@@ -1,5 +1,7 @@
 
-%This is a simple implementation of the Wu algorithm implemented in Reduce
+\index{Bradford, Russell}\index{People!Bradford, Russell}
+
+% This is a simple implementation of the Wu algorithm implemented in Reduce
 %3.3, working directly from
 %``A Zero Structure Theorem for Polynomial-Equations-Solving,''
 %Wu Wen-tsun, Institute of Systems Science, Academia Sinica, Beijing.
@@ -14,12 +16,13 @@ results. Of course, exploitation of the natural parallel structure is a must!
 
 All bug fixes and improvements are welcomed.
 
-The interface:
+\hypertarget{operator:WU}{}
+The interface:\ttindextype[WU]{wu}{operator}
 \begin{verbatim}
 wu( {x^2+y^2+z^2-r^2, x*y+z^2-1, x*y*z-x^2-y^2-z+1}, {x,y,z});
 \end{verbatim}
-calls {\tt wu} with the named polynomials, and with the variable ordering
-${\tt x} > {\tt y} > {\tt z}$. In this example, {\tt r} is a parameter.
+calls \f{wu} with the named polynomials, and with the variable ordering
+${\tt x} > {\tt y} > {\tt z}$. In this example, \var{r} is a parameter.
 
 The result is
 \begin{verbatim}
@@ -73,8 +76,9 @@ $y \neq 0$. These roots, together with the roots of the other
 characteristic set (under the constraint of $y(r^2+z^3-z^2-1) \neq 0$),
 comprise all the roots of the original set.
 
+\hypertarget{switch:TRWU}{}
 Additional information about the working of the algorithm can be gained by
-\ttindexswitch[WU]{TRWU}
+\ttindexswitch[WU]{trwu}
 \begin{verbatim}
 on trwu;
 \end{verbatim}

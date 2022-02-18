@@ -1,8 +1,7 @@
-
 \index{Gr\"abe, Hans-Gert}
-\index{Persons!Gr\"abe, Hans-Gert}
+\index{People!Gr\"abe, Hans-Gert}
 
-\newcommand{\ind}[1]{\emph{#1}\index{#1 (Cali package)@#1 (\textsc{Cali} package)}}
+\newcommand{\ind}[1]{\emph{#1}\index{#1!Cali package@\textsc{Cali} package}}
 \newcommand{\indf}[2]{\f{#1}\ttindextype[CALI]{#1}{#2}}
 \newcommand{\indid}[1]{\texttt{#1}\ttindextype[CALI]{#1}{symbol}}
 \newcommand{\indsw}[1]{\sw{#1}\ttindexswitch[CALI]{#1}}
@@ -386,7 +385,7 @@ weight lists as second parameter.
 procedures and variables to have a more concise semantic concept. This
 concerns
 \begin{quote}
-\ind{tracing} (the trace parameter is now stored on the property list
+\ind{Tracing} (the trace parameter is now stored on the property list
 of \texttt{cali} and should be set with \ind{setcalitrace}),
 
 choosing different versions of the Gr\"obner algorithm (through
@@ -1599,7 +1598,7 @@ Moreover there are two switches \indsw{detectunits} and
 \indsw{factorunits}, both off by default, that force such automatic
 simplifications during more advanced computations.
 
-The procedure \indf{deleteunits!*}{symbolic procedure} tries explicitely to factor the
+The procedure \f{deleteunits!*}\ttindextype[CALI]{deleteunits"!*}{symbolic procedure} tries explicitely to factor the
 basis polynomials of a dpmat and to remove polynomial units occuring
 as one of the factors.
 

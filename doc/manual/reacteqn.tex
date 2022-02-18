@@ -1,5 +1,5 @@
 \index{Melenk, Herbert}
-\index{Persons!Melenk, Herbert}
+\index{People!Melenk, Herbert}
 
 A single reaction equation is an expression of the form
 \begin{quote}
@@ -23,51 +23,58 @@ first constant is used for the forward direction, the second
 one for the backward direction.
 
 The names of the species are collected in a list bound to
-the \REDUCE{} variable SPECIES. This list is automatically filled
+the \REDUCE{} share variable \var{species}\ttindextype[REACTEQN]{species}{shared variable}.
+This list is automatically filled
 during the processing of a reaction system. The species enter
 in an order corresponding to their appearance in the reaction
 system and the resulting ode's will be ordered in the same manner.
 
 If a list of species is preassigned to the variable
-SPECIES either explicitly or from previous operations, the 
+\var{species} either explicitly or from previous operations, the 
 given order will be maintained and will dominate the formatting
 process. So the ordering of the result can be easily influenced
 by the user.
 
 Syntax:
-
- reac2ode \{ \meta{reaction} {[},\meta{rate} {[},\meta{rate}{]}{]} 
- {[},\meta{reaction} {[},\meta{rate} {[},\meta{rate}{]}{]}{]} 
- .... 
- \};
-
+\begin{syntax}
+  \f{reac2ode} \{\meta{reaction} {[},\meta{rate} {[},\meta{rate}{]}{]}
+  {[},\meta{reaction} {[},\meta{rate} {[},\meta{rate}{]}{]}{]}
+  \ldots
+  \};
+\end{syntax}
 where two rates are applicable only for \texttt{<>} reactions.
 
 Result is a system of explicit ordinary differential
  equations with polynomial righthand sides. As side
  effect the following variables are set:
-
- lists:
-
- rates: list of the rates in the system
-
- species: list of the species in the system
-
- matrices:
-
- inputmat: matrix of the input coefficients
-
- outputmat: matrix of the output coefficients
-
+ \begin{description}
+ \item [Lists:]
+   \begin{description}
+   \item[\var{rates}]
+     \hypertarget{variable:RATES}
+     list of the rates in the system
+   \item[\var{species}]
+     \hypertarget{variable:SPECIES}{}
+     list of the species in the system
+   \end{description}
+\item[Matrices: ]
+  \begin{description}
+  \item[\var{inputmat}]
+    \hypertarget{variable:INPUTMAT}{}
+    matrix of the input coefficients
+ \item[\var{outputmat}]
+    \hypertarget{variable:OUTPUTMAT}{}
+    matrix of the output coefficients
+  \end{description}
+ \end{description}
 In the matrices the row number corresponds to the input reaction 
 number, while the column number corresponds to the species index.
 Note: if the rates are numerical values, it will be in most cases
 appropriate to switch on \REDUCE{} rounded mode for floating
 point numbers. That is
-
-
-on rounded;
-
+\begin{quote}
+  \texttt{on rounded;}
+\end{quote}
 Inputmat and outputmat can be used for linear algebra type 
 investigations of the reaction system. The classical reaction 
 matrix is the difference of these matrices; however, the two 
@@ -88,17 +95,18 @@ This input
 \end{verbatim}
 gives the output
 \begin{verbatim}
-                             2
-{DF(A1,T)=RHO*A1*A4 - BETA*A1 - GAMMA*A1*A2 + EPSILON*A3,
 
- DF(A2,T)= - GAMMA*A1*A2 + EPSILON*A3 + THETA*A3 - MUE*A2*A5,
+{df(a1,t)=rho*a1*a4 - beta*a1  - gamma*a1*a2 + epsilon*a3,
 
- DF(A3,T)=GAMMA*A1*A2 - EPSILON*A3 - THETA*A3 + MUE*A2*A5,
+ df(a2,t)= - gamma*a1*a2 + epsilon*a3 + theta*a3 - mue*a2*a5,
+
+ df(a3,t)=gamma*a1*a2 - epsilon*a3 - theta*a3 + mue*a2*a5,
 
                                 2
- DF(A4,T)= - RHO*A1*A4 + BETA*A1 ,
+ df(a4,t)= - rho*a1*a4 + beta*a1 ,
 
- DF(A5,T)=THETA*A3 - MUE*A2*A5}
+ df(a5,t)=theta*a3 - mue*a2*a5}
+
 \end{verbatim}
 The corresponding matrices are
 \begin{verbatim}
@@ -138,26 +146,25 @@ REACTMAT :=  [ -1  -1  1   0   0 ]
               A1 + A2 <> A3,
                    a3 <> A2 + A5};
 
-new species: A1
-new species: A4
-new species: A3
-new species: A2
-new species: A5
-
+new species: a1
+new species: a4
+new species: a2
+new species: a3
+new species: a5
 
                2
-{DF(A1,T)= - A1 *RATE(2) + A1*A4*RATE(1) - A1*A2*RATE(3) + 
+{df(a1,t)= - a1 *rate(2) + a1*a4*rate(1) - a1*a2*rate(3) + 
 
-     A3*RATE(4),
+     a3*rate(4),
 
             2
- DF(A4,T)=A1 *RATE(2) - A1*A4*RATE(1),
+ df(a4,t)=a1 *rate(2) - a1*a4*rate(1),
 
- DF(A2,T)= - A1*A2*RATE(3) - A2*A5*RATE(6) + A3*RATE(5) + A3*RATE(4),
+ df(a2,t)= - a1*a2*rate(3) - a2*a5*rate(6) + a3*rate(5) + a3*rate(4),
 
- DF(A3,T)=A1*A2*RATE(3) + A2*A5*RATE(6) - A3*RATE(5) - A3*RATE(4),
+ df(a3,t)=a1*a2*rate(3) + a2*a5*rate(6) - a3*rate(5) - a3*rate(4),
 
- DF(A5,T)= - A2*A5*RATE(6) + A3*RATE(5)\}
+ df(a5,t)= - a2*a5*rate(6) + a3*rate(5)}
 
 % Example with rates computed from numerical expressions
 
@@ -166,12 +173,12 @@ new species: A5
    reac2ode { A1 + A4 <> 2A1, 17.3* 22.4^1.5,
                               0.04* 22.4^1.5 };
 
-new species: A1
-new species: A4
+new species: a1
+new species: a4
 
                        2
-{DF(A1,T)= - 4.24065*A1 + 1834.08*A1*A4,
+{df(a1,t)= - 4.24065*a1 + 1834.08*a1*a4,
 
                     2
- DF(A4,T)=4.24065*A1 - 1834.08*A1*A4}
+ df(a4,t)=4.24065*a1 - 1834.08*a1*a4}
 \end{verbatim}

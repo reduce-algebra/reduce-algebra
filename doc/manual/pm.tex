@@ -1,13 +1,14 @@
 PM is a general pattern matcher similar in style to those found in systems such
-as SMP and Mathematica, and is based on the pattern matcher described in Kevin
-McIsaac, ``Pattern Matching Algebraic Identities'', SIGSAM Bulletin, 19 (1985),
-4-13.  The following is a description of its structure.
+as SMP and Mathematica, and is based on the pattern matcher described in
+\cite{McIsaac:85}.  The following is a description of its structure.
 
 A \emph{template} is any expression composed of literal elements,
 e.g. \texttt{5}, \texttt{a}, or \texttt{a+1}, and specially-denoted pattern
 variables, e.g. \texttt{?a} or \texttt{??b}.  Atoms beginning with \texttt{?}
 are called \emph{generic variables} and match any expression.
 
+\hypertarget{reserved:repop}{}
+\hypertarget{reserved:repdop}{}
 Atoms beginning with \texttt{??} are called \emph{multi-generic variables} and
 match any expression or any sequence of expressions including the null or empty
 sequence.  A sequence is an expression of the form \texttt{[a1,a2,...]}.  When
@@ -37,7 +38,7 @@ does not match the corresponding subexpression because they have different
 structures, then the two are equated and the matcher continues matching the rest
 of the expression until all the generic variables in the subexpression are
 bound.  The equality is then checked.  This is controlled by the
-switch \texttt{semantic}.  By default it is \texttt{on}.
+switch \sw{semantic}.  By default it is \texttt{on}.
 
 \subsection{\texttt{M(exp,temp)}}
 
@@ -109,9 +110,10 @@ Note that the effect of using a multi-generic symbol is different:
 
 
 \subsection{temp \_= logical\_exp}
+\hypertarget{reserved:suchthatop}{}
 
 A template may be qualified by the use of the conditional operator \texttt{\_=},
-\texttt{such!-that}.  When a \texttt{such-that} condition is encountered in a template, it
+\f{such!-that}.  When a \f{such-that} condition is encountered in a template, it
 is held until all generic variables appearing in \texttt{logical\_exp} are bound.
 
 On the binding of the last generic variable, \texttt{logical\_exp} is simplified
@@ -202,6 +204,8 @@ Only substitute at the top level:
 
 
 \subsection{temp :- exp and temp ::- exp}
+\hypertarget{reserved:rsetop}{}
+\hypertarget{reserved:rsetdop}{}
 
 If during simplification of an expression, \texttt{temp} matches some
 sub-expression, then that sub-expression is replaced by \texttt{exp}.  If there
@@ -219,7 +223,7 @@ Define the factorial function of a natural number as a recursive function and a
 termination condition.  For all other values write it as a gamma function.  Note
 that the order of definition is not important, as the rules are re-ordered so
 that the most specific rule is tried first.  Note the use of \texttt{::-}
-instead of \texttt{:-} to stop simplification of the l.h.s.  \texttt{hold} stops
+instead of \texttt{:-} to stop simplification of the l.h.s.  \f{hold} stops
 its arguments from being simplified.
 \begin{verbatim}
         fac(?x _= Natp(?x)) ::- ?x*fac(?x-1);

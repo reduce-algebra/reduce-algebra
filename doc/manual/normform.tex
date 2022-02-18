@@ -1,5 +1,5 @@
 
-\index{Rebbeck, Matt}\index{Persons!Rebbeck, Matt}
+\index{Rebbeck, Matt}\index{People!Rebbeck, Matt}
 
 \subsection{Introduction}
 %% For MathJax, must be part of a paragraph to avoid extra space:
@@ -33,16 +33,16 @@ normal form they must be similar.
 {\small NORMFORM} is a package for computing the following normal
 forms of matrices:
 
-\begin{verbatim}
- - smithex
- - smithex_int
- - frobenius
- - ratjordan
- - jordansymbolic
- - jordan
-\end{verbatim}
+\begin{itemize}
+ \item smithex
+ \item smithex\_int
+ \item frobenius
+ \item ratjordan
+ \item jordansymbolic
+ \item jordan
+\end{itemize}
 
-The package is loaded by \texttt{load\_package normform;}
+%The package is loaded by \texttt{load\_package normform;}
 
 By default all calculations are carried out in $\mathbf{Q}$ (the rational
 numbers). For \f{smithex}, \f{frobenius}, \f{ratjordan},
@@ -55,14 +55,15 @@ in the respective sections.
 
 The algorithms for each routine are contained in the source code.
 
-{\small NORMFORM} has been converted from the normform and Normform
-packages written by T.M.L. Mulders and A.H.M. Levelt. These have been
-implemented in Maple [4].
+\package{NORMFORM} has been converted from the normform and Normform
+packages written by T.~M.~L.~Mulders and A.~H.~M.~Levelt. These have been
+implemented in Maple \cite{MapleManual}.
 
 
 \subsection{Smith normal form}
-\ttindextype{SMITHEX}{operator}
+\ttindextype[NORMFORM]{smithex}{operator}
 
+\hypertarget{operator:SMITHEX}{}
 \begin{description}
 \item[Function]\mbox{}\\*
 \f{smithex}($\mathcal{A},\, x$) computes the Smith normal form $\mathcal{ S}$
@@ -78,14 +79,14 @@ $x$ is the variable name.
 
 \item[Field extensions]\mbox{}\\*
 Calculations are performed in $\mathbf{Q}$. To extend this field the
-{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
+\package{ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-\item[Synopsis:]
+\item[Synopsis:]\mbox{}\\*
 \begin{itemize}
 \item The Smith normal form $\mathcal{S}$ of an n by m matrix $\mathcal{A}$
 with univariate polynomial entries in $x$ over a field $\mathbf{F}$ is
 computed. That is, the polynomials are then regarded as elements of the
-{\it E}uclidean domain $\mathbf{F}(x)$.
+\textit{Euclidean} domain $\mathbf{F}(x)$.
 
 \item The Smith normal form is a diagonal matrix $\mathcal{S}$ where:
 
@@ -118,7 +119,7 @@ computed. That is, the polynomials are then regarded as elements of the
 \end{itemize}
 
 \item[Example:]\mbox{}\\*
-\texttt{load\_package normform;}
+%\texttt{load\_package normform;}
 \[
  \mathcal{A} = \begin{pmatrix} x & x+1 \\ 0 & 3*x^2 \end{pmatrix}
 \]
@@ -133,7 +134,8 @@ computed. That is, the polynomials are then regarded as elements of the
 \end{description}
 
 \subsection{smithex\_int}
-\ttindextype{SMITHEX\_INT}{operator}
+\ttindextype[NORMFORM]{smithex\_int}{operator}
+\hypertarget{operator:SMITHEX_INT}{}
 
 \begin{description}
 \item[Function]\mbox{}\\*
@@ -146,7 +148,7 @@ $\mathcal{P}$, and $\mathcal{ P}^{-1}$ are such that $\mathcal{P S P}^{-1} =
 \mathcal{A}$.
 
 
-\item[Synopsis]
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
 \item The Smith normal form $\mathcal{ S}$ of an $n$ by $m$ matrix
@@ -176,7 +178,7 @@ $\mathcal{ A}$ with integer entries is computed.
 \end{itemize}
 
 \item[Example]\mbox{}\\*
-\texttt{load\_package normform;}
+%\texttt{load\_package normform;}
 \[
  \mathcal{A} =
     \begin{pmatrix} 9 & -36 & 30 \\ -36 & 192 & -180 \\ 30 & -180 & 180 \end{pmatrix}
@@ -190,7 +192,8 @@ $\mathcal{ A}$ with integer entries is computed.
 \end{description}
 
 \subsection{frobenius}
-\ttindextype{FROBENIUS}{operator}
+\ttindextype[NORMFORM]{frobenius}{operator}
+\hypertarget{operator:FROBENIUS}{}
 
 \begin{description}
 \item[Function]\mbox{}\\*
@@ -204,7 +207,7 @@ $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P F P}^{-1} =
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-Calculations are performed in $\mathcal{Q}$. To extend this field the
+Calculations are performed in $\mathbf{Q}$. To extend this field the
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}
 
 \item[Modular arithmetic]\mbox{}\\*
@@ -212,7 +215,7 @@ Calculations are performed in $\mathcal{Q}$. To extend this field the
 \f{frobenius} can be calculated in a modular base. For details see
 subsection \ref{sec:normform-modular}.
 
-\item[Synopsis]
+\item[Synopsis]\mbox{}\\*
 
 \begin{itemize}
 \item $\mathcal{F}$ has the following structure:
@@ -232,7 +235,7 @@ subsection \ref{sec:normform-modular}.
 \end{itemize}
 
 \item[Example]\mbox{}\\*
-\texttt{load\_package normform;}
+%\texttt{load\_package normform;}
 \[
 \mathcal{A} = \begin{pmatrix} \frac{-x^2+y^2+y}{y} &
 \frac{-x^2+x+y^2-y}{y} \\[1mm] \frac{-x^2-x+y^2+y}{y} & \frac{-x^2+x+y^2-y}
@@ -255,7 +258,8 @@ subsection \ref{sec:normform-modular}.
 \end{description}
 
 \subsection{ratjordan}
-\ttindextype{RATJORDAN}{operator}
+\ttindextype[NORMFORM]{ratjordan}{operator}
+\hypertarget{operator:RATJORDAN}{}
 
 \begin{description}
 \item[Function]\mbox{}\\*
@@ -269,15 +273,14 @@ $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P R P}^{-1} =
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-Calculations are performed in $\mathcal{Q}$. To extend this field the
-{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
+Calculations are performed in $\mathbf{Q}$. To extend this field the
+\package{ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
 \item[Modular arithmetic]\mbox{}\\*
 \f{ratjordan} can be calculated in a modular base. For details see
 subsection \ref{sec:normform-modular}.
 
-\item[Synopsis]
-
+\item[Synopsis]\mbox{}\\*
 \begin{itemize}
 \item $\mathcal{R}$ has the following structure:
       \[
@@ -301,7 +304,7 @@ subsection \ref{sec:normform-modular}.
 \end{itemize}
 
 \item[Example]\mbox{}\\*
-\texttt{load\_package normform;}
+%\texttt{load\_package normform;}
 \[
 \mathcal{A} = \begin{pmatrix} x+y & 5 \\ y & x^2 \end{pmatrix}
 \]
@@ -318,7 +321,8 @@ subsection \ref{sec:normform-modular}.
 \end{description}
 
 \subsection{jordansymbolic}
-\ttindextype{JORDANSYMBOLIC}{operator}
+\ttindextype[NORMFORM]{jordansymbolic}{operator}
+\hypertarget{operator:JORDANSYMBOLIC}{}
 
 \begin{description}
 \item[Function]\mbox{}\\*
@@ -333,13 +337,14 @@ a name and $ll$ is a list of irreducible factors of $p(\xi)$.
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-Calculations are performed in $\mathcal{Q}$. To extend this field the
-{\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
+Calculations are performed in $\mathbf{Q}$. To extend this field the
+\package{ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
 \item[Modular arithmetic]\mbox{}\\*
 {\tt jordansymbolic} can be calculated in a modular base. For details
 see subsection \ref{sec:normform-modular}.
 
+\iffalse
 \item[Extras]\mbox{}\\*
 \hypertarget{switch:LOOKING_GOOD}{}
 \ttindexswitch[NORMFORM]{LOOKING\_GOOD}
@@ -348,9 +353,9 @@ output can be improved by setting the switch \sw{looking\_good} to on. This
 converts all lambda to $\xi$ and improves the indexing, e.g., \texttt{lambda12}
 $\Rightarrow \xi_{12}$. The example below shows the
 output when this switch is on.
+\fi
 
-\item[Synopsis]
-
+\item[Synopsis]\mbox{}\\*
 \begin{itemize}
 \item A \emph{Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$
       upper triangular matrix of the form:
@@ -395,8 +400,8 @@ output when this switch is on.
 
 \item[Example]\mbox{}\\*
 %
-\texttt{load\_package normform;}\\
-\texttt{on looking\_good;}
+%\texttt{load\_package normform;}\\
+%\texttt{on looking\_good;}
 \[
 \mathcal{A} = \begin{pmatrix} 1 & y \\ y^2 & 3 \end{pmatrix}
 \]
@@ -429,12 +434,13 @@ output when this switch is on.
 \mathcal{J} = \begin{pmatrix} \sqrt{y^3+1} + 2 & 0 \\ 0 &
 -\sqrt{y^3+1} + 2 \end{pmatrix}
 \]
-For a similar example ot this in standard {\REDUCE} (ie: not using
-\texttt{xr}), see the \texttt{normform.rlg} file.
+%For a similar example of this in standard {\REDUCE} (ie: not using
+%\texttt{xr}), see the \texttt{normform.rlg} file.
 \end{description}
 
 \subsection{jordan}
-\ttindextype{JORDAN}{operator}
+\ttindextype[NORMFORM]{jordan}{operator}
+\hypertarget{operator:JORDAN}{}
 
 \begin{description}
 \item[Function]\mbox{}\\*
@@ -450,7 +456,7 @@ $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
 %
-Calculations are performed in $\mathcal{Q}$. To extend this field the
+Calculations are performed in $\mathbf{Q}$. To extend this field the
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
 \item[Note]\mbox{}\\*
@@ -462,11 +468,10 @@ the output being very large. In this case a message \\
 will be printed. It may be
 better to kill the calculation and compute \f{jordansymbolic} instead.
 
-\item[Synopsis]
-
+\item[Synopsis]\mbox{}\\*
 \begin{itemize}
 \item The Jordan normal form $\mathcal{J}$ with entries in an algebraic
-      extension of $\mathcal{Q}$ is computed.
+      extension of $\mathbf{Q}$ is computed.
 
 \item A \emph{Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$
       upper triangular matrix of the form:
@@ -503,7 +508,7 @@ better to kill the calculation and compute \f{jordansymbolic} instead.
 
 \item[Example]\mbox{}\\*
 %
-\texttt{load\_package normform;}
+%\texttt{load\_package normform;}
 \[
 \mathcal{A} = \begin{pmatrix} -9 & -21 & -15 & 4 & 2 & 0 \\
 -10 & 21 & -14 & 4 & 2 & 0 \\ -8 & 16 & -11 & 4 & 2 & 0 \\ -6 & 12 & -9
@@ -523,16 +528,17 @@ better to kill the calculation and compute \f{jordansymbolic} instead.
 \subsection{Algebraic extensions: Using the \textsc{arnum} package}
 \label{sec:normform-arnum}
 
-The package is loaded by the command \texttt{load\_package arnum;}. The algebraic
+%The package is loaded by the command \texttt{load\_package arnum;}.
+The algebraic
 field $\mathbf{Q}$ can now be extended. For example,
 \texttt{defpoly sqrt2**2-2;} will extend it to include ${\sqrt{2}}$ (defined here by
-\texttt{sqrt2}). The {\small ARNUM} package was written by Eberhard
+\texttt{sqrt2}). The \package{ARNUM} package was written by Eberhard
 Schr\"ufer and is described in section \ref{sec:package-arnum}.
 
 \subsubsection{Example}
 
-\texttt{load\_package normform;} \\
-\texttt{load\_package arnum;} \\
+%\texttt{load\_package normform;} \\
+%\texttt{load\_package arnum;} \\
 \texttt{defpoly sqrt2**2-2;} \\
 (sqrt2 now changed to ${\sqrt{2}}$ for looks!)
 \[
@@ -569,16 +575,16 @@ Schr\"ufer and is described in section \ref{sec:package-arnum}.
 \ttindexswitch{balanced\_mod}
 Calculations can be performed in a modular base by setting the switch \sw{modular}
 to on. The base can then be set by \texttt{setmod p;} (p a prime). The
-normal form will then have entries in $\mathcal{Z}/$p$\mathcal{Z}$.
+normal form will then have entries in $\mathbf{Z}/$p$\mathbf{Z}$.
 
 By also switching on \sw{balanced\_mod} the output will be shown using
 a symmetric modular representation.
 
-Information on this modular manipulation can be found in chapter \ref{sec:core-polyrat}.
+Information on this modular manipulation can be found in section \ref{sec:polyrat-modular}.
 
 \subsubsection{Example}
 
-\texttt{load\_package normform;} \\
+%\texttt{load\_package normform;} \\
 \texttt{on modular;} \\
 \texttt{setmod 23;}
 \[

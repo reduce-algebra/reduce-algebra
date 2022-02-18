@@ -25,7 +25,7 @@
 \(\newcommand{\f}[1]{\texttt{#1}}\)%
 }\fi
 %
-The package SPECFN is designed to provide algebraic and numeric manipulations of
+The package \package{SPECFN} is designed to provide algebraic and numeric manipulations of
 many common special functions, namely:
 
 \begin{itemize}
@@ -111,7 +111,7 @@ The polynomial function sets available are:
 All of the operators supported by this package have certain algebraic
 simplification rules to handle special cases, poles, derivatives and so
 on.  Such rules are applied whenever they are appropriate.  However, if
-the \sw{ROUNDED} switch is on, numeric evaluation is also carried out.
+the \sw{rounded}\ttindexswitch{rounded} switch is on, numeric evaluation is also carried out.
 Unless otherwise stated below, the result of an application of a special
 function operator to real or complex numeric arguments in rounded mode
 will be approximated numerically whenever it is possible to do so.  All
@@ -164,7 +164,7 @@ ShowRules BesselI;
 \end{verbatim}
 Several \REDUCE\ packages (such as Sum or Limits) obtain different
 (hopefully better)
-results for the algebraic simplifications when the SPECFN package
+results for the algebraic simplifications when the \package{SPECFN} package
 is loaded, because the latter package contains some information which
 may be useful and directly applicable for other packages, e.g.:
 
@@ -192,40 +192,40 @@ switch is on by default.
 \hypertarget{operator:Fresnel_S}{}
 \hypertarget{operator:Fresnel_C}{}
 \index{Error functions}\index{Integral functions}
-\ttindex{Si}\ttindex{Shi}\ttindex{Chi}\ttindex{Ci}
-\ttindextype{Li}{(logarithmic integral)}\ttindextype{Ei}{(exponential integral)}
-\ttindextype{Erf}{(error function)}
+\ttindextype{Si}{operator}\ttindextype{Shi}{operator}\ttindextype{Chi}{operator}\ttindextype{Ci}{operator}
+\ttindextype{Li}{(logarithmic integral) operator}\ttindextype{Ei}{(exponential integral) operator}
+\ttindextype{Erf}{(error function) operator}
 \ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
 \hypertarget{INTEGF}{}
 
-The SPECFN package includes manipulation and limited numerical
+The \package{SPECFN} package includes manipulation and limited numerical
 evaluation for some integral functions, namely
 
 \f{erf}, \f{erfc}, \f{Si}, \f{Shi}, \f{si}, \f{Ci}, \f{Chi}, \f{Ei}, \f{Li},
 \f{Fresnel\_C}, and \f{Fresnel\_S}.
 
 The error function, its complement and the two Fresnel integrals are defined by:
-\begin{eqnarray*}
-\mathrm{erf}(z) & = & \frac{2}{\sqrt \pi}\int_0^z e^{-t^2}\, \mathrm{d}t\\
-\mathrm{erfc}(z) & = & \frac{2}{\sqrt \pi}\int_z^\infty e^{-t^2}\, \mathrm{d}t
+\begin{align*}
+\mathrm{erf}(z) & = \frac{2}{\sqrt \pi}\int_0^z e^{-t^2}\, \mathrm{d}t\\
+\mathrm{erfc}(z) & = \frac{2}{\sqrt \pi}\int_z^\infty e^{-t^2}\, \mathrm{d}t
  = 1 - \mathrm{erf}(z)\\
-C(z) & = & \int_0^z \cos\left(\frac{\pi}{2} t^2\right)\, \mathrm{d}t\\
-S(z) & = & \int_0^z \sin\left(\frac{\pi}{2} t^2\right)\, \mathrm{d}t
-\end{eqnarray*}
+C(z) & = \int_0^z \cos\left(\frac{\pi}{2} t^2\right)\, \mathrm{d}t\\
+S(z) & = \int_0^z \sin\left(\frac{\pi}{2} t^2\right)\, \mathrm{d}t
+\end{align*}
 respectively.
 
 The exponential and related integrals are defined by the following:
-\begin{eqnarray*}
-\mathrm{Ei}(z) & = & e^{-z}\int_z^\infty \frac{e^{-t}} {t+z}\, \mathrm{d}t\\
-\mathrm{Li}(z) & = & \int_0^z \frac{\mathrm{d}t} {\log t}\\
-\mathrm{Si}(z) & = & \int_0^z \frac{\sin t} {t}\, \mathrm{d}t\\
-\mathrm{si}(z) & = & -\int_z^\infty \frac{\sin t} {t}\, \mathrm{d}t
+\begin{align*}
+\mathrm{Ei}(z) & = e^{-z}\int_z^\infty \frac{e^{-t}} {t+z}\, \mathrm{d}t\\
+\mathrm{Li}(z) & = \int_0^z \frac{\mathrm{d}t} {\log t}\\
+\mathrm{Si}(z) & = \int_0^z \frac{\sin t} {t}\, \mathrm{d}t\\
+\mathrm{si}(z) & = -\int_z^\infty \frac{\sin t} {t}\, \mathrm{d}t
  = \mathrm{Si}(z) - \frac{\pi}{2}\\
-\mathrm{Ci}(z) & = & -\int_z^\infty  \frac{\cos t} {t}\, \mathrm{d}t
+\mathrm{Ci}(z) & = -\int_z^\infty  \frac{\cos t} {t}\, \mathrm{d}t
 =  \int_0^z \frac{\cos t -1} {t}\, \mathrm{d}t + \log z +\gamma\\
-\mathrm{Shi}(z) & = & \int_0^z \frac{\sinh t} {t}\, \mathrm{d}t\\
-\mathrm{Chi}(z) & = & \int_0^z \frac{\cosh t -1} {t}\, \mathrm{d}t +\log z +\gamma
-\end{eqnarray*}
+\mathrm{Shi}(z) & = \int_0^z \frac{\sinh t} {t}\, \mathrm{d}t\\
+\mathrm{Chi}(z) & = \int_0^z \frac{\cosh t -1} {t}\, \mathrm{d}t +\log z +\gamma
+\end{align*}
 where $\gamma$ is Euler's constant (\f{Euler\_gamma}).
 
 The definitions of the exponential and related integrals, the
@@ -252,12 +252,12 @@ $\mathop{\mathrm{Li}(z)}$ is simplified to $\mathop{\mathrm{Ei}}(\ln(z))$ .
 This is represented by the unary operator \f{Gamma}.
 The \texttt{Gamma} function is defined by the integral:
 \[ \Gamma(a) = \int_0^\infty e^{-t}t^{a-1}\, \mathrm{d}t.\]
-Initial transformations applied with \sw{ROUNDED} off are: $\Gamma(n)$ for
+Initial transformations applied with \sw{rounded} off are: $\Gamma(n)$ for
 integral $n$ is computed, $\Gamma(n+1/2)$ for integral $n$ is rewritten to
 an expression in $\sqrt\pi$, $\Gamma(n+1/m)$ for natural $n$ and $m$ a
 positive integral power of 2 less than or equal to 64 is rewritten to an
 expression in $\Gamma(1/m)$, expressions with arguments at which there is a
-pole are replaced by \var{INFINITY}, and those with a negative (real)
+pole are replaced by \var{infinity}, and those with a negative (real)
 argument are rewritten so as to have positive arguments.
 
 The algorithm used for numerical approximation is an implementation of an
@@ -270,7 +270,7 @@ included.
 \subsubsection{Incomplete Gamma Functions}
 \index{Incomplete Gamma functions}
 \hypertarget{operator:M_GAMMA}{}
-\ttindex{igamma}\ttindex{m\_gamma}
+\ttindextype{igamma}{operator}\ttindextype{m\_gamma}{operator}
 The (unnormalised) incomplete gamma function is provided by the binary function
 \f{m\_gamma}. In the literature it is normally represented as $\gamma(a,z)$
 and is defined by
@@ -284,7 +284,7 @@ function \f{igamma} and is defined as
 \hypertarget{operator:BETA}{}
 \hypertarget{operator:IBETA}{}
 \index{Beta function}
-\ttindex{Beta}\ttindex{ibeta}
+\ttindextype{Beta}{operator}\ttindextype{ibeta}{operator}
 The binary function $B(a,b)$ is related to the $\Gamma$
 function\cite{AbramowitzStegun:72} and is defined by
 \[ B(a,b) = \int_0^1 t^a (1-t)^b\, \mathrm{d}t =
@@ -293,16 +293,17 @@ It is represented by the binary function \f{Beta}.
 
 \index{Incomplete Beta functions}
 The unnormalised and nomalised incomplete Beta funtions are defined by
-\begin{eqnarray*}
-B_x(a,b) & = & \int_0^x t^a (1-t)^b\, \mathrm{d}t,\\
-I_x(a,b) & = & \frac{B_x(a,b)}{B(a,b)}
-\end{eqnarray*}
+\begin{align*}
+B_x(a,b) & = \int_0^x t^a (1-t)^b\, \mathrm{d}t,\\
+I_x(a,b) & = \frac{B_x(a,b)}{B(a,b)}
+\end{align*}
 respectively. The normalised one is represented by the ternary function
 \texttt{ibeta(a,b,x)}.
 
 \subsubsection{The Digamma Function, $\psi$}
 \hypertarget{DIGAM}{}
-\ttindex{psi}\index{$\psi$ function}\index{Psi function}\index{Digamma
+\ttindextype{psi}{operator}%
+\index{$\psi$ function}\index{Psi function}\index{Digamma
 function}
 
 This is represented by the unary operator \f{psi}. It is defined as the
@@ -321,8 +322,8 @@ Relations for the derivative and integral of $\psi$ are included.
 
 \subsubsection{The Polygamma Functions, $\psi^{(n)}$}
 \hypertarget{POLYGAM}{}
-\ttindex{Polygamma}\index{$\psi^{(n)}$ functions}\index{Polygamma
-functions}
+\ttindextype{Polygamma}{operator}
+\index{$\psi^{(n)}$ functions}\index{Polygamma functions}
 
 The $n$th derivative of the $\psi$ function is represented by the
 binary operator \f{Polygamma}, whose first argument is $n$.
@@ -347,10 +348,10 @@ Simple relations for derivatives and integrals are provided.
 \hypertarget{operator:HANKEL1}{}
 \hypertarget{operator:HANKEL2}{}
 \hypertarget{BESSELF}{}
-\ttindex{BesselJ}\ttindex{BesselY}
-\ttindex{BesselI}\ttindex{BesselK}
-\ttindex{Hankel1}\ttindex{Hankel2}\index{Bessel functions}
-\index{Hankel functions}
+\ttindextype{BesselJ}{operator}\ttindextype{BesselY}{operator}
+\ttindextype{BesselI}{operator}\ttindextype{BesselK}{operator}
+\ttindextype{Hankel1}{operator}\ttindextype{Hankel2}{operator}
+\index{Bessel functions}\index{Hankel functions}
 
 Support is provided for the Bessel functions $J$ and $Y$, the modified
 Bessel functions $I$ and $K$, and the Hankel functions of the first and
@@ -376,12 +377,12 @@ It is sometimes known as Weber's function.
 
 The Hankel functions are alternative solutions of the Bessel equation
 distinguished by their asymptotic behaviour as $z\rightarrow \infty$:
-\begin{eqnarray*}
-H_\nu^{(1)}(z) & \sim & \sqrt{\frac{2}{\pi z}}\exp\left(i\left(z-\frac{\nu\pi}
+\begin{align*}
+H_\nu^{(1)}(z) & \sim \sqrt{\frac{2}{\pi z}}\exp\left(i\left(z-\frac{\nu\pi}
 {2}-\frac{\pi}{4}\right)\right),\\
-H_\nu^{(2)}(z) & \sim & \sqrt{\frac{2}{\pi z}}\exp\left(-i\left(z-\frac{\nu\pi}
+H_\nu^{(2)}(z) & \sim \sqrt{\frac{2}{\pi z}}\exp\left(-i\left(z-\frac{\nu\pi}
 {2}-\frac{\pi}{4}\right)\right).
-\end{eqnarray*}
+\end{align*}
 
 The modified Bessel functions $I_\nu(z)$ and $K_\nu(z)$ are solutions of the
 modified Bessel equation:
@@ -411,7 +412,8 @@ into an expression in $J$ or $I$ respectively;
 \item derivatives of $K$ with zero first argument are carried out;
 \item derivatives of Hankel functions are carried out.
 \end{itemize}
-Also, if the \sw{COMPLEX} switch is on and \sw{ROUNDED} is off,
+Also, if the \sw{complex}\ttindexswitch{complex} switch is on and
+\sw{rounded}\ttindexswitch{rounded} is off,
 expressions in Hankel functions are rewritten in terms of Bessel functions.
 
 No numerical approximation is provided for the Bessel $K$ function, or
@@ -433,8 +435,8 @@ There are no rules for the integration of Bessel and Hankel functions.
 \hypertarget{operator:AIRY_BIPRIME}{}
 \hypertarget{AIRYF}{}
 \index{Airy functions}
-\ttindex{Airy\_Ai}\ttindex{Airy\_Bi}
-\ttindex{Airy\_Aiprime}\ttindex{Airy\_Biprime}
+\ttindextype{Airy\_Ai}{operator}\ttindextype{Airy\_Bi}{operator}
+\ttindextype{Airy\_Aiprime}{operator}\ttindextype{Airy\_Biprime}{operator}
 
 Support is provided for the Airy Functions $Ai$ and $Bi$ and for their
 derivatives $Ai'$ and $Bi'$.  The relevant operators are
@@ -459,7 +461,7 @@ As a result the \f{Airy\_Ai} function will be evaluated using the formula:
  \zeta =  \frac{2}{3} z^{\frac{2}{3}}.
 \]
 \textbf{Note:} In order to obtain satisfactory approximations
-to numerical values both the \sw{COMPLEX} and \sw{ROUNDED} switches
+to numerical values both the \sw{complex} and \sw{rounded} switches
 must be on.
 
 The algorithms used for the Airy Functions are implementations of
@@ -480,9 +482,10 @@ There are no rules for the integration of Airy Functions.
 \hypertarget{operator:WHITTAKERM}{}
 \hypertarget{operator:WHITTAKERU}{}
 \hypertarget{HYPERGEOM}{}
-\ttindex{KummerM}\ttindex{KummerU}\ttindex{StruveH}
-\ttindex{StruveL}\ttindex{Lommel1}\ttindex{Lommel2}
-\ttindex{WhittakerM}\ttindex{WhittakerW}
+\ttindextype{KummerM}{operator}\ttindextype{KummerU}{operator}%
+\ttindextype{StruveH}{operator}\ttindextype{StruveL}{operator}%
+\ttindextype{Lommel1}{operator}\ttindextype{Lommel2}{operator}%
+\ttindextype{WhittakerM}{operator}\ttindextype{WhittakerW}{operator}
 \index{Kummer functions}\index{Struve functions}\index{Lommel functions}
 \index{Whittaker functions}\index{Hypergeometric functions}
 
@@ -535,7 +538,7 @@ This is represented by the unary operator \f{Zeta} and defined by the
 formula:
 \[\zeta(s) = \sum_{n=1}^\infty \frac{1}{n^s}.\]
 
-With \sw{ROUNDED} off, $\zeta(z)$ is evaluated numerically for even
+With \sw{rounded} off, $\zeta(z)$ is evaluated numerically for even
 integral arguments in the range $-31 < z < 31$, and for odd integral
 arguments in the range $-30 < z < 16$.  Outside this range the values
 become a little unwieldy.
@@ -607,10 +610,10 @@ package. However, this rule may be reactivated if required by
 
 The function is studied extensively in \cite{HareCorless:92}.
 The current implementation will compute values on the principal branch for
-all complex numerical arguments  only if the switch \sw{ROUNDED} is ON.
+all complex numerical arguments  only if the switch \sw{rounded} is on.
 However, since the numerical computations are carried out in
 \texttt{complex-rounded} mode, it is also better to turn the switch
-\sw{COMPLEX} ON to avoid repeated irritating mode change warnings.
+\sw{complex} to on to avoid repeated irritating mode change warnings.
 
 The real positive branch is part of the principal branch and currently there
 is no way of computing values on the real negative  branch or indeed any
@@ -621,7 +624,7 @@ non-principal values.
 \hypertarget{operator:SOLIDHARMONICY}{}
 \hypertarget{SPHSOLH}{}
 \index{Spherical and Solid Harmonics}
-\ttindex{SolidHarmonicY} \ttindex{SphericalHarmonicY}
+\ttindextype{SolidHarmonicY}{operator}\ttindextype{SphericalHarmonicY}{operator}
 
 The relevant operators are, respectively,\\
 \f{SolidHarmonicY} and \f{SphericalHarmonicY}.
@@ -714,8 +717,8 @@ For $m < 0$ one has:-
 \hypertarget{operator:ThreeJSymbol}{}
 \hypertarget{operator:SixJSymbol}{}
 \hypertarget{operator:Clebsch_Gordan}{}
-\ttindex{ThreejSymbol}\ttindex{SixjSymbol}
-\ttindex{Clebsch\_Gordan}
+\ttindextype{ThreejSymbol}{operator}\ttindextype{SixjSymbol}{operator}
+\ttindextype{Clebsch\_Gordan}{operator}
 The operators \f{ThreeJSymbol} and \f{Clebsch\_Gordan} are defined as
 in \cite{LandoltBoernstein:68} or \cite{Edmonds:57} and expect as arguments
 three lists of values \{$j_i,m_i$\}, e.g.
@@ -736,7 +739,7 @@ SixJSymbol({7,6,3},{2,4,6});
 
 In the current implementation of \f{SixJSymbol} there is only limited
 reasoning about the minima and maxima of the summation using
-the INEQ package, such that in most
+the \package{INEQ} package, such that in most
 cases the special 6j-symbols (see e.g.\ \cite{LandoltBoernstein:68})
 will not be found.
 
@@ -744,7 +747,7 @@ will not be found.
 \hypertarget{STIRL}{}
 \hypertarget{operator:STIRLING1}{}
 \hypertarget{operator:STIRLING2}{}
-\index{Stirling numbers}\ttindex{Stirling1}\ttindex{Stirling2}
+\index{Stirling numbers}\ttindextype{Stirling1}{operator}\ttindextype{Stirling2}{operator}
 The Stirling numbers of the first and second kind are computed
 by calling the binary operators \f{Stirling1} and \f{Stirling2}
 respectively.
@@ -764,8 +767,9 @@ second kind.
 
 \subsection{Constants}
 \hypertarget{CONSTS}{}
-\ttindex{Euler\_Gamma}\ttindex{Khinchin}\ttindex{Golden\_Ratio}
-\ttindex{Catalan}
+\ttindextype{Euler\_Gamma}{reserved variable}\ttindextype{Khinchin}{reserved variable}%
+\ttindextype{Golden\_Ratio}{reserved variable}%
+\ttindextype{Catalan}{reserved variable}
 
 The following well-known constants are defined in the \REDUCE\ core,
 but the code for computing their numerical value when the switch \sw{ROUNDED}
@@ -818,7 +822,7 @@ These quantities may be used in \href{https://dlmf.nist.gov/18.2#iv}
 
 \subsubsection{Legendre Polynomials}
 \hypertarget{operator:LEGENDREP}{}
-\index{Legendre polynomials}\ttindex{LegendreP}
+\index{Legendre polynomials}\ttindextype{LegendreP}{operator}
 The function call \texttt{LegendreP(n,x)} will return the $n$th Legendre
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
 the original operator \texttt{LegendreP} or on graphical interfaces $P_n(x)$
@@ -834,7 +838,7 @@ Also $\tilde{h}_n = \frac{2}{2 n +1}$ and $r_n =0$.
 \subsubsection{Associated Legendre Functions}
 The function call \texttt{LegendreP(n,m,x)} will return the $n$th associated
 Legendre function if $n$ and $m$ are integers with $0 \leq m \leq n$;
-otherwise the result will involve the original operator \texttt{LegendreP} or
+otherwise the result will involve the original operator \f{LegendreP} or
 on graphical interfaces $P_n^{(m)}(x)$ will be output.
 
 They are defined by
@@ -852,10 +856,10 @@ of this section, they are \emph{not} orthonormal:
 \subsubsection{Chebyshev Polynomials}
 \hypertarget{operator:CHEBYSHEVT}{}
 \hypertarget{operator:CHEBYSHEVU}{}
-\index{Chebyshev polynomials} \ttindex{ChebyshevT}
+\index{Chebyshev polynomials} \ttindextype{ChebyshevT}{operator}
 The function call \texttt{ChebyshevT(n,x)} will return the $n$th Chebyshev
 polynomial of the first kind if $n$ is a non-negative integer; otherwise the
-result will involve the original operator \texttt{ChebyshevT} or on graphical
+result will involve the original operator \f{ChebyshevT} or on graphical
 interfaces $T_n(x)$ will be output.
 
 The interval of definition is $(-1, 1)$, the weight function
@@ -863,10 +867,10 @@ $w(x)=(1-x^2)^{-1/2}$ and, for the orthonormal case, the leading
 coefficients are given by $k_n= 2^{n-1}\ \mbox{for}\ n>0;\ k_0 =1$. Also
 $\tilde{h}_n = \pi/2\ \ \mbox{for}\ n>0;\ \tilde{h}_0 =\pi\,$ and $r_n=0$.
 
-\ttindex{ChebyshevU}
+\ttindextype{ChebyshevU}{operator}
 The function call \texttt{ChebyshevU(n,x)} will return the $n$th Chebyshev
 polynomial of the second kind if $n$ is a non-negative integer; otherwise the
-result will involve the original operator \texttt{ChebyshevU} or on graphical
+result will involve the original operator \f{ChebyshevU} or on graphical
 interfaces $U_n(x)$ will be output.
 
 The interval of definition is $(-1, 1)$, the weight function
@@ -875,11 +879,11 @@ coefficients are given by $k_n= 2^n$, $\tilde{h}_n = \pi/2$ and $r_n=0$.
 
 \subsubsection{Gegenbauer Polynomials}
 \hypertarget{operator:GEGENBAUERP}{}
-\index{Gegenbauer polynomials} \ttindex{GegenbauerP}
+\index{Gegenbauer polynomials} \ttindextype{GegenbauerP}{operator}
 The function call \texttt{GegenbauerP(n,a,x)} will return the Gegenbauer
 polynomial of degree $n$ and parameter $a$ if $n$ is a non-negative integer
 and $a$ is numerical; otherwise the result will involve the original operator
-\texttt{GegenbauerP} or on graphical interfaces $C_n^{(a)}(x)$ will be output.
+\f{GegenbauerP} or on graphical interfaces $C_n^{(a)}(x)$ will be output.
 
 \index{Pochhammer symbol}
 The interval of definition is $(-1, 1)$, the weight function
@@ -892,11 +896,11 @@ The parameter $a$ should satisfy $a >-1/2,\ \ a \neq 0$. Also
 
 \subsubsection{Jacobi Polynomials}
 \hypertarget{operator:JACOBIP}{}
-\index{Jacobi polynomials} \ttindex{JacobiP}
+\index{Jacobi polynomials} \ttindextype{JacobiP}{operator}
 The function call \texttt{JacobiP(n,a,b,x)} will return the Jacobi
 polynomial of degree $n$ and parameters $a$ and $b$ if $n$ is a non-negative
 integer  and $a$ and $b$ are numerical; otherwise the result will involve
-the original operator \texttt{JacobiP} or on graphical interfaces
+the original operator \f{JacobiP} or on graphical interfaces
 $P_n^{(a, b)}(x)$ will be output.
 
 \index{Pochhammer symbol}
@@ -918,10 +922,10 @@ cases of the Jacobi polynomials.
 
 \subsubsection{Laguerre Polynomials}
 \hypertarget{operator:LAGUERREP}{}
-\index{Laguerre polynomials}\ttindex{LaguerreP}
+\index{Laguerre polynomials}\ttindextype{LaguerreP}{operator}
 The function call \texttt{LaguerreP(n,x)} will return the $n$th Laguerre
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
-the original operator \texttt{LaguerreP} or on graphical interfaces $L_n(x)$
+the original operator \f{LaguerreP} or on graphical interfaces $L_n(x)$
 will be output.
 
 The interval of definition is $(0, \infty)$, the weight function
@@ -933,7 +937,7 @@ are given by $k_n=(-1)^n/n!$, $\tilde{h}_n =1$ and $r_n = -n^2$.
 If used with three arguments \texttt{LaguerreP(n,a,x)} returns the $n$th
 generalised (or associated) Laguerre polynomial if $n$ is a non-negative
 integer and $a$ is numeric; otherwise the result will involve the original
-operator \texttt{LaguerreP} or on graphical interfaces $L_n^{(a)}(x)$ will be
+operator \f{LaguerreP} or on graphical interfaces $L_n^{(a)}(x)$ will be
 output. These are more properly called \emph{Sonin polynomials} after their
 discoverer N.~Y.~Sonin.
 
@@ -944,10 +948,10 @@ $r_n=-n(n+a)$. The parameter $a$ should satisfy $a > -1$.
 
 \subsubsection{Hermite Polynomials}
 \hypertarget{operator:HERMITEP}{}
-\index{Hermite polynomials}\ttindex{HermiteP}
+\index{Hermite polynomials}\ttindextype{HermiteP}{operator}
 The function call \texttt{HermiteP(n,x)} will return the $n$th Hermite
 polynomial if $n$ is a non-negative integer; otherwise the result will involve
-the original operator \texttt{HermiteP} or on graphical interfaces $H_n(x)$
+the original operator \f{HermiteP} or on graphical interfaces $H_n(x)$
 will be output.
 
 The interval of definition is $(-\infty, +\infty)$, the weight function
@@ -959,7 +963,7 @@ $k_n=2^n$, $\tilde{h}_n = \sqrt{\pi}2^nn!$ and $r_n=0$.
 \index{Other polynomials}
 
 \subsubsection{Fibonacci Polynomials}
-\index{Fibonacci polynomials}\ttindex{FibonacciP}
+\index{Fibonacci polynomials}\ttindextype{FibonacciP}{operator}
 \hypertarget{operator:FIBONACCIP}{}
 \texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
 in the variable $x$. If $n$ is an integer, it will be
@@ -971,7 +975,7 @@ computation of lower-order polynomials.
 
 \subsubsection{Euler Numbers and Polynomials}
 \index{Euler polynomials}\index{Euler numbers}
-\ttindex{EulerP}\ttindex{Euler}
+\ttindextype{EulerP}{operator}\ttindextype{Euler}{operator}
 \hypertarget{operator:EULERP}{}
 Euler numbers are computed by the unary operator \f{Euler}; the
 call \texttt{Euler(n)} returns the $n$th Euler number; all the odd Euler
@@ -992,7 +996,7 @@ the summation immediately above.
 
 \subsubsection{Bernoulli Numbers \& Polynomials}
 \index{Bernoulli polynomials}\index{Bernoulli numbers}
-\ttindex{BernoulliP}\ttindex{Bernoulli}
+\ttindextype{BernoulliP}{operator}\ttindextype{Bernoulli}{operator}
 \hypertarget{operator:BERNOULLIP}{}
 The call \texttt{Bernoulli(n)}
 evaluates to the $n$th Bernoulli number;
@@ -1001,7 +1005,7 @@ zero.
 
 The algorithms for Bernoulli numbers used are based upon those by Herbert Wilf,
 presented by Sandra Fillebrown \cite{Fillebrown:92}.
-If the \sw{ROUNDED} switch is off,
+If the \sw{rounded} switch is off,
 the algorithms are exactly those; if it is on, some further rounding may
 be done to prevent computation of redundant digits.  Hence, these
 functions are particularly fast when used to approximate the Bernoulli

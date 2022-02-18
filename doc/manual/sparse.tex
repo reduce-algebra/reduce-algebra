@@ -24,7 +24,8 @@ To extend the the syntax to this class of calculations we need to add an
 expression type \texttt{sparse}.
 
 \subsubsection{Sparse Variables}
-\ttindextype{SPARSE}{declaration}
+\hypertarget{command:SPARSE}{}
+\ttindextype[SPARSE]{sparse}{declaration}
 An identifier may be declared a sparse variable by the declaration
 \texttt{SPARSE}.
 The size of the sparse matrix must be declared explicitly in the matrix
@@ -32,9 +33,9 @@ declaration. For example,
 \begin{verbatim}
 sparse aa(10,1),bb(200,200);
 \end{verbatim}
-declares \texttt{AA} to be a 10 x 1 (column) sparse matrix and \texttt{Y} to
+declares \texttt{aa} to be a 10 x 1 (column) sparse matrix and \texttt{y} to
 be a 200 x 200 sparse matrix.
-The declaration \texttt{SPARSE} is similar to the declaration \texttt{MATRIX}.
+The declaration \texttt{sparse} is similar to the declaration \texttt{matrix}.
 Once a symbol is declared to name a sparse matrix, it can not also be
 used to name an array, operator, procedure, or used as an ordinary
 variable. For more information see the Matrix Variables
@@ -45,13 +46,13 @@ Once a matix has been declared a sparse matrix all elements of the
 matrix are initialized to 0. Thus when a sparse matrix is initially
 referred to the message
 \begin{verbatim}
-"The matrix is dense, contains only zeros"
+"Empty matrix"
 \end{verbatim}
 is returned. When printing out a matrix only the non-zero elements are
 printed. This is due to the fact that only the non-zero elements of the
 matrix are stored.
 To assign the elements of the declared matrix we use the following
-syntax. Assuming \texttt{AA} and \texttt{BB} have been declared as spasre
+syntax. Assuming \texttt{aa} and \texttt{bb} have been declared as spasre
 matrices, we simply write,
 \begin{verbatim}
 aa(1,1):=10;
@@ -63,7 +64,7 @@ or the element in the 100th row and 150th column to \texttt{a}.
 \subsubsection{Evaluating Sparse Matrix Elements}
 Once an element of a sparse matrix has been assingned, it may be referred
 to in standard array element notation. Thus \texttt{aa(2,1)} refers to the
-element in the second row and first column of the sparse matrix \texttt{AA}.
+element in the second row and first column of the sparse matrix \texttt{aa}.
 
 \subsection{Sparse Matrix Expressions}
 These follow the normal rules of matrix algebra. Sums and products must
@@ -75,7 +76,7 @@ matrix algebra see the Matrix Expressions section (\ref{sec:core-matrix-expressi
 
 \subsection{Operators with Sparse Matrix Arguments}
 The operators in the Sparse Matrix Package are the same as those in the
-Matrix Package with the exception that the \f{NULLSPACE} operator is
+Matrix Package with the exception that the \f{nullspace} operator is
 not defined. See section Operators with Matrix Arguments
 (\ref{sec:core-matrix-operators}) for more details.
 
@@ -89,38 +90,38 @@ In the examples the matrix $\mathcal{AA}$ will be
 \)
 
 \begin {verbatim}
-det ppp;
+det aa;
 
 135
 
-trace ppp;
+trace aa;
 
 18
 
-rank ppp;
+rank aa;
 
 4
 
-spmateigen(ppp,eta);
+spmateigen(aa,eta);
 
 {{eta - 1,1,
 
-  spm(1,1) := arbcomplex(4)$
+  spm(1,1) := arbcomplex(1)$
   },
 
  {eta - 3,1,
 
-  spm(2,1) := arbcomplex(5)$
+  spm(2,1) := arbcomplex(2)$
   },
 
  {eta - 5,1,
 
-  spm(3,1) := arbcomplex(6)$
+  spm(3,1) := arbcomplex(3)$
   },
 
  {eta - 9,1,
 
-  spm(4,1) := arbcomplex(7)$
+  spm(4,1) := arbcomplex(4)$
   }}
 \end{verbatim}
 
@@ -231,7 +232,8 @@ $\mathcal{A}^T$ to indicate the transpose of the matrix $\mathcal{A}$.
 
 \subsubsection{spadd\_columns, spadd\_rows}
 \label{sparse:spadd_columns}
-\ttindextype{SPADD\_COLUMNS}{operator}
+\hypertarget{operator:SPADD_COLUMNS}{}
+\ttindextype[SPARSE]{spadd\_columns}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -261,14 +263,16 @@ $\texttt{expr} * \texttt{column($\mathcal{A}$,c1)} + \texttt{column($\mathcal{A}
 
 \subsubsection{spadd\_rows}
 \label{sparse:spadd_rows}
-\ttindextype{SPADD\_ROWS}{operator}
+\hypertarget{operator:SPADD_ROWS}{}
+\ttindextype[SPARSE]{spadd\_rows}{operator}
 
 See: \texttt{spadd\_columns}.
 
 
 \subsubsection{spadd\_to\_columns, spadd\_to\_rows}
 \label{sparse:spadd_to_columns}
-\ttindextype{SPADD\_TO\_COLUMNS}{operator}
+\hypertarget{operator:SPADD_TO_COLUMNS}{}
+\ttindextype[SPARSE]{spadd\_to\_columns}{operator}
 
 \begin{description}
   \item[Syntax:]\mbox{}\\*
@@ -299,14 +303,16 @@ $\mathcal{A}$.
 
 \subsubsection{spadd\_to\_rows}
 \label{sparse:spadd_to_rows}
-\ttindextype{SPADD\_TO\_ROWS}{operator}
+\hypertarget{operator:SPADD_TO_ROWS}{}
+\ttindextype[SPARSE]{spadd\_to\_rows}{operator}
 
 See: \texttt{spadd\_to\_columns}.
 
 
 \subsubsection{spaugment\_columns, spstack\_rows}
 \label{sparse:spaugment_columns}
-\ttindextype{SPAUGMENT\_COLUMNS}{operator}
+\hypertarget{operator:SPAUGMENT_COLUMNS}{}
+\ttindextype[SPARSE]{spaugment\_columns}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -337,7 +343,8 @@ in column\_list and sticks them together.
 
 \subsubsection{spband\_matrix}
 \label{sparse:spband_matrix}
-\ttindextype{SPBAND\_MATRIX}{operator}
+\hypertarget{operator:SPBAND_MATRIX}{}
+\ttindextype[SPARSE]{spband\_matrix}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -366,7 +373,8 @@ square\_size &:-& a positive integer.
 
 \subsubsection{spblock\_matrix}
 \label{sparse:spblock_matrix}
-\ttindextype{SPBLOCK\_MATRIX}{operator}
+\hypertarget{operator:SPBLOCK_MATRIX}{}
+\ttindextype[SPARSE]{spblock\_matrix}{operator}
 
 \begin{description}
 
@@ -393,7 +401,8 @@ filled from the matrix\_list row wise.
 
 \subsubsection{spchar\_matrix}
 \label{sparse:spchar_matrix}
-\ttindextype{SPCHAR\_MATRIX}{operator}
+\hypertarget{operator:SPCHAR_MATRIX}{}
+\ttindextype[SPARSE]{spchar\_matrix}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -419,7 +428,8 @@ This is $\mathcal{C} = \lambda * \mathcal{I} - \mathcal{A}$.
 
 \subsubsection{spchar\_poly}
 \label{sparse:spchar_poly}
-\ttindextype{SPCHAR\_POLY}{operator}
+\hypertarget{operator:SPCHAR_POLY}{}
+\ttindextype[SPARSE]{spchar\_poly}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -444,7 +454,8 @@ This is the determinant of $\lambda * \mathcal{I} - \mathcal{A}$.
 
 \subsubsection{spcholesky}
 \label{sparse:spcholesky}
-\ttindextype{SPCHOLESKY}{operator}
+\hypertarget{operator:SPCHOLESKY}{}
+\ttindextype[SPARSE]{spcholesky}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -474,7 +485,8 @@ is a lower matrix, $\mathcal{U}$ is an upper matrix, \\ $\mathcal{A} =
 
 \subsubsection{spcoeff\_matrix}
 \label{sparse:spcoeff_matrix}
-\ttindextype{SPCOEFF\_MATRIX}{operator}
+\hypertarget{operator:SPCOEFF_MATRIX}{}
+\ttindextype[SPARSE]{spcoeff\_matrix}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -502,7 +514,8 @@ It returns \{$\mathcal{C,X,B}$\} such that $\mathcal{CX} = \mathcal{B}$.
 
 \subsubsection{spcol\_dim, sprow\_dim}
 \label{sparse:spcol_dim}
-\ttindextype{SPCOL\_DIM}{operator}
+\hypertarget{operator:SPCOL_DIM}{}
+\ttindextype[SPARSE]{spcol\_dim}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -522,7 +535,8 @@ $\mathcal{A}$ &:-& a sparse matrix.
 
 \subsubsection{spcompanion}
 \label{sparse:spcompanion}
-\ttindextype{SPCOMPANION}{operator}
+\hypertarget{operator:SPCOMPANION}{}
+\ttindextype[SPARSE]{spcompanion}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -556,7 +570,8 @@ The entries of $\mathcal{C}$ are:
 
 \subsubsection{spcopy\_into}
 \label{sparse:spcopy_into}
-\ttindextype{SPCOPY\_INTO}{operator}
+\hypertarget{operator:SPCOPY_INTO}{}
+\ttindextype[SPARSE]{spcopy\_into}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -587,7 +602,8 @@ r,c          &:-& positive integers.
 
 \subsubsection{spdiagonal}
 \label{sparse:spdiagonal}
-\ttindextype{SPDIAGONAL}{operator}
+\hypertarget{operator:SPDIAGONAL}{}
+\ttindextype[SPARSE]{spdiagonal}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -615,7 +631,8 @@ input on the diagonal.
 
 \subsubsection{spextend}
 \label{sparse:spextend}
-\ttindextype{SPEXTEND}{operator}
+\hypertarget{operator:SPEXTEND}{}
+\ttindextype[SPARSE]{spextend}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -646,7 +663,8 @@ expr      &:-& algebraic expression or symbol.
 
 \subsubsection{spfind\_companion}
 \label{sparse:spfind_companion}
-\ttindextype{SPFIND\_COMPANION}{operator}
+\hypertarget{operator:SPFIND_COMPANION}{}
+\ttindextype[SPARSE]{spfind\_companion}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\
@@ -672,7 +690,8 @@ from which it was made.
 
 \subsubsection{spget\_columns, spget\_rows}
 \label{sparse:spget_columns}
-\ttindextype{SPGET\_COLUMNS}{operator}
+\hypertarget{operator:SPGET_COLUMNS}{}
+\ttindextype[SPARSE]{spget\_columns}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -710,13 +729,15 @@ c          &:-& either a positive integer or a list of positive
 
 \subsubsection{spget\_rows}
 \label{sparse:spget_rows}
-\ttindextype{SPGET\_ROWS}{operator}
+\hypertarget{operator:SPGET_ROWS}{}
+\ttindextype[SPARSE]{spget\_rows}{operator}
 See: \texttt{spget\_columns}.
 
 
 \subsubsection{spgram\_schmidt}
 \label{sparse:spgram_schmidt}
-\ttindextype{SPGRAM\_SCHMIDT}{operator}
+\hypertarget{operator:SPGRAM_SCHMIDT}{}
+\ttindextype[SPARSE]{spgram\_schmidt}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -744,7 +765,8 @@ lists:  \{\{1,0,0,0\},\{1,1,0,0\},\{1,1,1,0\},\{1,1,1,1\}\}.
 
 \subsubsection{sphermitian\_tp}
 \label{sparse:sphermitian_tp}
-\ttindextype{SPHERMITIAN\_TP}{operator}
+\hypertarget{operator:SPHERMITIAN_TP}{}
+\ttindextype[SPARSE]{sphermitian\_tp}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -769,7 +791,8 @@ transpose of a matrix - see section \protect\ref{sec:core-matrix-operators}.}.
 
 \subsubsection{sphessian}
 \label{sparse:sphessian}
-\ttindextype{SPHESSIAN}{operator}
+\hypertarget{operator:SPHESSIAN}{}
+\ttindextype[SPARSE]{sphessian}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -793,7 +816,8 @@ variable\_list &:-& either a single variable or a list of variables.
 
 \subsubsection{spjacobian}
 \label{sparse:spjacobian}
-\ttindextype{SPJACOBIAN}{operator}
+\hypertarget{operator:SPJACOBIAN}{}
+\ttindextype[SPARSE]{spjacobian}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -821,7 +845,8 @@ for differentiation - see section \protect\ref{sec:DF-operator}.}.
 
 \subsubsection{spjordan\_block}
 \label{sparse:spjordan_block}
-\ttindextype{SPJORDAN\_BLOCK}{operator}
+\hypertarget{operator:SPJORDAN_BLOCK}{}
+\ttindextype[SPARSE]{spjordan\_block}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -847,7 +872,8 @@ square\_size &:-& a positive integer.
 
 \subsubsection{splu\_decom}
 \label{sparse:splu_decom}
-\ttindextype{SPLU\_DECOM}{operator}
+\hypertarget{operator:SPLU_DECOM}{}
+\ttindextype[SPARSE]{splu\_decom}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -896,7 +922,8 @@ The algorithm used can swap the rows of $\mathcal{A}$
 
 \subsubsection{spmake\_identity}
 \label{sparse:spmake_identity}
-\ttindextype{SPMAKE\_IDENTITY}{operator}
+\hypertarget{operator:SPMAKE_IDENTITY}{}
+\ttindextype[SPARSE]{spmake\_identity}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -921,7 +948,8 @@ square\_size &:-& a positive integer.
 
 \subsubsection{spmatrix\_augment, spmatrix\_stack}
 \label{sparse:spmatrix_augment}
-\ttindextype{SPMATRIX\_AUGMENT}{operator}
+\hypertarget{operator:SPMATRIX_AUGMENT}{}
+\ttindextype[SPARSE]{spmatrix\_augment}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -978,13 +1006,15 @@ test\_input &:-& anything you like.
 
 \subsubsection{spmatrix\_stack}
 \label{sparse:spmatrix_stack}
-\ttindextype{SPMATRIX\_STACK}{operator}
+\hypertarget{operator:SPMATRIX_STACK}{}
+\ttindextype[SPARSE]{spmatrix\_stack}{operator}
 See: \texttt{spmatrix\_augment}.
 
 
 \subsubsection{spminor}
 \label{sparse:spminor}
-\ttindextype{SPMINOR}{operator}
+\hypertarget{operator:SPMINOR}{}
+\ttindextype[SPARSE]{spminor}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1007,7 +1037,8 @@ r,c        &:-& positive integers.
 
 \subsubsection{spmult\_columns, spmult\_rows}
 \label{sparse:spmult_columns}
-\ttindextype{SPMULT\_COLUMNS}{operator}
+\hypertarget{operator:SPMULT_COLUMNS}{}
+\ttindextype[SPARSE]{spmult\_columns}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1037,14 +1068,16 @@ multiplied by expr.
 
 \subsubsection{spmult\_rows}
 \label{sparse:spmult_rows}
-\ttindextype{SPMULT\_ROWS}{operator}
+\hypertarget{operator:SPMULT_ROWS}{}
+\ttindextype[SPARSE]{spmult\_rows}{operator}
 
 See: \texttt{spmult\_columns}.
 
 
 \subsubsection{sppivot}
 \label{sparse:sppivot}
-\ttindextype{SPPIVOT}{operator}
+\hypertarget{operator:SPPIVOT}{}
+\ttindextype[SPARSE]{sppivot}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1070,7 +1103,8 @@ This means that the c'th column
 
 \subsubsection{sppseudo\_inverse}
 \label{sparse:sppseudo_inverse}
-\ttindextype{SPPSEUDO\_INVERSE}{operator}
+\hypertarget{operator:SPPSEUDO_INVERSE}{}
+\ttindextype[SPARSE]{sppseudo\_inverse}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1113,7 +1147,8 @@ This $x$ is $\mathcal{A}^{\dagger} b$.
 
 \subsubsection{spremove\_columns, spremove\_rows}
 \label{sparse:spremove_columns}
-\ttindextype{REMOVE\_COLUMNS}{operator}
+\hypertarget{operator:SPREMOVE_COLUMNS}{}
+\ttindextype[SPARSE]{spremove\_columns}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1144,21 +1179,24 @@ column\_list &:-& either a positive integer or a list of
 
 \subsubsection{spremove\_rows}
 \label{sparse:spremove_rows}
-\ttindextype{SPREMOVE\_ROWS}{operator}
+\hypertarget{operator:SPREMOVE_ROWS}{}
+\ttindextype[SPARSE]{spremove\_rows}{operator}
 
 See: \texttt{spremove\_columns}.
 
 
 \subsubsection{sprow\_dim}
 \label{sparse:sprow_dim}
-\ttindextype{SPROW\_DIM}{operator}
+\hypertarget{operator:SPROW_DIM}{}
+\ttindextype[SPARSE]{sprow\_dim}{operator}
 
 See: \texttt{spcolumn\_dim}.
 
 
 \subsubsection{sprows\_pivot}
 \label{sparse:sprows_pivot}
-\ttindextype{SPROWS\_PIVOT}{operator}
+\hypertarget{operator:SPROWS_PIVOT}{}
+\ttindextype[SPARSE]{sprows\_pivot}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1179,7 +1217,8 @@ the pivot only to the rows specified in row\_list.
 
 \subsubsection{sparsematp}
 \label{sparse:sparsematp}
-\ttindextype{SPARSEMATP}{predicate}
+\hypertarget{operator:SPARSEMATP}{}
+\ttindextype[SPARSE]{sparsematp}{predicate}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1203,7 +1242,7 @@ $\mathcal{A}$ &:-& a matrix.
 
 \subsubsection{squarep}
 \label{sparse:squarep}
-\ttindextype{SQUAREP}{predicate}
+\ttindextype[SPARSE]{squarep}{predicate}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1228,14 +1267,16 @@ $\mathcal{A}$ &:-& a matrix.
 
 \subsubsection{spstack\_rows}
 \label{sparse:spstack_rows}
-\ttindextype{STACK\_ROWS}{operator}
+\hypertarget{operator:SPSTACK_ROWS}{}
+\ttindextype[SPARSE]{spstack\_rows}{operator}
 
 See: \texttt{spaugment\_columns}.
 
 
 \subsubsection{spsub\_matrix}
 \label{sparse:spsub_matrix}
-\ttindextype{SPSUB\_MATRIX}{operator}
+\hypertarget{operator:SPSUB_MATRIX}{}
+\ttindextype[SPARSE]{spsub\_matrix}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1262,7 +1303,8 @@ columns specified in column\_list.
 
 \subsubsection{spsvd (singular value decomposition)}
 \label{sparse:spsvd}
-\ttindextype{SPSVD}{operator}
+\hypertarget{operator:SPSVD}{}
+\ttindextype[SPARSE]{spsvd}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1304,7 +1346,8 @@ here, but in others $U$ and $V$ are square, and $\Sigma$ is rectangular.
 
 \subsubsection{spswap\_columns, spswap\_rows}
 \label{sparse:spswap_columns}
-\ttindextype{SPSWAP\_COLUMNS}{operator}
+\hypertarget{operator:SPSWAP_COLUMNS}{}
+\ttindextype[SPARSE]{spswap\_columns}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1330,7 +1373,8 @@ c1,c1      &:-& positive integers.
 
 \subsubsection{swap\_entries}
 \label{sparse:spadd_entries}
-\ttindextype{SPSWAP\_ENTRIES}{operator}
+\hypertarget{operator:SPSWAP_ENTRIES}{}
+\ttindextype[SPARSE]{spswap\_entries}{operator}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1354,13 +1398,14 @@ r1,c1,r2,c2 &:-& positive integers.
 
 \subsubsection{spswap\_rows}
 \label{sparse:spswap_rows}
-\ttindextype{SPSWAP\_ROWS}{operator}
+\hypertarget{operator:SPSWAP_ROWS}{}
+\ttindextype[SPARSE]{spswap\_rows}{operator}
 See: \texttt{spswap\_columns}.
 \end{description}
 
 \subsubsection{symmetricp}
 \label{sparse:symmetricp}
-\ttindextype{SYMMETRICP}{predicate}
+\ttindextype[SPARSE]{symmetricp}{predicate}
 
 \begin{description}
 \item[Syntax:]\mbox{}\\*
@@ -1384,7 +1429,7 @@ $\mathcal{A}$ &:-& a matrix.
 
 
 \subsection{Fast Linear Algebra}
-\ttindexswitch[SPARSE]{FAST\_LA}
+\ttindexswitch[SPARSE]{fast\_la}
 
 By turning the \sw{fast\_la} switch on, the speed of the following
 functions will be increased:

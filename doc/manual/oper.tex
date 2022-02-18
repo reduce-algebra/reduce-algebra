@@ -1241,6 +1241,7 @@ and returns the result
 
 \section{CONTINUED\_FRACTION Operator}
 \hypertarget{operator:CONTINUED_FRACTION}{}
+\hypertarget{operator:CONTFRAC}{}
 \index{approximation}\index{rational number}
 
 The operator \texttt{continued\_fraction}
@@ -1250,8 +1251,8 @@ For irrational or rounded arguments, it approximates the real number
 as a rational number to the current system precision and generates
 the continued fraction expansion. Currently the operator \texttt{cf} is a
 complete synonym for \texttt{continued\_fraction} although this may change
-in future updates of the package \textsc{RATAPRX}.
-\ttindextype{CF}{operator}
+in future updates of the package \package{RATAPRX}.
+\ttindextype{cf}{operator}
 
 The operator \texttt{continued\_fraction} accepts one, two or
 three arguments: the number to be expanded; an \textbf{optional} maximum size
@@ -1881,7 +1882,7 @@ f(z)=\sum_{k=-\infty}^\infty a_k\,\frac{1}{z^k}
 The operator \f{residue}\texttt{(f,z,a)} determines the residue of $f$ at the point $z=a$
 if $f$ is meromorphic at $z=a$. The calculation of residues at essential
 singularities of $f$ is not supported, as are the residues of factorial terms.\footnote{This code was written by Wolfram Koepf.}
-\index{Koepf, Wolfram}\index{Persons!Koepf, Wolfram}
+\index{Koepf, Wolfram}\index{People!Koepf, Wolfram}
 
 \f{poleorder}\texttt{(f,z,a)} determines the pole order of $f$ at the point $z=a$
 if $f$ is meromorphic at $z=a$.

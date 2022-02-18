@@ -1,3 +1,7 @@
+
+\index{Temme, Lisa}\index{People!Temme, Lisa}
+\index{Koepf, Wolfram}\index{People!Koepf, Wolfram}
+
 \subsection{Periodic Decimal Representation}
 \label{sec:rataprx}
 \hyphenation{rat-ional}
@@ -15,9 +19,6 @@ periodic representation back to a rational number.
 \hypertarget{operator:RATIONAL2PERIODIC}{}
 \hypertarget{operator:PERIODIC2RATIONAL}{}
 \hypertarget{operator:PERIODIC}{}
-\ttindextype{RATIONAL2PERIODIC}{operator}
-\ttindextype{PERIODIC2RATIONAL}{operator}
-\ttindextype{PERIODIC}{operator}
 \textbf{\underline{Periodic Representation of a Rational Number}}
 
 \begin{list}{}{
@@ -25,21 +26,21 @@ periodic representation back to a rational number.
     \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
     \renewcommand{\makelabel}[1]{#1}
   }
-\item[\textbf{SYNTAX:}]
+\item[\textbf{SYNTAX:}]\ttindextype[RATAPRX]{rational2periodic}{operator}
   \texttt{rational2periodic(n);}\\
-  {\tt rational2periodic(n, b);}
+  \texttt{rational2periodic(n, b);}
 
 \item[\textbf{INPUT:}]
   \texttt{n} \hspace{3mm} is a rational number\\
-  {\tt b} \hspace{3mm} is the number base, if absent the default is 10.
+  \texttt{b} \hspace{3mm} is the number base, if absent the default is 10.
 
-\item[\textbf{RESULT:}]
-  {\tt periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
+\item[\textbf{RESULT:}]\ttindextype[RATAPRX]{periodic}{operator}
+  \texttt{periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
   where  {\tt\{a1,...,an\}} is a list of the digits in the integer part,\\
   {\tt\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
   {\tt\{c1,...,ck\}} is a list of the digits in the periodic part\\
-  and $\pm${\tt b} where {\tt b} is the number base $2 \leq {\rm b} \leq 16$, \\
-  a minus indicating the rational number {\tt n} was negative.
+  and $\pm$\texttt{b} where \texttt{b} is the number base $2 \leq {\rm b} \leq 16$, \\
+  a minus indicating the rational number \texttt{n} was negative.
 
 \item[\textbf{EXAMPLES:}]\mbox{}\\
   $-59/70$ written as $-0.8\overline{428571}$\\
@@ -50,13 +51,13 @@ periodic representation back to a rational number.
   \texttt{\hspace*{1em}periodic(\{0\}, \{0\}, \{3\}, 16)}
 \end{list}
 
-Normally the operator {\tt periodic} will not be seen as the output
+Normally the operator \texttt{periodic} will not be seen as the output
 will be prettyprinted as $-0.8\overline{428571}$ and
 $0.0\overline{3}\ (\mbox{base }16)$ respectively.
 
 \textbf{\underline{Rational Number of a Periodic Representation}}\\[\baselineskip]
 \begin{description}
-\item[\textbf{SYNTAX:}]\mbox{}\\
+\item[\textbf{SYNTAX:}]\mbox{}\ttindextype[RATAPRX]{periodic2rational}{operator}\\
   \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
   \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}
 
@@ -64,7 +65,7 @@ $0.0\overline{3}\ (\mbox{base }16)$ respectively.
   \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
   \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
   \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
-  and {\tt b} is the number base $2 \leq {\rm b} \leq 16$, a minus\\
+  and \texttt{b} is the number base $2 \leq {\rm b} \leq 16$, a minus\\
   indicating the rational number result should be negative. \\
   If the base is omitted, 10 is assumed.
 
@@ -163,9 +164,9 @@ This is represented in {\REDUCE} as
                 $\{a0, \{a1,b1\}, \{a2,b2\}, \dots\}$)
 \end{center}
 
-\hypertarget{CFRAC:operator}{}
-\ttindextype{cfrac}{operator}
-The operator \texttt{cfrac} is used to generate a generalised continued
+\hypertarget{operator:CFRAC}{}
+The operator \texttt{cfrac}\ttindextype{cfrac}{operator}
+is used to generate a generalised continued
 fraction expansion of an algebraic expression.
 
 \begin{syntaxtable}
@@ -194,7 +195,7 @@ The default for rational function or rational number input is the
 complete continued fraction.
 
 \hypertarget{switch:CF_TAYLOR}{}
-\ttindextype{CF\_TAYLOR}{switch}
+\ttindextype[RATAPRX]{cf\_taylor}{switch}
 
 For a non-rational function, power series expansion is necessary. The new
 switch \texttt{cf\_taylor} controls whether the TAYLOR or the TPS package is
@@ -290,8 +291,8 @@ cfrac(e^x, x);
 
 \hypertarget{CF:operator}{}
 
-The operator \texttt{CF} \ttindextype{CF}{operator} is a
-synonym for the operator \texttt{CONTINUED\_FRACTION}.
+The operator \texttt{CF} \ttindextype[RATAPRX]{cf}{operator} is a
+synonym for the operator \texttt{continued\_fraction}\ttindextype{continued\_fraction}{operator}.
 \begin{syntaxtable}
   \texttt{cf(}\meta{num}\texttt{)}\\
   \texttt{cf(}\meta{num}\texttt{,}\,\meta{size}\texttt{)}\\
@@ -300,34 +301,34 @@ synonym for the operator \texttt{CONTINUED\_FRACTION}.
 \end{syntaxtable}
 
 The meaning of the arguments is the same as for the operator
-\texttt{CONTINUED\_FRACTION}: the original number to be expanded
+\texttt{continued\_fraction}: the original number to be expanded
 \meta{num}, an optional maximum size \meta{size} permitted for the
 denominator of the convergent and an optional maximum number of continuents
 \meta{numterms} to be generated.
 
-The output is in the same format as that of \texttt{CFRAC} described above.
-As with the operator \texttt{CFRAC} output of \texttt{CF} is normally
+The output is in the same format as that of \texttt{cfrac} described above.
+As with the operator \texttt{cfrac} output of \texttt{CF} is normally
 pretty-printed so the operator \texttt{confract} will not be seen.
 
-\hypertarget{CF_EXPRESSION:operator}{}
-\hypertarget{CF_cONTINUENTS:operator}{}
-\hypertarget{CF_CONVERGENT:operator}{}
-\hypertarget{CF_CONVERGENTS:operator}{}
+\hypertarget{operator:CF_EXPRESSION}{}
+\hypertarget{operator:CF_CONTINUENTS}{}
+\hypertarget{operator:CF_CONVERGENT}{}
+\hypertarget{operator:CF_CONVERGENTS}{}
 
-The accessor operators \ttindextype{CF\_EXPRESSION}{operator}\texttt{CF\_EXPRESSION},
-\ttindextype{CF\_CONVERGENT}{operator}\texttt{CF\_CONVERGENT} and
-\ttindextype{CF\_CONTINUENTS}{operator}\texttt{CF\_CONTINUENTS} allow
+The accessor operators \ttindextype[RATAPRX]{cf\_expression}{operator}\texttt{cf\_expression},
+\ttindextype[RATAPRX]{cf\_convergent}{operator}\texttt{cf\_convergent} and
+\ttindextype[RATAPRX]{cf\_continuents}{operator}\texttt{cf\_continuents} allow
 the various parts of a continued fraction object \meta{cf\_object}
 (as returned by any of the operators \texttt{cf}, \texttt{cfrac},
 \texttt{continued\_fraction} and \texttt{cf\_euler}) to be extracted.
-\ttindextype{CF\_EULER}{operator}
+\ttindextype[RATAPRX]{cf\_euler}{operator}
 
 These three operators return, respectively, the originating
 expression of the continued fraction object, the last convergent of the
 continued fraction, a list of its continuents
 (that is a list of pairs of partial numerators and denominators).
 
-The operator \texttt{CF\_CONVERGENTS} \ttindextype{CF\_CONVERGENTS}{operator}
+The operator \texttt{cf\_convergents} \ttindextype[RATAPRX]{cf\_convergents}{operator}
 returns a list of all the convergents of the expansion.
 \begin{syntaxtable}
   \texttt{cf\_expression(}\meta{cf\_object}\texttt{)} \\
@@ -379,9 +380,9 @@ a := {pi,-----,3 + ----------------}
      6701487259
 \end{verbatim}
 
-\ttindextype{CF\_EULER}{operator}
-\hypertarget{CF_EULER:operator}{}
-The operator \texttt{CF\_EULER} is used to generate a generalised
+\ttindextype[RATAPRX]{cf\_euler}{operator}
+\hypertarget{operator:CF_EULER}{}
+The operator \texttt{cf\_euler} is used to generate a generalised
 continued fraction expansion of an algebraic expression using a formula due to
 Leonhard Euler (~\cite{Euler:1748}).
 \begin{syntaxtable}
@@ -397,20 +398,16 @@ Leonhard Euler (~\cite{Euler:1748}).
 \meta{length} \ is the maximum number of continuents to be generated
 and is \textbf{optional}.
 
-The meaning of the parameters is similar to those of \texttt{CFRAC}, but the
+The meaning of the parameters is similar to those of \texttt{cfrac}, but the
 continued fraction expansion generated will usually be different. Note that
-unlike \texttt{CFRAC}, \texttt{CF\_EULER} cannot currently generate
+unlike \texttt{cfrac}, \texttt{cf\_euler} cannot currently generate
 continued fraction expansion of numbers and for a rational function argument
 (with a non-constant denominator) the expansion will not be exact.
 
-\ttindextype{CF\_UNIT\_NUMERATORS}{operator}
-\hypertarget{CF_UNIT_NUMERATORS:operator}{}
-\ttindextype{CF\_UNIT\_DENOMINATORS}{operator}
-\hypertarget{CF_UNIT_DENOMINATORS:operator}{}
-\ttindextype{CF\_REMOVE\_FRACTIONS}{operator}
-\hypertarget{CF_REMOVE_FRACTIONS:operator}{}
-\ttindextype{CF\_REMOVE\_CONSTANT}{operator}
-\hypertarget{CF_REMOVE_CONSTANT:operator}{}
+\hypertarget{operator:CF_UNIT_NUMERATORS}{}
+\hypertarget{operator:CF_UNIT_DENOMINATORS}{}
+\hypertarget{operator:CF_REMOVE_FRACTIONS}{}
+\hypertarget{operator:CF_REMOVE_CONSTANT}{}
 A number of operators are provided for transforming their continued
 fraction argument \meta{cf\_object} into an equivalent expansion,
 that is one with exactly the same convergents.
@@ -418,20 +415,20 @@ They all accept as their single argument any continued fraction
 object \meta{cf\_object}.
 These are:
 
-\texttt{cf\_unit\_denominators}\\
+\texttt{cf\_unit\_denominators}\ttindextype[RATAPRX]{cf\_unit\_numerators}{operator}\\
 converts all partial denominators to 1.\\[\baselineskip]
-\texttt{cf\_unit\_numerators}\\
+\texttt{cf\_unit\_numerators}\ttindextype[RATAPRX]{cf\_unit\_denominators}{operator}\\
 converts all partial numerators to 1.\\[\baselineskip]
-\texttt{cf\_remove\_fractions}\\
+\texttt{cf\_remove\_fractions}\ttindextype[RATAPRX]{cf\_remove\_fractions}{operator}\\
 converts the denominators of the partial numerators and partial
 denominators in the continuents to 1.\\[\baselineskip]
-\texttt{cf\_remove\_constant}\\
+\texttt{cf\_remove\_constant}\ttindextype[RATAPRX]{cf\_remove\_constant}{operator}\\
 removes the zeroth continuent (if non-zero) absorbing it into the
 first continuent pair.
 
-\ttindextype{CF\_TRANSFORM}{operator}
-\hypertarget{CF_TRANSFORM:operator}{}
-The operator \texttt{CF\_TRANSFORM} is a general purpose function
+\hypertarget{operator:CF_TRANSFORM}{}
+The operator \texttt{cf\_transform}\ttindextype[RATAPRX]{cf\_transform}{operator}
+is a general purpose function
 for transforming its continued fraction argument \meta{cf\_object} into
 an equivalent expansion. Unlike the four preceding operators it requires
 a second argument: a list of multipliers used to modify the partial
@@ -454,9 +451,9 @@ is greater than the length of the \meta{multiplier-list}, the latter is
 (in effect) padded with 1's. Conversely if it is shorter, the surplus
 elements of \meta{multiplier-list} are ignored.
 
-\ttindextype{CF\_EVEN\_ODD}{operator}
-\hypertarget{CF_EVEN_ODD:operator}{}
-The operator \texttt{CF\_EVEN\_ODD} splits its continued fraction argument
+\hypertarget{operator:CF_EVEN_ODD}{}
+The operator \texttt{cf\_even\_odd}\ttindextype[RATAPRX]{cf\_even\_odd}{operator}
+ splits its continued fraction argument
 \meta{cf\_object} into two continued fraction objects: namely its even and
 odd parts (in that order) which are returned as a two-element list.
 \begin{syntaxtable}
@@ -605,9 +602,8 @@ the \texttt{pade} function finds the unique coefficients
 $a_i,\, b_i$ in the Pad\'{e} approximant
 \[ \frac{a_0+a_1 x+ \cdots + a_n x^n}{b_0+b_1 x+ \cdots + b_d x^d} \; .\]
 
-\hypertarget{PADE:operator}{}
-\ttindextype{PADE}{operator}
-
+\hypertarget{operator:PADE}{}
+\ttindextype[RATAPRX]{pade}{operator}
 \textbf{SYNTAX:} \hspace{5mm} \texttt{pade(f, x, h, n, d);}\\[\baselineskip]
 
 \textbf{INPUT:}\\[\baselineskip]
