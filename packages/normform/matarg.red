@@ -68,7 +68,7 @@ symbolic procedure unchecked_getmatelem u;
          else return nth(nth(cdr x,cadr u),caddr u);
    end;
 
-flag('(setmat,getmat,mkmatrix,letmtr),'opfn);  %  So they can be used
+flag('(setmat getmat mkmatrix letmtr),'opfn);  %  So they can be used
                                                %  independently from
                                                %  algebraic mode.
 
