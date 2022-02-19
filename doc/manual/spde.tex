@@ -1,5 +1,7 @@
 
-The package SPDE provides a set of functions which may be applied
+\index{Schwarz, Fritz}\index{People!Schwarz, Fritz}
+
+The package \package{SPDE} provides a set of functions which may be applied
 to determine the symmetry group of Lie- or point-symmetries of a
 given system of partial differential equations.  Preferably it is
 used interactively on a computer terminal. In many cases the
@@ -35,7 +37,7 @@ SIMPSYS() & Solves determining system \\ \hline
 RESULT() & Prints infinitesimal generators \\
 &  and commutator table \\ \hline
 \end{tabular}\\
-\caption{SPDE Functions}
+\caption{\package{SPDE} Functions}
 \end{center}
 \end{table}
 
@@ -52,7 +54,7 @@ PRGEN() & Prints infinitesimal generators \\ \hline
 \ttindex{COMM}
 COMM(U,V) & Prints commutator of generators U and V \\ \hline
 \end{tabular}\\
-\caption{SPDE Useful Output Functions}\label{spde:useful}
+\caption{\package{SPDE} Useful Output Functions}\label{spde:useful}
 \end{center}
 \end{table}
 
@@ -71,7 +73,7 @@ MM & Number of dependent variables \\ \hline
 \ttindex{PCLASS}
 PCLASS=0, 1 or 2 & Controls amount of output \\ \hline
 \end{tabular}\\
-\caption{SPDE Integer valued globals}\label{spde:intt}
+\caption{\package{SPDE} Integer valued globals}\label{spde:intt}
 \end{center}
 \end{table}
 
@@ -101,7 +103,7 @@ ZETA(ALFA,I) & references quoted in the introduction. \\ \hline
 \ttindex{C(I)}
 C(I) & i-th function used for substitution \\ \hline
 \end{tabular}\\
-\caption{SPDE Operator type global variables}\label{spde:op}
+\caption{\package{SPDE} Operator type global variables}\label{spde:op}
 \end{center}
 \end{table}
 
@@ -151,7 +153,7 @@ output produced by SIMPSYS is controlled by the global variable PCLASS
 with the default value 0. \ttindex{PCLASS} With PCLASS equal to 0, no
 intermediate steps are shown. With PCLASS equal to 1, all intermediate
 steps are displayed so that the solution algorithm may be followed
-\index{Tracing!SPDE package} through in detail. Each time the algorithm
+\index{Tracing!\package{SPDE} package} through in detail. Each time the algorithm
 passes through the top of the main solution loop the message
 
 \begin{verbatim}
@@ -184,7 +186,7 @@ generators and its non-vanishing commutators.
 \subsection{How to Use the Package}
 
 In this Section it is explained by way of several examples how the
-package SPDE is used interactively to determine the symmetry group of
+package \package{SPDE} is used interactively to determine the symmetry group of
 partial differential equations. Consider first the diffusion equation
 which in the notation given above may be written as
 

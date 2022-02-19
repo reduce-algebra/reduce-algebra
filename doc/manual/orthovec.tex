@@ -1,7 +1,7 @@
 \index{Eastwood, James W.}\index{People!Eastwood, James W.}
 \setcounter{examplectr}{0}
 \iffalse
-The revised version of ORTHOVEC is a collection of REDUCE 3.4 procedures and
+The revised version of \package{ORTHOVEC} is a collection of REDUCE 3.4 procedures and
 operations which provide a simple to use environment for the manipulation of
 scalars and vectors.  Operations include addition, subtraction, dot and cross
 products, division, modulus, div, grad, curl, laplacian, differentiation,
@@ -53,7 +53,7 @@ summarized in \cite{Eastwood:91}.  It differs from the original (\cite
 %\end{tabular}
 
 \subsection{Introduction}
-The revised version of \textsc{ORTHOVEC} (\cite{Eastwood:91}) is, like the
+The revised version of \package{ORTHOVEC} (\cite{Eastwood:91}) is, like the
 original (\cite{Eastwood:87}), a collection of \REDUCE procedures and
 operators designed to simplify the machine aided manipulation of vectors
 and vector expansions frequently met in many areas of applied mathematics.
@@ -84,7 +84,7 @@ that some computational inefficiencies are acceptable if it allows
 coding to be intelligible to (and thence adaptable by) users other
 than LISP experts familiar with the internal workings of \REDUCE.
 
-Procedures and operators in \textsc{ORTHOVEC} fall into the five classes: 
+Procedures and operators in \package{ORTHOVEC} fall into the five classes: 
 initialisation, input-output, algebraic operations, differential
 operations and integral operations.  Definitions are given in 
 the following sections, and
@@ -94,17 +94,17 @@ The final section discusses test examples.
 \subsection{Initialisation}\label{vstart}
 \ttindextype[ORTHOVEC]{vstart}{procedure}
 \hypertarget{command:VSTART}{}
-The procedure \f{vstart} initialises \textsc{ORTHOVEC}.  It may be
-called after \textsc{ORTHOVEC} has been loaded to reset coordinates.
+The procedure \f{vstart} initialises \package{ORTHOVEC}.  It may be
+called after \package{ORTHOVEC} has been loaded to reset coordinates.
 \f{vstart} provides a
 menu of standard coordinate systems:
 
 \begin{enumerate}
-\index{Cartesian coordinates}\index{Coordinates!cartesian}
+\index{Cartesian coordinates!\package{ORTHOVEC} package}\index{Coordinates, cartesian!\package{ORTHOVEC} package}
 \item cartesian $(x, y, z) = $ \texttt{(x, y, z)}
-\index{Cylindrical coordinates}\index{Coordinates!cylindrical}
+\index{Cylindrical coordinates!\package{ORTHOVEC} package}\index{Coordinates, cylindrical!\package{ORTHOVEC} package}
 \item cylindrical $(r, \theta, z) = $ \texttt{(r, th, z)}
-\index{Spherical coordinates}\index{coordinates!spherical}
+\index{Spherical coordinates!\package{ORTHOVEC} package}\index{Coordinates, spherical!\package{ORTHOVEC} package}
 \item spherical $(r, \theta, \phi) = $ \texttt{(r, th, ph) }
 \item general $( u_1, u_2, u_3 ) = $ \texttt{(u1, u2, u3) }
 \item others
@@ -114,7 +114,7 @@ which the user selects by number.  Selecting options (1)-(4)
 automatically sets up the coordinates and scale factors.  Selection
 option (5) shows the user how to select another coordinate system.  If
 \f{vstart} is not called, then the default cartesian coordinates are used.
-\textsc{ORTHOVEC} may be re-initialised to a new coordinate system at any time
+\package{ORTHOVEC} may be re-initialised to a new coordinate system at any time
 during a given \REDUCE session by typing
 \begin{verbatim}
 vstart $
@@ -122,7 +122,7 @@ vstart $
 
 \subsection{Input-Output}
 
-\textsc{ORTHOVEC} assumes all quantities are either scalars or 3 component
+\package{ORTHOVEC} assumes all quantities are either scalars or 3 component
 vectors.  To define a vector $a$ with components $(c_1, c_2, c_3)$ use
 the procedure \f{svec} as follows \ttindextype[ORTHOVEC]{svec}{procedure}
 \hypertarget{operator:SVEC}{}
@@ -156,7 +156,7 @@ Note the space before the \texttt{\textunderscore} operator: otherwise this woul
 Six infix operators, sum, difference, quotient, times, exponentiation
 and cross product, and four prefix
 operators, plus, minus, reciprocal
-and  modulus are defined in \textsc{ORTHOVEC}.  These operators can take suitable
+and  modulus are defined in \package{ORTHOVEC}.  These operators can take suitable
 combinations of scalar and vector arguments,
 and in the case of scalar arguments reduce to the usual definitions of
 $ +, -, *, /, $ etc.
@@ -317,7 +317,7 @@ s & := & div (\textbf{v})  \\
  s & := & \textbf{v}  dotgrad  s 
 \end{tabular}
 \end{center}
-\caption{\textsc{ORTHOVEC} valid combinations of operator and argument}\label{vvecttable}
+\caption{\package{ORTHOVEC} valid combinations of operator and argument}\label{vvecttable}
 \end{table}
 
 All other combinations of operator and argument type cause error
@@ -341,7 +341,7 @@ where, for example
 
 The standard \REDUCE declarations \f{depend} and \f{nodepend} have been redefined
 to allow dependences of vectors to be compactly
-defined.  For example \index{depend statement} \index{nodepend statement}
+defined.  For example \ttindextype{depend}{command}\ttindextype{nodepend}{command}
 \begin{verbatim}
 a := svec(a1,a2,a3)$;
 depend a,x,y;
@@ -376,7 +376,7 @@ s & \textbf{v} & \textbf{v} & s\\
 s & s & s & s\\
 \end{tabular}
 \end{center}
-\caption{\textsc{ORTHOVEC} valid combination of argument types.}\label{ORTHOVEC:validexp}
+\caption{\package{ORTHOVEC} valid combination of argument types.}\label{ORTHOVEC:validexp}
 \end{table}
 
 Any other combinations cause error messages to be issued.  Elements of
@@ -387,7 +387,7 @@ in each component are truncated at the same order, VORDER.
 \hypertarget{operator:OV_LIMIT}{}
 The new version of Taylor expansion applies \index{l'H\^opital's rule}
 l'H\^opital's rule in evaluating coefficients, so handle cases such as
-$\sin(x) / (x) $ , etc.  which the original version of \textsc{ORTHOVEC} could
+$\sin(x) / (x) $ , etc.  which the original version of \package{ORTHOVEC} could
 not. The procedure used for this is \f{ov\_limit}, \ttindextype[ORTHOVEC]{ov\_limit}{operator} which can
 be used directly to find the limit of a scalar function \texttt{ex} of
 variable \texttt{x} at point \texttt{pt}:-
@@ -398,7 +398,7 @@ ans := ov_limit(ex,x,pt);
 
 \subsection{Integral Operations}
 Definite and indefinite vector, volume and scalar line integration
-procedures are included in \textsc{ORTHOVEC}.  They are defined as follows:
+procedures are included in \package{ORTHOVEC}.  They are defined as follows:
 \ttindextype[ORTHOVEC]{vint}{operator} \ttindextype[ORTHOVEC]{dvint}{operator}
 \ttindextype[ORTHOVEC]{volint}{operator} \ttindextype[ORTHOVEC]{dvolint}{operator}
 \ttindextype[ORTHOVEC]{lineint}{operator} \ttindextype[ORTHOVEC]{dlineint}{operator}
@@ -471,7 +471,7 @@ line $\mathbf{u}(t)$ along which the integral is taken.
 \f{vmod} & & length of vector or scalar \\ \hline
 \end{tabular}
 \end{center}
-\caption{Procedures names and operators used in \textsc{ORTHOVEC} (part 1)}
+\caption{Procedures names and operators used in \package{ORTHOVEC} (part 1)}
 \end{table}
 
 \begin{table}
@@ -498,13 +498,13 @@ line $\mathbf{u}(t)$ along which the integral is taken.
 \f{nodepend} & vector extension of \REDUCE \f{nodepend} \\ \hline 
 \end{tabular}
 \end{center}
-\caption{Procedures names and operators used in \textsc{ORTHOVEC} (part 2)}
+\caption{Procedures names and operators used in \package{ORTHOVEC} (part 2)}
 \end{table}
 
 
 \subsection{Test Cases}
 
-To use the \REDUCE source version of \textsc{ORTHOVEC}, initiate a \REDUCE
+To use the \REDUCE source version of \package{ORTHOVEC}, initiate a \REDUCE
 session and then load the package with the command \texttt{load\_package orthovec;}
 (see section~\ref{sec-load} of the \REDUCE
 manual).  If coordinate dependent differential and integral operators
@@ -512,7 +512,7 @@ other than cartesian are needed, then \f{vstart} must be used to reset
 coordinates and scale factors.
 
 Six  simple examples are given in the Test Run Output file 
-\emph{orthovec.rlg} to illustrate the working of \textsc{ORTHOVEC}.  
+\emph{orthovec.rlg} to illustrate the working of \package{ORTHOVEC}.  
 The input lines were taken from the file
 \emph{orthovec.tst} (the Test Run Input), but could 
 equally well be typed in at the Terminal.

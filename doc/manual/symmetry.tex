@@ -1,8 +1,11 @@
+
+\index{Gatermann, Karin}\index{People!Gatermann, Karin}
+
 \iffalse
 This short note describes a package of \REDUCE{} procedures
 that compute symmetry-adapted bases and block diagonal forms
 of matrices which have the symmetry of a group.
-The SYMMETRY package is the implementation
+The \package{SYMMETRY} package is the implementation
 of the theory of linear representations
 for small finite groups such as the dihedral groups.
 \fi
@@ -11,7 +14,7 @@ for small finite groups such as the dihedral groups.
 
 The exploitation of symmetry is a very important principle in mathematics,
 physics and engineering sciences.
-The aim of the SYMMETRY package is to give an easy access to the
+The aim of the \package{SYMMETRY} package is to give an easy access to the
 underlying theory of linear representations for small groups. For
 example the
 dihedral groups $D_3,D_4,D_5,D_6$ are included.
@@ -31,8 +34,8 @@ representation,e.g.
 is transformed to block diagonal form by a coordinate
 transformation.
 The dependence of the algorithm on the
-field of real or complex numbers is controled by the switch {\tt complex}.
-An example for this is given in the testfile {\em symmetry.tst}.
+field of real or complex numbers is controled by the switch \sw{complex}.
+An example for this is given in the testfile \emph{symmetry.tst}.
 
 As the algorithm needs information concerning the irreducible representations
 this information is stored for some groups (see the operators in Section 3).
@@ -40,21 +43,21 @@ It is assumed that only orthogonal (unitar) representations are given.
 
 The package is loaded by
 
-{\tt load symmetry;}
+\texttt{load symmetry;}
 
 \subsection{Operators for linear representations}
-\ttindex{CANONICALDECOMPOSITION}
-\ttindex{CHARACTER}
-\ttindex{SYMMETRYBASIS}
-\ttindex{SYMMETRYBASISPART}
-\ttindex{ALLSYMMETRYBASES}
-\ttindex{DIAGONALIZE}
+\hypertarget{operator:CANONICALDECOMPOSITION}{}
+\hypertarget{operator:CHARACTER}{}
+\hypertarget{operator:SYMMETRYBASIS}{}
+\hypertarget{operator:SYMMETRYBASISPART}{}
+\hypertarget{operator:ALLSYMMETRYBASES}{}
+\hypertarget{operator:DIAGONALIZE}{}
 
 First the data structure for a linear representation has to be explained.
-{\em representation} is a list consisting of the group identifier and
+\emph{representation} is a list consisting of the group identifier and
 equations which assign matrices to the generators of the group.
 
-{\bf Example:}
+\textbf{Example:}
 \begin{verbatim}
    rr:=mat((0,1,0,0),
            (0,0,1,0),
@@ -72,54 +75,55 @@ equations which assign matrices to the generators of the group.
 For orthogonal (unitarian) representations the following operators
 are available.
 
-{\tt canonicaldecomposition(representation);}
+\texttt{canonicaldecomposition(representation);}\ttindextype[SYMMETRY]{canonicaldecomposition}{operator}
 
 returns an equation giving the canonical decomposition of the linear
 representation.
 
-{\tt character(representation);}
+\texttt{character(representation);}\ttindextype[SYMMETRY]{character}{operator}
 
 computes the character of the linear representation. The result is a list
 of the group identifier and of lists consisting of a
 list of group elements in one equivalence class and a real or complex number.
 
-{\tt symmetrybasis(representation,nr);}
+\texttt{symmetrybasis(representation,nr);}\ttindextype[SYMMETRY]{symmetrybasis}{operator}
 
 computes the basis of the isotypic component corresponding to the irreducible
 representation of type nr. If the nr-th irreducible representation is
 multidimensional, the basis is symmetry adapted. The output is a matrix.
 
-{\tt symmetrybasispart(representation,nr);}
+\texttt{symmetrybasispart(representation,nr);}\ttindextype[SYMMETRY]{symmetrybasispart}{operator}
 
-is similar as {\tt symmetrybasis}, but for multidimensional
+is similar as \texttt{symmetrybasis}, but for multidimensional
 irreducible representations only the first part of the
 symmetry adapted basis is computed.
 
-{\tt allsymmetrybases(representation);}
+\texttt{allsymmetrybases(representation);}\ttindextype[SYMMETRY]{allsymmetrybases}{operator}
 
-is similar as {\tt symmetrybasis} and {\tt symmetrybasispart},
+is similar as \texttt{symmetrybasis} and \texttt{symmetrybasispart},
 but the bases of all
 isotypic components are computed and thus a
 complete coordinate transformation is returned.
 
-{\tt diagonalize(matrix,representation);}
+\texttt{diagonalize(matrix,representation);}\ttindextype[SYMMETRY]{diagonalize}{operator}
 
 returns the block diagonal form of matrix which has the symmetry
 of the given linear representation. Otherwise an error message occurs.
 
-{\tt on complex;}
+\texttt{on complex;}
 
 Of course the property of irreducibility depends on the field $K$ of
 real or complex numbers. This is why the algorithm depends on $K$.
-The type of computation is set by the switch {\em complex}.
+The type of computation is set by the switch \sw{complex}.
 
 \subsection{Display Operators}
-\ttindex{AVAILABLEGROUPS}
-\ttindex{PRINTGROUP}
-\ttindex{GENERATORS}
-\ttindex{CHARACTERN}
-\ttindex{IRREDUCIBLEREPTABLE}
-\ttindex{IRREDUCIBLEREPNR}
+\hypertarget{operator:AVAILABLEGROUPS}{}
+\hypertarget{operator:PRINTGROUP}{}
+\hypertarget{operator:GENERATORS}{}
+\hypertarget{operator:CHARACTERTABLE}{}
+\hypertarget{operator:CHARACTERN}{}
+\hypertarget{operator:IRREDUCIBLEREPTABLE}{}
+\hypertarget{operator:IRREDUCIBLEREPNR}{}
 
 In this section the operators are described which give access to the
 stored information for a group.
@@ -127,96 +131,96 @@ First the operators for the abstract groups are given.
 Then it is described how to get the irreducible representations
 for a group.
 
-{\tt availablegroups();}
+\texttt{availablegroups();}\ttindextype[SYMMETRY]{availablegroups}{operator}
 
 returns the list of all groups for which the information such as
-irreducible representations is stored. In the following {\tt group}
+irreducible representations is stored. In the following \texttt{group}
 is always one of these group identifiers.
 
-{\tt printgroup(group);}
+\texttt{printgroup(group);}\ttindextype[SYMMETRY]{printgroup}{operator}
 
 returns the list of all group elements;
 
-{\tt generators(group);}
+\texttt{generators(group);}\ttindextype[SYMMETRY]{generators}{operator}
 
 returns a list of group elements which generates the group. For the
 definition of a linear representation matrices for these generators
 have to be defined.
 
-{\tt charactertable(group);}
+\texttt{charactertable(group);}\ttindextype[SYMMETRY]{charactertabl}{operator}
 
 returns a list of the characters corresponding to the irreducible
 representations of this group.
 
-{\tt charactern(group,nr);}
+\texttt{charactern(group,nr);}\ttindextype[SYMMETRY]{charactern}{operator}
 
 returns the character corresponding to the nr-th irreducible representation
-of this group as a list (see also {\tt character}).
+of this group as a list (see also \texttt{character}).
 
-{\tt irreduciblereptable(group);}
+\texttt{irreduciblereptable(group);}\ttindextype[SYMMETRY]{irreduciblereptable}{operator}
 
 returns the list of irreducible representations of the group.
 
-{\tt irreduciblerepnr(group,nr);}
+\texttt{irreduciblerepnr(group,nr);}\ttindextype[SYMMETRY]{irreduciblerepnr}{operator}
 
 returns an irreducible representation of the group. The output
 is a list of the group identifier and equations
 assigning the representation matrices to group elements.
 
 \subsection{Storing a new group}
-\ttindex{SETGENERATORS}
-\ttindex{SETELEMENTS}
-\ttindex{SETGROUPTABLE}
-\ttindex{RSETREPRESENTATION}
-\ttindex{CSETREPRESENTATION}
-\ttindex{SETAVAILABLE}
-\ttindex{STOREGROUP}
-\ttindex{LOADGROUPS}
+\hypertarget{operator:SETGENERATORS}{}
+\hypertarget{operator:SETELEMENTS}{}
+\hypertarget{operator:SETGROUPTABLE}{}
+\hypertarget{operator:RSETREPRESENTATION}{}
+\hypertarget{operator:CSETREPRESENTATION}{}
+\hypertarget{operator:SETAVAILABLE}{}
+\hypertarget{operator:STOREGROUP}{}
+\hypertarget{operator:LOADGROUPS}{}
 
 If the user wants to do computations for a group for which
 information is not predefined,
-the package SYMMETRY offers the possibility to supply information
+the package \package{SYMMETRY} offers the possibility to supply information
 for this group.
 
 For this the following data structures are used.
 
-{\bf elemlist} = list of identifiers.
+\textbf{elemlist} = list of identifiers.
 
-{\bf relationlist}  = list of equations with identifiers and
+\textbf{relationlist}  = list of equations with identifiers and
 operators $@$ and $**$.
 
-{\bf grouptable} = matrix with the (1,1)-entry grouptable.
+\textbf{grouptable} = matrix with the (1,1)-entry grouptable.
 
-{\bf filename} = "myfilename.new".
+\textbf{filename} = "myfilename.new".
 
 \vspace{2cm}
 The following operators have to be used in this order.
 
-{\tt setgenerators(group,elemlist,relationlist);}
+\texttt{setgenerators(group,elemlist,relationlist);}\ttindextype[SYMMETRY]{setgenerators}{operator}
 
-{\bf Example:}
+\textbf{Example:}
 \begin{verbatim}
    setgenerators(K4,{s1K4,s2K4},
      {s1K4^2=id,s2K4^2=id,s1K4@s2K4=s2K4@s1K4});
 \end{verbatim}
 
-{\bf setelements(group,relationlist);}
+\textbf{setelements(group,relationlist);}\ttindextype[SYMMETRY]{setelements}{operator}
 
 The group elements except the neutral element
 are given as product of the defined
-generators. The neutral element is always called {\tt id}.
+generators. The neutral element is always called \texttt{id}.
 
-{\bf Example:}
+\textbf{Example:}
 \begin{verbatim}
    setelements(K4,
         {s1K4=s1K4,s2K4=s2K4,rK4=s1K4@s2K4});
 \end{verbatim}
 
-{\bf setgrouptable(group,grouptable);}
+\textbf{setgrouptable(group,grouptable);}\ttindextype[SYMMETRY]{setgrouptable}{operator}
 
 installs the group table.
 
-{\bf Example:}
+\textbf{Example:}
 \begin{verbatim}
    tab:=
     mat((grouptable,     id,    s1K4, s2K4, rK4),
@@ -228,13 +232,13 @@ installs the group table.
    setgrouptable(K4,tab);
 \end{verbatim}
 
-{\bf Rsetrepresentation(representation,type);}
+\textbf{Rsetrepresentation(representation,type);}\ttindextype[SYMMETRY]{Rsetrepresentation}{operator}
 
 is used to define the real irreducible representations of the group.
-The variable {\tt type} is either {\em realtype} or {\em complextype}
+The variable \texttt{type} is either \emph{realtype} or \emph{complextype}
 which indicates the type of the real irreducible representation.
 
-{\bf Example:}
+\textbf{Example:}
 \begin{verbatim}
    eins:=mat((1));
    mineins:=mat((-1));
@@ -242,22 +246,22 @@ which indicates the type of the real irreducible representation.
    Rsetrepresentation(rep3,realtype);
 \end{verbatim}
 
-{\bf Csetrepresentation(representation);}
+\textbf{Csetrepresentation(representation);}\ttindextype[SYMMETRY]{Csetrepresentation}{operator}
 
 This defines the complex irreducible representations.
 
-{\bf setavailable(group);}
+\textbf{setavailable(group);}\ttindextype[SYMMETRY]{setavailable}{operator}
 
 terminates the installation of the group203. It checks some properties of the
 irreducible representations and makes the group available for the
 operators in Sections 2 and 3.
 
-{\bf storegroup(group,filename);}
+\textbf{storegroup(group,filename);}\ttindextype[SYMMETRY]{storegroup}{operator}
 
 writes the information concerning the group to the file with name
-{\em filename}.
+\emph{filename}.
 
-{\bf loadgroups(filename);}
+\textbf{loadgroups(filename);}\ttindextype[SYMMETRY]{loadgroups}{operator}
 
-loads a user defined group from the file {\em filename} into
+loads a user defined group from the file \emph{filename} into
 the system.

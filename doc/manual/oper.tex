@@ -742,9 +742,9 @@ information may be found in the \hyperlink{SPECFNS}{SPECFN package}.
 \hyperlink{SPECFNTAB1}{Quick Reference Tables} are also available.
 
 \index{Integral functions}
-\ttindex{Si}\ttindex{Shi}\ttindex{Chi}
-\ttindex{Ci}\ttindextype{Ei}{(exponential integral)}\ttindextype{Li}{(logarithmic integral)}
-\ttindex{Erf} \ttindex{Fresnel\_S}\ttindex{Fresnel\_C}
+\ttindextype{Si}{(sine integral) operator}\ttindextype{Shi}{(hyperbolic sine integral) operator}\ttindextype{Chi}{(hyperbolic cosine integral) operator}
+\ttindextype{Ci}{(cosine integral) operator}\ttindextype{Ei}{(exponential integral) operator}\ttindextype{Li}{(logarithmic integral) operator}
+\ttindextype{Erf}{(error function) operator}\ttindextype{Fresnel\_S}{(Fresnel sine integral) operator}\ttindextype{Fresnel\_C}{(Fresnel cosine integral) operator}
 \textbf{Integral Functions:}
 \begin{verbatim}
     Ei Li Si Ci Shi Chi Erf Fresnel_S Fresnel_C
@@ -756,8 +756,8 @@ cosine integrals and their hyperbolic counterparts. \f{Erf},
 sine and cosine integrals respectively.
 
 \index{Polygamma functions}\index{Gamma function}\index{Beta function}
-\ttindex{Beta}\ttindex{ibeta}\ttindex{Gamma}
-\ttindex{igamma}\ttindex{Polygamma}\ttindex{psi}
+\ttindextype{Beta}{operator}\ttindextype{ibeta}{operator}\ttindextype{Gamma}{operator}
+\ttindextype{igamma}{operator}\ttindextype{Polygamma}{operator}\ttindextype{psi}{operator}
 \textbf{Beta, Gamma and Related Functions:}
 \begin{verbatim}
     Beta ibeta Gamma igamma psi Polygamma
@@ -770,8 +770,8 @@ the binary function \f{Polygamma} with integer first parameter $n$ is the
 $n$th derivative of the function \f{psi}.
 
 \index{Bessel functions}\index{Hankel functions}
-\ttindex{BesselI}\ttindex{BesselJ}\ttindex{BesselK}
-\ttindex{BesselY}\ttindex{Hankel1}\ttindex{Hankel2}
+\ttindextype{BesselI}{operator}\ttindextype{BesselJ}{operator}\ttindextype{BesselK}{operator}
+\ttindextype{BesselY}{operator}\ttindextype{Hankel1}{operator}\ttindextype{Hankel2}{operator}
 \textbf{Bessel and Related Functions:}
 \begin{verbatim}
     BesselJ BesselY BesselI BesselK Hankel1 Hankel2
@@ -902,7 +902,7 @@ evaluated using the recursive definition:
 \f{EulerP}, where\linebreak
 \texttt{EulerP(n,x)} returns the $n$th Euler polynomial in the variable $x$.
 
-\index{Bernoulli polynomials}\ttindex{BernoulliP}
+\index{Bernoulli polynomials}\ttindextype{BernoulliP}{operator}
 \textbf{Bernoulli Polynomials} are computed by the binary operator
 \f{BernoulliP}, where \texttt{BernoulliP(n,x)} returns the
 $n$th Bernoulli polynomial in the variable $x$.
@@ -984,10 +984,10 @@ functions with the second and third arguments being the lattice invariants
 $g_2$ and $g_3$.
 
 \index{Inverse Elliptic functions}
-\ttindex{arcsn}\ttindex{arccn}\ttindex{arcdn}
-\ttindex{arcns}\ttindex{arcnc}\ttindex{arcnd}
-\ttindex{arcsc}\ttindex{arccs}\ttindex{arcsd}
-\ttindex{arcds}\ttindex{arccd}\ttindex{arcdc}
+\ttindextype{arcsn}{operator}\ttindextype{arccn}{operator}\ttindextype{arcdn}{operator}
+\ttindextype{arcns}{operator}\ttindextype{arcnc}{operator}\ttindextype{arcnd}{operator}
+\ttindextype{arcsc}{operator}\ttindextype{arccs}{operator}\ttindextype{arcsd}{operator}
+\ttindextype{arcds}{operator}\ttindextype{arccd}{operator}\ttindextype{arcdc}{operator}
 \textbf{Inverse Elliptic Functions:}
 \begin{verbatim}
     arcsn  arccn  arcdn   arcns  arcnc  arcnd
@@ -1627,7 +1627,7 @@ the integral by substitution. It is normally off.
 \hypertarget{operator:ERF}{}
 
 If a function appears in the integrand that is not one of the functions
-\texttt{exp, Erf, tan, atan, log, dilog}\ttindex{exp}\ttindex{Erf}
+\texttt{exp, Erf, tan, atan, log, dilog}\ttindex{exp}\ttindextype{Erf}{(error function) operator}
 \ttindex{tan}\ttindex{atan}\ttindex{log}\ttindex{dilog}
 then the algorithm will make an
 attempt to integrate the argument if it can, differentiate it and reach a
@@ -1798,7 +1798,7 @@ numerical evaluation of \hyperlink{SPECFNS}{special functions}.
 \section{PF Operator}\ttindextype{pf}{operator}
 \hypertarget{operator:PF}{}
 
-\index{partial fraction}\index{partial fraction decomposition}\index{decomposition!partial fraction}
+\index{Partial fraction}\index{Partial fraction!decomposition}\index{Decomposition!partial fraction}
 \texttt{pf(\meta{exp},\meta{var})} transforms the expression \meta{exp} into
 a list of partial fractions with respect to the main variable, \meta{var}.
 \texttt{pf}

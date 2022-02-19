@@ -10,7 +10,9 @@ how to inform {\REDUCE} of such assumptions.
 \hypertarget{command:REALVALUED}{}
 \hypertarget{command:NOTREALVALUED}{}
 
-The declaration \texttt{realvalued}\ttindextype{realvalued}{declaration} may be used 
+The declaration \texttt{realvalued}\ttindextype{realvalued}{declaration}%
+\index{Declaration!\texttt{realvalued}}
+may be used 
 to restrict variables to the real numbers. The syntax is:
 \begin{verbatim}
         realvalued v1,...vn;
@@ -37,7 +39,9 @@ real values. Example:
 Such declarations are not needed for the standard elementary functions.
         
 To remove the propery from a variable or an operator use the declaration
-\texttt{notrealvalued}\ttindextype{notrealvalued}{declaration} with the syntax:
+\texttt{notrealvalued}\ttindextype{notrealvalued}{declaration}
+\index{Declaration!\texttt{notrealvalued}}
+with the syntax:
 \begin{verbatim}
         notrealvalued v1,...vn;
 \end{verbatim}
@@ -68,7 +72,9 @@ expressions test the impart for checking the value range:
 \section{SELFCONJUGATE Declaration}
 \hypertarget{command:SELFCONJUGATE}{}
 
-The declaration \texttt{selfconjugate}\ttindextype{selfconjugate}{declaration} may be used 
+The declaration \texttt{selfconjugate}\ttindextype{selfconjugate}{declaration}
+\index{Declaration!\texttt{selfconjugate}}
+may be used 
 to declare an operator to be self-conjuate in the sense that
 \texttt{conj(f(z)) = f(conj(z))}. The syntax is:
 \begin{verbatim}
@@ -82,9 +88,10 @@ functions \texttt{log, asin, acos, atanh, acosh} etc. and
 subsets of the real axis).
 
 \section{Declaring Complex Conjugates}
-\ttindextype{complex\_conjugates}{declaration}
+
 \hypertarget{command:COMPLEX_CONJUGATES}{}
-The argument \texttt{u} of a declaration \texttt{complex\_conjugates} should
+The argument \texttt{u} of a declaration \texttt{complex\_conjugates}%
+\ttindextype{complex\_conjugates}{declaration}\index{Declaration!\texttt{complex\_conjugates}} should
 consist of one or more (comma-separated) lists of two identifiers.
 This declaration associates the two identifiers as
 mutual complex-conjugates. If the first is an operator, the second is

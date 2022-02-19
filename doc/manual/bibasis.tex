@@ -16,13 +16,13 @@ is also a number of quite successful examples of using Gr\"obner bases for solvi
 
 During our research we had developed~\cite{Gerdt:2008, Gerdt:2008a, Gerdt:2010} Boolean involutive algorithms based on Janet and Pommaret
 divisions and applied them to computation of Boolean Gr\"obner bases. Our implementation of both divisions has experimentally
-demonstrated computational superiority of the Pommaret division implementation. This package BIBASIS is the result
-of our thorough research in the field of Boolean Gr\"obner bases. BIBASIS implements the involutive algorithm based on Pommaret
+demonstrated computational superiority of the Pommaret division implementation. This package \package{BIBASIS} is the result
+of our thorough research in the field of Boolean Gr\"obner bases. \package{BIBASIS} implements the involutive algorithm based on Pommaret
 division in a multivariate Boolean ring.
 
 In section 2 the Boolean ring and its peculiarities are shortly introduced. In section 3 we briefly argue
 why the involutive algorithm and Pommaret division are good for Boolean ring while the Buhberger's algorithm is not.
-And finally in section 4 we give the full description of BIBASIS package capabilities and illustrate it by examples.
+And finally in section 4 we give the full description of \package{BIBASIS} package capabilities and illustrate it by examples.
 
 \subsection{Boolean Ring}
 
@@ -70,30 +70,32 @@ The involutive algorithm based on Janet division has the same disadvantage unlik
 in~\cite{Gerdt:2008}. The Pommaret division  algorithm can be applied directly in a Boolean ring and admits effective data
 structures for monomial representation.
 
-\subsection{BIBASIS Package}
+\subsection{\package{BIBASIS} Package}
 
-The package BIBASIS implements the Pommaret division algorithm in a Boolean ring. The first step to using the package
+The package \package{BIBASIS} implements the Pommaret division algorithm in a Boolean ring. The first step to using the package
 is to load it:
 \begin{verbatim}
     1: load_package bibasis;
 \end{verbatim}
-The current version of the BIBASIS user interface consists only of 2 functions:
+The current version of the \package{BIBASIS} user interface consists only of 2 functions:
 \texttt{bibasis} and
 \texttt{bibasis\_print\_statistics}.
 
-\ttindex{BIBASIS}
+\hypertarget{operator:BIBASIS}{}
+\ttindextype[BIBASIS]{bibasis}{operator}
 \noindent The \f{bibasis} is the function that performs all the computation and has the following syntax:
-\begin{center}
-    \texttt{bibasis(initial\_polynomial\_list, variables\_list, monomial\_ordering, reduce\_to\_groebner);}
-\end{center}
+\begin{syntaxtable}
+  \f{bibasis}(&&\meta{initial\_polynomial\_list},\meta{variables\_list},\\
+              &&\meta{monomial\_ordering},\meta{reduce\_to\_groebner});
+\end{syntaxtable}
 Input:
 \begin{itemize}
-    \item \texttt{initial\_polynomial\_list} is the list of polynomials containing the known basis of initial
+    \item \meta{initial\_polynomial\_list} is the list of polynomials containing the known basis of initial
 Boolean ideal. All given polynomials are treated modulo 2. See Example 1.
 
-    \item \texttt{variables\_list} is the list of independent variables in decreasing order.
+    \item \meta{variables\_list} is the list of independent variables in decreasing order.
 
-    \item \texttt{monomial\_ordering} is a chosen monomial ordering and the supported ones are:
+    \item \meta{monomial\_ordering} is a chosen monomial ordering and the supported ones are:
         \begin{itemize}
             \item[] \texttt{lex} -- pure lexicographical ordering;
             \item[] \texttt{deglex} -- degree lexicographic ordering;
@@ -101,7 +103,7 @@ Boolean ideal. All given polynomials are treated modulo 2. See Example 1.
         \end{itemize}
         See Examples 2--4 to check that Gr\"obner (as well as involutive) basis depends on monomial ordering.
 
-    \item \texttt{reduce\_to\_groebner} is a Boolean value, if it is \texttt{t} the output is the reduced
+    \item \meta{reduce\_to\_groebner} is a Boolean value, if it is \texttt{t} the output is the reduced
         Boolean Gr\"obner basis, if \texttt{nil}, then the reduced Boolean Pommaret basis. Examples 5,6 show distinctions between these two outputs.
 \end{itemize}
 Output:
@@ -109,8 +111,8 @@ Output:
  \item The list of polynomials which constitute the reduced Boolean Gr\"obner or Pommaret basis.
 \end{itemize}
 
-\ttindex{bibasis\_print\_statistics}
-\noindent The syntax of \texttt{bibasis\_print\_statistics} is simple:
+\hypertarget{operator:BIBASIS_PRINT_STATISTICS}{}
+\noindent The syntax of \texttt{bibasis\_print\_statistics}\ttindextype[BIBASIS]{bibasis\_print\_statistics}{operator} is simple:
 \begin{center}
     \texttt{bibasis\_print\_statistics();}
 \end{center}

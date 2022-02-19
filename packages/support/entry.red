@@ -682,6 +682,44 @@ defautoload(dfp_commute,dfpart);
 
 put('dfp_commute,'stat,'rlis);
 
+% Normform module entry points
+
+defautoload(frobenius,normform);
+
+defautoload(companion,normform,expr,2);
+
+defautoload(diag,normform);
+
+defautoload(jordan,normform);
+
+defautoload(jordansymbolic,normform);
+
+defautoload(jordanblock,normform,expr,2);
+
+defautoload(submatrix,normform,expr,3);
+
+%defautoload(setmat,normform,expr,4);
+
+%defautoload(getmat,normform,expr,3);
+
+%defautoload(mkmatrix,normform,expr,2);
+
+%defautoload(letmtr,normform,expr,3);
+
+%defautoload(setnest,normform);
+
+defautoload(ratjordan,normform);
+
+%defautoload(deg_sort,normform);
+
+defautoload(smithex_int,normform);
+
+defautoload(smithex,normform,expr,2);
+
+flag('(frobenius companion jordan jordansymbolic jordanblock submatrix
+       setmat getmat mkmatrix letmtr setnest ratjordan deg_sort
+       smithex_int smithex),'opfn);
+
 
 % Sum module entry points.
 
