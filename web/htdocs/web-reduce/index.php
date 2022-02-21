@@ -103,6 +103,8 @@ include '../include/begin-head.php';
                         </li>
                         <li><button id="StopREDUCEMenuItem" class="dropdown-item" type="button">Stop REDUCE</button>
                         </li>
+                        <li><button id="RestartREDUCEMenuItem" class="dropdown-item" type="button">Restart
+                                REDUCE</button></li>
                         <li><button id="ClearDisplayMenuItem" class="dropdown-item" type="button">Clear I/O
                                 Display</button></li>
                         <li><button id="PrintDisplayMenuItem" class="dropdown-item" type="button">Print I/O
@@ -242,10 +244,6 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
     <button id="LaterButton" type="button" disabled="disabled"
         title="Select later keyboard input. Keyboard Shortcut: Control+DownArrow.">▼ Later Input</button>
 </div>
-<a href="https://www.mathjax.org">
-    <img title="Powered by MathJax" src="https://www.mathjax.org/badge/badge.gif" alt="Powered by MathJax"
-        style="float: right" />
-</a>
 
 </div><!-- opened in begin-body.php -->
 

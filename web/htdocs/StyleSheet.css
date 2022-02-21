@@ -134,6 +134,7 @@ ul {
 }
 
 /* TeX and LaTeX logo markup from http://tess.oconnor.cx/2007/08/tex-poshlet */
+/* <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> */
 .tex sub, .latex sub, .latex sup {
     position: static; /* undo a change made by Bootstrap (Reboot) */
     text-transform: uppercase;

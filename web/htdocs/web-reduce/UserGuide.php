@@ -21,10 +21,10 @@ include '../include/begin-body.php';
 <h2 id="Versions">Desktop and Mobile Versions</h2>
 <p>
     There are currently two versions of Web REDUCE: desktop and
-    mobile.  The desktop (normal) version allocates 1GB of memory and
-    is a full build of REDUCE, including all packages.  The mobile
+    mobile. The desktop (normal) version allocates 1GB of memory and
+    is a full build of REDUCE, including all packages. The mobile
     version allocates 256MB of memory and does not include the more
-    specialised packages.  The mobile version is currently necessary
+    specialised packages. The mobile version is currently necessary
     because of problems with memory management in mobile web browsers
     and not primarily because mobile devices lack physical memory.
     The mobile version runs on desktop browsers, but probably not vice
@@ -33,11 +33,11 @@ include '../include/begin-body.php';
 <p>
     You select the version you want to run by clicking the appropriate
     button on the start page, which you reach by selecting <em>Web
-    REDUCE</em> in the main navigation panel.  The desktop version is
+        REDUCE</em> in the main navigation panel. The desktop version is
     started by visiting the URL <a href="/web-reduce/">/web-reduce/</a>
     whereas the mobile version is started by visiting the URL
     <a href="/web-reduce/?mobile">/web-reduce/?mobile</a>, which you
-    can also do explicitly.  The mobile version defaults to full
+    can also do explicitly. The mobile version defaults to full
     window mode (see the <a href="#ViewMenu">View Menu</a>) and tries to
     re-position the window contents after input events so that you can
     see the output, whereas the desktop version refocuses the input
@@ -148,11 +148,11 @@ include '../include/begin-body.php';
     By default, matching delimiter pairs in the input editor are
     highlighted by underlining the delimiters and their content when
     the text cursor is immediately after a closing delimiter or
-    immediately before an opening delimiter.  The delimiter pairs that
+    immediately before an opening delimiter. The delimiter pairs that
     are highlighted are: brackets, <code>(&hellip;)</code> and
     <code>{&hellip;}</code>; group statements,
     <code>&lt;&lt;&hellip;>></code>; block statements,
-    <code>begin&hellip;end</code>.  Delimiter highlighting can be
+    <code>begin&hellip;end</code>. Delimiter highlighting can be
     turned on and off using an entry in the <a href="#ViewMenu">View menu</a>.
     Delimiter matching handles nested delimiters correctly and
     partially ignores delimiters in strings, but not in comments since
@@ -193,6 +193,11 @@ include '../include/begin-body.php';
         Executing either of the usual commands <code>BYE</code> or
         <code>QUIT</code> should have exactly the same effect.
     </dd>
+    <dt>Restart REDUCE</dt>
+    <dd>
+        Selecting this item stops Web REDUCE and then starts it again, as a convenient alternative to clicking on the
+        above two menu items one after the other. It is disabled if Web REDUCE is not running.
+    </dd>
     <dt>Clear I/O Display</dt>
     <dd>
         Selecting this item clears the Input/Output Display, but has no
@@ -219,7 +224,7 @@ include '../include/begin-body.php';
     such as Chrome, Edge, and Opera on desktop platforms, which works
     well. On other browsers, such as Firefox, Safari and on mobile
     platforms, much cruder facilities have to be used, which work much
-    less well.  <strong>If you intend to use file input or output then
+    less well. <strong>If you intend to use file input or output then
         I recommend that you use a Chromium-based browsers on a
         desktop platform!</strong>
     The <em>File</em> menu is enabled only when Web REDUCE is running,
@@ -313,9 +318,9 @@ include '../include/begin-body.php';
         When this box is checked, Web REDUCE hides content that is
         extraneous to the web app, namely the header and footer
         regions, navigation panel, page heading and MathJax logo, so
-        that the web app uses the full browser window.  This is
+        that the web app uses the full browser window. This is
         primarily intended for use on small displays and is the
-        default in mobile mode.  In desktop mode, this box is
+        default in mobile mode. In desktop mode, this box is
         unchecked by default.
     </dd>
     <dt>I/O Colouring</dt>
@@ -348,7 +353,7 @@ include '../include/begin-body.php';
     <dt>Highlight Matching Delimiters</dt>
     <dd>
         When this box is checked, the input editor underlines matching
-        delimiters and their content.  It is checked by default.
+        delimiters and their content. It is checked by default.
     </dd>
 </dl>
 

@@ -32,6 +32,7 @@ const mobileVersion = (location.search.includes("mobile"));
 // Set up access to document elements and reset their defaults for when the page is reloaded:
 const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem") as HTMLButtonElement;
 const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem") as HTMLButtonElement;
+const restartREDUCEMenuItem = document.getElementById("RestartREDUCEMenuItem") as HTMLButtonElement;
 const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem") as HTMLButtonElement;
 const ioColouringCheckbox = document.getElementById('IOColouringCheckbox') as HTMLInputElement;
 
@@ -75,6 +76,7 @@ let worker: Worker;
 function setRunningState(running: boolean) {
     startREDUCEMenuItem.disabled = running;
     stopREDUCEMenuItem.disabled = !running;
+    restartREDUCEMenuItem.disabled = !running;
     sendInputButton.disabled = !running;
     typesetMathsCheckbox.disabled = !running;
     fileMenuLink.classList.toggle("disabled", !running);
@@ -237,7 +239,7 @@ function startREDUCE() {
         // The rejectionhandled and unhandledrejection events described
         // on MDN don't seem to work or to be in the official spec!
         sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
-            ' on nat, fancy; off int >>$');
+            ' on nat, fancy, errcont; off int >>$');
     } catch (error) {
         reduceWebErrorHandler(error);
         throw error; // cannot continue
@@ -325,6 +327,7 @@ export function loadPackage(pkg: string) {
 // REDUCE menu:
 startREDUCEMenuItem.addEventListener("click", startREDUCE);
 stopREDUCEMenuItem.addEventListener("click", stopREDUCE);
+restartREDUCEMenuItem.addEventListener("click", () => { stopREDUCE(); startREDUCE(); });
 clearDisplayMenuItem.addEventListener("click", clearIODisplay);
 document.getElementById("PrintDisplayMenuItem").addEventListener("click", () => ioDisplayWindow.print());
 
@@ -336,9 +339,8 @@ function setFullWindow(full: boolean) {
     document.getElementsByTagName("footer")[0].hidden = full;
     document.querySelector<HTMLElement>("#navmenu div").hidden = full;
     document.getElementById("main").className = full ? "" : defaultMainClassName;
-    // If full then hide page heading and MathJax logo:
+    // If full then hide page heading:
     document.querySelector<HTMLElement>("#main h1").hidden = full;
-    document.querySelector<HTMLElement>("a[href='https://www.mathjax.org']").hidden = full;
 }
 
 const defaultMainClassName = document.getElementById("main").className;
