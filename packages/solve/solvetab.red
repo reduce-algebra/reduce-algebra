@@ -260,7 +260,8 @@ fluid '(sol!-rulesets!*);
 sol!-rulesets!*:={{'lambertp,'lambert_rules}};
 
 symbolic procedure solve!-apply!-rules(e1,var);
-  begin scalar rules,u;
+  begin scalar rules,u,!*precise;
+    !*precise := t;
     u:=list('sol,mk!*sq(e1 ./ 1), var);
     for each r in sol!-rulesets!* do
       if apply(car r,{e1,var}) then rules := cadr r . rules;
