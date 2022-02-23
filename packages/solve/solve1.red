@@ -201,6 +201,16 @@ symbolic procedure subfx(u,v);
    (if errorp x then nil ./ 1 else car x)
       where x = errorset2 {'subf,mkquote u,mkquote v};
 
+%%
+%% It may happen that applicatin of rules for sol lead to an infinite recursion.
+%% To detect this a level counter is introduced and checked.
+%%
+
+fluid '(solve!-apply!-rules!-recursion!-level!* solve!-apply!-rules!-max!-recursion!-depth!*);
+
+solve!-apply!-rules!-max!-recursion!-depth!* := 20;  % somewhat arbitrary
+solve!-apply!-rules!-recursion!-level!* := 0;
+
 symbolic procedure solvesq1 (ex,var,mul);
    % Attempts to find solutions for standard quotient ex with respect to
    % top level occurrences of var and kernels containing variable var.
@@ -251,7 +261,9 @@ symbolic procedure solvesq1 (ex,var,mul);
                           neq 'unsolved
                then y
               else if not smemq('sol,x1 := solve!-apply!-rules(e1,var))
-               then solvesq(x1,var,mu)
+               then << if solve!-apply!-rules!-recursion!-level!* >= solve!-apply!-rules!-max!-recursion!-depth!*
+                         then rerror(solve,4,"SOLVE: table recursion too deep")
+                       else (solvesq(x1,var,mu) where solve!-apply!-rules!-recursion!-level!* := solve!-apply!-rules!-recursion!-level!* + 1)>>
               else mkrootsof(e1 ./ 1,var,mu),
                  z)>>;
       return z
