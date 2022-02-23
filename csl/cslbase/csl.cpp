@@ -126,10 +126,6 @@
 #include <sys/resource.h>
 #endif
 
-#ifdef PROCEDURAL_WASM_XX
-#include <emscripten.h>
-#endif
-
 // These flags are used to ensure that protected symbols don't get
 // overwritten by default, and that the system keeps quiet about it.
 
