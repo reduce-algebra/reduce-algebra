@@ -16,7 +16,7 @@ import { debug, typesetMathsCheckbox, inputDiv, Global } from "./Main.js";
 import { FileSystemWritableFileStream } from "./Main.js";
 
 // Imported functions:
-import { refocus, sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.js";
+import { hideMenuLink, refocus, sendPlainTextToIODisplay, sendToReduce, enableTypesetMaths } from "./Main.js";
 
 interface FileSystemFileHandle {
     readonly name: string,
@@ -25,6 +25,9 @@ interface FileSystemFileHandle {
 
 const supported = "showOpenFilePicker" in window;
 const echoFileInputCheckbox = document.getElementById("EchoFileInputCheckbox") as HTMLInputElement;
+echoFileInputCheckbox.checked = true;
+const fileMenuLink = document.getElementById("FileMenuLink");
+echoFileInputCheckbox.addEventListener("change", () => hideMenuLink(fileMenuLink));
 const outputFileMenuItem = document.getElementById("OutputFileMenuItem") as HTMLButtonElement;
 const outputHereMenuItem = document.getElementById("OutputHereMenuItem") as HTMLButtonElement;
 outputHereMenuItem.disabled = true;
