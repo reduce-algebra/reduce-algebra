@@ -38,9 +38,17 @@
 # The repeated build of bootstrapreduce.img is so that forward references
 # to inline functions end up coped with properly.
 
-# NOTE that by going "make USERFLAGS="-O0 -g" it is possible to override this
+# NOTE that by going 'make USERFLAGS="-O0 -g"' it is possible to override this
 # optimization level and get a debugging build.
-# to debug with sourcemaps, -g4 and -g must be used, eg USERFLAGS="-O0 -g -g4"
+
+# To debug with sourcemaps, --gsource-map and -g must be used
+# together, e.g. USERFLAGS="-O0 -g -gsource-map --source-map-base ./"
+# with the cslbase directory linked to the directory from which the
+# wasm file is server.  (A Windows directory symbolic link works!)
+
+# However, it is better to use DWARF information instead of source
+# maps, i.e. just use 'make USERFLAGS="-O0 -g"', and debug using
+# Chrome; see https://developer.chrome.com/blog/wasm-debugging-2020/
 
 OPT=-Oz
 
@@ -102,10 +110,11 @@ NODE= $(shell which node)
 NODE_EM_LDFLAGS= -s NODERAWFS -s FORCE_FILESYSTEM
 
 PRE_JS=$(JS_SRC)/init.js
-WEBOPTS= --pre-js $(PRE_JS)\
- -s ENVIRONMENT=worker\
- -s BUILD_AS_WORKER\
- --js-library $(JS_SRC)/io.js
+# WEBOPTS= --pre-js $(PRE_JS)\
+#  -s ENVIRONMENT=worker\
+#  -s BUILD_AS_WORKER\
+#  --js-library $(JS_SRC)/io.js
+WEBOPTS= --pre-js $(PRE_JS) -s ENVIRONMENT=worker -s BUILD_AS_WORKER
 
 
 #ASYNCIFY_OPTS = -s ASYNCIFY \
@@ -164,13 +173,16 @@ special_o_files = csl.o preserve.o
 
 bootstrapObjects = $(main_o_files) $(special_o_files) stubs.o
 
-bootstrapreduce.js:	$(bootstrapObjects) lib/libcrlibm.a
+# Some rules generate both a .js and a .wasm file, and so use a
+# grouped target and the separator "&:".
+
+bootstrapreduce.js bootstrapreduce.wasm &: $(bootstrapObjects) lib/libcrlibm.a
 	$(CXX) $(bootstrapObjects)\
 	 $(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o bootstrapreduce.js
 
 .PHONY:	bootstrapreduce
-bootstrapreduce: bootstrapreduce.js
-	@echo Building bootstrapreduce.js
+bootstrapreduce: bootstrapreduce.js bootstrapreduce.wasm
+	@echo '=== Built "bootstrapreduce.js" and "bootstrapreduce.wasm".'
 
 
 # I am going to build both reduce and bootstrapreduce in the same directory
@@ -195,7 +207,7 @@ endif
 # If MINIREDUCE is set (to -Dminireduce) then buildreduce.lsp reads
 # "./package.map", which should have most packages commented out.  See
 # target mini-webreduce at the end of this file.
-bootstrapreduce.img: bootstrapreduce.js $(package_map)
+bootstrapreduce.img: bootstrapreduce.js bootstrapreduce.wasm $(package_map)
 	-rm -f bootstrapreduce.img
 	$(NODE) bootstrapreduce.js -z -Dno_init_file $(MINIREDUCE) $(S)/buildreduce.lsp\
 	 -Dbootstrap -D@srcdir=$(S) -D@reduce=$(R)\
@@ -226,7 +238,7 @@ unn_oo_files =\
 
 reduceObjects = $(main_o_files) $(special_o_files) $(unn_oo_files)
 
-reduce.js: $(reduceObjects)
+reduce.js reduce.wasm &: $(reduceObjects)
 	$(CXX) $(reduceObjects)\
 	 $(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reduce.js
 
@@ -235,7 +247,7 @@ reduce.js: $(reduceObjects)
 
 reducexObjects = $(main_o_files:.o=.xo) $(special_o_files:.o=.xo) $(unn_oo_files:.oo=.xo)
 
-reducex.js: $(reducexObjects)
+reducex.js reducex.wasm &: $(reducexObjects)
 	$(CXX) $(reducexObjects) \
 		$(LDFLAGS) $(NODE_EM_LDFLAGS) $(LIBS) $(JSOPTS) -o reducex.js
 
@@ -246,9 +258,9 @@ reducex.js: $(reducexObjects)
 
 reduceWebObjects = $(main_o_files) $(special_o_files:.o=.yo) $(unn_oo_files)
 
-reduce.web.js: $(reduceWebObjects)
+reduce.web.js reduce.web.wasm &: $(reduceWebObjects)
 	$(CXX) $(reduceWebObjects)\
-	 $(LDFLAGS) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS) $(LINK_OPT)\
+	 $(LDFLAGS) $(LINK_OPT) $(LIBS) $(JSOPTS) $(ASYNCIFY_OPTS) $(WEBOPTS)\
 	 -o reduce.web.js
 
 .PHONY:	reduce
@@ -256,10 +268,10 @@ reduce:	reduce.js
 	@echo '=== Built "reduce.js" and "reduce.wasm".'
 
 .PHONY: reduce-web
-reduce-web: reduce.web.js
+reduce-web: reduce.web.js reduce.web.wasm
 	@echo '=== Built "reduce.web.js" and "reduce.web.wasm".'
 
-reduce.img: reduce.js $(package_map)
+reduce.img: reduce.js reduce.wasm $(package_map)
 	-rm -f reduce.img
 	export reduce=$(R) &&\
 	 $(NODE) reduce.js -z -Dforce_c_code\
@@ -276,11 +288,11 @@ HEADERS = ../include/config.h include/crlibm.h \
 	$(S)/lispthrow.h $(S)/syscsl.h	  $(S)/cslread.h	 $(S)/machine.h	 \
 	$(S)/tags.h
 
-make-image.js: $(S)/make-image.cpp $(HEADERS)
+make-image.js make-image.wasm &: $(S)/make-image.cpp $(HEADERS)
 	$(CXX) $(CPPFLAGS) $(NODE_EM_LDFLAGS) $(S)/make-image.cpp\
 	 $(LDFLAGS) $(LIBS) $(JSOPTS) -o make-image.js
 
-image.cpp: make-image.js reduce.img
+image.cpp: make-image.js make-image.wasm reduce.img
 	$(NODE) make-image.js
 	cp image.cpp ../reduce-image.cpp
 	cp reduce.img ..
