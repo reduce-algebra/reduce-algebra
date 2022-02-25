@@ -11,7 +11,7 @@
 import { inputDiv, earlierButton, sendInputButton, laterButton, noOutput, Global } from "./Main.js";
 
 // Imported functions:
-import { refocus, sendToReduce, sendToReduceAndEcho, stopREDUCE } from "./Main.js";
+import { hideViewMenuLink, refocus, sendToReduce, sendToReduceAndEcho, stopREDUCE } from "./Main.js";
 
 const inputList = [];
 let inputListIndex = 0;
@@ -118,8 +118,10 @@ const selection: Selection = getSelection();
 const matchDelimsCheckbox = document.getElementById("MatchDelimsCheckbox") as HTMLInputElement;
 matchDelimsCheckbox.checked = true;
 
-matchDelimsCheckbox.addEventListener("change", () =>
-    enableMatchDelims(matchDelimsCheckbox.checked));
+matchDelimsCheckbox.addEventListener("change", () => {
+    enableMatchDelims(matchDelimsCheckbox.checked);
+    hideViewMenuLink();
+});
 
 /**
 * Enable or disable delimiter matching by adding or removing the event handlers.

@@ -35,10 +35,30 @@ const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem") as HTML
 const restartREDUCEMenuItem = document.getElementById("RestartREDUCEMenuItem") as HTMLButtonElement;
 const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem") as HTMLButtonElement;
 const ioColouringCheckbox = document.getElementById('IOColouringCheckbox') as HTMLInputElement;
+ioColouringCheckbox.checked = true;
+
+// See https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html...
+declare const bootstrap: { Dropdown: any };
+// Can only apply bootstrap.Dropdown.getInstance() once everything is set up, so do it dynamically.
+
+/**
+ * Close a dropdown menu; used in menu-item check-box change-event
+ * handlers so that clicking on the check box closes the menu.
+ */
+export function hideMenuLink(menuLink: HTMLElement) {
+    bootstrap.Dropdown.getInstance(menuLink).hide();
+}
+
+const viewMenuLink = document.getElementById("ViewMenuLink");
+export function hideViewMenuLink() {
+    hideMenuLink(viewMenuLink);
+}
 
 /** Typeset Maths View Menu HTML Element. */
 export const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox') as HTMLInputElement;
+typesetMathsCheckbox.checked = true;
 const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox') as HTMLInputElement;
+centreTypesetMathsCheckbox.checked = true;
 
 /** Input Editor HTML Element. */
 export const inputDiv = document.getElementById('InputDiv');
@@ -348,18 +368,21 @@ const defaultMainClassName = document.getElementById("main").className;
 const fullWindowCheckbox = document.getElementById("FullWindowCheckbox") as HTMLInputElement;
 fullWindowCheckbox.checked = mobileVersion;
 if (mobileVersion) setFullWindow(true);
-fullWindowCheckbox.addEventListener("change",
-    () => setFullWindow(fullWindowCheckbox.checked));
+fullWindowCheckbox.addEventListener("change", () => {
+    setFullWindow(fullWindowCheckbox.checked);
+    hideViewMenuLink();
+});
 
 // I/O Colouring:
 const ioColouringStyleElement = document.createElement("style");
 ioColouringStyleElement.innerText = "pre.input {color: red;} *.output {color: blue;}";
 
-ioColouringCheckbox.addEventListener("change", event => {
+ioColouringCheckbox.addEventListener("change", () => {
     if (ioColouringCheckbox.checked)
         ioDisplayHead.appendChild(ioColouringStyleElement);
     else
         ioColouringStyleElement.remove();
+    hideViewMenuLink();
 });
 
 // Typeset Maths:
@@ -374,12 +397,14 @@ export function enableTypesetMaths(enable: boolean) {
 
 typesetMathsCheckbox.addEventListener("change", () => {
     enableTypesetMaths(typesetMathsCheckbox.checked);
+    hideViewMenuLink();
 });
 
 // Centre Typeset Maths:
 centreTypesetMathsCheckbox.addEventListener("change", event => {
     ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
     ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
+    hideViewMenuLink();
 });
 
 // *****************************
