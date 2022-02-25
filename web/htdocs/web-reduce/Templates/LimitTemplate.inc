@@ -8,7 +8,7 @@
 	</p>
 	<p>
 		<small>REDUCE Manual:&ensp;
-			<a href="/manual-lookup.php?LIMITS:" target="_blank" title="Opens in a new tab.">LIMITS Package</a></small>
+			<a href="/manual-lookup.php?LIMIT%20Operator" target="_blank" title="Opens in a new tab.">LIMIT Operator</a></small>
 	</p>
 	<div class="pattern" style="display: flex; justify-content: center; align-items: flex-start;">
 		<div style="display: inline-block; vertical-align: middle; flex: 0 0 auto;">

@@ -81,8 +81,8 @@ becomes Lisp evaluation.  Secondly, assignment statements are handled
 differently, as we shall discuss shortly.  Thirdly, local variables and array
 elements are initialized to \texttt{nil} rather than \texttt{0}. (In fact, any
 variables not explicitly declared \texttt{integer} are also initialized to
-\texttt{nil} in algebraic mode, but the algebraic evaluator recognizes 
-\texttt{nil} as \texttt{0}.) Finally, function definitions follow the 
+\texttt{nil} in algebraic mode, but the algebraic evaluator recognizes
+\texttt{nil} as \texttt{0}.) Finally, function definitions follow the
 conventions of
 Standard Lisp.
 
@@ -92,7 +92,7 @@ designed primarily if not exclusively for symbolic mode.
 \section{Symbolic Infix Operators}
 
 There are three binary infix operators in {\REDUCE} intended for use in
-symbolic mode, namely \texttt{.} (\texttt{cons}), \texttt{eq} and 
+symbolic mode, namely \texttt{.} (\texttt{cons}), \texttt{eq} and
 \texttt{memq}. The precedence of these operators was given in another section.
 
 \section{Symbolic Expressions}
@@ -247,7 +247,7 @@ However, its use is discouraged since it is hard to implement efficiently,
 and most uses can be replaced by macros.  At the present time, there are
 no \texttt{fexpr}s in the core REDUCE system.
 
-\section{Standard Lisp Equivalent of Reduce Input}
+\section{Standard Lisp Equivalent of REDUCE Input}
 \hypertarget{switch:DEFN}{}
 
 A user can obtain the Standard Lisp equivalent of his {\REDUCE} input by
@@ -279,7 +279,7 @@ basic principles for this.
 If one wants to evaluate an expression in algebraic mode, and then use
 that expression in symbolic mode calculations, or vice versa, the easiest
 way to do this is to assign a variable to that expression whose value is
-easily obtainable in both modes.  To facilitate this, a declaration 
+easily obtainable in both modes.  To facilitate this, a declaration
 \texttt{share}\ttindextype{share}{declaration} is available. \texttt{share} takes a list of
 identifiers as argument, and marks these variables as having recognizable
 values in both modes.  The declaration may be used in either mode.
@@ -329,7 +329,7 @@ So to get the true standard quotient form in symbolic mode, one needs
 \begin{verbatim}
         z := cadr x;
 \end{verbatim}
-would store in \texttt{Z} the standard quotient form for 
+would store in \texttt{Z} the standard quotient form for
 \texttt{(a+b)\textasciicircum 2}.
 
 Once you have this expression, you can now manipulate it as you wish.  To
@@ -553,4 +553,3 @@ Finally, if you wish to use the algebraic evaluator on an argument in a
 symbolic mode definition, the function \texttt{reval} can be used.  The one
 argument of \texttt{reval} must be the prefix form of an expression.
 \texttt{reval} returns the evaluated expression as a true Lisp prefix form.
-

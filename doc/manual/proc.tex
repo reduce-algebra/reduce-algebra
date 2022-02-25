@@ -16,7 +16,7 @@ where
 This will be explained more fully in the following sections.
 
 In the algebraic mode of {\REDUCE} the \meta{procedural type} can be
-omitted, since the default is \texttt{algebraic}.  Procedures of type 
+omitted, since the default is \texttt{algebraic}.  Procedures of type
 \texttt{integer} or \texttt{real} may also be used.  In the former case, the system
 checks that the value of the procedure is an integer.  At present, such
 checking is not done for a real procedure, although this will change in
@@ -89,7 +89,7 @@ elsewhere.
 
 \section{Procedure Body}\index{Procedure!body}
 
-Following the delimiter that ends the procedure heading must be a 
+Following the delimiter that ends the procedure heading must be a
 \emph{single} statement defining the action to be performed or the value to be
 delivered.  A terminator must follow the statement.  If it is a semicolon,
 the name of the procedure just defined is printed.  It is not printed if a
@@ -115,7 +115,7 @@ Suppose we need a function \texttt{p(n,x)} that, for any positive integer
 $n$. We can define this operator using the
 textbook formula defining these functions:
 \[
-p_n(x) = \left.\frac{1}{n!}\  
+p_n(x) = \left.\frac{1}{n!}\
 \frac{{d}^n}{dy^n}\ \frac{1}{{(y^2 - 2xy + 1)}^{\frac{1}{2}}}\right\vert_{y=0}
 \]
 Put into words, the Legendre polynomial $p_n(x)$ is the result of
@@ -181,12 +181,12 @@ recurrence relation to compute only those polynomials that have not already
 been derived. We leave it as an exercise for the reader to write such a
 definition.
 
-\section{Matrix- and list-valued Procedures}
+\section{Matrix- and List-valued Procedures}
 \ttindextype{matrixproc}{keyword}
 \hypertarget{reserved:MATRIXPROC}{}
 
 Normally, procedures can only return scalar values. In order for a procedure to
-return a matrix, it has to be declared of 
+return a matrix, it has to be declared of
 type \k{matrixproc}:\index{Procedure!matrix-valued}
 \begin{verbatim}
         matrixproc SkewSym1 (w);
