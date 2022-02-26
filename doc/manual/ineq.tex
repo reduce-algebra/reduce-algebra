@@ -1,6 +1,6 @@
 \index{Melenk, Herbert}
 \index{People!Melenk, Herbert}
-\section{Support for solving inequalities}
+\section{Support for Solving Inequalities}
 \index{Solving inequalities}
 \index{Inequalities, solving}
 \ttindextype{ineq\_solve}{operator}
@@ -10,7 +10,7 @@ tries to solves single inequalities and sets of coupled inequalities\footnote{Th
 The following types of systems are supported:
 \begin{itemize}
 \item only numeric coefficients (no parametric system),
-\item a linear system of mixed equations and $<=$ -- $>=$ 
+\item a linear system of mixed equations and $<=$ -- $>=$
      inequalities, applying the method of Fourier and Motzkin, as described by G.~B.~Dantzig in \cite{Dantzig1963},
 \item a univariate inequality with $<=$, $>=$, $>$ or $<$ operator
      and polynomial or rational left--hand and right--hand sides,
@@ -35,8 +35,8 @@ currently implemented algorithms.
 
 The result is a list. It is empty if the system has no feasible solution.
 Otherwise the result presents the admissible ranges as set
-of equations where each variable is equated to 
-one expression or to an interval. 
+of equations where each variable is equated to
+one expression or to an interval.
 The most specific variable is the first one in the result list and
 each form contains only preceding variables (resolved form).
 The interval limits can be formal \textbf{max} or \textbf{min} expressions.
@@ -67,5 +67,3 @@ ineq_solve (reg,{k,a,b,c});
 
  k=a + b + c}
 \end{verbatim}
-
-

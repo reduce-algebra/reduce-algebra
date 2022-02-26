@@ -3,8 +3,8 @@
 In many applications, it is desirable to load previously prepared {\REDUCE}
 files into the system, or to write output on other files. {\REDUCE} offers
 four commands for this purpose, namely, \texttt{in}, \texttt{out}, \texttt{shut},
-\texttt{load}, and \texttt{load\_package}.  
-The first three operators are described here; \texttt{load} and 
+\texttt{load}, and \texttt{load\_package}.
+The first three operators are described here; \texttt{load} and
 \texttt{load\_package} are discussed in Section~\ref{sec-load}.
 
 \section{IN Command}\ttindextype{in}{command}
@@ -76,7 +76,7 @@ file name \texttt{t} (for terminal) may be used.  For example,
 \texttt{out t;} will direct output to the user's terminal.
 
 The output sent to the file will be in the same form that it would have on
-the terminal.  In particular \texttt{x\textasciicircum 2} would appear 
+the terminal.  In particular \texttt{x\textasciicircum 2} would appear
 on two lines, an
 \texttt{x} on the lower line and a 2 on the line above.  If the purpose of the
 output file is to save results to be read in later, this is not an
@@ -111,12 +111,12 @@ If it is the current output file that is shut, output will switch to the
 terminal.  Attempts to shut files that have not been opened by \texttt{out},
 or an input file, will lead to errors.
 
-\section{\REDUCE startup file}\index{Startup file}
+\section{\REDUCE Startup File}\index{Startup file}
 \index{Startup file}\index{File, startup}
 \ttindextype{reducerc}{file}
 \hypertarget{startup file}
 At the start of a \REDUCE session, the system checks for the existence of a user's
-startup file, and executes the \REDUCE statements in it. This is equivalent to 
+startup file, and executes the \REDUCE statements in it. This is equivalent to
 inputting the file with the \texttt{in} command.
 
 To find the directory/folder where the file resides, the system checks
@@ -126,5 +126,3 @@ the existence of the following environment variables:
 \item \texttt{HOMEDRIVE} and \texttt{HOMEPATH} together (Windows).
 \end{enumerate}
 If none of these are set, the current directory is used. The file itself must be named either \texttt{.reducerc} or \texttt{reduce.rc}\footnote{If none of these exist, the system checks for a file called \texttt{reduce.INI} in the current directory. This is historical and may be removed in future.}.
-
-

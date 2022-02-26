@@ -135,7 +135,7 @@ operators may be declared to be self-conjugate with the declaration
 \hypertarget{operator:DMS2DEG}{}
 
 These operators convert an angle in degrees to radians and vice-versa.
-\f{rad2deg} converts the radian value to  an angle in degrees expressed as a single floating point value (according to the currently specified system precision\index{system precision}).  
+\f{rad2deg} converts the radian value to  an angle in degrees expressed as a single floating point value (according to the currently specified system precision\index{system precision}).
 The value to be converted may be an integer, a rational or a floating value or indeed any expression that simplifies to a rounded value.
 In particular  numerical constants such as $\pi$ may be used in the input expression.
 \f{deg2rad} performs the inverse conversion.
@@ -144,7 +144,7 @@ In particular  numerical constants such as $\pi$ may be used in the input expres
 Similarly, \f{deg2dms} converts an angle given in degrees into a such a three element list.
 
 The purpose of the operators  \f{dms2rad} and \f{dms2deg} should  also be obvious.  The degree, minute and second value to be converted is passed to the conversion function as a three element list.  There is considerable flexibility allowed in  format of the list supplied as parameter -- all three values may be integers, rational numbers or rounded values or any combination of these; the minute and second values need not lie between zero and sixty.  The list supplied is simplified with the appropriate \textit{carrys and borrows} performed (in effect at least) between the three values.  For example
-\begin{verbatim} 
+\begin{verbatim}
 {60.5, 9.2, 11.234}      =>   {60, 39, 23.234}
 {45, 0, -1}              =>   {44, 59, 59}
 \end{verbatim}
@@ -410,11 +410,11 @@ take arbitrary scalar expressions as their argument(s).
 \end{verbatim}
 
 These functions have arguments given in degrees rather than in radians.
-The secant, cosecant and cotangent functions and their inverses are also supported and, indeed, are treated more as \textit{first class} objects than their corresponding radian-based functions which are often converted to expressions involving sine and cosine by some of the standard {\REDUCE} simplifications rules.   
+The secant, cosecant and cotangent functions and their inverses are also supported and, indeed, are treated more as \textit{first class} objects than their corresponding radian-based functions which are often converted to expressions involving sine and cosine by some of the standard {\REDUCE} simplifications rules.
 
 \textbf{Their inverse functions:}
 \begin{verbatim}
-    asin acos atan acot acsc asec 
+    asin acos atan acot acsc asec
     asinh acosh atanh acoth acsch asech
     log log10 logb
 \end{verbatim}
@@ -527,7 +527,7 @@ used, e.g.
   when knowledge_about(sin,x,tan),
 
       ~x + ~~k*pi
- tan(-------------) => 
+ tan(-------------) =>
           ~~d
 
          x                 k
@@ -539,7 +539,7 @@ used, e.g.
                    d     2
 
       ~~w + ~~k*pi
- tan(--------------) => 
+ tan(--------------) =>
           ~~d
 
       w      k                k
@@ -943,7 +943,7 @@ The binary function \f{jacobiam} is the amplitude.
 \ttindextype[ELLIPFN]{ellipticK}{operator}\ttindextype[ELLIPFN]{ellipticE}{operator}\ttindextype[ELLIPFN]{ellipticF}{operator}
 \textbf{Complete and Incomplete Elliptic Integrals of the First \& Second Kinds:}
 \begin{verbatim}
-    ellipticK ellipticE ellipticF 
+    ellipticK ellipticE ellipticF
     jacobiE jacobiZeta
 \end{verbatim}
 The function \f{ellipticE} may take one or two arguments to
@@ -973,7 +973,7 @@ the nome $q$ being given by $q = \exp(i\pi\tau)$
 \textbf{Weierstrassian Elliptic Functions:}
 \begin{verbatim}
     weierstrass    weierstrassZeta
-    weierstrass_sigma  weierstrass_sigma1  
+    weierstrass_sigma  weierstrass_sigma1
     weierstrass_sigma2   weierstrass_sigma3
     weierstrass1   weierstrassZeta1
 \end{verbatim}
@@ -1096,7 +1096,7 @@ Otherwise the result returned involves the original operator
 as $\mathrm{F}_n$.
 
 
-\section{CHANGEVAR operator}
+\section{CHANGEVAR Operator}
 \hypertarget{operator:CHANGEVAR}{}
 \ttindextype{changevar}{operator}
 
@@ -1644,7 +1644,7 @@ responsible for the mathematical correctness of his actions.
 
 The standard version does not deal with algebraic extensions. Thus
 integration of expressions involving square roots and other like things
-can lead to trouble.  The extension package \texttt{ALGINT} 
+can lead to trouble.  The extension package \texttt{ALGINT}
 will analytically integrate a wide range of
 expressions involving square roots where the answer exists in that class
 of functions. It is an implementation of the work described by J.H.
@@ -1842,7 +1842,7 @@ Alternatively, one can use the operations on lists to extract any desired
 term.
 
 
-\section{RESIDUE and POLEORDER operators}
+\section{RESIDUE and POLEORDER Operators}
 \ttindextype{residue}{operator}
 \ttindextype{poleorder}{operator}
 \hypertarget{operator:RESIDUE}{}

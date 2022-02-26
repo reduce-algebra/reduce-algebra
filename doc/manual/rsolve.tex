@@ -1,4 +1,4 @@
-\section{Finding rational or integer zeros}
+\section{Finding Rational or Integer Zeros}
 \index{Wright, Francis J.}
 \index{People!Wright, Francis J.}
 
@@ -54,7 +54,7 @@ $0 = 0$.  In this case the result is returned by \f{i\_solve} in
 terms of the operator \f{arbint} and by \f{r\_solve} in terms of
 the (new) analogous operator \f{arbrat}.  The operator
 \f{i\_solve} will generally run slightly faster than \f{r\_solve}.
-  
+
 The (rational or integer) zeros of the first argument are returned as
 a list and the default output format is the same as that used by
 \f{solve}.  Each distinct zero is returned in the form of an
@@ -63,7 +63,7 @@ zeros are assigned to the variable \var{root\_multiplicities} as a
 list.  However, if the switch \sw{multiplicities} is turned on then
 each zero is explicitly included in the solution list the appropriate
 number of times (and \var{root\_multiplicities} has no value).
-  
+
 \begin{sloppypar}
 Optional keyword arguments acting as local switches allow other output
 formats.  They have the following meanings:
@@ -105,4 +105,3 @@ See the test/demonstration file \texttt{rsolve.tst} for more examples.
 \hypertarget{switch:TRSOLVE}{}
 The switch \sw{trsolve}\ttindexswitch[RSOLVE]{trsolve} turns on tracing of the algorithm.  It is off
 by default.
-

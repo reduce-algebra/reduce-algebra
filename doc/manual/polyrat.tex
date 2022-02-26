@@ -58,7 +58,7 @@ and
         a^2+3*a*b+2*b^2
 \end{verbatim}
 will both simplify to the latter form.  With \sw{exp}
-off, they would remain unchanged, unless the complete factoring 
+off, they would remain unchanged, unless the complete factoring
 (\sw{allfac}) option were in force. \sw{exp} is normally on.
 
 Several operators that expect a polynomial as an argument behave
@@ -84,7 +84,7 @@ described in \cite{NormanMoore:1981A}.
 The easiest way to use this facility is to turn on the switch
 \sw{factor},\ttindexswitch{factor} which causes all expressions to be output in
 a factored form.  For example, with \sw{factor} on, the expression
-\texttt{a\textasciicircum2-b\textasciicircum2} is returned as 
+\texttt{a\textasciicircum2-b\textasciicircum2} is returned as
 \texttt{(a+b)*(a-b)}.
 
 \hypertarget{operator:FACTORIZE}{}
@@ -318,7 +318,7 @@ The \texttt{remainder} operator is used with the syntax
 \end{verbatim}
 It returns the remainder when \texttt{exprn1} is divided by \texttt{exprn2}.  This
 is the true remainder based on the internal ordering of the variables, and
-not the pseudo-remainder. 
+not the pseudo-remainder.
 
 \textit{Examples:}
 \begin{verbatim}
@@ -453,7 +453,7 @@ switch \sw{msg} to off.)  For example
 \begin{verbatim}
      pseudo_divide(x^2 + y^2, x - y);
 
-     *** Main division variable selected is x 
+     *** Main division variable selected is x
 
                2
      {x + y,2*y }
@@ -625,7 +625,7 @@ For example:
 Users should note however that, unlike factorization, this decomposition
 is not unique.
 
-\section{INTERPOL operator}\ttindextype{interpol}{operator}
+\section{INTERPOL Operator}\ttindextype{interpol}{operator}
 \hypertarget{operator:INTERPOL}{}
 
 Syntax:
@@ -637,7 +637,7 @@ where \meta{values} and \meta{points} are lists of equal length and
 \texttt{<variable>} is an algebraic expression (preferably a kernel).
 
 \texttt{interpol} generates an interpolation polynomial \emph{f} in the given
-variable of degree \texttt{length}(\meta{values})-1.  The unique polynomial 
+variable of degree \texttt{length}(\meta{values})-1.  The unique polynomial
 \emph{f}
 is defined by the property that for corresponding elements \emph{v} of
 \meta{values} and \emph{p} of \meta{points} the relation $f(p)=v$ holds.
@@ -760,7 +760,7 @@ If \texttt{exprn} does not depend on \texttt{var}, \texttt{exprn} is returned.
 
 {\COMPATNOTE} In some earlier versions of \REDUCE, \texttt{lterm} returned
 \texttt{0} if the \texttt{exprn} did not depend on \texttt{var}.  In the present
-version, \texttt{exprn} is always equal to 
+version, \texttt{exprn} is always equal to
 \texttt{lterm(exprn,var) + reduct(exprn,var)}.
 
 \subsection{MAINVAR Operator}\ttindextype{mainvar}{operator}
@@ -846,7 +846,7 @@ coefficients of polynomials used in calculations.  The default mode is
 integer arithmetic, although the possibility of using real coefficients
 \index{Real coefficient} has been discussed elsewhere.  Rational
 coefficients have also been available by using integer coefficients in
-both the numerator and denominator of an expression, using the 
+both the numerator and denominator of an expression, using the
 \texttt{on div}\ttindexswitch{div} option to print the coefficients as rationals.
 However, {\REDUCE} includes several other coefficient options in its basic
 version which we shall describe in this section.  All such coefficient
@@ -888,7 +888,7 @@ be converted into a rational expression whose numerator is \texttt{0.5*a} and
 denominator \texttt{1}.
 
 Internally, {\REDUCE} uses floating point numbers up to the precision
-supported by the underlying machine hardware, and so-called \emph{bigfloats} 
+supported by the underlying machine hardware, and so-called \emph{bigfloats}
 for higher precision or whenever necessary to represent numbers
 whose value cannot be represented in floating point.  The internal
 precision is two decimal digits greater than the external precision to
@@ -959,7 +959,7 @@ commands must be used; \texttt{setmod }\meta{integer}\ttindex{setmod}, to set
 the prime modulus, and \texttt{on modular}\ttindexswitch{modular} to cause the
 actual modular calculations to occur.
 For example, with \texttt{setmod 3;} and \texttt{on modular;}, the polynomial
-\texttt{(a+2*b)\textasciicircum3} would become 
+\texttt{(a+2*b)\textasciicircum3} would become
 \texttt{a\textasciicircum3+2*b\textasciicircum3}.
 
 The argument of \texttt{setmod} is evaluated algebraically, except that
