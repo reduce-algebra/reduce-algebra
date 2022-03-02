@@ -101,7 +101,7 @@ symbolic macro procedure find!-loadable!-packages u;
 % would be no merit in loading any of those a second time.
     for each x in '(rlisp cslrend smacros poly arith alg
                     mathpr tmprint entry cslcompat user
-                    cslprolo) do
+                    cslprolo rtools) do
       u := delete(x, u);
 % Put things in alphabetic order at least to keep things neat.
     return mkquote sort(u, 'orderp)
@@ -137,7 +137,7 @@ switches!* := '(
     allpoly                   anticom                   anygcd
     arbvars                   arnum                     assert
     assertbreak               assertstatistics          asterisk
-    backtrace                 balanced_mod              
+    backtrace                 balanced_mod
     batch_mode                bcsimp                    bezout
     bfspace                   boese                     both
     carcheckflag              centergrid                cgbcheckg
@@ -331,7 +331,7 @@ switches!* := '(
     xfullreduce               xpartialint               xpartialintdf
     xpartialintint            zb_factor                 zb_inhomogeneous
     zb_proof                  zb_timer                  zb_trace
-    zeilberg                                            
+    zeilberg
 );
 
 % Constants used in scanner.
