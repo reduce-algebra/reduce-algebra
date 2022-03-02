@@ -11,36 +11,36 @@ polynomial $i^2 + 1$.  The arithmetic of algebraic number $s$ can be
 viewed as a polynomial arithmetic modulo the defining polynomial.
 
 Given a defining polynomial for an algebraic number $a$
-\begin{eqnarray*}
+\[
 a^n ~ + ~ {p _{n-1}} {a ^ {n -1}} ~ + ~ ... ~ + ~ {p_0}
-\end{eqnarray*}
+\]
 
 All algebraic numbers which can be built up from $a$ are then of the form:
-\begin{eqnarray*}
+\[
 {r_{n-1}} {a ^{n-1}} ~+~ {r_{n-2}} {a ^{n-2}} ~+~ ... ~+~ {r_0}
-\end{eqnarray*}
+\]
 where the $r_j$'s are rational numbers.
 
 \ttindextype{+ (plus)}{operator!algebraic numbers}
 The operation of addition is defined by
-\begin{eqnarray*}
+\begin{multline}
 ({r_{n-1}} {a ^{n-1}} ~+~ {r_{n-2}} {a ^{n-2}} ~+~ ...) ~ + ~
 ({s_{n-1}} {a ^{n-1}} ~+~ {s_{n-2}} {a ^{n-2}} ~+~ ...) ~ =  \\
 ({r_{n-1}+s_{n-1}}) {a ^{n-1}} ~+~ ({r_{n-2}+s_{n-2}}) {a ^{n-2}} ~+~ ...
-\end{eqnarray*}
+\end{multline}
 
 \ttindextype{* (times)}{operator!algebraic numbers}
 Multiplication of two algebraic numbers can be performed by normal
 polynomial multiplication followed by a reduction of the result with the
 help of the defining polynomial.
 
-\begin{eqnarray*}
+\begin{multline}
 ({r_{n-1}} {a ^{n-1}} + {r_{n-2}} {a ^{n-2}} + ...) ~ \times ~
 ({s_{n-1}} {a ^{n-1}} + {s_{n-2}} {a ^{n-2}} + ...) = \\
- {r_{n-1}} {s ^{n-1}}{a^{2n-2}} +  ... ~ {\bf modulo} ~
-a^n ~ + ~ {p _{n-1}} {a ^ {n -1}} ~ + ~ ... ~ + ~ {p_0} \\
+ {r_{n-1}} {s ^{n-1}}{a^{2n-2}} +  ... ~ \mathbin{\mathbf{modulo}} ~
+(a^n ~ + ~ {p _{n-1}} {a ^ {n -1}} ~ + ~ ... ~ + ~ {p_0}) \\
 = ~~~{q_{n-1}} a^{n-1} ~ + ~ {q _{n-2}} {a ^ {n -2}} ~ + ~ ...
-\end{eqnarray*}
+\end{multline}
 
 \ttindextype{/ (quotient)}{operator!algebraic numbers}
 Division of two algebraic numbers r and s yields another algebraic number q.
@@ -52,7 +52,7 @@ The last equation written out explicitly reads
   ({r_{n-1}} & {a^{n-1}} + {r_{n-2}} {a^{n-2}} + \ldots) \\
   =\ & ({q_{n-1}} {a^{n-1}} + {q_{n-2}} {a^{n-2}} + \ldots) \times
   ({s_{n-1}} {a^{n-1}} + {s_{n-2}} {a^{n-2}} + \ldots) \\
-     & {\bf modulo} (a^n + {p _{n-1}} {a^{n -1}} + \ldots) \\
+     & \mathbin{\mathbf{modulo}} (a^n + {p _{n-1}} {a^{n -1}} + \ldots) \\
   =\ & ({t_{n-1}} {a^{n-1}} + {t_{n-2}} {a^{n-2}} + \ldots)
 \end{align*}
 
@@ -89,7 +89,7 @@ multiplying polynomials on the tail of the tagged algebraic number.  Also,
 the routines for solving linear equations can easily be used for the
 calculation of quotients.  We are still left with the problem of
 introducing a particular algebraic number.  In the current version this is
-done by giving the defining polynomial to the statement {\bf defpoly}.  The
+done by giving the defining polynomial to the statement \textbf{defpoly}.  The
 \ttindextype[ARNUM]{defpoly}{statement}
 algebraic number sqrt(2), for example, can be introduced by
 \begin{verbatim}
@@ -99,7 +99,7 @@ algebraic number sqrt(2), for example, can be introduced by
 This statement associates a simplification function for the
 translation of the variable in the defining polynomial into its tagged
 internal form and also generates a power reduction rule used by the
-operations {\bf times} and {\bf quotient} for the reduction of their
+operations \textbf{times} and \textbf{quotient} for the reduction of their
 result modulo the defining polynomial.  A basis for the representation
 of an algebraic number is also set up by the statement.  In the
 working version, the basis is a list of powers of the indeterminate of
@@ -144,7 +144,7 @@ polynomial that contains all specified extensions.  This package implements
 the latter case (the so called primitive representation).  The algorithm we
 use for the construction of the primitive element is the same as given by
 Trager \cite{Trager:76}.  In the implementation, multiple extensions can be
-given as a list of equations to the statement {\bf defpoly}, which, among other
+given as a list of equations to the statement \textbf{defpoly}, which, among other
 things, adds the new extension to the previously defined one.  All
 algebraic numbers are then expressed in terms of the primitive element.
 

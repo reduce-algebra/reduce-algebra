@@ -12,7 +12,7 @@ summarized in \cite{Eastwood:91}.  It differs from the original (\cite
 {Eastwood:87}) in revised notation and extended capabilities.
 
 %\begin{center}
-%{\Large{\bf New Version Summary}}
+%\Large\textbf{New Version Summary}
 %\end{center}
 %\begin{tabular}{ll}
 %\underline{Title of program}:&ORTHOVEC\\[2ex]
@@ -186,66 +186,62 @@ are as summarised below.  The notation used is\\
 \underline{Vector Addition} \\
 \ttindextype[ORTHOVEC]{vectorplus}{operator} \ttindextype[ORTHOVEC]{vectoradd}{operator} \index{Vector!addition}
 \begin{tabular}{rclcrcl}
-\textbf{v} &:=& vectorplus(\textbf{v})  &{\rm or}& \textbf{v} &:=&  +  \textbf{v} \\
-     s  &:=& vectorplus(s)  &{\rm or} &      s  &:=&  +       s  \\
-\textbf{v} &:=& vectoradd(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=&  
+\textbf{v} &:=& vectorplus(\textbf{v})  &\textrm{or}& \textbf{v} &:=&  +  \textbf{v} \\
+     s  &:=& vectorplus(s)  &\textrm{or} &      s  &:=&  +       s  \\
+\textbf{v} &:=& vectoradd(\textbf{v},\textbf{v})  &\textrm{or }& \textbf{v} &:=&  
 \textbf{v} +  \textbf{v} \\
-     s  &:=& vectoradd(s,s)  &{\rm or }&      s  &:=&  s + s \\
+     s  &:=& vectoradd(s,s)  &\textrm{or }&      s  &:=&  s + s \\
 \end{tabular}
 
 \underline{Vector Subtraction} \\
 \ttindextype[ORTHOVEC]{vectorminus}{operator} \ttindextype[ORTHOVEC]{vectordifference}{operator} \index{Vector!subtraction}
 \begin{tabular}{rclcrcl}
-\textbf{v} &:=& vectorminus(\textbf{v})  &{\rm or}&
+\textbf{v} &:=& vectorminus(\textbf{v})  &\textrm{or}&
  \textbf{v} &:=&  -  \textbf{v} \\
- s  &:=& vectorminus(s)  &{\rm or} &      s  &:=&  -       s  \\
-\textbf{v} &:=& vectordifference(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=&
+ s  &:=& vectorminus(s)  &\textrm{or} &      s  &:=&  -       s  \\
+\textbf{v} &:=& vectordifference(\textbf{v},\textbf{v})  &\textrm{or }& \textbf{v} &:=&
   \textbf{v} -  \textbf{v} \\
- s  &:=& vectordifference(s,s)  &{\rm or }&      s  &:=&  s - s \\
+ s  &:=& vectordifference(s,s)  &\textrm{or }&      s  &:=&  s - s \\
 \end{tabular}
 
 \underline{Vector Division}\\
 \ttindextype[ORTHOVEC]{vectorrecip}{operator} \ttindextype[ORTHOVEC]{vectorquotient}{operator} \index{Vector!division}
 \begin{tabular}{rclcrcl}
-\textbf{v} &:=& vectorrecip(\textbf{v})  &{\rm or}& \textbf{v} &:=&  /  
+\textbf{v} &:=& vectorrecip(\textbf{v})  &\textrm{or}& \textbf{v} &:=&  /  
 \textbf{v} \\
- s  &:=& vectorrecip(s)  &{\rm or} &      s  &:=&  /       s  \\
-\textbf{v} &:=& vectorquotient(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=&  
+ s  &:=& vectorrecip(s)  &\textrm{or} &      s  &:=&  /       s  \\
+\textbf{v} &:=& vectorquotient(\textbf{v},\textbf{v})  &\textrm{or }& \textbf{v} &:=&  
 \textbf{v} /  \textbf{v} \\
-\textbf{v} &:=& vectorquotient(\textbf{v},    s  )  &{\rm or }& \textbf{v} &:=&  
+\textbf{v} &:=& vectorquotient(\textbf{v},    s  )  &\textrm{or }& \textbf{v} &:=&  
 \textbf{v} /     s    \\
-\textbf{v} &:=& vectorquotient(   s   ,\textbf{v})  &{\rm or }& \textbf{v} &:=&  
+\textbf{v} &:=& vectorquotient(   s   ,\textbf{v})  &\textrm{or }& \textbf{v} &:=&  
    s    /  \textbf{v} \\
-     s  &:=& vectorquotient(s,s)  &{\rm or }&      s  &:=&  s / s       
+     s  &:=& vectorquotient(s,s)  &\textrm{or }&      s  &:=&  s / s       
        
 \end{tabular}
 
 \underline{Vector Multiplication}\\ 
 \ttindextype[ORTHOVEC]{vectortimes}{operator} \index{Vector!multiplication}
 \begin{tabular}{rclcrcl}
-\textbf{v} &:=& vectortimes(   s   ,\textbf{v})  &{\rm or }& \textbf{v} &:=&     
+\textbf{v} &:=& vectortimes(   s   ,\textbf{v})  &\textrm{or }& \textbf{v} &:=&     
 s    *  \textbf{v} \\
-\textbf{v} &:=& vectortimes(\textbf{v},   s   )  &{\rm or }& \textbf{v} &:=& {\bf
- v}  *     s    \\
-   s    &:=& vectortimes(\textbf{v},\textbf{v})  &{\rm or }&    s    &:=& {\bf
- v}  *  \textbf{v} \\
-   s    &:=& vectortimes(   s   ,   s   )  &{\rm or }&    s    &:=&     
+\textbf{v} &:=& vectortimes(\textbf{v},   s   )  &\textrm{or }& \textbf{v} &:=& \textbf{v}  *     s    \\
+   s    &:=& vectortimes(\textbf{v},\textbf{v})  &\textrm{or }&    s    &:=& \textbf{v}  *  \textbf{v} \\
+   s    &:=& vectortimes(   s   ,   s   )  &\textrm{or }&    s    &:=&     
 s    *     s    
 \end{tabular}
  
 \underline{Vector Cross Product} \\
 \ttindextype[ORTHOVEC]{vectorcross}{operator} \index{Cross product} \index{Vector!cross product}
 \begin{tabular}{rclcrcl}
-\textbf{v} &:=& vectorcross(\textbf{v},\textbf{v})  &{\rm or }& \textbf{v} &:=& {\bf
- v} $\times$   \textbf{v} 
+\textbf{v} &:=& vectorcross(\textbf{v},\textbf{v})  &\textrm{or }& \textbf{v} &:=& \textbf{v} $\times$   \textbf{v} 
 \end{tabular}
  
 \underline{Vector Exponentiation}\\
 \ttindextype[ORTHOVEC]{vectorexpt}{operator} \index{Vector!exponentiation}
 \begin{tabular}{rclcrcl}
-   s    &:=& vectorexpt (\textbf{v},   s   )  &{\rm or }&    s    &:=& {\bf
- v}  \^{} s   \\
-   s    &:=& vectorexpt (   s   ,   s   )  &{\rm or }&    s    &:=&    s
+   s    &:=& vectorexpt (\textbf{v},   s   )  &\textrm{or }&    s    &:=& \textbf{v}  \^{} s   \\
+   s    &:=& vectorexpt (   s   ,   s   )  &\textrm{or }&    s    &:=&    s
      \^{} s   
 \end{tabular}
 

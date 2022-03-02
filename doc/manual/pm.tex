@@ -273,16 +273,25 @@ matched as \texttt{f(?e\_=(?e=?a+?b),?a,?b)} when semantic matching is allowed.
 \subsection{Switches}
 
 \begin{description}
-  \item[\texttt{TRPM}] Produces a trace of the rules applied during a
+\item[\sw{trpm}]
+    \ttindexswitch[PM]{trpm}%
+  \hypertarget{switch:TRPM}{}%
+  Produces a trace of the rules applied during a
     substitution.  This is useful to see how the pattern matcher works, or to
     understand an unexpected result.
 \end{description}
 In general usage the following switches need not be considered:
 \begin{description}
-  \item[\texttt{SEMANTIC}] Allow semantic matches, e.g. \texttt{f(?a+?b,?a,?b)}
+\item[\sw{semantic}]
+    \ttindexswitch[PM]{symantic}%
+  \hypertarget{switch:SEMANTIC}{}%
+  Allow semantic matches, e.g. \texttt{f(?a+?b,?a,?b)}
     will match \texttt{f(3,2,1)}, even though the matcher works from left to
     right.
-  \item[\texttt{SYM!-ASSOC}] Limits the search space of symmetric associative
+  \item[\sw{sym!-assoc}]
+    \ttindexswitch[PM]{sysm"!-assoc}%
+  \hypertarget{switch:SYM!-ASSOC}{}%
+    Limits the search space of symmetric associative
     functions when the template contains multi-generic symbols so that generic
     symbols will not function. For example \texttt{(a+b+c,?a+??b)} will return
       \begin{verbatim}

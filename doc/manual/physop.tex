@@ -76,7 +76,7 @@ standard
 \REDUCE\ routines to handle the new definition of noncommutativity in
 multiplications and pattern matching processes.
 
-{\bf CAVEAT: } Due to its nature, the package is highly version
+\textbf{CAVEAT: } Due to its nature, the package is highly version
 dependent. The current version has been designed for the 3.3  and 3.4
 releases
 of \REDUCE\ and may not work with previous versions. Some different
@@ -508,7 +508,7 @@ For this purpose, a function \f{OPAPPLY} \ttindex{OPAPPLY} has been
 defined.
 It has 2 arguments and is used in the following combinations: 
 
-\textbf{(i)}  \f{LET OPAPPLY(}{\it operator, state}\f{) =} {\it state};
+\textbf{(i)}  \f{LET OPAPPLY(}\textit{operator, state}\f{) =} \textit{state};
 This is to define a elementary
 action of an operator on a state in analogy to the way
 elementary commutation relations are introduced to the system.
@@ -519,7 +519,7 @@ SCALOP A; STATE U;
 FOR ALL N,P LET OPAPPLY((A(N),U(P))= EXP(I*N*P)*U(P);
 \end{verbatim}
 
-{\bf (ii)} \f{LET OPAPPLY(}{\it state, state}\f{) =} {\it scalar exp.};
+\textbf{(ii)} \f{LET OPAPPLY(}\textit{state, state}\f{) =} \textit{scalar exp.};
 This form is to define scalar products between states and normalization
 conditions.
 Example:
@@ -529,12 +529,12 @@ STATE U;
 FOR ALL N,M LET OPAPPLY(U(N),U(M)) = IF N=M THEN 1 ELSE 0;
 \end{verbatim}
 
-{\bf (iii)} {\it state} \f{:= OPAPPLY(}{\it operator expression, state});
+\textbf{(iii)} \textit{state} \f{:= OPAPPLY(}\textit{operator expression, state});
  In this way, the action of an operator expression on a given state
-is calculated using elementary relations defined as explained in {\bf
-(i)}. The result may be assigned to a different state vector.
+ is calculated using elementary relations defined as explained in \textbf{(i)}.
+ The result may be assigned to a different state vector.
 
-{\bf (iv)} \f{OPAPPLY(}{\it state}\f{, OPAPPLY(}{\it operator expression,
+\textbf{(iv)} \f{OPAPPLY(}\textit{state}\f{, OPAPPLY(}\textit{operator expression,
 state}\f{))}; This is the way how to calculate matrix elements of
 operator
 expressions. The system proceeds in the following way: first the
@@ -562,7 +562,7 @@ function}.
 
 \subsection{Known problems in the current release of PHYSOP}
 
-\indent {\bf (i)} Some spurious negative powers  of operators
+\indent \textbf{(i)} Some spurious negative powers  of operators
 may appear
 in the result of a calculation using the PHYSOP package. This is a
 purely ''cosmetic'' effect which is due to an additional
@@ -573,7 +573,7 @@ should make these
 terms disappear and print out the correct result (see example 1
 in the test file).
 
-{\bf (ii)} The current release of the PHYSOP package is not optimized
+\textbf{(ii)} The current release of the PHYSOP package is not optimized
 w.r.t. computation speed. Users should be aware that the evaluation
 of complicated expressions involving a lot of commutation relations
 requires a significant amount of CPU time \underline{and} memory.
@@ -581,7 +581,7 @@ Therefore the use of PHYSOP on small machines is rather limited. A
 minimal hardware configuration should include at least 4 MB of
 memory and a reasonably fast CPU (type Intel 80386 or equiv.).
 
-{\bf (iii)} Slightly different ordering of operators (especially with
+\textbf{(iii)} Slightly different ordering of operators (especially with
 multiple occurrences of the same operator with different indices)
 may appear in some calculations
 due to the internal ordering of atoms in the underlying LISP system
@@ -590,10 +590,10 @@ by the package but does not affect the correctness  of the results.
 
 
 \subsection{Final remarks}
-The package PHYSOP has been presented by
+The package \package{PHYSOP} has been presented by
 the author at the IV inter. Conference on Computer Algebra in Physical
-Research, Dubna (USSR) 1990 (see M. Warns, {\it
-Software Extensions of \REDUCE\ for Operator Calculus in Quantum Theory},
+Research, Dubna (USSR) 1990 (see M. Warns,
+\textit{Software Extensions of \REDUCE\ for Operator Calculus in Quantum Theory},
 Proc.\ of the IV inter.\ Conf.\ on Computer Algebra in Physical
 Research, Dubna 1990, to appear). It has been developed with the aim in
 mind to perform calculations of the type exemplified in the test file
@@ -615,8 +615,7 @@ input and output listing  displaying the encountered problem.
 \subsection*{Acknowledgements}
 The main ideas for the implementation of a new data type in the \REDUCE\
 environnement have been taken from the VECTOR package developed by
-Dr.\ David Harper (D. Harper, Comp.\ Phys.\ Comm.\ {\bf 54} (1989)
-295).
+Dr.\ David Harper (\cite{Harper:89a}).
 Useful discussions with  Dr.\ Eberhard Schr\"ufer  and
 Prof.\ John Fitch are also gratefully acknowledged.
 
@@ -626,44 +625,44 @@ Prof.\ John Fitch are also gratefully acknowledged.
 In the following the error (E) and warning (W) messages specific to the
 PHYSOP package are listed.
 \begin{description}
-\item[\f{cannot declare} {\it x}\f{ as }{\it data type}] (W):
+\item[\f{cannot declare} \textit{x}\f{ as }\textit{data type}] (W):
  An attempt has been made to declare an
-object {\it x} which cannot be used as a PHYSOP operator of the
+object \textit{x} which cannot be used as a PHYSOP operator of the
 required type. The declaration command is ignored.
 
-\item [{\it x} \f{already defined as} {\it data type}] (W): The object
-{\it x} has already been declared using a \REDUCE\ type declaration
+\item [\textit{x} \f{already defined as} \textit{data type}] (W): The object
+\textit{x} has already been declared using a \REDUCE\ type declaration
 command and can therefore not be used as a PHYSOP operator.
 The declaration command is ignored.
 
-\item [{\it x} \f{already declared as} {\it data type}] (W): The object
+\item [\textit{x} \f{already declared as} \textit{data type}] (W): The object
 \f{x} has already been declared with a PHYSOP declaration command.
 The declaration command is ignored.
 
-\item[{\it x} \f{is not a PHYSOP}] (E): An invalid argument has been
+\item[\textit{x} \f{is not a PHYSOP}] (E): An invalid argument has been
 included in an \f{OPORDER} command. Check the arguments.
 
-\item[\f{invalid argument(s) to }{\it function}] (E): A
+\item[\f{invalid argument(s) to }\textit{function}] (E): A
 function implemented by the PHYSOP package has been called with an
 invalid argument. Check type of arguments.
 
 
-\item[\f{Type conflict in }{\it operation}] (E): A PHYSOP type conflict
+\item[\f{Type conflict in }\textit{operation}] (E): A PHYSOP type conflict
 has occured during an arithmetic operation. Check the arguments.
 
-\item [\f{invalid call of }{\it function} \f{with args:} {\it arguments}]
+\item [\f{invalid call of }\textit{function} \f{with args:} \textit{arguments}]
 (E): A function
 of the PHYSOP package has been declared with invalid argument(s). Check
 the argument list.
 
-\item[\f{type mismatch in} {\it expression}] (E): A type mismatch has
+\item[\f{type mismatch in} \textit{expression}] (E): A type mismatch has
 been detected in an expression.  Check the corresponding expression.
 
-\item[\f{type mismatch in} {\it assignement}] (E): A type
+\item[\f{type mismatch in} \textit{assignement}] (E): A type
 mismatch has been detected in an assignment or in a \f{LET}
 statement. Check the listed statement.
 
-\item[\f{PHYSOP type conflict in} {\it expr}] (E): A ambiguity has been
+\item[\f{PHYSOP type conflict in} \textit{expr}] (E): A ambiguity has been
 detected during the type analysis of the expression. Check the
 expression.
 

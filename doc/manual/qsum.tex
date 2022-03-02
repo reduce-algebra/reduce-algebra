@@ -91,31 +91,30 @@ $q$-functions:
 \ttindextype{QPHIHYPERTERM}{operator}
 \ttindextype{QPSIHYPERTERM}{operator}
 Furthermore it is possible to use an abbreviation for the
-{\sl generalized $q$-hypergeometric series}
-({\sl basic generalized hypergeometric series},
+\textsl{generalized $q$-hypergeometric series}
+(\textsl{basic generalized hypergeometric series},
 see e.\,g.\ \cite{GasperRahman:90}, Chapter 1) which is defined as:
-\begin{eqnarray*}
-	\qphihyp{r}{s}{a_1,a_2,\ldots,a_r}{b_1,b_2,\ldots,b_s}{z}:=
-	\hspace{15em}\\ \hspace{10em}
+\begin{multline}
+	\qphihyp{r}{s}{a_1,a_2,\ldots,a_r}{b_1,b_2,\ldots,b_s}{z}:=\\
 	\sum_{k=0}^{\infty}{\frac{\qfac{a_1,a_2,\ldots,a_r}{k}}
 	{\qfac{b_1,b_2,\ldots,b_s}{k}}
 	\,\frac{z^k}{\qfac{q}{k}}\,\left[(-1)^k\,
 	q^{\binom{k}{2}}\right]^{1+s-r}}
-\end{eqnarray*}
+\end{multline}
 where $\qfac{a_1,a_2,\ldots,a_r}{k}$ is a short form to write the
 product $\prod_{j=1}^r{\qfac{a_j}{k}}$. An ${}_r\phi_s$ series
 terminates if one of its numerator parameters is of the form
 $q^{-n}$ with $n\in\mathbb{N}$. The additional factor
 $\left[(-1)^k\,q^{\binom{k}{2}}\right]^{1+s-r}$ (which does not
-occur in the corresponding definition of the {\sl generalized
-hypergeometric function}) is due to a {\sl confluence process}.
+occur in the corresponding definition of the \textsl{generalized
+hypergeometric function}) is due to a \textsl{confluence process}.
 With this factor one gets the simple formula:
 \[
 	\lim_{a_r\rightarrow\infty}{\qphihyp{r}{s}{a_1,a_2,\ldots,a_r}
 	{b_1,b_2,\ldots,b_s}{z}} =
 	{\qphihyp{r-1}{s}{a_1,a_2,\ldots,a_{r-1}}{b_1,b_2,\ldots,b_s}{z}}.
 \]
-Another variation is the {\sl bilateral basic hypergeometric
+Another variation is the \textsl{bilateral basic hypergeometric
 series} (see e.\,g.\ \cite{GasperRahman:90}, Chapter 5) that is defined as
 \[
 	\qpsihyp{r}{s}{a_1,a_2,\ldots,a_r}{b_1,b_2,\ldots,b_s}{z}:=
@@ -137,7 +136,7 @@ respectively.
 \subsection{\textsl{q}-Gosper Algorithm}
 \label{qgosper}
 
-The $q$-Gosper algorithm\cite{Koornwinder:93} is a {\sl decision procedure}, that
+The $q$-Gosper algorithm\cite{Koornwinder:93} is a \textsl{decision procedure}, that
 decides by algebraic calculations whether or not a given
 $q$-hypergeometric term $a_k$ has a $q$-hypergeometric term
 antidifference $g_k$, i.\,e.\ $a_k=g_{k}-g_{k-1}$ with
@@ -146,10 +145,10 @@ in $q^k$ --- an important fact which makes the
 \textsl{rational certification} (see \S~\ref{qzeilberger}) of Zeilberger's
 algorithm possible. If the procedure is successful
 it returns $g_k$, in which case we call $a_k$
-{\sl $q$-Gosper-summable}. Otherwise
-{\sl no $q$-hypergeometric antidifference exists}. Therefore
+\textsl{$q$-Gosper-summable}. Otherwise
+\textsl{no $q$-hypergeometric antidifference exists}. Therefore
 if the $q$-Gosper algorithm does not return a $q$-hypergeometric antidifference,
-it has {\sl proved} that no such solution exists, an information
+it has \textsl{proved} that no such solution exists, an information
 that may be quite useful and important.
 
 Any antidifference is uniquely determined up to a constant, and is
@@ -158,7 +157,7 @@ denoted by
 g_k=\sum a_k\,\delta_k
 \;.
 \]
-Finding $g_k$ given $a_k$ is called {\sl indefinite summation}.
+Finding $g_k$ given $a_k$ is called \textsl{indefinite summation}.
 The antidifference operator $\Sigma$ is the inverse of the downward
 difference operator $\nabla a_k=a_{k}-a_{k-1}$. There is an analogous
 summation theory corresponding to the upward difference operator
@@ -178,7 +177,7 @@ $g$ at the boundary points like in the integration case:
 \label{qzeilberger}
 
 The $q$-Zeilberger algorithm \cite{Koornwinder:93}
-deals with the {\sl definite summation} of
+deals with the \textsl{definite summation} of
 $q$-hyper\-geo\-metric terms $\fcn{f}{n,k}$ wrt.\ $n$ and $k$:
 \[
 	\fcn{s}{n}:= \sum_{k=-\infty}^\infty{\fcn{f}{n,k}}
@@ -195,7 +194,7 @@ Assuming finite support of $\fcn{f}{n,k}$ wrt.\ $k$
 (i.\,e. $\fcn{f}{n,k}=0$ for any $n$ and all sufficiently large $k$)
 we can sum equation (\eqnref{eq:f_n_k-recursion}) over all $k\in\mathbb{Z}$.
 Thus we receive a homogeneous recurrence equation with polynomial
-coefficients (called {\sl holonomic equation}) for $\fcn{s}{n}$:
+coefficients (called \textsl{holonomic equation}) for $\fcn{s}{n}$:
 \begin{equation} \label{holonomic_recurrence}
 	\sum_{j=0}^J{\ifcn{\sigma}{j}{n}\cdot \fcn{s}{n+j}} = 0
 \end{equation}
@@ -239,7 +238,7 @@ $\lim\limits_{k\rightarrow\infty}{\fcn{p}{k}\,\fcn{f}{k}}=0$ for
 all polynomials $\fcn{p}{k}$.)
 
 For a quite general class of $q$-hypergeometric terms
-({\sl proper q-hypergeometric terms}) the $q$-Zeilberger algorithm
+(\textsl{proper q-hypergeometric terms}) the $q$-Zeilberger algorithm
 always finds a recurrence equation, not necessarily of lowest
 order though. Unlike Zeilberger's original algorithm its
 $q$-analogue more often fails to determine the recursion of
@@ -289,7 +288,7 @@ algorithm.
 		This is only successful if \textsl{q}-Gosper's algorithm applies.
 \end{itemize}
 
-{\bf Examples}: The following two examples can be found in
+\textbf{Examples}: The following two examples can be found in
 	\cite{GasperRahman:90} ((II.3) and (2.3.4)).
 
 \begin{redoutput}
@@ -382,7 +381,7 @@ The third form is handy if you have any additional factors.
 For all three instances the following variations are allowed:
 \begin{itemize}
 	\item If for some reason the recursion order is known in
-		advance you can specify it as an additional ({\sl optional}\,)
+		advance you can specify it as an additional (\textsl{optional}\,)
 		argument at the very end of the parameter sequence. There are two
 		ways. If you just specify a positive integer,
 		\texttt{qsumrecursion} looks only for a recurrence equation of this order.
@@ -400,7 +399,7 @@ For all three instances the following variations are allowed:
 		following syntax applies: \texttt{qsumrecursion(f,q,k,s(n))}
 \end{itemize}
 
-As a first example we want to consider the {\sl q-binomial theorem}:
+As a first example we want to consider the \textsl{q-binomial theorem}:
 \[
 	\sum_{k=0}^\infty{\frac{\qfac{a}{k}}{\qfac{q}{k}}z^k} =
 	\frac{\qfac{a\,z}{\infty}}{\qfac{z}{\infty}},

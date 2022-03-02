@@ -362,7 +362,7 @@ randpoly({x, y}, dense);
 \newtheorem{prop}{Proposition}
 
 \newenvironment{randpproof}%
-   {\par\addvspace\baselineskip\noindent{\bf Proof~}}%
+   {\par\addvspace\baselineskip\noindent\textbf{Proof~}}%
    {\hspace*{\fill}$\Box$\par\addvspace\baselineskip}
 
 \subsection{Appendix: Algorithmic background}
@@ -402,7 +402,7 @@ indicated by the inductive proof below, one deduces that:
   \[
     N_h(n,r) = {}^{r+n-1}C_{n-1}
   \]
-  distinct monomials in an $n$-variable {\em homogeneous\/}
+  distinct monomials in an $n$-variable \emph{homogeneous\/}
   polynomial of total degree $r$.  Then there are at most
   \[
     N(d,r) = \sum_{r=0}^d {}^{r+n-1}C_{n-1} = {}^{d+n}C_n
@@ -420,9 +420,8 @@ indicated by the inductive proof below, one deduces that:
     \sum_{a \leq x < b} x^{\underline n} =
     \left. \frac{x^{\underline{n+1}}}{n+1} \right|_a^b.
   \]
-  (See, for example, D. H. Greene \& D. E. Knuth, {\it Mathematics
-  for the Analysis of Algorithms}, Birkh\"auser, Second Edn.\ 1982,
-  equation (1.37)).  Hence the second part of the proposition follows
+  (See, for example \cite[equation (1.37)]{GreenHarper:1982}.
+  Hence the second part of the proposition follows
   from the first.
 
   The proposition holds for 1 variable ($n = 1$), because there is
