@@ -101,7 +101,7 @@ symbolic macro procedure find!-loadable!-packages u;
 % would be no merit in loading any of those a second time.
     for each x in '(rlisp cslrend smacros poly arith alg
                     mathpr tmprint entry cslcompat user
-                    cslprolo rtools) do
+                    cslprolo revision rtools) do
       u := delete(x, u);
 % Put things in alphabetic order at least to keep things neat.
     return mkquote sort(u, 'orderp)
