@@ -362,12 +362,12 @@ both \f{elliptictheta1} and \f{elliptictheta2} although they all correspond to
 the same nome $q$.
 
 The four theta functions are defined by their Fourier series:
-\begin{eqnarray*}
-  \vartheta_1(z,\tau) & = & 2 e^{i\pi\tau/4}\sum_{n=0}^\infty (-1)^nq^{n^2+n} \sin(2n+1)z\\
-\vartheta_2(z,\tau) & = & 2 e^{i\pi\tau/4}\sum_{n=0}^\infty q^{n^2+n} \cos(2n+1)z\\
-\vartheta_3(z,\tau) & = & 1 +2\sum_{n=1}^\infty q^{n^2} \cos 2n z\\
-\vartheta_4(z,\tau) & = & 1 +2\sum_{n=1}^\infty (-1)^n q^{n^2} \cos 2n z.
-\end{eqnarray*}
+\begin{align*}
+  \vartheta_1(z,\tau) & = 2 e^{i\pi\tau/4}\sum_{n=0}^\infty (-1)^nq^{n^2+n} \sin(2n+1)z\\
+\vartheta_2(z,\tau) & = 2 e^{i\pi\tau/4}\sum_{n=0}^\infty q^{n^2+n} \cos(2n+1)z\\
+\vartheta_3(z,\tau) & = 1 +2\sum_{n=1}^\infty q^{n^2} \cos 2n z\\
+\vartheta_4(z,\tau) & = 1 +2\sum_{n=1}^\infty (-1)^n q^{n^2} \cos 2n z.
+\end{align*}
 
 Utilising the periodicity and quasi-periodicity of the theta functions
 some generalised shift rules are implemented to shift their first argument
@@ -608,24 +608,20 @@ the rules for the quasi-periodicity of the four sigma functions and of the
 Weierstrassian Zeta function. They are also used in the numerical
 evaluation of these functions when the switches \sw{rounded} and \sw{complex}
 are ON. The quasi-period relations are:
-\begin{eqnarray*}
-  \zeta_w(u+2\omega_j) & = & \zeta_w(u)+2\eta_j\\
-  \sigma(u+2\omega_j) & = & -exp(2\eta_j(u+\omega_j))\sigma(u)\\
-  \sigma_k(u+2\omega_j) & = &  exp(2\eta_j(u+\omega_j))\sigma_k(u) \quad\text{  if  }j\neq k\\
-  \sigma_j(u+2\omega_j) & = & -exp(2\eta_j(u+\omega_j))\sigma_j(u)\\
-  \zeta_w(\omega_j) & = & \eta_j\\
-  \sigma_j(\omega_j) & = & 0,
-\end{eqnarray*}
+\begin{align*}
+  \zeta_w(u+2\omega_j) & = \zeta_w(u)+2\eta_j\\
+  \sigma(u+2\omega_j) & = -exp(2\eta_j(u+\omega_j))\sigma(u)\\
+  \sigma_k(u+2\omega_j) & =  exp(2\eta_j(u+\omega_j))\sigma_k(u) \quad\text{  if  }j\neq k\\
+  \sigma_j(u+2\omega_j) & = -exp(2\eta_j(u+\omega_j))\sigma_j(u)\\
+  \zeta_w(\omega_j) & = \eta_j\\
+  \sigma_j(\omega_j) & = 0,
+\end{align*}
 where the lattice parameters have been omitted for conciseness and $j,k = 1\ldots 3$.
 The quasi-period factors satisfy
 \[\eta_1+\eta_2+\eta_3=0,\qquad
    \eta_1\omega_3-\eta_3\omega_1=\eta_2\omega_1-\eta_1\omega_2=\eta_3\omega_2-\eta_2\omega_3=i\pi/2.\]
 As well as the scalar-valued functions discussed above in this section,
 there are four functions which return a list as their value:
-\hypertarget{operator:LATTICE_ROOTS}{}
-\hypertarget{operator:LATTICE_INVARIANTS}{}
-\hypertarget{operator:LATTICE_GENERATORS}{}
-\hypertarget{operator:QUASI_PERIOD_FACTORS}{}
 \hypertarget{operator:LATTICE_ROOTS}{}
 \hypertarget{operator:LATTICE_INVARIANTS}{}
 \hypertarget{operator:LATTICE_GENERATORS}{}

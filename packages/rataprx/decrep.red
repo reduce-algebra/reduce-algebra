@@ -204,7 +204,10 @@ begin scalar l, ip, npp, pp, base, neg_flag, res;
 	ip := car u;
         npp := cadr u;
         pp := caddr u;
-        base := cadddr u;
+	if cdddr u then 
+           base := ieval cadddr u
+  	else
+     	   base := 10;
 	if base < 0 then <<
 	   neg_flag := t;
 	   base := -base

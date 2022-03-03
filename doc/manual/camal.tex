@@ -118,16 +118,16 @@ In order to maintain Fourier series in a canonical form it is
 necessary to apply the transformations for linearising products of
 sine and cosines.  These will be familiar to readers of the \REDUCE
 test program as
-\begin{eqnarray}
-\cos \theta \cos \phi & \Rightarrow &
+\begin{align}
+\cos \theta \cos \phi & \Rightarrow
                 (\cos(\theta+\phi)+\cos(\theta-\phi))/2, \\
-\cos \theta \sin \phi & \Rightarrow &
+\cos \theta \sin \phi & \Rightarrow
                 (\sin(\theta+\phi)-\sin(\theta-\phi))/2, \\
-\sin \theta \sin \phi & \Rightarrow &
+\sin \theta \sin \phi & \Rightarrow
                 (\cos(\theta-\phi)-\cos(\theta+\phi))/2, \\
-\cos^2 \theta & \Rightarrow & (1+\cos(2\theta))/2,      \\
-\sin^2 \theta & \Rightarrow & (1-\cos(2\theta))/2.
-\end{eqnarray}
+\cos^2 \theta & \Rightarrow (1+\cos(2\theta))/2,      \\
+\sin^2 \theta & \Rightarrow (1-\cos(2\theta))/2.
+\end{align}
 In CAMAL these transformations are coded directly into the
 multiplication routines, and no action is necessary on the part of the
 user to invoke them.  Of course they cannot be turned off either.
@@ -142,10 +142,10 @@ of the angle would normally introduce a secular term.  By convention
 in Fourier series these secular terms are ignored, and the constant of
 integration is taken as just the terms independent of the angle in the
 integrand.  This is equivalent to the substitution rules
-\begin{eqnarray*}
-\sin(n \theta) & \Rightarrow & -(1/n) \cos(n \theta) \\
-\cos(n \theta) & \Rightarrow & (1/n) \sin(n \theta)
-\end{eqnarray*}
+\begin{align*}
+\sin(n \theta) & \Rightarrow -(1/n) \cos(n \theta) \\
+\cos(n \theta) & \Rightarrow (1/n) \sin(n \theta)
+\end{align*}
 
 In CAMAL these operations were coded directly, and independently of
 the differentiation and integration of the polynomial coefficients.
@@ -156,20 +156,20 @@ An operation which is of great importance in Fourier operations is the
 \emph{harmonic substitution}.  This is the substitution of the sum of
 some angles and a general expression for an angle.  In order to
 preserve the format, the mechanism uses the translations
-\begin{eqnarray*}
-\sin(\theta + A) & \Rightarrow & \sin(\theta) \cos(A) +
+\begin{align*}
+\sin(\theta + A) & \Rightarrow \sin(\theta) \cos(A) +
                                  \cos(\theta) \sin(A) \\
-\cos(\theta + A) & \Rightarrow & \cos(\theta) \cos(A) -
+\cos(\theta + A) & \Rightarrow \cos(\theta) \cos(A) -
                                  \sin(\theta) \sin(A) \\
-\end{eqnarray*}
+\end{align*}
 and then assuming that the value $A$ is small it can be replaced by
 its expansion:
-\begin{eqnarray*}
-\sin(\theta + A) & \Rightarrow & \sin(\theta) \{1 - A^2/2! + A^4/4!\ldots\} +\\
-                 &             & \cos(\theta) \{A - A^3/3! + A^5/5!\ldots\} \\
-\cos(\theta + A) & \Rightarrow & \cos(\theta) \{1 - A^2/2! + A^4/4!\ldots\} -\\
-                 &             & \sin(\theta) \{A - A^3/3! + A^5/5! \ldots\} \\
-\end{eqnarray*}
+\begin{align*}
+\sin(\theta + A) \Rightarrow & \sin(\theta) \{1 - A^2/2! + A^4/4!\ldots\} +\\
+                             & \cos(\theta) \{A - A^3/3! + A^5/5!\ldots\} \\
+\cos(\theta + A) \Rightarrow & \cos(\theta) \{1 - A^2/2! + A^4/4!\ldots\} -\\
+                             & \sin(\theta) \{A - A^3/3! + A^5/5! \ldots\} \\
+\end{align*}
 If a truncation is set for large powers of the polynomial variables
 then the series will terminate.  In CAMAL the \texttt{HSUB} operation
 took five arguments; the original expression, the angle for which
@@ -189,10 +189,10 @@ variables were assumed to be equally small (a restriction removed in
 later versions).  By maintaining polynomials in increasing maximum
 order it is possible to truncate the multiplication of two
 polynomials.  Assume that we are multiplying the two polynomials
-\begin{eqnarray*}
-        A = a_0 + a_1 + a_2 + \ldots \\
-        B = b_0 + b_1 + b_2 + \ldots
-\end{eqnarray*}
+\begin{align*}
+        A &= a_0 + a_1 + a_2 + \ldots \\
+        B &= b_0 + b_1 + b_2 + \ldots
+\end{align*}
 If we are generating the partial answer
 \[
         a_i (b_0 + b_1 + b_2 + \ldots)
@@ -369,7 +369,7 @@ Fourier module, as could be expected.
 \medskip
 \begin{center}
 \begin{tabular}{ | c | l l |}
-\multicolumn{3}{@{}c@{}}{\bf Solving Kepler's Equation} \\
+\multicolumn{3}{@{}c@{}}\textbf{Solving Kepler's Equation} \\
 \hline
 Order   &       \REDUCE  &       Fourier Module \\
 5       &       9.16    &       2.48    \\

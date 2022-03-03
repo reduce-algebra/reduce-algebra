@@ -109,7 +109,7 @@ original expression exp is kept for later reference.
 It can be recovered by means of the operator
 
 \hypertarget{operator:TAYLORORIGINAL}{}
-\hspace*{2em} \texttt{taylororiginal}(exp:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{taylororiginal}(exp:\emph{exprn}):\emph{exprn}
 
 An error is signalled if exp is not a Taylor kernel or if the original
 expression was not kept, i.e.\ if \sw{taylorkeeporiginal} was
@@ -119,7 +119,7 @@ together with expansion point and order can be extracted using
 \ttindextype{taylortemplate}{operator}.
 
 \hypertarget{operator:TAYLORTEMPLATE}{}
-\hspace*{2em} \texttt{taylortemplate}(exp:{\em exprn}):{\em list}
+\hspace*{2em} \texttt{taylortemplate}(exp:\emph{exprn}):\emph{list}
 
 This returns a list of lists with the three elements (var,var0,order).
 As with \f{taylororiginal},
@@ -127,14 +127,14 @@ an error is signalled if exp is not a Taylor kernel.
 
 The operator
 \hypertarget{operator:TAYLORTOSTANDARD}{}\\
-\hspace*{2em} \texttt{taylortostandard}(exp:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{taylortostandard}(exp:\emph{exprn}):\emph{exprn}
 
 converts all Taylor kernels in exp into standard form and
 \ttindextype{taylortostandard}{operator} resimplifies the result.
 
 The boolean operator
 \hypertarget{operator:TAYLORSERIESP}{}\\
-\hspace*{2em} \texttt{taylorseriesp}(exp:{\em exprn}):{\em boolean}
+\hspace*{2em} \texttt{taylorseriesp}(exp:\emph{exprn}):\emph{boolean}
 
 may be used to determine if exp is a Taylor kernel.
 \ttindextype{taylorseriesp}{operator} (Note that this operator is subject to the same
@@ -144,7 +144,7 @@ boolean expressions in \f{if} or \f{let} statements.
 Finally there is
 
 \hypertarget{operator:TAYLORCOMBINE}{}
-\hspace*{2em} \texttt{taylorcombine}(exp:{\em exprn}):{\em exprn}
+\hspace*{2em} \texttt{taylorcombine}(exp:\emph{exprn}):\emph{exprn}
 
 which tries to combine all Taylor kernels found in exp into one.
 \ttindextype{taylorcombine}{operator}
@@ -207,8 +207,8 @@ done by the operator
 
 \hypertarget{operator:TAYLORREVERT}{}
 \ttindextype{taylorrevert}{operator}
-\hspace*{2em} \texttt{taylorrevert}(exp:{\em exprn},oldvar:{\em kernel},
-                                 NEWVAR:{\em kernel}):{\em exprn}
+\hspace*{2em} \texttt{taylorrevert}(exp:\emph{exprn},oldvar:\emph{kernel},
+                                 NEWVAR:\emph{kernel}):\emph{exprn}
 
 EXP must evaluate to a Taylor kernel with OLDVAR being one of its
 expansion variables. Example:

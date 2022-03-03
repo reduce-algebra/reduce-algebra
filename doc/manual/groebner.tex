@@ -127,13 +127,13 @@ method originally used by Buchberger.
 
 \begin{center}
 \begin{tabular}{@{}rlll}
-  \multicolumn{2}{l}{\hspace*{-1cm}{\bf lex:}} \\
+  \multicolumn{2}{l}{\hspace*{-1cm}\textbf{lex:}} \\
   $x * y**3$    & $\gg$ & $y**48$ & (heavier variable) \\
   $x**4 * y**2$ & $\gg$ & $x**3 * y**10$ & (higher degree in 1st variable) \\[2mm]
-  \multicolumn{2}{l}{\hspace*{-1cm}{\bf gradlex:}} \\
+  \multicolumn{2}{l}{\hspace*{-1cm}\textbf{gradlex:}} \\
   $y**3 * z**4$ & $\gg$ & $x**3 * y**3$ & (higher total degree) \\
   $x*z$         & $\gg$ & $y**2$ & (equal total degree) \\[2mm]
-  \multicolumn{2}{l}{\hspace*{-1cm}{\bf revgradlex:}} \\
+  \multicolumn{2}{l}{\hspace*{-1cm}\textbf{revgradlex:}} \\
   $y**3 * z**4$ & $\gg$ & $x**3 * y**3$ & (higher total degree) \\
   $x*z$         & $\ll$ & $y**2$ & (equal total degree, \\
                 &       &        & so reverse order of lex)
@@ -154,12 +154,12 @@ variable which does not occur:
 \]
 \begin{center}
 \begin{tabular}{@{}rll}
-  \multicolumn{1}{l}{\hspace*{-.5cm}{\bf lex:}} \\
+  \multicolumn{1}{l}{\hspace*{-.5cm}\textbf{lex:}} \\
   $(e) > lex > (0)$ & $\Longrightarrow$ & $e_k > 0 \mbox{ and } e_j =0
   \mbox{ for }\; j=1,\ldots , k-1$ \\[2mm]
-  \multicolumn{1}{l}{\hspace*{-.5cm}{\bf gradlex:}} \\
+  \multicolumn{1}{l}{\hspace*{-.5cm}\textbf{gradlex:}} \\
   $(e) >gl> (0)$    & $\Longrightarrow$ & $\deg(e)>0  \mbox { or } (e) >lex> (0)$ \\[2mm]
-  \multicolumn{1}{l}{\hspace*{-.5cm}{\bf revgradlex:}} \\
+  \multicolumn{1}{l}{\hspace*{-.5cm}\textbf{revgradlex:}} \\
   $(e) >rgl> (0)$   & $\Longrightarrow$ & $\deg(e)>0  \mbox{ or }(e)  <lex< (0)$
 \end{tabular}
 \end{center}
@@ -193,8 +193,8 @@ from a given set of polynomials, if an automatic reordering has been selected.
 
 \subsubsection{The Buchberger Algorithm}
 \index{Buchberger's Algorithm}
-The Buchberger algorithm of the package is based on {\sc
-Gebauer/M\"oller} \cite{Gebauer:88}.
+The Buchberger algorithm of the package is based on
+\textsc{Gebauer/M\"oller} \cite{Gebauer:88}.
 Extensions are documented in \cite{Melenk:88} and \cite{Giovini:91}.
 
 \subsection{Loading of the Package}
@@ -231,7 +231,7 @@ If the variable list is empty or if the \f{torder} declaration
 is omitted, the automatic variable extraction is activated.
 
 \ttindextype[GROEBNER]{gvars}{operator}
-\item[\f{gvars}({\it\{exp$1$, exp$2$, $\ldots$, exp$n$\}});]\mbox{}\\
+\item[\f{gvars}(\textit{\{exp$1$, exp$2$, $\ldots$, exp$n$\}});]\mbox{}\\
 \hypertarget{operator:GVARS}{}
   where $\{exp1, exp2, \ldots , expn\}$ is a list of expressions or
 equations.
@@ -404,8 +404,8 @@ The internal pairlist is printed when modified.
 \ttindextype[GROEBNER]{gzerodim?}{operator}
 \item[\f{gzerodim!?} \emph{bas}]\mbox{}\\
   \hypertarget{operator:GZERODIM!?}{}
-where {\it bas} is a Gr\"obner basis in the current setting.
-The result is \texttt{nil} if {\it bas} is the
+where \textit{bas} is a Gr\"obner basis in the current setting.
+The result is \texttt{nil} if \textit{bas} is the
 basis of an ideal of polynomials with more than finitely many common zeros.
 If the ideal is zero dimensional, i. e. the polynomials of the ideal have only
 finitely many zeros in common, the result is an integer $k$ which is the number
@@ -416,7 +416,7 @@ of these common zeros (counted with multiplicities).
 independent variables}
 The following operators can be used to compute the dimension
 and the independent variable sets of an ideal which has the
-Gr\"obner basis {\it bas} with arbitrary term order:
+Gr\"obner basis \textit{bas} with arbitrary term order:
 \begin{description}
 \ttindextype[GROEBNER]{gdimension}{operator}\ttindextype[GROEBNER]{gindependent\_sets}{operator}
 \index{Ideal dimension (\package{Groebner} package)}\index{Independent sets (\package{Groebner} package)}
@@ -477,11 +477,11 @@ an error message, if this limit is reached.
 A warning occurs if the ideal is not zero dimensional.
 
 \f{glexconvert} is an implementation of the FLGM algorithm by
-\linebreak[4] {\sc Faug{\`e}re}, {\sc Gianni}, {\sc Lazard} and {\sc
-Mora} \cite{Faugere:93}. Often, the calculation of a Gr\"obner basis
-with a graded ordering and subsequent conversion to {\it lex} is
-faster than a direct {\it lex} calculation. Additionally, \f{glexconvert}
-can be used to transform a {\it lex} basis into one with different
+\linebreak[4] \textsc{Faug{\`e}re}, \textsc{Gianni}, \textsc{Lazard} and
+\textsc{Mora} \cite{Faugere:93}. Often, the calculation of a Gr\"obner basis
+with a graded ordering and subsequent conversion to \textit{lex} is
+faster than a direct \textit{lex} calculation. Additionally, \f{glexconvert}
+can be used to transform a \textit{lex} basis into one with different
 variable sequence, and it supports the calculation of a univariate
 polynomial. If the latter exists, the algorithm is even applicable in
 the non zero-dimensional case, if such a polynomial exists.
@@ -777,7 +777,7 @@ type of reduction is also called a pseudo reduction of $ p $.
 \[
 \f{greduce}(exp, \{exp1, exp2, \ldots , expm\}]);
 \]
-where {\it exp} is an expression, and $\{exp1, exp2,\ldots , expm\}$ is
+where \textit{exp} is an expression, and $\{exp1, exp2,\ldots , expm\}$ is
 a list of any number of expressions or equations.
 
 \f{greduce} first converts the list of expressions $\{exp1, \ldots ,
@@ -829,14 +829,14 @@ with the operator \f{greduce\_orders}:
 \item[{\f{greduce\_orders}($exp$, \{$exp1$, $exp2$, \ldots , $expm$\}
     [,\{$v_1,v_2,\ldots,v_n$\}]);}]\mbox{}\\
   \hypertarget{operator:GREDUCE_ORDERS}{}
-where {\it exp} is an expression and $\{exp1, exp2,\ldots , expm\}$ is
+where \textit{exp} is an expression and $\{exp1, exp2,\ldots , expm\}$ is
 a list of any number of expressions or equations. The list of variables
 $v_1,v_2 \ldots v_n$ may be omitted; if set, the variables must be a list.
 \end{description}
 
 \ttindextype[GROEBNER]{gorders}{shared variable}
 \hypertarget{reserved:GORDERS}{}
-The expression {\it exp} is reduced by \f{greduce} with the orders
+The expression \textit{exp} is reduced by \f{greduce} with the orders
 in the shared variable \var{gorders}, which must be a list of term
 orders (if set). By default it is set to
 
@@ -849,7 +849,7 @@ The order with the shortest polynomial is set to the shared variable
 \var{gorder}. A Gr\"obner basis of the system \{$exp1$, $exp2$, \ldots ,
 $expm$\} is computed for each element of \emph{orders}.
 With the default setting \var{gorders} in most cases will be set
-to {\it revgradlex}.
+to \textit{revgradlex}.
 If the variable set is given, these variables are taken; otherwise all
 variables of the system \{$exp1$, $exp2$, \ldots , $expm$\} are
 extracted.
@@ -970,10 +970,10 @@ input values.
 There are two complementary operators with this feature: \f{groebnert}
 and \f{preducet}; functionally they correspond to \f{groebner} and \f{preduce}.
 However, the sets of expressions here \emph{\textbf{must be}} equations
-with unique single identifiers on their left side and the {\it lhs} are
+with unique single identifiers on their left side and the \textit{lhs} are
 interpreted as names of the expressions. Their results are
 sets of equations (\f{groebnert}) or equations (\f{preducet}), where
-a {\it lhs} is the computed value, while the {\it rhs} is its equivalent
+a \textit{lhs} is the computed value, while the \textit{rhs} is its equivalent
 in terms of the input names.
 
 \example \index{Groebner package!example}
@@ -982,7 +982,7 @@ We calculate the Gr\"obner basis for an ellipse (named ``$p1$'' ) and a
 line (named ``$p2$'' ); $p2$ is member of the basis immediately and so
 the corresponding first result element is of a very simple form; the
 second member is a combination of $p1$ and $p2$ as shown on the
-{\it rhs} of this equation:
+\textit{rhs} of this equation:
 
 \begin{verbatim}
 gb1:=groebnert {p1=2*x**2+4*y**2-100,p2=2*x-y+1};
@@ -999,7 +999,7 @@ the above Gr\"obner basis and need knowledge about the reduction
 formula. We therefore extract the basis polynomials from $gb1$,
 assign unique names to them (here $g1$, $g2$) and call \f{preducet}.
 The polynomial to be reduced here is introduced with the name $Q$,
-which then appears on the {\it rhs} of the result. If the name for the
+which then appears on the \textit{rhs} of the result. If the name for the
 polynomial is omitted, its formal value is used on the right side too.
 
 \begin{verbatim}
@@ -1020,7 +1020,7 @@ x^2 = (\frac{1}{2} x + \frac{1}{4} y - \frac{1}{4}) g1
 \example \index{Groebner package!example}
 
 If we reduce a polynomial which is member of the ideal, we
-consequently get a result with {\it lhs} zero:
+consequently get a result with \textit{lhs} zero:
 \begin{verbatim}
    preducet(q=2*x**2+4*y**2-100,gb2);
 
@@ -1033,8 +1033,8 @@ This means
 
 With these operators the matrices $C_{ij}$ and $D_{ji}$ are available
 implicitly, $D_{ji}$ as side effect of \f{groebnert}, $c_{ij}$ by \emph{calls}
-of \f{preducet} of $f_i$ {\it wrt} $\{g_j\}$. The latter by definition will
-have the {\it lhs} zero and a {\it rhs} with linear $f_i$.
+of \f{preducet} of $f_i$ \textit{wrt} $\{g_j\}$. The latter by definition will
+have the \textit{lhs} zero and a \textit{rhs} with linear $f_i$.
 
 If $\{1\}$ is the Gr\"obner basis, the \f{groebnert} calculation gives
 a ``proof'', showing,  how  $1$ can be computed as combination of the
@@ -1144,14 +1144,14 @@ special purposes.
 \index{Grouped ordering}\index{Groebner package!ordering!grouped}
 It is often desirable to separate variables
 and formal parameters in a system of polynomials.
-This can be done with a {\it lex} Gr\"obner
+This can be done with a \textit{lex} Gr\"obner
 basis.  That however may be hard to compute as it does more
 separation than necessary. The following orderings group the
 variables into two (or more) sets, where inside each set a classical
 ordering acts, while the sets are handled via their total degrees,
 which are compared in elimination style. So the Gr\"obner basis will
 eliminate the members of the first set, if algebraically possible.
-{\it torder} here gets an additional parameter which describe the
+\textit{torder} here gets an additional parameter which describe the
 grouping \ttindex{torder}
 \begin{center}{
 \begin{tabular}{l}
@@ -1175,7 +1175,7 @@ if & & & $(i_1,i_2,i_3) \gg_{lex}(j_1,j_2,j_3)$ \\
 \end{tabular}
 \end{center}
 
-Note that in the second place there is no {\it lex} ordering available;
+Note that in the second place there is no \textit{lex} ordering available;
 that would not make sense.
 
 \subsubsubsection{Weighted Ordering}
@@ -1244,7 +1244,7 @@ mode.
 \subsubsection{Gr\"obner Bases for Graded Homogeneous Systems}
 
 For a homogeneous system of polynomials under a term order
-{\it graded}, {\it gradlex}, {\it revgradlex} or {\it weighted}
+\textit{graded}, \textit{gradlex}, \textit{revgradlex} or \textit{weighted}
 a Gr\"obner Base can be computed with limiting the grade
 of the intermediate $s$--polynomials:
 \begin{description}
@@ -1256,7 +1256,7 @@ where $d1$ is a non--negative integer and $d2$ is an integer
 $>$ $d1$ or ``infinity". A pair of polynomials is considered
 only if the grade of the lcm of their head terms is between
 $d1$ and $d2$. See \cite{Becker:93} for the mathematical background.
-For the term orders {\it graded} or {\it weighted} the (first) weight
+For the term orders \textit{graded} or \textit{weighted} the (first) weight
 vector is used for the grade computation. Otherwise the total
 degree of a term is used.
 
@@ -1330,7 +1330,7 @@ for \f{groesolve}; it is stored during its processing.
 \ttindextype[GROEBNER]{groepostproc}{operator}
 \hypertarget{operator:GROEPOSTPROC}{}
 In many cases, it is difficult to do the general Gr\"obner processing.
-If a Gr\"obner basis with a {\it lex} ordering is calculated already (e.g.,
+If a Gr\"obner basis with a \textit{lex} ordering is calculated already (e.g.,
 by very individual parameter settings), the solutions can be derived
 from it by a call to \f{groepostproc}. \f{groesolve} is functionally
 equivalent to a call to \f{groebnerf} and subsequent calls to
@@ -1341,7 +1341,7 @@ varn\}]);
 \]
 where $\{exp1, exp2, \ldots , expm\}$ is a list of any number of
 expressions, \linebreak[4] $\{var1, var2, \ldots, varn\}$ is an
-optional list of variables. The expressions must be a {\it lex} Gr\"obner
+optional list of variables. The expressions must be a \textit{lex} Gr\"obner
 basis with the given variables; the ordering must be still active.
 
 The result is the same as with \f{groesolve}.
@@ -1416,13 +1416,14 @@ calculations.
 
 If $i$ is given by a basis and $f$ is given as an expression, the
 quotient can be calculated by
-\[
-idealquotient (\{exp1, \ldots , expm\}, exp); \]
-where $\{exp1, exp2, \ldots , expm\}$ is a list of any number of
-expressions or equations, {\it exp} is a single expression or equation.
+\begin{syntax}
+  \f{idealquotient} (\{\meta{exp1}, \meta{exp2},\ldots , \meta{expm}\}, \meta{exp});
+\end{syntax}
+where \{\meta{exp1}, \meta{exp2}, \ldots , \meta{expm}\} is a list of any number of
+expressions or equations, \meta{exp} is a single expression or equation.
 
 \f{idealquotient} calculates the algebraic quotient of the ideal $i$
-with the basis  $\{exp1, exp2, \ldots , expm\}$ and {\it exp} with
+with the basis  $\{exp1, exp2, \ldots , expm\}$ and \textit{exp} with
 respect to  the variables given or extracted.  $\{exp1, exp2, \ldots ,
 expm\}$ is not necessarily a Gr\"obner basis.
 The result is the Gr\"obner basis of the quotient.
@@ -1434,7 +1435,7 @@ The \f{saturation} operator computes the quotient on an ideal and an arbitrary p
 of an expression $exp**n$ with arbitrary $n$. The call is
 \[ saturation (\{exp1, \ldots , expm\}, exp); \]
 where $\{exp1, exp2, \ldots , expm\}$ is a list of any number of
-expressions or equations, {\it exp} is a single expression or equation.
+expressions or equations, \textit{exp} is a single expression or equation.
 
 \emph{saturation} calls \emph{idealquotient} several times, until the result is
 stable, and returns it.

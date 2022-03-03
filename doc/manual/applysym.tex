@@ -88,29 +88,29 @@ in first order of $\varepsilon.$ To transform the equations (\eqnref{PDEs})
 by (\eqnref{tran}), derivatives of $y^\alpha$ must be transformed, i.e. the part
 linear in $\varepsilon$ must be determined. The corresponding formulas are
 (see e.g. \cite{Olver:89,Stephani:89})
-\begin{eqnarray}
-\tilde{y}^\alpha_{j_1\ldots j_k} & = &
+\begin{align}
+\tilde{y}^\alpha_{j_1\ldots j_k} &=
 y^\alpha_{j_1\ldots j_k} + \varepsilon
 \eta^\alpha_{j_1\ldots j_k} + O(\varepsilon^2)  \nonumber \\[3mm]
-\eta^\alpha_{j_1\ldots j_{k-1}j_k} & = &
+\eta^\alpha_{j_1\ldots j_{k-1}j_k} &=
   \frac{D \eta^\alpha_{j_1\ldots j_{k-1}}}{D x^k} -
   y^\alpha_{ij_1\ldots j_{k-1}}\frac{D \xi^i}{D x^k} \label{recur}
-\end{eqnarray}
+\end{align}
 where $D/Dx^k$ means total differentiation w.r.t.\ $x^k$ and
 from now on lower latin indices of functions $y^\alpha,$
 (and later $u^\alpha$)
 denote partial differentiation w.r.t.\ the independent variables $x^i,$
 (and later $v^i$).
 The complete symmetry condition then takes the form
-\begin{eqnarray}
-X H_A & = & 0 \;\; \; \; \mbox{mod} \; \; \; H_A = 0\  \label{sbed1} \\
-X & = & \xi^i \frac{\partial}{\partial x^i} +
+\begin{align}
+X H_A &= 0  \bmod  H_A = 0\  \label{sbed1} \\
+X &= \xi^i \frac{\partial}{\partial x^i} +
  \eta^\alpha \frac{\partial}{\partial y^\alpha} +
  \eta^\alpha_m \frac{\partial}{\partial y^\alpha_m} +
  \eta^\alpha_{mn} \frac{\partial}{\partial y^\alpha_{mn}} + \ldots +
  \eta^\alpha_{mn\ldots p} \frac{\partial}{\partial y^\alpha_{mn\ldots p}}.
 \label{sbed2}
-\end{eqnarray}
+\end{align}
 where mod $H_A = 0$ means that the original PDE-system is used to replace
 some partial derivatives of $y^\alpha$ to reduce the number of independent
 variables, because the symmetry condition (\eqnref{sbed1}) must be
@@ -334,16 +334,16 @@ and second list.
 %For the following PDE-system, which takes its simplest form in the
 %formalism of exterior forms:
 %
-%\begin{eqnarray*}
-%0 & = & 3k_t,_{tt}-2k_t,_{xx}-2k_t,_{yy}-2k_t,_{zz}-k_x,_{tx}-2k_zk_x,_y \\
-%  &   & +2k_yk_x,_z-k_y,_{ty}+2k_zk_y,_x-2k_xk_y,_z-k_z,_{tz}-2k_yk_z,_x+2k_xk_z,_y \\
-%0 & = & k_t,_{tx}-2k_zk_t,_y+2k_yk_t,_z+2k_x,_{tt}-3k_x,_{xx}-2k_x,_{yy} \\
-%  &   & -2k_x,_{zz}+2k_zk_y,_t-k_y,_{xy}-2k_tk_y,_z-2k_yk_z,_t-k_z,_{xz}+2k_tk_z,_y \\
-%0 & = & k_t,_{ty}+2k_zk_t,_x-2k_xk_t,_z-2k_zk_x,_t-k_x,_{xy}+2k_tk_x,_z \\
-%  &   & +2k_y,_{tt}-2k_y,_{xx}-3k_y,_{yy}-2k_y,_{zz}+2k_xk_z,_t-2k_tk_z,_x-k_z,_{yz} \\
-%0 & = & k_t,_{tz}-2k_yk_t,_x+2k_xk_t,_y+2k_yk_x,_t-k_x,_{xz}-2k_tk_x,_y \\
-%  &   & -2k_xk_y,_t+2k_tk_y,_x-k_y,_{yz}+2k_z,_{tt}-2k_z,_{xx}-2k_z,_{yy}-3k_z,_{zz}
-%\end{eqnarray*}
+%\begin{align*}
+%0 = & 3k_t,_{tt}-2k_t,_{xx}-2k_t,_{yy}-2k_t,_{zz}-k_x,_{tx}-2k_zk_x,_y \\
+%    & +2k_yk_x,_z-k_y,_{ty}+2k_zk_y,_x-2k_xk_y,_z-k_z,_{tz}-2k_yk_z,_x+2k_xk_z,_y \\
+%0 = & k_t,_{tx}-2k_zk_t,_y+2k_yk_t,_z+2k_x,_{tt}-3k_x,_{xx}-2k_x,_{yy} \\
+%    & -2k_x,_{zz}+2k_zk_y,_t-k_y,_{xy}-2k_tk_y,_z-2k_yk_z,_t-k_z,_{xz}+2k_tk_z,_y \\
+%0 = & k_t,_{ty}+2k_zk_t,_x-2k_xk_t,_z-2k_zk_x,_t-k_x,_{xy}+2k_tk_x,_z \\
+%    & +2k_y,_{tt}-2k_y,_{xx}-3k_y,_{yy}-2k_y,_{zz}+2k_xk_z,_t-2k_tk_z,_x-k_z,_{yz} \\
+%0 = & k_t,_{tz}-2k_yk_t,_x+2k_xk_t,_y+2k_yk_x,_t-k_x,_{xz}-2k_tk_x,_y \\
+%    & -2k_xk_y,_t+2k_tk_y,_x-k_y,_{yz}+2k_z,_{tt}-2k_z,_{xx}-2k_z,_{yy}-3k_z,_{zz}
+%\end{align*}
 %---------------------------------------
 \subsubsection{The third step: Application of infinitesimal symmetries}
 If infinitesimal symmetries have been found then
@@ -381,12 +381,12 @@ y^\alpha=y^\alpha(v^j,u^\beta)$ and setting \\
 $H_A(x^i(v^j,u^\beta), y^\alpha(v^j,u^\beta),\ldots) =
 h_A(v^j, u^\beta,\ldots)$
 this means that
-\begin{eqnarray*}
- 0 & = & X H_A(x^i,y^\alpha,y^\beta_j,\ldots)\;\;\; \mbox{mod} \;\;\; H_A=0 \\
-   & = & X h_A(v^i,u^\alpha,u^\beta_j,\ldots)\;\;\; \mbox{mod} \;\;\; h_A=0 \\
-   & = & \partial_{v^1}h_A(v^i,u^\alpha,u^\beta_j,\ldots)\;\;\; \mbox{mod}
+\begin{align*}
+ 0 &= X H_A(x^i,y^\alpha,y^\beta_j,\ldots)\;\;\; \bmod \;\;\; H_A=0 \\
+   &= X h_A(v^i,u^\alpha,u^\beta_j,\ldots)\;\;\; \bmod \;\;\; h_A=0 \\
+   &= \partial_{v^1}h_A(v^i,u^\alpha,u^\beta_j,\ldots)\;\;\; \bmod
          \;\;\; h_A=0.
-\end{eqnarray*}
+\end{align*}
 Consequently, the variable $v^1$ does not occur explicitly in $h_A$.
 In the case of an ODE(-system) $(v^1=v)$
 the new equations $0=h_A(v,u^\alpha,du^\beta/dv,\ldots)$
@@ -397,13 +397,13 @@ as unknown functions and $u^1$ as independent variable.
 The new form (\eqnref{sbed3}) of $X$ leads directly to conditions for the
 symmetry variable $v^1$ and the similarity variables
 $v^i|_{i\neq 1}, u^\alpha$ (all functions of $x^k,y^\gamma$):
-\begin{eqnarray}
- X v^1 = 1 & = & \xi^i(x^k,y^\gamma)\partial_{x^i}v^1 +
+\begin{align}
+ X v^1 = 1 &= \xi^i(x^k,y^\gamma)\partial_{x^i}v^1 +
                 \eta^\alpha(x^k,y^\gamma)\partial_{y^\alpha}v^1 \label{ql1} \\
- X v^j|_{j\neq 1} = X u^\beta = 0 & = &
+ X v^j|_{j\neq 1} = X u^\beta = 0 &=
                  \xi^i(x^k,y^\gamma)\partial_{x^i}u^\beta +
                  \eta^\alpha(x^k,y^\gamma)\partial_{y^\alpha}u^\beta \label{ql2}
-\end{eqnarray}
+\end{align}
 The general solutions of (\eqnref{ql1}), (\eqnref{ql2}) involve free functions
 of $p+q-1$ arguments. From the general solution of equation (\eqnref{ql2}),
 $p+q-1$ functionally independent special solutions have to be selected
@@ -569,8 +569,8 @@ After modus 2, \texttt{APPLYSYM} returns the generalized special solution.
 Weyl's class of solutions of Einsteins field equations consists of
 axialsymmetric time independent metrics of the form
 \begin{equation}
-{\rm{d}} s^2 = e^{-2 U} \left[ e^{2 k}  \left( \rm{d} \rho^2 + \rm{d}
-z^2 \right)+\rho^2 \rm{d} \varphi^2 \right] - e^{2 U} \rm{d} t^2,
+{\mathrm{d}} s^2 = e^{-2 U} \left[ e^{2 k}  \left( \mathrm{d} \rho^2 + \mathrm{d}
+z^2 \right)+\rho^2 \mathrm{d} \varphi^2 \right] - e^{2 U} \mathrm{d} t^2,
 \end{equation}
 where $U$ and $k$ are functions of $\rho$ and $z$. If one is interested in
 generalizing these solutions to have a time dependence then the resulting
@@ -811,10 +811,10 @@ with solution
  \tilde{c}=const. \]
 Writing (\eqnref{udot}) as $p = v^3(du/dp)/(dv/dp)$ we get $u$ by integration
 and with (\eqnref{trafo1}) further a parametric solution for $\rho,h$:
-\begin{eqnarray}
-\rho & = & \left(\frac{3c_1^2(2p-1)}{p^{1/2}(p+1)^{1/2}}+c_2\right)^{-1/2} \\
-h & = & \frac{(c_2p^{1/2}(p+1)^{1/2}+6c_1^2p-3c_1^2)^{1/2}p^{1/2}}{c_1(4p+1)}
-\end{eqnarray}
+\begin{align}
+\rho & = \left(\frac{3c_1^2(2p-1)}{p^{1/2}(p+1)^{1/2}}+c_2\right)^{-1/2} \\
+h & = \frac{(c_2p^{1/2}(p+1)^{1/2}+6c_1^2p-3c_1^2)^{1/2}p^{1/2}}{c_1(4p+1)}
+\end{align}
 where $c_1, c_2 = const.$ and $c_1=\tilde{c}^{1/4}.$ Finally, the metric
 function $U(p)$ is obtained as an integral from (\eqnref{g1dgl}),(\eqnref{g2dgl}).
 %---------------------------------------
@@ -858,10 +858,10 @@ $\phi=\phi(w_i)$.
 \item
 The first step in solving a quasilinear PDE (\eqnref{PDE})
 is the formulation of the corresponding characteristic ODE-system
-\begin{eqnarray}
-\frac{dw_i}{d\varepsilon} & = & a_i(w_j,\phi) \label{char1}   \\
-\frac{d\phi}{d\varepsilon} & = & b(w_j,\phi)  \label{char2}
-\end{eqnarray}
+\begin{align}
+\frac{dw_i}{d\varepsilon} & = a_i(w_j,\phi) \label{char1}   \\
+\frac{d\phi}{d\varepsilon} & = b(w_j,\phi)  \label{char2}
+\end{align}
 for $\phi, w_i$ regarded now as functions of one variable $\varepsilon$.
 
 Because the $a_i$ and $b$ do not depend explicitly on $\varepsilon$, one of the
@@ -870,18 +870,18 @@ can be used to divide all others through it and by that having a system
 with one less ODE to solve.
 If the equation to divide through is one of
 (\eqnref{char1}) then the remaining system would be
-\begin{eqnarray}
-\frac{dw_i}{dw_k} & = & \frac{a_i}{a_k} , \;\;\;i=1,2,\ldots k-1,k+1,\ldots n
+\begin{align}
+\frac{dw_i}{dw_k} & = \frac{a_i}{a_k} , \;\;\;i=1,2,\ldots k-1,k+1,\ldots n
   \label{char3} \\
-\frac{d\phi}{dw_k} & = & \frac{b}{a_k}  \label{char4}
-\end{eqnarray}
+\frac{d\phi}{dw_k} & = \frac{b}{a_k}  \label{char4}
+\end{align}
 with the independent variable $w_k$ instead of $\varepsilon$.
 If instead we divide through equation
 (\eqnref{char2}) then the remaining system would be
-\begin{eqnarray}
-\frac{dw_i}{d\phi} & = & \frac{a_i}{b} , \;\;\;i=1,2,\ldots n
+\[
+\frac{dw_i}{d\phi} = \frac{a_i}{b} , \;\;\;i=1,2,\ldots n
   \label{char3a}
-\end{eqnarray}
+\]
 with the independent variable $\phi$ instead of $\varepsilon$.
 
 The equation to divide through is chosen by a
@@ -976,15 +976,17 @@ implicitly through an arbitrary function $F$ and the algebraic
 equation \[ 0 = F(\textit{ex}_1, \textit{ex}_2, \ldots). \]
 %---------------------------------------
 \subsubsection{Examples}
-{\em Example 1:}\\
+\emph{Example 1:}\\
 To solve the quasilinear first order PDE \[1 = xu,_x + uu,_y - zu,_z\]
 for the function $u = u(x,y,z),$ the input would be
-{\small \begin{verbatim}
+\begin{small}
+\begin{verbatim}
 depend u,x,y,z;
 de:=x*df(u,x)+u*df(u,y)-z*df(u,z) - 1;
 varlist:={x,y,z};
 QUASILINPDE(de,u,varlist);
-\end{verbatim}}
+\end{verbatim}
+\end{small}
 In this example the procedure returns
 \[\{ \{ x/e^u, ze^u, u^2 - 2y \} \},\]
 i.e. there is one general solution (because the outer list has only one
@@ -992,14 +994,14 @@ element which itself is a list) and $u$ is given implicitly through
 the algebraic equation
 \[ 0 = F(x/e^u, ze^u, u^2 - 2y)\]
 with arbitrary function $F.$ \\
-{\em Example 2:}\\
+\emph{Example 2:}\\
 For the linear inhomogeneous PDE
 \[ 0 = y z,_x + x z,_y - 1, \;\;\;\;\mbox{for}\;\;\;\;z=z(x,y)\]
 \texttt{QUASILINPDE} returns the result that for an arbitrary function $F,$ the
 equation
 \[ 0 = F\left(\frac{x+y}{e^z},e^z(x-y)\right) \]
 defines the general solution for $z$. \\
-{\em Example 3:}\\
+\emph{Example 3:}\\
 For the linear inhomogeneous PDE (3.8) from \cite{Kamke:Vol2}
 \[ 0 = x w,_x + (y+z)(w,_y - w,_z), \;\;\;\;\mbox{for}\;\;\;\;w=w(x,y,z)\]
 \texttt{QUASILINPDE} returns the result
@@ -1046,13 +1048,13 @@ variables $x^i$ must be
 known explicitly in terms of algebraic or
 differential expressions of the new functions $u^{\beta}$
 and new variables $v^j$. Then for point transformations the identity
-\begin{eqnarray}
-dy^{\alpha} & = & \left(y^{\alpha},_{v^i} +
+\begin{align}
+dy^{\alpha} & = \left(y^{\alpha},_{v^i} +
                   y^{\alpha},_{u^{\beta}}u^{\beta},_{v^i}\right) dv^i \\
-            & = & y^{\alpha},_{x^j}dx^j  \\
-            & = & y^{\alpha},_{x^j}\left(x^j,_{v^i} +
+            & = y^{\alpha},_{x^j}dx^j  \\
+            & = y^{\alpha},_{x^j}\left(x^j,_{v^i} +
                   x^j,_{u^{\beta}}u^{\beta},_{v^i}\right) dv^i
-\end{eqnarray}
+\end{align}
 provides the transformation
 \begin{equation}
 y^{\alpha},_{x^j} = \frac{dy^\alpha}{dv^i}\cdot
@@ -1067,10 +1069,10 @@ In the case of
 contact- or higher order transformations, the total
 derivatives $dy^{\alpha}/dv^i$ and $dx^j/dv^i$ then only include all
 $v^i-$ derivatives of $u^{\beta}$ which occur in
-\begin{eqnarray*}
-y^{\alpha} & = & y^{\alpha}(v^i,u^{\beta},u^{\beta},_{v^j},\ldots) \\
-x^k        & = & x^k(v^i,u^{\beta},u^{\beta},_{v^j},\ldots).
-\end{eqnarray*}
+\begin{align*}
+y^{\alpha} &= y^{\alpha}(v^i,u^{\beta},u^{\beta},_{v^j},\ldots) \\
+x^k        &= x^k(v^i,u^{\beta},u^{\beta},_{v^j},\ldots).
+\end{align*}
 %---------------------------------------
 \subsubsection{Syntax}
 The call of \texttt{DETRAFO} is

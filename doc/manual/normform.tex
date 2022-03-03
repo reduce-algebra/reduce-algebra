@@ -391,8 +391,8 @@ output when this switch is on.
       substituted for the symbolic names. For this,
       \f{jordansymbolic} actually returns $\{ \mathcal{J,L,P,P}^{-1} \}$.
       $\mathcal{J}$ is the Jordan normal form of $\mathcal{A}$ (using
-      symbolic names if necessary). $\mathcal{L} = \{ {\it ll}, \xi \}$,
-      where $\xi$ is a name and ${\it ll}$ is a list of irreducible
+      symbolic names if necessary). $\mathcal{L} = \{ \mathit{ll}, \xi \}$,
+      where $\xi$ is a name and $\mathit{ll}$ is a list of irreducible
       factors of $p(\xi)$. If symbolic names are used then
       ${\xi}_{ij}$ is a zero of $ll_{i}$. $\mathcal{P}$ and
       $\mathcal{P}^{-1}$ are as above.
@@ -464,7 +464,7 @@ Calculations are performed in $\mathbf{Q}$. To extend this field the
 In certain polynomial cases the switch \sw{fullroots} is turned on to compute the
 zeroes. This can lead to the calculation taking a long time, as well as
 the output being very large. In this case a message \\
-\verb|***** WARNING: fullroots turned on. May take a while.|\\
+\texttt{***** WARNING: fullroots turned on. May take a while.}\\
 will be printed. It may be
 better to kill the calculation and compute \f{jordansymbolic} instead.
 
@@ -488,7 +488,7 @@ better to kill the calculation and compute \f{jordansymbolic} instead.
       matrix entries are zero, and ${\jmath}_{1}(\lambda) = (\lambda)$.
 
 \item A Jordan matrix $\mathcal{J} \in M_{n}$ (the set of all $n$ by $n$
-      matrices) is a direct sum of {\it jordan blocks}.
+      matrices) is a direct sum of \textit{jordan blocks}.
 %
       \[
       \mathcal{J} = \begin{pmatrix} \jmath_{n_1}(\lambda_{1})

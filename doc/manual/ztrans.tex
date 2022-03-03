@@ -13,7 +13,7 @@
 
 
 \begin{tabular}{@{}l@{}l}
-  {\bf SYNTAX:}\ \ {\f{ztrans}($f_n$, n,  z)}\ \ \ \ \ \ \ \
+  \textbf{SYNTAX:}\ \ {\f{ztrans}($f_n$, n,  z)}\ \ \ \ \ \ \ \
   & where $f_n$ is an expression, and $n$,$z$ \\
   & are identifiers.
 \end{tabular}
@@ -32,7 +32,7 @@
 
 
 \begin{tabular}{@{}l@{}l}
-  {\bf SYNTAX:}\ \ {\tt invztrans($F(z)$, z,  n)}\ \ \ \ \ \ \ \
+  \textbf{SYNTAX:}\ \ {\tt invztrans($F(z)$, z,  n)}\ \ \ \ \ \ \ \
   & where $F(z)$ is an expression, \\
   & and $z$,$n$ are identifiers.
 \end{tabular}
@@ -56,7 +56,7 @@ list of $f_n$, and certain combinations thereof.
   \end{tabular}
 \end{center}
 
-\underline{{\bf Other Combinations}}
+\underline{\textbf{Other Combinations}}
 
 \begin{list}{}{
     \setlength{\leftmargin}{35mm}
@@ -110,7 +110,7 @@ variables ($B>0$) and $\alpha,\beta$, and $\phi$ are angles in
 radians.
 
 \subsection[Application of the Z-Transform]{Application of the $Z$-Transform}
-\underline {{\bf Solution of difference equations}}
+\underline {\textbf{Solution of difference equations}}
 
   In the same way that a Laplace Transform can be used to
   solve differential equations, so $Z$-Transforms can be used
@@ -139,7 +139,7 @@ radians.
 
 \subsection{EXAMPLES}
 \label{ztranssec:Examples}
-\underline {{\bf Here are some examples for the $Z$-Transform}}
+\underline {\textbf{Here are some examples for the $Z$-Transform}}
 \begin{verbatim}
 1: ztrans((-1)^n*n^2,n,z);
 
@@ -185,7 +185,7 @@ df(ztrans(f(n),n,z),z,2)*z  - df(ztrans(f(n),n,z),z)*z
 + ztrans(f(n),n,z)
 \end{verbatim}
 
-\underline {{\bf Here are some examples for the Inverse $Z$-Transform}}
+\underline {\textbf{Here are some examples for the Inverse $Z$-Transform}}
 \begin{verbatim}
 8: invztrans((z^2-2*z)/(z^2-4*z+1),z,n);
 
@@ -228,10 +228,10 @@ df(ztrans(f(n),n,z),z,2)*z  - df(ztrans(f(n),n,z),z)*z
 cosh(a*n)
 \end{verbatim}
 
-\underline {{\bf Examples: Solutions of Difference Equations}}
+\underline {\textbf{Examples: Solutions of Difference Equations}}
 
 \begin{description}
-\item[{\bf I}] (See \cite{Bronstein:1981}, p.\ 651, Example 1).\\
+\item[\textbf{I}] (See \cite{Bronstein:1981}, p.\ 651, Example 1).\\
   Consider the homogeneous linear difference equation
   \[ f_{n+5} - 2 f_{n+3} + 2 f_{n+2} - 3 f_{n+1} + 2 f_{n}=0 \]
   with initial conditions $f_0=0$, $f_1=0$, $f_2=9$, $f_3=-2$,
@@ -277,7 +277,7 @@ result := -----------------------------------
 \end{verbatim}
 
 \begin{description}
-\item[{\bf II}] (See \cite{Bronstein:1981}, p.\ 651, Example 2).\\
+\item[\textbf{II}] (See \cite{Bronstein:1981}, p.\ 651, Example 2).\\
   Consider the inhomogeneous difference equation:
   \[ f_{n+2} - 4 f_{n+1} + 3 f_{n} = 1 \]
   with initial conditions $f_0=0$, $f_1=1$. Giving
@@ -322,7 +322,7 @@ result := ----------------
 \end{verbatim}
 
 \begin{description}
-\item[{\bf III}] Consider the following difference equation, which has
+\item[\textbf{III}] Consider the following difference equation, which has
   a differential equation for ${\cal Z}\{f_n\}$.
   \[ (n+1) \cdot f_{n+1}-f_n=0\]
   with initial conditions $f_0=1$, $f_1=1$.  It can be solved in

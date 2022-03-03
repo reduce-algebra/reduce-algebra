@@ -242,7 +242,7 @@ whereas \texttt{nextprime(a)} gives a type error.
 \subsection{RANDOM}\ttindextype{random}{operator}
 \hypertarget{operator:RANDOM}{}
 
-\texttt{random(}{\em n\/}\texttt{)} returns a random number $r$ in the
+\texttt{random(}\emph{n}\texttt{)} returns a random number $r$ in the
 range $0\leq r < n$.  A type error occurs if the value of the argument is not a
 positive integer in algebraic mode, or positive number in symbolic mode.
 For example:
@@ -1165,17 +1165,17 @@ which relate the old variables to the new ones. Let us differentiate them:
 The first derivative is nothing but the $(j,k)$ th entry of the Jacobian matrix.
 
 So if we speak in matrix language
-\[ {\bf 1 = J \cdot D} \]
+\[ \mathbf{1 = J \cdot D} \]
 where we defined the Jacobian
-\[ {\bf J}_{ij} \stackrel{\triangle}{=}  \frac{\partial f_{i}}{\partial u_{j}} \]
+\[ \mathbf{J}_{ij} \stackrel{\triangle}{=}  \frac{\partial f_{i}}{\partial u_{j}} \]
 and the matrix of the derivatives we wanted to obtain as
-\[ {\bf D}_{ij} \stackrel{\triangle}{=}  \frac{\partial u_{i}}{\partial x_{j}}. \]
+\[ \mathbf{D}_{ij} \stackrel{\triangle}{=}  \frac{\partial u_{i}}{\partial x_{j}}. \]
 If the Jacobian has a non-vanishing determinant then it is invertible and
 we are able to write from the matrix equation above:
-\[ {\bf  D = J^{-1}} \]
+\[ \mathbf{ D = J^{-1}} \]
 so finally we have what we want
 \[
-   \frac{\partial u_{i}}{\partial x_{j}} = \left[{\bf J^{-1}}\right]_{ij}
+   \frac{\partial u_{i}}{\partial x_{j}} = \left[\mathbf{J^{-1}}\right]_{ij}
 \]
 The higher derivatives are obtained by the successive application of the chain
 rule and using the definitions of the old variables in terms of the new ones. It
@@ -1275,7 +1275,7 @@ pairs of partial numerators and denominators)
 
 which represents the same value according to the definition
 
-\hspace{10mm}\texttt{t0 +1/(t1 + 1/(t2 + ...))}.
+\hspace{10mm}\texttt{t0 + 1/(t1 + 1/(t2 + ...))}.
 
 Note that, although with the current
 algorithm all the partial numerators have the value 1, they are stored

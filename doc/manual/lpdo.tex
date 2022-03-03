@@ -1,9 +1,6 @@
 
 \index{Sturm, Thomas}\index{People!Sturm, Thomas}
 
-\newenvironment{reduce}{\begin{scriptsize}\begin{verbatim}}%
-{\end{verbatim}\end{scriptsize}}
-
 \newenvironment{ebnf}{\begin{tabular}{rcll}}{\end{tabular}}
 \newcommand{\ebnfvar}[1]{{\textit{#1}}\ \ }
 \newcommand{\ebnfvara}[1]{$\langle$\textit{#1}$\rangle$\ \ }
@@ -41,12 +38,12 @@ set $\Delta = \{\partial_{x_1}$,\dots,~$\partial_{x_n}\}$ of
 \emph{commuting derivations} acting on $F$. That is, for all
 $\partial_{x_i}$, $\partial_{x_j} \in \Delta$ and all $f$, $g\in F$
 the following properties are satisfied:
-\begin{eqnarray}
-\partial_{x_i}(f + g) &=& \partial_{x_i}(f) + \partial_{x_i}(g),\nonumber\\
-\partial_{x_i}(f\cdot g) &=& f\cdot\partial_{x_i}(g)
+\begin{align}
+\partial_{x_i}(f + g) &= \partial_{x_i}(f) + \partial_{x_i}(g),\nonumber\\
+\partial_{x_i}(f\cdot g) &= f\cdot\partial_{x_i}(g)
   + \partial_{x_i}(f)\cdot g,\label{EQ:leibnitz}\\
-\partial_{x_i}(\partial_{x_j}(f)) &=& \partial_{x_j}(\partial_{x_i}(f)).\label{EQ:comm}
-\end{eqnarray}
+\partial_{x_i}(\partial_{x_j}(f)) &= \partial_{x_j}(\partial_{x_i}(f)).\label{EQ:comm}
+\end{align}
 %We call $(F,\Delta)$ a \emph{$\Delta$-field}.
 
 Consider now the set $F[\partial_{x_1},\dots,\partial_{x_n}]$, where
@@ -55,35 +52,35 @@ non-commutative \emph{linear partial differential operator ring} with
 pointwise addition, and multiplication defined as follows: For $f\in
 F$ and $\partial_{x_i}$, $\partial_{x_j} \in \Delta$ we have for any
 $g\in F$ that
-\begin{eqnarray}
-    (f \partial_{x_i})(g) &=& f \cdot \partial_{x_i}(g),\nonumber\\
-    (\partial_{x_i} f)(g) &=& \partial_{x_i}(f \cdot g),\label{EQ:mult2}\\
-    (\partial_{x_i} \partial_{x_j})(g) &=& \partial_{x_i}(\partial_{x_j}(g)).\label{EQ:mult3}
-\end{eqnarray}
+\begin{align}
+    (f \partial_{x_i})(g) &= f \cdot \partial_{x_i}(g),\nonumber\\
+    (\partial_{x_i} f)(g) &= \partial_{x_i}(f \cdot g),\label{EQ:mult2}\\
+    (\partial_{x_i} \partial_{x_j})(g) &= \partial_{x_i}(\partial_{x_j}(g)).\label{EQ:mult3}
+\end{align}
 Here ``${}\cdot{}$'' denotes the multiplication in $F$. From
 (\eqnref{EQ:mult3}) and (\eqnref{EQ:comm}) it follows that
 $\partial_{x_i} \partial_{x_j}=\partial_{x_j} \partial_{x_i}$, and
 using (\eqnref{EQ:mult2}) and (\eqnref{EQ:leibnitz}) the following
 \emph{commutator} can be proved:
-\begin{eqnarray*}
-  \partial_{x_i} f &=& f \partial_{x_i} + \partial_{x_i}(f).
-\end{eqnarray*}
+\[
+  \partial_{x_i} f = f \partial_{x_i} + \partial_{x_i}(f).
+\]
 
 A \emph{linear partial differential operator} (LPDO) of order $k$ is
 an element
-\begin{eqnarray*}
-  D &=& \sum_{|j| \leq k} a_j \partial^j\in
+\[
+  D = \sum_{|j| \leq k} a_j \partial^j\in
   F[\partial_{x_1},\dots,\partial_{x_n}]
-\end{eqnarray*}
+\]
 in canonical form. Here the expression $|j| \leq k$ specifies the set
 of all tuples of the form $j = (j_1,\dots,j_n) \in \mathbb{N}^n$ with
 $\sum_{i=1}^n j_i \leq k$, and we define $\partial^j
 = \partial_{x_1}^{j_1} \cdots \partial_{x_n}^{j_n}$.
 
 A \emph{factorization} of $D$ is a non-trivial decomposition
-\begin{eqnarray*}
-D &=& D_1 \cdots D_r\in F[\partial_{x_1},\dots,\partial_{x_n}]
-\end{eqnarray*}
+\[
+D = D_1 \cdots D_r\in F[\partial_{x_1},\dots,\partial_{x_n}]
+\]
 into multiplicative factors, each of which is an LPDO $D_i$ of order
 greater than $0$ and less than $k$. If such a factorization exists,
 then $D$ is called \emph{reducible} or \emph{factorable}, else
@@ -95,9 +92,9 @@ consideration. Consider a commutative polynomial ring over $F$ in new
 indeterminates $y_1$, \dots,~$y_n$. Adopting the notational
 conventions above, for $m\leq k$ the \emph{symbol of $D$ of order $m$}
 is defined as
-\begin{eqnarray*}
-  \Sym_m(D) &=& \sum_{|j| = m} a_j y^j\in F[y_1,\dots,y_n].
-\end{eqnarray*}
+\[
+  \Sym_m(D) = \sum_{|j| = m} a_j y^j\in F[y_1,\dots,y_n].
+\]
 For $m=k$ we obtain as a special case the \emph{symbol $\Sym(D)$ of
   $D$}.
 

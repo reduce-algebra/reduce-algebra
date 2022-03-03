@@ -26,21 +26,21 @@ And finally in section 4 we give the full description of \package{BIBASIS} packa
 
 \subsection{Boolean Ring}
 
-{\em Boolean ring} perfectly goes with its name, it is a ring of {\em Boolean functions} of $n$ variables, i.e
+\emph{Boolean ring} perfectly goes with its name, it is a ring of \emph{Boolean functions} of $n$ variables, i.e
 mappings from $\{0,1\}^n$ to $\{0,1\}^n$. Considering these variables are $\mathbf{X}:=\{x_1,\ldots,x_n\}$ and
 $\mathbb{F}_2$ is the finite field of two elements $\{0,1\}$, Boolean ring can be regarded as the quotient ring
 \[
 \mathbb{B\,}[\mathbf{X}]:=\mathbb{F}_2[\mathbf{X}]\,/<x_1^2+x_1,\ldots,x_n^2+x_n>.
 \]
-Multiplication in $\mathbb{B\,}[\mathbf{X}]$ is {\em idempotent} and addition is {\em nilpotent}
+Multiplication in $\mathbb{B\,}[\mathbf{X}]$ is \emph{idempotent} and addition is \emph{nilpotent}
 \[
 \forall\, b\in \mathbb{B\,}[\mathbf{X}]\ :\ \,b^2=b\,,\ b+b=0.
 \]
-Elements in $\mathbb{B\,}[\mathbf{X}]$ are {\em Boolean polynomials} and can be represented as finite sums
+Elements in $\mathbb{B\,}[\mathbf{X}]$ are \emph{Boolean polynomials} and can be represented as finite sums
 \[
 \sum_j \prod_{x\in\, \Omega_j \subseteq\, \mathbf{X}} x
 \]
-of {\em Boolean monomials}. Each monomial is a conjunction. If set $\Omega$ is empty, then the corresponding
+of \emph{Boolean monomials}. Each monomial is a conjunction. If set $\Omega$ is empty, then the corresponding
 monomial is the unity Boolean function 1. The sum of zero monomials corresponds to zero polynomial, i.e. is
 zero Boolean function 0.
 
@@ -64,7 +64,7 @@ ideal $<p>$, for example:
 x_1,x_2\in \,<x_1x_2 + x_1 + x_2> \subset \mathbb{B\,}[x_1, x_2].
 \]
 That the reason why one cannot apply the Buhberger's algorithm directly in a Boolean ring, using instead a ring
-$\mathbb{F}_2[\mathbf{X}]$ and {\em the field binomials} $x_1^2+x_1,\ldots,x_n^2+x_n$.
+$\mathbb{F}_2[\mathbf{X}]$ and \emph{the field binomials} $x_1^2+x_1,\ldots,x_n^2+x_n$.
 
 The involutive algorithm based on Janet division has the same disadvantage unlike the Pommaret division algorithm as shown
 in~\cite{Gerdt:2008}. The Pommaret division  algorithm can be applied directly in a Boolean ring and admits effective data

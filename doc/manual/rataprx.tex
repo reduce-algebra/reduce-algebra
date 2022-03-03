@@ -35,11 +35,11 @@ periodic representation back to a rational number.
   \texttt{b} \hspace{3mm} is the number base, if absent the default is 10.
 
 \item[\textbf{RESULT:}]\ttindextype[RATAPRX]{periodic}{operator}
-  \texttt{periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
-  where  {\tt\{a1,...,an\}} is a list of the digits in the integer part,\\
-  {\tt\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
-  {\tt\{c1,...,ck\}} is a list of the digits in the periodic part\\
-  and $\pm$\texttt{b} where \texttt{b} is the number base $2 \leq {\rm b} \leq 16$, \\
+  \texttt{periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$)}\\
+  where  \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
+  \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
+  \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
+  and $\pm$\texttt{b} where \texttt{b} is the number base $2 \leq \mathrm{b} \leq 16$, \\
   a minus indicating the rational number \texttt{n} was negative.
 
 \item[\textbf{EXAMPLES:}]\mbox{}\\
@@ -58,14 +58,14 @@ $0.0\overline{3}\ (\mbox{base }16)$ respectively.
 \textbf{\underline{Rational Number of a Periodic Representation}}\\[\baselineskip]
 \begin{description}
 \item[\textbf{SYNTAX:}]\mbox{}\ttindextype[RATAPRX]{periodic2rational}{operator}\\
-  \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}\\
-  \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\rm b}$)}
+  \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$))}\\
+  \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$)}
 
 \item[\textbf{INPUT:}]\mbox{}\\
   \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
   \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
   \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
-  and \texttt{b} is the number base $2 \leq {\rm b} \leq 16$, a minus\\
+  and \texttt{b} is the number base $2 \leq \mathrm{b} \leq 16$, a minus\\
   indicating the rational number result should be negative. \\
   If the base is omitted, 10 is assumed.
 
@@ -76,14 +76,14 @@ $0.0\overline{3}\ (\mbox{base }16)$ respectively.
   $0.8\overline{428571}$ written as $59/70$ \\
   \texttt{3: periodic2rational(periodic(\{0\},\{8\},\{4,2,8,5,7,1\}));}
   \\[\baselineskip]
-  \verb| 59|\\
-  \verb|---|\\
-  \verb| 70|\\[\baselineskip]
+  \texttt{\mbox{}~59}\\
+  \texttt{-{}-{}-{}-}\\
+  \texttt{\mbox{}~70}\\[\baselineskip]
   \texttt{4: periodic2rational(\{0\},\{8\},\{4,2,8,5,7,1\}, -10);}
   \\[\baselineskip]
-  \verb|  59|\\
-  \verb|- ---|\\
-  \verb|  70|
+  \texttt{\mbox{}~~~~59}\\
+  \texttt{\mbox{} -\ -{}-{}-{}-}\\
+  \texttt{\mbox{}~~~~70}
 \end{description}
 
 Note that \texttt{periodic2rational} will produce the correct rational result
@@ -289,7 +289,7 @@ cfrac(e^x, x);
                           5
 \end{verbatim}
 
-\hypertarget{CF:operator}{}
+\hypertarget{operator:CF}{}
 
 The operator \texttt{CF} \ttindextype[RATAPRX]{cf}{operator} is a
 synonym for the operator \texttt{continued\_fraction}\ttindextype{continued\_fraction}{operator}.

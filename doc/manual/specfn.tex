@@ -724,7 +724,6 @@ For $m < 0$ one has:-
 \subsection{3j symbols and Clebsch-Gordan Coefficients}
 \hypertarget{CLEBSCHG}{}
 \hypertarget{operator:ThreeJSymbol}{}
-\hypertarget{operator:SixJSymbol}{}
 \hypertarget{operator:Clebsch_Gordan}{}
 \ttindextype{ThreejSymbol}{operator}\ttindextype{SixjSymbol}{operator}
 \ttindextype{Clebsch\_Gordan}{operator}
@@ -919,12 +918,12 @@ coefficients are given by
 \[\tilde{h}_n = \frac{(n+a+b+1)_n}{2^nn!}\]
 where $(n+a+b+1)_n$ is the \hyperlink{POCH}{Pochhammer symbol}.
 The parameters $a$ and $b$ should satisfy $a >-1,\ \ b > -1$. Also
-\begin{eqnarray*}
-\tilde{h}_0 & = & 2^{a+b+1}\frac{\Gamma(a+1)\Gamma(b+1)}{\Gamma(a+b+2)}\\
-\tilde{h}_n & = & 2^{a+b+1}\frac{\Gamma(n+a+1)\Gamma(n+b+1)}{(2 n +a+b+1)
+\begin{align*}
+\tilde{h}_0 & = 2^{a+b+1}\frac{\Gamma(a+1)\Gamma(b+1)}{\Gamma(a+b+2)}\\
+\tilde{h}_n & = 2^{a+b+1}\frac{\Gamma(n+a+1)\Gamma(n+b+1)}{(2 n +a+b+1)
 \Gamma(n+a+b+1)n!}\quad \mbox{for}\ n>0\\
-r_n & = & \frac{n(a-b)}{2n+a+b}.
-\end{eqnarray*}
+r_n & = \frac{n(a-b)}{2n+a+b}.
+\end{align*}
 
 The Legendre, Chebyshev and Gegenbauer polynomials are all, in fact, special
 cases of the Jacobi polynomials.
@@ -973,7 +972,7 @@ $k_n=2^n$, $\tilde{h}_n = \sqrt{\pi}2^nn!$ and $r_n=0$.
 
 \subsubsection{Fibonacci Polynomials}
 \index{Fibonacci polynomials}\ttindextype{FibonacciP}{operator}
-\hypertarget{operator:FIBONACCIP}{}
+%\hypertarget{operator:FIBONACCIP}{}
 \texttt{FibonacciP(n,x)} returns the $n$th Fibonacci polynomial
 in the variable $x$. If $n$ is an integer, it will be
 evaluated using the recursive definition:
@@ -1168,8 +1167,8 @@ $\mathrm{Ai}(z)$ & \f{Airy\_Ai(z)}\\
 $\mathrm{Bi}(z)$ & \f{Airy\_Bi(z)}\\
 $\mathrm{Ai}'(z)$ & \f{Airy\_Aiprime(z)}\\
 $\mathrm{Bi}'(z)$ & \f{Airy\_Biprime(z)}\\
-${\bf H}_{\nu}(z)$ & \f{StruveH(nu,z)}\\
-${\bf L}_{\nu}(z)$ & \f{StruveL(nu,z)}\\
+$\mathbf{H}_{\nu}(z)$ & \f{StruveH(nu,z)}\\
+$\mathbf{L}_{\nu}(z)$ & \f{StruveL(nu,z)}\\
 $s_{a,b}(z)$ & \f{Lommel1(a,b,z)}\\
 $S_{a,b}(z)$ & \f{Lommel2(a,b,z)}\\
 $M(a, b, z)$ or $_1F_1(a, b; z)$ or $\Phi(a, b; z)$ &
