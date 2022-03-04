@@ -9,7 +9,7 @@ if ($doc->loadHTMLFile('manual/manual.html')) {
     $queryString = urldecode($queryString);
     // Use XPath to extract the href attribute of the contents item containing the query string:
     $xpath = new DOMXpath($doc);
-    $href = $xpath->query("/html/body/div[@class='tableofcontents']/span/a[contains(.,'$queryString')]/@href");
+    $href = $xpath->query("/html/body/div[@class='tableofcontents']/span/a[starts-with(.,'$queryString')]/@href");
     if ($href->length == 1) {
         // If precisely one contents item is found, display the corresponding page:
         header("Location: manual/{$href->item(0)->nodeValue}");
@@ -68,19 +68,20 @@ include './include/begin-head.php';
         Instead, use a URL of the form
         <a href="#"><span class="href"></span>?<em>query string</em></a>,
         where <em>query string</em> is any (case-sensitive) string of
-        characters that appears uniquely in the title of an entry in the
+        characters that appears uniquely <strong>anchored at the start</strong>
+        of the title of an entry in the
         <a href="/manual/manual.html">REDUCE manual table of contents</a>.
         (Don&apos;t use section numbers, which may change.)  For example,
         these links should reliably access appropriate sections of the
         manual describing <strong>User Contributed Packages</strong>:
     </p>
     <ul>
-        <li><a href="?EXCALC"><span class="href"></span>?EXCALC</a></li>
-        <li><a href="?GROEBNER"><span class="href"></span>?GROEBNER</a></li>
-        <li><a href="?LINALG"><span class="href"></span>?LINALG</a></li>
-        <li><a href="?ODESOLVE"><span class="href"></span>?ODESOLVE</a></li>
-        <li><a href="?REDLOG"><span class="href"></span>?REDLOG</a></li>
-        <li><a href="?ROOTS"><span class="href"></span>?ROOTS</a></li>
+        <li><a href="?EXCALC:"><span class="href"></span>?EXCALC:</a></li>
+        <li><a href="?GROEBNER:"><span class="href"></span>?GROEBNER:</a></li>
+        <li><a href="?LINALG:"><span class="href"></span>?LINALG:</a></li>
+        <li><a href="?ODESOLVE:"><span class="href"></span>?ODESOLVE:</a></li>
+        <li><a href="?REDLOG:"><span class="href"></span>?REDLOG:</a></li>
+        <li><a href="?SPECFN:"><span class="href"></span>?SPECFN:</a></li>
     </ul>
     <p>
         Alternatively, for interactive experimentation, enter a <em>query
