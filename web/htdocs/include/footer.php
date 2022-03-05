@@ -28,10 +28,22 @@
             Microsoft Internet Explorer does not display this web site
             correctly; please use a current web browser.
         </p>
-        <a href="https://www.mathjax.org">
-            <img title="Powered by MathJax" src="https://www.mathjax.org/badge/badge.gif"
-                 alt="Powered by MathJax" style="float: right" />
-        </a>
+        <div style="display: flex; flex-wrap: wrap-reverse; justify-content: space-around;">
+            <!-- Begin SF Tag -->
+            <div class="sf-root" data-id="248416" data-badge="oss-open-source-excellence-white"
+                 data-metadata="achievement=oss-open-source-excellence" style="width:125px">
+                <a href="https://sourceforge.net/projects/reduce-algebra/" target="_blank">REDUCE</a>
+            </div>
+            <script>(function () {var sc=document.createElement('script');sc.type='text/javascript';
+                 sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=248416';
+                 var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();
+            </script>
+            <!-- End SF Tag -->
+            <a href="https://www.mathjax.org">
+                <img title="Powered by MathJax" src="https://www.mathjax.org/badge/badge.gif"
+                     alt="Powered by MathJax" />
+            </a>
+        </div>
     </div>
 </footer>
 
