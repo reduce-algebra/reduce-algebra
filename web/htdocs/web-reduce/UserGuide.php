@@ -186,6 +186,21 @@ include '../include/begin-body.php';
         starts Web REDUCE, which displays the usual CSL REDUCE start-up
         message. It is disabled if Web REDUCE is already running.
     </dd>
+    <dt>Load Packages&hellip;</dt>
+    <dd>
+        Selecting this item displays a list of the standard REDUCE packages available in this version of Web REDUCE and
+        allows you to load one or more (using the REDUCE <code>load_package</code> command). It is disabled unless
+        REDUCE is running. The non-mobile version provides all the packages distributed with REDUCE, whereas the mobile
+        version provides just the main packages, so the list is much shorter. The list is sorted alphabetically and
+        excludes packages that are pre-loaded, but includes packages that autoload, which many do.
+    </dd>
+    <dd>
+        You can either select one or more packages and then click/tap the Load button at the bottom, or you can
+        double-click/tap on a package to load just that package. To display the manual entry for a package (if there is
+        one) in a new browser tab either select a single package and click/tap the Manual button at the bottom or
+        right-click/tap-and-hold on a package. The Manual button is disabled unless precisely one package is selected.
+        Clicking on a package selects or deselects it, and the Reset button clears all selections.
+    </dd>
     <dt>Stop REDUCE</dt>
     <dd>
         Selecting this item stops Web REDUCE and displays the message
