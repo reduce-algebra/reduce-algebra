@@ -955,7 +955,7 @@ One can also define a tensor which has a \index{bloc-diagonal}
  ``bloc-diagonal'' structure.
 All these features are illustrated in the next sections which describe specific
 tensors and the properties of the extended function
-\ttindextype[CANTENS]{CANONICAL}{operator}\f{CANONICAL}.
+\ttindextype[CANTENS]{canonical}{operator}\f{canonical}.
 
 \subsection{Specific tensors}
 The means provided in the two previous subsection to handle generic tensors
@@ -1420,7 +1420,7 @@ to assign it to 1 or -1\ttindextype[CANTENS]{global\_sign}{operator}.
 \index{onespace switch@\texttt  {onespace} switch!Off}
 As already said, several epsilon tensors may be defined. They \emph{must}
 be assigned to a well defined (sub-)space otherwise the simplifying
-function \ttindextype[CANTENS]{canonical}{operator}\f{CANONICAL} will not properly work.
+function \ttindextype[CANTENS]{canonical}{operator}\f{canonical} will not properly work.
 The set of epsilon tensors defined  associated to their space-name
 may be retrieved using the function
 \ttindextype[CANTENS]{show\_epsilons}{operator}\hypertarget{operator:SHOW_EPSILONS}{\f{show\_epsilons}}.
@@ -2067,7 +2067,7 @@ Dummy indices are recognized  contracted and summed over whenever possible:
                a e
              te
 \end{verbatim}
-\texttt{CANONICAL} will not attempt to make contraction with
+\texttt{canonical} will not attempt to make contraction with
 dummy indices included inside ordinary operators:
 \ttindextype[CANTENS]{operator}{declaration}
 \begin{verbatim}
@@ -2508,7 +2508,7 @@ Another related question is the frequent need to symmetrize
 a tensor polynomial.
 To fulfill it, the function \ttindextype[CANTENS]{symmetrize}{operator}\f{symmetrize}
 of the package \package{ASSIST}\index{Assist package@\textsc{Assist} package} has been improved and
-generalised. For any kernel\index{Kernel!Cantens package} (which may be either
+generalised. For any kernel\index{Kernel!\package{Cantens} package} (which may be either
 an operator or a tensor) that function generates
 \begin{itemize}
 \item[-] the sum over the cyclic permutations of indices,
