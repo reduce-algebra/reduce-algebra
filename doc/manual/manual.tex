@@ -292,6 +292,7 @@
 
 % An example macro for numbering and indenting examples.
 \newcounter{examplectr}
+\providecommand{\theHexamplectr}{}
 \renewcommand{\theHexamplectr}{\thechapter.\thesection.\theexamplectr}
 \newcommand{\example}{\refstepcounter{examplectr}
 \noindent\textbf{Example \theexamplectr}}
