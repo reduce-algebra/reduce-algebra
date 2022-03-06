@@ -24,12 +24,12 @@
 %\newtheorem{definition}[theorem]{Definition}
 %\newtheorem{cdiffexample}[theorem]{Example}
 
-\let\DeclareMathOperator\newcommand
+%\let\DeclareMathOperator\newcommand
 % MACROS
 
-\providecommand{\cprime}{\/{\mathsurround=0pt$'$}}
+%\providecommand{\cprime}{\/{\mathsurround=0pt$'$}}
 
-\providecommand{\cdiff}{CDIFF\xspace}
+\providecommand{\cdiff}{\package{CDIFF}\xspace}
 
 %\keywords{\REDUCE, Hamiltonian operators, generalized symmetries, higher
 %  symmetries, conservation laws, nonlocal variables.}
@@ -67,11 +67,11 @@
   and can be found at the GDEQ website. The mathematical theory on which
   computations are based can be found in refs.~\cite{Krasilshchik:99,KerstenKrasilshchikVerboretsky:2004}.
 
-  \textbf{NOTE:} The new \REDUCE package CDE \cite{Vitolo:CDE}, also distributed on
+  \textbf{NOTE:} The new \REDUCE package \package{CDE} \cite{Vitolo:CDE}, also distributed on
   \url{http://gdeq.org}, simplifies the use of \cdiff and extends its
-  capabilities. Interested users may read the manual of CDE where the same
+  capabilities. Interested users may read the manual of \package{CDE} where the same
   computations described here for \cdiff are done in a simpler way, and further
-  capabilities allow CDE to solve a greater variety of problems.
+  capabilities allow \package{CDE} to solve a greater variety of problems.
 %\end{abstract}
 
 %\maketitle
@@ -187,6 +187,8 @@ is the name of the vector field, the second item is the list of even variables
 item is the list of odd (non-commuting) variables (`ext' stands for `external'
 like in external (wedge) product). Note that in this example odd variables are
 not strictly needed, but it is better to insert some of them for syntax reasons.
+\ttindextype[CDIFF]{super\_vectorfield}{operator}
+\hypertarget{operator:SUPER_VECTORFIELD}{}
 \begin{verbatim}
 super_vectorfield(ddx,{x,t,u,u1,u2,u3,u4,u5,u6,u7,
 u8,u9,u10,u11,u12,u13,u14,u15,u16,u17},
@@ -319,6 +321,8 @@ for i:=1:17 do write ev(0,i):=ddt(ddx(0,i))-ddx(ddt(0,i));
 
 This is the list of variables with respect to their grading,
 starting from degree \emph{one}.
+\ttindextype[CDIFF]{all\_graded\_der}{shared variable}
+\hypertarget{variable:ALL_GRADED_DER}{}
 \begin{verbatim}
 all_graded_der:={{u},{u1},{u2},{u3},{u4},{u5},
  {u6},{u7},{u8},{u9},{u10},{u11},{u12},{u13},{u14},{u15},
@@ -327,6 +331,8 @@ all_graded_der:={{u},{u1},{u2},{u3},{u4},{u5},
 
 This is the list of all monomials of degree $0$, $1$, $2$, \dots which can be
 constructed from the above list of elementary variables with their grading.
+\ttindextype[CDIFF]{mkvarlist1}{operator}
+\hypertarget{operator:MKVARLIST1}{}
 \begin{verbatim}
 grd0:={1};
 grd1:= mkvarlist1(1,1)$
@@ -385,6 +391,8 @@ This is the number of initial equation(s)
 tel:=1;
 \end{verbatim}
 
+\ttindextype[CDIFF]{multi\_coeff}{operator}
+\hypertarget{operator:MULTI_COEFF}{}
 The following procedure uses \texttt{multi\_coeff} (from the package
 \texttt{tools}).  It gets all coefficients of monomials appearing in the
 initial equation(s).  The coefficients are put into the vector \texttt{equ}
@@ -415,6 +423,8 @@ This command initializes the equation solver.  It passes
     a dummy argument, \texttt{f} in this case. There is also a last zero which
     is the negative length of the vector $f$, just as for constants.
   \end{itemize}
+  \ttindextype[CDIFF]{initialize\_equations}{operator}
+  \hypertarget{operator:CDIFF_INITIALIZE_EQUATIONS}{}
 \begin{verbatim}
 initialize_equations(equ,tel,{},{c,ctel,0},{f,0,0});
 \end{verbatim}
@@ -427,6 +437,8 @@ splitvars 1;
 
 Next command tells the solver the total number of equations obtained
 after running splitvars.
+\ttindextype[CDIFF]{put\_equations\_used}{operator}
+\hypertarget{operator:CDIFF_PUT_EQUATIONS_USED}{}
 \begin{verbatim}
 put_equations_used tel;
 \end{verbatim}
@@ -438,6 +450,8 @@ for i:=2:tel do write equ i;
 
 This command solves the equations for the coefficients.
 Note that we have to skip the initial equations!
+\ttindextype[CDIFF]{integrate\_equation}{operator}
+\hypertarget{operator:CDIFF_INTEGRATE_EQUATION}{}
 \begin{verbatim}
 for i:=2:tel do integrate_equation i;
 ;end;
