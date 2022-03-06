@@ -172,21 +172,13 @@ they had when \textbf{starting} \REDUCE.
 
 \subsection{Manipulation of the List Structure}
 
-\ttindextype[ASSIST]{mklist}{operator}
-\ttindextype[ASSIST]{sequences}{operator}
-\ttindextype[ASSIST]{split}{operator}
-\ttindextype[ASSIST]{algnlist}{operator}
-\ttindextype[ASSIST]{kernlist}{operator}
-\hypertarget{operator:MKLIST}{}
-\hypertarget{operator:SEQUENCES}{}
-\hypertarget{operator:SPLIT}{}
-\hypertarget{operator:ALGNLIST}{}
-\hypertarget{operator:KERNLIST}{}
 Additional operators for list manipulations are provided and some already
 defined operators in the kernel of \REDUCE are modified to properly
 generalize them to the available new structure \texttt{bag}.
 \begin{itemize}
 \item[i.]
+\ttindextype[ASSIST]{mklist}{operator}
+\hypertarget{operator:MKLIST}{}%
 Generation of a list of length n with all its elements initialized to 0
 and possibility to append to a list $l$ a certain number of
 zero's to make it of length $n$:
@@ -197,6 +189,8 @@ zero's to make it of length $n$:
 \end{verbatim}
 
 \item[ii.]
+\ttindextype[ASSIST]{sequences}{operator}
+\hypertarget{operator:SEQUENCES}{}%
 Generation of a list of sublists of length n containing p elements
 equal to 0 and q elements equal to 1 such that  \[p+q=n .\]
 The operator \f{sequences} works both in algebraic and
@@ -204,16 +198,22 @@ symbolic modes.  Here is an example in the algebraic mode:
 \begin{verbatim}
         sequences 2 ; ==> {{0,0},{0,1},{1,0},{1,1}}
 \end{verbatim}
+\ttindextype[ASSIST]{split}{operator}
+\hypertarget{operator:SPLIT}{}%
 An arbitrary splitting of a list can be done. The operator \f{split} 
 generates a list which contains the splitted parts of the original list.
 \begin{verbatim}
         split({a,b,c,d},{1,1,2}) ==> {{a},{b},{c,d}}
 \end{verbatim}
+\ttindextype[ASSIST]{algnlist}{operator}
+\hypertarget{operator:ALGNLIST}{}%
 The operator \f{algnlist} constructs a list which contains n copies  
 of a list bound to its first argument.
 \begin{verbatim}
         algnlist({a,b,c,d},2); ==> {{a,b,c,d},{a,b,c,d}}
 \end{verbatim}
+\ttindextype[ASSIST]{kernlist}{operator}
+\hypertarget{operator:KERNLIST}{}%
 The operator \f{kernlist} transforms any prefix of a kernel into the
 \texttt{list} prefix. The output list is a copy:
 \begin{verbatim}
@@ -455,9 +455,9 @@ if \texttt{op} is an operator one gets, by default,
 It is not permitted to submit lists to the operations valid on rings
 so that, for example, lists cannot be indeterminates of polynomials.\\
 Very frequently too, procedure arguments cannot be lists.
-At the other extreme, so to say, one has the kernel\index{kernel}
+At the other extreme, so to say, one has the kernel\index{Kernel!\package{ASSIST} package}
 structure associated
-with the algebraic declaration \\texttt{operator} .  This structure behaves as
+with the algebraic declaration \texttt{operator} .  This structure behaves as
 an ``unbreakable'' one and, for that reason, behaves
 like an ordinary identifier.
 It may generally be bound to all non-numeric procedure parameters

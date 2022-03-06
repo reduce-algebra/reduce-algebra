@@ -101,6 +101,8 @@ For $m=k$ we obtain as a special case the \emph{symbol $\Sym(D)$ of
 \subsection{Operators}
 
 \subsubsection{\texttt{partial}}
+\ttindextype[LPDO]{partial}{operator}
+\hypertarget{operator:PARTIAL}{}
 There is a unary operator \texttt{partial($\cdot$)} denoting
 $\partial$.
 
@@ -111,6 +113,8 @@ $\partial$.
 \end{center}
 
 \subsubsection{\texttt{***}}
+\ttindextype[LPDO]{*** (lpdotimes)}{operator}
+\hypertarget{operator:lpdotimes}{}
 There is a binary operator \texttt{***} for the non-commutative
 multiplication involving partials $\partial_x$. All expressions
 involving \texttt{***} are implicitly transformed into LPDOs, i.e.,
@@ -160,6 +164,8 @@ input: (x+y)***partial(y)***(x-y)***partial(x);
 Here we use as \textit{F-elements} specific elements from $F=\mathbb{Q}(x,y)$.
 
 \subsubsection{\texttt{diff}}
+\ttindextype[LPDO]{diff}{operator}
+\hypertarget{operator:DIFF}{}
 In our example with constant operators, the transformation into normal
 form introduces a formal derivative operation
 \texttt{diff($\cdot$,$\cdot$,$\cdot$)}, which cannot be evaluated.
@@ -177,6 +183,8 @@ mechanism to globally fix a certain \emph{shape} for
 \textit{F-elements} and to expand constant operators according to that
 shape.
 \subsubsection{\texttt{lpdoset}}
+\ttindextype[LPDO]{lpdoset}{operator}
+\hypertarget{operator:LPDOSET}{}%
 We give an example for a shape that fixes all constant operators to
 denote generic bivariate affine linear functions:
 
@@ -203,6 +211,8 @@ that \texttt{lpdoset} returns the old shape and that \texttt{\{-1\}}
 denotes the default state that there is no shape selected.
 
 \subsubsection{\texttt{lpdoweyl}}
+\ttindextype[LPDO]{lpdoweyl}{operator}
+\hypertarget{operator:LPDOWEYL}{}%
 The command \texttt{lpdoweyl \{n,x1,x2,...\}} creates a shape for
 generic polynomials of total degree \texttt{n} in variables
 $\texttt{x1}$, $\texttt{x2}$, \dots.
@@ -235,6 +245,8 @@ input: d;
 
 \subsubsection{General}
 \subsubsubsection{\texttt{lpdoord}}
+\ttindextype[LPDO]{lpdoord}{operator}
+\hypertarget{operator:LPDOORD}{}%
 The \emph{order} of an lpdo:
 \begin{footnotesize}
 \begin{verbatim}
@@ -245,6 +257,8 @@ input: lpdoord((a()+b())***partial(x1)***partial(x2)**2+3***partial(x1));
 \end{footnotesize}
 %
 \subsubsubsection{\texttt{lpdoptl}}
+\ttindextype[LPDO]{lpdoptl}{operator}
+\hypertarget{operator:LPDOPTL}{}%
 Returns the list of derivations (partials) occurring in its argument
 LPDO $d$.
 
@@ -260,6 +274,8 @@ $d$ is defined in $F[\dots,\partial_{x_i},\dots]$. Notice that formal
 derivatives are not derivations in that sense.
 
 \subsubsubsection{\texttt{lpdogp}}
+\ttindextype[LPDO]{lpdogp}{operator}
+\hypertarget{operator:LPDOGP}{}%
 Given a starting symbol $a$, a list of variables $l$, and a degree
 $n$, \texttt{lpdogp($a$,$l$,$n$)} generates a generic (commutative)
 polynomial of degree $n$ in variables $l$ with coefficients generated
@@ -275,6 +291,8 @@ a_00_ + a_01_*x2 + a_02_*x2  + a_10_*x1 + a_11_*x1*x2 + a_20_*x1
 \end{footnotesize}
 
 \subsubsubsection{\texttt{lpdogdp}}
+\ttindextype[LPDO]{lpdogdp}{operator}
+\hypertarget{operator:LPDOGDP}{}%
 Given a starting symbol $a$, a list of variables $l$, and a degree
 $n$, \texttt{lpdogp($a$,$l$,$n$)} generates a generic differential
 polynomial of degree $n$ in variables $l$ with coefficients generated
@@ -295,6 +313,8 @@ a_20_ *** partial(x1)  + a_02_ *** partial(x2)
 
 \subsubsection{Symbols}
 \subsubsubsection{\texttt{lpdosym}}
+\ttindextype[LPDO]{lpdosym}{operator}
+\hypertarget{operator:LPDOSYM}{}%
 The \emph{symbol} of an lpdo. That is the differential monomial of
 highest order with the partials replaced by corresponding commutative
 variables:
@@ -323,6 +343,8 @@ alternative starting symbol for the commutative variable, which is
 \texttt{lpdosym($\cdot$)}=\texttt{lpdosym($\cdot$,lpdoord($\cdot$),y)}.
 
 \subsubsubsection{\texttt{lpdosym2dp}}
+\ttindextype[LPDO]{lpdosym2dp}{operator}
+\hypertarget{operator:LPDOSYM2DP}{}%
 This converts a symbol obtained via \texttt{lpdosym} back into an LPDO
 resulting in the corresponding differential monomial of the original
 LPDO.
@@ -345,6 +367,8 @@ specifying an alternative starting symbol for the commutative
 variable, which is \texttt{y} by default.
 
 \subsubsubsection{\texttt{lpdos}}
+\ttindextype[LPDO]{lpdos}{operator}
+\hypertarget{operator:LPDOS}{}%
 Given LPDOs $p$, $q$ and $m\in\mathbb{N}$ the function
 \texttt{lpdos($p$,$q$,$m$)} computes the commutative polynomial \[S_m
 = \sum_{\substack{|j| = m\\ |j| < k}} \left(\sum_{i = 1}^n
@@ -368,6 +392,8 @@ a()*diff(c(),x1,1)*y_x1_ + a()*diff(d(),x1,1)*y_x2_ + b()*c()*y_x1_
 \subsubsection{Factorization}
 
 \subsubsubsection{\texttt{lpdofactorize}}
+\ttindextype[LPDO]{lpdofactorize}{operator}
+\hypertarget{operator:LPDOFACTORIZE}{}%
 Factorize the argument LPDO $d$. The ground field $F$ must be fixed via
 \texttt{lpdoset}. The result is a list of lists
 $\{\dots,(A_i,L_i),\dots\}$. $A_i$ is is genrally the identifiers
@@ -422,7 +448,7 @@ Besides
 \begin{enumerate}
 \item the LPDO $d$,
 \end{enumerate}
-\texttt{lpdofactorizex} accepts several optional arguments:
+\texttt{lpdofactorize} accepts several optional arguments:
 \begin{enumerate}
 \setcounter{enumi}{1}
 \item An LPDO of order 1, which serves as a template for the left
@@ -436,6 +462,8 @@ Besides
 \end{enumerate}
 
 \subsubsubsection{\texttt{lpdofac}}
+\ttindextype[LPDO]{lpdofac}{operator}
+\hypertarget{operator:LPDOFAC}{}%
 This is a low-level entry point to the factorization
 \texttt{lpdofactorize}. It accepts the same arguments as
 \texttt{lpdofactorize}. It generates factorization conditions as a quite
@@ -478,6 +506,8 @@ by \texttt{lpdofactorize}.
 \subsubsection{Approximate Factorization}
 
 \subsubsubsection{\texttt{lpdofactorizex}}
+\ttindextype[LPDO]{lpdofactorizex}{operator}
+\hypertarget{operator:LPDOFACTORIZEX}{}%
 Approximately factorize the argument LPDO $d$. The ground field $F$ must
 be fixed via \texttt{lpdoset}. The result is a list of lists
 $\{\dots,(A_i,L_i),\dots\}$. Each $A_i$ is quantifier-free formula
@@ -565,6 +595,8 @@ input: lpdofactorizex(f3,psi1,a()***partial(x1),b()***partial(x2));
 \end{footnotesize}
 
 \subsubsubsection{\texttt{lpdofacx}}
+\ttindextype[LPDO]{lpdofacx}{operator}
+\hypertarget{operator:LPDOFACX}{}%
 This is a low-level entry point to the factorization
 \texttt{lpdofactorizex}. It is analogous to \texttt{lpdofac} for
 \texttt{lpdofactorize}; see the documentation there for details.

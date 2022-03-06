@@ -27,10 +27,11 @@ export const Global: {
 export const debug = (location.search.includes("debug"));
 
 /** True if mobile version selected. */
-const mobileVersion = (location.search.includes("mobile"));
+export const mobileVersion = (location.search.includes("mobile"));
 
 // Set up access to document elements and reset their defaults for when the page is reloaded:
 const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem") as HTMLButtonElement;
+const loadPackagesMenuItem = document.getElementById("LoadPackagesMenuItem") as HTMLButtonElement;
 const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem") as HTMLButtonElement;
 const restartREDUCEMenuItem = document.getElementById("RestartREDUCEMenuItem") as HTMLButtonElement;
 const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem") as HTMLButtonElement;
@@ -95,6 +96,7 @@ let worker: Worker;
 
 function setRunningState(running: boolean) {
     startREDUCEMenuItem.disabled = running;
+    loadPackagesMenuItem.disabled = !running;
     stopREDUCEMenuItem.disabled = !running;
     restartREDUCEMenuItem.disabled = !running;
     sendInputButton.disabled = !running;

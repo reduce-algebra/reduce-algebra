@@ -101,6 +101,8 @@ include '../include/begin-head.php';
                     <ul class="dropdown-menu" aria-labelledby="REDUCEMenuLink">
                         <li><button id="StartREDUCEMenuItem" class="dropdown-item" type="button">Start REDUCE</button>
                         </li>
+                        <li><button id="LoadPackagesMenuItem" class="dropdown-item" data-bs-toggle="modal"
+                                data-bs-target="#LoadPackagesDialogue" type="button">Load Packages&hellip;</button></li>
                         <li><button id="StopREDUCEMenuItem" class="dropdown-item" type="button">Stop REDUCE</button>
                         </li>
                         <li><button id="RestartREDUCEMenuItem" class="dropdown-item" type="button">Restart
@@ -256,8 +258,9 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 <!-- Modal Dialogues -->
 <script type="module" src="GenJS/TempFuncs.js"></script>
 <?php
-    include './TempFuncs.inc';
+    include './LoadPackagesDialogue.inc';
 
+    include './TempFuncs.inc';
     include './Templates/DerivativeTemplate.inc';
     include './Templates/IntegralTemplate.inc';
     include './Templates/LimitTemplate.inc';

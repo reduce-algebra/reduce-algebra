@@ -279,7 +279,7 @@ included.
 \subsubsection{Incomplete Gamma Functions}
 \index{Incomplete Gamma functions}
 \hypertarget{operator:M_GAMMA}{}
-\ttindextype{igamma}{operator}\ttindextype{m\_gamma}{operator}
+\ttindextype[SPECFN]{igamma}{operator}\ttindextype[SPECFN]{m\_gamma}{operator}
 The (unnormalised) incomplete gamma function is provided by the binary function
 \f{m\_gamma}. In the literature it is normally represented as $\gamma(a,z)$
 and is defined by
@@ -491,10 +491,10 @@ There are no rules for the integration of Airy Functions.
 \hypertarget{operator:WHITTAKERM}{}
 \hypertarget{operator:WHITTAKERU}{}
 \hypertarget{HYPERGEOM}{}
-\ttindextype{KummerM}{operator}\ttindextype{KummerU}{operator}%
-\ttindextype{StruveH}{operator}\ttindextype{StruveL}{operator}%
-\ttindextype{Lommel1}{operator}\ttindextype{Lommel2}{operator}%
-\ttindextype{WhittakerM}{operator}\ttindextype{WhittakerW}{operator}
+\ttindextype[SPECFN]{KummerM}{operator}\ttindextype[SPECFN]{KummerU}{operator}%
+\ttindextype[SPECFN]{StruveH}{operator}\ttindextype[SPECFN]{StruveL}{operator}%
+\ttindextype[SPECFN]{Lommel1}{operator}\ttindextype[SPECFN]{Lommel2}{operator}%
+\ttindextype[SPECFN]{WhittakerM}{operator}\ttindextype[SPECFN]{WhittakerW}{operator}
 \index{Kummer functions}\index{Struve functions}\index{Lommel functions}
 \index{Whittaker functions}\index{Hypergeometric functions}
 
@@ -541,8 +541,9 @@ expressions involving the Kummer M and U functions respectively.
 \subsection{The Riemann Zeta Function}
 \hypertarget{operator:ZETA}{}
 \hypertarget{RIEMZETA}{}
-\ttindex{zeta}\index{Riemann Zeta function}\index{Zeta function}
-\index{$\zeta$ function}
+\ttindextype[SPECFN]{zeta}{operator}\index{Riemann Zeta function!\package{Specfn} package}%
+\index{Zeta function!\package{Specfn} package}
+\index{$\zeta$ function!\package{Specfn} package}
 This is represented by the unary operator \f{Zeta} and defined by the
 formula:
 \[\zeta(s) = \sum_{n=1}^\infty \frac{1}{n^s}.\]
@@ -1031,8 +1032,8 @@ the summation immediately above.
 
 Both the Bernoulli and Euler numbers and polynomials may also be calculated
 directly by expanding the corresponding generating function as a power
-series in $t$ using either the TPS or TAYLOR package, extracting the $n$th term
-and multiplying by $n!$. The use of the TPS package is probably preferable here
+series in $t$ using either the \package{TPS} or \package{TAYLOR} package, extracting the $n$th term
+and multiplying by $n!$. The use of the \package{TPS} package is probably preferable here
 as the series for the generating function is extendible and need only be
 calculated once; it will be extended automatically if higher order numbers or
 polynomials are required.

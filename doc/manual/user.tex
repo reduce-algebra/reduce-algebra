@@ -26,7 +26,7 @@ However, many must be specifically loaded before they can be used. (Those
 that are loaded automatically are so noted in their description.) You should
 also consult the user notes for your particular implementation for further
 information on whether this is necessary.  If it is, the relevant command is
-\f{LOAD\_PACKAGE},\ttindex{LOAD\_PACKAGE} which takes a list of one or
+\f{load\_package},\ttindextype{load\_package}{command} which takes a list of one or
 more package names as argument, for example:
 
 \begin{verbatim}
@@ -81,6 +81,7 @@ Author: Eberhard Schr\"ufer.
 
 \input{arnum}
 
+\iffalse
 \newpage
 
 \section{ASSERT: Dynamic Verification of Assertions on Function Types}
@@ -95,6 +96,8 @@ validity of the respective arguments during runtime.
 Author: Thomas Sturm.
 
 \input{assert}
+
+\fi
 
 \newpage
 
@@ -246,7 +249,7 @@ Authors: Andreas Dolzmann, Thomas Sturm, and Winfried Neun
 
 \newpage
 
-\section{COEFF2: Computing Comprehensive Gr\"obner Bases}
+\section{COEFF2: A Variant of the \texttt{coeff} Operator}
 \indexpackage{COEFF2}
 
 Authors: Fujio Kako and Masaaki Ito

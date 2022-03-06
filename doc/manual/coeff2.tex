@@ -26,18 +26,16 @@
 \index{Kako, Fujiko}\index{People!Kako, Fujiko}
 \index{Ito, Masaaki}\index{People!Ito, Masaaki}
 
-%\textbf{COEFF2 Package} \quad ( \textsf{COEFF2, NM, EVAL2, RESET} )\\[\baselineskip]
-\ttindextype{COEFF2}{operator}
-\ttindextype{NM}{operator}
-\ttindextype{EVAL2}{operator}
+\ttindextype[COEFF2]{coeff2}{operator}
+\ttindextype[COEFF2]{nm}{operator}
+\ttindextype[COEFF2]{eval2}{operator}
 \ttindextype{RESET}{operator}
-
-In \REDUCE,  we can use the \f{COEFF} operator which returns a list of coefficients of a polynomial
+In \REDUCE,  we can use the \f{coeff} operator which returns a list of coefficients of a polynomial
 with respect to  specified variables. 
-On the other hand, the \f{COEFF2} operator gives a polynomial in which each coefficient is replaced by
-special variables \verb|#1,#2|,$\cdots$. It is used with the same syntax as the \f{COEFF} operator:
+On the other hand, the \hypertarget{operator:COEFF2}{}\f{coeff2} operator gives a polynomial in which each coefficient is replaced by
+special variables \verb|#1,#2|,$\cdots$. It is used with the same syntax as the \f{coeff} operator:
 \begin{syntax}
-  \texttt{COEFF2(}\meta{EXPRN:polynomial},\,\meta{VAR:kernel}\texttt{)}\,:\,\textit{algebraic}
+  \f{coeff2(}\meta{exprn:polynomial},\,\meta{var:kernel}\texttt{)}\,:\,\textit{algebraic}
 \end{syntax}
 \textit{Example:}
 \begin{verbatim}
@@ -62,9 +60,9 @@ g := a*x*y  + 2*c*x  + d*x  + 3*x*y
 g2 := #3*x  + #4*x*y
 \end{verbatim}
 If you want to retrieve the values of  special variables \verb|#1,#2|,$\cdots$,
-we can use the command \f{NM}. The syntax for this is:
+we can use the operator \hypertarget{operator:NM}{}\f{nm}. The syntax for this is:
 \begin{syntax}
-  \texttt{NM(}\meta{N:integer}\texttt{)}\,:\,\textit{algebraic}
+  \f{nm(}\meta{n:integer}\texttt{)}\,:\,\textit{algebraic}
 \end{syntax}
 It returns the value of the variable \verb|#n|. For example, to get the value of 
 \verb|#1| in the above, one could say:
@@ -77,10 +75,10 @@ yields the result
 a  + 2*a*b + b
 \end{verbatim}
 It is also possible to evaluate an expression including  special variables \verb|#1,#2,|$\cdots$
-by \f{EVAL2} operator.
+by using the \hypertarget{operator:EVAL2}{}\f{eval2} operator.
 The syntax for this is:
 \begin{syntax}
-  \texttt{EVAL2(}\meta{EXPRN:rational}\texttt{)}\,:\,\textit{algebraic}
+  \f{eval2(}\meta{exprn:rational}\texttt{)}\,:\,\textit{algebraic}
 \end{syntax}
 \textit{Example:}
 \begin{verbatim}
@@ -99,9 +97,10 @@ eval2(ws);
 a*c  + 2*a*c*d + a*d  + 3*c  + 6*c*d + 3*d
 
 \end{verbatim}
+\ttindextype[COEFF2]{reset}{operator}
 The user may remove all values of special variables \verb|#1,#2|,$\cdots$
-by the command \f{RESET}, in the form
+by the operator \hypertarget{operator:RESET}{}\f{reset}, in the form
 \begin{verbatim}
-       RESET( );
+       reset( );
 \end{verbatim}
 
