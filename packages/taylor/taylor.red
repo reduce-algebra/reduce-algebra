@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2022 by Rainer M. Schöpf, all rights reserved.
+%  Copyright (C) 1989--2022 by Rainer M. SchÃ¶pf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -245,7 +245,7 @@ module taylor;
 %   Replaced call to subs2 with binding of !*sub2 by subs2!* in
 %    functions below.
 %   Removed error type inttaylorwrttayvar, no longer generated.
-%   
+%
 %
 %
 % 15-Feb-1994    1.9c
@@ -387,7 +387,7 @@ module taylor;
 %   Added get!-min!-degreelist to find minimum degree list of a
 %    coefflist; corrected mult!.comp!.tp!. and inv!.comp!.tp!. to
 %    use it.
-%   Corrected error in quottaylor that could wrongly calculate first   
+%   Corrected error in quottaylor that could wrongly calculate first
 %    coefficient of result.
 %   Shortened lines in tayfns.red to 72 characters.
 %   Improved taysimpexp and expttayrat!* to yield an exponential only
@@ -429,7 +429,7 @@ module taylor;
 %    and smemqlp by it.
 %   Split addtaylor, multtaylor and quottaylor into two procedures.
 %   Replaced taysimpp by expttayi in difftaylor.
-%   Introduced taysimpsq!* (taysimpsq with taylorautoexpand off). 
+%   Introduced taysimpsq!* (taysimpsq with taylorautoexpand off).
 %
 % 08-Jun-1993    1.5
 %   Introduction of special operations for exponents in powerlists:
@@ -500,7 +500,7 @@ module taylor;
 %    of `...'.
 %
 % 25-Feb-1993    1.4e
-%   Made expttayi more efficient by replacing straightforward 
+%   Made expttayi more efficient by replacing straightforward
 %    multiplication by a scheme that computes powers of 2.
 %   Corrected error in taysimpexp.
 %
@@ -985,7 +985,7 @@ switch taylorautocombine=on,
 
 convert!-taylor!* := nil;      % flag indicating that Taylor kernels
                                % should be converted to prefix forms
-taylorprintterms := 5;         % Only this nubmer of non-zero terms 
+taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % will normally be printed.
 %!*taylorkeeporiginal := nil;   % used to indicate if the original
                                % expressions (before the expansion)
@@ -1001,7 +1001,7 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
 !*tayexpanding!* := nil;       % set by taylorexpand to indicate that
                                % expansion is in progress.
 !*tayinternal!* := nil;        % set while doing internal computations,
-                               % to indicate that some normal REDUCE 
+                               % to indicate that some normal REDUCE
                                % operations should not be done (like
                                % making kernels unique and storing them.
 !*tayrestart!* := nil;         % set by Taylor!-error!* if expansion is
@@ -1041,7 +1041,7 @@ exports !*q2tayexp, !*tay2f, !*tay2q, !*TayExp2q, copy!-list, cst!-taylor!*,
 
 imports
 
-% from REDUCE kernel: 
+% from REDUCE kernel:
         !*f2q, !*i2rn, !*p2f, !*p2q, !:minusp, confusion, domainp,
         eqcar, kernp, lastpair, lc, ldeg, lpri, mathprint, mk!*sq,
         mksp, multsq, mvar, nlist, numr, over, prin2t, red, resimp,
@@ -1194,7 +1194,7 @@ symbolic procedure preptayexp u;
 symbolic macro procedure tayexp!-plus x;
    if null cdr x then 0
     else if null cddr x then cadr x
-    else expand(cdr x,'tayexp!-plus2);   
+    else expand(cdr x,'tayexp!-plus2);
 
 symbolic procedure tayexp!-plus2(e1,e2);
    if atom e1 and atom e2 then e1+e2
@@ -1216,7 +1216,7 @@ symbolic procedure tayexp!-minus e;
 symbolic macro procedure tayexp!-times x;
    if null cdr x then 1
     else if null cddr x then cadr x
-    else expand(cdr x,'tayexp!-times2);   
+    else expand(cdr x,'tayexp!-times2);
 
 symbolic procedure tayexp!-times2(e1,e2);
    if atom e1 and atom e2 then e1*e2
@@ -1268,7 +1268,7 @@ symbolic macro procedure taylor!: u;
             (max2 . tayexp!-max2)
             (min2 . tayexp!-min2)),
           cadr u);
-           
+
 
 
 COMMENT Smacros and procedures that are commonly used ;

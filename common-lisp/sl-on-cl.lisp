@@ -1,9 +1,11 @@
 ;;; sl-on-cl.lisp --- Standard Lisp on Common Lisp
 
-;; Copyright (C) 2018, 2019 Francis J. Wright
+;; Copyright (C) 2018, 2019, 2022 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 4 November 2018
+
+;; Modified by Rainer Schöpf to support Armed Bear Common Lisp.
 
 ;; Current target implementations of Common Lisp:
 ;; - Windows and Linux SBCL (Steel Bank Common Lisp); see http://www.sbcl.org/
@@ -16,7 +18,10 @@
 ;; This implementation of Standard Lisp is lower-case.  It uses case
 ;; inversion of symbol names and is case-sensitive internally.
 
-;; (eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
+;; For Common Lisp documentation see
+;; http://www.lispworks.com/documentation/HyperSpec/Front/
+
+(eval-when (:compile-toplevel :load-toplevel :execute) (push :debug *features*))
 
 #-DEBUG (declaim (optimize speed))
 #+DEBUG (declaim (optimize debug safety))
@@ -42,9 +47,9 @@
   (:shadow :constantp :equal :minusp :vectorp :zerop :nth :pnth
            :gensym :intern :get :remprop :error :expt :float :map
            :mapc :mapcan :mapcar :mapcon :maplist :append :assoc
-           :delete :length :member :sublis :subst :rassoc :apply :eval
-           :function :close :open :princ :print :prin1 :read
-           :terpri :complexp :union :load :time
+           :delete :length :member :sort :sublis :subla :subst :rassoc
+           :apply :eval :function :close :open :princ :print :prin1
+           :read :terpri :complexp :union :load :time
            :char-downcase :char-upcase :string-downcase :mod
            :char-code :symbol-name :number)
 
@@ -155,9 +160,9 @@ is printed whenever a function is redefined by PUTD.")
 
 ;; First, some utility functions used only internally:
 
-;; For ABCL, autoloaded functios must be loaded before copying the
+;; For ABCL, autoloaded functions must be loaded before copying the
 ;; function cell. Otherwise only the autoload stub is copied.
-;; The call to resolve does this
+;; The call to resolve does this.
 (defmacro defalias (symbol definition &optional docstring)
   "Set SYMBOL's function definition to DEFINITION.
 The optional third argument DOCSTRING specifies the documentation string
@@ -449,6 +454,14 @@ an out of range error occurs.
 ;;; Identifiers
 ;;; ===========
 
+(defmacro error-internal (message &rest args)
+  "Report an error detected internally in sl-on-cl with message
+MESSAGE possibly followed by arguments ARGS as for `format'."
+  `(cl:error 'sl-error-internal :errmsg
+             ,(if args
+                  `(format nil ,message ,@args)
+                  message)))
+
 (defun %id-to-char-invert-case (c)
   "As `character', but case-inverted."
   (declare (symbol c))
@@ -478,7 +491,7 @@ occurs:
            (if (or (null u)
                    (cl:member (setq u0 (car u))
                               '(\' \) \, \% \[ \\ \`))) ; PSL
-               (cl:error "Poorly formed S-expression in COMPRESS"))
+               (error-internal "Poorly formed S-expression in COMPRESS"))
            (cond
              ;; LIST?
              ((eq u0 '|(|) (setq u (cdr u))
@@ -499,7 +512,7 @@ occurs:
                                    (nreverse newu)))))
                    (push (car u) newu))
               ;; String not terminated:
-              (cl:error "Poorly formed S-expression in COMPRESS"))
+              (error-internal "Poorly formed S-expression in COMPRESS"))
              ;; NUMBER?
              ((or (digit u0) (char= (character u0) #\-))
               ;; (eq u0 '-) fails because u0 is in SL but - is (an operator) in CL.
@@ -557,29 +570,30 @@ printing (using prin1) to a list.  E.g.
              (push (list '|)|) ll)
              (cl:apply #'nconc (nreverse ll)))
            ;; Exploding an atom:
-           (cond ((stringp u)
-                  ;; Add leading and trailing " and convert internal " to "":
-                  (nconc
-                   (list '\")
-                   (loop for c across u
-                      collect (%intern-character-invert-case c)
-                      when (char= c #\") collect '\")
-                   (list '\")))
-                 ((numberp u)
-                  (cl:map 'list #'%intern-character-invert-case ; might not be portable!
-                          (princ-to-string u)))
-                 (t
-                  ;; Assume identifier -- insert ! before an upper-case
-                  ;; letter, leading digit or _, or special character
-                  ;; (except _):
-                  (loop with s = (cl:symbol-name u) and c
-                     for i below (cl:length s)
-                     do (setq c (aref s i))
-                     unless (or (upper-case-p c) ; case-inverted!
-                                (and (not (eql i 0))
-                                     (or (digit-char-p c) (char= c #\_))))
-                     collect '\!
-                     collect (%intern-character-preserve-case c)))))))
+           (typecase u
+             (string
+              ;; Add leading and trailing " and convert internal " to "":
+              (nconc
+               (list '\")
+               (loop for c across u
+                  collect (%intern-character-invert-case c)
+                  when (char= c #\") collect '\")
+               (list '\")))
+             (number
+              (cl:map 'list #'%intern-character-invert-case ; might not be portable!
+                      (princ-to-string u)))
+             (t
+              ;; Assume identifier -- insert ! before an upper-case
+              ;; letter, leading digit or _, or special character
+              ;; (except _):
+              (loop with s = (cl:symbol-name u) and c
+                 for i below (cl:length s)
+                 do (setq c (aref s i))
+                 unless (or (upper-case-p c) ; case-inverted!
+                            (and (not (eql i 0))
+                                 (or (digit-char-p c) (char= c #\_))))
+                 collect '\!
+                 collect (%intern-character-preserve-case c)))))))
 
 (defalias 'gensym 'cl:gensym)
 ;; GENSYM():identifier eval, spread
@@ -816,33 +830,34 @@ FNAME is a defined function then return the dotted-pair
   (the list
        (and (symbolp fname) (fboundp fname)
             ;; Assume expr unless fname was defined using SL dm macro.
-            (cond ((eq (cl:get fname '%ftype) 'macro)
-                   ;; ;; Return the (uncompiled) SL macro form:
-                   ;; (cl:get fname '%macro)
-                   ;; This may need more work.
-                   ;; A CL macro expansion needs an environment.
-                   ;; Try the null environment (nil) initially.
-                   ;; (The parameter x should perhaps be a gensym.)
-                   (cons 'macro
-                         `(lambda (x)
-                            (funcall ,(macro-function fname) x nil))))
-                  (t
-                   ;; Return a lambda expression if possible, since this is
-                   ;; most useful (although perhaps not most efficient in
-                   ;; some cases):
-                   (let (f)
-                     ;; Note that a CL function definition may contain
-                     ;; declarations and a documentation string, and the
-                     ;; body MAY BE wrapped in a block form, i.e.
-                     ;; (lambda params [decls] [doc] (block name body))
-                     ;; [A compiled CLISP function may not contain a block!]
-                     ;; Extract the function body:
-                     (when (and (functionp (setq fname (symbol-function fname)))
-                                (setq f (function-lambda-expression fname)))
-                       (setq fname (car (last f))) ; block or body form
-                       (if (eqcar fname 'block) (setq fname (caddr fname)))
-                       (setq fname `(lambda ,(cadr f) ,fname))))
-                   (cons 'expr fname))))))
+            (case (cl:get fname '%ftype)
+              (macro
+               ;; ;; Return the (uncompiled) SL macro form:
+               ;; (cl:get fname '%macro)
+               ;; This may need more work.
+               ;; A CL macro expansion needs an environment.
+               ;; Try the null environment (nil) initially.
+               ;; (The parameter x should perhaps be a gensym.)
+               (cons 'macro
+                     `(lambda (x)
+                        (funcall ,(macro-function fname) x nil))))
+              (t
+               ;; Return a lambda expression if possible, since this is
+               ;; most useful (although perhaps not most efficient in
+               ;; some cases):
+               (let (f)
+                 ;; Note that a CL function definition may contain
+                 ;; declarations and a documentation string, and the
+                 ;; body MAY BE wrapped in a block form, i.e.
+                 ;; (lambda params [decls] [doc] (block name body))
+                 ;; [A compiled CLISP function may not contain a block!]
+                 ;; Extract the function body:
+                 (when (and (functionp (setq fname (symbol-function fname)))
+                            (setq f (function-lambda-expression fname)))
+                   (setq fname (car (last f))) ; block or body form
+                   (if (eqcar fname 'block) (setq fname (caddr fname)))
+                   (setq fname `(lambda ,(cadr f) ,fname))))
+               (cons 'expr fname))))))
 
 (defun putd (fname type body)
   "PUTD(FNAME:id, TYPE:ftype, BODY:function):id eval, spread
@@ -862,31 +877,32 @@ the !*COMP global variable is non-NIL."
   (declare (symbol fname type) (type function body))
   (if (or (cl:get fname 'global)        ; only if explicitly declared
           (fluidp fname))
-      (cl:error "~a is a non-local variable" fname))
+      (error-internal "~a is a non-local variable" fname))
   (%redefmsg fname)
   ;; body = (lambda (u) body-form) or function-pointer
   (let (*redefmsg)                  ; don't report redefinitions twice
-    (cond ((eq type 'expr)
-           (cond ((eqcar body 'lambda)
-                  (eval `(de ,fname ,(cadr body) ,@(cddr body))))
-                 ((functionp body)
-                  (setf (symbol-function fname) body)
-                  (put fname '%ftype 'expr))
-                 (t (cl:error "Invalid expr body in PUTD"))))
-          ((eq type 'macro)
-           (cond ((eqcar body 'lambda)
-                  (if (eq (car (caddr body)) 'funcall)
-                      ;; This "hybrid form" is returned by getd.
-                      (progn
-                        (setf (macro-function fname) (cadr (caddr body)))
-                        (put fname '%ftype 'macro))
-                      ;; This "pure source form" is used in "rlisp/block.red".
-                      (eval `(dm ,fname ,(cadr body) ,@(cddr body)))))
-                 ;; ((functionp body)       ; This case should not happen!
-                 ;;  (setf (macro-function fname) body)
-                 ;;  (put fname '%ftype 'macro))
-                 (t (cl:error "Invalid macro body in PUTD"))))
-          (t (cl:error "Invalid type in PUTD"))))
+    (case type
+      (expr
+       (cond ((eqcar body 'lambda)
+              (eval `(de ,fname ,(cadr body) ,@(cddr body))))
+             ((functionp body)
+              (setf (symbol-function fname) body)
+              (put fname '%ftype 'expr))
+             (t (error-internal "Invalid expr body in PUTD"))))
+      (macro
+       (cond ((eqcar body 'lambda)
+              (if (eq (car (caddr body)) 'funcall)
+                  ;; This "hybrid form" is returned by getd.
+                  (progn
+                    (setf (macro-function fname) (cadr (caddr body)))
+                    (put fname '%ftype 'macro))
+                  ;; This "pure source form" is used in "rlisp/block.red".
+                  (eval `(dm ,fname ,(cadr body) ,@(cddr body)))))
+             ;; ((functionp body)       ; This case should not happen!
+             ;;  (setf (macro-function fname) body)
+             ;;  (put fname '%ftype 'macro))
+             (t (error-internal "Invalid macro body in PUTD"))))
+      (t (error-internal "Invalid type in PUTD"))))
   (the symbol fname))
 
 (defun remd (fname)
@@ -1096,14 +1112,13 @@ in interpreted functions are automatically considered fluid."
 ;;; Error Handling
 ;;; ==============
 
-;; THIS CODE COULD BE IMPROVED!
-
-(defun %princ-to-string (u)
-  ;; Used only in error and princ (which is not used in REDUCE).
-  "As cl:princ-to-string but invert case of a symbol."
-  (the simple-string
-       (if (symbolp u) (%string-invert-case (cl:princ-to-string u))
-           (cl:princ-to-string u))))
+(define-condition sl-error (cl:error)
+  ((errno :initarg :errno)
+   (errmsg :initarg :errmsg))
+  (:documentation "Standard Lisp error including an error number and message")
+  (:report (lambda (condition stream)
+             (with-slots (errno errmsg) condition
+               (format stream "Standard Lisp error ~a: ~a." errno errmsg)))))
 
 (defun error (number message)
   "ERROR(NUMBER:integer, MESSAGE:any) eval, spread
@@ -1113,31 +1128,32 @@ global variable EMSG!* and the error number becomes the value of
 the surrounding ERRORSET. FLUID variables and local bindings are
 unbound to return to the environment of the ERRORSET. Global
 variables are not affected by the process."
-  (if (consp message)
-      (setq message
-            (let ((*print-case* :downcase))
-              (cl:apply #'concatenate 'string
-                        (cons (%princ-to-string (car message))
-                              (loop
-                                 for x in (cdr message)
-                                 collect " "
-                                 collect (%princ-to-string x)))))))
-  (setf emsg* message)
-  ;; (cl:error "***** SL error ~a: ~a" number message)
-  ;; Do not include number in the output:
-  (cl:error "***** ~*~a" number message))
+  (setq emsg* message)
+  (cl:error 'sl-error :errno number :errmsg message))
+
+(define-condition sl-error-internal (sl-error)
+  ((errmsg :initarg :errmsg))
+  (:documentation "Standard Lisp internal error including an error message")
+  (:report (lambda (condition stream)
+             (with-slots (errmsg) condition
+               (format stream "Standard Lisp error: ~a." errmsg)))))
+
+(define-condition sl-error-no-message (sl-error-internal)
+  ()
+  (:documentation "Standard Lisp error without error number or message")
+  (:report (lambda (condition stream)
+             (declare (ignore condition))
+             (format stream "Standard Lisp error without error number or message"))))
 
 (defun error1 ()
   "This is the simplest error return, without a message printed.
 It can be defined as ERROR(99,NIL) if necessary.
 In PSL it is throw('!$error!$,99)."
-  (cl:error "***** SL no-message error"))
+  (cl:error 'sl-error-no-message))
 
 (defvar *debug nil
-  "If non-nil then errorset does not catch errors,
-so they fall through to the debugger.")
-
-;; See also invoke-debugger in the CLHS.
+  "If non-nil then `errorset' always enters the debugger on errors
+as if its argument `tr' were true.")
 
 (defun errorset (u msgp tr)
   "ERRORSET(U:any, MSGP:boolean, TR:boolean):any eval, spread
@@ -1161,29 +1177,28 @@ trace-back sequence will be initiated on the selected output
 device. The traceback will display information such as unbindings
 of FLUID variables, argument lists and so on in an implementation
 dependent format."
-  (if (or *debug tr)
-      ;; Enter the debugger if an error arises.
-      ;; Probably not the optimal way to generate a traceback!
-      (list (eval u))
-      ;; Handle any error that arises.
-      (handler-case (list (eval u))     ; protected form
-        (simple-error
-            (err)
-          (let ((fmt (simple-condition-format-control err))
-                (args (simple-condition-format-arguments err)))
-            (when (and msgp (cdr args))
-              (fresh-line)
-              (cl:apply #'format t fmt args)
-              (cl:terpri))
-            (car args)))
-        (cl:error
-            (err)
-          (if msgp (format t "~&***** CL error: ~a~%" err))
-          ;; This doesn't really work because it breaks in the context
-          ;; of the errorset rather than the error!
-          ;; It also breaks building bootstrap REDUCE on SBCL!
-          ;; (break "errorset(~a)" u)
-          999))))
+  ;; TO DO: output to both stdout and currently selected output
+  ;; device
+  (handler-case (list (eval u))         ; protected form
+    (sl-error-no-message (condition)
+      (if (or tr *debug) (invoke-debugger condition))
+      nil)
+    (sl-error-internal (condition)
+      (if msgp (format t "~&***** ~a~%" condition))
+      (if (or tr *debug) (invoke-debugger condition))
+      nil)
+    (sl-error (condition)
+      (if msgp
+          (let ((msg (slot-value condition 'errmsg)))
+            ;; If MESSAGE is a list then it is displayed without top
+            ;; level parentheses:
+            (format t "~&***** ~:[~a~;~{~a~^ ~}~]~%" (listp msg) msg)))
+      (if (or tr *debug) (invoke-debugger condition))
+      (slot-value condition 'errno))
+    (cl:error (condition)
+      (if msgp (format t "~&***** ~a~%" condition))
+      (if (or tr *debug) (invoke-debugger condition))
+      nil)))
 
 
 ;;; Vectors
@@ -1808,7 +1823,7 @@ EXPR PROCEDURE PAIR(U, V);
   (declare (list u v))
   (the list
        (if (/= (cl:length u) (cl:length v))
-           (cl:error "000 Different length lists in PAIR")
+           (error-internal "Different length lists in PAIR")
            (cl:map 'list #'cons u v))))
 
 (import 'cl:reverse)
@@ -1821,7 +1836,7 @@ EXPR PROCEDURE PAIR(U, V);
 ;;    RETURN W
 ;; END;
 
-(defalias 'reversip 'cl:nreverse)           ; PSL function
+(defalias 'reversip 'cl:nreverse)       ; PSL function
 
 (defun sassoc (u v fn)
   "SASSOC(U:any, V:alist, FN:function):any eval, spread
@@ -1833,6 +1848,13 @@ EXPR PROCEDURE SASSOC(U, V, FN);
       ELSE SASSOC(U, CDR V, FN);"
   (declare (list v) (type (function ()) fn))
   (or (cl:assoc u v :test #'equal) (funcall fn)))
+
+;; (import 'cl:sort)                       ; CSL function
+(defalias 'sort 'cl:sort)
+;; Defined this way so that it can be redefined in "rtools/sort.red"
+;; because this is what happens with CSL and PSL!  (The function sort
+;; is built into CSL and for PSL it is defined as an alias for gsort
+;; in "pslrend.red".)
 
 (defun sublis (x y)
   "SUBLIS(X:alist, Y:any):any eval, spread
@@ -1850,6 +1872,11 @@ EXPR PROCEDURE SUBLIS(X, Y);
                  END;"
   (declare (list x))
   (cl:sublis x y :test #'equal))
+
+(defun subla (x y)                      ; PSL function
+  "Eq version of sublis; replaces atoms only."
+  (declare (list x))
+  (cl:sublis x y :test #'eq))
 
 (defun subst (u v w)
   "SUBST(U:any, V:any, W:any):any eval, spread
@@ -2039,17 +2066,17 @@ closed.
   (the filehandle
        (if filehandle
            (prog1 filehandle
-             (cond
-               ((eq (car filehandle) 'file)
+             (case (car filehandle)
+               (file
                 ;; Output file stream ('file output-stream):
                 (cl:close (cadr filehandle)))
                #+SBCL
-               ((eq (car filehandle) 'pipe)
+               (pipe
                 ;; Output pipe stream ('pipe output-stream . process):
                 (sb-ext:process-close (cddr filehandle)) ; closes output-stream
                 (sb-ext:process-kill (cddr filehandle) 9)) ; 9 = SIGKILL
                #+CLISP
-               ((eq (car filehandle) 'pipe)
+               (pipe
                 ;; Output pipe stream ('pipe output-stream):
                 (cl:close (cadr filehandle))) ; closes output-stream
                (t
@@ -2081,7 +2108,7 @@ selected output file or LEN is negative or zero.
   (the fixnum
        (if len
            (if (or (not (integerp len)) (<= len 0))
-               (cl:error "~a is an invalid line length" len)
+               (error-internal "~a is an invalid line length" len)
                (prog1 %linelength (setq %linelength len)))
            %linelength)))
 
@@ -2163,16 +2190,17 @@ OUTPUT or the file can't be opened.
   ;; #+cygwin (setq file (win-to-cyg file))
   #+cygwin (setq file (parse-namestring file)) ; convert Windows filename to Cygwin format
   (the filehandle
-       (cond ((eq how 'input)
-              (let ((fh (cl:open file :direction :input)))
-                ;; An input filehandle is a pair of the form
-                ;; (input-stream . echo-stream):
-                (cons fh (make-echo-stream fh *standard-output*))))
-             ((eq how 'output)
-              (list 'file
-                    (cl:open file :direction :output
-                             :if-exists :supersede :if-does-not-exist :create)))
-             (t (cl:error "~a is not option for OPEN" how)))))
+       (case how
+         (input
+          (let ((fh (cl:open file :direction :input)))
+            ;; An input filehandle is a pair of the form
+            ;; (input-stream . echo-stream):
+            (cons fh (make-echo-stream fh *standard-output*))))
+         (output
+          (list 'file
+                (cl:open file :direction :output
+                         :if-exists :supersede :if-does-not-exist :create)))
+         (t (error-internal "~a is not option for OPEN" how)))))
 
 (defun pagelength (len)
   (declare (ignore len))
@@ -2221,17 +2249,16 @@ This is the only function that actually produces graphical output."
     (cl:princ s))
   nil)
 
-(defun princ (u)
-  ;; Not used in REDUCE since redefined in rlisp/rsupport.red as
-  ;; symbolic procedure princ u; prin2 u;
-  "PRINC(U:id):id eval, spread
-U must be a single character id such as produced by EXPLODE or
-read by READCH or the value of !$EOL!$. The effect is the character
-U displayed upon the currently selected output device. The value of
-!$EOL!$ causes termination of the current line like a call to TERPRI."
-  (cond ((eq u $eol$) (terpri))
-        (t (%prin-string (%princ-to-string u))))
-  u)
+;; PRINC(U:id):id eval, spread
+;; U must be a single character id such as produced by EXPLODE or
+;; read by READCH or the value of !$EOL!$. The effect is the character
+;; U displayed upon the currently selected output device. The value of
+;; !$EOL!$ causes termination of the current line like a call to TERPRI.
+
+;; The SL definition of PRINC is not used in REDUCE since PRINC is
+;; redefined in rlisp/rsupport.red as
+;; symbolic procedure princ u; prin2 u;
+;; so define it that way below and then flag it lose in clprolo.red.
 
 (defun print (u)
   "PRINT(U:any):any eval, spread
@@ -2250,14 +2277,15 @@ result of EXPLODE expansion; special characters are prefixed with the
 escape character !, and strings are enclosed in \"...\".  Lists are
 displayed in list-notation and vectors in vector-notation.  The value
 of U is returned."
-  (cond ((symbolp u) (%prin-string (%prin1-id-to-string u)))
-        ((stringp u) (%prin-string (%prin1-string-to-string u)))
-        ((floatp u) (%prin-string (%prin-float-to-string u)))
-        ((vectorp u) (%prin-vector u #'prin1))
-        ((atom u) (%prin-string (prin1-to-string u)))
-        ;; ((eq (car u) 'quote) (%prin-string "'") (prin1 (cadr u)))
-        ;; CSL doesn't treat quote specially
-        (t (%prin-cons u #'prin1)))
+  (typecase u
+    (symbol (%prin-string (%prin1-id-to-string u)))
+    (string (%prin-string (%prin1-string-to-string u)))
+    (cl:float (%prin-string (%prin-float-to-string u)))
+    (vector (%prin-vector u #'prin1))
+    (atom (%prin-string (prin1-to-string u)))
+    ;; ((eq (car u) 'quote) (%prin-string "'") (prin1 (cadr u)))
+    ;; CSL doesn't treat quote specially
+    (t (%prin-cons u #'prin1)))
   u)
 
 (defun prin2 (u)
@@ -2268,15 +2296,18 @@ described in the EXPLODE function with the exceptions that the escape
 character does not prefix special characters and strings are not
 enclosed in \"...\".  Lists are displayed in list-notation and vectors
 in vector-notation.  The value of U is returned."
-  (cond ((symbolp u) (%prin-string (%princ-id-to-string u)))
-        ((stringp u) (%prin-string u))
-        ((floatp u) (%prin-string (%prin-float-to-string u)))
-        ((vectorp u) (%prin-vector u #'prin2))
-        ((atom u) (%prin-string (princ-to-string u)))
-        ;; ((eq (car u) 'quote) (%prin-string "'") (prin2 (cadr u)))
-        ;; CSL doesn't treat quote specially
-        (t (%prin-cons u #'prin2)))
+  (typecase u
+    (symbol (%prin-string (%princ-id-to-string u)))
+    (string (%prin-string u))
+    (cl:float (%prin-string (%prin-float-to-string u)))
+    (vector (%prin-vector u #'prin2))
+    (atom (%prin-string (princ-to-string u)))
+    ;; ((eq (car u) 'quote) (%prin-string "'") (prin2 (cadr u)))
+    ;; CSL doesn't treat quote specially
+    (t (%prin-cons u #'prin2)))
   u)
+
+(defalias 'princ 'prin2)
 
 (defun %princ-id-to-string (u)
   "Convert identifier U to a string without any escapes."
@@ -2358,6 +2389,7 @@ If nil then floats are printed without any additional rounding.")
                        ;; factor s = 10^(d-e-1), round and divide s out again:
                        (e1 (- *float-print-precision* e 1))
                        (s (expt 10d0 (if (> e1 300) 300 e1)))
+                       ;; Code for (> e1 300) added by RS.
                        (s1 (if (> e1 300) (expt 10d0 (- e1 300)) 1d0)))
                   (if (> e1 300)
                    (setq u (/ (/ (fround (* (* u s) s1)) s) s1))
@@ -2396,13 +2428,14 @@ If nil then floats are printed without any additional rounding.")
 U is the cdr of a cons cell: nil, an atom or another cons cell.
 Cons cell elements are printed using PRINFN."
   (declare (cl:function prinfn))
-  (cond ((null u))                      ; do nothing
-        ((atom u)
-         (%prin-space-maybe) (%prin-string ".")
-         (%prin-space-maybe) (funcall prinfn u))
-        (t (%prin-space-maybe)
-           (funcall prinfn (car u))
-           (%prin-cdr (cdr u) prinfn)))
+  (typecase u
+    (null)                              ; do nothing
+    (atom
+     (%prin-space-maybe) (%prin-string ".")
+     (%prin-space-maybe) (funcall prinfn u))
+    (t (%prin-space-maybe)
+       (funcall prinfn (car u))
+       (%prin-cdr (cdr u) prinfn)))
   nil)
 
 (defun %default-read-stream ()
@@ -2582,13 +2615,13 @@ selected output file.
          (setq %write-stream +default-write-stream+
                *standard-output* (cadr %write-stream))
          (when filehandle
-           (cond
-             ((eq (car filehandle) 'file)
+           (ecase (car filehandle)
+             (file
               ;; Output file stream ('file output-stream):
               (if (open-stream-p (cadr filehandle))
                   (setq *standard-output* (cadr filehandle)
                         %write-stream filehandle)))
-             ((eq (car filehandle) 'pipe)
+             (pipe
               ;; Output pipe stream ('pipe output-stream . process):
               (if (open-stream-p (cadr filehandle))
                   (setq *standard-output* (cadr filehandle)
@@ -2599,25 +2632,26 @@ selected output file.
 stream by this function."
   (declare (simple-string command) (symbol how))
   (the filehandle
-       (cond ((eq how 'output)
-              #+SBCL
-              ;; An output filehandle is a dotted-list of the form ('file .
-              ;; output-stream) or ('pipe output-stream . process):
-              (let ((p
-                     #+win32
-		              (sb-ext:run-program "cmd" (list "/c" command)
-                                          :wait nil :search t :input :stream
-                                          :escape-arguments nil)
-		              #+unix
-		              (sb-ext:run-program "sh" (list "-c" command)
-					                      :wait nil :search t :input :stream)))
-                (cons 'pipe (cons (sb-ext:process-input p) p)))
-              #+CLISP
-              ;; An output filehandle is a dotted-list of the form ('file .
-              ;; output-stream) or ('pipe output-stream . nil):
-              ;; (list 'pipe (ext:run-shell-command command :input :stream :wait nil)))
-              (list 'pipe (ext:make-pipe-output-stream command)))
-             (t (cl:error "~a is not (currently) an option for PIPE-OPEN" how)))))
+       (case how
+         (output
+          #+SBCL
+          ;; An output filehandle is a dotted-list of the form ('file .
+          ;; output-stream) or ('pipe output-stream . process):
+          (let ((p
+                 #+win32
+		          (sb-ext:run-program "cmd" (list "/c" command)
+                                      :wait nil :search t :input :stream
+                                      :escape-arguments nil)
+		          #+unix
+		          (sb-ext:run-program "sh" (list "-c" command)
+					                  :wait nil :search t :input :stream)))
+            (cons 'pipe (cons (sb-ext:process-input p) p)))
+          #+CLISP
+          ;; An output filehandle is a dotted-list of the form ('file .
+          ;; output-stream) or ('pipe output-stream . nil):
+          ;; (list 'pipe (ext:run-shell-command command :input :stream :wait nil)))
+          (list 'pipe (ext:make-pipe-output-stream command)))
+         (t (error-internal "~a is not (currently) an option for PIPE-OPEN" how)))))
 
 (defun channelflush (filehandle)        ; PSL
   (declare (type filehandle filehandle))
@@ -2807,8 +2841,7 @@ lisp> (string2list \"STRING\")
                ;; Was 127, but then reading rlisp/tok.red fails!
                ;; Should 128 -> nil as specified for PSL?
                (code-char x)
-               (cl:error
-                "***** SL error in `%character': ~d is not a character code" x))
+               (error-internal "~d is not a character code" x))
            (%id-to-char-invert-case x))))
 
 (defun list2string (l)                  ; PSL
@@ -3254,7 +3287,7 @@ When all done, execute FASLEND;~2%" name))
             (cl:open (setq %faslout-name.lisp (concat2 name ".lisp"))
                      :direction :output :if-exists :supersede
                      :external-format #+SBCL :UTF-8 #+CLISP charset:UTF-8))
-    (cl:error "Faslout: cannot open ~a" %faslout-name.lisp))
+    (error-internal "FASLOUT cannot open ~a" %faslout-name.lisp))
   (if %faslout-header
       (cl:princ %faslout-header %faslout-stream))
   (setf %faslout-saved-prettyprint (symbol-function 'prettyprint)
@@ -3273,11 +3306,11 @@ When all done, execute FASLEND;~2%" name))
 (defun faslend ()
   "Terminate a previous FASLOUT and generate the compiled file."
   (unless *writingfaslfile
-    (cl:error "FASLEND is only allowed after a previous FASLOUT"))
+    (error-internal "FASLEND is only allowed after a previous FASLOUT"))
   ;; First, tidy up after the call of FASLOUT:
   (unless
       (cl:close %faslout-stream)
-    (cl:error "Faslend: cannot close ~a" %faslout-name.lisp))
+    (error-internal "FASLEND cannot close ~a" %faslout-name.lisp))
   (setq *writingfaslfile nil
         *defn nil) ; necessary here if faslend not input as a statement
   (setf (symbol-function 'prettyprint) %faslout-saved-prettyprint)
@@ -3291,7 +3324,7 @@ When all done, execute FASLEND;~2%" name))
   ;;      ;; (delete-file %faslout-name.lisp) ; keep to aid debugging ???
   ;;      (format t "Compiling ~a...done" %faslout-name.lisp)
   ;;      ;; nil)
-  ;;      (cl:error "Error compiling ~a" %faslout-name.lisp))
+  ;;      (error-internal "Error compiling ~a" %faslout-name.lisp))
   )
 
 (defvar cursym*)
@@ -3330,13 +3363,7 @@ When all done, execute FASLEND;~2%" name))
                +default-write-stream+ (%default-write-stream)
                %write-stream +default-write-stream+))))
 
-(defun start-reduce ()                  ; Now probably redundant
-  "Switch to STANDARD LISP mode and start REDUCE."
-  (standard-lisp)
-  (begin)
-  nil)
-
-(import '(standard-lisp start-reduce) :cl-user)
+(import '(standard-lisp) :cl-user)
 
 (defun reset-readtable ()
   "Switch to Common Lisp read syntax."
@@ -3444,3 +3471,5 @@ interpret otherwise.  The default is compile."
 ;; To do:
 ;; Use pathnames more consistently.
 ;; Revise documentation strings and function order to follow PSL manual more closely.
+
+;; Move implementation into a separate package and only export required symbols.  This should make profiling easier!

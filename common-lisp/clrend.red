@@ -244,11 +244,6 @@ deflist('((tr rlis) (untr rlis) (trst rlis) (untrst rlis)),'stat);
 
 % Some CSL compatibility, taken from support/psl{,rend}.red:
 
-% symbolic inline procedure princ x; prin2 x;
-
-% princ is defined in rlisp/rsupport.red, but the above inline
-% definition would be better!
-
 symbolic inline procedure prin x;  prin1 x;
 
 remflag('(printc), 'lose);
@@ -294,6 +289,12 @@ flag('(systo_get!-resource!-directory), 'lose);
 
 procedure compute!-prompt!-string(count,level); "";
 
+% The function subla is built into CSL and PSL and flagged lose.  It
+% is also defined in "rtools/general.red" and "alg/general.red", but
+% is needed early in the boot process, so I have defined it in
+% "sl-on-cl.lisp".
+
+flag('(subla), 'lose);
 
 % Fixes for the crack suite
 % =========================

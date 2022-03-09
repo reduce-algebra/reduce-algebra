@@ -3,6 +3,7 @@ module remake; % Update the fast loading (fasl) version of a file.
 % Authors: Martin L. Griss and Anthony C. Hearn.
 % Modified by ACN for the Sourceforge version.
 % Modified again by FJW for REDUCE on Common Lisp.
+% Modified by Rainer Schöpf to support Armed Bear Common Lisp.
 % The standard version is "packages/support/remake.red".
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
