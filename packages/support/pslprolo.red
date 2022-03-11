@@ -100,6 +100,17 @@ load numeric!-ops;
 load chars;
 load f!-strings; % for string-store
 
+% inum is needed for alg/farith.red
+remflag('(iplus2 itimes2 isub1 iadd1 iminus idifference iquotient
+          iremainder igreaterp ilessp iminusp),
+        'lose);
+
+load inum;
+
+flag('(iplus2 itimes2 isub1 iadd1 iminus idifference iquotient
+       iremainder igreaterp ilessp iminusp),
+     'lose);
+
 % Resolution of non-local variable definitions.
 
 % The following PSL variables differ from the Standard LISP Report
