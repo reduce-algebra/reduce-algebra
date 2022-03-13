@@ -324,6 +324,16 @@ loop  (cond ((atom l) (return nil))
                 (t (error "Bad type ~S in putd" type)))
              a))))))
 
+(cond
+  ((null (getd 'copyd))
+   (de copyd (new old)
+     (prog (x)
+       (setq x (getd old))
+       (cond
+         ((null x) (error 1 (cons old "has no definition in copyd"))))
+       (putd new (car x) (cdr x))
+       (return new)))))
+
 % A version of this in rlisp/rsupport.red tries to compile the
 % odd sort of definition involved, but I will not!
 (de putc (a b c)

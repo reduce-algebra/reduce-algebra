@@ -52,6 +52,11 @@ const char *decodeObject(LispObject a)
             if (len < 10) sprintf(r, "str %s \"%s\"", Addr(a&~TAG_BITS), s);
             else sprintf(r, "str %s \"%.10s...\"", Addr(a&~TAG_BITS), s);
         }
+        else if (is_forward(vechdr(a)))
+        {   decodeObject(TAG_VECTOR+(vechdr(a)&~TAG_BITS));
+            std::strcat(r, " forwarded");
+            return r;
+        }
         else sprintf(r, "vector at %s", Addr(a&~TAG_BITS));
         return r;
     case TAG_HDR_IMMED:

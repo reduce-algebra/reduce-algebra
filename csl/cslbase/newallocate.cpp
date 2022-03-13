@@ -683,6 +683,7 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
                           static_cast<uintptr_t>(gFringe));
     newChunk->length = n+targetChunkSize;
     newChunk->isPinned = false;
+    newChunk->evacuated = false;
     newChunk->chunkPinChain = nullptr;
     size_t chunkNo = currentPage->chunkCount++;
 //# zprintf("Page %a gets %d\n", currentPage, currentPage->chunkCount);
@@ -695,12 +696,13 @@ void ableToAllocateNewChunk(uintptr_t threadId, size_t n, size_t gap)
 // garbage collection, so I will make it seem like a respectable Lisp
 // vector with binary content.
 //    LispObject rr = result;
-    my_assert(findPage(result) != nullptr);
+    my_assert(findPage(result) != nullptr, "findPage failed");
 //    zprintf("%a %a\n", result, rr);
     setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
     fringeBis = newChunk->dataStart() + n;
 //  zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
     gFringe = limitBis = limit = fringeBis + targetChunkSize;
+    zprintf("!set limit = %a fringeBis = %a\n", limit, fringeBis);
 }
 
 void tryToSatisfyAtLeastOneThread(unsigned int &pendingCount)
@@ -1342,7 +1344,8 @@ uint64_t threadBit(unsigned int n)
 }
 
 unsigned int allocateThreadNumber()
-{   my_assert(threadMap != 0); // I need at least one spare.
+{   my_assert(threadMap != 0, "no more threads available");
+// I need at least one spare.
     unsigned int n = nlz(threadMap);
 // Now n is 0 if the top bit is set, 1 for the next etc down to 63 when
 // the least bit is the only one set.
@@ -1351,7 +1354,7 @@ unsigned int allocateThreadNumber()
 }
 
 void releaseThreadNumber(unsigned int n)
-{   my_assert(n <=63);
+{   my_assert(n <=63, "thread number out of range");
     threadMap |= threadBit(n);
 }
 

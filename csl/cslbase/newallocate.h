@@ -196,7 +196,6 @@ extern bool allocateSegment(size_t);
 // might be bigger than the remaining available block of memory.
 
 class Chunk
-
 {
 public:
     uintptr_t length;
@@ -208,6 +207,7 @@ public:
 // pinnedObjects is a reference for identifyingobjects present in a Chunk
 // where isPinned is true.
     bool isPinned;
+    bool evacuated;
     LispObject pinnedObjects;
 // At the start of garbage collection as I collect a chain of pinned chunks
 // those chunks may appear on the list in arbitrary order, but at the end
@@ -285,11 +285,9 @@ enum PageType
 class alignas(pageSize) Page
 {
 public:
-// I put chain and chunkCount consecutive to help cache access when a
-// new page is set up. This is a very minor optimisation!
+    PageType type;
     Page* chain;
     size_t chunkCount;
-    PageType type;
     uintptr_t pageFringe;
     uintptr_t pageLimit;
     bool hasPinned;
@@ -679,6 +677,10 @@ inline const char* Addr(uintptr_t p)
     {   std::strcpy(r, "nil");
         return r;
     }
+    else if (p == 0U)
+    {   std::strcpy(r, "zero");
+        return r;
+    }
     int hs = findHeapSegment(p);
     if (hs != -1)
     {   uintptr_t o = p - reinterpret_cast<uintptr_t>(heapSegment[hs]);
@@ -724,6 +726,18 @@ inline const char* Addr(uintptr_t p)
 template <typename T>
 inline const char* Addr(T p)
 {   return Addr((uintptr_t)p);
+}
+
+// If Addr(n) yields #p:o then unAddr(p,o) should return n
+
+inline uintptr_t unAddr(uintptr_t p, uintptr_t o)
+{    return reinterpret_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
+}
+
+// .. and extra for the case of addresses in segments 1 and beyond.
+
+inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
+{    return reinterpret_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
 }
 
 // This finds a page that a potential pointer p is within, or returns nullptr
@@ -942,6 +956,7 @@ inline LispObject get_n_bytes(size_t n, uintptr_t r, uintptr_t w)
             currentChunk = newChunk;
             newChunk->length = targetChunkSize+n;
             newChunk->isPinned = false;
+            newChunk->evacuated = false;
             newChunk->pinnedObjects = TAG_FIXNUM;
             newChunk->chunkPinChain = nullptr;
             size_t chunkNo = p->chunkCount++;
@@ -951,6 +966,7 @@ inline LispObject get_n_bytes(size_t n, uintptr_t r, uintptr_t w)
             limitBis = newLimit;
 #ifdef NO_THREADS
             limit = newLimit;
+            zprintf("limit = %a\n", limit);
             bool ok = true;
 #else // NO_THREADS
 // I wish to write back limit but it is possible that in
@@ -1327,6 +1343,7 @@ inline void regionInPageIsFull(unsigned int threadId, size_t n,
                            static_cast<uintptr_t>(gFringe));
             c->length = n + targetChunkSize;
             c->isPinned = false;
+            c->evacuated = false;
             c->pinnedObjects = TAG_FIXNUM;
             size_t chunkNo = currentPage->chunkCount++;
 //#         zprintf("regioninpagefull %a %d\n", currentPage, currentPage->chunkCount);
@@ -1694,4 +1711,3 @@ inline void testLayout()
 #endif // header_newallocate_h
 
 // end of newallocate.h
-

@@ -37,13 +37,19 @@
 
 LispObject runtest(int n, int payload)
 {
-    if (Crand()%2 == 0)
+    if ((Crand()&255) < 2)
     {   Lgc(nil, fixnum_of_int(1));
         zprintf("Fringe = %a at end of GC\n", fringe);
         zprintf("Limit = %a at end of GC\n\n\n", limit);
     }
     if (n < 2) return Lflag(nil, ncons(lisp_true), fixnum_of_int(0x33333));
-    return cons(runtest(n-1, payload), runtest(n-2, payload));
+// This version does not rely on ambiguous pointers to preserve anything.
+    LispObject w = runtest(n-1, payload);
+    RealSave s2(w);
+    LispObject x = runtest(n-2, payload);
+    s2.restore(w);
+    return cons(w, x);
+//  return cons(runtest(n-1, payload), runtest(n-2, payload));
 }
 
 #undef INIT_OBVECI_SIZE
