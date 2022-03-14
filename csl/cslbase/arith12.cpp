@@ -431,16 +431,33 @@ static LispObject Lilogxor_0(LispObject)
 {   return onevalue(fixnum_of_int(0));
 }
 
+static LispObject Lilogeqv_0(LispObject)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+static LispObject Lilognot_1(LispObject, LispObject a)
+{   if (!is_fixnum(a)) return aerror1("ilognot", a);
+    return onevalue (~(a - TAG_FIXNUM)) + TAG_FIXNUM;
+}
+
 static LispObject Lilogand_1(LispObject, LispObject a1)
-{   return onevalue(a1);
+{   if (!is_fixnum(a1)) return aerror1("ilogand", a1);
+    return onevalue(a1);
 }
 
 static LispObject Lilogor_1(LispObject, LispObject a1)
-{   return onevalue(a1);
+{   if (!is_fixnum(a1)) return aerror1("ilogor", a1);
+    return onevalue(a1);
 }
 
 static LispObject Lilogxor_1(LispObject, LispObject a1)
-{   return onevalue(a1);
+{   if (!is_fixnum(a1)) return aerror1("ilogxor", a1);
+    return onevalue(a1);
+}
+
+static LispObject Lilogeqv_1(LispObject, LispObject a1)
+{   if (!is_fixnum(a1)) return aerror1("ilogeqv", a1);
+    return onevalue(a1);
 }
 
 static LispObject Lilogand_2(LispObject, LispObject a1, LispObject a2)
@@ -456,6 +473,11 @@ static LispObject Lilogor_2(LispObject, LispObject a1, LispObject a2)
 static LispObject Lilogxor_2(LispObject, LispObject a1, LispObject a2)
 {   if (!is_fixnum(a1) || !is_fixnum(a2)) return aerror2("ilogxor", a1, a2);
     return onevalue((a1 ^ a2) + TAG_FIXNUM);
+}
+
+static LispObject Lilogeqv_2(LispObject, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || !is_fixnum(a2)) return aerror2("ilogeqv", a1, a2);
+    return onevalue(~(a1 ^ a2) + TAG_FIXNUM);
 }
 
 static LispObject Lilogand_3(LispObject, LispObject a1, LispObject a2,
@@ -477,6 +499,13 @@ static LispObject Lilogxor_3(LispObject, LispObject a1, LispObject a2,
 {   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
         return aerror3("ilogxor", a2, a2, a3);
     return onevalue(a1 ^ a2 ^ a3);
+}
+
+static LispObject Lilogeqv_3(LispObject, LispObject a1, LispObject a2,
+                             LispObject a3)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+        return aerror3("ilogeqv", a2, a2, a3);
+    return onevalue(~((a1 ^ a2 ^ a3) - TAG_FIXNUM) + TAG_FIXNUM);
 }
 
 static LispObject Lilogand_4up(LispObject env, LispObject a1,
@@ -522,6 +551,22 @@ static LispObject Lilogxor_4up(LispObject env, LispObject a1,
         a1 = a1 ^ a2;
     }
     a1 = (a1 & ~static_cast<LispObject>(TAG_BITS)) | TAG_FIXNUM;
+    return onevalue(a1);
+}
+
+static LispObject Lilogeqv_4up(LispObject env, LispObject a1,
+                               LispObject a2,
+                               LispObject a3, LispObject a4up)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+        return aerror3("ilogeqv", a2, a2, a3);
+    a1 = (a1 ^ a2 ^ a3) - TAG_FIXNUM;
+    while (a4up != nil)
+    {   a2 = car(a4up);
+        a4up = cdr(a4up);
+        if (!is_fixnum(a2)) return aerror1("ilogeqv", a2);
+        a1 = a1 ^ (a2 - TAG_FIXNUM);
+    }
+    a1 = (~a1) + TAG_FIXNUM;
     return onevalue(a1);
 }
 
@@ -614,7 +659,12 @@ LispObject Liremainder_2(LispObject, LispObject a, LispObject b)
 
 LispObject Lirightshift(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("irightshift", a, b);
-    return onevalue(fixnum_of_int(int_of_fixnum(a) >> int_of_fixnum(b)));
+    return onevalue(fixnum_of_int(ASR(int_of_fixnum(a), uint_of_fixnum(b))));
+}
+
+LispObject Lileftshift(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ileftshift", a, b);
+    return onevalue(fixnum_of_int(uint_of_fixnum(a) << uint_of_fixnum(b)));
 }
 
 LispObject Lisub1(LispObject, LispObject a)
@@ -787,9 +837,11 @@ setup_type const arith12_setup[] =
     DEF_2("igreaterp",          Ligreaterp_2),
     DEF_2("ileq",               Lileq_2),
     DEF_2("ilessp",             Lilessp_2),
+    DEF_1("ilognot",            Lilognot_1),
     {"ilogand",                 Lilogand_0, Lilogand_1, Lilogand_2, Lilogand_3, Lilogand_4up},
     {"ilogor",                  Lilogor_0, Lilogor_1, Lilogor_2, Lilogor_3, Lilogor_4up},
     {"ilogxor",                 Lilogxor_0, Lilogxor_1, Lilogxor_2, Lilogxor_3, Lilogxor_4up},
+    {"ilogeqv",                 Lilogeqv_0, Lilogeqv_1, Lilogeqv_2, Lilogeqv_3, Lilogeqv_4up},
     DEF_2("imax",               Limax_2),
     DEF_2("imin",               Limin_2),
     DEF_1("iminus",             Liminus),
@@ -799,6 +851,7 @@ setup_type const arith12_setup[] =
     DEF_2("iquotient",          Liquotient_2),
     DEF_2("iremainder",         Liremainder_2),
     DEF_2("irightshift",        Lirightshift),
+    DEF_2("ileftshift",         Lileftshift),
     DEF_1("isub1",              Lisub1),
     {"itimes",                  Litimes_0, Litimes_1, Litimes_2, Litimes_3, Litimes_4up},
     DEF_2("itimes2",            Litimes_2),

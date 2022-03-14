@@ -271,6 +271,14 @@ inline constexpr intptr_t int_of_fixnum(LispObject x)
             ~static_cast<intptr_t>(15)) / 16;
 }
 
+// This version is here to return an unsigned integer. If the fixnum is
+// negative this will be a value with its top bit set.
+
+inline constexpr uintptr_t uint_of_fixnum(LispObject x)
+{   return (static_cast<intptr_t>(x) &
+            ~static_cast<intptr_t>(15)) / 16;
+}
+
 // The following test will see if an intptr_t value can be reduced to
 // a Lisp fixnum without loss. I think that the logic is pretty clearly
 // expressed here, but I want the code to run fast. Well I observe that
@@ -594,6 +602,9 @@ static constexpr uintptr_t TYPE_ENCAPSULATE = 0x3b<<Tw; // Encapsulated address
 
 static constexpr uintptr_t TYPE_PADDER      = 0x7b<<Tw; // a padder vector
 
+inline bool is_padder_header(uintptr_t h)
+{   return (h & header_mask) == TYPE_PADDER;
+}
 
 inline bool vector_holds_binary(Header h)
 {   return  (h & (0x2<<Tw)) != 0;

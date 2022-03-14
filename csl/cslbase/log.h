@@ -131,12 +131,12 @@ inline void my_assert(bool ok, F&& action)
 // if the assertion fails.
     if (!ok)
     {   action();
-        my_abort();
+        my_abort("assertion failed");
     }
 }
 
 inline void my_assert(bool ok)
-{   if (!ok) my_abort();
+{   if (!ok) my_abort("my_assert without specific message");
 }
 
 // This is to help me in trace messages.
