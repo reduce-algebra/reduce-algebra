@@ -452,7 +452,8 @@ include '../include/begin-body.php';
         the right &int; symbol.
     </dd>
     <dt>Limit&hellip;</dt>
-    <dd>This template supports limits of (mostly) continuous functions
+    <dd>
+        This template supports limits of (mostly) continuous functions
         (as opposed to sequences). By default, it computes a two-sided
         limit, which is appropriate if the function is continuous at the
         limit point. By clicking successively on the superscript box to
@@ -462,21 +463,17 @@ include '../include/begin-body.php';
         two-sided limit. All fields are required.
     </dd>
     <dt>Sum or Product&hellip;</dt>
-    <dd>This template supports repeated sums and products of sequences, i.e. functions of a discrete control variable
-        that
-        runs over a range of successive integers. You select whether to construct a sum or product by clicking on the
-        appropriate toggle button, which defaults to a sum.
+    <dd>
+        This template supports repeated sums and products of sequences, i.e. functions of a discrete control variable
+        that runs over a range of successive integers. You select whether to construct a sum or product by clicking on
+        the appropriate toggle button, which defaults to a sum.
     </dd>
     <dd>
         You can select whether the range is considered to be symbolic or numeric, which selects different algorithms.
-        Selecting
-        the symbolic range option (the default) implies that you want a closed-form result, which is analogous to
-        evaluating an
-        integral, and the upper or both limit values can be omitted, giving an indefinite sum or product. Selecting the
-        numeric
-        range option implies explicitly adding or multiplying a finite sets of values using a <code>for</code> loop, and
-        all
-        field values are required.
+        Selecting the symbolic range option (the default) implies that you want a closed-form result, which is analogous
+        to evaluating an integral, and the upper or both limit values can be omitted, giving an indefinite sum or
+        product. Selecting the numeric range option implies explicitly adding or multiplying a finite sets of values
+        using a <code>for</code> loop, and all field values are required.
     </dd>
     <dt>Matrix&hellip;</dt>
     <dd>
@@ -495,8 +492,43 @@ include '../include/begin-body.php';
         To enter a matrix with more than 4 rows or columns, you can enter as much as possible using the template, then
         click on the <em>Edit</em> button and extend the matrix in the input editor.
     </dd>
+    <dt>Solve Equation(s)&hellip;</dt>
+    <dd>
+        This template supports solving one or several coupled algebraic equations. If no unknowns are specified then
+        REDUCE solves for all those found. Unknowns must be kernels.
+    </dd>
+    <dt>Solve an ODE&hellip;</dt>
+    <dd>
+        This template supports solving a single ordinary differential equation (ODE), meaning an equation involving the
+        derivative(s) of a single unknown dependent variable or function with respect to a single independent variable
+        (or function). An ODE in the field labelled <b>ODE</b> is the only required input and it can be an expression,
+        which is implicitly equated to zero. REDUCE can normally deduce the dependent variable or function, and the
+        independent variable, but if necessary either or both can be specified in the fields labelled respectively
+        <b>Dep Var</b> and <b>Ind Var</b>.
+    </dd>
+    <dd>
+        Derivatives with respect to the independent variable can be specified using prime notation, where a prime is
+        indicated by a single forward quote, provided the independent variable is explicitly specified. (This syntax is
+        not accepted directly by REDUCE.) For example, <code>y''</code> can be used to denote
+        d<sup>2</sup>y/dx<sup>2</sup> provided the independent variable is explicitly specified to be <code>x</code>; it
+        is converted to the standard REDUCE syntax <code>df(y,x,2)</code>.
+    </dd>
+    <dd>
+        Initial, boundary or mixed conditions can be specified in the field labelled <b>Conds</b>, as either a sequence
+        of equations separated by commas in the case of conditions applied at a single point (e.g. initial conditions)
+        or a sequence of lists of equations separated by commas in the case of conditions applied at more than one point
+        (e.g. boundary conditions), where each list of equations represents conditions imposed at one point.
+    </dd>
+    <dd>
+        ODE solving can be controlled by a number of optional switches that are off by default but can be turned on
+        locally using the check boxes at the bottom of the template. Hover over an option for a brief pop-up
+        description. These settings have no effect outside the current solution process, although the
+        <code>algint</code> option corresponds to the standard REDUCE <code>algint</code> switch that controls the
+        integrator.
+    </dd>
     <dt>For Statement&hellip;</dt>
-    <dd>This template supports the creation of <code>for</code> statements
+    <dd>
+        This template supports the creation of <code>for</code> statements
         and is modelled on the diagram at the start of the section of the
         REDUCE manual headed "FOR Statements". You choose between
         iterating over a numerical range or a list by clicking on the
@@ -638,7 +670,7 @@ include '../include/begin-body.php';
     </li>
 </ul>
 
-<address>Francis Wright, February 2022</address>
+<address>Francis Wright, March 2022</address>
 </div><!-- opened in begin-body.php -->
 <?php include '../include/footer.php'; ?>
 </body>

@@ -133,19 +133,19 @@ export class Template extends TempFuncs {
 	 * Create a generic template dialogue.
 	 * @param {string} templateName - The id attribute of the modal-dialogue element, but with added spaces.
 	 */
-	 constructor(templateName: string) {
+	constructor(templateName: string) {
 		super(templateName.replace(/\s+/g, ""));
 		this.pattern = this.dialogue.querySelector("div.pattern");
 		this.alertHeader = `${templateName} Error\n`;
 
 		// Edit button action:
 		this.buttons[1].addEventListener("click", () => {
-			// try {
-			// No fields are required:
-			this.checkNonEmpty = false;
-			this.inputDivInsert(this.result());
-			this.buttons[3].click();
-			// } catch (ignored) { }
+			try {
+				// No fields are normally required:
+				this.checkNonEmpty = false;
+				this.inputDivInsert(this.result());
+				this.buttons[3].click();
+			} catch (ignored) { }
 			inputDiv.focus(); // always return focus to input editor
 		});
 
@@ -164,7 +164,7 @@ export class Template extends TempFuncs {
 	/**
 	 * Reset the values of all input fields.
 	 */
-	 resetButtonAction() {
+	resetButtonAction() {
 		// This seems to be necessary!
 		super.resetButtonAction();
 	}
@@ -175,9 +175,9 @@ export class Template extends TempFuncs {
 	 * @param {HTMLInputElement} input - The input element.
 	 * @returns {string} The non-empty value of the input element.
 	 */
-	getValueCheckNonEmpty(input: HTMLInputElement) {
+	getValueCheckNonEmpty(input: HTMLInputElement, checkNonEmpty?: boolean) {
 		const value = input.value.trim();
-		if (this.checkNonEmpty && !value) {
+		if ((checkNonEmpty || this.checkNonEmpty) && value.length === 0) {
 			alert(this.alertHeader +
 				"A required field is empty.");
 			throw new Error("empty field");
@@ -198,7 +198,7 @@ export class Functions extends TempFuncs {
 	 * Create a generic function dialogue.
 	 * @param {string} dialogueId - The id attribute of the modal-dialogue element.
 	 */
-	 constructor(functionsId: string) {
+	constructor(functionsId: string) {
 		super(functionsId);
 		this.selectedFunction = undefined;
 
@@ -228,7 +228,7 @@ export class Functions extends TempFuncs {
 	/**
 	 * Reset the values of all input fields.
 	 */
-	 resetButtonAction() {
+	resetButtonAction() {
 		super.resetButtonAction();
 		if (this.selectedFunction) {
 			this.selectedFunction.classList.remove("selected");
