@@ -185,6 +185,8 @@ include '../include/begin-head.php';
                                 type="button">Matrix&hellip;</button></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SolveTemplate"
                                 type="button">Solve Equation(s)&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ODESolveTemplate"
+                                type="button">Solve an ODE&hellip;</button></li>
                         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ForTemplate"
                                 type="button">For Statement&hellip;</button></li>
                     </ul>
@@ -257,6 +259,7 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 
 <!-- Modal Dialogues -->
 <script type="module" src="GenJS/TempFuncs.js"></script>
+<script type="module" src="GenJS/Templates.js"></script>
 <?php
     include './LoadPackagesDialogue.inc';
 
@@ -267,6 +270,7 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
     include './Templates/SumProdTemplate.inc';
     include './Templates/MatrixTemplate.inc';
     include './Templates/SolveTemplate.inc';
+    include './Templates/ODESolveTemplate.inc';
     include './Templates/ForTemplate.inc';
 
     include './Functions/ExpLogFunctions.inc';

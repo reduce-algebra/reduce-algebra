@@ -657,10 +657,19 @@ LispObject Liremainder_2(LispObject, LispObject a, LispObject b)
     return onevalue(fixnum_of_int(c));
 }
 
+#ifdef SIXTY_FOUR
 LispObject Lirightshift(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("irightshift", a, b);
-    return onevalue(fixnum_of_int(ASR(int_of_fixnum(a), uint_of_fixnum(b))));
+    return onevalue(fixnum_of_int(ASR(
+           static_cast<int64_t>(int_of_fixnum(a)), uint_of_fixnum(b))));
 }
+#else // SIXTY_FOUR
+LispObject Lirightshift(LispObject, LispObject a, LispObject b)
+{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("irightshift", a, b);
+    return onevalue(fixnum_of_int(ASR(
+           static_cast<int32_t>(int_of_fixnum(a)), uint_of_fixnum(b))));
+}
+#endif // SIXTY_FOUR
 
 LispObject Lileftshift(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ileftshift", a, b);
