@@ -236,6 +236,7 @@
  (sstools       "sstools"               test                 csl psl)
  (coeff2        "misc"                                       csl psl)
 %  (heugcd        "heugcd"               test                 csl psl)
+ (grinder       "hephys"                                     csl psl)
 )
 
 % End of package.map
