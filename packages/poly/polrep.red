@@ -657,7 +657,7 @@ symbolic procedure quotf!-fail(a,b);
 symbolic procedure rank p;
    %P is a standard form
    %Value is the rank of P;
-   if !*mcd then ldeg p
+   if !*mcd or ldeg p > 0 then ldeg p
     else begin integer m,n; scalar y;
         n := ldeg p;
         y := mvar p;

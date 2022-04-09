@@ -82,6 +82,7 @@ symbolic procedure simpdint1 u;
           return addsq(negsq x, y) >> >>;
 % End of hack to try direct integration
       if low = upp then return nil ./ 1
+% new_defint is the entry point into the defint package, for application of the Mellin transform
        else if null getd 'new_defint then nil
        else if upp = 'infinity
         then if low = 0
