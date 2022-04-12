@@ -82,6 +82,16 @@ module taylor;
 %*****************************************************************
 %
 %
+% 12-Apr-2022    2.4d
+%
+%   Taylortostandard didn't always convert a Taylor kernel to standard
+%    prefix form, as the code in alg/prep.red doesn't call the prepfn2
+%    in all possible cases. Rewrite the code to go through simp!*, resimp,
+%    and simptaylor!* instead of prepsq.
+%
+%   Add protection when taylor!*print is called while defining a rule
+%    for taylor!*.
+%
 % 12-Jan-2022    2.4c
 %
 %   Add interface function TayApplyOpfn for applying a symbolic operator
@@ -1008,8 +1018,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4c";      % version number of the package
-taylor!:date!* := "12-Jan-2022"; % release date
+taylor!:version := "2.4d";      % version number of the package
+taylor!:date!* := "10-Apr-2022"; % release date
 
 if !*verboseload then
   << terpri ();

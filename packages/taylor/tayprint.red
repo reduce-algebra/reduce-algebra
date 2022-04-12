@@ -98,7 +98,9 @@ put('taylor!*,'fancy!-reform,'taylor!*print1);
 
 
 symbolic procedure taylor!*print(u,p);
-  if !*fort then fmprint(preptaylor!* u,0)
+  if smemq('!~,u) or atom taycoefflist u and not null taycoefflist u
+    then maprint('taylor . cdr u,p)
+   else if !*fort then fmprint(preptaylor!* u,0)
    else if null !*nat then maprint(
                      'taylor .
                         (if tayorig u

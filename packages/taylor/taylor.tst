@@ -341,6 +341,7 @@ int (zz, x);
 int (ww, x);
 int (zz + ww, x);
 
+clear zz,ww;
 
 COMMENT And here we present Taylor series reversion.
         We start with the example given by Knuth for the algorithm;
@@ -921,6 +922,21 @@ taylor(sin(x+y)^2,x,0,5);
 trigsimp(ws);
 
 trigsimp(ws,cos);
+
+
+COMMENT An example of Taylor together with off mcd
+        where taylortostandard didn't work correctly,
+	taken from inside mrvlimit;
+
+off mcd;
+
+f := log(log(log(log(x) + ww^(-1) + x)))^(-1)*log(log(log(x)^(log(x)) + x));
+		 
+series_exp := taylor(f,ww,0,1);
+
+taylortostandard ws;
+
+on mcd;
 
 
 %%% showtime;

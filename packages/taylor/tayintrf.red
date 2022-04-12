@@ -411,7 +411,8 @@ COMMENT The `FULL' flag causes the whole term (including the
         Taylor!* symbol) to be passed to SIMPTAYLOR!* ;
 
 symbolic procedure simptaylor!* u;
-  if taycoefflist u memq frlis!* or eqcar(taycoefflist u,'!~)
+  if convert!-taylor!* then simp preptaylor!* u
+   else if taycoefflist u memq frlis!* or eqcar(taycoefflist u,'!~)
     then !*tay2q u
    else <<
      %

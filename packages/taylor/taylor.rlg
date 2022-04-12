@@ -1264,6 +1264,9 @@ int (zz + ww, x);
   2        24        720                      2        24
 
 
+clear zz,ww;
+
+
 
 COMMENT And here we present Taylor series reversion.
         We start with the example given by Knuth for the algorithm;
@@ -2872,6 +2875,49 @@ trigsimp(ws,cos);
      - 2*cos(y)  + 1   4                 6
  + ------------------*x  + (1 term) + O(x )
            3
+
+
+
+COMMENT An example of Taylor together with off mcd
+        where taylortostandard didn't work correctly,
+	taken from inside mrvlimit;
+
+
+off mcd;
+
+
+
+f := log(log(log(log(x) + ww^(-1) + x)))^(-1)*log(log(log(x)^(log(x)) + x));
+
+
+                            -1       -1               log(x)
+f := log(log(log(log(x) + ww   + x)))  *log(log(log(x)       + x))
+
+		 
+series_exp := taylor(f,ww,0,1);
+
+
+series_exp := log(log( - log(ww) + ((log(x) + x)*ww
+
+                                     2                 2      2       3
+                         + ( - log(x)  - 2*log(x)*x - x )/2*ww  + O(ww ))))
+
+                                    log(x)             2
+              **(-1)*(log(log(log(x)       + x)) + O(ww ))
+
+
+taylortostandard ws;
+
+
+              log(x)
+log(log(log(x)       + x))
+
+                                                  2                 2      2  -1
+*log(log( - log(ww) + (log(x) + x)*ww + ( - log(x)  - 2*log(x)*x - x )/2*ww ))
+
+
+on mcd;
+
 
 
 
