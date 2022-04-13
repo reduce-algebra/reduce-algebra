@@ -59,8 +59,8 @@ symbolic procedure taylorcombine u;
   mk!*sq taysimpsq simp!* u;
 
 symbolic procedure taylortostandard u;
-  (prepsq if not eqcar (u, '!*sq) then simp!* u else cadr u)
-          where convert!-taylor!* := t;
+  mk!*sq resimp simp!* u where convert!-taylor!* := t,alglist!* := nil . nil;
+
 
 symbolic procedure taylororiginal u;
   (if not taylor!-kernel!-sq!-p sq
