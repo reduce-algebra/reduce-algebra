@@ -13,7 +13,7 @@
 #               rather than parallel building if you need to keep a log for
 #               debugging or diagnosis.
 #
-#   make csl-sanity-check.sh
+#   make csl-sanity-test
 #               A simple test to ensure that there is at least a chance of
 #               building the CSL version. This compiles a small test program
 #               that should pop up a window.
