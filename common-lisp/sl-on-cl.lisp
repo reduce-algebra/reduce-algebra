@@ -30,11 +30,11 @@
               custom:*compile-warnings* nil)
 
 #+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
-         (require :sb-posix))
+                  (require :sb-posix))
 
-#+ABCL (eval-when (:load-toplevel :execute)
-         (require :abcl-contrib)
-         (require :asdf-jar))
+#+ABCL (eval-when (:compile-toplevel :load-toplevel :execute)
+                  (require :abcl-contrib)
+                  (require :asdf-jar))
 
 (defpackage :standard-lisp
   (:nicknames :sl)
@@ -57,6 +57,8 @@
   #+SBCL (:import-from :sb-posix :getenv)
 
   #+CLISP (:import-from :ext :quit :gc :getenv)
+
+  #+ABCL (:import-from :ext :getenv)
   )
 
 (in-package :standard-lisp)
@@ -3164,17 +3166,20 @@ directory."
 
 (defalias 'filep 'probe-file)           ; PSL
 
-#+ABCL
-(defun getenv (string)
-    (java:jstatic "getenv" "java.lang.System" string))
-
-
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias 'getpid 'os:process-id)
 
+(defun setenv (name value)
+  "Create or update an environment variable"
+  #+SBCL (sb-posix:setenv name value 1) ; non-zero => overwrite
+  #+CLISP (setf (ext:getenv name) value))
+
 (defun exit (&optional code)
   #+SBCL (sb-ext:exit :code code)
-  #+CLISP (ext:exit code))
+  #+CLISP (ext:exit code)
+  #+ABCL (ext:exit :status code))
+
+(export '(getenv setenv exit))          ; used in "bootstrap.lisp"
 
 
 ;;; Compile and load
@@ -3370,6 +3375,10 @@ When all done, execute FASLEND;~2%" name))
   (setq *readtable* (copy-readtable nil))
   nil)
 
+#+SBCL #-win32
+;; In SBCL 2.2+ it seems to be necessary to unlock the sb-kernel package:
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (sb-ext:unlock-package :sb-kernel))
 #+SBCL
 ;; See function `toplevel-repl' in "sbcl-1.4.14/src/code/toplevel.lisp".
 (defun reduce-init-function ()
@@ -3413,7 +3422,7 @@ When all done, execute FASLEND;~2%" name))
   (ext:saveinitmem (concat "fasl.clisp/" name ".mem")
                    :init-function #'reduce-init-function
                    :quiet t :norc t)
-  #+ABCL (asdf-jar:package (intern name ) :verbose t)
+  #+ABCL (asdf-jar:package name :verbose t)
 )
 
 (pushnew :standard-lisp *features*)
