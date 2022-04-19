@@ -4,70 +4,111 @@
 # Based on "psl/bootstrap.sh" and "psl/build.sh".
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-# Modified by Rainer Schöpf to support Armed Bear Common Lisp.
+# Preliminary support for Armed Bear Common Lisp by Rainer Schöpf.
 
-# Compile all required fasl files and save a final REDUCE image.
-# Assume this script is run in the top-level CL REDUCE directory.
+# 1. Compile sl-on-cl, which implements Standard Lisp on Common Lisp.
+# 2. Build an initial bootstrap REDUCE image without REDUCE fasl files,
+#    which does not form part of the final REDUCE system and should not
+#    need to be rebuilt very often.  It is used to compile REDUCE.
+# 3. Compile all required fasl files and save a final REDUCE image.
 
-# Usage: ./build.sh -l sbcl/clisp [-c/f]
+# This script must be run in the top-level CL REDUCE directory.
+# Always do a clean build after updating your version of Common Lisp!
 
-# Option -c ensures a clean build by deleting any previous build.
-# Option -f forces recompilation of all packages.
+help () {
+    echo 'Build REDUCE on Common Lisp.'
+    echo 'Usage: ./build.sh [-h] -l sbcl/clisp/abcl [-c/f] [-b]'
+    echo 'Option -h displays this help message and exits.'
+    echo 'Option -c ensures a clean build by deleting any previous build.'
+    echo 'Option -f forces recompilation of all packages.'
+    echo 'Option -b builds only the bootstrap REDUCE image.'
+    exit 1
+}
 
-# Do a clean build after updating Common Lisp!
-
-if getopts l: option; then lisp=$OPTARG; fi
-
-if [ "$lisp" = 'sbcl' ]; then
-    runlisp='sbcl'
-    runbootstrap='sbcl --noinform --core fasl.sbcl/bootstrap.img'
-    runreduce='sbcl --noinform --core fasl.sbcl/reduce.img'
-    saveext='img'
-    faslext='fasl'
-    if_sbcl=''
-    if_clisp='%'
-    if_abcl='%'
-elif [ "$lisp" = 'clisp' ]; then
-    runlisp='clisp -ansi -norc'
-    runbootstrap='clisp -q -norc -M fasl.clisp/bootstrap.mem'
-    runreduce='clisp -q -norc -M fasl.clisp/reduce.mem'
-    saveext='mem'
-    faslext='fas'
-    if_sbcl='%'
-    if_clisp=''
-    if_abcl='%'
-elif [ "$lisp" = 'abcl' ]; then
-    runlisp='/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar abcl-bin-1.8.0/abcl.jar --noinit'
-    runbootstrap='/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl/bootstrap.mem'
-    runreduce='/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl/reduce.mem'
-    saveext='jar'
-    faslext='abcl'
-    if_sbcl='%'
-    if_clisp='%'
-    if_abcl=''
-else
-    echo 'Error: option -l sbcl/clisp/abcl is required'
-    exit
-fi
-
-while getopts cf option
+while getopts l:cfbh option
 do
-    if [ $option = c ]; then rm -rf  sl-on-cl.$faslext trace.$faslext fasl.$lisp log.$lisp
-    elif [ $option = f ]; then force='!*forcecompile := t;'
-    fi
+    case $option in
+        l) lisp=$OPTARG;;
+        c) echo '+++++ Clean build'
+           rm -rf  sl-on-cl.$faslext trace.$faslext fasl.$lisp log.$lisp;;
+        f) force='!*forcecompile := t;';;
+        b) bootstraponly='true';;
+        h) help;;
+    esac
 done
+
+case $lisp in
+    'sbcl')
+        runlisp='sbcl'
+        runlispfile='sbcl --load'
+        runbootstrap='sbcl --noinform --core fasl.sbcl/bootstrap.img'
+        runreduce='sbcl --noinform --core fasl.sbcl/reduce.img'
+        saveext='img'
+        faslext='fasl';;
+    'clisp')
+        runlisp='clisp -ansi -norc'
+        runlispfile='clisp -ansi'
+        runlispfile='clisp -ansi'
+        runbootstrap='clisp -q -norc -M fasl.clisp/bootstrap.mem'
+        runreduce='clisp -q -norc -M fasl.clisp/reduce.mem'
+        saveext='mem'
+        faslext='fas';;
+    'abcl')
+        runlisp='java -jar abcl-bin-1.8.0/abcl.jar --noinit'
+        runlispfile='java -jar abcl-bin-1.8.0/abcl.jar --noinit --load'
+        runbootstrap='java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl.abcl/bootstrap.mem'
+        runreduce='java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl.abcl/reduce.mem'
+        saveext='jar'
+        faslext='abcl';;
+    *)
+        echo 'Error: option "-l sbcl/clisp/abcl" is required'; help;;
+esac
 
 if [ ! -v reduce ]; then
     if [ -e './packages' ]; then export reduce=.
     elif [ -e '../packages' ]; then export reduce=..
-    else echo 'Error: cannot find packages directory.  Please set $reduce.'; exit
+    else echo 'Error: cannot find packages directory.  Please set $reduce.'; exit 1
     fi
 fi
 
-# Build an initial bootstrap REDUCE image if necessary:
-if [ ! -e fasl.$lisp/bootstrap.$saveext ]; then ./bootstrap.sh -l $lisp; fi
-
 mkdir -p log.$lisp           # -p avoids complaint if directory exists
+mkdir -p fasl.$lisp
+
+#################################
+# Compile sl-on-cl if necessary #
+#################################
+
+if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
+then
+    echo '+++++ Compiling sl-on-cl'
+    $runlisp << XXX &> log.$lisp/sl-on-cl.blg
+(or (compile-file "sl-on-cl") (exit #+SBCL :code 1))
+XXX
+fi || { echo '***** Compilation failed'; exit 1; }
+
+########################################################
+# Build an initial bootstrap REDUCE image if necessary #
+########################################################
+
+if [ ! -e fasl.$lisp/bootstrap.$saveext ]
+then
+    echo '+++++ Building bootstrap REDUCE...'
+    time $runlispfile bootstrap &> log.$lisp/bootstrap.blg
+    if [ ! -e fasl.$lisp/bootstrap.$saveext ]
+    then
+        echo '***** Building bootstrap REDUCE failed'; exit 1
+    else
+        echo '+++++ Built bootstrap REDUCE.  Possible errors:'
+        grep --ignore-case '\*\*\*\*\*\|\<error\>' log.$lisp/bootstrap.blg
+    fi
+    echo $'\a'
+fi
+
+if [ $bootstraponly ]; then exit; fi
+
+################
+# Build REDUCE #
+################
 
 shopt -s expand_aliases
 
@@ -115,14 +156,17 @@ end;
 bye;
 XXX
 
+if [ ! -e fasl.$lisp/core-packages.dat -o ! -e fasl.$lisp/noncore-packages.dat ]
+then echo '***** Running bootstrap REDUCE failed'; exit 1
+fi
+
 # Compile the "core" packages, each in a separate invocation of
 # bootstrap REDUCE to avoid adverse interactions:
 
 time for p in $(< fasl.$lisp/core-packages.dat)
 do
-echo +++++ Remaking core package $p
-
-$runbootstrap << XXX &> log.$lisp/$p.blg
+    echo "+++++ Remaking core package $p"
+    $runbootstrap << XXX &> log.$lisp/$p.blg
 symbolic; $force
 
 off redefmsg;
@@ -146,24 +190,20 @@ grep_errors
 
 done
 
-if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
-then
-echo +++++ Compiling sl-on-cl
-$runlisp << XXX &> log.$lisp/sl-on-cl.blg
-(or (compile-file "sl-on-cl") (exit #+SBCL :code 1))
-XXX
-fi || { echo '***** Compilation failed'; exit; }
+###############################
+# Build the REDUCE image file #
+###############################
 
 if [ "trace.lisp" -nt "trace.$faslext" ]
 then
-echo +++++ Compiling trace
-$runlisp << XXX &> log.$lisp/trace.blg
+    echo '+++++ Compiling trace'
+    $runlisp << XXX &> log.$lisp/trace.blg
 (load "sl-on-cl")
 (or (compile-file "trace") (exit 1))
 XXX
-fi || { echo '***** Compilation failed'; exit; }
+fi || { echo '***** Compiling trace failed'; exit 1; }
 
-echo +++++ Creating the REDUCE image file
+echo '+++++ Building the REDUCE image file'
 
 # Start a new invocation of Lisp and load the key modules compiled
 # above.  Then save a final REDUCE image that will be used below to
@@ -207,7 +247,8 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 (setq !*verboseload nil)        % inhibit loading messages
 (setq !*redefmsg t)             % display redefinition messages
 
-$if_sbcl (setq sb-ext:*muffled-warnings* 'warning)
+(cond ((memq 'sbcl lispsystem!*)
+       (setq sb-ext:*muffled-warnings* 'warning)))
 
 (prog nil
    (terpri)
@@ -231,9 +272,8 @@ XXX
 
 time for p in $(< fasl.$lisp/noncore-packages.dat)
 do
-echo +++++ Remaking noncore package $p
-
-$runreduce << XXX &> log.$lisp/$p.blg
+    echo "+++++ Remaking noncore package $p"
+    $runreduce << XXX &> log.$lisp/$p.blg
 symbolic; $force
 
 %load compiler;
