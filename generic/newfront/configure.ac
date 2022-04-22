@@ -105,6 +105,22 @@ then
   AC_MSG_NOTICE([neither "curses.h" nor "ncurses.h" found])
 fi
 
+# This is done on ALL hosts, and that is potentially dodgy.
+# So let me explain what it is about. If one builds on Ubuntu without this
+# then libtinfo (used by ncurses) is linked dynamically. If you take the
+# resulting binary to a Fedora machine it works OK but you get an annoying
+# warning about whether the library has a proper version number. This hack
+# will link in libtinfo statically and ought to avoid that ugly warning at
+# a rather modest increase in the size of the shipped binary.
+# And on Gentoo you need -ltinfo as well as -lncurses to access tgetent.
+if test -f /usr/lib/*/libtinfo.a
+then
+  LIBS="-l:libtinfo.a $LIBS"
+else
+  AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
+fi
+
+
 AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")
 
 AC_CHECK_HEADERS(wait.h sys/wait.h,break)

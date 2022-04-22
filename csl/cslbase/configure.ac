@@ -1,4 +1,4 @@
-## Process this file with autoconf to produce a configure script.
+### Process this file with autoconf to produce a configure script.
 
 # A C Norman.                                                     2008-2021
 
@@ -1059,6 +1059,23 @@ then
   AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
 fi
 
+if test "$linux_build" = "yes"
+then
+# This is done on ALL Linux (etc) hosts, and that is potentially dodgy.
+# So let me explain what it is about. If one builds on Ubuntu without this
+# then libtinfo (used by ncurses) is linked dynamically. If you take the
+# resulting binary to a Fedora machine it works OK but you get an annoying
+# warning about whether the library has a proper version number. This hack
+# will link in libtinfo statically and ought to avoid that ugly warning at
+# a rather modest increase in the size of the shipped binary.
+  if test -f /usr/lib/*/libtinfo.a
+  then
+    LIBS="-l:libtinfo.a $LIBS"
+  else
+    AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
+  fi
+fi
+
 OLIBS="$LIBS"
 LIBS="$OLIBS -lncurses"
 AC_LINK_IFELSE(
@@ -1085,21 +1102,6 @@ AC_LINK_IFELSE(
       AC_SEARCH_LIBS([tgetent], [ncurses curses])
      ])
   ])
-
-if test "$linux_build" = "yes"
-then
-# This is done on ALL Linux (etc) hosts, and that is potentially dodgy.
-# So let me explain what it is about. If one builds on Ubuntu without this
-# then libtinfo (used by ncurses) is linked dynamically. If you take the
-# resulting binary to a Fedora machine it works OK but you get an annoying
-# warning about whether the library has a proper version number. This hack
-# will link in libtinfo statically and ought to avoid that ugly warning at
-# a rather modest increase in the size of the shipped binary.
-  if test -f /usr/lib/*/libtinfo.a
-  then
-    LIBS="-l:libtinfo.a $LIBS"
-  fi
-fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
