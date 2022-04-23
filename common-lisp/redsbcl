@@ -1,4 +1,9 @@
 #!/bin/bash
-# Start the Linux SBCL REDUCE image
-cl=$(realpath $(dirname $0)) # common-lisp directory
-sbcl --noinform --core $cl/fasl.sbcl/reduce.img
+if [ "$OSTYPE" == cygwin ]
+then
+    cmd /c redsbcl.bat
+else
+    # Start the Linux SBCL REDUCE image
+    cl=$(realpath $(dirname $0)) # common-lisp directory
+    sbcl --noinform --core $cl/fasl.sbcl/reduce.img
+fi
