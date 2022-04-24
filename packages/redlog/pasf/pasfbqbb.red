@@ -51,7 +51,7 @@ asserted procedure pasf_BQf2ml(f: Formula, client: Applicable): List;
    lto_almerge({cl_f2ml(rl_mat f, client), cl_f2ml(rl_b f, client)}, 'plus2);
 
 asserted procedure pasf_BQsubfof1(al: Alist, f: Formula, asgal: Alist, allvl: List): Formula;
-   begin scalar op, v, m, b, al, asgal, newv, allvl, m;
+   begin scalar op, v, m, b, al, asgal, newv, allvl;
       op := rl_op f;
       v := rl_var f;
       m := rl_mat f;
