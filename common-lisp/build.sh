@@ -15,7 +15,7 @@
 # This script must be run in the top-level CL REDUCE directory.
 # Always do a clean build after updating your version of Common Lisp!
 
-help () {
+function help {
     echo 'Build REDUCE on Common Lisp.'
     echo 'Usage: ./build.sh [-h] -l sbcl/clisp/abcl [-c/f] [-b]'
     echo 'Option -h displays this help message and exits.'
@@ -29,10 +29,9 @@ while getopts l:cfbh option
 do
     case $option in
         l) lisp=$OPTARG;;
-        c) echo '+++++ Clean build'
-           rm -rf  sl-on-cl.$faslext trace.$faslext fasl.$lisp log.$lisp;;
+        c) clean=true;;
         f) force='!*forcecompile := t;';;
-        b) bootstraponly='true';;
+        b) bootstraponly=true;;
         h) help;;
     esac
 done
@@ -64,6 +63,11 @@ case $lisp in
         echo 'Error: option "-l sbcl/clisp/abcl" is required'; help;;
 esac
 
+if [ $clean ]; then
+    echo '+++++ Clean build'
+    rm -rf sl-on-cl.$faslext trace.$faslext fasl.$lisp log.$lisp
+fi
+
 if [ ! -v reduce ]; then
     if [ -e './packages' ]; then export reduce=.
     elif [ -e '../packages' ]; then export reduce=..
@@ -90,6 +94,10 @@ fi || { echo '***** Compilation failed'; exit 1; }
 # Build an initial bootstrap REDUCE image if necessary #
 ########################################################
 
+function grep_errors {
+    grep --ignore-case '\*\{5\} \| error \|COMMON-LISP:ERROR' log.$lisp/$1.blg | uniq
+}
+
 if [ ! -e fasl.$lisp/bootstrap.$saveext ]
 then
     echo '+++++ Building bootstrap REDUCE...'
@@ -98,8 +106,8 @@ then
     then
         echo '***** Building bootstrap REDUCE failed'; exit 1
     else
-        echo '+++++ Built bootstrap REDUCE.  Possible errors:'
-        grep --ignore-case '\*\*\*\*\*\|\<error\>' log.$lisp/bootstrap.blg
+        echo $'\n+++++ Built bootstrap REDUCE.  Possible errors:'
+        grep_errors bootstrap
     fi
     echo $'\a'
 fi
@@ -110,10 +118,7 @@ if [ $bootstraponly ]; then exit; fi
 # Build REDUCE #
 ################
 
-shopt -s expand_aliases
-
-alias grep_errors=\
-"grep --ignore-case '\*\{5\} \| \<error\>\|COMMON-LISP:ERROR' log.$lisp/\$p.blg | uniq"
+echo '+++++ Building REDUCE...'
 
 # First, compile fasl files for non-package source files:
 $runbootstrap << XXX &> log.$lisp/build.blg
@@ -186,7 +191,7 @@ package!-remake '$p;
 bye;
 XXX
 
-grep_errors
+grep_errors $p
 
 done
 
@@ -203,7 +208,7 @@ then
 XXX
 fi || { echo '***** Compiling trace failed'; exit 1; }
 
-echo '+++++ Building the REDUCE image file'
+echo $'\n+++++ Building the REDUCE image file...'
 
 # Start a new invocation of Lisp and load the key modules compiled
 # above.  Then save a final REDUCE image that will be used below to
@@ -267,6 +272,8 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 
 XXX
 
+echo $'\n+++++ Built the REDUCE image file\n'
+
 # Finally, compile the "noncore" packages using reduce.img rather than
 # bootstrap.img.
 
@@ -312,8 +319,8 @@ if '$p eq 'gnuplot then
 bye;
 XXX
 
-grep_errors
+grep_errors $p
 
 done
 
-echo $'\a'
+echo $'\n+++++ Built REDUCE.\a'

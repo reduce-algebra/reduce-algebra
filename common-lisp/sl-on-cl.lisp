@@ -3375,29 +3375,19 @@ When all done, execute FASLEND;~2%" name))
   (setq *readtable* (copy-readtable nil))
   nil)
 
-#+SBCL #-win32
-;; In SBCL 2.2+ it seems to be necessary to unlock the sb-kernel package:
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (sb-ext:unlock-package :sb-kernel))
 #+SBCL
-;; See function `toplevel-repl' in "sbcl-1.4.14/src/code/toplevel.lisp".
+;; See function `toplevel-repl' in "sbcl-2.2.3/src/code/toplevel.lisp".
 (defun reduce-init-function ()
   "The function executed at startup of the saved REDUCE memory image."
   (standard-lisp)
-  (handler-bind ((sb-impl::step-condition 'invoke-stepper))
-    (loop
-       ;; CLHS recommends that there should always be an
-       ;; ABORT restart; we have this one here, and one per
-       ;; debugger level.
-       (with-simple-restart
-           (abort "~@<Exit debugger, returning to top level.~@:>")
-         (catch 'toplevel-catcher
-           ;; In the event of a control-stack-exhausted-error, we
-           ;; should have unwound enough stack by the time we get
-           ;; here that this is now possible.
-           #-win32
-           (sb-kernel::reset-control-stack-guard-page)
-           (begin))))))
+  (loop
+   ;; CLHS recommends that there should always be an
+   ;; ABORT restart; we have this one here, and one per
+   ;; debugger level.
+   (with-simple-restart
+       (abort "~@<Exit debugger, returning to top level.~@:>")
+     (catch 'toplevel-catcher
+       (begin)))))
 
 #+CLISP
 ;; See function `main-loop' in
