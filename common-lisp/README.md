@@ -16,7 +16,7 @@ The files in this directory are intended to build and run the current distribute
 
 Here, "Linux" means current or recent versions of Ubuntu and Fedora.
 
-I have recently built REDUCE revision 6275 using SBCL 2.2.2 and GNU CLISP 2.49+ on Windows, and using SBCL 2.0.1.debian and GNU CLISP 2.49.92 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing.
+I have recently built REDUCE revision 6287 using SBCL 2.2.2 and GNU CLISP 2.49+ on Windows, and using SBCL 2.2.3 and GNU CLISP 2.49.92 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing.
 
 There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
 
