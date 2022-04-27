@@ -23,6 +23,13 @@
           `(:source-registry (:directory ,*default-pathname-defaults*)
                              :ignore-inherited-configuration)))
 
+#+CCL
+;; (progn
+  ;; (require :asdf)
+  (setq ccl:*warn-if-redefine* nil
+        ccl::*suppress-compiler-warnings* t)
+  ;; )
+
 (standard-lisp)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,5 +153,4 @@
 (initreduce)
 (setq date!* (date))
 (setq version!* "Bootstrap REDUCE")
-(cond ((or (memq 'sbcl lispsystem!*) (memq 'clisp lispsystem!*))
-       (save!-reduce!-image "bootstrap")))
+(save!-reduce!-image "bootstrap")
