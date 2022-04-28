@@ -5,6 +5,7 @@
 
 # Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 # Preliminary support for Armed Bear Common Lisp by Rainer Schöpf.
+# Support for Clozure Common Lisp by Marco Ferraris.
 
 # 1. Compile sl-on-cl, which implements Standard Lisp on Common Lisp.
 # 2. Build an initial bootstrap REDUCE image without REDUCE fasl files,
@@ -17,7 +18,7 @@
 
 function help {
     echo 'Build REDUCE on Common Lisp.'
-    echo 'Usage: ./build.sh [-h] -l sbcl/clisp/abcl [-c/f] [-b]'
+    echo 'Usage: ./build.sh [-h] -l sbcl/clisp/abcl/ccl [-c/f] [-b]'
     echo 'Option -h displays this help message and exits.'
     echo 'Option -c ensures a clean build by deleting any previous build.'
     echo 'Option -f forces recompilation of all packages.'
@@ -59,8 +60,22 @@ case $lisp in
         runreduce='java -jar abcl-bin-1.8.0/abcl.jar --noinit --noinform -M fasl.abcl/reduce.mem'
         saveext='jar'
         faslext='abcl';;
+    'ccl')
+        runlisp='ccl'
+        runlispfile='ccl -l'
+		runbootstrap='ccl -I fasl.ccl/bootstrap.image'
+        runreduce='ccl -I fasl.ccl/reduce.image'
+        saveext='image'
+        case $(uname -s) in
+            Darwin)             # macOS
+                faslext='dx64fsl';;
+            Linux)
+                faslext='lx64fsl';;
+            CYGWIN*)            # MS Windows
+                faslext='wx64fsl';;
+        esac;;
     *)
-        echo 'Error: option "-l sbcl/clisp/abcl" is required'; help;;
+        echo 'Error: option "-l sbcl/clisp/abcl/ccl" is required'; help;;
 esac
 
 if [ $clean ]; then
@@ -68,7 +83,7 @@ if [ $clean ]; then
     rm -rf sl-on-cl.$faslext trace.$faslext fasl.$lisp log.$lisp
 fi
 
-if [ ! -v reduce ]; then
+if [ -z "$reduce" ]; then
     if [ -e './packages' ]; then export reduce=.
     elif [ -e '../packages' ]; then export reduce=..
     else echo 'Error: cannot find packages directory.  Please set $reduce.'; exit 1
@@ -104,7 +119,7 @@ then
     time $runlispfile bootstrap &> log.$lisp/bootstrap.blg
     if [ ! -e fasl.$lisp/bootstrap.$saveext ]
     then
-        echo '***** Building bootstrap REDUCE failed'; exit 1
+        echo $'\n***** Building bootstrap REDUCE failed'; exit 1
     else
         echo $'\n+++++ Built bootstrap REDUCE.  Possible errors:'
         grep_errors bootstrap
@@ -244,7 +259,8 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 (setq date!* (date))
 (setq version!* (cl:format nil "REDUCE (Free ~a version, revision ~a)"
       (cond ((memq 'sbcl lispsystem!*) "SBCL")
-            ((memq 'clisp lispsystem!*) "CLISP"))
+            ((memq 'clisp lispsystem!*) "CLISP")
+            ((memq 'ccl lispsystem!*) "CCL"))
       revision!*))
 
 (initreduce)
@@ -253,7 +269,7 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 (setq !*redefmsg t)             % display redefinition messages
 
 (cond ((memq 'sbcl lispsystem!*)
-       (setq sb-ext:*muffled-warnings* 'warning)))
+       (setq !*muffled-warnings!* 'warning))) % exported from sb-ext
 
 (prog nil
    (terpri)
@@ -272,7 +288,12 @@ time $runlisp << XXX &> log.$lisp/reduce.blg
 
 XXX
 
-echo $'\n+++++ Built the REDUCE image file\n'
+if [ ! -e fasl.$lisp/reduce.$saveext ]
+then
+    echo $'\n***** Building the REDUCE image failed'; exit 1
+else
+    echo $'\n+++++ Built the REDUCE image file\n'
+fi
 
 # Finally, compile the "noncore" packages using reduce.img rather than
 # bootstrap.img.

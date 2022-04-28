@@ -1,0 +1,9 @@
+#!/bin/bash
+if [ "$OSTYPE" == cygwin ]
+then
+    cmd /c redccl.bat
+else
+    # Start the Linux or Mac OS X CCL REDUCE image
+    cl=$(realpath $(dirname $0)) # common-lisp directory
+    ccl -I $cl/fasl.ccl/reduce.image
+fi

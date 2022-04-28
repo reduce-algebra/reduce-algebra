@@ -5,11 +5,13 @@
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 4 November 2018
 
-;; Modified by Rainer Schöpf to support Armed Bear Common Lisp.
-
 ;; Current target implementations of Common Lisp:
-;; - Windows and Linux SBCL (Steel Bank Common Lisp); see http://www.sbcl.org/
-;; - Cygwin and Linux CLISP 2.49 (2010-07-07); see https://clisp.sourceforge.io/
+;; - SBCL (Steel Bank Common Lisp); see http://www.sbcl.org/
+;; - CLISP; see https://clisp.sourceforge.io/
+;; - CCL (Clozure Common Lisp); see https://ccl.clozure.com/
+
+;; Support for Armed Bear Common Lisp by Rainer Schöpf, but not yet complete!
+;; Support for Clozure Common Lisp by Marco Ferraris.
 
 ;; This file implements a superset of Standard Lisp that is a subset
 ;; of PSL and CSL in a package called STANDARD-LISP with nickname SL.
@@ -26,15 +28,21 @@
 #-DEBUG (declaim (optimize speed))
 #+DEBUG (declaim (optimize debug safety))
 #+SBCL (declaim (sb-ext:muffle-conditions sb-ext:compiler-note style-warning))
+
+#+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
+         (require :sb-posix))
+
 #+CLISP (setq custom:*suppress-check-redefinition* t
               custom:*compile-warnings* nil)
 
-#+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
-                  (require :sb-posix))
-
 #+ABCL (eval-when (:compile-toplevel :load-toplevel :execute)
-                  (require :abcl-contrib)
-                  (require :asdf-jar))
+         (require :abcl-contrib)
+         (require :asdf-jar))
+
+#+CCL (eval-when (:compile-toplevel :load-toplevel :execute)
+        (require :asdf)             ; used for various OS interactions
+        (setq ccl:*warn-if-redefine* nil
+              ccl::*suppress-compiler-warnings* t))
 
 (defpackage :standard-lisp
   (:nicknames :sl)
@@ -59,6 +67,8 @@
   #+CLISP (:import-from :ext :quit :gc :getenv)
 
   #+ABCL (:import-from :ext :getenv)
+
+  #+CCL (:import-from :ccl :quit :getenv :setenv :gc :gctime)
   )
 
 (in-package :standard-lisp)
@@ -2154,6 +2164,7 @@ parent.  Called by `open' and `cd' on SBCL."
   ;; such as ^ in a filename:
   (declare (type (or simple-string pathname) filename))
   #+SBCL (setq filename (sb-ext:native-pathname filename))
+  #-CCL
   (let ((d (copy-list (pathname-directory filename))))
     (when (eq (car d) :relative)
       ;; Replace a leading "." with the current working directory:
@@ -2169,8 +2180,10 @@ parent.  Called by `open' and `cd' on SBCL."
            (setq cwd (butlast cwd))
          finally (setq filename (merge-pathnames
                                  (make-pathname :directory d :defaults filename)
-                                 (make-pathname :directory cwd))))))
-  filename)
+                                 (make-pathname :directory cwd)))))
+    filename)
+  #+CCL (uiop/filesystem:truenamize filename)
+  )
 
 ;; CLISP user variable CUSTOM:*DEVICE-PREFIX* controls translation
 ;; between Cygwin pathnames (e.g., #P"/cygdrive/c/gnu/clisp/") and
@@ -2188,7 +2201,7 @@ OUTPUT or the file can't be opened.
 ***** FILE could not be opened"
   (declare (type (or simple-string pathname) file) (symbol how))
   (setq file (substitute-in-file-name file)) ; substitute environment variables
-  #+SBCL (setq file (expand-file-name file)) ; and then expand . and ..
+  #-CLISP (setq file (expand-file-name file)) ; and then expand . and ..
   ;; #+cygwin (setq file (win-to-cyg file))
   #+cygwin (setq file (parse-namestring file)) ; convert Windows filename to Cygwin format
   (the filehandle
@@ -2399,7 +2412,7 @@ If nil then floats are printed without any additional rounding.")
                 u)))
         p)
     ;; Lower-case an E if necessary and follow e with + unless there is already a -.
-    (when (setq p (position #+SBCL #\e #+CLISP #\E #+ABCL #\E s))
+    (when (setq p (position #+SBCL #\e #-SBCL #\E s))
       #+CLISP (setf (aref s p) #\e)
       (incf p)
       (unless (char-equal (aref s p) #\-)
@@ -2734,6 +2747,7 @@ Suppress the printed output."
   (let ((*standard-output* (make-broadcast-stream)))
     (nth-value n (room nil))))
 
+#-CCL
 (defun gctime ()
   "The total time (in milliseconds) spent in garbage collection."
   (the (integer 0)
@@ -2791,7 +2805,7 @@ A function hung on the garbage collection hook."
                    (read-from-string
                     (remove #\, (subseq s p (position #\Space s :start p))))))
        #+CLISP (%nth-room-value 1)
-       #+ABCL 0))
+       #+(not (or SBCL CLISP)) 0))
 
 (defun explode2 (u)                     ; PSL
   "(explode2 U:atom-vector): id-list expr
@@ -3089,7 +3103,9 @@ COMMAND to the interpreter and return the process exit code."
                             :search t :output t))
        ;; Cygwin CLISP behaves as if running on Unix, not Windows.
        ;; ext:shell returns nil for normal exit with status 0!
-       #+CLISP (or (ext:shell command) 0)))
+       #+CLISP (or (ext:shell command) 0)
+       #+CCL  (ccl:run-program "/bin/sh" (list "-c" command) :output t)
+       ))
 
 #+SBCL
 (defun system-to-string (command)       ; experimental - not tested!
@@ -3106,7 +3122,8 @@ COMMAND to the interpreter and return the process exit code."
 Return the current working directory in system specific format."
   (the simple-string
        #+SBCL (sb-ext:native-namestring *default-pathname-defaults*)
-       #+CLISP (namestring (ext:cd))))
+       #+CLISP (namestring (ext:cd))
+       #+CCL (ccl::defaulted-native-namestring (user-homedir-pathname))))
 
 #+SBCL
 (defun cd (&optional dir)               ; PSL / Unix
@@ -3161,6 +3178,25 @@ directory."
       (setf *default-pathname-defaults* (truename x)) ;; d-p-d is canonical!
       ))
 
+;;; MF - 2022-04-25
+#+CCL
+(defun cd (dir)							; PSL
+  "(cd DIR:string):BOOLEAN expr
+Set the current working directory to DIR after expanding the filename
+according to the rules of the operating system.  If this operation is
+not sucessful, the value Nil is returned."
+  (setq dir (pathname dir))
+  ;; Allow dir not to end with a separator:
+  (if (string/= (file-namestring dir) "")
+      (setq dir (make-pathname :directory
+                               (append (or (pathname-directory dir) '(:relative))
+                                       (list (file-namestring dir))))))
+  ;; Expand environment variables, "." and "..":
+  (setq dir (substitute-in-file-name (namestring dir)))
+  (setq dir (merge-pathnames dir))
+  (and (probe-file dir)
+       (uiop/os:chdir dir)))
+
 
 (defalias 'chdir 'cd)                   ; CSL / MS Windows
 
@@ -3169,6 +3205,7 @@ directory."
 #+SBCL (import 'sb-posix:getpid)
 #+CLISP (defalias 'getpid 'os:process-id)
 
+#-CCL
 (defun setenv (name value)
   "Create or update an environment variable"
   #+SBCL (sb-posix:setenv name value 1) ; non-zero => overwrite
@@ -3177,7 +3214,8 @@ directory."
 (defun exit (&optional code)
   #+SBCL (sb-ext:exit :code code)
   #+CLISP (ext:exit code)
-  #+ABCL (ext:exit :status code))
+  #+ABCL (ext:exit :status code)
+  #+CCL (ccl:quit code))
 
 (export '(getenv setenv exit))          ; used in "bootstrap.lisp"
 
@@ -3200,7 +3238,8 @@ These are files referenced by symbols rather than strings.")
 
 (defconstant %fasl-directory-pathname
   (make-pathname :directory (cl:append (pathname-directory (truename ""))
-                                       '(#+SBCL "fasl.sbcl" #+CLISP "fasl.clisp")))
+                                       '(#+SBCL "fasl.sbcl" #+CLISP "fasl.clisp"
+                                         #+ABCL "fasl.abcl" #+CCL "fasl.ccl")))
   "Absolute pathname of fasl directory.")
 
 (defun load (file)             ; currently only supports a single file
@@ -3291,7 +3330,8 @@ When all done, execute FASLEND;~2%" name))
       (setq %faslout-stream
             (cl:open (setq %faslout-name.lisp (concat2 name ".lisp"))
                      :direction :output :if-exists :supersede
-                     :external-format #+SBCL :UTF-8 #+CLISP charset:UTF-8))
+                     #-CCL :external-format
+                     #+SBCL :UTF-8 #+CLISP charset:UTF-8 #+ABCL :UTF-8))
     (error-internal "FASLOUT cannot open ~a" %faslout-name.lisp))
   (if %faslout-header
       (cl:princ %faslout-header %faslout-stream))
@@ -3324,7 +3364,8 @@ When all done, execute FASLEND;~2%" name))
   ;; (if
   (let ((*readtable* (copy-readtable nil))) ; normal CL syntax
     (compile-file %faslout-name.lisp
-                  :external-format #+SBCL :UTF-8 #+CLISP charset:UTF-8))
+                  #-CCL :external-format
+                  #+SBCL :UTF-8 #+CLISP charset:UTF-8 #+ABCL :UTF-8 ))
   ;;      ;; (progn
   ;;      ;; (delete-file %faslout-name.lisp) ; keep to aid debugging ???
   ;;      (format t "Compiling ~a...done" %faslout-name.lisp)
@@ -3402,6 +3443,10 @@ When all done, execute FASLEND;~2%" name))
          (begin))))
   (ext:exit))
 
+#+CCL (defun reduce-init-function ()
+        (standard-lisp)
+        (begin))
+
 (defun save-reduce-image (name)
   "Save a REDUCE memory image with main filename component NAME."
   (declare (string name))
@@ -3412,8 +3457,12 @@ When all done, execute FASLEND;~2%" name))
   (ext:saveinitmem (concat "fasl.clisp/" name ".mem")
                    :init-function #'reduce-init-function
                    :quiet t :norc t)
-  #+ABCL (asdf-jar:package name :verbose t)
-)
+  #+ABCL
+  (asdf-jar:package name :verbose t)
+  #+CCL
+  (ccl:save-application (concat "fasl.ccl/" name ".image")
+                        :toplevel-function #'reduce-init-function)
+  )
 
 (pushnew :standard-lisp *features*)
 
@@ -3421,12 +3470,26 @@ When all done, execute FASLEND;~2%" name))
   "Information about the Lisp system supporting REDUCE.
 A list of identifiers indicating system properties.")
 
-#+SBCL (pushnew 'sbcl lispsystem*)
-#+CLISP (pushnew 'clisp lispsystem*)
-#+ABCL (pushnew 'abcl lispsystem*)
+(pushnew #+SBCL 'sbcl #+CLISP 'clisp #+ABCL 'abcl #+CCL 'ccl lispsystem*)
 #+win32 (pushnew 'win32 lispsystem*)
 #+cygwin (pushnew 'cygwin lispsystem*)
 #+unix (pushnew 'unix lispsystem*)  ; appears together with cygwin
+
+(defconstant fasl-dir*
+  #+SBCL "fasl.sbcl/"
+  #+CLISP "fasl.clisp/"
+  #+ABCL "fasl.abcl/"
+  #+CCL "fasl.ccl/"
+  "Standard Lisp fasl directory, used by \"remake.red\".")
+
+(defconstant fasl-ext*
+  #+SBCL ".fasl"
+  #+CLISP ".fas"
+  #+ABCL ".abcl"
+  #+(and CCL WINDOWS) ".wx64fsl"
+  #+(and CCL LINUX) ".lx64fsl"
+  #+(and CCL MACOS) ".dx64fsl"          ; ???
+  "Standard Lisp fasl extension, used by \"remake.red\".")
 
 #+SBCL
 (defun compilation (on)
@@ -3451,6 +3514,7 @@ interpret otherwise.  The default is compile."
    file-write-date                      ; used in remake
    catch throw                          ; used in rubi_red
    sleep                                ; used in crack
+   #+SBCL sb-ext:*muffled-warnings*     ; used in build.sh
    ))
 
 ;; Cease inheriting the external symbols of :common-lisp except for

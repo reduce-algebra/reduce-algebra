@@ -165,8 +165,11 @@ symbolic procedure simplogbsq(sq,base);
        else if fixp denr sq and domainp numr sq
         then <<if (n:=int!-equiv!-chk numr sq) and fixp n
                  then return addsq(simplogbn(n,base,nil),negsq simplogbn(denr sq,base,nil))>>;
-      if !*precise then return !*kk2q mk!-log!-arg(prepsq sq,base)
-        else return addsq(simplogb2(numr sq,base),negsq simplogb2(denr sq,base));
+      %% Do log(x/y) -> log(x) - log(y) only if either precise is off
+      %%  or if x or y is real
+      if !*precise and not realvaluedp!-sf denr sq and not realvaluedp!-sf numr sq
+        then return !*kk2q mk!-log!-arg(prepsq sq,base)
+       else return addsq(simplogb2(numr sq,base),negsq simplogb2(denr sq,base));
     end;
 
 symbolic procedure simplogb2(sf,base);
@@ -181,8 +184,12 @@ symbolic procedure simplogb2(sf,base);
      else begin scalar form;
         form := comfac sf;
         if not null car form
-          then return addsq(formlog(form .+ nil,base),
-                            simplogb2(quotf(sf,form .+ nil),base));
+	   %% do not extract a common factor unless either precise is off
+ 	   %%  or the factor is real
+          then if null !*precise or realvaluedp!-sf(form .+ nil)
+	     then return addsq(formlog(form .+ nil,base),
+		               simplogb2(quotf(sf,form .+ nil),base))
+	     else return formlog(sf,base);
         % We have killed common powers.
         form := cdr form;
         if form neq 1
@@ -254,7 +261,14 @@ symbolic procedure formlogterm(sf,base);
                          multsq!*(simplogbi(u,base),simp!* ldeg sf))
         else if (lc sf iequal 1) and (ldeg sf iequal 1)
          then u := ((mksp(mk!-log!-arg(sfchk u,base),1) .* 1) .+ nil) ./ 1
+	    %% do not extract a negative factor from log's argument AND
         else if domainp lc sf and !:minusp lc sf
+         then u := ((mksp(mk!-log!-arg(prepf sf,base),1) .* 1) .+ nil) ./ 1
+	    %% keep product in log intact unless either precise is off
+	    %% or at most one factor is not real
+        else if !*precise and
+	        not (if sfp u then realvaluedp!-sf u else realvaluedp u) and
+	       	not realvaluedp!-sf lc sf 
          then u := ((mksp(mk!-log!-arg(prepf sf,base),1) .* 1) .+ nil) ./ 1
         else u := addsq(simptimes list(mk!-log!-arg(sfchk u,base),ldeg sf),
                         simplogb2(lc sf,base));
