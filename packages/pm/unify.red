@@ -32,9 +32,11 @@ module unify;   % Main part of unify code.
 
 fluid '(!*semantic substitution);
 
-switch semantic;
+fluid '(symm op r p i upb identity expand acontract mcontract comb);
 
-!*semantic := t;
+switch semantic=on;
+
+%!*semantic := t;
 
 symbolic procedure amatch(r,p,suchl,pmstack);
    if atom r then unify(nil,mval list r,list p,suchl, pmstack)
