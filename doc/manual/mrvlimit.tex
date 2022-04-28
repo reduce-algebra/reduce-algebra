@@ -14,7 +14,7 @@ limit(----,x,infinity)
        e
 \end{verbatim}
 
-This particular problem arises, because L'Hopital's rule for the computation of indefinite forms (such as $0/0$, or $\frac{\infty}{\infty}$) can only be applied in a CAS a finite number of times, and in \REDUCE, this number is 3. Applied 7 times to the above problem would have yielded the correct answer 0.
+This particular problem arises, because L'H\^{o}pital's rule for the computation of indefinite forms (such as $0/0$, or $\frac{\infty}{\infty}$) can only be applied in a CAS a finite number of times, and in \REDUCE, this number is 3. Applied 7 times to the above problem would have yielded the correct answer 0.
 The new algorithm solves this particular problem, and enables the computation of many more limit calculations in \REDUCE. We first define the domain in which we work, and then give a statement of the main algorithm that is used in this package. \\[\baselineskip]
 Definition: \\
 Let $\Re[x]$ be the ring of polynomials in $x$ with real coefficients, and let $f$ be an element in this ring. The field which is obtained from $\Re[x]$ by closing it under the operations $f\rightarrow\exp(f)$ and $f\rightarrow\log |f|$ is called the $L$- field (or logarithmico-exponential field, or field of exp-log functions for short).
