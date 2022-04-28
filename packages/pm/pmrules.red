@@ -33,7 +33,10 @@ algebraic;
 % These routines are used so often they should be coded in LISP
 % for efficiency.
 
-operator ~; deflist('((!~ !~)),'unary); %precedence ~,not;
+%% The operator declaration for ~ is no longer needed as it is
+%% already defined in alg/forall.red.
+%%operator ~; 
+deflist('((!~ !~)),'unary); %precedence ~,not;
 
 infix &; deflist('((!& !&)),'unary); precedence &, and;
 
