@@ -1523,15 +1523,14 @@ control the display of derivatives.  The default value is
 \texttt{partial}.  However, if the switch \texttt{dfprint} is on then
 \texttt{fancy\_print\_df} is ignored.  For example, with the following
 settings, derivatives are displayed as follows (assuming
-\texttt{depend f,x,y} and \texttt{operator g}):
-
-\begin{tabular}{ccc}
-  \texttt{Setting} & \texttt{df(f,x,2,y)} & \texttt{df(g(x,y),x,2,y)} \\
-  \texttt{fancy\_print\_df:=partial} &
-  \(\frac{\partial^3 f}{\partial x^2 \partial y}\) &
-  \(\frac{\partial^3 g(x,y)}{\partial x^2 \partial y}\) \\
-  \texttt{fancy\_print\_df:=total} & \(\frac{d^3 f}{d x^2 d y}\) &
-  \(\frac{d^3 g(x,y)}{d x^2 d y}\) \\
+\texttt{depend f,x,y} and \texttt{operator g}):\\[0.5\baselineskip]
+\begin{tabular}{lcc}
+  \multicolumn{1}{c}{Setting} & \texttt{df(f,x,2,y)} & \texttt{df(g(x,y),x,2,y)} \\[0.2em]
+  \texttt{fancy\_print\_df:=partial} & 
+  \(\displaystyle\frac{\partial^3 f}{\partial x^2 \partial y} \vphantom{\Biggl(} \)&
+  \(\displaystyle\frac{\partial^3 g(x,y)}{\partial x^2 \partial y}\) \\
+  \texttt{fancy\_print\_df:=total} & \(\displaystyle\frac{d^3 f}{d x^2 d y}\) &
+  \(\displaystyle\frac{d^3 g(x,y)}{d x^2 d y}\) \\
   \texttt{fancy\_print\_df:=indexed} & \(f_{x,x,y}\) & \(g(x,y)_{x,x,y}\) \\
   \texttt{on dfprint} & \(f_{x,x,y}\) & \(g_{x,x,y}\)
 \end{tabular}
@@ -1589,10 +1588,16 @@ The definite integral of \texttt{exprn} with respect to \texttt{var} is
 calculated between the limits \texttt{lower} and \texttt{upper}.
 This is calculated by several methods that are tried one after the other:
 pattern matching, by first finding
-the indefinite integral and then substituting the limits into this, by contour integration, or
+the indefinite integral and then substituting the limits into this,
+by contour integration for some types integrands with polynomial denominator, or
 by transforming the integrand into one or two Meijer G-functions.
-For details, consult
-the documentation on the DEFINT\indexpackage{DEFINT} package.
+For details, see
+the documentation on the \package{DEFINT}\indexpackage{DEFINT} package described
+in section \ref{sec:definiteIntegration}\footnote{This code was written by
+Kerry Gaskell, Stanley M. Kameny, Winfried Neun.}.
+\index{Gaskell, Kerry}\index{People!Gaskell, Kerry}
+\index{Kameny, Stanley L.}\index{People!Kameny, Stanley L.}
+\index{Neun, Winfried}\index{People!Neun, Winfried}
 
 
 \subsection{Options}

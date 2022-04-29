@@ -1022,6 +1022,19 @@ Complex conjugation is used to remove complex numbers from denominators of
 expressions.  To do this if \sw{complex} is off, you must turn the switch
 \sw{rationalize}\ttindexswitch{rationalize} on.
 
+\subsection{Algebraic Numbers as Coefficients in Polynomial}
+\label{sec:package-arnum}
+\indexpackage{ARNUM}
+
+The \package{ARNUM} package\footnote{This package was written by Eberhard Schr\"ufer.}
+provides facilities for handling algebraic numbers as
+polynomial coefficients in {\REDUCE} calculations. It includes facilities for
+introducing indeterminates to represent algebraic numbers, for calculating
+splitting fields, and for factoring and finding greatest common divisors
+in such domains.
+
+\input{arnum}
+
 \iffalse
 \section{ROOT\_VAL Operator}
 \hypertarget{operator:ROOT_VAL}{}

@@ -1,4 +1,4 @@
-module pmpatch; % Patches to make pattern matcher run in REDUCE 3.4.
+module pmpatch; % Patches to make pattern matcher run in REDUCE.
 
 % Author: Kevin McIsaac.
 % Changes by Rainer M .Schoepf
@@ -42,12 +42,17 @@ global '(simpcount!* simplimit!*);
 symbolic procedure listeval(u,v);
    <<if (simpcount!* := simpcount!*+1)>simplimit!*
        then <<simpcount!* := 0;
-              rederr "Simplification recursion too deep">>;
+              rerror(rlisp,18,"Simplification recursion too deep")>>;
      u := if atom u
             then listeval(if flagp(u,'share) then eval u
-                           else cadr get(u,'avalue),v)
-           else car u . for each x in cdr u collect reval1(x,t);
-     simpcount!* := simpcount!*-1;
+                           else if x then cadr x else typerr(u,'list),v)
+                                  where x=get(u,'avalue)
+           else if car u = 'list
+            then makelist for each x in cdr u collect reval1(x,t)
+           else ((if x then apply2(x,cdr u,v)
+                   else rerror(rlisp,19,"Illegal operation on lists"))
+                 where x = get(car u,'listfn));
+     simpcount!* := simpcount!* - 1;
      u>>;
 
 
@@ -92,10 +97,21 @@ symbolic procedure fnreval(u,v,mode);
 % Next two routines are changes to module SIMP to add NOSIMP code.
 
 symbolic procedure opfneval u;
-   lispeval(car u . for each j in
-                  (if flagp(car u,'noval) then cdr u
-                  else fnreval(cdr u,get(car u,'nosimp),t))
-                            collect mkquote j);
+  if flagp(car u ,'remember) then
+    begin scalar interm,resul,x;
+      interm := for each j in
+	   (if flagp(car u,'noval) then cdr u
+ 	     else fnreval(cdr u,get(car u,'nosimp),t))
+        collect if fixp j then j else mkquote j;
+      if (x:=assoc(car u . interm ,get(car u,'kvalue))) then return cadr x;
+      resul := opfneval1(car u, interm);
+      put!-kvalue(car u,get(car u,'kvalue), car u . interm, resul);
+      return resul;
+    end
+  else opfneval1(car u,
+    for each j in (if flagp(car u,'noval) then cdr u
+                        else fnreval(cdr u,get(car u,'nosimp),t))
+    collect mkquote j);
 
 fluid '(ncmp!* subfg!*);
 
@@ -104,10 +120,15 @@ symbolic procedure simpiden u;
    % Note: we must use PREPSQXX and not PREPSQ* here, since the REVOP1
    % in SUBS3T uses PREPSQXX, and terms must be consistent to prevent a
    % loop in the pattern matcher.
-   begin scalar bool,fn,x,y,z,n;
+   begin scalar bool,fn,x,y,z;
     fn := car u; u := cdr u;
-    if x := valuechk(fn,u) then return x;
-    if not null u and eqcar(car u,'list)
+    % Allow prefix ops with names of symbolic functions.
+    if (get(fn,'!:rn!:) or get(fn,'!:rd!:)) and (x := valuechk(fn,u))
+      then return x;
+    % check the number of arguments supplied to a specfn. Added by AB
+    if flagp(fn,'specfn) then check!-argnum(fn,u);
+    % Keep list arguments in *SQ form.
+    if u and eqcar(car u,'list) and null cdr u
       then return mksq(list(fn,aeval car u),1);
     % *** Following line added to add nosimp code.
     x := fnreval(u, get(fn, 'nosimp),nil);
@@ -116,31 +137,37 @@ symbolic procedure simpiden u;
               if eqcar(j,'!*sq) then prepsqxx cadr j
                else if numberp j then j
                else <<bool := t; j>>;
-    if u and car u=0
-       and flagp(fn,'odd) and not flagp(fn,'nonzero)
+%   if u and car u=0 and (flagp(fn,'odd) or flagp(fn,'oddreal))
+    if u and car u=0 and flagp(fn,'odd)
+         and not flagp(fn,'nonzero)
       then return nil ./ 1;
     u := fn . u;
     if flagp(fn,'noncom) then ncmp!* := t;
     if null subfg!* then go to c
      else if flagp(fn,'linear) and (z := formlnr u) neq u
       then return simp z
-     else if z := opmtch u then return simp z
-     else if z := get(car u,'opvalfn) then return apply1(z,u);
+     else if z := opmtch u then return simp z;
+ %   else if z := get(car u,'opvalfn) then return apply1(z,u);
  %    else if null bool and (z := domainvalchk(fn,
  %                for each j in x collect simp j))
  %     then return z;
     c:  if flagp(fn,'symmetric) then u := fn . ordn cdr u
-         else if flagp(fn,'antisymmetric)
-          then <<if repeats cdr u then return (nil ./ 1)
-              else if not permp(z:= ordn cdr u,cdr u) then y := t;
-        % The following patch was contributed by E. Schruefer.
-        fn := car u . z;
-        if z neq cdr u and (z := opmtch fn)
-          then return if y then negsq simp z else simp z;
-        u := fn>>;
+     else if flagp(fn,'antisymmetric)
+      then <<if repeats cdr u then return (nil ./ 1)
+          else if not permp(z:= ordn cdr u,cdr u) then y := t;
+         % The following patch was contributed by E. Schruefer.
+         fn := car u . z;
+         if z neq cdr u and (z := opmtch fn)
+           then return if y then negsq simp z else simp z;
+         u := fn>>;
+%    if (flagp(fn,'even) or flagp(fn,'odd))
+%       and x and minusf numr(x := simp car x)
+%     then <<if flagp(fn,'odd) then y := not y;
+%   if (flagp(fn,'even) or flagp(fn,'odd) or flagp(fn,'oddreal)
+%          and x and not_imag_num car x)
     if (flagp(fn,'even) or flagp(fn,'odd))
-       and x and minusf numr(x := simp car x)
-     then <<if flagp(fn,'odd) then y := not y;
+         and x and minusf numr(x := simp car x)
+     then <<if not flagp(fn,'even) then y := not y;
         u := fn . prepsqxx negsq x . cddr u;
         if z := opmtch u
           then return if y then negsq simp z else simp z>>;

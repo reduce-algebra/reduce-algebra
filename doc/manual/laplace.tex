@@ -52,9 +52,9 @@ transforming derivatives are entered in such a form.
 \textbf{Examples:}
 \begin{verbatim}
 
-    let {laplace(log(~x),x) => -log(gam * il!&)/il!&,
+    let {laplace(log(~x),x) => -log(Euler_Gamma * il!&)/il!&,
 
-    invlap(log(gam * ~x)/x,x) => -log(lp!&)};
+    invlap(log(Euler_Gamma * ~x)/x,x) => -log(lp!&)};
 
 
     operator f;

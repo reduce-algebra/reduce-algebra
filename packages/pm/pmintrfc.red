@@ -475,11 +475,12 @@ flag ('(such!-that), 'spaced);  % _ adjacent to symbols causes problems.
 
 algebraic;
 
-infix :-;
+%% Call infix function in symbolic mode, this avoids to making it a symbolic operator 
+symbolic infix :-;
 nosimp(:-,'(t nil));
 %precedence :-,:=;  %can't do this
 
-infix ::-;
+symbolic infix ::-;
 nosimp(::-,'(t t));
 precedence rsetd,rset;
 
