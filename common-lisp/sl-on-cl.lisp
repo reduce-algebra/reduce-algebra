@@ -2182,7 +2182,7 @@ parent.  Called by `open' and `cd' on SBCL."
                                  (make-pathname :directory d :defaults filename)
                                  (make-pathname :directory cwd)))))
     filename)
-  #+CCL (uiop/filesystem:truenamize filename)
+  #+CCL (uiop/filesystem:truenamize filename) ; requires asdf, so remove later?
   )
 
 ;; CLISP user variable CUSTOM:*DEVICE-PREFIX* controls translation
@@ -3104,7 +3104,12 @@ COMMAND to the interpreter and return the process exit code."
        ;; Cygwin CLISP behaves as if running on Unix, not Windows.
        ;; ext:shell returns nil for normal exit with status 0!
        #+CLISP (or (ext:shell command) 0)
-       #+CCL  (ccl:run-program "/bin/sh" (list "-c" command) :output t)
+       (nth-value 1
+           (external-process-status     ; returns status, exit code
+            #+(and CCL WINDOWS)         ; seems not to work!
+            (run-program "cmd" (list "/c" command) :output t)
+            #+(and CCL (not WINDOWS))
+            (run-program "sh" (list "-c" command) :output t)))
        ))
 
 #+SBCL
@@ -3120,10 +3125,7 @@ COMMAND to the interpreter and return the process exit code."
 (defun pwd ()                           ; PSL / Unix
   "(pwd):STRING expr
 Return the current working directory in system specific format."
-  (the simple-string
-       #+SBCL (sb-ext:native-namestring *default-pathname-defaults*)
-       #+CLISP (namestring (ext:cd))
-       #+CCL (ccl::defaulted-native-namestring (user-homedir-pathname))))
+  (the simple-string (namestring (truename *default-pathname-defaults*))))
 
 #+SBCL
 (defun cd (&optional dir)               ; PSL / Unix
@@ -3178,7 +3180,6 @@ directory."
       (setf *default-pathname-defaults* (truename x)) ;; d-p-d is canonical!
       ))
 
-;;; MF - 2022-04-25
 #+CCL
 (defun cd (dir)							; PSL
   "(cd DIR:string):BOOLEAN expr
@@ -3194,9 +3195,7 @@ not sucessful, the value Nil is returned."
   ;; Expand environment variables, "." and "..":
   (setq dir (substitute-in-file-name (namestring dir)))
   (setq dir (merge-pathnames dir))
-  (and (probe-file dir)
-       (uiop/os:chdir dir)))
-
+  (and (probe-file dir) (ccl::cd dir)))
 
 (defalias 'chdir 'cd)                   ; CSL / MS Windows
 
@@ -3223,6 +3222,14 @@ not sucessful, the value Nil is returned."
 ;;; Compile and load
 ;;; ================
 
+(defconstant %fasl-directory-pathname
+  (make-pathname :directory '(:relative
+                              #+SBCL "fasl.sbcl"
+                              #+CLISP "fasl.clisp"
+                              #+ABCL "fasl.abcl"
+                              #+CCL "fasl.ccl"))
+  "Pathname of fasl directory.")
+
 (defvar *verboseload nil
   "*verboseload = [Initially: nil] switch
 If non-nil, a message is displayed when a request is made to load a
@@ -3235,12 +3242,6 @@ a load.")
 (defvar options* nil
   "A list of loaded `modules', which are loaded only once.
 These are files referenced by symbols rather than strings.")
-
-(defconstant %fasl-directory-pathname
-  (make-pathname :directory (cl:append (pathname-directory (truename ""))
-                                       '(#+SBCL "fasl.sbcl" #+CLISP "fasl.clisp"
-                                         #+ABCL "fasl.abcl" #+CCL "fasl.ccl")))
-  "Absolute pathname of fasl directory.")
 
 (defun load (file)             ; currently only supports a single file
   "(load [FILE:{string, id}]): nil macro
@@ -3279,6 +3280,19 @@ Load a \".sl\" file using Standard Lisp read syntax."
 
 ;;; Faslout/faslend interface
 ;;; =========================
+
+(defconstant fasl-ext*
+  #+SBCL ".fasl"
+  #+CLISP ".fas"
+  #+ABCL ".abcl"
+  #+(and CCL WINDOWS) ".wx64fsl"
+  #+(and CCL LINUX) ".lx64fsl"
+  #+(and CCL MACOS) ".dx64fsl"          ; ???
+  "Standard Lisp fasl filename extension beginning with \".\", used by \"remake.red\".")
+
+(defconstant fasl-dir*
+  (namestring %fasl-directory-pathname)
+  "Standard Lisp fasl directory name ending with \"/\", used by \"remake.red\".")
 
 (defconstant %faslout-header
   (concatenate
@@ -3474,22 +3488,6 @@ A list of identifiers indicating system properties.")
 #+win32 (pushnew 'win32 lispsystem*)
 #+cygwin (pushnew 'cygwin lispsystem*)
 #+unix (pushnew 'unix lispsystem*)  ; appears together with cygwin
-
-(defconstant fasl-dir*
-  #+SBCL "fasl.sbcl/"
-  #+CLISP "fasl.clisp/"
-  #+ABCL "fasl.abcl/"
-  #+CCL "fasl.ccl/"
-  "Standard Lisp fasl directory, used by \"remake.red\".")
-
-(defconstant fasl-ext*
-  #+SBCL ".fasl"
-  #+CLISP ".fas"
-  #+ABCL ".abcl"
-  #+(and CCL WINDOWS) ".wx64fsl"
-  #+(and CCL LINUX) ".lx64fsl"
-  #+(and CCL MACOS) ".dx64fsl"          ; ???
-  "Standard Lisp fasl extension, used by \"remake.red\".")
 
 #+SBCL
 (defun compilation (on)

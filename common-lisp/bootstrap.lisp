@@ -3,12 +3,12 @@
 
 (load "sl-on-cl")
 
-(unless (sl:getenv "reduce")
-  ;; No easy way to support setenv in ABCL, so $reduce must be set explicitly!
-  (cond #-ABCL ((probe-file "./packages") (sl:setenv "reduce" "."))
-        #-ABCL ((probe-file "../packages") (sl:setenv "reduce" ".."))
-        (t (format t "~%Error: cannot find packages directory.  Please set $reduce.~2%")
-           (sl:exit 1))))
+;; (unless (sl:getenv "reduce")
+;;   ;; No easy way to support setenv in ABCL, so $reduce must be set explicitly!
+;;   (cond #-ABCL ((probe-file "./packages") (sl:setenv "reduce" "."))
+;;         #-ABCL ((probe-file "../packages") (sl:setenv "reduce" ".."))
+;;         (t (format t "~%Error: cannot find packages directory.  Please set $reduce.~2%")
+;;            (sl:exit 1))))
 
 #-DEBUG (declaim (optimize speed))
 #+DEBUG (declaim (optimize debug safety))
