@@ -9,23 +9,22 @@ From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Gu
 
 **This code is currently experimental!**
 
-The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support explicitly
+The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows and Linux, where, "Linux" means the current or recent versions of Ubuntu and Fedora.  There is also some code to support macOS and I understand that REDUCE builds and runs on SBCL and CCL, but not CLISP, on macOS, although I don't run macOS myself.
 
-* the native Microsoft (MS) Windows and Linux builds of [SBCL](http://www.sbcl.org/) (Steel Bank Common Lisp),
-* the [Cygwin](https://cygwin.com/) and Linux builds of [CLISP](https://clisp.sourceforge.io/).
+I have recently built REDUCE using SBCL 2.2.4, Cygwin GNU CLISP 2.49+ and CCL 1.12.1 on Windows, and SBCL 2.2.3, GNU CLISP 2.49.92 and CCL 1.12.1 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing recently.
 
-Here, "Linux" means current or recent versions of Ubuntu and Fedora.
-
-I have recently built REDUCE revision 6287 using SBCL 2.2.2 and GNU CLISP 2.49+ on Windows, and using SBCL 2.2.3 and GNU CLISP 2.49.92 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing.
-
-There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
+The support for CCL is based on code provided by Marco Ferraris.  There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
 
 Building REDUCE
 ---------------
 
 Create a build directory somewhere convenient.  If you download the whole [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/) then you can use the `common-lisp` directory as your build directory with no additions.
 
-You need an appropriate version of SBCL, CLISP and/or ABCL (see links above).  SBCL and CLISP on Linux should be available via a Linux package manager such as Synaptic (but not via a software installer for windowed applications).  To use ABCL, you need to ensure that you have a suitable Java runtime environment installed, and you need to download [abcl-bin-1.8.0.zip](https://abcl.org/releases/1.8.0/abcl-bin-1.8.0.zip) and unzip it (or build and install it) so that `abcl-bin-1.8.0/abcl.jar` exists in the `common-lisp` directory.  The build scripts expect to find the commands `sbcl`, `clisp` and/or `java` on your search path.
+You need an appropriate version of SBCL, CLISP, CCL and/or ABCL (see links above).  Possibly out-of-date versions of SBCL and CLISP on Linux should be available via a Linux package manager such as Synaptic (but not via a software installer for windowed applications).
+
+To use CCL you need to create a command called either `ccl` or `ccl64`, as explained in the CCL documentation.  The build and run scripts use whichever is available, preferring `ccl64`.  I have only tested 64-bit CCL and I call the command to run it `ccl`.
+
+To use ABCL, you need to ensure that you have a suitable Java runtime environment installed, and you need to download [abcl-bin-1.8.0.zip](https://abcl.org/releases/1.8.0/abcl-bin-1.8.0.zip) and unzip it (or build and install it) so that `abcl-bin-1.8.0/abcl.jar` exists in the `common-lisp` directory.  The build scripts expect to find the commands `sbcl`, `clisp`, `ccl`, `ccl64`, and/or `java` on your search path.
 
 You need to use a minimal Unix-like environment including `bash` and `grep`; on MS Windows I use [Cygwin](https://cygwin.com/).  (The `grep` command is used only for reporting an error summary, which could be commented out without affecting the build process.)
 
@@ -40,13 +39,11 @@ The build directory must contain the following files from the common-lisp direct
 * `build.sh`
 * `gnuintfc.red`
 
-On Linux, ensure that `build.sh` is executable.
-
 If you do not build within the REDUCE Subversion file tree then the following two additional steps are necessary:
 
-* The build directory must contain a link to, or copy of, the file [psl/boot.sl](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/boot.sl).  (The way to create a link in Windows is with `mklink` at a Windows command prompt running as Administrator, which you can open by holding the Windows key and typing X; I use a symbolic link for `boot.sl`.  A Windows shortcut created using the File Explorer GUI will probably not work!)
+* The build directory must contain a link to, or copy of, the file [psl/boot.sl](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/boot.sl).  (The way to create a link in Windows is with `mklink` at a Windows command prompt running as Administrator, which you can open by holding the Windows key and typing `x`; I use a symbolic link for `boot.sl`.  A Windows shortcut created using the File Explorer GUI will probably not work!)
 
-* The `packages` directory for the version of REDUCE you want to build must be available.  This could be the `packages` directory installed as part of a binary distribution or a recent download from the [Subversion repository](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/).  It is easiest to add the `packages` directory as a symbolic link in the `common-lisp` directory or its parent.  (On Windows I use a directory symbolic link created using `mklink /d`.)  Alternatively, you can set the environment variable `$reduce` to the directory containing the `packages` directory (without a trailing directory separator).
+* The `packages` directory for the version of REDUCE you want to build must be available.  This could be the `packages` directory installed as part of a binary distribution or a recent download from the [Subversion repository](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/).  It is easiest to add the `packages` directory as a symbolic link in either the `common-lisp` directory or its parent.  (On Windows I use a directory symbolic link created using `mklink /d`.)  Alternatively, you can set the environment variable `$reduce` to the directory containing the `packages` directory (without a trailing directory separator).
 
 Open a window running `bash` and make your chosen build directory current.  If you need to set the `$reduce` environment variable, you can do it like this.  For example, to use the `packages` directory from a _default_ REDUCE installation to build SBCL REDUCE on MS Windows, execute the `bash` command
 
@@ -64,9 +61,9 @@ Then run the build script by executing the `bash` command
 
     ./build.sh -l <lisp>
 
-where `<lisp>` is either `sbcl`, `clisp` or `abcl`.
+where `<lisp>` is either `sbcl`, `clisp`, `ccl` or `abcl`.
 
-The build process should create two sub-directories in the build directory called `fasl.<lisp>` and `log.<lisp>`.  The whole `log*` directory and the `*.lisp`, `*.dat` and `bootstrap.*` files in the `fasl*` directory could be deleted after the build; only the files `fasl.<lisp>/reduce.*` and `fasl.<lisp>/*.fas*` are required to run REDUCE.  (I will probably delete superfluous files automatically at some later date, but for now they are useful for debugging.)  Note that the SBCL, CLISP and ABCL builds are completely independent since they use different compiled file extensions and build sub-directories.
+The build process should create two sub-directories in the build directory called `fasl.<lisp>` and `log.<lisp>`.  The whole `log.*` directory and the `*.lisp`, `*.dat` and `bootstrap.*` files in the `fasl.*` directory could be deleted after the build; they are not required to run REDUCE.  (I will probably delete superfluous files automatically at some later date, but for now they are useful for debugging.)  Note that the builds for different Lisps are completely independent since they use different compiled (fasl) file extensions and sub-directories.
 
 The build script supports some optional flags: `-c` provides a clean build, by first deleting all the files that get built; `-f` forces all REDUCE packages to be recompiled, even if they appear to be up to date; `-b` builds only bootstrap REDUCE; `-h` displays help.  To build using an updated version of Common Lisp, you should do a clean build, i.e.
 
@@ -76,27 +73,21 @@ The build script supports some optional flags: `-c` provides a clean build, by f
 Running REDUCE
 --------------
 
-**SBCL REDUCE** can be run on MS Windows by double-clicking the file `redsbcl.bat`, or from a Windows command prompt with the build directory current by executing the command
+The general convention is that REDUCE on `<lisp>` is run by executing a shell script file named `red<lisp>`, where `<lisp>` is either `sbcl`, `clisp` or `ccl`.
 
-    redsbcl
+On MS Windows, SBCL or CCL REDUCE can be run by double-clicking the file `red<lisp>.bat`, or from a Windows command prompt with the build directory current by executing the command
 
-(Don't try to run Windows SBCL interactively under `bash` because you'll probably find that input editing doesn't work as you would wish; fortunately, it runs fine in batch mode under `bash`.)
+    red<lisp>
 
-On Linux, open a terminal window and execute the command
+On Linux or Cygwin, open a terminal window with the build directory current and execute the command
 
-    ./redsbcl
+    ./red<lisp>
 
-having ensured that the file `redsbcl`  is executable.  Beware that this interface does not provide any input editing, although it runs fine in an Emacs shell buffer.
+Beware that input editing may not work using the shell interface; one solution is to use [Run-REDUCE](https://fjwright.github.io/Run-REDUCE/).
 
-**CLISP REDUCE** can be run on MS Windows or Linux by opening a terminal window and executing the `bash` command
+REDUCE can be run from any directory provided the command to start it is specified suitably, such as by using an absolute file path or a symbolic link.  Alternatively, you can add the `common-lisp` directory to your path and then run REDUCE via the appropriate command from any directory on both Windows and Linux.
 
-    ./redclisp
-
-having ensured that the file `redclisp` is executable.
-
-REDUCE can be run from any directory provided the command to start it is specified suitably, such as by using an absolute file path or a symbolic link.  Alternatively, you can add the `common-lisp` directory to your path and then run REDUCE via the command `redsbcl` or `redclisp` on both Windows and Linux.
-
-On both implementations, interrupting REDUCE (with Control-C) invokes a Lisp break loop and aborting that should return you to REDUCE.  Within the break loop you can run arbitrary Lisp code, but remember that you are running Common Lisp and in particular Lisp output uses Common Lisp syntax, although you are initially in the Standard Lisp package.  However, package prefixes are recognised (which they are not from within REDUCE) so you can access most of Common Lisp, but beware that you might break REDUCE so that you cannot return to it!  Evaluating the Lisp expression `(exit)` from a Lisp break loop should completely terminate REDUCE.
+Interrupting REDUCE (with Control-C) invokes a Lisp break loop and aborting that should return you to REDUCE.  Within the break loop you can run arbitrary Lisp code, but remember that you are running Common Lisp and in particular Lisp output uses Common Lisp syntax, although you are initially in the Standard Lisp package.  However, package prefixes are recognised (which they are not from within REDUCE) so you can access most of Common Lisp, but beware that you might break REDUCE so that you cannot return to it!  Evaluating the Lisp expression `(exit)` from a Lisp break loop should completely terminate REDUCE.
 
 Implementation-specific functionality
 -------------------------------------

@@ -61,12 +61,13 @@ case $lisp in
         saveext='jar'
         faslext='abcl';;
     'ccl')
-        runlisp='ccl'
-        runlispfile='ccl -l'
-		runbootstrap='ccl -I fasl.ccl/bootstrap.image'
-        runreduce='ccl -I fasl.ccl/reduce.image'
+        if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
+        runlisp="$CCL"
+        runlispfile="$CCL -l"
+		runbootstrap="$CCL -I fasl.ccl/bootstrap.image"
+        runreduce="$CCL -I fasl.ccl/reduce.image"
         saveext='image'
-        case $(uname -s) in
+        case $(uname -s) in     # see CCL64 shell script in Clozure distribution
             Darwin)             # macOS
                 faslext='dx64fsl';;
             Linux)

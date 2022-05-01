@@ -4,6 +4,7 @@ then
     cmd /c redccl.bat
 else
     # Start the Linux or Mac OS X CCL REDUCE image
+    if [ "$(type -ft ccl64)" ]; then CCL='ccl64'; else CCL='ccl'; fi
     cl=$(realpath $(dirname $0)) # common-lisp directory
-    ccl -I $cl/fasl.ccl/reduce.image
+    $CCL -I $cl/fasl.ccl/reduce.image
 fi
