@@ -3301,15 +3301,7 @@ public:
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
     THREADID;
-#ifdef CONSERVATIVE
-// The next line sets threadId (in fact it should always be to zero since
-// at this stage this is the first and only thread that exists!) and using
-// RAII arranges to release that identifier on exit. It is part of the
-// protocol that will allow other threads to get created and run later on.
-    threadMap = -1;
-    activeThreads = 0;
-    ThreadStartup userThreads;
-#else
+#ifndef CONSERVATIVE
 #ifndef NO_THREADS
     genuineThreadId = 0; // the thread_local master variable.
 #endif

@@ -2,412 +2,263 @@
                      ===============================
 
 
-This note is to help me while I design and implement one, and comments on
-changes from a previous world. This is a fresh version of these notes and
-is being started in April 2016. I had done some redesign in October 2017, but
-the latest changes are from June 2018 - no now May/June 2019.
-And now I update this for April 2021, having coded far enough to understand
-yet more. Work on this has interleaves with other projects and also there
-have been a couple of significant student exercises that explored the areas
-of concern here and helped me come to the current design. But it is being
-a long haul.
+Version as if April 2022.
 
+Previous attempts here perhaps suffered from the "Second System Effect", so
+this version is trimmed down somewhat.
 
+Memory is grabbed from the OS in "segments" where the first such is of
+size (probably) 64MB and each subsequent one is twice the size of its
+predecessor until memory start to get full. This is intended to lead to
+modest calculations completing within a sane footprint while large ones
+being able to get all the memory they might need. There can be up to 16
+segments, so binary search can identify which segment (if any) a potential
+pointer falls within in 4 or 5 comparisons. Segments are all aligned at
+8MB boundaries.
 
-Memory is arranged in an hierarchy. At the largest scale there are segments
-which may be gigabytes in size. These are the blocks grabbed from the
-operating system and I will support there being up to 16. That allows
-the system to start with a modest allocation and then if necessary expand:
-it does not have to reserve the full amount right from the start.
+Each segment is considered to be made up of a sequence of 8MB pages. There
+are two sorts of page - CONS pages and VEC pages. Their internal structures
+are different. Pages that are in use at all will be in one of the following
+states: EMPTY, CONSPIN, VECPIN, CONSFULL, VECFULL, CONSCURRENT, VECCURRENT.
+At the start of a garbage collect a CURRENT page is converted into a FULL
+one.
 
-Each segment is structures as a sequence of 8 Mbyte pages, each of which is
-aligned at an 8 Mbyte boundary. A major reason for having these pages is that
-I expect to trigger a minor (ie ephemeral/generational) GC when a page
-becomes full. Pages are all on one of five chains:
-   freePages
-   mostlyFreePages
-   partlyFreePages
-   busyPages
-   borrowedPages
-[and during GC oldPages]
-and each will always have a field called chunkCount set in a header. A
-page with chunkCount=0 does not have any data stored within it. Two pages
-are noted specially for the benefit of minor GCs - currentPage and
-previousPage. Allocation will go on within currentPage and there are
-pointers gFringe and gLimit associated with it. During a time when minor
-GCs may arise there is a stablePage with sFringe and sLimit pointing into
-it: a minor GC copies material out from preciousPage into stablePage.
+There are three initial processes that I wish to describe first:
 
-The borrowedPages chain will be thread-local so in reality there can be
-as many such chains as their are threads.
+(1) Allocation of a new CONS cell.
+This will involve a CURRENT/CONS page so interacts with the structure there.
+I note that a GC earlier on may have left "pinned" CONS cells within the
+page, and I must allocate around them. The page will have two pointers, free
+and limit. In most cases the code executed for allocation will be
+    LispObject r = free;
+    free += 2*sizeof(LispObject);
+    if (free <= limit) return r;
+and I hope that that sequence can get compiled in-line where it is used.
+A part empty CONS page will contain live data up as far as fringe. From there
+to limit has undefined content. Limit is either the end of the page or is
+a previously pinned item. A bitmap identified all previously pinned data,
+so when it is necessary to skip same that can be consulted and the fringe
+pointer moved to the location just beyond all pinned data in a block. The
+cell there must contain the header for a padder vector defining space up to
+either the next pinned item or the end of the page. Obviously before any
+allocation has happened in a CONS page its first non-pinned location will
+contain such a header. So when a new CONS page is opened the steps taken
+need to be along the lines of:
+    fringe = <start of data region>;
+// The next line assumes that the page will not be 100% full of pinned
+// cells. That pathological case needs to be covered by avoiding any
+// attempt to re-use such a page.
+    while (location_is_pinned(fringe)) fringe += 2*sizeof(LispObject);
+    limit = fringe + length_from_padder_header(*fringe);
+When a CONS page is to be made full all that happens is that its fringe
+pointer is stored in its header.
+In previous plans I had considered multi-thread activity. If I revive that
+plan then each thread will have its own 8MB CURRENT pages and the
+variable fringe and limit become thread-local. That would mean that use of
+atomic operations and the like would only happen when pages become full.
 
-When a segment is created all the pages in it are chained onto freePages
-with a chunkCount of zero.
+Note here that a CONS for the purposes of this section can be any Lisp
+item that fits in exactly two cells. So Lisp vectors with just one element,
+double precision floats, bignums needing only one word of data and strings
+short enough to fit would all qualify. The expectation is that this is the
+sort of data with greatest turn-over.
 
-Within each page there can be chunks, which are 16Kbytes by default but
-can be larger if a large object gets created. The chunks within a page
-are recorded in a chunkMap[] array at the start of the page. There is
-also a flag chunksSorted that indicates whether the entries from 0 to
-chunkCount are arranged in ascending order. While a page is active and
-allocation is happening within it the region gFringe to gLimit may be
-used to allocate more chunks, and pinnedChunks 
+(2) Allocation of a new vector.
+This happens in VECCURRENT and is for all larger objects. It is going to
+turn out that handling pinned vectors is much messier than pinned CONS cells
+because the ambiguous reference may point at an arbitrary location within
+the vector, but it will end up important to identify the start address of
+the pinned item.
+A VEC page is considered as made up of 16KB chunks. As well as a map that
+tags pinned items within the page there is one that provides information
+about each chunk. The main need for this is that chunks may be marked as
+"continuations" when items of size over 16KB need to be allocated.
+Within a VEC page if there is any item that is pinned that means that the
+whole chunk (or chunk plus continuation chunks) containing it must be
+avoided during allocation.
+I hope that the best way of setting up an understanding of allocation will
+be to describe the memory state arrived at. First I will use the word Chunk
+with a capital letter to mean either a single chunk or an initial chunk
+followed by one or more continuations. In an 8MB page there can onlt be 512
+chunks so part of the page header will include a map shoding for each chunk
+whether it is initial, and if it is a continuation whether it is successor
+1, 2, 3 etc. Well at some stage I will make the continuation number
+wrap.
+The page will start with zero or more Chunks each of which is full, in that
+all space within will be accounted for. This is acheived by placing padder
+objects after all genuine data. Withing a Chunk that contains pinned
+material there will be padder objects before, between and after the pinned
+vectors.
+There will then be a Chunk that during allocation has fringe and limit
+pointers (much as in the CONS pages). Chunks beyond this active one are
+either ones containing pinned data or the memory in them has unspecified
+content. The map that contains chunk information needs to be set up for
+all those chunks.
 
-in what follows the term "pinned" indicates data where some ambiguous value
-(from the C++ stack) seems to refer to it. One can not be certain whether
-that value is a genuine Lisp pointer or merely an integer or part of a
-floating point value that happens to look a bit like a pointer. The item
-that it may possibly refer to will be pinned so that the GC does not copy
-and move it to a different location. This can lead to the accidental
-preservation of data that is not actually needed and it tends to introduce
-some memory fragmentation, but in other respects it simplifies system
-structure.
+(3) Investigation of an ambiguous value that may be a pointer to valid data.
+This has to be done at the start of GC, and must end with both a catalogue
+of all valid items referred to and with a quick way to test if a particular
+item is referenced this way. I will use the term "pinned" for items so
+referenced. A complication is that a value from the C++ stack may point not
+at the head word of a multi-word item but anywhere within it.
+Given a potential pointer the first thing to do is to use binary search to
+identify which segment (if any) it points within. Obviously if it does not
+point within any segment it can be ignored. Next the page involved can be
+extracted by a simple mask operation. But within the last-allocated segment
+it may be that only the first few pages have been brought into use, so a
+check against the address of the section of that segment that is in use
+is needed.
+Now for any pointer the page that it lies within is known. The header of that
+page cal be checked to see if it is a CONS or VEC page.
+For a CONS page a pointer is valid if it lies below the fringe or if it
+was pinned by a previous GC. Within such pages the granularity of pinning
+will be 2*sizeof(LispObject) and two bitmaps are required, one recording
+items pinned by earlier GCs and the other for ones that will now be pinned.
+THis process is performed at the start of a GC and at that stage there will
+be a new half-space ready for use. When an item becomed pinned it needs to
+be added to a chain that is built in the new half-space with the page
+header holding the head of that chain. That setup arranges that later parts
+of the GC can visit and process all pinned items. This list will be built
+such that items in it are not sorted. Towards the end of GC it will be
+necessary to sort the list and use it to construct the sequence of padder
+headers that are required when allocation in the recycled page start.
+Naturally for VEC pages things are messier! Again there will be two bitmaps,
+one noting previously pinned items and the other ones pinned this time round.
+The first step will be that the Chunk that a pointer lies within is identified
+and if this is one containing previously pinned data the pin-now mark is
+set on the call referred to. If the Chunk is one beyond where data has been
+placed the reference is ignored. Otherwise the pin-now mark is set. In both
+cases of a preumptive pin the Chunk is marked as containing data that
+may be pinned and a chain of such Chunks is make in the new half-space.
+Pages containing such chunks are chained together.
+After all the ambiguous pointers have been processed in this way a second
+pass is needed to arrange that pinning information refers to the heads
+of objects and never to padders. The chain of pages is traversed, and for
+each page the chain of Chunks inspected.
+As what I hope may be a useful optimisation if a new ambiguous pointer
+refers to a cell already tagged as pinned from last time I will not need
+to perform the next stage for it.  Maybe I can detect and take advantage of
+that situation.
+The step here is the one that I feel has the worst cost in the process of
+identifying pinned items. A Chunk that (may) contain pinned items can either
+be one containing previously pinned stuff or it can be one with fresh data
+in it. In either case it has to be parsed, starting from its start, so that
+all the objects within it are delimited. If a (new) pinned mark is present
+on any word within an object then that pinned mark is moved to tag the first
+word of the object, and the object is placed on a chain of pinned items in
+the new heap. Well if the object identified that way is a padder then it
+should not be pinned. Done simply this process involved around 2K probes
+in each 16KB chunk, and I do not really like that. However it is done in
+the context of a GC that is about to visit and copy all the live data in the
+entire active world, and its cost will be trifling measured against that!
+At the end of this sweep all items that are to be viewed as pinned during
+this gc will have a mark associated with their first word. for a VEC page
+the bitmap must have a bit for every 8-byte word, and so the bitmaps will
+be twice the size that they are in CONS pages. So on a CONS page each of the
+two bitmaps will use 64KB and in a VEC page each will fill 128KB.
 
-There are two sorts of chunks: normal and pinned, identified by a field in
-the chunk header. The header also contains a length field. At the start of
-a GC a normal chunk has Lisp data contiguous from the start of its data
-region as far as a chunkFringe (which can be the end of the chunk, but by
-being less than that can indicate some wasted space at the end of the chunk
-not containing valid or useful data). That data must be properly formatted
-so that the GC can parse it so as to make a linear scan of the chunk.
-A pinned chunk contains a non-null reference to a linked list that lives
-somewhere in the heap where the items in the heap are the doubleword
-aligned addresses of the start of each separate pinned item. The pinned items
-will of course be valid, but all other space within the chunk can contain
-any arbitrary junk - in reality it will contain the remains of structures
-that has been copied away from it by a previous GC. The non-empty list of
-pinned addresses identifies the chunk as pinned, but also all pinned chunks
-are chained on a page starting with a pinnedChunks field, and all pages
-that contain any pinned chunks are chained through a pagePinChain field with
-the list there in pagesPinChain.
+So let me comment a bit more on the map for chunks. There can be 512 chunks
+in a page (well ssomewhat fewer because space is used at the start of the
+page for header information including bitmaps). Well if I recognise that the
+128+128KB of pinning bitmaps are not filled with chunks I only need 496,
+ie 16 fewer. Anyway I will use one byte for information about each chunk.
+One bit if that indicates whether the chunk contains live or pinned data.
+That leaves 7 bits. A value 0 indicated a starter chunk. Values 1,2,...
+indicate continuation chunks up to some point N (maybe N=127 but it could be
+lower if I find a need for more codes for some other purpose). Beyond that
+each successor chunk is marked with N. If an ambiguous pointer refers to a
+chunk marked with non-zero value m then the pointer is reduced by 16384*m
+for processing - the effect is that vectors of length up to around 16KB*N
+find their header chunk instently and ones beyond that step back in
+units on N chunks. I.e. reasonably rapidly.
 
-There are two reasons for having chunks. One is that they provide the
-granularity at which memory as a whole in pinned, especially since it is
-expected that there can be clusters of pinned objects that were allocated
-all all about the same time. The second is that to support multiple threads
-each thread can have its own chunk and then allocation within that chunk
-does not involved synchronization and so is cheap. Allocating the next chunk
-within a page will often be just an atomic increment of a page fringe pointer
-and potentially expensive synchronization only happens when the page becomes
-full.
+After these initial scans that identify currently-pinned items I need to
+evacuate all such. I can have set up a chain of pages that contain pinned
+data and within such pages there are the headers of chains that identify the
+pinned material. Well I do not want those chains to be able to lead to
+material being preserved, for instance if an ambiguous pointer referred to
+a location within such a chain. So I will build the chains using values
+tagged as immediate data and hence not looking like further pointers. This
+does not lose much since almost by the nature of things when an ambiguous
+pointer refers to anything it will not have reliable tag bits, so I need to
+identify the object type by inspection anyway.
+ 
+At the end of a GC the "current" maps of pinned items will need to be copied
+to the "previous" location, and the current ones may properly be cleared
+ahead of the next GC. But also I will need to create the patterns that
+make freed pages ready for re-use. For any page the first check will be
+whether it contains any pinned data. If not it can be recorded as a FREE 
+page and claimed later for either CONS or VEC use.
+If a CONS page contains some pinned items then it refers to a chain of them.
+This chain must be sorted so that padder headers can be written in between
+the pinned items. To do that I think I will find a FREE page and copy the
+list of pinned items into it as a contiguous block that can them be sorted
+as a vector. Well actually the page for use does not need to be totally free,
+provided there is an available clear space in it large enough for the number
+of pinned items to be processed. I think that the unavailability of such a
+page would be extraordinary pathological so any recovery from that can be
+"odd" and I may take the view that it represents a fatal exhaustion of
+memory. However at the start of a GC it may be useful to claim one FREE
+page (if one is available) for this purpose and not copy live data into
+it during GC, use it this way at GC end but then leave it available for
+allocation during the subsequent run.
+A VEC page will have the same sort of treatment save that the chunk structure
+within it will need to be sorted out. Note that one of the pinning bitmaps
+is now available for use as workspace to help arrange that and is large
+enough to be used to hold a vector of pinned chunks if that helps!
 
-Each page contains several bitmaps. One is pinnedMap[] with one bit for
-each 8-byte aligned address in the page. The other is dirtyMap where a bit
-gets set in it by the "write barrier" that records when a RPLAC style
-operation updates data that may be in an old page. Ideally that would
-only be set when an "up pointer" got created - ie a reference from stable
-data to something in the current or previous page. It will be necessary to
-find the location of every dirty cell, and doing so using a full linear
-scan of dirtyMap could be onerous, so two smaller bitmaps refine the
-information to identify large blocks that are clear of any tainting.
-Pages that have any dirty bits at all are kept in a 2-way chain. That
-is a 2-way list to make it easy to remove a page from the list. Well the
-intent is to keep it as a 1-way chain most of the time but perhaps at the
-start of GC to traverse that once and put in the back-pointers.
+Now I have covered the "special" aspects of the scheme, I will just fill in
+the main steps on the GC
 
-So now I will try a sketch of (major) garbage collection. It is important
-to imagine that this is not the first GC, so there may be pinned chunks
-let over from previous times.
+(1) Convert CONSCURRENT and VECCURRENT into CONSFULL and VECFULL by
+    transferring the global fringe pointers into their headers and as
+    necessary  padder headers.
+(2) Prepare CONSCURRENT and VECCURRENT pages for the new half-space into
+    which material will be copied.
+(3) Scan the C++ stack and process each value on it as an ambiguous potential
+    pointer. End up with pin information set on the first word of every item
+    in the heap that must not be relocated.
+(4) For all items identified as pinned evacuate their contents.
+(5) Evacuate all unambiguous list-bases.
+(6) Now we have a loop that evacuates copied data. There are three actions:
+ (6.1) If there is a full page that metarial has been copied into then
+       evacuate all in it apart from any pinned things (which have already
+       been processed).
+ (6.2) If there is material in the VECCURRENT page not yet evacuated then
+       deal with some of it. This may end either if the scan point for
+       unevacuated data catched up with the fringe or if the scan point
+       reaches the end of the page. The latter can happen if performing
+       evacuation fills the page (and so a new VECCURRENT will have get
+       allocated). Note that the scan will go Chunk by Chunk and Chunks
+       containing pinned material must be skipped.
+ (6.3) If there is matarial in the CONSCURRENT page not yet evacuated
+       then process some, skipping over cells that are marked as pinned.
+       As in 6.2 this can stop if things catch up with fringe or reach the
+       end of the page.
+(7) the old half-space should now be available for re-use. Arrange variously
+    as EMPTY, CONSPIN or VECPIN and set up ready for re-use. Ensure that
+    everything is ready for the next cycle with the current pin bitmaps moved
+    to be the "historical" ones.
 
-I am not going to discuss synchronizing multiple threads ahead of GC here,
-but I am going to suppose that before the GC proper is entered that every
-chunk has been sanitised so that up as far as its chunkFringe the data
-is neat and can be scanned linearly. There is a further fairly lengthy
-writeup on all the synchronization that I will have elsewhere, but the
-main plan at present is that when ANY thread fills up a page ALL threads
-must be halted so that garbage collection will not be disrupted by them
-altering things under its feet.
-
-(1) For each page in busyPages set chunkMapSorted to false and hasPinned
-to false. Clear the pinMap[]. Clear the global chain of pages that
-contain pinned stuff. Set oldPages from usedPages and set usedPages
-empty.
-(2) For each ambiguous value (from the C++ stack or stacks) I need to
-record what must be pinned. Given a value v a binary search through
-the segment table can use about 4 steps to identify which segment it is
-within (if any). Then masking with (-8M) will provide a reference to the
-page that is involved. If the stableChunkCount field there is zero then the
-page is empty and v is not a useful pointer.
-If chunkCount is non-zero the page is in use and various other fields in
-it will be valid.
-If chunkMapSorted is false then sort from 0 to chunkCount and set it
-true. So only pages with a possible ambiguous reference get their map
-sorted and for each of then that happens just once. A binary search in
-chunkMap from 0 to chunkCount then identified a chunk that v may
-relate to. If chunks are 16K and pages 8M there can be up to 512 chunks per
-page so this may be 9 comparisons. Now the wasPinned entry in that chunk
-can be checked and it indicates whether the chunk was a pinned or ordinary
-one. If ordinary than at this stage set a bit in the pinMap for the
-doubleword that v references provided that is within the data region of
-the chunk up to chunkFringe. Tag the chunk as containing (new) pinned
-material and put chain it via chunkPinChain on its page. It it was a chunk
-that had been pinned by a previous GC traverse its pinnedObjects and for
-each object there test if v lies within the object. If so then set
-a bit in pinMap and here that can be at the head of the object to be
-pinned. Note that this completes investigation of ambiguous pointers
-without altering any chunkMap entries or chunkCount values, but it
-would be undesirable for this process to try to pin any region in the
-space the the GC is going to copy stuff into, hence
-(3) Allocate a page and chunk so that the GC becomes able to allocate
-new space - mostly it will be copying old data into that. 
-(4) It is now necessary to tidy up pinning information. There will now be
-a list of all pages where items were pinned, and for each such page a
-list of the chunks. Some of those will be newly pinned chunks and some
-continued pinning of currently pinned material. So it is straightforward
-to scan all the chunks that are involved. If they were previously pinned
-than the stuff pinned now is a subset of the material on their pinnedObjects
-Create a new version of that in fresh space and store a reference
-to that in the pinnedObjects field. For previously ordinary chunks it is
-necessary to perform a parse-and-scan of the chunk content to find the
-head address of each newly pinned item by checking for a mark bit that
-corresponds to anywhere within the object and migrating it to mark the
-header. Again create a data structure to go in pinnedObjects.
-The pinnedObjects information is a little delicate. If some ambiguous value
-pointed into it and it was a standard list then that could lead to all of
-it ending up preserved, and that would be undesirable. Also while processing
-a new pin I have to search through it. So it gets created as a vector
-but where all pointers in it as tagged as fixnums (ie as immediate data) and
-where the vector type is "padder". That way if a cell in it is pointed at by
-something wild nothing bad happens. This structure is created before anything
-else is copied into the new heap pages and so a sort of extensible allocation
-may be possible - save for the problem that the information associated with
-different chunks is not accumulated all at once. Oh dear! However the pinned
-addresses in each chunk are close together so I can collect a single vector
-of all pinned items in the new heap. When it is complete I sort it, then the
-material associated with each chunk will be in a compact block. For each
-pinned chunk I then do a binary search lookup that finds the start of that
-block, and with that if the chunk knows how many pinned items lie within
-it I have all the information that I need.
-While allocating the new block I may run out of space by using memory up
-as far as the page limit - in that situation I need to move on to a new
-region within that page or even a new page, copying across what I have
-already set up.
-By the end of this phase the page pinMaps contain marks against the first
-word of each pinned item. 
-(5) I can now start evacuation. This is the process of migrating data from
-the existing space to the new one, leaving forwarding pointers behind.
-Start by traversing the list of all pages that have pinned chunks, then
-the chunks concerned and finally the pinnedObjects chains there and parse
-memory to identify the type and size of the pinned objects and evacuate
-all pointer fields within them. Note that by now if a pointer refers to
-something that is pinned that it is a precise pointer so anding with (-8M)
-will always give a page that it is within, and the bitmap in the page then
-reports in whether it is pinned without too much overhead.
-(6) Evacuate all precise list bases. All the work done so far in the GC will
-have been done using a single thread. Potentially from now on several may
-be brought into play.
-(7) Evacuation has moved data from the old space into fresh chunks. Each of
-these must now be scanned and data fields within it evacuated. If the
-evacuation process is thread safe then several chunks can be scanned at
-once. When all chunks have been processed this stage completes. That is
-harder to arrange than one might at first imagine because at the end it
-will be necessary to be scannning a chunk that is also being used as the
-destination for copied material.
-(8) For every page in oldPages see if the page has pinned chunks and
-if so reset its chunkMap[] and chunkCount to include just them and arrange
-that the pinned chunks are chained so that future allocation can work
-around them. If the page does not have pinned chunks just set chunkCount
-to zero. In either case set chunkMapSorted false and re-chain onto either
-freePages or mostlyFreePages.
-(9) Ensure that fringe and limit (etc) values are nicely set up for the
-allocation process post GC.
-
-
-
-Now I will try to explain a minor GC which wull be provoked each time a
-page becomes full. Of course if at that stage it appears that memory os
-becoming overall full a major GC will happen instead. In support of the
-minor GC every RPLAC (and assignment into an array, and setting of fields
-in symbol heads) will have activated a write barrier that leaves a bit set
-in a dirtyMap[] when a value is written that is a pointer to within the
-current or previous page. The requirement there is that the location
-so updated must be updated if the data that was pointed at moves, and
-the data pointer at must be preserved even if nothing in the current
-or previous page references it directly.
-Let me discuss for a moment the interaction with pinning. Suppose that
-I allocate as current a page that contains pinned data. Then in addition to
-it having had (at some stage in the past) a reference from the C++ stack
-it may have one or more references from locations in the stable part of the
-heap. When the page becomes current those references are now from stable
-data into the current page... so two questions arise: do they count as
-up-pointers and when (if ever) can the data be un-pinned. So there are
-several cases to mention:
-(a) pinned chunks in the mostlyFree chain;
-(b) pinned checks when something moved from mostlyFree to current;
-(c) a pinned chunk as in (b) when current becomes previous;
-(d) newly pinned material in previous observed by the scan of ambiguous
-roots at the start of a minor GC.
-I suspect that the best policy will that once a chunk is pinned only
-a major GC can lift that status. Well the whole concept of a minor GC is
-almost like treating all the heap apart from current and previous as being
-pinned and any waste space in the stable part of the heap is not recovered.
-So this path is not totally ridiculous. A pinned chunk will have a chain
-that enumerates the precise pinned items in it, and that will always be
-in the stable part of the heap and so is safe. So perhaps everything works
-out easily. When a previous page has been evacuated it may end up either
-fully empty or containing some pinned blocks. Totally free pages get
-selected as the preference for new current pages, while ones with pinned
-regions embedded will be the first choice for material evacuated from
-previous to form part of the stable region of the heap.
-Now just to consider the case I want to see what would be involved if I
-wanted a minor GC to be able to un-pin some data from previous. To make
-that possible every location that points to a pinned item must be marked
-as dirty so that the GC can check if any precise pointers remain to things
-that at some stage became pinned. Since the stable parts of the heap are
-not fully scanned during a minor GC this has to happen partly during the
-previous precise GC and also when any item is evacuated from previous into
-the stable heap. If it refers to pinned data it must be marked dirty. The
-write barrier must also notice any update that makes (perhaps old) structure
-point at anything in a pinned region of a page on the freePages list.
-My expectation is that arranging all of that would complicate the write
-barrier and the GC and lead to a larger number of cells marked as dirty,
-and that the consequence would be overhead that more than balanced any
-hoped for reduction in pinning.
-
-The overview here is that I intend to copy material out from JUST the
-previous page and then rename current as previous - setting up a new
-empty page as the new current. The reasoning is that any material present
-in previous was allocated "a page ago" (ie current has been filled from
-empty since then) so it has a certain age, and data in it that was going
-to be discarded perhaps has. Also that the C++ stack is most likely to
-contain references to stuff currently being worked on, and that will be
-concentrated in current. So the hope (and again it is just a hope) is that
-there may not be too much data in previous to be pinned.
-However I will worry out loud here that it could be that there will usually
-be several new pinned items in the previous page. This could arise if data
-was allocated then 16 Mbyte worth or further allocation (ie enough to fill up
-a the current page and then when that has become previous to fill up the new
-current page and) and then a GC happens with references to that data still
-on the stack. If that sort of thing happens often then a serious proportion
-of vacated pages will have some pinned matter in them - in particular too
-many for them to all get gobbled up into the stable heap. In such a situation
-when a page with some pinned chunks works through current and previous it
-can collect more, and over a number of cycles it could get seriously
-clogged. So I want to schedule the most heavily pinned pages for allocation
-into the stable heap and the cleanest for recycling as a new current.
-Precise sorting my load is probably too costly, so I will maintain just
-3 lists of pages - freePages, mostlyFreePages and partlyFreePages.
-
-(1) Set the pinnedMap for previous clear. Arrange to be able to allocate for
-copying purposes in a section that will count as "old" or "stable".
-(2) Scan ambiguous roots and only pay attention to ones that refer within
-previous - set a pin bit on those locations.
-(3) Scan contents of pinned items in previous and process their fields.
-If those refer to non-pinned data in previous copy it to stable.
-(4) Scan current, leaving the objects there where they are but when those
-objects have fields that refer to something not pinned but in recent then
-move that item to the stable part of the heap.
-(5) Scan precise roots doing much the same.
-(6) Scan every location that was marked dirty by the write barrier. If
-it refers to current leave it dirty. If if refers to previous then copy that
-data to stable (unless it was pinned) and clear the dirty bit. If the
-testing now shows it as not referring to either of those (it may be that
-the test here can be more precise that the one in the write barrier) clear
-the bit.
-(7) make current into previous and allocate a fresh current page, for
-choice from freePages and never from partlyFreePages. If there is no space
-in either freePages or mostlyFreePages the trigger a major GC even if
-overall the memory is not half full.
-
-If minor GCs are to be supported then at the end of a major GC every page
-that is created to hold copied data must have its dirty-map cleared and
-the dirty bits associated with pinned data left in the mostlyFree or
-partlyFree must also be cleared. Also each time the minor GC moves stuff
-out of the previous page but finds that it is moving down a copy of a
-reference to the current page (which is sort of treated as pinned there) it
-must set a dirty bit to record the up-pointer, and each time it allocates a
-new stable page then un-pinned parts of that must me marked clean and
-any pinned chunks in it scanned and if there are up-pointers (ie to current)
-they must be marked dirty.
-
-More thought than I have at present given to it needs to go into the issue
-of whether some fields within symbols should be automatically viewed as
-dirty. A particular case is value cells, but property-list head pointers
-might plausibly be considered too. It would be easy to arrange that on
-creation of a symbol and when its head was moved by the garbage collector
-that its value cell was automatically tagged as dirty. The up-side of that
-is that there would then be no need to trigger a write barrier on updating
-the value either by setting it or with fluid binding. The down-side would be
-that the ephemeral GC would need to check the contents of every symbol's
-value cell and check if it contained a pointer into the recent page. Well
-all the files making up Reduce seem to involve a little under 25K symbols,
-and if a major GC works by evacuating the current package early all those
-will end up reasonably close together in memory, so scanning all of them
-(and indeed such other fields in symbol-heads as might be of interest) will
-be cheap enough. So that is my current plan. So that introduces more work in
-the evacuate procedure - it must mark fields in a copied symbol head as
-dirty!
-
-===========================
-
-While developing the consrvative GC I am also looking forward to an
-experiment in support for Lisp threads. This adds a lot more fun. To achieve
-this I will need to build on some thoughts that have a status that lies
-somewhere between hypotheses and assumptions and requirements. I will
-document them here.
-
-If several threads synchronise using semaphores, mutexes or condition
-variables I will suppose that a thread that is released will see all data
-placed in memory by the thread that led to that release. And that this does
-not depend on either thread using datatypes such as std::atomic<T>. The
-simple cases here will be if thread A writes some data and then either
-unlocks a muxed or signals a condition variable such that thread B is
-able to proceed. I will suppse that thread B can observe everything that
-thread A had written before it called the synchronization primitive, but that
-the visibility of anything done after that is uncertain. Note that this is
-a supposition applying to the C++ library synchronisation schemes and not
-to any home-brew use of test-and-set associated with busy waiting etc.
-Aha cppreference under its discussion of memory order sats that a lock
-operation on a muxex is an "acquire" and an unlock is a "release".
-
-For the discussion here I will suppose that all atomic operations I mention
-are done using sequentially consistent memory ordering.
-In addition to the above where I have data that is of the form std::atomic<T>
-then changes made in one thread become visible to other threads, although
-with no guarantee of whether there will be a delay. If the atomics enforce
-a release-aquire behabiour then all memory operations on both atoic and
-non-atomic values that happen before the changes made by the first thread
-will be visible once the second thread has observed that change. Threads that
-do not read from (and hence synchromize on) the atomic may or may not see
-other changes. As well as hardware behaviour there is what compilers are
-entitled to do. Compilers must not rearrange code so as to move other
-memory accesses before or after a (suitably carefully constrained) atomic
-operation. So without use of atomic<T> a "sufficiently advanced compiler"
-might shuffle memory accesses to an almost arbitrary extent including
-removing them totally. I think that the inter-processor consistency only
-applies if the same atomic item is written by the first thread as is read by
-the second.
-
-The C++ documentation for thread_fence still indicates that one thread must
-update something atomic and another must then read from it for any
-synmchronization to occur. Right now I think my understanding is that they
-can force ordering as between memory accesses but of themselves they do not
-perform cross-thread synchronisation - explicit use of atomic variables is
-needed for that. Fences may also prevent compiler re-orderings as well as
-hardware re-orderings which could sometimes be visible in the absence of
-full enforcement of sequential behaviour.
-
-I believe there is a bit of a disconnect. At the architecture level the
-discussions are about memory references to locations and such references may
-be made with our without accompanying memory ordering constaints and
-semantics. In C++ those options are only provided for explicitly atomic
-items and the default access mode to those is sequentially_constistent which
-is potentially one of the more expensive options. So what I will do is leave
-almost all data "simple" (ie not atomic). Then if any pair of Lisp threads
-need to collaborate they must take explicit steps to synchronise because
-without that it is not just that there may be race conditions - some data
-written by the one might just not be observed by the other. When memory is
-being allocated there will be use of (some) atomic variables such that
-each thread can allocate privately most of the time but when memory becomes
-full all come together with careful synchronisation. If the garbage collector
-is single thread it can then access the memory as used by every thread since
-they are all paused and have had write-buffers etc flushed.
-But I will now experiment with an operation I will call AT() which is intended
-to impose explicitly atomic access to data. So if (say) v is a simple variable
-then AT(v) can be used (either as an lvalue or an rvalue) to denote atomic
-reference to v. And AT(v) will support the various C++ methods for read-
-modify-write operations that std::atomic provides. This is not going to
-adhere to C++ standards very well but may still prove useful!
-
-
-
-
+Now let me talk about a higher level. Suppose the total available memory is
+N Pages. Then I will grab pages for the mutator until I have 2N/3 in use.
+If I perform a GC then it has to transcribe live data into N/3 Pages, and
+when it has done that it would be able to allocate a further N/3 before the
+next GC was provoked. My expectation is that when working in the extreme
+situation where those numbers apply that useful computation and GC copying
+costs start to become comparable. If I triggered GC sooner I could cope with
+a larger amount of fully live data, but the cost of GC measured against
+useful work would escalate.
+Now let me consider the fact that some Pages will contain pinned data
+while others will not. I am going to expect that only a modest fraction of
+all pages contain pinned material, in particular less than N/3 of them. If
+that is the case then all ordinary computation can just use pages that start
+off fully empty. That simplifies things and speeds them up a bit. When the
+GC copies stuff it will first prefer to copy into fully empty pages, and
+until memory is really getting full that will always be possible, but as
+memory load pushes towards the limit the GC will need to evacuate from
+the old heap into Pages of the new heap that contain pinned items. At
+least that is in a restricted and controllable state, and in the very
+common case where memory is not close to expiring pinned pages will just
+be left unused until eventually (one hopes) the ambiguous pointers to within
+them dissipate and they can be upgraded to be fully empty pages.
