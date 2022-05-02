@@ -1,17 +1,5 @@
 // newallocate.h                          Copyright (C) Codemist, 2018-2022
 
-// Serious work here started with a check-in in May 2018, but that followed
-// one from some significant time - specifically I had started work on
-// a conservative GC for the VSL Lisp in summer 2012!
-// This version represents a substantial re-though in April 2020, with the
-// ideas mainly ones that emerged while I was thinking about and implementing
-// a project called Zappa that was intended to explore concurrency in
-// garbage collection. Well in January 2022 I move that version to have the
-// name parallocate.h and this is for sequantial code but supporting a
-// conservative garbage collector. I am hoping that this will clear away a
-// raft of complication and make debugging the conservative GC much more
-// comfortable.
-
 
 /**************************************************************************
  * Copyright (C) 2022, Codemist.                         A C Norman       *
@@ -48,550 +36,593 @@
 #define header_newallocate_h 1
 
 #include "log.h"
+#include <cstring>
 #include <csetjmp>
 
-// I have a 4-level hierarchy in my storage allocation scheme. At the
-// large end I ask C++ to give me really large blocks, and I will call
-// these "segments". I do not grab all the memory I might need right from
-// the start, but as one segment starts to ger full I allocate another.
-// I limit myself to having 16 segments in total and maybe the first
-// might sensibly be say 128 Mbytes and subsequent ones each double in size.
-// Given that using more than say a couple of hundred gigabytes of memory
-// is not going to be feasible (and if and when it is this code will not
-// represent sane use of it!) this lets me expand to provide as much as could
-// ever be useful.
-//
-// Each segment is split into "pages" with each page at present 8 Mbytes.
-// The emphemeral garbage collector arranges that allocation happens in
-// one page. When that becomes full the PREVIOUS allocation-page is evacuated.
-// The rest of the pages are either full of data assumed to be stable or are
-// free for re-use (although some which are mostly free will contain data that
-// had to be retained without migrating it as part of the consequence of a
-// conservative collection policy). The largest single Lisp Object must fit
-// within a page, and so this granularity for instance limits the size of the
-// biggest integer that can be stored - but not in a way liable to disrupt
-// the use-cases I envisage here - it is of the order of 20 million decimal
-// digits.
-//
-// Within each page there are "chunks". The current expected chunk size will
-// be 16 Kbytes (so there are about 512 chunks per page). At any stage each
-// thread will have its own active chunk within which it can allocate without
-// and special need for synchronization. When a thread fills a chunk another
-// is allocated until the page becomes full. When a page becomes full a minor
-// garbage collection can be triggered, and if that does not recover enough
-// space a major one can be attempted.
-//
-// Chunks do not need to be consecutive within a page - there can be gaps
-// between them and such gaps will naturally arise when pinned data and
-// the allocation of large vectors leads to fragmentation. The system must
-// keep track of all the chunks in each page with a combination of an index
-// vector and chaining.
-//
-// Each chunk contains a sequence of Objects - these may be cons cells,
-// strings, vectors, bignums etc. In the normal course of allocation all
-// different sorts of objects may coexist in a chunk. When it is not possible
-// to fit more data into a chunk it will be necessary to allocate a new one.
-// The existing chunk can have its length reset so that it only contains
-// valid data. The contents of chunks must be kept clean since the
-// garbage collector can sometimes need to make a linear scan of them
-// identifying all pointers within a chunk - so in particular binary data
-// always needs protection with a header word in front of it and no
-// uninitialized locations may be left. Truncating chunks when they are
-// complete is part of the mechanism to ensure this.
-//
-// Chunks and fragmentation:
-// There are three sources of fragmentation in the memory system:
-// (1) Each Page is 8MB and individual CSL objects can be up to 2MB large.
-//     Attempting to allocate a maximum size object thus risks leaving a
-//     gap of up to 2MB, ie 25% of the Page.
-// (2) Within each Page there can be some pinned chunks where at the time
-//     of a recent garbage collection some sub-regions were (possibly)
-//     referenced by ambiguous pointers. If there are a sequence of pinned
-//     regions separated by just under 2MB and an attempt is made to allocate
-//     a new huge object then essentially the whole page may be wasted!
-//     More closely separated pinned items can cause havoc to allocation
-//     of smaller items.
-// (3) To support concurrent allocation each thread allocates within Chunks
-//     that are typically pre-allocated at a size of 16KB. Allocating an
-//     object larger than this default Chunk size can lead to a waste of
-//     space in a previous partly-used Chunk.
-// Of these (2) is has by far the most dramatic worst-case consequence!
-// But in realistic use-cases there will only be a very few large objects
-// allocated (I hope) and only a small number of pinned chunks, and so my
-// guess is that in reality (3) will represent the greatest inefficiency in
-// memory use.
-// However (1) and (2) could be fatal. Suppose that allocation starts off
-// somehow luckily and neatly so there is almost no loss down to
-// fragmentation. Then garbage collection is triggered and all existing data
-// gets copies into new space. If the allocation in that new space manages
-// to suffer from really severe fragmentation and if all dats is alive then
-// the copy could require dramatically more address space than the original
-// active part of the heap. In the light of (2) there is no sane limit to
-// how bad this could be.
-// HOWEVER I think I should note three things.
-// (a) ANY scheme that for allocating variable sized blocks of memory can
-//     suffer from fragmentation and have really horrible worst cases. Well
-//     ones that can subsequently move the memory blocks around may be immune,
-//     but my situation is not truly unusual.
-// (b) For a system with a copying GC to be running viably the amount of
-//     live data at the end of garbage collection would need to be much
-//     less than the total occupancy at the start of GC (or else the system
-//     will need to GC again almost instantly). So at the end of GC the
-//     target haf-space ought to have only modest occupancy - so the chance
-//     of it overflowing because of fragmentation will be low!
-// (c) There is no special reason for fragmentation in GC-copied material to
-//     be worse than that in the heap that is being copied, so gross
-//     expansion of the memory footprint is not to be expected.
-
-// My allocation strategy will be
-//     If a new object fits in the current chunk it goes there.
-// otherwise
-//     If the new object will be of size >= 8K then it goes in its
-//     own new chunk and the existing one is left active. This arranges
-//     that all chunks are >= 8K.
-// otherwise
-//     The existing chunk is terminated and a new one created of size
-//     16K. The new object will fit into it! The waste space at the end
-//     of the old chunk is at worst 8K and the new chunk will have at
-//     least 8K free in it.
-//
-// So when a new chunk is allocated to make space for an object of size n
-// the chunk size will be (n>=8K ? n : 16K) with some small adjustments
-// relating to the size of chunk headers.
-//
-// In the worst case around half space is lost to fragmentation. In
-// the worst case the number of chunks in a page may be up to 1024 (8M/8K).
-// 
-// Note that I have not yet updated the code here to implement the above!
-
-// If NO_THREADS is defined this will provide a consevative GC (and possibly
-// a generational one) but without support for multiple threads. The main
-// impact of this on the code is that a fair amount of messing around to
-// synchronise all threads when GC is needed gets avoided. In the single
-// thread world it would not be necessary to use atomic variable and the
-// associated operations on them, but for an initial version of the code I
-// will leave that (and its associated overhead) in place.
-// Part of the motivation for having a version of the code that only runs one
-// thread is that at least on some platforms use of thread-local variables
-// imposes a cost which, while not calamitous, is visible as an overall
-// slowdown that is not welcome.
 
 using std::hex;
 using std::dec;
 
-static const size_t pageSize = 8*1024*1024;      // Use 8 Mbyte pages
-
-// targetChunkSize will be taken to include the few words of header
-// at the start of each Chunk.
-static const size_t targetChunkSize = 16*1024;   // Target chunk size
+static const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
+static const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
 
 extern bool allocateSegment(size_t);
 
-// Each Chunk has a header that contains various information, including in
-// particular its length and information that is used to keep track of
-// Chunks that have ambiguous pointers within them - ie that are pinned.
-// When a Chunk has been used and is full, its chunkFringe will be set to
-// identify the end of the last allocated item in it. Often this will be
-// before its length is all used up, because the item to be allocated next
-// might be bigger than the remaining available block of memory.
-
-class Chunk
-{
-public:
-    uintptr_t length;
-// chunkFringe gets set when I Chunk is complete and at that stage there
-// will be valid data from usableSpace (aka dataStart()) up as far as
-// chunkFringe, but the region from there out the length may not be
-// initialised.
-    uintptr_t chunkFringe;
-// pinnedObjects is a reference for identifyingobjects present in a Chunk
-// where isPinned is true.
-    bool isPinned;
-    bool evacuated;
-    LispObject pinnedObjects;
-// At the start of garbage collection as I collect a chain of pinned chunks
-// those chunks may appear on the list in arbitrary order, but at the end
-// of garbage collection if a Page has a number of pinned Chunks within it
-// they must be sorted into ascending order. Arranging that will mean that
-// I can release the gaps between chunks for allocation easily.
-// So within a chunk I start off with gFringe pointing at usableSpace and
-// gLimit at either the start of the first pinned chunk or at the end of
-// the whole page. When that region gets full the gLimit pointer either
-// tells me that I have used up the entire page, or the pinned chunk it
-// points at lets me find the new gFringe (using the length field) and the
-// end of the next free block (using chunkPinChain - and if that is nullptr
-// the relevant limit is the end of the page.
-    Chunk* chunkPinChain;
-// pendingChunks is used to track Chunks that need scanning in the GC because
-// old objects have been copied there but the fields within those objects
-// may not have been fixed up yet.
-    Chunk* pendingChunks;
-// The rest of the chunk is the region within which data is kept.
-// Its size will be such that the entire Chunk has length a specified by
-// its first word.
-    alignas(8) LispObject usableSpace[];
-// Now I can have some accessor (etc) methods:
-//
-    uintptr_t dataStart()
-    {   return reinterpret_cast<uintptr_t>(&usableSpace);
-    }
-    uintptr_t dataEnd()
-    {   return reinterpret_cast<uintptr_t>(this) + length;
-    }
-    bool pointsWithinChunk(uintptr_t p)
-    {   return p >= dataStart() && p < chunkFringe;
-    }
-// Because gdb is a little awkward to use with atomic fields I provide
-// some access functions here...
-    uintptr_t Flength() { return length; }
-    uintptr_t FchunkFringe() { return chunkFringe; }
-    bool FisPinned() { return isPinned; }
-    LispObject FpinnedObjects() { return pinnedObjects; }
-    Chunk* FchunkPinChain() { return chunkPinChain; }
-    Chunk* FpendingChunks() { return pendingChunks; }
-};
-
-// This function is used with qsort to put chunkMap in ascending order.
-inline int chunkOrder(const void* a, const void* b)
-{   const Chunk* a1 = *reinterpret_cast<const Chunk*const*>(a);
-    const Chunk* b1 = *reinterpret_cast<const Chunk*const*>(b);
-    return reinterpret_cast<uintptr_t>(a1) - reinterpret_cast<uintptr_t>(b1);
-}
-
-extern Chunk* pendingChunks;
-
-// I am going to require Pages to be aligned at nice neat boundaries
-// because then if I have an arbitrary address within one I will be able to
-// find the page header using a simple AND operation.
-
-// I will allocate chunks that have size AT LEAST targetChunkSize/2. When
-// That means I can be confident that no page will every end up with more
-// than chunksPerPage chunks (and the numeric value with 8M pages and 16K
-// chunks is 512).
-// I allow extraChunks beyond that so that I can let the GC set up up
-// to that many small Chunks around pinned data.
-
-static const size_t extraChunks = 5;
-static const size_t chunksPerPage = 2*pageSize/targetChunkSize + extraChunks;
-
 enum PageType
-{   freePage,
-    mostlyFreePage,
-    busyPage,
-    borrowPage,
-    oldPage
+{   emptyPageType,
+    consPinPageType,
+    vecPinPageType,
+    consFullPageType,
+    vecFullPageType,
+    consCurrentType,
+    vecCurrentType
 };
+
+class Page;
+
+extern Page* emptyPages;
+extern Page* consPinPages;
+extern Page* vecPinPages;
+extern Page* consFullPages;
+extern Page* vecFullPages;
+extern Page* consCurrent;
+extern Page* vecCurrent;
+extern Page* borrowPages;
+extern Page* borrowCurrent;
+extern Page* potentiallyPinned;
 
 class alignas(pageSize) Page
 {
 public:
-    PageType type;
-    Page* chain;
-    size_t chunkCount;
-    uintptr_t pageFringe;
-    uintptr_t pageLimit;
-    bool hasPinned;
-    Page* pagePinChain;
-    Chunk* chunkPinChain;
-// In general I expect chunks all to be at least targetChunkSize large,
-// but fragmentation may mean I end up with some that are smaller. I
-// need a table showing all the chunks in the page and I will limit its size
-// in such a way that only in extreme cases will it set a limit.
-    bool chunkMapSorted;
-    Chunk* chunkMap[chunksPerPage];
-    static const size_t pageWords = pageSize/sizeof(LispObject);
-    static const size_t bpw = 8*sizeof(uintptr_t);// bits per word in map.
-    static const size_t bitmapSize = (pageWords+bpw-1)/bpw;
-    static const size_t bitmap1Size = (bitmapSize+bpw-1)/bpw;
-    static const size_t bitmap2Size = (bitmap1Size+bpw-1)/bpw;
-// dirtyMap has one bit for every pointer-sized unit within the Page.
-// so one factor of bpw here is so I cover a resolution of uintptr_t
-    uintptr_t dirtyMap[bitmapSize];
-// The two smaller maps make it possible to use bit-search operations
-// such as the one that finds the top set bit in a word to find all the
-// "dirty" doublewords in a Page fairly rapidly. See the implementation of
-// write-barrier() for how these are used.
-    uintptr_t dirtyMap1[bitmap1Size];
-    uintptr_t dirtyMap2[bitmap2Size];
-    bool hasDirty;
-    Page* dirtyPageChain;
-    Page* dirtyPageChainBack;
-    uintptr_t pinnedMap[bitmapSize]; // for header words of pinned items.
-
-    alignas(64) LispObject data[2];   // The real data in the page.
-// The data[] field really extends up to make the overall size of
-// the page be pageSize.
-
-    Page*     Fchain()             { return chain; }
-    uintptr_t Ffringe()            { return pageFringe; }                 
-    uintptr_t Flimit()             { return pageLimit; }
-    bool      FhasPinned()         { return hasPinned; }
-    Page*     FpagePinChain()      { return pagePinChain; }
-    Chunk*    FchunkPinChain()     { return chunkPinChain; }
-    size_t    FchunkCount()        { return chunkCount; }
-    Chunk*    FchunkMap(int n)     { return chunkMap[n]; }
-    uintptr_t FdirtyMap(int n)     { return dirtyMap[n]; }
-    uintptr_t FdirtyMap1(int n)    { return dirtyMap1[n]; }
-    uintptr_t FdirtyMap2(int n)    { return dirtyMap2[n]; }
-    bool      FhasDirty()          { return hasDirty; } 
-    Page*     FdirtyPageChain()    { return dirtyPageChain; }
-    Page*     FdirtyPageChainBack(){ return dirtyPageChainBack; }
+    struct alignas(2*sizeof(LispObject)) ConsCell
+    {   LispObject car;
+        LispObject cdr;
+    };
+    struct alignas(chunkSize) Chunk
+    {   uintptr_t data[chunkSize/sizeof(uintptr_t)];
+    };
+    union
+    {
+        struct
+        {   PageType type;
+            Page* chain;
+        };
+        struct
+        {   PageType consType;
+            Page* consChain;
+            uintptr_t consDataEnd; // fringe address in a full Page
+            uint64_t previousConsPins[pageSize/
+                                      (2*sizeof(LispObject))/
+                                      (8*sizeof(uint64_t))];
+            uint64_t currentConsPins[pageSize/
+                                     (2*sizeof(LispObject))/
+                                     (8*sizeof(uint64_t))];
+            ConsCell consData[(pageSize -
+                               sizeof(PageType) -
+                               sizeof(Page*) -
+                               sizeof(previousConsPins) -
+                               sizeof(currentConsPins)) / sizeof(ConsCell)];
+        };
+        struct
+        {   PageType vecType;
+            Page* vecChain;
+            Page* potentiallyPinnedPage;
+            uintptr_t vecDataEnd; // fringe address in a full Page
+// I make chunkStatus an array of uint8_t values so that I understand
+// its layout very clearly. The values stored will be:
+//    0x00        first (or only) chunk in a Chunk. Or unused chunk.
+//    0x01-0x7f   continuation chunks, where the count saturates at 07f.
+//    0x80        first or only chunk in a pinned Chunk.
+//    0x81-0xff   continuations of pinned Chunks.
+            uint8_t chunkStatus[pageSize/chunkSize];
+            uint64_t potentiallyPinnedChunks[pageSize/
+                                             chunkSize/(8*sizeof(uint64_t))];
+            uint64_t previousVecPins[pageSize/8/(8*sizeof(uint64_t))];
+            uint64_t currentVecPins[pageSize/8/(8*sizeof(uint64_t))];
+            Chunk chunks[(pageSize -
+                          sizeof(PageType) -
+                          sizeof(Page*) -
+                          sizeof(chunkStatus) -
+                          sizeof(previousVecPins) -
+                          sizeof(currentVecPins)) / sizeof(Chunk)];
+        };
+    };
 };
 
-extern Page* freePages;         // Free and clear of pinning.
-extern Page* mostlyFreePages;   // Free apart from a little pinned data.
-extern Page* mostlyFreeTail;    // Final entry on mostlyFreePages or nullptr
-extern Page* busyPages;         // All pages that are in use (including above).
-extern Page* borrowPages;       // Used for transient data
-extern Page* oldPages;          // Used during GC.
+// Here p must be a CONS page and a a pointer within it.
 
-extern void appendMostlyFree(Page* p);
-
-extern size_t freePagesCount;
-extern size_t mostlyFreePagesCount;
-extern size_t busyPagesCount;
-// There should never be borrowed pages during a GC and so I will not record
-// a count of them.
-extern size_t oldPagesCount;
-
-extern Page* currentPage;       // Where allocation is happening. Has gFringe
-                                // and gLimit.
-extern Page* previousPage;      // Previous currentPage. Evacuated by
-                                // the generational collector.
-extern Page* stablePage;        // Where minor GC allocated stuff. Has
-                                // sFringe and sLimit.
-
-// First I will give code that implements the write-barrier. It is passed
-// the address of a valid Lisp location - that can be one of &car(x),
-// &cdr(x) or &elt(v, n). It records the fact that an update has
-// been made to memory in that region by setting a byte in dirty[]. Because
-// the address it is given will always be a VALID address of some location
-// in the Lisp heap it can easily find the relevant page...
-
-extern Page* dirtyPages;
-extern Page* pagesPinChain;
-
-inline Page* FdirtyPages() { return dirtyPages; }
-
-
-#ifdef GENERATIONAL
-// By controlling this with an #ifdef I will be able to measure how much
-// overhead this imposes - and if that seems like too much I may need to
-// re-think plans!
-
-inline void write_barrier(LispObject* p, LispObject q)
-{   *p = q;
-// Only up-pointers can cause trouble, so if I write in something that
-// is not even a pointer or that is a pointer into a page that the
-// generational collector will not move I do not need to do anything. And
-// maybe the tests for that situation are cheap enough that the test is
-// a good idea. Note that NIL is a very special case - it is tagged as a
-// pointer but it lives outside the main heap. Also here that q will
-// be a valid (precise) LispObject and hence is a pointer to an address
-// strictly within a page.
-    Page* pp;
-    if (q == nil ||
-        !is_pointer_type(q) ||
-        ((pp = reinterpret_cast<Page*>(
-              static_cast<uintptr_t>(q) & -pageSize)) != currentPage &&
-          pp != previousPage))
-        return;
-    uintptr_t a = reinterpret_cast<uintptr_t>(p);
-// Round down to a Page boundary. Because pages are always allocated
-// properly aligned this will give the start of the Page containing the
-// word being addressed. p was also a precise pointer and so (eg) it can not
-// point to one beyond the end of the page. So the mask operator here that
-// identifies its page is safe.
-    Page* x = reinterpret_cast<Page*>(a & -pageSize);
-    const size_t bpw = 8*sizeof(uintptr_t);   // bits per word in bitmap.
-// The bit-position is measured in units of sizeof(LispObject)
-    uintptr_t offset = (a & (pageSize-1))/sizeof(LispObject);
-// I can now convert that to a location and a bit and offset in the bitmap.
-    uintptr_t bit = uptr_1 << (offset%bpw);
-    size_t wordAddr = offset/bpw;
-// Recording what is dirty is one thing but later on I will need to be
-// able to inspect every dirty word, and that means I need to scan
-// the recorded information fairly rapidly. The idea I use is that a dirty
-// word is recorded via a bit in a per-page bitmap. That needs 1 bit per
-// 64-bits on a 64-bit machine or 1 per 32 on a 32-bit machine.
-// Making must be possible from multiple threads, hence the may is made using
-// std::atomic and updates using fetch_or(). The first time a bit is set
-// in the main bit-map a secondary map will be marked to show that a word
-// in the main map is in use. Subsequent use of exactly the same input
-// will not need to do this so will be cheaper. The first time a bit is set
-// in the second map a bit gets set in a third. And the first time one gets
-// set in the third map the entire page is pushed onto a list called
-// dirtyPages - again using a thread-safe lock-free process. The effect of
-// all of this is that to find all dirty words the chain of dirty pages
-// is traversed and the various levels of bitmaps strongly reduce the
-// cost of spotting the locations of interest by using "count leading zeros"
-// operations in words from the bitmaps.
-    if ((x->dirtyMap[wordAddr].fetch_or(bit) & bit) == 0)
-    {   bit = uptr_1 << (wordAddr%bpw);
-        wordAddr /= bpw;
-        if ((x->dirtyMap1[wordAddr].fetch_or(bit) & bit) == 0)
-        {   bit = uptr_1 << (wordAddr%bpw);
-            wordAddr /= bpw;
-            if ((x->dirtyMap2[wordAddr].fetch_or(bit) & bit) == 0)
-            {   x->hasDirty = true;
-                for (;;)
-                {   Page* old = dirtyPages;
-                    x->dirtyPageChain = old;
-                    if (dirtyPages.compare_exchange_weak(old, x)) break;
-                }
-            }
-        }
-    }
-}
-#endif // GENERATIONAL
-
-// There will be times when I can clear an individual cell's status as
-// dirty, and this function is here to do just that.
-
-inline void write_unBarrier(LispObject* p)
-{   uintptr_t a = reinterpret_cast<uintptr_t>(p);
-    Page* x = reinterpret_cast<Page*>(a & -pageSize);
-    const size_t bpw = 8*sizeof(uintptr_t);   // bits per word in bitmap.
-    uintptr_t offset = (a & (pageSize-1))/sizeof(LispObject);
-    uintptr_t bit = uptr_1 << (offset%bpw);
-    size_t wordAddr = offset/bpw;
-// Here I want to clear a bit in the bitmap, and if that leaves the whole
-// word zero I can clear a bit in the next level map up. Because this is
-// only done within the garbage collector at a stage where I am only running
-// on one thread I do not need to worry about use of explicitly thread-safe
-// updates.
-    if ((x->dirtyMap[wordAddr] &= ~bit) == 0)
-    {   bit = uptr_1 << (wordAddr%bpw);
-        wordAddr /= bpw;
-        if ((x->dirtyMap1[wordAddr] &= ~bit) == 0)
-        {   bit = uptr_1 << (wordAddr%bpw);
-            wordAddr /= bpw;
-            if ((x->dirtyMap2[wordAddr] &= ~bit) == 0)
-            {   x->hasDirty = false;
-// Here I want to delete the page from the chain of dirty pages. During
-// regular computation I have just a singly linked list but at the
-// start of garbage collection I can scan that and set up dirtyChainBack
-// entries on each page involved so that I have a two-way list, and then
-// the deletion here can have unit cost.
-                Page* prev = x->dirtyPageChainBack;
-                Page* next = x->dirtyPageChain;
-                if (prev == nullptr) dirtyPages = next;
-                else prev->dirtyPageChain = next;
-                if (next != nullptr) next->dirtyPageChainBack = prev;
-            }
-        }
-    }
+inline bool consIsPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+    int bit = o & 63;
+    return (p->currentConsPins[o/64] >> bit) != 0;
 }
 
-// This is a function for the GC to call to fill in the back-pointers.
-
-inline void fillInBackChains()
-{   Page* prev = nullptr;
-    for (Page* p=dirtyPages; p!=nullptr; p=p->dirtyPageChain)
-    {   p->dirtyPageChainBack = prev;
-        prev = p;
-    }
+inline bool consIsPreviousPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+    int bit = o & 63;
+    return (p->previousConsPins[o/64] >> bit) != 0;
 }
 
-// Now to match the above I need code that will identify every dirty
-// item. It calls the function that is provided as an argument on each
-// dirty address.
-
-typedef void processDirtyCell(LispObject* a);
-extern int nlz(uint64_t a);
-
-inline void scanDirtyCells(processDirtyCell fn)
-{   for (Page* p=dirtyPages; p!=nullptr; p=p->dirtyPageChain)
-    {   if (!p->hasDirty) continue;
-        for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
-             i2++)
-        {   uintptr_t b2 = p->dirtyMap2[i2];
-            while (b2 != 0)
-            {   int n2 = nlz(static_cast<uint64_t>(b2));
-                size_t i1 = 8*sizeof(uintptr_t)*i2 + 63 - n2;
-                uintptr_t b1 = p->dirtyMap1[i1];
-                while (b1 != 0)
-                {   int n1 = nlz(static_cast<uint64_t>(b1));
-                    size_t i0 = 8*sizeof(uintptr_t)*i1 + 63 - n1;
-                    uintptr_t b0 = p->dirtyMap[i0];
-                    while (b0 != 0)
-                    {   int n0 = nlz(static_cast<uint64_t>(b0));
-                        size_t i = 8*sizeof(uintptr_t)*i0 + 63 - n0;
-                        (*fn)(reinterpret_cast<LispObject*>(
-                             reinterpret_cast<uintptr_t>(p) + i*sizeof(LispObject)));
-                        b0 -= uptr_1<<(63-n0);
-                    }
-                    b1 -= uptr_1<<(63-n1);
-                }
-                b2 -= uptr_1<<(63-n2);
-            }
-        }
-    }
+inline void consSetPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+    int bit = o & 63;
+    p->currentConsPins[o/64] |= static_cast<uint64_t>(1) << bit;
 }
 
-// Here there may be some items that have been marked as "dirty" but I want
-// to discard that information totally. This is for instance something that
-// happens when I perform a global garbage collection, since at the end
-// of that there is no data at all that is at risk of scavenging and that
-// hence needs protecting if there is an up-reference to it.
-
-inline void clearAllDirtyBits()
-{   for (Page* p=dirtyPages; p!=nullptr; p=p->dirtyPageChain)
-    {   if (!p->hasDirty) continue;
-        p->hasDirty = false;
-
-        for (size_t i2=0; i2<sizeof(p->dirtyMap2)/sizeof(p->dirtyMap2[0]);
-             i2++)
-        {   uintptr_t b2 = p->dirtyMap2[i2];
-            if (b2 != 0) continue;
-            {   p->dirtyMap2[i2] = 0;
-                while (b2 != 0)
-                {   int n2 = nlz(static_cast<uint64_t>(b2));
-                    size_t i1 = 8*sizeof(uintptr_t)*i2 + 63 - n2;
-                    uintptr_t b1 = p->dirtyMap1[i1];
-                    if (b1 != 0)
-                    {   p->dirtyMap1[i1] = 0;
-                        while (b1 != 0)
-                        {   int n1 = nlz(static_cast<uint64_t>(b1));
-                            size_t i0 = 8*sizeof(uintptr_t)*i1 + 63 - n1;
-                            p->dirtyMap[i0] = 0;
-                            b1 -= uptr_1<<(63-n1);
-                        }
-                    }
-                    b2 -= uptr_1<<(63-n2);
-                }
-            }
-        }
-    }
-    dirtyPages = nullptr;
+inline void consClearPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+    int bit = o & 63;
+    p->currentConsPins[o/64] &= ~(static_cast<uint64_t>(1) << bit);
 }
 
-// The code that implements pinning is in newcslgc.cpp. In some respects the
-// capabilities it provides are a bit like those of my write barrier in that
-// I can record the fact that some address is to be pinned and I can scan
-// all regions containing pinned data. There are three crucial differences:
-// (1) The address I ask to pin may not even be a pointer to anywhere within
-//     the Lisp heap - while that used with the write barrier is guaranteed
-//     to be a precise reference to a valid Lisp cell.
-// (2) For the write barrier I end up recording the exact location that is
-//     marked. For pinning I only pin to the granularity of a Chunk.
-// (3) The pinning operation is run from a single thread, while the write
-//     barrier could be used simultaneously from multiple threads, so the
-//     latter needs much more care over thread safety.
-// See newcslgc.cpp for more commentary.
+// And versions for VEC pages, which pin with granularity a single
+// LispObject, so the bitmaps are twice as large as the ones for CONS pages
+// where granularity only needs to be the size of a pair of adjacent
+// objects.
 
-extern void processAmbiguousValue(bool major, uintptr_t a);
-extern void clearAllPins();
+inline bool vecIsPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+    int bit = o & 63;
+    return (p->currentVecPins[o/64] >> bit) != 0;
+}
 
-extern uint64_t threadMap;
+inline bool vecIsPreviousPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+    int bit = o & 63;
+    return (p->previousVecPins[o/64] >> bit) != 0;
+}
 
-class ThreadStartup
+inline void vecSetPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+    int bit = o & 63;
+    p->currentVecPins[o/64] |= static_cast<uint64_t>(1) << bit;
+}
+
+inline void vecClearPinned(uintptr_t a, Page* p)
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+    int bit = o & 63;
+    p->currentVecPins[o/64] &= ~(static_cast<uint64_t>(1) << bit);
+}
+
+
+// Set up the given Page as one for use with CONS supposing it is
+// totally free to start with. This sets up global fringe and limit pointers.
+
+extern uintptr_t consFringe, consLimit, consEnd;
+
+inline void initConsPage(Page* p)
+{   p->type = consCurrentType;
+    std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
+    std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+    consFringe = reinterpret_cast<uintptr_t>(&p->consData);
+    consLimit = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    consCurrent = p;
+}
+
+extern uintptr_t consEndOfPage();
+extern uintptr_t doubleConsEndOfPage();
+extern uintptr_t consGCEndOfPage();
+extern void garbage_collect();
+
+inline uintptr_t harderGCGet2Words()
 {
+// Here consFringe == consLimit. One possibility is tha this is because
+// consLimit points at a pinned item, and there could of course be
+// several consecutive pinned things. And in a bad case that could
+// extend so that the very last location in the Page was pinned. Another
+// possibility is that consLimit==consEnd so the Page is already all used up.
+// The loop here skips over pinned stuff.
+    while (consFringe < consEnd &&
+           consIsPinned(consFringe, consCurrent))
+        consFringe += 2*sizeof(LispObject);
+// Now if the Page is full I need to try to allocate another, and if that
+// does not make sense I will have to garbage collect.
+    if (consFringe == consEnd) return consGCEndOfPage();
+// When I skip pinned data and if there is space beyond same then the first
+// word of that region holds a padder header that lets me know where the
+// next usable section of memory ends.
+    consLimit = consFringe +
+        length_of_header(*reinterpret_cast<Header*>(consFringe));
+// Now I can allocate.
+    uintptr_t r = consFringe;
+    consFringe += 2*sizeof(LispObject);
+    return r;
+}
+
+// This is the main function for allocating CONS cells and any
+// other item that only use up 2 cells. I hope it will often have
+// calls to it expanded inline.
+
+inline uintptr_t GCGet2Words()
+{   uintptr_t r = consFringe;
+    if (r != consLimit)
+    {   consFringe += 2*sizeof(LispObject);
+        return r;
+    }
+    return harderGCGet2Words();
+}
+
+// It may be that allocating two CONS cells at a time can save a little
+// bit of overhead... If there are not two consecutive units of memory
+// immediately available it will leave a gap. In case there is ever a
+// linear scan of the memory it will put in a padder.
+
+inline Header makeHeader(size_t n, int type)   // size is in bytes
+{   return TAG_HDR_IMMED + (n << (Tw+5)) + type;
+}
+
+// At times I want to put a vector header at the start of a block of
+// memory. This does the job. Note that a is an untagged pointer here.
+
+inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
+{   *reinterpret_cast<uintptr_t*>(a) = makeHeader(n, type);
+}
+
+extern uintptr_t vecFringe, vecLimit, vecEnd;
+
+inline void initVecPage(Page* p)
+{   p->type = vecCurrentType;
+    p->potentiallyPinnedPage = nullptr;
+    std::memset(p->previousVecPins, 0, sizeof(p->previousVecPins));
+    std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+    std::memset(p->chunkStatus, 0, sizeof(p->chunkStatus));
+    std::memset(p->potentiallyPinnedChunks, 0,
+                sizeof(p->potentiallyPinnedChunks));
+    vecFringe = reinterpret_cast<uintptr_t>(&p->chunks);
+    vecLimit = vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    vecCurrent = p;
+}
+
+extern uintptr_t vecEndOfPage(size_t n);
+extern uintptr_t vecGCEndOfPage(size_t n);
+
+inline uintptr_t harderGCGetNBytes(size_t n)
+// Write in a padder item (if necessary) so that the current chunk is
+// properly filled up.
+{   if (vecFringe != vecLimit)
+        setHeaderWord(vecFringe, vecLimit-vecFringe);
+    size_t chunkNo = (vecFringe -
+                      reinterpret_cast<uintptr_t>(vecCurrent))/chunkSize;
+    while (vecFringe < vecEnd &&
+           (vecCurrent->chunkStatus[chunkNo] & 0x80) != 0)
+    {   vecFringe += chunkSize;
+        chunkNo++;
+    }
+    return vecGCEndOfPage(n);
+}
+
+// This allocates from the vector-heap. It would not be essential to
+// detect and take special action on two-word requests, but I think the
+// cost will be low and the effect will be to make things just a bit tidier.
+// Again the case I hope will be common is cheap and may well get compiled
+// inline.
+
+inline uintptr_t GCGetNBytes(size_t n)
+{   if (n == 2*sizeof(LispObject)) return GCGet2Words();
+    uintptr_t r = vecFringe;
+    size_t gap = vecLimit - r;
+    if (n <= gap)
+    {   vecFringe += n;
+        return r;
+    }
+    return harderGCGetNBytes(n);
+}
+
+// This is the main function for allocating CONS cells and any
+// other item that only use up 2 cells. I hope it will often have
+// calls to it expanded inline.
+
+inline uintptr_t get2Words()
+{   uintptr_t r = consFringe;
+    if (r != consLimit)
+    {   consFringe += 2*sizeof(LispObject);
+        return r;
+    }
+    return consEndOfPage();
+}
+
+inline uintptr_t get4Words()
+{   uintptr_t r = consFringe;
+    size_t gap = consLimit - consFringe;
+    if (gap >= 4*sizeof(LispObject))         // The simple case!
+    {   consFringe += 4*sizeof(LispObject);
+        return r;
+    }
+    else if (gap != 0)
+    {   setHeaderWord(consFringe, 2*sizeof(LispObject));
+        consFringe += 2*sizeof(LispObject);
+    }
+    return doubleConsEndOfPage();
+}
+
+extern uintptr_t vecFringe, vecLimit, vecEnd;
+
+extern uintptr_t vecEndOfPage(size_t n);
+
+inline uintptr_t harderGetNBytes(size_t n)
+// Write in a padder item (if necessary) so that the current chunk is
+// properly filled up.
+{   setHeaderWord(vecFringe, vecLimit-vecFringe);
+// Here the requested vector will not fit in the existing chunk, so
+// a few one will need to be allocated. Well it is much worse than that!
+// First the request may be for a vector that will not fit into a single
+// chunk, so then extension chunks will be needed to build up a Chunk.
+// That that may or may not fit within the current Page, and if the Page
+// gets filled I will need to allocate another. The key thing I need
+// to do is to fill in the chunkStatus information in the page to track
+// those composite Chunks.
+    size_t free = vecEnd-vecLimit;
+    if (n <= free)       // Can fit in one or more chunks within current Page
+    {   uintptr_t r = vecLimit;
+        vecFringe = r + n;
+        size_t chunkNo =
+            (r - reinterpret_cast<uintptr_t>(vecCurrent))/chunkSize;
+        unsigned int seq = 0;
+// Deal with all the chunks that end up totally full. Note that chunk
+// sequence numbers saturate at 0x7f.
+        while (n > chunkSize)
+        {   vecCurrent->chunkStatus[chunkNo++] = seq;
+            if (seq < 0x7f) seq++;
+            vecLimit += chunkSize;
+            n -= chunkSize;
+        }
+// Now set up the last (or the only) chunk.
+        vecCurrent->chunkStatus[chunkNo++] = seq;
+        vecLimit += chunkSize;
+        return r;
+    }
+    return vecEndOfPage(n);
+}
+
+// This allocates from the vector-heap. It would not be essential to
+// detect and take special action on two-word requests, but I think the
+// cost will be low and the effect will be to make things just a bit tidier.
+// Again the case I hope will be common is cheap and may well get compiled
+// inline.
+
+inline uintptr_t getNBytes(size_t n)
+{   if (n == 2*sizeof(LispObject)) return get2Words();
+    uintptr_t r = vecFringe;
+    size_t gap = vecLimit - r;
+    if (n <= gap)
+    {   vecFringe += n;
+        return r;
+    }
+    return harderGetNBytes(n);
+}
+
+// "Borrowing" is a concept I introduce here. Its key use is when a hash
+// table needs to be re-hashed. A requirement here is that garbage
+// collection can not be triggered while borrowing is active.
+// The idea is that apart from when garbage collection is happening
+// around half of all memory is unused - when a GC starts it will be
+// treated as the "new space" into which live data will be copied.
+// Between garbage collections I allow myself to allocate from it
+// on a strictly temporary basis. I only ever need to store vectors
+// in it, so the logic here closely follow that for the normal
+// allocation of vectors. Its use for hash tables is that a copy
+// of all the data in a table can be made in "borrowed" space. The
+// original table can then be cleared and everything re-hashed back
+// into it. When that has been done the borrowed memory can be
+// released.
+
+extern Page* pageFringe;
+
+extern unsigned int borrowingDepth;
+
+class Borrowing
+{
+    Page* save;
 public:
-    ThreadStartup();
-    ~ThreadStartup();
+    Borrowing()
+    {   if (borrowingDepth++ == 0)
+        {   save = pageFringe;
+        }
+    }
+    ~Borrowing()
+    {   if (--borrowingDepth == 0)
+        {   while (borrowPages != nullptr)
+            {   Page* p = borrowPages;
+                borrowPages = p->chain;
+                p->chain = emptyPages;
+                emptyPages = p;
+            }
+            pageFringe = save;
+        }
+    }
 };
 
+extern uintptr_t borrowFringe, borrowEnd;
+
+inline void initBorrowPage(Page* p)
+{
+// borrowed pages do not need any magic structures set up in them beyond
+// the fringe and end pointers, because they will never be active at GC time. 
+    borrowFringe = reinterpret_cast<uintptr_t>(&p->chunks);
+    borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    borrowCurrent = p;
+}
+
+extern uintptr_t borrowEndOfPage(size_t n);
+
+// Borrowed pages are never in use during garbage collection, and so
+// I do not need to worry about chunks or padders or anything. I can
+// allocate big vectors right up to their end.
+
+inline uintptr_t borrowNBytes(size_t n)
+{   uintptr_t r = borrowFringe;
+    size_t gap = borrowEnd - r;
+    if (n <= gap)
+    {   borrowFringe += n;
+        return r;
+    }
+    return borrowEndOfPage(n);
+}
+
+inline void poll()
+{
+}
+
+// Now for higher level code that performs Lisp-specific allocation.
+
+inline LispObject cons(LispObject a, LispObject b)
+{   LispObject r = get2Words() + TAG_CONS;
+    setcar(r, a);
+    setcdr(r, b);
+    return r;
+}
+
+// With the conservative collector I maybe do not need to avoid garbage
+// collection on any particular individual uses of cons().
+
+inline LispObject cons_no_gc(LispObject a, LispObject b)
+{   return cons(a, b);
+}
+
+inline LispObject cons_gc_test(LispObject p)
+{   return p;
+}
+
+inline LispObject ncons(LispObject a)
+{   LispObject r = get2Words() + TAG_CONS;
+    setcar(r,  a);
+    setcdr(r,  nil);
+    return r;
+}
+
+
+inline LispObject list2(LispObject a, LispObject b)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcdr(r1, r2);
+    setcdr(r2, nil);
+    return r1;
+}
+
+inline LispObject list2star(LispObject a, LispObject b, LispObject c)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcdr(r1, r2);
+    setcdr(r2, c);
+    return r1;
+}
+
+inline LispObject list2starrev(LispObject c, LispObject b,
+                               LispObject a)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcdr(r1, r2);
+    setcdr(r2, c);
+    return r1;
+}
+
+inline LispObject list3star(LispObject a, LispObject b, LispObject c,
+                            LispObject d)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    LispObject r3 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, d);
+    return r1;
+}
+
+inline LispObject list4(LispObject a, LispObject b, LispObject c,
+                        LispObject d)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    LispObject r3 = get2Words() + TAG_CONS;
+    LispObject r4 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcar(r4, d);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, r4);
+    setcdr(r4, nil);
+    return r1;
+}
+
+inline LispObject acons(LispObject a, LispObject b, LispObject c)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r1, r2);
+    setcar(r2, a);
+    setcdr(r1, c);
+    setcdr(r2, b);
+    return r1;
+}
+
+inline LispObject acons_no_gc(LispObject a, LispObject b,
+                              LispObject c)
+{   return acons(a, b, c);
+}
+
+inline LispObject list3(LispObject a, LispObject b, LispObject c)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    LispObject r3 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, nil);
+    return r1;
+}
+
+inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    LispObject r2 = get2Words() + TAG_CONS;
+    LispObject r3 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcar(r2, b);
+    setcar(r3, c);
+    setcdr(r1, r2);
+    setcdr(r2, r3);
+    setcdr(r3, nil);
+    return r1;
+}
+
+inline LispObject Lcons(LispObject, LispObject a, LispObject b)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, b);
+    return onevalue(r1);
+}
+
+inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, b);
+    setcdr(r1, a);
+    return onevalue(r1);
+}
+
+inline LispObject Lnilfn(LispObject)
+{   return onevalue(nil);
+}
+
+inline LispObject Lncons(LispObject env, LispObject a)
+{   LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, nil);
+    return onevalue(r1);
+}
+
+extern LispObject Lgctest_0(LispObject);
+extern LispObject Lgctest_1(LispObject, LispObject);
+extern LispObject Lgctest_2(LispObject, LispObject, LispObject);
+extern void gcTestCode(); // temporary and for debugging.
 
 // For up to 16 segments I have...
 //   heapSegmentCount   number of allocated segments
@@ -665,6 +696,8 @@ inline int findHeapSegment(uintptr_t p)
 // and so the first bit of allocated user data lies (on a 64-bit machine)
 // at address #0:30 because of the size of the Chunk header.
 
+extern LispObject nil;
+
 inline const char* Addr(uintptr_t p)
 {
 // This function may be called several times in a single expression. I
@@ -686,6 +719,7 @@ inline const char* Addr(uintptr_t p)
     {   uintptr_t o = p - reinterpret_cast<uintptr_t>(heapSegment[hs]);
         uintptr_t pNum = o/pageSize;
         uintptr_t pOff = o%pageSize;
+#ifdef REVIEWED
         if (pOff >= offsetof(Page, data))
         {   pOff -= offsetof(Page, data);
             if (hs == 0) std::snprintf(r, 40,
@@ -694,7 +728,9 @@ inline const char* Addr(uintptr_t p)
                 "#[%d]: %" PRIxPTR ":%" PRIxPTR, hs, pNum, pOff);
             return r;
         }
-        else if (pOff == 0)
+        else
+#endif // REVIEWED
+            if (pOff == 0)
         {   if (hs == 0) std::snprintf(r, 40,
                 "#%" PRIxPTR ":", pNum);
             else std::snprintf(r, 40,
@@ -749,20 +785,6 @@ inline Page* findPage(uintptr_t p)
     return reinterpret_cast<Page*>(p & -pageSize);
 }
 
-// I can do cheaper tests if I only concerned with one of the special pages.
-
-inline bool inCurrentPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(currentPage);
-    return (p >= n &&
-            p < (n + pageSize));
-}
-
-inline bool inPreviousPage(uintptr_t p)
-{   uintptr_t n = reinterpret_cast<uintptr_t>(previousPage);
-    return (p >= n &&
-            p < (n + pageSize));
-}
-
 #ifdef __GNUC__
 
 // Note that __GNUC__ also gets defined by clang on the Macintosh, so
@@ -783,11 +805,11 @@ inline int nlz(uint64_t x)
 inline int nlz(uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU)
-    {   n = n +32;
+    {   n = n + 32;
         x = x << 32;
     }
     if (x <= 0x0000FFFFFFFFFFFFU)
-    {   n = n +16;
+    {   n = n + 16;
         x = x << 16;
     }
     if (x <= 0x00FFFFFFFFFFFFFFU)
@@ -811,902 +833,728 @@ inline int nlz(uint64_t x)
 #endif // __GNUC__
 #define NLZ_DEFINED 1
 
-extern uintptr_t              fringe;
-extern uintptr_t              limit;
-extern Chunk*                 currentChunk;
-extern uintptr_t              limitBis;
-extern uintptr_t              fringeBis;
-extern size_t                 request;
-extern LispObject             result;
-extern size_t                 gIncrement;
 
-extern uintptr_t              gFringe;
-extern uintptr_t              gLimit;
-
-inline uintptr_t Flimit()     { return limit; }
-inline uintptr_t FgFringe()   { return gFringe; }
-
-
-// With the scheme I have here when an 8 Mbyte page gets full all of it
-// will be scheduled for evacuation (ie garbage collection). In the extreme
-// case that I had 64 active threads but only one was performing allocation
-// that would leave 63 chunks within the page essentially empty - that is
-// about 1 Mbyte. Is (1/8) of the page is not used. That is not a disaster!
-// In the more plausible case of say 8 threads the overhead decreases to a
-// level where I really stop worrying.
-// Well if needbe I could try being clever and allocating each thread chunks
-// whose size was sensitive to their history of allocation, so that
-// threads that were almost always dormant or which hardly did any allocation
-// got much smaller chunks. At the very very least to do anything like that
-// now would be premature!
-
-// When I need to trigger or participate in a garbage collection I
-// call difficult_n_bytes() with an argument that is the amount of memory I
-// am wanting to allocate. That is allowed to be zero (for instance when
-// I am just polling). It will return a pointer to an allocated block, and
-// set fringe, limit etc to reflect the allocation performed. Within it
-// it may have to try several times: the fundamental version guarantees to
-// achieve allocation for at least one of the threads (and that thread will
-// continue and only join in with subsequent collections later on).
-// Note that limit[] can be forced to zero as a call to difficult_allocate
-// is exiting.
-
-enum GcStyle
-{
-    GcStyleNone,
-    GcStyleMinor,
-    GcStyleMajor
-};
-
-extern GcStyle userGcRequest;
-
-extern uintptr_t difficult_n_bytes();
-
-inline Header makeHeader(size_t n, int type)   // size is in bytes
-{   return TAG_HDR_IMMED + (n << (Tw+5)) + type;
-}
-
-// At times I want to put a vector header at the start of a block of
-// memory. This does the job. Note that a is an untagged pointer here.
-
-inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
-{   *reinterpret_cast<uintptr_t*>(a) = makeHeader(n, type);
-}
-
-// This is the core part of CONS and also of the code that allocates
-// bignums, strings and vectors.
-
-
-#ifdef DEBUG
-extern void testLayout();
-#endif // DEBUG
-
-#ifdef DEBUG
-namespace REAL
-{
-#endif // DEBUG
-
-inline LispObject get_n_bytes(size_t n, uintptr_t r, uintptr_t w)
-{
-// The new block I need to allocate really will not fit in the current
-// chunk.
-// I may in fact be able to make this allocation simply by grabbing a
-// fresh chunk. I need to record the end-point within this Chunk...
-// I want to make every chunk "tidy" because when I have one that gets
-// pinned I will need to make a linear scan of it treating every pointer
-// field within it as an unambiguous list-base. Any uninitialized or otherwise
-// wild regions within it could cause disaster! I do this by recording its
-// high water mark.
-    if (w != 0)
-    {
-// I now need to allocate a new chunk. gFringe and gLimit delimit a region
-// within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
-// chunks sequentially within that page. By making gFringe atomic I can so
-// this in a lock-free manner.
-// I will make my next chunk big enough for the current allocation request
-// with targetChunkSize left over after that. This ensures that even big
-// vector requests can be satisfied.
-        uintptr_t oldFringe = r;
-        Chunk* newChunk = reinterpret_cast<Chunk*>(gFringe);
-        gFringe += targetChunkSize+n;
-        r = newChunk->dataStart(); // safe even if chunk pointer is bad!
-// Be aware that other threads might be doing (atomic) increments on gFringe
-// at the same time that this one does. They will each reserve separate
-// new chunks, but some of these may fall in memory well above gLimit. And
-// hence they could be beyond the end of the current Page.
-// I am going to assume (ha ha) that even if the maximum number of threads
-// each increment gFringe by the largest possible amount then it will not
-// suffer arithmetic overflow. If I have a maximum of 16 threads then I ought
-// to ensure that gLimit+130M > gLimit.
-        fringe = r + n;
-// I can not use newChunk->dataEnd() on the next line because the chunk does
-// not yet have its length field filled in. And that has to be the case
-// because the region I have set aside for this Chunk may be beyond the end
-// of the current Page (or the next pinned place within the Page).
-        uint64_t newLimit =
-            reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
-// Possibly the allocation of the new chunk ran beyond the current page
-// and that will be cause to consider triggering garbage collection. If the
-// chunk size is 16K and the page size 8M it will take 512 chunk allocations
-// before a page is filled. If for now I suppose that having 16 threads all
-// allocating cons cells furiously is an extreme case then that will mean
-// that each thread gets through 32 chunks before the extra (probably severe)
-// costs of page allocation arise. So this is about 1 in 32000 conses in the
-// heaviest multi-thread case and only 1 in 0.5 million in a single thread
-// scenario.
-//
-// I want to identify the Page that I am currently allocating within. In an
-// earlier draft I masked newChunk with -pageSize. However newChunk could
-// be well above the end of valid allocation space in the current page and
-// might in fact be within the next sequential page. So rather than that I
-// use oldFringe-1. The "-1" is because maybe the previous fringe had
-// ended up such that the previously allocated item had totally filled the
-// Chunk and Page, so it points at the location just beyond the Page end.
-        Page* p = reinterpret_cast<Page*>((oldFringe-1) & -pageSize);
-        if (newLimit <= gLimit)
-        {
-// Now my allocation of a new chunk has been successful. Before I test if
-// participation in a garbage collection on behalf of some other thread
-// is required I need to record this chunk in the table of chunks that
-// the page maintains. I also need to fill in the chunk header -- well the
-// pinChain pointer does not need initializing until and unless the page
-// gets pinned, but the isPinned flag must start off false so that when the
-// GC finds an ambiguous pointer within this chunk it knows when that is the
-// first such.
-            currentChunk = newChunk;
-            newChunk->length = targetChunkSize+n;
-            newChunk->isPinned = false;
-            newChunk->evacuated = false;
-            newChunk->pinnedObjects = TAG_FIXNUM;
-            newChunk->chunkPinChain = nullptr;
-            size_t chunkNo = p->chunkCount++;
-//#         zprintf("allocation in page %a increments chunkCount to %d\n",
-//#                 p, p->chunkCount); 
-            p->chunkMap[chunkNo] = newChunk;
-            limitBis = newLimit;
-#ifdef NO_THREADS
-            limit = newLimit;
-            zprintf("limit = %a\n", limit);
-            bool ok = true;
-#else // NO_THREADS
-// I wish to write back limit but it is possible that in
-// the meanwhile somebody set that to zero, so I need to be a bit careful.
-// Specifically I will only write back the new limit if the old one was
-// still in force.
-//
-// Here I have (successfully) allocated a new chunk, and I have set my
-// fringe to point within it. Because limit can be arbitrarily clobbered
-// by others I will only update it if it has not changed since I loaded
-// it earlier. If it has changed it will have been set to zero and I
-// must participate in a GC.
-            bool ok = limit.compare_exchange_strong(w, newLimit);
-#endif // NO_THREADS
-#ifdef DEBUG
-            if (ok) testLayout();
-#endif // DEBUG
-            if (ok) return static_cast<LispObject>(r);
-        }
-        gIncrement = targetChunkSize+n;
-        fringe = oldFringe;
-//      zprintf("At %s fringe set to oldFringe = %a\n", __WHERE__, oldFringe);
-    }
-    else
-    {
-// Here I am about to be forced to participate in garbage collection,
-// typically for the benefit of some other thread.
-        if (gcTrace) zprintf("GC triggered\n");
-        if (currentChunk != nullptr)
-            currentChunk->chunkFringe = r;
-        gIncrement = 0;
-        fringe = r;
-//      zprintf("At %s fringe set to %a\n", __WHERE__, r);
-    }
-    THREADID;
-    fringeBis = fringe;
-//# zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-    request = n;
-// Here I can not complete the work with this inline function because
-// either I have run out of space for a new chunk or because some
-// other thread had done that and had set my limit register to zero
-// to tell me. I set fringe back to the value that it had on entry,
-// so the situation when I call difficult_n_bytes() is just as if it had
-// been called directly from the main program save that gFringe may have
-// been incremented - possibly beyond gLimit.
-    r = difficult_n_bytes();
-    my_assert(is_cons(r), "difficult_n_bytes should return a CONS");
-    return static_cast<LispObject>(r);
-}
-
-inline LispObject get_n_bytes(size_t n)
-{
-// The size passed here MUST be a multiple of 8.
-// I have a thread-local variable fringe, and limit is in effect
-// thread-local. These delimit a region of size about targetChunkSize
-// within which allocation can be especially cheap. limit is atomic and
-// that indicates that other threads may access it. In particular another
-// thread can set it to zero to cause this thread to synchronize with
-// others to participate in garbage collection. Because on some platforms
-// access to thread-locals is more expensive than use of simple variables
-// or is even achieved via strange C++ trickery, I isolate loading and
-// storing such values into simple statements that transfer values to
-// local variables.
-    THREADID;
-    uintptr_t r = fringe;
-    uintptr_t fr1 = r + n;
-    fringe = fr1;
-    uintptr_t w = limit;
-// The simple case completes here. If each chunk is around 16K then only 1
-// CONS in 1000 or so will take the longer route. I rather hope that the
-// common case will be lifted to be rendered in-line.
-    if (fr1 <= w) LIKELY
-    {
-#ifdef DEBUG
-        testLayout();
-//      if (gcTrace) zprintf("get_n_bytes(%d) = %a\n", n, r);
-#endif // DEBUG
-        return static_cast<LispObject>(r);
-    }
-    UNLIKELY return get_n_bytes(n, THREADARG r, w);
-}
-
-#ifdef DEBUG
-} // end of namespace
-
-inline size_t get_size[8];
-inline unsigned int get_count = 0;
-inline unsigned int get_trace = 0x7fffffff; // 514572-10;
-
-inline LispObject previousCons = 0;
-
-inline LispObject get_n_bytes(size_t n)
-{   LispObject r = REAL::get_n_bytes(n);
-//# zprintf("get_n_bytes %d => %a\n", n, r);
-// The following assertion may sometimes be violated maybe. Eg if a large
-// [vector] request causes a new Chunk to be allocated, but after that
-// a smaller object fits into the end of the existing Chunk.
-//  my_assert(r > previousCons, []{zprintf("non-increasing allocation\n"); });
-    previousCons = r;
-    return r;
-}
-
-#endif // DEBUG
-
-
-// It will be important to poll frequently because when one thread
-// observes that it needs to garbage collect all other threads must be
-// paused. Any other that calls cons() or getvec() will pause there, but
-// code in a loop that did not allocate memory could cause an unbounded
-// delay unless this is called such that the loop can be interrupted.
-// Extra steps will be needed when library calls that might block are
-// made, but details of that belong elsewhere.
-
-inline void poll()
-{   uintptr_t w;
-    THREADID;
-    if (fringe > (w = limit))
-    {
-// Here I need to set everything up just as if I had been making an
-// allocation request for zero bytes.
-        fringeBis = fringe;
-//#     zprintf("Polling at %s fringeBis[%d] = %a\n",
-//#             __WHERE__, threadId, fringeBis);
-        request = 0;
-        gIncrement = 0;
-        static_cast<void>(difficult_n_bytes());
-    }
-}
-
-// The following can be used as in
-//   withRecordedStack([&]{ ... });
-// where the "..." represents some actions. Its job is to arrange that
-// the C stack has all local values on (in particular that nothing is
-// referenced solely via machine registers) and that a stackFringe variable
-// is set so that the garbage collector can do its job properly.
-
-
-// The following code makes a whole slew of assumptions about how the
-// compiler and system library will treat it! I will explain what I hope
-// will happen, but a sufficiently clever compiler could without doubt
-// defeat me.
-
-// A C++ system is liable to have some "callee save" registers and keep the
-// values of some variable in them. A conservative garbage collector needs
-// to access their values. I EXPECT that setjmp will dump copies of all
-// such registers (at least!) into the jmp_buf, thus ensuring that a copy of
-// all the data is present on the stack. Well here the jmp_buf is not
-// referenced again or elsewhere, so maybe a compiler could consider it
-// unused and just remove the call to setjmp. To discourage that I have
-// buffer_pointer referring to the jmp_buf, and then at least potentially
-// (as far as the compiler can tell) in some other compilation unit there
-// might be code reachable from action() that does a longjmp() via it.
-// I alse want the jmp_buf to have been allocate on the stack at a lower
-// address than any other values currently in use. The "noinline" qualifier
-// as provided by gcc is intended to help to enforce that by arranging that
-// withRecordedStack() has its own stack frame with almost nothing except
-// action() and the jmp_buf in it. If values used within action() end up
-// on the stack above buffer that should not be a problem.
-//
-// There can be at most maxThreads threads in play, and each must have
-// the thread-local value threadId set.
-
-extern std::jmp_buf* buffer_pointer;
-
-// Usage:
-//   may_block([&]{
-//      ... ... ... });
-// This is to be used if the contents "..." etc do not do any Lisp memory
-// allocation but might block. Ie there could be use of a synchronization
-// primitive involving a muxex or a comdition variable, or there may be
-// a read-request from some source that might not be instantly ready (such
-// as the keyboard or a network connection or pipe). The reason this is needed
-// is that other threads may need to garbage collect, and that involves
-// getting every thread into synchronization - one that is blocked will not
-// be able to participate actively in that! Yes another plausible user-case
-// is the code performing a "sleep" operation.
-
-// The use of "NOINLINE inline" may look odd. "NOINLINE" probably expands
-// to an annotation [[gnu::noinline]] that should prevent the compiler
-// from some sorts of optimisation so that I expect that the jmp_buf will
-// be within a stack frame associated with this code, and hence the register
-// values I expect to be stored there will be found by a stack scan done by
-// the conservative garbage collector. The "inline" has the quite distinct
-// purpose and meaning - it is so that the definition can appear in a header
-// file included by multiple compilation units without that leading to
-// multiple definitions. 
-
-template <typename F>
-NOINLINE inline void may_block(F &&action)
-{   std::jmp_buf buffer;
-    buffer_pointer = &buffer;
-    THREADID;
-// ASSUME that setjmp dumps all the machine registers into the jmp_buf.
-    if (setjmp(buffer) == 0)
-    {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
-// I will need to do more here to decrement the count of threads that
-// the system knows to be potentially involved in memory allocation.
-        action();
-// ... and fix it up again here, possibly with a RAII style object.
-// This use of longjmp is intended to help guarantee that the buffer
-// and its contents are kept intact across the call to action().
-        std::longjmp(buffer, 1);
-    }
-};
-
-template <typename F>
-NOINLINE inline void withRecordedStack(F &&action)
-{   std::jmp_buf buffer;
-    buffer_pointer = &buffer;
-    THREADID;
-    if (setjmp(buffer) == 0)
-    {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
-        action();
-        std::longjmp(buffer, 1);
-    }
-};
-
-
-
-extern std::mutex mutexForGc;
-extern std::mutex mutexForFreePages;
-extern bool gc_started;
-extern bool gc_complete;
-extern std::condition_variable cv_for_gc_idling;
-extern std::condition_variable cv_for_gc_busy;
-extern std::condition_variable cvForChunkStack;
-extern std::condition_variable cvForCopying;
-extern std::condition_variable cv_for_gc_complete;
-
-// I am going to put the code that synchronizes threads for garbage
-// collection here as an inline function mainly so that the code is
-// present close to the procedures that call it - they have to cooperate
-// in a way that feels delicate enough that having them in separate files
-// would increase the risk of confusion.
-
-extern uint32_t activeThreads;
-inline uint32_t FactiveThreads() { return activeThreads; }
-
-//  0x00 : total_threads : lisp_threads : still_busy_threads
-//
-// The meaning of all those is as follows:
-//   total_threads: Count of all the threads that CSL has started and that
-//                  might ever participate as Lisp mutators.
-//   lisp_threads:  The number of threads that are at present running as
-//                  Lisp mutators. This can be less than total_threads
-//                  because if a thread is about to perform a (potentially)
-//                  blocking system call it must decrease thsi count. All
-//                  threads included in this count thereby guarantee that they
-//                  will either allocate memory or perform a polling operation
-//                  fairly soon.
-//   still_busy_threads: Used during synchronization at the start and end of
-//                  garbage collection. Specifically as threads poll and
-//                  discover that a garbage collection is pending they
-//                  decrement this field. When it reaches zero that indicates
-//                  that all (lisp) threads have become quiescent, and so
-//                  global action can start.
-// There can be delicacies involved in updating all these! In particular
-// starting or terminating a thread while all others are in the process
-// of synchronizing for or after garbage collection is something that will
-// involve some care!
-
-extern unsigned int activeHelpers;
-
-extern bool generationalGarbageCollection;
-extern void generationalGarbageCollect();
-extern void fullGarbageCollect();
-
-// I have multiple threads, and when a GC is needed they need to synchronize.
-// My plan is that one thread is selected as the key one, with that
-// being the last one to decrement an "activeThreads" counter. By virtue
-// of being last there the thread knows that all the other threads are
-// quiescent. All the others first wait on a condition variable until the
-// key one releases it, and then wait on a second condition variable until
-// that too is released.
-// The two variables are to let the underpinning variables get set up.
-// So outside GC-time a variable "gc_started" will be false, and all
-// non-key threads can go
-//      {   std::unique_lock<std::mutex> lock(mutexForGc);
-//          gc_start_cv.wait(lock, []{ return gc_started; });
-//      }
-// followed immediately  by
-//      activeThreads++;
-//      {   std::unique_lock<std::mutex> lock(mutexForGc);
-//          gc_end_cv.wait(lock, []{ return gc_finished; });
-//      }
-// The key thread on the other hand can go
-//      gc_finished = false;
-// MUST ensure that gc_finished will be seen as false by all other threads
-// before gc_started is seen as true, because otherwise spurious wake-ups
-// on gc_start_cv and gc_end_cv could let one of the other threads run
-// through improperly.
-//      {   std::lock_guard<std::mutex> lock(mutexForGc);
-//          gc_started = true;
-//      }
-//      gc_start_cv.notify_all();
-// At this point the key thread can perform garbage collection. It can not
-// tell if the other threads are still waiting to respond to the gc_start
-// notification or if they have gone on to wait for gc_finished! So to let
-// it know the subsidiary threads each increment activeThreads when they
-// have passed the first hurdle, and the one that brings that up to maximum
-// can notify yet another condition variable. At the end of GC the key thread
-// can wait on that CV until the thread count is high enough, and then it
-// can afford to clear gc_started and set gc_finished and finally notify
-// all other threads. Ught this feels heavy-handed and messy!
-
-extern void setupEmptyPage(Page* p);
-extern void setupMostlyFreePage(Page* p);
-extern void setVariablesFromPage(Page* p);
-extern void saveVariablesToPage(Page* p);
-
-inline void restoreGfringe()
-{   size_t inc = 0;
-#ifdef NO_THREADS
-    result = nil;
-    inc = gIncrement;
-    gIncrement = 0;
-#else // NO_THREADS
-    for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
-    {   result[i] = nil;
-//      zprintf("result[%d] = nil = %a\n", threadId, nil);
-        inc += gIncrement;
-        gIncrement = 0;
-    }
-#endif // NO_THREADS
-    gFringe = gFringe - inc;
-}
-
-inline void fitsWithinExistingGap(unsigned int threadId, size_t n, size_t gap)
-{
-// The request made will fit within the existing Chunk for thraed i.
-    result = fringeBis + TAG_VECTOR;
-//  zprintf("result[%d] = %a\n", threadId, result);
-// If I fill in a result for this I set it to show it does not need any more.
-    request = 0;
-    setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
-    fringeBis += n;
-//  zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-    gap -= n;
-// Make the end of the Chunk safe. This Chunk is not full, but a GC that is
-// (probably) about to happen can need to scan it so its chunkFringe info
-// must be filled in.
-// If I get here during a GC 
-    currentChunk->chunkFringe = fringeBis;
-}
-
-inline void regionInPageIsFull(unsigned int threadId, size_t n,
-                               size_t gap, unsigned int &pendingCount)
-{
-#ifdef DEBUG
-    previousCons = 0;
-#endif // DEBUG
-// Here the current region in the Page is full. I may either have reached the
-// very end of the page or I may have merely run up against a pinned Chunk
-// within it.
-//  zprintf("At %s gFringe = %a\n", __WHERE__, gFringe);
-//  zprintf("At %s pageSize = %a\n", __WHERE__, pageSize);
-//
-// Take care because gFringe can point at the start of the next consecutive
-// Page.
-    uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
-//# zprintf("At %s pageEnd = %a\n", __WHERE__, pageEnd);
-    while (gLimit != pageEnd)
-    {   gFringe = gLimit + reinterpret_cast<Chunk*>(gLimit)->length;
-        gLimit = reinterpret_cast<uintptr_t>(
-            static_cast<Chunk*>(
-                reinterpret_cast<Chunk*>(gLimit)->chunkPinChain));
-//      zprintf("At %s gLimit = %a\n", __WHERE__, gLimit);
-        if (gLimit == 0) gLimit = pageEnd;
-//#     zprintf("At %s gLimit = %a\n", __WHERE__, gLimit);
-        size_t gap1 = gLimit - gFringe;
-        currentChunk->chunkFringe = fringeBis;
-        if (n+targetChunkSize < gap1)
-        {   Chunk* c = reinterpret_cast<Chunk*>(
-                           static_cast<uintptr_t>(gFringe));
-            c->length = n + targetChunkSize;
-            c->isPinned = false;
-            c->evacuated = false;
-            c->pinnedObjects = TAG_FIXNUM;
-            size_t chunkNo = currentPage->chunkCount++;
-//#         zprintf("regioninpagefull %a %d\n", currentPage, currentPage->chunkCount);
-            currentPage->chunkMap[chunkNo] = c;
-            currentChunk = c;
-            result = gFringe + TAG_VECTOR;
-            request = 0;
-            setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
-            fringeBis = gFringe + n;
-//#         zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-            gFringe = limitBis = limit = fringeBis + targetChunkSize;
-            break;
-        }
-    }
-// pendingCount will be a count of the requests NOT satisfied. So I increment
-// it if I do not manage to make an allocation.
-    if (request != 0) pendingCount++;
-}
-
-// Eventually I expect I will always wish to allocate a Free page rather
-// than a MostlyFree one, but while developing and debugging it is good
-// to be able to exercise the recycling of cluttered space.
-
-inline void grabNewCurrentPage(bool preferMostlyFree)
-{   //# zprintf("[1] Old current = %a\n", currentPage);
-    if (preferMostlyFree && mostlyFreePages != nullptr)
-    {   currentPage = mostlyFreePages;
-        currentPage->type = busyPage;
-        previousCons = 0;
-//#     zprintf("new current from mostlyFree = %a\n", currentPage);
-        mostlyFreePages = mostlyFreePages->chain;
-        if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
-        mostlyFreePagesCount--;
-    }
-    else if (freePages != nullptr)
-    {   currentPage = freePages;
-        currentPage->type = busyPage;
-        previousCons = 0;
-//#     zprintf("new current from Free = %a\n", currentPage);
-        freePages = freePages->chain;
-//#     zprintf("freePages := %a\n", freePages);
-        freePagesCount--;
-// When I take something from freePages it may not have been initialised
-// at all or it may contain more or less arbitrary mess left over from when
-// the garbage collector put it on that list, so I will initialise all of
-// its contents here.
-        setupEmptyPage(currentPage);
-    }
-    else
-    {   currentPage = mostlyFreePages;
-        currentPage->type = busyPage;
-        previousCons = 0;
-//#     zprintf("new current from mostlyFree = %a\n", currentPage);
-        my_assert(currentPage != nullptr,
-            [&]{ zprintf("Utterly out of memory\n");
-#ifdef HAVE_QUICK_EXIT
-                 std::quick_exit(99); });
-#else // HAVE_QUICK_EXIT
-                 std::exit(99); });
-#endif // HAVE_QUICK_EXIT
-        mostlyFreePages = mostlyFreePages->chain;
-        if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
-        mostlyFreePagesCount--;
-    }
-    currentPage->chain = busyPages;
-    busyPages = currentPage;
-//# zprintf("busyPages := %a\n", busyPages);
-    busyPagesCount++;
-    setVariablesFromPage(currentPage);
-// Every thread will now need to grab its own fresh chunk!
-    for (unsigned int threadId=0; threadId<maxThreads; threadId++)
-        limit = fringeBis = limitBis = gFringe;
-//  zprintf("At %s fringeBis = limitBis = gFringe = %a\n",
-//          __WHERE__, gFringe);
-//  zprintf("@@ just allocated a fresh page\n");
-}
-
-extern bool withinMajorGarbageCollection;
-
-extern LispObject Lgctest_0(LispObject);
-extern LispObject Lgctest_1(LispObject, LispObject);
-extern LispObject Lgctest_2(LispObject, LispObject, LispObject);
-
-// Now for higher level code that performs Lisp-specific allocation.
-
-inline LispObject cons(LispObject a, LispObject b)
-{   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    setcar(r, a);
-    setcdr(r, b);
-//# zprintf("CONS %a, %a @ %a\n", a, b, r);
-    return r;
-}
-
-// With the conservative collector I maybe do not need to avoid garbage
-// collection on any particular individual uses of cons().
-
-inline LispObject cons_no_gc(LispObject a, LispObject b)
-{   return cons(a, b);
-}
-
-inline LispObject cons_gc_test(LispObject p)
-{   return p;
-}
-
-inline LispObject ncons(LispObject a)
-{   LispObject r = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    setcar(r,  a);
-    setcdr(r,  nil);
-    return r;
-}
-
-// Here I can wonder if there is a good way to save overhead by allocating
-// both cells as one operation...
-
-inline LispObject list2(LispObject a, LispObject b)
-{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcdr(r1, r2);
-    setcdr(r2, nil);
-    return r1;
-}
-
-inline LispObject list2star(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcdr(r1, r2);
-    setcdr(r2, c);
-    return r1;
-}
-
-inline LispObject list2starrev(LispObject c, LispObject b,
-                               LispObject a)
-{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcdr(r1, r2);
-    setcdr(r2, c);
-    return r1;
-}
-
-inline LispObject list3star(LispObject a, LispObject b, LispObject c,
-                            LispObject d)
-{   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r1 + 4*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcar(r3, c);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
-    setcdr(r3, d);
-    return r1;
-}
-
-inline LispObject list4(LispObject a, LispObject b, LispObject c,
-                        LispObject d)
-{   LispObject r1 = get_n_bytes(8*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r1 + 4*sizeof(LispObject);
-    LispObject r4 = r1 + 6*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcar(r3, c);
-    setcar(r4, d);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
-    setcdr(r3, r4);
-    setcdr(r4, nil);
-    return r1;
-}
-
-inline LispObject acons(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_n_bytes(4*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    setcar(r1, r2);
-    setcar(r2, a);
-    setcdr(r1, c);
-    setcdr(r2, b);
-    return r1;
-}
-
-inline LispObject acons_no_gc(LispObject a, LispObject b,
-                              LispObject c)
-{   return acons(a, b, c);
-}
-
-inline LispObject list3(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r1 + 4*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcar(r3, c);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
-    setcdr(r3, nil);
-    return r1;
-}
-
-inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
-{   LispObject r1 = get_n_bytes(6*sizeof(LispObject)) + TAG_CONS;
-    LispObject r2 = r1 + 2*sizeof(LispObject);
-    LispObject r3 = r1 + 4*sizeof(LispObject);
-    setcar(r1, a);
-    setcar(r2, b);
-    setcar(r3, c);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
-    setcdr(r3, nil);
-    return r1;
-}
-
-inline LispObject Lcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, b);
-    return onevalue(r1);
-}
-
-inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    setcar(r1, b);
-    setcdr(r1, a);
-    return onevalue(r1);
-}
-
-inline LispObject Lnilfn(LispObject)
-{   return onevalue(nil);
-}
-
-inline LispObject Lncons(LispObject env, LispObject a)
-{   LispObject r1 = get_n_bytes(2*sizeof(LispObject)) + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
-    return onevalue(r1);
-}
-
-// Low level functions for allocating objects.
-
-// Entry to a garbage collector.
-
-extern void garbageCollect();
-
-void allocate_segment(size_t n);
-extern void clearPinnedMap(Page* x);
-extern uint64_t threadBit(unsigned int n);
-extern bool isPinned(Page* x, uintptr_t p);   // test if pin bit set
-extern void setPinned(Page* x, uintptr_t p);  // just set mark in pinmap
-extern void setPinnedMajor(uintptr_t p); // used during major GC
-extern void setPinnedMinor(uintptr_t p); // used during minor GC
-
-// "Borrowing" is a concept that I introduce for use as part of the
-// Lisp implementation. The key place that it is used is when a hash
-// table needs to be re-hashed, and a particular case of that is a table
-// keyed on EQ when garbage collection has just relocated all the contents.
-// If I have an ephemeral GC I will probably not be copying the table itself
-// and so I can not re-hash as part of that process. So what I want to do
-// is to "borrow" some space from the part of the memory pool that is not
-// currently in use. I can then copy the table data into that and then
-// transfer it back hashing it using the new set of hash values that
-// relocation of data has led to. There is no heap allocation while that
-// copy and re-hash is happening and when it is done the borrowed memory can
-// be returned to the general free pool. In the middle of a run there will
-// need to be plenty of free space to make available because there has to be
-// enough for all live data to be copied into by a full GC.
-
-//#define TL_borrowPages 52
-//DECLARE_THREAD_LOCAL(Page* , borrowPages);
-//#define TL_borrowFringe 53
-//DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
-//#define TL_borrowLimit 54
-//DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
-//#define TL_borrowNext 55
-//DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
-
-#ifdef NO_THREADS
-extern Page* borrowPages;
-extern uintptr_t borrowFringe;
-extern uintptr_t borrowLimit;
-extern uintptr_t borrowNext;
-#else // NO_THREADS
-extern Page* borrowPagess[maxThreads];
-#define borrowPages borrowPagess[threadId]
-extern uintptr_t borrowFringes[maxThreads];
-#define borrowFringe borrowFringes[threadId]
-extern uintptr_t borrowLimits[maxThreads];
-#define borrowLimit borrowLimits[threadId]
-extern uintptr_t borrowNexts[maxThreads];
-#define borrowNext borrowNexts[threadId]
-#endif // NO_THREADS
-
-class Borrowing
-{
-public:
-    Borrowing()
-    {   THREADID;
-        borrowPages = nullptr;
-        borrowFringe = 0;
-        borrowLimit = 0;
-        borrowNext = 0;
-    }
-    ~Borrowing()
-    {   std::lock_guard<std::mutex> lock(mutexForFreePages);
-        THREADID;
-        while (static_cast<Page*>(borrowPages) != nullptr)
-        {   if (static_cast<Page*>(borrowPages)->chunkCount != 0)
-            {   Page* w = static_cast<Page*>(borrowPages)->chain;
-                appendMostlyFree(borrowPages);
-                borrowPages = w;
-            }
-            else
-            {   Page* w = static_cast<Page*>(borrowPages)->chain;
-                static_cast<Page*>(borrowPages)->chain = freePages;
-                freePages = borrowPages;
-                freePages->type = freePage;
-//#             zprintf("freePages := %a\n", freePages);
-                borrowPages = w;
-            }
-        }
-    }
-};
-
-extern void gcTestCode(); // temporary and for debugging.
-
-// I will arrange that if the GC takes more than this time waiting on a
-// condition variable it will abort. Such timeouts are dangerous in various
-// various ways and the amount of time it could make sense to allow will
-// depend on the speed of the computer in use. However while I am only
-// using one thread there ought not be to any contention and no thread
-// should ever stall during GC, so having a short period here is not a
-// big issue. When I have multiple threads the value set here will need
-// to be thought about much more carefully, or the timeout may have to
-// be withdrawn! It seems certain that I should arrange that the time limit
-// here is as long as the slowest garbage collection.
-
-#ifdef DEBUG
-// While debugging I may be single stepping code or printing copious
-// trace ouput, so I will set a limit at 5 minutes (and adjust that further
-// if it causes me trouble).
-INLINE_VAR const std::chrono::seconds cvTimeout(300);
-#else // DEBUG
-INLINE_VAR const std::chrono::seconds cvTimeout(1);
-#endif // DEBUG
-
-#ifdef DEBUG
-
-// The following is intended to help me check if allocation is going
-// smoothly. It can be removed once debugging is complete (ha ha).
-
-inline void testLayout()
-{   THREADID;
-    uintptr_t r = fringe;
-    uintptr_t w = limit;
-    my_assert(w==0 || r <= w,    []{zprintf("fringe > limit\n"); });
-    my_assert(gFringe <= gLimit, []{zprintf("gFringe > gLimit\n");});
-}
-
-#endif // DEBUG
+#if 0 ///////////////////////////////////////////////@@@@@@@@@@@@@@@@@@@@@
+//~ 
+//~ extern uintptr_t              fringe;
+//~ extern uintptr_t              limit;
+//~ extern Chunk*                 currentChunk;
+//~ extern uintptr_t              limitBis;
+//~ extern uintptr_t              fringeBis;
+//~ extern size_t                 request;
+//~ extern LispObject             result;
+//~ extern size_t                 gIncrement;
+//~
+//~ extern uintptr_t              gFringe;
+//~ extern uintptr_t              gLimit;
+//~
+//~ // With the scheme I have here when an 8 Mbyte page gets full all of it
+//~ // will be scheduled for evacuation (ie garbage collection). In the extreme
+//~ // case that I had 64 active threads but only one was performing allocation
+//~ // that would leave 63 chunks within the page essentially empty - that is
+//~ // about 1 Mbyte. Is (1/8) of the page is not used. That is not a disaster!
+//~ // In the more plausible case of say 8 threads the overhead decreases to a
+//~ // level where I really stop worrying.
+//~ // Well if needbe I could try being clever and allocating each thread chunks
+//~ // whose size was sensitive to their history of allocation, so that
+//~ // threads that were almost always dormant or which hardly did any allocation
+//~ // got much smaller chunks. At the very very least to do anything like that
+//~ // now would be premature!
+//~
+//~ // When I need to trigger or participate in a garbage collection I
+//~ // call difficult_n_bytes() with an argument that is the amount of memory I
+//~ // am wanting to allocate. That is allowed to be zero (for instance when
+//~ // I am just polling). It will return a pointer to an allocated block, and
+//~ // set fringe, limit etc to reflect the allocation performed. Within it
+//~ // it may have to try several times: the fundamental version guarantees to
+//~ // achieve allocation for at least one of the threads (and that thread will
+//~ // continue and only join in with subsequent collections later on).
+//~ // Note that limit[] can be forced to zero as a call to difficult_allocate
+//~ // is exiting.
+//~
+//~ enum GcStyle
+//~ {
+//~     GcStyleNone,
+//~     GcStyleMinor,
+//~     GcStyleMajor
+//~ };
+//~
+//~ extern GcStyle userGcRequest;
+//~
+//~ extern uintptr_t difficult_n_bytes();
+//~
+//~ // This is the core part of CONS and also of the code that allocates
+//~ // bignums, strings and vectors.
+//~
+//~
+//~ #ifdef DEBUG
+//~ extern void testLayout();
+//~ #endif // DEBUG
+//~
+//~ #ifdef DEBUG
+//~ namespace REAL
+//~ {
+//~ #endif // DEBUG
+//~
+//~ inline LispObject get_n_bytes(size_t n, uintptr_t r, uintptr_t w)
+//~ {
+//~ // The new block I need to allocate really will not fit in the current
+//~ // chunk.
+//~ // I may in fact be able to make this allocation simply by grabbing a
+//~ // fresh chunk. I need to record the end-point within this Chunk...
+//~ // I want to make every chunk "tidy" because when I have one that gets
+//~ // pinned I will need to make a linear scan of it treating every pointer
+//~ // field within it as an unambiguous list-base. Any uninitialized or otherwise
+//~ // wild regions within it could cause disaster! I do this by recording its
+//~ // high water mark.
+//~     if (w != 0)
+//~     {
+//~ // I now need to allocate a new chunk. gFringe and gLimit delimit a region
+//~ // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
+//~ // chunks sequentially within that page. By making gFringe atomic I can so
+//~ // this in a lock-free manner.
+//~ // I will make my next chunk big enough for the current allocation request
+//~ // with targetChunkSize left over after that. This ensures that even big
+//~ // vector requests can be satisfied.
+//~         uintptr_t oldFringe = r;
+//~         Chunk* newChunk = reinterpret_cast<Chunk*>(gFringe);
+//~         gFringe += targetChunkSize+n;
+//~         r = newChunk->dataStart(); // safe even if chunk pointer is bad!
+//~ // Be aware that other threads might be doing (atomic) increments on gFringe
+//~ // at the same time that this one does. They will each reserve separate
+//~ // new chunks, but some of these may fall in memory well above gLimit. And
+//~ // hence they could be beyond the end of the current Page.
+//~ // I am going to assume (ha ha) that even if the maximum number of threads
+//~ // each increment gFringe by the largest possible amount then it will not
+//~ // suffer arithmetic overflow. If I have a maximum of 16 threads then I ought
+//~ // to ensure that gLimit+130M > gLimit.
+//~         fringe = r + n;
+//~ // I can not use newChunk->dataEnd() on the next line because the chunk does
+//~ // not yet have its length field filled in. And that has to be the case
+//~ // because the region I have set aside for this Chunk may be beyond the end
+//~ // of the current Page (or the next pinned place within the Page).
+//~         uint64_t newLimit =
+//~             reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
+//~ // Possibly the allocation of the new chunk ran beyond the current page
+//~ // and that will be cause to consider triggering garbage collection. If the
+//~ // chunk size is 16K and the page size 8M it will take 512 chunk allocations
+//~ // before a page is filled. If for now I suppose that having 16 threads all
+//~ // allocating cons cells furiously is an extreme case then that will mean
+//~ // that each thread gets through 32 chunks before the extra (probably severe)
+//~ // costs of page allocation arise. So this is about 1 in 32000 conses in the
+//~ // heaviest multi-thread case and only 1 in 0.5 million in a single thread
+//~ // scenario.
+//~ //
+//~ // I want to identify the Page that I am currently allocating within. In an
+//~ // earlier draft I masked newChunk with -pageSize. However newChunk could
+//~ // be well above the end of valid allocation space in the current page and
+//~ // might in fact be within the next sequential page. So rather than that I
+//~ // use oldFringe-1. The "-1" is because maybe the previous fringe had
+//~ // ended up such that the previously allocated item had totally filled the
+//~ // Chunk and Page, so it points at the location just beyond the Page end.
+//~         Page* p = reinterpret_cast<Page*>((oldFringe-1) & -pageSize);
+//~         if (newLimit <= gLimit)
+//~         {
+//~ // Now my allocation of a new chunk has been successful. Before I test if
+//~ // participation in a garbage collection on behalf of some other thread
+//~ // is required I need to record this chunk in the table of chunks that
+//~ // the page maintains. I also need to fill in the chunk header -- well the
+//~ // pinChain pointer does not need initializing until and unless the page
+//~ // gets pinned, but the isPinned flag must start off false so that when the
+//~ // GC finds an ambiguous pointer within this chunk it knows when that is the
+//~ // first such.
+//~             currentChunk = newChunk;
+//~             newChunk->length = targetChunkSize+n;
+//~             newChunk->isPinned = false;
+//~             newChunk->evacuated = false;
+//~             newChunk->pinnedObjects = TAG_FIXNUM;
+//~             newChunk->chunkPinChain = nullptr;
+//~             size_t chunkNo = p->chunkCount++;
+//~ //#         zprintf("allocation in page %a increments chunkCount to %d\n",
+//~ //#                 p, p->chunkCount);
+//~             p->chunkMap[chunkNo] = newChunk;
+//~             limitBis = newLimit;
+//~ #ifdef NO_THREADS
+//~             limit = newLimit;
+//~             zprintf("limit = %a\n", limit);
+//~             bool ok = true;
+//~ #else // NO_THREADS
+//~ // I wish to write back limit but it is possible that in
+//~ // the meanwhile somebody set that to zero, so I need to be a bit careful.
+//~ // Specifically I will only write back the new limit if the old one was
+//~ // still in force.
+//~ //
+//~ // Here I have (successfully) allocated a new chunk, and I have set my
+//~ // fringe to point within it. Because limit can be arbitrarily clobbered
+//~ // by others I will only update it if it has not changed since I loaded
+//~ // it earlier. If it has changed it will have been set to zero and I
+//~ // must participate in a GC.
+//~             bool ok = limit.compare_exchange_strong(w, newLimit);
+//~ #endif // NO_THREADS
+//~ #ifdef DEBUG
+//~             if (ok) testLayout();
+//~ #endif // DEBUG
+//~             if (ok) return static_cast<LispObject>(r);
+//~         }
+//~         gIncrement = targetChunkSize+n;
+//~         fringe = oldFringe;
+//~ //      zprintf("At %s fringe set to oldFringe = %a\n", __WHERE__, oldFringe);
+//~     }
+//~     else
+//~     {
+//~ // Here I am about to be forced to participate in garbage collection,
+//~ // typically for the benefit of some other thread.
+//~         if (gcTrace) zprintf("GC triggered\n");
+//~         if (currentChunk != nullptr)
+//~             currentChunk->chunkFringe = r;
+//~         gIncrement = 0;
+//~         fringe = r;
+//~ //      zprintf("At %s fringe set to %a\n", __WHERE__, r);
+//~     }
+//~     THREADID;
+//~     fringeBis = fringe;
+//~ //# zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
+//~     request = n;
+//~ // Here I can not complete the work with this inline function because
+//~ // either I have run out of space for a new chunk or because some
+//~ // other thread had done that and had set my limit register to zero
+//~ // to tell me. I set fringe back to the value that it had on entry,
+//~ // so the situation when I call difficult_n_bytes() is just as if it had
+//~ // been called directly from the main program save that gFringe may have
+//~ // been incremented - possibly beyond gLimit.
+//~     r = difficult_n_bytes();
+//~     my_assert(is_cons(r), "difficult_n_bytes should return a CONS");
+//~     return static_cast<LispObject>(r);
+//~ }
+//~
+//~ inline LispObject get_n_bytes(size_t n)
+//~ {
+//~ // The size passed here MUST be a multiple of 8.
+//~ // I have a thread-local variable fringe, and limit is in effect
+//~ // thread-local. These delimit a region of size about targetChunkSize
+//~ // within which allocation can be especially cheap. limit is atomic and
+//~ // that indicates that other threads may access it. In particular another
+//~ // thread can set it to zero to cause this thread to synchronize with
+//~ // others to participate in garbage collection. Because on some platforms
+//~ // access to thread-locals is more expensive than use of simple variables
+//~ // or is even achieved via strange C++ trickery, I isolate loading and
+//~ // storing such values into simple statements that transfer values to
+//~ // local variables.
+//~     THREADID;
+//~     uintptr_t r = fringe;
+//~     uintptr_t fr1 = r + n;
+//~     fringe = fr1;
+//~     uintptr_t w = limit;
+//~ // The simple case completes here. If each chunk is around 16K then only 1
+//~ // CONS in 1000 or so will take the longer route. I rather hope that the
+//~ // common case will be lifted to be rendered in-line.
+//~     if (fr1 <= w) LIKELY
+//~     {
+//~ #ifdef DEBUG
+//~         testLayout();
+//~ //      if (gcTrace) zprintf("get_n_bytes(%d) = %a\n", n, r);
+//~ #endif // DEBUG
+//~         return static_cast<LispObject>(r);
+//~     }
+//~     UNLIKELY return get_n_bytes(n, THREADARG r, w);
+//~ }
+//~
+//~ #ifdef DEBUG
+//~ } // end of namespace
+//~
+//~ inline size_t get_size[8];
+//~ inline unsigned int get_count = 0;
+//~ inline unsigned int get_trace = 0x7fffffff; // 514572-10;
+//~
+//~ inline LispObject previousCons = 0;
+//~
+//~ inline LispObject get_n_bytes(size_t n)
+//~ {   LispObject r = REAL::get_n_bytes(n);
+//~ //# zprintf("get_n_bytes %d => %a\n", n, r);
+//~ // The following assertion may sometimes be violated maybe. Eg if a large
+//~ // [vector] request causes a new Chunk to be allocated, but after that
+//~ // a smaller object fits into the end of the existing Chunk.
+//~ //  my_assert(r > previousCons, []{zprintf("non-increasing allocation\n"); });
+//~     previousCons = r;
+//~     return r;
+//~ }
+//~
+//~ #endif // DEBUG
+//~
+//~
+//~ // It will be important to poll frequently because when one thread
+//~ // observes that it needs to garbage collect all other threads must be
+//~ // paused. Any other that calls cons() or getvec() will pause there, but
+//~ // code in a loop that did not allocate memory could cause an unbounded
+//~ // delay unless this is called such that the loop can be interrupted.
+//~ // Extra steps will be needed when library calls that might block are
+//~ // made, but details of that belong elsewhere.
+//~
+//~ inline void poll()
+//~ {   uintptr_t w;
+//~     THREADID;
+//~     if (fringe > (w = limit))
+//~     {
+//~ // Here I need to set everything up just as if I had been making an
+//~ // allocation request for zero bytes.
+//~         fringeBis = fringe;
+//~ //#     zprintf("Polling at %s fringeBis[%d] = %a\n",
+//~ //#             __WHERE__, threadId, fringeBis);
+//~         request = 0;
+//~         gIncrement = 0;
+//~         static_cast<void>(difficult_n_bytes());
+//~     }
+//~ }
+//~
+//~ // The following can be used as in
+//~ //   withRecordedStack([&]{ ... });
+//~ // where the "..." represents some actions. Its job is to arrange that
+//~ // the C stack has all local values on (in particular that nothing is
+//~ // referenced solely via machine registers) and that a stackFringe variable
+//~ // is set so that the garbage collector can do its job properly.
+//~
+//~
+//~ // The following code makes a whole slew of assumptions about how the
+//~ // compiler and system library will treat it! I will explain what I hope
+//~ // will happen, but a sufficiently clever compiler could without doubt
+//~ // defeat me.
+//~
+//~ // A C++ system is liable to have some "callee save" registers and keep the
+//~ // values of some variable in them. A conservative garbage collector needs
+//~ // to access their values. I EXPECT that setjmp will dump copies of all
+//~ // such registers (at least!) into the jmp_buf, thus ensuring that a copy of
+//~ // all the data is present on the stack. Well here the jmp_buf is not
+//~ // referenced again or elsewhere, so maybe a compiler could consider it
+//~ // unused and just remove the call to setjmp. To discourage that I have
+//~ // buffer_pointer referring to the jmp_buf, and then at least potentially
+//~ // (as far as the compiler can tell) in some other compilation unit there
+//~ // might be code reachable from action() that does a longjmp() via it.
+//~ // I alse want the jmp_buf to have been allocate on the stack at a lower
+//~ // address than any other values currently in use. The "noinline" qualifier
+//~ // as provided by gcc is intended to help to enforce that by arranging that
+//~ // withRecordedStack() has its own stack frame with almost nothing except
+//~ // action() and the jmp_buf in it. If values used within action() end up
+//~ // on the stack above buffer that should not be a problem.
+//~ //
+//~ // There can be at most maxThreads threads in play, and each must have
+//~ // the thread-local value threadId set.
+//~
+//~ extern std::jmp_buf* buffer_pointer;
+//~
+//~ // Usage:
+//~ //   may_block([&]{
+//~ //      ... ... ... });
+//~ // This is to be used if the contents "..." etc do not do any Lisp memory
+//~ // allocation but might block. Ie there could be use of a synchronization
+//~ // primitive involving a muxex or a comdition variable, or there may be
+//~ // a read-request from some source that might not be instantly ready (such
+//~ // as the keyboard or a network connection or pipe). The reason this is needed
+//~ // is that other threads may need to garbage collect, and that involves
+//~ // getting every thread into synchronization - one that is blocked will not
+//~ // be able to participate actively in that! Yes another plausible user-case
+//~ // is the code performing a "sleep" operation.
+//~
+//~ // The use of "NOINLINE inline" may look odd. "NOINLINE" probably expands
+//~ // to an annotation [[gnu::noinline]] that should prevent the compiler
+//~ // from some sorts of optimisation so that I expect that the jmp_buf will
+//~ // be within a stack frame associated with this code, and hence the register
+//~ // values I expect to be stored there will be found by a stack scan done by
+//~ // the conservative garbage collector. The "inline" has the quite distinct
+//~ // purpose and meaning - it is so that the definition can appear in a header
+//~ // file included by multiple compilation units without that leading to
+//~ // multiple definitions.
+//~
+//~ template <typename F>
+//~ NOINLINE inline void may_block(F &&action)
+//~ {   std::jmp_buf buffer;
+//~     buffer_pointer = &buffer;
+//~     THREADID;
+//~ // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
+//~     if (setjmp(buffer) == 0)
+//~     {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
+//~ // I will need to do more here to decrement the count of threads that
+//~ // the system knows to be potentially involved in memory allocation.
+//~         action();
+//~ // ... and fix it up again here, possibly with a RAII style object.
+//~ // This use of longjmp is intended to help guarantee that the buffer
+//~ // and its contents are kept intact across the call to action().
+//~         std::longjmp(buffer, 1);
+//~     }
+//~ };
+//~
+//~ template <typename F>
+//~ NOINLINE inline void withRecordedStack(F &&action)
+//~ {   std::jmp_buf buffer;
+//~     buffer_pointer = &buffer;
+//~     THREADID;
+//~     if (setjmp(buffer) == 0)
+//~     {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
+//~         action();
+//~         std::longjmp(buffer, 1);
+//~     }
+//~ };
+//~
+//~
+//~
+//~ extern std::mutex mutexForGc;
+//~ extern std::mutex mutexForFreePages;
+//~ extern bool gc_started;
+//~ extern bool gc_complete;
+//~ extern std::condition_variable cv_for_gc_idling;
+//~ extern std::condition_variable cv_for_gc_busy;
+//~ extern std::condition_variable cvForChunkStack;
+//~ extern std::condition_variable cvForCopying;
+//~ extern std::condition_variable cv_for_gc_complete;
+//~
+//~ // I am going to put the code that synchronizes threads for garbage
+//~ // collection here as an inline function mainly so that the code is
+//~ // present close to the procedures that call it - they have to cooperate
+//~ // in a way that feels delicate enough that having them in separate files
+//~ // would increase the risk of confusion.
+//~
+//~ extern uint32_t activeThreads;
+//~ inline uint32_t FactiveThreads() { return activeThreads; }
+//~
+//~ //  0x00 : total_threads : lisp_threads : still_busy_threads
+//~ //
+//~ // The meaning of all those is as follows:
+//~ //   total_threads: Count of all the threads that CSL has started and that
+//~ //                  might ever participate as Lisp mutators.
+//~ //   lisp_threads:  The number of threads that are at present running as
+//~ //                  Lisp mutators. This can be less than total_threads
+//~ //                  because if a thread is about to perform a (potentially)
+//~ //                  blocking system call it must decrease thsi count. All
+//~ //                  threads included in this count thereby guarantee that they
+//~ //                  will either allocate memory or perform a polling operation
+//~ //                  fairly soon.
+//~ //   still_busy_threads: Used during synchronization at the start and end of
+//~ //                  garbage collection. Specifically as threads poll and
+//~ //                  discover that a garbage collection is pending they
+//~ //                  decrement this field. When it reaches zero that indicates
+//~ //                  that all (lisp) threads have become quiescent, and so
+//~ //                  global action can start.
+//~ // There can be delicacies involved in updating all these! In particular
+//~ // starting or terminating a thread while all others are in the process
+//~ // of synchronizing for or after garbage collection is something that will
+//~ // involve some care!
+//~
+//~ extern unsigned int activeHelpers;
+//~
+//~ extern bool generationalGarbageCollection;
+//~ extern void generationalGarbageCollect();
+//~ extern void fullGarbageCollect();
+//~
+//~ // I have multiple threads, and when a GC is needed they need to synchronize.
+//~ // My plan is that one thread is selected as the key one, with that
+//~ // being the last one to decrement an "activeThreads" counter. By virtue
+//~ // of being last there the thread knows that all the other threads are
+//~ // quiescent. All the others first wait on a condition variable until the
+//~ // key one releases it, and then wait on a second condition variable until
+//~ // that too is released.
+//~ // The two variables are to let the underpinning variables get set up.
+//~ // So outside GC-time a variable "gc_started" will be false, and all
+//~ // non-key threads can go
+//~ //      {   std::unique_lock<std::mutex> lock(mutexForGc);
+//~ //          gc_start_cv.wait(lock, []{ return gc_started; });
+//~ //      }
+//~ // followed immediately  by
+//~ //      activeThreads++;
+//~ //      {   std::unique_lock<std::mutex> lock(mutexForGc);
+//~ //          gc_end_cv.wait(lock, []{ return gc_finished; });
+//~ //      }
+//~ // The key thread on the other hand can go
+//~ //      gc_finished = false;
+//~ // MUST ensure that gc_finished will be seen as false by all other threads
+//~ // before gc_started is seen as true, because otherwise spurious wake-ups
+//~ // on gc_start_cv and gc_end_cv could let one of the other threads run
+//~ // through improperly.
+//~ //      {   std::lock_guard<std::mutex> lock(mutexForGc);
+//~ //          gc_started = true;
+//~ //      }
+//~ //      gc_start_cv.notify_all();
+//~ // At this point the key thread can perform garbage collection. It can not
+//~ // tell if the other threads are still waiting to respond to the gc_start
+//~ // notification or if they have gone on to wait for gc_finished! So to let
+//~ // it know the subsidiary threads each increment activeThreads when they
+//~ // have passed the first hurdle, and the one that brings that up to maximum
+//~ // can notify yet another condition variable. At the end of GC the key thread
+//~ // can wait on that CV until the thread count is high enough, and then it
+//~ // can afford to clear gc_started and set gc_finished and finally notify
+//~ // all other threads. Ught this feels heavy-handed and messy!
+//~
+//~ extern void setupEmptyPage(Page* p);
+//~ extern void setupMostlyFreePage(Page* p);
+//~ extern void setVariablesFromPage(Page* p);
+//~ extern void saveVariablesToPage(Page* p);
+//~
+//~ inline void restoreGfringe()
+//~ {   size_t inc = 0;
+//~ #ifdef NO_THREADS
+//~     result = nil;
+//~     inc = gIncrement;
+//~     gIncrement = 0;
+//~ #else // NO_THREADS
+//~     for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
+//~     {   result[i] = nil;
+//~ //      zprintf("result[%d] = nil = %a\n", threadId, nil);
+//~         inc += gIncrement;
+//~         gIncrement = 0;
+//~     }
+//~ #endif // NO_THREADS
+//~     gFringe = gFringe - inc;
+//~ }
+//~
+//~ inline void fitsWithinExistingGap(unsigned int threadId, size_t n, size_t gap)
+//~ {
+//~ // The request made will fit within the existing Chunk for thraed i.
+//~     result = fringeBis + TAG_VECTOR;
+//~ //  zprintf("result[%d] = %a\n", threadId, result);
+//~ // If I fill in a result for this I set it to show it does not need any more.
+//~     request = 0;
+//~     setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
+//~     fringeBis += n;
+//~ //  zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
+//~     gap -= n;
+//~ // Make the end of the Chunk safe. This Chunk is not full, but a GC that is
+//~ // (probably) about to happen can need to scan it so its chunkFringe info
+//~ // must be filled in.
+//~ // If I get here during a GC
+//~     currentChunk->chunkFringe = fringeBis;
+//~ }
+//~
+//~ inline void regionInPageIsFull(unsigned int threadId, size_t n,
+//~                                size_t gap, unsigned int &pendingCount)
+//~ {
+//~ #ifdef DEBUG
+//~     previousCons = 0;
+//~ #endif // DEBUG
+//~ // Here the current region in the Page is full. I may either have reached the
+//~ // very end of the page or I may have merely run up against a pinned Chunk
+//~ // within it.
+//~ //  zprintf("At %s gFringe = %a\n", __WHERE__, gFringe);
+//~ //  zprintf("At %s pageSize = %a\n", __WHERE__, pageSize);
+//~ //
+//~ // Take care because gFringe can point at the start of the next consecutive
+//~ // Page.
+//~     uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
+//~ //# zprintf("At %s pageEnd = %a\n", __WHERE__, pageEnd);
+//~     while (gLimit != pageEnd)
+//~     {   gFringe = gLimit + reinterpret_cast<Chunk*>(gLimit)->length;
+//~         gLimit = reinterpret_cast<uintptr_t>(
+//~             static_cast<Chunk*>(
+//~                 reinterpret_cast<Chunk*>(gLimit)->chunkPinChain));
+//~ //      zprintf("At %s gLimit = %a\n", __WHERE__, gLimit);
+//~         if (gLimit == 0) gLimit = pageEnd;
+//~ //#     zprintf("At %s gLimit = %a\n", __WHERE__, gLimit);
+//~         size_t gap1 = gLimit - gFringe;
+//~         currentChunk->chunkFringe = fringeBis;
+//~         if (n+targetChunkSize < gap1)
+//~         {   Chunk* c = reinterpret_cast<Chunk*>(
+//~                            static_cast<uintptr_t>(gFringe));
+//~             c->length = n + targetChunkSize;
+//~             c->isPinned = false;
+//~             c->evacuated = false;
+//~             c->pinnedObjects = TAG_FIXNUM;
+//~             size_t chunkNo = currentPage->chunkCount++;
+//~ //#         zprintf("regioninpagefull %a %d\n", currentPage, currentPage->chunkCount);
+//~             currentPage->chunkMap[chunkNo] = c;
+//~             currentChunk = c;
+//~             result = gFringe + TAG_VECTOR;
+//~             request = 0;
+//~             setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
+//~             fringeBis = gFringe + n;
+//~ //#         zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
+//~             gFringe = limitBis = limit = fringeBis + targetChunkSize;
+//~             break;
+//~         }
+//~     }
+//~ // pendingCount will be a count of the requests NOT satisfied. So I increment
+//~ // it if I do not manage to make an allocation.
+//~     if (request != 0) pendingCount++;
+//~ }
+//~
+//~ // Eventually I expect I will always wish to allocate a Free page rather
+//~ // than a MostlyFree one, but while developing and debugging it is good
+//~ // to be able to exercise the recycling of cluttered space.
+//~
+//~ inline void grabNewCurrentPage(bool preferMostlyFree)
+//~ {   //# zprintf("[1] Old current = %a\n", currentPage);
+//~     if (preferMostlyFree && mostlyFreePages != nullptr)
+//~     {   currentPage = mostlyFreePages;
+//~         currentPage->type = busyPage;
+//~         previousCons = 0;
+//~ //#     zprintf("new current from mostlyFree = %a\n", currentPage);
+//~         mostlyFreePages = mostlyFreePages->chain;
+//~         if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
+//~         mostlyFreePagesCount--;
+//~     }
+//~     else if (freePages != nullptr)
+//~     {   currentPage = freePages;
+//~         currentPage->type = busyPage;
+//~         previousCons = 0;
+//~ //#     zprintf("new current from Free = %a\n", currentPage);
+//~         freePages = freePages->chain;
+//~ //#     zprintf("freePages := %a\n", freePages);
+//~         freePagesCount--;
+//~ // When I take something from freePages it may not have been initialised
+//~ // at all or it may contain more or less arbitrary mess left over from when
+//~ // the garbage collector put it on that list, so I will initialise all of
+//~ // its contents here.
+//~         setupEmptyPage(currentPage);
+//~     }
+//~     else
+//~     {   currentPage = mostlyFreePages;
+//~         currentPage->type = busyPage;
+//~         previousCons = 0;
+//~ //#     zprintf("new current from mostlyFree = %a\n", currentPage);
+//~         my_assert(currentPage != nullptr,
+//~             [&]{ zprintf("Utterly out of memory\n");
+//~ #ifdef HAVE_QUICK_EXIT
+//~                  std::quick_exit(99); });
+//~ #else // HAVE_QUICK_EXIT
+//~                  std::exit(99); });
+//~ #endif // HAVE_QUICK_EXIT
+//~         mostlyFreePages = mostlyFreePages->chain;
+//~         if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
+//~         mostlyFreePagesCount--;
+//~     }
+//~     currentPage->chain = busyPages;
+//~     busyPages = currentPage;
+//~ //# zprintf("busyPages := %a\n", busyPages);
+//~     busyPagesCount++;
+//~     setVariablesFromPage(currentPage);
+//~ // Every thread will now need to grab its own fresh chunk!
+//~     for (unsigned int threadId=0; threadId<maxThreads; threadId++)
+//~         limit = fringeBis = limitBis = gFringe;
+//~ //  zprintf("At %s fringeBis = limitBis = gFringe = %a\n",
+//~ //          __WHERE__, gFringe);
+//~ //  zprintf("@@ just allocated a fresh page\n");
+//~ }
+//~
+//~ extern bool withinMajorGarbageCollection;
+//~
+//~ // Low level functions for allocating objects.
+//~
+//~ // Entry to a garbage collector.
+//~
+//~ extern void garbageCollect();
+//~
+//~ void allocate_segment(size_t n);
+//~ extern void clearPinnedMap(Page* x);
+//~ extern uint64_t threadBit(unsigned int n);
+//~ extern bool isPinned(Page* x, uintptr_t p);   // test if pin bit set
+//~ extern void setPinned(Page* x, uintptr_t p);  // just set mark in pinmap
+//~ extern void setPinnedMajor(uintptr_t p); // used during major GC
+//~ extern void setPinnedMinor(uintptr_t p); // used during minor GC
+//~
+//~ // "Borrowing" is a concept that I introduce for use as part of the
+//~ // Lisp implementation. The key place that it is used is when a hash
+//~ // table needs to be re-hashed, and a particular case of that is a table
+//~ // keyed on EQ when garbage collection has just relocated all the contents.
+//~ // If I have an ephemeral GC I will probably not be copying the table itself
+//~ // and so I can not re-hash as part of that process. So what I want to do
+//~ // is to "borrow" some space from the part of the memory pool that is not
+//~ // currently in use. I can then copy the table data into that and then
+//~ // transfer it back hashing it using the new set of hash values that
+//~ // relocation of data has led to. There is no heap allocation while that
+//~ // copy and re-hash is happening and when it is done the borrowed memory can
+//~ // be returned to the general free pool. In the middle of a run there will
+//~ // need to be plenty of free space to make available because there has to be
+//~ // enough for all live data to be copied into by a full GC.
+//~
+//~ //#define TL_borrowPages 52
+//~ //DECLARE_THREAD_LOCAL(Page* , borrowPages);
+//~ //#define TL_borrowFringe 53
+//~ //DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
+//~ //#define TL_borrowLimit 54
+//~ //DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
+//~ //#define TL_borrowNext 55
+//~ //DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
+//~
+//~ #ifdef NO_THREADS
+//~ extern Page* borrowPages;
+//~ extern uintptr_t borrowFringe;
+//~ extern uintptr_t borrowLimit;
+//~ extern uintptr_t borrowNext;
+//~ #else // NO_THREADS
+//~ extern Page* borrowPagess[maxThreads];
+//~ #define borrowPages borrowPagess[threadId]
+//~ extern uintptr_t borrowFringes[maxThreads];
+//~ #define borrowFringe borrowFringes[threadId]
+//~ extern uintptr_t borrowLimits[maxThreads];
+//~ #define borrowLimit borrowLimits[threadId]
+//~ extern uintptr_t borrowNexts[maxThreads];
+//~ #define borrowNext borrowNexts[threadId]
+//~ #endif // NO_THREADS
+//~
+//~ class Borrowing
+//~ {
+//~ public:
+//~     Borrowing()
+//~     {   THREADID;
+//~         borrowPages = nullptr;
+//~         borrowFringe = 0;
+//~         borrowLimit = 0;
+//~         borrowNext = 0;
+//~     }
+//~     ~Borrowing()
+//~     {   std::lock_guard<std::mutex> lock(mutexForFreePages);
+//~         THREADID;
+//~         while (static_cast<Page*>(borrowPages) != nullptr)
+//~         {   if (static_cast<Page*>(borrowPages)->chunkCount != 0)
+//~             {   Page* w = static_cast<Page*>(borrowPages)->chain;
+//~                 appendMostlyFree(borrowPages);
+//~                 borrowPages = w;
+//~             }
+//~             else
+//~             {   Page* w = static_cast<Page*>(borrowPages)->chain;
+//~                 static_cast<Page*>(borrowPages)->chain = freePages;
+//~                 freePages = borrowPages;
+//~                 freePages->type = freePage;
+//~ //#             zprintf("freePages := %a\n", freePages);
+//~                 borrowPages = w;
+//~             }
+//~         }
+//~     }
+//~ };
+//~
+//~
+//~ // I will arrange that if the GC takes more than this time waiting on a
+//~ // condition variable it will abort. Such timeouts are dangerous in various
+//~ // various ways and the amount of time it could make sense to allow will
+//~ // depend on the speed of the computer in use. However while I am only
+//~ // using one thread there ought not be to any contention and no thread
+//~ // should ever stall during GC, so having a short period here is not a
+//~ // big issue. When I have multiple threads the value set here will need
+//~ // to be thought about much more carefully, or the timeout may have to
+//~ // be withdrawn! It seems certain that I should arrange that the time limit
+//~ // here is as long as the slowest garbage collection.
+//~
+//~ #ifdef DEBUG
+//~ // While debugging I may be single stepping code or printing copious
+//~ // trace ouput, so I will set a limit at 5 minutes (and adjust that further
+//~ // if it causes me trouble).
+//~ INLINE_VAR const std::chrono::seconds cvTimeout(300);
+//~ #else // DEBUG
+//~ INLINE_VAR const std::chrono::seconds cvTimeout(1);
+//~ #endif // DEBUG
+//~
+//~ #ifdef DEBUG
+//~
+//~ // The following is intended to help me check if allocation is going
+//~ // smoothly. It can be removed once debugging is complete (ha ha).
+//~
+//~ inline void testLayout()
+//~ {   THREADID;
+//~     uintptr_t r = fringe;
+//~     uintptr_t w = limit;
+//~     my_assert(w==0 || r <= w,    []{zprintf("fringe > limit\n"); });
+//~     my_assert(gFringe <= gLimit, []{zprintf("gFringe > gLimit\n");});
+//~ }
+//~
+//~ #endif // DEBUG
+
+#endif // 0 /////////////////// @@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 #endif // header_newallocate_h
 

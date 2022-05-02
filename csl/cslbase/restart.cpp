@@ -157,6 +157,12 @@ LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
 
 LispObject eq_hash_tables;
 
+#ifdef CONSERVATIVE
+// While developing and testing I will use these as the only
+// conservative values
+LispObject ambiguous[10] = {0,0,0,0,0,0,0,0,0,0};
+#endif // CONSERVATIVE
+
 char program_name[64] = {0};
 
 // The tables here are slightly oddly formatted. Every other entry is
@@ -575,9 +581,6 @@ static void cold_setup()
         std::exit(0);
     }
 #endif // CONSERVATIVE
-#ifdef DEBUG
-    cout << "Create pname of NIL\n";
-#endif
 #ifdef COMMON
     setpname(nil, make_string("NIL"));
 #else

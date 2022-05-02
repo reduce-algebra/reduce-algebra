@@ -39,8 +39,10 @@ LispObject runtest(int n, int payload)
 {
     if ((Crand()&255) < 2)
     {   Lgc(nil, fixnum_of_int(1));
-        zprintf("Fringe = %a at end of GC\n", fringe);
-        zprintf("Limit = %a at end of GC\n\n\n", limit);
+        zprintf("consFringe = %a at end of GC\n", consFringe);
+        zprintf("consLimit = %a at end of GC\n\n\n", consLimit);
+        zprintf("vecFringe = %a at end of GC\n", vecFringe);
+        zprintf("vecLimit = %a at end of GC\n\n\n", vecLimit);
     }
     if (n < 2) return Lflag(nil, ncons(lisp_true), fixnum_of_int(0x33333));
 // This version does not rely on ambiguous pointers to preserve anything.
@@ -58,6 +60,85 @@ LispObject runtest(int n, int payload)
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
     set_up_signal_handlers();
+#ifndef OLD
+// I will take the view that the following are things that can happen:
+// (1) set workbase[1] to a new cons
+// (2) set workbase[2] to a new cons
+// (3) set ambiguous[1] to a new cons
+// (4) set ambiguous[2] to a new cons
+// (5) garbage collect
+// Note that each of 1-4 can discard the cons cell previously
+// stored there.
+
+    bool allocated = false;
+    for (int i=0; i<24; i++)
+    {   switch (Crand()%5)
+        {
+        default:
+        case 0:
+            std::cout << "&&&set workbase 1\n";
+            workbase[1] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            allocated = true;
+            break;
+        case 1:
+            std::cout << "&&&set workbase 2\n";
+            workbase[2] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            allocated = true;
+            break;
+        case 2:
+            std::cout << "&&&set ambiguous 1\n";
+            ambiguous[1] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            allocated = true;
+            break;
+        case 3:
+            std::cout << "&&&set ambiguous 2\n";
+            ambiguous[2] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            allocated = true;
+            break;
+        case 4:
+// If I call reclaim before I have allocated ANYTHING at all it will end
+// up in a mess. This is such a pathological situation that I just arrange
+// to avoid it.
+            if (!allocated)
+            {   std::cout << "&&&reclaim too early!\n";
+                break;
+            }
+            std::cout << "&&&reclaim\n";
+            Lgc(nil, fixnum_of_int(Crand()));
+            std::cout << "&&&end reclaim\n";
+            break;
+        }
+    }
+    Lgc(nil, fixnum_of_int(0x999999));
+
+#if 0
+// This is going to let me control everything. I use workbase[] for
+// precise pointers and ambiguous[] for uncertain ones and thus control
+// exactly what ius alive and what is dead.
+    setpname(nil, make_string("NIL"));
+    workbase[1] = cons(fixnum_of_int(0x2222), fixnum_of_int(0x3333));
+    workbase[2] = cons(workbase[1], nil);
+    ambiguous[1] = workbase[2];
+//  a->((2222 . 3333))    pname[nil] = "NIL"
+    Lgc(nil, fixnum_of_int(0x111111));
+//  (x) pinned in page 0, x:(2222 . 3333) and "NIL" in page 1
+    Lgc(nil, fixnum_of_int(0x111111));
+//  (x) pinned in page 0, x:(2222 . 3333) and "NIL" in a separate
+//      chunk but also in page 0
+    workbase[1] = workbase[2] = nil;
+// Now try with only the ambiguous pointer saving things
+    Lgc(nil, fixnum_of_int(0x111111));
+    Lgc(nil, fixnum_of_int(0x111111));
+    Lgc(nil, fixnum_of_int(0x111111));
+    workbase[1] = ambiguous[1];
+    ambiguous[1] = 0;
+    Lgc(nil, fixnum_of_int(0x111111));
+#endif
+    
+    
+
+#else // OLD
+// now the OLD code
     setpname(nil, make_string("*NIL*"));
 #if 1
     lisp_true = get_symbol(false);
@@ -98,6 +179,7 @@ void gcTestCode()
         zprintf("\nGC test %d over\n", i);
     }
 #endif
+#endif // OLD
     std::printf("About to terminate\n");
     term_close();
     fflush(stdout);

@@ -518,6 +518,9 @@ extern LispObject om_whichCDs(LispObject, LispObject);
 #endif
 
 extern LispObject workbase[51];
+#ifdef CONSERVATIVE
+extern LispObject ambiguous[10];
+#endif // CONSERVATIVE
 
 extern LispObject user_base_0, user_base_1, user_base_2;
 extern LispObject user_base_3, user_base_4, user_base_5;
