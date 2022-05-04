@@ -1,5 +1,5 @@
 //
-// "FXTerminal.cpp"                         Copyright A C Norman 2003-2020
+// "FXTerminal.cpp"                         Copyright A C Norman 2003-2022
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -108,6 +108,23 @@
 #ifdef WIN32
 
 #include <windows.h>
+
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif // fake C++17 support
+
+#ifndef __has_include
+#define __has_include(name) 0
+#endif // fake C++17 support
+
+#if !defined HAVE_FILESYSTEM &&  \
+     __has_include(<filesystem>)
+#define HAS_FILESYSTEM 1
+#endif // HAVE_FILESYSTEM now defined if "#include <filesystem>" reasonable.
+
+#ifdef HAVE_FILESYSTEM
+#include <filesystem>
+#endif // HAVE_FILESYSTEM
 
 
 namespace FX {
@@ -2022,6 +2039,7 @@ BrowserBox::BrowserBox(FXApp *a, const char *p) :
     for (i=0; i<NBROWSERS; i++)
         choices[i] = NULL;
     nbr = 0;
+    addbutton(v, "xdg-open", p);
     addbutton(v, "firefox", p);
     addbutton(v, "midori", p);
     addbutton(v, "iceweasel", p);
@@ -2196,7 +2214,14 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     if (preferred == NULL || *preferred == 0)
         preferred = selectBrowser(reg, "firefox");
     char helpFile[256];
+#ifdef HAVE_FILESYSTEM
+    sprintf(helpFile, "%s/%s.doc/index.html", programDir, programName);
+    auto p1 = std::filesystem::path(helpFile);
+    auto p2 = std::filesystem::canonical(p1);
+    sprintf(helpFile, "file://%s", p1.c_str());
+#else
     sprintf(helpFile, "file://%s/%s.doc/index.html", programDir, programName);
+#endif // HAVE_FILESYSTEM
 // For non-windows the browsers I might imagine include
 //      netscape, mozilla, opera, firebird, konqueror, galeon, ...
 // I will try these in turn. It is probably a politically delicate issue
@@ -2205,6 +2230,7 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     if (fork() == 0)
     {   const char *browsers[] = {
             NULL,
+            "xdg-open",
             "opera",
             "firefox",
             "midori",

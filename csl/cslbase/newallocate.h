@@ -409,6 +409,7 @@ inline uintptr_t getNBytes(size_t n)
 extern Page* pageFringe;
 
 extern unsigned int borrowingDepth;
+extern uintptr_t borrowFringe, borrowEnd;
 
 class Borrowing
 {
@@ -427,12 +428,12 @@ public:
                 p->chain = emptyPages;
                 emptyPages = p;
             }
+            borrowCurrent = nullptr;
+            borrowFringe = borrowEnd = 0;
             pageFringe = save;
         }
     }
 };
-
-extern uintptr_t borrowFringe, borrowEnd;
 
 inline void initBorrowPage(Page* p)
 {

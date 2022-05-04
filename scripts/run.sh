@@ -175,8 +175,8 @@ xWindows_NT)
     exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exit 0
   else
-    host1=${host/aarch64/universal}
-    host1=${host1/x86_64/universal}
+    host1=`echo $host | sed 's/aarch64/universal/'`
+    host1=`echo $host1 | set 's/x86_64/universal/'`
     $maybe_echo host=$host host1=$host1
     if test -x $here/../cslbuild/$host1$version/csl/$ap
     then

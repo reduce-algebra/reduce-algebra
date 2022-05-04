@@ -310,7 +310,14 @@ Page* grabFreshPage()
 // none of those I will gust use the next Page in the currently partly used
 // Segment. Here I will only ever return a fully empty Page, never one that
 // contains any pinned data.
+#ifdef DEBUG
         if (busy < 2*unused)
+#else // DEBUG
+// For now if I am in the release version not the debug one I will use up ALL
+// memory before considering GC. This is because GC is not implemented yet,
+// so this lets me test just a few more things.
+        if (true || busy < 2*unused)
+#endif // DEBUG
         {   if (emptyPages != nullptr)
             {   Page* r = emptyPages;
                 emptyPages = emptyPages->chain;
@@ -331,6 +338,7 @@ Page* grabFreshPage()
 // however I can not allocate any more then I will need to garbage collect.
         if (!allocateAnotherSegment()) break;
     }
+    cout << "\n@@@ MEMORY FULL @@@\n" << endl;
     garbage_collect();
 // After garbage collection I will insist that there is an empty page
 // available for allocation.
@@ -396,8 +404,10 @@ uintptr_t vecEndOfPage(size_t n)
 // allocated and popped off when borrowing is over.
 
 uintptr_t borrowEndOfPage(size_t n)
-{   borrowCurrent->chain = borrowPages;
-    borrowPagesTail = borrowCurrent;
+{   if (borrowCurrent != nullptr)
+    {   borrowCurrent->chain = borrowPages;
+        borrowPagesTail = borrowCurrent;
+    }
     borrowCurrent = grabFreshPage();
     initBorrowPage(borrowCurrent);
     return borrowNBytes(n);
