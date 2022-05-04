@@ -475,12 +475,17 @@ flag ('(such!-that), 'spaced);  % _ adjacent to symbols causes problems.
 
 algebraic;
 
-%% Call infix function in symbolic mode, this avoids to making it a symbolic operator 
-symbolic infix :-;
+% Suppress warnings that rset and rsetd are already defined as
+% algebraic procedures.  Done this way to work on Common Lisp, which
+% uses "on defn" when generating fasl files, since "on" and "off" do
+% not generate output with "on defn".
+symbolic(!*msg := nil);
+infix :-, ::-;
+symbolic(!*msg := t);
+
 nosimp(:-,'(t nil));
 %precedence :-,:=;  %can't do this
 
-symbolic infix ::-;
 nosimp(::-,'(t t));
 precedence rsetd,rset;
 

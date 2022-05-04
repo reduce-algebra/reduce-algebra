@@ -82,7 +82,7 @@ symbolic procedure nextarg u;
 
 symbolic procedure o!-nextarg u;
    begin scalar args;
-      if !*udebug then uprint(nil);
+      if !*udebug then uprint();
       args :=
          if (i = 1)   and (i <= upb) then u
          else if (i = 0)   and (i <= upb) then '(null!-fn).u
@@ -97,7 +97,7 @@ symbolic procedure o!-nextarg u;
 
 symbolic procedure s!-nextarg u;
    begin scalar v, args;
-      if !*udebug then uprint(nil);
+      if !*udebug then uprint();
            if null comb then<< i := i + 1; comb := initcomb u>>;
       args :=
       if (v := getcomb(u,comb) ) then
@@ -120,7 +120,7 @@ symbolic procedure getcomb(u,v);
       return if group then group . setdiff(u,group) else nil
    end$
 
-symbolic procedure uprint(u);
+symbolic procedure uprint;
    <<if expand then <<prin2('expand);prin2(" ")>>;
      if mcontract then <<prin2('mcontract);prin2(" ")>>;
      if acontract then <<prin2('acontract);prin2("  ")>>;
