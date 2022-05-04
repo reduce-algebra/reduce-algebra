@@ -72,7 +72,7 @@
 
 #if !defined HAVE_FILESYSTEM &&  \
      __has_include(<filesystem>)
-#define HAS_FILESYSTEM 1
+#define HAVE_FILESYSTEM 1
 #endif // HAVE_FILESYSTEM now defined if "#include <filesystem>" reasonable.
 
 #ifdef HAVE_FILESYSTEM

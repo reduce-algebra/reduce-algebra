@@ -801,6 +801,12 @@ inline int nlz(uint64_t x)
 {   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
 }
 
+// Count the trailing zeros in a 64-bit word.
+
+inline int ntz(uint64_t x)
+{   return __builtin_ctzll(x);  // Must use the 64-bit version.
+}
+
 #else // __GNUC__
 
 inline int nlz(uint64_t x)
@@ -831,8 +837,41 @@ inline int nlz(uint64_t x)
     return n;
 }
 
+// This code is to identify the least significant bit in a 64-bit
+// value. The function leastBit() just removes all other bits. It is probably
+// not going to be used a lot.
+
+uint64_t leastBit(uint64_t n)
+{   return n & (-n);
+}
+
+// ntz find the bit-number of the least significant bit, So here are some
+// values it will return:
+//    1      0
+//    2      1
+//    4      2
+//    8      3
+//   16      4
+// etc. The name is for "Number of Trailing Zeros".
+// If the input value is zero it returns -1, but the GNU builting does not
+// guarantee any such behaviour, so zero input should be considered illegal.
+
+int ntz(uint64_t n)
+{   static int8_t lsbTable[67] =
+    {  -1,   0,   1,  39,   2,  15,  40,  23,   3,  12,
+       16,  59,  41,  19,  24,  54,   4,  -1,  13,  10,
+       17,  62,  60,  28,  42,  30,  20,  51,  25,  44,
+       55,  47,   5,  32,  -1,  38,  14,  22,  11,  58,
+       18,  53,  63,   9,  61,  27,  29,  50,  43,  46,
+       31,  37,  21,  57,  52,   8,  26,  49,  45,  36,
+       56,   7,  48,  35,   6,  34,  33,  -1
+    };
+    else return lsbTable[leastBit(n) % 67];
+}
+
 #endif // __GNUC__
 #define NLZ_DEFINED 1
+#define NTZ_DEFINED 1
 
 
 #if 0 ///////////////////////////////////////////////@@@@@@@@@@@@@@@@@@@@@
