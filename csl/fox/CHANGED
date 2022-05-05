@@ -269,4 +269,7 @@ June 2021.    A few more lines in FXShowMath.cpp so that debugging of the
 Sept 2021.    Flush stdout & stderr when - on the Mac - a call to execv
               fails. This should never happen!
 	      
+May 2022.     Make path to help files canonical for benefit of the
+              Ubuntu "snap" version of firefox.
+
 <end of CHANGED>

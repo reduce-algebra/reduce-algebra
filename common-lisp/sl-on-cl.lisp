@@ -3104,12 +3104,14 @@ COMMAND to the interpreter and return the process exit code."
        ;; Cygwin CLISP behaves as if running on Unix, not Windows.
        ;; ext:shell returns nil for normal exit with status 0!
        #+CLISP (or (ext:shell command) 0)
-       (nth-value 1
-           (external-process-status     ; returns status, exit code
-            #+(and CCL WINDOWS)         ; seems not to work!
-            (run-program "cmd" (list "/c" command) :output t)
-            #+(and CCL (not WINDOWS))
-            (run-program "sh" (list "-c" command) :output t)))
+       #+CCL
+       (nth-value
+        1
+        (ccl:external-process-status    ; returns status, exit code
+         #+WINDOWS
+         (ccl:run-program "cmd" (list "/c" command) :output *standard-output*)
+         #-WINDOWS
+         (ccl:run-program "sh" (list "-c" command) :output t)))
        ))
 
 #+SBCL
@@ -3195,7 +3197,7 @@ not sucessful, the value Nil is returned."
   ;; Expand environment variables, "." and "..":
   (setq dir (substitute-in-file-name (namestring dir)))
   (setq dir (merge-pathnames dir))
-  (and (probe-file dir) (ccl::cd dir)))
+  (and (probe-file dir) (namestring (ccl::cd dir))))
 
 (defalias 'chdir 'cd)                   ; CSL / MS Windows
 
@@ -3285,9 +3287,10 @@ Load a \".sl\" file using Standard Lisp read syntax."
   #+SBCL ".fasl"
   #+CLISP ".fas"
   #+ABCL ".abcl"
-  #+(and CCL WINDOWS) ".wx64fsl"
-  #+(and CCL LINUX) ".lx64fsl"
-  #+(and CCL MACOS) ".dx64fsl"          ; ???
+  ;; #+(and CCL WINDOWS) ".wx64fsl"
+  ;; #+(and CCL LINUX) ".lx64fsl"
+  ;; #+(and CCL MACOS) ".dx64fsl"          ; ???
+  #+CCL (namestring ccl:*.fasl-pathname*)
   "Standard Lisp fasl filename extension beginning with \".\", used by \"remake.red\".")
 
 (defconstant fasl-dir*
@@ -3484,10 +3487,12 @@ When all done, execute FASLEND;~2%" name))
   "Information about the Lisp system supporting REDUCE.
 A list of identifiers indicating system properties.")
 
-(pushnew #+SBCL 'sbcl #+CLISP 'clisp #+ABCL 'abcl #+CCL 'ccl lispsystem*)
-#+win32 (pushnew 'win32 lispsystem*)
-#+cygwin (pushnew 'cygwin lispsystem*)
-#+unix (pushnew 'unix lispsystem*)  ; appears together with cygwin
+(pushnew #+SBCL 'SBCL #+CLISP 'CLISP #+ABCL 'ABCL #+CCL 'CCL lispsystem*)
+;; The symbols UNIX, CYGWIN and WIN32 are used in gnuintfc.red.
+#+(or WIN32 WINDOWS) (pushnew 'WIN32 lispsystem*) ; SBCL, CCL
+#+CYGWIN (pushnew 'CYGWIN lispsystem*)            ; CLISP
+#+UNIX (pushnew 'UNIX lispsystem*)      ; appears together with CYGWIN
+#+OS-MACOSX (pushnew 'MACOS lispsystem*) ; CCL
 
 #+SBCL
 (defun compilation (on)

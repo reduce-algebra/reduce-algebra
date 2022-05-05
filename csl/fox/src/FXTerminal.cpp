@@ -1,5 +1,5 @@
 //
-// "FXTerminal.cpp"                         Copyright A C Norman 2003-2020
+// "FXTerminal.cpp"                         Copyright A C Norman 2003-2022
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -65,6 +65,19 @@
 #undef MAC_FRAMEWORK
 #endif
 
+#ifndef __has_include
+#define __has_include(name) 0
+#endif // fake C++17 support
+
+#if !defined HAVE_FILESYSTEM &&  \
+     __has_include(<filesystem>)
+#define HAVE_FILESYSTEM 1
+#endif // HAVE_FILESYSTEM now defined if "#include <filesystem>" reasonable.
+
+#ifdef HAVE_FILESYSTEM
+#include <filesystem>
+#endif // HAVE_FILESYSTEM
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -109,7 +122,6 @@
 
 #include <windows.h>
 
-
 namespace FX {
 
 HANDLE pipedes;
@@ -124,6 +136,7 @@ namespace FX {
 int pipedes[2];
 
 #endif /* WIN32 */
+
 
 static FXPrinter printer;
 
@@ -2022,6 +2035,7 @@ BrowserBox::BrowserBox(FXApp *a, const char *p) :
     for (i=0; i<NBROWSERS; i++)
         choices[i] = NULL;
     nbr = 0;
+    addbutton(v, "xdg-open", p);
     addbutton(v, "firefox", p);
     addbutton(v, "midori", p);
     addbutton(v, "iceweasel", p);
@@ -2145,6 +2159,14 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
 #if defined MACINTOSH && defined MAC_FRAMEWORK
     char helpFile[256];
     sprintf(helpFile, "%s.doc/index.html", fwin_full_program_name);
+// Now an oddity - I will edit out any sub-string "bootstrap" so that
+// bootstrapreduce gets access to the same help data as plain reduce
+    for (char* s=helpFile; *s!=0; s++)
+    {   if (std::memcmp(s, "bootstrap", 9) == 0)
+        {   for (char* s1 = s+9; *s1!=0; s1++) *s++ = *s1++;
+            *s = 0;
+        )
+    }
     if (CGDisplayIsActive(CGMainDisplayID()) != 1)
     {   FXMessageBox::error(this,
                 MBOX_OK, "Manual Browser Launch Needed",
@@ -2196,7 +2218,31 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     if (preferred == NULL || *preferred == 0)
         preferred = selectBrowser(reg, "firefox");
     char helpFile[256];
-    sprintf(helpFile, "file://%s/%s.doc/index.html", programDir, programName);
+#ifdef HAVE_FILESYSTEM
+    sprintf(helpFile, "%s/%s.doc/index.html", programDir,
+        std::strncmp(programName, "bootstrap", 9) == 0 ?
+            programName+9 : programName);
+    auto p1 = std::filesystem::path(helpFile);
+    std::filesystem::path p2;
+    try
+    {   p2 = std::filesystem::canonical(p1);
+    }
+    catch (std::filesystem::filesystem_error e)
+    {   FXMessageBox about(this,
+            "Help request",
+            "This program does not have embedded help",
+            main_window->getIcon(),
+            MBOX_OK|DECOR_TITLE|DECOR_BORDER);
+        about.execute(PLACEMENT_OWNER);
+        setFocus();
+        return 1;
+    }
+    sprintf(helpFile, "file://%s", p2.c_str());
+#else
+    sprintf(helpFile, "file://%s/%s.doc/index.html", programDir,
+        std::strncmp(programName, "bootstrap", 9) == 0 ?
+            programName+0 : programName);
+#endif // HAVE_FILESYSTEM
 // For non-windows the browsers I might imagine include
 //      netscape, mozilla, opera, firebird, konqueror, galeon, ...
 // I will try these in turn. It is probably a politically delicate issue
@@ -2205,6 +2251,7 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     if (fork() == 0)
     {   const char *browsers[] = {
             NULL,
+            "xdg-open",
             "opera",
             "firefox",
             "midori",
