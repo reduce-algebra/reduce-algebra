@@ -184,7 +184,7 @@ void gcTestCode()
     term_close();
     fflush(stdout);
     fflush(stderr);
-    std::quick_exit(0);
+    std::exit(0);  // I want to use quick_exit byt on the Mac that is not there
 }
 
 // end of testcode.cpp
