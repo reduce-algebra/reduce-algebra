@@ -102,7 +102,8 @@ if [ "sl-on-cl.lisp" -nt "sl-on-cl.$faslext" ]
 then
     echo '+++++ Compiling sl-on-cl'
     $runlisp << XXX &> log.$lisp/sl-on-cl.blg
-(or (compile-file "sl-on-cl") (exit #+SBCL :code 1))
+(or (compile-file "sl-on-cl")
+    #+CCL (quit 1) #-CCL (exit #+SBCL :code 1))
 XXX
 fi || { echo '***** Compilation failed'; exit 1; }
 
@@ -136,11 +137,12 @@ if [ $bootstraponly ]; then exit; fi
 
 echo '+++++ Building REDUCE...'
 
-# First, compile fasl files for non-package source files:
 $runbootstrap << XXX &> log.$lisp/build.blg
 symbolic; $force
 
 off redefmsg;
+
+% First, compile fasl files for non-package source files:
 
 package!-remake2('clprolo, nil);
 package!-remake2('revision, 'support);
@@ -149,7 +151,7 @@ package!-remake2('entry, 'support);
 package!-remake2('smacros,'support);
 package!-remake2('remake, nil); % for building noncore packages
 
-% Create .dat files that list core and non-core modules to build:
+% Second, create .dat files that list core and non-core modules to build:
 
 begin
   scalar w, i, s, core, noncore;
@@ -305,8 +307,8 @@ do
     $runreduce << XXX &> log.$lisp/$p.blg
 symbolic; $force
 
-%load compiler;
 on verboseload;
+off redefmsg;
 
 if '$p eq 'fps then load_package limits,factor,specfn,sfgamma
 else if '$p eq 'mrvlimit then load_package taylor
@@ -315,8 +317,6 @@ else if '$p eq 'rubi_red then flag('(flush),'rlisp)
 else if '$p eq 'tmprint then <<
    lispsystem!* := 'psl . lispsystem!*;
    switch usermode >>;
-
-load remake;
 
 !*argnochk := t;
 
@@ -330,7 +330,7 @@ begin
   for each x in w do put(car x, 'folder, cadr x)
 end;
 
-package!-remake '$p;
+package!-remake '$p; % autoloads remake
 
 % Temporary hack to make gnuplot package work on Common Lisp:
 if '$p eq 'gnuplot then

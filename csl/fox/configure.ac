@@ -457,9 +457,15 @@ AC_CHECK_HEADERS([unistd.h])
 case $host_os in
   *darwin*)
 # I should review this annually since OSX tends not to value backwards
-# compatibility!
+# compatibility! In May 2022 I wish to moved up to 10.15, but I do not
+# quite here bacause there will still be older hardware in use that will
+# not support beyond 10.13. For me and issue is that the C++17 feature
+# std::filesystem is not supported until 10.15 and I would like to be able
+# to use it.
     CC="MACOSX_DEPLOYMENT_TARGET=10.13 $CC"
     CXX="MACOSX_DEPLOYMENT_TARGET=10.13 $CXX"
+    AC_DEFINE([MACINTOSH], [1], [target machine])
+    AC_DEFINE([MAC_FRAMEWORK], [1], [target machine])
   ;;
 esac
 

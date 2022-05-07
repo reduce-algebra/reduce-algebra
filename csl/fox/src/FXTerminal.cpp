@@ -65,18 +65,58 @@
 #undef MAC_FRAMEWORK
 #endif
 
+// I am now insisting that CSL be built with C++17 and so the following
+// paragraph should be fading in relevance!
+
+// On some platforms it will APPEAR that <filesystem> and std::filesystem
+// are available but they will not be. This can perhaps be a consequenec of
+// transition arrangements in the C++ comnpiler, library and even the
+// operating system being used. On sufficiently old platforms there will be
+// no pretence of their availability so I will not have trouble, and on
+// fully up to date ones this part of the C++17 standard should be properly
+// supported, but somewher in between there can be "trouble"! So I have a
+// configure time test that can set FILESYSTEM_NOT_USABLE in the case when
+// the notionally standard-conforming test will not suffice.
+
+// I am really sorry about the following test! It is because on a Mac
+// one can have #include <filesystem> work and __cpp_lib_filesystem get
+// defined for you but std::filesystem may still not be properly available
+// because at least some parts of it were not supported until 10.15. I rather
+// firmly believe that __cpp_lib_filesystem ought not to have ended up
+// defined if the C++17 feature was not actually going to be available. But
+// there we go!
+
+//#define STR_HELPER(x) #x
+//#define STR(x) STR_HELPER(x)
+//#pragma message "MIN VER: " STR(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+
+#if defined __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ && \
+            __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 101500 && \
+            !defined FILESYSTEM_NOT_USABLE
+
+#pragma message "Disabling use of std::filesystem because of OS version min"
+#define FILESYSTEM_NOT_USABLE 1
+
+#endif // Hack for Macintosh.
+
+#if !defined FILESYSTEM_NOT_USABLE
+
 #ifndef __has_include
 #define __has_include(name) 0
-#endif // fake C++17 support
+#endif
 
-#if !defined HAVE_FILESYSTEM &&  \
-     __has_include(<filesystem>)
+// I will allow config.h to define HAVE_FILESYSTEM as a promise thae this
+// is all OK!
+#if !defined HAVE_FILESYSTEM && __has_include(<filesystem>)
 #define HAVE_FILESYSTEM 1
-#endif // HAVE_FILESYSTEM now defined if "#include <filesystem>" reasonable.
+#endif // HAVE_FILESYSTEM
 
 #ifdef HAVE_FILESYSTEM
 #include <filesystem>
 #endif // HAVE_FILESYSTEM
+
+#endif // FILESYSTEM_NOT_USABLE
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

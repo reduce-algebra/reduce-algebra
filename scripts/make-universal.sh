@@ -13,6 +13,10 @@ case ${1:-nothing} in
   ;;
 esac
 
+# Having any partially-built ports in a confused state could hurt, so
+# tidy up first.
+port clean installed
+
 all=`port installed installed | grep active | tail -n +2 | sed -e 's/@.*$//g'`
 failures=""
 for P in $all

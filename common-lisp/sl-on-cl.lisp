@@ -32,8 +32,9 @@
 #+SBCL (eval-when (:compile-toplevel :load-toplevel :execute)
          (require :sb-posix))
 
-#+CLISP (setq custom:*suppress-check-redefinition* t
-              custom:*compile-warnings* nil)
+#+CLISP (eval-when (:compile-toplevel :load-toplevel :execute)
+          (setq custom:*suppress-check-redefinition* t
+                custom:*compile-warnings* nil))
 
 #+ABCL (eval-when (:compile-toplevel :load-toplevel :execute)
          (require :abcl-contrib)
@@ -1482,10 +1483,13 @@ the negative truncation of the absolute value of U divided by the
 absolute value of V. An error occurs if division by zero is attempted:
 ***** Attempt to divide by 0 in QUOTIENT"
   ;; Can probably implement this better using generic functions!
+  ;; In CLISP on macOS, / throws an error on underflow.
+  ;; Just return 0, as do all other Common Lisps I have tried.
   (declare (type number u v))
   (the number
        (if (or (floatp u) (floatp v))
-           (/ u v)
+           #+CLISP (ext:without-floating-point-underflow (/ u v))
+           #-CLISP (/ u v)
            (values (truncate u v)))))
 
 (defalias 'remainder 'cl:rem
@@ -3225,12 +3229,16 @@ not sucessful, the value Nil is returned."
 ;;; ================
 
 (defconstant %fasl-directory-pathname
-  (make-pathname :directory '(:relative
-                              #+SBCL "fasl.sbcl"
-                              #+CLISP "fasl.clisp"
-                              #+ABCL "fasl.abcl"
-                              #+CCL "fasl.ccl"))
-  "Pathname of fasl directory.")
+  ;; *Must* be independent of the current working directory, i.e.
+  ;; absolute.
+  (merge-pathnames
+   (make-pathname :directory '(:relative
+                               #+SBCL "fasl.sbcl"
+                               #+CLISP "fasl.clisp"
+                               #+ABCL "fasl.abcl"
+                               #+CCL "fasl.ccl"))
+   (truename *default-pathname-defaults*))
+  "Absolute pathname of fasl directory.")
 
 (defvar *verboseload nil
   "*verboseload = [Initially: nil] switch
@@ -3492,7 +3500,7 @@ A list of identifiers indicating system properties.")
 #+(or WIN32 WINDOWS) (pushnew 'WIN32 lispsystem*) ; SBCL, CCL
 #+CYGWIN (pushnew 'CYGWIN lispsystem*)            ; CLISP
 #+UNIX (pushnew 'UNIX lispsystem*)      ; appears together with CYGWIN
-#+OS-MACOSX (pushnew 'MACOS lispsystem*) ; CCL
+#+(or MACOS OS-MACOSX) (pushnew 'MACOS lispsystem*) ; CLISP, CCL
 
 #+SBCL
 (defun compilation (on)
