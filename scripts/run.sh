@@ -176,7 +176,7 @@ xWindows_NT)
     exit 0
   else
     host1=`echo $host | sed 's/aarch64/universal/'`
-    host1=`echo $host1 | set 's/x86_64/universal/'`
+    host1=`echo $host1 | sed 's/x86_64/universal/'`
     $maybe_echo host=$host host1=$host1
     if test -x $here/../cslbuild/$host1$version/csl/$ap
     then
