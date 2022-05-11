@@ -1,4 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % File:         PC:DUMPFASL.SL 
 % Title:        Code for showing some contents of a FASL file: symbols, relocation
 % Author:       Rainer Schöpf
@@ -30,6 +31,10 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -88,10 +93,11 @@
 
     % Read the bit table
     (setf bit-table-size (binaryread fid))
-    (printf "Fasl bittable has size %d (%x) wirds%n" bit-table-size bit-table-size)
+    (printf "Fasl bittable has size %d (%x) words%n" bit-table-size bit-table-size)
     (setq current-offset (plus2 current-offset bit-table-size))
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
-    (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
+    (printf "Loading bittable to address %d (%x)%n" (sys2int (bittable-get-address bit-table)) (sys2int (bittable-get-address bit-table)))
+    (binaryreadblock fid (bittable-get-address bit-table) bit-table-size)
 
     % Close the file
     (binaryclose fid)
@@ -114,7 +120,7 @@
 				addressingunitsperitem)))
     (for (from i 0 (wdifference code-au-size 1)) 
 	 (do 
-	  (let ((bit-table-entry (bittable (loc (words-fetch bit-table 0)) i))   %%% HACK!
+	  (let ((bit-table-entry (bittable (bittable-get-address bit-table) i))
 		(code-location    (wplus2 code-base i)))
 	    (case bit-table-entry
 	      ((reloc-word)
@@ -144,9 +150,8 @@
 	      ))))
 		    
 		     
-
-(compiletime (ds reloc-word-inf (x) (wshift (wshift x 34) -34)))
-(compiletime (ds reloc-word-tag (x) (wshift (wshift x 32) -62)))
+%(compiletime (ds reloc-word-inf (x) (wshift (wshift x 34) -34)))
+%(compiletime (ds reloc-word-tag (x) (wshift (wshift x 32) -62)))
 (compiletime (put 'get_a_halfword 'opencode '(
    (!*move (displacement (reg 1) 0) (reg eax)))))
 
