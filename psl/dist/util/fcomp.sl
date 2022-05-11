@@ -43,7 +43,12 @@
 % 02-Nov-94 (Herbert Melenk): moved gtfltn into inner progn
 % 17-Oct-94 (Herbert Melenk): Added control by inline declarations.
 % 23-Sep-94 (Herbert Melenk): Introduced vector for temporary FP numbers
-%  
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(floattmp* floatdecls* *fcomp))
 

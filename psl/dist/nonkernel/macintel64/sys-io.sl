@@ -7,7 +7,7 @@
 % Modified:     05-Oct-87 (Harold Carr)
 % Mode:         Lisp                                                       
 % Package:                                                                 
-% Status:       Experimental (Do Not Distribute)                           
+% Status:       Open Source: BSD License                           
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -70,6 +70,12 @@
 %    FileName - A Lisp string of the file name.                            
 % FileDescriptors in the Unix version are "FILE *" (pointers to C "standard
 % I/O" stream structs, as defined in /usr/include/stdio.h.)                
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load io-decls sys-macros))
 

@@ -5,7 +5,7 @@
 % Author:       Martin Griss and Eric Benson 
 % Created:      10 September 1981 
 % Modified:     22-Mar-84 14:43:18 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License 
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  
@@ -45,6 +45,10 @@
 %
 % 01-Dec-83 15:01:30 (Brian Beach)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

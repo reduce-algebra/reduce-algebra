@@ -7,7 +7,7 @@
 % Modified:     
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -41,6 +41,10 @@
 %  changed bread so that long numbers can be read with less bignum overhead 
 % 24-Jan-89 (Herbert Melenk)
 %  enlarged bigit length up to wordsize - 2
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

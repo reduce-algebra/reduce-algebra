@@ -5,6 +5,7 @@
 % Author:       Cris Perdue
 % Created:      April 5, 1983
 % Modified:     13-Jan-84 10:09:43 (Brian Beach)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -38,6 +39,10 @@
 %  Added standard header.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (de get-command-args ()
  (let ((ii 1))

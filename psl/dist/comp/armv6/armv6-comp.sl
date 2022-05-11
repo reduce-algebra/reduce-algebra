@@ -2,7 +2,6 @@
 %
 % File:           PVC:armv6-COMP.SL
 % Title:          Compiler patterns for VAX PSL, plus a few cmacro expanders
-% Status:         Experimental
 % Mode:           Lisp
 % Package:        Compiler
 % Status:         Open Source: BSD License

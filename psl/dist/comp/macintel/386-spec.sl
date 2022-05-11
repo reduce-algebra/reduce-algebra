@@ -4,7 +4,6 @@
 % Title:          Some special things for sun PSL compiler
 % Author:         Winfried Neun , ZIB Berlin
 % Created:        9 Feb 1989
-% Status:         Experimental
 % Mode:           Lisp
 % Package:        Compiler
 % Status:         Open Source: BSD License
@@ -30,6 +29,10 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

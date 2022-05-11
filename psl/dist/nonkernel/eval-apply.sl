@@ -61,6 +61,10 @@
 %   Translated from Rlisp to Lisp.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (compiletime
   (flag '(lambdaevalapply* lambdaapply* lambdaevalapply lambdaapply) 'internalfunction))

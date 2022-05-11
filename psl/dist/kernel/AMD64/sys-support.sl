@@ -41,6 +41,10 @@
 % 08-Sep-89 (Winfried Neun)
 %  Version for AMD64_ext
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (on fast-integers)
 (compiletime (put 'UndefinedFunction 'symbol 'UndefinedFunction))

@@ -38,6 +38,13 @@
 % operations such that they are accessible from compiled LISP top level.
 % They map the 2*30 bit operations needed by BIG to the 2*32 bit operations
 % of the processor by shifting etc.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 (fluid '(*second-value*))
  
 

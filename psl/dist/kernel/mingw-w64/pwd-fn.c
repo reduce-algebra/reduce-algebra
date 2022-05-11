@@ -35,6 +35,11 @@
  *
  * Wed Mar 13 15:17:12 1985,  Robert Virding
  *  Modified to use getwd(3). This might be more 4.2BSD specific.
+ ******************************************************************************
+ *
+ *  $Id$
+ *
+ ******************************************************************************
  */
 
 /* getwd(3) should be defined on all 4.2bsd or compatible Unices.  If

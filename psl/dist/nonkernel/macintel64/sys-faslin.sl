@@ -6,7 +6,7 @@
 % Author:         Eric Benson
 % Created:        25 April 1982
 % Modified:       4-Dec-84 15:05:42 (Vicki O'Day)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Kernel
 %
@@ -63,6 +63,10 @@
 %  fread, fwrite, fseek.
 % 2-Dec-83  16:00:00 (Brian Beach)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                          

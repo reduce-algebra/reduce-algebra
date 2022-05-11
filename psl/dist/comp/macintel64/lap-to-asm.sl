@@ -99,6 +99,10 @@
 %   Changed SEMIC* declaration from global to fluid.                      
 % <PSL.COMP>LAP-TO-ASM.RED.5, 30-Apr-82 14:47:52, Edit by BENSON           
 %   Removed EVAL and IGNORE processing                                     
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(semic* *comp *plap dfprint* charactersperword 
                  addressingunitsperitem addressingunitsperfunctioncell 

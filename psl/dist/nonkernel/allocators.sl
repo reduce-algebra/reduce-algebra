@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      27 August 1981 
 % Modified:     03-Jul-84 10:14:03 
-% Status:       Experimental 
+% Status:       Open Source: BSD License 
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  
@@ -73,6 +73,10 @@
 % Pre-GC trap, known-free-space fns                                        
 %  <PSL.KERNEL>ALLOCATORS.RED.4, 10-Jan-83 15:50:50, Edit by PERDUE        
 %  Added GtEVect                                                           
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

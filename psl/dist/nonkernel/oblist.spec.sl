@@ -6,7 +6,7 @@
 % Author:       Eric Benson 
 % Created:      27 August 1981 
 % Modified:     25-Sep-84 14:02:09 (Brian Beach)
-% Status:       Experimental 
+% Status:       Open Source: BSD License 
 % Mode:         Lisp 
 % Status:       Open Source: BSD License
 % Package:      Kernel 
@@ -68,6 +68,10 @@
 %  compile time load of HASH-DECLS.
 % 01-Dec-83 14:55:01 (Brian Beach)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

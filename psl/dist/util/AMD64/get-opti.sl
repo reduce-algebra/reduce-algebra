@@ -6,6 +6,7 @@
 % Created:      April 5, 1983
 % Modified:     05-Oct-87 (Harold Carr)
 % Package:	
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -42,6 +43,10 @@
 %  Added standard header.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (de get-command-args ()
   (for (from i 1 (size Unixargs*))	% Don't return the zeroeth /csp

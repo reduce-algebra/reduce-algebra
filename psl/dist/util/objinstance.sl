@@ -43,7 +43,12 @@
 % 28-Mar-84 15:39:37 (Mike Creech)
 %  Changed both references to IDAPPLY2 to new compiler IDAPPLY.
 %  This IDAPPLY mimics APPLY.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Other Files of Interest:
 %

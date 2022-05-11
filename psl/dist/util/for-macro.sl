@@ -58,6 +58,10 @@
 % Changed NULL tests to ATOM tests
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Fancy for loop.  Similar to MACLISP and clones' loop function, but with
 % LISPier "syntax" and slightly reduced functionality and concommitant hair.

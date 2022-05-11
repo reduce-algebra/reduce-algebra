@@ -5,7 +5,7 @@
 % Author:         Herbert Melenk, Konrad-Zuse_zentrum Berlin
 % Created:        07-Nov-89
 % Modified:                                 
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Kernel
 %
@@ -36,6 +36,10 @@
 % Revisions:
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % this version provides for a two heap model (copying GC)
 

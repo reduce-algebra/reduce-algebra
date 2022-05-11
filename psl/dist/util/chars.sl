@@ -63,6 +63,10 @@
 %  Fixed bug in CHAR-UPCASE and CHAR-DOWNCASE
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load useful clcomp))
 (compiletime (put 'Space 'CharConst 32))	; temporary patch

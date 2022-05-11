@@ -6,6 +6,7 @@
 % Created:      19 October 1981
 % Modified:     23-Oct-84 14:51:52 (Alan Snyder)
 % Package:
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -107,6 +108,11 @@
 %
 % 01-Dec-83 15:03:39 (Brian Beach)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(toploopread*    % reading function

@@ -5,6 +5,7 @@
 % Author:       Brian Beach, Hewlett-Packard CRC 
 % Created:      22-Feb-84 
 % Modified:     13-Nov-84 14:06:44 (Brian Beach) 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -45,6 +46,10 @@
 %  SEARCH-STRING-FOR-CHARACTER.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load f-strings))
 

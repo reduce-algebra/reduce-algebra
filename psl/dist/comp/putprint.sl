@@ -46,6 +46,10 @@
 %    Added standard header
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
 % These routines are replacements for current ones in LAP-TO-ASM.SL.
 % Their purpose is to produce a more compact xxx.SYM file, thereby avoiding

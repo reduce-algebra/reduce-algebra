@@ -94,6 +94,12 @@
 % Added check of Heap!-Warn!-Level after %Reclaim.
 %  <PSL.KERNEL>COPYING-GC.RED.6,  4-Oct-82 17:56:49, Edit by BENSON
 %  Added GCTime!*
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (on fast-integers)
 

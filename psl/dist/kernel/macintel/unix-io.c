@@ -9,7 +9,7 @@
 % Modified:     17-Jul-84 22:49:12 (RAM)
 % Mode:         Text
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % Copyright (c) 1984 Hewlett-Packard Company, all rights reserved.
 % Copyright (c) 1984 University of Utah
@@ -36,6 +36,10 @@
 %  Added unixcleario.  It is called by syscleario.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
 #include <stdio.h>

@@ -5,7 +5,7 @@
 % Author:       Leigh Stoller
 % Created:      22-Dec-86
 % Package:      
-% RCS $Header: $
+% Status:         Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
@@ -38,7 +38,12 @@
 %
 % 22-Dec-86 (Leigh Stoller)
 %  Copied from vax nonkernel directory.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load sys-macros))
 (on fast-integers)

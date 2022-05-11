@@ -109,6 +109,12 @@
 %  Added -TRSTCOND to handle COND correctly
 %  <PSL.UTIL>DEBUG.RED,  12-Dec-82 15:59:45, Edit by GRISS
 %    Fixed printx to handle 0 SIZE (i.e. one-element) vectors
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %   The debug package works on the principle of embedding the
 % definition (or code-pointer) of the function whose behavior is

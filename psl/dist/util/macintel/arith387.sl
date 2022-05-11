@@ -40,6 +40,12 @@
 % moved to masked coprocessor mode: exceptions are tested by investigating
 % the result exponent (IEEE convention).
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % the functions are mapped to the corresponding Cmacros,
 % which then are expanded to coprocessor instructions
 %
@@ -233,7 +239,7 @@
 % Modified:     Wed Jan  7 08:16:45 1987 (Russ Fish)
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Notes:        
 % Compiletime:  
 % Runtime:      

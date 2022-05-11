@@ -69,6 +69,10 @@
 %  Changed W to !%!%!%W in the EQCAR to avoid subst W into EQCAR form
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (put '!*JUMPNOTEQ      'NEGJMP '!*JUMPEQ)
 (put '!*JUMPWLESSP     'NEGJMP '!*JUMPWGEQ)

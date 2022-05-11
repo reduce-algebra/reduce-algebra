@@ -78,6 +78,10 @@
 %    Also started commenting the functions defined here.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % These are only the Common Lisp definitions that do not conflict with
 % Standard Lisp or other PSL functions.  Currently growing on a daily basis

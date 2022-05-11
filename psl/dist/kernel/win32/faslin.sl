@@ -58,6 +58,10 @@
 %   Translated from Rlisp to Lisp.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load fasl-decls))
 
@@ -110,7 +114,7 @@
     % Read the bit table
     (setf bit-table-size (binaryread fid))
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
-    (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
+    (binaryreadblock fid (bittable-get-address bit-table) bit-table-size)
 
     % Close the file
     (binaryclose fid)
@@ -140,7 +144,7 @@
 				addressingunitsperitem)))
     (for (from i 0 (wdifference code-au-size 1)) 
 	 (do 
-	  (let ((bit-table-entry  (bittable (loc (words-fetch bit-table 0)) i))   %%% HACK!
+	  (let ((bit-table-entry  (bittable (bittable-get-address bit-table) i))
 		(code-location    (wplus2 code-base i)))
 	    (case bit-table-entry
 	      ((reloc-word)

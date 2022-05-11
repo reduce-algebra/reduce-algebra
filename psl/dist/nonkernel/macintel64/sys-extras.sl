@@ -6,6 +6,7 @@
 % Created:        9 October 1981                                           
 % Modified:       2-Jan-85 (Vicki O'Day)
 % Package:        Kernel                                                   
+% Status:         Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -98,6 +99,12 @@
 %  Added user-homedir-string and getenv to end of file                     
 %  $pi/system-extras.red, Aug 11 07:19:06 1982, Edit by fish               
 %  Added flushStdOutputBuffer for Emode.                                   
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load sys-consts sys-macros))
 

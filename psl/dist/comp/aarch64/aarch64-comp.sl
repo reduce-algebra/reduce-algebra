@@ -2,7 +2,6 @@
 %
 % File:           PVC:aarch64-COMP.SL
 % Title:          Compiler patterns for Arm v8, plus a few cmacro expanders
-% Status:         Experimental
 % Mode:           Lisp
 % Package:        Compiler
 % Status:         Open Source: BSD License
@@ -30,7 +29,6 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

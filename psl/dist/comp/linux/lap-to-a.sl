@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        13 August 1981
 % Modified:       15-Jan-85 11:00 (Brian Beach)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Compiler
 %
@@ -44,6 +44,12 @@
 %  Wrapped printexpressionform* in a copy so that it ends up in the heap.
 %  Cannot do destructive operations into bps if we want to move the
 %  text/data boundry in unexec.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(semic* *comp *plap dfprint* charactersperword 
 		 addressingunitsperitem addressingunitsperfunctioncell 

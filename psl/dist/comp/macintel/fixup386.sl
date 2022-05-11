@@ -46,6 +46,10 @@
 %  D-register model version. Added header.                                 
 %                                                                          
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                                                            
 %%%%%%%
 %%%%%% Fuer Cross LAP geklaut von /keller/cons/psl/dist/nonkernel/sun/fixup.sl

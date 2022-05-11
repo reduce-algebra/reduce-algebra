@@ -5,7 +5,6 @@
 % Author:         Eric Benson
 % Created:        13 August 1981
 % Modified:       15-Jan-85 11:00 (Brian Beach)
-% Status:         Experimental
 % Mode:           Lisp
 % Package:        Compiler
 % Status:         Open Source: BSD License
@@ -101,6 +100,12 @@
 %   Changed SEMIC* declaration from global to fluid.                      
 % <PSL.COMP>LAP-TO-ASM.RED.5, 30-Apr-82 14:47:52, Edit by BENSON           
 %   Removed EVAL and IGNORE processing                                     
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(semic* *comp *plap dfprint* charactersperword 
                  addressingunitsperitem addressingunitsperfunctioncell 

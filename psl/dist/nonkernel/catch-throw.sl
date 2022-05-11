@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      12 October 1982 
 % Modified:     22-Mar-84 09:39:42 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License 
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  
@@ -52,6 +52,10 @@
 %   Translated from Rlisp to Lisp.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load if-system))
 

@@ -51,8 +51,12 @@
 %    Hipo'ed up hasher (&get-method-hash-address).
 % 11-Dec-83 11:21:52 (Mike Creech)
 %  
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % NOTE: 1) This is an implementation dependent module!
 %          It will only run compiled and must be updated when id's are
 %          stored differently in the language.  See the comments for 
