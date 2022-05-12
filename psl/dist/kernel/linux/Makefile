@@ -48,9 +48,13 @@
 #  to feed to the cross-compiler to produce main.s .
 #
 ##############################################################################
- 
+#
+#  $Id$
+# 
+###############################################################################
+
 ###PROOT   = /silo/cons/verkaufpsl
- 
+
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

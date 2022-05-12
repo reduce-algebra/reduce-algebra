@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        20 February 1982
 % Modified:       27-Feb-84 17:04:06 (RAM)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Kernel
 %
@@ -44,6 +44,10 @@
 %  Changed File entry in header.
 % 02-Dec-83 10:40:13 (Jim Ambras)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                          

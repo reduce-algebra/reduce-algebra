@@ -54,6 +54,10 @@
 %  Removed FASL magic number.  It now is in SYS-CONSTS.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %
 % These constants are the tags of the relocation fields. They tell
@@ -99,6 +103,8 @@
 
 (define-constant bittable-entries-per-word 16)
 
+(ds bittable-get-address (bit-table) (loc (words-fetch bit-table 0)))   %%% HACK!
+
 (ds reloc-right-half-tag (x) (field x 0 2))
 (ds reloc-right-half-inf (x) (field x 2 14))
 
@@ -108,5 +114,3 @@
 (ds reloc-word-tag (x) (field x 0 2))
 (ds reloc-word-inf (x) (field x 2 30))
 
-  
-

@@ -51,6 +51,10 @@
 %   Fixed typo, ((null (cdr result) nil)) ==> ((null (cdr result)) nil)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load backquote read-macros defmacro cond-macros
 		   bind-macros set-macros))

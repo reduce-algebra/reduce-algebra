@@ -40,7 +40,12 @@
 %
 % 08-Dec-2004 (Winfried Neun)
 %  Version for AMD 64
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (on fast-integers)
 (compiletime (put 'UndefinedFunction 'symbol 'UndefinedFunction))

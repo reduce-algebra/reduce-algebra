@@ -45,6 +45,12 @@
 %
 % This module can be loaded to a PSL arithmetic which is
 % compiled avoiding the coprocessor instructions.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (flag '(ftestresult) 'internalfunction))
 
@@ -233,7 +239,7 @@
 % Modified:     Wed Jan  7 08:16:45 1987 (Russ Fish)
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Notes:        
 % Compiletime:  
 % Runtime:      

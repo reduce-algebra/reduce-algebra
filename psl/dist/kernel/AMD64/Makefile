@@ -1,12 +1,12 @@
 ############################################################################
 #
-# File:		 PXK:Makefile
+# File:		PXK:Makefile
 # Description:  Makefile for bpsl (microkernel).
-# Author:	   Harold Carr and Leigh Stoller.
-# Created:	  29-Sep-86
+# Author:	Harold Carr and Leigh Stoller.
+# Created:	29-Sep-86
 # Modified:	06-Oct-87 (Harold Carr)
-# Status:        Open Source: BSD License
-# Mode:		 Text
+# Status:       Open Source: BSD License
+# Mode:		Text
 # Package:
 #
 # (c) Copyright 1982, University of Utah
@@ -57,9 +57,13 @@
 #  to feed to the cross-compiler to produce main.s .
 #
 ##############################################################################
- 
+#
+#  $Id$
+# 
+###############################################################################
+
 ## PROOT   = /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
- 
+
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

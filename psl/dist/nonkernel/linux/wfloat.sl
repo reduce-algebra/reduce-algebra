@@ -44,6 +44,10 @@
 %  Removed definition of writefloat. It has been returned to write-float.sl.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(**neg-zero** **neg-one** fp-except-mode*
          ieee-positive-infinity ieee-negative-infinity))

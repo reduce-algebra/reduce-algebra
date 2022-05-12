@@ -35,7 +35,6 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -48,6 +47,11 @@
 %  <PSL.COMP>BIG-FASLEND.RED.4, 10-Jun-82 10:39:32, Edit by GRISS          
 %  Added InitCodeMax!* for testing                                         
 %                                                                          
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 (de compileuncompiledexpressions ()
   (errorprintf "%n*** Init code length is %w%n" 
                (length (car uncompiledexpressions!*)))

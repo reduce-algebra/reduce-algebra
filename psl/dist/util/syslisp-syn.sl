@@ -44,6 +44,10 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 %  <PSL.COMP>SYSLISP-SYNTAX.RED.2, 30-Mar-83 11:05:36, Edit by KENDZIERSKI
 %  Included the text from syslisp-syntax.build at the beginning of this file.
 %  The file names w/extensions were too large for the VAX to deal with.

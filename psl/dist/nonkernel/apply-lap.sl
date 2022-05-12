@@ -8,7 +8,7 @@
 % Mode:         Lisp 
 % Status:       Open Source: BSD License
 % Package:      
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License 
 % Compiletime:  PL:SYS-MACROS.B 
 % Runtime:      
 %
@@ -48,6 +48,10 @@
 %  Un-rlisp'ed Sam's D-register model version.  This file plus PHP:LAP.SL,
 %  replaces php:apply-lap.sl.  For other machines besides HP9836 PWS, this
 %  file would need an appropriate machine-dependent section (like php:lap.sl).
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

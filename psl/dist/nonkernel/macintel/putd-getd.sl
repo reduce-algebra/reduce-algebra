@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      18 August 1981 
 % Modified:     31-May-84 10:51:14 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License 
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  
@@ -55,6 +55,10 @@
 %  Reformatted getd to be more readable (and changed u => func).
 % 01-Dec-83 14:59:44 (Brian Beach)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

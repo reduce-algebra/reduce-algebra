@@ -55,7 +55,12 @@
 %  Removed assembler alias statements because they are not portable. Instead,
 %  a sed script will be used to convert the _variables of C to VARIABLES of
 %  PSL.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
 long unexec();

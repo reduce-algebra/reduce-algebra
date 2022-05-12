@@ -46,6 +46,10 @@
 %  Removed FASL magic number.  It now is in SYS-CONSTS.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %
 % These constants are the tags of the relocation fields. They tell
@@ -89,6 +93,8 @@
 (ds makeextraargument (u)
   (wdifference u (wplus2 first-extraargument-number (wplus2 maxrealregs 1)))
   )
+
+(ds bittable-get-address (bit-table) (loc (words-fetch bit-table 0)))
 
 (define-constant bittable-entries-per-word 32)
 

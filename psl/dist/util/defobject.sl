@@ -43,6 +43,10 @@
 % Wed Oct 22 1986 (mueller)
 %  Converted to lisp syntax.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (bothtimes (load objects))
 % Make sure codeTemplate gets loaded, even in a non-Rlisp environment.

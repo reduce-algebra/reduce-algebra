@@ -57,9 +57,13 @@
 #  to feed to the cross-compiler to produce main.s .
 #
 ##############################################################################
- 
+#
+#  $Id$
+# 
+###############################################################################
+
 ## PROOT   = /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
- 
+
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

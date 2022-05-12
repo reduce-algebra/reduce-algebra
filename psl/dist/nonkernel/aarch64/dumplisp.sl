@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PXNK:DUMPLISP.SL
-% Description:  Dump running lisp to an a.out format file.
+% Description:  Dump running lisp to an image format file.
 % Author:       RAM, HP/FSD
 % Created:      27-Feb-84
 % Modified:     14-Jan-85 09:10:20 (Vicki O'Day)
@@ -62,6 +62,10 @@
 %  bugs when these are used.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (fluid '(symbolfilename* gcknt* gctime* ))
  

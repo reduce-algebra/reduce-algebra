@@ -23,6 +23,7 @@
 
 % for kernel: halfword and byte instructions generated in MIT syntax
 
+% $Id$
 
 (deflist '(
          (Byte    ( (movb (indexed (reg 2) (displacement (reg 1) 0)) (reg AL))

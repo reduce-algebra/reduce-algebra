@@ -20,6 +20,14 @@ PURPOSE.
 */
 
 /*
+******************************************************************************
+*
+*  $Id$
+*
+******************************************************************************
+*/
+
+/*
   This is the FORMLINK interface which can be used for embedding FORM 
   in other applications, see http://www.arxiv.org/abs/cs.SC/0604052 
   Appendix D. There are two public functions available, the low-level

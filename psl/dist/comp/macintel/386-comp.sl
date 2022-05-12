@@ -5,7 +5,6 @@
 % Author:         Eric Benson
 % Created:        11 January 1982                                              
 % Modified:       5 June 1984 (Vicki O'Day)
-% Status:         Experimental
 % Mode:           Lisp
 % Package:        Compiler
 % Status:         Open Source: BSD License
@@ -60,6 +59,10 @@
 %   Added patterns 'CARCDRPAT and 'MEMORYPAT;  modified MODMEMPAT
 % 06-Dec-83 10:00 (Brian Beach)
 %   Translated from Rlisp to Lisp.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

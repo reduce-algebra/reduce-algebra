@@ -32,6 +32,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % WN: This is a slight modification of the 'general Linux' AMD64 version.
 % Main reason is that the 64 bit Macintel uses data (and code) addresses
 % beyond 32 bit. Therefore an absolute address cannot stored in 32 bit

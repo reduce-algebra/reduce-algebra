@@ -5,7 +5,7 @@
 % Author:         Eric Benson, Steve Lowder                                
 % Created:        23 August 1981                                           
 % Modified:       11-May-84 07:39:28 (Brian Beach)
-% Status:         Experimental                                             
+% Status:         Open Source: BSD License                                             
 % Mode:           Lisp                                                     
 % Package:        Kernel                                                   
 %
@@ -54,6 +54,10 @@
 % 1-Jul-83 Steve Lowder                                                    
 %  Changed expressions (displacement (reg 1) 0) to (indirect (reg 1)) to   
 %  improve code generation.                                                
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                                                            
 %                                                                          

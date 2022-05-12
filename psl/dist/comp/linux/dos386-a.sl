@@ -7,6 +7,8 @@
 % Modified:
 % Mode:         Lisp
 % Package:      
+% Status:       Open Source: BSD License
+%
 % (c) Copyright 1982, University of Utah
 %
 % Redistribution and use in source and binary forms, with or without
@@ -36,6 +38,10 @@
 % Revisions:
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load if-system))
 

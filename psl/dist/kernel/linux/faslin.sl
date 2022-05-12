@@ -11,6 +11,9 @@
 % Compiletime:  PL:FASL-DECLS.B 
 % Runtime:      
 %
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %

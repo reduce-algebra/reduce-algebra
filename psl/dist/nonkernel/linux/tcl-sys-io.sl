@@ -7,6 +7,7 @@
 % Modified:     05-Oct-87 (Harold Carr)
 % Mode:         Lisp                                                       
 % Package:                                                                 
+% Status:         Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -33,6 +34,10 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (compiletime (load io-decls sys-macros))
 

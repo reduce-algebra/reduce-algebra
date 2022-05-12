@@ -53,7 +53,12 @@
 *  state to echooff and echoon, which are contained in echo.c
 *
 ******************************************************************************
+*
+*  $Id$
+*
+******************************************************************************
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

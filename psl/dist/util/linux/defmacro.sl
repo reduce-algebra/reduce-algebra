@@ -5,7 +5,7 @@
 % Author:       Don Morrison, Hewlett-Packard CRC 
 % Created:      Wednesday, 12 May 1982 
 % Modified:     7 May 1984 1100-PDT (Nancy Kendzierski) 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Utilities 
 % Compiletime:  
@@ -53,6 +53,10 @@
 %   "(put '!%displaced-macro 'compfn #'&comprogn)".  SETF isn't defined in the
 %   module USEFUL until after defmacro.sl is processed -- setf is defined
 %   in set-macros.sl, using defmacro, which is defined in this file!
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

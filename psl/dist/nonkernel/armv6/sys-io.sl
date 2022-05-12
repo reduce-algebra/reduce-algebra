@@ -70,6 +70,12 @@
 %    FileName - A Lisp string of the file name.                            
 % FileDescriptors in the Unix version are "FILE *" (pointers to C "standard
 % I/O" stream structs, as defined in /usr/include/stdio.h.)                
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load io-decls sys-macros))
 

@@ -7,7 +7,7 @@
 % Modified:     05-Oct-87 (Harold Carr)
 % Mode:         Lisp                                                       
 % Package:                                                                 
-% Status:       Experimental (Do Not Distribute)                           
+% Status:       Open Source: BSD License                           
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -60,6 +60,11 @@
 %  Force line buffering on StdOut and StdErr in SysClearIO even if file output.
 %                                                                          
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Each individual system must have the following routines defined.         
 % SysClearIo, SysOpenRead, SysOpenWrite, SysReadRec, SysWriteRec, SysClose,
 % SysMaxBuffer                                                             

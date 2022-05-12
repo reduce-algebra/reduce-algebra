@@ -40,6 +40,12 @@
 % moved to masked coprocessor mode: exceptions are tested by investigating
 % the result exponent (IEEE convention).
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % the functions are mapped to the corresponding Cmacros,
 % which then are expanded to coprocessor instructions
 %

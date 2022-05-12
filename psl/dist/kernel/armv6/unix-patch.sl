@@ -23,6 +23,7 @@
 
 % for kernel: halfword and byte instructions generated in MIT syntax
 
+% $Id$
 
 (deflist '(
          (Byte    ((*wor  (reg 1) 16#8000000)

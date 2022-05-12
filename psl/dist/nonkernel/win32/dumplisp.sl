@@ -40,6 +40,12 @@
 % Revisions:
 % 31-Aug-88 (Julian Padget)
 %  Changed second "fluid" call to "global" since there was no need of former.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (fluid '(symbolfilename* gcknt* gctime* ))
 

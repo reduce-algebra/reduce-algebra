@@ -4,7 +4,6 @@
 % Description:    various useful access functions
 % Author:         Herbert Melenk and Winfried Neun, ZIB Berlin
 % Created:        5 February 1989 (SUN4 version)
-% Status:         Experimental (Do Not Distribute)
 % Mode:           Lisp
 % Package:        Utilities
 % Status:       Open Source: BSD License
@@ -30,6 +29,10 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

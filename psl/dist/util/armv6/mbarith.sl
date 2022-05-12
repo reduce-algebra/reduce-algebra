@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         arithmetic.sl
-% Description:  Generic arithmetic routines for (Sun386) PSL
+% File:         mbarith.sl
+% Description:  Generic arithmetic routines for (armv6) PSL
 % Author:       Winfried Neun
 % Created:      9 March 1989 
 % Mode:         Lisp
@@ -41,6 +41,10 @@
 % 15 May 1989, Winfried Neun
 %  Some 'sanitary' for largest negative integer
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % New arithmetic: 
 %

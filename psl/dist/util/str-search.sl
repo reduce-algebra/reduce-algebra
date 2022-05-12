@@ -5,7 +5,6 @@
 % Author:       Cris Perdue 
 % Created:      23-Nov-82 
 % Modified:     12 Apr 1984 1423-PST (Nancy Kendzierski) 
-% Status:       Experimental (Do Not Distribute) 
 % Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
@@ -62,6 +61,12 @@
 % 02-Jun-83 18:11:27, Cris Perdue
 %   Added string-search-equal, string-search-from-equal, substring-=,
 %   and substring-equal.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% General-purpose searches for substring.  Case is important.
 %%% If the target is found, the index in the domain of the
