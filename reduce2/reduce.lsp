@@ -4418,6 +4418,10 @@ er  (errpri2 (car u) 'hold)
 (de matp (u) (nsp u 'matrix))
 
 (put 'mat 'matfn 'matfn)
+% The Code assumes that after the call to put above the call
+%   (flagp 'mat 'matfn)        
+%  returns non-nil which is not the case in PSL. PSL which keeps flags
+%  separate from properties.  
 (flag '(mat) 'matfn)
 
 (put 'tp 'matfn 'tp)
