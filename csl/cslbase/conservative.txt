@@ -217,8 +217,12 @@ the main steps on the GC
     which material will be copied.
 (3) Scan the C++ stack and process each value on it as an ambiguous potential
     pointer. End up with pin information set on the first word of every item
-    in the heap that must not be relocated.
-(4) For all items identified as pinned evacuate their contents.
+    in the heap that must not be relocated. Build list (in new space) of
+    all the currently pinned items.
+(4) For all items identified as pinned evacuate their contents, using the
+    list of them to know where they are. Note that data that was pinned last
+    time but is not pinned now may still ve referenced in unambiguous ways
+    so such pages may not be recycled yet.
 (5) Evacuate all unambiguous list-bases.
 (6) Now we have a loop that evacuates copied data. There are three actions:
  (6.1) If there is a full page that metarial has been copied into then
@@ -238,7 +242,9 @@ the main steps on the GC
 (7) the old half-space should now be available for re-use. Arrange variously
     as EMPTY, CONSPIN or VECPIN and set up ready for re-use. Ensure that
     everything is ready for the next cycle with the current pin bitmaps moved
-    to be the "historical" ones.
+    to be the "historical" ones. Note especially that at this stage some
+    pages that used to comntain pinned data but where it is no longer pinned
+    will have had that data evacuated and so those pages end up empty.
 
 Now let me talk about a higher level. Suppose the total available memory is
 N Pages. Then I will grab pages for the mutator until I have 2N/3 in use.

@@ -96,13 +96,17 @@ void gcTestCode()
             allocated = true;
             break;
         case 4:
+#if 0
 // If I call reclaim before I have allocated ANYTHING at all it will end
 // up in a mess. This is such a pathological situation that I just arrange
 // to avoid it.
+// Well this was an issue with my old code - I am not yet certain that it
+// is with the new!
             if (!allocated)
             {   std::cout << "&&&reclaim too early!\n";
                 break;
             }
+#endif
             std::cout << "&&&reclaim\n";
             Lgc(nil, fixnum_of_int(Crand()));
             std::cout << "&&&end reclaim\n";
@@ -184,7 +188,11 @@ void gcTestCode()
     term_close();
     fflush(stdout);
     fflush(stderr);
-    std::exit(0);  // I want to use quick_exit byt on the Mac that is not there
+#ifdef HAVE_QUICK_EXIT
+    std::quick_exit(0);
+#else // HAVE_QUICK_EXIT
+    std::exit(0);
+#endif // HAVE_QUICK_EXIT
 }
 
 // end of testcode.cpp

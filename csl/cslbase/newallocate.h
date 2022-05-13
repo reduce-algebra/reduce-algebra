@@ -53,9 +53,7 @@ enum PageType
     consPinPageType,
     vecPinPageType,
     consFullPageType,
-    vecFullPageType,
-    consCurrentType,
-    vecCurrentType
+    vecFullPageType
 };
 
 class Page;
@@ -63,17 +61,40 @@ class Page;
 extern Page* emptyPages;
 extern Page* consPinPages;
 extern Page* vecPinPages;
+extern Page* oldConsPinPages;
+extern Page* oldVecPinPages;
 extern Page* consFullPages;
 extern Page* vecFullPages;
+extern Page* consOldPages;
+extern Page* vecOldPages;
 extern Page* consCurrent;
 extern Page* vecCurrent;
 extern Page* borrowPages;
 extern Page* borrowCurrent;
 extern Page* potentiallyPinned;
+extern Page* pinnedPages;
+
+extern Page* emptyPagesTail;
+extern Page* consPinPagesTail;
+extern Page* vecPinPagesTail;
+extern Page* consFullPagesTail;
+extern Page* vecFullPagesTail;
+extern Page* borrowPagesTail;
+
+extern size_t emptyPagesCount;
+extern size_t consPinPagesCount;
+extern size_t vecPinPagesCount;
+extern size_t consFullPagesCount;
+extern size_t vecFullPagesCount;
+extern size_t borrowPagesCount;
+
 
 class alignas(pageSize) Page
 {
 public:
+// Define two structs used when setting out the rest of the
+// layout. In many respects the most important thing about these is
+// the alignment that they impose.
     struct alignas(2*sizeof(LispObject)) ConsCell
     {   LispObject car;
         LispObject cdr;
@@ -83,76 +104,105 @@ public:
     };
     union
     {
+// The sole purpose of the forceSize[] array is to ensure that the
+// Page class ends up the size I want it to. The other entries in the
+// union end up with arrays that are declared as having size 1 but which
+// are in fact intended to span all the way up to pageSize
+        char forceSize[pageSize];
         struct
-        {   PageType type;
+        {
+// There are some fields that every Page will have...
+            PageType type;
             Page* chain;
-        };
-        struct
-        {   PageType consType;
-            Page* consChain;
-            uintptr_t consDataEnd; // fringe address in a full Page
-            uint64_t previousConsPins[pageSize/
-                                      (2*sizeof(LispObject))/
-                                      (8*sizeof(uint64_t))];
-            uint64_t currentConsPins[pageSize/
-                                     (2*sizeof(LispObject))/
-                                     (8*sizeof(uint64_t))];
-            ConsCell consData[(pageSize -
-                               sizeof(PageType) -
-                               sizeof(Page*) -
-                               sizeof(previousConsPins) -
-                               sizeof(currentConsPins)) / sizeof(ConsCell)];
-        };
-        struct
-        {   PageType vecType;
-            Page* vecChain;
-            Page* potentiallyPinnedPage;
-            uintptr_t vecDataEnd; // fringe address in a full Page
+            Page* oldPinnedPages;
+            Page* pinnedPages;
+            LispObject pinnedObjects;
+            uintptr_t dataEnd;
+// Now based on the "type" field I will have either a CONS page or
+// a VEC page, and the union here defines how each is to be laid out. Note
+// that the arrays consData[] and chunks[] are in fact expected to run
+// out up to pageSize rather than being of length 1 as declared here...
+// I can not see a tidy C++ way to make the length of each array what I
+// want. Well I can do it using something like
+//   consData[(pagesize - sizeof(PageType) - sizeof(Page*) - ...)/
+//            sizeof(ConsCell)]
+// but that becomes hideous to maintain and delicate as regards alignment.
+// I might clean it up a bit by embedding the whole header in a further
+// struct so I could use the size of that in my arithmetic, but it still
+// feels uncomfortable!
+            union
+            {   struct
+                {   uint64_t previousConsPins[pageSize/
+                                              (2*sizeof(LispObject))/
+                                              (8*sizeof(uint64_t))];
+                    uint64_t currentConsPins[pageSize/
+                                             (2*sizeof(LispObject))/
+                                             (8*sizeof(uint64_t))];
+                    ConsCell consData[1];
+                };
+                struct
+                {   bool potentiallyPinnedFlag;
+                    Page* potentiallyPinnedChain;
 // I make chunkStatus an array of uint8_t values so that I understand
 // its layout very clearly. The values stored will be:
 //    0x00        first (or only) chunk in a Chunk. Or unused chunk.
 //    0x01-0x7f   continuation chunks, where the count saturates at 07f.
 //    0x80        first or only chunk in a pinned Chunk.
 //    0x81-0xff   continuations of pinned Chunks.
-            uint8_t chunkStatus[pageSize/chunkSize];
-            uint64_t potentiallyPinnedChunks[pageSize/
-                                             chunkSize/(8*sizeof(uint64_t))];
-            uint64_t previousVecPins[pageSize/8/(8*sizeof(uint64_t))];
-            uint64_t currentVecPins[pageSize/8/(8*sizeof(uint64_t))];
-            Chunk chunks[(pageSize -
-                          sizeof(PageType) -
-                          sizeof(Page*) -
-                          sizeof(chunkStatus) -
-                          sizeof(previousVecPins) -
-                          sizeof(currentVecPins)) / sizeof(Chunk)];
+                    uint8_t  chunkStatus[pageSize/chunkSize];
+                    uint64_t potentiallyPinnedChunks[pageSize/
+                                                     chunkSize/(8*sizeof(uint64_t))];
+                    uint64_t previousVecPins[pageSize/8/(8*sizeof(uint64_t))];
+                    uint64_t currentVecPins[pageSize/8/(8*sizeof(uint64_t))];
+                    Chunk chunks[1];
+                };
+            };
         };
     };
 };
+
+inline bool isPotentiallyPinned(Page* p, uintptr_t a)
+{   size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+    return ((p->potentiallyPinnedChunks[chunkNo/64] >>
+             (chunkNo & 63)) & 1) != 0;
+}
+
+inline void setPotentiallyPinned(Page* p, uintptr_t a)
+{   size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+    p->potentiallyPinnedChunks[chunkNo/84] |=
+        static_cast<uint64_t>(1) << (chunkNo & 63);
+}
+
+inline bool isPotentiallyPinnedChunk(Page* p, size_t chunkNo)
+{   return ((p->potentiallyPinnedChunks[chunkNo/64] >>
+             (chunkNo & 63)) & 1) != 0;
+}
+
+inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
+{   p->potentiallyPinnedChunks[chunkNo/84] |=
+        static_cast<uint64_t>(1) << (chunkNo & 63);
+}
 
 // Here p must be a CONS page and a a pointer within it.
 
 inline bool consIsPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    int bit = o & 63;
-    return (p->currentConsPins[o/64] >> bit) != 0;
+    return (p->currentConsPins[o/64] >> (o&63)) != 0;
 }
 
 inline bool consIsPreviousPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    int bit = o & 63;
-    return (p->previousConsPins[o/64] >> bit) != 0;
+    return (p->previousConsPins[o/64] >> (o&63)) != 0;
 }
 
 inline void consSetPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    int bit = o & 63;
-    p->currentConsPins[o/64] |= static_cast<uint64_t>(1) << bit;
+    p->currentConsPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
 }
 
 inline void consClearPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    int bit = o & 63;
-    p->currentConsPins[o/64] &= ~(static_cast<uint64_t>(1) << bit);
+    p->currentConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
 }
 
 // And versions for VEC pages, which pin with granularity a single
@@ -162,26 +212,22 @@ inline void consClearPinned(uintptr_t a, Page* p)
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    int bit = o & 63;
-    return (p->currentVecPins[o/64] >> bit) != 0;
+    return (p->currentVecPins[o/64] >> (o&63)) != 0;
 }
 
 inline bool vecIsPreviousPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    int bit = o & 63;
-    return (p->previousVecPins[o/64] >> bit) != 0;
+    return (p->previousVecPins[o/64] >> (o&63)) != 0;
 }
 
 inline void vecSetPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    int bit = o & 63;
-    p->currentVecPins[o/64] |= static_cast<uint64_t>(1) << bit;
+    p->currentVecPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
 }
 
 inline void vecClearPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    int bit = o & 63;
-    p->currentVecPins[o/64] &= ~(static_cast<uint64_t>(1) << bit);
+    p->currentVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
 }
 
 
@@ -191,12 +237,26 @@ inline void vecClearPinned(uintptr_t a, Page* p)
 extern uintptr_t consFringe, consLimit, consEnd;
 
 inline void initConsPage(Page* p)
-{   p->type = consCurrentType;
+{   p->type = consFullPageType;
+    p->pinnedObjects = TAG_FIXNUM;
     std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
     std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
     consFringe = reinterpret_cast<uintptr_t>(&p->consData);
     consLimit = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     consCurrent = p;
+}
+
+inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
+{   p->chain = nullptr;
+    if (count == 0)
+    {   list = tail = p;
+        count = 1;
+    }
+    else
+    {   tail->chain = p;
+        tail = p;
+        count++;
+    }
 }
 
 extern uintptr_t consEndOfPage();
@@ -261,8 +321,9 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 
 inline void initVecPage(Page* p)
-{   p->type = vecCurrentType;
-    p->potentiallyPinnedPage = nullptr;
+{   p->type = vecFullPageType;
+    p->potentiallyPinnedFlag = false;
+    p->potentiallyPinnedChain = nullptr;
     std::memset(p->previousVecPins, 0, sizeof(p->previousVecPins));
     std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
     std::memset(p->chunkStatus, 0, sizeof(p->chunkStatus));
@@ -288,6 +349,11 @@ inline uintptr_t harderGCGetNBytes(size_t n)
     {   vecFringe += chunkSize;
         chunkNo++;
     }
+#pragma message "improper treatment of vectors over 16KB"
+// here I need code akin to that in harderGetNBytes that sets
+// sequence numbers into chunkStatus. Well what I actually do at
+// is I waste all the space in a Page when a request will not fit in
+// easily. I think this may be valid but just wasteful.
     return vecGCEndOfPage(n);
 }
 
@@ -463,6 +529,8 @@ inline uintptr_t borrowNBytes(size_t n)
 inline void poll()
 {
 }
+
+extern Page* grabFreshPage();
 
 // Now for higher level code that performs Lisp-specific allocation.
 
@@ -717,25 +785,32 @@ inline const char* Addr(uintptr_t p)
     }
     int hs = findHeapSegment(p);
     if (hs != -1)
-    {   uintptr_t o = p - reinterpret_cast<uintptr_t>(heapSegment[hs]);
+    {   uintptr_t segBase = reinterpret_cast<uintptr_t>(heapSegment[hs]);
+        uintptr_t o = p - segBase;
         uintptr_t pNum = o/pageSize;
+        Page* pp = reinterpret_cast<Page*>(segBase + pNum*pageSize); 
         uintptr_t pOff = o%pageSize;
-#ifdef REVIEWED
-        if (pOff >= offsetof(Page, data))
-        {   pOff -= offsetof(Page, data);
+        if ((pp->type==consPinPageType || pp->type==consFullPageType) &&
+            pOff >= offsetof(Page, consData))
+        {   pOff -= offsetof(Page, consData);
             if (hs == 0) std::snprintf(r, 40,
                 "#%" PRIxPTR ":%" PRIxPTR, pNum, pOff);
             else std::snprintf(r, 40,
                 "#[%d]: %" PRIxPTR ":%" PRIxPTR, hs, pNum, pOff);
             return r;
         }
-        else
-#endif // REVIEWED
-            if (pOff == 0)
-        {   if (hs == 0) std::snprintf(r, 40,
-                "#%" PRIxPTR ":", pNum);
+        else if ((pp->type==vecPinPageType || pp->type==vecFullPageType) &&
+                 pOff >= offsetof(Page, chunks))
+        {   pOff -= offsetof(Page, chunks);
+            if (hs == 0) std::snprintf(r, 40,
+                "#%" PRIxPTR "::%" PRIxPTR, pNum, pOff);
             else std::snprintf(r, 40,
-                "#[%d]: %" PRIxPTR ":", hs, pNum);
+                "#[%d]: %" PRIxPTR "::%" PRIxPTR, hs, pNum, pOff);
+            return r;
+        }
+        else if (pOff == 0)
+        {   if (hs == 0) std::snprintf(r, 40, "#%" PRIxPTR ":", pNum);
+            else std::snprintf(r, 40, "#[%d]: %" PRIxPTR ":", hs, pNum);
             return r;
         }
     }
@@ -765,7 +840,9 @@ inline const char* Addr(T p)
 {   return Addr((uintptr_t)p);
 }
 
-// If Addr(n) yields #p:o then unAddr(p,o) should return n
+// If Addr(n) yields #p:o then unAddr(p,o) should return n, however the code
+// here does not achieve this because Addr subtracts the start address of
+// data within a Page!
 
 inline uintptr_t unAddr(uintptr_t p, uintptr_t o)
 {    return reinterpret_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
@@ -872,6 +949,7 @@ int ntz(uint64_t n)
 #endif // __GNUC__
 #define NLZ_DEFINED 1
 #define NTZ_DEFINED 1
+
 
 
 #if 0 ///////////////////////////////////////////////@@@@@@@@@@@@@@@@@@@@@
@@ -1153,86 +1231,6 @@ int ntz(uint64_t n)
 //~ // referenced solely via machine registers) and that a stackFringe variable
 //~ // is set so that the garbage collector can do its job properly.
 //~
-//~
-//~ // The following code makes a whole slew of assumptions about how the
-//~ // compiler and system library will treat it! I will explain what I hope
-//~ // will happen, but a sufficiently clever compiler could without doubt
-//~ // defeat me.
-//~
-//~ // A C++ system is liable to have some "callee save" registers and keep the
-//~ // values of some variable in them. A conservative garbage collector needs
-//~ // to access their values. I EXPECT that setjmp will dump copies of all
-//~ // such registers (at least!) into the jmp_buf, thus ensuring that a copy of
-//~ // all the data is present on the stack. Well here the jmp_buf is not
-//~ // referenced again or elsewhere, so maybe a compiler could consider it
-//~ // unused and just remove the call to setjmp. To discourage that I have
-//~ // buffer_pointer referring to the jmp_buf, and then at least potentially
-//~ // (as far as the compiler can tell) in some other compilation unit there
-//~ // might be code reachable from action() that does a longjmp() via it.
-//~ // I alse want the jmp_buf to have been allocate on the stack at a lower
-//~ // address than any other values currently in use. The "noinline" qualifier
-//~ // as provided by gcc is intended to help to enforce that by arranging that
-//~ // withRecordedStack() has its own stack frame with almost nothing except
-//~ // action() and the jmp_buf in it. If values used within action() end up
-//~ // on the stack above buffer that should not be a problem.
-//~ //
-//~ // There can be at most maxThreads threads in play, and each must have
-//~ // the thread-local value threadId set.
-//~
-//~ extern std::jmp_buf* buffer_pointer;
-//~
-//~ // Usage:
-//~ //   may_block([&]{
-//~ //      ... ... ... });
-//~ // This is to be used if the contents "..." etc do not do any Lisp memory
-//~ // allocation but might block. Ie there could be use of a synchronization
-//~ // primitive involving a muxex or a comdition variable, or there may be
-//~ // a read-request from some source that might not be instantly ready (such
-//~ // as the keyboard or a network connection or pipe). The reason this is needed
-//~ // is that other threads may need to garbage collect, and that involves
-//~ // getting every thread into synchronization - one that is blocked will not
-//~ // be able to participate actively in that! Yes another plausible user-case
-//~ // is the code performing a "sleep" operation.
-//~
-//~ // The use of "NOINLINE inline" may look odd. "NOINLINE" probably expands
-//~ // to an annotation [[gnu::noinline]] that should prevent the compiler
-//~ // from some sorts of optimisation so that I expect that the jmp_buf will
-//~ // be within a stack frame associated with this code, and hence the register
-//~ // values I expect to be stored there will be found by a stack scan done by
-//~ // the conservative garbage collector. The "inline" has the quite distinct
-//~ // purpose and meaning - it is so that the definition can appear in a header
-//~ // file included by multiple compilation units without that leading to
-//~ // multiple definitions.
-//~
-//~ template <typename F>
-//~ NOINLINE inline void may_block(F &&action)
-//~ {   std::jmp_buf buffer;
-//~     buffer_pointer = &buffer;
-//~     THREADID;
-//~ // ASSUME that setjmp dumps all the machine registers into the jmp_buf.
-//~     if (setjmp(buffer) == 0)
-//~     {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
-//~ // I will need to do more here to decrement the count of threads that
-//~ // the system knows to be potentially involved in memory allocation.
-//~         action();
-//~ // ... and fix it up again here, possibly with a RAII style object.
-//~ // This use of longjmp is intended to help guarantee that the buffer
-//~ // and its contents are kept intact across the call to action().
-//~         std::longjmp(buffer, 1);
-//~     }
-//~ };
-//~
-//~ template <typename F>
-//~ NOINLINE inline void withRecordedStack(F &&action)
-//~ {   std::jmp_buf buffer;
-//~     buffer_pointer = &buffer;
-//~     THREADID;
-//~     if (setjmp(buffer) == 0)
-//~     {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
-//~         action();
-//~         std::longjmp(buffer, 1);
-//~     }
-//~ };
 //~
 //~
 //~

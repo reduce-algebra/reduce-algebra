@@ -1741,9 +1741,9 @@ then
 #                       old macbook can install!).
 # 10.14 Mojave
 # 10.15 Catalina
-# 11.0  Big Sur         Now the version I build and test on.
-# 11.1                  Ha ha - from late 2020 there is a transition to
-# 11.2                  "Apple Silicon", ie ARM64.
+# 11.x  Big Sur         Ha ha - from late 2020 there is a transition to
+#                       "Apple Silicon", ie ARM64.                     
+# 12.x  Monterey        Now the version I build and test on.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
