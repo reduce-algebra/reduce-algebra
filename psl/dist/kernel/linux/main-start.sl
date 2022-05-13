@@ -181,6 +181,16 @@
    unixtty
    ))
 
+(compiletime
+  (progn
+    (put 'unixtty 'symbol 'unix_tty)
+    (put 'unixeof 'symbol 'unix_eof)
+    (put 'unixstderr 'symbol 'unix_stderr)
+    (put 'unixstdin 'symbol 'unix_stdin)
+    (put 'unixstdout 'symbol 'unix_stdout)
+    (put 'unixnull 'symbol 'unix_null)
+))
+
 (internal-global
  '(symget
    symnam
@@ -250,7 +260,10 @@
   (setq *fastcar nil)
 )
 
-(lap '((*entry !m!a!i!n expr 0)
+(compiletime
+  (setq mainentrypointname* '!_!p!s!l!_!m!a!i!n))
+
+(lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
        (*move (displacement (reg st) 4) (fluid argc))
        (*move (displacement (reg st) 8) (fluid argv))

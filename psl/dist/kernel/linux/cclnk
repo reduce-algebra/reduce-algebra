@@ -1,4 +1,11 @@
-gcc  -o bpsl -m32 -w -DBPSSIZE=8000000 bps.c bpsheap.c echo.c file-status.c float.c \
+#!/bin/sh
+#
+# Take care to not use -no-pie on older gcc versions
+# 
+NO_PIE=""
+gcc -no-pie 2>&1 | grep "unrecognized command line option .-no-pie." >/dev/null || NO_PIE="-no-pie"
+
+gcc  -o bpsl -m32 ${NO_PIE} -w -DBPSSIZE=8000000 bps.c bpsheap.c echo.c file-status.c float.c \
    os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
    -DLINUX main.o dmain.o -lm -ldl
 
