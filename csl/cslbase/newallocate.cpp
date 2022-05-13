@@ -68,8 +68,11 @@ Page* consPinPages;
 Page* vecPinPages;
 Page* consFullPages;
 Page* vecFullPages;
+Page* consOldPages;
+Page* vecOldPages;
 Page* borrowPages;
 Page* potentiallyPinned;
+Page* pinnedPages;
 
 Page* emptyPagesTail;
 Page* consPinPagesTail;
@@ -349,20 +352,6 @@ Page* grabFreshPage()
     return r;
 }
 
-void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
-{   p->chain = nullptr;
-    if (count == 0)
-    {   list = tail = p;
-
-        count = 1;
-    }
-    else
-    {   tail->chain = p;
-        tail = p;
-        count++;
-    }
-}
-
 extern void initConsPage(Page* p);
 
 // When I make a page "full" I will put a pointer just beyond the
@@ -370,7 +359,7 @@ extern void initConsPage(Page* p);
 // space beyond that is unused (apart from potential pinned stuff).
 
 uintptr_t consEndOfPage()
-{   consCurrent->consDataEnd = consFringe;
+{   consCurrent->dataEnd = consFringe;
     pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
     consCurrent = grabFreshPage();
     initConsPage(consCurrent);
@@ -380,7 +369,7 @@ uintptr_t consEndOfPage()
 }
 
 uintptr_t doubleConsEndOfPage()
-{   consCurrent->consDataEnd = consFringe;
+{   consCurrent->dataEnd = consFringe;
     pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
     consCurrent = grabFreshPage();
     initConsPage(consCurrent);
@@ -390,7 +379,7 @@ uintptr_t doubleConsEndOfPage()
 }
 
 uintptr_t vecEndOfPage(size_t n)
-{   vecCurrent->vecDataEnd = vecFringe;
+{   vecCurrent->dataEnd = vecFringe;
     pageAppend(vecCurrent, vecFullPages, vecFullPagesTail, vecFullPagesCount);
     vecCurrent = grabFreshPage();
     initVecPage(vecCurrent);
@@ -411,6 +400,34 @@ uintptr_t borrowEndOfPage(size_t n)
     borrowCurrent = grabFreshPage();
     initBorrowPage(borrowCurrent);
     return borrowNBytes(n);
+}
+
+// At least for now I maje the processing at EndOfPage during GC just the
+// same as it is during normal computation. This means that pages that
+// contain pinned data never get re-used until all pins have been released
+// and the pinned data evacuated leaving totally empty pages. At a later
+// stage I may want to br eilling to allocate pages containing pins here
+// and the GC allocation code can (I hope) allocate around any such.
+
+uintptr_t consGCEndOfPage()
+{   consCurrent->dataEnd = consFringe;
+    pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
+    consCurrent = grabFreshPage();
+    initConsPage(consCurrent);
+    uintptr_t r = consFringe;
+    consFringe += 2*sizeof(LispObject);
+    return r;
+}
+
+uintptr_t vecGCEndOfPage(size_t n)
+{   vecCurrent->dataEnd = vecFringe;
+    pageAppend(vecCurrent, vecFullPages, vecFullPagesTail, vecFullPagesCount);
+    vecCurrent = grabFreshPage();
+    initVecPage(vecCurrent);
+// End with a recursive call to getNBytes(), but this time because we
+// have just allocated a full new empty page it is guaranteed to complete
+// without ending up in vecEndOfPage() again.
+    return getNBytes(n);
 }
 
 size_t pages_count = 0;
@@ -458,10 +475,11 @@ void initHeapSegments(double storeSize)
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void*>(-1);
     emptyPages = consPinPages = vecPinPages =
-        consFullPages = vecFullPages = borrowPagesTail = nullptr;
+        consFullPages = vecFullPages = borrowPagesTail =
+        consOldPages = vecOldPages = nullptr;
     potentiallyPinned = nullptr;
     emptyPagesTail = consPinPagesTail = vecPinPagesTail =
-        consFullPagesTail = vecFullPagesTail =borrowPagesTail = nullptr;
+        consFullPagesTail = vecFullPagesTail = borrowPagesTail = nullptr;
     emptyPagesCount = consPinPagesCount = vecPinPagesCount =
         consFullPagesCount = vecFullPagesCount = borrowPagesCount =  0;
     nilSegment = reinterpret_cast<LispObject*>(

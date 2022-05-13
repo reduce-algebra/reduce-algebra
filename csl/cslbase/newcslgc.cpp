@@ -124,8 +124,22 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // of dataStart, because then the ambiguous reference will only be deemed
 // valid if it points to old pinned material.
         if (a < dataStart) return;
-        else if (a < p->consDataEnd ||
-                 consIsPreviousPinned(a, p)) consSetPinned(a, p);
+        else if (a < p->dataEnd ||
+                 consIsPreviousPinned(a, p))
+        {   consSetPinned(a, p);
+// The first time I find an object pinned on a page I will put that page
+// in a chain of ones containing pinned material.
+            if (p->pinnedObjects == TAG_FIXNUM)
+            {   p->pinnedPages = pinnedPages;
+                pinnedPages = p;
+            }
+            LispObject z = GCGet2Words();
+// The next line is to ensure that the CONS just allocated never gets pinned.
+            consCurrent->type = emptyPageType;
+            car(z) = a + TAG_FIXNUM;
+            cdr(z) = p->pinnedObjects;
+            p->pinnedObjects = z + TAG_FIXNUM;
+        }
         return;
     case vecFullPageType:
     case vecPinPageType:
@@ -134,21 +148,43 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // objects (as distinct from just identifying the object header). I do
 // not have a trivial way to tell where objects start, so I will tend to
 // set mark bits now even when they are not on object headers and correct
-// in a later phase. Tois is where I rely on "chunks" and I will view
+// in a later phase. This is where I rely on "chunks" and I will view
 // an ambiguous pointer as "provisionally valid" either if it is at an
 // address before vecDataEnd or if it is into a chunk beyond that where
 // the chunkStatus entry has the 0x80 bit set to indicate that it contains
-// at least some old pinned material.
-        a = a & -(sizeof(LispObject));   // align the pointer (a).
-        dataStart = reinterpret_cast<uintptr_t>(&p->chunks);
-        if (a < dataStart) return;
-        if (a < p->vecDataEnd) vecSetPinned(a, p);
-        else
-        {   size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
-            if ((p->chunkStatus[chunkNo] & 0x80) != 0)
+// at least some old pinned material. When I set a mark bit I will tag
+// the chunk as "of interest" in another little bitmap, and push the Page
+// onto a chain of one to deal with later.
+        {   a = a & -(sizeof(LispObject));   // align the pointer (a).
+            dataStart = reinterpret_cast<uintptr_t>(&p->chunks);
+            if (a < dataStart) return;
+            size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+// The pointer may be valid either if it refers ro an address below the
+// fringe or if it is withing a chunk that had been pinned during an
+// earlier GC.
+            if (a < p->dataEnd ||
+                (p->chunkStatus[chunkNo] & 0x80) != 0)
+            {   int c = p->chunkStatus[chunkNo];
+// If the pointer is somewhere within an extended Chunk then I will
+// skip back to the first chunk making it up. This case can apply if
+// there is a reference some way down a rather large vector.
+                while ((c & 0x7f) != 0)
+                    c = p->chunkStatus[chunkNo -= c & 0x7f];
+// Now I tag the Chunk as potentially pinned. It will not actually be pinned
+// if the dodgy address points within a padder item in it.
+                if (!isPotentiallyPinnedChunk(p, chunkNo))
+                {   setPotentiallyPinnedChunk(p, chunkNo);
+// ... and note when Pages contain such material.
+                    if (!p->potentiallyPinnedFlag)
+                    {   p->potentiallyPinnedFlag = true;
+                        p->potentiallyPinnedChain = potentiallyPinned;
+                        potentiallyPinned = p;
+                    }
+                }
                 vecSetPinned(a, p);
+            }
+            return;
         }
-        return;
     default:
         my_abort("page type not recognised");
     }
@@ -181,6 +217,11 @@ void processAmbiguousValue(uintptr_t a)
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems()
 {
+#ifdef DEBUG
+// Just while I develop the code.
+    for (int i=0; i<10; i++)
+        processAmbiguousValue(ambiguous[i]);
+#else // DEBUG
 // For each ambiguous value (ie value on the stack) processAmbiguousValue().
 // This must ensure that if the item might be a LispObject that is a
 // reference that the destination address of that reference is marked as
@@ -194,6 +235,7 @@ void identifyPinnedItems()
 // of the C++ standard!
     for (uintptr_t s=C_stackFringe; s<C_stackBase; s+=sizeof(uintptr_t))
         processAmbiguousValue(*reinterpret_cast<uintptr_t*>(s));
+#endif // DEBUG
 }
 
 // This not only ensures that the bitmap identifies the head of every
@@ -216,193 +258,231 @@ void identifyPinnedItems()
 // The second case is if the chunk in question was new. In that case any
 // pointer into it that does not refer to a padder is valid and must be
 // moved to the object header.
-// In each case I have parallel scans - one of the bitmap identifying the
-// next potentially pinned location, and the other of the data identifying
-// the next object.
 // Well happily I can deal with both cases using the same code, because
 // pointers into previously pinned chunks that are invalid will be to
 // addresses within padder objects, so the general rule that padders are not
 // proper data will apply to them.
 
+// In find HeadersInChunk the pointer a starts off at the start of a chunk,
+// and it could be that this will be the first of an extended Chunk. I
+// need to parse it to identify the objects present. Then the
+// currentVecPins[] bitmap should identify where ambiguous pointers
+// fall. So as I parse and identify an object I need to sort out the
+// range of bits within that map and test them. If any are set then I
+// clear any that are not to the header of the object and set one on
+// the header (unless the object is a padder).
+
+void findHeadersInChunk(size_t firstChunk, Page* p)
+{   size_t lastChunk = firstChunk+1;
+// First I need to sort out the start and end addresses associated with
+// what may be an extended Chunk. So I will arrange that lastChunk is
+// either the number beyond that for the last chunk in the Page or
+// is tha number for the next chunk that has a zero status, ie is
+// either a freestanding chunk or the first part of an extended one. Then
+    while (lastChunk < pageSize/chunkSize &&
+           (p->chunkStatus[lastChunk] & 0x7f) != 0) lastChunk++;
+    uintptr_t firstAddr = reinterpret_cast<uintptr_t>(p) +
+                          firstChunk*chunkSize;
+// endAddr is just beyond the last data I need to scan here.
+    uintptr_t endAddr   = reinterpret_cast<uintptr_t>(p) +
+                          lastChunk*chunkSize;
+    uintptr_t s = firstAddr;
+    while (s < endAddr)
+    {   uintptr_t a = *reinterpret_cast<uintptr_t*>(s);
+        size_t len;
+// Now based on its first word I need to decode the LispObject at address s.
+// In many cases it will have an explicit header word that contains length
+// information. Here I do not need to worry whether vectors contain
+// binary data or more Lisp pointers - all I need to sort out is the
+// length of the object concerned.
+        switch (a & 0x1f)
+        {
+    case 0x0a: // 0b01010: // Header for vector of Lisp pointers
+                           // Note TYPE_STREAM is in with this.
+    case 0x12: // 0b10010: // Header for bit-vector
+            len = doubleword_align_up(length_of_header(a));
+            break;
+    case 0x02: // 0b00010: // Symbol headers, char literals etc.
+// The code is either for the header of a symbol or for some sort
+// of immediate data, and in the latter case the object must be
+// a CONS cell.
+            if (is_symbol_header(a)) len = symhdr_length;
+            else len = 2*CELL;
+            break;
+    default:                 // None of the above cases...
+            len = 2*CELL;    // ... must be a CONS cell.
+            break;
+        }
+        uintptr_t final = s + len - sizeof(LispObject);
+// I will take special action of the object found is a padder. In that
+// case I will clear all the pin bits for addresses within the object.
+        uintptr_t o1 = (s - reinterpret_cast<uintptr_t>(p)) /
+                       sizeof(LispObject);
+        uintptr_t o2 = (final - reinterpret_cast<uintptr_t>(p)) /
+                       sizeof(LispObject);
+        size_t w1 = o1/64;
+        size_t w2 = o2/64;
+        int bit1 = o1 & 63;
+        int bit2 = o2 & 63;
+        uint64_t mask1 = static_cast<uint64_t>(-1) << bit1;
+        uint64_t mask2 = static_cast<uint64_t>(-1) >> (63-bit2);
+        if (is_padder_header(a))
+        {   // what I have here is in effect "clearVecPins(s, endS, p)";
+            if (w1 == w2)
+                p->currentVecPins[w1] &= ~(mask1 & mask2);
+            else
+            {   p->currentVecPins[w1] &= ~mask1;
+                for (uintptr_t w=w1+1; w<w2; w++)
+                    p->currentVecPins[w] = 0;
+                p->currentVecPins[w2] &= ~mask2;
+            }
+            s += len;
+            continue;
+        }
+        else if (w1 == w2)
+        {   bool pinFound = (p->currentVecPins[w1] & mask1 & mask2) != 0;
+            p->currentVecPins[w1] &= ~(mask1 & mask2);
+            if (pinFound)
+                p->currentVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
+        }
+        else
+        {
+// Now I need to check if any address in the range s <= x <= final has
+// been marked as pinned, and if so clear internal pin bits and set one
+// on the header word.
+            bool pinFound = (p->currentVecPins[w1] & mask1) != 0;
+            p->currentVecPins[w1] &= ~mask1;
+            for (size_t w=w1+1; w<w2; w++)
+            {   if (p->currentVecPins[w] != 0) pinFound = true;
+                p->currentVecPins[w] = 0;
+            }
+            if ((p->currentVecPins[w2] & mask2) != 0) pinFound = true;
+            p->currentVecPins[w2] &= ~mask2;
+            if (pinFound)
+            {   p->currentVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
+                if (p->pinnedObjects == TAG_FIXNUM)
+                {   p->pinnedPages = pinnedPages;
+                    pinnedPages = p;
+                }
+                LispObject z = GCGet2Words();
+// The next line is to ensure that the CONS just allocated never gets pinned.
+                consCurrent->type = emptyPageType;
+                car(z) = s + TAG_FIXNUM;
+                cdr(z) = p->pinnedObjects;
+                p->pinnedObjects = z + TAG_FIXNUM;
+            }
+        }
+        s += len;
+    }
+}
+
 void findHeadersOfPinnedItems()
-{   for (Page* p=potentiallyPinned; p!=nullptr; p=p->potentiallyPinnedPage)
-    {   for (size_t i=0; i<pageSize/chunkSize/(8*sizeof(uint64_t)); i++)
+{   for (Page* p=potentiallyPinned; p!=nullptr; p=p->potentiallyPinnedChain)
+    {   for (size_t i=0; i<sizeof(p->potentiallyPinnedChunks)/8; i++)
         {   uint64_t bits = p->potentiallyPinnedChunks[i];
             while (bits != 0)
-            {   int lz = nlz(bits);
-// DO SOMETHING on the chunk just identified.
-                bits ^= static_cast<uint64_t>(1) << (63-lz);
+            {   int trailingZeros = ntz(bits);
+                size_t chunkNo = 64*i + trailingZeros;
+                findHeadersInChunk(chunkNo, p);
+                bits &= ~(static_cast<uint64_t>(1) << trailingZeros);
             }
         }
     }
 }
-
-#if 0
-
-                    switch (a & 0x1f)
-                    {
-                case 0x0a: // 0b01010: // Header for vector of Lisp pointers
-                                       // Note TYPE_STREAM is in with this.
-                case 0x12: // 0b10010: // Header for bit-vector
-                        len = doubleword_align_up(length_of_header(a));
-                        break;
-                case 0x02: // 0b00010: // Symbol headers, char literals etc.
-                        if (is_symbol_header(a)) len = symhdr_length;
-                        else len = 2*CELL;
-                        break;
-                default:                 // None of the above cases...
-                        len = 2*CELL;    // ... must be a CONS cell.
-                        break;
-                    }
-                    for (size_t i=8; i<len; i+=8)
-                    {   if (isPinned(o+i))
-                        {   clearPinned(o+i);
-                            setPinned(o);
-                        }
-                    }
-// Padders should never have been put on the pinnedObject chain so I
-// do not need to detect them here and take any special action.
-                    if (isPinned(o))
-                    {   anyStill = true;
-                        LispObject ch = gc_n_bytes(2*CELL);
-                        car(ch) = o + TAG_FIXNUM;
-                        cdr(ch) = newChain;
-                        newChain = ch + TAG_FIXNUM;
-                        zprintf("pOb1: %a %a %a\n", ch, car(ch), cdr(ch));
-                    }
-                }
-// At present the list of pinned items is in reversed order. Fix that up.
-                c->pinnedObjects = TAG_FIXNUM;
-                while (newChain != TAG_FIXNUM)
-                {   LispObject w = cdr(newChain&~TAG_BITS);
-                    cdr(newChain&~TAG_BITS) = c->pinnedObjects;
-                    c->pinnedObjects = newChain;
-                    newChain = w;
-                }
-                c->isPinned = anyStill;
-            }
-            else
-            {   c->pinnedObjects = TAG_FIXNUM;
-                while (ptr < c->chunkFringe)
-                {   LispObject* pp = reinterpret_cast<LispObject*>(ptr);
-// In the loop here ptr will point in turn at each item in the Chunk. I know
-// that some items in the Chunk are pinned, but the pinning bitmap may
-// (until here) not tag the header word. So when I have an item of size > 8
-// I need to check isPinned() on all subsequent words and if one is
-// marked I need to setPinned() on the header. A crude version can just do
-// a linear scan word by word while a cleverer one would use the bitmap
-// to go much faster. I will use the crude strategy first for simplicity!
-                    LispObject a = *pp;
-                    size_t len;
-                    switch (a & 0x1f) // tag bits plus 2 more
-                    {
-// Here is is immaterial whether a vector holds binary or lisp data, any
-// ambiguous pointer within it counts.
-                    case 0x0a: // 0b01010: // Header for vector of Lisp pointers
-                                           // Note TYPE_STREAM is in with this.
-                    case 0x12: // 0b10010: // Header for bit-vector
-                    case 0x1a: // 0b11010: // Header for vector of binary data
-// I demand that length_of_header() gives a proper length for byte- and
-// bit-vectors at least as far as the number of words that are used. But then
-// I round it up to a multiple of 8.
-                        len = doubleword_align_up(length_of_header(a));
-//#                     zprintf("Vector of length %d to scan at %a\n", len, ptr);
-//#                     zprintf("Header was %x\n", a);
-// On a 64-bit machine this is one probe per LispObject. On a 32-bit one
-// because my pinning bitmap has a resolution of 8 bytes I will handle
-// two LispObjects at a time.
-// Here is where I could probably improve things by consulting multiple
-// bits in the bitmap at once... The loop here will ensure that if any
-// (double-)word in the vector is pinned that the pin marker is put on the
-// header word and not on any one within the vector.
-                        for (size_t i=8; i<len; i+=8)
-                        {   if (isPinned(ptr+i))
-                            {   clearPinned(ptr+i);
-                                setPinned(ptr);
-                            }
-                        }
-                        if (is_padder_header(a)) clearPinned(ptr);
-                        else if (isPinned(ptr))
-                        {   zprintf("Pinned vector at %a\n", ptr);
-                            LispObject ch = gc_n_bytes(2*CELL);
-// I am going to make a chain of all pinned items. But I do not want
-// ambiguous pointers to the chain to cause it or its contents to
-// get pinned in any significant way and the list is only needed until
-// the start phases of the next GC. I tag the references in it as fixnums
-// which lets me work with them and keeps all but the low 3 bits intact,
-// but which - as immediate data - will not complicate pinning in the
-// next GC.
-                            car(ch) = ptr + TAG_FIXNUM;
-                            cdr(ch) = static_cast<LispObject>(c->pinnedObjects);
-                            c->pinnedObjects = ch + TAG_FIXNUM;
-                            c->isPinned = true;
-                            zprintf("pOb: %a %a %a\n", ch, car(ch), cdr(ch));
-                        }
-                        my_assert(len != 0, "zero length vector of some sort");
-                        ptr += len;
-                        continue;
-                    case 0x02: // 0b00010: // Symbol headers, char literals etc.
-                        if (is_symbol_header(a))
-                        {   for (size_t i=8; i<symhdr_length; i+=8)
-                            {   if (isPinned(ptr+i))
-                                {   clearPinned(ptr+i);
-                                    setPinned(ptr);
-                                }
-                            }
-                            if (isPinned(ptr))
-                            {   zprintf("Pinned symbol at %a\n", ptr);
-                                LispObject ch = gc_n_bytes(2*CELL);
-                                car(ch) = ptr + TAG_FIXNUM;
-                                cdr(ch) = static_cast<LispObject>(c->pinnedObjects);
-                                c->pinnedObjects = ch + TAG_FIXNUM;
-                                c->isPinned = true;
-                                zprintf("pOb: %a %a %a\n", ch, car(ch), cdr(ch));
-                            }
-                            else zprintf("unpinned symbol head at %a\n", ptr);
-                            ptr += symhdr_length;
-                            continue;
-                        }
-                        // drop through if what I found was not a symhdr.
-                    default:                 // None of the above cases...
-                                             // ... must be a CONS cell.
-// Only need an extra probe on 64-bit platforms because the pin bits record
-// information with an 8-byte granularity and the whole of a 32-bit CONS
-// cell falls within that. On a 64-bit machine there could be an ambiguous
-// pointer to the cdr field of the cell and that needs handling.
-                        if (SIXTY_FOUR_BIT && isPinned(ptr+CELL))
-                        {   clearPinned(ptr+CELL);
-                            setPinned(ptr);
-                        }
-                        if (isPinned(ptr))
-                        {   zprintf("Pinned cons cell at %a\n", ptr);
-                            LispObject ch = gc_n_bytes(2*CELL);
-                            car(ch) = ptr + TAG_FIXNUM;
-                            cdr(ch) = static_cast<LispObject>(c->pinnedObjects);
-                            c->pinnedObjects = ch + TAG_FIXNUM;
-                            c->isPinned = true;
-//#                         zprintf("pOb: %a %a %a\n", ch, car(ch), cdr(ch));
-                        }
-//#                     else zprintf("unpinned cons cell at %a\n", ptr);
-                        ptr += 2*CELL;
-                    }
-                }
-            }
-        }
-    }
-}
-
-#endif // 0
 
 // I start garbage collection by  making the current allocation pages
 // have the structure of ones that are full. The only thing that involves
 // is storing fringe pointers in them.
 
-void garbage_collect()
-{   consCurrent->consDataEnd = consFringe;
-    vecCurrent->vecDataEnd = vecFringe;
+void inner_garbage_collect()
+{
+    cout << "Page size = " <<std::hex << sizeof(Page) << std::dec << "\n";
+// I start by setting the end-point information in the two current pages.
+// That leaves them in the proprer state to count as "full", so that when
+// the GC looks at ambiguous pointers it will be able to be aware when
+// an apparent pointer is to a location above the fringe. Note that any
+// final chunk in the vector page needs to have a padder inserted.
+    if (vecFringe != vecLimit)
+        setHeaderWord(vecFringe, vecLimit-vecFringe);
+    consCurrent->dataEnd = consFringe;
+    vecCurrent->dataEnd = vecFringe;
+// Next I move the currently used pages to an "old" chain.
+    consOldPages = consFullPages;
+    vecOldPages = vecFullPages;
+    consFullPages = vecFullPages =
+        consFullPagesTail = vecFullPagesTail = nullptr;
+    consFullPagesCount = vecFullPagesCount = 0;
+    pinnedPages = nullptr;
+// ... and allocate what will be the start of the new half-space.
+// Well here I will not want any ambiguous pointers into this new
+// space to be deemed valid, and I will be putting stuff into the
+// CONS region as a list of pinned objects - so on a temporary basis
+// I will mark the pages as free!
+    consCurrent = grabFreshPage();  initConsPage(consCurrent);
+    pageAppend(consCurrent,
+               consFullPages, consFullPagesTail, consFullPagesCount);
+    consCurrent->type = emptyPageType;
+    vecCurrent = grabFreshPage();   initVecPage(vecCurrent);
+    pageAppend(vecCurrent,
+               vecFullPages, vecFullPagesTail, vecFullPagesCount);
+// Now I can scan the stack and mark up pinned items. This will build
+// up a chain of pages still 
     identifyPinnedItems();
     findHeadersOfPinnedItems();
+    zprintf("Try to report on pinning...\n");
+    {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
+        {   zprintf("Page %a contains some pinned material\n", pp);
+            for (LispObject c=pp->pinnedObjects-TAG_FIXNUM;
+                            c!=0;
+                            c=cdr(c)-TAG_FIXNUM)
+            {   zprintf("Pinned object at address %a\n", car(c)-TAG_FIXNUM);
+            }
+        }
+    }
+    my_abort("This is how far GC has got");
 }
+
+// The following code makes a whole slew of assumptions about how the
+// compiler and system library will treat it! I will explain what I hope
+// will happen, but a sufficiently clever compiler could without doubt
+// defeat me.
+
+// A C++ system is liable to have some "callee save" registers and keep the
+// values of some variable in them. A conservative garbage collector needs
+// to access their values. I EXPECT that setjmp will dump copies of all
+// such registers (at least!) into the jmp_buf, thus ensuring that a copy of
+// all the data is present on the stack. Well here the jmp_buf is not
+// referenced again or elsewhere, so maybe a compiler could consider it
+// unused and just remove the call to setjmp. To discourage that I have
+// buffer_pointer referring to the jmp_buf, and then at least potentially
+// (as far as the compiler can tell) in some other compilation unit there
+// might be code reachable from inner_garbage_collect() that does a longjmp()
+// via it.
+// Well that I guess would depend on there being a call from the code in
+// action() to something far enough away that the ocmpiler does not see it,
+// and whole-program optimisation could defeat that!
+// I alse want the jmp_buf to have been allocate on the stack at a lower
+// address than any other values currently in use. The "NOINLINE" qualifier
+// as provided by gcc is intended to help to enforce that by arranging that
+// garbage_collect() has its own stack frame with almost nothing except
+// inner_garbage_collect() and the jmp_buf in it. If inner_garbage_collect
+// has its code lifted inline ans some of then values used within it
+// ended up on the stack above buffer that should not be a problem. It
+// would merely lead to those being candidate ambiguous pointers.
+//
+
+std::jmp_buf* buffer_pointer;
+
+NOINLINE void garbage_collect()
+{   std::jmp_buf buffer;
+    buffer_pointer = &buffer;
+    if (setjmp(buffer) == 0)
+    {   C_stackFringe = reinterpret_cast<uintptr_t>(&buffer);
+        inner_garbage_collect();
+        std::longjmp(buffer, 1);
+    }
+}
+
 
 #ifdef REWORKED
 //~
