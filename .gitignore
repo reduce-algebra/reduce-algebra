@@ -267,6 +267,27 @@
 /psl/bin/AMD64_ext/pslcomp.img
 /psl/bin/AMD64_ext/tmp.sed
 
+# /psl/bin/aarch64/
+/psl/bin/aarch64/bare-psl
+/psl/bin/aarch64/bare-psl.img
+/psl/bin/aarch64/old-bare-psl
+/psl/bin/aarch64/old-pslcomp
+/psl/bin/aarch64/pslcomp
+/psl/bin/aarch64/pslcomp.img
+/psl/bin/aarch64/tmp.sed
+
+# /psl/bin/armv6/
+/psl/bin/armv6/bare-psl
+/psl/bin/armv6/bare-psl.img
+/psl/bin/armv6/old-bare-psl
+/psl/bin/armv6/old-pslcomp
+/psl/bin/armv6/pslcomp
+/psl/bin/armv6/pslcomp.img
+/psl/bin/armv6/tmp.sed
+/psl/bin/armv6/.imago
+/psl/bin/armv6/old-bare-psl.img
+/psl/bin/armv6/old-pslcomp.img
+
 # /psl/bin/brock/
 /psl/bin/brock/bare-psl
 /psl/bin/brock/bare-psl.img
@@ -315,11 +336,26 @@
 /psl/bin/linux/pslcomp.old
 /psl/bin/linux/tmp.sed
 
+# /psl/bin/mingw-w64/
+/psl/bin/mingw-w64/bare-psl
+/psl/bin/mingw-w64/bare-psl.img
+/psl/bin/mingw-w64/old-bare-psl
+/psl/bin/mingw-w64/old-pslcomp
+/psl/bin/mingw-w64/pslcomp
+/psl/bin/mingw-w64/pslcomp.img
+/psl/bin/mingw-w64/tmp.sed
+
 # /psl/dist/kernel/AMD64_ext/
 /psl/dist/kernel/AMD64_ext/tmp.sl
 
 # /psl/dist/kernel/aarch64/
 /psl/dist/kernel/aarch64/tmp.sl
+
+# /psl/dist/kernel/armv6/
+/psl/dist/kernel/armv6/tmp.sl
+
+# /psl/dist/kernel/brock/
+/psl/dist/kernel/brock/tmp.sl
 
 # /psl/dist/kernel/freeBSD/
 /psl/dist/kernel/freeBSD/tmp.sl
@@ -329,6 +365,9 @@
 
 # /psl/dist/kernel/linux/
 /psl/dist/kernel/linux/tmp.sl
+
+# /psl/dist/kernel/macintel/
+/psl/dist/kernel/macintel/tmp.sl
 
 # /psl/dist/kernel/win32/
 /psl/dist/kernel/win32/main.s.orig
