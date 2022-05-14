@@ -122,7 +122,7 @@
 % Changed below to be like Vax version, so heap will be in bss. bao
 (setq ReserveZeroBlockFormat* "  .comm %w,%e%n")
 
-(put 'MkItem 'ASMExpressionFormat "[[%e\*0x8000000]+%e]" )
+(put 'MkItem 'ASMExpressionFormat "((%e*0x8000000)+%e)" )
 
 (setq DefinedFunctionCellFormat* " .long %w%n")   %/ Must be LONG
 

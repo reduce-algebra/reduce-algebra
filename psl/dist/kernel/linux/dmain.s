@@ -334,8 +334,8 @@ lastbps:
  .globl bpslowerbound
 bpslowerbound:
  .long ((29*0x8000000)+284)
- .globl _psl_mainstartinitialize
-_psl_mainstartinitialize:
+ .globl mainstartinitialize
+mainstartinitialize:
  .long ((29*0x8000000)+285)
  .globl nextbps
 nextbps:
