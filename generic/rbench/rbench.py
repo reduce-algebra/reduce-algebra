@@ -70,7 +70,9 @@ def setup_parser_run(parser):
     _add_bar(parser)
     _addgroup_incl_excl(parser)
     _add_exclude_by_time(parser)
+    _add_ulimit(parser)
     _addgroup_reduce(parser)
+    _add_lisp(parser)
     _add_revision(parser)
 
 def setup_parser_summary(parser):
@@ -165,6 +167,13 @@ def _add_exclude_by_time(parser):
         help=('Exclude benchmarks with a cpu time record (cpu_csl.txt, cpu_psl.txt) larger than '
                 'SECONDS in SOURCE'))
 
+def _add_ulimit(parser):
+    parser.add_argument(
+        '--ulimit', metavar='SECONDS',
+        type=str,
+        default='unlimited',
+        help=('Use "ulimit -t SECONDS" for each Reduce job'))
+
 def _addgroup_reduce(parser):
     reduce_group = parser.add_mutually_exclusive_group(required = True)
     reduce_group.add_argument(
@@ -175,6 +184,13 @@ def _addgroup_reduce(parser):
         '--svn-reduce', metavar='DIR',
         type=str,
         help='svn check out into DIR, compile, and use as Reduce directory')
+
+def _add_lisp(parser):
+    parser.add_argument(
+        '--lisp', metavar='LISP',
+        type=str,
+        default='csl psl',
+        help='Use Reduce flavors ("csl", "psl", "boot") from space-separated list LISP')
 
 def _add_revision(parser):
     parser.add_argument(
@@ -233,8 +249,10 @@ def run(args):
                     exclude=args.exclude,
                     include=args.include,
                     exclude_by_time=args.exclude_by_time,
+                    ulimit=args.ulimit,
                     reduce=args.reduce,
                     svn_reduce=args.svn_reduce,
+                    lisp=args.lisp,
                     revision=args.revision)
 
 def summary(args):

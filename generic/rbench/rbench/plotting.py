@@ -20,6 +20,8 @@ from matplotlib.transforms import Bbox
 import pandas as pd
 from pandas.plotting import PlotAccessor
 
+from . import analytics
+
 # Values less than 5 lead to trouble with the Bbox in axes_to_b64()
 default_figsize = (5, 5)
 default_double_figsize = (2 * default_figsize[0], 2 * default_figsize[1])
@@ -68,13 +70,23 @@ def plot_schedule(rbdf, *, key0: str = None, figsize: tuple = default_figsize,
             raise ValueError(f'specify one of {str(list(l0))[1:-1]} as keyword argument key0')
         key0 = l0[0]
     rbdf = rbdf.xs(key0, level=0, axis=1)
-    csl_rows = rbdf[['start_csl', 'end_csl']]
-    csl_rows = csl_rows.rename({'start_csl': 'start', 'end_csl': 'end'}, axis=1)
-    csl_rows = csl_rows.assign(color='r')
-    psl_rows = rbdf[['start_psl', 'end_psl']]
-    psl_rows = psl_rows.rename({'start_psl': 'start', 'end_psl': 'end'}, axis=1)
-    psl_rows = psl_rows.assign(color='b')
-    all_rows = csl_rows.append(psl_rows, ignore_index=True).sort_values(['start', 'end'])
+    all_rows = analytics.RbDataFrame()
+    if 'start_csl' in rbdf.columns and 'end_csl' in rbdf.columns:
+        csl_rows = rbdf[['start_csl', 'end_csl']]
+        csl_rows = csl_rows.rename({'start_csl': 'start', 'end_csl': 'end'}, axis=1)
+        csl_rows = csl_rows.assign(color='r')
+        all_rows = all_rows.append(csl_rows, ignore_index=True)
+    if 'start_psl' in rbdf.columns and 'end_psl' in rbdf.columns:
+        psl_rows = rbdf[['start_psl', 'end_psl']]
+        psl_rows = psl_rows.rename({'start_psl': 'start', 'end_psl': 'end'}, axis=1)
+        psl_rows = psl_rows.assign(color='b')
+        all_rows = all_rows.append(psl_rows, ignore_index=True)
+    if 'start_boot' in rbdf.columns and 'end_boot' in rbdf.columns:
+        boot_rows = rbdf[['start_boot', 'end_boot']]
+        boot_rows = boot_rows.rename({'start_boot': 'start', 'end_boot': 'end'}, axis=1)
+        boot_rows = boot_rows.assign(color='g')
+        all_rows = all_rows.append(boot_rows, ignore_index=True)
+    all_rows = all_rows.sort_values(['start', 'end'])
     t0 = all_rows['start'].min()
     all_rows['start_sec'] = all_rows.apply(lambda df: (df['start'] - t0).total_seconds() + 1, axis=1)
     all_rows['end_sec'] = all_rows.apply(lambda df: (df['end'] - t0).total_seconds() + 1, axis=1)
