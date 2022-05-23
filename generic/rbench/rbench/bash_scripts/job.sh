@@ -12,21 +12,22 @@ if [ "$1" = -q ]; then
     shift
 fi
 
-if [ $# -lt 5 ]; then
+if [ $# -lt 6 ]; then
     echo "$0: too few arguments provided" > /dev/stderr
     exit 1
 fi
 
-if [ $# -gt 5 ]; then
+if [ $# -gt 6 ]; then
     echo "$0: too many arguments provided" > /dev/stderr
     exit 1
 fi
 
-reduce="$1"
-psl_heapsize="$2"
-now="$3"
-rel_benchmark="$4"
-ref="$5"
+timelimit="$1"
+reduce="$2"
+psl_heapsize="$3"
+now="$4"
+rel_benchmark="$5"
+ref="$6"
 
 dir=$(dirname "$now/$rel_benchmark")
 
@@ -37,7 +38,7 @@ if [ ! $? ]; then
     exit 1
 fi
 
-lisp=$(sed 's/red//' <<< $(basename "$reduce"))
+lisp=$(sed -e 's/strapreduce//' -e 's/^red//' <<< $(basename "$reduce"))
 
 if [ "$lisp" = "psl" ]; then
     pslheap_file="$(basename $rel_benchmark .red).pslheap"
@@ -52,7 +53,8 @@ fi
 
 date -R > start_$lisp.txt
 
-$reduce $reduce_args > rlg_$lisp.raw 2> stderr_$lisp.txt <<EOF
+(ulimit -t $timelimit
+ $reduce $reduce_args > rlg_$lisp.raw 2> stderr_$lisp.txt <<EOF
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg!* := nil);
@@ -64,6 +66,14 @@ write "START OF REDUCE TEST RUN"$ in "$(basename $rel_benchmark)"; write "END OF
 showtime1$
 quit$
 EOF
+ exit $?) 2> /dev/null
+
+if [ $? -ne 0 ]; then
+    rm -f rlg_$lisp.raw stderr_$lisp.txt
+    echo "$timelimit" > sigxcpu_$lisp.txt
+    date -R > end_$lisp.txt
+    exit
+fi
 
 read -ra tmparr <<< $(fgrep 'Time (counter 1):' rlg_$lisp.raw)
 cpu=${tmparr[3]}

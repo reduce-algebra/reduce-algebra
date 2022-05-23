@@ -176,8 +176,9 @@ def _init_result(source: str, result: str, force: bool, include: str, exclude: s
         sys.exit(0)
     return red_files
 
-def _run_using_gnu_parallel(dry_run: bool, bar: bool, jobs: int, reduce: str, psl_heapsize: int,
-                            source: str, result: str, red_files: list) -> str:
+def _run_using_gnu_parallel(dry_run: bool, bar: bool, jobs: int, ulimit: str, reduce: str,
+                            lisp: str, psl_heapsize: int, source: str, result: str,
+                            red_files: list) -> str:
     def _parallel_command() -> str:
         logger.info('building GNU parallel command')
         parallel_args = ''
@@ -190,10 +191,10 @@ def _run_using_gnu_parallel(dry_run: bool, bar: bool, jobs: int, reduce: str, ps
         parallel_cmd_args  = ' '
         if bar or logger.getEffectiveLevel() > logging.DEBUG:
             parallel_cmd_args += ' -q'
-        one = 'csl psl'
+        one = lisp.replace('csl', 'redcsl').replace('psl', 'redpsl').replace('boot', 'bootstrapreduce');
         two = str(psl_heapsize)
         three = ' '.join(red_files)
-        parallel_cmd_args += ' ' + os.path.join(reduce, 'bin', 'red{1}') \
+        parallel_cmd_args += ' ' + ulimit + ' ' + os.path.join(reduce, 'bin', '{1}') \
                              + ' {2} ' + result + ' {3} ' + source
         parallel_cmd_args += ' ::: ' + one + ' ::: ' + two + ' ::: ' + three
         cmd = 'parallel' + parallel_args + parallel_cmd + parallel_cmd_args
@@ -253,8 +254,8 @@ def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heaps
 
 def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: bool = False,
         psl_heapsize: int = 4000, log: str = 'warning', bar: bool = False, exclude: str = None,
-        include: str = None, exclude_by_time: int = None, reduce: str = None,
-        svn_reduce: str = None, revision: str = None):
+        include: str = None, exclude_by_time: int = None, ulimit: str = 'unlimited',
+        reduce: str = None, lisp: str = 'csl psl', svn_reduce: str = None, revision: str = None):
     """
     Run a Reduce benchmark set.
     """
@@ -283,7 +284,7 @@ def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: b
         file.write(source)
     with open(os.path.join(result, 'GLOBAL', 'start.txt'), 'w') as file:
         file.write(_now())
-    _run_using_gnu_parallel(dry_run=dry_run, bar=bar, jobs=jobs, reduce=reduce,
-        psl_heapsize=psl_heapsize, source=source, result=result, red_files=red_files)
+    _run_using_gnu_parallel(dry_run=dry_run, bar=bar, jobs=jobs, ulimit=ulimit, reduce=reduce,
+        lisp=lisp, psl_heapsize=psl_heapsize, source=source, result=result, red_files=red_files)
     with open(os.path.join(result, 'GLOBAL', 'end.txt'), 'w') as file:
         file.write(_now())

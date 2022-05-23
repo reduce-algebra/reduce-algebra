@@ -85,8 +85,8 @@ class RbDataFrame(pd.DataFrame):
 def read_filetree(root: str, key0: str = None):
     class Row(dict):
         def read(self, root: str):
-            for stem in 'cpu', 'end', 'gc', 'heapsize', 'start', 'valid':
-                for lisp in 'csl', 'psl':
+            for stem in 'cpu', 'end', 'gc', 'sigxcpu', 'heapsize', 'start', 'valid':
+                for lisp in 'csl', 'psl', 'boot':
                     key = '_'.join([stem, lisp])
                     key_file_name = os.path.join(root, self['name'], stem + '_' + lisp + '.txt')
                     if os.path.exists(key_file_name):
@@ -137,8 +137,8 @@ def read_filetree(root: str, key0: str = None):
             row.read(root)
             rows.append(row)
     columns = []
-    for postfix in '_csl', '_psl':
-        for stem in 'start', 'cpu', 'gc', 'heapsize', 'valid', 'end':
+    for postfix in '_csl', '_psl', '_boot':
+        for stem in 'start', 'cpu', 'gc', 'sigxcpu', 'heapsize', 'valid', 'end':
             columns.append(stem + postfix)
     rbdf = RbDataFrame(rows, columns=['name'] + columns)
     rbdf.set_index('name', inplace=True)
