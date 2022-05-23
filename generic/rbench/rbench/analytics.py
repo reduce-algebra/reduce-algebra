@@ -56,6 +56,23 @@ class RbDataFrame(pd.DataFrame):
                     break
         return self[selection]
 
+    def deselect(self, selectors):
+        """
+        Remove columns by substring match in any level.
+        """
+        if type(selectors) == str:
+            selectors = [selectors]
+        selection = []
+        for column in self.columns:
+            select = True
+            for selector in selectors:
+                if selector in column[0] or selector in column[1]:
+                    select = False
+                    break
+            if select:
+                selection.append(column)
+        return self[selection]
+
     def fast(self, max: float = 0.5):
         """
         Select rows where all CPU times are < max. Note that fast() and
@@ -92,7 +109,7 @@ def read_filetree(root: str, key0: str = None):
                     if os.path.exists(key_file_name):
                         with open(key_file_name) as file:
                             entry = file.read().rstrip()
-                            if stem in ('cpu', 'gc'):
+                            if stem in ('cpu', 'gc', 'sigxcpu'):
                                 entry = float(entry) / 1000
                             elif stem in ('heapsize'):
                                 entry = int(entry)
