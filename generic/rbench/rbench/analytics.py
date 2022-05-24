@@ -81,9 +81,21 @@ class RbDataFrame(pd.DataFrame):
         level0 = list(self.columns.levels[0])
         query = True
         for index0 in level0:
-            cpu_csl = self[(index0, 'cpu_csl')]
-            cpu_psl = self[(index0, 'cpu_psl')]
-            query &= (cpu_csl < max) & (cpu_psl < max)
+            try:
+                cpu_csl = self[(index0, 'cpu_csl')]
+                query &= (cpu_csl < max)
+            except KeyError:
+                pass
+            try:
+                cpu_psl = self[(index0, 'cpu_psl')]
+                query &= (cpu_psl < max)
+            except KeyError:
+                pass
+            try:
+                cpu_boot = self[(index0, 'cpu_boot')]
+                query &= (cpu_boot < max)
+            except KeyError:
+                pass
         return self[query]
 
     def slow(self, min: float = 0.5):
@@ -94,9 +106,21 @@ class RbDataFrame(pd.DataFrame):
         level0 = list(self.columns.levels[0])
         query = False
         for index0 in level0:
-            cpu_csl = self[(index0, 'cpu_csl')]
-            cpu_psl = self[(index0, 'cpu_psl')]
-            query |= (min <= cpu_csl) | (min <= cpu_psl)
+            try:
+                cpu_csl = self[(index0, 'cpu_csl')]
+                query |= (min <= cpu_csl)
+            except KeyError:
+                pass
+            try:
+                cpu_psl = self[(index0, 'cpu_psl')]
+                query |=  (min <= cpu_psl)
+            except KeyError:
+                pass
+            try:
+                cpu_boot = self[(index0, 'cpu_boot')]
+                query |=  (min <= cpu_boot)
+            except KeyError:
+                pass
         return self[query]
 
 def read_filetree(root: str, key0: str = None):
