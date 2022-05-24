@@ -132,6 +132,9 @@ class RbPlotAccessor(PlotAccessor):
         else:
             raise ValueError(f'{kind} is not a valid plot kind')
 
+    # def scatter(self, *arguments, **keywords):
+    #     return self(kind='scatter', *arguments, **keywords)
+
     def scatter2(self, *arguments, **keywords):
         return self(kind='scatter2', *arguments, **keywords)
 
