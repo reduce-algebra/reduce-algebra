@@ -20,7 +20,7 @@
 % ----------------------------------------------------------------------
 
 \documentclass[a4paper]{article}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage[german]{babel}
 \usepackage{times}
 \setlength{\parindent}{0pt}
@@ -30,20 +30,20 @@
 \section{Versionsbeschreibungen}
 \begin{description}
 \item[Version 1.1:]
-	Ursprünglich in Reduce enthaltenes Modul Simplex. Es wird gerundet 
+	UrsprÃ¼nglich in Reduce enthaltenes Modul Simplex. Es wird gerundet 
 	gerechnet und Matrizen werden als Listen von Listen mit mat-Tag 
 	abgespeichert, die Zahlenwerte wurden als \textit{rounded} bzw. als 
 	Integers gespeichert. \\
-	Problem: \textit{reval}-Aufrufe benötigen mindestens zwei Drittel 
+	Problem: \textit{reval}-Aufrufe benÃ¶tigen mindestens zwei Drittel 
 	der Gesamtlaufzeit. \textit{reval} wird vor allem bei Matrixoperationen
 	benutzt.
 \item[Version 1.2:]
 	Jeder Aufruf eines ''reval'' wurde ausgelagert in eine 
-	eigenständige Prozedur. Dabei wurden auch indirekte reval-Aufrufe 
+	eigenstÃ¤ndige Prozedur. Dabei wurden auch indirekte reval-Aufrufe 
 	wie ''my\_reval'' und ''my\_revlis'' durch eigene Prozeduren ersetzt. 
-	In den ursprünglichen im Modul ''Simplex'' enthaltenen Prozeduren 
+	In den ursprÃ¼nglichen im Modul ''Simplex'' enthaltenen Prozeduren 
 	existiert somit kein direkter reval-Aufruf mehr. 
-  	Fazit: Matrixmultiplikation und Skalarprodukt benötigen jeweils 
+  	Fazit: Matrixmultiplikation und Skalarprodukt benÃ¶tigen jeweils 
 	mindenstens 20\% der Laufzeit.
 	Problem: Uneinheitliche Darstellung der Zahlenwerte.
 \item[Version 1.3:]
@@ -51,14 +51,14 @@
 	Fazit: Verlangsamt die Laufzeit unwesentlich gering.
 \item[Version 1.4:]
 	Die ''rounded''-Umwandlung aus Version 1.3 wurde wieder entfernt. 
-	Zusätzlich wurden eigene Zugriffsprozeduren auf SQ-Formen eingefügt mit
+	ZusÃ¤tzlich wurden eigene Zugriffsprozeduren auf SQ-Formen eingefÃ¼gt mit
 	der Form \textit{sc\_proc}. 
 \item[Version 1.5:]
-	Es wurde die interne Repräsentation der Argumente auf SQ-Form 
+	Es wurde die interne ReprÃ¤sentation der Argumente auf SQ-Form 
 	umgestellt. Diese Umstellung geschieht vor dem Betreten der Prozedur 
 	''initialise''. Dabei wurden alle relevanten Prozeduren so upgedatet, 
-	dass sie mit der neuen Struktur der Argumente umgehen können. Teilweise   	wurden eigene zusätzliche Prozeduren geschrieben, die alte ersetzen, 
-	und einige ''alte'' Prozeduren werden überflüssig: \\
+	dass sie mit der neuen Struktur der Argumente umgehen kÃ¶nnen. Teilweise   	wurden eigene zusÃ¤tzliche Prozeduren geschrieben, die alte ersetzen, 
+	und einige ''alte'' Prozeduren werden Ã¼berflÃ¼ssig: \\
 	\\
 	\begin{tabular}{ll}
 	Prozedur & wurde ersetzt durch neue Prozedur \\
@@ -70,7 +70,7 @@
 	scalar\_product & sc\_scalarproduct \\
 	\end{tabular} \\
 	\\
-	Folgende Prozeduren sind nun überflüssig und werden nicht mehr
+	Folgende Prozeduren sind nun Ã¼berflÃ¼ssig und werden nicht mehr
 	aufgerufen: 
 	\begin{itemize}
 	\item fast\_my\_letmtr
@@ -81,15 +81,15 @@
 	\end{itemize}
 	Alle vorkommenden Matrizen sind nun Listen von Listen ohne 'mat-Tag.
 	Fazit: Afiro ist nun doppelt so schnell, Example 6.3. nun 22 mal so 
-	schnell. Das ganze Programm läuft nun schneller, der Zeitgewinn 
-	beschränkt sich dabei nicht auf einzelne Prozeduren. Dabei verbleibt 
-	ein großer Teil der Laufzeit in der Prozedur \textit{sc\_getmat}.
+	schnell. Das ganze Programm lÃ¤uft nun schneller, der Zeitgewinn 
+	beschrÃ¤nkt sich dabei nicht auf einzelne Prozeduren. Dabei verbleibt 
+	ein groÃŸer Teil der Laufzeit in der Prozedur \textit{sc\_getmat}.
 \item[Version 1.6:]
 	Patches
 \item[Version 1.7:]
 	\textit{sc\_matrixproduct}-Aufruf wurde ersetzt durch Prozedur 
 	\textit{sc\_multm}, die auf die Prozedur \textit{multm} im Modul 
-	\textit{matsm} im Package \textit{Matrix} zurückgreift.
+	\textit{matsm} im Package \textit{Matrix} zurÃ¼ckgreift.
 	Fazit: Beschleunigung um ca. 15\%
 \item[Version 1.8:]
 	Matrizen werden nun als Vektoren von Vektoren dargestellt. Es wird nun
@@ -98,13 +98,13 @@
 	Version 1.0 sogar um Faktor 500-600%. 
 \item[Version 1.9:]
 	Die Prozeduren \textit{putv} und \textit{getv} wurden ersetzt durch
-	\textit{iputv} und \textit{igetv}. Überarbeitung und Verbesserung der 
+	\textit{iputv} und \textit{igetv}. Ãœberarbeitung und Verbesserung der 
 	Matrixprozeduren. 
 \item[Version 1.10:]
-	Überarbeitung der Matrixprozeduren und Auslagerung der Aufrufe von 
+	Ãœberarbeitung der Matrixprozeduren und Auslagerung der Aufrufe von 
 	\textit{iputv} und \textit{igetv} in Prozeduren \textit{sc\_iputv} 
 	und \textit{sc\_igetv}.
-	Fazit: Afiro läuft nun um Faktor 9,10 schneller, Example 6.3 um Faktor
+	Fazit: Afiro lÃ¤uft nun um Faktor 9,10 schneller, Example 6.3 um Faktor
 	77,6 und Adlittle um Faktor 1415,6.
 \item[Versuch:]
 	Es wurde versucht, die Matrizen als Listen von Listen ohne mat-Tag 
@@ -115,9 +115,9 @@
 	Paar, wobei im \textit{cdr} die eigentliche Matrix als Liste von Listen 	ohne mat-Tag steht, und im \textit{car} ein Paar von Paaren steht, 
 	wobei das erste Paar die aktuelle Zeilennummer angibt und die aktuelle 		Zeile, und das zweite Paar die aktuelle Spalte mit der Restzeile der 
 	aktuellen Zeile von diesem Index aus.
-	Die zugehörigen Matrixprozeduren wurden in eigene Module ausgelagert,
-	so daß eigentliche Simplex-Code nicht verändert werden musste.
-	Keine dieser Versuche führte zu einem besseren Ergebnis im Vergleich 
+	Die zugehÃ¶rigen Matrixprozeduren wurden in eigene Module ausgelagert,
+	so daÃŸ eigentliche Simplex-Code nicht verÃ¤ndert werden musste.
+	Keine dieser Versuche fÃ¼hrte zu einem besseren Ergebnis im Vergleich 
 	zur Vektoren-Darstellung.
 \end{description}
 
