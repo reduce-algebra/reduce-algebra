@@ -1,6 +1,6 @@
 module oc_simple_read;
 
-% Author: Rainer Schöpf 
+% Author: Rainer SchÃ¶pf 
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
