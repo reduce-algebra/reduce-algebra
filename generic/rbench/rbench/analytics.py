@@ -133,8 +133,10 @@ def read_filetree(root: str, key0: str = None):
                     if os.path.exists(key_file_name):
                         with open(key_file_name) as file:
                             entry = file.read().rstrip()
-                            if stem in ('cpu', 'gc', 'sigxcpu'):
+                            if stem in ('cpu', 'gc'):
                                 entry = float(entry) / 1000
+                            elif stem in ('sigxcpu'):
+                                entry = float(entry)
                             elif stem in ('heapsize'):
                                 entry = int(entry)
                             elif stem in ('start', 'end'):
