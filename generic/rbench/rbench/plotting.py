@@ -26,7 +26,7 @@ from . import analytics
 default_figsize = (5, 5)
 default_double_figsize = (2 * default_figsize[0], 2 * default_figsize[1])
 
-def plot_scatter(rbdf, **keywords):
+def _scatter(rbdf, **keywords):
     if 'alpha' not in keywords:
         keywords['alpha'] = 0.25
     if 'figsize' not in keywords:
@@ -38,11 +38,46 @@ def plot_scatter(rbdf, **keywords):
     if keywords['loglog']:
         rbdf = rbdf.replace(to_replace=0.0, value=0.005)
     ax = PlotAccessor(rbdf)(kind='scatter', **keywords)
+    return ax
+
+def plot_scatter(rbdf, **keywords):
+    ax = _scatter(rbdf, **keywords)
     low_x, high_x = ax.get_xlim()
     low_y, high_y = ax.get_ylim()
-    low = max(low_x, low_y)
-    high = min(high_x, high_y)
+    low = min(low_x, low_y)
+    high = max(high_x, high_y)
     ax.axline([low, low],[high, high], c='k', linewidth=0.1)
+    return ax
+
+def plot_scatter1(rbdf, *, x: str, y: str, c: str, color: str = None, colorx: str = None,
+                  **keywords):
+    l0 = rbdf.columns.levels[0]
+    l1 = rbdf.columns.levels[1]
+    fig, ax = plt.subplots()
+    if x in l0 and y in l0 and c in l1:
+        _scatter(rbdf, x=(x, c), y=(y, c), ax=ax, color=color or 'g', **keywords)
+    else:
+        raise ValueError('bad choice of x, y, c')
+    if 'cpu_' in c:
+        cx = c.replace('cpu_', 'sigxcpu_')
+        x_only = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(y, c)]).index)].dropna(subset=[(x, c)])
+        _scatter(x_only, x=(x, c), y=(y, cx), ax=ax, color=colorx or 'k', **keywords)
+        y_only = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(x, c)]).index)].dropna(subset=[(y, c)])
+        _scatter(y_only, x=(x, cx), y=(y, c), ax=ax, color=colorx or 'k', **keywords)
+        neither = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(y, c)]).index)]
+        neither = neither.loc[~neither.index.isin(neither.dropna(subset=[(x, c)]).index)]
+        _scatter(neither, x=(x, cx), y=(y, cx), ax=ax, color=colorx or 'k', **keywords)
+    low_x, high_x = ax.get_xlim()
+    low_y, high_y = ax.get_ylim()
+    low = min(low_x, low_y)
+    high = max(high_x, high_y)
+    ax.axline([low, low],[high, high], c='k', linewidth=0.1)
+    for val in set(x_only[(y, cx)].to_list()):
+        ax.axline([val, low],[val, high], c='r', linewidth=0.5)
+    for val in set(y_only[(x, cx)].to_list()):
+        ax.axline([low, val],[high, val], c='r', linewidth=0.5)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
     return ax
 
 def plot_scatter2(rbdf, *, x: str, y: str, c1: str, c2: str, color1: str = None,
@@ -123,6 +158,8 @@ class RbPlotAccessor(PlotAccessor):
         kind = keywords.pop('kind', 'scatter')
         if kind == 'scatter':
             return plot_scatter(data, *arguments, **keywords)
+        elif kind == 'scatter1':
+            return plot_scatter1(data, *arguments, **keywords)
         elif kind == 'scatter2':
             return plot_scatter2(data, *arguments, **keywords)
         elif kind == 'schedule':
@@ -132,8 +169,8 @@ class RbPlotAccessor(PlotAccessor):
         else:
             raise ValueError(f'{kind} is not a valid plot kind')
 
-    # def scatter(self, *arguments, **keywords):
-    #     return self(kind='scatter', *arguments, **keywords)
+    def scatter1(self, *arguments, **keywords):
+        return self(kind='scatter1', *arguments, **keywords)
 
     def scatter2(self, *arguments, **keywords):
         return self(kind='scatter2', *arguments, **keywords)
