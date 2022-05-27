@@ -20,7 +20,7 @@ all:	update-changelog reduce-packages
 update-changelog:
 	if head -1 $(CHANGELOG) | grep $(SNAPSHOT) >/dev/null ; then : ; \
 	else  \
-	  ( echo "reduce ("$(SNAPSHOT)") unstable; urgency=low" ; \
+	  ( echo "reduce ("$(SNAPSHOT)") stable; urgency=low" ; \
 	    echo ; \
 	    echo "  * New Snapshot. Date $(SNAPSHOTDATE)." ; \
 	    echo ; \
@@ -40,13 +40,17 @@ $(BUILDTOPDIR).stamp:
 
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
 
+# suppress complaint about distribution "unstable" in Ubuntu
+# by specifying the debian lintian profile
 debpackages:
 	cd reduce ; \
+	echo DEBUILD_LINTIAN_OPTS= $${DEBUILD_LINTIAN_OPTS} ; \
 	debuild \
             --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) \
 	    --preserve-envvar=DH_OPTIONS \
             --prepend-path=/usr/local/bin \
-            -b -us -uc
+            -b -us -uc \
+	    --lintian-opts --profile debian
 
 rpmpackages:
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
