@@ -838,7 +838,7 @@ start_remote_host() {
 #   --info=... control messages that are generated
 #
 
-RSYNC_OPTIONS="-rlHpEPtz --delete --force \
+RSYNC_OPTIONS="--old-args -rlHpEPtz --delete --force \
    --info=backup0,copy0,del0,flist0,misc0,mount0 \
    --info=name0,progress0,remove0,skip0,symsafe2,stats2"
 
