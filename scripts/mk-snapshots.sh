@@ -37,6 +37,7 @@
 #                                                           September 2019
 #                                                           December 2019
 #                                                           June 2020
+#                                                           June 2022
 
 # [some of the access schemes that chain ssh and virtual machines etc do not
 # get path quoting right yet, but the simple cases are OK!]
@@ -445,6 +446,7 @@ build_win64() {
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
@@ -466,6 +468,7 @@ build_altwin64() {
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
+  backup_old_snapshots "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/win64"
   stop_remote_host
 }
@@ -493,7 +496,11 @@ build_debian() {
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
+  backup_old_snapshots "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
+  fetch_files    "$REDUCE_BUILD/*.deb"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
+  fetch_files    "$REDUCE_BUILD/*.rpm"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
+  fetch_files    "$REDUCE_BUILD/*.tgz"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
+  fetch_files    "$REDUCE_BUILD/*.bz2"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   stop_remote_host
 }
 
@@ -540,7 +547,9 @@ build_macintosh() {
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
+  backup_old_snapshots "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
+  fetch_files    "$REDUCE_BUILD/*.dmg"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
+  fetch_files    "$REDUCE_BUILD/*.bz2"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   stop_remote_host
 }
 
@@ -822,25 +831,28 @@ start_remote_host() {
 }
 
 # All the options to rsync here say
-#   r recursive copy
-#   l copy symlinks
-#   H copy hard links
-#   p preserve permissions
-#   E preserve executability
-#   P keep any partially copied files for smoother re-start after
-#     interruption
-#   t preserve modification times of files
-#   z compress network traffic
-#   e use ssh with a specified port number
+#   r             recursive copy
+#   l             copy symlinks
+#   H             copy hard links
+#   p             preserve permissions
+#   E             preserve executability
+#   P             keep any partially copied files for smoother re-start
+#                 after interruption
+#   t             preserve modification times of files
+#   z             compress network traffic
+#   e             use ssh with a specified port number
 #   --exclude=... avoid sending certain files & directories
-#   --delete get rid of files not in the local file-set
-#   --force perform actions without requiring confirmation
-#   --info=... control messages that are generated
+#   --delete      get rid of files not in the local file-set
+#   --force       perform actions without requiring confirmation
+#   --info=...    control messages that are generated
+#   --inplace     make better use of an existing partial file (see -P)
+#   --append      ditto
 #
 
-RSYNC_OPTIONS="--old-args -rlHpEPtz --delete --force \
+RSYNC_OPTIONS="-rlHpEPtz --force \
    --info=backup0,copy0,del0,flist0,misc0,mount0 \
-   --info=name0,progress0,remove0,skip0,symsafe2,stats2"
+   --info=name0,progress0,remove0,skip0,symsafe2,stats2 \
+   --inplace --append"
 
 # NOTE HORRIBLY WELL. On the Macintosh there is a version of rsync in
 # /usr/bin, but it is an old one. The settings of PATH that put the newer
@@ -970,25 +982,19 @@ execute_in_dir() {
   esac
 }
 
-fetch_files() {
-# Usage example: fetch_files "$REDUCE_BUILD/*.{dmg,bz2}" "$SNAPSHOTS/linux32" "$SNAPSHOTS/old/linux32"
-  if test "$1" = "" || test "$2" = "" || test "$3" = ""
+backup_old_snapshots() {
+# Usage example: backup_old_snapshots "$SNAP/linux32" "$SNAP/old/linux32"
+  if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
     exit 1
   fi
-  src="$1"
-  dest="$2"
-  backup="$3"
+  dest="$1"
+  backup="$2"
 # I will move any previous snapshots for this architecture to somewhere
 # else, specifically to a directory "old" in the place where snapshots are
-# collected. At one stage I had copied the files here and I expected that
-# rsync would delete the old ones for me, but when I copy named files using
-# rsync, ones not mentioned are not purged. I had also tried using
-# a directory called old$dest (eg oldsnapshots) but that would not be good
-# if the user had configured things to put built snapshots in a directory
-# with a fully rooted path. So now the invocation of this function specifies
-# the backup directory explicitly.
+# collected. This should leave the $dest directory empty so it is tidy after
+# fetch files has populated it with a new snapshot.
   mkdir -p $dest
   mkdir -p $backup
   printf "mv ${dest}* $backup\n"
@@ -1000,17 +1006,33 @@ fetch_files() {
   else
     mv ${dest}* $backup
   fi
-# This function is perhaps more delicate than others, because the source
-# argument may be a list of files using wildcards. The wildcards must be
-# expanded on the remote machine not locally. The --delete option here
-# turns out not to do as much as I had hoped by way of tidying up the
-# destination directory, but all is well - I just emptied it by moving files
-# from there to the backup location.
+}
+
+fetch_files() {
+# Usage example: fetch_files "$BUILD/*.dmg" "$SNAP/linux32" "$SNAP/old/linux32"
+# Note that complicated wildcards in the source, eg ".{dmg,bz2}" were supported
+# by older versions of rsync, but as of 3.2.4 (April 15 2022) the only the
+# simpler cases of "?", "*" and "[]" are processed, and they are processed
+# within the rsync server not by the underlying shell. This change seems to
+# to have been made to make quoting simpler when file-names with embedded
+# spaces were used. An option "--old-args" reverts to the previous behaviour
+# but it is not clear that that will be accepted by older copies of rsync or
+# what happens if the client and server versions of rsync are from different
+# generations. So I AVOID specifying "--old-args" and restrict my wildcards
+# to rather simple cases. That is achieved by using several calls to this
+# fetch_files procedure, eg one for .dmg and a second for .bz2.
+# The issue was noticed and addressed in July 2022.
+  if test "$1" = "" || test "$2" = "" || test "$3" = ""
+  then
+    printf "Internal error\n"
+    exit 1
+  fi
+  src="$1"
+  dest="$2"
+  backup="$3"
   if test "$TARGET" = "macintosh"
   then
-    RSO="$RSYNC_OPTIONS --delete $MAC_RSYNC_EXTRA"
-  else
-    RSO="$RSYNC_OPTIONS --delete"
+    RSO="$RSYNC_OPTIONS $MAC_RSYNC_EXTRA"
   fi
   printf "Mode = $MODE: copy $src to $dest\n"
   case $MODE in
