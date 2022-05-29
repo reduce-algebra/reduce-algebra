@@ -45,6 +45,7 @@ using std::dec;
 
 static const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
 static const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
+static const size_t chunkMask = chunkSize-1;
 
 extern bool allocateSegment(size_t);
 
@@ -53,7 +54,8 @@ enum PageType
     consPinPageType,
     vecPinPageType,
     consFullPageType,
-    vecFullPageType
+    vecFullPageType,
+    borrowPageType
 };
 
 class Page;
@@ -117,7 +119,9 @@ public:
             Page* oldPinnedPages;
             Page* pinnedPages;
             LispObject pinnedObjects;
+            uintptr_t scanPoint;
             uintptr_t dataEnd;
+            uintptr_t initialLimit;
 // Now based on the "type" field I will have either a CONS page or
 // a VEC page, and the union here defines how each is to be laid out. Note
 // that the arrays consData[] and chunks[] are in fact expected to run
@@ -144,11 +148,7 @@ public:
                 {   bool potentiallyPinnedFlag;
                     Page* potentiallyPinnedChain;
 // I make chunkStatus an array of uint8_t values so that I understand
-// its layout very clearly. The values stored will be:
-//    0x00        first (or only) chunk in a Chunk. Or unused chunk.
-//    0x01-0x7f   continuation chunks, where the count saturates at 07f.
-//    0x80        first or only chunk in a pinned Chunk.
-//    0x81-0xff   continuations of pinned Chunks.
+// its layout very clearly. The values stored are explained elsewhere.
                     uint8_t  chunkStatus[pageSize/chunkSize];
                     uint64_t potentiallyPinnedChunks[pageSize/
                                                      chunkSize/(8*sizeof(uint64_t))];
@@ -169,7 +169,7 @@ inline bool isPotentiallyPinned(Page* p, uintptr_t a)
 
 inline void setPotentiallyPinned(Page* p, uintptr_t a)
 {   size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
-    p->potentiallyPinnedChunks[chunkNo/84] |=
+    p->potentiallyPinnedChunks[chunkNo/64] |=
         static_cast<uint64_t>(1) << (chunkNo & 63);
 }
 
@@ -179,7 +179,7 @@ inline bool isPotentiallyPinnedChunk(Page* p, size_t chunkNo)
 }
 
 inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   p->potentiallyPinnedChunks[chunkNo/84] |=
+{   p->potentiallyPinnedChunks[chunkNo/64] |=
         static_cast<uint64_t>(1) << (chunkNo & 63);
 }
 
@@ -234,16 +234,26 @@ inline void vecClearPinned(uintptr_t a, Page* p)
 // Set up the given Page as one for use with CONS supposing it is
 // totally free to start with. This sets up global fringe and limit pointers.
 
+// Note that a page that has any pinned items in it will hold the relevant
+// values for those in scanPoint and initialLimit fields.
+
 extern uintptr_t consFringe, consLimit, consEnd;
 
-inline void initConsPage(Page* p)
+inline void initConsPage(Page* p, bool empty)
 {   p->type = consFullPageType;
-    p->pinnedObjects = TAG_FIXNUM;
-    std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
-    std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
-    consFringe = reinterpret_cast<uintptr_t>(&p->consData);
-    consLimit = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     consCurrent = p;
+    consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    if (empty)
+    {   p->pinnedObjects = TAG_FIXNUM;
+        std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
+        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+        consFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->consData);
+        consLimit = consEnd;
+    }
+    else
+    {   consFringe = p->scanPoint;
+        consLimit = p->initialLimit;
+    }
 }
 
 inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
@@ -260,11 +270,205 @@ inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
 }
 
 extern uintptr_t consEndOfPage();
-extern uintptr_t doubleConsEndOfPage();
-extern uintptr_t consGCEndOfPage();
 extern void garbage_collect();
 
-inline uintptr_t harderGCGet2Words()
+// A totally unused page must still have its type field filled in as
+// emptyPageType so that ambiguous pointers that refer within it can
+// be disregarded.
+// 
+
+// I should document the layout of a Cons Page, and the structure depends
+// on the status of the page:
+//
+// Empty:      value in consData[0].car = consEnd
+//             Well actually that will get set as the page is allocated to
+//             be one containing Cons style data. Also a fully empty page
+//             will have the bitmaps relating to pinning all clear.
+//             dataEnd points at the start of the page.
+//
+// Empty+Pins: first unpinned word points to either consEnd or the next
+//             pinned location, and similarly beyond that. dataEnd refers
+//             to the start of the page. So a fully empty page is just a
+//             special case of that.
+//
+// Full:       Valid data is present from consData[0] to dataEnd
+//             but skipping items marked as pinned in the bitmap and the
+//             pinning bitmap will identify any pinned data. Ah well
+//             in fact all of these have the same structure. I just show
+//             them separately here because allocating an unused page as
+//             a cons page makes an empty one, the GC can release pages
+//             as either unused or empty+pins and both GC and general
+//             computation can allocate memory as full pages.
+// 
+//
+// Current:    data runs from consData[0] to scanPoint and then scanPoint
+//             up to consFringe, but any cells marked as pinned will be
+//             ignored on scanning.
+//             During allocation new data is placed from consFringe to
+//             consLimit.
+//             There are two possibilities there. One is that consLimit is
+//             at consEnd in which case the Page has become full. The other
+//             is that the cell at consLimit is pinned. In such a case one
+//             can perform a linear scan upwards looking for either no
+//             pinning or consEnd. If an unpinned item is found its
+//             contents show where the next setting of consLimit should
+//             be, and that will either be the next pinned item or consEnd.
+//
+// Note that some of the words there refer to global variables (eg consFringe)
+// while others are fields stored within the Page (eg scanPoint).
+//
+// When allocation fills up a page or when GC is about to start (which
+// may happen when the current cons page is only partly filled) the
+// current Page has its dataEnd field set to consFringe.
+// Whenever a new current (cons) page is established it has its scanPoint
+// and dataEnd fields set to the first address after &consData[0]
+// that is not pinned, and consFringe also points there. consLimit is set
+// based on the initial value set there. This means that a Page that contains
+// any pinned cons cells may not be re-allocated to hold vectors, because it
+// has to have the internal structure as per here,
+// "Current:" above. So that defines the state that the GC must leave
+// a cons Page in. So for clarity, if the page is utterly empty and without
+// any pinned items it starts off with its first word containing the
+// address one beyond its last.
+
+// Well I will also explain a Vector Page.
+//
+// Each vector Page is viewed as made up of a sequence of chunks each of
+// 16KB and a 512 byte array provides a small amount of information about
+// each. The values are used as follows:
+// 0          A basic chunk, ie everything fits within 16KB.
+// 1          The first segment of an extended chunk.
+// 2,3,..253  Subsequent segments of an extended chunk.
+// 254        Initial segment of an extended chunk containing some pins.
+// 255        A basic chunk that contains some pinned data.
+// In CSL I arrange that the largest basic vector I allocate is of size
+// around 2MB and a consequence of that is that I will never need an
+// extended chunk much larger than that, and so I will never overflow
+// the limit (253) of segments in an extended chunk. Phew. Note that setting
+// the array so it just contains zero leaves it is a "safe" state, and when
+// an unused Page is made into a Vector one this must happen.
+//
+enum ChunkStatus
+{
+    BasicChunk          = 0u,
+    ExtendedChunkStart  = 1u,
+    ExtendedChunkMax    = 253u,
+    ExtendedPinnedChunk = 254u,
+    BasicPinnedChunk    = 255u
+};
+// The purpose of all this is that if I have an ambiguous pointer that
+// refers within a vector page I can first easily identify the chunk
+// it is within. Then I probe the byte array. If the value I find is
+// 0, 1, 254 or 255 I have the first or only 16KB part of the chunk.
+// Otherwise I can subtract the number I find from the address to identify
+// the first part, and then if I need to re-probe to see if an extended
+// chunk contains any pinned objects.
+//
+// A full vector page will contain its sequence of chunks. some will be
+// flagged as containing pinned material by the entry on their first
+// (or only) segment. A bitmap will identify the headers of the pinned
+// objects within them.
+// Chunks up to dataEnd will will contain a sequence of Lisp items,
+// with a padder object at the end so that the chunk is totally full,
+// ir if it is a current Page live date runs up to vecFringe.
+// Only chunks containing pinned material beyond that are at all
+// useful.
+//
+// A current vector page will have a scanPoint that refers just beyond
+// some object and has vecFringe and vecLimit set properly.
+// Each chunk apart from the one that vecFringe points within
+// and any that contain pinned data are totally full (with a padder at
+// the end). So to scan, one identifies the chunk concerned (by dividing
+// by 16K) and checks its sequence number in the byte-array. That makes
+// it possible to identify the end of the chunk or extended chunk, and
+// the data can then be parsed until that is reached. Then the next
+// non-pinned chunk is found (by skipping over pinned chunks) and scanning
+// continues until either vecFringe or the end of the Page is reached.
+//
+// Allocation will test currentChunkIsEmpty. If it is empty then it is
+// OK to allocate a block up as far as vecHardLimit, which is either the
+// start of the next pinned chunk is is vecEnd. In that case the allocated
+// space is set up as an extended chunk if needbe and vecLimit set so that
+// subsequent small requests can potentially fill up spare space at the
+// end. Of course that clears currentChunkIsEmpty. The next allocation(s)
+// can fit in blocks of memory up as far as vecLimit. A common case may be
+// when multiple smallish vectors build up within a basic chunk.
+// When the next request will not fit a padder has to be put in and
+// a new empty chunk started.
+// When there is an attempt to allocate a rather large vector a big padder
+// may be needed. Well most padders will just be from vecFringe to the
+// end of the current chunk, so inserting then will not adjust
+// chunkStatus[], but it will be possible to need to insert a padder
+// when currentChunkIsEmpty and that may cvall for an extended chunk to
+// hold it.
+//
+// A vector page that is empty apart from some pinned stuff needs to have
+// the chunkStatus array filled in to identify each chunk that contains
+// pinned material. When a totally fresh page is made into a vector page
+// the chunkStatus[] array can be set to zero as if every chunk is basic
+// and not pinned.
+
+// Allocation while programs are running normally and when garbage
+// collection is in progress are identical until a Page becomes full.
+// In normal cases filling a page leads to a check as to whether 2/3 of
+// all available pages are in use, and if now a further page is just
+// grabbed, and otherwise GC is triggered. Well "available" needs to include
+// available via requesting more from the operating system.
+// During GC fresh pages are always grabbed save that if none are available
+// at all then a "run out of memory" event must be reported. This is a
+// horrible situation because memory is in a messed up state with some
+// stuff copied to the "new half space" and some not, so recovery is
+// not possible but I suspect that by making print routines able to
+// traverse forwarding pointers transparently it may still be possible to
+// generate a backtrace. If I want to be able to recover from memory-full
+// disasters I would need to trigger GC when memory became just 1/2 full
+// (and still worry about fragmentation!) and then complain at the end
+// of GC unless there was not say 1/6 of memory still unused, ie that
+// half memory load had compressed into 1/3 of memory, which is the
+// same stopping point that I am at present envisaging. But my proposed
+// scheme garbage collects less frequently so improves performance at the
+// cost of recovery in circumstances that I tend to view as unrecoverable!
+
+
+// With at least some compilers if I have an "inline" function definition
+// but there are no calls to it then no space is wasted. Well compile time
+// may be impacted. So I put some functions that can display or validate
+// Pages here for use while debugging.
+
+inline void displayVectorPage(Page* p)
+{   unsigned int n = 0;
+    for (unsigned int i=0; i<sizeof(p->chunkStatus); i++)
+    {   unsigned int k = p->chunkStatus[i];
+        if (k == BasicChunk)
+        {   n++;
+            continue;
+        }
+        if (n != 0)
+        {   zprintf("%dB ", n);
+            n = 0;
+        }
+        zprintf("^%u ", k);
+    }
+    if (n != 0) zprintf("%dB ", n);
+}
+
+
+extern bool withinGarbageCollector;
+
+// The class here is to ensure that the flag gets reset when GC terminates.
+
+class WithinGarbageCollector
+{
+public:
+    WithinGarbageCollector()
+    {   withinGarbageCollector = true;
+    }
+    ~WithinGarbageCollector()
+    {   withinGarbageCollector = false;
+    }
+};
+
+inline uintptr_t harderGet2Words()
 {
 // Here consFringe == consLimit. One possibility is tha this is because
 // consLimit points at a pinned item, and there could of course be
@@ -277,12 +481,11 @@ inline uintptr_t harderGCGet2Words()
         consFringe += 2*sizeof(LispObject);
 // Now if the Page is full I need to try to allocate another, and if that
 // does not make sense I will have to garbage collect.
-    if (consFringe == consEnd) return consGCEndOfPage();
+    if (consFringe == consEnd) return consEndOfPage();
 // When I skip pinned data and if there is space beyond same then the first
-// word of that region holds a padder header that lets me know where the
-// next usable section of memory ends.
-    consLimit = consFringe +
-        length_of_header(*reinterpret_cast<Header*>(consFringe));
+// word of that region holds a pointer showing where the next usable
+// section of memory ends.
+    consLimit = *reinterpret_cast<uintptr_t*>(consFringe);
 // Now I can allocate.
     uintptr_t r = consFringe;
     consFringe += 2*sizeof(LispObject);
@@ -293,19 +496,14 @@ inline uintptr_t harderGCGet2Words()
 // other item that only use up 2 cells. I hope it will often have
 // calls to it expanded inline.
 
-inline uintptr_t GCGet2Words()
+inline uintptr_t get2Words()
 {   uintptr_t r = consFringe;
     if (r != consLimit)
     {   consFringe += 2*sizeof(LispObject);
         return r;
     }
-    return harderGCGet2Words();
+    return harderGet2Words();
 }
-
-// It may be that allocating two CONS cells at a time can save a little
-// bit of overhead... If there are not two consecutive units of memory
-// immediately available it will leave a gap. In case there is ever a
-// linear scan of the memory it will put in a padder.
 
 inline Header makeHeader(size_t n, int type)   // size is in bytes
 {   return TAG_HDR_IMMED + (n << (Tw+5)) + type;
@@ -320,142 +518,122 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 
-inline void initVecPage(Page* p)
+// Again pages that have any pinned data in them specify their initial
+// fringe and limit in scanPoint and initialLimit.
+
+inline void initVecPage(Page* p, bool empty)
 {   p->type = vecFullPageType;
-    p->potentiallyPinnedFlag = false;
-    p->potentiallyPinnedChain = nullptr;
-    std::memset(p->previousVecPins, 0, sizeof(p->previousVecPins));
-    std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
-    std::memset(p->chunkStatus, 0, sizeof(p->chunkStatus));
-    std::memset(p->potentiallyPinnedChunks, 0,
-                sizeof(p->potentiallyPinnedChunks));
-    vecFringe = reinterpret_cast<uintptr_t>(&p->chunks);
-    vecLimit = vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     vecCurrent = p;
+    vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    if (empty)
+    {   p->potentiallyPinnedFlag = false;
+        p->potentiallyPinnedChain = nullptr;
+        std::memset(p->previousVecPins, 0, sizeof(p->previousVecPins));
+        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+        std::memset(p->chunkStatus, BasicChunk, sizeof(p->chunkStatus));
+        std::memset(p->potentiallyPinnedChunks, 0,
+                    sizeof(p->potentiallyPinnedChunks));
+        vecFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->chunks);
+        vecLimit = vecEnd;
+    }
+    else
+    {   vecFringe = p->scanPoint;
+        vecLimit = p->initialLimit;
+    }
+    displayVectorPage(p);
 }
 
-extern uintptr_t vecEndOfPage(size_t n);
-extern uintptr_t vecGCEndOfPage(size_t n);
-
-inline uintptr_t harderGCGetNBytes(size_t n)
-// Write in a padder item (if necessary) so that the current chunk is
-// properly filled up.
-{   if (vecFringe != vecLimit)
-        setHeaderWord(vecFringe, vecLimit-vecFringe);
-    size_t chunkNo = (vecFringe -
-                      reinterpret_cast<uintptr_t>(vecCurrent))/chunkSize;
-    while (vecFringe < vecEnd &&
-           (vecCurrent->chunkStatus[chunkNo] & 0x80) != 0)
-    {   vecFringe += chunkSize;
-        chunkNo++;
-    }
-#pragma message "improper treatment of vectors over 16KB"
-// here I need code akin to that in harderGetNBytes that sets
-// sequence numbers into chunkStatus. Well what I actually do at
-// is I waste all the space in a Page when a request will not fit in
-// easily. I think this may be valid but just wasteful.
-    return vecGCEndOfPage(n);
-}
-
-// This allocates from the vector-heap. It would not be essential to
-// detect and take special action on two-word requests, but I think the
-// cost will be low and the effect will be to make things just a bit tidier.
-// Again the case I hope will be common is cheap and may well get compiled
-// inline.
-
-inline uintptr_t GCGetNBytes(size_t n)
-{   if (n == 2*sizeof(LispObject)) return GCGet2Words();
-    uintptr_t r = vecFringe;
-    size_t gap = vecLimit - r;
-    if (n <= gap)
-    {   vecFringe += n;
-        return r;
-    }
-    return harderGCGetNBytes(n);
-}
-
-// This is the main function for allocating CONS cells and any
-// other item that only use up 2 cells. I hope it will often have
-// calls to it expanded inline.
-
-inline uintptr_t get2Words()
-{   uintptr_t r = consFringe;
-    if (r != consLimit)
-    {   consFringe += 2*sizeof(LispObject);
-        return r;
-    }
-    return consEndOfPage();
-}
-
-inline uintptr_t get4Words()
-{   uintptr_t r = consFringe;
-    size_t gap = consLimit - consFringe;
-    if (gap >= 4*sizeof(LispObject))         // The simple case!
-    {   consFringe += 4*sizeof(LispObject);
-        return r;
-    }
-    else if (gap != 0)
-    {   setHeaderWord(consFringe, 2*sizeof(LispObject));
-        consFringe += 2*sizeof(LispObject);
-    }
-    return doubleConsEndOfPage();
-}
-
-extern uintptr_t vecFringe, vecLimit, vecEnd;
-
-extern uintptr_t vecEndOfPage(size_t n);
-
-inline uintptr_t harderGetNBytes(size_t n)
-// Write in a padder item (if necessary) so that the current chunk is
-// properly filled up.
-{   setHeaderWord(vecFringe, vecLimit-vecFringe);
-// Here the requested vector will not fit in the existing chunk, so
-// a few one will need to be allocated. Well it is much worse than that!
-// First the request may be for a vector that will not fit into a single
-// chunk, so then extension chunks will be needed to build up a Chunk.
-// That that may or may not fit within the current Page, and if the Page
-// gets filled I will need to allocate another. The key thing I need
-// to do is to fill in the chunkStatus information in the page to track
-// those composite Chunks.
-    size_t free = vecEnd-vecLimit;
-    if (n <= free)       // Can fit in one or more chunks within current Page
-    {   uintptr_t r = vecLimit;
-        vecFringe = r + n;
-        size_t chunkNo =
-            (r - reinterpret_cast<uintptr_t>(vecCurrent))/chunkSize;
-        unsigned int seq = 0;
-// Deal with all the chunks that end up totally full. Note that chunk
-// sequence numbers saturate at 0x7f.
-        while (n > chunkSize)
-        {   vecCurrent->chunkStatus[chunkNo++] = seq;
-            if (seq < 0x7f) seq++;
-            vecLimit += chunkSize;
-            n -= chunkSize;
-        }
-// Now set up the last (or the only) chunk.
-        vecCurrent->chunkStatus[chunkNo++] = seq;
-        vecLimit += chunkSize;
-        return r;
-    }
-    return vecEndOfPage(n);
-}
-
-// This allocates from the vector-heap. It would not be essential to
-// detect and take special action on two-word requests, but I think the
-// cost will be low and the effect will be to make things just a bit tidier.
-// Again the case I hope will be common is cheap and may well get compiled
-// inline.
+extern Page* grabFreshPage(PageType type);
 
 inline uintptr_t getNBytes(size_t n)
-{   if (n == 2*sizeof(LispObject)) return get2Words();
-    uintptr_t r = vecFringe;
-    size_t gap = vecLimit - r;
-    if (n <= gap)
-    {   vecFringe += n;
-        return r;
+{
+// If I am just getting 2 words I can use the cons heap where allocation
+// is simpler. This will cover some rather small bignums and some short
+// strings. It is a rather minor special case!
+    if (n == 2*sizeof(LispObject)) return get2Words();
+    for (;;)
+    {   uintptr_t r = vecFringe;
+// Now I will see if the new item will fit within the current chunk. Note
+// that this test applies whether I am in a basic chunk or at the end of
+// an extended one. The chunkStatus[] entry must already be set up and
+// at the start that will always indicate basic chunks, so when this fills
+// one chunk perfectly and moves on to the next that next one will be
+// ready to be a basic chunk. The test against vecLimit is needed because
+// a previous allocation may have totally filled eg the last chunk on
+// the page.
+        if ((r&chunkMask) + n <= chunkSize && r!=vecLimit)
+        {   vecFringe += n;
+            return r;
+        }
+// Here either the request will not fit in the current chunk or really there
+// is no current chunk. Insert a padder in the former case.
+        if (r!=vecLimit)
+        {   setHeaderWord(r, (-r)&chunkMask);
+            vecFringe = r + ((-r)&chunkMask);
+        }
+// Now vecFringe points at the start of a chunk. In some cases that will
+// mean I can just move on and use that chunk easily. Note that this
+// requires chunkStatus[] to have been initialised to BasicChunk
+        if (n <= chunkSize && vecFringe != vecLimit)
+        {   r = vecFringe;
+            vecFringe += n;
+            return r;
+        }
+// Here is the messy case. It could be that the request is small and
+// I have just filled memory up as far as vecLimit, or it could be that
+// there is space before vecLimit but I need to confirm that there are
+// enough consecutive free unpinned chunks to accommodate a large
+// vector request.
+        size_t chunkNo =
+            (vecFringe - reinterpret_cast<uintptr_t>(vecCurrent))/chunkSize;
+// chunkNo is now the number of the chunk that blocked me at vecLimit. I
+// will skip over pinned chunks.
+        while (chunkNo<sizeof(vecCurrent->chunkStatus) &&
+               vecCurrent->chunkStatus[chunkNo] != BasicChunk) chunkNo++;
+// Now I know where the next available region is. Scan to find its end.
+// That will let me set fresh values for vecFringe and vecLimit.
+        size_t stopPoint=chunkNo;
+        while (stopPoint<sizeof(vecCurrent->chunkStatus) &&
+               vecCurrent->chunkStatus[stopPoint] == BasicChunk) stopPoint++;
+        vecFringe =
+            reinterpret_cast<uintptr_t>(vecCurrent) + chunkNo*chunkSize;
+        vecLimit =
+            reinterpret_cast<uintptr_t>(vecCurrent) + stopPoint*chunkSize;
+        if (n <= vecLimit - vecFringe)
+        {
+// Now it will fit
+            uintptr_t r = vecFringe;
+            vecFringe += n;
+// Set vecLimit the the chunk boundary just above the newly allocated
+// region of memory
+            vecLimit = vecFringe + ((-vecFringe) & chunkMask);
+// Mark up an extended block if needbe.
+            if (n > chunkSize)  // leave as Basic if possible.
+            {   size_t chunksNeeded = (n + chunkSize - 1)/chunkSize;
+                for (size_t i=0; i<chunksNeeded; i++)
+                    vecCurrent->chunkStatus[chunkNo+i] = ExtendedChunkStart+i;
+            }
+            return r;
+        }
+// Ugh - the request will not fit in this block. I need to fill this block
+// with a padder and scan on looking for another. Make the space into
+// and extended block (if necessary)
+        if (vecLimit != vecFringe+chunkSize)
+            for (size_t i=chunkNo; i<stopPoint; i++)
+                vecCurrent->chunkStatus[i] = ExtendedChunkStart+(i-chunkNo);
+        setHeaderWord(vecFringe, vecLimit-vecFringe);
+        vecFringe = vecLimit;
+// If I have reached the end of a Page then I must gram a new one.
+        if (vecLimit == vecEnd)
+        {   vecCurrent->dataEnd = vecFringe;
+            pageAppend(vecCurrent, vecFullPages,
+                       vecFullPagesTail, vecFullPagesCount);
+            vecCurrent = grabFreshPage(vecFullPageType);
+        }
+        continue;    
     }
-    return harderGetNBytes(n);
 }
+
 
 // "Borrowing" is a concept I introduce here. Its key use is when a hash
 // table needs to be re-hashed. A requirement here is that garbage
@@ -475,7 +653,7 @@ inline uintptr_t getNBytes(size_t n)
 extern Page* pageFringe;
 
 extern unsigned int borrowingDepth;
-extern uintptr_t borrowFringe, borrowEnd;
+extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
 class Borrowing
 {
@@ -501,36 +679,85 @@ public:
     }
 };
 
-inline void initBorrowPage(Page* p)
+inline void initBorrowPage(Page* p, bool empty)
 {
-// borrowed pages do not need any magic structures set up in them beyond
-// the fringe and end pointers, because they will never be active at GC time. 
-    borrowFringe = reinterpret_cast<uintptr_t>(&p->chunks);
-    borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+// borrowed pages do not need anything like as much initialisation since
+// they will never participate in GC. However they must have chunkStatus
+// set up since that is inspected in case there might have been pinned
+// items within them.
     borrowCurrent = p;
+    borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    if (empty)
+    {
+// I do not need to do anything with pinning bitmaps here, but I must
+// initialise chunkStatus since that is used during allocation.
+        std::memset(p->chunkStatus, BasicChunk, sizeof(p->chunkStatus));
+        borrowFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->chunks);
+        borrowLimit = borrowEnd;
+    }
+    else
+    {   borrowFringe = p->scanPoint;
+        borrowLimit = p->initialLimit;
+    }
+    displayVectorPage(p);
 }
 
-extern uintptr_t borrowEndOfPage(size_t n);
-
-// Borrowed pages are never in use during garbage collection, and so
-// I do not need to worry about chunks or padders or anything. I can
-// allocate big vectors right up to their end.
+// The code for borrowing is very much the same as the for allocating
+// vector space, save that it uses borrowFringe etc. Also it does not
+// change chunkStatus[] information, so that when the borrowed page is
+// finally abandoned it is left in just the state it was at the start.
+// Furthermore it does not need to insert padder objects since new data
+// in the page is not visible to the garbage collector.
+// This code has the comments that are present in getNBytes() stripped out
+// so that the bulk is a little less daunting.
 
 inline uintptr_t borrowNBytes(size_t n)
-{   uintptr_t r = borrowFringe;
-    size_t gap = borrowEnd - r;
-    if (n <= gap)
-    {   borrowFringe += n;
-        return r;
+{
+    for (;;)
+    {   uintptr_t r = borrowFringe;
+        if ((r&chunkMask) + n <= chunkSize && r!=borrowLimit)
+        {   borrowFringe += n;
+            return r;
+        }
+        if (r!=borrowLimit)
+            borrowFringe = r + ((-r)&chunkMask);
+        if (n <= chunkSize && borrowFringe != borrowLimit)
+        {   r = borrowFringe;
+            borrowFringe += n;
+            return r;
+        }
+        size_t chunkNo =
+            (borrowFringe - reinterpret_cast<uintptr_t>(borrowCurrent))/chunkSize;
+        while (chunkNo<sizeof(borrowCurrent->chunkStatus) &&
+               borrowCurrent->chunkStatus[chunkNo] != BasicChunk) chunkNo++;
+        size_t stopPoint=chunkNo;
+        while (stopPoint<sizeof(borrowCurrent->chunkStatus) &&
+               borrowCurrent->chunkStatus[stopPoint] == BasicChunk) stopPoint++;
+        borrowFringe =
+            reinterpret_cast<uintptr_t>(borrowCurrent) + chunkNo*chunkSize;
+        borrowLimit =
+            reinterpret_cast<uintptr_t>(borrowCurrent) + stopPoint*chunkSize;
+        if (n <= borrowLimit - borrowFringe)
+        {   uintptr_t r = borrowFringe;
+            borrowFringe += n;
+            borrowLimit = borrowFringe + ((-r) & chunkMask);
+            return r;
+        }
+        borrowFringe = borrowLimit;
+        if (borrowLimit == borrowEnd)
+        {   borrowCurrent->dataEnd = borrowFringe;
+            pageAppend(borrowCurrent, borrowPages,
+                       borrowPagesTail, borrowPagesCount);
+            borrowCurrent = grabFreshPage(borrowPageType);
+        }
+        continue;    
     }
-    return borrowEndOfPage(n);
 }
+
 
 inline void poll()
 {
 }
-
-extern Page* grabFreshPage();
 
 // Now for higher level code that performs Lisp-specific allocation.
 
@@ -949,650 +1176,6 @@ int ntz(uint64_t n)
 #endif // __GNUC__
 #define NLZ_DEFINED 1
 #define NTZ_DEFINED 1
-
-
-
-#if 0 ///////////////////////////////////////////////@@@@@@@@@@@@@@@@@@@@@
-//~ 
-//~ extern uintptr_t              fringe;
-//~ extern uintptr_t              limit;
-//~ extern Chunk*                 currentChunk;
-//~ extern uintptr_t              limitBis;
-//~ extern uintptr_t              fringeBis;
-//~ extern size_t                 request;
-//~ extern LispObject             result;
-//~ extern size_t                 gIncrement;
-//~
-//~ extern uintptr_t              gFringe;
-//~ extern uintptr_t              gLimit;
-//~
-//~ // With the scheme I have here when an 8 Mbyte page gets full all of it
-//~ // will be scheduled for evacuation (ie garbage collection). In the extreme
-//~ // case that I had 64 active threads but only one was performing allocation
-//~ // that would leave 63 chunks within the page essentially empty - that is
-//~ // about 1 Mbyte. Is (1/8) of the page is not used. That is not a disaster!
-//~ // In the more plausible case of say 8 threads the overhead decreases to a
-//~ // level where I really stop worrying.
-//~ // Well if needbe I could try being clever and allocating each thread chunks
-//~ // whose size was sensitive to their history of allocation, so that
-//~ // threads that were almost always dormant or which hardly did any allocation
-//~ // got much smaller chunks. At the very very least to do anything like that
-//~ // now would be premature!
-//~
-//~ // When I need to trigger or participate in a garbage collection I
-//~ // call difficult_n_bytes() with an argument that is the amount of memory I
-//~ // am wanting to allocate. That is allowed to be zero (for instance when
-//~ // I am just polling). It will return a pointer to an allocated block, and
-//~ // set fringe, limit etc to reflect the allocation performed. Within it
-//~ // it may have to try several times: the fundamental version guarantees to
-//~ // achieve allocation for at least one of the threads (and that thread will
-//~ // continue and only join in with subsequent collections later on).
-//~ // Note that limit[] can be forced to zero as a call to difficult_allocate
-//~ // is exiting.
-//~
-//~ enum GcStyle
-//~ {
-//~     GcStyleNone,
-//~     GcStyleMinor,
-//~     GcStyleMajor
-//~ };
-//~
-//~ extern GcStyle userGcRequest;
-//~
-//~ extern uintptr_t difficult_n_bytes();
-//~
-//~ // This is the core part of CONS and also of the code that allocates
-//~ // bignums, strings and vectors.
-//~
-//~
-//~ #ifdef DEBUG
-//~ extern void testLayout();
-//~ #endif // DEBUG
-//~
-//~ #ifdef DEBUG
-//~ namespace REAL
-//~ {
-//~ #endif // DEBUG
-//~
-//~ inline LispObject get_n_bytes(size_t n, uintptr_t r, uintptr_t w)
-//~ {
-//~ // The new block I need to allocate really will not fit in the current
-//~ // chunk.
-//~ // I may in fact be able to make this allocation simply by grabbing a
-//~ // fresh chunk. I need to record the end-point within this Chunk...
-//~ // I want to make every chunk "tidy" because when I have one that gets
-//~ // pinned I will need to make a linear scan of it treating every pointer
-//~ // field within it as an unambiguous list-base. Any uninitialized or otherwise
-//~ // wild regions within it could cause disaster! I do this by recording its
-//~ // high water mark.
-//~     if (w != 0)
-//~     {
-//~ // I now need to allocate a new chunk. gFringe and gLimit delimit a region
-//~ // within of size PAGE (perhaps 8 Mbytes) and I will start by allocating
-//~ // chunks sequentially within that page. By making gFringe atomic I can so
-//~ // this in a lock-free manner.
-//~ // I will make my next chunk big enough for the current allocation request
-//~ // with targetChunkSize left over after that. This ensures that even big
-//~ // vector requests can be satisfied.
-//~         uintptr_t oldFringe = r;
-//~         Chunk* newChunk = reinterpret_cast<Chunk*>(gFringe);
-//~         gFringe += targetChunkSize+n;
-//~         r = newChunk->dataStart(); // safe even if chunk pointer is bad!
-//~ // Be aware that other threads might be doing (atomic) increments on gFringe
-//~ // at the same time that this one does. They will each reserve separate
-//~ // new chunks, but some of these may fall in memory well above gLimit. And
-//~ // hence they could be beyond the end of the current Page.
-//~ // I am going to assume (ha ha) that even if the maximum number of threads
-//~ // each increment gFringe by the largest possible amount then it will not
-//~ // suffer arithmetic overflow. If I have a maximum of 16 threads then I ought
-//~ // to ensure that gLimit+130M > gLimit.
-//~         fringe = r + n;
-//~ // I can not use newChunk->dataEnd() on the next line because the chunk does
-//~ // not yet have its length field filled in. And that has to be the case
-//~ // because the region I have set aside for this Chunk may be beyond the end
-//~ // of the current Page (or the next pinned place within the Page).
-//~         uint64_t newLimit =
-//~             reinterpret_cast<uintptr_t>(newChunk) + targetChunkSize+n;
-//~ // Possibly the allocation of the new chunk ran beyond the current page
-//~ // and that will be cause to consider triggering garbage collection. If the
-//~ // chunk size is 16K and the page size 8M it will take 512 chunk allocations
-//~ // before a page is filled. If for now I suppose that having 16 threads all
-//~ // allocating cons cells furiously is an extreme case then that will mean
-//~ // that each thread gets through 32 chunks before the extra (probably severe)
-//~ // costs of page allocation arise. So this is about 1 in 32000 conses in the
-//~ // heaviest multi-thread case and only 1 in 0.5 million in a single thread
-//~ // scenario.
-//~ //
-//~ // I want to identify the Page that I am currently allocating within. In an
-//~ // earlier draft I masked newChunk with -pageSize. However newChunk could
-//~ // be well above the end of valid allocation space in the current page and
-//~ // might in fact be within the next sequential page. So rather than that I
-//~ // use oldFringe-1. The "-1" is because maybe the previous fringe had
-//~ // ended up such that the previously allocated item had totally filled the
-//~ // Chunk and Page, so it points at the location just beyond the Page end.
-//~         Page* p = reinterpret_cast<Page*>((oldFringe-1) & -pageSize);
-//~         if (newLimit <= gLimit)
-//~         {
-//~ // Now my allocation of a new chunk has been successful. Before I test if
-//~ // participation in a garbage collection on behalf of some other thread
-//~ // is required I need to record this chunk in the table of chunks that
-//~ // the page maintains. I also need to fill in the chunk header -- well the
-//~ // pinChain pointer does not need initializing until and unless the page
-//~ // gets pinned, but the isPinned flag must start off false so that when the
-//~ // GC finds an ambiguous pointer within this chunk it knows when that is the
-//~ // first such.
-//~             currentChunk = newChunk;
-//~             newChunk->length = targetChunkSize+n;
-//~             newChunk->isPinned = false;
-//~             newChunk->evacuated = false;
-//~             newChunk->pinnedObjects = TAG_FIXNUM;
-//~             newChunk->chunkPinChain = nullptr;
-//~             size_t chunkNo = p->chunkCount++;
-//~ //#         zprintf("allocation in page %a increments chunkCount to %d\n",
-//~ //#                 p, p->chunkCount);
-//~             p->chunkMap[chunkNo] = newChunk;
-//~             limitBis = newLimit;
-//~ #ifdef NO_THREADS
-//~             limit = newLimit;
-//~             zprintf("limit = %a\n", limit);
-//~             bool ok = true;
-//~ #else // NO_THREADS
-//~ // I wish to write back limit but it is possible that in
-//~ // the meanwhile somebody set that to zero, so I need to be a bit careful.
-//~ // Specifically I will only write back the new limit if the old one was
-//~ // still in force.
-//~ //
-//~ // Here I have (successfully) allocated a new chunk, and I have set my
-//~ // fringe to point within it. Because limit can be arbitrarily clobbered
-//~ // by others I will only update it if it has not changed since I loaded
-//~ // it earlier. If it has changed it will have been set to zero and I
-//~ // must participate in a GC.
-//~             bool ok = limit.compare_exchange_strong(w, newLimit);
-//~ #endif // NO_THREADS
-//~ #ifdef DEBUG
-//~             if (ok) testLayout();
-//~ #endif // DEBUG
-//~             if (ok) return static_cast<LispObject>(r);
-//~         }
-//~         gIncrement = targetChunkSize+n;
-//~         fringe = oldFringe;
-//~ //      zprintf("At %s fringe set to oldFringe = %a\n", __WHERE__, oldFringe);
-//~     }
-//~     else
-//~     {
-//~ // Here I am about to be forced to participate in garbage collection,
-//~ // typically for the benefit of some other thread.
-//~         if (gcTrace) zprintf("GC triggered\n");
-//~         if (currentChunk != nullptr)
-//~             currentChunk->chunkFringe = r;
-//~         gIncrement = 0;
-//~         fringe = r;
-//~ //      zprintf("At %s fringe set to %a\n", __WHERE__, r);
-//~     }
-//~     THREADID;
-//~     fringeBis = fringe;
-//~ //# zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-//~     request = n;
-//~ // Here I can not complete the work with this inline function because
-//~ // either I have run out of space for a new chunk or because some
-//~ // other thread had done that and had set my limit register to zero
-//~ // to tell me. I set fringe back to the value that it had on entry,
-//~ // so the situation when I call difficult_n_bytes() is just as if it had
-//~ // been called directly from the main program save that gFringe may have
-//~ // been incremented - possibly beyond gLimit.
-//~     r = difficult_n_bytes();
-//~     my_assert(is_cons(r), "difficult_n_bytes should return a CONS");
-//~     return static_cast<LispObject>(r);
-//~ }
-//~
-//~ inline LispObject get_n_bytes(size_t n)
-//~ {
-//~ // The size passed here MUST be a multiple of 8.
-//~ // I have a thread-local variable fringe, and limit is in effect
-//~ // thread-local. These delimit a region of size about targetChunkSize
-//~ // within which allocation can be especially cheap. limit is atomic and
-//~ // that indicates that other threads may access it. In particular another
-//~ // thread can set it to zero to cause this thread to synchronize with
-//~ // others to participate in garbage collection. Because on some platforms
-//~ // access to thread-locals is more expensive than use of simple variables
-//~ // or is even achieved via strange C++ trickery, I isolate loading and
-//~ // storing such values into simple statements that transfer values to
-//~ // local variables.
-//~     THREADID;
-//~     uintptr_t r = fringe;
-//~     uintptr_t fr1 = r + n;
-//~     fringe = fr1;
-//~     uintptr_t w = limit;
-//~ // The simple case completes here. If each chunk is around 16K then only 1
-//~ // CONS in 1000 or so will take the longer route. I rather hope that the
-//~ // common case will be lifted to be rendered in-line.
-//~     if (fr1 <= w) LIKELY
-//~     {
-//~ #ifdef DEBUG
-//~         testLayout();
-//~ //      if (gcTrace) zprintf("get_n_bytes(%d) = %a\n", n, r);
-//~ #endif // DEBUG
-//~         return static_cast<LispObject>(r);
-//~     }
-//~     UNLIKELY return get_n_bytes(n, THREADARG r, w);
-//~ }
-//~
-//~ #ifdef DEBUG
-//~ } // end of namespace
-//~
-//~ inline size_t get_size[8];
-//~ inline unsigned int get_count = 0;
-//~ inline unsigned int get_trace = 0x7fffffff; // 514572-10;
-//~
-//~ inline LispObject previousCons = 0;
-//~
-//~ inline LispObject get_n_bytes(size_t n)
-//~ {   LispObject r = REAL::get_n_bytes(n);
-//~ //# zprintf("get_n_bytes %d => %a\n", n, r);
-//~ // The following assertion may sometimes be violated maybe. Eg if a large
-//~ // [vector] request causes a new Chunk to be allocated, but after that
-//~ // a smaller object fits into the end of the existing Chunk.
-//~ //  my_assert(r > previousCons, []{zprintf("non-increasing allocation\n"); });
-//~     previousCons = r;
-//~     return r;
-//~ }
-//~
-//~ #endif // DEBUG
-//~
-//~
-//~ // It will be important to poll frequently because when one thread
-//~ // observes that it needs to garbage collect all other threads must be
-//~ // paused. Any other that calls cons() or getvec() will pause there, but
-//~ // code in a loop that did not allocate memory could cause an unbounded
-//~ // delay unless this is called such that the loop can be interrupted.
-//~ // Extra steps will be needed when library calls that might block are
-//~ // made, but details of that belong elsewhere.
-//~
-//~ inline void poll()
-//~ {   uintptr_t w;
-//~     THREADID;
-//~     if (fringe > (w = limit))
-//~     {
-//~ // Here I need to set everything up just as if I had been making an
-//~ // allocation request for zero bytes.
-//~         fringeBis = fringe;
-//~ //#     zprintf("Polling at %s fringeBis[%d] = %a\n",
-//~ //#             __WHERE__, threadId, fringeBis);
-//~         request = 0;
-//~         gIncrement = 0;
-//~         static_cast<void>(difficult_n_bytes());
-//~     }
-//~ }
-//~
-//~ // The following can be used as in
-//~ //   withRecordedStack([&]{ ... });
-//~ // where the "..." represents some actions. Its job is to arrange that
-//~ // the C stack has all local values on (in particular that nothing is
-//~ // referenced solely via machine registers) and that a stackFringe variable
-//~ // is set so that the garbage collector can do its job properly.
-//~
-//~
-//~
-//~
-//~ extern std::mutex mutexForGc;
-//~ extern std::mutex mutexForFreePages;
-//~ extern bool gc_started;
-//~ extern bool gc_complete;
-//~ extern std::condition_variable cv_for_gc_idling;
-//~ extern std::condition_variable cv_for_gc_busy;
-//~ extern std::condition_variable cvForChunkStack;
-//~ extern std::condition_variable cvForCopying;
-//~ extern std::condition_variable cv_for_gc_complete;
-//~
-//~ // I am going to put the code that synchronizes threads for garbage
-//~ // collection here as an inline function mainly so that the code is
-//~ // present close to the procedures that call it - they have to cooperate
-//~ // in a way that feels delicate enough that having them in separate files
-//~ // would increase the risk of confusion.
-//~
-//~ extern uint32_t activeThreads;
-//~ inline uint32_t FactiveThreads() { return activeThreads; }
-//~
-//~ //  0x00 : total_threads : lisp_threads : still_busy_threads
-//~ //
-//~ // The meaning of all those is as follows:
-//~ //   total_threads: Count of all the threads that CSL has started and that
-//~ //                  might ever participate as Lisp mutators.
-//~ //   lisp_threads:  The number of threads that are at present running as
-//~ //                  Lisp mutators. This can be less than total_threads
-//~ //                  because if a thread is about to perform a (potentially)
-//~ //                  blocking system call it must decrease thsi count. All
-//~ //                  threads included in this count thereby guarantee that they
-//~ //                  will either allocate memory or perform a polling operation
-//~ //                  fairly soon.
-//~ //   still_busy_threads: Used during synchronization at the start and end of
-//~ //                  garbage collection. Specifically as threads poll and
-//~ //                  discover that a garbage collection is pending they
-//~ //                  decrement this field. When it reaches zero that indicates
-//~ //                  that all (lisp) threads have become quiescent, and so
-//~ //                  global action can start.
-//~ // There can be delicacies involved in updating all these! In particular
-//~ // starting or terminating a thread while all others are in the process
-//~ // of synchronizing for or after garbage collection is something that will
-//~ // involve some care!
-//~
-//~ extern unsigned int activeHelpers;
-//~
-//~ extern bool generationalGarbageCollection;
-//~ extern void generationalGarbageCollect();
-//~ extern void fullGarbageCollect();
-//~
-//~ // I have multiple threads, and when a GC is needed they need to synchronize.
-//~ // My plan is that one thread is selected as the key one, with that
-//~ // being the last one to decrement an "activeThreads" counter. By virtue
-//~ // of being last there the thread knows that all the other threads are
-//~ // quiescent. All the others first wait on a condition variable until the
-//~ // key one releases it, and then wait on a second condition variable until
-//~ // that too is released.
-//~ // The two variables are to let the underpinning variables get set up.
-//~ // So outside GC-time a variable "gc_started" will be false, and all
-//~ // non-key threads can go
-//~ //      {   std::unique_lock<std::mutex> lock(mutexForGc);
-//~ //          gc_start_cv.wait(lock, []{ return gc_started; });
-//~ //      }
-//~ // followed immediately  by
-//~ //      activeThreads++;
-//~ //      {   std::unique_lock<std::mutex> lock(mutexForGc);
-//~ //          gc_end_cv.wait(lock, []{ return gc_finished; });
-//~ //      }
-//~ // The key thread on the other hand can go
-//~ //      gc_finished = false;
-//~ // MUST ensure that gc_finished will be seen as false by all other threads
-//~ // before gc_started is seen as true, because otherwise spurious wake-ups
-//~ // on gc_start_cv and gc_end_cv could let one of the other threads run
-//~ // through improperly.
-//~ //      {   std::lock_guard<std::mutex> lock(mutexForGc);
-//~ //          gc_started = true;
-//~ //      }
-//~ //      gc_start_cv.notify_all();
-//~ // At this point the key thread can perform garbage collection. It can not
-//~ // tell if the other threads are still waiting to respond to the gc_start
-//~ // notification or if they have gone on to wait for gc_finished! So to let
-//~ // it know the subsidiary threads each increment activeThreads when they
-//~ // have passed the first hurdle, and the one that brings that up to maximum
-//~ // can notify yet another condition variable. At the end of GC the key thread
-//~ // can wait on that CV until the thread count is high enough, and then it
-//~ // can afford to clear gc_started and set gc_finished and finally notify
-//~ // all other threads. Ught this feels heavy-handed and messy!
-//~
-//~ extern void setupEmptyPage(Page* p);
-//~ extern void setupMostlyFreePage(Page* p);
-//~ extern void setVariablesFromPage(Page* p);
-//~ extern void saveVariablesToPage(Page* p);
-//~
-//~ inline void restoreGfringe()
-//~ {   size_t inc = 0;
-//~ #ifdef NO_THREADS
-//~     result = nil;
-//~     inc = gIncrement;
-//~     gIncrement = 0;
-//~ #else // NO_THREADS
-//~     for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
-//~     {   result[i] = nil;
-//~ //      zprintf("result[%d] = nil = %a\n", threadId, nil);
-//~         inc += gIncrement;
-//~         gIncrement = 0;
-//~     }
-//~ #endif // NO_THREADS
-//~     gFringe = gFringe - inc;
-//~ }
-//~
-//~ inline void fitsWithinExistingGap(unsigned int threadId, size_t n, size_t gap)
-//~ {
-//~ // The request made will fit within the existing Chunk for thraed i.
-//~     result = fringeBis + TAG_VECTOR;
-//~ //  zprintf("result[%d] = %a\n", threadId, result);
-//~ // If I fill in a result for this I set it to show it does not need any more.
-//~     request = 0;
-//~     setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
-//~     fringeBis += n;
-//~ //  zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-//~     gap -= n;
-//~ // Make the end of the Chunk safe. This Chunk is not full, but a GC that is
-//~ // (probably) about to happen can need to scan it so its chunkFringe info
-//~ // must be filled in.
-//~ // If I get here during a GC
-//~     currentChunk->chunkFringe = fringeBis;
-//~ }
-//~
-//~ inline void regionInPageIsFull(unsigned int threadId, size_t n,
-//~                                size_t gap, unsigned int &pendingCount)
-//~ {
-//~ #ifdef DEBUG
-//~     previousCons = 0;
-//~ #endif // DEBUG
-//~ // Here the current region in the Page is full. I may either have reached the
-//~ // very end of the page or I may have merely run up against a pinned Chunk
-//~ // within it.
-//~ //  zprintf("At %s gFringe = %a\n", __WHERE__, gFringe);
-//~ //  zprintf("At %s pageSize = %a\n", __WHERE__, pageSize);
-//~ //
-//~ // Take care because gFringe can point at the start of the next consecutive
-//~ // Page.
-//~     uintptr_t pageEnd = ((gFringe-1) & -pageSize) + pageSize;
-//~ //# zprintf("At %s pageEnd = %a\n", __WHERE__, pageEnd);
-//~     while (gLimit != pageEnd)
-//~     {   gFringe = gLimit + reinterpret_cast<Chunk*>(gLimit)->length;
-//~         gLimit = reinterpret_cast<uintptr_t>(
-//~             static_cast<Chunk*>(
-//~                 reinterpret_cast<Chunk*>(gLimit)->chunkPinChain));
-//~ //      zprintf("At %s gLimit = %a\n", __WHERE__, gLimit);
-//~         if (gLimit == 0) gLimit = pageEnd;
-//~ //#     zprintf("At %s gLimit = %a\n", __WHERE__, gLimit);
-//~         size_t gap1 = gLimit - gFringe;
-//~         currentChunk->chunkFringe = fringeBis;
-//~         if (n+targetChunkSize < gap1)
-//~         {   Chunk* c = reinterpret_cast<Chunk*>(
-//~                            static_cast<uintptr_t>(gFringe));
-//~             c->length = n + targetChunkSize;
-//~             c->isPinned = false;
-//~             c->evacuated = false;
-//~             c->pinnedObjects = TAG_FIXNUM;
-//~             size_t chunkNo = currentPage->chunkCount++;
-//~ //#         zprintf("regioninpagefull %a %d\n", currentPage, currentPage->chunkCount);
-//~             currentPage->chunkMap[chunkNo] = c;
-//~             currentChunk = c;
-//~             result = gFringe + TAG_VECTOR;
-//~             request = 0;
-//~             setHeaderWord(result-TAG_VECTOR, n, TYPE_VEC32);
-//~             fringeBis = gFringe + n;
-//~ //#         zprintf("At %s fringeBis[%d] = %a\n", __WHERE__, threadId, fringeBis);
-//~             gFringe = limitBis = limit = fringeBis + targetChunkSize;
-//~             break;
-//~         }
-//~     }
-//~ // pendingCount will be a count of the requests NOT satisfied. So I increment
-//~ // it if I do not manage to make an allocation.
-//~     if (request != 0) pendingCount++;
-//~ }
-//~
-//~ // Eventually I expect I will always wish to allocate a Free page rather
-//~ // than a MostlyFree one, but while developing and debugging it is good
-//~ // to be able to exercise the recycling of cluttered space.
-//~
-//~ inline void grabNewCurrentPage(bool preferMostlyFree)
-//~ {   //# zprintf("[1] Old current = %a\n", currentPage);
-//~     if (preferMostlyFree && mostlyFreePages != nullptr)
-//~     {   currentPage = mostlyFreePages;
-//~         currentPage->type = busyPage;
-//~         previousCons = 0;
-//~ //#     zprintf("new current from mostlyFree = %a\n", currentPage);
-//~         mostlyFreePages = mostlyFreePages->chain;
-//~         if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
-//~         mostlyFreePagesCount--;
-//~     }
-//~     else if (freePages != nullptr)
-//~     {   currentPage = freePages;
-//~         currentPage->type = busyPage;
-//~         previousCons = 0;
-//~ //#     zprintf("new current from Free = %a\n", currentPage);
-//~         freePages = freePages->chain;
-//~ //#     zprintf("freePages := %a\n", freePages);
-//~         freePagesCount--;
-//~ // When I take something from freePages it may not have been initialised
-//~ // at all or it may contain more or less arbitrary mess left over from when
-//~ // the garbage collector put it on that list, so I will initialise all of
-//~ // its contents here.
-//~         setupEmptyPage(currentPage);
-//~     }
-//~     else
-//~     {   currentPage = mostlyFreePages;
-//~         currentPage->type = busyPage;
-//~         previousCons = 0;
-//~ //#     zprintf("new current from mostlyFree = %a\n", currentPage);
-//~         my_assert(currentPage != nullptr,
-//~             [&]{ zprintf("Utterly out of memory\n");
-//~ #ifdef HAVE_QUICK_EXIT
-//~                  std::quick_exit(99); });
-//~ #else // HAVE_QUICK_EXIT
-//~                  std::exit(99); });
-//~ #endif // HAVE_QUICK_EXIT
-//~         mostlyFreePages = mostlyFreePages->chain;
-//~         if (mostlyFreePages == nullptr) mostlyFreeTail = nullptr;
-//~         mostlyFreePagesCount--;
-//~     }
-//~     currentPage->chain = busyPages;
-//~     busyPages = currentPage;
-//~ //# zprintf("busyPages := %a\n", busyPages);
-//~     busyPagesCount++;
-//~     setVariablesFromPage(currentPage);
-//~ // Every thread will now need to grab its own fresh chunk!
-//~     for (unsigned int threadId=0; threadId<maxThreads; threadId++)
-//~         limit = fringeBis = limitBis = gFringe;
-//~ //  zprintf("At %s fringeBis = limitBis = gFringe = %a\n",
-//~ //          __WHERE__, gFringe);
-//~ //  zprintf("@@ just allocated a fresh page\n");
-//~ }
-//~
-//~ extern bool withinMajorGarbageCollection;
-//~
-//~ // Low level functions for allocating objects.
-//~
-//~ // Entry to a garbage collector.
-//~
-//~ extern void garbageCollect();
-//~
-//~ void allocate_segment(size_t n);
-//~ extern void clearPinnedMap(Page* x);
-//~ extern uint64_t threadBit(unsigned int n);
-//~ extern bool isPinned(Page* x, uintptr_t p);   // test if pin bit set
-//~ extern void setPinned(Page* x, uintptr_t p);  // just set mark in pinmap
-//~ extern void setPinnedMajor(uintptr_t p); // used during major GC
-//~ extern void setPinnedMinor(uintptr_t p); // used during minor GC
-//~
-//~ // "Borrowing" is a concept that I introduce for use as part of the
-//~ // Lisp implementation. The key place that it is used is when a hash
-//~ // table needs to be re-hashed, and a particular case of that is a table
-//~ // keyed on EQ when garbage collection has just relocated all the contents.
-//~ // If I have an ephemeral GC I will probably not be copying the table itself
-//~ // and so I can not re-hash as part of that process. So what I want to do
-//~ // is to "borrow" some space from the part of the memory pool that is not
-//~ // currently in use. I can then copy the table data into that and then
-//~ // transfer it back hashing it using the new set of hash values that
-//~ // relocation of data has led to. There is no heap allocation while that
-//~ // copy and re-hash is happening and when it is done the borrowed memory can
-//~ // be returned to the general free pool. In the middle of a run there will
-//~ // need to be plenty of free space to make available because there has to be
-//~ // enough for all live data to be copied into by a full GC.
-//~
-//~ //#define TL_borrowPages 52
-//~ //DECLARE_THREAD_LOCAL(Page* , borrowPages);
-//~ //#define TL_borrowFringe 53
-//~ //DECLARE_THREAD_LOCAL(uintptr_t, borrowFringe);
-//~ //#define TL_borrowLimit 54
-//~ //DECLARE_THREAD_LOCAL(uintptr_t, borrowLimit);
-//~ //#define TL_borrowNext 55
-//~ //DECLARE_THREAD_LOCAL(uintptr_t, borrowNext);
-//~
-//~ #ifdef NO_THREADS
-//~ extern Page* borrowPages;
-//~ extern uintptr_t borrowFringe;
-//~ extern uintptr_t borrowLimit;
-//~ extern uintptr_t borrowNext;
-//~ #else // NO_THREADS
-//~ extern Page* borrowPagess[maxThreads];
-//~ #define borrowPages borrowPagess[threadId]
-//~ extern uintptr_t borrowFringes[maxThreads];
-//~ #define borrowFringe borrowFringes[threadId]
-//~ extern uintptr_t borrowLimits[maxThreads];
-//~ #define borrowLimit borrowLimits[threadId]
-//~ extern uintptr_t borrowNexts[maxThreads];
-//~ #define borrowNext borrowNexts[threadId]
-//~ #endif // NO_THREADS
-//~
-//~ class Borrowing
-//~ {
-//~ public:
-//~     Borrowing()
-//~     {   THREADID;
-//~         borrowPages = nullptr;
-//~         borrowFringe = 0;
-//~         borrowLimit = 0;
-//~         borrowNext = 0;
-//~     }
-//~     ~Borrowing()
-//~     {   std::lock_guard<std::mutex> lock(mutexForFreePages);
-//~         THREADID;
-//~         while (static_cast<Page*>(borrowPages) != nullptr)
-//~         {   if (static_cast<Page*>(borrowPages)->chunkCount != 0)
-//~             {   Page* w = static_cast<Page*>(borrowPages)->chain;
-//~                 appendMostlyFree(borrowPages);
-//~                 borrowPages = w;
-//~             }
-//~             else
-//~             {   Page* w = static_cast<Page*>(borrowPages)->chain;
-//~                 static_cast<Page*>(borrowPages)->chain = freePages;
-//~                 freePages = borrowPages;
-//~                 freePages->type = freePage;
-//~ //#             zprintf("freePages := %a\n", freePages);
-//~                 borrowPages = w;
-//~             }
-//~         }
-//~     }
-//~ };
-//~
-//~
-//~ // I will arrange that if the GC takes more than this time waiting on a
-//~ // condition variable it will abort. Such timeouts are dangerous in various
-//~ // various ways and the amount of time it could make sense to allow will
-//~ // depend on the speed of the computer in use. However while I am only
-//~ // using one thread there ought not be to any contention and no thread
-//~ // should ever stall during GC, so having a short period here is not a
-//~ // big issue. When I have multiple threads the value set here will need
-//~ // to be thought about much more carefully, or the timeout may have to
-//~ // be withdrawn! It seems certain that I should arrange that the time limit
-//~ // here is as long as the slowest garbage collection.
-//~
-//~ #ifdef DEBUG
-//~ // While debugging I may be single stepping code or printing copious
-//~ // trace ouput, so I will set a limit at 5 minutes (and adjust that further
-//~ // if it causes me trouble).
-//~ INLINE_VAR const std::chrono::seconds cvTimeout(300);
-//~ #else // DEBUG
-//~ INLINE_VAR const std::chrono::seconds cvTimeout(1);
-//~ #endif // DEBUG
-//~
-//~ #ifdef DEBUG
-//~
-//~ // The following is intended to help me check if allocation is going
-//~ // smoothly. It can be removed once debugging is complete (ha ha).
-//~
-//~ inline void testLayout()
-//~ {   THREADID;
-//~     uintptr_t r = fringe;
-//~     uintptr_t w = limit;
-//~     my_assert(w==0 || r <= w,    []{zprintf("fringe > limit\n"); });
-//~     my_assert(gFringe <= gLimit, []{zprintf("gFringe > gLimit\n");});
-//~ }
-//~
-//~ #endif // DEBUG
-
-#endif // 0 /////////////////// @@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 #endif // header_newallocate_h
 

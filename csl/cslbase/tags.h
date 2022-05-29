@@ -1247,7 +1247,7 @@ static constexpr size_t VECTOR_CHUNK_BYTES =
 // the basic memory allocation block size from 4 Mbytes upwards, and each
 // doubling of that could allow me to increase the largest vector size by
 // a factor of 4. Note that the above limit is on the size of a single
-// individual vector, and so mmy current limit is really unlikely to become
+// individual vector, and so my current limit is really unlikely to become
 // and issue until people are using computers with several terabytes of
 // main memory.
 

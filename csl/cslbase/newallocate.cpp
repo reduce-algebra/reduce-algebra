@@ -294,12 +294,32 @@ bool allocateAnotherSegment()
     else return false;
 }
 
-// This finds another Page to use. This version supposed that it will manage
-// to return a page that is at present totally unused and which is hence
-// equally properly used for either cons or vector storage.
+// This finds another Page to use.
+// Within the GC it will be willing to re-use pages that contain
+// pinned data, but otherwise it will insist on finding a fully
+// empty page, and will invoke the GC when things start to feel a bit
+// cluttered.
 
-Page* grabFreshPage()
-{   size_t busy = emptyPagesCount +
+void initPage(PageType type, Page* p, bool empty)
+{   switch (type)
+    {
+    default:
+        my_abort("bad page type in initPage");
+    case consFullPageType:
+        initConsPage(p, empty);
+        return;
+    case vecFullPageType:
+        initVecPage(p, empty);
+        return;
+    case borrowPageType:
+        initBorrowPage(p, empty);
+        return;
+    }
+}
+
+Page* grabFreshPage(PageType type)
+{   bool mustGrab = withinGarbageCollector || type==borrowPageType;
+    size_t busy = emptyPagesCount +
         consPinPagesCount +
         vecPinPagesCount +
         consFullPagesCount +
@@ -314,24 +334,43 @@ Page* grabFreshPage()
 // Segment. Here I will only ever return a fully empty Page, never one that
 // contains any pinned data.
 #ifdef DEBUG
-        if (busy < 2*unused)
+        if (mustGrab || busy < 2*unused)
 #else // DEBUG
 // For now if I am in the release version not the debug one I will use up ALL
 // memory before considering GC. This is because GC is not implemented yet,
 // so this lets me test just a few more things.
-        if (true || busy < 2*unused)
+        if (mustGrab || true || busy < 2*unused)
 #endif // DEBUG
         {   if (emptyPages != nullptr)
             {   Page* r = emptyPages;
                 emptyPages = emptyPages->chain;
                 emptyPagesCount--;
                 r->type = emptyPageType;
+                initPage(type, r, true); 
                 return r;
             }
             else if (pageFringe != pageEnd)
             {   Page* r = pageFringe++;
                 r->type = emptyPageType;
+                initPage(type, r, true); 
                 return r;
+            }
+            else if (mustGrab)
+            {   if ((type==vecFullPageType ||
+                     type==borrowPageType) && vecPinPages != nullptr)
+                {   Page* r = vecPinPages;
+                    vecPinPages = vecPinPages->chain;
+                    vecPinPagesCount--;
+                    initPage(type, r, false); 
+                    return r;
+                }
+                else if (type==consFullPageType && consPinPages != nullptr)
+                {   Page* r = consPinPages;
+                    consPinPages = consPinPages->chain;
+                    consPinPagesCount--;
+                    initPage(type, r, false); 
+                    return r;
+                }
             }
         }
 // If current memory is at least (2/3) full or (really improbably) more
@@ -341,18 +380,12 @@ Page* grabFreshPage()
 // however I can not allocate any more then I will need to garbage collect.
         if (!allocateAnotherSegment()) break;
     }
+    if (withinGarbageCollector) fatal_error(err_no_store);
     cout << "\n@@@ MEMORY FULL @@@\n" << endl;
     garbage_collect();
-// After garbage collection I will insist that there is an empty page
-// available for allocation.
-    Page* r = emptyPages;
-    emptyPages = emptyPages->chain;
-    emptyPagesCount--;
-    r->type = emptyPageType;
-    return r;
+// After garbage collection there had BETTER be some available memory left!
+    return grabFreshPage(type);
 }
-
-extern void initConsPage(Page* p);
 
 // When I make a page "full" I will put a pointer just beyond the
 // last data allocated in it there so that the GC can be aware that
@@ -361,32 +394,10 @@ extern void initConsPage(Page* p);
 uintptr_t consEndOfPage()
 {   consCurrent->dataEnd = consFringe;
     pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
-    consCurrent = grabFreshPage();
-    initConsPage(consCurrent);
+    consCurrent = grabFreshPage(consFullPageType);
     uintptr_t r = consFringe;
     consFringe += 2*sizeof(LispObject);
     return r;
-}
-
-uintptr_t doubleConsEndOfPage()
-{   consCurrent->dataEnd = consFringe;
-    pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
-    consCurrent = grabFreshPage();
-    initConsPage(consCurrent);
-    uintptr_t r = consFringe;
-    consFringe += 4*sizeof(LispObject);
-    return r;
-}
-
-uintptr_t vecEndOfPage(size_t n)
-{   vecCurrent->dataEnd = vecFringe;
-    pageAppend(vecCurrent, vecFullPages, vecFullPagesTail, vecFullPagesCount);
-    vecCurrent = grabFreshPage();
-    initVecPage(vecCurrent);
-// End with a recursive call to getNBytes(), but this time because we
-// have just allocated a full new empty page it is guaranteed to complete
-// without ending up in vecEndOfPage() again.
-    return getNBytes(n);
 }
 
 // The borrowed pages are just pushed on the front of the chain when
@@ -397,37 +408,8 @@ uintptr_t borrowEndOfPage(size_t n)
     {   borrowCurrent->chain = borrowPages;
         borrowPagesTail = borrowCurrent;
     }
-    borrowCurrent = grabFreshPage();
-    initBorrowPage(borrowCurrent);
+    borrowCurrent = grabFreshPage(borrowPageType);
     return borrowNBytes(n);
-}
-
-// At least for now I maje the processing at EndOfPage during GC just the
-// same as it is during normal computation. This means that pages that
-// contain pinned data never get re-used until all pins have been released
-// and the pinned data evacuated leaving totally empty pages. At a later
-// stage I may want to br eilling to allocate pages containing pins here
-// and the GC allocation code can (I hope) allocate around any such.
-
-uintptr_t consGCEndOfPage()
-{   consCurrent->dataEnd = consFringe;
-    pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
-    consCurrent = grabFreshPage();
-    initConsPage(consCurrent);
-    uintptr_t r = consFringe;
-    consFringe += 2*sizeof(LispObject);
-    return r;
-}
-
-uintptr_t vecGCEndOfPage(size_t n)
-{   vecCurrent->dataEnd = vecFringe;
-    pageAppend(vecCurrent, vecFullPages, vecFullPagesTail, vecFullPagesCount);
-    vecCurrent = grabFreshPage();
-    initVecPage(vecCurrent);
-// End with a recursive call to getNBytes(), but this time because we
-// have just allocated a full new empty page it is guaranteed to complete
-// without ending up in vecEndOfPage() again.
-    return getNBytes(n);
 }
 
 size_t pages_count = 0;
@@ -466,7 +448,7 @@ void initHeapSegments(double storeSize)
 // The store-size is passed in units of Kilobyte, and as a double rather
 // than as an integer so that overflow is not an issue. The value will
 // already have had defaults and limits applied.
-{
+{   withinGarbageCollector = false;               // Just to be very clear!
     size_t freeSpace = 1024*static_cast<size_t>(storeSize); // now in bytes
 // Now freeSpace is the amount I want to allocate. I will explicitly
 // set the variables that are associated with tracking memory allocation
@@ -491,10 +473,10 @@ void initHeapSegments(double storeSize)
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
-    consCurrent = grabFreshPage();  initConsPage(consCurrent);
+    consCurrent = grabFreshPage(consFullPageType);
     pageAppend(consCurrent,
                consFullPages, consFullPagesTail, consFullPagesCount);
-    vecCurrent = grabFreshPage();   initVecPage(vecCurrent);
+    vecCurrent = grabFreshPage(vecFullPageType);
     pageAppend(vecCurrent,
                vecFullPages, vecFullPagesTail, vecFullPagesCount);
     borrowCurrent = nullptr;
