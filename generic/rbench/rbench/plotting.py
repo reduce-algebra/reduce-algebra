@@ -61,8 +61,10 @@ def plot_scatter1(rbdf, *, x: str, y: str, c: str, color: str = None, colorx: st
     if 'cpu_' in c:
         cx = c.replace('cpu_', 'sigxcpu_')
         x_only = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(y, c)]).index)].dropna(subset=[(x, c)])
+        display(x_only)
         _scatter(x_only, x=(x, c), y=(y, cx), ax=ax, color=colorx or 'k', **keywords)
         y_only = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(x, c)]).index)].dropna(subset=[(y, c)])
+        display(y_only)
         _scatter(y_only, x=(x, cx), y=(y, c), ax=ax, color=colorx or 'k', **keywords)
         neither = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(y, c)]).index)]
         neither = neither.loc[~neither.index.isin(neither.dropna(subset=[(x, c)]).index)]
@@ -72,10 +74,10 @@ def plot_scatter1(rbdf, *, x: str, y: str, c: str, color: str = None, colorx: st
     low = min(low_x, low_y)
     high = max(high_x, high_y)
     ax.axline([low, low],[high, high], c='k', linewidth=0.1)
-    for val in set(x_only[(y, cx)].to_list()):
-        ax.axline([val, low],[val, high], c='r', linewidth=0.5)
-    for val in set(y_only[(x, cx)].to_list()):
+    for val in set(x_only[(y, cx)].to_list()).union(set(neither[(y, cx)].to_list())):
         ax.axline([low, val],[high, val], c='r', linewidth=0.5)
+    for val in set(y_only[(x, cx)].to_list()).union(set(neither[(x, cx)].to_list())):
+        ax.axline([val, low],[val, high], c='r', linewidth=0.5)
     ax.set_xlabel(x)
     ax.set_ylabel(y)
     return ax
@@ -120,7 +122,7 @@ def plot_schedule(rbdf, *, key0: str = None, figsize: tuple = default_figsize,
         boot_rows = rbdf[['start_boot', 'end_boot']]
         boot_rows = boot_rows.rename({'start_boot': 'start', 'end_boot': 'end'}, axis=1)
         boot_rows = boot_rows.assign(color='g')
-        all_rows = all_rows.append(boot_rows, ignore_index=True)
+        all_rows = pd.concat([all_rows, boot_rows], ignore_index=True)
     all_rows = all_rows.sort_values(['start', 'end'])
     t0 = all_rows['start'].min()
     all_rows['start_sec'] = all_rows.apply(lambda df: (df['start'] - t0).total_seconds() + 1, axis=1)
