@@ -61,10 +61,8 @@ def plot_scatter1(rbdf, *, x: str, y: str, c: str, color: str = None, colorx: st
     if 'cpu_' in c:
         cx = c.replace('cpu_', 'sigxcpu_')
         x_only = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(y, c)]).index)].dropna(subset=[(x, c)])
-        display(x_only)
         _scatter(x_only, x=(x, c), y=(y, cx), ax=ax, color=colorx or 'k', **keywords)
         y_only = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(x, c)]).index)].dropna(subset=[(y, c)])
-        display(y_only)
         _scatter(y_only, x=(x, cx), y=(y, c), ax=ax, color=colorx or 'k', **keywords)
         neither = rbdf.loc[~rbdf.index.isin(rbdf.dropna(subset=[(y, c)]).index)]
         neither = neither.loc[~neither.index.isin(neither.dropna(subset=[(x, c)]).index)]
