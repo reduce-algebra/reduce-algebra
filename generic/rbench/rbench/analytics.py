@@ -108,17 +108,20 @@ class RbDataFrame(pd.DataFrame):
         for index0 in level0:
             try:
                 cpu_csl = self[(index0, 'cpu_csl')]
-                query |= (min <= cpu_csl)
+                sigxcpu_csl = self[(index0, 'sigxcpu_csl')]
+                query |=  (min <= cpu_csl) | (min <= sigxcpu_csl)
             except KeyError:
                 pass
             try:
                 cpu_psl = self[(index0, 'cpu_psl')]
-                query |=  (min <= cpu_psl)
+                sigxcpu_psl = self[(index0, 'sigxcpu_psl')]
+                query |=  (min <= cpu_psl) | (min <= sigxcpu_psl)
             except KeyError:
                 pass
             try:
                 cpu_boot = self[(index0, 'cpu_boot')]
-                query |=  (min <= cpu_boot)
+                sigxcpu_boot = self[(index0, 'sigxcpu_boot')]
+                query |=  (min <= cpu_boot) | (min <= sigxcpu_boot)
             except KeyError:
                 pass
         return self[query]
