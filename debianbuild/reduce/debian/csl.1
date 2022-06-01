@@ -1,0 +1,527 @@
+.\" --------------------------------------------------------------------
+.\" $Id$
+.\" --------------------------------------------------------------------
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\"    * Redistributions of source code must retain the relevant
+.\"      copyright notice, this list of conditions and the following
+.\"      disclaimer.
+.\"    * Redistributions in binary form must reproduce the above
+.\"      copyright notice, this list of conditions and the following
+.\"      disclaimer in the documentation and/or other materials provided
+.\"      with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+.\" A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+.\" OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+.\" SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+.\" LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+.\" OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH CSL 1 "2022 June 01" "csl"
+.
+.
+.SH NAME
+csl \- Codemist Standard Lisp Interpreter
+.
+.
+.SH Synopsis
+.B csl
+[
+.I command-line switches
+] [
+.I file ...\&
+]
+.
+.
+.SH DESCRIPTION
+.I csl
+runs the CSL Interpreter.
+.
+.
+.SH CSL Options
+
+In general, an option that requires an argument can be written as either
+.B -x
+.I yyy
+or as
+.BI -x "yyy"
+.BR "" "."
+Arguments should be case insensitive."
+
+.TP
+.BI -- " filename"
+If the application is run in console mode then its standard output could
+be redirected to a file using shell facilities. But the
+.B --
+directive (followed by a file name) redirects output within the Lisp rather
+than outside it. If this is done a very limited capability for sending
+progress or status reports to stderr (or the title-bar when running in
+windowed  mode) remains via the
+.SB report!-right
+function.
+
+The
+.B -w
+option may frequently make sense in such cases,
+but if that is not used and the system tries to run in a window it will
+create it starting off minimised.
+
+.TP
+.B --cygwin
+On Windows this flag is used to specify that a cygwin rather that a native
+windows version of Reduce is needed. This can be the situation in some
+cases where the foreign function interface is to be used.
+
+.TP
+.B --bt
+.TQ
+.B --force-backtrace
+Forces any error to generate a backtrace regardless of any
+attempt from with the system to change that (eg via use of errorset).
+Intended for use during system  debugging where it may be important to
+observe behaviour otherwise hidden by
+.SB (errorset X nil nil)
+but when it
+undesirable to change the input script at all.
+
+.TP
+.B --force-echo
+Forces echoing of input regardless of any
+attempt from with the system to change that. Intended for use during system
+debugging where it may be important to observe progress through an
+input file but undesirable to change the input script at all.
+
+.TP
+.B --force-verbos
+Forces generation of messages from the garbage collector regardless of any
+attempt from with the system to change that. Intended for use during system
+debugging where it may be important to see when a garbage collection occurs
+but undesirable to change the input script at all.
+
+.TP
+.B --gc-trigger
+.BI --gc-trigger \fR=\fPNNNN
+causes a garbage collection to be forced on the 
+.IR NNNN th
+occasion when that could possibly happen. This may sometimes be relevant
+when trying to track down garbage collection related bugs. If the option
+is set every garbage collection displays the count that it corresponds to,
+and the intent is that these counts should be fairly deterministic.
+
+.TP
+.B --gui
+Encourage the system to run in its own window. Similar behaviour to
+.BR -w+ " ."
+
+.TP
+.B --guimin
+Encourage the system to run as in its own window, but
+start that window off minimised. Similar to
+.BR -w. " ."
+
+.TP
+.B --help
+It is probably obvious what this option does! Note that on Windows the
+application was linked as a windows binary so it carefully creates a
+console to display the help text in, and organizes a delay to give
+people a chance to read it.
+
+.TP
+.B --kara
+This it is intended for use by those maintaining CSL not for the general
+public. By default long multiplication can use a threaded implementation
+(to exploit multi-core machines). This happens when numbers get bigger
+than some magic threshold.
+
+This option allows one to override the default threshold so that
+performance effects can be measured and the cut-off adjusted to suit the
+machine involved.
+
+.TP
+.B --maxmem
+Normally this code goes back to the operating system and requests more memory
+at any time when it feels that would be useful.This option can be used to
+set an approximate limit on the amount it will use. See also
+.B -k
+
+.TP
+.B --no-rcfile
+Instruct the system not to read a user-specific configuation file, which
+ake have such a names as
+.IR .reducerc ,
+at startup time. This
+can be useful during system building where utterly self-contained and
+predictable behaviour is important.
+
+.TP
+.B --nogui
+Encourage the system to run as a console-style application. Similar to
+.B -w-
+or just simply
+.BR -w " ."
+
+.TP
+.B --stop-on-error
+This utterly defeats errorset and arranges that if there is any error that
+after whatever backtrace might have been generated any inner errorset
+just propagates the error out, and at the top level the system exits.
+
+.TP
+.B --texmacs
+If CSL/Reduce is launched from texmacs this command-line flag should be
+used to arrange that the
+.I texmacs
+flag is set in
+.IR lispsystem!* ,
+ and the code may then do special things.
+
+.TP
+.BI --tr " fname"
+.TQ
+.BI --trace " fname"
+When followed by the name of a function this command-line option has an
+effect as if 
+.SB (trace '(fname))
+had been called at system start-up so that
+all calls to the named function are reported to the user. Perhaps often to
+be combined with
+.B --bt
+so that on any error a backtrace will get generated,
+and used when an input script leads to failure and one wants to investigate
+its behaviour without altering the script at all.
+
+.TP
+.B --version
+It is probably obvious what this option does! But note that there is an
+issue here about whether one is looking at the CSL version identification or
+one for the Lisp application from an image file (eg often Reduce).
+
+.TP
+.B --wait
+This displays the process number and waits for 15 seconds at the
+start of a run. This may be useful for those who have built everything
+with debugging options and then want to start it fairly normally and
+then attach from gdb or some other debugger.
+
+.TP
+.B -a
+is a curious option, not intended for general or casual use.
+
+If given it causes the
+.SB (batchp)
+function to return the opposite
+result from normal!  Without
+.B -a
+.SB (batchp)
+returns 
+.SB T
+either if at least one file was specified on the command line,
+or if the standard input is ``not a tty'' (under some operating systems this
+makes sense -- for instance the standard input might not be a ``tty'' if it
+is provided via file redirection).  Otherwise (ie primary input is directly
+from a keyboard)
+.SB (batchp)
+returns 
+.IR nil .
+Sometimes
+this judgement about how ``batch'' the current run is will be wrong or
+unhelpful, so
+.B -a
+allows the user to coax the system into better
+behaviour.  I hope that this is never used!
+
+.TP
+.B -b
+.TQ
+.BI -b " KRGYbMCW"
+tells the system to avoid any attempt to recolour prompts
+and input text. It will mainly be needed on X terminals that have been
+set up so that they use colours that make the defaults here unhelpful.
+Specifically white-on-black and so on.
+
+.B -b
+can be followed by colour specifications to make things yet
+more specific. It is supposed to be the idea that three colours can be
+specified after it for output, input and prompts, with the letters KRGYbMCW
+standing for blacK, Red, Green, Yellow, blue, Magenta, Cyan and White.
+
+This may not fully work yet!
+
+.TP
+.B -c
+Displays a notice relating to the authorship of CSL. Note that this
+is an authorship statement not a Copyright notice, because if any
+(L)GPL code is involved that would place requirements on what was
+displayed in a Copyright Notice.
+
+.TP
+.BI -d name\fR=\fPvalue
+.TQ
+.BI -d " name\fR=\fPvalue"
+sets the value of the named lisp variable
+.I name
+to the
+.I value
+as a string.
+
+.TP
+.BI -dd name\fR=\fPvalue
+.TQ
+.BI -dd " name\fR=\fPvalue"
+sets the value of the named lisp variable 
+.I name 
+to the 
+.I value 
+interpreted as a name, number, string etc using normal Lisp conventions.
+Cf
+.B -d
+which always leaves the value as a string.
+
+.TP
+.BI -e " form"
+The lisp form 
+.I form
+gets evaluated and
+its result printed during startup. This may be useful for forcing
+settings or other debugging.
+
+.TP
+.BI -f " portnumber"
+At one stage CSL could run as a socket server, and this option
+activated that mode.
+.B -f-
+used a default port, 1206 (a number
+inspired by an account number on Titan that I used in the 1960s). The code
+that supports this may be a useful foundation to others who want to make a
+network service out of this code-base, but is currently disabled.
+
+.TP
+.B -g
+In line with the implication of this option for C compilers, this enables
+a debugging mode. It sets a lisp variable
+.I !*backtrace
+and arranges that all backtraces are displayed notwithstanding use of
+.IR errorset .
+
+.TP
+.BI \-i " imagefile\fR,\fP " \-i-
+CSL and Reduce use image files to keep both initial heap images and
+.I fasl
+loadable modules. By default if the executable launched has some name,
+say xxx, then an image file xxx.img is used. But to support greater
+generality 
+.B -i
+introduces a new image,
+.B -i-
+indicates the default one and a sequence of such directives list
+image files that are searched in the order given. These are read-only.
+The similar option 
+.B -o
+equally introduces image files that are scanned for input, but that
+can also be used for output. Normally there would only be one
+.B -o
+directive.
+
+.TP
+.BI -j " filename"
+A record of all the files read during the Lisp run will be dumped to
+.I filename
+with a view that it can be included in a Makefile to document dependencies.
+
+.TP
+.BI -k " nnn"
+.TQ
+.BI -k " nnn\fR/\fPss"
+sets the size of heap to be used.  If it is given then that much
+memory will be allocated and the heap will never expand.  Without this
+option a default amount is used, and (on many machines) it will grow
+if space seems tight.
+
+The extended version of this option is 
+.BI -k " nnn\fR/\fPss"
+and then 
+.I ss
+is the number of ``CSL pages'' to be allocated to the Lisp stack. The default
+value (which is 1) should suffice for almost all users, and it should
+be noted that the C stack is separate from and independent of this one and
+it too could overflow.
+
+A suffix K, M or G on the number indicates units of kilobytes, megabytes or
+gigabytes, with megabytes being the default. So
+-B -k200M
+might represent typical usage for common-sized computations. In general CSL
+will automatically expand its heap, and so it should normally never be
+necessary to use this option.
+
+.TP
+.BI -l " logfile"
+sends a copy of the standard output to 
+.I logfile\fR.\fP
+It is very much as if the Lisp function
+.SB (spool logfile)
+had been invoked at the start of the run.
+
+.TP
+.B -m
+not used at present.
+
+.TP
+.B -n
+ignore startup function.
+
+Normally when the system is started it will run a 
+.I restart function
+as indicated in its heap image. There can be cases where a heap image has
+been created in a bad way such that the saved restart function always fails
+abruptly, and hence working out what was wrong becomes hard. In such cases
+it may be useful to give the
+.B -n
+options that forces CSL to ignore any startup function and merely begin
+in a minimal Lisp-style read-eval-print loop.
+
+.TP 
+.B -o
+see 
+.B -i
+This specifies an image file used for output via
+.SB faslout
+and
+.SB reserve\fR.\fP
+
+.TP
+.B -p
+If a suitable profile option gets implemented one day this will activate it,
+but for now it has no effect.
+
+.TP
+.B -q
+quiet run: sets
+.SB !*echo
+to
+.SB nil
+and switches off garbage collector messages.
+
+.TP
+.BI -r " nnn\fR[,\fPmmm\fR]\fP"
+seed random number generator.
+
+The random-number generator in CSL is normally initialised to a value
+based on the time of day and is hence not reproducible from run to run.
+In many cases that behavious is desirable, but for debugging it can be useful
+to force a seed. The directive
+.B -r 
+.I nnn\fR[,\fPmmm\fR]\fP
+sets the seed to up to 64 bits taken from the values 
+.I nnn 
+and 
+.I mmm. 
+THe second value is optional, and specifying 
+.B -r0
+explicitly asks for the non-reproducible behaviour (I hope). Note that
+the main Reduce-level random number source is coded at a higher level
+and does not get reset this way - this is the lower level CSL
+generator.
+
+.TP 
+.B -s
+sets the Lisp variable 
+.SB !*plap
+and hence the compiler generates an assembly listing.
+
+.TP
+.BI -t " name"
+reports the time-stamp on the named module, and then exits. This is
+for use in perl scripts and the like, and is needed because the stamps
+on modules within an image or library file are not otherwise instantly
+available.
+
+Note that especially on windowed systems it may be necessary to use
+this with 
+.BI -- " filename"
+since the information generated here goes to the default output, which
+in some cases is just the screen.
+
+.TP
+.BI -u " symbol"
+forcibly undefine a Lisp symbol. There are probably very very few
+cases where it is useful since I do not have a large number of
+system-specific predefined names.
+
+.TP
+.B -v
+An option to make things mildly more verbose. It displays more of a
+banner at startup and switches garbage collection messages on.
+
+.TP
+.B -w
+force console mode.
+
+On a typical system if the system is launched it creates a new window and uses
+its own windowed intarface in that. If it is run such that at startup the
+standard input or output are associated with a file or pipe, or under X the
+variable 
+.SB DISPLAY
+is not set it will try to start up in console
+mode. The flag 
+.B -w
+indicates that the system should run in console
+more regadless, while 
+.B -w+
+attempts a window even if that seems doomed to failure. When running
+the system to obey a script it will often make sense to use the
+.B -w
+option. Note that on Windows the system is provided as
+two separate (but almost identical) binaries. For example the file
+.SB csl.exe
+is linked in windows mode. A result is that if launched from the
+command line it detaches from its console, and if launched by
+double-clicking it does not create a console. It is in fact very ugly
+when double clicking on an application causes an unwanted console
+window to appear. In contrast
+.SB csl.com
+is a console mode version of just the same program, so when launched
+from a command line it can communicate with the console in the
+ordinary expected manner.
+
+The option is in fact processed at an earlier stage then here if windowing
+is possible at all!
+
+.TP
+.B -x
+is an option intended for use only by system
+support experts -- it disables trapping if segment violations by
+errorset and so makes it easier to track down low level disasters --
+maybe!  This can be valuable when running under a debugger since if the
+code traps signals in its usual way and tries to recover it can make it a lot
+harder to find out just what was going wrong.
+
+.TP
+.B -y
+is at present unused.
+
+.TP
+.B -z 
+start without image.
+
+When bootstrapping it is necessary to start up the system for one initial time
+without the benefit of any image file at all. This option makes
+this happen, so when it is specified the system starts up with a minimal
+environment and only those capabilities that are present in the CSL
+kernel. It will normally make sense to start loading some basic Lisp
+definitions rather rapidly. The files
+.SB compat.lsp
+,
+.SB extras.lsp 
+and 
+.SB compiler.lsp
+have Lisp source for the main things I use, and once they are loaded
+the Lisp compiler can be used to compile itself.
+.
