@@ -20,6 +20,25 @@
 /common-lisp/trace.fas
 /common-lisp/trace.fasl
 
+# /csl/
+/csl/autom4te.cache
+/csl/compile
+/csl/config.guess
+/csl/config.sub
+/csl/depcomp
+/csl/install-sh
+/csl/ltmain.sh
+/csl/m4
+/csl/missing
+
+# /csl/cslbase/
+/csl/cslbase/autom4te.cache
+
+# /csl/fox/
+/csl/fox/autom4te.cache
+/csl/fox/compile
+/csl/fox/ltmain.sh
+
 # /csl/new-embedded/for-emscripten/
 /csl/new-embedded/for-emscripten/*.oo
 /csl/new-embedded/for-emscripten/*.ooo
