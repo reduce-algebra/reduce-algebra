@@ -923,24 +923,22 @@ then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
 fi
 
-# Note that before all this I will have tried putting "-std=gnu++20" on
-# the command line. I note that at the time of writing I can not find
-# and official autoconf macro to check for C++20.
 
-# The following seems to be an "official" way to ensure that I have at least
-# -std=gnu++17. 
-
-AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
-AC_MSG_NOTICE([HAVE_CXX17=$HAVE_CXX17])
-
-if test "$HAVE_CXX17" != "1"
+AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
+AC_MSG_NOTICE([HAVE_CXX20=$HAVE_CXX20])
+if test "$HAVE_CXX20" != "1"
 then
-  AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
-  AC_MSG_NOTICE([HAVE_CXX14=$HAVE_CXX14])
-  if test "$HAVE_CXX14" != "1"
+  AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
+  AC_MSG_NOTICE([HAVE_CXX17=$HAVE_CXX17])
+  if test "$HAVE_CXX17" != "1"
   then
-    AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
-    AC_MSG_NOTICE([HAVE_CXX11=$HAVE_CXX11])
+    AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
+    AC_MSG_NOTICE([HAVE_CXX14=$HAVE_CXX14])
+    if test "$HAVE_CXX14" != "1"
+    then
+      AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
+      AC_MSG_NOTICE([HAVE_CXX11=$HAVE_CXX11])
+    fi
   fi
 fi
 

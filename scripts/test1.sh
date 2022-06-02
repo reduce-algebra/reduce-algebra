@@ -66,6 +66,14 @@ here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
+# I will annotate the script with the identity of the machine on which the
+# test was run... mc ends up as (probably!) the host-triple used in the
+# cslbuild directory. There is perhaps one oddity in that if that comes
+# out as x86_64-pc-windows than x86_64-pc-cygwin may also be relevant!
+
+mc=`$here/config.guess`
+mc=`$here/scripts/findhost.sh $mc`
+
 diffBw() {
     case `diff -v` in
     *GNU\ diffutils*)
@@ -115,6 +123,56 @@ do
       platforms="$platforms ${1#--}"
       shift
       ;;
+# I will have a few special shorthands that will make things nicer for
+# at least one of the developers!
+# Perhaps the main issue is on Windows where there are two builds, one for
+# native Windows and the other for Cygwin. Similarly on the Mac there can
+# potentially be x86_64, arm64 and universal builds all present and testing
+# one against the other can be desirable.
+    --csl=windows)
+      platforms="$platforms csl=x86_64-pc-windows"
+      shift;
+      ;;
+    --csl=cygwin)
+      platforms="$platforms csl=x86_64-pc-cygwin"
+      shift;
+      ;;
+    --csl=mac-arm | --csl=mac-aarch64)
+# On the Mac I need to allow foc changing releases of the operating
+# system, so I search the cslbuild directory to see what makes sense.
+      p=`echo $here/cslbuild/aarch64-mac*`
+      p=${p%% *}
+      p=${p#*cslbuild/}
+      platforms="$platforms csl=$p"
+      shift;
+      ;;
+    --csl=mac-intel | --csl=mac-x86_64)
+      p=`echo $here/cslbuild/x86_6464-mac*`
+      p=${p%% *}
+      p=${p#*cslbuild/}
+      platforms="$platforms csl=$p"
+      shift;
+      ;;
+    --csl=mac-universal)
+      p=`echo $here/cslbuild/universal*`
+      p=${p%% *}
+      p=${p#*cslbuild/}
+      platforms="$platforms csl=$p"
+      shift;
+      ;;
+# Now during development of the "conservative" experiment I want
+# --csl=conservative to be an easy way of specifying a test.
+    --csl=conservative)
+      if test "$OS" = "Windows_NT"
+      then
+        p="x86_64-pc-cygwin-conservative"
+      else
+        p="$mc-conservative"
+      fi
+      platforms="$platforms csl=$p"
+      shift;
+      ;;
+# Otherwise in general the usage is "--csl=full-host-triple-opt1-opt2" etc.
     --csl=*)
       platforms="$platforms ${1#--}"
       shift
@@ -298,14 +356,6 @@ if test -f /usr/bin/cygpath
 then
   dd=`cygpath -m $dd`
 fi
-
-# I will annotate the script with the identity of the machine on which the
-# test was run... mc ends up as (probably!) the host-triple used in the
-# cslbuild directory. There is perhaps one oddity in that if that comes
-# out as x86_64-pc-windows than x86_64-pc-cygwin may also be relevant!
-
-mc=`$here/config.guess`
-mc=`$here/scripts/findhost.sh $mc`
 
 # 
 # Use /dev/null if the .rlg file doesn't exist

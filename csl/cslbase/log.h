@@ -60,7 +60,6 @@
 #include <string_view>
 #include <cassert>
 #include <stdexcept>
-#include <atomic>
 #include <thread>
 #include <chrono>
 
@@ -301,7 +300,8 @@ inline void printlog(const char* s, ...)
 // inserted the manipulators more cleanly.
 // The format directive supported are
 //    %d      %NNd                             NN denotes a width
-// [I should cnsider supporting a width specified as "*" rather than digts]
+//    %u      %NNu
+// [I should consider supporting a width specified as "*" rather than digts]
 //    %x %X   %NNx %NNX   %#x %#X %#NNx %#NNX  # for "0x" prefix, X upper case
 // [I should consider the full set of flags: "#+=0 " rather than just "#"]
 //    %e %E   %NNe %NNE   %.NNe %.NNE %NN.NNe %NN.NNE
@@ -425,16 +425,20 @@ enum argTypes:uint64_t
 
 enum subTypes:uint64_t
 {   subtypeNone      = 0,
+
     subtypeUpperCase = 1,    // converts %x to %X etc 
     subtypeDecimal   = 2,    // %d
+    subtypeUnsigned  = 3,    // %u
     subtypeHex       = 4,    // %x
     subtypeHexUp     = 5,    // %X
+
     subtypeEformat   = 2,    // %e
     subtypeEformatUp = 3,    // %E
     subtypeFformat   = 4,    // %f
     subtypeFformatUp = 5,    // %F
     subtypeGformat   = 6,    // %g
     subtypeGformatUp = 7,    // %G
+
     subtypeGeneral   = 2,    // %s
     subtypeAddr      = 4,    // %a
     subtypePercent   = 6     // %%
@@ -442,7 +446,7 @@ enum subTypes:uint64_t
 
 
 
-// I am goint to count both "int" and "std::atomic<int>" as integral types
+// I am going to count both "int" and "std::atomic<int>" as integral types
 // and similarly for short, long and unsigned versions etc. And similarly
 // floating point values may be wrapped in std::atomic.
 
@@ -530,7 +534,7 @@ enum parseState
     parsePrecStar,   // parseDot followed by '*'
     parsePrec,       // parseDot followed by {Digit}
 
-    parseInt,        // all above then one of d, x, X
+    parseInt,        // all above then one of d, u, x, X
     parseFlt,        // e, E, f, F, g, G
     parseGeneral,    // s
     parseAddr,       // a
@@ -653,7 +657,7 @@ BadFmt("integer value needed for '*' width");
                 case '.':
                     state = parseDot;
                     continue;
-                case 'd': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -681,7 +685,7 @@ BadFmt("invalid character following '%'");
                 case '.':
                     state = parseDot;
                     continue;
-                case 'd': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -714,7 +718,7 @@ BadFmt("invalid character following '%*'");
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
                     continue;
-                case 'd': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -756,7 +760,7 @@ BadFmt("invalid character following '%.'");
 // After "%N.*" I can only have an argument-type letter. 
                 switch (data()[i])
                 {
-                case 'd': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -783,7 +787,7 @@ BadFmt("invalid character following '%.*'");
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
                     continue;
-                case 'd': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -984,6 +988,10 @@ BadFmt(
             case 'd':
                 type = argTypeInt;
                 subtype = subtypeDecimal;
+                break;
+            case 'u':
+                type = argTypeInt;
+                subtype = subtypeUnsigned;
                 break;
             case 'x':
                 type = argTypeInt;
@@ -1235,7 +1243,17 @@ BadFmt(
                 std::cout << Addr(a1);
             else
 #endif // CSL
-            std::cout << a1;
+// I can not force unsigned printing using a manipulator, so if the
+// format string says "%u" I will cast the value that is to be printed.
+// Note that a format string "%d" and an argument that is an unsigned
+// integer will be displayed in unsigned mode. That upsets me less!
+// Note that I write an old style C cast to uintmax_t because that will
+// compile in cases where arg1 is not integral but the compiler does not
+// not manage to detect (at compile time) that the paththere will not
+// be execured.
+            if (type==argTypeInt && subtype==subtypeUnsigned)
+                std::cout << (uintmax_t)(a1);
+            else std::cout << a1;
 // After printing the argument I need to reset the printing configuration
 // to its default state. Well in very many cases none of these miserable
 // options will have been used and so this will not actually have to do

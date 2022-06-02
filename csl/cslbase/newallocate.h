@@ -43,51 +43,49 @@
 using std::hex;
 using std::dec;
 
-static const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
-static const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
-static const size_t chunkMask = chunkSize-1;
+INLINE_VAR const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
+INLINE_VAR const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
+INLINE_VAR const size_t chunkMask = chunkSize-1;
 
 extern bool allocateSegment(size_t);
 
 enum PageType
 {   emptyPageType,
-    consPinPageType,
-    vecPinPageType,
-    consFullPageType,
-    vecFullPageType,
+    consPageType,
+    vecPageType,
     borrowPageType
 };
 
 class Page;
 
-extern Page* emptyPages;
-extern Page* consPinPages;
-extern Page* vecPinPages;
-extern Page* oldConsPinPages;
-extern Page* oldVecPinPages;
-extern Page* consFullPages;
-extern Page* vecFullPages;
-extern Page* consOldPages;
-extern Page* vecOldPages;
-extern Page* consCurrent;
-extern Page* vecCurrent;
-extern Page* borrowPages;
-extern Page* borrowCurrent;
-extern Page* potentiallyPinned;
-extern Page* pinnedPages;
+extern Page* emptyPages;        // Fully empty.
+extern Page* consPinPages;      // Not active but comtains some pinned data.
+extern Page* vecPinPages;       // Ditto, but with vectors not cons cells.
+extern Page* oldConsPinPages;   // Used during GC.
+extern Page* oldVecPinPages;    // Ditto.
+extern Page* consPages;         // Active pages containing cons cells.
+extern Page* vecPages;          // Active pages containing vectors.
+extern Page* borrowPages;       // Temporarily active pages.
+extern Page* consOldPages;      // Used during GC.
+extern Page* vecOldPages;       // Ditto.
+extern Page* consCurrent;       // Where cons cells are allocated.
+extern Page* vecCurrent;        // Where vectors are allocated.
+extern Page* borrowCurrent;     // Where temporary vectors are allocated.
+extern Page* potentiallyPinned; // For GC.
+extern Page* pinnedPages;       // For GC.
 
 extern Page* emptyPagesTail;
 extern Page* consPinPagesTail;
 extern Page* vecPinPagesTail;
-extern Page* consFullPagesTail;
-extern Page* vecFullPagesTail;
+extern Page* consPagesTail;
+extern Page* vecPagesTail;
 extern Page* borrowPagesTail;
 
 extern size_t emptyPagesCount;
 extern size_t consPinPagesCount;
 extern size_t vecPinPagesCount;
-extern size_t consFullPagesCount;
-extern size_t vecFullPagesCount;
+extern size_t consPagesCount;
+extern size_t vecPagesCount;
 extern size_t borrowPagesCount;
 
 
@@ -161,14 +159,26 @@ public:
     };
 };
 
+INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
+
+inline size_t chunkNoFromAddress(Page* p, uintptr_t a)
+{   my_assert((a - reinterpret_cast<uintptr_t>(p))/chunkSize <= 512, LOCATION);
+    return (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+}
+
+inline uintptr_t addressFromChunkNo(Page* p, size_t n)
+{   my_assert(n <= 512, LOCATION);
+    return reinterpret_cast<uintptr_t>(p) + chunkSize*n;
+}
+
 inline bool isPotentiallyPinned(Page* p, uintptr_t a)
-{   size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+{   size_t chunkNo = chunkNoFromAddress(p, a);
     return ((p->potentiallyPinnedChunks[chunkNo/64] >>
              (chunkNo & 63)) & 1) != 0;
 }
 
 inline void setPotentiallyPinned(Page* p, uintptr_t a)
-{   size_t chunkNo = (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+{   size_t chunkNo = chunkNoFromAddress(p, a);
     p->potentiallyPinnedChunks[chunkNo/64] |=
         static_cast<uint64_t>(1) << (chunkNo & 63);
 }
@@ -240,7 +250,7 @@ inline void vecClearPinned(uintptr_t a, Page* p)
 extern uintptr_t consFringe, consLimit, consEnd;
 
 inline void initConsPage(Page* p, bool empty)
-{   p->type = consFullPageType;
+{   p->type = consPageType;
     consCurrent = p;
     consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
@@ -356,13 +366,14 @@ enum ChunkStatus
     ExtendedPinnedChunk = 254u,
     BasicPinnedChunk    = 255u
 };
+
 // The purpose of all this is that if I have an ambiguous pointer that
 // refers within a vector page I can first easily identify the chunk
 // it is within. Then I probe the byte array. If the value I find is
 // 0, 1, 254 or 255 I have the first or only 16KB part of the chunk.
 // Otherwise I can subtract the number I find from the address to identify
 // the first part, and then if I need to re-probe to see if an extended
-// chunk contains any pinned objects.
+// chunk contains any pinned objects. I saturate counts at 253.
 //
 // A full vector page will contain its sequence of chunks. some will be
 // flagged as containing pinned material by the entry on their first
@@ -429,6 +440,10 @@ enum ChunkStatus
 // scheme garbage collects less frequently so improves performance at the
 // cost of recovery in circumstances that I tend to view as unrecoverable!
 
+inline ChunkStatus saturateChunk(size_t n)
+{   if (n >= ExtendedChunkMax) return ExtendedChunkMax;
+    else return static_cast<ChunkStatus>(n+1);
+}
 
 // With at least some compilers if I have an "inline" function definition
 // but there are no calls to it then no space is wasted. Well compile time
@@ -444,12 +459,12 @@ inline void displayVectorPage(Page* p)
             continue;
         }
         if (n != 0)
-        {   zprintf("%dB ", n);
+        {   zprintf("~%d ", n);
             n = 0;
         }
-        zprintf("^%u ", k);
+        zprintf("^%d ", k);
     }
-    if (n != 0) zprintf("%dB ", n);
+    if (n != 0) zprintf("~%d ", n);
 }
 
 
@@ -517,12 +532,15 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 }
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
+extern unsigned int borrowingDepth;
+extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
+
 
 // Again pages that have any pinned data in them specify their initial
 // fringe and limit in scanPoint and initialLimit.
 
 inline void initVecPage(Page* p, bool empty)
-{   p->type = vecFullPageType;
+{   p->type = vecPageType;
     vecCurrent = p;
     vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
@@ -540,19 +558,133 @@ inline void initVecPage(Page* p, bool empty)
     {   vecFringe = p->scanPoint;
         vecLimit = p->initialLimit;
     }
-    displayVectorPage(p);
+    my_assert(vecLimit > vecFringe &&
+              vecLimit <= vecEnd, LOCATION);
+//  displayVectorPage(p);
 }
 
 extern Page* grabFreshPage(PageType type);
+extern int vecStopCache;
+extern int borrowStopCache;
+    
+// The big function here is now shared between use for long-term vectors
+// and borrowed ones. Allocations within a 16K chunk do not get to it and
+// so my expectation is that its extra reference arguments will not lead
+// to severe overhead. The key difference between the two use cases is that
+// borrowing must not update chunkStatus. This function must be called
+// potentially repeatedly until it returns a value other than zero! 
+
+inline uintptr_t getNBytes(size_t n, Page* current,
+                           uintptr_t& fringe, uintptr_t& limit, uintptr_t &end,
+                           int& stopCache, bool borrowing)
+{   for (;;)
+    {   uintptr_t r = fringe;
+        my_assert(fringe <= limit, LOCATION);
+        my_assert(fringe > (uintptr_t)current &&
+                  fringe <= (uintptr_t)(current+1), LOCATION);
+// Now I will see if the new item will fit within the current chunk. Note
+// that this test applies whether I am in a basic chunk or at the end of
+// an extended one. The chunkStatus[] entry must already be set up and
+// at the start that will always indicate basic chunks, so when this fills
+// one chunk perfectly and moves on to the next that next one will be
+// ready to be a basic chunk. The test against limit is needed because
+// a previous allocation may have totally filled eg the last chunk on
+// the page.
+        if ((r&chunkMask) + n <= chunkSize && r!=limit)
+        {   fringe += n;
+            my_assert(fringe <= limit, LOCATION);
+            return r;
+        }
+// Here either the request will not fit in the current chunk or really there
+// is no current chunk. Insert a padder in the former case.
+        if (r!=limit)
+        {   setHeaderWord(r, (-r)&chunkMask);
+            my_assert(fringe > (uintptr_t)current &&
+                      fringe <= (uintptr_t)(current+1), LOCATION);
+            fringe = r + ((-r)&chunkMask);
+            my_assert(fringe <= limit, LOCATION);
+            my_assert(fringe > (uintptr_t)current &&
+                      fringe <= (uintptr_t)(current+1), LOCATION);
+        }
+// Now fringe points at the start of a chunk. In some cases that will
+// mean I can just move on and use that chunk easily. Note that this
+// requires chunkStatus[] to have been initialised to BasicChunk
+        if (n <= chunkSize && fringe != limit)
+        {   r = fringe;
+            fringe += n;
+            my_assert(fringe <= limit, LOCATION);
+            return r;
+        }
+        my_assert(fringe > (uintptr_t)current &&
+                  fringe <= (uintptr_t)(current+1), LOCATION);
+// Here is the messy case. It could be that the request is small and
+// I have just filled memory up as far as limit, or it could be that
+// there is space before limit but I need to confirm that there are
+// enough consecutive free unpinned chunks to accommodate a large
+// vector request. This is ugly because limit is not the end of
+// where real available space is - it is just the end of a chunk. I will
+// need to scan chunkStatus to find how far I can really go, but stopCache
+// is used so I do not do that more often that needbe.
+        size_t chunkNo = chunkNoFromAddress(current, fringe);
+// chunkNo is now the number of the chunk that I had reached at limit. I
+// will skip over any pinned chunks. If there are any then stopCache needs
+// resetting.
+        while (chunkNo<sizeof(current->chunkStatus) &&
+               current->chunkStatus[chunkNo] != BasicChunk)
+        {   chunkNo++;
+            stopCache = -1;
+        }
+// Now I know where the next available region is. Scan to find its end.
+// That will let me set fresh values for fringe and limit.
+        size_t stopPoint;
+        if (stopCache >= 0 && false) stopPoint = stopCache;
+        else
+        {   stopPoint = chunkNo;
+            while (stopPoint<sizeof(current->chunkStatus) &&
+                   current->chunkStatus[stopPoint] == BasicChunk)
+                stopPoint++;
+            stopCache = stopPoint;
+        }
+        fringe = addressFromChunkNo(current, chunkNo);
+        limit = addressFromChunkNo(current, stopPoint);
+// I hope that very often the allocation can use available space now.
+        if (n <= limit-fringe)
+        {   // It will fit : hoorah!
+            uintptr_t r = fringe;
+            fringe += n;
+// Set limit the the chunk boundary just above the newly allocated
+// region of memory
+            limit = fringe + ((-fringe) & chunkMask);
+// Mark up an extended block if needbe.
+            if (n > chunkSize && !borrowing)  // leave as Basic if possible.
+            {   size_t chunksNeeded = (n + chunkSize - 1)/chunkSize;
+                for (size_t i=0; i<chunksNeeded; i++)
+                    current->chunkStatus[chunkNo+i] =
+                        saturateChunk(ExtendedChunkStart+i);
+            }
+//          displayVectorPage(current);
+            return r;
+        }
+// Ugh - the request will not fit in this block. I need to fill this block
+// with a padder and scan on looking for another. Make the space into
+// and extended block (if necessary)
+        if (limit != fringe+chunkSize && !borrowing)
+            for (size_t i=chunkNo; i<stopPoint; i++)
+                current->chunkStatus[i] =
+                    saturateChunk(ExtendedChunkStart+(i-chunkNo));
+        setHeaderWord(fringe, limit-fringe);
+//      displayVectorPage(current);
+        fringe = limit;
+        stopCache = -1;
+// If I have reached the end of a Page then I must grab a new one.
+        if (limit == end) return 0;
+        continue;    
+    }
+}
 
 inline uintptr_t getNBytes(size_t n)
-{
-// If I am just getting 2 words I can use the cons heap where allocation
-// is simpler. This will cover some rather small bignums and some short
-// strings. It is a rather minor special case!
-    if (n == 2*sizeof(LispObject)) return get2Words();
-    for (;;)
-    {   uintptr_t r = vecFringe;
+{   if (n == 2*sizeof(LispObject)) return get2Words();
+    uintptr_t r = vecFringe;
 // Now I will see if the new item will fit within the current chunk. Note
 // that this test applies whether I am in a basic chunk or at the end of
 // an extended one. The chunkStatus[] entry must already be set up and
@@ -560,80 +692,23 @@ inline uintptr_t getNBytes(size_t n)
 // one chunk perfectly and moves on to the next that next one will be
 // ready to be a basic chunk. The test against vecLimit is needed because
 // a previous allocation may have totally filled eg the last chunk on
-// the page.
-        if ((r&chunkMask) + n <= chunkSize && r!=vecLimit)
-        {   vecFringe += n;
-            return r;
-        }
-// Here either the request will not fit in the current chunk or really there
-// is no current chunk. Insert a padder in the former case.
-        if (r!=vecLimit)
-        {   setHeaderWord(r, (-r)&chunkMask);
-            vecFringe = r + ((-r)&chunkMask);
-        }
-// Now vecFringe points at the start of a chunk. In some cases that will
-// mean I can just move on and use that chunk easily. Note that this
-// requires chunkStatus[] to have been initialised to BasicChunk
-        if (n <= chunkSize && vecFringe != vecLimit)
-        {   r = vecFringe;
-            vecFringe += n;
-            return r;
-        }
-// Here is the messy case. It could be that the request is small and
-// I have just filled memory up as far as vecLimit, or it could be that
-// there is space before vecLimit but I need to confirm that there are
-// enough consecutive free unpinned chunks to accommodate a large
-// vector request.
-        size_t chunkNo =
-            (vecFringe - reinterpret_cast<uintptr_t>(vecCurrent))/chunkSize;
-// chunkNo is now the number of the chunk that blocked me at vecLimit. I
-// will skip over pinned chunks.
-        while (chunkNo<sizeof(vecCurrent->chunkStatus) &&
-               vecCurrent->chunkStatus[chunkNo] != BasicChunk) chunkNo++;
-// Now I know where the next available region is. Scan to find its end.
-// That will let me set fresh values for vecFringe and vecLimit.
-        size_t stopPoint=chunkNo;
-        while (stopPoint<sizeof(vecCurrent->chunkStatus) &&
-               vecCurrent->chunkStatus[stopPoint] == BasicChunk) stopPoint++;
-        vecFringe =
-            reinterpret_cast<uintptr_t>(vecCurrent) + chunkNo*chunkSize;
-        vecLimit =
-            reinterpret_cast<uintptr_t>(vecCurrent) + stopPoint*chunkSize;
-        if (n <= vecLimit - vecFringe)
-        {
-// Now it will fit
-            uintptr_t r = vecFringe;
-            vecFringe += n;
-// Set vecLimit the the chunk boundary just above the newly allocated
-// region of memory
-            vecLimit = vecFringe + ((-vecFringe) & chunkMask);
-// Mark up an extended block if needbe.
-            if (n > chunkSize)  // leave as Basic if possible.
-            {   size_t chunksNeeded = (n + chunkSize - 1)/chunkSize;
-                for (size_t i=0; i<chunksNeeded; i++)
-                    vecCurrent->chunkStatus[chunkNo+i] = ExtendedChunkStart+i;
-            }
-            return r;
-        }
-// Ugh - the request will not fit in this block. I need to fill this block
-// with a padder and scan on looking for another. Make the space into
-// and extended block (if necessary)
-        if (vecLimit != vecFringe+chunkSize)
-            for (size_t i=chunkNo; i<stopPoint; i++)
-                vecCurrent->chunkStatus[i] = ExtendedChunkStart+(i-chunkNo);
-        setHeaderWord(vecFringe, vecLimit-vecFringe);
-        vecFringe = vecLimit;
-// If I have reached the end of a Page then I must gram a new one.
-        if (vecLimit == vecEnd)
-        {   vecCurrent->dataEnd = vecFringe;
-            pageAppend(vecCurrent, vecFullPages,
-                       vecFullPagesTail, vecFullPagesCount);
-            vecCurrent = grabFreshPage(vecFullPageType);
-        }
-        continue;    
+// the page. I expect this to be the most common case
+    if ((r&chunkMask) + n <= chunkSize && r!=vecLimit)
+    {   vecFringe += n;
+        return r;
     }
+    while ((r = getNBytes(n, vecCurrent, vecFringe,
+                          vecLimit, vecEnd, vecStopCache, false)) == 0)
+    {   vecCurrent->dataEnd = vecFringe;
+        pageAppend(vecCurrent, vecPages,
+                   vecPagesTail, vecPagesCount);
+        vecCurrent = grabFreshPage(vecPageType);
+        vecStopCache = -1;
+    }
+    return r;
 }
 
+extern Page* pageFringe;
 
 // "Borrowing" is a concept I introduce here. Its key use is when a hash
 // table needs to be re-hashed. A requirement here is that garbage
@@ -650,10 +725,22 @@ inline uintptr_t getNBytes(size_t n)
 // into it. When that has been done the borrowed memory can be
 // released.
 
-extern Page* pageFringe;
-
-extern unsigned int borrowingDepth;
-extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
+inline uintptr_t borrowNBytes(size_t n)
+{   uintptr_t r = borrowFringe;
+    if ((r&chunkMask) + n <= chunkSize && r!=borrowLimit)
+    {   borrowFringe += n;
+        return r;
+    }
+    while ((r = getNBytes(n, borrowCurrent, borrowFringe,
+                          borrowLimit, borrowEnd, borrowStopCache, true)) == 0)
+    {   borrowCurrent->dataEnd = borrowFringe;
+        pageAppend(borrowCurrent, borrowPages,
+                   borrowPagesTail, borrowPagesCount);
+        borrowCurrent = grabFreshPage(vecPageType);
+        borrowStopCache = -1;
+    }
+    return r;
+}
 
 class Borrowing
 {
@@ -662,6 +749,7 @@ public:
     Borrowing()
     {   if (borrowingDepth++ == 0)
         {   save = pageFringe;
+            borrowStopCache = -1;
         }
     }
     ~Borrowing()
@@ -699,61 +787,8 @@ inline void initBorrowPage(Page* p, bool empty)
     {   borrowFringe = p->scanPoint;
         borrowLimit = p->initialLimit;
     }
-    displayVectorPage(p);
+//  displayVectorPage(p);
 }
-
-// The code for borrowing is very much the same as the for allocating
-// vector space, save that it uses borrowFringe etc. Also it does not
-// change chunkStatus[] information, so that when the borrowed page is
-// finally abandoned it is left in just the state it was at the start.
-// Furthermore it does not need to insert padder objects since new data
-// in the page is not visible to the garbage collector.
-// This code has the comments that are present in getNBytes() stripped out
-// so that the bulk is a little less daunting.
-
-inline uintptr_t borrowNBytes(size_t n)
-{
-    for (;;)
-    {   uintptr_t r = borrowFringe;
-        if ((r&chunkMask) + n <= chunkSize && r!=borrowLimit)
-        {   borrowFringe += n;
-            return r;
-        }
-        if (r!=borrowLimit)
-            borrowFringe = r + ((-r)&chunkMask);
-        if (n <= chunkSize && borrowFringe != borrowLimit)
-        {   r = borrowFringe;
-            borrowFringe += n;
-            return r;
-        }
-        size_t chunkNo =
-            (borrowFringe - reinterpret_cast<uintptr_t>(borrowCurrent))/chunkSize;
-        while (chunkNo<sizeof(borrowCurrent->chunkStatus) &&
-               borrowCurrent->chunkStatus[chunkNo] != BasicChunk) chunkNo++;
-        size_t stopPoint=chunkNo;
-        while (stopPoint<sizeof(borrowCurrent->chunkStatus) &&
-               borrowCurrent->chunkStatus[stopPoint] == BasicChunk) stopPoint++;
-        borrowFringe =
-            reinterpret_cast<uintptr_t>(borrowCurrent) + chunkNo*chunkSize;
-        borrowLimit =
-            reinterpret_cast<uintptr_t>(borrowCurrent) + stopPoint*chunkSize;
-        if (n <= borrowLimit - borrowFringe)
-        {   uintptr_t r = borrowFringe;
-            borrowFringe += n;
-            borrowLimit = borrowFringe + ((-r) & chunkMask);
-            return r;
-        }
-        borrowFringe = borrowLimit;
-        if (borrowLimit == borrowEnd)
-        {   borrowCurrent->dataEnd = borrowFringe;
-            pageAppend(borrowCurrent, borrowPages,
-                       borrowPagesTail, borrowPagesCount);
-            borrowCurrent = grabFreshPage(borrowPageType);
-        }
-        continue;    
-    }
-}
-
 
 inline void poll()
 {
@@ -1017,7 +1052,7 @@ inline const char* Addr(uintptr_t p)
         uintptr_t pNum = o/pageSize;
         Page* pp = reinterpret_cast<Page*>(segBase + pNum*pageSize); 
         uintptr_t pOff = o%pageSize;
-        if ((pp->type==consPinPageType || pp->type==consFullPageType) &&
+        if (pp->type==consPageType &&
             pOff >= offsetof(Page, consData))
         {   pOff -= offsetof(Page, consData);
             if (hs == 0) std::snprintf(r, 40,
@@ -1026,7 +1061,7 @@ inline const char* Addr(uintptr_t p)
                 "#[%d]: %" PRIxPTR ":%" PRIxPTR, hs, pNum, pOff);
             return r;
         }
-        else if ((pp->type==vecPinPageType || pp->type==vecFullPageType) &&
+        else if (pp->type==vecPageType &&
                  pOff >= offsetof(Page, chunks))
         {   pOff -= offsetof(Page, chunks);
             if (hs == 0) std::snprintf(r, 40,
