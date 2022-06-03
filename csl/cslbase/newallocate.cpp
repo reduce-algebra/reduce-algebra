@@ -66,8 +66,8 @@ unsigned int borrowingDepth = 0;
 Page* emptyPages;
 Page* consPinPages;
 Page* vecPinPages;
-Page* consFullPages;
-Page* vecFullPages;
+Page* consPages;
+Page* vecPages;
 Page* consOldPages;
 Page* vecOldPages;
 Page* borrowPages;
@@ -77,17 +77,19 @@ Page* pinnedPages;
 Page* emptyPagesTail;
 Page* consPinPagesTail;
 Page* vecPinPagesTail;
-Page* consFullPagesTail;
-Page* vecFullPagesTail;
+Page* consPagesTail;
+Page* vecPagesTail;
 Page* borrowPagesTail;
 
 size_t emptyPagesCount;
 size_t consPinPagesCount;
 size_t vecPinPagesCount;
-size_t consFullPagesCount;
-size_t vecFullPagesCount;
+size_t consPagesCount;
+size_t vecPagesCount;
 size_t borrowPagesCount;
 
+int vecStopCache = -1;
+int borrowStopCache = -1;
 
 uintptr_t consFringe, consLimit, consEnd;
 uintptr_t vecFringe, vecLimit, vecEnd;
@@ -110,8 +112,20 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // that now!]
 //
     size_t allocSize = (size_t)doubleword_align_up(size);
-// Basic vectors must be smaller then the CSL page size.
-    if (allocSize > (CSL_PAGE_SIZE - 32))
+// Basic vectors must be small enough to be ones that I can allocate.
+// There are two potential limitations. One is via the chunkStatus
+// array and the scheme I have sets that at 8096 Kbytes...
+    if (allocSize > 2*ExtendedChunkMax*chunkSize)
+        return aerror1("request for basic vector too big",
+                       fixnum_of_int(allocSize/CELL-1));
+// The other is the size of the region within a page that chunks can
+// be put in while allowing for page headers and the like. That turns
+// out to be 7904 Kbytes and so is the real limit. For Lisp vectors
+// neither of these are important limits because big vectors and hash
+// tables are stored in chunks rather smaller than that. But for
+// arithmetic this sets a limit on the largest representable integer such
+// that it will have between 19 and 20 million (decimal) digits.
+    if (allocSize > vecDataSize)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = getNBytes(allocSize);
@@ -305,10 +319,10 @@ void initPage(PageType type, Page* p, bool empty)
     {
     default:
         my_abort("bad page type in initPage");
-    case consFullPageType:
+    case consPageType:
         initConsPage(p, empty);
         return;
-    case vecFullPageType:
+    case vecPageType:
         initVecPage(p, empty);
         return;
     case borrowPageType:
@@ -322,8 +336,8 @@ Page* grabFreshPage(PageType type)
     size_t busy = emptyPagesCount +
         consPinPagesCount +
         vecPinPagesCount +
-        consFullPagesCount +
-        vecFullPagesCount +
+        consPagesCount +
+        vecPagesCount +
         borrowPagesCount;
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
@@ -356,7 +370,7 @@ Page* grabFreshPage(PageType type)
                 return r;
             }
             else if (mustGrab)
-            {   if ((type==vecFullPageType ||
+            {   if ((type==vecPageType ||
                      type==borrowPageType) && vecPinPages != nullptr)
                 {   Page* r = vecPinPages;
                     vecPinPages = vecPinPages->chain;
@@ -364,7 +378,7 @@ Page* grabFreshPage(PageType type)
                     initPage(type, r, false); 
                     return r;
                 }
-                else if (type==consFullPageType && consPinPages != nullptr)
+                else if (type==consPageType && consPinPages != nullptr)
                 {   Page* r = consPinPages;
                     consPinPages = consPinPages->chain;
                     consPinPagesCount--;
@@ -393,8 +407,8 @@ Page* grabFreshPage(PageType type)
 
 uintptr_t consEndOfPage()
 {   consCurrent->dataEnd = consFringe;
-    pageAppend(consCurrent, consFullPages, consFullPagesTail, consFullPagesCount);
-    consCurrent = grabFreshPage(consFullPageType);
+    pageAppend(consCurrent, consPages, consPagesTail, consPagesCount);
+    consCurrent = grabFreshPage(consPageType);
     uintptr_t r = consFringe;
     consFringe += 2*sizeof(LispObject);
     return r;
@@ -457,13 +471,13 @@ void initHeapSegments(double storeSize)
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void*>(-1);
     emptyPages = consPinPages = vecPinPages =
-        consFullPages = vecFullPages = borrowPagesTail =
+        consPages = vecPages = borrowPagesTail =
         consOldPages = vecOldPages = nullptr;
     potentiallyPinned = nullptr;
     emptyPagesTail = consPinPagesTail = vecPinPagesTail =
-        consFullPagesTail = vecFullPagesTail = borrowPagesTail = nullptr;
+        consPagesTail = vecPagesTail = borrowPagesTail = nullptr;
     emptyPagesCount = consPinPagesCount = vecPinPagesCount =
-        consFullPagesCount = vecFullPagesCount = borrowPagesCount =  0;
+        consPagesCount = vecPagesCount = borrowPagesCount =  0;
     nilSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);
@@ -473,13 +487,14 @@ void initHeapSegments(double storeSize)
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
-    consCurrent = grabFreshPage(consFullPageType);
+    consCurrent = grabFreshPage(consPageType);
     pageAppend(consCurrent,
-               consFullPages, consFullPagesTail, consFullPagesCount);
-    vecCurrent = grabFreshPage(vecFullPageType);
+               consPages, consPagesTail, consPagesCount);
+    vecCurrent = grabFreshPage(vecPageType);
     pageAppend(vecCurrent,
-               vecFullPages, vecFullPagesTail, vecFullPagesCount);
+               vecPages, vecPagesTail, vecPagesCount);
     borrowCurrent = nullptr;
+    vecStopCache = borrowStopCache = -1;
 }
 
 // This function receives a target heap size in megabytes. If the user

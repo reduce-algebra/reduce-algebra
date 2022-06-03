@@ -80,29 +80,21 @@ AC_PROG_MAKE_SET
 # I now really want at least C++11 so I can use its thread support. On an
 # increasing number of platforms that is a default, but this sorts things
 # out properly. And C++17 will be even nicer with inline variables and
-# std::filesystem (etc).
+# std::filesystem (etc). And C++20 better still with consteval etc!
 
-# The following seems to be an "official" way to ensure that I have at least
-# -std=gnu++11 (or gnu++0x) available.
 
-AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
-
-if test "x$HAVE_CXX17" != "x1"
+AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
+if test "x$HAVE_CXX20" != "x1"
 then
+  AX_CXX_COMPILE_STDCXX([17], [ext], [optional])
+  if test "x$HAVE_CXX17" != "x1"
+  then
     AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
-fi
-
-# If I can not use C++-14 I will INSIST on C++-11. This is somewhat an issue
-# in thet older platforms may not support this instantly. A particular case
-# is that Ubuntu 12.04 provides gcc-4.6 which would choke here, But a brief
-# web search will allow those using such a system to see how to install
-# gcc 4.9... and that MUST be done for Reduce to build. C++-11 provides
-# things like static_assert and type traits that at present are used in just
-# a small corner of the code, but that are potentially generally valuable.
-
-if test "x$HAVE_CXX14" != "x1" && test "x$HAVE_CXX17" != x1
-then
-    AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
+    if test "x$HAVE_CXX14" != "x1"
+    then
+      AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
+    fi
+  fi
 fi
 
 AC_CANONICAL_HOST

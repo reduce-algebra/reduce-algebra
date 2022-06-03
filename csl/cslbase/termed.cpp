@@ -355,8 +355,8 @@ int getFromKeyboard()
                 ascii = keyboardBuffer[0].Event.KeyEvent.uChar.AsciiChar;
                 unicode = keyboardBuffer[0].Event.KeyEvent.uChar.UnicodeChar;
                 ctrl = keyboardBuffer[0].Event.KeyEvent.dwControlKeyState;
-                printlog("key=%x ascii=%x unicode=%x ctrl=%x\n", key, ascii, unicode,
-                         ctrl);
+//              printlog("key=%x ascii=%x unicode=%x ctrl=%x\n", key, ascii, unicode,
+//                       ctrl);
 // If Windows thinks that the key that has been hit corresponded to an
 // ordinary character than I will just return it. No hassle here! Well
 // not quite so easy after all. If ALT is held down at the same time as
@@ -382,9 +382,9 @@ int getFromKeyboard()
 // extend the tables here later if I feel moved to, but getting compatibility
 // with the Unix-like case means I am unlikely to want to support every
 // possible feature.
-                printlog("key=%x unicode=%x\n", key, unicode);
+//              printlog("key=%x unicode=%x\n", key, unicode);
                 switch (key)
-            {       default:    continue;     // Ignore unknown keys
+                {   default:    continue;     // Ignore unknown keys
                     case VK_LEFT:
                         return unicode | TERM_LEFT | ARROW_BIT;
                     case VK_RIGHT:
@@ -516,7 +516,7 @@ static void keyboardThreadFunction()
     bool prevWasEsc = false;
     while (true)
     {   int c = getFromKeyboard();
-        printlog("getFromKeyboard = %x\n", c);
+//      printlog("getFromKeyboard = %x\n", c);
 //      if (c >= ' ' && c < 0x7f)
 //          log("Keyboard delivers %.2x (%c) prev=%d\n", c, c, prevWasEsc);
 //      else log("Keyboard delivers %.2x prev=%d\n", c, prevWasEsc);
@@ -766,7 +766,7 @@ bool is_reduce = false;
 void input_history_init(const char *argv0,
                         int &phistoryFirst, int &phistoryLast, int &phistoryNumber,
                         int &pinput_history_next, int &plongest_history_line)
-{   printlog("input_history_init %s\n", argv0);
+{   // printlog("input_history_init %s\n", argv0);
     int i;
     pinput_history_next = plongest_history_line = 0;
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
@@ -781,7 +781,7 @@ void input_history_init(const char *argv0,
 // so for instance "redcsl" and "bootstrapreduce" as well as "reduce" will
 // qualify, while "csl" should not.
     is_reduce = (std::strstr(argv0, "red") != nullptr);
-    printlog("is_reduce = %s\n", is_reduce ? "true" : "false");
+//  printlog("is_reduce = %s\n", is_reduce ? "true" : "false");
     const char *h1, *h2, *h3;
 #ifdef WIN32
     h1 = std::getenv("HOMEDRIVE");
@@ -815,9 +815,9 @@ void input_history_init(const char *argv0,
         return; // malformed
     phistoryLast = pinput_history_next - 1;
     phistoryNumber = pinput_history_next;
-    printlog("phistoryNumber = %d\n", phistoryNumber);
-    printlog("phistoryLast = %d\n", phistoryLast);
-    printlog("pinput_history_next = %d\n", pinput_history_next);
+//  printlog("phistoryNumber = %d\n", phistoryNumber);
+//  printlog("phistoryLast = %d\n", phistoryLast);
+//  printlog("pinput_history_next = %d\n", pinput_history_next);
 // Headline OK
     for (i=0; i<INPUT_HISTORY_SIZE; i++)
     {   std::getline(h, histline);
@@ -875,28 +875,28 @@ void input_history_init(const char *argv0,
         if (l == nullptr) blankcount++;
         else
         {   if (blankcount != 0)
-            {   printlog("-%d\n", blankcount);
+            {   // printlog("-%d\n", blankcount);
                 blankcount = 0;
             }
-            printlog("%d: \"", j);
-            int ch;
-            wchar_t *ll = l;
-            while ((ch = *ll++) != 0)
-            {   if (0x20 <= ch && ch <= 0x7e &&
-                    ch != '\\' && ch != '"') printlog("%c", ch);
-                else printlog("\\%0.4x", ch & 0xffff);
-            }
-            printlog("\"\n");
+//          printlog("%d: \"", j);
+//          int ch;
+//          wchar_t *ll = l;
+//          while ((ch = *ll++) != 0)
+//          {   if (0x20 <= ch && ch <= 0x7e &&
+//                  ch != '\\' && ch != '"') printlog("%c", ch);
+//              else printlog("\\%0.4x", ch & 0xffff);
+//          }
+//          printlog("\"\n");
         }
     }
-    if (blankcount != 0) printlog("-%d\n", blankcount);
+//  if (blankcount != 0) printlog("-%d\n", blankcount);
 #endif // __OPTIMIZE__
 // The input stream is closed at end of block
 }
 
 void input_history_end()
 {   if (!history_active) return;
-    printlog("Write out updated history\n");
+//  printlog("Write out updated history\n");
 // Dump_history_to_file.
 // The format that I use is:
 //      History <size> <index>
@@ -973,7 +973,7 @@ void input_history_stage(const wchar_t *s)
 
 void input_history_add(const wchar_t *s)
 {   wchar_t *scopy;
-    printlog("input_history_add(%ls)\n", s);
+//  printlog("input_history_add(%ls)\n", s);
     int p;
 // If the line I am attempting to add is empty or is identical to the
 // most recently added entry that is already present I will do nothing.
@@ -985,7 +985,7 @@ void input_history_add(const wchar_t *s)
 //         3};
 // had better not discard any of the "1,2," lines.
     if (s==nullptr || *s==0) return;
-    printlog("input_history_next = %d\n", input_history_next);
+//  printlog("input_history_next = %d\n", input_history_next);
     p = input_history_next;
     if (p > 0 &&
         (scopy = input_history[(p-1)%INPUT_HISTORY_SIZE]) != nullptr &&
@@ -999,7 +999,7 @@ void input_history_add(const wchar_t *s)
 // I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
 // entries.
     if (input_history[p] != nullptr) delete [] input_history[p];
-    printlog("insert new item in slot %d\n", p);
+//  printlog("insert new item in slot %d\n", p);
     input_history[p] = scopy;
     historyLast = input_history_next;
     input_history_next++;
@@ -1020,8 +1020,8 @@ const wchar_t *input_history_get(int n)
         n < input_history_next-INPUT_HISTORY_SIZE) return nullptr;
     s = input_history[n % INPUT_HISTORY_SIZE];
 // The nullptr here would be if new had failed earlier.
-    printlog("input_history_get(%d) = %ls\n", n,
-             s==nullptr ? L"<nil>" : s);
+//  printlog("input_history_get(%d) = %ls\n", n,
+//           s==nullptr ? L"<nil>" : s);
     if (s == nullptr) return L"";
     else return s;
 }
@@ -2598,14 +2598,14 @@ static void term_history_next()
     {   term_bell();
         return;
     }
-    printlog("term_history_next hNum=%d hLast=%d\n", historyNumber,
-             historyLast);
+//  printlog("term_history_next hNum=%d hLast=%d\n", historyNumber,
+//           historyLast);
     if (historyNumber < historyLast) historyNumber++;
     if ((history_string = input_history_get(historyNumber)) == nullptr)
     {   term_bell();
         return;
     }
-    printlog("history string = %ls\n", history_string);
+//  printlog("history string = %ls\n", history_string);
     insert_point = std::wcslen(history_string);
     std::wcsncpy(input_line+prompt_length, history_string, insert_point);
     insert_point += prompt_length;
@@ -2615,8 +2615,8 @@ static void term_history_next()
 
 
 static void term_history_previous()
-{   printlog("term_history_previous hNum=%d hFirst=%dhLast=%d\n",
-             historyNumber, historyFirst, historyLast);
+{   // printlog("term_history_previous hNum=%d hFirst=%dhLast=%d\n",
+    //          historyNumber, historyFirst, historyLast);
     const wchar_t *history_string;
     if (historyLast == -1) // no previous lines to retrieve
     {   term_bell();
@@ -2630,7 +2630,7 @@ static void term_history_previous()
     {   term_bell();
         return;
     }
-    printlog("history string = %ls\n", history_string);
+//  printlog("history string = %ls\n", history_string);
     insert_point = std::wcslen(history_string);
     std::wcsncpy(input_line+prompt_length, history_string, insert_point);
     insert_point += prompt_length;
@@ -5812,7 +5812,7 @@ static wchar_t *term_wide_fancy_getline()
     for (;;)
     {   int n;
         ch = term_getchar();
-        printlog("term_getchar = %x\n", ch);
+//      printlog("term_getchar = %x\n", ch);
         if (ch == EOF || (ch == CTRL_D && !any_keys))
         {   set_default_colour();
             return nullptr;
