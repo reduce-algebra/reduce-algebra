@@ -188,7 +188,7 @@ then
       sys1=${sys1#*-*-}
       base1=${base#csl=}
       base1=${base1#*-*-}
-      d=`cd $base-$dsys-times-comparison; echo *.rlg.diff`
+      d=`cd $dbase-$dsys-times-comparison; echo *.rlg.diff`
       if test "$d" != '*.rlg.diff'
       then
         printf "\nDifferences between $base1 and $sys1: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
