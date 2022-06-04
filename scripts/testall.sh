@@ -82,8 +82,7 @@ do
     then
       plist="$a"
       platforms="$sys"
-      base=${sys#csl=}
-      base="${base#*-*-}"
+      base=$sys
     else
       plist="$plist $a"
       platforms="$platforms $sys"
@@ -110,6 +109,9 @@ then
   base="csl"
 fi
 
+dbase=`$here/scripts/alias.sh $here $base`
+dbase=`$here/scripts/logdirname.sh $dbase`
+
 if test "$just_time" = "no"
 then
 
@@ -118,16 +120,18 @@ then
 #
   for sys in $platforms
   do
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
     sys=${sys#csl=}
     sys=${sys#*-*-}
     if test "$sys" = "cslboot1"
     then
       sys="cslboot"
     fi
-    rm -f $sys-times/*.rlg* $sys-times/showtimes \
-          $base-$sys-times-comparison/*.rlg.diff
-    mkdir -p $sys-times
-    echo "showtimes := '(" > $sys-times/showtimes
+    rm -f $dsys-times/*.rlg* $dsys-times/showtimes \
+          $dbase-$dsys-times-comparison/*.rlg.diff
+    mkdir -p $dsys-times
+    echo "showtimes := '(" > $dsys-times/showtimes
   done
 
   packages=`sed -e '/^\%/d' $here/packages/package.map | \
@@ -151,13 +155,9 @@ then
 
   for sys in $platforms
   do
-    sys=${sys#csl=}
-    sys=${sys#*-*-}
-    if test "$sys" = "cslboot1"
-    then
-      sys="cslboot"
-    fi
-    echo ")\$ end\$" >> $sys-times/showtimes
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
+    echo ")\$ end\$" >> $dsys-times/showtimes
   done
 fi
 
@@ -167,10 +167,12 @@ if test "$just_time" = "no"
 then
   for sys in $platforms
   do
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
     sys=${sys#csl=}
     sys=${sys#*-*-}
-    d=`cd $sys-times; echo *.rlg.diff`
-    if test "$d" != "*.rlg.diff"
+    d=`cd $dsys-times; echo *.rlg.diff`
+    if test "$d" != '*.rlg.diff'
     then
       printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
     fi
@@ -178,14 +180,18 @@ then
 
   for sys in $platforms
   do
-    sys=${sys#csl=}
-    sys=${sys#*-*-}
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
     if test "$sys" != "$base"
     then
-      d=`cd $base-$sys-times-comparison; echo *.rlg.diff`
-      if test "$d" != "*.rlg.diff"
+      sys1=${sys#csl=}
+      sys1=${sys1#*-*-}
+      base1=${base#csl=}
+      base1=${base1#*-*-}
+      d=`cd $base-$dsys-times-comparison; echo *.rlg.diff`
+      if test "$d" != '*.rlg.diff'
       then
-        printf "\nDifferences between $base and $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+        printf "\nDifferences between $base1 and $sys1: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
       fi
     fi
   done
@@ -233,21 +239,27 @@ do
     reporttime "CSLBOOT1" "cslboot-times"
     ;;
   cslboot*)
-    reporttime "CSLBOOT${sys#cslboot}" "$sys-times"
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
+    reporttime "CSLBOOT${sys#cslboot}" "$dsys-times"
     ;;
   installed-cslboot)
     reporttime "installedCSLBOOT" "installed-cslboot-times"
     ;;
   csl | csl-*)
-    reporttime "CSL${sys#csl}" "$sys-times"
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
+    reporttime "CSL${sys#csl}" "$dsys-times"
     ;;
   installed-csl)
     reporttime "installedCSL" "installed-csl-times"
     ;;
   csl=*)
+    dsys=`$here/scripts/alias.sh $here $sys`
+    dsys=`$here/scripts/logdirname.sh $dsys`
     sys=${sys#csl=}
     sys=${sys#*-*-}
-    reporttime "${sys}" "${sys}-times"
+    reporttime "$sys" "$dsys-times"
     ;;
   jlisp)
     reporttime "Jlisp" "jlisp-times"
