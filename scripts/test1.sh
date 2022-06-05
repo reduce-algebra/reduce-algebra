@@ -83,10 +83,10 @@ diffBw() {
 # if "diff" is not the GNU version it may not support the "-B" or "-w"
 # options that ignore whitespace, so here I use sed to get rid of it
 # before running diff.
-      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $name-times/temp1.tmp
-      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $name-times/temp2.tmp
-      diff $name-times/temp1.tmp $name-times/temp2.tmp
-      rm $name-times/temp1.tmp $name-times/temp2.tmp
+      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $lname-times/temp1.tmp
+      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $lname-times/temp2.tmp
+      diff $lname-times/temp1.tmp $lname-times/temp2.tmp
+      rm $lname-times/temp1.tmp $lname-times/temp2.tmp
       ;;
     esac
 }
@@ -419,6 +419,9 @@ csltest() {
   profilemode1=2
   profilename="bytecounts"
 
+  lname=`$here/scripts/alias.sh $here $name`
+  lname=`$here/scripts/logdirname.sh $lname`
+
   if test "$variant" = ""
   then
     case $name in
@@ -450,9 +453,9 @@ csltest() {
     fullcommand="$exename $CSLFLAGS"
   fi
 
-  mkdir -p $name-times
+  mkdir -p $lname-times
   $timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > \
-    $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+    $lname-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -474,11 +477,11 @@ symbolic eval '
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
-    (wrs (setq o (open "$name-times/$p.showtime" 'output)))
+    (wrs (setq o (open "$lname-times/$p.showtime" 'output)))
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
     (cond ((memq 'bytecounts lispsystem!*)
-           (wrs (setq o (open "$name-times/$p.$profilename" 'output)))
+           (wrs (setq o (open "$lname-times/$p.$profilename" 'output)))
            (setq tot 0)
            (dolist (a w) (setq tot (plus tot (caddr a))))
            (set!-print!-precision 3)
@@ -497,30 +500,30 @@ symbolic eval '
 end$
 quit$
 XXX
-  if test -f $name-times/$p.showtime
+  if test -f $lname-times/$p.showtime
   then
-    cat $name-times/$p.showtime >> $name-times/showtimes
+    cat $lname-times/$p.showtime >> $lname-times/showtimes
   fi
-  cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
+  cat $p.howlong.tmp >> $lname-times/$p.rlg.tmp
   printf $showname..
   sed -e "/^Tested on /,//d" <$rlgfile |
-    sed -e "$SED1" >$name-times/$p.rlg.orig
+    sed -e "$SED1" >$lname-times/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-      -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
+      -e "/OMIT/,/TIMO/d" <$lname-times/$p.rlg.tmp | \
     sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
     sed -e "s/${ESCAPED_DIR}.//" | \
-    sed -e "$SED1" >$name-times/$p.rlg
-  diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
-  if test -s $name-times/$p.rlg.diff
-    then printf "Diff is in $name-times/$p.rlg.diff "
-    else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
+    sed -e "$SED1" >$lname-times/$p.rlg
+  diffBw $lname-times/$p.rlg.orig $lname-times/$p.rlg >$lname-times/$p.rlg.diff
+  if test -s $lname-times/$p.rlg.diff
+    then printf "Diff is in $lname-times/$p.rlg.diff "
+    else printf "OK " ; rm -f $lname-times/$p.rlg.diff $lname-times/$p.rlg.orig
   fi
-  printf "Tested on $mc CSL\n" > $name-times/$p.time
-  sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
-    sed -e '/^1: *$/d;' >>$name-times/$p.time
+  printf "Tested on $mc CSL\n" > $lname-times/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$lname-times/$p.rlg.tmp | \
+    sed -e '/^1: *$/d;' >>$lname-times/$p.time
   if test "x$keep" = "xno"
   then
-    rm -f $name-times/$p.rlg.tmp
+    rm -f $lname-times/$p.rlg.tmp
   fi
 }
 
@@ -752,6 +755,8 @@ then
   none="yes"
   for sys in $platforms
   do
+    lsys=`$here/scripts/alias.sh $here $sys`
+    lsys=`$here/scripts/logdirname.sh $lsys`
     sys="${sys#csl=}"
     sys="${sys#*-*-}"
     if test "$sys" = "cslboot1"
@@ -761,7 +766,7 @@ then
 # Each file packageName.showtime will contain just one line of the form
 #       ("packageName" cputime gctime)
 # where the times are recorded in milliseconds.
-    tt=`cat $sys-times/$p.showtime | \
+    tt=`cat $lsys-times/$p.showtime | \
         sed -e 's/[^ ]* //; s/ .*//'`
 # base gets set to the time recorded for the first platform in the list.
     
@@ -801,6 +806,8 @@ then
   base=""
   for sys in $platforms
   do
+    lsys=`$here/scripts/alias.sh $here $sys`
+    lsys=`$here/scripts/logdirname.sh $lsys`
     sys="${sys#csl=}"
     sys="${sys#*-*-}"
     if test "$sys" = "cslboot1"
@@ -810,13 +817,14 @@ then
     if test "x$base" = "x"
     then
       base="$sys"
+      lbase="$lsys"
     else
-      mkdir -p $base-$sys-times-comparison
-      diffBw $base-times/$p.rlg $sys-times/$p.rlg >$base-$sys-times-comparison/$p.rlg.diff
-      if test -s $base-$sys-times-comparison/$p.rlg.diff
+      mkdir -p $lbase-$lsys-times-comparison
+      diffBw $lbase-times/$p.rlg $lsys-times/$p.rlg >$lbase-$lsys-times-comparison/$p.rlg.diff
+      if test -s $lbase-$lsys-times-comparison/$p.rlg.diff
       then
         printf "***** $base and $sys test logs differ!\n"
-      else rm -f $base-$sys-times-comparison/$p.rlg.diff
+      else rm -f $lbase-$lsys-times-comparison/$p.rlg.diff
       fi
     fi
   done
