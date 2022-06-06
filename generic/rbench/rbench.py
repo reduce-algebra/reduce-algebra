@@ -74,6 +74,7 @@ def setup_parser_run(parser):
     _addgroup_reduce(parser)
     _add_lisp(parser)
     _add_revision(parser)
+    _add_sed(parser)
 
 def setup_parser_summary(parser):
     """
@@ -223,6 +224,13 @@ def _add_display(parser):
         action='store_true',
         help='Open the generated NOW/summary.html in the default web browser')
 
+def _add_sed(parser):
+    parser.add_argument(
+        '--sed', metavar='S',
+        type=str,
+        default=None,
+        help='Apply GNU sed script S to benchmark files when creating RESULT from SOURCE')
+
 def cron(args):
     computation.cron(source=args.source,
                      result=args.result,
@@ -253,7 +261,8 @@ def run(args):
                     reduce=args.reduce,
                     svn_reduce=args.svn_reduce,
                     lisp=args.lisp,
-                    revision=args.revision)
+                    revision=args.revision,
+                    sed_script=args.sed)
 
 def summary(args):
     analytics.summary(ref=args.ref,

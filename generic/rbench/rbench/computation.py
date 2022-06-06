@@ -97,9 +97,26 @@ def _install_reduce(svn_reduce: str, revision: str, force: bool) -> str:
     compile(svn_reduce)
 
 def _init_result(source: str, result: str, force: bool, include: str, exclude: str,
-                 exclude_by_time: int, reduce: str) -> list:
+                 exclude_by_time: int, reduce: str, sed_script: str = None) -> list:
     class Continue(Exception):
         pass
+    if sed_script is not None:
+        logger.info('checking for a sed version that supports GNU extensions')
+        sed_prog = None
+        for sed in 'sed', 'gsed':
+            sed = subprocess.run(['type', '-p', sed], capture_output=True).stdout.decode().rstrip()
+            if sed != '':
+                completed_process = subprocess.run([sed, 'v'],
+                    stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+            if completed_process.returncode == 0:
+                logger.info('found ' + sed)
+                sed_prog = sed
+                break
+            else:
+                logger.info('skipping ' + sed)
+        if sed_prog is None:
+            logger.critical('failed')
+            sys.exit(17)
     logger.info('initializing RESULT directory ' + result)
     if os.path.exists(result):
         if force:
@@ -146,7 +163,7 @@ def _init_result(source: str, result: str, force: bool, include: str, exclude: s
                 continue
             if exclude_by_time:
                 try:
-                    for lisp in 'csl', 'psl':
+                    for lisp in 'csl', 'psl', 'boot':
                         cpu_file = 'cpu_' + lisp + '.txt'
                         source_cpu_file = os.path.join(path, cpu_file)
                         if os.path.exists(source_cpu_file):
@@ -165,7 +182,15 @@ def _init_result(source: str, result: str, force: bool, include: str, exclude: s
             else:
                 logger.debug('  +' + red_file)
             os.makedirs(os.path.join(result, relpath), exist_ok=True)
-            shutil.copy(source_red_file, result_red_file)
+            if sed_script is None:
+                shutil.copy(source_red_file, result_red_file)
+            else:
+                with open(source_red_file, 'r') as i, open(result_red_file, 'w') as o:
+                    completed_process = subprocess.run([sed_prog, sed_script], stdin=i, stdout=o)
+                if completed_process.returncode != 0:
+                    logger.critical('exit code ' + str(completed_process.returncode) +
+                                    ' in '+ sed_prog + " '" + sed_script + "'")
+                    sys.exit(17)
             source_pslheap_file = os.path.join(path, basename + '.pslheap')
             result_pslheap_file = os.path.join(result, relpath, basename + '.pslheap')
             if os.path.exists(source_pslheap_file):
@@ -252,10 +277,11 @@ def cron(source: str, result: str, force: bool = False, jobs: int = 1, psl_heaps
     print(html.end)
 
 
-def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: bool = False,
-        psl_heapsize: int = 4000, log: str = 'warning', bar: bool = False, exclude: str = None,
-        include: str = None, exclude_by_time: int = None, ulimit: str = 'unlimited',
-        reduce: str = None, lisp: str = 'csl psl', svn_reduce: str = None, revision: str = None):
+def run(source: str, result: str, force: bool = False, jobs: int = 1,
+        dry_run: bool = False, psl_heapsize: int = 4000, log: str = 'warning', bar: bool = False,
+        exclude: str = None, include: str = None, exclude_by_time: int = None,
+        ulimit: str = 'unlimited', reduce: str = None, lisp: str = 'csl psl',
+        svn_reduce: str = None, revision: str = None, sed_script: str = None):
     """
     Run a Reduce benchmark set.
     """
@@ -275,7 +301,7 @@ def run(source: str, result: str, force: bool = False, jobs: int = 1, dry_run: b
         _install_reduce(svn_reduce, revision, force)
         reduce = svn_reduce
     red_files = _init_result(source=source, result=result, force=force, include=include,
-        exclude=exclude, exclude_by_time=exclude_by_time, reduce=reduce)
+        exclude=exclude, exclude_by_time=exclude_by_time, reduce=reduce, sed_script=sed_script)
     with open(os.path.join(result, 'GLOBAL', 'call.txt'), 'w') as file:
         myframe = inspect.currentframe()
         funcname = myframe.f_code.co_name
