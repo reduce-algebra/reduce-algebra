@@ -14,6 +14,7 @@ import inspect
 import io
 import logging
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -104,16 +105,17 @@ def _init_result(source: str, result: str, force: bool, include: str, exclude: s
         logger.info('checking for a sed version that supports GNU extensions')
         sed_prog = None
         for sed in 'sed', 'gsed':
-            sed = subprocess.run(['type', '-p', sed], capture_output=True).stdout.decode().rstrip()
-            if sed != '':
-                completed_process = subprocess.run([sed, 'v'],
-                    stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-            if completed_process.returncode == 0:
+            sed = shutil.which(sed)
+            if sed is not None:
+                try:
+                    null = subprocess.DEVNULL
+                    subprocess.run([sed, 'v'], check=True, stdin=null, stderr=null, stdout=null)
+                except subprocess.CalledProcessError:
+                    logger.debug('skipping ' + sed)
+                    continue
                 logger.info('found ' + sed)
                 sed_prog = sed
                 break
-            else:
-                logger.info('skipping ' + sed)
         if sed_prog is None:
             logger.critical('failed')
             sys.exit(17)
@@ -206,24 +208,31 @@ def _run_using_gnu_parallel(dry_run: bool, bar: bool, jobs: int, ulimit: str, re
                             red_files: list) -> str:
     def _parallel_command() -> str:
         logger.info('building GNU parallel command')
-        parallel_args = ''
+        # parallel_args
+        parallel_args = []
         if dry_run:
-            parallel_args += ' --dry-run'
-        parallel_args += ' --lb -j' + str(jobs)
+            parallel_args += ['--dry-run']
+        parallel_args += ['--lb', '-j', str(jobs)]
         if bar:
-            parallel_args += ' --bar'
-        parallel_cmd = ' ' + os.path.join(os.path.dirname(__file__), 'bash_scripts', 'job.sh')
-        parallel_cmd_args  = ' '
+            parallel_args += ['--bar']
+        # parallel_command
+        parallel_cmd = [os.path.join(os.path.dirname(__file__), 'bash_scripts', 'job.sh')]
+        # parallel_command_args
+        parallel_cmd_args = []
         if bar or logger.getEffectiveLevel() > logging.DEBUG:
-            parallel_cmd_args += ' -q'
+            parallel_cmd_args += ['-q']
+        parallel_cmd_args += [ulimit, os.path.join(reduce, 'bin', '{1}')]
+        # I am assuming that shlex.quote(source) and shlex.quote(result) are not double quoted
+        _result = '\"' + shlex.quote(result) + '\"'
+        _source = '\"' + shlex.quote(source) + '\"'
+        parallel_cmd_args += ['{2}', _result, '{3}', _source]
         one = lisp.replace('csl', 'redcsl').replace('psl', 'redpsl').replace('boot', 'bootstrapreduce');
         two = str(psl_heapsize)
-        three = ' '.join(red_files)
-        parallel_cmd_args += ' ' + ulimit + ' ' + os.path.join(reduce, 'bin', '{1}') \
-                             + ' {2} ' + result + ' {3} ' + source
-        parallel_cmd_args += ' ::: ' + one + ' ::: ' + two + ' ::: ' + three
-        cmd = 'parallel' + parallel_args + parallel_cmd + parallel_cmd_args
-        return cmd
+        three = ' '.join(map(shlex.quote, red_files))
+        parallel_cmd_args += [':::', one, ':::', two, ':::', three]
+        # parallel_cmd
+        parallel_cmd = ' '.join(['parallel'] + parallel_args + parallel_cmd + parallel_cmd_args)
+        return parallel_cmd
 
     cmd = _parallel_command()
     logger.debug(cmd)
