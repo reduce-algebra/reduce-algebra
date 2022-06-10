@@ -60,6 +60,8 @@ in
   then
     p="x86_64-pc-cygwin-conservative"
   else
+    mc=`$here/config.guess`
+    mc=`$here/scripts/findhost.sh $mc`
     p="$mc-conservative"
   fi
   printf -- "--csl=$p"

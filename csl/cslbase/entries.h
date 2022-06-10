@@ -840,8 +840,6 @@ extern LispObject om_listCDs(LispObject env, LispObject a1,
 extern LispObject om_listSymbols(LispObject env, LispObject lcd);
 extern LispObject om_whichCDs(LispObject env, LispObject lsym);
 #endif
-extern LispObject undefined_4up(LispObject env,
-                                LispObject a1, LispObject a2, LispObject a3, LispObject a4);
 
 #endif // header_entries_h
 

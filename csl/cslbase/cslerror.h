@@ -160,6 +160,7 @@ extern LispObject bad_specialfn_4up(LispObject env, LispObject,
 #define G4Wother       got_4up_wanted_other
 
 extern LispObject display_backtrace();
+
 extern LispObject aerror(const char *s);         // Called from C not Lisp
 extern LispObject aerror0(const char *s);
 extern LispObject aerror1(const char *s, LispObject a);
@@ -167,7 +168,8 @@ extern LispObject aerror2(const char *s, LispObject a, LispObject b);
 extern LispObject aerror2(const char *s, const char *a, LispObject b);
 extern LispObject aerror3(const char *s,
                           LispObject a, LispObject b, LispObject c);
-extern void fatal_error(int code, ...);
+
+[[noreturn]] extern void fatal_error(int code, ...);
 
 // For the sake of Common Lisp style treatment of (car nil) and (cdr nil)
 // I have these. In the CL case they can return nil if the arg is nil or
