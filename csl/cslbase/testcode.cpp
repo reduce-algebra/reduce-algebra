@@ -70,7 +70,6 @@ void gcTestCode()
 // Note that each of 1-4 can discard the cons cell previously
 // stored there.
 
-    bool allocated = false;
     for (int i=0; i<24; i++)
     {   switch (Crand()%5)
         {
@@ -78,35 +77,20 @@ void gcTestCode()
         case 0:
             std::cout << "&&&set workbase 1\n";
             workbase[1] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
-            allocated = true;
             break;
         case 1:
             std::cout << "&&&set workbase 2\n";
             workbase[2] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
-            allocated = true;
             break;
         case 2:
             std::cout << "&&&set ambiguous 1\n";
             ambiguous[1] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
-            allocated = true;
             break;
         case 3:
             std::cout << "&&&set ambiguous 2\n";
             ambiguous[2] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
-            allocated = true;
             break;
         case 4:
-#if 0
-// If I call reclaim before I have allocated ANYTHING at all it will end
-// up in a mess. This is such a pathological situation that I just arrange
-// to avoid it.
-// Well this was an issue with my old code - I am not yet certain that it
-// is with the new!
-            if (!allocated)
-            {   std::cout << "&&&reclaim too early!\n";
-                break;
-            }
-#endif
             std::cout << "&&&reclaim\n";
             Lgc(nil, fixnum_of_int(Crand()));
             std::cout << "&&&end reclaim\n";

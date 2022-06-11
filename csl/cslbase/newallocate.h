@@ -72,6 +72,7 @@ extern Page* vecCurrent;        // Where vectors are allocated.
 extern Page* borrowCurrent;     // Where temporary vectors are allocated.
 extern Page* potentiallyPinned; // For GC.
 extern Page* pinnedPages;       // For GC.
+extern Page* pendingPages;      // For GC.
 
 extern Page* emptyPagesTail;
 extern Page* consPinPagesTail;
@@ -115,6 +116,7 @@ public:
             bool borrowPinned;
             Page* oldPinnedPages;
             Page* pinnedPages;
+            Page* pendingPages;
             LispObject pinnedObjects;
             uintptr_t scanPoint;
             uintptr_t dataEnd;
@@ -266,7 +268,7 @@ inline void initConsPage(Page* p, bool empty)
                consPagesTail, consPagesCount);
     p->type = consPageType;
     consCurrent = p;
-    consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    p->dataEnd = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {   p->pinnedObjects = TAG_FIXNUM;
         std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
@@ -544,7 +546,7 @@ inline void initVecPage(Page* p, bool empty)
                vecPagesTail, vecPagesCount);
     p->type = vecPageType;
     vecCurrent = p;
-    vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    p->dataEnd = vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {   p->potentiallyPinnedFlag = false;
         p->potentiallyPinnedChain = nullptr;
@@ -565,7 +567,7 @@ inline void initVecPage(Page* p, bool empty)
 //  displayVectorPage(p);
 }
 
-extern Page* grabFreshPage(PageType type);
+extern void grabFreshPage(PageType type);
 extern int vecStopCache;
 extern int borrowStopCache;
     
@@ -702,7 +704,12 @@ inline uintptr_t getNBytes(size_t n)
     while ((r = getNBytes(n, vecCurrent, vecFringe,
                           vecLimit, vecEnd, vecStopCache, false)) == 0)
     {   vecCurrent->dataEnd = vecFringe;
-        vecCurrent = grabFreshPage(vecPageType);
+// If I am within the GC I need a chain of all pages that have been filled
+// up, and when I am not then establishing such a chain is an utterly
+// trivial overhead.
+        vecCurrent->pendingPages = pendingPages;
+        pendingPages = vecCurrent;
+        grabFreshPage(vecPageType);
         vecStopCache = -1;
     }
     return r;
@@ -752,13 +759,12 @@ inline void initBorrowPage(Page* p, bool empty)
 //  displayVectorPage(p);
 }
 
-inline Page* grabBorrowPage()
+inline void grabBorrowPage()
 {   if (emptyPages != nullptr)
     {   Page* r = emptyPages;
         emptyPages = emptyPages->chain;
         initBorrowPage(r, true);
 //      zprintf("return empty %a for borrow\n", r);
-        return r;
     }
     else if (pageFringe != pageEnd)
     {   Page* r = pageFringe++;
@@ -767,14 +773,12 @@ inline Page* grabBorrowPage()
         emptyPages = r;
         initBorrowPage(r, true);
 //      zprintf("return new %a for borrow\n", r);
-        return r;
     }
     else if (vecPinPages != nullptr)
     {   Page* r = vecPinPages;
         vecPinPages = vecPinPages->chain;
         initBorrowPage(r, false);
 //      zprintf("return pinned vec %a type for borrow\n", r);
-        return r;
     }
     else fatal_error(err_no_store);
 }
@@ -787,7 +791,10 @@ inline uintptr_t borrowNBytes(size_t n)
     }
     while ((r = getNBytes(n, borrowCurrent, borrowFringe,
                           borrowLimit, borrowEnd, borrowStopCache, true)) == 0)
-    {   borrowCurrent = grabBorrowPage();
+    {
+// Full borrowed do not go on the pendingPages list because they are not
+// relevant to the GC.
+        grabBorrowPage();
         borrowStopCache = -1;
     }
     return r;
