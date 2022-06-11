@@ -901,7 +901,7 @@ static void report_dependencies()
     dependency_file[0] = 0;
 }
 
-void my_exit()
+[[noreturn]] void my_exit()
 {
 // There are a range of places in the code where I feel I want to quite
 // abruptly because some internal failure has arisen.

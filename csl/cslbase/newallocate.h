@@ -53,7 +53,6 @@ enum PageType
 {   emptyPageType,
     consPageType,
     vecPageType,
-    borrowPageType
 };
 
 class Page;
@@ -79,14 +78,12 @@ extern Page* consPinPagesTail;
 extern Page* vecPinPagesTail;
 extern Page* consPagesTail;
 extern Page* vecPagesTail;
-extern Page* borrowPagesTail;
 
 extern size_t emptyPagesCount;
 extern size_t consPinPagesCount;
 extern size_t vecPinPagesCount;
 extern size_t consPagesCount;
 extern size_t vecPagesCount;
-extern size_t borrowPagesCount;
 
 
 class alignas(pageSize) Page
@@ -114,6 +111,8 @@ public:
 // There are some fields that every Page will have...
             PageType type;
             Page* chain;
+            Page* borrowChain;
+            bool borrowPinned;
             Page* oldPinnedPages;
             Page* pinnedPages;
             LispObject pinnedObjects;
@@ -249,8 +248,23 @@ inline void vecClearPinned(uintptr_t a, Page* p)
 
 extern uintptr_t consFringe, consLimit, consEnd;
 
+inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
+{   p->chain = nullptr;
+    if (count == 0)
+    {   list = tail = p;
+        count = 1;
+    }
+    else
+    {   tail->chain = p;
+        tail = p;
+        count++;
+    }
+}
+
 inline void initConsPage(Page* p, bool empty)
-{   p->type = consPageType;
+{   pageAppend(p, consPages,
+               consPagesTail, consPagesCount);
+    p->type = consPageType;
     consCurrent = p;
     consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
@@ -263,19 +277,6 @@ inline void initConsPage(Page* p, bool empty)
     else
     {   consFringe = p->scanPoint;
         consLimit = p->initialLimit;
-    }
-}
-
-inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
-{   p->chain = nullptr;
-    if (count == 0)
-    {   list = tail = p;
-        count = 1;
-    }
-    else
-    {   tail->chain = p;
-        tail = p;
-        count++;
     }
 }
 
@@ -532,7 +533,6 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 }
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
-extern unsigned int borrowingDepth;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
 
@@ -540,7 +540,9 @@ extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 // fringe and limit in scanPoint and initialLimit.
 
 inline void initVecPage(Page* p, bool empty)
-{   p->type = vecPageType;
+{   pageAppend(p, vecPages,
+               vecPagesTail, vecPagesCount);
+    p->type = vecPageType;
     vecCurrent = p;
     vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
@@ -598,7 +600,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // Here either the request will not fit in the current chunk or really there
 // is no current chunk. Insert a padder in the former case.
         if (r!=limit)
-        {   setHeaderWord(r, (-r)&chunkMask);
+        {   if (!borrowing) setHeaderWord(r, (-r)&chunkMask);
             my_assert(fringe > (uintptr_t)current &&
                       fringe <= (uintptr_t)(current+1), LOCATION);
             fringe = r + ((-r)&chunkMask);
@@ -672,7 +674,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
             for (size_t i=chunkNo; i<stopPoint; i++)
                 current->chunkStatus[i] =
                     saturateChunk(ExtendedChunkStart+(i-chunkNo));
-        setHeaderWord(fringe, limit-fringe);
+        if (!borrowing) setHeaderWord(fringe, limit-fringe);
 //      displayVectorPage(current);
         fringe = limit;
         stopCache = -1;
@@ -700,8 +702,6 @@ inline uintptr_t getNBytes(size_t n)
     while ((r = getNBytes(n, vecCurrent, vecFringe,
                           vecLimit, vecEnd, vecStopCache, false)) == 0)
     {   vecCurrent->dataEnd = vecFringe;
-        pageAppend(vecCurrent, vecPages,
-                   vecPagesTail, vecPagesCount);
         vecCurrent = grabFreshPage(vecPageType);
         vecStopCache = -1;
     }
@@ -709,6 +709,7 @@ inline uintptr_t getNBytes(size_t n)
 }
 
 extern Page* pageFringe;
+extern Page* pageEnd;
 
 // "Borrowing" is a concept I introduce here. Its key use is when a hash
 // table needs to be re-hashed. A requirement here is that garbage
@@ -725,48 +726,6 @@ extern Page* pageFringe;
 // into it. When that has been done the borrowed memory can be
 // released.
 
-inline uintptr_t borrowNBytes(size_t n)
-{   uintptr_t r = borrowFringe;
-    if ((r&chunkMask) + n <= chunkSize && r!=borrowLimit)
-    {   borrowFringe += n;
-        return r;
-    }
-    while ((r = getNBytes(n, borrowCurrent, borrowFringe,
-                          borrowLimit, borrowEnd, borrowStopCache, true)) == 0)
-    {   borrowCurrent->dataEnd = borrowFringe;
-        pageAppend(borrowCurrent, borrowPages,
-                   borrowPagesTail, borrowPagesCount);
-        borrowCurrent = grabFreshPage(vecPageType);
-        borrowStopCache = -1;
-    }
-    return r;
-}
-
-class Borrowing
-{
-    Page* save;
-public:
-    Borrowing()
-    {   if (borrowingDepth++ == 0)
-        {   save = pageFringe;
-            borrowStopCache = -1;
-        }
-    }
-    ~Borrowing()
-    {   if (--borrowingDepth == 0)
-        {   while (borrowPages != nullptr)
-            {   Page* p = borrowPages;
-                borrowPages = p->chain;
-                p->chain = emptyPages;
-                emptyPages = p;
-            }
-            borrowCurrent = nullptr;
-            borrowFringe = borrowEnd = 0;
-            pageFringe = save;
-        }
-    }
-};
-
 inline void initBorrowPage(Page* p, bool empty)
 {
 // borrowed pages do not need anything like as much initialisation since
@@ -774,6 +733,9 @@ inline void initBorrowPage(Page* p, bool empty)
 // set up since that is inspected in case there might have been pinned
 // items within them.
     borrowCurrent = p;
+    p->borrowChain = borrowPages;
+    p->borrowPinned = !empty;
+    borrowPages = p;
     borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {
@@ -789,6 +751,72 @@ inline void initBorrowPage(Page* p, bool empty)
     }
 //  displayVectorPage(p);
 }
+
+inline Page* grabBorrowPage()
+{   if (emptyPages != nullptr)
+    {   Page* r = emptyPages;
+        emptyPages = emptyPages->chain;
+        initBorrowPage(r, true);
+//      zprintf("return empty %a for borrow\n", r);
+        return r;
+    }
+    else if (pageFringe != pageEnd)
+    {   Page* r = pageFringe++;
+        r->chain = nullptr;
+        r->type = emptyPageType;
+        emptyPages = r;
+        initBorrowPage(r, true);
+//      zprintf("return new %a for borrow\n", r);
+        return r;
+    }
+    else if (vecPinPages != nullptr)
+    {   Page* r = vecPinPages;
+        vecPinPages = vecPinPages->chain;
+        initBorrowPage(r, false);
+//      zprintf("return pinned vec %a type for borrow\n", r);
+        return r;
+    }
+    else fatal_error(err_no_store);
+}
+
+inline uintptr_t borrowNBytes(size_t n)
+{   uintptr_t r = borrowFringe;
+    if ((r&chunkMask) + n <= chunkSize && r!=borrowLimit)
+    {   borrowFringe += n;
+        return r;
+    }
+    while ((r = getNBytes(n, borrowCurrent, borrowFringe,
+                          borrowLimit, borrowEnd, borrowStopCache, true)) == 0)
+    {   borrowCurrent = grabBorrowPage();
+        borrowStopCache = -1;
+    }
+    return r;
+}
+
+class Borrowing
+{
+public:
+    Borrowing()
+    {   grabBorrowPage();
+    }
+    ~Borrowing()
+    {
+//      zprintf("exit borrowing\n");
+        while (false && borrowPages != nullptr)
+        {   Page* p = borrowPages;
+            zprintf("return borrowed page %a\n", p);
+//          borrowPages = p->borrowChain;
+            if (p->borrowPinned)
+            {   p->chain = vecPinPages;
+                vecPinPages = p;
+            }
+            else
+            {   p->chain = emptyPages;
+                emptyPages = p;
+            }
+        }
+    }
+};
 
 inline void poll()
 {

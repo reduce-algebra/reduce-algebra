@@ -325,14 +325,15 @@ void initPage(PageType type, Page* p, bool empty)
     case vecPageType:
         initVecPage(p, empty);
         return;
-    case borrowPageType:
-        initBorrowPage(p, empty);
-        return;
     }
 }
 
 Page* grabFreshPage(PageType type)
-{   bool mustGrab = withinGarbageCollector || type==borrowPageType;
+{   bool mustGrab = withinGarbageCollector;
+// Ha ha - the careful type-checking in zprintf understands that a
+// value of "enum" type is not of "integer" type, so the case gere is
+// required!
+//  zprintf("grabFreshPage %d\n", static_cast<int>(type));
     size_t busy = emptyPagesCount +
         consPinPagesCount +
         vecPinPagesCount +
@@ -360,29 +361,32 @@ Page* grabFreshPage(PageType type)
                 emptyPages = emptyPages->chain;
                 emptyPagesCount--;
                 r->type = emptyPageType;
-                initPage(type, r, true); 
+                initPage(type, r, true);
+//              zprintf("return empty %a type %d\n", r, (int)type);
                 return r;
             }
             else if (pageFringe != pageEnd)
             {   Page* r = pageFringe++;
                 r->type = emptyPageType;
-                initPage(type, r, true); 
+                initPage(type, r, true);
+//              zprintf("return new %a type %d\n", r, (int)type);
                 return r;
             }
             else if (mustGrab)
-            {   if ((type==vecPageType ||
-                     type==borrowPageType) && vecPinPages != nullptr)
+            {   if (type==vecPageType && vecPinPages != nullptr)
                 {   Page* r = vecPinPages;
                     vecPinPages = vecPinPages->chain;
                     vecPinPagesCount--;
-                    initPage(type, r, false); 
+                    initPage(type, r, false);
+//                  zprintf("return pinned vec %a type %d\n", r, (int)type);
                     return r;
                 }
                 else if (type==consPageType && consPinPages != nullptr)
                 {   Page* r = consPinPages;
                     consPinPages = consPinPages->chain;
                     consPinPagesCount--;
-                    initPage(type, r, false); 
+                    initPage(type, r, false);
+//                  zprintf("return pinned cons %a type %d\n", r, (int)type);
                     return r;
                 }
             }
@@ -418,11 +422,7 @@ uintptr_t consEndOfPage()
 // allocated and popped off when borrowing is over.
 
 uintptr_t borrowEndOfPage(size_t n)
-{   if (borrowCurrent != nullptr)
-    {   borrowCurrent->chain = borrowPages;
-        borrowPagesTail = borrowCurrent;
-    }
-    borrowCurrent = grabFreshPage(borrowPageType);
+{   grabBorrowPage();
     return borrowNBytes(n);
 }
 
