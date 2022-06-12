@@ -172,14 +172,16 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // Reset chunkNo to refer to the start of the chunk that this address
 // lies within. Hah if the value seen is ExtendedChunkMax then I step
 // back that far and check again. That is because chunk sequence values
-// saturate, but the page size is such that just two probes will
-// always suffice.
-            if (w >= ExtendedChunkMax)
-                w = p->chunkStatus[chunkNo -= w-1];
+// saturate. The page size is such that just two probes will be enough.
+            if (w == ExtendedChunkMax) w = p->chunkStatus[chunkNo -= w-1];
             if (w > ExtendedChunkStart && w <= ExtendedChunkMax)
                 w = p->chunkStatus[chunkNo -= w-1];
+// Now I am pointing at the start of the chunk. If it is ahead of
+// dataEnd it contains live data and also if the chunk is pinned it might
+// even if it is way beyond dataEnd.
             if (a < p->dataEnd ||
-                w >= ExtendedPinnedChunk) // ExtendedPinned or BasicPinned
+                w == ExtendedPinnedChunk ||
+                w == BasicPinnedChunk)
             {
 // Now I tag the Chunk as potentially pinned. It will not actually be pinned
 // if the dodgy address points within a padder item in it.
@@ -305,12 +307,10 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
     size_t lastChunk = firstChunk+1;
     while (lastChunk < sizeof(p->chunkStatus) &&
            !startOfChunk(p->chunkStatus[lastChunk])) lastChunk++;
-    uintptr_t firstAddr = reinterpret_cast<uintptr_t>(p) +
-                          firstChunk*chunkSize;
+    uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
 // endAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
-    uintptr_t endAddr   = reinterpret_cast<uintptr_t>(p) +
-                          lastChunk*chunkSize;
+    uintptr_t endAddr   = addressFromChunkNo(p, lastChunk);
 // Now I have a chunk delimited, I will parse it so I can identify
 // object start addresses.
     uintptr_t s = firstAddr;
@@ -567,47 +567,7 @@ void evacuateFromPinnedItems()
     }
 }
 
-// Note that there could ba a page that was scanned as consCurrent and
-// at that stage it was left unfilled, but later when a vector page is
-// scanned it gets filled up. So I must start checking from scanPoint here
-// even though the page is known to be full. But because it is full I can
-// scan up as far as dataEnd. Note that consEndPage() set dataEnd and
-// also the start of garbage collection does...
-
-void evacuateFullConsPage(Page* p)
-{   uintptr_t next = p->scanPoint;
-    while (next != p->dataEnd)
-    {   if (!consIsPinned(next, p))
-        {   LispObject* n = reinterpret_cast<LispObject*>(next);
-// A "cons page" can in fact contain any sort of object of size 2. So as
-// well as cons cells it can contain double precision floats, (short) strings,
-// (small) bignums and lisp vectors with only a single element. All the
-// messy cases will have a header word in the first cell. Furthermore
-// because the object is known to be only two words long various cases
-// can not arise - eg stream objects, symbol headers. About the only
-// edge case I feel like mentioning here will be Lisp vectors of length
-// zero, which in fact use only one word. Even though that would fit in a
-// two-word gap the system must not put them in the cons space.
-            switch (*n & 0x1f)
-            {
-            case 0x0a: // 0b01010: // Header for vector of Lisp pointers
-                evacuate(*(n+1));
-                [[fallthrough]];
-            case 0x12: // 0b10010: // Header for bit-vector
-                [[fallthrough]];
-            case 0x1a: // 0b11010: // Header for vector of binary data
-                break;
-            default:
-                evacuate(*n);      // must be a cons cell
-                evacuate(*(n+1));
-                break;
-            }
-        }
-        next += 2*sizeof(LispObject);
-    }
-}
-
-bool evacuateCurrentConsPage(Page* p)
+bool evacuateConsPage(Page* p)
 {   bool didSomething = false;
     uintptr_t next = p->scanPoint;
 // If some of the evacuation here fills up this page iy may cease being
@@ -642,13 +602,76 @@ bool evacuateCurrentConsPage(Page* p)
     return didSomething;
 }
 
-void evacuateFullVecPage(Page* p)
-{   // Not coded yet
-}
+bool evacuateVecPage(Page* p)
+{   uintptr_t next = p->scanPoint;
+    bool didSomething = false;
+// Ugh! Here it could be that this point is within a chunk (or extended
+// chunk) because it was left over from a previous pass. So I need to
+// identify the chubk that it is within. Well to be a little more pedantic
+// I first need to find the start of the relevant chunk.
+    size_t firstChunk;
+    while (next != p->dataEnd && next != vecFringe)
+    {   firstChunk = chunkNoFromAddress(p, next);
+        int w = p->chunkStatus[firstChunk];
+        if (w == ExtendedChunkMax) w = p->chunkStatus[firstChunk -= w-1];
+        if (w > ExtendedChunkStart && w <= ExtendedChunkMax)
+            w = p->chunkStatus[firstChunk -= w-1];
+// Now firstChunk is set up OK.
+        size_t lastChunk = firstChunk+1;
+        while (lastChunk < sizeof(p->chunkStatus) &&
+               !startOfChunk(p->chunkStatus[lastChunk])) lastChunk++;
+        uintptr_t endAddress   = addressFromChunkNo(p, lastChunk);
+        while (next != endAddress)     // scan this chunk
+        {   if (next == p->dataEnd || next == vecFringe)
+            {   p->scanPoint = next;
+                return didSomething;
+            }
+// I will now identify the sort of item present at location *next.
+            didSomething = true;
+            uintptr_t a = *reinterpret_cast<uintptr_t*>(next);
+            size_t len, len1;
+            switch (a & 0x1f)
+            {
+            case 0x0a: // 0b01010: // Header for vector of Lisp pointers
+                                   // Note TYPE_STREAM is in with this.
+                len = length_of_header(a);
+                if (is_mixed_header(a)) len1 = 4*CELL;
+                else len1 = len;
+                my_assert(len != 0, "lisp vector size zero");
+                for (size_t i = CELL; i<len1; i += CELL)
+                    evacuate(*reinterpret_cast<LispObject*>(next+i));
+                break;
 
-bool evacuateCurrentVecPage(Page* p)
-{   // Not coded yet
-    return false;
+            case 0x12: // 0b10010: // Header for bit-vector
+                [[fallthrough]];
+            case 0x1a: // 0b11010: // Header of vector holding binary data
+                len = doubleword_align_up(length_of_header(a));
+                break;
+
+            case 0x02: // 0b00010: // Symbol headers, char literals etc.
+                if (is_symbol_header(a))
+                {   len = symhdr_length;
+                    Symbol_Head* s = reinterpret_cast<Symbol_Head*>(next);
+                    evacuate(s->value);
+                    evacuate(s->env);
+                    evacuate(s->plist);
+                    evacuate(s->fastgets);
+                    evacuate(s->package);
+                    evacuate(s->pname);
+                    break;
+                }
+                [[fallthrough]];
+            default:               // None of the above cases...
+                len = 2*CELL;      // ... must be a CONS cell.
+                evacuate(car(next));
+                evacuate(cdr(next));
+                break;
+            }
+            next += len;
+        }
+// I get here at the end of the current chunk.
+    }
+    return didSomething;
 }
 
 void evacuateFromCopiedData()
@@ -661,10 +684,10 @@ void evacuateFromCopiedData()
             switch (p->type)
             {
             case consPageType:
-                evacuateFullConsPage(p);
+                evacuateConsPage(p);
                 break;
             case vecPageType:
-                evacuateFullVecPage(p);
+                evacuateVecPage(p);
                 break;
             default:
                 my_abort("bad page type in evacuateFromCopiedData");
@@ -683,13 +706,13 @@ void evacuateFromCopiedData()
 // the evacuation did not actually do anything, and so the whole function
 // can return false if there was in fact no additional data in to be
 // looked at.
-        bool didSomething = evacuateCurrentConsPage(consCurrent);
+        bool didSomething = evacuateConsPage(consCurrent);
 // Now similarly for the vector page. Well the pain here is that scanning
 // the vector page might put more info in the consCurrent page or even make
 // it overflow, even if the vector page does not become full. So I must
 // return false either if the vector page fills up or if any new conses are
 // created.
-        if (evacuateCurrentVecPage(vecCurrent)) didSomething = true;
+        if (evacuateVecPage(vecCurrent)) didSomething = true;
 // If neither scanning consCurrent nor vecCurrent did anything at all then
 // pendingPages will still be left empty and there is nothing left to do.
 // If either of them did do something then at least that one will have
@@ -698,248 +721,6 @@ void evacuateFromCopiedData()
         if (!didSomething) break;
     }
 }
-
-//~ void evacuateOneChunk(Chunk* c)
-//~ {   c->evacuated = true;
-//~     uintptr_t p = c->dataStart();
-//~     while (p < c->chunkFringe)
-//~     {   LispObject* pp = reinterpret_cast<LispObject*>(p);
-//~ // The first word of an object may be one of several possibilities:
-//~ //    Header for vector holding binary data;
-//~ //    Header for vector holding Lisp data;
-//~ //    Header for object with 3 lisp items then binary stuff;
-//~ //    Header for symbol;
-//~ //    anything else (item is a cons cell).
-//~         LispObject a = *pp;
-//~         size_t len, len1;
-//~         switch (a & 0x1f) // tag bits plus 2 more
-//~         {
-//~ // binary literals are C++14, so just for now I will use hex, but I will
-//~ // write what the binary literal would be...
-//~         case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
-//~                                  // Note TYPE_STREAM etc is in with this.
-//~             len = doubleword_align_up(length_of_header(a));
-//~             if (is_mixed_header(a)) len1 = 4*CELL;
-//~             else len1 = len;
-//~             for (size_t i = CELL; i<len1; i += CELL)
-//~                 evacuate(*reinterpret_cast<LispObject*>(p+i));
-//~             p += len;
-//~             continue;
-//~
-//~         case 0x12: // 0b10010:   // Header for bit-vector
-//~             len = doubleword_align_up(length_of_header(a));
-//~             p += len;
-//~             continue;
-//~
-//~         case 0x1a: // 0b11010:   // Header for vector holding binary data
-//~             len = doubleword_align_up(length_of_header(a));
-//~             p += len;
-//~             continue;
-//~         case 0x02: // 0b00010:   // Symbol headers plus char literals etc
-//~             if (is_symbol_header(a))
-//~             {   Symbol_Head* s = reinterpret_cast<Symbol_Head*>(p);
-//~                 evacuate(s->value);
-//~                 evacuate(s->env);
-//~ //#             zprintf("%a has plist %a\n", s, s->plist); // @@@
-//~                 evacuate(s->plist);
-//~                 evacuate(s->fastgets);
-//~                 evacuate(s->package);
-//~                 evacuate(s->pname);
-//~                 p += symhdr_length;
-//~                 continue;
-//~             }
-//~             // drop through.
-//~         default:                 // None of the above cases...
-//~                                  // ... must be a CONS cell.
-//~             evacuate(pp[0]);
-//~             evacuate(pp[1]);
-//~             p += 2*CELL;
-//~             continue;
-//~         }
-//~     }
-//~ }
-//~
-//~ void evacuatePartOfMyOwnChunk()
-//~ {
-//~ // This is the core of the copying GC. It starts by identifying the Chunk
-//~ // that its thread is allocating within.
-//~ // The steps are:
-//~ // (1) The "busy Chunk" will start off in state (4) - ie it will have some
-//~ // data within it (well a degenerate case is that there is in fact no data,
-//~ // but that is not a problem) and it also has some free space at the end. I
-//~ // know the latter because it is the Chunk I am allocating into and if it
-//~ // was full I would have moved on. I guess that a further minor special case
-//~ // is if there is no such Chunk yet - in which case I just allocate one and
-//~ // it will start off empty.
-//~ // (2) The code here points myBusyChunk at that Chunk. That is needed
-//~ // so that when (and if!) allocation fills up that Chunk it will not be
-//~ // enqueued for other threads to scan. It also sets a pointer to the start
-//~ // of data within the Chunk.
-//~ // (3) Data within the Chunk is scanned. Where there are old pointers in it
-//~ // those are "evacuated". Doing this may involve creating copies of lists.
-//~ // These copies may (or may not) fill up the Chunk - when it is filled a
-//~ // new one gets allocated. If scanning leads to creation of second or
-//~ // subsequent Chunks then the full ones get enqueued. The scan can terminate
-//~ // in one of two manners. (a) the Chunk may not become full but all data in
-//~ // it has been inspected or (b) the Chunk may have become full in which
-//~ // case scanning terminates at its end.
-//~ // (4) In a non-blocking mode the code attempts to obtain a Chunk to work on.
-//~ // While that succeeds it scans/evacuates contents. It only continues from
-//~ // this step if there seems to be no data available.
-//~ // (5) If more copying had occured then return to step (3), resetting
-//~ // myActiveChunk to wherever allocation is now active. This will commonly
-//~ // happen if (4) had found more Chunks to scan, and it is easily noticed
-//~ // by checking if fringe has changed.
-//~ // (6) If scanning stopped for lack of data (local or from the queue) the
-//~ // thread must make a blocking request from the Chunk queue (well in fact
-//~ // it is run as a stack). This can either return more memory to be scanned
-//~ // and this is treated as if it had been found at step (4). Or it can
-//~ // report that no more will ever become available, in which case we are
-//~ // finished.
-//~     THREADID;
-//~     for (;;)
-//~     {
-//~ // myBusyChunk is set here so because the Chunk being worked on is
-//~ // simultaneously one that has some copied but not cleaned up material in
-//~ // it AND the one in which this thread will be placing any further
-//~ // copied material.
-//~         myBusyChunk = currentChunk;
-//~         myBusyChunk->evacuated = true;
-//~         uintptr_t p = myBusyChunk->dataStart();
-//~         if (gcTrace) zprintf("Start of data in my Chunk is at %a\n", p);
-//~         if (gcTrace) zprintf("fringe = %a\n", fringe);
-//~         for (;;)
-//~         {
-//~             if (evaccount > 4970) zprintf("p=%a\n", p);
-//~ // The start of this loop is what I describe as "step (3)" in the
-//~ // above commentary.
-//~             if (p == fringe)
-//~             {   Chunk* c1;
-//~                 for (;;)
-//~                 {   while ((c1 = nonblockingPopChunk()) != nullptr)
-//~                     {   if (gcTrace) zprintf("another chunk at %a from queue\n", c1);
-//~                         evacuateOneChunk(c1);
-//~                     }
-//~                     if (fringe == p)
-//~                     {   c1 = popChunk(); // blocking
-//~                         if (c1 == nullptr) return;
-//~ //#                     if (gcTrace) zprintf("!Another chunk at %a from queue\n", c1);
-//~                         evacuateOneChunk(c1);
-//~                         continue;
-//~                     }
-//~                     else break;
-//~                 }
-//~                 if (myBusyChunk != currentChunk)
-//~                 {   myBusyChunk = currentChunk;
-//~                     p = myBusyChunk->dataStart();
-//~                     zprintf("Resetting p = %a\n", p);
-//~                 }
-//~                 continue;
-//~             }
-//~             else if (p >= myBusyChunk->dataEnd())
-//~             {
-//~ // The test here is based on scanning right up to the very end of the Chunk,
-//~ // so it will be important that when a Chunk overflows that a padder object
-//~ // is inserted to fill any gap at the end. There is then a jolly edge case.
-//~ // If the most recent call to gc_n_bytes() allocated memory that just
-//~ // filled up the Chunk and that was used such that evacuating it did not need
-//~ // and more memory. Then this thread will not have been allocated its
-//~ // next Chunk. However in that case fringe would be set to the same value
-//~ // as dataEnd() and I always check for p==fringe before p>=dataEnd() so this
-//~ // odd case will never lead to trouble here. Phew! Relief!! The fact that
-//~ // I do not hit fringe but do reach dataEnd() must be because a new Chunk
-//~ // had been set up for allocation and fringe points within it, and in that
-//~ // situation currentChunk[] will have been updated.
-//~                 my_assert(myBusyChunk != currentChunk,
-//~                           "current chunk not busy one");
-//~                 myBusyChunk = currentChunk;
-//~                 p = myBusyChunk->dataStart();
-//~                 zprintf("Resetting p = %a\n", p);
-//~                 continue;
-//~             }
-//~ //#         if (gcTrace) zprintf("scanning (1) at %a\n", p);
-//~
-//~             LispObject* pp = reinterpret_cast<LispObject*>(p);
-//~ // The first word of an object may be one of several possibilities:
-//~ //    Header for vector holding binary data;
-//~ //    Header for vector holding Lisp data;
-//~ //    Header for object with 3 lisp items then binary stuff;
-//~ //    Header for symbol;
-//~ //    anything else (item is a cons cell).
-//~             LispObject a = *pp;
-//~             size_t len, len1;
-//~ #ifdef DEBUG
-//~ //# if (gcTrace) zprintf("First word of %a = %a %x\n", pp, a, a&0x1f);
-//~ //# if (gcTrace)
-//~ //# {   if (is_cons(a))         zprintf("a cons pointer\n");
-//~ //#     else if (is_vector(a))  zprintf("pointer to a vector of some sort\n");
-//~ //#     else if (is_forward(a)) zprintf("forwarding pointer ILLEGAL HERE\n");
-//~ //#     else if (is_symbol(a))  zprintf("pointer to a symbol\n");
-//~ //#     else if (is_numbers(a)) zprintf("pointer to a symbol\n");
-//~ //#     else if (is_bfloat(a))  zprintf("pointer to a boxfloat\n");
-//~ //#     else if (is_fixnum(a))  zprintf("item is a fixnum\n");
-//~ //#     else if (is_odds(a))
-//~ //#     {   if (is_header(a))
-//~ //#             zprintf("header found %a  %d:%x:%x\n", a,
-//~ //#                     length_of_header(a), (a & header_mask)>>Tw, a&TAG_BITS);
-//~ //#         else zprintf("immed %a = %x\n", a, a);
-//~ //#     }
-//~ //#     else zprintf("??? %s\n", Addr(a));
-//~ //# }
-//~ #endif
-//~             if (is_forward(a))
-//~             {   zprintf("Forwarding pointer %a found at %a\n", a, p);
-//~             }
-//~             my_assert(!is_forward(a), "forwarding pointer not expected");
-//~             switch (a & 0x1f) // tag bits plus 2 more
-//~             {
-//~ // binary literals are C++14, so just for now I will use hex, but I will
-//~ // write what the binary literal would be...
-//~             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
-//~                                      // Note TYPE_STREAM etc is in with this.
-//~                 len = length_of_header(a);
-//~                 if (is_mixed_header(a)) len1 = 4*CELL;
-//~                 else len1 = len;
-//~ // Remember that on a 32-bit machine the final doubleword of a vector
-//~ // could be padded with junk.
-//~                 for (size_t i = CELL; i<len1; i += CELL)
-//~                     evacuate(*reinterpret_cast<LispObject*>(p+i));
-//~                 p += doubleword_align_up(len);
-//~                 continue;
-//~
-//~             case 0x12: // 0b10010:   // Header for bit-vector
-//~                 len = doubleword_align_up(length_of_header(a));
-//~                 p += len;
-//~                 continue;
-//~
-//~             case 0x1a: // 0b11010:   // Header for vector holding binary data
-//~                 len = doubleword_align_up(length_of_header(a));
-//~                 p += len;
-//~                 continue;
-//~             case 0x02: // 0b00010:   // Symbol headers plus char literals etc
-//~                 if (is_symbol_header(a))
-//~                 {   Symbol_Head* s = reinterpret_cast<Symbol_Head*>(p);
-//~                     evacuate(s->value);
-//~                     evacuate(s->env);
-//~                     evacuate(s->plist);
-//~                     evacuate(s->fastgets);
-//~                     evacuate(s->package);
-//~                     evacuate(s->pname);
-//~                     p += symhdr_length;
-//~                     continue;
-//~                 }
-//~                 // drop through.
-//~             default:                 // None of the above cases...
-//~                                      // ... must be a CONS cell.
-//~                 evacuate(pp[0]);
-//~                 evacuate(pp[1]);
-//~                 p += 2*CELL;
-//~                 continue;
-//~             }
-//~         }
-//~     }
-//~ }
-//~
 
 // I start garbage collection by  making the current allocation pages
 // have the structure of ones that are full. The only thing that involves
@@ -972,12 +753,8 @@ void inner_garbage_collect()
 // CONS region as a list of pinned objects - so on a temporary basis
 // I will mark the pages as free!
     grabFreshPage(consPageType);
-    pageAppend(consCurrent,
-               consPages, consPagesTail, consPagesCount);
     consCurrent->type = emptyPageType;
     grabFreshPage(vecPageType);
-    pageAppend(vecCurrent,
-               vecPages, vecPagesTail, vecPagesCount);
 // Now I can scan the stack and mark up pinned items. This will build
 // up a chain of pages still 
     identifyPinnedItems();
