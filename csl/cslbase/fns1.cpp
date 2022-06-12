@@ -1643,17 +1643,21 @@ LispObject get_vector(int tag, int type, size_t n)
     return v;
 }
 
+// reduce_vector_size() shrinks a vector in-place. This obviously discards
+// information but my intent is that the first elements of the input
+// vector are preserved.
 
 LispObject reduce_vector_size(LispObject v, size_t len)
 {   if (is_basic_vector(v)) return reduce_basic_vector_size(v, len);
 // Maybe the shorter vector will fit entirely within the first chunk of
-// the general one.
+// the general one. A key thing I am relying on here is that if I have
+// a non-basic vector (ie one made up of chunks) that the first chunk
+// is full sized.
     if (len <= VECTOR_CHUNK_BYTES+CELL)
         return reduce_basic_vector_size(basic_elt(v, 0), len);
 // Work out how many chunks the smaller vector will need, and how large
 // its last chunk will end up.
-    size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES -
-                     1)/VECTOR_CHUNK_BYTES;
+    size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
     size_t last_size = (len - CELL) % VECTOR_CHUNK_BYTES;
     if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
     len = CELL*(chunks+1);

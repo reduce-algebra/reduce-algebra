@@ -73,6 +73,7 @@ Page* vecOldPages;
 Page* borrowPages;
 Page* potentiallyPinned;
 Page* pinnedPages;
+Page* pendingPages;
 
 Page* emptyPagesTail;
 Page* consPinPagesTail;
@@ -328,7 +329,7 @@ void initPage(PageType type, Page* p, bool empty)
     }
 }
 
-Page* grabFreshPage(PageType type)
+void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
 // Ha ha - the careful type-checking in zprintf understands that a
 // value of "enum" type is not of "integer" type, so the case gere is
@@ -363,14 +364,14 @@ Page* grabFreshPage(PageType type)
                 r->type = emptyPageType;
                 initPage(type, r, true);
 //              zprintf("return empty %a type %d\n", r, (int)type);
-                return r;
+                return;
             }
             else if (pageFringe != pageEnd)
             {   Page* r = pageFringe++;
                 r->type = emptyPageType;
                 initPage(type, r, true);
 //              zprintf("return new %a type %d\n", r, (int)type);
-                return r;
+                return;
             }
             else if (mustGrab)
             {   if (type==vecPageType && vecPinPages != nullptr)
@@ -379,7 +380,7 @@ Page* grabFreshPage(PageType type)
                     vecPinPagesCount--;
                     initPage(type, r, false);
 //                  zprintf("return pinned vec %a type %d\n", r, (int)type);
-                    return r;
+                    return;
                 }
                 else if (type==consPageType && consPinPages != nullptr)
                 {   Page* r = consPinPages;
@@ -387,7 +388,7 @@ Page* grabFreshPage(PageType type)
                     consPinPagesCount--;
                     initPage(type, r, false);
 //                  zprintf("return pinned cons %a type %d\n", r, (int)type);
-                    return r;
+                    return;
                 }
             }
         }
@@ -402,7 +403,7 @@ Page* grabFreshPage(PageType type)
     cout << "\n@@@ MEMORY FULL @@@\n" << endl;
     garbage_collect();
 // After garbage collection there had BETTER be some available memory left!
-    return grabFreshPage(type);
+    grabFreshPage(type);
 }
 
 // When I make a page "full" I will put a pointer just beyond the
@@ -412,18 +413,13 @@ Page* grabFreshPage(PageType type)
 uintptr_t consEndOfPage()
 {   consCurrent->dataEnd = consFringe;
     pageAppend(consCurrent, consPages, consPagesTail, consPagesCount);
-    consCurrent = grabFreshPage(consPageType);
+// Maintain a list of all full pages, regardless of type.
+    consCurrent->pendingPages = pendingPages;
+    pendingPages = consCurrent;
+    grabFreshPage(consPageType);
     uintptr_t r = consFringe;
     consFringe += 2*sizeof(LispObject);
     return r;
-}
-
-// The borrowed pages are just pushed on the front of the chain when
-// allocated and popped off when borrowing is over.
-
-uintptr_t borrowEndOfPage(size_t n)
-{   grabBorrowPage();
-    return borrowNBytes(n);
 }
 
 size_t pages_count = 0;
@@ -472,7 +468,7 @@ void initHeapSegments(double storeSize)
         heapSegment[i] = reinterpret_cast<void*>(-1);
     emptyPages = consPinPages = vecPinPages =
         consPages = vecPages = borrowPagesTail =
-        consOldPages = vecOldPages = nullptr;
+        consOldPages = vecOldPages = pendingPages = nullptr;
     potentiallyPinned = nullptr;
     emptyPagesTail = consPinPagesTail = vecPinPagesTail =
         consPagesTail = vecPagesTail = borrowPagesTail = nullptr;
@@ -487,10 +483,10 @@ void initHeapSegments(double storeSize)
     if (stackSegment == nullptr) fatal_error(err_no_store);
     stackBase = reinterpret_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
-    consCurrent = grabFreshPage(consPageType);
+    grabFreshPage(consPageType);
     pageAppend(consCurrent,
                consPages, consPagesTail, consPagesCount);
-    vecCurrent = grabFreshPage(vecPageType);
+    grabFreshPage(vecPageType);
     pageAppend(vecCurrent,
                vecPages, vecPagesTail, vecPagesCount);
     borrowCurrent = nullptr;

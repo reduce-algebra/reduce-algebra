@@ -964,6 +964,66 @@ static bool hash_compare_symtab(LispObject key, LispObject hashentry)
 
 //==========================================================================
 
+// First copy from h_table and v_table to oldkeys and oldvals,
+// then hash back. This rehashes the main table while not changing
+// its size, and oldkeys, oldvals are purely temporary. h_table,
+// v_table and h_table_size are static variable so do not need to be
+// passed as arguments. Well this only copies active data into
+// oldkeys and oldvals, so empty space is ignored and tombstones end
+// up discarded. If in the process this discovers that the table is
+// rather empty it will shrink it.
+
+void rehashInPlace(LispObject tab, LispObject oldkeys, LispObject oldvals)
+{   size_t load = 0;
+// Copy live data to the borrowed space and make the existing table empty.
+    for (size_t i=0; i<h_table_size; i++)
+    {   LispObject k = ht(i);
+        if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
+        {   elt(oldkeys, load) = k;
+            if (v_table != nil)
+            {   elt(oldvals, load) = static_cast<LispObject>(htv(i));
+                htv(i) = SPID_HASHEMPTY;
+            }
+            load++;
+        }
+        ht(i) = SPID_HASHEMPTY;
+    }
+// If the table is under 20% occupied (and if it is big enough for shrinking
+// to be sensible) I halve its size, so it will still end up at worst 40%
+// occupied. It a really large fraction of its contents had been removed
+// it will be repeatedly halved in size but with a slightly more conservative
+// stopping point.
+    if (load < h_table_size/5 && h_table_size > 16)
+    {   do
+        {   h_shift++;
+            h_table_size /= 2;
+        }
+        while (load < h_table_size/6 && h_table_size > 16);
+// I can reduce the size of a vector and doing so preserves the contents
+// of the cells that remain (here they will all contain nil). However if
+// the vector shrinks from a segmented representation to a basic one the
+// address involved may change, so I must update the referenced in the
+// main table.
+        h_table = reduce_vector_size(h_table, CELL*(load+1));
+        if (v_table != nil)
+            v_table = reduce_vector_size(v_table, CELL*(load+1));
+        write_barrier(&basic_elt(tab, HASH_KEYS), h_table);
+        write_barrier(&basic_elt(tab, HASH_VALUES), v_table);
+    }
+// As perhaps a matter of caution I will re-create the COUNT.
+    basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
+    for (size_t i=0; i<load; i++)
+    {   LispObject k = elt(oldkeys, i);
+        size_t j = hash_where_to_insert(k);
+        write_barrier(&ht(j), k);
+        if (v_table != nil)
+            write_barrier(&htv(j),
+                          static_cast<LispObject>(elt(oldvals, i)));
+        basic_elt(tab, HASH_COUNT) =
+            static_cast<LispObject>(basic_elt(tab, HASH_COUNT)) + 0x10;
+    }
+}
+
 LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
                      LispObject dflt)
 {   STACK_SANITY;
@@ -983,35 +1043,21 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
 // half-space that is reserved by the copying garbage collector to copy
 // material into when a GC is needed. The result is that plenty of space
 // should always be available, but it will be imporant that GC is not
-// triggered while a borrowed vector is still in use.
-        Borrowing borrowObject;
-        LispObject oldkeys =
-            h_table_size <= REHASHVEC_SIZE ? rehash_vec1 :
-            borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
-        LispObject oldvals = v_table == nil ? nil :
-                             h_table_size <= REHASHVEC_SIZE ? rehash_vec2 :
-                             borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
-        size_t load = 0;
-// Copy live data to the borrowed space and make the existing table empty.
-        for (size_t i=0; i<h_table_size; i++)
-        {   LispObject k = ht(i);
-            if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
-            {   elt(oldkeys, load) = k;
-                ht(i) = SPID_HASHEMPTY;
-                if (v_table != nil)
-                {   elt(oldvals, load) = static_cast<LispObject>(htv(i));
-                    htv(i) = SPID_HASHEMPTY;
-                }
-                load++;
-            }
-        }
-        for (size_t i=0; i<load; i++)
-        {   LispObject k = elt(oldkeys, i);
-            size_t j = hash_where_to_insert(k);
-            write_barrier(&ht(j), k);
-            if (v_table != nil)
-                write_barrier(&htv(j),
-                              static_cast<LispObject>(elt(oldvals, i)));
+// triggered while a borrowed vector is still in use. However for small
+// tables I will just use a pre-allocated pair of vectors. A consequence
+// of that is that those vectors may keep the table content alive even if
+// the hash table itself is altered - but only until the next time something
+// gets rehashed in this way!
+        if (h_table_size <= REHASHVEC_SIZE)
+            rehashInPlace(tab, rehash_vec1, rehash_vec2);
+        else
+        {   Borrowing borrowObject;
+            LispObject oldkeys = borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC,
+                                               CELL*(h_table_size+1));
+            LispObject oldvals = v_table == nil ? nil :
+                                 borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC,
+                                               CELL*(h_table_size+1));
+            rehashInPlace(tab, oldkeys, oldvals);
         }
     }
     else set_hash_operations(tab);
@@ -1214,52 +1260,16 @@ LispObject Lput_hash(LispObject env,
             discard_vector(oldvals);
         }
         else
-        {   Borrowing borrowObject;
-// Here I will either leave the tables the same size of shrink them.
-// Note that "borrowed" vectors are not garbage collector safe. And that
-// allocating them can not trigger garbage collection.
-            LispObject oldkeys =
-                h_table_size <= REHASHVEC_SIZE ? rehash_vec1 :
-                borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
-            LispObject oldvals = v_table == nil ? nil :
-                                 h_table_size <= REHASHVEC_SIZE ? rehash_vec2 :
-                                 borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(h_table_size+1));
-            size_t load = 0;
-            for (size_t i=0; i<h_table_size; i++)
-            {   LispObject k = ht(i);
-                if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
-                {   elt(oldkeys, load) = k;
-                    if (v_table != nil)
-                        elt(oldvals, load) = static_cast<LispObject>(htv(i));
-                    load++;
-                }
-            }
-            if (load < h_table_size/5 && h_table_size > 16)
-            {   do
-                {   h_shift++;
-                    h_table_size /= 2;
-                }
-                while (load < h_table_size/6 && h_table_size > 16);
-                h_table = reduce_vector_size(h_table, CELL*(load+1));
-                if (v_table != nil)
-                    v_table = reduce_vector_size(v_table, CELL*(load+1));
-                write_barrier(&basic_elt(tab, HASH_KEYS), h_table);
-                write_barrier(&basic_elt(tab, HASH_VALUES), v_table);
-            }
-            for (size_t i=0; i<h_table_size; i++)
-            {   ht(i) = SPID_HASHEMPTY;
-                if (v_table != nil) htv(i) = SPID_HASHEMPTY;
-            }
-            basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
-            for (size_t i=0; i<load; i++)
-            {   LispObject k = elt(oldkeys, i);
-                size_t j = hash_where_to_insert(k);
-                write_barrier(&ht(j), k);
-                if (v_table != nil)
-                    write_barrier(&htv(j),
-                                  static_cast<LispObject>(elt(oldvals, i)));
-                basic_elt(tab, HASH_COUNT) =
-                    static_cast<LispObject>(basic_elt(tab, HASH_COUNT)) + 0x10;
+        {   if (h_table_size <= REHASHVEC_SIZE)
+                rehashInPlace(tab, rehash_vec1, rehash_vec2);
+            else
+            {   Borrowing borrowObject;
+                LispObject oldkeys = borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC,
+                                                   CELL*(h_table_size+1));
+                LispObject oldvals = v_table == nil ? nil :
+                                     borrow_vector(TAG_VECTOR, TYPE_SIMPLE_VEC,
+                                                   CELL*(h_table_size+1));
+                rehashInPlace(tab, oldkeys, oldvals);
             }
         }
     }
