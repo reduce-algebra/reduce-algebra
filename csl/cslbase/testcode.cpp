@@ -76,24 +76,26 @@ void gcTestCode()
         default:
         case 0:
             std::cout << "&&&set workbase 1\n";
-            workbase[1] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            workbase[1] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
             break;
         case 1:
             std::cout << "&&&set workbase 2\n";
-            workbase[2] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            workbase[2] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
             break;
         case 2:
             std::cout << "&&&set ambiguous 1\n";
-            ambiguous[1] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            ambiguous[1] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
             break;
         case 3:
             std::cout << "&&&set ambiguous 2\n";
-            ambiguous[2] = cons(fixnum_of_int(Crand()), fixnum_of_int(Crand()));
+            ambiguous[2] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
             break;
         case 4:
             std::cout << "&&&reclaim\n";
-            Lgc(nil, fixnum_of_int(Crand()));
+            displayAllPages("testcode before GC");
+            Lgc(nil, fixnum_of_int(Crand()&0xffff));
             std::cout << "&&&end reclaim\n";
+            displayAllPages("testcode after GC");
             break;
         }
     }
@@ -160,7 +162,6 @@ void gcTestCode()
 #endif
     setvalue(nil,              nil);          // Whew!
 
-    for (int i=0; i<1000; i++) Crand();
     zprintf("Run the test\n");
     for (int i=1; i<10; i++)
     {   simple_print(runtest(1+Crand()%15, i));

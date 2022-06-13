@@ -129,6 +129,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
     if (allocSize > vecDataSize)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
+// Note that allocSize has been rounded up suitably.
     LispObject r = getNBytes(allocSize);
     *(reinterpret_cast<Header*>(r)) =
         type + (size<<(Tw+5)) + TAG_HDR_IMMED;
@@ -309,6 +310,54 @@ bool allocateAnotherSegment()
     else return false;
 }
 
+void initConsPage(Page* p, bool empty)
+{   pageAppend(p, consPages,
+               consPagesTail, consPagesCount);
+    p->type = consPageType;
+    consCurrent = p;
+    p->dataEnd = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    if (empty)
+    {   p->pinnedObjects = TAG_FIXNUM;
+        std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
+        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+        consFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->consData);
+        consLimit = consEnd;
+    }
+    else
+    {   consFringe = p->scanPoint;
+        consLimit = p->initialLimit;
+    }
+}
+
+// Again pages that have any pinned data in them specify their initial
+// fringe and limit in scanPoint and initialLimit.
+
+void initVecPage(Page* p, bool empty)
+{   pageAppend(p, vecPages,
+               vecPagesTail, vecPagesCount);
+    p->type = vecPageType;
+    vecCurrent = p;
+    p->dataEnd = vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    if (empty)
+    {   p->potentiallyPinnedFlag = false;
+        p->potentiallyPinnedChain = nullptr;
+        std::memset(p->previousVecPins, 0, sizeof(p->previousVecPins));
+        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+        std::memset(p->chunkStatus, BasicChunk, sizeof(p->chunkStatus));
+        std::memset(p->potentiallyPinnedChunks, 0,
+                    sizeof(p->potentiallyPinnedChunks));
+        vecFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->chunks);
+        vecLimit = vecEnd;
+    }
+    else
+    {   vecFringe = p->scanPoint;
+        vecLimit = p->initialLimit;
+    }
+    my_assert(vecLimit > vecFringe &&
+              vecLimit <= vecEnd, LOCATION);
+//  displayVecPage(p);
+}
+
 // This finds another Page to use.
 // Within the GC it will be willing to re-use pages that contain
 // pinned data, but otherwise it will insist on finding a fully
@@ -403,7 +452,8 @@ void grabFreshPage(PageType type)
     cout << "\n@@@ MEMORY FULL @@@\n" << endl;
     garbage_collect();
 // After garbage collection there had BETTER be some available memory left!
-    grabFreshPage(type);
+// At the end of garbage collection everything should be ready to do the
+// next bit of allocation.
 }
 
 // When I make a page "full" I will put a pointer just beyond the
@@ -416,9 +466,7 @@ uintptr_t consEndOfPage()
     consCurrent->pendingPages = pendingPages;
     pendingPages = consCurrent;
     grabFreshPage(consPageType);
-    uintptr_t r = consFringe;
-    consFringe += 2*sizeof(LispObject);
-    return r;
+    return get2Words();
 }
 
 size_t pages_count = 0;
@@ -1731,3 +1779,4 @@ LispObject Lgctest_2(LispObject env, LispObject a1, LispObject a2)
 }
 
 // end of newallocate.cpp
+ 

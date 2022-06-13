@@ -263,25 +263,6 @@ inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
     }
 }
 
-inline void initConsPage(Page* p, bool empty)
-{   pageAppend(p, consPages,
-               consPagesTail, consPagesCount);
-    p->type = consPageType;
-    consCurrent = p;
-    p->dataEnd = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
-    if (empty)
-    {   p->pinnedObjects = TAG_FIXNUM;
-        std::memset(p->previousConsPins, 0, sizeof(p->previousConsPins));
-        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
-        consFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->consData);
-        consLimit = consEnd;
-    }
-    else
-    {   consFringe = p->scanPoint;
-        consLimit = p->initialLimit;
-    }
-}
-
 extern uintptr_t consEndOfPage();
 extern void garbage_collect();
 
@@ -453,8 +434,40 @@ inline ChunkStatus saturateChunk(size_t n)
 // may be impacted. So I put some functions that can display or validate
 // Pages here for use while debugging.
 
-inline void displayVectorPage(Page* p)
-{   unsigned int n = 0;
+inline void displayConsPage(Page* p)
+{   zprintf("Cons page %a\n", p);
+    zprintf("chain = %a\n", p->chain);
+    zprintf("borrowChain = %a borrowPinned=%s\n",
+        p->borrowChain, p->borrowPinned);
+    zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
+    zprintf("pinnedPages = %a\n", p->pinnedPages);
+    zprintf("pendingPages = %a\n", p->pendingPages);
+    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a\n",
+        p->scanPoint, p->dataEnd, p->initialLimit);
+    uintptr_t prev = 0x1234567887654321u;
+    for (uintptr_t q=reinterpret_cast<uintptr_t>(&p->consData);
+                   q<p->dataEnd;
+                   q+=sizeof(uintptr_t))
+    {   uintptr_t n = *reinterpret_cast<uintptr_t*>(q);
+        if (n != prev)
+        {   zprintf("%a: %a\n", q, n);
+            prev = n;
+        }
+    }
+    zprintf("end of page %a\n", p);
+}
+
+inline void displayVecPage(Page* p)
+{   zprintf("Vec page %a\n", p);
+    zprintf("chain = %a\n", p->chain);
+    zprintf("borrowChain = %a borrowPinned=%s\n",
+        p->borrowChain, p->borrowPinned);
+    zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
+    zprintf("pinnedPages = %a\n", p->pinnedPages);
+    zprintf("pendingPages = %a\n", p->pendingPages);
+    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a\n",
+        p->scanPoint, p->dataEnd, p->initialLimit);
+    unsigned int n = 0;
     for (unsigned int i=0; i<sizeof(p->chunkStatus); i++)
     {   unsigned int k = p->chunkStatus[i];
         if (k == BasicChunk)
@@ -468,8 +481,17 @@ inline void displayVectorPage(Page* p)
         zprintf("^%d ", k);
     }
     if (n != 0) zprintf("~%d ", n);
+    zprintf("\n");
 }
 
+inline void displayAllPages(const char* s)
+{   zprintf("displayAllPages %s\n", s);
+    for (Page* p=consPages; p!=nullptr; p=p->chain)
+        displayConsPage(p);
+    for (Page* p=vecPages; p!=nullptr; p=p->chain)
+        displayVecPage(p);
+    zprintf("end of display\n\n");
+}
 
 extern bool withinGarbageCollector;
 
@@ -537,35 +559,6 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
-
-// Again pages that have any pinned data in them specify their initial
-// fringe and limit in scanPoint and initialLimit.
-
-inline void initVecPage(Page* p, bool empty)
-{   pageAppend(p, vecPages,
-               vecPagesTail, vecPagesCount);
-    p->type = vecPageType;
-    vecCurrent = p;
-    p->dataEnd = vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
-    if (empty)
-    {   p->potentiallyPinnedFlag = false;
-        p->potentiallyPinnedChain = nullptr;
-        std::memset(p->previousVecPins, 0, sizeof(p->previousVecPins));
-        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
-        std::memset(p->chunkStatus, BasicChunk, sizeof(p->chunkStatus));
-        std::memset(p->potentiallyPinnedChunks, 0,
-                    sizeof(p->potentiallyPinnedChunks));
-        vecFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->chunks);
-        vecLimit = vecEnd;
-    }
-    else
-    {   vecFringe = p->scanPoint;
-        vecLimit = p->initialLimit;
-    }
-    my_assert(vecLimit > vecFringe &&
-              vecLimit <= vecEnd, LOCATION);
-//  displayVectorPage(p);
-}
 
 extern void grabFreshPage(PageType type);
 extern int vecStopCache;
@@ -685,6 +678,9 @@ inline uintptr_t getNBytes(size_t n, Page* current,
         continue;    
     }
 }
+
+// This function should always be used with an argument that is
+// a multiple of sizeof(uintptr_t).
 
 inline uintptr_t getNBytes(size_t n)
 {   if (n == 2*sizeof(LispObject)) return get2Words();
