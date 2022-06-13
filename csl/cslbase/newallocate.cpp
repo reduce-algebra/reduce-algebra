@@ -412,7 +412,6 @@ void grabFreshPage(PageType type)
 
 uintptr_t consEndOfPage()
 {   consCurrent->dataEnd = consFringe;
-    pageAppend(consCurrent, consPages, consPagesTail, consPagesCount);
 // Maintain a list of all full pages, regardless of type.
     consCurrent->pendingPages = pendingPages;
     pendingPages = consCurrent;
@@ -484,11 +483,7 @@ void initHeapSegments(double storeSize)
     stackBase = reinterpret_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
     grabFreshPage(consPageType);
-    pageAppend(consCurrent,
-               consPages, consPagesTail, consPagesCount);
     grabFreshPage(vecPageType);
-    pageAppend(vecCurrent,
-               vecPages, vecPagesTail, vecPagesCount);
     borrowCurrent = nullptr;
     vecStopCache = borrowStopCache = -1;
 }
