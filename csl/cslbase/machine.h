@@ -83,19 +83,25 @@
 // actually available. If I use it I may need to link -lstdc++fs in gcc
 // or -lc++fs in clang!
 
+#if __has_cpp_attribute(fallthrough)
+#define FALLTHROUGH [[fallthrough]]
+#else // __has_cpp_attribute(fallthrough)
+#define FALLTHROUGH
+#endif // __has_cpp_attribute(fallthrough)
+
 #if !defined LIKELY && !defined UNLIKELY
 
-#ifdef __has_cpp_attribute_likely
+#if __has_cpp_attribute(likely)
 #define LIKELY [[likely]]
-#else // __has_cpp_attribute_likely
+#else // __has_cpp_attribute(likely)
 #define LIKELY
-#endif // __has_cpp_attribute_likely
+#endif // __has_cpp_attribute(likely)
 
-#ifdef __has_cpp_attribute_unlikely
+#if __has_cpp_attribute(unlikely)
 #define UNLIKELY [[unlikely]]
-#else // __has_cpp_attribute_unlikely
+#else // __has_cpp_attribute(unlikely)
 #define UNLIKELY
-#endif // __has_cpp_attribute_unlikely
+#endif // __has_cpp_attribute(unlikely)
 
 #endif // LIKELY, UNLIKELY
 

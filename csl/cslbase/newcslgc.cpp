@@ -480,14 +480,14 @@ void evacuate(LispObject &a)
 // pointer to it.
     if (is_cons(a)) len = 2*CELL;
     else if (is_symbol(a)) len = symhdr_length;
-    else len = length_of_header(aa);
+    else len = doubleword_align_up(length_of_header(aa));
     if (len == 2*CELL) aa = get2Words();
     else aa = getNBytes(len);
 // I will copy the full final doubleword of a vector, and in the case of
 // a 32-bit machine or for vectors that contain components that are smaller
 // than CELL this will include material beyond that which is meaningful.
 // This at least keeps any zero-padding of the last word intact.
-    std::memcpy(reinterpret_cast<void*>(aa), ap, doubleword_align_up(len));
+    std::memcpy(reinterpret_cast<void*>(aa), ap, len);
     *ap = TAG_FORWARD + aa;
     a = aa + (a & TAG_BITS);
 }
@@ -584,9 +584,9 @@ bool evacuateConsPage(Page* p)
             case 0x0a: // 0b01010: // Header for vector of Lisp pointers
                 didSomething = true;
                 evacuate(*(n+1));
-                [[fallthrough]];
+                FALLTHROUGH;
             case 0x12: // 0b10010: // Header for bit-vector
-                [[fallthrough]];
+                FALLTHROUGH;
             case 0x1a: // 0b11010: // Header for vector of binary data
                 break;
             default:
@@ -643,7 +643,7 @@ bool evacuateVecPage(Page* p)
                 break;
 
             case 0x12: // 0b10010: // Header for bit-vector
-                [[fallthrough]];
+                FALLTHROUGH;
             case 0x1a: // 0b11010: // Header of vector holding binary data
                 len = doubleword_align_up(length_of_header(a));
                 break;
@@ -660,7 +660,7 @@ bool evacuateVecPage(Page* p)
                     evacuate(s->pname);
                     break;
                 }
-                [[fallthrough]];
+                FALLTHROUGH;
             default:               // None of the above cases...
                 len = 2*CELL;      // ... must be a CONS cell.
                 evacuate(car(next));
@@ -777,7 +777,20 @@ void inner_garbage_collect()
     evacuateFromPinnedItems();
     evacuateFromUnambiguousBases();
     evacuateFromCopiedData();
-    my_abort("This is how far GC has got");
+// Well where we should be now is that all live data is either left in place
+// if pinned or moved to new space if not. References to it should all be
+// updated properly. Memory allocation should now be ready to continue on
+// seamlessly from where stuff got copied to.
+// I *COULD* (and will eventually want to!) look at all the pages in
+// consOldPages and vecOldPages and put those that are empty on the correct
+// free-chain of pages and carefully set up the internal data needed by pages
+// that have some free space but which contain some pinned data. I would
+// want to verify that a sensible amount of space remained maybe. But
+// if I just abandon the pages that I have copied stuff out of then future
+// allocation will just use new space and everything OUGHT to work - and
+// if it does that will validate the copying process. So rather than
+// aborting here the way I had initially intended I will just return.
+    zprintf("This is how far GC has got\n");
 }
 
 // The following code makes a whole slew of assumptions about how the
