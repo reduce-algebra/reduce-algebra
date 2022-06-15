@@ -722,6 +722,127 @@ void evacuateFromCopiedData()
     }
 }
 
+// For all non-empty pages I copy the existing pin maps to the "previous"
+// versions and zero out the "current" ones. The GC that I am about to
+// perform will establish a new proper set of "current" info.
+
+void migratePinMaps()
+{   for (Page* p=consPages; p!=nullptr; p=p->chain)
+    {   std::memcpy(p->previousConsPins, p->currentConsPins, sizeof(p->previousConsPins));
+        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+    }
+    for (Page* p=consPinPages; p!=nullptr; p=p->chain)
+    {   std::memcpy(p->previousConsPins, p->currentConsPins, sizeof(p->previousConsPins));
+        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+    }
+    for (Page* p=vecPages; p!=nullptr; p=p->chain)
+    {   std::memcpy(p->previousVecPins, p->currentVecPins, sizeof(p->previousVecPins));
+        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+    }
+    for (Page* p=vecPinPages; p!=nullptr; p=p->chain)
+    {   std::memcpy(p->previousVecPins, p->currentVecPins, sizeof(p->previousVecPins));
+        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+    }
+}
+
+// Here I need to look at consPinPages because some of the pages may now
+// have fewer pinned items - indeed some may now not have any and in that
+// case they may be moved to emptyPages. Well an elaborate scheme would
+// try to update the existing freestore map setup, but it seems cleaner
+// and safer and not much more expensive to just regenerate the structure
+// from scratch. And that will mean that I can also use this function at the
+// end of GC to put newly vacated pages in their proper state!
+//
+// As a reminder, in a cons page the structure for a page with some pinned
+// stuff is as follows:
+//     (1) cells that are pinned must not be used.
+//     (2) Thus the first location available for use will be the
+//         first unpinned cell. Before use that contains the address
+//         of the next pinned cell (or the end of the page if there is
+//         no more pinning). This value can be moved to consLimit.
+// For a vector page something of the same style applies but for chunks
+// not cells and with the additional complication of extended chunks as
+// identified using chunkStatus.
+
+// The next two return true if there are actually any pinned items in the
+// page concerned.
+
+bool rePinOneConsPage(Page* p)
+{
+    return true;
+}
+
+bool rePinOneVecPage(Page* p)
+{
+    return true;
+}
+
+void adjustPinmapsConsPages()
+{   Page* r = nullptr;
+    while (consPinPages != nullptr)
+    {   Page* p = consPinPages;
+        consPinPages = p->chain;
+        if (rePinOneConsPage(p))
+        {   p->chain = r;
+            r = p;
+        }
+        else
+        {   p->chain = emptyPages;
+            emptyPages = p;
+        }
+    }
+    consPinPages = r;
+}
+
+void adjustPinmapsVecPages()
+{   Page* r = nullptr;
+    while (vecPinPages != nullptr)
+    {   Page* p = vecPinPages;
+        vecPinPages = p->chain;
+        if (rePinOneVecPage(p))
+        {   p->chain = r;
+            r = p;
+        }
+        else
+        {   p->chain = emptyPages;
+            emptyPages = p;
+        }
+        p->chain = r;
+        r = p;
+    }
+    vecPinPages = r;
+}
+
+void setupPinmapsConsPages()
+{   while (consOldPages != nullptr)
+    {   Page* p = consOldPages;
+        consOldPages = p->chain;
+        if (rePinOneConsPage(p))
+        {   p->chain = consPinPages;
+            consPinPages = p;
+        }
+        else
+        {   p->chain = emptyPages;
+            emptyPages = p;
+        }
+    }
+}
+
+void setupPinmapsVecPages()
+{   while (vecOldPages != nullptr)
+    {   Page* p = vecOldPages;
+        vecOldPages = p->chain;
+        if (rePinOneVecPage(p))
+        {   p->chain = vecPinPages;
+            vecPinPages = p;
+        }
+        else
+        {   p->chain = emptyPages;
+            emptyPages = p;
+        }
+    }
+}
+
 // I start garbage collection by  making the current allocation pages
 // have the structure of ones that are full. The only thing that involves
 // is storing fringe pointers in them.
@@ -740,6 +861,7 @@ void inner_garbage_collect()
         setHeaderWord(vecFringe, vecLimit-vecFringe);
     consCurrent->dataEnd = consFringe;
     vecCurrent->dataEnd = vecFringe;
+    migratePinMaps();
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
     vecOldPages = vecPages;
@@ -754,15 +876,36 @@ void inner_garbage_collect()
 // I will mark the pages as free!
     grabFreshPage(consPageType);
     consCurrent->type = emptyPageType;
-    grabFreshPage(vecPageType);
+// When the page becomes a current one it needs the existing pin info
+// present. This issue only matters if (ugh) the page grabbed here was one
+// that had some old pinned material in it, and if there are new pins that
+// lead to early allocation within it...
+//@@@ And if I allocate a new cons page soon I must do the same to it! @@@
+#pragma warning "read the comment"
+    std::memcpy(consCurrent->currentConsPins,
+                consCurrent->previousConsPins, sizeof(consCurrent->previousConsPins));
 // Now I can scan the stack and mark up pinned items. This will build
 // up a chain of pages still 
     identifyPinnedItems();
+// Now I have marked all cons cells that are still or now pinned, so I
+// need to tidy up all the pages that are free apart from pinning to
+// reflect that.
+    adjustPinmapsConsPages();
     findHeadersOfPinnedItems();
+// ... and now vector pin information is OK so I can sort out pages that
+// are free apart from pinned vectors.
+    adjustPinmapsVecPages();
+// I never need to allocate any vectors before here, so I wait until now
+// to grab space for some so that I know that pin information in any
+// one that I do allocate has been updated.
+    grabFreshPage(vecPageType);
 // Now I have finished identifying all the pinned objects, so I can make
 // pages that contain lists of them proper again.
     for (Page* p=consPages; p!=nullptr; p=p->chain)
         p->type = consPageType;
+// I think all that messing about with old and new pin information and
+// the structure of free-apart-from-pinning pages is quite messy. It
+// certainly took some while for me to get my thoughts straight about it!
     pendingPages = nullptr;
     zprintf("Try to report on pinning...\n");
     {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
@@ -781,16 +924,20 @@ void inner_garbage_collect()
 // if pinned or moved to new space if not. References to it should all be
 // updated properly. Memory allocation should now be ready to continue on
 // seamlessly from where stuff got copied to.
-// I *COULD* (and will eventually want to!) look at all the pages in
-// consOldPages and vecOldPages and put those that are empty on the correct
-// free-chain of pages and carefully set up the internal data needed by pages
-// that have some free space but which contain some pinned data. I would
-// want to verify that a sensible amount of space remained maybe. But
-// if I just abandon the pages that I have copied stuff out of then future
-// allocation will just use new space and everything OUGHT to work - and
-// if it does that will validate the copying process. So rather than
-// aborting here the way I had initially intended I will just return.
-    zprintf("This is how far GC has got\n");
+//
+// Now vecOldPages and consOldPages have the pages that I have just copied
+// material out from and vecPinPages and consPinPages the ones that held
+// some pinned material at the start of this GC. It is possible - indeed
+// I have high hopes - that some pages in consPinPages and vecPinPages now
+// have fewer objects in them that are pinned, and I very much hope that
+// eventually most of them will have NO pinned stuff left at all - at which
+// stage they can be moved to emptyPages. But when they do have any pins
+// left but fewer than before I will need to rearrange the mapping that
+// is there to let me allocate within them.
+     setupPinmapsConsPages();
+     setupPinmapsVecPages();
+
+    zprintf("This is how far GC has got: I hope it is complete!\n");
 }
 
 // The following code makes a whole slew of assumptions about how the
@@ -871,7 +1018,10 @@ NOINLINE void garbage_collect()
 // not allowed to be confident of that, so I think it decently ought to
 // see a1-a18 as repeatedly used within the loop and hence important values
 // to dedicate registers to!
-// Of course all I do here is slihtly ridiculous!
+// Of course all I do here is slihtly ridiculous! And none of if really
+// gives guarantees. Well the whole issue of there being a contiguous
+// stack as the only place the compiler stashes things is very much an
+// assumption!
         if (volatileVar == volatileVar) break;
     }
 }

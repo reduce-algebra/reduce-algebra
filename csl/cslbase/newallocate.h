@@ -60,16 +60,16 @@ class Page;
 extern Page* emptyPages;        // Fully empty.
 extern Page* consPinPages;      // Not active but comtains some pinned data.
 extern Page* vecPinPages;       // Ditto, but with vectors not cons cells.
-extern Page* oldConsPinPages;   // Used during GC.
-extern Page* oldVecPinPages;    // Ditto.
 extern Page* consPages;         // Active pages containing cons cells.
 extern Page* vecPages;          // Active pages containing vectors.
 extern Page* borrowPages;       // Temporarily active pages.
 extern Page* consOldPages;      // Used during GC.
 extern Page* vecOldPages;       // Ditto.
+
 extern Page* consCurrent;       // Where cons cells are allocated.
 extern Page* vecCurrent;        // Where vectors are allocated.
 extern Page* borrowCurrent;     // Where temporary vectors are allocated.
+
 extern Page* potentiallyPinned; // For GC.
 extern Page* pinnedPages;       // For GC.
 extern Page* pendingPages;      // For GC.
