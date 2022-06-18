@@ -1,36 +1,36 @@
-;;; reduce-delim.el -- highlight matching group or block delimiter
+;;; reduce-delim.el --- Highlight matching group or block delimiter
 
-;; Copyright (C) 2018 Francis J. Wright
+;; Copyright (C) 2018, 2022 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 22 March 2018
-;; Version: $Id$	
+;; Time-stamp: <2022-06-18 16:25:13 franc>
 ;; Keywords: languages, faces
-;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.54
+;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide
+;; Package-Version: 1.6
 ;; Package-Requires: ((reduce-mode "1.54"))
 
-;; This file is not part of GNU Emacs.
+;; This file is part of REDUCE IDE.
 
-;; This program is free software: you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation, either version 3 of
-;; the License, or (at your option) any later version.
+;; REDUCE IDE is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation, either version 3 of the License,
+;; or (at your option) any later version.
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; REDUCE IDE is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with REDUCE IDE.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
 
 ;; Based closely on Emacs 26 paren.el --- highlight matching paren
 
 ;; Display highlighting on whatever group or block delimiter matches
 ;; the one before or after point.
-
-;;; Commentary:
 
 ;; In a REDUCE mode buffer, execute `M-x reduce-show-delim-mode' to
 ;; toggle this buffer-local minor mode.  When on, it will display
@@ -50,7 +50,7 @@
 ;;;###autoload
 (defgroup reduce-delim-showing nil
   "Showing (un)matching of group/block delimiters and enclosed expressions."
-  :package-version '(reduce-mode . "1.54")
+  :package-version '(reduce-ide . "1.54")
   :prefix "reduce-show-delim-"
   :group 'reduce-format-display)
 
@@ -171,13 +171,16 @@ matching delimiter is highlighted in `reduce-show-delim-style' after
   "Return non-nil if the delimiter after point is unescaped."
   ;; Only used in reduce-show-delim--categorize-delim.
   ;; (logand x 1) = lowest order bit of x = 0 if x is even.
-  (= (logand (skip-syntax-backward "/\\") 1) 0))
+  (= (logand (skip-syntax-backward "/") 1) 0))
 
-(defun reduce-show-delim--unescaped-word-p ()
-  "Return non-nil if point precedes an unescaped word, i.e.
-point is not preceded by an escape or a word character."
+(defun reduce-show-delim--distinct-word-p (word-length)
+  "Return non-nil if distinct word of length WORD-LENGTH after point.
+That is, point is not preceded by an escape or a word character
+and the word is not followed by an escape or a word character."
   ;; Only used in reduce-show-delim--categorize-delim.
-  (= (skip-syntax-backward "/\\w") 0))
+  (and (= (skip-syntax-backward "/w") 0)
+       (progn (forward-char word-length)
+              (= (skip-syntax-forward "/w") 0))))
 
 (defun reduce-show-delim--categorize-delim (pos)
   "Determine whether the characters after POS form a delimiter.
@@ -195,23 +198,20 @@ isn't a delimiter, or it is an escaped delimiter, return nil."
 			(cons 2 pos))
 		   ((and (looking-at ">>") (reduce-show-delim--unescaped-p))
 			(cons -2 (+ pos 2)))
-		   ((and (looking-at "begin") (reduce-show-delim--unescaped-word-p))
+		   ((and (looking-at "begin") (reduce-show-delim--distinct-word-p 5))
 			(cons 5 pos))
-		   ((and (looking-at "end") (reduce-show-delim--unescaped-word-p))
+		   ((and (looking-at "end") (reduce-show-delim--distinct-word-p 3))
 			(cons -3 (+ pos 3))))))))
 
 (defun reduce-show-delim--locate-delim-backward (&optional pos)
   "Locate and return the start of a delimiter ending at POS.
 Use point if POS not given.  Return nil if no delimiter found."
+  ;; Only used as argument of reduce-show-delim--categorize-delim.
   (save-excursion
 	(if pos (goto-char pos))			; otherwise start from point
 	(save-match-data
-	  (and (setq pos (search-backward-regexp
-					  "\\(?:\\(<<\\|>>\\)\\|begin\\|end\\)\\=" nil 0))
-		   (if (match-beginning 1)
-			   (reduce-show-delim--unescaped-p)
-			 (reduce-show-delim--unescaped-word-p))
-		   pos))))
+	  (re-search-backward
+	   "\\(?:\\(<<\\|>>\\)\\|begin\\|end\\)\\=" nil t))))
 
 (defun reduce-show-delim--locate-near-delim ()
   "Locate an unescaped delimiter \"near\" point to show.
@@ -272,7 +272,7 @@ Return t if successful; otherwise move as far as possible and return nil."
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (- pos 3))
   (when (reduce-backward-block)
-	(skip-chars-forward " \t")
+	(skip-chars-forward " \t\n")
 	t))
 
 (defun reduce-show-delim-data-function ()
