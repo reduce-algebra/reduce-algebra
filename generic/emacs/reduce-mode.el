@@ -4,33 +4,33 @@
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1992
-;; Version: $Id$
+;; Time-stamp: <2022-06-18 16:25:12 franc>
 ;; Keywords: languages
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide
-;; Package-Version: 1.55
+;; Package-Version: 1.6
 
-;; This file is not part of GNU Emacs.
+;; This file is part of REDUCE IDE.
 
-;; This program is free software: you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation, either version 3 of
-;; the License, or (at your option) any later version.
+;; REDUCE IDE is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation, either version 3 of the License,
+;; or (at your option) any later version.
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; REDUCE IDE is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with REDUCE IDE.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
 
 ;; Contributions by Rainer Schoepf flagged ; RS
 ;; Schoepf@goofy.zdv.Uni-Mainz.DE
 
 ;; Contributions by Thomas Sturm flagged ; TS
 ;; sturm@redlog.eu
-
-;;; Commentary:
 
 ;; REDUCE Mode is a major mode for editing source code for the REDUCE
 ;; computer algebra system, which is Open Source and available from
@@ -120,9 +120,14 @@
   :tag "REDUCE Interface"
   :group 'reduce)
 
-(defgroup reduce-format-display nil
-  "Format and display options for editing and running REDUCE code."
-  :tag "REDUCE Format & Display"
+(defgroup reduce-display nil
+  "Display options for editing and running REDUCE code."
+  :tag "REDUCE Display"
+  :group 'reduce)
+
+(defgroup reduce-format nil
+  "Format options for editing and running REDUCE code."
+  :tag "REDUCE Format"
   :group 'reduce)
 
 (defcustom reduce-mode-load-hook nil
@@ -154,7 +159,7 @@ see the documentation for `imenu-generic-expression'."
 
 (defcustom reduce-imenu nil
   "*If non-nil REDUCE mode automatically calls `imenu-add-to-menubar'.
-This adds a Contents menu to the menubar. Default is nil."
+This adds a Contents menu to the menubar.  Default is nil."
   :type 'boolean
   :group 'reduce-interface)
 
@@ -236,18 +241,18 @@ Optional `cdr' is a replacement string or nullary function (for structures)."
 (defcustom reduce-indentation 3
   "*Depth of successive indentations in REDUCE code."
   :type 'integer
-  :group 'reduce-format-display)
+  :group 'reduce-format)
 
 (defcustom reduce-indent-line-conservative nil ; TS
   "*If non-nil, `reduce-indent-line' will not successively indent."
   :type 'boolean
-  :group 'reduce-format-display)
+  :group 'reduce-format)
 
 (defcustom reduce-comment-region-string "%% "
   "*String inserted by \\[reduce-comment-region] at start of each line."
   :version "1.21" ; Name was reduce-comment-region up to version 1555!
   :type 'string
-  :group 'reduce-format-display)
+  :group 'reduce-format)
 
 (defcustom reduce-auto-indent-mode t
   "*If non-nil then conditionally re-indent the current line.
@@ -257,29 +262,36 @@ time if the text just typed matches `reduce-auto-indent-regex'."
      (reduce-auto-indent-mode (or value 0)))
   :initialize 'custom-initialize-default
   :type 'boolean
-  :group 'reduce-format-display)
+  :group 'reduce-format)
 
 (defcustom reduce-auto-indent-delay 0.125
   "*Time in seconds to delay before maybe re-indenting current line."
   :type 'number
-  :group 'reduce-format-display)
+  :group 'reduce-format)
 
 (defcustom reduce-auto-indent-regexp "\\(else\\|end\\|>>\\)\\="
   "*Auto indent current line if text just typed matches this regexp.
 It should end with \\=\\=.  The default value is \"\\(else\\|end\\|>>\\)\\=\\=\"."
   :type 'regexp
-  :group 'reduce-format-display)
+  :group 'reduce-format)
 
 ;; Display:
+
+(defcustom reduce-font-lock-mode-on t
+  "If non-nil then turn on `reduce-font-lock-mode' initially.
+Defaults to t."
+  :package-version '(reduce-ide . "1.6")
+  :type 'boolean
+  :group 'reduce-display)
 
 (defcustom reduce-show-delim-mode-on show-paren-mode
   "If non-nil then turn on `reduce-show-delim-mode' initially.
 Since `reduce-show-delim-mode' is a buffer-local minor mode, it
 can also be turned on and off in each buffer independently.
 Defaults to the value of `show-paren-mode'."
-  :package-version '(reduce-mode . "1.54")
+  :package-version '(reduce-ide . "1.54")
   :type 'boolean
-  :group 'reduce-format-display)
+  :group 'reduce-display)
 
 (defcustom reduce-show-proc-mode nil
   "*If non-nil then display current procedure name in mode line.
@@ -288,12 +300,12 @@ Update after `reduce-show-proc-delay' seconds of Emacs idle time."
      (reduce-show-proc-mode (or value 0)))
   :initialize 'custom-initialize-default
   :type 'boolean
-  :group 'reduce-format-display)
+  :group 'reduce-display)
 
 (defcustom reduce-show-proc-delay 0.125
   "*Time in seconds to delay before showing the current procedure name."
   :type 'number
-  :group 'reduce-format-display)
+  :group 'reduce-display)
 
 ;; External variables:
 
@@ -318,32 +330,12 @@ Update after `reduce-show-proc-delay' seconds of Emacs idle time."
 (defvar reduce-mode-syntax-table nil
   "Syntax table for REDUCE mode.")
 
-(defconst reduce-font-lock-keywords
-  '(
-    reduce-font-lock-keywords-0     ; Default = nil
-    reduce-font-lock-keywords-1     ; Algebraic
-    reduce-font-lock-keywords-2     ; Symbolic
-    reduce-font-lock-keywords-3     ; Full = t
-    )
-  "A list of symbols corresponding to increasing fontification.
-Each is assigned a `font-lock-keywords' value for REDUCE mode.")
-
-(defconst reduce-font-lock-syntactic-keywords
-  ;; ((MATCHER SUBEXP SYNTAX OVERRIDE LAXMATCH) ... )
-  ;; where SYNTAX = (SYNTAX-CODE . MATCHING-CHAR)
-  ;;   If this proves unreliable, try
-  ;;    '(("\".*\\(!\\)\"" 1 (1 . nil)))
-  ;;   i.e. only mark ! at end of a string as punctuation.
-  ;;   But this may be slow!
-  '(("[^'\(]\\(!\\)\"" 1 (1 . nil)))
-  "Mark ! followed by \" as having punctuation syntax (syntax-code 1)
-unless preceded by ' or (, for correct syntax highlighing of strings.")
-
 
 ;;;; *****************
 ;;;; REDUCE major mode
 ;;;; *****************
 
+(declare-function reduce-font-lock-mode "reduce-font-lock" ())
 (declare-function reduce-show-delim-mode "reduce-delim" ())
 
 ;;;###autoload
@@ -397,31 +389,14 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   (setq major-mode 'reduce-mode)
   (setq mode-name "REDUCE")
   (reduce-mode-variables)
-  ;; Set up font-lock mode - variables automatically buffer-local:
-  (setq font-lock-defaults
-       ;; reduce-font-lock-keywords evaluates to a list of symbols!
-       (list reduce-font-lock-keywords  ; KEYWORDS
-         nil            ; KEYWORDS-ONLY
-         t              ; CASE-FOLD
-         nil            ; SYNTAX-ALIST
-         (cons          ; (VARIABLE . VALUE) ...
-          'font-lock-syntactic-keywords ; obsolete since 24.1! Use
-                                        ; syntax-propertize-function
-                                        ; instead!
-          reduce-font-lock-syntactic-keywords)
-         ))
-  (reduce-font-lock-level)              ; for font-lock menu
-  (setq font-lock-multiline t)          ; for comment statements
-  ;; Additional support for comment statements:
-  (add-to-list 'font-lock-extend-region-functions
-               #'reduce-font-lock-extend-region-for-comment-statement)
-  ;; Make all parsing respect the syntax property set by the above
-  ;; font-lock option (which is essential to parse "...!"):
-  (set (make-local-variable 'parse-sexp-lookup-properties) t)
+  ;; Optionally set up font-lock mode:
+  (and reduce-font-lock-mode-on
+       (require 'reduce-font-lock "reduce-font-lock" t)
+       (reduce-font-lock-mode))
   ;; Optionally turn on REDUCE minor modes:
-  (when reduce-show-delim-mode-on
-    (require 'reduce-delim)
-    (reduce-show-delim-mode))
+  (and reduce-show-delim-mode-on
+       (require 'reduce-delim "reduce-delim" t)
+       (reduce-show-delim-mode))
   (if reduce-auto-indent-mode (reduce-auto-indent-mode t))
   ;; For reduce-show-proc-mode:
   (set (make-local-variable 'which-func-mode) nil)
@@ -520,7 +495,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
 (easy-menu-define           ; (symbol maps doc menu)
  reduce-mode-menu
  reduce-mode-map
- "REDUCE Mode Menu"
+ "REDUCE Mode Menu."
  `("REDUCE"
    ["Indent Line" indent-for-tab-command :active t
     :help "Re-indent the current line"]
@@ -644,7 +619,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   "Indent current line; if ARG indent whole statement rigidly.
 Indents to fixed style determined by current and previous non-blank line.
 Subsequent consecutive calls indent additionally by `reduce-indentation'
-unless `reduce-indent-line-conservative' is non-nil. With argument,
+unless `reduce-indent-line-conservative' is non-nil.  With argument,
 indent any additional lines of the same statement rigidly together with
 this one."
   (interactive "*P")            ; error if buffer read-only
@@ -1005,7 +980,7 @@ current line if the text just typed matches `reduce-auto-indent-regexp'."
 ;;;; ******************************
 
 (defun reduce-backward-procedure (arg)
-  "Move backward to next start of procedure. With ARG, do it ARG times."
+  "Move backward to next start of procedure.  With ARG, do it ARG times."
   (interactive "p")
   (let ((case-fold-search t) (count arg))
     (while (and (> count 0) (reduce-re-search-backward procedure-regexp))
@@ -1108,11 +1083,11 @@ after reduce-max-up-tries repeated interactive attempts."
     (setq reduce-up-tries 1)))
 
 (defvar reduce-forward-statement-found nil
-  "Free variable bound in `reduce-forward-statement'")
+  "Free variable bound in `reduce-forward-statement'.")
 ;; Consider replacing with lexical binding.
 
 (defun reduce-forward-statement (arg)
-  "Move forward to end of statement. With ARG, do it ARG times.
+  "Move forward to end of statement.  With ARG, do it ARG times.
 If looking at the end of a block or group, or the end-of-file marker,
 move over it after `reduce-max-up-tries' consecutive interactive tries."
   (interactive "p")
@@ -1161,7 +1136,7 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
 
 
 (defun reduce-backward-statement (arg)
-  "Move backward to start of statement. With ARG, do it ARG times.
+  "Move backward to start of statement.  With ARG, do it ARG times.
 If looking at the beginning of a block or group move over it after
 `reduce-max-up-tries' consecutive interactive tries.
 The end-of-file marker is treated as a statement.
@@ -1427,7 +1402,7 @@ Return t if match found, nil otherwise."
 
 (defun reduce-re-search-backward (regexp &optional MOVE)
   "Syntactic search backwards for REGEXP else if MOVE then move to start.
-Skip REDUCE comments and strings. Return t if match found, nil otherwise."
+Skip REDUCE comments and strings.  Return t if match found, nil otherwise."
   (let ((start (point))
     (move (if MOVE 'move t)))
     (if (reduce-re-search-backward1 regexp move)
@@ -1904,590 +1879,6 @@ passing on any prefix argument (in raw form)."
        (message "Making completion list...%s" "done")))))
 
 
-;;;; ****************************************************
-;;;; Support font-lock-mode for highlighting keywords and
-;;;; "object" names (based on code by Rainer Schoepf).
-;;;; ****************************************************
-
-;; Note that Font Lock Mode is documented in the ELisp manual under
-;; Major and Minor Modes.  Fontification is performed syntactically
-;; (e.g. comments) and THEN by keyword.
-
-;; Regard quoted identifiers and lists as data and don't fontify them.
-
-(defconst reduce-identifier-regexp
-  "\\(?:[a-z]\\|!.\\)\
-\\(?:\\w\\|\\s_\\|!.\\)*"
-  ;; NB: digits have word syntax
-  "Regular expression matching a REDUCE identifier.")
-
-(defconst reduce-infix-regexp
-  "where\\|when\\|or\\|and\\|member\\|memq\\|neq\\|eq")
-
-(defconst reduce-keyword-regexp
-  (mapconcat 'identity
-             (list
-              "begin" "end" "return" "<<" ">>"
-              "if" "then" "else"
-              "while" "do" "repeat" "until"
-              "collect" "join" "conc" "sum" "product"
-              "for\\(?:\\s-*\\(?:all\\|each\\)\\)?" "step"
-              "in" "on" "off" "write" "pause"
-              "such" "that" "let" "match" "clear\\(?:rules\\)?"
-              ;; "assert_install" "assert_install_all"
-              ;; "assert_uninstall" "assert_uninstall_all"
-              ;; "assert"
-              "assert\\(?:_\\(?:un\\)?install\\(?:_all\\)?\\)?"
-              ;; Lisp keywords used frequently in REDUCE:
-              "lambda" "function"
-              ;; "put" "flag" "remprop" "remflag"
-              reduce-infix-regexp)
-             "\\|")
-  ;; module/endmodule keywords are handled specially in
-  ;; reduce-font-lock-keywords-symbolic.
-  "Regular expression matching a REDUCE keyword.")
-
-(defconst font-lock-default-face 'font-lock-default-face
-  "A copy of the default face for use by REDUCE Font Lock mode.")
-
-(copy-face 'default 'font-lock-default-face)
-
-;; Assertion and preprocessor rules based on code by Thomas Sturm.
-;; A good test file for all assertion rules is "redlog/cl/clqe.red".
-
-;; A constant with a name of the form `font-lock-rule' becomes an
-;; element of the list assigned by `reduce-mode' to
-;; `font-lock-keywords', which directly controls search-based
-;; fontification, whereas a constant with a name of the form
-;; `font-lock-rules' (plural) below becomes appended to or spliced
-;; into the list assigned to `font-lock-keywords'.
-
-(defconst reduce-font-lock-asserted-type-rule
-  `("procedure"
-     ;; anchored-highlighter to handle the rest of the statement:
-    ,(concat "[^!]:\\s-*\\(" reduce-identifier-regexp "\\)") nil nil
-    (1 font-lock-type-face t))
-  "A rule specifying how to highlight types of procedure
-  arguments and return values.")
-
-(defconst reduce-font-lock-assert-declare/struct-rules
-  `((,(concat
-       "\\(declare\\)\\s-+"
-       "\\(" reduce-identifier-regexp "\\)\\s-*:")
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face)
-     ;; anchored-highlighter to handle the rest of the statement:
-     (,reduce-identifier-regexp nil nil (0 font-lock-type-face)))
-    (,(concat
-       "\\(struct\\)\\s-+"
-       "\\(" reduce-identifier-regexp "\\)"
-       ;; optionally followed by...
-       "\\(?:\\s-+\\(\\(?:checked\\|asserted\\)\\s-+by\\)\\s-+"
-       "\\(" reduce-identifier-regexp "\\)\\)?")
-     (1 font-lock-keyword-face)
-     (2 font-lock-type-face)
-     (3 font-lock-keyword-face t)
-     (4 font-lock-function-name-face)))
-  "Rules specifying how to highlight `declare' and `struct'
-  statements, as used in `redlog'.")
-
-(defconst reduce-font-lock-preprocessor-rules
-  `((,(concat
-       "\\(#define\\)\\s-+"
-       "\\(" reduce-identifier-regexp "\\)\\s-+"
-       "\\(" reduce-identifier-regexp "\\)")
-     (1 font-lock-preprocessor-face)
-     (2 font-lock-variable-name-face)
-     (3 font-lock-variable-name-face))
-    ("\\(#if\\)\\s-+\\(.*\\)"
-     (1 font-lock-preprocessor-face)
-     (2 font-lock-default-face))
-    ("\\(#elif\\)\\s-+\\(.*\\)"
-     (1 font-lock-preprocessor-face)
-     (2 font-lock-default-face))
-    ("\\(#else\\)"
-     (1 font-lock-preprocessor-face))
-    ("\\(#endif\\)"
-     (1 font-lock-preprocessor-face)))
-  "Rules specifying how to highlight preprocessor #-directives.")
-
-
-(defconst reduce-font-lock-keywords-00
-  `((reduce-font-lock-match-comment-statement
-     . (1 font-lock-comment-face t))
-
-    ;; Main keywords:
-    (,(concat
-       ;; Ignore 'keyword, _keyword, #keyword:
-       "\\(?:^\\|[^'_#]\\)"
-       "\\<\\(" reduce-keyword-regexp "\\)\\>"
-       ;; Ignore composite identifiers beginning with a keyword:
-       "[^!_#]")
-     (1 font-lock-keyword-face)
-     ;; Handle consecutive keywords:
-     (,(concat "\\<\\(" reduce-keyword-regexp "\\)\\>[^!_#]")
-      nil nil (1 font-lock-keyword-face))))
-  "Rules to highlight comment statements and main keywords.
-Used at the start of all other rule sets.")
-
-
-(defconst reduce-type-regexp
-  "algebraic\\|symbolic\\|lisp\\|operator\\|\
-scalar\\|integer\\|real\\|linear")
-
-
-(defconst reduce-font-lock-keywords-0
-  `("reduce-font-lock-keywords-0"      ; TEMPORARY label for debugging
-
-    ,@reduce-font-lock-keywords-00
-
-    ;; References:
-    "\\<\\go\\(?:\\s-*to\\)?\\>"
-
-    ;; Procedure declarations:
-    (,(concat "\\<\\(procedure\\)\\s-+"
-              "\\(" reduce-identifier-regexp "\\)")
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face))
-
-    ;; Type declarations:
-    ;; (Ignore quoted keywords and composite identifiers.)
-    (,(concat
-       "\\(?:^\\|[^'_]\\)\\<\\("
-       reduce-type-regexp
-       "\\)\\>[^!_]")
-     (1 font-lock-type-face)))
-  "Minimal REDUCE fontification rules.  No variables are fontified.")
-
-
-(defconst reduce-font-lock-keywords-basic
-  `(,@reduce-font-lock-keywords-00
-
-    ;; Procedure declarations:
-    ;; procedure name arg ;  [where arg may be missing]
-    (,(concat "\\<\\(procedure\\)\\s-+"
-              "\\(" reduce-identifier-regexp "\\)\\s-+"
-              "\\(" reduce-identifier-regexp "\\)?\\s-*[;$]")
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face)
-     (3 font-lock-variable-name-face))
-    ;; procedure name ( arg1 , arg2 , ... )
-    (,(concat "\\<\\(procedure\\)\\s-+"
-              "\\(" reduce-identifier-regexp "\\)\\s-*(?")
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face)
-     ;; Anchored matches (single line only!):
-     (,(concat "\\s-*\\(" reduce-identifier-regexp "\\)\\s-*[,\)]")
-      nil nil (1 font-lock-variable-name-face)))
-
-    ;; Type declarations: e.g.
-    ;; scalar var1 , var2 , ... ;
-    ("\\<\\(operator\\|scalar\\|integer\\|real\\)\\s-"
-     (1 font-lock-type-face)
-     ;; Anchored matches (single line only!):
-     (,(concat "\\s-*\\(" reduce-identifier-regexp "\\)\\s-*\\s.")
-      nil nil (1 font-lock-variable-name-face)))
-
-    ;; References -- goto and labels:
-    ;; go to label; ... label :
-    (,(concat "\\<\\(go\\(?:\\s-*to\\)?\\)\\s-+"
-              "\\(" reduce-identifier-regexp "\\)")
-     (1 font-lock-keyword-face)
-     (2 font-lock-constant-face))
-    (,(concat "\\(?:^\\|[\;$]\\)\\s-*\\("
-              reduce-identifier-regexp "\\)\\s-*:[^=]")
-     . (1 font-lock-constant-face))
-
-    ,reduce-font-lock-asserted-type-rule
-    ,@reduce-font-lock-preprocessor-rules)
-  "Basic REDUCE fontification rules including variable fontification.")
-
-
-(defconst reduce-font-lock-keywords-algebraic
-  `(;; Array, matrix and linear type declarations: e.g.
-    ;; array a(10),b(2,3,4);
-    ;; matrix x(2,1),y(3,4),z;
-    ;; linear f,g;
-    ("\\_<\\(array\\|matrix\\|linear\\)\\s-"
-     (1 font-lock-type-face)
-     ;; Anchored matches (single line only!):
-     (,(concat "\\s-*\\(" reduce-identifier-regexp "\\)\\s-*"
-               "(\\(?:[[:digit:],]\\|\\s-\\)*)?\\s-*[,;$]")
-      nil nil (1 font-lock-variable-name-face)))
-
-    ("[^[:alpha:]_]\\(e\\|i\\|infinity\\|nil\\|pi\\|t\\)\\_>"
-     ;; Allow 5pi to match pi, etc.  Digits have word syntax.
-     ;; Must also match within i*pi/2, etc.
-     (1 font-lock-constant-face)))
-  "More algebraic-mode REDUCE fontification rules.")
-
-
-(defconst reduce-font-lock-keywords-symbolic
-  `(;; References -- module:
-    (,(concat "\\<\\(module\\)\\s-+"
-              "\\(" reduce-identifier-regexp "\\)")
-     (1 font-lock-keyword-face)
-     (2 font-lock-constant-face))
-
-    "endmodule"
-
-    ;; Type declarations:
-    ;; ("\\<\\(fluid\\|global\\)\\>\\s-*'(\\([^\)]*\\))"
-    ;;  ;; Should match a multi-line list because [^\)] matches \n.
-    ;;  (1 font-lock-type-face)
-    ;;  (2 font-lock-variable-name-face))
-    ;; But don't fontify quoted data:
-    ("fluid\\|global" . font-lock-type-face)
-
-    ;; Ignore quoted keywords and composite identifiers.
-    ("\\(?:^\\|[^'_]\\)\\<\\(\
-algebraic\\|symbolic\\|lisp\\|\
-newtok\\|precedence\\|switch\\|share\\|\
-expr\\|s?macro\\|inline\\|asserted\
-\\)\\>[^!_]"
-     (1 font-lock-type-face))
-
-    ,@reduce-font-lock-assert-declare/struct-rules)
-  "More symbolic-mode REDUCE fontification sub-rules.")
-
-
-(defconst reduce-font-lock-keywords-extra
-  `(;; Quoted identifiers:
-    (,(concat "'\\(" reduce-identifier-regexp "\\)")
-     (1 font-lock-constant-face))
-
-    (;; Quoted lists (arbitrarily nested and multi-line):
-     "'\\((\\)"
-     (1 font-lock-constant-face)
-     ("\\(?:.\\|\n\\)"         ; match anything including \n
-      ;; This is a hack but it seems to work!
-      ;; Pre-form function sets search limit to end of list:
-      (save-excursion (backward-char) (forward-sexp) (point))
-      nil
-      (0 font-lock-constant-face)))
-
-    ;; Function calls:
-    ;; fn ( ), fn { }, fn " ", fn 'data, fn << >>
-    (,(concat "\\(" reduce-identifier-regexp "\\)\\s-*"
-              "\\(?:[\(\{\"']\\|<<\\)")
-     (1 font-lock-function-name-face))
-
-    ;; Match f1 f2 ... fn in
-    ;; f1 f2 ... fn f(...)  or  f1 f2 ... fn any_identifier
-    (reduce-font-lock-match-functions
-     . (0 font-lock-function-name-face t))
-
-    ;; Variable invocations:
-    ;; ( var), var PUNCTUATION, var EOL, var KEYWORD, var INFIX )
-    ;; (,(concat
-    ;;    "\\(" reduce-identifier-regexp "\\)"
-    ;;    "\\s *\\("
-    ;;    "\\s\)\\|\\s.\\|$\\|"
-    ;;    "\\s \\<\\(" reduce-keyword-regexp
-    ;;    "\\|\\(" reduce-infix-regexp "\\)\\)\\>"
-    ;;    "\\)")
-    ;;  (1 font-lock-variable-name-face)
-    ;;  (4 font-lock-default-face nil t))
-
-;;; Should force ALL infix ops into right font!
-
-    )
-  "Maximal REDUCE fontification rules.")
-
-
-(defconst anchored-reduce-identifier-regexp
-  (concat "\\=\\s-+\\(" reduce-identifier-regexp "\\)"))
-
-(defconst entire-reduce-keyword-regexp
-  (concat "\\`\\(?:"
-          reduce-keyword-regexp "\\|" reduce-type-regexp
-          "\\|module\\|procedure\\)\\'"))
-
-(defsubst reduce-font-lock-match-keyword (num)
-  "Return non-nil if `(match-string NUM)' is a REDUCE keyword."
-  (string-match-p                   ; avoids modifying the match data.
-   entire-reduce-keyword-regexp
-   (match-string num)))
-
-(defsubst reduce-font-lock-match-procedure (num)
-  "Return non-nil if `(match-string NUM)' is 'procedure'."
-  (string-match-p                   ; avoids modifying the match data.
-   "\\`procedure\\'"
-   (match-string num)))
-
-(defconst entire-reduce-functional-keyword-regexp
-  (concat
-   "\\`\\(?:"
-   "begin\\|" "if\\|" "for\\(?:\\s-*\\(?:all\\|each\\)\\)?\\|"
-   "\\)\\'"))
-
-(defsubst reduce-font-lock-match-functional-keyword (num)
-  "Return non-nil if `(match-string NUM)' is a REDUCE functional keyword."
-  (string-match-p                   ; avoids modifying the match data.
-   entire-reduce-functional-keyword-regexp
-   (match-string num)))
-
-(defun reduce-font-lock-match-functions (limit)
-  "Search for function calls without () between point and LIMIT.
-Also match composed function calls where the final call has ().
-If successful, return non-nil and set the match data to describe
-the function name(s) matched; otherwise return nil."
-  ;; Fontification will call this function repeatedly with the same
-  ;; limit, and with point where the previous invocation left it,
-  ;; until it fails.  On failure, there is no need to reset point in
-  ;; any particular way.
-
-  ;; An identifier (function or variable name) matches
-  ;; reduce-identifier-regexp but not reduce-keyword-regexp.  Function
-  ;; names followed by a variable, function name or functional keyword
-  ;; indicates successive composed functions of the form
-
-  ;; f1 f2 ... fn f(...)  or  f1 f2 ... fn var_or_functional_keyword
-
-  ;; where only f1 f2 ... fn should be matched because f should
-  ;; already be fontified and var_or_functional_keyword should not be
-  ;; fontified by this rule; it may be a variable or one of the
-  ;; functional keywords that can return a value: begin, if, for*.
-  (message "Function composition search: %d %d" (point) limit)
-  (let (beg newend end)
-    ;; Find the next identifier that is not a keyword before limit
-    ;; and save its beginning and end positions.
-    (while
-        (and
-         ;; Find next identifier or stop:
-         (re-search-forward
-          reduce-identifier-regexp limit t)
-         ;; If identifier is procedure then skip to the following
-         ;; terminator and return nil:
-         (if (reduce-font-lock-match-procedure 0)
-             (progn (re-search-forward "[;$]" limit t) nil)
-           ;; If identifier is a keyword then ignore it and continue
-           ;; the search, otherwise update end data and stop search:
-           (if (reduce-font-lock-match-keyword 0)
-               t
-             (setq beg (match-beginning 0) newend (match-end 0))
-             nil))))
-    (when beg                           ; found initial identifier
-      ;; Find successive identifiers that are not keywords before
-      ;; limit, each of which validates the previous match as an
-      ;; identifier, and update the match end position.  Stop on
-      ;; finding a functional keyword (e.g. begin, if) or non-keyword.
-      (while
-          (and
-           ;; Find next identifier or stop:
-           (re-search-forward
-            anchored-reduce-identifier-regexp limit t)
-           ;; Check identifier:
-           (if (reduce-font-lock-match-keyword 1)
-               ;; keyword...
-               (if (reduce-font-lock-match-functional-keyword 1)
-                   ;; functional keyword so update end and stop:
-                   (progn (setq end newend) nil)
-                 ;; regular keyword so just stop:
-                 nil)
-             ;; not a keyword so update end data and continue search:
-             (setq end newend newend (match-end 0)))))
-      (when end                         ; also found final identifier
-        (set-match-data (list beg end))
-        (message "Function composition found: %d %d" beg end)
-        newend ;; t
-        ;; (add-face-text-property beg end 'font-lock-warning-face) ; FOR DEBUGGING!
-        ))))
-
-
-(defconst reduce-font-lock-keywords-1
-  `("reduce-font-lock-keywords-1"       ; TEMPORARY label for debugging
-    ,@reduce-font-lock-keywords-basic
-    ,@reduce-font-lock-keywords-algebraic)
-  "Standard algebraic-mode REDUCE fontification rules.")
-
-(defconst reduce-font-lock-keywords-2
-  `("reduce-font-lock-keywords-2"       ; TEMPORARY label for debugging
-    ,@reduce-font-lock-keywords-basic
-    ,@reduce-font-lock-keywords-symbolic)
-  "Standard symbolic-mode REDUCE fontification rules.")
-
-(defconst reduce-font-lock-keywords-3
-  `("reduce-font-lock-keywords-3"      ; TEMPORARY label for debugging
-    ,@reduce-font-lock-keywords-basic
-    ,@reduce-font-lock-keywords-algebraic
-    ,@reduce-font-lock-keywords-symbolic
-    ,@reduce-font-lock-keywords-extra)
-  "Full REDUCE fontification rules.")
-
-;; Support functions for comment statements.  Being normally
-;; multi-line, they require the support of the function
-;; `reduce-font-lock-extend-region-for-comment-statement'.
-
-(defun reduce-font-lock-match-comment-statement (limit)
-  "Search for a comment statement between point and LIMIT.
-If successful, return non-nil and set the match data to describe
-the match; otherwise return nil."
-  ;; Fontification will call this function repeatedly with the same
-  ;; limit, and with point where the previous invocation left it,
-  ;; until it fails.  On failure, there is no need to reset point in
-  ;; any particular way.
-  (when
-      (re-search-forward "\\(\\<comment\\>[^;$]*\\)[;$]" limit t)
-    ;; If successful, check that "comment" is preceded by beginning of
-    ;; buffer or a terminator, possibly with white space and/or %
-    ;; comments in between:
-    (save-excursion
-      (goto-char (match-beginning 0))
-      (save-match-data
-        (looking-back "\\(?:\\`\\|[;$]\\)\
-\\(?:\\s-*\\(?:%.*\\)?\n\\)*\\s-*" nil)))))
-
-(defvar font-lock-beg)
-(defvar font-lock-end)
-
-(defun reduce-font-lock-extend-region-for-comment-statement ()
-  "Extend font-lock region if necessary to include all of any
-comment statements that it intersects, and if so return non-nil.
-This function is prepended to `font-lock-extend-region-functions'."
-  (let (new-beg new-end)
-    (goto-char font-lock-beg)
-    ;; Is font-lock-beg within a comment?
-    (save-excursion
-      (if (and (re-search-backward "\\(comment\\)\\|\\([;$]\\)" nil t)
-               (match-beginning 1))
-          (setq new-beg (point))))
-    (when (or new-beg
-              ;; Or does a comment start in the font-lock region?
-              (search-forward "comment" font-lock-end t))
-      ;; If either of the above then...
-      (re-search-forward "[;$]" nil 1) ; if un-terminated move to EOB
-      ;; Do multiple comments start in the font-lock region?
-      (while (and (< (point) font-lock-end)
-                  (search-forward "comment" font-lock-end t))
-        (re-search-forward "[;$]" nil 1)) ; if un-terminated move to EOB
-      (if (> (point) font-lock-end)
-          (setq new-end (point))))
-    ;; Temporary message for testing:
-    ;; (message "reduce-font-lock-extend-region-for-comment-statement: %s --> %s, %s --> %s"
-    ;;       font-lock-beg new-beg font-lock-end new-end)
-    ;; Return non-nil if font-lock region adjusted:
-    (or (if new-beg (setq font-lock-beg new-beg))
-        (if new-end (setq font-lock-end new-end)))))
-
-;; Provide a REDUCE font-lock menu, based originally on
-;; font-lock-menu.el by Simon Marshall <simon@gnu.ai.mit.edu>.
-
-(defconst reduce-font-lock-level-max
-  (1- (length reduce-font-lock-keywords))
-  "Maximum REDUCE font-lock level.")
-
-(defvar reduce-font-lock-level)
-
-(defun reduce-font-lock-level ()
-  "Establish the buffer-local variable `reduce-font-lock-level'.
-It is used only to control the font-lock menu and is set for each
-new buffer from the value of `font-lock-maximum-decoration',
-which must be done in `reduce-mode'."
-  (set (make-local-variable 'reduce-font-lock-level)
-       ;; The value of `font-lock-maximum-decoration' may be an alist,
-       ;; non-negative integer, t (meaning max) or nil (meaning 0).
-       (let (level)
-         (if (consp font-lock-maximum-decoration) ; alist
-             (if (setq level (or (assoc 'reduce-mode font-lock-maximum-decoration)
-                                 (assoc t font-lock-maximum-decoration)))
-                 (setq level (cdr level)))
-           (setq level font-lock-maximum-decoration)) ; not alist
-         ;; level = integer, t or nil
-         (cond ((numberp level)
-                (cond ((< level 0) 0)
-                      ((> level reduce-font-lock-level-max)
-                       reduce-font-lock-level-max)
-                      (t level)))
-               ((eq level t) reduce-font-lock-level-max) ; t means max
-               (t 0)))))                                 ; nil means 0
-
-(defconst reduce-font-lock-submenu
-  '("Syntax Highlighting"
-    ["In Current Buffer" font-lock-mode
-     :style toggle :selected font-lock-mode :active t]
-    ["Highlight Buffer" font-lock-fontify-buffer t]
-    ;; ["Toggle `!' Syntax" reduce-font-lock-toggle-escape t]
-    ["Maximum (3)" (reduce-font-lock-change 3)
-     :style radio :selected (eq reduce-font-lock-level 3) :active t]
-    ["Symbolic (2)" (reduce-font-lock-change 2)
-     :style radio :selected (eq reduce-font-lock-level 2) :active t]
-    ["Algebraic (1)" (reduce-font-lock-change 1)
-     :style radio :selected (eq reduce-font-lock-level 1) :active t]
-    ["Minimum (0)" (reduce-font-lock-change 0)
-     :style radio :selected (eq reduce-font-lock-level 0) :active t]))
-
-(easy-menu-define                       ; (symbol maps doc menu)
-  reduce-fontification-submenu
-  nil
-  "REDUCE Fontification Submenu"
-  reduce-font-lock-submenu)
-
-(define-key-after (lookup-key reduce-mode-map [menu-bar REDUCE])
-  [Fontification] (cons "Syntax Highlighting" reduce-fontification-submenu)
-  t)                                    ; was 'Make\ Proc\ Menu
-
-(defconst reduce-font-lock-level-names
-  '("minimum" "algebraic" "symbolic" "maximum"))
-
-(defun reduce-font-lock-change (level)
-  "Re-fontify at the specified LEVEL."
-  ;; Do messages need to be saved in the messages buffer?
-  ;; If interactive then needs to be more robust.
-  ;; (interactive)
-  (let ((name (nth level reduce-font-lock-level-names)))
-    (if (eq reduce-font-lock-level level)
-        (message "REDUCE Font Lock decoration unchanged (level %d : %s)."
-                 level name)
-      (let ((font-lock-maximum-decoration level))
-        (font-lock-refresh-defaults))
-      (setq reduce-font-lock-level level)
-      (message "REDUCE Font Lock decoration set to level %d : %s."
-               level name))))
-;; (let ((name (nth (1- level) reduce-font-lock-level-names))
-;;       (keywords (eval (nth (1- level) (car font-lock-defaults)))))
-;;   ;; `font-lock-defaults' is used in order to support both
-;;   ;; reduce-mode and reduce-run with the same code!
-;;   (setq keywords (font-lock-compile-keywords keywords)) ; Emacs 20 only!
-;;   (if (and font-lock-mode (equal font-lock-keywords keywords))
-;;       (message "REDUCE Font Lock decoration unchanged (level %d : %s)."
-;;                level name)
-;;     (font-lock-mode 0)
-;;     (font-lock-set-defaults)
-;;     (setq font-lock-keywords keywords)
-;;     (font-lock-mode 1)
-;;     (setq reduce-font-lock-level level)
-;;     (message "REDUCE Font Lock decoration set to level %d : %s."
-;;              level name))))
-
-(defun reduce-font-lock-toggle-escape (&optional arg)
-  "Toggle `!' escape syntax for REDUCE Font Lock mode (only) and re-fontify.
-With arg, clear `!' escape syntax if arg >= 0 and set it if arg < 0.
-For example,
-\(add-hook 'reduce-mode-hook
-      (function (lambda () (reduce-font-lock-toggle-escape 1))))
-will turn off the default font-lock escape syntax for `!'."
-  (interactive "P")
-  (require 'font-lock)
-  (let ((reset font-lock-syntax-table))
-    (font-lock-mode 0)
-    (font-lock-set-defaults)           ; resets font-lock-syntax-table
-    (if arg (setq reset (< (prefix-numeric-value arg) 0)))
-    (if reset
-        ;; `!' syntax has been reset to `escape', so do nothing:
-        () ;; (setq font-lock-syntax-table nil) ; default
-      ;; Set `!' syntax to punctuation:
-      (setq font-lock-syntax-table
-            (copy-syntax-table reduce-mode-syntax-table))
-      (modify-syntax-entry ?! "." font-lock-syntax-table)) ; punctuation
-    (font-lock-mode 1)
-    ;; Display message so it is not overwritten by font-lock messages:
-    (message
-     (if font-lock-syntax-table
-         "REDUCE Font Lock syntax (only) for `!' set to `punctuation'."
-       "REDUCE Font Lock syntax table reset."))))
-
-
 ;;;; **********************************************************
 ;;;; Support for displaying current procedure name in mode line
 ;;;; **********************************************************
@@ -2552,7 +1943,7 @@ in mode line after `reduce-show-proc-delay' seconds of Emacs idle time."
 (defcustom reduce-etags-directory invocation-directory
   "Directory containing the etags program, or nil if it is in path.
 If non-nil the string must end with /."
-  :package-version '(reduce-mode . "1.54")
+  :package-version '(reduce-ide . "1.54")
   :type '(choice (directory :tag "Etags program directory")
                  (const :tag "Etags is in exec path" nil))
   :group 'reduce-interface)

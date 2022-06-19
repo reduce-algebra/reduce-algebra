@@ -1,29 +1,29 @@
 ;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer
 
-;; Copyright (C) 1998-2001, 2012, 2017-2019 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1998
-;; Version: $Id$
+;; Time-stamp: <2022-06-18 16:25:07 franc>
 ;; Keywords: languages, processes
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide
-;; Package-Version: 1.55
+;; Package-Version: 1.6
 ;; Package-Requires: ((reduce-mode "1.5"))
 
-;; This file is not part of GNU Emacs.
+;; This file is part of REDUCE IDE.
 
-;; This program is free software: you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation, either version 3 of
-;; the License, or (at your option) any later version.
+;; REDUCE IDE is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation, either version 3 of the License,
+;; or (at your option) any later version.
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; REDUCE IDE is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;; along with REDUCE IDE.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -106,26 +106,48 @@
   :tag "REDUCE Run"
   :group 'reduce)
 
-(defcustom reduce-installation-directory
+;; *** Should define and use this only on MS Win! ***
+(defcustom reduce-run-MSWin-drives
   (if (eq system-type 'windows-nt)
-      (let (dir (skeleton ":/Program Files/Reduce/"))
-        (cond ((file-accessible-directory-p
-                (setq dir (concat "c" skeleton)))
-               dir)
-              ((file-accessible-directory-p
-                (setq dir (concat "d" skeleton)))
-               dir)
-              (t nil)))
-    "/usr/local/reduce")                ; *** CHECK THIS FOR LINUX ***
-  "Root directory of the REDUCE installation, or nil if not set.
-Note that you can complete the directory name using `M-<TAB>'.
-It should be an absolute pathname; e.g. on Windows the default is
-\"c:/Program Files/Reduce/\"."
-  :type '(choice (const :tag "None" nil) directory)
+      (cdr (split-string
+            (shell-command-to-string "wmic LogicalDisk get Caption"))))
+  "On MS Windows, the list of drives to be searched for REDUCE.
+It is used only by `reduce-run-installation-directory'.
+Defaults to all local drives, e.g. (\"C:\" \"D:\" \"E:\" \"F:\").
+nil on other platforms."
+  ;; https://stackoverflow.com/questions/3652631/is-there-a-way-to-list-drive-letters-in-dired
+  :type '(repeat
+          (string
+           :match (lambda (widget value) (string-match "\\`[A-Z]:\\'" value))
+           :type-error "Drive must be specified as X:, where X is a letter A-Z."))
   :group 'reduce-run
-  :package-version '(reduce-run . "1.55"))
+  :package-version '(reduce-ide . "1.6"))
 
-;; Use some of this code to find the reduce-installation-directory on Linux?
+(defcustom reduce-run-installation-directory
+  (if (eq system-type 'windows-nt)
+      (let ((drives reduce-run-MSWin-drives)
+            (skeleton "/Program Files/Reduce/")
+            dir d)
+        (while drives
+          (setq d (concat (car drives) skeleton))
+          (if (file-accessible-directory-p d)
+              (setq dir d drives nil)
+            (setq drives (cdr drives))))
+        dir)
+    "/usr/share/reduce/")
+  "Absolute root directory of the REDUCE installation, or nil if not set.
+It is the directory containing the \"packages\" directory and, on
+MS Windows, the \"bin\" directory containing the user-executable
+batch files.  It defaults to \"X:/Program Files/Reduce/\" on MS
+Windows, where X is a letter A-Z, and to \"/usr/share/reduce/\"
+on other platforms.  On MS Windows, REDUCE Run Mode attempts to
+determine the correct value for this variable automatically.
+Note that you can complete the directory name using \\[widget-complete]."
+  :type  '(choice (const :tag "None" nil) directory)
+  :group 'reduce-run
+  :package-version '(reduce-ide . "1.6"))
+
+;; Use some of this code to find the reduce-run-installation-directory on Linux?
 
 ;; (defun reduce-packages-directory-default ()
 ;;   "Return the REDUCE packages directory or nil if it cannot be found."
@@ -144,32 +166,61 @@ It should be an absolute pathname; e.g. on Windows the default is
  "This variable has been replaced by `reduce-run-commands' with different syntax."
  "1.3")
 
+
+(defconst reduce-run--redpsl-bat-filename
+  (if reduce-run-installation-directory
+      (concat reduce-run-installation-directory "bin/redpsl.bat")
+    "redpsl.bat")
+  "The absolute pathname of the standard file \"redpsl.bat\".
+If it cannot be found then just \"redpsl.bat\".")
+
+(defconst reduce-run--this-filepath
+  (or load-file-name (buffer-file-name))
+  "The absolute pathname of this file, \"reduce-run.el\".
+If it cannot be found then nil (which might be the case if REDUCE
+Run mode is customized before it is otherwise used).")
+
+(defconst reduce-run--reduce-run-redpsl-bat-filename
+  (if reduce-run--this-filepath
+      (concat (file-name-directory reduce-run--this-filepath)
+              "reduce-run-redpsl.bat"))
+  "The absolute pathname of the local file \"reduce-run-redpsl.bat\".
+It must be in this directory; if it cannot be found then nil.")
+
+
+;; Construct "reduce-run-redpsl.bat" in this directory.  Doing this
+;; every time this file is loaded allows for changes between loads.
+
+(if reduce-run--reduce-run-redpsl-bat-filename
+    (with-temp-file
+        reduce-run--reduce-run-redpsl-bat-filename
+      (insert "@echo off\r\n\"" reduce-run--redpsl-bat-filename "\"")))
+
+
 (defcustom reduce-run-commands
-  (if (eq system-type 'windows-nt)
-      (and
-       reduce-installation-directory
-       (list '("CSL" . (concat reduce-installation-directory
-                               "bin/redcsl.bat --nogui"))
-             (cons "PSL"
-                   (let ((file (or load-file-name (buffer-file-name))))
-                     ;; file can be nil if REDUCE Run mode is customized
-                     ;; before it is otherwise used!
-                     (if file
-                         (setq file (concat (file-name-directory file)
-                                            "reduce-run-redpsl.bat")))
-                     (if (and file (file-exists-p file))
-                         file
-                       (concat reduce-installation-directory
-                               "bin/redpsl.bat"))))))
-    '(("CSL" "redcsl --nogui") ("PSL" "redpsl")))
-  "Alist of commands to invoke CSL and PSL REDUCE in preference order.
-The commands may be absolute path names, and they may include switches.
-They must invoke a command-line version of REDUCE; a GUI version will not work!
-The command `run-reduce' tries to run the first REDUCE command.
-If that fails then it tries to run the second REDUCE command."
+  (if (and (eq system-type 'windows-nt) reduce-run-installation-directory)
+      (list (cons "CSL" (concat reduce-run-installation-directory
+                                "bin/redcsl.bat --nogui"))
+            (cons "PSL"
+                  (if (and reduce-run--reduce-run-redpsl-bat-filename
+                           (file-exists-p reduce-run--reduce-run-redpsl-bat-filename))
+                      ;; local batch file if possible:
+                      reduce-run--reduce-run-redpsl-bat-filename
+                    ;; otherwise standard batch file:
+                    reduce-run--redpsl-bat-filename)))
+    '(("CSL" . "redcsl --nogui") ("PSL" . "redpsl")))
+  "Alist of commands to invoke REDUCE versions in preference order.
+By default, it should be appropriate for standard installations
+of CSL and PSL REDUCE.  Each element has the form \"name
+. command\", where name and command are strings.  Name is
+arbitrary.  Command should be a relative or absolute pathname,
+and may include switches.  It must invoke a command-line version
+of REDUCE; a GUI version will not work!  The command `run-reduce'
+tries to run the first REDUCE command.  If that fails then it
+tries to run the second REDUCE command."
   :type '(alist :key-type (choice (const "CSL") (const "PSL")) :value-type string)
   :group 'reduce-run
-  :set-after '(reduce-installation-directory))
+  :set-after '(reduce-run-installation-directory))
 
 (defcustom reduce-run-prompt "^\\(?:[0-9]+[:*] \\)+"
   "Regexp to recognise prompts in REDUCE Run mode."
@@ -209,9 +260,10 @@ character (e.g. y or n) possibly surrounded by whitespace."
 
 (defcustom reduce-source-modes '(reduce-mode)
   "Used to determine if a buffer contains REDUCE source code.
-If it's loaded into a buffer that is in one of these major modes, it's
-considered a REDUCE source file by `reduce-input-file' and `reduce-fasl-file'.
-Used by these commands to determine defaults."
+If a file is loaded into a buffer that is in one of the major
+modes in this list then it is considered to be a REDUCE source
+file by `reduce-input-file' and `reduce-fasl-file'.  Used by
+these commands to determine defaults."
   :type '(repeat symbol)
   :group 'reduce-run)
 
@@ -220,8 +272,8 @@ Used by these commands to determine defaults."
 ;;; ==================
 
 (defvar reduce-run-buffer-alist nil
-  "This variable holds an alist of REDUCE process buffers (RPBs),
-which is used to name new RPBs appropriately and decide where to
+  "This variable holds an alist of REDUCE process buffers (RPBs).
+It is used to name new RPBs appropriately and decide where to
 send REDUCE input.")
 
 (defvar reduce-run-mode-map nil)
@@ -257,7 +309,7 @@ send REDUCE input.")
 (easy-menu-define                       ; (symbol maps doc menu)
   reduce-run-menu
   reduce-run-mode-map
-  "REDUCE Run Menu"
+  "REDUCE Run Menu."
   `("Run REDUCE"
     ,@reduce-run-menu2
     ["Re-Run REDUCE" re-run-reduce :active t
@@ -274,7 +326,7 @@ send REDUCE input.")
 (easy-menu-define                       ; (symbol maps doc menu)
   reduce-mode-run-menu
   nil
-  "REDUCE Mode Run Menu"
+  "REDUCE Mode Run Menu."
   `("Run REDUCE"
     ["Run REDUCE" run-reduce :active t
      :help "Start a new REDUCE process if necessary"]
@@ -417,12 +469,12 @@ to continue it."
 ;;;###autoload
 (defun run-reduce (&optional cmd)
   "Run CMD as a REDUCE process with input and output via a buffer.
-If CMD omitted or nil, use whichever REDUCE appears first in `reduce-run-commands'.
-If `reduce-run-multiple' in non-nil then always start a new distinct REDUCE process,
-Otherwise, if there is a REDUCE process already running, just switch to it.
-Runs the hooks from `reduce-run-mode-hook' (after the
-`comint-mode-hook' is run).  (Type \\[describe-mode] in the
-process buffer for a list of commands.)"
+If CMD omitted or nil, use whichever REDUCE appears first in
+`reduce-run-commands'.  If `reduce-run-multiple' in non-nil then
+always start a new distinct REDUCE process, Otherwise, if there
+is a REDUCE process already running, just switch to it.  Runs the
+hooks from `reduce-run-mode-hook' (after the `comint-mode-hook' is run).
+\(Type \\[describe-mode] in the process buffer for a list of commands.)"
   (interactive
    (let ((reduce-run-command (cdar reduce-run-commands)))
      (list (if current-prefix-arg
@@ -440,23 +492,23 @@ process buffer for a list of commands.)"
 ;;;###autoload
 (defun run-csl-reduce ()
   "Run CSL REDUCE with I/O via a buffer with a name like `*CSL\ REDUCE*'.
-The appropriate command is taken from `reduce-run-commands'.
-If `reduce-run-multiple' in non-nil then always start a new distinct REDUCE process,
-Otherwise, if there is a CSL REDUCE process already running, just switch to it.
-Runs the hooks from `reduce-run-mode-hook' (after the
-`comint-mode-hook' is run).  (Type \\[describe-mode] in the
-process buffer for a list of commands.)"
+The appropriate command is taken from `reduce-run-commands'.  If
+`reduce-run-multiple' in non-nil then always start a new distinct
+REDUCE process, Otherwise, if there is a CSL REDUCE process
+already running, just switch to it.  Runs the hooks from
+`reduce-run-mode-hook' (after the `comint-mode-hook' is run).
+\(Type \\[describe-mode] in the process buffer for a list of commands.)"
   (interactive)
   (reduce-run-reduce (cdr (assoc "CSL" reduce-run-commands)) "CSL"))
 
 ;;;###autoload
 (defun run-psl-reduce ()
   "Run PSL REDUCe with I/O via a buffer with a name like `*PSL\ REDUCE*'.
-If `reduce-run-multiple' in non-nil then always start a new distinct REDUCE process,
-Otherwise, if there is a PSL REDUCE process already running, just switch to it.
-Runs the hooks from `reduce-run-mode-hook' (after the
-`comint-mode-hook' is run).  (Type \\[describe-mode] in the
-process buffer for a list of commands.)"
+If `reduce-run-multiple' in non-nil then always start a new
+distinct REDUCE process, Otherwise, if there is a PSL REDUCE
+process already running, just switch to it.  Runs the hooks from
+`reduce-run-mode-hook' (after the `comint-mode-hook' is run).
+\(Type \\[describe-mode] in the process buffer for a list of commands.)"
   (interactive)
   (reduce-run-reduce (cdr (assoc "PSL" reduce-run-commands)) "PSL"))
 
@@ -488,23 +540,12 @@ Return t if successful; nil otherwise."
                (push (list xsl buf-name) reduce-run-buffer-alist)
                t)))))
 
-;; Try forcing the use of a shell by replacing the use of
-;; (start-file-process name buffer-or-name program &rest args) with
-;; (start-file-process-shell-command name buffer-or-name command) in
-;; make-comint.
-
 (defun reduce-run-reduce-1 (cmd process-name buffer-name)
   "Run CMD as a REDUCE process PROCESS-NAME in buffer BUFFER-NAME.
 Return the process buffer if successful; nil otherwise."
   (condition-case err
       ;; Protected form:
       (let ((cmdlist (reduce-run-args-to-list cmd)))
-        ;; Hack to try to run PSL on native Windows GNU Emacs:
-        ;; (fset 'start-file-process
-        ;;    (lambda (name buffer-or-name program &rest args)
-        ;;      (start-file-process-shell-command
-        ;;       name buffer-or-name
-        ;;       (mapconcat identity (cons program args) " "))))
         (set-buffer
          ;; `apply' used below because last arg is &rest!
          (apply 'make-comint process-name (car cmdlist) nil (cdr cmdlist)))
@@ -650,7 +691,7 @@ Prefix argument SWITCH means also switch to the REDUCE window."
 
 (defun reduce-run-buffer-p (buf)
   "Return t if cons cell BUF represents an active REDUCE process buffer.
-To be applied to each element of the buffer-read completion list, 
+To be applied to each element of the buffer-read completion list,
 which appears to have the form `buffer-name . buffer-object'."
   (setq buf (car buf))
   (and (eq (aref buf 0) ?*)
@@ -662,10 +703,12 @@ which appears to have the form `buffer-name . buffer-object'."
 
 (defun switch-to-reduce (to-eob &optional no-mark switch)
   "Switch to REDUCE process buffer, at end if TO-EOB; if NO-MARK do not save mark.
-With interactive argument, TO-EOB, position cursor at end of buffer.
-If `reduce-run-autostart' is non-nil then automatically start a new REDUCE
-process if necessary.
-Return the window displaying the REDUCE process buffer."
+SWITCH means also switch to the REDUCE window; see
+`reduce-eval-region'.  With interactive argument, TO-EOB,
+position cursor at end of buffer.  If `reduce-run-autostart' is
+non-nil then automatically start a new REDUCE process if
+necessary.  Return the window displaying the REDUCE process
+buffer."
   (interactive "P")
   (let ((set-or-switch-to-buffer (if switch #'switch-to-buffer #'set-buffer)))
     ;; Find the appropriate REDUCE process buffer:
@@ -826,22 +869,23 @@ REDUCE packages directory."
               (mapcar #'list packages))))))
 
 (defcustom reduce-packages-directory
-  (and reduce-installation-directory
-       (let ((dir (concat reduce-installation-directory "packages/")))
+  (and reduce-run-installation-directory
+       (let ((dir (concat reduce-run-installation-directory "packages/")))
          (and (file-accessible-directory-p dir) dir)))
   "Directory of REDUCE packages, or nil if not set.
-Note that you can complete the directory name using `M-<TAB>'.
-It should be an absolute pathname ending with \".../packages/\".
-This directory is used for completion by `reduce-load-package'.
-Customizing this variable assigns a REDUCE package completion
-alist to `reduce-package-completion-alist'; setting this variable
-directly has no effect."
+It should be an absolute pathname ending with \".../packages/\"
+and should be set automatically.  Note that you can complete the
+directory name using `M-<TAB>'.  This directory is used for
+completion by `reduce-load-package'.  Customizing this variable
+assigns a REDUCE package completion alist to
+`reduce-package-completion-alist'; setting this variable directly
+has no effect."
   :type '(choice (const :tag "None" nil) directory)
   :group 'reduce-run
   :set #'(lambda (symbol value)
            (if value (reduce-set-package-completion-alist value))
            (set-default symbol value))
-  :set-after '(reduce-installation-directory))
+  :set-after '(reduce-run-installation-directory))
 
 (defvar reduce-load-package-history nil
      "A history list for `reduce-load-package'.")
