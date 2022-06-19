@@ -6,19 +6,17 @@ include '../include/begin-body.php';
 ?>
 
 <p>
-    REDUCE IDE is a package that provides an
-    <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for the
-    <a>REDUCE</a> computer algebra system within the
-    <a href="http://www.gnu.org/">GNU</a> <a href="http://www.gnu.org/software/emacs/emacs.html">Emacs</a>
-    editor.  Its two major components are Emacs Lisp libraries that
-    provide major modes for respectively editing REDUCE source code
-    and running a <strong>command-line version</strong>
-    of REDUCE in an Emacs window.  Many of the facilities require that
-    Emacs is running under a GUI such as
-    <a href="http://windows.microsoft.com/">Microsoft Windows</a>, or
-    the <a href="http://www.x.org/">X Window System</a> under some flavour of
-    <a href="http://en.wikipedia.org/wiki/Unix">UNIX</a> or
-    <a href="http://en.wikipedia.org/wiki/Linux">Linux</a>.
+    REDUCE IDE is a <a href="https://www.gnu.org">GNU</a>
+    <a href="https://www.gnu.org/software/emacs/emacs.html">Emacs</a>
+    package that provides an <b>I</b>ntegrated <b>D</b>evelopment <b>E</b>nvironment
+    for REDUCE consisting of major modes for editing REDUCE source
+    code and running a <strong>command-line version</strong> of REDUCE
+    in an Emacs window.  Many of the facilities require that Emacs is
+    running under a GUI such as
+    <a href="https://www.microsoft.com/en-gb/windows">Microsoft Windows</a>, or
+    the <a href="https://www.x.org/wiki/">X Window System</a> under some flavour of
+    <a href="https://en.wikipedia.org/wiki/Unix">UNIX</a> or
+    <a href="https://en.wikipedia.org/wiki/Linux">Linux</a>.
 </p>
 <p>
     A user guide is available online in
@@ -33,19 +31,7 @@ include '../include/begin-body.php';
         using a web browser</a>.  A README file provides further
     technical details.
 </p>
-<p>
-    REDUCE IDE requires GNU Emacs 23 or later, although I recommend
-    version 25 or later.  There is currently no explicit support for
-    <a href="http://www.xemacs.org/">XEmacs</a>.
-</p>
-<h2>Major update history</h2>
-<p>
-    REDUCE IDE version 1.5 (Nov 2017) should work with the latest
-    versions of both REDUCE and GNU Emacs.  It also provides full
-    support for the GNU Emacs package manager (see below), explicit
-    support for running both CSL and PSL REDUCE, and explicit support
-    for running multiple REDUCE processes simultaneously.
-</p>
+
 <h2>Installation</h2>
 <p>
     Provided you are using GNU Emacs 24 or later, I recommend that you
@@ -94,6 +80,28 @@ include '../include/begin-body.php';
     <code>package-install-file</code> and give it the full pathname of the
     <code>reduce-ide</code> package file you just downloaded.
 </p>
+
+<h2>Major update history</h2>
+<ul>
+    <li>
+        REDUCE IDE version 1.5 (Nov 2017) should work with the latest
+        versions of both REDUCE and GNU Emacs.  It also provides full
+        support for the GNU Emacs package manager (see below),
+        explicit support for running both CSL and PSL REDUCE, and
+        explicit support for running multiple REDUCE processes
+        simultaneously.
+    </li>
+    <li>
+        REDUCE IDE version 1.6 (June 2022) provides better syntactic
+        highlighting (fontification) and better delimiter matching, which
+        are provided by two new files.  It also repairs support for
+        running PSL REDUCE on Microsoft Windows.  I have tested REDUCE
+        IDE 1.6 with REDUCE revision 6339 and GNU Emacs 28 on
+        Microsoft Windows and Ubuntu.
+
+    </li>
+</ul>
+
 <p>Feedback is welcome.</p>
 <address>
     <a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>
