@@ -156,9 +156,9 @@ and returns the result
 \begin{verbatim}
  int(x*sin(1/x),x,0,infinity);
 
-           1
-int(x*sin(---),x,0,infinity)
-           x
+            1
+ int(x*sin(---),x,0,infinity)
+            x
 \end{verbatim}
 
 \[
@@ -204,9 +204,9 @@ int(x*sin(---),x,0,infinity)
 \begin{verbatim}
  int(cos(2x),x,y,2y);
 
- sin(4*y) - sin(2*y)
----------------------
-          2
+  sin(4*y) - sin(2*y)
+ ---------------------
+           2
 \end{verbatim}
 \subsection{Integral Transforms}
 
@@ -447,9 +447,9 @@ the \textit{Meijer G representation --}
 \ \MeijerGparams{ . \; . }{ 0 \; \frac{1}{2}} \right) dx
 \]
 i.e. $m=1$, $n=0$, $p=0$, $q=2$, $a_{i}=\{\}$, $b_{j} = \{0,1/2)$, $C=\sqrt{\pi}$.
-The corresponding \textit{internal definite integration package representation} ist
+The corresponding \textit{internal definite integration package representation} is
 \begin{verbatim}
-  defint_choose(cos(~x),~var)   => f1(3,x);
+  defint_choose(cos(~x),~var) => f1(3,x);
 \end{verbatim}
 where 3 is the indexing number corresponding to the 3
 in the following formula
