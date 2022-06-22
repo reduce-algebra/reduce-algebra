@@ -42,7 +42,7 @@ conventional \REDUCE list.
 \subsubsection{Operators}
 
 Because of syntactical restrictions in \REDUCE, special operators
-have to be used for ideal arithmetic: 
+have to be used for ideal arithmetic:
 \ttindextype[IDEALS]{.+ (ideal sum)}{infix operator}
 \ttindextype[IDEALS]{.* (ideal product)}{infix operator}
 \ttindextype[IDEALS]{.: (ideal quotient)}{infix operator}
@@ -52,7 +52,7 @@ have to be used for ideal arithmetic:
 \ttindextype[IDEALS]{intersection}{(ideal intersection) operator}
 \ttindextype[IDEALS]{member}{(ideal membership test) infix operator}
 \ttindextype[IDEALS]{gb}{operator}
-\hypertarget{operator:IDEALSUM}{}
+\hypertarget{operator:IDEALS_IDEALSUM}{}
 \hypertarget{operator:IDEALPRODUCT}{}
 \hypertarget{operator:IDEALS_IDEALQUOTIENT}{}
 \hypertarget{operator:IDEALQUOTIENTALT}{}
@@ -72,7 +72,7 @@ have to be used for ideal arithmetic:
          member        test for membership in an ideal
                          (infix: polynomial and ideal)
          gb            Groebner basis of an ideal (prefix, unary)
-         ideal2list    convert ideal basis to polynomial list 
+         ideal2list    convert ideal basis to polynomial list
                          (prefix,unary)
 \end{verbatim}
 
@@ -92,7 +92,7 @@ directly.
 The results of \texttt{.+}, \texttt{.*}, \texttt{.:}/\texttt{./}, and \f{intersection} are ideals
 represented by their Gr\"obner basis in the current setting and
 term order. The term order can be modified using the operator
-\f{torder}\ttindextype{torder}{opreator} from the Gr\"obner package. Note that ideal equality 
+\f{torder}\ttindextype{torder}{opreator} from the Gr\"obner package. Note that ideal equality
 cannot be tested with the \REDUCE equal sign:
 
 \begin{verbatim}
@@ -117,14 +117,14 @@ $p \in I_1 \rightarrow p=0 \ mod \ I_1$
 $I_1 : I(p) \rightarrow (I_1 \bigcap I(p)) / p \ elementwise$
 
 \noindent
-On top of these the \textsc{Ideals} package implements the following 
+On top of these the \textsc{Ideals} package implements the following
 operations:
 
 
 $I(u_1,u_2...)+I(v_1,v_2...) \rightarrow GB(I(u_1,u_2...,v_1,v_2...))$
 
 
-$I(u_1,u_2...)*I(v_1,v_2...)\rightarrow 
+$I(u_1,u_2...)*I(v_1,v_2...)\rightarrow
  GB(I(u_1*v_1,u_1*v2,...,u_2*v_1,u_2*v_2...))$
 
 

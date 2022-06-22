@@ -694,7 +694,7 @@ managed through a global (symbolic) variable
 
 \item[]
   \begin{syntax}
-\f{getdegrees}()                                                                                                                                                         
+\f{getdegrees}()
   \end{syntax}
 \calipbx{returns the current setting of \var{cali!=degrees}.}
 
@@ -874,7 +874,7 @@ name \texttt{cali} to control \package{CALI}'s computations.
   \ttindexswitch[CALI]{detectunits}
   \hypertarget{switch:DETECTUNITS}{}
   (Default: off)\\
-On: replace polynomials of the form 
+On: replace polynomials of the form
 $\langle monomial\rangle *
 \langle polynomial\ unit\rangle $ by $\langle monomial\rangle$
 during interreductions and standard basis computations.
@@ -1548,7 +1548,7 @@ this information with \indf{red\_extract}{symbolic procedure}.
 $model$ and returns a dotted pair}
 \begin{quote}
   \texttt{(}\meta{reduced model} \texttt{.} \meta{dpoly unit multiplier}\texttt{)}
-\end{quote}     
+\end{quote}
 \end{description}
 
 Advanced applications call the interfacing procedures
@@ -3041,7 +3041,7 @@ S^c$ by the ideal $m2$.}
     \f{idealsum}(\meta{m1},\meta{m2},\ldots)
   \end{syntax}
   \ttindextype[CALI]{idealsum}{operator}
-  \hypertarget{operator:IDEALSUM}{}
+  \hypertarget{operator:CALI_IDEALSUM}{}
 \calipbx{returns the interreduced basis of the ideal sum $m1+m2+\ldots$.}
 
 \item[]
@@ -3505,7 +3505,7 @@ $m$ as a list of $\{component, associated\ prime\}$ pairs.}
     \intertext{and} \\
     \f{zerosolve1} \meta{m} \\
     \intertext{and} \\
-    \f{zerosolve2} \meta{m} 
+    \f{zerosolve2} \meta{m}
   \end{syntaxtable}
   \ttindextype[CALI]{zerosolve}{operator}
   \ttindextype[CALI]{zerosolve1}{operator}

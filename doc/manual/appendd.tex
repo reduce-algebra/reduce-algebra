@@ -1,0 +1,490 @@
+
+\hypertarget{sec:appendixd}{\chapter{Description of Algorithms}}
+\label{sec:algorithms}
+
+\section{Definite Integration}
+\label{sec:definiteIntegration}
+%% For MathJax, must be part of a paragraph to avoid extra space:
+\ifdefined\VerbMath{\makehashletter
+\(
+\newcommand{\MeijerGparams}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
+\)%
+}\else
+\newcommand{\MeijerGparams}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
+\fi
+This section  describes part of \REDUCE's definite
+integration package that is able to calculate the definite integrals of
+many functions, including several special functions.  There are other
+parts of this package, such as Stan Kameny's code for contour integration,
+that are not included here.  The integration process described here is not
+the more normal approach of initially calculating the indefinite integral,
+but is instead the rather unusual idea of representing each function as a
+Meijer G-function (a formal definition of the Meijer G-function can be
+found in \cite {Prudnikov:90c}), and then calculating the integral by using
+the following Meijer G integration formula.
+\index{Meijer's G function!use for definite integration}
+
+\begin{equation}
+\int_{0}^{\infty} x^{\alpha-1} G^{s t}_{u v}
+\left( \sigma x \  \Bigg\vert \  \MeijerGparams{( c_u)}{(d_v)} \right)
+G^{m n}_{p q} \left( \omega x^{l/k} \  \Bigg\vert \ \MeijerGparams{(a_p)}{(b_q)}
+\right) dx = k G^{i j}_{k l} \left( \xi \ \Bigg\vert \
+\MeijerGparams{(g_k)}{(h_l)} \right) \label{defint:eq1}
+\end{equation}
+
+The resulting Meijer G-function is then retransformed, either directly
+or via a hypergeometric function simplification, to give
+the answer. A more detailed account of this theory can be found in
+\cite {Adamchik90}.
+
+\subsection{Integration between zero and infinity}
+
+As an example, if one wishes to calculate the following integral
+
+\[
+\int_{0}^{\infty} x^{-1} e^{-x} \sin(x) \, dx
+\]
+
+then initially the  correct Meijer G-functions are found, via a
+pattern matching
+process, and are substituted into eq.~\eqnref{defint:eq1} to give
+
+\[
+\sqrt{\pi} \int_{0}^{\infty} x^{-1} G^{1 0}_{0 1} \left(x
+\ \Bigg\vert \
+\MeijerGparams{.}{0}\right) G^{1 0}_{0 2}\left(\frac{x^{2}}{4}
+\ \Bigg\vert \ \MeijerGparams{. \; . }{\frac{1}{2} \; 0} \right) dx
+\]
+
+The cases for validity of the integral are then checked. If these
+are found to be satisfactory then the formula is calculated and we
+obtain the following Meijer G-function
+
+\[
+G^{1 2}_{2 2} \left(1 \ \Bigg\vert \ \MeijerGparams{\frac{1}{2} \; 1}{\frac{1}{2} \; 0} \right)
+\]
+
+This is reduced to the following hypergeometric function
+
+\[
+_2F_1 (\frac{1}{2},1;\frac{3}{2};-1)
+\]
+
+which is then calculated to give the correct answer of
+
+\[
+\frac{\pi}{4}
+\]
+
+The above formula (\eqnref{defint:eq1}) is also true for the
+integration of a single Meijer G-function by replacing the second
+Meijer G-function with a trivial Meijer G-function.
+
+A list of numerous particular Meijer G-functions is available in
+\cite {Prudnikov:90c}.
+
+\subsection{Integration over other ranges}
+
+Although the description so far has been limited to the computation of
+definite integrals between 0 and infinity, it can also be extended to
+calculate integrals between 0 and some specific upper bound, and
+by further extension, integrals between any two bounds.  One approach is
+to use the Heaviside function, i.e.
+
+\[
+\int_{0}^{\infty} x^{2} e^{-x} H(1-x)\,dx = \int_{0}^{1} x^{2} e^{-x}dx
+\]
+
+Another approach, again not involving the normal indefinite integration
+process, again uses Meijer G-functions, this time by means of the
+following formula
+
+\begin{equation}
+\int_{0}^{y} x^{\alpha-1} G^{m n}_{p q}
+\left( \sigma x \  \Bigg\vert \ \MeijerGparams{(a_u)}{(b_v)} \right) dx=%
+y^{\alpha}\,G^{m \; n+1}_{p+1 \; q+1} \left( \sigma y \  \Bigg\vert \
+\MeijerGparams{( a_1..a_n,1-\alpha,a_{n+1}..a_p)}{(b_1..b_m,-\alpha,b_{m+1}..b_q)} \right) \label{defint:eq2}
+\end{equation}
+
+For a more detailed look at the theory behind this see
+\cite{Adamchik90}.
+
+For example, if one wishes to calculate the following integral
+
+\[
+\int_{0}^{y} \sin(2 \sqrt{x}) \, dx
+\]
+
+then initially the correct Meijer G-function is found, by a pattern
+matching process, and is substituted
+into eq.~\eqnref{defint:eq2} to give
+
+\[
+\int_{0}^{y} G^{1 0}_{0 2}\left(x
+\ \Bigg\vert \ \MeijerGparams{. \; .}{\frac{1}{2} \; 0} \right) dx
+\]
+
+which then in turn gives
+
+\[
+y \; G^{1 1}_{1 3}\left(y \ \Bigg\vert \ \MeijerGparams{0}{\frac{1}{2} -\!1 \; 0} \right) dx
+\]
+
+and returns the result
+
+\[
+\frac{\sqrt{\pi} \, J_{3/2}(2 \, \sqrt{\,y}) \, y}{y^{1/4}}
+\]
+
+\subsubsection{Examples}
+
+\[
+\int_{0}^{\infty} e^{-x} dx
+\]
+
+
+\begin{verbatim}
+ int(e^(-x),x,0,infinity);
+
+ 1
+\end{verbatim}
+
+\[
+\int_{0}^{\infty} x \sin(1/x) \, dx
+\]
+
+\begin{verbatim}
+ int(x*sin(1/x),x,0,infinity);
+
+           1
+int(x*sin(---),x,0,infinity)
+           x
+\end{verbatim}
+
+\[
+\int_{0}^{\infty} x^2 \cos(x) \, e^{-2x} dx
+\]
+
+\begin{verbatim}
+ int(x^2*cos(x)*e^(-2*x),x,0,infinity);
+
+   4
+ -----
+  125
+\end{verbatim}
+
+\[
+\int_{0}^{\infty} x e^{-1/2x} H(1-x) \,dx = \int_{0}^{1} x e^{-1/2x} dx
+\]
+
+\begin{verbatim}
+ int(x*e^(-1/2x)*Heaviside(1-x),x,0,infinity);
+
+  2*(2*sqrt(e) - 3)
+ -------------------
+       sqrt(e)
+\end{verbatim}
+
+\[
+\int_{0}^{1} x \log(1+x) \,dx
+\]
+
+\begin{verbatim}
+ int(x*log(1+x),x,0,1);
+
+  1
+ ---
+  4
+\end{verbatim}
+
+\[
+\int_{0}^{y} \cos(2x) \,dx
+\]
+
+\begin{verbatim}
+ int(cos(2x),x,y,2y);
+
+ sin(4*y) - sin(2*y)
+---------------------
+          2
+\end{verbatim}
+\subsection{Integral Transforms}
+
+A useful application of the definite integration package is in the
+calculation of various integral transforms. The transforms
+available are as follows:
+
+\begin{itemize}
+\item Laplace transform
+\item Hankel transform
+\item Y-transform
+\item K-transform
+\item StruveH transform
+\item Fourier sine transform
+\item Fourier cosine transform
+\end{itemize}
+
+\subsubsection{Laplace transform}
+\index{Laplace transform}
+\index{Integral transform!Laplace transform}
+\hypertarget{operator:LAPLACE_TRANSFORM}{}
+\ttindextype{laplace\_transform}{operator}
+
+The Laplace transform
+
+\[
+f(s) = \mathcal{L}\{\mathrm{F}(t)\} = \int_{0}^{\infty} e^{-st}F(t)\,dt
+\]
+
+can be calculated by using the \f{laplace\_transform} operator.
+
+This requires as parameters
+\begin{itemize}
+\item the function to be integrated
+\item the integration variable.
+\end{itemize}
+
+For example
+
+\[
+\mathcal{L}\{e^{-at}\}
+\]
+
+is entered as
+
+\begin{verbatim}
+        laplace_transform(e^(-a*x),x);
+\end{verbatim}
+
+and returns the result
+
+\[
+\frac{1}{s+a}
+\]
+
+\subsubsection{Hankel transform}
+\index{Hankel transform}
+\index{Integral transform!Hankel transform}
+\hypertarget{operator:HANKEL_TRANSFORM}{}
+\ttindextype{hankel\_transform}{operator}
+
+The Hankel transform
+\[
+f(\omega) = \int_{0}^{\infty} F(t) \,J_{\nu}(2\sqrt{\omega t}) \,dt
+\]
+
+can be calculated by using the \f{hankel\_transform} operator, e.g.,
+
+\begin{verbatim}
+        hankel_transform(f(x),x);
+\end{verbatim}
+
+This is used in the same way as the \f{laplace\_transform} operator.
+
+\subsubsection{Y-transform}
+\index{Y-transform}
+\index{Integral transform!Y-transform}
+\hypertarget{operator:Y_TRANSFORM}{}
+\ttindextype{Y\_transform}{operator}
+
+The Y-transform
+
+\[
+f(\omega) = \int_{0}^{\infty} F(t) \,Y_{\nu}(2\sqrt{\omega t}) \,dt
+\]
+
+can be calculated by using the \f{Y\_transform} operator, e.g.,
+
+\begin{verbatim}
+        Y_transform(f(x),x);
+\end{verbatim}
+
+This is used in the same way as the \f{laplace\_transform} operator.
+
+\subsubsection{K-transform}
+\index{K-transform}
+\index{Integral transform!K-transform}
+\hypertarget{operator:K_TRANSFORM}{}
+\ttindextype{K\_transform}{operator}
+
+The K-transform
+
+\[
+f(\omega) = \int_{0}^{\infty} F(t) \,K_{\nu}(2\sqrt{\omega t}) \,dt
+\]
+
+can be calculated by using the \f{K\_transform} operator, e.g.,
+
+\begin{verbatim}
+        K_transform(f(x),x);
+\end{verbatim}
+
+This is used in the same way as the \f{laplace\_transform} operator.
+
+\subsubsection{StruveH transform}
+\index{StruveH transform}
+\index{Integral transform!StruveH transform}
+\hypertarget{operator:STRUVEH_TRANSFORM}{}
+\ttindextype{struveh\_transform}{operator}
+
+The StruveH transform
+
+\[
+f(\omega) = \int_{0}^{\infty} F(t) \,StruveH(\nu,2\sqrt{\omega t}) \,dt
+\]
+
+can be calculated by using the \f{struveh\_transform} operator, e.g.,
+
+\begin{verbatim}
+        struveh_transform(f(x),x);
+\end{verbatim}
+
+This is used in the same way as the \f{laplace\_transform} operator.
+
+\subsubsection{Fourier sine transform}
+\index{Fourier sine transform}
+\index{Integral transform!Fourier sine transform}
+\hypertarget{operator:FOURIER_SIN}{}
+\ttindextype{fourier\_sin}{operator}
+
+The Fourier sine transform
+
+\[
+f(s) = \int_{0}^{\infty} F(t) \sin(st) \,dt
+\]
+
+can be calculated by using the \f{fourier\_sin} operator, e.g.,
+\begin{verbatim}
+        fourier_sin(f(x),x);
+\end{verbatim}
+
+This is used in the same way as the \f{laplace\_transform} operator.
+
+\subsubsection{Fourier cosine transform}
+\index{Fourier cosine transform}
+\index{Integral transform!Fourier cosine transform}
+\hypertarget{operator:FOURIER_COS}{}
+\ttindextype{fourier\_cos}{operator}
+
+The Fourier cosine transform
+
+\[
+f(s) = \int_{0}^{\infty} F(t) \cos(st) \,dt
+\]
+
+can be calculated by using the \f{fourier\_cos} operator, e.g.,
+\begin{verbatim}
+        fourier_cos(f(x),x);
+\end{verbatim}
+
+This is used in the same way as the \f{laplace\_transform} operator.
+
+\subsubsection{The print\_conditions function}
+\hypertarget{operator:PRINT_CONDITIONS}{}
+\ttindextype{PRINT\_CONDITIONS}{operator}
+
+The required conditions for the validity of the transform integrals
+can be viewed using the following command:
+
+\begin{verbatim}
+        print_conditions().
+\end{verbatim}
+
+For example after calculating the following laplace transform
+
+\begin{verbatim}
+        laplace_transform(x^k,x);
+\end{verbatim}
+
+using the \f{print\_conditions} operator would produce
+
+\begin{verbatim}
+repart(sum(ai) - sum(bj)) + 1/2 (q + 1 - p)>(q - p) repart(s)
+
+ and ( - min(repart(bj))<repart(s))<1 - max(repart(ai))
+
+ or mod(arg(eta))=pi*delta
+
+ or ( - min(repart(bj))<repart(s))<1 - max(repart(ai))
+
+ or mod(arg(eta))<pi*delta
+\end{verbatim}
+
+where
+\[
+\begin{array}{l}
+delta = s+t-\frac{u-v}{2}\\
+eta = 1-\alpha(v-u)-\mu-\rho\\
+\mu = \sum_{j=1}^{q} b_{j} - \sum_{i=1}^{p} a_{i} + \frac{p-q}{2} + 1\\
+\rho = \sum_{j=1}^{v} d{j} - \sum_{i=1}^{u} c_{i} + \frac{u-v}{2} + 1\\
+s,t,u,v,p,q,\alpha \; \text{as in eq.~\ref{defint:eq1}}
+\end{array}
+\]
+
+\subsection{Extending the Tables}
+
+The relevant Meijer G representation for any function is found by a
+pattern-matching process which is carried out on a list of Meijer
+G-function definitions. This list, although extensive, can never hope
+to be complete and therefore the user may wish to add more definitions.
+Definitions can be added by adding the following lines:
+
+\begin{verbatim}
+  defint_choose(f(~x),~var => f1(n,x);
+
+  symbolic putv(mellin!-transforms!*,n,'
+                (() (m n p q) (ai) (bj) (C) (var)));
+
+\end{verbatim} 
+where $f(x)$ is the new function, $i = 1,\ldots, p$, $j=1,\ldots,q$, $C$ a constant,
+%where i = 1..p, j=1..q, C = a constant,
+var = variable, n = an indexing number, where all expression must be in internal prefix form.
+
+For example when considering $\cos(x)$ we have
+the \textit{Meijer G representation --}
+\[
+\cos x = \sqrt{\pi} \,G^{1 0}_{0 2}\left(\frac{x^{2}}{4} \ \Bigg\vert
+\ \MeijerGparams{ . \; . }{ 0 \; \frac{1}{2}} \right) dx
+\]
+i.e. $m=1$, $n=0$, $p=0$, $q=2$, $a_{i}=\{\}$, $b_{j} = \{0,1/2)$, $C=\sqrt{\pi}$.
+The corresponding \textit{internal definite integration package representation} ist
+\begin{verbatim}
+  defint_choose(cos(~x),~var)   => f1(3,x);
+\end{verbatim}
+where 3 is the indexing number corresponding to the 3
+in the following formula
+\begin{verbatim}
+  symbolic putv(mellin!-transforms!*,3,'
+                (() (1 0 0 2) () (nil (quotient 1 2))
+                (sqrt pi) (quotient (expt x 2) 4)));
+\end{verbatim} 
+
+or the more interesting example of the Bessel function $J_{n}(x)$:
+
+\textit{Meijer G representation --}
+\[
+  J_{n}(x)
+G^{1 0}_{0 2} \left(\frac{x^{2}}{4} \ \Bigg\vert
+\ \MeijerGparams{. \; .}{\frac{n}{2} \; {\frac{-n}{2}}} \right) dx
+\]
+
+\textit{Internal definite integration package representation --}
+
+\begin{verbatim}
+  defint_choose(besselj(~n,~x),~var) => f1(50,x,n);
+
+  symbolic putv(mellin!-transforms!*,50,'
+                ((n) (1 0 0 2) () ((quotient n 2)
+                                   (minus quotient n 2)) 1
+                                   (quotient (expt x 2) 4)));
+\end{verbatim} 
+
+
+
+\subsection{Acknowledgements}
+\index{Adamchik, Victor}\index{People!Adamchik, Victor}
+Kerry Gaskell would like to thank Victor Adamchik whose implementation of the
+definite integration package for {\REDUCE} is vital to this
+interface.
+
+\input{cvit}
