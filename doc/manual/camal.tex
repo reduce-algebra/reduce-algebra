@@ -1,4 +1,4 @@
-h\index{Fitch, John P.}\index{People!Fitch, John P.}
+\index{Fitch, John P.}\index{People!Fitch, John P.}
 \emph{It is generally accepted that special purpose algebraic systems
 are more efficient than general purpose ones, but as machines get
 faster this does not matter.  An experiment has been performed to see
@@ -414,7 +414,7 @@ extent of the calculation.
 
 Referring to the figure 1 which gives the cordinate system, the basic
 equations are
-\begin{subequations}
+%% \begin{subequations}
 \begin{align}
   S  & = (1-\gamma ^2)\cos(f + g +h -f' -g' -h') \notag \\
      & \qquad + \gamma ^2 \cos(f + g -h +f' +g' +h')  \label{eq:calc-S}\\
@@ -430,9 +430,9 @@ a & = \frac{r\mathbf{d} E}{\mathbf{d}l} \label{eq:calc-a}\\
               (\frac{r}{a}\right )^3 \left (\frac{a'}{r'}\right )^3 P_3(S)
               + \ldots \right \} \label{eq:calc-R}
 \end{align}
-\end{subequations}
+%% \end{subequations}
 
-There are similar equations to (\ref{eq:radial}) to (\ref{eq:calc-f}) for the quantities $r'$,
+There are similar equations to (\eqnref{eq:radial}) to (\eqnref{eq:calc-f}) for the quantities $r'$,
 $a'$, $e'$, $l'$, $E'$ and $f'$ which refer to the position of the Sun
 rather than the Moon.  The problem is to calculate the expression $R$
 as an expansion in terms of the quantities $e$, $e'$, $\gamma$,
@@ -442,10 +442,10 @@ second order.
 
 The steps required are
 \begin{enumerate}
-\item Solve the Kepler equation (\ref{eq:Kepler})
-\item Substitute into (\ref{eq:radial}) to give $r/a$ in terms of $e$ and $l$.
-\item Calculate $a/r$ from (\ref{eq:calc-a}) and $f$ from (\ref{eq:calc-f})
-\item Substitute for $f$ and $f'$ into $S$ using (\ref{eq:calc-S})
+\item Solve the Kepler equation (\eqnref{eq:Kepler})
+\item Substitute into (\eqnref{eq:radial}) to give $r/a$ in terms of $e$ and $l$.
+\item Calculate $a/r$ from (\eqnref{eq:calc-a}) and $f$ from (\eqnref{eq:calc-f})
+\item Substitute for $f$ and $f'$ into $S$ using (\eqnref{eq:calc-S})
 \item Calculate $R$ from $S$, $a'/r'$ and $r/a$
 \end{enumerate}
 
