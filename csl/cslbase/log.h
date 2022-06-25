@@ -213,7 +213,16 @@ inline const char* where(const char* file, int line, const char* msg)
 
 #endif // !__OPTIMIZE__
 
-static const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
+
+#ifndef INLINE_VAR
+#ifdef __cpp_inline_variables
+#define INLINE_VAR inline
+#else // inline variables
+#define INLINE_VAR UNUSED_NAME static
+#endif // inline variables
+#endif // INLINE_VAR
+
+INLINE_VAR const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 
 // This is maybe a more principled scheme that sends its output to a file
 // debug.log, typically in the current directory but failing that in /tmp.

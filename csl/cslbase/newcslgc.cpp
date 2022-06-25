@@ -120,8 +120,8 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // previously been pinned.
         if (a < dataStart) return;
         else if (a < p->dataEnd ||
-                 consIsPreviousPinned(a, p))
-        {   consSetPinned(a, p);
+                 consIsPinned(a, p))
+        {   consSetNewPinned(a, p);
 // The first time I find an object pinned on a page I will put that page
 // in a chain of ones containing pinned material.
             if (p->pinnedObjects == TAG_FIXNUM)
@@ -142,7 +142,6 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // objects it references do not have their type captured in a tagged pointer,
 // so when I process them I will need to deduce type by inspecting them.
             LispObject z = get2Words();
-            consCurrent->type = emptyPageType;
             car(z) = a + TAG_FIXNUM;
             cdr(z) = p->pinnedObjects;
             p->pinnedObjects = z + TAG_FIXNUM;
@@ -194,7 +193,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
                         potentiallyPinned = p;
                     }
                 }
-                vecSetPinned(a, p);
+                vecSetNewPinned(a, p);
             }
             return;
         }
@@ -227,9 +226,12 @@ void processAmbiguousValue(uintptr_t a)
 // on the stack but between the proper stack frames is indeed a bit
 // "dodgy"!
 
+bool gcStartupMagic = false;
+
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems()
 {
+    gcStartupMagic = true;
 #ifdef DEBUG
 // Just while I develop the code.
     for (int i=0; i<10; i++)
@@ -249,6 +251,7 @@ void identifyPinnedItems()
     for (uintptr_t s=C_stackFringe; s<C_stackBase; s+=sizeof(uintptr_t))
         processAmbiguousValue(*reinterpret_cast<uintptr_t*>(s));
 #endif // DEBUG
+    gcStartupMagic = false;
 }
 
 // This not only ensures that the bitmap identifies the head of every
@@ -279,7 +282,7 @@ void identifyPinnedItems()
 // In find HeadersInChunk the pointer a starts off at the start of a chunk,
 // and it could be that this will be the first of an extended Chunk. I
 // need to parse it to identify the objects present. Then the
-// currentVecPins[] bitmap should identify where ambiguous pointers
+// newVecPins[] bitmap should identify where ambiguous pointers
 // fall. So as I parse and identify an object I need to sort out the
 // range of bits within that map and test them. If any are set then I
 // clear any that are not to the header of the object and set one on
@@ -363,12 +366,12 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
         if (is_padder_header(a))
         {   // what I have here is in effect "clearVecPins(s, endS, p)";
             if (w1 == w2)
-                p->currentVecPins[w1] &= ~(mask1 & mask2);
+                p->newVecPins[w1] &= ~(mask1 & mask2);
             else
-            {   p->currentVecPins[w1] &= ~mask1;
+            {   p->newVecPins[w1] &= ~mask1;
                 for (uintptr_t w=w1+1; w<w2; w++)
-                    p->currentVecPins[w] = 0;
-                p->currentVecPins[w2] &= ~mask2;
+                    p->newVecPins[w] = 0;
+                p->newVecPins[w2] &= ~mask2;
             }
             s += len;
             continue;
@@ -376,10 +379,10 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 // For other objects I need to test if there are any pin bits at all within
 // the object, and if so set one for the first bit while clearing all others.
         else if (w1 == w2)
-        {   bool pinFound = (p->currentVecPins[w1] & mask1 & mask2) != 0;
-            p->currentVecPins[w1] &= ~(mask1 & mask2);
+        {   bool pinFound = (p->newVecPins[w1] & mask1 & mask2) != 0;
+            p->newVecPins[w1] &= ~(mask1 & mask2);
             if (pinFound)
-            {   p->currentVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
+            {   p->newVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
                 if (p->pinnedObjects == TAG_FIXNUM)
                 {   p->pinnedPages = pinnedPages;
                     pinnedPages = p;
@@ -399,16 +402,16 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 // been marked as pinned, and if so clear internal pin bits and set one
 // on the header word, and when the pinning bitmap region involves more
 // than one word this is a bit more messy.
-            bool pinFound = (p->currentVecPins[w1] & mask1) != 0;
-            p->currentVecPins[w1] &= ~mask1;
+            bool pinFound = (p->newVecPins[w1] & mask1) != 0;
+            p->newVecPins[w1] &= ~mask1;
             for (size_t w=w1+1; w<w2; w++)
-            {   if (p->currentVecPins[w] != 0) pinFound = true;
-                p->currentVecPins[w] = 0;
+            {   if (p->newVecPins[w] != 0) pinFound = true;
+                p->newVecPins[w] = 0;
             }
-            if ((p->currentVecPins[w2] & mask2) != 0) pinFound = true;
-            p->currentVecPins[w2] &= ~mask2;
+            if ((p->newVecPins[w2] & mask2) != 0) pinFound = true;
+            p->newVecPins[w2] &= ~mask2;
             if (pinFound)
-            {   p->currentVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
+            {   p->newVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
                 if (p->pinnedObjects == TAG_FIXNUM)
                 {   p->pinnedPages = pinnedPages;
                     pinnedPages = p;
@@ -577,7 +580,7 @@ bool evacuateConsPage(Page* p)
 // initConsPage I set dataEnd to its very end, because the "real" end of
 // data at that stage will be at fringe. 
     while (next != p->dataEnd && next != consFringe)
-    {   if (!consIsPinned(next, p))
+    {   if (!consIsNewPinned(next, p))
         {   LispObject* n = reinterpret_cast<LispObject*>(next);
             switch (*n & 0x1f)
             {
@@ -722,37 +725,41 @@ void evacuateFromCopiedData()
     }
 }
 
-// For all non-empty pages I copy the existing pin maps to the "previous"
-// versions and zero out the "current" ones. The GC that I am about to
-// perform will establish a new proper set of "current" info.
+// For all non-empty pages I copy the new pin maps to the be the ones
+// for future use, and I will zero out the new map.
 
-void migratePinMaps()
+void migratePinMaps() // @@@@
 {   for (Page* p=consPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->previousConsPins, p->currentConsPins, sizeof(p->previousConsPins));
-        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+    {   std::memcpy(p->consPins,
+                    p->newConsPins,
+                    sizeof(p->consPins));
+        std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
     }
     for (Page* p=consPinPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->previousConsPins, p->currentConsPins, sizeof(p->previousConsPins));
-        std::memset(p->currentConsPins, 0, sizeof(p->currentConsPins));
+    {   std::memcpy(p->consPins,
+                    p->newConsPins,
+                    sizeof(p->consPins));
+        std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
     }
     for (Page* p=vecPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->previousVecPins, p->currentVecPins, sizeof(p->previousVecPins));
-        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+    {   std::memcpy(p->vecPins,
+                    p->newVecPins,
+                    sizeof(p->vecPins));
+        std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
     }
     for (Page* p=vecPinPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->previousVecPins, p->currentVecPins, sizeof(p->previousVecPins));
-        std::memset(p->currentVecPins, 0, sizeof(p->currentVecPins));
+    {   std::memcpy(p->vecPins,
+                    p->newVecPins,
+                    sizeof(p->vecPins));
+        std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
     }
 }
 
-// Here I need to look at consPinPages because some of the pages may now
-// have fewer pinned items - indeed some may now not have any and in that
-// case they may be moved to emptyPages. Well an elaborate scheme would
-// try to update the existing freestore map setup, but it seems cleaner
-// and safer and not much more expensive to just regenerate the structure
-// from scratch. And that will mean that I can also use this function at the
-// end of GC to put newly vacated pages in their proper state!
-//
+// Here I need to look at xPinPages because some of the pages may now
+// have fewer pinned items and xPages because some of them may now
+// have pinned items. I must create or re-create the layout needed
+// for allocatiion based on the newer version of pin information that
+// I have.
 // As a reminder, in a cons page the structure for a page with some pinned
 // stuff is as follows:
 //     (1) cells that are pinned must not be used.
@@ -762,59 +769,39 @@ void migratePinMaps()
 //         no more pinning). This value can be moved to consLimit.
 // For a vector page something of the same style applies but for chunks
 // not cells and with the additional complication of extended chunks as
-// identified using chunkStatus.
+// identified using chunkStatus, and in vecPinPages there can be pages
+// with chunks that used to contain pinned material but which now do not.
+// If I was really keen I could note that an extended chunk might have
+// a pinned item towards its end but the initial large vector that led it
+// to being big is not (now) pinned, and in that case I could demote it
+// to a sequence of basic chunks...
 
 // The next two return true if there are actually any pinned items in the
-// page concerned.
+// page concerned. I will need that information to decide whether the
+// page should be put in emptyPages or xPinPages.
 
 bool rePinOneConsPage(Page* p)
 {
+#pragma message ("rePinOneConsPage")
     return true;
 }
 
 bool rePinOneVecPage(Page* p)
 {
+#pragma message ("rePinOneVecPage")
     return true;
 }
 
-void adjustPinmapsConsPages()
-{   Page* r = nullptr;
+void setupPinmapsConsPages()
+{
+// I will start by moving consPinPages stuff onto consOldPages.
     while (consPinPages != nullptr)
     {   Page* p = consPinPages;
         consPinPages = p->chain;
-        if (rePinOneConsPage(p))
-        {   p->chain = r;
-            r = p;
-        }
-        else
-        {   p->chain = emptyPages;
-            emptyPages = p;
-        }
+        p->chain = consOldPages;
+        consOldPages = p;
     }
-    consPinPages = r;
-}
-
-void adjustPinmapsVecPages()
-{   Page* r = nullptr;
-    while (vecPinPages != nullptr)
-    {   Page* p = vecPinPages;
-        vecPinPages = p->chain;
-        if (rePinOneVecPage(p))
-        {   p->chain = r;
-            r = p;
-        }
-        else
-        {   p->chain = emptyPages;
-            emptyPages = p;
-        }
-        p->chain = r;
-        r = p;
-    }
-    vecPinPages = r;
-}
-
-void setupPinmapsConsPages()
-{   while (consOldPages != nullptr)
+    while (consOldPages != nullptr)
     {   Page* p = consOldPages;
         consOldPages = p->chain;
         if (rePinOneConsPage(p))
@@ -829,7 +816,13 @@ void setupPinmapsConsPages()
 }
 
 void setupPinmapsVecPages()
-{   while (vecOldPages != nullptr)
+{   while (vecPinPages != nullptr)
+    {   Page* p = vecPinPages;
+        vecPinPages = p->chain;
+        p->chain = vecOldPages;
+        vecOldPages = p;
+    }
+    while (vecOldPages != nullptr)
     {   Page* p = vecOldPages;
         vecOldPages = p->chain;
         if (rePinOneVecPage(p))
@@ -861,7 +854,6 @@ void inner_garbage_collect()
         setHeaderWord(vecFringe, vecLimit-vecFringe);
     consCurrent->dataEnd = consFringe;
     vecCurrent->dataEnd = vecFringe;
-    migratePinMaps();
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
     vecOldPages = vecPages;
@@ -875,37 +867,31 @@ void inner_garbage_collect()
 // CONS region as a list of pinned objects - so on a temporary basis
 // I will mark the pages as free!
     grabFreshPage(consPageType);
-    consCurrent->type = emptyPageType;
-// When the page becomes a current one it needs the existing pin info
-// present. This issue only matters if (ugh) the page grabbed here was one
-// that had some old pinned material in it, and if there are new pins that
-// lead to early allocation within it...
-//@@@ And if I allocate a new cons page soon I must do the same to it! @@@
-#pragma warning "read the comment"
-    std::memcpy(consCurrent->currentConsPins,
-                consCurrent->previousConsPins, sizeof(consCurrent->previousConsPins));
 // Now I can scan the stack and mark up pinned items. This will build
-// up a chain of pages still 
+// up a chain of pages pinned this time.
+// For each such page it will create a list of the pinned locations, where
+// the "pointers" in that list are tagged so that the GC will view then as
+// integers rather than references, and so not be tempted into following
+// them. But the nodes that make up the list there could by some mischance
+// now have their new pin bit set. I will tidy that up!
     identifyPinnedItems();
-// Now I have marked all cons cells that are still or now pinned, so I
-// need to tidy up all the pages that are free apart from pinning to
-// reflect that.
-    adjustPinmapsConsPages();
-    findHeadersOfPinnedItems();
-// ... and now vector pin information is OK so I can sort out pages that
-// are free apart from pinned vectors.
-    adjustPinmapsVecPages();
-// I never need to allocate any vectors before here, so I wait until now
-// to grab space for some so that I know that pin information in any
-// one that I do allocate has been updated.
-    grabFreshPage(vecPageType);
-// Now I have finished identifying all the pinned objects, so I can make
-// pages that contain lists of them proper again.
+// I need to give more explanation. consPages now will be JUST the
+// pages allocated for the GC to use as its "new half space". That
+// means that the only things that ought to get pinned in them will be
+// items where an existing pin is confirmed. Any cases where a new pin has
+// been set on something where there is not an existing one is liable to be
+// an accidental pinning of part of the list of pinned items I have
+// just been creating.
     for (Page* p=consPages; p!=nullptr; p=p->chain)
-        p->type = consPageType;
-// I think all that messing about with old and new pin information and
-// the structure of free-apart-from-pinning pages is quite messy. It
-// certainly took some while for me to get my thoughts straight about it!
+    {   for (uintptr_t v=p->pinnedObjects&~TAG_BITS;
+             v!=0;
+             v=cdr(v)&~TAG_BITS)
+        {   uintptr_t pa = car(v)&~TAG_BITS;
+            if (consIsNewPinned(pa, p) && !consIsPinned(pa, p))
+                consClearNewPinned(pa, p);
+        }
+    }
+    findHeadersOfPinnedItems();
     pendingPages = nullptr;
     zprintf("Try to report on pinning...\n");
     {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
@@ -917,6 +903,8 @@ void inner_garbage_collect()
             }
         }
     }
+// There is no need to set up a new vector current page until now.
+    grabFreshPage(vecPageType);
     evacuateFromPinnedItems();
     evacuateFromUnambiguousBases();
     evacuateFromCopiedData();
@@ -926,14 +914,18 @@ void inner_garbage_collect()
 // seamlessly from where stuff got copied to.
 //
 // Now vecOldPages and consOldPages have the pages that I have just copied
-// material out from and vecPinPages and consPinPages the ones that held
-// some pinned material at the start of this GC. It is possible - indeed
-// I have high hopes - that some pages in consPinPages and vecPinPages now
-// have fewer objects in them that are pinned, and I very much hope that
-// eventually most of them will have NO pinned stuff left at all - at which
-// stage they can be moved to emptyPages. But when they do have any pins
-// left but fewer than before I will need to rearrange the mapping that
-// is there to let me allocate within them.
+// material out from.
+// vecPinPages and consPinPages are the ones that held some pinned material
+// at the start of this GC but have not had anything fresh copied into them.
+// It is possible - indeed I have high hopes - that some pages in
+// consPinPages and vecPinPages now have fewer objects in them that are
+// pinned, and I very much hope that eventually most of them will have
+// NO pinned stuff left at all - at which stage they can be moved to
+// emptyPages.
+// So for everything in consOldPages and in consPinPages I will need to
+// copy the new pin-map to the main one and rearrange free-space chaining.
+// if such a page ends up empty it may be put in emptyPages otherwise on
+// consPinPages. And similarly for vector pages.
      setupPinmapsConsPages();
      setupPinmapsVecPages();
 

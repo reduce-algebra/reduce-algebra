@@ -254,7 +254,7 @@ extern LispObject rplacd_fails(LispObject a);
 #define err_no_tempdir           39
 
 #ifdef INCLUDE_ERROR_STRING_TABLE
-static const char *error_message_table[] =
+INLINE_VAR const char *error_message_table[] =
 {   "attempt to take car of an atom",
     "attempt to take cdr of an atom",
     "insufficient freestore to run this package",

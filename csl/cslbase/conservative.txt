@@ -19,9 +19,9 @@ pointer falls within in 4 or 5 comparisons. Segments are all aligned at
 Each segment is considered to be made up of a sequence of 8MB pages. There
 are two sorts of page - CONS pages and VEC pages. Their internal structures
 are different. Pages that are in use at all will be in one of the following
-states: EMPTY, CONSPIN, VECPIN, CONSFULL, VECFULL, CONSCURRENT, VECCURRENT.
-At the start of a garbage collect a CURRENT page is converted into a FULL
-one.
+states: EMPTY, CONSPIN, VECPIN, CONSFULL, VECFULL. One CONS and one VEC
+page will be "current" which will mean that some information that will
+eventually be stored within it is instead in variables for immediate use.
 
 There are three initial processes that I wish to describe first:
 
@@ -39,19 +39,20 @@ to limit has undefined content. Limit is either the end of the page or is
 a previously pinned item. A bitmap identified all previously pinned data,
 so when it is necessary to skip same that can be consulted and the fringe
 pointer moved to the location just beyond all pinned data in a block. The
-cell there must contain the header for a padder vector defining space up to
-either the next pinned item or the end of the page. Obviously before any
-allocation has happened in a CONS page its first non-pinned location will
-contain such a header. So when a new CONS page is opened the steps taken
-need to be along the lines of:
+cell there contains a pointer defining space up to either the next pinned
+item or the end of the page. Obviously before any allocation has happened
+in a CONS page its first non-pinned location will contain such a value.
+So when a new CONS page is opened the steps taken need to be along the
+lines of:
     fringe = <start of data region>;
 // The next line assumes that the page will not be 100% full of pinned
 // cells. That pathological case needs to be covered by avoiding any
 // attempt to re-use such a page.
     while (location_is_pinned(fringe)) fringe += 2*sizeof(LispObject);
-    limit = fringe + length_from_padder_header(*fringe);
+    limit = fringe + *fringe;
 When a CONS page is to be made full all that happens is that its fringe
 pointer is stored in its header.
+
 In previous plans I had considered multi-thread activity. If I revive that
 plan then each thread will have its own 8MB CURRENT pages and the
 variable fringe and limit become thread-local. That would mean that use of
@@ -64,11 +65,11 @@ short enough to fit would all qualify. The expectation is that this is the
 sort of data with greatest turn-over.
 
 (2) Allocation of a new vector.
-This happens in VECCURRENT and is for all larger objects. It is going to
-turn out that handling pinned vectors is much messier than pinned CONS cells
-because the ambiguous reference may point at an arbitrary location within
-the vector, but it will end up important to identify the start address of
-the pinned item.
+This happens in the current VEC Page and is for all larger objects. It is
+going to turn out that handling pinned vectors is much messier than pinned
+CONS cells because the ambiguous reference may point at an arbitrary
+location within the vector, but it will end up important to identify
+the start address of the pinned item.
 A VEC page is considered as made up of 16KB chunks. As well as a map that
 tags pinned items within the page there is one that provides information
 about each chunk. The main need for this is that chunks may be marked as
@@ -76,24 +77,28 @@ about each chunk. The main need for this is that chunks may be marked as
 Within a VEC page if there is any item that is pinned that means that the
 whole chunk (or chunk plus continuation chunks) containing it must be
 avoided during allocation.
+
 I hope that the best way of setting up an understanding of allocation will
 be to describe the memory state arrived at. First I will use the word Chunk
 with a capital letter to mean either a single chunk or an initial chunk
-followed by one or more continuations. In an 8MB page there can onlt be 512
-chunks so part of the page header will include a map shoding for each chunk
+followed by one or more continuations. In an 8MB page there can only be 512
+chunks so part of the page header will include a map showing for each chunk
 whether it is initial, and if it is a continuation whether it is successor
-1, 2, 3 etc. Well at some stage I will make the continuation number
-wrap.
-The page will start with zero or more Chunks each of which is full, in that
-all space within will be accounted for. This is acheived by placing padder
-objects after all genuine data. Withing a Chunk that contains pinned
+1, 2, 3 etc. Well at some stage I will make the continuation number saturate
+but from the continuation number I can skip back from a location in the
+middle of an extended Chunk and find its start.
+The page laout will begin with zero or more Chunks each of which is full,
+in that all space within will be accounted for. This is acheived by placing
+padder objects after all genuine data. Withing a Chunk that contains pinned
 material there will be padder objects before, between and after the pinned
 vectors.
+
 There will then be a Chunk that during allocation has fringe and limit
 pointers (much as in the CONS pages). Chunks beyond this active one are
 either ones containing pinned data or the memory in them has unspecified
 content. The map that contains chunk information needs to be set up for
-all those chunks.
+all those chunks so that it is possible to discriminate between these two
+cases.
 
 (3) Investigation of an ambiguous value that may be a pointer to valid data.
 This has to be done at the start of GC, and must end with both a catalogue
@@ -108,13 +113,18 @@ extracted by a simple mask operation. But within the last-allocated segment
 it may be that only the first few pages have been brought into use, so a
 check against the address of the section of that segment that is in use
 is needed.
+
 Now for any pointer the page that it lies within is known. The header of that
-page cal be checked to see if it is a CONS or VEC page.
+page can be checked to see if it is a CONS or VEC page. At the time (in the
+GC) when I do this I will want to have arranged that the two "current" pages
+have been tagged or padded at the end so there is no awkwardness about the
+unused space at their end.
+
 For a CONS page a pointer is valid if it lies below the fringe or if it
 was pinned by a previous GC. Within such pages the granularity of pinning
 will be 2*sizeof(LispObject) and two bitmaps are required, one recording
 items pinned by earlier GCs and the other for ones that will now be pinned.
-THis process is performed at the start of a GC and at that stage there will
+This process is performed at the start of a GC and at that stage there will
 be a new half-space ready for use. When an item becomed pinned it needs to
 be added to a chain that is built in the new half-space with the page
 header holding the head of that chain. That setup arranges that later parts
@@ -122,6 +132,7 @@ of the GC can visit and process all pinned items. This list will be built
 such that items in it are not sorted. Towards the end of GC it will be
 necessary to sort the list and use it to construct the sequence of padder
 headers that are required when allocation in the recycled page start.
+
 Naturally for VEC pages things are messier! Again there will be two bitmaps,
 one noting previously pinned items and the other ones pinned this time round.
 The first step will be that the Chunk that a pointer lies within is identified
@@ -131,14 +142,25 @@ placed the reference is ignored. Otherwise the pin-now mark is set. In both
 cases of a preumptive pin the Chunk is marked as containing data that
 may be pinned and a chain of such Chunks is make in the new half-space.
 Pages containing such chunks are chained together.
-After all the ambiguous pointers have been processed in this way a second
+
+Now all pinned items in CONS pages have been ser, but in VEC pages the
+pin bit may be set on a word within the vector. But because CONS pages
+have been dealt with it will be possible to scan all the lists of
+pinned items and clear pin bits on the cells making up those lists. Well
+if any did get pinned then they will themselves appear in a pinned item
+list, so I may wish to take any such pinned cell and edit reference to it
+out from the list concerned. This is perhaps a bit over-fussy?
+
+After all the ambiguous pointers have been processed this far a second
 pass is needed to arrange that pinning information refers to the heads
 of objects and never to padders. The chain of pages is traversed, and for
-each page the chain of Chunks inspected.
-As what I hope may be a useful optimisation if a new ambiguous pointer
-refers to a cell already tagged as pinned from last time I will not need
-to perform the next stage for it.  Maybe I can detect and take advantage of
-that situation.
+each page the chain of Chunks inspected. The chunk has to be parsed to
+identify each object in it, and pin bits for every address within the
+object checked. If any are then the pin map is adjusted so there is a tag
+against the first word of the object but no others. Working on the bitmap
+as a sequence of 64-bit words rather than as 1-bit entities makes the
+core of this much less painful that it could be!
+
 The step here is the one that I feel has the worst cost in the process of
 identifying pinned items. A Chunk that (may) contain pinned items can either
 be one containing previously pinned stuff or it can be one with fresh data
