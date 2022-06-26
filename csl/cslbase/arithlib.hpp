@@ -1,4 +1,4 @@
-// Big Number arithmetic.                               A C Norman, 2019-21
+// Big Number arithmetic.                               A C Norman, 2019-22
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -11,7 +11,7 @@
 //     can accompany it and illustrate its use]
 
 /**************************************************************************
- * Copyright (C) 2019-21, Codemist.                      A C Norman       *
+ * Copyright (C) 2019-22, Codemist.                      A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -72,7 +72,7 @@
 // need that. It should work on 32-bit systems as well, although one should
 // expect performance there to be lower.
 //
-// The code here tried to arrange that any operations that might overflow are
+// The code here tries to arrange that any operations that might overflow are
 // done using unsigned types, because in C++ overflow in signed arithmetic
 // yields undefined results - ie on some machines the values delivered could
 // be quite unrelated to the desired ones. This means that I do plenty of
@@ -424,33 +424,11 @@
 
 #endif
 
-#ifdef __cpp_inline_variables
-
-// For versions of C++ up to C++17 I will put constant values in header
-// files using something along the line of "static const int VAR = VAL;".
-// This should give the compiler a chance to replace the name with its value
-// throughout the compilation unit, and if the compiler is clever enough it
-// will avoid leaving a word of memory with the value stored if all uses
-// have been dealt with more directly. However it will tend to lead to a
-// lot of "static variable defined but not used" warnings.
-// From C++17 onwards (and C++ mandates the __cpp_inline_variables macro to
-// indicate if the feature is in place) I will use
-//             inline const int VAR = VAL;
-// and now if memory is allocated for the variable it will only be allocated
-// once, and I hope that compilers will not feel entitled to moan about
-// cases where there are no references. I will only use this idiom for things
-// that are at least "almost" constant so that in the case that the variables
-// end up static and there are different copies in each compilation unit
-// it should not cause cconfusion.
-
-#define INLINE_VAR inline
-#define HAVE_INLINE_VARS 1
-#else
-#define INLINE_VAR static
+#ifndef __cpp_inline_variables
+#error "Arithlib.hpp needs __cpp_inline_variables (ie C++17 or above)"
 #endif
 
-
-// Another useful C++17 feature.... with a fallback to a GNU-specific
+// A useful C++17 feature.... with a fallback to a GNU-specific
 // way of achieving the same through use of C++11 annotations. And a final
 // fall back to just not worrying.
 
@@ -535,28 +513,11 @@ DEFINE_INLINE_THREAD_LOCAL(void *, arithlibData);
 // one of if. It also sets its argument to a reference to a const char *
 // pointer that will be used for transmitting the location information.
 
-#ifdef HAVE_INLINE_VARS
 inline std::mutex my_diagnostic_mutex;
-inline static const char *my_diagnostic_location;
-#endif // HAVE_INLINE_VARS
+inline const char *my_diagnostic_location;
 
 inline std::mutex &diagnostic_mutex(const char ***where)
-{
-#ifndef HAVE_INLINE_VARS
-// C++11 guarantees that even if this header is included from many
-// compilation units there will be a single unique mutex here. I guarantees
-// that the mutex will have been constructed (ie initialized) by the time
-// an execution path flows past its definition. However there can be
-// overhead since the C++ run-time system may protect itself from risk of
-// multiple threads triggering initialization at the same time. In doing so
-// it may be that the initialization involved not just a simple boolean flag
-// but some synchronization primitives. If we have C++17 then inline
-// variable declarations achieve pretty well just what I want without this
-// mess, so I will use it.
-    static std::mutex my_diagnostic_mutex;
-    static const char *my_diagnostic_location;
-#endif // !HAVE_INLINE_VARS
-    *where = &my_diagnostic_location;
+{   *where = &my_diagnostic_location;
     return my_diagnostic_mutex;
 }
 
@@ -1130,9 +1091,9 @@ typedef void *malloc_t(size_t n);
 typedef void *realloc_t(void *, std::size_t);
 typedef void free_t(void *);
 
-INLINE_VAR malloc_t  *malloc_function = std::malloc;
-INLINE_VAR realloc_t *realloc_function = std::realloc;
-INLINE_VAR free_t    *free_function   = std::free;
+inline malloc_t  *malloc_function = std::malloc;
+inline realloc_t *realloc_function = std::realloc;
+inline free_t    *free_function   = std::free;
 
 inline std::uint64_t *reserve(std::size_t n)
 {   arithlib_assert(n>0);
@@ -1567,8 +1528,8 @@ inline std::intptr_t int_to_handle(std::int64_t n)
 // may not have the low tag bits to be proper fixnums. But if I implement
 // int_of_handle so that it ignores tag bits that will be OK.
 
-INLINE_VAR const std::int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
-INLINE_VAR const std::int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
+inline const std::int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
+inline const std::int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
 
 inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
@@ -1779,8 +1740,8 @@ inline std::intptr_t int_to_handle(std::int64_t n)
 {   return fixnum_of_int(n);
 }
 
-INLINE_VAR const std::int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
-INLINE_VAR const std::int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
+inline const std::int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
+inline const std::int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
 
 inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
@@ -1937,8 +1898,8 @@ inline std::intptr_t int_to_handle(std::int64_t n)
 {   return static_cast<std::intptr_t>(n*valXMult + SmallInteger);
 }
 
-INLINE_VAR const std::int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
-INLINE_VAR const std::int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
+inline const std::int64_t MIN_FIXNUM = int_of_handle(INTPTR_MIN);
+inline const std::int64_t MAX_FIXNUM = int_of_handle(INTPTR_MAX);
 
 inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
@@ -3942,11 +3903,11 @@ again2:
 // that in C++ the consequences of overflow are defined) I need to treat
 // some top-digits as signed: here are values and tests relating to that.
 
-INLINE_VAR const std::uint64_t allbits   =
+inline const std::uint64_t allbits   =
     ~static_cast<std::uint64_t>(0);
-INLINE_VAR const std::uint64_t topbit    = static_cast<std::uint64_t>
+inline const std::uint64_t topbit    = static_cast<std::uint64_t>
         (1)<<63;
-INLINE_VAR const std::uint64_t allbuttop = topbit - 1;
+inline const std::uint64_t allbuttop = topbit - 1;
 
 inline bool positive(std::uint64_t a)
 {   return static_cast<std::int64_t>(a) >= 0;
@@ -4545,7 +4506,7 @@ inline std::intptr_t unsigned_int_to_bignum(std::uint64_t n)
 // Some constants that are useful when I am dealing with float128_t.
 
 #ifdef LITTLEENDIAN
-INLINE_VAR float128_t
+inline float128_t
 f128_0      = {{0, INT64_C(0x0000000000000000)}},
 f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
 f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
@@ -4553,7 +4514,7 @@ f128_1      = {{0, INT64_C(0x3fff000000000000)}},
 f128_m1     = {{0, INT64_C(0xbfff000000000000)}},
 f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
 #else // !LITTLEENDIAN
-INLINE_VAR float128_t
+inline float128_t
 f128_0      = {{INT64_C(0x0000000000000000), 0}},
 f128_half   = {{INT64_C(0x3ffe000000000000), 0}},
 f128_mhalf  = {{INT64_C(0xbffe000000000000), 0}},
@@ -5494,7 +5455,7 @@ inline float128_t Float128::op(std::uint64_t *a)
 
 #endif // softfloat_t
 
-INLINE_VAR const std::uint64_t ten19 = UINT64_C(10000000000000000000);
+inline const std::uint64_t ten19 = UINT64_C(10000000000000000000);
 
 inline std::intptr_t string_to_bignum(const char *s)
 {   bool sign = false;
@@ -6152,13 +6113,13 @@ inline bool Eqn::op(double a, std::uint64_t *b)
 
 #ifdef LITTLEENDIAN
 
-INLINE_VAR float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-INLINE_VAR float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
+inline float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
+inline float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 
 #else // !LITTLEENDIAN
 
-INLINE_VAR float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
-INLINE_VAR float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
+inline float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
+inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
 #endif // !LITTLEENDIAN
 
@@ -8689,8 +8650,8 @@ inline void small_or_big_multiply_and_add(const std::uint64_t *a,
 // KARA_WORKSPACE_SIZE*sizeof(uint64_t) on the stack without that feeling
 // embarassing. The settings I use here can use around 50 Kbytes of stack.
 
-INLINE_VAR const std::size_t KARA_FIXED_LENGTH_LIMIT = 1000;
-INLINE_VAR const std::size_t KARA_WORKSPACE_SIZE = 2050;
+inline const std::size_t KARA_FIXED_LENGTH_LIMIT = 1000;
+inline const std::size_t KARA_WORKSPACE_SIZE = 2050;
 
 // These two functions allocate workspace for Karatsuba on the stack and
 // are called when the inputs are short enough for that to feel reasonable.
@@ -10861,22 +10822,29 @@ inline std::intptr_t Lcm::op(std::int64_t a, std::int64_t b)
 #ifdef CSL
 // Support for calculations modulo some integer value...
 
-// While initially developing this bit of code I will assume C++17 and
-// hence that inline variables are supported.
+// Some of these NEED to be inline, so that they are shared across all
+// uses...
 
-static const int modulus_32 = 0;
-static const int modulus_64 = 1;
-static const int modulus_big = 2;
+inline const int modulus_32 = 0;
+inline const int modulus_64 = 1;
+inline const int modulus_big = 2;
 // On Windows these thread-locals may introduce serious overhead. I
 // will worry about that later if needbe.
 thread_local inline int modulus_size = 0;
 thread_local inline std::uint64_t small_modulus = 2;
-thread_local inline std::vector<std::uint64_t>
-large_modulus_vector;
+
+// When I tried "thread_local inline std::vector<T> V;" I got complaints
+// about the TLS init function being multiply defined at least on one of
+// the platforms I was interested in, so I use a slightly more contorted
+// code style that seems to survive better...
+
+inline std::vector<std::uint64_t>& large_modulus_vector()
+{   static thread_local std::vector<std::uint64_t> v;
+    return v;
+}
 
 inline std::uint64_t *large_modulus()
-{   return 1 + reinterpret_cast<std::uint64_t *>
-           (large_modulus_vector.data());
+{   return 1 + reinterpret_cast<std::uint64_t *>(large_modulus_vector().data());
 }
 
 inline std::intptr_t value_of_current_modulus()
@@ -10905,9 +10873,9 @@ inline std::intptr_t SetModulus::op(std::uint64_t *n)
     std::intptr_t r = value_of_current_modulus();
     std::size_t lenn = number_size(n);
     std::size_t bytes = (lenn+1)*sizeof(std::uint64_t);
-    if (bytes > large_modulus_vector.size())
-        large_modulus_vector.resize(bytes);
-    std::memcpy(large_modulus_vector.data(), &n[-1], bytes);
+    if (bytes > large_modulus_vector().size())
+        large_modulus_vector().resize(bytes);
+    std::memcpy(large_modulus_vector().data(), &n[-1], bytes);
     modulus_size = modulus_big;
     return r;
 }

@@ -109,7 +109,7 @@ std::atomic<T>& AT(T& x)
 // Perhaps the most important value here is nil!
 extern LispObject nil;
 
-static constexpr bool SIXTY_FOUR_BIT = sizeof(intptr_t) == 8;
+INLINE_VAR constexpr bool SIXTY_FOUR_BIT = sizeof(intptr_t) == 8;
 
 // I manage memory in CSL_PAGE_SIZE chunks.
 //
@@ -117,29 +117,29 @@ static constexpr bool SIXTY_FOUR_BIT = sizeof(intptr_t) == 8;
 // pages. I use that size on both 32 and 64-bit machines.
 
 #ifndef PAGE_BITS
-static constexpr size_t PAGE_BITS = 23;
+INLINE_VAR constexpr size_t PAGE_BITS = 23;
 #endif // PAGE_BITS
 
-static constexpr size_t PAGE_POWER_OF_TWO = static_cast<size_t>(1) << PAGE_BITS;
-static constexpr size_t CSL_PAGE_SIZE = PAGE_POWER_OF_TWO;
+INLINE_VAR constexpr size_t PAGE_POWER_OF_TWO = static_cast<size_t>(1) << PAGE_BITS;
+INLINE_VAR constexpr size_t CSL_PAGE_SIZE = PAGE_POWER_OF_TWO;
 
 // On 64-bit systems I will limit myself to 2 Terabytes, while on 32-bit
 // ones the limit is around 2 Gbyte and in reality will usually be
 // rather less than that. Note that this limit is expected to be a power
 // of 2.
 #ifndef MAX_HEAPSIZE
-static constexpr size_t MAX_HEAPBITS = SIXTY_FOUR_BIT ? 41 : 31;
+INLINE_VAR constexpr size_t MAX_HEAPBITS = SIXTY_FOUR_BIT ? 41 : 31;
 // The number here is measured in megabytes so it is always reasonably small.
-static constexpr size_t MAX_HEAPSIZE = static_cast<size_t>(1) << (MAX_HEAPBITS-20);
+INLINE_VAR constexpr size_t MAX_HEAPSIZE = static_cast<size_t>(1) << (MAX_HEAPBITS-20);
 #endif // MAX_HEAPSIZE
 
-static constexpr size_t MEGABYTE = 0x100000;
+INLINE_VAR constexpr size_t MEGABYTE = 0x100000;
 
 #ifndef INITIAL_HEAPSIZE
-static constexpr size_t INITIAL_HEAPSIZE = (SIXTY_FOUR_BIT?768u:128u)*MEGABYTE;
+INLINE_VAR constexpr size_t INITIAL_HEAPSIZE = (SIXTY_FOUR_BIT?768u:128u)*MEGABYTE;
 #endif // MAX_HEAPSIZE
 
-static constexpr size_t MAX_PAGES = MAX_HEAPSIZE >> (PAGE_BITS-20);
+INLINE_VAR constexpr size_t MAX_PAGES = MAX_HEAPSIZE >> (PAGE_BITS-20);
 
 // Windows seems to say it can use file names up to 260 chars, Unix and
 // the like may not even have that limit, but I will assume something here.
@@ -154,7 +154,7 @@ static constexpr size_t MAX_PAGES = MAX_HEAPSIZE >> (PAGE_BITS-20);
 // perhaps by also putting extra stuff an an "application manifest".
 // I rather wonder how many people exploit that option?
 
-static constexpr size_t LONGEST_LEGAL_FILENAME = 1024;
+INLINE_VAR constexpr size_t LONGEST_LEGAL_FILENAME = 1024;
 
 // This class is provided just so I can allocate things so as to be
 // (at least) 8-byte aligned.
@@ -168,14 +168,14 @@ public:
 // The macro CELL had better have either the value 4 or 8. It is the
 // size of the basic unit of memory within which CSL works.
 
-static constexpr size_t CELL = sizeof(LispObject);
+INLINE_VAR constexpr size_t CELL = sizeof(LispObject);
 
 // LispObject is a datatype where the low 3 bits are used as tags -
 // this idea works provided all memory addresses needed can be kept
 // doubleword aligned.  The main tag allocation is documented here.
 
-static constexpr uintptr_t TAG_BITS      = 0x7;
-static constexpr uintptr_t XTAG_BITS     = 0xf;
+INLINE_VAR constexpr uintptr_t TAG_BITS      = 0x7;
+INLINE_VAR constexpr uintptr_t XTAG_BITS     = 0xf;
 
 // For almost all types I just use TAG_BITS and masking with that leaves
 // an integer in the range 0-7. But the code 7 there is used both for small
@@ -183,17 +183,17 @@ static constexpr uintptr_t XTAG_BITS     = 0xf;
 // to discriminate, so there I may want to use XTAG_BITS which picks out
 // the low 4 bits rather than just the low 3.
 
-static constexpr uintptr_t TAG_CONS      =  0; // Cons cells                    01
-static constexpr uintptr_t TAG_VECTOR    =  1; // Regular Lisp vectors          02
-static constexpr uintptr_t TAG_HDR_IMMED =  2; // Char constants, vechdrs etc   04
-static constexpr uintptr_t TAG_FORWARD   =  3; // For the Garbage Collector     08
-static constexpr uintptr_t TAG_SYMBOL    =  4; // Symbols                       10
+INLINE_VAR constexpr uintptr_t TAG_CONS      =  0; // Cons cells                    01
+INLINE_VAR constexpr uintptr_t TAG_VECTOR    =  1; // Regular Lisp vectors          02
+INLINE_VAR constexpr uintptr_t TAG_HDR_IMMED =  2; // Char constants, vechdrs etc   04
+INLINE_VAR constexpr uintptr_t TAG_FORWARD   =  3; // For the Garbage Collector     08
+INLINE_VAR constexpr uintptr_t TAG_SYMBOL    =  4; // Symbols                       10
                  // Note that tags from 5 up are all for numeric date       e0
-static constexpr uintptr_t TAG_NUMBERS   =  5; // Bignum, Rational, Complex     20
-static constexpr uintptr_t TAG_BOXFLOAT  =  6; // Boxed floats                  40
-static constexpr uintptr_t TAG_FIXNUM    =  7; // 28/60-bit integers            80
-static constexpr uintptr_t TAG_XBIT      =  8; // extra bit!                    80
-static constexpr uintptr_t XTAG_SFLOAT   = 15; // Short float, 28+ bits of data 80
+INLINE_VAR constexpr uintptr_t TAG_NUMBERS   =  5; // Bignum, Rational, Complex     20
+INLINE_VAR constexpr uintptr_t TAG_BOXFLOAT  =  6; // Boxed floats                  40
+INLINE_VAR constexpr uintptr_t TAG_FIXNUM    =  7; // 28/60-bit integers            80
+INLINE_VAR constexpr uintptr_t TAG_XBIT      =  8; // extra bit!                    80
+INLINE_VAR constexpr uintptr_t XTAG_SFLOAT   = 15; // Short float, 28+ bits of data 80
 
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
@@ -202,7 +202,7 @@ static constexpr uintptr_t XTAG_SFLOAT   = 15; // Short float, 28+ bits of data 
 // a 28 or a 32-bit value and the high 28 or 32-bits can be that value.
 // Thus on a 64-bit machine single floats as well as short floats have
 // an immediate representation.
-static constexpr uintptr_t XTAG_FLOAT32  = 16;
+INLINE_VAR constexpr uintptr_t XTAG_FLOAT32  = 16;
 
 inline bool is_forward(LispObject p)
 {   return (p & TAG_BITS) == TAG_FORWARD;
@@ -332,14 +332,14 @@ inline bool uint128_valid_as_fixnum(uint128_t x)
                 28));
 }
 
-static constexpr intptr_t MOST_POSITIVE_FIXVAL =
+INLINE_VAR constexpr intptr_t MOST_POSITIVE_FIXVAL =
     ((static_cast<intptr_t>(1) << (8*sizeof(LispObject)-5)) - 1);
-static constexpr intptr_t MOST_NEGATIVE_FIXVAL =
+INLINE_VAR constexpr intptr_t MOST_NEGATIVE_FIXVAL =
     (-(static_cast<intptr_t>(1) << (8*sizeof(LispObject)-5)));
 
-static constexpr LispObject MOST_POSITIVE_FIXNUM =
+INLINE_VAR constexpr LispObject MOST_POSITIVE_FIXNUM =
     fixnum_of_int(MOST_POSITIVE_FIXVAL);
-static constexpr LispObject MOST_NEGATIVE_FIXNUM =
+INLINE_VAR constexpr LispObject MOST_NEGATIVE_FIXNUM =
     fixnum_of_int(MOST_NEGATIVE_FIXVAL);
 
 inline bool is_cons(LispObject p)
@@ -484,7 +484,7 @@ typedef LispObject fourup_args(LispObject, LispObject, LispObject,
 // Tw=3 so that the offset to where yyyy/zz starts is kept just a little
 // bit abstract.
 
-static constexpr unsigned int Tw = 3;
+INLINE_VAR constexpr unsigned int Tw = 3;
 
 // The zz bits are
 //        00    symbol header, character literal, special identifier (Spid)
@@ -526,81 +526,81 @@ static constexpr unsigned int Tw = 3;
 // move to it would be cost-effective and the risk introduced by a change
 // that widestream could be large.
 
-static constexpr uintptr_t header_mask = 0x7f<<Tw;
+INLINE_VAR constexpr uintptr_t header_mask = 0x7f<<Tw;
 
 // Bit, byte and halfword-vectors need extra information held here so that
 // their exact can be determined.  Generally headers hold length information
 // measured in words, so a few more bits are required here.
 // Bitvectors will now supported even in Standard Lisp mode.
 
-static constexpr uintptr_t TYPE_BITVEC_1     = 0x02<<Tw;  // subtypes encode length mod 32
-static constexpr uintptr_t TYPE_BITVEC_2     = 0x06<<Tw;  // BITVEC_n has n bits in use in its...
-static constexpr uintptr_t TYPE_BITVEC_3     = 0x0a<<Tw;  // ... final 32-bit word.
-static constexpr uintptr_t TYPE_BITVEC_4     = 0x0c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_5     = 0x12<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_6     = 0x16<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_7     = 0x1a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_8     = 0x1c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_9     = 0x22<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_10    = 0x26<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_11    = 0x2a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_12    = 0x2c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_13    = 0x32<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_14    = 0x36<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_15    = 0x3a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_16    = 0x3c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_17    = 0x42<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_18    = 0x46<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_19    = 0x4a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_20    = 0x4c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_21    = 0x52<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_22    = 0x56<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_23    = 0x5a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_24    = 0x5c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_25    = 0x62<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_26    = 0x66<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_27    = 0x6a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_28    = 0x6c<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_29    = 0x72<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_30    = 0x76<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_31    = 0x7a<<Tw;  //
-static constexpr uintptr_t TYPE_BITVEC_32    = 0x7c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_1     = 0x02<<Tw;  // subtypes encode length mod 32
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_2     = 0x06<<Tw;  // BITVEC_n has n bits in use in its...
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_3     = 0x0a<<Tw;  // ... final 32-bit word.
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_4     = 0x0c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_5     = 0x12<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_6     = 0x16<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_7     = 0x1a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_8     = 0x1c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_9     = 0x22<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_10    = 0x26<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_11    = 0x2a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_12    = 0x2c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_13    = 0x32<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_14    = 0x36<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_15    = 0x3a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_16    = 0x3c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_17    = 0x42<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_18    = 0x46<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_19    = 0x4a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_20    = 0x4c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_21    = 0x52<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_22    = 0x56<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_23    = 0x5a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_24    = 0x5c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_25    = 0x62<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_26    = 0x66<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_27    = 0x6a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_28    = 0x6c<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_29    = 0x72<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_30    = 0x76<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_31    = 0x7a<<Tw;  //
+INLINE_VAR constexpr uintptr_t TYPE_BITVEC_32    = 0x7c<<Tw;  //
 
 // A string is not really a vector of characters since it is in utf-8 so
 // access to the nth characters or updating characters within it is
 // hard. You should use a vector of 32-bit codepoints if you want
 // a genuine vector of characters, but then you will not have a string!
 
-static constexpr uintptr_t TYPE_STRING_1    = 0x07<<Tw; // simple (narrow) character vector
-static constexpr uintptr_t TYPE_STRING_2    = 0x27<<Tw; // Strings are in UTF8
-static constexpr uintptr_t TYPE_STRING_3    = 0x47<<Tw; //
-static constexpr uintptr_t TYPE_STRING_4    = 0x67<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_STRING_1    = 0x07<<Tw; // simple (narrow) character vector
+INLINE_VAR constexpr uintptr_t TYPE_STRING_2    = 0x27<<Tw; // Strings are in UTF8
+INLINE_VAR constexpr uintptr_t TYPE_STRING_3    = 0x47<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_STRING_4    = 0x67<<Tw; //
 
-static constexpr uintptr_t TYPE_VEC8_1      = 0x03<<Tw; // vector of 8 bit values
-static constexpr uintptr_t TYPE_VEC8_2      = 0x23<<Tw; //
-static constexpr uintptr_t TYPE_VEC8_3      = 0x43<<Tw; //
-static constexpr uintptr_t TYPE_VEC8_4      = 0x63<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_VEC8_1      = 0x03<<Tw; // vector of 8 bit values
+INLINE_VAR constexpr uintptr_t TYPE_VEC8_2      = 0x23<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_VEC8_3      = 0x43<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_VEC8_4      = 0x63<<Tw; //
 
-static constexpr uintptr_t TYPE_BPS_1       = 0x0b<<Tw; // Bytecodes
-static constexpr uintptr_t TYPE_BPS_2       = 0x2b<<Tw; //
-static constexpr uintptr_t TYPE_BPS_3       = 0x4b<<Tw; //
-static constexpr uintptr_t TYPE_BPS_4       = 0x6b<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_BPS_1       = 0x0b<<Tw; // Bytecodes
+INLINE_VAR constexpr uintptr_t TYPE_BPS_2       = 0x2b<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_BPS_3       = 0x4b<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_BPS_4       = 0x6b<<Tw; //
 
-// static constexpr uintptr_t TYPE_NATIVECODE  = 0x6f<<Tw; // (not implemented)
+// INLINE_VAR constexpr uintptr_t TYPE_NATIVECODE  = 0x6f<<Tw; // (not implemented)
 
-static constexpr uintptr_t TYPE_VEC16_1     = 0x0f<<Tw; // vector of 16 bit values
-static constexpr uintptr_t TYPE_VEC16_2     = 0x4f<<Tw; //
+INLINE_VAR constexpr uintptr_t TYPE_VEC16_1     = 0x0f<<Tw; // vector of 16 bit values
+INLINE_VAR constexpr uintptr_t TYPE_VEC16_2     = 0x4f<<Tw; //
 
 #if 0
-static constexpr uintptr_t TYPE_MAPLEREF    = 0x2f<<Tw; // hook for interface to Maple ...
+INLINE_VAR constexpr uintptr_t TYPE_MAPLEREF    = 0x2f<<Tw; // hook for interface to Maple ...
 // ... note this was an EXPERIMENT
 #endif
 
-static constexpr uintptr_t TYPE_FOREIGN     = 0x33<<Tw; // entrypoint to foreign function
-static constexpr uintptr_t TYPE_SP          = 0x37<<Tw; // Encapsulated stack ptr
-static constexpr uintptr_t TYPE_ENCAPSULATE = 0x3b<<Tw; // Encapsulated address
+INLINE_VAR constexpr uintptr_t TYPE_FOREIGN     = 0x33<<Tw; // entrypoint to foreign function
+INLINE_VAR constexpr uintptr_t TYPE_SP          = 0x37<<Tw; // Encapsulated stack ptr
+INLINE_VAR constexpr uintptr_t TYPE_ENCAPSULATE = 0x3b<<Tw; // Encapsulated address
 
-static constexpr uintptr_t TYPE_PADDER      = 0x7b<<Tw; // a padder vector
+INLINE_VAR constexpr uintptr_t TYPE_PADDER      = 0x7b<<Tw; // a padder vector
 
 inline bool is_padder_header(uintptr_t h)
 {   return (h & header_mask) == TYPE_PADDER;
@@ -610,56 +610,56 @@ inline bool vector_holds_binary(Header h)
 {   return  (h & (0x2<<Tw)) != 0;
 }
 
-static constexpr uintptr_t TYPE_SIMPLE_VEC   = 0x01<<Tw; // simple general vector
-static constexpr uintptr_t TYPE_INDEXVEC     = 0x11<<Tw; // used for huge vectors
-static constexpr uintptr_t TYPE_HASH         = 0x15<<Tw; // new style hash table
-static constexpr uintptr_t TYPE_HASHX        = 0x19<<Tw; // new hash table in need of re-hashing
-//static constexpr uintptr_t TYPE_OLDHASH    = 0x21<<Tw; // old style hash table.
-static constexpr uintptr_t TYPE_ARRAY        = 0x05<<Tw; // header record for general array
-static constexpr uintptr_t TYPE_STRUCTURE    = 0x09<<Tw; // .. includes packages etc possibly
-static constexpr uintptr_t TYPE_OBJECT       = 0x0d<<Tw; // .. and "object"
+INLINE_VAR constexpr uintptr_t TYPE_SIMPLE_VEC   = 0x01<<Tw; // simple general vector
+INLINE_VAR constexpr uintptr_t TYPE_INDEXVEC     = 0x11<<Tw; // used for huge vectors
+INLINE_VAR constexpr uintptr_t TYPE_HASH         = 0x15<<Tw; // new style hash table
+INLINE_VAR constexpr uintptr_t TYPE_HASHX        = 0x19<<Tw; // new hash table in need of re-hashing
+//INLINE_VAR constexpr uintptr_t TYPE_OLDHASH    = 0x21<<Tw; // old style hash table.
+INLINE_VAR constexpr uintptr_t TYPE_ARRAY        = 0x05<<Tw; // header record for general array
+INLINE_VAR constexpr uintptr_t TYPE_STRUCTURE    = 0x09<<Tw; // .. includes packages etc possibly
+INLINE_VAR constexpr uintptr_t TYPE_OBJECT       = 0x0d<<Tw; // .. and "object"
 
-static constexpr uintptr_t TYPE_VEC32        = 0x13<<Tw; // contains 32-bit integers
-static constexpr uintptr_t TYPE_VEC64        = 0x17<<Tw; // contains 32-bit integers
-static constexpr uintptr_t TYPE_VEC128       = 0x1b<<Tw; // contains 32-bit integers
-static constexpr uintptr_t TYPE_VECFLOAT32   = 0x53<<Tw; // contains single-precision floats
-static constexpr uintptr_t TYPE_VECFLOAT64   = 0x57<<Tw; // contains double-precision floats
-static constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains long double floats
+INLINE_VAR constexpr uintptr_t TYPE_VEC32        = 0x13<<Tw; // contains 32-bit integers
+INLINE_VAR constexpr uintptr_t TYPE_VEC64        = 0x17<<Tw; // contains 32-bit integers
+INLINE_VAR constexpr uintptr_t TYPE_VEC128       = 0x1b<<Tw; // contains 32-bit integers
+INLINE_VAR constexpr uintptr_t TYPE_VECFLOAT32   = 0x53<<Tw; // contains single-precision floats
+INLINE_VAR constexpr uintptr_t TYPE_VECFLOAT64   = 0x57<<Tw; // contains double-precision floats
+INLINE_VAR constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains long double floats
 
 // The next items live amongst the vectors that hold Lisp pointers, but only
 // the first three items are pointers - the rest of the stuff is binary
 // data. This arrangements was required for streams, and the three other
 // "mixed" cases are just in case anybody finds them useful.
-static constexpr uintptr_t TYPE_MIXED1       = 0x41<<Tw; // general, but limited to 3 pointers
-static constexpr uintptr_t TYPE_MIXED2       = 0x45<<Tw; // general, but limited to 3 pointers
-static constexpr uintptr_t TYPE_MIXED3       = 0x49<<Tw; // only 3 pointers
-static constexpr uintptr_t TYPE_STREAM       = 0x4d<<Tw; // 3 pointers then binary data
+INLINE_VAR constexpr uintptr_t TYPE_MIXED1       = 0x41<<Tw; // general, but limited to 3 pointers
+INLINE_VAR constexpr uintptr_t TYPE_MIXED2       = 0x45<<Tw; // general, but limited to 3 pointers
+INLINE_VAR constexpr uintptr_t TYPE_MIXED3       = 0x49<<Tw; // only 3 pointers
+INLINE_VAR constexpr uintptr_t TYPE_STREAM       = 0x4d<<Tw; // 3 pointers then binary data
 
 inline bool is_mixed_header(uintptr_t h)
 {   return (h & (0x73<<Tw)) == TYPE_MIXED1;
 }
 
-static constexpr uintptr_t VIRTUAL_TYPE_CONS = 0x07d<<Tw;// what a header for a CONS would be!
-static constexpr uintptr_t VIRTUAL_TYPE_REF  = 0x17d<<Tw;// Used by sxhash.
-static constexpr uintptr_t VIRTUAL_TYPE_NIL  = 0x27d<<Tw;// Used in hashing.
+INLINE_VAR constexpr uintptr_t VIRTUAL_TYPE_CONS = 0x07d<<Tw;// what a header for a CONS would be!
+INLINE_VAR constexpr uintptr_t VIRTUAL_TYPE_REF  = 0x17d<<Tw;// Used by sxhash.
+INLINE_VAR constexpr uintptr_t VIRTUAL_TYPE_NIL  = 0x27d<<Tw;// Used in hashing.
 
-static constexpr uintptr_t HDR_IMMED_MASK    = (0xf<<Tw) | TAG_BITS;
-static constexpr uintptr_t TAG_CHAR          = (0x4<<Tw) | TAG_HDR_IMMED; // 25 bits payload
-static constexpr uintptr_t TAG_SPID          = (0xc<<Tw) | TAG_HDR_IMMED; // Internal flag values
+INLINE_VAR constexpr uintptr_t HDR_IMMED_MASK    = (0xf<<Tw) | TAG_BITS;
+INLINE_VAR constexpr uintptr_t TAG_CHAR          = (0x4<<Tw) | TAG_HDR_IMMED; // 25 bits payload
+INLINE_VAR constexpr uintptr_t TAG_SPID          = (0xc<<Tw) | TAG_HDR_IMMED; // Internal flag values
 
-static constexpr uintptr_t SPID_NIL       = TAG_SPID+(0x00<<(Tw+4)); // NIL in checkpoint file
-static constexpr uintptr_t SPID_FBIND     = TAG_SPID+(0x01<<(Tw+4)); // Fluid binding on stack
-static constexpr uintptr_t SPID_CATCH     = TAG_SPID+(0x02<<(Tw+4)); // CATCH frame on stack
-static constexpr uintptr_t SPID_PROTECT   = TAG_SPID+(0x03<<(Tw+4)); // UNWIND_PROTECT on stack
-static constexpr uintptr_t SPID_HASHEMPTY = TAG_SPID+(0x04<<(Tw+4)); // Empty hash slot
-static constexpr uintptr_t SPID_HASHTOMB  = TAG_SPID+(0x05<<(Tw+4)); // Deleted hash item (tombstone)
-static constexpr uintptr_t SPID_GCMARK    = TAG_SPID+(0x06<<(Tw+4)); // Used by GC as sentinel
-static constexpr uintptr_t SPID_NOINPUT   = TAG_SPID+(0x07<<(Tw+4)); // Used by (read) in #X()
-static constexpr uintptr_t SPID_ERROR     = TAG_SPID+(0x08<<(Tw+4)); // Used to indicate error
-static constexpr uintptr_t SPID_PVBIND    = TAG_SPID+(0x09<<(Tw+4)); // PROGV binding on stack
-static constexpr uintptr_t SPID_NOARG     = TAG_SPID+(0x0a<<(Tw+4)); // Missing &OPTIONAL arg
-static constexpr uintptr_t SPID_NOPROP    = TAG_SPID+(0x0b<<(Tw+4)); // fastget entry is empty
-static constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0xnnn00000 offset
+INLINE_VAR constexpr uintptr_t SPID_NIL       = TAG_SPID+(0x00<<(Tw+4)); // NIL in checkpoint file
+INLINE_VAR constexpr uintptr_t SPID_FBIND     = TAG_SPID+(0x01<<(Tw+4)); // Fluid binding on stack
+INLINE_VAR constexpr uintptr_t SPID_CATCH     = TAG_SPID+(0x02<<(Tw+4)); // CATCH frame on stack
+INLINE_VAR constexpr uintptr_t SPID_PROTECT   = TAG_SPID+(0x03<<(Tw+4)); // UNWIND_PROTECT on stack
+INLINE_VAR constexpr uintptr_t SPID_HASHEMPTY = TAG_SPID+(0x04<<(Tw+4)); // Empty hash slot
+INLINE_VAR constexpr uintptr_t SPID_HASHTOMB  = TAG_SPID+(0x05<<(Tw+4)); // Deleted hash item (tombstone)
+INLINE_VAR constexpr uintptr_t SPID_GCMARK    = TAG_SPID+(0x06<<(Tw+4)); // Used by GC as sentinel
+INLINE_VAR constexpr uintptr_t SPID_NOINPUT   = TAG_SPID+(0x07<<(Tw+4)); // Used by (read) in #X()
+INLINE_VAR constexpr uintptr_t SPID_ERROR     = TAG_SPID+(0x08<<(Tw+4)); // Used to indicate error
+INLINE_VAR constexpr uintptr_t SPID_PVBIND    = TAG_SPID+(0x09<<(Tw+4)); // PROGV binding on stack
+INLINE_VAR constexpr uintptr_t SPID_NOARG     = TAG_SPID+(0x0a<<(Tw+4)); // Missing &OPTIONAL arg
+INLINE_VAR constexpr uintptr_t SPID_NOPROP    = TAG_SPID+(0x0b<<(Tw+4)); // fastget entry is empty
+INLINE_VAR constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0xnnn00000 offset
 
 inline Header &vechdr(LispObject v)
 {   return *reinterpret_cast<Header *>(v - TAG_VECTOR);
@@ -715,23 +715,23 @@ inline Header bitvechdr_(size_t n)
 // I mean is that even on a 32-bit machine there are 25 bits available. On a
 // 64-bit system there are an extra 32 (which at present I do not use).
 
-static constexpr uintptr_t TYPE_SYMBOL        = 0x00000000;
-static constexpr uintptr_t  SYM_SPECIAL_VAR   = 0x00000080; // (fluid '(xxx))
-static constexpr uintptr_t  SYM_FLUID_VAR     = 0x00000080; // (fluid '(xxx))
-static constexpr uintptr_t  SYM_GLOBAL_VAR    = 0x00000100; // (global '(xxx))
+INLINE_VAR constexpr uintptr_t TYPE_SYMBOL        = 0x00000000;
+INLINE_VAR constexpr uintptr_t  SYM_SPECIAL_VAR   = 0x00000080; // (fluid '(xxx))
+INLINE_VAR constexpr uintptr_t  SYM_FLUID_VAR     = 0x00000080; // (fluid '(xxx))
+INLINE_VAR constexpr uintptr_t  SYM_GLOBAL_VAR    = 0x00000100; // (global '(xxx))
 // I will set both SPECIAL and GLOBAL for "keywords" and those will be
 // initialised to have themselves as their value and then neither be
 // bindable or settable.
-static constexpr uintptr_t  SYM_KEYWORD_VAR   = 0x00000180; // (keyword '(xxx))
-static constexpr uintptr_t  SYM_SPECIAL_FORM  = 0x00000200; // eg. COND, QUOTE
-static constexpr uintptr_t  SYM_MACRO         = 0x00000400; // (putd 'xxx 'macro ...)
-static constexpr uintptr_t  SYM_CODEPTR       = 0x00000800; // just carries code pointer
-static constexpr uintptr_t  SYM_ANY_GENSYM    = 0x00001000; // gensym, printed or not
-static constexpr uintptr_t  SYM_TRACED        = 0x00002000; // function is traced.
-static constexpr uintptr_t  SYM_TRACESET      = 0x00004000; // traceset support
-static constexpr uintptr_t  SYM_TAGGED        = 0x00008000; // used for special versions
-static constexpr uintptr_t  SYM_FASTGET_MASK  = 0x007e0000; // used to support "fast" gets
-static constexpr uintptr_t  SYM_FASTGET_SHIFT = 17;
+INLINE_VAR constexpr uintptr_t  SYM_KEYWORD_VAR   = 0x00000180; // (keyword '(xxx))
+INLINE_VAR constexpr uintptr_t  SYM_SPECIAL_FORM  = 0x00000200; // eg. COND, QUOTE
+INLINE_VAR constexpr uintptr_t  SYM_MACRO         = 0x00000400; // (putd 'xxx 'macro ...)
+INLINE_VAR constexpr uintptr_t  SYM_CODEPTR       = 0x00000800; // just carries code pointer
+INLINE_VAR constexpr uintptr_t  SYM_ANY_GENSYM    = 0x00001000; // gensym, printed or not
+INLINE_VAR constexpr uintptr_t  SYM_TRACED        = 0x00002000; // function is traced.
+INLINE_VAR constexpr uintptr_t  SYM_TRACESET      = 0x00004000; // traceset support
+INLINE_VAR constexpr uintptr_t  SYM_TAGGED        = 0x00008000; // used for special versions
+INLINE_VAR constexpr uintptr_t  SYM_FASTGET_MASK  = 0x007e0000; // used to support "fast" gets
+INLINE_VAR constexpr uintptr_t  SYM_FASTGET_SHIFT = 17;
 //
 #ifdef COMMON
 // In Common Lisp mode I use the rest of the header to help speed up
@@ -739,15 +739,15 @@ static constexpr uintptr_t  SYM_FASTGET_SHIFT = 17;
 // Note that on a 32-bit machine I have just 8 bits for that. I think that
 // will help with the first 8 packages I come across (or many more on a
 // 64-bit machine). If I ever enable package support!
-static constexpr uintptr_t  SYM_EXTERN_IN_HOME= 0x00800000;  // external in its home package
-static constexpr uintptr_t  SYM_IN_PACKAGE    = 0xff000000U; //availability in 8 packages
-static constexpr uintptr_t  SYM_IN_PKG_SHIFT  = 24;
-static constexpr uintptr_t  SYM_IN_PKG_COUNT  = 8;
+INLINE_VAR constexpr uintptr_t  SYM_EXTERN_IN_HOME= 0x00800000;  // external in its home package
+INLINE_VAR constexpr uintptr_t  SYM_IN_PACKAGE    = 0xff000000U; //availability in 8 packages
+INLINE_VAR constexpr uintptr_t  SYM_IN_PKG_SHIFT  = 24;
+INLINE_VAR constexpr uintptr_t  SYM_IN_PKG_COUNT  = 8;
 #else // COMMON
 // In Standard Lisp mode I only allocate a print-name to a gensym when I
 // first print it, so I have a bit that tells me when a gensym is still
 // not printed.
-static constexpr uintptr_t  SYM_UNPRINTED_GENSYM= 0x00800000; // not-yet-printed gensym
+INLINE_VAR constexpr uintptr_t  SYM_UNPRINTED_GENSYM= 0x00800000; // not-yet-printed gensym
 // Here in Standard Lisp mode I have 8 bits left in a symbol header even
 // on a 32-bit system.
 #endif // COMMON
@@ -804,7 +804,7 @@ inline constexpr uintptr_t object_2_align_up(uintptr_t n)
                -(2*sizeof(LispObject)));
 }
 
-static constexpr size_t symhdr_length =
+INLINE_VAR constexpr size_t symhdr_length =
     doubleword_align_up(sizeof(Symbol_Head));
 
 inline bool is_symbol_header(Header h)
@@ -1011,18 +1011,18 @@ inline bool vector_f128(LispObject n)
 // there is a real prospect that I will rearrange storage layout strategies
 // so it never is!
 
-static constexpr uintptr_t TYPE_BIGNUMINDEX    = 0x1d<<Tw;
-static constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
-static constexpr uintptr_t TYPE_RATNUM         = 0x3d<<Tw;
-static constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x3f<<Tw;
-static constexpr uintptr_t TYPE_COMPLEX_NUM    = 0x5d<<Tw;
-static constexpr uintptr_t TYPE_DOUBLE_FLOAT   = 0x5f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_BIGNUMINDEX    = 0x1d<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_RATNUM         = 0x3d<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x3f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_COMPLEX_NUM    = 0x5d<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_DOUBLE_FLOAT   = 0x5f<<Tw;
 //      unused              = 0x7d<<Tw;
 // While gradually working on a new implementation of big-numbers I will
 // have a "TYPE_NEW_BIGNUM" for big integers represented using 64-bit
 // digits. These well not be fully integrated with everything else!
-static constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x7d<<Tw;  // Temporary provision!
-static constexpr uintptr_t TYPE_LONG_FLOAT     = 0x7f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x7d<<Tw;  // Temporary provision!
+INLINE_VAR constexpr uintptr_t TYPE_LONG_FLOAT     = 0x7f<<Tw;
 
 inline Header &numhdr(LispObject v)
 {   return *reinterpret_cast<Header *>(v - TAG_NUMBERS);
@@ -1155,7 +1155,7 @@ inline signed char& basic_scelt(LispObject v, size_t n)
              (CELL-TAG_VECTOR) + n);
 }
 
-static constexpr size_t BPS_DATA_OFFSET = CELL-TAG_VECTOR;
+INLINE_VAR constexpr size_t BPS_DATA_OFFSET = CELL-TAG_VECTOR;
 
 inline unsigned char* data_of_bps(LispObject v)
 {   return reinterpret_cast<unsigned char *>(v) + BPS_DATA_OFFSET;
@@ -1231,8 +1231,8 @@ inline double& basic_delt(LispObject v, size_t n)
 // the upper one allows vectors to get MUCH MUCH bigger. This scheme
 // builds vectors out of 
 
-static constexpr size_t LOG2_VECTOR_CHUNK_BYTES = PAGE_BITS-2;
-static constexpr size_t VECTOR_CHUNK_BYTES =
+INLINE_VAR constexpr size_t LOG2_VECTOR_CHUNK_BYTES = PAGE_BITS-2;
+INLINE_VAR constexpr size_t VECTOR_CHUNK_BYTES =
     static_cast<size_t>(1)<<LOG2_VECTOR_CHUNK_BYTES;
 
 // With the above large vectors are represented in chunks each of which is
@@ -1260,7 +1260,7 @@ inline unsigned int intlog2(uint64_t n)
 // This fragment takes a 64-bit number that is a power of 2 and
 // finds its logarithm, ie the number of bits that 1 needs to be shifted
 // left to yield it. The function will return garbage if its input is
-// not a power of 2.
+// not a power of 2. This is 
 //
 // This table works because it is of length 67 and that is a prime, so
 // the sequence 2^i mod 67 cycles through 1 .. 66 as I runs from 0 to 65,
@@ -1513,9 +1513,9 @@ inline constexpr LispObject pack_char(int font, unsigned int code)
 // 4 bytes in utf-8 (f4/8f/bf/bf) and it is the last codepoint in the
 // Unicode range and is reserved in Unicode as not being a valid
 // character.
-static constexpr LispObject CHAR_EOF = pack_char(0, 0x0010ffff);
+INLINE_VAR constexpr LispObject CHAR_EOF = pack_char(0, 0x0010ffff);
 
-static constexpr size_t MAX_FASTGET_SIZE = 63;
+INLINE_VAR constexpr size_t MAX_FASTGET_SIZE = 63;
 // I have up to 63 "fast" tags for PUT/GET/FLAG/FLAGP
 
 inline Header &qheader(LispObject p)
@@ -1879,7 +1879,7 @@ typedef union _Double_union
 
 } Double_union;
 
-static constexpr size_t SIZEOF_DOUBLE_FLOAT = 16;
+INLINE_VAR constexpr size_t SIZEOF_DOUBLE_FLOAT = 16;
 inline double *double_float_addr(LispObject v)
 {   return reinterpret_cast<double *>(reinterpret_cast<char *>(v) +
                                       (8-TAG_BOXFLOAT));
@@ -1939,7 +1939,7 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 //  } Long_Float;
 
 #ifdef HAVE_SOFTFLOAT
-static constexpr size_t SIZEOF_LONG_FLOAT = 24;
+INLINE_VAR constexpr size_t SIZEOF_LONG_FLOAT = 24;
 inline float128_t *long_float_addr(LispObject v)
 {   return (float128_t *)(reinterpret_cast<char *>(v) +
                           (8-TAG_BOXFLOAT));
@@ -1996,31 +1996,31 @@ inline int32_t& intfloat128_t_val32_3(LispObject v)
 
 // Values to go in exit_reason at times when exceptions are being thrown.
 
-static constexpr uintptr_t UNWIND_NULL     = 0x0;   // no error or action at all
-static constexpr uintptr_t UNWIND_GO       = 0x1;   // GO, to support non-local case
-static constexpr uintptr_t UNWIND_RETURN   = 0x2;   // RETURN, to support non-local
-static constexpr uintptr_t UNWIND_THROW    = 0x3;   // THROW is obvious
-static constexpr uintptr_t UNWIND_RESTART  = 0x4;   // (restart!-csl ...)
-static constexpr uintptr_t UNWIND_RESOURCE = 0x5;   // used with (resource!-limit ...)
+INLINE_VAR constexpr uintptr_t UNWIND_NULL     = 0x0;   // no error or action at all
+INLINE_VAR constexpr uintptr_t UNWIND_GO       = 0x1;   // GO, to support non-local case
+INLINE_VAR constexpr uintptr_t UNWIND_RETURN   = 0x2;   // RETURN, to support non-local
+INLINE_VAR constexpr uintptr_t UNWIND_THROW    = 0x3;   // THROW is obvious
+INLINE_VAR constexpr uintptr_t UNWIND_RESTART  = 0x4;   // (restart!-csl ...)
+INLINE_VAR constexpr uintptr_t UNWIND_RESOURCE = 0x5;   // used with (resource!-limit ...)
 //static constexpr uintptr_t UNWIND_SIGINT = 0x6;   // SIGINT
 
-static constexpr uintptr_t UNWIND_FNAME    = 0x100; // at least short backtrace is needed
-static constexpr uintptr_t UNWIND_ARGS     = 0x200; // produce long form backtrace
-static constexpr uintptr_t UNWIND_ERROR    = (UNWIND_FNAME|UNWIND_ARGS);
-static constexpr uintptr_t UNWIND_UNWIND   = 0x400; // no backtrace, still an error
+INLINE_VAR constexpr uintptr_t UNWIND_FNAME    = 0x100; // at least short backtrace is needed
+INLINE_VAR constexpr uintptr_t UNWIND_ARGS     = 0x200; // produce long form backtrace
+INLINE_VAR constexpr uintptr_t UNWIND_ERROR    = (UNWIND_FNAME|UNWIND_ARGS);
+INLINE_VAR constexpr uintptr_t UNWIND_UNWIND   = 0x400; // no backtrace, still an error
 
 #define SHOW_FNAME  ((exit_reason & UNWIND_FNAME) != 0)
 #define SHOW_ARGS   ((exit_reason & UNWIND_ARGS) != 0)
 
 // Styles or flavours of hash table.
 
-static constexpr int HASH_AS_EQ        = 0;
-static constexpr int HASH_AS_EQL       = 1;
-static constexpr int HASH_AS_CL_EQUAL  = 2;
-static constexpr int HASH_AS_EQUAL     = 3;
-static constexpr int HASH_AS_EQUALP    = 4;
-static constexpr int HASH_AS_SYMBOL    = 5;
-static constexpr int HASH_AS_SXHASH    = 6;
+INLINE_VAR constexpr int HASH_AS_EQ        = 0;
+INLINE_VAR constexpr int HASH_AS_EQL       = 1;
+INLINE_VAR constexpr int HASH_AS_CL_EQUAL  = 2;
+INLINE_VAR constexpr int HASH_AS_EQUAL     = 3;
+INLINE_VAR constexpr int HASH_AS_EQUALP    = 4;
+INLINE_VAR constexpr int HASH_AS_SYMBOL    = 5;
+INLINE_VAR constexpr int HASH_AS_SXHASH    = 6;
 
 #endif // header_tags_h
 

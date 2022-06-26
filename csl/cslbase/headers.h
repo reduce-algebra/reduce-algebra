@@ -43,7 +43,7 @@
 #endif
 
 #ifdef ARITHLIB
-#ifndef HAVE_CXX17
+#if !defined __cpp_inline_variables
 #error The version configure --with-arithlib needs a C++17 compiler.
 #endif
 #endif

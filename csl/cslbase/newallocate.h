@@ -135,12 +135,12 @@ public:
 // feels uncomfortable!
             union
             {   struct
-                {   uint64_t previousConsPins[pageSize/
-                                              (2*sizeof(LispObject))/
-                                              (8*sizeof(uint64_t))];
-                    uint64_t currentConsPins[pageSize/
-                                             (2*sizeof(LispObject))/
-                                             (8*sizeof(uint64_t))];
+                {   uint64_t consPins[pageSize/
+                                        (2*sizeof(LispObject))/
+                                        (8*sizeof(uint64_t))];
+                    uint64_t newConsPins[pageSize/
+                                           (2*sizeof(LispObject))/
+                                           (8*sizeof(uint64_t))];
                     ConsCell consData[1];
                 };
                 struct
@@ -151,8 +151,8 @@ public:
                     uint8_t  chunkStatus[pageSize/chunkSize];
                     uint64_t potentiallyPinnedChunks[pageSize/
                                                      chunkSize/(8*sizeof(uint64_t))];
-                    uint64_t previousVecPins[pageSize/8/(8*sizeof(uint64_t))];
-                    uint64_t currentVecPins[pageSize/8/(8*sizeof(uint64_t))];
+                    uint64_t vecPins[pageSize/8/(8*sizeof(uint64_t))];
+                    uint64_t newVecPins[pageSize/8/(8*sizeof(uint64_t))];
                     Chunk chunks[1];
                 };
             };
@@ -198,22 +198,22 @@ inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
 
 inline bool consIsPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    return (p->currentConsPins[o/64] >> (o&63)) != 0;
+    return (p->consPins[o/64] >> (o&63)) != 0;
 }
 
-inline bool consIsPreviousPinned(uintptr_t a, Page* p)
+inline bool consIsNewPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    return (p->previousConsPins[o/64] >> (o&63)) != 0;
+    return (p->newConsPins[o/64] >> (o&63)) != 0;
 }
 
-inline void consSetPinned(uintptr_t a, Page* p)
+inline void consSetNewPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    p->currentConsPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
+    p->newConsPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
 }
 
-inline void consClearPinned(uintptr_t a, Page* p)
+inline void consClearNewPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
-    p->currentConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
+    p->newConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
 }
 
 // And versions for VEC pages, which pin with granularity a single
@@ -223,22 +223,22 @@ inline void consClearPinned(uintptr_t a, Page* p)
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    return (p->currentVecPins[o/64] >> (o&63)) != 0;
+    return (p->vecPins[o/64] >> (o&63)) != 0;
 }
 
-inline bool vecIsPreviousPinned(uintptr_t a, Page* p)
+inline bool vecIsNewPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    return (p->previousVecPins[o/64] >> (o&63)) != 0;
+    return (p->newVecPins[o/64] >> (o&63)) != 0;
 }
 
-inline void vecSetPinned(uintptr_t a, Page* p)
+inline void vecSetNewPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    p->currentVecPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
+    p->newVecPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
 }
 
-inline void vecClearPinned(uintptr_t a, Page* p)
+inline void vecClearNewPinned(uintptr_t a, Page* p)
 {   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
-    p->currentVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
+    p->newVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
 }
 
 
@@ -1223,8 +1223,11 @@ uint64_t leastBit(uint64_t n)
 //    8      3
 //   16      4
 // etc. The name is for "Number of Trailing Zeros".
-// If the input value is zero it returns -1, but the GNU builting does not
+// If the input value is zero it returns -1, but the GNU builtin does not
 // guarantee any such behaviour, so zero input should be considered illegal.
+
+// This is related to the function intlog2() in tags.h, but that function
+// is only to be applied on inputs that are a power of 2.
 
 int ntz(uint64_t n)
 {   static int8_t lsbTable[67] =
