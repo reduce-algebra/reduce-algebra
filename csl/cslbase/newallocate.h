@@ -56,15 +56,84 @@ enum PageType
 };
 
 class Page;
+class PageListIter;
 
-extern Page* emptyPages;        // Fully empty.
-extern Page* consPinPages;      // Not active but comtains some pinned data.
-extern Page* vecPinPages;       // Ditto, but with vectors not cons cells.
-extern Page* consPages;         // Active pages containing cons cells.
-extern Page* vecPages;          // Active pages containing vectors.
-extern Page* borrowPages;       // Temporarily active pages.
-extern Page* consOldPages;      // Used during GC.
-extern Page* vecOldPages;       // Ditto.
+class PageList
+{
+public:
+    Page *head;
+    size_t count;
+// I want (rather minimal) support for an iterator over the Pages in
+// a PageList.
+    typedef std::input_iterator_tag iterator_category;
+    typedef std::ptrdiff_t          difference_type;
+    typedef Page                    value_type;
+    typedef Page*                   pointer;
+    typedef Page&                   reference;
+    PageListIter begin();
+    PageListIter end();
+
+    PageList()
+    {   head = nullptr;
+        count = 0;
+    }
+    Page*& page()
+    {   return head;
+    }
+    bool isEmpty()
+    {   return head == nullptr;
+    }
+    PageList& operator=(PageList *a)
+    {   head = a->head;
+        count = a->count;
+        a->head = nullptr;
+        a->count = 0;
+        return *this;
+    }
+    void push(Page* a);
+    Page* pop();
+    PageList& operator+=(PageList& a)
+    {   while (!a.isEmpty())
+            push(a.pop());
+        return *this;
+    }
+};
+
+class PageListIter
+{
+public:
+    PageList& L;
+    Page* loc;
+    PageListIter(PageList& a, Page* p) : L(a), loc(p)
+    {
+    }
+    Page* operator*()
+    {   return loc;
+    }
+    Page* operator++();
+    bool operator!=(PageListIter& a)
+    {   return a.loc != loc;
+    }
+};
+
+inline PageListIter PageList::begin()
+{   return PageListIter(*this, head);
+}
+
+inline PageListIter PageList::end()
+{   return PageListIter(*this, nullptr);
+}
+
+extern PageList emptyPages;        // Fully empty.
+extern PageList consPinPages;      // Not active but contains some pinned data.
+extern PageList vecPinPages;       // Ditto, but with vectors not cons cells.
+extern PageList consCloggedPages;  // Not active and contains much pinned data.
+extern PageList vecCloggedPages;   // Not active and contains much pinned data.
+extern PageList consPages;         // Active pages containing cons cells.
+extern PageList vecPages;          // Active pages containing vectors.
+extern PageList borrowPages;       // Temporarily active pages.
+extern PageList consOldPages;      // Used during GC.
+extern PageList vecOldPages;       // Ditto.
 
 extern Page* consCurrent;       // Where cons cells are allocated.
 extern Page* vecCurrent;        // Where vectors are allocated.
@@ -74,32 +143,22 @@ extern Page* potentiallyPinned; // For GC.
 extern Page* pinnedPages;       // For GC.
 extern Page* pendingPages;      // For GC.
 
-extern Page* emptyPagesTail;
-extern Page* consPinPagesTail;
-extern Page* vecPinPagesTail;
-extern Page* consPagesTail;
-extern Page* vecPagesTail;
 
-extern size_t emptyPagesCount;
-extern size_t consPinPagesCount;
-extern size_t vecPinPagesCount;
-extern size_t consPagesCount;
-extern size_t vecPagesCount;
+// Define two structs used when setting out the rest of the
+// layout. In many respects the most important thing about these is
+// the alignment that they impose.
+struct alignas(2*sizeof(LispObject)) ConsCell
+{   LispObject car;
+    LispObject cdr;
+};
 
+struct alignas(chunkSize) Chunk
+{   uintptr_t data[chunkSize/sizeof(uintptr_t)];
+};
 
 class alignas(pageSize) Page
 {
 public:
-// Define two structs used when setting out the rest of the
-// layout. In many respects the most important thing about these is
-// the alignment that they impose.
-    struct alignas(2*sizeof(LispObject)) ConsCell
-    {   LispObject car;
-        LispObject cdr;
-    };
-    struct alignas(chunkSize) Chunk
-    {   uintptr_t data[chunkSize/sizeof(uintptr_t)];
-    };
     union
     {
 // The sole purpose of the forceSize[] array is to ensure that the
@@ -159,6 +218,24 @@ public:
         };
     };
 };
+
+inline void PageList::push(Page* p)
+{   p->chain = head;
+    head = p;
+    count++;
+}
+
+inline Page* PageList::pop()
+{   my_assert(head != nullptr, "popping from empty page list");
+    Page* r = head;
+    head = head->chain;
+    count--;
+    return r;
+}
+
+inline Page* PageListIter::operator++()
+{   return (loc = loc->chain);
+}
 
 INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
 
@@ -249,19 +326,6 @@ inline void vecClearNewPinned(uintptr_t a, Page* p)
 // values for those in scanPoint and initialLimit fields.
 
 extern uintptr_t consFringe, consLimit, consEnd;
-
-inline void pageAppend(Page* p, Page*& list, Page*& tail, size_t& count)
-{   p->chain = nullptr;
-    if (count == 0)
-    {   list = tail = p;
-        count = 1;
-    }
-    else
-    {   tail->chain = p;
-        tail = p;
-        count++;
-    }
-}
 
 extern uintptr_t consEndOfPage();
 extern void garbage_collect();
@@ -432,7 +496,8 @@ inline ChunkStatus saturateChunk(size_t n)
 // With at least some compilers if I have an "inline" function definition
 // but there are no calls to it then no space is wasted. Well compile time
 // may be impacted. So I put some functions that can display or validate
-// Pages here for use while debugging.
+// Pages here for use while debugging and expect there not to be any space
+// overhead in the compiled binary of builds that happen not to use them.
 
 inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a\n", p);
@@ -486,10 +551,8 @@ inline void displayVecPage(Page* p)
 
 inline void displayAllPages(const char* s)
 {   zprintf("displayAllPages %s\n", s);
-    for (Page* p=consPages; p!=nullptr; p=p->chain)
-        displayConsPage(p);
-    for (Page* p=vecPages; p!=nullptr; p=p->chain)
-        displayVecPage(p);
+    for (auto p:consPages) displayConsPage(p);
+    for (auto p:vecPages) displayVecPage(p);
     zprintf("end of display\n\n");
 }
 
@@ -701,8 +764,8 @@ inline uintptr_t getNBytes(size_t n)
                           vecLimit, vecEnd, vecStopCache, false)) == 0)
     {   vecCurrent->dataEnd = vecFringe;
 // If I am within the GC I need a chain of all pages that have been filled
-// up, and when I am not then establishing such a chain is an utterly
-// trivial overhead.
+// up, and if I am not in the GC then establishing such a chain is an utterly
+// trivial overhead so I may as well do it anyway.
         vecCurrent->pendingPages = pendingPages;
         pendingPages = vecCurrent;
         grabFreshPage(vecPageType);
@@ -729,16 +792,16 @@ extern Page* pageEnd;
 // into it. When that has been done the borrowed memory can be
 // released.
 
-inline void initBorrowPage(Page* p, bool empty)
+inline Page* initBorrowPage(Page* p, bool empty)
 {
 // borrowed pages do not need anything like as much initialisation since
 // they will never participate in GC. However they must have chunkStatus
 // set up since that is inspected in case there might have been pinned
 // items within them.
     borrowCurrent = p;
-    p->borrowChain = borrowPages;
+    p->borrowChain = borrowPages.page();
     p->borrowPinned = !empty;
-    borrowPages = p;
+    borrowPages.page() = p;
     borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {
@@ -753,29 +816,13 @@ inline void initBorrowPage(Page* p, bool empty)
         borrowLimit = p->initialLimit;
     }
 //  displayVectorPage(p);
+    return p;
 }
 
 inline void grabBorrowPage()
-{   if (emptyPages != nullptr)
-    {   Page* r = emptyPages;
-        emptyPages = emptyPages->chain;
-        initBorrowPage(r, true);
-//      zprintf("return empty %a for borrow\n", r);
-    }
-    else if (pageFringe != pageEnd)
-    {   Page* r = pageFringe++;
-        r->chain = nullptr;
-        r->type = emptyPageType;
-        emptyPages = r;
-        initBorrowPage(r, true);
-//      zprintf("return new %a for borrow\n", r);
-    }
-    else if (vecPinPages != nullptr)
-    {   Page* r = vecPinPages;
-        vecPinPages = vecPinPages->chain;
-        initBorrowPage(r, false);
-//      zprintf("return pinned vec %a type for borrow\n", r);
-    }
+{   if (!emptyPages.isEmpty()) initBorrowPage(emptyPages.pop(), true);
+    else if (pageFringe != pageEnd) initBorrowPage(pageFringe++, true);
+    else if (!vecPinPages.isEmpty()) initBorrowPage(vecPinPages.pop(), false);
     else fatal_error(err_no_store);
 }
 
@@ -803,20 +850,11 @@ public:
     {   grabBorrowPage();
     }
     ~Borrowing()
-    {
-//      zprintf("exit borrowing\n");
-        while (false && borrowPages != nullptr)
-        {   Page* p = borrowPages;
+    {   while (!borrowPages.isEmpty())
+        {   Page* p = borrowPages.pop();
             zprintf("return borrowed page %a\n", p);
-//          borrowPages = p->borrowChain;
-            if (p->borrowPinned)
-            {   p->chain = vecPinPages;
-                vecPinPages = p;
-            }
-            else
-            {   p->chain = emptyPages;
-                emptyPages = p;
-            }
+            if (p->borrowPinned) vecPinPages.push(p);
+            else emptyPages.push(p);
         }
     }
 };
@@ -1179,6 +1217,8 @@ inline int ntz(uint64_t x)
 
 #else // __GNUC__
 
+#ifdef OLD_VERSION
+
 inline int nlz(uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU)
@@ -1206,6 +1246,34 @@ inline int nlz(uint64_t x)
     }
     return n;
 }
+
+#else // OLD_VERSION
+
+// This version seems faster to me.
+
+inline int nlz(uint64_t x)
+{   x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests. Now I can use a lookup
+// table in much the same wau as I do for trailing zero bits.
+    static int8_t nlzTable[67] =
+    {   64,  63,  25,  62,  49,  24,  41,  61,  52,  48,
+         5,  23,  45,  40,  10,  60,   0,  51,  54,  47,
+         2,   4,  36,  22,  34,  44,  13,  39,  20,   9,
+        17,  59,  32,  -1,  26,  50,  42,  53,   6,  46,
+        11,   1,  55,   3,  37,  35,  14,  21,  18,  33,
+        27,  43,   7,  12,  56,  38,  15,  19,  28,   8,
+        57,  16,  29,  58,  30,  31,  -1
+    };
+    return nlzTable[x % 67];
+}
+
+#endif // OLD_VERSION
 
 // This code is to identify the least significant bit in a 64-bit
 // value. The function leastBit() just removes all other bits. It is probably
@@ -1249,3 +1317,4 @@ int ntz(uint64_t n)
 #endif // header_newallocate_h
 
 // end of newallocate.h
+

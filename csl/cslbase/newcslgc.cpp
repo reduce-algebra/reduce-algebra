@@ -389,8 +389,6 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
                 }
 // Record this pinned object in a list of same.
                 LispObject z = get2Words();
-// The next line is to ensure that the CONS just allocated never gets pinned.
-                consCurrent->type = emptyPageType;
                 car(z) = s + TAG_FIXNUM;
                 cdr(z) = p->pinnedObjects;
                 p->pinnedObjects = z + TAG_FIXNUM;
@@ -417,8 +415,6 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
                     pinnedPages = p;
                 }
                 LispObject z = get2Words();
-// The next line is to ensure that the CONS just allocated never gets pinned.
-                consCurrent->type = emptyPageType;
                 car(z) = s + TAG_FIXNUM;
                 cdr(z) = p->pinnedObjects;
                 p->pinnedObjects = z + TAG_FIXNUM;
@@ -725,36 +721,6 @@ void evacuateFromCopiedData()
     }
 }
 
-// For all non-empty pages I copy the new pin maps to the be the ones
-// for future use, and I will zero out the new map.
-
-void migratePinMaps() // @@@@
-{   for (Page* p=consPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->consPins,
-                    p->newConsPins,
-                    sizeof(p->consPins));
-        std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
-    }
-    for (Page* p=consPinPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->consPins,
-                    p->newConsPins,
-                    sizeof(p->consPins));
-        std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
-    }
-    for (Page* p=vecPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->vecPins,
-                    p->newVecPins,
-                    sizeof(p->vecPins));
-        std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-    }
-    for (Page* p=vecPinPages; p!=nullptr; p=p->chain)
-    {   std::memcpy(p->vecPins,
-                    p->newVecPins,
-                    sizeof(p->vecPins));
-        std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-    }
-}
-
 // Here I need to look at xPinPages because some of the pages may now
 // have fewer pinned items and xPages because some of them may now
 // have pinned items. I must create or re-create the layout needed
@@ -776,63 +742,224 @@ void migratePinMaps() // @@@@
 // to being big is not (now) pinned, and in that case I could demote it
 // to a sequence of basic chunks...
 
-// The next two return true if there are actually any pinned items in the
-// page concerned. I will need that information to decide whether the
-// page should be put in emptyPages or xPinPages.
+// The next two return a count of the number of pinned items present.
 
-bool rePinOneConsPage(Page* p)
-{
-#pragma message ("rePinOneConsPage")
-    return true;
+size_t rePinOneConsPage(Page* p)
+{   std::memcpy(p->consPins,
+                p->newConsPins,
+                sizeof(p->consPins));
+    std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
+    uintptr_t a = reinterpret_cast<uintptr_t>(&p->consData);
+    size_t nPins = 0;
+    while (a != reinterpret_cast<uintptr_t>(p+1) &&
+           consIsPinned(a, p))
+    {   a += sizeof(ConsCell);
+        nPins++;
+    }
+    if (a == reinterpret_cast<uintptr_t>(p+1)) return nPins;
+    uintptr_t base = a;
+// At present this is coded by looking at each individual cons cell. Once
+// I have debugged things using this version I can use ntz() to search for
+// pinned items 64-cells at a time in the bitmap, thereby speeding this
+// up quite a lot. But this version is simpler so I use it first.
+    while (a != reinterpret_cast<uintptr_t>(p+1))
+    {   if (consIsPinned(a, p))
+        {   car(base) = a;
+            base = a;
+            while (a != reinterpret_cast<uintptr_t>(p+1) &&
+                   consIsPinned(a, p))
+            {   a += sizeof(ConsCell);
+                nPins++;
+            }
+        }
+        else a += sizeof(ConsCell);
+    }
+    car(base) = a;
+    return nPins;
 }
 
-bool rePinOneVecPage(Page* p)
-{
-#pragma message ("rePinOneVecPage")
-    return true;
+void rePinConsCurrent(Page* p)
+{   std::memcpy(p->consPins,
+                p->newConsPins,
+                sizeof(p->consPins));
+    std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
+// Space up as far as consFringe is in use, and any pinned items there
+// should now be skipped.
+    while (consFringe != reinterpret_cast<uintptr_t>(p+1) &&
+           consIsPinned(consFringe, p)) consFringe += sizeof(ConsCell);
+// If that tkes consFringe up to the end of the page then this page is
+// full and the next allocation request will replace it.
+    if (consFringe == reinterpret_cast<uintptr_t>(p+1))
+    {   consLimit = consFringe;
+        return;
+    }
+// Now (whew) there is at least one non-pinned cell available still. The
+// first block of such must be left delimited by consLimit.
+    uintptr_t a = consFringe;
+    while (a != reinterpret_cast<uintptr_t>(p+1) &&
+           !consIsPinned(a, p)) a += sizeof(ConsCell);
+    consLimit = a;
+    if (a == reinterpret_cast<uintptr_t>(p+1)) return;
+// Here I have found a relevant pinned item. Skip past pinnings..
+    while (a != reinterpret_cast<uintptr_t>(p+1) &&
+           consIsPinned(a, p)) a += sizeof(ConsCell);
+// Now a points to the start of a free region (or at the end of the page).
+// I can fill in the rest of the page with pointers that chain such free
+// regions together.
+    uintptr_t base = a;
+// At present this is coded by looking at each individual cons cell. Once
+// I have debugged things using this version I can use ntz() to search for
+// pinned items 64-cells at a time in the bitmap, thereby speeding this
+// up quite a lot. But this version is simpler so I use it first.
+    while (a != reinterpret_cast<uintptr_t>(p+1))
+    {   if (consIsPinned(a, p))
+        {   car(base) = a;
+            base = a;
+            while (a != reinterpret_cast<uintptr_t>(p+1) &&
+                   consIsPinned(a, p)) a += sizeof(ConsCell);
+        }
+        else a += sizeof(ConsCell);
+    }
+    car(base) = a;
+}
+
+size_t rePinOneVecPage(Page* p)
+{   std::memcpy(p->vecPins,
+                p->newVecPins,
+                sizeof(p->vecPins));
+    std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
+
+// This hack will cause every vector page to end up blacklisted. Well in
+// a while I will upgrade so that vector pages that have no pinned items in
+// them at all survive (by returning 0). And eventually I will make pages
+// that do have some pinned items set up suitable maps so that allocation can
+// go around pinning and return a count of pinned stuff.
+    return pageSize;
+}
+
+void rePinVecCurrent(Page* p)
+{   std::memcpy(p->vecPins,
+                p->newVecPins,
+                sizeof(p->vecPins));
+    std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
+// Fudge so that next vector request will allocate another page.
+    vecFringe = reinterpret_cast<uintptr_t>(p+1);
+    return;
+
+
+// Space up as far as consFringe is in use, and any pinned items there
+// should now be skipped.
+    while (consFringe != reinterpret_cast<uintptr_t>(p+1) &&
+           consIsPinned(consFringe, p)) consFringe += sizeof(ConsCell);
+// If that tkes consFringe up to the end of the page then this page is
+// full and the next allocation request will replace it.
+    if (consFringe == reinterpret_cast<uintptr_t>(p+1))
+    {   consLimit = consFringe;
+        return;
+    }
+// Now (whew) there is at least one non-pinned cell available still. The
+// first block of such must be left delimited by consLimit.
+    uintptr_t a = consFringe;
+    while (a != reinterpret_cast<uintptr_t>(p+1) &&
+           !consIsPinned(a, p)) a += sizeof(ConsCell);
+    consLimit = a;
+    if (a == reinterpret_cast<uintptr_t>(p+1)) return;
+// Here I have found a relevant pinned item. Skip past pinnings..
+    while (a != reinterpret_cast<uintptr_t>(p+1) &&
+           consIsPinned(a, p)) a += sizeof(ConsCell);
+// Now a points to the start of a free region (or at the end of the page).
+// I can fill in the rest of the page with pointers that chain such free
+// regions together.
+    uintptr_t base = a;
+// At present this is coded by looking at each individual cons cell. Once
+// I have debugged things using this version I can use ntz() to search for
+// pinned items 64-cells at a time in the bitmap, thereby speeding this
+// up quite a lot. But this version is simpler so I use it first.
+    while (a != reinterpret_cast<uintptr_t>(p+1))
+    {   if (consIsPinned(a, p))
+        {   car(base) = a;
+            base = a;
+            while (a != reinterpret_cast<uintptr_t>(p+1) &&
+                   consIsPinned(a, p)) a += sizeof(ConsCell);
+        }
+        else a += sizeof(ConsCell);
+    }
+    car(base) = a;
 }
 
 void setupPinmapsConsPages()
 {
-// I will start by moving consPinPages stuff onto consOldPages.
-    while (consPinPages != nullptr)
-    {   Page* p = consPinPages;
-        consPinPages = p->chain;
-        p->chain = consOldPages;
-        consOldPages = p;
+// This is called at the end of GC. At this stage I generally need to move
+// pin information from newConsPins to Pins (and clear newConsPins ahead of
+// any future GC). There are several "sorts" of pages:
+// (1) consPinPages. Ones that contained some pinned data after the
+//     previous GC but may or may not now. Apart from pinned items
+//     and any pinned now will have been pinned last time, the page is
+//     empty and available for allocation.
+// (2) consOldPages. Ones that held live data at the start of the GC but
+//     where all non-pinned data has now been moved to elsewhere. There can
+//     be pinned items that were pinned last time and also ones newly pinned
+//     this time, but all non-pinned space is available for re-use. These
+//     pages are treated just as the ones in catergoty (1).
+// (3) consPages except from consCurrent: now full of live data copied
+//     by this GC. The pin-maps need updating but no freechains should be
+//     created.
+// (4) currentCons. The pinmap needs updating and free-chain information
+//     must be set up from fringe to the end of the page, but space before
+//     fringe must not be touched.
+// (5) emptyPages. No action needed because there can neither be new nor old
+//     pinned data.
+// (6) consCloggedPages. Well with luck this GC has led to some of the
+//     old pinning being released so the page morphs into a consPinPage
+//     or exceptionally even into and emptyPage]
+// I will start by moving consPinPages stuff onto consOldPages so that the
+// two can be processed together.
+    consOldPages += consPinPages;
+    consOldPages += consCloggedPages;
+    while (!consOldPages.isEmpty())
+    {   Page* p = consOldPages.pop();
+// rePinOneConsPage processes one page and returns a count of the pinned
+// items present.
+        size_t nPins = rePinOneConsPage(p);
+        if (nPins == 0) emptyPages.push(p);
+// I set a rather arbitrary limit such that if (1/10) of a page is
+// filled with pinned items I will avoid allocation within that page
+// until subsequent garbage collections have (one hopes) observed the
+// pinning evaporating.
+        else if (nPins < pageSize/sizeof(ConsCell)/10) consPinPages.push(p);
+        else consCloggedPages.push(p);
     }
-    while (consOldPages != nullptr)
-    {   Page* p = consOldPages;
-        consOldPages = p->chain;
-        if (rePinOneConsPage(p))
-        {   p->chain = consPinPages;
-            consPinPages = p;
-        }
-        else
-        {   p->chain = emptyPages;
-            emptyPages = p;
-        }
+    for (auto p:consPages)
+    {   std::memcpy(p->consPins,
+                    p->newConsPins,
+                    sizeof(p->consPins));
+        std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
+        if (p == consCurrent) rePinConsCurrent(p);
     }
 }
 
 void setupPinmapsVecPages()
-{   while (vecPinPages != nullptr)
-    {   Page* p = vecPinPages;
-        vecPinPages = p->chain;
-        p->chain = vecOldPages;
-        vecOldPages = p;
+{   vecOldPages += vecPinPages;
+    vecOldPages += vecCloggedPages;
+    while (!vecOldPages.isEmpty())
+    {   Page* p = vecOldPages.pop();
+// rePinOneVecPage processes one page and returns a count of the pinned
+// items present.
+        size_t nPins = rePinOneVecPage(p);
+        if (nPins == 0) emptyPages.push(p);
+// I set a rather arbitrary limit such that if (1/10) of a page is
+// filled with pinned items I will avoid allocation within that page
+// until subsequent garbage collections have (one hopes) observed the
+// pinning evaporating.
+        else if (nPins < pageSize/sizeof(LispObject)/10) vecPinPages.push(p);
+        else vecCloggedPages.push(p);
     }
-    while (vecOldPages != nullptr)
-    {   Page* p = vecOldPages;
-        vecOldPages = p->chain;
-        if (rePinOneVecPage(p))
-        {   p->chain = vecPinPages;
-            vecPinPages = p;
-        }
-        else
-        {   p->chain = emptyPages;
-            emptyPages = p;
-        }
+    for (auto p:vecPages)
+    {   std::memcpy(p->vecPins,
+                    p->newVecPins,
+                    sizeof(p->vecPins));
+        std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
+        if (p == vecCurrent) rePinVecCurrent(p);
     }
 }
 
@@ -857,9 +984,6 @@ void inner_garbage_collect()
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
     vecOldPages = vecPages;
-    consPages = vecPages =
-        consPagesTail = vecPagesTail = nullptr;
-    consPagesCount = vecPagesCount = 0;
     pinnedPages = nullptr;
 // ... and allocate what will be the start of the new half-space.
 // Well here I will not want any ambiguous pointers into this new
@@ -882,7 +1006,7 @@ void inner_garbage_collect()
 // been set on something where there is not an existing one is liable to be
 // an accidental pinning of part of the list of pinned items I have
 // just been creating.
-    for (Page* p=consPages; p!=nullptr; p=p->chain)
+    for (auto p:consPages)
     {   for (uintptr_t v=p->pinnedObjects&~TAG_BITS;
              v!=0;
              v=cdr(v)&~TAG_BITS)
