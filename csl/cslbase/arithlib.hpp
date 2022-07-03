@@ -3517,15 +3517,17 @@ inline int popcount(std::uint64_t x)
 
 #else // __GNUC__
 
-inline int nlz(std::uint64_t x)
+#ifdef OLD_VERSION
+
+inline int nlz(uint64_t x)
 {   int n = 0;
     if (x <= 0x00000000FFFFFFFFU)
-    {   n = n +32;
-        x = x <<32;
+    {   n = n + 32;
+        x = x << 32;
     }
     if (x <= 0x0000FFFFFFFFFFFFU)
-    {   n = n +16;
-        x = x <<16;
+    {   n = n + 16;
+        x = x << 16;
     }
     if (x <= 0x00FFFFFFFFFFFFFFU)
     {   n = n + 8;
@@ -3545,10 +3547,38 @@ inline int nlz(std::uint64_t x)
     return n;
 }
 
+#else // OLD_VERSION
+
+// This version seems faster to me.
+
+inline int nlz(uint64_t x)
+{   x |= x>>1;
+    x |= x>>2;
+    x |= x>>4;
+    x |= x>>8;
+    x |= x>>16;
+    x |= x>>32;
+// Now x is a number with all bits up as far as its highest one set, and I
+// have achieved that without performing any tests. Now I can use a lookup
+// table in much the same wau as I do for trailing zero bits.
+    static int8_t nlzTable[67] =
+    {   64,  63,  25,  62,  49,  24,  41,  61,  52,  48,
+         5,  23,  45,  40,  10,  60,   0,  51,  54,  47,
+         2,   4,  36,  22,  34,  44,  13,  39,  20,   9,
+        17,  59,  32,  -1,  26,  50,  42,  53,   6,  46,
+        11,   1,  55,   3,  37,  35,  14,  21,  18,  33,
+        27,  43,   7,  12,  56,  38,  15,  19,  28,   8,
+        57,  16,  29,  58,  30,  31,  -1
+    };
+    return nlzTable[x % 67];
+}
+
+#endif // OLD_VERSION
+
 inline int popcount(std::uint64_t x)
-{   x = (x & 0x5555555555555555U) + (x >> 1 & 0x5555555555555555U);
-    x = (x & 0x3333333333333333U) + (x >> 2 & 0x3333333333333333U);
-    x = x + (x >> 4) & 0x0f0f0f0f0f0f0f0fU;
+{   x = (x & 0x5555555555555555U) + ((x >> 1) & 0x5555555555555555U);
+    x = (x & 0x3333333333333333U) + ((x >> 2) & 0x3333333333333333U);
+    x = x + ((x >> 4) & 0x0f0f0f0f0f0f0f0fU);
     x = x + (x >> 8);
     x = x + (x >> 16);
     x = x + (x >> 32) & 0x7f;

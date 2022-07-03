@@ -42,12 +42,6 @@
 #include "config.h"
 #endif
 
-#ifdef ARITHLIB
-#if !defined __cpp_inline_variables
-#error The version configure --with-arithlib needs a C++17 compiler.
-#endif
-#endif
-
 // There will be an hierarchy of degrees of generality in support for
 // user interfaces. If EMBEDDED is defined then there will be no attempt
 // at any input handling beyond simple use of getchar(). At the other

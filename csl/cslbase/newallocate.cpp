@@ -63,31 +63,19 @@ Page* vecCurrent;
 Page* borrowCurrent;
 unsigned int borrowingDepth = 0;
 
-Page* emptyPages;
-Page* consPinPages;
-Page* vecPinPages;
-Page* consPages;
-Page* vecPages;
-Page* consOldPages;
-Page* vecOldPages;
-Page* borrowPages;
-Page* potentiallyPinned;
-Page* pinnedPages;
-Page* pendingPages;
-
-Page* emptyPagesTail;
-Page* consPinPagesTail;
-Page* vecPinPagesTail;
-Page* consPagesTail;
-Page* vecPagesTail;
-Page* borrowPagesTail;
-
-size_t emptyPagesCount;
-size_t consPinPagesCount;
-size_t vecPinPagesCount;
-size_t consPagesCount;
-size_t vecPagesCount;
-size_t borrowPagesCount;
+PageList emptyPages;
+PageList consPinPages;
+PageList vecPinPages;
+PageList consCloggedPages;
+PageList vecCloggedPages;
+PageList consPages;
+PageList vecPages;
+PageList consOldPages;
+PageList vecOldPages;
+PageList borrowPages;
+Page*    potentiallyPinned;
+Page*    pinnedPages;
+Page*    pendingPages;
 
 int vecStopCache = -1;
 int borrowStopCache = -1;
@@ -311,8 +299,7 @@ bool allocateAnotherSegment()
 }
 
 void initConsPage(Page* p, bool empty)
-{   pageAppend(p, consPages,
-               consPagesTail, consPagesCount);
+{   consPages.push(p);
     p->type = consPageType;
     consCurrent = p;
     p->dataEnd = consEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
@@ -333,8 +320,7 @@ void initConsPage(Page* p, bool empty)
 // fringe and limit in scanPoint and initialLimit.
 
 void initVecPage(Page* p, bool empty)
-{   pageAppend(p, vecPages,
-               vecPagesTail, vecPagesCount);
+{   vecPages.push(p);
     p->type = vecPageType;
     vecCurrent = p;
     p->dataEnd = vecEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
@@ -384,12 +370,14 @@ void grabFreshPage(PageType type)
 // value of "enum" type is not of "integer" type, so the case gere is
 // required!
 //  zprintf("grabFreshPage %d\n", static_cast<int>(type));
-    size_t busy = emptyPagesCount +
-        consPinPagesCount +
-        vecPinPagesCount +
-        consPagesCount +
-        vecPagesCount +
-        borrowPagesCount;
+    size_t busy = emptyPages.count +
+        consPinPages.count +
+        vecPinPages.count +
+        consCloggedPages.count +
+        vecCloggedPages.count +
+        consPages.count +
+        vecPages.count +
+        borrowPages.count;
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
 // If the memory I have allocated thus far is less then 2/3 full I will
@@ -406,10 +394,8 @@ void grabFreshPage(PageType type)
 // so this lets me test just a few more things.
         if (mustGrab || true || busy < 2*unused)
 #endif // DEBUG
-        {   if (emptyPages != nullptr)
-            {   Page* r = emptyPages;
-                emptyPages = emptyPages->chain;
-                emptyPagesCount--;
+        {   if (!emptyPages.isEmpty())
+            {   Page* r = emptyPages.pop();
                 r->type = emptyPageType;
                 initPage(type, r, true);
 //              zprintf("return empty %a type %d\n", r, (int)type);
@@ -423,18 +409,14 @@ void grabFreshPage(PageType type)
                 return;
             }
             else if (mustGrab)
-            {   if (type==vecPageType && vecPinPages != nullptr)
-                {   Page* r = vecPinPages;
-                    vecPinPages = vecPinPages->chain;
-                    vecPinPagesCount--;
+            {   if (type==vecPageType && !vecPinPages.isEmpty())
+                {   Page* r = vecPinPages.pop();
                     initPage(type, r, false);
 //                  zprintf("return pinned vec %a type %d\n", r, (int)type);
                     return;
                 }
-                else if (type==consPageType && consPinPages != nullptr)
-                {   Page* r = consPinPages;
-                    consPinPages = consPinPages->chain;
-                    consPinPagesCount--;
+                else if (type==consPageType && !consPinPages.isEmpty())
+                {   Page* r = consPinPages.pop();
                     initPage(type, r, false);
 //                  zprintf("return pinned cons %a type %d\n", r, (int)type);
                     return;
@@ -513,14 +495,15 @@ void initHeapSegments(double storeSize)
     heapSegmentCount = 0;
     for (int i=0; i<16; i++)
         heapSegment[i] = reinterpret_cast<void*>(-1);
-    emptyPages = consPinPages = vecPinPages =
-        consPages = vecPages = borrowPagesTail =
-        consOldPages = vecOldPages = pendingPages = nullptr;
+    emptyPages.head = consPinPages.head = vecPinPages.head =
+        consCloggedPages.head = vecCloggedPages.head =
+        consPages.head = vecPages.head = borrowPages.head =
+        consOldPages.head = vecOldPages.head = pendingPages = nullptr;
+    emptyPages.count = consPinPages.count = vecPinPages.count =
+        consCloggedPages.count = vecCloggedPages.count =
+        consPages.count = vecPages.count = borrowPages.count =
+        consOldPages.count = vecOldPages.count = 0;
     potentiallyPinned = nullptr;
-    emptyPagesTail = consPinPagesTail = vecPinPagesTail =
-        consPagesTail = vecPagesTail = borrowPagesTail = nullptr;
-    emptyPagesCount = consPinPagesCount = vecPinPagesCount =
-        consPagesCount = vecPagesCount = borrowPagesCount =  0;
     nilSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);
