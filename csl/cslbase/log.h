@@ -1232,7 +1232,22 @@ BadFmt(
                 break;
             }
             if (width != 0) std::cout << std::setw(width-1);
-            if (precision != 0) std::cout << std::setw(precision-1);
+            if (precision != 0) std::cout << std::setprecision(precision-1);
+// A particular oddity here is a C/printf style format specification such
+// as "%12.7d" where the range of C++ manipulators do not provide a trivial
+// sequence to map this on to. I think it needs to be turned into something
+// like '"      " << setfill(0) << setw(7) << VALUE << setfill(' ')' for
+// positive inputs and '"    -" << setfill(0) << setw(t) << -VALUE
+// << setfill(' ')' for negative ones. Also if flagplus is set the explicit
+// "+" sign must come ahead of the padding zero characters. Actually there
+// is then "%12.7x" to worry about where the leading "0x" or "0X". This all
+// seems horrid to me so I will at most deal with very simple cases. In
+// particular %w.px". Other cases nay lead to "odd" output! 
+            if (type==argTypeInt && precision != 0 && width >= precision)
+            {   for (int k=0; k<width-precision; k++) std::cout << " ";
+                std::cout << std::setw(precision-1) << std::setfill('0');
+            }
+//
 //          if (type==argTypeInt)
 //          {   if (!maybe_atomic_int<decltype(a1)>())
 //BadFmt(
@@ -1258,8 +1273,8 @@ BadFmt(
 // integer will be displayed in unsigned mode. That upsets me less!
 // Note that I write an old style C cast to uintmax_t because that will
 // compile in cases where arg1 is not integral but the compiler does not
-// not manage to detect (at compile time) that the paththere will not
-// be execured.
+// not manage to detect (at compile time) that the path there will not
+// be executed.
             if (type==argTypeInt && subtype==subtypeUnsigned)
                 std::cout << (uintmax_t)(a1);
             else std::cout << a1;
@@ -1270,7 +1285,8 @@ BadFmt(
             if ((flags & flaghash) != 0) std::cout << std::noshowbase; 
             if ((flags & flagplus) != 0) std::cout << std::noshowpos; 
             if ((flags & flagminus) != 0) std::cout << std::right; 
-            if ((flags & flagzero) != 0) std::cout << std::setfill(' '); 
+            if ((flags & flagzero) != 0 ||
+                type==argTypeInt) std::cout << std::setfill(' '); 
             if ((subtype & subtypeUpperCase) != 0)
                 std::cout << std::nouppercase;
             if (type==argTypeInt &&

@@ -83,20 +83,18 @@ public:
     bool isEmpty()
     {   return head == nullptr;
     }
-    PageList& operator=(PageList *a)
-    {   head = a->head;
-        count = a->count;
-        a->head = nullptr;
-        a->count = 0;
+    PageList& operator=(PageList& a)
+    {   head = a.head;     a.head = nullptr;
+        count = a.count;   a.count = 0;
         return *this;
     }
-    void push(Page* a);
-    Page* pop();
     PageList& operator+=(PageList& a)
     {   while (!a.isEmpty())
             push(a.pop());
         return *this;
     }
+    void push(Page* a);
+    Page* pop();
 };
 
 class PageListIter
@@ -274,22 +272,22 @@ inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
 // Here p must be a CONS page and a a pointer within it.
 
 inline bool consIsPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
     return (p->consPins[o/64] >> (o&63)) != 0;
 }
 
 inline bool consIsNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
     return (p->newConsPins[o/64] >> (o&63)) != 0;
 }
 
 inline void consSetNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
     p->newConsPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
 }
 
 inline void consClearNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/(2*sizeof(LispObject));
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
     p->newConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
 }
 
@@ -299,22 +297,22 @@ inline void consClearNewPinned(uintptr_t a, Page* p)
 // objects.
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
     return (p->vecPins[o/64] >> (o&63)) != 0;
 }
 
 inline bool vecIsNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
     return (p->newVecPins[o/64] >> (o&63)) != 0;
 }
 
 inline void vecSetNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
     p->newVecPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
 }
 
 inline void vecClearNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p))/sizeof(LispObject);
+{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
     p->newVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
 }
 

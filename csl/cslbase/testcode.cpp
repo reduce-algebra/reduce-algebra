@@ -75,30 +75,31 @@ void gcTestCode()
         {
         default:
         case 0:
-            std::cout << "&&&set workbase 1\n";
             workbase[1] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&set workbase 1 = %a\n", workbase[1]);
             break;
         case 1:
-            std::cout << "&&&set workbase 2\n";
             workbase[2] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&set workbase 2 = %a\n", workbase[2]);
             break;
         case 2:
-            std::cout << "&&&set ambiguous 1\n";
             ambiguous[1] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&set ambiguous 1 = %a\n", ambiguous[1]);
             break;
         case 3:
-            std::cout << "&&&set ambiguous 2\n";
             ambiguous[2] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&set ambiguous 2 = %a\n", ambiguous[2]);
             break;
         case 4:
-            std::cout << "&&&reclaim\n";
-            displayAllPages("testcode before GC");
+            std::cout << "&&&provoke reclaim\n";
+            displayAllPages("memory before GC");
             Lgc(nil, fixnum_of_int(Crand()&0xffff));
+            displayAllPages("memory after after GC");
             std::cout << "&&&end reclaim\n";
-            displayAllPages("testcode after GC");
             break;
         }
     }
+    zprintf("&&&do one final GC\n");
     Lgc(nil, fixnum_of_int(0x999999));
 
 #if 0

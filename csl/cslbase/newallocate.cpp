@@ -378,6 +378,7 @@ void grabFreshPage(PageType type)
         consPages.count +
         vecPages.count +
         borrowPages.count;
+    zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);  
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
 // If the memory I have allocated thus far is less then 2/3 full I will

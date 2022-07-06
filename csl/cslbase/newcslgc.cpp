@@ -721,6 +721,68 @@ void evacuateFromCopiedData()
     }
 }
 
+// Iteration over a bitmap: I have bitmaps the record which items
+// are pinned and I wish to process just the items as identified in the
+// bitmaps. I can scan using the "number-of-trailing-zeros" function to
+// identify the next such item. The code I have here returns a value
+// static_cast<size_t>(-1) when there are no more pin bits present.
+
+uint64_t* bitmapPointer;
+size_t    bitmapSize;
+
+size_t    bitmapWordPos;
+uint64_t  bitmapWord;
+
+// In fact the bitmaps that I use cover the whole of the Page, but the
+// start of the page is filled up with for instance the bitmaps and so
+// should never be tagged. I could therefore improve this a bit by
+// starting my scan a little in to the start of the map. I avoid that for
+// the present in the name of simplicity.
+
+void startBitmapScan(uint64_t* p, size_t n)
+{   bitmapPointer = p;
+    my_assert(n > 0, "a bitmap must have at least one word in it");
+    bitmapSize    = n;
+    bitmapWordPos = 0;
+    bitmapWord    = bitmapPointer[bitmapWordPos];
+}
+
+static const uint64_t one64 = 1;
+static const size_t   badSize = -1;
+
+size_t nextInBitmap()
+{   if (bitmapWord != 0)             // One or more bits left in current word.
+    {   int n = ntz(bitmapWord);     // ... use the lowest one.
+        bitmapWord &= ~(one64 << n); // Clear it.
+        return 64*bitmapWordPos + n; // Return an overall offset.
+    }
+    do                               // Find next non-zero word.
+    {   if (bitmapWordPos == bitmapSize-1) return badSize;
+        bitmapWordPos++;
+        bitmapWord = bitmapPointer[bitmapWordPos];
+    } while (bitmapWord == 0);
+    int n = ntz(bitmapWord);         // Report the lowesxt bit in that word.
+    bitmapWord &= ~(one64 << n);
+    return 64*bitmapWordPos + n;
+}
+
+// These version convert from the index values reported by nextInBitmap()
+// into addresses within a Page. I have to have different versions for
+// Cons and Vec pages because the resolution used in the bitmaps
+// are different in the two cases.
+
+inline uintptr_t nextInConsBitmap(Page* p)
+{   size_t o = nextInBitmap();
+    if (o == badSize) return 0;
+    return reinterpret_cast<uintptr_t>(p->consData) + 2*sizeof(LispObject)*o;
+}
+
+inline uintptr_t nextInVecBitmap(Page* p)
+{   size_t o = nextInBitmap();
+    if (o == badSize) return 0;
+    return reinterpret_cast<uintptr_t>(p) + sizeof(LispObject)*o;
+}
+
 // Here I need to look at xPinPages because some of the pages may now
 // have fewer pinned items and xPages because some of them may now
 // have pinned items. I must create or re-create the layout needed
@@ -751,9 +813,13 @@ size_t rePinOneConsPage(Page* p)
     std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
     uintptr_t a = reinterpret_cast<uintptr_t>(&p->consData);
     size_t nPins = 0;
+    zprintf("rePin from %a to %a\n", a, reinterpret_cast<uintptr_t>(p+1));
     while (a != reinterpret_cast<uintptr_t>(p+1) &&
            consIsPinned(a, p))
-    {   a += sizeof(ConsCell);
+    {   cout  << "!!beginPin at "
+              << (a-reinterpret_cast<uintptr_t>(p)) << "\n";
+        zprintf("beginPin %a\n", a);
+        a += sizeof(ConsCell);
         nPins++;
     }
     if (a == reinterpret_cast<uintptr_t>(p+1)) return nPins;
@@ -762,10 +828,14 @@ size_t rePinOneConsPage(Page* p)
 // I have debugged things using this version I can use ntz() to search for
 // pinned items 64-cells at a time in the bitmap, thereby speeding this
 // up quite a lot. But this version is simpler so I use it first.
+
     while (a != reinterpret_cast<uintptr_t>(p+1))
-    {   if (consIsPinned(a, p))
+    {   if ((a & 0xffff) == 0) zprintf("check at %a\n", a);
+        if (consIsPinned(a, p))
         {   car(base) = a;
             base = a;
+            cout << "!!startPin at "
+                 << (a-reinterpret_cast<uintptr_t>(p)) << "\n";
             while (a != reinterpret_cast<uintptr_t>(p+1) &&
                    consIsPinned(a, p))
             {   a += sizeof(ConsCell);
@@ -775,6 +845,13 @@ size_t rePinOneConsPage(Page* p)
         else a += sizeof(ConsCell);
     }
     car(base) = a;
+// Well here is a loop using the bitmaps and displaying where pinned items are!
+// It should notice just the same locations as are detected above!
+    startBitmapScan(p->consPins, sizeof(p->consPins)/8);
+    uintptr_t nextPin;
+    while ((nextPin = nextInConsBitmap(p)) != 0)
+    {   zprintf("!!Pinned item at %a\n", nextPin);
+    }
     return nPins;
 }
 
@@ -1024,6 +1101,19 @@ void inner_garbage_collect()
                             c!=0;
                             c=cdr(c)-TAG_FIXNUM)
             {   zprintf("Pinned object at address %a\n", car(c)-TAG_FIXNUM);
+            }
+            if (pp->type == consPageType)
+            {   int n = 0;
+                zprintf("bitmaps for a cons page\n");
+                for (auto v:pp->consPins)
+                {   if (v != 0) zprintf("Map_% d: %16.16x\n", n, v);
+                    n++;
+                }
+                n = 0;
+                for (auto v:pp->newConsPins)
+                {   if (v != 0) zprintf("newMap_% d: %16.16x\n", n, v);
+                    n++;
+                }
             }
         }
     }
