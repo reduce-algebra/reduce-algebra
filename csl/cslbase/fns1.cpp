@@ -607,7 +607,7 @@ LispObject Lfixp(LispObject env, LispObject a)
 // fixnums. The code here is as in intergerp.
     if (is_fixnum(a)) return onevalue(lisp_true);
     else if (is_numbers(a))
-    {   Header h = *reinterpret_cast<Header *>(reinterpret_cast<char *>
+    {   Header h = *csl_cast<Header *>(csl_cast<char *>
                                                (a) - TAG_NUMBERS);
         if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
         else return onevalue(nil);
@@ -1911,8 +1911,8 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
     if (!is_vector(a) || !is_vector(b) ||
         vechdr(a) != STR24HDR ||
         vechdr(b) != STR24HDR) return aerror2("datelessp", a, b);
-    aa = reinterpret_cast<char *>(a) + (CELL - TAG_VECTOR);
-    bb = reinterpret_cast<char *>(b) + (CELL - TAG_VECTOR);
+    aa = csl_cast<char *>(a) + (CELL - TAG_VECTOR);
+    bb = csl_cast<char *>(b) + (CELL - TAG_VECTOR);
 // Layout is eg. "Wed May 12 15:50:23 1993"
 //                012345678901234567890123
 // Note that the year is 4 digits so that the year 2000 should hold
@@ -1982,7 +1982,7 @@ LispObject Lrepresentation2(LispObject env, LispObject a,
 }
 
 LispObject Lindirect(LispObject, LispObject a)
-{   return onevalue(*reinterpret_cast<LispObject *>(
+{   return onevalue(*csl_cast<LispObject *>(
                         static_cast<intptr_t>(sixty_four_bits(a))));
 }
 
@@ -2103,7 +2103,7 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
         return onevalue(nil);
     }
 #endif
-    r = encapsulate_pointer(reinterpret_cast<void *>(a));
+    r = encapsulate_pointer(csl_cast<void *>(a));
     return onevalue(r);
 }
 
@@ -2142,7 +2142,7 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     b = nullptr;
 #else
 #ifdef WIN32
-    b = reinterpret_cast<void *>(GetProcAddress(a, sname));
+    b = csl_cast<void *>(GetProcAddress(a, sname));
 #else
     b = dlsym(a, sname);
 #endif
@@ -2176,8 +2176,8 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
 // "void *" to the function pointer "void_function *" using intptr_t as
 // an intermediary. This is obviously undefined behaviour! But "The Spirit
 // of C" would give a clear indication of expectations!
-    ffi_call(&cif, reinterpret_cast<void_function *>(
-                       reinterpret_cast<uintptr_t>(f)), nullptr, nullptr);
+    ffi_call(&cif, csl_cast<void_function *>(
+                       csl_cast<uintptr_t>(f)), nullptr, nullptr);
     return onevalue(nil);
 }
 
@@ -2312,8 +2312,8 @@ static bool dumparg(int i, LispObject type, LispObject value)
 LispObject callf_n(LispObject fun, LispObject args)
 {   if (Lencapsulatedp(nil, fun) == nil)
         return aerror1("call-foreign-function", fun);
-    void_function *f = reinterpret_cast<void_function *>(
-                           reinterpret_cast<uintptr_t>(extract_pointer(fun)));
+    void_function *f = csl_cast<void_function *>(
+                           csl_cast<uintptr_t>(extract_pointer(fun)));
     LispObject currenttype = nil;
     unsigned int nargs = 0;
     while (args != nil)
@@ -2389,7 +2389,7 @@ LispObject callf_n(LispObject fun, LispObject args)
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &strres, vargs);
-        return onevalue(make_string(reinterpret_cast<const char *>(strres)));
+        return onevalue(make_string(csl_cast<const char *>(strres)));
     }
     else return aerror1("call-foreign-function", currenttype);
 }
@@ -2417,74 +2417,74 @@ static LispObject Lget_callback(LispObject env, LispObject a)
 {   void *r = nullptr;
     if (!is_fixnum(a)) return aerror("get_callback needs an integer arg");
     switch (int_of_fixnum(a))
-    {   case  0:  r = reinterpret_cast<void *>(execute_lisp_function);
+    {   case  0:  r = csl_cast<void *>(execute_lisp_function);
             break;
-        case  1:  r = reinterpret_cast<void *>(PROC_set_callbacks);
+        case  1:  r = csl_cast<void *>(PROC_set_callbacks);
             break;
-        case  2:  r = reinterpret_cast<void *>(PROC_load_package);
+        case  2:  r = csl_cast<void *>(PROC_load_package);
             break;
-        case  3:  r = reinterpret_cast<void *>(PROC_set_switch);
+        case  3:  r = csl_cast<void *>(PROC_set_switch);
             break;
-        case  4:  r = reinterpret_cast<void *>(PROC_gc_messages);
+        case  4:  r = csl_cast<void *>(PROC_gc_messages);
             break;
-        case  5:  r = reinterpret_cast<void *>(PROC_clear_stack);
+        case  5:  r = csl_cast<void *>(PROC_clear_stack);
             break;
-        case  6:  r = reinterpret_cast<void *>(PROC_push_symbol);
+        case  6:  r = csl_cast<void *>(PROC_push_symbol);
             break;
-        case  7:  r = reinterpret_cast<void *>(PROC_push_string);
+        case  7:  r = csl_cast<void *>(PROC_push_string);
             break;
-        case  8:  r = reinterpret_cast<void *>(PROC_push_small_integer);
+        case  8:  r = csl_cast<void *>(PROC_push_small_integer);
             break;
-        case  9:  r = reinterpret_cast<void *>(PROC_push_big_integer);
+        case  9:  r = csl_cast<void *>(PROC_push_big_integer);
             break;
-        case 10:  r = reinterpret_cast<void *>(PROC_push_floating);
+        case 10:  r = csl_cast<void *>(PROC_push_floating);
             break;
-        case 11:  r = reinterpret_cast<void *>(PROC_make_function_call);
+        case 11:  r = csl_cast<void *>(PROC_make_function_call);
             break;
-        case 12:  r = reinterpret_cast<void *>(PROC_save);
+        case 12:  r = csl_cast<void *>(PROC_save);
             break;
-        case 13:  r = reinterpret_cast<void *>(PROC_load);
+        case 13:  r = csl_cast<void *>(PROC_load);
             break;
-        case 14:  r = reinterpret_cast<void *>(PROC_dup);
+        case 14:  r = csl_cast<void *>(PROC_dup);
             break;
-        case 15:  r = reinterpret_cast<void *>(PROC_pop);
+        case 15:  r = csl_cast<void *>(PROC_pop);
             break;
-        case 16:  r = reinterpret_cast<void *>(PROC_simplify);
+        case 16:  r = csl_cast<void *>(PROC_simplify);
             break;
-        case 17:  r = reinterpret_cast<void *>(PROC_make_printable);
+        case 17:  r = csl_cast<void *>(PROC_make_printable);
             break;
-        case 18:  r = reinterpret_cast<void *>(PROC_get_value);
+        case 18:  r = csl_cast<void *>(PROC_get_value);
             break;
-        case 19:  r = reinterpret_cast<void *>(PROC_atom);
+        case 19:  r = csl_cast<void *>(PROC_atom);
             break;
-        case 20:  r = reinterpret_cast<void *>(PROC_null);
+        case 20:  r = csl_cast<void *>(PROC_null);
             break;
-        case 21:  r = reinterpret_cast<void *>(PROC_fixnum);
+        case 21:  r = csl_cast<void *>(PROC_fixnum);
             break;
-        case 22:  r = reinterpret_cast<void *>(PROC_floatnum);
+        case 22:  r = csl_cast<void *>(PROC_floatnum);
             break;
-        case 23:  r = reinterpret_cast<void *>(PROC_string);
+        case 23:  r = csl_cast<void *>(PROC_string);
             break;
-        case 24:  r = reinterpret_cast<void *>(PROC_symbol);
+        case 24:  r = csl_cast<void *>(PROC_symbol);
             break;
-        case 25:  r = reinterpret_cast<void *>(PROC_first);
+        case 25:  r = csl_cast<void *>(PROC_first);
             break;
-        case 26:  r = reinterpret_cast<void *>(PROC_rest);
+        case 26:  r = csl_cast<void *>(PROC_rest);
             break;
-        case 27:  r = reinterpret_cast<void *>(PROC_integer_value);
+        case 27:  r = csl_cast<void *>(PROC_integer_value);
             break;
-        case 28:  r = reinterpret_cast<void *>(PROC_floating_value);
+        case 28:  r = csl_cast<void *>(PROC_floating_value);
             break;
-        case 29:  r = reinterpret_cast<void *>(PROC_symbol_name);
+        case 29:  r = csl_cast<void *>(PROC_symbol_name);
             break;
-        case 30:  r = reinterpret_cast<void *>(PROC_string_data);
+        case 30:  r = csl_cast<void *>(PROC_string_data);
             break;
-        case 31:  r = reinterpret_cast<void *>(PROC_lisp_eval);
+        case 31:  r = csl_cast<void *>(PROC_lisp_eval);
             break;
-        case 32:  r = reinterpret_cast<void *>(PROC_get_raw_value);
+        case 32:  r = csl_cast<void *>(PROC_get_raw_value);
             break;
     }
-    return onevalue(make_lisp_integer64(reinterpret_cast<LispObject>(r)));
+    return onevalue(make_lisp_integer64(csl_cast<LispObject>(r)));
 }
 
 // This is a rather silly function put in here to help me debug exception

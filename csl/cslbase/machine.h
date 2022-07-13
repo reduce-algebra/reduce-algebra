@@ -60,6 +60,7 @@
 #include <iostream>
 #include <atomic>
 #include <string>
+#include <cstring>
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
@@ -110,6 +111,41 @@
 #else
 #define NOINLINE
 #endif // __GNUC__
+
+// The use of reinterpret_cast() to map between pointers and integer
+// types brings type aliasing issues. I think that this is a case where the
+// compiler could be entitled to believe that data in memory had not been
+// altered if the alteration was via a pointer that had cycled through
+// an integer phase - and in a Lisp system MANY items are flipped between
+// integers including tag bits and pointers. C++20 introduces bit_cast()
+// which is (I believe) intended to leave code safe against this in effect
+// but preventing some potential compiler "optimisation". But I want my
+// code to be buildable with earlier C++ versions, so I include a chunk
+// of code that is a "potential implementation" for bit_cast and that uses
+// std::memcpy as a "legal" way to move raw data around. This feels
+// hideously clumsy! This code fragment was found on
+//     https://en.cppreference.com/w/cpp/numeric/bit_cast
+// and by citing that I gain permission to use it.
+// I call my version "csl_cast" to avoid clash with any standard version.
+// When EVERYBODY uses C++20 I could possibly globally edit csl_cast to
+// bit_cast.
+
+template <class To, class From>
+std::enable_if_t<
+    sizeof(To) == sizeof(From) &&
+    std::is_trivially_copyable_v<From> &&
+    std::is_trivially_copyable_v<To>,
+    To>
+// constexpr support needs compiler magic
+csl_cast(const From& src) noexcept
+{
+    static_assert(std::is_trivially_constructible_v<To>,
+        "This implementation additionally requires "
+        "destination type to be trivially constructible");
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
 
 using std::cout;      // Make C++ output as in "cout << "string" << endl;" a
 using std::endl;      // lot nicer to write.

@@ -1,13 +1,11 @@
-// version.h                               Copyright (C) 1990-2021 Codemist
 
-#ifndef header_version_h
-#define header_version_h 1
+// bitmaps.cpp                                  Copyright (C) 2022 Codemist
 
 // $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2021, Codemist.                         A C Norman       *
+ * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,12 +33,65 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
 
-#define REVISION 6350
+// A little bit of test/demonstration code for bitmaps.h
+// This is not exactly comprehensive and it does not automate testing
+// but its output lets me do some checks by hand.
 
-#endif // header_version_h
+#include <cstdio>
+#include "bitmaps.h"
 
-// end of version.h
+int N, M;
+
+void print64(uint64_t a)
+{   for (int i=0; i<64; i++)
+    {   std::printf("%c", '0'+ ((a>>i) & 1));
+        N++;
+        if ((N%50) == 0) std::printf("\n");
+        else if ((N%10) == 0) std::printf(" ");
+    }
+}
+
+int main()
+{   uint64_t map[] = {
+        0x0000000000000000,
+        0x0000000000000000,
+        0x0000000000000000,
+        0x0000000000000000
+    };
+    setBit(map, 50);
+    setBits(map, 60, 130);
+    clearBits(map, 90, 110);
+    N = 0;
+    print64(map[0]);
+    print64(map[1]);
+    print64(map[2]);
+    print64(map[3]);
+    std::printf("\n");
+    M = 0;
+    size_t p = 0;
+    while ((p = nextOneBit(map, 4, p)) != SIZE_MAX)
+    {   std::printf("%4d", (int)p);
+        M++;
+        if ((M%10) == 0) std::printf("\n");
+        if (M > 300) std::abort();
+        N = 0;
+        p++;
+    }
+    std::printf("\n");
+    M = 0;
+    p = 0;
+    while ((p = nextZeroBit(map, 4, p)) != SIZE_MAX)
+    {   std::printf("%4d", (int)p);
+        M++;
+        if ((M%10) == 0) std::printf("\n");
+        if (M > 300) std::abort();
+        N = 0;
+        p++;
+    }
+    std::printf("\n");
+    return 0;
+}
+
+// end of bitmaps.cpp
+

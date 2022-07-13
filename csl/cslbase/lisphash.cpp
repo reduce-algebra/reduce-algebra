@@ -457,8 +457,7 @@ static uint64_t hash_byte_vector(uint64_t r, LispObject key)
 // it works byte by byte.
     UPDATE(r, (uint64_t)vechdr(key));
     size_t n = length_of_byteheader(vechdr(key))-CELL;
-    unsigned char *p = reinterpret_cast<unsigned char *>(&basic_ucelt(key,
-                       0));
+    unsigned char *p = reinterpret_cast<unsigned char *>(&basic_ucelt(key, 0));
     for (size_t i=0; i<n; i++) UPDATE32(r, *p++);
     return r;
 }
@@ -467,8 +466,7 @@ static uint64_t hash_halfword_vector(uint64_t r, LispObject key)
 {   UPDATE(r, (uint64_t)vechdr(key));
     size_t n = length_of_hwordheader(vechdr(key))-CELL/sizeof(
                    std::uint16_t);
-    std::uint16_t *p = reinterpret_cast<std::uint16_t *>(&basic_helt(key,
-                       0));
+    std::uint16_t *p = reinterpret_cast<std::uint16_t *>(&basic_helt(key, 0));
     for (size_t i=0; i<n; i++) UPDATE32(r, *p++);
     return r;
 }

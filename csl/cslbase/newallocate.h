@@ -133,14 +133,14 @@ extern PageList borrowPages;       // Temporarily active pages.
 extern PageList consOldPages;      // Used during GC.
 extern PageList vecOldPages;       // Ditto.
 
-extern Page* consCurrent;       // Where cons cells are allocated.
-extern Page* vecCurrent;        // Where vectors are allocated.
-extern Page* borrowCurrent;     // Where temporary vectors are allocated.
+extern Page* consCurrent;          // Where cons cells are allocated.
+extern Page* vecCurrent;           // Where vectors are allocated.
+extern Page* borrowCurrent;        // Where temporary vectors are allocated.
 
-extern Page* potentiallyPinned; // For GC.
-extern Page* pinnedPages;       // For GC.
-extern Page* pendingPages;      // For GC.
-
+extern Page* potentiallyPinned;    // For GC.
+extern Page* pinnedPages;          // For GC.
+extern Page* pendingPages;         // For GC.
+extern Page* oldVecPinPages;       // for GC.
 
 // Define two structs used when setting out the rest of the
 // layout. In many respects the most important thing about these is
@@ -153,6 +153,19 @@ struct alignas(2*sizeof(LispObject)) ConsCell
 struct alignas(chunkSize) Chunk
 {   uintptr_t data[chunkSize/sizeof(uintptr_t)];
 };
+
+// In each case here the "/64" is because the bitmaps I use are
+// always based on uint64_t words. This may add to cost on 32-bit machines
+// but having a uniform word size in bitmaps leads to cleaner simpler code
+// for me.
+
+INLINE_VAR const size_t consPinSize = pageSize/sizeof(ConsCell)/64;
+INLINE_VAR const size_t chunkStatusSize = pageSize/chunkSize;
+INLINE_VAR const size_t chunkStatusMapSize = chunkStatusSize/64;
+// Note that vector pinning always works to resolution 8 bytes because on
+// a 32-bit machine all vector-like objects are kept aligned on 8 byte
+// boundaries, with padding if necessary.
+INLINE_VAR const size_t vecPinSize = pageSize/8/64;
 
 class alignas(pageSize) Page
 {
@@ -192,24 +205,29 @@ public:
 // feels uncomfortable!
             union
             {   struct
-                {   uint64_t consPins[pageSize/
-                                        (2*sizeof(LispObject))/
-                                        (8*sizeof(uint64_t))];
-                    uint64_t newConsPins[pageSize/
-                                           (2*sizeof(LispObject))/
-                                           (8*sizeof(uint64_t))];
+                {   uint64_t consPins[consPinSize];
+                    uint64_t newConsPins[consPinSize];
                     ConsCell consData[1];
                 };
                 struct
                 {   bool potentiallyPinnedFlag;
                     Page* potentiallyPinnedChain;
+                    bool hasVecPins;
+                    Page* oldVecPinPages;
 // I make chunkStatus an array of uint8_t values so that I understand
 // its layout very clearly. The values stored are explained elsewhere.
-                    uint8_t  chunkStatus[pageSize/chunkSize];
-                    uint64_t potentiallyPinnedChunks[pageSize/
-                                                     chunkSize/(8*sizeof(uint64_t))];
-                    uint64_t vecPins[pageSize/8/(8*sizeof(uint64_t))];
-                    uint64_t newVecPins[pageSize/8/(8*sizeof(uint64_t))];
+                    uint8_t  chunkStatus[chunkStatusSize];
+// chunkStatusMap[] has one bit for each item in chunkStatus[], and that is
+// a 1 if the indicated chunk is a pinned simple chunk or is a chunk within
+// a pinned extended chunk. This plus "clz()" makes scanning forward to find
+// the start of a free chunk or the end of a block of free chunks fairly
+// cheap. Findding the end if a pinned extended chunk is a bit messier
+// but can be done by finding the next free chunk then checking the backwards
+// chaining in chunkStatus[] to skip back past any pinned chunks adjacent to
+// the one being considered.
+                    uint64_t chunkStatusMap[chunkStatusMapSize];
+                    uint64_t vecPins[vecPinSize];
+                    uint64_t newVecPins[vecPinSize];
                     Chunk chunks[1];
                 };
             };
@@ -238,57 +256,57 @@ inline Page* PageListIter::operator++()
 INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
 
 inline size_t chunkNoFromAddress(Page* p, uintptr_t a)
-{   my_assert((a - reinterpret_cast<uintptr_t>(p))/chunkSize <= 512, LOCATION);
-    return (a - reinterpret_cast<uintptr_t>(p))/chunkSize;
+{   my_assert((a - csl_cast<uintptr_t>(p))/chunkSize <= 512, LOCATION);
+    return (a - csl_cast<uintptr_t>(p))/chunkSize;
 }
 
 inline uintptr_t addressFromChunkNo(Page* p, size_t n)
 {   my_assert(n <= 512, LOCATION);
-    return reinterpret_cast<uintptr_t>(p) + chunkSize*n;
+    return csl_cast<uintptr_t>(p) + chunkSize*n;
 }
 
 inline bool isPotentiallyPinned(Page* p, uintptr_t a)
 {   size_t chunkNo = chunkNoFromAddress(p, a);
-    return ((p->potentiallyPinnedChunks[chunkNo/64] >>
-             (chunkNo & 63)) & 1) != 0;
+    return ((p->chunkStatusMap[chunkNo/64] >>
+             (chunkNo%64)) & 1) != 0;
 }
 
 inline void setPotentiallyPinned(Page* p, uintptr_t a)
 {   size_t chunkNo = chunkNoFromAddress(p, a);
-    p->potentiallyPinnedChunks[chunkNo/64] |=
-        static_cast<uint64_t>(1) << (chunkNo & 63);
+    p->chunkStatusMap[chunkNo/64] |=
+        static_cast<uint64_t>(1) << (chunkNo%64);
 }
 
 inline bool isPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   return ((p->potentiallyPinnedChunks[chunkNo/64] >>
-             (chunkNo & 63)) & 1) != 0;
+{   return ((p->chunkStatusMap[chunkNo/64] >>
+             (chunkNo%64)) & 1) != 0;
 }
 
 inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   p->potentiallyPinnedChunks[chunkNo/64] |=
-        static_cast<uint64_t>(1) << (chunkNo & 63);
+{   p->chunkStatusMap[chunkNo/64] |=
+        static_cast<uint64_t>(1) << (chunkNo%64);
 }
 
 // Here p must be a CONS page and a a pointer within it.
 
 inline bool consIsPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
-    return (p->consPins[o/64] >> (o&63)) != 0;
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
+    return ((p->consPins[o/64] >> (o%64)) & 1) != 0;
 }
 
 inline bool consIsNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
-    return (p->newConsPins[o/64] >> (o&63)) != 0;
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
+    return ((p->newConsPins[o/64] >> (o%64)) & 1) != 0;
 }
 
 inline void consSetNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
-    p->newConsPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
+    p->newConsPins[o/64] |= static_cast<uint64_t>(1) << (o%64);
 }
 
 inline void consClearNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
-    p->newConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->consData))/(2*sizeof(LispObject));
+    p->newConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o%64));
 }
 
 // And versions for VEC pages, which pin with granularity a single
@@ -297,23 +315,23 @@ inline void consClearNewPinned(uintptr_t a, Page* p)
 // objects.
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
-    return (p->vecPins[o/64] >> (o&63)) != 0;
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
+    return ((p->vecPins[o/64] >> (o%64)) & 1) != 0;
 }
 
 inline bool vecIsNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
-    return (p->newVecPins[o/64] >> (o&63)) != 0;
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
+    return ((p->newVecPins[o/64] >> (o%64)) & 1) != 0;
 }
 
 inline void vecSetNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
-    p->newVecPins[o/64] |= static_cast<uint64_t>(1) << (o&63);
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
+    p->newVecPins[o/64] |= static_cast<uint64_t>(1) << (o%64);
 }
 
 inline void vecClearNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - reinterpret_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
-    p->newVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o&63));
+{   uintptr_t o = (a - csl_cast<uintptr_t>(p->chunks))/sizeof(LispObject);
+    p->newVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o%64));
 }
 
 
@@ -508,10 +526,10 @@ inline void displayConsPage(Page* p)
     zprintf("scanPoint=%a dataEnd=%a initialLimit=%a\n",
         p->scanPoint, p->dataEnd, p->initialLimit);
     uintptr_t prev = 0x1234567887654321u;
-    for (uintptr_t q=reinterpret_cast<uintptr_t>(&p->consData);
+    for (uintptr_t q=csl_cast<uintptr_t>(&p->consData);
                    q<p->dataEnd;
                    q+=sizeof(uintptr_t))
-    {   uintptr_t n = *reinterpret_cast<uintptr_t*>(q);
+    {   uintptr_t n = *csl_cast<uintptr_t*>(q);
         if (n != prev)
         {   zprintf("%a: %a\n", q, n);
             prev = n;
@@ -586,7 +604,7 @@ inline uintptr_t harderGet2Words()
 // When I skip pinned data and if there is space beyond same then the first
 // word of that region holds a pointer showing where the next usable
 // section of memory ends.
-    consLimit = *reinterpret_cast<uintptr_t*>(consFringe);
+    consLimit = *csl_cast<uintptr_t*>(consFringe);
 // Now I can allocate.
     uintptr_t r = consFringe;
     consFringe += 2*sizeof(LispObject);
@@ -614,7 +632,7 @@ inline Header makeHeader(size_t n, int type)   // size is in bytes
 // memory. This does the job. Note that a is an untagged pointer here.
 
 inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
-{   *reinterpret_cast<uintptr_t*>(a) = makeHeader(n, type);
+{   *csl_cast<uintptr_t*>(a) = makeHeader(n, type);
 }
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
@@ -666,7 +684,8 @@ inline uintptr_t getNBytes(size_t n, Page* current,
         }
 // Now fringe points at the start of a chunk. In some cases that will
 // mean I can just move on and use that chunk easily. Note that this
-// requires chunkStatus[] to have been initialised to BasicChunk
+// requires chunkStatus[] to have been initialised to BasicChunk all
+// the way through the page.
         if (n <= chunkSize && fringe != limit)
         {   r = fringe;
             fringe += n;
@@ -687,6 +706,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // chunkNo is now the number of the chunk that I had reached at limit. I
 // will skip over any pinned chunks. If there are any then stopCache needs
 // resetting.
+// Hmmm can I make chunkStatusMap[] help me here?
         while (chunkNo<sizeof(current->chunkStatus) &&
                current->chunkStatus[chunkNo] != BasicChunk)
         {   chunkNo++;
@@ -698,6 +718,12 @@ inline uintptr_t getNBytes(size_t n, Page* current,
         if (stopCache >= 0 && false) stopPoint = stopCache;
         else
         {   stopPoint = chunkNo;
+// HA HA this at present looks in chunkStatus for the end of a current run
+// of basic chunks. Well apart from the end of page the only thing that
+// could apply would be that start of a pinned chunk of some sort, so I
+// can in due couse use ntz() on entried in chunkStatusMap so that I
+// scan up in units of 64 rather than 1
+#pragma message "Use chunkStatusMap[] to speed this up"
             while (stopPoint<sizeof(current->chunkStatus) &&
                    current->chunkStatus[stopPoint] == BasicChunk)
                 stopPoint++;
@@ -800,13 +826,13 @@ inline Page* initBorrowPage(Page* p, bool empty)
     p->borrowChain = borrowPages.page();
     p->borrowPinned = !empty;
     borrowPages.page() = p;
-    borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
+    borrowEnd = csl_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {
 // I do not need to do anything with pinning bitmaps here, but I must
 // initialise chunkStatus since that is used during allocation.
         std::memset(p->chunkStatus, BasicChunk, sizeof(p->chunkStatus));
-        borrowFringe = p->scanPoint = reinterpret_cast<uintptr_t>(&p->chunks);
+        borrowFringe = p->scanPoint = csl_cast<uintptr_t>(&p->chunks);
         borrowLimit = borrowEnd;
     }
     else
@@ -1051,32 +1077,32 @@ void initHeapSegments(double n);
 // generated code.
 
 inline int findSegment2(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+1])) return n;
+{   if (p < csl_cast<uintptr_t>(heapSegment[n+1])) return n;
     else return n+1;
 }
 
 inline int findSegment4(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+2]))
+{   if (p < csl_cast<uintptr_t>(heapSegment[n+2]))
         return findSegment2(p, n);
     else return findSegment2(p, n+2);
 }
 
 inline int findSegment8(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+4]))
+{   if (p < csl_cast<uintptr_t>(heapSegment[n+4]))
         return findSegment4(p, n);
     else return findSegment4(p, n+4);
 }
 
 inline int findSegment16(uintptr_t p, int n)
-{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+8]))
+{   if (p < csl_cast<uintptr_t>(heapSegment[n+8]))
         return findSegment8(p, n);
     else return findSegment8(p, n+8);
 }
 
 inline int findHeapSegment(uintptr_t p)
 {   int n = findSegment16(p, 0);
-    if (p < reinterpret_cast<uintptr_t>(heapSegment[n]) ||
-        p >= reinterpret_cast<uintptr_t>(heapSegment[n]) +
+    if (p < csl_cast<uintptr_t>(heapSegment[n]) ||
+        p >= csl_cast<uintptr_t>(heapSegment[n]) +
         heapSegmentSize[n]) return -1;
     return n;
 }
@@ -1114,10 +1140,10 @@ inline const char* Addr(uintptr_t p)
     }
     int hs = findHeapSegment(p);
     if (hs != -1)
-    {   uintptr_t segBase = reinterpret_cast<uintptr_t>(heapSegment[hs]);
+    {   uintptr_t segBase = csl_cast<uintptr_t>(heapSegment[hs]);
         uintptr_t o = p - segBase;
         uintptr_t pNum = o/pageSize;
-        Page* pp = reinterpret_cast<Page*>(segBase + pNum*pageSize); 
+        Page* pp = csl_cast<Page*>(segBase + pNum*pageSize); 
         uintptr_t pOff = o%pageSize;
         if (pp->type==consPageType &&
             pOff >= offsetof(Page, consData))
@@ -1174,13 +1200,13 @@ inline const char* Addr(T p)
 // data within a Page!
 
 inline uintptr_t unAddr(uintptr_t p, uintptr_t o)
-{    return reinterpret_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
+{    return csl_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
 }
 
 // .. and extra for the case of addresses in segments 1 and beyond.
 
 inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
-{    return reinterpret_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
+{    return csl_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
 }
 
 // This finds a page that a potential pointer p is within, or returns nullptr
@@ -1189,130 +1215,9 @@ inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
 inline Page* findPage(uintptr_t p)
 {   int n = findHeapSegment(p);
     if (n < 0) return nullptr;
-    return reinterpret_cast<Page*>(p & -pageSize);
+    return csl_cast<Page*>(p & -pageSize);
 }
-
-#ifdef __GNUC__
-
-// Note that __GNUC__ also gets defined by clang on the Macintosh, so
-// this code is probably optimized there too. This must NEVER be called
-// with a zero argument. Also note that this function is also defined
-// in arithlib.hpp, but since it is "inline" there is not need to worry
-// about having multiple definitions, although it will be best if they
-// all match.
-
-// Count the leading zeros in a 64-bit word.
-
-inline int nlz(uint64_t x)
-{   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
-}
-
-// Count the trailing zeros in a 64-bit word.
-
-inline int ntz(uint64_t x)
-{   return __builtin_ctzll(x);  // Must use the 64-bit version.
-}
-
-#else // __GNUC__
-
-#ifdef OLD_VERSION
-
-inline int nlz(uint64_t x)
-{   int n = 0;
-    if (x <= 0x00000000FFFFFFFFU)
-    {   n = n + 32;
-        x = x << 32;
-    }
-    if (x <= 0x0000FFFFFFFFFFFFU)
-    {   n = n + 16;
-        x = x << 16;
-    }
-    if (x <= 0x00FFFFFFFFFFFFFFU)
-    {   n = n + 8;
-        x = x << 8;
-    }
-    if (x <= 0x0FFFFFFFFFFFFFFFU)
-    {   n = n + 4;
-        x = x << 4;
-    }
-    if (x <= 0x3FFFFFFFFFFFFFFFU)
-    {   n = n + 2;
-        x = x << 2;
-    }
-    if (x <= 0x7FFFFFFFFFFFFFFFU)
-    {   n = n + 1;
-    }
-    return n;
-}
-
-#else // OLD_VERSION
-
-// This version seems faster to me.
-
-inline int nlz(uint64_t x)
-{   x |= x>>1;
-    x |= x>>2;
-    x |= x>>4;
-    x |= x>>8;
-    x |= x>>16;
-    x |= x>>32;
-// Now x is a number with all bits up as far as its highest one set, and I
-// have achieved that without performing any tests. Now I can use a lookup
-// table in much the same wau as I do for trailing zero bits.
-    static int8_t nlzTable[67] =
-    {   64,  63,  25,  62,  49,  24,  41,  61,  52,  48,
-         5,  23,  45,  40,  10,  60,   0,  51,  54,  47,
-         2,   4,  36,  22,  34,  44,  13,  39,  20,   9,
-        17,  59,  32,  -1,  26,  50,  42,  53,   6,  46,
-        11,   1,  55,   3,  37,  35,  14,  21,  18,  33,
-        27,  43,   7,  12,  56,  38,  15,  19,  28,   8,
-        57,  16,  29,  58,  30,  31,  -1
-    };
-    return nlzTable[x % 67];
-}
-
-#endif // OLD_VERSION
-
-// This code is to identify the least significant bit in a 64-bit
-// value. The function leastBit() just removes all other bits. It is probably
-// not going to be used a lot.
-
-uint64_t leastBit(uint64_t n)
-{   return n & (-n);
-}
-
-// ntz find the bit-number of the least significant bit, So here are some
-// values it will return:
-//    1      0
-//    2      1
-//    4      2
-//    8      3
-//   16      4
-// etc. The name is for "Number of Trailing Zeros".
-// If the input value is zero it returns -1, but the GNU builtin does not
-// guarantee any such behaviour, so zero input should be considered illegal.
-
-// This is related to the function intlog2() in tags.h, but that function
-// is only to be applied on inputs that are a power of 2.
-
-int ntz(uint64_t n)
-{   static int8_t lsbTable[67] =
-    {  -1,   0,   1,  39,   2,  15,  40,  23,   3,  12,
-       16,  59,  41,  19,  24,  54,   4,  -1,  13,  10,
-       17,  62,  60,  28,  42,  30,  20,  51,  25,  44,
-       55,  47,   5,  32,  -1,  38,  14,  22,  11,  58,
-       18,  53,  63,   9,  61,  27,  29,  50,  43,  46,
-       31,  37,  21,  57,  52,   8,  26,  49,  45,  36,
-       56,   7,  48,  35,   6,  34,  33,  -1
-    };
-    else return lsbTable[leastBit(n) % 67];
-}
-
-#endif // __GNUC__
-#define NLZ_DEFINED 1
-#define NTZ_DEFINED 1
 
 #endif // header_newallocate_h
 
 // end of newallocate.h
-

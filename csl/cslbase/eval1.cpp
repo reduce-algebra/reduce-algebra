@@ -1721,7 +1721,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Attach to the shared segment to obtain a memory address via which it can be
 // accessed. Again raise an error if this fails.
     shared = reinterpret_cast<char *>(shmat(segid, nullptr, 0));
-    if (shared == reinterpret_cast<char *>(-1))
+    if (shared == csl_cast<char *>(static_cast<uintptr_t>(-1)))
         return aerror("Unable to attach to shared segment");
 // the shared segment is set up to contain null strings in the two places
 // where it might be used to hold return values.
@@ -1878,7 +1878,7 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
     }
     THREADID;
     term_printf("Stack depth %" PRIuPTR "\n",
-                reinterpret_cast<uintptr_t>(stack) - stackBase);
+                csl_cast<uintptr_t>(stack) - stackBase);
     for (int i=m; i<=n; i++)
     {   term_printf("%d: ", i);
         prin_to_terminal(stack[-i]);

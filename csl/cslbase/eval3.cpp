@@ -792,7 +792,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
             bv = *sp--;
             n = length_of_header(vechdr(bv));
             while (n>CELL)
-            {   LispObject v = *reinterpret_cast<LispObject *>(
+            {   LispObject v = *csl_cast<LispObject *>(
                                    (intptr_t)bv + n - (CELL + TAG_VECTOR));
                 n -= CELL;
                 setvalue(v, *sp--);

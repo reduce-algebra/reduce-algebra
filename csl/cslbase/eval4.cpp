@@ -224,7 +224,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
 #endif
     int nargs = countargs(a4up);
     LispObject r = car(qenv(def));   // the vector of bytecodes
-    if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
+    if (nargs != (csl_cast<unsigned char *>(data_of_bps(r)))[0])
         return error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
     RealSave save(THREADARG def, a1, a2, a3);
@@ -292,8 +292,8 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // In this case the first 2 bytes of the bytecode stream give and upper and
 // lower bound for arguments ahead of any &REST ones.
     r = car(qenv(def));
-    wantargs = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0];
-    wantopts = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[1];
+    wantargs = (csl_cast<unsigned char *>(data_of_bps(r)))[0];
+    wantopts = (csl_cast<unsigned char *>(data_of_bps(r)))[1];
     if (nargs < wantargs || (!restp && nargs > wantargs+wantopts))
         return error(2, err_wrong_no_args, def,
                         fixnum_of_int((int32_t)nargs));
