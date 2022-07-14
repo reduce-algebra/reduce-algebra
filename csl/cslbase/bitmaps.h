@@ -45,17 +45,18 @@
 
 #ifndef __has_include
 #define __has_include(name) 0
-#endif
+#endif // __has_include
+#if __has_include(<bit>)
+#include <bit>
+#endif // <bit> header
 
 using std::uint64_t;
 using std::size_t;
 
-#if defined _cpp_lib_bitops && __has_include(<bit>)
+#if defined _cpp_lib_bitops
 
 // C++20 provides functions for counting zeros. Unlike the GNU intrinsics
 // they have defined behaviour when presented with a zero word.
-
-#include <bit>
 
 inline int nlz(uint64_t x)
 {   return countl_zero(x);
@@ -143,18 +144,19 @@ int ntz(uint64_t n)
 }
 
 #endif // __GNUC__
+
 #define NLZ_DEFINED 1
 #define NTZ_DEFINED 1
 
 
 // These functions view map[] as an array of 64-bit values with bits counted
 // least significant first. They set, clear or test bits. The ones that work
-// on ranges handle bits from m to n inclusive and the test returns true if
-// any of the bits in the range are set. nextOneBit() and friends return
-// the index of the next relevant set of cleared bit at or beyond the location
-// specified, and need to know the size (measured in 64-bit words) of the
-// map because there may not be a further bit to report. In that case
-// they return SIZE_MAX.
+// on ranges handle bits from m up with a given length and the test returns
+// true if any of the bits in the range are set.
+// nextOneBit() and friends return the index of the next relevant set or
+// cleared bit at or beyond the location specified, and need to know the
+// size (measured in 64-bit words) of the map because there may not be a
+// further bit to report. In that case they return SIZE_MAX.
 
 // Everything here assumes that n is such that the nth bit is within the
 // map array. Not overflow checks are made.
@@ -174,10 +176,11 @@ inline bool testBit(uint64_t map[], size_t n)
     return ((map[word] >> (n%64)) & 1) != 0;
 }
 
-// These work on the bits from m to n inclusive. They assume n>=m.
+// These work on the bits from m to m+length-1 inclusive.
 
-inline void setBits(uint64_t map[], size_t m, size_t n)
+inline void setBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
     size_t word1 = m/64;
     size_t word2 = n/64;
     size_t bitpos1 = m%64;
@@ -192,8 +195,9 @@ inline void setBits(uint64_t map[], size_t m, size_t n)
     }
 }
 
-inline void clearBits(uint64_t map[], size_t m, size_t n)
+inline void clearBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
     size_t word1 = m/64;
     size_t word2 = n/64;
     size_t bitpos1 = m%64;
@@ -208,8 +212,9 @@ inline void clearBits(uint64_t map[], size_t m, size_t n)
     }
 }
 
-inline bool testBits(uint64_t map[], size_t m, size_t n)
+inline bool testBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
     size_t word1 = m/64;
     size_t word2 = n/64;
     size_t bitpos1 = m%64;
@@ -226,7 +231,7 @@ inline bool testBits(uint64_t map[], size_t m, size_t n)
 }
 
 // This finds the next bit at or beyond n that is set supposing there is
-// one present in the map.
+// one present in the map. If not it returns SIZE_MAX.
 
 inline size_t nextOneBit(uint64_t map[], size_t mapSize, size_t n)
 {
@@ -257,8 +262,8 @@ inline size_t nextZeroBit(uint64_t map[], size_t mapSize, size_t n)
     if (word >= mapSize) return SIZE_MAX;
     size_t bitpos = n%64;
     n -= bitpos;          // now n refers to a word boundary.
-    uint64_t bits;
     static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
     if ((bits = ~map[word] & (ones<<bitpos)) != 0)
         return n + ntz(bits);
 // Skip past any words that are all ones in the map.
@@ -270,14 +275,38 @@ inline size_t nextZeroBit(uint64_t map[], size_t mapSize, size_t n)
     return n + ntz(bits);
 }
 
-#include <cstdlib> // for abort()
-
 inline size_t previousOneBit(uint64_t map[], size_t n)
-{   abort();
+{   if (n == SIZE_MAX) return SIZE_MAX;
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = map[word] & (ones >> (63-bitpos))) != 0)
+        return n + 63 - nlz(bits);
+    do
+    {   if (word == 0) return SIZE_MAX;
+        word--;
+        n -= 64;
+    } while ((bits = map[word]) == 0);
+    return n + 63 - nlz(bits);
 }
 
 inline size_t previousZeroBit(uint64_t map[], size_t n)
-{   abort();
+{   if (n == SIZE_MAX) return SIZE_MAX;
+    size_t word = n/64;
+    size_t bitpos = n%64;
+    n -= bitpos;
+    static const uint64_t ones = static_cast<uint64_t>(-1);
+    uint64_t bits;
+    if ((bits = ~map[word] & (ones >> (63-bitpos))) != 0)
+        return n + 63 - nlz(bits);
+    do
+    {   if (word == 0) return SIZE_MAX;
+        word--;
+        n -= 64;
+    } while ((bits = ~map[word]) == 0);
+    return n + 63 - nlz(bits);
 }
 
 #endif // header_bitmaps_h

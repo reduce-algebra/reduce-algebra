@@ -39,13 +39,19 @@
 // but its output lets me do some checks by hand.
 
 #include <cstdio>
+
 #include "bitmaps.h"
 
-int N, M;
+static int N, M;
+
+// This displays a 64-bit value in binary, using I and O rather than 1 and 0
+// for the first bit. It displays least significant bit first, and splits
+// its output every 10 characters.
 
 void print64(uint64_t a)
 {   for (int i=0; i<64; i++)
-    {   std::printf("%c", '0'+ ((a>>i) & 1));
+    {   if (i == 0) std::printf("%c", "OI"[(a>>i) & 1]);
+        else std::printf("%c", '0'+ ((a>>i) & 1));
         N++;
         if ((N%50) == 0) std::printf("\n");
         else if ((N%10) == 0) std::printf(" ");
@@ -60,8 +66,10 @@ int main()
         0x0000000000000000
     };
     setBit(map, 50);
-    setBits(map, 60, 130);
-    clearBits(map, 90, 110);
+    setBits(map, 60, 71);
+    clearBits(map, 90, 21);
+    setBit(map, 191);
+    setBit(map, 192);
     N = 0;
     print64(map[0]);
     print64(map[1]);
@@ -70,24 +78,42 @@ int main()
     std::printf("\n");
     M = 0;
     size_t p = 0;
-    while ((p = nextOneBit(map, 4, p)) != SIZE_MAX)
+    printf("Find Ones forward\n");
+    while ((p = nextOneBit(map, sizeof(map)/sizeof(map[0]), p)) != SIZE_MAX)
     {   std::printf("%4d", (int)p);
         M++;
-        if ((M%10) == 0) std::printf("\n");
-        if (M > 300) std::abort();
-        N = 0;
+        if ((M%20) == 0) std::printf("\n");
         p++;
     }
     std::printf("\n");
     M = 0;
     p = 0;
-    while ((p = nextZeroBit(map, 4, p)) != SIZE_MAX)
+    printf("Find Zeros forward\n");
+    while ((p = nextZeroBit(map, sizeof(map)/sizeof(map[0]), p)) != SIZE_MAX)
     {   std::printf("%4d", (int)p);
         M++;
-        if ((M%10) == 0) std::printf("\n");
-        if (M > 300) std::abort();
-        N = 0;
+        if ((M%20) == 0) std::printf("\n");
         p++;
+    }
+    std::printf("\n");
+    M = 0;
+    p = 8*sizeof(map)-1;
+    printf("Find Ones backward\n");
+    while ((p = previousOneBit(map, p)) != SIZE_MAX)
+    {   std::printf("%4d", (int)p);
+        M++;
+        if ((M%20) == 0) std::printf("\n");
+        p--;
+    }
+    std::printf("\n");
+    M = 0;
+    p = 8*sizeof(map)-1;
+    printf("Find Zeros backward\n");
+    while ((p = previousZeroBit(map, p)) != SIZE_MAX)
+    {   std::printf("%4d", (int)p);
+        M++;
+        if ((M%20) == 0) std::printf("\n");
+        p--;
     }
     std::printf("\n");
     return 0;
