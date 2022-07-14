@@ -703,7 +703,7 @@ LispObject Expt::op(Fixnum a, std::uint64_t *b)
         default:
             if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
             return aerror1("bad argument for expt",
-                    reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+                    csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
     }
 }
 
@@ -711,7 +711,7 @@ LispObject Expt::op(Fixnum a, std::uint64_t *b)
 LispObject Expt::op(std::uint64_t *a, std::uint64_t *b)
 {   if (arithlib_lowlevel::Minusp::op(b)) return fixnum_of_int(0);
     return aerror1("bad argument for expt",
-            reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+            csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
 }
 
 // rational ** bignum
@@ -729,7 +729,7 @@ LispObject Expt::op(Cpx a, std::uint64_t *b)
         Zerop::op(a.imag_part()))
     {   if (Minusp::op(b))
             return aerror1("bad argument for expt",
-                    reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+                    csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
         else return a.value();  // (0+0i)^N
     }
     if (Onep::op(a.real_part()) &&
@@ -760,31 +760,31 @@ LispObject Expt::op(Cpx a, std::uint64_t *b)
         }
     }
     return aerror1("bad argument for expt",
-            reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+            csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
 }
 
 // short float ** bignum
 LispObject Expt::op(SFlt a, std::uint64_t *b)
 {   return aerror1("bad argument for expt",
-            reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+            csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
 }
 
 // single float ** bignum
 LispObject Expt::op(Flt a, std::uint64_t *b)
 {   return aerror1("bad argument for expt",
-            reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+            csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
 }
 
 // double float ** bignum
 LispObject Expt::op(double a, std::uint64_t *b)
 {   return aerror1("bad argument for expt",
-            reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+            csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
 }
 
 // long float ** bignum
 LispObject Expt::op(LFlt a, std::uint64_t *b)
 {   return aerror1("bad argument for expt",
-            reinterpret_cast<LispObject>(TAG_NUMBERS+reinterpret_cast<char *>(b)-8));
+            csl_cast<LispObject>(TAG_NUMBERS+csl_cast<char *>(b)-8));
 }
 
 // fixnum ** rational

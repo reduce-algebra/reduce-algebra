@@ -902,7 +902,7 @@ inline void do_freebind(LispObject bvec)
     THREADID;
     n = length_of_header(vechdr(bvec));
     for (k=CELL; k<n; k+=CELL)
-    {   LispObject v = *reinterpret_cast<LispObject *>(
+    {   LispObject v = *csl_cast<LispObject *>(
             static_cast<intptr_t>(bvec) + k - TAG_VECTOR);
         *++stack = qvalue(v);
         setvalue(v, nil);
@@ -921,7 +921,7 @@ inline void do_freerstr()
     bv = *stack--;
     n = length_of_header(vechdr(bv));
     while (n>CELL)
-    {   LispObject v = *reinterpret_cast<LispObject *>(
+    {   LispObject v = *csl_cast<LispObject *>(
             static_cast<intptr_t>(bv) + n - (CELL + TAG_VECTOR));
         n -= CELL;
         LispObject v1 = *stack--;;

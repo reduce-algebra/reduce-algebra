@@ -87,9 +87,9 @@ static void copy(LispObject *p)
 // This copies the object pointed at by p from the old to the new semi-space,
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
-{   char *fr = reinterpret_cast<char *>(reinterpret_cast<uintptr_t>
+{   char *fr = csl_cast<char *>(csl_cast<uintptr_t>
                                         (lfringe)),
-               *vfr = reinterpret_cast<char *>(reinterpret_cast<uintptr_t>(vfringe));
+               *vfr = csl_cast<char *>(csl_cast<uintptr_t>(vfringe));
     char *tr_fr = fr, *tr_vfr = vfr;
     void *p1;
 #define CONT           0
@@ -130,12 +130,12 @@ static void copy(LispObject *p)
 // words (size SPARE bytes) so that I can afford to do several cons operations
 // between tests.  Here I do careful tests on every step, and so I can
 // sail much closer to the wind wrt filling up space.
-                    if (fr <= reinterpret_cast<char *>(
-                            reinterpret_cast<uintptr_t>(lheaplimit) - SPARE + 32))
-                    {   char *hl = reinterpret_cast<char *>(
+                    if (fr <= csl_cast<char *>(
+                            csl_cast<uintptr_t>(lheaplimit) - SPARE + 32))
+                    {   char *hl = csl_cast<char *>(
                                        static_cast<intptr_t>(lheaplimit));
                         void *p;
-                        setcar(reinterpret_cast<LispObject>(fr), SPID_GCMARK);
+                        setcar(csl_cast<LispObject>(fr), SPID_GCMARK);
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
@@ -146,14 +146,14 @@ static void copy(LispObject *p)
                         zero_out(p);
                         new_heap_pages[new_heap_pages_count++] = p;
                         lheaplimit = (intptr_t)p;
-                        hl = reinterpret_cast<char *>(
+                        hl = csl_cast<char *>(
                                  static_cast<intptr_t>(lheaplimit));
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
-                        lheaplimit = reinterpret_cast<LispObject>(hl + SPARE);
+                        lheaplimit = csl_cast<LispObject>(hl + SPARE);
                     }
-                    setcar(reinterpret_cast<LispObject>(fr), w);
-                    setcdr(reinterpret_cast<LispObject>(fr), cdr(a));
-                    *p = w = reinterpret_cast<LispObject>(fr + TAG_CONS);
+                    setcar(csl_cast<LispObject>(fr), w);
+                    setcdr(csl_cast<LispObject>(fr), cdr(a));
+                    *p = w = csl_cast<LispObject>(fr + TAG_CONS);
                     setcar(a, w + TAG_FORWARD);
                     break;
                 }   // end of treatment of CONS
@@ -164,8 +164,8 @@ static void copy(LispObject *p)
                 int tag;
                 size_t len;
                 tag = static_cast<int>(a) & TAG_BITS;
-                a = reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - tag);
-                h = *reinterpret_cast<Header *>(a);
+                a = csl_cast<LispObject>(csl_cast<char *>(a) - tag);
+                h = *csl_cast<Header *>(a);
 // If the symbol/number/vector has already been copied then its header
 // word contains a forwarding address. Re-tag it.
                 if (is_forward(h))
@@ -189,7 +189,7 @@ static void copy(LispObject *p)
                     my_assert(len >= CELL,
                               [&] { trace_printf("\nlen = %" PRIx64 " < CELL\n", len);
                                     for (int i=-30; i<=30; i++)
-                {   LispObject q = (reinterpret_cast<LispObject *>(a))[i];
+                {   LispObject q = (csl_cast<LispObject *>(a))[i];
                         trace_printf("%3d: %" PRIx64, i, q);
                         if (is_odds(q) && is_header(q))
                             trace_printf(" len=%" PRId64, length_of_header(q));
@@ -217,13 +217,13 @@ static void copy(LispObject *p)
                     }
                 }
                 for (;;)
-                {   char *vl = reinterpret_cast<char *>(
-                                   reinterpret_cast<uintptr_t>(vheaplimit));
+                {   char *vl = csl_cast<char *>(
+                                   csl_cast<uintptr_t>(vheaplimit));
                     size_t freespace = (size_t)(vl - vfr);
 // len indicates the length of the block of memory that must now be
 // allocated...
                     if (len > freespace)
-                    {   setcar(reinterpret_cast<LispObject>(vfr),
+                    {   setcar(csl_cast<LispObject>(vfr),
                                0);          // sentinel value
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
@@ -234,20 +234,20 @@ static void copy(LispObject *p)
                         p1 = pages[--pages_count];
                         zero_out(p1);
                         new_vheap_pages[new_vheap_pages_count++] = p1;
-                        vfr = reinterpret_cast<char *>(p1) + 8;
+                        vfr = csl_cast<char *>(p1) + 8;
                         vl = vfr + (CSL_PAGE_SIZE - 16);
-                        vheaplimit = reinterpret_cast<LispObject>(vl);
+                        vheaplimit = csl_cast<LispObject>(vl);
                         continue;
                     }
-                    *p = reinterpret_cast<LispObject>(vfr + tag);
-                    *reinterpret_cast<LispObject *>(a) = reinterpret_cast<LispObject>
+                    *p = csl_cast<LispObject>(vfr + tag);
+                    *csl_cast<LispObject *>(a) = csl_cast<LispObject>
                                                          (vfr + TAG_FORWARD);
-                    *reinterpret_cast<Header *>(vfr) = h;
+                    *csl_cast<Header *>(vfr) = h;
 // I copy EVERYTHING from the old vector to the new one. By using memcpy
 // I can do so with no worry about strict aliasing or the exact type of
 // data present. So this will copy across any padder words.
-                    std::memcpy(reinterpret_cast<char *>(vfr)+CELL,
-                                reinterpret_cast<char *>(a)+CELL, len-CELL);
+                    std::memcpy(csl_cast<char *>(vfr)+CELL,
+                                csl_cast<char *>(a)+CELL, len-CELL);
                     vfr += len;
                     break;
                 }
@@ -262,11 +262,11 @@ static void copy(LispObject *p)
             {   case CONT:
                     if (tr_fr != fr)
                     {   tr_fr = tr_fr - sizeof(Cons_Cell);
-                        if (car(reinterpret_cast<LispObject>(tr_fr)) ==
+                        if (car(csl_cast<LispObject>(tr_fr)) ==
                             SPID_GCMARK)
                         {   char *w;
                             p1 = new_heap_pages[trailing_heap_pages_count++];
-                            w = reinterpret_cast<char *>(p1);
+                            w = csl_cast<char *>(p1);
                             tr_fr = w + (CSL_PAGE_SIZE - sizeof(Cons_Cell));
                         }
                         next = DONE_CAR;
@@ -275,27 +275,27 @@ static void copy(LispObject *p)
 // that the memory layouts of atomic<T> and T agree. I will be
 // reworking the garbage collector for thread support soon so I am not
 // going to worry instantly about this!
-                        p = reinterpret_cast<LispObject *>(
-                                vcaraddr(reinterpret_cast<LispObject>(tr_fr)));
+                        p = csl_cast<LispObject *>(
+                                vcaraddr(csl_cast<LispObject>(tr_fr)));
                         break;              // Takes me to the outer loop
                     }
                     else if (tr_vfr != vfr)
                     {   Header h;
-                        h = *reinterpret_cast<Header *>(tr_vfr);
+                        h = *csl_cast<Header *>(tr_vfr);
                         if (h == 0)
                         {   char *w;
 // The next word in the vector heap being a zero where a header was expected
 // marks the end of data in this page of heap, so I will move on to the next
 // one.
                             p1 = new_vheap_pages[trailing_vheap_pages_count++];
-                            w = reinterpret_cast<char *>(p1);
+                            w = csl_cast<char *>(p1);
                             tr_vfr = w + 8;
-                            h = *reinterpret_cast<Header *>(tr_vfr);
+                            h = *csl_cast<Header *>(tr_vfr);
                         }
                         if (is_symbol_header(h))
                         {   next = DONE_VALUE;
-                            p = reinterpret_cast<LispObject *>(
-                                    &(reinterpret_cast<Symbol_Head *>(tr_vfr)->value));
+                            p = csl_cast<LispObject *>(
+                                    &(csl_cast<Symbol_Head *>(tr_vfr)->value));
                             break;
                         }
                         else
@@ -344,44 +344,44 @@ static void copy(LispObject *p)
                                     next = len - 2*CELL;
                                     break;
                             }
-                            p = reinterpret_cast<LispObject *>(tr + next + CELL);
+                            p = csl_cast<LispObject *>(tr + next + CELL);
                             break;
                         }
                     }
                     else
-                    {   lfringe = reinterpret_cast<LispObject>(fr);
-                        vfringe = reinterpret_cast<LispObject>(vfr);
+                    {   lfringe = csl_cast<LispObject>(fr);
+                        vfringe = csl_cast<LispObject>(vfr);
                         return;        // Final exit when all has been copied
                     }
                 case DONE_CAR:
                     next = CONT;
-                    p = reinterpret_cast<LispObject *>(
-                            vcdraddr(reinterpret_cast<LispObject>(tr_fr)));
+                    p = csl_cast<LispObject *>(
+                            vcdraddr(csl_cast<LispObject>(tr_fr)));
                     break;
                 case DONE_VALUE:
                     next = DONE_ENV;
-                    p = reinterpret_cast<LispObject *>(
-                            envaddr(TAG_SYMBOL+reinterpret_cast<LispObject>(tr_vfr)));
+                    p = csl_cast<LispObject *>(
+                            envaddr(TAG_SYMBOL+csl_cast<LispObject>(tr_vfr)));
                     break;
                 case DONE_ENV:
                     next = DONE_FASTGETS;
-                    p = reinterpret_cast<LispObject *>(
-                            fastgetsaddr(TAG_SYMBOL+reinterpret_cast<LispObject>(tr_vfr)));
+                    p = csl_cast<LispObject *>(
+                            fastgetsaddr(TAG_SYMBOL+csl_cast<LispObject>(tr_vfr)));
                     break;
                 case DONE_FASTGETS:
                     next = DONE_PNAME;
-                    p = reinterpret_cast<LispObject *>(
-                            pnameaddr(TAG_SYMBOL+reinterpret_cast<LispObject>(tr_vfr)));
+                    p = csl_cast<LispObject *>(
+                            pnameaddr(TAG_SYMBOL+csl_cast<LispObject>(tr_vfr)));
                     break;
                 case DONE_PNAME:
                     next = DONE_PLIST;
-                    p = reinterpret_cast<LispObject *>(
-                            plistaddr(TAG_SYMBOL+reinterpret_cast<LispObject>(tr_vfr)));
+                    p = csl_cast<LispObject *>(
+                            plistaddr(TAG_SYMBOL+csl_cast<LispObject>(tr_vfr)));
                     break;
                 case DONE_PLIST:
                     next = CONT;
-                    p = reinterpret_cast<LispObject *>(
-                            packageaddr(TAG_SYMBOL+reinterpret_cast<LispObject>(tr_vfr)));
+                    p = csl_cast<LispObject *>(
+                            packageaddr(TAG_SYMBOL+csl_cast<LispObject>(tr_vfr)));
                     tr_vfr = tr_vfr + symhdr_length;
                     break;
                 default:
@@ -390,7 +390,7 @@ static void copy(LispObject *p)
 // eventually ends up at zero (which is otherwise known as CONT) at
 // which stage the vector has been fully processed and the next item
 // to be scanned will be identified.
-                    p = reinterpret_cast<LispObject *>(tr + next);
+                    p = csl_cast<LispObject *>(tr + next);
                     next -= CELL;
                     break;
             }
@@ -433,11 +433,11 @@ static bool reset_limit_registers()
         zero_out(p);
         heap_pages[heap_pages_count++] = p;
         lheaplimit = (intptr_t)p;
-        lfringe = reinterpret_cast<LispObject>(
-                     reinterpret_cast<char *>(
+        lfringe = csl_cast<LispObject>(
+                     csl_cast<char *>(
                          static_cast<uintptr_t>(lheaplimit)) + CSL_PAGE_SIZE);
-        lheaplimit = reinterpret_cast<LispObject>(
-                        reinterpret_cast<char *>(
+        lheaplimit = csl_cast<LispObject>(
+                        csl_cast<char *>(
                             static_cast<uintptr_t>(lheaplimit)) + SPARE);
     }
     else
@@ -446,10 +446,10 @@ static bool reset_limit_registers()
         space_now++;
         zero_out(p);
         vheap_pages[vheap_pages_count++] = p;
-        vf = reinterpret_cast<char *>(p) + 8;
-        vfringe = reinterpret_cast<LispObject>(vf);
+        vf = csl_cast<char *>(p) + 8;
+        vfringe = csl_cast<LispObject>(vf);
         vh = vf + (CSL_PAGE_SIZE - 16);
-        vheaplimit = reinterpret_cast<LispObject>(vh);
+        vheaplimit = csl_cast<LispObject>(vh);
     }
     return true;
 }
@@ -523,33 +523,33 @@ static void real_garbage_collector()
 // A first page of (cons-)heap
     zero_out(pp);
     new_heap_pages[new_heap_pages_count++] = pp;
-    lheaplimit = reinterpret_cast<intptr_t>(pp);
-    vl = reinterpret_cast<char *>(
+    lheaplimit = csl_cast<intptr_t>(pp);
+    vl = csl_cast<char *>(
              static_cast<uintptr_t>(lheaplimit));
-    lfringe = reinterpret_cast<LispObject>(vl + CSL_PAGE_SIZE);
-    lheaplimit = reinterpret_cast<LispObject>(vl + SPARE);
+    lfringe = csl_cast<LispObject>(vl + CSL_PAGE_SIZE);
+    lheaplimit = csl_cast<LispObject>(vl + SPARE);
 // A first page of vector heap.
     pp = pages[--pages_count];
     zero_out(pp);
     new_vheap_pages[new_vheap_pages_count++] = pp;
-    vf = reinterpret_cast<char *>(pp) + 8;
-    vfringe = reinterpret_cast<LispObject>(vf);
+    vf = csl_cast<char *>(pp) + 8;
+    vfringe = csl_cast<LispObject>(vf);
     vl = vf + (CSL_PAGE_SIZE - 16);
-    vheaplimit = reinterpret_cast<LispObject>(vl);
+    vheaplimit = csl_cast<LispObject>(vl);
 // I should remind you, gentle reader, that the value cell
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
 // never moves.
-    copy(reinterpret_cast<LispObject *>(plistaddr(nil)));
-    copy(reinterpret_cast<LispObject *>(pnameaddr(nil)));
-    copy(reinterpret_cast<LispObject *>(fastgetsaddr(nil)));
-    copy(reinterpret_cast<LispObject *>(packageaddr(nil)));
+    copy(csl_cast<LispObject *>(plistaddr(nil)));
+    copy(csl_cast<LispObject *>(pnameaddr(nil)));
+    copy(csl_cast<LispObject *>(fastgetsaddr(nil)));
+    copy(csl_cast<LispObject *>(packageaddr(nil)));
 // I dislike the special treatment of current_package that follows. Maybe
 // I should arrange something totally different for copying the package
 // structure...
     for (LispObject **p = list_bases; *p!=nullptr; p++) copy(*p);
     for (LispObject *sp=stack;
-         sp > reinterpret_cast<LispObject *>(stackBase);
+         sp > csl_cast<LispObject *>(stackBase);
          sp--) copy(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
@@ -724,9 +724,9 @@ void reclaim(const char *why, int stg_class)
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR
             "K Lisp-stack=%" PRIdPTR "K\n",
             getvecs,
-            ((reinterpret_cast<char *>(C_stackBase)-
-                 reinterpret_cast<char *>(&why))+1023)/1024,
-            ((reinterpret_cast<intptr_t>(stack)-stackBase)+1023)/1024);
+            ((csl_cast<char *>(C_stackBase)-
+                 csl_cast<char *>(&why))+1023)/1024,
+            ((csl_cast<intptr_t>(stack)-stackBase)+1023)/1024);
     }
 
     grab_more_memory(heap_pages_count + vheap_pages_count);

@@ -134,8 +134,7 @@ bool Iread(void *buff, size_t size)
 
 bool Iwrite(const void *buff, size_t size)
 // Writes (size) bytes from the given buffer, returning true if trouble.
-{   const unsigned char *p = reinterpret_cast<const unsigned char *>
-                             (buff);
+{   const unsigned char *p = reinterpret_cast<const unsigned char *>(buff);
     for (size_t i=0; i<size; i++)
         if (Iputc(p[i])) return true;
     return false;
@@ -1902,7 +1901,7 @@ bool finished_with(int j)
                 {   size_t n =
                         (size_t)((CSL_PAGE_SIZE - 64 -
                                   ((char *)stack -
-                                   reinterpret_cast<char *>(stackBase))) &
+                                   csl_cast<char *>(stackBase))) &
                                  (~(int32_t)0xff));
 // I only perform compression of the file when I am in the process of stopping,
 // and in that case the Lisp stack is not in use, so I use if as a buffer.
@@ -2036,8 +2035,7 @@ bool Iputc(int ch)
 
 bool Iwrite(const void *buff, size_t size)
 // Writes (size) bytes from the given buffer, returning true if trouble.
-{   const unsigned char *p = reinterpret_cast<const unsigned char *>
-                             (buff);
+{   const unsigned char *p = reinterpret_cast<const unsigned char *>(buff);
     for (size_t i=0; i<size; i++)
         if (Iputc(p[i])) return true;
     return false;

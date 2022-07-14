@@ -86,7 +86,7 @@ LispObject make_string(const char *b)
 // Given a C string, create a Lisp (simple-) string.
 {   size_t n = std::strlen(b);
     LispObject r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-    char *s = reinterpret_cast<char *>(r) - TAG_VECTOR;
+    char *s = csl_cast<char *>(r) - TAG_VECTOR;
     size_t k = doubleword_align_up(CELL+n);
     std::memcpy(s + CELL, b, (size_t)n);
     while (n < k) s[CELL+n++] = 0;
@@ -100,7 +100,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
         size_t len1 = doubleword_align_up((uintptr_t)len);
         while (len < len1)
         {   if (celt(s, len-CELL) != 0)
-            {   char *p = reinterpret_cast<char *>(s - TAG_VECTOR);
+            {   char *p = csl_cast<char *>(s - TAG_VECTOR);
                 size_t i;
                 if (std::strrchr(file, '/') != nullptr) file = std::strrchr(file,
                             '/')+1;
@@ -145,9 +145,9 @@ LispObject copy_string(LispObject str, size_t n)
     r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     errexit();
     save.restore(str);
-    s = reinterpret_cast<char *>(r) - TAG_VECTOR;
+    s = csl_cast<char *>(r) - TAG_VECTOR;
     std::memcpy(s + CELL,
-                reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
+                csl_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
     k = doubleword_align_up(CELL+n)-CELL;
     while (n < k) s[CELL+n++] = 0;
     validate_string(r);
@@ -155,9 +155,9 @@ LispObject copy_string(LispObject str, size_t n)
 }
 
 LispObject Lvalidate_package(LispObject env, LispObject p)
-{   std::printf("package = %p\n", reinterpret_cast<void *>(p));
+{   std::printf("package = %p\n", csl_cast<void *>(p));
     Lprint(env, p);
-    std::printf("%p\n", reinterpret_cast<void *>(packhdr_(p)));
+    std::printf("%p\n", csl_cast<void *>(packhdr_(p)));
     Lprint(env, packid_(p));
     Lprint(env, packint_(p));
     Lprint(env, packnint_(p));
@@ -222,7 +222,7 @@ LispObject Lgetenv(LispObject env, LispObject a)
         else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         return aerror1("getenv", a);
         size_t len = length_of_byteheader(h) - CELL;
-                     std::memcpy(parmname, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+                     std::memcpy(parmname, csl_cast<char *>(a) + (CELL-TAG_VECTOR),
                                  (size_t)len);
                      parmname[len] = 0;
                      const char *w = my_getenv(parmname);
@@ -249,7 +249,7 @@ LispObject Lsystem(LispObject env, LispObject a)
         return aerror1("system", a);
     size_t len = length_of_byteheader(h) - CELL;
     if (len+1 > sizeof(parmname)) return aerror1("argument too long", a);
-    std::memcpy(parmname, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+    std::memcpy(parmname, csl_cast<char *>(a) + (CELL-TAG_VECTOR),
                 (size_t)len);
     parmname[len] = 0;
     ensure_screen();
@@ -286,7 +286,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         return aerror1("system", a);
     ensure_screen();
     size_t len = length_of_byteheader(h) - CELL;
-    std::memcpy(cmd, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+    std::memcpy(cmd, csl_cast<char *>(a) + (CELL-TAG_VECTOR),
                 (size_t)len);
     cmd[len] = 0;
 #ifdef SHELL_EXECUTE
@@ -364,7 +364,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 static uint64_t hash_lisp_string(LispObject s, size_t n)
 {   uint64_t h = n;
 // Here I will hash sizeof(intptr_t) bytes at a time.
-    uintptr_t *p = reinterpret_cast<uintptr_t *>(s-TAG_VECTOR+CELL);
+    uintptr_t *p = csl_cast<uintptr_t *>(s-TAG_VECTOR+CELL);
     n -= CELL;
 //  fprintf(stderr, "About to hash <%.*s> length %d\n", (int)n, (char *)p, (int)n);
     while (n >= sizeof(uintptr_t))
@@ -622,7 +622,7 @@ LispObject intern(size_t len, bool escaped)
 // denominators.
             boffo_char(boffop) = 0;
 // p and q were made int not int32_t to match up with the %d in scanf ...
-            std::sscanf(reinterpret_cast<char *>(&boffo_char(0)), "%d/%d", &p,
+            std::sscanf(csl_cast<char *>(&boffo_char(0)), "%d/%d", &p,
                         &q);
 // Limit myself to fixnums here
             g = static_cast<int>(int_of_fixnum(gcd(fixnum_of_int((int32_t)p),
@@ -659,19 +659,19 @@ LispObject intern(size_t len, bool escaped)
             switch (fplength)
             {   case 0:
                     return pack_short_float(
-                        std::atof(reinterpret_cast<char *>(&boffo_char(0))));
+                        std::atof(csl_cast<char *>(&boffo_char(0))));
                 case 1:
                     return pack_single_float(
-                        std::atof(reinterpret_cast<char *>(&boffo_char(0))));
+                        std::atof(csl_cast<char *>(&boffo_char(0))));
                 default:
                 case 2:
                     return make_boxfloat(
-                        std::atof(reinterpret_cast<char *>(&boffo_char(0))),
+                        std::atof(csl_cast<char *>(&boffo_char(0))),
                         TYPE_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
                 case 3:
                     return make_boxfloat128(atof128(
-                        reinterpret_cast<char *>(&boffo_char(0))));
+                        csl_cast<char *>(&boffo_char(0))));
 #endif // HAVE_SOFTFLOAT
             }
         }
@@ -752,7 +752,7 @@ LispObject make_symbol(char const *s, int restartp,
 // For COMMON Lisp I will make all the built-in symbols upper case, unless
 // the "2" bit of restartp is set...
     char const *p1 = s;
-    char *p2 = reinterpret_cast<char *>(&boffo_char(0));
+    char *p2 = csl_cast<char *>(&boffo_char(0));
     int c;
     if ((restartp & 2) == 0)
     {   while ((c = *p1++) != 0)
@@ -763,8 +763,8 @@ LispObject make_symbol(char const *s, int restartp,
     }
     else
 #endif
-        std::strcpy(reinterpret_cast<char *>(&boffo_char(0)), s);
-    size_t len = std::strlen(reinterpret_cast<char *>(&boffo_char(0)));
+        std::strcpy(csl_cast<char *>(&boffo_char(0)), s);
+    size_t len = std::strlen(csl_cast<char *>(&boffo_char(0)));
     if (len == 0) len = 1; // Special case so I can create symbol for U+00
     v = iintern(boffo, len, CP, 0);
 // I instate the definition given if (a) the definition is a real
@@ -966,8 +966,8 @@ static LispObject lookup(LispObject str, size_t strsize,
 #ifdef HASH_STATISTICS
             Noputtmp++;  // A prob...
 #endif
-            if (std::memcmp(reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR),
-                            reinterpret_cast<char *>(pn) + (CELL-TAG_VECTOR),
+            if (std::memcmp(csl_cast<char *>(str) + (CELL-TAG_VECTOR),
+                            csl_cast<char *>(pn) + (CELL-TAG_VECTOR),
                             (size_t)strsize) == 0 &&
                 length_of_byteheader(vechdr(pn)) == (size_t)strsize+CELL)
             {   if (4*n > 3*size) rehash_pending = true;
@@ -1022,8 +1022,8 @@ static int ordersymbol(LispObject v1, LispObject v2)
     validate_string(pn2);
     l1 = length_of_byteheader(vechdr(pn1)) - CELL;
     l2 = length_of_byteheader(vechdr(pn2)) - CELL;
-    c = std::memcmp(reinterpret_cast<char *>(pn1) + (CELL-TAG_VECTOR),
-                    reinterpret_cast<char *>(pn2) + (CELL-TAG_VECTOR),
+    c = std::memcmp(csl_cast<char *>(pn1) + (CELL-TAG_VECTOR),
+                    csl_cast<char *>(pn2) + (CELL-TAG_VECTOR),
                     (size_t)(l1 < l2 ? l1 : l2));
     if (c == 0) c = static_cast<int>(l1 - l2);
     return c;
@@ -1089,9 +1089,9 @@ static int ordpv(LispObject u, LispObject v)
                 break;
         }
         while (n < lu && n < lv)
-        {   unsigned int eu = *reinterpret_cast<unsigned char *>
+        {   unsigned int eu = *csl_cast<unsigned char *>
                               (u - TAG_VECTOR + n),
-                              ev = *reinterpret_cast<unsigned char *>(v - TAG_VECTOR + n);
+                              ev = *csl_cast<unsigned char *>(v - TAG_VECTOR + n);
             if (eu != ev) return (eu < ev ? -1 : 1);
             n += 1;
         }
@@ -1104,12 +1104,12 @@ static int ordpv(LispObject u, LispObject v)
     else
     {   THREADID;
         while (n < lu && n < lv)
-        {   LispObject eu = *reinterpret_cast<LispObject *>
+        {   LispObject eu = *csl_cast<LispObject *>
                             (u - TAG_VECTOR + n),
-                            ev = *reinterpret_cast<LispObject *>(v - TAG_VECTOR + n);
+                            ev = *csl_cast<LispObject *>(v - TAG_VECTOR + n);
             int w;
             Save save(THREADARG u, v);
-            if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
+            if (csl_cast<uintptr_t>(stack) >= stackLimit)
                 respond_to_stack_event();
             w = orderp(eu, ev);
             errexit();
@@ -1177,7 +1177,7 @@ static int orderp(LispObject u, LispObject v)
             THREADID;
             Save save(THREADARG u, v);
 //          stackcheck(threadId);
-            if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
+            if (csl_cast<uintptr_t>(stack) >= stackLimit)
                 respond_to_stack_event();
             w = orderp(cu, cv);
             errexit();
@@ -1344,7 +1344,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 63-len1) len = 63-len1; // Unpublished truncation of the string
     std::sprintf(genname, "%.*s%s", static_cast<int>(len),
-        reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
+        csl_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
     genbase = make_string(genname);
     errexit();
     LispObject id;
@@ -1396,7 +1396,7 @@ LispObject Lgensym(LispObject env, LispObject a)
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 60) len = 60;     // Unpublished truncation of the string
     std::sprintf(genname, "%.*s%lu", static_cast<int>(len),
-                 reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR),
+                 csl_cast<char *>(genbase) + (CELL-TAG_VECTOR),
                  (long unsigned)(uint32_t)gensym_ser++);
     genbase = make_string(genname);
 #endif
@@ -2533,7 +2533,7 @@ void packcharacter(int c)
     if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        std::memcpy(reinterpret_cast<void *>(reinterpret_cast<char *>
+        std::memcpy(csl_cast<void *>(csl_cast<char *>
                                              (new_boffo) + (CELL-TAG_VECTOR)),
                     &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -2565,7 +2565,7 @@ void packbyte(int c)
     if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        std::memcpy(reinterpret_cast<void *>(reinterpret_cast<char *>
+        std::memcpy(csl_cast<void *>(csl_cast<char *>
                                              (new_boffo) + (CELL-TAG_VECTOR)),
                     &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -3354,7 +3354,7 @@ int char_from_list(LispObject f)
 int char_from_vector(LispObject f)
 {   LispObject ch = stream_pushed_char(f);
     if (ch == NOT_CHAR)
-    {   unsigned char *v = reinterpret_cast<unsigned char *>(
+    {   unsigned char *v = csl_cast<unsigned char *>(
                                static_cast<std::FILE *>(stream_file(f)));
         if (v == nullptr) ch = EOF;
         else
@@ -3650,7 +3650,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror1("load", file);
         len = length_of_byteheader(h) - CELL;
-        filestring = reinterpret_cast<char *>(file) + CELL-TAG_VECTOR;
+        filestring = csl_cast<char *>(file) + CELL-TAG_VECTOR;
         for (i=0; i<6; i++)
         {   if (len == 0)
             {   tail[i] = 0;
@@ -3855,7 +3855,7 @@ LispObject Lspool(LispObject env, LispObject file)
         return aerror1(spool_name, file);
     len = length_of_byteheader(h) - CELL;
     spool_file = open_file(filename,
-                           reinterpret_cast<char *>(file) + (CELL-TAG_VECTOR),
+                           csl_cast<char *>(file) + (CELL-TAG_VECTOR),
                            (size_t)len, "w", nullptr);
     if (spool_file != nullptr)
     {   std::time_t t0 = std::time(nullptr);
@@ -3952,14 +3952,14 @@ static LispObject Lfind_package(LispObject env, LispObject name)
     for (w = all_packages; w!=nil; w=cdr(w))
     {   LispObject nn, n = packname_(car(w));
         if (is_vector(n) && vechdr(n) == h &&
-            std::memcmp(reinterpret_cast<char *>(name) + (CELL-TAG_VECTOR),
-                        reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
+            std::memcmp(csl_cast<char *>(name) + (CELL-TAG_VECTOR),
+                        csl_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
             return onevalue(car(w));
         for (nn = packnick_(car(w)); nn!=nil; nn=cdr(nn))
         {   n = car(nn);
             if (!is_vector(n) || vechdr(n) != h) continue;
-            if (std::memcmp(reinterpret_cast<char *>(name) + (CELL-TAG_VECTOR),
-                            reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
+            if (std::memcmp(csl_cast<char *>(name) + (CELL-TAG_VECTOR),
+                            csl_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
                 return onevalue(car(w));
         }
     }
@@ -3975,7 +3975,7 @@ LispObject find_package(char *name, int len)
     {   LispObject nn, n = packname_(car(w));
         if (is_vector(n) &&
             length_of_byteheader(vechdr(n))==(uint32_t)(len+CELL) &&
-            std::memcmp(name, reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR),
+            std::memcmp(name, csl_cast<char *>(n) + (CELL-TAG_VECTOR),
                         (size_t)len) == 0)
             return car(w);
         for (nn = packnick_(car(w)); nn!=nil; nn=cdr(nn))
@@ -3984,7 +3984,7 @@ LispObject find_package(char *name, int len)
                 length_of_byteheader(vechdr(n)) != (uint32_t)(len+CELL))
                 continue;
             if (std::memcmp(name,
-                            reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
+                            csl_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
                 return car(w);
         }
     }
@@ -4294,7 +4294,7 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     if (ch == EOF && n == 0) w = eof_symbol;
     else
     {   w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-        s = reinterpret_cast<char *>(w) + CELL - TAG_VECTOR;
+        s = csl_cast<char *>(w) + CELL - TAG_VECTOR;
         std::memcpy(s, &boffo_char(0), n);
         while ((n&7) != 0) s[n++] = 0;
     }

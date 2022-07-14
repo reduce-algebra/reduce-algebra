@@ -157,7 +157,7 @@ LispObject Lmaple_tag(LispObject, LispObject a)
         return aerror1("not an encapsulated pointer", a);
     v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
-    v1 = reinterpret_cast<LispObject *>(v);
+    v1 = csl_cast<LispObject *>(v);
     v = *v1;    // the header word of the Maple object
 // The following line will be incorrect on 64-bit machines
     return onevalue(fixnum_of_int(v >> 26));
@@ -171,22 +171,22 @@ LispObject Lmaple_length(LispObject, LispObject a)
         return aerror1("not an encapsulated pointer", a);
     v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
-    v1 = reinterpret_cast<LispObject *>(v);
+    v1 = csl_cast<LispObject *>(v);
     v = *v1;    // the header word of the Maple object
 // The following line will be incorrect on 64-bit machines
     return onevalue(fixnum_of_int(v & 0x03ffffff));
 }
 
 LispObject Lmaple_string_data(LispObject, LispObject a)
-{   LispObject *p = reinterpret_cast<LispObject *>(extract_pointer(
+{   LispObject *p = csl_cast<LispObject *>(extract_pointer(
                         a));
-    char *s = reinterpret_cast<char *>()&p[3];
+    char *s = csl_cast<char *>()&p[3];
     return onevalue(make_string(s));
 }
 
 LispObject Lmaple_integer(LispObject env, LispObject a)
 {   LispObject r = fixnum_of_int(0);
-    LispObject *p = reinterpret_cast<LispObject *>(extract_pointer(a));
+    LispObject *p = csl_cast<LispObject *>(extract_pointer(a));
     int i;
     LispObject t = fixnum_of_int(1);
     int len = static_cast<int>(*p & 0x03ffffff);
@@ -220,13 +220,13 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
         return aerror1("not an encapsulated pointer", a);
     v = static_cast<LispObject>(extract_pointer(a));
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
-    v1 = reinterpret_cast<LispObject *>(v);
+    v1 = csl_cast<LispObject *>(v);
     v = *v1;    // the header word of the Maple object
     n = int_of_fixnum(nn);
 // The following line will be incorrect on 64-bit machines
     len = v & 0x03ffffff;
     if (n < 0 || n >= len) return aerror1("subscript out of range", nn);
-    return onevalue(encapsulate_pointer(reinterpret_cast<void *>
+    return onevalue(encapsulate_pointer(csl_cast<void *>
                                         (v1[n+1])));
 }
 
@@ -1518,11 +1518,11 @@ UNUSED_NAME static LispObject Lmake_string_3(LispObject env, LispObject n,
     blanks = (blanks << 16) | blanks;
     while (z > CELL)
     {   z -= 4;
-        *(int32_t *)(reinterpret_cast<char *>(w) - TAG_VECTOR + z) = blanks;
+        *(int32_t *)(csl_cast<char *>(w) - TAG_VECTOR + z) = blanks;
     }
     nn = nn + CELL;
     while ((nn & 7) != 0)
-    {   *(reinterpret_cast<char *>(w) - TAG_VECTOR + nn) = 0;
+    {   *(csl_cast<char *>(w) - TAG_VECTOR + nn) = 0;
         nn++;
     }
     return onevalue(w);
@@ -1541,11 +1541,11 @@ UNUSED_NAME static LispObject Lmake_string_1(LispObject env, LispObject n)
     blanks = (' ' << 24) | (' ' << 16) | (' ' << 8) | ' ';
     while (z > CELL)
     {   z -= 4;
-        *(int32_t *)(reinterpret_cast<char *>(w) - TAG_VECTOR + z) = blanks;
+        *(int32_t *)(csl_cast<char *>(w) - TAG_VECTOR + z) = blanks;
     }
     nn = nn + CELL;
     while ((nn & 7) != 0)
-    {   *(reinterpret_cast<char *>(w) - TAG_VECTOR + nn) = 0;
+    {   *(csl_cast<char *>(w) - TAG_VECTOR + nn) = 0;
         nn++;
     }
     return onevalue(w);
@@ -1700,7 +1700,7 @@ static LispObject Lmake_simple_bitvector(LispObject env, LispObject n)
     n1 = doubleword_align_up(bytes);
     while (n1 > CELL)
     {   n1 -= 4;
-        *(int32_t *)(reinterpret_cast<char *>(w) - TAG_VECTOR + n1) = 0;
+        *(int32_t *)(csl_cast<char *>(w) - TAG_VECTOR + n1) = 0;
     }
     return onevalue(w);
 }
@@ -1925,13 +1925,13 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         errexit();
 
         // This code plagiarised from copy_string ...
-        s = reinterpret_cast<char *>(copy) - TAG_VECTOR;
+        s = csl_cast<char *>(copy) - TAG_VECTOR;
         k = (seq_length + 3) & ~(int32_t)7;
         *(int32_t *)(s + k + CELL) = 0;
         if (k != 0) *(int32_t *)(s + k) = 0;
 
         std::memcpy(s + CELL,
-                    reinterpret_cast<char *>(sequence)+(CELL-TAG_VECTOR)+start,
+                    csl_cast<char *>(sequence)+(CELL-TAG_VECTOR)+start,
                     (size_t)seq_length);
 
         return onevalue(copy);

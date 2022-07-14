@@ -210,6 +210,7 @@ inline double CSLpow(double x, double y)
 
 #include "tags.h"
 
+#include "bitmaps.h"
 #include "cslerror.h"
 #include "externs.h"
 #include "lispthrow.h"

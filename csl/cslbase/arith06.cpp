@@ -1560,7 +1560,7 @@ LispObject Lmd5(LispObject env, LispObject a)
     uint32_t v0, v1, v2, v3, v4;
     int32_t len, i;
     if (is_fixnum(a))
-    {   std::sprintf(reinterpret_cast<char *>(md), "%.7lx  ",
+    {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.7lx  ",
                      static_cast<unsigned long>(a>>4)&0x0fffffff);
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
@@ -1569,7 +1569,7 @@ LispObject Lmd5(LispObject env, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   std::sprintf(reinterpret_cast<char *>(md), "%.8x",
+        {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.8x",
                          (uint32_t)bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }
@@ -1578,7 +1578,7 @@ LispObject Lmd5(LispObject env, LispObject a)
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
-        CSL_MD5_Update(reinterpret_cast<unsigned char *>(a + CELL -
+        CSL_MD5_Update(csl_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else checksum(a);
@@ -1649,7 +1649,7 @@ LispObject Lmd5string(LispObject env, LispObject a)
     if (is_vector(a) && is_string(a))
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
-        CSL_MD5_Update(reinterpret_cast<unsigned char *>(a + CELL -
+        CSL_MD5_Update(csl_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else return onevalue(nil);
@@ -1727,7 +1727,7 @@ LispObject Lmd60(LispObject env, LispObject a)
     uint32_t v0, v1;
     int32_t len, i;
     if (is_fixnum(a))
-    {   std::sprintf(reinterpret_cast<char *>(md), "%.7lx  ",
+    {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.7lx  ",
                      static_cast<unsigned long>(a>>4) & 0x0fffffff);
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
@@ -1736,7 +1736,7 @@ LispObject Lmd60(LispObject env, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   std::sprintf(reinterpret_cast<char *>(md), "%.8x",
+        {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.8x",
                          (uint32_t)bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }
@@ -1745,7 +1745,7 @@ LispObject Lmd60(LispObject env, LispObject a)
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
-        CSL_MD5_Update(reinterpret_cast<unsigned char *>(a + CELL -
+        CSL_MD5_Update(csl_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else checksum(a);
