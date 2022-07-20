@@ -8,27 +8,19 @@ include './include/begin-head.php';
 <meta name="google-site-verification" content="pKr8xVCb35NVMHejjhvma4js1wsSweNQ_8vTVJqWFeA" />
 
 <style type="text/css">
- #main img {
-     float: none;
-     margin: 0;
-     width: 100%;
-     border: thin solid;
- }
+    #main img {
+        float: none;
+        margin: 0;
+        width: 100%;
+        border: thin solid;
+    }
 
- #main img.sflogo {
-     margin: auto;
-     width: auto;
-     border: none;
- }
+    #main img.sflogo {
+        margin: auto;
+        width: auto;
+        border: none;
+    }
 
- aside iframe {
-     border: 0;
-     padding: 0;
-     width: 100%;
-     height: 500px;
-     border: 1px solid #333333;
-     background-color: #f8f8ff;
- }
 </style>
 
 <?php
@@ -37,14 +29,8 @@ include './include/begin-body.php';
 ?>
 
 <p>
-    See also the <a href="https://sourceforge.net/p/reduce-algebra/"
-                    rel="nofollow">REDUCE project page at
-    <img class="sflogo" alt="SourceForge"
-         src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a>.
-</p>
-<p>
     REDUCE is a <strong>portable general-purpose computer algebra
-    system</strong>. It is a system for doing scalar, vector and
+        system</strong>. It is a system for doing scalar, vector and
     matrix algebra by computer, which also supports arbitrary
     precision numerical approximation and interfaces
     to <a href="http://www.gnuplot.info/">gnuplot</a> to provide
@@ -61,14 +47,14 @@ include './include/begin-body.php';
     REDUCE (and its complete source code) is
     <a href="obtaining.php">available free of charge</a> for most
     common computing systems, in some cases in <a href="versions.php">more
-        than one version</a> for the same machine.  The
+        than one version</a> for the same machine. The
     <a href="documentation.php">manual and other support documents</a> and
     <a href="tutorials.php">tutorials</a> are also included in the
     distributions.
 </p>
 <a href="images/reduce_screenshot_1.png">
     <img src="images/reduce_screenshot_1.png" alt="CSL REDUCE on Microsoft Windows"
-         title="CSL REDUCE on Microsoft Windows &ndash; click to see the full size image" />
+        title="CSL REDUCE on Microsoft Windows &ndash; click to see the full size image" />
 </a>
 <p>
     REDUCE has a long and distinguished place in the history of
@@ -85,7 +71,7 @@ include './include/begin-body.php';
     REDUCE is implemented in Lisp (as are Axiom and Macsyma), but this
     is completely hidden from the casual user. REDUCE primarily runs
     on either <a href="versions.php">Portable Standard Lisp (PSL) or
-    Codemist Standard Lisp (CSL)</a>, both of which are available in
+        Codemist Standard Lisp (CSL)</a>, both of which are available in
     the distributions. PSL is long-established and compiles to machine
     code, whereas CSL is newer and compiles to byte code. Hence, PSL
     may be faster but CSL may be available on a wider range of
@@ -96,17 +82,33 @@ include './include/begin-body.php';
 
 </div><!-- opened in begin-body.php -->
 
-<aside class="col-md-3 col-xl-2">
-    <h2 style="text-align:center; font-size:medium;">SourceForge RSS feeds</h2>
-    <div class="row">
-        <div class="col-sm col-md-12">
-            <iframe src="include/displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/activity/feed?source=project_activity"></iframe>
-        </div>
-        <div class="col-sm col-md-12">
-            <iframe src="include/displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/news/feed.rss"></iframe>
+<aside class="col-md-3 col-xl-2 text-center">
+    <div class="sticky-top">
+        <h3 style="color: #009">SourceForge Links</h3>
+        <p><small>Hover for details</small></p>
+        <div class="d-grid gap-3">
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow"
+                role="button" title="Download the latest installation package for your platform">
+                Project Home Page</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/projects/reduce-algebra/files/"
+                rel="nofollow" role="button" title="Binary installation packages and source-code archives">
+                All Release Snapshots</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/code/" rel="nofollow"
+                role="button" title="Online access to Subversion">Source Code Repository</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/news/" rel="nofollow"
+                role="button" title="Important news items">Project News</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/activity/" rel="nofollow"
+                role="button"
+                title="All mailing list, bug tracker, discussion, repository commit and release messages">
+                Project Activity</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/discussion/"
+                rel="nofollow" role="button" title="Read or contribute to online discussions">Discussion Fora</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/mailman/" rel="nofollow"
+                role="button" title="Report a bug/request/suggestion, or read about previous bugs">Bug Tracker</a>
+            <a class="btn btn-outline-primary" href="https://sourceforge.net/p/reduce-algebra/mailman/" rel="nofollow"
+                role="button" title="Read, search or subscribe to the REDUCE mailing list">Mailing List</a>
         </div>
     </div>
-    <p style="text-align:center; font-size:small;">RSS feed display courtesy of <a href="http://simplepie.org/">SimplePie</a></p>
 </aside>
 
 <?php
@@ -115,4 +117,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>
