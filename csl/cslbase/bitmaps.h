@@ -180,6 +180,7 @@ inline bool testBit(uint64_t map[], size_t n)
 
 inline void setBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
+    my_assert(length < 1000000);
     size_t n = m + length - 1;
     size_t word1 = m/64;
     size_t word2 = n/64;
@@ -197,6 +198,7 @@ inline void setBits(uint64_t map[], size_t m, size_t length)
 
 inline void clearBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
+    my_assert(length < 1000000);
     size_t n = m + length - 1;
     size_t word1 = m/64;
     size_t word2 = n/64;
@@ -214,6 +216,7 @@ inline void clearBits(uint64_t map[], size_t m, size_t length)
 
 inline bool testBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
+    my_assert(length < 1000000);
     size_t n = m + length - 1;
     size_t word1 = m/64;
     size_t word2 = n/64;

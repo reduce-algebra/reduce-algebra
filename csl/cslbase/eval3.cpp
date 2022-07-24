@@ -186,6 +186,7 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
 
 LispObject progn_fn(LispObject args, LispObject env)
 {   LispObject f;
+    putc_stream('#', qvalue(trace_output));
     THREADID;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
@@ -193,20 +194,25 @@ LispObject progn_fn(LispObject args, LispObject env)
     f = nil;
     for (;;)
     {   f = car(args);
+        putc_stream('#', qvalue(trace_output));
         args = cdr(args);
         if (!consp(args)) break;
         Save save(THREADARG args, env, f);
         on_backtrace(
+            putc_stream('#', qvalue(trace_output));
             static_cast<void>(eval(f, env)),
+            putc_stream('#', qvalue(trace_output));
             errexit();
             // Action for backtrace here...
             save.restore(args, env, f);
+            putc_stream('#', qvalue(trace_output));
             if (SHOW_FNAME)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(f);
             });
-        save.restore(args, env, f);
+        save.restore(THREADARG args, env, f);
     }
+    putc_stream('#', qvalue(trace_output));
     errexit();
     return eval(f, env);    // tail call on last item in the progn
 }

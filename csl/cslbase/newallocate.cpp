@@ -102,16 +102,10 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // that now!]
 //
     size_t allocSize = (size_t)doubleword_align_up(size);
-// Basic vectors must be small enough to be ones that I can allocate.
-// There are two potential limitations. One is via the chunkStatus
-// array and the scheme I have sets that at 8096 Kbytes...
-    if (allocSize > 2*ExtendedChunkMax*chunkSize)
-        return aerror1("request for basic vector too big",
-                       fixnum_of_int(allocSize/CELL-1));
-// The other is the size of the region within a page that chunks can
+// There is a limit to the size of the region within a page that chunks can
 // be put in while allowing for page headers and the like. That turns
 // out to be 7904 Kbytes and so is the real limit. For Lisp vectors
-// neither of these are important limits because big vectors and hash
+// this is not an important limit because big vectors and hash
 // tables are stored in chunks rather smaller than that. But for
 // arithmetic this sets a limit on the largest representable integer such
 // that it will have between 19 and 20 million (decimal) digits.
@@ -323,15 +317,20 @@ void initConsPage(Page* p, bool empty)
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
     p->type = vecPageType;
+    p->dataEnd = endOfPage(p);
     vecCurrent = p;
-    p->dataEnd = vecEnd = csl_cast<uintptr_t>(p) + pageSize;
+    vecEnd = csl_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {   p->potentiallyPinnedFlag = false;
         p->potentiallyPinnedChain = nullptr;
         p->hasVecPins = false;
+        p->isInVecPages = false;
         std::memset(p->vecPins, 0, sizeof(p->vecPins));
         std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-        std::memset(p->chunkStatus, BasicChunk, sizeof(p->chunkStatus));
+        for (size_t i=0; i<chunkStatusSize; i++)
+        {   p->chunkStatus[i] = ChunkStart;
+            p->chunkLength[i] = 1;
+        }
         std::memset(p->chunkStatusMap, 0, sizeof(p->chunkStatusMap));
         vecFringe = p->scanPoint = csl_cast<uintptr_t>(&p->chunks);
         vecLimit = vecEnd;
@@ -341,7 +340,7 @@ void initVecPage(Page* p, bool empty)
         vecLimit = p->initialLimit;
     }
     my_assert(vecLimit > vecFringe &&
-              vecLimit <= vecEnd, LOCATION);
+              vecLimit <= vecEnd, __WHERE__);
 //  displayVecPage(p);
 }
 
@@ -495,8 +494,10 @@ void initHeapSegments(double storeSize)
 // set the variables that are associated with tracking memory allocation
 // to keep everything as clear as I can.
     heapSegmentCount = 0;
+// The values I put into heapSegment here are intended to be invalid so
+// that if by mischance I try using them I hope to get a crash.
     for (int i=0; i<16; i++)
-        heapSegment[i] = csl_cast<void*>(-1);
+        heapSegment[i] = reinterpret_cast<void*>(-1);
     emptyPages.head = consPinPages.head = vecPinPages.head =
         consCloggedPages.head = vecCloggedPages.head =
         consPages.head = vecPages.head = borrowPages.head =
@@ -595,12 +596,12 @@ LispObject Lgctest_0(LispObject env)
         {   zprintf("%d", i);
             LispObject b = a;
             for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
-            {   if (!is_cons(b)) my_abort(LOCATION ": gc test failure");
+            {   if (!is_cons(b)) my_abort(__WHERE__);
                 if (car(b) != fixnum_of_int(j))
-                    my_abort(LOCATION ": gc test failure");
+                    my_abort(__WHERE__);
                 b = cdr(b);
             }
-            if (b != nil) my_abort(LOCATION ": gc test failure");
+            if (b != nil) my_abort(__WHERE__);
         }
     }
     return nil;

@@ -864,7 +864,7 @@ static LispObject add_to_externals(LispObject s, LispObject p, uint64_t hash)
 // I trigger a re-hash if the table reaches 50% loading.  Then I double
 // its size. The effect is that it will remain between 25 and 50% full -
 // really rather lightly loaded.
-    if (static_cast<dize_t>(2*int_of_fixnum(n)) > used)
+    if (static_cast<size_t>(2*int_of_fixnum(n)) > used)
     {   THREADID;
         stackcheck(THREADARG s, p);
         Save save(THREADARG s, p);
@@ -1954,7 +1954,7 @@ static int raw_char_from_terminal()
 // If the user provokes an interrupt (^C, or ESC or whatever) while I am
 // in here I will try to return promptly with an empty buffer and
 // some indication of an exception.
-{   volatile int c;
+{   int c;
     if (++kilo >= 1024)
     {   kilo = 0;
         io_now++;
@@ -3511,9 +3511,9 @@ LispObject read_eval_print(int noisy)
 {   THREADID;
     SaveStack stack_saver OPTTHREAD;
     for (;;)        // Loop for each s-expression found
-    {   volatile LispObject u;
+    {   LispObject u;
 #ifdef COMMON
-        volatile int32_t nvals, i;
+        int32_t nvals, i;
 #endif
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = nullptr;

@@ -136,8 +136,8 @@ extern LispObject read_from_vector(char *v);
 extern char prompt_string[MAX_PROMPT_LENGTH];
 
 // These two are now specified in LispObject units not bytes
-#define INIT_OBVECI_SIZE      4096
-#define INIT_OBVECX_SIZE      4096
+#define INIT_OBVECI_SIZE      2048
+#define INIT_OBVECX_SIZE      2048
 
 #endif // header_read_h
 

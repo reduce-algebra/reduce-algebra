@@ -193,6 +193,7 @@ entry_point0 entries_table0[] =
     {G0W4up,                            "G0W4up"},
     {G0Wother,                          "G0Wother"},
     {f0_as_0,                           "0->0"},
+    {bad_specialfn_0,                   "bad_specialfn_0"}, 
     {nullptr,                           "dummy"}
 };
 
@@ -248,6 +249,7 @@ entry_point2 entries_table2[] =
     {G2W3,                              "G2W3"},
     {G2W4up,                            "G2W4up"},
     {G2Wother,                          "G2Wother"},
+    {bad_specialfn_2,                   "bad_specialfn_2"},
     {autoload_2,                        "autoload_2"},
     {interpreted_2,                     "interpreted_2"},
     {funarged_2,                        "funarged_2"},
@@ -282,6 +284,7 @@ entry_point3 entries_table3[] =
     {G3W2,                              "G3W2"},
     {G3W4up,                            "G3W4up"},
     {G3Wother,                          "G3Wother"},
+    {bad_specialfn_3,                   "bad_specialfn_3"},
     {f3_as_0,                           "3->0"},
     {f3_as_1,                           "3->1"},
     {f3_as_2,                           "3->2"},
@@ -307,6 +310,7 @@ entry_point4up entries_table4up[] =
     {G4W2,                              "G4W2"},
     {G4W3,                              "G4W3"},
     {G4Wother,                          "G4Wother"},
+    {bad_specialfn_4up,                 "bad_specialfn_4up"},
     {nullptr,                           "dummy"}
 };
 
@@ -602,9 +606,7 @@ static void cold_setup()
 // The size chosen here is only an initial size - the hash table in a package
 // can grow later on if needbe - but I ought to ensure that the initial
 // size is big enough for the built-in symbols that Lisp creates in
-// this restart code.  The size must be a power of 2. I want the object
-// table to have the same number of entries regardless of whether I am on
-// a 32 or 64-bit machine to make cross-loading of images possible.
+// this restart code.  The size must be a power of 2.
     packint_(static_cast<LispObject>(CP)) =
         get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
     packflags_(static_cast<LispObject>(CP)) = fixnum_of_int(++package_bits);

@@ -119,15 +119,16 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 // The following typedef shows the expected layout of a Lisp_STREAM object,
 // but it is not used directly because I need to insist that each field is
 // exactly CELL wide. Thus when I access things that contain pointers I
-// will perform horrible casts. This is essential if I am to be able to host
-// this system on certain 64-bit systems.
+// will perform horrible casts. This was at one time essential if I was to
+// be able to host this system on certain 64-bit systems.
 //
 //  typedef struct Lisp_STREAM
 //  {
 //      Header h;                              0
-//      LispObject type;                       CELL
-//      LispObject write_data;                 2*CELL
-//      LispObject read_data;                  3*CELL
+//      LispObject type;                       CELL    )
+//      LispObject write_data;                 2*CELL  ) Lisp items
+//      LispObject read_data;                  3*CELL  )
+//
 //      FILE *file;                            4*CELL
 //      character_stream_writer *write_fn;     5*CELL
 //      other_stream_op *write_other_fn;       6*CELL
@@ -165,6 +166,8 @@ inline LispObject &stream_read_data(LispObject v)
 {   return basic_elt(v, 2);
 }
 
+// All the rest of the components of a stream object are not altered by
+// the garbage collector.
 
 inline std::FILE *& stream_file(LispObject v)
 {   return (std::FILE *&)basic_elt(v, 3);
@@ -243,7 +246,9 @@ inline int32_t other_read_action(int32_t c, LispObject f)
 //
 // For other_write_action if the top four bits of the operand select an
 // action to be performed, while the remaining 28 are available to pass
-// an operand.
+// an operand. Well note I am only using the low 32 bits of a word because
+// I developed this on 32-bit machines. The consequence is that linelengths
+// had better not go beyond several million.
 //
 
 #define WRITE_GET_INFO        0x00000000
@@ -261,7 +266,9 @@ inline int32_t other_read_action(int32_t c, LispObject f)
 // it is a character to be unread (-1 is used for EOF). Otherwise if the most
 // significant bit is a "1" then the request is a seek (with a 31-bit address
 // within the stream to go to).  The remaining few cases are things that do
-// not need additional data passed.
+// not need additional data passed. Observe that this means that seeks are
+// limited to be within the first 2GBytes of a file - again this is because
+// of 32-bit history!
 //
 #define READ_SEEK          0x80000000
 #define READ_TELL          0x40000000

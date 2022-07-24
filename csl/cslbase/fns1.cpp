@@ -774,9 +774,8 @@ LispObject Lthreevectorp(LispObject env, LispObject a)
 // but gives a size expressed in bytes. The "/4" then converts that to a
 // count expressed in 32-bit words which is what pach_hdrlength requires.
     return onevalue(Lispify_predicate(
-                        vechdr(a) ==
-                        (TAG_HDR_IMMED + TYPE_SIMPLE_VEC +
-                            pack_hdrlength(4*CELL/4))));
+        vechdr(a) ==
+        (TAG_HDR_IMMED + TYPE_SIMPLE_VEC + pack_hdrlength(4*CELL/4))));
 }
 
 static LispObject Larrayp(LispObject env, LispObject a)

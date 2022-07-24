@@ -78,7 +78,9 @@ bool withinObject(LispObject* v, uintptr_t a)
 // Here is is immaterial whether a vector holds binary or Lisp data.
         case 0x0a: // 0b01010: // Header for vector of Lisp pointers
                                // Note TYPE_STREAM is in with this.
+            FALLTHROUGH;
         case 0x12: // 0b10010: // Header for bit-vector
+            FALLTHROUGH;
         case 0x1a: // 0b11010: // Header for vector of binary data
 // I demand that length_of_header() gives a proper length for byte- and
 // bit-vectors at least as far as the number of words that are used. But then
@@ -122,6 +124,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
         else if (a < p->dataEnd ||
                  consIsPinned(a, p))
         {   consSetNewPinned(a, p);
+zprintf("set new cons pin %a\n", a);
 // The first time I find an object pinned on a page I will put that page
 // in a chain of ones containing pinned material.
             if (p->pinnedObjects == TAG_FIXNUM)
@@ -169,18 +172,13 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // earlier GC.
             int w = p->chunkStatus[chunkNo];
 // Reset chunkNo to refer to the start of the chunk that this address
-// lies within. Hah if the value seen is ExtendedChunkMax then I step
-// back that far and check again. That is because chunk sequence values
-// saturate. The page size is such that just two probes will be enough.
-            if (w == ExtendedChunkMax) w = p->chunkStatus[chunkNo -= w-1];
-            if (w > ExtendedChunkStart && w <= ExtendedChunkMax)
-                w = p->chunkStatus[chunkNo -= w-1];
+// lies within.
+            if (w > PinnedChunkStart) chunkNo -= (w-PinnedChunkStart);
 // Now I am pointing at the start of the chunk. If it is ahead of
 // dataEnd it contains live data and also if the chunk is pinned it might
 // even if it is way beyond dataEnd.
             if (a < p->dataEnd ||
-                w == ExtendedPinnedChunk ||
-                w == BasicPinnedChunk)
+                w == PinnedChunkStart)
             {
 // Now I tag the Chunk as (potentially) pinned. It will not actually be pinned
 // if the dodgy address points within a padder item in it. At this stage the
@@ -196,6 +194,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
                     }
                 }
                 vecSetNewPinned(a, p);
+zprintf("set new vec pin %a\n", a);
             }
             return;
         }
@@ -228,17 +227,14 @@ void processAmbiguousValue(uintptr_t a)
 // on the stack but between the proper stack frames is indeed a bit
 // "dodgy"!
 
-bool gcStartupMagic = false;
-
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems()
 {
-    gcStartupMagic = true;
 #ifdef DEBUG
 // Just while I develop the code.
     for (int i=0; i<10; i++)
         processAmbiguousValue(ambiguous[i]);
-#else // DEBUG
+#endif // DEBUG
 // For each ambiguous value (ie value on the stack) processAmbiguousValue().
 // This must ensure that if the item might be a LispObject that is a
 // reference that the destination address of that reference is marked as
@@ -250,10 +246,9 @@ void identifyPinnedItems()
 // way in to the Garbage Collector I have tried quite hard to ensure that
 // last point, but none of this can be guaranteed by reference to the rules
 // of the C++ standard!
+    zprintf("Scan C stack from %x to %x\n", C_stackFringe, C_stackBase);
     for (uintptr_t s=C_stackFringe; s<C_stackBase; s+=sizeof(uintptr_t))
         processAmbiguousValue(*csl_cast<uintptr_t*>(s));
-#endif // DEBUG
-    gcStartupMagic = false;
 }
 
 // This not only ensures that the bitmap identifies the head of every
@@ -290,19 +285,6 @@ void identifyPinnedItems()
 // clear any that are not to the header of the object and set one on
 // the header (unless the object is a padder).
 
-inline bool startOfChunk(unsigned int code)
-{   switch (code)
-    {
-    default:
-        return false;
-    case BasicChunk:
-    case ExtendedChunkStart:
-    case ExtendedPinnedChunk:
-    case BasicPinnedChunk:
-        return true;
-    }
-}
-
 void findHeadersInChunk(size_t firstChunk, Page* p)
 {
 // First I need to sort out the start and end addresses associated with
@@ -310,8 +292,9 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 // either the number beyond that for the last chunk in the Page or
 // is the number for the start of the next chunk.
     size_t lastChunk = firstChunk+1;
-    while (lastChunk < sizeof(p->chunkStatus) &&
-           !startOfChunk(p->chunkStatus[lastChunk])) lastChunk++;
+    while (lastChunk < chunkStatusSize &&
+           p->chunkStatus[lastChunk] != ChunkStart)
+        lastChunk += p->chunkLength[lastChunk];
     uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
 // endAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
@@ -331,8 +314,12 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
         {
     case 0x0a: // 0b01010: // Header for vector of Lisp pointers
                            // Note TYPE_STREAM is in with this.
+            FALLTHROUGH;
     case 0x12: // 0b10010: // Header for bit-vector
+            FALLTHROUGH;
+    case 0x1a: // 0b11010: // Header for vector of binary data
             len = doubleword_align_up(length_of_header(a));
+            my_assert(len > 0 && len<1000000, __WHERE__);
             break;
     case 0x02: // 0b00010: // Symbol headers, char literals etc.
 // The code is either for the header of a symbol or for some sort
@@ -348,83 +335,33 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 // Since this is a Page intended to contain vectors it would be wrong if it
 // had any cons cells in it. However in case at some later stage I put
 // some cons cells into vector pages I will allow for that case here!
-// Get the address of the last word of the object.
-        uintptr_t final = s + len - sizeof(LispObject);
-// I will sort out the bit-address in the bitmap for the first and last
-// words of the object as w1:bit1 and w2:bit2.
-        uintptr_t o1 = (s - csl_cast<uintptr_t>(p)) /
-                       sizeof(LispObject);
-        uintptr_t o2 = (final - csl_cast<uintptr_t>(p)) /
-                       sizeof(LispObject);
-        size_t w1 = o1/64;
-        size_t w2 = o2/64;
-        int bit1 = o1%64;
-        int bit2 = o2%64;
-        uint64_t mask1 = static_cast<uint64_t>(-1) << bit1;
-        uint64_t mask2 = static_cast<uint64_t>(-1) >> (63-bit2);
+        uintptr_t o1 = (s - csl_cast<uintptr_t>(p)) / sizeof(LispObject);
 // I will take special action of the object found is a padder. In that
 // case I will clear all the pin bits for addresses within the object,
 // because padders can never be pinned.
         if (is_padder_header(a))
-        {   // what I have here is in effect "clearVecPins(s, endS, p)";
-            if (w1 == w2)
-                p->newVecPins[w1] &= ~(mask1 & mask2);
-            else
-            {   p->newVecPins[w1] &= ~mask1;
-                for (uintptr_t w=w1+1; w<w2; w++)
-                    p->newVecPins[w] = 0;
-                p->newVecPins[w2] &= ~mask2;
-            }
+        {   clearBits(p->newVecPins, o1, len/sizeof(LispObject));
             s += len;
             continue;
         }
 // For other objects I need to test if there are any pin bits at all within
 // the object, and if so set one for the first bit while clearing all others.
-        else if (w1 == w2)
-        {   bool pinFound = (p->newVecPins[w1] & mask1 & mask2) != 0;
-            p->newVecPins[w1] &= ~(mask1 & mask2);
-            if (pinFound)
-            {   p->newVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
-                if (p->pinnedObjects == TAG_FIXNUM)
-                {   p->pinnedPages = pinnedPages;
-                    pinnedPages = p;
-                }
+        else if (testBits(p->newVecPins, o1, len/sizeof(LispObject)))
+        {   clearBits(p->newVecPins, o1, len/sizeof(LispObject));
+            setBit(p->newVecPins, o1);
+            if (p->pinnedObjects == TAG_FIXNUM)
+            {   p->pinnedPages = pinnedPages;
+                pinnedPages = p;
+            }
 // Record this pinned object in a list of same.
-                LispObject z = get2Words();
-                car(z) = s + TAG_FIXNUM;
-                cdr(z) = p->pinnedObjects;
-                p->pinnedObjects = z + TAG_FIXNUM;
-                if (!p->hasVecPins)
-                {   p->hasVecPins = true;
-                    p->oldVecPinPages = oldVecPinPages;
-                    oldVecPinPages = p;
-                }
-            }
-        }
-        else
-        {
-// I need to check if any address in the range s <= x <= final has
-// been marked as pinned, and if so clear internal pin bits and set one
-// on the header word, and when the pinning bitmap region involves more
-// than one word this is a bit more messy.
-            bool pinFound = (p->newVecPins[w1] & mask1) != 0;
-            p->newVecPins[w1] &= ~mask1;
-            for (size_t w=w1+1; w<w2; w++)
-            {   if (p->newVecPins[w] != 0) pinFound = true;
-                p->newVecPins[w] = 0;
-            }
-            if ((p->newVecPins[w2] & mask2) != 0) pinFound = true;
-            p->newVecPins[w2] &= ~mask2;
-            if (pinFound)
-            {   p->newVecPins[w1] |= static_cast<uint64_t>(-1) << bit1;
-                if (p->pinnedObjects == TAG_FIXNUM)
-                {   p->pinnedPages = pinnedPages;
-                    pinnedPages = p;
-                }
-                LispObject z = get2Words();
-                car(z) = s + TAG_FIXNUM;
-                cdr(z) = p->pinnedObjects;
-                p->pinnedObjects = z + TAG_FIXNUM;
+            LispObject z = get2Words();
+            car(z) = s + TAG_FIXNUM;
+            cdr(z) = p->pinnedObjects;
+            p->pinnedObjects = z + TAG_FIXNUM;
+            if (!p->hasVecPins)
+            {   p->hasVecPins = true;
+                p->oldVecPinPages = oldVecPinPages;
+                oldVecPinPages = p;
             }
         }
         s += len;
@@ -451,7 +388,7 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 
 void findHeadersOfPinnedItems()
 {   for (Page* p=potentiallyPinned; p!=nullptr; p=p->potentiallyPinnedChain)
-    {   for (size_t i=0; i<sizeof(p->chunkStatusMap)/8; i++)
+    {   for (size_t i=0; i<chunkStatusMapSize; i++)
         {   uint64_t bits = p->chunkStatusMap[i];
             while (bits != 0)
             {   int trailingZeros = ntz(bits);
@@ -554,8 +491,7 @@ void evacuateFromPinnedItems()
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
                 len = length_of_header(h);
-                if (is_mixed_header(h))
-                    len1 = 4*CELL;
+                if (is_mixed_header(h)) len1 = 4*CELL;
                 else len1 = len;
                 my_assert(len != 0, "lisp vector size zero");
                 for (size_t i = CELL; i<len1; i += CELL)
@@ -563,6 +499,7 @@ void evacuateFromPinnedItems()
                 continue;
 
             case 0x12: // 0b10010:   // Header for bit-vector
+                FALLTHROUGH;
             case 0x1a: // 0b11010:   // Header for vector holding binary data
                 continue;
 
@@ -579,6 +516,12 @@ void evacuateFromPinnedItems()
                 }
                 // drop through on character literals etc.
             default:                 // None of the above cases... so a CONS
+                if (car(p) == 0)
+                {   zprintf("@@@Zero word at %a\n", p);
+                    zprintf("@@@p=%a vecCurrent=%a\n", p, vecCurrent);
+                    displayAllPages("Line 518 in newcslgc.cpp"); // DEBUG
+                    my_abort("zero word in evacuateFromPinnedItems");
+                }
                 evacuate(car(p));
                 evacuate(cdr(p));
                 continue;
@@ -590,14 +533,16 @@ void evacuateFromPinnedItems()
 bool evacuateConsPage(Page* p)
 {   bool didSomething = false;
     uintptr_t next = p->scanPoint;
-// If some of the evacuation here fills up this page iy may cease being
+    zprintf("cons scanPoint = %a\n", next);
+    my_assert(!is_forward(car(next)), __WHERE__);
+// If some of the evacuation here fills up this page it may cease being
 // "current" and then consFringe is liable to get set pointing into
 // the next allocated page. That is OK because then the loop here will
 // terminate at dataEnd. Note that when I make a page current via
 // initConsPage I set dataEnd to its very end, because the "real" end of
 // data at that stage will be at fringe. 
     while (next != p->dataEnd && next != consFringe)
-    {   if (!consIsNewPinned(next, p))
+    {   if (!consIsNewPinned(next, p))  // Pinned things evacuated elsewhere
         {   LispObject* n = csl_cast<LispObject*>(next);
             switch (*n & 0x1f)
             {
@@ -619,78 +564,132 @@ bool evacuateConsPage(Page* p)
         next += 2*sizeof(LispObject);
     }
     p->scanPoint = next;
+    zprintf("end with cons scanPoint = %a\n", next);
     return didSomething;
 }
 
+// Pages only become vector ones when made into vecCurrent. Well borrowed
+// pages do not count. For vecCurrent there must be data contiguously filling
+// all non-pinned chunks up as far as vecFringe. For all other pages
+// there must be data filling all chunks up to dataEnd, which is the
+// address just beyond the last chunk that was in use when the Page graduated
+// from being vecCurrent. When vecCurrent is being scanned it is possible
+// for evacuations to cause vecFringe to move and for the page to become
+// stable rather than current. When and if that happens dataEnd gets set
+// and so the scanning will stop there. To arrange that scanning is not
+// terminated based on a check of dataEnd when it should not be, the
+// vecCurrent page will have that field initialised to the end of the Page. 
+
 bool evacuateVecPage(Page* p)
 {   uintptr_t next = p->scanPoint;
+    zprintf("~#evacVecPage %a, scanPoint=%a vecFringe=%a dataEnd=%a\n",
+        p, next, vecFringe, p->dataEnd);
+    if (next == p->dataEnd || next == vecFringe) return false;
     bool didSomething = false;
 // Ugh! Here it could be that this point is within a chunk (or extended
 // chunk) because it was left over from a previous pass. So I need to
-// identify the chubk that it is within. Well to be a little more pedantic
+// identify the chunk that it is within. Well to be a little more pedantic
 // I first need to find the start of the relevant chunk.
-    size_t firstChunk;
+    size_t firstChunk = chunkNoFromAddress(p, next);
+    int w = p->chunkStatus[firstChunk];
+// In fact on the next line I would not need to detect PinnedChunkStart
+// because since its value is 1 performing the update of firstChunk
+// would not change it! However I think what I wrire here is clearer.
+    if (w != ChunkStart && w != PinnedChunkStart) firstChunk -= w-1;
+// Now firstChunk is set up as the start of the chunk I am within.
+// From now on the chunks and extended chunks all align nicely.
+    size_t lastChunk = firstChunk + p->chunkLength[firstChunk];
+    zprintf("evacVecPage %a, scanPoint=%a vecFringe=%a dataEnd=%a\n",
+        p, next, vecFringe, p->dataEnd);
     while (next != p->dataEnd && next != vecFringe)
-    {   firstChunk = chunkNoFromAddress(p, next);
-        int w = p->chunkStatus[firstChunk];
-        if (w == ExtendedChunkMax) w = p->chunkStatus[firstChunk -= w-1];
-        if (w > ExtendedChunkStart && w <= ExtendedChunkMax)
-            w = p->chunkStatus[firstChunk -= w-1];
-// Now firstChunk is set up OK.
-        size_t lastChunk = firstChunk+1;
-        while (lastChunk < sizeof(p->chunkStatus) &&
-               !startOfChunk(p->chunkStatus[lastChunk])) lastChunk++;
-        uintptr_t endAddress   = addressFromChunkNo(p, lastChunk);
-        while (next != endAddress)     // scan this chunk
-        {   if (next == p->dataEnd || next == vecFringe)
-            {   p->scanPoint = next;
-                return didSomething;
-            }
-// I will now identify the sort of item present at location *next.
-            didSomething = true;
-            uintptr_t a = *csl_cast<uintptr_t*>(next);
-            size_t len, len1;
-            switch (a & 0x1f)
-            {
-            case 0x0a: // 0b01010: // Header for vector of Lisp pointers
-                                   // Note TYPE_STREAM is in with this.
-                len = length_of_header(a);
-                if (is_mixed_header(a)) len1 = 4*CELL;
-                else len1 = len;
-                my_assert(len != 0, "lisp vector size zero");
-                for (size_t i = CELL; i<len1; i += CELL)
-                    evacuate(*csl_cast<LispObject*>(next+i));
-                break;
+    {
+// Chunks that contain pinned material are an issue here. Well ones
+// with chunkStatus as PinnedChunkStart can only have had that set by
+// a previous GC, and so the only data within them will be pinned. That
+// was evacuated by other code than this. But there can be new material
+// here that became pinned this time but that has already been evacuated,
+// leaving its header words replaces by forwarding addresses. But I need
+// those header words to scan over! So while I am scanning if I come
+// to a pinned item I need to play special games. Note that in the cons heap
+// this was not so bad because every object was just of width 2*CELL. 
+        if (p->chunkStatus[firstChunk] == PinnedChunkStart)
+            next = addressFromChunkNo(p, lastChunk);
+        else
+        {   uintptr_t chunkEnd = addressFromChunkNo(p, lastChunk);
+            while (next != chunkEnd && next != vecFringe)
+            {   bool pinned = false;
+                uintptr_t a = *csl_cast<uintptr_t*>(next);;
+                if (vecIsNewPinned(next, p))
+                {   pinned = true;
+// Here a will be a forwarding pointer, and the real first word of the
+// object can be found by indirecting through it.
+                    my_assert(is_forward(a), __WHERE__);
+                    a = *csl_cast<uintptr_t*>(a & ~TAG_BITS);
+                }
+                my_assert(!is_forward(a), __WHERE__);
+                size_t len, len1;
+                switch (a & 0x1f)
+                {
+                case 0x0a: // 0b01010: // Header for vector of Lisp pointers
+                                       // Note TYPE_STREAM is in with this.
+                    len = length_of_header(a);
+                    if (is_mixed_header(a)) len1 = 4*CELL;
+                    else len1 = len;
+                    my_assert(len != 0, "lisp vector size zero");
+                    if (!pinned)
+                    {   for (size_t i = CELL; i<len1; i += CELL)
+                            evacuate(*csl_cast<LispObject*>(next+i));
+                        didSomething = true;
+                    }
+                    break;
 
-            case 0x12: // 0b10010: // Header for bit-vector
-                FALLTHROUGH;
-            case 0x1a: // 0b11010: // Header of vector holding binary data
-                len = doubleword_align_up(length_of_header(a));
-                break;
+                case 0x12: // 0b10010: // Header for bit-vector
+                    FALLTHROUGH;
+                case 0x1a: // 0b11010: // Header of vector holding binary data
+                    len = doubleword_align_up(length_of_header(a));
+                    my_assert(len != 0, "lisp vector size zero");
+                    break;
 
-            case 0x02: // 0b00010: // Symbol headers, char literals etc.
-                if (is_symbol_header(a))
-                {   len = symhdr_length;
-                    Symbol_Head* s = csl_cast<Symbol_Head*>(next);
-                    evacuate(s->value);
-                    evacuate(s->env);
-                    evacuate(s->plist);
-                    evacuate(s->fastgets);
-                    evacuate(s->package);
-                    evacuate(s->pname);
+                case 0x02: // 0b00010: // Symbol headers, char literals etc.
+                    if (is_symbol_header(a))
+                    {   len = symhdr_length;
+                        if (!pinned)
+                        {   Symbol_Head* s = csl_cast<Symbol_Head*>(next);
+                            evacuate(s->value);
+                            evacuate(s->env);
+                            evacuate(s->plist);
+                            evacuate(s->fastgets);
+                            evacuate(s->package);
+                            evacuate(s->pname);
+                            didSomething = true;
+                        }
+                        break;
+                    }
+                    FALLTHROUGH;
+                default:               // None of the above cases...
+                    if (car(next) == 0)
+                    {   displayAllPages("Line 623 in newcslgc.cpp"); // DEBUG
+                        zprintf("@@@Zero word at %a\n", next);
+                        zprintf("@@@p=%a vecCurrent=%a\n", p, vecCurrent);
+                        my_abort("zero word in evacuateVecPage");
+                    }
+                    len = 2*CELL;      // ... must be a CONS cell.
+                    if (!pinned)
+                    {   evacuate(car(next));
+                        evacuate(cdr(next));
+                        didSomething = true;
+                    }
                     break;
                 }
-                FALLTHROUGH;
-            default:               // None of the above cases...
-                len = 2*CELL;      // ... must be a CONS cell.
-                evacuate(car(next));
-                evacuate(cdr(next));
-                break;
+                my_assert(len != 0, "something of size zero");
+                next += len;
             }
-            next += len;
         }
-// I get here at the end of the current chunk.
+// I get here at the end of the current chunk, so move on to the next one.
+        firstChunk = lastChunk;
+        lastChunk = firstChunk + p->chunkLength[firstChunk];
     }
+    p->scanPoint = next;
     return didSomething;
 }
 
@@ -701,6 +700,7 @@ void evacuateFromCopiedData()
         while (pendingPages != nullptr)
         {   Page* p = pendingPages;
             pendingPages = p->pendingPages;
+            zprintf("Now evacuate contents of pending page %a\n", p);
             switch (p->type)
             {
             case consPageType:
@@ -726,18 +726,21 @@ void evacuateFromCopiedData()
 // the evacuation did not actually do anything, and so the whole function
 // can return false if there was in fact no additional data in to be
 // looked at.
+        zprintf("Now evacuate current Cons page %a\n", consCurrent);
         bool didSomething = evacuateConsPage(consCurrent);
 // Now similarly for the vector page. Well the pain here is that scanning
 // the vector page might put more info in the consCurrent page or even make
 // it overflow, even if the vector page does not become full. So I must
 // return false either if the vector page fills up or if any new conses are
 // created.
+        zprintf("Now evacuate current Vec page %a\n", vecCurrent);
         if (evacuateVecPage(vecCurrent)) didSomething = true;
 // If neither scanning consCurrent nor vecCurrent did anything at all then
 // pendingPages will still be left empty and there is nothing left to do.
 // If either of them did do something then at least that one will have
 // moved its scanPoint on, so when I re-try it will continue in a useful
 // manner and eventually things will converge.
+        zprintf("didSomething = %s\n", didSomething);
         if (!didSomething) break;
     }
 }
@@ -795,7 +798,7 @@ size_t nextInBitmap()
 inline uintptr_t nextInConsBitmap(Page* p)
 {   size_t o = nextInBitmap();
     if (o == badSize) return 0;
-    return csl_cast<uintptr_t>(p->consData) + 2*sizeof(LispObject)*o;
+    return csl_cast<uintptr_t>(&p->consData[0]) + 2*sizeof(LispObject)*o;
 }
 
 inline uintptr_t nextInVecBitmap(Page* p)
@@ -830,24 +833,9 @@ inline uintptr_t nextInVecBitmap(Page* p)
 size_t rePinOneConsPage(Page* p)
 {   std::memcpy(p->consPins,
                 p->newConsPins,
-                sizeof(p->consPins));
-    std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
-    uintptr_t a = csl_cast<uintptr_t>(p->consData);
-
-    {   int n = 0;
-        zprintf("bitmaps for a cons page\n");
-        for (auto v:p->consPins)
-        {   if (v != 0) zprintf("Map_% d: %16.16x\n", n, v);
-            n++;
-        }
-        n = 0;
-        for (auto v:p->newConsPins)
-        {   if (v != 0) zprintf("newMap_% d: %16.16x\n", n, v);
-            n++;
-        }
-    }
-
-
+                consPinBytes);
+    std::memset(p->newConsPins, 0, consPinBytes);
+    uintptr_t a = csl_cast<uintptr_t>(&p->consData[0]);
     size_t nPins = 0;
     zprintf("rePin from %a to %a\n", a, csl_cast<uintptr_t>(p+1));
     while (a != csl_cast<uintptr_t>(p+1) &&
@@ -856,6 +844,7 @@ size_t rePinOneConsPage(Page* p)
         a += sizeof(ConsCell);
         nPins++;
     }
+// I have now just scanned past any initial pinned items in the Page.
     if (a == csl_cast<uintptr_t>(p+1)) return nPins;
     uintptr_t base = a;
 // At present this is coded by looking at each individual cons cell. Once
@@ -867,20 +856,20 @@ size_t rePinOneConsPage(Page* p)
     {   //-- if ((a & 0xffff) == 0) zprintf("check at %a\n", a);
         if (consIsPinned(a, p))
         {   car(base) = a;
-            base = a;
             zprintf("!!startPin at %a\n", a);
             while (a != csl_cast<uintptr_t>(p+1) &&
                    consIsPinned(a, p))
             {   a += sizeof(ConsCell);
                 nPins++;
             }
+            base = a;
         }
         else a += sizeof(ConsCell);
     }
     car(base) = a;
 // Well here is a loop using the bitmaps and displaying where pinned items are!
 // It should notice just the same locations as are detected above!
-    startBitmapScan(p->consPins, sizeof(p->consPins)/8);
+    startBitmapScan(p->consPins, consPinSize);
     uintptr_t nextPin;
     while ((nextPin = nextInConsBitmap(p)) != 0)
     {   zprintf("!!Pinned item at %a\n", nextPin);
@@ -891,8 +880,8 @@ size_t rePinOneConsPage(Page* p)
 void rePinConsCurrent(Page* p)
 {   std::memcpy(p->consPins,
                 p->newConsPins,
-                sizeof(p->consPins));
-    std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
+                consPinBytes);
+    std::memset(p->newConsPins, 0, consPinBytes);
 // Space up as far as consFringe is in use, and any pinned items there
 // should now be skipped.
     while (consFringe != csl_cast<uintptr_t>(p+1) &&
@@ -934,74 +923,22 @@ void rePinConsCurrent(Page* p)
 }
 
 size_t rePinOneVecPage(Page* p)
-{   std::memcpy(p->vecPins,
-                p->newVecPins,
-                sizeof(p->vecPins));
-    std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-    bool clean = true;
-    for (auto w:p->vecPins)
-    {   if (w != 0)
-        {   clean = false;
-            break;
-        }
+{
+// Here the page has at least one chunk that was pinned (either in
+// a previous GC or in this one). Info about that is in chunkStatus and
+// chunkStatusMap. Current detailed pinning info is in newVecPins.
+    size_t pinnedChunkCount = 0;
+    size_t pinnedChunk = 0;
+    while ((pinnedChunk = nextOneBit(p->chunkStatusMap,
+                                     chunkStatusMapSize,
+                                     pinnedChunk)) != SIZE_MAX)
+    {   // Deal with a chunk that may still be pinned
+        size_t pinEnd = pinnedChunk + p->chunkLength[pinnedChunk];
+#pragma message "Work in progress"
+        zprintf("pinned chunk from %d to %d\n", pinnedChunk, pinEnd);
+        pinnedChunk = pinEnd;
     }
-    if (clean) return 0;
-
-// This hack will cause every vector page with any pinned items to end up
-// blacklisted. Wventually I will make pages that do have some pinned
-// items set up suitable maps so that allocation can go around pinning
-// and return a count of pinned stuff.
-    return pageSize;
-}
-
-void rePinVecCurrent(Page* p)
-{   std::memcpy(p->vecPins,
-                p->newVecPins,
-                sizeof(p->vecPins));
-    std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-// Fudge so that next vector request will allocate another page.
-    vecFringe = csl_cast<uintptr_t>(p+1);
-    return;
-
-
-// Space up as far as consFringe is in use, and any pinned items there
-// should now be skipped.
-    while (consFringe != csl_cast<uintptr_t>(p+1) &&
-           consIsPinned(consFringe, p)) consFringe += sizeof(ConsCell);
-// If that tkes consFringe up to the end of the page then this page is
-// full and the next allocation request will replace it.
-    if (consFringe == csl_cast<uintptr_t>(p+1))
-    {   consLimit = consFringe;
-        return;
-    }
-// Now (whew) there is at least one non-pinned cell available still. The
-// first block of such must be left delimited by consLimit.
-    uintptr_t a = consFringe;
-    while (a != csl_cast<uintptr_t>(p+1) &&
-           !consIsPinned(a, p)) a += sizeof(ConsCell);
-    consLimit = a;
-    if (a == csl_cast<uintptr_t>(p+1)) return;
-// Here I have found a relevant pinned item. Skip past pinnings..
-    while (a != csl_cast<uintptr_t>(p+1) &&
-           consIsPinned(a, p)) a += sizeof(ConsCell);
-// Now a points to the start of a free region (or at the end of the page).
-// I can fill in the rest of the page with pointers that chain such free
-// regions together.
-    uintptr_t base = a;
-// At present this is coded by looking at each individual cons cell. Once
-// I have debugged things using this version I can use ntz() to search for
-// pinned items 64-cells at a time in the bitmap, thereby speeding this
-// up quite a lot. But this version is simpler so I use it first.
-    while (a != csl_cast<uintptr_t>(p+1))
-    {   if (consIsPinned(a, p))
-        {   car(base) = a;
-            base = a;
-            while (a != csl_cast<uintptr_t>(p+1) &&
-                   consIsPinned(a, p)) a += sizeof(ConsCell);
-        }
-        else a += sizeof(ConsCell);
-    }
-    car(base) = a;
+    return pinnedChunkCount;
 }
 
 void setupPinmapsConsPages()
@@ -1049,35 +986,65 @@ void setupPinmapsConsPages()
     for (auto p:consPages)
     {   std::memcpy(p->consPins,
                     p->newConsPins,
-                    sizeof(p->consPins));
-        std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
+                    consPinBytes);
+        std::memset(p->newConsPins, 0, consPinBytes);
         if (p == consCurrent) rePinConsCurrent(p);
     }
 }
 
-void setupPinmapsVecPages()
-{   vecOldPages += vecPinPages;
-    vecOldPages += vecCloggedPages;
-    while (!vecOldPages.isEmpty())
-    {   Page* p = vecOldPages.pop();
-// rePinOneVecPage processes one page and returns a count of the pinned
-// items present.
-        size_t nPins = rePinOneVecPage(p);
-        if (nPins == 0) emptyPages.push(p);
-// I set a rather arbitrary limit such that if (1/10) of a page is
-// filled with pinned items I will avoid allocation within that page
-// until subsequent garbage collections have (one hopes) observed the
-// pinning evaporating.
-        else if (nPins < pageSize/sizeof(LispObject)/10) vecPinPages.push(p);
-        else vecCloggedPages.push(p);
-    }
-    for (auto p:vecPages)
+void moveNewPins(PageList& pl)
+{   for (auto p:pl)
     {   std::memcpy(p->vecPins,
                     p->newVecPins,
-                    sizeof(p->vecPins));
-        std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-        if (p == vecCurrent) rePinVecCurrent(p);
+                    vecPinBytes);
+        std::memset(p->newVecPins, 0, vecPinBytes);
     }
+}
+
+void setupPinmapsVecPages()
+{
+// I will now set a flag on all vecPages so that when I have repinned
+// I leave them there. I also need to get ready to reconstitute vecPinPages
+// and vecCloggedPages;    
+// Note that at this stage vecPages contain just the pages that form
+// the vector component of the "new half space" that I have copied
+// data into. I need to treat them differently from all other Pages.
+    for (Page* p:vecPages) p->isInVecPages = true;
+    vecOldPages += vecPinPages;
+    vecOldPages += vecCloggedPages;  // This leaves vecPinPages etc empty.
+    Page* old = oldVecPinPages;
+    oldVecPinPages = nullptr;
+    for (Page* p=old; p!=nullptr; p=p->oldVecPinPages)
+    {   int nPins = rePinOneVecPage(p);
+        if (!p->isInVecPages)
+        {   if (nPins == 0) emptyPages.push(p);
+            else if (nPins < 10) vecPinPages.push(p);
+            else vecCloggedPages.push(p);
+            if (nPins == 0) p->hasVecPins = false;
+            else
+            {   p->oldVecPinPages = oldVecPinPages;
+                oldVecPinPages = p;
+                p->hasVecPins = true;
+            }
+        }
+        // Otherwise the page remains on vecPages
+    }
+// Tidy up
+    for (Page* p:vecPages) p->isInVecPages = false;
+    moveNewPins(vecPages);
+    moveNewPins(vecPinPages);
+    moveNewPins(vecCloggedPages);
+// Finally I must reset vecLimit to cope with the possibility that
+// a pinned region within vecCurrent went away.
+    size_t vChunk =
+        (vecFringe - csl_cast<uintptr_t>(&vecCurrent->chunks[0]))/chunkSize;
+    size_t nextPinnedChunk = nextOneBit(vecCurrent->chunkStatusMap,
+                                        chunkStatusMapSize,
+                                        vChunk);
+    if (nextPinnedChunk == SIZE_MAX)
+        vecLimit = csl_cast<uintptr_t>(vecCurrent+1);
+    else vecLimit = csl_cast<uintptr_t>(&vecCurrent->chunks[0]) +
+        chunkSize*nextPinnedChunk;
 }
 
 // I start garbage collection by  making the current allocation pages
@@ -1088,16 +1055,15 @@ bool withinGarbageCollector = false;
 
 void inner_garbage_collect()
 {   WithinGarbageCollector noted;
-    cout << "Page size = " <<std::hex << sizeof(Page) << std::dec << "\n";
 // I start by setting the end-point information in the two current pages.
 // That leaves them in the proprer state to count as "full", so that when
 // the GC looks at ambiguous pointers it will be able to be aware when
 // an apparent pointer is to a location above the fringe. Note that any
-// final chunk in the vector page needs to have a padder inserted.
+// final chunk in the vector page may need to have a padder inserted.
+    consCurrent->dataEnd = consFringe;
     if (vecFringe != vecLimit)
         setHeaderWord(vecFringe, vecLimit-vecFringe);
-    consCurrent->dataEnd = consFringe;
-    vecCurrent->dataEnd = vecFringe;
+    vecCurrent->dataEnd = vecLimit;
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
     vecOldPages = vecPages;
@@ -1159,8 +1125,13 @@ void inner_garbage_collect()
     }
 // There is no need to set up a new vector current page until now.
     grabFreshPage(vecPageType);
+// I arrange that the very first vector item I copy is the vector that is
+// the current "package", ie hash table of symbols. I do this because it
+// is liable to be a large vector so putting it first avoids some padding
+// waste (maybe!).
     evacuateFromPinnedItems();
     evacuateFromUnambiguousBases();
+    if (gcTrace) displayAllPages("Line 1070 in newcslgc.cpp"); // DEBUG
     evacuateFromCopiedData();
 // Well where we should be now is that all live data is either left in place
 // if pinned or moved to new space if not. References to it should all be
@@ -1271,6 +1242,10 @@ std::jmp_buf* buffer_pointer;
 
 static volatile int volatileVar = 0; 
 
+NOINLINE uintptr_t getStackFringe(double x)
+{   return csl_cast<uintptr_t>(&x);
+}
+
 NOINLINE void garbage_collect()
 {   std::jmp_buf buffer;
     buffer_pointer = &buffer;
@@ -1288,7 +1263,7 @@ NOINLINE void garbage_collect()
     int a16 = volatileVar; int a17 = volatileVar; int a18 = volatileVar;
     for (int i=0; i<1000000; i++)
     {   if (setjmp(buffer) == 0)
-        {   C_stackFringe = csl_cast<uintptr_t>(&buffer);
+        {   C_stackFringe = getStackFringe(1.0);
             inner_garbage_collect();
 // Now I reference all the variables a1-a18. Because I multiply each
 // by a value that is notionally unpredictable I can not perform any
@@ -1323,5 +1298,25 @@ NOINLINE void garbage_collect()
         if (volatileVar == volatileVar) break;
     }
 }
+
+#ifdef DEBUG
+// The functions here are intended to be useful for calling from gdb
+
+void aprint(uintptr_t x)
+{
+// Note that with zprintf() I do not need to mess around and use eg PRIx64.
+    zprintf("x = %a %16.16x\n", (uintptr_t)x, (uint64_t)x);
+}
+
+void aprint(Page* x)
+{   zprintf("x = %a %16.16x\n", (uintptr_t)x, (uint64_t)x);
+}
+
+void aprint(LispObject* x)
+{   zprintf("x = %a %16.16x\n", (uintptr_t)x, (uint64_t)x);
+}
+
+
+#endif
 
 // end of file newcslgc.cpp

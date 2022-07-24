@@ -71,7 +71,7 @@ THREADID;
     std::memcpy(csl_cast<void *>(&ffname[0]),
                 &celt(ffpname, 0), fflength);
     ffname[fflength] = 0;
-    debug_record(csl_cast<const char *>(ffname));
+    debug_record(reinterpret_cast<const char *>(ffname));
 //
 #ifdef CHECK_STACK
     {   char *my_stack = csl_cast<char *>(&my_stack);

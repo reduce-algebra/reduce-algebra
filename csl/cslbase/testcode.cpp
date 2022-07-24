@@ -35,6 +35,31 @@
 
 #include "headers.h"
 
+const char* which;
+
+uint64_t crudeHash(LispObject a)
+{   if (is_cons(a))
+        return 12345u + 169*(crudeHash(car(a)) + 169*crudeHash(cdr(a)));
+    else if (is_fixnum(a)) return 11213u*a;
+    else if (is_vector(a))
+    {   uint64_t r = 19937u;
+        size_t len=cells_in_vector(a);
+        for (size_t i=0; i<len; i++)
+            r = 21701*r + crudeHash(elt(a, i));
+        return r;
+    }
+    else
+    {   zprintf("!!!crudeHash(%16.16x) %s\n", a, which);
+        displayAllPages("crudeHash messup");
+        my_abort("bad value in crudeHash");
+    }
+}
+
+uint64_t crudeHash(LispObject a, const char* w)
+{   which = w;
+    return crudeHash(a);
+}
+
 LispObject runtest(int n, int payload)
 {
     if ((Crand()&255) < 2)
@@ -57,6 +82,12 @@ LispObject runtest(int n, int payload)
 #undef INIT_OBVECI_SIZE
 #define INIT_OBVECI_SIZE 16
 
+size_t randSize()
+{   uintptr_t r = Crand();
+    r = doubleword_align_up(r);
+    return 16384/CELL - 128 + (r & 0xff);
+}
+
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
     set_up_signal_handlers();
@@ -66,12 +97,19 @@ void gcTestCode()
 // (2) set workbase[2] to a new cons
 // (3) set ambiguous[1] to a new cons
 // (4) set ambiguous[2] to a new cons
-// (5) garbage collect
-// Note that each of 1-4 can discard the cons cell previously
-// stored there.
+// (5) set workbase[1] to a new vector
+// (6) set workbase[2] to a new vector
+// (7) set ambiguous[1] to a new vector
+// (8) set ambiguous[2] to a new vector
+// (9) garbage collect
+// Note that each of 1-8 can discard the items previously stored there.
 
+    workbase[1] = fixnum_of_int(Crand()&0xffff);
+    workbase[2] = fixnum_of_int(Crand()&0xffff);
+    ambiguous[1] = fixnum_of_int(Crand()&0xffff);
+    ambiguous[2] = fixnum_of_int(Crand()&0xffff);
     for (int i=0; i<24; i++)
-    {   switch (Crand()%5)
+    {   switch (Crand()%10)
         {
         default:
         case 0:
@@ -90,12 +128,37 @@ void gcTestCode()
             ambiguous[2] = cons(fixnum_of_int(Crand()&0xffff), fixnum_of_int(Crand()&0xffff));
             zprintf("&&&set ambiguous 2 = %a\n", ambiguous[2]);
             break;
-        case 4:
+        case 5:
+            workbase[1] = get_basic_vector_init(randSize(), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&setvec workbase 1 = %a\n", workbase[1]);
+            break;
+        case 6:
+            workbase[2] = get_basic_vector_init(randSize(), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&setvec workbase 2 = %a\n", workbase[2]);
+            break;
+        case 7:
+            ambiguous[1] = get_basic_vector_init(randSize(), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&setvec ambiguous 1 = %a\n", ambiguous[1]);
+            break;
+        case 8:
+            ambiguous[2] = get_basic_vector_init(randSize(), fixnum_of_int(Crand()&0xffff));
+            zprintf("&&&setvec ambiguous 2 = %a\n", ambiguous[2]);
+            break;
+        case 9:
             std::cout << "&&&provoke reclaim\n";
             displayAllPages("memory before GC");
+            uint64_t h0 = crudeHash(workbase[1], "w1") +
+                          crudeHash(workbase[2], "w2") +
+                          crudeHash(ambiguous[1], "a1") +
+                          crudeHash(ambiguous[2], "a2");
             Lgc(nil, fixnum_of_int(Crand()&0xffff));
+            uint64_t h1 = crudeHash(workbase[1], "w1") +
+                          crudeHash(workbase[2], "w2") +
+                          crudeHash(ambiguous[1], "a1") +
+                          crudeHash(ambiguous[2], "a2");
             displayAllPages("memory after after GC");
             std::cout << "&&&end reclaim\n";
+            my_assert(h1 == h0, "corrupted by GC");
             break;
         }
     }
