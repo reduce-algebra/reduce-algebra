@@ -857,9 +857,16 @@ int char_to_broadcast(int c, LispObject f)
 int32_t write_action_synonym(int32_t c, LispObject f)
 {   int r;
     LispObject f1 = qvalue(stream_write_data(f));
+    if (is_forward(f1)) aerror("forwarding pointer left over"); // @@@
     if (!is_stream(f1))
-        return aerror1("attempt to act on",
+    { //@@@
+        zprintf("f1 = %a = %16.16x\n", f1, f1);
+        if (is_vector(f1))
+            zprintf("hdr = %a = %17.16x\n", vechdr(f1), vechdr(f1));
+        my_abort("Synonym stream messed up");
+        return aerror1("Not a stream in write_action_synonym",
                 cons_no_gc(fixnum_of_int(c >> 8), f));
+    }
     r = other_write_action(c, f1);
     if (c == WRITE_CLOSE)
     {   set_stream_write_fn(f, char_to_illegal);

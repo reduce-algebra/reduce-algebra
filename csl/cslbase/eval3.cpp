@@ -205,7 +205,7 @@ LispObject progn_fn(LispObject args, LispObject env)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(f);
             });
-        save.restore(args, env, f);
+        save.restore(THREADARG args, env, f);
     }
     errexit();
     return eval(f, env);    // tail call on last item in the progn
