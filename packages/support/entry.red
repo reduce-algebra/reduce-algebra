@@ -1398,6 +1398,23 @@ switch tracelimit;
 symbolic operator mrv_limit;
 defautoload(mrv_limit, mrvlimit, expr, 3);
 
+% F5
+switch f5fractionfree=off;
+switch f5interreduce=off;
+switch f5statistics=off;
+switch f5sugar=on;
+switch f5usef5c=off;
+switch f5parametric=off;
+switch f5parametricNormalize=off;
+
+put('f5, 'psopfn, 'f5_groebner);
+defautoload(f5_groebner, f5, expr, 1);
+defautoload(f5dumpAssumptions, f5, expr, 0);
+
+% Dipoly
+put('torder, 'psopfn, 'torder);
+defautoload(torder, dipoly, expr, 1);
+
 endmodule;
 
 end;
