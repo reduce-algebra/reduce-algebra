@@ -1,0 +1,292 @@
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb}
+\usepackage{xcolor}
+
+\newcommand{\grobner}{Gr\"obner}
+\newcommand{\faugere}{Faug\`ere}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{document}
+\title{F5: Computing Gröbner Bases Using F5}
+
+\author{Alexander Demin, Hamid Rahkooy\\
+  MPI Informatics, Saarland Informatics Campus, Germany\\
+  \texttt{\{ademin,hrahkooy\}@mpi-inf.mpg.de}
+  \and
+  Thomas Sturm\\
+  CNRS, Inria, and the University of Lorraine, France\\
+  \texttt{thomas.sturm@cnrs.fr}
+}
+
+\date{July 2022}
+
+\maketitle
+
+\section{Introduction}
+
+F5 is a package for the computation of \grobner{} Bases using \faugere{}'s F5 algorithm \cite{f5}.
+Admissible coefficient field is rational functions. It is compatible with existing REDUCE term
+orderings, as used with the GROEBNER package and the CGB package. Some package usage examples are
+presented in Section~\ref{SE:usage} and in the package test file
+\code{f5.tst}.
+
+The efficiency of this algorithm comes from two criteria, namely, the \emph{$F_5$ Criterion} and the
+\emph{Rewritten Criterion}, for which it assigns to each polynomial a unique signature. The general
+idea of signatures is to keep track of the history of the computation with a minimal overhead and to
+exploit this information to detect redundant polynomial reductions. It has been shown that in the
+special case of "regular" input F5 computes a \grobner{} basis without reduction to zero \cite{f5}.
+For a description of the F5 algorithm as well as a general survey of the area of signature
+based-methods see \cite{survey}.
+
+\section{Package Usage}\label{SE:usage}
+
+The following command loads the package into REDUCE:
+%
+\begin{center}
+    \code{load\_package f5;}
+\end{center}
+
+The package provides the command \code{f5} and the command \code{torder} to manipulate the current
+term order. It comes wth some switches, which are described in Section~\ref{SE:switches}.
+
+The principal function in the interface is
+%
+\begin{center}
+    \code{f5(\{expr\_1, \ldots, expr\_m\}, \{var\_n, \ldots, var\_n\}, ord)}
+\end{center}
+%
+It computes a \grobner{} basis of the polynomials \code {expr\_1}, \dots,~\code{expr\_m} in the variables \code{var\_1}, \dots,~\code{var\_n} using a
+term order constructed from the given variables and the sort mode \code{ord}. As usual, all REDUCE
+kernels can play the role of variables of the polynomial ring under consideration. Among the sort
+modes that are available through the
+\code{torder} command, F5 currently supports the basic orders \code{lex},
+\code{gradlex}, and \code{revgradlex}, as well as block orders,
+weighted orders, and graded orders, but not matrix orders. Recall that the list of variables
+specifies their relative order from largest to smallest, like $\code{var\_1} \succ \dots \succ
+\code{var\_n}$.
+
+All variables occurring in \code{expr\_1}, \dots,~\code{expr\_m} but not in \code{var\_1},
+\dots,~\code{var\_n} are considered to belong to the coefficients. Depending on the switch
+\code{f5para\-met\-ric} (compare Section~\ref{SE:switches}) those coefficients are treated either as
+formal rational functions or as parametric expressions. In the latter case, certain assumptions on
+the non-vanishing of such expressions are made and recorded in the course of the \grobner{} basis
+computation. The assumptions can be dumped using the command
+%
+\begin{center}
+\code{f5dumpAssumptions()}.
+\end{center}
+An example can be found in Figure~\ref{fig:para}.
+
+The arguments \code{var\_1}, \dots,~\code{var\_n} and \code{ord} are optional. The default term
+order is $\code{lex}$ with respect to all kernels occurring in numerators of \code{expr\_1},
+\dots,~\code{expr\_m}, sorted by the REDUCE kernel order. Note that in this default case, variables
+are assigned to the polynomial ring without being explicitly listed in \code{var\_1},
+\dots,~\code{var\_n}.
+
+Variables and sort mode can be globally specified using the command
+%
+\begin{center}
+    \code{torder(vars, ord)}.
+\end{center}
+%
+Using the optional arguments of \code{f5} shadows the current global
+setting. Note that the observation that graded term orders like
+\code{gradlex} and \code{revgradlex} tend to be fast for \grobner{}
+basis computations \cite[\S5]{tolstaya} holds also for F5.
+
+The coefficient
+field is the field of rational functions in all variables occurring in
+\code{expr\_1}, \dots,~\code{expr\_m} but not in \code{var\_1}, \dots,~
+\code{var\_n}. The field of rational numbers is a special case.
+%
+\paragraph{Example}
+On input of
+\begin{verbatim}
+1: load_package f5;
+
+2: torder({x, y, z}, lex)$
+
+3: f5({x*y + 1, y*z + 1});
+\end{verbatim}
+we obtain the \grobner{} basis
+\code{\{x - z, y*z + 1\}} using lexicographic order with $\code{x} \succ
+\code{y} \succ \code{z}$. A subsequent call
+\begin{verbatim}
+4: f5({x*y + 1, y*z + 1}, {z, y, x}, lex);
+\end{verbatim}
+with optional arguments shadows our \code{torder} setting above in favor of $
+\code{z}
+\succ \code{y} \succ \code{x}$. We then obtain the \grobner{} basis
+\code{\{z - x, y*x + 1\}}.
+%
+\section{Switches}
+\label{SE:switches}
+
+\begin{description}
+\item[\code{f5fractionfree:}] Default is \code{off}. If set \code{on}, keep
+coefficients fraction-free during computation.
+%
+\item[\code{f5interreduce:}] Default is \code{off}.
+If set \code{on}, inter-reduce the resulting basis, which makes it unique
+wrt.~the chosen term order. Note that even with
+\code{off f5interreduce} the output basis has minimal number of elements.
+%
+\item[\code{f5parametric:}] Default is \code{off}. If set \code{on}, parametric coefficients are not
+considered as rational functions but as parametric expressions. Necessary assumptions on the
+non-vanishing of such parametric expressions are made during computation. They can be queried using
+the function \code{f5dumpAs\-sump\-tions}. Figure~\ref{fig:para} shows an example.
+%
+\item[\code{f5parametricNormalize:}] This switch is considered only with \code{on f5para\-met\-ric}.
+Its default is \code{off}. \emph{Normalize} refers to the conversion to primitive polynomials with
+\code{on f5fractionfree} and to monic polynomials otherwise. If set \code{off}, normalization
+factors are computed over the integers. If set \code{on}, normalization factors are computed over
+the polynomial ring in the parameters, and necessary assumptions on their non-vanishing are made.
+%
+\item[\code{f5statistics:}] Default is
+\code{off}. If set \code{on}, collect and print statistics about \grobner{}
+basis computation with each call to \code{f5}. Figure~\ref{fig:stat} shows an example.
+%
+\item[\code{f5sugar:}]  Default is \code{on}. If set \code{on}, use sugar selection strategy;
+otherwise use the normal selection strategy.
+%
+\item[\code{f5usef5c:}] Default is \code{off}. If set \code{on}, use the F5C algorithm described in
+\cite{f5c}.
+\end{description}
+%
+\begin{figure}[p]
+\footnotesize
+\begin{verbatim}
+1: load_package f5;
+
+2: on f5parametric;
+
+3: f5({a*x*y + b*x, (1-b)*x*y^2 - 1}, {x, y}, lex);
+
+      3    2       2        3  3    3  2        2  4    2  3
+{ - (b  - b )*x - a ,   - (a *b  - a *b )*y - (a *b  - a *b ) }
+
+4: f5dumpAssumptions();
+
+             2
+    {a <> 0,b  - b <> 0}
+\end{verbatim}
+\caption{Assumptions made with switch \code{f5parametric}\label{fig:para}}
+\end{figure}
+%
+\begin{figure}[p]
+\footnotesize
+\begin{verbatim}
+1: load_package f5;
+
+2: system := {z1 + z2 + z3 + z4, 
+              z1*z2 + z1*z4 + z2*z3 + z3*z4,
+              z1*z2*z3 + z1*z2*z4 + z1*z3*z4 + z2*z3*z4, 
+              z1*z2*z3*z4 - 1};
+
+3: on f5statistics;
+
+4: f5(system, {z1,z2,z3,z4}, revgradlex);
+
+      2   4        5        5                     2
+{ - z3 *z4  - z1*z4  - z3*z4  - z2*z3 - z3*z4 + z4 ,
+
+   3   2           3           3           3     2   3
+ z3 *z4  + z1*z2*z4  + z1*z3*z4  + z2*z3*z4  + z3 *z4  - z3,
+
+      4     5                    2     2   2        3          3
+ z2*z4  + z4  - z2 - z4, z2*z3*z4  + z3 *z4  + z1*z4  + 2*z3*z4  - 1,
+
+      2                           2
+ z2*z3  - z1*z2*z4 - z2*z3*z4 + z3 *z4,
+
+      2
+  - z2  + z1*z4 - z2*z4 + z3*z4,  z1 + z2 + z3 + z4 }
+
+-------------------------------------------------------------------------------
+| # i | # pairs | # reductions | # zero reductions | # normal forms | degrees |
+-------------------------------------------------------------------------------
+|  1  |    0    |       0      |         0         |        0       |    -    |
+|  2  |    1    |       1      |         1         |        2       |  4 - 4  |
+|  3  |    3    |       3      |         0         |        4       |  5 - 6  |
+-------------------------------------------------------------------------------
+ Total     4            4                1                  6
+\end{verbatim}
+\caption{Statistical information with switch \code{f5statistics}
+\label{fig:stat}}
+\end{figure}
+%
+\section{Symbolic Mode Interface}
+
+In symbolic mode the term order must be specified explicitly before \grobner{} basis computation.
+%
+\begin{description}\sloppy
+\item[\code{torder(\{\{'list, var\_1, \ldots, var\_n\}, ord\}):}] with variables \code{var\_1},
+\dots, \code{var\_n} and sort mode \code{ord} as described in Section~\ref{SE:usage}. The return
+value is the old setting.
+\end{description}
+
+There are three alternative symbolic mode entry points for \grobner{} basis computation, depending
+on the syntax of input and output polynomials:
+\begin{description}
+\item[\code{f5\_groebnera(\{expr\_1, \ldots, expr\_m\}):}] \code{expr\_1}, \dots, \code{expr\_m} are
+Lisp Prefix Forms. The return value is a list of polynomials as Lisp Prefix Forms, which are ordered
+with respect to the chosen term order.
+%
+\item[\code{f5\_groebnerf(\{expr\_1, \ldots, expr\_m\}):}] \code{expr\_1}, \dots, \code{expr\_m} are
+polynomials as Standard Forms. The return value is a list of polynomials as Standard Forms, which
+are ordered with respect to the current REDUCE kernel order. Note that the information on the term
+order gets lost here.
+%
+\item[\code{f5\_groebnerPoly(\{expr\_1, \ldots, expr\_m\}):}] \code{expr\_1}, \dots, \code{expr\_m}
+are polynomials as Polynomial data structures of the F5 package. The return value is a list of
+polynomials as such Polynomial data structures.
+%
+\item[\code{f5\_groebnerq(\{expr\_1, \ldots, expr\_m\}):}] \code{expr\_1}, \dots, \code{expr\_m} are
+polynomials as Standard Quotients, possibly with parametric denominators. The return value is a list
+of polynomials as Standard Quotients, which are ordered with respect to the current REDUCE kernel
+order. Note that the information on the term order gets lost here.
+\end{description}
+
+Finally, assumptions can be accessed in symbolic mode as follows:
+\begin{description}
+\item[\code{param\_dumpAssumptions():}] the return value is a list of polynomial inequations in the
+form \code{(neq expr nil)}, where \code{expr} is a Lisp Prefix polynomial. This format is suitable
+to be processed with REDLOG.
+\end{description}
+
+\begin{thebibliography}{BWK93}
+
+\bibitem[BWK93]{tolstaya}
+Thomas Becker, Volker Weispfenning, and Hainz Kredel.
+\newblock {\em Gr{\"o}bner Bases}, volume 141 of {\em Graduate Texts in
+  Mathematics}.
+\newblock Springer, 1993.
+
+\bibitem[EF17]{survey}
+Christian Eder and Jean-Charles Faugère.
+\newblock A survey on signature-based algorithms for computing {G}röbner
+  bases.
+\newblock {\em J. Symb. Comput.}, 80:719--784, 2017.
+
+\bibitem[EP10]{f5c}
+Christian Eder and John Perry.
+\newblock {F5C}: A variant of {F}aug{\`{e}}re's {F5} algorithm with reduced
+  {G}r{\"o}bner bases.
+\newblock {\em J. Symb. Comput.}, 45(12):1442--1458, 2010.
+
+\bibitem[Fau02]{f5}
+Jean~Charles Faugère.
+\newblock A new efficient algorithm for computing {G}röbner bases without
+  reduction to zero ($\textrm{{F}}_5$).
+\newblock In {\em Proc. ISSAC 2002}, pages 75--83. ACM, 2002.
+
+\end{thebibliography}
+
+% \bibliography{f5}
+% \bibliographystyle{alpha}
+
+\end{document}
