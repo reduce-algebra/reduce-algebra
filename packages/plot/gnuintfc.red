@@ -79,7 +79,8 @@ global '(plotcommand!* gnuplot_select_terminal!*);
 % The initialize_gnuplot() function will set plotcommand!*.
 
 gnuplot_select_terminal!* :=
-"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
+%"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else if(strstrt(GPVAL_TERMINALS,""x11"")!=0)set terminal x11;";
+"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;";
 
 #if (member 'psl lispsystem!*)
 %%%%%%%%%%%%%%%%%%%%%%%%%%% PSL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,23 +110,23 @@ symbolic procedure initialize_gnuplot();
    if null !*force_gnuplot_term then plotheader!* := ""
    else << if null x then
       if getenv "DISPLAY" then x := nil . gnuplot_select_terminal!*
-                        else x:='(nil."dumb");
-      if wlessp (strlen strinf cdr x, 20) 
-                 then  plotheader!* :=bldmsg("set term %w",cdr x)
-                       else plotheader!* := cdr x ;
+                        else x:='(nil . "set terminal dumb");
+      plotheader!* := cdr x ;
    >>
      where x =
       assoc(getenv "TERM",
 	    ("xterm" . gnuplot_select_terminal!*) .
 	    ("xterm-color" . gnuplot_select_terminal!*) .
+	    ("xterm-256color" . gnuplot_select_terminal!*) .
+	    ("screen-256color" . gnuplot_select_terminal!*) .
            '(
           %% You may want to extend or modify the terminal list above
-                ("sun-cmd" . "x11")
-                ("sun" . "x11")
-                ("hpterm" . "x11")
-                ("vt52"  . "tek40xx")
-                ("vt100" . "tek40xx")
-                ("vt102" . "tek40xx")
+                ("sun-cmd" . "set term x11")
+                ("sun" . "set terminal x11")
+                ("hpterm" . "set terminal x11")
+                ("vt52"  . "set terminal tek40xx")
+                ("vt100" . "set terminal tek40xx")
+                ("vt102" . "set terminal tek40xx")
            ));
 
    plotcommand!* := find!-gnuplot();
@@ -199,7 +200,7 @@ symbolic procedure initialize_gnuplot();
 %:     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
 %:     plotcommand!* :=
 %:       fnexpand bldmsg("$reduce\wutil\dos386\gnuplot.exe %w",plotcmds!*);
-%:     if !*force_gnuplot_term then plotheader!* :=  "set term vga";
+%:     if !*force_gnuplot_term then plotheader!* :=  "set terminal vga";
 %:     else plotheader!* := "";
 %:     plotcleanup!* :=                     % delete scratch files
 %:       bldmsg("del %w",plotcmds!*).
@@ -217,7 +218,7 @@ symbolic procedure initialize_gnuplot();
          bldmsg("%wplotdt%w",plottmp!*,i); % scratch data files
    plotcmds!* :=bldmsg("%wplotcmds",plottmp!*); % if pipes not accessible
    plotcommand!* := bldmsg("gnuplot %w",plotcmds!*);
-   if !*force_gnuplot_term then plotheader!* :=    "set term x11;";
+   if !*force_gnuplot_term then plotheader!* :=    "set terminal x11;";
    else plotheader!* := "";
    plotcleanup!* :=                  % delete scratch files
        {bldmsg("del %wplotdt*;*",plottmp!*),bldmsg("del %wplotcmds*;*",plottmp!*)};

@@ -324,6 +324,8 @@ symbolic procedure gp!-plotoptions();
       scalar a, b;
       a := x;
       if not idp a then a := car a;
+      %% RmS: Correct name of option that was renamed during input (e.g., size in PSL Reduce) 
+      if b := get(a,'oldnam) then a := b;
       b := explode2 a;
       if eqcar(b, 'n) and eqcar(cdr b, 'o) then <<
          a := compress cddr b;
