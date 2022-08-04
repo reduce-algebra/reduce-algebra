@@ -695,6 +695,7 @@ bool valid_address(void *pointer)
 }
 
 #elif defined WIN32
+// ???
 #else
 
 bool valid_address(void *pointer)

@@ -35,6 +35,8 @@
 
 // $Id$
 
+#define DEFINE_LIST_BASES 1
+
 #include "headers.h"
 
 //#ifdef WIN32
@@ -318,17 +320,17 @@ static void copy(LispObject *p)
                                 case TYPE_MIXED3: case TYPE_STREAM:
                                     next = 2*CELL;
                                     break;
-// There is a slight delight here. The test "vector_holds_binary" is only
+// There is a slight delight here. The test "vector_hheader_of_binary" is only
 // applicable if the header to be checked is a header of a genuine vector,
 // ie something that would have TAG_VECTOR in the pointer to it. But here
 // various numeric data types also live in the vector heap, so I need to
 // separate them out explicitly. The switch block here does slightly more than
-// it actually HAS to, since the vector_holds_binary test would happen to
+// it actually HAS to, since the vector_header_of_binary test would happen to
 // deal with several of the numeric types "by accident", but I feel that
 // the security of listing them as separate cases is more important than the
 // minor speed-up that might come from exploiting such marginal behaviour.
                                 default:
-                                    if (vector_holds_binary(h)) continue;
+                                    if (vector_header_of_binary(h)) continue;
                                 // drop through on simple vectors, hash
                                 // tables etc etc. In general anything
                                 // that contains Lisp pointers.
@@ -547,7 +549,7 @@ static void real_garbage_collector()
 // I dislike the special treatment of current_package that follows. Maybe
 // I should arrange something totally different for copying the package
 // structure...
-    for (LispObject **p = list_bases; *p!=nullptr; p++) copy(*p);
+    for (LispObject *p:list_bases) copy(p);
     for (LispObject *sp=stack;
          sp > csl_cast<LispObject *>(stackBase);
          sp--) copy(sp);

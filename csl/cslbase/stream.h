@@ -220,7 +220,8 @@ inline LispObject set_stream_read_other(LispObject v, other_stream_op *x)
 #define STREAM_FLAG_PIPE       1
 
 inline bool is_stream(LispObject v)
-{   return (is_vector(v) && vechdr(v) == STREAM_HEADER);
+{   if (is_vector(v)) my_assert(!is_forward(vechdr(v))); // @@@
+    return (is_vector(v) && vechdr(v) == STREAM_HEADER);
 }
 
 inline int putc_stream(int c, LispObject f)
@@ -307,6 +308,59 @@ extern directory *rootDirectory;
 #define PDS_PENDING 2
 extern directory *open_pds(const char *name, int mode);
 extern bool finished_with(int h);
+
+// For debugging etc...
+
+inline const char* streamop(uintptr_t x)
+{
+         if (x==(uintptr_t)char_to_terminal)         return "char_to_terminal";
+    else if (x==(uintptr_t)char_to_file)             return "char_to_file";
+    else if (x==(uintptr_t)char_to_pipeout)          return "char_to_pipeout";
+    else if (x==(uintptr_t)char_to_synonym)          return "char_to_synonym";
+    else if (x==(uintptr_t)char_to_broadcast)        return "char_to_broadcast";
+    else if (x==(uintptr_t)char_to_illegal)          return "char_to_illegal";
+    else if (x==(uintptr_t)char_to_list)             return "char_to_list";
+    else if (x==(uintptr_t)code_to_list)             return "code_to_list";
+    else if (x==(uintptr_t)count_character)          return "count_character";
+    else if (x==(uintptr_t)binary_outchar)           return "binary_outchar";
+    else if (x==(uintptr_t)char_to_function)         return "char_to_function";
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
+    else if (x==(uintptr_t)char_to_math)             return "char_to_math";
+    else if (x==(uintptr_t)char_to_spool)            return "char_to_spool";
+#endif
+    else if (x==(uintptr_t)write_action_terminal)    return "write_action_terminal";
+    else if (x==(uintptr_t)write_action_file)        return "write_action_file";
+    else if (x==(uintptr_t)write_action_pipe)        return "write_action_pipe";
+    else if (x==(uintptr_t)write_action_synonym)     return "write_action_synonym";
+    else if (x==(uintptr_t)write_action_broadcast)   return "write_action_broadcast";
+//  else if (x==(uintptr_t)write_action_twoway)      return "write_action_twoway";
+    else if (x==(uintptr_t)write_action_illegal)     return "write_action_illegal";
+    else if (x==(uintptr_t)write_action_list)        return "write_action_list";
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
+    else if (x==(uintptr_t)write_action_math)        return "write_action_math";
+    else if (x==(uintptr_t)write_action_spool)       return "write_action_spool";
+#endif
+    else if (x==(uintptr_t)char_from_terminal)       return "char_from_terminal";
+    else if (x==(uintptr_t)char_from_file)           return "char_from_file";
+    else if (x==(uintptr_t)char_from_pipe)           return "char_from_pipe";
+    else if (x==(uintptr_t)char_from_synonym)        return "char_from_synonym";
+    else if (x==(uintptr_t)char_from_concatenated)   return "char_from_concatenated";
+    else if (x==(uintptr_t)char_from_echo)           return "char_from_echo";
+    else if (x==(uintptr_t)char_from_illegal)        return "char_from_illegal";
+    else if (x==(uintptr_t)char_from_list)           return "char_from_list";
+    else if (x==(uintptr_t)char_from_vector)         return "char_from_vector";
+    else if (x==(uintptr_t)read_action_terminal)     return "read_action_terminal";
+    else if (x==(uintptr_t)read_action_file)         return "read_action_file";
+    else if (x==(uintptr_t)read_action_output_file)  return "read_action_output_file";
+    else if (x==(uintptr_t)read_action_synonym)      return "read_action_synonym";
+    else if (x==(uintptr_t)read_action_concatenated) return "read_action_concatenated";
+//  else if (x==(uintptr_t)read_action_echo)         return "read_action_echo";
+//  else if (x==(uintptr_t)read_action_twoway)       return "read_action_twoway";
+    else if (x==(uintptr_t)read_action_illegal)      return "read_action_illegal";
+    else if (x==(uintptr_t)read_action_list)         return "read_action_list";
+    else if (x==(uintptr_t)read_action_vector)       return "read_action_vector";
+    else return "unknown";
+}
 
 #endif // header_stream_h
 

@@ -1630,7 +1630,7 @@ LispObject get_vector(int tag, int type, size_t n)
             }
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
-            if (!vector_holds_binary(v1))
+            if (!vector_header_of_binary(vechdr(v1)))
             {   size_t k1 = k/CELL;
                 for (size_t j=0; j<k1; j++)
                     basic_elt(v1, j) = nil;

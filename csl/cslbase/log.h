@@ -75,8 +75,15 @@ extern void term_close();
 // diagnostics. I also "exit()" rather than "abort()" since that is slightly
 // cleaner!
 
+#ifdef CONSERVATIVE
+extern void displayAllPages(const char*);
+#endif // CONSERVATIVE
+
 [[noreturn]] inline void my_abort()
 {   std::fprintf(stdout, "\n\n!!! Aborting\n\n");
+#ifdef CONSERVATIVE
+    displayAllPages("Failure");
+#endif // CONSERVATIVE
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
@@ -96,6 +103,9 @@ extern void term_close();
 
 [[noreturn]] inline void my_abort(const char* msg)
 {   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
+#ifdef CONSERVATIVE
+    displayAllPages("Failure");
+#endif // CONSERVATIVE
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL

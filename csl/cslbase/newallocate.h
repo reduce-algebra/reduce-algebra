@@ -275,58 +275,62 @@ inline Page* PageListIter::operator++()
 
 INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
 
+inline Page* pageOf(uintptr_t a)
+{  return csl_cast<Page*>(a & (-pageSize));
+}
+
 inline size_t chunkNoFromAddress(Page* p, uintptr_t a)
-{   my_assert((a - csl_cast<uintptr_t>(p))/chunkSize <= 512, __WHERE__);
-    return (a - csl_cast<uintptr_t>(p))/chunkSize;
+{   return (a - csl_cast<uintptr_t>(p))/chunkSize;
+}
+
+inline size_t chunkNoFromAddress(uintptr_t a)
+{   return chunkNoFromAddress(pageOf(a), a);
 }
 
 inline uintptr_t addressFromChunkNo(Page* p, size_t n)
-{   my_assert(n <= 512, __WHERE__);
-    return csl_cast<uintptr_t>(p) + chunkSize*n;
+{   return csl_cast<uintptr_t>(p) + chunkSize*n;
 }
 
 inline bool isPotentiallyPinned(Page* p, uintptr_t a)
-{   size_t chunkNo = chunkNoFromAddress(p, a);
-    return ((p->chunkStatusMap[chunkNo/64] >>
-             (chunkNo%64)) & 1) != 0;
+{   return testBit(p->chunkStatusMap, chunkNoFromAddress(p, a));
 }
 
 inline void setPotentiallyPinned(Page* p, uintptr_t a)
-{   size_t chunkNo = chunkNoFromAddress(p, a);
-    p->chunkStatusMap[chunkNo/64] |=
-        static_cast<uint64_t>(1) << (chunkNo%64);
+{   setBit(p->chunkStatusMap, chunkNoFromAddress(p, a));
 }
 
 inline bool isPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   return ((p->chunkStatusMap[chunkNo/64] >>
-             (chunkNo%64)) & 1) != 0;
+{   return testBit(p->chunkStatusMap, chunkNo);
 }
 
 inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   p->chunkStatusMap[chunkNo/64] |=
-        static_cast<uint64_t>(1) << (chunkNo%64);
+{   setBit(p->chunkStatusMap, chunkNo);
 }
 
-// Here p must be a CONS page and a a pointer within it.
+inline size_t consToOffset(uintptr_t a, Page* p)
+{   return (a - csl_cast<uintptr_t>(&p->consData)) / (2*sizeof(LispObject));
+}
+
+inline uintptr_t offsetToCons(size_t o, Page* p)
+{   return csl_cast<uintptr_t>(&p->consData) + 2*sizeof(LispObject)*o;
+}
+
+// Here p must be a CONS page and a is a pointer within it.
 
 inline bool consIsPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->consData[0]))/(2*sizeof(LispObject));
-    return ((p->consPins[o/64] >> (o%64)) & 1) != 0;
+{   return testBit(p->consPins, consToOffset(a, p));
 }
 
 inline bool consIsNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->consData[0]))/(2*sizeof(LispObject));
-    return ((p->newConsPins[o/64] >> (o%64)) & 1) != 0;
+{   return testBit(p->newConsPins, consToOffset(a, p));
 }
 
 inline void consSetNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->consData[0]))/(2*sizeof(LispObject));
-    p->newConsPins[o/64] |= static_cast<uint64_t>(1) << (o%64);
+{   setBit(p->newConsPins, consToOffset(a, p));
 }
 
 inline void consClearNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->consData[0]))/(2*sizeof(LispObject));
-    p->newConsPins[o/64] &= ~(static_cast<uint64_t>(1) << (o%64));
+{   clearBit(p->newConsPins, consToOffset(a, p));
 }
 
 // And versions for VEC pages, which pin with granularity a single
@@ -334,26 +338,61 @@ inline void consClearNewPinned(uintptr_t a, Page* p)
 // where granularity only needs to be the size of a pair of adjacent
 // objects.
 
+inline size_t vecToOffset(uintptr_t a, Page* p)
+{   return (a - csl_cast<uintptr_t>(&p->chunks)) / sizeof(LispObject);
+}
+
+inline uintptr_t offsetToVec(size_t o, Page* p)
+{   return csl_cast<uintptr_t>(&p->chunks) + sizeof(LispObject)*o;
+}
+
 inline bool vecIsPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->chunks[0]))/sizeof(LispObject);
-    return ((p->vecPins[o/64] >> (o%64)) & 1) != 0;
+{   return testBit(p->vecPins, vecToOffset(a, p));
 }
 
 inline bool vecIsNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->chunks[0]))/sizeof(LispObject);
-    return ((p->newVecPins[o/64] >> (o%64)) & 1) != 0;
+{   return testBit(p->newVecPins, vecToOffset(a, p));
 }
 
 inline void vecSetNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->chunks[0]))/sizeof(LispObject);
-    p->newVecPins[o/64] |= static_cast<uint64_t>(1) << (o%64);
+{   setBit(p->newVecPins, vecToOffset(a, p));
 }
 
 inline void vecClearNewPinned(uintptr_t a, Page* p)
-{   uintptr_t o = (a - csl_cast<uintptr_t>(&p->chunks[0]))/sizeof(LispObject);
-    p->newVecPins[o/64] &= ~(static_cast<uint64_t>(1) << (o%64));
+{   clearBit(p->newVecPins, vecToOffset(a, p));
 }
 
+inline bool consIsPinned(uintptr_t a)
+{   return consIsPinned(a, pageOf(a));
+}
+
+inline bool consIsNewPinned(uintptr_t a)
+{   return consIsNewPinned(a, pageOf(a));
+}
+
+inline void consSetNewPinned(uintptr_t a)
+{   consSetNewPinned(a, pageOf(a));
+}
+
+inline void consClearNewPinned(uintptr_t a)
+{   consClearNewPinned(a, pageOf(a));
+}
+
+inline bool vecIsPinned(uintptr_t a)
+{   return vecIsPinned(a, pageOf(a));
+}
+
+inline bool vecIsNewPinned(uintptr_t a)
+{   return vecIsNewPinned(a, pageOf(a));
+}
+
+inline void vecSetNewPinned(uintptr_t a)
+{   vecSetNewPinned(a, pageOf(a));
+}
+
+inline void vecClearNewPinned(uintptr_t a)
+{   vecClearNewPinned(a, pageOf(a));
+}
 
 // Set up the given Page as one for use with CONS supposing it is
 // totally free to start with. This sets up global fringe and limit pointers.
@@ -520,6 +559,9 @@ enum ChunkStatus
 // Pages here for use while debugging and expect there not to be any space
 // overhead in the compiled binary of builds that happen not to use them.
 
+extern uintptr_t vecFringe, vecLimit, vecEnd;
+extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
+
 inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a\n", p);
     zprintf("chain = %a\n", p->chain);
@@ -528,25 +570,34 @@ inline void displayConsPage(Page* p)
     zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
-    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a\n",
-        p->scanPoint, p->dataEnd, p->initialLimit);
-    uintptr_t prev = ~p->consData[0].car;
-    size_t count = 1;
+    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a fr=%a lim=%a\n",
+        p->scanPoint, p->dataEnd, p->initialLimit, consFringe, consLimit); 
+    LispObject prevCar = 0, prevCdr = 0;
+    prevCar = ~p->consData[0].car; // so it is NOT the start of a run
+    size_t repeats = 0;
     for (uintptr_t q=csl_cast<uintptr_t>(&p->consData);
-                   q<p->dataEnd;
-                   q+=sizeof(uintptr_t))
-    {   uintptr_t n = *csl_cast<uintptr_t*>(q);
-        if (n != prev)
-        {   if (count != 1) zprintf(" * %d\n", count);
-            else zprintf("\n");
-            zprintf("%a: %a", q, n);
-            prev = n;
-            count = 1;
+                   q<p->dataEnd && q!=consFringe;
+                   q+=2*sizeof(uintptr_t))
+    {   if (car(q) == prevCar && cdr(q) == prevCdr) repeats++;
+        else
+        {   if (repeats != 0) zprintf(" ... and %d repeats\n", repeats);
+            zprintf("%a: %a@%s  .  %a@%s\n",
+                q, prevCar=car(q), objectType(car(q)),
+                   prevCdr=cdr(q), objectType(cdr(q)));
+            repeats = 0;
         }
-        else count++;
     }
-    zprintf("\nend of page %a\n\n", p);
+    zprintf("end of page %a\n\n", p);
 }
+
+extern const char* show_fn0(no_args* x);
+extern const char* show_fn1(one_arg* x);
+extern const char* show_fn2(two_args* x);
+extern const char* show_fn3(three_args* x);
+extern const char* show_fn4up(fourup_args*x);
+extern const char* streamop(uintptr_t x);
+
+#define xSTREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + ((14*CELL)<<(Tw+5)))
 
 inline void displayVecPage(Page* p)
 {   zprintf("Vec page %a\n", p);
@@ -556,8 +607,8 @@ inline void displayVecPage(Page* p)
     zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
-    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a\n",
-        p->scanPoint, p->dataEnd, p->initialLimit);
+    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a fr=%a lim=%a\n",
+        p->scanPoint, p->dataEnd, p->initialLimit, vecFringe, vecLimit);
     unsigned int n = 0;
     for (size_t i=0; i<chunkStatusSize; i++)
     {   unsigned int len = p->chunkLength[i];
@@ -574,17 +625,38 @@ inline void displayVecPage(Page* p)
     if (n != 0) zprintf("~%d ", n);
     zprintf("=====");
     size_t count = 1;
+    int symhdr = 0, streamhdr = 0;
     uintptr_t prev = ~p->chunks[0].data[0];
     for (uintptr_t q=csl_cast<uintptr_t>(&p->chunks);
-                   q<p->dataEnd;
+                   q<p->dataEnd && q!=vecFringe;
                    q+=sizeof(uintptr_t))
     {   uintptr_t n = *csl_cast<uintptr_t*>(q);
+        if (is_symbol_header_full_test(n)) symhdr = 1;
+        else if (n == xSTREAM_HEADER) streamhdr = 1;
         if (n != prev)
         {   if (count != 1) zprintf(" * %d\n", count);
             else zprintf("\n");
-            zprintf("%a: %a", q, n);
+            const char* ff = "unknown";
+            if (symhdr == 8) ff = show_fn0((no_args*)n);
+            else if (symhdr == 9) ff = show_fn1((one_arg*)n);
+            else if (symhdr == 10) ff = show_fn2((two_args*)n);
+            else if (symhdr == 11) ff = show_fn3((three_args*)n);
+            else if (symhdr == 12)
+            {   ff = show_fn4up((fourup_args*)n);
+                symhdr = 0;
+            }
+            else if (streamhdr == 5 ||
+                     streamhdr == 6 ||
+                     streamhdr == 9 ||
+                     streamhdr == 10) ff = streamop(n);
+            else if (streamhdr == 12) streamhdr = 0;
+            if (std::strcmp(ff, "unknown") == 0)
+                zprintf("%a: %a %s", q, n, objectType(n));
+            else zprintf("%a: %a %s", q, n, ff);
             prev = n;
             count = 1;
+            if (symhdr > 0) symhdr++;
+            if (streamhdr > 0) streamhdr++;
         }
         else count++;
     }
@@ -663,10 +735,6 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 {   *csl_cast<uintptr_t*>(a) = makeHeader(n, type);
 }
 
-extern uintptr_t vecFringe, vecLimit, vecEnd;
-extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
-
-
 extern void grabFreshPage(PageType type);
     
 // The big function here is now shared between use for long-term vectors
@@ -732,16 +800,15 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // chunkNo is now the number of the chunk that I had reached at limit. I
 // will skip over any pinned chunks (they must be pinned because I hit
 // the limit).
-        chunkNo += current->chunkLength[chunkNo];     // The first pinned chunk
         while (current->chunkStatus[chunkNo] != ChunkStart)
-            chunkNo += current->chunkLength[chunkNo]; // Skip any more pinned
+            chunkNo += current->chunkLength[chunkNo]; // Skip any pinned
 // Now I know where the next available region starts. Find its end.
 // That will let me set fresh values for fringe and limit.
         size_t stopPoint = nextOneBit(current->chunkStatusMap,
                                       chunkStatusMapSize,
                                       chunkNo);
         if (stopPoint == SIZE_MAX) stopPoint = chunkStatusSize; 
-        fringe = addressFromChunkNo(current, chunkNo);
+        fringe = addressFromChunkNo(current, chunkNo); // in case skipped pins
         limit = addressFromChunkNo(current, stopPoint);
 // I hope that very often the allocation can use available space now.
         if (n <= limit-fringe)
@@ -780,9 +847,16 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // This function should always be used with an argument that is
 // a multiple of sizeof(uintptr_t).
 
+// At one stage I had a test in here so that vector-like things of
+// size exectly 2*CELL get allocated in CONS pages not VEC ones. That
+// was intended to reduce overhead dealing with them. The case I was
+// particularly thinking of was boxed double precision floats. Well I
+// may provide special treatment for JUST that case at some stage, but
+// for now I will keep vectors and cons cells separated since that will
+// make treatment of pinning easier.
+
 inline uintptr_t getNBytes(size_t n)
-{   if (n == 2*sizeof(LispObject)) return get2Words();
-    uintptr_t r = vecFringe;
+{   uintptr_t r = vecFringe;
 // Now I will see if the new item will fit within the current chunk. Note
 // that this test applies whether I am in a basic chunk or at the end of
 // an extended one. The chunkStatus[] entry must already be set up and
@@ -1153,6 +1227,7 @@ inline const char* Addr(uintptr_t p)
     {   std::strcpy(r, "zero");
         return r;
     }
+    *r = 0;
     int hs = findHeapSegment(p);
     if (hs != -1)
     {   uintptr_t segBase = csl_cast<uintptr_t>(heapSegment[hs]);
@@ -1201,12 +1276,13 @@ inline const char* Addr(uintptr_t p)
         r[q++] = '"';
         r[q] = 0;
     }
-    else std::snprintf(r, 80, "%#" PRIxPTR "/%" PRIdPTR, p, p);
-    if (is_vector_header_full_test(p))
+    else if (is_vector_header_full_test(p) &&
+             length_of_header(p) < pageSize/2)
     {   char buf[40];
-        std::snprintf(buf, 40, " :L%u", (unsigned int)length_of_header(p));
+        std::snprintf(buf, 40, " %#" PRIxPTR ":L%u", p, (unsigned int)length_of_header(p));
         std::strcat(r, buf); // buffer overflow not protected here
     }
+    else std::snprintf(r, 80, "%#" PRIxPTR "/%" PRIdPTR, p, p);
     return r;
 }
 
@@ -1241,3 +1317,4 @@ inline Page* findPage(uintptr_t p)
 #endif // header_newallocate_h
 
 // end of newallocate.h
+

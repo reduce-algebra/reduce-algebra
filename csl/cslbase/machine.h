@@ -112,23 +112,56 @@
 #define NOINLINE
 #endif // __GNUC__
 
-// The use of reinterpret_cast() to map between pointers and integer
-// types brings type aliasing issues. I think that this is a case where the
-// compiler could be entitled to believe that data in memory had not been
-// altered if the alteration was via a pointer that had cycled through
-// an integer phase - and in a Lisp system MANY items are flipped between
-// integers including tag bits and pointers. C++20 introduces bit_cast()
-// which is (I believe) intended to leave code safe against this in effect
-// but preventing some potential compiler "optimisation". But I want my
-// code to be buildable with earlier C++ versions, so I include a chunk
-// of code that is a "potential implementation" for bit_cast and that uses
-// std::memcpy as a "legal" way to move raw data around. This feels
-// hideously clumsy! This code fragment was found on
+// C++20 introduces bit_cast<T>() but to support earlier C++ dialects I
+// use an implementation for it found at
 //     https://en.cppreference.com/w/cpp/numeric/bit_cast
-// and by citing that I gain permission to use it.
+// By citing that referebce I gain permission to use it.
 // I call my version "csl_cast" to avoid clash with any standard version.
 // When EVERYBODY uses C++20 I could possibly globally edit csl_cast to
 // bit_cast.
+
+// OK so now a bit of rationale for my use of it.
+// C++ aliasing rules say that when one accesses memory any read operation
+// must use the same type that was used when writing data (with some special
+// exceptions for "char" arrays). That means that casts that generate
+// reference types can risk trouble. In the code here I want to have
+// LispObject a type that can hold a few bits of tag but then a pointer
+// as payload. Taking an integer value, masking of subtracting off some low
+// bits, then casting to a pointer and indirecting may count as dangerous!
+// So here is my explanation of how I try to stay as safe as I think I can.
+//
+// In C++ there is a concept of memory alignment, and I ensure that all
+// my important items are aligned at 8-byte boundaries. Now cppreference.com
+// tells me that a reinterpret_cast "does not compile to any CPU instructions
+// (except when converting between integers and pointers or on obscure
+// architectures where pointer representation depends on its type). And the
+// (draft) C++ standard makes is explicit that use of reinterpret_cast "might
+// or might not produce a representation identical to the original". Also
+// C++ has a concept of "pointer safety" was introduced to make implementation
+// of garbage collection possible, but at least from 2021 I find suggestions
+// that that might be removed and that the standards current then made
+// undefined behaviour hard to avoid.
+//
+// I will use bit_cast to convert between pointers and integers, and expect
+// that to enforce that the word-widths used in the two cases match and that
+// the underlying bit-representation does not change. Since C++20 I am
+// assured integer arithmetic is twos complement, so I think I am safe
+// in believing that when I bit_cast an aligned pointer to an integer
+// I get a value with the low few bits zero. If I do arithmetic that messes
+// with those bits but eventially leave them zero again I can then bit_cast
+// back to a pointer type and be confident that it is identical with the
+// one I started with. So my HOPE is that then provided all read is accessed
+// using the type it was written with that I will be safe. And of course
+// also that data accessed using std::memcpy() will also be safe.
+//
+// See https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2186r2.html
+// and note that it is not REALLY clear to me that use of bit_cast rather
+// than reinterpret_cast makes my code much safer either in terms of standard
+// adherence or in practical terms, but use of it perhaps signals my
+// sensitivity to the horrors of C++ "undefined behaviour" and the hideous
+// prospect of future compilers noting places where it arises and "optimising"
+// code in ways uttery at odds with the origimal "spirt of C", but which
+// may speed up code that meets all modern pedantic constaints. 
 
 template <class To, class From>
 std::enable_if_t<

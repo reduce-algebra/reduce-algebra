@@ -392,31 +392,6 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
     return w;
 }
 
-LispObject make_boxfloat(double a, int type)
-// Make a boxed float (single, double according to the type specifier)
-// if type==0 this makes a short float.
-// 128-bit floats must be made using make_boxfloat128.
-{   LispObject r;
-    switch (type)
-    {   case 0:
-            return pack_short_float(a);
-        case TYPE_SINGLE_FLOAT:
-            return pack_single_float(a);
-        default: // TYPE_DOUBLE_FLOAT I hope
-            r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
-                                 SIZEOF_DOUBLE_FLOAT);
-            errexit();
-            if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
-            double_float_val(r) = a;
-            if (trap_floating_overflow &&
-                floating_edge_case(double_float_val(r)))
-            {   floating_clear_flags();
-                return aerror("exception with double float");
-            }
-            return r;
-    }
-}
-
 #ifdef HAVE_SOFTFLOAT
 LispObject make_boxfloat128(float128_t a)
 {   LispObject r;

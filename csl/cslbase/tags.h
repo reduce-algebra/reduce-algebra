@@ -190,7 +190,7 @@ INLINE_VAR constexpr uintptr_t TAG_VECTOR    =  1; // Regular Lisp vectors      
 INLINE_VAR constexpr uintptr_t TAG_HDR_IMMED =  2; // Char constants, vechdrs etc   04
 INLINE_VAR constexpr uintptr_t TAG_FORWARD   =  3; // For the Garbage Collector     08
 INLINE_VAR constexpr uintptr_t TAG_SYMBOL    =  4; // Symbols                       10
-                 // Note that tags from 5 up are all for numeric date       e0
+                            // Note that tags from 5 up are all for numeric date    e0
 INLINE_VAR constexpr uintptr_t TAG_NUMBERS   =  5; // Bignum, Rational, Complex     20
 INLINE_VAR constexpr uintptr_t TAG_BOXFLOAT  =  6; // Boxed floats                  40
 INLINE_VAR constexpr uintptr_t TAG_FIXNUM    =  7; // 28/60-bit integers            80
@@ -604,11 +604,18 @@ INLINE_VAR constexpr uintptr_t TYPE_ENCAPSULATE = 0x3b<<Tw; // Encapsulated addr
 
 INLINE_VAR constexpr uintptr_t TYPE_PADDER      = 0x7b<<Tw; // a padder vector
 
+// Sometimes (with the conservative GC) I need to put a padder mixed in
+// with where I keep cons cells. So this is the header for a padder of
+// the correct size.
+
+INLINE_VAR constexpr uintptr_t CONS_PADDER_HEADER =
+    TYPE_PADDER + ((2*CELL)<<(Tw+5)) + TAG_HDR_IMMED;
+
 inline bool is_padder_header(uintptr_t h)
 {   return (h & header_mask) == TYPE_PADDER;
 }
 
-inline bool vector_holds_binary(Header h)
+inline bool vector_header_of_binary(Header h)
 {   return  (h & (0x2<<Tw)) != 0;
 }
 
@@ -662,6 +669,135 @@ INLINE_VAR constexpr uintptr_t SPID_PVBIND    = TAG_SPID+(0x09<<(Tw+4)); // PROG
 INLINE_VAR constexpr uintptr_t SPID_NOARG     = TAG_SPID+(0x0a<<(Tw+4)); // Missing &OPTIONAL arg
 INLINE_VAR constexpr uintptr_t SPID_NOPROP    = TAG_SPID+(0x0b<<(Tw+4)); // fastget entry is empty
 INLINE_VAR constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0xnnn00000 offset
+
+extern bool valid_address(uintptr_t h);
+
+inline const char* objectType(uintptr_t h)
+{   switch (h & TAG_BITS)
+    {
+    case TAG_CONS:      // Cons cells
+        if (!valid_address(h)) return "";
+        else return "cons cell pointer";
+    case TAG_VECTOR:    // Regular Lisp vectors
+        if (!valid_address(h)) return "";
+        else return "vector pointer";
+    case TAG_HDR_IMMED: // Char constants, vechdrs etc
+        break;          // needs more decoding
+    case TAG_FORWARD:   // For the Garbage Collector
+        if (!valid_address(h)) return "";
+        else return "forwarding address";
+    case TAG_SYMBOL:    // Symbols
+        if (!valid_address(h)) return "";
+        else return "symbol pointer";
+    case TAG_NUMBERS:   // Bignum, Rational, Complex
+        if (!valid_address(h)) return "";
+        else return "number pointer (big, ratio, complex)";
+    case TAG_BOXFLOAT:  // Boxed floats
+        if (!valid_address(h)) return "";
+        else return "boxed float pointer";
+    case TAG_FIXNUM:    // 28/60-bit integers or immediate short float
+        if ((h & TAG_XBIT) != 0) return "immediate float value";
+        else return "immediate integer value";
+    }
+    switch ((h>>3) & 0x3)
+    {
+    case 0x0:
+        switch ((h>>5) & 0x3)
+        {
+        case 0x0:
+            return "symbol header etc";
+        case 0x1:
+            return "char literal";
+        case 0x2:
+            return "bytecode handle?";
+        case 0x3:
+            return "SPID";
+        }
+    case 0x1:
+        break;   // vector with lisp contents
+    case 0x2:
+        return "header of bit-vector";
+    case 0x3:
+        break;   // vector with binary contents
+    }
+    static char unknown[32];
+    switch (h & header_mask)
+    {
+    case TYPE_STRING_1:
+        return "header of STRING_1";
+    case TYPE_STRING_2:
+        return "header of STRING_2";
+    case TYPE_STRING_3:
+        return "header of STRING_3";
+    case TYPE_STRING_4:
+        return "header of STRING_4";
+    case TYPE_VEC8_1:
+        return "header of VEC8_1";
+    case TYPE_VEC8_2:
+        return "header of VEC8_2";
+    case TYPE_VEC8_3:
+        return "header of VEC8_3";
+    case TYPE_VEC8_4:
+        return "header of VEC8_4";
+    case TYPE_BPS_1:
+        return "header of BPS_1";
+    case TYPE_BPS_2:
+        return "header of BPS_2";
+    case TYPE_BPS_3:
+        return "header of BPS_3";
+    case TYPE_BPS_4:
+        return "header of BPS_4";
+    case TYPE_VEC16_1:
+        return "header of VEC16_1";
+    case TYPE_VEC16_2:
+        return "header of VEC16_2";
+    case TYPE_FOREIGN:
+        return "header of FOREIGN";
+    case TYPE_SP:
+        return "header of SP";
+    case TYPE_ENCAPSULATE:
+        return "header of ENCAPSULATE";
+    case TYPE_PADDER:
+        return "header of PADDER";
+    case TYPE_SIMPLE_VEC:
+        return "header of SIMPLE_VEC";
+    case TYPE_INDEXVEC:
+        return "header of INDEXVEC";
+    case TYPE_HASH:
+        return "header of HASH";
+    case TYPE_HASHX:
+        return "header of HASHX";
+    case TYPE_ARRAY:
+        return "header of ARRAY";
+    case TYPE_STRUCTURE:
+        return "header of STRUCTURE";
+    case TYPE_OBJECT:
+        return "header of OBJECT";
+    case TYPE_VEC32:
+        return "header of VEC32";
+    case TYPE_VEC64:
+        return "header of VEC64";
+    case TYPE_VEC128:
+        return "header of VEC128";
+    case TYPE_VECFLOAT32:
+        return "header of VECFLOAT32";
+    case TYPE_VECFLOAT64:
+        return "header of VECFLOAT64";
+    case TYPE_VECFLOAT128:
+        return "header of VECFLOAT128";
+    case TYPE_MIXED1:
+        return "header of MIXED1";
+    case TYPE_MIXED2:
+        return "header of MIXED2";
+    case TYPE_MIXED3:
+        return "header of MIXED3";
+    case TYPE_STREAM:
+        return "header of STREAM";
+    default:
+        std::sprintf(unknown, "unknown %x", (int)h);
+        return unknown;
+    }
+}
 
 inline Header &vechdr(LispObject v)
 {   return *csl_cast<Header *>(v - TAG_VECTOR);
@@ -1349,10 +1485,13 @@ inline size_t cells_in_vector(LispObject v)
 {   return bytes_in_vector(v)/CELL;
 }
 
+#if 0
+// This is no longer used...
 inline bool vector_holds_binary(LispObject v)
-{   if (is_basic_vector(v)) return vector_holds_binary(vechdr(v));
-    else return vector_holds_binary(vechdr(basic_elt(v, 0)));
+{   if (is_basic_vector(v)) return vector_header_of_binary(vechdr(v));
+    else return vector_header_of_binary(vechdr(basic_elt(v, 0)));
 }
+#endif // 0
 
 // the table of free vectors is not saved across checkpoint/restore operations,
 // and so issues of 64- vs 32-bit sizing in that context do not arise.
