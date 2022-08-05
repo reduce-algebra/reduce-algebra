@@ -156,6 +156,8 @@
 //=========================================================================
 //=========================================================================
 
+#define DEFINE_LIST_BASES 1
+
 #include "headers.h"
 
 // Here is a bit of raw information. I looked at the length of the names
@@ -2449,7 +2451,7 @@ down:
 // necessary to decode the header to see which case applies. The same
 // issue will arise for (boxed) numbers.
             h = vechdr(p);
-            if (vector_holds_binary(h)) goto up;
+            if (vector_header_of_binary(h)) goto up;
             if (is_mixed_header(h)) len = 4*CELL;
             else len = length_of_header(h);
             if (len == CELL) goto up;
@@ -2469,7 +2471,7 @@ down:
             }
             mark_address_as_used(p - TAG_NUMBERS);
             h = numhdr(p);
-            if (vector_holds_binary(h)) goto up;
+            if (vector_header_of_binary(h)) goto up;
             len = length_of_header(h);
             if (len == CELL) goto up;  // should never happen
             w = p + len - CELL - TAG_NUMBERS;
@@ -2915,7 +2917,7 @@ down:
 // issue will arise for (boxed) numbers.
             h = vechdr(p);
         writevector:
-            if (vector_holds_binary(h)) goto write_binary_vector;
+            if (vector_header_of_binary(h)) goto write_binary_vector;
             write_opcode(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "lisp vector");
 // Length of a list-containing vector is given in CELLS.
             write_u64(length_of_header(h)/CELL - 1);
@@ -3813,10 +3815,10 @@ void write_everything()
         std::strcpy(trigger, "package nil scan");
         scan_data(qpackage(nil));
 // Next the major list-bases.
-        for (LispObject **p = list_bases; *p!=nullptr; p++)
+        for (LispObject *p:list_bases)
         {   std::sprintf(trigger, "list base %" PRIx64 " scan",
-                static_cast<uint64_t>(**p));
-            scan_data(**p);
+                static_cast<uint64_t>(*p));
+            scan_data(*p);
         }
     }
 // Now I should have identified all cyclic and shared data - including
@@ -3854,9 +3856,9 @@ void write_everything()
     write_data(qfastgets(nil));
     std::strcpy(trigger, "package of nil write");
     write_data(qpackage(nil));
-    for (LispObject **p = list_bases; *p!=nullptr; p++)
-    {   std::sprintf(trigger, "list base %p write", csl_cast<void *>(**p));
-        write_data(**p);
+    for (LispObject *p:list_bases)
+    {   std::sprintf(trigger, "list base %p write", csl_cast<void *>(*p));
+        write_data(*p);
     }
 // Tidy up at the end. I do not logically need an explicit end of data marker
 // in the serialized form, but putting one there seems like a way to make
@@ -3868,7 +3870,7 @@ void warm_setup()
 {   size_t i;
     set_up_function_tables();
     setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
-    for (LispObject **p = list_bases; *p!=nullptr; p++) **p = nil;
+    for (LispObject *p:list_bases) *p = nil;
     THREADID;
     *stack = nil;
     qcountLow(nil) = 256;
@@ -3931,7 +3933,7 @@ void warm_setup()
 // include all other symbols, and through them basically everything!
     setpackage(nil, serial_read());
 
-    for (LispObject **p = list_bases; *p!=nullptr; p++) **p = serial_read();
+    for (LispObject *p:list_bases) *p = serial_read();
 
     if ((i = read_opcode_byte()) != SER_END)
     {   std::fprintf(stderr, "Did not find SER_END opcode where expected\n");
@@ -4062,7 +4064,7 @@ down:
             if (address_used(p - TAG_VECTOR)) goto up;
             mark_address_as_used(p - TAG_VECTOR);
             h = vechdr(p);
-            if (vector_holds_binary(h)) goto up;
+            if (vector_header_of_binary(h)) goto up;
             if (is_mixed_header(h)) len = 4*CELL;
             else len = length_of_header(h);
             if (len == CELL) goto up;
@@ -4077,7 +4079,7 @@ down:
             if (address_used(p - TAG_NUMBERS)) goto up;
             mark_address_as_used(p - TAG_NUMBERS);
             h = numhdr(p);
-            if (vector_holds_binary(h)) goto up;
+            if (vector_header_of_binary(h)) goto up;
             len = length_of_header(h);
             if (len == CELL) goto up;
             w = p + len - CELL - TAG_NUMBERS;
@@ -4192,9 +4194,9 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     if (push_symbols(pp, qfastgets(nil))) return true;
     std::strcpy(trigger, "package nil push");
     if (push_symbols(pp, qpackage(nil))) return true;
-    for (LispObject **p = list_bases; *p!=nullptr; p++)
-    {   std::sprintf(trigger, "list base %p push", csl_cast<void *>(**p));
-        if (push_symbols(pp, **p)) return true;
+    for (LispObject *p:list_bases)
+    {   std::sprintf(trigger, "list base %p push", csl_cast<void *>(*p));
+        if (push_symbols(pp, *p)) return true;
     }
     return false;
 }

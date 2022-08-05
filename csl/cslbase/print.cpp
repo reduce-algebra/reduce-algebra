@@ -5226,11 +5226,15 @@ LispObject Lwindow_heading1(LispObject env, LispObject a)
 // I will also implement a scheme that lets me limit the output from each
 // printed expression to a certain number of lines of output...
 
+// I render line-ends here as "\r\n" not just "\n" because when I call
+// simple_print() from within gdb I seem to need to do that to get the
+// proper effect (at least on some platforms).
+
 static int simple_column = 0;
 
 void simple_lineend(int n)
 {   if (simple_column + n > 70)
-    {   std::printf("\n");
+    {   std::printf("\r\n");
         simple_column = n;
     }
     else simple_column += n;
@@ -5301,7 +5305,7 @@ void simple_prin1(LispObject x)
                          csl_cast<const char *>(&celt(x, 0)));
             return;
         }
-        else if (vector_holds_binary(vechdr(x)) &&
+        else if (vector_header_of_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             std::printf("<Header is %" PRIx64 ">",
@@ -5369,7 +5373,7 @@ void simple_prin1(atomic<LispObject> &x)
 
 void simple_print(LispObject x)
 {   simple_prin1(x);
-    std::printf("\n");
+    std::printf("\r\n");
     simple_column = 0;
 }
 
@@ -5380,7 +5384,7 @@ void simple_print(atomic<LispObject> &x)
 void simple_msg(const char *s, LispObject x)
 {   std::printf("%s", s);
     simple_print(x);
-    std::printf("\n");
+    std::printf("\r\n");
 }
 
 setup_type const print_setup[] =

@@ -120,7 +120,7 @@ static const char *c_fn4up(fourup_args *p, setup_type const s[])
     return nullptr;
 }
 
-static const char *show_fn0(no_args *p)
+const char *show_fn0(no_args *p)
 {   int i;
     const char *r;
     for (i=0; entries_table0[i].s!=nullptr; i++)
@@ -130,11 +130,10 @@ static const char *show_fn0(no_args *p)
 // There are more entries in setup_tables after the first nullptr!
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn0(p, setup_tables[i])) != nullptr) return r;
-    trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
-static const char *show_fn1(one_arg *p)
+const char *show_fn1(one_arg *p)
 {   int i;
     const char *r;
     for (i=0; entries_table1[i].s!=nullptr; i++)
@@ -144,11 +143,10 @@ static const char *show_fn1(one_arg *p)
 // There are more entries in setup_tables after the first nullptr!
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn1(p, setup_tables[i])) != nullptr) return r;
-    trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
-static const char *show_fn2(two_args *p)
+const char *show_fn2(two_args *p)
 {   int i;
     const char *r;
     for (i=0; entries_table2[i].s!=nullptr; i++)
@@ -157,11 +155,10 @@ static const char *show_fn2(two_args *p)
         if ((r = c_fn2(p, setup_tables[i])) != nullptr) return r;
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn2(p, setup_tables[i])) != nullptr) return r;
-    trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
-static const char *show_fn3(three_args *p)
+const char *show_fn3(three_args *p)
 {   int i;
     const char *r;
     for (i=0; entries_table3[i].s!=nullptr; i++)
@@ -170,11 +167,10 @@ static const char *show_fn3(three_args *p)
         if ((r = c_fn3(p, setup_tables[i])) != nullptr) return r;
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn3(p, setup_tables[i])) != nullptr) return r;
-    trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
-static const char *show_fn4up(fourup_args *p)
+const char *show_fn4up(fourup_args *p)
 {   int i;
     const char *r;
     for (i=0; entries_table4up[i].s!=nullptr; i++)
@@ -183,7 +179,6 @@ static const char *show_fn4up(fourup_args *p)
         if ((r = c_fn4up(p, setup_tables[i])) != nullptr) return r;
     for (i++; setup_tables[i]!=nullptr; i++)
         if ((r = c_fn4up(p, setup_tables[i])) != nullptr) return r;
-    trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
@@ -230,7 +225,7 @@ LispObject Lobject_header(LispObject env, LispObject a)
         trace_printf("Symbol: (%" PRIxPTR ") ", h);
         trace_printf("Rounded up length in bytes units = %" PRIuPTR "\n",
                      length_of_header(h));
-        if (!vector_holds_binary(h))
+        if (!vector_header_of_binary(h))
             trace_printf("Holds %" PRIuPTR " pointers\n",
                          length_of_header(h)/CELL);
         else if (is_bitvec_header(h))
@@ -1911,7 +1906,7 @@ static bool vec_equal(LispObject a, LispObject b)
 // Checking only the words that matter is just marginally quicker and
 // will fail less often if I do not pad properly!
     l = (size_t)word_align_up(length_of_header(ha));
-    if (vector_holds_binary(ha))
+    if (vector_header_of_binary(ha))
     {   while ((l -= 4) != 0)
             if (*((uint32_t *)(csl_cast<char *>(a) + l - TAG_VECTOR)) !=
                 *((uint32_t *)(csl_cast<char *>(b) + l - TAG_VECTOR))) return

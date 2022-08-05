@@ -889,7 +889,7 @@ static bool is_cyclic(LispObject key, int trail)
         if (is_cyclic(car(key), trail)) return true;
         return is_cyclic(cdr(key), trail);
     }
-    if (is_vector(key) && !vector_holds_binary(vechdr(key)))
+    if (is_vector(key) && !vector_header_of_binary(vechdr(key)))
     {   for (int i=0; i<trail; i++) 
             if (trailvec[i] == key) return true;
         size_t len = length_of_header(vechdr(key))/CELL - 1;

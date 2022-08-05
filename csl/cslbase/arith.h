@@ -308,6 +308,55 @@ inline LispObject pack_immediate_float(double d,
     return aa.i + XTAG_SFLOAT;
 }
 
+// double floats 
+
+// Note that on both 32 and 64-bit systems a double float is stored
+// in a 16-byte block of memory.
+
+INLINE_VAR constexpr uintptr_t DOUBLE_FLOAT_HEADER =
+    TYPE_DOUBLE_FLOAT + (16<<(Tw+5)) + TAG_HDR_IMMED;
+
+inline LispObject make_boxfloat(double a, int type)
+// Make a boxed float (single, double according to the type specifier)
+// if type==0 this makes a short float.
+// 128-bit floats must be made using make_boxfloat128.
+{   LispObject r;
+    switch (type)
+    {   case 0:
+            return pack_short_float(a);
+        case TYPE_SINGLE_FLOAT:
+            return pack_single_float(a);
+        default: // TYPE_DOUBLE_FLOAT I hope
+#ifdef CONSERVATIVE
+// double precision floats always consume 16 bytes in all. On a 64
+// bit machines that is an 8 byte header than the 8 bytes of the double
+// itself. With 32-bits the header only uses 4 bytes, but then there has
+// to be a 4 byte padder so that the double is properly aligned. With
+// 64-bit words the size matches that of cons cells, and so I can allocate
+// in cons-space which is a cheaper operation than allocating in vector
+// space.
+            if (SIXTY_FOUR_BIT) r = get2Words();
+            else r = getNBytes(16);
+            *(csl_cast<Header*>(r)) = DOUBLE_FLOAT_HEADER;
+            r += TAG_BOXFLOAT;
+#else // CONSERVATIVE
+            r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
+                                 SIZEOF_DOUBLE_FLOAT);
+#endif // CONSERVATIVE
+            errexit();
+            if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
+            double_float_val(r) = a;
+// I hope that trap_floating_overflow will almost always be false and
+// so the extra mess here will hardly add any overhead.
+            if (trap_floating_overflow &&
+                floating_edge_case(double_float_val(r)))
+            {   floating_clear_flags();
+                return aerror("exception with double float");
+            }
+            return r;
+    }
+}
+
 // comparing 64-bit integers against (double precision) is perhaps
 // unexpectedly delicate. Here is some code to help. You can find two
 // sources of extra commentary about this. One is by Andrew Koenig in

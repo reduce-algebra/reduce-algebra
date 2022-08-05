@@ -251,7 +251,7 @@ LispObject Lputv(LispObject, LispObject v, LispObject n, LispObject x)
     h = vechdr(v);
     if (type_of_header(h) == TYPE_INDEXVEC)
         h = type_of_header(vechdr(basic_elt(v,0)));
-    if (vector_holds_binary(h)) return aerror1("putv", v);
+    if (vector_header_of_binary(h)) return aerror1("putv", v);
     else if (!is_fixnum(n)) return aerror1("putv offset not fixnum", n);
     hl = cells_in_vector(v);
     n1 = int_of_fixnum(n);
@@ -270,7 +270,7 @@ LispObject Lgetv(LispObject, LispObject v, LispObject n)
     h = vechdr(v);
     if (type_of_header(h) == TYPE_INDEXVEC)
         h = type_of_header(vechdr(basic_elt(v,0)));
-    if (vector_holds_binary(h)) return aerror1("getv", v);
+    if (vector_header_of_binary(h)) return aerror1("getv", v);
     else if (!is_fixnum(n)) return aerror1("getv offset not fixnum", n);
     hl = cells_in_vector(v);
     n1 = int_of_fixnum(n);
@@ -880,7 +880,7 @@ UNUSED_NAME static LispObject Lputvec(LispObject, LispObject v, LispObject n,
         else        celt(v, n1) |= b;
         return onevalue(fixnum_of_int(x));
     }
-    if (vector_holds_binary(h)) return aerror1("putvec", v);
+    if (vector_header_of_binary(h)) return aerror1("putvec", v);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
     if (n1 >= hl) return aerror1("putvec index range", n);

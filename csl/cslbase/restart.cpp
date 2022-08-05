@@ -38,6 +38,8 @@
 
 // $Id$
 
+#define DEFINE_LIST_BASES 1
+
 #include "headers.h"
 
 #ifdef WIN32
@@ -560,7 +562,7 @@ static void cold_setup()
 // eq_hash_tables is not an ordinary list-base, si I need to clear it
 // individually.
     eq_hash_tables = nil;
-    for (LispObject** p=list_bases; *p!=nullptr; p++) **p = nil;
+    for (LispObject* p:list_bases) *p = nil;
     eq_hash_tables = nil;
 // The package I am using at present will always be a package object
 // stored in the value cell of "current-package". But that symbol does not
@@ -688,7 +690,7 @@ static void cold_setup()
 // object list, but I view it as really improbable that anybody will have
 // an accidental conflict with the name and for debugging it MAY be handy
 // to be able to access it?
-//@@@@@@@@@@@@@@@@@@@    Lunintern(nil, unset_var);
+//  Lunintern(nil, unset_var);
     symbol_sequence = 259;
 // Now in some minor sense the world is in a self-consistent state
     lisp_true           = make_undefined_global("t");
@@ -2037,7 +2039,7 @@ void setup(int restart_flag, double store_size)
             }
         }
     }
-    else for (LispObject** p = list_bases; *p!=nullptr; p++) **p = nil;
+    else for (LispObject* p:list_bases) *p = nil;
 
     stackLimit = ~static_cast<uintptr_t>(0xff) &
                  reinterpret_cast<uintptr_t>(
@@ -2110,98 +2112,6 @@ void setup(int restart_flag, double store_size)
 
 LispObject multiplication_buffer;
 
-// Here is a table of all the list-bases that CSL marks from, and that
-// must have their values captured in checkpoint files.
-
-#define LIST_BASES \
-    X(active_stream),         X(allow_key_key),     X(allow_other_keys), \
-    X(all_packages),          X(and_symbol),        X(append_symbol), \
-    X(applyhook),             X(apply_symbol),      X(autoload_symbol), \
-    X(aux_key),               X(avail_space),       X(big_dividend), \
-    X(big_divisor),           X(big_fake1),         X(big_fake2), \
-    X(big_quotient),          X(bit_symbol),        X(boffo), \
-    X(break_function),        X(B_reg),             X(builtin0_symbol), \
-    X(builtin1_symbol),       X(builtin2_symbol),   X(builtin3_symbol), \
-    X(builtin4_symbol),       X(bytecoded_symbol),  X(call_stack), \
-    X(callstack),             X(catch_tags),        X(cfunarg), \
-    X(char_0_symbol),         X(charvec),           X(cl_equal_symbol), \
-    X(codevec),               X(comma_at_symbol),   X(comma_symbol), \
-    X(compiler_symbol),       X(comp_symbol),       X(cond_symbol), \
-    X(cons_symbol),           X(current_file),      X(current_function), \
-    X(current_module),        X(current_package),   X(debug_io), \
-    X(declare_symbol),        X(double_float),      X(echo_symbol), \
-    X(emsg_star),             X(eof_symbol),        X(eql_symbol), \
-    X(eq_symbol),             X(equalp_symbol),     X(equal_symbol), \
-    X(error_output),          X(err_table),         X(evalhook), \
-    X(eval_symbol),           X(exit_tag),          X(exit_value), \
-    X(expand_def_symbol),     X(expr_symbol),       X(external_symbol), \
-    X(faslgensyms),           X(fasl_stream),       X(faslvec), \
-    X(fastget_names),         X(features_symbol),   X(fexpr_symbol), \
-    X(format_symbol),         X(funarg),            X(funcall_symbol), \
-    X(function_symbol),       X(gchook),            X(gcknt_symbol), \
-    X(gensym_base),           X(get_counts),        X(go_symbol), \
-    X(help_index),            X(inherited_symbol),  X(initial_element), \
-    X(input_libraries),       X(internal_symbol),   X(key_key), \
-    X(keyword_package),       X(lambda),            X(large_modulus), \
-    X(lex_words),             X(lisp_debug_io),     X(lisp_error_output), \
-    X(lisp_package),          X(lisp_query_io),     X(lisp_standard_input), \
-    X(lisp_standard_output),  X(lisp_terminal_io),  X(lisp_trace_output), \
-    X(lisp_true),             X(lisp_work_stream),  X(liststar_symbol), \
-    X(list_symbol),           X(litvec),            X(load_selected_source_symbol), \
-    X(load_source_symbol),    X(long_float),        X(lose_symbol), \
-    X(lower_symbol),          X(macroexpand_hook),  X(macro_symbol), \
-    X(multiplication_buffer), X(mv_call_symbol),    X(named_character), \
-    X(nicknames_symbol),      X(not_symbol),        X(opt_key), \
-    X(or_symbol),             X(output_library),    X(package_symbol), \
-    X(pathname_symbol),       X(prinl_symbol),      X(print_array_sym), \
-    X(procmem),               X(procstack),         X(progn_symbol), \
-    X(prompt_thing),          X(query_io),          X(quote_symbol), \
-    X(raise_symbol),          X(read_base),         X(reader_workspace), \
-    X(read_float_format),     X(redef_msg),         X(rehash_vec1), \
-    X(rehash_vec2),           X(resources),         X(rest_key), \
-    X(savedefs_symbol),       X(savedef_symbol),    X(short_float), \
-    X(single_float),          X(special_symbol),    X(standard_input), \
-    X(standard_output),       X(startfn),           X(startup_symbol), \
-    X(string_char_sym),       X(supervisor),        X(sys_hash_table), \
-    X(terminal_io),           X(tracedfn),          X(trace_output), \
-    X(traceprint_symbol),     X(trap_time),         X(unset_var), \
-    X(used_space),            X(use_symbol),        X(work_symbol), \
- \
-    X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
-    X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \
- \
-    X(workbase[ 0]), X(workbase[ 1]), X(workbase[ 2]), X(workbase[ 3]), X(workbase[ 4]), \
-    X(workbase[ 5]), X(workbase[ 6]), X(workbase[ 7]), X(workbase[ 8]), X(workbase[ 9]), \
-    X(workbase[10]), X(workbase[11]), X(workbase[12]), X(workbase[13]), X(workbase[14]), \
-    X(workbase[15]), X(workbase[16]), X(workbase[17]), X(workbase[18]), X(workbase[19]), \
-    X(workbase[20]), X(workbase[21]), X(workbase[22]), X(workbase[23]), X(workbase[24]), \
-    X(workbase[25]), X(workbase[26]), X(workbase[27]), X(workbase[28]), X(workbase[29]), \
-    X(workbase[30]), X(workbase[31]), X(workbase[32]), X(workbase[33]), X(workbase[34]), \
-    X(workbase[35]), X(workbase[36]), X(workbase[37]), X(workbase[38]), X(workbase[39]), \
-    X(workbase[40]), X(workbase[41]), X(workbase[42]), X(workbase[43]), X(workbase[44]), \
-    X(workbase[45]), X(workbase[46]), X(workbase[47]), X(workbase[48]), X(workbase[49]), \
-    X(workbase[50]),
-
-
-#define X(name) &name
-
-LispObject* list_bases[] =
-{   LIST_BASES
-    nullptr              // Used to mark the end of the table.
-};
-
-// For debugging it is sometimes nice to be able to identify the names
-// associated with list-base offsets. The way I do this using the macros
-// LIST_BASES and X() ensures that entries and names are kept in step.
-
-#undef X
-#define X(name) #name
-
-const char* list_names[] =
-{   LIST_BASES
-    nullptr              // Used to mark the end of the table.
-};
-
 
 
 // June 2015: I am now going to try MD5 code from Alexander Peslyak
@@ -2251,4 +2161,3 @@ void CSL_MD5_Final(unsigned char *md)
 #endif
 
 // end of restart.cpp
-

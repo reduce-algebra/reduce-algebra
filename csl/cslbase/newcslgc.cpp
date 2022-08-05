@@ -32,8 +32,36 @@
 
 // $Id$
 
-#include "headers.h"
+#define DEFINE_LIST_BASES 1
 
+#include "headers.h"
+#include <unordered_set>
+
+std::unordered_set<LispObject> visited;
+static size_t validateCount = 0;
+extern void validateObject(LispObject);
+
+void check_standard_input(const char* msg="check_standard_input") // @@@@@@@@@@@@@@
+{   zprintf("****** %s *****\n", msg);
+    LispObject a = terminal_io;
+    zprintf("terminal_io = %a(%a) = ", a, qheader(a)); simple_print(a);
+    a = qvalue(a);
+    zprintf("qvalue terminal_io = %a(%a) = ", a, vechdr(a)); simple_print(a);
+    a = lisp_terminal_io;
+    zprintf("lisp_terminal_io = %a(%a) = ", a, vechdr(a)); simple_print(a);
+    a = standard_input;
+    zprintf("standard_input = %a(%a) = ", a, qheader(a)); simple_print(a);
+    a = qvalue(a);
+    zprintf("qvalue standard_input = %a(%a) = ", a, vechdr(a)); simple_print(a);
+    a = lisp_standard_input;
+    zprintf("lisp_standard_input = %a(%a) = ", a, vechdr(a)); simple_print(a);
+    LispObject b = stream_read_data(a);
+    zprintf("read_data lisp_standard_input = %a(%a) = ", b, qheader(b)); simple_print(b);
+    b = qvalue(b);
+    zprintf("value read_data lisp_standard_input= %a(%a) = ", b, vechdr(b)); simple_print(b);
+    visited.clear();
+    validateObject(b);
+}
 
 // Each page consists of a header followed by a number of chunks. There may
 // be unused space in the page after the last chunk. For the purposes of
@@ -98,12 +126,20 @@ bool withinObject(LispObject* v, uintptr_t a)
     return (a >= uv && a < (uv+len));
 }
 
+std::unordered_set<uintptr_t> allPinned;
+
 // The ambiguous value (a) seems to point within the page (p). I do
 // different things based on the sort of page involved... pointers into
 // CONS pages will be the simplest to handle.
 
+void blurp()
+{}
+
 void processAmbiguousInPage(Page* p, uintptr_t a)
 {   uintptr_t dataStart;
+    if ((a & ~TAG_BITS) == (lisp_standard_input & ~TAG_BITS))
+    {   blurp();
+    }
     switch (p->type)
     {
     case emptyPageType:
@@ -119,12 +155,19 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // recently allocated data in the page, or it is to some item previously
 // pinned and which is still to be pinned. Finally if it is above
 // consDataEnd then it is only valid if it refers to data that had
-// previously been pinned.
+// previously been pinned. Well one more issue to discuss to show that
+// it has been considered. A previous GC can have left padder items in the
+// cons heap where cells had been pinned 2 GCs ago but were not at the last
+// GC. Well they will not have consIsPinned set and so an (ambiguous)
+// reference to them now is not about to pin them. So I do not need an
+// explicit check for padders here.
         if (a < dataStart) return;
-        else if (a < p->dataEnd ||
-                 consIsPinned(a, p))
-        {   consSetNewPinned(a, p);
-zprintf("set new cons pin %a\n", a);
+        else if ((a < p->dataEnd ||
+                  consIsPinned(a, p)) &&
+                 !consIsNewPinned(a, p))   // detect first time noticed.
+        {   my_assert(!consIsNewPinned(a, p), __WHERE__);
+            consSetNewPinned(a, p);
+            zprintf("set new cons pin %a\n", a);
 // The first time I find an object pinned on a page I will put that page
 // in a chain of ones containing pinned material.
             if (p->pinnedObjects == TAG_FIXNUM)
@@ -144,6 +187,8 @@ zprintf("set new cons pin %a\n", a);
 // all the pointers within it are tagged as if fixnums. That means that the
 // objects it references do not have their type captured in a tagged pointer,
 // so when I process them I will need to deduce type by inspecting them.
+            my_assert(allPinned.count(a) == 0, "double pinning");
+            allPinned.insert(a);
             LispObject z = get2Words();
             car(z) = a + TAG_FIXNUM;
             cdr(z) = p->pinnedObjects;
@@ -194,7 +239,7 @@ zprintf("set new cons pin %a\n", a);
                     }
                 }
                 vecSetNewPinned(a, p);
-zprintf("set new vec pin %a\n", a);
+                zprintf("mark new vec pin %a potentially within object\n", a);
             }
             return;
         }
@@ -217,6 +262,7 @@ void processAmbiguousValue(uintptr_t a)
 {
 // I find the Page (if any!) the value is in. That Page may be empty,
 // one containing old pinned stuff or one full of live data.
+    zprintf("ON STACK: %a\n", a);
     Page* p = findPage(a);
     if (p!=nullptr) processAmbiguousInPage(p, a);
 }
@@ -226,12 +272,25 @@ void processAmbiguousValue(uintptr_t a)
 // the like, so I need to disable it here... After all looking at locations
 // on the stack but between the proper stack frames is indeed a bit
 // "dodgy"!
+//
+// A more agressive "conservative" regime could scan statically and
+// dynamically allocated memory in general, and if multiple threads were
+// present would look at the stacks used by each thread. A particular use
+// case for additional generality would be to support more general use of
+// Lisp pointers by "foreign" code. I am not moving in that direction (yet?).
+
+// I need "NO_SANITIZE_ADDRESS" because when I scan the stack I will
+// access return addresses, stack pointer chains and the like. Doing so
+// would normally be a sign of buffer overflow or malice, and so helpful
+// "sanitize" options that try to protect against suchlike would get
+// triggered.
 
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems()
 {
 #ifdef DEBUG
-// Just while I develop the code.
+// Just while I develop the code I will have some extra "ambiguous" pointers
+// that I have rather direct control over. They may help me to test things.
     for (int i=0; i<10; i++)
         processAmbiguousValue(ambiguous[i]);
 #endif // DEBUG
@@ -347,13 +406,20 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 // For other objects I need to test if there are any pin bits at all within
 // the object, and if so set one for the first bit while clearing all others.
         else if (testBits(p->newVecPins, o1, len/sizeof(LispObject)))
-        {   clearBits(p->newVecPins, o1, len/sizeof(LispObject));
+        {
+// Here I am scanning those pages that might have pinned material in and
+// if each Chunk is processed just once I will set the pinning information
+// on each object just once.
+            clearBits(p->newVecPins, o1, len/sizeof(LispObject));
             setBit(p->newVecPins, o1);
             if (p->pinnedObjects == TAG_FIXNUM)
             {   p->pinnedPages = pinnedPages;
                 pinnedPages = p;
             }
 // Record this pinned object in a list of same.
+            my_assert(allPinned.count(s) == 0, "double pinning");
+            allPinned.insert(s);
+         
             LispObject z = get2Words();
             car(z) = s + TAG_FIXNUM;
             cdr(z) = p->pinnedObjects;
@@ -388,65 +454,92 @@ void findHeadersInChunk(size_t firstChunk, Page* p)
 
 void findHeadersOfPinnedItems()
 {   for (Page* p=potentiallyPinned; p!=nullptr; p=p->potentiallyPinnedChain)
-    {   for (size_t i=0; i<chunkStatusMapSize; i++)
-        {   uint64_t bits = p->chunkStatusMap[i];
-            while (bits != 0)
-            {   int trailingZeros = ntz(bits);
-                size_t chunkNo = 64*i + trailingZeros;
-                findHeadersInChunk(chunkNo, p);
-                bits &= ~(static_cast<uint64_t>(1) << trailingZeros);
-            }
+    {   size_t pinnedChunk = 0;
+        while ((pinnedChunk = nextOneBit(p->chunkStatusMap,
+                                         chunkStatusMapSize,
+                                         pinnedChunk)) != SIZE_MAX)
+        {   // Deal with a chunk that may still be pinned
+            size_t pinEnd = pinnedChunk + p->chunkLength[pinnedChunk];
+            zprintf("find headers in pinned chunk from %a to %a\n",
+                addressFromChunkNo(p, pinnedChunk),
+                addressFromChunkNo(p,  pinEnd));
+            findHeadersInChunk(pinnedChunk, p);
+            pinnedChunk = pinEnd;
         }
     }
 }
 
-void evacuate(LispObject &a)
+// This will turn back into std::memcpy when I have finished debugging, but
+// is here now so that when watchpoints are triggered within it the gdb
+// record is easier for me to traverse.
+
+void csl_memcpy(void* vdest, void* vsrc, size_t len)
+{   char* dest = (char*)vdest;
+    char* src = (char*)vsrc;
+    for (size_t i=0; i<len; i++)
+        dest[i] = src[i];
+}
+
+void evacuate(LispObject &x)
 {
-// Here a refers to a location that is a list-base, ie it contains
-// a valid Lisp object, but also the value of a is the LispObject
+// Here x refers to x location that is x list-base, ie it contains
+// x valid Lisp object, but also the value of x is the LispObject
 // held in that location. I want to arrange that the object and all its
 // components are moved to the new half space, and (if necessary) the
-// list base is updated to refer to the copy and a forwarding pointer is left
+// list base is updated to refer to the copy and x forwarding pointer is left
 // where the original had been. The procedure is:
-//   a is the object that may need to be copied.
-//   If a is tagged as immediate data do nothing.
-//   [now a is some sort of tagged pointer]
-//   If *a is a forwarding pointer replace the list base with the
+//   x is the object that may need to be copied.
+//   If x is tagged as immediate data or is the special case NIL do nothing.
+//   [now x is some sort of tagged pointer]
+//   If *x is x forwarding pointer replace the list base with the
 //      object referred to, reconstructing suitable tag bits.
-//   If a refers to material that is pinned do nothing.
-//   Determine the length, b, of the object that a refers to.
-//   Allocate b byte in the new space and do a simple binary copy of all
-//      of object a to there.
-//   Write in a forwarding pointer.
+//   If x refers to material that is pinned do nothing.
+//   Determine the length, b, of the object that x refers to.
+//   Allocate b byte in the new space and do x simple binary copy of all
+//      of object x to there.
+//   Write in x forwarding pointer.
 //   Update the list-base to refer to the copy.
-// Note that this is a shallow copy operation. A later stage must perform
-// a linear scan of the newly copied material. That stage is not discussed
+// Note that this is x shallow copy operation. A later stage must perform
+// x linear scan of the newly copied material. That stage is not discussed
 // here because this function does not directly cause it to happen.
-    my_assert(a != 0, "zero word in scanning");
-    my_assert(!is_forward(a), "forwarding ptr in scanning");
-    if (is_immediate(a) || a == nil) return;
-    LispObject* ap = csl_cast<LispObject*>(a & ~TAG_BITS);
-    LispObject aa = *ap;
-    if (is_forward(aa))
-    {   a = aa - TAG_FORWARD + (a & TAG_BITS);
+    my_assert(x != 0, "zero word in scanning");
+    my_assert(!is_forward(x), "forwarding ptr in scanning");
+    zprintf("evacuating %a %s\n", x, objectType(x));
+    if (is_immediate(x) || x == nil) return;
+// If something is not immediate it must be x pointer!
+    LispObject* untagged_x = csl_cast<LispObject*>(x & ~TAG_BITS);
+    LispObject hdr = *untagged_x;
+    LispObject cpy;
+    if (is_forward(hdr))
+    {   x = hdr - TAG_FORWARD + (x & TAG_BITS);
         return;
     }
-// Now I will need to make a copy of the item.
+// Now I will need to make x copy of the item (unless it is pinned).
     size_t len;
-// Finding its length is not too hard here because I have a validly tagged
-// pointer to it.
-    if (is_cons(a)) len = 2*CELL;
-    else if (is_symbol(a)) len = symhdr_length;
-    else len = doubleword_align_up(length_of_header(aa));
-    if (len == 2*CELL) aa = get2Words();
-    else aa = getNBytes(len);
-// I will copy the full final doubleword of a vector, and in the case of
-// a 32-bit machine or for vectors that contain components that are smaller
-// than CELL this will include material beyond that which is meaningful.
-// This at least keeps any zero-padding of the last word intact.
-    std::memcpy(csl_cast<void*>(aa), ap, len);
-    *ap = TAG_FORWARD + aa;
-    a = aa + (a & TAG_BITS);
+    if (is_cons(x))
+    {   if (consIsNewPinned(x)) return;
+        len = 2*CELL;
+        cpy = get2Words();
+    }
+    else if (is_symbol(x))
+    {   if (vecIsNewPinned(x)) return;
+        len = symhdr_length;
+        cpy = getNBytes(len);
+    }
+    else if (SIXTY_FOUR_BIT && hdr == DOUBLE_FLOAT_HEADER)
+    {   if (consIsPinned(x)) return;
+        len = 16;
+        cpy = get2Words();
+    }
+    else
+    {   if (vecIsNewPinned(x)) return;
+        len = doubleword_align_up(length_of_header(hdr));
+        cpy = getNBytes(len);
+    }
+    csl_memcpy(csl_cast<void*>(cpy), untagged_x, len);
+    *untagged_x = TAG_FORWARD + cpy;
+    x = cpy + (x & TAG_BITS);
+    zprintf("Evacuate %a to %a\n", untagged_x, x);
 }
 
 void evacuateFromUnambiguousBases()
@@ -462,7 +555,7 @@ void evacuateFromUnambiguousBases()
     evacuate(qpname(nil));
     evacuate(qfastgets(nil));
     evacuate(qpackage(nil));
-    for (auto p = list_bases;* p!=nullptr; p++) evacuate(**p);
+    for (LispObject* p:list_bases) evacuate(*p);
     for (LispObject* sp=stack;
          sp>csl_cast<LispObject*>(stackBase); sp--) evacuate(*sp);
 // When running the deserialization code I keep references to multiply-
@@ -474,28 +567,46 @@ void evacuateFromUnambiguousBases()
     }
 }
 
+void showPinnedItems()
+{   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
+    {   for (LispObject c=pp->pinnedObjects-TAG_FIXNUM;
+                        c!=0;
+                        c=cdr(c)-TAG_FIXNUM)
+        {   LispObject next = car(c)-TAG_FIXNUM;
+            zprintf("Pinned item at %a\n", next);
+        }
+    }
+}
+
+// There is a "jolly" issue here that it took me a while to spot. Let me
+// first note that I should not evacuate any location twice.
+// Well here I look at each pinned object. Although the pointer is
+// ambiguous the object is well formed and it may be that the only
+// reference to it is from an ambiguous pointer. So I need to evacuate
+// and fields within it.
+
 void evacuateFromPinnedItems()
 {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
     {   for (LispObject c=pp->pinnedObjects-TAG_FIXNUM;
                         c!=0;
                         c=cdr(c)-TAG_FIXNUM)
-        {   LispObject p = car(c)-TAG_FIXNUM;
-            Header h = *csl_cast<Header*>(p);
+        {   LispObject next = car(c)-TAG_FIXNUM;
+            Header a = *csl_cast<Header*>(next);
             size_t len, len1;
 // Now based on the low 6 bits of the first word of the object I sort
 // out whether it is a vector containing Lisp data, a vector containing
 // binary data (including strings and bignums) or a symbol. If none of
 // those then it will be a CONS cell.
-            switch (h & 0x1f)
+            switch (a & 0x1f)
             {
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
-                len = length_of_header(h);
-                if (is_mixed_header(h)) len1 = 4*CELL;
+                len = length_of_header(a);
+                if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
                 my_assert(len != 0, "lisp vector size zero");
                 for (size_t i = CELL; i<len1; i += CELL)
-                    evacuate(*csl_cast<LispObject*>(p+i));
+                    evacuate(*csl_cast<LispObject*>(next+i));
                 continue;
 
             case 0x12: // 0b10010:   // Header for bit-vector
@@ -504,8 +615,8 @@ void evacuateFromPinnedItems()
                 continue;
 
             case 0x02: // 0b00010:   // Symbol headers plus char literals etc
-                if (is_symbol_header(h))
-                {   Symbol_Head* s = csl_cast<Symbol_Head*>(p);
+                if (is_symbol_header(a))
+                {   Symbol_Head* s = csl_cast<Symbol_Head*>(next);
                     evacuate(s->value);
                     evacuate(s->env);
                     evacuate(s->plist);
@@ -516,25 +627,36 @@ void evacuateFromPinnedItems()
                 }
                 // drop through on character literals etc.
             default:                 // None of the above cases... so a CONS
-                if (car(p) == 0)
-                {   zprintf("@@@Zero word at %a\n", p);
-                    zprintf("@@@p=%a vecCurrent=%a\n", p, vecCurrent);
-                    displayAllPages("Line 518 in newcslgc.cpp"); // DEBUG
+                if (car(next) == 0)
+                {   zprintf("@@@Zero word at %a\n", next);
+                    zprintf("@@@next=%a vecCurrent=%a\n", next, vecCurrent);
+                    displayAllPages("Line 586 in newcslgc.cpp"); // DEBUG
                     my_abort("zero word in evacuateFromPinnedItems");
                 }
-                evacuate(car(p));
-                evacuate(cdr(p));
+                evacuate(car(next));
+                evacuate(cdr(next));
                 continue;
             }
         }
     }
 }
 
+// evacuateConsPage is only ever called on a page that is part of the
+// "new half space" that the GC has been copying material into. When it
+// was allocated that page might have had some pinned material in it, and
+// at that time there was a chain of pointers to allow allocation around
+// them. By now that chain has been overwritten by copied data. However the
+// (old) pin bits will be set on relevant cells. If any of those are
+// still pinned their contents get evacuated. If any are no longer pinned
+// but remain alive then they get evacuated when a reference to them is
+// processed. If they are not used they will need to be replaced by padders
+// after all evacuation has happened.
+
 bool evacuateConsPage(Page* p)
 {   bool didSomething = false;
+    displayConsPage(p);
     uintptr_t next = p->scanPoint;
     zprintf("cons scanPoint = %a\n", next);
-    my_assert(!is_forward(car(next)), __WHERE__);
 // If some of the evacuation here fills up this page it may cease being
 // "current" and then consFringe is liable to get set pointing into
 // the next allocated page. That is OK because then the loop here will
@@ -542,29 +664,23 @@ bool evacuateConsPage(Page* p)
 // initConsPage I set dataEnd to its very end, because the "real" end of
 // data at that stage will be at fringe. 
     while (next != p->dataEnd && next != consFringe)
-    {   if (!consIsNewPinned(next, p))  // Pinned things evacuated elsewhere
+    {
+// NB test the OLD pin flag here. And I know which page I am in so I
+// use the 2-argument version of consIsPinned().
+        if (!consIsPinned(next, p))  // Pinned things evacuated elsewhere
         {   LispObject* n = csl_cast<LispObject*>(next);
-            switch (*n & 0x1f)
-            {
-            case 0x0a: // 0b01010: // Header for vector of Lisp pointers
-                didSomething = true;
-                evacuate(*(n+1));
-                FALLTHROUGH;
-            case 0x12: // 0b10010: // Header for bit-vector
-                FALLTHROUGH;
-            case 0x1a: // 0b11010: // Header for vector of binary data
-                break;
-            default:
-                didSomething = true;
+            if (*n != DOUBLE_FLOAT_HEADER &&
+                *n != CONS_PADDER_HEADER)  // Note special cases.
+            {   didSomething = true;
                 evacuate(*n);      // must be a cons cell
                 evacuate(*(n+1));
-                break;
             }
         }
         next += 2*sizeof(LispObject);
     }
     p->scanPoint = next;
     zprintf("end with cons scanPoint = %a\n", next);
+    displayConsPage(p);
     return didSomething;
 }
 
@@ -580,8 +696,14 @@ bool evacuateConsPage(Page* p)
 // terminated based on a check of dataEnd when it should not be, the
 // vecCurrent page will have that field initialised to the end of the Page. 
 
+// Observe that the way that a vector page is split into chunks and
+// extended chunks makes the treatment here a lot messier than for cons
+// pages even before one start to worry about the different sorts of
+// vector where some have lisp and others binary content.
+
 bool evacuateVecPage(Page* p)
 {   uintptr_t next = p->scanPoint;
+    displayVecPage(p);
     zprintf("~#evacVecPage %a, scanPoint=%a vecFringe=%a dataEnd=%a\n",
         p, next, vecFringe, p->dataEnd);
     if (next == p->dataEnd || next == vecFringe) return false;
@@ -594,7 +716,8 @@ bool evacuateVecPage(Page* p)
     int w = p->chunkStatus[firstChunk];
 // In fact on the next line I would not need to detect PinnedChunkStart
 // because since its value is 1 performing the update of firstChunk
-// would not change it! However I think what I wrire here is clearer.
+// would not change it! However I think what I write here is good for
+// clarity.
     if (w != ChunkStart && w != PinnedChunkStart) firstChunk -= w-1;
 // Now firstChunk is set up as the start of the chunk I am within.
 // From now on the chunks and extended chunks all align nicely.
@@ -606,28 +729,15 @@ bool evacuateVecPage(Page* p)
 // Chunks that contain pinned material are an issue here. Well ones
 // with chunkStatus as PinnedChunkStart can only have had that set by
 // a previous GC, and so the only data within them will be pinned. That
-// was evacuated by other code than this. But there can be new material
-// here that became pinned this time but that has already been evacuated,
-// leaving its header words replaces by forwarding addresses. But I need
-// those header words to scan over! So while I am scanning if I come
-// to a pinned item I need to play special games. Note that in the cons heap
-// this was not so bad because every object was just of width 2*CELL. 
+// was evacuated by other code than this. The rest of this page should not
+// have any pinned stuff in it at all.
         if (p->chunkStatus[firstChunk] == PinnedChunkStart)
             next = addressFromChunkNo(p, lastChunk);
         else
         {   uintptr_t chunkEnd = addressFromChunkNo(p, lastChunk);
             while (next != chunkEnd && next != vecFringe)
-            {   bool pinned = false;
+            {   size_t len, len1;
                 uintptr_t a = *csl_cast<uintptr_t*>(next);;
-                if (vecIsNewPinned(next, p))
-                {   pinned = true;
-// Here a will be a forwarding pointer, and the real first word of the
-// object can be found by indirecting through it.
-                    my_assert(is_forward(a), __WHERE__);
-                    a = *csl_cast<uintptr_t*>(a & ~TAG_BITS);
-                }
-                my_assert(!is_forward(a), __WHERE__);
-                size_t len, len1;
                 switch (a & 0x1f)
                 {
                 case 0x0a: // 0b01010: // Header for vector of Lisp pointers
@@ -636,11 +746,9 @@ bool evacuateVecPage(Page* p)
                     if (is_mixed_header(a)) len1 = 4*CELL;
                     else len1 = len;
                     my_assert(len != 0, "lisp vector size zero");
-                    if (!pinned)
-                    {   for (size_t i = CELL; i<len1; i += CELL)
-                            evacuate(*csl_cast<LispObject*>(next+i));
-                        didSomething = true;
-                    }
+                    for (size_t i = CELL; i<len1; i += CELL)
+                        evacuate(*csl_cast<LispObject*>(next+i));
+                    didSomething = true;
                     break;
 
                 case 0x12: // 0b10010: // Header for bit-vector
@@ -653,33 +761,19 @@ bool evacuateVecPage(Page* p)
                 case 0x02: // 0b00010: // Symbol headers, char literals etc.
                     if (is_symbol_header(a))
                     {   len = symhdr_length;
-                        if (!pinned)
-                        {   Symbol_Head* s = csl_cast<Symbol_Head*>(next);
-                            evacuate(s->value);
-                            evacuate(s->env);
-                            evacuate(s->plist);
-                            evacuate(s->fastgets);
-                            evacuate(s->package);
-                            evacuate(s->pname);
-                            didSomething = true;
-                        }
+                        Symbol_Head* s = csl_cast<Symbol_Head*>(next);
+                        evacuate(s->value);
+                        evacuate(s->env);
+                        evacuate(s->plist);
+                        evacuate(s->fastgets);
+                        evacuate(s->package);
+                        evacuate(s->pname);
+                        didSomething = true;
                         break;
                     }
                     FALLTHROUGH;
                 default:               // None of the above cases...
-                    if (car(next) == 0)
-                    {   displayAllPages("Line 623 in newcslgc.cpp"); // DEBUG
-                        zprintf("@@@Zero word at %a\n", next);
-                        zprintf("@@@p=%a vecCurrent=%a\n", p, vecCurrent);
-                        my_abort("zero word in evacuateVecPage");
-                    }
-                    len = 2*CELL;      // ... must be a CONS cell.
-                    if (!pinned)
-                    {   evacuate(car(next));
-                        evacuate(cdr(next));
-                        didSomething = true;
-                    }
-                    break;
+                    my_abort("cons cell in vec page");
                 }
                 my_assert(len != 0, "something of size zero");
                 next += len;
@@ -690,8 +784,11 @@ bool evacuateVecPage(Page* p)
         lastChunk = firstChunk + p->chunkLength[firstChunk];
     }
     p->scanPoint = next;
+    displayVecPage(p);
     return didSomething;
 }
+
+extern void validateAll();
 
 void evacuateFromCopiedData()
 {   for (;;)
@@ -705,9 +802,11 @@ void evacuateFromCopiedData()
             {
             case consPageType:
                 evacuateConsPage(p);
+                validateAll();
                 break;
             case vecPageType:
                 evacuateVecPage(p);
+                validateAll();
                 break;
             default:
                 my_abort("bad page type in evacuateFromCopiedData");
@@ -728,6 +827,7 @@ void evacuateFromCopiedData()
 // looked at.
         zprintf("Now evacuate current Cons page %a\n", consCurrent);
         bool didSomething = evacuateConsPage(consCurrent);
+        validateAll();
 // Now similarly for the vector page. Well the pain here is that scanning
 // the vector page might put more info in the consCurrent page or even make
 // it overflow, even if the vector page does not become full. So I must
@@ -735,6 +835,7 @@ void evacuateFromCopiedData()
 // created.
         zprintf("Now evacuate current Vec page %a\n", vecCurrent);
         if (evacuateVecPage(vecCurrent)) didSomething = true;
+        validateAll();
 // If neither scanning consCurrent nor vecCurrent did anything at all then
 // pendingPages will still be left empty and there is nothing left to do.
 // If either of them did do something then at least that one will have
@@ -831,7 +932,17 @@ inline uintptr_t nextInVecBitmap(Page* p)
 // The next two return a count of the number of pinned items present.
 
 size_t rePinOneConsPage(Page* p)
-{   std::memcpy(p->consPins,
+{
+// Before I mess with the pin maps I want to arrange that every
+// cell that has an old pin but not a new one gets a padder written in.
+    size_t loc=0;
+    while ((loc = nextOneBit(p->consPins, consPinSize, loc)) != SIZE_MAX)
+    {   uintptr_t v = csl_cast<uintptr_t>(&p->consData[0]) +
+                      2*sizeof(LispObject)*loc;
+        if (!consIsNewPinned(v, p)) car(v) = CONS_PADDER_HEADER;
+        loc++;
+    }
+    std::memcpy(p->consPins,
                 p->newConsPins,
                 consPinBytes);
     std::memset(p->newConsPins, 0, consPinBytes);
@@ -878,7 +989,14 @@ size_t rePinOneConsPage(Page* p)
 }
 
 void rePinConsCurrent(Page* p)
-{   std::memcpy(p->consPins,
+{   size_t loc=0;
+    while ((loc = nextOneBit(p->consPins, consPinSize, loc)) != SIZE_MAX)
+    {   uintptr_t v = csl_cast<uintptr_t>(&p->consData[0]) +
+                      2*sizeof(LispObject)*loc;
+        if (!consIsNewPinned(v, p)) car(v) = CONS_PADDER_HEADER;
+        loc++;
+    }
+    std::memcpy(p->consPins,
                 p->newConsPins,
                 consPinBytes);
     std::memset(p->newConsPins, 0, consPinBytes);
@@ -1055,6 +1173,12 @@ bool withinGarbageCollector = false;
 
 void inner_garbage_collect()
 {   WithinGarbageCollector noted;
+    displayAllPages("Start of GC");
+    check_standard_input(__WHERE__);
+    validateAll();
+    allPinned.clear();
+    validateAll();
+    check_standard_input(__WHERE__);
 // I start by setting the end-point information in the two current pages.
 // That leaves them in the proprer state to count as "full", so that when
 // the GC looks at ambiguous pointers it will be able to be aware when
@@ -1068,12 +1192,15 @@ void inner_garbage_collect()
     consOldPages = consPages;
     vecOldPages = vecPages;
     pinnedPages = nullptr;
+    potentiallyPinned = nullptr;
 // ... and allocate what will be the start of the new half-space.
 // Well here I will not want any ambiguous pointers into this new
 // space to be deemed valid, and I will be putting stuff into the
 // CONS region as a list of pinned objects - so on a temporary basis
 // I will mark the pages as free!
     grabFreshPage(consPageType);
+    validateAll();
+    check_standard_input(__WHERE__);
 // Now I can scan the stack and mark up pinned items. This will build
 // up a chain of pages pinned this time.
 // For each such page it will create a list of the pinned locations, where
@@ -1082,6 +1209,8 @@ void inner_garbage_collect()
 // them. But the nodes that make up the list there could by some mischance
 // now have their new pin bit set. I will tidy that up!
     identifyPinnedItems();
+    validateAll();
+    check_standard_input(__WHERE__);
 // I need to give more explanation. consPages now will be JUST the
 // pages allocated for the GC to use as its "new half space". That
 // means that the only things that ought to get pinned in them will be
@@ -1099,6 +1228,8 @@ void inner_garbage_collect()
         }
     }
     findHeadersOfPinnedItems();
+    validateAll();
+    check_standard_input(__WHERE__);
     pendingPages = nullptr;
     zprintf("Report on pinning...\n");
     {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
@@ -1125,14 +1256,22 @@ void inner_garbage_collect()
     }
 // There is no need to set up a new vector current page until now.
     grabFreshPage(vecPageType);
+    validateAll();
+    check_standard_input(__WHERE__);
 // I arrange that the very first vector item I copy is the vector that is
 // the current "package", ie hash table of symbols. I do this because it
 // is liable to be a large vector so putting it first avoids some padding
 // waste (maybe!).
     evacuateFromPinnedItems();
+    validateAll();
+    check_standard_input(__WHERE__);
     evacuateFromUnambiguousBases();
+    validateAll();
+    check_standard_input(__WHERE__);
     if (gcTrace) displayAllPages("Line 1070 in newcslgc.cpp"); // DEBUG
     evacuateFromCopiedData();
+    validateAll();
+    check_standard_input(__WHERE__);
 // Well where we should be now is that all live data is either left in place
 // if pinned or moved to new space if not. References to it should all be
 // updated properly. Memory allocation should now be ready to continue on
@@ -1151,7 +1290,9 @@ void inner_garbage_collect()
 // copy the new pin-map to the main one and rearrange free-space chaining.
 // if such a page ends up empty it may be put in emptyPages otherwise on
 // consPinPages. And similarly for vector pages.
-     setupPinmapsConsPages();
+    setupPinmapsConsPages();
+    validateAll();
+    check_standard_input(__WHERE__);
 // The following is messier than I has recognized. There can be existing
 // pages containing items pinned for the first time during the GC in
 // vecOldPages. They will also be in potentiallyPinned.
@@ -1204,7 +1345,8 @@ void inner_garbage_collect()
 //     a chunk that used to be pinned but is not now.
 // All this must leave the oldVecPinPages as a chain of pages with items
 // pinned NOW, and it mist move pin maps from vecNewPins to vecPins.
-     setupPinmapsVecPages();
+    setupPinmapsVecPages();
+    validateAll();
 
     zprintf("GC complete!\n");
 }
@@ -1240,7 +1382,7 @@ void inner_garbage_collect()
 
 std::jmp_buf* buffer_pointer;
 
-static volatile int volatileVar = 0; 
+static volatile int volatileVar = 0x4321234;
 
 NOINLINE uintptr_t getStackFringe(double x)
 {   return csl_cast<uintptr_t>(&x);
@@ -1248,6 +1390,7 @@ NOINLINE uintptr_t getStackFringe(double x)
 
 NOINLINE void garbage_collect()
 {   std::jmp_buf buffer;
+    check_standard_input(__WHERE__);
     buffer_pointer = &buffer;
 // This is a silly hack! The idea is that as far as the compiler is
 // allowed to assune, each reference to volatileVar might return a different
@@ -1297,26 +1440,148 @@ NOINLINE void garbage_collect()
 // assumption!
         if (volatileVar == volatileVar) break;
     }
+// End of garbage collection!
+    zprintf("@@@END OF GC@@@\n");
+    check_standard_input(__WHERE__);
 }
 
-#ifdef DEBUG
 // The functions here are intended to be useful for calling from gdb
 
 void aprint(uintptr_t x)
 {
 // Note that with zprintf() I do not need to mess around and use eg PRIx64.
-    zprintf("x = %a %16.16x\n", (uintptr_t)x, (uint64_t)x);
+    zprintf("x = %a %16.16x = %s\r\n",
+        (uintptr_t)x, (uint64_t)x, objectType((uintptr_t)x));
 }
 
 void aprint(Page* x)
-{   zprintf("x = %a %16.16x\n", (uintptr_t)x, (uint64_t)x);
+{   zprintf("x = %a %16.16x = %s\r\n",
+        (uintptr_t)x, (uint64_t)x, objectType((uintptr_t)x));
 }
 
 void aprint(LispObject* x)
-{   zprintf("x = %a %16.16x\n", (uintptr_t)x, (uint64_t)x);
+{   zprintf("x = %a %16.16x = %s\r\n",
+        (uintptr_t)x, (uint64_t)x, objectType((uintptr_t)x));
 }
 
+// I now have some code intended for testing and debugging. A LispObject
+// is a tagged value. If it is a pointer it must point into the right
+// sort of Page and the first word that it refers to must be proper -
+// for instance a value tagged as a vector must have a vector header there
+// while something that should be a cons cell must not.
 
-#endif
+void validateObject(LispObject x)
+{   validateCount++;
+    if (is_immediate(x) || x == nil) return;     // Ha ha an easy case!
+    if (visited.count(x) != 0) return;
+    visited.insert(x);
+    if (is_cons(x))
+    {   Page* p = pageOf(x);
+        my_assert(p->type == consPageType, "cons pointer into vector page");
+        LispObject c = car(x);
+        if (is_forward(c))
+        {   x = (c & ~TAG_BITS) | (x & TAG_BITS);
+            p = pageOf(x);
+            my_assert(p->type == consPageType,
+                      "cons pointer forwards into vector page");
+            c = car(x);
+            my_assert(!is_forward(c), "double forward pointer");
+        }
+        my_assert(!is_odds(c) || !is_header(c), "header in car(x)");
+        c = cdr(x);
+        my_assert(!is_odds(c) || !is_header(c), "header in cdr(x)");
+        validateObject(car(x));
+        validateObject(cdr(x));
+        return;
+    }
+    else if (is_symbol(x))
+    {   Page* p = pageOf(x);
+        my_assert(p->type == vecPageType, "symbol pointer into cons page");
+        LispObject c = qheader(x);
+        if (is_forward(c))
+        {   x = (c & ~TAG_BITS) | (x & TAG_BITS);
+            p = pageOf(x);
+            my_assert(p->type == vecPageType,
+                      "symbol pointer forwards into cons page");
+            c = qheader(x);
+            my_assert(!is_forward(c), "double forward pointer");
+        }
+        my_assert(is_symbol_header_full_test(c), "symbol without header");
+        validateObject(qvalue(x));
+        validateObject(qenv(x));
+        validateObject(qplist(x));
+        validateObject(qfastgets(x));
+        validateObject(qpackage(x));
+        validateObject(qpname(x));
+        return;
+    }
+    if (is_bfloat(x))
+    {   Page* p = pageOf(x);
+        Page* p1 = p;
+        LispObject c = flthdr(x);
+        if (is_forward(c))
+        {   x = (c & ~TAG_BITS) | (x & TAG_BITS);
+            p1 = pageOf(x);
+            c = flthdr(x);
+            my_assert(!is_forward(c), "double forward pointer");
+        }
+        my_assert(is_odds(c) && is_header(c), "float needs a header");
+        switch (type_of_header(c))
+        {
+        case TYPE_SINGLE_FLOAT:
+        case TYPE_LONG_FLOAT:
+            my_assert(p->type == vecPageType, "float in cons page");
+            my_assert(p1->type == vecPageType, "float forwards into cons page");
+            break;
+        case TYPE_DOUBLE_FLOAT:
+            if (SIXTY_FOUR_BIT)
+            {   my_assert(p->type == consPageType, "double float in vector page");
+                my_assert(p1->type == consPageType, "double float forwards into vector page");
+            }
+            else
+            {   my_assert(p->type == vecPageType, "float in cons page");
+                my_assert(p1->type == vecPageType, "float forwards into cons page");
+            }
+            break;
+        default:
+            my_abort("float with bad header");
+        }        
+        return;
+    }
+// In all other cases we should have some sort of vector.
+    Page* p = pageOf(x);
+    my_assert(p->type == vecPageType, "vector in cons page");
+    LispObject c = car(x & ~TAG_BITS);
+    if (is_forward(c))
+    {   x = (c & ~TAG_BITS) | (x & TAG_BITS);
+        p = pageOf(x);
+        my_assert(p->type == vecPageType,
+                      "vector forwards into cons page");
+        c = car(x & ~TAG_BITS);
+        my_assert(!is_forward(c), "double forward pointer");
+    }
+    my_assert(is_odds(c) && is_header(c), "vector needs a header");
+    if (vector_header_of_binary(c)) return;
+// Here I want to check the contents of the vector.
+    size_t len = length_of_header(c);
+    if (is_mixed_header(c)) len = 4*CELL;
+    for (size_t i=CELL; i<len; i+=CELL)
+        validateObject(*(LispObject *)((x & ~TAG_BITS)+i));
+    return;
+}
+
+void validateAll()
+{   visited.clear();
+    validateCount = 0;
+    zprintf("Starting validation\n");
+    validateObject(qvalue(nil));
+    validateObject(qenv(nil));
+    validateObject(qplist(nil));
+    validateObject(qpname(nil));
+    validateObject(qfastgets(nil));
+    validateObject(qpackage(nil));
+    for (LispObject* p:list_bases) validateObject(*p);
+    zprintf("Validation success\n");
+}
 
 // end of file newcslgc.cpp

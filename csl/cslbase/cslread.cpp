@@ -1065,7 +1065,7 @@ static int ordpv(LispObject u, LispObject v)
     size_t lu = length_of_header(hu), lv = length_of_header(hv), n = CELL;
     if (type_of_header(hu) != type_of_header(hv))
         return (type_of_header(hu) < type_of_header(hv) ? -1 : 1);
-    if (vector_holds_binary(hu))
+    if (vector_header_of_binary(hu))
     {
 // STRING, VEC8 and BPS need length_of_byteheader used here.
         switch (type_of_header(hu))
