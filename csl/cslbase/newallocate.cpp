@@ -295,14 +295,17 @@ bool allocateAnotherSegment()
 
 void initConsPage(Page* p, bool empty)
 {   consPages.push(p);
+    zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
     p->type = consPageType;
     consCurrent = p;
     p->dataEnd = consEnd = csl_cast<uintptr_t>(p) + pageSize;
     if (empty)
-    {   p->pinnedObjects = TAG_FIXNUM;
+    {   p->hasPinned = false;
+        p->pinnedPages = nullptr;
+        p->pinnedObjects = TAG_FIXNUM;
         std::memset(p->consPins, 0, sizeof(p->consPins));
         std::memset(p->newConsPins, 0, sizeof(p->newConsPins));
-        consFringe = p->scanPoint = csl_cast<uintptr_t>(&p->consData);
+        consFringe = p->scanPoint = offsetToCons(0, p);
         consLimit = consEnd;
     }
     else
@@ -316,23 +319,28 @@ void initConsPage(Page* p, bool empty)
 
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
+    zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
     p->type = vecPageType;
     p->dataEnd = endOfPage(p);
     vecCurrent = p;
     vecEnd = csl_cast<uintptr_t>(p) + pageSize;
     if (empty)
-    {   p->potentiallyPinnedFlag = false;
+    {   p->hasPinned = false;
+        p->pinnedPages = nullptr;
+        p->potentiallyPinnedFlag = false;
         p->potentiallyPinnedChain = nullptr;
         p->hasVecPins = false;
         p->isInVecPages = false;
+        p->pinnedObjects = TAG_FIXNUM;
         std::memset(p->vecPins, 0, sizeof(p->vecPins));
         std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
-        for (size_t i=0; i<chunkStatusSize; i++)
-        {   p->chunkStatus[i] = ChunkStart;
+        for (size_t i=0; i<chunkInfoSize; i++)
+        {   p->chunkSeqNo[i] = 0;
             p->chunkLength[i] = 1;
         }
-        std::memset(p->chunkStatusMap, 0, sizeof(p->chunkStatusMap));
-        vecFringe = p->scanPoint = csl_cast<uintptr_t>(&p->chunks);
+        std::memset(p->chunkBitmap, 0, sizeof(p->chunkBitmap));
+        std::memset(p->newChunkBitmap, 0, sizeof(p->chunkBitmap));
+        vecFringe = p->scanPoint = offsetToVec(0, p);
         vecLimit = vecEnd;
     }
     else
@@ -506,7 +514,7 @@ void initHeapSegments(double storeSize)
         consCloggedPages.count = vecCloggedPages.count =
         consPages.count = vecPages.count = borrowPages.count =
         consOldPages.count = vecOldPages.count = 0;
-    potentiallyPinned = nullptr;
+    potentiallyPinned = pinnedPages = pendingPages = oldVecPinPages = nullptr;
     nilSegment = csl_cast<LispObject*>(
         new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);

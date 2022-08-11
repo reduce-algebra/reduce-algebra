@@ -43,6 +43,153 @@
 using std::hex;
 using std::dec;
 
+// A totally unused page must still have its type field filled in as
+// emptyPageType so that ambiguous pointers that refer within it can
+// be disregarded.
+// 
+
+// I should document the layout of a Cons Page, and the structure depends
+// on the status of the page:
+//
+// Empty:      value in consData[0].car = consEnd
+//             Well actually that will get set as the page is allocated to
+//             be one containing Cons style data. Also a fully empty page
+//             will have the bitmaps relating to pinning all clear.
+//             dataEnd points at the start of the page.
+//
+// Empty+Pins: first unpinned word points to either consEnd or the next
+//             pinned location, and similarly beyond that. dataEnd refers
+//             to the start of the page. So a fully empty page is just a
+//             special case of that.
+//
+// Full:       Valid data is present from consData[0] to dataEnd
+//             but skipping items marked as pinned in the bitmap and the
+//             pinning bitmap will identify any pinned data. Ah well
+//             in fact all of these have the same structure. I just show
+//             them separately here because allocating an unused page as
+//             a cons page makes an empty one, the GC can release pages
+//             as either unused or empty+pins and both GC and general
+//             computation can allocate memory as full pages.
+// 
+//
+// Current:    data runs from consData[0] to scanPoint and then scanPoint
+//             up to consFringe, but any cells marked as pinned will be
+//             ignored on scanning.
+//             During allocation new data is placed from consFringe to
+//             consLimit.
+//             There are two possibilities there. One is that consLimit is
+//             at consEnd in which case the Page has become full. The other
+//             is that the cell at consLimit is pinned. In such a case one
+//             can perform a linear scan upwards looking for either no
+//             pinning or consEnd. If an unpinned item is found its
+//             contents show where the next setting of consLimit should
+//             be, and that will either be the next pinned item or consEnd.
+//
+// Note that some of the words there refer to global variables (eg consFringe)
+// while others are fields stored within the Page (eg scanPoint).
+//
+// When allocation fills up a page or when GC is about to start (which
+// may happen when the current cons page is only partly filled) the
+// current Page has its dataEnd field set to consFringe.
+// Whenever a new current (cons) page is established it has its scanPoint
+// and dataEnd fields set to the first address after &consData[0]
+// that is not pinned, and consFringe also points there. consLimit is set
+// based on the initial value set there. This means that a Page that contains
+// any pinned cons cells may not be re-allocated to hold vectors, because it
+// has to have the internal structure as per here,
+// "Current:" above. So that defines the state that the GC must leave
+// a cons Page in. So for clarity, if the page is utterly empty and without
+// any pinned items it starts off with its first word containing the
+// address one beyond its last.
+
+// Well I will also explain a Vector Page.
+//
+// Each vector Page is viewed as made up of a sequence of chunks each in
+// 16Kb units that are basic chunks. Associated with each 16K segment there
+// are four values: chunkSeqNo[n], chunkLength[n], chunkPinned(n,p) and
+// newChunkPinned(n,p). The first two are arrays the second two functions
+// that access bitmaps.
+// Suppose a chunk has N basic chunks making it up. Then the chunkLength[]
+// for its start will hold N. Everywhere else chunkLength[] will be
+// unused. The kth unit in the extended chunk has the value k in chunkSeqNo[]
+// so the first one is 0, the second 1 etc. chunkLength[] makes it possible
+// to scan chunks sequentially visiting the start of each. chunkSeqNo[]
+// means that given any pointer into a chunk it is easy to identify the
+// start of the block. The two pinning bits identify the starts of
+// chunks that contain pinned material. By using nextOneBit() it is possible
+// to find just pinned chunks reasonably fast.
+// 
+//
+
+// The purpose of all this is that if I have an ambiguous pointer that
+// refers within a vector page I can first easily identify the chunk
+// it is within. Then I probe the array. Using chunkSeqNo[] I can find
+// that start of chunk even if it is made up of many basic ones.
+// Chunks up to dataEnd will will contain a sequence of Lisp items,
+// with a padder object at the end so that the chunk is totally full,
+// Or if it is a current Page, live date runs up to vecFringe.
+// Only chunks containing pinned material beyond that are at all
+// useful.
+//
+// A current vector page will have a scanPoint that refers just beyond
+// some object and has vecFringe and vecLimit set properly.
+// Each chunk apart from the one that vecFringe points within
+// and any that contain pinned data are totally full (with a padder at
+// the end). So to scan, one identifies the chunk concerned (by dividing
+// by 16K) and checks its sequence number in chunkSeqNo[]. That makes
+// it possible to identify the start and hence iusing chunnLength[] the
+// end of the chunk. The data can then be parsed until that is reached.
+// Then the next non-pinned chunk is found (by skipping over pinned chunks)
+// and scanning continues until either vecFringe or the end of the Page
+// is reached.
+//
+// When there is an attempt to allocate a rather large vector a big padder
+// may be needed. Well most padders will just be from vecFringe to the
+// end of the current chunk, so inserting then will not adjust
+// chunkSeqNo[], but sometimes it will be necessary to have large padders.
+// Eg suppose a Page is around 50% full and there is a request for a
+// block of memory that is 70% of the Page size. The residual half page
+// has to be turned into padder. That should be done by putting in multiple
+// padders each of size (up to) 16Kb so that the space is left so that the
+// unused memory is a sequence of basic chunks. The alternative would
+// involve as much effort because chunkSeqNo[] values would need updating
+// all through it.
+//
+// A vector page that is empty apart from some pinned stuff needs to have
+// the chunkPinned filled in to identify each chunk that contains
+// pinned material, and then chunkSeqNo[] and chunkLength[] for at least
+// that pinned part. When a totally fresh page is made into a vector page
+// the chunkBitmap[] array and chunkSeqNo[] can be set to zero and
+// every element of chunkLength[] set to 1 to show every chunk is basic
+// and not pinned.
+
+// Allocation while programs are running normally and when garbage
+// collection is in progress are identical until a Page becomes full.
+// In normal cases filling a page leads to a check as to whether 2/3 of
+// all available pages are in use, and if now a further page is just
+// grabbed, and otherwise GC is triggered. Well "available" needs to include
+// available via requesting more from the operating system.
+// During GC fresh pages are always grabbed save that if none are available
+// at all then a "run out of memory" event must be reported. This is a
+// horrible situation because memory is in a messed up state with some
+// stuff copied to the "new half space" and some not, so recovery is
+// not possible but I suspect that by making print routines able to
+// traverse forwarding pointers transparently it may still be possible to
+// generate a backtrace. If I want to be able to recover from memory-full
+// disasters I would need to trigger GC when memory became just 1/2 full
+// (and still worry about fragmentation!) and then complain at the end
+// of GC unless there was not say 1/6 of memory still unused, ie that
+// half memory load had compressed into 1/3 of memory, which is the
+// same stopping point that I am at present envisaging. But my proposed
+// scheme garbage collects less frequently so improves performance at the
+// cost of recovery in circumstances that I tend to view as unrecoverable!
+
+// With at least some compilers if I have an "inline" function definition
+// but there are no calls to it then no space is wasted. Well compile time
+// may be impacted. So I put some functions that can display or validate
+// Pages here for use while debugging and expect there not to be any space
+// overhead in the compiled binary of builds that happen not to use them.
+
 INLINE_VAR const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
 INLINE_VAR const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
 INLINE_VAR const size_t chunkMask = chunkSize-1;
@@ -54,6 +201,20 @@ enum PageType
     consPageType,
     vecPageType,
 };
+
+inline const char* pageTypeName(PageType x)
+{   switch (x)
+    {
+    case emptyPageType:
+        return "Empty";
+    case consPageType:
+        return "Cons";
+    case vecPageType:
+        return "Vec";
+    default:
+        return "Unknown";
+    }
+}
 
 class Page;
 class PageListIter;
@@ -161,8 +322,8 @@ struct alignas(chunkSize) Chunk
 
 INLINE_VAR const size_t consPinSize = pageSize/sizeof(ConsCell)/64;
 INLINE_VAR const size_t consPinBytes = 8*consPinSize;
-INLINE_VAR const size_t chunkStatusSize = pageSize/chunkSize;
-INLINE_VAR const size_t chunkStatusMapSize = chunkStatusSize/64;
+INLINE_VAR const size_t chunkInfoSize = pageSize/chunkSize;
+INLINE_VAR const size_t chunkBitmapSize = chunkInfoSize/64;
 // Note that vector pinning always works to resolution 8 bytes because on
 // a 32-bit machine all vector-like objects are kept aligned on 8 byte
 // boundaries, with padding if necessary.
@@ -181,12 +342,15 @@ public:
         char forceSize[pageSize];
         struct
         {
-// There are some fields that every Page will have...
+// There are some fields that every Page will have... It feels to me
+// as if there are rather a lot, and that suggests complication. Any
+// clean-up that removed some of these would be good.
             PageType type;
             Page* chain;
             Page* borrowChain;
-            bool borrowPinned;
+            bool  borrowPinned;
             Page* oldPinnedPages;
+            bool  hasPinned;
             Page* pinnedPages;
             Page* pendingPages;
             LispObject pinnedObjects;
@@ -202,9 +366,6 @@ public:
 //   consData[(pagesize - sizeof(PageType) - sizeof(Page*) - ...)/
 //            sizeof(ConsCell)]
 // but that becomes hideous to maintain and delicate as regards alignment.
-// I might clean it up a bit by embedding the whole header in a further
-// struct so I could use the size of that in my arithmetic, but it still
-// feels uncomfortable!
             union
             {   struct
                 {   uint64_t consPins[consPinSize];
@@ -217,31 +378,10 @@ public:
                     bool hasVecPins;
                     bool isInVecPages;
                     Page* oldVecPinPages;
-// At one stage I used a single arrray of uint8_t values here thinking
-// to avoid loss of space. Doing that led to the need for special
-// handling of vectors larger than around 256*16384 bytes, and also
-// scanning forward across chunks could be clumsy. However because
-// each chunk wants to be aligned at a 16K boundary I actually have quite
-// a lot of spare space here, so having two arrays of ints does not reduce
-// the memory free for storing vectors at all, and it cleans up my code
-// in various ways! I have checked and even if on the platform concerned
-// unsigned ints are 64-bit values this all fits in happily.
-//
-// The initial chunk of any extended chunk will have a value on chunkLength
-// that is not 1 and that indicated how many chunks make it up. The
-// other component chunks within the extended chunk can have the value 1.
-                    unsigned int  chunkLength[chunkStatusSize];
-// 
-                    unsigned int  chunkStatus[chunkStatusSize];
-// chunkStatusMap[] has one bit for each item in chunkStatus[], and that is
-// a 1 if the indicated chunk is a pinned simple chunk or is a chunk within
-// a pinned extended chunk. This plus "clz()" makes scanning forward to find
-// the start of a free chunk or the end of a block of free chunks fairly
-// cheap. Findding the end if a pinned extended chunk is a bit messier
-// but can be done by finding the next free chunk then checking the backwards
-// chaining in chunkStatus[] to skip back past any pinned chunks adjacent to
-// the one being considered.
-                    uint64_t chunkStatusMap[chunkStatusMapSize];
+                    unsigned int chunkSeqNo[chunkInfoSize];
+                    unsigned int chunkLength[chunkInfoSize];
+                    uint64_t newChunkBitmap[chunkBitmapSize];
+                    uint64_t chunkBitmap[chunkBitmapSize];
                     uint64_t vecPins[vecPinSize];
                     uint64_t newVecPins[vecPinSize];
                     Chunk chunks[1];
@@ -291,20 +431,52 @@ inline uintptr_t addressFromChunkNo(Page* p, size_t n)
 {   return csl_cast<uintptr_t>(p) + chunkSize*n;
 }
 
-inline bool isPotentiallyPinned(Page* p, uintptr_t a)
-{   return testBit(p->chunkStatusMap, chunkNoFromAddress(p, a));
+inline bool chunkIsNewPinned(Page* p, uintptr_t a)
+{   return testBit(p->newChunkBitmap, chunkNoFromAddress(p, a));
 }
 
-inline void setPotentiallyPinned(Page* p, uintptr_t a)
-{   setBit(p->chunkStatusMap, chunkNoFromAddress(p, a));
+inline void chunkSetNewPinned(Page* p, uintptr_t a)
+{   setBit(p->newChunkBitmap, chunkNoFromAddress(p, a));
 }
 
-inline bool isPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   return testBit(p->chunkStatusMap, chunkNo);
+inline void chunkClearNewPinned(Page* p, uintptr_t a)
+{   clearBit(p->newChunkBitmap, chunkNoFromAddress(p, a));
 }
 
-inline void setPotentiallyPinnedChunk(Page* p, size_t chunkNo)
-{   setBit(p->chunkStatusMap, chunkNo);
+inline bool chunkNoIsNewPinned(Page* p, size_t chunkNo)
+{   return testBit(p->newChunkBitmap, chunkNo);
+}
+
+inline void chunkNoSetNewPinned(Page* p, size_t chunkNo)
+{   setBit(p->newChunkBitmap, chunkNo);
+}
+
+inline void chunkNoClearNewPinned(Page* p, size_t chunkNo)
+{   clearBit(p->newChunkBitmap, chunkNo);
+}
+
+inline bool chunkIsPinned(Page* p, uintptr_t a)
+{   return testBit(p->chunkBitmap, chunkNoFromAddress(p, a));
+}
+
+inline void chunkSetPinned(Page* p, uintptr_t a)
+{   setBit(p->chunkBitmap, chunkNoFromAddress(p, a));
+}
+
+inline void chunkClearPinned(Page* p, uintptr_t a)
+{   clearBit(p->chunkBitmap, chunkNoFromAddress(p, a));
+}
+
+inline bool chunkNoIsPinned(Page* p, size_t chunkNo)
+{   return testBit(p->chunkBitmap, chunkNo);
+}
+
+inline void chunkNoSetPinned(Page* p, size_t chunkNo)
+{   setBit(p->chunkBitmap, chunkNo);
+}
+
+inline void chunkNoClearPinned(Page* p, size_t chunkNo)
+{   clearBit(p->chunkBitmap, chunkNo);
 }
 
 inline size_t consToOffset(uintptr_t a, Page* p)
@@ -405,177 +577,24 @@ extern uintptr_t consFringe, consLimit, consEnd;
 extern uintptr_t consEndOfPage();
 extern void garbage_collect();
 
-// A totally unused page must still have its type field filled in as
-// emptyPageType so that ambiguous pointers that refer within it can
-// be disregarded.
-// 
-
-// I should document the layout of a Cons Page, and the structure depends
-// on the status of the page:
-//
-// Empty:      value in consData[0].car = consEnd
-//             Well actually that will get set as the page is allocated to
-//             be one containing Cons style data. Also a fully empty page
-//             will have the bitmaps relating to pinning all clear.
-//             dataEnd points at the start of the page.
-//
-// Empty+Pins: first unpinned word points to either consEnd or the next
-//             pinned location, and similarly beyond that. dataEnd refers
-//             to the start of the page. So a fully empty page is just a
-//             special case of that.
-//
-// Full:       Valid data is present from consData[0] to dataEnd
-//             but skipping items marked as pinned in the bitmap and the
-//             pinning bitmap will identify any pinned data. Ah well
-//             in fact all of these have the same structure. I just show
-//             them separately here because allocating an unused page as
-//             a cons page makes an empty one, the GC can release pages
-//             as either unused or empty+pins and both GC and general
-//             computation can allocate memory as full pages.
-// 
-//
-// Current:    data runs from consData[0] to scanPoint and then scanPoint
-//             up to consFringe, but any cells marked as pinned will be
-//             ignored on scanning.
-//             During allocation new data is placed from consFringe to
-//             consLimit.
-//             There are two possibilities there. One is that consLimit is
-//             at consEnd in which case the Page has become full. The other
-//             is that the cell at consLimit is pinned. In such a case one
-//             can perform a linear scan upwards looking for either no
-//             pinning or consEnd. If an unpinned item is found its
-//             contents show where the next setting of consLimit should
-//             be, and that will either be the next pinned item or consEnd.
-//
-// Note that some of the words there refer to global variables (eg consFringe)
-// while others are fields stored within the Page (eg scanPoint).
-//
-// When allocation fills up a page or when GC is about to start (which
-// may happen when the current cons page is only partly filled) the
-// current Page has its dataEnd field set to consFringe.
-// Whenever a new current (cons) page is established it has its scanPoint
-// and dataEnd fields set to the first address after &consData[0]
-// that is not pinned, and consFringe also points there. consLimit is set
-// based on the initial value set there. This means that a Page that contains
-// any pinned cons cells may not be re-allocated to hold vectors, because it
-// has to have the internal structure as per here,
-// "Current:" above. So that defines the state that the GC must leave
-// a cons Page in. So for clarity, if the page is utterly empty and without
-// any pinned items it starts off with its first word containing the
-// address one beyond its last.
-
-// Well I will also explain a Vector Page.
-//
-// Each vector Page is viewed as made up of a sequence of chunks each of
-// 16KB and a 512 element array provides a small amount of information about
-// each. The values are used as follows:
-//    ChunkStart       The first or only chunk of one without any pinning.
-//    PinnedChunkStart Ditto but for chunks that do have pinned data within.
-//    2,3,...          Chunk number N of an extended chunk.
-//
-enum ChunkStatus
-{
-    ChunkStart             = 0u,
-    PinnedChunkStart       = 1u,
-    ExtendedChunkInterior  = 2u    // and up
-};
-
-// The purpose of all this is that if I have an ambiguous pointer that
-// refers within a vector page I can first easily identify the chunk
-// it is within. Then I probe the array. If the value I find is at least 2
-// I can use it to adjust until I am looking at the entry for the initial
-// chunk of any extended one. The value stored against that tells me
-// whether the chunk already has pinned material, and I can update it
-// if necessary. The chunkLength array also lets me know both how long
-// any extended chunk is and gives me an direct way to identify the
-// following chunk.
-// I keep chunkStatusMap as a bitmap with set bits for the every chunk
-// containing pinned material (in the case of extended chunks the bit
-// is only set for the start).
-// Chunks up to dataEnd will will contain a sequence of Lisp items,
-// with a padder object at the end so that the chunk is totally full,
-// Or if it is a current Page, live date runs up to vecFringe.
-// Only chunks containing pinned material beyond that are at all
-// useful.
-//
-// A current vector page will have a scanPoint that refers just beyond
-// some object and has vecFringe and vecLimit set properly.
-// Each chunk apart from the one that vecFringe points within
-// and any that contain pinned data are totally full (with a padder at
-// the end). So to scan, one identifies the chunk concerned (by dividing
-// by 16K) and checks its sequence number in the byte-array. That makes
-// it possible to identify the end of the chunk or extended chunk, and
-// the data can then be parsed until that is reached. Then the next
-// non-pinned chunk is found (by skipping over pinned chunks) and scanning
-// continues until either vecFringe or the end of the Page is reached.
-//
-// Allocation will test currentChunkIsEmpty. If it is empty then it is
-// OK to allocate a block up as far as vecHardLimit, which is either the
-// start of the next pinned chunk is is vecEnd. In that case the allocated
-// space is set up as an extended chunk if needbe and vecLimit set so that
-// subsequent small requests can potentially fill up spare space at the
-// end. Of course that clears currentChunkIsEmpty. The next allocation(s)
-// can fit in blocks of memory up as far as vecLimit. A common case may be
-// when multiple smallish vectors build up within a basic chunk.
-// When the next request will not fit a padder has to be put in and
-// a new empty chunk started.
-// When there is an attempt to allocate a rather large vector a big padder
-// may be needed. Well most padders will just be from vecFringe to the
-// end of the current chunk, so inserting then will not adjust
-// chunkStatus[], but it will be possible to need to insert a padder
-// when currentChunkIsEmpty and that may cvall for an extended chunk to
-// hold it.
-//
-// A vector page that is empty apart from some pinned stuff needs to have
-// the chunkStatus array filled in to identify each chunk that contains
-// pinned material. When a totally fresh page is made into a vector page
-// the chunkStatus[] array can be set to zero as if every chunk is basic
-// and not pinned.
-
-// Allocation while programs are running normally and when garbage
-// collection is in progress are identical until a Page becomes full.
-// In normal cases filling a page leads to a check as to whether 2/3 of
-// all available pages are in use, and if now a further page is just
-// grabbed, and otherwise GC is triggered. Well "available" needs to include
-// available via requesting more from the operating system.
-// During GC fresh pages are always grabbed save that if none are available
-// at all then a "run out of memory" event must be reported. This is a
-// horrible situation because memory is in a messed up state with some
-// stuff copied to the "new half space" and some not, so recovery is
-// not possible but I suspect that by making print routines able to
-// traverse forwarding pointers transparently it may still be possible to
-// generate a backtrace. If I want to be able to recover from memory-full
-// disasters I would need to trigger GC when memory became just 1/2 full
-// (and still worry about fragmentation!) and then complain at the end
-// of GC unless there was not say 1/6 of memory still unused, ie that
-// half memory load had compressed into 1/3 of memory, which is the
-// same stopping point that I am at present envisaging. But my proposed
-// scheme garbage collects less frequently so improves performance at the
-// cost of recovery in circumstances that I tend to view as unrecoverable!
-
-// With at least some compilers if I have an "inline" function definition
-// but there are no calls to it then no space is wasted. Well compile time
-// may be impacted. So I put some functions that can display or validate
-// Pages here for use while debugging and expect there not to be any space
-// overhead in the compiled binary of builds that happen not to use them.
-
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
 inline void displayConsPage(Page* p)
-{   zprintf("Cons page %a\n", p);
+{   zprintf("Cons page %a type=%s\n", p, pageTypeName(p->type));
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowChain = %a borrowPinned=%s\n",
         p->borrowChain, p->borrowPinned);
     zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
+    zprintf("pinnedObjects = %a\n", p->pinnedObjects);
     zprintf("scanPoint=%a dataEnd=%a initialLimit=%a fr=%a lim=%a\n",
         p->scanPoint, p->dataEnd, p->initialLimit, consFringe, consLimit); 
     LispObject prevCar = 0, prevCdr = 0;
     prevCar = ~p->consData[0].car; // so it is NOT the start of a run
     size_t repeats = 0;
-    for (uintptr_t q=csl_cast<uintptr_t>(&p->consData);
+    for (uintptr_t q=offsetToCons(0, p);
                    q<p->dataEnd && q!=consFringe;
                    q+=2*sizeof(uintptr_t))
     {   if (car(q) == prevCar && cdr(q) == prevCdr) repeats++;
@@ -600,17 +619,28 @@ extern const char* streamop(uintptr_t x);
 #define xSTREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + ((14*CELL)<<(Tw+5)))
 
 inline void displayVecPage(Page* p)
-{   zprintf("Vec page %a\n", p);
+{   zprintf("Vec page %a type=%s\n", p, pageTypeName(p->type));
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowChain = %a borrowPinned=%s\n",
         p->borrowChain, p->borrowPinned);
     zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
+    zprintf("pinnedObjects = %a\n", p->pinnedObjects);
     zprintf("scanPoint=%a dataEnd=%a initialLimit=%a fr=%a lim=%a\n",
         p->scanPoint, p->dataEnd, p->initialLimit, vecFringe, vecLimit);
+    zprintf("potentiallPinnedFlag = %s\n", p->potentiallyPinnedFlag);
+    zprintf("potentiallPinnedChain = %a\n", p->potentiallyPinnedChain);
+    zprintf("hasVecPins = %s\n", p->hasVecPins);
+    zprintf("isInVecPages = %s\n", p->isInVecPages);
+    zprintf("oldVecPinPages = %a\n", p->oldVecPinPages);
+    size_t q = 0;
+    while ((q = nextOneBit(p->chunkBitmap, chunkBitmapSize, q)) != SIZE_MAX)
+    {   zprintf("chunkBitmap[%d] set\n", q);
+        q++;
+    }
     unsigned int n = 0;
-    for (size_t i=0; i<chunkStatusSize; i++)
+    for (size_t i=0; i<chunkInfoSize; i++)
     {   unsigned int len = p->chunkLength[i];
         if (len == 1)
         {   n++;
@@ -627,7 +657,7 @@ inline void displayVecPage(Page* p)
     size_t count = 1;
     int symhdr = 0, streamhdr = 0;
     uintptr_t prev = ~p->chunks[0].data[0];
-    for (uintptr_t q=csl_cast<uintptr_t>(&p->chunks);
+    for (uintptr_t q=offsetToVec(0, p);
                    q<p->dataEnd && q!=vecFringe;
                    q+=sizeof(uintptr_t))
     {   uintptr_t n = *csl_cast<uintptr_t*>(q);
@@ -665,10 +695,31 @@ inline void displayVecPage(Page* p)
 
 inline void displayAllPages(const char* s)
 {   zprintf("displayAllPages %s\n", s);
-    for (auto p:consPages) displayConsPage(p);
-    for (auto p:vecPages) displayVecPage(p);
-    for (auto p:consOldPages) displayConsPage(p);
-    for (auto p:vecOldPages) displayVecPage(p);
+    int k = 0;
+    for (auto p:list_bases)
+        zprintf("%s: %a\n", list_names[k++], *p);
+    zprintf("\nconsPages......\n");
+    for (auto p:consPages)
+    {   if (p == consCurrent) zprintf("*** consCurrent ***\n");
+        my_assert(p->type == consPageType, "page has incorrect type");
+        displayConsPage(p);
+    }
+    zprintf("\nvecPages......\n");
+    for (auto p:vecPages)
+    {   if (p == vecCurrent) zprintf("*** vecCurrent ***\n");
+        my_assert(p->type == vecPageType, "page has incorrect type");
+        displayVecPage(p);
+    }
+    zprintf("\nconsOldPages......\n");
+    for (auto p:consOldPages)
+    {   my_assert(p->type == consPageType, "page has incorrect type");
+        displayConsPage(p);
+    }
+    zprintf("\nvecOldPages......\n");
+    for (auto p:vecOldPages)
+    {   my_assert(p->type == vecPageType, "page has incorrect type");
+        displayVecPage(p);
+    }
     zprintf("end of display\n\n");
 }
 
@@ -713,7 +764,8 @@ inline uintptr_t harderGet2Words()
 
 // This is the main function for allocating CONS cells and any
 // other item that only use up 2 cells. I hope it will often have
-// calls to it expanded inline.
+// calls to it expanded inline. If harderGet2Words remains a function
+// call that does not matter much.
 
 inline uintptr_t get2Words()
 {   uintptr_t r = consFringe;
@@ -754,12 +806,11 @@ inline uintptr_t getNBytes(size_t n, Page* current,
                   fringe <= (uintptr_t)(current+1), __WHERE__);
 // Now I will see if the new item will fit within the current chunk. Note
 // that this test applies whether I am in a basic chunk or at the end of
-// an extended one. The chunkStatus[] entry must already be set up and
-// at the start that will always indicate basic chunks, so when this fills
-// one chunk perfectly and moves on to the next that next one will be
-// ready to be a basic chunk. The test against limit is needed because
-// a previous allocation may have totally filled eg the last chunk on
-// the page.
+// an extended one. The chunkSeqNo[] entry must already be set up and
+// for an unused region that was always initialised to 0 so in the easy
+// case I do not need to set or re-set it.
+// The test against limit is needed because a previous allocation may have
+// totally filled eg the last chunk on the page.
         if ((r&chunkMask) + n <= chunkSize && r!=limit)
         {   fringe += n;
             my_assert(fringe <= limit, __WHERE__);
@@ -767,7 +818,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
         }
 // Here either the request will not fit in the current chunk or really there
 // is no current chunk. Insert a padder in the former case. Note that
-// if r!=limit there is at least a bif of space that needs a padder.
+// if r!=limit there is at least a bit of space that needs a padder.
         if (r!=limit)
         {   if (!borrowing) setHeaderWord(r, (-r)&chunkMask);
             my_assert(fringe > (uintptr_t)current &&
@@ -779,7 +830,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
         }
 // Now fringe points at the start of a chunk. In some cases that will
 // mean I can just move on and use that chunk easily. Note that this
-// requires chunkStatus[] to have been initialised to ChunkStart all
+// requires chunkSeqNo[] to have been initialised to 0 all
 // the way through the page.
         if (n <= chunkSize && fringe != limit)
         {   r = fringe;
@@ -795,19 +846,20 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // enough consecutive free unpinned chunks to accommodate a large
 // vector request. This is ugly because limit is not the end of
 // where real available space is - it is just the end of a chunk. I will
-// need to use chunkStatus and chunkLength to find how far I can really go.
+// need to use chunkPinmap and chunkLength to find how far I can really go.
         size_t chunkNo = chunkNoFromAddress(current, fringe);
 // chunkNo is now the number of the chunk that I had reached at limit. I
 // will skip over any pinned chunks (they must be pinned because I hit
-// the limit).
-        while (current->chunkStatus[chunkNo] != ChunkStart)
+// the limit). Note that while I am allocating I use chunkPinmap, not the
+// "new" version (which gets involved while I am in the garbage collector).
+        while (chunkNoIsPinned(current, chunkNo))
             chunkNo += current->chunkLength[chunkNo]; // Skip any pinned
 // Now I know where the next available region starts. Find its end.
 // That will let me set fresh values for fringe and limit.
-        size_t stopPoint = nextOneBit(current->chunkStatusMap,
-                                      chunkStatusMapSize,
+        size_t stopPoint = nextOneBit(current->chunkBitmap,
+                                      chunkBitmapSize,
                                       chunkNo);
-        if (stopPoint == SIZE_MAX) stopPoint = chunkStatusSize; 
+        if (stopPoint == SIZE_MAX) stopPoint = chunkInfoSize; 
         fringe = addressFromChunkNo(current, chunkNo); // in case skipped pins
         limit = addressFromChunkNo(current, stopPoint);
 // I hope that very often the allocation can use available space now.
@@ -822,9 +874,10 @@ inline uintptr_t getNBytes(size_t n, Page* current,
             if (n > chunkSize && !borrowing)  // leave as Basic if possible.
             {   size_t chunksNeeded = (n + chunkSize - 1)/chunkSize;
                 current->chunkLength[chunkNo] = chunksNeeded;
-// Write in the back-pointers into all but the first word of chunkStatus.
-                for (size_t i=1; i<chunksNeeded; i++)
-                    current->chunkStatus[chunkNo+i] = i+1;
+// It should not be necessary to write back a zero against the initial
+// part of a chunk, but it feels clearer to me if I do so.
+                for (size_t i=0; i<chunksNeeded; i++)
+                    current->chunkSeqNo[chunkNo+i] = i;
             }
 //          displayVectorPage(current);
             return r;
@@ -917,12 +970,12 @@ inline Page* initBorrowPage(Page* p, bool empty)
     if (empty)
     {
 // I do not need to do anything with pinning bitmaps here, but I must
-// initialise chunkStatus since that is used during allocation.
-        for (size_t i=0; i<chunkStatusSize; i++)
-        {   p->chunkStatus[i] = ChunkStart;
+// initialise chunkInfo since that is used during allocation.
+        for (size_t i=0; i<chunkInfoSize; i++)
+        {   p->chunkSeqNo[i] = 0;
             p->chunkLength[i] = 1;
         } 
-        borrowFringe = p->scanPoint = csl_cast<uintptr_t>(&p->chunks);
+        borrowFringe = p->scanPoint = offsetToVec(0, p);
         borrowLimit = borrowEnd;
     }
     else
@@ -1317,4 +1370,3 @@ inline Page* findPage(uintptr_t p)
 #endif // header_newallocate_h
 
 // end of newallocate.h
-

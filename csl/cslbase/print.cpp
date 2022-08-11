@@ -5256,6 +5256,13 @@ void simple_prin1(LispObject x)
     {   std::printf("Forward_%" PRIx64, static_cast<uint64_t>(x));
         return;
     }
+    if (is_pointer_type(x))
+    {   LispObject h = *reinterpret_cast<LispObject*>(x & ~TAG_BITS);
+        if (is_forward(h))
+        {   std::printf("[forward to]");
+            x = (h&~TAG_BITS) + (x&TAG_BITS);
+        }
+    }
     if (is_cons(x))
     {   int len = 0;
         const char *sep = "(";
@@ -5310,22 +5317,21 @@ void simple_prin1(LispObject x)
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             std::printf("<Header is %" PRIx64 ">",
                          static_cast<uint64_t>(vechdr(x)));
-            if (len > 80) len = 80;
             simple_lineend(2*len+3);
             std::printf("#8[");
-            for (size_t i=0; i<len; i++)
+            for (size_t i=0; i<(len>80?80:len); i++)
             {   simple_lineend(2);
                 std::printf("%.2x", celt(x, i) & 0xff);
             }
-            std::printf("]");
+            if (len > 80) std::printf("...]");
+            else std::printf("]");
             return;
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = std::sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
-        if (len > 20) len = 20;
         simple_lineend(nn);
         std::printf("%s", buffer);
-        for (i=0; i<len; i++)
+        for (i=0; i<(len>40?40:len); i++)
         {   simple_lineend(1);
             std::printf(" ");
             if (i > 2 && is_mixed_header(vechdr(x)))
@@ -5336,7 +5342,8 @@ void simple_prin1(LispObject x)
             else simple_prin1(elt(x, i));
         }
         simple_lineend(1);
-        std::printf("]");
+        if (len > 20) std::printf("...]");
+        else std::printf("]");
         return;
     }
     else if (is_numbers(x) && is_bignum(x))
@@ -5356,10 +5363,6 @@ void simple_prin1(LispObject x)
     }
     else
     {   char buffer[32];
-// This default case includes bignums, and I am not keen on needing
-// to render them here! But it certainly looks ugly when they get
-// displayed as @xxxxx@ with the xxxxx being a bunch of hex digits giving
-// the memory address the data lies at!
         int clen = std::sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
         simple_lineend(clen);
         std::printf("%s", buffer);

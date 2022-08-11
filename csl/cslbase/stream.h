@@ -220,7 +220,8 @@ inline LispObject set_stream_read_other(LispObject v, other_stream_op *x)
 #define STREAM_FLAG_PIPE       1
 
 inline bool is_stream(LispObject v)
-{   if (is_vector(v)) my_assert(!is_forward(vechdr(v))); // @@@
+{   if (is_vector(v)) my_assert(!is_forward(vechdr(v)),
+                                "forwarding ptr in stream"); // @@@
     return (is_vector(v) && vechdr(v) == STREAM_HEADER);
 }
 

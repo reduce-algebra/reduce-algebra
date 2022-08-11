@@ -610,23 +610,21 @@ static void cold_setup()
 // size is big enough for the built-in symbols that Lisp creates in
 // this restart code.  The size must be a power of 2.
     packint_(static_cast<LispObject>(CP)) =
-        get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
+        get_basic_vector_init(CELL*(1+INITIAL_OBVEC_SIZE), fixnum_of_int(0));
     packflags_(static_cast<LispObject>(CP)) = fixnum_of_int(++package_bits);
 #ifdef COMMON
 // Common Lisp also has "external" symbols to allow for...
     packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(0);
     packext_(static_cast<LispObject>(CP)) =
-        get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
+        get_basic_vector_init(CELL*(1+INITIAL_OBVEC_SIZE), fixnum_of_int(0));
     packnext_(static_cast<LispObject>(CP)) = fixnum_of_int(1);
-    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
-                            (INIT_OBVECX_SIZE - 1));
+    {   size_t i = (size_t)(hash_lisp_string(qpname(nil))%INITIAL_OBVEC_SIZE);
         elt(packext_(static_cast<LispObject>(CP)), i) = nil;
     }
 #else
     packnint_(static_cast<LispObject>(CP)) = fixnum_of_int(1);
 // Place NIL into the table.
-    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
-                   (INIT_OBVECI_SIZE - 1));
+    {   size_t i = (size_t)(hash_lisp_string(qpname(nil))%INITIAL_OBVEC_SIZE);
         elt(packint_(static_cast<LispObject>(CP)), i) = nil;
     }
 #endif
