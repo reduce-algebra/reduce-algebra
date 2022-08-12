@@ -79,9 +79,6 @@ LispObject runtest(int n, int payload)
 //  return cons(runtest(n-1, payload), runtest(n-2, payload));
 }
 
-#undef INIT_OBVECI_SIZE
-#define INIT_OBVECI_SIZE 16
-
 size_t randSize()
 {   uintptr_t r = Crand();
     r = doubleword_align_up(r);

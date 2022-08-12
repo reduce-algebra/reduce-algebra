@@ -802,15 +802,12 @@ static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
 // Adds an item into a hash table given that it is known that it is not
 // already there.
 {   size_t size = cells_in_vector(vector);
-    size_t i = (size_t)(hash & (size-1));
-// I have arranged (elsewhere) that the hash table will be a power of two
-// in size, so I can avoid primary clustering by stepping on by any odd
-// number.  Furthermore I might replace the (perhaps expensive) remaindering
-// operations by (perhaps cheap) bitwise "AND" when I reduce my hash value
-// to the right range to be an index into the table.
-    size_t step = 1 | ((hash >> 10) & (size - 1));
+    size_t i = (size_t)(hash % size);
+// I have arranged (elsewhere) that the hash table size will be prime
+// so I can avoid primary clustering by stepping on by almost any
+// number.
+    size_t step = 1 + ((hash >> 10)%(size-1));
     size_t probes = 0;
-// size is expected to be a power of 2 here.
 // When I *know* I am inserting in a table I do not need to do any
 // key comparisons - I just scan until I find an empty slot in the table.
     while (++probes <= size)
@@ -824,6 +821,141 @@ static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
     return false;                          // Table is totally full
 }
 
+// The integers in this table are all primes chosen as the largest
+// that are less than various powers of 2. The hash tables used for
+// the package system (ie the "oblist" in old notation) will all be
+// one of these sizes, and because the sizes are all prime I can use
+// double hashing with a free choice of stride. The first entry in the
+// table is 2039 because I will make that the smallest size table ever
+// used. I stop at around 2^40 which is just over 10^12 with a belief
+// that I should never need that size of table. Because that is over
+// 2^32 I can not use size_t because on a 32-bit machine that would
+// probably overflow.
+
+//= uint64_t goodTableSizes[] =
+//= {   2039u,
+//=     4093u,
+//=     8191u,
+//=     16381u,
+//=     32749u,
+//=     65521u,
+//=     131071u,
+//=     262139u,
+//=     524287u,
+//=     1048573u,
+//=     2097143u,
+//=     4194301u,
+//=     8388593u,
+//=     16777213u,
+//=     33554393u,
+//=     67108859u,
+//=     134217689u,
+//=     268435399u,
+//=     536870909u,
+//=     1073741789u,
+//=     2147483647u,
+//=     4294967291u,
+//=     8589934583u,
+//=     17179869143u,
+//=     34359738337u,
+//=     68719476731u,
+//=     137438953447u,
+//=     274877906899u,
+//=     549755813881u,
+//=     1099511627689u
+//= };
+
+// Given a prime from the above table I want to be able to find the previous
+// and the next one. To achieve this reasonably fast I have a perfect
+// hashing onto a lookup table with 32 elements (so only 3 are wasted). I
+// had some jiffy-code that identified a reasonable hash function and set up
+// the tables for me.
+
+size_t perfectHash(uint64_t n)
+{   return ((32*n) % 70987) % 32; 
+}
+
+uint64_t nextTableTable[] =
+{   4093u,
+    131071u,
+    549755813881u,
+    268435399u,
+    1099511627689u,
+    4194301u,
+    65521u,
+    134217689u,
+    0u,
+    16777213u,
+    8388593u,
+    0u,
+    2147483647u,
+    4294967291u,
+    524287u,
+    68719476731u,
+    0u,
+    274877906899u,
+    33554393u,
+    32749u,
+    17179869143u,
+    8191u,
+    1073741789u,
+    262139u,
+    2097143u,
+    67108859u,
+    8589934583u,
+    536870909u,
+    1048573u,
+    34359738337u,
+    137438953447u,
+    16381u
+};
+
+uint64_t previousTableTable[] =
+{   0u,
+    32749u,
+    137438953447u,
+    67108859u,
+    274877906899u,
+    1048573u,
+    16381u,
+    33554393u,
+    549755813881u,
+    4194301u,
+    2097143u,
+    0u,
+    536870909u,
+    1073741789u,
+    131071u,
+    17179869143u,
+    0u,
+    68719476731u,
+    8388593u,
+    8191u,
+    4294967291u,
+    2039u,
+    268435399u,
+    65521u,
+    524287u,
+    16777213u,
+    2147483647u,
+    134217689u,
+    262139u,
+    8589934583u,
+    34359738337u,
+    4093u
+};
+
+// The next two functions return zero if the input is at an extreme
+// of the table where they can not yield a proper successor.
+
+uint64_t nextTableSize(uint64_t n)
+{   return nextTableTable[perfectHash(n)];
+}
+
+uint64_t previousTableSize(uint64_t n)
+{   return previousTableTable[perfectHash(n)];
+}
+
 static LispObject rehash(LispObject v, int grow)
 {
 // If (grow) is +1 this enlarges the table. If -1 it shrinks it. In the
@@ -831,8 +963,8 @@ static LispObject rehash(LispObject v, int grow)
 // table size down will have enough space for the number of active items
 // present. grow=0 leaves the table size alone but still rehashes.
     size_t h = cells_in_vector(v);
-    if (grow > 0) h = 2*h;
-    else if (grow < 0 && h > 64) h = h/2;
+    if (grow > 0) h = nextTableSize(h);
+    else if (grow < 0 && h > INITIAL_OBVEC_SIZE) h = previousTableSize(h);
     THREADID;
     stackcheck(THREADARG v);
     STACK_SANITY;
@@ -861,9 +993,9 @@ static LispObject add_to_externals(LispObject s, LispObject p, uint64_t hash)
 {   LispObject n = packnext_(p);
     LispObject v = packext_(p);
     size_t used = cells_in_vector(v);
-// I trigger a re-hash if the table reaches 50% loading.  Then I double
-// its size. The effect is that it will remain between 25 and 50% full -
-// really rather lightly loaded.
+// I trigger a re-hash if the table reaches 50% loading.  Then I (approx)
+// double its size. The effect is that it will remain between 25 and 50%
+// full - really rather lightly loaded.
     if (static_cast<size_t>(2*int_of_fixnum(n)) > used)
     {   THREADID;
         stackcheck(THREADARG s, p);
@@ -947,8 +1079,8 @@ static LispObject lookup(LispObject str, size_t strsize,
     Noputtmp = 0;
 #endif
     size_t size = cells_in_vector(v);
-    size_t i = (size_t)(hash & (size - 1));
-    size_t step = 1 | ((hash >> 10) & (size - 1));
+    size_t i = (size_t)(hash%size);
+    size_t step = 1 + ((hash >> 10)%(size-1));
 // I count the probes that I make here and if there are as many as the size
 // of the hash table then I allow the lookup to report that the symbol is not
 // present. But at least I do not get stuck in a loop.
@@ -964,7 +1096,7 @@ static LispObject lookup(LispObject str, size_t strsize,
             validate_string(pn);
 // v comes out of a package so has a proper pname
 #ifdef HASH_STATISTICS
-            Noputtmp++;  // A prob...
+            Noputtmp++;  // A probe...
 #endif
             if (std::memcmp(csl_cast<char *>(str) + (CELL-TAG_VECTOR),
                             csl_cast<char *>(pn) + (CELL-TAG_VECTOR),
@@ -1741,11 +1873,11 @@ static LispObject Lextern(LispObject env, LispObject sym,
         size_t n = int_of_fixnum(packnint_(package));
         LispObject v = packint_(package);
         size_t used = cells_in_vector(v);
-        if (n < used/6 && used>INIT_OBVECI_SIZE)
+        if (n < used/6 && used>INITIAL_OBVEC_SIZE)
         {   stackcheck(THREADARG sym, package, v);
             THREADID;
             Save save(THREADARG sym, package);
-            v = rehash(v), -1);
+            v = rehash(v, -1);
             save.restore(sym, package);
             packint_(package) = v;
         }
@@ -1830,7 +1962,7 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
     {   size_t n = int_of_fixnum(packnint_(package));
         LispObject v = packint_(package);
         size_t used = cells_in_vector(v);
-        if (n < used/6 && used>INIT_OBVECI_SIZE)
+        if (n < used/6 && used>INITIAL_OBVEC_SIZE)
         {   stackcheck(THREADARG package, v);
             Save save(THREADARG package);
             v = rehash(v, -1);
@@ -1849,7 +1981,7 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
         size_t n = int_of_fixnum(packnext_(package));
         LispObject v = packext_(package);
         size_t used = cells_in_vector(v);
-        if (n < used/6 && used>INIT_OBVECX_SIZE)
+        if (n < used/6 && used>INITIAL_OBVEC_SIZE)
         {   stackcheck(THREADARG package, v);
             Save save(THREADARG package);
             v = rehash(v, -1);

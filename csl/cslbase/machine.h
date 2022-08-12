@@ -552,6 +552,14 @@ inline uint64_t ASL(uint64_t a, int n)
 INLINE_VAR const uintptr_t uptr_1 = static_cast<uintptr_t>(1);
 INLINE_VAR const uint64_t u64_1 = static_cast<uint64_t>(1);
 
+// At times I wish to treat an integer address as a pointer and fetch
+// the value it refers to. I encapsulate this here so that the dubious
+// cast involved is present in just one place.
+
+inline uintptr_t& indirect(uintptr_t address)
+{   return *csl_cast<uintptr_t*>(address);
+}
+
 #endif // header_machine_h
 
 // end machine.h

@@ -1141,9 +1141,6 @@ extern setup_type const om_setup[];
 extern setup_type const om_parse_setup[];
 #endif
 
-
-#ifdef DEFINE_LIST_BASES
-
 // Here is a table of all the list-bases that CSL marks from, and that
 // must have their values captured in checkpoint files.
 
@@ -1217,6 +1214,11 @@ extern setup_type const om_parse_setup[];
     X(workbase[50])
 
 
+// If using a C++ compiler that does not support inline variables (ie
+// pre C++17, and increasingly I view that as at best "legacy support"
+// this will put a couple of static arrays in with each compilation unit.
+// In terms of the big picture the storage waste will be quite modest.
+
 #define X(name) &name
 
 INLINE_VAR LispObject* list_bases[] =
@@ -1233,8 +1235,6 @@ INLINE_VAR LispObject* list_bases[] =
 INLINE_VAR const char* list_names[] =
 {   LIST_BASES
 };
-
-#endif // DEFINE_LIST_BASES
 
 extern const char* find_image_directory(int argc, const char* argv[]);
 extern char program_name[64];

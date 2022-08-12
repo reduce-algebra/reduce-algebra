@@ -949,6 +949,14 @@ inline bool is_symbol_header(Header h)
 {   return (static_cast<int>(h) & (0xf<<Tw)) == TYPE_SYMBOL;
 }
 
+// All vector-like things apart from symbols have their length explicit
+// but symbols do not.
+
+inline size_t length_of_any_header(Header h)
+{   if (is_symbol_header(h)) return symhdr_length;
+    else return length_of_header(h);
+}
+
 inline bool is_symbol_header_full_test(Header h)
 {   return (static_cast<int>(h) & ((0xf<<Tw) + TAG_BITS)) ==
            (TYPE_SYMBOL + TAG_HDR_IMMED);

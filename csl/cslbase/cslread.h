@@ -135,9 +135,15 @@ extern LispObject read_from_vector(char *v);
 #define MAX_PROMPT_LENGTH 80
 extern char prompt_string[MAX_PROMPT_LENGTH];
 
-// These two are now specified in LispObject units not bytes
-#define INIT_OBVECI_SIZE      2048
-#define INIT_OBVECX_SIZE      2048
+// I use hash tables with prime sizes as the main symbol table, and
+// here is a table of suitable primes each of which is a little below
+// a power of 2. And then a perfect hashing scheme so that given one
+// size I can find the next larger or smaller one rapidly.
+
+INLINE_VAR const size_t INITIAL_OBVEC_SIZE=2039;
+extern uint64_t nextTableSize(uint64_t n);
+extern uint64_t previousTableSize(uint64_t n);
+
 
 #endif // header_read_h
 
