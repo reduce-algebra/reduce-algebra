@@ -963,7 +963,7 @@ static LispObject rehash(LispObject v, int grow)
 // table size down will have enough space for the number of active items
 // present. grow=0 leaves the table size alone but still rehashes.
     size_t h = cells_in_vector(v);
-    if (grow > 0) h = nextTableSize(h);
+    if (grow > 0 && h < MAX_OBVEC_SIZE) h = nextTableSize(h);
     else if (grow < 0 && h > INITIAL_OBVEC_SIZE) h = previousTableSize(h);
     THREADID;
     stackcheck(THREADARG v);

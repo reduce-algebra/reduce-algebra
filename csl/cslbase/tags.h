@@ -1493,14 +1493,6 @@ inline size_t cells_in_vector(LispObject v)
 {   return bytes_in_vector(v)/CELL;
 }
 
-#if 0
-// This is no longer used...
-inline bool vector_holds_binary(LispObject v)
-{   if (is_basic_vector(v)) return vector_header_of_binary(vechdr(v));
-    else return vector_header_of_binary(vechdr(basic_elt(v, 0)));
-}
-#endif // 0
-
 // the table of free vectors is not saved across checkpoint/restore operations,
 // and so issues of 64- vs 32-bit sizing in that context do not arise.
 

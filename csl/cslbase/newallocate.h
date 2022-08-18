@@ -256,6 +256,7 @@ public:
     }
     void push(Page* a);
     Page* pop();
+    bool contains(Page* a);
 };
 
 class PageListIter
@@ -301,7 +302,6 @@ extern Page* borrowCurrent;        // Where temporary vectors are allocated.
 extern Page* potentiallyPinned;    // For GC.
 extern Page* pinnedPages;          // For GC.
 extern Page* pendingPages;         // For GC.
-extern Page* oldVecPinPages;       // for GC.
 
 // Define two structs used when setting out the rest of the
 // layout. In many respects the most important thing about these is
@@ -320,15 +320,18 @@ struct alignas(chunkSize) Chunk
 // but having a uniform word size in bitmaps leads to cleaner simpler code
 // for me.
 
-INLINE_VAR const size_t consPinSize = pageSize/sizeof(ConsCell)/64;
-INLINE_VAR const size_t consPinBytes = 8*consPinSize;
+INLINE_VAR const size_t consPinBits = pageSize/sizeof(ConsCell);
+INLINE_VAR const size_t consPinBytes = consPinBits/8;
+INLINE_VAR const size_t consPinSize = consPinBits/64;
 INLINE_VAR const size_t chunkInfoSize = pageSize/chunkSize;
+INLINE_VAR const size_t chunkBitmapBits = chunkInfoSize;
 INLINE_VAR const size_t chunkBitmapSize = chunkInfoSize/64;
 // Note that vector pinning always works to resolution 8 bytes because on
 // a 32-bit machine all vector-like objects are kept aligned on 8 byte
 // boundaries, with padding if necessary.
-INLINE_VAR const size_t vecPinSize = pageSize/8/64;
-INLINE_VAR const size_t vecPinBytes = 8*vecPinSize;
+INLINE_VAR const size_t vecPinBits = pageSize/8;
+INLINE_VAR const size_t vecPinBytes = vecPinBits/8;
+INLINE_VAR const size_t vecPinSize = vecPinBits/64;
 
 class alignas(pageSize) Page
 {
@@ -349,8 +352,7 @@ public:
             Page* chain;
             Page* borrowChain;
             bool  borrowPinned;
-            Page* oldPinnedPages;
-            bool  hasPinned;
+            size_t hasPinned;
             Page* pinnedPages;
             Page* pendingPages;
             LispObject pinnedObjects;
@@ -375,9 +377,6 @@ public:
                 struct
                 {   bool potentiallyPinnedFlag;
                     Page* potentiallyPinnedChain;
-                    bool hasVecPins;
-                    bool isInVecPages;
-                    Page* oldVecPinPages;
                     unsigned int chunkSeqNo[chunkInfoSize];
                     unsigned int chunkLength[chunkInfoSize];
                     uint64_t newChunkBitmap[chunkBitmapSize];
@@ -393,6 +392,12 @@ public:
 
 inline uintptr_t endOfPage(Page* p)
 {   return csl_cast<uintptr_t>(p+1);
+}
+
+inline bool PageList::contains(Page* p)
+{   for (Page* p1=head; p1!=nullptr; p1=p1->chain)
+        if (p == p1) return true;
+    return false;
 }
 
 inline void PageList::push(Page* p)
@@ -584,8 +589,7 @@ inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a type=%s\n", p, pageTypeName(p->type));
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowChain = %a borrowPinned=%s\n",
-        p->borrowChain, p->borrowPinned);
-    zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
+            p->borrowChain, p->borrowPinned);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
     zprintf("pinnedObjects = %a\n", p->pinnedObjects);
@@ -600,8 +604,14 @@ inline void displayConsPage(Page* p)
     {   if (car(q) == prevCar && cdr(q) == prevCdr) repeats++;
         else
         {   if (repeats != 0) zprintf(" ... and %d repeats\n", repeats);
-            zprintf("%a: %a@%s  .  %a@%s\n",
-                q, prevCar=car(q), objectType(car(q)),
+            const char* s;
+            if (consIsPinned(q, p))
+                if (consIsNewPinned(q, p)) s = "!|";
+                else s = "!";
+            else if (consIsNewPinned(q, p)) s = "|";
+            else s = "";
+            zprintf("%a%s: %a@%s  .  %a@%s\n",
+                q, s, prevCar=car(q), objectType(car(q)),
                    prevCdr=cdr(q), objectType(cdr(q)));
             repeats = 0;
         }
@@ -622,8 +632,8 @@ inline void displayVecPage(Page* p)
 {   zprintf("Vec page %a type=%s\n", p, pageTypeName(p->type));
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowChain = %a borrowPinned=%s\n",
-        p->borrowChain, p->borrowPinned);
-    zprintf("oldPinnedPages = %a\n", p->oldPinnedPages);
+            p->borrowChain, p->borrowPinned);
+    zprintf("hasPinned = %s\n", p->hasPinned);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
     zprintf("pinnedObjects = %a\n", p->pinnedObjects);
@@ -631,12 +641,16 @@ inline void displayVecPage(Page* p)
         p->scanPoint, p->dataEnd, p->initialLimit, vecFringe, vecLimit);
     zprintf("potentiallPinnedFlag = %s\n", p->potentiallyPinnedFlag);
     zprintf("potentiallPinnedChain = %a\n", p->potentiallyPinnedChain);
-    zprintf("hasVecPins = %s\n", p->hasVecPins);
-    zprintf("isInVecPages = %s\n", p->isInVecPages);
-    zprintf("oldVecPinPages = %a\n", p->oldVecPinPages);
+    zprintf("chunkPins:\n");
     size_t q = 0;
-    while ((q = nextOneBit(p->chunkBitmap, chunkBitmapSize, q)) != SIZE_MAX)
-    {   zprintf("chunkBitmap[%d] set\n", q);
+    while ((q = nextOneBit(p->chunkBitmap, chunkBitmapBits, q)) != SIZE_MAX)
+    {   zprintf("chunkBitmap[%d] set (%a)\n", q, addressFromChunkNo(p, q));
+        q++;
+    }
+    zprintf("newChunkPins:\n");
+    q = 0;
+    while ((q = nextOneBit(p->newChunkBitmap, chunkBitmapBits, q)) != SIZE_MAX)
+    {   zprintf("newChunkBitmap[%d] set (%a)\n", q, addressFromChunkNo(p, q));
         q++;
     }
     unsigned int n = 0;
@@ -680,9 +694,15 @@ inline void displayVecPage(Page* p)
                      streamhdr == 9 ||
                      streamhdr == 10) ff = streamop(n);
             else if (streamhdr == 12) streamhdr = 0;
+            const char* s;
+            if (vecIsPinned(q, p))
+                if (vecIsNewPinned(q, p)) s = "!|";
+                else s = "!";
+            else if (vecIsNewPinned(q, p)) s = "|";
+            else s = "";
             if (std::strcmp(ff, "unknown") == 0)
-                zprintf("%a: %a %s", q, n, objectType(n));
-            else zprintf("%a: %a %s", q, n, ff);
+                zprintf("%a%s: %a %s", q, s, n, objectType(n));
+            else zprintf("%a%s: %a %s", q, s, n, ff);
             prev = n;
             count = 1;
             if (symhdr > 0) symhdr++;
@@ -857,7 +877,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // Now I know where the next available region starts. Find its end.
 // That will let me set fresh values for fringe and limit.
         size_t stopPoint = nextOneBit(current->chunkBitmap,
-                                      chunkBitmapSize,
+                                      chunkInfoSize,
                                       chunkNo);
         if (stopPoint == SIZE_MAX) stopPoint = chunkInfoSize; 
         fringe = addressFromChunkNo(current, chunkNo); // in case skipped pins

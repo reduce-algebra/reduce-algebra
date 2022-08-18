@@ -5230,6 +5230,10 @@ LispObject Lwindow_heading1(LispObject env, LispObject a)
 // simple_print() from within gdb I seem to need to do that to get the
 // proper effect (at least on some platforms).
 
+#ifdef CONSERVATIVE
+extern const char* getPageType(uintptr_t a);
+#endif
+
 static int simple_column = 0;
 
 void simple_lineend(int n)
@@ -5253,13 +5257,18 @@ void simple_prin1(LispObject x)
         return;
     }
     if (is_forward(x))
-    {   std::printf("Forward_%" PRIx64, static_cast<uint64_t>(x));
+    {
+        std::printf("Forward_%" PRIx64, static_cast<uint64_t>(x));
         return;
     }
     if (is_pointer_type(x))
     {   LispObject h = *reinterpret_cast<LispObject*>(x & ~TAG_BITS);
         if (is_forward(h))
-        {   std::printf("[forward to]");
+        {
+#ifdef CONSERVATIVE
+            std::printf("%s:", getPageType(x));
+#endif
+            std::printf("[forward to]");
             x = (h&~TAG_BITS) + (x&TAG_BITS);
         }
     }
@@ -5268,6 +5277,9 @@ void simple_prin1(LispObject x)
         const char *sep = "(";
         while (consp(x))
         {   simple_lineend(1);
+#ifdef CONSERVATIVE
+            std::printf("%s:", getPageType(x));
+#endif
             std::printf("%s", sep);
             sep = " ";
             simple_prin1(car(x));
@@ -5299,6 +5311,9 @@ void simple_prin1(LispObject x)
         len = length_of_byteheader(vechdr(x)) - CELL;
         if (len > 80) len = 80;
         simple_lineend(len);
+#ifdef CONSERVATIVE
+        std::printf("%s:", getPageType(x));
+#endif
         std::printf("%.*s", static_cast<int>(len),
                      csl_cast<const char *>(&celt(x, 0)));
     }
@@ -5308,6 +5323,9 @@ void simple_prin1(LispObject x)
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             if (len > 80) len = 80;
             simple_lineend(len+2);
+#ifdef CONSERVATIVE
+            std::printf("%s:", getPageType(x));
+#endif
             std::printf("\"%.*s\"", static_cast<int>(len),
                          csl_cast<const char *>(&celt(x, 0)));
             return;
@@ -5318,6 +5336,9 @@ void simple_prin1(LispObject x)
             std::printf("<Header is %" PRIx64 ">",
                          static_cast<uint64_t>(vechdr(x)));
             simple_lineend(2*len+3);
+#ifdef CONSERVATIVE
+            std::printf("%s:", getPageType(x));
+#endif
             std::printf("#8[");
             for (size_t i=0; i<(len>80?80:len); i++)
             {   simple_lineend(2);
@@ -5330,6 +5351,9 @@ void simple_prin1(LispObject x)
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = std::sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
         simple_lineend(nn);
+#ifdef CONSERVATIVE
+        std::printf("%s:", getPageType(x));
+#endif
         std::printf("%s", buffer);
         for (i=0; i<(len>40?40:len); i++)
         {   simple_lineend(1);

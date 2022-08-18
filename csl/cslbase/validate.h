@@ -42,8 +42,6 @@
 // for instance a value tagged as a vector must have a vector header there
 // while something that should be a cons cell must not.
 
-#include <unordered_set>
-
 INLINE_VAR std::unordered_set<LispObject> visited;
 
 // forwardOK can be made true to allow forwarding pointers as valid, which
@@ -73,7 +71,7 @@ public:
     void print()
     {   if (special) zprintf("%s\nEND\n", name);
         else
-        {   zprintf("B %a %s: ", payload, name);
+        {   zprintf("Bt %a %s: ", payload, name);
             simple_print(payload);
             if (parent != nullptr) parent->print();
         }
@@ -82,67 +80,78 @@ public:
 
 inline void validateObject(LispObject x,
                            bool forwardOK=false,
+                           bool oldSpaceValid=true,
                            Backtrace *parent = nullptr)
 {   if (is_immediate(x) || x == nil) return;     // Ha ha an easy case!
     if (visited.count(x) != 0) return;
+    if (!oldSpaceValid &&
+        ((consOldPages.contains(pageOf(x)) &&
+          !consIsPinned(x, pageOf(x))) ||
+         (vecOldPages.contains(pageOf(x)) &&
+          !vecIsPinned(x, pageOf(x)))))
+    {   zprintf("Bad reference to %a\n", x);
+        simple_print(x);
+        if (parent != nullptr) parent->print();
+        my_abort(where("reference into old half-space"));
+    }
     visited.insert(x);
     Backtrace bb(parent, x, "validateObject");
     if (is_cons(x))
     {   Page* p = pageOf(x);
-        my_assert(p->type == consPageType, "cons pointer into vector page");
+        my_assert(p->type == consPageType, where("cons pointer into vector page"));
         LispObject c = car(x);
         if (is_forward(c))
         {   if (!forwardOK)
             {   zprintf("\nCONS %a => %a\n", x, c);
                 bb.print();
-                my_abort("illegal forwarding");
+                my_abort(where("illegal forwarding"));
             }
             x = (c & ~TAG_BITS) | (x & TAG_BITS);
             p = pageOf(x);
             my_assert(p->type == consPageType,
-                      "cons pointer forwards into vector page");
+                      where("cons pointer forwards into vector page"));
             c = car(x);
-            my_assert(!is_forward(c), "double forward pointer");
+            my_assert(!is_forward(c), where("double forward pointer"));
         }
-        my_assert(!is_odds(c) || !is_header(c), "header in car(x)");
+        my_assert(!is_odds(c) || !is_header(c), where("header in car(x)"));
         c = cdr(x);
-        my_assert(!is_odds(c) || !is_header(c), "header in cdr(x)");
+        my_assert(!is_odds(c) || !is_header(c), where("header in cdr(x)"));
         bb.name = "car";
-        validateObject(car(x), forwardOK, &bb);
+        validateObject(car(x), forwardOK, oldSpaceValid, &bb);
         bb.name = "cdr";
-        validateObject(cdr(x), forwardOK, &bb);
+        validateObject(cdr(x), forwardOK, oldSpaceValid, &bb);
         return;
     }
     else if (is_symbol(x))
     {   Page* p = pageOf(x);
-        my_assert(p->type == vecPageType, "symbol pointer into cons page");
+        my_assert(p->type == vecPageType, where("symbol pointer into cons page"));
         LispObject c = qheader(x);
         if (is_forward(c))
         {   if (!forwardOK)
             {   zprintf("\nSYMBOL %a => %a\n", x, c);
                 bb.print();
-                my_abort("illegal forwarding");
+                my_abort(where("left over forwarding pointer on symbol"));
             }
             x = (c & ~TAG_BITS) | (x & TAG_BITS);
             p = pageOf(x);
             my_assert(p->type == vecPageType,
-                      "symbol pointer forwards into cons page");
+                      where("symbol pointer forwards into cons page"));
             c = qheader(x);
-            my_assert(!is_forward(c), "double forward pointer");
+            my_assert(!is_forward(c), where("double forward pointer"));
         }
-        my_assert(is_symbol_header_full_test(c), "symbol without header");
+        my_assert(is_symbol_header_full_test(c), where("symbol without header"));
         bb.name = "qvalue";
-        validateObject(qvalue(x), forwardOK, &bb);
+        validateObject(qvalue(x), forwardOK, oldSpaceValid, &bb);
         bb.name = "qenv";
-        validateObject(qenv(x), forwardOK, &bb);
+        validateObject(qenv(x), forwardOK, oldSpaceValid, &bb);
         bb.name = "qplist";
-        validateObject(qplist(x), forwardOK, &bb);
+        validateObject(qplist(x), forwardOK, oldSpaceValid, &bb);
         bb.name = "qfastgets";
-        validateObject(qfastgets(x), forwardOK, &bb);
+        validateObject(qfastgets(x), forwardOK, oldSpaceValid, &bb);
         bb.name = "qpackage";
-        validateObject(qpackage(x), forwardOK, &bb);
+        validateObject(qpackage(x), forwardOK, oldSpaceValid, &bb);
         bb.name = "qpname";
-        validateObject(qpname(x), forwardOK, &bb);
+        validateObject(qpname(x), forwardOK, oldSpaceValid, &bb);
         return;
     }
     if (is_bfloat(x))
@@ -153,54 +162,57 @@ inline void validateObject(LispObject x,
         {   if (!forwardOK)
             {   zprintf("\nBOXFLOAT %a => %a\n", x, c);
                 bb.print();
-                my_abort("illegal forwarding");
+                my_abort(where("illegal forwarding"));
             }
             x = (c & ~TAG_BITS) | (x & TAG_BITS);
             p1 = pageOf(x);
             c = flthdr(x);
-            my_assert(!is_forward(c), "double forward pointer");
+            my_assert(!is_forward(c), where("double forward pointer"));
         }
-        my_assert(is_odds(c) && is_header(c), "float needs a header");
+        my_assert(is_odds(c) && is_header(c), where("float needs a header"));
         switch (type_of_header(c))
         {
         case TYPE_SINGLE_FLOAT:
         case TYPE_LONG_FLOAT:
-            my_assert(p->type == vecPageType, "float in cons page");
-            my_assert(p1->type == vecPageType, "float forwards into cons page");
+            my_assert(p->type == vecPageType, where("float in cons page"));
+            my_assert(p1->type == vecPageType, where("float forwards into cons page"));
             break;
         case TYPE_DOUBLE_FLOAT:
             if (SIXTY_FOUR_BIT)
-            {   my_assert(p->type == consPageType, "double float in vector page");
-                my_assert(p1->type == consPageType, "double float forwards into vector page");
+            {   my_assert(p->type == consPageType, where("double float in vector page"));
+                my_assert(p1->type == consPageType, where("double float forwards into vector page"));
             }
             else
-            {   my_assert(p->type == vecPageType, "float in cons page");
-                my_assert(p1->type == vecPageType, "float forwards into cons page");
+            {   my_assert(p->type == vecPageType, where("float in cons page"));
+                my_assert(p1->type == vecPageType, where("float forwards into cons page"));
             }
             break;
         default:
-            my_abort("float with bad header");
+            my_abort(where("float with bad header"));
         }        
         return;
     }
 // In all other cases we should have some sort of vector.
     Page* p = pageOf(x);
-    my_assert(p->type == vecPageType, "vector in cons page");
+    my_assert(p->type == vecPageType, where("vector in cons page"));
     LispObject c = car(x & ~TAG_BITS);
     if (is_forward(c))
     {   if (!forwardOK)
         {   zprintf("\nVEC %a => %a\n", x, c);
             bb.print();
-            my_abort("illegal forwarding");
+            my_abort(where("illegal forwarding"));
         }
         x = (c & ~TAG_BITS) | (x & TAG_BITS);
         p = pageOf(x);
         my_assert(p->type == vecPageType,
-                      "vector forwards into cons page");
+                      where("vector forwards into cons page"));
         c = car(x & ~TAG_BITS);
-        my_assert(!is_forward(c), "double forward pointer");
+        if (is_forward(c))
+        {   bb.print();
+            my_abort(where("double forward pointer"));
+        }
     }
-    my_assert(is_odds(c) && is_header(c), "vector needs a header");
+    my_assert(is_odds(c) && is_header(c), where("vector needs a header"));
     if (vector_header_of_binary(c)) return;
 // Here I want to check the contents of the vector.
     size_t len = length_of_header(c);
@@ -209,42 +221,41 @@ inline void validateObject(LispObject x,
     {   char msg[20];
         std::sprintf(msg, "[%d]", (int)i);
         bb.name = msg;
-        validateObject(*(LispObject *)((x & ~TAG_BITS)+i), forwardOK, &bb);
+        validateObject(*(LispObject *)((x & ~TAG_BITS)+i), forwardOK, oldSpaceValid, &bb);
     }
     return;
 }
 
-inline void validateAll(const char* why, bool forwardOK=false)
+inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceValid=true)
 {   visited.clear();
     Backtrace bb("nil");
     zprintf("Starting validation %s\n", why);
     bb.name = "qvalue(nil)";
-    validateObject(qvalue(nil), forwardOK, &bb);
+    validateObject(qvalue(nil), forwardOK, oldSpaceValid, &bb);
     bb.name = "qenv(nil)";
-    validateObject(qenv(nil), forwardOK, &bb);
+    validateObject(qenv(nil), forwardOK, oldSpaceValid, &bb);
     bb.name = "qplist(nil)";
-    validateObject(qplist(nil), forwardOK, &bb);
+    validateObject(qplist(nil), forwardOK, oldSpaceValid, &bb);
     bb.name = "qpname(nil)";
-    validateObject(qpname(nil), forwardOK, &bb);
+    validateObject(qpname(nil), forwardOK, oldSpaceValid, &bb);
     bb.name = "qfastgets(nil)";
-    validateObject(qfastgets(nil), forwardOK, &bb);
+    validateObject(qfastgets(nil), forwardOK, oldSpaceValid, &bb);
     bb.name = "qpackage(nil)";
-    validateObject(qpackage(nil), forwardOK, &bb);
+    validateObject(qpackage(nil), forwardOK, oldSpaceValid, &bb);
     int k=0;
     for (LispObject* p:list_bases)
     {   bb.name = list_names[k++];
-        validateObject(*p, forwardOK, &bb);
+        validateObject(*p, forwardOK, oldSpaceValid, &bb);
     }
     for (LispObject* sp=stack; sp>csl_cast<LispObject*>(stackBase); sp--)
     {   char msg[20];
         std::sprintf(msg, "Stack %d", (int)(stack-sp));
         bb.name = msg;
-        validateObject(*sp, forwardOK, &bb);
+        validateObject(*sp, forwardOK, oldSpaceValid, &bb);
     }
     zprintf("Validation success\n");
 }
 
 #endif // header_validate_h
-
 
 // end of validate.h

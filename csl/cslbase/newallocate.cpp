@@ -300,7 +300,7 @@ void initConsPage(Page* p, bool empty)
     consCurrent = p;
     p->dataEnd = consEnd = csl_cast<uintptr_t>(p) + pageSize;
     if (empty)
-    {   p->hasPinned = false;
+    {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
         p->pinnedObjects = TAG_FIXNUM;
         std::memset(p->consPins, 0, sizeof(p->consPins));
@@ -325,12 +325,10 @@ void initVecPage(Page* p, bool empty)
     vecCurrent = p;
     vecEnd = csl_cast<uintptr_t>(p) + pageSize;
     if (empty)
-    {   p->hasPinned = false;
+    {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
         p->potentiallyPinnedFlag = false;
         p->potentiallyPinnedChain = nullptr;
-        p->hasVecPins = false;
-        p->isInVecPages = false;
         p->pinnedObjects = TAG_FIXNUM;
         std::memset(p->vecPins, 0, sizeof(p->vecPins));
         std::memset(p->newVecPins, 0, sizeof(p->newVecPins));
