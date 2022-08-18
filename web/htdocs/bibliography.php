@@ -142,7 +142,55 @@ include './include/begin-body.php';
         <dt id="Balian:78">[Balian:78] R.&nbsp;Balian, G.&nbsp;Parisi, and A.&nbsp;Voros.</dt>
         <dd>Quartic oscillator. In: <em>Proc. of the Colloq. on Mathematical Problems in Feynman Path Integrals, Marseille</em>, May 1978.</dd>
         <dt id="Bamberger:88">[Bamberger:88] L.&nbsp;Bamberger.</dt>
-        <dd>An error validation package for REDUCE. In: <em>ESPRIT &apos;88: putting the technology to use: proceedings of the 5th Annual ESPRIT Conference, Brussels</em>, pages 467-474 (vol. 1), Siemens AG, Munich, West Germany, 1988.</dd>
+        <dd>An error validation package for REDUCE. In: <em>ESPRIT &apos;88: putting the technology to use: proceedings of the
+                5th Annual ESPRIT Conference, Brussels</em>, pages 467-474 (vol. 1), Siemens AG, Munich, West Germany, 1988.
+        </dd>
+        <dt id="Banerjee:95">[Banerjee:95] Banerjee, J.R. and Williams, F.W.</dt>
+        <dd>Vibration of composite beams &ndash; an exact method using symbolic computation.
+            <em>Journal of Aircraft</em>, <strong>Vol. 32</strong>, pp. 636&ndash;642, 1995.
+        </dd>
+        <dt id="Banerjee:98">[Banerjee:98] Banerjee, J.R.</dt>
+        <dd>Free vibration of axially loaded composite Timoshenko beams using the dynamic stiffness matrix method.
+            <em>Computers &amp; Structures</em>, <strong>Vol. 69</strong>, pp. 197&ndash;208, 1998.
+        </dd>
+        <dt id="Banerjee:99">[Banerjee:99] Banerjee, J.R.</dt>
+        <dd>An exact analytical method of flutter analysis using symbolic computation,
+            <em>40<sup>th</sup>
+                AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, 12&ndash;15 April 1999,
+                Missouri, USA</em>, Paper No. AIAA-99-1354.
+        </dd>
+        <dt id="Banerjee:00">[Banerjee:00] Banerjee, J.R.</dt>
+        <dd>Exact modal analysis of an idealised whole aircraft using symbolic computation.
+            <em>The Aeronautical Journal</em>, <strong>Vol. 104</strong>, pp. 247&ndash;255, 2000.
+        </dd>
+        <dt id="Banerjee:01">[Banerjee:01] Banerjee, J.R.</dt>
+        <dd>Frequency equation and mode shape formulae for composite Timoshenko beams.
+            <em>Composite Structures</em>, <strong>Vol. 51</strong>, pp. 381&ndash;388, 2001.
+        </dd>
+        <dt id="Banerjee:02">[Banerjee:02] Banerjee, J.R.</dt>
+        <dd>Modal analysis of axially loaded composite Timoshenko beams using symbolic computation.
+            <em>Journal of Aircraft</em>, <strong>Vol. 39</strong>, No. 5, pp. 909&ndash;912, 2002.
+        </dd>
+        <dt id="Banerjee:08">[Banerjee:08] Banerjee, J.R., Sobey, A.J., Su, H., and Fitch, J.P.</dt>
+        <dd>
+            Use of computer algebra in Hamiltonian calculations. <em>Advances in Engineering Software</em>,
+            <strong>Vol. 39</strong>, Issue 6, pp. 521&ndash;525, 2008.
+        </dd>
+        <dt id="Banerjee:18">[Banerjee:18] Banerjee, J.R. and Ananthapuvirajah A.</dt>
+        <dd>
+            Free vibration of functionally graded beams and frameworks using the dynamic stiffness method.
+            <em>Journal of Sound and Vibration</em>, <strong>Vol. 422</strong>, pp. 34&ndash;47, 2018.
+        </dd>
+        <dt id="Banerjee:21">[Banerjee:21] Banerjee, J.R.</dt>
+        <dd><a href="https://doi.org/10.1016/j.compstruc.2021.106616">Frequency dependent mass and stiffness matrices of bar and beam
+            elements and their equivalency with the dynamic stiffness matrix</a>.
+            <em>Computers and Structures</em> <strong>Vol. 254</strong>, p. 106616, 2021.
+        </dd>
+        <dt id="Banerjee:22">[Banerjee:22] Banerjee, J.R.</dt>
+        <dd><a href="https://doi.org/10.1115/1.4055133">Free Vibration of Timoshenko-Ehrenfest Beams and Frameworks Using
+                Frequency-Dependent Mass and Stiffness Matrices</a>.
+            <em>Journal of Vibration and Acoustics</em>, <strong>Vol. 144</strong> p. 064501, December 2022.
+        </dd>
         <dt id="Baranov:07">[Baranov:07] S.&nbsp;P. Baranov.</dt>
         <dd><a href="http://link.aps.org/abstract/PRD/v74/e074002">Associated y+b+<span style="text-decoration: overline;">b</span> production at the Fermilab Tevatron and CERN LHC</a>. <em>Physical Review D (Particles and Fields)</em> <strong>74</strong> no. 7, page 074002, November 2006.</dd>
         <dt id="Baranov:06">[Baranov:06] S.&nbsp;P. Baranov.</dt>
