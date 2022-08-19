@@ -78,9 +78,6 @@ Page*    pinnedPages;
 Page*    pendingPages;
 Page*    oldVecPinPages;
 
-int vecStopCache = -1;
-int borrowStopCache = -1;
-
 uintptr_t consFringe, consLimit, consEnd;
 uintptr_t vecFringe, vecLimit, vecEnd;
 uintptr_t borrowFringe, borrowLimit, borrowEnd;
@@ -438,7 +435,7 @@ void grabFreshPage(PageType type)
         if (!allocateAnotherSegment()) break;
     }
     if (withinGarbageCollector) fatal_error(err_no_store);
-    cout << "\n@@@ MEMORY FULL @@@\n" << endl;
+    cout << "\n@@@ MEMORY FULL: will try to garbage collect @@@\n" << endl;
     garbage_collect();
 // After garbage collection there had BETTER be some available memory left!
 // At the end of garbage collection everything should be ready to do the
@@ -525,7 +522,6 @@ void initHeapSegments(double storeSize)
     grabFreshPage(consPageType);
     grabFreshPage(vecPageType);
     borrowCurrent = nullptr;
-    vecStopCache = borrowStopCache = -1;
 }
 
 // This function receives a target heap size in megabytes. If the user

@@ -1098,16 +1098,16 @@ static LispObject lisp_main()
 #ifdef CONSERVATIVE
 // I believe that this is all to abandon all existing in-use pages and
 // put things back as if all memory is totally empty.
-// @@ Well there is something wrong here at present so I need to come
-// back and debug. Not having this means that memory tends to end up
-// leaked and lost over an internal CSL restart.
-//                    emptyPages += consPinPages;
-//                    emptyPages += vecPinPages;
-//                    emptyPages += consCloggedPages;
-//                    emptyPages += vecCloggedPages;
-//                    emptyPages += consPages;
-//                    emptyPages += vecPages;
-                    zprintf("Not recycling pages on line 1107\n");
+                    emptyPages += consPinPages;
+                    emptyPages += vecPinPages;
+                    emptyPages += consCloggedPages;
+                    emptyPages += vecCloggedPages;
+                    emptyPages += consPages;
+                    emptyPages += vecPages;
+                    grabFreshPage(consPageType);
+                    grabFreshPage(vecPageType);
+                    borrowCurrent = nullptr;
+                    zprintf("Try recycling pages on line 1107 of csl.cpp\n");
 #else
                     for (size_t i=0; i<pages_count; i++)
                     {   char *w = csl_cast<char *>(pages[i]);
@@ -1193,13 +1193,16 @@ static LispObject lisp_main()
                         }
                     }
 #ifdef CONSERVATIVE
-//                    emptyPages += consPinPages;
-//                    emptyPages += vecPinPages;
-//                    emptyPages += consCloggedPages;
-//                    emptyPages += vecCloggedPages;
-//                    emptyPages += consPages;
-//                    emptyPages += vecPages;
-                    zprintf("Not recycling pages on line 1200\n");
+                    emptyPages += consPinPages;
+                    emptyPages += vecPinPages;
+                    emptyPages += consCloggedPages;
+                    emptyPages += vecCloggedPages;
+                    emptyPages += consPages;
+                    emptyPages += vecPages;
+                    grabFreshPage(consPageType);
+                    grabFreshPage(vecPageType);
+                    borrowCurrent = nullptr;
+                    zprintf("Trying to recycling pages on line 1202 of csl.cpp\n");
 #else // CONSERVATIVE
 // This puts all recorded heap pages back in the main pool.
                     for (size_t i=0; i<pages_count; i++)
