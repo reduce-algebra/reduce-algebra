@@ -385,6 +385,7 @@ extern bool gcTrace;
 
 #else // !CONSERVATIVE
 extern uintptr_t stackLimit;
+extern bool minimal;
 #endif // !CONSERVATIVE
 
 extern atomic<uintptr_t> event_flag;
