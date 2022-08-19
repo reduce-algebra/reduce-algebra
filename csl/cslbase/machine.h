@@ -361,6 +361,7 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #include <cassert>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <iostream>
 #include <algorithm>

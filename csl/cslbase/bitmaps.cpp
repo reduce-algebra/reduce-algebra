@@ -51,7 +51,7 @@ static int N, M;
 void print64(uint64_t a)
 {   for (int i=0; i<64; i++)
     {   if (i == 0) std::printf("%c", "OI"[(a>>i) & 1]);
-        else std::printf("%c", '0'+ ((a>>i) & 1));
+        else std::printf("%c", '0'+ (int)((a>>i) & 1));
         N++;
         if ((N%50) == 0) std::printf("\n");
         else if ((N%10) == 0) std::printf(" ");
@@ -79,7 +79,7 @@ int main()
     M = 0;
     size_t p = 0;
     printf("Find Ones forward\n");
-    while ((p = nextOneBit(map, sizeof(map)/sizeof(map[0]), p)) != SIZE_MAX)
+    while ((p = nextOneBit(map, 8*sizeof(map), p)) != SIZE_MAX)
     {   std::printf("%4d", (int)p);
         M++;
         if ((M%20) == 0) std::printf("\n");
@@ -89,7 +89,7 @@ int main()
     M = 0;
     p = 0;
     printf("Find Zeros forward\n");
-    while ((p = nextZeroBit(map, sizeof(map)/sizeof(map[0]), p)) != SIZE_MAX)
+    while ((p = nextZeroBit(map, 8*sizeof(map), p)) != SIZE_MAX)
     {   std::printf("%4d", (int)p);
         M++;
         if ((M%20) == 0) std::printf("\n");

@@ -148,9 +148,14 @@ inline void my_assert(bool ok)
 {   if (!ok) my_abort("my_assert without specific message");
 }
 
-// This is to help me in trace messages.
+// This is to help me in trace messages. The main issue it addresses is that
+// __FILE__ expands to the full path of the file being compiled, and
+// in many cases all but the final component are both not especially
+// useful to me and they are often unreasonably verbose. So this combines
+// a file-name and a line number into a single string based on the leaf
+// part of the file-name.
 
-inline const char* where(const char* file, int line)
+inline const char* whereFn(const char* file, int line)
 {   const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
     static char whereMsg[100];
@@ -158,16 +163,30 @@ inline const char* where(const char* file, int line)
     return whereMsg;
 }
 
-inline const char* where(const char* file, int line, const char* msg)
+// As above but with a user-provided message in there too.
+
+inline const char* whereFn(const char* file, int line, const char* msg)
 {   const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
-    static char whereMsg[100];
+    static char whereMsg[110];
     sprintf(whereMsg, "%.40s:%d %.50s", file, line, msg);
     return whereMsg;
 }
 
-#define __WHERE__ where(__FILE__, __LINE__)
-#define __WHERE1__(msg) where(__FILE__, __LINE__, msg)
+// whereFn is used via one of these nacros so that the location of its
+// call is captured.
+
+#define __WHERE__ whereFn(__FILE__, __LINE__)
+#define where(msg) whereFn(__FILE__, __LINE__, msg)
+
+// This simpler version is available as just a string without needing any
+// computation. However the file-name is liable to be rather bulky! In case
+// where I do not need to concatenate the result with another I will use
+// __WHERE__ which trims the file-name so I just keep the final component.
+
+#define CSL_STRINGIFY(x) #x
+#define CSL_TOSTRING(x) CSL_STRINGIFY(x)
+#define LOCATION __FILE__ ":" CSL_TOSTRING(__LINE__)
 
 #if defined __OPTIMIZE__ || !defined __GNUC__
 

@@ -140,7 +140,9 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 // a power of 2. And then a perfect hashing scheme so that given one
 // size I can find the next larger or smaller one rapidly.
 
-INLINE_VAR const size_t INITIAL_OBVEC_SIZE=2039;
+INLINE_VAR const size_t INITIAL_OBVEC_SIZE=2039u;
+INLINE_VAR const size_t MAX_OBVEC_SIZE=1099511627689u;
+
 extern uint64_t nextTableSize(uint64_t n);
 extern uint64_t previousTableSize(uint64_t n);
 

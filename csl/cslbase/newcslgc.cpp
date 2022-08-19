@@ -38,7 +38,9 @@
 #include "validate.h"
 
 void check_standard_input(const char* msg="check_standard_input") // @@@@@@@@@@@@@@
-{   zprintf("****** %s *****\n", msg);
+{   if (gcTest) return; // these things will not be set up, so trying to look
+                        // at them would crash!
+    zprintf("****** %s *****\n", msg);
     LispObject a = terminal_io;
     zprintf("terminal_io = %a(%a) = ", a, qheader(a)); simple_print(a);
     a = qvalue(a);
@@ -59,6 +61,30 @@ void check_standard_input(const char* msg="check_standard_input") // @@@@@@@@@@@
     validateObject(b, true);
 }
 
+const char* getPageType(uintptr_t a)
+{   Page* p = pageOf(a);
+    const char* t;
+    static char b[12];
+    if (consPages.contains(p))             t = "C";
+    else if (vecPages.contains(p))         t = "V";
+    else if (consOldPages.contains(p))     t = "Co";
+    else if (vecOldPages.contains(p))      t = "Vo";
+    else if (consPinPages.contains(p))     t = "Cp";
+    else if (vecPinPages.contains(p))      t = "Vp";
+    else if (consCloggedPages.contains(p)) t = "Cx";
+    else if (vecCloggedPages.contains(p))  t = "Vx";
+    else if (emptyPages.contains(p))       return "E";
+    else if (borrowPages.contains(p))      t = "B";
+    else                                   return "Q";
+    bool pin = p->type == consPageType ? consIsPinned(a, p) :
+                                         vecIsPinned(a, p);
+    bool newpin = p->type == consPageType ? consIsNewPinned(a, p) :
+                                            vecIsNewPinned(a, p);
+    std::sprintf(b, "%s%s%s%s",t, pin?"!":"", newpin?"|":"",
+                 (pin||newpin)?Addr(a):"");
+    return b;
+}
+
 // Each page consists of a header followed by a number of chunks. There may
 // be unused space in the page after the last chunk. For the purposes of
 // pinning I want to identify the chunk (if any) that (a) points into, and
@@ -70,13 +96,13 @@ void check_standard_input(const char* msg="check_standard_input") // @@@@@@@@@@@
 // since it. So I start by identifying which Chunk (if any) an address lies
 // within. Chunks can have a flag pinnedObjects that records their status at
 // the end of the previous GC. If that is NOT set then all addresses within
-// the chunk from its (data) start to its fringe are valid. If pinnedObjects is
-// set I need to check in great detail whether the address is within one
+// the chunk from its (data) start to its fringe are valid. If pinnedObjects
+// is set I need to check in great detail whether the address is within one
 // of the objects in the chunk that had let to it being pinned. Well
-// pinnedObjects is not a boolean, it is a list (albeit with its pointers tagged
-// as TAG_FIXNUM!) of such items. The pointers are represented as fixnums
-// because the list is ephemeral and I do not want this GC to view it as
-// data to be traced through and preserved.
+// pinnedObjects is not a boolean, it is a list (albeit with its pointers
+// tagged as TAG_FIXNUM!) of such items. The pointers are represented as
+// fixnums because the list is ephemeral and I do not want this GC to view
+// it as data to be traced through and preserved.
 
 // There is a messy issue here. Suppose a Page P has a Chunk C that contained
 // some pinned items during the last GC then P is on the list of pages that
@@ -134,9 +160,6 @@ void blurp()
 
 void processAmbiguousInPage(Page* p, uintptr_t a)
 {   uintptr_t dataStart;
-//    if ((a & ~TAG_BITS) == (lisp_standard_input & ~TAG_BITS))
-//    {   blurp();
-//    }
     size_t chunkNo;
     switch (p->type)
     {
@@ -168,26 +191,14 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
             consSetNewPinned(a, p);
             zprintf("set new cons pin %a\n", a);
 // The first time I find an object pinned on a page I will put that page
-// in a chain of ones containing pinned material. 
-            if (!p->hasPinned)
-            {   p->hasPinned = true;
+// in a chain of ones containing pinned material. This chain will include
+// pages with material pinned by previous GCs as well as by new activity.
+            if (p->hasPinned == 0)
+            {   p->hasPinned = 1;
                 p->pinnedPages = pinnedPages;
                 pinnedPages = p;
             }
-// Ha ha there is a potential ugliness here in that the cons cell I am
-// about to allocate could be at an address that an ambiguous pointer I have
-// not yet got round to handling seems to refer to, but it would be silly
-// to let it get pinned. To avoid that I arrange that during this early
-// part of garbage collection any pages that I allocate within for just
-// this purpose remain tagged with emptyPageType and so the pinning process
-// will ignore references into them. I reset the page type as soon as I can.
-// I also do not want this list to be subject to getting pinned during the
-// next GC since that could preserve material it refers to in a really
-// unhalpful way. I achieve that by making it a sort of fake list where
-// all the pointers within it are tagged as if fixnums. That means that the
-// objects it references do not have their type captured in a tagged pointer,
-// so when I process them I will need to deduce type by inspecting them.
-            my_assert(allPinned.count(a) == 0, "double pinning");
+            my_assert(allPinned.count(a) == 0, where("double pinning"));
             allPinned.insert(a);
             LispObject z = get2Words();
             car(z) = a + TAG_FIXNUM;
@@ -199,30 +210,30 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // Pointers into vector pages can refer to any individual cell. The biggest
 // cause of pain here is that the pointers may refer to addresses within
 // objects (as distinct from just identifying the object header). I do
-// not have a trivial way to tell where objects start, so I will set
-// mark bits now even when they are not on object headers and correct
-// in a later phase. This is where I rely on "chunks" and I will view
-// an ambiguous pointer as "provisionally valid" either if it is at an
-// address before vecDataEnd or if it is into a chunk beyond that where
-// the chunkStatus entry indicates that it contains at least some old
-// pinned material. When I set a mark bit I will tag the chunk as
-// "of interest" in another little bitmap, and push the Page
-// onto a chain of ones to deal with later.
+// not have a trivial way to tell where objects start and it is very common
+// for there to me multiple ambiguous references to the same live item.
+// So at this stage I will make simple checks so I ignore obviously
+// irrelevent "pointers", but just set "new" vector-pin and chunk-pin
+// information. Then after all ambiguous values have been inspected I
+// will re-visit the pages that contain new "potentially pinned" stuff and
+// put things in the state they need to be. The chain potentiallyPinned is
+// one of pages I will need to re-visit.
         a = a & -(sizeof(LispObject));   // align the pointer.
         dataStart = offsetToVec(0, p);
         if (a < dataStart) return;
         chunkNo = chunkNoFromAddress(p, a);
 // The pointer may be valid either if it refers to an address below the
 // fringe or if it is withing a chunk that had been pinned during an
-// earlier GC. I can use chunkSeqNo to adjust so I point at the start of
-// and extended chunk.
+// earlier GC. I need to make sure that I refer to the start of the chunk
+// containing the address concerned.
         chunkNo -= p->chunkSeqNo[chunkNo];
 // Now I am pointing at the start of the chunk. If it is ahead of
 // dataEnd it contains live data and also if the chunk is pinned it might
 // even if it is way beyond dataEnd. Note that "pinned" here has to mean
-// "pinned by a previous GC" not this one.
+// "pinned by a previous GC" not this one. In each case I will mark it as
+// potentially pinned.
         if (a < p->dataEnd ||
-            chunkIsPinned(p, chunkNo))
+            chunkNoIsPinned(p, chunkNo))
         {
 // Now I tag the Chunk as (potentially) pinned. It will not actually be pinned
 // if the dodgy address points within a padder item in it. Set a mark in
@@ -230,8 +241,8 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // the page as having new pinned chunks - well only potentially because
 // the address noticed may refer within a padder. A later pass will
 // need to scan potentially pinned chunks and tidy things up.
-            if (!chunkIsNewPinned(p, chunkNo))
-            {   chunkSetNewPinned(p, chunkNo);
+            if (!chunkNoIsNewPinned(p, chunkNo))
+            {   chunkNoSetNewPinned(p, chunkNo);
 // ... and note when Pages contain such material.
                 if (!p->potentiallyPinnedFlag)
                 {   p->potentiallyPinnedFlag = true;
@@ -262,11 +273,11 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 
 size_t stackCount = 0;
 
-void processAmbiguousValue(uintptr_t a)
+void processAmbiguousValue(uintptr_t a, const char* source="STACK")
 {
 // I find the Page (if any!) the value is in. That Page may be empty,
 // one containing old pinned stuff or one full of live data.
-    zprintf("ON STACK %d: %a\n", stackCount++, a);
+    zprintf("%s %d: %a\n", source, stackCount++, a);
     Page* p = findPage(a);
     if (p!=nullptr) processAmbiguousInPage(p, a);
 }
@@ -287,7 +298,9 @@ void processAmbiguousValue(uintptr_t a)
 // access return addresses, stack pointer chains and the like. Doing so
 // would normally be a sign of buffer overflow or malice, and so helpful
 // "sanitize" options that try to protect against suchlike would get
-// triggered.
+// triggered. Some careful C++ systems have a default behaviour that
+// aborts if one accesses memory on the stack but outside the current
+// proper stack frame and I need to disable that (very proper) caution.
 
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems()
@@ -296,7 +309,7 @@ void identifyPinnedItems()
 // Just while I develop the code I will have some extra "ambiguous" pointers
 // that I have rather direct control over. They may help me to test things.
     for (int i=0; i<10; i++)
-        processAmbiguousValue(ambiguous[i]);
+        processAmbiguousValue(ambiguous[i], "AMBIG");
 #endif // DEBUG
 // For each ambiguous value (ie value on the stack) processAmbiguousValue().
 // This must ensure that if the item might be a LispObject that is a
@@ -316,47 +329,26 @@ void identifyPinnedItems()
 
 // This not only ensures that the bitmap identifies the head of every
 // pinned item, but it also arranges that no addresses within objects are
-// marked. This is relied upon by evacuatePinnedInChunk.
-//
-// It only needs to look at vector pages where there was fresh (potential)
-// pinning. Within those it needs to look at chunks where a new ambiguous
-// pointer is relevant. If the chunk is one that had left over pinned
-// data from a previous GC then it will have padder objects between
-// all those old pinned items, so I can easily skip those to find just
-// where the pinned material is. A non-extended chunk is 16KB so has a
-// max of 2K objects in it (on a 64-bit machine) and that is covered by
-// just 32 words (of 64-bits each) in the pin-bitmap. So I will use
-// find-first-bit operations so I can scan the new bitmap and I will
-// skip over padders and then parse actual pinned items. By doing that
-// I can tell if a new pin bit is actually within a previously pinned
-// object. If it is not it was not a valid pin. If it is I need to move
-// the pin bit so it is on the object header.
-// The second case is if the chunk in question was new. In that case any
-// pointer into it that does not refer to a padder is valid and must be
-// moved to the object header.
-// Well happily I can deal with both cases using the same code, because
-// pointers into previously pinned chunks that are invalid will be to
-// addresses within padder objects, so the general rule that padders are not
-// proper data will apply to them.
-
-// In find HeadersInChunk the pointer a starts off at the start of a chunk,
-// and it could be that this will be the first of an extended Chunk. I
-// need to parse it to identify the objects present. Then the
-// newVecPins[] bitmap should identify where ambiguous pointers
-// fall. So as I parse and identify an object I need to sort out the
-// range of bits within that map and test them. If any are set then I
-// clear any that are not to the header of the object and set one on
-// the header (unless the object is a padder).
+// marked.
+// It completes the work that in some sense logically belonged when
+// ambiguous pointers into vector pages were first spotted. Delaying until
+// now means that just one scan of a potentially pinned chunk serves for
+// all the ambiguous pointers into it.
+// Note that chunks that has been pinned by a previous GC will have
+// padders written into all unused space in them, so bew references
+// into them are only accepted it to existing pinned data.
 
 void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
-{
-    uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
+{   uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
+    zprintf("\n\n@@@@\n");
+    displayAllPages(__WHERE__); // DEBUG
 // lastAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
     uintptr_t lastAddr   = addressFromChunkNo(p, lastChunk);
 // Now I have a chunk delimited, I will parse it so I can identify
 // object start addresses.
     uintptr_t s = firstAddr;
+    bool thisChunkHasPins = false;
     while (s < lastAddr)
     {   uintptr_t h = indirect(s);
         size_t len;
@@ -378,7 +370,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
             if (testBits(p->newVecPins,
                          vecToOffset(s, p),
                          len/sizeof(LispObject)))
-            {   zprintf("Pinned item head at %a: ", s);
+            {   zprintf("Pinned vector head at %a: ", s);
                 simple_print(s+TAG_VECTOR);  // well floats & bignums may mess up printing here
             }
             break;
@@ -386,25 +378,32 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 // The code is either for the header of a symbol or for some sort
 // of immediate data, and in the latter case the object must be
 // h CONS cell.
-            if (is_symbol_header(h)) len = symhdr_length;
-            else len = 2*CELL;
-            break;
+            if (is_symbol_header(h))
+            {   len = symhdr_length;
+                if (testBits(p->newVecPins, vecToOffset(s, p), len/sizeof(LispObject)))
+                {   zprintf("Pinned symbol head at %a: ", s);
+                    simple_print(s+TAG_SYMBOL);
+                }
+                break;
+            }
+            FALLTHROUGH;
     default:                 // None of the above cases...
 // Since this is a Page intended to contain vectors it would be wrong if it
 // had any cons cells in it. However in case at some later stage I put
 // some cons cells into vector pages I will allow for that case here!
             if (testBits(p->newVecPins, vecToOffset(s, p), len/sizeof(LispObject)))
-            {   zprintf("Pinned item head at %a: ", s);
-                simple_print(is_symbol_header(h) ? s+TAG_SYMBOL:s);
+            {   zprintf("Pinned cons head at %a: ", s);
+                simple_print(s);
             }
             len = 2*CELL;    // ... must be a CONS cell.
             break;
         }
         size_t o1 = vecToOffset(s, p);
-        zprintf("o1 = %d\n", o1);
 // I will take special action of the object found is a padder. In that
 // case I will clear all the pin bits for addresses within the object,
-// because padders can never be pinned.
+// because padders can never be pinned. This tidies up in an ambiguous
+// pointer refers into a block of memory pinned by a previous GC but
+// does not identify live data within it.
         if (is_padder_header(h))
         {   clearBits(p->newVecPins, o1, len/sizeof(LispObject));
             s += len;
@@ -413,31 +412,30 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 // For other objects I need to test if there are any pin bits at all within
 // the object, and if so set one for the first bit while clearing all others.
         else if (testBits(p->newVecPins, o1, len/sizeof(LispObject)))
-        {
+        {   thisChunkHasPins = true;
 // Move the pin bit so it is on the head of the item.
+            zprintf("Move pin bit to head of %a\n", s); 
             clearBits(p->newVecPins, o1, len/sizeof(LispObject));
             setBit(p->newVecPins, o1);
-            if (!p->hasPinned)
-            {   p->hasPinned = true;
+            if (p->hasPinned == 0)
+            {   p->hasPinned = 1;
+                zprintf("set hasPinned and put %a on pinnedPages\n", p);
                 p->pinnedPages = pinnedPages;
                 pinnedPages = p;
             }
-            my_assert(allPinned.count(s) == 0, "double pinning");
+            my_assert(allPinned.count(s) == 0, where("double pinning"));
             allPinned.insert(s);
 // Record this pinned object in a list of same.
             LispObject z = get2Words();
             car(z) = s + TAG_FIXNUM;
             cdr(z) = p->pinnedObjects;
             p->pinnedObjects = z + TAG_FIXNUM;
-            if (!p->hasVecPins)
-            {   p->hasVecPins = true;
-                p->oldVecPinPages = oldVecPinPages;
-                oldVecPinPages = p;
-            }
         }
-        zprintf("o1 bis = %d\n", o1);
         s += len;
     }
+    if (!thisChunkHasPins) chunkNoClearNewPinned(p, firstChunk);
+    zprintf("\n\n&&&&\n");
+    displayAllPages(__WHERE__); // DEBUG
 }
 
 // Here I identify each chunk that may contain pinned data and process it.
@@ -446,20 +444,21 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 // in the current GC, ie newVecPins[]. All things on vecPins[] left over
 // from the previous GC will already just identify item heads. So this
 // only needs to process pages and chunks with pinning in the most recent GC.
-// It does three things:
+// It does fice things:
 //   When a (new) pin is on the middle of an object it migrates it so
 //     that it is on the header word of the object.
-//   If a new pin is then on a padding object it is removed.
+//   If a new pin is then on a padding object oin info is removed.
+//   If no (new) pins remain in a chunk then the chunk is unpinned.
 //   For items that are in fact pinned it sticks them on a "pinned object
 //     chain" associated with the page they are in, that chain being
 //     created in the new half-space.
-//   If a genuine new pin is set it ensures that the page is on pinnedPages.
+//   If at least one new pin is set it ensures that the page is on pinnedPages.
 
 void findHeadersOfPinnedItems()
 {   while (potentiallyPinned != nullptr)
     {   size_t pinnedChunk = 0;
-        while ((pinnedChunk = nextOneBit(potentiallyPinned->chunkBitmap,
-                                         chunkBitmapSize,
+        while ((pinnedChunk = nextOneBit(potentiallyPinned->newChunkBitmap,
+                                         chunkBitmapBits,
                                          pinnedChunk)) != SIZE_MAX)
         {   // Deal with a chunk that may still be pinned
             size_t pinEnd = pinnedChunk +
@@ -486,8 +485,11 @@ void csl_memcpy(void* vdest, void* vsrc, size_t len)
         dest[i] = src[i];
 }
 
+std::unordered_set<LispObject*> evacuated;
+
 void evacuate(LispObject &x)
-{
+{   if (evacuated.count(&x) == 0) evacuated.insert(&x);
+    else my_abort("repeat evacuation");
 // Here x refers to x location that is x list-base, ie it contains
 // x valid Lisp object, but also the value of x is the LispObject
 // held in that location. I want to arrange that the object and all its
@@ -508,20 +510,23 @@ void evacuate(LispObject &x)
 // Note that this is x shallow copy operation. A later stage must perform
 // x linear scan of the newly copied material. That stage is not discussed
 // here because this function does not directly cause it to happen.
-    if ((x & ~TAG_BITS) == (lisp_standard_input & ~TAG_BITS))
-    {   blurp();
-    }
-    my_assert(x != 0, "zero word in scanning");
-    my_assert(!is_forward(x), "forwarding ptr in scanning");
-    zprintf("evacuating %a %s\n", x, objectType(x));
+    my_assert(x != 0, where("zero word in scanning"));
+    my_assert(!is_forward(x), where("forwarding ptr in scanning"));
     if (is_immediate(x) || x == nil) return;
+    zprintf("evacuating %a %s\n", x, objectType(x));
 // If something is not immediate it must be x pointer!
     LispObject* untagged_x = csl_cast<LispObject*>(x & ~TAG_BITS);
     LispObject hdr = *untagged_x;
     LispObject cpy;
+    if (!consOldPages.contains(pageOf(x)) &&
+        !vecOldPages.contains(pageOf(x)))
+    {   if (pageOf(x)->type == consPageType && consIsPinned(x)) /*OK*/;
+        else if (pageOf(x)->type == vecPageType  && vecIsPinned(x)) /*OK*/;
+        else my_abort(where("evac something odd"));
+    }
     if (is_forward(hdr))
     {   x = hdr - TAG_FORWARD + (x & TAG_BITS);
-        my_assert(!is_forward(x), "forwarding ptr in scanning");
+        my_assert(!is_forward(x), where("forwarding ptr in scanning"));
         return;
     }
 // Now I will need to make x copy of the item (unless it is pinned).
@@ -550,7 +555,7 @@ void evacuate(LispObject &x)
     *untagged_x = TAG_FORWARD + cpy;
     x = cpy + (x & TAG_BITS);
     zprintf("Evacuate %a to %a\n", untagged_x, x);
-    my_assert(!is_forward(x), "forwarding ptr in scanning");
+    my_assert(!is_forward(x), where("forwarding ptr in scanning"));
 }
 
 void evacuateFromUnambiguousBases()
@@ -598,10 +603,11 @@ void showPinnedItems()
 
 void evacuateFromPinnedItems()
 {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
-    {   for (LispObject c=pp->pinnedObjects-TAG_FIXNUM;
-                        c!=0;
-                        c=cdr(c)-TAG_FIXNUM)
-        {   LispObject next = car(c)-TAG_FIXNUM;
+    {   while (pp->pinnedObjects != TAG_FIXNUM)
+        {   LispObject c = pp->pinnedObjects-TAG_FIXNUM;
+            LispObject next = car(c)-TAG_FIXNUM;
+            pp->pinnedObjects = cdr(c);
+            zprintf("About to evacuate contents of %a\n", next);
             Header a = *csl_cast<Header*>(next);
             size_t len, len1;
 // Now based on the low 6 bits of the first word of the object I sort
@@ -616,6 +622,7 @@ void evacuateFromPinnedItems()
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
                 my_assert(len != 0, "lisp vector size zero");
+                zprintf("Evac contents of pinned vector of length %s\n", len1);
                 for (size_t i = CELL; i<len1; i += CELL)
                     evacuate(*csl_cast<LispObject*>(next+i));
                 continue;
@@ -641,7 +648,7 @@ void evacuateFromPinnedItems()
                 if (car(next) == 0)
                 {   zprintf("@@@Zero word at %a\n", next);
                     zprintf("@@@next=%a vecCurrent=%a\n", next, vecCurrent);
-                    displayAllPages("Line 586 in newcslgc.cpp"); // DEBUG
+                    displayAllPages(__WHERE__); // DEBUG
                     my_abort("zero word in evacuateFromPinnedItems");
                 }
                 evacuate(car(next));
@@ -737,7 +744,7 @@ bool evacuateVecPage(Page* p)
 // a previous GC, and so the only data within them will be pinned. That
 // was evacuated by other code than this. The rest of this page should not
 // have any pinned stuff in it at all.
-        if (chunkIsPinned(p, firstChunk))
+        if (chunkNoIsPinned(p, firstChunk))
             next = addressFromChunkNo(p, lastChunk);
         else
         {   uintptr_t chunkEnd = addressFromChunkNo(p, lastChunk);
@@ -851,6 +858,8 @@ void evacuateFromCopiedData()
     my_assert(pendingPages == nullptr, "pendingPages");
 }
 
+#pragma message ("use bitmaps.h rather than this")
+
 // Iteration over a bitmap: I have bitmaps the record which items
 // are pinned and I wish to process just the items as identified in the
 // bitmaps. I can scan using the "number-of-trailing-zeros" function to
@@ -910,38 +919,32 @@ inline uintptr_t nextInConsBitmap(Page* p)
 inline uintptr_t nextInVecBitmap(Page* p)
 {   size_t o = nextInBitmap();
     if (o == badSize) return 0;
-    return csl_cast<uintptr_t>(p) + sizeof(LispObject)*o;
+    return offsetToVec(o, p);
 }
 
 // Here I need to look at xPinPages because some of the pages may now
 // have fewer pinned items and xPages because some of them may now
-// have pinned items. I must create or re-create the layout needed
-// for allocatiion based on the newer version of pin information that
-// I have.
+// have pinned items thet were not pinned before. I must create or re-create
+// the layout needed for allocation based on the newer version of pin
+// information that I have.
 // As a reminder, in a cons page the structure for a page with some pinned
 // stuff is as follows:
-//     (1) cells that are pinned must not be used.
-//     (2) Thus the first location available for use will be the
-//         first unpinned cell. Before use that contains the address
-//         of the next pinned cell (or the end of the page if there is
-//         no more pinning). This value can be moved to consLimit.
-// For a vector page something of the same style applies but for chunks
-// not cells and with the additional complication of extended chunks as
-// identified using chunkStatus, and in vecPinPages there can be pages
-// with chunks that used to contain pinned material but which now do not.
-// If I was really keen I could note that an extended chunk might have
-// a pinned item towards its end but the initial large vector that led it
-// to being big is not (now) pinned, and in that case I could demote it
-// to a sequence of basic chunks...
+//   At the start there MAY be some pinned locatione that must not be used.
+//   Beyond that the first cell of a usable block of memory must contain
+//   either the address of the end of the page or the address of the next
+//   pinned item.
+// If there are cells that has been pinned by the previous GC but at not
+// pinned now then they must be overwritten with padders. The value
+// CONS_PADDER_HEADER put in the car() field achieves that. 
+//
+// The hasPinned field in the page must end up with a count of pinned
+// items, and that must be zero if there are none.
 
-// The next two return a count of the number of pinned items present.
+// I have to do slightly different things on the current cons page.
 
-size_t rePinOneConsPage(Page* p)
-{
-// Before I mess with the pin maps I want to arrange that every
-// cell that has an old pin but not a new one gets a padder written in.
-    size_t loc=0;
-    while ((loc = nextOneBit(p->consPins, consPinSize, loc)) != SIZE_MAX)
+void rePinConsCurrent(Page* p)
+{   size_t loc=0;
+    while ((loc = nextOneBit(p->consPins, consPinBits, loc)) != SIZE_MAX)
     {   uintptr_t v = offsetToCons(loc, p);
         if (!consIsNewPinned(v, p)) car(v) = CONS_PADDER_HEADER;
         loc++;
@@ -950,26 +953,106 @@ size_t rePinOneConsPage(Page* p)
                 p->newConsPins,
                 consPinBytes);
     std::memset(p->newConsPins, 0, consPinBytes);
+// Space up as far as consFringe is in use, and any pinned items there
+// should now be skipped.
+    size_t nPins = 0;
+    while (consFringe != csl_cast<uintptr_t>(p+1) &&
+           consIsPinned(consFringe, p))
+    {   nPins++;
+        consFringe += sizeof(ConsCell);
+    }
+// If that tkes consFringe up to the end of the page then this page is
+// full and the next allocation request will replace it.
+    if (consFringe == csl_cast<uintptr_t>(p+1))
+    {   consLimit = consFringe;
+        p->hasPinned = nPins;
+        return;
+    }
+// Now (whew) there is at least one non-pinned cell available still. The
+// first block of such must be left delimited by consLimit.
+    uintptr_t a = consFringe;
+#pragma message ("use nextOneBit")
+    while (a != csl_cast<uintptr_t>(p+1) &&
+           !consIsPinned(a, p)) a += sizeof(ConsCell);
+    consLimit = a;
+    if (a == csl_cast<uintptr_t>(p+1))
+    {   p->hasPinned = nPins;
+        return;
+    }
+// Here I have found a relevant pinned item. Skip past pinnings..
+    while (a != csl_cast<uintptr_t>(p+1) &&
+           consIsPinned(a, p))
+    {   a += sizeof(ConsCell);
+        nPins++;
+    }
+// Now a points to the start of a free region (or at the end of the page).
+// I can fill in the rest of the page with pointers that chain such free
+// regions together.
+    uintptr_t base = a;
+// At present this is coded by looking at each individual cons cell. Once
+// I have debugged things using this version I can use ntz() to search for
+// pinned items 64-cells at a time in the bitmap, thereby speeding this
+// up quite a lot. But this version is simpler so I use it first.
+    while (a != csl_cast<uintptr_t>(p+1))
+    {   if (consIsPinned(a, p))
+        {   car(base) = a;
+            base = a;
+            while (a != csl_cast<uintptr_t>(p+1) &&
+                   consIsPinned(a, p))
+            {   a += sizeof(ConsCell);
+                nPins++;
+            }
+        }
+        else a += sizeof(ConsCell);
+    }
+    car(base) = a;
+    p->hasPinned = nPins;
+}
+
+void rePinConsPage(Page* p)
+{   if (p == consCurrent)
+    {   rePinConsCurrent(p);
+        return;
+    }
+// Before I mess with the pin maps I want to arrange that every
+// cell that has an old pin but not a new one gets a padder written in.
+    size_t loc=0;
+    while ((loc = nextOneBit(p->consPins, consPinBits, loc)) != SIZE_MAX)
+    {   uintptr_t v = offsetToCons(loc, p);
+        if (!consIsNewPinned(v, p)) car(v) = CONS_PADDER_HEADER;
+        loc++;
+    }
+// Move the new pin map to the standard position and clear the "new" version
+// ahead of a future GC.
+    std::memcpy(p->consPins,
+                p->newConsPins,
+                consPinBytes);
+    std::memset(p->newConsPins, 0, consPinBytes);
     uintptr_t a = offsetToCons(0, p);
     size_t nPins = 0;
     zprintf("rePin from %a to %a\n", a, csl_cast<uintptr_t>(p+1));
+// Now I need to scan the page. I will start by skipping past any
+// initial pinned items. A pathalogical situation would be if every single
+// cell was pinned, so I have to check for end of page!
     while (a != offsetToCons(0, p+1) &&
            consIsPinned(a, p))
     {   zprintf("!!beginPin %a %s\n", a, consIsPinned(a, p));
         a += sizeof(ConsCell);
         nPins++;
     }
-// I have now just scanned past any initial pinned items in the Page.
-    if (a == csl_cast<uintptr_t>(p+1)) return nPins;
+// In the pathalogical case I am done, and the page will count as clogged.
+    if (a == csl_cast<uintptr_t>(p+1))
+    {   p->hasPinned = nPins;
+        return;
+    }
     uintptr_t base = a;
 // At present this is coded by looking at each individual cons cell. Once
 // I have debugged things using this version I can use ntz() to search for
 // pinned items 64-cells at a time in the bitmap, thereby speeding this
 // up quite a lot. But this version is simpler so I use it first.
-
+#pragma message ("need to use nextOneBit() here")
     while (a != csl_cast<uintptr_t>(p+1))
-    {   //-- if ((a & 0xffff) == 0) zprintf("check at %a\n", a);
-        if (consIsPinned(a, p))
+    {   if (consIsPinned(a, p))
         {   car(base) = a;
             zprintf("!!startPin at %a\n", a);
             while (a != csl_cast<uintptr_t>(p+1) &&
@@ -987,74 +1070,38 @@ size_t rePinOneConsPage(Page* p)
     startBitmapScan(p->consPins, consPinSize);
     uintptr_t nextPin;
     while ((nextPin = nextInConsBitmap(p)) != 0)
-    {   zprintf("!!Pinned item at %a\n", nextPin);
+    {   zprintf("!!Pinned item at %a (method 1)\n", nextPin);
     }
-    return nPins;
+// And yet another version which is probably the one I will want to end
+// up using.
+    nextPin = 0;
+    while ((nextPin=nextOneBit(p->consPins, consPinBits, nextPin))!=SIZE_MAX)
+    {   zprintf("!!Pinned item at %a (method 2)\n", offsetToCons(nextPin, p));
+        nextPin++;
+    }
+    p->hasPinned = nPins;
 }
 
-void rePinConsCurrent(Page* p)
-{   size_t loc=0;
-    while ((loc = nextOneBit(p->consPins, consPinSize, loc)) != SIZE_MAX)
-    {   uintptr_t v = offsetToCons(loc, p);
-        if (!consIsNewPinned(v, p)) car(v) = CONS_PADDER_HEADER;
-        loc++;
-    }
-    std::memcpy(p->consPins,
-                p->newConsPins,
-                consPinBytes);
-    std::memset(p->newConsPins, 0, consPinBytes);
-// Space up as far as consFringe is in use, and any pinned items there
-// should now be skipped.
-    while (consFringe != csl_cast<uintptr_t>(p+1) &&
-           consIsPinned(consFringe, p)) consFringe += sizeof(ConsCell);
-// If that tkes consFringe up to the end of the page then this page is
-// full and the next allocation request will replace it.
-    if (consFringe == csl_cast<uintptr_t>(p+1))
-    {   consLimit = consFringe;
-        return;
-    }
-// Now (whew) there is at least one non-pinned cell available still. The
-// first block of such must be left delimited by consLimit.
-    uintptr_t a = consFringe;
-    while (a != csl_cast<uintptr_t>(p+1) &&
-           !consIsPinned(a, p)) a += sizeof(ConsCell);
-    consLimit = a;
-    if (a == csl_cast<uintptr_t>(p+1)) return;
-// Here I have found a relevant pinned item. Skip past pinnings..
-    while (a != csl_cast<uintptr_t>(p+1) &&
-           consIsPinned(a, p)) a += sizeof(ConsCell);
-// Now a points to the start of a free region (or at the end of the page).
-// I can fill in the rest of the page with pointers that chain such free
-// regions together.
-    uintptr_t base = a;
-// At present this is coded by looking at each individual cons cell. Once
-// I have debugged things using this version I can use ntz() to search for
-// pinned items 64-cells at a time in the bitmap, thereby speeding this
-// up quite a lot. But this version is simpler so I use it first.
-    while (a != csl_cast<uintptr_t>(p+1))
-    {   if (consIsPinned(a, p))
-        {   car(base) = a;
-            base = a;
-            while (a != csl_cast<uintptr_t>(p+1) &&
-                   consIsPinned(a, p)) a += sizeof(ConsCell);
-        }
-        else a += sizeof(ConsCell);
-    }
-    car(base) = a;
-}
-
-size_t rePinOneVecPage(Page* p)
+void rePinVecPage(Page* p)
 {
-// Here the page has at least one chunk that was pinned (either in
-// a previous GC or in this one). Info about that is in chunkStatus and
-// chunkStatusMap. Current detailed pinning info is in newVecPins.
-    zprintf("rePinOneVecPage %a\n", p);
+    displayAllPages(where("start repin")); // DEBUG
+// Here the page may have some pinned material. The "odd" cases are where
+// it had pinned stuff during the previous GC but doesn't any more, and
+// where potential pinning during this page turned out to refer into a
+// padder.
+// There can be more pins this GC than last or less, and I must put
+// everything in a state that reflects the current state!
+    zprintf("rePinVecPage %a\n", p);
+    std::memcpy(p->vecPins, p->newVecPins, vecPinBytes);
+    std::memset(p->newVecPins, 0, vecPinBytes);
+    std::memcpy(p->chunkBitmap, p->newChunkBitmap, sizeof(p->chunkBitmap));
+    std::memset(p->newChunkBitmap, 0, sizeof(p->chunkBitmap));
     size_t pinnedChunkCount = 0;
     size_t pinnedChunk = 0;
     while ((pinnedChunk = nextOneBit(p->chunkBitmap,
-                                     chunkBitmapSize,
+                                     chunkBitmapBits,
                                      pinnedChunk)) != SIZE_MAX)
-    {   // Deal with a chunk that may still be pinned
+    {   // Deal with a chunk that MAY be pinned
         bool anyPinned = false;
         size_t pinEnd = pinnedChunk + p->chunkLength[pinnedChunk];
 // So here is a chunk. There may be some pinned material in it.
@@ -1064,27 +1111,25 @@ size_t rePinOneVecPage(Page* p)
         uintptr_t b = addressFromChunkNo(p, pinEnd);
 // Now I have the addresses of the start and end of the chunk. Note that they
 // will be 16K aligned. I need to process each pinned item in that range.
-// Well that is going to be looking in newVecPins starting at the offset
+// Well that is going to involve looking in vecPins starting at the offset
 // for a and ending at the one for b.
         size_t aOffset = vecToOffset(a, p);
         size_t bOffset = vecToOffset(b, p);
-// Because the chunk is 16K aligned its end address comes at a neat multiple
-// of 64-bits in the map, so the division here will be exact.
-        size_t bitmapEndPos = bOffset/64;
-// There is a step that I could take here where at prezsent I do not, and
+// I want to search the bitmap up as far as the end of this chunk, and that
+// is not up to the very end of the whole bitmap...
+// There is a step that I could take here where at present I do not, and
 // which I do not intend to until I have everything else debugged.
 // If the first pinned item in a chunk is more than 16K down from the
-// front or if am extended chunk in fact has no items in it that are still
+// front or if an extended chunk in fact has no items in it that are still
 // pinned then I can turn at turn all of it into a sequence of basic
 // chunks. Detecting and handling that case here will not be costly and it
 // (slightly) improves the recycling of memory!
-        while ((aOffset = nextOneBit(p->newVecPins, bitmapEndPos, aOffset)) !=
-               SIZE_MAX)
+        while ((aOffset=nextOneBit(p->vecPins, bOffset, aOffset)) != SIZE_MAX)
         {   anyPinned = true;
             uintptr_t thePinnedItem = offsetToVec(aOffset, p);
             if (thePinnedItem != a) setHeaderWord(a, thePinnedItem-a);
             zprintf("Put padder at %a length %d\n", a, thePinnedItem-a);
-            Header h = *reinterpret_cast<Header*>(thePinnedItem);
+            Header h = indirect(thePinnedItem);
             zprintf("Pinned item at %a length %d\n", thePinnedItem, length_of_any_header(h));
             a = thePinnedItem + length_of_any_header(h);
             aOffset = vecToOffset(a, p);
@@ -1092,143 +1137,77 @@ size_t rePinOneVecPage(Page* p)
         if (a != b) setHeaderWord(a, b-a);
         zprintf("final padder at %a length %d\n", a, b-a);
         if (anyPinned) pinnedChunkCount++;
+        else
+        {   for (size_t i=pinnedChunk; i<pinEnd; i++)
+            {   p->chunkSeqNo[i] = 0;
+                p->chunkLength[i] = 1;
+                chunkNoClearPinned(p, i);
+            }
+        }
         zprintf("pinned chunk from %d to %d\n", pinnedChunk, pinEnd);
         pinnedChunk = pinEnd;
     }
-    std::memset(p->chunkBitmap, 0, sizeof(p->chunkBitmap));
-    return pinnedChunkCount;
+    p->hasPinned = pinnedChunkCount;
+    zprintf("pinnedChunkCount = %d\n", pinnedChunkCount);
+    displayAllPages(where("end repin")); // DEBUG
 }
 
-void setupPinmapsConsPages()
-{
-// This is called at the end of GC. At this stage I generally need to move
-// pin information from newConsPins to Pins (and clear newConsPins ahead of
-// any future GC). There are several "sorts" of pages:
-// (1) consPinPages. Ones that contained some pinned data after the
-//     previous GC but may or may not now. Apart from pinned items
-//     and any pinned now will have been pinned last time, the page is
-//     empty and available for allocation.
-// (2) consOldPages. Ones that held live data at the start of the GC but
-//     where all non-pinned data has now been moved to elsewhere. There can
-//     be pinned items that were pinned last time and also ones newly pinned
-//     this time, but all non-pinned space is available for re-use. These
-//     pages are treated just as the ones in catergoty (1).
-// (3) consPages except from consCurrent: now full of live data copied
-//     by this GC. The pin-maps need updating but no freechains should be
-//     created.
-// (4) currentCons. The pinmap needs updating and free-chain information
-//     must be set up from fringe to the end of the page, but space before
-//     fringe must not be touched.
-// (5) emptyPages. No action needed because there can neither be new nor old
-//     pinned data.
-// (6) consCloggedPages. Well with luck this GC has led to some of the
-//     old pinning being released so the page morphs into a consPinPage
-//     or exceptionally even into and emptyPage]
-// I will start by moving consPinPages stuff onto consOldPages so that the
-// two can be processed together.
-    consOldPages += consPinPages;
-    consOldPages += consCloggedPages;
-    while (!consOldPages.isEmpty())
+void tidyUpPinmaps()
+{   Page* r = nullptr;
+    zprintf("tidyUpPinmaps with pinnedPages = %a\n", pinnedPages);
+    while (pinnedPages != nullptr)
+    {   Page*p = pinnedPages;
+        pinnedPages = p->pinnedPages;
+        switch (p->type)
+        {
+        case consPageType:
+            rePinConsPage(p);
+            if (p->hasPinned != 0)
+            {   p->pinnedPages = r;
+                r = p;
+            }
+            continue;
+        case vecPageType:
+            rePinVecPage(p);
+            if (p->hasPinned != 0)
+            {   p->pinnedPages = r;
+                r = p;
+            }
+            continue;
+        default:
+            my_abort("illegal page type");
+        }
+    }
+    pinnedPages = r;
+}
+
+
+// I have the following two threshold values which have not been selected
+// based on measurement - they are guesses! If a page has more pinning in it
+// than the limit set here I will not make it available for re-allocation.
+// That is because allocation around many pinned items has a performance
+// implication. However declaring too many pages as "clogged" could lead to
+// memory becoming exhausted too soon.
+
+const size_t consClogThreshold = 200;
+const size_t vecClogThreshold  = 10;
+
+void recycleOldSpace()
+{   while (!consOldPages.isEmpty())
     {   Page* p = consOldPages.pop();
-// rePinOneConsPage processes one page and returns a count of the pinned
-// items present.
-        size_t nPins = rePinOneConsPage(p);
-        if (nPins == 0)
-        {   zprintf("cons Page %a is now empty\n", p);
-            emptyPages.push(p);
-        }
-// I set a rather arbitrary limit such that if (1/10) of a page is
-// filled with pinned items I will avoid allocation within that page
-// until subsequent garbage collections have (one hopes) observed the
-// pinning evaporating.
-        else if (nPins < pageSize/sizeof(ConsCell)/10)
-        {   zprintf("cons Page %a has %d pins\n", p, nPins);
-            consPinPages.push(p);
-        }
-        else
-        {   zprintf("cons page %a hs clogged (%d)\n", p, nPins);
-            consCloggedPages.push(p);
-        }
+        zprintf("cons Page %a has %d pins\n", p, p->hasPinned);
+        if (p->hasPinned == 0) emptyPages.push(p);
+        else if (p->hasPinned < consClogThreshold) consPinPages.push(p);
+        else consCloggedPages.push(p);
     }
-    for (auto p:consPages)
-    {   std::memcpy(p->consPins,
-                    p->newConsPins,
-                    consPinBytes);
-        std::memset(p->newConsPins, 0, consPinBytes);
-        if (p == consCurrent) rePinConsCurrent(p);
+    while (!vecOldPages.isEmpty())
+    {   Page* p = vecOldPages.pop();
+        zprintf("vec Page %a has %d pins\n", p, p->hasPinned);
+        if (p->hasPinned == 0) emptyPages.push(p);
+        else if (p->hasPinned < vecClogThreshold) vecPinPages.push(p);
+        else vecCloggedPages.push(p);
     }
-}
 
-void moveNewPins(PageList& pl)
-{   for (auto p:pl)
-    {   std::memcpy(p->vecPins,
-                    p->newVecPins,
-                    vecPinBytes);
-        std::memset(p->newVecPins, 0, vecPinBytes);
-    }
-}
-
-void setupPinmapsVecPages()
-{
-// I will now set a flag on all vecPages so that when I have repinned
-// I leave them there. I also need to get ready to reconstitute vecPinPages
-// and vecCloggedPages;    
-// Note that at this stage vecPages contain just the pages that form
-// the vector component of the "new half space" that I have copied
-// data into. I need to treat them differently from all other Pages.
-    zprintf("setPinmapsVecPages\n");
-    zprintf("vecPinPages:"); for (Page* p:vecPinPages) zprintf(" %a", p); zprintf("\n");
-    zprintf("vecCloggedPages:"); for (Page* p:vecCloggedPages) zprintf(" %a", p); zprintf("\n");
-    zprintf("vecOldPages:"); for (Page* p:vecOldPages) zprintf(" %a", p); zprintf("\n");
-    zprintf("oldVecPinPages:");
-    for (Page* p=oldVecPinPages; p!=nullptr; p=p->oldVecPinPages)
-        zprintf(" %a", p);
-    zprintf("\n");
-    for (Page* p:vecPages) p->isInVecPages = true;
-    vecOldPages += vecPinPages;
-    vecOldPages += vecCloggedPages;  // This leaves vecPinPages etc empty.
-    Page* old = oldVecPinPages;
-    oldVecPinPages = nullptr;
-    for (Page* p=old; p!=nullptr; p=p->oldVecPinPages)
-    {   int nPins = rePinOneVecPage(p);
-        if (!p->isInVecPages)
-        {   if (nPins == 0)
-            {   zprintf("Page %a is now empty\n", p);
-                emptyPages.push(p);
-            }
-            else if (nPins < 10)
-            {   zprintf("Page %a now has %d pins\n", p, nPins);
-                vecPinPages.push(p);
-            }
-            else
-            {   zprintf("Page %a is clogged (%d)\n", p, nPins);
-                vecCloggedPages.push(p);
-            }
-            if (nPins == 0) p->hasVecPins = false;
-            else
-            {   p->oldVecPinPages = oldVecPinPages;
-                oldVecPinPages = p;
-                p->hasVecPins = true;
-            }
-        }
-        // Otherwise the page remains on vecPages
-    }
-// Tidy up
-    for (Page* p:vecPages) p->isInVecPages = false;
-    moveNewPins(vecPages);
-    moveNewPins(vecPinPages);
-    moveNewPins(vecCloggedPages);
-// Finally I must reset vecLimit to cope with the possibility that
-// a pinned region within vecCurrent went away.
-    size_t vChunk =
-        (vecFringe - csl_cast<uintptr_t>(&vecCurrent->chunks[0]))/chunkSize;
-    size_t nextPinnedChunk = nextOneBit(vecCurrent->chunkBitmap,
-                                        chunkBitmapSize,
-                                        vChunk);
-    if (nextPinnedChunk == SIZE_MAX)
-        vecLimit = csl_cast<uintptr_t>(vecCurrent+1);
-    else vecLimit = csl_cast<uintptr_t>(&vecCurrent->chunks[0]) +
-        chunkSize*nextPinnedChunk;
 }
 
 // I start garbage collection by  making the current allocation pages
@@ -1241,8 +1220,9 @@ void inner_garbage_collect()
 {   WithinGarbageCollector noted;
     displayAllPages("Start of GC");
     check_standard_input(__WHERE__);
-    validateAll("start GC");
+    validateAll("start GC", false, false);
     allPinned.clear();
+    evacuated.clear();
 //    check_standard_input(__WHERE__);
 // I start by setting the end-point information in the two current pages.
 // That leaves them in the proprer state to count as "full", so that when
@@ -1256,7 +1236,6 @@ void inner_garbage_collect()
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
     vecOldPages = vecPages;
-    pinnedPages = nullptr;
     potentiallyPinned = nullptr;
 // ... and allocate what will be the start of the new half-space.
 // Well here I will not want any ambiguous pointers into this new
@@ -1333,7 +1312,7 @@ void inner_garbage_collect()
     evacuateFromUnambiguousBases();
     validateAll("evacuateFromUnambiguousBases done", true);
 //    check_standard_input(__WHERE__);
-    if (gcTrace) displayAllPages("Line 1070 in newcslgc.cpp"); // DEBUG
+    if (gcTrace) displayAllPages("Line " CSL_TOSTRING(__LINE__) " in newcslgc.cpp"); // DEBUG
     evacuateFromCopiedData();
     validateAll("evacuateFromCopiedDate done");
 //    check_standard_input(__WHERE__);
@@ -1354,65 +1333,14 @@ void inner_garbage_collect()
 // So for everything in consOldPages and in consPinPages I will need to
 // copy the new pin-map to the main one and rearrange free-space chaining.
 // if such a page ends up empty it may be put in emptyPages otherwise on
-// consPinPages. And similarly for vector pages.
-    setupPinmapsConsPages();
-    validateAll("setupPinmapsConsPages done");
+// consPinPages. And similarly for vector pages. Well only page on the list
+// pinnedPages can have any set bits in their new pinmaps and so I do not
+// need to worry about others!
+    tidyUpPinmaps();
+    validateAll("tidyUpPinmaps done");
+    recycleOldSpace();
+    validateAll("tidyUpPinmaps done", false, false);
     check_standard_input(__WHERE__);
-// The following is messier than I has recognized. There can be existing
-// pages containing items pinned for the first time during the GC in
-// vecOldPages. They will also be in potentiallyPinned.
-// There can then be items that had been pinned during the last GC but
-// which may or may not be pinned still in VecOldPages, vecPages,
-// vecPinPages and vecCloggedPages.
-// I think I want to be able to identify these pages efficiently without
-// needing to check everything in vecPages and vecOldPages (which I
-// generally expect to be pretty clean). So I will have yet another
-// chain of pages - oldVecPinPages - that at the end of a GC contains
-// every vector page containing pinned chunks, and if a page is on that
-// chain it has a flag - hasVecPins - set in it to note this fact.
-// So I need to scan oldVecPinPages. There are then several cases:
-// (1) pages in vecOldPages. These had been full of live data at the start
-//     of the GC that is now ending, so there may be existing pinned stuff
-//     from a previous GC and there can be new pinnings. But some existing
-//     old pins may no longer be active. Inspect each Chunk that contains
-//     or may contain pinned stuff. chunkStatusMap[] makes identifying these
-//     quick. For each such chunk inspect newVecPins[] for all words within
-//     the chunk (or extended chunk). If none then that Chunk becomes
-//     plain and might usefully be filled with a single padder. If it is
-//     an extended Chunk turn into a sequence of simple chunks each padded.
-//     Adjust chunkStatus and chunkStatusMap[]. A special case is if a
-//     pinned extended chunk now does not have the first vector in it
-//     pinned. An extended chunk always contains one large vector that spans
-//     at least 2 sub-chunks, but its final chunk can be filled out with
-//     more small objects. It the large vector is now not pinned but one or
-//     more of the small ones are then all but the final chunk can be
-//     turned into unused simple chunks and that final chunk becomes a
-//     simple pinned one.
-//     If there are pinned items still then write in padders between
-//     every pinned object, and leave chunkStatus and chunkStatusMap alone.
-//     If no pinned checks remain move to emptyPages, otherwise based on
-//     how much pinning is present move to vecPinPages or vecCloggedPages.
-//     That is because all non-pinned stuff has been moved out from it.
-//     Note that allocation just uses chunkStatus[] and not any information
-//     written into the data region, so things here are simpler than in the
-//     case of cons pages.
-// (2) Things in vecPages [this in fact includes vecCurrent]. Such pages
-//     can only contain pinned data if it has been pinned by a previous GC
-//     and allocation as stuff was copied during this GC has moved material
-//     into it, but some of the old pinned stuff may still be pinned. Treat
-//     just as case (1) except that it stays on vecPages.
-// (3) vecPinPages and vecCloggedPages. Treat as (1). The only possible live
-//     material will be in pinned chunks and I rather hope or expect that
-//     over a sequence of GCs the number of pinned chunks will decrease.
-//     This can cause progression from Clogged to Pin to Empty.
-// (4) vecCurrent. I think this gets handled as (2) except that at the end
-//     it resets vecLimit because that might previously have been defined by
-//     a chunk that used to be pinned but is not now.
-// All this must leave the oldVecPinPages as a chain of pages with items
-// pinned NOW, and it mist move pin maps from vecNewPins to vecPins.
-    setupPinmapsVecPages();
-    validateAll("setupPinmapsVecPages done: GC complete");
-
     zprintf("GC complete!\n");
 }
 
@@ -1541,3 +1469,4 @@ void aprint(LispObject* x)
 }
 
 // end of file newcslgc.cpp
+

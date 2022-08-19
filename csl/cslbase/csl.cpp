@@ -1429,6 +1429,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 }
 
 bool gcTest = false;
+bool minimal = false;
 bool gcTrace = false;
 bool ignoreLoadTime = false;
 
@@ -1969,6 +1970,17 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "--gc-trace copious logging from garbage collection.",
                 [&](string key, bool hasVal, string val)
                 {   gcTrace = true;
+                }
+            },
+            /*! options [--minimal] \item [{\ttfamily --minimal}] \index{{\ttfamily --minimal}}
+             * --minimal reduces that number of things defined (rather sharply)
+             * Only activates if "-z" is also specified for a "cold start".
+             * May be helpful while testing by leaving the heap image smaller.
+             */
+            {   "--minimal", true, true,
+                "--minimal reduces the nuimber of things defined. Need -z as well.",
+                [&](string key, bool hasVal, string val)
+                {   minimal = true;
                 }
             },
 #endif // CONSERVATIVE
