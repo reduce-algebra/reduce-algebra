@@ -187,7 +187,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
         else if ((a < p->dataEnd ||
                   consIsPinned(a, p)) &&
                  !consIsNewPinned(a, p))   // detect first time noticed.
-        {   my_assert(!consIsNewPinned(a, p), __WHERE__);
+        {   my_assert(!consIsNewPinned(a, p), where("consIsNewPinned test bad"));
             consSetNewPinned(a, p);
             zprintf("set new cons pin %a\n", a);
 // The first time I find an object pinned on a page I will put that page
@@ -341,7 +341,7 @@ void identifyPinnedItems()
 void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 {   uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
     zprintf("\n\n@@@@\n");
-    displayAllPages(__WHERE__); // DEBUG
+    displayAllPages(where("findHeadersInChunk")); // DEBUG
 // lastAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
     uintptr_t lastAddr   = addressFromChunkNo(p, lastChunk);
@@ -366,7 +366,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
             FALLTHROUGH;
     case 0x1a: // 0b11010: // Header for vector of binary data
             len = doubleword_align_up(length_of_header(h));
-            my_assert(len > 0 && len<pageSize, __WHERE__);
+            my_assert(len > 0 && len<pageSize, where("len==0"));
             if (testBits(p->newVecPins,
                          vecToOffset(s, p),
                          len/sizeof(LispObject)))
@@ -435,7 +435,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
     }
     if (!thisChunkHasPins) chunkNoClearNewPinned(p, firstChunk);
     zprintf("\n\n&&&&\n");
-    displayAllPages(__WHERE__); // DEBUG
+    displayAllPages(where("end findHeadersInChunk")); // DEBUG
 }
 
 // Here I identify each chunk that may contain pinned data and process it.
@@ -648,7 +648,7 @@ void evacuateFromPinnedItems()
                 if (car(next) == 0)
                 {   zprintf("@@@Zero word at %a\n", next);
                     zprintf("@@@next=%a vecCurrent=%a\n", next, vecCurrent);
-                    displayAllPages(__WHERE__); // DEBUG
+                    displayAllPages(where("zero work in heap")); // DEBUG
                     my_abort("zero word in evacuateFromPinnedItems");
                 }
                 evacuate(car(next));
@@ -1219,11 +1219,11 @@ bool withinGarbageCollector = false;
 void inner_garbage_collect()
 {   WithinGarbageCollector noted;
     displayAllPages("Start of GC");
-    check_standard_input(__WHERE__);
+    check_standard_input(where("inner_garbage_collect starting"));
     validateAll("start GC", false, false);
     allPinned.clear();
     evacuated.clear();
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("inner_garbage_collect"));
 // I start by setting the end-point information in the two current pages.
 // That leaves them in the proprer state to count as "full", so that when
 // the GC looks at ambiguous pointers it will be able to be aware when
@@ -1244,7 +1244,7 @@ void inner_garbage_collect()
 // I will mark the pages as free!
     grabFreshPage(consPageType);
     validateAll("GC setup");
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("GC setup done"));
 // Now I can scan the stack and mark up pinned items. This will build
 // up a chain of pages pinned this time.
 // For each such page it will create a list of the pinned locations, where
@@ -1254,7 +1254,7 @@ void inner_garbage_collect()
 // now have their new pin bit set. I will tidy that up!
     identifyPinnedItems();
     validateAll("identifyPinnedItems done");
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("identifyPinnedItems done"));
 // I need to give more explanation. consPages now will be JUST the
 // pages allocated for the GC to use as its "new half space". That
 // means that the only things that ought to get pinned in them will be
@@ -1273,7 +1273,7 @@ void inner_garbage_collect()
     }
     findHeadersOfPinnedItems();
     validateAll("findHeadersOfPinnedItems done");
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("findHeadersOfPinnedItems done"));
     pendingPages = nullptr;
     zprintf("Report on pinning...\n");
     {   for (Page* pp=pinnedPages; pp!=nullptr; pp=pp->pinnedPages)
@@ -1301,21 +1301,21 @@ void inner_garbage_collect()
 // There is no need to set up a new vector current page until now.
     grabFreshPage(vecPageType);
     validateAll("ready to start evacuating");
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("read to start evacuating"));
 // I arrange that the very first vector item I copy is the vector that is
 // the current "package", ie hash table of symbols. I do this because it
 // is liable to be a large vector so putting it first avoids some padding
 // waste (maybe!).
     evacuateFromPinnedItems();
     validateAll("evacuateFromPinnedItems done", true);
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("evacFromPinned done"));
     evacuateFromUnambiguousBases();
     validateAll("evacuateFromUnambiguousBases done", true);
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("evacFromUnambig done"));
     if (gcTrace) displayAllPages("Line " CSL_TOSTRING(__LINE__) " in newcslgc.cpp"); // DEBUG
     evacuateFromCopiedData();
     validateAll("evacuateFromCopiedDate done");
-//    check_standard_input(__WHERE__);
+//    check_standard_input(where("evacFromCopied done"));
 // Well where we should be now is that all live data is either left in place
 // if pinned or moved to new space if not. References to it should all be
 // updated properly. Memory allocation should now be ready to continue on
@@ -1340,7 +1340,7 @@ void inner_garbage_collect()
     validateAll("tidyUpPinmaps done");
     recycleOldSpace();
     validateAll("tidyUpPinmaps done", false, false);
-    check_standard_input(__WHERE__);
+    check_standard_input(where("end of GC"));
     zprintf("GC complete!\n");
 }
 
@@ -1389,7 +1389,7 @@ NOINLINE uintptr_t getStackFringe(double x)
 
 NOINLINE void garbage_collect()
 {   std::jmp_buf buffer;
-    check_standard_input(__WHERE__);
+    check_standard_input(where("entering GC"));
     buffer_pointer = &buffer;
 // This is a silly hack! The idea is that as far as the compiler is
 // allowed to assune, each reference to volatileVar might return a different
@@ -1446,7 +1446,7 @@ NOINLINE void garbage_collect()
     }
 // End of garbage collection!
     zprintf("@@@END OF GC@@@\n");
-    check_standard_input(__WHERE__);
+    check_standard_input(where("exiting GC"));
 }
 
 // The functions here are intended to be useful for calling from gdb
@@ -1469,4 +1469,3 @@ void aprint(LispObject* x)
 }
 
 // end of file newcslgc.cpp
-

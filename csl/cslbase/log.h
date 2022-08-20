@@ -148,6 +148,14 @@ inline void my_assert(bool ok)
 {   if (!ok) my_abort("my_assert without specific message");
 }
 
+#ifndef INLINE_VAR
+#ifdef __cpp_inline_variables
+#define INLINE_VAR inline
+#else // inline variables
+#define INLINE_VAR UNUSED_NAME static
+#endif // inline variables
+#endif // INLINE_VAR
+
 // This is to help me in trace messages. The main issue it addresses is that
 // __FILE__ expands to the full path of the file being compiled, and
 // in many cases all but the final component are both not especially
@@ -155,11 +163,12 @@ inline void my_assert(bool ok)
 // a file-name and a line number into a single string based on the leaf
 // part of the file-name.
 
+INLINE_VAR char whereMsg[128];
+
 inline const char* whereFn(const char* file, int line)
 {   const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
-    static char whereMsg[100];
-    sprintf(whereMsg, "%.40s:%d", file, line);
+    std::sprintf(whereMsg, "%.40s:%d", file, line);
     return whereMsg;
 }
 
@@ -168,8 +177,7 @@ inline const char* whereFn(const char* file, int line)
 inline const char* whereFn(const char* file, int line, const char* msg)
 {   const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
-    static char whereMsg[110];
-    sprintf(whereMsg, "%.40s:%d %.50s", file, line, msg);
+    std::sprintf(whereMsg, "%.40s:%d %.50s", file, line, msg);
     return whereMsg;
 }
 
@@ -242,14 +250,6 @@ inline const char* whereFn(const char* file, int line, const char* msg)
 
 #endif // !__OPTIMIZE__
 
-
-#ifndef INLINE_VAR
-#ifdef __cpp_inline_variables
-#define INLINE_VAR inline
-#else // inline variables
-#define INLINE_VAR UNUSED_NAME static
-#endif // inline variables
-#endif // INLINE_VAR
 
 INLINE_VAR const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 
@@ -1342,7 +1342,7 @@ void zprintf(formatString<my_type_identity_t<Args> ...> format,
 // report of where the offending call to zprintf() had been. This saves
 // that information so it can be displayed.
 #define zprintf(...)                                   \
-    (std::strcpy(formatLocation(), __WHERE1__(".. ")), \
+    (std::strcpy(formatLocation(), where(".. ")),      \
      zprintf(__VA_ARGS__))
 #endif
 
