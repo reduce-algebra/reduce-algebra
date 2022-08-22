@@ -284,7 +284,7 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 {   const char* _p_ = reinterpret_cast<const char*>(&_p_);
-    if (csl_cast<uintptr_t>(_p_) < C_stackLimit)
+    if (bit_cast<uintptr_t>(_p_) < C_stackLimit)
     {   if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
         aerror("stack overflow");
     }
@@ -861,8 +861,8 @@ inline void zero_out(void* p)
 // view that if things went wrong that would avoid confusion when looking
 // at the wreckage. Now is the time to cease putting in that extra
 // overhead.
-    char* p1 = csl_cast<char* >(
-        doubleword_align_up(csl_cast<uintptr_t>(p)));
+    char* p1 = bit_cast<char* >(
+        doubleword_align_up(bit_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 #endif // 0
 }
@@ -1103,6 +1103,10 @@ typedef struct setup_type
 #define DEF_2(name, code)   {name, G0W2, G1W2, code, G3W2, G4W2}
 #define DEF_3(name, code)   {name, G0W3, G1W3, G2W3, code, G4W3}
 #define DEF_4up(name, code) {name, G0W4up, G1W4up, G2W4up, G3W4up, code}
+#define DEF_special(name, def)               \
+    {name, bad_specialfn_0, def,             \
+           bad_specialfn_2, bad_specialfn_3, \
+           bad_specialfn_4up}
 
 extern setup_type const
 arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],

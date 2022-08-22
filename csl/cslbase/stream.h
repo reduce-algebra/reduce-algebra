@@ -201,19 +201,19 @@ inline LispObject &stream_spare(LispObject v)
 }
 
 inline LispObject set_stream_file(LispObject v, std::FILE *x)
-{   return (basic_elt(v, 3) = csl_cast<LispObject>(x));
+{   return (basic_elt(v, 3) = bit_cast<LispObject>(x));
 }
 inline LispObject set_stream_write_fn(LispObject v, character_stream_writer *x)
-{   return (basic_elt(v, 4) = csl_cast<LispObject>(x));
+{   return (basic_elt(v, 4) = bit_cast<LispObject>(x));
 }
 inline LispObject set_stream_write_other(LispObject v, other_stream_op *x)
-{   return (basic_elt(v, 5) = csl_cast<LispObject>(x));
+{   return (basic_elt(v, 5) = bit_cast<LispObject>(x));
 }
 inline LispObject set_stream_read_fn(LispObject v, character_stream_reader *x)
-{   return (basic_elt(v, 9) = csl_cast<LispObject>(x));
+{   return (basic_elt(v, 9) = bit_cast<LispObject>(x));
 }
 inline LispObject set_stream_read_other(LispObject v, other_stream_op *x)
-{   return (basic_elt(v, 10) = csl_cast<LispObject>(x));
+{   return (basic_elt(v, 10) = bit_cast<LispObject>(x));
 }
 
 #define STREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + (STREAM_SIZE<<(Tw+5)))

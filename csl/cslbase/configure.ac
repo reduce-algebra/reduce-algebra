@@ -942,41 +942,6 @@ then
   fi
 fi
 
-# I will withdraw the following tests until I actually need 16-byte atomics!
-#
-# # Some platforms need "-latomic" to support std::atomic<T> where sizeof(T)
-# # exceeds 8.
-#
-# AC_LINK_IFELSE([
-#   AC_LANG_PROGRAM([[#include <atomic>
-#                      typedef struct _c16 { char c[16]; } c16;
-#                      typedef std::atomic<c16> a16;
-#                    ]],
-#                    [[ c16 v16 = {1};
-#                       a16 av16;
-#                       av16 = v16;
-#                    v16 = av16;
-#                   ]])],
-#   [AC_MSG_NOTICE([std::atomic<T> width 16 available])],
-#   [maybe_need_libatomic="yes"])
-#
-# if test "$maybe_need_libatomic" = "yes"
-# then
-#   LIBS="$LIBS -latomic"
-#   AC_LINK_IFELSE([
-#     AC_LANG_PROGRAM([[#include <atomic>
-#                        typedef struct _c16 { char c[16]; } c16;
-#                        typedef std::atomic<c16> a16;
-#                      ]],
-#                      [[ c16 v16 = {1};
-#                         a16 av16;
-#                         av16 = v16;
-#                      v16 = av16;
-#                     ]])],
-#     [AC_MSG_NOTICE([std::atomic<T> width 16 OK with -libatomic])],
-#     [AC_MSG_ERROR([std::atomic<T> with sizeof(T)=16 fails])])
-# fi
-
 AC_LINK_IFELSE(
   [AC_LANG_SOURCE([
     #if defined __has_include
@@ -1056,6 +1021,18 @@ if test "$filesystem" = "fail"
 then
   AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
 fi
+
+AC_COMPILE_IFELSE(
+  [AC_LANG_SOURCE([
+    #include <bit>
+    #include <cstdint>
+    int main()
+    {   auto a = std::bit_cast<std::uint64_t>(1.0);
+        return 0;
+    }
+  ])],
+  [AC_DEFINE(HAVE_BITCAST, [1], [bit_cast<T>() available])],
+  [])
 
 if test "$linux_build" = "yes"
 then

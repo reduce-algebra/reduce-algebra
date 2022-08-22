@@ -607,7 +607,7 @@ LispObject Lfixp(LispObject env, LispObject a)
 // fixnums. The code here is as in intergerp.
     if (is_fixnum(a)) return onevalue(lisp_true);
     else if (is_numbers(a))
-    {   Header h = *csl_cast<Header *>(csl_cast<char *>
+    {   Header h = *bit_cast<Header *>(bit_cast<char *>
                                                (a) - TAG_NUMBERS);
         if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
         else return onevalue(nil);
@@ -1910,8 +1910,8 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
     if (!is_vector(a) || !is_vector(b) ||
         vechdr(a) != STR24HDR ||
         vechdr(b) != STR24HDR) return aerror2("datelessp", a, b);
-    aa = csl_cast<char *>(a) + (CELL - TAG_VECTOR);
-    bb = csl_cast<char *>(b) + (CELL - TAG_VECTOR);
+    aa = bit_cast<char *>(a) + (CELL - TAG_VECTOR);
+    bb = bit_cast<char *>(b) + (CELL - TAG_VECTOR);
 // Layout is eg. "Wed May 12 15:50:23 1993"
 //                012345678901234567890123
 // Note that the year is 4 digits so that the year 2000 should hold
@@ -1981,7 +1981,7 @@ LispObject Lrepresentation2(LispObject env, LispObject a,
 }
 
 LispObject Lindirect(LispObject, LispObject a)
-{   return onevalue(*csl_cast<LispObject *>(
+{   return onevalue(*bit_cast<LispObject *>(
                         static_cast<intptr_t>(sixty_four_bits(a))));
 }
 
@@ -2102,7 +2102,7 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
         return onevalue(nil);
     }
 #endif
-    r = encapsulate_pointer(csl_cast<void *>(a));
+    r = encapsulate_pointer(bit_cast<void *>(a));
     return onevalue(r);
 }
 
@@ -2141,7 +2141,7 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     b = nullptr;
 #else
 #ifdef WIN32
-    b = csl_cast<void *>(GetProcAddress(a, sname));
+    b = bit_cast<void *>(GetProcAddress(a, sname));
 #else
     b = dlsym(a, sname);
 #endif
@@ -2175,8 +2175,8 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
 // "void *" to the function pointer "void_function *" using intptr_t as
 // an intermediary. This is obviously undefined behaviour! But "The Spirit
 // of C" would give a clear indication of expectations!
-    ffi_call(&cif, csl_cast<void_function *>(
-                       csl_cast<uintptr_t>(f)), nullptr, nullptr);
+    ffi_call(&cif, bit_cast<void_function *>(
+                       bit_cast<uintptr_t>(f)), nullptr, nullptr);
     return onevalue(nil);
 }
 
@@ -2311,8 +2311,8 @@ static bool dumparg(int i, LispObject type, LispObject value)
 LispObject callf_n(LispObject fun, LispObject args)
 {   if (Lencapsulatedp(nil, fun) == nil)
         return aerror1("call-foreign-function", fun);
-    void_function *f = csl_cast<void_function *>(
-                           csl_cast<uintptr_t>(extract_pointer(fun)));
+    void_function *f = bit_cast<void_function *>(
+                           bit_cast<uintptr_t>(extract_pointer(fun)));
     LispObject currenttype = nil;
     unsigned int nargs = 0;
     while (args != nil)
@@ -2388,7 +2388,7 @@ LispObject callf_n(LispObject fun, LispObject args)
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &strres, vargs);
-        return onevalue(make_string(csl_cast<const char *>(strres)));
+        return onevalue(make_string(bit_cast<const char *>(strres)));
     }
     else return aerror1("call-foreign-function", currenttype);
 }
@@ -2483,7 +2483,7 @@ static LispObject Lget_callback(LispObject env, LispObject a)
         case 32:  r = reinterpret_cast<void *>(PROC_get_raw_value);
             break;
     }
-    return onevalue(make_lisp_integer64(csl_cast<LispObject>(r)));
+    return onevalue(make_lisp_integer64(bit_cast<LispObject>(r)));
 }
 
 // This is a rather silly function put in here to help me debug exception

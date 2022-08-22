@@ -678,7 +678,7 @@ LispObject Fix::op(Fixnum a)
 }
 
 LispObject Fix::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -715,13 +715,13 @@ LispObject Truncate::op(Fixnum a)
 }
 
 LispObject Truncate::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Truncate::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragma message ("Truncate(Rat)")
+#pragm message ("Truncate(Rat)")
 }
 
 LispObject Truncate::op(Cpx a)
@@ -753,7 +753,7 @@ LispObject Floor::op(Fixnum a)
 }
 
 LispObject Floor::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -791,7 +791,7 @@ LispObject Ceiling::op(Fixnum a)
 }
 
 LispObject Ceiling::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -829,7 +829,7 @@ LispObject Ftruncate::op(Fixnum a)
 }
 
 LispObject Ftruncate::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -867,7 +867,7 @@ LispObject Ffloor::op(Fixnum a)
 }
 
 LispObject Ffloor::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -906,7 +906,7 @@ LispObject Fceiling::op(Fixnum a)
 }
 
 LispObject Fceiling::op(uint64_t *a)
-{   return csl_cast<LispObject>(csl_cast<char *>
+{   return bit_cast<LispObject>(bit_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 

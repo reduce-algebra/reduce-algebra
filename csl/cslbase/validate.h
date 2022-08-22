@@ -247,7 +247,7 @@ inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceVali
     {   bb.name = list_names[k++];
         validateObject(*p, forwardOK, oldSpaceValid, &bb);
     }
-    for (LispObject* sp=stack; sp>csl_cast<LispObject*>(stackBase); sp--)
+    for (LispObject* sp=stack; sp>bit_cast<LispObject*>(stackBase); sp--)
     {   char msg[20];
         std::sprintf(msg, "Stack %d", (int)(stack-sp));
         bb.name = msg;

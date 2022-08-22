@@ -111,7 +111,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
                        fixnum_of_int(allocSize/CELL-1));
 // Note that allocSize has been rounded up suitably.
     LispObject r = getNBytes(allocSize);
-    *(csl_cast<Header*>(r)) =
+    *(bit_cast<Header*>(r)) =
         type + (size<<(Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
@@ -130,10 +130,10 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // need to worry about it elsewhere.
 #ifdef DEBUG
    for (size_t i=CELL; i<allocSize; i+=4)
-       *csl_cast<uint32_t*>(r+i) = 0xfeedface;
+       *bit_cast<uint32_t*>(r+i) = 0xfeedface;
 #endif // DEBUG
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *csl_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
+        *bit_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
     return static_cast<LispObject>(r + tag);
 }
 
@@ -161,10 +161,10 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrowNBytes(allocSize);
-    *(csl_cast<Header*>(r)) = type + (size <<
+    *(bit_cast<Header*>(r)) = type + (size <<
                                        (Tw+5)) + TAG_HDR_IMMED;
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *csl_cast<LispObject*>(r+allocSize-CELL) = 0;
+        *bit_cast<LispObject*>(r+allocSize-CELL) = 0;
     return static_cast<LispObject>(r + tag);
 }
 
@@ -214,7 +214,7 @@ bool allocateSegment(size_t n)
 {   assert(pageFringe == pageEnd);
 // I will round up the size to allocate so it is a multiple of the
 // page size, ie of 8 Mbytes.
-    n = (n + pageSize - 1) & -pageSize;
+    n = (n+pageSize-1) & -pageSize;
     Page* r;
 // If I have C++17 I can rely on alignment constraints and just allocate
 // using new[]. And for this CONSERVATIVE version I will insist on C++17,
@@ -229,9 +229,9 @@ bool allocateSegment(size_t n)
     {   size_t sz = n+pageSize-1;
         char* tr = new (std::nothrow) char[sz];
         heapSegmentBase[heapSegmentCount] = tr;
-        void* trv = csl_cast<void*>(tr);
+        void* trv = bit_cast<void*>(tr);
         std::align(pageSize, n*pageSize, trv, sz);
-        r = csl_cast<Page*>(trv);
+        r = bit_cast<Page*>(trv);
     }
 #else // MACINTOSH
     r = new (std::nothrow) Page[n/pageSize];
@@ -246,7 +246,7 @@ bool allocateSegment(size_t n)
     for (size_t i=heapSegmentCount-1; i!=0; i--)
     {   int j = i-1;
         void* h1 = heapSegment[i],* h2 = heapSegment[j];
-        if (csl_cast<uintptr_t>(h2) < csl_cast<uintptr_t>(h1))
+        if (bit_cast<uintptr_t>(h2) < bit_cast<uintptr_t>(h1))
             break; // Ordering is OK
 // The segment must sink a place in the tables.
         std::swap(heapSegment[i], heapSegment[j]);
@@ -295,7 +295,7 @@ void initConsPage(Page* p, bool empty)
     zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
     p->type = consPageType;
     consCurrent = p;
-    p->dataEnd = consEnd = csl_cast<uintptr_t>(p) + pageSize;
+    p->dataEnd = consEnd = bit_cast<uintptr_t>(p+1);
     if (empty)
     {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
@@ -306,13 +306,21 @@ void initConsPage(Page* p, bool empty)
         consLimit = consEnd;
     }
     else
-    {   consFringe = p->scanPoint;
-        consLimit = p->initialLimit;
+    {   consFringe = p->scanPoint = offsetToCons(0, p);
+// Now because this iafe will have had some pinned data in it I need to
+// skip any initial pinned locations and set consLimit ahead of any
+// subsequent ones.
+        while (consFringe < consEnd &&
+               consIsPinned(consFringe, consCurrent))
+            consFringe += 2*sizeof(LispObject);
+// It would be pathological if ALL the page was pinned, and in that case
+// it should have ended up in consCloggedPages and not re-issued, but to
+// be cautious I will cover that case... In normal cases I will have left
+// a reference to the end of free space in the first word of a free block.
+        if (consFringe == consEnd) consLimit = consEnd;
+        else consLimit = indirect(consFringe);
     }
 }
-
-// Again pages that have any pinned data in them specify their initial
-// fringe and limit in scanPoint and initialLimit.
 
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
@@ -320,7 +328,7 @@ void initVecPage(Page* p, bool empty)
     p->type = vecPageType;
     p->dataEnd = endOfPage(p);
     vecCurrent = p;
-    vecEnd = csl_cast<uintptr_t>(p) + pageSize;
+    vecEnd = bit_cast<uintptr_t>(p+1);
     if (empty)
     {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
@@ -338,20 +346,11 @@ void initVecPage(Page* p, bool empty)
         vecFringe = p->scanPoint = offsetToVec(0, p);
         vecLimit = vecEnd;
     }
-    else
-    {   vecFringe = p->scanPoint;
-        vecLimit = p->initialLimit;
-    }
+    else setVecFringeAndLimit(p, vecFringe, vecLimit);
     my_assert(vecLimit > vecFringe &&
-              vecLimit <= vecEnd, __WHERE__);
+              vecLimit <= vecEnd, where("vecFringe, VecLimit, vecEnd bad"));
 //  displayVecPage(p);
 }
-
-// This finds another Page to use.
-// Within the GC it will be willing to re-use pages that contain
-// pinned data, but otherwise it will insist on finding a fully
-// empty page, and will invoke the GC when things start to feel a bit
-// cluttered.
 
 void initPage(PageType type, Page* p, bool empty)
 {   switch (type)
@@ -366,6 +365,12 @@ void initPage(PageType type, Page* p, bool empty)
         return;
     }
 }
+
+// This finds another Page to use.
+// I prefer to allocate empty pages and refuse to re-use clogged ones.
+// When I do not have a page readily to hand the garbage collector is
+// invoked - once I am within the GC I will use every bit of memory I
+// can and not try a recusive call to the GC!
 
 void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
@@ -510,14 +515,14 @@ void initHeapSegments(double storeSize)
         consPages.count = vecPages.count = borrowPages.count =
         consOldPages.count = vecOldPages.count = 0;
     potentiallyPinned = pinnedPages = pendingPages = oldVecPinPages = nullptr;
-    nilSegment = csl_cast<LispObject*>(
+    nilSegment = bit_cast<LispObject*>(
         new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);
     nil = static_cast<LispObject>((uintptr_t)nilSegment + TAG_SYMBOL);
-    stackSegment = csl_cast<LispObject*>(
+    stackSegment = bit_cast<LispObject*>(
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
-    stackBase = csl_cast<uintptr_t>(stackSegment);
+    stackBase = bit_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
     grabFreshPage(consPageType);
     grabFreshPage(vecPageType);
@@ -555,8 +560,8 @@ void dropHeapSegments()
         delete [] static_cast<Page*>(heapSegment[i]);
 #endif // MACINTOSH
     }
-    delete [] csl_cast<Align8*>(nilSegment);
-    delete [] csl_cast<Align8*>(stackSegment);
+    delete [] bit_cast<Align8*>(nilSegment);
+    delete [] bit_cast<Align8*>(stackSegment);
 }
 
 void drop_heap_segments()
