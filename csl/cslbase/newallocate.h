@@ -216,7 +216,214 @@ inline const char* pageTypeName(PageType x)
     }
 }
 
-class Page;
+// Define two structs used when setting out the rest of the
+// layout. In many respects the most important thing about these is
+// the alignment that they impose.
+struct alignas(2*sizeof(LispObject)) ConsCell
+{   LispObject car;
+    LispObject cdr;
+};
+
+struct alignas(chunkSize) Chunk
+{   uintptr_t data[chunkSize/sizeof(uintptr_t)];
+};
+
+// I have a slight misery here! I will respond to it with fairly
+// dubious use of fixed numbers.
+// What I want is for my Page structure to have a known size (8Mbytes)
+// and I want that to be a round numbers so I can use cheap mask operations
+// to tell which page any pointer is within. A cons-Page has to contain
+// some header information, two bitmaps and then the main part is an
+// array ConsCell[]. Each bitmap will use 1/64 as much space as the main
+// array. The header size is fixed until I change the code and add or remove
+// items, or until a variant C++ compiler alters its layout.
+// C++ does not seem to give me a very tidy way arrange the sizes of the
+// bitmaps and main array automatically.
+
+template <int ConsN, int ChunkN>
+class alignas(pageSize) PageTemplate
+{
+    using Page = PageTemplate<ConsN,ChunkN>;
+
+public:
+    static const size_t consDataCount = ConsN;
+    static const size_t consPinWords = (consDataCount+63)/64;
+
+    static const size_t chunkDataCount = ChunkN;
+    static const size_t chunkInfoSize = chunkDataCount;
+    static const size_t vecPinWords = (chunkSize*ChunkN+8*64-1)/(8*64);
+    static const size_t chunkBitmapWords = (chunkDataCount+63)/64;
+    
+    union
+    {
+// A Page can be either a Cons page or a Vector page. The initial components
+// are the same in each case
+        struct
+        {   PageType type;
+            Page* chain;
+            Page* borrowChain;
+            bool borrowPinned;
+            size_t hasPinned;
+            Page* pinnedPages;
+            Page* pendingPages;
+            LispObject pinnedObjects;
+            uintptr_t scanPoint;
+            uintptr_t dataEnd;
+        };
+// Because I am using anonymous structs here I make the names of all the
+// initial fields that are expected to be present in every case different
+// in each branch of the union.
+        struct
+        {   PageType Ctype;
+            Page* Cchain;
+            Page* CborrowChain;
+            bool CborrowPinned;
+            size_t ChasPinned;
+            Page* CpinnedPages;
+            Page* CpendingPages;
+            LispObject CpinnedObjects;
+            uintptr_t CscanPoint;
+            uintptr_t CdataEnd;
+// The above are the common fields...
+            uint64_t consPins[consPinWords];
+            uint64_t newConsPins[consPinWords];
+            ConsCell consData[consDataCount];
+        };
+        struct
+        {   PageType Vtype;
+            Page* Vchain;
+            Page* VborrowChain;
+            bool VborrowPinned;
+            size_t VhasPinned;
+            Page* VpinnedPages;
+            Page* VpendingPages;
+            LispObject VpinnedObjects;
+            uintptr_t VscanPoint;
+            uintptr_t VdataEnd;
+// The above are the common fields.
+            bool potentiallyPinnedFlag;
+            Page* potentiallyPinnedChain;
+            uint64_t newChunkBitmap[chunkBitmapWords];
+            uint64_t chunkBitmap[chunkBitmapWords];
+            uint32_t chunkLength[chunkInfoSize];
+            uint32_t chunkSeqNo[chunkInfoSize];
+            uint64_t vecPins[vecPinWords];
+            uint64_t newVecPins[vecPinWords];
+            Chunk chunks[chunkDataCount];
+        };
+    };
+};
+
+// I now want to find values for ConsN and ChunkN that lead to the
+// data in the Page being sucy that both consData[] and chunks[] run
+// right up to the end of a pageSize object. There is no certainty in
+// advance that this will be possible. For instance for consData
+// most times that ConsN is incremented that adds sizeof(ConsCell) to
+// the space used, but one time in 64 it adds an extra 8 bytes. What that
+// happens that could skip past the target size. In such a case in order
+// to fill right up to pageSize I would need to insert an item somewhere
+// to pad the previous case up to the right size. And whether or not that
+// was needed can depend on just how much space is used by the common
+// header fields and also whether I am on a 32 or 64-bit system. Well
+// I am going to argue that this would only arise about 1 time in 64 for
+// each for each word-length considered. Similar issues arise in the
+// ChunkN case but the fact that the array of Chunks will end up aligned
+// on 16Kbyte boundaries means that the chances of difficulty are very
+// low.
+
+// I use template meta-programming to find the values I need.
+
+// With meta-programming one NEEDS some debugging tools!
+// I want to see the value of (eg) sizeof(Page) at compile-time. C++ does
+// not have a built-in static_print function to help me, but
+// https://stackoverflow.com/questions/28852574/
+//         how-to-print-result-of-a-compile-time-calculation-in-c
+// contained a suggestion that works with g++ and clang++ by putting the
+// value of interest into a part of a warning about an unused variable.
+// There are other suggestions that use errors rather than warnings,
+// but this seems gentler to me.
+
+// I find that if I have two uses of static_print both of which happen to
+// want to display the same value that the template expansions match well
+// enough that only one survives. The result is that one of the messages
+// is omitted. To make me feel happier about things I have two copies
+// called static_print and static_print1 which use different names
+// internally and so avoid this effect.
+
+#define CONCAT(a, b) CONCAT_INNER(a, b)
+#define CONCAT_INNER(a, b) a ## b
+#define UNIQUE(base) CONCAT(base, __LINE__)
+template <size_t val> constexpr void s_p_f() { int unused = 0; };
+#define static_print(v) \
+  UNUSED_NAME static void UNIQUE(s_p_)() { s_p_f<v>(); }
+template <size_t val1> constexpr void s_q_f() { int unused1 = 0; };
+#define static_print1(v) \
+  UNUSED_NAME static void UNIQUE(s_q_)() { s_q_f<v>(); }
+
+// This next template finds a value of ConsN that will fill up the
+// Page nicely.
+
+template <size_t ConsN, size_t TargetSize, size_t Gap>
+class FindConsN
+{   using Page = PageTemplate<ConsN, 1>;
+    enum { W = TargetSize -
+               offsetof(Page,consData) -
+               sizeof(Page::consData) };
+public:
+    enum { value = FindConsN<W==0  ? ConsN :
+                            (W>16) ? ConsN + W/(sizeof(ConsCell)+2) :
+                                     ConsN + 1,
+                            TargetSize, W>::value };
+};
+
+template <size_t ConsN, size_t TargetSize>
+class FindConsN<ConsN,TargetSize,0>
+{
+public:
+    enum { value = ConsN };
+};
+
+INLINE_VAR const size_t ConsN = FindConsN<1,pageSize,1>::value;
+static_print(ConsN);
+
+template <size_t ChunkN, size_t TargetSize, size_t Gap>
+class FindChunkN
+{   using Page = PageTemplate<1,ChunkN>;
+    enum { W = TargetSize -
+               offsetof(Page,chunks) -
+               sizeof(Page::chunks) };
+public:
+    enum { value = FindChunkN<W==0             ? ChunkN :
+                              (W>10*chunkSize) ? ChunkN + W/(chunkSize+2000) :
+                                                 ChunkN + 1,
+                              TargetSize, W>::value };
+};
+
+template <size_t ChunkN, size_t TargetSize>
+class FindChunkN<ChunkN,TargetSize,0>
+{
+public:
+    enum { value = ChunkN };
+};
+
+INLINE_VAR const size_t ChunkN = FindChunkN<1,pageSize,1>::value;
+static_print(ChunkN);
+
+typedef PageTemplate<ConsN,ChunkN> Page;
+
+INLINE_VAR const size_t consPinBits     = Page::consDataCount;
+INLINE_VAR const size_t consPinBytes    = Page::consPinWords*8;
+INLINE_VAR const size_t vecPinBytes     = Page::vecPinWords*8;
+INLINE_VAR const size_t chunkInfoSize   = Page::chunkInfoSize;
+INLINE_VAR const size_t chunkBitmapBits = Page::chunkDataCount;
+
+
+// So "just for fun and to show off" I will generate a warning message
+// here (if using gcc or clang) that includes the size of various
+// aspects of the Page class.
+static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);
+static_print1(offsetof(Page,chunks)+sizeof(Page::chunks) - pageSize);
+
 class PageListIter;
 
 class PageList
@@ -302,187 +509,6 @@ extern Page* borrowCurrent;        // Where temporary vectors are allocated.
 extern Page* potentiallyPinned;    // For GC.
 extern Page* pinnedPages;          // For GC.
 extern Page* pendingPages;         // For GC.
-
-// Define two structs used when setting out the rest of the
-// layout. In many respects the most important thing about these is
-// the alignment that they impose.
-struct alignas(2*sizeof(LispObject)) ConsCell
-{   LispObject car;
-    LispObject cdr;
-};
-
-struct alignas(chunkSize) Chunk
-{   uintptr_t data[chunkSize/sizeof(uintptr_t)];
-};
-
-// I have a slight misery here! I will respond to it with fairly
-// dubious use of fixed numbers.
-// What I want is for my Page structure to have a known size (8Mbytes)
-// and I want that to be a round numbers so I can use cheap mask operations
-// to tell which page any pointer is within. A cons-Page has to contain
-// some header information, two bitmaps and then the main part is an
-// array ConsCell[]. Each bitmap will use 1/64 as much space as the main
-// array. The header size is fixed until I change the code and add or remove
-// items, or until a variant C++ compiler alters its layout.
-// C++ does not seem to give me a very tidy way arrange the sizes of the
-// bitmaps and main array automatically.
-
-// A Cons page contains a header then two bitmaps and its data. On a
-// 32-bit machine each bitmap is 1/64 of the size of the data array
-// because there is 1 bit for each Cons cell and each Cons cell is
-// made up of two 32-bit words. On a 64-bit machine each bitmap is
-// 1/128 of the data size. So if each bitmap used B bytes the total
-// space used for the two bitmaps plus the data is either 66*B or 130*B.
-// Well I want the bitmaps to be specified with as arrays of 64-bit
-// words (even on 32-bit systems) so if each bitmaps uses W words
-// the total bytes used is 528*W or 1040*W.
-// Then I need a the header size to be 2^23-272*W (etc)
-// Well it each bitmap will be 8-byte aligned and so the two of them
-// one after the other will preserve 16-byte alignment, so keeping
-// consData aligned is purely a matter of arranging that the header
-// size is a multiple of 16.
-
-#ifdef SIXTY_FOUR_BIT
-INLINE_VAR constexpr size_t consPinWords = pageSize/(1024+1024/64);
-#else // SIXTY_FOUR_BIT
-INLINE_VAR constexpr size_t consPinWords = pageSize/(512+512/32);
-#endif // SIXTY_FOUR_BIT
-
-INLINE_VAR constexpr size_t consPinBytes = consPinWords*8;
-INLINE_VAR constexpr size_t consPinBits  = consPinWords*64;
-
-INLINE_VAR constexpr size_t consDataCount = consPinBits;   // number of Cons cells
-INLINE_VAR constexpr size_t consDataBytes  = consDataCount*sizeof(ConsCell);
-
-// Now I want to do the same for vector pages. Here let me suppose that
-// chunkBitmap[] is B bytes. Then I can have 8*W Chunks each of
-// 16384 bytes. Plus chunkLen and chunkSeq each of which is an array
-// of uint32_t values. Then I need two vecPin bitmaps, each of which
-// have 1 bit for every 8 bytes of data.
-// In total the space (measured in bytes) used is
-//    W              chunkBitmap
-// +  W              newChunkBitmap
-// +  16384*8*W      the chunk data
-// +  16384*8*W/64   vecPins
-// +  16384*8*W/64   newVecPins
-// +  8*W*4          chunkSeqNo
-// +  8*W*4          chunkLength
-//           = 135234*W
-// In this case the bitmap resolutions are the same on both 32 and 64-bit
-// platforms.
-
-// There is an extra mess in that chunks need to be aligned on 16K boundaries.
-// That wastes some space to padding, but happily with the arithmetic as
-// follows everything works out well and the Page ends up neatly filled. The
-// only slight oddity is that the final 64-bit word in chunkBitMap does not
-// get used. That does not hurt anything. 
-
-INLINE_VAR constexpr size_t chunkBitmapBytes = pageSize/135234; // = 62
-INLINE_VAR constexpr size_t chunkBitmapBits  = chunkBitmapBytes*8;
-INLINE_VAR constexpr size_t chunkBitmapWords = (chunkBitmapBytes+7)/8;
-INLINE_VAR constexpr size_t chunkDataCount   = chunkBitmapBits; // = 496
-INLINE_VAR constexpr size_t chunkDataSize    = chunkDataCount*chunkSize;
-INLINE_VAR constexpr size_t chunkInfoSize    = chunkDataCount;
-INLINE_VAR constexpr size_t vecPinBits       = chunkDataSize/8;
-INLINE_VAR constexpr size_t vecPinBytes      = vecPinBits/8;
-INLINE_VAR constexpr size_t vecPinWords      = vecPinBits/64;
-
-// Details of how this class is defined, and in particular the order of
-// declaration of its components, has been set up with some delicacy to
-// reduce some space that might otherwise be wasted to padding and to
-// ensure that the Page as a whole has the size that I want it to. This is
-// not as clean coding as one might really like to see.
-
-class alignas(pageSize) Page
-{
-public:
-    union
-    {
-// A Page can be either a Cons page or a Vector page. The initial components
-// are the same in each case
-        struct
-        {   PageType type;
-            Page* chain;
-            Page* borrowChain;
-            bool borrowPinned;
-            size_t hasPinned;
-            Page* pinnedPages;
-            Page* pendingPages;
-            LispObject pinnedObjects;
-            uintptr_t scanPoint;
-            uintptr_t dataEnd;
-        };
-// Because I am using anonymous structs here I make the names of all the
-// initial fields that are expected to be present in every case different
-// in each branch of the union.
-        struct
-        {   PageType Ctype;
-            Page* Cchain;
-            Page* CborrowChain;
-            bool CborrowPinned;
-            size_t ChasPinned;
-            Page* CpinnedPages;
-            Page* CpendingPages;
-            LispObject CpinnedObjects;
-            uintptr_t CscanPoint;
-            uintptr_t CdataEnd;
-// The above are the common fields...
-            uint64_t consPins[consPinWords];
-            uint64_t newConsPins[consPinWords];
-            ConsCell consData[consDataCount];
-        };
-        struct
-        {   PageType Vtype;
-            Page* Vchain;
-            Page* VborrowChain;
-            bool VborrowPinned;
-            size_t VhasPinned;
-            Page* VpinnedPages;
-            Page* VpendingPages;
-            LispObject VpinnedObjects;
-            uintptr_t VscanPoint;
-            uintptr_t VdataEnd;
-// The above are the common fields.
-            bool potentiallyPinnedFlag;
-            Page* potentiallyPinnedChain;
-            uint64_t newChunkBitmap[chunkBitmapWords];
-            uint64_t chunkBitmap[chunkBitmapWords];
-            uint32_t chunkLength[chunkInfoSize];
-            uint64_t vecPins[vecPinWords];
-            Chunk chunks[chunkDataCount];
-            uint32_t chunkSeqNo[chunkInfoSize];
-            uint64_t newVecPins[vecPinWords];
-        };
-    };
-};
-
-// I have tried to set out my Page class so that instances will be
-// exactly 2^23 bytes in size. I will verify that here. Note that because
-// Page is decared as needing 2^23 byte alignment that if the size of
-// the internal structures end up even a byte beyond that it will pad
-// out to double that size!
-
-// I want to see the value of (eg) sizeof(Page) at compile-time. C++ does
-// not have a built-in static_print function to help me, but
-// https://stackoverflow.com/questions/28852574/
-//         how-to-print-result-of-a-compile-time-calculation-in-c
-// contained a suggestion that works with g++ and clang++ by putting the
-// value of interest into a part of a warning about an unused variable.
-// There are other suggestions that use errors rather than warnings,
-// but this seems gentler to me.
-
-#define CONCAT(a, b) CONCAT_INNER(a, b)
-#define CONCAT_INNER(a, b) a ## b
-#define UNIQUE(base) CONCAT(base, __LINE__)
-template <auto val> constexpr void s_p_f() { int unused = 0; };
-#define static_print(v) \
-  UNUSED_NAME static void UNIQUE(s_p_)() { s_p_f<v>(); }
-
-// So "just for fun and to show off" I will generate a warning message
-// here (if using gcc or clang) that includes the size of the Page class.
-static_print(sizeof(Page));
-
-static_assert(sizeof(Page) == pageSize, "Page size incorrect");
 
 inline uintptr_t endOfPage(Page* p)
 {   return bit_cast<uintptr_t>(p+1);
@@ -801,7 +827,9 @@ inline void displayVecPage(Page* p)
         }
         else count++;
     }
-    zprintf("\nend of page %a\n\n", p);
+    if (count != 1) zprintf(" * %d\n", count);
+    else zprintf("\n");
+    zprintf("end of page %a\n\n", p);
 }
 
 inline void displayAllPages(const char* s)
@@ -850,6 +878,10 @@ inline void displayAllPages(const char* s)
     for (auto p:vecCloggedPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
+    }
+    zprintf("\nemptyPages......\n");
+    for (auto p:emptyPages)
+    {   zprintf("empty Page %a\n", p);
     }
     zprintf("end of display\n\n");
 }

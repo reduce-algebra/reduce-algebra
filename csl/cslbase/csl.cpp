@@ -1960,7 +1960,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * --gc-test causes running some test code rather than the full system.
              * Only activates if "-z" is also specified for a "cold start".
              */
-            {   "--gc-test", true, true,
+            {   "--gc-test", false, false,
                 "--gc-test runs some test code. Need -z as well.",
                 [&](string key, bool hasVal, string val)
                 {   gcTest = true;
@@ -1969,7 +1969,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             /*! options [--gc-trace] \item [{\ttfamily --gc-trace}] \index{{\ttfamily --gc-trace}}
              * --gc-trace leads to copious debugging trace output from garbage collection.
              */
-            {   "--gc-trace", true, true,
+            {   "--gc-trace", false, false,
                 "--gc-trace copious logging from garbage collection.",
                 [&](string key, bool hasVal, string val)
                 {   gcTrace = true;
@@ -1980,7 +1980,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * Only activates if "-z" is also specified for a "cold start".
              * May be helpful while testing by leaving the heap image smaller.
              */
-            {   "--minimal", true, true,
+            {   "--minimal", false, false,
                 "--minimal reduces the nuimber of things defined. Need -z as well.",
                 [&](string key, bool hasVal, string val)
                 {   minimal = true;
