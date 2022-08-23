@@ -86,7 +86,7 @@ void debugprint1(LispObject a, int depth)
             if (CELL<len && len < 64)
                 std::printf("%.*s", static_cast<int>(len-CELL), &celt(pn, 0));
             else std::printf("<symbol with pname hdr %p>",
-                                 csl_cast<void *>(
+                                 bit_cast<void *>(
                                      static_cast<Header>(vechdr(pn))));
         }
         else std::printf("<symbol with odd pname>");
@@ -102,12 +102,12 @@ void debugprint1(LispObject a, int depth)
         std::printf("]");
     }
     else
-    {   std::printf("@%p@", csl_cast<void *>(a));
+    {   std::printf("@%p@", bit_cast<void *>(a));
     }
 }
 
 void debugprint(LispObject a, int depth)
-{   std::printf("%p: ", csl_cast<void *>(a));
+{   std::printf("%p: ", bit_cast<void *>(a));
     debugprint1(a, depth);
     std::printf("\n");
     std::fflush(stdout);
@@ -697,8 +697,8 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
     errexit();
     save.restore(w);
     k = (n + 3) & ~(int32_t)7;
-    *(int32_t *)(csl_cast<char *>(a) + k + 4 - TAG_VECTOR) = 0;
-    if (k != 0) *(int32_t *)(csl_cast<char *>
+    *(int32_t *)(bit_cast<char *>(a) + k + 4 - TAG_VECTOR) = 0;
+    if (k != 0) *(int32_t *)(bit_cast<char *>
                                  (a) + k - TAG_VECTOR) = 0;
     while (n > 0)
     {   n--;
@@ -975,11 +975,11 @@ const char *get_string_data(LispObject name, const char *why,
             h = vechdr(name);
         }
         else if (!is_vector(name))
-            return csl_cast<const char *>(aerror1(why, name));
+            return bit_cast<const char *>(aerror1(why, name));
         else if (!is_string_header(h = vechdr(name)))
-            return csl_cast<const char *>(aerror1(why, name));
+            return bit_cast<const char *>(aerror1(why, name));
     len = length_of_byteheader(h) - CELL;
-    return csl_cast<const char *>(&celt(name, 0));
+    return bit_cast<const char *>(&celt(name, 0));
 }
 
 static LispObject Lfiledate(LispObject env, LispObject name)
@@ -1635,13 +1635,13 @@ LispObject Lrename_file(LispObject env, LispObject from,
         save.restore(to);
     }
     if (from_len >= sizeof(from_name)) from_len = sizeof(from_name);
-    from = csl_cast<LispObject>(from_w + TAG_VECTOR - CELL);
+    from = bit_cast<LispObject>(from_w + TAG_VECTOR - CELL);
 
     {   Save save(THREADARG from);
         to_w = get_string_data(to, "rename-file", to_len);
         save.restore(from);
     }
-    from_w = csl_cast<const char *>(&celt(from, 0));
+    from_w = bit_cast<const char *>(&celt(from, 0));
     if (to_len >= sizeof(to_name)) to_len = sizeof(to_name);
 
     to_len = rename_file(from_name, from_w, static_cast<size_t>(from_len),
@@ -1970,7 +1970,7 @@ LispObject internal_prin(LispObject uu, int blankp)
     }
 restart:
 #endif
-    if (csl_cast<uintptr_t>(stack) >= stackLimit)
+    if (bit_cast<uintptr_t>(stack) >= stackLimit)
         respond_to_stack_event();
     switch (static_cast<int>(u) & TAG_BITS)
     {   case TAG_CONS:
@@ -2467,7 +2467,7 @@ restart:
 
                 case TYPE_SP:
                     std::sprintf(my_buff, "#<closure: %p>",
-                                 csl_cast<void *>(static_cast<LispObject>(elt(u, 0))));
+                                 bit_cast<void *>(static_cast<LispObject>(elt(u, 0))));
                     goto print_my_buff;
 
 #if 0
@@ -2598,8 +2598,8 @@ restart:
                     else
 #endif
                         for (k=0; k<len; k+=CELL)
-                        {   LispObject vv = *csl_cast<LispObject *>(
-                                                (csl_cast<char *>(u) +
+                        {   LispObject vv = *bit_cast<LispObject *>(
+                                                (bit_cast<char *>(u) +
                                                  (CELL - TAG_VECTOR) + k));
                             internal_prin(vv, (k != 0) ? 1 : 0);
                         }
@@ -2643,8 +2643,8 @@ restart:
                     for (k=3*CELL; k<len; k+=CELL)
                     {   std::sprintf(my_buff, "%.8lx",
                                      static_cast<long>(
-                                         *csl_cast<LispObject *>(
-                                             csl_cast<char *>(u) +
+                                         *bit_cast<LispObject *>(
+                                             bit_cast<char *>(u) +
                                              (CELL - TAG_VECTOR) + k)));
                         prin_buf(my_buff, true);
                     }
@@ -3201,7 +3201,7 @@ restart:
 #endif
                         *o++ = ':';
                         o += f128M_sprint_G(o, 0, 34,
-                                            csl_cast<float128_t *>(
+                                            bit_cast<float128_t *>(
                                                 &long_float_val(u)));
                         *o++ = '}';
                         *o = 0;
@@ -3222,7 +3222,7 @@ restart:
 #endif
                         *o++ = ':';
                         o += f128M_sprint_G(o, 0, 34,
-                                            csl_cast<float128_t *>(
+                                            bit_cast<float128_t *>(
                                                 &long_float_val(u)));
                         *o++ = '}';
                         *o = 0;
@@ -3234,7 +3234,7 @@ restart:
                     break;
 #endif // HAVE_SOFTFLOAT
                 default:
-                    std::sprintf(my_buff, "?%p?", csl_cast<void *>(u));
+                    std::sprintf(my_buff, "?%p?", bit_cast<void *>(u));
                     break;
             }
         float_print_tidyup:   // label to join in from short float printing
@@ -3305,7 +3305,7 @@ restart:
         // Else drop through to treat as an error
         default:
         error_case:
-            std::sprintf(my_buff, "?%p?", csl_cast<void *>(u));
+            std::sprintf(my_buff, "?%p?", bit_cast<void *>(u));
             break;
     }
 print_my_buff:
@@ -3529,7 +3529,7 @@ LispObject prinraw(LispObject u)
         my_assert(len>=8 && len < CSL_PAGE_SIZE);
         for (size_t i=8; i<len; i+=8)
         {   std::sprintf(b, "%.16" PRIx64 " ",
-                         *(uint64_t *)(csl_cast<char *>(u) - TAG_NUMBERS + i));
+                         *(uint64_t *)(bit_cast<char *>(u) - TAG_NUMBERS + i));
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
         }
     }
@@ -4092,7 +4092,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     if (!is_string_header(h)) return Lprint(env, a);
     len = length_of_byteheader(h) - CELL;
     my_assert(len < CSL_PAGE_SIZE);
-    p = csl_cast<const char *>(&celt(a, 0));
+    p = bit_cast<const char *>(&celt(a, 0));
     THREADID;
     for (i=0; i<len; i++)
     {   Save save(THREADARG a);
@@ -4104,7 +4104,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
         putc_stream(':', stream);
         save.restore(a);
     }
-    p = csl_cast<const char *>(&celt(a, 0));
+    p = bit_cast<const char *>(&celt(a, 0));
     for (; i<doubleword_align_up(len+CELL)-CELL; i++)
     {   int c = p[i] & 0xff;
         Save save(THREADARG a);
@@ -4118,7 +4118,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
         }
         putc_stream(c, stream);
         save.restore(a);
-        p = csl_cast<const char *>(&celt(a, 0));
+        p = bit_cast<const char *>(&celt(a, 0));
     }
     putc_stream('\n', stream);
     return onevalue(nil);
@@ -4737,7 +4737,7 @@ int char_from_socket(LispObject stream)
         if (sb_start != sb_end) ch = ucelt(w, sb_start++);
         else
         {   ch = recv((SOCKET)(intptr_t)(std::FILE *)stream_file(stream),
-                      csl_cast<char *>(&celt(w, 4)), SOCKET_BUFFER_SIZE, 0);
+                      bit_cast<char *>(&celt(w, 4)), SOCKET_BUFFER_SIZE, 0);
             if (ch == 0) return EOF;
             if (ch == SOCKET_ERROR)
             {   err_printf("socket read error (%s)\n",
@@ -5315,7 +5315,7 @@ void simple_prin1(LispObject x)
         std::printf("%s:", getPageType(x));
 #endif
         std::printf("%.*s", static_cast<int>(len),
-                     csl_cast<const char *>(&celt(x, 0)));
+                     bit_cast<const char *>(&celt(x, 0)));
     }
     else if (is_vector(x))
     {   size_t i, len;
@@ -5327,7 +5327,7 @@ void simple_prin1(LispObject x)
             std::printf("%s:", getPageType(x));
 #endif
             std::printf("\"%.*s\"", static_cast<int>(len),
-                         csl_cast<const char *>(&celt(x, 0)));
+                         bit_cast<const char *>(&celt(x, 0)));
             return;
         }
         else if (vector_header_of_binary(vechdr(x)) &&

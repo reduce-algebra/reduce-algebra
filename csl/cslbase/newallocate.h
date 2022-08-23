@@ -315,83 +315,177 @@ struct alignas(chunkSize) Chunk
 {   uintptr_t data[chunkSize/sizeof(uintptr_t)];
 };
 
-// In each case here the "/64" is because the bitmaps I use are
-// always based on uint64_t words. This may add to cost on 32-bit machines
-// but having a uniform word size in bitmaps leads to cleaner simpler code
-// for me.
+// I have a slight misery here! I will respond to it with fairly
+// dubious use of fixed numbers.
+// What I want is for my Page structure to have a known size (8Mbytes)
+// and I want that to be a round numbers so I can use cheap mask operations
+// to tell which page any pointer is within. A cons-Page has to contain
+// some header information, two bitmaps and then the main part is an
+// array ConsCell[]. Each bitmap will use 1/64 as much space as the main
+// array. The header size is fixed until I change the code and add or remove
+// items, or until a variant C++ compiler alters its layout.
+// C++ does not seem to give me a very tidy way arrange the sizes of the
+// bitmaps and main array automatically.
 
-INLINE_VAR const size_t consPinBits = pageSize/sizeof(ConsCell);
-INLINE_VAR const size_t consPinBytes = consPinBits/8;
-INLINE_VAR const size_t consPinSize = consPinBits/64;
-INLINE_VAR const size_t chunkInfoSize = pageSize/chunkSize;
-INLINE_VAR const size_t chunkBitmapBits = chunkInfoSize;
-INLINE_VAR const size_t chunkBitmapSize = chunkInfoSize/64;
-// Note that vector pinning always works to resolution 8 bytes because on
-// a 32-bit machine all vector-like objects are kept aligned on 8 byte
-// boundaries, with padding if necessary.
-INLINE_VAR const size_t vecPinBits = pageSize/8;
-INLINE_VAR const size_t vecPinBytes = vecPinBits/8;
-INLINE_VAR const size_t vecPinSize = vecPinBits/64;
+// A Cons page contains a header then two bitmaps and its data. On a
+// 32-bit machine each bitmap is 1/64 of the size of the data array
+// because there is 1 bit for each Cons cell and each Cons cell is
+// made up of two 32-bit words. On a 64-bit machine each bitmap is
+// 1/128 of the data size. So if each bitmap used B bytes the total
+// space used for the two bitmaps plus the data is either 66*B or 130*B.
+// Well I want the bitmaps to be specified with as arrays of 64-bit
+// words (even on 32-bit systems) so if each bitmaps uses W words
+// the total bytes used is 528*W or 1040*W.
+// Then I need a the header size to be 2^23-272*W (etc)
+// Well it each bitmap will be 8-byte aligned and so the two of them
+// one after the other will preserve 16-byte alignment, so keeping
+// consData aligned is purely a matter of arranging that the header
+// size is a multiple of 16.
+
+#ifdef SIXTY_FOUR_BIT
+INLINE_VAR constexpr size_t consPinWords = pageSize/(1024+1024/64);
+#else // SIXTY_FOUR_BIT
+INLINE_VAR constexpr size_t consPinWords = pageSize/(512+512/32);
+#endif // SIXTY_FOUR_BIT
+
+INLINE_VAR constexpr size_t consPinBytes = consPinWords*8;
+INLINE_VAR constexpr size_t consPinBits  = consPinWords*64;
+
+INLINE_VAR constexpr size_t consDataCount = consPinBits;   // number of Cons cells
+INLINE_VAR constexpr size_t consDataBytes  = consDataCount*sizeof(ConsCell);
+
+// Now I want to do the same for vector pages. Here let me suppose that
+// chunkBitmap[] is B bytes. Then I can have 8*W Chunks each of
+// 16384 bytes. Plus chunkLen and chunkSeq each of which is an array
+// of uint32_t values. Then I need two vecPin bitmaps, each of which
+// have 1 bit for every 8 bytes of data.
+// In total the space (measured in bytes) used is
+//    W              chunkBitmap
+// +  W              newChunkBitmap
+// +  16384*8*W      the chunk data
+// +  16384*8*W/64   vecPins
+// +  16384*8*W/64   newVecPins
+// +  8*W*4          chunkSeqNo
+// +  8*W*4          chunkLength
+//           = 135234*W
+// In this case the bitmap resolutions are the same on both 32 and 64-bit
+// platforms.
+
+// There is an extra mess in that chunks need to be aligned on 16K boundaries.
+// That wastes some space to padding, but happily with the arithmetic as
+// follows everything works out well and the Page ends up neatly filled. The
+// only slight oddity is that the final 64-bit word in chunkBitMap does not
+// get used. That does not hurt anything. 
+
+INLINE_VAR constexpr size_t chunkBitmapBytes = pageSize/135234; // = 62
+INLINE_VAR constexpr size_t chunkBitmapBits  = chunkBitmapBytes*8;
+INLINE_VAR constexpr size_t chunkBitmapWords = (chunkBitmapBytes+7)/8;
+INLINE_VAR constexpr size_t chunkDataCount   = chunkBitmapBits; // = 496
+INLINE_VAR constexpr size_t chunkDataSize    = chunkDataCount*chunkSize;
+INLINE_VAR constexpr size_t chunkInfoSize    = chunkDataCount;
+INLINE_VAR constexpr size_t vecPinBits       = chunkDataSize/8;
+INLINE_VAR constexpr size_t vecPinBytes      = vecPinBits/8;
+INLINE_VAR constexpr size_t vecPinWords      = vecPinBits/64;
+
+// Details of how this class is defined, and in particular the order of
+// declaration of its components, has been set up with some delicacy to
+// reduce some space that might otherwise be wasted to padding and to
+// ensure that the Page as a whole has the size that I want it to. This is
+// not as clean coding as one might really like to see.
 
 class alignas(pageSize) Page
 {
 public:
     union
     {
-// The sole purpose of the forceSize[] array is to ensure that the
-// Page class ends up the size I want it to. The other entries in the
-// union end up with arrays that are declared as having size 1 but which
-// are in fact intended to span all the way up to pageSize
-        char forceSize[pageSize];
+// A Page can be either a Cons page or a Vector page. The initial components
+// are the same in each case
         struct
-        {
-// There are some fields that every Page will have... It feels to me
-// as if there are rather a lot, and that suggests complication. Any
-// clean-up that removed some of these would be good.
-            PageType type;
+        {   PageType type;
             Page* chain;
             Page* borrowChain;
-            bool  borrowPinned;
+            bool borrowPinned;
             size_t hasPinned;
             Page* pinnedPages;
             Page* pendingPages;
             LispObject pinnedObjects;
             uintptr_t scanPoint;
             uintptr_t dataEnd;
-            uintptr_t initialLimit;
-// Now based on the "type" field I will have either a CONS page or
-// a VEC page, and the union here defines how each is to be laid out. Note
-// that the arrays consData[] and chunks[] are in fact expected to run
-// out up to pageSize rather than being of length 1 as declared here...
-// I can not see a tidy C++ way to make the length of each array what I
-// want. Well I can do it using something like
-//   consData[(pagesize - sizeof(PageType) - sizeof(Page*) - ...)/
-//            sizeof(ConsCell)]
-// but that becomes hideous to maintain and delicate as regards alignment.
-            union
-            {   struct
-                {   uint64_t consPins[consPinSize];
-                    uint64_t newConsPins[consPinSize];
-                    ConsCell consData[1];
-                };
-                struct
-                {   bool potentiallyPinnedFlag;
-                    Page* potentiallyPinnedChain;
-                    unsigned int chunkSeqNo[chunkInfoSize];
-                    unsigned int chunkLength[chunkInfoSize];
-                    uint64_t newChunkBitmap[chunkBitmapSize];
-                    uint64_t chunkBitmap[chunkBitmapSize];
-                    uint64_t vecPins[vecPinSize];
-                    uint64_t newVecPins[vecPinSize];
-                    Chunk chunks[1];
-                };
-            };
+        };
+// Because I am using anonymous structs here I make the names of all the
+// initial fields that are expected to be present in every case different
+// in each branch of the union.
+        struct
+        {   PageType Ctype;
+            Page* Cchain;
+            Page* CborrowChain;
+            bool CborrowPinned;
+            size_t ChasPinned;
+            Page* CpinnedPages;
+            Page* CpendingPages;
+            LispObject CpinnedObjects;
+            uintptr_t CscanPoint;
+            uintptr_t CdataEnd;
+// The above are the common fields...
+            uint64_t consPins[consPinWords];
+            uint64_t newConsPins[consPinWords];
+            ConsCell consData[consDataCount];
+        };
+        struct
+        {   PageType Vtype;
+            Page* Vchain;
+            Page* VborrowChain;
+            bool VborrowPinned;
+            size_t VhasPinned;
+            Page* VpinnedPages;
+            Page* VpendingPages;
+            LispObject VpinnedObjects;
+            uintptr_t VscanPoint;
+            uintptr_t VdataEnd;
+// The above are the common fields.
+            bool potentiallyPinnedFlag;
+            Page* potentiallyPinnedChain;
+            uint64_t newChunkBitmap[chunkBitmapWords];
+            uint64_t chunkBitmap[chunkBitmapWords];
+            uint32_t chunkLength[chunkInfoSize];
+            uint64_t vecPins[vecPinWords];
+            Chunk chunks[chunkDataCount];
+            uint32_t chunkSeqNo[chunkInfoSize];
+            uint64_t newVecPins[vecPinWords];
         };
     };
 };
 
+// I have tried to set out my Page class so that instances will be
+// exactly 2^23 bytes in size. I will verify that here. Note that because
+// Page is decared as needing 2^23 byte alignment that if the size of
+// the internal structures end up even a byte beyond that it will pad
+// out to double that size!
+
+// I want to see the value of (eg) sizeof(Page) at compile-time. C++ does
+// not have a built-in static_print function to help me, but
+// https://stackoverflow.com/questions/28852574/
+//         how-to-print-result-of-a-compile-time-calculation-in-c
+// contained a suggestion that works with g++ and clang++ by putting the
+// value of interest into a part of a warning about an unused variable.
+// There are other suggestions that use errors rather than warnings,
+// but this seems gentler to me.
+
+#define CONCAT(a, b) CONCAT_INNER(a, b)
+#define CONCAT_INNER(a, b) a ## b
+#define UNIQUE(base) CONCAT(base, __LINE__)
+template <auto val> constexpr void s_p_f() { int unused = 0; };
+#define static_print(v) \
+  UNUSED_NAME static void UNIQUE(s_p_)() { s_p_f<v>(); }
+
+// So "just for fun and to show off" I will generate a warning message
+// here (if using gcc or clang) that includes the size of the Page class.
+static_print(sizeof(Page));
+
+static_assert(sizeof(Page) == pageSize, "Page size incorrect");
+
 inline uintptr_t endOfPage(Page* p)
-{   return csl_cast<uintptr_t>(p+1);
+{   return bit_cast<uintptr_t>(p+1);
 }
 
 inline bool PageList::contains(Page* p)
@@ -421,11 +515,11 @@ inline Page* PageListIter::operator++()
 INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
 
 inline Page* pageOf(uintptr_t a)
-{  return csl_cast<Page*>(a & (-pageSize));
+{  return bit_cast<Page*>(a & (-pageSize));
 }
 
 inline size_t chunkNoFromAddress(Page* p, uintptr_t a)
-{   return (a - csl_cast<uintptr_t>(p))/chunkSize;
+{   return (a - bit_cast<uintptr_t>(&p->chunks[0]))/chunkSize;
 }
 
 inline size_t chunkNoFromAddress(uintptr_t a)
@@ -433,7 +527,7 @@ inline size_t chunkNoFromAddress(uintptr_t a)
 }
 
 inline uintptr_t addressFromChunkNo(Page* p, size_t n)
-{   return csl_cast<uintptr_t>(p) + chunkSize*n;
+{   return bit_cast<uintptr_t>(&p->chunks[0]) + chunkSize*n;
 }
 
 inline bool chunkIsNewPinned(Page* p, uintptr_t a)
@@ -485,11 +579,11 @@ inline void chunkNoClearPinned(Page* p, size_t chunkNo)
 }
 
 inline size_t consToOffset(uintptr_t a, Page* p)
-{   return (a - csl_cast<uintptr_t>(&p->consData)) / (2*sizeof(LispObject));
+{   return (a - bit_cast<uintptr_t>(&p->consData)) / (2*sizeof(LispObject));
 }
 
 inline uintptr_t offsetToCons(size_t o, Page* p)
-{   return csl_cast<uintptr_t>(&p->consData) + 2*sizeof(LispObject)*o;
+{   return bit_cast<uintptr_t>(&p->consData) + 2*sizeof(LispObject)*o;
 }
 
 // Here p must be a CONS page and a is a pointer within it.
@@ -516,11 +610,11 @@ inline void consClearNewPinned(uintptr_t a, Page* p)
 // objects.
 
 inline size_t vecToOffset(uintptr_t a, Page* p)
-{   return (a - csl_cast<uintptr_t>(&p->chunks)) / sizeof(LispObject);
+{   return (a - bit_cast<uintptr_t>(&p->chunks)) / sizeof(LispObject);
 }
 
 inline uintptr_t offsetToVec(size_t o, Page* p)
-{   return csl_cast<uintptr_t>(&p->chunks) + sizeof(LispObject)*o;
+{   return bit_cast<uintptr_t>(&p->chunks) + sizeof(LispObject)*o;
 }
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
@@ -574,9 +668,6 @@ inline void vecClearNewPinned(uintptr_t a)
 // Set up the given Page as one for use with CONS supposing it is
 // totally free to start with. This sets up global fringe and limit pointers.
 
-// Note that a page that has any pinned items in it will hold the relevant
-// values for those in scanPoint and initialLimit fields.
-
 extern uintptr_t consFringe, consLimit, consEnd;
 
 extern uintptr_t consEndOfPage();
@@ -593,8 +684,8 @@ inline void displayConsPage(Page* p)
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
     zprintf("pinnedObjects = %a\n", p->pinnedObjects);
-    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a fr=%a lim=%a\n",
-        p->scanPoint, p->dataEnd, p->initialLimit, consFringe, consLimit); 
+    zprintf("scanPoint=%a dataEnd=%a fr=%a lim=%a\n",
+        p->scanPoint, p->dataEnd, consFringe, consLimit); 
     LispObject prevCar = 0, prevCdr = 0;
     prevCar = ~p->consData[0].car; // so it is NOT the start of a run
     size_t repeats = 0;
@@ -637,8 +728,8 @@ inline void displayVecPage(Page* p)
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
     zprintf("pinnedObjects = %a\n", p->pinnedObjects);
-    zprintf("scanPoint=%a dataEnd=%a initialLimit=%a fr=%a lim=%a\n",
-        p->scanPoint, p->dataEnd, p->initialLimit, vecFringe, vecLimit);
+    zprintf("scanPoint=%a dataEnd=%a fr=%a lim=%a\n",
+        p->scanPoint, p->dataEnd, vecFringe, vecLimit);
     zprintf("potentiallPinnedFlag = %s\n", p->potentiallyPinnedFlag);
     zprintf("potentiallPinnedChain = %a\n", p->potentiallyPinnedChain);
     zprintf("chunkPins:\n");
@@ -674,7 +765,7 @@ inline void displayVecPage(Page* p)
     for (uintptr_t q=offsetToVec(0, p);
                    q<p->dataEnd && q!=vecFringe;
                    q+=sizeof(uintptr_t))
-    {   uintptr_t n = *csl_cast<uintptr_t*>(q);
+    {   uintptr_t n = *bit_cast<uintptr_t*>(q);
         if (is_symbol_header_full_test(n)) symhdr = 1;
         else if (n == xSTREAM_HEADER) streamhdr = 1;
         if (n != prev)
@@ -740,6 +831,26 @@ inline void displayAllPages(const char* s)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
+    zprintf("\nconsPinPages......\n");
+    for (auto p:consPinPages)
+    {   my_assert(p->type == consPageType, "page has incorrect type");
+        displayConsPage(p);
+    }
+    zprintf("\nvecPinPages......\n");
+    for (auto p:vecPinPages)
+    {   my_assert(p->type == vecPageType, "page has incorrect type");
+        displayVecPage(p);
+    }
+    zprintf("\nconsCloggedPages......\n");
+    for (auto p:consCloggedPages)
+    {   my_assert(p->type == consPageType, "page has incorrect type");
+        displayConsPage(p);
+    }
+    zprintf("\nvecCloggedPages......\n");
+    for (auto p:vecCloggedPages)
+    {   my_assert(p->type == vecPageType, "page has incorrect type");
+        displayVecPage(p);
+    }
     zprintf("end of display\n\n");
 }
 
@@ -775,7 +886,7 @@ inline uintptr_t harderGet2Words()
 // When I skip pinned data and if there is space beyond same then the first
 // word of that region holds a pointer showing where the next usable
 // section of memory ends.
-    consLimit = *csl_cast<uintptr_t*>(consFringe);
+    consLimit = indirect(consFringe);
 // Now I can allocate.
     uintptr_t r = consFringe;
     consFringe += 2*sizeof(LispObject);
@@ -804,7 +915,8 @@ inline Header makeHeader(size_t n, int type)   // size is in bytes
 // memory. This does the job. Note that a is an untagged pointer here.
 
 inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
-{   *csl_cast<uintptr_t*>(a) = makeHeader(n, type);
+{   zprintf("Write header (maybe padder) of length %d at %a\n", n, a);
+    indirect(a) = makeHeader(n, type);
 }
 
 extern void grabFreshPage(PageType type);
@@ -821,9 +933,9 @@ inline uintptr_t getNBytes(size_t n, Page* current,
                            bool borrowing)
 {   for (;;)
     {   uintptr_t r = fringe;
-        my_assert(fringe <= limit, __WHERE__);
+        my_assert(fringe <= limit, where("fringe < limit"));
         my_assert(fringe > (uintptr_t)current &&
-                  fringe <= (uintptr_t)(current+1), __WHERE__);
+                  fringe <= (uintptr_t)(current+1), where("fringe not in current page"));
 // Now I will see if the new item will fit within the current chunk. Note
 // that this test applies whether I am in a basic chunk or at the end of
 // an extended one. The chunkSeqNo[] entry must already be set up and
@@ -976,6 +1088,18 @@ extern Page* pageEnd;
 // into it. When that has been done the borrowed memory can be
 // released.
 
+inline void setVecFringeAndLimit(Page* p, uintptr_t& fringe, uintptr_t& limit)
+{   size_t chunk = 0;
+// First skip any initial pinned chunks.
+    while (chunk<chunkInfoSize && chunkNoIsPinned(p, chunk))
+        chunk+=p->chunkLength[chunk];
+// Now find the next pinned chunk beyond that, if there is one.
+    size_t end = nextOneBit(p->chunkBitmap, chunkBitmapBits, chunk);
+    fringe = addressFromChunkNo(p, chunk);
+    if (end == SIZE_MAX) limit = bit_cast<uintptr_t>(p+1);
+    else limit = addressFromChunkNo(p, end);
+}
+
 inline Page* initBorrowPage(Page* p, bool empty)
 {
 // borrowed pages do not need anything like as much initialisation since
@@ -986,7 +1110,7 @@ inline Page* initBorrowPage(Page* p, bool empty)
     p->borrowChain = borrowPages.page();
     p->borrowPinned = !empty;
     borrowPages.page() = p;
-    borrowEnd = csl_cast<uintptr_t>(p) + pageSize;
+    borrowEnd = bit_cast<uintptr_t>(p) + pageSize;
     if (empty)
     {
 // I do not need to do anything with pinning bitmaps here, but I must
@@ -998,10 +1122,7 @@ inline Page* initBorrowPage(Page* p, bool empty)
         borrowFringe = p->scanPoint = offsetToVec(0, p);
         borrowLimit = borrowEnd;
     }
-    else
-    {   borrowFringe = p->scanPoint;
-        borrowLimit = p->initialLimit;
-    }
+    else setVecFringeAndLimit(p, borrowFringe, borrowLimit);
 //  displayVectorPage(p);
     return p;
 }
@@ -1239,32 +1360,32 @@ void initHeapSegments(double n);
 // generated code.
 
 inline int findSegment2(uintptr_t p, int n)
-{   if (p < csl_cast<uintptr_t>(heapSegment[n+1])) return n;
+{   if (p < bit_cast<uintptr_t>(heapSegment[n+1])) return n;
     else return n+1;
 }
 
 inline int findSegment4(uintptr_t p, int n)
-{   if (p < csl_cast<uintptr_t>(heapSegment[n+2]))
+{   if (p < bit_cast<uintptr_t>(heapSegment[n+2]))
         return findSegment2(p, n);
     else return findSegment2(p, n+2);
 }
 
 inline int findSegment8(uintptr_t p, int n)
-{   if (p < csl_cast<uintptr_t>(heapSegment[n+4]))
+{   if (p < bit_cast<uintptr_t>(heapSegment[n+4]))
         return findSegment4(p, n);
     else return findSegment4(p, n+4);
 }
 
 inline int findSegment16(uintptr_t p, int n)
-{   if (p < csl_cast<uintptr_t>(heapSegment[n+8]))
+{   if (p < bit_cast<uintptr_t>(heapSegment[n+8]))
         return findSegment8(p, n);
     else return findSegment8(p, n+8);
 }
 
 inline int findHeapSegment(uintptr_t p)
 {   int n = findSegment16(p, 0);
-    if (p < csl_cast<uintptr_t>(heapSegment[n]) ||
-        p >= csl_cast<uintptr_t>(heapSegment[n]) +
+    if (p < bit_cast<uintptr_t>(heapSegment[n]) ||
+        p >= bit_cast<uintptr_t>(heapSegment[n]) +
         heapSegmentSize[n]) return -1;
     return n;
 }
@@ -1303,10 +1424,10 @@ inline const char* Addr(uintptr_t p)
     *r = 0;
     int hs = findHeapSegment(p);
     if (hs != -1)
-    {   uintptr_t segBase = csl_cast<uintptr_t>(heapSegment[hs]);
+    {   uintptr_t segBase = bit_cast<uintptr_t>(heapSegment[hs]);
         uintptr_t o = p - segBase;
         uintptr_t pNum = o/pageSize;
-        Page* pp = csl_cast<Page*>(segBase + pNum*pageSize); 
+        Page* pp = bit_cast<Page*>(segBase + pNum*pageSize); 
         uintptr_t pOff = o%pageSize;
         if (pp->type==consPageType &&
             pOff >= offsetof(Page, consData))
@@ -1369,13 +1490,13 @@ inline const char* Addr(T p)
 // data within a Page!
 
 inline uintptr_t unAddr(uintptr_t p, uintptr_t o)
-{    return csl_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
+{    return bit_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
 }
 
 // .. and extra for the case of addresses in segments 1 and beyond.
 
 inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
-{    return csl_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
+{    return bit_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
 }
 
 // This finds a page that a potential pointer p is within, or returns nullptr
@@ -1384,7 +1505,7 @@ inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
 inline Page* findPage(uintptr_t p)
 {   int n = findHeapSegment(p);
     if (n < 0) return nullptr;
-    return csl_cast<Page*>(p & -pageSize);
+    return bit_cast<Page*>(p & -pageSize);
 }
 
 #endif // header_newallocate_h

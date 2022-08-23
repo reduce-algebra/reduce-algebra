@@ -152,7 +152,7 @@ void init_heap_segments(double store_size)
         fatal_error(err_no_store);
     }
     THREADID;
-    stackBase = csl_cast<uintptr_t>(stacksegment);
+    stackBase = bit_cast<uintptr_t>(stacksegment);
 }
 
 inline bool is_in_big_chunk(void *p)
@@ -610,7 +610,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // certain that the loop here terminates!
             continue;
         }
-        *csl_cast<Header *>(r) = type + (size <<
+        *bit_cast<Header *>(r) = type + (size <<
                                          (Tw+5)) + TAG_HDR_IMMED;
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -625,7 +625,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
         if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *csl_cast<LispObject *>(vfringe-CELL) = 0;
+            *bit_cast<LispObject *>(vfringe-CELL) = 0;
         return static_cast<LispObject>(r + tag);
     }
 }
@@ -662,29 +662,29 @@ void get_borrowed_page()
     }
     void *p = pages[--borrowed_pages_count];
     borrowed_vfringe =
-        csl_cast<LispObject>(csl_cast<char *>
+        bit_cast<LispObject>(bit_cast<char *>
                                      (doubleword_align_up((intptr_t)p)) + 8);
     borrowed_vheaplimit =
-        csl_cast<LispObject>(csl_cast<char *>
+        bit_cast<LispObject>(bit_cast<char *>
                                      (borrowed_vfringe) + (CSL_PAGE_SIZE-16));
 }
 
 LispObject borrow_basic_vector(int tag, int type, size_t size)
 {   for (;;)
-    {   char *r = csl_cast<char *>(borrowed_vfringe);
-        size_t freespace = (size_t)(csl_cast<char *>
+    {   char *r = bit_cast<char *>(borrowed_vfringe);
+        size_t freespace = (size_t)(bit_cast<char *>
                                     (borrowed_vheaplimit) - r);
         size_t alloc_size = (size_t)doubleword_align_up(size);
         if (alloc_size > freespace)
         {   get_borrowed_page();
             continue;
         }
-        borrowed_vfringe = csl_cast<LispObject>(r + alloc_size);
-        *(csl_cast<Header *>(r)) = type + (size <<
+        borrowed_vfringe = bit_cast<LispObject>(r + alloc_size);
+        *(bit_cast<Header *>(r)) = type + (size <<
                                            (Tw+5)) + TAG_HDR_IMMED;
         if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *csl_cast<LispObject *>(borrowed_vfringe-CELL) = 0;
-        return csl_cast<LispObject>(r + tag);
+            *bit_cast<LispObject *>(borrowed_vfringe-CELL) = 0;
+        return bit_cast<LispObject>(r + tag);
     }
 }
 

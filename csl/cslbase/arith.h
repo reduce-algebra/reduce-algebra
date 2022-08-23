@@ -337,7 +337,7 @@ inline LispObject make_boxfloat(double a, int type)
 // space.
             if (SIXTY_FOUR_BIT) r = get2Words();
             else r = getNBytes(16);
-            *(csl_cast<Header*>(r)) = DOUBLE_FLOAT_HEADER;
+            indirect(r) = DOUBLE_FLOAT_HEADER;
             r += TAG_BOXFLOAT;
 #else // CONSERVATIVE
             r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,

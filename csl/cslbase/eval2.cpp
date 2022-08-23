@@ -914,9 +914,6 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 // OK some are listed here and some in eval3.cpp, but both the lists are
 // fairly short.
 
-#define DEF_special(name, def) \
-    {name, bad_specialfn_0, def, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up}
-
 setup_type const eval2_setup[] =
 {   DEF_special("and",           and_fn),
     DEF_special("catch",         catch_fn),

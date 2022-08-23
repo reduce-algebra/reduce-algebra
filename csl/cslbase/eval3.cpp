@@ -792,7 +792,7 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
             bv = *sp--;
             n = length_of_header(vechdr(bv));
             while (n>CELL)
-            {   LispObject v = *csl_cast<LispObject *>(
+            {   LispObject v = *bit_cast<LispObject *>(
                                    (intptr_t)bv + n - (CELL + TAG_VECTOR));
                 n -= CELL;
                 setvalue(v, *sp--);
@@ -1237,9 +1237,6 @@ LispObject bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
                        LispObject c, LispObject d)
 {   return aerror1("bad special function", env);
 }
-
-#define DEF_special(name, def) \
-    {name, bad_specialfn_0, def, bad_specialfn_2, bad_specialfn_3, bad_specialfn_4up}
 
 setup_type const eval3_setup[] =
 {   DEF_special("or",                   or_fn),

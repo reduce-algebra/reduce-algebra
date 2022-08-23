@@ -498,10 +498,19 @@ setup_type const restart_setup[] =
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
+// The effect of "--minimal" on the command-line is to arrange that
+// only the following functions end up defined. The reason this weird
+// option is provided is so that it becomes possible to set up a "minimal"
+// heap for bug-hunting in. The precise set of functions listed here will
+// change as I hunt different bugs! So this is NOT stable and not intended
+// to be relevant to those not doing in-CSL detailed debugging.
+
 setup_type const minimal_setup[] =
-{   {"gc",                      Lgc, Lgc, G2Wother, G3Wother, G4Wother},
-    {"reclaim",                 Lgc, Lgc, G2Wother, G3Wother, G4Wother},
+{   {"reclaim",                 Lgc, Lgc, G2Wother, G3Wother, G4Wother},
     {"stop",                    Lstop, Lstop, G2Wother, G3Wother, G4Wother},
+    DEF_1("mkvect",             Lmkvect),
+    DEF_special("quote",        quote_fn),
+    DEF_1("null",               Lnull),
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
@@ -509,8 +518,11 @@ setup_type const minimal_setup[] =
 static void create_symbols(setup_type const s[], int restart_flag)
 {   size_t i;
     for (i=0; s[i].name != nullptr; i++)
-        make_symbol(s[i].name, restart_flag,
-                    s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
+    {   LispObject v = make_symbol(s[i].name, restart_flag,
+            s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
+        if (s[i].zero == bad_specialfn_0)
+            setheader(v, qheader(v) | SYM_SPECIAL_FORM);
+    }
 }
 
 static int32_t defined_symbols;
@@ -941,43 +953,25 @@ LispObject set_up_functions(int restart_flag)
                     G4Wother);
 // The main bunch of symbols can be handed using a table that
 // gives names and values.
-    for (i=0; eval2_setup[i].name != nullptr; i++)
-    {   LispObject v = make_symbol(eval2_setup[i].name,
-                                   restart_flag,
-                                   eval2_setup[i].zero,
-                                   eval2_setup[i].one,
-                                   eval2_setup[i].two,
-                                   eval2_setup[i].three,
-                                   eval2_setup[i].fourup);
-        setheader(v, qheader(v) | SYM_SPECIAL_FORM);
-    }
-    for (i=0; eval3_setup[i].name != nullptr; i++)
-    {   LispObject v = make_symbol(eval3_setup[i].name,
-                                   restart_flag,
-                                   eval3_setup[i].zero,
-                                   eval3_setup[i].one,
-                                   eval3_setup[i].two,
-                                   eval3_setup[1].three,
-                                   eval3_setup[i].fourup);
-        setheader(v, qheader(v) | SYM_SPECIAL_FORM);
-    }
-    create_symbols(arith06_setup, restart_flag);
-    create_symbols(arith08_setup, restart_flag);
-    create_symbols(arith10_setup, restart_flag);
-    create_symbols(arith12_setup, restart_flag);
-    create_symbols(arith13_setup, restart_flag);
-    create_symbols(char_setup, restart_flag);
-    create_symbols(eval1_setup, restart_flag);
-    create_symbols(funcs1_setup, restart_flag);
-    create_symbols(funcs2_setup, restart_flag);
-    create_symbols(funcs3_setup, restart_flag);
+    create_symbols(arith06_setup,  restart_flag);
+    create_symbols(arith08_setup,  restart_flag);
+    create_symbols(arith10_setup,  restart_flag);
+    create_symbols(arith12_setup,  restart_flag);
+    create_symbols(arith13_setup,  restart_flag);
+    create_symbols(char_setup,     restart_flag);
+    create_symbols(eval1_setup,    restart_flag);
+    create_symbols(eval2_setup,    restart_flag);
+    create_symbols(eval3_setup,    restart_flag);
+    create_symbols(funcs1_setup,   restart_flag);
+    create_symbols(funcs2_setup,   restart_flag);
+    create_symbols(funcs3_setup,   restart_flag);
     create_symbols(lisphash_setup, restart_flag);
-    create_symbols(print_setup, restart_flag);
-    create_symbols(read_setup, restart_flag);
-    create_symbols(restart_setup, restart_flag);
-    create_symbols(mpi_setup, restart_flag);
+    create_symbols(print_setup,    restart_flag);
+    create_symbols(read_setup,     restart_flag);
+    create_symbols(restart_setup,  restart_flag);
+    create_symbols(mpi_setup,      restart_flag);
 #ifdef ARITHLIB
-    create_symbols(arith_setup, restart_flag);
+    create_symbols(arith_setup,    restart_flag);
 #endif
 // Although almost everything is mapped into upper case in a Common Lisp
 // world, I will preserve the case of symbols defined in u01 to u60.
@@ -985,17 +979,17 @@ LispObject set_up_functions(int restart_flag)
         create_symbols(setup_tables[i], restart_flag | 2);
 
 #ifdef NAG
-    create_symbols(asp_setup, restart_flag);
-    create_symbols(nag_setup, restart_flag);
-    create_symbols(socket_setup, restart_flag);
-    create_symbols(xdr_setup, restart_flag);
-    create_symbols(grep_setup, restart_flag);
-    create_symbols(axfns_setup, restart_flag);
-    create_symbols(gr_setup, restart_flag);
+    create_symbols(asp_setup,      restart_flag);
+    create_symbols(nag_setup,      restart_flag);
+    create_symbols(socket_setup,   restart_flag);
+    create_symbols(xdr_setup,      restart_flag);
+    create_symbols(grep_setup,     restart_flag);
+    create_symbols(axfns_setup,    restart_flag);
+    create_symbols(gr_setup,       restart_flag);
 #endif
 
 #ifdef OPENMATH
-    create_symbols(om_setup, restart_flag);
+    create_symbols(om_setup,       restart_flag);
     create_symbols(om_parse_setup, restart_flag);
 #endif
     } // minimal

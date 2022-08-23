@@ -276,7 +276,7 @@ LispObject Lcopy_module(LispObject env, LispObject file)
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror("copy-module");
         len = length_of_byteheader(h) - CELL;
-        modname = csl_cast<char *>(file) + CELL - TAG_VECTOR;
+        modname = bit_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
         modname = trim_module_name(modname, &len);
 #endif
@@ -302,7 +302,7 @@ LispObject Ldelete_module(LispObject env, LispObject file)
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror("delete-module");
         len = length_of_byteheader(h) - CELL;
-        modname = csl_cast<char *>(file) + CELL - TAG_VECTOR;
+        modname = bit_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
         modname = trim_module_name(modname, &len);
 #endif
@@ -338,7 +338,7 @@ LispObject Lbanner(LispObject env, LispObject info)
     else if (!is_vector(info) || !is_string_header(h = vechdr(info)))
         return aerror("banner");
     len = length_of_byteheader(h) - CELL;
-    name = csl_cast<char *>(info) + CELL - TAG_VECTOR;
+    name = bit_cast<char *>(info) + CELL - TAG_VECTOR;
     if (len == 0) Iopen_banner(-2); // delete banner info
     else
     {
@@ -406,7 +406,7 @@ LispObject Lmodule_exists(LispObject env, LispObject file)
     else if (!is_vector(file) ||!is_string_header(h = vechdr(file)))
         return aerror("modulep");
     len = length_of_byteheader(h) - CELL;
-    modname = csl_cast<char *>(file) + CELL - TAG_VECTOR;
+    modname = bit_cast<char *>(file) + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
     modname = trim_module_name(modname, &len);
 #endif
@@ -506,7 +506,7 @@ LispObject Lstart_module(LispObject env, LispObject name)
             else if (!is_string_header(h = vechdr(name)))
                 return aerror("start-module");
         len = length_of_byteheader(h) - CELL;
-        modname = csl_cast<char *>(name) + CELL - TAG_VECTOR;
+        modname = bit_cast<char *>(name) + CELL - TAG_VECTOR;
 //
 // Here I will play jolly games! The name as passed in to start-module will
 // be allowed to be a fairly general file-name. If there is a suffix of the

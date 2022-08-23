@@ -1578,7 +1578,7 @@ LispObject Lmd5(LispObject env, LispObject a)
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
-        CSL_MD5_Update(csl_cast<unsigned char *>(a + CELL -
+        CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else checksum(a);
@@ -1649,7 +1649,7 @@ LispObject Lmd5string(LispObject env, LispObject a)
     if (is_vector(a) && is_string(a))
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
-        CSL_MD5_Update(csl_cast<unsigned char *>(a + CELL -
+        CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else return onevalue(nil);
@@ -1745,7 +1745,7 @@ LispObject Lmd60(LispObject env, LispObject a)
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
-        CSL_MD5_Update(csl_cast<unsigned char *>(a + CELL -
+        CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else checksum(a);

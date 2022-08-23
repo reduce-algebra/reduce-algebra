@@ -465,7 +465,30 @@
 #include <atomic>
 #include <vector>
 #include <type_traits>
+#ifdef HAVE_BITCAST
 #include <bit>            // Note that this is a C++20 header file
+#else // HAVE_BITCAST
+// C++20 introduces bit_cast<T>() but to support earlier C++ dialects I
+// use an implementation for it found at
+//     https://en.cppreference.com/w/cpp/numeric/bit_cast
+// By citing that reference I gain permission to use it.
+
+template <class To, class From>
+std::enable_if_t<
+    sizeof(To) == sizeof(From) &&
+    std::is_trivially_copyable_v<From> &&
+    std::is_trivially_copyable_v<To>,
+    To>
+// constexpr support needs compiler magic
+bit_cast(const From& src) noexcept
+{   static_assert(std::is_trivially_constructible_v<To>,
+        "This implementation additionally requires "
+        "destination type to be trivially constructible");
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
+#endif // HAVE_BITCAST
 
 namespace arithlib_implementation
 {

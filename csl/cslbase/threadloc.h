@@ -184,11 +184,11 @@ class ThreadLocal
 public:
     T operator=(T v)
     {   write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v));
+            bit_cast<void *>(v));
         return v;
     }
     operator T() const
-    {   return csl_cast<T>(
+    {   return bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
     }
     template <typename T1>
@@ -197,51 +197,51 @@ public:
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>();
     }
     T operator ++()
-    {   T v = csl_cast<T>(
+    {   T v = bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
             + 1U;
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v));
+            bit_cast<void *>(v));
         return v;
     }
     T operator ++(int)
-    {   T v = csl_cast<T>(
+    {   T v = bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v + 1U));
+            bit_cast<void *>(v + 1U));
         return v;
     }
     T operator --()
-    {   T v = csl_cast<T>(
+    {   T v = bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
             - 1U;
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v));
+            bit_cast<void *>(v));
         return v;
     }
     T operator --(int)
-    {   T v = csl_cast<T>(
+    {   T v = bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v - 1U));
+            bit_cast<void *>(v - 1U));
         return v;
     }
     template <typename T1>
     T operator +=(T1 n)
-    {   T v = csl_cast<T>(
+    {   T v = bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) +
             static_cast<uintptr_t>(n);
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v));
+            bit_cast<void *>(v));
         return v;
     }
     template <typename T1>
     T operator -=(T1 n)
-    {   T v = csl_cast<T>(
+    {   T v = bit_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) -
             static_cast<uintptr_t>(n);
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            csl_cast<void *>(v));
+            bit_cast<void *>(v));
         return v;
     }
 };

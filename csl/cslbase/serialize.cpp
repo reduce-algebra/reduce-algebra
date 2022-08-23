@@ -1410,10 +1410,10 @@ void write_function4up(fourup_args *p)
     do                                                  \
     {   THREADID;                                       \
         Save save(THREADARG r, s, pbase, b);            \
-        ip = csl_cast<LispObject>(p) - pbase;           \
+        ip = bit_cast<LispObject>(p) - pbase;           \
         stmt;                                           \
         save.restore(r, s, pbase, b);                   \
-        p = csl_cast<LispObject *>(pbase + ip);         \
+        p = bit_cast<LispObject *>(pbase + ip);         \
     } while (0)
 
 
@@ -1505,7 +1505,7 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     *(LispObject*)p = prev;
                     pbase = prev;
-                    p = csl_cast<LispObject *>(vcaraddr(pbase));
+                    p = bit_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_a_S:
@@ -1514,7 +1514,7 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     *(LispObject*)p = b = prev;
                     pbase = b;
-                    p = csl_cast<LispObject *>(vcdraddr(b));
+                    p = bit_cast<LispObject *>(vcdraddr(b));
                     goto down;
 
                 case SER_L_aa:
@@ -1530,7 +1530,7 @@ down:
                     setcar(prev, b);
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
-                    p = csl_cast<LispObject *>(vcaraddr(pbase));
+                    p = bit_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_aa_S:
@@ -1547,7 +1547,7 @@ down:
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
-                    p = csl_cast<LispObject *>(vcdraddr(pbase));
+                    p = bit_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
 
                 case SER_L_aaa:
@@ -1568,7 +1568,7 @@ down:
                     setcar(pbase, b);
                     b = pbase;
                     pbase = cdr(b);
-                    p = csl_cast<LispObject *>(vcaraddr(pbase));
+                    p = bit_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_aaa_S:
@@ -1591,7 +1591,7 @@ down:
                     pbase = cdr(b);
                     setcar(pbase, b);
                     b = pbase;
-                    p = csl_cast<LispObject *>(vcdraddr(pbase));
+                    p = bit_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
 
                 case SER_L_aaaa:
@@ -1609,7 +1609,7 @@ down:
                     setcar(pbase, b);
                     b = pbase;
                     pbase = cdr(pbase);
-                    p = csl_cast<LispObject *>(vcaraddr(pbase));
+                    p = bit_cast<LispObject *>(vcaraddr(pbase));
                     goto down;
 
                 case SER_L_aaaa_S:
@@ -1627,7 +1627,7 @@ down:
                     pbase = cdr(pbase);
                     setcar(pbase, b);
                     b = pbase;
-                    p = csl_cast<LispObject *>(vcdraddr(pbase));
+                    p = bit_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
 
                 case SER_BIGBACKREF:
@@ -1748,7 +1748,7 @@ down:
                     }
                     s = prev;
                     prev = pbase = b;
-                    p = csl_cast<LispObject *>(pnameaddr(b));
+                    p = bit_cast<LispObject *>(pnameaddr(b));
                     goto down;
 
 
@@ -1857,7 +1857,7 @@ down:
                         GC_PROTECT(prev =
                             get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
                         *(LispObject*)p = prev;
-                        char *x = csl_cast<char *>(&basic_celt(prev, 0));
+                        char *x = bit_cast<char *>(&basic_celt(prev, 0));
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_data_byte();
                         while (((intptr_t)x & 7) != 0) *x++ = 0;
@@ -1943,7 +1943,7 @@ down:
 // then I must NOT set up back-pointers and the "s-stack" in quite the usual
 // manner...
                 if (n == 0)
-                {   p = csl_cast<LispObject *>(&vselt(w, 0));
+                {   p = bit_cast<LispObject *>(&vselt(w, 0));
                     goto down;
                 }
                 vselt(w, 0) = b;
@@ -1951,7 +1951,7 @@ down:
                 GC_PROTECT(prev = cons(fixnum_of_int(n), s));
                 s = prev;
                 prev = pbase = b;
-                p = csl_cast<LispObject *>(&vselt(b, n));
+                p = bit_cast<LispObject *>(&vselt(b, n));
             }
             goto down;
 
@@ -1985,7 +1985,7 @@ down:
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *(LispObject*)p = prev;
-            {   char *x = csl_cast<char *>(&basic_celt(prev, 0));
+            {   char *x = bit_cast<char *>(&basic_celt(prev, 0));
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
 // Fill in end of the memory block with zero bytes so it is properly tidy.
 // This is needed so that comaprisons between strings and hash value
@@ -2017,7 +2017,7 @@ down:
                 if (vector_i8(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
                     *(LispObject*)p = prev;
-                    unsigned char *x = csl_cast<unsigned char *>(start_contents(prev));
+                    unsigned char *x = bit_cast<unsigned char *>(start_contents(prev));
                     if (is_string_header(type))
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_string_byte();
@@ -2041,7 +2041,7 @@ down:
                 else if (vector_f64(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
                     *(LispObject*)p = prev;
-                    double *x = csl_cast<double *>(start_contents64(prev));
+                    double *x = bit_cast<double *>(start_contents64(prev));
 // There has to be a padder word in these objects on a 32-bit machine so
 // that the data is 64-bit aligned. Clean it up.
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
@@ -2050,7 +2050,7 @@ down:
                 else if (vector_i16(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+2*w));
                     *(LispObject*)p = prev;
-                    std::uint16_t *x = csl_cast<std::uint16_t *>(start_contents(prev));
+                    std::uint16_t *x = bit_cast<std::uint16_t *>(start_contents(prev));
                     for (size_t i=0; i<(size_t)w; i++)
                     {   uint32_t q = read_data_byte() & 0xff;
                         *x++ = (q << 8) | (read_data_byte() & 0xff);
@@ -2076,7 +2076,7 @@ down:
                 else if (vector_f32(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
                     *(LispObject*)p = prev;
-                    float *x = csl_cast<float *>(start_contents(prev));
+                    float *x = bit_cast<float *>(start_contents(prev));
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
@@ -2123,7 +2123,7 @@ up:
 // just need to go and deal with the CAR.
     if (consp(b))
     {   pbase = b;
-        p = csl_cast<LispObject *>(vcaraddr(b));
+        p = bit_cast<LispObject *>(vcaraddr(b));
         b = car(b);
         goto down;
     }
@@ -2155,7 +2155,7 @@ up:
 // (including hash tables, structures, records, objects...) or a symbol.
 // In the case of a symbol the index n selects as between qvalue, pname and
 // the other fields making up a symbol.
-        p = csl_cast<LispObject *>(&vselt(w, 0));
+        p = bit_cast<LispObject *>(&vselt(w, 0));
         b = vselt(w, 0);
 // I could and possibly should push the released cell from s onto a local
 // freelist and use that where I do a CONS if possible...
@@ -2166,7 +2166,7 @@ up:
     }
     setcar(s, fixnum_of_int(n)); // write back decreased index
     pbase = b;
-    p = csl_cast<LispObject *>(&vselt(b, n));
+    p = bit_cast<LispObject *>(&vselt(b, n));
     goto down;
 }
 
@@ -2266,7 +2266,7 @@ static void *new_map_block()
         my_exit();
     }
     std::memset(p, 0, 512*sizeof(void *));
-    return csl_cast<void *>(p);
+    return bit_cast<void *>(p);
 }
 
 static std::uint8_t *new_final_map_block()
@@ -2437,7 +2437,7 @@ down:
             w = p;
             p = qpname(p);
             setpname(w, b);
-            b = csl_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
+            b = bit_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
         case TAG_VECTOR:
@@ -2459,8 +2459,8 @@ down:
 // vectors (most notably stream objects) it represents one cell of header and
 // three of lisp data, which are thought of as having indexes 0, 1 and 2.
             w = p + len - CELL - TAG_VECTOR;
-            p = *csl_cast<LispObject *>(w);
-            *csl_cast<LispObject *>(w) = b;
+            p = *bit_cast<LispObject *>(w);
+            *bit_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -2475,8 +2475,8 @@ down:
             len = length_of_header(h);
             if (len == CELL) goto up;  // should never happen
             w = p + len - CELL - TAG_NUMBERS;
-            p = *csl_cast<LispObject *>(w);
-            *csl_cast<LispObject *>(w) = b;
+            p = *bit_cast<LispObject *>(w);
+            *bit_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -2535,16 +2535,16 @@ up:
 // the more general VECTOR case both because symbols are common and
 // because their headers are formatted differently to other vectors, so
 // this simplifies the task of sorting out how to re-tag things.
-            w = *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
-            *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
+            w = *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
-            p = *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            p = *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
                 b = w;
                 goto up;
             }
-            *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
+            *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
             goto down;
 
         case BACKPOINTER_VECTOR:
@@ -2554,10 +2554,10 @@ up:
 // had originally been tagged as SYMBOL, VECTOR or NUMBERS. Note that the
 // fact that I am RETURNING to a vector means it must have been a vector
 // that contained pointers...
-            w = *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR);
-            *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
+            w = *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
-            p = *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            p = *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR);
 // The item I am scanning back over is either a number (in fact a ratio
 // or a complex number) in which case it will need to be re-tagged with
 // TAG_NUMBERS, and the test here detects its header...
@@ -2574,7 +2574,7 @@ up:
                 b = w;
                 goto up;
             }
-            *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
+            *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
             goto down;
     }
 }
@@ -2907,7 +2907,7 @@ down:
             w = p;
             p = qpname(p);
             setpname(w, b);
-            b = csl_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
+            b = bit_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
         case TAG_VECTOR:
@@ -2934,9 +2934,9 @@ down:
 // three of lisp data. The "-1" on the next line is because elements run from
 // 0 to len-1 rather than from 1 to len.
             if (len == 0) goto up; // NB special case
-            w = csl_cast<LispObject>(&basic_elt(p, len-1));
-            p = *csl_cast<LispObject *>(w);
-            *csl_cast<LispObject *>(w) = b;
+            w = bit_cast<LispObject>(&basic_elt(p, len-1));
+            p = *bit_cast<LispObject *>(w);
+            *bit_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -3052,7 +3052,7 @@ down:
 // Also note that the "vector" may be tagged as TAG_VECTOR or TAG_NUMBERS and
 // so I need code that uses a mask operation to address its start.
             if (vector_i8(h))
-            {   unsigned char *x = csl_cast<unsigned char *>(start_contents(p));
+            {   unsigned char *x = bit_cast<unsigned char *>(start_contents(p));
                 write_u64(len = length_of_byteheader(h) - CELL);
 // I *could* detect strings etc here to display the comments more tidily,
 // but since they are just for debugging that seems like too much work
@@ -3075,12 +3075,12 @@ down:
                 }
             }
             else if (vector_f64(h))
-            {   double *x = csl_cast<double *>(start_contents64(p));
+            {   double *x = bit_cast<double *>(start_contents64(p));
                 write_u64(len = (length_of_header(h) - CELL)/8);
                 for (size_t i=0; i<len; i++) write_f64(*x++);
             }
             else if (vector_i16(h))
-            {   std::uint16_t *x = csl_cast<std::uint16_t *>(start_contents(p));
+            {   std::uint16_t *x = bit_cast<std::uint16_t *>(start_contents(p));
                 write_u64(len = length_of_hwordheader(h) - CELL/2);
                 for (size_t i=0; i<len; i++)
                 {   uint32_t q = *x++;
@@ -3105,7 +3105,7 @@ down:
                 }
             }
             else if (vector_f32(h))
-            {   float *x = csl_cast<float *>(start_contents(p));
+            {   float *x = bit_cast<float *>(start_contents(p));
                 write_u64(len = (length_of_header(h) - CELL)/4);
                 for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
@@ -3249,16 +3249,16 @@ up:
 // the more general VECTOR case both because symbols are common and
 // because their headers are formatted differently to other vectors, so
 // this simplifies the task of sorting out how to re-tag things.
-            w = *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
-            *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
+            w = *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
-            p = *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            p = *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
                 b = w;
                 goto up;
             }
-            *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
+            *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
             goto down;
 
         case BACKPOINTER_VECTOR:
@@ -3268,10 +3268,10 @@ up:
 // had originally been tagged as SYMBOL, VECTOR or NUMBERS. Note that the
 // fact that I am RETURNING to a vector means it must have been a vector
 // that contained pointers...
-            w = *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR);
-            *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
+            w = *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
-            p = *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            p = *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR);
 // The item I am scanning back over is either a number (in fact a ratio
 // or a complex number) in which case it will need to be re-tagged with
 // TAG_NUMBERS, and the test here detects its header...
@@ -3288,7 +3288,7 @@ up:
                 b = w;
                 goto up;
             }
-            *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
+            *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
             goto down;
     }
 }
@@ -3443,7 +3443,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
     }
     else
     {   len = length_of_byteheader(h) - CELL;
-        char *modname = csl_cast<char *>(file) + CELL - TAG_VECTOR;
+        char *modname = bit_cast<char *>(file) + CELL - TAG_VECTOR;
         modname = trim_module_name(modname, &len);
         if (Iopen(modname, len, IOPEN_IN, filename))
         {   err_printf("Failed to find \"%s\"\n", filename);
@@ -3857,7 +3857,7 @@ void write_everything()
     std::strcpy(trigger, "package of nil write");
     write_data(qpackage(nil));
     for (LispObject *p:list_bases)
-    {   std::sprintf(trigger, "list base %p write", csl_cast<void *>(*p));
+    {   std::sprintf(trigger, "list base %p write", bit_cast<void *>(*p));
         write_data(*p);
     }
 // Tidy up at the end. I do not logically need an explicit end of data marker
@@ -3891,7 +3891,7 @@ void warm_setup()
 
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
-    std::memset(csl_cast<void *>(csl_cast<char *>(boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
+    std::memset(bit_cast<void *>(bit_cast<char *>(boffo) + (CELL - TAG_VECTOR)), '@', boffo_size);
 
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -4056,7 +4056,7 @@ down:
             w = p;
             p = qpname(p);
             setpname(w, b);
-            b = csl_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
+            b = bit_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
         case TAG_VECTOR:
@@ -4069,8 +4069,8 @@ down:
             else len = length_of_header(h);
             if (len == CELL) goto up;
             w = p + len - CELL - TAG_VECTOR;
-            p = *csl_cast<LispObject *>(w);
-            *csl_cast<LispObject *>(w) = b;
+            p = *bit_cast<LispObject *>(w);
+            *bit_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -4083,8 +4083,8 @@ down:
             len = length_of_header(h);
             if (len == CELL) goto up;
             w = p + len - CELL - TAG_NUMBERS;
-            p = *csl_cast<LispObject *>(w);
-            *csl_cast<LispObject *>(w) = b;
+            p = *bit_cast<LispObject *>(w);
+            *bit_cast<LispObject *>(w) = b;
             b = w + BACKPOINTER_VECTOR;
             goto down;
 
@@ -4136,24 +4136,24 @@ up:
 
         case BACKPOINTER_SYMBOL:
             debug_record("push_symbols BACKPOINTER_SYMBOL");
-            w = *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
-            *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
+            w = *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = p;
             b = b - CELL;
-            p = *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
+            p = *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL);
             if (is_symbol_header_full_test(p))
             {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
                 b = w;
                 goto up;
             }
-            *csl_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
+            *bit_cast<LispObject *>(b - BACKPOINTER_SYMBOL) = w;
             goto down;
 
         case BACKPOINTER_VECTOR:
             debug_record("push_symbols BACKPOINTER_VECTOR");
-            w = *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR);
-            *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
+            w = *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR) = p;
             b = b - CELL;
-            p = *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR);
+            p = *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR);
             if (is_number_header_full_test(p))
             {   p = b - BACKPOINTER_VECTOR + TAG_NUMBERS;
                 b = w;
@@ -4164,7 +4164,7 @@ up:
                 b = w;
                 goto up;
             }
-            *csl_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
+            *bit_cast<LispObject *>(b - BACKPOINTER_VECTOR) = w;
             goto down;
     }
 }
@@ -4176,7 +4176,7 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     map_releaser RAII;
     for (uintptr_t threadId=0; threadId<maxThreads; threadId++)
     {   LispObject *oldStack = stack;
-        for (LispObject *s=csl_cast<LispObject *>(stackBase)+1;
+        for (LispObject *s=bit_cast<LispObject *>(stackBase)+1;
              s<=oldStack; s++)
         {   std::sprintf(trigger, "Stack@%p", s);
             if (push_symbols(pp, *s)) return true;
@@ -4195,7 +4195,7 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     std::strcpy(trigger, "package nil push");
     if (push_symbols(pp, qpackage(nil))) return true;
     for (LispObject *p:list_bases)
-    {   std::sprintf(trigger, "list base %p push", csl_cast<void *>(*p));
+    {   std::sprintf(trigger, "list base %p push", bit_cast<void *>(*p));
         if (push_symbols(pp, *p)) return true;
     }
     return false;
@@ -4417,7 +4417,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                         size_t limit = sizeof(buff[0].name);
                         if (npn >= limit) npn = limit-1;
                         std::strncpy(buff[buffp].name,
-                            csl_cast<const char *>(&basic_celt(pn, 0)),
+                            bit_cast<const char *>(&basic_celt(pn, 0)),
                             npn);
                         buff[buffp].name[npn] = 0; 
                         buffp++;
@@ -4448,7 +4448,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
     }
     if (what == 0 || what == 1)
     {   double running = 0.0;
-        std::qsort(csl_cast<void *>(buff), buffp,
+        std::qsort(bit_cast<void *>(buff), buffp,
                    sizeof(buff[0]), profile_cf);
         trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
         for (size_t j=0; j<buffp; j++)
