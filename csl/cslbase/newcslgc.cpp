@@ -40,7 +40,7 @@
 const char* getPageType(uintptr_t a)
 {   Page* p = pageOf(a);
     const char* t;
-    static char b[12];
+    static char b[20];
     if (consPages.contains(p))             t = "C";
     else if (vecPages.contains(p))         t = "V";
     else if (consOldPages.contains(p))     t = "Co";
@@ -129,10 +129,6 @@ std::unordered_set<uintptr_t> allPinned;
 // The ambiguous value (a) seems to point within the page (p). I do
 // different things based on the sort of page involved... pointers into
 // CONS pages will be the simplest to handle.
-
-void blurp()
-{   zprintf("\n\n\nblurp\n\n\n");
-}
 
 void processAmbiguousInPage(Page* p, uintptr_t a)
 {   uintptr_t dataStart;
@@ -253,7 +249,9 @@ void processAmbiguousValue(uintptr_t a, const char* source="STACK")
 {
 // I find the Page (if any!) the value is in. That Page may be empty,
 // one containing old pinned stuff or one full of live data.
+#ifdef DEBUG
     zprintf("%s %d: %a\n", source, stackCount++, a);
+#endif
     Page* p = findPage(a);
     if (p!=nullptr) processAmbiguousInPage(p, a);
 }
@@ -367,6 +365,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
             }
             FALLTHROUGH;
     default:                 // None of the above cases...
+            len = 2*CELL;    // ... must be a CONS cell.
 // Since this is a Page intended to contain vectors it would be wrong if it
 // had any cons cells in it. However in case at some later stage I put
 // some cons cells into vector pages I will allow for that case here!
@@ -374,7 +373,6 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
             {   zprintf("Pinned cons head at %a: ", s);
                 simple_print(s);
             }
-            len = 2*CELL;    // ... must be a CONS cell.
             break;
         }
         size_t o1 = vecToOffset(s, p);
@@ -492,7 +490,9 @@ void evacuate(LispObject &x)
     my_assert(x != 0, where("zero word in scanning"));
     my_assert(!is_forward(x), where("forwarding ptr in scanning"));
     if (is_immediate(x) || x == nil) return;
+#ifdef DEBUG
     zprintf("evacuating %a %s\n", x, objectType(x));
+#endif
 // If something is not immediate it must be x pointer!
     LispObject* untagged_x = bit_cast<LispObject*>(x & ~TAG_BITS);
     LispObject hdr = *untagged_x;
@@ -533,7 +533,9 @@ void evacuate(LispObject &x)
     csl_memcpy(bit_cast<void*>(cpy), untagged_x, len);
     *untagged_x = TAG_FORWARD + cpy;
     x = cpy + (x & TAG_BITS);
+#ifdef DEBUG
     zprintf("Evacuate %a to %a\n", untagged_x, x);
+#endif
     my_assert(!is_forward(x), where("forwarding ptr in scanning"));
 }
 
@@ -586,7 +588,9 @@ void evacuateFromPinnedItems()
         {   LispObject c = pp->pinnedObjects-TAG_FIXNUM;
             LispObject next = car(c)-TAG_FIXNUM;
             pp->pinnedObjects = cdr(c);
+#ifdef DEBUG
             zprintf("About to evacuate contents of %a\n", next);
+#endif
             Header a = *bit_cast<Header*>(next);
             size_t len, len1;
 // Now based on the low 6 bits of the first word of the object I sort
@@ -601,7 +605,9 @@ void evacuateFromPinnedItems()
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
                 my_assert(len != 0, "lisp vector size zero");
+#ifdef DEBUG
                 zprintf("Evac contents of pinned vector of length %s\n", len1);
+#endif
                 for (size_t i = CELL; i<len1; i += CELL)
                     evacuate(*bit_cast<LispObject*>(next+i));
                 continue;
@@ -872,14 +878,14 @@ void rePinConsCurrent(Page* p)
 // Space up as far as consFringe is in use, and any pinned items there
 // should now be skipped.
     size_t nPins = 0;
-    while (consFringe != bit_cast<uintptr_t>(p+1) &&
+    while (consFringe != endOfConsPage(p) &&
            consIsPinned(consFringe, p))
     {   nPins++;
         consFringe += sizeof(ConsCell);
     }
 // If that tkes consFringe up to the end of the page then this page is
 // full and the next allocation request will replace it.
-    if (consFringe == bit_cast<uintptr_t>(p+1))
+    if (consFringe == endOfConsPage(p))
     {   consLimit = consFringe;
         p->hasPinned = nPins;
         return;
@@ -887,21 +893,21 @@ void rePinConsCurrent(Page* p)
 // Now (whew) there is at least one non-pinned cell available still. The
 // first block of such must be left delimited by consLimit.
     uintptr_t a = consFringe;
-    while (a != bit_cast<uintptr_t>(p+1) &&
+    while (a != endOfConsPage(p) &&
            !consIsPinned(a, p)) a += sizeof(ConsCell);
     consLimit = a;
-    if (a == bit_cast<uintptr_t>(p+1))
+    if (a == endOfConsPage(p))
     {   p->hasPinned = nPins;
         return;
     }
 // Here I have found a relevant pinned item. Skip past pinnings..
-    while (a != bit_cast<uintptr_t>(p+1) &&
+    while (a != endOfConsPage(p) &&
            consIsPinned(a, p))
     {   a += sizeof(ConsCell);
         nPins++;
     }
 // That may end up at the end of the page. Ugh.
-    if (a == bit_cast<uintptr_t>(p+1))
+    if (a == endOfConsPage(p))
     {   p->hasPinned = nPins;
         return;
     }
@@ -919,13 +925,13 @@ void rePinConsCurrent(Page* p)
 // The first free cell in a block points to the next non-free cell.
         indirect(base) = a;        // write in chaining
 // Again I skip pinned cells one at a time.
-        while (a != bit_cast<uintptr_t>(p+1) &&
+        while (a != endOfConsPage(p) &&
                consIsPinned(a, p))
         {   a += sizeof(ConsCell);
             nPins++;               // Count the pinned cells
         }
 // ... and if I reach the end of the page I am done.
-        if (a == bit_cast<uintptr_t>(p+1))
+        if (a == endOfConsPage(p))
         {   p->hasPinned = nPins;
             return;
         }
@@ -936,7 +942,7 @@ void rePinConsCurrent(Page* p)
     }
 // If I exit here it is because there are no more pinned cells, so the
 // end of the free block is the end of the page.
-    indirect(base) = bit_cast<uintptr_t>(p+1);
+    indirect(base) = endOfConsPage(p);
     p->hasPinned = nPins;
 }
 
@@ -961,18 +967,18 @@ void rePinConsPage(Page* p)
     std::memset(p->newConsPins, 0, consPinBytes);
     uintptr_t a = offsetToCons(0, p);
     size_t nPins = 0;
-    zprintf("rePin from %a to %a\n", a, bit_cast<uintptr_t>(p+1));
+    zprintf("rePin from %a to %a\n", a, endOfConsPage(p));
 // Now I need to scan the page. I will start by skipping past any
 // initial pinned items. A pathological situation would be if every single
 // cell was pinned, so I have to check for end of page!
-    while (a != offsetToCons(0, p+1) &&
+    while (a != endOfConsPage(p) &&
            consIsPinned(a, p))
     {   zprintf("!!beginPin %a %s\n", a, consIsPinned(a, p));
         a += sizeof(ConsCell);
         nPins++;
     }
 // In the pathological case I am done, and the page will count as clogged.
-    if (a == bit_cast<uintptr_t>(p+1))
+    if (a == endOfConsPage(p))
     {   p->hasPinned = nPins;
         return;
     }
@@ -987,13 +993,13 @@ void rePinConsPage(Page* p)
 // The first free cell in a block points to the next non-free cell.
         indirect(base) = a;        // write in chaining
 // Again I ship pinned cells one at a time.
-        while (a != bit_cast<uintptr_t>(p+1) &&
+        while (a != endOfConsPage(p) &&
                consIsPinned(a, p))
         {   a += sizeof(ConsCell);
             nPins++;               // Count the pinned cells
         }
 // And if I reach the end of the page I am done.
-        if (a == bit_cast<uintptr_t>(p+1))
+        if (a == endOfConsPage(p))
         {   p->hasPinned = nPins;
             return;
         }
@@ -1004,7 +1010,7 @@ void rePinConsPage(Page* p)
     }
 // If I exit here it is because there are no more pinned cells, so the
 // end of the free block is the end of the page.
-    indirect(base) = bit_cast<uintptr_t>(p+1);
+    indirect(base) = endOfConsPage(p);
     p->hasPinned = nPins;
 }
 
@@ -1054,14 +1060,18 @@ void rePinVecPage(Page* p)
         {   anyPinned = true;
             uintptr_t thePinnedItem = offsetToVec(aOffset, p);
             if (thePinnedItem != a) setHeaderWord(a, thePinnedItem-a);
+#ifdef DEBUG
             zprintf("Put padder at %a length %d\n", a, thePinnedItem-a);
+#endif
             Header h = indirect(thePinnedItem);
             zprintf("Pinned item at %a length %d\n", thePinnedItem, length_of_any_header(h));
             a = thePinnedItem + doubleword_align_up(length_of_any_header(h));
             aOffset = vecToOffset(a, p);
         }
         if (a != b) setHeaderWord(a, b-a);
+#ifdef DEBUG
         zprintf("final padder at %a length %d\n", a, b-a);
+#endif
         if (anyPinned) pinnedChunkCount++;
         else
         {   for (size_t i=pinnedChunk; i<pinEnd; i++)
