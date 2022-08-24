@@ -48,12 +48,16 @@ case "guess:$guess" in
         MACHINE=macaarch64
         ;;
 
-  x86_64-unknown-freebsd* | guess:amd64-unknown-freebsd* )
+  guess:x86_64-unknown-freebsd* | guess:amd64-unknown-freebsd* )
 	MACHINE=freeBSD64
 	;;
 
-  i386-unknown-freebsd* | i586-unknown-freebsd*)
+  guess:i386-unknown-freebsd* | guess:i586-unknown-freebsd*)
 	MACHINE=freeBSD
+	;;
+
+  guess:aarch64-unknown-freebsd*)
+	MACHINE=FreeBSD_aarch64
 	;;
 
   guess:i686-pc-cygwin )

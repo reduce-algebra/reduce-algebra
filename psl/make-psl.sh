@@ -39,6 +39,10 @@ case "guess:$guess" in
 	MACHINE=freeBSD
 	;;
 
+  guess:aarch64-unknown-freebsd*)
+	MACHINE=FreeBSD_aarch64
+	;;
+
   guess:i686-pc-cygwin )
 	MACHINE=win32
 	test "$BPSL_CYGDRIVE_PREFIX" = "" && export BPSL_CYGDRIVE_PREFIX=/cygdrive
