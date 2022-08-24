@@ -47,7 +47,7 @@
 // I use the Mersenne Twister generator as set up in arithlib.hpp
 // to set up some randomized testing for this code. That will only
 // compile if you have a "modern" C++ compiler. For use here arithlib.hpp
-// need to know it is being used from within CSL...
+// needs to know it is being used from within CSL...
 
 #ifndef LISP
 #define LISP 1
@@ -81,6 +81,26 @@ Page*    oldVecPinPages;
 uintptr_t consFringe, consLimit, consEnd;
 uintptr_t vecFringe, vecLimit, vecEnd;
 uintptr_t borrowFringe, borrowLimit, borrowEnd;
+
+
+// Here I will have a demonstration of my "static_print" mechanism that
+// causes g++ or clang++ to generate a warning message that includes the
+// numeric value give. Here that value should be 2^23.
+
+static_print(sizeof(Page));
+
+// I also illustrate how I can get a value printed at the very start of
+// the program's execution...
+
+class PrintDuringStartup
+{
+public:
+    PrintDuringStartup()
+    {   std::cout << "sizeof(Page) = " << sizeof(Page) << "\n";
+    }
+};
+
+static const PrintDuringStartup constructionCausesPrinting;
 
 LispObject get_symbol(bool gensymp)
 {   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);

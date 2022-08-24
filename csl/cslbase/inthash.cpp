@@ -369,7 +369,7 @@ static void hash_double_size(inthash *h)
 
 // When the table needs rehashing I can just remove items one at a time and
 // re-insert them. Well it is not quite as nice as that because in
-// pathalogical cases the re-insertion might fail. I will allow for that by
+// pathological cases the re-insertion might fail. I will allow for that by
 // letting hash_rehash return true if it succeeds. If it fails then I will
 // ensure that all the data is still in it, but a further recovery step will
 // be called for. I expect that to be a very rare occurrence.

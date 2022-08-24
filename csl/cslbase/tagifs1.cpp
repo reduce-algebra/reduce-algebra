@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
             while (curline[i] == ' ') i++;
             std::strcpy(pending[depth], &curline[i]);
 // I now rather want to remove comments from the pending material.
-// In particular there is a case that could have pathalogical consequences:
+// In particular there is a case that could have pathological consequences:
 //   #if defined XXX // Comment with */ in it.
             stripcomments(pending[depth]);
             elseseen[depth] = (curline[3] == 'n') ? 1 : 0;

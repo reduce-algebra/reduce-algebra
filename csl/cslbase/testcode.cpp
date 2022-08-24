@@ -78,7 +78,6 @@ void random_fill(LispObject v)
 
 void gcTestCode()
 {   std::printf("\n: Conservative code - run a simple test of the GC\n\n");
-    int gcCount = 0;
     set_up_signal_handlers();
 // I will take the view that the following are things that can happen:
 // (1) set workbase[1] to a new cons
@@ -168,7 +167,6 @@ void gcTestCode()
                         w1, w1a,  w2, w2a, a1, a1a, a2, a2a);
                 my_abort("corrupted by GC");
             }
-//          if (++gcCount == 1) i = 10000;
             break;
         }
     }

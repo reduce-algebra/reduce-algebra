@@ -838,70 +838,6 @@ void evacuateFromCopiedData()
     my_assert(pendingPages == nullptr, "pendingPages");
 }
 
-#pragma message ("use bitmaps.h rather than this")
-
-// Iteration over a bitmap: I have bitmaps the record which items
-// are pinned and I wish to process just the items as identified in the
-// bitmaps. I can scan using the "number-of-trailing-zeros" function to
-// identify the next such item. The code I have here returns a value
-// static_cast<size_t>(-1) when there are no more pin bits present.
-
-uint64_t* bitmapPointer;
-size_t    bitmapSize;
-
-size_t    bitmapWordPos;
-uint64_t  bitmapWord;
-
-// In fact the bitmaps that I use cover the whole of the Page, but the
-// start of the page is filled up with for instance the bitmaps and so
-// should never be tagged. I could therefore improve this a bit by
-// starting my scan a little in to the start of the map. I avoid that for
-// the present in the name of simplicity.
-
-void startBitmapScan(uint64_t* p, size_t n)
-{   bitmapPointer = p;
-    my_assert(n > 0, "a bitmap must have at least one word in it");
-    bitmapSize    = n;
-    bitmapWordPos = 0;
-    bitmapWord    = bitmapPointer[bitmapWordPos];
-}
-
-static const uint64_t one64 = 1;
-static const size_t   badSize = -1;
-
-size_t nextInBitmap()
-{   if (bitmapWord != 0)             // One or more bits left in current word.
-    {   int n = ntz(bitmapWord);     // ... use the lowest one.
-        bitmapWord &= ~(one64 << n); // Clear it.
-        return 64*bitmapWordPos + n; // Return an overall offset.
-    }
-    do                               // Find next non-zero word.
-    {   if (bitmapWordPos == bitmapSize-1) return badSize;
-        bitmapWordPos++;
-        bitmapWord = bitmapPointer[bitmapWordPos];
-    } while (bitmapWord == 0);
-    int n = ntz(bitmapWord);         // Report the lowesxt bit in that word.
-    bitmapWord &= ~(one64 << n);
-    return 64*bitmapWordPos + n;
-}
-
-// These version convert from the index values reported by nextInBitmap()
-// into addresses within a Page. I have to have different versions for
-// Cons and Vec pages because the resolution used in the bitmaps
-// are different in the two cases.
-
-inline uintptr_t nextInConsBitmap(Page* p)
-{   size_t o = nextInBitmap();
-    if (o == badSize) return 0;
-    return offsetToCons(o, p);
-}
-
-inline uintptr_t nextInVecBitmap(Page* p)
-{   size_t o = nextInBitmap();
-    if (o == badSize) return 0;
-    return offsetToVec(o, p);
-}
-
 // Here I need to look at xPinPages because some of the pages may now
 // have fewer pinned items and xPages because some of them may now
 // have pinned items thet were not pinned before. I must create or re-create
@@ -951,7 +887,6 @@ void rePinConsCurrent(Page* p)
 // Now (whew) there is at least one non-pinned cell available still. The
 // first block of such must be left delimited by consLimit.
     uintptr_t a = consFringe;
-#pragma message ("use nextOneBit")
     while (a != bit_cast<uintptr_t>(p+1) &&
            !consIsPinned(a, p)) a += sizeof(ConsCell);
     consLimit = a;
@@ -965,27 +900,43 @@ void rePinConsCurrent(Page* p)
     {   a += sizeof(ConsCell);
         nPins++;
     }
-// Now a points to the start of a free region (or at the end of the page).
+// That may end up at the end of the page. Ugh.
+    if (a == bit_cast<uintptr_t>(p+1))
+    {   p->hasPinned = nPins;
+        return;
+    }
+// Now a points to the start of a free region.
 // I can fill in the rest of the page with pointers that chain such free
 // regions together.
-    uintptr_t base = a;
-// At present this is coded by looking at each individual cons cell. Once
-// I have debugged things using this version I can use ntz() to search for
-// pinned items 64-cells at a time in the bitmap, thereby speeding this
-// up quite a lot. But this version is simpler so I use it first.
-    while (a != bit_cast<uintptr_t>(p+1))
-    {   if (consIsPinned(a, p))
-        {   car(base) = a;
-            base = a;
-            while (a != bit_cast<uintptr_t>(p+1) &&
-                   consIsPinned(a, p))
-            {   a += sizeof(ConsCell);
-                nPins++;
-            }
+    uintptr_t base = a;            // base points at the first free cell
+    size_t nextPin = consToOffset(a, p);
+    while ((nextPin=nextOneBit(p->consPins,consPinBits,nextPin)) != SIZE_MAX)
+    {   zprintf("!!Pinned item at %a\n", offsetToCons(nextPin, p));
+// I could use nextZeroBit() here but my expectation is that pinned cons
+// cells will not come in long runs, so skipping them individually is going
+// to be at least as sensible.
+        a = offsetToCons(nextPin, p);
+// The first free cell in a block points to the next non-free cell.
+        indirect(base) = a;        // write in chaining
+// Again I skip pinned cells one at a time.
+        while (a != bit_cast<uintptr_t>(p+1) &&
+               consIsPinned(a, p))
+        {   a += sizeof(ConsCell);
+            nPins++;               // Count the pinned cells
         }
-        else a += sizeof(ConsCell);
+// ... and if I reach the end of the page I am done.
+        if (a == bit_cast<uintptr_t>(p+1))
+        {   p->hasPinned = nPins;
+            return;
+        }
+// Now I have the next free block, so record its first location so
+// that I can write a pointer into there.
+        base = a;
+        nextPin = consToOffset(a, p);;
     }
-    car(base) = a;
+// If I exit here it is because there are no more pinned cells, so the
+// end of the free block is the end of the page.
+    indirect(base) = bit_cast<uintptr_t>(p+1);
     p->hasPinned = nPins;
 }
 
@@ -1012,7 +963,7 @@ void rePinConsPage(Page* p)
     size_t nPins = 0;
     zprintf("rePin from %a to %a\n", a, bit_cast<uintptr_t>(p+1));
 // Now I need to scan the page. I will start by skipping past any
-// initial pinned items. A pathalogical situation would be if every single
+// initial pinned items. A pathological situation would be if every single
 // cell was pinned, so I have to check for end of page!
     while (a != offsetToCons(0, p+1) &&
            consIsPinned(a, p))
@@ -1020,45 +971,40 @@ void rePinConsPage(Page* p)
         a += sizeof(ConsCell);
         nPins++;
     }
-// In the pathalogical case I am done, and the page will count as clogged.
+// In the pathological case I am done, and the page will count as clogged.
     if (a == bit_cast<uintptr_t>(p+1))
     {   p->hasPinned = nPins;
         return;
     }
-    uintptr_t base = a;
-// At present this is coded by looking at each individual cons cell. Once
-// I have debugged things using this version I can use ntz() to search for
-// pinned items 64-cells at a time in the bitmap, thereby speeding this
-// up quite a lot. But this version is simpler so I use it first.
-#pragma message ("need to use nextOneBit() here")
-    while (a != bit_cast<uintptr_t>(p+1))
-    {   if (consIsPinned(a, p))
-        {   car(base) = a;
-            zprintf("!!startPin at %a\n", a);
-            while (a != bit_cast<uintptr_t>(p+1) &&
-                   consIsPinned(a, p))
-            {   a += sizeof(ConsCell);
-                nPins++;
-            }
-            base = a;
+    uintptr_t base = a;            // base points at the first free cell
+    size_t nextPin = consToOffset(a, p);
+    while ((nextPin=nextOneBit(p->consPins,consPinBits,nextPin)) != SIZE_MAX)
+    {   zprintf("!!Pinned item at %a\n", offsetToCons(nextPin, p));
+// I could use nextZeroBit() here but my expectation is that pinned cons
+// cells will not come in long runs, so skipping them individually is going
+// to be at least as sensible.
+        a = offsetToCons(nextPin, p);
+// The first free cell in a block points to the next non-free cell.
+        indirect(base) = a;        // write in chaining
+// Again I ship pinned cells one at a time.
+        while (a != bit_cast<uintptr_t>(p+1) &&
+               consIsPinned(a, p))
+        {   a += sizeof(ConsCell);
+            nPins++;               // Count the pinned cells
         }
-        else a += sizeof(ConsCell);
+// And if I reach the end of the page I am done.
+        if (a == bit_cast<uintptr_t>(p+1))
+        {   p->hasPinned = nPins;
+            return;
+        }
+// Now I have the next free block, so record its first location so
+// that I can write a pointer into there.
+        base = a;
+        nextPin = consToOffset(a, p);;
     }
-    car(base) = a;
-// Well here is a loop using the bitmaps and displaying where pinned items are!
-// It should notice just the same locations as are detected above!
-    startBitmapScan(p->consPins, consPinBits);
-    uintptr_t nextPin;
-    while ((nextPin = nextInConsBitmap(p)) != 0)
-    {   zprintf("!!Pinned item at %a (method 1)\n", nextPin);
-    }
-// And yet another version which is probably the one I will want to end
-// up using.
-    nextPin = 0;
-    while ((nextPin=nextOneBit(p->consPins, consPinBits, nextPin))!=SIZE_MAX)
-    {   zprintf("!!Pinned item at %a (method 2)\n", offsetToCons(nextPin, p));
-        nextPin++;
-    }
+// If I exit here it is because there are no more pinned cells, so the
+// end of the free block is the end of the page.
+    indirect(base) = bit_cast<uintptr_t>(p+1);
     p->hasPinned = nPins;
 }
 
@@ -1172,14 +1118,22 @@ void tidyUpPinmaps()
 const size_t consClogThreshold = 200;
 const size_t vecClogThreshold  = 10;
 
+// Here I need to review the pages in consPinPages etc as well as
+// condOldPages, since I hope that the number of pins will have
+// reduced and so the pages may even now end up empty.
+
 void recycleOldSpace()
-{   while (!consOldPages.isEmpty())
+{   consOldPages += consPinPages;
+    consOldPages += consCloggedPages;
+    while (!consOldPages.isEmpty())
     {   Page* p = consOldPages.pop();
         zprintf("cons Page %a has %d pins\n", p, p->hasPinned);
         if (p->hasPinned == 0) emptyPages.push(p);
         else if (p->hasPinned < consClogThreshold) consPinPages.push(p);
         else consCloggedPages.push(p);
     }
+    vecOldPages += vecPinPages;
+    vecOldPages += vecCloggedPages;
     while (!vecOldPages.isEmpty())
     {   Page* p = vecOldPages.pop();
         zprintf("vec Page %a has %d pins\n", p, p->hasPinned);
@@ -1283,7 +1237,7 @@ void inner_garbage_collect()
     validateAll("evacuateFromPinnedItems done", true);
     evacuateFromUnambiguousBases();
     validateAll("evacuateFromUnambiguousBases done", true);
-    if (gcTrace) displayAllPages("Line " CSL_TOSTRING(__LINE__) " in newcslgc.cpp"); // DEBUG
+    if (gcTrace) displayAllPages(where("unambig bases evacuated"));
     evacuateFromCopiedData();
     validateAll("evacuateFromCopiedDate done");
 // Well where we should be now is that all live data is either left in place
@@ -1311,6 +1265,7 @@ void inner_garbage_collect()
     recycleOldSpace();
     validateAll("tidyUpPinmaps done", false, false);
     zprintf("GC complete!\n");
+    displayAllPages("End of GC");
 }
 
 // The following code makes a whole slew of assumptions about how the
