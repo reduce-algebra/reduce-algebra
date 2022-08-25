@@ -384,7 +384,7 @@ public:
 };
 
 INLINE_VAR const size_t ConsN = FindConsN<1,pageSize,1>::value;
-static_print(ConsN);
+//static_print(ConsN);
 
 template <size_t ChunkN, size_t TargetSize, size_t Gap>
 class FindChunkN
@@ -407,7 +407,7 @@ public:
 };
 
 INLINE_VAR const size_t ChunkN = FindChunkN<1,pageSize,1>::value;
-static_print(ChunkN);
+//static_print(ChunkN);
 
 typedef PageTemplate<ConsN,ChunkN> Page;
 
@@ -421,8 +421,8 @@ INLINE_VAR const size_t chunkBitmapBits = Page::chunkDataCount;
 // So "just for fun and to show off" I will generate a warning message
 // here (if using gcc or clang) that includes the size of various
 // aspects of the Page class.
-static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);
-static_print1(offsetof(Page,chunks)+sizeof(Page::chunks) - pageSize);
+//static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);
+//static_print1(offsetof(Page,chunks)+sizeof(Page::chunks) - pageSize);
 
 class PageListIter;
 
@@ -510,8 +510,14 @@ extern Page* potentiallyPinned;    // For GC.
 extern Page* pinnedPages;          // For GC.
 extern Page* pendingPages;         // For GC.
 
-inline uintptr_t endOfPage(Page* p)
-{   return bit_cast<uintptr_t>(p+1);
+inline uintptr_t endOfConsPage(Page* p)
+{   return bit_cast<uintptr_t>(p) +
+           offsetof(Page, consData) + sizeof(Page::consData);
+}
+
+inline uintptr_t endOfVecPage(Page* p)
+{   return bit_cast<uintptr_t>(p) +
+           offsetof(Page, chunks) + sizeof(Page::chunks);
 }
 
 inline bool PageList::contains(Page* p)
@@ -704,6 +710,7 @@ extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
 inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a type=%s\n", p, pageTypeName(p->type));
+#ifdef DEBUG
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowChain = %a borrowPinned=%s\n",
             p->borrowChain, p->borrowPinned);
@@ -733,6 +740,7 @@ inline void displayConsPage(Page* p)
             repeats = 0;
         }
     }
+#endif // DEBUG
     zprintf("end of page %a\n\n", p);
 }
 
@@ -747,6 +755,7 @@ extern const char* streamop(uintptr_t x);
 
 inline void displayVecPage(Page* p)
 {   zprintf("Vec page %a type=%s\n", p, pageTypeName(p->type));
+#ifdef DEBUG
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowChain = %a borrowPinned=%s\n",
             p->borrowChain, p->borrowPinned);
@@ -829,14 +838,17 @@ inline void displayVecPage(Page* p)
     }
     if (count != 1) zprintf(" * %d\n", count);
     else zprintf("\n");
+#endif // DEBUG
     zprintf("end of page %a\n\n", p);
 }
 
 inline void displayAllPages(const char* s)
 {   zprintf("displayAllPages %s\n", s);
+#ifdef DEBUG
     int k = 0;
     for (auto p:list_bases)
         zprintf("%s: %a\n", list_names[k++], *p);
+#endif
     zprintf("\nconsPages......\n");
     for (auto p:consPages)
     {   if (p == consCurrent) zprintf("*** consCurrent ***\n");
@@ -947,8 +959,7 @@ inline Header makeHeader(size_t n, int type)   // size is in bytes
 // memory. This does the job. Note that a is an untagged pointer here.
 
 inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
-{   zprintf("Write header (maybe padder) of length %d at %a\n", n, a);
-    indirect(a) = makeHeader(n, type);
+{   indirect(a) = makeHeader(n, type);
 }
 
 extern void grabFreshPage(PageType type);
@@ -1128,7 +1139,7 @@ inline void setVecFringeAndLimit(Page* p, uintptr_t& fringe, uintptr_t& limit)
 // Now find the next pinned chunk beyond that, if there is one.
     size_t end = nextOneBit(p->chunkBitmap, chunkBitmapBits, chunk);
     fringe = addressFromChunkNo(p, chunk);
-    if (end == SIZE_MAX) limit = bit_cast<uintptr_t>(p+1);
+    if (end == SIZE_MAX) limit = endOfVecPage(p);
     else limit = addressFromChunkNo(p, end);
 }
 

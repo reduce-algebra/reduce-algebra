@@ -55,18 +55,21 @@ public:
     const char* name;
     LispObject payload;
     Backtrace *parent;
+    int depth;
 
-    Backtrace(Backtrace *xparent, LispObject x, const char* msg="?")
+    Backtrace(Backtrace *xparent, int xdepth, LispObject x, const char* msg="?")
     {   special = false;
         name = msg;
         payload = x;
         parent = xparent;
+        depth = xdepth;
     }
     Backtrace(const char* s)
     {   special = true;
         name = s;
         payload = nil;
         parent = nullptr;
+        depth = 0;
     }
     void print()
     {   if (special) zprintf("%s\nEND\n", name);
@@ -81,7 +84,7 @@ public:
 inline void validateObject(LispObject x,
                            bool forwardOK=false,
                            bool oldSpaceValid=true,
-                           Backtrace *parent = nullptr)
+                           Backtrace *parent=nullptr)
 {   if (is_immediate(x) || x == nil) return;     // Ha ha an easy case!
     if (visited.count(x) != 0) return;
     if (!oldSpaceValid &&
@@ -95,7 +98,8 @@ inline void validateObject(LispObject x,
         my_abort(where("reference into old half-space"));
     }
     visited.insert(x);
-    Backtrace bb(parent, x, "validateObject");
+    if (parent->depth > 100) return; // Avoid stack overflow.
+    Backtrace bb(parent, parent->depth+1, x, "validateObject");
     if (is_cons(x))
     {   Page* p = pageOf(x);
         my_assert(p->type == consPageType, where("cons pointer into vector page"));

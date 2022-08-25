@@ -85,9 +85,14 @@ uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
 // Here I will have a demonstration of my "static_print" mechanism that
 // causes g++ or clang++ to generate a warning message that includes the
-// numeric value give. Here that value should be 2^23.
+// numeric value give. Note that I hope the two "gap" values are both 0.
 
-static_print(sizeof(Page));
+#pragma message ("ConsN ChunkN and 2 gaps at end of a Page")
+static_print(ConsN);
+static_print(ChunkN);
+static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);
+static_print1(offsetof(Page,chunks)+sizeof(Page::chunks) - pageSize);
+
 
 // I also illustrate how I can get a value printed at the very start of
 // the program's execution...
@@ -96,7 +101,14 @@ class PrintDuringStartup
 {
 public:
     PrintDuringStartup()
-    {   std::cout << "sizeof(Page) = " << sizeof(Page) << "\n";
+    {   std::cout << "ConsN = "    << ConsN << "\n";
+        std::cout << "ChunkN = "   << ChunkN << "\n";
+        std::cout << "cons gap = " << (offsetof(Page,consData) +
+                                       sizeof(Page::consData) -
+                                       pageSize) << "\n";
+        std::cout << "vec gap = "  << (offsetof(Page,chunks) +
+                                       sizeof(Page::chunks) -
+                                       pageSize) << "\n";
     }
 };
 
@@ -312,10 +324,12 @@ bool allocateAnotherSegment()
 
 void initConsPage(Page* p, bool empty)
 {   consPages.push(p);
+#ifdef DEBUG
     zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
+#endif
     p->type = consPageType;
     consCurrent = p;
-    p->dataEnd = consEnd = bit_cast<uintptr_t>(p+1);
+    p->dataEnd = consEnd = endOfConsPage(p);
     if (empty)
     {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
@@ -344,11 +358,13 @@ void initConsPage(Page* p, bool empty)
 
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
+#ifdef DEBUG
     zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
+#endif
     p->type = vecPageType;
-    p->dataEnd = endOfPage(p);
+    p->dataEnd = endOfVecPage(p);
     vecCurrent = p;
-    vecEnd = bit_cast<uintptr_t>(p+1);
+    vecEnd = endOfVecPage(p);
     if (empty)
     {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
@@ -406,7 +422,9 @@ void grabFreshPage(PageType type)
         consPages.count +
         vecPages.count +
         borrowPages.count;
-    zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);  
+#ifdef DEBUG
+    zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);
+#endif
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
 // If the memory I have allocated thus far is less then 2/3 full I will
