@@ -611,11 +611,11 @@ inline void chunkNoClearPinned(Page* p, size_t chunkNo)
 }
 
 inline size_t consToOffset(uintptr_t a, Page* p)
-{   return (a - bit_cast<uintptr_t>(&p->consData)) / (2*sizeof(LispObject));
+{   return (a - bit_cast<uintptr_t>(&p->consData)) / sizeof(ConsCell);
 }
 
 inline uintptr_t offsetToCons(size_t o, Page* p)
-{   return bit_cast<uintptr_t>(&p->consData) + 2*sizeof(LispObject)*o;
+{   return bit_cast<uintptr_t>(&p->consData) + sizeof(ConsCell)*o;
 }
 
 // Here p must be a CONS page and a is a pointer within it.
@@ -724,7 +724,7 @@ inline void displayConsPage(Page* p)
     size_t repeats = 0;
     for (uintptr_t q=offsetToCons(0, p);
                    q<p->dataEnd && q!=consFringe;
-                   q+=2*sizeof(uintptr_t))
+                   q+=sizeof(ConsCell))
     {   if (car(q) == prevCar && cdr(q) == prevCdr) repeats++;
         else
         {   if (repeats != 0) zprintf(" ... and %d repeats\n", repeats);
@@ -923,7 +923,7 @@ inline uintptr_t harderGet2Words()
 // The loop here skips over pinned stuff.
     while (consFringe < consEnd &&
            consIsPinned(consFringe, consCurrent))
-        consFringe += 2*sizeof(LispObject);
+        consFringe += sizeof(ConsCell);
 // Now if the Page is full I need to try to allocate another, and if that
 // does not make sense I will have to garbage collect.
     if (consFringe == consEnd) return consEndOfPage();
@@ -933,7 +933,7 @@ inline uintptr_t harderGet2Words()
     consLimit = indirect(consFringe);
 // Now I can allocate.
     uintptr_t r = consFringe;
-    consFringe += 2*sizeof(LispObject);
+    consFringe += sizeof(ConsCell);
     return r;
 }
 
@@ -945,7 +945,7 @@ inline uintptr_t harderGet2Words()
 inline uintptr_t get2Words()
 {   uintptr_t r = consFringe;
     if (r != consLimit)
-    {   consFringe += 2*sizeof(LispObject);
+    {   consFringe += sizeof(ConsCell);
         return r;
     }
     return harderGet2Words();
@@ -1240,11 +1240,19 @@ inline LispObject ncons(LispObject a)
     return r;
 }
 
+// get2Words() can call the garbage collector. When it does the result from
+// any previous use of get2Words may be inspected by the garbage collector
+// and so MUST have safe contents. I do not do this within get2Words because
+// most of the time I will have proper data to write in so writing in dummy
+// but safe valued would be a waste. The "conservative" nature of my GC
+// allows for uncertain values to be on the C stack, but everything within
+// the heap must always be legitimate in the Lisp world-view..
 
 inline LispObject list2(LispObject a, LispObject b)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil); // Needed for GC safety!
+    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
     setcdr(r1, r2);
     setcdr(r2, nil);
@@ -1253,8 +1261,9 @@ inline LispObject list2(LispObject a, LispObject b)
 
 inline LispObject list2star(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
     setcdr(r1, r2);
     setcdr(r2, c);
@@ -1264,8 +1273,9 @@ inline LispObject list2star(LispObject a, LispObject b, LispObject c)
 inline LispObject list2starrev(LispObject c, LispObject b,
                                LispObject a)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
     setcdr(r1, r2);
     setcdr(r2, c);
@@ -1275,10 +1285,12 @@ inline LispObject list2starrev(LispObject c, LispObject b,
 inline LispObject list3star(LispObject a, LispObject b, LispObject c,
                             LispObject d)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
-    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
+    setcdr(r2, nil);
+    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r3, c);
     setcdr(r1, r2);
     setcdr(r2, r3);
@@ -1289,12 +1301,15 @@ inline LispObject list3star(LispObject a, LispObject b, LispObject c,
 inline LispObject list4(LispObject a, LispObject b, LispObject c,
                         LispObject d)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
-    LispObject r3 = get2Words() + TAG_CONS;
-    LispObject r4 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
+    setcdr(r2, nil);
+    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r3, c);
+    setcdr(r3, nil);
+    LispObject r4 = get2Words() + TAG_CONS;
     setcar(r4, d);
     setcdr(r1, r2);
     setcdr(r2, r3);
@@ -1305,10 +1320,11 @@ inline LispObject list4(LispObject a, LispObject b, LispObject c,
 
 inline LispObject acons(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, nil);
+    setcdr(r1, c);
     LispObject r2 = get2Words() + TAG_CONS;
     setcar(r1, r2);
     setcar(r2, a);
-    setcdr(r1, c);
     setcdr(r2, b);
     return r1;
 }
@@ -1320,10 +1336,12 @@ inline LispObject acons_no_gc(LispObject a, LispObject b,
 
 inline LispObject list3(LispObject a, LispObject b, LispObject c)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
-    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
+    setcdr(r1, nil);
+    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r3, c);
     setcdr(r1, r2);
     setcdr(r2, r3);
@@ -1333,9 +1351,12 @@ inline LispObject list3(LispObject a, LispObject b, LispObject c)
 
 inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {   LispObject r1 = get2Words() + TAG_CONS;
-    LispObject r2 = get2Words() + TAG_CONS;
-    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r1, a);
+    setcdr(r1, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r2, b);
+    setcdr(r2, nil);
+    LispObject r3 = get2Words() + TAG_CONS;
     setcar(r2, b);
     setcar(r3, c);
     setcdr(r1, r2);
