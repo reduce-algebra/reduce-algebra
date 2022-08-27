@@ -141,7 +141,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
     case consPageType:
 // This is the simplest case, mainly because all objects in the page
 // are neatly aligned on 2-cell boundaries.
-        a = a & -(2*sizeof(LispObject));   // align the pointer.
+        a = a & -sizeof(ConsCell);   // align the pointer.
         dataStart = offsetToCons(0, p);
 // If the ambigious pointer points before any real data in the page
 // it is invalid. If it points before consDataEnd it is valid, but this
@@ -314,8 +314,8 @@ void identifyPinnedItems()
 
 void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 {   uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
-    zprintf("\n\n@@@@\n");
-    displayAllPages(where("findHeadersInChunk")); // DEBUG
+//  zprintf("\n\n@@@@\n");
+//  displayAllPages(where("findHeadersInChunk")); // DEBUG
 // lastAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
     uintptr_t lastAddr   = addressFromChunkNo(p, lastChunk);
@@ -411,8 +411,8 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
         s += len;
     }
     if (!thisChunkHasPins) chunkNoClearNewPinned(p, firstChunk);
-    zprintf("\n\n&&&&\n");
-    displayAllPages(where("end findHeadersInChunk")); // DEBUG
+//  zprintf("\n\n&&&&\n");
+//  displayAllPages(where("end findHeadersInChunk")); // DEBUG
 }
 
 // Here I identify each chunk that may contain pinned data and process it.

@@ -427,20 +427,16 @@ void grabFreshPage(PageType type)
 #endif
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
-// If the memory I have allocated thus far is less then 2/3 full I will
+// If the memory I have allocated thus far is less then 1/2 full I will
 // merely try to grab an empty page from the spare space. I will
 // use emptyPages that have been used before for choice, but when there are
 // none of those I will gust use the next Page in the currently partly used
 // Segment. Here I will only ever return a fully empty Page, never one that
-// contains any pinned data.
-#ifdef DEBUG
-        if (mustGrab || busy < 2*unused)
-#else // DEBUG
-// For now if I am in the release version not the debug one I will use up ALL
-// memory before considering GC. This is because GC is not implemented yet,
-// so this lets me test just a few more things.
-        if (mustGrab || true || busy < 2*unused)
-#endif // DEBUG
+// contains any pinned data. Well I will give myself a spare Page in hand
+// in the decision. Doing so will tend to make garbage collection more
+// frequent but will reduce any chance of fragmentation leading to the
+// copying process failing.
+        if (mustGrab || busy < (unused-1))
         {   if (!emptyPages.isEmpty())
             {   Page* r = emptyPages.pop();
                 r->type = emptyPageType;

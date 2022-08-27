@@ -207,98 +207,69 @@ extern LispObject rplacd_fails(LispObject a);
 
 #define BACKTRACE_MSG_BITS 0x38
 
-//
-// It is essential that the #define values set up here are kept in
-// step with the textual error messages in the array that follows...
-//
+// I need a bunch of numeric codes (eg err_bad_car) and I then need a
+// table of strings that has to stey in step. The code here achieves
+// this using a fairly standarf hack that uses macros. Note that by
+// defining the codes using enum the definitions are all processed at
+// compile time. 
 
-#define err_bad_car               0      // + the atom
-#define err_bad_cdr               1      // + the atom
-#define err_no_store              2      // no extras
-#define err_undefined_function_0  3      // + fn name
-#define err_undefined_function_1  4      // + fn name
-#define err_undefined_function_2  5      // + fn name
-#define err_undefined_function_3  6      // + fn name
-#define err_undefined_function_4up  7    // + fn name
-#define err_wrong_no_args         8      // fn name, actual arg count
-#define err_unbound_lexical       9      // + name
-#define err_bad_rplac            10      // + atom
-#define err_bad_arith            11      // + bad value
-#define err_redef_special        12      // + name
-#define err_bad_arg              13      // + offending value
-#define err_bad_declare          14      // + offending value
-#define err_bad_fn               15      // + offending value
-#define err_unset_var            16      // + name
-#define err_too_many_args0       17      // no extras
-#define err_too_many_args1       18      // no extras
-#define err_too_many_args2       19      // no extras
-#define err_too_many_args3       20      // no extras
-#define err_bad_apply            21      // + bad thing
-#define err_macroex_hook         22      // what it is
-#define err_block_tag            23      // bad tag
-#define err_go_tag               24      // bad tag
-#define err_excess_args          25
-#define err_insufficient_args    26
-#define err_bad_bvl              27      // + offending value
-#define err_bad_keyargs          28
-#define err_write_err            29
-#define err_bad_endp             30      // + the non-null atom
-#define err_no_fasldir           31
-#define err_no_fasl              32      // plus module name
-#define err_open_failed          33      // plus file name
-#define err_pipe_failed          34      // plus command for execution
-#define err_stack_overflow       35
-#define err_top_bit              36
-#define err_mem_spans_zero       37
-#define err_read_failure         38      // from preserve.cpp
-#define err_no_tempdir           39
+#define ERROR_MESSAGES                                                      \
+X(err_bad_car,                "attempt to take car of an atom")             \
+X(err_bad_cdr,                "attempt to take cdr of an atom")             \
+X(err_no_store,               "insufficient freestore to run this package") \
+X(err_undefined_function_0,   "undefined function (0 args)")                \
+X(err_undefined_function_1,   "undefined function (1 arg)")                 \
+X(err_undefined_function_2,   "undefined function (2 args)")                \
+X(err_undefined_function_3,   "undefined function (3 args)")                \
+X(err_undefined_function_4up, "undefined function (4 or more args)")        \
+X(err_wrong_no_args,          "wrong number of arguments")                  \
+X(err_unbound_lexical,        "unbound lexical variable")                   \
+X(err_bad_rplac,              "bad rplaca/rplacd")                          \
+X(err_bad_arith,              "bad argument for an arithmetic function")    \
+X(err_redef_special,          "attempt to redefine a special form")         \
+X(err_bad_arg,                "not a variable")                             \
+X(err_bad_declare,            "bad use of declare")                         \
+X(err_bad_fn,                 "attempt to apply non-function")              \
+X(err_unset_var,              "unset variable")                             \
+X(err_too_many_args0,         "too many arguments for 0-arg function")      \
+X(err_too_many_args1,         "too many arguments for 1-arg function")      \
+X(err_too_many_args2,         "too many arguments for 2-arg function")      \
+X(err_too_many_args3,         "too many arguments for 3-arg function")      \
+X(err_bad_apply,              "object not valid as a function (apply,")     \
+X(err_macroex_hook,           "macroexpand-hook failure")                   \
+X(err_block_tag,              "block tag not found")                        \
+X(err_go_tag,                 "go tag not found")                           \
+X(err_excess_args,            "too many arguments provided")                \
+X(err_insufficient_args,      "not enough arguments provided")              \
+X(err_bad_bvl,                "bad item in bound variable list")            \
+X(err_bad_keyargs,            "bad keyword arguments")                      \
+X(err_write_err,              "write-error on file")                        \
+X(err_bad_endp,               "endp used on badly terminated list")         \
+X(err_no_fasldir,             "environment parameter 'fasldir' not set")    \
+X(err_no_fasl,                "loadable module not found for loading")      \
+X(err_open_failed,            "file could not be opened")                   \
+X(err_pipe_failed,            "unable to establish pipe")                   \
+X(err_stack_overflow,         "stack overflow")                             \
+X(err_top_bit,                "top bit of address has unexpected value")    \
+X(err_mem_spans_zero,         "memory block spans the zero address")        \
+X(err_read_failure,           "failure reading from an image file")         \
+X(err_no_tempdir,             "unable to find a directory for temporary files")
 
-#ifdef INCLUDE_ERROR_STRING_TABLE
+#define X(name, text) name,
+enum
+{
+    ERROR_MESSAGES
+};
+#undef X
+
+#define X(name, text) text,
 INLINE_VAR const char *error_message_table[] =
-{   "attempt to take car of an atom",
-    "attempt to take cdr of an atom",
-    "insufficient freestore to run this package",
-    "undefined function (0 args)",
-    "undefined function (1 arg)",
-    "undefined function (2 args)",
-    "undefined function (3 args)",
-    "undefined function (4 or more args)",
-    "wrong number of arguments",
-    "unbound lexical variable",
-    "bad rplaca/rplacd",
-    "bad argument for an arithmetic function",
-    "attempt to redefine a special form",
-    "not a variable",
-    "bad use of declare",
-    "attempt to apply non-function",
-    "unset variable",
-    "too many arguments for 0-arg function",
-    "too many arguments for 1-arg function",
-    "too many arguments for 2-arg function",
-    "too many arguments for 3-arg function",
-    "object not valid as a function (apply,",
-    "macroexpand-hook failure",
-    "block tag not found",
-    "go tag not found",
-    "too many arguments provided",
-    "not enough arguments provided",
-    "bad item in bound variable list",
-    "bad keyword arguments",
-    "write-error on file",
-    "endp used on badly terminated list",
-    "environment parameter 'fasldir' not set",
-    "loadable module not found for loading",
-    "file could not be opened",
-    "unable to establish pipe",
-    "stack overflow",
-    "top bit of address has unexpected value",
-    "memory block spans the zero address",
-    "failure reading from an image file",
-    "unable to find a directory for temporary files",
+{
+    ERROR_MESSAGES
     "dummy final error message"
 };
-#endif
+#undef X
 
-#endif // header_cslerror_h
+#endif //  header_cslerror_h
 
 // end of cslerror.h
