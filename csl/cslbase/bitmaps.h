@@ -182,8 +182,7 @@ inline void flipBit(uint64_t map[], size_t n)
 }
 
 inline bool testBit(uint64_t map[], size_t n)
-{   size_t word = n/64;
-    return ((map[word] >> (n%64)) & 1) != 0;
+{   return ((map[n/64] >> (n%64)) & 1) != 0;
 }
 
 // These work on the bits from m to m+length-1 inclusive.

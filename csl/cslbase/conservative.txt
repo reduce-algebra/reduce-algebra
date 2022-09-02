@@ -290,3 +290,32 @@ least that is in a restricted and controllable state, and in the very
 common case where memory is not close to expiring pinned pages will just
 be left unused until eventually (one hopes) the ambiguous pointers to within
 them dissipate and they can be upgraded to be fully empty pages.
+
+
+---------------------------
+
+Comments as of late August 22:
+  If a computation works with many symbols or many strings there are two
+cases I will note. One is when most of these are newly created, in which
+situation they are liable to be clumped in memory so only a tolerable range
+of memory will contain pinned material. That is tidy. If however the atoms
+are existing ones then previous garbage collections may have left them
+spread widely so pinning will be more scattered. An example of the latter
+might involve code that sorted a list of all symbols using a sorting
+scheme that recursed deeply. Each level of the recursion might capture
+a reference to a different symbol within its stack-frame. To give me a
+feeling for this if I load all of the modules making up Reduce then the
+object list has a bit under 25000 symbols on it. It is perhaps hard to
+imagine code that manages to get references to all of those on the stack
+at once (well sane code anyway!) but now imagine that each symbol locks
+down a 16Kbyte "chunk". That would be almost 400 Mbytes of memory where in
+my existing scheme it would remain unused.
+A question I need to ask myself in response is "can I make the GC copy data
+into the gaps in pinned chunks?". Well probably! And could I make all
+allocation re-use those gaps? Well that could be done by forming padder
+items into free-chains. It would risk slowing down the "fast" path through
+getNBytes() with some extra tests... which *probably* would not matter that
+much.
+Note that I can put double precision floats in "cons" Pages so they do
+not cause so much trouble.
+

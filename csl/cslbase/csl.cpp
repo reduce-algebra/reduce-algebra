@@ -1433,7 +1433,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 
 bool gcTest = false;
 bool minimal = false;
-bool gcTrace = false;
+unsigned int gcTrace = 0;
 bool ignoreLoadTime = false;
 
 #ifndef AVOID_KARATSUBA_THREADS
@@ -1968,11 +1968,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             },
             /*! options [--gc-trace] \item [{\ttfamily --gc-trace}] \index{{\ttfamily --gc-trace}}
              * --gc-trace leads to copious debugging trace output from garbage collection.
+             * --gc-trace=N only starts that for GC number N and beyond.
              */
-            {   "--gc-trace", false, false,
+            {   "--gc-trace", true, false,
                 "--gc-trace copious logging from garbage collection.",
                 [&](string key, bool hasVal, string val)
-                {   gcTrace = true;
+                {   unsigned int r = 1;
+                    if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
+                    gcTrace = r;
                 }
             },
             /*! options [--minimal] \item [{\ttfamily --minimal}] \index{{\ttfamily --minimal}}

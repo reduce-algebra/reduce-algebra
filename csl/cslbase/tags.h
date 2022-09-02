@@ -1783,7 +1783,8 @@ inline bool a4a5(const char *name, LispObject a4up,
     a4up = cdr(a4up);
     if (a4up==nil ||
         cdr(a4up) != nil)
-    {   aerror1(name, a4up);     // wrong number
+    {   a5 = nil;
+        aerror1(name, a4up);     // wrong number
         return true;
     }
     a5 = car(a4up);
@@ -1795,14 +1796,16 @@ inline bool a4a5a6(const char *name, LispObject a4up,
 {   a4 = car(a4up);
     a4up = cdr(a4up);
     if (a4up == nil)
-    {   aerror1(name, a4up); // not enough args
+    {   a5 = a6 = nil;
+        aerror1(name, a4up); // not enough args
         return true;
     }
     a5 = car(a4up);
     a4up = cdr(a4up);
     if (a4up==nil ||
         cdr(a4up) != nil)
-    {   aerror1(name, a4up); // wrong number
+    {   a6 = nil;
+        aerror1(name, a4up); // wrong number
         return true;
     }
     a6 = car(a4up);
