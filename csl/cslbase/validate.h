@@ -89,9 +89,11 @@ inline void validateObject(LispObject x,
     if (visited.count(x) != 0) return;
     if (!oldSpaceValid &&
         ((consOldPages.contains(pageOf(x)) &&
-          !consIsPinned(x, pageOf(x))) ||
+          !consIsPinned(x, pageOf(x)) &&
+          !consIsNewPinned(x, pageOf(x))) ||
          (vecOldPages.contains(pageOf(x)) &&
-          !vecIsPinned(x, pageOf(x)))))
+          !vecIsPinned(x, pageOf(x)) &&
+          !vecIsNewPinned(x, pageOf(x)))))
     {   zprintf("Bad reference to %a\n", x);
         simple_print(x);
         if (parent != nullptr) parent->print();
@@ -230,10 +232,40 @@ inline void validateObject(LispObject x,
     return;
 }
 
+inline void validateVecPage(Page* p, bool isCurrent)
+{   size_t c = 0;
+    while (c < chunkInfoSize)
+    {   bool pin = chunkNoIsPinned(p, c);
+        bool newPin = chunkNoIsNewPinned(p, c);
+        uint32_t len = p->chunkLength[c];
+        uint32_t seq = p->chunkSeqNo[c];
+// Here I am a first bit if any extended chunk
+        my_assert(seq == 0, "chunk starts at other then zero");
+        if (isCurrent && addressFromChunkNo(p, c) > vecFringe &&
+            !pin && !newPin) my_assert(len == 1, "len>1 above vecFringe");
+        if (!isCurrent && addressFromChunkNo(p, c) > p->dataEnd &&
+            !pin && !newPin) my_assert(len == 1, "len>1 above dataEnd");
+        if (len != 1)
+        {   for (size_t c1=c+1; c1<c+len; c1++)
+            {   my_assert(!chunkNoIsPinned(p, c1), "pin in middle");
+                my_assert(!chunkNoIsNewPinned(p, c1), "pin in middle");
+                my_assert(p->chunkLength[c1] == 1, "bad len in middle");
+                my_assert(p->chunkSeqNo[c1] == c1-c, "bad seq in middle");
+            }
+        }
+        c += len;
+        my_assert(c <= chunkInfoSize, "overflow at end of chunks");
+    }
+}
+
 inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceValid=true)
-{   visited.clear();
+{   for (Page* p:vecPages) validateVecPage(p, p==vecCurrent);
+    for (Page* p:vecOldPages) validateVecPage(p, false);
+    for (Page* p:vecPinPages) validateVecPage(p, false);
+    for (Page* p:vecCloggedPages) validateVecPage(p, false);
+    visited.clear();
     Backtrace bb("nil");
-    zprintf("Starting validation %s\n", why);
+    if (GCTRACE) zprintf("Starting validation %s\n", why);
     bb.name = "qvalue(nil)";
     validateObject(qvalue(nil), forwardOK, oldSpaceValid, &bb);
     bb.name = "qenv(nil)";
@@ -257,7 +289,7 @@ inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceVali
         bb.name = msg;
         validateObject(*sp, forwardOK, oldSpaceValid, &bb);
     }
-    zprintf("Validation success\n");
+    if (GCTRACE) zprintf("Validation success\n");
 }
 
 #endif // header_validate_h

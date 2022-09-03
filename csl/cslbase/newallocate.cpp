@@ -193,8 +193,7 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrowNBytes(allocSize);
-    *(bit_cast<Header*>(r)) = type + (size <<
-                                       (Tw+5)) + TAG_HDR_IMMED;
+    *(bit_cast<Header*>(r)) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
     if (!SIXTY_FOUR_BIT && allocSize != size)
         *bit_cast<LispObject*>(r+allocSize-CELL) = 0;
     return static_cast<LispObject>(r + tag);
@@ -324,12 +323,11 @@ bool allocateAnotherSegment()
 
 void initConsPage(Page* p, bool empty)
 {   consPages.push(p);
-#ifdef DEBUG
-    zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
-#endif
+    if (GCTRACE) zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
     p->type = consPageType;
     consCurrent = p;
     p->dataEnd = consEnd = endOfConsPage(p);
+    if (GCTRACE) zprintf("set %a dataEnd = %a\n", p, p->dataEnd);
     if (empty)
     {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
@@ -358,11 +356,10 @@ void initConsPage(Page* p, bool empty)
 
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
-#ifdef DEBUG
-    zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
-#endif
+    if (GCTRACE) zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
     p->type = vecPageType;
     p->dataEnd = endOfVecPage(p);
+    if (GCTRACE) zprintf("set %a dataEnd = %a\n", p, p->dataEnd);
     vecCurrent = p;
     vecEnd = endOfVecPage(p);
     if (empty)
@@ -383,6 +380,7 @@ void initVecPage(Page* p, bool empty)
         vecLimit = vecEnd;
     }
     else setVecFringeAndLimit(p, vecFringe, vecLimit);
+    
     my_assert(vecLimit > vecFringe &&
               vecLimit <= vecEnd, where("vecFringe, VecLimit, vecEnd bad"));
 //  displayVecPage(p);
@@ -410,10 +408,8 @@ void initPage(PageType type, Page* p, bool empty)
 
 void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
-// Ha ha - the careful type-checking in zprintf understands that a
-// value of "enum" type is not of "integer" type, so the case gere is
-// required!
-//  zprintf("grabFreshPage %d\n", static_cast<int>(type));
+// Ha ha - note use of "%s" for displaying an "enum".
+    if (GCTRACE) zprintf("grabFreshPage %s\n", type);
     size_t busy = emptyPages.count +
         consPinPages.count +
         vecPinPages.count +
@@ -422,9 +418,7 @@ void grabFreshPage(PageType type)
         consPages.count +
         vecPages.count +
         borrowPages.count;
-#ifdef DEBUG
-    zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);
-#endif
+    if (GCTRACE) zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
 // If the memory I have allocated thus far is less then 1/2 full I will
@@ -487,6 +481,7 @@ void grabFreshPage(PageType type)
 
 uintptr_t consEndOfPage()
 {   consCurrent->dataEnd = consFringe;
+    if (GCTRACE) zprintf("set %a dataEnd = %a\n", consCurrent, consCurrent->dataEnd);
 // Maintain a list of all full pages, regardless of type.
     consCurrent->pendingPages = pendingPages;
     pendingPages = consCurrent;

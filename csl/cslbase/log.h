@@ -105,12 +105,13 @@ extern void displayAllPages(const char*);
 {   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
 #ifdef CONSERVATIVE
     displayAllPages("Failure");
+    std::fprintf(stdout, "\n\n... Repeat: %s\n\n", msg);
 #endif // CONSERVATIVE
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
     if (spool_file != nullptr)
-    {   std::fprintf(spool_file, "\n\n!!! Aborting\n\n");
+    {   std::fprintf(spool_file, "\n\n!!! Aborting: %s\n\n", msg);
         std::fflush(spool_file);
     }
     term_close();

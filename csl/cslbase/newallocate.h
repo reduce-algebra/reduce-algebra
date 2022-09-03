@@ -849,52 +849,74 @@ inline void displayAllPages(const char* s)
     for (auto p:list_bases)
         zprintf("%s: %a\n", list_names[k++], *p);
 #endif
-    zprintf("\nconsPages......\n");
+    zprintf("\nconsPages......");
+    for (auto p:consPages)
+    {   if (p == consCurrent) zprintf(" *%a:%d", p, p->hasPinned);
+        else zprintf(" %a:%d", p, p->hasPinned);
+    }
+    zprintf("\n");
     for (auto p:consPages)
     {   if (p == consCurrent) zprintf("*** consCurrent ***\n");
         my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
-    zprintf("\nvecPages......\n");
+    zprintf("\nvecPages......");
+    for (auto p:vecPages)
+    {   if (p == vecCurrent) zprintf(" *%a:%d", p, p->hasPinned);
+        else zprintf(" %a:%d", p, p->hasPinned);
+    }
+    zprintf("\n");
     for (auto p:vecPages)
     {   if (p == vecCurrent) zprintf("*** vecCurrent ***\n");
         my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
-    zprintf("\nconsOldPages......\n");
+    zprintf("\nconsOldPages......");
+    for (auto p:consOldPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
     for (auto p:consOldPages)
     {   my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
-    zprintf("\nvecOldPages......\n");
+    zprintf("\nvecOldPages......");
+    for (auto p:vecOldPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
     for (auto p:vecOldPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
-    zprintf("\nconsPinPages......\n");
+    zprintf("\nconsPinPages......");
+    for (auto p:consPinPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
     for (auto p:consPinPages)
     {   my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
-    zprintf("\nvecPinPages......\n");
+    zprintf("\nvecPinPages......");
+    for (auto p:vecPinPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
     for (auto p:vecPinPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
-    zprintf("\nconsCloggedPages......\n");
+    zprintf("\nconsCloggedPages......");
+    for (auto p:consCloggedPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
     for (auto p:consCloggedPages)
     {   my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
-    zprintf("\nvecCloggedPages......\n");
+    zprintf("\nvecCloggedPages......");
+    for (auto p:vecCloggedPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
     for (auto p:vecCloggedPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
-    zprintf("\nemptyPages......\n");
-    for (auto p:emptyPages)
-    {   zprintf("empty Page %a\n", p);
-    }
+    zprintf("\nemptyPages......");
+    for (auto p:emptyPages) zprintf(" %a:%d", p, p->hasPinned);
+    zprintf("\n");
+    zprintf("gcNumber = %d\n", gcNumber);
     zprintf("end of display\n\n");
 }
 
@@ -944,11 +966,36 @@ inline uintptr_t harderGet2Words()
 
 inline uintptr_t get2Words()
 {   uintptr_t r = consFringe;
-    if (r != consLimit)
+    if (r < consLimit)
     {   consFringe += sizeof(ConsCell);
         return r;
     }
     return harderGet2Words();
+}
+
+// The next two may provide very minor speedup for list2 and list3 in what
+// I hope will be the common case where allocation can be sequential. They
+// have to be calle din two steps - the first will check if the second would
+// be valid.
+
+inline bool get4WordsValid()
+{   return consFringe + sizeof(ConsCell) < consLimit;
+}
+
+inline uintptr_t get4Words()
+{   uintptr_t r = consFringe;
+    consFringe += 2*sizeof(ConsCell);
+    return r;
+}
+
+inline bool get6WordsValid()
+{   return consFringe + 2*sizeof(ConsCell) < consLimit;
+}
+
+inline uintptr_t get6Words()
+{   uintptr_t r = consFringe;
+    consFringe += 3*sizeof(ConsCell);
+    return r;
 }
 
 inline Header makeHeader(size_t n, int type)   // size is in bytes
@@ -1103,6 +1150,7 @@ inline uintptr_t getNBytes(size_t n)
 // Here vecFringe should point at the start of a chunk just beyond
 // all the ones that are in use.
         vecCurrent->dataEnd = vecFringe;
+        if (GCTRACE) zprintf("set %a dataEnd = %a\n", vecCurrent, vecFringe);
 // If I am within the GC I need a chain of all pages that have been filled
 // up, and if I am not in the GC then establishing such a chain is an utterly
 // trivial overhead so I may as well do it anyway.
@@ -1138,7 +1186,7 @@ inline void setVecFringeAndLimit(Page* p, uintptr_t& fringe, uintptr_t& limit)
         chunk+=p->chunkLength[chunk];
 // Now find the next pinned chunk beyond that, if there is one.
     size_t end = nextOneBit(p->chunkBitmap, chunkBitmapBits, chunk);
-    fringe = addressFromChunkNo(p, chunk);
+    p->scanPoint = fringe = addressFromChunkNo(p, chunk);
     if (end == SIZE_MAX) limit = endOfVecPage(p);
     else limit = addressFromChunkNo(p, end);
 }
@@ -1240,93 +1288,116 @@ inline LispObject ncons(LispObject a)
     return r;
 }
 
-// get2Words() can call the garbage collector. When it does the result from
-// any previous use of get2Words may be inspected by the garbage collector
-// and so MUST have safe contents. I do not do this within get2Words because
-// most of the time I will have proper data to write in so writing in dummy
-// but safe valued would be a waste. The "conservative" nature of my GC
-// allows for uncertain values to be on the C stack, but everything within
-// the heap must always be legitimate in the Lisp world-view..
 
 inline LispObject list2(LispObject a, LispObject b)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil); // Needed for GC safety!
+{   if (get4WordsValid()) LIKELY
+    {   LispObject r1 = get4Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        setcar(r1, a);
+        setcdr(r1, r2);
+        setcar(r2, b);
+        setcdr(r2, nil);
+        return r1;
+    }
     LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
-    setcdr(r1, r2);
     setcdr(r2, nil);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, r2);
     return r1;
 }
 
 inline LispObject list2star(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
+{   if (get4WordsValid()) LIKELY
+    {   LispObject r1 = get4Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        setcar(r1, a);
+        setcdr(r1, r2);
+        setcar(r2, b);
+        setcdr(r2, c);
+        return r1;
+    }
     LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
-    setcdr(r1, r2);
     setcdr(r2, c);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, r2);
     return r1;
 }
 
 inline LispObject list2starrev(LispObject c, LispObject b,
                                LispObject a)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
+{   if (get4WordsValid()) LIKELY
+    {   LispObject r1 = get4Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        setcar(r1, a);
+        setcdr(r1, r2);
+        setcar(r2, b);
+        setcdr(r2, c);
+        return r1;
+    }
     LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
-    setcdr(r1, r2);
     setcdr(r2, c);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, r2);
     return r1;
 }
 
 inline LispObject list3star(LispObject a, LispObject b, LispObject c,
                             LispObject d)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
-    LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, nil);
+{   if (get6WordsValid()) LIKELY
+    {   LispObject r1 = get6Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        LispObject r3 = r2 + sizeof(ConsCell);
+        setcar(r1, a);
+        setcdr(r1, r2);
+        setcar(r2, b);
+        setcdr(r2, r3);
+        setcar(r3, c);
+        setcdr(r3, d);
+        return r1;
+    }
     LispObject r3 = get2Words() + TAG_CONS;
     setcar(r3, c);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
     setcdr(r3, d);
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r2, b);
+    setcdr(r2, r3);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, r2);
     return r1;
 }
 
 inline LispObject list4(LispObject a, LispObject b, LispObject c,
                         LispObject d)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
-    LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, nil);
-    LispObject r3 = get2Words() + TAG_CONS;
-    setcar(r3, c);
-    setcdr(r3, nil);
-    LispObject r4 = get2Words() + TAG_CONS;
-    setcar(r4, d);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
-    setcdr(r3, r4);
-    setcdr(r4, nil);
-    return r1;
+{   LispObject w = list2(c, d);
+    return list2star(a, b, w);
 }
 
 inline LispObject acons(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, nil);
-    setcdr(r1, c);
+{   if (get4WordsValid()) LIKELY
+    {   LispObject r1 = get4Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        setcar(r1, r2);
+        setcdr(r1, c);
+        setcar(r2, a);
+        setcdr(r2, b);
+        return r1;
+    }
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r1, r2);
     setcar(r2, a);
     setcdr(r2, b);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, r2);
+    setcdr(r1, c);
     return r1;
+
+
 }
 
 inline LispObject acons_no_gc(LispObject a, LispObject b,
@@ -1335,33 +1406,52 @@ inline LispObject acons_no_gc(LispObject a, LispObject b,
 }
 
 inline LispObject list3(LispObject a, LispObject b, LispObject c)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
-    LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r1, nil);
+{   if (get6WordsValid()) LIKELY
+    {   LispObject r1 = get6Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        LispObject r3 = r2 + sizeof(ConsCell);
+        setcar(r1, a);
+        setcdr(r1, r2);
+        setcar(r2, b);
+        setcdr(r2, r3);
+        setcar(r3, c);
+        setcdr(r3, nil);
+        return r1;
+    }
     LispObject r3 = get2Words() + TAG_CONS;
     setcar(r3, c);
-    setcdr(r1, r2);
-    setcdr(r2, r3);
     setcdr(r3, nil);
+    LispObject r2 = get2Words() + TAG_CONS;
+    setcar(r2, b);
+    setcdr(r2, r3);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, r2);
     return r1;
 }
 
 inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
-{   LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
+{   if (get6WordsValid()) LIKELY
+    {   LispObject r1 = get6Words() + TAG_CONS;
+        LispObject r2 = r1 + sizeof(ConsCell);
+        LispObject r3 = r2 + sizeof(ConsCell);
+        setcar(r1, a);
+        setcdr(r1, r2);
+        setcar(r2, b);
+        setcdr(r2, r3);
+        setcar(r3, c);
+        setcdr(r3, nil);
+        return r1;
+    }
+    LispObject r3 = get2Words() + TAG_CONS;
+    setcar(r3, c);
+    setcdr(r3, nil);
     LispObject r2 = get2Words() + TAG_CONS;
     setcar(r2, b);
-    setcdr(r2, nil);
-    LispObject r3 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcar(r3, c);
-    setcdr(r1, r2);
     setcdr(r2, r3);
-    setcdr(r3, nil);
+    LispObject r1 = get2Words() + TAG_CONS;
+    setcar(r1, a);
+    setcdr(r1, r2);
     return r1;
 }
 
@@ -1514,6 +1604,17 @@ inline const char* Addr(uintptr_t p)
         else if (pOff == 0)
         {   if (hs == 0) std::snprintf(r, 80, "#%" PRIxPTR ":", pNum);
             else std::snprintf(r, 80, "#[%d]: %" PRIxPTR ":", hs, pNum);
+            return r;
+        }
+    }
+    else if ((p & (pageSize-1)) == 0)
+    {   int hs1 = findHeapSegment(p-pageSize);
+        if (hs1 != -1)
+        {   uintptr_t segBase = bit_cast<uintptr_t>(heapSegment[hs1]);
+            uintptr_t o = p - segBase;
+            uintptr_t pNum = o/pageSize;
+            if (hs == 0) std::snprintf(r, 80, "#%" PRIxPTR ": end:", pNum);
+            else std::snprintf(r, 80, "#[%d]%" PRIxPTR ": end:", hs1, pNum);
             return r;
         }
     }
