@@ -2114,12 +2114,11 @@ void setup(int restart_flag, double store_size)
             term_printf("There are %u processors available\n", n);
     }
     garbage_collection_permitted = true;
+    for (size_t i=0; i<waste; i++) cons(nil, nil);
     return;
 }
 
 LispObject multiplication_buffer;
-
-
 
 // June 2015: I am now going to try MD5 code from Alexander Peslyak
 // (Solar Designer). The code is public domain and all I do here is provide

@@ -821,140 +821,9 @@ static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
     return false;                          // Table is totally full
 }
 
-// The integers in this table are all primes chosen as the largest
-// that are less than various powers of 2. The hash tables used for
-// the package system (ie the "oblist" in old notation) will all be
-// one of these sizes, and because the sizes are all prime I can use
-// double hashing with a free choice of stride. The first entry in the
-// table is 2039 because I will make that the smallest size table ever
-// used. I stop at around 2^40 which is just over 10^12 with a belief
-// that I should never need that size of table. Because that is over
-// 2^32 I can not use size_t because on a 32-bit machine that would
-// probably overflow.
-
-//= uint64_t goodTableSizes[] =
-//= {   2039u,
-//=     4093u,
-//=     8191u,
-//=     16381u,
-//=     32749u,
-//=     65521u,
-//=     131071u,
-//=     262139u,
-//=     524287u,
-//=     1048573u,
-//=     2097143u,
-//=     4194301u,
-//=     8388593u,
-//=     16777213u,
-//=     33554393u,
-//=     67108859u,
-//=     134217689u,
-//=     268435399u,
-//=     536870909u,
-//=     1073741789u,
-//=     2147483647u,
-//=     4294967291u,
-//=     8589934583u,
-//=     17179869143u,
-//=     34359738337u,
-//=     68719476731u,
-//=     137438953447u,
-//=     274877906899u,
-//=     549755813881u,
-//=     1099511627689u
-//= };
-
-// Given a prime from the above table I want to be able to find the previous
-// and the next one. To achieve this reasonably fast I have a perfect
-// hashing onto a lookup table with 32 elements (so only 3 are wasted). I
-// had some jiffy-code that identified a reasonable hash function and set up
-// the tables for me.
-
-size_t perfectHash(uint64_t n)
-{   return ((32*n) % 70987) % 32; 
-}
-
-uint64_t nextTableTable[] =
-{   4093u,
-    131071u,
-    549755813881u,
-    268435399u,
-    1099511627689u,
-    4194301u,
-    65521u,
-    134217689u,
-    0u,
-    16777213u,
-    8388593u,
-    0u,
-    2147483647u,
-    4294967291u,
-    524287u,
-    68719476731u,
-    0u,
-    274877906899u,
-    33554393u,
-    32749u,
-    17179869143u,
-    8191u,
-    1073741789u,
-    262139u,
-    2097143u,
-    67108859u,
-    8589934583u,
-    536870909u,
-    1048573u,
-    34359738337u,
-    137438953447u,
-    16381u
-};
-
-uint64_t previousTableTable[] =
-{   0u,
-    32749u,
-    137438953447u,
-    67108859u,
-    274877906899u,
-    1048573u,
-    16381u,
-    33554393u,
-    549755813881u,
-    4194301u,
-    2097143u,
-    0u,
-    536870909u,
-    1073741789u,
-    131071u,
-    17179869143u,
-    0u,
-    68719476731u,
-    8388593u,
-    8191u,
-    4294967291u,
-    2039u,
-    268435399u,
-    65521u,
-    524287u,
-    16777213u,
-    2147483647u,
-    134217689u,
-    262139u,
-    8589934583u,
-    34359738337u,
-    4093u
-};
-
-// The next two functions return zero if the input is at an extreme
-// of the table where they can not yield a proper successor.
-
-uint64_t nextTableSize(uint64_t n)
-{   return nextTableTable[perfectHash(n)];
-}
-
-uint64_t previousTableSize(uint64_t n)
-{   return previousTableTable[perfectHash(n)];
-}
+// cslread.h and through that isprime.h provide a way of identifying
+// primes that are just below powers of 2, and I use those as the size
+// for my table.
 
 static LispObject rehash(LispObject v, int grow)
 {
@@ -963,8 +832,8 @@ static LispObject rehash(LispObject v, int grow)
 // table size down will have enough space for the number of active items
 // present. grow=0 leaves the table size alone but still rehashes.
     size_t h = cells_in_vector(v);
-    if (grow > 0 && h < MAX_OBVEC_SIZE) h = nextTableSize(h);
-    else if (grow < 0 && h > INITIAL_OBVEC_SIZE) h = previousTableSize(h);
+    if (grow > 0 && h < MAX_OBVEC_SIZE) h = nextGoodPrime(h);
+    else if (grow < 0 && h > INITIAL_OBVEC_SIZE) h = previousGoodPrime(h);
     THREADID;
     stackcheck(THREADARG v);
     STACK_SANITY;

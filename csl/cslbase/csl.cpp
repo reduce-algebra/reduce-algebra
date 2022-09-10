@@ -1433,6 +1433,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 
 bool gcTest = false;
 bool minimal = false;
+size_t waste = 0;
 unsigned int gcTrace = 0;
 bool ignoreLoadTime = false;
 
@@ -1976,6 +1977,18 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 {   unsigned int r = 1;
                     if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
                     gcTrace = r;
+                }
+            },
+            /*! options [--waste] \item [{\ttfamily --waste}] \index{{\ttfamily --waste}}
+             * --waste N performs N useless CONS operations during startup
+             * so that memory layout and GC patters are changed from the default.
+             */
+            {   "--waste", true, true,
+                "--waste N does N useless CONS operations at startup.",
+                [&](string key, bool hasVal, string val)
+                {   unsigned int r = 1;
+                    if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
+                    waste = r;
                 }
             },
             /*! options [--minimal] \item [{\ttfamily --minimal}] \index{{\ttfamily --minimal}}

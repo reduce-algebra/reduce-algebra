@@ -69,6 +69,7 @@ extern LispObject* nilsegment;
 extern LispObject* stacksegment;
 extern int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
+extern size_t waste;           // used for debugging GC
 
 extern bool restartp;
 

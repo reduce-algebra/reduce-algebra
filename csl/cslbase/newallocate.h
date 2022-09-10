@@ -315,7 +315,7 @@ public:
 };
 
 // I now want to find values for ConsN and ChunkN that lead to the
-// data in the Page being sucy that both consData[] and chunks[] run
+// data in the Page being such that both consData[] and chunks[] run
 // right up to the end of a pageSize object. There is no certainty in
 // advance that this will be possible. For instance for consData
 // most times that ConsN is incremented that adds sizeof(ConsCell) to
@@ -1006,7 +1006,17 @@ inline Header makeHeader(size_t n, int type)   // size is in bytes
 // memory. This does the job. Note that a is an untagged pointer here.
 
 inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
-{   indirect(a) = makeHeader(n, type);
+{   my_assert((n & (-CELL)) == n, "odd size to setHeaderWord");
+    indirect(a) = makeHeader(n, type);
+#if 1
+// The idea here is to fill all the cells that are unused (as marked by
+// use of a padder vector) with data that is otherwise improbable and that
+// is liable to cause a prompt disaster if encountered.
+    if (type==TYPE_PADDER)
+    {   for (size_t i=CELL; i<n; i+=CELL)
+            indirect(a+i) = 0xfeedadeadbeefc03;
+    }
+#endif
 }
 
 extern void grabFreshPage(PageType type);
@@ -1602,8 +1612,8 @@ inline const char* Addr(uintptr_t p)
             return r;
         }
         else if (pOff == 0)
-        {   if (hs == 0) std::snprintf(r, 80, "#%" PRIxPTR ":", pNum);
-            else std::snprintf(r, 80, "#[%d]: %" PRIxPTR ":", hs, pNum);
+        {   if (hs == 0) std::snprintf(r, 80, "#%" PRIxPTR "^:", pNum);
+            else std::snprintf(r, 80, "#[%d]: %" PRIxPTR "^:", hs, pNum);
             return r;
         }
     }

@@ -504,6 +504,14 @@ void evacuate(LispObject &x)
         my_assert(!is_forward(x), where("forwarding ptr in scanning"));
         return;
     }
+// Every hash table must have its type changed from TYPE_HASH to TYPE_HASHX
+// to reflect the fact that the GC will move datya around and that can
+// render hash functions out of date and hence the table as being is need
+// of rehashing. Note that I do this for pinned and unpinned items since
+// it is not the evacuation of the top-level part of the hash table that
+// is important here!
+    if (type_of_header(hdr) == TYPE_HASH)
+        *untagged_x = hdr = hdr ^ (TYPE_HASHX^TYPE_HASH);
 // Now I will need to make x copy of the item (unless it is pinned).
     size_t len;
     if (is_cons(x))
@@ -529,7 +537,7 @@ void evacuate(LispObject &x)
     std::memcpy(bit_cast<void*>(cpy), untagged_x, len);
     *untagged_x = TAG_FORWARD + cpy;
     x = cpy + (x & TAG_BITS);
-    if (GCTRACE) zprintf("Evacuate %a to %a\n", untagged_x, x);
+    if (GCTRACE) zprintf("Evac uate %a to %a\n", untagged_x, x);
     my_assert(!is_forward(x), where("forwarding ptr in scanning"));
 }
 
@@ -590,7 +598,6 @@ void evacuateFromPinnedItems()
 // binary data (including strings and bignums) or a symbol. If none of
 // those then it will be a CONS cell.
             switch (a & 0x1f)
-            {
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
                 len = doubleword_align_up(length_of_header(a));
@@ -1202,7 +1209,14 @@ void recycleOldSpace()
 bool withinGarbageCollector = false;
 
 void inner_garbage_collect()
-{   gcNumber++;
+{   THREADID;
+// The hash table support caches blocks of memory in a way intended to
+// reducxe allocation and re-allocation overhead when hash tables need to
+// grow or shrink. The place where I keep the recycled memory is not
+// garbage collector safe, and so I need to clean up as I enter the GC.
+    for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
+        free_vectors[i] = 0;
+    gcNumber++;
     WithinGarbageCollector noted;
     zprintf("start of GC %d\n", gcNumber);
     if (GCTRACE) displayAllPages("Start of GC");
