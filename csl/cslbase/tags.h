@@ -1609,6 +1609,10 @@ inline bool is_spid(LispObject x)
 {   return (static_cast<int>(x) & HDR_IMMED_MASK) == TAG_SPID;
 }
 
+inline bool is_sym_or_vec_hdr(LispObject x)
+{   return is_odds(x) && !is_spid(x) && !is_char(x);
+}
+
 inline bool is_library(LispObject x)
 {   return (static_cast<int>(x) & 0xfffff) == SPID_LIBRARY;
 }
