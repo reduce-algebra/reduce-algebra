@@ -1435,6 +1435,7 @@ bool gcTest = false;
 bool minimal = false;
 size_t waste = 0;
 unsigned int gcTrace = 0;
+unsigned int gcStop = 0;
 bool ignoreLoadTime = false;
 
 #ifndef AVOID_KARATSUBA_THREADS
@@ -1979,9 +1980,20 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     gcTrace = r;
                 }
             },
-            /*! options [--waste] \item [{\ttfamily --waste}] \index{{\ttfamily --waste}}
+            /*! options [--gc-stop] \item [{\ttfamily --gc-stop}] \index{{\ttfamily --gc-stop}}
+             * --gc-stop=N stops at the start of GC number N.
+             */
+            {   "--gc-stop", true, true,
+                "--gc-stop N stops at the start of GC number N.",
+                [&](string key, bool hasVal, string val)
+                {   unsigned int r = 1;
+                    if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
+                    gcStop = r;
+                }
+            },
+            /*! options [--waste] \item [{\ttfamily --waste}] \index{{\ttfamily
              * --waste N performs N useless CONS operations during startup
-             * so that memory layout and GC patters are changed from the default.
+             * so that memory layout and GC patters are changed from the defaul
              */
             {   "--waste", true, true,
                 "--waste N does N useless CONS operations at startup.",

@@ -382,7 +382,7 @@ extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
 
 extern bool gcTest, minimal;
-extern unsigned int gcTrace;
+extern unsigned int gcTrace, gcStop;
 extern unsigned int gcNumber;
 
 #define GCTRACE (gcTrace!=0 && gcNumber>=gcTrace)

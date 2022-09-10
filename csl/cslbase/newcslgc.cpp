@@ -320,7 +320,7 @@ void identifyPinnedItems()
 void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 {   uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
 //  zprintf("\n\n@@@@\n");
-//  if (GCTRACE) displayAllPages(where("findHeadersInChunk")); // DEBUG
+//  if (GCTRACE) displayAllPages(where("findHeadersInChunk"));
 // lastAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
     uintptr_t lastAddr   = addressFromChunkNo(p, lastChunk);
@@ -598,6 +598,7 @@ void evacuateFromPinnedItems()
 // binary data (including strings and bignums) or a symbol. If none of
 // those then it will be a CONS cell.
             switch (a & 0x1f)
+            {
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
                 len = doubleword_align_up(length_of_header(a));
@@ -1219,6 +1220,7 @@ void inner_garbage_collect()
     gcNumber++;
     WithinGarbageCollector noted;
     zprintf("start of GC %d\n", gcNumber);
+    if (gcNumber == gcStop) std::abort();
     if (GCTRACE) displayAllPages("Start of GC");
     validateAll("start GC", false, false);
     allPinned.clear();
@@ -1298,10 +1300,12 @@ void inner_garbage_collect()
 // There is no need to set up a new vector current page until now.
     grabFreshPage(vecPageType);
     validateAll("ready to start evacuating");
+    if (GCTRACE) displayAllPages(where("findHeadersOfPinnedItems done"));
 // I arrange that the very first vector item I copy is the vector that is
 // the current "package", ie hash table of symbols. I do this because it
 // is liable to be a large vector so putting it first avoids some padding
 // waste (maybe!).
+    validateAll("just before evacuateFromPinnedItems", true);
     evacuateFromPinnedItems();
     validateAll("evacuateFromPinnedItems done", true);
     evacuateFromUnambiguousBases();
