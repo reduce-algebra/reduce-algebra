@@ -50,6 +50,11 @@
 // trouble in protected mode on a PC if I have items of type LispObject
 // that are not valid pointers. I suspect that the same used to be
 // the case on a Motorola 68000 with address and data registers.
+// Given that I have been in C++ for quite a while now I should
+// consider a jolly class with derived classes for all the various
+// options, or possibly just a C-style union. But the transition to
+// that looks pretty daunting to me. If some kind person could design
+// it and show how to make it all work nicely that would be GREAT!
 //
 // Sometimes the pointer-sized integer will be 64-bits wide, and will be the
 // data type for the type LispObject. A result will be that anywhere in
@@ -64,7 +69,8 @@ typedef intptr_t LispObject;
 // chance of headers and other objects getting confused during
 // garbage collection, and the code there has to be rather on the
 // careful side.  By making Headers unsigned I help the length
-// calculation on them.
+// calculation on them. But by making the type distinct from LispObject
+// I probably risk some strict aliasing pain!
 
 typedef uintptr_t Header;
 
@@ -117,6 +123,7 @@ extern LispObject nil;
 // and the fact that I can compare its value against 2^32, and that should
 // do the trick.
 //INLINE_VAR constexpr bool SIXTY_FOUR_BIT = sizeof(intptr_t) == 8;
+// I keep this as a "#define" because I will still use if with "#if"
 
 #define SIXTY_FOUR_BIT (SIZE_MAX >= 4294967296ULL)
 
@@ -1408,31 +1415,6 @@ inline bool is_power_of_two(uint64_t n)
 {   return (n == (n & (-n)));
 }
 
-inline unsigned int intlog2(uint64_t n)
-{
-// This fragment takes a 64-bit number that is a power of 2 and
-// finds its logarithm, ie the number of bits that 1 needs to be shifted
-// left to yield it. The function will return garbage if its input is
-// not a power of 2. This is 
-//
-// This table works because it is of length 67 and that is a prime, so
-// the sequence 2^i mod 67 cycles through 1 .. 66 as I runs from 0 to 65,
-// and 2^66 = 2^0 (mod 67). To help show this I have annotated the items at
-// offsets 1, 2, 4, 8, 16, 32 and 64.
-    static constexpr unsigned char intlog2_table[] =
-    {   0,      0,/*1*/ 1,/*2*/ 39,     2,/*4*/ 15,     40,     23,
-        3,/*8*/ 12,     16,     59,     41,     19,     24,     54,
-        4,/*16*/0,      13,     10,     17,     62,     60,     28,
-        42,     30,     20,     51,     25,     44,     55,     47,
-        5,/*32*/32,     0,      38,     14,     22,     11,     58,
-        18,     53,     63,     9,      61,     27,     29,     50,
-        43,     46,     31,     37,     21,     57,     52,     8,
-        26,     49,     45,     36,     56,     7,      48,     35,
-        6,/*64*/34,     33
-    };
-    return intlog2_table[n % (sizeof(intlog2_table)/sizeof(unsigned char))];
-}
-
 // In the past when something is tagged TAG_VECTOR I have used
 // type_of_header(vechdr(v)) to detect its type. In the future
 // I should in general use type_of_vector(cv) because that can cope
@@ -1512,7 +1494,7 @@ inline void discard_basic_vector(LispObject v)
 // truncate to potential bad effect.
     size_t n = size/CELL - 1;
     if (is_power_of_two(n))    // save if this has byte-count 2^i
-    {   unsigned int i = intlog2(n); // identify what power of 2 we have
+    {   unsigned int i = ntz(n); // identify what power of 2 we have
         if (i <= LOG2_VECTOR_CHUNK_BYTES)
         {   basic_elt(v, 0) = free_vectors[i];
 // I put the discarded vector in the free-chain as a "simple vector"

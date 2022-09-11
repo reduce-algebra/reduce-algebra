@@ -38,6 +38,9 @@
 // See https://sourceforge.net/projects/isprime64/ for the programs used
 // to create the various tables used here.
 
+// The file isprime.h provides a version constexpr_isprime that avoids
+// use of C++ extensions (such as uint128_t and builtin functions for
+// finding the top bit in a word) but that can be evaluated at compile time.
 
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1

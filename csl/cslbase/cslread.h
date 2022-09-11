@@ -137,19 +137,17 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 
 // I use hash tables with prime sizes as the main symbol table, and
 // here is a table of suitable primes each of which is a little below
-// a power of 2. And then a perfect hashing scheme so that given one
-// size I can find the next larger or smaller one rapidly.
+// a power of 2. And then a scheme that given one size I can find the
+// next larger or smaller one rapidly.
 
-INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=2039u;
+#include "isprime.h"
+
+INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
 #ifdef SIXTY_FOUR_BIT
-INLINE_VAR const uint64_t MAX_OBVEC_SIZE=1099511627689u;
+INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[48]; // 562949953421231
 #else // SIXTY_FOUR_BIT
-INLINE_VAR const uint64_t MAX_OBVEC_SIZE=1073741789u;
+INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[30]; // 2147483647
 #endif // SIXTY_FOUR_BIT
-
-extern uint64_t nextTableSize(uint64_t n);
-extern uint64_t previousTableSize(uint64_t n);
-
 
 #endif // header_read_h
 

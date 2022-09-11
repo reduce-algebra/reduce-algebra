@@ -320,7 +320,7 @@ void identifyPinnedItems()
 void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 {   uintptr_t firstAddr = addressFromChunkNo(p, firstChunk);
 //  zprintf("\n\n@@@@\n");
-//  if (GCTRACE) displayAllPages(where("findHeadersInChunk")); // DEBUG
+//  if (GCTRACE) displayAllPages(where("findHeadersInChunk"));
 // lastAddr is just beyond the last data I need to scan here. Note that
 // it can be just beyond the end of the page.
     uintptr_t lastAddr   = addressFromChunkNo(p, lastChunk);
@@ -504,6 +504,14 @@ void evacuate(LispObject &x)
         my_assert(!is_forward(x), where("forwarding ptr in scanning"));
         return;
     }
+// Every hash table must have its type changed from TYPE_HASH to TYPE_HASHX
+// to reflect the fact that the GC will move datya around and that can
+// render hash functions out of date and hence the table as being is need
+// of rehashing. Note that I do this for pinned and unpinned items since
+// it is not the evacuation of the top-level part of the hash table that
+// is important here!
+    if (type_of_header(hdr) == TYPE_HASH)
+        *untagged_x = hdr = hdr ^ (TYPE_HASHX^TYPE_HASH);
 // Now I will need to make x copy of the item (unless it is pinned).
     size_t len;
     if (is_cons(x))
@@ -529,7 +537,7 @@ void evacuate(LispObject &x)
     std::memcpy(bit_cast<void*>(cpy), untagged_x, len);
     *untagged_x = TAG_FORWARD + cpy;
     x = cpy + (x & TAG_BITS);
-    if (GCTRACE) zprintf("Evacuate %a to %a\n", untagged_x, x);
+    if (GCTRACE) zprintf("Evac uate %a to %a\n", untagged_x, x);
     my_assert(!is_forward(x), where("forwarding ptr in scanning"));
 }
 
@@ -1202,9 +1210,17 @@ void recycleOldSpace()
 bool withinGarbageCollector = false;
 
 void inner_garbage_collect()
-{   gcNumber++;
+{   THREADID;
+// The hash table support caches blocks of memory in a way intended to
+// reducxe allocation and re-allocation overhead when hash tables need to
+// grow or shrink. The place where I keep the recycled memory is not
+// garbage collector safe, and so I need to clean up as I enter the GC.
+    for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
+        free_vectors[i] = 0;
+    gcNumber++;
     WithinGarbageCollector noted;
     zprintf("start of GC %d\n", gcNumber);
+    if (gcNumber == gcStop) std::abort();
     if (GCTRACE) displayAllPages("Start of GC");
     validateAll("start GC", false, false);
     allPinned.clear();
@@ -1284,10 +1300,12 @@ void inner_garbage_collect()
 // There is no need to set up a new vector current page until now.
     grabFreshPage(vecPageType);
     validateAll("ready to start evacuating");
+    if (GCTRACE) displayAllPages(where("findHeadersOfPinnedItems done"));
 // I arrange that the very first vector item I copy is the vector that is
 // the current "package", ie hash table of symbols. I do this because it
 // is liable to be a large vector so putting it first avoids some padding
 // waste (maybe!).
+    validateAll("just before evacuateFromPinnedItems", true);
     evacuateFromPinnedItems();
     validateAll("evacuateFromPinnedItems done", true);
     evacuateFromUnambiguousBases();

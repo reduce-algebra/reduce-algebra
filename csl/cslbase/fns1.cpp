@@ -1569,7 +1569,7 @@ static LispObject gvector(int tag, int type, size_t size)
     if (size%CELL != 0) return get_basic_vector(tag, type, size);
     size_t n = size/CELL - 1;  // size in words of data part in cells.
     if (is_power_of_two(n))    // special if size is a power of 2.
-    {   size_t i = intlog2(n);    // identify what power of 2 we have.
+    {   size_t i = ntz(n);    // identify what power of 2 we have.
         LispObject r;
         if (i <= LOG2_VECTOR_CHUNK_BYTES &&
             (r = free_vectors[i]) != 0)

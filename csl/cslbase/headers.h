@@ -208,9 +208,9 @@ inline double CSLpow(double x, double y)
 
 #endif // HAVE_CRLIBM
 
+#include "bitmaps.h"
 #include "tags.h"
 
-#include "bitmaps.h"
 #include "cslerror.h"
 #include "externs.h"
 #include "lispthrow.h"

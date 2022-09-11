@@ -460,10 +460,10 @@ void grabFreshPage(PageType type)
                 }
             }
         }
-// If current memory is at least (2/3) full or (really improbably) more
-// than 1/3 of all pages contain pinned data then I will try to grab
+// If current memory is getting full or (really improbably) there are too
+// many pages clogged with pinned data then I will try to grab
 // more memory from the operating system. If that succeeds I very much
-// expect that the enlarged memory will be well less than (2/3) full. If
+// expect that the enlarged memory will be well less than (1/2) full. If
 // however I can not allocate any more then I will need to garbage collect.
         if (!allocateAnotherSegment()) break;
     }
@@ -472,7 +472,21 @@ void grabFreshPage(PageType type)
     garbage_collect();
 // After garbage collection there had BETTER be some available memory left!
 // At the end of garbage collection everything should be ready to do the
-// next bit of allocation.
+// next bit of allocation. Well the tests here are a bit dubious! If there
+// are no consPinPages and no vecPinPages but just one emptyPage I will
+// continue, because whichever of cons or vec space runs out first will
+// grab and use the empty page. If there are no more pages available to
+// allocate I will demand that the current cons and vector pages are both
+// at worst 7/8 full. Well my check for that does not look at the bad
+// prospect for pinned material clogging up that final 1/8th!
+    if (emptyPages.isEmpty() &&
+        consPinPages.isEmpty() &&
+        consFringe > (endOfConsPage(consCurrent)-pageSize/8))
+        fatal_error(err_no_store);
+    if (emptyPages.isEmpty() &&
+        vecPinPages.isEmpty() &&
+        vecFringe > (endOfVecPage(vecCurrent)-pageSize/8))
+        fatal_error(err_no_store);
 }
 
 // When I make a page "full" I will put a pointer just beyond the
