@@ -2,7 +2,7 @@
 \index{Warns, Mathias}\index{People!Warns, Mathias}
 
 \subsection{Introduction}
-The package PHYSOP has been designed to meet the requirements of
+The package \package{PHYSOP} has been designed to meet the requirements of
 theoretical physicists looking for a
 computer algebra tool to perform complicated calculations
 in quantum theory
@@ -24,15 +24,15 @@ PHYSOP (for PHYSical OPerator) package described in section 3.
 
 \subsection{The NONCOM2 Package}
 
-The package NONCOM2  redefines some standard \REDUCE\ routines
+The package \package{NONCOM2}  redefines some standard \REDUCE\ routines
 in order to modify the way noncommutative operators are handled by the
 system. In standard \REDUCE\ declaring an operator to be noncommutative
-using the \f{NONCOM} statement puts a global flag on the
+using the \f{noncom} statement puts a global flag on the
 operator. This flag is checked when the system has to decide
 whether or not two operators commute during the manipulation of an
 expression.
 
-The NONCOM2 package redefines the \f{NONCOM} \ttindex{NONCOM} statement in
+The \package{NONCOM2} package redefines the \f{noncom} \ttindextype{noncom}{declaration} statement in
 a way more suitable for calculations in physics. Operators have now to
 be declared noncommutative pairwise, i.e. coding:
 \begin{verbatim}
@@ -82,20 +82,20 @@ releases
 of \REDUCE\ and may not work with previous versions. Some different
 (but still correct) results may occur by using this package in
 conjunction with
-LET statements since part of the pattern matching routines have been
+\f{let} statements since part of the pattern matching routines have been
 redesigned. The package has been designed to bridge a deficiency of the
 current \REDUCE\ version concerning the notion of noncommutativity
  and it is the author's hope that it will be made  obsolete
 by a future release of \REDUCE.
 
-\subsection{The PHYSOP package}
+\subsection{The \package{PHYSOP} package}
 
-The package PHYSOP implements a new \REDUCE\ data type to perform
+The package \package{PHYSOP} implements a new \REDUCE\ data type to perform
 calculations with physical operators. The noncommutativity of
 operators is
-implemented using the NONCOM2 package so this file should be loaded
-prior to the use of PHYSOP\footnote{To build a fast
-loading version of PHYSOP the NONCOM2
+implemented using the \package{NONCOM2} package so this file should be loaded
+prior to the use of \package{PHYSOP}\footnote{To build a fast
+loading version of \package{PHYSOP} the \package{NONCOM2}
 source code should be read in prior to the PHYSOP
 code}.
 In the following the new commands  implemented by the package
@@ -105,7 +105,7 @@ available for performing  any other calculation.
 
 \subsubsection{Type declaration commands}
 
-The new \REDUCE\ data type PHYSOP implemented by the package allows the
+The new \REDUCE\ data type \package{PHYSOP} implemented by the package allows the
 definition of a new kind of operators (i.e. kernels carrying
 an arbitrary
 number of arguments). Throughout this manual, the name
@@ -115,7 +115,7 @@ This data type is in turn
 divided into 5 subtypes. For each of this subtype, a declaration command
 has been defined:
 \begin{description}
-\item[\f{SCALOP A;} ] \ttindex{SCALOP} declares \f{A} to be a scalar
+\item[\f{SCALOP A;} ] \ttindextype[PHYSOP]{scalop}{declaration} declares \f{A} to be a scalar
 operator. This operator may
 carry an arbitrary number of arguments i.e.\ after the
 declaration: \f{ SCALOP A; }
@@ -123,7 +123,7 @@ all kernels of the form e.g.\
 \f{A(J), A(1,N), A(N,L,M)}
 are recognized by the system as being scalar operators.
 
-\item[\f{VECOP V;} ] \ttindex{VECOP} declares \f{V} to be a vector operator.
+\item[\f{VECOP V;} ] \ttindextype[PHYSOP]{vecop}{declaration} declares \f{V} to be a vector operator.
 As for scalar operators, the vector operators may carry an arbitrary
 number of arguments. For example \f{V(3)} can be used to represent
 the vector operator $\vec{V}_{3}$. Note that the dimension of space
@@ -133,7 +133,7 @@ vector operator by using a special index declared as \f{PHYSINDEX} (see
 below). This index must then be the first in the argument list
 of the vector operator.
 
-\item[\f{TENSOP C(3);} ]  \ttindex{TENSOP}
+\item[\f{TENSOP C(3);} ]  \ttindextype[PHYSOP]{tensop}{declaration}
 declares \f{C} to be a tensor operator of rank 3. Tensor operators
 of any fixed integer rank larger than 1 can be declared.
 Again this operator may carry an arbitrary number of arguments
@@ -144,19 +144,19 @@ components can be addressed by using  special \f{PHYSINDEX} indices
 arguments in the argument list.
 
 
-\item[\f{STATE U;} ] \ttindex{STATE} declares \f{U} to be a state, i.e.\ an
+\item[\f{STATE U;} ] \ttindextype[PHYSOP]{state}{declaration} declares \f{U} to be a state, i.e.\ an
 object on
 which operators have a certain action.  The state  U can also carry an
 arbitrary number of arguments.
 
-\item[\f{PHYSINDEX X;} ] \ttindex{PHYSINDEX} declares \f{X} to be a special
+\item[\f{PHYSINDEX X;} ] \ttindextype[PHYSOP]{physindex}{declaration} declares \f{X} to be a special
 index which will be used
 to address components of vector and tensor operators.
 \end{description}
 
 It is very important to understand precisely the way how the type
 declaration commands work in order to avoid type mismatch errors when
-using the PHYSOP package. The following examples should illustrate the
+using the \package{PHYSOP} package. The following examples should illustrate the
 way the program interprets type declarations.
 Assume that the declarations listed above have
 been typed in by the user, then:
@@ -222,9 +222,9 @@ Exceptions from these rules are (i) that inverse operators are
 and (ii) that  the expressions \f{A!-1*A}
 and \f{A*A!-1} are replaced\footnote{This may not always occur in
 intermediate steps of a calculation  due to efficiency reasons.}
-by the unit operator \f{UNIT} \ttindex{UNIT}.
+by the unit operator \f{UNIT}\ttindextype[PHYSOP]{unit}{operator}.
 This operator is defined
-as a scalar operator during the initialization of the PHYSOP package.
+as a scalar operator during the initialization of the \package{PHYSOP} package.
 It should be used to indicate
 the type of an operator expression whenever no other PHYSOP
 occur in it. For example, the following sequence: 
@@ -244,7 +244,7 @@ not be used for other purposes.
 
 All other kernels  (including standard \REDUCE\ operators)
 occurring in expressions are treated as ordinary scalar variables
-without any PHYSOP type (referred to as \underline{scalars} in the
+without any \package{PHYSOP} type (referred to as \underline{scalars} in the
 following).
 Assignement statements are checked to ensure correct operator
 type assignement on both sides leading to an error if a type
@@ -252,18 +252,18 @@ mismatch occurs. However an assignement statement of the form
 \f{A:= 0} or \f{LET A = 0} is \underline{always} valid regardless of the
 type of \f{A}.
 
-Finally a command \f{CLEARPHYSOP} \ttindex{CLEARPHYSOP}
+Finally a command \f{CLEARPHYSOP} \ttindextype[PHYSOP]{clearphysop}{command}
 has been defined to remove
-the PHYSOP type from an identifier in order to use it for subsequent
+the \package{PHYSOP} type from an identifier in order to use it for subsequent
 calculations (e.g. as an ordinary \REDUCE\ operator). However it should be
 remembered that \underline{no}
 substitution rule is cleared by this function. It
 is therefore left to the user's responsibility to clear previously all
-substitution rules involving the identifier from which the PHYSOP type
+substitution rules involving the identifier from which the \package{PHYSOP} type
 is removed.
 
 Users should be very careful when defining procedures or statements of
-the type \f{FOR ALL ... LET ...} that the PHYSOP type of all identifiers
+the type \f{FOR ALL ... LET ...} that the \package{PHYSOP} type of all identifiers
 occurring in such expressions is unambigously fixed. The type analysing
 procedure is rather restrictive and will print out a ''PHYSOP type
 conflict'' error message if such ambiguities occur.
@@ -274,7 +274,7 @@ The ordering of kernels in an expression is performed according to
 the following rules: \\
 1. \underline{Scalars} are always ordered ahead of
 PHYSOP \underline{operators} in an expression.
-The \REDUCE\ statement \f{KORDER} \ttindex{KORDER} can be used to control the
+The \REDUCE\ statement \f{korder} \ttindextype{korder}{declaration} can be used to control the
 ordering of scalars but has \underline{no}
 effect on the ordering of operators.
 
@@ -282,8 +282,8 @@ effect on the ordering of operators.
 order in which they have been declared (and \underline{not}
 the alphabetical one).
 This ordering scheme can be changed using the command \f{OPORDER}.
-\ttindex{OPORDER}
-Its syntax is similar to the \f{KORDER} statement, i.e.\ coding:
+\ttindextype[PHYSOP]{oporder}{declaration}
+Its syntax is similar to the \f{korder} statement, i.e.\ coding:
 \f{OPORDER A,V,F;}
 means that all occurrences of the operator \f{A} are ordered ahead of
 those of \f{V} etc. It is also possible to include operators
@@ -387,8 +387,8 @@ expressions and particularly their application  on states
 dummy indices in order to enhance the readability of the
 system's final output.
 \hypertarget{switch:CONTRACT}{}%
-For this purpose the switch \sw{CONTRACT} \ttindex{CONTRACT} has to
-be turned on (\sw{CONTRACT} is normally set to \f{OFF}).
+For this purpose the switch \sw{contract} \ttindexswitch[PHYSOP]{contract} has to
+be turned on (\sw{contract} is normally set to \f{OFF}).
 The system in this case contracts over dummy indices reinserting the
 \f{DOT} operator and reassembling the expanded powers.  However due to
 the predefined operator ordering the system may not remove all the
@@ -399,12 +399,12 @@ dummy indices introduced previously.
 \subsubsubsection{Commutation relations}
 
 If 2 PHYSOPs have been declared noncommutative using the (redefined)
-\f{NONCOM} statement, it is possible to introduce in the environment
+\f{noncom} statement, it is possible to introduce in the environment
 \underline{elementary} (anti-) commutation relations between them. For
 this purpose,
-2 \underline{scalar} operators \f{COMM} \ttindextype{COMM}{operator} and
-\f{ANTICOMM} \ttindextype{ANTICOMM}{operator} are available.
-These operators are used in conjunction with \f{LET} statements.
+2 \underline{scalar} operators \f{comm} \ttindextype[PHYSOP]{comm}{operator} and
+\f{anticomm} \ttindextype[PHYSOP]{anticomm}{operator} are available.
+These operators are used in conjunction with \f{let} statements.
 Example: 
 
 \begin{verbatim}
@@ -437,9 +437,9 @@ so that the user may introduce the commutation relation later on.
 
 \hypertarget{switch:ANTICOM}{}
 The user may want to force the system to look for
-\underline{anticommutators} only; for this purpose a switch \sw{ANTICOM}
-\ttindexswitch[PHYSOP]{ANTICOM}
-is defined which has to be turned on (\sw{ANTICOM} is normally set to
+\underline{anticommutators} only; for this purpose a switch \sw{anticom}
+\ttindexswitch[PHYSOP]{anticom}
+is defined which has to be turned on (\sw{anticom} is normally set to
 \f{OFF}). In this case, the above example is replaced by: 
 
 \begin{verbatim}
@@ -469,13 +469,13 @@ OPORDER A,B;
 - --> A*B - C;
 \end{verbatim}
 
-The functions \f{COMM} and \f{ANTICOMM} should only be used  to
+The functions \f{comm} and \f{anticomm} should only be used  to
 define
 elementary (anti-) commutation relations between single operators.
 For the calculation of (anti-) commutators between complex
 operator
-expressions, the functions \f{COMMUTE} \ttindex{COMMUTE} and
-\f{ANTICOMMUTE} \ttindex{ANTICOMMUTE} have been defined.
+expressions, the functions \f{commute} \ttindextype[PHYSOP]{commute}{operator} and
+\f{anticommute} \ttindextype[PHYSOP]{anticommute}{operator} have been defined.
 Example (is included as example 1 in the test file): 
 
 \begin{verbatim}
@@ -491,9 +491,9 @@ As has been already mentioned, for each operator and state defined
 using the declaration commands quoted in section 3.1, the system
 generates automatically the corresponding adjoint operator. For the
 calculation of the adjoint representation of a complicated
-operator expression, a function  \f{ADJ} \ttindex{ADJ} has been defined.
+operator expression, a function  \f{adj} \ttindextype[PHYSOP]{adj}{operator} has been defined.
 Example\footnote{This shows how adjoint operators are printed out
-when the switch \f{NAT} is on}: 
+when the switch \f{nat} is on}: 
 
 \begin{verbatim}
 SCALOP A,B;
@@ -504,11 +504,11 @@ ADJ(A*B);
 
 \subsubsubsection{Application of operators on states}
 
-For this purpose, a function \f{OPAPPLY} \ttindex{OPAPPLY} has been
+For this purpose, a function \f{opapply} \ttindextype[PHYSOP]{opapply}{operator} has been
 defined.
 It has 2 arguments and is used in the following combinations: 
 
-\textbf{(i)}  \f{LET OPAPPLY(}\textit{operator, state}\f{) =} \textit{state};
+\textbf{(i)}  \f{let opapply(}\textit{operator, state}\f{) =} \textit{state};
 This is to define a elementary
 action of an operator on a state in analogy to the way
 elementary commutation relations are introduced to the system.
@@ -519,7 +519,7 @@ SCALOP A; STATE U;
 FOR ALL N,P LET OPAPPLY((A(N),U(P))= EXP(I*N*P)*U(P);
 \end{verbatim}
 
-\textbf{(ii)} \f{LET OPAPPLY(}\textit{state, state}\f{) =} \textit{scalar exp.};
+\textbf{(ii)} \f{let opapply(}\textit{state, state}\f{) =} \textit{scalar exp.};
 This form is to define scalar products between states and normalization
 conditions.
 Example:
@@ -529,12 +529,12 @@ STATE U;
 FOR ALL N,M LET OPAPPLY(U(N),U(M)) = IF N=M THEN 1 ELSE 0;
 \end{verbatim}
 
-\textbf{(iii)} \textit{state} \f{:= OPAPPLY(}\textit{operator expression, state});
+\textbf{(iii)} \textit{state} \f{:= opapply(}\textit{operator expression, state});
  In this way, the action of an operator expression on a given state
  is calculated using elementary relations defined as explained in \textbf{(i)}.
  The result may be assigned to a different state vector.
 
-\textbf{(iv)} \f{OPAPPLY(}\textit{state}\f{, OPAPPLY(}\textit{operator expression,
+\textbf{(iv)} \f{opapply(}\textit{state}\f{, opapply(}\textit{operator expression,
 state}\f{))}; This is the way how to calculate matrix elements of
 operator
 expressions. The system proceeds in the following way: first the
@@ -552,7 +552,7 @@ looks for a relation expressing the scalar product of the two
 resulting states and prints out the final result. An example of such
 a calculation is given in the test file.
 
-The infix version of the \f{OPAPPLY} function is the vertical bar $\mid$
+The infix version of the \f{opapply} function is the vertical bar $\mid$
 . It is \underline{right} associative and placed in the precedence
 list just above the minus ($-$) operator.
 Some of the \REDUCE\ implementation may not work with this character,
@@ -564,20 +564,20 @@ function}.
 
 \indent \textbf{(i)} Some spurious negative powers  of operators
 may appear
-in the result of a calculation using the PHYSOP package. This is a
+in the result of a calculation using the \package{PHYSOP} package. This is a
 purely ''cosmetic'' effect which is due to an additional
 factorization of the expression in the output printing routines of
-\REDUCE. Setting off the \REDUCE\ switch \f{ALLFAC}  (\f{ALLFAC} is normally
-on)
+\REDUCE. Setting off the \REDUCE\ switch \f{allfac}  (\f{allfac} is normally
+on)\ttindexswitch{allfac}
 should make these
 terms disappear and print out the correct result (see example 1
 in the test file).
 
-\textbf{(ii)} The current release of the PHYSOP package is not optimized
+\textbf{(ii)} The current release of the \package{PHYSOP} package is not optimized
 w.r.t. computation speed. Users should be aware that the evaluation
 of complicated expressions involving a lot of commutation relations
 requires a significant amount of CPU time \underline{and} memory.
-Therefore the use of PHYSOP on small machines is rather limited. A
+Therefore the use of \package{PHYSOP} on small machines is rather limited. A
 minimal hardware configuration should include at least 4 MB of
 memory and a reasonably fast CPU (type Intel 80386 or equiv.).
 
@@ -625,32 +625,32 @@ PHYSOP package are listed.
 \begin{description}
 \item[\f{cannot declare} \textit{x}\f{ as }\textit{data type}] (W):
  An attempt has been made to declare an
-object \textit{x} which cannot be used as a PHYSOP operator of the
+object \textit{x} which cannot be used as a \package{PHYSOP} operator of the
 required type. The declaration command is ignored.
 
 \item [\textit{x} \f{already defined as} \textit{data type}] (W): The object
 \textit{x} has already been declared using a \REDUCE\ type declaration
-command and can therefore not be used as a PHYSOP operator.
+command and can therefore not be used as a \package{PHYSOP} operator.
 The declaration command is ignored.
 
 \item [\textit{x} \f{already declared as} \textit{data type}] (W): The object
-\f{x} has already been declared with a PHYSOP declaration command.
+\f{x} has already been declared with a \package{PHYSOP} declaration command.
 The declaration command is ignored.
 
 \item[\textit{x} \f{is not a PHYSOP}] (E): An invalid argument has been
 included in an \f{OPORDER} command. Check the arguments.
 
 \item[\f{invalid argument(s) to }\textit{function}] (E): A
-function implemented by the PHYSOP package has been called with an
+function implemented by the \package{PHYSOP} package has been called with an
 invalid argument. Check type of arguments.
 
 
-\item[\f{Type conflict in }\textit{operation}] (E): A PHYSOP type conflict
+\item[\f{Type conflict in }\textit{operation}] (E): A \package{PHYSOP} type conflict
 has occured during an arithmetic operation. Check the arguments.
 
 \item [\f{invalid call of }\textit{function} \f{with args:} \textit{arguments}]
 (E): A function
-of the PHYSOP package has been declared with invalid argument(s). Check
+of the \package{PHYSOP} package has been declared with invalid argument(s). Check
 the argument list.
 
 \item[\f{type mismatch in} \textit{expression}] (E): A type mismatch has

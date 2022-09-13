@@ -82,8 +82,18 @@ symbolic procedure taylortemplate u;
                taytpelorder quartet})
      where sq := simp!* u;
 
+symbolic procedure taylorcoefflist u;
+  (if not taylor!-kernel!-sq!-p sq
+     then typerr (u, "Taylor kernel")
+    else 'list . for each cf in taycoefflist mvar numr sq collect
+            {'list,
+	       'list . for each ll in car cf collect
+ 		  if null cdr ll then preptayexp car ll else 'list . for each n in ll collect preptayexp n,
+	       mk!*sq cdr cf})
+     where sq := simp!* u;
+
 flag ('(taylorseriesp taylorcombine taylortostandard taylororiginal
-        taylortemplate),
+        taylortemplate taylorcoefflist),
       'opfn);
 
 flag ('(taylorseriesp), 'boolean);

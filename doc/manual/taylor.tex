@@ -125,6 +125,18 @@ This returns a list of lists with the three elements (var,var0,order).
 As with \f{taylororiginal},
 an error is signalled if exp is not a Taylor kernel.
 
+\hypertarget{operator:TAYLORCOEFFLIST}{}
+\ttindextype{taylorcoefflist}{operator}
+\hspace*{2em} \texttt{taylorcoefflist}(exp:\emph{exprn}):\emph{list}
+
+This returns a list of two element lists (list of exponents,coefficient).
+Each exponent corresponds to a variable in the template.
+For homogenous expansion, each exponent is replaced by a list of exponents,
+as the template has a list of variables instead of a single one.
+Again, an error is signalled if exp is not a Taylor kernel.
+
+See the test file for examples.
+
 The operator
 \hypertarget{operator:TAYLORTOSTANDARD}{}\\
 \hspace*{2em} \texttt{taylortostandard}(exp:\emph{exprn}):\emph{exprn}
@@ -358,9 +370,7 @@ operator.
     a Taylor series whose constant term vanishes.
 
 \item[\msg{***** Not implemented yet (...)}]\mbox{}\\
-    Sorry, but I haven't had the time to implement this feature.
-    Tell me if you really need it, maybe I have already an improved
-    version of the package.
+    Sorry, but this feature is not implemented, although it is possible to do so.
 
 \item[\msg{***** Reversion of Taylor series not possible: ...}]\mbox{}\\
 \ttindextype{taylorrevert}{operator}
@@ -396,13 +406,13 @@ operator.
     The order parameter you gave to \f{taylor} is not an integer.
 
 \item[\msg{***** ... invalid as Taylor kernel}]\mbox{}\\
-\ttindextype{taylororiginal}{operator} \ttindextype{taylortemplate}{operator}
+\ttindextype{taylororiginal}{operator}\ttindextype{taylortemplate}{operator}%
     You tried to apply \f{taylororiginal} or \f{taylortemplate}
     to an expression that is not a Taylor kernel.
 
 \item[\msg{***** ... invalid as Taylor Template element}]\mbox{}\\
     You tried to substitute the \f{taylortemplate} part of a Taylor
-    kernel with a list a incorrect form. For the correct form see the
+    kernel with a list of incorrect form. For the correct form see the
     description of the \f{taylortemplate} operator.
 
 \item[\msg{***** ... invalid as Taylor variable}]\mbox{}\\
@@ -419,8 +429,8 @@ operator.
     This message shows that an internal inconsistency was detected.
     This is not your fault, at least as long as you did not try to
     work with the internal data structures of \REDUCE. Send input
-    and output to me, together with the version information that is
-    printed out.
+    and output to the \REDUCE developers mailing list, together with
+    the version information that is printed out.
 
 \end{description}
 
@@ -441,6 +451,6 @@ In my opinion there are two major differences:
         certain order and forget how the unexpanded expression
         looked like.  I think that their method is more widely
         usable, whereas mine is more efficient when you know in
-        advance exactly how many terms you need.
+        advance how many terms you need.
 \end{itemize}
 
