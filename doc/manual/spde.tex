@@ -12,12 +12,13 @@ should only be used in compiled form.
 
 For all theoretical questions, a description of the algorithm and
 numerous examples the following articles should be consulted:
-``Automatically Determining Symmetries of Partial Differential
-Equations'', Computing vol. 34, page 91-106(1985) and vol. 36, page
-279-280(1986), ``Symmetries of Differential Equations: From Sophus
-Lie to Computer Algebra'', SIAM Review, to appear, and Chapter 2
-of the Lecture Notes ``Computer Algebra and Differential Equations
-of Mathematical Physics'', to appear.
+\cite{Schwarz:85,Schwarz:88,Schwarz:GMD1987}.
+%``Automatically Determining Symmetries of Partial Differential
+%Equations'', Computing vol. 34, page 91-106(1985) and vol. 36, page
+%279-280(1986), ``Symmetries of Differential Equations: From Sophus
+%Lie to Computer Algebra'', SIAM Review, to appear, and Chapter 2
+%of the Lecture Notes ``Computer Algebra and Differential Equations
+%of Mathematical Physics'', to appear.
 
 
 \subsection{Description of the System Functions and Variables}
@@ -29,12 +30,12 @@ provided by the package are:
 \begin{center}
 \begin{tabular}{| c | c | }\hline
 Function name & Operation \\ \hline \hline
-\ttindex{CRESYS}
-CRESYS(\s{arguments}) & Constructs determining system \\ \hline
-\ttindex{SIMPSYS}
-SIMPSYS() & Solves determining system \\ \hline
-\ttindex{RESULT}
-RESULT() & Prints infinitesimal generators \\
+\ttindextype[SPDE]{cresys}{operator}
+\f{cresys}(\s{arguments}) & Constructs determining system \\ \hline
+\ttindextype[SPDE]{simpsys}{operator}
+\f{simpsys}() & Solves determining system \\ \hline
+\ttindextype[SPDE]{result}{operator}
+\f{result}() & Prints infinitesimal generators \\
 &  and commutator table \\ \hline
 \end{tabular}\\
 \caption{\package{SPDE} Functions}
@@ -47,12 +48,12 @@ are:\pagebreak
 \begin{center}
 \begin{tabular}{| c | c |} \hline
 Function name & Operation \\ \hline \hline
-\ttindex{PRSYS}
-PRSYS() & Prints determining system \\ \hline
-\ttindex{PRGEN}
-PRGEN() & Prints infinitesimal generators \\ \hline
-\ttindex{COMM}
-COMM(U,V) & Prints commutator of generators U and V \\ \hline
+\ttindextype[SPDE]{prsys}{operator}
+\f{prsys}() & Prints determining system \\ \hline
+\ttindextype[SPDE]{prgen}{operator}
+\f{prgen}() & Prints infinitesimal generators \\ \hline
+\ttindextype[SPDE]{comm}{operator}
+\f{comm}(U,V) & Prints commutator of generators U and V \\ \hline
 \end{tabular}\\
 \caption{\package{SPDE} Useful Output Functions}\label{spde:useful}
 \end{center}
@@ -63,15 +64,18 @@ not be used for any other purpose than that given in
 Table~\ref{spde:intt} and~\ref{spde:op}. The three globals of the type
 integer are:
 \begin{table}[htbp]
+  \hypertarget{reserved:MM}{}
+  \hypertarget{reserved:NN}{}
+  \hypertarget{reserved:PCLASS}{}
 \begin{center}
 \begin{tabular}{| c | c |}\hline
 Variable name & Meaning \\ \hline \hline
-\ttindex{NN}
-NN & Number of independent variables \\ \hline
-\ttindex{MM}
-MM & Number of dependent variables \\ \hline
-\ttindex{PCLASS}
-PCLASS=0, 1 or 2 & Controls amount of output \\ \hline
+\ttindextype[SPDE]{nn}{reserved variable}
+\var{nn} & Number of independent variables \\ \hline
+\ttindextype[SPDE]{mm}{reserved variable}
+\var{mm} & Number of dependent variables \\ \hline
+\ttindextype[SPDE]{pclass}{reserved variable}
+\var{pclass}=0, 1 or 2 & Controls amount of output \\ \hline
 \end{tabular}\\
 \caption{\package{SPDE} Integer valued globals}\label{spde:intt}
 \end{center}
@@ -83,24 +87,26 @@ operator:
 \begin{center}
 \begin{tabular}{| c | c |}\hline
 Variable name & Meaning \\ \hline \hline
-\ttindex{X(I)}
+\ttindextype[SPDE]{x(i)}{operator}
 X(I) & Independent variable $x_i$ \\ \hline
-\ttindex{U(ALFA)}
+\ttindextype[SPDE]{u(alfa)}{operator}
 U(ALFA) & Dependent variable $u^{alfa}$ \\ \hline
-\ttindex{U(ALFA,I)}
+\ttindextype[SPDE]{U(ALFA,I)}{operator}
 U(ALFA,I) & Derivative of $u^{alfa}$ w.r.t. $x_i$ \\ \hline
-\ttindex{DEQ(I)}
+\ttindextype[SPDE]{deq(i)}{operator}
 DEQ(I) & i-th differential equation \\ \hline
-\ttindex{SDER(I)}
+\ttindextype[SPDE]{sder(i)}{operator}
 SDER(I) & Derivative w.r.t. which DEQ(I) is resolved \\ \hline
-\ttindex{GL(I)}
+\ttindextype[SPDE]{gl(i)}{operator}
 GL(I) & i-th equation of determining system \\ \hline
-\ttindex{GEN(I)}
+\ttindextype[SPDE]{gen(i)}{operator}
 GEN(I) & i-th infinitesimal generator \\ \hline
-\ttindex{XI(I)} \ttindex{ETA(ALFA)} \ttindex{ZETA(ALFA,I)}
+\ttindextype[SPDE]{xi(i)}{operator}
+\ttindextype[SPDE]{ETA(ALFA)}{operator}
+\ttindextype[SPDE]{ZETA(ALFA,I)}{operator}
 XI(I), ETA(ALFA)  & See definition given in the \\
 ZETA(ALFA,I) & references quoted in the introduction. \\ \hline
-\ttindex{C(I)}
+\ttindextype[SPDE]{c(i)}{operator}
 C(I) & i-th function used for substitution \\ \hline
 \end{tabular}\\
 \caption{\package{SPDE} Operator type global variables}\label{spde:op}
@@ -118,14 +124,14 @@ differential equation and no assignment has been made by the user, the
 highest derivative is taken by default.
 
 When the appropriate assignments are made to the variable deq, the
-values of NN and MM (Table~\ref{spde:useful}) are determined
+values of \var{nn} and \var{mm} (Table~\ref{spde:useful}) are determined
 automatically, i.e. they have not to be assigned by the user.
 
-\ttindex{CRESYS}
+\ttindextype[SPDE]{cresys}{operator}
 The function CRESYS may be called with any number of arguments, i.e.
 
 \begin{verbatim}
-  CRESYS(); or CRESYS(deq 1,deq 2,... );
+  cresys(); or cresys(deq 1,deq 2,... );
 \end{verbatim}
 
  are legal calls. If it is called without any argument, all current
@@ -135,7 +141,7 @@ group of the full system comprising all three equations is desired,
 equivalent calls are
 
 \begin{verbatim}
-  CRESYS();   or   CRESYS(deq 1,deq 2,deq 3);
+  cresys();   or   cresys(deq 1,deq 2,deq 3);
 \end{verbatim}
 
 The first alternative saves some typing. If later in the session the
@@ -143,15 +149,15 @@ symmetry group of deq 1 alone has to be determined, the correct call
 is
 
 \begin{verbatim}
-  CRESYS deq 1;
+  cresys deq 1;
 \end{verbatim}
 
-\ttindex{SIMPSYS}
-After the determining system has bee created, SIMPSYS which has no
+\ttindextype[SPDE]{simpsys}{operator}
+after the determining system has bee created, \f{simpsys} which has no
 arguments may be called for solving it. The amount of intermediate
-output produced by SIMPSYS is controlled by the global variable PCLASS
-with the default value 0. \ttindex{PCLASS} With PCLASS equal to 0, no
-intermediate steps are shown. With PCLASS equal to 1, all intermediate
+output produced by \f{simpsys} is controlled by the global variable \var{pclass}
+with the default value 0. \ttindextype[SPDE]{pclass}{reserved variable}With \var{pclass} equal to 0, no
+intermediate steps are shown. With \var{pclass} equal to 1, all intermediate
 steps are displayed so that the solution algorithm may be followed
 \index{Tracing!\package{SPDE} package} through in detail. Each time the algorithm
 passes through the top of the main solution loop the message
@@ -160,25 +166,25 @@ passes through the top of the main solution loop the message
   Entering main loop
 \end{verbatim}
 
-is written. PCLASS equal 2 produces a lot of LISP output and is of no
+is written. \var{pclass} equal 2 produces a lot of LISP output and is of no
 interest for the normal user.
 
-If with PCLASS=0 the procedure SIMPSYS terminates without any
+If with \var{pclass}=0 the procedure \f{simpsys} terminates without any
 response, the determining system is completely solved.  In some cases
-SIMPSYS does not solve the determining system completely in a single
+\f{simpsys} does not solve the determining system completely in a single
 run. In general this is true if there are only genuine differential
 equations left which the algorithm cannot handle at present. If a case
-like this occurs, SIMPSYS returns the remaining equations of the
+like this occurs, \f{simpsys} returns the remaining equations of the
 determining system. To proceed with the solution algorithm,
 appropriate assignments have to be transmitted by the user, e.g. the
 explicit solution for one of the returned differential equations. Any
 new functions which are introduced thereby must be operators of the
 form c(k) with the correct dependencies generated by a depend
-statement (see the ``REDUCE User's Guide''). Its enumeration has to be
+statement (see section~\ref{sec:dependency}). Its enumeration has to be
 chosen in agreement with the current number of functions which have
-alreday been introduced.  This value is returned by SIMPSYS too.
+alreday been introduced.  This value is returned by \f{simpsys} too.
 
-After the determining system has been solved, the procedure RESULT,
+After the determining system has been solved, the procedure \f{result},
 which has no arguments, may be called. It displays the infinitesimal
 generators and its non-vanishing commutators.
 
@@ -201,7 +207,7 @@ comprises only a single equation.
 The determining system is constructed by calling
 
 \begin{verbatim}
-  CRESYS(); or CRESYS deq 1;
+  cresys(); or cresys deq 1;
 \end{verbatim}
 
 The latter call is compulsory if there are other assignments to the
@@ -218,54 +224,54 @@ appears if there are no differential equations assigned to any deq.
 If the user wants the determining system displayed for inspection
 before starting the solution algorithm he may call
 
-\ttindex{PRSYS}
+\ttindextype[SPDE]{prsys}{operator}
 \begin{verbatim}
-  PRSYS();
+  prsys();
 \end{verbatim}
 
 and gets the answer
 
 \begin{verbatim}
-  GL(1):=2*DF(ETA(1),U(1),X(2)) - DF(XI(2),X(2),2) -
-         DF(XI(2),X(1))
+  gl(1):=2*df(eta(1),u(1),x(2)) - df(xi(2),x(2),2) -
+         df(xi(2),x(1))
 
-  GL(2):=DF(ETA(1),U(1),2) - 2*DF(XI(2),U(1),X(2))
+  gl(2):=df(eta(1),u(1),2) - 2*df(xi(2),u(1),x(2))
 
-  GL(3):=DF(ETA(1),X(2),2) + DF(ETA(1),X(1))
+  gl(3):=df(eta(1),x(2),2) + df(eta(1),x(1))
 
-  GL(4):=DF(XI(2),U(1),2)
+  gl(4):=df(xi(2),u(1),2)
 
-  GL(5):=DF(XI(2),U(1)) - DF(XI(1),U(1),X(2))
+  gl(5):=df(xi(2),u(1)) - df(xi(1),u(1),x(2))
 
-  GL(6):=2*DF(XI(2),X(2)) - DF(XI(1),X(2),2) - DF(XI(1),X(1))
+  gl(6):=2*df(xi(2),x(2)) - df(xi(1),x(2),2) - df(xi(1),x(1))
 
-  GL(7):=DF(XI(1),U(1),2)
+  gl(7):=df(xi(1),u(1),2)
 
-  GL(8):=DF(XI(1),U(1))
+  gl(8):=df(xi(1),u(1))
 
-  GL(9):=DF(XI(1),X(2))
+  gl(9):=df(xi(1),x(2))
 
 The remaining dependencies
 
-  XI(2) depends on U(1),X(2),X(1)
+  xi(2) depends on u(1),x(2),x(1)
 
-  XI(1) depends on U(1),X(2),X(1)
+  xi(1) depends on u(1),x(2),x(1)
 
-  ETA(1) depends on U(1),X(2),X(1)
+  eta(1) depends on u(1),x(2),x(1)
 \end{verbatim}
 
-The last message means that all three functions XI(1), XI(2) and
-ETA(1) depend on X(1), X(2) and U(1). Without this information the
-nine equations GL(1) to GL(9) forming the determining system are
+The last message means that all three functions xi(1), xi(2) and
+eta(1) depend on x(1), x(2) and u(1). Without this information the
+nine equations gl(1) to gl(9) forming the determining system are
 meaningless. Now the solution algorithm may be activated by calling
 
-\ttindex{SIMPSYS}
+\ttindextype[SPDE]{simpsys}{operator}
 \begin{verbatim}
-   SIMPSYS();
+   simpsys();
 \end{verbatim}
 
-\ttindex{PCLASS}
-If the print flag PCLASS has its default value which is 0 no
+\ttindextype[SPDE]{pclass}{reserved variable}
+If the print flag \var{pclass} has its default value which is 0 no
 intermediate output is produced and the answer is
 
 \begin{verbatim}
@@ -273,16 +279,16 @@ intermediate output is produced and the answer is
 
   The remaining equations are
 
-  GL(1):=DF(C(1),X(2),2) + DF(C(1),X(1))
+  gl(1):=df(c(1),x(2),2) + df(c(1),x(1))
 
   Number of functions is 16
 
   The remaining dependencies
 
-  C(1) depends on X(2),X(1)
+  c(1) depends on x(2),x(1)
 \end{verbatim}
 
-With PCLASS equal to 1 about 6 pages of intermediate output are
+With \var{pclass} equal to 1 about 6 pages of intermediate output are
 obtained. It allows the user to follow through each step of the
 solution algorithm.
 
@@ -296,13 +302,13 @@ algorithm may continue. In the example under consideration the
 appropriate input is
 
 \begin{verbatim}
-   DF(C(1),X(1)) := - DF(C(1),X(2),2);
+   df(c(1),x(1)) := - df(c(1),x(2),2);
 \end{verbatim}
 
 If now the solution algorithm is activated again by
 
 \begin{verbatim}
-  SIMPSYS();
+  simpsys();
 \end{verbatim}
 
 the solution algorithm terminates without any further message, i.e.
@@ -310,7 +316,7 @@ there are no equations of the determining system left unsolved. To
 obtain the symmetry generators one has to say finally
 
 \begin{verbatim}
-  RESULT();
+  result();
 \end{verbatim}
 
 and obtains the answer
@@ -318,65 +324,65 @@ and obtains the answer
 \begin{verbatim}
   The differential equation
 
-  DEQ(1):=U(1,2,2) + U(1,1)
+  deq(1):=u(1,2,2) + u(1,1)
 
 
   The symmetry generators are
 
-  GEN(1):= DX(1)
+  gen(1):= dx(1)
 
-  GEN(2):= DX(2)
+  gen(2):= dx(2)
 
-  GEN(3):= 2*DX(2)*X(1) + DU(1)*U(1)*X(2)
+  gen(3):= 2*dx(2)*x(1) + du(1)*u(1)*x(2)
 
-  GEN(4):= DU(1)*U(1)
+  gen(4):= du(1)*u(1)
 
-  GEN(5):= 2*DX(1)*X(1) + DX(2)*X(2)
+  gen(5):= 2*dx(1)*x(1) + dx(2)*x(2)
 
                        2
-  GEN(6):= 4*DX(1)*X(1)
+  gen(6):= 4*dx(1)*x(1)
 
-         + 4*DX(2)*X(2)*X(1)
+         + 4*dx(2)*x(2)*x(1)
 
                            2
-           + DU(1)*U(1)*(X(2)  - 2*X(1))
+           + du(1)*u(1)*(x(2)  - 2*x(1))
 
-  GEN(7):= DU(1)*C(1)
+  gen(7):= du(1)*c(1)
 
   The remaining dependencies
 
-  C(1) depends on X(2),X(1)
+  c(1) depends on x(2),x(1)
 
 
   Constraints
 
-  DF(C(1),X(1)):= - DF(C(1),X(2),2)
+  df(c(1),x(1)):= - df(c(1),x(2),2)
 
 
   The non-vanishing commutators of the finite subgroup
 
 
-  COMM(1,3):= 2*DX(2)
+  comm(1,3):= 2*dx(2)
 
-  COMM(1,5):= 2*DX(1)
+  comm(1,5):= 2*dx(1)
 
-  COMM(1,6):= 8*DX(1)*X(1) + 4*DX(2)*X(2) - 2*DU(1)*U(1)
+  comm(1,6):= 8*dx(1)*x(1) + 4*dx(2)*x(2) - 2*du(1)*u(1)
 
-  COMM(2,3):= DU(1)*U(1)
+  comm(2,3):= du(1)*u(1)
 
-  COMM(2,5):= DX(2)
+  comm(2,5):= dx(2)
 
-  COMM(2,6):= 4*DX(2)*X(1) + 2*DU(1)*U(1)*X(2)
+  comm(2,6):= 4*dx(2)*x(1) + 2*du(1)*u(1)*x(2)
 
-  COMM(3,5):=  - (2*DX(2)*X(1) + DU(1)*U(1)*X(2))
+  comm(3,5):=  - (2*dx(2)*x(1) + du(1)*u(1)*x(2))
 
                           2
-  COMM(5,6):= 8*DX(1)*X(1)
+  comm(5,6):= 8*dx(1)*x(1)
 
-            + 8*DX(2)*X(2)*X(1)
+            + 8*dx(2)*x(2)*x(1)
 
                                 2
-            + 2*DU(1)*U(1)*(X(2)  - 2*X(1))
+            + 2*du(1)*u(1)*(x(2)  - 2*x(1))
 \end{verbatim}
 
 The message ``Constraints'' which appears after the symmetry generators
@@ -397,114 +403,114 @@ has been created. To check the correctness for example of generator GEN
 3 which has been obtained above, the assignments
 
 \begin{verbatim}
-  XI(1):=0;  XI(2):=2*X(1);  ETA(1):=X(2)*U(1);
+  xi(1):=0;  xi(2):=2*x(1);  eta(1):=x(2)*u(1);
 \end{verbatim}
 
-have to be made. If now PRSYS() is called all GL(K) are zero
+have to be made. If now \f{prsys()} is called all gl(k) are zero
 proving the correctness of this generator.
 
-Sometimes a user only wants to know some of the functions ZETA for for
-various values of its possible arguments and given values of MM and
-NN. In these cases the user has to assign the desired values of MM and
-NN and may call the ZETAs after that. Example:
+Sometimes a user only wants to know some of the functions \f{zeta} for for
+various values of its possible arguments and given values of \var{mm} and
+\var{nn}. In these cases the user has to assign the desired values of \var{mm} and
+\var{nn} and may call the ZETAs after that. Example:
 
 \begin{verbatim}
-  MM:=1;  NN:=2;
+  mm:=1;  nn:=2;
 
-  FACTOR U(1,2),U(1,1),U(1,1,2),U(1,1,1);
+  factor u(1,2),u(1,1),u(1,1,2),u(1,1,1);
 
-  ON LIST;
+  on list;
 
-  ZETA(1,1);
+  zeta(1,1);
 
-  -U(1,2)*U(1,1)*DF(XI(2),U(1))
+  -u(1,2)*u(1,1)*df(xi(2),u(1))
 
-  -U(1,2)*DF(XI(2),X(1))
+  -u(1,2)*df(xi(2),x(1))
 
          2
-  -U(1,1) *DF(XI(1),U(1))
+  -u(1,1) *df(xi(1),u(1))
 
-  +U(1,1)*(DF(ETA(1),U(1)) -DF(XI(1),X(1)))
+  +u(1,1)*(df(eta(1),u(1)) -df(xi(1),x(1)))
 
-  +DF(ETA(1),X(1))
+  +df(eta(1),x(1))
 
 
-  ZETA(1,1,1);
+  zeta(1,1,1);
 
-  -2*U(1,1,2)*U(1,1)*DF(XI(2),U(1))
+  -2*u(1,1,2)*u(1,1)*df(xi(2),u(1))
 
-  -2*U(1,1,2)*DF(XI(2),X(1))
+  -2*u(1,1,2)*df(xi(2),x(1))
 
-  -U(1,1,1)*U(1,2)*DF(XI(2),U(1))
+  -u(1,1,1)*u(1,2)*df(xi(2),u(1))
 
-  -3*U(1,1,1)*U(1,1)*DF(XI(1),U(1))
+  -3*u(1,1,1)*u(1,1)*df(xi(1),u(1))
 
-  +U(1,1,1)*(DF(ETA(1),U(1)) -2*DF(XI(1),X(1)))
+  +u(1,1,1)*(df(eta(1),u(1)) -2*df(xi(1),x(1)))
 
                 2
-  -U(1,2)*U(1,1) *DF(XI(2),U(1),2)
+  -u(1,2)*u(1,1) *df(xi(2),u(1),2)
 
-  -2*U(1,2)*U(1,1)*DF(XI(2),U(1),X(1))
+  -2*u(1,2)*u(1,1)*df(xi(2),u(1),x(1))
 
-  -U(1,2)*DF(XI(2),X(1),2)
+  -u(1,2)*df(xi(2),x(1),2)
 
          3
-  -U(1,1) *DF(XI(1),U(1),2)
+  -u(1,1) *df(xi(1),u(1),2)
 
          2
-  +U(1,1) *(DF(ETA(1),U(1),2) -2*DF(XI(1),U(1),X(1)))
+  +u(1,1) *(df(eta(1),u(1),2) -2*df(xi(1),u(1),x(1)))
 
-  +U(1,1)*(2*DF(ETA(1),U(1),X(1)) -DF(XI(1),X(1),2))
+  +u(1,1)*(2*df(eta(1),u(1),x(1)) -df(xi(1),x(1),2))
 
-  +DF(ETA(1),X(1),2)
+  +df(eta(1),x(1),2)
 \end{verbatim}
 
-If by error no values to MM or NN and have been assigned the message
+If by error no values to \var{mm} or \var{nn} and have been assigned the message
 
 \begin{verbatim}
   ***** Number of variables not defined
 \end{verbatim}
 
-is returned. Often the functions ZETA are desired for special values
-of its arguments ETA(ALFA) and XI(K). To this end they have to be
+is returned. Often the functions zeta are desired for special values
+of its arguments eta(alfa) and xi(k). To this end they have to be
 assigned first to some other variable. After that they may be
 evaluated for the special arguments. In the previous example this may
 be achieved by
 
 \begin{verbatim}
-  Z11:=ZETA(1,1)$   Z111:=ZETA(1,1,1)$
+  z11:=zeta(1,1)$   z111:=zeta(1,1,1)$
 \end{verbatim}
 
-Now assign the following values to XI 1, XI 2 and ETA 1:
+Now assign the following values to xi 1, xi 2 and eta 1:
 
 \begin{verbatim}
-  XI 1:=4*X(1)**2; XI 2:=4*X(2)*X(1);
+  xi 1:=4*x(1)**2; xi 2:=4*x(2)*x(1);
 
-  ETA 1:=U(1)*(X(2)**2  - 2*X(1));
+  eta 1:=u(1)*(x(2)**2  - 2*x(1));
 \end{verbatim}
 
-They correspond to the generator GEN 6 of the diffusion equation which
+They correspond to the generator gen 6 of the diffusion equation which
 has been obtained above. Now the desired expressions are obtained by
 calling
 
 \begin{verbatim}
-  Z11;
+  z11;
 
                                2
- - (4*U(1,2)*X(2) - U(1,1)*X(2)  + 10*U(1,1)*X(1) + 2*U(1))
+ - (4*u(1,2)*x(2) - u(1,1)*x(2)  + 10*u(1,1)*x(1) + 2*u(1))
 
-  Z111;
+  z111;
 
                                    2
- - (8*U(1,1,2)*X(2) - U(1,1,1)*X(2)  + 18*U(1,1,1)*X(1) +
-   12*U(1,1))
+ - (8*u(1,1,2)*x(2) - u(1,1,1)*x(2)  + 18*u(1,1,1)*x(1) +
+   12*u(1,1))
 \end{verbatim}
 
 
 \subsection{Test File}
 
 This appendix is a test file. The symmetry groups for various
-equations or systems of equations are determined. The variable PCLASS
+equations or systems of equations are determined. The variable \var{pclass}
 has the default value 0 and may be changed by the user before running
 it. The output may be compared with the results which are given in the
 references.
