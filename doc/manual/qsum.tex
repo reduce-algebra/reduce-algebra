@@ -60,10 +60,10 @@ $q$-shifted factorials that are integer-linear in their arguments.
 
 \subsection{Elementary \textsl{q}-Functions}
 
-\ttindextype{QPOCHHAMMER}{operator}
-\ttindextype{QBRACKETS}{operator}
-\ttindextype{QFACTORIAL}{operator}
-\ttindextype{QBINOMIAL}{operator}
+\ttindextype[QSUM]{qpochhammer}{operator}
+\ttindextype[QSUM]{qbrackets}{operator}
+\ttindextype[QSUM]{qfactorial}{operator}
+\ttindextype[QSUM]{qbinomial}{operator}
 Our package supports the input of the following elementary
 $q$-functions:
 \begin{itemize}
@@ -88,8 +88,8 @@ $q$-functions:
 		\frac{\qfac{q}{n}}{\qfac{q}{k}\cdot\qfac{q}{n-k}} \]
 \end{itemize}
 
-\ttindextype{QPHIHYPERTERM}{operator}
-\ttindextype{QPSIHYPERTERM}{operator}
+\ttindextype[QSUM]{qphihyperterm}{operator}
+\ttindextype[QSUM]{qpsihyperterm}{operator}
 Furthermore it is possible to use an abbreviation for the
 \textsl{generalized $q$-hypergeometric series}
 (\textsl{basic generalized hypergeometric series},
@@ -267,10 +267,10 @@ some of which are contained in the test file
 
 % ======================================================================
 
-\subsection{\REDUCE{} operator \texttt{QGOSPER}}
+\subsection{\REDUCE{} operator \texttt{qgosper}}
 \label{reduce_qgosper}
 
-\ttindextype{QGOSPER}{operator}
+\ttindextype[QSUM]{qgosper}{operator}
 The \texttt{qgosper} operator is an implementation of the $q$-Gosper
 algorithm.
 \begin{itemize}
@@ -343,10 +343,10 @@ Here are some other simple examples:
 %\vspace{-2ex}%
 % ----------------------------------------------------------------------
 %
-\subsection{\REDUCE{} operator \texttt{QSUMRECURSION}}
+\subsection{\REDUCE{} operator \texttt{qsumrecursion}}
 \label{reduce_qsumrecursion}
 
-\ttindextype{QSUMRECURSION}{operator}
+\ttindextype[QSUM]{qsumrecursion}{operator}
 The \texttt{qsumrecursion} operator is an implementation of the
 $q$-Zeilberger algorithm.
 It tries to determine a homogeneous recurrence equation for
@@ -474,7 +474,7 @@ Those informations enable you to prove the recurrence equation for
 the sum or supply you with the necessary informations to determine
 an inhomogeneous recurrence equation for a sum with nonnatural bounds.
 
-\ttindextype{QSIMPCOMB}{operator}
+\ttindextype[QSUM]{qsimpcomb}{operator}
 For our last example we can now calculate both sides of
 equation (\eqnref{eq:f_n_k-recursion}):
 
@@ -604,10 +604,10 @@ calculation of the recurrence equation for this example.
 \subsection{Simplification Operators}
 \label{qsum:simplification}
 
-\ttindextype{qsimpcomb}{operator}
-\ttindextype{up\_qratio}{operator}
-\ttindextype{qratio}{operator}
-\ttindextype{down\_qratio}{operator}
+\ttindextype[QSUM]{qsimpcomb}{operator}
+\ttindextype[QSUM]{up\_qratio}{operator}
+\ttindextype[QSUM]{qratio}{operator}
+\ttindextype[QSUM]{down\_qratio}{operator}
 An essential step in the algorithms introduced above is to decide
 whether a term $a_k$ is $q$-hypergeometric, i.\,e.\ if the
 ratio $a_{k}/a_{k-1}$ is rational in $q^k$.

@@ -82,6 +82,10 @@ module taylor;
 %*****************************************************************
 %
 %
+% 12-Sep-2022    2.4e
+%
+%   Add taylorcoefflist operator.
+%
 % 12-Apr-2022    2.4d
 %
 %   Taylortostandard didn't always convert a Taylor kernel to standard
@@ -1018,8 +1022,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4d";      % version number of the package
-taylor!:date!* := "10-Apr-2022"; % release date
+taylor!:version := "2.4e";      % version number of the package
+taylor!:date!* := "12-Sep-2022"; % release date
 
 if !*verboseload then
   << terpri ();

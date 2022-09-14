@@ -194,6 +194,7 @@ system.
 \hyperlink{operator:SPARSEMATP}{\texttt{sparsematp}}
 \hyperlink{operator:SQUAREP}{\texttt{squarep}}
 \hyperlink{operator:SYMMETRICP}{\texttt{symmetricp}}
+\hyperlink{operator:TAYLORSERIESP}{\texttt{taylorseriesp}}
 \halfinterwordspace
 
 \section{Infix Operators}
@@ -504,6 +505,7 @@ system.
 \hyperlink{operator:COLUMN_DIM}{\texttt{column\_dim}}
 \hyperlink{operator:COMBINATIONS}{\texttt{combinations}}
 \hyperlink{operator:COMBNUM}{\texttt{combnum}}
+\hyperlink{operator:COMM}{\texttt{comm}}
 \hyperlink{operator:COMPANION}{\texttt{companion}}
 \hyperlink{operator:CONJ}{\texttt{conj}}
 \hyperlink{operator:CONTFRAC}{\texttt{CONTFRAC}}
@@ -512,6 +514,7 @@ system.
 \hyperlink{operator:CONV_SUPERFUN2CDIFF}{\texttt{conv\_superfun2cdiff}}
 \hyperlink{operator:COORDINATES}{\texttt{coordinates}}
 \hyperlink{operator:COPY_INTO}{\texttt{copy\_into}}
+\hyperlink{operator:CRESYS}{\texttt{cresys}}
 \hyperlink{operator:CROSSVECT}{\texttt{crossvect}}
 \hyperlink{operator:CSETREPRESENTATION}{\texttt{Csetrepresentation}}
 \hyperlink{operator:CURL}{\texttt{curl}}
@@ -678,6 +681,7 @@ system.
 \hyperlink{operator:IDEALS_IDEALSUM}{\texttt{idealsum (IDEALS)}}
 \hyperlink{operator:IMPART}{\texttt{impart}}
 \hyperlink{operator:IMPLICIT}{\texttt{implicit}}
+\hyperlink{operator:IMPLICIT_TAYLOR}{\texttt{implicit\_taylor}}
 \hyperlink{operator:INDEPVARSETS}{\texttt{indepvarsets}}
 \hyperlink{operator:INEQ_SOLVE}{\texttt{ineq\_solve}}
 \hyperlink{operator:INFSUM}{\texttt{infsum}}
@@ -691,6 +695,7 @@ system.
 \hyperlink{operator:INTERREDUCE}{\texttt{interreduce}}
 \hyperlink{operator:INTERSECT}{\texttt{intersect}}
 \hyperlink{operator:INVBASE}{\texttt{invbase}}
+\hyperlink{operator:INVERSE_TAYLOR}{\texttt{inverse\_taylor}}
 \hyperlink{operator:INVLAP}{\texttt{invlap}}
 \hyperlink{operator:INVLEX}{\texttt{invlex}}
 \hyperlink{operator:INVTORDER}{\texttt{invtorder}}
@@ -868,6 +873,7 @@ system.
 \hyperlink{operator:PREDUCE}{\texttt{preduce}}
 \hyperlink{operator:PREDUCET}{\texttt{preducet}}
 \hyperlink{operator:PREIMAGE}{\texttt{preimage}}
+\hyperlink{operator:PRGEN}{\texttt{prgen}}
 \hyperlink{operator:PRIMARYDECOMPOSITION}{\texttt{primarydecomposition}}
 \hyperlink{operator:PRINTGROUP}{\texttt{printgroup}}
 \hyperlink{operator:PROC}{\texttt{proc}}
@@ -875,6 +881,7 @@ system.
 \hyperlink{operator:PROJ_MONOMIAL_CURVE}{\texttt{proj\_monomial\_curve}}
 \hyperlink{operator:PROJ_POINTS}{\texttt{proj\_points}}
 \hyperlink{operator:PRINT_CONDITIONS}{\texttt{print\_conditions}}
+\hyperlink{operator:PRSYS}{\texttt{prsys}}
 \hyperlink{operator:PS}{\texttt{PS}}
 \hyperlink{operator:PSCHANGEVAR}{\texttt{pschangevar}}
 \hyperlink{operator:PSCOMPOSE}{\texttt{pscompose}}
@@ -930,6 +937,7 @@ system.
 \hyperlink{operator:RESOLVE}{\texttt{resolve}}
 \hyperlink{operator:REST}{\texttt{rest}}
 \hyperlink{operator:RESTASLIST}{\texttt{restaslist}}
+\hyperlink{operator:RESULT}{\texttt{result}}
 \hyperlink{operator:RESULTANT}{\texttt{resultant}}
 \hyperlink{operator:REVERSE}{\texttt{reverse}}
 \hyperlink{operator:RHS}{\texttt{rhs}}
@@ -985,6 +993,7 @@ system.
 \hyperlink{operator:SIMPLIFY_GAMMA2}{\texttt{simplify\_gamma2}}
 \hyperlink{operator:SIMPLIFY_GAMMAN}{\texttt{simplify\_gamman}}
 \hyperlink{operator:SIMPLIFY_COMBINATORIAL}{\texttt{simplify\_combinatorial}}
+\hyperlink{operator:SIMPSYS}{\texttt{simpsys}}
 \hyperlink{operator:SINGULAR_LOCUS}{\texttt{singular\_locus}}
 \hyperlink{operator:SixJSymbol}{\texttt{SixJSymbol}}
 \hyperlink{operator:SMITHEX}{\texttt{smithex}}
@@ -1078,6 +1087,13 @@ system.
 \hyperlink{operator:SYMBOLIC_POWER}{\texttt{symbolic\_power}}
 \hyperlink{operator:SYZYGIES}{\texttt{syzygies}}
 \hyperlink{operator:TANGENTCONE}{\texttt{tangentcone}}
+\hyperlink{operator:TAYLOR}{\texttt{taylor}}
+\hyperlink{operator:TAYLORCOEFFLIST}{\texttt{taylorcoefflist}}
+\hyperlink{operator:TAYLORCOMBINE}{\texttt{taylorcombine}}
+\hyperlink{operator:TAYLORORIGINAL}{\texttt{taylororiginal}}
+\hyperlink{operator:TAYLORREVERT}{\texttt{taylorrevert}}
+\hyperlink{operator:TAYLORTEMPLATE}{\texttt{taylortemplate}}
+\hyperlink{operator:TAYLORTOSTANDARD}{\texttt{taylortostandard}}
 \hyperlink{operator:TESTBOOL}{\texttt{testbool}}
 \hyperlink{operator:THETA1D}{\texttt{theta1d}}
 \hyperlink{operator:THETA2D}{\texttt{theta2d}}
@@ -1086,8 +1102,8 @@ system.
 \hyperlink{operator:THIRD}{\texttt{third}}
 \hyperlink{operator:ThreeJSymbol}{\texttt{ThreeJSymbol}}
 \hyperlink{operator:TOEPLITZ}{\texttt{toeplitz}}
-\hyperlink{operator:TORDER}{\texttt{TORDER}}
-\hyperlink{operator:TORDER_COMPILE}{\texttt{TORDER\_COMPILE}}
+\hyperlink{operator:TORDER}{\texttt{torder}}
+\hyperlink{operator:TORDER_COMPILE}{\texttt{torder\_compile}}
 \hyperlink{operator:TOTALDEG}{\texttt{totaldeg}}
 \hyperlink{operator:TP}{\texttt{tp}}
 \hyperlink{operator:TRACE}{\texttt{trace}}
@@ -1171,11 +1187,14 @@ system.
 \hyperlink{reserved:K!*}{\texttt{k!*}}
 \hyperlink{reserved:KHINCHIN}{\texttt{khinchin}}
 \hyperlink{reserved:LOW_POW}{\texttt{low\_pow}}
+\hyperlink{reserved:MM}{\texttt{mm}}
 \hyperlink{variable:NC_FACTOR_TIME}{\texttt{nc\_factor\_time}}
 \hyperlink{reserved:NEGATIVE}{\texttt{negative}}
 \hyperlink{reserved:NIL}{\texttt{nil}}
+\hyperlink{reserved:NN}{\texttt{nn}}
 \hyperlink{reserved:NO_GLAISHER}{\texttt{no\_glaisher}}
 \hyperlink{variable:ODD_VAR}{\texttt{odd\_var}}
+\hyperlink{reserved:PCLASS}{\texttt{pclass}}
 \hyperlink{reserved:PI}{\texttt{pi}}
 \hyperlink{reserved:POSITIVE}{\texttt{positive}}
 \hyperlink{variable:PRINCIPAL_DER}{\texttt{principal\_der}}
@@ -1190,6 +1209,7 @@ system.
 \hyperlink{reserved:SET_DISTRIBUTION_RULE}{\texttt{set\_distribution\_rule}}
 \hyperlink{variable:SPECIES}{\var{species}}
 \hyperlink{reserved:T}{\texttt{t}}
+\hyperlink{reserved:TAYLORPRINTTERMS}{\texttt{taylorprintterms}}
 \hyperlink{reserved:TO_CN}{\texttt{to\_cn}}
 \hyperlink{reserved:TO_DN}{\texttt{to\_dn}}
 \hyperlink{reserved:TO_SN}{\texttt{to\_sn}}

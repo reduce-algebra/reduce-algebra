@@ -303,6 +303,27 @@ taylortemplate xy;
 
 taylortemplate xx1;
 
+COMMENT and the list of coefficients as well;
+
+taylorcoefflist yy;
+
+taylorcoefflist xxa;
+
+taylorcoefflist xi;
+
+taylorcoefflist xy;
+
+taylorcoefflist xx1;
+
+taylorcoefflist taylor(sqrt(x),x,0,2);
+
+COMMENT Extract a specific coefficient;
+
+select(first(~w)={3},taylorcoefflist yy);
+
+select(first(~w)={1,1},taylorcoefflist xy);
+
+
 COMMENT Here is a slightly less trivial example;
 
 exp := (sin (x) * sin (y) / (x * y))**2;
