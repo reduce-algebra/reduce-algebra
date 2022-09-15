@@ -81,12 +81,12 @@ include '../include/begin-body.php';
     <code>reduce-ide</code> package file you just downloaded.
 </p>
 
-<h2>Major update history</h2>
+<h2>Recent update history</h2>
 <ul>
     <li>
         REDUCE IDE version 1.5 (Nov 2017) should work with the latest
         versions of both REDUCE and GNU Emacs.  It also provides full
-        support for the GNU Emacs package manager (see below),
+        support for the GNU Emacs package manager (see above),
         explicit support for running both CSL and PSL REDUCE, and
         explicit support for running multiple REDUCE processes
         simultaneously.
@@ -98,7 +98,37 @@ include '../include/begin-body.php';
         running PSL REDUCE on Microsoft Windows.  I have tested REDUCE
         IDE 1.6 with REDUCE revision 6339 and GNU Emacs 28 on
         Microsoft Windows and Ubuntu.
-
+    </li>
+    <li>
+        REDUCE IDE version 1.7 (September 2022):
+        <ul>
+            <li><strong>INCOMPATIBLE CHANGE:</strong> The command <code>run-reduce</code> is
+            now the only way to run REDUCE. It prompts for the REDUCE
+            command name to run, defaulting to the last one used.</li>
+            <li>The commands <code>run-csl-reduce</code> and <code>run-psl-reduce</code> have
+            been removed; use <code>run-reduce</code> and select the
+            appropriate command name instead.</li>
+            <li>The customizable option <code>reduce-run-commands</code> now
+            accepts arbitrary key strings and an arbitrary number of
+            REDUCE versions.</li>
+            <li>Improved access to the <code>comint</code> customization
+            group (since REDUCE Run mode inherits from comint).</li>
+            <li><code>&lt;RET&gt;</code> in REDUCE Run mode now adds a <code>;</code> statement
+            terminator automatically as appropriate (whereas <code>S-&lt;RET&gt;</code> never
+            adds a terminator).</li>
+            <li>REDUCE mode now inherits from <code>prog-mode</code>,
+            so it runs <code>prog-mode-hook</code> and
+            some <code>prog-mode</code> customizations are relevant.</li>
+            <li>Initial support for C-style <code>/**/</code> comments:
+            they are now highlighted as comments and movement commands
+            should skip them.</li>
+            <li><strong>INCOMPATIBLE CHANGE:</strong> The command <code>reduce-eval-line</code> is
+            now bound to the key sequence <code>C-c C-e</code> instead of <code>C-c C-n</code>,
+            which was already bound to <code>reduce-forward-statement</code>.</li>
+            <li>Improved code relating to all the commands that move by statements and expressions.</li>
+            <li><strong>INCOMPATIBLE CHANGE:</strong> The customizable option <code>reduce-max-up-tries</code> is
+            now called <code>reduce-max-escape-tries</code>.</li>
+        </ul>
     </li>
 </ul>
 
