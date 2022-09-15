@@ -213,6 +213,7 @@ constexpr inline bool constexpr_isprime(uint64_t n)
 // Note I must not use a witness that is equal to the value that I am
 // testing, so I have checked small numbers the traditional way first.
     else if (!constexpr_miller_rabin_isprime(2, n)) return false;
+#if 0
     else if (!constexpr_miller_rabin_isprime(3, n)) return false;
     else if (!constexpr_miller_rabin_isprime(5, n)) return false;
     else if (!constexpr_miller_rabin_isprime(7, n)) return false;
@@ -224,6 +225,7 @@ constexpr inline bool constexpr_isprime(uint64_t n)
     else if (!constexpr_miller_rabin_isprime(29, n)) return false;
     else if (!constexpr_miller_rabin_isprime(31, n)) return false;
     else if (!constexpr_miller_rabin_isprime(37, n)) return false;
+#endif
     else return true;
 }
 
@@ -255,12 +257,20 @@ constexpr inline uint64_t goodPrimes[] =
     goodPrime(16), goodPrime(17), goodPrime(18), goodPrime(19),
     goodPrime(20), goodPrime(21), goodPrime(22), goodPrime(23),
     goodPrime(24), goodPrime(25), goodPrime(26), goodPrime(27),
-    goodPrime(28), goodPrime(29), goodPrime(30), goodPrime(31),
+    goodPrime(28), goodPrime(29), goodPrime(30), goodPrime(31)
+#ifndef __clang__
+// g++ copes with plenty of compile-time comoutation without fuss, but
+// clang (on the Mac at least) has an embedded limit on the number of steps
+// it is prepared to use in compile-time (meta) computation, and that
+// causes big pain here! I have tried finding a compiler option that
+// overrides its limit but so far without success.
+    ,
     goodPrime(32), goodPrime(33), goodPrime(34), goodPrime(35),
     goodPrime(36), goodPrime(37), goodPrime(38), goodPrime(39),
     goodPrime(40), goodPrime(41), goodPrime(42), goodPrime(43),
     goodPrime(44), goodPrime(45), goodPrime(46), goodPrime(47),
     goodPrime(48), goodPrime(49), goodPrime(50)
+#endif
 };
 
 constexpr inline unsigned int goodPrimesCount =

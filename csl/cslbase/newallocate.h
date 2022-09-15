@@ -353,10 +353,21 @@ public:
 #define CONCAT(a, b) CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a ## b
 #define UNIQUE(base) CONCAT(base, __LINE__)
-template <size_t val> constexpr void s_p_f() { int unused = 0; };
+template <size_t val> constexpr void s_p_f()
+{
+#ifndef __clang__
+// c;ang does not support this tric nicely!
+    int unused = 0;
+#endif
+};
 #define static_print(v) \
   UNUSED_NAME static void UNIQUE(s_p_)() { s_p_f<v>(); }
-template <size_t val1> constexpr void s_q_f() { int unused1 = 0; };
+template <size_t val1> constexpr void s_q_f()
+{
+#ifndef __clang__
+    int unused1 = 0;
+#endif
+};
 #define static_print1(v) \
   UNUSED_NAME static void UNIQUE(s_q_)() { s_q_f<v>(); }
 

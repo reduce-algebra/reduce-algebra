@@ -143,7 +143,7 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 #include "isprime.h"
 
 INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
-#ifdef SIXTY_FOUR_BIT
+#if defined SIXTY_FOUR_BIT && !defined __clang__
 INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[48]; // 562949953421231
 #else // SIXTY_FOUR_BIT
 INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[30]; // 2147483647
