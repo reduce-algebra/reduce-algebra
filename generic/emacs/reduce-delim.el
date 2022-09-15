@@ -4,10 +4,10 @@
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 22 March 2018
-;; Time-stamp: <2022-06-18 16:25:13 franc>
+;; Time-stamp: <2022-09-14 17:25:41 franc>
 ;; Keywords: languages, faces
-;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide
-;; Package-Version: 1.6
+;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
+;; Package-Version: 1.7
 ;; Package-Requires: ((reduce-mode "1.54"))
 
 ;; This file is part of REDUCE IDE.
@@ -32,12 +32,12 @@
 ;; Display highlighting on whatever group or block delimiter matches
 ;; the one before or after point.
 
-;; In a REDUCE mode buffer, execute `M-x reduce-show-delim-mode' to
+;; In a REDUCE mode buffer, execute ‘M-x reduce-show-delim-mode’ to
 ;; toggle this buffer-local minor mode.  When on, it will display
 ;; highlighting on whatever group or block delimiter matches the one
 ;; before or after point.
 
-;; You can also customize the variable `reduce-show-delim-mode-on' to
+;; You can also customize the variable ‘reduce-show-delim-mode-on’ to
 ;; turn this mode on initially in every REDUCE mode buffer.
 
 ;;; Add matching of delim AROUND point later???
@@ -57,39 +57,39 @@
 (defface reduce-show-delim-match
   '((default :inherit show-paren-match))
   "Face used for a matching delimiter.
-This face is used by `reduce-show-delim-mode'.
-Default is the same as for `show-paren-mode'."
+This face is used by ‘reduce-show-delim-mode’.
+Default is the same as for ‘show-paren-mode’."
   :group 'reduce-delim-showing)
 
 (defface reduce-show-delim-match-expression
   '((default :inherit show-paren-match-expression))
   "Face used for a matching delimiter when highlighting the whole expression.
-This face is used by `reduce-show-delim-mode'.
-Default is the same as for `show-paren-mode'."
+This face is used by ‘reduce-show-delim-mode’.
+Default is the same as for ‘show-paren-mode’."
   :group 'reduce-delim-showing)
 
 (defface reduce-show-delim-mismatch
   '((default :inherit show-paren-mismatch))
   "Face used for a mismatching delimiter.
-This face is used by `reduce-show-delim-mode'.
-Default is the same as for `show-paren-mode'."
+This face is used by ‘reduce-show-delim-mode’.
+Default is the same as for ‘show-paren-mode’."
   :group 'reduce-delim-showing)
 
 (defcustom reduce-show-delim-style
   (if (eq show-paren-style 'parenthesis) 'delimiter show-paren-style)
   "Style used when showing a matching delimiter.
-Valid styles are `delimiter' (meaning show the matching delimiter),
-`expression' (meaning show the entire expression enclosed by the
-delimiters) and `mixed' (meaning show the matching delimiter if
+Valid styles are ‘delimiter’ (meaning show the matching delimiter),
+‘expression’ (meaning show the entire expression enclosed by the
+delimiters) and ‘mixed’ (meaning show the matching delimiter if
 it is visible, and the expression otherwise)."
   :type '(choice (const delimiter) (const expression) (const mixed))
   :group 'reduce-delim-showing)
 
-(defvar reduce-show-delim-mode)	; defined by `define-minor-mode' below
+(defvar reduce-show-delim-mode)	; defined by ‘define-minor-mode’ below
 
 (defcustom reduce-show-delim-delay show-paren-delay
   "Time in seconds to delay before showing a matching delimiter.
-If you change this without using customize while `reduce-show-delim-mode' is
+If you change this without using customize while ‘reduce-show-delim-mode’ is
 active, you must toggle the mode off and on again for this to take effect."
   :type '(number :tag "seconds")
   :initialize 'custom-initialize-default
@@ -144,6 +144,9 @@ highlighted, the cursor being regarded as adequate to mark its position."
   "Overlay used to highlight the delimiter at point.")
 
 
+(declare-function reduce--backward-block "reduce-mode" ())
+(declare-function reduce--forward-block "reduce-mode" ())
+
 ;;;###autoload
 (define-minor-mode reduce-show-delim-mode
   "Toggle visualization of matching delimiters (REDUCE Show Delim mode).
@@ -152,8 +155,8 @@ positive, and disable it otherwise.  If called from Lisp, enable
 the mode if ARG is omitted or nil.
 
 Show Delim mode is a buffer-local minor mode.  When enabled, any
-matching delimiter is highlighted in `reduce-show-delim-style' after
-`reduce-show-delim-delay' seconds of Emacs idle time."
+matching delimiter is highlighted in ‘reduce-show-delim-style’ after
+‘reduce-show-delim-delay’ seconds of Emacs idle time."
   :group 'reduce-delim-showing
   ;; Enable or disable the mechanism.
   ;; First get rid of the old idle timer.
@@ -214,7 +217,7 @@ Use point if POS not given.  Return nil if no delimiter found."
 	   "\\(?:\\(<<\\|>>\\)\\|begin\\|end\\)\\=" nil t))))
 
 (defun reduce-show-delim--locate-near-delim ()
-  "Locate an unescaped delimiter \"near\" point to show.
+  "Locate an unescaped delimiter “near” point to show.
 If one is found, return a cons (DIR . OUTSIDE), where DIR is > 0
 for an opening delimiter, < 0 for a closing delimiter, and
 OUTSIDE is the buffer position of the outside of the delimiter.
@@ -252,28 +255,25 @@ OUTSIDE is the buffer position of the outside of the delimiter.
   "Move forwards to end of group immediately following POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (+ pos 2))
-  (reduce-forward-group))
+  (reduce--forward-group))
 
 (defun reduce-show-delim-skip-group-backward (pos)
   "Move backwards to start of group immediately preceding POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (- pos 2))
-  (reduce-backward-group))
+  (reduce--backward-group))
 
 (defun reduce-show-delim-skip-block-forward (pos)
   "Move forwards to end of block immediately following POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (+ pos 5))
-  (reduce-forward-block))
+  (reduce--forward-block))
 
-;; ***** Should reduce-backward-block also skip white space? *****
 (defun reduce-show-delim-skip-block-backward (pos)
   "Move backwards to start of block immediately preceding POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (- pos 3))
-  (when (reduce-backward-block)
-	(skip-chars-forward " \t\n")
-	t))
+  (reduce--backward-block))
 
 (defun reduce-show-delim-data-function ()
   "Find the opening/closing delimiter \"near\" point and its match.
