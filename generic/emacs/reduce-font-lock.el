@@ -4,10 +4,10 @@
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 6 June 2022 as a separate file (was part of reduce-mode.el)
-;; Time-stamp: <2022-06-10 16:55:10 franc>
+;; Time-stamp: <2022-09-14 17:25:41 franc>
 ;; Keywords: languages, faces
-;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide
-;; Package-Version: 1.6
+;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
+;; Package-Version: 1.7
 ;; Package-Requires: ((reduce-mode "1.6"))
 
 ;; This file is part of REDUCE IDE.
@@ -27,7 +27,7 @@
 
 ;;; Commentary:
 
-;; Based on code by Rainer Schoepf.
+;; Based on code by Rainer Schöpf.
 
 ;; Note that Font Lock Mode is documented in the ELisp manual under
 ;; Major and Minor Modes.  Syntactic fontification happens first; it
@@ -36,7 +36,7 @@
 
 ;; Regard quoted identifiers and lists as data and don't fontify them.
 
-;; Font Lock mode processes the elements of `font-lock-keywords' one
+;; Font Lock mode processes the elements of ‘font-lock-keywords’ one
 ;; by one, and for each element, it finds and handles all matches.
 ;; Ordinarily, once part of the text has been fontified already, this
 ;; cannot be overridden by a subsequent match in the same text; but
@@ -53,9 +53,9 @@
     reduce-font-lock--keywords-3     ; Maximal = t
     )
   "A list of symbols corresponding to increasing fontification.
-Each is assigned a `font-lock-keywords' value for REDUCE mode.
+Each is assigned a ‘font-lock-keywords’ value for REDUCE mode.
 The symbols are in order of increasing fontification level, which
-is selected by the value of `font-lock-maximum-decoration'.
+is selected by the value of ‘font-lock-maximum-decoration’.
 This defaults to t, meaning maximal fontification.")
 
 (defconst reduce-font-lock--syntactic-keywords
@@ -192,12 +192,12 @@ No variables are fontified.")
 ;; Assertion and preprocessor rules based on code by Thomas Sturm.
 ;; A good test file for all assertion rules is "redlog/cl/clqe.red".
 
-;; A constant with a name of the form `font-lock-rule' becomes an
-;; element of the list assigned by `reduce-mode' to
-;; `font-lock-keywords', which directly controls search-based
+;; A constant with a name of the form ‘font-lock-rule’ becomes an
+;; element of the list assigned by ‘reduce-mode’ to
+;; ‘font-lock-keywords’, which directly controls search-based
 ;; fontification, whereas a constant with a name of the form
-;; `font-lock-rules' (plural) below becomes appended to or spliced
-;; into the list assigned to `font-lock-keywords'.
+;; ‘font-lock-rules’ (plural) below becomes appended to or spliced
+;; into the list assigned to ‘font-lock-keywords’.
 ;; *****************************************************************
 
 (defconst font-lock-default-face 'font-lock-default-face
@@ -230,7 +230,7 @@ No variables are fontified.")
      (2 font-lock-type-face)
      (3 font-lock-keyword-face t)
      (4 font-lock-function-name-face)))
-  "Rules to highlight `declare' and `struct' statements, as used in `redlog'.")
+  "Rules to highlight “declare” and “struct” statements, as used in “redlog”.")
 
 (defconst reduce-font-lock--preprocessor-rules
   `((,(concat
@@ -303,7 +303,7 @@ No variables are fontified.")
 ;;;;; Algebraic fontification
 
 (defconst reduce-font-lock--keywords-algebraic
-  `(;; Operator declarations of the form `type op1, op2, ...'
+  `(;; Operator declarations of the form ‘type op1, op2, ...’
     (,(concat "\\_<\\(?:"
               (mapconcat #'identity
                          '("even" "odd"
@@ -385,9 +385,9 @@ expr\\|s?macro\\|inline\\|asserted\
 \\(?:e[+-]?[[:digit:]]+\\)?"
   "Regular expression matching a REDUCE unsigned integer or real number.
 Real numbers can be input in two ways:
-* as a sequence of any number of decimal digits with an embedded
+• as a sequence of any number of decimal digits with an embedded
 or trailing decimal point;
-* as above followed by a decimal exponent which is written as the
+• as above followed by a decimal exponent which is written as the
 letter e followed by a signed or unsigned integer.
 For example, 32., 32.0, 0.32e2 and 320.e-1 are all
 representations of 32.")
@@ -458,13 +458,13 @@ representations of 32.")
           "\\|module\\|procedure\\)\\'"))
 
 (defsubst reduce-font-lock--match-keyword (num)
-  "Return non-nil if `(match-string NUM)' is a REDUCE keyword."
+  "Return non-nil if ‘(match-string NUM)’ is a REDUCE keyword."
   (string-match-p                   ; avoids modifying the match data.
    entire-reduce-keyword-regexp
    (match-string num)))
 
 (defsubst reduce-font-lock--match-procedure (num)
-  "Return non-nil if `(match-string NUM)' is 'procedure'."
+  "Return non-nil if ‘(match-string NUM)’ is 'procedure'."
   (string-match-p                   ; avoids modifying the match data.
    "\\`procedure\\'"
    (match-string num)))
@@ -476,7 +476,7 @@ representations of 32.")
    "\\)\\'"))
 
 (defsubst reduce-font-lock--match-functional-keyword (num)
-  "Return non-nil if `(match-string NUM)' is a REDUCE functional keyword."
+  "Return non-nil if “(match-string NUM)” is a REDUCE functional keyword."
   (string-match-p                   ; avoids modifying the match data.
    entire-reduce-functional-keyword-regexp
    (match-string num)))
@@ -578,7 +578,7 @@ the function name(s) matched; otherwise return nil."
 ;;;; *********************************************************
 ;;;; Support functions for comment statements.  Being normally
 ;;;; multi-line, they require the support of the function
-;;;; `reduce-font-lock--extend-region-for-comment-statement'.
+;;;; ‘reduce-font-lock--extend-region-for-comment-statement’.
 ;;;; *********************************************************
 
 (defun reduce-font-lock--match-comment-statement (limit)
@@ -606,7 +606,7 @@ the match; otherwise return nil."
 (defun reduce-font-lock--extend-region-for-comment-statement ()
   "Extend font-lock region if necessary and if so return non-nil.
 Include all of any comment statements that font-lock region intersects.
-This function is prepended to `font-lock-extend-region-functions'."
+This function is prepended to ‘font-lock-extend-region-functions’."
   (let (new-beg new-end)
     (goto-char font-lock-beg)
     ;; Is font-lock-beg within a comment?
@@ -645,12 +645,12 @@ This function is prepended to `font-lock-extend-region-functions'."
 (defvar reduce-font-lock--level)
 
 (defun reduce-font-lock--level ()
-  "Establish the buffer-local variable `reduce-font-lock--level'.
+  "Establish the buffer-local variable ‘reduce-font-lock--level’.
 It is used only to control the font-lock menu and is set for each
-new buffer from the value of `font-lock-maximum-decoration',
-which must be done in `reduce-mode'."
+new buffer from the value of ‘font-lock-maximum-decoration’,
+which must be done in ‘reduce-mode’."
   (set (make-local-variable 'reduce-font-lock--level)
-       ;; The value of `font-lock-maximum-decoration' may be an alist,
+       ;; The value of ‘font-lock-maximum-decoration’ may be an alist,
        ;; non-negative integer, t (meaning max) or nil (meaning 0).
        (let (level)
          (if (consp font-lock-maximum-decoration) ; alist
@@ -672,7 +672,7 @@ which must be done in `reduce-mode'."
     ["In Current Buffer" font-lock-mode
      :style toggle :selected font-lock-mode :active t]
     ["Highlight Buffer" font-lock-fontify-buffer t]
-    ;; ["Toggle `!' Syntax" reduce-font-lock--toggle-escape t]
+    ;; ["Toggle ‘!’ Syntax" reduce-font-lock--toggle-escape t]
     ["Maximal (3)" (reduce-font-lock--change 3)
      :style radio :selected (eq reduce-font-lock--level 3) :active t]
     ["Symbolic (2)" (reduce-font-lock--change 2)
@@ -711,7 +711,7 @@ which must be done in `reduce-mode'."
                level name))))
 ;; (let ((name (nth (1- level) reduce-font-lock--level-names))
 ;;       (keywords (eval (nth (1- level) (car font-lock-defaults)))))
-;;   ;; `font-lock-defaults' is used in order to support both
+;;   ;; ‘font-lock-defaults’ is used in order to support both
 ;;   ;; reduce-mode and reduce-run with the same code!
 ;;   (setq keywords (font-lock-compile-keywords keywords)) ; Emacs 20 only!
 ;;   (if (and font-lock-mode (equal font-lock-keywords keywords))
@@ -726,12 +726,12 @@ which must be done in `reduce-mode'."
 ;;              level name))))
 
 (defun reduce-font-lock--toggle-escape (&optional arg)
-  "Toggle `!' escape syntax for REDUCE Font Lock mode (only) and re-fontify.
-With ARG, clear `!' escape syntax if ARG >= 0 and set it if ARG < 0.
+  "Toggle “!” escape syntax for REDUCE Font Lock mode (only) and re-fontify.
+With ARG, clear “!” escape syntax if ARG >= 0 and set it if ARG < 0.
 For example,
 \(add-hook 'reduce-mode-hook
       (function (lambda () (reduce-font-lock--toggle-escape 1))))
-will turn off the default font-lock escape syntax for `!'."
+will turn off the default font-lock escape syntax for “!”."
   (interactive "P")
   (require 'font-lock)
   (let ((reset font-lock-syntax-table))
@@ -739,9 +739,9 @@ will turn off the default font-lock escape syntax for `!'."
     (font-lock-set-defaults)           ; resets font-lock-syntax-table
     (if arg (setq reset (< (prefix-numeric-value arg) 0)))
     (if reset
-        ;; `!' syntax has been reset to `escape', so do nothing:
+        ;; ‘!’ syntax has been reset to ‘escape’, so do nothing:
         () ;; (setq font-lock-syntax-table nil) ; default
-      ;; Set `!' syntax to punctuation:
+      ;; Set ‘!’ syntax to punctuation:
       (setq font-lock-syntax-table
             (copy-syntax-table reduce-mode-syntax-table))
       (modify-syntax-entry ?! "." font-lock-syntax-table)) ; punctuation
@@ -749,7 +749,7 @@ will turn off the default font-lock escape syntax for `!'."
     ;; Display message so it is not overwritten by font-lock messages:
     (message
      (if font-lock-syntax-table
-         "REDUCE Font Lock syntax (only) for `!' set to `punctuation'."
+         "REDUCE Font Lock syntax (only) for ‘!’ set to ‘punctuation’."
        "REDUCE Font Lock syntax table reset."))))
 
 (provide 'reduce-font-lock)
