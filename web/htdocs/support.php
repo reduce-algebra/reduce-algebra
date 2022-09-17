@@ -271,7 +271,10 @@ Reduce&quot;. In practice, it is probably used most by users asking
 questions that developers try to answer. It is currently the main
 support mechanism for REDUCE and can be used to report bugs, request
 features, and discuss anything related to REDUCE. Developers also
-occasionally use it for announcements. The list is low volume!'),
+occasionally use it for announcements. The list is low volume!
+Just send an email to
+<a href="mailto:reduce-algebra-developers@lists.sourceforge.net">reduce-algebra-developers@lists.sourceforge.net</a>,
+but you should be registered with SourceForge before you do this.'),
 
 array(
 'Q' => 'How can I receive updates on REDUCE by email?',
