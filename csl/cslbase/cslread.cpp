@@ -36,6 +36,8 @@
 
 // $Id$
 
+#define DEFINE_GOODPRIMES 1
+
 #include "headers.h"
 
 #ifdef SOCKETS
