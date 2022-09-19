@@ -572,6 +572,18 @@ case $host in
   ;;
 esac
 
+# Adjust the number of steps that clang can take while evaluating
+# constexpr things at compile time. With the CSL code as of September
+# 2022 the code uses almost 3.7 million steps while building cslread.o - I
+# can see ways to reduce that at the code of having more very special code
+# present. I believe that the clang default is 2^20 (about a million),
+# while gcc limits at more like 32 million and that is why I set my
+# explicit clang override here to such a huge value - it is in the hope
+# that this will leave clang and gcc issues arising at around the same
+# point.
+AC_CHECK_DECL([__clang__],
+  [CXXFLAGS="$CXXFLAGS -fconstexpr-steps=32000000"])
+
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
 

@@ -87,32 +87,13 @@ uintptr_t borrowFringe, borrowLimit, borrowEnd;
 // causes g++ or clang++ to generate a warning message that includes the
 // numeric value give. Note that I hope the two "gap" values are both 0.
 
+#ifndef __clang__
 #pragma message ("ConsN ChunkN and 2 gaps at end of a Page")
 static_print(ConsN);
 static_print(ChunkN);
 static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);
 static_print1(offsetof(Page,chunks)+sizeof(Page::chunks) - pageSize);
-
-
-// I also illustrate how I can get a value printed at the very start of
-// the program's execution...
-
-class PrintDuringStartup
-{
-public:
-    PrintDuringStartup()
-    {   std::cout << "ConsN = "    << ConsN << "\n";
-        std::cout << "ChunkN = "   << ChunkN << "\n";
-        std::cout << "cons gap = " << (offsetof(Page,consData) +
-                                       sizeof(Page::consData) -
-                                       pageSize) << "\n";
-        std::cout << "vec gap = "  << (offsetof(Page,chunks) +
-                                       sizeof(Page::chunks) -
-                                       pageSize) << "\n";
-    }
-};
-
-static const PrintDuringStartup constructionCausesPrinting;
+#endif // __clang__
 
 LispObject get_symbol(bool gensymp)
 {   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);

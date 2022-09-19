@@ -1378,7 +1378,7 @@ std::jmp_buf* buffer_pointer;
 // the heap, and so I will give it a value that I do not expect to be
 // issues by "new" but which if printed while I am debugging will stand out.
 
-static volatile uint64_t volatileVar = 0xf0f0f0f012345678u;
+static volatile std::atomic<uint64_t> volatileVar = 0xf0f0f0f012345678u;
 
 NOINLINE uintptr_t getStackFringe(double x)
 {   return bit_cast<uintptr_t>(&x);
@@ -1392,7 +1392,12 @@ NOINLINE void garbage_collect()
 // value. So a1-a18 all hold notionally independent values. I rather hope
 // that many of those will be placed in machine registers, flushing
 // any values from the caller to the stack. And because thay are all
-// independent each needs its own register!
+// independent each needs its own register! So the "volatile" qualification
+// ensures that the compiler turns each use of the variable into a separate
+// operation (rather than optimising some out). And use of std::atomic
+// should reinforce that by further stressing that some independent action
+// might change the value of the variable at any time. Well whole-program
+// analysis might reveal that no such oddites actially arise here.
     uint64_t a1 = volatileVar; uint64_t a2 = volatileVar; uint64_t a3 = volatileVar;
     uint64_t a4 = volatileVar; uint64_t a5 = volatileVar; uint64_t a6 = volatileVar;
     uint64_t a7 = volatileVar; uint64_t a8 = volatileVar; uint64_t a9 = volatileVar;
