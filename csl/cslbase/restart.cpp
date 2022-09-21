@@ -1985,7 +1985,7 @@ void setup(int restart_flag, double store_size)
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
     for (size_t j=0; j<=LOG2_VECTOR_CHUNK_BYTES; j++)
-        free_vectors[j] = 0;
+        free_vectors[j] = nil;
 
     if ((restart_flag & 1) != 0)
     {   char junkbuf[120];

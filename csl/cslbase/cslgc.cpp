@@ -508,7 +508,7 @@ static void real_garbage_collector()
 // so that I can set breakpoints on it!
     THREADID;
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
-        free_vectors[i] = 0;
+        free_vectors[i] = nil;
 
     cons_cells = symbol_heads = strings = user_vectors =
             big_numbers = box_floats = bytestreams = other_mem =

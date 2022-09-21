@@ -104,8 +104,9 @@ extern void displayAllPages(const char*);
 [[noreturn]] inline void my_abort(const char* msg)
 {   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
 #ifdef CONSERVATIVE
+    extern unsigned int gcNumber;
     displayAllPages("Failure");
-    std::fprintf(stdout, "\n\n... Repeat: %s\n\n", msg);
+    std::fprintf(stdout, "\n\n... Repeat: %s gcN=%d\n\n", msg, gcNumber);
 #endif // CONSERVATIVE
     std::fflush(stdout);
     std::fflush(stderr);

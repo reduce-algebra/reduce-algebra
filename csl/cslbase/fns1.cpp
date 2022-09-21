@@ -1556,7 +1556,7 @@ LispObject get_basic_vector_init(size_t n, LispObject k)
 // garbage collector rather than being scanned. Every vector put in
 // here should have tag TAG_VECTOR and type TYPE_SIMPLE_VEC
 
-LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
+LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 
 // This will recover a saved vector if one is available. Its argument is
 // the size of the vector including its header word, but as far as powers
@@ -1572,7 +1572,7 @@ static LispObject gvector(int tag, int type, size_t size)
     {   size_t i = ntz(n);    // identify what power of 2 we have.
         LispObject r;
         if (i <= LOG2_VECTOR_CHUNK_BYTES &&
-            (r = free_vectors[i]) != 0)
+            (r = free_vectors[i]) != nil)
         {   free_vectors[i] = basic_elt(r, 0);
             basic_elt(r, 0) = nil; // Just to be tidy!
 // reset type field

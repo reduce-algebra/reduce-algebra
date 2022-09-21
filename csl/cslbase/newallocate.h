@@ -1617,9 +1617,9 @@ inline const char* Addr(uintptr_t p)
                  pOff >= offsetof(Page, chunks))
         {   pOff -= offsetof(Page, chunks);
             if (hs == 0) std::snprintf(r, 80,
-                "#%" PRIxPTR "::%" PRIxPTR, pNum, pOff);
+                "#%" PRIxPTR ":%" PRIxPTR, pNum, pOff);
             else std::snprintf(r, 80,
-                "#[%d]: %" PRIxPTR "::%" PRIxPTR, hs, pNum, pOff);
+                "#[%d]: %" PRIxPTR ":%" PRIxPTR, hs, pNum, pOff);
             return r;
         }
         else if (pOff == 0)

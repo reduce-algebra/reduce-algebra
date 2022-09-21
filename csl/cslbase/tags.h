@@ -1500,11 +1500,14 @@ inline void discard_basic_vector(LispObject v)
 // I put the discarded vector in the free-chain as a "simple vector"
 // regardless of what it used to be. If it has contained binary information
 // its contents will not be GC safe - but the GC should never encounter it
-// so that should not matter.
+// so that should not matter. But out of caution I will still fill it with
+// safe values!
             setvechdr(v,TYPE_SIMPLE_VEC +
                       (size << (Tw+5)) +
                       TAG_HDR_IMMED);
             v = (v & ~bit_cast<uintptr_t>(TAG_BITS)) | TAG_VECTOR;
+            for (size_t j=0; j<n; j++)
+                basic_elt(v, j) = nil;
             free_vectors[i] = v;
         }
     }
