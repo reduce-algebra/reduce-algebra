@@ -510,7 +510,7 @@ void evacuate(LispObject &x)
 // of rehashing. Note that I do this for pinned and unpinned items since
 // it is not the evacuation of the top-level part of the hash table that
 // is important here!
-    if (type_of_header(hdr) == TYPE_HASH)
+    if (is_odds(hdr) && type_of_header(hdr) == TYPE_HASH)
         *untagged_x = hdr = hdr ^ (TYPE_HASHX^TYPE_HASH);
 // Now I will need to make x copy of the item (unless it is pinned).
     size_t len;
@@ -1216,7 +1216,7 @@ void inner_garbage_collect()
 // grow or shrink. The place where I keep the recycled memory is not
 // garbage collector safe, and so I need to clean up as I enter the GC.
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
-        free_vectors[i] = 0;
+        free_vectors[i] = nil;
     gcNumber++;
     WithinGarbageCollector noted;
     zprintf("start of GC %d\n", gcNumber);

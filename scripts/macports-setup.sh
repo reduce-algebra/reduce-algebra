@@ -243,8 +243,11 @@ done
 
 # "port reclaim" will discard all the non-active versions of ports, so when
 # I have succeded in installing a universal variant it will get rid of the
-# single-architecture version.
-port -N reclaim
+# single-architecture version. However I am concerned that it might discard
+# some things that are in fact still useful, so I will not do it automatically
+# here... Anybidy who feels they want to may do it for themselves!
+#
+# port -N reclaim
 
 if test "$failures" != ""
 then
