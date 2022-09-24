@@ -2114,6 +2114,9 @@ void setup(int restart_flag, double store_size)
             term_printf("There are %u processors available\n", n);
     }
     garbage_collection_permitted = true;
+#ifdef CONSERVATIVE
+    consCounter = 0;
+#endif // CONSERVATIVE
     for (size_t i=0; i<waste; i++) cons(nil, nil);
     return;
 }

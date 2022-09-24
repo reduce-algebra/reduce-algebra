@@ -108,8 +108,8 @@ const char *decodeObject(LispObject a)
         sprintf(r, "Bit vector length %" PRIdPTR, length_of_bitheader(a));
         return r;
     case 0x3: // vector of binary stuff (including strings)
-        sprintf(r, "Binary vector length %" PRIdPTR, length_of_header(a));
-        return r;
+//      sprintf(r, "Binary vector length %" PRIdPTR, length_of_header(a));
+//      return r;
         break;
     }
     switch (a & header_mask)
@@ -218,6 +218,21 @@ const char *decodeObject(LispObject a)
         return r;
     case TYPE_STREAM:
         sprintf(r, "STREAM length %" PRIdPTR, length_of_header(a));
+        return r;
+    case TYPE_SINGLE_FLOAT:
+        sprintf(r, "SINGLE_FLOAT length %" PRIdPTR, length_of_header(a));
+        return r;
+    case TYPE_DOUBLE_FLOAT:
+        sprintf(r, "DOUBLE_FLOAT length %" PRIdPTR, length_of_header(a));
+        return r;
+    case TYPE_LONG_FLOAT:
+        sprintf(r, "LONG_FLOAT length %" PRIdPTR, length_of_header(a));
+        return r;
+    case TYPE_BIGNUM:
+        sprintf(r, "BIGNUM length %" PRIdPTR, length_of_header(a));
+        return r;
+    case TYPE_NEW_BIGNUM:
+        sprintf(r, "NEW_BIGNUM length %" PRIdPTR, length_of_header(a));
         return r;
     default:
         sprintf(r, "Unknown %" PRIxPTR, a);

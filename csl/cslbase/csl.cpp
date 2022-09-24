@@ -1436,6 +1436,7 @@ bool minimal = false;
 size_t waste = 0;
 unsigned int gcTrace = 0;
 unsigned int gcStop = 0;
+unsigned int gcEvery = 0;
 bool ignoreLoadTime = false;
 
 #ifndef AVOID_KARATSUBA_THREADS
@@ -1989,6 +1990,17 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 {   unsigned int r = 1;
                     if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
                     gcStop = r;
+                }
+            },
+            /*! options [--gc-every] \item [{\ttfamily --gc-every}] \index{{\ttfamily --gc-every}}
+             * --gc-every=N forced a GC every N conses (if N!=0).
+             */
+            {   "--gc-every", true, true,
+                "--gc-every N forces a GC roughly every N cons operation.",
+                [&](string key, bool hasVal, string val)
+                {   unsigned int r = 1;
+                    if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
+                    gcEvery = r;
                 }
             },
             /*! options [--waste] \item [{\ttfamily --waste}] \index{{\ttfamily
