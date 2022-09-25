@@ -82,18 +82,20 @@ uintptr_t consFringe, consLimit, consEnd;
 uintptr_t vecFringe, vecLimit, vecEnd;
 uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
+uintptr_t consCounter = 0;
 
+#ifdef DEMONSTRATE_STATIC_PRINT
 // Here I will have a demonstration of my "static_print" mechanism that
 // causes g++ or clang++ to generate a warning message that includes the
 // numeric value give. Note that I hope the two "gap" values are both 0.
+// This works in an interesting way with gcc but less so with clang.
 
-#ifndef __clang__
 #pragma message ("ConsN ChunkN and 2 gaps at end of a Page")
 static_print(ConsN);
 static_print(ChunkN);
 static_print(offsetof(Page,consData)+sizeof(Page::consData) - pageSize);
 static_print1(offsetof(Page,chunks)+sizeof(Page::chunks) - pageSize);
-#endif // __clang__
+#endif // DEMONSTRATE_STATIC_PRINT
 
 LispObject get_symbol(bool gensymp)
 {   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);

@@ -343,7 +343,8 @@ up:
 }
 
 inline void validateVecPage(Page* p, bool isCurrent)
-{   size_t c = 0;
+{   my_assert(p->type == vecPageType, "vector page not a vector page");
+    size_t c = 0;
     while (c < chunkInfoSize)
     {   bool pin = chunkNoIsPinned(p, c);
         bool newPin = chunkNoIsNewPinned(p, c);
@@ -368,11 +369,19 @@ inline void validateVecPage(Page* p, bool isCurrent)
     }
 }
 
+inline void validateConsPage(Page* p, bool isCurrent)
+{   my_assert(p->type == consPageType, "cons page not a cons page");
+}
+
 inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceValid=true)
 {   for (Page* p:vecPages) validateVecPage(p, p==vecCurrent);
     for (Page* p:vecOldPages) validateVecPage(p, false);
     for (Page* p:vecPinPages) validateVecPage(p, false);
     for (Page* p:vecCloggedPages) validateVecPage(p, false);
+    for (Page* p:consPages) validateConsPage(p, p==consCurrent);
+    for (Page* p:consOldPages) validateConsPage(p, false);
+    for (Page* p:consPinPages) validateConsPage(p, false);
+    for (Page* p:consCloggedPages) validateConsPage(p, false);
     visited.clear();
     if (GCTRACE) zprintf("Starting validation %s\n", why);
     validateObject(qvalue(nil), forwardOK, oldSpaceValid);

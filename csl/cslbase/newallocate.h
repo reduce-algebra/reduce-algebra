@@ -862,8 +862,8 @@ inline void displayAllPages(const char* s)
 #endif
     zprintf("\nconsPages......");
     for (auto p:consPages)
-    {   if (p == consCurrent) zprintf(" *%a:%d", p, p->hasPinned);
-        else zprintf(" %a:%d", p, p->hasPinned);
+    {   if (p == consCurrent) zprintf(" *%a_%d", p, p->hasPinned);
+        else zprintf(" %a_%d", p, p->hasPinned);
     }
     zprintf("\n");
     for (auto p:consPages)
@@ -873,8 +873,8 @@ inline void displayAllPages(const char* s)
     }
     zprintf("\nvecPages......");
     for (auto p:vecPages)
-    {   if (p == vecCurrent) zprintf(" *%a:%d", p, p->hasPinned);
-        else zprintf(" %a:%d", p, p->hasPinned);
+    {   if (p == vecCurrent) zprintf(" *%a_%d", p, p->hasPinned);
+        else zprintf(" %a_%d", p, p->hasPinned);
     }
     zprintf("\n");
     for (auto p:vecPages)
@@ -883,49 +883,49 @@ inline void displayAllPages(const char* s)
         displayVecPage(p);
     }
     zprintf("\nconsOldPages......");
-    for (auto p:consOldPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:consOldPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     for (auto p:consOldPages)
     {   my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
     zprintf("\nvecOldPages......");
-    for (auto p:vecOldPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:vecOldPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     for (auto p:vecOldPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
     zprintf("\nconsPinPages......");
-    for (auto p:consPinPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:consPinPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     for (auto p:consPinPages)
     {   my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
     zprintf("\nvecPinPages......");
-    for (auto p:vecPinPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:vecPinPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     for (auto p:vecPinPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
     zprintf("\nconsCloggedPages......");
-    for (auto p:consCloggedPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:consCloggedPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     for (auto p:consCloggedPages)
     {   my_assert(p->type == consPageType, "page has incorrect type");
         displayConsPage(p);
     }
     zprintf("\nvecCloggedPages......");
-    for (auto p:vecCloggedPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:vecCloggedPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     for (auto p:vecCloggedPages)
     {   my_assert(p->type == vecPageType, "page has incorrect type");
         displayVecPage(p);
     }
     zprintf("\nemptyPages......");
-    for (auto p:emptyPages) zprintf(" %a:%d", p, p->hasPinned);
+    for (auto p:emptyPages) zprintf(" %a_%d", p, p->hasPinned);
     zprintf("\n");
     zprintf("gcNumber = %d\n", gcNumber);
     zprintf("end of display\n\n");
@@ -975,8 +975,18 @@ inline uintptr_t harderGet2Words()
 // calls to it expanded inline. If harderGet2Words remains a function
 // call that does not matter much.
 
+extern uintptr_t consCounter;
+
 inline uintptr_t get2Words()
-{   uintptr_t r = consFringe;
+{
+#ifdef DEBUG
+    consCounter++;
+    if (garbage_collection_permitted && consCounter==gcEvery)
+    {   garbage_collect();
+        consCounter = 0;
+    }
+#endif // DEBUG
+    uintptr_t r = consFringe;
     if (r < consLimit)
     {   consFringe += sizeof(ConsCell);
         return r;
@@ -1004,7 +1014,8 @@ inline bool get6WordsValid()
 }
 
 inline uintptr_t get6Words()
-{   uintptr_t r = consFringe;
+{
+    uintptr_t r = consFringe;
     consFringe += 3*sizeof(ConsCell);
     return r;
 }
@@ -1152,7 +1163,15 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // make treatment of pinning easier.
 
 inline uintptr_t getNBytes(size_t n)
-{   uintptr_t r = vecFringe;
+{
+#ifdef DEBUG
+    consCounter++;
+    if (garbage_collection_permitted && consCounter==gcEvery)
+    {   garbage_collect();
+        consCounter = 0;
+    }
+#endif // DEBUG
+    uintptr_t r = vecFringe;
 // Now I will see if the new item will fit within the current chunk. Note
 // that this test applies whether I am in a basic chunk or at the end of
 // an extended one. The chunkStatus[] entry must already be set up and

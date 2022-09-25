@@ -145,6 +145,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
     case emptyPageType:
 // A "pointer" into an empty page is of no concern to anybody.
         return;
+
     case consPageType:
 // This is the simplest case, mainly because all objects in the page
 // are neatly aligned on 2-cell boundaries.
@@ -163,7 +164,13 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // reference to them now is not about to pin them. So I do not need an
 // explicit check for padders here.
         if (a < dataStart) return;
-        else if ((a < p->dataEnd ||
+// At this stage the "new half space" will only contain some fragments of
+// chains of newly pinned items. These should never need to get pinned, so
+// I will just reject pointers into consCurrent. In extreme cases the
+// chains of pinned items could lead to the allocation of further pages, but
+// for those further pages I can check against dataEnd to avoid putting a
+// pin on memory that is not in use.
+        else if (((p!=consCurrent && a < p->dataEnd) ||
                   consIsPinned(a, p)) &&
                  !consIsNewPinned(a, p))   // detect first time noticed.
         {   my_assert(!consIsNewPinned(a, p), where("consIsNewPinned test bad"));
@@ -185,6 +192,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
             p->pinnedObjects = z + TAG_FIXNUM;
         }
         return;
+
     case vecPageType:
 // Pointers into vector pages can refer to any individual cell. The biggest
 // cause of pain here is that the pointers may refer to addresses within
@@ -497,7 +505,7 @@ void evacuate(LispObject &x)
         !vecOldPages.contains(pageOf(x)))
     {   if (pageOf(x)->type == consPageType && consIsPinned(x)) /*OK*/;
         else if (pageOf(x)->type == vecPageType  && vecIsPinned(x)) /*OK*/;
-        else my_abort(where("evac something odd"));
+        else my_abort(where("evacuate something odd"));
     }
     if (is_forward(hdr))
     {   x = hdr - TAG_FORWARD + (x & TAG_BITS);
@@ -537,7 +545,7 @@ void evacuate(LispObject &x)
     std::memcpy(bit_cast<void*>(cpy), untagged_x, len);
     *untagged_x = TAG_FORWARD + cpy;
     x = cpy + (x & TAG_BITS);
-    if (GCTRACE) zprintf("Evac uate %a to %a\n", untagged_x, x);
+    if (GCTRACE) zprintf("Evacuate %a to %a\n", untagged_x, x);
     my_assert(!is_forward(x), where("forwarding ptr in scanning"));
 }
 
@@ -605,7 +613,7 @@ void evacuateFromPinnedItems()
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
                 my_assert(len != 0, "lisp vector size zero");
-                if (GCTRACE) zprintf("Evac contents of pinned vector of length %s\n", len1);
+                if (GCTRACE) zprintf("Evacuate contents of pinned vector of length %s\n", len1);
                 for (size_t i = CELL; i<len1; i += CELL)
                     evacuate(*bit_cast<LispObject*>(next+i));
                 continue;
@@ -715,7 +723,7 @@ bool evacuateChunk(Page* p, uintptr_t& next, size_t lastChunk)
             zprintf("chunkEnd = %a\n", chunkEnd);
             zprintf("vecFringe = %a\n", vecFringe);
             zprintf("vecLimit = %a\n", vecLimit);
-            my_abort("zero or forwardin addr vec page");
+            my_abort("zero or forwarding addr vec page");
         }
         switch (h & 0x1f)
         {
@@ -1078,10 +1086,29 @@ void rePinVecPage(Page* p)
     if (GCTRACE) zprintf("rePinVecPage %a\n", p);
     std::memcpy(p->vecPins, p->newVecPins, vecPinBytes);
     std::memset(p->newVecPins, 0, vecPinBytes);
+// Here if a chunk used to be pinned but is not any more then I need to
+// clear it. All the data in it will have been evacuated. A situation where
+// this matters when the old pinned chunk is in the middle of a currently
+// live page and new data has been copied around it. In a subsequent GC
+// since the chunk is not pinned the data in it will get scanned, and it is
+// now old data probably containing forwarding pointers. If the chunk
+// concerned is in a page that ends up free or is beyond the fringe of
+// vecCurrent then there would not be any problem.
+    size_t pinnedChunk = 0;
+    while ((pinnedChunk = nextOneBit(p->chunkBitmap,
+                                     chunkBitmapBits,
+                                     pinnedChunk)) != SIZE_MAX)
+    {   if (!chunkNoIsNewPinned(p, pinnedChunk))
+        {   // Deal with a chunk that use to be pinned but is not any longer.
+            uintptr_t a = addressFromChunkNo(p, pinnedChunk);
+            setHeaderWord(a, chunkSize);
+        }
+        pinnedChunk =  pinnedChunk + p->chunkLength[pinnedChunk];
+    }
     std::memcpy(p->chunkBitmap, p->newChunkBitmap, sizeof(p->chunkBitmap));
     std::memset(p->newChunkBitmap, 0, sizeof(p->chunkBitmap));
     size_t pinnedChunkCount = 0;
-    size_t pinnedChunk = 0;
+    pinnedChunk = 0;
     while ((pinnedChunk = nextOneBit(p->chunkBitmap,
                                      chunkBitmapBits,
                                      pinnedChunk)) != SIZE_MAX)
