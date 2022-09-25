@@ -1202,7 +1202,6 @@ static LispObject lisp_main()
                     grabFreshPage(consPageType);
                     grabFreshPage(vecPageType);
                     borrowCurrent = nullptr;
-                    zprintf("Trying to recycling pages on line 1202 of csl.cpp\n");
 #else // CONSERVATIVE
 // This puts all recorded heap pages back in the main pool.
                     for (size_t i=0; i<pages_count; i++)
