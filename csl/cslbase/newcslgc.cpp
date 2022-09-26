@@ -164,6 +164,16 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // reference to them now is not about to pin them. So I do not need an
 // explicit check for padders here.
         if (a < dataStart) return;
+// If I have a pointer into a consPinPage that may point at an entry
+// with consIsPinned() set (ie pinned from last time) in which case the
+// new pinning is valid. But otherwise it is BAD. And it could potentially
+// cause trouble because the item referred to was almost certainly evacuated
+// during the last GC so has a forward pointer om place, and if I pin it
+// this time I will try to evacuate again with very bad consequences.
+// Well a way to keep me safe is to set dataEnd to the start of the Page
+// whenever I push anything onto consFreePages, condPinnedPages or
+// consCloggedPages.
+//
 // At this stage the "new half space" will only contain some fragments of
 // chains of newly pinned items. These should never need to get pinned, so
 // I will just reject pointers into consCurrent. In extreme cases the
@@ -219,8 +229,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // even if it is way beyond dataEnd. Note that "pinned" here has to mean
 // "pinned by a previous GC" not this one. In each case I will mark it as
 // potentially pinned.
-        if (a < p->dataEnd ||
-            chunkNoIsPinned(p, chunkNo))
+        if (a < p->dataEnd || chunkNoIsPinned(p, chunkNo))
         {
 // Now I tag the Chunk as (potentially) pinned. It will not actually be pinned
 // if the dodgy address points within a padder item in it. Set a mark in
@@ -532,8 +541,8 @@ void evacuate(LispObject &x)
         len = symhdr_length;
         cpy = getNBytes(len);
     }
-    else if (SIXTY_FOUR_BIT && hdr == DOUBLE_FLOAT_HEADER)
-    {   if (consIsPinned(x)) return;
+    else if (is_bfloat(x) && SIXTY_FOUR_BIT && hdr==DOUBLE_FLOAT_HEADER)
+    {   if (consIsNewPinned(x)) return;
         len = 16;             // I know I am on a 64-bit system here
         cpy = get2Words();
     }
@@ -1213,6 +1222,7 @@ void recycleOldSpace()
     consOldPages += consCloggedPages;
     while (!consOldPages.isEmpty())
     {   Page* p = consOldPages.pop();
+        p->dataEnd = offsetToCons(0, p);
         if (GCTRACE) zprintf("cons Page %a has %d pins\n", p, p->hasPinned);
         if (p->hasPinned == 0) emptyPages.push(p);
         else if (p->hasPinned < consClogThreshold) consPinPages.push(p);
