@@ -1109,10 +1109,16 @@ void rePinVecPage(Page* p)
                                      pinnedChunk)) != SIZE_MAX)
     {   if (!chunkNoIsNewPinned(p, pinnedChunk))
         {   // Deal with a chunk that use to be pinned but is not any longer.
-            uintptr_t a = addressFromChunkNo(p, pinnedChunk);
-            setHeaderWord(a, chunkSize);
+            uint32_t len = p->chunkLength[pinnedChunk];
+            for (uint32_t i=0; i<len; i++)
+            {   uintptr_t a = addressFromChunkNo(p, pinnedChunk+i);
+                setHeaderWord(a, chunkSize);
+                p->chunkSeqNo[pinnedChunk+i] = 0;
+            }
+            p->chunkLength[pinnedChunk] = 1;
+            pinnedChunk =  pinnedChunk + len;
         }
-        pinnedChunk =  pinnedChunk + p->chunkLength[pinnedChunk];
+        else pinnedChunk =  pinnedChunk + p->chunkLength[pinnedChunk];
     }
     std::memcpy(p->chunkBitmap, p->newChunkBitmap, sizeof(p->chunkBitmap));
     std::memset(p->newChunkBitmap, 0, sizeof(p->chunkBitmap));
@@ -1232,6 +1238,7 @@ void recycleOldSpace()
     vecOldPages += vecCloggedPages;
     while (!vecOldPages.isEmpty())
     {   Page* p = vecOldPages.pop();
+        p->dataEnd = offsetToVec(0, p);
         if (GCTRACE) zprintf("vec Page %a has %d pins\n", p, p->hasPinned);
         if (p->hasPinned == 0) emptyPages.push(p);
         else if (p->hasPinned < vecClogThreshold) vecPinPages.push(p);
