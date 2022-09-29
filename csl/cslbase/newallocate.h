@@ -176,13 +176,23 @@ using std::dec;
 // not possible but I suspect that by making print routines able to
 // traverse forwarding pointers transparently it may still be possible to
 // generate a backtrace. If I want to be able to recover from memory-full
-// disasters I would need to trigger GC when memory became just 1/2 full
-// (and still worry about fragmentation!) and then complain at the end
-// of GC unless there was not say 1/6 of memory still unused, ie that
-// half memory load had compressed into 1/3 of memory, which is the
-// same stopping point that I am at present envisaging. But my proposed
-// scheme garbage collects less frequently so improves performance at the
-// cost of recovery in circumstances that I tend to view as unrecoverable!
+// disasters I would need to trigger GC when memory became just 1/2 full.
+
+// A conservative GC can waste memory when ambiguous pointers cause data to
+// be preserved when it is in fact no longer in use. With large memory
+// this waste will usually (I really hope!) be modest. An issue I had not
+// recognised when I started this work is that when there is an ambiguous
+// pointer to a symbol or vector then the page that contains that object
+// has to remain one for vector use until subsequent GCs manage to notice
+// that the ambiguity has evaporated. In bad cases and especially with
+// fairly small memory allocation so there are not many pages this can
+// lead to many pages ending up dedicated for use for vectors - to an extent
+// that there end up not being enough for lists. Of course the same issue
+// could arise the other way around. A conseqence of that is that allocating
+// a fully empty page carries some danger of that page ending up dedicated
+// to either lists or vectors - and so despite the fact that it may impact
+// allocation speed a little I now preferentially grab types rather than
+// empty pages... 
 
 // With at least some compilers if I have an "inline" function definition
 // but there are no calls to it then no space is wasted. Well compile time
@@ -939,7 +949,8 @@ class WithinGarbageCollector
 {
 public:
     WithinGarbageCollector()
-    {   withinGarbageCollector = true;
+    {   my_assert(!withinGarbageCollector, "Attempt to recurse into GC");
+        withinGarbageCollector = true;
     }
     ~WithinGarbageCollector()
     {   withinGarbageCollector = false;
@@ -981,7 +992,7 @@ inline uintptr_t get2Words()
 {
 #ifdef DEBUG
     consCounter++;
-    if (garbage_collection_permitted && consCounter==gcEvery)
+    if (garbage_collection_permitted && !withinGarbageCollector && consCounter==gcEvery)
     {   garbage_collect();
         consCounter = 0;
     }
@@ -1166,7 +1177,7 @@ inline uintptr_t getNBytes(size_t n)
 {
 #ifdef DEBUG
     consCounter++;
-    if (garbage_collection_permitted && consCounter==gcEvery)
+    if (garbage_collection_permitted && !withinGarbageCollector && consCounter==gcEvery)
     {   garbage_collect();
         consCounter = 0;
     }

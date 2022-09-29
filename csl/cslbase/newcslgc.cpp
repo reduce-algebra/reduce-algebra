@@ -1164,7 +1164,11 @@ void rePinVecPage(Page* p)
         if (GCTRACE) zprintf("final padder at %a length %d\n", a, b-a);
         if (anyPinned) pinnedChunkCount++;
         else
-        {   for (size_t i=pinnedChunk; i<pinEnd; i++)
+        {
+// I rather think that that this fragment of code ought not be to invoked
+// ever - but I need to think a bit harder!
+            my_abort(where("#### Should I be here? ####"));
+            for (size_t i=pinnedChunk; i<pinEnd; i++)
             {   p->chunkSeqNo[i] = 0;
                 p->chunkLength[i] = 1;
                 chunkNoClearPinned(p, i);
@@ -1256,9 +1260,13 @@ bool withinGarbageCollector = false;
 void inner_garbage_collect()
 {   THREADID;
 // The hash table support caches blocks of memory in a way intended to
-// reducxe allocation and re-allocation overhead when hash tables need to
-// grow or shrink. The place where I keep the recycled memory is not
-// garbage collector safe, and so I need to clean up as I enter the GC.
+// reduce allocation and re-allocation overhead when hash tables need to
+// grow or shrink. The place where I keep the recycled memory contains
+// references to abandoned data (in general things used as parts of
+// hash tables) and none of the material there is in use. It exists so
+// that re-use as between garbage collections can sometimes be cheaper.
+// But when a GC starts I clear it away because the stuff in it can then be
+// recycled in the normal manner. 
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = nil;
     gcNumber++;
@@ -1383,6 +1391,7 @@ void inner_garbage_collect()
     validateAll("tidyUpPinmaps done", false, false);
     zprintf("GC complete!\n");
     if (GCTRACE) displayAllPages("End of GC");
+    consCounter = 0;
 }
 
 // The following code makes a whole slew of assumptions about how the

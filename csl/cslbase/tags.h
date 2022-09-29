@@ -1497,17 +1497,14 @@ inline void discard_basic_vector(LispObject v)
     {   unsigned int i = ntz(n); // identify what power of 2 we have
         if (i <= LOG2_VECTOR_CHUNK_BYTES)
         {   basic_elt(v, 0) = free_vectors[i];
-// I put the discarded vector in the free-chain as a "simple vector"
-// regardless of what it used to be. If it has contained binary information
-// its contents will not be GC safe - but the GC should never encounter it
-// so that should not matter. But out of caution I will still fill it with
-// safe values!
-            setvechdr(v,TYPE_SIMPLE_VEC +
+// I put the discarded vector in the free-chain as a padder, regardless of
+// what it used to be.
+            setvechdr(v, TYPE_PADDER +
                       (size << (Tw+5)) +
                       TAG_HDR_IMMED);
+// I retag the pointer in case at some stage I use this scheme for (eg)
+// bignums.
             v = (v & ~bit_cast<uintptr_t>(TAG_BITS)) | TAG_VECTOR;
-            for (size_t j=0; j<n; j++)
-                basic_elt(v, j) = nil;
             free_vectors[i] = v;
         }
     }

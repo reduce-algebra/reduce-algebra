@@ -157,8 +157,6 @@ LispObject workbase[51];
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
 LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
 
-LispObject eq_hash_tables;
-
 #ifdef CONSERVATIVE
 // While developing and testing I will use these as the only
 // conservative values
@@ -578,11 +576,7 @@ static void cold_setup()
 // Similarly the package field for nil needs a (temporary) safe value.
     setpackage(nil, nil);
     exit_reason = UNWIND_NULL;
-// eq_hash_tables is not an ordinary list-base, si I need to clear it
-// individually.
-    eq_hash_tables = nil;
     for (LispObject* p:list_bases) *p = nil;
-    eq_hash_tables = nil;
 // The package I am using at present will always be a package object
 // stored in the value cell of "current-package". But that symbol does not
 // quite exist yet - so as a temporary provision I use the value cell of NIL.
@@ -1372,9 +1366,6 @@ LispObject set_up_variables(int restart_flag)
 #endif
 #ifdef NO_THROW
         w = cons(make_keyword("no-throw"), w);
-#endif
-#ifdef CONSERVATIVE
-        w = cons(make_keyword("conservative"), w);
 #endif
         if (fwin_windowmode() & FWIN_WITH_TERMED)
             w = cons(make_keyword("termed"), w);
