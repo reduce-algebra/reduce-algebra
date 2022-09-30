@@ -1096,14 +1096,27 @@ static LispObject lisp_main()
                         preserve(msg, len);
                     }
 #ifdef CONSERVATIVE
-// I believe that this is all to abandon all existing in-use pages and
-// put things back as if all memory is totally empty.
+// This is all to abandon existing in-use pages and put things back as if
+// all memory is totally empty. Since I am abandoning all pages of memory
+// (and even forgetting whether they had been in use to hold lists or
+// vectors, and whether there were ambiguous pointers into them) I must
+// ensure that no list bases have references into any of them.
+                    for (LispObject *p:list_bases) *p = nil;
+                    THREADID;
+                    *stack = nil;
+                    setvalue(nil, nil);
+                    setenv(nil, nil);
+                    setpname(nil, nil);
+                    setplist(nil, nil);
+                    setfastgets(nil, nil);
+                    setpackage(nil, nil);
                     emptyPages += consPinPages;
                     emptyPages += vecPinPages;
                     emptyPages += consCloggedPages;
                     emptyPages += vecCloggedPages;
                     emptyPages += consPages;
                     emptyPages += vecPages;
+                    for (Page* p:emptyPages) p->type = emptyPageType;
                     grabFreshPage(consPageType);
                     grabFreshPage(vecPageType);
                     borrowCurrent = nullptr;
@@ -1193,6 +1206,16 @@ static LispObject lisp_main()
                         }
                     }
 #ifdef CONSERVATIVE
+// Again I need to do a fairly full tidy up when I recycle all memory.
+                    for (LispObject *p:list_bases) *p = nil;
+                    THREADID;
+                    *stack = nil;
+                    setvalue(nil, nil);
+                    setenv(nil, nil);
+                    setpname(nil, nil);
+                    setplist(nil, nil);
+                    setfastgets(nil, nil);
+                    setpackage(nil, nil);
                     emptyPages += consPinPages;
                     emptyPages += vecPinPages;
                     emptyPages += consCloggedPages;
@@ -1793,12 +1816,16 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {   badArgs.push_back(key.append(val));
                         return;
                     }
-// valD is now in megabytes, so eg if tiy had specified -k2G it will be 2048.0
+// valD is now in megabytes, so eg if I had specified -k2G it will be 2048.0
 // and if you had specified -k256K it will be 0.25.
 // Negative requests or requests for more than 256Gbytes (or requests for
 // zero or more than 10 stack chunks) will be rejected. I will also demand that
-// at least 8 Mbytes be allocated.
-                    if (valD <= 8.0 || valD > 256.0e3 ||
+// at least 8 Mbytes be allocated, or 32/512 for the conservative version
+#ifdef CONSERVATIVE
+                    if (valD < 32.0 || valD > 512.0*1024.0 ||
+#else // CONSERVATIVE
+                    if (valD < 8.0 || valD > 256.0*1024.0 ||
+#endif // CONSERVATIVE
                         valI < 1 || valI > 10)
                     {   badArgs.push_back(key.append(val));
                         return;

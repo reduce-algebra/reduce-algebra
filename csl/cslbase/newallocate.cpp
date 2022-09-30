@@ -404,17 +404,30 @@ void grabFreshPage(PageType type)
     if (GCTRACE) zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
-// If the memory I have allocated thus far is less then 1/2 full I will
-// merely try to grab an empty page from the spare space. I will
-// use emptyPages that have been used before for choice, but when there are
-// none of those I will gust use the next Page in the currently partly used
-// Segment. Here I will only ever return a fully empty Page, never one that
-// contains any pinned data. Well I will give myself a spare Page in hand
-// in the decision. Doing so will tend to make garbage collection more
-// frequent but will reduce any chance of fragmentation leading to the
-// copying process failing.
+// Here I grab a page that is already dedicated to the type of use required
+// (ie list or vector) if one is available. When I do that I accept that I
+// then have to allocate around the pinned data in it, but I have placed
+// any pages that contain painful amounts of pinning on consCloggedPages
+// and vecCloggedPages and I only re-use them if I am needing space to
+// copy into during garbage collection and there is no alternative.
+// The motivation here is to keep emptyPages available for allocation as
+// either list of vector ones and so avoid having to fail for lack of space
+// for one of the sorts of data while there may be plenty of room for the
+// other.
         if (mustGrab || busy < (unused-1))
-        {   if (!emptyPages.isEmpty())
+        {   if (type==vecPageType && !vecPinPages.isEmpty())
+            {   Page* r = vecPinPages.pop();
+                initPage(type, r, false);
+//              zprintf("return pinned vec %a type %d\n", r, (int)type);
+                return;
+            }
+            else if (type==consPageType && !consPinPages.isEmpty())
+            {   Page* r = consPinPages.pop();
+                initPage(type, r, false);
+//              zprintf("return pinned cons %a type %d\n", r, (int)type);
+                return;
+            }
+            else if (!emptyPages.isEmpty())
             {   Page* r = emptyPages.pop();
                 r->type = emptyPageType;
                 initPage(type, r, true);
@@ -428,19 +441,17 @@ void grabFreshPage(PageType type)
 //              zprintf("return new %a type %d\n", r, (int)type);
                 return;
             }
-            else if (mustGrab)
-            {   if (type==vecPageType && !vecPinPages.isEmpty())
-                {   Page* r = vecPinPages.pop();
-                    initPage(type, r, false);
-//                  zprintf("return pinned vec %a type %d\n", r, (int)type);
-                    return;
-                }
-                else if (type==consPageType && !consPinPages.isEmpty())
-                {   Page* r = consPinPages.pop();
-                    initPage(type, r, false);
-//                  zprintf("return pinned cons %a type %d\n", r, (int)type);
-                    return;
-                }
+            if (mustGrab && type==vecPageType && !vecCloggedPages.isEmpty())
+            {   Page* r = vecCloggedPages.pop();
+                initPage(type, r, false);
+//              zprintf("return clogged vec %a type %d\n", r, (int)type);
+                return;
+            }
+            else if (mustGrab && type==consPageType && !consCloggedPages.isEmpty())
+            {   Page* r = consCloggedPages.pop();
+                initPage(type, r, false);
+//              zprintf("return clogged cons %a type %d\n", r, (int)type);
+                return;
             }
         }
 // If current memory is getting full or (really improbably) there are too
