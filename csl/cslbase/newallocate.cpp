@@ -306,6 +306,7 @@ bool allocateAnotherSegment()
 
 void initConsPage(Page* p, bool empty)
 {   consPages.push(p);
+    p->liveData = true;
     if (GCTRACE) zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
     p->type = consPageType;
     consCurrent = p;
@@ -339,6 +340,7 @@ void initConsPage(Page* p, bool empty)
 
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
+    p->liveData = true;
     if (GCTRACE) zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
     p->type = vecPageType;
     p->dataEnd = endOfVecPage(p);
@@ -463,7 +465,7 @@ void grabFreshPage(PageType type)
     }
     if (withinGarbageCollector) fatal_error(err_no_store);
     cout << "\n@@@ MEMORY FULL: will try to garbage collect @@@\n" << endl;
-    garbage_collect();
+    garbage_collect(type==consPageType ? "list space" : "vector space");
 // After garbage collection there had BETTER be some available memory left!
 // At the end of garbage collection everything should be ready to do the
 // next bit of allocation. Well the tests here are a bit dubious! If there
@@ -583,7 +585,7 @@ LispObject Lgc(LispObject env)
 }
 
 LispObject Lgc(LispObject env, LispObject a)
-{   garbage_collect();
+{   garbage_collect("user request");
     return nil;
 }
 
