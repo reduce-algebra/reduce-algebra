@@ -1026,8 +1026,8 @@ void rePinConsPage(Page* p)
 // to be at least as sensible.
         a = offsetToCons(nextPin, p);
 // The first free cell in a block points to the next non-free cell.
-        indirect(base) = a;        // write in chaining
-// Again I ship pinned cells one at a time.
+        if (!p->liveData) indirect(base) = a;        // write in chaining
+// Again I skip pinned cells one at a time.
         while (a != endOfConsPage(p) &&
                consIsPinned(a, p))
         {   a += sizeof(ConsCell);
@@ -1045,7 +1045,7 @@ void rePinConsPage(Page* p)
     }
 // If I exit here it is because there are no more pinned cells, so the
 // end of the free block is the end of the page.
-    indirect(base) = endOfConsPage(p);
+    if (!p->liveData) indirect(base) = endOfConsPage(p);
     p->hasPinned = nPins;
 }
 
@@ -1269,9 +1269,7 @@ void inner_garbage_collect()
 // recycled in the normal manner. 
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = nil;
-    gcNumber++;
     WithinGarbageCollector noted;
-    zprintf("start of GC %d\n", gcNumber);
     if (gcNumber == gcStop) std::abort();
     if (GCTRACE) displayAllPages("Start of GC");
     validateAll("start GC", false, false);
@@ -1289,7 +1287,9 @@ void inner_garbage_collect()
     vecCurrent->dataEnd = vecLimit;
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
+    for (Page* p:consOldPages) p->liveData = false;
     vecOldPages = vecPages;
+    for (Page* p:vecOldPages) p->liveData = false;
     potentiallyPinned = nullptr;
 // ... and allocate what will be the start of the new half-space.
 // Well here I will not want any ambiguous pointers into this new
@@ -1437,8 +1437,57 @@ NOINLINE uintptr_t getStackFringe(double x)
 {   return bit_cast<uintptr_t>(&x);
 }
 
-NOINLINE void garbage_collect()
-{   std::jmp_buf buffer;
+NOINLINE void garbage_collect(const char* why)
+{   gcNumber++;
+    uint64_t t0 = read_clock();
+#ifdef WITH_GUI
+// If I have a window system I tell it the current time every so often
+// just to keep things cheery... so in such cases I will read the time
+// every time there is a garbage collection regardless of whether I am
+// generating GC messages. If I am not on a GUI system then  I only
+// report time if GC messages are enabled, so I will only read the clock
+// in that situation.
+    {   long int t = (t0 - base_time)/10000; // in centiseconds
+        long int gct = gc_time/10000;
+// @@@@
+// I guess that I want garbage collection messages, if any, to
+// be sent to stderr rather than whatever output stream happens to
+// be selected at the time of the garbage collection?
+// At present messages go to the normal output stream, which only makes
+// sense if GC messages are almost always disabled - maybe that will
+// be the case!
+        report_time(t, gct);
+        time_now = read_clock()/1000;
+        if ((verbos_flag & 1) || force_verbos)
+        {   freshline_trace();
+            trace_printf(
+                "+++ Garbage collection %" PRId64
+                " (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
+                gcNumber, why, t/100, t%100, gct/100, gct%100);
+        }
+    }
+#else // !WITH_GUI
+    if ((verbos_flag & 1) || force_verbos)
+    {   long int t = (t0 - base_time)/10000;
+        long int gct = gc_time/10000;
+// @@@@
+// I guess that I want garbage collection messages, if any, to
+// be sent to stderr rather than whatever output stream happens to
+// be selected at the time of the garbage collection?
+// At present messages go to the normal output stream, which only makes
+// sense if GC messages are almost always disabled - maybe that will
+// be the case!
+        time_now = t0/1000;
+        if ((time_limit >= 0 && time_now > time_limit) ||
+            (io_limit >= 0 && io_now > io_limit))
+            resource_exceeded();
+        freshline_trace();
+        trace_printf(
+            "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
+            static_cast<long>(gcNumber), why, t/100, t%100, gct/100, gct%100);
+    }
+#endif // !WITH_GUI
+    std::jmp_buf buffer;
     buffer_pointer = &buffer;
 // This is a silly hack! The idea is that as far as the compiler is
 // allowed to assune, each reference to volatileVar might return a different
@@ -1501,6 +1550,11 @@ NOINLINE void garbage_collect()
 // End of garbage collection!
     zprintf("@@@END OF GC@@@\n");
 }
+
+NOINLINE void garbage_collect()
+{   garbage_collect("some reason");
+}
+
 
 // The functions here are intended to be useful for calling from gdb
 

@@ -269,16 +269,17 @@ public:
 // A Page can be either a Cons page or a Vector page. The initial components
 // are the same in each case
         struct
-        {   PageType type;
-            Page* chain;
-            Page* borrowChain;
-            bool borrowPinned;
-            size_t hasPinned;
-            Page* pinnedPages;
-            Page* pendingPages;
-            LispObject pinnedObjects;
-            uintptr_t scanPoint;
-            uintptr_t dataEnd;
+        {   PageType type;            // empty, cons or vector.
+            Page* chain;              // general purpose chaining.
+            Page* borrowChain;        // support discarding borrowed pages
+            size_t hasPinned;         // count of pinned locations/chunks
+            Page* pinnedPages;        // chain used during GC
+            Page* pendingPages;       // chain used during GC
+            LispObject pinnedObjects; // chain used during GC
+            uintptr_t scanPoint;      // for when GC has parly evacuated page
+            uintptr_t dataEnd;        // end of data in this page
+            bool borrowPinned;        // used when borrowed page is discarded
+            bool liveData;            // is there valid data here?
         };
 // Because I am using anonymous structs here I make the names of all the
 // initial fields that are expected to be present in every case different
@@ -287,13 +288,14 @@ public:
         {   PageType Ctype;
             Page* Cchain;
             Page* CborrowChain;
-            bool CborrowPinned;
             size_t ChasPinned;
             Page* CpinnedPages;
             Page* CpendingPages;
             LispObject CpinnedObjects;
             uintptr_t CscanPoint;
             uintptr_t CdataEnd;
+            bool CborrowPinned;
+            bool CliveData;
 // The above are the common fields...
             uint64_t consPins[consPinWords];
             uint64_t newConsPins[consPinWords];
@@ -303,13 +305,14 @@ public:
         {   PageType Vtype;
             Page* Vchain;
             Page* VborrowChain;
-            bool VborrowPinned;
             size_t VhasPinned;
             Page* VpinnedPages;
             Page* VpendingPages;
             LispObject VpinnedObjects;
             uintptr_t VscanPoint;
             uintptr_t VdataEnd;
+            bool VborrowPinned;
+            bool VliveData;
 // The above are the common fields.
             bool potentiallyPinnedFlag;
             Page* potentiallyPinnedChain;
@@ -725,6 +728,7 @@ extern uintptr_t consFringe, consLimit, consEnd;
 
 extern uintptr_t consEndOfPage();
 extern void garbage_collect();
+extern void garbage_collect(const char* why);
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
@@ -993,7 +997,7 @@ inline uintptr_t get2Words()
 #ifdef DEBUG
     consCounter++;
     if (garbage_collection_permitted && !withinGarbageCollector && consCounter==gcEvery)
-    {   garbage_collect();
+    {   garbage_collect("gc-every");
         consCounter = 0;
     }
 #endif // DEBUG
@@ -1178,7 +1182,7 @@ inline uintptr_t getNBytes(size_t n)
 #ifdef DEBUG
     consCounter++;
     if (garbage_collection_permitted && !withinGarbageCollector && consCounter==gcEvery)
-    {   garbage_collect();
+    {   garbage_collect("gc-every");
         consCounter = 0;
     }
 #endif // DEBUG
@@ -1273,6 +1277,7 @@ inline void grabBorrowPage()
 {   if (!emptyPages.isEmpty()) initBorrowPage(emptyPages.pop(), true);
     else if (pageFringe != pageEnd) initBorrowPage(pageFringe++, true);
     else if (!vecPinPages.isEmpty()) initBorrowPage(vecPinPages.pop(), false);
+    else if (!vecCloggedPages.isEmpty()) initBorrowPage(vecCloggedPages.pop(), false);
     else fatal_error(err_no_store);
 }
 
