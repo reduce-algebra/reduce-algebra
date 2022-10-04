@@ -1,13 +1,13 @@
-;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer
+;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1998
-;; Time-stamp: <2022-09-14 17:25:39 franc>
+;; Time-stamp: <2022-10-02 17:51:39 franc>
 ;; Keywords: languages, processes
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.7
+;; Package-Version: 1.8
 ;; Package-Requires: ((reduce-mode "1.5"))
 
 ;; This file is part of REDUCE IDE.
@@ -616,7 +616,7 @@ Used by all functions that send input to REDUCE."
     ;; necessary (?) because ‘comint-input-sender’ is a buffer local
     ;; variable.
     (setq comint-input-sender
-          (lambda (proc string)
+          (lambda (_proc _string)
             (comint-simple-send (get-buffer-process (current-buffer)) region)))
     (comint-send-input)
     (setq comint-input-sender comint-input-sender-old)

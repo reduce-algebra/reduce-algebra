@@ -2,9 +2,9 @@
 @c %**start of header
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Manual last updated:
-@set UPDATED Time-stamp: <2022-09-14 17:25:41 franc>
+@set UPDATED Time-stamp: <2022-10-02 17:51:40 franc>
 @c Software version:
-@set VERSION 1.7
+@set VERSION 1.8
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -293,10 +293,7 @@ some ideas from FORTRAN mode.
 
 The standard Emacs syntax tables are modified to reflect REDUCE
 syntax, so that for example Emacs knows that the REDUCE escape
-character is @code{!}.  However, there remain some unresolved problems
-concerning the REDUCE escape character.  @xref{Font-Lock,,Font-lock
-support for automatic font selection,,}.
-@xref{Miscellaneous,,Miscellaneous minor features and bugs,,}.
+character is @code{!}.
 
 Blank lines separate ``paragraphs''.
 
@@ -505,69 +502,79 @@ forwards instead of backwards.  This command is modelled on
 @cindex Operations on Procedures
 
 Files of REDUCE source code frequently consist mainly of procedure
-definitions.  This is certainly true of symbolic-mode code, and hence it
-is true of most of the source code of the REDUCE system itself.  REDUCE
-mode provides the following operations on procedures.  They work on all
-kinds of REDUCE procedures provided they contain the keyword
-@code{procedure} somewhere within the first statement of their
-definition.
+definitions.  This is certainly true of symbolic-mode code, and hence
+it is true of most of the source code of the REDUCE system itself.
+REDUCE mode provides the following operations on procedures.  They
+work on all kinds of REDUCE procedures provided they contain one of
+the procedural keywords @code{procedure}, @code{listproc} or
+@code{matrixproc} within their header.  Procedure type declarations
+(@code{symbolic}, @code{inline}, @code{real}, etc.@:) preceding the
+procedural keyword are also supported.
 
 A procedure is considered to begin at the first non-white-space
-character of the definition, and to end after the statement defining the
-procedure body.  White space and the first newline after the procedure
-body are always considered to be part of the procedure.  The commands to
-mark, kill and reformat a procedure also include @emph{all} blank lines
-after the procedure definition, because this seems most convenient in
-practice.  Some procedure-oriented commands support a prefix argument.
+character of the definition, and to end after the statement defining
+the procedure body.  White space and the first newline after the
+procedure body are always considered to be part of the procedure.  The
+commands to mark and kill a procedure also include @emph{all} blank
+lines before the procedure definition.  Many procedure-oriented
+commands support a prefix argument.
 
 The two commands for moving over procedures accept a positive integer
-argument that indicates by how many procedures to move -- the default is
-1.  These commands do not move in the opposite direction if given a
+argument that indicates by how many procedures to move -- the default
+is 1.  These commands do not move in the opposite direction if given a
 negative argument, in which case they do not move at all.
 
 @table @kbd
-@item  C-M-e
+@item C-M-e
 @kindex C-M-e
 @itemx M-x reduce-forward-procedure
 @findex reduce-forward-procedure
-Move forward to the next end of a procedure.  With a numeric argument,
-do it that many times.
+Move forwards to the end of the procedure ending after point.  With a
+positive argument, do it that many times.  If this fails, move
+forwards by as many complete procedures as possible and report a user
+error.  Skip to the first following non-blank character or the next
+line.
 
-@item  C-M-a
+@item C-M-a
 @kindex C-M-a
 @itemx M-x reduce-backward-procedure
 @findex reduce-backward-procedure
-Move backward to the next start of a procedure.  With a numeric
-argument, do it that many times.
+Move backwards to the start of the procedure starting before point.
+With a positive argument, do it that many times.  If this fails, move
+backwards by as many complete procedures as possible and report a user
+error.  Skip to the start of any procedural types.
 @end table
 
 Regardless of whether point is within a procedure or not, these two
-commands move respectively to the first following end of a procedure, or
-the first preceding start of a procedure.  To move to the start of the
-next procedure, move forward to its end and then move backward to its
-start.
+commands move respectively to the first following end of a procedure,
+or the first preceding start of a procedure.  One way to move to the
+start of the next procedure is to move forwards to its end and then
+move backwards to its start.
 
-The remaining commands do not accept an argument because (even without
-an argument) they can change large portions of text.  Marking a
-procedure is the basis of the other operations on procedures.
+Marking is the basis for many operations on procedures.
 
 @table @kbd
-@item  C-M-h
+@item C-M-h
 @kindex C-M-h
 @itemx M-x reduce-mark-procedure
 @findex reduce-mark-procedure
-Put the mark after the next end of a procedure and point at the start of
-that procedure.  A procedure ends @emph{after} any trailing white space.
-With a numeric argument, mark that many following procedures including
-this one.
+Mark the procedure ending after point.  With a positive argument, mark
+that many procedures ending after point.  Put mark at the first
+non-blank character or next line after the appropriate end of
+procedure.  If this fails, do not mark anything and report a user
+error.  Leave point at the start of the first procedure before any
+preceding blank lines.
 
-@item  C-c k
+@item C-c k
 @kindex C-c k
 @itemx M-x reduce-kill-procedure
 @findex reduce-kill-procedure
-Kill the procedure (and trailing white space) ending after point.
+Kill the procedure ending after point.  With a positive argument,
+kill that many procedures ending after point, including any preceding
+blank lines.  If this fails, do not kill anything and report a user
+error.
 
-@item  C-M-q
+@item C-M-q
 @kindex C-M-q
 @itemx M-x reduce-indent-procedure
 @findex reduce-indent-procedure
@@ -584,7 +591,7 @@ function to REDUCE procedures, to which the standard key @kbd{C-M-l} is
 rebound.
 
 @table @kbd
-@item  C-M-l
+@item C-M-l
 @kindex C-M-l
 @itemx M-x reduce-reposition-window
 @findex reduce-reposition-window
@@ -602,9 +609,10 @@ rebound to a function to narrow to the current procedure.
 @kindex C-x n d
 @itemx M-x reduce-narrow-to-procedure
 @findex reduce-narrow-to-procedure
-Make text outside the current procedure invisible.  The procedure
-visible is the one that contains point or follows point.  With a prefix
-argument, narrow to the following arg procedures including this one.
+Narrow to the procedure ending after point.  In other words, make all
+text outside this procedure invisible.  With a positive argument ARG,
+include that many procedures ending after point.  Also include any
+preceding blank lines.  If narrowing fails, report a user error.
 @xref{Narrowing,,, emacs, The Emacs Editor}.
 @end table
 
@@ -1058,67 +1066,62 @@ Font-lock mode causes Emacs to select automatically the font in which
 text is displayed (``fontify'' it) so as to indicate its logical
 status.  @xref{Font Lock,, Font Lock mode, emacs, The Emacs Editor}.
 The first version of font-lock support for REDUCE mode was contributed
-by Rainer Schöpf.  The current version provides 4 levels of
-decoration, which can be selected using the standard font-lock
-facilities, or interactively most easily via the REDUCE mode font-lock
-sub-menu.  The levels and corresponding highlighting are as follows:
+by Rainer Schöpf.  The current version provides 3 strictly inclusive
+level: ``Symbolic'' includes ``Algebraic'' includes ``Basic''.  The
+level can be selected using the standard font-lock facilities, or
+interactively most easily via the REDUCE mode @emph{Syntax
+Highlighting} sub-menu.  The levels and corresponding highlighting are
+as follows:
 
 @enumerate 0
 @item
-Minimal: strings, comments, main keywords and block delimiters,
-procedure and other main type declarations, assertions and
-pre-processor @code{#}-directives;
+Basic: strings are displayed using @code{font-lock-string-face}; all
+types of comment (comment statements, comments from @code{%} to the
+end of the line, and C-style comments between @code{/*} and @code{*/}
+delimiters) are displayed using @code{font-lock-comment-face}; the
+main keywords including block delimiters and group delimiters are
+displayed using @code{font-lock-keyword-face}.
 
 @item
-Algebraic: minimal plus operator, operator type and vector
-declarations, array and matrix declarations with or without bounds,
-and symbolic constants;
+Algebraic: as basic level; additionally procedure names are displayed
+using @code{font-lock-function-name-face} and procedure parameters are
+displayed using @code{font-lock-variable-face}; general types such as
+``algebraic'' are displayed using @code{font-lock-type-face}; local
+variable types such as ``scalar'' are displayed using
+@code{font-lock-type-face} and declared local variable names are
+displayed using @code{font-lock-variable-name-face}; goto and label
+names and named constants such as ``pi'' and ``Catalan'' are displayed
+using @code{font-lock-constant-face}; declared operator, operator type
+such as ``linear'', vector, array and matrix declarations are
+displayed using @code{font-lock-type-face}; operator, vector, and
+array and matrix identifiers (with or without bounds) are displayed
+using @code{font-lock-function-face}.
 
 @item
-Symbolic: minimal plus module, endmodule, fluid, global, and other
-symbolic-mode declarations;
-
-@item
-Maximal: all the above plus quoted data, function calls with or
-without parentheses (but not nested function calls).
+Symbolic: as algebraic level; additionally preprocessor #-directives
+are displayed using @code{font-lock-preprocessor-face}; quoted objects
+are displayed using @code{font-lock-constant-face}; asserted types are
+displayed using @code{font-lock-type-face}; ``declare'' and ``struct''
+statements, as used in ``redlog'', are displayed using
+@code{font-lock-keyword-face}, @code{font-lock-function-name-face} and
+@code{font-lock-type-face}; module, endmodule and other symbolic-mode
+keywords are displayed using @code{font-lock-keyword-face}; module
+names are displayed using @code{font-lock-constant-face}; key
+symbolic-mode functions such as ``flag'' and ``get'' are displayed
+using @code{font-lock-builtin-face}; key symbolic-mode types such as
+``fluid'' and ``global'' are displayed using
+@code{font-lock-type-face}; declared lambda parameters are displayed
+using @code{font-lock-variable-face}.
 @end enumerate
 
-@noindent
-Using Emacs' default settings gives maximal highlighting, but if you
-find this too gaudy or too slow then you might prefer to select a
-lower level.
-
-REDUCE mode does not make any (user configurable) face definitions of
-its own and uses only standard font-lock faces.  The faces used to
-highlight particular syntactic elements are as follows:
-
-@vtable @var
-@item font-lock-builtin-face
-not currently used
-@item font-lock-comment-face
-%-comments and comment statements
-@item font-lock-constant-face
-symbolic constants, such as @code{pi}, and labels
-@item font-lock-function-name-face
-procedure, operator and module names
-@item font-lock-keyword-face
-main REDUCE keywords
-@item font-lock-string-face
-strings
-@item font-lock-type-face
-keywords that can be regarded as type declarations for variables or
-functions, such as @code{scalar} and @code{even}
-@item font-lock-variable-name-face
-variables being defined or declared
-@item font-lock-warning-face
-currently used only by REDUCE Run mode
-@end vtable
-
-Font-lock mode can be turned on interactively in the normal way that any
-minor mode is turned on, e.g.@: it can be toggled on and off by the
-command @code{font-lock-mode}.  It can also be turned on and off via the
-REDUCE mode font-lock sub-menu.  To turn on font-lock mode automatically
-with REDUCE mode, put this in your @file{.emacs} file:
+Using Emacs' default settings gives symbolic-level highlighting, but
+if you find this too gaudy or too slow then you might prefer to select
+a lower level.  Font-lock mode can be turned on interactively in the
+normal way that any minor mode is turned on, e.g.@: it can be toggled
+on and off by the command @code{font-lock-mode}.  It can also be
+turned on and off via the REDUCE mode @emph{Syntax Highlighting}
+sub-menu.  To turn on font-lock mode automatically with REDUCE mode,
+put this in your @file{.emacs} file:
 
 @lisp
 (add-hook 'reduce-mode-hook 'turn-on-font-lock)
@@ -1153,15 +1156,10 @@ because the character @code{!} represents an escape character within
 an identifier but not within a string.  This is different from the
 convention in the languages (C and Emacs Lisp) that Emacs was
 primarily designed to support, in which the significance of the escape
-character does not depend on the context.  I have not found a
-completely satisfactory way to deal with this problem.  The solution I
-currently adopt in REDUCE mode is to use a recently added font-lock
-facility that allows the syntax of @code{!} to be reset from escape to
+character does not depend on the context.  The solution I adopt in
+REDUCE mode is to reset the syntax of @code{!} from escape to
 punctuation when it occurs immediately followed by a double quote,
-i.e.@: as @code{!"}.  This avoids most of the difficulties, but it
-fails in the (fairly rare) case that @code{!"}  appears in an
-identifier (which it does in one or two of the core REDUCE source
-files).
+i.e.@: as @code{!"}, but only within a string.
 
 @c ===================================================================
 
@@ -1304,7 +1302,6 @@ in Emacs in general and in REDUCE mode in particular.
 * Groups and blocks highlighting:: Delimiter highlighting
 * Major mode menu::             Major mode menu
 * Version::                     REDUCE mode version information
-* Problems::                    Known and potential problems
 * Special function keys::       Linefeed, Meta-TAB, etc.
 @end menu
 
@@ -1410,29 +1407,6 @@ menu option from the REDUCE major mode menu or by running the command
 way to start it is to switch to a temporary buffer (e.g.@: by using
 @kbd{C-x b tmp}) and then switch it to REDUCE mode (by using @kbd{M-x
 reduce-mode}).
-
-@c -------------------------------------------------------------------
-
-@node Problems
-@section Known and potential problems
-@cindex Problems
-@cindex Bugs
-@cindex Compatibility
-
-There is a problem with the way that REDUCE mode handles an exclamation
-mark (@samp{!}) followed immediately by a double quote @samp{"}.
-@xref{Font-Lock,, Font-lock support for automatic font selection}.  This
-should not be a problem in ``normal'' code, but it may upset the parsing
-of code that uses this character sequence within an identifier.  It is
-caused by a limitation in the way that Emacs currently handles the
-syntax of the text being edited and is not easy to avoid completely!  I
-am looking for a better resolution of this problem.
-
-There is no guarantee that an arbitrary minor mode or other extension
-will be compatible with REDUCE mode, although I am not aware of any
-conflicts.  Two minor modes that are known to be compatible with REDUCE
-mode are transient-mark-mode and delete-selection-mode (because I always
-use them and I recommend them!).
 
 @c -------------------------------------------------------------------
 
@@ -1692,16 +1666,6 @@ use.  If you try to send REDUCE code to REDUCE but REDUCE is not
 running, then REDUCE Run mode will (optionally) start REDUCE
 automatically.
 
-@cartouche
-@quotation
-Beware that version 1.7 introduces a significant incompatible change:
-the command @code{run-reduce} has changed; it is now the main command
-to run REDUCE and subsumes the commands @code{run-csl-reduce} and
-@code{run-psl-reduce}, which have been removed.  @xref{Run REDUCE,,
-Running@comma{} re-running and switching to REDUCE}.
-@end quotation
-@end cartouche
-
 @menu
 * Run Introduction::            Introduction to REDUCE Run mode
 * Run Installation::            Installation of REDUCE Run mode
@@ -1881,11 +1845,6 @@ If this command is executed with a prefix argument then it reads an
 actual command to run REDUCE from the minibuffer and runs that
 command.  In this case, the REDUCE process buffer is named without any
 reference to the REDUCE command, e.g.@: @code{*REDUCE*}.
-
-(Note that the definition of this command has changed in version 1.7
-and the commands @code{run-csl-reduce} and @code{run-psl-reduce} have
-been removed; use @code{run-reduce} and select the appropriate command
-name instead.)
 @end deffn
 
 A couple of convenience commands allow you to re-start a running

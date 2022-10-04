@@ -1,13 +1,13 @@
-;;; reduce-delim.el --- Highlight matching group or block delimiter
+;;; reduce-delim.el --- Highlight matching group or block delimiter  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018, 2022 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 22 March 2018
-;; Time-stamp: <2022-09-14 17:25:41 franc>
+;; Time-stamp: <2022-10-02 17:51:41 franc>
 ;; Keywords: languages, faces
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.7
+;; Package-Version: 1.8
 ;; Package-Requires: ((reduce-mode "1.54"))
 
 ;; This file is part of REDUCE IDE.
