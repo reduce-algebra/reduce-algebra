@@ -369,9 +369,9 @@ public:
 template <size_t val> constexpr void s_p_f()
 {
 #ifndef __clang__
-// c;ang does not support this tric nicely!
+// clang does not support this trick nicely!
     int unused = 0;
-#endif
+#endif // !__clang__
 };
 #define static_print(v) \
   UNUSED_NAME static void UNIQUE(s_p_)() { s_p_f<v>(); }
@@ -379,7 +379,7 @@ template <size_t val1> constexpr void s_q_f()
 {
 #ifndef __clang__
     int unused1 = 0;
-#endif
+#endif // !__clang__
 };
 #define static_print1(v) \
   UNUSED_NAME static void UNIQUE(s_q_)() { s_q_f<v>(); }
@@ -733,6 +733,7 @@ extern void garbage_collect(const char* why);
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
+#ifdef EXTREME_DEBUG
 inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a type=%s\n", p, pageTypeName(p->type));
 #ifdef DEBUG
@@ -768,6 +769,7 @@ inline void displayConsPage(Page* p)
 #endif // DEBUG
     zprintf("end of page %a\n\n", p);
 }
+#endif // EXTREME_DEBUG
 
 extern const char* show_fn0(no_args* x);
 extern const char* show_fn1(one_arg* x);
@@ -778,6 +780,7 @@ extern const char* streamop(uintptr_t x);
 
 #define xSTREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + ((14*CELL)<<(Tw+5)))
 
+#ifdef EXTREME_DEBUG
 inline void displayVecPage(Page* p)
 {   zprintf("Vec page %a type=%s\n", p, pageTypeName(p->type));
 #ifdef DEBUG
@@ -873,7 +876,7 @@ inline void displayAllPages(const char* s)
     int k = 0;
     for (auto p:list_bases)
         zprintf("%s: %a\n", list_names[k++], *p);
-#endif
+#endif // DEBUG
     zprintf("\nconsPages......");
     for (auto p:consPages)
     {   if (p == consCurrent) zprintf(" *%a_%d", p, p->hasPinned);
@@ -944,6 +947,7 @@ inline void displayAllPages(const char* s)
     zprintf("gcNumber = %d\n", gcNumber);
     zprintf("end of display\n\n");
 }
+#endif // EXTREME_DEBUG
 
 extern bool withinGarbageCollector;
 
@@ -1045,7 +1049,7 @@ inline Header makeHeader(size_t n, int type)   // size is in bytes
 inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 {   my_assert((n & (-CELL)) == n, "odd size to setHeaderWord");
     indirect(a) = makeHeader(n, type);
-#if 1
+#ifdef EXTREME_DEBUG
 // The idea here is to fill all the cells that are unused (as marked by
 // use of a padder vector) with data that is otherwise improbable and that
 // is liable to cause a prompt disaster if encountered.
@@ -1053,7 +1057,7 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
     {   for (size_t i=CELL; i<n; i+=CELL)
             indirect(a+i) = 0xfeedadeadbeefc03;
     }
-#endif
+#endif // EXTREME_DEBUG
 }
 
 extern void grabFreshPage(PageType type);

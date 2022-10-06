@@ -217,6 +217,7 @@ extern LispObject rplacd_fails(LispObject a);
 X(err_bad_car,                "attempt to take car of an atom")             \
 X(err_bad_cdr,                "attempt to take cdr of an atom")             \
 X(err_no_store,               "insufficient freestore to run this package") \
+X(err_no_store_in_gc,         "run out of store while garbage collecting")  \
 X(err_undefined_function_0,   "undefined function (0 args)")                \
 X(err_undefined_function_1,   "undefined function (1 arg)")                 \
 X(err_undefined_function_2,   "undefined function (2 args)")                \

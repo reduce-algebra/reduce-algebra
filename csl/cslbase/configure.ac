@@ -639,6 +639,18 @@ AC_ARG_ENABLE(debug,
   [enable_debug="no"])
 AC_MSG_RESULT([$enable_debug])
 
+AC_ARG_ENABLE(extremedebug,
+  AS_HELP_STRING([--enable-extremedebug],
+                 [compile for extremedebugging]),
+  [],
+  [enable_extremedebug="no"])
+
+if test "$enable_extremedebug" = "yes"
+then
+  AC_DEFINE(EXTREME_DEBUG, [1], [Show down garbage collection dramatically])
+fi
+
+
 AC_ARG_ENABLE(profile,
   AS_HELP_STRING([--enable-profile],
                  [compile for profiling]),

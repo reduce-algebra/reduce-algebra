@@ -75,15 +75,15 @@ extern void term_close();
 // diagnostics. I also "exit()" rather than "abort()" since that is slightly
 // cleaner!
 
-#ifdef CONSERVATIVE
+#if defined CONSERVATIVE && defined EXTREME_DEBUG
 extern void displayAllPages(const char*);
-#endif // CONSERVATIVE
+#endif // CONSERVATIVE && EXTREME_DEBUG
 
 [[noreturn]] inline void my_abort()
 {   std::fprintf(stdout, "\n\n!!! Aborting\n\n");
-#ifdef CONSERVATIVE
+#if defined CONSERVATIVE && defined EXTREME_DEBUG
     displayAllPages("Failure");
-#endif // CONSERVATIVE
+#endif // CONSERVATIVE && EXTREME_DEBUG
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
@@ -103,11 +103,11 @@ extern void displayAllPages(const char*);
 
 [[noreturn]] inline void my_abort(const char* msg)
 {   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
-#ifdef CONSERVATIVE
-    extern unsigned int gcNumber;
+#if defined CONSERVATIVE && defined EXTREME_DEBUG
     displayAllPages("Failure");
+    extern unsigned int gcNumber;
     std::fprintf(stdout, "\n\n... Repeat: %s gcN=%d\n\n", msg, gcNumber);
-#endif // CONSERVATIVE
+#endif // CONSERVATIVE && EXTREME_DEBUG
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
@@ -351,7 +351,7 @@ inline void printlog(const char* s, ...)
 // Format string arguments must be provided as literal strings and zprintf
 // only prints to the standard output stream (but in the CSL case with
 // a copy sent to a spool file if one is active). At present I am not
-// certain I know how to relax wither of those limitations.
+// certain I know how to relax either of those limitations.
 
 
 // This will provide an ostream that goes to the standard output but in
@@ -1250,6 +1250,9 @@ BadFmt(
                 break;
             case subtypeFformat:
                 std::cout << std::fixed;
+                break;
+            case subtypeGformat:
+                std::cout << std::defaultfloat;
                 break;
             default:
                 std::cout << std::defaultfloat;

@@ -50,7 +50,9 @@ uint64_t crudeHash(LispObject a)
     }
     else
     {   zprintf("!!!crudeHash(%16.16x) %s\n", a, which);
+#ifdef EXTREME_DEBUG
         displayAllPages("crudeHash messup");
+#endif
         my_abort("bad value in crudeHash");
     }
 }
@@ -137,7 +139,9 @@ void gcTestCode()
             break;
         case 9:
             std::cout << "&&&provoke reclaim\n";
+#ifdef EXTREME_DEBUG
             displayAllPages("memory before GC");
+#endif
             uint64_t w1 = crudeHash(workbase[1], "w1");
             uint64_t w2 = crudeHash(workbase[2], "w2");
             uint64_t a1 = crudeHash(ambiguous[1], "a1");
@@ -148,7 +152,9 @@ void gcTestCode()
             zprintf("w2="); simple_print(workbase[2]);
             zprintf("a1="); simple_print(ambiguous[1]);
             zprintf("a2="); simple_print(ambiguous[2]);
+#ifdef EXTREME_DEBUG
             displayAllPages("memory before after GC");
+#endif
             Lgc(nil, fixnum_of_int(Crand()&0xffff));
             uint64_t w1a = crudeHash(workbase[1], "w1");
             uint64_t w2a = crudeHash(workbase[2], "w2");
@@ -160,7 +166,9 @@ void gcTestCode()
             zprintf("w2="); simple_print(workbase[2]);
             zprintf("a1="); simple_print(ambiguous[1]);
             zprintf("a2="); simple_print(ambiguous[2]);
+#ifdef EXTREME_DEBUG
             displayAllPages("memory after after GC");
+#endif
             std::cout << "&&&end reclaim\n";
             if (w1!=w1a || w2!=w2a || a1!=a1a || a2!=a2a)
             {   zprintf("%x %x   %x %x   %x %x   %x %x\n",
