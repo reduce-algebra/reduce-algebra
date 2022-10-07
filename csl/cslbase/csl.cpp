@@ -1324,6 +1324,9 @@ const char **csl_argv;
 bool restartp;
 
 double max_store_size = 0.0;
+const size_t pageMega = 8;
+size_t maxPages = 0;
+
 
 #ifndef HAVE_CILK
 std::thread kara_thread[2];
@@ -2989,7 +2992,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     if (store_size < 32.0) store_size = 32.0;
     if (max_store_size < 32.0) max_store_size = 32.0;
 #endif // CONSERVATIVE
-    maxPages = static_cast<size_t>(max_store_size)/(pageSize/1024/1024);
+    maxPages = static_cast<size_t>(max_store_size)/pageMega;
 
 // Up until the time I call setup() I may only use term_printf for
 // output, because the other relevant streams will not have been set up.

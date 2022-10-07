@@ -217,7 +217,6 @@ size_t heapSegmentCount;
 // This next tracks how much memory has been grabbed from the operating
 // system, and accounts for it in units of Page.
 size_t totalAllocatedMemory = 0;
-size_t maxPages = 0;
 bool memorySeemsFull = false;
 
 Page* pageFringe = nullptr;
