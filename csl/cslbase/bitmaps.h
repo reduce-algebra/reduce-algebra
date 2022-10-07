@@ -53,9 +53,13 @@
 #ifndef __has_include
 #define __has_include(name) 0
 #endif // __has_include
+
 #if __has_include(<bit>)
 #include <bit>
 #endif // <bit> header
+#if __has_include(<bitset>)
+#include <bitset>
+#endif // <bitset> header
 
 using std::uint64_t;
 using std::size_t;
@@ -71,6 +75,10 @@ inline int nlz(uint64_t x)
 
 inline int ntz(uint64_t x)
 {   return countr_zero(x);
+}
+
+inline int countBits(uint64_t x)
+{   return std::popcount(x);
 }
 
 #elif defined __GNUC__
@@ -89,6 +97,10 @@ inline int nlz(uint64_t x)
 
 inline int ntz(uint64_t x)
 {   return x==0 ? 64 : __builtin_ctzll(x);
+}
+
+inline int countBits(uint64_t x)
+{   return __builtin_popcount(x);
 }
 
 #else // __GNUC__
@@ -194,6 +206,18 @@ inline int ntz(uint64_t n)
     return ntzTable[leastBit(n) % 67];
 }
 
+// The version here is expected to be a good one when the expected number
+// of set bits is small.
+
+inline int countBits(uint64_t x)
+{   int r = 0;
+    while (x != 0)
+    {   r++;
+        x -= x & (-x);
+    }
+    return r;
+}
+
 #endif // __GNUC__
 
 #define NLZ_DEFINED 1
@@ -281,6 +305,28 @@ inline void flipBits(uint64_t map[], size_t m, size_t length)
     }
 }
 
+// Count the number of 1 bits in the specified range.
+
+inline int countBits(uint64_t map[], size_t m, size_t length)
+{   static const uint64_t ones = static_cast<uint64_t>(-1);
+    size_t n = m + length - 1;
+    size_t word1 = m/64;
+    size_t word2 = n/64;
+    size_t bitpos1 = m%64;
+    size_t bitpos2 = n%64;
+    uint64_t mask1 = ones << bitpos1;
+    uint64_t mask2 = ones >> (63-bitpos2);
+    if (word1 == word2) return countBits(map[word1] & mask1 & mask2);
+    else
+    {   int r = countBits(map[word1] & mask1);
+        for (size_t k=word1+1; k<word2; k++)
+            r += countBits(map[k]);
+        return r + countBits(map[word2] & mask2);
+    }
+}
+
+// testBits(map, start, length) == (countBits(map, start, length) != 0)
+
 inline bool testBits(uint64_t map[], size_t m, size_t length)
 {   static const uint64_t ones = static_cast<uint64_t>(-1);
     size_t n = m + length - 1;
@@ -304,8 +350,7 @@ inline bool testBits(uint64_t map[], size_t m, size_t length)
 // mapSize is counting in bits.
 
 inline size_t nextOneBit(uint64_t map[], size_t mapSize, size_t n)
-{
-    if (n >= mapSize) return SIZE_MAX;
+{   if (n >= mapSize) return SIZE_MAX;
 // The first test has to allow for the possibility that it is within a
 // single word of the map.
     size_t word = n/64;
@@ -330,8 +375,7 @@ inline size_t nextOneBit(uint64_t map[], size_t mapSize, size_t n)
 // a multiple of 64. The size is specified in bits not bytes or words.
 
 inline size_t nextZeroBit(uint64_t map[], size_t mapSize, size_t n)
-{
-    if (n >= mapSize) return SIZE_MAX;
+{   if (n >= mapSize) return SIZE_MAX;
 // The first test has to allow for the possibility that it is within a
 // single word of the map.
     size_t word = n/64;

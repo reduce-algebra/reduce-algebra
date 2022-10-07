@@ -1834,6 +1834,91 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     stack_segsize = valI;
                 }
             },
+            /*! options [--mem] \item [{\ttfamily --mem}] \index{{\ttfamily --mem}}
+             * See "-k" which behaves exactly the same.
+             */
+            {   "--mem", true, true,
+                "--mem nnnK or -knnnM or -knnnG Suggest heap-size to use.\n"
+                "         --mem N is the same as -k N",
+                [&](string key, bool hasVal, string val)
+                {   if (!hasVal || val.length() == 0)
+                    {   badArgs.push_back(key);
+                        return;
+                    }
+// val should be a string of the form
+//              nnnK   nnnM or nnnG
+//              nnnK/mm
+// where nnn indicates (approximately) the desired amount of memory in
+// kilobytes, megabytes or gigabytes (default megabytes) and mm is a feature
+// that is deprecated and will be removed soon but that might set the
+// size of the Lisp stack segment in the range 1-10. It is legal to
+// express nnn as a floating point value, as in 2.5G. Since full floating
+// point notation is allowed one can use "-k1.2e3" (1200 Mbytes), or
+// "-k1.2e6K" (1200000 Kbytes, ie the same!) or "-k1.2e-1G" for 120 Mbytes.
+// Ignore case in the specifier.
+                    string valLow(val);
+                    std::transform(valLow.begin(), valLow.end(), valLow.begin(),
+                                   [](int c)
+                    {   return std::tolower(c);
+                    });
+                    const char *valS = valLow.c_str();
+                    double valD;
+                    int valI = 1;
+                    unsigned int len=std::strlen(valS), pos;
+// This is not an especially tidy way of parsing this, but I think it is
+// easy to understand. It uses sscanf to check each potential valid input
+// format and the "%n" in there is used to confirm that sscanf had used up
+// all the characters in the input.
+                    if (std::sscanf(valS, "%lg%n", &valD, &pos)==1 && pos==len)
+                    {
+                    }
+                    else if (std::sscanf(valS, "%lgk%n", &valD, &pos)==1 && pos==len)
+                    {   valD /= 1024.0;
+                    }
+                    else if (std::sscanf(valS, "%lgm%n", &valD, &pos)==1 && pos==len)
+                    {
+                    }
+                    else if (std::sscanf(valS, "%lgg%n", &valD, &pos)==1 && pos==len)
+                    {   valD *= 1024.0;
+                    }
+                    else if (std::sscanf(valS, "%lg/%u%n", &valD, &valI, &pos)==2 &&
+                             pos==len)
+                    {
+                    }
+                    else if (std::sscanf(valS, "%lgk/%u%n", &valD, &valI, &pos)==2 &&
+                             pos==len)
+                    {   valD /= 1024.0;
+                    }
+                    else if (std::sscanf(valS, "%lgm/%u%n", &valD, &valI, &pos)==2 &&
+                             pos==len)
+                    {
+                    }
+                    else if (std::sscanf(valS, "%lgg/%u%n", &valD, &valI, &pos)==2 &&
+                             pos==len)
+                    {   valD *= 1024.0;
+                    }
+                    else
+                    {   badArgs.push_back(key.append(val));
+                        return;
+                    }
+// valD is now in megabytes, so eg if I had specified -k2G it will be 2048.0
+// and if you had specified -k256K it will be 0.25.
+// Negative requests or requests for more than 256Gbytes (or requests for
+// zero or more than 10 stack chunks) will be rejected. I will also demand that
+// at least 8 Mbytes be allocated, or 32/512 for the conservative version
+#ifdef CONSERVATIVE
+                    if (valD < 32.0 || valD > 512.0*1024.0 ||
+#else // CONSERVATIVE
+                    if (valD < 8.0 || valD > 256.0*1024.0 ||
+#endif // CONSERVATIVE
+                        valI < 1 || valI > 10)
+                    {   badArgs.push_back(key.append(val));
+                        return;
+                    }
+                    store_size = valD;
+                    stack_segsize = valI;
+                }
+            },
 
 
             /*! options [--cygwin] \item [{\ttfamily --cygwin}] \index{{\ttfamily --cygwin}}
@@ -2864,7 +2949,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // eg especially on a shared machine with large total memory but running tasks
 // for many users. But still using a default of half the machine memory
 // size may be as good a guess as I can make, and the user can override
-// it using the "-K" option.
+// it using the "-K" and "--maxmem" options.
     size_t mem;
 #ifdef WIN32
     mem = getMemorySize();
@@ -2881,15 +2966,30 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     mem = sysPageCount*static_cast<size_t>(sysPageSize);
 #endif // WIN32
     double dmem = mem/(1024.0*1024.0);    // Physical memory now in megabytes
-    if (store_size == 0.0) store_size = dmem/2.0;
-    if (max_store_size != 0.0 &&
-        store_size > max_store_size) store_size = max_store_size;
+// store_size is as set by "-k" or "--mem" and max_store_size by "--max-mem"
+// and in each case the value will be zero if the user has not provided an
+// explicit setting.
+    if (max_store_size == 0) max_store_size = static_cast<double>(SIZE_MAX);
+// First apply some limits to maxmem - I will allow the user to
+// specify up to twice the physical memory of their computer, but
+// beyond that is liable to be ridiculous.
+    if (max_store_size > 2.0*dmem) max_store_size = 2.0*dmem;
 // On 32-bit systems I will restrict myself to 1.6Gbytes max because over
 // 2Gbytes I start to risk trouble with sign bits and address arithmetic
 // overflow. There OUGHT not to be too much trouble and the main reasons
 // for my caution here are now historical, but I will take a view that
 // people who want more memory than 1.6G should move to a 64-bit platform.
-    if (!SIXTY_FOUR_BIT && store_size > 1600.0) store_size = 1600.0;
+    if (!SIXTY_FOUR_BIT && max_store_size > 1600.0)
+        max_store_size = 1600.0;
+    if (store_size == 0.0) store_size = dmem/2.0;
+    if (store_size > max_store_size) store_size = max_store_size;
+#ifdef CONSERVATIVE
+// With this variant at least 32 Mbytes will be needed, so force that in
+// case anybody has tried to set a lower limit.
+    if (store_size < 32.0) store_size = 32.0;
+    if (max_store_size < 32.0) max_store_size = 32.0;
+#endif // CONSERVATIVE
+    maxPages = static_cast<size_t>(max_store_size)/(pageSize/1024/1024);
 
 // Up until the time I call setup() I may only use term_printf for
 // output, because the other relevant streams will not have been set up.

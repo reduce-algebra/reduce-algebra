@@ -45,16 +45,14 @@
 
 // In code that at present (February 2021) is disabled with "#if 0"
 // I use the Mersenne Twister generator as set up in arithlib.hpp
-// to set up some randomized testing for this code. That will only
-// compile if you have a "modern" C++ compiler. For use here arithlib.hpp
-// needs to know it is being used from within CSL...
+// to set up some randomized testing for this code.
 
 #ifndef LISP
 #define LISP 1
-#endif
+#endif // !LISP
 #ifndef CSL
 #define CSL 1
-#endif // CSL
+#endif // !CSL
 #include "arithlib.hpp"  // For random number support
 #endif
 
@@ -217,15 +215,16 @@ size_t heapSegmentSize[16];
 size_t heapSegmentCount;
 
 // This next tracks how much memory has been grabbed from the operating
-// system, and accounts for it in uints of Page.
+// system, and accounts for it in units of Page.
 size_t totalAllocatedMemory = 0;
+size_t maxPages = 0;
 bool memorySeemsFull = false;
 
 Page* pageFringe = nullptr;
 Page* pageEnd = nullptr;
 
 bool allocateSegment(size_t n)
-{   assert(pageFringe == pageEnd);
+{   my_assert(pageFringe == pageEnd, where("pageFringe != pageEnd"));
 // I will round up the size to allocate so it is a multiple of the
 // page size, ie of 8 Mbytes.
     n = (n+pageSize-1) & -pageSize;
@@ -269,6 +268,12 @@ bool allocateSegment(size_t n)
 // r now refers to a new segment of size n.
     pageFringe = r;
     pageEnd = &r[n/pageSize];
+    while (pageFringe != pageEnd)
+    {   Page* r = pageFringe++;
+        r->type = emptyPageType;
+        emptyPages.push(r);
+//      zprintf("set up new empty page %a\n", r);
+    }
     return true; // Success!
 }
 
@@ -288,15 +293,15 @@ bool allocateSegment(size_t n)
 // things. I grab memory right up to that limit if I can.
 
 bool allocateAnotherSegment()
-{   size_t maxPages = static_cast<size_t>(max_store_size);
-    if (memorySeemsFull ||
+{   if (memorySeemsFull ||
         totalAllocatedMemory >= maxPages ||
         heapSegmentCount == 15) return false;
     size_t inc = totalAllocatedMemory;
     if ((totalAllocatedMemory+inc) > maxPages)
         inc = maxPages - totalAllocatedMemory;
     std::cout << "@@@ Current heap size " << (8*totalAllocatedMemory) << " MB\n";
-    if (allocateSegment(inc*pageSize)) return true;
+    if (inc == 0) return false;
+    else if (allocateSegment(inc*pageSize)) return true;
     memorySeemsFull = true;
     if (totalAllocatedMemory <= 8) return false;
     else if (allocateSegment(inc*pageSize/2)) return true;
@@ -307,11 +312,15 @@ bool allocateAnotherSegment()
 void initConsPage(Page* p, bool empty)
 {   consPages.push(p);
     p->liveData = true;
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
+#endif // EXTREME_DEBUG
     p->type = consPageType;
     consCurrent = p;
     p->dataEnd = consEnd = endOfConsPage(p);
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("set %a dataEnd = %a\n", p, p->dataEnd);
+#endif // EXTREME_DEBUG
     if (empty)
     {   p->hasPinned = 0;
         p->pinnedPages = nullptr;
@@ -341,10 +350,14 @@ void initConsPage(Page* p, bool empty)
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
     p->liveData = true;
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
+#endif // EXTREME_DEBUG
     p->type = vecPageType;
     p->dataEnd = endOfVecPage(p);
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("set %a dataEnd = %a\n", p, p->dataEnd);
+#endif // EXTREME_DEBUG
     vecCurrent = p;
     vecEnd = endOfVecPage(p);
     if (empty)
@@ -385,8 +398,10 @@ void initPage(PageType type, Page* p, bool empty)
     }
 }
 
-// This finds another Page to use.
-// I prefer to allocate empty pages and refuse to re-use clogged ones.
+// This finds another Page to use. If must ensure that there is a Page
+// of the specified type set up as current, and it is called when the
+// existing current page is full up.
+// I use pinned pages first, then free ones and clogged only in extremis.
 // When I do not have a page readily to hand the garbage collector is
 // invoked - once I am within the GC I will use every bit of memory I
 // can and not try a recusive call to the GC!
@@ -394,16 +409,13 @@ void initPage(PageType type, Page* p, bool empty)
 void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
 // Ha ha - note use of "%s" for displaying an "enum".
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("grabFreshPage %s\n", type);
-    size_t busy = emptyPages.count +
-        consPinPages.count +
-        vecPinPages.count +
-        consCloggedPages.count +
-        vecCloggedPages.count +
-        consPages.count +
-        vecPages.count +
-        borrowPages.count;
+#endif // EXTREME_DEBUG
+    size_t busy = consPages.count + vecPages.count;
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);
+#endif // EXTREME_DEBUG
     for (;;)
     {   size_t unused = totalAllocatedMemory - busy;
 // Here I grab a page that is already dedicated to the type of use required
@@ -456,15 +468,27 @@ void grabFreshPage(PageType type)
                 return;
             }
         }
-// If current memory is getting full or (really improbably) there are too
-// many pages clogged with pinned data then I will try to grab
-// more memory from the operating system. If that succeeds I very much
-// expect that the enlarged memory will be well less than (1/2) full. If
-// however I can not allocate any more then I will need to garbage collect.
-        if (!allocateAnotherSegment()) break;
+// Here I may need to garbage collect. There is a potenial disaster state
+// where since the previous GC I have allocated lots of memory but not
+// released any at all, and where the pages that will form my "new half space" are
+// somewhat cluttered and fragmented with pinned items. In such a situation
+// evacuating all data from the current live space could over-fill the new
+// space and so garbage collection could fail. An especially unhappy version
+// of that would be if memory was expandable so that the disaster could
+// be averted via allocateAnotherSegment().
+// I think that the situation described is extremely improbable, even though
+// a tight loop that just performed CONS operations might be able to lead
+// to it. If I decide I am unhappy enough I will adjust the memory allocation
+// code so that when NOT in the garbage collector it triggers GC some time
+// before a page gets full. Then copying data ought not to be able to
+// totally fill the new half space. The amount by which I should GC early
+// would needs to be conditioned by what I would see as worst case
+// expansion due to pinning clutter/fragmentation. The other thing I can do
+// is to arrange that when in the GC I expand memory where necessary and
+// possible... which I do right here.
+        if (!withinGarbageCollector || !allocateAnotherSegment()) break;
     }
-    if (withinGarbageCollector) fatal_error(err_no_store);
-    cout << "\n@@@ MEMORY FULL: will try to garbage collect @@@\n" << endl;
+    if (withinGarbageCollector) fatal_error(err_no_store_in_gc);
     garbage_collect(type==consPageType ? "list space" : "vector space");
 // After garbage collection there had BETTER be some available memory left!
 // At the end of garbage collection everything should be ready to do the
@@ -475,14 +499,47 @@ void grabFreshPage(PageType type)
 // allocate I will demand that the current cons and vector pages are both
 // at worst 7/8 full. Well my check for that does not look at the bad
 // prospect for pinned material clogging up that final 1/8th!
-    if (emptyPages.isEmpty() &&
-        consPinPages.isEmpty() &&
-        consFringe > (endOfConsPage(consCurrent)-pageSize/8))
-        fatal_error(err_no_store);
-    if (emptyPages.isEmpty() &&
-        vecPinPages.isEmpty() &&
-        vecFringe > (endOfVecPage(vecCurrent)-pageSize/8))
-        fatal_error(err_no_store);
+    if (force_verbos)
+    {    zprintf("fr=%a, end=%a target=%a\n",
+                 consFringe, endOfConsPage(consCurrent),
+                 endOfConsPage(consCurrent)-pageSize/8);
+         zprintf("pf=%a pe=%a\n", pageFringe, pageEnd);
+         zprintf("ep %s cpin %s cclog %s test=%s\n",
+             emptyPages.isEmpty(), consPinPages.isEmpty(),
+             consCloggedPages.isEmpty(),
+             consFringe > (endOfConsPage(consCurrent)-pageSize/8));
+    }
+// I try expanding memory with a target that the heap should be at
+// most 25% full at the end of GC. Ie that the half-space within which
+// I am working be at most 50% full. In the test applied here I am not
+// counting cons and vector pages independently and in particular I am
+// not worrying about the type-commitment represented bu consPinPages etc.
+    busy = consPages.count + vecPages.count;
+    if (busy > totalAllocatedMemory/4 &&
+        totalAllocatedMemory < maxPages)
+        allocateAnotherSegment();
+// At the end of GC know that consCurrent and vecCurrent are both active.
+// I will want to report a failure if the new half space is too close to
+// being full. There are two cases - one is that the number of pages
+// currently in use is strictly less than half the total memory I have
+// allocated. Well even in that situation there could be disasters because
+// of pinning! The other is that the page counts show memory half full
+// but also consCurrent or vecCurrent is seriously full up. This second
+// situation is one that really matters when one attempts to run in small
+// total memory such as "just" 32Mb.
+    if (2*busy < totalAllocatedMemory) return;
+// Now I need to see it it would be possible to allocate a new half-space...
+// I try to take account of cons and vector pages.
+    size_t fr = emptyPages.count;
+    size_t consFr = consPinPages.count + consCloggedPages.count;
+    if (consPages.count > consFr)
+    {   if (consPages.count-consFr > fr) fatal_error(err_no_store);
+        fr -= consPages.count-consFr;
+    }
+    size_t vecFr = vecPinPages.count + vecCloggedPages.count;
+    if (vecPages.count > vecFr)
+    {   if (vecPages.count-vecFr > fr) fatal_error(err_no_store);
+    }
 }
 
 // When I make a page "full" I will put a pointer just beyond the
@@ -491,7 +548,9 @@ void grabFreshPage(PageType type)
 
 uintptr_t consEndOfPage()
 {   consCurrent->dataEnd = consFringe;
+#ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("set %a dataEnd = %a\n", consCurrent, consCurrent->dataEnd);
+#endif // EXTREME_DEBUG
 // Maintain a list of all full pages, regardless of type.
     consCurrent->pendingPages = pendingPages;
     pendingPages = consCurrent;
@@ -575,7 +634,8 @@ void initHeapSegments(double storeSize)
 // --maxmem can be used to force a smaller limit.
 
 void init_heap_segments(double d)
-{   zprintf("init_heap_segments %.2g Mbytes\n", d);
+{   if (d < 1000.0) zprintf("init_heap_segments %g Mbytes\n", d);
+    else zprintf("init_heap_segments %g Gbytes\n", d/1000.0);
 // For historical reasons initHeapSegments takes its size in Kbytes not Mbytes
     initHeapSegments(d*1024.0);
 }

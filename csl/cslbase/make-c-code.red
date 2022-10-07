@@ -272,7 +272,10 @@ begin
   read_profile_data "$destdir/profile.dat";
   read_profile_data "$destdir/unprofile.dat";
 % I will load source definitions of everything available. That will include
-% much that is not actually needed, but will be simplest and safest.
+% much that is not actually needed, but will be simplest and safest. But
+% note that the full source code for all of Reduce in Lisp form is quite
+% bulky, so you are liable to need several hundred megabytes of heap
+% available for this to succeed.
   load!-source();
 % The next few lines are something of a cheat! The test case for pasf
 % does not seen to have special hot-spots in the way that most others do,
