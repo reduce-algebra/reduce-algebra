@@ -405,18 +405,100 @@ void initPage(PageType type, Page* p, bool empty)
 // invoked - once I am within the GC I will use every bit of memory I
 // can and not try a recusive call to the GC!
 
+// canAllocate() checks if it is possible to allocate a page of the
+// specified type while then leaving memory such that it ought to be
+// possible to run a garbage collection and copy all live data to a
+// fresh new half-space.
+
+bool canAllocateSub(PageType type,
+    size_t consInUse, size_t vecInUse, size_t consFree, size_t vecFree)
+{   size_t reallyFree = emptyPages.count + (pageEnd-pageFringe);
+
+// Account on the basis of taking a new CONS page preferentially from
+// consPinPages or consCloggedPages and only from emptyPages if those
+// are not available. Then similarly for a vector Page.
+    if (type == consPageType)
+    {   if (consFree != 0) consFree--;
+        else if (reallyFree == 0) return false;
+        else reallyFree--;
+    }
+    else if (vecFree != 0) vecFree--;
+    else if (reallyFree == 0) return false;
+    else reallyFree--;
+// I have now modelled how many pages will have each status after another
+// one of the indicated type has been allocated. So now see if I will have
+// enough to copy into a new half space... This is achieved by pretending it
+// is copying every active cons and vec page that it can and then looking to
+// see if it managed to copy them all.
+    if (consInUse <= consFree)
+    {   consFree -= consInUse;
+        consInUse = 0;
+    }
+    else
+    {   consInUse -= consFree;
+        consFree = 0;
+    }
+    if (vecInUse <= vecFree)
+    {   vecFree -= vecInUse;
+        vecInUse = 0;
+    }
+    else
+    {   vecInUse -= vecFree;
+        vecFree = 0;
+    }
+    if (consInUse <= reallyFree)
+    {   reallyFree -= consInUse;
+        consInUse = 0;
+    }
+    else
+    {   consInUse -= reallyFree;
+        reallyFree = 0;
+    }
+    if (vecInUse <= reallyFree)
+    {   reallyFree -= vecInUse;
+        vecInUse = 0;
+    }
+    else
+    {   vecInUse -= reallyFree;
+        reallyFree = 0;
+    }
+    return (consInUse==0 && vecInUse==0);
+}
+
+bool canAllocate(PageType type)
+{   size_t consInUse = consPages.count;
+    size_t vecInUse = vecPages.count;
+    if (type == consPageType) consInUse++; else vecInUse++;
+    size_t consFree = consPinPages.count + consCloggedPages.count;
+    size_t vecFree = vecPinPages.count + vecCloggedPages.count;
+    return canAllocateSub(type, consInUse, vecInUse, consFree, vecFree);
+}
+
+bool canAllocateAvoidingClogged(PageType type)
+{   size_t consInUse = consPages.count;
+    size_t vecInUse = vecPages.count;
+    if (type == consPageType) consInUse++; else vecInUse++;
+    size_t consFree = consPinPages.count;
+    size_t vecFree = vecPinPages.count;
+    return canAllocateSub(type, consInUse, vecInUse, consFree, vecFree);
+}
+
 void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
-// Ha ha - note use of "%s" for displaying an "enum".
-#ifdef EXTREME_DEBUG
-    if (GCTRACE) zprintf("grabFreshPage %s\n", type);
-#endif // EXTREME_DEBUG
-    size_t busy = consPages.count + vecPages.count;
-#ifdef EXTREME_DEBUG
-    if (GCTRACE) zprintf("There are %d pages in use of %d\n", busy, totalAllocatedMemory);
-#endif // EXTREME_DEBUG
-    for (;;)
-    {   size_t unused = totalAllocatedMemory - busy;
+// When called from within the GC this MUST succeed! So the key issue is
+// to trigger a GC early enough to make this so. The criterion I will
+// use is to imagine that a page of the specified type gets allocated and
+// is then totally filled. Then beyond that there must be enough pages
+// to copy all the potentially live data into, allowing for the fact that
+// eg a vecPinPage may be mosyly empty but it can only be re-allocated
+// as a vector page. I will do any memory expansion after not before
+// garbage collection, so the judgement here is to be based on memory
+// currently active. I will count in units of Pages rather than anything
+// more refined. Note that this is going to mean that if the total allocated
+// memory is an odd multiple of the Page size there may be some waste -
+// in general "sensible" memory allocations will be at multiples of 16Mb!
+    if (mustGrab || canAllocate(type))
+    {
 // Here I grab a page that is already dedicated to the type of use required
 // (ie list or vector) if one is available. When I do that I accept that I
 // then have to allocate around the pinned data in it, but I have placed
@@ -427,118 +509,125 @@ void grabFreshPage(PageType type)
 // either list of vector ones and so avoid having to fail for lack of space
 // for one of the sorts of data while there may be plenty of room for the
 // other.
-        if (mustGrab || busy < (unused-1))
-        {   if (type==vecPageType && !vecPinPages.isEmpty())
-            {   Page* r = vecPinPages.pop();
-                initPage(type, r, false);
-//              zprintf("return pinned vec %a type %d\n", r, (int)type);
-                return;
-            }
-            else if (type==consPageType && !consPinPages.isEmpty())
-            {   Page* r = consPinPages.pop();
-                initPage(type, r, false);
-//              zprintf("return pinned cons %a type %d\n", r, (int)type);
-                return;
-            }
-            else if (!emptyPages.isEmpty())
-            {   Page* r = emptyPages.pop();
-                r->type = emptyPageType;
-                initPage(type, r, true);
-//              zprintf("return empty %a type %d\n", r, (int)type);
-                return;
-            }
-            else if (pageFringe != pageEnd)
-            {   Page* r = pageFringe++;
-                r->type = emptyPageType;
-                initPage(type, r, true);
-//              zprintf("return new %a type %d\n", r, (int)type);
-                return;
-            }
-            if (mustGrab && type==vecPageType && !vecCloggedPages.isEmpty())
+        if (type==vecPageType && !vecPinPages.isEmpty())
+        {   Page* r = vecPinPages.pop();
+            initPage(type, r, false);
+            return;
+        }
+        if (type==consPageType && !consPinPages.isEmpty())
+        {   Page* r = consPinPages.pop();
+            initPage(type, r, false);
+            return;
+        }
+// I rather want to use empty pages in preference to clogged ones. So
+// if that is possible I will do it.
+        if (!canAllocateAvoidingClogged(type))
+        {   if (type==vecPageType && !vecCloggedPages.isEmpty())
             {   Page* r = vecCloggedPages.pop();
                 initPage(type, r, false);
-//              zprintf("return clogged vec %a type %d\n", r, (int)type);
                 return;
             }
-            else if (mustGrab && type==consPageType && !consCloggedPages.isEmpty())
+            else if (type==consPageType && !consCloggedPages.isEmpty())
             {   Page* r = consCloggedPages.pop();
                 initPage(type, r, false);
-//              zprintf("return clogged cons %a type %d\n", r, (int)type);
                 return;
             }
         }
-// Here I may need to garbage collect. There is a potenial disaster state
-// where since the previous GC I have allocated lots of memory but not
-// released any at all, and where the pages that will form my "new half space" are
-// somewhat cluttered and fragmented with pinned items. In such a situation
-// evacuating all data from the current live space could over-fill the new
-// space and so garbage collection could fail. An especially unhappy version
-// of that would be if memory was expandable so that the disaster could
-// be averted via allocateAnotherSegment().
-// I think that the situation described is extremely improbable, even though
-// a tight loop that just performed CONS operations might be able to lead
-// to it. If I decide I am unhappy enough I will adjust the memory allocation
-// code so that when NOT in the garbage collector it triggers GC some time
-// before a page gets full. Then copying data ought not to be able to
-// totally fill the new half space. The amount by which I should GC early
-// would needs to be conditioned by what I would see as worst case
-// expansion due to pinning clutter/fragmentation. The other thing I can do
-// is to arrange that when in the GC I expand memory where necessary and
-// possible... which I do right here.
-        if (!withinGarbageCollector || !allocateAnotherSegment()) break;
+        if (!emptyPages.isEmpty())
+        {   Page* r = emptyPages.pop();
+            r->type = emptyPageType;
+            initPage(type, r, true);
+            return;
+        }
+        if (pageFringe != pageEnd)
+        {   Page* r = pageFringe++;
+            r->type = emptyPageType;
+            initPage(type, r, true);
+            return;
+        }
+        if (type==vecPageType && !vecCloggedPages.isEmpty())
+        {   Page* r = vecCloggedPages.pop();
+            initPage(type, r, false);
+            return;
+        }
+        if (type==consPageType && !consCloggedPages.isEmpty())
+        {   Page* r = consCloggedPages.pop();
+            initPage(type, r, false);
+            return;
+        }
+        my_abort(where("I had expected to be able to allocate a Page"));
     }
+// Here I need to garbage collect.
     if (withinGarbageCollector) fatal_error(err_no_store_in_gc);
     garbage_collect(type==consPageType ? "list space" : "vector space");
 // After garbage collection there had BETTER be some available memory left!
 // At the end of garbage collection everything should be ready to do the
-// next bit of allocation. Well the tests here are a bit dubious! If there
-// are no consPinPages and no vecPinPages but just one emptyPage I will
-// continue, because whichever of cons or vec space runs out first will
-// grab and use the empty page. If there are no more pages available to
-// allocate I will demand that the current cons and vector pages are both
-// at worst 7/8 full. Well my check for that does not look at the bad
-// prospect for pinned material clogging up that final 1/8th!
+// next bit of allocation. And with the space now free should be sufficient
+// for the next garbage collection!
+// First report on memory use...
+// This calculation does not allow for padders that has been put in
+// when previously-pinned items are now no longer pinned, and it does not
+// include the space used by pinned data in otherwise free pages.
+    size_t consUsed = Page::consDataCount*consPages.count -
+        (endOfConsPage(consCurrent)-consFringe)/sizeof(ConsCell);
+    size_t vecUsed = (chunkSize*Page::chunkDataCount*vecPages.count -
+        (endOfVecPage(vecCurrent)-vecFringe))/sizeof(LispObject);
     if (force_verbos)
-    {    zprintf("fr=%a, end=%a target=%a\n",
-                 consFringe, endOfConsPage(consCurrent),
-                 endOfConsPage(consCurrent)-pageSize/8);
-         zprintf("pf=%a pe=%a\n", pageFringe, pageEnd);
-         zprintf("ep %s cpin %s cclog %s test=%s\n",
-             emptyPages.isEmpty(), consPinPages.isEmpty(),
-             consCloggedPages.isEmpty(),
-             consFringe > (endOfConsPage(consCurrent)-pageSize/8));
+    {   zprintf("%.3g Mbytes lists, %.3g Mbytes vectors\n",
+            consUsed*sizeof(ConsCell)/1024.0/1024.0,
+            vecUsed*sizeof(LispObject)/1024.0/1024.0);
+        zprintf("Cons just pages = %.3g\n",
+            (double)Page::consDataCount*consPages.count*sizeof(ConsCell));
     }
+
 // I try expanding memory with a target that the heap should be at
 // most 25% full at the end of GC. Ie that the half-space within which
 // I am working be at most 50% full. In the test applied here I am not
 // counting cons and vector pages independently and in particular I am
-// not worrying about the type-commitment represented bu consPinPages etc.
-    busy = consPages.count + vecPages.count;
-    if (busy > totalAllocatedMemory/4 &&
+// not worrying about the type-commitment represented by pinned Pages etc.
+    if (consPages.count + vecPages.count > totalAllocatedMemory/4 &&
         totalAllocatedMemory < maxPages)
         allocateAnotherSegment();
+// I am going to take a somewhat neurotic stance regarding cons pinning...
+// I put in a number of padders equal to the total number of pinned cells
+// in unused cons pages. The result should be that I will then ALWAYS have
+// space for the GC to copy list data. Well I am not 100% careful because
+// if there is in fact an extra page or so available here but the current one
+// is nearly full I will fill the page up but that may not have reserved
+// quite enough space...
+    size_t pinCount = 0;
+    for (auto p:consPinPages)
+        pinCount += countBits(p->consPins, 0, Page::consDataCount-1);
+    while (pinCount != 0 &&
+           consFringe < consEnd)
+    {   uintptr_t r = consFringe;
+        if (r < consLimit)
+        {   consFringe += sizeof(ConsCell);
+            indirect(r) = CONS_PADDER_HEADER;
+            pinCount--;
+            continue;
+        }
+        while (consFringe < consEnd &&
+               consIsPinned(consFringe, consCurrent))
+            consFringe += sizeof(ConsCell);
+        if (consFringe == consEnd) break;   // a bit dubious!
+        r = consFringe;
+        consFringe += 2;
+        indirect(r) = CONS_PADDER_HEADER;
+        pinCount--;
+    }
+// I might want to do the same for vector pages...
+//
 // At the end of GC know that consCurrent and vecCurrent are both active.
 // I will want to report a failure if the new half space is too close to
-// being full. There are two cases - one is that the number of pages
-// currently in use is strictly less than half the total memory I have
-// allocated. Well even in that situation there could be disasters because
-// of pinning! The other is that the page counts show memory half full
-// but also consCurrent or vecCurrent is seriously full up. This second
-// situation is one that really matters when one attempts to run in small
-// total memory such as "just" 32Mb.
-    if (2*busy < totalAllocatedMemory) return;
-// Now I need to see it it would be possible to allocate a new half-space...
-// I try to take account of cons and vector pages.
-    size_t fr = emptyPages.count;
-    size_t consFr = consPinPages.count + consCloggedPages.count;
-    if (consPages.count > consFr)
-    {   if (consPages.count-consFr > fr) fatal_error(err_no_store);
-        fr -= consPages.count-consFr;
-    }
-    size_t vecFr = vecPinPages.count + vecCloggedPages.count;
-    if (vecPages.count > vecFr)
-    {   if (vecPages.count-vecFr > fr) fatal_error(err_no_store);
-    }
+// to being full. The threshold I apply is that there is at least (about)
+// a megabyte of both cons and vector space available.
+    if (!canAllocate(consPageType) &&
+        consFringe > (endOfConsPage(consCurrent) - pageSize/8))
+        fatal_error(err_no_store);
+    if (!canAllocate(vecPageType) &&
+        vecFringe > (endOfVecPage(vecCurrent) - pageSize/8))
+        fatal_error(err_no_store);
 }
 
 // When I make a page "full" I will put a pointer just beyond the

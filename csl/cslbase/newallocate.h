@@ -1000,7 +1000,9 @@ inline uintptr_t get2Words()
 {
 #ifdef DEBUG
     consCounter++;
-    if (garbage_collection_permitted && !withinGarbageCollector && consCounter==gcEvery)
+    if (garbage_collection_permitted &&
+        !withinGarbageCollector &&
+        consCounter==gcEvery)
     {   garbage_collect("gc-every");
         consCounter = 0;
     }
@@ -1185,7 +1187,9 @@ inline uintptr_t getNBytes(size_t n)
 {
 #ifdef DEBUG
     consCounter++;
-    if (garbage_collection_permitted && !withinGarbageCollector && consCounter==gcEvery)
+    if (garbage_collection_permitted &&
+        !withinGarbageCollector &&
+        consCounter==gcEvery)
     {   garbage_collect("gc-every");
         consCounter = 0;
     }
