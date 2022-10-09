@@ -212,7 +212,7 @@ LispObject borrow_vector(int tag, int type, size_t n)
 void* heapSegment[16];
 char* heapSegmentBase[16];
 size_t heapSegmentSize[16];
-size_t heapSegmentCount;
+size_t heapSegmentCount = 0;
 
 // This next tracks how much memory has been grabbed from the operating
 // system, and accounts for it in units of Page.
