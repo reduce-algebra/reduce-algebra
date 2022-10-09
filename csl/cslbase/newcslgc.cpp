@@ -1761,4 +1761,17 @@ void aprint(LispObject* x)
         (uintptr_t)x, (uint64_t)x, objectType((uintptr_t)x));
 }
 
+// This version only supports the first segment of pages... and it does not
+// do any checking for the validity of either of its arguments. It is probably
+// quite close to what unAddr() in newallocate.h ought to have been. I give
+// it a very short name since I will be using it while debugging and typing
+// in uses of it to gdb.
+
+uintptr_t V(int pageNumber, size_t offset)
+{   Page* p = reinterpret_cast<Page*>(heapSegment[0]) + pageNumber;
+    if (p->type == consPageType)
+        return offsetToCons(offset/sizeof(ConsCell), p);
+    else return offsetToVec(offset/sizeof(LispObject), p);
+}
+
 // end of file newcslgc.cpp

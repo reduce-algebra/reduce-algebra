@@ -521,7 +521,7 @@ void grabFreshPage(PageType type)
         }
 // I rather want to use empty pages in preference to clogged ones. So
 // if that is possible I will do it.
-        if (!canAllocateAvoidingClogged(type))
+        if (!canAllocateAvoidingClogged(type) || mustGrab)
         {   if (type==vecPageType && !vecCloggedPages.isEmpty())
             {   Page* r = vecCloggedPages.pop();
                 initPage(type, r, false);
