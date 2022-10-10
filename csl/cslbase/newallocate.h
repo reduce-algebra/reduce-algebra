@@ -533,6 +533,7 @@ extern Page* borrowCurrent;        // Where temporary vectors are allocated.
 extern Page* potentiallyPinned;    // For GC.
 extern Page* pinnedPages;          // For GC.
 extern Page* pendingPages;         // For GC.
+extern Page* oldVecPinPages;       // For GC.
 
 inline uintptr_t endOfConsPage(Page* p)
 {   return bit_cast<uintptr_t>(p) +

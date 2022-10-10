@@ -1119,7 +1119,8 @@ static LispObject lisp_main()
                     for (Page* p:emptyPages) p->type = emptyPageType;
                     grabFreshPage(consPageType);
                     grabFreshPage(vecPageType);
-                    borrowCurrent = nullptr;
+                    potentiallyPinned = pinnedPages = pendingPages =
+                        oldVecPinPages = borrowCurrent = nullptr;
                     zprintf("Try recycling pages on line 1107 of csl.cpp\n");
 #else
                     for (size_t i=0; i<pages_count; i++)
@@ -1224,7 +1225,8 @@ static LispObject lisp_main()
                     emptyPages += vecPages;
                     grabFreshPage(consPageType);
                     grabFreshPage(vecPageType);
-                    borrowCurrent = nullptr;
+                    potentiallyPinned = pinnedPages = pendingPages =
+                        oldVecPinPages = borrowCurrent = nullptr;
 #else // CONSERVATIVE
 // This puts all recorded heap pages back in the main pool.
                     for (size_t i=0; i<pages_count; i++)

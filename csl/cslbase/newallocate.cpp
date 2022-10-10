@@ -212,7 +212,7 @@ LispObject borrow_vector(int tag, int type, size_t n)
 void* heapSegment[16];
 char* heapSegmentBase[16];
 size_t heapSegmentSize[16];
-size_t heapSegmentCount;
+size_t heapSegmentCount = 0;
 
 // This next tracks how much memory has been grabbed from the operating
 // system, and accounts for it in units of Page.
@@ -521,7 +521,7 @@ void grabFreshPage(PageType type)
         }
 // I rather want to use empty pages in preference to clogged ones. So
 // if that is possible I will do it.
-        if (!canAllocateAvoidingClogged(type))
+        if (!canAllocateAvoidingClogged(type) || mustGrab)
         {   if (type==vecPageType && !vecCloggedPages.isEmpty())
             {   Page* r = vecCloggedPages.pop();
                 initPage(type, r, false);
