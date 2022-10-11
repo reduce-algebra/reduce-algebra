@@ -96,7 +96,8 @@ ipower := {i^~n => cos(n*pi/2) + i*sin(n*pi/2),
 
 begin scalar oldmode;
       if dmode!* then oldmode := setdmode(dmode!*,nil);
-      algebraic let ipower,atan2eval;
+      %algebraic let ipower,atan2eval;
+      algebraic let atan2eval;
       if oldmode then setdmode(oldmode,t)
    end;
 
@@ -120,7 +121,7 @@ symbolic procedure defint0 u;
     %  on complex;  % this causes trouble here, so it was moved into
                     % defint11s after splitfactors has operated!
       !*noneglogs := t;
-      algebraic (let logcomplex); %,atan2eval);
+      algebraic (let ipower,logcomplex); %,atan2eval);
       fac := !*factor; on factor;
       u := errorset2 {'defint1,mkquote u} where !*norationalgi = t;
       if errorp u then <<u := 'failed; go to ret>> else u := car u;
@@ -143,13 +144,13 @@ symbolic procedure defint0 u;
       u := aeval prepsq u;
       on complex;
       u := simp!* u;
-   %   u := evalletsub2({'(logcomplexs),
+   %   u := evalletsub2({'(ipower logcomplex),
    %      {'simp!*,{'prepsq,mkquote u}}},nil);
    %   if errorp u then error(99,list("error during log simp"))
    %      else u := car u;
  ret: onoff('factor,fac);
       off complex;
-      algebraic (clearrules logcomplex); %,atan2eval);
+      algebraic (clearrules ipower,logcomplex); %,atan2eval);
       if u neq 'failed then u := prepsq u;
       off complex; on combinelogs;
       if u neq 'failed then u := aeval u;
