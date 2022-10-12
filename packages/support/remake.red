@@ -126,7 +126,7 @@ symbolic procedure inline_defs_file();
 
 symbolic procedure load_saved_inlines();
   begin
-    scalar ff, u, v;
+    scalar ff, u, v, !*echo;  % Read this silently.
 %
 % There is another bit of fun here. I would like to be able to call
 % module!-rebuild at any time, and that means that the current directory
