@@ -238,8 +238,12 @@ struct alignas(chunkSize) Chunk
 {   uintptr_t data[chunkSize/sizeof(uintptr_t)];
 };
 
-// I have a slight misery here! I will respond to it with fairly
-// dubious use of fixed numbers.
+enum PinStatus
+{   wasEmpty,
+    wasPinned,
+    wasClogged
+};
+
 // What I want is for my Page structure to have a known size (8Mbytes)
 // and I want that to be a round numbers so I can use cheap mask operations
 // to tell which page any pointer is within. A cons-Page has to contain
@@ -247,8 +251,8 @@ struct alignas(chunkSize) Chunk
 // array ConsCell[]. Each bitmap will use 1/64 as much space as the main
 // array. The header size is fixed until I change the code and add or remove
 // items, or until a variant C++ compiler alters its layout.
-// C++ does not seem to give me a very tidy way arrange the sizes of the
-// bitmaps and main array automatically.
+// I use some "jolly" C++ metaprogramming to derive suitable sized for the
+// bitmaps and main array.
 
 template <int ConsN, int ChunkN>
 class alignas(pageSize) PageTemplate
@@ -271,14 +275,13 @@ public:
         struct
         {   PageType type;            // empty, cons or vector.
             Page* chain;              // general purpose chaining.
-            Page* borrowChain;        // support discarding borrowed pages
             size_t hasPinned;         // count of pinned locations/chunks
             Page* pinnedPages;        // chain used during GC
             Page* pendingPages;       // chain used during GC
             LispObject pinnedObjects; // chain used during GC
             uintptr_t scanPoint;      // for when GC has parly evacuated page
             uintptr_t dataEnd;        // end of data in this page
-            bool borrowPinned;        // used when borrowed page is discarded
+            PinStatus borrowStatus;   // used when borrowed page is discarded
             bool liveData;            // is there valid data here?
         };
 // Because I am using anonymous structs here I make the names of all the
@@ -287,14 +290,13 @@ public:
         struct
         {   PageType Ctype;
             Page* Cchain;
-            Page* CborrowChain;
             size_t ChasPinned;
             Page* CpinnedPages;
             Page* CpendingPages;
             LispObject CpinnedObjects;
             uintptr_t CscanPoint;
             uintptr_t CdataEnd;
-            bool CborrowPinned;
+            PinStatus CborrowStatus;
             bool CliveData;
 // The above are the common fields...
             uint64_t consPins[consPinWords];
@@ -304,14 +306,13 @@ public:
         struct
         {   PageType Vtype;
             Page* Vchain;
-            Page* VborrowChain;
             size_t VhasPinned;
             Page* VpinnedPages;
             Page* VpendingPages;
             LispObject VpinnedObjects;
             uintptr_t VscanPoint;
             uintptr_t VdataEnd;
-            bool VborrowPinned;
+            PinStatus VborrowStatus;
             bool VliveData;
 // The above are the common fields.
             bool potentiallyPinnedFlag;
@@ -739,8 +740,7 @@ inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a type=%s\n", p, pageTypeName(p->type));
 #ifdef DEBUG
     zprintf("chain = %a\n", p->chain);
-    zprintf("borrowChain = %a borrowPinned=%s\n",
-            p->borrowChain, p->borrowPinned);
+    zprintf("borrowStatus=%s\n", p->borrowStatus);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
     zprintf("pinnedObjects = %a\n", p->pinnedObjects);
@@ -786,8 +786,7 @@ inline void displayVecPage(Page* p)
 {   zprintf("Vec page %a type=%s\n", p, pageTypeName(p->type));
 #ifdef DEBUG
     zprintf("chain = %a\n", p->chain);
-    zprintf("borrowChain = %a borrowPinned=%s\n",
-            p->borrowChain, p->borrowPinned);
+    zprintf("borrowStatus=%s\n", p->borrowStatus);
     zprintf("hasPinned = %s\n", p->hasPinned);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
     zprintf("pendingPages = %a\n", p->pendingPages);
@@ -1255,18 +1254,18 @@ inline void setVecFringeAndLimit(Page* p, uintptr_t& fringe, uintptr_t& limit)
     else limit = addressFromChunkNo(p, end);
 }
 
-inline Page* initBorrowPage(Page* p, bool empty)
+inline Page* initBorrowPage(Page* p, PinStatus status)
 {
 // borrowed pages do not need anything like as much initialisation since
 // they will never participate in GC. However they must have chunkStatus
 // set up since that is inspected in case there might have been pinned
 // items within them.
     borrowCurrent = p;
-    p->borrowChain = borrowPages.page();
-    p->borrowPinned = !empty;
-    borrowPages.page() = p;
+    borrowPages.push(p);
+    borrowCurrent = p;
+    p->borrowStatus = status;
     borrowEnd = bit_cast<uintptr_t>(p) + pageSize;
-    if (empty)
+    if (status == wasEmpty)
     {
 // I do not need to do anything with pinning bitmaps here, but I must
 // initialise chunkInfo since that is used during allocation.
@@ -1283,10 +1282,10 @@ inline Page* initBorrowPage(Page* p, bool empty)
 }
 
 inline void grabBorrowPage()
-{   if (!emptyPages.isEmpty()) initBorrowPage(emptyPages.pop(), true);
-    else if (pageFringe != pageEnd) initBorrowPage(pageFringe++, true);
-    else if (!vecPinPages.isEmpty()) initBorrowPage(vecPinPages.pop(), false);
-    else if (!vecCloggedPages.isEmpty()) initBorrowPage(vecCloggedPages.pop(), false);
+{   if (!emptyPages.isEmpty()) initBorrowPage(emptyPages.pop(), wasEmpty);
+    else if (pageFringe != pageEnd) initBorrowPage(pageFringe++, wasEmpty);
+    else if (!vecPinPages.isEmpty()) initBorrowPage(vecPinPages.pop(), wasPinned);
+    else if (!vecCloggedPages.isEmpty()) initBorrowPage(vecCloggedPages.pop(), wasClogged);
     else fatal_error(err_no_store);
 }
 
@@ -1306,18 +1305,35 @@ inline uintptr_t borrowNBytes(size_t n)
     return r;
 }
 
+static int timeout = 0;
+
 class Borrowing
 {
+    Page* previous;
 public:
     Borrowing()
-    {   grabBorrowPage();
+    {   previous = borrowPages.head;
+        grabBorrowPage();
     }
     ~Borrowing()
-    {   while (!borrowPages.isEmpty())
+    {   while (borrowPages.head != previous)
         {   Page* p = borrowPages.pop();
             zprintf("return borrowed page %a\n", p);
-            if (p->borrowPinned) vecPinPages.push(p);
-            else emptyPages.push(p);
+            my_assert(++timeout < 100, where("too many recycled borrow pages"));
+            switch (p->borrowStatus)
+            {
+            default:
+                my_abort(where("Bad status on borrowed page"));
+            case wasClogged:
+                vecCloggedPages.push(p);
+                return;
+            case wasPinned:
+                vecPinPages.push(p);
+                return;
+            case wasEmpty:
+                emptyPages.push(p);
+                return;
+            }
         }
     }
 };

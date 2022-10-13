@@ -98,8 +98,8 @@ symbolic inline procedure mo_zero;  nil . mo!=deglist nil;
 
 symbolic inline procedure mo_zero!? u; mo!=zero car u;
 
-symbolic inline procedure mo!=zero u;
-    null u or car u = 0 and mo!=zero cdr u;
+symbolic procedure mo!=zero u; % Making a recursive procedure inline is horrid!
+    null u or (car u = 0 and mo!=zero cdr u);
 
 symbolic procedure mo_equal!?(m1,m2);
 % Test whether m1 = m2.

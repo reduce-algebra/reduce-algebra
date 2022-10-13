@@ -639,13 +639,13 @@ AC_ARG_ENABLE(debug,
   [enable_debug="no"])
 AC_MSG_RESULT([$enable_debug])
 
-AC_ARG_ENABLE(extremedebug,
-  AS_HELP_STRING([--enable-extremedebug],
-                 [compile for extremedebugging]),
+AC_ARG_ENABLE(extreme-debug,
+  AS_HELP_STRING([--enable-extreme-debug],
+                 [compile for extreme debugging]),
   [],
-  [enable_extremedebug="no"])
+  [enable_extreme_debug="no"])
 
-if test "$enable_extremedebug" = "yes"
+if test "$enable_extreme_debug" = "yes"
 then
   AC_DEFINE(EXTREME_DEBUG, [1], [Show down garbage collection dramatically])
 fi
