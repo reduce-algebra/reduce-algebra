@@ -432,6 +432,8 @@ symbolic procedure fancy!-output(mode,l);
    if ofl!* or (mode='maprin and posn!*>2) or not !*nat then <<
 % not terminal handler or current output line non-empty.
       if mode = 'maprin then maprin l
+      else if mode = 'assgnpri then assgnpri(car l,cadr l,caddr l)
+      else if mode = 'prin2!* then prin2!* l
       else terpri!*(l) >> where outputhandler!* = nil
       else
 % I want to do some more magic for CSL here. In CSL the system can be launched
@@ -474,7 +476,7 @@ symbolic procedure fancy!-output(mode,l);
 % I know I on in "on nat" mode. In that case setting pline!* to nil has the
 % effect of discarding any built-up layout.
    <<set!-fancymode t;
-      if mode = 'maprin then <<
+      if mode = 'maprin or mode = 'prin2!* then <<
 #if (memq 'csl lispsystem!*)
 % math!-display 1 will not do anything, but returns true if a spool_file
 % is active.

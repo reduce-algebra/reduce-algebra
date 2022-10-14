@@ -231,12 +231,14 @@ symbolic procedure fancy!-output(mode,l);
   if ofl!* or posn!*>2 or not !*nat then
      % not terminal handler or current output line non-empty.
    <<if mode = 'maprin then maprin l
+     else if mode = 'assgnpri then assgnpri(car l,cadr l,caddr l)
+     else if mode = 'prin2!* then prin2!* l
      else
      terpri!*(l)
    >> where outputhandler!* = nil
      else
    <<set!-fancymode t;
-     if mode = 'maprin then fancy!-maprin0 l
+     if mode = 'maprin or mode = 'prin2!* then fancy!-maprin0 l
      else if mode = 'assgnpri then << fancy!-assgnpri l; fancy!-flush() >>
      else
      fancy!-flush();
