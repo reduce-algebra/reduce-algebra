@@ -58,6 +58,7 @@
 #include <cstdint>
 #include <cinttypes>
 #include <iostream>
+#include <fstream>
 #include <atomic>
 #include <string>
 #include <cstring>

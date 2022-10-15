@@ -259,7 +259,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
         }
         return;
     default:
-        my_abort("page type not recognised");
+        my_abort(where("page type not recognised"));
     }
 }
 
@@ -499,7 +499,7 @@ std::unordered_set<LispObject*> evacuated;
 
 void evacuate(LispObject &x)
 {   if (evacuated.count(&x) == 0) evacuated.insert(&x);
-    else my_abort("repeat evacuation");
+    else my_abort(where("repeat evacuation"));
 // Here x refers to x location that is x list-base, ie it contains
 // x valid Lisp object, but also the value of x is the LispObject
 // held in that location. I want to arrange that the object and all its
@@ -666,7 +666,7 @@ void evacuateFromPinnedItems()
 #ifdef EXTREME_DEBUG
                     displayAllPages(where("zero work in heap")); // DEBUG
 #endif // EXTREME_DEBUG
-                    my_abort("zero word in evacuateFromPinnedItems");
+                    my_abort(where("zero word in evacuateFromPinnedItems"));
                 }
                 evacuate(car(next));
                 evacuate(cdr(next));
@@ -757,7 +757,7 @@ bool evacuateChunk(Page* p, uintptr_t& next, size_t lastChunk)
             zprintf("chunkEnd = %a\n", chunkEnd);
             zprintf("vecFringe = %a\n", vecFringe);
             zprintf("vecLimit = %a\n", vecLimit);
-            my_abort("zero or forwarding addr vec page");
+            my_abort(where("zero or forwarding addr vec page"));
         }
         switch (h & 0x1f)
         {
@@ -799,7 +799,7 @@ bool evacuateChunk(Page* p, uintptr_t& next, size_t lastChunk)
             zprintf("chunkEnd = %a\n", chunkEnd);
             zprintf("vecFringe = %a\n", vecFringe);
             zprintf("vecLimit = %a\n", vecLimit);
-            my_abort("cons cell in vec page");
+            my_abort(where("cons cell in vec page"));
         }
         my_assert(len != 0, "something of size zero");
         next += len;
@@ -878,7 +878,7 @@ void evacuateFromCopiedData()
 #endif // EXTREME_DEBUG
                 break;
             default:
-                my_abort("bad page type in evacuateFromCopiedData");
+                my_abort(where("bad page type in evacuateFromCopiedData"));
             }
         }
 // Now I have a current Cons and a current Vec one. I will scan the current
@@ -1276,7 +1276,7 @@ void tidyUpPinmaps()
             }
             continue;
         default:
-            my_abort("illegal page type");
+            my_abort(where("illegal page type"));
         }
     }
     pinnedPages = r;
@@ -1361,7 +1361,7 @@ void inner_garbage_collect()
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = nil;
     WithinGarbageCollector noted;
-    if (gcNumber == gcStop) std::abort();
+    if (gcNumber == gcStop) give_up("gcStop triggered");
 #ifdef EXTREME_DEBUG
     if (GCTRACE) displayAllPages("Start of GC");
     validateAll("start GC", false, false);
@@ -1772,6 +1772,17 @@ uintptr_t V(int pageNumber, size_t offset)
     if (p->type == consPageType)
         return offsetToCons(offset/sizeof(ConsCell), p);
     else return offsetToVec(offset/sizeof(LispObject), p);
+}
+
+// This does a displayAllPages but redirects the output so it gets
+// put in a named file.
+
+void dumpToFile(const char* filename)
+{   std::ofstream out(filename);
+    std::streambuf *coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(out.rdbuf());
+    displayAllPages("dumpToFile");
+    std::cout.rdbuf(coutbuf); //reset to standard output again
 }
 
 // end of file newcslgc.cpp

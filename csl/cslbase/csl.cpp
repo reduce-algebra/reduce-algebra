@@ -779,26 +779,13 @@ LispObject bad_specialn(LispObject, int, ...)
 {   return aerror("call to special form");
 }
 
-void fatal_error(int code, ...)
+[[noreturn]] void fatal_error(int code, ...)
 {   errorNest safe;
 // Note that FATAL error messages are sent to the terminal, not to the
 // error output stream. This is because the error output stream may be
 // corrupted in such dire circumstances.
     term_printf("+++ Fatal error %s\n", errcode(code));
-    if (spool_file != nullptr)
-    {
-#ifdef COMMON
-        std::fprintf(spool_file,
-                     "\nFinished dribbling to %s.\n", spool_file_name);
-#else
-        std::fprintf(spool_file,
-                     "\n+++ Transcript terminated after error +++\n");
-#endif
-        std::fclose(spool_file);
-        spool_file = nullptr;
-    }
-    term_close();
-    my_exit();
+    give_up();
 }
 
 static char dependency_file[LONGEST_LEGAL_FILENAME] = {0};

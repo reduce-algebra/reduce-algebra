@@ -90,8 +90,19 @@ LispObject make_string(const char *b)
     LispObject r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     char *s = bit_cast<char *>(r) - TAG_VECTOR;
     size_t k = doubleword_align_up(CELL+n);
+// The final word of the string must be zero, and get_basic_vector has
+// not arranged that. On a 32-bit system there can be a padding word beyond
+// the last one that contains characters and that too ought to be set to
+// zero if only to be tidy. So in that cases eg strings with 0, 1, 2 or 3
+// characters fit (including their header word) within a 64-bit unit while
+// those with 4, 5, 6 or 7 spill into a second pair of words and the second
+// of those is the padder. Using memset probably leads to compilation that
+// writes the zeros with a word memory access but avoids C++ worries
+// about strict aliasing.
+    if (SIXTY_FOUR_BIT || n%8 >= 4)
+        std::memset(s+k-8, 0, 8);
+    else std::memset(s+k-4, 0, 4);
     std::memcpy(s + CELL, b, (size_t)n);
-    while (n < k) s[CELL+n++] = 0;
     validate_string(r);
     return r;
 }
