@@ -1741,6 +1741,7 @@ NOINLINE void garbage_collect()
 {   garbage_collect("some reason");
 }
 
+#ifdef DEBUG
 
 // The functions here are intended to be useful for calling from gdb
 
@@ -1784,5 +1785,7 @@ void dumpToFile(const char* filename)
     displayAllPages("dumpToFile");
     std::cout.rdbuf(coutbuf); //reset to standard output again
 }
+
+#endif // DEBUG
 
 // end of file newcslgc.cpp

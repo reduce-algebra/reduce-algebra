@@ -735,10 +735,8 @@ extern void garbage_collect(const char* why);
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
 
-#ifdef EXTREME_DEBUG
 inline void displayConsPage(Page* p)
 {   zprintf("Cons page %a type=%s\n", p, pageTypeName(p->type));
-#ifdef DEBUG
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowStatus=%s\n", p->borrowStatus);
     zprintf("pinnedPages = %a\n", p->pinnedPages);
@@ -767,10 +765,8 @@ inline void displayConsPage(Page* p)
             repeats = 0;
         }
     }
-#endif // DEBUG
     zprintf("end of page %a\n\n", p);
 }
-#endif // EXTREME_DEBUG
 
 extern const char* show_fn0(no_args* x);
 extern const char* show_fn1(one_arg* x);
@@ -781,10 +777,8 @@ extern const char* streamop(uintptr_t x);
 
 #define xSTREAM_HEADER (TAG_HDR_IMMED + TYPE_STREAM + ((14*CELL)<<(Tw+5)))
 
-#ifdef EXTREME_DEBUG
 inline void displayVecPage(Page* p)
 {   zprintf("Vec page %a type=%s\n", p, pageTypeName(p->type));
-#ifdef DEBUG
     zprintf("chain = %a\n", p->chain);
     zprintf("borrowStatus=%s\n", p->borrowStatus);
     zprintf("hasPinned = %s\n", p->hasPinned);
@@ -866,17 +860,14 @@ inline void displayVecPage(Page* p)
     }
     if (count != 1) zprintf(" * %d\n", count);
     else zprintf("\n");
-#endif // DEBUG
     zprintf("end of page %a\n\n", p);
 }
 
 inline void displayAllPages(const char* s)
 {   zprintf("displayAllPages %s\n", s);
-#ifdef DEBUG
     int k = 0;
     for (auto p:list_bases)
         zprintf("%s: %a\n", list_names[k++], *p);
-#endif // DEBUG
     zprintf("\nconsPages......");
     for (auto p:consPages)
     {   if (p == consCurrent) zprintf(" *%a_%d", p, p->hasPinned);
@@ -947,7 +938,6 @@ inline void displayAllPages(const char* s)
     zprintf("gcNumber = %d\n", gcNumber);
     zprintf("end of display\n\n");
 }
-#endif // EXTREME_DEBUG
 
 extern bool withinGarbageCollector;
 
