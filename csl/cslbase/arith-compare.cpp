@@ -536,6 +536,15 @@ bool CLEqn::op(SFlt a, Rat b)
 }
 // single float CL== rational
 #pragma message ("Comparisons between floats and rationals are NOT done nicely yet")
+/*
+ * This is coded as converting both values to floats. This is not as good
+ * as it could be. Eg consider a rational number (10^500+1)/10^100. That
+ * would convert to a floating point value 1.0 so compare equal to 1.0,
+ * while its value differs if looked at with full accuracy. It would be
+ * much better to convert floats to rationals for the comparison (treating
+ * NaN and infinities specially) but for that I expect there are a number of
+ * cases where performance could be optimised and so should be.
+ */
 bool CLEqn::op(Flt a, Rat b)
 {   return (a.floatval() == RawFloat::op(b));
 }

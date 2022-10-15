@@ -11157,6 +11157,7 @@ inline std::intptr_t ModularMinus::op(std::uint64_t *a)
     return Difference::op(large_modulus(), a);
 }
 
+#pragma message ("general modular reciprocal")
 inline std::intptr_t general_modular_reciprocal(std::intptr_t a)
 {   return (std::intptr_t)aerror("not coded yet");
 }

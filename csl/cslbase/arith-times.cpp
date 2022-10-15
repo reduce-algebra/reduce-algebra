@@ -809,6 +809,7 @@ LispObject Expt::op(std::uint64_t *a, Rat b)
 }
 
 // rational ** rational
+// Should eg (9/16)^(1/2) remain rational rather that ending ip as a float?
 LispObject Expt::op(Rat a, Rat b)
 {   return make_boxfloat(std::pow(RawFloat::op(a), RawFloat::op(b)));
 }

@@ -496,23 +496,6 @@ setup_type const restart_setup[] =
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
-// The effect of "--minimal" on the command-line is to arrange that
-// only the following functions end up defined. The reason this weird
-// option is provided is so that it becomes possible to set up a "minimal"
-// heap for bug-hunting in. The precise set of functions listed here will
-// change as I hunt different bugs! So this is NOT stable and not intended
-// to be relevant to those not doing in-CSL detailed debugging.
-
-setup_type const minimal_setup[] =
-{   {"reclaim",                 Lgc, Lgc, G2Wother, G3Wother, G4Wother},
-    {"stop",                    Lstop, Lstop, G2Wother, G3Wother, G4Wother},
-    DEF_1("mkvect",             Lmkvect),
-    DEF_special("quote",        quote_fn),
-    DEF_1("null",               Lnull),
-    {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
-};
-
-
 static void create_symbols(setup_type const s[], int restart_flag)
 {   size_t i;
     for (i=0; s[i].name != nullptr; i++)
@@ -594,12 +577,6 @@ static void cold_setup()
 //
 // Well garbage collection even at this early stage should now be valid when
 // the conservative GC is active.
-#ifdef CONSERVATIVE
-    if (gcTest)
-    {   gcTestCode();   // if "--gc-test" was on command line.
-        std::exit(0);
-    }
-#endif // CONSERVATIVE
 #ifdef COMMON
     setpname(nil, make_string("NIL"));
 #else
@@ -681,7 +658,6 @@ static void cold_setup()
 // sequence number 256, 257 and 258. So now I set up 256 character symbols
 // such that they each get the correct sequence number.
     symbol_sequence = 0;
-    if (!minimal)
     for (int i=0; i<256; i++)
     {   int len;
         if (i <= 0x7f)
@@ -707,7 +683,6 @@ static void cold_setup()
 // Now in some minor sense the world is in a self-consistent state
     lisp_true           = make_undefined_global("t");
     setvalue(lisp_true,   lisp_true);
-    if (!minimal) {
     savedef_symbol      = make_undefined_symbol("*savedef");
     savedefs_symbol     = make_undefined_symbol("*savedefs");
     lose_symbol         = make_undefined_symbol("lose");
@@ -857,7 +832,6 @@ static void cold_setup()
         setheader(nc, qheader(nc) | (2L << SYM_FASTGET_SHIFT));
         elt(fastget_names, 1) = nc;
     }
-    }  // minimal
 // I create the stream objects just once at cold-start time, but every time I
 // restart I will fill in their components in the standard way again.
     lisp_work_stream = make_stream_handle();
@@ -890,7 +864,6 @@ LispObject set_up_functions(int restart_flag)
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    if (!minimal) {
     function_symbol          = make_symbol("function", restart_flag,
                                            bad_specialfn_0, function_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
@@ -986,8 +959,6 @@ LispObject set_up_functions(int restart_flag)
     create_symbols(om_setup,       restart_flag);
     create_symbols(om_parse_setup, restart_flag);
 #endif
-    } // minimal
-    else create_symbols(minimal_setup, restart_flag);
 
 #ifdef COMMON
     CP = saved_package;
@@ -1016,7 +987,6 @@ LispObject set_up_variables(int restart_flag)
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    if (!minimal) {
     charvec = get_basic_vector_init(257*CELL, nil);
     for (int i=0; i<256; i++)
     {   char buffer[4];
@@ -1568,7 +1538,6 @@ LispObject set_up_variables(int restart_flag)
                   make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
     make_constant("internal-time-units-per-second",
                   fixnum_of_int(1000));
-    } // minimal
 
     terminal_io = make_undefined_fluid("*terminal-io*");
     standard_input = make_undefined_fluid("*standard-input*");
@@ -1783,7 +1752,7 @@ LispObject set_up_variables(int restart_flag)
 // JUST ONCE. This may be limiting (in particular it means that menus get
 // set at the very start of a run ONLY) but should only be visible to those
 // who call restart!-csl.
-    if (!minimal && loadable_packages == nullptr && switches==nullptr)
+    if (loadable_packages == nullptr && switches==nullptr)
     {   LispObject w1 = qvalue(make_undefined_symbol("loadable-packages*"));
         LispObject w2;
         int n;
@@ -2155,9 +2124,5 @@ void CSL_MD5_Final(unsigned char *md)
 {   MD5_Final(md, &context);
     CSL_MD5_busy = false;
 }
-
-#if defined CONSERVATIVE
-#include "testcode.cpp" // Temporary for debugging
-#endif
 
 // end of restart.cpp

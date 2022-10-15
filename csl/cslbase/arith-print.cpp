@@ -79,6 +79,8 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
 }
 
 #pragma message ("print_newbighexoctbin")
+// At present this is just not implemented!
+
 void print_newbighexoctbin(LispObject u, int radix, int width,
                            bool blankp, int nobreak)
 //

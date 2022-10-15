@@ -290,7 +290,6 @@ then
   then
     timecmd="$timecmd -p"
   fi
-  timeoutcmd=`type -P timeout`
 else
   testfortime=`type time 2>&1 | grep -v "not found"`
   if test -n "$testfortime"
@@ -302,23 +301,13 @@ else
   else
     timecmd=""
   fi
-  testfortimeout=`type timeout 2>&1 | grep -v "not found"`
-  if test -n "$testfortimeout"
-  then
-    set -- $testfortimeout
-    # remove all but last parameter
-    shift `expr $# - 1`
-    timeoutcmd="$1"
-  else
-    timeoutcmd=""
-  fi
 fi
 
 # If I can I will limit the time that each test script can possibly use,
 # except when the --notimeout switch is set.
 # I would like to make the limit such that everything has a decent chance of
 # running to completion but that tests that get stuck do not delay me
-# unduly. The most extreme test at the time of writing this is stoolls which
+# unduly. The most extreme test at the time of writing this is stools which
 # uses up to 90 seconds on a decent speed desktop machine. So a limit
 # at 600 seconds seems tolerably safe for most machine. It is sufficient for
 # if the Raspberry Pi 3, where the sstools and qsum take a fair proportion
@@ -328,17 +317,12 @@ fi
 
 if test "$notimeout" = "yes"
 then
-  timeoutcmd="" 
-fi
-
-if test "x$timeoutcmd" != "x"
+  timeoutcmd=":"
+elif test "x$slow" = "xyes"
 then
-  if test "x$slow" = "xyes"
-  then
-    timeoutcmd="$timeoutcmd 2400"
-  else
-    timeoutcmd="$timeoutcmd 600"
-  fi
+  timeoutcmd="ulimit -t 2400"
+else
+  timeoutcmd="ulimit -t 600"
 fi
 
 # If I am running on Windows I need to have the file name in
@@ -454,8 +438,9 @@ csltest() {
   fi
 
   mkdir -p $lname-times
-  $timeoutcmd $timecmd sh -c "$fullcommand $extras -v -w $otherflags > \
-    $lname-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+# Note that the next line runs things in a sub-shell.
+  ( $timeoutcmd ; $timecmd sh -c "$fullcommand $extras -v -w $otherflags > \
+    $lname-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp )
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -545,7 +530,7 @@ jlisptest() {
     wh=`cygpath -m $wh`
   fi
 
-  $timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+  ( $timeoutcmd ; $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp )
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -620,7 +605,7 @@ psltest() {
     ;;
   esac
   mkdir -p "$outdir"
-  $timeoutcmd $timecmd sh -c "$cmd > $outdir/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+  ( $timeoutcmd ; $timecmd sh -c "$cmd > $outdir/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp )
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);

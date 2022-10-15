@@ -1431,7 +1431,7 @@ LispObject serial_read()
                s,     // a (linked) stack used with vectors (and symbols
                       // if the SER_RAWSYMBOL opcode is encountered).
                b;     // a back-pointer chain
-    int c;
+    int c = SER_ILLEGAL;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
     uint64_t opcode_repeats = 0, repeat_arg = 0;

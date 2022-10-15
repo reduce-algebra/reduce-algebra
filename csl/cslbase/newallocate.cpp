@@ -135,18 +135,13 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 //
 // All vectors are allocated so as to be 8-byte aligned. On a 64-bit system
 // a vector that will not end up being a multiple of 8 bytes long naturally
-// gets padded out. Here I arrange to zero out any such padder word. This
-// should not be very important since nobody should ever try to use that
-// word. When the garbage collector copies material around it transcribes
-// the whole vector (including the padder), but it should never try to trace
-// through it. By tidying this up here can feel that I do not have any
-// need to worry about it elsewhere.
+// gets padded out.
 #ifdef DEBUG
    for (size_t i=CELL; i<allocSize; i+=4)
        *bit_cast<uint32_t*>(r+i) = 0xfeedface;
-#endif // DEBUG
     if (!SIXTY_FOUR_BIT && allocSize != size)
         *bit_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
+#endif // DEBUG
     return static_cast<LispObject>(r + tag);
 }
 

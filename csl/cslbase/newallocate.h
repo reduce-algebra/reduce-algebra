@@ -1295,8 +1295,6 @@ inline uintptr_t borrowNBytes(size_t n)
     return r;
 }
 
-static int timeout = 0;
-
 class Borrowing
 {
     Page* previous;
@@ -1308,8 +1306,6 @@ public:
     ~Borrowing()
     {   while (borrowPages.head != previous)
         {   Page* p = borrowPages.pop();
-            zprintf("return borrowed page %a\n", p);
-            my_assert(++timeout < 100, where("too many recycled borrow pages"));
             switch (p->borrowStatus)
             {
             default:

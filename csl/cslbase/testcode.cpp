@@ -1,5 +1,7 @@
 // testcode.cpp                                 Copyright (C) 2022 Codemist
 
+#error "This file is no longer in use"
+
 // This is code to exercise the draft conservative GC.
 
 /**************************************************************************

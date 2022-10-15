@@ -286,7 +286,7 @@ public:
 // raised and handled by errorset, so I must not give up. But while debugging
 // I can be a bit more energetic. If I make this too small I will not be able
 // to profile the code in debug mode!
-        if (errorCount > 1000) my_abort("too many errors");
+        my_assert(errorCount <= 1000, "too many errors");
 #endif
     }
     ~errorNest()
@@ -1108,7 +1108,6 @@ static LispObject lisp_main()
                     grabFreshPage(vecPageType);
                     potentiallyPinned = pinnedPages = pendingPages =
                         oldVecPinPages = borrowCurrent = nullptr;
-                    zprintf("Try recycling pages on line 1107 of csl.cpp\n");
 #else
                     for (size_t i=0; i<pages_count; i++)
                     {   char *w = bit_cast<char *>(pages[i]);
@@ -1445,8 +1444,6 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
     }
 }
 
-bool gcTest = false;
-bool minimal = false;
 size_t waste = 0;
 unsigned int gcTrace = 0;
 unsigned int gcStop = 0;
@@ -1811,7 +1808,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // valD is now in megabytes, so eg if I had specified -k2G it will be 2048.0
 // and if you had specified -k256K it will be 0.25.
 // Negative requests or requests for more than 256Gbytes (or requests for
-// zero or more than 10 stack chunks) will be rejected. I will also demand that
+// zero or more than 10 stack chunks) will be rejected. I will also require
 // at least 8 Mbytes be allocated, or 32/512 for the conservative version
 #ifdef CONSERVATIVE
                     if (valD < 32.0 || valD > 512.0*1024.0 ||
@@ -2062,16 +2059,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             },
 
 #ifdef CONSERVATIVE
-            /*! options [--gc-test] \item [{\ttfamily --gc-test}] \index{{\ttfamily --gc-test}}
-             * --gc-test causes running some test code rather than the full system.
-             * Only activates if "-z" is also specified for a "cold start".
-             */
-            {   "--gc-test", false, false,
-                "--gc-test runs some test code. Need -z as well.",
-                [&](string key, bool hasVal, string val)
-                {   gcTest = true;
-                }
-            },
             /*! options [--gc-trace] \item [{\ttfamily --gc-trace}] \index{{\ttfamily --gc-trace}}
              * --gc-trace leads to copious debugging trace output from garbage collection.
              * --gc-trace=N only starts that for GC number N and beyond.
@@ -2116,17 +2103,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 {   unsigned int r = 1;
                     if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
                     waste = r;
-                }
-            },
-            /*! options [--minimal] \item [{\ttfamily --minimal}] \index{{\ttfamily --minimal}}
-             * --minimal reduces that number of things defined (rather sharply)
-             * Only activates if "-z" is also specified for a "cold start".
-             * May be helpful while testing by leaving the heap image smaller.
-             */
-            {   "--minimal", false, false,
-                "--minimal reduces the nuimber of things defined. Need -z as well.",
-                [&](string key, bool hasVal, string val)
-                {   minimal = true;
                 }
             },
 #endif // CONSERVATIVE
@@ -2195,7 +2171,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * one for the Lisp application from an image file (eg often Reduce).
              */
             {   "--version", false, false,
-                "---version Display version information and stop.",
+                "--version Display version information and stop.",
                 [&](string key, bool hasVal, string val)
                 {   term_printf(
 #ifndef COMMON
@@ -2262,7 +2238,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * machine involved.
              */
             {   "--kara", true, true,
-                "---kara NN Set transition between single and multi-thread Karatsuba\n"
+                "--kara NN Set transition between single and multi-thread Karatsuba\n"
                 "         multiplication.",
                 [&](string key, bool hasVal, string val)
                 {   char *end;
@@ -2282,14 +2258,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              * its behaviour without altering the script at all.
              */
             {   "--trace", true, true,
-                "---trace NAME Sets up tracing on the names Lisp function.",
+                "--trace NAME Sets up tracing on the names Lisp function.",
                 [&](string key, bool hasVal, string val)
                 {   tracedFunctions.push_back(val);
                 }
             },
 
             {   "--tr", true, true,
-                "---tr NAME Equivalent to \"--trace NAME\".",
+                "--tr NAME Equivalent to \"--trace NAME\".",
                 [&](string key, bool hasVal, string val)
                 {   tracedFunctions.push_back(val);
                 }
@@ -3187,7 +3163,7 @@ static void low_level_signal_handler(int signo, siginfo_t *si,
 static void low_level_signal_handler(int signo)
 #endif // !HAVE_SIGACTION
 {
-#ifdef DEBUG
+//#ifdef DEBUG
 // If debugging then even though trying to print here is in violation of
 // C++ standards I will try to do it so I get SOME information about a
 // disaster!
@@ -3220,7 +3196,7 @@ static void low_level_signal_handler(int signo)
     fflush(stdout);
     fflush(stderr);
     term_close();
-#endif
+//#endif
 #ifndef NO_SIGNALS
 // There are really very restrictive rules about what I can do in a
 // signal handler and remain safe. And the exceptions that are trapped
