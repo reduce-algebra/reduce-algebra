@@ -102,7 +102,6 @@ float128_t abs2(float128_t x, float128_t y)
 #pragma message ("float128_t elementary functions not coded yet")
 }
 
-
 float128_t sqrt(float128_t x)
 {   return x;
 #pragma message ("float128_t elementary functions not coded yet")

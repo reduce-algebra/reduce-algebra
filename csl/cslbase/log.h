@@ -83,6 +83,8 @@ extern void displayAllPages(const char*);
 {   std::fprintf(stdout, "\n\n!!! Aborting\n\n");
 #if defined CONSERVATIVE && defined EXTREME_DEBUG
     displayAllPages("Failure");
+    extern unsigned int gcNumber;
+    std::fprintf(stdout, "\n\n... gcN=%d\n\n", gcNumber);
 #endif // CONSERVATIVE && EXTREME_DEBUG
     std::fflush(stdout);
     std::fflush(stderr);
@@ -90,6 +92,8 @@ extern void displayAllPages(const char*);
     if (spool_file != nullptr)
     {   std::fprintf(spool_file, "\n\n!!! Aborting\n\n");
         std::fflush(spool_file);
+        std::fclose(spool_file);
+        spool_file = nullptr;
     }
     term_close();
     std::exit(999);
@@ -106,7 +110,7 @@ extern void displayAllPages(const char*);
 #if defined CONSERVATIVE && defined EXTREME_DEBUG
     displayAllPages("Failure");
     extern unsigned int gcNumber;
-    std::fprintf(stdout, "\n\n... Repeat: %s gcN=%d\n\n", msg, gcNumber);
+    std::fprintf(stdout, "\n\n... Bis: %s gcN=%d\n\n", msg, gcNumber);
 #endif // CONSERVATIVE && EXTREME_DEBUG
     std::fflush(stdout);
     std::fflush(stderr);
@@ -114,6 +118,8 @@ extern void displayAllPages(const char*);
     if (spool_file != nullptr)
     {   std::fprintf(spool_file, "\n\n!!! Aborting: %s\n\n", msg);
         std::fflush(spool_file);
+        std::fclose(spool_file);
+        spool_file = nullptr;
     }
     term_close();
 #endif
@@ -133,6 +139,7 @@ inline void my_assert(bool ok, std::string msg)
 {   if (!ok) my_abort(msg.c_str());
 }
 
+
 template <typename F>
 inline void my_assert(bool ok, F&& action)
 {
@@ -148,6 +155,44 @@ inline void my_assert(bool ok, F&& action)
 
 inline void my_assert(bool ok)
 {   if (!ok) my_abort("my_assert without specific message");
+}
+
+// give_up is a bit like my_abort but does not generate any messages.
+
+[[noreturn]] inline void give_up()
+{   std::fflush(stdout);
+    std::fflush(stderr);
+#ifdef CSL
+    if (spool_file != nullptr)
+    {
+#ifdef COMMON
+        std::fprintf(spool_file,
+                     "\nFinished dribbling to %s.\n", spool_file_name);
+#else
+        std::fprintf(spool_file,
+                     "\n+++ Transcript terminated after error +++\n");
+#endif
+        std::fflush(spool_file);
+        std::fclose(spool_file);
+        spool_file = nullptr;
+    }
+    term_close();
+#endif
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+#ifdef HAVE_QUICK_EXIT
+    std::quick_exit(EXIT_FAILURE);
+#else // HAVE_QUICK_EXIT
+    std::exit(EXIT_FAILURE);
+#endif // HAVE_QUICK_EXIT
+}
+
+[[noreturn]] inline void give_up(const char* msg)
+{   std::fprintf(stdout, "\nStopping: %s\n\n", msg);
+#ifdef CSL
+    if (spool_file != nullptr)
+        std::fprintf(spool_file, "\nStopping: %s\n\n", msg);
+#endif
+    give_up();
 }
 
 #ifndef INLINE_VAR

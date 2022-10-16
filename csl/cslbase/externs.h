@@ -382,7 +382,6 @@ extern uintptr_t vheapstart;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
 
-extern bool gcTest, minimal;
 extern unsigned int gcTrace, gcStop, gcEvery;
 extern unsigned int gcNumber;
 

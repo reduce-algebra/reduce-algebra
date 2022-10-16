@@ -13,8 +13,17 @@ algebraic equation, or is the difference of the two sides of the equation.
 The second argument is either a kernel or a list of kernels representing
 the unknowns in the system.  This argument may be omitted if the number of
 distinct, non-constant, top-level kernels equals the number of unknowns,
-in which case these kernels are presumed to be the unknowns.
+in which case these kernels are presumed to be the unknowns and a message is
+printed:
+\begin{verbatim}
+           solve(x^2);
 
+           ->
+
+           Unknown: x
+
+           {x=1,x=-1}
+\end{verbatim}
 For one equation, \texttt{solve}\ttindextype{solve}{operator} recursively uses
 factorization and decomposition, together with the known inverses of
 \texttt{log}, \texttt{sin}, \texttt{cos}, \texttt{\textasciicircum},
@@ -51,13 +60,13 @@ of the operator \texttt{root\_of}\ttindextype{root\_of}{operator}. If there
 are several unknowns, each solution will be a list of equations for the
 unknowns.  For example,
 \begin{verbatim}
-     solve(x^2=1,x);             -> {X=-1,X=1}
+     solve(x^2=1,x);             -> {x=-1,x=1}
 
      solve(x^7-x^6+x^2=1,x)
                             6
             -> {x=root_of(x_  + x_ + 1,x_,tag_1),x=1}
 
-     solve({x+3y=7,y-x=1},{x,y}) -> {{X=1,Y=2}}.
+     solve({x+3y=7,y-x=1},{x,y}) -> {{x=1,y=2}}.
 \end{verbatim}
 \hypertarget{reserved:ROOT_MULTIPLICITIES}{}
 \ttindextype{root\_multiplicities}{global variable}
@@ -157,9 +166,7 @@ xx;
                             3*sqrt(3)
 {x=(i*(sqrt(3)*sin(-----------------------)
                               3
-\end{verbatim}
-\newpage
-\begin{verbatim}
+
                       - sqrt(31)*i
                atan(---------------)
                        3*sqrt(3)

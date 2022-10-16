@@ -64,6 +64,10 @@ LispObject Float::op(uint64_t *a)
 }
 
 #pragma message ("conversion from ratio to float not done yet")
+// One can not just turn the numerator and denominator into floats and
+// divide because each could be outside the range of floating point even
+// though the quotient was a reasonable value.
+
 LispObject Float::op(Rat a)
 {   return aerror("float of rat not coded yet");
 //    return Float::op(a.numerator()) / Float::op(a.denominator());
@@ -108,6 +112,7 @@ LispObject Float128::op(uint64_t *a)
 {   return make_boxfloat128(arithlib_lowlevel::Float128::op(a));
 }
 
+// As for shorter floats! 
 LispObject Float128::op(Rat a)
 {   return aerror("floating a rat not implemented yet");
 //return f128_div(Float128::op(a.numerator()), Float128::op(a.denominator()));
@@ -143,7 +148,7 @@ LispObject Float128::op(LFlt a)
 }
 
 // In Common Lisp the 1-argument version of FLOAT converts to a
-// single precisoin float and if the second argument of the 2-argument
+// single precision float and if the second argument of the 2-argument
 // version is unhelpful it does the same. I view that as old fashioned
 // and ridiculous and make double the default. If at any stage strict
 // Common Lisp compatibility was required and it was essential to continue
@@ -721,7 +726,7 @@ LispObject Truncate::op(uint64_t *a)
 
 LispObject Truncate::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
-#pragm message ("Truncate(Rat)")
+#pragma message ("Truncate(Rat)")
 }
 
 LispObject Truncate::op(Cpx a)
@@ -760,6 +765,7 @@ LispObject Floor::op(uint64_t *a)
 LispObject Floor::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
 #pragma message ("Floor(Rat)")
+// Need tp round towards -infinity here.
 }
 
 LispObject Floor::op(Cpx a)
@@ -798,6 +804,7 @@ LispObject Ceiling::op(uint64_t *a)
 LispObject Ceiling::op(Rat a)
 {   return Quotient::op(a.numerator(), a.denominator());
 #pragma message ("Ceiling(Rat)")
+// noot to truncate towards +infinity here
 }
 
 LispObject Ceiling::op(Cpx a)
@@ -867,8 +874,7 @@ LispObject Ffloor::op(Fixnum a)
 }
 
 LispObject Ffloor::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>
-                                   (a) - 8 + TAG_NUMBERS);
+{   return bit_cast<LispObject>(bit_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Ffloor::op(Rat a)
@@ -897,8 +903,7 @@ LispObject Ffloor::op(LFlt a)
 }
 
 LispObject Fceiling::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Fceiling>("ceiling",
-            a);
+{   return number_dispatcher::unary<LispObject,Fceiling>("ceiling", a);
 }
 
 LispObject Fceiling::op(Fixnum a)
@@ -906,8 +911,7 @@ LispObject Fceiling::op(Fixnum a)
 }
 
 LispObject Fceiling::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>
-                                   (a) - 8 + TAG_NUMBERS);
+{   return bit_cast<LispObject>(bit_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Fceiling::op(Rat a)
