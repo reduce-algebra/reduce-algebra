@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Test a package
 #
@@ -248,14 +248,14 @@ LANG=C ; export LANG
 p=${1:-alg}
 # WARNING - the "-n" option to echo is not portable. So I use printf
 # which should be available in all Posix systems.
-if test "x$p" = "xregressions"
+if test "$p" = "regressions"
 then
   r=${2:-aug-29-2011}
   printf "Regression test %s\n                 " "$r:"
   p="$r"
   d="regressions"
 else
-  if test "x$2" = "x"
+  if test "$2" = ""
   then
     printf "Test %-11s " "$p:"
   else
@@ -282,11 +282,11 @@ fi
 # Tricky logic to always use the external time command, even if
 # the shell has a time builtin, or not collecting times if no external
 # time command can be found
-if test "x$BASH_VERSION" != "x"
+if test "$BASH_VERSION" != ""
 then
   # do a search for time in $PATH
   timecmd=`type -P time`
-  if test "x$timecmd" != "x"
+  if test "$timecmd" != ""
   then
     timecmd="$timecmd -p"
   fi
@@ -315,15 +315,67 @@ fi
 # built with debug options enabled - can be much slower, so if one of the
 # tests is for that I will increase the limit significantly.
 
+limittime() {
+# This is intended to run a command for a limited amount of CPU time.
+# Note that ounder Cygwin it only checks the time DIRECTLY in the
+# command that is launched, not in any sub-processes. So perhaps
+# unexpectedly 'limittime "time ./expensiveCommand"' does not manage
+# to time-out even if 'limittime ./expensiveCommand' might.
+
 if test "$notimeout" = "yes"
 then
-  timeoutcmd=":"
-elif test "x$slow" = "xyes"
-then
-  timeoutcmd="ulimit -t 2400"
+  $timecmd $*
+  exit $?
 else
-  timeoutcmd="ulimit -t 600"
+  if test "$slow" = "yes"
+  then
+    TIME=2400
+  else
+    TIME=600
+  fi
+  case `uname -s` in
+
+  *CYGWIN*)
+echo Cygwin special
+for x in $*
+do
+  echo $x
+done
+    $* &
+    PID=$!
+
+    tick=`getconf CLK_TCK`
+
+    while true
+    do
+       d=`cat /proc/$PID/stat 2>/dev/null`
+       if test "$d" = ""
+       then
+         break
+       fi
+       user_time=$((`echo $d | cut -d' ' -f16` / $tick))
+       if [ $user_time -ge $TIME ]
+       then
+         kill -9 $PID
+         break
+       fi
+       sleep 1
+    done
+
+    wait $PID 2>/dev/null
+    exit $?
+    ;;
+
+  *)
+    ulimit -t $TIME
+    $timecmd $*
+    exit $?
+    ;;
+
+  esac
 fi
+}
+
 
 # If I am running on Windows I need to have the file name in
 # (close to) native windows form. I can usefully retain "/" rather than
@@ -347,19 +399,13 @@ fi
 if test -f $here/packages/$d/$p.rlg
 then
   rlgfile=$here/packages/$d/$p.rlg
-elif test "x$skipmissingrlg" != "x"
+elif test "$skipmissingrlg" != ""
 then
   printf "Missing log file $here/packages/$d/$p.rlg - skipping test!\n"
   exit 1
 else
   rlgfile=/dev/null
 fi
-
-# 
-# Each individual test should only take a few seconds. The idea behind
-# applying a ulimit here is to avoid trouble when or if a test script loops.
- 
-ulimit -c 60 2>/dev/null
 
 # There are a number of "sed" operations I use to tidy up logs files
 # so that comparisons do not show up frivolous differences. I put the
@@ -438,9 +484,8 @@ csltest() {
   fi
 
   mkdir -p $lname-times
-# Note that the next line runs things in a sub-shell.
-  ( $timeoutcmd ; $timecmd sh -c "$fullcommand $extras -v -w $otherflags > \
-    $lname-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp )
+  ( limittime $fullcommand $extras -v -w $otherflags ) > \
+    $lname-times/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -506,7 +551,7 @@ XXX
   printf "Tested on $mc CSL\n" > $lname-times/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$lname-times/$p.rlg.tmp | \
     sed -e '/^1: *$/d;' >>$lname-times/$p.time
-  if test "x$keep" = "xno"
+  if test "$keep" = "no"
   then
     rm -f $lname-times/$p.rlg.tmp
   fi
@@ -530,7 +575,7 @@ jlisptest() {
     wh=`cygpath -m $wh`
   fi
 
-  ( $timeoutcmd ; $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp )
+  ( limittime java -jar $wh/jlisp/$command -v -w $otherflags ) > $name-times/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -579,7 +624,7 @@ XXX
   printf "Tested on $mc Jlisp\n" > $name-times/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
     sed -e '/^1: *$/d;' >>$name-times/$p.time
-  if test "x$keep" = "xno"
+  if test "$keep" = "no"
   then
     rm -f $name-times/$p.rlg.tmp
   fi
@@ -605,7 +650,7 @@ psltest() {
     ;;
   esac
   mkdir -p "$outdir"
-  ( $timeoutcmd ; $timecmd sh -c "$cmd > $outdir/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp )
+  ( limittime $cmd > $outdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -656,7 +701,7 @@ XXX
   printf "Tested on $mc PSL\n" > $outdir/$p.time
   sed -e "1,/END OF REDUCE TEST RUN/d"  <$outdir/$p.rlg.tmp | \
     sed -e '/^1: /d;' >>$outdir/$p.time
-  if test "x$keep" = "xno"
+  if test "$keep" = "no"
   then
     rm -f $outdir/$p.rlg.tmp
   fi
@@ -769,7 +814,7 @@ then
     fi
 # If "dc" is not available then the following line leaves ratio empty.
     ratio=`printf "1k $tt 100 * $base / pq" | dc 2> /dev/null`
-    if test "x$ratio" = "x"
+    if test "$ratio" = ""
     then
       ratio="?"
     fi
@@ -799,7 +844,7 @@ then
     then
       sys="cslboot"
     fi
-    if test "x$base" = "x"
+    if test "$base" = ""
     then
       base="$sys"
       lbase="$lsys"
