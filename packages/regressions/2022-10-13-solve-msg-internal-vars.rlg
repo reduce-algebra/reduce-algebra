@@ -1,0 +1,195 @@
+
+COMMENT Bug report #148 Stange output(!solvevar0001) in solve (part 2)
+        https://sourceforge.net/p/reduce-algebra/bugs/148/
+
+        Internal call to solve0 without variable list causes a messagei
+        "Unknown: !!solveevar0001" to be printed
+        ;
+
+
+a:=solve({xx^(5/7) = 216}, {xx});
+
+
+               1/5
+a := {xx=1296*6   ,
+
+                     3/5      2*pi        1/7    3/5      2*pi
+      xx=root_of( - 6   *cos(------) + xx_    - 6   *sin(------)*i,xx_,tag_1),
+                               5                           5
+
+                     3/5      2*pi        1/7    3/5      2*pi
+      xx=root_of( - 6   *cos(------) + xx_    + 6   *sin(------)*i,xx_,tag_4),
+                               5                           5
+
+                  3/5      pi        1/7    3/5      pi
+      xx=root_of(6   *cos(----) + xx_    - 6   *sin(----)*i,xx_,tag_2),
+                           5                         5
+
+                  3/5      pi        1/7    3/5      pi
+      xx=root_of(6   *cos(----) + xx_    + 6   *sin(----)*i,xx_,tag_3)}
+                           5                         5
+
+on complex;
+
+
+a;
+
+
+
+
+
+
+
+
+          1/5
+{xx=1296*6   ,
+
+                  1/5                  2*pi  2           2*pi  6
+ xx=one_of({1296*6   *(64*sqrt( - sin(------)  + 1)*sin(------)
+                                        5                 5
+
+                                  2*pi  2           2*pi  4
+                - 80*sqrt( - sin(------)  + 1)*sin(------)
+                                   5                 5
+
+                                  2*pi  2           2*pi  2
+                + 24*sqrt( - sin(------)  + 1)*sin(------)
+                                   5                 5
+
+                               2*pi  2                  2*pi  7
+                - sqrt( - sin(------)  + 1) - 64*i*sin(------)
+                                5                        5
+
+                             2*pi  5             2*pi  3            2*pi
+                + 112*i*sin(------)  - 56*i*sin(------)  + 7*i*sin(------)),
+                              5                   5                  5
+
+                  1/5                     2*pi  2           2*pi  6
+            1296*6   *( - 64*sqrt( - sin(------)  + 1)*sin(------)
+                                           5                 5
+
+                                  2*pi  2           2*pi  4
+                + 80*sqrt( - sin(------)  + 1)*sin(------)
+                                   5                 5
+
+                                  2*pi  2           2*pi  2
+                - 24*sqrt( - sin(------)  + 1)*sin(------)
+                                   5                 5
+
+                               2*pi  2                  2*pi  7
+                + sqrt( - sin(------)  + 1) - 64*i*sin(------)
+                                5                        5
+
+                             2*pi  5             2*pi  3            2*pi
+                + 112*i*sin(------)  - 56*i*sin(------)  + 7*i*sin(------))},
+                              5                   5                  5
+
+           tag_1),
+
+          1/5      2*pi  7           1/5      2*pi  6      2*pi
+ xx=1296*6   *cos(------)  - 9072*i*6   *cos(------) *sin(------)
+                    5                          5            5
+
+           1/5      2*pi  5      2*pi  2
+  - 27216*6   *cos(------) *sin(------)
+                     5            5
+
+             1/5      2*pi  4      2*pi  3
+  + 45360*i*6   *cos(------) *sin(------)
+                       5            5
+
+           1/5      2*pi  3      2*pi  4
+  + 45360*6   *cos(------) *sin(------)
+                     5            5
+
+             1/5      2*pi  2      2*pi  5         1/5      2*pi        2*pi  6
+  - 27216*i*6   *cos(------) *sin(------)  - 9072*6   *cos(------)*sin(------)
+                       5            5                        5           5
+
+            1/5      2*pi  7
+  + 1296*i*6   *sin(------) ,
+                      5
+
+                  1/5                  pi  2           pi  6
+ xx=one_of({1296*6   *(64*sqrt( - sin(----)  + 1)*sin(----)
+                                       5               5
+
+                                  pi  2           pi  4
+                - 80*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                                  pi  2           pi  2
+                + 24*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                               pi  2                  pi  7              pi  5
+                - sqrt( - sin(----)  + 1) - 64*i*sin(----)  + 112*i*sin(----)
+                               5                      5                  5
+
+                            pi  3            pi
+                - 56*i*sin(----)  + 7*i*sin(----)),
+                            5                5
+
+                  1/5                     pi  2           pi  6
+            1296*6   *( - 64*sqrt( - sin(----)  + 1)*sin(----)
+                                          5               5
+
+                                  pi  2           pi  4
+                + 80*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                                  pi  2           pi  2
+                - 24*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                               pi  2                  pi  7              pi  5
+                + sqrt( - sin(----)  + 1) - 64*i*sin(----)  + 112*i*sin(----)
+                               5                      5                  5
+
+                            pi  3            pi
+                - 56*i*sin(----)  + 7*i*sin(----))},tag_2),
+                            5                5
+
+                  1/5                  pi  2           pi  6
+ xx=one_of({1296*6   *(64*sqrt( - sin(----)  + 1)*sin(----)
+                                       5               5
+
+                                  pi  2           pi  4
+                - 80*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                                  pi  2           pi  2
+                + 24*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                               pi  2                  pi  7              pi  5
+                - sqrt( - sin(----)  + 1) + 64*i*sin(----)  - 112*i*sin(----)
+                               5                      5                  5
+
+                            pi  3            pi
+                + 56*i*sin(----)  - 7*i*sin(----)),
+                            5                5
+
+                  1/5                     pi  2           pi  6
+            1296*6   *( - 64*sqrt( - sin(----)  + 1)*sin(----)
+                                          5               5
+
+                                  pi  2           pi  4
+                + 80*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                                  pi  2           pi  2
+                - 24*sqrt( - sin(----)  + 1)*sin(----)
+                                  5               5
+
+                               pi  2                  pi  7              pi  5
+                + sqrt( - sin(----)  + 1) + 64*i*sin(----)  - 112*i*sin(----)
+                               5                      5                  5
+
+                            pi  3            pi
+                + 56*i*sin(----)  - 7*i*sin(----))},tag_3)}
+                            5                5
+
+
+end;
+

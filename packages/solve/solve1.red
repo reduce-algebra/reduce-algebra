@@ -821,11 +821,13 @@ symbolic procedure mkrootsof(e1,var,mu);
 put('root_of,'psopfn,'root_of_eval);
 
 symbolic procedure root_of_eval u;
-   begin scalar !*!*norootvarrenamep!*!*,x,n;
+   begin scalar !*!*norootvarrenamep!*!*,x,n,v;
       if null cdr u then rederr "Too few arguments to root_eval";
       n := if cddr u then caddr u else mkrootsoftag();
       !*!*norootvarrenamep!*!* := n;
-      x := solveeval1{car u,cadr u};
+      v := if not null cadr u then cadr u
+            else car solvevars {simp!* !*eqn2a car u};
+      x := solveeval1{car u,v};
       if eqcar(x,'list) then x := cdr x else typerr(x,"list");
       x := foreach j in x collect if eqcar(j,'equal) then caddr j
                                    else typerr(j,"equation");
