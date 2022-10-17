@@ -2239,7 +2239,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              */
             {   "--kara", true, true,
                 "--kara NN Set transition between single and multi-thread Karatsuba\n"
-                "         multiplication.",
+                "          multiplication.",
                 [&](string key, bool hasVal, string val)
                 {   char *end;
                     kparallel = static_cast<int>(

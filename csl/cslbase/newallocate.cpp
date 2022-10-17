@@ -288,7 +288,7 @@ bool allocateSegment(size_t n)
 
 bool allocateAnotherSegment()
 {   if (memorySeemsFull ||
-        totalAllocatedMemory >= maxPages ||
+        (max_store_size != 0.0 && totalAllocatedMemory >= maxPages) ||
         heapSegmentCount == 15) return false;
     size_t inc = totalAllocatedMemory;
     if ((totalAllocatedMemory+inc) > maxPages)

@@ -133,7 +133,9 @@ bool withinObject(LispObject* v, uintptr_t a)
     return (a >= uv && a < (uv+len));
 }
 
+#ifdef EXTREME_DEBUG
 std::unordered_set<uintptr_t> allPinned;
+#endif // EXTREME_DEBUG
 
 // The ambiguous value (a) seems to point within the page (p). I do
 // different things based on the sort of page involved... pointers into
@@ -198,8 +200,10 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
                 p->pinnedPages = pinnedPages;
                 pinnedPages = p;
             }
+#ifdef EXTREME_DEBUG
             my_assert(allPinned.count(a) == 0, where("double pinning"));
             allPinned.insert(a);
+#endif // EXTREME_DEBUG
             LispObject z = get2Words();
             car(z) = a + TAG_FIXNUM;
             cdr(z) = p->pinnedObjects;
@@ -442,8 +446,10 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
                 p->pinnedPages = pinnedPages;
                 pinnedPages = p;
             }
+#ifdef EXTREME_DEBUG
             my_assert(allPinned.count(s) == 0, where("double pinning"));
             allPinned.insert(s);
+#endif // EXTREME_DEBUG
 // Record this pinned object in a list of same.
             LispObject z = get2Words();
             car(z) = s + TAG_FIXNUM;
@@ -495,11 +501,16 @@ void findHeadersOfPinnedItems()
     }
 }
 
+#ifdef EXTREME_DEBUG
 std::unordered_set<LispObject*> evacuated;
+#endif // ETREME_DEBUG
 
 void evacuate(LispObject &x)
-{   if (evacuated.count(&x) == 0) evacuated.insert(&x);
+{
+#ifdef EXTREME_DEBUG
+    if (evacuated.count(&x) == 0) evacuated.insert(&x);
     else my_abort(where("repeat evacuation"));
+#endif // EXTREME_DEBUG
 // Here x refers to x location that is x list-base, ie it contains
 // x valid Lisp object, but also the value of x is the LispObject
 // held in that location. I want to arrange that the object and all its
@@ -520,8 +531,10 @@ void evacuate(LispObject &x)
 // Note that this is x shallow copy operation. A later stage must perform
 // x linear scan of the newly copied material. That stage is not discussed
 // here because this function does not directly cause it to happen.
+#ifdef DEBUG
     my_assert(x != 0, where("zero word in scanning"));
     my_assert(!is_forward(x), where("forwarding ptr in scanning"));
+#endif // DEBUG
     if (is_immediate(x) || x == nil) return;
 #ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("evacuating %a %s\n", x, objectType(x));
@@ -530,15 +543,19 @@ void evacuate(LispObject &x)
     LispObject* untagged_x = bit_cast<LispObject*>(x & ~TAG_BITS);
     LispObject hdr = *untagged_x;
     LispObject cpy;
+#ifdef EXTREME_DEBUG
     if (!consOldPages.contains(pageOf(x)) &&
         !vecOldPages.contains(pageOf(x)))
     {   if (pageOf(x)->type == consPageType && consIsPinned(x)) /*OK*/;
         else if (pageOf(x)->type == vecPageType  && vecIsPinned(x)) /*OK*/;
         else my_abort(where("evacuate something odd"));
     }
+#endif // EXTREME_DEBUG
     if (is_forward(hdr))
     {   x = hdr - TAG_FORWARD + (x & TAG_BITS);
+#ifdef DEBUG
         my_assert(!is_forward(x), where("forwarding ptr in scanning"));
+#endif // DEBUG
         return;
     }
 // Every hash table must have its type changed from TYPE_HASH to TYPE_HASHX
@@ -1365,9 +1382,9 @@ void inner_garbage_collect()
 #ifdef EXTREME_DEBUG
     if (GCTRACE) displayAllPages("Start of GC");
     validateAll("start GC", false, false);
-#endif // EXTREME_DEBUG
     allPinned.clear();
     evacuated.clear();
+#endif // EXTREME_DEBUG
 // I start by setting the end-point information in the two current pages.
 // That leaves them in the proprer state to count as "full", so that when
 // the GC looks at ambiguous pointers it will be able to be aware when
@@ -1382,10 +1399,12 @@ void inner_garbage_collect()
     if (GCTRACE) zprintf("set %a dataEnd = %a\n", vecCurrent, vecLimit);
 #endif // EXTREME_DEBUG
     vecCurrent->dataEnd = vecLimit;
+#ifdef DEBUG
     if (force_verbos)
     {  for (auto p:consPages) reportOnConsPage("start of GC", p);
        for (auto p:vecPages) reportOnVecPage("start of GC", p);
     }
+#endif // DEBUG
 // Next I move the currently used pages to an "old" chain.
     consOldPages = consPages;
     for (Page* p:consOldPages) p->liveData = false;
