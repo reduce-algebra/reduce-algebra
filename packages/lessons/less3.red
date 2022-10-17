@@ -8,8 +8,8 @@ COMMENT
                         Update for REDUCE 3.4
                             Herbert Melenk
                       Konrad-Zuse-Zentrum Berlin
-                                   
-% $Id$
+
+;% $Id$
 
 COMMENT This is lesson 3 of 7 REDUCE lessons.  Please refrain from
 using variables beginning with the letters F through H during the
@@ -217,8 +217,8 @@ COMMENT Suppose that instead we wish to replace M by ENERGY/C^2:;
 
 g1 where m => energy/c^2;
 
-COMMENT You may wonder how a rule of the trivial form 
-"indeterminate => ..." differs from the corresponding assignment 
+COMMENT You may wonder how a rule of the trivial form
+"indeterminate => ..." differs from the corresponding assignment
 "indeterminate := ...".  The difference is this:
 
    1.  The LET rule does not replace any contained bound
@@ -360,11 +360,11 @@ for this special case:;
 let integrate(~x^-1, x) => log(x);
 integrate(1/x, x);
 pause;
- 
+
 COMMENT We now collect the integration rules so far into one list
 according to the law that within a rule set a more specific rule
 should precede the more general one:;
- 
+
 integrate_rules := {
   integrate(1, ~x) => x,
   integrate(~x, x) => x^2/2,

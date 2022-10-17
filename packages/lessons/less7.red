@@ -1,12 +1,12 @@
 COMMENT
- 
+
                   REDUCE INTERACTIVE LESSON NUMBER 7
 
                          David R. Stoutemyer
                          University of Hawaii
- 
-% $Id$
- 
+
+;% $Id$
+
 COMMENT This is lesson 7 of 7 REDUCE lessons.  Sometimes it is desired
 to have a certain facility available to algebraic mode, no such
 facility is described in the REDUCE User's Manual, and there is no

@@ -5,7 +5,7 @@ COMMENT
                          David R. Stoutemyer
                          University of Hawaii
 
-% $Id$
+;% $Id$
 
 COMMENT This is lesson 2 of 7 REDUCE lessons.  Please refrain from
 using variables beginning with the letters F through H during the
@@ -191,7 +191,7 @@ The answer is:
        G1, then subsequent changes to the value of F1 have no effect
        on G1 because all traces of F1 in G1 disappeared after F1
        contributed its value to the formation of G1.
-   
+
    2.  If F1 was an indeterminate in an expression previously assigned
        to G1, then for each subsequent use of G1, F1 contributes its
        current value at the time of that use.
