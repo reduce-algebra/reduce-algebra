@@ -1245,6 +1245,8 @@ INLINE_VAR const char* list_names[] =
 {   LIST_BASES
 };
 
+#undef X
+
 extern const char* find_image_directory(int argc, const char* argv[]);
 extern char program_name[64];
 extern LispObject declare_fn(LispObject args, LispObject env);

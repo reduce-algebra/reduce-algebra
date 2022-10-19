@@ -125,7 +125,7 @@ inline LispObject& packshade_(LispObject p)
 #define NO_PREFIX           'x'
 
 extern bool is_constituent(int c);
-extern LispObject intern(size_t len, bool escaped);
+extern LispObject intern(size_t len, bool escaped, int startAddr=0);
 extern LispObject iintern(LispObject str, size_t h, LispObject p,
                           int str_is_ok /* NOT a bool */);
 extern LispObject get_symbol(bool gensymp);
