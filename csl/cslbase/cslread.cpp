@@ -423,7 +423,7 @@ static int value_in_radix(int c, int radix)
     else return -1;
 }
 
-LispObject intern(size_t len, bool escaped)
+LispObject intern(size_t len, bool escaped, int startAddr)
 // This takes whatever is in the first len characters of
 // the Lisp string boffo, and maps it into a number, string
 // or symbol as relevant.
@@ -437,7 +437,7 @@ LispObject intern(size_t len, bool escaped)
 #else // NO_THREADS
     stackcheck(threadId);
 #endif // NO_THREADS
-    for (i=0; i<len; i++)
+    for (i=startAddr; i<len; i++)
     {   int c = boffo_char(i);
         switch (numberp)
         {   default:
@@ -691,7 +691,7 @@ LispObject intern(size_t len, bool escaped)
     }
 }
 
-LispObject intern_hex(size_t len)
+LispObject intern_hex_old(size_t len)
 {   size_t i;
     LispObject v = fixnum_of_int(0);
     int32_t d = 0, d1 = 16;
@@ -712,13 +712,14 @@ LispObject intern_hex(size_t len)
 }
 
 #ifdef ARITHLIB
+
 #include "dispatch.h"
 
 LispObject intern_new(size_t len)
 {   size_t i;
     LispObject v = fixnum_of_int(0);
     int32_t d = 0, d1 = 10;
-    for (i=2; i<boffop; i++)
+    for (i=0; i<boffop; i++)
     {   if (d1 == 10000000 || i == boffop-1)
         {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
             v = Times::op(v, fixnum_of_int(d1));
@@ -733,7 +734,28 @@ LispObject intern_new(size_t len)
     }
     return v;
 }
-#endif
+
+LispObject intern_hex_new(size_t len)
+{   size_t i;
+    LispObject v = fixnum_of_int(0);
+    int32_t d = 0, d1 = 16;
+    for (i=2; i<boffop; i++)
+    {   if (d1 == 0x1000000 || i == boffop-1)
+        {   d = 16*d + (int32_t)value_in_radix(boffo_char(i), 16);
+            v = Times::op(v, fixnum_of_int(d1));
+            v = Plus::op(v, fixnum_of_int(d));
+            d = 0;
+            d1 = 16;
+        }
+        else
+        {   d = 16*d + (int32_t)value_in_radix(boffo_char(i), 16);
+            d1 = 16*d1;
+        }
+    }
+    return v;
+}
+
+#endif // ARITHLIB
 
 LispObject make_undefined_symbol(char const *s)
 {   return make_symbol(s, 0, undefined_0, undefined_1, undefined_2,
@@ -2721,17 +2743,18 @@ static LispObject read_s(LispObject stream)
                     if (curchar > 0xff || !std::isdigit(curchar))
                         return intern(boffop, false);
                 }
-                bool ishex = false, isnew = false;
+                bool ishex = false, isold = false;
 // The mess here should allow  nnnnnn  0Xxxxxxxx 0Znnnnnnn where n denotes
 // 0..9 and x denotes 0..9a..fA..F.
 // The "0z" notation is a TEMPORARY provision while I work on an upgraded
-// arithmetic package.
+// arithmetic package. It causes the OLD code and bignum representation to be
+// used.
                 while (curchar <= 0xff &&
                        (std::isdigit(curchar) ||
                         ((boffop == 1 &&
                           boffo_char(0)=='0' &&
                           (((curchar=='x' || curchar=='X') && (ishex=true)) ||
-                           ((curchar=='z' || curchar=='Z') && (isnew=true))))) ||
+                           ((curchar=='z' || curchar=='Z') && (isold=true))))) ||
                         (ishex && (('a'<=curchar && curchar<='f') ||
                                    ('A'<=curchar && curchar<='F')))))
                 {   Save save(THREADARG stream);
@@ -2784,11 +2807,14 @@ static LispObject read_s(LispObject stream)
                         curchar = getc_stream(stream);
                     }
                 }
-                if (ishex) return intern_hex(boffop);
 #ifdef ARITHLIB
-                else if (isnew) return intern_new(boffop);
-#endif
+                if (ishex) return intern_hex_new(boffop);
+                else if (!isold) return intern_new(boffop);
+                else return intern(boffop, false, 2);
+#else // ARITHLIB
+                if (ishex) return intern_hex_old(boffop);
                 else return intern(boffop, false);
+#endif // ARITHLIB
             }
 
             case '_':       // This seems to have to be a funny case for REDUCE
