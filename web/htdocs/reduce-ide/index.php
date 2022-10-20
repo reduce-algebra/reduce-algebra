@@ -84,7 +84,7 @@ include '../include/begin-body.php';
 <h2>Recent update history</h2>
 <ul>
     <li>
-        REDUCE IDE version 1.5 (Nov 2017) should work with the latest
+        <strong>REDUCE IDE version 1.5</strong> (November 2017) should work with the latest
         versions of both REDUCE and GNU Emacs. It also provides full
         support for the GNU Emacs package manager (see above),
         explicit support for running both CSL and PSL REDUCE, and
@@ -92,7 +92,7 @@ include '../include/begin-body.php';
         simultaneously.
     </li>
     <li>
-        REDUCE IDE version 1.6 (June 2022) provides better syntactic
+        <strong>REDUCE IDE version 1.6</strong> (June 2022) provides better syntactic
         highlighting (fontification) and better delimiter matching, which
         are provided by two new files. It also repairs support for
         running PSL REDUCE on Microsoft Windows. I have tested REDUCE
@@ -100,7 +100,7 @@ include '../include/begin-body.php';
         Microsoft Windows and Ubuntu.
     </li>
     <li>
-        REDUCE IDE version 1.7 (September 2022):
+        <strong>REDUCE IDE version 1.7</strong> (September 2022):
         <ul>
             <li><strong>INCOMPATIBLE CHANGE:</strong> The command <code>run-reduce</code> is
                 now the only way to run REDUCE. It prompts for the REDUCE
@@ -131,12 +131,13 @@ include '../include/begin-body.php';
         </ul>
     </li>
     <li>
-        REDUCE IDE version 1.8 (October 2022):
+        <strong>REDUCE IDE version 1.8</strong> (October 2022):
         <ul>
             <li>Use lexical scoping, which might be a little faster.</li>
             <li><strong>INCOMPATIBLE CHANGE:</strong> The commands <code>reduce-forward-sexp</code> and
                 <code>reduce-backward-sexp</code> no longer accept an argument and now skip any comments or white space,
-                but <strong>not terminators</strong>, between point and the "balanced expression".</li>
+                but <strong>not terminators</strong>, between point and the "balanced expression".
+            </li>
             <li>Add the command <code>reduce-kill-sexp</code> to kill one "balanced expression" either forwards or, with
                 any argument, backwards, bound to <code>C-M-k</code>.</li>
             <li>Reliably disregard ! as an escape character at the end of a string, which would otherwise mask the end
@@ -160,18 +161,38 @@ include '../include/begin-body.php';
                 </ul>
             </li>
         </ul>
+    </li>
+    <li>
+        <strong>REDUCE IDE version 1.9</strong> (October 2022):
+        <ul>
+            <li>Highlight fluid and global forms as variable type declarations rather than as quoted data.</li>
+            <li>Some menu improvements.</li>
+            <li>Indentation is now more reasonable.</li>
+            <li><strong>INCOMPATIBLE CHANGE:</strong> The command <code>reduce-indent-line</code> is now idempotent and
+                no longer successively indents. Hence, the option <code>reduce-indent-line-conservative</code> no longer
+                exists.</li>
+            <li>The command <code>reduce-indent-line</code> is now bound indirectly to <code>TAB</code> but is also
+                bound directly to <code>M-i</code>, which allows it to be run with a prefix argument to indent the whole
+                of the current statement rigidly.</li>
+            <li>The new command <code>reduce-indent-line-always</code> bound to <code>C-TAB</code> indents by one step,
+                and replaces the effect of executing <code>reduce-indent-line</code> repeatedly.</li>
+            <li>The command <code>reduce-indent-procedure</code> preserves point and no longer leaves the procedure
+                selected.</li>
+        </ul>
+    </li>
+</ul>
 
-        <p>Feedback is welcome.</p>
-        <address>
-            <a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>
-        </address>
+<p>Feedback is welcome.</p>
+<address>
+    <a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>
+</address>
 
-        </div><!-- opened in begin-body.php -->
+</div><!-- opened in begin-body.php -->
 
-        <?php
+<?php
 include '../include/footer.php';
 ?>
 
-        </body>
+</body>
 
-        </html>
+</html>

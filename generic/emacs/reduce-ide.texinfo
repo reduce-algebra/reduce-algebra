@@ -2,9 +2,9 @@
 @c %**start of header
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Manual last updated:
-@set UPDATED Time-stamp: <2022-10-02 17:51:40 franc>
+@set UPDATED Time-stamp: <2022-10-20 16:04:10 franc>
 @c Software version:
-@set VERSION 1.8
+@set VERSION 1.9
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -94,7 +94,7 @@ Manual last updated @value{UPDATED}
 * Completion::                  Completion and expansion of REDUCE keywords
 * Font-Lock::                   Font selection for syntactic highlighting
 * Access::                      Access to procedure and operator definitions
-* Miscellaneous::               Miscellaneous minor features and bugs
+* Miscellaneous::               Miscellaneous minor features
 * Customization::               Options that control REDUCE IDE
 * Run::                         Running REDUCE in a window
 * Feedback::                    Bug reports, suggestions, comments, @dots{}
@@ -145,13 +145,6 @@ version 28 or later, which I will endeavour to support under recent
 versions of Microsoft Windows and Linux.  It should also run under
 closely related versions of GNU Emacs and on other platforms, but I
 may not be able to provide support.
-
-REDUCE IDE version 1.7 provides: support for running several different
-versions of REDUCE and automatic termination of input to REDUCE
-(@pxref{Run REDUCE,, Running@comma{} re-running and switching to
-REDUCE}); partial support for C-style @code{/**/} comments;
-improvements to the commands that move by statement, block, group,
-etc.@: (@pxref{Statements,, Commands that operate on statements}).
 
 This manual assumes that you are familiar in general with both Emacs
 and REDUCE.
@@ -771,7 +764,7 @@ reflects very much my own style of indentation.  Future versions may
 provide more flexible and customizable indentation.
 
 Currently all indentation is done in steps consisting of a fixed
-number of columns determined by the value of the variable
+number of spaces determined by the value of the variable
 @code{reduce-indentation}, the default value of which is 3;
 @ref{Customization,, Customization of REDUCE IDE}.  This is the
 indentation recommended by A.@ C.@ Hearn (the principal author of
@@ -792,53 +785,50 @@ compound and group statements themselves are generally not indented if
 they occupy multiple lines (because their bodies are indented) but they
 are indented if they occupy only a single line.
 
-When a new line that is empty is being indented, the indentation can be
-based only on the preceding code, and not on the code that will appear
-in the line.  Therefore, it is often necessary to re-indent a line in
-order to get consistent indentation.  This seems a little strange, but
-it is unavoidable (given the syntax of REDUCE and the indentation style
-that I have chosen).  It is for this reason that the key @kbd{@key{LFD}}
-runs the command @code{reindent-then-newline-and-indent} rather than
-just @code{newline-and-indent}.  But see also below.
+When a new line that is inserted is being indented, the indentation
+can be based only on the preceding code, and not on the code that will
+appear in the line.  Therefore, it is often necessary to re-indent a
+line in order to get consistent indentation.  This may seem a little
+strange, but it is unavoidable given the syntax of REDUCE and the
+indentation style that I have chosen.  It is for this reason that the
+key @kbd{@key{LFD}} runs the command
+@code{reindent-then-newline-and-indent} rather than just
+@code{newline-and-indent}.
 
 The command to indent, or re-indent, a line of text is
-@code{reduce-indent-line}, normally bound to the key @kbd{@key{TAB}}.
-If re-run immediately after itself (or run immediately after
-@code{reindent-then-newline-and-indent} (@kbd{@key{LFD}}) or
-@code{newline-and-indent} (@kbd{M-x newline-and-indent})) then it
-indents by one further step.  This is non-standard additional
-flexibility provided by REDUCE mode.  To force a line back to its
-standard indentation after multiple use of the @kbd{@key{TAB}} key,
-simply execute any other command(s) and then press @kbd{@key{TAB}}
-@emph{once}.  The execution of @code{reduce-indent-line} is independent
-of the position of point within the line.  It does not move point
-relative to the text around it unless point was within the indentation,
-in which case it is left before the first non-blank character (i.e.@: at
-the end of the indentation), or at the end of the line if it is empty.
-Normally, however, the most convenient way to use automatic indentation
-is to terminate each line of code with @kbd{@key{LFD}} rather than
-@kbd{@key{RET}}.  @xref{Miscellaneous,, Miscellaneous minor features and
-bugs}.
+@code{reduce-indent-line}, normally bound (indirectly) to the key
+@kbd{@key{TAB}}.  The execution of @code{reduce-indent-line} is
+independent of the position of point within the line.  It does not
+move point relative to the text around it unless point was within the
+indentation, in which case it is left before the first non-blank
+character (i.e.@: at the end of the indentation), or at the end of the
+line if it contains only white space.  Normally, however, the most
+convenient way to use automatic indentation is to terminate each line
+of code with @kbd{@key{LFD}} rather than @kbd{@key{RET}}.
+@xref{Miscellaneous,, Miscellaneous minor features}.
 
-When called with any argument, @code{reduce-indent-line} will indent the
+When called with any argument, which is possible only via the direct
+key binding @kbd{M-i}, @code{reduce-indent-line} will indent the
 current line correctly and then re-indent the rest of the logical
-statement containing point by the same amount that the current line was
-re-indented.  This is @emph{not} the same as correctly re-indenting the
-subsequent lines -- it re-indents them rigidly, without changing their
-relative indentations at all, and is much faster.
+statement containing point by the same amount that the current line
+was re-indented.  This is @emph{not} the same as correctly
+re-indenting the subsequent lines -- it re-indents them rigidly,
+without changing their relative indentations at all, and is much
+faster.
 
 @table @kbd
-@item  TAB
+@item TAB
 @kindex TAB
+@item M-i
+@kindex M-i
 @itemx M-x reduce-indent-line
 @findex reduce-indent-line
-Indent or re-indent the current line as REDUCE code.  Indents to a fixed
-style determined by the current and previous non-blank lines.
-Subsequent consecutive calls indent additionally by
-@code{reduce-indentation}.  With an interactive argument, indent any
-additional lines of the same statement rigidly together with this one.
+Indent or re-indent the current line as REDUCE code.  Indents to a
+fixed style determined by the current and previous non-blank lines.
+With an interactive argument, indent any additional lines of the same
+statement rigidly together with this one.
 
-@item  LFD
+@item LFD
 @kindex LFD
 @itemx M-x reindent-then-newline-and-indent
 @findex reindent-then-newline-and-indent
@@ -879,13 +869,13 @@ idle time re-indent the current line if the text just typed matches
 
 A section of code can be re-indented using one command if it is first
 marked as the current region, or the whole buffer or a complete
-procedure definition can be re-indented by a single command.  The latter
-command works by marking the procedure and then re-indenting the region;
-it currently leaves the procedure marked.  Region (and hence procedure)
-indenting is currently implemented inefficiently by applying the
-single-line indentation algorithm line-by-line, and hence is very slow
-for a large region or procedure.  In some future version it may be
-re-implemented more efficiently.
+procedure definition can be re-indented by a single command.  The
+latter command works by marking the procedure and then re-indenting
+the region.  Region (and hence procedure) indenting is currently
+implemented inefficiently by applying the single-line indentation
+algorithm line-by-line, and hence is very slow for a large region or
+procedure.  In some future version it may be re-implemented more
+efficiently.
 
 @table @kbd
 @item  C-M-\
@@ -904,36 +894,39 @@ Indent or re-indent the procedure (and trailing white space) ending
 after point by applying @code{reduce-indent-line} to each line.
 @end table
 
-An inverse of the extra-indentation facility is provided to decrease
-the indentation by one step.  This command is bound to
-@kbd{S-@key{TAB}} (i.e.@: @kbd{@key{BACKTAB}}) if possible, but not
-all platforms support this (because it has no ASCII representation).
-It may be no different from @kbd{@key{TAB}} alone, or it may generate
-an obscure ASCII sequence, so just try @kbd{S-@key{TAB}}, or ask Emacs
-what function is bound to @kbd{S-@key{TAB}} (by using @kbd{C-h k}).  A
-default key binding, which should work on all platforms, is provided
-as @kbd{C-c @key{TAB}}.  (However, currently this is rebound by REDUCE
-Run mode.  @xref{Run Keys,, Run mode key bindings and menu}.)
+The command @code{reduce-indent-line-always}, bound to
+@kbd{C-@key{TAB}}, is analogous to @code{reduce-indent-line} but
+always indents by precisely one additional step consisting of
+@code{reduce-indentation} spaces.  With an argument, it rigidly
+indents by one step the current line and the rest of the logical
+statement.
 
-With an argument, @code{reduce-unindent-line} rigidly unindents by one
-step the current line and the rest of the logical statement as an
-inverse of extra applications of @code{reduce-indent-line} with an
-argument.
+The command @code{reduce-unindent-line}, bound to @kbd{S-@key{TAB}}
+(i.e.@: @kbd{@key{BACKTAB}}), is an inverse of
+@code{reduce-indent-line-always} and decreases the indentation by one
+step.  With an argument, it rigidly unindents by one step the current
+line and the rest of the logical statement.
 
 @table @kbd
+@item C-TAB
+@kindex C-TAB
+@itemx M-x reduce-indent-line-always
+@findex reduce-indent-line-always
+Indent the current line as REDUCE code by adding
+@code{reduce-indentation} spaces at the beginning of the line.  With
+an interactive argument, indent any additional lines of the same
+statement rigidly along with this one.
+
 @item BACKTAB
 @kindex BACKTAB
-@itemx S-TAB
+@item S-TAB
 @kindex S-TAB
-@kindex TAB
-@itemx C-c TAB
-@kindex C-c TAB
 @itemx M-x reduce-unindent-line
 @findex reduce-unindent-line
 Unindent the current line as REDUCE code by deleting
-@code{reduce-indentation} spaces from the beginning of the line.  With
-an interactive argument, unindent any additional lines of the same
-statement rigidly along with this one.
+@code{reduce-indentation} spaces (or as many as possible) from the
+beginning of the line.  With an interactive argument, unindent any
+additional lines of the same statement rigidly along with this one.
 @end table
 
 @c ===================================================================
@@ -1088,7 +1081,7 @@ using @code{font-lock-function-name-face} and procedure parameters are
 displayed using @code{font-lock-variable-face}; general types such as
 ``algebraic'' are displayed using @code{font-lock-type-face}; local
 variable types such as ``scalar'' are displayed using
-@code{font-lock-type-face} and declared local variable names are
+@code{font-lock-type-face} and variable names declared local are
 displayed using @code{font-lock-variable-name-face}; goto and label
 names and named constants such as ``pi'' and ``Catalan'' are displayed
 using @code{font-lock-constant-face}; declared operator, operator type
@@ -1099,17 +1092,21 @@ using @code{font-lock-function-face}.
 
 @item
 Symbolic: as algebraic level; additionally preprocessor #-directives
-are displayed using @code{font-lock-preprocessor-face}; quoted objects
-are displayed using @code{font-lock-constant-face}; asserted types are
-displayed using @code{font-lock-type-face}; ``declare'' and ``struct''
-statements, as used in ``redlog'', are displayed using
-@code{font-lock-keyword-face}, @code{font-lock-function-name-face} and
-@code{font-lock-type-face}; module, endmodule and other symbolic-mode
-keywords are displayed using @code{font-lock-keyword-face}; module
-names are displayed using @code{font-lock-constant-face}; key
-symbolic-mode functions such as ``flag'' and ``get'' are displayed
-using @code{font-lock-builtin-face}; key symbolic-mode types such as
-``fluid'' and ``global'' are displayed using
+are displayed using @code{font-lock-preprocessor-face}; the key
+symbolic-mode ``types'' @code{fluid} and @code{global} are displayed
+using @code{font-lock-type-face} and the variable names declared fluid
+or global are displayed using @code{font-lock-variable-name-face}; all
+other quoted objects are displayed using
+@code{font-lock-constant-face}; asserted types are displayed using
+@code{font-lock-type-face}; ``declare'' and ``struct'' statements, as
+used in ``redlog'', are displayed using @code{font-lock-keyword-face},
+@code{font-lock-function-name-face} and @code{font-lock-type-face};
+module, endmodule and other symbolic-mode keywords are displayed using
+@code{font-lock-keyword-face}; module names are displayed using
+@code{font-lock-constant-face}; key symbolic-mode functions such as
+``flag'' and ``get'' are displayed using
+@code{font-lock-builtin-face}; other symbolic-mode ``types'' such as
+``switch'' and ``share'' are displayed using
 @code{font-lock-type-face}; declared lambda parameters are displayed
 using @code{font-lock-variable-face}.
 @end enumerate
@@ -1285,18 +1282,16 @@ subdirectories.  The single TAGS file goes in the specified directory.
 @c ===================================================================
 
 @node Miscellaneous
-@chapter Miscellaneous minor features and bugs
+@chapter Miscellaneous minor features
 @cindex Miscellaneous
 @cindex Features
-@cindex Bugs
-@cindex Minor modes
 
-REDUCE mode extends some of the standard Emacs handling of parenthesised
-``lists'' to include REDUCE group and block constructs.  It provides a
-major mode menu and easy access to its version information.  This
-chapter also discusses known and potential problems using REDUCE mode,
-and describes how to access some special function keys that are useful
-in Emacs in general and in REDUCE mode in particular.
+REDUCE mode extends some of the standard Emacs handling of
+parenthesised ``lists'' to include REDUCE group and block constructs.
+It provides a major mode menu and easy access to its version
+information.  This chapter also describes how to access some special
+function keys that are useful in Emacs in general and in REDUCE mode
+in particular.
 
 @menu
 * Groups and blocks highlighting:: Delimiter highlighting
@@ -1586,10 +1581,6 @@ with @code{\=}.
 Default value @samp{%% }.  String inserted by
 @code{reduce-comment-region} or @code{reduce-comment-procedure} at the
 start of each line.
-
-@item reduce-indent-line-conservative
-Default value @code{nil}.  If non-nil, @code{reduce-indent-line} will
-not successively indent.
 
 @item reduce-indentation
 Default value 3.  Depth of successive indentation in REDUCE code.
