@@ -4,10 +4,10 @@
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1992
-;; Time-stamp: <2022-10-02 17:51:40 franc>
+;; Time-stamp: <2022-10-20 16:04:10 franc>
 ;; Keywords: languages
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.8
+;; Package-Version: 1.9
 
 ;; This file is part of REDUCE IDE.
 
@@ -51,6 +51,7 @@
 ;;  more structure templates (?) – while, repeat
 
 ;;; Code:
+(eval-when-compile (require 'cl-lib))
 
 (defconst reduce-mode-version
   ;; Extract version from Package-Version in file header:
@@ -203,11 +204,6 @@ Optional ‘cdr’ is a replacement string or nullary function (for structures).
   :type 'integer
   :group 'reduce-format)
 
-(defcustom reduce-indent-line-conservative nil ; TS
-  "If non-nil, ‘reduce-indent-line’ will not successively indent."
-  :type 'boolean
-  :group 'reduce-format)
-
 (defcustom reduce-comment-region-string "%% "
   "String inserted by \\[reduce-comment-region] at start of each line."
   :version "1.21" ; Name was reduce-comment-region up to version 1555!
@@ -292,10 +288,10 @@ Update after ‘reduce-show-proc-delay’ seconds of Emacs idle time."
 (defvar reduce-mode-map
   (let ((map (make-sparse-keymap)))
     ;; (define-key map ">" 'reduce-self-insert-and-blink-matching-group-open)
-    ;; (define-key map "\t" 'reduce-indent-line)
     (define-key map "\C-j" 'reindent-then-newline-and-indent)
-    ;; (define-key map [(shift tab)] 'reduce-unindent-line) ; backtab
-    (define-key map [backtab] 'reduce-unindent-line)
+    (define-key map "\M-i" 'reduce-indent-line)
+    (define-key map [(control tab)] 'reduce-indent-line-always)
+    (define-key map [backtab] 'reduce-unindent-line) ; [(shift tab)]
     (define-key map [del] 'backward-delete-char-untabify)
     (define-key map "\C-c\C-n" 'reduce-forward-statement)
     (define-key map "\C-c\C-p" 'reduce-backward-statement)
@@ -310,8 +306,7 @@ Update after ‘reduce-show-proc-delay’ seconds of Emacs idle time."
     (define-key map "\C-\M-h" 'reduce-mark-procedure)
     (define-key map "\C-xnd" 'reduce-narrow-to-procedure)
     (define-key map "\C-ck" 'reduce-kill-procedure)
-    ;; (define-key map "\e;" 'reduce-indent-comment) ; via global map
-    (define-key map "\C-\M-\\" 'reduce-indent-region)
+    ;; (define-key map "\C-\M-\\" 'reduce-indent-region)
     (define-key map "\C-\M-q" 'reduce-indent-procedure)
     (define-key map "\C-c;" 'reduce-comment-region)
     (define-key map "\C-c:" 'reduce-comment-procedure)
@@ -342,8 +337,8 @@ Update after ‘reduce-show-proc-delay’ seconds of Emacs idle time."
     :help "Fill the current comment"]
    ["(Un)Comment Region" reduce-comment-region :active mark-active
     :help "Toggle the commenting of the current region"]
-   ;; "-- PROCEDURES --" ; not good in ntemacs
    "--"
+   "Procedures:"
    ["Forward Procedure" reduce-forward-procedure :active t
     :help "Move forward to the nearest end of a procedure"]
    ["Backward Procedure" reduce-backward-procedure :active t
@@ -378,8 +373,8 @@ Update after ‘reduce-show-proc-delay’ seconds of Emacs idle time."
     ["Tag Dir & Subdirs..." reduce-tagify-dir-recursively :active t
      :help "Tag all REDUCE files under this directory"]
     )
-   ;;   "-- TEMPLATES --" ; not good in ntemacs
    "--"
+   "Templates:"
    ["Insert If-Then" reduce-insert-if-then :active t
     :help "Insert an ‘if-then’ template"]
    ["Insert Block" reduce-insert-block :active t
@@ -393,7 +388,7 @@ Update after ‘reduce-show-proc-delay’ seconds of Emacs idle time."
     :keys "C-u M-C-\\" :active t
     :help "Re-indent the current buffer"]
    "--"
-   ["Command Mini Help" (apropos-command "reduce") :active t
+   ["Command Mini Help" (apropos-command "\\`reduce\\|reduce\\'") :active t
     :help "Show a REDUCE Mode command summary"]
    ["Customize..." (customize-group 'reduce) :active t
     :help "Customize REDUCE Mode"]
@@ -464,8 +459,6 @@ comment commands follow Lisp conventions.
 symbolic expressions for motion, delimiter matching, etc.
 
 The command ‘\\[reduce-indent-line]’ indents in a fixed style (mine!).
-If re-run immediately after itself or ‘\\[reindent-then-newline-and-indent]’
-or ‘\\[newline-and-indent]’ it indents further.
 The indentation increment is the value of the variable ‘reduce-indentation’.
 
 Structure template commands are provided to insert and indent
@@ -479,10 +472,9 @@ Text highlighting is supported via the command ‘font-lock-mode’, and
 the style of highlighting may be controlled by setting
 ‘font-lock-maximum-decoration’ to one of:
 
-  0, nil : basic keyword highlighting;
-  1      : algebraic-mode highlighting;
-  2      : symbolic-mode highlighting;
-  3, t   : full highlighting – of almost everything!
+  0, nil – basic keyword highlighting;
+  1      – algebraic-mode highlighting;
+  2, t   – symbolic-mode highlighting.
 
 Text highlighting may also be controlled using the REDUCE menu.
 
@@ -530,7 +522,8 @@ also affects this mode.  Entry to this mode runs the hooks on
               (concat paragraph-start "\\|^%")) ; RS
   ;; so that comments at beginning of a line do not disturb reformatting.
   (setq-local paragraph-ignore-fill-prefix t)
-  (setq-local indent-line-function 'reduce-indent-line)
+  (setq-local indent-line-function #'reduce-indent-line
+              indent-region-function #'reduce-indent-region)
   (setq-local comment-start "% ")
   (setq-local comment-start-skip
               "\\(?:^\\|[^!]\\)%+ *")   ; "%+ *" but not !%
@@ -577,76 +570,110 @@ Mark ! followed by \" as having punctuation syntax (syntax-code
 ;;;; Indentation commands
 ;;;; ********************
 
+;; This section updated 13 October 2022, but needs a lot more work!
+
 (defun reduce-indent-line (&optional arg)
   "Indent current line; if ARG indent whole statement rigidly.
-Indents to fixed style determined by current and previous non-blank line.
-Subsequent consecutive calls indent additionally by ‘reduce-indentation’
-unless ‘reduce-indent-line-conservative’ is non-nil.  With argument,
-indent any additional lines of the same statement rigidly together with
-this one."
-  (interactive "*P")            ; error if buffer read-only
+Indents to fixed style determined by current and previous
+non-blank line.  With argument, indent any additional lines of
+the same statement rigidly together with this one.  Assigned
+locally to ‘indent-line-function’ to implement
+‘indent-for-tab-command’."
+  (interactive "*P")                    ; error if buffer read-only
   (let ((start-marker (point-marker))
-    (indentation (progn (back-to-indentation) (current-column)))
-    new-indent)
-    (if (and (memq this-command
-           '(reduce-indent-line indent-for-tab-command))
-         (memq last-command
-           (list 'reduce-indent-line 'indent-for-tab-command
-             'newline-and-indent
-             'reindent-then-newline-and-indent))
-         (not reduce-indent-line-conservative))  ; TS
-    (indent-to 0 reduce-indentation)
-      (if (< (setq new-indent (reduce-calculate-indent)) indentation)
-      (delete-horizontal-space))
-      (indent-to new-indent))
+        (indentation (progn (back-to-indentation) (current-column)))
+        (new-indent (reduce--calculate-indent)))
+    (if (< new-indent indentation) (delete-horizontal-space))
+    (indent-to new-indent)
     (if arg
-    (save-excursion
-      (setq indentation (- (current-column) indentation))
-      (indent-rigidly
-       (point) (progn (reduce-forward-statement 1) (point)) indentation)
-      ))
+        (save-excursion
+          (setq indentation (- (current-column) indentation))
+          (indent-rigidly
+           (point) (reduce-forward-statement 1) indentation)))
     (if (< (point) start-marker) (goto-char start-marker))
-    (set-marker start-marker nil)
-    ))
+    (set-marker start-marker nil)))
 
-
-(defun reduce-calculate-indent ()
+(defun reduce--calculate-indent ()
   "Return appropriate indentation for current line as REDUCE code."
-  (let ((case-fold-search t))
-    (or (reduce-calculate-indent-proc)
-    (reduce-calculate-indent-this)
-    (reduce-calculate-indent-prev))))
+  (let ((case-fold-search t)
+        ;; Check whether point is in a comment first:
+        (comment-indent (reduce--calculate-indent-comment)))
+    ;; comment-indent is t for the first line of a comment and
+    ;; numerical for subsequent lines of a multi-line comment:
+    (or (and (numberp comment-indent) comment-indent)
+        (reduce--calculate-indent-proc)
+        (unless comment-indent (reduce--calculate-indent-this))
+        (reduce--calculate-indent-prev))))
 
-(defsubst looking-at-procedure ()
+(defun reduce--calculate-indent-comment ()
+  "Return non-nil if point is in a comment.
+Return t if point is in the first or only line of a comment.
+Return the indentation of the previous comment line if point is
+below the first line of a multi-line comment.  This applies to
+any type of comment."
+  (save-excursion
+    (back-to-indentation)
+    (cond
+     ;; % comment:
+     ((looking-at "%")
+      (if (and (eq (forward-line -1) 0)
+               (looking-at "%"))
+          (current-indentation)
+        t))
+     ;; /**/ comment:
+     ((looking-at "/\\*") t)
+     ((nth 4 (syntax-ppss))
+      (skip-chars-backward " \t\f\n")
+      (current-indentation))
+     ;; Comment statement:
+     ((looking-at "\\_<comment\\_>") t)
+     (t
+      (let ((start (point)))
+        (when (reduce--re-search-backward "[\;$]" t)
+          (forward-char))
+        (forward-comment (buffer-size))
+        (when (and
+               (looking-at "\\_<comment\\_>")
+               (> start (point))
+               (re-search-forward "[\;$]" nil t)
+               (< start (point)))
+          (goto-char start)
+          (forward-line -1)
+          (current-indentation)))))))
+
+(defsubst reduce--looking-at-procedure ()
   "Return t if text after point matches the start of a procedure."
-  (looking-at ".*\\<procedure\\s-+[![:alpha:]]"))
+  (looking-at "[a-z \t\f\n]*\\_<procedure\\_>"))
 
-(defun reduce-calculate-indent-proc ()
-  ;; "Handle comment lines, or if immediately following a procedure body
-  ;; then return 0, otherwise return nil."
-  "Return 0 if immediately following procedure body, else return nil."
+(defun reduce--calculate-indent-proc ()
+  "Return non-nil if point in or above procedure header or below body.
+If above or below and point is within white space or comments
+then return 0 unless point is in a continuation of the procedure
+header onto subsequent lines, in which case return
+‘reduce-indentation’; otherwise return nil."
   (save-excursion
     (beginning-of-line)
-    (cond
-     ;; ((looking-at "[ \t]*%")
-     ;; (back-to-indentation) (reduce-comment-indent))
-          ;; ((and (re-search-backward "[;$][ \t\n]*\n" nil t) ; ))
-      ((progn
-         ;; Find previous line that is neither blank nor a comment:
-         (while (and (= (forward-line -1) 0)
-             (looking-at "[ \t\f]*[%\n]")) )
-         ;; Does it end with a separator?
-         (and (looking-at ".*[;$][ \t]*[%\n]")
-          ;; Is it the end of a procedure?
-          (progn (end-of-line)
-             (= (reduce-backward-statement 2) 0))
-          (looking-at-procedure)))
-       0)
-      )))
+    (condition-case nil
+        (let ((start (point)))
+          (or
+           ;; Point in or above procedure header?
+           (progn
+             (reduce-forward-statement 1)
+             (reduce-backward-statement 1)
+             (and (reduce--looking-at-procedure)
+                  (if (> start (point))  ; start below "procedure"
+                      reduce-indentation ; on continuation line
+                    0)))
+           ;; Point below procedure?
+           (progn
+             (reduce-backward-procedure 1)
+             (reduce-forward-procedure 1)
+             (and (>= start (point)) 0)))) ; start not above procedure end
+      (t nil))))
 
-
-(defun reduce-calculate-indent-this ()
-  "Handle current line BEGINNING with a special token.
+(defun reduce--calculate-indent-this ()
+  "Return indentation for current line beginning with a special token.
+The indentation depends on *this* and previous non-blank lines.
 For an opening token (‘begin’ or ‘<<’) normally return the indentation of
 the previous non-blank line; for an intermediate token (‘then’ or ‘else’)
 return the indentation of the beginning of the statement; for a
@@ -655,228 +682,256 @@ of the construct; otherwise return nil."
   (save-excursion
     (back-to-indentation)
     (cond
-     ;; *** Opening tokens *** :
-     ((looking-at "[({ \t]*\\(\\<begin\\>\\|<<\\)")
-      ;; Find previous non-blank line:
-      (let ((closed (looking-at ".*\\(\\<end\\>\\|>>\\)")))
-    (skip-syntax-backward " >") ; whitespace, endcomment
-    (if (looking-at "[;$]")
-        (reduce-backward-statement 1)
-      (back-to-indentation))
-    (if (or (looking-at-procedure)
-        (and
-         (or closed     ; single-line construct
-             (looking-at "\\w+[ \t]*:=")) ; assignment
-         (not (looking-at ".*[;$]")))) ; not completed
-        (+ (current-column) reduce-indentation)
-      (current-column))
-    ))
-     ((looking-at "\\w+[ \t]*:[^=]")    ; label
-      ;; Indent to beginning of enclosing block:
-      (reduce--backward-block) (current-column))
-     ;; *** Intermediate tokens *** :
-     ((looking-at "\\<then\\>\\|\\<else\\>")
-      (reduce-find-matching-if) (current-indentation))
-     ;; *** Closing tokens *** :
-     ((looking-at "\\<end\\>")
+     ;; *** Opening token ***
+     ((looking-at "[\({ \t]*\\(?:\\_<begin\\_>\\|<<\\)")
+      (let ((closed (looking-at ".*\\(?:\\_<end\\_>\\|>>\\)")))
+        ;; Closed true if opening and closing tokens on same line.
+        ;; Find previous non-blank line:
+        (skip-chars-backward " \t\f\n")
+        ;; Go to beginning of statement or line:
+        (if (memq (char-before) '(?\; ?$))
+            (reduce-backward-statement 1)
+          (back-to-indentation))
+        (cond ((reduce--looking-at-procedure)
+               reduce-indentation)
+              ((and
+                (or closed                     ; single-line construct
+                    (looking-at ".*:="))       ; assignment
+                (not (looking-at ".*[;$]")))   ; not completed
+               (+ (current-column) reduce-indentation))
+              (t
+               (current-column)))))
+     ;; *** Intermediate tokens ***
+     ((looking-at "\\_<\\(?:then\\|else\\)\\_>")
+      (reduce--find-matching-if) (current-indentation))
+     ;; *** Label or closing tokens ***
+     ;; Indent to beginning of enclosing block or group:
+     ((looking-at ".*:[^=]\\|\\_<end\\_>")
       (reduce--backward-block) (current-indentation))
      ((looking-at ">>")
       (reduce--backward-group) (current-indentation))
-     ;; ((looking-at "#\\<endif\\>")
-     ;;  (reduce--backward-group) 0)
-     ((looking-at "#\\(\\<define\\>\\|\\<if\\>\\|\\<\\elif\\>\\|\\<\\else\\>\\|\\<endif\\>\\)")
+     ;; *** Special cases ***
+     ((looking-at "\\_<\\(?:\\(?:end\\)?module\\)\\_>\\|\
+#\\(?:define\\|\\(?:el\\)?if\\|else\\|endif\\)\\_>")
       0))))
 
-(defun reduce-find-matching-if ()
-  "Find the ‘if’ matching a ‘then’ or ‘else’."
-  ;; Must skip groups, blocks and brackets.
-  ;; Detects a missing ‘if’ as early as possible as an unrecoverable error.
-  (let ((pattern "\\<\\(if\\|else\\|end\\|begin\\)\\>\\|>>\\|\\s)\\|<<\\|\\s(\\|[^!][;$]"))
+(defun reduce--find-matching-if ()
+  "Search backwards for the ‘if’ matching a ‘then’ or ‘else’.
+Return non-nil if found; otherwise report a user error."
+  ;; Must skip groups, blocks and brackets.  Also search for invalid
+  ;; tokens such as ‘begin’ so as to detect a missing ‘if’ ASAP.
+  (let ((pattern
+         "\\_<\\(?:\\(if\\)\\|\\(else\\)\\|\\(end\\)\\|begin\\)\\_>\
+\\|\\(>>\\)\\|\\(\\s\)\\)\\|<<\\|\\s\(\\|[^!][\;$]"))
     (or (and
-     (reduce--re-search-backward pattern)
-     (cond
-      ((looking-at "if"))       ; found it – return t
-      ((looking-at "else")      ; nested conditional
-       (reduce-find-matching-if) (reduce-find-matching-if))
-      ((= (following-char) ?>)  ; end of group
-       (reduce--backward-group) (reduce-find-matching-if))
-      ((looking-at "end")       ; end of block
-       (reduce--backward-block) (reduce-find-matching-if))
-      ((= (char-syntax (following-char)) ?\) )
-       (forward-char) (backward-list) ; skip balanced brackets
-       (reduce-find-matching-if))))
-    ;; begin, <<, opening bracket, ‘;’, ‘$’ or beginning of buffer
-    (error "‘if’ matching ‘then’ or ‘else’ not found"))
-    ))
+         (reduce--re-search-backward pattern)
+         (cond
+          ((match-end 1))               ; if – return t
+          ((match-end 2)                ; else – nested conditional
+           (reduce--find-matching-if)
+           (reduce--find-matching-if))
+          ((match-end 3)                ; end of block
+           (reduce--backward-block)
+           (reduce--find-matching-if))
+          ((match-end 4)                ; end of group
+           (reduce--backward-group)
+           (reduce--find-matching-if))
+          ((match-end 5)                  ; closing bracket
+           (forward-char) (backward-list) ; skip balanced brackets
+           (reduce--find-matching-if))))
+        ;; Found begin, <<, opening bracket, terminator or beginning
+        ;; of buffer, so...
+        (user-error "Cannot find ‘if’ matching ‘then’ or ‘else’"))))
 
-
-(defun reduce-calculate-indent-prev ()
-  "Return indentation based on previous non-blank line."
+(defun reduce--calculate-indent-prev ()
+  "Return indentation for current line based on previous lines.
+The indentation depends only on *previous* non-blank line."
   ;; Should comments be ignored, esp. if they begin the line?
   ;; e.g. they may indicate a commented-out region!
-  (save-excursion
-    (beginning-of-line)
-    (if (bobp)
-    0               ; no previous line
+  (cl-block nil
+    (save-excursion
+      (beginning-of-line)
+      (when (bobp) (cl-return 0))       ; no previous line
       ;; Find previous line that is neither blank nor a comment
       ;; beginning in the first column (which may represent
       ;; commented-out code):
       (while (and (= (forward-line -1) 0)
-          (looking-at "%\\|[ \t\f]*$")) )
-      (if (and (bobp) (looking-at "[ \t\f]*$"))
-      0             ; no previous non-blank line
-    (back-to-indentation)
-    ;; Point is now at first text in the previous non-blank line.
-    (let ((previous-indentation (current-column))
-          extra-indentation)
-      ;; Skip any label:
-      (when (looking-at "^\\(\\w+[ \t]*:\\)[^=]") ; label
-        (goto-char (match-end 1))
-        (skip-chars-forward "[ \t]")
-        (if (eolp)      ; label alone on line
-        (setq extra-indentation reduce-indentation)
-          (setq previous-indentation (current-column))))
-      ;; Point is now at start of statement text in the previous
-      ;; non-blank line.
-      (or extra-indentation
-          (setq extra-indentation
-            (cond
-             ;; *** Tokens at beginning of the line *** :
-             ((looking-at "%") 0)   ; % comment (HANDLE THIS FIRST!)
-     ;          ((looking-at "\\w+[ \t]*:[^=]") ; label
-     ;           (if (looking-at ".*\\<if\\>") ; what else?
-     ;               (* 2 reduce-indentation)
-     ;             reduce-indentation))
-             ;; *** Tokens anywhere in the line *** :
-             ((or (looking-at-procedure)
-              (and (looking-at ".*\\<begin\\>")
-                   (not (looking-at ".*\\<end\\>")))
-              (and (looking-at ".*<<") (not (looking-at ".*>>"))))
-              (if (looking-at ".*,[ \t]*[%\n]") ; line ends with ,
-              (* 2 reduce-indentation)
-            reduce-indentation))
-             ;; *** Tokens at the end of the (logical) line *** :
-             ((looking-at ".*\\<\\(if\\|for\\|do\\|collect\\|join\\|sum\\product\\)\\>[ \t]*[%\n]")
-              reduce-indentation)
-             ;; Otherwise, extra indentation undefined
-             )))
-      (cond
-       ((looking-at "#\\<endif\\>")
-        (current-indentation))
-       ((looking-at "#\\(\\<define\\>\\|\\<if\\>\\|\\<\\elif\\>\\|\\<\\else\\>\\)")
-        (current-indentation))
-       ;; If extra indentation determined then use it ...
-       (extra-indentation (+ previous-indentation extra-indentation))
-       ;; If beginning new statement or comma-separated element
-       ;; then indent to previous statement or element
-       ;; unless it is a first argument ...
-       ((reduce-calculate-indent-prev1))
-; This produces very odd results if the group is preceded by indented code:
-;      ((and (looking-at ".*<<") (not (looking-at ".*>>")))
-;       (reduce-backward-statement 1)
-;       (back-to-indentation)
-;       (+ (current-column) reduce-indentation))
-       ;; If continuing ‘if’ then indent relative to the ‘if’ ...
-;      ((looking-at ".*\\(\\<then\\>\\|\\<else\\>\\)[ \t]*[%\n]")
-;       (if (looking-at ".*\\<if\\>")
-;       ()
-;         (goto-char (match-beginning 1))
-;         (reduce-find-matching-if))
-;       (+ (current-indentation) reduce-indentation))
-       ;; ... but the ‘if’ must be embedded ...
-       ((looking-at ".+\\<if\\>.*\\(\\<then\\>\\|\\<else\\>\\)[ \t]*[%\n]")
-        (goto-char (match-beginning 1))
-        (reduce-find-matching-if)
-        (+ (current-indentation) reduce-indentation))
-       ;; Otherwise continuing previous line, so ...
-       (t (+ previous-indentation reduce-indentation))
-       ))))))
+                  (looking-at "%\\|[ \t\f]*$")) )
+      (when (and (bobp) (looking-at "[ \t\f]*$"))
+        (cl-return 0))                  ; no previous non-blank line
+      (back-to-indentation)
+      ;; Point is now at first text in the previous non-blank line.
+      (let ((previous-indentation (current-column))
+            extra-indentation)
+        ;; Skip any label:
+        (when (looking-at "^\\(\\w+[ \t]*:\\)[^=]") ; label
+          (goto-char (match-end 1))
+          (skip-chars-forward "[ \t]")
+          (if (eolp)                    ; label alone on line
+              (setq extra-indentation reduce-indentation)
+            (setq previous-indentation (current-column))))
+        ;; Point is now at start of statement text in the previous
+        ;; non-blank line.
 
-(defun reduce-calculate-indent-prev1 ()
-  "Sub-function of ‘reduce-calculate-indent-prev’.
-If beginning new statement or comma-separated element or
-sub-expression ending with ‘+’, ‘-’, ‘or’ or ‘and’ then indent to
-previous statement or element unless it is a first argument ..."
-  (if (looking-at ".*\\(\\([,+-]\\|\\<or\\|\\<and\\)\\|[\;$]\\)[ \t]*[%\n]")
-      (let* ((second_arg (match-string 2))
-         (open (or second_arg
-               (not (looking-at
-                 ".*\\(\\<end\\>\\|>>\\)[\;$][ \t]*[%\n]")))))
-    (end-of-line)
-    (reduce-backward-statement 1)
-    (if second_arg
-        (setq second_arg
-          (save-excursion
-            (reduce--re-search-backward "[^ \t\f\n]")
-            (not (looking-at "\\(,\\|\\s(\\)[ \t]*[%\n]"))
-            )))
-    (back-to-indentation)
-    (if (or second_arg
-        (and open
-             (looking-at
-              ;; ... procedure / begin, << / label
-              ".*\\<procedure\\>\
+        (when (looking-at
+               "#\\_<\\(?:define\\|if\\|elif\\|else\\|endif\\)\\_>")
+          (cl-return (current-indentation)))
+
+        (unless extra-indentation
+          (setq extra-indentation
+                (cond
+                 ;; *** Tokens at beginning of the line ***
+                 ;; Comment (not /**/!)
+                 ((looking-at "%\\|\\_<comment\\_>") 0)
+                 ;; ((looking-at "\\w+[ \t]*:[^=]") ; label
+                 ;;  (if (looking-at ".*\\<if\\>") ; what else?
+                 ;;      (* 2 reduce-indentation)
+                 ;;    reduce-indentation))
+                 ;; *** Tokens anywhere in the line ***
+                 ((or (reduce--looking-at-procedure)
+                      (and (looking-at ".*\\<begin\\>")
+                           (not (looking-at ".*\\<end\\>")))
+                      (and (looking-at ".*<<") (not (looking-at ".*>>"))))
+                  (if (looking-at ".*,[ \t]*[%\n]") ; line ends with ,
+                      (* 2 reduce-indentation)
+                    reduce-indentation))
+                 ;; *** Tokens at the end of the (logical) line *** :
+                 ((looking-at ".*\\<\\(if\\|for\\|do\\|collect\\|join\\|sum\\product\\)\\>[ \t]*[%\n]")
+                  reduce-indentation)
+                 ;; Otherwise, extra indentation undefined
+                 )))
+
+        (cond
+         ;; If extra indentation determined then use it ...
+         (extra-indentation (+ previous-indentation extra-indentation))
+         ;; Indent successive lines of a comma-separated sequence by
+         ;; the same amount if both previous lines end with , :
+         ((and (looking-at ".*,\\s-*[%\n]")
+               (looking-back ",\\s-*[%\n]\\s-*" nil))
+          (current-indentation))
+         ;; If beginning new statement or comma-separated element
+         ;; then indent to previous statement or element
+         ;; unless it is a first argument ...
+         ((reduce--calculate-indent-prev1))
+         ;; This produces very odd results if the group is preceded by indented code:
+         ;; ((and (looking-at ".*<<") (not (looking-at ".*>>")))
+         ;;  (reduce-backward-statement 1)
+         ;;  (back-to-indentation)
+         ;;  (+ (current-column) reduce-indentation))
+         ;; ;; If continuing ‘if’ then indent relative to the ‘if’ ...
+         ;; ((looking-at ".*\\(\\<then\\>\\|\\<else\\>\\)[ \t]*[%\n]")
+         ;;  (if (looking-at ".*\\<if\\>")
+         ;;  ()
+         ;;    (goto-char (match-beginning 1))
+         ;;    (reduce--find-matching-if))
+         ;;  (+ (current-indentation) reduce-indentation))
+         ;; ;; ... but the ‘if’ must be embedded ...
+         ((looking-at ".+\\<if\\>.*\\(\\<then\\>\\|\\<else\\>\\)[ \t]*[%\n]")
+          (goto-char (match-beginning 1))
+          (reduce--find-matching-if)
+          (+ (current-indentation) reduce-indentation))
+         ;; Otherwise continuing previous line, so ...
+         (t (+ previous-indentation reduce-indentation)))))))
+
+(defun reduce--calculate-indent-prev1 ()
+  "Sub-function of ‘reduce--calculate-indent-prev’.
+If beginning new statement or continuing comma-separated sequence
+or sub-expression ending with ‘+’, ‘-’, ‘or’ or ‘and’ then indent
+to previous statement or element unless it is the first element."
+  ;; Point now at start of previous non-blank line.
+  (when (looking-at
+         ".*\\(?:\\([,+-]\\|\\_<\\(?:or\\|and\\)\\_>\\)\\|[\;$]\\)[ \t]*[%\n]")
+    (let* ((not-first-el (match-end 1))
+           (open (or not-first-el ; not end of block, group or statement
+                     (not (looking-at
+                           ".*\\(?:\\_<end\\_>\\|>>\\)[\;$][ \t]*[%\n]")))))
+      (end-of-line)
+      (reduce-backward-statement 1)
+      (when not-first-el
+        (setq not-first-el
+              (save-excursion
+                (reduce--re-search-backward "[^ \t\f\n]")
+                (not (looking-at "\\(,\\|\\s(\\)[ \t]*[%\n]")))))
+      (back-to-indentation)
+      (if (or not-first-el
+              (and open
+                   (looking-at
+                    ;; ... procedure, begin, <<, label
+                    ".*\\<procedure\\>\
 \\|\\<begin\\>\\|<<\
-\\|\\w+[ \t]*:[^=]"))           ; ???
-        (looking-at "\\w+[ \t]*:[^=]")) ; label
-        (+ (current-column) reduce-indentation)
-      (current-column)))))
+\\|\\w+[ \t]*:[^=]"))                           ; ???
+              (looking-at "\\w+[ \t]*:[^=]"))   ; label
+          (+ (current-indentation) reduce-indentation)
+        (current-indentation)))))
+
+(defun reduce-indent-line-always (arg)
+  "Indent current line; with ARG indent whole statement rigidly.
+Add ‘reduce-indentation’ spaces at the beginning of the line.
+With any argument, indent any additional lines of the same
+statement rigidly along with this one."
+  (interactive "*P")                    ; error if buffer read-only
+  (let ((start-marker (point-marker)))
+    (set-marker-insertion-type start-marker t)
+    (indent-rigidly
+     (1- (line-beginning-position))     ; to include first line
+     (if arg
+         (reduce-forward-statement 1)
+       (line-end-position))
+     reduce-indentation)
+    (goto-char start-marker)
+    (set-marker start-marker nil)))
 
 (defun reduce-unindent-line (arg)
-  "Unindent current line; if ARG indent whole statement rigidly.
-Delete ‘reduce-indentation’ spaces from beginning of line.
-With argument, unindent any additional lines of the same statement
-rigidly along with this one."
-  (interactive "*P")            ; error if buffer read-only
+  "Unindent current line; with ARG unindent whole statement rigidly.
+Delete ‘reduce-indentation’ spaces from the beginning of the
+line.  With any argument, unindent any additional lines of the
+same statement rigidly along with this one."
+  (interactive "*P")                    ; error if buffer read-only
   (let ((start-marker (point-marker))
-    (indentation (progn (back-to-indentation) (current-column))))
-    (if (bolp)
-    ()
+        (indentation (progn (back-to-indentation) (current-indentation))))
+    ;; Point now at first non-blank character of current line.
+    (unless (bolp)
       (backward-delete-char-untabify reduce-indentation)
-      (if arg
-      (save-excursion
-        (setq indentation (- (current-column) indentation))
-        (indent-rigidly
-         (point) (progn (reduce-forward-statement 1) (point)) indentation)
-        ))
-      (if (< (point) start-marker) (goto-char start-marker))
-      (set-marker start-marker nil)
-      )))
-
+      (when arg
+        (progn
+          (setq indentation (- (current-column) indentation))
+          (indent-rigidly
+           (point) (reduce-forward-statement 1) indentation)))
+      (goto-char start-marker)
+      (set-marker start-marker nil))))
 
 (defun reduce-comment-indent ()
-  "Value of ‘comment-indent-function’."
-  ;; Called only by indent-for-comment and
-  ;; (hence) indent-new-comment-line.
-  (if (looking-at "%%%")
-      (current-column)
-    (if (looking-at "%%")
-    (reduce-calculate-indent)
-      (skip-chars-backward " \t")
-      ;; (bolp) needed by indent-new-comment-line:
-      (max (if (bolp) 0 (1+ (current-column))) comment-column)
-      )))
-
+  "Return indent for %-comment depending on number of % characters.
+Assigned to ‘comment-indent-function’."
+  ;; Called only by indent-for-comment and (hence)
+  ;; indent-new-comment-line.
+  (cond ((looking-at "%%%") (current-column))
+        ((looking-at "%%") (reduce--calculate-indent))
+        (t (skip-chars-backward " \t")
+           ;; (bolp) needed by indent-new-comment-line:
+           (max (if (bolp) 0 (1+ (current-column))) comment-column))))
 
 (defun reduce-indent-procedure (arg)
-  "Indent this and following ARG procedures.
-Indent the procedure (and trailing white space) ending after point.
-With arg, indent the following arg procedures including this one."
-  (interactive "*p")            ; error if buffer read-only
+  "Indent the procedure ending after point.
+With positive ARG, indent that many procedures ending after point.
+Put mark at the first non-blank character or next line after the
+ARGth end of procedure after point.  If this fails, do not indent
+anything and report a user error.  Leave point at the start of
+the first procedure before any preceding blank lines."
+  (interactive "*p")                    ; error if buffer read-only
   (save-excursion
-    (if (reduce-mark-procedure arg)
-    ;; Leaves mark at end of procedure, point at start.
+    (reduce-mark-procedure arg)
     (reduce-indent-region (point) (mark))
-      )))
+    (deactivate-mark)))
 
 (defun reduce-indent-region (beg-region end-region)
   "Interactively indent region; otherwise BEG-REGION to END-REGION.
 Interactively with prefix arg, indent the whole buffer."
-  ;; (interactive "*r")         ; error if buffer read-only
   (interactive
    (if current-prefix-arg
        (list (point-min) (point-max))
      (list (region-beginning) (region-end))))
+  (barf-if-buffer-read-only)
   ;; Indent lines between beg-region and end-region
   ;; and return point to where it started.
   ;; This version is not very efficient.
@@ -887,14 +942,13 @@ Interactively with prefix arg, indent the whole buffer."
     (goto-char beg-region)
     (while (< (point) end-region-mark)
       (reduce-indent-line)
-      ;; Strip trailing white space from lines
+      ;; Strip trailing white space from lines:
       (end-of-line) (delete-horizontal-space)
       (forward-line))
     (goto-char save-point)
     (set-marker end-region-mark nil)
     (set-marker save-point nil))
   (message "Indenting ... done"))
-
 
 ;;;; ******************************************************
 ;;;; Support for automatic re-indentation of specific lines
@@ -1093,10 +1147,11 @@ This includes the end-of-file marker.  But move only after
 
 (defun reduce-forward-statement (arg)
   "Move forwards to the end of this or the following statement.
-With ARG, move that many times.  Ignore (skip) comment statements.
-If looking at the end of a block or group, or the end-of-file
-marker, move over it after ‘reduce-max-escape-tries’ consecutive
-interactive tries.  Report a user error if unsuccessful."
+With ARG, move that many times.  Ignore (skip) comment
+statements.  If looking at the end of a block or group, or the
+end-of-file marker, move over it after ‘reduce-max-escape-tries’
+consecutive interactive tries.  Return point or report a user
+error if unsuccessful."
   (interactive "p")
   (let ((case-fold-search t)
         (start (point))
@@ -1113,7 +1168,9 @@ interactive tries.  Report a user error if unsuccessful."
     ;; Move over  >>  or  end  on repeated interactive attempts:
     (reduce--escape-block-or-group start)
     ;; Never move backwards:
-    (if (< (point) start) (goto-char start))))
+    (if (< (point) start)
+        (goto-char start)
+      (point))))
 
 (defun reduce--forward-statement1 (pattern)
   "Syntactic search forwards for PATTERN.
@@ -1154,8 +1211,9 @@ If looking at the beginning of a block or group move over it
 after ‘reduce-max-escape-tries’ consecutive interactive tries.
 The end-of-file marker is treated as a statement.  Return the
 count of statements left to move, which is used by
-‘reduce-calculate-indent-proc’.  Report a user error if
+‘reduce--calculate-indent-proc’.  Report a user error if
 unsuccessful."
+  ;; *** No longer used by ‘reduce--calculate-indent-proc’! ***
   (interactive "p")
   (let ((case-fold-search t)
         (start (point))
