@@ -1171,18 +1171,51 @@ inline bool vector_f128(LispObject n)
 // there is a real prospect that I will rearrange storage layout strategies
 // so it never is!
 
+// TYPE_FLOAT is used for both double and long floats with the length of the
+// object discriminating.
+
 INLINE_VAR constexpr uintptr_t TYPE_BIGNUMINDEX    = 0x1d<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
 INLINE_VAR constexpr uintptr_t TYPE_RATNUM         = 0x3d<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x3f<<Tw;
 INLINE_VAR constexpr uintptr_t TYPE_COMPLEX_NUM    = 0x5d<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_DOUBLE_FLOAT   = 0x5f<<Tw;
 //      unused              = 0x7d<<Tw;
-// While gradually working on a new implementation of big-numbers I will
-// have a "TYPE_NEW_BIGNUM" for big integers represented using 64-bit
-// digits. These well not be fully integrated with everything else!
-INLINE_VAR constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x7d<<Tw;  // Temporary provision!
-INLINE_VAR constexpr uintptr_t TYPE_LONG_FLOAT     = 0x7f<<Tw;
+
+INLINE_VAR constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x3f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x5f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_FLOAT          = 0x7f<<Tw;
+
+// On a 64-bit platform single floats should be represented as immediate
+// data rather then being boxed, so this calue should not be especially
+// meaningful. I will include it so that in case of error and it occuring I
+// can detect and complain.
+
+// SHORT_FLOAT_HEADER should NEVER occur in memory. The value is as for
+// an object that takes zero bytes in memory, and because objects need
+// a header word this is not a legal value. However this value is distinct
+// from the other headers used by floating point values so achieves
+// what I need in the FloatType enumeration.
+
+INLINE_VAR constexpr uintptr_t SHORT_FLOAT_HEADER =
+    TYPE_SINGLE_FLOAT + TAG_HDR_IMMED;
+
+INLINE_VAR constexpr uintptr_t SINGLE_FLOAT_HEADER =
+    TYPE_SINGLE_FLOAT + ((SIXTY_FOUR_BIT?16:8)<<(Tw+5)) + TAG_HDR_IMMED;
+
+// Note that on both 32 and 64-bit systems a double float is stored
+// in a 16-byte block of memory.
+
+INLINE_VAR constexpr uintptr_t DOUBLE_FLOAT_HEADER =
+    TYPE_FLOAT + (16<<(Tw+5)) + TAG_HDR_IMMED;
+
+INLINE_VAR constexpr uintptr_t LONG_FLOAT_HEADER =
+    TYPE_FLOAT + (24<<(Tw+5)) + TAG_HDR_IMMED;
+
+enum FloatType
+{  WANT_SHORT_FLOAT  = SHORT_FLOAT_HEADER,
+   WANT_SINGLE_FLOAT = SINGLE_FLOAT_HEADER,
+   WANT_DOUBLE_FLOAT = DOUBLE_FLOAT_HEADER,
+   WANT_LONG_FLOAT   = LONG_FLOAT_HEADER
+};
 
 inline Header &numhdr(LispObject v)
 {   return *bit_cast<Header *>(v - TAG_NUMBERS);
@@ -1216,12 +1249,12 @@ inline bool is_single_float(LispObject v)
 
 inline bool is_double_float(LispObject v)
 {   return is_bfloat(v) &&
-           type_of_header(flthdr(v)) == TYPE_DOUBLE_FLOAT;
+           flthdr(v) == DOUBLE_FLOAT_HEADER;
 }
 
 inline bool is_long_float(LispObject v)
 {   return is_bfloat(v) &&
-           type_of_header(flthdr(v)) == TYPE_LONG_FLOAT;
+           flthdr(v) == LONG_FLOAT_HEADER;
 }
 
 inline bool is_ratio(LispObject n)

@@ -680,7 +680,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                 case 2:
                     return make_boxfloat(
                         std::atof(bit_cast<char *>(&boffo_char(0))),
-                        TYPE_DOUBLE_FLOAT);
+                        WANT_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
                 case 3:
                     return make_boxfloat128(atof128(

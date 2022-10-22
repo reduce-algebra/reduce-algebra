@@ -254,8 +254,8 @@ X(err_stack_overflow,         "stack overflow")                             \
 X(err_top_bit,                "top bit of address has unexpected value")    \
 X(err_mem_spans_zero,         "memory block spans the zero address")        \
 X(err_read_failure,           "failure reading from an image file")         \
-X(err_no_tempdir,             "unable to find a directory for temporary files")
-
+X(err_no_tempdir,             "unable to find a directory for temporary files") \
+X(err_bad_serialize,          "corruption in fasl or image file")
 #define X(name, text) name,
 enum
 {

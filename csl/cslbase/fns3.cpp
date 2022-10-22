@@ -773,8 +773,7 @@ LispObject Lfgetv32(LispObject env, LispObject v, LispObject n)
     v = make_boxfloat(static_cast<double>(felt(v, n1)),
                       TYPE_SINGLE_FLOAT);
 #else
-    v = make_boxfloat(static_cast<double>(felt(v, n1)),
-                      TYPE_DOUBLE_FLOAT);
+    v = make_boxfloat(static_cast<double>(felt(v, n1)), WANT_DOUBLE_FLOAT);
 #endif
     return onevalue(v);
 }
@@ -804,7 +803,7 @@ LispObject Lfgetv64(LispObject env, LispObject v, LispObject n)
     hl = (length_of_header(h) - 8)/8;
     n1 = int_of_fixnum(n);
     if (n1 >= hl) return aerror1("fgetv64 index range", n);
-    v = make_boxfloat(delt(v, n1), TYPE_DOUBLE_FLOAT);
+    v = make_boxfloat(delt(v, n1), WANT_DOUBLE_FLOAT);
     return onevalue(v);
 }
 

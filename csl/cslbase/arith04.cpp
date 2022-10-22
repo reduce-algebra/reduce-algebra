@@ -119,7 +119,7 @@ LispObject rationalf(double d)
 #define FP_INT_LIMIT ((double)((int64_t)1<<52))
     if (d <= -static_cast<double>(FP_INT_LIMIT) ||
         d >= static_cast<double>(FP_INT_LIMIT))
-        return lisp_fix(make_boxfloat(d, TYPE_DOUBLE_FLOAT), FIX_ROUND);
+        return lisp_fix(make_boxfloat(d, WANT_DOUBLE_FLOAT), FIX_ROUND);
 // Now the magnitude if d is modest, so it is safe to cast it to
 // an int64_t. When I cast the result back to a float there will not be
 // any need for rounding, so I can detect cases where the floating point
@@ -209,7 +209,7 @@ static LispObject rationalizef(double dd, int bits)
 // If the absolute value of the input is large just convert it to an
 // integer.
     if (d >= static_cast<double>((uint64_t)1<<bits))
-        return lisp_fix(make_boxfloat(dd, TYPE_DOUBLE_FLOAT), FIX_ROUND);
+        return lisp_fix(make_boxfloat(dd, WANT_DOUBLE_FLOAT), FIX_ROUND);
 // If the value is small first convert it to a rational number p/q, then
 // find the integer value r of q/p and return (1/r).
     if (d <= 1.0/static_cast<double>((uint64_t)1<<bits))
@@ -630,7 +630,7 @@ LispObject rational(LispObject a)
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
 #ifdef HAVE_SOFTFLOAT
-            if (type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+            if (flthdr(a) == LONG_FLOAT_HEADER)
                 return rationalf128(reinterpret_cast<float128_t *>(long_float_addr(
                                         a)));
             else
@@ -662,13 +662,13 @@ LispObject rationalize(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+        switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return rationalizef(single_float_val(a), 24);
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     return rationalizef(double_float_val(a), 53);
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return rationalizef128(reinterpret_cast<float128_t *>(long_float_addr(
                                                a)));
 #endif // HAVE_SOFTFLOAT

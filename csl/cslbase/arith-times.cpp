@@ -424,7 +424,7 @@ LispObject Times::op(Flt a, Flt b)
 
 // double float * single float
 LispObject Times::op(double a, Flt b)
-{   return make_boxfloat(a, b.floatval());
+{   return make_boxfloat(a * b.floatval());
 }
 
 // long float * single float
@@ -619,12 +619,12 @@ LispObject Expt::op(Rat a, Fixnum b)
 LispObject match_type(LispObject in, int value)
 {   switch (in & XTAG_BITS)
     {   case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(in)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(in))
+            {   case SINGLE_FLOAT_HEADER:
                     return pack_single_float(static_cast<double>(value));
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     return make_boxfloat(static_cast<double>(value));
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return make_boxfloat128(i64_to_f128(value));
                 default:
                     return aerror1("Invalid component in complex number", in);

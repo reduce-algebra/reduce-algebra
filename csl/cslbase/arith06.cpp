@@ -76,14 +76,14 @@ LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
     }
     else if (!is_bfloat(b)) return aerror1("bad arg for float",  b);
 #ifdef HAVE_SOFTFLOAT
-    else if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
+    else if (flthdr(b) == LONG_FLOAT_HEADER)
     {   float128_t dd = float128_of_number(a);
         return onevalue(make_boxfloat128(dd));
     }
 #endif // HAVE_SOFTFLOAT
     else
     {   double d = float_of_number(a);
-        return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
+        return onevalue(make_boxfloat(d, floatWant(flthdr(b))));
     }
 }
 
@@ -97,7 +97,7 @@ LispObject Lfloat(LispObject env, LispObject a)
 // I count that as a stupid decision!
     return onevalue(pack_single_float(d));
 #else
-    return onevalue(make_boxfloat(d, TYPE_DOUBLE_FLOAT));
+    return onevalue(make_boxfloat(d, WANT_DOUBLE_FLOAT));
 #endif
 }
 
@@ -1228,7 +1228,7 @@ static LispObject Lmanexp(LispObject env, LispObject a)
     if (!is_float(a))  return aerror1("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = std::frexp(f, &x);
-    return onevalue(cons(make_boxfloat(f, TYPE_DOUBLE_FLOAT),
+    return onevalue(cons(make_boxfloat(f, WANT_DOUBLE_FLOAT),
                          fixnum_of_int(x)));
 }
 
@@ -1392,7 +1392,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
             v *= d;
         }
         while (v == d);
-        a = make_boxfloat(v, type_of_header(h));
+        a = make_boxfloat(v, floatWant(h));
         return onevalue(a);
     }
     if (is_sfloat(a))
@@ -1501,7 +1501,7 @@ LispObject Lrandom_1(LispObject env, LispObject a)
             v *= d;
         }
         while (v == d);
-        a = make_boxfloat(v, type_of_header(h));
+        a = make_boxfloat(v, floatWant(h));
         return onevalue(a);
     }
     if (is_sfloat(a))

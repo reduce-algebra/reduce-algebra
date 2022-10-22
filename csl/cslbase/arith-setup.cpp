@@ -1194,16 +1194,16 @@ static LispObject Nmodf(LispObject env, LispObject a1)
                 return cons(pack_single_float(fi), pack_single_float(ff));
             else return cons(pack_short_float(fi), pack_short_float(ff));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a1)))
+            switch (flthdr(a1))
         {       default:
                     return aerror("badly formatted float data");
-                case TYPE_SINGLE_FLOAT:
+                case SINGLE_FLOAT_HEADER:
                     ff = std::modf(single_float_val(a1), &fi);
                     return cons(pack_single_float(fi), pack_single_float(ff));
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     df = std::modf(double_float_val(a1), &di);
                     return cons(make_boxfloat(di), make_boxfloat(df));
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     lf = arithlib_lowlevel::modf(long_float_val(a1), li);
                     return cons(make_boxfloat128(li), make_boxfloat128(lf));
             }

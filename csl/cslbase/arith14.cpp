@@ -47,54 +47,43 @@
 // all as 128-bit numbers, and 1, 10 and 0.1 as 256-bit ones.
 
 #ifdef LITTLEENDIAN
+#define fpOrder(a, b) {INT64_C(a), INT64_C(b)}
+#define fp256Order(a, b) {a, b}
+#else // LITTLEENDIAN
+#define fpOrder(a, b) {INT64_C(a), INT64_C(b)}
+#define fp256Order(a, b) {b, a}
+#endif // LITTLEENDIAN
 
-float128_t f128_0      = {{0, INT64_C(0x0000000000000000)}},
-f128_half   = {{0, INT64_C(0x3ffe000000000000)}},
-f128_mhalf  = {{0, INT64_C(0xbffe000000000000)}},
-f128_1      = {{0, INT64_C(0x3fff000000000000)}},
-f128_10_16  = {{0, INT64_C(0x40341c37937e0800)}},
-f128_10_17  = {{0, INT64_C(0x40376345785d8a00)}},
-f128_10_18  = {{0, INT64_C(0x403abc16d674ec80)}},
-f128_scale  = {{INT64_C(0x0080000000000000),
-        INT64_C(0x4038000000000000)
-    }
-},
-f128_N1     = {{0, INT64_C(0x4fff000000000000)}}; // 2^4096
+float128_t
+  f128_0            = {fpOrder(0, 0x0000000000000000)},
+  f128_half         = {fpOrder(0, 0x3ffe000000000000)},
+  f128_mhalf        = {fpOrder(0, 0xbffe000000000000)},
+  f128_1            = {fpOrder(0, 0x3fff000000000000)},
+  f128_10_16        = {fpOrder(0, 0x40341c37937e0800)},
+  f128_10_17        = {fpOrder(0, 0x40376345785d8a00)},
+  f128_10_18        = {fpOrder(0, 0x403abc16d674ec80)},
+  f128_scale        = {fpOrder(0x0080000000000000, 0x4038000000000000)},
+  f128_N1           = {fpOrder(0, 0x4fff000000000000)}, // 2^4096
 
-float256_t f256_5      = {{{0,0}}, {{0, INT64_C(0x4001400000000000)}}},
-f256_10     = {{{0,0}}, {{0, INT64_C(0x4002400000000000)}}},
-f256_r5     = {{{INT64_C(0x999999999999999a), INT64_C(0xbf8a999999999999)}},
-    {{INT64_C(0x999999999999999a), INT64_C(0x3ffc999999999999)}}
-},
-f256_r10    = {{{INT64_C(0x999999999999999a), INT64_C(0xbf89999999999999)}},
-    {{INT64_C(0x999999999999999a), INT64_C(0x3ffb999999999999)}}
-},
-f256_10_16  = {{{0,0}}, {{0, INT64_C(0x40341c37937e0800)}}};
-#else
+// These values are not set up yet!!!!
+  f128_epsilon      = {fpOrder(0, 0)},
+  f128_half_epsilon = {fpOrder(0, 0)},
+  f128_max          = {fpOrder(0, 0)},
+  f128_negmax       = {fpOrder(0, 0)},
+  f128_min          = {fpOrder(0, 0)},
+  f128_negmin       = {fpOrder(0, 0)},
+  f128_normmin      = {fpOrder(0, 0)},
+  f128_negnormmin   = {fpOrder(0, 0)};
 
-float128_t f128_0      = {{INT64_C(0x0000000000000000), 0}},
-f128_half   = {{INT64_C(0x3ffe000000000000), 0}},
-f128_mhalf  = {{INT64_C(0xbffe000000000000), 0}},
-f128_1      = {{INT64_C(0x3fff000000000000), 0}},
-f128_10_16  = {{INT64_C(0x40341c37937e0800), 0}},
-f128_10_17  = {{INT64_C(0x40376345785d8a00), 0}},
-f128_10_18  = {{INT64_C(0x403abc16d674ec80), 0}},
-f128_scale  = {{INT64_C(0x4038000000000000),
-        INT64_C(0x0080000000000000)
-    }
-},
-f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 
-float256_t f256_5      = {{{INT64_C(0x4001400000000000), 0}}, {{0,0}}},
-f256_10     = {{{INT64_C(0x4002400000000000), 0}}, {{0,0}}},
-f256_r5     = {{{INT64_C(0x3ffc999999999999), INT64_C(0x999999999999999a)}},
-    {{INT64_C(0xbf8a999999999999), INT64_C(0x999999999999999a)}}
-},
-f256_r10    = {{{INT64_C(0x3ffb999999999999), INT64_C(0x999999999999999a)}},
-    {{INT64_C(0xf899999999999999), INT64_C(0x999999999999999a)}}
-},
-f256_10_16  = {{{INT64_C(0x40341c37937e0800), 0}}, {{0,0}}};
-#endif
+float256_t
+  f256_5      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000)),
+  f256_10     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000)),
+  f256_r5     = fp256Order(fpOrder(0x999999999999999a, 0xbf8a999999999999),
+                            fpOrder(0x999999999999999a, 0x3ffc999999999999)),
+  f256_r10    = fp256Order(fpOrder(0x999999999999999a, 0xbf89999999999999),
+                            fpOrder(0x999999999999999a, 0x3ffb999999999999)),
+  f256_10_16  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800));
 
 void f128M_ldexp(float128_t *p, int x)
 {   if (f128M_zero(p) ||

@@ -112,6 +112,18 @@ const char *decodeObject(LispObject a)
 //      return r;
         break;
     }
+    switch (a)
+    {
+    case SINGLE_FLOAT_HEADER:
+        sprintf(r, "SINGLE_FLOAT length %" PRIdPTR, length_of_header(a));
+        return r;
+    case DOUBLE_FLOAT_HEADER:
+        sprintf(r, "DOUBLE_FLOAT length %" PRIdPTR, length_of_header(a));
+        return r;
+    case LONG_FLOAT_HEADER:
+        sprintf(r, "LONG_FLOAT length %" PRIdPTR, length_of_header(a));
+        return r;
+    }
     switch (a & header_mask)
     {
     case TYPE_STRING_1:
@@ -218,15 +230,6 @@ const char *decodeObject(LispObject a)
         return r;
     case TYPE_STREAM:
         sprintf(r, "STREAM length %" PRIdPTR, length_of_header(a));
-        return r;
-    case TYPE_SINGLE_FLOAT:
-        sprintf(r, "SINGLE_FLOAT length %" PRIdPTR, length_of_header(a));
-        return r;
-    case TYPE_DOUBLE_FLOAT:
-        sprintf(r, "DOUBLE_FLOAT length %" PRIdPTR, length_of_header(a));
-        return r;
-    case TYPE_LONG_FLOAT:
-        sprintf(r, "LONG_FLOAT length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_BIGNUM:
         sprintf(r, "BIGNUM length %" PRIdPTR, length_of_header(a));

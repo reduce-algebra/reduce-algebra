@@ -635,7 +635,7 @@ static LispObject Lsingle_floatp(LispObject env, LispObject p)
         is_sfloat(p) &&
         (p & XTAG_FLOAT32) != 0) return onevalue(lisp_true);
     if (tag == TAG_BOXFLOAT &&
-        type_of_header(flthdr(p)) == TYPE_SINGLE_FLOAT)
+        flthdr(p) == SINGLE_FLOAT_HEADER)
         return onevalue(lisp_true);
     else return onevalue(nil);
 }
@@ -643,7 +643,7 @@ static LispObject Lsingle_floatp(LispObject env, LispObject p)
 static LispObject Ldouble_floatp(LispObject env, LispObject p)
 {   int tag = TAG_BITS & static_cast<int>(p);
     if (tag == TAG_BOXFLOAT &&
-        type_of_header(flthdr(p)) == TYPE_DOUBLE_FLOAT)
+        flthdr(p) == DOUBLE_FLOAT_HEADER)
         return onevalue(lisp_true);
     else return onevalue(nil);
 }
@@ -651,7 +651,7 @@ static LispObject Ldouble_floatp(LispObject env, LispObject p)
 static LispObject Llong_floatp(LispObject env, LispObject p)
 {   int tag = TAG_BITS & static_cast<int>(p);
     if (tag == TAG_BOXFLOAT &&
-        type_of_header(flthdr(p)) == TYPE_LONG_FLOAT)
+        flthdr(p) == LONG_FLOAT_HEADER)
         return onevalue(lisp_true);
     else return onevalue(nil);
 }
@@ -2381,7 +2381,7 @@ LispObject callf_n(LispObject fun, LispObject args)
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &dblres, vargs);
-        return onevalue(make_boxfloat(dblres, TYPE_DOUBLE_FLOAT));
+        return onevalue(make_boxfloat(dblres, WANT_DOUBLE_FLOAT));
     }
     if (name_matches(currenttype, "string"))
     {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_pointer,

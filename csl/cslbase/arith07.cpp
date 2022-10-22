@@ -214,15 +214,15 @@ LispObject negate(LispObject a)
             }
         }
         case TAG_BOXFLOAT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return make_boxfloat(-single_float_val(a),
-                                         TYPE_SINGLE_FLOAT);
-                case TYPE_DOUBLE_FLOAT:
+                                         WANT_SINGLE_FLOAT);
+                case DOUBLE_FLOAT_HEADER:
                     return make_boxfloat(-double_float_val(a),
-                                         TYPE_DOUBLE_FLOAT);
+                                         WANT_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                 {   float128_t aa = long_float_val(a);
                     f128M_negate(&aa);
                     return make_boxfloat128(aa);

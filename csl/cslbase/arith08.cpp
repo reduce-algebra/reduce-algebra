@@ -366,7 +366,7 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     LispObject sign;
     if (!is_float(a)) return aerror("decode-float");
 #ifdef HAVE_SOFTFLOAT
-    if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
         return decode_long_float(a);
 #endif // HAVE_SOFTFLOAT
     d = float_of_number(a);
@@ -379,11 +379,11 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     if (d == 0.0) x = 0;
     else d = std::frexp(d, &x);
     if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
-    else sign = make_boxfloat(neg, type_of_header(flthdr(a)));
+    else sign = make_boxfloat(neg, floatWant(flthdr(a)));
     {   THREADID;
         Save save(THREADARG sign);
         if (is_sfloat(a)) a = pack_immediate_float(d, a);
-        else a = make_boxfloat(d, type_of_header(flthdr(a)));
+        else a = make_boxfloat(d, floatWant(flthdr(a)));
         errexit();
         save.restore(sign);
     }
@@ -413,17 +413,17 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
             return onevalue(nil);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
+            switch (flthdr(a))
             {
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     if (f128M_infinite(reinterpret_cast<float128_t *>(&long_float_val(
                                            a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
-                case TYPE_SINGLE_FLOAT:
-                case TYPE_DOUBLE_FLOAT:
+                case SINGLE_FLOAT_HEADER:
+                case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_INFINITE)
                         return onevalue(lisp_true);
                     return onevalue(nil);
@@ -443,18 +443,18 @@ static LispObject Lfp_nan(LispObject env, LispObject a)
             return onevalue(nil);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     if (std::fpclassify(single_float_val(a)) == FP_NAN)
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     if (f128M_nan(reinterpret_cast<float128_t *>(&long_float_val(a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_NAN)
                         return onevalue(lisp_true);
                     return onevalue(nil);
@@ -473,19 +473,19 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
             return onevalue(nil);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
+            switch (flthdr(a))
             {
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     if (f128M_finite(reinterpret_cast<float128_t *>(&long_float_val(a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
-                case TYPE_SINGLE_FLOAT:
+                case SINGLE_FLOAT_HEADER:
                     if (std::isfinite(single_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     if (std::isfinite(double_float_val(a)))
                         return onevalue(lisp_true);
                     return onevalue(nil);
@@ -505,18 +505,18 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     if (std::fpclassify(single_float_val(a)) == FP_SUBNORMAL)
                         return  onevalue(lisp_true);
                     else return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     if (f128M_subnorm(reinterpret_cast<float128_t *>(&long_float_val(a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_SUBNORMAL)
                         return  onevalue(lisp_true);
                     else return onevalue(nil);
@@ -542,16 +542,16 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
             else return onevalue(nil);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return onevalue(std::signbit(single_float_val(a)) ? lisp_true : nil);
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return onevalue(f128M_negative(reinterpret_cast<float128_t *>
                                                    (&long_float_val(a))) ?
                                     lisp_true : nil);
 #endif // HAVE_SOFTFLOAT
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     return onevalue(std::signbit(double_float_val(a)) ? lisp_true : nil);
             }
         default:
@@ -576,12 +576,12 @@ static LispObject Lfloat_digits(LispObject env, LispObject a)
             else return onevalue(fixnum_of_int(20));
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return onevalue(fixnum_of_int(24));
-                default:
+                case DOUBLE_FLOAT_HEADER:
                     return onevalue(fixnum_of_int(53));
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return onevalue(fixnum_of_int(113));
             }
         default:
@@ -600,12 +600,12 @@ static LispObject Lfloat_precision(LispObject env, LispObject a)
             else return onevalue(fixnum_of_int(20));
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return onevalue(fixnum_of_int(24));
-                default:
+                case DOUBLE_FLOAT_HEADER:
                     return onevalue(fixnum_of_int(53));
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return onevalue(fixnum_of_int(113));
             }
         default:
@@ -625,7 +625,7 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a,
 {
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(b) &&
-        type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
+        flthdr(b) == LONG_FLOAT_HEADER)
     {   float128_t d = float128_of_number(b);
 // If a is another long float then float_of_number may overflow, but
 // here I am only interested in its sign, and -infinity is still negative.
@@ -639,14 +639,14 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a,
     if (is_sfloat(b)) return onevalue(pack_immediate_float(d, b));
     else if (!is_bfloat(b)) return aerror1("bad arg for float-sign",  b);
 // make_boxfloat may detect infinity or NaN.
-    else return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
+    else return onevalue(make_boxfloat(d, floatWant(flthdr(b))));
 }
 
 static LispObject Lfloat_sign1(LispObject env, LispObject a)
 {
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(1) &&
-        type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+        flthdr(a) == LONG_FLOAT_HEADER)
     {   float128_t d = float128_of_number(a);
         float128_t r = f128_1;
         if (f128M_negative(&d)) f128M_negate(&r);
@@ -659,7 +659,7 @@ static LispObject Lfloat_sign1(LispObject env, LispObject a)
     else d = 1.0;
     if (is_sfloat(a)) return onevalue(pack_immediate_float(d, a));
     else if (!is_bfloat(a)) return aerror1("bad arg for float-sign",  a);
-    else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
+    else return onevalue(make_boxfloat(d, floatWant(flthdr(a))));
 }
 
 static LispObject Lfround(LispObject env, LispObject a1,
@@ -715,7 +715,7 @@ LispObject Linteger_decode_float(LispObject env, LispObject a)
 {   double d;
     if (!is_float(a)) return aerror("integer-decode-float");
 #ifdef HAVE_SOFTFLOAT
-    if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
         return integer_decode_long_float(a);
 #endif // HAVE_SOFTFLOAT
     d = float_of_number(a);
@@ -929,7 +929,7 @@ static LispObject Lscale_float(LispObject env, LispObject a,
 {   if (!is_fixnum(b)) return aerror("scale-float");
     intptr_t x = int_of_fixnum(b);
 #ifdef HAVE_SOFTFLOAT
-    if (is_bfloat(a) && type_of_header(a) == TYPE_LONG_FLOAT)
+    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
         return scale_float128(a, x);
 #endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);
@@ -939,7 +939,7 @@ static LispObject Lscale_float(LispObject env, LispObject a,
 // Overflows etc handled by make_boxfloat.
     if (is_sfloat(a)) return onevalue(pack_immediate_float(d, a));
     else if (!is_bfloat(a)) return aerror1("bad arg for scale-float",  a);
-    else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
+    else return onevalue(make_boxfloat(d, floatWant(flthdr(a))));
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1052,7 +1052,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // result can always be accurate.
 {
 #ifdef HAVE_SOFTFLOAT
-    if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
         return lisp_fix_sub128(a, roundmode);
 #endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);

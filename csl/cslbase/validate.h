@@ -146,14 +146,14 @@ inline void checkBoxfloat(LispObject x, bool forwardOK)
         my_assert(!is_forward(c), where("double forward pointer"));
     }
     my_assert(is_odds(c) && is_header(c), where("float needs a header"));
-    switch (type_of_header(c))
+    switch (c)
     {
-    case TYPE_SINGLE_FLOAT:
-    case TYPE_LONG_FLOAT:
+    case SINGLE_FLOAT_HEADER:
+    case LONG_FLOAT_HEADER:
         my_assert(p->type == vecPageType, where("float in cons page"));
         my_assert(p1->type == vecPageType, where("float forwards into cons page"));
         break;
-    case TYPE_DOUBLE_FLOAT:
+    case DOUBLE_FLOAT_HEADER:
         if (SIXTY_FOUR_BIT)
         {   my_assert(p->type == consPageType, where("double float in vector page"));
             my_assert(p1->type == consPageType, where("double float forwards into vector page"));

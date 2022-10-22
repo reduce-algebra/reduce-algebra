@@ -1,6 +1,6 @@
 // arith-float128.cpp                      Copyright (C) 2022-2022 Codemist
 
-#ifdef ARITHLIB
+#if defined ARITHLIB || defined TEST
 
 // $Id$
 
@@ -35,6 +35,150 @@
  *************************************************************************/
 
 #include "headers.h"
+
+// For any degree of sanity at all here I need to arrange that I can use
+// 128-bit floats using the normal arithmetic operators even though they
+// are liable to be implemented in software with ugly function calls
+// as the "real" way of doing things. So I start with some C++ wrapper
+// and operator overload "fun".
+
+class LongDouble
+{
+    float128_t v;
+public:
+    LongDouble(float128_t n);
+    LongDouble(const char* s);
+    LongDouble(const LongDouble& rhs);
+    LongDouble(const LongDouble& rhs, int exponent);
+    LongDouble(LongDouble&& rhs);
+
+    LongDouble operator=(const LongDouble & rhs);
+    LongDouble operator=(LongDouble && rhs);
+
+    bool operator-=(const LongDouble& rhs) const;
+    bool operator!=(const LongDouble& rhs) const;
+    bool operator<(const LongDouble& rhs) const;
+    bool operator<=(const LongDouble& rhs) const;
+    bool operator>(const LongDouble& rhs) const;
+    bool operator>=(const LongDouble& rhs) const;
+
+    LongDouble operator-() const;
+
+    LongDouble operator+(const LongDouble& rhs) const;
+    LongDouble operator-(const LongDouble& rhs) const;
+    LongDouble operator*(const LongDouble& rhs) const;
+    LongDouble operator/(const LongDouble& rhs) const;
+
+    bool isInfinite();
+    bool isNaN();
+    bool isSubnormal();
+
+    bool sign();
+    int exponent();
+    LongDouble mantissa();
+};
+
+
+LongDouble::LongDouble(float128_t n)
+{
+}
+
+LongDouble::LongDouble(const char* s)
+{
+}
+
+LongDouble::LongDouble(const LongDouble& rhs)
+{
+}
+
+LongDouble::LongDouble(const LongDouble& rhs, int exponent)
+{
+}
+
+LongDouble::LongDouble(LongDouble&& rhs)
+{
+}
+
+LongDouble LongDouble::operator=(const LongDouble& rhs)
+{
+}
+
+LongDouble LongDouble::operator=(LongDouble&& rhs)
+{
+}
+
+
+bool LongDouble::operator-=(const LongDouble& rhs) const
+{
+}
+
+bool LongDouble::operator!=(const LongDouble& rhs) const
+{
+}
+
+bool LongDouble::operator<(const LongDouble& rhs) const
+{
+}
+
+bool LongDouble::operator<=(const LongDouble& rhs) const
+{
+}
+
+bool LongDouble::operator>(const LongDouble& rhs) const
+{
+}
+
+bool LongDouble::operator>=(const LongDouble& rhs) const
+{
+}
+
+
+LongDouble LongDouble::operator-() const
+{
+}
+
+
+LongDouble LongDouble::operator+(const LongDouble& rhs) const
+{
+}
+
+LongDouble LongDouble::operator-(const LongDouble& rhs) const
+{
+}
+
+LongDouble LongDouble::operator*(const LongDouble& rhs) const
+{
+}
+
+LongDouble LongDouble::operator/(const LongDouble& rhs) const
+{
+}
+
+
+bool LongDouble::isInfinite()
+{
+}
+
+bool LongDouble::isNaN()
+{
+}
+
+bool LongDouble::isSubnormal()
+{
+}
+
+
+bool LongDouble::sign()
+{
+}
+
+int LongDouble::exponent()
+{
+}
+
+LongDouble LongDouble::mantissa()
+{
+}
 
 
 //
@@ -108,5 +252,16 @@ float128_t sqrt(float128_t x)
 }
 
 #endif // ARITHLIB
+
+#ifdef TEST
+
+int main()
+{
+    LongDouble a, b, c;
+    a = b+c;
+    return 0;
+}
+
+#endif // TEST
 
 // end of arith-float.cpp
