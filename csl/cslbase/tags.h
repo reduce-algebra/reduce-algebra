@@ -1179,6 +1179,8 @@ INLINE_VAR constexpr uintptr_t TYPE_RATNUM         = 0x3d<<Tw;
 INLINE_VAR constexpr uintptr_t TYPE_COMPLEX_NUM    = 0x5d<<Tw;
 //      unused              = 0x7d<<Tw;
 
+INLINE_VAR constexpr uintptr_t BIGNUM_TYPE_MASK    = 0x5f<<Tw;
+
 INLINE_VAR constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
 INLINE_VAR constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x3f<<Tw;
 INLINE_VAR constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x5f<<Tw;
@@ -1263,6 +1265,12 @@ inline bool is_ratio(LispObject n)
 
 inline bool is_complex(LispObject n)
 {   return is_numbers(n) && type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM;
+}
+
+// This checks for either BIGNUM or NEW_BIGNUM.
+
+inline bool is_either_bignum_header(Header h)
+{   return (h & BIGNUM_TYPE_MASK) == TYPE_BIGNUM;
 }
 
 inline bool is_bignum_header(Header h)

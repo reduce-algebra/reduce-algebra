@@ -2016,8 +2016,8 @@ down:
 // opcode. The header I want for my vector will be
 //     wwwwwwww....wwww CCC CC 10 g100
             {   Header type = ((c & 0x1f)<<(Tw+2)) | (0x3<<Tw),
-                    tag = is_bignum_header(type) ? TAG_NUMBERS :
-                                                   TAG_VECTOR;
+                    tag = is_either_bignum_header(type) ? TAG_NUMBERS :
+                                                          TAG_VECTOR;
                 if (vector_i8(type))
                 {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
                     *(LispObject*)p = prev;
@@ -2987,19 +2987,22 @@ down:
                 if (i != (size_t)-1) write_opcode(SER_DUP, "dup bitvector");
                 goto up;
             }
+// This first bit of code is for pre-arithlib bignums.
 // If I have a big-integer that uses at most two (32-bit) words then
 // I can transmit it as a big fixnum. I know that a 3-word bignum can
 // sometimes fit within 64-bits, but I do not detect and handle that
-// case here. The main concern I have here is that if I move to making
-// fixnums 60-bits wide in the future that the range that they cover is
-// handled nicely, and here it is!
+// case here. This is important for compatibility when an image is being
+// created on a 32-bit platform where values from around 2^27-2^61 are
+// are bignums while on a 64-bit platform they would be fixnums.
 // Observe that the type returned by bignum_digits(p)[n] is uint32_t and
 // that although most digits in a bignum are unsigned the most significant
 // one must be treated as signed. So I cast to int32_t before casting to
 // int64_t to ensure that the sign gets propagated the way I need it to.
-            else if (is_bignum_header(h))
+// On a 64-bit platform I do not need to worry here.
+            else if (!SIXTY_FOUR_BIT && is_bignum_header(h))
             {   if (length_of_header(h) == CELL+4)
                 {   int64_t n = (int32_t)bignum_digits(p)[0];
+// Values from 2^27 to 2^30-1
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "int value=%" PRId64, n);
@@ -3013,6 +3016,7 @@ down:
                 else if (length_of_header(h) == CELL+8)
                 {   int64_t n = (int32_t)bignum_digits(p)[0] |
                                 ((int64_t)(int32_t)bignum_digits(p)[1] << 31);
+// Values from 2^31 to 2^61-1
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "int value=%" PRId64, n);
@@ -3031,6 +3035,7 @@ down:
 // which I might otherwise need to think about carefully to ensure that
 // processing with 64-bit integers did not cause trouble with overflow.
             }
+// I will treat arithlib bignums as just a sort of binary-containing vector
 //
 // The general code here writes out a vector where its contents are
 // binary data. This needs to use separate code for each sort of data
