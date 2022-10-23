@@ -3016,7 +3016,9 @@ down:
                 else if (length_of_header(h) == CELL+8)
                 {   int64_t n = (int32_t)bignum_digits(p)[0] |
                                 ((int64_t)(int32_t)bignum_digits(p)[1] << 31);
-// Values from 2^31 to 2^61-1
+// Values from 2^31 to 2^61-1. Although some values in the range 2^62 to
+// 2^92-1 would fit within 64-bits they would not turn into fixnums
+// ever so I will not trap them for special treatment here.
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "int value=%" PRId64, n);
@@ -3101,7 +3103,7 @@ down:
             {   uint64_t *x = (uint64_t *)start_contents64(p);
                 write_u64(len = (length_of_header(h) - CELL)/8);
 // 64-bit integers are transmitted most significant byte first.
-                for (size_t i=0; i<len/8; i++)
+                for (size_t i=0; i<len; i++)
                 {   uint64_t q = *x++;
                     write_byte((q>>56) & 0xff, "high byte");
                     write_byte((q>>48) & 0xff, "7");
