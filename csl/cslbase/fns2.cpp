@@ -1271,9 +1271,9 @@ bool eql_fn(LispObject a, LispObject b)
         if (h != flthdr(b)) return false;
 // Boxed single floats should not arise on a 64-bit system, so I will
 // avoid checking for them there.
-        if (!SIXTY_FOUR_BIT && type_of_header(h) == TYPE_SINGLE_FLOAT)
+        if (!SIXTY_FOUR_BIT && h == SINGLE_FLOAT_HEADER)
             return (single_float_val(a) == single_float_val(b));
-        else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
+        else if (h == DOUBLE_FLOAT_HEADER)
             return (double_float_val(a) == double_float_val(b));
 #ifdef HAVE_SOFTFLOAT
 // Here I must have a long float.
@@ -1515,12 +1515,12 @@ bool cl_equal_fn(LispObject a, LispObject b)
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
                                 if (!SIXTY_FOUR_BIT &&
-                                    type_of_header(h) == TYPE_SINGLE_FLOAT)
+                                    h == SINGLE_FLOAT_HEADER)
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
                                 }
-                                else if (type_of_header(ca) == TYPE_DOUBLE_FLOAT)
+                                else if (ca == DOUBLE_FLOAT_HEADER)
                                 {   if (double_float_val(ca) !=
                                         double_float_val(cb)) return false;
                                     else break;
@@ -1571,19 +1571,18 @@ bool cl_equal_fn(LispObject a, LispObject b)
                 {   Header h = flthdr(a);
                     if (h != flthdr(b)) return false;
                     if (!SIXTY_FOUR_BIT &&
-                        type_of_header(h) == TYPE_SINGLE_FLOAT)
+                        h == SINGLE_FLOAT_HEADER)
                     {   if (single_float_val(a) != single_float_val(b))
                             return false;
                         else return true;
                     }
-                    else if(type_of_header(h) == TYPE_DOUBLE_FLOAT)
+                    else if (h == DOUBLE_FLOAT_HEADER)
                     {   if (double_float_val(a) != double_float_val(b))
                             return false;
                         else return true;
                     }
 #ifdef HAVE_SOFTFLOAT
-                    else return f128_eq(
-                                        float128_of_number(a),
+                    else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
 #else
                     else return false;
@@ -1808,12 +1807,12 @@ bool equal_fn(LispObject a, LispObject b)
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
                                 if (!SIXTY_FOUR_BIT &&
-                                    type_of_header(h) == TYPE_SINGLE_FLOAT)
+                                    h == SINGLE_FLOAT_HEADER)
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
                                 }
-                                else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
+                                else if (h == DOUBLE_FLOAT_HEADER)
                                 {   if (double_float_val(ca) !=
                                         double_float_val(cb)) return false;
                                     else break;
@@ -1861,19 +1860,18 @@ bool equal_fn(LispObject a, LispObject b)
                 {   Header h = flthdr(a);
                     if (h != flthdr(b)) return false;
                     if (!SIXTY_FOUR_BIT &&
-                        type_of_header(h) == TYPE_SINGLE_FLOAT)
+                        h == SINGLE_FLOAT_HEADER)
                     {   if (single_float_val(a) != single_float_val(b))
                             return false;
                         else return true;
                     }
-                    else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
+                    else if (h == DOUBLE_FLOAT_HEADER)
                     {   if (double_float_val(a) != double_float_val(b))
                             return false;
                         else return true;
                     }
 #ifdef HAVE_SOFTFLOAT
-                    else return f128_eq(
-                                        float128_of_number(a),
+                    else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
 #else
                     else return false;
@@ -2013,12 +2011,12 @@ bool equalp(LispObject a, LispObject b)
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
                                 if (!SIXTY_FOUR_BIT &&
-                                    type_of_header(h) == TYPE_SINGLE_FLOAT)
+                                    h == SINGLE_FLOAT_HEADER)
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
                                 }
-                                else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
+                                else if (h == DOUBLE_FLOAT_HEADER)
                                 {   if (double_float_val(ca) !=
                                         double_float_val(cb)) return false;
                                     else break;
@@ -2068,19 +2066,18 @@ bool equalp(LispObject a, LispObject b)
                 {   Header h = flthdr(a);
                     if (h != flthdr(b)) return false;
                     if (!SIXTY_FOUR_BIT &&
-                        type_of_header(h) == TYPE_SINGLE_FLOAT)
+                        h == SINGLE_FLOAT_HEADER)
                     {   if (single_float_val(a) != single_float_val(b))
                             return false;
                         else return true;
                     }
-                    else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
+                    else if (h == DOUBLE_FLOAT_HEADER)
                     {   if (double_float_val(a) != double_float_val(b))
                             return false;
                         else return true;
                     }
 #ifdef HAVE_SOFTFLOAT
-                    else return f128_eq(
-                                        float128_of_number(a),
+                    else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
 #else
                     else return false;

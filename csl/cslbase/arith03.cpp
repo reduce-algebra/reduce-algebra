@@ -176,7 +176,7 @@ static LispObject quotif(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = static_cast<double>(int_of_fixnum(a)) / d;
-    return make_boxfloat(d, type_of_header(flthdr(b)));
+    return make_boxfloat(d, floatWant(flthdr(b)));
 }
 
 static LispObject quotsi(LispObject a, LispObject b)
@@ -215,7 +215,7 @@ static LispObject quotsf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = value_of_immediate_float(a) / d;
-    return make_boxfloat(d, type_of_header(flthdr(b)));
+    return make_boxfloat(d, floatWant(flthdr(b)));
 }
 
 LispObject quotbn(LispObject a, int32_t n)
@@ -975,7 +975,7 @@ static LispObject quotbf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
-    return make_boxfloat(d, type_of_header(flthdr(b)));
+    return make_boxfloat(d, floatWant(flthdr(b)));
 }
 
 static LispObject quotri(LispObject a, LispObject b)
@@ -1041,7 +1041,7 @@ static LispObject quotrf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
-    return make_boxfloat(d, type_of_header(flthdr(b)));
+    return make_boxfloat(d, floatWant(flthdr(b)));
 }
 
 static LispObject quotci(LispObject a, LispObject b)
@@ -1071,41 +1071,41 @@ static LispObject quotfi(LispObject a, LispObject b)
 {   double d;
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / static_cast<double>(int_of_fixnum(b));
-    return make_boxfloat(d, type_of_header(flthdr(a)));
+    return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
 static LispObject quotfs(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
-    return make_boxfloat(d, type_of_header(flthdr(a)));
+    return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
 static LispObject quotfb(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
-    return make_boxfloat(d, type_of_header(flthdr(a)));
+    return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
 static LispObject quotfr(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     mv_2 = fixnum_of_int(0);
     d = float_of_number(a) / d;
-    return make_boxfloat(d, type_of_header(flthdr(a)));
+    return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
 #define quotfc(a, b) quotic(a, b)
 
 static LispObject quotff(LispObject a, LispObject b)
-{   int32_t ha = type_of_header(flthdr(a)),
-                hb = type_of_header(flthdr(b));
-    int32_t hc;
+{   Header ha = flthdr(a),
+           hb = flthdr(b);
+    FloatType hc;
     mv_2 = fixnum_of_int(0);
 #ifdef HAVE_SOFTFLOAT
 // If EITHER argument is a long float I will need to do things differently,
 // because I can not use machine-native arithmetic on float128_t.
-    if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
+    if (ha == LONG_FLOAT_HEADER || hb == LONG_FLOAT_HEADER)
     {   float128_t x, y, z;
         x = float128_of_number(a);
         y = float128_of_number(b);
@@ -1114,9 +1114,9 @@ static LispObject quotff(LispObject a, LispObject b)
     }
     else
 #endif // HAVE_SOFTFLOAT
-        if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
-            hc = TYPE_DOUBLE_FLOAT;
-        else hc = TYPE_SINGLE_FLOAT;
+        if (ha == DOUBLE_FLOAT_HEADER || hb == DOUBLE_FLOAT_HEADER)
+            hc = WANT_DOUBLE_FLOAT;
+        else hc = WANT_SINGLE_FLOAT;
     double d = float_of_number(b);
     return make_boxfloat(float_of_number(a) / d, hc);
 }

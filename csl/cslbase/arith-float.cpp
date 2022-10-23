@@ -1226,7 +1226,7 @@ LispObject Ldexp::op(Flt a, uint64_t *b)
 LispObject Ldexp::op(double a, uint64_t *b)
 {   if (Minusp::op(b)) return make_boxfloat(
                                       a == a ? 0.0 : 0.0/0.0,
-                                      TYPE_DOUBLE_FLOAT);
+                                      WANT_DOUBLE_FLOAT);
     double d = std::ldexp(a, 100000000);
     return make_boxfloat(d);
 }

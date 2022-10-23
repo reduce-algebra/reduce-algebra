@@ -775,7 +775,7 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
     {       default:
                 return aerror("Bad op in fp-evaluate");
             case FP_RETURN:
-                args = make_boxfloat(fp_stack[0], TYPE_DOUBLE_FLOAT);
+                args = make_boxfloat(fp_stack[0], WANT_DOUBLE_FLOAT);
                 return onevalue(args);
             case FP_PLUS:
                 n--;

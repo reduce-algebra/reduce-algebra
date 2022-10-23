@@ -261,13 +261,13 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
     {   default:
             return static_cast<R>(aerror2("Non-numeric argument", fname, b));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(b)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(b))
+            {   case SINGLE_FLOAT_HEADER:
                     return T::op(lhsVal, Flt(b));
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
 // 64-bit floats passed as native data not via a wrapper class.
                     return T::op(lhsVal, double_float_val(b));
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return T::op(lhsVal, LFlt(b));
                 default:
                     return static_cast<R>(static_cast<R>(aerror2("Non-numeric argument", fname, b)));
@@ -297,13 +297,13 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
     {   default:
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return T::op(Flt(a), rhsval);
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
 // 64-bit floats passed as native data not via a wrapper class.
                     return T::op(double_float_val(a), rhsval);
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return T::op(LFlt(a), rhsval);
                 default:
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
@@ -338,12 +338,12 @@ inline R binary(const char *fname, LispObject a, LispObject b)
     {   default:
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return binaryL<R,T,Flt>(fname, Flt(a), b);
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     return binaryL<R,T,double>(fname, double_float_val(a), b);
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return binaryL<R,T,LFlt>(fname, LFlt(a), b);
                 default:
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
@@ -436,12 +436,12 @@ inline R unary(const char *fname, LispObject a)
     {   default:
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return T::op(Flt(a));
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     return T::op(double_float_val(a));
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return T::op(LFlt(a));
                 default:
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
@@ -493,12 +493,12 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
     {   default:
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
-            switch (type_of_header(flthdr(a)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(a))
+            {   case SINGLE_FLOAT_HEADER:
                     return T::op(Flt(a), xx);
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                     return T::op(double_float_val(a), xx);
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     return T::op(LFlt(a), xx);
                 default:
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));

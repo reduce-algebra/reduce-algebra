@@ -3764,7 +3764,7 @@ int PROC_push_floating(double n)
     THREADID;
     C_stackBase = bit_cast<uintptr_t>(&sp);
 // Here I have to construct a Lisp (boxed) float
-    if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
+    if_error(w = make_boxfloat(n, WANT_DOUBLE_FLOAT);
              errexit();
              w = cons(w, procstack),
              return 1);

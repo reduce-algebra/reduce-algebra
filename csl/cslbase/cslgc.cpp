@@ -209,8 +209,7 @@ static void copy(LispObject *p)
                         case TYPE_BIGNUM:
                             big_numbers += len; break;
                         case TYPE_SINGLE_FLOAT:
-                        case TYPE_LONG_FLOAT:
-                        case TYPE_DOUBLE_FLOAT:
+                        case TYPE_FLOAT:
                             box_floats += len; break;
                         case TYPE_SIMPLE_VEC:
                             user_vectors += len; break;
@@ -312,8 +311,7 @@ static void copy(LispObject *p)
                             }
                             switch (type_of_header(h))
                             {   case TYPE_SINGLE_FLOAT:
-                                case TYPE_LONG_FLOAT:
-                                case TYPE_DOUBLE_FLOAT:
+                                case TYPE_FLOAT:
                                 case TYPE_BIGNUM:
                                     continue;
                                 case TYPE_MIXED1: case TYPE_MIXED2:

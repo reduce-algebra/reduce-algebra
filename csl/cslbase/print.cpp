@@ -3121,8 +3121,8 @@ restart:
             return nil;
 
         case TAG_BOXFLOAT:
-            switch (type_of_header(flthdr(u)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(u))
+            {   case SINGLE_FLOAT_HEADER:
 // The casts to "uint32_t *" here break the strict aliasing rules. If I was
 // more cautious I would use a union, which (I believe) would cause gcc (at
 // least) to guarantee to treat me kindly despite this. But even with that
@@ -3144,7 +3144,7 @@ restart:
                     else fp_sprint(my_buff,
                                        static_cast<double>(single_float_val(u)), print_precision, 'f');
                     break;
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
 // Hexadecimal printing of floating point numbers is only provided for
 // here to help with nasty low-level debugging.  The output will not be
 // directly re-readable.
@@ -3175,7 +3175,7 @@ restart:
                                        print_precision, 'e');
                     break;
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                     if (escaped_printing & escape_checksum)
                     {   int64_t v0 = intfloat128_t_val0(u);
                         int64_t v1 = intfloat128_t_val1(u);
@@ -4541,7 +4541,7 @@ static LispObject Lbinary_read4(LispObject)
 }
 
 static LispObject Lbinary_readfloat(LispObject env)
-{   LispObject r = make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
+{   LispObject r = make_boxfloat(0.0, WANT_DOUBLE_FLOAT);
     uint32_t w;
     if (binary_infile == nullptr) return onevalue(r);
 // Note that the code here treats the float as binary data so infinities and

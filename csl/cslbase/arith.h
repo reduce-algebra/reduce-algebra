@@ -232,10 +232,24 @@ inline double value_of_immediate_float(LispObject a)
     return aa.f;
 }
 
-extern LispObject make_boxfloat(double a, int type=TYPE_DOUBLE_FLOAT);
+extern LispObject make_boxfloat(double a, FloatType type=WANT_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
 extern LispObject make_boxfloat128(float128_t a);
 #endif // HAVE_SOFTFLOAT
+
+inline FloatType floatWant(Header h)
+{   switch (h)
+    {
+    case SINGLE_FLOAT_HEADER:
+        return WANT_SINGLE_FLOAT;
+    case DOUBLE_FLOAT_HEADER:
+        return WANT_DOUBLE_FLOAT;
+    case LONG_FLOAT_HEADER:
+        return WANT_LONG_FLOAT;
+    default:
+        my_abort("bad header for boxed floating point number");
+    }
+}
 
 // Pack something as a short (28-bit) float
 
@@ -310,23 +324,17 @@ inline LispObject pack_immediate_float(double d,
 
 // double floats 
 
-// Note that on both 32 and 64-bit systems a double float is stored
-// in a 16-byte block of memory.
-
-INLINE_VAR constexpr uintptr_t DOUBLE_FLOAT_HEADER =
-    TYPE_DOUBLE_FLOAT + (16<<(Tw+5)) + TAG_HDR_IMMED;
-
-inline LispObject make_boxfloat(double a, int type)
+inline LispObject make_boxfloat(double a, FloatType type)
 // Make a boxed float (single, double according to the type specifier)
 // if type==0 this makes a short float.
 // 128-bit floats must be made using make_boxfloat128.
 {   LispObject r;
     switch (type)
-    {   case 0:
+    {   case WANT_SHORT_FLOAT:
             return pack_short_float(a);
-        case TYPE_SINGLE_FLOAT:
+        case WANT_SINGLE_FLOAT:
             return pack_single_float(a);
-        default: // TYPE_DOUBLE_FLOAT I hope
+        case WANT_DOUBLE_FLOAT:
 #ifdef CONSERVATIVE
 // double precision floats always consume 16 bytes in all. On a 64
 // bit machines that is an 8 byte header than the 8 bytes of the double
@@ -340,8 +348,7 @@ inline LispObject make_boxfloat(double a, int type)
             indirect(r) = DOUBLE_FLOAT_HEADER;
             r += TAG_BOXFLOAT;
 #else // CONSERVATIVE
-            r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
-                                 SIZEOF_DOUBLE_FLOAT);
+            r = get_basic_vector(TAG_BOXFLOAT,TYPE_FLOAT,SIZEOF_DOUBLE_FLOAT);
 #endif // CONSERVATIVE
             errexit();
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
@@ -354,6 +361,8 @@ inline LispObject make_boxfloat(double a, int type)
                 return aerror("exception with double float");
             }
             return r;
+        default:
+            my_abort("coding error in support of long floats");
     }
 }
 
@@ -378,8 +387,7 @@ inline bool eq_i64d(int64_t a, double b)
 // an integer safely. In C++ the consequence of trying to cast a double to
 // and int where the result would not fit is undefined, and so could
 // include arbitrary bad behaviour. So I have to filter that case out.
-    if (b == static_cast<double>(static_cast<uint64_t>
-                                 (1)<<63)) return false;
+    if (b == static_cast<double>(static_cast<uint64_t>(1)<<63)) return false;
 // With the special case out of the way I can afford to case from double to
 // int64_t. The negative end of the range is safe!
     return a == static_cast<int64_t>(b);
@@ -391,18 +399,18 @@ inline bool lessp_i64d(int64_t a, double b)
 // introduce any error at all, so I can perform the comparison reliably
 // on doubles. If d ia a NaN this is still OK.
     if (a <= (static_cast<int64_t>(1)<<53) &&
-        a >= -(static_cast<int64_t>(1)<<53)) return static_cast<double>
-                    (a) < b;
+        a >= -(static_cast<int64_t>(1)<<53))
+        return static_cast<double>(a) < b;
 // If the float is outside the range of int64_t I can tell how the
 // comparison must play out. Note that near the value 2^63 the next
 // double value lower than 2^63 is in integer, as we can not have any
 // floating point value larger than the largest positive int64_t value
 // and less then 2^63. I make these tests of the form "if (!xxx)" because
 // then if b is a NaN the comparison returns false and I end up exiting.
-    if (!(b >= -static_cast<double>(static_cast<uint64_t>
-                                    (1)<<63))) return false;
-    if (!(b < static_cast<double>(static_cast<uint64_t>
-                                  (1)<<63))) return true;
+    if (!(b >= -static_cast<double>(static_cast<uint64_t>(1)<<63)))
+        return false;
+    if (!(b < static_cast<double>(static_cast<uint64_t>(1)<<63)))
+        return true;
 // Now we know that a is large and b is not huge. I will just discuss the
 // case of two positive numbers here, but mixed signs and negative values
 // follow the same.
@@ -422,12 +430,11 @@ inline bool lessp_di64(double a, int64_t b)
 // The logic here is much as above - by omitting all the commentary
 // you can see much more clearly just how long the code is.
     if (b <= (static_cast<int64_t>(1)<<53) &&
-        b >= -(static_cast<int64_t>(1)<<53)) return a < static_cast<double>
-                    (b);
-    if (!(a < static_cast<double>(static_cast<uint64_t>
-                                  (1)<<63))) return false;
-    if (!(a >= -static_cast<double>(static_cast<uint64_t>
-                                    (1)<<63))) return true;
+        b >= -(static_cast<int64_t>(1)<<53)) return a < static_cast<double>(b);
+    if (!(a < static_cast<double>(static_cast<uint64_t>(1)<<63)))
+        return false;
+    if (!(a >= -static_cast<double>(static_cast<uint64_t>(1)<<63)))
+        return true;
     return static_cast<int64_t>(a) < b;
 }
 
@@ -839,22 +846,25 @@ stgclass type name(LispObject a1)                                   \
         case TYPE_COMPLEX_NUM:                                      \
             return name##_c(a1);                                    \
         default:                                                    \
-            return static_cast<type>(aerror1("bad arg for " #name, a1)); \
+            return static_cast<type>(                               \
+                aerror1("bad arg for " #name, a1));                 \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
-        switch (type_of_header(flthdr(a1)))                         \
+        switch (flthdr(a1))                                         \
         {                                                           \
-        case TYPE_SINGLE_FLOAT:                                     \
+        case SINGLE_FLOAT_HEADER:                                   \
             return name##_f(a1);                                    \
-        case TYPE_DOUBLE_FLOAT:                                     \
+        case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1);                                    \
-        case TYPE_LONG_FLOAT:                                       \
+        case LONG_FLOAT_HEADER:                                     \
             return name##_l(a1);                                    \
         default:                                                    \
-            return static_cast<type>(aerror1("bad arg for " #name, a1)); \
+            return static_cast<type>(                               \
+                aerror1("bad arg for " #name, a1));                 \
         }                                                           \
     default:                                                        \
-        return static_cast<type>(aerror1("bad arg for " #name, a1)); \
+        return static_cast<type>(                                   \
+            aerror1("bad arg for " #name, a1));                     \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0)            \
             return name##_f(a1);                                    \
@@ -879,22 +889,25 @@ stgclass type name(LispObject a1, LispObject a2)                    \
         case TYPE_COMPLEX_NUM:                                      \
             return name##_c(a1, a2);                                \
         default:                                                    \
-            return static_cast<type>(aerror2("bad arg for " #rawname, a1, a2)); \
+            return static_cast<type>(                               \
+                aerror2("bad arg for " #rawname, a1, a2));          \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
-        switch (type_of_header(flthdr(a2)))                         \
+        switch (flthdr(a2))                                         \
         {                                                           \
-        case TYPE_SINGLE_FLOAT:                                     \
+        case SINGLE_FLOAT_HEADER:                                   \
             return name##_f(a1, a2);                                \
-        case TYPE_DOUBLE_FLOAT:                                     \
+        case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1, a2);                                \
-        case TYPE_LONG_FLOAT:                                       \
+        case LONG_FLOAT_HEADER:                                     \
             return name##_l(a1, a2);                                \
         default:                                                    \
-            return static_cast<type>(aerror2("bad arg for " #rawname, a1, a2)); \
+            return static_cast<type>(                               \
+                aerror2("bad arg for " #rawname, a1, a2));          \
         }                                                           \
     default:                                                        \
-        return static_cast<type>(aerror2("bad arg for " #rawname, a1, a2)); \
+        return static_cast<type>(                                   \
+            aerror2("bad arg for " #rawname, a1, a2));              \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a2 & XTAG_FLOAT32) != 0))           \
             return name##_f(a1, a2);                                \
@@ -933,22 +946,25 @@ stgclass type name(LispObject a1, LispObject a2)                    \
         case TYPE_COMPLEX_NUM:                                      \
             return name##_c(a1, a2);                                \
         default:                                                    \
-            return static_cast<type>(aerror2("bad arg for " #name, a1, a2)); \
+            return static_cast<type>(                               \
+                aerror2("bad arg for " #name, a1, a2));             \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
-        switch (type_of_header(flthdr(a1)))                         \
+        switch (flthdr(a1))                                         \
         {                                                           \
-        case TYPE_SINGLE_FLOAT:                                     \
+        case SINGLE_FLOAT_HEADER:                                   \
             return name##_f(a1, a2);                                \
-        case TYPE_DOUBLE_FLOAT:                                     \
+        case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1, a2);                                \
-        case TYPE_LONG_FLOAT:                                       \
+        case LONG_FLOAT_HEADER:                                     \
             return name##_l(a1, a2);                                \
         default:                                                    \
-            return static_cast<type>(aerror2("bad arg for " #name, a1, a2)); \
+            return static_cast<type>(                               \
+                aerror2("bad arg for " #name, a1, a2));             \
         }                                                           \
     default:                                                        \
-        return static_cast<type>(aerror2("bad arg for " #name, a1, a2)); \
+        return static_cast<type>(                                   \
+            aerror2("bad arg for " #name, a1, a2));                 \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
             return name##_f(a1, a2);                                \
@@ -979,20 +995,25 @@ stgclass type name(LispObject a1)                                   \
         case TYPE_COMPLEX_NUM:                                      \
             return name##_c(a1);                                    \
         default:                                                    \
-            return static_cast<type>(aerror1("bad arg for " #name, a1)); \
+            return static_cast<type>(                               \
+                aerror1("bad arg for " #name, a1));                 \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
-        switch (type_of_header(flthdr(a1)))                         \
+        switch (flthdr(a1))                                         \
         {                                                           \
-        case TYPE_SINGLE_FLOAT:                                     \
+        case SINGLE_FLOAT_HEADER:                                   \
             return name##_f(a1);                                    \
-        case TYPE_DOUBLE_FLOAT:                                     \
+        case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1);                                    \
+        case LONG_FLOAT_HEADER:                                     \
+            return name##_l(a1);                                    \
         default:                                                    \
-            return static_cast<type>(aerror1("bad arg for " #name, a1)); \
+            return static_cast<type>(                               \
+                aerror1("bad arg for " #name, a1));                 \
         }                                                           \
     default:                                                        \
-        return static_cast<type>(aerror1("bad arg for " #name, a1)); \
+        return static_cast<type>(                                   \
+            aerror1("bad arg for " #name, a1));                     \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
             return name##_f(a1);                                    \
@@ -1020,12 +1041,14 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return static_cast<type>(aerror2("bad arg for " #rawname, a1, a2)); \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
-        switch (type_of_header(flthdr(a2)))                         \
+        switch (flthdr(a2))                                         \
         {                                                           \
-        case TYPE_SINGLE_FLOAT:                                     \
+        case SINGLE_FLOAT_HEADER:                                   \
             return name##_f(a1, a2);                                \
-        case TYPE_DOUBLE_FLOAT:                                     \
+        case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1, a2);                                \
+        case LONG_FLOAT_HEADER:                                     \
+            return name##_l(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(aerror2("bad arg for " #rawname, a1, a2)); \
         }                                                           \
@@ -1067,20 +1090,25 @@ stgclass type name(LispObject a1, LispObject a2)                    \
         case TYPE_COMPLEX_NUM:                                      \
             return name##_c(a1, a2);                                \
         default:                                                    \
-            return static_cast<type>(aerror2("bad arg for " #name, a1, a2)); \
+            return static_cast<type>(                               \
+                aerror2("bad arg for " #name, a1, a2));             \
         }                                                           \
     case TAG_BOXFLOAT:                                              \
-        switch (type_of_header(flthdr(a1)))                         \
+        switch (flthdr(a1))                                         \
         {                                                           \
-        case TYPE_SINGLE_FLOAT:                                     \
+        case SINGLE_FLOAT_HEADER:                                   \
             return name##_f(a1, a2);                                \
-        case TYPE_DOUBLE_FLOAT:                                     \
+        case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1, a2);                                \
+        case LONG_FLOAT_HEADER:                                     \
+            return name##_l(a1, a2);                                \
         default:                                                    \
-            return static_cast<type>(aerror2("bad arg for " #name, a1, a2)); \
+            return static_cast<type>(                               \
+                aerror2("bad arg for " #name, a1, a2));             \
         }                                                           \
     default:                                                        \
-        return static_cast<type>(aerror2("bad arg for " #name, a1, a2)); \
+        return static_cast<type>(                                   \
+            aerror2("bad arg for " #name, a1, a2));                 \
     case (XTAG_SFLOAT & TAG_BITS):                                  \
         if (SIXTY_FOUR_BIT && ((a1 & XTAG_FLOAT32) != 0))           \
             return name##_f(a1, a2);                                \

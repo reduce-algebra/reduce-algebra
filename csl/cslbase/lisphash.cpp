@@ -498,8 +498,8 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 // The headers of floating point values fit in just 32-bits so I do not do the
 // two steps that I would with general vector headers.
         UPDATE(r, (uint64_t)h);
-        switch (type_of_header(h))
-        {   case TYPE_SINGLE_FLOAT:
+        switch (h)
+        {   case SINGLE_FLOAT_HEADER:
 // Here I hash single floats as if they had been represented in the way that
 // they would have been on a 64-bit machine. This is so that the values
 // returned by sxhash can be consistent across platforms.
@@ -509,13 +509,13 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                 return r;
             }
             default:
-            case TYPE_DOUBLE_FLOAT:
+            case DOUBLE_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
                 if (double_float_val(key) == 0.0) UPDATE(r, 0);
                 else UPDATE(r, intfloat64_t_val(key));
                 return r;
 #ifdef HAVE_SOFTFLOAT
-            case TYPE_LONG_FLOAT:
+            case LONG_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
                 if (f128M_zero(reinterpret_cast<float128_t *>(long_float_addr(key))))
                 {   UPDATE(r, 0);
@@ -667,14 +667,14 @@ UNUSED_NAME static bool float_if_exact(LispObject x)
         else return false;
     }
     else if (is_bfloat(x))
-    {   switch (type_of_header(flthdr(x)))
-        {   case TYPE_SINGLE_FLOAT:
+    {   switch (flthdr(x))
+        {   case SINGLE_FLOAT_HEADER:
                 f32_to_f128M(float32_t_val(x), &bigfloat_result);
                 return true;
-            case TYPE_DOUBLE_FLOAT:
+            case DOUBLE_FLOAT_HEADER:
                 f64_to_f128M(float64_t_val(x), &bigfloat_result);
                 return true;
-            case TYPE_LONG_FLOAT:
+            case LONG_FLOAT_HEADER:
                 bigfloat_result = long_float_val(x);
                 return true;
             default:

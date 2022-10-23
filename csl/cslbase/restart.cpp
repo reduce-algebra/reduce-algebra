@@ -752,7 +752,7 @@ static void cold_setup()
     make_constant("most-positive-fixnum", MOST_POSITIVE_FIXNUM);
     make_constant("most-negative-fixnum", MOST_NEGATIVE_FIXNUM);
     make_constant("pi",
-                  make_boxfloat(3.141592653589793238, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(3.141592653589793238, WANT_DOUBLE_FLOAT));
     append_symbol       = make_undefined_symbol("append");
     raise_symbol        = make_undefined_fluid("*raise");
     lower_symbol        = make_undefined_fluid("*lower");
@@ -1459,11 +1459,10 @@ LispObject set_up_variables(int restart_flag)
     make_constant("single-float-epsilon",
                   pack_single_float(FLT_EPSILON));
     make_constant("double-float-epsilon",
-                  make_boxfloat(DBL_EPSILON, TYPE_DOUBLE_FLOAT));
-// Now that LONG FLOAT is 128-bits all the literals set up here are
-// liable to be incorrect!
-    make_constant("long-float-epsilon",
-                  make_boxfloat(DBL_EPSILON, TYPE_LONG_FLOAT));
+                  make_boxfloat(DBL_EPSILON, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
+    make_constant("long-float-epsilon", make_boxfloat128(f128_epsilon));
+#endif
 // I assume that I have a radix 2 representation, and float-negative-epsilon
 // is just half float-epsilon. Correct me if I am wrong...
     make_constant("short-float-negative-epsilon",
@@ -1471,10 +1470,11 @@ LispObject set_up_variables(int restart_flag)
     make_constant("single-float-negative-epsilon",
                   pack_single_float(FLT_EPSILON/2.0));
     make_constant("double-float-negative-epsilon",
-                  make_boxfloat(DBL_EPSILON/2.0, TYPE_DOUBLE_FLOAT));
-// For now "long" = "double"
+                  make_boxfloat(DBL_EPSILON/2.0, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("long-float-negative-epsilon",
-                  make_boxfloat(DBL_EPSILON/2.0, TYPE_LONG_FLOAT));
+        make_boxfloat128(f128_half_epsilon));
+#endif
 // I hope that the C header file gets extremal values correct. Note that
 // because pack_short_float() truncates (rather than rounding) it should give
 // correct values for most-positive-short-float etc
@@ -1483,9 +1483,11 @@ LispObject set_up_variables(int restart_flag)
     make_constant("most-positive-single-float",
                   pack_single_float(FLT_MAX));
     make_constant("most-positive-double-float",
-                  make_boxfloat(DBL_MAX, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(DBL_MAX, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("most-positive-long-float",
-                  make_boxfloat(DBL_MAX, TYPE_LONG_FLOAT));
+                  make_boxfloat128(f128_max));
+#endif
 // Here I assume that the floating point representation is sign-and-magnitude
 // and hence symmetric about zero.
     make_constant("most-negative-short-float",
@@ -1493,9 +1495,11 @@ LispObject set_up_variables(int restart_flag)
     make_constant("most-negative-single-float",
                   pack_single_float(-FLT_MAX));
     make_constant("most-negative-double-float",
-                  make_boxfloat(-DBL_MAX, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(-DBL_MAX, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("most-negative-long-float",
-                  make_boxfloat(-DBL_MAX, TYPE_LONG_FLOAT));
+                  make_boxfloat128(f128_negmax));
+#endif
 // The "least-xxx" set of values did not consider the case of denormalised
 // numbers too carefully in ClTl-1, so in ClTl-2 there are elaborations. I
 // believe that a proper C header file <cfloat> will make the macros that
@@ -1507,17 +1511,21 @@ LispObject set_up_variables(int restart_flag)
     make_constant("least-positive-single-float",
                   pack_single_float(FLT_MIN));
     make_constant("least-positive-double-float",
-                  make_boxfloat(DBL_MIN, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(DBL_MIN, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("least-positive-long-float",
-                  make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
+                  make_boxfloat128(f128_min));
+#endif
     make_constant("least-negative-short-float",
                   pack_short_float(-FLT_MIN));
     make_constant("least-negative-single-float",
                   pack_single_float(-FLT_MIN));
     make_constant("least-negative-double-float",
-                  make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(-DBL_MIN, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("least-negative-long-float",
-                  make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
+                  make_boxfloat128(f128_negmin));
+#endif
 // The bunch here are intended to be NORMALISED numbers, while the unqualified
 // ones above may not be.
     make_constant("least-positive-normalized-short-float",
@@ -1525,17 +1533,21 @@ LispObject set_up_variables(int restart_flag)
     make_constant("least-positive-normalized-single-float",
                   pack_single_float(FLT_MIN));
     make_constant("least-positive-normalized-double-float",
-                  make_boxfloat(DBL_MIN, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(DBL_MIN, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("least-positive-normalized-long-float",
-                  make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
+                  make_boxfloat128(f128_normmin));
+#endif
     make_constant("least-negative-normalized-short-float",
                   pack_short_float(-FLT_MIN));
     make_constant("least-negative-normalized-single-float",
                   pack_single_float(-FLT_MIN));
     make_constant("least-negative-normalized-double-float",
-                  make_boxfloat(-DBL_MIN, TYPE_DOUBLE_FLOAT));
+                  make_boxfloat(-DBL_MIN, WANT_DOUBLE_FLOAT));
+#ifdef HAVE_SOFTFLOAT
     make_constant("least-negative-normalized-long-float",
-                  make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
+                  make_boxfloat128(f128_negnormmin));
+#endif
     make_constant("internal-time-units-per-second",
                   fixnum_of_int(1000));
 

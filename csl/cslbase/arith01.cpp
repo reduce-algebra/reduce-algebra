@@ -395,7 +395,7 @@ LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
 #ifdef HAVE_SOFTFLOAT
 LispObject make_boxfloat128(float128_t a)
 {   LispObject r;
-    r = get_basic_vector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
+    r = get_basic_vector(TAG_BOXFLOAT, TYPE_FLOAT, SIZEOF_LONG_FLOAT);
     errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
@@ -726,19 +726,19 @@ double float_of_number(LispObject a)
     else if (is_sfloat(a))
         return value_of_immediate_float(a);
     else if (is_bfloat(a))
-    {   int32_t h = type_of_header(flthdr(a));
+    {   Header h = flthdr(a);
         switch (h)
-        {   case TYPE_SINGLE_FLOAT:
+        {   case SINGLE_FLOAT_HEADER:
 // On a 64-bit system one should NEVER encounter a boxed single precision
 // float, and so to improve reliability I will raise an error if one is
 // seen.
                 if (SIXTY_FOUR_BIT)
                     return aerror("boxed single float on 64-bit system");
                 return static_cast<double>(single_float_val(a));
-            case TYPE_DOUBLE_FLOAT:
+            case DOUBLE_FLOAT_HEADER:
                 return double_float_val(a);
 #ifdef HAVE_SOFTFLOAT
-            case TYPE_LONG_FLOAT:
+            case LONG_FLOAT_HEADER:
             {   float128_t w = long_float_val(a);
                 union
                 {   float64_t sf;
@@ -805,19 +805,19 @@ float128_t float128_of_number(LispObject a)
         return r;
     }
     else if (is_bfloat(a))
-    {   int32_t h = type_of_header(flthdr(a));
+    {   Header h = flthdr(a);
         switch (h)
-        {   case TYPE_SINGLE_FLOAT:
+        {   case SINGLE_FLOAT_HEADER:
                 r32 = float32_t_val(a);
                 f32_to_f128M(r32, &r);
                 if (SIXTY_FOUR_BIT)
                     aerror("boxed single float on 64-bit system");
                 return r;
-            case TYPE_DOUBLE_FLOAT:
+            case DOUBLE_FLOAT_HEADER:
                 r64 = float64_t_val(a);
                 f64_to_f128M(r64, &r);
                 return r;
-            case TYPE_LONG_FLOAT:
+            case LONG_FLOAT_HEADER:
                 return float128_t_val(a);
             default:
                 i32_to_f128M(0, &r);
@@ -1445,13 +1445,13 @@ inline LispObject plus_i_s(LispObject a1, LispObject a2)
 inline LispObject plus_i_f(LispObject a1, LispObject a2)
 {   double d = static_cast<double>(int_of_fixnum(a1)) +
                single_float_val(a2);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject plus_i_d(LispObject a1, LispObject a2)
 {   double d = static_cast<double>(int_of_fixnum(a1)) +
                double_float_val(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1680,12 +1680,12 @@ inline LispObject plus_b_s(LispObject a1, LispObject a2)
 
 inline LispObject plus_b_f(LispObject a1, LispObject a2)
 {   double d = float_of_number(a1) + single_float_val(a2);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject plus_b_d(LispObject a1, LispObject a2)
 {   double d = float_of_number(a1) + double_float_val(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1844,12 +1844,12 @@ inline LispObject plus_s_s(LispObject a1, LispObject a2)
 
 inline LispObject plus_s_f(LispObject a1, LispObject a2)
 {   double d = value_of_immediate_float(a1) + single_float_val(a2);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject plus_s_d(LispObject a1, LispObject a2)
 {   double d = value_of_immediate_float(a1) + single_float_val(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1885,12 +1885,12 @@ inline LispObject plus_f_s(LispObject a1, LispObject a2)
 
 inline LispObject plus_f_f(LispObject a1, LispObject a2)
 {   return make_boxfloat(single_float_val(a1) + single_float_val(a2),
-                         TYPE_SINGLE_FLOAT);
+                         WANT_SINGLE_FLOAT);
 }
 
 inline LispObject plus_f_d(LispObject a1, LispObject a2)
 {   return make_boxfloat(single_float_val(a1) + double_float_val(a2),
-                         TYPE_DOUBLE_FLOAT);
+                         WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1931,7 +1931,7 @@ inline LispObject plus_d_f(LispObject a1, LispObject a2)
 
 inline LispObject plus_d_d(LispObject a1, LispObject a2)
 {   return make_boxfloat(double_float_val(a1) + double_float_val(a2),
-                         TYPE_DOUBLE_FLOAT);
+                         WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -2398,14 +2398,14 @@ inline LispObject difference_s_l(LispObject a1, LispObject a2)
 inline LispObject difference_f_i(LispObject a1, LispObject a2)
 {   double d = single_float_val(a1) - static_cast<double>
                (int_of_fixnum(a2));
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject difference_f_b(LispObject a1, LispObject a2)
 {   int x;
     double a2d = bignum_to_float(a2, length_of_header(numhdr(a2)), &x);
     double d = single_float_val(a1) - std::ldexp(a2d, x);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject difference_f_r(LispObject a1, LispObject a2)
@@ -2430,17 +2430,17 @@ inline LispObject difference_f_c(LispObject a1, LispObject a2)
 
 inline LispObject difference_f_s(LispObject a1, LispObject a2)
 {   double d = single_float_val(a1) - value_of_immediate_float(a2);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject difference_f_f(LispObject a1, LispObject a2)
 {   double d = single_float_val(a1) - single_float_val(a2);
-    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    return make_boxfloat(d, WANT_SINGLE_FLOAT);
 }
 
 inline LispObject difference_f_d(LispObject a1, LispObject a2)
 {   double d = single_float_val(a1) - single_float_val(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -2458,14 +2458,14 @@ inline LispObject difference_f_l(LispObject a1, LispObject a2)
 inline LispObject difference_d_i(LispObject a1, LispObject a2)
 {   double d = double_float_val(a1) - static_cast<double>
                (int_of_fixnum(a2));
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 inline LispObject difference_d_b(LispObject a1, LispObject a2)
 {   int x;
     double a2d = bignum_to_float(a2, length_of_header(numhdr(a2)), &x);
     double d = double_float_val(a1) - std::ldexp(a2d, x);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
@@ -2490,17 +2490,17 @@ inline LispObject difference_d_c(LispObject a1, LispObject a2)
 
 inline LispObject difference_d_s(LispObject a1, LispObject a2)
 {   double d = double_float_val(a1) - value_of_immediate_float(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 inline LispObject difference_d_f(LispObject a1, LispObject a2)
 {   double d = double_float_val(a1) - single_float_val(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 inline LispObject difference_d_d(LispObject a1, LispObject a2)
 {   double d = double_float_val(a1) - double_float_val(a2);
-    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 }
 
 #ifdef HAVE_SOFTFLOAT

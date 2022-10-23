@@ -360,15 +360,15 @@ static LispObject make_complex_float(Complex v, LispObject a)
 //
 // Note that regardless of their input type the elementary functions deliver
 // at most double precision results.
-{   int32_t type;
+{   FloatType type;
     LispObject a1, a2;
     a = real_part(a);
     if (is_sfloat(a))
         return onevalue(make_complex(pack_immediate_float(v.real, a),
                                      pack_immediate_float(v.imag, a)));
-    if (is_bfloat(a)) type = type_of_header(flthdr(a));
-    else type = TYPE_SINGLE_FLOAT;
-    if (type == TYPE_LONG_FLOAT) type = TYPE_DOUBLE_FLOAT;
+    if (is_bfloat(a)) type = floatWant(flthdr(a));
+    else type = WANT_SINGLE_FLOAT;
+    if (type == WANT_LONG_FLOAT) type = WANT_DOUBLE_FLOAT;
 // There are MANY uses of make_boxfloat here. In pretty well all cases I let
 // make_boxfloat do any overflow checks, and I do not support 128-bit floats.
     a1 = make_boxfloat(v.real, type);
@@ -702,7 +702,7 @@ static double arg_reduce_degrees(double a, int *quadrant)
 // Reduce argument to the range -45 to 45, and set quadrant to the
 // relevant quadant.  Returns arg converted to radians.
 {   double w = a / 90.0;
-    int32_t n = static_cast<int>(w);
+    int64_t n = static_cast<int64_t>(w);
     w = a - 90.0*n;
     while (w < -45.0)
     {   n--;
@@ -1162,18 +1162,18 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // of elementary functions.
 {   double d;
 #ifndef COMMON
-    int32_t restype = TYPE_DOUBLE_FLOAT;
+    FloatType restype = WANT_DOUBLE_FLOAT;
 #else
 // single floats seem to me to be a bad idea! But they are the default
 // for Common Lisp. Boo Hiss.
-    int32_t restype = TYPE_SINGLE_FLOAT;
+    FloatType restype = WANT_SINGLE_FLOAT;
 #endif
     if (which_one > 46) return aerror("trigfn internal error");
     switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a))
             {   d = value_of_immediate_float(a);
-                restype = 0;
+                restype = WANT_SHORT_FLOAT;
                 break;
             }
             else d = static_cast<double>(int_of_fixnum(a));
@@ -1199,7 +1199,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             break;
         }
         case TAG_BOXFLOAT:
-            restype = type_of_header(flthdr(a));
+            restype = floatWant(flthdr(a));
             d = float_of_number(a);
             break;
         default:
@@ -1251,9 +1251,9 @@ static LispObject makenum(LispObject a, int32_t n)
 // used with n=0 or n=1
 {
 #ifndef COMMON
-    int32_t restype = TYPE_DOUBLE_FLOAT;
+    FloatType restype = WANT_DOUBLE_FLOAT;
 #else
-    int32_t restype = TYPE_SINGLE_FLOAT;
+    FloatType restype = WANT_SINGLE_FLOAT;
 #endif
     switch (static_cast<int>(a) & TAG_BITS)
     {   case TAG_FIXNUM:
@@ -1278,9 +1278,9 @@ static LispObject makenum(LispObject a, int32_t n)
             return aerror1("bad arg for makenumber",  a);
         }
         case TAG_BOXFLOAT:
-            restype = type_of_header(flthdr(a));
+            restype = floatWant(flthdr(a));
 #ifdef HAVE_SOFTFLOAT
-            if (restype == TYPE_LONG_FLOAT)
+            if (restype == WANT_LONG_FLOAT)
                 return onevalue(make_boxfloat128(
                                     float128_of_number(fixnum_of_int(n))));
 #endif // HAVE_SOFTFLOAT
@@ -1290,7 +1290,7 @@ static LispObject makenum(LispObject a, int32_t n)
     }
 }
 
-static LispObject CSLpowi(LispObject a, uint32_t n)
+static LispObject CSLpowi(LispObject a, uint64_t n)
 // Raise a to the power n by repeated multiplication. The name is CSLpowi
 // rather than just powi because some miserable C compilers come with an
 // external function called powi in <cmath> and then moan about the
@@ -1347,13 +1347,14 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 // overflow, blowing me out of the water.
         r = v * std::sqrt(1.0 + r*r);
     }
-    a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
+    a = make_boxfloat(r, WANT_DOUBLE_FLOAT);
     return onevalue(a);
 }
 
 LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 {   double d, e;
-    int32_t restype, n;
+    FloatType restype, n;
+    int64_t nn;
     LispObject w;
     Complex c1, c2, c3;
 // I take special action on 1, 0 and -1 raised to a power that is an integer
@@ -1365,25 +1366,25 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         a == fixnum_of_int(0) ||
         a == fixnum_of_int(-1))
     {   if (is_fixnum(b))
-        {   n = int_of_fixnum(b);
+        {   nn = int_of_fixnum(b);
             switch (int_of_fixnum(a))
             {   case 1:  return onevalue(a);
-                case 0:  if (n < 0) return aerror2("expt", a, b);
+                case 0:  if (nn < 0) return aerror2("expt", a, b);
                     // In Common Lisp (expt 0 0) is defined to be 0
-                    else if (n == 0) return onevalue(fixnum_of_int(1));
+                    else if (nn == 0) return onevalue(fixnum_of_int(1));
                     else return onevalue(a);
-                case -1: if (n & 1) return onevalue(a);
+                case -1: if (nn & 1) return onevalue(a);
                     else return onevalue(fixnum_of_int(1));
             }
         }
         else if (is_numbers(b) && is_bignum(b))
         {   switch (int_of_fixnum(a))
             {   case 1:  return onevalue(a);
-                case 0:  n = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
-                    if (n <= 0) return aerror2("expt", a, b);
+                case 0:  nn = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
+                    if (nn <= 0) return aerror2("expt", a, b);
                     else return onevalue(a);
-                case -1: n = bignum_digits(b)[0];
-                    if (n & 1) return onevalue(a);
+                case -1: nn = bignum_digits(b)[0];
+                    if (nn & 1) return onevalue(a);
                     else return onevalue(fixnum_of_int(1));
             }
         }
@@ -1395,25 +1396,25 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         real_part(a)==fixnum_of_int(0) &&
         (imag_part(a) == fixnum_of_int(1) ||
          imag_part(a) == fixnum_of_int(-1)))
-    {   n = -1;
-        if (is_fixnum(b)) n = int_of_fixnum(b) & 3;
+    {   nn = -1;
+        if (is_fixnum(b)) nn = int_of_fixnum(b) & 3;
         else if (is_numbers(b) && is_bignum(b))
-            n = bignum_digits(b)[0] & 3;
-        switch (n)
+            nn = bignum_digits(b)[0] & 3;
+        switch (nn)
         {   case 0:   return onevalue(fixnum_of_int(1));
             case 2:   return onevalue(fixnum_of_int(-1));
             case 1:
-            case 3:   if (int_of_fixnum(imag_part(a)) == 1) n ^= 2;
+            case 3:   if (int_of_fixnum(imag_part(a)) == 1) nn ^= 2;
                 a = make_complex(fixnum_of_int(0),
-                                 fixnum_of_int((n & 2) ? 1 : -1));
+                                 fixnum_of_int((nn & 2) ? 1 : -1));
                 return onevalue(a);
             default:  break;
         }
     }
     if (is_fixnum(b))   // bignum exponents would yield silly values!
-    {   n = int_of_fixnum(b);
-        if (n == 1) return onevalue(a);
-        if (n < 0)
+    {   nn = int_of_fixnum(b);
+        if (nn == 1) return onevalue(a);
+        if (nn < 0)
         {
 // With floating point value if I compute a^(-n) as 1.0/a^n then I can get
 // premature overflow, and indeed an exception from overflow (if I am in
@@ -1426,28 +1427,28 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 #else
             a = quot2(fixnum_of_int(1), a);
 #endif
-            a = CSLpowi(a, (uint32_t)(-n));
+            a = CSLpowi(a, -nn);
         }
-        else a = CSLpowi(a, (uint32_t)n);
+        else a = CSLpowi(a, nn);
         return onevalue(a);
     }
     if (is_numbers(a) && is_complex(a)) w = real_part(a);
     else w = a;
-    if (is_sfloat(w)) restype = 0;
-    else if (is_bfloat(w)) restype = type_of_header(flthdr(w));
-    else restype = TYPE_SINGLE_FLOAT;
+    if (is_sfloat(w)) restype = WANT_SHORT_FLOAT;
+    else if (is_bfloat(w)) restype = floatWant(flthdr(w));
+    else restype = WANT_SINGLE_FLOAT;
     if (is_numbers(b) && is_complex(b)) w = real_part(b);
     else w = b;
     if (is_bfloat(w))
-    {   n = type_of_header(flthdr(w));
-        if (restype == 0 || restype == TYPE_SINGLE_FLOAT ||
-            (restype == TYPE_DOUBLE_FLOAT && n == TYPE_LONG_FLOAT))
+    {   n = floatWant(flthdr(w));
+        if (restype == WANT_SHORT_FLOAT || restype == WANT_SINGLE_FLOAT ||
+            (restype == WANT_DOUBLE_FLOAT && n == WANT_LONG_FLOAT))
             restype = n;
     }
-    else if (restype == 0) restype = TYPE_SINGLE_FLOAT;
+    else if (restype == WANT_SHORT_FLOAT) restype = WANT_SINGLE_FLOAT;
 // At least for now I do not support long floats here - I demote to double
 // floats.
-    if (restype == TYPE_LONG_FLOAT) restype = TYPE_DOUBLE_FLOAT;
+    if (restype == WANT_LONG_FLOAT) restype = WANT_DOUBLE_FLOAT;
     if ((is_numbers(a) && is_complex(a)) ||
         (is_numbers(b) && is_complex(b)))
     {   c1 = complex_of_number(a);
@@ -1544,7 +1545,7 @@ LispObject Labsval(LispObject env, LispObject a)
                     d = Cabs(c1);
 // /* I wonder if I am allowed to promote short or single values to
 //    double precision here?
-                    a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+                    a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
                     return onevalue(a);
                 }
                 default:
@@ -1569,7 +1570,7 @@ static LispObject Lphase(LispObject env, LispObject a)
     s = minusp(a);
     if (s) d = -_pi;
     else d = _pi;
-    a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+    a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
     return onevalue(a);
 // /* Wrong precision, I guess
 }
@@ -1629,7 +1630,7 @@ LispObject Latan2(LispObject env, LispObject y, LispObject x)
 // than as pi-atan(-v/u) to reduce risk of cancellation errors.
         r = _half_pi + CSLatan(-u/v);
     else r = -_half_pi - CSLatan(u/v);
-    x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
+    x = make_boxfloat(r, WANT_DOUBLE_FLOAT);
     return onevalue(x);
 }
 
@@ -1642,7 +1643,7 @@ LispObject Latan2d(LispObject env, LispObject y, LispObject x)
     else if (v > 0.0 || (v == 0.0 && 1.0/v > 0.0))
         r = 90.0 + n180pi*CSLatan(-u/v);
     else r = -90.0 - n180pi*CSLatan(u/v);
-    x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
+    x = make_boxfloat(r, WANT_DOUBLE_FLOAT);
     return onevalue(x);
 }
 

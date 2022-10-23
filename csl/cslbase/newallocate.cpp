@@ -717,8 +717,8 @@ void initHeapSegments(double storeSize)
 // --maxmem can be used to force a smaller limit.
 
 void init_heap_segments(double d)
-{   if (d < 1000.0) zprintf("init_heap_segments %g Mbytes\n", d);
-    else zprintf("init_heap_segments %g Gbytes\n", d/1000.0);
+{   if (d < 1000.0) zprintf("init_heap_segments %.3g Mbytes\n", d);
+    else zprintf("init_heap_segments %.3g Gbytes\n", d/1000.0);
 // For historical reasons initHeapSegments takes its size in Kbytes not Mbytes
     initHeapSegments(d*1024.0);
 }

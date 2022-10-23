@@ -186,19 +186,22 @@
 
 static bool descend_symbols = true;
 
-#define SER_OPBITS         0xe0     // top 3 bits of byte are major opcode
+INLINE_VAR const int SER_OPBITS = 0xe0; // top 3 bits are major opcode
+
+enum OpcodeByte
+{
 
 
 // 64 most recent shared items in a single byte.
-#define SER_BACKREF0       0x00     // reference to item 1 to 32 ago
-#define SER_BACKREF1       0x20     // reference to item 33 to 64 ago
+    SER_BACKREF0     = 0x00,   // reference to item 1 to 32 ago
+    SER_BACKREF1     = 0x20,    // reference to item 33 to 64 ago
 
 // I expect strings to be important enough that at least short ones have
 // special treatment. The length-code here will stand for 1-32 not 0-31.
-#define SER_STRING         0x40     // a string with 1-32 bytes
+    SER_STRING       = 0x40,    // a string with 1-32 bytes
 
 // very small integers perhaps also deserve help.
-#define SER_FIXNUM         0x60     // integer -16 to +15
+    SER_FIXNUM       = 0x60,    // integer -16 to +15
 
 // In CSL header words have a 7-bit field that identifies the type
 // of the object. Two bits there discriminate between bit-vectors, vectors
@@ -208,8 +211,8 @@ static bool descend_symbols = true;
 // vector.  Bit-vectors will need to be dealt with otherwise. These cases
 // will deal with simple lisp vectors, with bignums and with strings that are
 // too long for the special SER_STRING case.
-#define SER_LVECTOR        0x80     // vector holding lists
-#define SER_BVECTOR        0xa0     // vector holding binary info
+    SER_LVECTOR      = 0x80,    // vector holding lists
+    SER_BVECTOR      = 0xa0,    // vector holding binary info
 
 // SER_LIST has 32 variants, and these are used to build lists of length
 // 1, 2, 3 or 4 with an arbitrary mix of the cons cells involved being
@@ -237,26 +240,26 @@ static bool descend_symbols = true;
 // in gebneral not be as good as the above best cases indicate, and the net
 // saving aftger zlib has done some compression may be even less impressive!
 
-#define SER_LIST           0xc0
+    SER_LIST         = 0xc0,
 
 // Cases that involve a single CONS cell, which may or may not be shared.
-#define SER_L_a            0xc0     // (CONS a nil)
-#define SER_CONS_NIL       SER_L_a  //   alternative name!
-#define SER_L_A            0xc1     // (DCONS a nil)
-#define SER_CONS_DUP_NIL   SER_L_A
-#define SER_L_a_S          0xc2     // (CONS b a)
-#define SER_CONS           SER_L_a_S
-#define SER_L_A_S          0xc3     // (DCONS b a)
-#define SER_CONS_DUP       SER_L_A_S
+    SER_L_a          = 0xc0,    // (CONS a nil)
+    SER_CONS_NIL     = SER_L_a, //   alternative name!
+    SER_L_A          = 0xc1,    // (DCONS a nil)
+    SER_CONS_DUP_NIL = SER_L_A,
+    SER_L_a_S        = 0xc2,    // (CONS b a)
+    SER_CONS         = SER_L_a_S,
+    SER_L_A_S        = 0xc3,    // (DCONS b a)
+    SER_CONS_DUP     = SER_L_A_S,
 // Cases with two CONS cells, each of which may or may not be shared.
-#define SER_L_aa           0xc4     // (CONS b (CONS a nil))
-#define SER_L_Aa           0xc5     // (DCONS b (CONS a nil))
-#define SER_L_aA           0xc6     // (CONS b (DCONS a nil))
-#define SER_L_AA           0xc7     // (DCONS b (DCONS a nil))
-#define SER_L_aa_S         0xc8     // (CONS c (CONS b a))
-#define SER_L_Aa_S         0xc9     // (DCONS c (CONS b a))
-#define SER_L_aA_S         0xca     // (CONS c (DCONS b a))
-#define SER_L_AA_S         0xcb     // (DCONS c (DCONS b a))
+    SER_L_aa         = 0xc4,    // (CONS b (CONS a nil))
+    SER_L_Aa         = 0xc5,    // (DCONS b (CONS a nil))
+    SER_L_aA         = 0xc6,    // (CONS b (DCONS a nil))
+    SER_L_AA         = 0xc7,    // (DCONS b (DCONS a nil))
+    SER_L_aa_S       = 0xc8,    // (CONS c (CONS b a))
+    SER_L_Aa_S       = 0xc9,    // (DCONS c (CONS b a))
+    SER_L_aA_S       = 0xca,    // (CONS c (DCONS b a))
+    SER_L_AA_S       = 0xcb,    // (DCONS c (DCONS b a))
 // For cases that create 4 CONS cells I will only allow for the very first
 // one to be shared. I expect this case to apply if I have a really
 // long list because I rather expect that only the head of the list stands
@@ -265,28 +268,28 @@ static bool descend_symbols = true;
 // (f c b a) with 3 arguments. If there is sharing on other than the
 // first item I will need to use one of the opcodes that create 3 CONS cells
 // to build the front of the list.
-#define SER_L_aaaa         0xcc     // (CONS d (CONS c (CONS b (CONS a nil))
-#define SER_L_Aaaa         0xcd     // (DCONS d (CONS c (CONS b (CONS a nil))
-#define SER_L_aaaa_S       0xce     // (CONS e (CONS d (CONS c (CONS b a))
-#define SER_L_Aaaa_S       0xcf     // (DCONS e (CONS d (CONS c (CONS b a))
+    SER_L_aaaa       = 0xcc,    // (CONS d (CONS c (CONS b (CONS a nil))
+    SER_L_Aaaa       = 0xcd,    // (DCONS d (CONS c (CONS b (CONS a nil))
+    SER_L_aaaa_S     = 0xce,    // (CONS e (CONS d (CONS c (CONS b a))
+    SER_L_Aaaa_S     = 0xcf,    // (DCONS e (CONS d (CONS c (CONS b a))
 // Lots of cases with 3 CONS cells, as in (list c b a) and (SER_L* d c b a)
 // again with full control over whether the cells are shared or not.
-#define SER_L_aaa          0xd0     // (CONS c (CONS b (CONS a nil))
-#define SER_L_Aaa          0xd1     // (DCONS c (CONS b (CONS a nil))
-#define SER_L_aAa          0xd2     // (CONS c (DCONS b (CONS a nil))
-#define SER_L_AAa          0xd3     // (DCONS c (DCONS b (CONS a nil))
-#define SER_L_aaA          0xd4     // (CONS c (CONS b (DCONS a nil))
-#define SER_L_AaA          0xd5     // (DCONS c (CONS b (DCONS a nil))
-#define SER_L_aAA          0xd6     // (CONS c (DCONS b (DCONS a nil))
-#define SER_L_AAA          0xd7     // (DCONS c (DCONS b (DCONS a nil))
-#define SER_L_aaa_S        0xd8     // (CONS d (CONS c (CONS b a))
-#define SER_L_Aaa_S        0xd9     // (DCONS c (CONS b (CONS a nil))
-#define SER_L_aAa_S        0xda     // (CONS d (DCONS c (CONS b a))
-#define SER_L_AAa_S        0xdb     // (DCONS c (DCONS b (CONS a nil))
-#define SER_L_aaA_S        0xdc     // (CONS d (CONS c (DCONS b a))
-#define SER_L_AaA_S        0xdd     // (DCONS c (CONS b (DCONS a nil))
-#define SER_L_aAA_S        0xde     // (CONS d (DCONS c (DCONS b a))
-#define SER_L_AAA_S        0xdf     // (DCONS c (DCONS b (DCONS a nil))
+    SER_L_aaa        = 0xd0,    // (CONS c (CONS b (CONS a nil))
+    SER_L_Aaa        = 0xd1,    // (DCONS c (CONS b (CONS a nil))
+    SER_L_aAa        = 0xd2,    // (CONS c (DCONS b (CONS a nil))
+    SER_L_AAa        = 0xd3,    // (DCONS c (DCONS b (CONS a nil))
+    SER_L_aaA        = 0xd4,    // (CONS c (CONS b (DCONS a nil))
+    SER_L_AaA        = 0xd5,    // (DCONS c (CONS b (DCONS a nil))
+    SER_L_aAA        = 0xd6,    // (CONS c (DCONS b (DCONS a nil))
+    SER_L_AAA        = 0xd7,    // (DCONS c (DCONS b (DCONS a nil))
+    SER_L_aaa_S      = 0xd8,    // (CONS d (CONS c (CONS b a))
+    SER_L_Aaa_S      = 0xd9,    // (DCONS c (CONS b (CONS a nil))
+    SER_L_aAa_S      = 0xda,    // (CONS d (DCONS c (CONS b a))
+    SER_L_AAa_S      = 0xdb,    // (DCONS c (DCONS b (CONS a nil))
+    SER_L_aaA_S      = 0xdc,    // (CONS d (CONS c (DCONS b a))
+    SER_L_AaA_S      = 0xdd,    // (DCONS c (CONS b (DCONS a nil))
+    SER_L_aAA_S      = 0xde,    // (CONS d (DCONS c (DCONS b a))
+    SER_L_AAA_S      = 0xdf,    // (DCONS c (DCONS b (DCONS a nil))
 
 // SER_VARIOUS is used for a collection of individual bytes-codes
 // that cover symbols, floating point values, characters and bit-vectors.
@@ -296,46 +299,47 @@ static bool descend_symbols = true;
 // de deployed if I find further features that I need or that would represent
 // really useful optimisations.
 
-#define SER_VARIOUS        0xe0
+    SER_VARIOUS      = 0xe0,
 
 // In heap image mode I use the two "RAWSYMBOL" codes, while in FASL file
 // mode I use SYMBOl & GENSYM. I could common-up the opcodes and so give
 // myself two more spare codes!
-#define   SER_RAWSYMBOL    0xe0    // a symbol
-#define   SER_DUPRAWSYMBOL 0xe1    // a symbol, but will be referenced again
-#define   SER_SYMBOL       0xe2    // a symbol, but intern it as you read
-#define   SER_DUPSYMBOL    0xe3    // as above, but will be referenced again
-#define   SER_GENSYM       0xe4    // a gensym
-#define   SER_DUPGENSYM    0xe5    // a gensym that will be referenced again
-#define   SER_BIGBACKREF   0xe6    // reference more than 64 items ago
-#define   SER_POSFIXNUM    0xe7    // positive (or unsigned) 64-bit integer
-#define   SER_NEGFIXNUM    0xe8    // negative integer up to 63 bits
-#define   SER_FLOAT28      0xe9    // short float
-#define   SER_FLOAT32      0xea    // single float
-#define   SER_FLOAT64      0xeb    // double float
-#define   SER_FLOAT128     0xec    // long float
-#define   SER_CHARSPID     0xed    // char object, "special identifier" etc
-#define   SER_DUP          0xee    // used with items that have multiple references
-#define   SER_BITVEC       0xef    // bit-vector
-#define   SER_NIL          0xf0    // the very special case of NIL
-#define   SER_END          0xf1    // a (redundant) marker for end of heap dump
-#define   SER_OPNEXT       0xf2    // for debugging
-#define   SER_NIL2         0xf3    // NIL NIL
-#define   SER_NIL3         0xf4    // NIL NIL NIL
-#define   SER_REPEAT       0xf5    // provides simple run-length coding
-#define   SER_spare_f6     0xf6
-#define   SER_spare_f7     0xf7
-#define   SER_spare_f8     0xf8
-#define   SER_spare_f9     0xf9
-#define   SER_spare_fa     0xfa
-#define   SER_spare_fb     0xab
-#define   SER_spare_fc     0xfc
-#define   SER_spare_fd     0xfd
-#define   SER_spare_fe     0xfe
+      SER_RAWSYMBOL  = 0xe0,   // a symbol
+      SER_DUPRAWSYMBOL=0xe1,   // a symbol, but will be referenced again
+      SER_SYMBOL     = 0xe2,   // a symbol, but intern it as you read
+      SER_DUPSYMBOL  = 0xe3,   // as above, but will be referenced again
+      SER_GENSYM     = 0xe4,   // a gensym
+      SER_DUPGENSYM  = 0xe5,   // a gensym that will be referenced again
+      SER_BIGBACKREF = 0xe6,   // reference more than 64 items ago
+      SER_POSFIXNUM  = 0xe7,   // positive (or unsigned) 64-bit integer
+      SER_NEGFIXNUM  = 0xe8,   // negative integer up to 63 bits
+      SER_FLOAT28    = 0xe9,   // short float
+      SER_FLOAT32    = 0xea,   // single float
+      SER_FLOAT64    = 0xeb,   // double float
+      SER_FLOAT128   = 0xec,   // long float
+      SER_CHARSPID   = 0xed,   // char object, "special identifier" etc
+      SER_DUP        = 0xee,   // used with items that have multiple references
+      SER_BITVEC     = 0xef,   // bit-vector
+      SER_NIL        = 0xf0,   // the very special case of NIL
+      SER_END        = 0xf1,   // a (redundant) marker for end of heap dump
+      SER_OPNEXT     = 0xf2,   // for debugging
+      SER_NIL2       = 0xf3,   // NIL NIL
+      SER_NIL3       = 0xf4,   // NIL NIL NIL
+      SER_REPEAT     = 0xf5,   // provides simple run-length coding
+      SER_spare_f6   = 0xf6,
+      SER_spare_f7   = 0xf7,
+      SER_spare_f8   = 0xf8,
+      SER_spare_f9   = 0xf9,
+      SER_spare_fa   = 0xfa,
+      SER_spare_fb   = 0xab,
+      SER_spare_fc   = 0xfc,
+      SER_spare_fd   = 0xfd,
+      SER_spare_fe   = 0xfe,
 
 // I make the byte 0xff illegal so that if I get EOF (which is traditionally
 // the value -1) and mask it to 8 bits I will see a complaint.
-#define   SER_ILLEGAL      0xff
+      SER_ILLEGAL    = 0xff
+};
 
 
 #ifdef DEBUG_SERIALIZE
@@ -594,7 +598,7 @@ size_t find_index_in_repeats(size_t h)
     return h;
 }
 
-int read_opcode_byte()
+OpcodeByte read_opcode_byte()
 {   int r;
 #if defined DEBUG_SERIALIZE && defined DEBUG_OPNEXT
 // In this case each serialization opcode is preceeded by SER_OPNEXT. This
@@ -616,7 +620,7 @@ int read_opcode_byte()
     ser_print_opname(r);
     std::fprintf(stderr, "\n");
 #endif // DEBUG_SERIALIZE
-    return r;
+    return static_cast<OpcodeByte>(r);
 }
 
 int read_data_byte()
@@ -1431,7 +1435,7 @@ LispObject serial_read()
                s,     // a (linked) stack used with vectors (and symbols
                       // if the SER_RAWSYMBOL opcode is encountered).
                b;     // a back-pointer chain
-    int c = SER_ILLEGAL;
+    OpcodeByte c = SER_ILLEGAL;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
     uint64_t opcode_repeats = 0, repeat_arg = 0;
@@ -1451,7 +1455,7 @@ down:
         repeat_arg_ready = false;
     }
     else opcode_repeats--;
-    switch (c & 0xe0)
+    switch ((OpcodeByte)((int)c & 0xe0))
     {   case SER_VARIOUS:
         case SER_LIST:
             switch (c)
@@ -1460,9 +1464,9 @@ down:
 // has the value -1. I am further assuming that my machine is a twos
 // complement one and hence (-1) & 0xff will be 0xff, which is SER_ILLEGAL.
 // If I see that I will abandon reading and return in an error state.
-                    return aerror("Failure in serialization");
+                    fatal_error(err_bad_serialize);
                 case SER_REPEAT:
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
 // If you prefix something with "SER_REPEAT nn" then the opcode you next
 // use will be used nn+3 times. If the opcode uses operands then they
 // will be read for each instance, so perhaps this will make most sense
@@ -1636,7 +1640,7 @@ down:
 // you may a back-reference that applies a move to front strategy and
 // so multiple successive references to the same item will (after the
 // first) be "BACKREF 1" and that is not the "big" case as present here.
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
 // Back references with an offset from 1..64 are dealt with using special
 // compact opcodes. Here I have something that reaches further back. The main
 // opcode is followed by a sequence of bytes and if this represents the value
@@ -1654,7 +1658,7 @@ down:
                 case SER_DUP:
 // Beware with SER_REPEAT that SER_DUP is a postfix to an opcode. I think
 // that REPEAT should not be used if DUP will.
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
 // This is issued just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
                     reader_repeat_new(prev);
@@ -1711,7 +1715,7 @@ down:
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
                     GC_PROTECT(prev =
                         get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
                     *(LispObject*)p = w = prev;
@@ -1762,7 +1766,7 @@ down:
 // repeatedly. in the "GENSYM" case the name is the base-name of the gensym,
 // pergaps very often just "G", and the name read in will be set up as
 // if not yet printed, so a sequence number will be added leter.
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
                     {   size_t len = read_u64();
                         boffop = 0;
 // HAHAHA - if BOFFO does not exist properly at this stage then I am in
@@ -1794,33 +1798,33 @@ down:
 
                 case SER_FLOAT28:
 // A 28-bit short float
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
                     std::fprintf(stderr, "SER_FLOAT28 not coded yet\n");
                     my_abort("FLOAT28");
 
                 case SER_FLOAT32:
 // a 32-bit single float
-                    assert(opcode_repeats == 0);
-                    GC_PROTECT(prev = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT));
+                    my_assert(opcode_repeats == 0);
+                    GC_PROTECT(prev = make_boxfloat(read_f32(), WANT_SINGLE_FLOAT));
                     *(LispObject*)p = prev;
                     goto up;
 
                 case SER_FLOAT64:
 // a 64-bit (long) float
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
 // I can image the case of dumping a vector all of whose elements were the
 // value 0.0, and in the case supporting repeats here could be helpful.
 // But at present I think that will be an uncommon case with Reduce and so
 // I will give priority to other cases.
-                    GC_PROTECT(prev = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT));
+                    GC_PROTECT(prev = make_boxfloat(read_f64(), WANT_DOUBLE_FLOAT));
                     *(LispObject*)p = prev;
                     goto up;
 
 #ifdef HAVE_SOFTFLOAT
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
-                    assert(opcode_repeats == 0);
-                    GC_PROTECT(prev = make_boxfloat(0.0, TYPE_LONG_FLOAT));
+                    my_assert(opcode_repeats == 0);
+                    GC_PROTECT(prev = make_boxfloat128(f128_0));
                     long_float_val(prev) = read_f128();
                     *(LispObject*)p = prev;
                     goto up;
@@ -1851,7 +1855,7 @@ down:
                     goto up;
 
                 case SER_BITVEC:
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
@@ -1865,10 +1869,10 @@ down:
                     goto up;
 
                 case SER_NIL3:
-                    assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0);
                     opcode_repeats++;
                 case SER_NIL2:
-                    assert(c == SER_NIL3 || opcode_repeats == 0);
+                    my_assert(c == SER_NIL3 || opcode_repeats == 0);
                     opcode_repeats++;
                     c = SER_NIL;
                 case SER_NIL:
@@ -1906,7 +1910,7 @@ down:
 // that, and if they find it they re-hash before use, restoring the key to
 // just TYPE_HASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
-            assert(opcode_repeats == 0);
+            my_assert(opcode_repeats == 0);
             {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
                     tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                              TAG_VECTOR;
@@ -1981,7 +1985,7 @@ down:
 // the opcode byte and the type information is implicit. This code only copes
 // with strings with length 1-32. The associated data is JUST the bytes
 // making up the string, with padding at the end.
-            assert(opcode_repeats == 0);
+            my_assert(opcode_repeats == 0);
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *(LispObject*)p = prev;
@@ -2002,7 +2006,7 @@ down:
 // information.
 
         case SER_BVECTOR:
-            assert(opcode_repeats == 0);
+            my_assert(opcode_repeats == 0);
 // The general case for vectors containing binary information is followed
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.
@@ -3132,8 +3136,8 @@ down:
             goto writevector;
 
         case TAG_BOXFLOAT:
-            switch (type_of_header(flthdr(p)))
-            {   case TYPE_SINGLE_FLOAT:
+            switch (flthdr(p))
+            {   case SINGLE_FLOAT_HEADER:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "float %.7g", static_cast<double>(single_float_val(p)));
@@ -3142,7 +3146,7 @@ down:
                     write_f32(single_float_val(p));
                 }
                 break;
-                case TYPE_DOUBLE_FLOAT:
+                case DOUBLE_FLOAT_HEADER:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                     std::sprintf(msg, "double %.16g", double_float_val(p));
@@ -3152,7 +3156,7 @@ down:
                 }
                 break;
 #ifdef HAVE_SOFTFLOAT
-                case TYPE_LONG_FLOAT:
+                case LONG_FLOAT_HEADER:
                 {   char msg[40];
 // At present I do not have a good scheme to display the 128-bit float value.
 #ifdef DEBUG_SERIALIZE
