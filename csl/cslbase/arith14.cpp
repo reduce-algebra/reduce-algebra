@@ -153,8 +153,7 @@ void f128M_frexp(float128_t *p, float128_t *r, int *x)
 // overflow. The result should end up with almost 224 bits of precision,
 // but it does not pretend to get rounding utterly correct.
 
-void f256M_add(const float256_t *x, const float256_t *y,
-               float256_t *z)
+void f256M_add(const float256_t *x, const float256_t *y, float256_t *z)
 {   float128_t r, s, w1, w2, w3;
 // r = x->hi + y->hi
     f128M_add(&x->hi, &y->hi, &r);

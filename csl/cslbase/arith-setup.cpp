@@ -670,6 +670,14 @@ LispObject Nlognot(LispObject env, LispObject a1)
 {   return onevalue(Lognot::op(a1));
 }
 
+LispObject Nlsd(LispObject env, LispObject a1)
+{   return onevalue(LowBit::op(a1));
+}
+
+LispObject Nmsd(LispObject env, LispObject a1)
+{   return onevalue(IntegerLength::op(a1));
+}
+
 LispObject Nlogcount(LispObject env, LispObject a1)
 {   return onevalue(Logcount::op(a1));
 }
@@ -1364,6 +1372,8 @@ setup_type const arith_setup[] =
     {"leqv",              Nlogeqv, Nlogeqv, Nlogeqv, Nlogeqv, Nlogeqv},
     DEF_1("lognot",       Nlognot),
     DEF_1("lnot",         Nlognot),
+    DEF_1("lsd",          Nlsd),
+    DEF_1("msd",          Nmsd),
     DEF_1("logcount",     Nlogcount),
     DEF_2("lshift",       Nleftshift),
     DEF_2("ash",          Nleftshift),

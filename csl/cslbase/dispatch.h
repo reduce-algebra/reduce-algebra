@@ -2157,6 +2157,24 @@ public:
     static LispObject op(uint64_t *a);
 };
 
+class LowBit
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum a);
+    static LispObject op(uint64_t *a);
+};
+
+class IntegerLength
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum a);
+    static LispObject op(uint64_t *a);
+};
+
 class Logcount
 {
 public:

@@ -3518,9 +3518,15 @@ LispObject prinraw(LispObject u)
     if (is_numbers(u) && type_of_header(h = numhdr(u)) == TYPE_BIGNUM)
     {   len = length_of_header(h);
         my_assert(len>=CELL && len < CSL_PAGE_SIZE);
+#ifdef ARITHLIB
+// Mark the output so that it is visible that it is an old-style bignum.
+        putc_stream('0', active_stream);
+        putc_stream('Z', active_stream);
+#endif // ARITHLIB
         for (size_t i=CELL; i<len; i+=4)
         {   std::sprintf(b, "%.8x ", (uint32_t)bignum_digits(u)[(i-CELL)/4]);
-            for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
+            for (p=b; *p!=0; p++) 
+                putc_stream(*p, active_stream);
         }
     }
 #ifdef ARITHLIB
