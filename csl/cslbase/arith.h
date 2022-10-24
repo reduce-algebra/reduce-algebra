@@ -1118,6 +1118,19 @@ stgclass type name(LispObject a1, LispObject a2)                    \
 
 #endif // HAVE_SOFTFLOAT
 
+#ifdef HAVE_SOFTFLOAT
+
+extern float128_t f128_epsilon;
+extern float128_t f128_half_epsilon;
+extern float128_t f128_max;
+extern float128_t f128_negmax;
+extern float128_t f128_min;
+extern float128_t f128_negmin;
+extern float128_t f128_normmin;
+extern float128_t f128_negnormmin;  
+
+#endif // HAVE_SOFTFLOAT
+
 #endif // header_arith_h
 
 // end of arith.h

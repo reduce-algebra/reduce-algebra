@@ -228,30 +228,6 @@ inline bool is_number(LispObject p)
 {   return (p & TAG_BITS) >= TAG_NUMBERS;
 }
 
-inline bool is_float(LispObject p)
-{   return ((0xc040 >> (p & XTAG_BITS)) & 1) != 0;
-}
-
-inline bool is_pointer_type(LispObject p)
-{   return ((0x73 >> (p & TAG_BITS)) & 1) != 0;
-}
-
-inline bool is_immed_or_cons(LispObject p)
-{   return ((0x85 >> (p & TAG_BITS)) & 1) != 0;
-}
-
-inline bool is_immediate(LispObject p)
-{   return ((0x84 >> (p & TAG_BITS)) & 1) != 0;
-}
-
-inline bool is_immed_cons_sym(LispObject p)
-{   return ((0x95 >> (p & TAG_BITS)) & 1) != 0;
-}
-
-inline bool need_more_than_eq(LispObject p)
-{   return ((0x63 >> (p & TAG_BITS)) & 1) != 0;
-}
-
 // For each of the above tag classes I have a bunch of low-level
 // operations that need support - including type identification
 // predicates and conversions to and from native C formats.
@@ -684,135 +660,6 @@ INLINE_VAR constexpr uintptr_t SPID_NOARG     = TAG_SPID+(0x0a<<(Tw+4)); // Miss
 INLINE_VAR constexpr uintptr_t SPID_NOPROP    = TAG_SPID+(0x0b<<(Tw+4)); // fastget entry is empty
 INLINE_VAR constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0xnnn00000 offset
 
-extern bool valid_address(uintptr_t h);
-
-inline const char* objectType(uintptr_t h)
-{   switch (h & TAG_BITS)
-    {
-    case TAG_CONS:      // Cons cells
-        if (!valid_address(h)) return "";
-        else return "cons cell pointer";
-    case TAG_VECTOR:    // Regular Lisp vectors
-        if (!valid_address(h)) return "";
-        else return "vector pointer";
-    case TAG_HDR_IMMED: // Char constants, vechdrs etc
-        break;          // needs more decoding
-    case TAG_FORWARD:   // For the Garbage Collector
-        if (!valid_address(h)) return "";
-        else return "forwarding address";
-    case TAG_SYMBOL:    // Symbols
-        if (!valid_address(h)) return "";
-        else return "symbol pointer";
-    case TAG_NUMBERS:   // Bignum, Rational, Complex
-        if (!valid_address(h)) return "";
-        else return "number pointer (big, ratio, complex)";
-    case TAG_BOXFLOAT:  // Boxed floats
-        if (!valid_address(h)) return "";
-        else return "boxed float pointer";
-    case TAG_FIXNUM:    // 28/60-bit integers or immediate short float
-        if ((h & TAG_XBIT) != 0) return "immediate float value";
-        else return "immediate integer value";
-    }
-    switch ((h>>3) & 0x3)
-    {
-    case 0x0:
-        switch ((h>>5) & 0x3)
-        {
-        case 0x0:
-            return "symbol header etc";
-        case 0x1:
-            return "char literal";
-        case 0x2:
-            return "bytecode handle?";
-        case 0x3:
-            return "SPID";
-        }
-    case 0x1:
-        break;   // vector with lisp contents
-    case 0x2:
-        return "header of bit-vector";
-    case 0x3:
-        break;   // vector with binary contents
-    }
-    static char unknown[32];
-    switch (h & header_mask)
-    {
-    case TYPE_STRING_1:
-        return "header of STRING_1";
-    case TYPE_STRING_2:
-        return "header of STRING_2";
-    case TYPE_STRING_3:
-        return "header of STRING_3";
-    case TYPE_STRING_4:
-        return "header of STRING_4";
-    case TYPE_VEC8_1:
-        return "header of VEC8_1";
-    case TYPE_VEC8_2:
-        return "header of VEC8_2";
-    case TYPE_VEC8_3:
-        return "header of VEC8_3";
-    case TYPE_VEC8_4:
-        return "header of VEC8_4";
-    case TYPE_BPS_1:
-        return "header of BPS_1";
-    case TYPE_BPS_2:
-        return "header of BPS_2";
-    case TYPE_BPS_3:
-        return "header of BPS_3";
-    case TYPE_BPS_4:
-        return "header of BPS_4";
-    case TYPE_VEC16_1:
-        return "header of VEC16_1";
-    case TYPE_VEC16_2:
-        return "header of VEC16_2";
-    case TYPE_FOREIGN:
-        return "header of FOREIGN";
-    case TYPE_SP:
-        return "header of SP";
-    case TYPE_ENCAPSULATE:
-        return "header of ENCAPSULATE";
-    case TYPE_PADDER:
-        return "header of PADDER";
-    case TYPE_SIMPLE_VEC:
-        return "header of SIMPLE_VEC";
-    case TYPE_INDEXVEC:
-        return "header of INDEXVEC";
-    case TYPE_HASH:
-        return "header of HASH";
-    case TYPE_HASHX:
-        return "header of HASHX";
-    case TYPE_ARRAY:
-        return "header of ARRAY";
-    case TYPE_STRUCTURE:
-        return "header of STRUCTURE";
-    case TYPE_OBJECT:
-        return "header of OBJECT";
-    case TYPE_VEC32:
-        return "header of VEC32";
-    case TYPE_VEC64:
-        return "header of VEC64";
-    case TYPE_VEC128:
-        return "header of VEC128";
-    case TYPE_VECFLOAT32:
-        return "header of VECFLOAT32";
-    case TYPE_VECFLOAT64:
-        return "header of VECFLOAT64";
-    case TYPE_VECFLOAT128:
-        return "header of VECFLOAT128";
-    case TYPE_MIXED1:
-        return "header of MIXED1";
-    case TYPE_MIXED2:
-        return "header of MIXED2";
-    case TYPE_MIXED3:
-        return "header of MIXED3";
-    case TYPE_STREAM:
-        return "header of STREAM";
-    default:
-        std::sprintf(unknown, "unknown %x", (int)h);
-        return unknown;
-    }
-}
-
 inline Header &vechdr(LispObject v)
 {   return *bit_cast<Header *>(v - TAG_VECTOR);
 }
@@ -1074,36 +921,200 @@ inline bool is_basic_vector(LispObject v)
 {   return is_vector(v) && type_of_header(vechdr(v)) != TYPE_INDEXVEC;
 }
 
-inline bool vector_i8(Header h)
-{   return ((0x7f070707u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+// I have made the allocation so that any header of the form xx1:11x1:010
+// is the header of a number. And the ...:..x.:... bit indicates whether
+// the number is stored as binary or Lisp data. Thus rational and complex
+// numbers are (pairs of) Lisp objects, while bignums and boxed floats have
+// binary data. The case BIGNUMINDEX is for bignums that need more than
+// 4 Mbytes of memory and is an index vector containing a number of lower-
+// level vectors of binary information. That case is not supported yet, and
+// there is a real prospect that I will rearrange storage layout strategies
+// so it never is!
+
+// TYPE_FLOAT is used for both double and long floats with the length of the
+// object discriminating.
+
+INLINE_VAR constexpr uintptr_t TYPE_BIGNUMINDEX    = 0x1d<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_RATNUM         = 0x3d<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_COMPLEX_NUM    = 0x5d<<Tw;
+//      unused              = 0x7d<<Tw;
+
+INLINE_VAR constexpr uintptr_t BIGNUM_TYPE_MASK    = 0x5f<<Tw;
+
+INLINE_VAR constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x3f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x5f<<Tw;
+INLINE_VAR constexpr uintptr_t TYPE_FLOAT          = 0x7f<<Tw;
+
+// On a 64-bit platform single floats should be represented as immediate
+// data rather then being boxed, so this calue should not be especially
+// meaningful. I will include it so that in case of error and it occuring I
+// can detect and complain.
+
+// SHORT_FLOAT_HEADER should NEVER occur in memory. The value is as for
+// an object that takes zero bytes in memory, and because objects need
+// a header word this is not a legal value. However this value is distinct
+// from the other headers used by floating point values so achieves
+// what I need in the FloatType enumeration.
+
+INLINE_VAR constexpr uintptr_t SHORT_FLOAT_HEADER =
+    TYPE_SINGLE_FLOAT + TAG_HDR_IMMED;
+
+INLINE_VAR constexpr uintptr_t SINGLE_FLOAT_HEADER =
+    TYPE_SINGLE_FLOAT + ((SIXTY_FOUR_BIT?16:8)<<(Tw+5)) + TAG_HDR_IMMED;
+
+// Note that on both 32 and 64-bit systems a double float is stored
+// in a 16-byte block of memory.
+
+INLINE_VAR constexpr uintptr_t DOUBLE_FLOAT_HEADER =
+    TYPE_FLOAT + (16<<(Tw+5)) + TAG_HDR_IMMED;
+
+INLINE_VAR constexpr uintptr_t LONG_FLOAT_HEADER =
+    TYPE_FLOAT + (24<<(Tw+5)) + TAG_HDR_IMMED;
+
+enum FloatType
+{  WANT_SHORT_FLOAT  = SHORT_FLOAT_HEADER,
+   WANT_SINGLE_FLOAT = SINGLE_FLOAT_HEADER,
+   WANT_DOUBLE_FLOAT = DOUBLE_FLOAT_HEADER,
+   WANT_LONG_FLOAT   = LONG_FLOAT_HEADER
+};
+
+inline constexpr int bitOf(int code)
+{   return 1<<code;
 }
+
+/*INLINE_VAR*/static const unsigned int float_tags_mask =
+   bitOf(TAG_BOXFLOAT) |
+   bitOf(TAG_BOXFLOAT+TAG_XBIT) |
+   bitOf(XTAG_SFLOAT);
+
+inline bool is_float(LispObject p)
+{   return ((float_tags_mask >> (p & XTAG_BITS)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int pointer_tags_mask =
+   bitOf(TAG_CONS) |
+   bitOf(TAG_VECTOR) |
+   bitOf(TAG_SYMBOL) |
+   bitOf(TAG_NUMBERS) |
+   bitOf(TAG_BOXFLOAT);
+
+inline bool is_pointer_type(LispObject p)
+{   return ((pointer_tags_mask >> (p & TAG_BITS)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int immed_or_cons_tags_mask =
+   bitOf(TAG_CONS) |
+   bitOf(TAG_HDR_IMMED) |
+   bitOf(TAG_FIXNUM);
+
+inline bool is_immed_or_cons(LispObject p)
+{   return ((immed_or_cons_tags_mask >> (p & TAG_BITS)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int immed_tags_mask =
+   bitOf(TAG_HDR_IMMED) |
+   bitOf(TAG_FIXNUM);
+
+inline bool is_immediate(LispObject p)
+{   return ((immed_tags_mask >> (p & TAG_BITS)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int immed_cons_sym_tags_mask =
+   bitOf(TAG_CONS) |
+   bitOf(TAG_HDR_IMMED) |
+   bitOf(TAG_SYMBOL) |
+   bitOf(TAG_FIXNUM);
+
+inline bool is_immed_cons_sym(LispObject p)
+{   return ((immed_cons_sym_tags_mask >> (p & TAG_BITS)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int need_more_eq_tags_mask =
+   bitOf(TAG_CONS) |
+   bitOf(TAG_VECTOR) |
+   bitOf(TAG_NUMBERS) |
+   bitOf(TAG_BOXFLOAT);
+
+inline bool need_more_than_eq(LispObject p)
+{   return ((need_more_eq_tags_mask >> (p & TAG_BITS)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int vi8_tags_mask =
+   bitOf(TYPE_STRING_1>>(Tw+2)) |
+   bitOf(TYPE_VEC8_1>>(Tw+2)) |
+   bitOf(TYPE_BPS_1>>(Tw+2)) |
+   bitOf(TYPE_STRING_2>>(Tw+2)) |
+   bitOf(TYPE_VEC8_2>>(Tw+2)) |
+   bitOf(TYPE_BPS_2>>(Tw+2)) |
+   bitOf(TYPE_STRING_3>>(Tw+2)) |
+   bitOf(TYPE_VEC8_3>>(Tw+2)) |
+   bitOf(TYPE_BPS_3>>(Tw+2)) |
+   bitOf(TYPE_STRING_4>>(Tw+2)) |
+   bitOf(TYPE_VEC8_4>>(Tw+2)) |
+   bitOf(TYPE_BPS_4>>(Tw+2));
+
+inline bool vector_i8(Header h)
+{   return ((vi8_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+/*INLINE_VAR*/static const unsigned int vi16_tags_mask =
+   bitOf(TYPE_VEC16_1>>(Tw+2)) |
+   bitOf(TYPE_VEC16_2>>(Tw+2));
 
 inline bool vector_i16(Header h)
-{   return ((0x00080008u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((vi16_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
+/*INLINE_VAR*/static const unsigned int vi32_tags_mask =
+   bitOf(TYPE_VEC32>>(Tw+2)) |
+   bitOf(TYPE_BIGNUM>>(Tw+2));
 
 inline bool vector_i32(Header h)
-{   return ((0x00000090u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((vi32_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
+
+/*INLINE_VAR*/static const unsigned int vi64_tags_mask =
+   bitOf(TYPE_VEC64>>(Tw+2)) |
+   bitOf(TYPE_NEW_BIGNUM>>(Tw+2)) |
+// bitOf(TYPE_MAPLEREF>>(Tw+2)) |
+   bitOf(TYPE_FOREIGN>>(Tw+2)) |
+   bitOf(TYPE_SP>>(Tw+2)) |
+   bitOf(TYPE_ENCAPSULATE>>(Tw+2));
 
 inline bool vector_i64(Header h)
-{   return ((0x00007820u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((vi64_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
+
+/*INLINE_VAR*/static const unsigned int vi128_tags_mask =
+   bitOf(TYPE_VEC128>>(Tw+2));
 
 inline bool vector_i128(Header h)
-{   return ((0x00000040u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((vi128_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
+
+/*INLINE_VAR*/static const unsigned int f32_tags_mask =
+   bitOf(TYPE_SINGLE_FLOAT) |
+   bitOf(TYPE_VECFLOAT32>>(Tw+2));
 
 inline bool vector_f32(Header h)
-{   return ((0x00108000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((f32_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
+
+/*INLINE_VAR*/static const unsigned int f64_tags_mask =
+   bitOf(TYPE_VECFLOAT64>>(Tw+2));
+
+// Warning - double and long floats share type code and are discriminated
+// based on length.
 
 inline bool vector_f64(Header h)
-{   return ((0x00a00000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((f64_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
+/*INLINE_VAR*/static const unsigned int f128_tags_mask =
+   bitOf(TYPE_VECFLOAT128>>(Tw+2));
+
 inline bool vector_f128(Header h)
-{   return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+{   return ((f128_tags_mask >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
 inline LispObject& basic_elt(LispObject v, size_t n)
@@ -1161,62 +1172,6 @@ inline bool vector_f128(LispObject n)
     else return vector_f128(vechdr(basic_elt(n, 0)));
 }
 
-// I have made the allocation so that any header of the form xx1:11x1:010
-// is the header of a number. And the ...:..x.:... bit indicates whether
-// the number is stored as binary or Lisp data. Thus rational and complex
-// numbers are (pairs of) Lisp objects, while bignums and boxed floats have
-// binary data. The case BIGNUMINDEX is for bignums that need more than
-// 4 Mbytes of memory and is an index vector containing a number of lower-
-// level vectors of binary information. That case is not supported yet, and
-// there is a real prospect that I will rearrange storage layout strategies
-// so it never is!
-
-// TYPE_FLOAT is used for both double and long floats with the length of the
-// object discriminating.
-
-INLINE_VAR constexpr uintptr_t TYPE_BIGNUMINDEX    = 0x1d<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_RATNUM         = 0x3d<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_COMPLEX_NUM    = 0x5d<<Tw;
-//      unused              = 0x7d<<Tw;
-
-INLINE_VAR constexpr uintptr_t TYPE_BIGNUM         = 0x1f<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_NEW_BIGNUM     = 0x3f<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_SINGLE_FLOAT   = 0x5f<<Tw;
-INLINE_VAR constexpr uintptr_t TYPE_FLOAT          = 0x7f<<Tw;
-
-// On a 64-bit platform single floats should be represented as immediate
-// data rather then being boxed, so this calue should not be especially
-// meaningful. I will include it so that in case of error and it occuring I
-// can detect and complain.
-
-// SHORT_FLOAT_HEADER should NEVER occur in memory. The value is as for
-// an object that takes zero bytes in memory, and because objects need
-// a header word this is not a legal value. However this value is distinct
-// from the other headers used by floating point values so achieves
-// what I need in the FloatType enumeration.
-
-INLINE_VAR constexpr uintptr_t SHORT_FLOAT_HEADER =
-    TYPE_SINGLE_FLOAT + TAG_HDR_IMMED;
-
-INLINE_VAR constexpr uintptr_t SINGLE_FLOAT_HEADER =
-    TYPE_SINGLE_FLOAT + ((SIXTY_FOUR_BIT?16:8)<<(Tw+5)) + TAG_HDR_IMMED;
-
-// Note that on both 32 and 64-bit systems a double float is stored
-// in a 16-byte block of memory.
-
-INLINE_VAR constexpr uintptr_t DOUBLE_FLOAT_HEADER =
-    TYPE_FLOAT + (16<<(Tw+5)) + TAG_HDR_IMMED;
-
-INLINE_VAR constexpr uintptr_t LONG_FLOAT_HEADER =
-    TYPE_FLOAT + (24<<(Tw+5)) + TAG_HDR_IMMED;
-
-enum FloatType
-{  WANT_SHORT_FLOAT  = SHORT_FLOAT_HEADER,
-   WANT_SINGLE_FLOAT = SINGLE_FLOAT_HEADER,
-   WANT_DOUBLE_FLOAT = DOUBLE_FLOAT_HEADER,
-   WANT_LONG_FLOAT   = LONG_FLOAT_HEADER
-};
-
 inline Header &numhdr(LispObject v)
 {   return *bit_cast<Header *>(v - TAG_NUMBERS);
 }
@@ -1263,6 +1218,12 @@ inline bool is_ratio(LispObject n)
 
 inline bool is_complex(LispObject n)
 {   return is_numbers(n) && type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM;
+}
+
+// This checks for either BIGNUM or NEW_BIGNUM.
+
+inline bool is_either_bignum_header(Header h)
+{   return (h & BIGNUM_TYPE_MASK) == TYPE_BIGNUM;
 }
 
 inline bool is_bignum_header(Header h)
@@ -1332,6 +1293,147 @@ inline bool is_bitvec(LispObject n)
 {   if (!is_vector(n)) return false;
     else if (is_basic_vector(n)) return is_bitvec_header(vechdr(n));
     else  return is_bitvec_header(vechdr(basic_elt(n, 0)));
+}
+
+extern bool valid_address(uintptr_t h);
+
+inline const char* objectType(uintptr_t h)
+{   switch (h & TAG_BITS)
+    {
+    case TAG_CONS:      // Cons cells
+        if (!valid_address(h)) return "";
+        else return "cons cell pointer";
+    case TAG_VECTOR:    // Regular Lisp vectors
+        if (!valid_address(h)) return "";
+        else return "vector pointer";
+    case TAG_HDR_IMMED: // Char constants, vechdrs etc
+        break;          // needs more decoding
+    case TAG_FORWARD:   // For the Garbage Collector
+        if (!valid_address(h)) return "";
+        else return "forwarding address";
+    case TAG_SYMBOL:    // Symbols
+        if (!valid_address(h)) return "";
+        else return "symbol pointer";
+    case TAG_NUMBERS:   // Bignum, Rational, Complex
+        if (!valid_address(h)) return "";
+        else return "number pointer (big, ratio, complex)";
+    case TAG_BOXFLOAT:  // Boxed floats
+        if (!valid_address(h)) return "";
+        else return "boxed float pointer";
+    case TAG_FIXNUM:    // 28/60-bit integers or immediate short float
+        if ((h & TAG_XBIT) != 0) return "immediate float value";
+        else return "immediate integer value";
+    }
+    switch ((h>>3) & 0x3)
+    {
+    case 0x0:
+        switch ((h>>5) & 0x3)
+        {
+        case 0x0:
+            return "symbol header etc";
+        case 0x1:
+            return "char literal";
+        case 0x2:
+            return "bytecode handle?";
+        case 0x3:
+            return "SPID";
+        }
+    case 0x1:
+        break;   // vector with lisp contents
+    case 0x2:
+        return "header of bit-vector";
+    case 0x3:
+        break;   // vector with binary contents
+    }
+    static char unknown[32];
+    switch (h & header_mask)
+    {
+    case TYPE_STRING_1:
+        return "header of STRING_1";
+    case TYPE_STRING_2:
+        return "header of STRING_2";
+    case TYPE_STRING_3:
+        return "header of STRING_3";
+    case TYPE_STRING_4:
+        return "header of STRING_4";
+    case TYPE_VEC8_1:
+        return "header of VEC8_1";
+    case TYPE_VEC8_2:
+        return "header of VEC8_2";
+    case TYPE_VEC8_3:
+        return "header of VEC8_3";
+    case TYPE_VEC8_4:
+        return "header of VEC8_4";
+    case TYPE_BPS_1:
+        return "header of BPS_1";
+    case TYPE_BPS_2:
+        return "header of BPS_2";
+    case TYPE_BPS_3:
+        return "header of BPS_3";
+    case TYPE_BPS_4:
+        return "header of BPS_4";
+    case TYPE_VEC16_1:
+        return "header of VEC16_1";
+    case TYPE_VEC16_2:
+        return "header of VEC16_2";
+    case TYPE_FOREIGN:
+        return "header of FOREIGN";
+    case TYPE_SP:
+        return "header of SP";
+    case TYPE_ENCAPSULATE:
+        return "header of ENCAPSULATE";
+    case TYPE_PADDER:
+        return "header of PADDER";
+    case TYPE_SIMPLE_VEC:
+        return "header of SIMPLE_VEC";
+    case TYPE_INDEXVEC:
+        return "header of INDEXVEC";
+    case TYPE_HASH:
+        return "header of HASH";
+    case TYPE_HASHX:
+        return "header of HASHX";
+    case TYPE_ARRAY:
+        return "header of ARRAY";
+    case TYPE_STRUCTURE:
+        return "header of STRUCTURE";
+    case TYPE_OBJECT:
+        return "header of OBJECT";
+    case TYPE_VEC32:
+        return "header of VEC32";
+    case TYPE_VEC64:
+        return "header of VEC64";
+    case TYPE_VEC128:
+        return "header of VEC128";
+    case TYPE_VECFLOAT32:
+        return "header of VECFLOAT32";
+    case TYPE_VECFLOAT64:
+        return "header of VECFLOAT64";
+    case TYPE_VECFLOAT128:
+        return "header of VECFLOAT128";
+    case TYPE_MIXED1:
+        return "header of MIXED1";
+    case TYPE_MIXED2:
+        return "header of MIXED2";
+    case TYPE_MIXED3:
+        return "header of MIXED3";
+    case TYPE_STREAM:
+        return "header of STREAM";
+    case TYPE_BIGNUM:
+        return "header of BIGNUM";
+    case TYPE_NEW_BIGNUM:
+        return "header of NEW_BIGNUM";
+    case TYPE_RATNUM:
+        return "header of RATNUM";
+    case TYPE_COMPLEX_NUM:
+        return "header of COMPLEX_NUM";
+    case TYPE_SINGLE_FLOAT:
+        return "header of SINGLE_FLOAT";
+    case TYPE_FLOAT:
+        return "header of FLOAT";
+    default:
+        std::sprintf(unknown, "unknown %x", (int)h);
+        return unknown;
+    }
 }
 
 inline char& basic_celt(LispObject v, size_t n)
@@ -1853,7 +1955,7 @@ inline uint32_t& qcountHigh(LispObject p)
 
 inline uint64_t qcount(LispObject p)
 {   Symbol_Head *pp = bit_cast<Symbol_Head *>(p-TAG_SYMBOL);
-    return (static_cast<uint64_t>(pp->countHigh)<<32 | pp->countLow)>>22;
+    return (static_cast<uint64_t>(pp->countHigh)<<32 | pp->countLow)>>(Tw+2);
 }
 
 // The amount that the count should be incremented here must not be
