@@ -221,6 +221,9 @@ inline double CSLpow(double x, double y)
 #endif // CONSERVATIVE
 #include "syscsl.h"
 #include "arith.h"
+#ifdef ARITHLIB
+#include "arith-defs.h"
+#endif // ARITHLIB"
 #include "entries.h"
 #include "proc.h"
 #include "stream.h"

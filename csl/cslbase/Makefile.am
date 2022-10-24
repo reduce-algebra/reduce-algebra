@@ -293,7 +293,7 @@ if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
-		arith-float128.cpp
+		arith-float128.cpp arith-elem.cpp
 else !arithlib
 arith_sources =
 endif !arithlib
@@ -892,6 +892,7 @@ csl-arith-compare.$(OBJEXT):	$(HDRS)
 csl-arith-logops.$(OBJEXT):	$(HDRS)
 csl-arith-modular.$(OBJEXT):	$(HDRS)
 csl-arith-float128.$(OBJEXT):	$(HDRS)
+csl-arith-elem.$(OBJEXT):	$(HDRS)
 
 bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
@@ -903,6 +904,7 @@ bootstrapreduce-arith-compare.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-float128.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
 
 reduce-arith-setup.$(OBJEXT):	$(HDRS)
 reduce-arith-plus.$(OBJEXT):	$(HDRS)
@@ -914,6 +916,7 @@ reduce-arith-compare.$(OBJEXT):	$(HDRS)
 reduce-arith-logops.$(OBJEXT):	$(HDRS)
 reduce-arith-modular.$(OBJEXT):	$(HDRS)
 reduce-arith-float128.$(OBJEXT):	$(HDRS)
+reduce-arith-elem.$(OBJEXT):	$(HDRS)
 
 endif arithlib
 

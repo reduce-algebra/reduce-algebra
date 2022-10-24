@@ -2355,6 +2355,13 @@ public:
     static bool op(uint64_t *w);
 };
 
+class Plusp
+{
+public:
+    static bool op(std::int64_t w);
+    static bool op(uint64_t *w);
+};
+
 class Evenp
 {
 public:
@@ -3332,6 +3339,10 @@ inline bool onep(const Bignum &x)
 
 inline bool minusp(const Bignum &x)
 {   return op_dispatch1<Minusp,bool>(x.val);
+}
+
+inline bool plusp(const Bignum &x)
+{   return op_dispatch1<Plusp,bool>(x.val);
 }
 
 inline bool evenp(const Bignum &x)
@@ -6050,6 +6061,14 @@ inline bool Minusp::op(std::uint64_t *a)
 
 inline bool Minusp::op(std::int64_t a)
 {   return a < 0;
+}
+
+inline bool Plusp::op(std::uint64_t *a)
+{   return !negative(a[number_size(a)-1]); // NB a bignum can not be zero
+}
+
+inline bool Plusp::op(std::int64_t a)
+{   return a > 0;
 }
 
 inline bool Evenp::op(std::uint64_t *a)
@@ -11243,6 +11262,7 @@ using arithlib_implementation::Logeqv;
 using arithlib_implementation::Zerop;
 using arithlib_implementation::Onep;
 using arithlib_implementation::Minusp;
+using arithlib_implementation::Plusp;
 using arithlib_implementation::Evenp;
 using arithlib_implementation::Oddp;
 using arithlib_implementation::Eqn;

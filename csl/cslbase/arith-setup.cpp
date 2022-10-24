@@ -45,24 +45,24 @@ LispObject onebool(bool b)
 {   return onevalue(b ? lisp_true : nil);
 }
 
-static LispObject Nplus(LispObject env)
+LispObject Nplus(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nplus(LispObject env, LispObject a1)
+LispObject Nplus(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nplus(LispObject env, LispObject a1, LispObject a2)
+LispObject Nplus(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Plus::op(a1, a2));
 }
 
-static LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
+LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
 {   return onevalue(Plus::op(Plus::op(a1, a2), a3));
 }
 
-static LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
+LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   LispObject w = Plus::op(Plus::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -72,24 +72,24 @@ static LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Ntimes(LispObject env)
+LispObject Ntimes(LispObject env)
 {   return onevalue(fixnum_of_int(1));
 }
 
-static LispObject Ntimes(LispObject env, LispObject a1)
+LispObject Ntimes(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
+LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Times::op(a1, a2));
 }
 
-static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
+LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onevalue(Times::op(Times::op(a1, a2), a3));
 }
 
-static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
+LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -99,28 +99,28 @@ static LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Nexpt(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Expt::op(a1, a2));
-}
+//LispObject Nexpt(LispObject env, LispObject a1, LispObject a2)
+//{   return onevalue(Expt::op(a1, a2));
+//}
 
-static LispObject Ngcdn(LispObject env)
+LispObject Ngcdn(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Ngcdn(LispObject env, LispObject a1)
+LispObject Ngcdn(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
+LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Gcdn::op(a1, a2));
 }
 
-static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
+LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
 {   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
 }
 
-static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
+LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -130,24 +130,24 @@ static LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Nlcmn(LispObject env)
+LispObject Nlcmn(LispObject env)
 {   return onevalue(fixnum_of_int(1));
 }
 
-static LispObject Nlcmn(LispObject env, LispObject a1)
+LispObject Nlcmn(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2)
+LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Lcmn::op(a1, a2));
 }
 
-static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
 {   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
 }
 
-static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -157,172 +157,176 @@ static LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Ndifference(LispObject env, LispObject a1,
+LispObject Ndifference(LispObject env, LispObject a1,
                               LispObject a2)
 {   return onevalue(Difference::op(a1, a2));
 }
 
-static LispObject Nquotient(LispObject env, LispObject a1,
+LispObject Nquotient(LispObject env, LispObject a1,
                             LispObject a2)
 {   return onevalue(Quotient::op(a1, a2));
 }
 
-static LispObject NCLQuotient(LispObject env, LispObject a1,
+LispObject NCLQuotient(LispObject env, LispObject a1,
                               LispObject a2)
 {   return onevalue(CLQuotient::op(a1, a2));
 }
 
-static LispObject Nremainder(LispObject env, LispObject a1,
+LispObject Nremainder(LispObject env, LispObject a1,
                              LispObject a2)
 {   return onevalue(Remainder::op(a1, a2));
 }
 
-static LispObject Ndivide(LispObject env, LispObject a1,
+LispObject Ndivide(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Divide::op(a1, a2));
 }
 
-static LispObject Nadd1(LispObject env, LispObject a1)
+LispObject Nadd1(LispObject env, LispObject a1)
 {   return onevalue(Plus::op(a1, fixnum_of_int(1)));
 }
 
-static LispObject Nsub1(LispObject env, LispObject a1)
+LispObject Nsub1(LispObject env, LispObject a1)
 {   return onevalue(Difference::op(a1, fixnum_of_int(1)));
 }
 
-static LispObject Nonep(LispObject env, LispObject a1)
+LispObject Nonep(LispObject env, LispObject a1)
 {   return onebool(Onep::op(a1));
 }
 
-static LispObject Nevenp(LispObject env, LispObject a1)
+LispObject Nevenp(LispObject env, LispObject a1)
 {   return onebool(Evenp::op(a1));
 }
 
-static LispObject Noddp(LispObject env, LispObject a1)
+LispObject Noddp(LispObject env, LispObject a1)
 {   return onebool(Oddp::op(a1));
 }
 
-static LispObject Nzerop(LispObject env, LispObject a1)
+LispObject Nzerop(LispObject env, LispObject a1)
 {   return onebool(Zerop::op(a1));
 }
 
-static LispObject Nminusp(LispObject env, LispObject a1)
+LispObject Nminusp(LispObject env, LispObject a1)
 {   return onebool(Minusp::op(a1));
 }
 
-static LispObject Nminus(LispObject env, LispObject a1)
+LispObject Nplusp(LispObject env, LispObject a1)
+{   return onebool(Plusp::op(a1));
+}
+
+LispObject Nminus(LispObject env, LispObject a1)
 {   return onevalue(Minus::op(a1));
 }
 
-static LispObject Nabs(LispObject env, LispObject a1)
+LispObject Nabs(LispObject env, LispObject a1)
 {   return onevalue(Abs::op(a1));
 }
 
-static LispObject Nreciprocal(LispObject env, LispObject a1)
+LispObject Nreciprocal(LispObject env, LispObject a1)
 {   return onevalue(Reciprocal::op(a1));
 }
 
-static LispObject Nsqrt(LispObject env, LispObject a1)
-{   return onevalue(Sqrt::op(a1));
-}
+//LispObject Nsqrt(LispObject env, LispObject a1)
+//{   return onevalue(Sqrt::op(a1));
+//}
 
-static LispObject Nisqrt(LispObject env, LispObject a1)
+LispObject Nisqrt(LispObject env, LispObject a1)
 {   return onevalue(Isqrt::op(a1));
 }
 
-static LispObject Nsquare(LispObject env, LispObject a1)
+LispObject Nsquare(LispObject env, LispObject a1)
 {   return onevalue(Square::op(a1));
 }
 
-static LispObject Nfloat(LispObject env, LispObject a1)
+LispObject Nfloat(LispObject env, LispObject a1)
 {   return onevalue(Float::op(a1));
 }
 
-static LispObject Nfloat(LispObject env, LispObject a1, LispObject a2)
+LispObject Nfloat(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Float::op(a1, a2));
 }
 
-static LispObject Nfix(LispObject env, LispObject a1)
+LispObject Nfix(LispObject env, LispObject a1)
 {   return onevalue(Fix::op(a1));
 }
 
-static LispObject Ntruncate(LispObject env, LispObject a1)
+LispObject Ntruncate(LispObject env, LispObject a1)
 {   return onevalue(Truncate::op(a1));
 }
 
-static LispObject Nfloor(LispObject env, LispObject a1)
+LispObject Nfloor(LispObject env, LispObject a1)
 {   return onevalue(Floor::op(a1));
 }
 
-static LispObject Nceiling(LispObject env, LispObject a1)
+LispObject Nceiling(LispObject env, LispObject a1)
 {   return onevalue(Ceiling::op(a1));
 }
 
-static LispObject Nftruncate(LispObject env, LispObject a1)
+LispObject Nftruncate(LispObject env, LispObject a1)
 {   return onevalue(Ftruncate::op(a1));
 }
 
-static LispObject Nffloor(LispObject env, LispObject a1)
+LispObject Nffloor(LispObject env, LispObject a1)
 {   return onevalue(Ffloor::op(a1));
 }
 
-static LispObject Nfceiling(LispObject env, LispObject a1)
+LispObject Nfceiling(LispObject env, LispObject a1)
 {   return onevalue(Fceiling::op(a1));
 }
 
-static LispObject Ntruncate(LispObject env, LispObject a1,
+LispObject Ntruncate(LispObject env, LispObject a1,
                             LispObject a2)
 {   return onevalue(Truncate::op(a1, a2));
 }
 
-static LispObject Nfloor(LispObject env, LispObject a1, LispObject a2)
+LispObject Nfloor(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Floor::op(a1, a2));
 }
 
-static LispObject Nceiling(LispObject env, LispObject a1,
+LispObject Nceiling(LispObject env, LispObject a1,
                            LispObject a2)
 {   return onevalue(Ceiling::op(a1, a2));
 }
 
-static LispObject Nftruncate(LispObject env, LispObject a1,
+LispObject Nftruncate(LispObject env, LispObject a1,
                              LispObject a2)
 {   return onevalue(Ftruncate::op(a1, a2));
 }
 
-static LispObject Nffloor(LispObject env, LispObject a1,
+LispObject Nffloor(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Ffloor::op(a1, a2));
 }
 
-static LispObject Nfceiling(LispObject env, LispObject a1,
+LispObject Nfceiling(LispObject env, LispObject a1,
                             LispObject a2)
 {   return onevalue(Fceiling::op(a1,  a2));
 }
 
-static LispObject Nfloat128(LispObject env, LispObject a1)
+LispObject Nfloat128(LispObject env, LispObject a1)
 {   return onevalue(Float128::op(a1));
 }
 
-static LispObject Nfrexp(LispObject env, LispObject a1)
+LispObject Nfrexp(LispObject env, LispObject a1)
 {   return onevalue(Frexp::op(a1));
 }
 
-static LispObject Nldexp(LispObject env, LispObject a1, LispObject a2)
+LispObject Nldexp(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Ldexp::op(a1, a2));
 }
 
-static LispObject Ngreaterp(LispObject env, LispObject a1,
+LispObject Ngreaterp(LispObject env, LispObject a1,
                             LispObject a2)
 {   return onebool(Greaterp::op(a1, a2));
 }
 
-static LispObject Ngreaterp(LispObject env, LispObject a1,
+LispObject Ngreaterp(LispObject env, LispObject a1,
                             LispObject a2,
                             LispObject a3)
 {   return onebool(Greaterp::op(a1, a2) && Greaterp::op(a2, a3));
 }
 
-static LispObject Ngreaterp(LispObject env, LispObject a1,
+LispObject Ngreaterp(LispObject env, LispObject a1,
                             LispObject a2,
                             LispObject a3, LispObject a4plus)
 {   if (!Greaterp::op(a1, a2)) return onevalue(nil);
@@ -336,16 +340,16 @@ static LispObject Ngreaterp(LispObject env, LispObject a1,
     return onevalue(lisp_true);
 }
 
-static LispObject Ngeq(LispObject env, LispObject a1, LispObject a2)
+LispObject Ngeq(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Geq::op(a1, a2));
 }
 
-static LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
+LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
 {   return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
 }
 
-static LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
+LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4plus)
 {   if (!Geq::op(a1, a2)) return onevalue(nil);
     if (!Geq::op(a2, a3)) return onevalue(nil);
@@ -358,16 +362,16 @@ static LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nlessp(LispObject env, LispObject a1, LispObject a2)
+LispObject Nlessp(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Lessp::op(a1, a2));
 }
 
-static LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
+LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
 }
 
-static LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
+LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   if (!Lessp::op(a1, a2)) return onevalue(nil);
     if (!Lessp::op(a2, a3)) return onevalue(nil);
@@ -380,16 +384,16 @@ static LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nleq(LispObject env, LispObject a1, LispObject a2)
+LispObject Nleq(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Leq::op(a1, a2));
 }
 
-static LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
+LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
 {   return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
 }
 
-static LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
+LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4plus)
 {   if (!Leq::op(a1, a2)) return onevalue(nil);
     if (!Leq::op(a2, a3)) return onevalue(nil);
@@ -402,16 +406,16 @@ static LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2)
+LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Eqn::op(a1, a2));
 }
 
-static LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
+LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
 }
 
-static LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
+LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   if (!Eqn::op(a1, a2)) return onevalue(nil);
     if (!Eqn::op(a2, a3)) return onevalue(nil);
@@ -424,16 +428,16 @@ static LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2)
+LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(CLEqn::op(a1, a2));
 }
 
-static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
+LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onebool(CLEqn::op(a1, a2) && CLEqn::op(a2, a3));
 }
 
-static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
+LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   if (!CLEqn::op(a1, a2)) return onevalue(nil);
     if (!CLEqn::op(a2, a3)) return onevalue(nil);
@@ -446,11 +450,11 @@ static LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nneqn(LispObject env, LispObject a1, LispObject a2)
+LispObject Nneqn(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Neqn::op(a1, a2));
 }
 
-static LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
 {   return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
                    Neqn::op(a1, a3));
@@ -460,7 +464,7 @@ static LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
 // checks if all aee distinct. Well (neqn a NaN) will be false so if ANY
 // of the arguments is a NaN then NEQN will return false.
 
-static LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   if (!Neqn::op(a1, a2)) return onevalue(nil);
     if (!Neqn::op(a2, a3)) return onevalue(nil);
@@ -481,26 +485,90 @@ static LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nlogand(LispObject env)
-{   return onevalue(fixnum_of_int(-1));
+LispObject Nmax(LispObject env)
+{   return aerror("max called witout arguments");
 }
 
-static LispObject Nlogand(LispObject env, LispObject a1)
+LispObject Nmax(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nlogand(LispObject env, LispObject a1,
+LispObject Nmax(LispObject env, LispObject a1, LispObject a2)
+{   if (Lessp::op(a1, a2)) return onevalue(a2);
+    return onevalue(a1);
+}
+
+LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3)
+{   if (Lessp::op(a1, a2)) a1 = a2;
+    if (Lessp::op(a1, a3)) a1 = a3;
+    return onevalue(a1);
+}
+
+LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3, LispObject a4plus)
+{   if (Lessp::op(a1, a2)) a1 = a2;
+    if (Lessp::op(a1, a3)) a1 = a3;
+    while (is_cons(a4plus))
+    {   LispObject w = car(a4plus);
+        if (Lessp::op(a1, w)) a1 = w;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env)
+{   return aerror("min called witout arguments");
+}
+
+LispObject Nmin(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env, LispObject a1, LispObject a2)
+{   if (Greaterp::op(a1, a2)) return onevalue(a2);
+    return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3)
+{   if (Greaterp::op(a1, a2)) a1 = a2;
+    if (Greaterp::op(a1, a3)) a1 = a3;
+    return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3, LispObject a4plus)
+{   if (Greaterp::op(a1, a2)) a1 = a2;
+    if (Greaterp::op(a1, a3)) a1 = a3;
+    while (is_cons(a4plus))
+    {   LispObject w = car(a4plus);
+        if (Greaterp::op(a1, w)) a1 = w;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(a1);
+}
+
+LispObject Nlogand(LispObject env)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+LispObject Nlogand(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nlogand(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Logand::op(a1, a2));
 }
 
-static LispObject Nlogand(LispObject env, LispObject a1,
+LispObject Nlogand(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onevalue(Logand::op(Logand::op(a1, a2), a3));
 }
 
-static LispObject Nlogand(LispObject env, LispObject a1,
+LispObject Nlogand(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   LispObject w = Logand::op(Logand::op(a1, a2), a3);
@@ -511,24 +579,24 @@ static LispObject Nlogand(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nlogor(LispObject env)
+LispObject Nlogor(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nlogor(LispObject env, LispObject a1)
+LispObject Nlogor(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nlogor(LispObject env, LispObject a1, LispObject a2)
+LispObject Nlogor(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Logor::op(a1, a2));
 }
 
-static LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
+LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onevalue(Logor::op(Logor::op(a1, a2), a3));
 }
 
-static LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
+LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   LispObject w = Logor::op(Logor::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -538,26 +606,26 @@ static LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Nlogxor(LispObject env)
+LispObject Nlogxor(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nlogxor(LispObject env, LispObject a1)
+LispObject Nlogxor(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nlogxor(LispObject env, LispObject a1,
+LispObject Nlogxor(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Logxor::op(a1, a2));
 }
 
-static LispObject Nlogxor(LispObject env, LispObject a1,
+LispObject Nlogxor(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onevalue(Logxor::op(Logxor::op(a1, a2), a3));
 }
 
-static LispObject Nlogxor(LispObject env, LispObject a1,
+LispObject Nlogxor(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   LispObject w = Logxor::op(Logxor::op(a1, a2), a3);
@@ -568,26 +636,26 @@ static LispObject Nlogxor(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nlogeqv(LispObject env)
+LispObject Nlogeqv(LispObject env)
 {   return onevalue(fixnum_of_int(-1));
 }
 
-static LispObject Nlogeqv(LispObject env, LispObject a1)
+LispObject Nlogeqv(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nlogeqv(LispObject env, LispObject a1,
+LispObject Nlogeqv(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Logeqv::op(a1, a2));
 }
 
-static LispObject Nlogeqv(LispObject env, LispObject a1,
+LispObject Nlogeqv(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onevalue(Logeqv::op(Logeqv::op(a1, a2), a3));
 }
 
-static LispObject Nlogeqv(LispObject env, LispObject a1,
+LispObject Nlogeqv(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   LispObject w = Logeqv::op(Logeqv::op(a1, a2), a3);
@@ -598,44 +666,53 @@ static LispObject Nlogeqv(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nlognot(LispObject env, LispObject a1)
+LispObject Nlognot(LispObject env, LispObject a1)
 {   return onevalue(Lognot::op(a1));
 }
 
-static LispObject Nlogcount(LispObject env, LispObject a1)
+LispObject Nlogcount(LispObject env, LispObject a1)
 {   return onevalue(Logcount::op(a1));
 }
 
-static LispObject Nleftshift(LispObject env, LispObject a1,
-                             LispObject a2)
+LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(LeftShift::op(a1, a2));
 }
 
-static LispObject Nrightshift(LispObject env, LispObject a1,
-                              LispObject a2)
+// The following divides by a power of 2 when shifting right so is not
+// a natural arithmetic shift on negative numbers.
+
+LispObject Nash1(LispObject env, LispObject a1, LispObject a2)
+{   bool neg = Minusp::op(a1);
+    if (neg) a1 = Minus::op(a1);
+    a1 = LeftShift::op(a1, a2);
+    if (neg) a1 = Minus::op(a1);
+    return onevalue(a1);
+}
+
+LispObject Nrightshift(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(RightShift::op(a1, a2));
 }
 
-static LispObject Nmodular_plus(LispObject env)
+LispObject Nmodular_plus(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nmodular_plus(LispObject env, LispObject a1)
+LispObject Nmodular_plus(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nmodular_plus(LispObject env, LispObject a1,
+LispObject Nmodular_plus(LispObject env, LispObject a1,
                                 LispObject a2)
 {   return onevalue(ModularPlus::op(a1, a2));
 }
 
-static LispObject Nmodular_plus(LispObject env, LispObject a1,
+LispObject Nmodular_plus(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3)
 {   return onevalue(ModularPlus::op(ModularPlus::op(a1, a2), a3));
 }
 
-static LispObject Nmodular_plus(LispObject env, LispObject a1,
+LispObject Nmodular_plus(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4plus)
 {   LispObject w = ModularPlus::op(ModularPlus::op(a1, a2), a3);
@@ -646,26 +723,26 @@ static LispObject Nmodular_plus(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nmodular_times(LispObject env)
+LispObject Nmodular_times(LispObject env)
 {   return onevalue(fixnum_of_int(1));
 }
 
-static LispObject Nmodular_times(LispObject env, LispObject a1)
+LispObject Nmodular_times(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nmodular_times(LispObject env, LispObject a1,
+LispObject Nmodular_times(LispObject env, LispObject a1,
                                  LispObject a2)
 {   return onevalue(ModularTimes::op(a1, a2));
 }
 
-static LispObject Nmodular_times(LispObject env, LispObject a1,
+LispObject Nmodular_times(LispObject env, LispObject a1,
                                  LispObject a2,
                                  LispObject a3)
 {   return onevalue(ModularTimes::op(ModularTimes::op(a1, a2), a3));
 }
 
-static LispObject Nmodular_times(LispObject env, LispObject a1,
+LispObject Nmodular_times(LispObject env, LispObject a1,
                                  LispObject a2,
                                  LispObject a3, LispObject a4plus)
 {   LispObject w = ModularTimes::op(ModularTimes::op(a1, a2), a3);
@@ -676,34 +753,34 @@ static LispObject Nmodular_times(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nmodular_expt(LispObject env, LispObject a1,
+LispObject Nmodular_expt(LispObject env, LispObject a1,
                                 LispObject a2)
 {   return onevalue(ModularExpt::op(a1, a2));
 }
 
-static LispObject Nmodular_difference(LispObject env, LispObject a1,
+LispObject Nmodular_difference(LispObject env, LispObject a1,
                                       LispObject a2)
 {   return onevalue(ModularDifference::op(a1, a2));
 }
 
-static LispObject Nmodular_quotient(LispObject env, LispObject a1,
+LispObject Nmodular_quotient(LispObject env, LispObject a1,
                                     LispObject a2)
 {   return onevalue(ModularQuotient::op(a1, a2));
 }
 
-static LispObject Nmodular_reciprocal(LispObject env, LispObject a1)
+LispObject Nmodular_reciprocal(LispObject env, LispObject a1)
 {   return onevalue(ModularReciprocal::op(a1));
 }
 
-static LispObject Nmodular_minus(LispObject env, LispObject a1)
+LispObject Nmodular_minus(LispObject env, LispObject a1)
 {   return onevalue(ModularMinus::op(a1));
 }
 
-static LispObject Nset_modulus(LispObject env, LispObject a1)
+LispObject Nset_modulus(LispObject env, LispObject a1)
 {   return onevalue(SetModulus::op(a1));
 }
 
-static LispObject Nmodular_number(LispObject env, LispObject a1)
+LispObject Nmodular_number(LispObject env, LispObject a1)
 {   return onevalue(ModularNumber::op(a1));
 }
 
@@ -714,24 +791,24 @@ static LispObject Nmodular_number(LispObject env, LispObject a1)
 // consequence is probably that values wrap around within the range of fixnums
 // that will not be guaranteed.
 
-static LispObject Niplus(LispObject env)
+LispObject Niplus(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Niplus(LispObject env, LispObject a1)
+LispObject Niplus(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Niplus(LispObject env, LispObject a1, LispObject a2)
+LispObject Niplus(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Plus::op(a1, a2));
 }
 
-static LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
+LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onevalue(Plus::op(Plus::op(a1, a2), a3));
 }
 
-static LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
+LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   LispObject w = Plus::op(Plus::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -741,26 +818,26 @@ static LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Nitimes(LispObject env)
+LispObject Nitimes(LispObject env)
 {   return onevalue(fixnum_of_int(1));
 }
 
-static LispObject Nitimes(LispObject env, LispObject a1)
+LispObject Nitimes(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nitimes(LispObject env, LispObject a1,
+LispObject Nitimes(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Times::op(a1, a2));
 }
 
-static LispObject Nitimes(LispObject env, LispObject a1,
+LispObject Nitimes(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onevalue(Times::op(Times::op(a1, a2), a3));
 }
 
-static LispObject Nitimes(LispObject env, LispObject a1,
+LispObject Nitimes(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   LispObject w = Times::op(Times::op(a1, a2), a3);
@@ -771,28 +848,28 @@ static LispObject Nitimes(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Niexpt(LispObject env, LispObject a1, LispObject a2)
+LispObject Niexpt(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Expt::op(a1, a2));
 }
 
-static LispObject Nigcdn(LispObject env)
+LispObject Nigcdn(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nigcdn(LispObject env, LispObject a1)
+LispObject Nigcdn(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2)
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Gcdn::op(a1, a2));
 }
 
-static LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
 }
 
-static LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -802,24 +879,24 @@ static LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Nilcmn(LispObject env)
+LispObject Nilcmn(LispObject env)
 {   return onevalue(fixnum_of_int(1));
 }
 
-static LispObject Nilcmn(LispObject env, LispObject a1)
+LispObject Nilcmn(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2)
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Lcmn::op(a1, a2));
 }
 
-static LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
 }
 
-static LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -829,82 +906,82 @@ static LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-static LispObject Nidifference(LispObject env, LispObject a1,
+LispObject Nidifference(LispObject env, LispObject a1,
                                LispObject a2)
 {   return onevalue(Difference::op(a1, a2));
 }
 
-static LispObject Niquotient(LispObject env, LispObject a1,
+LispObject Niquotient(LispObject env, LispObject a1,
                              LispObject a2)
 {   return onevalue(Quotient::op(a1, a2));
 }
 
-static LispObject Niremainder(LispObject env, LispObject a1,
+LispObject Niremainder(LispObject env, LispObject a1,
                               LispObject a2)
 {   return onevalue(Remainder::op(a1, a2));
 }
 
-static LispObject Nidivide(LispObject env, LispObject a1,
+LispObject Nidivide(LispObject env, LispObject a1,
                            LispObject a2)
 {   return onevalue(Divide::op(a1, a2));
 }
 
-static LispObject Niadd1(LispObject env, LispObject a1)
+LispObject Niadd1(LispObject env, LispObject a1)
 {   return onevalue(Plus::op(a1, fixnum_of_int(1)));
 }
 
-static LispObject Nisub1(LispObject env, LispObject a1)
+LispObject Nisub1(LispObject env, LispObject a1)
 {   return onevalue(Difference::op(a1, fixnum_of_int(1)));
 }
 
-static LispObject Nionep(LispObject env, LispObject a1)
+LispObject Nionep(LispObject env, LispObject a1)
 {   return onevalue(Onep::op(a1));
 }
 
-static LispObject Nievenp(LispObject env, LispObject a1)
+LispObject Nievenp(LispObject env, LispObject a1)
 {   return onevalue(Evenp::op(a1));
 }
 
-static LispObject Nioddp(LispObject env, LispObject a1)
+LispObject Nioddp(LispObject env, LispObject a1)
 {   return onevalue(Oddp::op(a1));
 }
 
-static LispObject Nizerop(LispObject env, LispObject a1)
+LispObject Nizerop(LispObject env, LispObject a1)
 {   return onevalue(Zerop::op(a1));
 }
 
-static LispObject Niminusp(LispObject env, LispObject a1)
+LispObject Niminusp(LispObject env, LispObject a1)
 {   return onevalue(Minusp::op(a1));
 }
 
-static LispObject Niminus(LispObject env, LispObject a1)
+LispObject Niminus(LispObject env, LispObject a1)
 {   return onevalue(Minus::op(a1));
 }
 
-static LispObject Niabs(LispObject env, LispObject a1)
+LispObject Niabs(LispObject env, LispObject a1)
 {   return onevalue(Abs::op(a1));
 }
 
-static LispObject Nireciprocal(LispObject env, LispObject a1)
+LispObject Nireciprocal(LispObject env, LispObject a1)
 {   return onevalue(Reciprocal::op(a1));
 }
 
-static LispObject Nisquare(LispObject env, LispObject a1)
+LispObject Nisquare(LispObject env, LispObject a1)
 {   return onevalue(Square::op(a1));
 }
 
-static LispObject Nigreaterp(LispObject env, LispObject a1,
+LispObject Nigreaterp(LispObject env, LispObject a1,
                              LispObject a2)
 {   return onebool(Greaterp::op(a1, a2));
 }
 
-static LispObject Nigreaterp(LispObject env, LispObject a1,
+LispObject Nigreaterp(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3)
 {   return onebool(Greaterp::op(a1, a2) && Greaterp::op(a2, a3));
 }
 
-static LispObject Nigreaterp(LispObject env, LispObject a1,
+LispObject Nigreaterp(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4plus)
 {   if (!Greaterp::op(a1, a2)) return onevalue(nil);
@@ -918,16 +995,16 @@ static LispObject Nigreaterp(LispObject env, LispObject a1,
     return onevalue(lisp_true);
 }
 
-static LispObject Nigeq(LispObject env, LispObject a1, LispObject a2)
+LispObject Nigeq(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Geq::op(a1, a2));
 }
 
-static LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
+LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
 {   return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
 }
 
-static LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
+LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   if (!Geq::op(a1, a2)) return onevalue(nil);
     if (!Geq::op(a2, a3)) return onevalue(nil);
@@ -940,18 +1017,18 @@ static LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nilessp(LispObject env, LispObject a1,
+LispObject Nilessp(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onebool(Lessp::op(a1, a2));
 }
 
-static LispObject Nilessp(LispObject env, LispObject a1,
+LispObject Nilessp(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
 }
 
-static LispObject Nilessp(LispObject env, LispObject a1,
+LispObject Nilessp(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   if (!Lessp::op(a1, a2)) return onevalue(nil);
@@ -965,16 +1042,16 @@ static LispObject Nilessp(LispObject env, LispObject a1,
     return onevalue(lisp_true);
 }
 
-static LispObject Nileq(LispObject env, LispObject a1, LispObject a2)
+LispObject Nileq(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Leq::op(a1, a2));
 }
 
-static LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
+LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
 {   return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
 }
 
-static LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
+LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
 {   if (!Leq::op(a1, a2)) return onevalue(nil);
     if (!Leq::op(a2, a3)) return onevalue(nil);
@@ -987,18 +1064,18 @@ static LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nieqn_a(LispObject env, LispObject a1,
+LispObject Nieqn_a(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onebool(Eqn::op(a1, a2));
 }
 
-static LispObject Nieqn_a(LispObject env, LispObject a1,
+LispObject Nieqn_a(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
 }
 
-static LispObject Nieqn_a(LispObject env, LispObject a1,
+LispObject Nieqn_a(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   if (!Eqn::op(a1, a2)) return onevalue(nil);
@@ -1012,11 +1089,11 @@ static LispObject Nieqn_a(LispObject env, LispObject a1,
     return onevalue(lisp_true);
 }
 
-static LispObject Nineqn(LispObject env, LispObject a1, LispObject a2)
+LispObject Nineqn(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Neqn::op(a1, a2));
 }
 
-static LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
                    Neqn::op(a1, a3));
@@ -1026,7 +1103,7 @@ static LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
 // checks if all aee distinct. Well (neqn a NaN) will be false so if ANY
 // of the arguments is a NaN then NEQN will return false.
 
-static LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
+LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
 {   if (!Neqn::op(a1, a2)) return onevalue(nil);
     if (!Neqn::op(a2, a3)) return onevalue(nil);
@@ -1047,26 +1124,26 @@ static LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(lisp_true);
 }
 
-static LispObject Nilogand(LispObject env)
+LispObject Nilogand(LispObject env)
 {   return onevalue(fixnum_of_int(-1));
 }
 
-static LispObject Nilogand(LispObject env, LispObject a1)
+LispObject Nilogand(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nilogand(LispObject env, LispObject a1,
+LispObject Nilogand(LispObject env, LispObject a1,
                            LispObject a2)
 {   return onevalue(Logand::op(a1, a2));
 }
 
-static LispObject Nilogand(LispObject env, LispObject a1,
+LispObject Nilogand(LispObject env, LispObject a1,
                            LispObject a2,
                            LispObject a3)
 {   return onevalue(Logand::op(Logand::op(a1, a2), a3));
 }
 
-static LispObject Nilogand(LispObject env, LispObject a1,
+LispObject Nilogand(LispObject env, LispObject a1,
                            LispObject a2,
                            LispObject a3, LispObject a4plus)
 {   LispObject w = Logand::op(Logand::op(a1, a2), a3);
@@ -1077,26 +1154,26 @@ static LispObject Nilogand(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nilogor(LispObject env)
+LispObject Nilogor(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nilogor(LispObject env, LispObject a1)
+LispObject Nilogor(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nilogor(LispObject env, LispObject a1,
+LispObject Nilogor(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Logor::op(a1, a2));
 }
 
-static LispObject Nilogor(LispObject env, LispObject a1,
+LispObject Nilogor(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
 {   return onevalue(Logor::op(Logor::op(a1, a2), a3));
 }
 
-static LispObject Nilogor(LispObject env, LispObject a1,
+LispObject Nilogor(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
 {   LispObject w = Logor::op(Logor::op(a1, a2), a3);
@@ -1107,26 +1184,26 @@ static LispObject Nilogor(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nilogxor(LispObject env)
+LispObject Nilogxor(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Nilogxor(LispObject env, LispObject a1)
+LispObject Nilogxor(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nilogxor(LispObject env, LispObject a1,
+LispObject Nilogxor(LispObject env, LispObject a1,
                            LispObject a2)
 {   return onevalue(Logxor::op(a1, a2));
 }
 
-static LispObject Nilogxor(LispObject env, LispObject a1,
+LispObject Nilogxor(LispObject env, LispObject a1,
                            LispObject a2,
                            LispObject a3)
 {   return onevalue(Logxor::op(Logxor::op(a1, a2), a3));
 }
 
-static LispObject Nilogxor(LispObject env, LispObject a1,
+LispObject Nilogxor(LispObject env, LispObject a1,
                            LispObject a2,
                            LispObject a3, LispObject a4plus)
 {   LispObject w = Logxor::op(Logxor::op(a1, a2), a3);
@@ -1137,26 +1214,26 @@ static LispObject Nilogxor(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nilogeqv(LispObject env)
+LispObject Nilogeqv(LispObject env)
 {   return onevalue(fixnum_of_int(-1));
 }
 
-static LispObject Nilogeqv(LispObject env, LispObject a1)
+LispObject Nilogeqv(LispObject env, LispObject a1)
 {   return onevalue(a1);
 }
 
-static LispObject Nilogeqv(LispObject env, LispObject a1,
+LispObject Nilogeqv(LispObject env, LispObject a1,
                            LispObject a2)
 {   return onevalue(Logeqv::op(a1, a2));
 }
 
-static LispObject Nilogeqv(LispObject env, LispObject a1,
+LispObject Nilogeqv(LispObject env, LispObject a1,
                            LispObject a2,
                            LispObject a3)
 {   return onevalue(Logeqv::op(Logeqv::op(a1, a2), a3));
 }
 
-static LispObject Nilogeqv(LispObject env, LispObject a1,
+LispObject Nilogeqv(LispObject env, LispObject a1,
                            LispObject a2,
                            LispObject a3, LispObject a4plus)
 {   LispObject w = Logeqv::op(Logeqv::op(a1, a2), a3);
@@ -1167,21 +1244,21 @@ static LispObject Nilogeqv(LispObject env, LispObject a1,
     return onevalue(w);
 }
 
-static LispObject Nilognot(LispObject env, LispObject a1)
+LispObject Nilognot(LispObject env, LispObject a1)
 {   return onevalue(Lognot::op(a1));
 }
 
-static LispObject Nileftshift(LispObject env, LispObject a1,
+LispObject Nileftshift(LispObject env, LispObject a1,
                               LispObject a2)
 {   return onevalue(LeftShift::op(a1, a2));
 }
 
-static LispObject Nirightshift(LispObject env, LispObject a1,
+LispObject Nirightshift(LispObject env, LispObject a1,
                                LispObject a2)
 {   return onevalue(RightShift::op(a1, a2));
 }
 
-static LispObject Nmodf(LispObject env, LispObject a1)
+LispObject Nmodf(LispObject env, LispObject a1)
 {   float fi, ff;
     double di, df;
     float128_t li, lf;
@@ -1213,12 +1290,14 @@ static LispObject Nmodf(LispObject env, LispObject a1)
 setup_type const arith_setup[] =
 {   DEF_1("modf",         Nmodf),
     {"plus",              Nplus, Nplus, Nplus, Nplus, Nplus},
+    {"plus2",             Nplus, Nplus, Nplus, Nplus, Nplus},
     {"+",                 Nplus, Nplus, Nplus, Nplus, Nplus},
     DEF_1("add1",         Nadd1),
     DEF_1("1+",           Nadd1),
     DEF_2("difference",   Ndifference),
     {"-",                 G0Wother, Nminus, Ndifference, G3Wother, G4Wother},
     {"times",             Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
+    {"times2",            Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
     {"*",                 Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
     DEF_2("quotient",     Nquotient),
     DEF_2("//",           Nquotient),
@@ -1229,6 +1308,7 @@ setup_type const arith_setup[] =
     {"lcmn",              Nlcmn, Nlcmn, Nlcmn, Nlcmn, Nlcmn},
     DEF_1("minus",        Nminus),
     DEF_1("minusp",       Nminusp),
+    DEF_1("plusp",        Nplusp),
     DEF_1("abs",          Nabs),
     DEF_1("reciprocal",   Nreciprocal),
     DEF_1("square",       Nsquare),
@@ -1252,6 +1332,10 @@ setup_type const arith_setup[] =
     DEF_1("frexp",        Nfrexp),
     DEF_2("ldexp",        Nldexp),
     DEF_2("expt",         Nexpt),
+    {"max",               Nmax, Nmax, Nmax, Nmax, Nmax},
+    {"max2",              Nmax, Nmax, Nmax, Nmax, Nmax},
+    {"min",               Nmin, Nmin, Nmin, Nmin, Nmin},
+    {"min2",              Nmin, Nmin, Nmin, Nmin, Nmin},
 // Neqn is a name that gives trouble. In one part of the code here it is
 // "N" followed by "eqn", and denotes the function that will perform equality
 // tests on numbers. In another it is "Neqn", otherwise "neqn" but capitalized
@@ -1260,6 +1344,7 @@ setup_type const arith_setup[] =
     {"eqn",               G0Wother, G1Wother, Neqn_a, Neqn_a, Neqn_a},
     {"=",                 G0Wother, G1Wother, NCLEqn, NCLEqn, NCLEqn},
     {"neqn",              G0Wother, G1Wother, Nneqn, Nneqn, Nneqn},
+    {"/=",                G0Wother, G1Wother, Nneqn, Nneqn, Nneqn},
     {"greaterp",          G0Wother, G1Wother, Ngreaterp, Ngreaterp, Ngreaterp},
     {">",                 G0Wother, G1Wother, Ngreaterp, Ngreaterp, Ngreaterp},
     {"geq",               G0Wother, G1Wother, Ngeq, Ngeq, Ngeq},
@@ -1282,6 +1367,8 @@ setup_type const arith_setup[] =
     DEF_1("logcount",     Nlogcount),
     DEF_2("lshift",       Nleftshift),
     DEF_2("ash",          Nleftshift),
+    DEF_2("ashift",       Nash1),
+    DEF_2("ash1",         Nash1),
     DEF_2("rshift",       Nrightshift),
     {"modular-plus",      Nmodular_plus, Nmodular_plus, Nmodular_plus, Nmodular_plus, Nmodular_plus},
     DEF_2("modular-difference", Nmodular_difference),
@@ -1294,9 +1381,11 @@ setup_type const arith_setup[] =
     DEF_1("modular-minus",      Nmodular_minus),
     DEF_1("modular-reciprocal", Nmodular_reciprocal),
     {"iplus",             Niplus, Niplus, Niplus, Niplus, Niplus},
+    {"iplus2",            Niplus, Niplus, Niplus, Niplus, Niplus},
     DEF_1("iadd1",        Niadd1),
     DEF_2("idifference",  Nidifference),
     {"itimes",            Nitimes, Nitimes, Nitimes, Nitimes, Nitimes},
+    {"itimes2",           Nitimes, Nitimes, Nitimes, Nitimes, Nitimes},
     DEF_2("iquotient",    Niquotient),
     DEF_2("iremainder",   Niremainder),
     DEF_2("idivide",      Nidivide),
@@ -1332,6 +1421,90 @@ setup_type const arith_setup[] =
     DEF_1("ilogcount",    Nlogcount),
     DEF_2("ilshift",      Nileftshift),
     DEF_2("irshift",      Nirightshift),
+    DEF_2("ileftshift",   Nileftshift),
+    DEF_2("irightshift",  Nirightshift),
+    DEF_1("abs",          Nabsval),
+    DEF_1("acos",         Nacos),
+    DEF_1("acosd",        Nacosd),
+    DEF_1("acosh",        Nacosh),
+    DEF_1("acot",         Nacot),
+    DEF_1("acotd",        Nacotd),
+    DEF_1("acoth",        Nacoth),
+    DEF_1("acsc",         Nacsc),
+    DEF_1("acscd",        Nacscd),
+    DEF_1("acsch",        Nacsch),
+    DEF_1("asec",         Nasec),
+    DEF_1("asecd",        Nasecd),
+    DEF_1("asech",        Nasech),
+    DEF_1("asin",         Nasin),
+    DEF_1("asind",        Nasind),
+    DEF_1("asinh",        Nasinh),
+    DEF_1("atand",        Natand),
+    DEF_2("atan2",        Natan2),
+    DEF_2("atan2d",       Natan2d),
+    DEF_1("atanh",        Natanh),
+    DEF_1("cbrt",         Ncbrt),
+    DEF_1("cos",          Ncos),
+    DEF_1("cosd",         Ncosd),
+    DEF_1("cosh",         Ncosh),
+    DEF_1("cot",          Ncot),
+     DEF_1("cotd",         Ncotd),
+    DEF_1("coth",         Ncoth),
+    DEF_1("csc",          Ncsc),
+    DEF_1("cscd",         Ncscd),
+    DEF_1("csch",         Ncsch),
+    DEF_1("exp",          Nexp),
+    DEF_2("expt",         Nexpt),
+    DEF_2("hypot",        Nhypot),
+    DEF_1("ln",           Nln),
+    {"log",               G0Wother, Nln, Nlog_2, G3Wother, G4Wother},
+    DEF_1("log2",         Nlog2),
+    DEF_1("log10",        Nlog10),
+    DEF_1("sec",          Nsec),
+    DEF_1("secd",         Nsecd),
+    DEF_1("sech",         Nsech),
+    DEF_1("sin",          Nsin),
+    DEF_1("sind",         Nsind),
+    DEF_1("sinh",         Nsinh),
+    DEF_1("sqrt",         Nsqrt),
+    DEF_1("tan",          Ntan),
+    DEF_1("tand",         Ntand),
+    DEF_1("tanh",         Ntanh),
+    DEF_1("cis",          Ncis),
+//  DEF_1("isqrt",        Nisqrt),
+    DEF_1("phase",        Nphase),
+    DEF_1("signum",       Nsignum),
+    {"atan",              G0Wother, Natan, Natan_2, G3Wother, G4Wother},
+    DEF_2("logb",         Nlog_2),
+    DEF_2("native-carg",  Ncarg),
+    DEF_2("native-cabs",  Ncabs),
+    DEF_2("native-cexp",  Ncexp),
+    DEF_2("native-clog",  Nclog),
+    DEF_2("native-csqrt", Ncsqrt),
+    DEF_2("native-csin",  Ncsin),
+    DEF_2("native-ccos",  Nccos),
+    DEF_2("native-ctan",  Nctan),
+    DEF_2("native-ccsc",  Nccsc),
+    DEF_2("native-csec",  Ncsec),
+    DEF_2("native-ccot",  Nccot),
+    DEF_2("native-casin", Ncasin),
+    DEF_2("native-cacos", Ncacos),
+    DEF_2("native-catan", Ncatan),
+    DEF_2("native-cacsc", Ncacsc),
+    DEF_2("native-casec", Ncasec),
+    DEF_2("native-cacot", Ncacot),
+    DEF_2("native-csinh", Ncsinh),
+    DEF_2("native-ccosh", Nccosh),
+    DEF_2("native-ctanh", Nctanh),
+    DEF_2("native-ccsch", Nccsch),
+    DEF_2("native-csech", Ncsech),
+    DEF_2("native-ccoth", Nccoth),
+    DEF_2("native-casinh",Ncasinh),
+    DEF_2("native-cacosh",Ncacosh),
+    DEF_2("native-catanh",Ncatanh),
+    DEF_2("native-cacsch",Ncacsch),
+    DEF_2("native-casech",Ncasech),
+    DEF_2("native-cacoth",Ncacoth),
     {nullptr,             nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

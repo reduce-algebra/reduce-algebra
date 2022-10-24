@@ -2354,6 +2354,25 @@ public:
 #endif // softfloat_h
 };
 
+class Plusp
+{
+public:
+    static bool op(LispObject a);
+
+    static bool op(Fixnum b);
+    static bool op(uint64_t *b);
+    static bool op(Rat b);
+// While MINUSP may not be very sensible on a complex number I will
+// still include that case in the dispatch.
+    static bool op(Cpx b);
+    static bool op(SFlt b);
+    static bool op(Flt b);
+    static bool op(double b);
+#ifdef softfloat_h
+    static bool op(LFlt b);
+#endif // softfloat_h
+};
+
 class Abs
 {
 public:
