@@ -2157,6 +2157,15 @@ public:
     static LispObject op(uint64_t *a);
 };
 
+class LowBits
+{
+public:
+    static int op(LispObject a);
+
+    static int op(Fixnum a);
+    static int op(uint64_t *a);
+};
+
 class LowBit
 {
 public:

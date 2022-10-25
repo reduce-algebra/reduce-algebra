@@ -325,15 +325,16 @@ LispObject RightShift::op(uint64_t *a, uint64_t *b)
     else return fixnum_of_int(0);
 }
 
+// Return some low bits of an integer - up to 64 of them.
 
-LispObject IntegerLength::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,IntegerLength>("msd", a);
+uint64_t LowBits::op(LispObject a)
+{   return number_dispatcher::iunary<LispObject,LowBits>("lowbits", a);
 }
-LispObject IntegerLength::op(Fixnum a)
-{   return arithlib_lowlevel::IntegerLength::op(a.intval());
+uint64_t LowBits::op(Fixnum a)
+{   return arithlib_lowlevel::LowBits::op(a.intval());
 }
-LispObject IntegerLength::op(uint64_t *a)
-{   return arithlib_lowlevel::IntegerLength::op(a);
+uint64_t LowBitd::op(uint64_t *a)
+{   return arithlib_lowlevel::LowBits::op(a);
 }
 
 LispObject LowBit::op(LispObject a)
@@ -344,6 +345,16 @@ LispObject LowBit::op(Fixnum a)
 }
 LispObject LowBit::op(uint64_t *a)
 {   return arithlib_lowlevel::LowBit::op(a);
+}
+
+LispObject IntegerLength::op(LispObject a)
+{   return number_dispatcher::iunary<LispObject,IntegerLength>("msd", a);
+}
+LispObject IntegerLength::op(Fixnum a)
+{   return arithlib_lowlevel::IntegerLength::op(a.intval());
+}
+LispObject IntegerLength::op(uint64_t *a)
+{   return arithlib_lowlevel::IntegerLength::op(a);
 }
 
 LispObject Ninorm(LispObject env, LispObject a, LispObject k)

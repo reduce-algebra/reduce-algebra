@@ -283,7 +283,7 @@ public:
     friend std::ostream& operator<<(std::ostream& o, const QuadFloat& d)
     {   std::ios_base::fmtflags save = o.flags();
         return o << std::hex
-                 << std::setw(16) << std::setfill('0') << d.v.v[1] << ":"
+                 << std::setw(16) << std::setfill('0') << d.v.v[1] << "'"
                  << std::setw(16) << std::setfill('0') << d.v.v[0]
                  << std::setiosflags(save);
     }
@@ -318,52 +318,52 @@ public:
 };
 
 
-bool QuadFloat::operator==(const QuadFloat& rhs) const
+inline bool QuadFloat::operator==(const QuadFloat& rhs) const
 {   return f128_eq(v, rhs.v);
 }
 
-bool QuadFloat::operator!=(const QuadFloat& rhs) const
+inline bool QuadFloat::operator!=(const QuadFloat& rhs) const
 {   return !f128_eq(v, rhs.v);
 }
 
-bool QuadFloat::operator<(const QuadFloat& rhs) const
+inline bool QuadFloat::operator<(const QuadFloat& rhs) const
 {   return f128_lt(v, rhs.v);
 }
 
-bool QuadFloat::operator<=(const QuadFloat& rhs) const
+inline bool QuadFloat::operator<=(const QuadFloat& rhs) const
 {   return f128_le(v, rhs.v);
 }
 
-bool QuadFloat::operator>(const QuadFloat& rhs) const
+inline bool QuadFloat::operator>(const QuadFloat& rhs) const
 {   return f128_lt(rhs.v, v);
 }
 
-bool QuadFloat::operator>=(const QuadFloat& rhs) const
+inline bool QuadFloat::operator>=(const QuadFloat& rhs) const
 {   return f128_le(rhs.v, v);
 }
 
-QuadFloat QuadFloat::operator-() const
+inline QuadFloat QuadFloat::operator-() const
 {   float128_t zero = {0,0};
     return QuadFloat(f128_sub(zero, v));
 }
 
-QuadFloat QuadFloat::operator+(const QuadFloat& rhs) const
+inline QuadFloat QuadFloat::operator+(const QuadFloat& rhs) const
 {   return QuadFloat(f128_add(v, rhs.v));
 }
 
-QuadFloat QuadFloat::operator-(const QuadFloat& rhs) const
+inline QuadFloat QuadFloat::operator-(const QuadFloat& rhs) const
 {   return QuadFloat(f128_sub(v, rhs.v));
 }
 
-QuadFloat QuadFloat::operator*(const QuadFloat& rhs) const
+inline QuadFloat QuadFloat::operator*(const QuadFloat& rhs) const
 {   return QuadFloat(f128_mul(v, rhs.v));
 }
 
-QuadFloat QuadFloat::operator/(const QuadFloat& rhs) const
+inline QuadFloat QuadFloat::operator/(const QuadFloat& rhs) const
 {   return QuadFloat(f128_div(v, rhs.v));
 }
 
-constexpr bool QuadFloat::sign()
+inline constexpr bool QuadFloat::sign()
 {
 #ifdef LITTLEENDIAN
     uint64_t top = v.v[1];
@@ -373,7 +373,7 @@ constexpr bool QuadFloat::sign()
     return (top & 0x8000000000000000U) != 0;
 }
 
-constexpr int QuadFloat::exponent()
+inline constexpr int QuadFloat::exponent()
 {
 #ifdef LITTLEENDIAN
     uint64_t top = v.v[1];
@@ -383,7 +383,7 @@ constexpr int QuadFloat::exponent()
     return ((top>>48) & 0x7fff) - 0x3fff;
 }
 
-constexpr QuadFloat QuadFloat::set_exponent(int64_t n)
+inline constexpr QuadFloat QuadFloat::set_exponent(int64_t n)
 {   float128_t r = v;
 #ifdef LITTLEENDIAN
     r.v[1] = (r.v[1] & 0x8000ffffffffffffU) | (((n + 0x3fff) & 0x7fff)<<48);
@@ -393,7 +393,7 @@ constexpr QuadFloat QuadFloat::set_exponent(int64_t n)
     return r;
 }
 
-constexpr QuadFloat QuadFloat::mantissa()
+inline constexpr QuadFloat QuadFloat::mantissa()
 {   float128_t r = v;
 #ifdef LITTLEENDIAN
     r.v[1] = (r.v[1] & 0x8000ffffffffffffU) | 0x3fff000000000000U;
@@ -403,7 +403,7 @@ constexpr QuadFloat QuadFloat::mantissa()
     return QuadFloat(r);
 }
 
-constexpr QuadFloat operator ""_Q (const char *s)
+inline constexpr QuadFloat operator ""_Q (const char *s)
 {   return QuadFloat(s);
 }
 
