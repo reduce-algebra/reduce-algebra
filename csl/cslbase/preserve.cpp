@@ -1,8 +1,4 @@
-#ifndef ZLIB_DEMO
 // preserve.cpp                           Copyright (C) Codemist, 1990-2022
-#else
-// zlibdemo.cpp                           Copyright (C) Codemist, 1990-2022
-#endif
 
 // The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
 // which is why the header line above is "strange".
@@ -38,20 +34,6 @@
  *************************************************************************/
 
 // $Id$
-
-
-#ifndef ZLIB_DEMO
-
-// If this file is compiled with ZLIB_DEMO defined it will be a program that
-// can be used as either
-//     zlibdemo source dest
-// to compress the source file and create the destination one, or
-//     slibdemo -d source dest
-// to uncompress from source to dest.
-//
-// I will use "unifdef" to create the separate file zlibdemo.cpp from this one
-// but this is the master version...
-
 
 #include "headers.h"
 
@@ -97,49 +79,6 @@
 // where the data is that which might otherwise have lived in a file.
 
 #include "image.cpp"
-#endif
-
-#else // ZLIB_DEMO
-
-// Free-standing demonstration of how I use zlib to compress image files.
-
-#include <cstdio>
-#include <zlib.h>
-#include <cstring>
-#include <cassert>
-
-
-std::FILE *src, *dest;
-
-static int Igetc()
-{   return std::getc(src);
-}
-
-static bool Iputc(int ch)
-{   return (std::putc(ch, dest) == EOF);
-}
-
-bool Iread(void *buff, size_t size)
-// Reads (size) bytes into the indicated buffer.  Returns true if
-// if fails to read the expected number of bytes.
-{   unsigned char *p = reinterpret_cast<unsigned char *>(buff);
-    while (size > 0)
-    {   int c;
-        if ((c = Igetc()) == EOF) return true;
-        *p++ = c;
-        size--;
-    }
-    return false;
-}
-
-bool Iwrite(const void *buff, size_t size)
-// Writes (size) bytes from the given buffer, returning true if trouble.
-{   const unsigned char *p = reinterpret_cast<const unsigned char *>(buff);
-    for (size_t i=0; i<size; i++)
-        if (Iputc(p[i])) return true;
-    return false;
-}
-
 #endif
 
 // I will use zlib to compress image files. The code here arranges to
@@ -364,59 +303,6 @@ bool Zread(void *b, size_t n)
 bool inf_finish()
 {   return (inflateEnd(&strm) != Z_OK);
 }
-
-#ifdef ZLIB_DEMO
-
-// compress or decompress from src to dest
-
-int main(int argc, char **argv)
-{
-// Check argument number and format. I expect either
-//      zlibdemo src compressed-dest
-// OR   zlibdemo -d compressed-src dest
-    if (argc < 3 ||
-        (argc == 3 && std::strcmp(argv[1], "-d") == 0) ||
-        (argc == 4 && std::strcmp(argv[1], "-d") != 0) ||
-        argc > 4)
-    {   std::fputs("Usage: zlibdemo [-d] source dest\n", stderr);
-        return 1;
-    }
-
-    if (argc == 3)
-    {   src = std::strcmp(argv[1], "-") == 0 ? stdin : std::fopen(argv[1],
-                "r");
-        assert(src != nullptr);
-        dest = std::fopen(argv[2], "wb");
-        assert(dest != nullptr);
-        def_init();
-        int ch;
-        while ((ch = std::getc(src)) != EOF) Zputc(ch);
-        def_finish();
-        std::fclose(src);
-        std::fclose(dest);
-        return 0;
-    }
-
-    else
-    {   src = std::fopen(argv[2], "rb");
-        assert(src != nullptr);
-        dest = std::strcmp(argv[3], "-") == 0 ? stdout : std::fopen(argv[3],
-                "w");
-        assert(dest != nullptr);
-        inf_init();
-        int ch;
-        while ((ch = Zgetc()) != -1) std::putc(ch, dest);
-        inf_finish();
-        std::fclose(src);
-        std::fclose(dest);
-        return 0;
-    }
-}
-
-// end of zlibdemo.cpp
-
-
-#else // ZLIB_DEMO
 
 // These routines pack multiple binary files into one big one.  The
 // good effect is that I expect fseek to be faster than fopen, and as
@@ -2093,7 +1979,5 @@ void preserve(const char *banner, size_t len)
     if (IcloseOutput()) error(0, err_write_err);
     return;
 }
-
-#endif // ZLIB_DEMO
 
 // end of file preserve.cpp

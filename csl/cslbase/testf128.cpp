@@ -1,7 +1,4 @@
-// version.h                               Copyright (C) 1990-2022 Codemist
-
-#ifndef header_version_h
-#define header_version_h 1
+// testf128.cpp                                Copyright Arthur Norman 2022
 
 // $Id$
 
@@ -35,12 +32,44 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
 
-#define REVISION 6412
+// This is a jiffy program to demonstrate and test the "float128_t.h"
+// scheme that makes 129-bit floating point easier to work with than
+// the previous state where everything had to be done using visible
+// function calls.
 
-#endif // header_version_h
+#include <iostream>
+#include <iomanip>
 
-// end of version.h
+#include "float128_t.h"
+
+
+int main()
+{
+    QuadFloat a("1");            // I can create QuadFloat variables...
+    QuadFloat b("1e10");
+    QuadFloat c("460551");
+
+    std::cout << "a (1) " << a << "\n";
+    std::cout << "b (1e10) " << b << "\n";
+    std::cout << "c (460551) " << c << "\n";
+
+// I can also use literals written with suffix "_Q".
+
+    std::cout << "1_Q " << 1_Q << "\n";
+    std::cout << "1.000_Q " << 1.000_Q << "\n";
+    std::cout << "3.141592653_Q " << 3.141592653_Q << "\n";
+
+// Simple arithmetic should be supported.
+
+    c = a + 17_Q;
+    std::cout << "a + 17_Q = " << c << "  (" << 18_Q << ")\n";
+
+// Literals can be presented in hexadecimal using a suffix "_QX".
+
+    std::cout << 0x3fff'171717171717'1717171717171717_QX << "\n";
+    return 0;
+}
+
+// end of testf128.cpp
+

@@ -1391,15 +1391,30 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
                     else return onevalue(fixnum_of_int(1));
             }
         }
-        else if (is_numbers(b) && is_bignum(b))
-        {   switch (int_of_fixnum(a))
-            {   case 1:  return onevalue(a);
-                case 0:  nn = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
-                    if (nn <= 0) return aerror2("expt", a, b);
-                    else return onevalue(a);
-                case -1: nn = bignum_digits(b)[0];
-                    if (nn & 1) return onevalue(a);
-                    else return onevalue(fixnum_of_int(1));
+        else if (is_numbers(b))
+        {   Header h = numhdr(b);
+            if (is_bignum_header(h))
+            {   switch (int_of_fixnum(a))
+                {   case 1:  return onevalue(a);
+                    case 0:  nn = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
+                        if (nn <= 0) return aerror2("expt", a, b);
+                        else return onevalue(a);
+                    case -1: nn = bignum_digits(b)[0];
+                        if (nn & 1) return onevalue(a);
+                        else return onevalue(fixnum_of_int(1));
+                }
+            }
+            else if (is_new_bignum_header(h))
+            {   switch (int_of_fixnum(a))
+                {   case 1:
+                        return onevalue(a);
+                    case 0:  
+                        if (Minusp::op(b)) return aerror2("expt", a, b);
+                        else return onevalue(a);
+                    case -1:
+                        if (Oddp::op(b)) return onevalue(a);
+                        else return onevalue(fixnum_of_int(1));
+                }
             }
         }
     }
@@ -1413,6 +1428,8 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
     {   nn = -1;
         if (is_fixnum(b)) nn = int_of_fixnum(b) & 3;
         else if (is_numbers(b) && is_bignum(b))
+            nn = bignum_digits(b)[0] & 3;
+        else if (is_numbers(b) && is_new_bignum(b))
             nn = bignum_digits(b)[0] & 3;
         switch (nn)
         {   case 0:   return onevalue(fixnum_of_int(1));
