@@ -2355,6 +2355,13 @@ public:
     static bool op(uint64_t *w);
 };
 
+class Plusp
+{
+public:
+    static bool op(std::int64_t w);
+    static bool op(uint64_t *w);
+};
+
 class Evenp
 {
 public:
@@ -2595,15 +2602,15 @@ public:
 class IntegerLength
 {
 public:
-    static std::size_t op(std::int64_t w);
-    static std::size_t op(uint64_t *w);
+    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(uint64_t *w);
 };
 
-class Low_bit
+class LowBit
 {
 public:
-    static std::size_t op(std::int64_t w);
-    static std::size_t op(uint64_t *w);
+    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(uint64_t *w);
 };
 
 class Logbitp
@@ -2616,8 +2623,8 @@ public:
 class Logcount
 {
 public:
-    static std::size_t op(std::int64_t w);
-    static std::size_t op(uint64_t *w);
+    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(uint64_t *w);
 };
 
 class Int64_t
@@ -3332,6 +3339,10 @@ inline bool onep(const Bignum &x)
 
 inline bool minusp(const Bignum &x)
 {   return op_dispatch1<Minusp,bool>(x.val);
+}
+
+inline bool plusp(const Bignum &x)
+{   return op_dispatch1<Plusp,bool>(x.val);
 }
 
 inline bool evenp(const Bignum &x)
@@ -6052,6 +6063,14 @@ inline bool Minusp::op(std::int64_t a)
 {   return a < 0;
 }
 
+inline bool Plusp::op(std::uint64_t *a)
+{   return !negative(a[number_size(a)-1]); // NB a bignum can not be zero
+}
+
+inline bool Plusp::op(std::int64_t a)
+{   return a > 0;
+}
+
 inline bool Evenp::op(std::uint64_t *a)
 {   return (a[0] & 1) == 0;
 }
@@ -7375,57 +7394,57 @@ inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
     return int_to_handle((a & ~(q-1))/q);
 }
 
-inline std::size_t IntegerLength::op(std::uint64_t *a)
-{   return bignum_bits(a, number_size(a));
+inline std::intptr_t IntegerLength::op(std::uint64_t *a)
+{   return int_to_handle(bignum_bits(a, number_size(a)));
 }
 
-inline std::size_t IntegerLength::op(std::int64_t aa)
+inline std::intptr_t IntegerLength::op(std::int64_t aa)
 {   std::uint64_t a;
     if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
     else a = aa;
-    return static_cast<std::size_t>(64-nlz(a));
+    return int_to_handle(64-nlz(a));
 }
 
-inline std::size_t Low_bit::op(std::uint64_t *a)
+inline std::intptr_t LowBit::op(std::uint64_t *a)
 {   std::size_t lena = number_size(a);
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   std::size_t r=0, i=0;
         while (a[i++]==-static_cast<std::uint64_t>(1)) r += 64;
         std::uint64_t w = ~a[i-1];
-        return static_cast<std::size_t>(64-nlz(w & (-w))+r);
+        return int_to_handle(64-nlz(w & (-w))+r);
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         std::uint64_t w = a[i-1];
-        return static_cast<std::size_t>(64-nlz(w & (-w))+r);
+        return int_to_handle(64-nlz(w & (-w))+r);
     }
 }
 
-inline std::size_t Low_bit::op(std::int64_t aa)
+inline std::intptr_t LowBit::op(std::int64_t aa)
 {   std::uint64_t a;
     if (aa == 0) return 0;
     else if (aa < 0) a = ~static_cast<std::uint64_t>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return static_cast<std::size_t>(64-nlz(a));
+    return int_to_handle(64-nlz(a));
 }
 
-inline std::size_t Logcount::op(std::uint64_t *a)
+inline std::intptr_t Logcount::op(std::uint64_t *a)
 {   std::size_t lena = number_size(a);
     std::size_t r = 0;
     if (negative(a[lena-1]))
     {   for (std::size_t i=0; i<lena; i++) r += popcount(~a[i]);
     }
     else for (std::size_t i=0; i<lena; i++) r += popcount(a[i]);
-    return r;
+    return int_to_handle(r);
 }
 
-inline std::size_t Logcount::op(std::int64_t a)
-{   if (a < 0) return static_cast<std::size_t>(popcount(~a));
-    else return static_cast<std::size_t>(popcount(a));
+inline std::intptr_t Logcount::op(std::int64_t a)
+{   if (a < 0) return int_to_handle(popcount(~a));
+    else return int_to_handle(popcount(a));
 }
 
 inline bool Logbitp::op(std::uint64_t *a, std::size_t n)
@@ -11243,6 +11262,7 @@ using arithlib_implementation::Logeqv;
 using arithlib_implementation::Zerop;
 using arithlib_implementation::Onep;
 using arithlib_implementation::Minusp;
+using arithlib_implementation::Plusp;
 using arithlib_implementation::Evenp;
 using arithlib_implementation::Oddp;
 using arithlib_implementation::Eqn;
@@ -11262,7 +11282,7 @@ using arithlib_implementation::Pow;
 using arithlib_implementation::LeftShift;
 using arithlib_implementation::RightShift;
 using arithlib_implementation::IntegerLength;
-using arithlib_implementation::Low_bit;
+using arithlib_implementation::LowBit;
 using arithlib_implementation::Logbitp;
 using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;

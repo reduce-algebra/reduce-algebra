@@ -2588,6 +2588,42 @@ bool Minusp::op(LFlt a)
 {   return f128_lt(a.floatval(), arithlib_lowlevel::f128_0);
 }
 
+bool Plusp::op(LispObject a)
+{   return number_dispatcher::unary<bool,Plusp>("plusp", a);
+}
+
+bool Plusp::op(Fixnum a)
+{   return a.intval() > 0;
+}
+
+bool Plusp::op(uint64_t *a)
+{   return arithlib_lowlevel::Plusp::op(a);
+}
+
+bool Plusp::op(Rat a )
+{   return Plusp::op(a.numerator());
+}
+
+bool Plusp::op(Cpx a)
+{   return false;
+}
+
+bool Plusp::op(SFlt a)
+{   return a.floatval() > 0.0;
+}
+
+bool Plusp::op(Flt a)
+{   return a.floatval() > 0.0;
+}
+
+bool Plusp::op(double a)
+{   return a > 0.0;
+}
+
+bool Plusp::op(LFlt a)
+{   return f128_lt(arithlib_lowlevel::f128_0, a.floatval());
+}
+
 LispObject Abs::op(LispObject a)
 {   return number_dispatcher::unary<LispObject,Abs>("abs", a);
 }

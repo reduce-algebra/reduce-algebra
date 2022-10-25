@@ -53,6 +53,10 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 
 void print_bignum(LispObject u, bool blankp, int nobreak)
 {   THREADID;
+#ifdef ARITHLIB
+    putc_stream('0', active_stream);
+    putc_stream('Z', active_stream);
+#endif // ARITHLIB
     size_t len = length_of_header(numhdr(u))-CELL;
     size_t i, len1;
     LispObject w;

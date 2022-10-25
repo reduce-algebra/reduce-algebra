@@ -593,7 +593,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
             boffo_char(--boffop) = 0; // ... trim off the trailing dot
         // drop through
         case 2:
-// I speed up reading by working 7 digits at a time (using C integer
+// I speed up reading by working 7 digits at a time (using simple integer
 // arithmetic to gobble them) and only resorting to Lisp generic
 // arithmetic to combine the chunks.
             if (boffo_char(0) == '+')
@@ -604,7 +604,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
             {   LispObject v = fixnum_of_int(0);
                 bool sign = false;
                 int32_t d = 0, d1 = 10;
-                for (i=0; i<boffop; i++)
+                for (i=startAddr; i<boffop; i++)
                 {   if (i==0 && boffo_char(i) == '-') sign = true;
                     else if (d1 == 10000000 || i == boffop-1)
                     {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
@@ -2743,7 +2743,7 @@ static LispObject read_s(LispObject stream)
                     if (curchar > 0xff || !std::isdigit(curchar))
                         return intern(boffop, false);
                 }
-                bool ishex = false, isold = false;
+                bool ishex = false, isalt = false, isflt = false;
 // The mess here should allow  nnnnnn  0Xxxxxxxx 0Znnnnnnn where n denotes
 // 0..9 and x denotes 0..9a..fA..F.
 // The "0z" notation is a TEMPORARY provision while I work on an upgraded
@@ -2754,7 +2754,7 @@ static LispObject read_s(LispObject stream)
                         ((boffop == 1 &&
                           boffo_char(0)=='0' &&
                           (((curchar=='x' || curchar=='X') && (ishex=true)) ||
-                           ((curchar=='z' || curchar=='Z') && (isold=true))))) ||
+                           ((curchar=='z' || curchar=='Z') && (isalt=true))))) ||
                         (ishex && (('a'<=curchar && curchar<='f') ||
                                    ('A'<=curchar && curchar<='F')))))
                 {   Save save(THREADARG stream);
@@ -2765,7 +2765,8 @@ static LispObject read_s(LispObject stream)
                 }
 // accept possible decimal point
                 if (!ishex && curchar == '.')
-                {   Save save(THREADARG stream);
+                {   isflt = true;
+                    Save save(THREADARG stream);
                     packcharacter(curchar);
                     errexit();
                     save.restore(stream);
@@ -2787,7 +2788,8 @@ static LispObject read_s(LispObject stream)
                      curchar == 'f' || curchar == 'F' ||
                      curchar == 'd' || curchar == 'D' ||
                      curchar == 'l' || curchar == 'L'))
-                {   Save save(THREADARG stream);
+                {   isflt = true;
+                    Save save(THREADARG stream);
                     packcharacter(curchar);
                     errexit();
                     save.restore(stream);
@@ -2809,8 +2811,9 @@ static LispObject read_s(LispObject stream)
                 }
 #ifdef ARITHLIB
                 if (ishex) return intern_hex_new(boffop);
-                else if (!isold) return intern_new(boffop);
-                else return intern(boffop, false, 2);
+                else if (isalt) return intern(boffop, false, 2);
+                else if (isflt) return intern(boffop, false);
+                else return intern_new(boffop);
 #else // ARITHLIB
                 if (ishex) return intern_hex_old(boffop);
                 else return intern(boffop, false);
