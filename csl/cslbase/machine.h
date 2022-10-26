@@ -393,6 +393,13 @@ extern "C"
 
 #include "int128_t.h"
 
+// float128_t introduces a type QuadFloat with input syntax
+//      nnn.nnnExxx_Q
+// or   xxxxxxxxxxxxxxxx:xxxxxxxxxxxxxx_QX
+// such that basic arithmetic operations are supported.
+
+#include "float128_t.h"
+
 //
 // I will decode information that config.h has given me and define a simple
 // symbol SOCKETS if I can use sockets...

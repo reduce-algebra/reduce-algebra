@@ -943,23 +943,23 @@ LispObject Nisub1(LispObject env, LispObject a1)
 }
 
 LispObject Nionep(LispObject env, LispObject a1)
-{   return onevalue(Onep::op(a1));
+{   return onebool(Onep::op(a1));
 }
 
 LispObject Nievenp(LispObject env, LispObject a1)
-{   return onevalue(Evenp::op(a1));
+{   return onebool(Evenp::op(a1));
 }
 
 LispObject Nioddp(LispObject env, LispObject a1)
-{   return onevalue(Oddp::op(a1));
+{   return onebool(Oddp::op(a1));
 }
 
 LispObject Nizerop(LispObject env, LispObject a1)
-{   return onevalue(Zerop::op(a1));
+{   return onebool(Zerop::op(a1));
 }
 
 LispObject Niminusp(LispObject env, LispObject a1)
-{   return onevalue(Minusp::op(a1));
+{   return onebool(Minusp::op(a1));
 }
 
 LispObject Niminus(LispObject env, LispObject a1)

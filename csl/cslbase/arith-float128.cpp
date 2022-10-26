@@ -253,15 +253,4 @@ float128_t sqrt(float128_t x)
 
 #endif // ARITHLIB
 
-#ifdef TEST
-
-int main()
-{
-    LongDouble a, b, c;
-    a = b+c;
-    return 0;
-}
-
-#endif // TEST
-
 // end of arith-float.cpp

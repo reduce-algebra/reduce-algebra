@@ -102,8 +102,7 @@ plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
-plain_zlibdemo = zlibdemo
-plain_gctest = gctest
+plain_testf128 = testf128
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -122,8 +121,7 @@ plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
-plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
-plain_gctest = gctest.unnecessary.except.on.windows
+plain_testf128 = testf128.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -143,8 +141,7 @@ endif !exeext
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_dyndemo)
-.PHONY: $(plain_zlibdemo)
-.PHONY: $(plain_gctest)
+.PHONY: $(plain_testf128)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -263,12 +260,12 @@ if mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	zlibdemo$(EXEEXT) $(wxdemotarget)
+	testf128$(EXEEXT) $(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
+	dyndemo$(EXEEXT) testf128$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
 
 if mac_framework
@@ -610,11 +607,8 @@ if !darwin
 endif !darwin
 endif !debug
 
-zlibdemo_SOURCES = zlibdemo.cpp
-zlibdemo_LDADD = -lz
-
-remake-zlibdemo-source:	$(cslbase)/preserve.cpp
-	unifdef -x2 -DZLIB_DEMO < $(cslbase)/preserve.cpp > $(cslbase)/zlibdemo.cpp
+testf128_SOURCES = testf128.cpp
+testf128_LDADD = ../lib/libsoftfloat.a
 
 if windows
 
@@ -1664,11 +1658,8 @@ $(plain_termdemo):	termdemo.exe
 $(plain_dyndemo):	dyndemo.exe
 	printf "$(MAKE) dyndemo.exe is preferred\n"
 
-$(plain_zlibdemo):	zlibdemo.exe
-	printf "$(MAKE) zlibdemo.exe is preferred\n"
-
-$(plain_gctest):	gctest.exe
-	printf "$(MAKE) gctest.exe is preferred\n"
+$(plain_testf128):	testf128.exe
+	printf "$(MAKE) testf128.exe is preferred\n"
 
 endif exeext
 

@@ -2815,6 +2815,7 @@ static LispObject read_s(LispObject stream)
                 else if (isflt) return intern(boffop, false);
                 else return intern_new(boffop);
 #else // ARITHLIB
+                (void)isflt; // get it used!
                 if (ishex) return intern_hex_old(boffop);
                 else return intern(boffop, false);
 #endif // ARITHLIB

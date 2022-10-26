@@ -2599,14 +2599,21 @@ public:
     static std::intptr_t op(std::uint64_t *, std::uint64_t *);
 };
 
-class IntegerLength
+class LowBits
+{
+public:
+    static std::uint64_t op(std::int64_t w);
+    static std::uint64_t op(uint64_t *w);
+};
+
+class LowBit
 {
 public:
     static std::intptr_t op(std::int64_t w);
     static std::intptr_t op(uint64_t *w);
 };
 
-class LowBit
+class IntegerLength
 {
 public:
     static std::intptr_t op(std::int64_t w);
@@ -7394,16 +7401,12 @@ inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
     return int_to_handle((a & ~(q-1))/q);
 }
 
-inline std::intptr_t IntegerLength::op(std::uint64_t *a)
-{   return int_to_handle(bignum_bits(a, number_size(a)));
+inline std::uint64_t LowBits::op(std::uint64_t *a)
+{   return a[0];
 }
 
-inline std::intptr_t IntegerLength::op(std::int64_t aa)
-{   std::uint64_t a;
-    if (aa == 0 || aa == -1) return 0;
-    else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
-    else a = aa;
-    return int_to_handle(64-nlz(a));
+inline std::uint64_t LowBits::op(std::int64_t aa)
+{   return static_cast<std::uint64_t>(aa);
 }
 
 inline std::intptr_t LowBit::op(std::uint64_t *a)
@@ -7429,6 +7432,18 @@ inline std::intptr_t LowBit::op(std::int64_t aa)
     else if (aa < 0) a = ~static_cast<std::uint64_t>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
+    return int_to_handle(64-nlz(a));
+}
+
+inline std::intptr_t IntegerLength::op(std::uint64_t *a)
+{   return int_to_handle(bignum_bits(a, number_size(a)));
+}
+
+inline std::intptr_t IntegerLength::op(std::int64_t aa)
+{   std::uint64_t a;
+    if (aa == 0 || aa == -1) return 0;
+    else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
+    else a = aa;
     return int_to_handle(64-nlz(a));
 }
 
@@ -11281,8 +11296,9 @@ using arithlib_implementation::Lognot;
 using arithlib_implementation::Pow;
 using arithlib_implementation::LeftShift;
 using arithlib_implementation::RightShift;
-using arithlib_implementation::IntegerLength;
+using arithlib_implementation::LowBits;
 using arithlib_implementation::LowBit;
+using arithlib_implementation::IntegerLength;
 using arithlib_implementation::Logbitp;
 using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;
