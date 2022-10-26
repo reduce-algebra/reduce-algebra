@@ -2641,6 +2641,53 @@ LispObject Remainder::op(LFlt a, LFlt b)
     return Difference::op(a, Times::op(q, b));
 }
 
+LispObject Mod::op(LispObject a, LispObject b)
+{   return
+        number_dispatcher::ibinary<LispObject,Mod>("mod", a, b);
+}
+
+LispObject Mod::op(LispObject a, Fixnum b)
+{   return
+        number_dispatcher::ibinaryR<LispObject,Mod>("mod", a, b);
+}
+
+LispObject Mod::op(LispObject a, std::uint64_t *b)
+{   return
+        number_dispatcher::ibinaryR<LispObject,Mod>("mod", a, b);
+}
+
+LispObject Mod::op(Fixnum a, LispObject b)
+{   return
+        number_dispatcher::ibinaryL<LispObject,Mod>("mod", a, b);
+}
+
+LispObject Mod::op(std::uint64_t *a, LispObject b)
+{   return
+        number_dispatcher::ibinaryL<LispObject,Mod>("mod", a, b);
+}
+
+// fixnum mod fixnum
+LispObject Mod::op(Fixnum a, Fixnum b)
+{   return arithlib_lowlevel::Mod::op(a.intval(), b.intval());
+}
+
+// bignum mod fixnum
+LispObject Mod::op(std::uint64_t *a, Fixnum b)
+{   return arithlib_lowlevel::Mod::op(a, b.intval());
+}
+
+// fixnum % bignum
+LispObject Mod::op(Fixnum a, std::uint64_t *b)
+{
+#pragma message ("work needed")
+    return a.value();
+}
+
+// bignum % bignum
+LispObject Mod::op(std::uint64_t *a, std::uint64_t *b)
+{   return arithlib_lowlevel::Mod::op(a, b);
+}
+
 LispObject Divide::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Divide>("divide", a,
             b);

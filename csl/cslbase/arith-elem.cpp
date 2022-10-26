@@ -45,7 +45,7 @@
 
 
 #include "headers.h"
-
+#include "dispatch.h"
 
 
 /*****************************************************************************/
@@ -1304,28 +1304,28 @@ static LispObject makenum(LispObject a, int32_t n)
     }
 }
 
-static LispObject CSLpowi(LispObject a, uint64_t n)
-// Raise a to the power n by repeated multiplication. The name is CSLpowi
+static LispObject N_CSLpowi(LispObject a, uint64_t n)
+// Raise a to the power n by repeated multiplication. The name is N_CSLpowi
 // rather than just powi because some miserable C compilers come with an
 // external function called powi in <cmath> and then moan about the
-// name clash.
+// name clash. And also to avoid confusion againt the older CSL code.
 {   if (n == 0) return makenum(a, 1); // value 1 of appropriate type
     else if (n == 1) return a;
     else if ((n & 1) == 0)
-    {   a = CSLpowi(a, n/2);
+    {   a = N_CSLpowi(a, n/2);
         errexit();
-        return times2(a, a);
+        return Times::op(a, a);
     }
     else
     {   LispObject b;
         THREADID;
         Save save(THREADARG a);
-        b = CSLpowi(a, n/2);
+        b = N_CSLpowi(a, n/2);
         errexit();
-        b = times2(b, b);
+        b = Times::op(b, b);
         errexit();
         save.restore(a);
-        return times2(a, b);
+        return Times::op(a, b);
     }
 }
 
@@ -1430,7 +1430,7 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
         else if (is_numbers(b) && is_bignum(b))
             nn = bignum_digits(b)[0] & 3;
         else if (is_numbers(b) && is_new_bignum(b))
-            nn = bignum_digits(b)[0] & 3;
+            nn = LowBits::op(b) & 3;
         switch (nn)
         {   case 0:   return onevalue(fixnum_of_int(1));
             case 2:   return onevalue(fixnum_of_int(-1));
@@ -1454,13 +1454,16 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
 // I worry that if instead I compute (1.0/a)^n that rounding in computing
 // 1.0/a could be amplified unduly. But still that is what I do.
 #ifdef COMMON
+// CLquot2 has to generate a ratio when the quotient generated is
+// not a whole number.
+#pragma message ("CLquot2 not sorted out yet")
             a = CLquot2(fixnum_of_int(1), a);
 #else
-            a = quot2(fixnum_of_int(1), a);
+            a = Quotient::op(fixnum_of_int(1), a);
 #endif
-            a = CSLpowi(a, -nn);
+            a = N_CSLpowi(a, -nn);
         }
-        else a = CSLpowi(a, nn);
+        else a = N_CSLpowi(a, nn);
         return onevalue(a);
     }
     if (is_numbers(a) && is_complex(a)) w = real_part(a);
@@ -1631,10 +1634,10 @@ LispObject Ncis(LispObject, LispObject a)
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     errexit();
     save.restore(a);
-// it seems a bit gross to multiply by i by calling times2(), but
+// it seems a bit gross to multiply by i by calling Times::op(), but
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).
-    a = times2(a, ii);
+    a = Times::op(a, ii);
     return Ntrigfn(30, a);     // exp()
 }
 

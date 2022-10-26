@@ -716,10 +716,16 @@ LispObject intern_hex_old(size_t len)
 #include "dispatch.h"
 
 LispObject intern_new(size_t len)
-{   size_t i;
-    LispObject v = fixnum_of_int(0);
+{   LispObject v = fixnum_of_int(0);
     int32_t d = 0, d1 = 10;
-    for (i=0; i<boffop; i++)
+    size_t i = 0;
+    bool sign = false;
+    if (boffo_char(i) == '-')
+    {   sign = true;
+        i++;
+    }
+    else if (boffo_char(i) == '+') i++;
+    for (; i<boffop; i++)
     {   if (d1 == 10000000 || i == boffop-1)
         {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
             v = Times::op(v, fixnum_of_int(d1));
@@ -732,6 +738,7 @@ LispObject intern_new(size_t len)
             d1 = 10*d1;
         }
     }
+    if (sign) v = Minus::op(v);
     return v;
 }
 

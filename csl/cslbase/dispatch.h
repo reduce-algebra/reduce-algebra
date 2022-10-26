@@ -1159,6 +1159,24 @@ public:
 #endif // softfloat_h
 };
 
+class Mod
+{
+public:
+    static LispObject op(LispObject a, LispObject b);
+
+    static LispObject op(LispObject a, Fixnum b);
+    static LispObject op(LispObject a, uint64_t *b);
+
+    static LispObject op(Fixnum a, LispObject b);
+    static LispObject op(uint64_t *a, LispObject b);
+
+    static LispObject op(Fixnum a, Fixnum b);
+    static LispObject op(uint64_t *a, Fixnum b);
+
+    static LispObject op(Fixnum a, uint64_t *b);
+    static LispObject op(uint64_t *a, uint64_t *b);
+};
+
 class Divide
 {
 public:
@@ -2160,10 +2178,10 @@ public:
 class LowBits
 {
 public:
-    static int op(LispObject a);
+    static uint64_t op(LispObject a);
 
-    static int op(Fixnum a);
-    static int op(uint64_t *a);
+    static uint64_t op(Fixnum a);
+    static uint64_t op(uint64_t *a);
 };
 
 class LowBit

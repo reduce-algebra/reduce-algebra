@@ -177,6 +177,11 @@ LispObject Nremainder(LispObject env, LispObject a1,
 {   return onevalue(Remainder::op(a1, a2));
 }
 
+LispObject Nmod(LispObject env, LispObject a1,
+                             LispObject a2)
+{   return onevalue(Mod::op(a1, a2));
+}
+
 LispObject Ndivide(LispObject env, LispObject a1,
                           LispObject a2)
 {   return onevalue(Divide::op(a1, a2));
@@ -924,9 +929,9 @@ LispObject Niquotient(LispObject env, LispObject a1,
 {   return onevalue(Quotient::op(a1, a2));
 }
 
-LispObject Niremainder(LispObject env, LispObject a1,
+LispObject Nimod(LispObject env, LispObject a1,
                               LispObject a2)
-{   return onevalue(Remainder::op(a1, a2));
+{   return onevalue(Mod::op(a1, a2));
 }
 
 LispObject Nidivide(LispObject env, LispObject a1,
@@ -1295,6 +1300,225 @@ LispObject Nmodf(LispObject env, LispObject a1)
     }
 }
 
+LispObject Nrealpart(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("realpart", a);
+    if (is_numbers(a) && is_complex(a))
+        return onevalue(real_part(a));
+    else return onevalue(a);
+}
+
+LispObject Nimagpart(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("imagpart", a);
+    if (is_numbers(a) && is_complex(a))
+        return onevalue(imag_part(a));
+// /* the 0.0 returned here ought to be the same type as a has
+    else return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nnumerator(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("numerator", a);
+    if (is_numbers(a) && is_ratio(a))
+        return onevalue(numerator(a));
+    else return onevalue(a);
+}
+
+LispObject Ndenominator(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("denominator", a);
+    if (is_numbers(a) && is_ratio(a))
+        return onevalue(denominator(a));
+    else return onevalue(fixnum_of_int(1));
+}
+
+LispObject Ncomplex_1(LispObject env, LispObject a)
+{
+// /* Need to make zero of same type as a
+    a = make_complex(a, fixnum_of_int(0));
+    return onevalue(a);
+}
+
+LispObject Ncomplex_2(LispObject env, LispObject a, LispObject b)
+{
+// /* Need to coerce a and b to the same type here...
+    a = make_complex(a, b);
+    return onevalue(a);
+}
+
+LispObject Nconjugate(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("conjugate", a);
+    if (is_numbers(a) && is_complex(a))
+    {   LispObject r = real_part(a),
+                   i = imag_part(a);
+        {   THREADID;
+            Save save(THREADARG r);
+            i = Minus::op(i);
+            errexit();
+            save.restore(r);
+        }
+        a = make_complex(r, i);
+        return onevalue(a);
+    }
+    else return onevalue(a);
+}
+
+#ifdef HAVE_SOFTFLOAT
+LispObject Ndecode_long_float(LispObject a)
+{   float128_t d = long_float_val(a);
+    if (f128M_infinite(&d) || f128M_nan(&d))
+    {   if (trap_floating_overflow) return aerror("decode-float");
+        else return onevalue(nil); // infinity or NaN
+    }
+    bool neg = false;
+    int x = 0;
+    if (f128M_negative(&d)) f128M_negate(&d), neg = true;
+    if (f128M_eq(&d, &f128_0)) x = 0;
+    else
+    {   if (f128M_subnorm(&d))
+        {   f128M_mul(&d, &f128_N1, &d);
+            x -= 4096;
+        }
+        x += f128M_exponent(&d) - 0x3fff;
+        f128M_set_exponent(&d, 0x3fff);
+    }
+    LispObject sign = make_boxfloat128(f128_1);
+    if (neg) f128M_negate(reinterpret_cast<float128_t *>(long_float_addr(
+                                  sign)));
+    {   THREADID;
+        Save save(THREADARG sign);
+        a = make_boxfloat128(d);
+        errexit();
+        save.restore(sign);
+    }
+#ifdef COMMON
+// Until and unless Standard Lisp supports multiple values this has to
+// return a list in standard lisp mode.
+    mv_2 = fixnum_of_int(x);
+    mv_3 = sign;
+    return nvalues(a, 3);
+#else
+    return list3(sign, fixnum_of_int(x), a);
+#endif
+}
+#endif // HAVE_SOFTFLOAT
+
+LispObject Ndecode_float(LispObject env, LispObject a)
+{   double d, neg = 1.0;
+    int x;
+    LispObject sign;
+    if (!is_float(a)) return aerror("decode-float");
+#ifdef HAVE_SOFTFLOAT
+    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
+        return Ndecode_long_float(a);
+#endif // HAVE_SOFTFLOAT
+    d = float_of_number(a);
+    if (floating_edge_case(d))
+    {   if (trap_floating_overflow) return aerror("decode-float");
+        else return onevalue(nil); // infinity or NaN
+    }
+// Ha ha ha - I detect -0.0 here.
+    if (d < 0.0 || (d == 0.0 && 1.0/d < 0)) d = -d, neg = -1.0;
+    if (d == 0.0) x = 0;
+    else d = std::frexp(d, &x);
+    if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
+    else sign = make_boxfloat(neg, floatWant(flthdr(a)));
+    {   THREADID;
+        Save save(THREADARG sign);
+        if (is_sfloat(a)) a = pack_immediate_float(d, a);
+        else a = make_boxfloat(d, floatWant(flthdr(a)));
+        errexit();
+        save.restore(sign);
+    }
+#ifdef COMMON
+// Until and unless Standard Lisp supports multiple values this has to
+// return a list in standard lisp mode.
+    mv_2 = fixnum_of_int(x);
+    mv_3 = sign;
+    return nvalues(a, 3);
+#else
+    return list3(sign, fixnum_of_int(x), a);
+#endif
+}
+
+#ifdef HAVE_SOFTFLOAT
+LispObject Ninteger_decode_long_float(LispObject a)
+{   float128_t d = long_float_val(a);
+    if (f128M_infinite(&d) || f128M_nan(&d))
+    {   if (trap_floating_overflow) return aerror("integer-decode-float");
+        else return onevalue(nil); // infinity or NaN
+    }
+    if (f128M_eq(&d, &f128_0))
+#ifdef COMMON
+    {   mv_2 = fixnum_of_int(0);
+        mv_3 = fixnum_of_int(f128M_negative(&d) ? -1 : 1);
+        nvalues(fixnum_of_int(0), 3);
+    }
+#else
+        return list3(fixnum_of_int(0), fixnum_of_int(0),
+                     fixnum_of_int(f128M_negative(&d) ? -1 : 1));
+#endif
+    bool neg = false;
+    if (f128M_negative(&d))
+    {   f128M_negate(&d);
+        neg = true;
+    }
+    int32_t d4;
+    uint32_t d3, d2, d1, d0;
+    intptr_t x = 31*float128_to_5_digits(&d, d4, d3, d2, d1, d0);
+    a = make_n5_word_bignum(d4, d3, d2, d1, d0, 0);
+#ifdef COMMON
+    {   mv_2 = fixnum_of_int(x);
+        mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
+        return nvalues(a, 3);
+    }
+#else
+    return list3(a, fixnum_of_int(x),
+                 neg ? fixnum_of_int(-1) : fixnum_of_int(1));
+#endif
+}
+#endif // HAVE_SOFTFLOAT
+
+
+LispObject Ninteger_decode_float(LispObject env, LispObject a)
+{   double d;
+    if (!is_float(a)) return aerror("integer-decode-float");
+#ifdef HAVE_SOFTFLOAT
+    if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
+        return integer_decode_long_float(a);
+#endif // HAVE_SOFTFLOAT
+    d = float_of_number(a);
+    if (floating_edge_case(d))
+    {   if (trap_floating_overflow) return aerror("integer-decode-float");
+        else return onevalue(nil); // infinity or NaN
+    }
+    if (d == 0.0)
+#ifdef COMMON
+    {   mv_2 = fixnum_of_int(0);
+        mv_3 = fixnum_of_int(1.0/d < 0.0 ? -1 : 1);
+        nvalues(fixnum_of_int(0), 3);
+    }
+#else
+        return list3(fixnum_of_int(0), fixnum_of_int(0),
+                     fixnum_of_int(1.0/d < 0.0 ? -1 : 1));
+#endif
+    bool neg = 0;
+    if (d < 0.0)
+    {   d = -d;
+        neg = true;
+    }
+    int32_t d2;
+    uint32_t d1, d0;
+    intptr_t x = 31*double_to_3_digits(d, d2, d1, d0);
+    a = make_three_word_bignum(d2, d1, d0);
+#ifdef COMMON
+    {   mv_2 = fixnum_of_int(x);
+        mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
+        return nvalues(a, 3);
+    }
+#else
+    return list3(a, fixnum_of_int(x),
+                 neg ? fixnum_of_int(-1) : fixnum_of_int(1));
+#endif
+}
+
 setup_type const arith_setup[] =
 {   DEF_1("modf",         Nmodf),
     {"plus",              Nplus, Nplus, Nplus, Nplus, Nplus},
@@ -1303,6 +1527,7 @@ setup_type const arith_setup[] =
     DEF_1("add1",         Nadd1),
     DEF_1("1+",           Nadd1),
     DEF_2("difference",   Ndifference),
+    DEF_2("xdifference",  Nxdifference),
     {"-",                 G0Wother, Nminus, Ndifference, G3Wother, G4Wother},
     {"times",             Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
     {"times2",            Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
@@ -1311,7 +1536,10 @@ setup_type const arith_setup[] =
     DEF_2("//",           Nquotient),
     DEF_2("/",            NCLQuotient),
     DEF_2("remainder",    Nremainder),
+    DEF_2("rem",          Nremainder),
+    DEF_2("mod",          Nmod),
     DEF_2("divide",       Ndivide),
+    {"gcd",               Ngcdn, Ngcdn, Ngcdn, Ngcdn, Ngcdn},
     {"gcdn",              Ngcdn, Ngcdn, Ngcdn, Ngcdn, Ngcdn},
     {"lcmn",              Nlcmn, Nlcmn, Nlcmn, Nlcmn, Nlcmn},
     DEF_1("minus",        Nminus),
@@ -1342,8 +1570,10 @@ setup_type const arith_setup[] =
     DEF_2("expt",         Nexpt),
     {"max",               Nmax, Nmax, Nmax, Nmax, Nmax},
     {"max2",              Nmax, Nmax, Nmax, Nmax, Nmax},
+    {"imax",              Nmax, Nmax, Nmax, Nmax, Nmax},
     {"min",               Nmin, Nmin, Nmin, Nmin, Nmin},
     {"min2",              Nmin, Nmin, Nmin, Nmin, Nmin},
+    {"imin",              Nmin, Nmin, Nmin, Nmin, Nmin},
 // Neqn is a name that gives trouble. In one part of the code here it is
 // "N" followed by "eqn", and denotes the function that will perform equality
 // tests on numbers. In another it is "Neqn", otherwise "neqn" but capitalized
@@ -1397,7 +1627,9 @@ setup_type const arith_setup[] =
     {"itimes",            Nitimes, Nitimes, Nitimes, Nitimes, Nitimes},
     {"itimes2",           Nitimes, Nitimes, Nitimes, Nitimes, Nitimes},
     DEF_2("iquotient",    Niquotient),
-    DEF_2("iremainder",   Niremainder),
+    DEF_2("iremainder",   Nremainder),
+    DEF_2("irem",         Nremainder),
+    DEF_2("imod",         Nmod),
     DEF_2("idivide",      Nidivide),
     {"igcdn",             Nigcdn, Nigcdn, Nigcdn, Nigcdn, Nigcdn},
     {"ilcmn",             Nilcmn, Nilcmn, Nilcmn, Nilcmn, Nilcmn},
@@ -1515,7 +1747,45 @@ setup_type const arith_setup[] =
     DEF_2("native-cacsch",Ncacsch),
     DEF_2("native-casech",Ncasech),
     DEF_2("native-cacoth",Ncacoth),
-    {nullptr,             nullptr, nullptr, nullptr, nullptr, nullptr}
+    DEF_1("numerator",    Nnumerator),
+    DEF_1("denominator",  Ndenominator),
+    DEF_1("realpart",     Nrealpart),
+    DEF_1("imagpart",     Nimagpart),
+    DEF_1("decode-float", Ndecode_float),
+    DEF_1("integer-decode-float", Ninteger_decode_float),
+
+    DEF_1("fp-infinite", Nfp_infinite),
+    DEF_1("float-infinity-p", Nfp_infinite),
+    DEF_1("fp-nan", Nfp_nan),
+    DEF_1("fp-finite", Nfp_finite),
+    DEF_1("fp-subnorm", Nfp_subnorm),
+    DEF_1("float-denormalized-p", Nfp_subnorm),
+    DEF_1("fp-signbit", Nfp_signbit),
+    DEF_1("float-sign", Nfp_signbit),
+    DEF_1("float-digits", Nfloat_digits),
+    DEF_1("float-precision", Nfloat_precision),
+    DEF_1("float-radix", Nfloat_radix),
+    {"float_sign", G0Wother, Nfloat_sign1, Nfloat_sign2, G3Wother, G4Wother},
+
+    DEF_1("rational", Nrational),
+    DEF_1("manexp", Nmanexp),
+    DEF_1("rationalize", Nrationalize),
+    {"random", G0Wother, Nrandom_1, Nrandom_2, G3Wother, G4Wother}, 
+    DEF_0("next-random-number", Nnext_random),
+    DEF_0("random-fixnum", Nnext_random),
+    {"make-random-state", G0Wother, Nmake_random_state1, Nmake_random_state, G3Wother, G4Wother},
+    DEF_1("md5", Nmd5),
+    DEF_1("md5string", Nmd5string),
+    DEF_1("md60", Nmd60),
+    DEF_2("inorm", Ninorm),
+    DEF_3("boole", Nboole),
+    DEF_2("byte", Nbyte),
+    DEF_1("byte-position", Nbyte_position),
+    DEF_1("byte-size", Nbyte_size),
+    {"complex", G0Wother, Ncomplex_1, Ncomplex_2, G3Wother, G4Wother}, 
+    DEF_1("conjugate", Nconjugate),
+
+    {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 #endif // ARITHLIB
