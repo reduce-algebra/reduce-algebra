@@ -37,6 +37,9 @@
 
 
 #include "headers.h"
+#ifdef ARITHLIB
+#include "arith-defs.h"
+#endif
 
 //
 // Here is a bit of a commentary about calling arrangements.
@@ -573,7 +576,25 @@ LispObject Lmv_list(LispObject env, LispObject a)
 // cases, together with eq and equal.
 //
 
-
+#ifdef ARITHLIB
+#define NO_ARGS \
+    BI(Lbatchp,                "batchp",     0),  \
+    BI(Ldate,                  "date",       1),  \
+    BI(Leject,                 "eject",      2),  \
+    BI((no_args *)Lerror_0,    "error0",     3),  \
+    BI(Lgctime,                "gctime",     4),  \
+    BI(Lgensym,                "gensym",     5),  \
+    BI(Llposn,                 "lposn",      6),  \
+    BI(Nnext_random,           "next-random-number", 7), \
+    BI(Lposn,                  "posn",       8),  \
+    BI(Lread,                  "read",       9),  \
+    BI(Lreadch,                "readch",     10), \
+    BI(Lterpri,                "terpri",     11), \
+    BI(Ltime,                  "time",       12), \
+    BI(Ltyi,                   "tyi",        13), \
+    BI(Lload_spid,             "load-spid",  14), \
+    BI(nullptr,                nullptr,      0)
+#else // ARITHLIB
 #define NO_ARGS \
     BI(Lbatchp,                "batchp",     0),  \
     BI(Ldate,                  "date",       1),  \
@@ -591,6 +612,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
     BI(Ltyi,                   "tyi",        13), \
     BI(Lload_spid,             "load-spid",  14), \
     BI(nullptr,                nullptr,      0)
+#endif // ARITHLIB
 
 #undef BI
 #define BI(a, b, c) a
@@ -607,6 +629,130 @@ const char *no_arg_names[] =
 bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
                            no_arg_functions[0])];
 
+#ifdef ARITHLIB
+#define ONE_ARGS    \
+   BI(Nabsval,            "absval",                  0),   \
+   BI(Nadd1,              "add1",                    1),   \
+   BI(Natan,              "atan",                    2),   \
+   BI(Lapply_1,           "apply0",                  3),   \
+   BI(Latom,              "atom",                    4),   \
+   BI(Lboundp,            "boundp",                  5),   \
+   BI(Lchar_code,         "char-code",               6),   \
+   BI(Lclose,             "close",                   7),   \
+   BI(Lcodep,             "codep",                   8),   \
+   BI(Lcompress,          "compress",                9),   \
+   BI(Lconstantp,         "constantp",               10),  \
+   BI(Ldigitp,            "digitp",                  11),  \
+   BI(Lendp,              "endp",                    12),  \
+   BI(Leval,              "eval",                    13),  \
+   BI(Nevenp,             "evenp",                   14),  \
+   BI(Levlis,             "evlis",                   15),  \
+   BI(Lexplode,           "explode",                 16),  \
+   BI(Lexplode2lc,        "explode2lc",              17),  \
+   BI(Lexplodec,          "explodec",                18),  \
+   BI(Lfixp,              "fixp",                    19),  \
+   BI(Nfloat,             "float",                   20),  \
+   BI(Lfloatp,            "floatp",                  21),  \
+   BI(Lsymbol_specialp,   "fluidp",                  22),  \
+   BI(Lgc,                "reclaim",                 23),  \
+   BI(Lgensym,            "gensym1",                 24),  \
+   BI(Lgetenv,            "getenv",                  25),  \
+   BI(Lsymbol_globalp,    "globalp",                 26),  \
+   BI(Nadd1,              "iadd1",                   27),  \
+   BI(Lsymbolp,           "symbolp",                 28),  \
+   BI(Nminus,             "iminus",                  29),  \
+   BI(Nminusp,            "iminusp",                 30),  \
+   BI(Lindirect,          "indirect",                31),  \
+   BI(Lintegerp,          "integerp",                32),  \
+   BI(Lintern,            "intern",                  33),  \
+   BI(Nsub1,              "isub1",                   34),  \
+   BI(Llength,            "length",                  35),  \
+   BI(Llengthc,           "lengthc",                 36),  \
+   BI(Llinelength,        "linelength",              37),  \
+   BI(Lalpha_char_p,      "liter",                   38),  \
+   BI(Lload_module,       "load-module",             39),  \
+   BI(Nlognot,            "lognot",                  40),  \
+   BI(Lmacroexpand,       "macroexpand",             41),  \
+   BI(Lmacroexpand_1,     "macroexpand-1",           42),  \
+   BI(Lmacro_function,    "macro-function",          43),  \
+   BI(Lget_bps,           "get_bps",                 44),  \
+   BI(Lmake_global,       "make-global",             45),  \
+   BI(Lsmkvect,           "smkvect",                 46),  \
+   BI(Lmake_special,      "make-special",            47),  \
+   BI(Nminus,             "minus",                   48),  \
+   BI(Nminusp,            "minusp",                  49),  \
+   BI(Lmkvect,            "mkvect",                  50),  \
+   BI(Nmodular_minus,     "modular-minus",           51),  \
+   BI(Nmodular_number,    "modular-number",          52),  \
+   BI(Nmodular_reciprocal,"modular-reciprocal",      53),  \
+   BI(Lnull,              "null",                    54),  \
+   BI(Noddp,              "oddp",                    55),  \
+   BI(Nonep,              "onep",                    56),  \
+   BI(Lpagelength,        "pagelength",              57),  \
+   BI(Lconsp,             "consp",                   58),  \
+   BI(Lplist,             "plist",                   59),  \
+   BI(Nplusp,             "plusp",                   60),  \
+   BI(Lprin,              "prin",                    61),  \
+   BI(Lprinc,             "princ",                   62),  \
+   BI(Lprint,             "print",                   63),  \
+   BI(Lprintc,            "printc",                  64),  \
+   BI(Nrandom_1,          "random",                  65),  \
+   BI(Nrational,          "rational",                66),  \
+   BI(Lrdf1,              "rdf1",                    67),  \
+   BI(Lrds,               "rds",                     68),  \
+   BI(Lremd,              "remd",                    69),  \
+   BI(Lreverse,           "reverse",                 70),  \
+   BI(Lnreverse,          "nreverse",                71),  \
+   BI(Lwhitespace_char_p, "whitespace-char-p",       72),  \
+   BI(Nset_modulus,       "set-small-modulus",       73),  \
+   BI(Lxtab,              "xtab",                    74),  \
+   BI(Lspecial_char,      "special-char",            75),  \
+   BI(Lspecial_form_p,    "special-form-p",          76),  \
+   BI(Lspool,             "spool",                   77),  \
+   BI((one_arg *)Lstop,   "stop",                    78),  \
+   BI(Lstringp,           "stringp",                 79),  \
+   BI(Nsub1,              "sub1",                    80),  \
+   BI(Lsymbol_env,        "symbol-env",              81),  \
+   BI(Lsymbol_function,   "symbol-function",         82),  \
+   BI(Lsymbol_name,       "symbol-name",             83),  \
+   BI(Lsymbol_value,      "symbol-value",            84),  \
+   BI(Lsystem,            "system",                  85),  \
+   BI(Ltruncate,          "truncate",                86),  \
+   BI(Lttab,              "ttab",                    87),  \
+   BI(Ltyo,               "tyo",                     88),  \
+   BI(Lunintern,          "unintern",                89),  \
+   BI(Lunmake_global,     "unmake-global",           90),  \
+   BI(Lunmake_special,    "unmake-special",          91),  \
+   BI(Lupbv,              "upbv",                    92),  \
+   BI(Lsimple_vectorp,    "simple-vectorp",          93),  \
+   BI(Lverbos,            "verbos",                  94),  \
+   BI(Lwrs,               "wrs",                     95),  \
+   BI(Nzerop,             "zerop",                   96),  \
+   BI(Lcar,               "car",                     97),  \
+   BI(Lcdr,               "cdr",                     98),  \
+   BI(Lcaar,              "caar",                    99),  \
+   BI(Lcadr,              "cadr",                    100), \
+   BI(Lcdar,              "cdar",                    101), \
+   BI(Lcddr,              "cddr",                    102), \
+   BI(Lcar,               "car",                     103), \
+   BI(Lcdr,               "cdr",                     104), \
+   BI(Lcaar,              "caar",                    105), \
+   BI(Lcadr,              "cadr",                    106), \
+   BI(Lcdar,              "cdar",                    107), \
+   BI(Lcddr,              "cddr",                    108), \
+   BI(Lncons,             "ncons",                   109), \
+   BI(Lnumberp,           "numberp",                 110), \
+   BI(Lis_spid,           "is-spid",                 111), \
+   BI(Lspid_to_nil,       "spid-to-nil",             112), \
+   BI(Lmv_list,           "mv-list",                 113), \
+   BI(Lload_source,       "load-source",             114), \
+   BI(quote_fn,           "quote",                   115), \
+   BI(progn_fn,           "progn",                   116), \
+   BI(progn_fn,           "progn",                   117), \
+   BI(declare_fn,         "declare",                 118), \
+   BI(function_fn,        "function",                119), \
+   BI(nullptr,            nullptr,                   0)
+#else // ARITHLIB
 #define ONE_ARGS    \
    BI(Labsval,            "absval",                  0),   \
    BI(Ladd1,              "add1",                    1),   \
@@ -729,6 +875,7 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
    BI(declare_fn,         "declare",                 118), \
    BI(function_fn,        "function",                119), \
    BI(nullptr,            nullptr,                   0)
+#endif // ARITHLIB
 
 #undef BI
 #define BI(a, b, c) a
@@ -745,6 +892,83 @@ const char *one_arg_names[] =
 bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
                             one_arg_functions[0])];
 
+#ifdef ARITHLIB
+#define TWO_ARGS \
+    BI(Lappend_2,                  "append",                 0),   \
+    BI(Nleftshift,                 "ash",                    1),   \
+    BI(Lassoc,                     "assoc",                  2),   \
+    BI(Latsoc,                     "atsoc",                  3),   \
+    BI(Ldeleq,                     "deleq",                  4),   \
+    BI(Ldelete,                    "delete",                 5),   \
+    BI(Ndivide,                    "divide",                 6),   \
+    BI(Leqcar,                     "eqcar",                  7),   \
+    BI(Leql,                       "eql",                    8),   \
+    BI(Leqn_2,                     "eqn",                    9),   \
+    BI(Nexpt,                      "expt",                   10),  \
+    BI(Lflag,                      "flag",                   11),  \
+    BI(Lflagpcar,                  "flagpcar",               12),  \
+    BI(Ngcdn,                      "gcd",                    13),  \
+    BI(Ngeq,                       "geq",                    14),  \
+    BI(Lgetv,                      "getv",                   15),  \
+    BI(Ngreaterp,                  "greaterp",               16),  \
+    BI(Ndifference,                "idifference",            17),  \
+    BI(Ngreaterp,                  "igreaterp",              18),  \
+    BI(Nlessp,                     "ilessp",                 19),  \
+    BI(Nmax,                       "imax",                   20),  \
+    BI(Nmin,                       "imin",                   21),  \
+    BI(Nplus,                      "iplus2",                 22),  \
+    BI(Nquotient,                  "iquotient",              23),  \
+    BI(Nremainder,                 "iremainder",             24),  \
+    BI(Nrightshift,                "irightshift",            25),  \
+    BI(Ntimes,                     "itimes2",                26),  \
+    BI(Nlcmn,                      "lcm",                    27),  \
+    BI(Nleq,                       "leq",                    28),  \
+    BI(Nlessp,                     "lessp",                  29),  \
+    BI(Nmake_random_state,         "make-random-state",      30),  \
+    BI(Nmax,                       "max2",                   31),  \
+    BI(Lmember,                    "member",                 32),  \
+    BI(Lmemq,                      "memq",                   33),  \
+    BI(Nmin,                       "min2",                   34),  \
+    BI(Nmod,                       "mod",                    35),  \
+    BI(Nmodular_difference,        "modular-difference",     36),  \
+    BI(Nmodular_expt,              "modular-expt",           37),  \
+    BI(Nmodular_plus,              "modular-plus",           38),  \
+    BI(Nmodular_quotient,          "modular-quotient",       39),  \
+    BI(Nmodular_times,             "modular-times",          40),  \
+    BI(Lnconc,                     "nconc",                  41),  \
+    BI(Lneq_2,                     "neq",                    42),  \
+    BI(Lorderp,                    "orderp",                 43),  \
+    BI(Nquotient,                  "quotient",               44),  \
+    BI(Nremainder,                 "rem",                    45),  \
+    BI(Lremflag,                   "remflag",                46),  \
+    BI(Lremprop,                   "remprop",                47),  \
+    BI(Lrplaca,                    "rplaca",                 48),  \
+    BI(Lrplacd,                    "rplacd",                 49),  \
+    BI(Lsgetv,                     "sgetv",                  50),  \
+    BI(Lset,                       "set",                    51),  \
+    BI(Lsmemq,                     "smemq",                  52),  \
+    BI(Lsubla,                     "subla",                  53),  \
+    BI(Lsublis,                    "sublis",                 54),  \
+    BI(Lsymbol_set_definition,     "symbol-set-definition",  55),  \
+    BI(Lsymbol_set_env,            "symbol-set-env",         56),  \
+    BI(Ntimes,                     "times2",                 57),  \
+    BI(Lxcons,                     "xcons",                  58),  \
+    BI(Lequal,                     "equal",                  59),  \
+    BI(Leq,                        "eq",                     60),  \
+    BI(Lcons,                      "cons",                   61),  \
+    BI(Llist_2,                    "list2",                  62),  \
+    BI(Lget,                       "get",                    63),  \
+    BI(Lgetv,                      "getv",                   64),  \
+    BI(Lflagp,                     "flagp",                  65),  \
+    BI(Lapply_2,                   "apply1",                 66),  \
+    BI(Ndifference,                "difference2",            67),  \
+    BI(Nplus,                      "plus2",                  68),  \
+    BI(Ntimes,                     "times2",                 69),  \
+    BI(Lequalcar,                  "equalcar",               70),  \
+    BI(Leq,                        "eq",                     71),  \
+    BI(Lnreverse2,                 "nreverse2",              72),  \
+    BI(nullptr,                    nullptr,                  0)
+#else //ARITHLIB
 #define TWO_ARGS \
     BI(Lappend_2,                  "append",                 0),   \
     BI(Lash,                       "ash",                    1),   \
@@ -820,6 +1044,7 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
     BI(Leq,                        "eq",                     71),  \
     BI(Lnreverse2,                 "nreverse2",              72),  \
     BI(nullptr,                    nullptr,                  0)
+#endif // ARITHLIB
 
 #undef BI
 #define BI(a, b, c) a
@@ -836,6 +1061,7 @@ const char *two_arg_names[] =
 bool two_arg_traceflags[sizeof(two_arg_functions)/sizeof(
                             two_arg_functions[0])];
 
+#ifdef ARITHLIB
 #define THREE_ARGS \
     BI(Lbpsputv,     "bpsputv",                0),  \
     BI(Lerrorset_3,  "errorset",               1),  \
@@ -848,6 +1074,20 @@ bool two_arg_traceflags[sizeof(two_arg_functions)/sizeof(
     BI(Lapply_3,     "apply2",                 8),  \
     BI(Lacons,       "acons",                  9),  \
     BI(nullptr,      nullptr,                  0)
+#else // ARITHLIB
+#define THREE_ARGS \
+    BI(Lbpsputv,     "bpsputv",                0),  \
+    BI(Lerrorset_3,  "errorset",               1),  \
+    BI(Llist_2star,  "list2*",                 2),  \
+    BI(Llist_3,      "list3",                  3),  \
+    BI(Lputprop,     "putprop",                4),  \
+    BI(Lputv,        "putv",                   5),  \
+    BI(Lsputv,       "sputv",                  6),  \
+    BI(Lsubst,       "subst",                  7),  \
+    BI(Lapply_3,     "apply2",                 8),  \
+    BI(Lacons,       "acons",                  9),  \
+    BI(nullptr,      nullptr,                  0)
+#endif // ARITHLIB
 
 #undef BI
 #define BI(a, b, c) a

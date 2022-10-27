@@ -37,6 +37,9 @@
 // $Id$
 
 #include "headers.h"
+#ifdef ARITHLIB
+#include "dispatch.h"
+#endif // ARITHLIB
 
 #include "bytes.h"
 

@@ -2363,6 +2363,40 @@ public:
 
 // Now some unary things
 
+class Add1
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
+class Sub1
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+    static LispObject op(Rat b);
+    static LispObject op(Cpx b);
+    static LispObject op(SFlt b);
+    static LispObject op(Flt b);
+    static LispObject op(double b);
+#ifdef softfloat_h
+    static LispObject op(LFlt b);
+#endif // softfloat_h
+};
+
 class Minus
 {
 public:

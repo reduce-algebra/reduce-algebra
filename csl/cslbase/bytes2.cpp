@@ -478,7 +478,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg += 0x10;
                     continue;
                 }
+#ifdef ARITHLIB
+                A_reg = Add1::op(A_reg);
+#else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(1));
+#endif
                 errexit();
                 continue;
 
@@ -488,7 +492,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
+#ifdef ARITHLIB
+                A_reg = Plus::op(B_reg, A_reg);
+#else // ARITHLIB
                 A_reg = plus2(B_reg, A_reg);
+#endif // ARITHLIB
                 errexit();
                 continue;
 
@@ -497,7 +505,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg -= 0x10;
                     continue;
                 }
+#ifdef ARITHLIB
+                A_reg = Sub1::op(A_reg);
+#else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
+#endif // ARITHLIB
                 errexit();
                 continue;
 
@@ -507,32 +519,48 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = make_lisp_integerptr(nn);
                     continue;
                 }
+#ifdef ARITHLIB
+                A_reg = Difference::op(B_reg, A_reg);
+#else // ARITHLIB
                 A_reg = difference2(B_reg, A_reg);
+#endif // ARITHLIB
                 errexit();
                 continue;
 
             case OP_TIMES2:
 // I do not in-line even the integer case here, since overflow checking
 // is a slight mess.
+#ifdef ARITHLIB
+                A_reg = Times::op(B_reg, A_reg);
+#else // ARITHLIB
                 A_reg = times2(B_reg, A_reg);
+#endif // ARITHLIB
                 errexit();
                 continue;
 
             case OP_LESSP:
+#ifdef ARITHLIB
+                w = Lessp::op(B_reg, A_reg);
+#else // ARITHLIB
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg < A_reg;
                 else
                 {   w = lessp2(B_reg, A_reg);
                     errexit();
                 }
+#endif // ARITHLIB
                 A_reg = Lispify_predicate(w);
                 continue;
 
             case OP_GREATERP:
+#ifdef ARITHLIB
+                w = Lessp::op(A_reg, B_reg);
+#else // ARITHLIB
                 if (is_fixnum(B_reg) && is_fixnum(A_reg)) w = B_reg > A_reg;
                 else
                 {   w = lessp2(A_reg, B_reg);
                     errexit();
                 }
+#endif // ARITHLIB
                 A_reg = Lispify_predicate(w);
                 continue;
 
