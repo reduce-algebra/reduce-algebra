@@ -556,23 +556,6 @@ static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
 // case of infinities and NaNs.
 
 int double_to_binary(double d, int64_t &m)
-#ifdef OLD_VERSION
-{   Double_union u;
-// What is done here is an improper use of the union type even if it is
-// what old-fashioned C expected to be able to do. I could use std::frexp
-// after checking for infinities and NaNs and be much more officially safe!
-    u.f = d;
-    int x = static_cast<int>(u.i64 >> 52) & 0x7ff;
-    int64_t f = u.i64 & UINT64_C(0x000fffffffffffff);
-    if (x != 0) f |= INT64_C(0x0010000000000000);
-    if ((int64_t)u.i64 < 0) f = -f;
-    m = f;
-// for Infinity I will return INT_MAX and for a NaN INT_MIN as otherwise
-// invalid exponent values.
-    if (x == 0x7ff) return f==0 ? INT_MAX : INT_MIN;
-    return x - 0x3ff - 52;
-}
-#else // OLD_VERSION
 {   if (std::isnan(d))
     {   m = 0;
         return INT_MIN;
@@ -591,7 +574,6 @@ int double_to_binary(double d, int64_t &m)
     m = static_cast<int64_t>(d*4503599627370496.0); // 2.0^52
     return x - 52;
 }
-#endif // OLD_VERSION
 
 #ifdef HAVE_SOFTFLOAT
 // This does much the same for 128-bit floats.

@@ -2093,9 +2093,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     gcEvery = r;
                 }
             },
-            /*! options [--waste] \item [{\ttfamily --waste}] \index{{\ttfamily
+            /*! options [--waste] \item [{\ttfamily --waste}] \index{{\ttfamily --waste}}
              * --waste N performs N useless CONS operations during startup
-             * so that memory layout and GC patters are changed from the defaul
+             * so that memory layout and GC patterns are changed from the
+             * default
              */
             {   "--waste", true, true,
                 "--waste N does N useless CONS operations at startup.",

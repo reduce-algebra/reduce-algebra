@@ -1539,8 +1539,7 @@ inline bool stored_as_fixnum(std::intptr_t a)
 }
 
 constexpr inline std::int64_t int_of_handle(std::intptr_t a)
-{   return (static_cast<std::int64_t>(a) & ~static_cast<std::int64_t>
-            (1))/2;
+{   return (static_cast<std::int64_t>(a) & ~static_cast<std::int64_t>(1))/2;
 }
 
 // This function should only ever be called in situations where the
@@ -2256,6 +2255,15 @@ public:
 };
 
 class Remainder
+{
+public:
+    static std::intptr_t op(std::int64_t, std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t *);
+    static std::intptr_t op(std::uint64_t *, std::int64_t);
+    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+};
+
+class Mod
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
@@ -10172,6 +10180,58 @@ inline std::intptr_t Remainder::op(std::int64_t a, std::int64_t b)
 {   return int_to_handle(a % b);
 }
 
+inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
+{   std::size_t lena = number_size(a);
+    std::size_t lenb = number_size(b);
+    std::uint64_t *q, *r;
+    std::size_t olenq, olenr, lenq, lenr;
+    division(a, lena, b, lenb,
+             false, q, olenq, lenq,
+             true, r, olenr, lenr);
+    uintptr_t w = confirm_size(r, olenr, lenr);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = negative(b[lenb-1]);
+    if ((a_neg && !b_neg) || (!a_neg && b_neg))
+    {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
+        else return Plus::op(vector_of_handle(w), b);
+    }
+    else return w;
+}
+
+inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
+{   std::size_t lena = number_size(a);
+    std::uint64_t *q, *r;
+    std::size_t olenq, olenr, lenq, lenr;
+    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    division(a, lena, bb, 1,
+             false, q, olenq, lenq,
+             true, r, olenr, lenr);
+    uintptr_t w = confirm_size(r, olenr, lenr);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = (b < 0);
+    if ((a_neg && !b_neg) || (!a_neg && b_neg))
+    {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
+        else return Plus::op(vector_of_handle(w), b);
+    }
+    else return w;
+}
+
+inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t *b)
+{   if (number_size(b)==1 &&
+        b[0]==-static_cast<std::uint64_t>(a)) return int_to_handle(0);
+    bool a_neg = (a < 0);
+    bool b_neg = negative(b[number_size(b)-1]);
+    if ((a_neg && !b_neg) || (!a_neg && b_neg))
+        return Plus::op(a, b);
+    else return int_to_handle(a);
+}
+
+inline std::intptr_t Mod::op(std::int64_t a, std::int64_t b)
+{   int64_t r = a%b;
+    if ((a<0 && b>0) || (a>0 && b<0)) r += b;
+    return int_to_handle(r);
+}
+
 
 
 #ifdef LISP
@@ -11267,6 +11327,7 @@ using arithlib_implementation::RevDifference;
 using arithlib_implementation::Times;
 using arithlib_implementation::Quotient;
 using arithlib_implementation::Remainder;
+using arithlib_implementation::Mod;
 using arithlib_implementation::Divide;
 using arithlib_implementation::Gcd;
 using arithlib_implementation::Lcm;

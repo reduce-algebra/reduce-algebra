@@ -35,6 +35,68 @@
 #ifndef header_arith_defs_h
 #define header_arith_defs_h 1
 
+extern LispObject Nplus(LispObject env);
+extern LispObject Nplus(LispObject env, LispObject a1);
+extern LispObject Nplus(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nplus(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nplus(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Ndifference(LispObject env);
+extern LispObject Ndifference(LispObject env, LispObject a1);
+extern LispObject Ndifference(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Ndifference(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Ndifference(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Ntimes(LispObject env);
+extern LispObject Ntimes(LispObject env, LispObject a1);
+extern LispObject Ntimes(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Ntimes(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Ntimes(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nquotient(LispObject env);
+extern LispObject Nquotient(LispObject env, LispObject a1);
+extern LispObject Nquotient(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nquotient(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nquotient(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nlessp(LispObject env);
+extern LispObject Nlessp(LispObject env, LispObject a1);
+extern LispObject Nlessp(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlessp(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nlessp(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nleq(LispObject env);
+extern LispObject Nleq(LispObject env, LispObject a1);
+extern LispObject Nleq(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nleq(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nleq(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Ngreaterp(LispObject env);
+extern LispObject Ngreaterp(LispObject env, LispObject a1);
+extern LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Ngreaterp(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Ngeq(LispObject env);
+extern LispObject Ngeq(LispObject env, LispObject a1);
+extern LispObject Ngeq(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Ngeq(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Ngeq(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nlogand(LispObject env);
+extern LispObject Nlogand(LispObject env, LispObject a1);
+extern LispObject Nlogand(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlogand(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nlogand(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nlogor(LispObject env);
+extern LispObject Nlogor(LispObject env, LispObject a1);
+extern LispObject Nlogor(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlogor(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nlogor(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nlogxor(LispObject env);
+extern LispObject Nlogxor(LispObject env, LispObject a1);
+extern LispObject Nlogxor(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlogxor(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nlogxor(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nlogeqv(LispObject env);
+extern LispObject Nlogeqv(LispObject env, LispObject a1);
+extern LispObject Nlogeqv(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlogeqv(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Nlogeqv(LispObject env, LispObject a1, LispObject a2, LispObject a3, LispObject a4plus);
+extern LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nrightshift(LispObject env, LispObject a1, LispObject a2);
 
 extern LispObject Nabsval(LispObject env, LispObject a);
 extern LispObject Nacos(LispObject env, LispObject a);
@@ -139,6 +201,44 @@ extern LispObject Ncatanh(LispObject env, LispObject re, LispObject im);
 extern LispObject Ncacsch(LispObject env, LispObject re, LispObject im);
 extern LispObject Ncasech(LispObject env, LispObject re, LispObject im);
 extern LispObject Ncacoth(LispObject env, LispObject re, LispObject im);
+
+extern LispObject Nnumerator(LispObject env, LispObject a);
+extern LispObject Ndenominator(LispObject env, LispObject a);
+extern LispObject Nrealpart(LispObject env, LispObject a);
+extern LispObject Nimagpart(LispObject env, LispObject a);
+extern LispObject Ndecode_float(LispObject env, LispObject a);
+extern LispObject Ninteger_decode_float(LispObject env, LispObject a);
+
+extern LispObject Nfp_infinite(LispObject env, LispObject a);
+extern LispObject Nfp_nan(LispObject env, LispObject a);
+extern LispObject Nfp_finite(LispObject env, LispObject a);
+extern LispObject Nfp_subnorm(LispObject env, LispObject a);
+extern LispObject Nfp_signbit(LispObject env, LispObject a);
+extern LispObject Nfloat_digits(LispObject env, LispObject a);
+extern LispObject Nfloat_precision(LispObject env, LispObject a);
+extern LispObject Nfloat_radix(LispObject env, LispObject a);
+extern LispObject Nfloat_sign1(LispObject env, LispObject a);
+extern LispObject Nfloat_sign2(LispObject env, LispObject a, LispObject b);
+
+extern LispObject Nrational(LispObject env, LispObject a);
+extern LispObject Nmanexp(LispObject env, LispObject a);
+extern LispObject Nrationalize(LispObject env, LispObject a);
+extern LispObject Nrandom_2(LispObject env, LispObject a, LispObject bb);
+extern LispObject Nrandom_1(LispObject env, LispObject a);
+extern LispObject Nnext_random(LispObject);
+extern LispObject Nmake_random_state(LispObject env, LispObject a, LispObject b);
+extern LispObject Nmake_random_state1(LispObject env, LispObject a);
+extern LispObject Nmd5(LispObject env, LispObject a);
+extern LispObject Nmd5string(LispObject env, LispObject a);
+extern LispObject Nmd60(LispObject env, LispObject a);
+
+extern LispObject Nxdifference(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Ninorm(LispObject env, LispObject a, LispObject k);
+extern LispObject Nboole(LispObject env, LispObject op,
+                         LispObject a, LispObject b);
+extern LispObject Nbyte(LispObject env, LispObject a, LispObject b);
+extern LispObject Nbyte_position(LispObject env, LispObject a);
+extern LispObject Nbyte_size(LispObject env, LispObject a);
 
 #endif // header_arith_defs_h
 

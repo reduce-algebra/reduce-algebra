@@ -1,4 +1,4 @@
-% Generated using doxtract Sat Jan  9 14:40:43 2021
+% Generated using doxtract Tue Oct 25 21:38:53 2022
 \documentclass[a4paper,11pt]{article}
 \title{CSL reference}
 \author{A C Norman}
@@ -13,7 +13,7 @@ are the ones that are initially present in a raw CSL image. Some
 proportion of them are not really intended to be used by end-users but
 are merely the internal components of some feature.
 
-% Generating section 01 [options] with 46 subsections
+% Generating section 01 [options] with 51 subsections
 \section{Command-line options}
 The items shown here are the ones that are recognized on the CSL command
 line. In general an option that requires an argument can be written as either
@@ -57,6 +57,16 @@ insensitive.
           * debugging where it may be important to see when a garbage collection occurs
           * but undesirable to change the input script at all.
 
+\item [{\ttfamily --gc-every}] \index{{\ttfamily --gc-every}}
+          * --gc-every=N forced a GC every N conses (if N!=0).
+
+\item [{\ttfamily --gc-stop}] \index{{\ttfamily --gc-stop}}
+          * --gc-stop=N stops at the start of GC number N.
+
+\item [{\ttfamily --gc-trace}] \index{{\ttfamily --gc-trace}}
+          * --gc-trace leads to copious debugging trace output from garbage collection.
+          * --gc-trace=N only starts that for GC number N and beyond.
+
 \item [{\ttfamily --gc-trigger}] \index{{\ttfamily --gc-trigger}}
           * --gc-trigger=NNNN causes a garbage collection to be forced on the NNNNth
           * occasion when that could possibly happen. This may sometimes be relevant
@@ -79,6 +89,11 @@ insensitive.
           * console to display the help text in, and organizes a delay to give
           * people a chance to read it.
 
+\item [{\ttfamily --ignore-load-time}] \index{{\ttfamily --ignore-load-time}}
+          * By default the time spend loading or autoloading optional
+          * modules is accounted by CSL as part of "garbage collector time".
+          * If this option is set it is just not recorded at all.
+
 \item [{\ttfamily --kara}] \index{{\ttfamily --kara}}
           * This it is intended for use by those maintaining CSL not for the general
           * public. By default long multiplication can use a threaded implementation
@@ -93,6 +108,9 @@ insensitive.
           * at any time when it feels that would be useful.This option can be used to
           * set an approximate limit on the amount it will use. See also -k
 
+\item [{\ttfamily --mem}] \index{{\ttfamily --mem}}
+          * See "-k" which behaves exactly the same.
+
 \item [{\ttfamily --no-rcfile}] \index{{\ttfamily --no-rcfile}}
           * Instruct the system not to read a user-specific configuation file, which
           * make have such a names as ``{\ttfamily .reducerc}'', at startup time. This
@@ -102,11 +120,6 @@ insensitive.
 \item [{\ttfamily --nogui}] \index{{\ttfamily --nogui}}
           * Encourage the system to run as a console-style application. Similar
           * to {\ttfamily -w-} or just simply {\ttfamily -w}.
-
-\item [{\ttfamily --stop-on-error}] \index{{\ttfamily --stop-on-error}}
-          * This utterly defeats errorset and arranges that if there is any error that
-          * after whatever backtrace might have been generated any inner errorset
-          * just propagates the error out, and at the top level the system exits.
 
 \item [{\ttfamily --texmacs}] \index{{\ttfamily --texmacs}}
           * If CSL/Reduce is launched from texmacs this command-line flag should be
@@ -131,6 +144,11 @@ item [{ttfamily --wait}] index{{ttfamily --wait}}
           * start of a run. This may be useful for those who have built everything
           * with debugging options and then want to start it fairly normally and
           * then attach from gdb or some other debugger.
+
+\item [{\ttfamily --waste}] \index{{\ttfamily --waste}}
+          * --waste N performs N useless CONS operations during startup
+          * so that memory layout and GC patterns are changed from the
+          * default
 
 \item [{\ttfamily -a}] \index{{\ttfamily -a}}
           * {\ttfamily -a} is a curious option, not intended for general or casual use.
@@ -230,7 +248,8 @@ item [{ttfamily --wait}] index{{ttfamily --wait}}
           * gigabytes, with megabytes being the default. So {\ttfamily -K200M} might
           * represent typical usage for common-sized computations. In general CSL
           * will automatically expand its heap, and so it should normally never be
-          * necessary to use this option.
+          * necessary to use this option. It is legal to specify floating point
+          * values such as -K1.2G.
 
 \item [{\ttfamily -l}] \index{{\ttfamily -l}}
           * This is to send a copy of the standard output to a named log file. It is
@@ -265,9 +284,9 @@ item [{ttfamily --wait}] index{{ttfamily --wait}}
 \item [{\ttfamily -r}] \index{{\ttfamily -r}}
           * The random-number generator in CSL is normally initialised to a value
           * that is intended not to be reproducible from run to run.
-          * In many cases that behavious is desirable, but for debugging it can be useful
-          * to force a seed. The directive {\ttfamily -r nnn,mmm} sets the seed to
-          * up to 64 bits taken from the values nnn and mmm. The second value if optional,
+          * In many cases that behaviour is desirable, but for debugging it can be useful
+          * to force a seed. The directive {\ttfamily -r nnn} sets the seed to
+          * up to 64 bits taken from the value nnn.
           * and specifying {\ttfamily -r0}  explicitly asks for the non-reproducible
           * behaviour (I hope). Note that the main Reduce-level random number source is
           * coded at a higher level and does not get reset this way -- this is the

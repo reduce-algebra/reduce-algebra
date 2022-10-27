@@ -333,7 +333,7 @@ uint64_t LowBits::op(LispObject a)
 uint64_t LowBits::op(Fixnum a)
 {   return arithlib_lowlevel::LowBits::op(a.intval());
 }
-uint64_t LowBitd::op(uint64_t *a)
+uint64_t LowBits::op(uint64_t *a)
 {   return arithlib_lowlevel::LowBits::op(a);
 }
 
@@ -515,6 +515,100 @@ LispObject Ninorm(LispObject env, LispObject a, LispObject k)
     a = cons(a, fixnum_of_int(kk));
     return onevalue(a);
 #endif // 0
+}
+
+LispObject Nboole(LispObject env, LispObject op,
+                  LispObject a1, LispObject a2)
+{   LispObject r;
+    THREADID;
+    switch (is_fixnum(op) ? int_of_fixnum(op) : -1)
+    {   case boole_clr:
+            return onevalue(fixnum_of_int(0));
+        case boole_and:
+            r = Logand::op(a1, a2);
+            break;
+        case boole_andc2:
+            {   Save save(THREADARG a1);
+                a2 = Lognot::op(a2);
+                errexit();
+                save.restore(a1);
+            }
+            r = Logand::op(a1, a2);
+            break;
+        case boole_1:
+            return onevalue(a1);
+        case boole_andc1:
+            {   Save save(THREADARG a2);
+                a1 = Lognot::op(a1);
+                errexit();
+                save.restore(a2);
+            }
+            r = Logand::op(a1, a2);
+            break;
+        case boole_2:
+            return onevalue(a2);
+        case boole_xor:
+            r = Logxor::op(a1, a2);
+            break;
+        case boole_ior:
+            r = Logor::op(a1, a2);
+            break;
+        case boole_nor:
+            a1 = Logor::op(a1, a2);
+            errexit();
+            r = Lognot::op(a1);
+            break;
+        case boole_eqv:
+            r = Logeqv::op(a1, a2);
+            break;
+        case boole_c2:
+            r = Lognot::op(a2);
+            break;
+        case boole_orc2:
+            {   Save save(THREADARG a1);
+                a2 = Lognot::op(a2);
+                errexit();
+                save.restore(a1);
+            }
+            r = Logor::op(a1, a2);
+            break;
+        case boole_c1:
+            r = Lognot::op(a1);
+            break;
+        case boole_orc1:
+            {   Save save(THREADARG a2);
+                a1 = Lognot::op(a1);
+                errexit();
+                save.restore(a2);
+            }
+            r = Logor::op(a1, a2);
+            break;
+        case boole_nand:
+            a1 = Logand::op(a1, a2);
+            errexit();
+            r = Lognot::op(a1);
+            break;
+        case boole_set:
+            return onevalue(fixnum_of_int(-1));
+        default:
+            return aerror1("bad arg for boole",  op);
+    }
+    return onevalue(r);
+}
+
+LispObject Nbyte(LispObject env, LispObject a, LispObject b)
+{   a = cons(a, b);
+    return onevalue(a);
+}
+
+LispObject Nbyte_position(LispObject env, LispObject a)
+{   if (!consp(a)) return aerror1("byte-position", a);
+    else return onevalue(cdr(a));
+}
+
+LispObject Nbyte_size(LispObject env, LispObject a)
+{   if (!consp(a)) return aerror1("byte-size", a);
+    else return onevalue(car(a));
 }
 
 #endif // ARITHLIB

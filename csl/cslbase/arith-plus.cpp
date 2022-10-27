@@ -851,6 +851,20 @@ LispObject Minus::op(LFlt a)
 {   return make_boxfloat128(f128_sub(i64_to_f128(0), a.floatval()));
 }
 
+// xdifference is provided just for the support of the CASE operator. It
+// subtracts its arguments but returns NIL if either argument is not
+// an small integer or if the result overflows. Small is 28-bits in this
+// context at present, which is maybe strange!
+
+LispObject Nxdifference(LispObject env, LispObject a, LispObject b)
+{   int32_t r;
+    if (!is_fixnum(a) || !is_fixnum(b)) return onevalue(nil);
+    r = int_of_fixnum(a) - int_of_fixnum(b);
+    if (r < -0x08000000 || r > 0x07ffffff) return onevalue(nil);
+    return onevalue(fixnum_of_int(r));
+}
+
+
 #endif // ARITHLIB
 
 // end of arith-plus.cpp
