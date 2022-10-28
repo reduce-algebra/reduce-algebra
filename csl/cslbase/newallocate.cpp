@@ -101,6 +101,11 @@ LispObject get_symbol(bool gensymp)
 
 LispObject get_basic_vector(int tag, int type, size_t size)
 {
+#ifdef ARITHLIB
+    static int count = 0;
+    if (type == TYPE_BIGNUM && garbage_collection_permitted && ++count < 10)
+        zprintf("creating old style bignum @" LOCATION "\n");
+#endif // ARITHLIB
 // tag is the value (e.g. TAG_VECTOR) that will go in the low order
 // 3 bits of the pointer result.
 // type is the code (e.g. TYPE_STRING) that gets packed, together with

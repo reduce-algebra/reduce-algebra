@@ -2058,23 +2058,19 @@ typedef struct Rational_Number_
 } Rational_Number;
 
 inline LispObject numerator(LispObject r)
-{   return ((Rational_Number *)(bit_cast<char *>
-                                (r)-TAG_NUMBERS))->num;
+{   return ((Rational_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->num;
 }
 
 inline LispObject denominator(LispObject r)
-{   return ((Rational_Number *)(bit_cast<char *>
-                                (r)-TAG_NUMBERS))->den;
+{   return ((Rational_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->den;
 }
 
 inline void setnumerator(LispObject r, LispObject v)
-{   ((Rational_Number *)(bit_cast<char *>
-                         (r)-TAG_NUMBERS))->num = v;
+{   ((Rational_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->num = v;
 }
 
 inline void setdenominator(LispObject r, LispObject v)
-{   ((Rational_Number *)(bit_cast<char *>
-                         (r)-TAG_NUMBERS))->den = v;
+{   ((Rational_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->den = v;
 }
 
 typedef struct Complex_Number_
@@ -2084,23 +2080,19 @@ typedef struct Complex_Number_
 } Complex_Number;
 
 inline LispObject real_part(LispObject r)
-{   return ((Complex_Number *)(bit_cast<char *>
-                               (r)-TAG_NUMBERS))->real;
+{   return ((Complex_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->real;
 }
 
 inline LispObject imag_part(LispObject r)
-{   return ((Complex_Number *)(bit_cast<char *>
-                               (r)-TAG_NUMBERS))->imag;
+{   return ((Complex_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->imag;
 }
 
 inline void setreal_part(LispObject r, LispObject v)
-{   ((Complex_Number *)(bit_cast<char *>
-                        (r)-TAG_NUMBERS))->real = v;
+{   ((Complex_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->real = v;
 }
 
 inline void setimag_part(LispObject r, LispObject v)
-{   ((Complex_Number *)(bit_cast<char *>
-                        (r)-TAG_NUMBERS))->imag = v;
+{   ((Complex_Number *)(bit_cast<char *>(r)-TAG_NUMBERS))->imag = v;
 }
 
 typedef struct Single_Float_
@@ -2113,18 +2105,15 @@ typedef struct Single_Float_
 } Single_Float;
 
 inline float& single_float_val(LispObject v)
-{   return ((Single_Float *)(bit_cast<char *>
-                             (v)-TAG_BOXFLOAT))->f.f;
+{   return ((Single_Float *)(bit_cast<char *>(v)-TAG_BOXFLOAT))->f.f;
 }
 
 inline float32_t& float32_t_val(LispObject v)
-{   return ((Single_Float *)(bit_cast<char *>
-                             (v)-TAG_BOXFLOAT))->f.f32;
+{   return ((Single_Float *)(bit_cast<char *>(v)-TAG_BOXFLOAT))->f.f32;
 }
 
 inline int32_t& intfloat32_t_val(LispObject v)
-{   return ((Single_Float *)(bit_cast<char *>
-                             (v)-TAG_BOXFLOAT))->f.i;
+{   return ((Single_Float *)(bit_cast<char *>(v)-TAG_BOXFLOAT))->f.i;
 }
 
 // The structures here are not actually used - because I can not get
@@ -2153,40 +2142,33 @@ typedef union _Double_union
 
 INLINE_VAR constexpr size_t SIZEOF_DOUBLE_FLOAT = 16;
 inline double *double_float_addr(LispObject v)
-{   return bit_cast<double *>(bit_cast<char *>(v) +
-                                      (8-TAG_BOXFLOAT));
+{   return bit_cast<double *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 // on 32-bit machines there has to be a padding work in a double_float,
 // and this lets me clear it out.
 inline int32_t& double_float_pad(LispObject v)
-{   return *bit_cast<int32_t *>(bit_cast<char *>
-                                        (v) + (4-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (4-TAG_BOXFLOAT));
 }
 
 inline double& double_float_val(LispObject v)
-{   return *bit_cast<double *>(bit_cast<char *>(v) +
-                                       (8-TAG_BOXFLOAT));
+{   return *bit_cast<double *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline float64_t& float64_t_val(LispObject v)
-{   return *bit_cast<float64_t *>(bit_cast<char *>
-                                          (v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<float64_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat64_t_val(LispObject v)
-{   return *bit_cast<int64_t *>(bit_cast<char *>
-                                        (v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<int64_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat64_t_val_hi(LispObject v)
-{   return *bit_cast<int32_t *>(bit_cast<char *>
-                                        (v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat64_t_val_lo(LispObject v)
-{   return *bit_cast<int32_t *>(
-               bit_cast<char *>(v) + (12-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (12-TAG_BOXFLOAT));
 }
 
 // Again I do not actually introduce the struct...
@@ -2213,56 +2195,43 @@ inline int32_t& intfloat64_t_val_lo(LispObject v)
 #ifdef HAVE_SOFTFLOAT
 INLINE_VAR constexpr size_t SIZEOF_LONG_FLOAT = 24;
 inline float128_t *long_float_addr(LispObject v)
-{   return (float128_t *)(bit_cast<char *>(v) +
-                          (8-TAG_BOXFLOAT));
+{   return (float128_t *)(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& long_float_pad(LispObject v)
-{   return *bit_cast<int32_t *>(bit_cast<char *>
-                                        (v) + (4-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (4-TAG_BOXFLOAT));
 }
 
 inline float128_t& long_float_val(LispObject v)
-{   return *bit_cast<float128_t *>(bit_cast<char *>
-                                           (v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<float128_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline float128_t& float128_t_val(LispObject v)
-{   return *bit_cast<float128_t *>(bit_cast<char *>
-                                           (v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<float128_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat128_t_val0(LispObject v)
-{   return *bit_cast<int64_t *>(
-               bit_cast<char *>(
-                   v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<int64_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat128_t_val1(LispObject v)
-{   return *bit_cast<int64_t *>(
-               bit_cast<char *>(
-                   v) + (16-TAG_BOXFLOAT));
+{   return *bit_cast<int64_t *>(bit_cast<char *>(v) + (16-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_0(LispObject v)
-{   return *bit_cast<int32_t *>(
-               bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_1(LispObject v)
-{   return *bit_cast<int32_t *>(
-               bit_cast<char *>(v) + (12-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (12-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_2(LispObject v)
-{   return *bit_cast<int32_t *>(
-               bit_cast<char *>(
-                   v) + (16-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (16-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat128_t_val32_3(LispObject v)
-{   return *bit_cast<int32_t *>(
-               bit_cast<char *>(v) + (20-TAG_BOXFLOAT));
+{   return *bit_cast<int32_t *>(bit_cast<char *>(v) + (20-TAG_BOXFLOAT));
 }
 #endif // HAVE_SOFTFLOAT
 

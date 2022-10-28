@@ -34,7 +34,6 @@
 // $Id$
 
 #include "headers.h"
-#include "dispatch.h"
 
 // Each generic arithmetic operation will involve a class styled rather
 // along the lines of this one. It will use mechanisms from the header

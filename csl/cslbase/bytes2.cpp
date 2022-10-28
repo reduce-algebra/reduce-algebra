@@ -1571,7 +1571,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     }
                 }
                 exit_value = A_reg;
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
 // Here after performing the unwind-protect code I must restore a throw
 // action that was the same sort as the one that caused me to arrive. I
 // think that will involve switching on exit_reason and trying to re-create
@@ -1598,7 +1598,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (r2==nil) return aerror1("throw: tag not found", r1);
                 exit_tag = r2;
                 exit_value = A_reg;
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 exit_reason = UNWIND_THROW;
                 THROW(LispThrow);
 
@@ -1641,7 +1641,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
                 else A_reg = f0(r1);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -1968,7 +1968,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                                  stack-1);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CALL1_1:
@@ -2000,7 +2000,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2016,7 +2016,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-2);
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2046,7 +2046,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2060,7 +2060,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
                 else A_reg = f2(r1, A_reg, B_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2075,7 +2075,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
                 else A_reg = f3(r1, r2, B_reg, A_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2089,7 +2089,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = basic_elt(litvec,
                                   (bit_cast<unsigned char *>(codevec))[ppc]);
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 ppc++;
                 errexit();
                 continue;
@@ -2105,7 +2105,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call0(basic_elt(litvec, 0), f0,
                                          make_undefined_symbol(no_arg_names[previous_byte]));
                 else A_reg = f0(nil);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2118,7 +2118,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          make_undefined_symbol(one_arg_names[previous_byte]),
                                          A_reg);
                 A_reg = f1(nil, A_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2131,7 +2131,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          make_undefined_symbol(two_arg_names[previous_byte]),
                                          B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2144,7 +2144,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          make_undefined_symbol(two_arg_names[previous_byte]),
                                          A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2158,7 +2158,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                                          make_undefined_symbol(three_arg_names[previous_byte]),
                                          r1, B_reg, A_reg);
                 else A_reg = f3(nil, r1, B_reg, A_reg);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 
@@ -2171,79 +2171,79 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_LOADLOC:
                 B_reg = A_reg;
                 A_reg = stack[-static_cast<int>(next_byte)];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC0:
                 B_reg = A_reg;
                 A_reg = stack[-0];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC1:
                 B_reg = A_reg;
                 A_reg = stack[-1];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC2:
                 B_reg = A_reg;
                 A_reg = stack[-2];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC3:
                 B_reg = A_reg;
                 A_reg = stack[-3];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC4:
                 B_reg = A_reg;
                 A_reg = stack[-4];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC5:
                 B_reg = A_reg;
                 A_reg = stack[-5];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC6:
                 B_reg = A_reg;
                 A_reg = stack[-6];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC7:
                 B_reg = A_reg;
                 A_reg = stack[-7];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC8:
                 B_reg = A_reg;
                 A_reg = stack[-8];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC9:
                 B_reg = A_reg;
                 A_reg = stack[-9];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC10:
                 B_reg = A_reg;
                 A_reg = stack[-10];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOADLOC11:
                 B_reg = A_reg;
                 A_reg = stack[-11];
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CAR:
@@ -2252,7 +2252,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC0:
@@ -2263,7 +2263,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC1:
@@ -2274,7 +2274,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC2:
@@ -2285,7 +2285,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC3:
@@ -2296,7 +2296,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC4:
@@ -2307,7 +2307,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC5:
@@ -2318,7 +2318,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC6:
@@ -2329,7 +2329,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC7:
@@ -2340,7 +2340,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC8:
@@ -2351,7 +2351,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC9:
@@ -2362,7 +2362,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC10:
@@ -2373,7 +2373,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CARLOC11:
@@ -2384,7 +2384,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = carerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_CDR:
@@ -2393,7 +2393,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   A_reg = cdrerror(A_reg);
                     errexit();
                 }
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_STORELOC:
@@ -2582,7 +2582,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 return nil;
 
             case OP_PUSH:
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 *++stack = A_reg;
                 continue;
 
@@ -2604,7 +2604,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_POP:
                 B_reg = A_reg;
                 A_reg = *stack--;
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 continue;
 
             case OP_LOSE:
@@ -2673,7 +2673,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_GET:                                    // A = get(B, A)
                 A_reg = get(B_reg, A_reg, nil);
-                assert(A_reg != 0);
+                my_assert(A_reg != 0);
                 errexit();
                 continue;
 

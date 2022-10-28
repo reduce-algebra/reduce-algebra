@@ -1242,7 +1242,8 @@ bool eql_fn(LispObject a, LispObject b)
 // Actually in Common Lisp mode where I have short floats as immediate data
 // I have further pain here with (eql 0.0s -0.0s), and (eql NaN NaN) might
 // improperly return true because of the early EQ test. For Standard Lisp
-// I am going to make +0.0 and -0.0 equal.
+// I am going to make +0.0 and -0.0 equal at last for now - nut maybe I
+// will review that later.
     if (SIXTY_FOUR_BIT)
     {   if (a == XTAG_SFLOAT &&
             b == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
@@ -1285,7 +1286,8 @@ bool eql_fn(LispObject a, LispObject b)
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
         if (h != numhdr(b)) return false;
-        if (type_of_header(h) == TYPE_BIGNUM)
+        if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
+        else if (type_of_header(h) == TYPE_BIGNUM)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
             {   hh -= 4;

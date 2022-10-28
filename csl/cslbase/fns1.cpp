@@ -58,8 +58,13 @@ LispObject Lcount_up(LispObject)
 }
 
 LispObject integerp(LispObject p)
-{   if (is_fixnum(p) || (is_numbers(p) &&
-                         is_bignum(p))) return lisp_true;
+{   if (is_fixnum(p) ||
+#ifdef ARITHLIB
+        (is_numbers(p) && (is_bignum(p) || is_new_bignum(p))))
+        return lisp_true;
+#else // ARITHLIB
+        (is_numbers(p) && is_bignum(p))) return lisp_true;
+#endif
     else return nil;
 }
 

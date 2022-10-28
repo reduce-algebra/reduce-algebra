@@ -212,19 +212,13 @@ inline void my_assert(bool ok)
 
 INLINE_VAR char whereMsg[128];
 
-inline const char* whereFn(const char* file, int line)
-{   const char* p = std::strrchr(file, '/');
+inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
+{
+// This version is to explain the intent, but would not be constexpr
+    const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
     std::sprintf(whereMsg, "%.40s:%d", file, line);
-    return whereMsg;
-}
-
-// As above but with a user-provided message in there too.
-
-inline const char* whereFn(const char* file, int line, const char* msg)
-{   const char* p = std::strrchr(file, '/');
-    if (p != nullptr) file = p+1;
-    std::sprintf(whereMsg, "%.40s:%d %.50s", file, line, msg);
+    if (msg != nullptr) std::strcat(whereMsg, msg);
     return whereMsg;
 }
 

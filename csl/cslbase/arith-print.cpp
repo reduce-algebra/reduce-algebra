@@ -35,7 +35,6 @@
 // $Id$
 
 #include "headers.h"
-#include "dispatch.h"
 
 
 static thread_local std::vector<char> print_buffer;

@@ -39,7 +39,6 @@
 
 
 #include "headers.h"
-#include "dispatch.h"
 
 LispObject onebool(bool b)
 {   return onevalue(b ? lisp_true : nil);
@@ -195,8 +194,12 @@ LispObject Nsub1(LispObject env, LispObject a1)
 {   return onevalue(Difference::op(a1, fixnum_of_int(1)));
 }
 
+// Some of the predicates here are "generous" when given an argument
+// which is not a number, so for instance (onep 'rhubarb) returns nil.
+// Ditto zerop, plusp and minusp.
+
 LispObject Nonep(LispObject env, LispObject a1)
-{   return onebool(Onep::op(a1));
+{   return onebool(is_number(a1) && Onep::op(a1));
 }
 
 LispObject Nevenp(LispObject env, LispObject a1)
@@ -208,15 +211,15 @@ LispObject Noddp(LispObject env, LispObject a1)
 }
 
 LispObject Nzerop(LispObject env, LispObject a1)
-{   return onebool(Zerop::op(a1));
+{   return onebool(is_number(a1) && Zerop::op(a1));
 }
 
 LispObject Nminusp(LispObject env, LispObject a1)
-{   return onebool(Minusp::op(a1));
+{   return onebool(is_number(a1) && Minusp::op(a1));
 }
 
 LispObject Nplusp(LispObject env, LispObject a1)
-{   return onebool(Plusp::op(a1));
+{   return onebool(is_number(a1) && Plusp::op(a1));
 }
 
 LispObject Nminus(LispObject env, LispObject a1)
@@ -1604,6 +1607,7 @@ setup_type const arith_setup[] =
     DEF_1("lnot",         Nlognot),
     DEF_1("lsd",          Nlsd),
     DEF_1("msd",          Nmsd),
+    DEF_1("integer-length", Nmsd),
     DEF_1("logcount",     Nlogcount),
     DEF_2("lshift",       Nleftshift),
     DEF_2("ash",          Nleftshift),

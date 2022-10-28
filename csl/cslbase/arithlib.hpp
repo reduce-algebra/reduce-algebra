@@ -11008,8 +11008,8 @@ inline std::intptr_t value_of_current_modulus()
 }
 
 inline std::intptr_t SetModulus::op(std::int64_t n)
-{   if (n <= 1) return (std::intptr_t)aerror1("Invalid arg to set-modulus",
-                            int_to_handle(n));
+{   if (n < 1) return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+                                             int_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
     small_modulus = n;
     if (n <= 0xffffffffU) modulus_size = modulus_32;
@@ -11251,7 +11251,6 @@ inline std::intptr_t ModularMinus::op(std::uint64_t *a)
     return Difference::op(large_modulus(), a);
 }
 
-#pragma message ("general modular reciprocal")
 inline std::intptr_t general_modular_reciprocal(std::intptr_t a)
 {   return (std::intptr_t)aerror("not coded yet");
 }
