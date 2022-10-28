@@ -7449,7 +7449,7 @@ inline std::intptr_t IntegerLength::op(std::uint64_t *a)
 
 inline std::intptr_t IntegerLength::op(std::int64_t aa)
 {   std::uint64_t a;
-    if (aa == 0 || aa == -1) return 0;
+    if (aa == 0 || aa == -1) return int_to_handle(0);
     else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
     else a = aa;
     return int_to_handle(64-nlz(a));
