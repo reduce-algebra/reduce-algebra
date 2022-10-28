@@ -425,7 +425,7 @@ public:
 // When I (eventually) gain confidence in C99 I will use vsnprintf and
 // be safer.
 
-#define FWIN_BUFFER_SIZE  1000
+#define FWIN_BUFFER_SIZE  5000
 #define SPARE_FOR_VFPRINTF 200
 
   char fwin_buffer[FWIN_BUFFER_SIZE];
@@ -441,7 +441,7 @@ public:
 
   volatile int fwin_in, fwin_out;
 
-#define INPUT_BUFFER_LENGTH 512
+#define INPUT_BUFFER_LENGTH 2000
 
   int inputBufferLen;
   int inputBufferP;

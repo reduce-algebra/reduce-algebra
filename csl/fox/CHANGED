@@ -272,4 +272,9 @@ Sept 2021.    Flush stdout & stderr when - on the Mac - a call to execv
 May 2022.     Make path to help files canonical for benefit of the
               Ubuntu "snap" version of firefox.
 
+Oct 2022.     Increase a buffer length from around 500 to 2000 so that
+              longer input lines do not mess things up. This does not
+              address the underlying issue - it just means that you have
+              to have much longer lines to trigger it.
+
 <end of CHANGED>

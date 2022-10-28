@@ -812,6 +812,84 @@ LispObject Difference::op(LFlt a, LFlt b)
 {   return make_boxfloat128(f128_sub(a.floatval(), b.floatval()));
 }
 
+// add1
+
+LispObject Add1::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Add1>("add1", a);
+}
+
+LispObject Add1::op(Fixnum a)
+{   return arithlib_lowlevel::Add1::op(a.intval());
+}
+
+LispObject Add1::op(uint64_t *a)
+{   return arithlib_lowlevel::Add1::op(a);
+}
+
+LispObject Add1::op(Rat a)
+{   return make_ratio(Plus::op(a.numerator(), a.denominator()), a.denominator());
+}
+
+LispObject Add1::op(Cpx a)
+{   return make_complex(Add1::op(a.real_part()),
+                        a.imag_part());
+}
+
+LispObject Add1::op(SFlt a)
+{   return pack_short_float(a.floatval() + 1.0);
+}
+
+LispObject Add1::op(Flt a)
+{   return pack_single_float(a.floatval() + 1.0);
+}
+
+LispObject Add1::op(double a)
+{   return make_boxfloat(a + 1.0);
+}
+
+LispObject Add1::op(LFlt a)
+{   return make_boxfloat128(f128_add(i64_to_f128(1), a.floatval()));
+}
+
+// sub1
+
+LispObject Sub1::op(LispObject a)
+{   return number_dispatcher::unary<LispObject,Sub1>("sub1", a);
+}
+
+LispObject Sub1::op(Fixnum a)
+{   return arithlib_lowlevel::Sub1::op(a.intval());
+}
+
+LispObject Sub1::op(uint64_t *a)
+{   return arithlib_lowlevel::Sub1::op(a);
+}
+
+LispObject Sub1::op(Rat a)
+{   return make_ratio(Difference::op(a.numerator(), a.denominator()), a.denominator());
+}
+
+LispObject Sub1::op(Cpx a)
+{   return make_complex(Sub1::op(a.real_part()),
+                        a.imag_part());
+}
+
+LispObject Sub1::op(SFlt a)
+{   return pack_short_float(a.floatval() - 1.0);
+}
+
+LispObject Sub1::op(Flt a)
+{   return pack_single_float(a.floatval() - 1.0);
+}
+
+LispObject Sub1::op(double a)
+{   return make_boxfloat(a - 1.0);
+}
+
+LispObject Sub1::op(LFlt a)
+{   return make_boxfloat128(f128_add(i64_to_f128(-1), a.floatval()));
+}
+
 // minus
 
 LispObject Minus::op(LispObject a)
