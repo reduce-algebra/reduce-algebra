@@ -592,6 +592,11 @@ AC_ARG_WITH(arithlib,
   [],
   [with_arithlib="no"])
 
+if test "$with_arithlib" = "yes"
+then
+   enable_conservative="yes"
+fi
+
 AC_ARG_ENABLE(static,
   AS_HELP_STRING([--enable-static],
                  [link it all statically (CSL only)]),

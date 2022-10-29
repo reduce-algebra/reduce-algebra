@@ -1466,7 +1466,7 @@ down:
 // If I see that I will abandon reading and return in an error state.
                     fatal_error(err_bad_serialize);
                 case SER_REPEAT:
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
 // If you prefix something with "SER_REPEAT nn" then the opcode you next
 // use will be used nn+3 times. If the opcode uses operands then they
 // will be read for each instance, so perhaps this will make most sense
@@ -1640,7 +1640,7 @@ down:
 // you may a back-reference that applies a move to front strategy and
 // so multiple successive references to the same item will (after the
 // first) be "BACKREF 1" and that is not the "big" case as present here.
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
 // Back references with an offset from 1..64 are dealt with using special
 // compact opcodes. Here I have something that reaches further back. The main
 // opcode is followed by a sequence of bytes and if this represents the value
@@ -1715,7 +1715,7 @@ down:
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     GC_PROTECT(prev =
                         get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
                     *(LispObject*)p = w = prev;
@@ -1766,7 +1766,7 @@ down:
 // repeatedly. in the "GENSYM" case the name is the base-name of the gensym,
 // pergaps very often just "G", and the name read in will be set up as
 // if not yet printed, so a sequence number will be added leter.
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     {   size_t len = read_u64();
                         boffop = 0;
 // HAHAHA - if BOFFO does not exist properly at this stage then I am in
@@ -1798,20 +1798,20 @@ down:
 
                 case SER_FLOAT28:
 // A 28-bit short float
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     std::fprintf(stderr, "SER_FLOAT28 not coded yet\n");
                     my_abort("FLOAT28");
 
                 case SER_FLOAT32:
 // a 32-bit single float
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     GC_PROTECT(prev = make_boxfloat(read_f32(), WANT_SINGLE_FLOAT));
                     *(LispObject*)p = prev;
                     goto up;
 
                 case SER_FLOAT64:
 // a 64-bit (long) float
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
 // I can image the case of dumping a vector all of whose elements were the
 // value 0.0, and in the case supporting repeats here could be helpful.
 // But at present I think that will be an uncommon case with Reduce and so
@@ -1823,7 +1823,7 @@ down:
 #ifdef HAVE_SOFTFLOAT
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     GC_PROTECT(prev = make_boxfloat128(f128_0));
                     long_float_val(prev) = read_f128();
                     *(LispObject*)p = prev;
@@ -1855,7 +1855,7 @@ down:
                     goto up;
 
                 case SER_BITVEC:
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
@@ -1869,10 +1869,10 @@ down:
                     goto up;
 
                 case SER_NIL3:
-                    my_assert(opcode_repeats == 0);
+                    my_assert(opcode_repeats == 0, LOCATION);
                     opcode_repeats++;
                 case SER_NIL2:
-                    my_assert(c == SER_NIL3 || opcode_repeats == 0);
+                    my_assert(c == SER_NIL3 || opcode_repeats == 0, LOCATION);
                     opcode_repeats++;
                     c = SER_NIL;
                 case SER_NIL:
@@ -1910,7 +1910,7 @@ down:
 // that, and if they find it they re-hash before use, restoring the key to
 // just TYPE_HASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
-            my_assert(opcode_repeats == 0);
+            my_assert(opcode_repeats == 0, LOCATION);
             {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
                     tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                              TAG_VECTOR;
@@ -1985,7 +1985,7 @@ down:
 // the opcode byte and the type information is implicit. This code only copes
 // with strings with length 1-32. The associated data is JUST the bytes
 // making up the string, with padding at the end.
-            my_assert(opcode_repeats == 0);
+            my_assert(opcode_repeats == 0, LOCATION);
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *(LispObject*)p = prev;
@@ -2006,7 +2006,7 @@ down:
 // information.
 
         case SER_BVECTOR:
-            my_assert(opcode_repeats == 0);
+            my_assert(opcode_repeats == 0, LOCATION);
 // The general case for vectors containing binary information is followed
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.

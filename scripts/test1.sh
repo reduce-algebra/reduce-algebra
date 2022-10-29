@@ -172,6 +172,17 @@ do
       platforms="$platforms csl=$p"
       shift;
       ;;
+# Sitto --csl=arithlib
+    --csl=arithlib)
+      if test "$OS" = "Windows_NT"
+      then
+        p="x86_64-pc-cygwin-arithlib"
+      else
+        p="$mc-arithlib"
+      fi
+      platforms="$platforms csl=$p"
+      shift;
+      ;;
 # Otherwise in general the usage is "--csl=full-host-triple-opt1-opt2" etc.
     --csl=*)
       platforms="$platforms ${1#--}"

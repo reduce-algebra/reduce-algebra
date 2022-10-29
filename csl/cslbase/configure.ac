@@ -751,6 +751,8 @@ if test "$with_arithlib" = "yes"
 then
   CPPFLAGS="$CPPFLAGS -DARITHLIB=1"
   AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
+  AC_DEFINE(CONSERVATIVE, [1], [Needed for arithlib])
+  enable_conservative="yes"
 fi
 
 AC_ARG_WITH(throw,

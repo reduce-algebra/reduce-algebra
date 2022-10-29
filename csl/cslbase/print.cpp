@@ -2202,14 +2202,14 @@ restart:
 #ifdef COMMON
         print_non_simple_string:
 #endif
-            my_assert(len >= 0 && len < CSL_PAGE_SIZE);
+            my_assert(len >= 0 && len < CSL_PAGE_SIZE, LOCATION);
             switch (type_of_header(h))
             {   case TYPE_BPS_1:
                 case TYPE_BPS_2:
                 case TYPE_BPS_3:
                 case TYPE_BPS_4:
                     len = length_of_byteheader(h) - CELL;
-                    my_assert(len >= 0 && len < CSL_PAGE_SIZE);
+                    my_assert(len >= 0 && len < CSL_PAGE_SIZE, LOCATION);
                     outprefix(blankp, 3+2*len);
 // At some stage I should look at all the special notations that use "#"
 // and ensure that none clash. Well here we go...
@@ -2258,7 +2258,7 @@ restart:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
                     len = length_of_byteheader(h) - CELL;
-                    my_assert(len >= 0 && len < CSL_PAGE_SIZE);
+                    my_assert(len >= 0 && len < CSL_PAGE_SIZE, LOCATION);
                     {   int32_t slen = 0;
 // /*
 // Getting the width of strings that contain tabs correct here is
@@ -2670,7 +2670,7 @@ restart:
                 case TYPE_VEC16_1:
                 case TYPE_VEC16_2:
                     len = length_of_hwordheader(h);
-                    my_assert(len < CSL_PAGE_SIZE/2);
+                    my_assert(len < CSL_PAGE_SIZE/2, LOCATION);
                     outprefix(blankp, 5);
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('1', active_stream); putc_stream('6', active_stream);
@@ -2824,7 +2824,7 @@ restart:
                 }
 #endif
                 len = length_of_byteheader(h);  // counts in bytes
-                my_assert(len>=CELL && len < CSL_PAGE_SIZE);
+                my_assert(len>=CELL && len < CSL_PAGE_SIZE, LOCATION);
                 lenchars = 0;
 // Now see how many characters that is, allowing for utf-8 encoding
                 for (k=0; k<(len-CELL); k++)
@@ -3517,7 +3517,7 @@ LispObject prinraw(LispObject u)
     }
     if (is_numbers(u) && type_of_header(h = numhdr(u)) == TYPE_BIGNUM)
     {   len = length_of_header(h);
-        my_assert(len>=CELL && len < CSL_PAGE_SIZE);
+        my_assert(len>=CELL && len < CSL_PAGE_SIZE, LOCATION);
 #ifdef ARITHLIB
 // Mark the output so that it is visible that it is an old-style bignum.
         putc_stream('0', active_stream);
@@ -3532,7 +3532,7 @@ LispObject prinraw(LispObject u)
 #ifdef ARITHLIB
     else if (is_numbers(u) && type_of_header(h) == TYPE_NEW_BIGNUM)
     {   len = length_of_header(h);
-        my_assert(len>=8 && len < CSL_PAGE_SIZE);
+        my_assert(len>=8 && len < CSL_PAGE_SIZE, LOCATION);
         for (size_t i=8; i<len; i+=8)
         {   std::sprintf(b, "%.16" PRIx64 " ",
                          *(uint64_t *)(bit_cast<char *>(u) - TAG_NUMBERS + i));
@@ -4097,7 +4097,7 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     h = vechdr(a);
     if (!is_string_header(h)) return Lprint(env, a);
     len = length_of_byteheader(h) - CELL;
-    my_assert(len < CSL_PAGE_SIZE);
+    my_assert(len < CSL_PAGE_SIZE, LOCATION);
     p = bit_cast<const char *>(&celt(a, 0));
     THREADID;
     for (i=0; i<len; i++)
