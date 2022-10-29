@@ -3800,8 +3800,14 @@ void write_everything()
 {   set_up_function_tables();
 // These may have been messed with during the run. Reset them here to
 // be tidy.
+#ifdef ARITHLIB
+    garbage_collection_permitted = false;
+#endif // ARITHLIB
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
+#ifdef ARITHLIB
+    garbage_collection_permitted = true;
+#endif // ARITHLIB
     if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;

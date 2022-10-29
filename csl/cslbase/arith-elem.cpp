@@ -45,7 +45,6 @@
 
 
 #include "headers.h"
-#include "dispatch.h"
 
 
 /*****************************************************************************/
@@ -1557,51 +1556,37 @@ LispObject Nisqrt(LispObject, LispObject a)
 #endif
 
 LispObject Nabsval(LispObject env, LispObject a)
-// I call this Labsval not Labs because a non-case-sensitive linker
-// would confuse Labs with labs, and labs is defined in the C libraries...
-// Of course I do not think that case-insensitive linkers should be allowed
-// to remain in service....
-{   switch (static_cast<int>(a) & TAG_BITS)
-    {   case TAG_FIXNUM:
-//      case XTAG_SFLOAT:
-            break;
-        case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
-            switch (ha)
-            {   case TYPE_BIGNUM:
-                case TYPE_RATNUM:
-                    break;
-                case TYPE_COMPLEX_NUM:
-                {   Complex c1;
-                    double d;
-                    c1.real = float_of_number(real_part(a));
-                    c1.imag = float_of_number(imag_part(a));
-                    d = Cabs(c1);
-// /* I wonder if I am allowed to promote short or single values to
-//    double precision here?
-                    a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
-                    return onevalue(a);
-                }
-                default:
-                    return aerror1("bad arg for abs",  a);
-            }
-            break;
-        }
-        case TAG_BOXFLOAT:
-            break;
-        default:
-            return aerror1("bad arg for abs",  a);
+{   if (is_complex(a))
+    {   Complex c1;
+// This handles all complex values by mapping the two components to
+// floats. Well the eventual result is going to be sqrt(r^2 + i^2) and
+// I think it is acceptable to let the sqrt() function return a float
+// here even though cases such as abs #C(3,4) might have an exact integer
+// value. For now (at least) I will always compute and use a 64-bit float
+// even if the components of the complex are short, single or long.
+        c1.real = float_of_number(real_part(a));
+        c1.imag = float_of_number(imag_part(a));
+        double d = Cabs(c1);
+        a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
+        return onevalue(a);
     }
-    if (minusp(a)) a = negate(a);
-    return onevalue(a);
+    else if (is_ratio(a))
+    {   if (Minusp::op(numerator(a)))
+            return onevalue(make_ratio(Minus::op(numerator(a)),
+                                       denominator(a)));
+        else return onevalue(a);
+    }
+    else if (Minusp::op(a)) return onevalue(Minus::op(a));
+    else return onevalue(a);
 }
 
 LispObject Nphase(LispObject env, LispObject a)
-{   bool s;
-    double d;
-    if (is_numbers(a) && is_complex(a))
+{   if (is_numbers(a) && is_complex(a))
         return Latan2(nil, imag_part(a), real_part(a));
-    s = minusp(a);
+// If a is not a complex number it is real, so its phase is either
+// +pi or -pi.
+    bool s = minusp(a);
+    double d;
     if (s) d = -_pi;
     else d = _pi;
     a = make_boxfloat(d, WANT_DOUBLE_FLOAT);

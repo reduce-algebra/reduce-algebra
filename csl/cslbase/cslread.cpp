@@ -713,8 +713,6 @@ LispObject intern_hex_old(size_t len)
 
 #ifdef ARITHLIB
 
-#include "dispatch.h"
-
 LispObject intern_new(size_t len)
 {   LispObject v = fixnum_of_int(0);
     int32_t d = 0, d1 = 10;
@@ -1194,11 +1192,19 @@ static int orderp(LispObject u, LispObject v)
                 {   if (is_vector(v)) return ordpv(u, v);
                     else return -1;
                 }
+#ifdef ARITHLIB
                 else if (is_number(u))
-                {   if (is_number(v)) return lessp2(u, v) ? 1 :
-                                                 eql(u, v) ? 0 : -1;
+                {   if (is_number(v)) return Lessp::op(u, v) ? 1 :
+                                                eql(u, v) ? 0 : -1;
                     else return 1;
                 }
+#else // ARITHLIB
+                else if (is_number(u))
+                {   if (is_number(v)) return lessp2(u, v) ? 1 :
+                                                eql(u, v) ? 0 : -1;
+                    else return 1;
+                }
+#endif // ARITHLIB
                 else if (is_number(v)) return -1;
                 else if (is_symbol(u))
                 {   if (is_symbol(v)) return ordersymbol(u, v);

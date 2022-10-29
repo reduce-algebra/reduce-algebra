@@ -34,7 +34,6 @@
 // $Id$
 
 #include "headers.h"
-#include "dispatch.h"
 
 
 LispObject N_make_power_of_two(size_t n)

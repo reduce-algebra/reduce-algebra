@@ -223,6 +223,7 @@ inline double CSLpow(double x, double y)
 #include "arith.h"
 #ifdef ARITHLIB
 #include "arith-defs.h"
+#include "dispatch.h"
 #endif // ARITHLIB"
 #include "entries.h"
 #include "proc.h"
@@ -232,7 +233,8 @@ inline double CSLpow(double x, double y)
 #include "version.h"
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#endif
+#endif // __EMSCRIPTEN__
+
 
 namespace FX
 {

@@ -37,7 +37,6 @@
 // Logand, Logor etc. Also Shifts.
 
 #include "headers.h"
-#include "dispatch.h"
 
 using number_dispatcher::Fixnum;
 // uint64_t *
