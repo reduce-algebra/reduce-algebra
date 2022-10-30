@@ -1286,7 +1286,9 @@ bool eql_fn(LispObject a, LispObject b)
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
         if (h != numhdr(b)) return false;
+#ifdef ARITHLIIB
         if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
+#endif // ARITHLIB
         else if (type_of_header(h) == TYPE_BIGNUM)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
