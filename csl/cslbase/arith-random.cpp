@@ -33,8 +33,12 @@
 
 // $Id$
 
-#include "headers.h"
+// This is "random" in two senses! It contains some oddments of stray
+// functions, but also the ones that return random and pseudo-random
+// numbers.
 
+
+#include "headers.h"
 
 LispObject N_make_power_of_two(size_t n)
 //
@@ -778,144 +782,22 @@ LispObject Nrationalize(LispObject env, LispObject a)
 {   return onevalue(N_rationalize(a));
 }
 
-// I use a Mersenne Twister pseudo-random generator from the C++11 library.
-// For seeding it there is a severe misery in that the most obvious source
-// of unpredictability, ie std::random_devivce, is deterministic on some
-// platforms (including mingw32). So I seed my mersenene twister with
-// something based on what it returns AND on the time of day (and on the
-// identity of the current thread). You will see that I could easily add
-// other sources of entropy here.
-
-#ifndef AVOID_THREADS
-static std::random_device hopefully_random;
-#endif
-
-static std::seed_seq initial_random_seed
-{
-#ifndef AVOID_THREADS
-    hopefully_random(),
-    static_cast<unsigned int>(
-        std::hash<std::thread::id>()(std::this_thread::get_id())),
-#endif
-    static_cast<unsigned int>(std::time(nullptr)),
-    static_cast<unsigned int>(
-        std::chrono::high_resolution_clock::now().time_since_epoch().count())
-};
-static std::mt19937 mersenne_twister(initial_random_seed);
-
-static uint32_t NCrand()
-{   return mersenne_twister();
-}
-
-// If the user specifies a random number seed of zero I will try to
-// start things in as unpredictable a state as I reasonably can.
-// The security of "genuine random values" here depends on the quality of the
-// C++ implementation.
-
-static void NCsrand(uint64_t seed)
-{   if (seed == 0)
-    {   std::seed_seq random_seed
-        {
-#ifndef AVOID_THREADS
-            hopefully_random(),
-            static_cast<unsigned int>(
-                std::hash<std::thread::id>()(std::this_thread::get_id())),
-#endif
-            static_cast<unsigned int>(std::time(nullptr)),
-            static_cast<unsigned int>(
-                std::chrono::high_resolution_clock::now().
-                time_since_epoch().count())
-        };
-        mersenne_twister.seed(random_seed);
-    }
-    else
-    {   std::seed_seq user_seed
-        {   static_cast<unsigned int>(seed),
-            static_cast<unsigned int>(seed>>32)
-        };
-        mersenne_twister.seed(user_seed);
-    }
-}
-
-LispObject Nrandom_2(LispObject env, LispObject a, LispObject bb)
+LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
 {
 #ifdef COMMON
-    LispObject b;
 // Common Lisp expects an optional second arg to be used for the random
 // state - at present I do not support that, but it will not be too hard
 // when I get around to it...
-    b = bb;
 #endif // COMMON
     if (is_fixnum(a))
-    {   size_t v = int_of_fixnum(a), p, q;
-        if (v <= 0) return aerror1("random-number", a);
-// (random 1) always returns zero - a rather silly case!
-        else if (v == 1) return onevalue(fixnum_of_int(0));
-// I generate a value that is an exact multiple of my range (v) and
-// pick random bitpatterns until I find one less than that.  On average
-// I will have only VERY slightly more than one draw needed, and doing things
-// this way ought to ensure that my pseudo random numbers are uniformly
-// distributed provided that the underlying generator is well behaved.
-        if (SIXTY_FOUR_BIT)
-        {   p = v*(INT64_C(0x7fffffffffffffff)/v);
-            do
-            {   q = (int64_t)NCrand()<<31 ^ NCrand();
-            }
-            while (q > p);
-            return onevalue(fixnum_of_int(q % v));
-        }
-        else
-        {   p = v*(0x7fffffff/v);
-            do q = ((uint32_t)NCrand()) >> 1;
-            while (q > p);
-            return onevalue(fixnum_of_int(q % v));
-        }
-    }
-    if (is_numbers(a))
-    {   int32_t len, len1, msd;
-        uint32_t w, w1;
-        LispObject r;
-        if (!is_bignum(a)) return aerror1("random-number", a);
-        len = bignum_length(a);
-        {   THREADID;
-            Save save(THREADARG a);
-            r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-            errexit();
-            save.restore(a);
-        }
-        len1 = (len-CELL)/4-1;
-    restart:
-        len = len1;
-        msd = bignum_digits(a)[len];
-        if (msd < 0) return aerror("negative arg for random"); // -ve arg
-        if (msd == 0)
-        {   bignum_digits(r)[len] = 0;
-            len--;
-            msd = bignum_digits(a)[len];
-        }
-        for (;;)
-        {   w = (0xffffffffU/((uint32_t)msd+1U))*((uint32_t)msd+1U);
-            do w1 = (uint32_t)NCrand();
-            while (w1 >= w);
-            w1 = w1%((uint32_t)msd+1U);
-            bignum_digits(r)[len] = w1;
-            if ((int32_t)w1 != msd) break;
-// The loop to restart on the next line is when the random value I
-// have built up word by word ends up being equal to the input number - I
-// will discard it and start again in that case.
-            if (len == 0) goto restart;
-            len--;
-            msd = bignum_digits(a)[len];
-        }
-// having got some leading digits properly set up I can fill in the rest
-// as totally independent bit-patterns.
-        for (len--; len>=0; len--)
-            bignum_digits(r)[len] = ((uint32_t)NCrand())>>1;
-        a = shrink_bignum(r, len1);
-        return onevalue(a);
-    }
+         return arithlib_lowlevel::uniform_upto(a);
+    if (is_numbers(a) && is_new_bignum(a))
+        return arithlib_lowlevel::uniform_upto(a);
     if (is_bfloat(a))
     {   Header h = flthdr(a);
+        if (h == LONG_FLOAT_HEADER)
+        {   aerror1("random can not cope with long floats yet", a);
+        }
         double d = float_of_number(a), v;
 // The calculation here turns 62 bits of integer data into a floating
 // point number in the range 0.0 (inclusive) to 1.0 (exclusive).  Well,
@@ -926,25 +808,28 @@ LispObject Nrandom_2(LispObject env, LispObject a, LispObject bb)
 // the need for that extra test, but it does not seem very painful to me
 // and I prefer the more portable code.
         do
-        {   v = (static_cast<double>(static_cast<int32_t>
-                                     (NCrand() & 0x7fffffff) / TWO_31));
-            v += static_cast<double>(static_cast<int32_t>(NCrand() & 0x7fffffff));
-            v /= TWO_31;
-            v *= d;
-        }
-        while (v == d);
+        {   uint64_t r = arithlib::mersenne_twister();
+            v = static_cast<double>(r);
+            v /= 16384.0; // 2^16  I divide by 2^16 four times because
+            v /= 16384.0; // 2^16  I think that the literal for 2^64 is
+            v /= 16384.0; // 2^16  too big to be obvious or memorable and
+            v /= 16384.0; // 2^16  in the hope that a compiler will optimise!
+            v *= d;       // scale up to correct range
+        } 
+        while (v == d);   // loop on unusual case where FP value rounds up
         a = make_boxfloat(v, floatWant(h));
         return onevalue(a);
     }
     if (is_sfloat(a))
     {   Float_union d;
         Float_union v;
+// What I do here violates strict aliasing rules! I ought to use some
+// memcpy to be properly legal.
         d.f = value_of_immediate_float(a);
         do
-        {   v.f = static_cast<float>(
-                      static_cast<int32_t>(NCrand() & 0x7fffffff)) /
-                  static_cast<float>(TWO_31);
-            v.f = v.f*d.f;
+        {   uint64_t r = arithlib::mersenne_twister();
+            float r1 = static_cast<float>(r&0xffffffff)/16384.0/16384.0;
+            v.f = r1*d.f;
         }
         while ((v.i & ~0xf) == (d.i & ~0xf));
         d.f = v.f;
@@ -953,137 +838,32 @@ LispObject Nrandom_2(LispObject env, LispObject a, LispObject bb)
     return aerror1("random-number", a);
 }
 
-LispObject Nrandom_1(LispObject env, LispObject a)
-{   if (is_fixnum(a))
-    {   intptr_t v = int_of_fixnum(a), p, q;
-        if (v <= 0) return aerror1("random-number -ve argument", a);
-// (random 1) always returns zero - a rather silly case!
-        else if (v == 1) return onevalue(fixnum_of_int(0));
-// I generate a value that is an exact multiple of my range (v) and
-// pick random bitpatterns until I find one less than that.  On average
-// I will have only VERY slightly less than one draw needed, and doing things
-// this way ought to ensure that my pseudo random numbers are uniformly
-// distributed provided that the underlying generator is well behaved.
-        if (SIXTY_FOUR_BIT)
-        {   p = v*(INT64_C(0x7fffffffffffffff)/v);
-            do
-            {   q = (int64_t)NCrand()<<31 ^ NCrand();
-            }
-            while (q > p);
-            return onevalue(fixnum_of_int(q % v));
-        }
-        else
-        {   p = v*(0x7fffffff/v);
-            do q = ((uint32_t)NCrand()) >> 1;
-            while (q > p);
-            return onevalue(fixnum_of_int(q % v));
-        }
-    }
-    if (is_numbers(a))
-    {   int32_t len, len1, msd;
-        uint32_t w, w1;
-        LispObject r;
-        if (!is_bignum(a)) return aerror1("random-number", a);
-        len = bignum_length(a);
-        {   THREADID;
-            Save save(THREADARG a);
-            r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-            errexit();
-            save.restore(a);
-        }
-        len1 = (len-CELL)/4-1;
-    restart:
-        len = len1;
-        msd = bignum_digits(a)[len];
-        if (msd < 0) return aerror("negative arg for random"); // -ve arg
-        if (msd == 0)
-        {   bignum_digits(r)[len] = 0;
-            len--;
-            msd = bignum_digits(a)[len];
-        }
-        for (;;)
-        {   w = (0xffffffffU/((uint32_t)msd+1U))*((uint32_t)msd+1U);
-            do w1 = (uint32_t)NCrand();
-            while (w1 >= w);
-            w1 = w1%((uint32_t)msd+1U);
-            bignum_digits(r)[len] = w1;
-            if ((int32_t)w1 != msd) break;
-// The loop to restart on the next line is when the random value I
-// have built up word by word ends up being equal to the input number - I
-// will discard it and start again in that case.
-            if (len == 0) goto restart;
-            len--;
-            msd = bignum_digits(a)[len];
-        }
-// having got some leading digits properly set up I can fill in the rest
-// as totally independent bit-patterns.
-        for (len--; len>=0; len--)
-            bignum_digits(r)[len] = ((uint32_t)NCrand())>>1;
-        return onevalue(shrink_bignum(r, len1));
-    }
-    if (is_bfloat(a))
-    {   Header h = flthdr(a);
-        double d = float_of_number(a), v;
-// The calculation here turns 62 bits of integer data into a floating
-// point number in the range 0.0 (inclusive) to 1.0 (exclusive).  Well,
-// to be more precise, rounding the value to the machine's floating point
-// format may round it up to be exactly 1.0, so I discard and cases where
-// that happens (once in several blue moons...).  If I wrote code that
-// knew exactly how many bits my floating point format had I could avoid
-// the need for that extra test, but it does not seem very painful to me
-// and I prefer the more portable code.
-        do
-        {   v = static_cast<double>(
-                    static_cast<int32_t>(NCrand() & 0x7fffffff)) /
-                static_cast<double>(TWO_31);
-            v += static_cast<double>(
-                     static_cast<int32_t>(NCrand() & 0x7fffffff));
-            v /= TWO_31;
-            v *= d;
-        }
-        while (v == d);
-        a = make_boxfloat(v, floatWant(h));
-        return onevalue(a);
-    }
-    if (is_sfloat(a))
-    {   Float_union d;
-        Float_union v;
-        d.i = a - XTAG_SFLOAT;
-        do
-        {   v.f = static_cast<float>(
-                      static_cast<int32_t>(NCrand() & 0x7fffffff)) /
-                  static_cast<float>(TWO_31);
-            v.f = v.f*d.f;
-        }
-        while ((v.i & ~0xf) == (d.i & ~0xf));
-        d.f = v.f;
-        return onevalue(low32((d.i & ~0xf) + XTAG_SFLOAT));
-    }
-    return aerror1("random-number", a);
+LispObject Nrandom(LispObject env, LispObject a)
+{   return Nrandom(env, a, nil);
 }
 
 LispObject Nnext_random(LispObject)
 // Returns a random positive fixnum.  27 bits in this Lisp! At present this
 // returns 27 bits whether on a 32 or 64-bit machine...
-{   int32_t r = NCrand();
-    return onevalue(static_cast<LispObject>((r & 0x7ffffff0) + TAG_FIXNUM));
+{   uint64_t r = arithlib::mersenne_twister();
+    return onevalue(fixnum_of_int(r & 0x07ffffff));
 }
 
-LispObject Nmake_random_state(LispObject env, LispObject a,
-                              LispObject b)
-{
-// Nasty temporary hack here to allow me to set the seed for the
-// random number generator in Standard Lisp mode.
-// The second argument (b) is utterly ignored, and if the first argument is
-// noyt a number in the range 1..UINT32_MAX a non-repeatable new state will
-// be established.
-    NCsrand(thirty_two_bits_unsigned(a));
+LispObject Nmake_random_state(LispObject env, LispObject a, LispObject b)
+{   uint64_t seed = 0;
+    if (!is_fixnum(a)) seed = int_of_fixnum(a); 
+    arithlib_lowlevel::reseed(seed);
     return onevalue(nil);
 }
 
-LispObject Nmake_random_state1(LispObject env, LispObject a)
-{   NCsrand(thirty_two_bits_unsigned(a));
-    return onevalue(nil);
+LispObject Nmake_random_state(LispObject env, LispObject a)
+{   return Nmake_random_state(env, a, nil);
+}
+
+LispObject Npack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
+{   uint64_t high = v0 | (static_cast<uint64_t>(v1)<<32);
+    uint64_t low = v2 | (static_cast<uint64_t>(v3)<<32);
+    return arithlib_lowlevel::int128_to_bignum(high, low);
 }
 
 // The function md5() can be given a number or a string as an argument,
@@ -1095,157 +875,106 @@ LispObject Nmake_random_state1(LispObject env, LispObject a)
 // considered secure, so anybody worried by security needs at least sha2!
 
 LispObject Nmd5(LispObject env, LispObject a)
-{   LispObject r;
-    unsigned char md[16];
-    uint32_t v0, v1, v2, v3, v4;
-    int32_t len, i;
+{   unsigned char md[16];
+    uint32_t v0, v1, v2, v3;
+    size_t len, i;
+// I want the checksums that are computed to be the same whether I am on
+// a big or little-endian machine, so when I process integers I will
+// check map them onto byte-sequences that adapt for that.
     if (is_fixnum(a))
-    {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.7lx  ",
-                     static_cast<unsigned long>(a>>4)&0x0fffffff);
+    {   md[0] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[1] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[2] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[3] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[4] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[5] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[6] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[7] = a & 0xff;
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
     }
     else if (is_numbers(a) && is_bignum_header(numhdr(a)))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
-        for (i=CELL; i<len; i+=4)
-        {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.8x",
-                         (uint32_t)bignum_digits(a)[(i-CELL)/4]);
-            CSL_MD5_Update(md, 8);
+#ifdef __cpp_lib_endian // C++20 feature. Needs #include <bit>.
+        bool littleEndian = std::endian::native == std::endian::little;
+#else // __cpp_lib_endian
+        uint32_t w1 = 0x12345678;
+        char w2[4];
+        std::memcpy(w2, &w1, 4);
+        bool littleEndian = w2[0] == 0x78;
+#endif // __cpp_lib_endian
+        if (littleEndian)
+            CSL_MD5_Update(
+                reinterpret_cast<const unsigned char*>(&bignum_digits(a)[0]),
+                len-CELL);
+        else for (i=0; i<(len-CELL)/4; i++)
+        {   std::memcpy(md, &bignum_digits(a)[i], 4);
+            int b = md[0]; md[0] = md[3]; md[3] = b;
+            b = md[1]; md[1] = md[2]; md[2] = b;
+            CSL_MD5_Update(md, 4);
+        }
+    }
+    else if (is_numbers(a) && is_new_bignum_header(numhdr(a)))
+    {   len = length_of_header(numhdr(a));
+        CSL_MD5_Init();
+#ifdef __cpp_lib_endian
+        bool littleEndian = std::endian::native == std::endian::little;
+#else // __cpp_lib_endian
+        uint32_t w1 = 0x12345678;
+        char w2[4];
+        std::memcpy(w2, &w1, 4);
+        bool littleEndian = w2[0] == 0x78;
+#endif // __cpp_lib_endian
+        if (littleEndian)
+            CSL_MD5_Update(
+                reinterpret_cast<const unsigned char*>(a - TAG_NUMBERS + CELL),
+                len-CELL);
+        else for (i=CELL; i<len; i+=8)
+        {   std::memcpy(md,
+                reinterpret_cast<const unsigned char*>(a - TAG_NUMBERS + i), 8);
+            int b = md[0]; md[0] = md[7]; md[7] = b;
+            b = md[1]; md[1] = md[6]; md[6] = b;
+            b = md[2]; md[2] = md[5]; md[5] = b;
+            b = md[3]; md[3] = md[4]; md[4] = b;
+            CSL_MD5_Update(md, 4);
         }
     }
     else if (is_vector(a) && is_string(a))
     {   len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update((const unsigned char *)"\"", 1);
-        CSL_MD5_Update(bit_cast<unsigned char *>(a+CELL-TAG_VECTOR), len-CELL);
+        CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL - TAG_VECTOR),
+                       len-CELL);
     }
     else checksum(a);
     CSL_MD5_Final(md);
+// md5 produces a digest that is 128 bits. I wish to pack that as an
+// integer. Well I will start by collecting 4 32-bit chunks...
 //    for (i=0; i<16; i++) printf("%x ", md[i] & 0xff);
 //   printf("\n");
     v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
     v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
-// I will deal with cases where the top 64 bits are all zero first - very
-// uncommon I know, but disposing of that case here will simplify the code
-// that follows!
-    if (v3 == 0 && v2 == 0)
-    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
-        return onevalue(r);
-    }
-    v4 = v3 >> 28;
-    v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
-    v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
-    v1 = ((v1 << 1) | (v0 >> 31)) & 0x7fffffff;
-    v0 &= 0x7fffffff;
-// Note the funny tests. This is because in my representation the
-// top word of a bignum is a 2s complement signed value and to keep clear
-// of overflow that means I use an extra digit slightly before one might
-// imagine it is necessary!
-    if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
-    else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
-    else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else my_abort();  // All smaller cases were filtered earlier!
-    r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-    if (SIXTY_FOUR_BIT)
-    {   switch (len)
-        {   case CELL+20:
-                bignum_digits(r)[5] = 0;  // zeros out padding word as necessary
-                bignum_digits(r)[4] = v4;
-            case CELL+16:
-            case CELL+12:
-                bignum_digits(r)[3] = v3;
-                bignum_digits(r)[2] = v2;
-                bignum_digits(r)[1] = v1;
-                bignum_digits(r)[0] = v0;
-        }
-    }
-    else
-    {   switch (len)
-        {   case CELL+20:
-            case CELL+16:
-                bignum_digits(r)[4] = v4; // zeros out padding word as necessary
-                bignum_digits(r)[3] = v3;
-            case CELL+12:
-                bignum_digits(r)[2] = v2;
-                bignum_digits(r)[1] = v1;
-                bignum_digits(r)[0] = v0;
-        }
-    }
-//  validate_number("MD5", r, r, r);
-    return onevalue(r);
+    return onevalue(Npack_md5_result(v0, v1, v2, v3));
 }
 
 // For testing the MD5 code... processes a string "raw".
 
 LispObject Nmd5string(LispObject env, LispObject a)
-{   LispObject r;
-    unsigned char md[16];
-    uint32_t v0, v1, v2, v3, v4;
-    int32_t len, i;
+{   unsigned char md[16];
     if (is_vector(a) && is_string(a))
-    {   len = length_of_byteheader(vechdr(a));
+    {   size_t len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else return onevalue(nil);
     CSL_MD5_Final(md);
-    for (i=0; i<16; i++) std::printf("%x ", md[i] & 0xff);
+    for (int i=0; i<16; i++) std::printf("%x ", md[i]);
     std::printf("\n");
-    v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
-    v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
-    v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
-    v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
-    if (v3 == 0 && v2 == 0)
-    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
-        return onevalue(r);
-    }
-    v4 = v3 >> 28;
-    v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
-    v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
-    v1 = ((v1 << 1) | (v0 >> 31)) & 0x7fffffff;
-    v0 &= 0x7fffffff;
-// Note the funny tests. This is because in my representation the
-// top word of a bignum is a 2s complement signed value and to keep clear
-// of overflow that means I use an extra digit slightly before one might
-// imagine it is necessary!
-    if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
-    else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
-    else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else my_abort();
-    r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-    if (SIXTY_FOUR_BIT)
-    {   switch (len)
-        {   case CELL+20:
-                bignum_digits(r)[5] = 0;  // zeros out padding word as necessary
-                bignum_digits(r)[4] = v4;
-            case CELL+16:
-            case CELL+12:
-                bignum_digits(r)[3] = v3;
-                bignum_digits(r)[2] = v2;
-                bignum_digits(r)[1] = v1;
-                bignum_digits(r)[0] = v0;
-                break;
-        }
-    }
-    else
-    {   switch (len)
-        {   case CELL+20:
-            case CELL+16:
-                bignum_digits(r)[4] = v4; // zeros out padding word as necessary
-                bignum_digits(r)[3] = v3;
-            case CELL+12:
-                bignum_digits(r)[2] = v2;
-                bignum_digits(r)[1] = v1;
-                bignum_digits(r)[0] = v0;
-                break;
-        }
-    }
-//  validate_number("MD5", r, r, r);
-    return onevalue(r);
+    return onevalue(Npack_md5_result(md[0], md[1], md[2], md[3]));
 }
 
 // md60 is a function that uses MD5 but then returns just about 60 bits
@@ -1264,20 +993,67 @@ LispObject Nmd5string(LispObject env, LispObject a)
 LispObject Nmd60(LispObject env, LispObject a)
 {   unsigned char md[16];
     uint32_t v0, v1;
-    int32_t len, i;
+    size_t len, i;
+// I want the checksums that are computed to be the same whether I am on
+// a big or little-endian machine, so when I process integers I will
+// check map them onto byte-sequences that adapt for that.
     if (is_fixnum(a))
-    {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.7lx  ",
-                     static_cast<unsigned long>(a>>4) & 0x0fffffff);
+    {   md[0] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[1] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[2] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[3] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[4] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[5] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[6] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[7] = a & 0xff;
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
     }
     else if (is_numbers(a) && is_bignum_header(numhdr(a)))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
-        for (i=CELL; i<len; i+=4)
-        {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.8x",
-                         (uint32_t)bignum_digits(a)[(i-CELL)/4]);
-            CSL_MD5_Update(md, 8);
+#ifdef __cpp_lib_endian // C++20 feature. Needs #include <bit>.
+        bool littleEndian = std::endian::native == std::endian::little;
+#else // __cpp_lib_endian
+        uint32_t w1 = 0x12345678;
+        char w2[4];
+        std::memcpy(w2, &w1, 4);
+        bool littleEndian = w2[0] == 0x78;
+#endif // __cpp_lib_endian
+        if (littleEndian)
+            CSL_MD5_Update(
+                reinterpret_cast<const unsigned char*>(&bignum_digits(a)[0]),
+                len-CELL);
+        else for (i=0; i<(len-CELL)/4; i++)
+        {   std::memcpy(md, &bignum_digits(a)[i], 4);
+            int b = md[0]; md[0] = md[3]; md[3] = b;
+            b = md[1]; md[1] = md[2]; md[2] = b;
+            CSL_MD5_Update(md, 4);
+        }
+    }
+    else if (is_numbers(a) && is_new_bignum_header(numhdr(a)))
+    {   len = length_of_header(numhdr(a));
+        CSL_MD5_Init();
+#ifdef __cpp_lib_endian
+        bool littleEndian = std::endian::native == std::endian::little;
+#else // __cpp_lib_endian
+        uint32_t w1 = 0x12345678;
+        char w2[4];
+        std::memcpy(w2, &w1, 4);
+        bool littleEndian = w2[0] == 0x78;
+#endif // __cpp_lib_endian
+        if (littleEndian)
+            CSL_MD5_Update(
+                reinterpret_cast<const unsigned char*>(a - TAG_NUMBERS + CELL),
+                len-CELL);
+        else for (i=CELL; i<len; i+=8)
+        {   std::memcpy(md,
+                reinterpret_cast<const unsigned char*>(a - TAG_NUMBERS + i), 8);
+            int b = md[0]; md[0] = md[7]; md[7] = b;
+            b = md[1]; md[1] = md[6]; md[6] = b;
+            b = md[2]; md[2] = md[5]; md[5] = b;
+            b = md[3]; md[3] = md[4]; md[4] = b;
+            CSL_MD5_Update(md, 4);
         }
     }
     else if (is_vector(a) && is_string(a))
@@ -1293,11 +1069,17 @@ LispObject Nmd60(LispObject env, LispObject a)
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     uint64_t v = (uint64_t)v1<<32 | v0;
 // I discard 4 bits to allow for fixnum tag bits and one more so that the
-// number does not extend into the fixnum's sign bit. Of course on a 32-bit
-// machine it will almost always be a bignum using 2 digits.
-    a = make_lisp_unsigned64(v >> 5);
-//  validate_number("MD60", a, a, a);
-    return onevalue(a);
+// number does not extend into the fixnum's sign bit.
+// So maybe this in fact only keeps 59 bits.
+    return onevalue(make_lisp_unsigned64(v >> 5));
+}
+
+LispObject Nvalidate_number(LispObject env, LispObject a)
+{   return aerror1("validate-number not available or needed here", a);
+}
+
+LispObject Nvalidate_number(LispObject env, LispObject a, LispObject b)
+{   return aerror2("validate-number not available or needed here", a, b);
 }
 
 #endif // ARITHLIB

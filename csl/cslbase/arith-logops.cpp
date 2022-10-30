@@ -52,14 +52,17 @@ LispObject Logand::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,Logand>("logand", a,
             b);
 }
+
 LispObject Logand::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,Logand>("logand", a,
             b);
 }
+
 LispObject Logand::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,Logand>("logand", a,
             b);
 }
+
 LispObject Logand::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Logand>("logand", a,
             b);
@@ -90,14 +93,17 @@ LispObject Logor::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,Logor>("logor", a,
             b);
 }
+
 LispObject Logor::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,Logor>("logor", a,
             b);
 }
+
 LispObject Logor::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,Logor>("logor", a,
             b);
 }
+
 LispObject Logor::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Logor>("logor", a,
             b);
@@ -128,14 +134,17 @@ LispObject Logxor::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,Logxor>("logxor", a,
             b);
 }
+
 LispObject Logxor::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,Logxor>("logxor", a,
             b);
 }
+
 LispObject Logxor::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,Logxor>("logxor", a,
             b);
 }
+
 LispObject Logxor::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Logxor>("logxor", a,
             b);
@@ -166,14 +175,17 @@ LispObject Logeqv::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,Logeqv>("logeqv", a,
             b);
 }
+
 LispObject Logeqv::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,Logeqv>("logeqv", a,
             b);
 }
+
 LispObject Logeqv::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,Logeqv>("logeqv", a,
             b);
 }
+
 LispObject Logeqv::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,Logeqv>("logeqv", a,
             b);
@@ -199,22 +211,41 @@ LispObject Logeqv::op(Fixnum a, uint64_t *b)
 LispObject Logeqv::op(uint64_t *a, uint64_t *b)
 {   return arithlib_lowlevel::Logeqv::op(a, b);
 }
+
 LispObject Lognot::op(LispObject a)
 {   return number_dispatcher::iunary<LispObject,Lognot>("lognot", a);
 }
+
 LispObject Lognot::op(Fixnum a)
 {   return arithlib_lowlevel::Lognot::op(a.intval());
 }
+
 LispObject Lognot::op(uint64_t *a)
 {   return arithlib_lowlevel::Lognot::op(a);
 }
+
+LispObject Nlogbitp(LispObject env, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || (intptr_t)a1 < 0)
+        return aerror1("logbitp", a1);
+    if (!is_fixnum(a2) && (!is_numbers(a2) || !is_new_bignum(a2)))
+        return aerror1("logbitp", a2);
+    uintptr_t n = int_of_fixnum(a1);
+    return onebool(arithlib_lowlevel::Logbitp::op(a2, n));
+}
+
+LispObject Nlogtest(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Logand::op(a1, a2) != fixnum_of_int(0));
+}
+
 LispObject Logcount::op(LispObject a)
 {   return number_dispatcher::iunary<LispObject,Logcount>("logcount",
             a);
 }
+
 LispObject Logcount::op(Fixnum a)
 {   return arithlib_lowlevel::Logcount::op(a.intval());
 }
+
 LispObject Logcount::op(uint64_t *a)
 {   return arithlib_lowlevel::Logcount::op(a);
 }
@@ -223,14 +254,17 @@ LispObject LeftShift::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,LeftShift>("lshift",
             a, b);
 }
+
 LispObject LeftShift::op(LispObject a, Fixnum b)
 {   return number_dispatcher::ibinaryR<LispObject,LeftShift>("lshift",
             a, b);
 }
+
 LispObject LeftShift::op(LispObject a, uint64_t *b)
 {   return number_dispatcher::ibinaryR<LispObject,LeftShift>("lshift",
             a, b);
 }
+
 LispObject LeftShift::op(Fixnum a, LispObject b)
 {   return number_dispatcher::ibinaryL<LispObject,LeftShift>("lshift",
             a, b);
@@ -248,6 +282,7 @@ LispObject LeftShift::op(Fixnum a, Fixnum b)
 LispObject LeftShift::op(uint64_t *a, Fixnum b)
 {   return arithlib_lowlevel::LeftShift::op(a, b.intval());
 }
+
 LispObject bignum_value(uint64_t *a)
 {   return number_dispatcher::bignum_value(a);
 }
@@ -269,21 +304,23 @@ LispObject LeftShift::op(uint64_t *a, uint64_t *b)
     }
     else return aerror1("left shift by value that is too large",
                          bignum_value(b));
-
 }
 
 LispObject RightShift::op(LispObject a, LispObject b)
 {   return number_dispatcher::ibinary<LispObject,RightShift>("rshift",
             a, b);
 }
+
 LispObject RightShift::op(LispObject a, Fixnum b)
 {   return
         number_dispatcher::ibinaryR<LispObject,RightShift>("rshift", a, b);
 }
+
 LispObject RightShift::op(LispObject a, uint64_t *b)
 {   return
         number_dispatcher::ibinaryR<LispObject,RightShift>("rshift", a, b);
 }
+
 LispObject RightShift::op(Fixnum a, LispObject b)
 {   return
         number_dispatcher::ibinaryL<LispObject,RightShift>("rshift", a, b);
@@ -339,9 +376,11 @@ uint64_t LowBits::op(uint64_t *a)
 LispObject LowBit::op(LispObject a)
 {   return number_dispatcher::iunary<LispObject,LowBit>("lsd", a);
 }
+
 LispObject LowBit::op(Fixnum a)
 {   return arithlib_lowlevel::LowBit::op(a.intval());
 }
+
 LispObject LowBit::op(uint64_t *a)
 {   return arithlib_lowlevel::LowBit::op(a);
 }
@@ -349,9 +388,11 @@ LispObject LowBit::op(uint64_t *a)
 LispObject IntegerLength::op(LispObject a)
 {   return number_dispatcher::iunary<LispObject,IntegerLength>("msd", a);
 }
+
 LispObject IntegerLength::op(Fixnum a)
 {   return arithlib_lowlevel::IntegerLength::op(a.intval());
 }
+
 LispObject IntegerLength::op(uint64_t *a)
 {   return arithlib_lowlevel::IntegerLength::op(a);
 }
@@ -595,19 +636,112 @@ LispObject Nboole(LispObject env, LispObject op,
     return onevalue(r);
 }
 
-LispObject Nbyte(LispObject env, LispObject a, LispObject b)
-{   a = cons(a, b);
-    return onevalue(a);
-}
+// Common Lisp has a bunch of functions that treat integers are packed
+// bit sequences. A "byte" within an integer is specified by a pair
+// (size . position). My feeling is that this may have been a valuable
+// scheme for system programming on machine-int width integers where the
+// functions got open compiled but that it is not terribly sensible
+// when the size and position mean that the underpinning integer has to
+// be a bignum. So I will not demand that my support is super high-performance
+// since I do not expect anybody to use it! But if somebody imports some
+// Common Lisp code then having these here ready may assist them.
 
-LispObject Nbyte_position(LispObject env, LispObject a)
-{   if (!consp(a)) return aerror1("byte-position", a);
-    else return onevalue(cdr(a));
+static const int SIZE_LIMIT = 1024;
+static const int POSITION_LIMIT = 65536;
+static const int SIZE_SHIFT = 16;
+
+LispObject Nbyte(LispObject env, LispObject size, LispObject position)
+{   if (!is_fixnum(size) || !is_fixnum(position) ||
+        size <= 0 || position < 0 ||
+        size >= SIZE_LIMIT || position >= POSITION_LIMIT)
+        return aerror2("bytes", size, position);
+    return onevalue(fixnum_of_int(
+        (int_of_fixnum(size)<<SIZE_SHIFT) | int_of_fixnum(position)));
 }
 
 LispObject Nbyte_size(LispObject env, LispObject a)
-{   if (!consp(a)) return aerror1("byte-size", a);
-    else return onevalue(car(a));
+{   if (!is_fixnum(a)) return aerror1("byte-size", a);
+    else return onevalue(
+        fixnum_of_int((int_of_fixnum(a)>>SIZE_SHIFT) & (SIZE_LIMIT-1)));
+}
+
+LispObject Nbyte_position(LispObject env, LispObject a)
+{   if (!is_fixnum(a)) return aerror1("byte-position", a);
+    else return onevalue(
+        fixnum_of_int(int_of_fixnum(a) & (POSITION_LIMIT-1)));
+}
+
+// Since I do not expect these to be used I will implement them using
+// simple generic arithmetic. Well I expect that for fixnum sized
+// input integers that will in fact not be too bad!
+
+LispObject Nldb(LispObject env, LispObject bytespec, LispObject n)
+{   if (!is_fixnum(bytespec) ||
+        (!is_fixnum(n) && (!is_numbers(n) || !is_new_bignum(n))))
+        return aerror2("ldb", bytespec, n);
+    int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
+    if (size == 0) return aerror("zero width field in ldb");
+    int position = int_of_fixnum(bytespec) & (POSITION_LIMIT-1);
+    LispObject mask = Sub1::op(LeftShift::op(fixnum_of_int(1),
+                                             fixnum_of_int(size)));
+    return onevalue(Logand::op(
+        RightShift::op(n, fixnum_of_int(position)),
+        mask));
+}
+
+LispObject Nmask_field(LispObject env, LispObject bytespec, LispObject n)
+{   if (!is_fixnum(bytespec) ||
+        (!is_fixnum(n) && (!is_numbers(n) || !is_new_bignum(n))))
+        return aerror2("mask_field", bytespec, n);
+    int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
+    if (size == 0) return aerror("zero width field in ldb");
+    int position = int_of_fixnum(bytespec) & (POSITION_LIMIT-1);
+    LispObject mask = Sub1::op(LeftShift::op(fixnum_of_int(1),
+                                             fixnum_of_int(size)));
+    return onevalue(Logand::op(n,
+        LeftShift::op(mask, fixnum_of_int(position))));
+}
+
+LispObject Nldb_test(LispObject env, LispObject a1, LispObject a2)
+{   if (Nldb(env, a1, a2) == fixnum_of_int(0)) return onevalue(nil);
+    else return onevalue(lisp_true);
+}
+
+LispObject Ndpb(LispObject env, LispObject newData,
+                                LispObject bytespec, LispObject old)
+{   if (!is_fixnum(bytespec) ||
+        (!is_fixnum(old) && (!is_numbers(old) || !is_new_bignum(old))))
+        return aerror2("mask_field", bytespec, old);
+// mask = (1<<width - 1)<<position
+// (old & ~mask) | ((new<<position) & mask)
+    int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
+    if (size == 0) return aerror("zero width field in ldb");
+    int position = int_of_fixnum(bytespec) & (POSITION_LIMIT-1);
+    LispObject mask = Sub1::op(LeftShift::op(fixnum_of_int(1),
+                                             fixnum_of_int(size)));
+    mask = LeftShift::op(mask, fixnum_of_int(position));
+    old = Logand::op(old, Lognot::op(mask));
+    old = Logor::op(old,
+        Logand::op(mask, LeftShift::op(newData, fixnum_of_int(position))));
+    return onevalue(old);
+}
+
+LispObject Ndeposit_field(LispObject env, LispObject newData,
+                          LispObject bytespec, LispObject old)
+{   if (!is_fixnum(bytespec) ||
+        (!is_fixnum(old) && (!is_numbers(old) || !is_new_bignum(old))))
+        return aerror2("mask_field", bytespec, old);
+// mask = (1<<width - 1)<<position
+// (old & ~mask) | ((new<<position) & mask)
+    int size = (int_of_fixnum(bytespec)>>SIZE_SHIFT) & (SIZE_LIMIT-1);
+    if (size == 0) return aerror("zero width field in ldb");
+    int position = int_of_fixnum(bytespec) & (POSITION_LIMIT-1);
+    LispObject mask = Sub1::op(LeftShift::op(fixnum_of_int(1),
+                                             fixnum_of_int(size)));
+    mask = LeftShift::op(mask, fixnum_of_int(position));
+    old = Logand::op(old, Lognot::op(mask));
+    old = Logor::op(old, Logand::op(mask, newData));
+    return onevalue(old);
 }
 
 #endif // ARITHLIB

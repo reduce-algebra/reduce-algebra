@@ -1508,6 +1508,10 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
+#ifdef ARITHLIB
+                                else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+                                    return Eqn::op(a, b);
+#endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
                             }
@@ -1566,6 +1570,10 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         }
                         return true;
                     }
+#ifdef ARITHLIB
+                    else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+                        return Eqn::op(a, b);
+#endif // ARITHLIB
                     else return eql_numbers(a, b);
                 }
                 case TAG_VECTOR:
@@ -1800,6 +1808,10 @@ bool equal_fn(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
+#ifdef ARITHLIB
+                                else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+                                    return Eqn::op(a, b);
+#endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
                             }
@@ -1855,6 +1867,10 @@ bool equal_fn(LispObject a, LispObject b)
                         }
                         return true;
                     }
+#ifdef ARITHLIB
+                    else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+                        return Eqn::op(a, b);
+#endif // ARITHLIB
                     else return eql_numbers(a, b);
                 }
                 case TAG_VECTOR:
@@ -2003,6 +2019,10 @@ bool equalp(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
+#ifdef ARITHLIB
+                                else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+                                    return Eqn::op(a, b);
+#endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
                             }
@@ -2060,6 +2080,10 @@ bool equalp(LispObject a, LispObject b)
                         }
                         return true;
                     }
+#ifdef ARITHLIB
+                    else if (type_of_header(h) == TYPE_NEW_BIGNUM)
+                        return Eqn::op(a, b);
+#endif // ARITHLIB
                     else return eql_numbers(a, b);
                 }
                 case TAG_VECTOR:

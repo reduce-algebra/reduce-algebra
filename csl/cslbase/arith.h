@@ -492,6 +492,10 @@ extern LispObject make_n5_word_bignum(int32_t a4, uint32_t a3,
 
 extern LispObject make_power_of_two(size_t n);
 
+// For each of the next few I have an inline version that works for
+// small enough arguments then a version whose name has the suffix "_fn"
+// that gets called in the larger case.
+
 extern LispObject make_lisp_integer32_fn(int32_t n);
 inline LispObject make_lisp_integer32(int32_t n)
 {   if (SIXTY_FOUR_BIT ||
@@ -501,8 +505,7 @@ inline LispObject make_lisp_integer32(int32_t n)
 
 extern LispObject make_lisp_integer64_fn(int64_t n);
 inline LispObject make_lisp_integer64(int64_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int(
-                                           static_cast<intptr_t>(n));
+{   if (valid_as_fixnum(n)) return fixnum_of_int(static_cast<intptr_t>(n));
     else return make_lisp_integer64_fn(n);
 }
 
@@ -513,32 +516,25 @@ inline LispObject make_lisp_unsigned64(uint64_t n)
     else return make_lisp_unsigned64_fn(n);
 }
 
-extern LispObject make_lisp_integerptr_fn(intptr_t n);
-
-// There is a little C++ joke here. I had originally used valid_as_fixnum()
-// to test if the intptr_t value was suitably in range. That function provides
-// overloads for int32_t and int64_t. And for int128_t if I have a 128-bit
-// integer type available. It does not provide a direct overload for intptr_t
-// because that is liable to be one of the previous types and so would clash
-// and be rejected. Anyway on clang (on a Macintosh) is deemed ambiguous and
-// the code failed to compile. clang would allow me to add an extra overload
-// to valid_as_integer so there it is treating intptr_t as a new integer type
-// not exactly the same as int32_t or int64_t, rather as if it only has
-// preprocessor levels of understanding so it does not yet know which it is.
-// All this means that I need to go and read the C++ standard carefully, but
-// in the meanwhile having conservative code feels safer... so this comment is
-// the main cost.
+// There is a little C++ joke here.
+// If I try to provide overloads for arguments that are int32_t, int64_t and
+// also intptr_t then on some platforms intptr_t is viewed as identical to
+// one of the others and I get a complaint about multiple definition. While
+// on others it is a distinct type and is OK. If I then try omitting the
+// overload from it and call the function with an intptr_t I may get moans
+// about ambiguity. So I use a different name (ending in "ptr") here. Ugh.
+// I may need to understand the C++ specification in greater depth, but
+// while I get confused others could too... so safety is good.
 
 inline LispObject make_lisp_integerptr(intptr_t n)
-{   if (intptr_valid_as_fixnum(n)) return fixnum_of_int(n);
-    else return make_lisp_integerptr_fn(n);
+{   if (valid_as_fixnum(static_cast<intptr_t>(n))) return fixnum_of_int(n);
+    else return make_lisp_integer64_fn(static_cast<intptr_t>(n));
 }
 
-extern LispObject make_lisp_unsignedptr_fn(uintptr_t n);
 inline LispObject make_lisp_unsignedptr(uintptr_t n)
 {   if (n < (static_cast<uintptr_t>(1))<<(8*sizeof(intptr_t)-5))
-        return fixnum_of_int(static_cast<intptr_t>(n));
-    else return make_lisp_unsignedptr_fn(n);
+        return fixnum_of_int(static_cast<int64_t>(n));
+    else return make_lisp_unsigned64_fn(n);
 }
 
 extern LispObject make_lisp_integer128_fn(int128_t n);
@@ -1130,6 +1126,159 @@ extern float128_t f128_normmin;
 extern float128_t f128_negnormmin;  
 
 #endif // HAVE_SOFTFLOAT
+
+// The names here are for the benefit of code compiled into C++ using
+// ccomp.red.
+
+#ifdef ARITHLIB
+
+#define NABSVAL                 Labsval
+#define NASH                    Lash
+#define NASH1                   Lash1
+#define NATAN                   Latan
+#define NDIFFER                 Ldifference_2
+#define NEQN                    Leqn_2
+#define NEVENP                  Levenp
+#define NEXPT                   Lexpt
+#define NTRUNCATE               Ltruncate
+#define NFLOAT                  Lfloat
+#define NGCD                    Lgcd_2
+#define NGEQ                    Lgeq_2
+#define NGREATERP               Lgreaterp_2
+#define NIADD1                  Liadd1
+#define NIDIFFERENCE            Lidifference_2
+#define NIGREATERP              Ligreaterp_2
+#define NILESSP                 Lilessp
+#define NIMIMUS                 Liminus
+#define NIMINUSP                Liminusp
+#define NIPLUS                  Liplus_2
+#define NIQUOTIENT              Liquotient_2
+#define NIREMAINDER             Liremainder_2
+#define NIRIGHTSHIFT            Lirightshift
+#define NISUB1                  Lisub1
+#define NITIMES                 Litimes_2
+#define NLCM                    Llcm_2
+#define NLEQ                    Lleq_2
+#define NLESSP                  Llessp_2
+#define NLOGNOT                 Llognot
+#define NMAX                    Lmax_2
+#define NMIN                    Lmin_2
+#define XNMINUS                 Lminus
+#define NMINUSP                 Lminusp
+#define NMOD                    Lmod_2
+#define NMODULAR_DIFFERENCE     Lmodular_difference
+#define NMODULAR_EXPT           Lmodular_expt
+#define NMODULAR_MINUS          Lmodular_minus
+#define NMODULAR_NUMBER         Lmodular_number
+#define NMODULAR_PLUS           Lmodular_plus
+#define NMODULAR_QUOTIENT       Lmodular_quotient
+#define NMODULAR_RECIPROCAL     Lmodular_reciprocal
+#define NMODULAR_TIMES          Lmodular_times
+#define NNEXT_RANDOM            Lnext_random
+#define NODDP                   Loddp
+#define NONEP                   Lonep
+#define NPLUS                   Lplus_2
+#define NPLUSP                  Lplusp
+#define NQUOTIENT               Lquotient_2
+#define NRANDOM                 Lrandom
+#define NRATIONAL               Lrational
+#define NREM                    Lrem_2
+#define NSET_SMALL_MODULUS      Lset_small_modulus
+#define NSUB1                   Lsub1
+#define NTIMES                  Ltimes_2
+#define NZEROP                  Lzerop
+#define DPLUS2                  plus2
+#define DDIFFERENCE2            difference2
+#define DADD1                   add1
+#define DSUB1                   sub1
+#define DLOGNOT                 lognot
+#define DASH                    ash
+#define DQUOT                   quot2
+#define DCREMAINDER             Cremainder
+#define DTIMES2                 times2
+#define DNEGATE                 negate
+#define DRATIONAL               rational
+#define DLESSP2                 lessp2
+#define DLESSEQ2                lesseq2
+#define DGREATERP2              greaterp2
+#define DGEQ2                   geq2
+#define DZEROP                  zerop
+
+#else // ARITHLIB
+
+#define NABSVAL                 Labsval
+#define NASH                    Lash
+#define NASH1                   Lash1
+#define NATAN                   Latan
+#define NDIFFER                 Ldifference_2
+#define NEQN                    Leqn_2
+#define NEVENP                  Levenp
+#define NEXPT                   Lexpt
+#define NTRUNCATE               Ltruncate
+#define NFLOAT                  Lfloat
+#define NGCD                    Lgcd_2
+#define NGEQ                    Lgeq_2
+#define NGREATERP               Lgreaterp_2
+#define NIADD1                  Liadd1
+#define NIDIFFERENCE            Lidifference_2
+#define NIGREATERP              Ligreaterp_2
+#define NILESSP                 Lilessp
+#define NIMIMUS                 Liminus
+#define NIMINUSP                Liminusp
+#define NIPLUS                  Liplus_2
+#define NIQUOTIENT              Liquotient_2
+#define NIREMAINDER             Liremainder_2
+#define NIRIGHTSHIFT            Lirightshift
+#define NISUB1                  Lisub1
+#define NITIMES                 Litimes_2
+#define NLCM                    Llcm_2
+#define NLEQ                    Lleq_2
+#define NLESSP                  Llessp_2
+#define NLOGNOT                 Llognot
+#define NMAX                    Lmax_2
+#define NMIN                    Lmin_2
+#define XNMINUS                 Lminus
+#define NMINUSP                 Lminusp
+#define NMOD                    Lmod_2
+#define NMODULAR_DIFFERENCE     Lmodular_difference
+#define NMODULAR_EXPT           Lmodular_expt
+#define NMODULAR_MINUS          Lmodular_minus
+#define NMODULAR_NUMBER         Lmodular_number
+#define NMODULAR_PLUS           Lmodular_plus
+#define NMODULAR_QUOTIENT       Lmodular_quotient
+#define NMODULAR_RECIPROCAL     Lmodular_reciprocal
+#define NMODULAR_TIMES          Lmodular_times
+#define NNEXT_RANDOM            Lnext_random
+#define NODDP                   Loddp
+#define NONEP                   Lonep
+#define NPLUS                   Lplus_2
+#define NPLUSP                  Lplusp
+#define NQUOTIENT               Lquotient_2
+#define NRANDOM                 Lrandom
+#define NRATIONAL               Lrational
+#define NREM                    Lrem_2
+#define NSET_SMALL_MODULUS      Lset_small_modulus
+#define NSUB1                   Lsub1
+#define NTIMES                  Ltimes_2
+#define NZEROP                  Lzerop
+#define DPLUS2                  plus2
+#define DDIFFERENCE2            difference2
+#define DADD1                   add1
+#define DSUB1                   sub1
+#define DLOGNOT                 lognot
+#define DASH                    ash
+#define DQUOT                   quot2
+#define DCREMAINDER             Cremainder
+#define DTIMES2                 times2
+#define DNEGATE                 negate
+#define DRATIONAL               rational
+#define DLESSP2                 lessp2
+#define DLESSEQ2                lesseq2
+#define DGREATERP2              greaterp2
+#define DGEQ2                   geq2
+#define DZEROP                  zerop
+
+#endif // ARITHLIB
 
 #endif // header_arith_h
 

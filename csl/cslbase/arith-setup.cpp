@@ -40,10 +40,6 @@
 
 #include "headers.h"
 
-LispObject onebool(bool b)
-{   return onevalue(b ? lisp_true : nil);
-}
-
 LispObject Nplus(LispObject env)
 {   return onevalue(fixnum_of_int(0));
 }
@@ -786,6 +782,10 @@ LispObject Nmodular_quotient(LispObject env, LispObject a1,
 
 LispObject Nmodular_reciprocal(LispObject env, LispObject a1)
 {   return onevalue(ModularReciprocal::op(a1));
+}
+
+LispObject Nsafe_modular_reciprocal(LispObject env, LispObject a1)
+{   return onevalue(SafeModularReciprocal::op(a1));
 }
 
 LispObject Nmodular_minus(LispObject env, LispObject a1)
@@ -1562,6 +1562,9 @@ setup_type const arith_setup[] =
     {"float",             G0Wother, Nfloat, Nfloat, G3Wother, G4Wother},
     DEF_1("float128",     Nfloat128),
     DEF_1("fix",          Nfix),
+    {"round",             G0Wother, Nround, Nround, G3Wother, G4Wother},
+    {"fround",            G0Wother, Nfround, Nfround, G3Wother, G4Wother},
+    DEF_2("scale-float",  Nscale_float),
     {"truncate",          G0Wother, Ntruncate, Ntruncate, G3Wother, G4Wother},
     {"floor",             G0Wother, Nfloor, Nfloor, G3Wother, G4Wother},
     {"ceiling",           G0Wother, Nceiling, Nceiling, G3Wother, G4Wother},
@@ -1624,6 +1627,7 @@ setup_type const arith_setup[] =
     DEF_1("modular-number",     Nmodular_number),
     DEF_1("modular-minus",      Nmodular_minus),
     DEF_1("modular-reciprocal", Nmodular_reciprocal),
+    DEF_1("safe-modular-reciprocal", Nsafe_modular_reciprocal),
     {"iplus",             Niplus, Niplus, Niplus, Niplus, Niplus},
     {"iplus2",            Niplus, Niplus, Niplus, Niplus, Niplus},
     DEF_1("iadd1",        Niadd1),
@@ -1774,10 +1778,11 @@ setup_type const arith_setup[] =
     DEF_1("rational", Nrational),
     DEF_1("manexp", Nmanexp),
     DEF_1("rationalize", Nrationalize),
-    {"random", G0Wother, Nrandom_1, Nrandom_2, G3Wother, G4Wother}, 
+    {"random", G0Wother, Nrandom, Nrandom, G3Wother, G4Wother}, 
+    DEF_1("random-number", Nrandom),
     DEF_0("next-random-number", Nnext_random),
     DEF_0("random-fixnum", Nnext_random),
-    {"make-random-state", G0Wother, Nmake_random_state1, Nmake_random_state, G3Wother, G4Wother},
+    {"make-random-state", G0Wother, Nmake_random_state, Nmake_random_state, G3Wother, G4Wother},
     DEF_1("md5", Nmd5),
     DEF_1("md5string", Nmd5string),
     DEF_1("md60", Nmd60),
@@ -1786,9 +1791,18 @@ setup_type const arith_setup[] =
     DEF_2("byte", Nbyte),
     DEF_1("byte-position", Nbyte_position),
     DEF_1("byte-size", Nbyte_size),
+    DEF_2("ldb", Nldb),
+    DEF_2("mask-field", Nmask_field),
+    DEF_2("ldb-test", Nldb_test),
+    DEF_3("dpb", Ndpb),
+    DEF_3("deposit-field", Ndeposit_field),
+    DEF_2("logbitp", Nlogbitp),
+    DEF_2("logtest", Nlogtest),
     {"complex", G0Wother, Ncomplex_1, Ncomplex_2, G3Wother, G4Wother}, 
     DEF_1("conjugate", Nconjugate),
-
+    DEF_2("fp-evaluate", Nfp_eval),
+    DEF_1("trap-floating-overflow", Ntrap_floating_overflow),
+    {"validate-number", G0Wother, Nvalidate_number, Nvalidate_number, G3Wother, G4Wother},
     {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

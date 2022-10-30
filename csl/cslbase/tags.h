@@ -315,13 +315,11 @@ inline bool valid_as_fixnum(uint32_t x)
 }
 
 inline bool valid_as_fixnum(uint64_t x)
-{   return x < ((static_cast<uintptr_t>(1)) << (SIXTY_FOUR_BIT ? 60 :
-                28));
+{   return x < ((static_cast<uintptr_t>(1)) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
 inline bool uint128_valid_as_fixnum(uint128_t x)
-{   return x < ((static_cast<uintptr_t>(1)) << (SIXTY_FOUR_BIT ? 60 :
-                28));
+{   return x < ((static_cast<uintptr_t>(1)) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
 INLINE_VAR constexpr intptr_t MOST_POSITIVE_FIXVAL =

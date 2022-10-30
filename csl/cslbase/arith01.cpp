@@ -163,7 +163,6 @@ LispObject validate_number(const char *s, LispObject a,
 }
 
 
-
 //
 // I start off with a collection of utility functions that create
 // Lisp structures to represent various sorts of numbers
@@ -174,6 +173,34 @@ LispObject validate_number(const char *s, LispObject a,
 // The functions here are called via inline functions that are in arith.h and
 // that check if all that is needed is fixnum_of_int, so here I know that
 // I have to create a bignum.
+
+#ifdef ARITHLIB
+
+LispObject make_lisp_integer32_fn(int32_t n)
+{   return arithlib_lowlevel::int_to_bignum(n);
+}
+
+LispObject make_lisp_integer64_fn(int64_t n)
+{   return arithlib_lowlevel::int_to_bignum(n);
+}
+
+LispObject make_lisp_unsigned64_fn(uint64_t n)
+{   return arithlib_lowlevel::unsigned_int_to_bignum(n);
+}
+
+LispObject make_lisp_integer128_fn(int128_t r)
+{   return arithlib_lowlevel::int128_to_bignum(
+        static_cast<int64_t>(r>>64),
+        static_cast<uint64_t>(r));
+}
+
+LispObject make_lisp_unsigned128_fn(uint128_t r)
+{   return arithlib_lowlevel::unsigned_int128_to_bignum(
+        static_cast<uint64_t>(r>>64),
+        static_cast<uint64_t>(r));
+}
+
+#else // ARITHLIB
 
 LispObject make_lisp_integer32_fn(int32_t n)
 {   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
@@ -207,34 +234,6 @@ LispObject make_lisp_unsigned64_fn(uint64_t n)
                                     (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
                (int32_t)(n >> 62),
-               (uint32_t)((n >> 31) & 0x7fffffff),
-               (uint32_t)(n & 0x7fffffff));
-}
-
-LispObject make_lisp_integerptr_fn(intptr_t n)
-{   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
-        return make_one_word_bignum((int32_t)n);
-    if (!SIXTY_FOUR_BIT ||
-        (n < (intptr_t)INT64_C(0x2000000000000000) &&
-         n >= -(intptr_t)INT64_C(0x2000000000000000)))
-        return make_two_word_bignum((int32_t)ASR((int64_t)n, 31),
-                                    (uint32_t)(n & 0x7fffffff));
-// Noter that intptr_t may be a 32-bit type where trying to shift right be 62
-// bits would be a mistake. So I cast to 64-bits to be safe.
-    return make_three_word_bignum(
-               (int32_t)ASR((int64_t)n, 62),
-               (uint32_t)((n >> 31) & 0x7fffffff),
-               (uint32_t)(n & 0x7fffffff));
-}
-
-LispObject make_lisp_unsignedptr_fn(uintptr_t n)
-{   if (!SIXTY_FOUR_BIT && n < 0x40000000)
-        return make_one_word_bignum((int32_t)n);
-    if (!SIXTY_FOUR_BIT || n < (uintptr_t)UINT64_C(0x2000000000000000))
-        return make_two_word_bignum((int32_t)(n >> 31),
-                                    (uint32_t)(n & 0x7fffffff));
-    return make_three_word_bignum(
-               (int32_t)((uint64_t)n >> 62),
                (uint32_t)((n >> 31) & 0x7fffffff),
                (uint32_t)(n & 0x7fffffff));
 }
@@ -293,6 +292,8 @@ LispObject make_lisp_unsigned128_fn(uint128_t r)
                    (uint32_t)((lo >> 31) & 0x7fffffff),
                    (uint32_t)(lo & 0x7fffffff));
 }
+
+#endif // ARITHLIB
 
 // There are places within the arithmetic code where the simplest
 // implementatiom for combining a bignum and a fixnum seemed to be to

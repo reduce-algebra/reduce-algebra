@@ -696,7 +696,7 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
    BI(Lprinc,             "princ",                   62),  \
    BI(Lprint,             "print",                   63),  \
    BI(Lprintc,            "printc",                  64),  \
-   BI(Nrandom_1,          "random",                  65),  \
+   BI(Nrandom,            "random",                  65),  \
    BI(Nrational,          "rational",                66),  \
    BI(Lrdf1,              "rdf1",                    67),  \
    BI(Lrds,               "rds",                     68),  \

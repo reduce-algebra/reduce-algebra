@@ -275,6 +275,21 @@ LispObject ModularReciprocal::op(uint64_t *a)
 {   return arithlib_lowlevel::ModularReciprocal::op(a);
 }
 
+LispObject SafeModularReciprocal::op(LispObject a)
+{   return
+        number_dispatcher::iunary<LispObject,SafeModularReciprocal>("modular-reciprocal",
+                a);
+}
+
+// -fixnum
+LispObject SafeModularReciprocal::op(Fixnum a)
+{   return arithlib_lowlevel::SafeModularReciprocal::op(a.intval());
+}
+// -bignum
+LispObject SafeModularReciprocal::op(uint64_t *a)
+{   return arithlib_lowlevel::SafeModularReciprocal::op(a);
+}
+
 LispObject ModularMinus::op(LispObject a)
 {   return
         number_dispatcher::iunary<LispObject,ModularMinus>("modular-minus",

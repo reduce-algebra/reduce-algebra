@@ -51,7 +51,7 @@ LispObject Ladd1(LispObject env, LispObject a)
 {   if (is_fixnum(a))
     {   // fixnums have data shifted left 4 bits
         if (a == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
-            a = make_lisp_integerptr_fn(MOST_POSITIVE_FIXVAL+1);
+            a = make_lisp_integer64_fn(MOST_POSITIVE_FIXVAL+1);
         else return onevalue(static_cast<LispObject>(a +
                                  0x10));   // the cheap case
     }
@@ -62,7 +62,7 @@ LispObject Ladd1(LispObject env, LispObject a)
 LispObject Lsub1(LispObject env, LispObject a)
 {   if (is_fixnum(a))
     {   if (a == MOST_NEGATIVE_FIXNUM)
-            return make_lisp_integerptr_fn(MOST_NEGATIVE_FIXVAL - 1);
+            return make_lisp_integer64_fn(MOST_NEGATIVE_FIXVAL - 1);
         else return onevalue(static_cast<LispObject>(a - 0x10));
     }
     else a = plus2(a, fixnum_of_int(-1));
@@ -1525,17 +1525,15 @@ LispObject Lnext_random(LispObject)
 // Returns a random positive fixnum.  27 bits in this Lisp! At present this
 // returns 27 bits whether on a 32 or 64-bit machine...
 {   int32_t r = Crand();
-    return onevalue(static_cast<LispObject>((r & 0x7ffffff0) +
-                                            TAG_FIXNUM));
+    return onevalue(static_cast<LispObject>((r & 0x7ffffff0) + TAG_FIXNUM));
 }
 
-LispObject Lmake_random_state(LispObject env, LispObject a,
-                              LispObject b)
+LispObject Lmake_random_state(LispObject env, LispObject a, LispObject b)
 {
 // Nasty temporary hack here to allow me to set the seed for the
 // random number generator in Standard Lisp mode.
 // The second argument (b) is utterly ignored, and if the first argument is
-// noyt a number in the range 1..UINT32_MAX a non-repeatable new state will
+// not a number in the range 1..UINT32_MAX a non-repeatable new state will
 // be established.
     Csrand(thirty_two_bits_unsigned(a));
     return onevalue(nil);
@@ -1546,57 +1544,10 @@ LispObject Lmake_random_state1(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-// The function md5() can be given a number or a string as an argument,
-// and it uses the md5 message digest algorithm to reduce it to a
-// numeric value in the range 0 to 2^128.
-// Well actually I will also allow an arbitrary expression, which I
-// will often treat as if it has to be printed... Note that these days
-// md5 is not considered secure, and sha1 that followed it is also not
-// considered secure, so anybody worried by security needs at least sha2!
-
-LispObject Lmd5(LispObject env, LispObject a)
-{   LispObject r;
-    unsigned char md[16];
-    uint32_t v0, v1, v2, v3, v4;
-    int32_t len, i;
-    if (is_fixnum(a))
-    {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.7lx  ",
-                     static_cast<unsigned long>(a>>4)&0x0fffffff);
-        CSL_MD5_Init();
-        CSL_MD5_Update(md, 8);
-    }
-    else if (is_numbers(a) && is_bignum_header(numhdr(a)))
-    {   len = length_of_header(numhdr(a));
-        CSL_MD5_Init();
-        for (i=CELL; i<len; i+=4)
-        {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.8x",
-                         (uint32_t)bignum_digits(a)[(i-CELL)/4]);
-            CSL_MD5_Update(md, 8);
-        }
-    }
-    else if (is_vector(a) && is_string(a))
-    {   len = length_of_byteheader(vechdr(a));
-        CSL_MD5_Init();
-        CSL_MD5_Update((const unsigned char *)"\"", 1);
-        CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL -
-                       TAG_VECTOR), len-CELL);
-    }
-    else checksum(a);
-    CSL_MD5_Final(md);
-//    for (i=0; i<16; i++) printf("%x ", md[i] & 0xff);
-//   printf("\n");
-    v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
-    v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
-    v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
-    v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
-// I will deal with cases where the top 64 bits are all zero first - very
-// uncommon I know, but disposing of that case here will simplify the code
-// that follows!
-    if (v3 == 0 && v2 == 0)
-    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
-        return onevalue(r);
-    }
-    v4 = v3 >> 28;
+LispObject pack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
+{
+    LispObject r;
+    uint32_t v4 = v3 >> 28;
     v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
     v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
     v1 = ((v1 << 1) | (v0 >> 31)) & 0x7fffffff;
@@ -1605,6 +1556,7 @@ LispObject Lmd5(LispObject env, LispObject a)
 // top word of a bignum is a 2s complement signed value and to keep clear
 // of overflow that means I use an extra digit slightly before one might
 // imagine it is necessary!
+    size_t len;
     if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
@@ -1636,77 +1588,126 @@ LispObject Lmd5(LispObject env, LispObject a)
         }
     }
 //  validate_number("MD5", r, r, r);
-    return onevalue(r);
+    return r;
+}
+
+// The function md5() can be given a number or a string as an argument,
+// and it uses the md5 message digest algorithm to reduce it to a
+// numeric value in the range 0 to 2^128.
+// Well actually I will also allow an arbitrary expression, which I
+// will often treat as if it has to be printed... Note that these days
+// md5 is not considered secure, and sha1 that followed it is also not
+// considered secure, so anybody worried by security needs at least sha2!
+
+LispObject Lmd5(LispObject env, LispObject a)
+{   LispObject r;
+    unsigned char md[16];
+    uint32_t v0, v1, v2, v3;
+    size_t len, i;
+// I want the checksums that are computed to be the same whether I am on
+// a big or little-endian machine, so when I process integers I will
+// check map them onto byte-sequences that adapt for that.
+    if (is_fixnum(a))
+    {   md[0] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[1] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[2] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[3] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[4] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[5] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[6] = a & 0xff;
+        a = static_cast<uint64_t>(a) >> 8; md[7] = a & 0xff;
+        CSL_MD5_Init();
+        CSL_MD5_Update(md, 8);
+    }
+    else if (is_numbers(a) && is_bignum_header(numhdr(a)))
+    {   len = length_of_header(numhdr(a));
+        CSL_MD5_Init();
+#ifdef __cpp_lib_endian // C++20 feature. Needs #include <bit>.
+        bool littleEndian = std::endian::native == std::endian::little;
+#else // __cpp_lib_endian
+        uint32_t w1 = 0x12345678;
+        char w2[4];
+        std::memcpy(w2, &w1, 4);
+        bool littleEndian = w2[0] == 0x78;
+#endif // __cpp_lib_endian
+        if (littleEndian)
+            CSL_MD5_Update(
+                reinterpret_cast<const unsigned char*>(&bignum_digits(a)[0]),
+                len-CELL);
+        else for (i=0; i<(len-CELL)/4; i++)
+        {   std::memcpy(md, &bignum_digits(a)[i], 4);
+            int b = md[0]; md[0] = md[3]; md[3] = b;
+            b = md[1]; md[1] = md[2]; md[2] = b;
+            CSL_MD5_Update(md, 4);
+        }
+    }
+    else if (is_numbers(a) && is_new_bignum_header(numhdr(a)))
+    {   len = length_of_header(numhdr(a));
+        CSL_MD5_Init();
+#ifdef __cpp_lib_endian
+        bool littleEndian = std::endian::native == std::endian::little;
+#else // __cpp_lib_endian
+        uint32_t w1 = 0x12345678;
+        char w2[4];
+        std::memcpy(w2, &w1, 4);
+        bool littleEndian = w2[0] == 0x78;
+#endif // __cpp_lib_endian
+        if (littleEndian)
+            CSL_MD5_Update(
+                reinterpret_cast<const unsigned char*>(a - TAG_NUMBERS + CELL),
+                len-CELL);
+        else for (i=CELL; i<len; i+=8)
+        {   std::memcpy(md,
+                reinterpret_cast<const unsigned char*>(a - TAG_NUMBERS + i), 8);
+            int b = md[0]; md[0] = md[7]; md[7] = b;
+            b = md[1]; md[1] = md[6]; md[6] = b;
+            b = md[2]; md[2] = md[5]; md[5] = b;
+            b = md[3]; md[3] = md[4]; md[4] = b;
+            CSL_MD5_Update(md, 4);
+        }
+    }
+    else if (is_vector(a) && is_string(a))
+    {   len = length_of_byteheader(vechdr(a));
+        CSL_MD5_Init();
+        CSL_MD5_Update((const unsigned char *)"\"", 1);
+        CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL - TAG_VECTOR),
+                       len-CELL);
+    }
+    else checksum(a);
+    CSL_MD5_Final(md);
+// md5 produces a digest that is 128 bits. I wish to pack that as an
+// integer. Well I will start by collecting 4 32-bit chunks...
+//    for (i=0; i<16; i++) printf("%x ", md[i] & 0xff);
+//   printf("\n");
+    v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
+    v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
+    v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
+    v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
+// I will deal with cases where the top 64 bits are all zero first - very
+// uncommon I know, but disposing of that case here will simplify the code
+// that follows!
+    if (v3 == 0 && v2 == 0)
+    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
+        return onevalue(r);
+    }
+    return onevalue(pack_md5_result(v0, v1, v2, v3));
 }
 
 // For testing the MD5 code... processes a string "raw".
 
 LispObject Lmd5string(LispObject env, LispObject a)
-{   LispObject r;
-    unsigned char md[16];
-    uint32_t v0, v1, v2, v3, v4;
-    int32_t len, i;
+{   unsigned char md[16];
     if (is_vector(a) && is_string(a))
-    {   len = length_of_byteheader(vechdr(a));
+    {   size_t len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update(bit_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
     else return onevalue(nil);
     CSL_MD5_Final(md);
-    for (i=0; i<16; i++) std::printf("%x ", md[i] & 0xff);
+    for (int i=0; i<16; i++) std::printf("%x ", md[i]);
     std::printf("\n");
-    v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
-    v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
-    v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
-    v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
-    if (v3 == 0 && v2 == 0)
-    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
-        return onevalue(r);
-    }
-    v4 = v3 >> 28;
-    v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
-    v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
-    v1 = ((v1 << 1) | (v0 >> 31)) & 0x7fffffff;
-    v0 &= 0x7fffffff;
-// Note the funny tests. This is because in my representation the
-// top word of a bignum is a 2s complement signed value and to keep clear
-// of overflow that means I use an extra digit slightly before one might
-// imagine it is necessary!
-    if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
-    else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
-    else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else my_abort();
-    r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
-    if (SIXTY_FOUR_BIT)
-    {   switch (len)
-        {   case CELL+20:
-                bignum_digits(r)[5] = 0;  // zeros out padding word as necessary
-                bignum_digits(r)[4] = v4;
-            case CELL+16:
-            case CELL+12:
-                bignum_digits(r)[3] = v3;
-                bignum_digits(r)[2] = v2;
-                bignum_digits(r)[1] = v1;
-                bignum_digits(r)[0] = v0;
-                break;
-        }
-    }
-    else
-    {   switch (len)
-        {   case CELL+20:
-            case CELL+16:
-                bignum_digits(r)[4] = v4; // zeros out padding word as necessary
-                bignum_digits(r)[3] = v3;
-            case CELL+12:
-                bignum_digits(r)[2] = v2;
-                bignum_digits(r)[1] = v1;
-                bignum_digits(r)[0] = v0;
-                break;
-        }
-    }
-//  validate_number("MD5", r, r, r);
-    return onevalue(r);
+    return onevalue(pack_md5_result(md[0], md[1], md[2], md[3]));
 }
 
 // md60 is a function that uses MD5 but then returns just about 60 bits

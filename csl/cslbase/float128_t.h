@@ -407,6 +407,8 @@ inline constexpr QuadFloat operator ""_Q (const char *s)
 {   return QuadFloat(s);
 }
 
+#define HAVE_Q_LITERALS 1
+
 inline constexpr unsigned hexFromChar(int c)
 {   switch (c)
     {

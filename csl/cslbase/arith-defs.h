@@ -34,6 +34,10 @@
 #ifndef header_arith_defs_h
 #define header_arith_defs_h 1
 
+inline LispObject onebool(bool b)
+{   return onevalue(b ? lisp_true : nil);
+}
+
 extern LispObject Nplus(LispObject env);
 extern LispObject Nplus(LispObject env, LispObject a1);
 extern LispObject Nplus(LispObject env, LispObject a1, LispObject a2);
@@ -222,11 +226,11 @@ extern LispObject Nfloat_sign2(LispObject env, LispObject a, LispObject b);
 extern LispObject Nrational(LispObject env, LispObject a);
 extern LispObject Nmanexp(LispObject env, LispObject a);
 extern LispObject Nrationalize(LispObject env, LispObject a);
-extern LispObject Nrandom_2(LispObject env, LispObject a, LispObject bb);
-extern LispObject Nrandom_1(LispObject env, LispObject a);
+extern LispObject Nrandom(LispObject env, LispObject a, LispObject bb);
+extern LispObject Nrandom(LispObject env, LispObject a);
 extern LispObject Nnext_random(LispObject);
 extern LispObject Nmake_random_state(LispObject env, LispObject a, LispObject b);
-extern LispObject Nmake_random_state1(LispObject env, LispObject a);
+extern LispObject Nmake_random_state(LispObject env, LispObject a);
 extern LispObject Nmd5(LispObject env, LispObject a);
 extern LispObject Nmd5string(LispObject env, LispObject a);
 extern LispObject Nmd60(LispObject env, LispObject a);
@@ -529,6 +533,26 @@ extern LispObject Ndecode_long_float(LispObject a);
 extern LispObject Ndecode_float(LispObject env, LispObject a);
 extern LispObject Ninteger_decode_long_float(LispObject a);
 extern LispObject Ninteger_decode_float(LispObject env, LispObject a);
+
+extern LispObject Ntrap_floating_overflow(LispObject env, LispObject a);
+extern LispObject Nfp_eval(LispObject env, LispObject a1, LispObject a2);
+
+extern LispObject Nldb(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nldb_test(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nmask_field(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlogbitp(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nlogtest(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Ndpb(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+extern LispObject Ndeposit_field(LispObject env, LispObject a1, LispObject a2, LispObject a3);
+
+extern LispObject Nlisp_fix_ratio(LispObject env, LispObject a1);
+extern LispObject Nround(LispObject env, LispObject a1);
+extern LispObject Nround(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nfround(LispObject env, LispObject a1);
+extern LispObject Nfround(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nscale_float(LispObject env, LispObject a1, LispObject a2);
+extern LispObject Nvalidate_number(LispObject env, LispObject a1);
+extern LispObject Nvalidate_number(LispObject env, LispObject a1, LispObject a2);
 
 #endif // header_arith_defs_h
 

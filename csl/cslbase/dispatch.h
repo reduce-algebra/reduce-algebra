@@ -2175,6 +2175,15 @@ public:
     static LispObject op(uint64_t *a);
 };
 
+class Logbitp
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum a);
+    static LispObject op(uint64_t *a);
+};
+
 class LowBits
 {
 public:
@@ -2609,6 +2618,15 @@ public:
 };
 
 class ModularReciprocal
+{
+public:
+    static LispObject op(LispObject a);
+
+    static LispObject op(Fixnum b);
+    static LispObject op(uint64_t *b);
+};
+
+class SafeModularReciprocal
 {
 public:
     static LispObject op(LispObject a);
