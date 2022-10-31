@@ -503,6 +503,8 @@ enum subTypes:uint64_t
     subtypeUnsigned  = 3,    // %u
     subtypeHex       = 4,    // %x
     subtypeHexUp     = 5,    // %X
+    subtypeBinary    = 6,    // %b
+    subtypeBinaryUp  = 7,    // %B
 
     subtypeEformat   = 2,    // %e
     subtypeEformatUp = 3,    // %E
@@ -729,7 +731,7 @@ BadFmt("integer value needed for '*' width");
                 case '.':
                     state = parseDot;
                     continue;
-                case 'd': case 'u': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X': case 'b': case 'B':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -757,7 +759,7 @@ BadFmt("invalid character following '%'");
                 case '.':
                     state = parseDot;
                     continue;
-                case 'd': case 'u': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X': case 'b': case 'B':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -790,7 +792,7 @@ BadFmt("invalid character following '%*'");
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
                     continue;
-                case 'd': case 'u': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X': case 'b': case 'B':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -832,7 +834,7 @@ BadFmt("invalid character following '%.'");
 // After "%N.*" I can only have an argument-type letter. 
                 switch (data()[i])
                 {
-                case 'd': case 'u': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X': case 'b': case 'B':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -859,7 +861,7 @@ BadFmt("invalid character following '%.*'");
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
                     continue;
-                case 'd': case 'u': case 'x': case 'X':
+                case 'd': case 'u': case 'x': case 'X': case 'b': case 'B':
                     state = parseInt;
                     break;
                 case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
@@ -1073,6 +1075,14 @@ BadFmt(
                 type = argTypeInt;
                 subtype = subtypeHexUp;
                 break;
+            case 'b':
+                type = argTypeInt;
+                subtype = subtypeBinary;
+                break;
+            case 'B':
+                type = argTypeInt;
+                subtype = subtypeBinaryUp;
+                break;
             case 'e':
                 type = argTypeFloat;
                 subtype = subtypeEformat;
@@ -1191,6 +1201,35 @@ BadFmt(
         }
     }
 
+    inline const char* convertToBinary(uintptr_t n, bool rad, bool upper)
+    {
+// This function may be called several times in a single expression. I
+// do not want it to have to allocate fresh memory, so I set it up with
+// four (4) buffers and use those in turn. 
+        static char rr[4*80];
+        static int seq=0;
+        char* r = &rr[80*(seq++ & 0x3)];
+        char* p = r;
+        if (rad)
+        {   *p++ = '0';
+            *p++ = upper ? 'B' : 'b';
+        }
+        bool seen = false;
+        int bits=8*sizeof(uintptr_t);
+        for (int i=0; i<bits; i++)
+        {   int bit = (n>>(bits-i-1)) & 1;
+            if (bit!=0 || i==bits-1) seen = true;
+            if (seen) *p++ = '0' + bit;
+        }
+        *p = 0;
+        return r;
+    }
+
+    template <typename T>
+    inline const char* convertToBinary(T p, bool a, bool b)
+    {   return convertToBinary((uintptr_t)p, a, b);
+    }
+
     template <typename A1, typename... Rest>
     constexpr void zprintf(uint64_t n, A1&& a1, Rest&&... rest)
     {   std::uint64_t dir =
@@ -1282,6 +1321,12 @@ BadFmt(
             if (type==argTypeInt &&
                 (subtype==subtypeHex || subtype==subtypeHexUp))
                 std::cout << std::hex;
+            if (type==argTypeInt &&
+                (subtype==subtypeBinary || subtype==subtypeBinaryUp))
+            {
+// One might like to go "std::cout << std::setbase(2);" however only
+// bases 8, 10 and 16 are supported directly by C++.
+            }
             if (type==argTypeFloat) switch (subtype & ~subtypeUpperCase)
             {
             case subtypeEformat:
@@ -1328,6 +1373,12 @@ BadFmt(
             {   if constexpr (std::is_arithmetic_v<A1>)
                     if (a1 >= 0) std::cout << " ";
             }
+            if (type == argTypeInt &&
+                (subtype == subtypeBinary || subtype == subtypeBinaryUp))
+                std::cout << convertToBinary(a1,
+                    (flags&flaghash) != 0,
+                    (subtype & subtypeUpperCase) != 0);
+            else
 #if defined CSL && defined CONSERVATIVE
             if (type == argTypeGeneral && subtype == subtypeAddr)
                 std::cout << Addr(a1);
@@ -1351,8 +1402,7 @@ BadFmt(
             if ((flags & flaghash) != 0) std::cout << std::noshowbase; 
             if ((flags & flagplus) != 0) std::cout << std::noshowpos; 
             if ((flags & flagminus) != 0) std::cout << std::right; 
-            if ((flags & flagzero) != 0 ||
-                type==argTypeInt) std::cout << std::setfill(' '); 
+            if ((flags & flagzero) != 0) std::cout << std::setfill(' '); 
             if ((subtype & subtypeUpperCase) != 0)
                 std::cout << std::nouppercase;
             if (type==argTypeInt &&

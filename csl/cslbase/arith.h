@@ -121,17 +121,39 @@ extern unsigned char msd_table[256], lsd_table[256];
 // an assumption that numbers are 2s complement and that casts between
 // signed and unsigned values leave the bitwise representations unchanged.
 
+#if 0
 #define signed29_in_64(n)                                                   \
-  ((static_cast<int64_t>((static_cast<uint64_t>(n) & 0x1fffffffU) << 35) / (static_cast<int64_t>(1) << 35)) == \
+  ((static_cast<int64_t>(                                                   \
+      (static_cast<uint64_t>(n) & 0x1fffffffU) << 35) / (1LLU << 35)) ==    \
    static_cast<int64_t>(n))
+#endif
 
+inline bool signed29_in_64(int64_t n)
+{   return (n >= -(1<<28)) && (n <= (1<<28)-1);
+}
+
+#if 0
 #define signed31_in_64(n)                                                   \
-  ((static_cast<int64_t>((static_cast<uint64_t>(n) & 0x7fffffffU) << 33) / (static_cast<int64_t>(1) << 33)) == \
+  ((static_cast<int64_t>(                                                   \
+      (static_cast<uint64_t>(n) & 0x7fffffffU) << 33) / (1ULL << 33)) ==    \
    static_cast<int64_t>(n))
+#endif
 
-#define signed31_in_ptr(n)                                                  \
-  ((static_cast<intptr_t>((static_cast<uintptr_t>(n)&0x7fffffffU) << (8*sizeof(intptr_t) - 31)) / \
-    (static_cast<intptr_t>(1) << (8*sizeof(intptr_t) - 31))) == static_cast<intptr_t>(n))
+inline bool signed31_in_64(int64_t n)
+{   return (n >= -(1<<30)) && (n <= (1<<30)-1);
+}
+
+#if 0
+#define signed31_in_ptr(n)                                                    \
+  ((static_cast<intptr_t>(                                                    \
+      (static_cast<uintptr_t>(n)&0x7fffffffU) << (8*sizeof(intptr_t) - 31)) / \
+      (1LL << (8*sizeof(intptr_t) - 31))) ==                                  \
+   static_cast<intptr_t>(n))
+#endif
+
+inline bool signed31_in_ptr(intptr_t n)
+{   return (n >= -(1<<30)) && (n <= (1<<30)-1);
+}
 
 #ifdef HAVE_SOFTFLOAT
 // I use rounding-direction specifiers from SoftFloat because I can then
@@ -387,7 +409,7 @@ inline bool eq_i64d(int64_t a, double b)
 // an integer safely. In C++ the consequence of trying to cast a double to
 // and int where the result would not fit is undefined, and so could
 // include arbitrary bad behaviour. So I have to filter that case out.
-    if (b == static_cast<double>(static_cast<uint64_t>(1)<<63)) return false;
+    if (b == static_cast<double>(1ULL<<63)) return false;
 // With the special case out of the way I can afford to case from double to
 // int64_t. The negative end of the range is safe!
     return a == static_cast<int64_t>(b);
@@ -398,8 +420,8 @@ inline bool lessp_i64d(int64_t a, double b)
 // If the integer is <= 2^53 then converting it to a double does not
 // introduce any error at all, so I can perform the comparison reliably
 // on doubles. If d ia a NaN this is still OK.
-    if (a <= (static_cast<int64_t>(1)<<53) &&
-        a >= -(static_cast<int64_t>(1)<<53))
+    if (a <= (1LL<<53) &&
+        a >= -(1LL<<53))
         return static_cast<double>(a) < b;
 // If the float is outside the range of int64_t I can tell how the
 // comparison must play out. Note that near the value 2^63 the next
@@ -407,9 +429,9 @@ inline bool lessp_i64d(int64_t a, double b)
 // floating point value larger than the largest positive int64_t value
 // and less then 2^63. I make these tests of the form "if (!xxx)" because
 // then if b is a NaN the comparison returns false and I end up exiting.
-    if (!(b >= -static_cast<double>(static_cast<uint64_t>(1)<<63)))
+    if (!(b >= -static_cast<double>(1ULL<<63)))
         return false;
-    if (!(b < static_cast<double>(static_cast<uint64_t>(1)<<63)))
+    if (!(b < static_cast<double>(1ULL<<63)))
         return true;
 // Now we know that a is large and b is not huge. I will just discuss the
 // case of two positive numbers here, but mixed signs and negative values
@@ -429,11 +451,11 @@ inline bool lessp_di64(double a, int64_t b)
 {
 // The logic here is much as above - by omitting all the commentary
 // you can see much more clearly just how long the code is.
-    if (b <= (static_cast<int64_t>(1)<<53) &&
-        b >= -(static_cast<int64_t>(1)<<53)) return a < static_cast<double>(b);
-    if (!(a < static_cast<double>(static_cast<uint64_t>(1)<<63)))
+    if (b <= (1LL<<53) &&
+        b >= -(1LL<<53)) return a < static_cast<double>(b);
+    if (!(a < static_cast<double>(1ULL<<63)))
         return false;
-    if (!(a >= -static_cast<double>(static_cast<uint64_t>(1)<<63)))
+    if (!(a >= -static_cast<double>(1ULL<<63)))
         return true;
     return static_cast<int64_t>(a) < b;
 }
@@ -511,7 +533,7 @@ inline LispObject make_lisp_integer64(int64_t n)
 
 extern LispObject make_lisp_unsigned64_fn(uint64_t n);
 inline LispObject make_lisp_unsigned64(uint64_t n)
-{   if (n < (static_cast<uint64_t>(1))<<(8*sizeof(intptr_t)-5))
+{   if (n < (1ULL<<(8*sizeof(intptr_t)-5)))
         return fixnum_of_int(static_cast<intptr_t>(n));
     else return make_lisp_unsigned64_fn(n);
 }
@@ -532,7 +554,7 @@ inline LispObject make_lisp_integerptr(intptr_t n)
 }
 
 inline LispObject make_lisp_unsignedptr(uintptr_t n)
-{   if (n < (static_cast<uintptr_t>(1))<<(8*sizeof(intptr_t)-5))
+{   if (n < (1LL<<(8*sizeof(intptr_t)-5)))
         return fixnum_of_int(static_cast<int64_t>(n));
     else return make_lisp_unsigned64_fn(n);
 }

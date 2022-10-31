@@ -5391,6 +5391,16 @@ void simple_prin1(LispObject x)
         }
         return;
     }
+#ifdef ARITHLIB
+    else if (is_new_bignum(x))
+    {   intptr_t w = arithlib_lowlevel::bignum_to_string(x);
+        size_t len = length_of_byteheader(vechdr(w)) - CELL;
+        simple_lineend(len);
+        std::printf("%.*s", static_cast<int>(len),
+                     bit_cast<const char *>(&celt(w, 0)));
+        return;
+    }
+#endif // ARITHLIB
     else
     {   char buffer[32];
         int clen = std::sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);

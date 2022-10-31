@@ -237,7 +237,7 @@ constexpr inline bool constexpr_isprime(uint64_t n)
 }
 
 constexpr inline auto goodPrime(int n)
-{   uint64_t p = (static_cast<uint64_t>(1)<<n) - 1;
+{   uint64_t p = (1ULL<<n) - 1;
     while (!constexpr_isprime(p)) p -= 2;
     return p;
 }

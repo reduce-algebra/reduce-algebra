@@ -1641,7 +1641,7 @@ LispObject Lmd5(LispObject env, LispObject a)
             CSL_MD5_Update(md, 4);
         }
     }
-    else if (is_numbers(a) && is_new_bignum_header(numhdr(a)))
+    else if (is_new_bignum(a))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
 #ifdef __cpp_lib_endian

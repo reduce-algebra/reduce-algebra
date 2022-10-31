@@ -745,8 +745,8 @@ public:
 // them here. Then when I restore one of them I disable the test for binary.
 // I will arrange that if nobody has ever asked for binary they do not get it,
 // just so I feel safe.
-    static void set_binary_output(std::ios_base &s)
-    {   flag(s) = 1;
+    static void set_binary_output(std::ios_base &s, bool state = true)
+    {   flag(s) = state ? 1 : 0;
         s.unsetf(std::ios_base::dec);
         s.unsetf(std::ios_base::oct);
         s.unsetf(std::ios_base::hex);
@@ -1794,6 +1794,7 @@ inline char *reserve_string(std::size_t n)
 inline LispObject confirm_size_string(char *p, std::size_t n,
                                       std::size_t final)
 {   LispObject *a = (LispObject *)(p - sizeof(LispObject));
+    final += sizeof(std::uintptr_t);
     *a = TAG_HDR_IMMED + TYPE_STRING_4 + (final<<(Tw+5));
     return (LispObject)a + TAG_VECTOR;
 }
@@ -3154,13 +3155,13 @@ public:
         val = r;
     }
 
-
     inline void operator /=(const Bignum &x)
     {   std::intptr_t r = op_dispatch2<Quotient,std::intptr_t>(val,
                           x.val);
         abandon(val);
         val = r;
     }
+
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator /=(T x)
@@ -3169,7 +3170,6 @@ public:
         abandon(val);
         val = r;
     }
-
 
     inline void operator %=(const Bignum &x)
     {   std::intptr_t r = op_dispatch2<Remainder,std::intptr_t>(val,
@@ -3192,6 +3192,7 @@ public:
         abandon(val);
         val = r;
     }
+
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator &=(T x)
@@ -3281,6 +3282,14 @@ public:
         return oldval;
     }
 
+    inline Bignum lowbit() const
+    {   return Bignum(true, op_dispatch1<LowBit,std::intptr_t>(val));
+    }
+
+    inline Bignum highbit() const
+    {   return Bignum(true, op_dispatch1<IntegerLength,std::intptr_t>(val));
+    }
+
     friend std::ostream & operator << (std::ostream &out, const Bignum &a)
     {   std::ios_base::fmtflags fg = out.flags();
 #if defined LISP && !defined ZAPPA
@@ -3298,7 +3307,8 @@ public:
             s = bignum_to_string_binary(a.val);
         else s = bignum_to_string(a.val);
 #if defined LISP && !defined ZAPPA
-        std::string ss(s, length_of_byteheader(qheader(s)));
+        std::string ss(s, length_of_byteheader(qheader(s)) -
+                          sizeof(std::uintptr_t));
         out << ss;
 #else
         out << s;
@@ -5770,8 +5780,7 @@ inline std::size_t predict_size_in_bytes(const std::uint64_t *a,
     return r;
 }
 
-inline std::size_t bignum_to_string_length(std::uint64_t *a,
-        std::size_t lena)
+inline std::size_t bignum_to_string_length(std::uint64_t *a, std::size_t lena)
 {   if (lena == 1)
     {   std::int64_t v = a[0];
 // Note that the negative numbers checked against are 1 digit shorter so as
@@ -6107,8 +6116,8 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
         }
     }
     else
-    {   arithlib_assert(top != 0);
-        while ((top>>63) == 0)
+    {   if (top == 0) m -= 64;
+        else while ((top>>63) == 0)
         {   top = top << 1;
             m--;
         }
@@ -6116,7 +6125,7 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
     push(a);
     char *r = reserve_string(m);
     pop(a);
-    char *p = bit_cast<char *>(r);
+    char *p = r;
     top = a[n-1];
     if (sign)
     {   *p++ = '~';
@@ -11303,41 +11312,41 @@ inline std::intptr_t ModularTimes::op(std::uint64_t *a,
 
 
 inline std::intptr_t ModularExpt::op(std::int64_t a, std::int64_t b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 inline std::intptr_t ModularExpt::op(std::int64_t a, std::uint64_t *b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 inline std::intptr_t ModularExpt::op(std::uint64_t *a, std::int64_t b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 inline std::intptr_t ModularExpt::op(std::uint64_t *a,
                                      std::uint64_t *b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 
 inline std::intptr_t ModularQuotient::op(std::int64_t a,
         std::int64_t b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularQuotient");
 }
 
 inline std::intptr_t ModularQuotient::op(std::int64_t a,
         std::uint64_t *b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularQuotient");
 }
 
 inline std::intptr_t ModularQuotient::op(std::uint64_t *a,
         std::int64_t b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularQuotient");
 }
 
 inline std::intptr_t ModularQuotient::op(std::uint64_t *a,
         std::uint64_t *b)
-{   return (std::intptr_t)aerror("incomplete");
+{   return (std::intptr_t)aerror("incomplete ModularQuotient");
 }
 
 

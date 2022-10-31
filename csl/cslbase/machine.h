@@ -532,8 +532,8 @@ inline uint64_t ASL(uint64_t a, int n)
 // for us in code of that shape (x & (1U<<n)) where I need the "1" to be at
 // least as wide as x and it would be excessive for it to be wider.
 
-INLINE_VAR const uintptr_t uptr_1 = static_cast<uintptr_t>(1);
-INLINE_VAR const uint64_t u64_1 = static_cast<uint64_t>(1);
+INLINE_VAR const uintptr_t uptr_1 = 1ULL;
+INLINE_VAR const uint64_t u64_1 = 1LL;
 
 // At times I wish to treat an integer address as a pointer and fetch
 // the value it refers to. I encapsulate this here so that the dubious
