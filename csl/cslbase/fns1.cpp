@@ -614,6 +614,9 @@ LispObject Lfixp(LispObject env, LispObject a)
     else if (is_numbers(a))
     {   Header h = *bit_cast<Header *>(bit_cast<char *>
                                                (a) - TAG_NUMBERS);
+#ifdef ARITHLIB
+        if (type_of_header(h) == TYPE_NEW_BIGNUM) return onevalue(lisp_true);
+#endif // ARITHLIB
         if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
         else return onevalue(nil);
     }

@@ -1035,6 +1035,8 @@ constexpr inline std::int64_t int_of_handle(std::intptr_t n);
 inline std::intptr_t string_to_bignum(const char *s);
 inline std::intptr_t int_to_bignum(std::int64_t n);
 inline std::intptr_t unsigned_int_to_bignum(std::uint64_t n);
+inline std::intptr_t int128_to_bignum(std::int64_t high, std::uint64_t low);
+inline std::intptr_t unsigned_int128_to_bignum(std::uint64_t high, std::uint64_t low);
 inline std::intptr_t round_double_to_int(double d);
 inline std::intptr_t trunc_double_to_int(double d);
 inline std::intptr_t floor_double_to_int(double d);
@@ -2557,6 +2559,13 @@ public:
     static std::intptr_t op(uint64_t *w);
 };
 
+class Uniform_upto
+{
+public:
+    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(uint64_t *w);
+};
+
 class Square
 {
 public:
@@ -2750,6 +2759,13 @@ public:
 };
 
 class ModularReciprocal
+{
+public:
+    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(uint64_t *w);
+};
+
+class SafeModularReciprocal
 {
 public:
     static std::intptr_t op(std::int64_t w);
@@ -4138,7 +4154,7 @@ inline int read_u3(const std::uint64_t *v, std::size_t n,
 // with all the usual joys regarding seqencing. If it is thread_local its
 // destructor is invoked as the thread terminates. Again it will be prudent
 // to avoid too many assumptions about the ordering of destruction, and when
-// such odrerings are relied upon to include copious comments in the code
+// such orderings are relied upon to include copious comments in the code
 // as to why everything will be OK. In particular it will be hard to have
 // guarantees about the order in which constructors have been called.
 //
@@ -4184,14 +4200,14 @@ inline int read_u3(const std::uint64_t *v, std::size_t n,
 // things distinct in each will be the high resolution clock. Well to
 // try to improve things there I will use the address of one of these
 // variables as part of the seeding process, so that if they all end
-// up static rather than inline that will give per-compilation-uint
+// up static rather than inline that will give per-compilation-unit
 // variation.
 
 // Note that the thread local status information for a random number
 // generator will be initialized in EVERY thread that is created. This
 // includes the worker threads for Karatsuba multiplicatin and in a
 // broader context where I use this library it will include threads that
-// are used for GUI or other I/O purposes. So theer is a benefit if C++
+// are used for GUI or other I/O purposes. So there is a benefit if C++
 // delays initialization of any of the variables within the following
 // function until the function is first used!
 
@@ -4249,29 +4265,49 @@ inline std::mt19937_64 &ref_mersenne_twister()
     return inner_mersenne_twister;
 }
 
-// If you are going to use vary many random numbers it may be a good
-// and you might be running under Cygwin or mingw32 it could be idea to
+// If you are going to use very many random numbers and you might be
+// running under Cygwin or mingw32 it could be a good idea to
 // use ref_mersenne_twister() once to collect the thread local instance
 // relevant to you [note that it is a class object that provides operator(),
 // not really a function, despite appearances!]. That way you only do the
-// thread_local activity once (I hope).
+// thread_local activity once (I hope). On those platforms at the time
+// I investigates thread_local support had fairly high overhead.
 
 MAYBE_UNUSED static std::uint64_t mersenne_twister()
 {   return ref_mersenne_twister()();
 }
 
-// To re-seed I can just call this. I think that when I re-seed it will be
-// to gain more repeatable behaviour, and so I am fairly happy about
-// limiting the amount of input entropy here to 64-bits. If I was keen I
-// could provide a reseed-method taking a bignum argument that could have
-// lots of data in it. Note that this will reseed the random number
-// generator associated with the thread it is called from. Note that there
-// is one generator per thread, so if you have multiple threads and you reseed
-// you are liable to want to reseed each of them.
+// To re-seed I can just call this. I think that when I re-seed it will
+// often be to gain repeatable behaviour, and so I am fairly happy about
+// limiting the amount of input entropy here to 64-bits.
+// However I arrange that a new seed that is zero tries to lead to
+// unpredictable and ideally genuine random behaviour.
+// Note that this will reseed the random number generator associated with
+// the thread it is called from. Specifically there is one generator per
+// thread, so if you have multiple threads and you reseed to obtain
+// determininistic "random" values you are liable to want to reseed each
+// of threads.
 //
 
 MAYBE_UNUSED static void reseed(std::uint64_t n)
-{   ref_mersenne_twister().seed(n);
+{   if (n == 0)
+    {   std::random_device basic_randomness;
+        std::uint64_t threadid =
+            static_cast<std::uint64_t>(
+                std::hash<std::thread::id>()(
+                    std::this_thread::get_id()));
+        std::uint64_t seed_component =
+            static_cast<std::uint64_t>(basic_randomness());
+        std::uint64_t time_now =
+            static_cast<std::uint64_t>(std::time(NULL));
+        std::uint64_t chrono_now =
+            static_cast<std::uint64_t>(
+                std::chrono::high_resolution_clock::now().
+                    time_since_epoch().count());
+        n = threadid ^ seed_component ^ time_now ^ chrono_now ^
+            reinterpret_cast<uint64_t>(&n);
+    }
+    ref_mersenne_twister().seed(n);
 }
 
 // Now a number of functions for setting up random bignums. These may be
@@ -4366,10 +4402,9 @@ inline std::intptr_t uniform_signed(std::size_t n)
     return confirm_size(r, save, lenr);
 }
 
-inline std::size_t bignum_bits(const std::uint64_t *a,
-                               std::size_t lena);
+inline std::size_t bignum_bits(const std::uint64_t *a, std::size_t lena);
 
-// Generate a a value in the range 0 .. a-1 using a uniform distribution
+// Generate a value in the range 0 .. a-1 using a uniform distribution
 
 inline void uniform_upto(std::uint64_t *a, std::size_t lena,
                          std::uint64_t *r,
@@ -4584,9 +4619,64 @@ inline std::intptr_t unsigned_int_to_bignum(std::uint64_t n)
     return confirm_size(r, w, lenr);
 }
 
+// The next two pass an 128-bit value as two 64-bit words.
+
+inline std::intptr_t int128_to_bignum(std::int64_t high, std::uint64_t low)
+{   if (high == 0 &&
+        !negative(low) &&
+        fits_into_fixnum(static_cast<std::intptr_t>(low)))
+        return int_to_handle(static_cast<std::intptr_t>(low));
+    else if (high == -1 &&
+        negative(low) &&
+        fits_into_fixnum(static_cast<std::intptr_t>(low)))
+        return int_to_handle(static_cast<std::intptr_t>(low));
+    std::uint64_t *r = reserve(2);
+    r[0] = low;
+    r[1] = static_cast<std::uintptr_t>(high);
+    return confirm_size(r, 2, 2);
+}
+
+inline std::intptr_t unsigned_int128_to_bignum(std::uint64_t  high, std::uint64_t low)
+{   if (high == 0 &&
+        !negative(low) &&
+        fits_into_fixnum(static_cast<std::intptr_t>(low)))
+        return int_to_handle(static_cast<std::intptr_t>(low));
+    else if (high == 0xffffffffffffffffu &&
+        negative(low) &&
+        fits_into_fixnum(static_cast<std::intptr_t>(low)))
+        return int_to_handle(static_cast<std::intptr_t>(low));
+    else if (!negative(high))
+    {   std::uint64_t *r = reserve(2);
+        r[0] = low;
+        r[1] = static_cast<std::uintptr_t>(high);
+        return confirm_size(r, 2, 2);
+    }
+    std::uint64_t *r = reserve(3);
+    r[0] = low;
+    r[1] = static_cast<std::uintptr_t>(high);
+    return confirm_size(r, 2, 2);
+}
+
 #ifdef softfloat_h
 // Some constants that are useful when I am dealing with float128_t.
 
+#if HAVE_Q_LITERALS
+
+// Observe that use of the "_Q" suffix is somewhat delicate, since the
+// literal generated a QuadFloat and one then needs to access its "v"
+// field to obtain the float128_t value. And the whitespace before ".v"
+// seems to be necessary. Also there are parenthese so that the "-" sign is
+// handled as part of the syntax of the literal.
+
+inline float128_t
+    f128_0      = 0_Q .v,
+    f128_half   = 0.5_Q .v,
+    f128_mhalf  = (-0.5_Q) .v,
+    f128_1      = 1.0_Q .v,
+    f128_m1     = (-1.0_Q) .v,
+    f128_N1     = 1.04438888141315250669175271071662438258e1223_Q .v;// 2^4096
+
+#else // HAVE_Q_LITERALS
 #ifdef LITTLEENDIAN
 inline float128_t
 f128_0      = {{0, INT64_C(0x0000000000000000)}},
@@ -4604,6 +4694,7 @@ f128_1      = {{INT64_C(0x3fff000000000000), 0}},
 f128_m1     = {{INT64_C(0xbfff000000000000), 0}},
 f128_N1     = {{INT64_C(0x4fff000000000000), 0}};
 #endif // !LITTLEENDIAN
+#endif // HAVE_Q_LITERALS
 
 // The following tests are not supported by the version of softfloat that
 // I am using, so I implement them myself.
@@ -4912,7 +5003,7 @@ inline void double_to_virtual_bignum(double d,
 
 #ifdef softfloat_h
 
-// For int128_t the mantissa needs to be returned as a 128-bit integer, and
+// For float128_t the mantissa needs to be returned as a 128-bit integer, and
 // I do that as a pair of 64-bit integers here. Infinities and NaNs would
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
@@ -6201,6 +6292,18 @@ inline bool Eqn::op(double a, std::uint64_t *b)
 // are used in rationalf128 because any 128-bit floating point value that
 // is that large is necessarily an exact integer.
 
+#ifdef HAVE_Q_LITERALS
+
+// Again note ugly parens around negative literal and the whitespace before
+// the ".v".
+
+inline float128_t FP128_INT_LIMIT =
+    5192296858534827628530496329220096.0_Q .v;
+inline float128_t FP128_MINUS_INT_LIMIT =
+    (-5192296858534827628530496329220096.0_Q) .v;
+
+#else // HAVE_Q_LITERALS
+
 #ifdef LITTLEENDIAN
 
 inline float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
@@ -6212,10 +6315,10 @@ inline float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
 inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
 #endif // !LITTLEENDIAN
+#endif // HAVE_Q_LITERALS
 
 
-inline bool eqnbigfloat(std::uint64_t *a, std::size_t lena,
-                        float128_t b)
+inline bool eqnbigfloat(std::uint64_t *a, std::size_t lena, float128_t b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
     std::int64_t top = static_cast<std::int64_t>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return false;
@@ -11251,8 +11354,27 @@ inline std::intptr_t ModularMinus::op(std::uint64_t *a)
     return Difference::op(large_modulus(), a);
 }
 
-inline std::intptr_t general_modular_reciprocal(std::intptr_t a)
+inline std::intptr_t general_modular_reciprocal(std::intptr_t aa, bool safe=false)
 {   return (std::intptr_t)aerror("not coded yet");
+#if 0
+    std::int64_t a = small_modulus,
+                 b = aa,
+                 x = 0,
+                 y = 1;
+    while (b != 1)
+    {   std::uint64_t w, t;
+        if (b == 0) return nil;
+        w = a / b;
+        t = b;
+        b = a - b*w;
+        a = t;
+        t = y;
+        y = x - y*w;
+        x = t;
+    }
+    if (y < 0) y += small_modulus;
+    return int_to_handle(y);
+#endif
 }
 
 inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
@@ -11284,6 +11406,34 @@ inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
 
 inline std::intptr_t ModularReciprocal::op(std::uint64_t *a)
 {   return general_modular_reciprocal(vector_to_handle(a));
+}
+
+inline std::intptr_t SafeModularReciprocal::op(std::int64_t aa)
+{   if (aa <= 0) return (std::intptr_t)aerror1("bad argument to safe-modular-reciprocal",
+                             int_to_handle(aa));
+    else if (modulus_size == modulus_big)
+        return general_modular_reciprocal(int_to_handle(aa), true);
+    std::int64_t a = small_modulus,
+                 b = aa,
+                 x = 0,
+                 y = 1;
+    while (b != 1)
+    {   std::uint64_t w, t;
+        if (b == 0) return nil;
+        w = a / b;
+        t = b;
+        b = a - b*w;
+        a = t;
+        t = y;
+        y = x - y*w;
+        x = t;
+    }
+    if (y < 0) y += small_modulus;
+    return int_to_handle(y);
+}
+
+inline std::intptr_t SafeModularReciprocal::op(std::uint64_t *a)
+{   return general_modular_reciprocal(vector_to_handle(a), true);
 }
 
 #endif // CSL
@@ -11372,9 +11522,15 @@ using arithlib_implementation::ModularExpt;
 using arithlib_implementation::ModularQuotient;
 using arithlib_implementation::ModularMinus;
 using arithlib_implementation::ModularReciprocal;
+using arithlib_implementation::SafeModularReciprocal;
 using arithlib_implementation::ModularNumber;
 using arithlib_implementation::SetModulus;
 #endif // CSL
+
+using arithlib_implementation::int_to_bignum;
+using arithlib_implementation::unsigned_int_to_bignum;
+using arithlib_implementation::int128_to_bignum;
+using arithlib_implementation::unsigned_int128_to_bignum;
 
 using arithlib_implementation::bignum_to_string;
 using arithlib_implementation::bignum_to_string_length;
@@ -11390,6 +11546,9 @@ using arithlib_implementation::trunc_double_to_int;
 using arithlib_implementation::floor_double_to_int;
 using arithlib_implementation::ceiling_double_to_int;
 
+using arithlib_implementation::reseed;
+using arithlib_implementation::uniform_upto;
+
 #ifdef softfloat_h
 using arithlib_implementation::Float128;
 using arithlib_implementation::Frexp128;
@@ -11397,7 +11556,7 @@ using arithlib_implementation::round_float128_to_int;
 using arithlib_implementation::trunc_float128_to_int;
 using arithlib_implementation::floor_float128_to_int;
 using arithlib_implementation::ceiling_float128_to_int;
-// These next few are just raw float128_t operations.
+// These next few are just raw float128_t values and operations.
 using arithlib_implementation::f128_0;
 using arithlib_implementation::f128_half;
 using arithlib_implementation::f128_mhalf;
@@ -11415,6 +11574,7 @@ using arithlib_implementation::modf;
 //using arithlib_implementation::number_size;
 
 using arithlib_implementation::cast_to_float;
+
 }
 
 #endif // __arithlib_hpp

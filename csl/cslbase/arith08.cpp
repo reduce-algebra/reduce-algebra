@@ -192,6 +192,19 @@ static LispObject Ldpb_3(LispObject env, LispObject a1,
     return aerror("dpb");
 }
 
+static LispObject Lldb(LispObject env, LispObject a1, LispObject a2)
+{
+// Not implemented yet!
+    return aerror("ldb");
+}
+
+static LispObject Lldb_test(LispObject env, LispObject a1,
+                            LispObject a2)
+{
+// Not implemented yet!
+    return aerror("ldb-test");
+}
+
 static LispObject Lffloor(LispObject env, LispObject a1,
                           LispObject a2)
 {
@@ -250,12 +263,6 @@ static LispObject Limagpart(LispObject env, LispObject a)
     else return onevalue(fixnum_of_int(0));
 }
 
-static LispObject Lldb(LispObject env, LispObject a1, LispObject a2)
-{
-// Not implemented yet!
-    return aerror("ldb");
-}
-
 LispObject Llcm_0(LispObject env)
 {   return onevalue(fixnum_of_int(1));
 }
@@ -297,13 +304,6 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
         a4up = cdr(a4up);
     }
     return onevalue(a1);
-}
-
-static LispObject Lldb_test(LispObject env, LispObject a1,
-                            LispObject a2)
-{
-// Not implemented yet!
-    return aerror("ldb-test");
 }
 
 static LispObject Lnumerator(LispObject env, LispObject a)
@@ -923,6 +923,10 @@ static LispObject scale_float128(LispObject a, intptr_t x)
 }
 #endif // HAVE_SOFTFLOAT
 
+static LispObject Lround_2(LispObject env, LispObject a, LispObject b)
+{   if (!is_number(a) || !is_number(b)) return aerror1("round", a);
+    return lisp_ifix(a, b, FIX_ROUND);
+}
 
 static LispObject Lscale_float(LispObject env, LispObject a,
                                LispObject b)
@@ -1198,6 +1202,14 @@ LispObject lisp_fix(LispObject a, int roundmode)
     return nvalues(r, 2);
 }
 
+static LispObject Lround(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("round", a);
+    if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_ROUND);
+    if (is_float(a)) return lisp_fix(a, FIX_ROUND);
+    mv_2 = fixnum_of_int(0);
+    return nvalues(a, 2);
+}
+
 // ifix is for the 2-arg variants of floor, truncate, round etc. For
 // floating point values a and b it computes fix(a/b) and the residue
 // returned as a second value is b times the residue in that fix operation.
@@ -1278,11 +1290,6 @@ static LispObject Lfloor_2(LispObject env, LispObject a, LispObject b)
     return lisp_ifix(a, b, FIX_FLOOR);
 }
 
-static LispObject Lround_2(LispObject env, LispObject a, LispObject b)
-{   if (!is_number(a) || !is_number(b)) return aerror1("round", a);
-    return lisp_ifix(a, b, FIX_ROUND);
-}
-
 LispObject Ltruncate_2(LispObject env, LispObject a, LispObject b)
 {   if (!is_number(a) || !is_number(b)) return aerror1("truncate", a);
     return lisp_ifix(a, b, FIX_TRUNCATE);
@@ -1301,14 +1308,6 @@ static LispObject Lfloor(LispObject env, LispObject a)
 {   if (!is_number(a)) return aerror1("floor", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_FLOOR);
     if (is_float(a)) return lisp_fix(a, FIX_FLOOR);
-    mv_2 = fixnum_of_int(0);
-    return nvalues(a, 2);
-}
-
-static LispObject Lround(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("round", a);
-    if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_ROUND);
-    if (is_float(a)) return lisp_fix(a, FIX_ROUND);
     mv_2 = fixnum_of_int(0);
     return nvalues(a, 2);
 }
