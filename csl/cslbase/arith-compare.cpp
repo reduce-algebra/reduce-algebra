@@ -46,7 +46,11 @@ using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
 bool Eqn::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,Eqn>("eqn", a, b);
+{   if (a == b) return true;
+// Immediate numbers would only be NEQ if they were in fact EQ, so for
+// them the heavier duty dispatch is not needed.
+    if (!is_boxed_number(a) || !is_boxed_number(b)) return false;
+    return number_dispatcher::binary<bool,Eqn>("eqn", a, b);
 }
 
 bool Eqn::op(LispObject a, Fixnum b)
@@ -718,7 +722,9 @@ bool CLEqn::op(LFlt a, LFlt b)
 }
 
 bool Neqn::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<bool,Neqn>("neqn", a, b);
+{   if (a == b) return false;
+    if (!is_boxed_number(a) || !is_boxed_number(b)) return true;
+    return number_dispatcher::binary<bool,Neqn>("neqn", a, b);
 }
 
 bool Neqn::op(LispObject a, Fixnum b)

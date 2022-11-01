@@ -1,3 +1,4 @@
+
 % RLISP to LISP converter. A C Norman 2022
 
 
@@ -940,15 +941,17 @@ quote iminus) b))) (t (cond ((equal b 0) a) (t (list (car u) a b))))))))
 
 (put (quote idifference) (quote s!:tidy_fn) (quote s!:imp_idifference))
 
-(de s!:imp_car (u) (prog ((a (s!:improve (cadr u)))) (cond ((eqcar a (quote 
-car)) (return (list (quote caar) (cadr a)))) (t (cond ((eqcar a (quote cdr)) 
-(return (list (quote cadr) (cadr a)))) (t (return (list (quote car) a))))))))
+(de s!:imp_car (u) (prog (a) (setq a (s!:improve (cadr u))) (cond ((eqcar a (
+quote car)) (return (list (quote caar) (cadr a)))) (t (cond ((eqcar a (quote 
+cdr)) (return (list (quote cadr) (cadr a)))) (t (return (list (quote car) a))
+))))))
 
 (put (quote car) (quote s!:tidy_fn) (quote s!:imp_car))
 
-(de s!:imp_cdr (u) (prog ((a (s!:improve (cadr u)))) (cond ((eqcar a (quote 
-car)) (return (list (quote cdar) (cadr a)))) (t (cond ((eqcar a (quote cdr)) 
-(return (list (quote cddr) (cadr a)))) (t (return (list (quote cdr) a))))))))
+(de s!:imp_cdr (u) (prog (a) (setq a (s!:improve (cadr u))) (cond ((eqcar a (
+quote car)) (return (list (quote cdar) (cadr a)))) (t (cond ((eqcar a (quote 
+cdr)) (return (list (quote cddr) (cadr a)))) (t (return (list (quote cdr) a))
+))))))
 
 (put (quote cdr) (quote s!:tidy_fn) (quote s!:imp_cdr))
 
@@ -4980,13 +4983,12 @@ c!:startblock next))) (setq var1384 (cdr var1384)) (go lab1383)) (c!:endblock
 
 (fluid (quote (c!:c_entrypoint_list)))
 
-(null (setq c!:c_entrypoint_list (quote ((abs c!:c_entrypoint "Labsval") (
-apply0 c!:c_entrypoint "Lapply0") (apply1 c!:c_entrypoint "Lapply1") (apply2 
-c!:c_entrypoint "Lapply2") (apply3 c!:c_entrypoint "Lapply3") (ash1 
-c!:c_entrypoint "Lash1") (atan c!:c_entrypoint "Latan") (atom c!:c_entrypoint
-"Latom") (atsoc c!:c_entrypoint "Latsoc") (batchp c!:c_entrypoint "Lbatchp")
-(boundp c!:c_entrypoint "Lboundp") (bps!-putv c!:c_entrypoint "Lbpsputv") (
-caaaar c!:c_entrypoint "Lcaaaar") (caaadr c!:c_entrypoint "Lcaaadr") (caaar 
+(null (setq c!:c_entrypoint_list (quote ((apply0 c!:c_entrypoint "Lapply0") (
+apply1 c!:c_entrypoint "Lapply1") (apply2 c!:c_entrypoint "Lapply2") (apply3 
+c!:c_entrypoint "Lapply3") (atom c!:c_entrypoint "Latom") (atsoc 
+c!:c_entrypoint "Latsoc") (batchp c!:c_entrypoint "Lbatchp") (boundp 
+c!:c_entrypoint "Lboundp") (bps!-putv c!:c_entrypoint "Lbpsputv") (caaaar 
+c!:c_entrypoint "Lcaaaar") (caaadr c!:c_entrypoint "Lcaaadr") (caaar 
 c!:c_entrypoint "Lcaaar") (caadar c!:c_entrypoint "Lcaadar") (caaddr 
 c!:c_entrypoint "Lcaaddr") (caadr c!:c_entrypoint "Lcaadr") (caar 
 c!:c_entrypoint "Lcaar") (cadaar c!:c_entrypoint "Lcadaar") (cadadr 
@@ -5005,96 +5007,101 @@ c!:c_entrypoint "Lcdddr") (cddr c!:c_entrypoint "Lcddr") (cdr c!:c_entrypoint
 "Lconstantp") (date c!:c_entrypoint "Ldate") (deleq c!:c_entrypoint "Ldeleq")
 (digit c!:c_entrypoint "Ldigitp") (eject c!:c_entrypoint "Leject") (endp 
 c!:c_entrypoint "Lendp") (eq c!:c_entrypoint "Leq") (eqcar c!:c_entrypoint 
-"Leqcar") (eql c!:c_entrypoint "Leql") (eqn c!:c_entrypoint "Leqn_2") (error1
-c!:c_entrypoint "Lerror_0") (evenp c!:c_entrypoint "Levenp") (evlis 
-c!:c_entrypoint "Levlis") (explode c!:c_entrypoint "Lexplode") (explode2 
-c!:c_entrypoint "Lexplodec") (explodec c!:c_entrypoint "Lexplodec") (expt 
-c!:c_entrypoint "Lexpt") (fix c!:c_entrypoint "Ltruncate") (fixp 
-c!:c_entrypoint "Lfixp") (flag c!:c_entrypoint "Lflag") (flagp!*!* 
+"Leqcar") (eql c!:c_entrypoint "Leql") (error1 c!:c_entrypoint "Lerror_0") (
+evlis c!:c_entrypoint "Levlis") (explode c!:c_entrypoint "Lexplode") (
+explode2 c!:c_entrypoint "Lexplodec") (explodec c!:c_entrypoint "Lexplodec") 
+(fixp c!:c_entrypoint "Lfixp") (flag c!:c_entrypoint "Lflag") (flagp!*!* 
 c!:c_entrypoint "Lflagp") (flagp c!:c_entrypoint "Lflagp") (flagpcar 
-c!:c_entrypoint "Lflagpcar") (float c!:c_entrypoint "Lfloat") (floatp 
-c!:c_entrypoint "Lfloatp") (fluidp c!:c_entrypoint "Lsymbol_specialp") (gcdn 
-c!:c_entrypoint "Lgcd_2") (gctime c!:c_entrypoint "Lgctime") (gensym 
-c!:c_entrypoint "Lgensym") (gensym1 c!:c_entrypoint "Lgensym") (geq 
-c!:c_entrypoint "Lgeq_2") (get!* c!:c_entrypoint "Lget") (getenv 
-c!:c_entrypoint "Lgetenv") (getv c!:c_entrypoint "Lgetv") (svref 
-c!:c_entrypoint "Lgetv") (globalp c!:c_entrypoint "Lsymbol_globalp") (
-greaterp c!:c_entrypoint "Lgreaterp_2") (iadd1 c!:c_entrypoint "Liadd1") (
-idifference c!:c_entrypoint "Lidifference_2") (idp c!:c_entrypoint "Lsymbolp"
-) (igreaterp c!:c_entrypoint "Ligreaterp_2") (ilessp c!:c_entrypoint 
-"Lilessp") (iminus c!:c_entrypoint "Liminus") (iminusp c!:c_entrypoint 
-"Liminusp") (indirect c!:c_entrypoint "Lindirect") (integerp c!:c_entrypoint 
-"Lintegerp") (iplus2 c!:c_entrypoint "Liplus_2") (iquotient c!:c_entrypoint 
-"Liquotient_2") (iremainder c!:c_entrypoint "Liremainder_2") (irightshift 
-c!:c_entrypoint "Lirightshift") (isub1 c!:c_entrypoint "Lisub1") (itimes2 
-c!:c_entrypoint "Litimes_2") (length c!:c_entrypoint "Llength") (lengthc 
-c!:c_entrypoint "Llengthc") (leq c!:c_entrypoint "Lleq_2") (lessp 
-c!:c_entrypoint "Llessp_2") (linelength c!:c_entrypoint "Llinelength") (
-load!-module c!:c_entrypoint "Lload_module") (lposn c!:c_entrypoint "Llposn")
-(macro!-function c!:c_entrypoint "Lmacro_function") (macroexpand!-1 
-c!:c_entrypoint "Lmacroexpand_1") (macroexpand c!:c_entrypoint "Lmacroexpand"
-) (make!-bps c!:c_entrypoint "Lget_bps") (make!-global c!:c_entrypoint 
-"Lmake_global") (make!-simple!-string c!:c_entrypoint "Lsmkvect") (
-make!-special c!:c_entrypoint "Lmake_special") (mapstore c!:c_entrypoint 
-"Lmapstore") (max2 c!:c_entrypoint "Lmax_2") (memq c!:c_entrypoint "Lmemq") (
-min2 c!:c_entrypoint "Lmin_2") (minus c!:c_entrypoint "Lminus") (minusp 
-c!:c_entrypoint "Lminusp") (mkquote c!:c_entrypoint "Lmkquote") (mkvect 
-c!:c_entrypoint "Lmkvect") (mod c!:c_entrypoint "Lmod_2") (
-modular!-difference c!:c_entrypoint "Lmodular_difference") (modular!-expt 
-c!:c_entrypoint "Lmodular_expt") (modular!-minus c!:c_entrypoint 
-"Lmodular_minus") (modular!-number c!:c_entrypoint "Lmodular_number") (
-modular!-plus c!:c_entrypoint "Lmodular_plus") (modular!-quotient 
-c!:c_entrypoint "Lmodular_quotient") (modular!-reciprocal c!:c_entrypoint 
-"Lmodular_reciprocal") (modular!-times c!:c_entrypoint "Lmodular_times") (
-nconc c!:c_entrypoint "Lnconc") (neq c!:c_entrypoint "Lneq_2") (not 
-c!:c_entrypoint "Lnull") (null c!:c_entrypoint "Lnull") (numberp 
-c!:c_entrypoint "Lnumberp") (oddp c!:c_entrypoint "Loddp") (onep 
-c!:c_entrypoint "Lonep") (orderp c!:c_entrypoint "Lorderp") (pagelength 
-c!:c_entrypoint "Lpagelength") (pairp c!:c_entrypoint "Lconsp") (plist 
-c!:c_entrypoint "Lplist") (plusp c!:c_entrypoint "Lplusp") (posn 
-c!:c_entrypoint "Lposn") (put c!:c_entrypoint "Lputprop") (putv!-char 
-c!:c_entrypoint "Lsputv") (putv c!:c_entrypoint "Lputv") (qcaar 
-c!:c_entrypoint "Lcaar") (qcadr c!:c_entrypoint "Lcadr") (qcar 
-c!:c_entrypoint "Lcar") (qcdar c!:c_entrypoint "Lcdar") (qcddr 
-c!:c_entrypoint "Lcddr") (qcdr c!:c_entrypoint "Lcdr") (qgetv c!:c_entrypoint
-"Lgetv") (rds c!:c_entrypoint "Lrds") (reclaim c!:c_entrypoint "Lgc") (remd 
-c!:c_entrypoint "Lremd") (remflag c!:c_entrypoint "Lremflag") (remob 
-c!:c_entrypoint "Lunintern") (remprop c!:c_entrypoint "Lremprop") (reverse 
-c!:c_entrypoint "Lreverse") (reversip c!:c_entrypoint "Lnreverse") (rplaca 
-c!:c_entrypoint "Lrplaca") (rplacd c!:c_entrypoint "Lrplacd") (schar 
-c!:c_entrypoint "Lsgetv") (seprp c!:c_entrypoint "Lwhitespace_char_p") (
-set!-small!-modulus c!:c_entrypoint "Lset_small_modulus") (set 
-c!:c_entrypoint "Lset") (smemq c!:c_entrypoint "Lsmemq") (spaces 
-c!:c_entrypoint "Lxtab") (special!-char c!:c_entrypoint "Lspecial_char") (
-special!-form!-p c!:c_entrypoint "Lspecial_form_p") (spool c!:c_entrypoint 
-"Lspool") (stop c!:c_entrypoint "Lstop") (stringp c!:c_entrypoint "Lstringp")
-(subla c!:c_entrypoint "Lsubla") (subst c!:c_entrypoint "Lsubst") (
-symbol!-env c!:c_entrypoint "Lsymbol_env") (symbol!-function c!:c_entrypoint 
-"Lsymbol_function") (symbol!-name c!:c_entrypoint "Lsymbol_name") (
-symbol!-set!-definition c!:c_entrypoint "Lsymbol_set_definition") (
-symbol!-set!-env c!:c_entrypoint "Lsymbol_set_env") (symbol!-value 
-c!:c_entrypoint "Lsymbol_value") (system c!:c_entrypoint "Lsystem") (terpri 
-c!:c_entrypoint "Lterpri") (threevectorp c!:c_entrypoint "Lthreevectorp") (
-time c!:c_entrypoint "Ltime") (ttab c!:c_entrypoint "Lttab") (tyo 
-c!:c_entrypoint "Ltyo") (unmake!-global c!:c_entrypoint "Lunmake_global") (
-unmake!-special c!:c_entrypoint "Lunmake_special") (upbv c!:c_entrypoint 
-"Lupbv") (verbos c!:c_entrypoint "Lverbos") (wrs c!:c_entrypoint "Lwrs") (
-xcons c!:c_entrypoint "Lxcons") (xtab c!:c_entrypoint "Lxtab") (zerop 
-c!:c_entrypoint "Lzerop") (cons c!:direct_entrypoint (2 . "cons")) (ncons 
+c!:c_entrypoint "Lflagpcar") (floatp c!:c_entrypoint "Lfloatp") (fluidp 
+c!:c_entrypoint "Lsymbol_specialp") (gctime c!:c_entrypoint "Lgctime") (
+gensym c!:c_entrypoint "Lgensym") (gensym1 c!:c_entrypoint "Lgensym") (get!* 
+c!:c_entrypoint "Lget") (getenv c!:c_entrypoint "Lgetenv") (getv 
+c!:c_entrypoint "Lgetv") (svref c!:c_entrypoint "Lgetv") (globalp 
+c!:c_entrypoint "Lsymbol_globalp") (idp c!:c_entrypoint "Lsymbolp") (indirect
+c!:c_entrypoint "Lindirect") (integerp c!:c_entrypoint "Lintegerp") (length 
+c!:c_entrypoint "Llength") (lengthc c!:c_entrypoint "Llengthc") (linelength 
+c!:c_entrypoint "Llinelength") (load!-module c!:c_entrypoint "Lload_module") 
+(lposn c!:c_entrypoint "Llposn") (macro!-function c!:c_entrypoint 
+"Lmacro_function") (macroexpand!-1 c!:c_entrypoint "Lmacroexpand_1") (
+macroexpand c!:c_entrypoint "Lmacroexpand") (make!-bps c!:c_entrypoint 
+"Lget_bps") (make!-global c!:c_entrypoint "Lmake_global") (
+make!-simple!-string c!:c_entrypoint "Lsmkvect") (make!-special 
+c!:c_entrypoint "Lmake_special") (mapstore c!:c_entrypoint "Lmapstore") (memq
+c!:c_entrypoint "Lmemq") (mkquote c!:c_entrypoint "Lmkquote") (mkvect 
+c!:c_entrypoint "Lmkvect") (nconc c!:c_entrypoint "Lnconc") (neq 
+c!:c_entrypoint "Lneq_2") (not c!:c_entrypoint "Lnull") (null c!:c_entrypoint
+"Lnull") (numberp c!:c_entrypoint "Lnumberp") (orderp c!:c_entrypoint 
+"Lorderp") (pagelength c!:c_entrypoint "Lpagelength") (pairp c!:c_entrypoint 
+"Lconsp") (plist c!:c_entrypoint "Lplist") (posn c!:c_entrypoint "Lposn") (
+put c!:c_entrypoint "Lputprop") (putv!-char c!:c_entrypoint "Lsputv") (putv 
+c!:c_entrypoint "Lputv") (qcaar c!:c_entrypoint "Lcaar") (qcadr 
+c!:c_entrypoint "Lcadr") (qcar c!:c_entrypoint "Lcar") (qcdar c!:c_entrypoint
+"Lcdar") (qcddr c!:c_entrypoint "Lcddr") (qcdr c!:c_entrypoint "Lcdr") (
+qgetv c!:c_entrypoint "Lgetv") (rds c!:c_entrypoint "Lrds") (reclaim 
+c!:c_entrypoint "Lgc") (remd c!:c_entrypoint "Lremd") (remflag 
+c!:c_entrypoint "Lremflag") (remob c!:c_entrypoint "Lunintern") (remprop 
+c!:c_entrypoint "Lremprop") (reverse c!:c_entrypoint "Lreverse") (reversip 
+c!:c_entrypoint "Lnreverse") (rplaca c!:c_entrypoint "Lrplaca") (rplacd 
+c!:c_entrypoint "Lrplacd") (schar c!:c_entrypoint "Lsgetv") (seprp 
+c!:c_entrypoint "Lwhitespace_char_p") (set c!:c_entrypoint "Lset") (smemq 
+c!:c_entrypoint "Lsmemq") (spaces c!:c_entrypoint "Lxtab") (special!-char 
+c!:c_entrypoint "Lspecial_char") (special!-form!-p c!:c_entrypoint 
+"Lspecial_form_p") (spool c!:c_entrypoint "Lspool") (stop c!:c_entrypoint 
+"Lstop") (stringp c!:c_entrypoint "Lstringp") (subla c!:c_entrypoint "Lsubla"
+) (subst c!:c_entrypoint "Lsubst") (symbol!-env c!:c_entrypoint "Lsymbol_env"
+) (symbol!-function c!:c_entrypoint "Lsymbol_function") (symbol!-name 
+c!:c_entrypoint "Lsymbol_name") (symbol!-set!-definition c!:c_entrypoint 
+"Lsymbol_set_definition") (symbol!-set!-env c!:c_entrypoint "Lsymbol_set_env"
+) (symbol!-value c!:c_entrypoint "Lsymbol_value") (system c!:c_entrypoint 
+"Lsystem") (terpri c!:c_entrypoint "Lterpri") (threevectorp c!:c_entrypoint 
+"Lthreevectorp") (time c!:c_entrypoint "Ltime") (ttab c!:c_entrypoint "Lttab"
+) (tyo c!:c_entrypoint "Ltyo") (unmake!-global c!:c_entrypoint 
+"Lunmake_global") (unmake!-special c!:c_entrypoint "Lunmake_special") (upbv 
+c!:c_entrypoint "Lupbv") (verbos c!:c_entrypoint "Lverbos") (wrs 
+c!:c_entrypoint "Lwrs") (xcons c!:c_entrypoint "Lxcons") (xtab 
+c!:c_entrypoint "Lxtab") (cons c!:direct_entrypoint (2 . "cons")) (ncons 
 c!:direct_entrypoint (1 . "ncons")) (list2 c!:direct_entrypoint (2 . "list2")
 ) (list2!* c!:direct_entrypoint (3 . "list2star")) (acons 
 c!:direct_entrypoint (3 . "acons")) (list3 c!:direct_entrypoint (3 . "list3")
 ) (list3!* c!:direct_entrypoint (4 . "list3star")) (list4 
-c!:direct_entrypoint (4 . "list4")) (plus2 c!:direct_entrypoint (2 . "plus2")
-) (difference c!:direct_entrypoint (2 . "difference2")) (add1 
-c!:direct_entrypoint (1 . "add1")) (sub1 c!:direct_entrypoint (1 . "sub1")) (
-lognot c!:direct_entrypoint (1 . "lognot")) (ash c!:direct_entrypoint (2 . 
-"ash")) (quotient c!:direct_entrypoint (2 . "quot2")) (remainder 
-c!:direct_entrypoint (2 . "Cremainder")) (times2 c!:direct_entrypoint (2 . 
-"times2")) (minus c!:direct_entrypoint (1 . "negate")) (lessp 
-c!:direct_predicate (2 . "lessp2")) (leq c!:direct_predicate (2 . "lesseq2"))
-(greaterp c!:direct_predicate (2 . "greaterp2")) (geq c!:direct_predicate (2
- . "geq2")) (zerop c!:direct_predicate (1 . "zerop"))))))
+c!:direct_entrypoint (4 . "list4"))))))
+
+(null (setq c!:c_entrypoint_list (append c!:c_entrypoint_list (quote ((abs 
+c!:c_entrypoint "GABSVAL") (add1 c!:c_entrypoint "GADD1") (!1!+ 
+c!:c_entrypoint "GADD1") (ash1 c!:c_entrypoint "GASH1") (atan c!:c_entrypoint
+"GATAN") (eqn c!:c_entrypoint "GEQN") (evenp c!:c_entrypoint "GEVENP") (expt
+c!:c_entrypoint "GEXPT") (fix c!:c_entrypoint "GTRUNCATE") (float 
+c!:c_entrypoint "GFLOAT") (gcdn c!:c_entrypoint "GGCD") (geq c!:c_entrypoint 
+"GGEQ") (greaterp c!:c_entrypoint "GGREATERP") (iadd1 c!:c_entrypoint 
+"GIADD1") (idifference c!:c_entrypoint "GIDIFFERENCE") (igreaterp 
+c!:c_entrypoint "GIGREATERP") (ilessp c!:c_entrypoint "GILESSP") (iminus 
+c!:c_entrypoint "GIMINUS") (iminusp c!:c_entrypoint "GIMINUSP") (iplus2 
+c!:c_entrypoint "GIPLUS") (iquotient c!:c_entrypoint "GIQUOTIENT") (
+iremainder c!:c_entrypoint "GIREMAINDER") (irightshift c!:c_entrypoint 
+"GIRIGHTSHIFT") (isub1 c!:c_entrypoint "GISUB1") (itimes2 c!:c_entrypoint 
+"GITIMES") (leq c!:c_entrypoint "GLEQ") (lessp c!:c_entrypoint "GLESSP") (
+max2 c!:c_entrypoint "GMAX") (min2 c!:c_entrypoint "GMIN") (minus 
+c!:c_entrypoint "GMINUS") (minusp c!:c_entrypoint "GMINUSP") (mod 
+c!:c_entrypoint "GMOD") (modular!-difference c!:c_entrypoint 
+"GMODULAR_DIFFERENCE") (modular!-expt c!:c_entrypoint "GMODULAR_EXPT") (
+modular!-minus c!:c_entrypoint "GMODULAR_MINUS") (modular!-number 
+c!:c_entrypoint "GMODULAR_NUMBER") (modular!-plus c!:c_entrypoint 
+"GMODULAR_PLUS") (modular!-quotient c!:c_entrypoint "GMODULAR_QUOTIENT") (
+modular!-reciprocal c!:c_entrypoint "GMODULAR_RECIPROCAL") (modular!-times 
+c!:c_entrypoint "GMODULAR_TIMES") (oddp c!:c_entrypoint "GODDP") (onep 
+c!:c_entrypoint "GONEP") (plusp c!:c_entrypoint "GPLUSP") (
+set!-small!-modulus c!:c_entrypoint "GSET_SMALL_MODULUS") (!1!- 
+c!:c_entrypoint "GSUB1") (zerop c!:c_entrypoint "GZEROP") (plus2 
+c!:direct_entrypoint (2 . "DPLUS2")) (difference c!:direct_entrypoint (2 . 
+"DDIFFERENCE2")) (add1 c!:direct_entrypoint (1 . "DADD1")) (sub1 
+c!:direct_entrypoint (1 . "DSUB1")) (lognot c!:direct_entrypoint (1 . 
+"DLOGNOT")) (ash c!:direct_entrypoint (2 . "DASH")) (quotient 
+c!:direct_entrypoint (2 . "DQUOT")) (remainder c!:direct_entrypoint (2 . 
+"DCREMAINDER")) (times2 c!:direct_entrypoint (2 . "DTIMES2")) (minus 
+c!:direct_entrypoint (1 . "DNEGATE")) (lessp c!:direct_predicate (2 . 
+"DLESSP2")) (leq c!:direct_predicate (2 . "DLESSEQ2")) (greaterp 
+c!:direct_predicate (2 . "DGREATERP2")) (geq c!:direct_predicate (2 . "DGEQ2"
+)) (zerop c!:direct_predicate (1 . "DZEROP")))))))
 
 (null (setq c!:c_entrypoint_list (append c!:c_entrypoint_list (quote ((append
 c!:c_entrypoint "Lappend_2") (assoc c!:c_entrypoint "Lassoc") (compress 
