@@ -791,7 +791,7 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
 #endif // COMMON
     if (is_fixnum(a))
          return arithlib_lowlevel::uniform_upto(a);
-    if (is_numbers(a) && is_new_bignum(a))
+    if (is_new_bignum(a))
         return arithlib_lowlevel::uniform_upto(a);
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -915,7 +915,7 @@ LispObject Nmd5(LispObject env, LispObject a)
             CSL_MD5_Update(md, 4);
         }
     }
-    else if (is_numbers(a) && is_new_bignum_header(numhdr(a)))
+    else if (is_new_bignum(a))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
 #ifdef __cpp_lib_endian
@@ -1031,7 +1031,7 @@ LispObject Nmd60(LispObject env, LispObject a)
             CSL_MD5_Update(md, 4);
         }
     }
-    else if (is_numbers(a) && is_new_bignum_header(numhdr(a)))
+    else if (is_new_bignum(a))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
 #ifdef __cpp_lib_endian

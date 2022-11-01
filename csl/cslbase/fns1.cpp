@@ -1958,7 +1958,7 @@ LispObject Lrepresentation2(LispObject env, LispObject a,
                 for (size_t i=len; i>0; i--)
                     trace_printf("%.8x ", (uint32_t)bignum_digits(a)[i-1]);
             }
-            if (is_numbers(a) && is_new_bignum(a))
+            if (is_new_bignum(a))
             {   size_t len = (length_of_header(numhdr(a))-8)/8;
                 for (size_t i=len; i>0; i--)
                     trace_printf("%.8x ", (uint64_t)new_bignum_digits(a)[i-1]);

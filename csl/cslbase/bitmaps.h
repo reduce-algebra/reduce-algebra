@@ -182,7 +182,7 @@ inline int ntz(uint64_t n)
         uint64_t v=0;
         int r = -1;
         for (int k=0; k<64; k++)
-        {   v = static_cast<uint64_t>(1)<<k;
+        {   v = 1ULL<<k;
             if (v%67 == n) r = k;
         }
         return r;
@@ -237,15 +237,15 @@ inline int countBits(uint64_t x)
 // map array. No overflow checks are made.
 
 inline void setBit(uint64_t map[], size_t n)
-{   map[n/64] |= static_cast<uint64_t>(1) << (n%64);
+{   map[n/64] |= 1ULL << (n%64);
 }
 
 inline void clearBit(uint64_t map[], size_t n)
-{   map[n/64] &= ~(static_cast<uint64_t>(1) << (n%64));
+{   map[n/64] &= ~(1ULL << (n%64));
 }
 
 inline void flipBit(uint64_t map[], size_t n)
-{   map[n/64] ^= static_cast<uint64_t>(1) << (n%64);
+{   map[n/64] ^= 1ULL << (n%64);
 }
 
 inline bool testBit(uint64_t map[], size_t n)
