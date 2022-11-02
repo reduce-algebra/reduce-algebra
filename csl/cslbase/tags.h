@@ -228,6 +228,11 @@ inline bool is_number(LispObject p)
 {   return (p & TAG_BITS) >= TAG_NUMBERS;
 }
 
+inline bool is_boxed_number(LispObject p)
+{   return (p & TAG_BITS) >= TAG_NUMBERS &&
+           (p & TAG_BITS) != TAG_FIXNUM;
+}
+
 // For each of the above tag classes I have a bunch of low-level
 // operations that need support - including type identification
 // predicates and conversions to and from native C formats.

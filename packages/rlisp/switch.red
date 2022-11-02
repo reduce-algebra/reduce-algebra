@@ -106,15 +106,16 @@ symbolic procedure on1 u; onoff(u,t);
 
 symbolic procedure onoff(u,bool);
    begin scalar x,y;
-      if not idp u then typerr(u,"switch")
-       else if not flagp(u,'switch)
-%       then if !*switchcheck
-               then rerror(rlisp,25,list(u,"not defined as switch"));
-%             else lpriw("*****",list(u,"not defined as switch"));
+      if not idp u then <<
+         lpriw("*****",list(u,"not valid as switch"));
+         return nil >>
+      else if not flagp(u,'switch) then <<
+         lpriw("*****",list(u,"not defined as switch"));
+         return nil >>;
       x := intern list2string ('!* . explode2 u);
       if !*switchcheck and lispeval x eq bool then return nil
-       else if y := atsoc(bool,get(u,'simpfg))
-        then lispeval('progn . append(cdr y,list nil));
+      else if y := atsoc(bool,get(u,'simpfg)) then
+         lispeval('progn . append(cdr y,list nil));
       if bool and x = '!*!r!a!i!s!e then x := '!*raise       % Special case.
       else if bool and x = '!*!L!O!W!E!R then x := '!*lower; % Special case.
       set(x,bool)

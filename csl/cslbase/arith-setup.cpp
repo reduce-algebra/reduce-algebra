@@ -695,7 +695,7 @@ LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Nash1(LispObject env, LispObject a1, LispObject a2)
 {   bool neg = Minusp::op(a1);
-    if (neg) a1 = Minus::op(a1);
+    if (neg) a1 = Minus::op(a1);   // Is this needed? @@@@@
     a1 = LeftShift::op(a1, a2);
     if (neg) a1 = Minus::op(a1);
     return onevalue(a1);

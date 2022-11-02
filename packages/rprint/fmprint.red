@@ -168,11 +168,7 @@ symbolic procedure fmp!-switch mode;
             outputhandler!-stack!* := cdr outputhandler!-stack!*;
             !*fancy := nil
           >>
-	  else
-          << !*fancy := nil;
-             rederr "FANCY is not current output handler" >>
-% ACN feels that raising an error on an attempt to switch off an option
-% in the case that the option is already disabled is a bit harsh.
+	  else !*fancy := nil;
         >>;
 
 symbolic procedure fancy!-out!-header();
