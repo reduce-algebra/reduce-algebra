@@ -410,38 +410,3 @@
 /psl/dist/manual/*.idv
 /psl/dist/manual/*.xref
 /psl/dist/manual/*.dvi
-
-# /scripts/
-/scripts/Makefile.in
-/scripts/autom4te.cache
-/scripts/compile
-/scripts/config.guess
-/scripts/config.sub
-/scripts/install-sh
-/scripts/ltmain.sh
-/scripts/m4
-/scripts/missing
-
-# /vsl/
-/vsl/vslmanual.log
-/vsl/vslmanual.dvi
-/vsl/vslmanual.idx
-/vsl/vslmanual.ind
-/vsl/vslmanual.ilg
-/vsl/*.img
-/vsl/*.log
-/vsl/vsl
-/vsl/modules
-
-# /web/
-/web/htdocs/lisp-docs
-/web/htdocs/manual
-/web/htdocs/reduce38-docs
-/web/htdocs/reduce40.pdf
-
-# /winbuild64/
-/winbuild64/Output
-/winbuild64/reduce.iss
-/winbuild64/reduce.img
-/winbuild64/*.log
-/winbuild64/*.stamp
