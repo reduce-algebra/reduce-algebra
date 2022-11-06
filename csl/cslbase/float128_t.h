@@ -56,7 +56,8 @@
 // the basic arithmetic operations +-*/ and comparison operations such
 // as ">" and ">=".
 // It directed to and ostream via "<<" the data is displayed in hex
-// format.
+// format. Well I have a chance of using G format decimal printing so
+// I should use that unless the "hex" flag is set.
 
 // Note that input is FRAGILE. For instance the hex input must have
 // 32 hex digits (the separator "'" may be used to help make the format
@@ -203,12 +204,9 @@ extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 // number of characters used. The "sprint" versions put their result in
 // a buffer, while "print" goes to stdout.
 
-extern int f128_sprint_E(char *s, int width, int precision,
-                         float128_t p);
-extern int f128_sprint_F(char *s, int width, int precision,
-                         float128_t p);
-extern int f128_sprint_G(char *s, int width, int precision,
-                         float128_t p);
+extern int f128_sprint_E(char *s, int width, int precision, float128_t p);
+extern int f128_sprint_F(char *s, int width, int precision, float128_t p);
+extern int f128_sprint_G(char *s, int width, int precision, float128_t p);
 extern int f128_print_E(int width, int precision, float128_t p);
 extern int f128_print_F(int width, int precision, float128_t p);
 extern int f128_print_G(int width, int precision, float128_t p);
@@ -427,11 +425,16 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& o, const QuadFloat& d)
-    {   std::ios_base::fmtflags save = o.flags();
-        return o << std::hex
-                 << std::setw(16) << std::setfill('0') << d.v.v[1] << "'"
-                 << std::setw(16) << std::setfill('0') << d.v.v[0]
-                 << std::setiosflags(save);
+    {   bool hex = (o.flags() & std::ios::hex) != 0;
+        if (hex)
+        {   return o << std::setw(16) << std::setfill('0') << d.v.v[1]
+                 << "'" << std::setw(16) << std::setfill('0') << d.v.v[0];
+        }
+        else
+        {   char buffer[64];
+            f128_sprint_G(buffer, 0, 34, d.v);
+            return o << buffer;
+        }
     }
 
     constexpr QuadFloat operator=(const QuadFloat& rhs)
@@ -686,8 +689,12 @@ public:
     {   v.hi = n.hi;
         v.lo = n.lo;
     }
-    constexpr OctFloat(const char* s)      // value as from a text string
+    OctFloat(const char* s)                // value as from a text string
     {   v = ato256(s);
+    }
+    constexpr OctFloat(const QuadFloat hi)
+    {   v.hi = hi.v;
+        v.lo = f128_0;
     }
     constexpr OctFloat(const QuadFloat hi, const QuadFloat lo)
     {   v.hi = hi.v;
@@ -784,58 +791,6 @@ inline OctFloat operator ""_QQ (const char* s)
 {   return OctFloat(ato256(s));
 }
 
-inline float256_t ato256(const char* s)
-{   bool sign = false;
-    if (*s == '-')
-    {   sign = true;
-        s++;
-        if (*s == '\'') s++;
-    }
-    bool dotSeen = false;
-    int x = 0;
-    OctFloat r(0);
-    int c;
-    while (std::isdigit(c = *s))
-    {   r = oct_10*r + OctFloat(c - '0');
-        s++;
-        if (*s == '\'') s++;
-        if (dotSeen) x--;
-        else if (*s == '.')
-        {   dotSeen = true;
-            s++;
-            if (*s == '\'') s++;
-        }
-    }
-    if (*s == 'e' || *s == 'E')
-    {   s++;
-        if (*s == '\'') s++;
-        bool xsign = false;
-        if (*s == '-')
-        {   xsign = true;
-            s++;
-            if (*s == '\'') s++;
-        }
-        int xx = 0;
-        while (std::isdigit(c = *s))
-        {   xx = 10*xx + c - '0';
-            s++;
-            if (*s == '\'') s++;
-        }
-        if (xsign) xx = -xx;
-        x += xx;
-    }
-    if (x != 0)
-    {   bool xsign = x < 0;
-        if (xsign) x = -x;
-        float256_t scale;
-        f256M_pow(&oct_10.v, x, &scale);
-        if (xsign) r = r / OctFloat(scale);
-        else r = r * OctFloat(r);
-    }
-    if (sign) r = -r;
-    return r.v;
-}
-
 // If the user specified other than exactly 64 hex digits with _QQX the
 // result will be something that is as defined by this code but that
 // ought not to be relied upon!
@@ -867,7 +822,7 @@ constexpr inline OctFloat operator ""_QQX (const char* s)
     r.hi.v[low] = data[1];
     r.lo.v[high] = data[2];
     r.lo.v[low] = data[3];
-    return OctFloat(r); // Only fills in the "hi" component.
+    return OctFloat(r);
 }
 
 #endif // header_float128_t

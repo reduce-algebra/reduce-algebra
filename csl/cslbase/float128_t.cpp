@@ -207,10 +207,35 @@ void f256M_mul(const float256_t *x, const float256_t *y, float256_t *z)
     f128M_add(&w1, &c.lo, &z->lo);
 }
 
-void f256M_div(const float256_t *x, const float256_t *y, float256_t *z)
-{   abort();
-}
+// I suspect that the following is not correct yet!
 
+void f256M_div(const float256_t *x, const float256_t *y, float256_t *z)
+{
+// This is new code as of November 2022 and can benefit from use of the
+// QuadFloat class and all the operator overloads. See how much neater it
+// is that the code that uses f128M_add etc directly! But also note some
+// residual ugliness such as incomplete compatibility between QuadFloat
+// and float128_t.
+    QuadFloat xhi(x->hi);
+    QuadFloat xlo(x->lo);
+    QuadFloat yhi(y->hi);
+    QuadFloat ylo(y->lo);
+    QuadFloat c = xhi / yhi;
+    float256_t u;
+    f128M_mul2(&c.v, &yhi.v, &u);
+    std::cout << OctFloat(*x) << "\n"
+              << OctFloat(*y) << "\n" << OctFloat(u) << "\n" << std::dec;
+    std::cout << "c = " << c << "\n";
+    std::cout << "u.hi = " << QuadFloat(u.hi) << "\n";
+    std::cout << "c = " << c << "\n";
+    std::cout << "c = " << c << "\n";
+    std::cout << "c = " << c << "\n";
+
+    QuadFloat cc = ((((c - QuadFloat(u.hi)) - QuadFloat(u.lo)) + xlo) - c*ylo) / yhi;
+    z->hi = (c + cc).v;
+    z->lo = (c - z->hi + cc).v;
+    std::cout << "DIV: " << QuadFloat(z->hi) << " & " << QuadFloat(z->lo) << "\n\n";
+}
 
 // y := x^n where n is a positive integer.
 
@@ -265,6 +290,62 @@ bool f256M_le(const float256_t *x, const float256_t *y)
 {   if (f128_lt(x->hi, y->hi)) return true;
     else if (f128_eq(x->hi, y->hi)) return f128_le(x->lo, y->lo);
     else return false;
+}
+
+// I suspect that this is noy yet right!
+
+float256_t ato256(const char* s)
+{   bool sign = false;
+    if (*s == '-')
+    {   sign = true;
+        s++;
+        if (*s == '\'') s++;
+    }
+    bool dotSeen = false;
+    int x = 0;
+    OctFloat r(0);
+    int c;
+    while (std::isdigit(c = *s))
+    {   r = oct_10*r + OctFloat(c - '0');
+        s++;
+        if (*s == '\'') s++;
+        if (dotSeen) x--;
+        else if (*s == '.')
+        {   dotSeen = true;
+            s++;
+            if (*s == '\'') s++;
+        }
+    }
+    if (*s == 'e' || *s == 'E')
+    {   s++;
+        if (*s == '\'') s++;
+        bool xsign = false;
+        if (*s == '-')
+        {   xsign = true;
+            s++;
+            if (*s == '\'') s++;
+        }
+        int xx = 0;
+        while (std::isdigit(c = *s))
+        {   xx = 10*xx + c - '0';
+            s++;
+            if (*s == '\'') s++;
+        }
+        if (xsign) xx = -xx;
+        x += xx;
+    }
+    if (x != 0)
+    {   bool xsign = x < 0;
+        if (xsign) x = -x;
+        float256_t scale;
+        f256M_pow(&oct_10.v, x, &scale);
+std::cout << " _QQ: " << r << "\n" << OctFloat(scale) << "\n"
+          << (r / OctFloat(scale)) << "\n";
+        if (xsign) r = r / OctFloat(scale);
+        else r = r * OctFloat(r);
+    }
+    if (sign) r = -r;
+    return r.v;
 }
 
 bool OctFloat::operator==(const OctFloat& rhs) const
@@ -750,7 +831,7 @@ int f128_sprint_G(char *r, int width, int prec, float128_t p)
     else return f128_sprint_F(r, width, prec-decexp, p);
 }
 
-int f128_print_G(int width, int prec, float128_t p)
+int f128_print_G(int width, int prec, float128_t p) 
 {   char buffer[64];
     int r = 0;
     while (width > 63)
