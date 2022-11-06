@@ -151,17 +151,12 @@ LispObject single_float, double_float, long_float, bit_symbol;
 LispObject pathname_symbol, print_array_sym, read_base;
 LispObject initial_element, builtin0_symbol, builtin1_symbol;
 LispObject builtin2_symbol, builtin3_symbol, builtin4_symbol;
+LispObject NaN_symbol, infinity_symbol, minusinfinity_symbol;
 
 LispObject workbase[51];
 
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
 LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
-
-#ifdef CONSERVATIVE
-// While developing and testing I will use these as the only
-// conservative values
-LispObject ambiguous[10] = {0,0,0,0,0,0,0,0,0,0};
-#endif // CONSERVATIVE
 
 char program_name[64] = {0};
 
@@ -908,6 +903,9 @@ LispObject set_up_functions(int restart_flag)
                                            G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up);
     load_source_symbol       = make_symbol("load-source", restart_flag,
                                            Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
+    NaN_symbol               = make_undefined_symbol("NaN");
+    infinity_symbol          = make_undefined_symbol("infinity");
+    minusinfinity_symbol     = make_undefined_symbol("minusinfinity");
     builtin0_symbol          = make_undefined_symbol("s:builtin0");
     builtin1_symbol          = make_undefined_symbol("s:builtin1");
     builtin2_symbol          = make_undefined_symbol("s:builtin2");
@@ -1280,7 +1278,51 @@ LispObject set_up_variables(int restart_flag)
 #ifdef EXPERIMENT
         w = cons(make_keyword("EXPERIMENT"), w);
 #endif
+#ifdef CONSERVATIVE
+        w = cons(make_keyword("CONSERVATIVE"), w);
+#endif
+#ifdef ARITHLIB
+        w = cons(make_keyword("ARITHLIB"), w);
+#endif
+#ifdef EMBEDDED
+        w = cons(make_keyword("EMBEDDED"), w);
+#endif
+#ifdef NO_THROW
+        w = cons(make_keyword("NO-THROW"), w);
+#endif
+        if (fwin_windowmode() & FWIN_WITH_TERMED)
+            w = cons(make_keyword("TERMED"), w);
+#ifdef HAVE_LIBFOX
+        if (fwin_windowmode() & FWIN_IN_WINDOW)
+        {   w = cons(make_keyword("WINDOWED"), w);
+            w = cons(make_keyword("FOX"), w);
+// It could be the case that SHOWMATH is compiled in but the necessary
+// fonts were not located. Or if they were there but "--" has been used to
+// redirect standard output to a file.
+            if (showmathInitialised &&
+                alternative_stdout == nullptr)
+            {   w = cons(make_keyword("SHOWMATH"), w);
+                w = cons(make_keyword("SHOWMATH1"), w);
+            }
+        }
+#endif
+#ifdef HAVE_LIBWX
+        if (fwin_windowmode() & FWIN_IN_WINDOW)
+        {   w = cons(make_keyword("WINDOWED"), w);
+            w = cons(make_keyword("WX"), w);
+// It could be the case that SHOWMATH is compiled in but the necessary
+// fonts were not located. Or if they were there but "--" has been used to
+// redirect standard output to a file.
+            if (showmathInitialised &&
+                alternative_stdout == nullptr)
+            {   w = cons(make_keyword("SHOWMATH"), w);
+                w = cons(make_keyword("SHOWMATH1"), w);
+            }
+        }
+#endif
+#ifdef RECORD_GET
         w = cons(make_keyword("RECORD_GET"), w);
+#endif
         w = acons(make_keyword("EXECUTABLE"),
                   make_string(fullProgramName), w);
         w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
@@ -1330,6 +1372,9 @@ LispObject set_up_variables(int restart_flag)
 #endif
 #ifdef CONSERVATIVE
         w = cons(make_keyword("conservative"), w);
+#endif
+#ifdef ARITHLIB
+        w = cons(make_keyword("arithlib"), w);
 #endif
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);

@@ -1,7 +1,5 @@
 // arith-float128.cpp                      Copyright (C) 2022-2022 Codemist
 
-#if defined ARITHLIB || defined TEST
-
 // $Id$
 
 
@@ -36,150 +34,7 @@
 
 #include "headers.h"
 
-// For any degree of sanity at all here I need to arrange that I can use
-// 128-bit floats using the normal arithmetic operators even though they
-// are liable to be implemented in software with ugly function calls
-// as the "real" way of doing things. So I start with some C++ wrapper
-// and operator overload "fun".
-
-class LongDouble
-{
-    float128_t v;
-public:
-    LongDouble(float128_t n);
-    LongDouble(const char* s);
-    LongDouble(const LongDouble& rhs);
-    LongDouble(const LongDouble& rhs, int exponent);
-    LongDouble(LongDouble&& rhs);
-
-    LongDouble operator=(const LongDouble & rhs);
-    LongDouble operator=(LongDouble && rhs);
-
-    bool operator-=(const LongDouble& rhs) const;
-    bool operator!=(const LongDouble& rhs) const;
-    bool operator<(const LongDouble& rhs) const;
-    bool operator<=(const LongDouble& rhs) const;
-    bool operator>(const LongDouble& rhs) const;
-    bool operator>=(const LongDouble& rhs) const;
-
-    LongDouble operator-() const;
-
-    LongDouble operator+(const LongDouble& rhs) const;
-    LongDouble operator-(const LongDouble& rhs) const;
-    LongDouble operator*(const LongDouble& rhs) const;
-    LongDouble operator/(const LongDouble& rhs) const;
-
-    bool isInfinite();
-    bool isNaN();
-    bool isSubnormal();
-
-    bool sign();
-    int exponent();
-    LongDouble mantissa();
-};
-
-
-LongDouble::LongDouble(float128_t n)
-{
-}
-
-LongDouble::LongDouble(const char* s)
-{
-}
-
-LongDouble::LongDouble(const LongDouble& rhs)
-{
-}
-
-LongDouble::LongDouble(const LongDouble& rhs, int exponent)
-{
-}
-
-LongDouble::LongDouble(LongDouble&& rhs)
-{
-}
-
-LongDouble LongDouble::operator=(const LongDouble& rhs)
-{
-}
-
-LongDouble LongDouble::operator=(LongDouble&& rhs)
-{
-}
-
-
-bool LongDouble::operator-=(const LongDouble& rhs) const
-{
-}
-
-bool LongDouble::operator!=(const LongDouble& rhs) const
-{
-}
-
-bool LongDouble::operator<(const LongDouble& rhs) const
-{
-}
-
-bool LongDouble::operator<=(const LongDouble& rhs) const
-{
-}
-
-bool LongDouble::operator>(const LongDouble& rhs) const
-{
-}
-
-bool LongDouble::operator>=(const LongDouble& rhs) const
-{
-}
-
-
-LongDouble LongDouble::operator-() const
-{
-}
-
-
-LongDouble LongDouble::operator+(const LongDouble& rhs) const
-{
-}
-
-LongDouble LongDouble::operator-(const LongDouble& rhs) const
-{
-}
-
-LongDouble LongDouble::operator*(const LongDouble& rhs) const
-{
-}
-
-LongDouble LongDouble::operator/(const LongDouble& rhs) const
-{
-}
-
-
-bool LongDouble::isInfinite()
-{
-}
-
-bool LongDouble::isNaN()
-{
-}
-
-bool LongDouble::isSubnormal()
-{
-}
-
-
-bool LongDouble::sign()
-{
-}
-
-int LongDouble::exponent()
-{
-}
-
-LongDouble LongDouble::mantissa()
-{
-}
-
+#ifdef SOFTFLOAT
 
 //
 //    a**b = exp(b*log(a))
@@ -215,42 +70,92 @@ LongDouble LongDouble::mantissa()
 // get this much working I will be amazed!
 
 
+// Just for now I provide horrid placeholders for all the 128-bit float
+// elementary functions by conveting back to ordinary double floats and
+// calculating the result there. This is MUCH less accurate than would be
+// proper, and can fail when the input is outside the range of double.
+// I use std::memmove() to avoid strict aliasing undefinedness.
+// All of this should be reworked in the long term - with the replacement
+// code using the QuadFloat wrapper class around all the float128_t
+// values so that coding style can look natural with literals written
+// with a _Q suffix.
 
 float128_t sin(float128_t x)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   Double_union d;
+    d.f64 = f128_to_f64(x);
+    std::memmove(&d.f, &d.f64, sizeof(double));
+    d.f = std::sin(d.f);
+    std::memmove(&d.f64, &d.f, sizeof(double));
+    return f64_to_f128(d.f64);
 }
 
 float128_t cos(float128_t x)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   Double_union d;
+    d.f64 = f128_to_f64(x);
+    std::memmove(&d.f, &d.f64, sizeof(double));
+    d.f = std::cos(d.f);
+    std::memmove(&d.f64, &d.f, sizeof(double));
+    return f64_to_f128(d.f64);
 }
 
 float128_t exp(float128_t x)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   Double_union d;
+    d.f64 = f128_to_f64(x);
+    std::memmove(&d.f, &d.f64, sizeof(double));
+    d.f = std::exp(d.f);
+    std::memmove(&d.f64, &d.f, sizeof(double));
+    return f64_to_f128(d.f64);
 }
 
 float128_t log(float128_t x)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   Double_union d;
+    d.f64 = f128_to_f64(x);
+    std::memmove(&d.f, &d.f64, sizeof(double));
+    d.f = std::log(d.f);
+    std::memmove(&d.f64, &d.f, sizeof(double));
+    return f64_to_f128(d.f64);
 }
 
 float128_t atan2(float128_t y, float128_t x)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   Double_union d;
+    d.f64 = f128_to_f64(x);
+    std::memmove(&d.f, &d.f64, sizeof(double));
+    d.f = std::atan(d.f);
+    std::memmove(&d.f64, &d.f, sizeof(double));
+    return f64_to_f128(d.f64);
 }
 
 float128_t abs2(float128_t x, float128_t y)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   QuadFloat a(x);
+    QuadFloat b(y);
+// In naive terms what I want is sqrt(x*2 + y*2). If either x or y
+// is very big squaring could overflow, so I need to svale.
+    if (a > 1.0e2000_Q || a < -1.0e2000_Q ||
+        b > 1.0e2000_Q || b < -1.0e2000_Q)
+    {   QuadFloat scale = 0x2000'000000000000'0000000000000000_QX;
+        a /= scale;
+        b /= scale;
+        QuadFloat r = a*a + b*b;
+        return f128_mul(f128_sqrt(r.v), scale.v);
+    }
+// If both x and y are tiny I also need to scale to avoid premature
+// underflow.
+    if (a > 1.0e-2000_Q && a < -1.0e-2000_Q &&
+        b > 1.0e-2000_Q && b < -1.0e-2000_Q)
+    {   QuadFloat scale = 0x2000'000000000000'0000000000000000_QX;
+        a *= scale;
+        b *= scale;
+        QuadFloat r = a*a + b*b;
+        return f128_div(f128_sqrt(r.v), scale.v);
+    }
+    QuadFloat r = a*a + b*b;
+    return f128_sqrt(r.v);
 }
 
 float128_t sqrt(float128_t x)
-{   return x;
-#pragma message ("float128_t elementary functions not coded yet")
+{   return f128_sqrt(x);
 }
 
-#endif // ARITHLIB
+#endif // SOFTFLOAT
 
 // end of arith-float.cpp

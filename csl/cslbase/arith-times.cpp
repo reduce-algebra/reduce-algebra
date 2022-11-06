@@ -295,10 +295,10 @@ LispObject Times::op(LFlt a, Rat b)
     float128_t d = Frexp128::op(b, xb);
     int x;
     float128_t d1 = a.floatval();
-    f128M_frexp(&d1, &d1, &x);
+    f128_frexp(d1, &d1, &x);
     x += xb;
     d = f128_mul(d, d1);
-    f128M_ldexp(&d, x);
+    f128_ldexp(&d, x);
     return make_boxfloat128(d);
 }
 
@@ -1379,7 +1379,7 @@ LispObject Quotient::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -1462,7 +1462,7 @@ LispObject Quotient::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -1883,7 +1883,7 @@ LispObject CLQuotient::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -1966,7 +1966,7 @@ LispObject CLQuotient::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -3527,7 +3527,7 @@ LispObject Truncate::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -3610,7 +3610,7 @@ LispObject Truncate::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4010,7 +4010,7 @@ LispObject Ceiling::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4093,7 +4093,7 @@ LispObject Ceiling::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4494,7 +4494,7 @@ LispObject Floor::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4577,7 +4577,7 @@ LispObject Floor::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -4977,7 +4977,7 @@ LispObject Ftruncate::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -5060,7 +5060,7 @@ LispObject Ftruncate::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -5460,7 +5460,7 @@ LispObject Fceiling::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -5543,7 +5543,7 @@ LispObject Fceiling::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -5943,7 +5943,7 @@ LispObject Ffloor::op(LFlt a, std::uint64_t *b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -6026,7 +6026,7 @@ LispObject Ffloor::op(LFlt a, Rat b)
 {   std::int64_t xx;
     float128_t bb = Frexp128::op(b, xx);
     float128_t d = f128_div(a.floatval(), bb);
-    f128M_ldexp(&d, -xx);
+    f128_ldexp(&d, -xx);
     return make_boxfloat128(d);
 }
 
@@ -6239,6 +6239,234 @@ LispObject Ffloor::op(LFlt a, LFlt b)
 {   arithlib_abort("not done yet");
 }
 
+
+LispObject Ntimes(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+LispObject Ntimes(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Times::op(a1, a2));
+}
+
+LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onevalue(Times::op(Times::op(a1, a2), a3));
+}
+
+LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   LispObject w = Times::op(Times::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Times::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+//LispObject Nexpt(LispObject env, LispObject a1, LispObject a2)
+//{   return onevalue(Expt::op(a1, a2));
+//}
+
+LispObject Ngcdn(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Ngcdn(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Gcdn::op(a1, a2));
+}
+
+LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3)
+{   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
+}
+
+LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4plus)
+{   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Gcdn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nlcmn(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+LispObject Nlcmn(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Lcmn::op(a1, a2));
+}
+
+LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3)
+{   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
+}
+
+LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4plus)
+{   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Lcmn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nquotient(LispObject env, LispObject a1,
+                            LispObject a2)
+{   return onevalue(Quotient::op(a1, a2));
+}
+
+LispObject NCLQuotient(LispObject env, LispObject a1,
+                              LispObject a2)
+{   return onevalue(CLQuotient::op(a1, a2));
+}
+
+LispObject Nremainder(LispObject env, LispObject a1,
+                             LispObject a2)
+{   return onevalue(Remainder::op(a1, a2));
+}
+
+LispObject Nmod(LispObject env, LispObject a1,
+                             LispObject a2)
+{   return onevalue(Mod::op(a1, a2));
+}
+
+LispObject Ndivide(LispObject env, LispObject a1,
+                          LispObject a2)
+{   return onevalue(Divide::op(a1, a2));
+}
+
+LispObject Nreciprocal(LispObject env, LispObject a1)
+{   return onevalue(Reciprocal::op(a1));
+}
+
+LispObject Nsquare(LispObject env, LispObject a1)
+{   return onevalue(Square::op(a1));
+}
+
+LispObject Nitimes(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+LispObject Nitimes(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nitimes(LispObject env, LispObject a1,
+                          LispObject a2)
+{   return onevalue(Times::op(a1, a2));
+}
+
+LispObject Nitimes(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3)
+{   return onevalue(Times::op(Times::op(a1, a2), a3));
+}
+
+LispObject Nitimes(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   LispObject w = Times::op(Times::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Times::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Niexpt(LispObject env, LispObject a1, LispObject a2)
+{   return Nexpt(env, a1, a2);
+}
+
+LispObject Nigcdn(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nigcdn(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Gcdn::op(a1, a2));
+}
+
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
+}
+
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Gcdn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nilcmn(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+LispObject Nilcmn(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Lcmn::op(a1, a2));
+}
+
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
+}
+
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Lcmn::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Niquotient(LispObject env, LispObject a1,
+                             LispObject a2)
+{   return onevalue(Quotient::op(a1, a2));
+}
+
+LispObject Nimod(LispObject env, LispObject a1,
+                              LispObject a2)
+{   return onevalue(Mod::op(a1, a2));
+}
+
+LispObject Nidivide(LispObject env, LispObject a1,
+                           LispObject a2)
+{   return onevalue(Divide::op(a1, a2));
+}
+
+LispObject Nireciprocal(LispObject env, LispObject a1)
+{   return onevalue(Reciprocal::op(a1));
+}
+
+LispObject Nisquare(LispObject env, LispObject a1)
+{   return onevalue(Square::op(a1));
+}
 
 #endif // ARITHLIB
 

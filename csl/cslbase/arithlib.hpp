@@ -409,7 +409,7 @@
 // this can overflow. I might try (1LLU<<n) but I have no absolute guarantee
 // that "LL" makes a 64-bit integer. I could use UINT64_C(1) and that is not
 // too bad, but in many places I will in fact write the rather wordy but very
-// explicit (static_cast<std::uint64_t>(1)<<n).
+// explicit (1ULL<<n).
 
 
 // I provide a default configuration, but by predefining one of the
@@ -1361,7 +1361,7 @@ public:
 // freechains here should show that. I set and test for that in the other
 // bits of code that allocate or release memory.
                 for (std::uint64_t *b=f; b!=NULL; b = (std::uint64_t *)b[1])
-                {   arithlib_assert(b[0] == -static_cast<std::uint64_t>(1));
+                {   arithlib_assert(b[0] == -1ULL);
                     n++;
                 }
                 if (n != 0)
@@ -1438,12 +1438,12 @@ public:
 // When I abandon a memory block I will push it onto a relevant free chain.
 
     static void abandon(std::uint64_t *p)
-    {   arithlib_assert(p[0] != -static_cast<std::uint64_t>(1));
+    {   arithlib_assert(p[0] != -1ULL);
         int bits = bit_cast<std::uint32_t *>(p)[0];
         arithlib_assert(bits>0 && bits<48);
 // Here I assume that sizeof(uint64_t) >= sizeof(intptr_t) so I am not
 // going to lose information here on any platform I can consider.
-        if (debug_arith) p[0] = -static_cast<std::uint64_t>(1);
+        if (debug_arith) p[0] = -1ULL;
 #ifdef ARITHLIB_ATOMIC
         lockfree_push(p, freechain_table::get(), bits);
 #else
@@ -1541,7 +1541,7 @@ inline bool stored_as_fixnum(std::intptr_t a)
 }
 
 constexpr inline std::int64_t int_of_handle(std::intptr_t a)
-{   return (static_cast<std::int64_t>(a) & ~static_cast<std::int64_t>(1))/2;
+{   return (static_cast<std::int64_t>(a) & ~1LL)/2;
 }
 
 // This function should only ever be called in situations where the
@@ -4498,9 +4498,9 @@ inline void fudge_distribution(const std::uint64_t *a,
         case 2:
             for (std::size_t i=0; i<lena+1; i++) r[i] = 0;
             if (a[lena-1] == 0)
-            {   if (lena>1) r[lena-2] = static_cast<std::uint64_t>(1)<<63;
+            {   if (lena>1) r[lena-2] = 1ULL<<63;
             }
-            else r[lena-1] = static_cast<std::uint64_t>(1) << (63-nlz(a[lena-1]));
+            else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t *p = r;
@@ -4809,7 +4809,7 @@ inline float128_t modf(float128_t d, float128_t &i)
         i.v[LOPART] = 0;
     }
     else if (x <= 112)
-    {   i.v[LOPART] &= (-static_cast<std::uint64_t>(1)) << (113-x);
+    {   i.v[LOPART] &= (-1ULL) << (113-x);
     }
 // If the number is large enough then then it is its own integer part, and
 // the fractional part will be zero.
@@ -5390,8 +5390,8 @@ inline float Float::op(std::uint64_t *a)
     {   if (next != 0) top24++;
         else top24 += (top24&1);
     }
-    arithlib_assert(top24 >= (static_cast<std::int64_t>(1))<<23 &&
-                    top24 <= (static_cast<std::int64_t>(1))<<24);
+    arithlib_assert(top24 >= (1LL)<<23 &&
+                    top24 <= (1LL)<<24);
     double d = static_cast<float>(top24);
     arithlib_assert(top24 == static_cast<std::uint64_t>(d));
     if (sign) d = -d;
@@ -5406,7 +5406,7 @@ inline double Frexp::op(std::int64_t a, std::int64_t &x)
 // conversions that I do are ones that will be exact, and I will perform
 // rounding in IEEE style myself.
 // First I will see if the value is small enough that I can work directly.
-    const std::int64_t range = (static_cast<std::int64_t>(1))<<53;
+    const std::int64_t range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a);
 // I will now drop down to a sign and magnitude representation
     bool sign = a < 0;
@@ -5420,8 +5420,8 @@ inline double Frexp::op(std::int64_t a, std::int64_t &x)
     if (low > 0x8000000000000000U) top53++;
     else if (low == 0x8000000000000000U) top53 += (top53 &
                 1); // round to even
-    arithlib_assert(top53 >= (static_cast<std::int64_t>(1))<<52 &&
-                    top53 <= (static_cast<std::int64_t>(1))<<53);
+    arithlib_assert(top53 >= (1LL)<<52 &&
+                    top53 <= (1LL)<<53);
 // The next line should never introduce any rounding at all.
     double d = static_cast<double>(top53);
     arithlib_assert(top53 == static_cast<std::uint64_t>(d));
@@ -5507,8 +5507,8 @@ inline double Frexp::op(std::uint64_t *a, std::int64_t &x)
     {   if (next != 0) top53++;
         else top53 += (top53&1);
     }
-    arithlib_assert(top53 >= (static_cast<std::int64_t>(1))<<52 &&
-                    top53 <= (static_cast<std::int64_t>(1))<<53);
+    arithlib_assert(top53 >= (1LL)<<52 &&
+                    top53 <= (1LL)<<53);
     double d = static_cast<double>(top53);
     arithlib_assert(top53 == static_cast<std::uint64_t>(d));
     if (sign) d = -d;
@@ -5532,7 +5532,7 @@ inline float128_t Float128::op(std::int64_t a)
 inline float128_t Frexp128::op(std::int64_t a, std::int64_t &x)
 {   float128_t d = i64_to_f128(a), d1;
     int xi = 0;
-    f128M_frexp(&d, &d1, &xi); // in the CSL sources.
+    f128_frexp(d, &d1, &xi); // in the CSL sources.
     x = xi;
     return d1;
 }
@@ -5631,8 +5631,8 @@ inline float128_t Float128::op(std::uint64_t *a)
     float128_t d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
-// the CSL source file arith14.cpp.
-    f128M_ldexp(&d, static_cast<int>(x));
+// the CSL source file float128_t,h.
+    f128_ldexp(&d, static_cast<int>(x));
     return d;
 }
 
@@ -6248,7 +6248,7 @@ inline bool Eqn::op(float a, std::uint64_t *b)
 }
 
 inline bool Eqn::op(std::int64_t a, double b)
-{   const std::int64_t range = (static_cast<std::int64_t>(1))<<53;
+{   const std::int64_t range = (1LL)<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) == b;
 // The value on the next line is a floating point representation of 2^63,
 // so any floating value at least that large is bigger than any int64_t value.
@@ -6420,7 +6420,7 @@ inline bool Neqn::op(float a, std::uint64_t *b)
 }
 
 inline bool Neqn::op(std::int64_t a, double b)
-{   const std::int64_t range = (static_cast<std::int64_t>(1))<<53;
+{   const std::int64_t range = (1LL)<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) != b;
 // The value on the next line is a floating point representation of 2^63,
 // so any floating value at least that large is bigger than any int64_t value.
@@ -6560,17 +6560,17 @@ inline bool Greaterp::op(std::int64_t a, double b)
 {
 // If the integer is small enough it can be converted to a double
 // without any rounding, so then I can do the comparison easily.
-    const std::int64_t range = static_cast<std::int64_t>(1)<<53;
+    const std::int64_t range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) > b;
+// NaNs must always return false from a comparison, so all the cases so
+// far will have yielded correct results. But here I must filter out
+// that situation.
+    if (std::isnan(b)) return false;
 // If the floating point value is >= 2^63 or is less < -2^63 it is beyond
 // the range of int64_t, so the result is easy. This situation includes
 // the case of infinities.
     if (b >= 9223372036854775808.0) return false;
     else if (b < -9223372036854775808.0) return true;
-// NaNs must always return false from a comparison, so all the cases so
-// far will have yielded correct results. But here I must filter out
-// that situation.
-    if (std::isnan(b)) return false;
 // Because |b| >= 2^53 but < 2^63 it can be converted to an int64_t value
 // without rounding.
     return a > static_cast<std::int64_t>(b);
@@ -6596,7 +6596,7 @@ inline bool greaterpfloat(std::uint64_t *a, std::size_t lena,
 // without any rounding, so then I can do the comparison easily.
     if (lena == 1)
     {   std::int64_t aa = a[0];
-        const std::int64_t range = (static_cast<std::int64_t>(1))<<53;
+        const std::int64_t range = (1LL)<<53;
         if (aa >= -range && aa <= range)
         {   double ad = static_cast<double>(aa);
             switch (mode)
@@ -6796,11 +6796,11 @@ inline bool Geq::op(float a, std::uint64_t *b)
 }
 
 inline bool Geq::op(std::int64_t a, double b)
-{   const std::int64_t range = (static_cast<std::int64_t>(1))<<53;
+{   const std::int64_t range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) >= b;
+    if (std::isnan(b)) return false;
     if (b >= 9223372036854775808.0) return false;
     else if (b < -9223372036854775808.0) return true;
-    if (std::isnan(b)) return false;
     return a >= static_cast<std::int64_t>(b);
 }
 
@@ -6877,11 +6877,11 @@ inline bool Lessp::op(float a, std::uint64_t *b)
 }
 
 inline bool Lessp::op(std::int64_t a, double b)
-{   const std::int64_t range = static_cast<std::int64_t>(1)<<53;
+{   const std::int64_t range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) < b;
+    if (std::isnan(b)) return false;
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return false;
-    if (std::isnan(b)) return false;
     return a < static_cast<std::int64_t>(b);
 }
 
@@ -6959,11 +6959,11 @@ inline bool Leq::op(float a, std::uint64_t *b)
 }
 
 inline bool Leq::op(std::int64_t a, double b)
-{   const std::int64_t range = static_cast<std::int64_t>(1)<<53;
+{   const std::int64_t range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) <= b;
+    if (std::isnan(b)) return false;
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return false;
-    if (std::isnan(b)) return false;
     return a <= static_cast<std::int64_t>(b);
 }
 
@@ -7474,7 +7474,7 @@ inline void bigrightshift(const std::uint64_t *a, std::size_t lena,
     std::size_t words = n/64;
     std::size_t bits = n % 64;
     if (words >= lena)
-    {   r[0] = negative(a[lena-1]) ? -static_cast<std::uint64_t>(1) : 0;
+    {   r[0] = negative(a[lena-1]) ? -1ULL : 0;
         lenr = 1;
     }
     else if (bits == 0)
@@ -7517,7 +7517,7 @@ inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
 // Because C++ does not guarantee that right shifts on signed values
 // duplicate the sign bit I perform the "shift" here using division by
 // a power of 2. Because I have n <= 62 here I will not get overflow.
-    std::int64_t q = static_cast<std::int64_t>(1)<<n;
+    std::int64_t q = 1LL<<n;
     return int_to_handle((a & ~(q-1))/q);
 }
 
@@ -7533,7 +7533,7 @@ inline std::intptr_t LowBit::op(std::uint64_t *a)
 {   std::size_t lena = number_size(a);
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   std::size_t r=0, i=0;
-        while (a[i++]==-static_cast<std::uint64_t>(1)) r += 64;
+        while (a[i++]==-1ULL) r += 64;
         std::uint64_t w = ~a[i-1];
         return int_to_handle(64-nlz(w & (-w))+r);
     }
@@ -7585,12 +7585,12 @@ inline std::intptr_t Logcount::op(std::int64_t a)
 inline bool Logbitp::op(std::uint64_t *a, std::size_t n)
 {   std::size_t lena = number_size(a);
     if (n >= 64*lena) return negative(a[lena-1]);
-    return (a[n/64] & (static_cast<std::uint64_t>(1) << (n%64))) != 0;
+    return (a[n/64] & (1ULL << (n%64))) != 0;
 }
 
 inline bool Logbitp::op(std::int64_t a, std::size_t n)
 {   if (n >= 64) return (a < 0);
-    else return (a & (static_cast<std::uint64_t>(1) << n)) != 0;
+    else return (a & (1ULL << n)) != 0;
 }
 
 // Addition when the length of a is art least than that of b.
@@ -9433,7 +9433,7 @@ inline std::intptr_t Isqrt::op(std::uint64_t *a)
     std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
     bitstop /= 2;
     if ((lena%2) == 0) bitstop += 32;
-    x[lenx-1] = static_cast<std::uint64_t>(1) << bitstop;
+    x[lenx-1] = 1ULL << bitstop;
     if (bitstop == 63) x[lenx-1]--; // ensure it is still positive!
 // I now have a first approximation to the square root as a number that is
 // a power of 2 with about half the bit-length of a. I will degenerate into
@@ -9881,7 +9881,7 @@ inline void division(std::uint64_t *a, std::size_t lena,
                 std::uint64_t carry = !negative(a[lena-1]) || a[0]==0 ? 1 : 0;
                 for (std::size_t i=1; i<lena; i++)
                     carry = add_with_carry(~a[i], carry, q[i-1]);
-                q[lena-1] = negative(a[lena-1]) ? 0 : -static_cast<std::uint64_t>(1);
+                q[lena-1] = negative(a[lena-1]) ? 0 : -1ULL;
                 truncate_positive(q, lenq);
                 truncate_negative(q, lenq);
             }
@@ -11130,8 +11130,9 @@ inline std::intptr_t SetModulus::op(std::int64_t n)
 }
 
 inline std::intptr_t SetModulus::op(std::uint64_t *n)
-{   if (Minusp::op(n))
-        return (std::intptr_t)aerror1("Invalid arg to set-modulus", vector_to_handle(n));
+{   if (!Plusp::op(n))
+        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+                                      vector_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
     std::size_t lenn = number_size(n);
     std::size_t bytes = (lenn+1)*sizeof(std::uint64_t);
@@ -11189,8 +11190,9 @@ inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t *b)
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
-    if (modulus_size != modulus_big) return (std::intptr_t)aerror1("bad arg for modular-plus",
-                vector_to_handle(b));
+    if (modulus_size != modulus_big)
+        return (std::intptr_t)aerror1("bad arg for modular-plus",
+            vector_to_handle(b));
     std::intptr_t r = Plus::op(a, b);
     if (op_dispatch1<Geq,bool>(r, large_modulus()))
     {   std::intptr_t r1 = op_dispatch1<Difference,std::intptr_t>(r,
@@ -11265,14 +11267,14 @@ inline std::intptr_t ModularDifference::op(std::uint64_t *a,
 inline std::intptr_t ModularTimes::op(std::int64_t a, std::int64_t b)
 {   switch (modulus_size)
     {   case modulus_32:
-            return int_to_handle(static_cast<std::uint64_t>(a)
-                                 *static_cast<std::uint64_t>
-                                 (b) % small_modulus);
+            return int_to_handle((static_cast<std::uint64_t>(a) *
+                                  static_cast<std::uint64_t>(b)) %
+                                 small_modulus);
         case modulus_64:
         {   std::uint64_t hi, lo, q, r;
             multiply64(static_cast<std::uint64_t>(a),
-                       static_cast<std::uint64_t>(b), hi,
-                       lo);
+                       static_cast<std::uint64_t>(b),
+                       hi, lo);
             divide64(hi, lo, small_modulus, q, r);
             return int_to_handle(r);
         }
@@ -11290,8 +11292,7 @@ inline std::intptr_t ModularTimes::op(std::int64_t a, std::int64_t b)
 inline std::intptr_t ModularTimes::op(std::int64_t a,
                                       std::uint64_t *b)
 {   std::intptr_t w = Times::op(a, b);
-    std::intptr_t r = op_dispatch1<Remainder,std::intptr_t>(w,
-                      large_modulus());
+    std::intptr_t r = op_dispatch1<Remainder,std::intptr_t>(w, large_modulus());
     abandon(w);
     return r;
 }
@@ -11304,8 +11305,8 @@ inline std::intptr_t ModularTimes::op(std::uint64_t *a,
 inline std::intptr_t ModularTimes::op(std::uint64_t *a,
                                       std::uint64_t *b)
 {   std::intptr_t w = Times::op(a, b);
-    std::intptr_t r = op_dispatch1<Remainder,std::intptr_t>(w,
-                      large_modulus());
+    std::intptr_t r =
+        op_dispatch1<Remainder,std::intptr_t>(w, large_modulus());
     abandon(w);
     return r;
 }
@@ -11323,30 +11324,49 @@ inline std::intptr_t ModularExpt::op(std::uint64_t *a, std::int64_t b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-inline std::intptr_t ModularExpt::op(std::uint64_t *a,
-                                     std::uint64_t *b)
+inline std::intptr_t ModularExpt::op(std::uint64_t *a, std::uint64_t *b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
 
-inline std::intptr_t ModularQuotient::op(std::int64_t a,
-        std::int64_t b)
-{   return (std::intptr_t)aerror("incomplete ModularQuotient");
+inline std::intptr_t ModularQuotient::op(std::int64_t a, std::int64_t b)
+{   std::intptr_t recip_b = ModularReciprocal::op(b);
+    std::intptr_t r;
+    if (stored_as_fixnum(recip_b))
+        r = ModularTimes::op(a, int_of_handle(recip_b));
+    else r = ModularTimes::op(a, vector_of_handle(recip_b));
+    abandon(recip_b);
+    return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::int64_t a,
-        std::uint64_t *b)
-{   return (std::intptr_t)aerror("incomplete ModularQuotient");
+inline std::intptr_t ModularQuotient::op(std::int64_t a, std::uint64_t *b)
+{   std::intptr_t recip_b = ModularReciprocal::op(b);
+    std::intptr_t r;
+    if (stored_as_fixnum(recip_b))
+        r = ModularTimes::op(a, int_of_handle(recip_b));
+    else r = ModularTimes::op(a, vector_of_handle(recip_b));
+    abandon(recip_b);
+    return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::uint64_t *a,
-        std::int64_t b)
-{   return (std::intptr_t)aerror("incomplete ModularQuotient");
+inline std::intptr_t ModularQuotient::op(std::uint64_t *a, std::int64_t b)
+{   std::intptr_t recip_b = ModularReciprocal::op(b);
+    std::intptr_t r;
+    if (stored_as_fixnum(recip_b))
+        r = ModularTimes::op(a, int_of_handle(recip_b));
+    else r = ModularTimes::op(a, vector_of_handle(recip_b));
+    abandon(recip_b);
+    return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::uint64_t *a,
-        std::uint64_t *b)
-{   return (std::intptr_t)aerror("incomplete ModularQuotient");
+inline std::intptr_t ModularQuotient::op(std::uint64_t *a, std::uint64_t *b)
+{   std::intptr_t recip_b = ModularReciprocal::op(b);
+    std::intptr_t r;
+    if (stored_as_fixnum(recip_b))
+        r = ModularTimes::op(a, int_of_handle(recip_b));
+    else r = ModularTimes::op(a, vector_of_handle(recip_b));
+    abandon(recip_b);
+    return r;
 }
 
 
@@ -11364,26 +11384,33 @@ inline std::intptr_t ModularMinus::op(std::uint64_t *a)
 }
 
 inline std::intptr_t general_modular_reciprocal(std::intptr_t aa, bool safe=false)
-{   return (std::intptr_t)aerror("not coded yet");
-#if 0
-    std::int64_t a = small_modulus,
-                 b = aa,
-                 x = 0,
-                 y = 1;
-    while (b != 1)
-    {   std::uint64_t w, t;
-        if (b == 0) return nil;
-        w = a / b;
+{
+// I believe that this could be speeded up significantly in cases where
+// the modulus is huge by using a Lehmer-style process as in the simpler
+// GCD code. Also it could save memory turnover by re-using the space
+// from intermediate results. At least for now I will be happy if I just
+// implement a version that actually works!
+    intptr_t a = vector_to_handle(large_modulus());
+    intptr_t b = aa;
+    intptr_t x = int_to_handle(0);
+    intptr_t y = int_to_handle(1);
+    while (b != int_to_handle(1))
+    {   intptr_t w, t;
+        if (b == int_to_handle(0))
+        {   if (safe) return nil;
+            else (std::intptr_t)aerror(
+                "non-prime modulus in modular-reciprocal");
+        }
+        w = Quotient::op(a, b);
         t = b;
-        b = a - b*w;
+        b = Difference::op(a, Times::op(a, w));
         a = t;
         t = y;
-        y = x - y*w;
+        y = Difference::op(x, Times::op(y, w));
         x = t;
     }
-    if (y < 0) y += small_modulus;
-    return int_to_handle(y);
-#endif
+    if (Minusp::op(y)) y = Plus::op(y, vector_to_handle(large_modulus()));
+    return y;
 }
 
 inline std::intptr_t ModularReciprocal::op(std::int64_t aa)

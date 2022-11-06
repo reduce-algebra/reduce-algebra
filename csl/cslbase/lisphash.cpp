@@ -517,7 +517,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 #ifdef HAVE_SOFTFLOAT
             case LONG_FLOAT_HEADER:
                 UPDATE32(r, (uint64_t)h);
-                if (f128M_zero(reinterpret_cast<float128_t *>(long_float_addr(key))))
+                if (f128_zerop(*reinterpret_cast<float128_t *>(long_float_addr(key))))
                 {   UPDATE(r, 0);
                     UPDATE(r, 0);
                 }

@@ -1309,23 +1309,14 @@ static LispObject N_CSLpowi(LispObject a, uint64_t n)
 // external function called powi in <cmath> and then moan about the
 // name clash. And also to avoid confusion againt the older CSL code.
 {   if (n == 0) return makenum(a, 1); // value 1 of appropriate type
-    else if (n == 1) return a;
-    else if ((n & 1) == 0)
-    {   a = N_CSLpowi(a, n/2);
-        errexit();
-        return Times::op(a, a);
+    else if (n == 1) return a;        // a simple special case.
+    LispObject r = fixnum_of_int(1);
+    while (n != 1)
+    {   if ((n & 1) != 0) r = Times::op(r, a);
+        a = Square::op(a);
+        n = n/2;
     }
-    else
-    {   LispObject b;
-        THREADID;
-        Save save(THREADARG a);
-        b = N_CSLpowi(a, n/2);
-        errexit();
-        b = Times::op(b, b);
-        errexit();
-        save.restore(a);
-        return Times::op(a, b);
-    }
+    return Times::op(r, a);
 }
 
 static Complex complex_of_number(LispObject a)
@@ -1390,30 +1381,16 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
                     else return onevalue(fixnum_of_int(1));
             }
         }
-        else if (is_numbers(b))
-        {   Header h = numhdr(b);
-            if (is_bignum_header(h))
-            {   switch (int_of_fixnum(a))
-                {   case 1:  return onevalue(a);
-                    case 0:  nn = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
-                        if (nn <= 0) return aerror2("expt", a, b);
-                        else return onevalue(a);
-                    case -1: nn = bignum_digits(b)[0];
-                        if (nn & 1) return onevalue(a);
-                        else return onevalue(fixnum_of_int(1));
-                }
-            }
-            else if (is_new_bignum_header(h))
-            {   switch (int_of_fixnum(a))
-                {   case 1:
-                        return onevalue(a);
-                    case 0:  
-                        if (Minusp::op(b)) return aerror2("expt", a, b);
-                        else return onevalue(a);
-                    case -1:
-                        if (Oddp::op(b)) return onevalue(a);
-                        else return onevalue(fixnum_of_int(1));
-                }
+        else if (is_new_bignum(b))
+        {   switch (int_of_fixnum(a))
+            {   case 1:
+                    return onevalue(a);
+                case 0:  
+                    if (Minusp::op(b)) return aerror2("expt", a, b);
+                    else return onevalue(a);
+                case -1:
+                    if (Oddp::op(b)) return onevalue(a);
+                    else return onevalue(fixnum_of_int(1));
             }
         }
     }
@@ -1426,8 +1403,6 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
          imag_part(a) == fixnum_of_int(-1)))
     {   nn = -1;
         if (is_fixnum(b)) nn = int_of_fixnum(b) & 3;
-        else if (is_numbers(b) && is_bignum(b))
-            nn = bignum_digits(b)[0] & 3;
         else if (is_new_bignum(b))
             nn = LowBits::op(b) & 3;
         switch (nn)
@@ -2314,6 +2289,15 @@ LispObject Ncasech(LispObject env, LispObject a, LispObject b)
 LispObject Ncacoth(LispObject env, LispObject a, LispObject b)
 {   return aerror("unimplemented function cacoth");
 }
+
+//LispObject Nsqrt(LispObject env, LispObject a1)
+//{   return onevalue(Sqrt::op(a1));
+//}
+
+LispObject Nisqrt(LispObject env, LispObject a1)
+{   return onevalue(Isqrt::op(a1));
+}
+
 
 #endif // HAVE_COMPLEX
 

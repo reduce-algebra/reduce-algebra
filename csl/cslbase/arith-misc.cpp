@@ -40,231 +40,6 @@
 
 #include "headers.h"
 
-LispObject N_make_power_of_two(size_t n)
-//
-// Create the number 2^n where n is positive.  Used to make the
-// denominator float of a rational representation of a float.  Some fun
-// to cope with various small cases before I get to the general call
-// to make_n_word_bignum.
-//
-{   if (n < 64) return make_lisp_unsigned64((uint64_t)1 << n);
-    else return Nleftshift(nil, fixnum_of_int(1), fixnum_of_int(n));
-}
-
-LispObject N_make_fix_or_big2(int32_t a1, uint32_t a2)
-{   return make_lisp_integer64(((int64_t)a1 << 31) | a2);
-}
-
-// N_double_to_binary returns an integer exponent and sets m such that the
-// original float is equal to m*2^x. It returns special values for x in the
-// case of infinities and NaNs.
-
-int N_double_to_binary(double d, int64_t& m)
-{   if (std::isnan(d))
-    {   m = 0;
-        return INT_MIN;
-    }
-    else if (std::isinf(d))
-    {   m = (d < 0.0) ? -1 : 1;
-        return INT_MAX;
-    }
-    else if (d == 0.0)
-    {   m = 0;   // I lose information about +0.0 vs -0.0 here
-        return 0;
-    }
-    int x;
-    d = std::frexp(d, &x);
-// now d is in the range +/-[0/5, 1) and the input had value d*2^x
-    m = static_cast<int64_t>(d*4503599627370496.0); // 2.0^52
-    return x - 52;
-}
-
-#ifdef HAVE_SOFTFLOAT
-// This does much the same for 128-bit floats.
-
-int N_float128_to_binary(const float128_t *d, int64_t& mhi, uint64_t& mlo)
-{   uint64_t hi = d->v[HIPART];
-    uint64_t lo = d->v[LOPART];
-    int x = static_cast<int>(hi >> 48) & 0x7fff;
-    uint64_t fhi = hi & UINT64_C(0x0000ffffffffffff);
-    if (x != 0) fhi |= UINT64_C(0x0001000000000000);
-    if ((int64_t)hi < 0)  // Now negate the mantissa
-    {   fhi = ~fhi;
-        lo = ~lo;
-        if (lo == UINT64_C(0xffffffffffffffff))
-        {   lo = 0;
-            fhi++;
-        }
-        else lo++;
-    }
-    mhi = fhi;
-    mlo = lo;
-    if (x == 0x7fff) return fhi==0 && lo == 0 ? INT_MAX : INT_MIN;
-    return x - 0x3fff - 112;
-}
-#endif // HAVE_SOFTFLOAT
-
-// The following can be used in lisp_fix and in comparisons between
-// floats and bignums. It return three 31-bit digits that would be the top
-// 3 words of representation in terms of 31-bit digits, together with
-// the number of such digits that would be used. That is all because in
-// an older version of CSL my bignums used 31-bit digits. For many
-// purposes the split here is still useful.
-
-intptr_t N_double_to_3_digits(double d, int32_t& a2, uint32_t& a1, uint32_t& a0)
-{   int64_t m;
-    int x = N_double_to_binary(d, m);
-    a0 = (uint32_t)m & 0x7fffffffU;
-    a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
-    a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
-    // because m is only a 53 bit + sign value.
-    if (x == 0x7ff) return INTPTR_MAX;
-// Now I need to adjust in effect so that the exponent is treated as
-// a multiple of 31.
-    int q = x/31, r = x%31;
-    if (r < 0)
-    {   q--;
-        r += 31;
-    }
-// I now shift the 3-digit value left by r bits. It will not overflow.
-    if (r != 0)
-    {   a2 = ((uint32_t)a2<<r) | a1>>(31-r);
-        a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
-        a0 = (a0<<r) & 0x7fffffffU;
-    }
-// At this stage it is possible that a2 is 0 or -1 and a1 does not
-// intrude into its most significant place, in which case the bignum
-// could have afforded to use one fewer digits.
-    if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
-        (a2 == -1 && (a1 & 0x40000000U) != 0))
-    {   a2 = a1 | ((a1 & 0x40000000U)<<1);
-        a1 = a0;
-        a0 = 0;
-        q--;
-// Further to the above, a number that was originally sub-normalized can
-// still suffer in the same manner. So I will do the same again!
-        if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
-            (a2 == -1 && (a1 & 0x40000000U) != 0))
-        {   a2 = a1 | ((a1 & 0x40000000U)<<1);
-            a1 = a0;
-            a0 = 0;
-            q--;
-        }
-    }
-    return q;
-}
-
-#ifdef HAVE_SOFTFLOAT
-
-intptr_t N_float128_to_5_digits(float128_t *d,
-             int32_t& a4, uint32_t& a3, uint32_t& a2,
-             uint32_t& a1, uint32_t& a0)
-{   int64_t mhi;
-    uint64_t mlo;
-    int x = N_float128_to_binary(d, mhi, mlo);
-    a0 = (uint32_t)mlo & 0x7fffffffU;
-    a1 = (uint32_t)((uint64_t)mlo >> 31) & 0x7fffffff;
-    a2 = (((uint32_t)mhi << 2) & 0x7fffffff) | (uint32_t)(mlo>>62);
-    a3 = (uint32_t)(mhi>>29);
-    a4 = (int32_t)ASR(mhi, 60);   // again either 0 or -1
-    if (x == 0x7fff) return INTPTR_MAX;
-    int q = x/31, r = x%31;
-    if (r < 0)
-    {   q--;
-        r += 31;
-    }
-    if (a4 == 0 && a3 == 0 && a2 == 0 && a1 == 0 && a0 == 0) return q;
-    if (r != 0)
-    {   a4 = (int32_t)(((uint32_t)a4<<r) | a3>>(31-r));
-        a3 = ((a3<<r) & 0x7fffffffU) | a2>>(31-r);
-        a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r);
-        a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
-        a0 = (a0<<r) & 0x7fffffffU;
-    }
-    while ((a4 == 0 && (a3 & 0x40000000U) == 0) ||
-           (a4 == -1 && (a3 & 0x40000000U) != 0))
-    {   a4 = a3 | ((a3 & 0x40000000U)<<1);
-        a3 = a2;
-        a2 = a1;
-        a1 = a0;
-        a0 = 0;
-        q--;
-    }
-    return q;
-}
-
-#endif // HAVE_SOFTFLOAT
-
-LispObject N_rationalf(double d)
-{
-// If the value of the double is >= 2^52 then it must be an exact integer.
-// In that case N_rationalf will just return the integer value using fix,
-// and in this case it is immaterial what rounding mode I indicate there
-// since no rounding should apply!
-#define FP_INT_LIMIT ((double)((int64_t)1<<52))
-    if (d <= -static_cast<double>(FP_INT_LIMIT) ||
-        d >= static_cast<double>(FP_INT_LIMIT))
-        return lisp_fix(make_boxfloat(d, WANT_DOUBLE_FLOAT), FIX_ROUND);
-// Now the magnitude if d is modest, so it is safe to cast it to
-// an int64_t. When I cast the result back to a float there will not be
-// any need for rounding, so I can detect cases where the floating point
-// input has a value that is exactly an integer.
-    int64_t i = (int64_t)d;
-    if (d == static_cast<double>(i)) return make_lisp_integer64(i);
-// Now the value is smallish but is known not be to an integer. It may
-// be that it is VERY small.
-    bool negative = false;
-    if (d < 0.0)
-    {   d = -d;
-        negative = true;
-    }
-    int32_t a2;
-    uint32_t a1, a0;
-    intptr_t x = 31*N_double_to_3_digits(d, a2, a1, a0);
-// The representation extracted above is carefully aligned at a 32-bit
-// boundary. I want to shift it right so that the least significant bit is
-// a 1. I do the shifting in stages - by 31, by 6 and by 1 bit movements.
-    while (a0 == 0)
-    {   a0 = a1;
-        a1 = a2;
-        a2 = 0;
-        x += 31;
-    }
-    while ((a0 & 0x3f) == 0)
-    {   a0 = (a0 >> 6) | ((a1 & 0x3f) << 25);
-        a1 = (a1 >> 6) | ((a2 & 0x3f) << 25);
-        a2 = (uint32_t)a2 >> 6;
-        x += 6;
-    }
-// Because d started as a floating point value it can involve at most 53 bits,
-// and hence when I am within 6 bits of being normalised I have at worst
-// 59 bits. But the bottom two words of the integer representation use
-// 62 bits, so by now I must have a2 == 0
-    assert(a2 == 0);
-    while ((a0 & 1) == 0)
-    {   a0 = (a0 >> 1) | ((a1 & 1) << 30);
-        a1 = (a1 >> 1);
-        x += 1;
-    }
-// Now the numerator will be just (d1,d0): re-attach the sign.
-    if (negative)
-    {   if (a0 == 0) a1 = -a1;
-        else
-        {   a0 = clear_top_bit(-a0);
-            a1 = ~a1;
-        }
-    }
-// x should still be strictly negative because the number was not an
-// integer.
-    assert(x < 0);
-    LispObject w = N_make_fix_or_big2(a1, a0);
-    THREADID;
-    Save save(THREADARG w);
-    LispObject den = N_make_power_of_two(-x);
-    save.restore(w);
-    return make_ratio(w, den);
-}
-
 // The intent here is to take a single precision floating point value and
 // mask off its low 4 bits. The code here is a fine example of the sort
 // of thing that runs up against strict aliasing rules. Here I believe that
@@ -278,6 +53,173 @@ double N_truncate20(double d)
     std::memcpy(&aa, &bb, sizeof(aa));
     return aa.f;
 }
+
+LispObject N_make_power_of_two(size_t n)
+//
+// Create the number 2^n where n is positive.  Used to make the
+// denominator float of a rational representation of a float.  Some fun
+// to cope with various small cases before I get to the general call
+// to make_n_word_bignum.
+//
+{   if (n < 64) return make_lisp_unsigned64((uint64_t)1 << n);
+    else return Nleftshift(nil, fixnum_of_int(1), fixnum_of_int(n));
+}
+
+// N_double_to_binary returns an integer exponent and sets m such that the
+// original float is equal to m*2^x. It returns special values for x in the
+// case of infinities and NaNs.
+
+LispObject N_rationalf(double d)
+{   if (std::isnan(d)) return NaN_symbol;
+    else if (std::isinf(d))
+    {   if (d > 0.0) return infinity_symbol;
+        else return minusinfinity_symbol;
+    }
+    else if (d == 0.0) return fixnum_of_int(0);
+// Now I have a non-zero number. I will convert it to an integer
+// and a binary exponent.
+// Here I rely on frexp handling any subnormal inputs and returning a
+// normalised result. When it does that the returned exponent will be
+// smaller than -1022.
+    int x;
+    d = std::frexp(d, &x);
+// now d is in the range +/-[0/5, 1) and the input had value d * 2^x.
+// If I multiply by 2^52 the result will be an integer. Since C++17 I can
+// write the floating point value of 2^52 in hex and that may be clearer
+// and less error-prone that writing 4503599627370496.0 ...
+    int64_t m = static_cast<int64_t>(d * 0x1.0p52); // 2.0^52
+    x -= 52;
+    int trail = nlz(m); // m != 0 so this is safe!
+    m = m/(1<<trail);
+    x += trail;
+// Now m is an odd (64-bit) integer and x the binary exponent by which it
+// would need adjusting. On 64-bit machined m could always be a fixnum,
+// but perhaps on a 32-bit platform it could end up boxed.
+    LispObject mm = make_lisp_integer64(m);
+    if (x >= 0) return LeftShift::op(mm, fixnum_of_int(x));
+    else return make_ratio(mm, N_make_power_of_two(-x));
+}
+
+#ifdef HAVE_SOFTFLOAT
+// This does much the same for 128-bit floats.
+
+int N_rationalf128(float128_t d)
+{   uint128_t bits = static_cast<uint128_t>(d.v[HIPART])<<64 | d.v[LOPART];
+    int x = static_cast<int>(bits>>112) & 0x7fff;
+    bool sign = (bits>>127) != 0;
+    uint128_t m = bits & ((static_cast<uint128_t>(1)<<113) - 1);
+// detect infinities and NaNs.
+    if (x == 0x7fff)
+    {   if (m != 0) return NaN_symbol;
+        else if (!sign) return infinity_symbol;
+        else return minusinfinity_symbol;
+    }
+    else if (x == 0 && m == 0) return fixnum_of_int(0);
+// Insert the "hidden bit" unless the value if subnormal. The fix up the
+// sign of the integer representation.
+    if (x != 0) m |= static_cast<uint128_t>(1)<<113;
+    if (sign) m = -m;
+// Now adjust for exponent bias and all the bits of integer I have.
+    x = x - 0x3fff - 112;
+// Shift right as necessary
+    int trail;
+    uint64_t w;
+    if ((w = static_cast<uint64_t>(m)) != 0) trail = nlz(w);
+    else trail = 64 + nlz(static_cast<uint64_t>(m>>64));
+    m = m >> trail;
+    x += trail; 
+    LispObject mm = make_lisp_integer128(m);
+    if (x >= 0) return LeftShift::op(mm, fixnum_of_int(x));
+    else return make_ratio(mm, N_make_power_of_two(-x));
+}
+#endif // HAVE_SOFTFLOAT
+
+// intptr_t N_double_to_3_digits(double d, int32_t& a2, uint32_t& a1, uint32_t& a0)
+// {   int64_t m;
+//     int x = N_double_to_binary(d, m);
+//     a0 = (uint32_t)m & 0x7fffffffU;
+//     a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
+//     a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
+//     // because m is only a 53 bit + sign value.
+//     if (x == 0x7ff) return INTPTR_MAX;
+// // Now I need to adjust in effect so that the exponent is treated as
+// // a multiple of 31.
+//     int q = x/31, r = x%31;
+//     if (r < 0)
+//     {   q--;
+//         r += 31;
+//     }
+// // I now shift the 3-digit value left by r bits. It will not overflow.
+//     if (r != 0)
+//     {   a2 = ((uint32_t)a2<<r) | a1>>(31-r);
+//         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
+//         a0 = (a0<<r) & 0x7fffffffU;
+//     }
+// // At this stage it is possible that a2 is 0 or -1 and a1 does not
+// // intrude into its most significant place, in which case the bignum
+// // could have afforded to use one fewer digits.
+//     if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
+//         (a2 == -1 && (a1 & 0x40000000U) != 0))
+//     {   a2 = a1 | ((a1 & 0x40000000U)<<1);
+//         a1 = a0;
+//         a0 = 0;
+//         q--;
+// // Further to the above, a number that was originally sub-normalized can
+// // still suffer in the same manner. So I will do the same again!
+//         if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
+//             (a2 == -1 && (a1 & 0x40000000U) != 0))
+//         {   a2 = a1 | ((a1 & 0x40000000U)<<1);
+//             a1 = a0;
+//             a0 = 0;
+//             q--;
+//         }
+//     }
+//     return q;
+// }
+
+#ifdef HAVE_SOFTFLOAT
+
+// If I re-work this for a 64-bit world it will return 3 64-bit integers
+// and a count of how many 64-bit zero words beyond that would be needed.
+
+// intptr_t N_float128_to_5_digits(float128_t *d,
+//              int32_t& a4, uint32_t& a3, uint32_t& a2,
+//              uint32_t& a1, uint32_t& a0)
+// {   int64_t mhi;
+//     uint64_t mlo;
+//     int x = N_float128_to_binary(d, mhi, mlo);
+//     a0 = (uint32_t)mlo & 0x7fffffffU;
+//     a1 = (uint32_t)((uint64_t)mlo >> 31) & 0x7fffffff;
+//     a2 = (((uint32_t)mhi << 2) & 0x7fffffff) | (uint32_t)(mlo>>62);
+//     a3 = (uint32_t)(mhi>>29);
+//     a4 = (int32_t)ASR(mhi, 60);   // again either 0 or -1
+//     if (x == 0x7fff) return INTPTR_MAX;
+//     int q = x/31, r = x%31;
+//     if (r < 0)
+//     {   q--;
+//         r += 31;
+//     }
+//     if (a4 == 0 && a3 == 0 && a2 == 0 && a1 == 0 && a0 == 0) return q;
+//     if (r != 0)
+//     {   a4 = (int32_t)(((uint32_t)a4<<r) | a3>>(31-r));
+//         a3 = ((a3<<r) & 0x7fffffffU) | a2>>(31-r);
+//         a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r);
+//         a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
+//         a0 = (a0<<r) & 0x7fffffffU;
+//     }
+//     while ((a4 == 0 && (a3 & 0x40000000U) == 0) ||
+//            (a4 == -1 && (a3 & 0x40000000U) != 0))
+//     {   a4 = a3 | ((a3 & 0x40000000U)<<1);
+//         a3 = a2;
+//         a2 = a1;
+//         a1 = a0;
+//         a0 = 0;
+//         q--;
+//     }
+//     return q;
+// }
+
+#endif // HAVE_SOFTFLOAT
 
 LispObject N_rationalizef(double dd, int bits)
 //
@@ -418,123 +360,21 @@ LispObject N_rationalizef(double dd, int bits)
 #ifdef HAVE_SOFTFLOAT
 // The following constants are 2^112 and -2^112 and their reciprocals, which
 // are used in N_rationalf128 because any 128-bit floating point value that
-// is that large is necessarily an exact integer.
+// is at least that large is necessarily an exact integer.
 //
 // FP128_SMALL_LIMIT is 2^-113 and is used in N_rationalizef128.
 
 #ifdef LITTLEENDIAN
 
 static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
-static float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
 static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
 
 #else
 
 static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
-static float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
-static float128_t FP128_LARGE_LIMIT = {{INT64_C(0x4070000000000000), 0}};
 static float128_t FP128_SMALL_LIMIT = {{INT64_C(0x3f8e000000000000), 0}};
 
 #endif
-
-LispObject N_rationalf128(float128_t *d)
-{
-// If the value of the double is > 2^112 then it must be an exact integer.
-// In that case N_rationalf will just return the integer value using fix,
-// and in this case it is immaterial what rounding mode I indicate there
-// since no rounding should apply!
-    if (f128M_le(d, &FP128_MINUS_INT_LIMIT) ||
-        f128M_le(&FP128_INT_LIMIT, d))
-        return lisp_fix(make_boxfloat128(*d), FIX_ROUND);
-// Now the magnitude if d at most 2^112. I want to check whether it is
-// exactly an integer or not. Well that is not as easy as it was in the
-// 64-bit case so I will go straight to the general method... Well I will
-// filter out the case of zero first.
-    if (f128M_zero(d)) return fixnum_of_int(0);
-    bool negative = false;
-    float128_t dd = *d;
-    if (f128M_negative(d))
-    {   f128M_negate(&dd);
-        negative = true;
-    }
-// Remember that |d| < 2^112. That means it will use at most 4 digits
-// of bignum. Well the calculations I do here split it into 5 digits,
-// but by the time I end only the low 4 should be relevant.
-    int32_t a4;
-    uint32_t a3, a2, a1, a0;
-    intptr_t x = 31*N_float128_to_5_digits(&dd, a4, a3, a2, a1, a0);
-    while (a0 == 0 && x <= -31)
-    {   a0 = a1;
-        a1 = a2;
-        a2 = a3;
-        a3 = a4;
-        a4 = 0;
-        x += 31;
-    }
-    while ((a0 & 0x3f) == 0 && x <= -6)
-    {   a0 = (a0 >> 6) | ((a1 & 0x3f) << 25);
-        a1 = (a1 >> 6) | ((a2 & 0x3f) << 25);
-        a2 = (a2 >> 6) | ((a3 & 0x3f) << 25);
-        a3 = (a3 >> 6) | ((a4 & 0x3f) << 25);
-        a4 = (uint32_t)a4 >> 6;
-        x += 6;
-    }
-    while ((a0 & 1) == 0 && x <= -1)
-    {   a0 = (a0 >> 1) | ((a1 & 1) << 30);
-        a1 = (a1 >> 1) | ((a2 & 1) << 30);
-        a2 = (a2 >> 1) | ((a3 & 1) << 30);
-        a3 = (a3 >> 1) | ((a4 & 1) << 30);
-        a4 = ((uint32_t)a4 >> 1);
-        x += 1;
-    }
-    assert(a4 == 0);
-    LispObject w;
-    if (negative)
-    {   uint32_t carry = 1;
-        a0 = ~a0 + carry;
-        carry = a0 >> 31;
-        a0 &= 0x7fffffffU;
-        a1 = ~a1 + carry;
-        carry = a1 >> 31;
-        a1 &= 0x7fffffffU;
-        a2 = ~a2 + carry;
-        carry = a2 >> 31;
-        a2 &= 0x7fffffffU;
-        a3 = ~a3 + carry;    // leave sign bit set in a3.
-    }
-    int len = 4;
-// Allow for the fact that the number may not need fully 4 digits.
-    if ((a3 == 0 && ((a2 & 0x40000000) == 0)) ||
-        (a3 == 0xffffffff && ((a2 & 0x40000000) != 0)))
-    {   len = 3;
-        if (a3 == 0xffffffff) a2 |= 0x80000000U;
-        if ((a2 == 0 && ((a1 & 0x40000000) == 0)) ||
-            (a2 == 0xffffffff && ((a1 & 0x40000000) != 0)))
-        {   len = 2;
-            if (a2 == 0xffffffff) a1 |= 0x80000000U;
-        }
-    }
-    switch (len)
-    {   // case 4:
-        default:
-            w = make_four_word_bignum(a3, a2, a1, a0);
-            break;
-        case 3:
-            w = make_three_word_bignum(a2, a1, a0);
-            break;
-        case 2:
-            int64_t n = ((int64_t)a1 << 31) + a0;
-            if (negative) n = -n;
-            w = make_lisp_integer64(n);
-            break;
-    }
-    if (x == 0) return w;
-    THREADID;
-    Save save(THREADARG w);
-    LispObject den = N_make_power_of_two(-x);
-    save.restore(w);
-    return make_ratio(w, den);
-}
 
 // This is expected to adjust the ratio returned to support 113 bits
 // of precision.
@@ -560,7 +400,7 @@ uint128_t N_uint128_fix(float128_t *a)
 // are just not permitted and would lead to chaos.
     float128_t aa;
     int x;
-    f128M_frexp(a, &aa, &x);
+    f128_frexp(*a, &aa, &x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
 // shuffle to be in the form of the uint128_t integer.
     uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
@@ -607,17 +447,16 @@ void N_uint128_float(uint128_t a, float128_t *b)
 }
 
 LispObject N_rationalizef128(float128_t *dd)
-{   float128_t d;
-    if (f128M_zero(dd)) return fixnum_of_int(0);
-    d = *dd;
-    if (f128M_negative(&d)) f128M_negate(&d);
+{   float128_t d = *dd;
+    if (f128_zerop(d)) return fixnum_of_int(0);
+    if (f128_negative(d)) f128_negate(&d);
 // Maybe the float is in fact exactly an integer.
     if (f128M_le(&FP128_INT_LIMIT, &d))
         return lisp_fix(make_boxfloat128(*dd), FIX_ROUND);
 // I am slightly more conservative as to when I decide that the
 // result I return will be just the reciprocal of an integer.
     if (f128M_le(&d, &FP128_SMALL_LIMIT))
-    {   LispObject r = N_rationalf128(dd);
+    {   LispObject r = N_rationalf128(d);
         r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
     }
@@ -628,8 +467,8 @@ LispObject N_rationalizef128(float128_t *dd)
     if (f128M_le(&f128_1, &d))
     {   int x;
         float128_t d1;
-        f128M_frexp(&d, &d1, &x);
-        f128M_ldexp(&d1, 113);
+        f128_frexp(d, &d1, &x);
+        f128_ldexp(&d1, 113);
         p = N_uint128_fix(&d1);
         q = uint128_t(1) << (113-x);
         u1 = p/q;
@@ -643,8 +482,8 @@ LispObject N_rationalizef128(float128_t *dd)
     else
     {   int x;
         float128_t d1, d2;
-        f128M_frexp(&d, &d1, &x);
-        f128M_ldexp(&d1, 113);
+        f128_frexp(d, &d1, &x);
+        f128_ldexp(&d1, 113);
         p = N_uint128_fix(&d1);
         f128M_div(&f128_1, &d, &d2);
         a = N_uint128_fix(&d2);
@@ -683,7 +522,7 @@ LispObject N_rationalizef128(float128_t *dd)
         v0 = v1; v1 = v2;
     }
     LispObject p1;
-    if (f128M_negative(dd)) p1 = make_lisp_integer128(-u1);
+    if (f128_negative(*dd)) p1 = make_lisp_integer128(-u1);
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
     THREADID;
@@ -716,8 +555,8 @@ LispObject N_rational(LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
 #ifdef HAVE_SOFTFLOAT
             if (flthdr(a) == LONG_FLOAT_HEADER)
-                return N_rationalf128(reinterpret_cast<float128_t *>(long_float_addr(
-                                        a)));
+                return N_rationalf128(
+                    *reinterpret_cast<float128_t *>(long_float_addr(a)));
             else
 #endif // HAVE_SOFTFLOAT
                 return N_rationalf(float_of_number(a));
@@ -893,28 +732,6 @@ LispObject Nmd5(LispObject env, LispObject a)
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
     }
-    else if (is_numbers(a) && is_bignum_header(numhdr(a)))
-    {   len = length_of_header(numhdr(a));
-        CSL_MD5_Init();
-#ifdef __cpp_lib_endian // C++20 feature. Needs #include <bit>.
-        bool littleEndian = std::endian::native == std::endian::little;
-#else // __cpp_lib_endian
-        uint32_t w1 = 0x12345678;
-        char w2[4];
-        std::memcpy(w2, &w1, 4);
-        bool littleEndian = w2[0] == 0x78;
-#endif // __cpp_lib_endian
-        if (littleEndian)
-            CSL_MD5_Update(
-                reinterpret_cast<const unsigned char*>(&bignum_digits(a)[0]),
-                len-CELL);
-        else for (i=0; i<(len-CELL)/4; i++)
-        {   std::memcpy(md, &bignum_digits(a)[i], 4);
-            int b = md[0]; md[0] = md[3]; md[3] = b;
-            b = md[1]; md[1] = md[2]; md[2] = b;
-            CSL_MD5_Update(md, 4);
-        }
-    }
     else if (is_new_bignum(a))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
@@ -1009,28 +826,6 @@ LispObject Nmd60(LispObject env, LispObject a)
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
     }
-    else if (is_numbers(a) && is_bignum_header(numhdr(a)))
-    {   len = length_of_header(numhdr(a));
-        CSL_MD5_Init();
-#ifdef __cpp_lib_endian // C++20 feature. Needs #include <bit>.
-        bool littleEndian = std::endian::native == std::endian::little;
-#else // __cpp_lib_endian
-        uint32_t w1 = 0x12345678;
-        char w2[4];
-        std::memcpy(w2, &w1, 4);
-        bool littleEndian = w2[0] == 0x78;
-#endif // __cpp_lib_endian
-        if (littleEndian)
-            CSL_MD5_Update(
-                reinterpret_cast<const unsigned char*>(&bignum_digits(a)[0]),
-                len-CELL);
-        else for (i=0; i<(len-CELL)/4; i++)
-        {   std::memcpy(md, &bignum_digits(a)[i], 4);
-            int b = md[0]; md[0] = md[3]; md[3] = b;
-            b = md[1]; md[1] = md[2]; md[2] = b;
-            CSL_MD5_Update(md, 4);
-        }
-    }
     else if (is_new_bignum(a))
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
@@ -1080,6 +875,66 @@ LispObject Nvalidate_number(LispObject env, LispObject a)
 
 LispObject Nvalidate_number(LispObject env, LispObject a, LispObject b)
 {   return aerror2("validate-number not available or needed here", a, b);
+}
+
+LispObject Nrealpart(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("realpart", a);
+    if (is_numbers(a) && is_complex(a))
+        return onevalue(real_part(a));
+    else return onevalue(a);
+}
+
+LispObject Nimagpart(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("imagpart", a);
+    if (is_numbers(a) && is_complex(a))
+        return onevalue(imag_part(a));
+// /* the 0.0 returned here ought to be the same type as a has
+    else return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nnumerator(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("numerator", a);
+    if (is_numbers(a) && is_ratio(a))
+        return onevalue(numerator(a));
+    else return onevalue(a);
+}
+
+LispObject Ndenominator(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("denominator", a);
+    if (is_numbers(a) && is_ratio(a))
+        return onevalue(denominator(a));
+    else return onevalue(fixnum_of_int(1));
+}
+
+LispObject Ncomplex_1(LispObject env, LispObject a)
+{
+// /* Need to make zero of same type as a
+    a = make_complex(a, fixnum_of_int(0));
+    return onevalue(a);
+}
+
+LispObject Ncomplex_2(LispObject env, LispObject a, LispObject b)
+{
+// /* Need to coerce a and b to the same type here...
+    a = make_complex(a, b);
+    return onevalue(a);
+}
+
+LispObject Nconjugate(LispObject env, LispObject a)
+{   if (!is_number(a)) return aerror1("conjugate", a);
+    if (is_numbers(a) && is_complex(a))
+    {   LispObject r = real_part(a),
+                   i = imag_part(a);
+        {   THREADID;
+            Save save(THREADARG r);
+            i = Minus::op(i);
+            errexit();
+            save.restore(r);
+        }
+        a = make_complex(r, i);
+        return onevalue(a);
+    }
+    else return onevalue(a);
 }
 
 #endif // ARITHLIB

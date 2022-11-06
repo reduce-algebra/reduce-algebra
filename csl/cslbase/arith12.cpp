@@ -48,7 +48,7 @@ LispObject Lfrexp(LispObject env, LispObject a)
     if (is_long_float(a))
     {   float128_t d;
         int x;
-        f128M_frexp(bit_cast<float128_t *>(long_float_addr(a)), &d, &x);
+        f128_frexp(*bit_cast<float128_t *>(long_float_addr(a)), &d, &x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));
     }
     else

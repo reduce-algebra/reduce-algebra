@@ -652,6 +652,292 @@ LispObject Ndeposit_field(LispObject env, LispObject newData,
     return onevalue(old);
 }
 
+LispObject Nlogand(LispObject env)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+LispObject Nlogand(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nlogand(LispObject env, LispObject a1,
+                          LispObject a2)
+{   return onevalue(Logand::op(a1, a2));
+}
+
+LispObject Nlogand(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3)
+{   return onevalue(Logand::op(Logand::op(a1, a2), a3));
+}
+
+LispObject Nlogand(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   LispObject w = Logand::op(Logand::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logand::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nlogor(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nlogor(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nlogor(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(Logor::op(a1, a2));
+}
+
+LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onevalue(Logor::op(Logor::op(a1, a2), a3));
+}
+
+LispObject Nlogor(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   LispObject w = Logor::op(Logor::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nlogxor(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nlogxor(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nlogxor(LispObject env, LispObject a1,
+                          LispObject a2)
+{   return onevalue(Logxor::op(a1, a2));
+}
+
+LispObject Nlogxor(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3)
+{   return onevalue(Logxor::op(Logxor::op(a1, a2), a3));
+}
+
+LispObject Nlogxor(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   LispObject w = Logxor::op(Logxor::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logxor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nlogeqv(LispObject env)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+LispObject Nlogeqv(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nlogeqv(LispObject env, LispObject a1,
+                          LispObject a2)
+{   return onevalue(Logeqv::op(a1, a2));
+}
+
+LispObject Nlogeqv(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3)
+{   return onevalue(Logeqv::op(Logeqv::op(a1, a2), a3));
+}
+
+LispObject Nlogeqv(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   LispObject w = Logeqv::op(Logeqv::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logeqv::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nlognot(LispObject env, LispObject a1)
+{   return onevalue(Lognot::op(a1));
+}
+
+LispObject Nlsd(LispObject env, LispObject a1)
+{   return onevalue(LowBit::op(a1));
+}
+
+LispObject Nmsd(LispObject env, LispObject a1)
+{   return onevalue(IntegerLength::op(a1));
+}
+
+LispObject Nlogcount(LispObject env, LispObject a1)
+{   return onevalue(Logcount::op(a1));
+}
+
+LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(LeftShift::op(a1, a2));
+}
+
+// The following divides by a power of 2 when shifting right so is not
+// a natural arithmetic shift on negative numbers.
+
+LispObject Nash1(LispObject env, LispObject a1, LispObject a2)
+{   bool neg = Minusp::op(a1);
+    if (neg) a1 = Minus::op(a1);   // Is this needed? @@@@@
+    a1 = LeftShift::op(a1, a2);
+    if (neg) a1 = Minus::op(a1);
+    return onevalue(a1);
+}
+
+LispObject Nrightshift(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(RightShift::op(a1, a2));
+}
+
+LispObject Nilogand(LispObject env)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+LispObject Nilogand(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nilogand(LispObject env, LispObject a1,
+                           LispObject a2)
+{   return onevalue(Logand::op(a1, a2));
+}
+
+LispObject Nilogand(LispObject env, LispObject a1,
+                           LispObject a2,
+                           LispObject a3)
+{   return onevalue(Logand::op(Logand::op(a1, a2), a3));
+}
+
+LispObject Nilogand(LispObject env, LispObject a1,
+                           LispObject a2,
+                           LispObject a3, LispObject a4plus)
+{   LispObject w = Logand::op(Logand::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logand::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nilogor(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nilogor(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nilogor(LispObject env, LispObject a1,
+                          LispObject a2)
+{   return onevalue(Logor::op(a1, a2));
+}
+
+LispObject Nilogor(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3)
+{   return onevalue(Logor::op(Logor::op(a1, a2), a3));
+}
+
+LispObject Nilogor(LispObject env, LispObject a1,
+                          LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   LispObject w = Logor::op(Logor::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nilogxor(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Nilogxor(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nilogxor(LispObject env, LispObject a1,
+                           LispObject a2)
+{   return onevalue(Logxor::op(a1, a2));
+}
+
+LispObject Nilogxor(LispObject env, LispObject a1,
+                           LispObject a2,
+                           LispObject a3)
+{   return onevalue(Logxor::op(Logxor::op(a1, a2), a3));
+}
+
+LispObject Nilogxor(LispObject env, LispObject a1,
+                           LispObject a2,
+                           LispObject a3, LispObject a4plus)
+{   LispObject w = Logxor::op(Logxor::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logxor::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nilogeqv(LispObject env)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+LispObject Nilogeqv(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nilogeqv(LispObject env, LispObject a1,
+                           LispObject a2)
+{   return onevalue(Logeqv::op(a1, a2));
+}
+
+LispObject Nilogeqv(LispObject env, LispObject a1,
+                           LispObject a2,
+                           LispObject a3)
+{   return onevalue(Logeqv::op(Logeqv::op(a1, a2), a3));
+}
+
+LispObject Nilogeqv(LispObject env, LispObject a1,
+                           LispObject a2,
+                           LispObject a3, LispObject a4plus)
+{   LispObject w = Logeqv::op(Logeqv::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = Logeqv::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(w);
+}
+
+LispObject Nilognot(LispObject env, LispObject a1)
+{   return onevalue(Lognot::op(a1));
+}
+
+LispObject Nileftshift(LispObject env, LispObject a1,
+                              LispObject a2)
+{   return onevalue(LeftShift::op(a1, a2));
+}
+
+LispObject Nirightshift(LispObject env, LispObject a1,
+                               LispObject a2)
+{   return onevalue(RightShift::op(a1, a2));
+}
+
 #endif // ARITHLIB
 
 // end of arith-logops.cpp

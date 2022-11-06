@@ -2,7 +2,6 @@
 
 // $Id$
 
-
 /**************************************************************************
  * Copyright (C) 2022, Codemist.                         A C Norman       *
  *                                                                        *
@@ -32,6 +31,11 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+
+// The initial version of this file defines many "Inline" functions. When
+// I get things feeling really rather more stafe I intend to move most
+// of the definitions into a new file float128_t.cpp, leaving just
+// declarations here. At present it is rather stupid!
   
 #ifndef header_float128_t
 #define header_float128_t
@@ -68,6 +72,148 @@ extern "C" {
 #include "softfloat.h"
 }
 
+inline int  f128_exponent(const float128_t p);
+inline void f128_set_exponent(float128_t *p, int n);
+extern void f128_ldexp(float128_t *p, int n);
+extern void f128_frexp(float128_t p, float128_t *r, int *x);
+inline bool f128_infinitep(const float128_t p);
+inline bool f128_finite(const float128_t p);
+inline bool f128_nanp(const float128_t x);
+inline bool f128_subnorm(const float128_t x);
+inline bool f128_negative(const float128_t x);
+inline void f128_negate(float128_t *x);
+extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
+
+#ifdef LITTLEENDIAN
+#define HIPART 1
+#define LOPART 0
+#else
+#define HIPART 0
+#define LOPART 1
+#endif
+
+extern float128_t
+    f128_0,      // 0.0L0
+    f128_half,   // 0.5L0
+    f128_mhalf,  // -0.5L0
+    f128_1,      // 1.0L0
+    f128_10,     // 10.0L0
+    f128_10_17,  // 1.0L17
+    f128_10_18,  // 1.0L18
+    f128_r10,    // 0.1L0
+    f128_scale,  // 2.0^58+1.0
+    f128_N1;     // 2.0L0^4096
+
+inline bool f128_zerop(const float128_t p)
+{   return ((p.v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
+           (p.v[LOPART] == 0);
+}
+
+inline bool f128_infinitep(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
+           ((p.v[HIPART] & INT64_C(0xffffffffffff)) == 0) &&
+           (p.v[LOPART] == 0);
+}
+
+inline bool f128_finite(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) != 0x7fff);
+}
+
+inline void f128_make_infinite(float128_t *p)
+{   p->v[HIPART] |= UINT64_C(0x7fff000000000000);
+    p->v[HIPART] &= UINT64_C(0xffff000000000000);
+    p->v[LOPART] = 0;
+}
+
+inline void f128_make_zero(float128_t *p)
+{   p->v[HIPART] &= UINT64_C(0x8000000000000000);
+    p->v[LOPART] = 0;
+}
+
+// Here I do not count 0.0 (or -0.0) as sub-normal.
+
+inline bool f128_subnorm(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) == 0) &&
+           (((p.v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
+            (p.v[LOPART] != 0));
+}
+
+inline bool f128_nanp(const float128_t p)
+{   return (((p.v[HIPART] >> 48) & 0x7fff) == 0x7fff) &&
+           (((p.v[HIPART] & INT64_C(0xffffffffffff)) != 0) ||
+            (p.v[LOPART] != 0));
+}
+
+inline bool f128_negative(const float128_t x)
+{   if (f128_nanp(x)) return false;
+    return (static_cast<int64_t>(x.v[HIPART])) < 0;
+}
+
+inline int f128_exponent(const float128_t p)
+{   return ((p.v[HIPART] >> 48) & 0x7fff) - 0x3fff;
+}
+
+inline void f128_set_exponent(float128_t *p, int n)
+{   p->v[HIPART] = (p->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+                   ((static_cast<uint64_t>(n) + 0x3fff) << 48);
+}
+
+inline void f128_negate(float128_t *x)
+{   x->v[HIPART] ^= UINT64_C(0x8000000000000000);
+}
+
+inline bool floating_edge_case128(float128_t r)
+{   return f128_infinitep(r) || f128_nanp(r);
+}
+
+extern int float128_to_binary(const float128_t d, int64_t &mhi, uint64_t &mlo);
+extern intptr_t float128_to_5_digits(float128_t d,
+                                     int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
+
+struct float256_t
+{
+#ifdef LITTLEENDIAN
+    float128_t lo;
+    float128_t hi;
+#else
+    float128_t hi;
+    float128_t lo;
+#endif
+};
+
+inline void f128_to_f256M(const float128_t a, float256_t *b)
+{   b->hi = a;
+    b->lo = f128_0;
+}
+
+extern void f256M_add(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_mul(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_div(
+    const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+
+extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
+
+// These print 128-bit floats in the various standard styles, returning the
+// number of characters used. The "sprint" versions put their result in
+// a buffer, while "print" goes to stdout.
+
+extern int f128_sprint_E(char *s, int width, int precision,
+                         float128_t p);
+extern int f128_sprint_F(char *s, int width, int precision,
+                         float128_t p);
+extern int f128_sprint_G(char *s, int width, int precision,
+                         float128_t p);
+extern int f128_print_E(int width, int precision, float128_t p);
+extern int f128_print_F(int width, int precision, float128_t p);
+extern int f128_print_G(int width, int precision, float128_t p);
+
+extern float128_t atof128(const char *s);
 
 // By making the code that generated a QuadFloat from a string of
 // characters "constexpr" I can (with luck) move all costs associated
@@ -317,7 +463,6 @@ public:
     constexpr QuadFloat mantissa();
 };
 
-
 inline bool QuadFloat::operator==(const QuadFloat& rhs) const
 {   return f128_eq(v, rhs.v);
 }
@@ -468,6 +613,261 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
     r.v[1] = low;
 #endif // LITTLEENDIAN
     return QuadFloat(r);
+}
+
+// Now some limited support for 256-bit floats, implemented as pairs
+// of 128-bit numbers using the strategy sometimes known as double-double.
+// But here it should be quad-quad.
+// Infinities, NaNs and gradual underflow will NOT be well supported here
+// so code that uses these numbers should take care!
+
+extern void f256M_negate(const float256_t *x, float256_t *z);
+
+extern void f256M_add(const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_mul(const float256_t *x, const float256_t *y, float256_t *z);
+
+extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+
+extern void f256M_gt(const float256_t *x, float256_t *y);
+extern void f256M_ge(const float256_t *x, float256_t *y);
+
+extern void f256M_lt(const float256_t *x, float256_t *y);
+extern void f256M_le(const float256_t *x, float256_t *y);
+
+
+extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
+
+
+#ifdef LITTLEENDIAN
+#define fpOrder(a, b) {INT64_C(a), INT64_C(b)}
+#define fp256Order(a, b) {a, b}
+#else // LITTLEENDIAN
+#define fpOrder(a, b) {INT64_C(b), INT64_C(a)}
+#define fp256Order(a, b) {b, a}
+#endif // LITTLEENDIAN
+
+extern float256_t
+  f256_5, //      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000)),
+  f256_10, //     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000)),
+  f256_r5, //     = fp256Order(fpOrder(0x999999999999999a, 0xbf8a999999999999),
+           //                  fpOrder(0x999999999999999a, 0x3ffc999999999999)),
+  f256_r10, //    = fp256Order(fpOrder(0x999999999999999a, 0xbf89999999999999),
+            //                 fpOrder(0x999999999999999a, 0x3ffb999999999999)),
+  f256_10_16; //  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800));
+
+// I will want working precision even higher than 128-bits. I will
+// arrange that using pairs of 128-bit floats such that the value
+// I am representing is their sum. The code I have here will not be
+// robust against issues of denormailised numbers, infinities or
+// NaNs, and so its use needs to take care to avoid such cases.
+//
+// I am following the scheme from T J Dekker, Numer Math 18 224-242 (1971).
+
+extern float256_t ato256(const char* s);
+
+class OctFloat
+{
+public:
+// Many people would believe I should make the data field here
+// private rather than public, and provide an access function in
+// case of need.
+
+    float256_t v;
+
+    constexpr OctFloat()                   // default constructor
+    {   v.hi = v.lo = f128_0;
+    }
+    constexpr OctFloat(float128_t n)       // import from a float128_t
+    {   v.hi = n;
+        v.lo = f128_0;
+    }
+    constexpr OctFloat(float256_t n)       // import from a float256_t
+    {   v.hi = n.hi;
+        v.lo = n.lo;
+    }
+    constexpr OctFloat(const char* s)      // value as from a text string
+    {   v = ato256(s);
+    }
+    constexpr OctFloat(const QuadFloat hi, const QuadFloat lo)
+    {   v.hi = hi.v;
+        v.lo = lo.v;
+    }
+    constexpr OctFloat(const OctFloat& rhs)
+    {   v = rhs.v;
+    }
+    OctFloat(int n)
+    {   v.hi = i32_to_f128(n);
+        v.lo = f128_0;
+    }
+    OctFloat(int64_t n)
+    {   v.hi = i64_to_f128(n);
+        v.lo = f128_0;
+    }
+    OctFloat(float64_t n)
+    {   v.hi = f64_to_f128(n);
+        v.lo = f128_0;
+    }
+    OctFloat(double d)
+    {   float64_t n;
+        std::memcpy(reinterpret_cast<char*>(&n),
+                    reinterpret_cast<char*>(&d),
+                    sizeof(double));
+        v.hi = f64_to_f128(n);
+        v.lo = f128_0;
+    }
+
+    constexpr OctFloat(OctFloat&& rhs)
+    {   v = rhs.v;
+    }
+
+    friend std::ostream& operator<<(std::ostream& o, const OctFloat& d)
+    {   return o << QuadFloat(d.v.hi) << "_:_" << QuadFloat(d.v.lo);
+    }
+
+    constexpr OctFloat operator=(const OctFloat& rhs)
+    {   v = rhs.v;
+        return *this;
+    }
+    constexpr OctFloat operator=(OctFloat&& rhs)
+    {   v = rhs.v;
+        return *this;
+    }
+
+    bool operator==(const OctFloat& rhs) const;
+    bool operator!=(const OctFloat& rhs) const;
+    bool operator<(const OctFloat& rhs) const;
+    bool operator<=(const OctFloat& rhs) const;
+    bool operator>(const OctFloat& rhs) const;
+    bool operator>=(const OctFloat& rhs) const;
+
+    OctFloat operator-() const;
+
+    OctFloat operator+(const OctFloat& rhs) const;
+    OctFloat operator-(const OctFloat& rhs) const;
+    OctFloat operator*(const OctFloat& rhs) const;
+    OctFloat operator/(const OctFloat& rhs) const;
+
+    constexpr bool sign();
+    constexpr int exponent();
+    constexpr OctFloat set_exponent(int64_t n);
+    constexpr OctFloat mantissa();
+};
+
+
+// I will allow oct-float literals in the form 1.234e56_QQ but NOTE
+// WELL that I will not expect all the bits in the value read to be
+// fully accurate. The results will be best when the values are within
+// reasonable reach of 1.0, and infinities, subnormal numbers etc may
+// not be well supported. The values will have around 227 bits which
+// gives a little over 68 decimals. The literals here will not be
+// assembled at compile time and so it will probably be best to
+// set up all constants using static initialization so that the
+// conversion from decimal to binary is performed at program startup
+// time. Another option will be to run a jiffy program once that
+// sets up the constants that way and then renders the binary values
+// in hex, since I will be able to provide a compile-time translation
+// from hex-formatted input of the form 0xNNNN...NNN_QQX into the
+// required data. For this there will be exactly 64 hex digits that
+// will denote the bit pattern in a most-significant-digit-first layout.
+// So the main thing that the parsing will need to do is to allow for
+// byte ordering on the target machine.
+//
+// Well probably the best way to put OctFloat literal values in source code
+// will be along the lines of OctFloat(1.23_Q, 4.56e-36_Q) leveraging the
+// fact that QuadDoubles can be read in competently.
+
+
+inline OctFloat oct_10(10);
+
+inline OctFloat operator ""_QQ (const char* s)
+{   return OctFloat(ato256(s));
+}
+
+inline float256_t ato256(const char* s)
+{   bool sign = false;
+    if (*s == '-')
+    {   sign = true;
+        s++;
+        if (*s == '\'') s++;
+    }
+    bool dotSeen = false;
+    int x = 0;
+    OctFloat r(0);
+    int c;
+    while (std::isdigit(c = *s))
+    {   r = oct_10*r + OctFloat(c - '0');
+        s++;
+        if (*s == '\'') s++;
+        if (dotSeen) x--;
+        else if (*s == '.')
+        {   dotSeen = true;
+            s++;
+            if (*s == '\'') s++;
+        }
+    }
+    if (*s == 'e' || *s == 'E')
+    {   s++;
+        if (*s == '\'') s++;
+        bool xsign = false;
+        if (*s == '-')
+        {   xsign = true;
+            s++;
+            if (*s == '\'') s++;
+        }
+        int xx = 0;
+        while (std::isdigit(c = *s))
+        {   xx = 10*xx + c - '0';
+            s++;
+            if (*s == '\'') s++;
+        }
+        if (xsign) xx = -xx;
+        x += xx;
+    }
+    if (x != 0)
+    {   bool xsign = x < 0;
+        if (xsign) x = -x;
+        float256_t scale;
+        f256M_pow(&oct_10.v, x, &scale);
+        if (xsign) r = r / OctFloat(scale);
+        else r = r * OctFloat(r);
+    }
+    if (sign) r = -r;
+    return r.v;
+}
+
+// If the user specified other than exactly 64 hex digits with _QQX the
+// result will be something that is as defined by this code but that
+// ought not to be relied upon!
+
+constexpr inline OctFloat operator ""_QQX (const char* s)
+{   s += 2; // skip over the "0x" prefix.
+    if (*s == '\'') s++;
+    uint64_t data[4] = {0, 0, 0, 0};
+    for (int i=0; i<4; i++)
+    {   uint64_t w = 0;
+        for (int j=0; j<16; j++)
+        {   int c = *s++, d;
+            if ((d = hexFromChar(c)) < 0)
+            {   s--;
+                break;
+            }
+            if (*s == '\'') s++;
+            w = 16*w + d;
+        }
+        data[i] = w;
+    }
+    float256_t r;
+#ifdef LITTLEENDIAN
+    const int low = 0, high = 1;
+#else // LITTLEENDIAN
+    const int low = 1, high = 0;
+#endif // LITTLEENDIAN
+    r.hi.v[high] = data[0];
+    r.hi.v[low] = data[1];
+    r.lo.v[high] = data[2];
+    r.lo.v[low] = data[3];
+    return OctFloat(r); // Only fills in the "hi" component.
 }
 
 #endif // header_float128_t

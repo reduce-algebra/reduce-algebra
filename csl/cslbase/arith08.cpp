@@ -323,24 +323,24 @@ static LispObject Lrealpart(LispObject env, LispObject a)
 #ifdef HAVE_SOFTFLOAT
 LispObject decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
-    if (f128M_infinite(&d) || f128M_nan(&d))
+    if (f128_infinitep(d) || f128_nanp(d))
     {   if (trap_floating_overflow) return aerror("decode-float");
         else return onevalue(nil); // infinity or NaN
     }
     bool neg = false;
     int x = 0;
-    if (f128M_negative(&d)) f128M_negate(&d), neg = true;
+    if (f128_negative(d)) f128_negate(&d), neg = true;
     if (f128M_eq(&d, &f128_0)) x = 0;
     else
-    {   if (f128M_subnorm(&d))
+    {   if (f128_subnorm(d))
         {   f128M_mul(&d, &f128_N1, &d);
             x -= 4096;
         }
-        x += f128M_exponent(&d) - 0x3fff;
-        f128M_set_exponent(&d, 0x3fff);
+        x += f128_exponent(d) - 0x3fff;
+        f128_set_exponent(&d, 0x3fff);
     }
     LispObject sign = make_boxfloat128(f128_1);
-    if (neg) f128M_negate(reinterpret_cast<float128_t *>(long_float_addr(
+    if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(
                                   sign)));
     {   THREADID;
         Save save(THREADARG sign);
@@ -417,7 +417,7 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
             {
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    if (f128M_infinite(reinterpret_cast<float128_t *>(&long_float_val(
+                    if (f128_infinitep(*reinterpret_cast<float128_t *>(&long_float_val(
                                            a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
@@ -450,7 +450,7 @@ static LispObject Lfp_nan(LispObject env, LispObject a)
                     return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    if (f128M_nan(reinterpret_cast<float128_t *>(&long_float_val(a))))
+                    if (f128_nanp(*reinterpret_cast<float128_t *>(&long_float_val(a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
@@ -477,7 +477,7 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
             {
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    if (f128M_finite(reinterpret_cast<float128_t *>(&long_float_val(a))))
+                    if (f128_finite(*reinterpret_cast<float128_t *>(&long_float_val(a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
@@ -512,7 +512,7 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
                     else return onevalue(nil);
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    if (f128M_subnorm(reinterpret_cast<float128_t *>(&long_float_val(a))))
+                    if (f128_subnorm(*reinterpret_cast<float128_t *>(&long_float_val(a))))
                         return onevalue(lisp_true);
                     return onevalue(nil);
 #endif // HAVE_SOFTFLOAT
@@ -547,7 +547,7 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
                     return onevalue(std::signbit(single_float_val(a)) ? lisp_true : nil);
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    return onevalue(f128M_negative(reinterpret_cast<float128_t *>
+                    return onevalue(f128_negative(*reinterpret_cast<float128_t *>
                                                    (&long_float_val(a))) ?
                                     lisp_true : nil);
 #endif // HAVE_SOFTFLOAT
@@ -629,7 +629,7 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a,
     {   float128_t d = float128_of_number(b);
 // If a is another long float then float_of_number may overflow, but
 // here I am only interested in its sign, and -infinity is still negative.
-        if (float_of_number(a) < 0.0) f128M_negate(&d);
+        if (float_of_number(a) < 0.0) f128_negate(&d);
         return onevalue(make_boxfloat128(d));
     }
 #endif // HAVE_SOFTFLOAT
@@ -649,7 +649,7 @@ static LispObject Lfloat_sign1(LispObject env, LispObject a)
         flthdr(a) == LONG_FLOAT_HEADER)
     {   float128_t d = float128_of_number(a);
         float128_t r = f128_1;
-        if (f128M_negative(&d)) f128M_negate(&r);
+        if (f128_negative(d)) f128_negate(&r);
         return onevalue(make_boxfloat128(r));
     }
 #endif // HAVE_SOFTFLOAT
@@ -675,7 +675,7 @@ static LispObject Lftruncate(LispObject env, LispObject a1,
 #ifdef HAVE_SOFTFLOAT
 LispObject integer_decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
-    if (f128M_infinite(&d) || f128M_nan(&d))
+    if (f128_infinitep(d) || f128_nanp(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
         else return onevalue(nil); // infinity or NaN
     }
@@ -687,16 +687,16 @@ LispObject integer_decode_long_float(LispObject a)
     }
 #else
         return list3(fixnum_of_int(0), fixnum_of_int(0),
-                     fixnum_of_int(f128M_negative(&d) ? -1 : 1));
+                     fixnum_of_int(f128_negative(d) ? -1 : 1));
 #endif
     bool neg = false;
-    if (f128M_negative(&d))
-    {   f128M_negate(&d);
+    if (f128_negative(d))
+    {   f128_negate(&d);
         neg = true;
     }
     int32_t d4;
     uint32_t d3, d2, d1, d0;
-    intptr_t x = 31*float128_to_5_digits(&d, d4, d3, d2, d1, d0);
+    intptr_t x = 31*float128_to_5_digits(d, d4, d3, d2, d1, d0);
     a = make_n5_word_bignum(d4, d3, d2, d1, d0, 0);
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
@@ -900,25 +900,25 @@ static LispObject Lmask_field(LispObject env, LispObject a1,
 #ifdef HAVE_SOFTFLOAT
 static LispObject scale_float128(LispObject a, intptr_t x)
 {   float128_t d = long_float_val(a);
-    if (f128M_nan(&d)) return a;
+    if (f128_nanp(d)) return a;
     if (x >= 0x40000) x = 0x40000;
     else if (x <= -0x40000) x = -0x40000;
-    if (f128M_subnorm(&d))
+    if (f128_subnorm(d))
     {   f128M_mul(&d, &f128_N1, &d);
         x -= 4096;
     }
-    x += f128M_exponent(&d);
+    x += f128_exponent(d);
     if (x >= 0x7fff)         // result will be infinite
-        f128M_make_infinite(&d);
+        f128_make_infinite(&d);
     else if (x <= 0)         // result underflows
-    {   if (x < -113) f128M_make_zero(&d);
+    {   if (x < -113) f128_make_zero(&d);
         else
-        {   f128M_set_exponent(&d, x+4096);
+        {   f128_set_exponent(&d, x+4096);
 // If there is a risk I need to generate a subnormal result do it this way.
             f128M_div(&d, &f128_N1, &d);
         }
     }
-    else f128M_set_exponent(&d, x);
+    else f128_set_exponent(&d, x);
     return make_boxfloat128(d);
 }
 #endif // HAVE_SOFTFLOAT
@@ -953,9 +953,9 @@ static LispObject Lscale_float(LispObject env, LispObject a,
 static LispObject lisp_fix_sub128(LispObject a, int roundmode)
 {   float128_t *d = reinterpret_cast<float128_t *>(long_float_addr(
                         a));
-    if (f128M_nan(d)) return aerror("NaN in fix");
-    if (f128M_infinite(d)) return aerror("infinity in fix");
-    int x = f128M_exponent(d);
+    if (f128_nanp(*d)) return aerror("NaN in fix");
+    if (f128_infinitep(*d)) return aerror("infinity in fix");
+    int x = f128_exponent(*d);
 // Here I will limit the range where I convert to an int64_t value because
 // a long float could have a value of (say) INT64_MAX+0.75, and then the
 // conversion would overflow and hence fail.
@@ -969,7 +969,7 @@ static LispObject lisp_fix_sub128(LispObject a, int roundmode)
 // I may sometimes still need to worry about rounding.
     int32_t d4;
     uint32_t d3, d2, d1, d0;
-    intptr_t x1 = float128_to_5_digits(d, d4, d3, d2, d1, d0);
+    intptr_t x1 = float128_to_5_digits(*d, d4, d3, d2, d1, d0);
     switch (x1)
     {   case -2:
 // The integer part is at present represented in 2s complement, so if I
