@@ -454,6 +454,7 @@ extern LispObject long_float, bit_symbol, pathname_symbol, print_array_sym;
 extern LispObject read_base, initial_element;
 extern LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
 extern LispObject builtin3_symbol, builtin4_symbol;
+extern LispObject NaN_symbol, infinity_symbol, minusinfinity_symbol;
 
 #ifdef OPENMATH
 extern LispObject om_openFileDev(LispObject, int nargs, ...);
@@ -1206,6 +1207,7 @@ extern setup_type const om_parse_setup[];
     X(terminal_io),           X(tracedfn),          X(trace_output), \
     X(traceprint_symbol),     X(trap_time),         X(unset_var), \
     X(used_space),            X(use_symbol),        X(work_symbol), \
+    X(NaN_symbol),            X(infinity_symbol),   X(minusinfinity_symbol), \
  \
     X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
     X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \

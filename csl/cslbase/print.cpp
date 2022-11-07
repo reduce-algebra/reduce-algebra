@@ -1842,25 +1842,25 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
 static void fp_sprint128(char *buff, float128_t x, int prec,
                          int xchar)
 {   if (f128M_eq(&x, &f128_0))
-    {   if (f128M_negative(&x)) std::strcpy(buff, "-0.0L+00");
+    {   if (f128_negative(x)) std::strcpy(buff, "-0.0L+00");
         else std::strcpy(buff, "0.0L+00");
         return;
     }
-    if (f128M_nan(&x))
+    if (f128_nanp(x))
     {   std::strcpy(buff, "NaN");
         return;
     }
-    if (f128M_infinite(&x))
-    {   if (f128M_negative(&x)) std::strcpy(buff, "minusinf");
+    if (f128_infinitep(x))
+    {   if (f128_negative(x)) std::strcpy(buff, "minusinf");
         else std::strcpy(buff, "inf");
         return;
     }
-    if (f128M_negative(&x))
+    if (f128_negative(x))
     {   *buff++ = '-';
-        f128M_negate(&x);
+        f128_negate(&x);
     }
     if (prec > 36) prec = 36;
-    f128M_sprint_G(buff, 0, prec, &x);
+    f128_sprint_G(buff, 0, prec, x);
 //  printf("Raw printing gives \"%s\"\n", buff);
 //
 // I rather hope that my own print routine is not degenerate so some of
@@ -3200,8 +3200,8 @@ restart:
                         o += std::sprintf(o, "/%.8" PRIx32, p[3]);
 #endif
                         *o++ = ':';
-                        o += f128M_sprint_G(o, 0, 34,
-                                            bit_cast<float128_t *>(
+                        o += f128_sprint_G(o, 0, 34,
+                                            *bit_cast<float128_t *>(
                                                 &long_float_val(u)));
                         *o++ = '}';
                         *o = 0;
@@ -3221,8 +3221,8 @@ restart:
                         o += std::sprintf(o, "/%.11" PRIo32, p[3]);
 #endif
                         *o++ = ':';
-                        o += f128M_sprint_G(o, 0, 34,
-                                            bit_cast<float128_t *>(
+                        o += f128_sprint_G(o, 0, 34,
+                                            *bit_cast<float128_t *>(
                                                 &long_float_val(u)));
                         *o++ = '}';
                         *o = 0;

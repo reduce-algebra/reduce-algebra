@@ -313,12 +313,6 @@ void processAmbiguousValue(uintptr_t a, const char* source="STACK")
 NO_SANITIZE_ADDRESS
 void identifyPinnedItems()
 {
-#ifdef DEBUG
-// Just while I develop the code I will have some extra "ambiguous" pointers
-// that I have rather direct control over. They may help me to test things.
-    for (int i=0; i<10; i++)
-        processAmbiguousValue(ambiguous[i], "AMBIG");
-#endif // DEBUG
 // For each ambiguous value (ie value on the stack) processAmbiguousValue().
 // This must ensure that if the item might be a LispObject that is a
 // reference that the destination address of that reference is marked as

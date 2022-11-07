@@ -290,7 +290,7 @@ if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
-		arith-float128.cpp arith-elem.cpp arith-random.cpp
+		arith-float128.cpp arith-elem.cpp arith-misc.cpp
 else !arithlib
 arith_sources =
 endif !arithlib
@@ -308,7 +308,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
 		winsupport.cpp csl.cpp fasl.cpp preserve.cpp bytes1.cpp \
-		showhdr.cpp $(gc_sources) $(arith_sources)
+		showhdr.cpp float128_t.cpp $(gc_sources) $(arith_sources)
 
 # Thie little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
@@ -887,7 +887,7 @@ csl-arith-logops.$(OBJEXT):	$(HDRS)
 csl-arith-modular.$(OBJEXT):	$(HDRS)
 csl-arith-float128.$(OBJEXT):	$(HDRS)
 csl-arith-elem.$(OBJEXT):	$(HDRS)
-csl-arith-random.$(OBJEXT):	$(HDRS)
+csl-arith-misc.$(OBJEXT):	$(HDRS)
 
 bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
@@ -900,7 +900,7 @@ bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-float128.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-random.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
 
 reduce-arith-setup.$(OBJEXT):	$(HDRS)
 reduce-arith-plus.$(OBJEXT):	$(HDRS)
@@ -913,7 +913,7 @@ reduce-arith-logops.$(OBJEXT):	$(HDRS)
 reduce-arith-modular.$(OBJEXT):	$(HDRS)
 reduce-arith-float128.$(OBJEXT):	$(HDRS)
 reduce-arith-elem.$(OBJEXT):	$(HDRS)
-reduce-arith-random.$(OBJEXT):	$(HDRS)
+reduce-arith-misc.$(OBJEXT):	$(HDRS)
 
 endif arithlib
 
@@ -935,6 +935,8 @@ csl-arith13.$(OBJEXT):	$(HDRS)
 csl-arith14.$(OBJEXT):	$(HDRS)
 csl-isprime.$(OBJEXT):	$(HDRS)
 csl-bytes1.$(OBJEXT):	$(HDRS)
+csl-showhdr.$(OBJEXT):	$(HDRS)
+csl-float128_t.$(OBJEXT):	$(HDRS)
 csl-char.$(OBJEXT):	$(HDRS)
 csl-csl.$(OBJEXT):	$(HDRS)
 csl-cslmpi.$(OBJEXT):	$(HDRS)
@@ -980,6 +982,8 @@ bootstrapreduce-arith13.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith14.$(OBJEXT):	$(HDRS)
 bootstrapreduce-isprime.$(OBJEXT):	$(HDRS)
 bootstrapreduce-bytes1.$(OBJEXT):	$(HDRS)
+bootstrapreduce-showhdr.$(OBJEXT):	$(HDRS)
+bootstrapreduce-float128_t.$(OBJEXT):	$(HDRS)
 bootstrapreduce-char.$(OBJEXT):	$(HDRS)
 bootstrapreduce-csl.$(OBJEXT):	$(HDRS)
 bootstrapreduce-cslmpi.$(OBJEXT):	$(HDRS)
@@ -1025,6 +1029,8 @@ reduce-arith13.$(OBJEXT):	$(HDRS)
 reduce-arith14.$(OBJEXT):	$(HDRS)
 reduce-isprime.$(OBJEXT):	$(HDRS)
 reduce-bytes1.$(OBJEXT):	$(HDRS)
+reduce-showhdr.$(OBJEXT):	$(HDRS)
+reduce-float128_t.$(OBJEXT):	$(HDRS)
 reduce-char.$(OBJEXT):		$(HDRS)
 reduce-csl.$(OBJEXT):		$(HDRS)
 reduce-cslmpi.$(OBJEXT):	$(HDRS)

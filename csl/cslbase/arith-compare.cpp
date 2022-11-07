@@ -45,10 +45,14 @@ using number_dispatcher::SFlt;
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
+// (eqn a b) will be true if a and b are both numbers of the same
+// type and their values match. So note that all the mixed mode variants
+// here just return "nil" for false.
+
 bool Eqn::op(LispObject a, LispObject b)
 {   if (a == b) return true;
-// Immediate numbers would only be NEQ if they were in fact EQ, so for
-// them the heavier duty dispatch is not needed.
+// Immediate numbers would only be EQN if they were in fact EQ, so for
+// them the heavier duty dispatch is not needed. 
     if (!is_boxed_number(a) || !is_boxed_number(b)) return false;
     return number_dispatcher::binary<bool,Eqn>("eqn", a, b);
 }
@@ -378,6 +382,18 @@ bool Eqn::op(LFlt a, LFlt b)
 {   return f128_eq(a.floatval(), b.floatval());
 }
 
+// (cleqn a b) compares two numbers and returns true if they have the same
+// value even if their types differ. The common and sensible case here
+// will be (cleqn 2 2.0) but it is also necessary to arrange that the
+// following cases apply:
+//   (cleqn 1.5 3/2)   (cleqn 2 2/1)   (cleqn 1 #x(1 0))
+// and equality tests involving a mix of floating point values and
+// rationals needs to take care lest (cleqn 1.0 10000000001/10000000000)
+// and variants with huge numerators and denominators do not get confused.
+// This is achieved by converting the floating point value to the exact
+// rational that it stands for and performing comparison as between a
+// pair of rational numbers.
+
 bool CLEqn::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<bool,CLEqn>("eqn", a, b);
 }
@@ -464,6 +480,9 @@ bool CLEqn::op(Cpx a, Fixnum b)
 {   return false;
 }
 // short float CL== fixnum
+// fixnums can always be converted to floating point without loss and
+// so the test here is easy.
+
 bool CLEqn::op(SFlt a, Fixnum b)
 {   return arithlib_lowlevel::Eqn::op(static_cast<double>
                                       (a.floatval()), b.intval());
@@ -498,6 +517,9 @@ bool CLEqn::op(Cpx a, uint64_t *b)
 {   return false;
 }
 // short float CL== bignum
+// arithlib.hpp has somewhat contorted code so that it can perform
+// reliable comparisons between floats and bignums.
+
 bool CLEqn::op(SFlt a, uint64_t *b)
 {   return arithlib_lowlevel::Eqn::op(static_cast<double>
                                       (a.floatval()), b);
@@ -533,31 +555,46 @@ bool CLEqn::op(Rat a, Rat b)
 bool CLEqn::op(Cpx a, Rat b)
 {   return false;
 }
+
 // short float CL== rational
+// This is where I needs to convert the floating point value to a
+// rational value (which may in fact turn out to be an integer, so I
+// then have a dispatch as between integer and rational converted value).
+
 bool CLEqn::op(SFlt a, Rat b)
-{   return (a.floatval() == RawFloat::op(b));
+{   double d = a.floatval();
+    if (std::isnan(d)) return false;
+    if (std::isinf(d)) return false;
+    LispObject aa = N_rationalf(d);
+    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aa, b);
 }
+
 // single float CL== rational
-#pragma message ("Comparisons between floats and rationals are NOT done nicely yet")
-/*
- * This is coded as converting both values to floats. This is not as good
- * as it could be. Eg consider a rational number (10^500+1)/10^100. That
- * would convert to a floating point value 1.0 so compare equal to 1.0,
- * while its value differs if looked at with full accuracy. It would be
- * much better to convert floats to rationals for the comparison (treating
- * NaN and infinities specially) but for that I expect there are a number of
- * cases where performance could be optimised and so should be.
- */
 bool CLEqn::op(Flt a, Rat b)
-{   return (a.floatval() == RawFloat::op(b));
+{   double d = a.floatval();
+    if (std::isnan(d)) return false;
+    if (std::isinf(d)) return false;
+    LispObject aa = N_rationalf(d);
+    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aa, b);
 }
+
 // double float CL== rational
 bool CLEqn::op(double a, Rat b)
-{   return (a == RawFloat::op(b));
+{   if (std::isnan(a)) return false;
+    if (std::isinf(a)) return false;
+    LispObject aa = N_rationalf(a);
+    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aa, b);
 }
+
+extern LispObject N_rationalf128(float128_t d);
+
 // long float CL== rational
-bool CLEqn::op(LFlt a, Rat b)
-{   return f128_eq(a.floatval(), RawFloat128::op(b));
+bool CLEqn::op(LFlt aa, Rat b)
+{   float128_t a = aa.floatval();
+    if (f128_nanp(a)) return false;
+    if (f128_infinitep(a)) return false;
+    LispObject aaa = N_rationalf128(a);
+    return number_dispatcher::binaryR<bool,CLEqn>("CLeqn", aaa, b);
 }
 // fixnum CL== complex
 bool CLEqn::op(Fixnum a, Cpx b)
@@ -721,6 +758,9 @@ bool CLEqn::op(LFlt a, LFlt b)
 {   return f128_eq(a.floatval(), b.floatval());
 }
 
+// (neqn a b) is defined as (not (eqn a b)) so if the two operands are
+// not the same sort of number it will return true.
+
 bool Neqn::op(LispObject a, LispObject b)
 {   if (a == b) return false;
     if (!is_boxed_number(a) || !is_boxed_number(b)) return true;
@@ -793,48 +833,44 @@ bool Neqn::op(LFlt a, LispObject b)
 
 // fixnum != fixnum
 
-// There is a sort of C++ type misery here. intval() returns an intptr_t
-// value and that may be either a 32 or 64-bit integer. Many of the
-// low level primitives here want a 64-bit integer as input, but automatic
-// conversion does not make the adaptations I desire - hence a load of
-// ugly casts. This is probably a signal that I got the type signatures in
-// my code wrong, but I am not about to alter it now.
-
 bool Neqn::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Neqn::op((int64_t)a.intval(),
-                                       (int64_t)b.intval());
+{   return a.intval() != b.intval();
 }
+
 // bignum != fixnum
 bool Neqn::op(uint64_t *a, Fixnum b)
-{   return arithlib_lowlevel::Neqn::op(a, (int64_t)b.intval());
+{   return true;
 }
+
 // rational != fixnum
 bool Neqn::op(Rat a, Fixnum b)
 {   return true;
 }
+
 // complex != fixnum
 bool Neqn::op(Cpx a, Fixnum b)
 {   return true;
 }
+
 // short float != fixnum
 bool Neqn::op(SFlt a, Fixnum b)
-{   return (a.floatval() != static_cast<double>(b.intval()));
+{   return true;
 }
 // single float != fixnum
 bool Neqn::op(Flt a, Fixnum b)
-{   return (a.floatval() != static_cast<double>(b.intval()));
+{   return true;
 }
 // double float != fixnum
 bool Neqn::op(double a, Fixnum b)
-{   return (a != static_cast<double>(b.intval()));
+{   return true;
 }
 // long float != fixnum
 bool Neqn::op(LFlt a, Fixnum b)
-{   return !f128_eq(a.floatval(), i64_to_f128(b.intval()));
+{   return true;
 }
 // fixnum != bignum
 bool Neqn::op(Fixnum a, uint64_t *b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // bignum != bignum
 bool Neqn::op(uint64_t *a, uint64_t *b)
@@ -842,11 +878,11 @@ bool Neqn::op(uint64_t *a, uint64_t *b)
 }
 // rational != bignum
 bool Neqn::op(Rat a, uint64_t *b)
-{   return false;
+{   return true;
 }
 // complex != bignum
 bool Neqn::op(Cpx a, uint64_t *b)
-{   return false;
+{   return true;
 }
 // short float != bignum
 bool Neqn::op(SFlt a, uint64_t *b)
@@ -854,15 +890,15 @@ bool Neqn::op(SFlt a, uint64_t *b)
 }
 // single float != bignum
 bool Neqn::op(Flt a, uint64_t *b)
-{   return (a.floatval() != arithlib_lowlevel::Double::op(b));
+{   return true;
 }
 // double float != bignum
 bool Neqn::op(double a, uint64_t *b)
-{   return (a != arithlib_lowlevel::Double::op(b));
+{   return true;
 }
 // long float != bignum
 bool Neqn::op(LFlt a, uint64_t *b)
-{   return !f128_eq(a.floatval(), arithlib_lowlevel::Float128::op(b));
+{   return true;
 }
 // fixnum != rational
 bool Neqn::op(Fixnum a, Rat b)
@@ -884,19 +920,19 @@ bool Neqn::op(Cpx a, Rat b)
 }
 // short float != rational
 bool Neqn::op(SFlt a, Rat b)
-{   return (a.floatval() != RawFloat::op(b));
+{   return true;
 }
 // single float != rational
 bool Neqn::op(Flt a, Rat b)
-{   return (a.floatval() != RawFloat::op(b));
+{   return true;
 }
 // double float != rational
 bool Neqn::op(double a, Rat b)
-{   return (a != RawFloat::op(b));
+{   return true;
 }
 // long float != rational
 bool Neqn::op(LFlt a, Rat b)
-{   return !f128_eq(a.floatval(), RawFloat128::op(b));
+{   return true;
 }
 // fixnum != complex
 bool Neqn::op(Fixnum a, Cpx b)
@@ -933,19 +969,19 @@ bool Neqn::op(LFlt a, Cpx b)
 }
 // fixnum != short float
 bool Neqn::op(Fixnum a, SFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // bignum != short float
 bool Neqn::op(uint64_t *a, SFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // rational != short float
 bool Neqn::op(Rat a, SFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // complex != short float
 bool Neqn::op(Cpx a, SFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // short float != short float
 bool Neqn::op(SFlt a, SFlt b)
@@ -953,35 +989,35 @@ bool Neqn::op(SFlt a, SFlt b)
 }
 // single float != short float
 bool Neqn::op(Flt a, SFlt b)
-{   return (a.floatval() != b.floatval());
+{   return true;
 }
 // double float != short float
 bool Neqn::op(double a, SFlt b)
-{   return (a != b.floatval());
+{   return true;
 }
 // long float != short float
 bool Neqn::op(LFlt a, SFlt b)
-{   return !f128_eq(a.floatval(), RawFloat128::op(b));
+{   return true;
 }
 // fixnum != single float
 bool Neqn::op(Fixnum a, Flt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // bignum != single float
 bool Neqn::op(uint64_t *a, Flt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // rational != single float
 bool Neqn::op(Rat a, Flt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // complex != single float
 bool Neqn::op(Cpx a, Flt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // short float != single float
 bool Neqn::op(SFlt a, Flt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // single float != single float
 bool Neqn::op(Flt a, Flt b)
@@ -989,35 +1025,35 @@ bool Neqn::op(Flt a, Flt b)
 }
 // double float != single float
 bool Neqn::op(double a, Flt b)
-{   return (a != b.floatval());
+{   return true;
 }
 // long float != single float
 bool Neqn::op(LFlt a, Flt b)
-{   return !f128_eq(a.floatval(), RawFloat128::op(b));
+{   return true;
 }
 // fixnum != double float
 bool Neqn::op(Fixnum a, double b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // bignum != double float
 bool Neqn::op(uint64_t *a, double b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // rational != double float
 bool Neqn::op(Rat a, double b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // complex != double float
 bool Neqn::op(Cpx a, double b)
-{   return false;
+{   return true;
 }
 // short float != double float
 bool Neqn::op(SFlt a, double b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // single float != double float
 bool Neqn::op(Flt a, double b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // double float != double float
 bool Neqn::op(double a, double b)
@@ -1025,130 +1061,117 @@ bool Neqn::op(double a, double b)
 }
 // long float != double float
 bool Neqn::op(LFlt a, double b)
-{   return !f128_eq(a.floatval(), RawFloat128::op(b));
+{   return true;
 }
 // fixnum != long float
 bool Neqn::op(Fixnum a, LFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // bignum != long float
 bool Neqn::op(uint64_t *a, LFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // rational != long float
 bool Neqn::op(Rat a, LFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // complex != long float
 bool Neqn::op(Cpx a, LFlt b)
-{   return false;
+{   return true;
 }
 // short float != long float
 bool Neqn::op(SFlt a, LFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // single float != long float
 bool Neqn::op(Flt a, LFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // double float != long float
 bool Neqn::op(double a, LFlt b)
-{   return Neqn::op(b, a);
+{   return true;
 }
 // long float != long float
 bool Neqn::op(LFlt a, LFlt b)
 {   return !f128_eq(a.floatval(), b.floatval());
 }
 
+// (greaterp a b) is reasonably straightforward for integers and floats.
+// It is not meaningful for complex numbers, and for rationals it is
+// slightly messy in general and very messy for floating point.
+
 bool Greaterp::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, uint64_t *b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryR<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 bool Greaterp::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a,
-            b);
+{   return number_dispatcher::binaryL<bool,Greaterp>("greaterp", a, b);
 }
 
 // fixnum > fixnum
 
 bool Greaterp::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op((int64_t)a.intval(),
-                                           (int64_t)b.intval());
+{   return a.intval() > b.intval();
 }
 // bignum > fixnum
 bool Greaterp::op(uint64_t *a, Fixnum b)
@@ -1161,21 +1184,31 @@ bool Greaterp::op(Rat a, Fixnum b)
 }
 // complex > fixnum
 bool Greaterp::op(Cpx a, Fixnum b)
-{   return false;
+{   return false;      // really this is meaningless in general, and
+                       // I am not going to make special provision for the
+                       // special case where the complex value happens
+                       // to have a zero imaginary part.
 }
 // short float > fixnum
+// Note that a fixnum may be up to 60 bits wide while double precision
+// floats only hold 53 bits of precision, so I can not compare by
+// just converting the fixnum to a double. If I tried going the other
+// way I could run into issues with floating values that had fractional
+// parts or that had values well beyond 2^60. But arithlib.hpp deals
+// with all that - including the cases of NaNs and infinities.
+
 bool Greaterp::op(SFlt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
-                                           (a.floatval()), b.intval());
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>(a.floatval()),
+                                           b.intval());
 }
 // single float > fixnum
 bool Greaterp::op(Flt a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
-                                           (a.floatval()), b.intval());
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>(a.floatval()),
+                                           b.intval());
 }
 // double float > fixnum
 bool Greaterp::op(double a, Fixnum b)
-{   return arithlib_lowlevel::Greaterp::op(a, (int64_t)b.intval());
+{   return arithlib_lowlevel::Greaterp::op(a, b.intval());
 }
 // long float > fixnum
 bool Greaterp::op(LFlt a, Fixnum b)
@@ -1201,13 +1234,13 @@ bool Greaterp::op(Cpx a, uint64_t *b)
 }
 // short float > bignum
 bool Greaterp::op(SFlt a, uint64_t *b)
-{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
-                                           (a.floatval()), b);
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>(a.floatval()),
+                                           b);
 }
 // single float > bignum
 bool Greaterp::op(Flt a, uint64_t *b)
-{   return arithlib_lowlevel::Greaterp::op(static_cast<double>
-                                           (a.floatval()), b);
+{   return arithlib_lowlevel::Greaterp::op(static_cast<double>(a.floatval()),
+                                           b);
 }
 // double float > bignum
 bool Greaterp::op(double a, uint64_t *b)
@@ -1236,21 +1269,37 @@ bool Greaterp::op(Cpx a, Rat b)
 {   return false;
 }
 // short float > rational
-#pragma message ("greaterp float rational not complete yet")
 bool Greaterp::op(SFlt a, Rat b)
-{   return (a.floatval() > RawFloat::op(b));
+{   double d = a.floatval();
+    if (std::isnan(d)) return false;
+    if (std::isinf(d)) return d > 0.0;
+    LispObject aa = N_rationalf(d);
+    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // single float > rational
 bool Greaterp::op(Flt a, Rat b)
-{   return (a.floatval() > RawFloat::op(b));
+{   double d = a.floatval();
+    if (std::isnan(d)) return false;
+    if (std::isinf(d)) return d > 0.0;
+    LispObject aa = N_rationalf(d);
+    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // double float > rational
 bool Greaterp::op(double a, Rat b)
-{   return (a > RawFloat::op(b));
+{   if (std::isnan(a)) return false;
+    if (std::isinf(a)) return a > 0.0;
+    LispObject aa = N_rationalf(a);
+    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // long float > rational
 bool Greaterp::op(LFlt a, Rat b)
-{   return !f128_le(a.floatval(), RawFloat128::op(b));
+{   float128_t d = a.floatval();
+    if (!f128_eq(d, d)) return false;   // a is a NaN
+    float128_t r = f128_div(f128_1, d);
+    if (f128_eq(r, f128_0))             // a is infinite
+        return f128_lt(f128_0, d);
+    LispObject aa = N_rationalf128(d);
+    return number_dispatcher::binaryR<bool,Greaterp>("greaterp", aa, b);
 }
 // fixnum > complex
 bool Greaterp::op(Fixnum a, Cpx b)
@@ -1412,6 +1461,8 @@ bool Greaterp::op(double a, LFlt b)
 bool Greaterp::op(LFlt a, LFlt b)
 {   return f128_lt(b.floatval(), a.floatval());
 }
+
+// (geq a b) is very much like (greaterp a b)... @@@@@@@@
 
 bool Geq::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<bool,Geq>("geq", a, b);
@@ -2673,7 +2724,431 @@ LispObject Abs::op(LFlt a)
     else return a.value();
 }
 
+LispObject Nonep(LispObject env, LispObject a1)
+{   return onebool(is_number(a1) && Onep::op(a1));
+}
+
+LispObject Nevenp(LispObject env, LispObject a1)
+{   return onebool(Evenp::op(a1));
+}
+
+LispObject Noddp(LispObject env, LispObject a1)
+{   return onebool(Oddp::op(a1));
+}
+
+LispObject Nzerop(LispObject env, LispObject a1)
+{   return onebool(is_number(a1) && Zerop::op(a1));
+}
+
+LispObject Nminusp(LispObject env, LispObject a1)
+{   return onebool(is_number(a1) && Minusp::op(a1));
+}
+
+LispObject Nplusp(LispObject env, LispObject a1)
+{   return onebool(is_number(a1) && Plusp::op(a1));
+}
+
+LispObject Ngreaterp(LispObject env, LispObject a1,
+                            LispObject a2)
+{   return onebool(Greaterp::op(a1, a2));
+}
+
+LispObject Ngreaterp(LispObject env, LispObject a1,
+                            LispObject a2,
+                            LispObject a3)
+{   return onebool(Greaterp::op(a1, a2) && Greaterp::op(a2, a3));
+}
+
+LispObject Ngreaterp(LispObject env, LispObject a1,
+                            LispObject a2,
+                            LispObject a3, LispObject a4plus)
+{   if (!Greaterp::op(a1, a2)) return onevalue(nil);
+    if (!Greaterp::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Greaterp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Ngeq(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Geq::op(a1, a2));
+}
+
+LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
+                       LispObject a3)
+{   return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
+}
+
+LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
+                       LispObject a3, LispObject a4plus)
+{   if (!Geq::op(a1, a2)) return onevalue(nil);
+    if (!Geq::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Geq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nlessp(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Lessp::op(a1, a2));
+}
+
+LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
+}
+
+LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   if (!Lessp::op(a1, a2)) return onevalue(nil);
+    if (!Lessp::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Lessp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nleq(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Leq::op(a1, a2));
+}
+
+LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
+                       LispObject a3)
+{   return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
+}
+
+LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
+                       LispObject a3, LispObject a4plus)
+{   if (!Leq::op(a1, a2)) return onevalue(nil);
+    if (!Leq::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Leq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Eqn::op(a1, a2));
+}
+
+LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
+}
+
+LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   if (!Eqn::op(a1, a2)) return onevalue(nil);
+    if (!Eqn::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Eqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(CLEqn::op(a1, a2));
+}
+
+LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   return onebool(CLEqn::op(a1, a2) && CLEqn::op(a2, a3));
+}
+
+LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   if (!CLEqn::op(a1, a2)) return onevalue(nil);
+    if (!CLEqn::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (CLEqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nneqn(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Neqn::op(a1, a2));
+}
+
+LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3)
+{   return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
+                   Neqn::op(a1, a3));
+}
+
+// NEQN is what Common Lisp calls "/=" and when given many arguments it
+// checks if all aee distinct. Well (neqn a NaN) will be false so if ANY
+// of the arguments is a NaN then NEQN will return false.
+
+LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4plus)
+{   if (!Neqn::op(a1, a2)) return onevalue(nil);
+    if (!Neqn::op(a2, a3)) return onevalue(nil);
+    if (!Neqn::op(a1, a3)) return onevalue(nil);
+    for (LispObject w=a4plus; is_cons(w); w=cdr(w))
+    {   LispObject a = car(w);
+        if (!Neqn::op(a1, a)) return onevalue(nil);
+        if (!Neqn::op(a2, a)) return onevalue(nil);
+        if (!Neqn::op(a3, a)) return onevalue(nil);
+    }
+    a2 = a3;
+    for (; is_cons(a4plus); a4plus=cdr(a4plus))
+    {   LispObject a = car(a4plus);
+        for (LispObject  w = cdr(a4plus); is_cons(w); w = cdr(w))
+        {   if (!Neqn::op(a, car(w))) return onevalue(nil);
+        }
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nmax(LispObject env)
+{   return aerror("max called witout arguments");
+}
+
+LispObject Nmax(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nmax(LispObject env, LispObject a1, LispObject a2)
+{   if (Lessp::op(a1, a2)) return onevalue(a2);
+    return onevalue(a1);
+}
+
+LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3)
+{   if (Lessp::op(a1, a2)) a1 = a2;
+    if (Lessp::op(a1, a3)) a1 = a3;
+    return onevalue(a1);
+}
+
+LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3, LispObject a4plus)
+{   if (Lessp::op(a1, a2)) a1 = a2;
+    if (Lessp::op(a1, a3)) a1 = a3;
+    while (is_cons(a4plus))
+    {   LispObject w = car(a4plus);
+        if (Lessp::op(a1, w)) a1 = w;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env)
+{   return aerror("min called witout arguments");
+}
+
+LispObject Nmin(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env, LispObject a1, LispObject a2)
+{   if (Greaterp::op(a1, a2)) return onevalue(a2);
+    return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3)
+{   if (Greaterp::op(a1, a2)) a1 = a2;
+    if (Greaterp::op(a1, a3)) a1 = a3;
+    return onevalue(a1);
+}
+
+LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
+                                LispObject a3, LispObject a4plus)
+{   if (Greaterp::op(a1, a2)) a1 = a2;
+    if (Greaterp::op(a1, a3)) a1 = a3;
+    while (is_cons(a4plus))
+    {   LispObject w = car(a4plus);
+        if (Greaterp::op(a1, w)) a1 = w;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(a1);
+}
+
+LispObject Nionep(LispObject env, LispObject a1)
+{   return onebool(Onep::op(a1));
+}
+
+LispObject Nievenp(LispObject env, LispObject a1)
+{   return onebool(Evenp::op(a1));
+}
+
+LispObject Nioddp(LispObject env, LispObject a1)
+{   return onebool(Oddp::op(a1));
+}
+
+LispObject Nizerop(LispObject env, LispObject a1)
+{   return onebool(Zerop::op(a1));
+}
+
+LispObject Niminusp(LispObject env, LispObject a1)
+{   return onebool(Minusp::op(a1));
+}
+
+LispObject Niminus(LispObject env, LispObject a1)
+{   return onevalue(Minus::op(a1));
+}
+
+LispObject Niabs(LispObject env, LispObject a1)
+{   return onevalue(Abs::op(a1));
+}
+
+LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Greaterp::op(a1, a2));
+}
+
+LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   return onebool(Greaterp::op(a1, a2) && Greaterp::op(a2, a3));
+}
+
+LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2,
+                             LispObject a3, LispObject a4plus)
+{   if (!Greaterp::op(a1, a2)) return onevalue(nil);
+    if (!Greaterp::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Greaterp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nigeq(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Geq::op(a1, a2));
+}
+
+LispObject Nigeq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
+}
+
+LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4plus)
+{   if (!Geq::op(a1, a2)) return onevalue(nil);
+    if (!Geq::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Geq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nilessp(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Lessp::op(a1, a2));
+}
+
+LispObject Nilessp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
+}
+
+LispObject Nilessp(LispObject env, LispObject a1, LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   if (!Lessp::op(a1, a2)) return onevalue(nil);
+    if (!Lessp::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Lessp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nileq(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Leq::op(a1, a2));
+}
+
+LispObject Nileq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
+}
+
+LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4plus)
+{   if (!Leq::op(a1, a2)) return onevalue(nil);
+    if (!Leq::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Leq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Eqn::op(a1, a2));
+}
+
+LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
+}
+
+LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2,
+                          LispObject a3, LispObject a4plus)
+{   if (!Eqn::op(a1, a2)) return onevalue(nil);
+    if (!Eqn::op(a2, a3)) return onevalue(nil);
+    a2 = a3;
+    while (is_cons(a4plus))
+    {   if (Eqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
+        a2 = a3;
+        a4plus = cdr(a4plus);
+    }
+    return onevalue(lisp_true);
+}
+
+LispObject Nineqn(LispObject env, LispObject a1, LispObject a2)
+{   return onebool(Neqn::op(a1, a2));
+}
+
+LispObject Nineqn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
+                   Neqn::op(a1, a3));
+}
+
+// NEQN is what Common Lisp calls "/=" and when given many arguments it
+// checks if all are distinct. Well (neqn a NaN) will be false so if ANY
+// of the arguments is a NaN then NEQN will return false.
+
+LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   if (!Neqn::op(a1, a2)) return onevalue(nil);
+    if (!Neqn::op(a2, a3)) return onevalue(nil);
+    if (!Neqn::op(a1, a3)) return onevalue(nil);
+    for (LispObject w=a4plus; is_cons(w); w=cdr(w))
+    {   LispObject a = car(w);
+        if (!Neqn::op(a1, a)) return onevalue(nil);
+        if (!Neqn::op(a2, a)) return onevalue(nil);
+        if (!Neqn::op(a3, a)) return onevalue(nil);
+    }
+    a2 = a3;
+    for (; is_cons(a4plus); a4plus=cdr(a4plus))
+    {   LispObject a = car(a4plus);
+        for (LispObject  w = cdr(a4plus); is_cons(w); w = cdr(w))
+        {   if (!Neqn::op(a, car(w))) return onevalue(nil);
+        }
+    }
+    return onevalue(lisp_true);
+}
+
 #endif // ARITHLIB
 
 // end of arith-compare.cpp
-

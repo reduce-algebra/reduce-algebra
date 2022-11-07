@@ -224,7 +224,7 @@ LispObject negate(LispObject a)
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                 {   float128_t aa = long_float_val(a);
-                    f128M_negate(&aa);
+                    f128_negate(&aa);
                     return make_boxfloat128(aa);
                 }
 #endif // HAVE_SOFTFLOAT

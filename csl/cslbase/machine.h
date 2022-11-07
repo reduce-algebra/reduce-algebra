@@ -350,6 +350,29 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #include <sys/time.h>
 #endif // SYS_TIME_H
 
+// I want to have types uint128_t and int128_t and this header file
+// can arrange that for me.
+
+#include "int128_t.h"
+
+#ifndef EMBEDDED
+extern "C"
+{
+// At present softfloat.h needs inclusion in C mode not C++ mode.
+// This must be included before tags.h.
+
+#include "softfloat.h"
+}
+
+// float128_t introduces a type QuadFloat with input syntax
+//      nnn.nnnExxx_Q
+// or   xxxxxxxxxxxxxxxx:xxxxxxxxxxxxxx_QX
+// such that basic arithmetic operations are supported.
+
+#include "float128_t.h"
+
+#endif // EMBEDDED
+
 // In a manner that I view as bad, at least the Macintosh copy of libffi
 // installed via macports in August 2017 defined a bunch of autoconf-related
 // macros, potentially in conflict with my own set of values that autoconf
@@ -377,28 +400,6 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_TARNAME
 #undef PACKAGE_URL
-
-#ifndef EMBEDDED
-extern "C"
-{
-// At present softfloat.h needs inclusion in C mode not C++ mode.
-// This must be included before tags.h.
-
-#include "softfloat.h"
-}
-#endif // EMBEDDED
-
-// I want to have types uint128_t and int128_t and this header file
-// can arrange that for me.
-
-#include "int128_t.h"
-
-// float128_t introduces a type QuadFloat with input syntax
-//      nnn.nnnExxx_Q
-// or   xxxxxxxxxxxxxxxx:xxxxxxxxxxxxxx_QX
-// such that basic arithmetic operations are supported.
-
-#include "float128_t.h"
 
 //
 // I will decode information that config.h has given me and define a simple

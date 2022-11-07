@@ -413,6 +413,7 @@ extern LispObject Nmodular_expt(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nmodular_difference(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nmodular_quotient(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nmodular_reciprocal(LispObject env, LispObject a1);
+extern LispObject Nsafe_modular_reciprocal(LispObject env, LispObject a1);
 extern LispObject Nmodular_minus(LispObject env, LispObject a1);
 extern LispObject Nset_modulus(LispObject env, LispObject a1);
 extern LispObject Nmodular_number(LispObject env, LispObject a1);
@@ -495,7 +496,7 @@ extern LispObject Nilogand(LispObject env, LispObject a1);
 extern LispObject Nilogand(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nilogand(LispObject env, LispObject a1, LispObject a2,
                                         LispObject a3);
-extern LispObject Nilogand(LispObject env, LispObject a1,
+extern LispObject Nilogand(LispObject env, LispObject a1, LispObject a2,
                                           LispObject a3, LispObject a4plus);
 extern LispObject Nilogor(LispObject env);
 extern LispObject Nilogor(LispObject env, LispObject a1);
@@ -553,6 +554,11 @@ extern LispObject Nfround(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nscale_float(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nvalidate_number(LispObject env, LispObject a1);
 extern LispObject Nvalidate_number(LispObject env, LispObject a1, LispObject a2);
+
+extern LispObject N_rationalf(double d);
+#ifdef SOFTFLOAT
+extern LispObject N_rationalf128(float128_t d);
+#endif // SOFTFLOAT
 
 #endif // header_arith_defs_h
 

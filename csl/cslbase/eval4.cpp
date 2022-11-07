@@ -37,9 +37,6 @@
 
 
 #include "headers.h"
-#ifdef ARITHLIB
-#include "arith-defs.h"
-#endif
 
 //
 // Here is a bit of a commentary about calling arrangements.

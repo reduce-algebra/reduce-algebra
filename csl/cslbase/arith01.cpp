@@ -402,7 +402,7 @@ LispObject make_boxfloat128(float128_t a)
     long_float_val(r) = a;
     if (trap_floating_overflow &&
         floating_edge_case128(
-            reinterpret_cast<float128_t *>(&long_float_val(r))))
+            *reinterpret_cast<float128_t *>(&long_float_val(r))))
         return aerror("exception with long float");
     return r;
 }
@@ -579,10 +579,9 @@ int double_to_binary(double d, int64_t &m)
 #ifdef HAVE_SOFTFLOAT
 // This does much the same for 128-bit floats.
 
-int float128_to_binary(const float128_t *d, int64_t &mhi,
-                       uint64_t &mlo)
-{   uint64_t hi = d->v[HIPART];
-    uint64_t lo = d->v[LOPART];
+int float128_to_binary(const float128_t d, int64_t &mhi, uint64_t &mlo)
+{   uint64_t hi = d.v[HIPART];
+    uint64_t lo = d.v[LOPART];
     int x = static_cast<int>(hi >> 48) & 0x7fff;
     uint64_t fhi = hi & UINT64_C(0x0000ffffffffffff);
     if (x != 0) fhi |= UINT64_C(0x0001000000000000);
@@ -659,8 +658,9 @@ intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1,
 }
 
 #ifdef HAVE_SOFTFLOAT
-intptr_t float128_to_5_digits(float128_t *d,
-                              int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0)
+intptr_t float128_to_5_digits(float128_t d,
+                              int32_t &a4, uint32_t &a3,
+                              uint32_t &a2, uint32_t &a1, uint32_t &a0)
 {   int64_t mhi;
     uint64_t mlo;
     int x = float128_to_binary(d, mhi, mlo);
@@ -814,7 +814,7 @@ float128_t float128_of_number(LispObject a)
         switch (type_of_header(h))
         {   case TYPE_BIGNUM:
                 r1 = bignum_to_float128(a, length_of_header(h), &x1);
-                f128M_ldexp(&r1, x1);
+                f128_ldexp(&r1, x1);
                 return r1;
             case TYPE_RATNUM:
             {   int x2;
@@ -827,7 +827,7 @@ float128_t float128_of_number(LispObject a)
                 else r2 = bignum_to_float128(a,
                               length_of_header(numhdr(a)), &x2);
                 f128M_div(&r1, &r2, &w);
-                f128M_ldexp(&w, x1 - x2);
+                f128_ldexp(&w, x1 - x2);
                 return w;
             }
             default:
