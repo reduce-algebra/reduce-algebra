@@ -32,10 +32,18 @@
  *************************************************************************/
 
 
-// The initial version of this file defines many "Inline" functions. When
-// I get things feeling really rather more stafe I intend to move most
-// of the definitions into a new file float128_t.cpp, leaving just
-// declarations here. At present it is rather stupid!
+// *************************
+// * * * W A R N I N G * * *
+// *************************
+//
+// It is possible that on some platforms - especially 32-bit x86 ones -
+// that floating point operations are compiled to use 80-bit extra
+// precision for some intermediate working. That could potentially
+// disrupt things for me. If necessary one can set compilation flags
+// such as "-msse2" to avoid that. I believe that on 64-bit systems that
+// double precision operations always round in the IEEE style and so
+// will be safe.
+
   
 #ifndef header_float128_t
 #define header_float128_t
@@ -73,6 +81,14 @@ extern "C" {
 #include "softfloat.h"
 }
 
+#ifdef LITTLEENDIAN
+#define fpOrder(a, b)    {a, b}
+#define fp256Order(a, b) {a, b}
+#else // LITTLEENDIAN
+#define fpOrder(a, b)    {b, a}
+#define fp256Order(a, b) {b, a}
+#endif // LITTLEENDIAN
+
 inline int  f128_exponent(const float128_t p);
 inline void f128_set_exponent(float128_t *p, int n);
 extern void f128_ldexp(float128_t *p, int n);
@@ -93,17 +109,52 @@ extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 #define LOPART 1
 #endif
 
-extern float128_t
-    f128_0,      // 0.0L0
-    f128_half,   // 0.5L0
-    f128_mhalf,  // -0.5L0
-    f128_1,      // 1.0L0
-    f128_10,     // 10.0L0
-    f128_10_17,  // 1.0L17
-    f128_10_18,  // 1.0L18
-    f128_r10,    // 0.1L0
-    f128_scale,  // 2.0^58+1.0
-    f128_N1;     // 2.0L0^4096
+// This file may be used more of less stand-alone so I will noy rely on
+// "earlier" CSL headers to define these...
+
+#ifndef UNUSED_NAME
+#if __has_cpp_attribute(maybe_unused)
+// C++17 introduced [[maybe_unused]] to avoid warnings about unused variables
+// and functions. Earlier versions of gcc and clang supported [[gnu::unused]]
+// as a non-standard annotation with similar effect.
+#define UNUSED_NAME [[maybe_unused]]
+#elif defined __GNUC__
+#define UNUSED_NAME [[gnu::unused]]
+#else // [[maybe_unused]] or [[gnu::unused]] availability
+// In any other case I just omit any annotation and if I get warnings about
+// unused things then so be it.
+#define UNUSED_NAME
+#endif // annotation for unused things
+#endif // UNUSED_NAME
+
+#ifndef INLINE_VAR
+#ifdef __cpp_inline_variables
+#define INLINE_VAR inline
+#else // inline variables
+#define INLINE_VAR UNUSED_NAME static
+#endif // inline variables
+#endif // INLINE_VAR
+
+
+extern float128_t f128_0;           // 0.0_Q . v;
+extern float128_t f128_half;        // 0.5_Q . v;
+extern float128_t f128_mhalf;       // (-0.5_Q) . v;
+extern float128_t f128_1;           // 1.0_Q . v;
+extern float128_t f128_10_16;       // 1.0e16_Q . v;
+extern float128_t f128_10_17;       // 1.0e17_Q . v;
+extern float128_t f128_10_18;       // 1.0e18_Q . v;
+extern float128_t f128_10_19;       // 1.0e19_Q . v;
+extern float128_t f128_scale;       // {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
+extern float128_t f128_N1;          // {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+
+extern float128_t f128_epsilon;
+extern float128_t f128_half_epsilon;
+extern float128_t f128_max;
+extern float128_t f128_negmax;
+extern float128_t f128_min;
+extern float128_t f128_negmin;
+extern float128_t f128_normmin;
+extern float128_t f128_negnormmin;
 
 inline bool f128_zerop(const float128_t p)
 {   return ((p.v[HIPART] & INT64_C(0x7fffffffffffffff)) == 0) &&
@@ -159,6 +210,13 @@ inline void f128_set_exponent(float128_t *p, int n)
                    ((static_cast<uint64_t>(n) + 0x3fff) << 48);
 }
 
+inline void f128_mantissa(const float128_t p, uint64_t& hi, uint64_t& lo)
+{   hi = p.v[HIPART] & 0x0000ffffffffffffULL;
+    if ((p.v[HIPART] & 0x7fff000000000000ULL) != 0)
+                 hi |= 0x0001000000000000ULL;  // hidden bit
+    lo = p.v[LOPART];
+}
+
 inline void f128_negate(float128_t *x)
 {   x->v[HIPART] ^= UINT64_C(0x8000000000000000);
 }
@@ -198,8 +256,6 @@ extern void f256M_div(
 
 extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
 
-extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
-
 // These print 128-bit floats in the various standard styles, returning the
 // number of characters used. The "sprint" versions put their result in
 // a buffer, while "print" goes to stdout.
@@ -207,26 +263,144 @@ extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 extern int f128_sprint_E(char *s, int width, int precision, float128_t p);
 extern int f128_sprint_F(char *s, int width, int precision, float128_t p);
 extern int f128_sprint_G(char *s, int width, int precision, float128_t p);
+
+extern void f128_print(float128_t p);
 extern int f128_print_E(int width, int precision, float128_t p);
 extern int f128_print_F(int width, int precision, float128_t p);
 extern int f128_print_G(int width, int precision, float128_t p);
-
-extern float128_t atof128(const char *s);
 
 // By making the code that generated a QuadFloat from a string of
 // characters "constexpr" I can (with luck) move all costs associated
 // with use of QuadFloat literals to compile-time.
 
-inline constexpr float128_t ato128(const char* s)
+inline constexpr uint64_t f160_leftshift(uint64_t m[5], uint64_t carry, int bits=1)
+{   for (int i=0; i<5; i++)
+    {   uint64_t w = (m[i]<<bits) + carry;
+        m[i] = w & 0xffffffffU;
+        carry = w >> 32;
+    }
+    return carry;
+}
+
+inline constexpr uint64_t f160_rightshift(uint64_t m[5], uint64_t carry, int bits=1)
+{   for (int i=4; i>=0; i--)
+    {   uint64_t w = m[i];
+        m[i] = (w>>bits) + (carry<<(32-bits));
+        carry = w & ((1U<<bits) - 1);
+    }
+    return carry;
+}
+
+// I want constexpr versions of these functions here, and so even though
+// I have them defined elsewhere I will provide versions in this file
+// (and with slightly different names).
+
+inline constexpr int f160_nlz(uint64_t x)
+{   int n = 0;
+    if (x <= 0x00000000FFFFFFFFU)
+    {   n = n +32;
+        x = x <<32;
+    }
+    if (x <= 0x0000FFFFFFFFFFFFU)
+    {   n = n +16;
+        x = x <<16;
+    }
+    if (x <= 0x00FFFFFFFFFFFFFFU)
+    {   n = n + 8;
+        x = x << 8;
+    }
+    if (x <= 0x0FFFFFFFFFFFFFFFU)
+    {   n = n + 4;
+        x = x << 4;
+    }
+    if (x <= 0x3FFFFFFFFFFFFFFFU)
+    {   n = n + 2;
+        x = x << 2;
+    }
+    if (x <= 0x7FFFFFFFFFFFFFFFU)
+    {   n = n + 1;
+    }
+    return n;
+}
+
+inline constexpr int f160_z(unsigned int n)
+{   if (n==0) return 64;
+    uint64_t v=0;
+    int r = -1;
+    for (int k=0; k<64; k++)
+    {   v = 1ULL<<k;
+        if (v%67 == n) r = k;
+    }
+    return r;
+};
+
+constexpr static int8_t f160_ntzTable[67] =
+{   f160_z( 0), f160_z( 1), f160_z( 2), f160_z( 3), f160_z( 4),
+    f160_z( 5), f160_z( 6), f160_z( 7), f160_z( 8), f160_z( 9),
+    f160_z(10), f160_z(11), f160_z(12), f160_z(13), f160_z(14),
+    f160_z(15), f160_z(16), f160_z(17), f160_z(18), f160_z(19),
+    f160_z(20), f160_z(21), f160_z(22), f160_z(23), f160_z(24),
+    f160_z(25), f160_z(26), f160_z(27), f160_z(28), f160_z(29),
+    f160_z(30), f160_z(31), f160_z(32), f160_z(33), f160_z(34),
+    f160_z(35), f160_z(36), f160_z(37), f160_z(38), f160_z(39),
+    f160_z(40), f160_z(41), f160_z(42), f160_z(43), f160_z(44),
+    f160_z(45), f160_z(46), f160_z(47), f160_z(48), f160_z(49),
+    f160_z(50), f160_z(51), f160_z(52), f160_z(53), f160_z(54),
+    f160_z(55), f160_z(56), f160_z(57), f160_z(58), f160_z(59),
+    f160_z(60), f160_z(61), f160_z(62), f160_z(63), f160_z(64),
+    f160_z(65), f160_z(66)
+};
+
+inline constexpr int f160_ntz(uint64_t n)
+{   return f160_ntzTable[(n & -n) % 67];
+}
+inline constexpr void f160_mul(uint64_t m[5], uint64_t n, int& bx)
+{   uint64_t carry = 0;
+    for (int i=0; i<5; i++)
+    {   uint64_t w = n*m[i] + carry;
+        m[i] = w & 0xffffffffU;
+        carry = w >> 32;
+    }
+    if (carry != 0)
+    {   int carryBits = 64 - f160_nlz(carry);
+        f160_rightshift(m, carry, carryBits);
+        bx += carryBits;
+    }
+}
+
+inline constexpr void f160_div(uint64_t m[5], uint64_t n, int& bx)
+{   uint64_t carry = 0;
+    for (int i=4; i>=0; i--)
+    {   uint64_t w = m[i] + (carry<<32);
+        m[i] = w/n;
+        carry = w%n;
+    }
+    carry = (carry<<32)/n;
+    if (m[4] == 0)
+    {   for (int i=3; i>=0; i--) m[i+1] = m[1];
+        m[0] = carry;
+        carry = 0;
+    }
+    int carryBits = f160_nlz(m[4]) - 32;
+    f160_leftshift(m, carry>>(32-carryBits), carryBits);
+    bx -= carryBits;
+}
+
+#ifdef LITTLEENDIAN
+constexpr int f128_low = 0, f128_high = 1;
+#else // LITTLEENDIAN
+constexpr int f128_low = 1, f128_high = 0;
+#endif // LITTLEENDIAN
+
+inline constexpr float128_t atof128(const char* s)
 {
 // I will collect the mantissa in a 5-word array, storing just
 // 32 bits in each word. That is 160 bits and is going to give me
 // 48 guard bits while I calculate the floating point representation.
 // With that many guard bits I will hope not to have too much pain with
 // overall accuracy of conversion once the result is packed in 128 bits.
-    uint64_t m[5];
-    float128_t r;
-    for (int i=0; i<5; i++) m[i] = 0;
+    uint64_t m[5] = {0,0,0,0,0};
+    float128_t r = {0,0};
     int x = 0;    // decimal exponent
     bool isZero = true, dotSeen = false, sign = false;
     int c = *s++;
@@ -254,9 +428,22 @@ inline constexpr float128_t ato128(const char* s)
             dotSeen = true;
         }
     }
+// If the NNN.NNN part does not have any non-zero digits then
+// whatever exponent might follow the result is going to be zero, so
+// I will return it now. However in a spirit of enthusiasm I will
+// allow the zero to be a signed one.
+    if (isZero)
+    {   r.v[f128_high] = r.v[f128_low] = 0;
+        if (sign) r.v[f128_high] |= 0x8000000000000000LLU;
+        return r;
+    }
     int xx = 0;    // explicitly specified decimal exponent
-    if (c == 'e')
+                   // I allow all sorts of silly characters!
+    if (c == 'e' || c == 'E' || c == 'd' || c == 'D' ||
+        c == 'l' || c == 'l' || c == 's' || c == 'S' ||
+        c == 'f' || c == 'F')
     {   c = *s++;
+        if (c == '+') c = *s++;
         bool xsign = false;
         if (c == '-')
         {   xsign = true;
@@ -269,112 +456,99 @@ inline constexpr float128_t ato128(const char* s)
         if (xsign) xx = -xx;
     }
     x += xx;
-    if (isZero)
-    {   r.v[0] = r.v[1] = 0;
-        return r;
-    }
     int bx = 160;     // binary exponent
 // Now normalise the value - first get the top word non-zero.
     while (m[4] == 0)
-    {   m[4] = m[3];
-        m[3] = m[2];
-        m[2] = m[1];
-        m[1] = m[0];
+    {   for (int i=3; i>=0; i--) m[i+1] = m[i];
         m[0] = 0;
         bx -= 32;
     }
 // Now shift within the words to get the top bit non-zero.
-    uint64_t topWord = m[4]; // this is nonzero
-    int shift = 0;
-    while ((topWord & 0x80000000U) == 0)
-    {   topWord = topWord<<1;
-        shift++;
+    int carryBits = f160_nlz(m[4]) - 32;
+    f160_leftshift(m, 0, carryBits);
+    bx -= carryBits;
+
+//    while ((m[4] & 0x80000000U) == 0)
+//    {   f160_leftshift(m, 0);
+//        bx--;
+//    }
+
+// Now I have in effect a 160-bit floating point value for an integer
+// made from all the digits of the input.
+// I need to multiply by 10^x (or if x is negative I divide). I do so
+// in a naive manner - ie repeated multiplication or division by the
+// constant 10. The largest 120-bit float is almost 10^5000 so in the
+// worst case I may be performing almost 5000 multiplications here, and
+// each can corrupt a low bit of the value. I feel that the result means
+// I will not want to rely on say the bottom 16 bits of my result. Well to
+// save a little time and also improve accuracy I scale in chunks of 10^9
+// while I can, so actually the worst number of multiplications is just
+// under 560 and maybe I will only lose 10 bits.
+    while (x > 8)
+    {   f160_mul(m, 1000000000, bx);
+        x -= 9;
     }
-    bx -= shift;
-    uint64_t carry = 0;
-    for (int i=0; i<5; i++)
-    {   uint64_t w = (m[i]<<shift) + carry;
-        m[i] = w & 0xffffffffU;
-        carry = w >> 32;
-    }
-// I need to multiply by 10^x (or if x is negative I divide).
     while (x > 0)
-    {   uint64_t carry = 0;
-        for (int i=0; i<5; i++)
-        {   uint64_t w = 10*m[i] + carry;
-            m[i] = w & 0xffffffffU;
-            carry = w >> 32;
-        }
-        while (carry != 0)
-        {   uint64_t bit = carry & 1;
-            for (int i=4; i>=0; i--)
-            {   uint64_t w = m[i];
-                m[i] = (w>>1) | (bit<<31);
-                bit = w & 1;
-            }
-            carry >>= 1;
-            bx++;
-        }
+    {   f160_mul(m, 10, bx);
         x--;
     }
 // Similarly for division I am not bothering to round the quotient.
+    while (x < -8)
+    {   f160_div(m, 1000000000, bx);
+        x += 9;
+    }
     while (x < 0)
-    {   uint64_t carry = 0;
-        for (int i=4; i>=0; i--)
-        {   uint64_t w = m[i] + (carry<<32);
-            m[i] = w/10;
-            carry = w%10;
-        }
-        carry = (carry<<32)/10;
-        while ((m[4]&0x80000000U) == 0)
-        {   uint64_t bit = carry>>31;
-            carry = carry<<1;
-            for (int i=0; i<5; i++)
-            {   uint64_t w = m[i];
-                m[i] = (w<<1) + bit;
-                bit = w >> 31;
-            }   
-            bx--;
-        }
+    {   f160_div(m, 10, bx);
         x++;
     }
-#ifdef LITTLEENDIAN
-    const int low = 0, high = 1;
-#else // LITTLEENDIAN
-    const int low = 1, high = 0;
-#endif // LITTLEENDIAN
     bx += 0x3ffe;
 // At this stage I have an extra-precision value which I should
 // round to the nearest proper result.
-    if (((m[1] & 0x7fff) > 0x4000) ||
-        (((m[1] & 0x7fff) == 0x4000) && ((m[1] & 0x8000) != 0)))
-    {   m[1] += 0x8000;
-        if (m[1] >= 0x100000000u)
-        {   m[1] &= 0xffffffffu;
-            m[2] += 1;
-            if (m[2] >= 0x100000000u)
-            {   m[2] &= 0xffffffffu;
-                m[3] += 1;
-                if (m[3] >= 0x100000000u)
-                {   m[3] &= 0xffffffffu;
-                    m[4] += 1;
-                    if (m[4] >= 0x100000000u)
-                    {   bx++;
-                        m[0] = (m[0]>>1) + ((m[1]&1)<<31);
-                        m[1] = (m[1]>>1) + ((m[2]&1)<<31);
-                        m[2] = (m[2]>>1) + ((m[3]&1)<<31);
-                        m[3] = (m[3]>>1) + ((m[4]&1)<<31);
-                        m[4] = m[4]>>1;
-                    }
-                }
+    if ((m[1] & 0x7fff) >= 0x4000)
+    {   uint64_t carry = 0x8000;
+        for (int i=1; i<5; i++)
+        {   uint64_t w = m[i] + carry;
+            m[i] = w & 0xffffffffU;
+            carry = w >> 32;
+        }
+        if (carry != 0)
+        {   f160_rightshift(m, 1);
+            bx++;
+        }
+    }
+    for (int i=0; i<5; i++) m[i] &= 0xffffffffU;  // ensure clean!
+    m[4] &= 0x7fffffffU;   // lose the hidden bit
+    uint64_t hh = (m[4]<<32) | m[3];
+    uint64_t ll = (m[2]<<32) | m[1];
+// Shift the mantissa right 15 bits to put it where it needs to be.
+    ll = (ll>>15) | (hh<<49);
+    hh = hh>>15;
+// Insert exponent
+    if (bx >= 0x7fff)   // Overflow to infinity
+    {   bx = 0x7fff;
+        hh = ll = 0;
+    }
+    if (bx <= 0)
+    {   hh |= 0x0001000000000000ULL; // restore bit that will not be hidden
+        int sh = 1-bx;
+        bx = 0;                      // to leave a subnormal number or zero.
+        if (sh >= 128) hh = ll = 0;
+        else
+        {   if (sh >= 64)
+            {   ll = hh;
+                hh = 0;
+                sh -= 64;
+            }
+            if (sh != 0)
+            {   ll = (hh<<(64-sh)) | (ll >> sh);
+                hh >>= sh;
             }
         }
     }
-    r.v[high] = r.v[low] = 0;
-    if (sign) r.v[high] |= 0x80000000;
-    r.v[high] |= ((static_cast<uint64_t>(bx) & 0x7fffU) << 48);
-    r.v[high] |= ((m[4] & 0x7fffffff) << 17) | (m[3] >> 15);
-    r.v[low] = (m[3] << 49) | (m[2] << 17) | (m[1] >> 15);
+    hh |= static_cast<uint64_t>(bx & 0x7fffU)<<48;
+    if (sign) hh |= 0x8000000000000000LLU;
+    r.v[f128_high] = hh;
+    r.v[f128_low] = ll;
     return r;
 }
 
@@ -391,36 +565,35 @@ public:
 
     float128_t v;
 
-    constexpr QuadFloat()                   // default constructor
-    {   v.v[0] = v.v[1] = 0;
+    constexpr QuadFloat():v()               // default constructor
+    {   v = f128_0;
     }
-    constexpr QuadFloat(float128_t n)       // import from a float128_t
+    constexpr QuadFloat(float128_t n):v()   // import from a float128_t
     {   v = n;
     }
-    constexpr QuadFloat(const char* s)      // value as from a text string
-    {   v = ato128(s);
+    constexpr QuadFloat(const char* s):v()  // value as from a text string
+    {   v = atof128(s);
     }
-    constexpr QuadFloat(const QuadFloat& rhs)
+    constexpr QuadFloat(const QuadFloat& rhs):v()
     {   v = rhs.v;
     }
-    QuadFloat(int n)
+    QuadFloat(int n):v()
     {   v = i32_to_f128(n);
     }
-    QuadFloat(int64_t n)
+    QuadFloat(int64_t n):v()
     {   v = i64_to_f128(n);
     }
-    QuadFloat(float64_t n)
+    QuadFloat(float64_t n):v()
     {   v = f64_to_f128(n);
     }
-    QuadFloat(double d)
+    QuadFloat(double d):v()
     {   float64_t n;
         std::memcpy(reinterpret_cast<char*>(&n),
                     reinterpret_cast<char*>(&d),
                     sizeof(double));
         v = f64_to_f128(n);
     }
-
-    constexpr QuadFloat(QuadFloat&& rhs)
+    constexpr QuadFloat(QuadFloat&& rhs):v()
     {   v = rhs.v;
     }
 
@@ -432,7 +605,7 @@ public:
         }
         else
         {   char buffer[64];
-            f128_sprint_G(buffer, 0, 34, d.v);
+            f128_sprint_G(buffer, 0, 36, d.v);
             return o << buffer;
         }
     }
@@ -453,7 +626,7 @@ public:
     bool operator>(const QuadFloat& rhs) const;
     bool operator>=(const QuadFloat& rhs) const;
 
-    QuadFloat operator-() const;
+    constexpr QuadFloat operator-() const;
 
     QuadFloat operator+(const QuadFloat& rhs) const;
     QuadFloat operator-(const QuadFloat& rhs) const;
@@ -490,9 +663,11 @@ inline bool QuadFloat::operator>=(const QuadFloat& rhs) const
 {   return f128_le(rhs.v, v);
 }
 
-inline QuadFloat QuadFloat::operator-() const
-{   float128_t zero = {0,0};
-    return QuadFloat(f128_sub(zero, v));
+constexpr inline QuadFloat QuadFloat::operator-() const
+{   float128_t r{{0,0}};
+    r.v[f128_high] = v.v[f128_high] ^ 0x8000000000000000ULL;
+    r.v[f128_low] = v.v[f128_low];
+    return QuadFloat(r);
 }
 
 inline QuadFloat QuadFloat::operator+(const QuadFloat& rhs) const
@@ -587,9 +762,9 @@ inline constexpr unsigned hexFromChar(int c)
 }
 
 inline constexpr QuadFloat operator ""_QX (const char* s)
-{   uint64_t high, low, w = 0;
+{   uint64_t high=0, low=0, w = 0;
     s += 2; // skip over the "0x" prefix.
-    int c = *s++, d;
+    int c = *s++, d=0;
     int n = 0;
     while ((d = hexFromChar(c)) >= 0)
     {   w = 16*w + d;
@@ -607,7 +782,7 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
         if (++n == 16) break;
     }
     low = w;
-    float128_t r;    
+    float128_t r = {{0,0}};    
 #ifdef LITTLEENDIAN
     r.v[0] = low;
     r.v[1] = high;
@@ -618,6 +793,28 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
     return QuadFloat(r);
 }
 
+INLINE_VAR float128_t f128_0            = 0.0_Q . v;
+INLINE_VAR float128_t f128_half         = 0.5_Q . v;
+INLINE_VAR float128_t f128_mhalf        = (-0.5_Q) . v;
+INLINE_VAR float128_t f128_1            = 1.0_Q . v;
+INLINE_VAR float128_t f128_10_16        = 1.0e16_Q . v;
+INLINE_VAR float128_t f128_10_17        = 1.0e17_Q . v;
+INLINE_VAR float128_t f128_10_18        = 1.0e18_Q . v;
+INLINE_VAR float128_t f128_10_19        = 1.0e19_Q . v;
+INLINE_VAR float128_t f128_scale        = {fpOrder(0x0080000000000000ULL, 0x4038000000000000ULL)};
+INLINE_VAR float128_t f128_N1           = {fpOrder(0, 0x4fff000000000000ULL)}; // 2^4096
+
+INLINE_VAR float128_t f128_epsilon      = 1.925929944387235853055977942584927319e-34_Q . v;
+INLINE_VAR float128_t f128_half_epsilon = 9.629649721936179265279889712924636593e-35_Q . v;
+INLINE_VAR float128_t f128_max          = 1.18973149535723176508575932662800702e+4932_Q . v;
+INLINE_VAR float128_t f128_negmax       = (-1.18973149535723176508575932662800702e+4932_Q) . v;
+INLINE_VAR float128_t f128_min          = {fpOrder(1, 0)};
+//                                        6.47517511943802511092443895822764655e-4966_Q . v;
+INLINE_VAR float128_t f128_negmin       = {fpOrder(1, 0x8000000000000000ULL)};
+//                                        (-6.47517511943802511092443895822764655e-4966_Q) . v;
+INLINE_VAR float128_t f128_normmin      = 3.36210314311209350626267781732175260e-4932_Q . v; 
+INLINE_VAR float128_t f128_negnormmin   = (-3.36210314311209350626267781732175260e-4932_Q) . v;
+
 // Now some limited support for 256-bit floats, implemented as pairs
 // of 128-bit numbers using the strategy sometimes known as double-double.
 // But here it should be quad-quad.
@@ -625,39 +822,13 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
 // so code that uses these numbers should take care!
 
 extern void f256M_negate(const float256_t *x, float256_t *z);
-
 extern void f256M_add(const float256_t *x, const float256_t *y, float256_t *z);
-
 extern void f256M_mul(const float256_t *x, const float256_t *y, float256_t *z);
-
 extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
-
 extern void f256M_gt(const float256_t *x, float256_t *y);
 extern void f256M_ge(const float256_t *x, float256_t *y);
-
 extern void f256M_lt(const float256_t *x, float256_t *y);
 extern void f256M_le(const float256_t *x, float256_t *y);
-
-
-extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
-
-
-#ifdef LITTLEENDIAN
-#define fpOrder(a, b) {INT64_C(a), INT64_C(b)}
-#define fp256Order(a, b) {a, b}
-#else // LITTLEENDIAN
-#define fpOrder(a, b) {INT64_C(b), INT64_C(a)}
-#define fp256Order(a, b) {b, a}
-#endif // LITTLEENDIAN
-
-extern float256_t
-  f256_5, //      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000)),
-  f256_10, //     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000)),
-  f256_r5, //     = fp256Order(fpOrder(0x999999999999999a, 0xbf8a999999999999),
-           //                  fpOrder(0x999999999999999a, 0x3ffc999999999999)),
-  f256_r10, //    = fp256Order(fpOrder(0x999999999999999a, 0xbf89999999999999),
-            //                 fpOrder(0x999999999999999a, 0x3ffb999999999999)),
-  f256_10_16; //  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800));
 
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
@@ -666,6 +837,15 @@ extern float256_t
 // NaNs, and so its use needs to take care to avoid such cases.
 //
 // I am following the scheme from T J Dekker, Numer Math 18 224-242 (1971).
+
+extern float256_t
+  f256_5, //      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000ULL)),
+  f256_10, //     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000ULL)),
+  f256_r5, //     = fp256Order(fpOrder(0x00000000000000000ULL, 0x4001400000000000ULL),
+           //                  fpOrder(0x00000000000000000ULL, 0x0000000000000000ULL)),
+  f256_r10, //    = fp256Order(fpOrder(0x9999999999999999aULL, 0xbf8a999999999999ULL),
+            //                 fpOrder(0x9999999999999999aULL, 0x3ffc999999999999ULL)),
+  f256_10_16; //  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800ULL));
 
 extern float256_t ato256(const char* s);
 
@@ -678,44 +858,44 @@ public:
 
     float256_t v;
 
-    constexpr OctFloat()                   // default constructor
+    constexpr OctFloat():v()               // default constructor
     {   v.hi = v.lo = f128_0;
     }
-    constexpr OctFloat(float128_t n)       // import from a float128_t
+    constexpr OctFloat(float128_t n):v()   // import from a float128_t
     {   v.hi = n;
         v.lo = f128_0;
     }
-    constexpr OctFloat(float256_t n)       // import from a float256_t
+    constexpr OctFloat(float256_t n):v()   // import from a float256_t
     {   v.hi = n.hi;
         v.lo = n.lo;
     }
-    OctFloat(const char* s)                // value as from a text string
+    OctFloat(const char* s):v()            // value as from a text string
     {   v = ato256(s);
     }
-    constexpr OctFloat(const QuadFloat hi)
+    constexpr OctFloat(const QuadFloat hi):v()
     {   v.hi = hi.v;
         v.lo = f128_0;
     }
-    constexpr OctFloat(const QuadFloat hi, const QuadFloat lo)
+    constexpr OctFloat(const QuadFloat hi, const QuadFloat lo):v()
     {   v.hi = hi.v;
         v.lo = lo.v;
     }
-    constexpr OctFloat(const OctFloat& rhs)
+    constexpr OctFloat(const OctFloat& rhs):v()
     {   v = rhs.v;
     }
-    OctFloat(int n)
+    OctFloat(int n):v()
     {   v.hi = i32_to_f128(n);
         v.lo = f128_0;
     }
-    OctFloat(int64_t n)
+    OctFloat(int64_t n):v()
     {   v.hi = i64_to_f128(n);
         v.lo = f128_0;
     }
-    OctFloat(float64_t n)
+    OctFloat(float64_t n):v()
     {   v.hi = f64_to_f128(n);
         v.lo = f128_0;
     }
-    OctFloat(double d)
+    OctFloat(double d):v()
     {   float64_t n;
         std::memcpy(reinterpret_cast<char*>(&n),
                     reinterpret_cast<char*>(&d),
@@ -723,8 +903,7 @@ public:
         v.hi = f64_to_f128(n);
         v.lo = f128_0;
     }
-
-    constexpr OctFloat(OctFloat&& rhs)
+    constexpr OctFloat(OctFloat&& rhs):v()
     {   v = rhs.v;
     }
 
@@ -741,6 +920,12 @@ public:
         return *this;
     }
 
+// Beware at present - these overloads only support operations with the
+// OctFloat argument as the left operand! I could set up some templates
+// etc to allow for things the other way round, but given that OctFloats
+// are ONLY intended for internal use in support of bettter precision in
+// some QuadFloat operations I am not going to add that extra complication.
+
     bool operator==(const OctFloat& rhs) const;
     bool operator!=(const OctFloat& rhs) const;
     bool operator<(const OctFloat& rhs) const;
@@ -755,10 +940,6 @@ public:
     OctFloat operator*(const OctFloat& rhs) const;
     OctFloat operator/(const OctFloat& rhs) const;
 
-    constexpr bool sign();
-    constexpr int exponent();
-    constexpr OctFloat set_exponent(int64_t n);
-    constexpr OctFloat mantissa();
 };
 
 
@@ -802,7 +983,7 @@ constexpr inline OctFloat operator ""_QQX (const char* s)
     for (int i=0; i<4; i++)
     {   uint64_t w = 0;
         for (int j=0; j<16; j++)
-        {   int c = *s++, d;
+        {   int c = *s++, d=0;
             if ((d = hexFromChar(c)) < 0)
             {   s--;
                 break;
@@ -812,7 +993,7 @@ constexpr inline OctFloat operator ""_QQX (const char* s)
         }
         data[i] = w;
     }
-    float256_t r;
+    float256_t r = {{0, 0}, {0,0}};
 #ifdef LITTLEENDIAN
     const int low = 0, high = 1;
 #else // LITTLEENDIAN

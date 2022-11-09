@@ -607,7 +607,7 @@ if !darwin
 endif !darwin
 endif !debug
 
-testf128_SOURCES = testf128.cpp
+testf128_SOURCES = testf128.cpp float128_t.cpp
 testf128_LDADD = ../lib/libsoftfloat.a
 
 if windows
