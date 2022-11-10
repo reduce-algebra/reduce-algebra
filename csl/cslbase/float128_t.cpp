@@ -31,7 +31,19 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-#include "headers.h"
+// I will include only minimal headers here... This is so that I can
+// use this alongwith float128_t.h in a more stand-alone manner.
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#include "machine.h"
+#include "log.h"
+#include "bitmaps.h"
+#include "tags.h"
+
+
 
 #ifdef HAVE_SOFTFLOAT
 
@@ -89,15 +101,6 @@ void f128_frexp(float128_t p, float128_t *r, int *x)
 }
 
 
-float256_t
-  f256_5      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000)),
-  f256_10     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000)),
-  f256_r5     = fp256Order(fpOrder(0x999999999999999a, 0xbf8a999999999999),
-                           fpOrder(0x999999999999999a, 0x3ffc999999999999)),
-  f256_r10    = fp256Order(fpOrder(0x999999999999999a, 0xbf89999999999999),
-                           fpOrder(0x999999999999999a, 0x3ffb999999999999)),
-  f256_10_16  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800));
-
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
 // I am representing is their sum. The code I have here will not be
@@ -105,6 +108,25 @@ float256_t
 // NaNs, and so its use needs to take care to avoid such cases.
 //
 // I am following the scheme from T J Dekker, Numer Math 18 224-242 (1971).
+
+//float256_t
+//  f256_5      = fp256Order(fpOrder(0,0), fpOrder(0, 0x4001400000000000)),
+//  f256_10     = fp256Order(fpOrder(0,0), fpOrder(0, 0x4002400000000000)),
+//  f256_r5     = fp256Order(fpOrder(0x999999999999999a, 0xbf8a999999999999),
+//                           fpOrder(0x999999999999999a, 0x3ffc999999999999)),
+//  f256_r10    = fp256Order(fpOrder(0x999999999999999a, 0xbf89999999999999),
+//                           fpOrder(0x999999999999999a, 0x3ffb999999999999)),
+//  f256_10_16  = fp256Order(fpOrder(0,0), fpOrder(0, 0x40341c37937e0800));
+
+float256_t
+  f256_5      = fp256Order(0.0_Q . v, 5.0_Q . v),
+  f256_10     = fp256Order(0.0_Q . v, 10.0_Q . v),
+  f256_r5     = fp256Order((-9.629649721936179265184467440737095e-36_Q) . v,
+                           0.2_Q . v),
+  f256_r10    = fp256Order((-4.814824860968089632639944856462318e-36_Q) . v, 
+                           0.1_Q . v),
+  f256_10_16  = fp256Order(0.0_Q . v, 10.0e16_Q . v);
+
 
 
 // f256M_add adds two long numbers. As noted above you should keep the
@@ -207,8 +229,6 @@ void f256M_mul(const float256_t *x, const float256_t *y, float256_t *z)
     f128M_add(&w1, &c.lo, &z->lo);
 }
 
-// I suspect that the following is not correct yet!
-
 void f256M_div(const float256_t *x, const float256_t *y, float256_t *z)
 {
 // This is new code as of November 2022 and can benefit from use of the
@@ -223,18 +243,9 @@ void f256M_div(const float256_t *x, const float256_t *y, float256_t *z)
     QuadFloat c = xhi / yhi;
     float256_t u;
     f128M_mul2(&c.v, &yhi.v, &u);
-    std::cout << OctFloat(*x) << "\n"
-              << OctFloat(*y) << "\n" << OctFloat(u) << "\n" << std::dec;
-    std::cout << "c = " << c << "\n";
-    std::cout << "u.hi = " << QuadFloat(u.hi) << "\n";
-    std::cout << "c = " << c << "\n";
-    std::cout << "c = " << c << "\n";
-    std::cout << "c = " << c << "\n";
-
-    QuadFloat cc = ((((c - QuadFloat(u.hi)) - QuadFloat(u.lo)) + xlo) - c*ylo) / yhi;
+    QuadFloat cc = ((((xhi - QuadFloat(u.hi)) - QuadFloat(u.lo)) + xlo) - c*ylo) / yhi;
     z->hi = (c + cc).v;
     z->lo = (c - z->hi + cc).v;
-    std::cout << "DIV: " << QuadFloat(z->hi) << " & " << QuadFloat(z->lo) << "\n\n";
 }
 
 // y := x^n where n is a positive integer.
@@ -339,8 +350,6 @@ float256_t ato256(const char* s)
         if (xsign) x = -x;
         float256_t scale;
         f256M_pow(&oct_10.v, x, &scale);
-std::cout << " _QQ: " << r << "\n" << OctFloat(scale) << "\n"
-          << (r / OctFloat(scale)) << "\n";
         if (xsign) r = r / OctFloat(scale);
         else r = r * OctFloat(r);
     }
@@ -403,6 +412,7 @@ OctFloat OctFloat::operator/(const OctFloat& rhs) const
     return OctFloat(r);
 }
 
+#if 0
 constexpr bool OctFloat::sign()
 {   float128_t w = v.hi;
 #ifdef LITTLEENDIAN
@@ -422,167 +432,171 @@ constexpr int OctFloat::exponent()
 #endif // LITTLEENDIAN
     return ((top>>48) & 0x7fff) - 0x3fff;
 }
+#endif
 
-#if 0
-constexpr OctFloat OctFloat::set_exponent(int64_t n)
-{   float128_t r = v;
-#ifdef LITTLEENDIAN
-    r.v[1] = (r.v[1] & 0x8000ffffffffffffU) | (((n + 0x3fff) & 0x7fff)<<48);
-#else // LITTLEENDIAN
-    r.v[0] = (r.v[0] & 0x8000ffffffffffffU) | (((n + 0x3fff) & 0x7fff)<<48);
-#endif // LITTLEENDIAN
-    return r;
+// 10^9 is  0.ee6b2800'00000000'00000000'00000000'00000000 * 2^30
+
+bool f160_less_10_9(uint64_t m[5], int bx)
+{   if (bx < 30) return true;
+    else if (bx > 30) return false;
+    else return m[4] < 0xee6b2800U;
 }
 
-constexpr OctFloat OctFloat::mantissa()
-{   float128_t r = v;
-#ifdef LITTLEENDIAN
-    r.v[1] = (r.v[1] & 0x8000ffffffffffffU) | 0x3fff000000000000U;
-#else // LITTLEENDIAN
-    r.v[0] = (r.v[0] & 0x8000ffffffffffffU) | 0x3fff000000000000U;
-#endif // LITTLEENDIAN
-    return OctFloat(r);
-}
-#endif // 0
+// 10^18 is 0.de0b6b3a'76400000'00000000'00000000'00000000 * 2^60
 
-// This is code to print a float128_t value. That may require 34 decimal
-// digits. Note that it uses 256-bit floats for internal working so that
-// it stands a chance of avoiding loss of accuracy.
+bool f160_less_10_18(uint64_t m[5], int bx)
+{   if (bx < 60) return true;
+    else if (bx > 60) return false;
+    else if (m[4] < 0xde0b6b3aU) return true;
+    else if (m[4] > 0xde0b6b3aU) return false;
+    else return m[3] < 0x76400000U;
+}
+
+// 10^28 is 0.813f3978'f8940984'40000000'00000000'00000000 * 2^94
+
+bool f160_geq_10_28(uint64_t m[5], int bx)
+{   if (bx < 94) return false;
+    else if (bx > 94) return true;
+    else if (m[4] < 0x813f3978U) return false;
+    else if (m[4] > 0x813f3978U) return true;
+    else if (m[3] < 0xf8940984U) return false;
+    else if (m[3] > 0xf8940984U) return true;
+    else return m[2] >= 0x40000000U;
+}
+
+// 10^19 is 0.8ac72304'89e80000'00000000'00000000'00000000 * 2^64
+
+bool f160_geq_10_19(uint64_t m[5], int bx)
+{   if (bx < 64) return false;
+    else if (bx > 64) return true;
+    else if (m[4] < 0x8ac72304U) return false;
+    else if (m[4] > 0x8ac72304U) return true;
+    else return m[3] >= 0x76400000U;
+}
 
 
 // This converts a number from floating point to character representation.
-// The reult is true if the original number was negative, and *pdecexp gets
-// the decimal exponent. The buffer s is filled with 34 digits (or one of the
+// The result is true if the original number was negative, and *pdecexp gets
+// the decimal exponent. The buffer s is filled with 36 digits (or one of the
 // strings "inf" or "nan" plus a terminating nul. In a printed representation
 // these digits need displaying as [-]d.dddddddddExxx
 
-bool f128_sprint(char *s, float128_t p, int *pdecexp)
+bool f128_sprint(char* s, float128_t p, int& pdecexp)
 {
 // I deal with a number of special cases first. +0.0 and -0.0 ...
-    if (f128M_eq(&p, &f128_0))
-    {   for (int i=0; i<34; i++) *s++ = '0';
-        *s++ = 0;
-        *pdecexp = 0;
+    if (f128_zerop(p))
+    {   for (int i=0; i<36; i++) *s++ = '0';
+        *s = 0;
+        pdecexp = 0;
         return f128_negative(p);
     }
 // +inf and -inf
     if (f128_infinitep(p))
-    {   *s++ = 'i';
-        *s++ = 'n';
-        *s++ = 'f';
-        *s++ = 0;
-        *pdecexp = 0;
+    {   std::strcpy(s, "inf");
+        pdecexp = 0;
         return f128_negative(p);
     }
 // NaNs. I do not distinguish between signalling and non-signalling ones.
     int exponent = f128_exponent(p);
-    if (exponent ==
-        0x4000) // A NaN, because I have already handled infinity
-    {   *s++ = 'n';
-        *s++ = 'a';
-        *s++ = 'n';
-        *s++ = 0;
-        *pdecexp = 0;
+    if (exponent == 0x4000) // A NaN, because I have already handled infinity
+    {   std::strcpy(s, "NaN");
+        pdecexp = 0;
         return false;
     }
 // For sub-normal numbers the exponent is stored as a magic value. To find
 // out what it REALLY is I will multiply the number by 2^4096. Because I know
-// it is tiny that will not overflow, but it will put it back in the range of
-// proper normalised numbers. So I can look at its exponent in a normal
+// it is tiny that will not overflow: this will put it back in the range of
+// proper normalised numbers. So I can look at its exponent as in normal form
 // via that adjusted version. Multiplying by an exact power of two should
 // never lose information or trigger rounding.
     if (exponent == -0x3fff) // a sub-normal number
     {   float128_t w3;
         f128M_mul(&p, &f128_N1, &w3); // multiply by 2^4096
-        exponent = f128_exponent(w3) - 0x1000;
+        exponent = f128_exponent(w3) - 4096;
     }
-// Now remove the sign bit, and while doing I will expand this to be a 256
-// bit float because I am liable to need to scale it.
-    float256_t w1, w2;
-    w1.hi = p;
-    w1.lo = f128_0;
+    uint64_t w1, w2;
     bool result = false;
-    if (f128_negative(w1.hi))
-    {   result = true;
-        f128_negate(&w1.hi);
+    if (f128_negative(p)) result = true;
+    f128_mantissa(p, w1, w2);
+    uint64_t m[5];
+    m[4] = w1>>17;
+    m[3] = ((w1<<15) | (w2>>49)) & 0xffffffffU;
+    m[2] = (w2 >> 17) & 0xffffffffU;
+    m[1] = (w2 << 15) & 0xffffffffU;
+    m[0] = 0;
+    int bx = exponent+1;    // Now value is m in [0.5,1) * 2^bx
+// The input might have been a subnormal number, so now I adjust
+// until the top bit of the 160-bit value is non-zero.
+    while (m[4] == 0)
+    {   for (int i=3; i>=0; i--) m[i+1] = m[i];
+        m[0] = 0;
     }
-// Now the decimal exponent will be around exponent*log_{10}(2)
-    double d_decexp = 0.301029995663981195*static_cast<double>(exponent);
-// Now I want to multiply the value I have by 10^(-decexp)
-//  printf("d_decexp = %.3f\n", d_decexp);
-    int decexp = 0;
-    if (d_decexp >= 18.0)
-    {   float256_t w3;
-// multiply by a power of 0.1. Note that the largest possible finite number
-// is around 1.19e4932 and to scale that down to 10^17 or so involves
-// multiplying by a number where which is about 10^17 times as big as
-// the smallest normaised number. But in the double-double representation
-// in use here that would mean that its low half could be sub-normal, and so
-// I do the division as (n/5^K)/2^K where the scaling by a power of 2
-// is certainly safe.
-        f256M_pow(&f256_r5, decexp = static_cast<int>(d_decexp-17.0), &w3);
-        f128_ldexp(&w3.hi, -decexp);
-        f128_ldexp(&w3.lo, -decexp);
-        f256M_mul(&w1, &w3, &w2);
+    int shiftBy = f160_nlz(m[4]) - 32;
+    f160_leftshift(m, 0, shiftBy);
+    bx -= (shiftBy-16);
+// Now I need to multiply or divide my number by a power of 10 until
+// it is in the range [10^18, 10^19). I choose that range because then
+// the integer part can be extracted to give the first 18 digits of the
+// decimal representation. Working with 160-bits precision means I will
+// not feel I have to worry too much about rounding!
+    int dx = 0;
+    while (f160_less_10_9(m, bx))
+    {   f160_mul(m, 1000000000, bx);
+        dx -= 9;
     }
-    else if (d_decexp < 17.0)
-    {   float256_t w3;
-// multiply by a power of 10.0. Well this could cause overflow issues
-// if the number I am trying to print is really tiny. To avoid that instead
-// of multiplying by 10^K I will multiply by 5^K (not risking anything at
-// all bad) and then increment the exponent by K.
-        f256M_pow(&f256_5, decexp = static_cast<int>(18.0-d_decexp), &w3);
-        f128_ldexp(&w3.hi, decexp);
-        f128_ldexp(&w3.lo, decexp);
-        decexp = -decexp;
-        f256M_mul(&w1, &w3, &w2);
+    while (f160_less_10_18(m, bx))
+    {   f160_mul(m, 10, bx);
+        dx--;
     }
-    else w2 = w1;
-// Now I rather expect that w2 is not that far from 1.0e17. Further the
-// above scaling will have performed at most around 30 multiplications
-// so can not have wrecked accuracy TOO much. I will do the final adjustment
-// simply. If I scale the the range [1.0e17, 10.0e18) then I think that the
-// tests are reasonably easy to perform provided I believe that the
-// high part of a float256_t is rounded properly.
-//
-// while hi<1.0e17 or (hi==1.0e17 && lo<0.0) ...
-    while (f128M_lt(&w2.hi, &f128_10_17) ||
-           (f128M_eq(&w2.hi, &f128_10_17) &&
-            f128M_lt(&w2.lo, &f128_0)))
-    {   float256_t w3;
-        f256M_mul(&w2, &f256_10, &w3);
-        w2 = w3;
-        decexp--;
+    while (f160_geq_10_28(m, bx))
+    {   f160_div(m, 1000000000, bx);
+        dx += 9;
     }
-// while hi>=10.0e18 or (hi==10.0e18 && lo>0.0) ...
-    while (!f128M_lt(&w2.hi, &f128_10_18) ||
-           (f128M_eq(&w2.hi, &f128_10_18) &&
-            !f128M_lt(&w2.lo, &f128_0)))
-    {   float256_t w3;
-        f256M_mul(&w2, &f256_r10, &w3);
-        w2 = w3;
-        decexp++;
+    while (f160_geq_10_19(m, bx))
+    {   f160_div(m, 10, bx);
+        dx++;
     }
-// Now w2 should be neatly in the range 1.0e17 to 9.99999999999...e17. I will
-// consolidate all of it into the 128-bit top half.
-    float128_t v;
-    f128M_add(&w2.hi, &w2.lo, &v);
-    uint64_t d = f128M_to_ui64(&v, softfloat_round_min, false);
-    s += std::sprintf(s, "%.17" PRIu64, d);
-    float128_t w3, w4;
-    i64_to_f128M(-d, &w3);
-    f128M_add(&v, &w3, &w4);
-    f128M_mul(&w4, &f128_10_17, &v);
-    d = f128M_to_ui64(&v, softfloat_round_near_even, false);
-    s += std::sprintf(s, "%.17" PRIu64, d);
-    *pdecexp = decexp + 17;
+// Here bx will be 60, 61, 62, 63 or 64. If I shift until the exponent is
+// exactly 64 I will have a 64-bit binary chunk in m[4].
+    while (bx != 64)
+    {   f160_rightshift(m, 0);
+        bx++;
+    }
+// Now m[4] holds the first 18 digits!
+    uint64_t topDigits = (m[4]<<32) + m[3];
+    m[4] = m[3] = 0;                // Now I have just the fraction left
+// If I multiply the fraction by 10^18 I will again get be able to
+// pick up the integer part easily. Note that this ought never to
+// trespass into the range where it needs to re-normalise.
+    f160_mul(m, 1000000000, bx);
+    f160_mul(m, 1000000000, bx);
+    uint64_t bottomDigits = (m[4]<<32) + m[3];
+// A bit of rounding...
+    if ((m[3] & 0x80000000U) != 0)
+    {   bottomDigits++;
+        if (bottomDigits == 10000000000000000000U)
+        {   bottomDigits = 0;
+            topDigits++;
+            if (topDigits == 10000000000000000000U)
+            {   topDigits = 1000000000000000000U;
+                dx++;
+            }
+        }
+    }
+    s += std::sprintf(s, "%.18" PRIu64, topDigits);
+    s += std::sprintf(s, "%.18" PRIu64, bottomDigits);
+    pdecexp = dx + 18;
     return result;
 }
 
-void f128M_print(float128_t p)
-{   char s[36];
+// f128_print displays the number so that it is always in the form
+//   n.nnnnLxxx
+// with one digit before the decimal point and an explicit exponent.
+
+void f128_print(float128_t p)
+{   char s[40];
     int decexp;
-    bool neg = f128_sprint(s, p, &decexp);
+    bool neg = f128_sprint(s, p, decexp);
     if (!std::isdigit(s[0])) std::printf("%s%s\n", neg ? "-" : "", s);
     else std::printf("%s%c.%sL%d\n", neg ? "-" : "", s[0], &s[1], decexp);
 }
@@ -597,15 +611,15 @@ void f128M_print(float128_t p)
 // Rounding to 0 digits should yield either "0" or "1".
 
 bool round_at(char *s, int ndigits)
-{   if (ndigits < 0 || ndigits >= 34) return false;
+{   if (ndigits < 0 || ndigits >= 36) return false;
 // If the digits just beyond where I am is < '5' I will truncate down.
     if (s[ndigits] < '5') return false;
 // If the digits beyond where I am are "50000...0" and I the digit I would
 // change on rounding up is even then I will round down.
     if (s[ndigits] == '5' && (ndigits == 0 || s[ndigits-1]%2 == 0))
     {   int p = ndigits+1;
-        while (p < 34 && s[p] == '0') p++;
-        if (p >= 34) return false;
+        while (p < 36 && s[p] == '0') p++;
+        if (p >= 36) return false;
     }
 // Here I need to round up.
     int p = ndigits-1;
@@ -636,7 +650,7 @@ char *pad_by(char *r, int n)
 // triggered within parts of the number that are significant. It happens
 // with huge numbers in F format that may end up with integer parts such as
 //                 XXXXX...XXXXX00000...00000.0
-// with 34 digits (the most needed for full indication of a 128-bit float) in
+// with 36 digits (the most needed for full indication of a 128-bit float) in
 // the string XX..XX but then very many zeros before the decimal point.
 // It might also arise with F format if the user specified a HUGE precision
 // and either leading or trailing zeros surround the digits that are
@@ -656,10 +670,8 @@ char *pad_by_zero(char *r, int n)
 
 // Print using "e" format
 
-int f128_sprint_E(char *r, int width, int prec, float128_t p)
-{   char s[36], *original_r = r;
-    int decexp;
-    bool sign = f128_sprint(s, p, &decexp);
+int f128_sprint_E(char *r, int width, int prec, char *s, bool sign, int decexp)
+{   char* original_r = r;
 // I limit the requested precision to 9999 so that the {NNNN} abbreviations
 // only ever need 4 digits. A precision less than 1 can not make sense.
     if (prec < 1) prec = 1;
@@ -678,9 +690,9 @@ int f128_sprint_E(char *r, int width, int prec, float128_t p)
         width -= std::sprintf(ebuf, "e%02d", decexp);
         r = pad_by(r, width - prec - 1);
         if (sign) *r++ = '-';
-        if (prec >= 34)
-        {   r += std::sprintf(r, "%c.%.33s", s[0], &s[1]);
-            r = pad_by_zero(r, prec-33);
+        if (prec >= 36)
+        {   r += std::sprintf(r, "%c.%.35s", s[0], &s[1]);
+            r = pad_by_zero(r, prec-36);
             std::strcpy(r, ebuf);
             r += std::strlen(r);
         }
@@ -694,7 +706,7 @@ int f128_sprint_E(char *r, int width, int prec, float128_t p)
 }
 
 int f128_print_E(int width, int prec, float128_t p)
-{   char buffer[64];
+{   char buffer[64], s[40];
     int r = 0;
     while (width > 63)
     {   std::putchar(' ');
@@ -706,17 +718,17 @@ int f128_print_E(int width, int prec, float128_t p)
 // with a HUGE number of zeros, swamping the buffer. Well that pain is
 // avoided by having f128_sprint arrange to insert {NNNN} in place of
 // long strings of zeros...
-    r += f128_sprint_E(buffer, width, prec, p);
+    int decexp;
+    bool neg = f128_sprint(s, p, decexp);
+    r += f128_sprint_E(buffer, width, prec, s, neg, decexp);
     std::fputs(buffer, stdout);
     return r;
 }
 
 // This will be for "F" format.
 
-int f128_sprint_F(char *r, int width, int prec, float128_t p)
-{   char s[36], *original_r = r;
-    int decexp;
-    bool sign = f128_sprint(s, p, &decexp);
+int f128_sprint_F(char *r, int width, int prec, char *s, bool sign, int decexp)
+{   char* original_r = r;
     if (prec < 0) prec = 0;
     else if (prec > 9999) prec = 9999;
     if (sign) width--;
@@ -760,25 +772,25 @@ int f128_sprint_F(char *r, int width, int prec, float128_t p)
 // where xxxxxxxx denote significant digits, (xxxx) digits that are to
 // be truncated and 00000000 could be almost arbitrarily long sequences of
 // zero characters dependent on the magnitude of the number being displayed
-// and the number of sigits after the decimal point that F notation has
+// and the number of digits after the decimal point that F notation has
 // asked for.
     if (round_at(s, decexp+prec+1)) decexp++;
-    if (decexp >= 34)
+    if (decexp >= 36)
     {   if (sign) *r++ = '-';
-        r += std::sprintf(r, "%.34s", s);
-        r = pad_by_zero(r, decexp-33);
+        r += std::sprintf(r, "%.36s", s);
+        r = pad_by_zero(r, decexp-35);
         *r++ = '.';
         r = pad_by_zero(r, prec);
     }
     else if (decexp >= 0)
-    {   int fdig = 33-decexp;
+    {   int fdig = 35-decexp;
         if (fdig > prec) fdig = prec;
         if (sign) *r++ = '-';
         r += std::sprintf(r, "%.*s.%.*s",
                           decexp+1, s, fdig, &s[decexp+1]);
         r = pad_by_zero(r, prec-fdig);
     }
-    else if (prec+decexp+1 <= 34)
+    else if (prec+decexp+1 <= 36)
     {   if (sign) *r++ = '-';
         r += std::sprintf(r, "0.");
         int pp = -decexp-1;
@@ -791,21 +803,23 @@ int f128_sprint_F(char *r, int width, int prec, float128_t p)
     {   if (sign) *r++ = '-';
         r += std::sprintf(r, "0.");
         r = pad_by_zero(r, -decexp-1);
-        r += std::sprintf(r, "%.34s", s);
-        r = pad_by_zero(r, prec+decexp-33);
+        r += std::sprintf(r, "%.36s", s);
+        r = pad_by_zero(r, prec+decexp-35);
     }
     return r - original_r;
 }
 
 int f128_print_F(int width, int prec, float128_t p)
-{   char buffer[64];
+{   char buffer[64], s[64];
     int r = 0;
     while (width > 63)
     {   std::putchar(' ');
         r++;
         width--;
     }
-    r += f128_sprint_F(buffer, width, prec, p);
+    int decexp;
+    bool neg = f128_sprint(s, p, decexp);
+    r += f128_sprint_F(buffer, width, prec, s, neg, decexp);
     std::fputs(buffer, stdout);
     return r;
 }
@@ -814,7 +828,7 @@ int f128_print_F(int width, int prec, float128_t p)
 // Finally for "G" format.
 
 int f128_sprint_G(char *r, int width, int prec, float128_t p)
-{   char s[36];
+{   char s[40];
     int decexp;
 // This implementation does the conversion twice, which is clumsy.  It also
 // makes its choice as between use of E and F format before rounding. This
@@ -823,12 +837,12 @@ int f128_sprint_G(char *r, int width, int prec, float128_t p)
 // no digits beyond the decimal point. This asks the F printer to print
 // as 999.[999] and I expect it will round this to 1000. which ought to
 // have been rendered as 1.e03.
-    static_cast<void>(f128_sprint(s, p, &decexp));
+    bool neg = f128_sprint(s, p, decexp);
     if (prec < 1) prec = 1;
     else if (prec > 9999) prec = 9999;
     if (decexp < -4 || decexp > prec)
-        return f128_sprint_E(r, width, prec, p);
-    else return f128_sprint_F(r, width, prec-decexp, p);
+        return f128_sprint_E(r, width, prec, s, neg, decexp);
+    else return f128_sprint_F(r, width, prec-decexp, s, neg, decexp);
 }
 
 int f128_print_G(int width, int prec, float128_t p) 
@@ -847,3 +861,4 @@ int f128_print_G(int width, int prec, float128_t p)
 #endif // HAVE_SOFTFLOAT
 
 // end of float128_t.cpp
+

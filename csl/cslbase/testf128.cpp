@@ -34,7 +34,7 @@
 
 
 // This is a jiffy program to demonstrate and test the "float128_t.h"
-// scheme that makes 129-bit floating point easier to work with than
+// scheme that makes 128-bit floating point easier to work with than
 // the previous state where everything had to be done using visible
 // function calls.
 
@@ -43,9 +43,48 @@
 
 #include "float128_t.h"
 
+#include <iostream>
+
+template<typename T>
+T epsilon() {
+    int pow = 0;
+    T eps = 1;
+    while (eps + 1 != 1) {
+        eps = eps/2;
+        --pow;
+    }
+    return eps * 2;
+}
 
 int main()
 {
+//  std::cout << std::setprecision(9);
+//  std::cout << "Epsilon for float: " << epsilon<float>() << '\n';
+//  std::cout << std::setprecision(17);
+//  std::cout << "Epsilon for double: " << epsilon<double>() << '\n';
+    std::cout << "Epsilon for QuadFloat: " << epsilon<QuadFloat>() << '\n';
+    std::cout << "HalfEpsilon for QuadFloat: " << (epsilon<QuadFloat>() / 2) << '\n';
+
+    QuadFloat rfive = QuadFloat(1) / QuadFloat(5);
+    QuadFloat rten = QuadFloat(1) / QuadFloat(10);
+    std::cout << "\n1/5: " << rfive << " " << std::hex << "\n" << rfive << std::dec << "\n";
+    std::cout << "\n1/10: " << rten << " " << std::hex << "\n" << rten << std::dec << "\n";
+
+    std::cout << "hex 0.2_Q = " << std::hex << 0.2_Q << std::dec << "\n";
+    std::cout << "0.2_Q = " << 0.2_Q << "\n";
+
+    OctFloat rrfive = OctFloat(1) / OctFloat(5);
+    OctFloat rrten = OctFloat(1) / OctFloat(10);
+    std::cout << "\n1/5: " << rrfive << " " << std::hex << "\n" << rrfive << std::dec << "\n";
+    std::cout << "\n1/10: " << rrten << " " << std::hex << "\n" << rrten << std::dec << "\n";
+
+    OctFloat r5a(0.2_Q); // only top half
+    std::cout << "\nr5a: " << r5a << " " << std::hex << "\n" << r5a << std::dec << "\n";
+    
+
+    std::cout << "f256_r5: " << OctFloat(f256_r5) << " " << std::hex << OctFloat(f256_r5) << std::dec << "\n";
+
+
     QuadFloat a("1");            // I can create QuadFloat variables...
     QuadFloat b("1e10");
     QuadFloat c("460551");
@@ -68,6 +107,37 @@ int main()
 // Literals can be presented in hexadecimal using a suffix "_QX".
 
     std::cout << 0x3fff'171717171717'1717171717171717_QX << "\n";
+
+    std::cout << std::hex;
+    std::cout << 1.0e17_Q << "\n";
+    std::cout << 1.0e18_Q << "\n";
+    std::cout << 1.0e19_Q << "\n" << std::dec;
+
+    OctFloat five = OctFloat(5);
+    OctFloat fifth = OctFloat(1) / five;
+    std::cout << five << "\n" << fifth << "\n";
+    std::cout << std::hex << five << "\n" << fifth << std::dec << "\n";
+
+    std::cout << "epsilon...\n" << std::hex;
+    std::cout << "epsilon     " << QuadFloat(f128_epsilon) << "\n";
+    std::cout << "half_epsilon" << QuadFloat(f128_half_epsilon) << "\n";
+    std::cout << "max         " << QuadFloat(f128_max) << "\n";
+    std::cout << "negmax      " << QuadFloat(f128_negmax) << "\n";
+    std::cout << "min         " << QuadFloat(f128_min) << "\n";
+    std::cout << "negmin      " << QuadFloat(f128_negmin) << "\n";
+    std::cout << "normmin     " << QuadFloat(f128_normmin) << "\n";
+    std::cout << "negnormmin  " << QuadFloat(f128_negnormmin) << "\n";
+
+    std::cout << "epsilon...\n" << std::dec;
+    std::cout << "epsilon     " << QuadFloat(f128_epsilon) << "\n";
+    std::cout << "half_epsilon" << QuadFloat(f128_half_epsilon) << "\n";
+    std::cout << "max         " << QuadFloat(f128_max) << "\n";
+    std::cout << "negmax      " << QuadFloat(f128_negmax) << "\n";
+    std::cout << "min         " << QuadFloat(f128_min) << "\n";
+    std::cout << "negmin      " << QuadFloat(f128_negmin) << "\n";
+    std::cout << "normmin     " << QuadFloat(f128_normmin) << "\n";
+    std::cout << "negnormmin  " << QuadFloat(f128_negnormmin) << "\n";
+
     return 0;
 }
 

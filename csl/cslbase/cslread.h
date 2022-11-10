@@ -140,8 +140,6 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 // a power of 2. And then a scheme that given one size I can find the
 // next larger or smaller one rapidly.
 
-#include "isprime.h"
-
 INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
 #ifdef SIXTY_FOUR_BIT__
 INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[48]; // 562949953421231

@@ -31,6 +31,9 @@
 
 // $Id$
 
+#ifndef header_isprime
+#define header_isprime
+
 // It provides a function "bool constexpr_isprime(uint64_t n)" that tests
 // if n is a prime number and that can be used at compile-time.
 
@@ -64,7 +67,7 @@
 // "Hacker's Delight" which in turn derives it by specialising and further
 // optimising the scheme from Knuth's Art of Computer Programming volume 2.
 //
-// I need an auxilliary function to find the yop bit in a word.
+// I need an auxiliary function to find the top bit in a word.
 
 constexpr inline int constexpr_nlz(uint64_t x)
 {   int n = 0;
@@ -317,5 +320,7 @@ inline uint64_t nextGoodPrime(uint64_t p)
 {   return p == goodPrimes[goodPrimesCount-1] ? p :
                            goodPrimes[primeIndex(p)+1];
 }
+
+#endif // header_isprime
 
 // end of isprime.h

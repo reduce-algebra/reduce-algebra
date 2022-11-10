@@ -228,6 +228,7 @@ inline double CSLpow(double x, double y)
 #include "entries.h"
 #include "proc.h"
 #include "stream.h"
+#include "isprime.h"
 #include "cslread.h"
 #include "inthash.h"
 #include "version.h"
