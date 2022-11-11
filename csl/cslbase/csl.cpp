@@ -628,15 +628,16 @@ static LispObject wrong(int given, int wanted, LispObject env)
 {   errorNest safe;
     char msg[64];
     if (wanted == 4)
-        std::sprintf(msg,
+        std::snprintf(msg, sizeof(msg),
                      "Function called with %d args where more then three wanted",
                      given);
     else if (given == 4)
-        std::sprintf(msg,
+        std::snprintf(msg, sizeof(msg),
                      "Function called with more than three args where %d wanted",
                      wanted);
-    else std::sprintf(msg, "Function called with %d args where %d wanted",
-                          given, wanted);
+    else std::snprintf(msg, sizeof(msg),
+                       "Function called with %d args where %d wanted",
+                       given, wanted);
     if ((miscflags & HEADLINE_FLAG))
     {   err_printf("\nCalling ");
         loop_print_error(env);
@@ -649,10 +650,11 @@ static LispObject wrong(int given, LispObject env)
 {   errorNest safe;
     char msg[64];
     if (given == 4)
-        std::sprintf(msg,
+        std::snprintf(msg, sizeof(msg),
                      "Function called incorrectly with more than 3 args");
-    else std::sprintf(msg, "Function called incorrectly with %d args",
-                          given);
+    else std::snprintf(msg, sizeof(msg),
+                       "Function called incorrectly with %d args",
+                       given);
     if ((miscflags & HEADLINE_FLAG))
     {   err_printf("\nCalling ");
         loop_print_error(env);
@@ -984,7 +986,7 @@ void debug_record_int_raw(const char *data, int n, const char *file,
     if (f1 != nullptr) f1++;
     else f1 = file;
     if (data != nullptr)
-    {   std::sprintf(debug_trail[debug_trailp], "%s%d", data, n);
+    {   std::snprintf(debug_trail[debug_trailp], 32, "%s%d", data, n);
         std::strncpy(debug_trail_file[debug_trailp], f1, 32);
         debug_trail_line[debug_trailp] = line;
         debug_trailp = (debug_trailp+1)%32;

@@ -340,7 +340,7 @@ int RunResource(int index, int forcegui, const char *modulename)
 // make my next probe increases the hex constant in the spirit of a 32-bit
 // linear congruential pseudo-random sequence in the expectation that that
 // would tend to reduce clustering. That really ought not to matter!
-        std::sprintf(fname, "T%.7x.exe", k & 0xfffffff);
+        std::snprintf(fname, sizeof(fname), "T%.7x.exe", k & 0xfffffff);
 // This use of CreateFile arranges that the file opened is guaranteed
 // to be new. This is just what I want.
         HANDLE h = CreateFile(

@@ -1344,7 +1344,8 @@ LispObject Lgensym(LispObject env)
     THREADID;
     stackcheck(THREADARG env);
 #ifdef COMMON
-    std::sprintf(genname, "G%lu", (long unsigned)(uint32_t)gensym_ser++);
+    std::snprintf(genname, sizeof(genname),
+        "G%lu", (long unsigned)(uint32_t)gensym_ser++);
     pn = make_string(genname);
     errexit();
     Save save(THREADARG pn);
@@ -1392,7 +1393,8 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     errexit();
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 63-len1) len = 63-len1; // Unpublished truncation of the string
-    std::sprintf(genname, "%.*s%s", static_cast<int>(len),
+    std::snprintf(genname, sizeof(genname),
+        "%.*s%s", static_cast<int>(len),
         bit_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
     genbase = make_string(genname);
     errexit();
@@ -1444,7 +1446,8 @@ LispObject Lgensym(LispObject env, LispObject a)
 #ifdef COMMON
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     if (len > 60) len = 60;     // Unpublished truncation of the string
-    std::sprintf(genname, "%.*s%lu", static_cast<int>(len),
+    std::snprintf(genname, sizeof(genname),
+                 "%.*s%lu", static_cast<int>(len),
                  bit_cast<char *>(genbase) + (CELL-TAG_VECTOR),
                  (long unsigned)(uint32_t)gensym_ser++);
     genbase = make_string(genname);

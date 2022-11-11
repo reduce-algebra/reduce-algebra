@@ -549,7 +549,7 @@ inline LispObject make_lisp_unsigned64(uint64_t n)
 // while I get confused others could too... so safety is good.
 
 inline LispObject make_lisp_integerptr(intptr_t n)
-{   if (valid_as_fixnum(static_cast<intptr_t>(n))) return fixnum_of_int(n);
+{   if (valid_as_fixnum(static_cast<int64_t>(n))) return fixnum_of_int(n);
     else return make_lisp_integer64_fn(static_cast<intptr_t>(n));
 }
 

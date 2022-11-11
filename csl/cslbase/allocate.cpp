@@ -555,15 +555,15 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // really cares - but I do very much when I am chasing after GC bugs!
             switch (tag)
             {   case TAG_SYMBOL:
-                    std::sprintf(msg, "symbol header");
+                    std::snprintf(msg, sizeof(msg), "symbol header");
                     break;
                 case TAG_NUMBERS:
                     switch (type)
                     {   case TYPE_BIGNUM:
-                            std::sprintf(msg, "bignum(%ld)", static_cast<long>(size));
+                            std::snprintf(msg, sizeof(msg), "bignum(%ld)", static_cast<long>(size));
                             break;
                         default:
-                            std::sprintf(msg, "numbers(%lx,%ld)", static_cast<long>(type),
+                            std::snprintf(msg, sizeof(msg), "numbers(%lx,%ld)", static_cast<long>(type),
                                          static_cast<long>(size));
                             break;
                     }
@@ -574,31 +574,31 @@ LispObject get_basic_vector(int tag, int type, size_t size)
                         case TYPE_STRING_2:
                         case TYPE_STRING_3:
                         case TYPE_STRING_4:
-                            std::sprintf(msg, "string(%ld)", static_cast<long>(size));
+                            std::snprintf(msg, sizeof(msg), "string(%ld)", static_cast<long>(size));
                             break;
                         case TYPE_BPS_1:
                         case TYPE_BPS_2:
                         case TYPE_BPS_3:
                         case TYPE_BPS_4:
-                            std::sprintf(msg, "BPS(%ld)", static_cast<long>(size));
+                            std::snprintf(msg, sizeof(msg), "BPS(%ld)", static_cast<long>(size));
                             break;
                         case TYPE_SIMPLE_VEC:
-                            std::sprintf(msg, "simple vector(%ld)", static_cast<long>(size));
+                            std::snprintf(msg, sizeof(msg), "simple vector(%ld)", static_cast<long>(size));
                             break;
                         case TYPE_HASH:
-                            std::sprintf(msg, "hash table(%ld)", static_cast<long>(size));
+                            std::snprintf(msg, sizeof(msg), "hash table(%ld)", static_cast<long>(size));
                             break;
                         default:
-                            std::sprintf(msg, "vector(%lx,%ld)", static_cast<long>(type),
+                            std::snprintf(msg, sizeof(msg), "vector(%lx,%ld)", static_cast<long>(type),
                                          static_cast<long>(size));
                             break;
                     }
                     break;
                 case TAG_BOXFLOAT:
-                    std::sprintf(msg, "float(%ld)", static_cast<long>(size));
+                    std::snprintf(msg, sizeof(msg), "float(%ld)", static_cast<long>(size));
                     break;
                 default:
-                    std::sprintf(msg, "get_basic_vector(%lx,%ld)", static_cast<long>(tag),
+                    std::snprintf(msg, sizeof(msg), "get_basic_vector(%lx,%ld)", static_cast<long>(tag),
                                  static_cast<long>(size));
                     break;
             }

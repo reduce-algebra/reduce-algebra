@@ -148,8 +148,9 @@ LispObject apply(LispObject fn, LispObject args,
             if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
             std::memcpy(name_of_caller, &celt(from, 0), len);
             name_of_caller[len] = 0;
-            std::sprintf(message, "Bad function called from %s: ",
-                         name_of_caller);
+            std::snprintf(message, sizeof(message),
+                          "Bad function called from %s: ",
+                          name_of_caller);
             return aerror1(message, fn);
         }
 // apply_lambda() is the key part of calls to interpreted functions.
@@ -183,8 +184,9 @@ LispObject apply(LispObject fn, LispObject args,
     if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
     std::memcpy(name_of_caller, &celt(from, 0), len);
     name_of_caller[len] = 0;
-    std::sprintf(message, "Bad function called from %s: ",
-                 name_of_caller);
+    std::snprintf(message, sizeof(message),
+                  "Bad function called from %s: ",
+                  name_of_caller);
     return aerror1(message, fn);
 }
 
