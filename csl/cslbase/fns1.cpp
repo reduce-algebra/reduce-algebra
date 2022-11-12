@@ -2053,7 +2053,7 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
     std::memset(libname, 0, sizeof(libname));
     w = get_string_data(name, "find-foreign-library", len);
     if (len > sizeof(libname)-5) len = sizeof(libname)-5;
-    std::sprintf(libname, "%.*s", static_cast<int>(len), w);
+    std::snprintf(libname, sizeof(libname), "%.*s", static_cast<int>(len), w);
     for (w2=libname; *w2!=0; w2++)
         if (w1==nullptr && *w2 == '.') w1 = w2;
         else if (*w2 == '/' || *w2 == '\\') w1 = nullptr;
@@ -2139,7 +2139,7 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
 #endif
     w = get_string_data(name, "find-foreign-function", len);
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
-    std::sprintf(sname, "%.*s", static_cast<int>(len), w);
+    std::snprintf(sname, sizeof(sname), "%.*s", static_cast<int>(len), w);
 //=== #ifdef __CYGWIN__
 //===     printf("name to look up = %s\r\n", sname);
 //=== #else

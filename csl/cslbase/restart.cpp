@@ -1433,11 +1433,11 @@ LispObject set_up_variables(int restart_flag)
             if (is_vector(w1) &&
                 is_string_header(vechdr(w1)))
             {   int n = length_of_byteheader(vechdr(w1))-CELL;
-                std::sprintf(about_box_title, "About %.*s",
+                std::snprintf(about_box_title, 40, "About %.*s",
                              (n > 31-static_cast<int>(std::strlen("About ")) ?
                               31-static_cast<int>(std::strlen("About ")) : n),
                              reinterpret_cast<const char *>(&celt(w1, 0)));
-                std::sprintf(about_box_description, "%.*s",
+                std::snprintf(about_box_description, 40, "%.*s",
                              (n > 31 ? 31 : n),
                              reinterpret_cast<const char *>(&celt(w1, 0)));
 // The provision here is that if variables called "author!*" and
@@ -1449,7 +1449,7 @@ LispObject set_up_variables(int restart_flag)
                 if (is_vector(w1) &&
                     is_string_header(vechdr(w1)))
                 {   n = length_of_byteheader(vechdr(w1))-CELL;
-                    std::sprintf(about_box_rights_1, "%.*s",
+                    std::snprintf(about_box_rights_1, 40, "%.*s",
                                  n > 31 ? 31 : n, reinterpret_cast<const char *>(&celt(w1, 0)));
                 }
                 else std::strcpy(about_box_rights_1, "A C Hearn/RAND");
@@ -1457,7 +1457,7 @@ LispObject set_up_variables(int restart_flag)
                 if (is_vector(w1) &&
                     is_string_header(vechdr(w1)))
                 {   n = length_of_byteheader(vechdr(w1))-CELL;
-                    std::sprintf(about_box_rights_2, "%.*s",
+                    std::snprintf(about_box_rights_2, 40, "%.*s",
                                  n > 31 ? 31 : n,
                                  reinterpret_cast<const char *>(&celt(w1, 0)));
                 }
@@ -1855,7 +1855,7 @@ LispObject set_up_variables(int restart_flag)
                     !is_string_header(vechdr(w3))) break;
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
                 if (n1 > 60) break;
-                std::sprintf(sname, "*%.*s", n1,
+                std::snprintf(sname, sizeof(sname), "*%.*s", n1,
                              reinterpret_cast<const char*>(&celt(w3, 0)));
                 w4 = make_undefined_symbol(sname);
                 v = new (std::nothrow) char[n1+2];
@@ -1902,7 +1902,7 @@ void review_switch_settings()
         if (!is_vector(s) || !is_string_header(vechdr(s))) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
-        std::sprintf(sname, "*%.*s", n1,
+        std::snprintf(sname, sizeof(sname), "*%.*s", n1,
                      reinterpret_cast<const char*>(&celt(s, 0)));
         for (p=switches; *p!=nullptr; p+=2)
         {   if (std::strcmp(1+*p, &sname[1]) == 0) break;
@@ -1937,7 +1937,7 @@ void review_switch_settings()
         if (!is_vector(s) || !is_string_header(s)) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
-        std::sprintf(sname, "%.*s", n1,
+        std::snprintf(sname, sizeof(sname), "%.*s", n1,
                      reinterpret_cast<const char *>(&celt(s, 0)));
         for (p=loadable_packages; *p!=nullptr; p+=2)
         {   if (std::strcmp(1+*p, sname) == 0) break;

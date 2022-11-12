@@ -217,7 +217,7 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 // This version is to explain the intent, but would not be constexpr
     const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
-    std::sprintf(whereMsg, "%.40s:%d", file, line);
+    std::snprintf(whereMsg, sizeof(whereMsg), "%.40s:%d", file, line);
     if (msg != nullptr) std::strcat(whereMsg, msg);
     return whereMsg;
 }
@@ -315,8 +315,10 @@ inline void printlog(const char* s, ...)
     {   char logfile_name[LONGEST_LEGAL_FILENAME_1];
         std::memset(logfile_name, 0, sizeof(logfile_name));
         if (std::strcmp(programDir, ".") == 0)
-            std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
-        else std::sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+            std::snprintf(logfile_name, sizeof(logfile_name),
+                          "/tmp/%s", LOGFILE_NAME);
+        else std::snprintf(logfile_name, sizeof(logfile_name),
+                           "%s/%s", programDir, LOGFILE_NAME);
         logfile = std::fopen(logfile_name, "a");
         if (logfile == nullptr) logfile = std::fopen("/tmp/fwin.log", "w");
         if (logfile == nullptr) return; // the file can not be used

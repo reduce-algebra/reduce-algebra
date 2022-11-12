@@ -978,22 +978,23 @@ LispObject get_pname(LispObject a)
 // the "numeric" suffix. The code I have here would allow for up to 10^13
 // distinct gensyms, and after that it wraps round. Well on a 32-bit
 // system it counts up to 2^32 and wraps there.
-        std::sprintf(genname, "%.*s", static_cast<int>(len),
+        std::snprintf(genname, sizeof(genname), "%.*s", static_cast<int>(len),
                      bit_cast<const char *>(&celt(name, 0)));
         p = genname+len;
-        if (gensym_ser <= 9999) std::sprintf(p, "%.4d",
+        if (gensym_ser <= 9999) std::snprintf(p, sizeof(genname)-len,
+                                                 "%.4d",
                                                  static_cast<int>(gensym_ser));
         else if (gensym_ser <= 9999999)
-            std::sprintf(p, "%.4d_%.3d",
+            std::snprintf(p, sizeof(genname)-len, "%.4d_%.3d",
                          static_cast<int>(gensym_ser/1000),
                          static_cast<int>(gensym_ser%1000));
         else if (!SIXTY_FOUR_BIT || gensym_ser <= UINT64_C(99999999999))
-            std::sprintf(p, "%.4d_%.3d_%.3d",
+            std::snprintf(p, sizeof(genname)-len, "%.4d_%.3d_%.3d",
                          static_cast<int>(gensym_ser/1000000),
                          static_cast<int>((gensym_ser/1000)%1000),
                          static_cast<int>(gensym_ser%1000));
         else
-            std::sprintf(p, "%.4d_%.3d_%.3d_%.3d",
+            std::snprintf(p, sizeof(genname)-len, "%.4d_%.3d_%.3d_%.3d",
                          static_cast<int>((gensym_ser/1000000000)%10000),
                          static_cast<int>((gensym_ser/1000000)%1000),
                          static_cast<int>((gensym_ser/1000)%1000),

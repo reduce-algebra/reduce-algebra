@@ -1434,7 +1434,7 @@ inline const char* objectType(uintptr_t h)
     case TYPE_FLOAT:
         return "header of FLOAT";
     default:
-        std::sprintf(unknown, "unknown %x", (int)h);
+        std::snprintf(unknown, sizeof(unknown), "unknown %x", (int)h);
         return unknown;
     }
 }

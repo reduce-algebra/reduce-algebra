@@ -665,7 +665,7 @@ void write_delayed(int byte, const char *msg, ...)
 #ifdef DEBUG_SERIALIZE
         std::va_list a;
         va_start(a, msg);
-        std::vsprintf(delayed_message, msg, a);
+        std::vspnrintf(delayed_message, sizeof(delayed_message), msg, a);
         va_end(a);
 #endif // DEBUG_SERIALIZE
         delayed_byte = byte;
@@ -683,7 +683,7 @@ void write_delayed_with_arg(int byte, uint64_t arg, const char *msg, ...)
 #ifdef DEBUG_SERIALIZE
         std::va_list a;
         va_start(a, msg);
-        std::vsprintf(delayed_message, msg, a);
+        std::vsnprintf(delayed_message, sizeof(delayed_message), msg, a);
         va_end(a);
 #endif // DEBUG_SERIALIZE
         delayed_byte = byte;
@@ -808,7 +808,8 @@ void write_u64(uint64_t n)
     if (n == (n & 0x7f))
     {
 #ifdef DEBUG_SERIALIZE
-        std::sprintf(msg, "small int %#.2x = %d", static_cast<int>(n), static_cast<int>(n));
+        std::snprintf(msg, sizeof(msg),
+            "small int %#.2x = %d", static_cast<int>(n), static_cast<int>(n));
 #endif // DEBUG_SERIALIZE
         write_byte(n | 0x80, msg);
         return;
@@ -830,7 +831,8 @@ void write_u64(uint64_t n)
         if (any || (b != 0))
         {   any = true;
 #ifdef DEBUG_SERIALIZE
-            std::sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*(7-i)+final));
+            std::snprintf(msg, sizeof(msg),
+                "%#" PRIx64, ((uint64_t)b) << (7*(7-i)+final));
 #endif // DEBUG_SERIALIZE
             write_byte(b, msg);
         }
@@ -838,14 +840,16 @@ void write_u64(uint64_t n)
     if (final == 7)
     {
 #ifdef DEBUG_SERIALIZE
-        std::sprintf(msg, "%#.2x = %" PRIu64, static_cast<int>(n) & 0x7f, n);
+        std::snprintf(msg, sizeof(msg),
+            "%#.2x = %" PRIu64, static_cast<int>(n) & 0x7f, n);
 #endif // DEBUG_SERIALIZE
         write_byte(0x80 | (n & 0x7f), msg);
     }
     else
     {
 #ifdef DEBUG_SERIALIZE
-        std::sprintf(msg, "%#.2x = %" PRIu64, static_cast<int>(n) & 0xff, n);
+        std::snprintf(msg, sizeof(msg),
+            "%#.2x = %" PRIu64, static_cast<int>(n) & 0xff, n);
 #endif // DEBUG_SERIALIZE
         write_byte(n & 0xff, msg);
     }
@@ -2632,7 +2636,8 @@ down:
         {   size_t n = find_index_in_repeats(i);
             char msg[40];
 #ifdef DEBUG_SERIALIZE
-            std::sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
+            std::snprintf(msg, sizeof(msg),
+                "back %" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
             if (n <= 32) write_delayed(SER_BACKREF0 + n - 1, msg);
             else if (n <= 64) write_delayed(SER_BACKREF1 + n - 33, msg);
@@ -2850,14 +2855,16 @@ down:
                 {   if (i != (size_t)-1)
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
+                        std::snprintf(msg, sizeof(msg),
+                            "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_DUPGENSYM, msg);
                     }
                     else
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "gensym, length=%" PRIuPTR, (uintptr_t)n);
+                        std::snprintf(msg, sizeof(msg),
+                            "gensym, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_GENSYM, msg);
                     }
@@ -2866,14 +2873,16 @@ down:
                 {   if (i != (size_t)-1)
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
+                        std::snprintf(msg, sizeof(msg),
+                            "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_DUPSYMBOL, msg);
                     }
                     else
                     {
 #ifdef DEBUG_SERIALIZE
-                        std::sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
+                        std::snprintf(msg, sizeof(msg),
+                            "symbol, length=%" PRIuPTR, (uintptr_t)n);
 #endif // DEBUG_SERIALIZE
                         write_opcode(SER_SYMBOL, msg);
                     }
@@ -2883,8 +2892,9 @@ down:
                 {   int c = basic_celt(w, i) & 0xff;
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
-                    if (0x20 < c && c <= 0x7e) std::sprintf(msg, "'%c'", c);
-                    else std::sprintf(msg, "%#.2x", c);
+                    if (0x20 < c && c <= 0x7e) std::snprintf(msg, sizeof(msg),
+                        "'%c'", c);
+                    else std::snprintf(msg, sizeof(msg), "%#.2x", c);
 #endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
@@ -2952,14 +2962,16 @@ down:
                 len != 0)
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "string, length=%" PRIuPTR, (intptr_t)len);
+                std::snprintf(msg, sizeof(msg),
+                    "string, length=%" PRIuPTR, (intptr_t)len);
 #endif // DEBUG_SERIALIZE
                 write_opcode(SER_STRING+len-1, msg);
                 for (size_t j=0; j<len; j++)
                 {   int c = basic_ucelt(p, j);
 #ifdef DEBUG_SERIALIZE
-                    if (0x20 < c && c <= 0x7e) std::sprintf(msg, "'%c'", c);
-                    else std::sprintf(msg, "%#.2x", c);
+                    if (0x20 < c && c <= 0x7e) std::snprintf(msg, sizeof(msg),
+                        "'%c'", c);
+                    else std::snprintf(msg, sizeof(msg), "%#.2x", c);
 #endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
@@ -2970,7 +2982,8 @@ down:
             {   char msg[40];
                 len = length_of_bitheader(h);
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
+                std::snprintf(msg, sizeof(msg),
+                    "bitvec, length=%" PRIuPTR, (intptr_t)len);
 #endif // DEBUG_SERIALIZE
                 write_opcode(SER_BITVEC, msg);
                 write_u64(len);
@@ -3005,7 +3018,8 @@ down:
 // Values from 2^27 to 2^30-1
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
-                    std::sprintf(msg, "int value=%" PRId64, n);
+                    std::snprintf(msg, sizeof(msg),
+                        "int value=%" PRId64, n);
 #endif // DEBUG_SERIALIZE
                     if (n < 0)
                         write_delayed_with_arg(SER_NEGFIXNUM, -n-1, msg);
@@ -3021,7 +3035,7 @@ down:
 // ever so I will not trap them for special treatment here.
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
-                    std::sprintf(msg, "int value=%" PRId64, n);
+                    std::snprintf(msg, sizeof(msg), "int value=%" PRId64, n);
 #endif // DEBUG_SERIALIZE
 // The value I have here fitted within two bignum digits and so is really at
 // most 62 bits. A consequence of that is that negating it can not lead to
@@ -3147,7 +3161,8 @@ down:
             {   case SINGLE_FLOAT_HEADER:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                    std::sprintf(msg, "float %.7g", static_cast<double>(single_float_val(p)));
+                    std::snprintf(msg, sizeof(msg),
+                        "float %.7g", static_cast<double>(single_float_val(p)));
 #endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT32, msg);
                     write_f32(single_float_val(p));
@@ -3156,7 +3171,8 @@ down:
                 case DOUBLE_FLOAT_HEADER:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                    std::sprintf(msg, "double %.16g", double_float_val(p));
+                    std::snprintf(msg, sizeof(msg),
+                        "double %.16g", double_float_val(p));
 #endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT64, msg);
                     write_f64(double_float_val(p));
@@ -3167,7 +3183,7 @@ down:
                 {   char msg[40];
 // At present I do not have a good scheme to display the 128-bit float value.
 #ifdef DEBUG_SERIALIZE
-                    std::sprintf(msg, "long double");
+                    std::snprintf(msg, sizeof(msg), "long double");
 #endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT128, msg);
                     write_f128(long_float_val(p));
@@ -3189,14 +3205,15 @@ down:
             if (-16 <= w64 && w64 < 15)
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "int, value=%d", static_cast<int>(w64));
+                std::snprintf(msg, sizeof(msg),
+                    "int, value=%d", static_cast<int>(w64));
 #endif // DEBUG_SERIALIZE
                 write_delayed(SER_FIXNUM | (static_cast<int>(w64) & 0x1f), msg);
             }
             else
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
-                std::sprintf(msg, "int value=%" PRId64, w64);
+                std::snprintf(msg, sizeof(msg), "int value=%" PRId64, w64);
 #endif // DEBUG_SERIALIZE
                 if (w64 < 0)
                     write_delayed_with_arg(SER_NEGFIXNUM, -w64-1, msg);
@@ -3210,7 +3227,8 @@ down:
         {   char msg[40];
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
 #ifdef DEBUG_SERIALIZE
-            std::sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
+            std::snprintf(msg, sizeof(msg),
+                "char/spid, value=%#" PRIx64, (uint64_t)p);
 #endif // DEBUG_SERIALIZE
             write_delayed_with_arg(SER_CHARSPID, nn, msg);
         }
@@ -3833,7 +3851,8 @@ void write_everything()
         scan_data(qpackage(nil));
 // Next the major list-bases.
         for (LispObject *p:list_bases)
-        {   std::sprintf(trigger, "list base %" PRIx64 " scan",
+        {   std::snprintf(trigger, sizeof(trigger),
+                "list base %" PRIx64 " scan",
                 static_cast<uint64_t>(*p));
             scan_data(*p);
         }
@@ -3874,7 +3893,8 @@ void write_everything()
     std::strcpy(trigger, "package of nil write");
     write_data(qpackage(nil));
     for (LispObject *p:list_bases)
-    {   std::sprintf(trigger, "list base %p write", bit_cast<void *>(*p));
+    {   std::snprintf(trigger, sizeof(trigger),
+            "list base %p write", bit_cast<void *>(*p));
         write_data(*p);
     }
 // Tidy up at the end. I do not logically need an explicit end of data marker
@@ -4195,7 +4215,7 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     {   LispObject *oldStack = stack;
         for (LispObject *s=bit_cast<LispObject *>(stackBase)+1;
              s<=oldStack; s++)
-        {   std::sprintf(trigger, "Stack@%p", s);
+        {   std::snprintf(trigger, sizeof(trigger), "Stack@%p", s);
             if (push_symbols(pp, *s)) return true;
         }
     }
@@ -4212,7 +4232,8 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     std::strcpy(trigger, "package nil push");
     if (push_symbols(pp, qpackage(nil))) return true;
     for (LispObject *p:list_bases)
-    {   std::sprintf(trigger, "list base %p push", bit_cast<void *>(*p));
+    {   std::snprintf(trigger, sizeof(trigger),
+            "list base %p push", bit_cast<void *>(*p));
         if (push_symbols(pp, *p)) return true;
     }
     return false;

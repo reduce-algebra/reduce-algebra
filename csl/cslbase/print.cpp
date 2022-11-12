@@ -170,7 +170,7 @@ void term_printf(const char *fmt, ...)
     char print_temp[VPRINTF_CHUNK], *p;
     int n;
     va_start(a, fmt);
-    n = std::vsprintf(print_temp, fmt, a);
+    n = std::vsnprintf(print_temp, sizeof(print_temp), fmt, a);
     p = print_temp;
     while (n-- > 0) char_to_terminal(*p++, 0);
     va_end(a);
@@ -184,7 +184,7 @@ void stdout_printf(const char *fmt, ...)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     va_start(a, fmt);
-    n = std::vsprintf(print_temp, fmt, a);
+    n = std::vsnprintf(print_temp, sizeof(print_temp), fmt, a);
     p = print_temp;
     while (n-- > 0) putc_stream(*p++, stream);
     va_end(a);
@@ -198,7 +198,7 @@ void err_printf(const char *fmt, ...)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     va_start(a, fmt);
-    n = std::vsprintf(print_temp, fmt, a);
+    n = std::vsnprintf(print_temp, sizeof(print_temp), fmt, a);
     p = print_temp;
     while (n-- > 0) putc_stream(*p++, stream);
     va_end(a);
@@ -212,7 +212,7 @@ void debug_printf(const char *fmt, ...)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     va_start(a, fmt);
-    n = std::vsprintf(print_temp, fmt, a);
+    n = std::vsnprintf(print_temp, sizeof(print_temp), fmt, a);
     p = print_temp;
     while (n-- > 0) putc_stream(*p++, stream);
     va_end(a);
@@ -226,7 +226,7 @@ void trace_printf(const char *fmt, ...)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     va_start(a, fmt);
-    n = std::vsprintf(print_temp, fmt, a);
+    n = std::vsnprintf(print_temp, sizeof(print_temp), fmt, a);
     p = print_temp;
     while (n-- > 0) putc_stream(*p++, stream);
     va_end(a);

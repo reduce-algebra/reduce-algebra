@@ -65,7 +65,7 @@ const char* getPageType(uintptr_t a)
                                          vecIsPinned(a, p);
     bool newpin = p->type == consPageType ? consIsNewPinned(a, p) :
                                             vecIsNewPinned(a, p);
-    std::sprintf(b, "%s%s%s%s",t, pin?"!":"", newpin?"|":"",
+    std::snprintf(b, sizeof(b), "%s%s%s%s",t, pin?"!":"", newpin?"|":"",
                  (pin||newpin)?Addr(a):"");
     return b;
 }
