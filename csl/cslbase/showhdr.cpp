@@ -43,44 +43,44 @@ const char *decodeObject(LispObject a)
     switch (a & TAG_BITS)
     {
     case TAG_CONS:
-        sprintf(r, "cons at %s", Addr(a&~TAG_BITS));
+        std::snprintf(r, sizeof(r), "cons at %s", Addr(a&~TAG_BITS));
         return r;
     case TAG_VECTOR:
         if (is_string_header(vechdr(a)))
         {   size_t len = length_of_byteheader(vechdr(a)) - CELL;
             const char *s = &basic_celt(a, 0);
-            if (len < 10) sprintf(r, "str %s \"%s\"", Addr(a&~TAG_BITS), s);
-            else sprintf(r, "str %s \"%.10s...\"", Addr(a&~TAG_BITS), s);
+            if (len < 10) std::snprintf(r, sizeof(r), "str %s \"%s\"", Addr(a&~TAG_BITS), s);
+            else std::snprintf(r, sizeof(r), "str %s \"%.10s...\"", Addr(a&~TAG_BITS), s);
         }
         else if (is_forward(vechdr(a)))
         {   decodeObject(TAG_VECTOR+(vechdr(a)&~TAG_BITS));
             std::strcat(r, " forwarded");
             return r;
         }
-        else sprintf(r, "vector at %s", Addr(a&~TAG_BITS));
+        else std::snprintf(r, sizeof(r), "vector at %s", Addr(a&~TAG_BITS));
         return r;
     case TAG_HDR_IMMED:
         break;
     case TAG_FORWARD:
-        sprintf(r, "forward to %s", Addr(a&~TAG_BITS));
+        std::snprintf(r, sizeof(r), "forward to %s", Addr(a&~TAG_BITS));
         return r;
     case TAG_SYMBOL:
-        sprintf(r, "symbol at %s", Addr(a));
+        std::snprintf(r, sizeof(r), "symbol at %s", Addr(a));
         return r;
     case TAG_NUMBERS:
-        sprintf(r, "bignum etc at %s", Addr(a&~TAG_BITS));
+        std::snprintf(r, sizeof(r), "bignum etc at %s", Addr(a&~TAG_BITS));
         return r;
     case TAG_BOXFLOAT:
-        sprintf(r, "boxfloat at %s", Addr(a&~TAG_BITS));
+        std::snprintf(r, sizeof(r), "boxfloat at %s", Addr(a&~TAG_BITS));
         return r;
     case TAG_FIXNUM:
         if ((a & TAG_XBIT) != 0)
         {   double f;
             a &= ~XTAG_SFLOAT;
             std::memcpy(&f, &a, sizeof(double));
-            sprintf(r, "short float %g", f);
+            std::snprintf(r, sizeof(r), "short float %g", f);
         }
-        else sprintf(r, "fixnum %" PRIdPTR, a>>4);
+        else std::snprintf(r, sizeof(r), "fixnum %" PRIdPTR, a>>4);
         return r;
     }
     switch ((a>>3) & 0x3)
@@ -89,156 +89,156 @@ const char *decodeObject(LispObject a)
         switch ((a>>5) & 0x3)
         {
         case 0x0: // symbol head
-            sprintf(r, "symbol head %" PRIxPTR, a);
+            std::snprintf(r, sizeof(r), "symbol head %" PRIxPTR, a);
             return r;
         case 0x1: // char literal
-            sprintf(r, "character U+%" PRIxPTR, (a>>5));
+            std::snprintf(r, sizeof(r), "character U+%" PRIxPTR, (a>>5));
             return r;
         case 0x2: // unused
-            sprintf(r, "Unknown %" PRIxPTR, a>>5);
+            std::snprintf(r, sizeof(r), "Unknown %" PRIxPTR, a>>5);
             return r;
         case 0x3: // "spid"
-            sprintf(r, "SPID %" PRIxPTR, (a>>5));
+            std::snprintf(r, sizeof(r), "SPID %" PRIxPTR, (a>>5));
             return r;
         }
     case 0x1: // vector of lisp pointers (including stream objects)
-        sprintf(r, "Lisp vector length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "Lisp vector length %" PRIdPTR, length_of_header(a));
         return r;
     case 0x2: // bit-vector
-        sprintf(r, "Bit vector length %" PRIdPTR, length_of_bitheader(a));
+        std::snprintf(r, sizeof(r), "Bit vector length %" PRIdPTR, length_of_bitheader(a));
         return r;
     case 0x3: // vector of binary stuff (including strings)
-//      sprintf(r, "Binary vector length %" PRIdPTR, length_of_header(a));
+//      std::snprintf(r, sizeof(r), "Binary vector length %" PRIdPTR, length_of_header(a));
 //      return r;
         break;
     }
     switch (a)
     {
     case SINGLE_FLOAT_HEADER:
-        sprintf(r, "SINGLE_FLOAT length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "SINGLE_FLOAT length %" PRIdPTR, length_of_header(a));
         return r;
     case DOUBLE_FLOAT_HEADER:
-        sprintf(r, "DOUBLE_FLOAT length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "DOUBLE_FLOAT length %" PRIdPTR, length_of_header(a));
         return r;
     case LONG_FLOAT_HEADER:
-        sprintf(r, "LONG_FLOAT length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "LONG_FLOAT length %" PRIdPTR, length_of_header(a));
         return r;
     }
     switch (a & header_mask)
     {
     case TYPE_STRING_1:
-        sprintf(r, "STRING_1 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "STRING_1 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_STRING_2:
-        sprintf(r, "STRING_2 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "STRING_2 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_STRING_3:
-        sprintf(r, "STRING_3 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "STRING_3 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_STRING_4:
-        sprintf(r, "STRING_4 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "STRING_4 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_VEC8_1:
-        sprintf(r, "VEC8_1 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "VEC8_1 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_VEC8_2:
-        sprintf(r, "VEC8_2 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "VEC8_2 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_VEC8_3:
-        sprintf(r, "VEC8_3 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "VEC8_3 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_VEC8_4:
-        sprintf(r, "VEC8_4 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "VEC8_4 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_BPS_1:
-        sprintf(r, "BPS_1 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "BPS_1 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_BPS_2:
-        sprintf(r, "BPS_2 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "BPS_2 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_BPS_3:
-        sprintf(r, "BPS_3 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "BPS_3 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_BPS_4:
-        sprintf(r, "BPS_4 length %" PRIdPTR, length_of_byteheader(a));
+        std::snprintf(r, sizeof(r), "BPS_4 length %" PRIdPTR, length_of_byteheader(a));
         return r;
     case TYPE_VEC16_1:
-        sprintf(r, "VEC16_1 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VEC16_1 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VEC16_2:
-        sprintf(r, "VEC16_2 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VEC16_2 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_FOREIGN:
-        sprintf(r, "FOREIGN length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "FOREIGN length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_SP:
-        sprintf(r, "SP length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "SP length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_ENCAPSULATE:
-        sprintf(r, "ENCAPSULATE length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "ENCAPSULATE length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_PADDER:
-        sprintf(r, "PADDER length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "PADDER length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_SIMPLE_VEC:
-        sprintf(r, "SIMPLE_VEC length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "SIMPLE_VEC length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_INDEXVEC:
-        sprintf(r, "INDEXVEC length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "INDEXVEC length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_HASH:
-        sprintf(r, "HASH length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "HASH length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_HASHX:
-        sprintf(r, "HASHX length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "HASHX length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_ARRAY:
-        sprintf(r, "ARRAY length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "ARRAY length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_STRUCTURE:
-        sprintf(r, "STRUCTURE length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "STRUCTURE length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_OBJECT:
-        sprintf(r, "OBJECT length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "OBJECT length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VEC32:
-        sprintf(r, "VEC32 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VEC32 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VEC64:
-        sprintf(r, "VEC64 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VEC64 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VEC128:
-        sprintf(r, "VEC128 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VEC128 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VECFLOAT32:
-        sprintf(r, "VECFLOAT32 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VECFLOAT32 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VECFLOAT64:
-        sprintf(r, "VECFLOAT64 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VECFLOAT64 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_VECFLOAT128:
-        sprintf(r, "VECFLOAT128 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "VECFLOAT128 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_MIXED1:
-        sprintf(r, "MIXED1 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "MIXED1 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_MIXED2:
-        sprintf(r, "MIXED2 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "MIXED2 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_MIXED3:
-        sprintf(r, "MIXED3 length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "MIXED3 length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_STREAM:
-        sprintf(r, "STREAM length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "STREAM length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_BIGNUM:
-        sprintf(r, "BIGNUM length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "BIGNUM length %" PRIdPTR, length_of_header(a));
         return r;
     case TYPE_NEW_BIGNUM:
-        sprintf(r, "NEW_BIGNUM length %" PRIdPTR, length_of_header(a));
+        std::snprintf(r, sizeof(r), "NEW_BIGNUM length %" PRIdPTR, length_of_header(a));
         return r;
     default:
-        sprintf(r, "Unknown %" PRIxPTR, a);
+        std::snprintf(r, sizeof(r), "Unknown %" PRIxPTR, a);
         return r;
     }
 }

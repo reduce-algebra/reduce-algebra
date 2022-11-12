@@ -1728,7 +1728,7 @@ LispObject Lmd60(LispObject env, LispObject a)
     uint32_t v0, v1;
     int32_t len, i;
     if (is_fixnum(a))
-    {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.7lx  ",
+    {   std::snprintf(reinterpret_cast<char *>(&md[0]), 16, "%.7lx  ",
                      static_cast<unsigned long>(a>>4) & 0x0fffffff);
         CSL_MD5_Init();
         CSL_MD5_Update(md, 8);
@@ -1737,7 +1737,7 @@ LispObject Lmd60(LispObject env, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   std::sprintf(reinterpret_cast<char *>(&md[0]), "%.8x",
+        {   std::snprintf(reinterpret_cast<char *>(&md[0]), 16, "%.8x",
                          (uint32_t)bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }

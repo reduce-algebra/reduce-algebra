@@ -583,8 +583,8 @@ bool f128_sprint(char* s, float128_t p, int& pdecexp)
             }
         }
     }
-    s += std::sprintf(s, "%.18" PRIu64, topDigits);
-    s += std::sprintf(s, "%.18" PRIu64, bottomDigits);
+    s += std::snprintf(s, 20, "%.18" PRIu64, topDigits);
+    s += std::snprintf(s, 20, "%.18" PRIu64, bottomDigits);
     pdecexp = dx + 18;
     return result;
 }
@@ -662,7 +662,7 @@ char *pad_by(char *r, int n)
 //
 
 char *pad_by_zero(char *r, int n)
-{   if (n >= 14) r += std::sprintf(r, "00000{%d}00000", n-10);
+{   if (n >= 14) r += std::snprintf(r, 20, "00000{%d}00000", n-10);
     else while (n-- > 0) *r++ = '0';
     *r = 0;
     return r;
@@ -687,16 +687,16 @@ int f128_sprint_E(char *r, int width, int prec, char *s, bool sign, int decexp)
     {   char ebuf[8];
         if (round_at(s, prec+1)) decexp++;
 // I format the exponent so I can see how many characters that uses.
-        width -= std::sprintf(ebuf, "e%02d", decexp);
+        width -= std::snprintf(ebuf, sizeof(ebuf), "e%02d", decexp);
         r = pad_by(r, width - prec - 1);
         if (sign) *r++ = '-';
         if (prec >= 36)
-        {   r += std::sprintf(r, "%c.%.35s", s[0], &s[1]);
+        {   r += std::snprintf(r, 40, "%c.%.35s", s[0], &s[1]);
             r = pad_by_zero(r, prec-36);
             std::strcpy(r, ebuf);
             r += std::strlen(r);
         }
-        else r += std::sprintf(r, "%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
+        else r += std::snprintf(r, 40, "%c.%.*s%s", s[0], prec-1, &s[1], ebuf);
     }
 // The longest possible output here will be along the lines of
 //  -1.123456789012345678901234567890123000{NNNN}000e-NNNN
@@ -777,7 +777,7 @@ int f128_sprint_F(char *r, int width, int prec, char *s, bool sign, int decexp)
     if (round_at(s, decexp+prec+1)) decexp++;
     if (decexp >= 36)
     {   if (sign) *r++ = '-';
-        r += std::sprintf(r, "%.36s", s);
+        r += std::snprintf(r, 40, "%.36s", s);
         r = pad_by_zero(r, decexp-35);
         *r++ = '.';
         r = pad_by_zero(r, prec);
@@ -786,24 +786,24 @@ int f128_sprint_F(char *r, int width, int prec, char *s, bool sign, int decexp)
     {   int fdig = 35-decexp;
         if (fdig > prec) fdig = prec;
         if (sign) *r++ = '-';
-        r += std::sprintf(r, "%.*s.%.*s",
+        r += std::snprintf(r, 48, "%.*s.%.*s",
                           decexp+1, s, fdig, &s[decexp+1]);
         r = pad_by_zero(r, prec-fdig);
     }
     else if (prec+decexp+1 <= 36)
     {   if (sign) *r++ = '-';
-        r += std::sprintf(r, "0.");
+        r += std::snprintf(r, 4, "0.");
         int pp = -decexp-1;
         if (pp > prec) pp = prec;
         r = pad_by_zero(r, pp);
         if (prec+decexp+1 > 0)
-            r += std::sprintf(r, "%.*s", prec+decexp+1, s);
+            r += std::snprintf(r, 48, "%.*s", prec+decexp+1, s);
     }
     else
     {   if (sign) *r++ = '-';
-        r += std::sprintf(r, "0.");
+        r += std::snprintf(r, 4, "0.");
         r = pad_by_zero(r, -decexp-1);
-        r += std::sprintf(r, "%.36s", s);
+        r += std::snprintf(r, 40, "%.36s", s);
         r = pad_by_zero(r, prec+decexp-35);
     }
     return r - original_r;

@@ -150,14 +150,15 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 // The next line is a clue to the unsafe nature of a Standard C library!
 // I want to implement "printf-like" functions of my own, but need to
 // process the characters others than via a normal (FILE *) object. So I
-// use vsprintf etc to place stuff in a buffer from where I can pass it on.
+// use vsnprintf etc to place stuff in a buffer from where I can pass it on.
 // however usage such as
 //   my_magic_printf("%s", ...)
 // can oh so easily generate unbounded amounts of stuff to overflow any
 // buffer I have. I allow space for VPRINTF_CHUNK chars so demand
 // discipline of myself in all uses...
 //
-// The 1999 C standard introduced vsnprintf and solves this worry!
+// The 1999 C standard introduced vsnprintf and solves this worry! And
+// std::vsnprintf is part of C++11 so by now I think I can rely on it.
 #define VPRINTF_CHUNK 2048
 
 void ensure_screen()
@@ -1759,8 +1760,8 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
 // "x < 0.0" will not pick up the case of -0.0.
     if (x == 0.0)
     {   if (xmark != 'e')
-        {   if (1.0/x < 0.0) std::sprintf(buff, "-0.0%c+00", xmark);
-            else std::sprintf(buff, "0.0%c+00", xmark);
+        {   if (1.0/x < 0.0) std::snprintf(buff, 32, "-0.0%c+00", xmark);
+            else std::snprintf(buff, 32, "0.0%c+00", xmark);
         }
         else if (1.0/x < 0.0) std::strcpy(buff, "-0.0");
         else std::strcpy(buff, "0.0");
@@ -1792,9 +1793,11 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
     {   *buff++ = '-';
         x = -x;
     }
-// Now I just have strictly positive values to worry about
-    std::sprintf(buff, "%.*g", prec, x);
-// I will allow for pathologically bad versions of sprintf...
+// Now I just have strictly positive values to worry about. With precision
+// at most 17 I will fit within 32 chars.
+    std::snprintf(buff, 32, "%.*g", prec, x);
+// I will allow for pathologically bad versions of snprintf... because
+// I have come across them in the past!
     if (*buff == '+') char_del(buff);      // Explicit "+" not wanted
     if (*buff == '.') char_ins(buff, '0'); // turn .nn to 0.nn
     else if (*buff == 'e')                 // turn Ennn to 0.0Ennn
@@ -1802,7 +1805,7 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
         char_ins(buff, '.');
         char_ins(buff, '0');
     }
-// I now have at lesst one digit before any "." or "E"
+// I now have at least one digit before any "." or "E"
     while (*buff != 0 && *buff != '.' && *buff != 'e') buff++;
     if (*buff == 'e') *buff = xmark;    // force style of exponent mark
     if (*buff == 0 || *buff == xmark)   // ddd to ddd.0
@@ -2025,11 +2028,11 @@ restart:
                 }
                 else uu.i = u - XTAG_SFLOAT;
                 if (escaped_printing & escape_hex)
-                {   std::sprintf(my_buff, "%.8x%c", uu.i, xmark);
+                {   std::snprintf(my_buff, sizeof(my_buff), "%.8x%c", uu.i, xmark);
                     goto float_print_tidyup;
                 }
                 else if (escaped_printing & escape_octal)
-                {   std::sprintf(my_buff, "%.11o%c", uu.i, xmark);
+                {   std::snprintf(my_buff, sizeof(my_buff), "%.11o%c", uu.i, xmark);
                     goto float_print_tidyup;
                 }
                 else if (escaped_printing & escape_binary)
@@ -2078,7 +2081,7 @@ restart:
                     mask = (mask<<4) | 0xf;
                 }
                 while (--width > 0) my_buff[len++] = static_cast<char>(k);
-                std::sprintf(&my_buff[len], "%" PRIx64,
+                std::snprintf(&my_buff[len], 32, "%" PRIx64,
                     static_cast<int64_t>(v));
             }
             else if (escaped_printing & escape_octal)
@@ -2105,7 +2108,7 @@ restart:
                     mask = (mask<<3) | 0x7;
                 }
                 while (--width > 0) my_buff[len++] = static_cast<char>(k);
-                std::sprintf(&my_buff[len], "%" PRIo64,
+                std::snprintf(&my_buff[len], 32, "%" PRIo64,
                     static_cast<int64_t>(v));
             }
             else if (escaped_printing & escape_binary)
@@ -2132,7 +2135,7 @@ restart:
                 my_buff[len] = 0;
             }
             else
-                std::sprintf(my_buff, "%" PRId64,
+                std::snprintf(my_buff, sizeof(my_buff), "%" PRId64,
                     static_cast<int64_t>(int_of_fixnum(u)));
             break;
 
@@ -2161,7 +2164,7 @@ restart:
                     case SPID_GCMARK:  std::strcpy(my_buff, "SPID_GCMARK");  break;
                     case SPID_NOINPUT: std::strcpy(my_buff, "SPID_NOINPUT"); break;
                     case SPID_ERROR: u = (u >> 20) & 0xfff;
-                        std::sprintf(my_buff, "SPID_ERROR_%x",
+                        std::snprintf(my_buff, sizeof(my_buff), "SPID_ERROR_%x",
                             static_cast<int>(u));
                         break;
                     case SPID_PVBIND:  std::strcpy(my_buff, "SPID_PVBIND");  break;
@@ -2171,12 +2174,12 @@ restart:
 // to 124 characters. This is somewhat arbitrary (but MUST relate to the
 // size of my_buff), but will tend to keep output more compact.
                         if (fasl_files[u].name == nullptr)
-                            std::sprintf(my_buff, "#{%.124s}", "*unknown*");
-                        else std::sprintf(my_buff, "#{%.124s}",
+                            std::snprintf(my_buff, sizeof(my_buff), "#{%.124s}", "*unknown*");
+                        else std::snprintf(my_buff, sizeof(my_buff), "#{%.124s}",
                                           fasl_files[u].name);
                         break;
                     default:
-                        std::sprintf(my_buff, "SPID_%lx",
+                        std::snprintf(my_buff, sizeof(my_buff), "SPID_%lx",
                             static_cast<long>((u >> 8) & 0x00ffffff));
                         break;
                 }
@@ -2466,7 +2469,7 @@ restart:
                     return nil;
 
                 case TYPE_SP:
-                    std::sprintf(my_buff, "#<closure: %p>",
+                    std::snprintf(my_buff, sizeof(my_buff), "#<closure: %p>",
                                  bit_cast<void *>(static_cast<LispObject>(elt(u, 0))));
                     goto print_my_buff;
 
@@ -2475,7 +2478,7 @@ restart:
 #endif
                 case TYPE_FOREIGN:
                 case TYPE_ENCAPSULATE:
-                    std::sprintf(my_buff, "#<encapsulated pointer: %p>",
+                    std::snprintf(my_buff, sizeof(my_buff), "#<encapsulated pointer: %p>",
                                  *(void **)&elt(u, 0));
                     goto print_my_buff;
 
@@ -2525,7 +2528,7 @@ restart:
                     // Drop through
 #else
                 case TYPE_STRUCTURE:
-                    std::sprintf(my_buff, "[e-vector:%.8lx]",
+                    std::snprintf(my_buff, sizeof(my_buff), "[e-vector:%.8lx]",
                                  static_cast<long>(static_cast<uint32_t>(u)));
                     goto print_my_buff;
 
@@ -2641,7 +2644,7 @@ restart:
                         internal_prin(elt(u, 2), 1);
                     }
                     for (k=3*CELL; k<len; k+=CELL)
-                    {   std::sprintf(my_buff, "%.8lx",
+                    {   std::snprintf(my_buff, sizeof(my_buff), "%.8lx",
                                      static_cast<long>(
                                          *bit_cast<LispObject *>(
                                              bit_cast<char *>(u) +
@@ -2661,7 +2664,7 @@ restart:
                     putc_stream('#', active_stream); putc_stream('V', active_stream);
                     putc_stream('8', active_stream); putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%d", static_cast<int>(scelt(u, k)));
+                    {   std::snprintf(my_buff, sizeof(my_buff), "%d", static_cast<int>(scelt(u, k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2676,7 +2679,7 @@ restart:
                     putc_stream('1', active_stream); putc_stream('6', active_stream);
                     putc_stream('(', active_stream);
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%d", static_cast<int>(helt(u, k)));
+                    {   std::snprintf(my_buff, sizeof(my_buff), "%d", static_cast<int>(helt(u, k)));
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2689,7 +2692,7 @@ restart:
                     putc_stream('(', active_stream);
                     len = len >> 2;
                     for (k=0; k<len; k++)
-                    {   std::sprintf(my_buff, "%ld", static_cast<long>(ielt32(u,
+                    {   std::snprintf(my_buff, sizeof(my_buff), "%ld", static_cast<long>(ielt32(u,
                                      k)));
                         prin_buf(my_buff, k != 0);
                     }
@@ -2773,7 +2776,7 @@ restart:
                         stream_write_data(active_stream) = al;
                     }
                     al = cdr(car(al));
-                    std::sprintf(my_buff, "#G%lx", static_cast<long>(int_of_fixnum(al)));
+                    std::snprintf(my_buff, sizeof(my_buff), "#G%lx", static_cast<long>(int_of_fixnum(al)));
                     break;
                 }
             }
@@ -3129,16 +3132,16 @@ restart:
 // I would be relying on behaviour not blessed by the current C++ standards.
                     if (escaped_printing & escape_checksum)
                     {   int32_t v = intfloat32_t_val(u);
-                        std::sprintf(my_buff, "@F%.8x", v);
+                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8x", v);
                     }
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&single_float_val(u);
-                        std::sprintf(my_buff, "{%.8" PRIx32 ":%#.8g}",
+                        std::snprintf(my_buff, sizeof(my_buff), "{%.8" PRIx32 ":%#.8g}",
                                      p[0], static_cast<double>(single_float_val(u)));
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
-                        std::sprintf(my_buff, "{%.11" PRIo32 ":%#.8g}",
+                        std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 ":%#.8g}",
                                      p[0], static_cast<double>(single_float_val(u)));
                     }
                     else fp_sprint(my_buff,
@@ -3150,11 +3153,11 @@ restart:
 // directly re-readable.
                     if (escaped_printing & escape_checksum)
                     {   int64_t v = intfloat64_t_val(u);
-                        std::sprintf(my_buff, "@F%.8" PRIx64, v);
+                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64, v);
                     }
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
-                        std::sprintf(my_buff,
+                        std::snprintf(my_buff, sizeof(my_buff),
                                      "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
 #ifdef LITTLEENDIAN
                                      p[1], p[0], static_cast<double>(double_float_val(u)));
@@ -3164,7 +3167,7 @@ restart:
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
-                        std::sprintf(my_buff, "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
+                        std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
 #ifdef LITTLEENDIAN
                                      p[1], p[0], static_cast<double>(double_float_val(u)));
 #else
@@ -3180,24 +3183,24 @@ restart:
                     {   int64_t v0 = intfloat128_t_val0(u);
                         int64_t v1 = intfloat128_t_val1(u);
 #ifdef LITTLEENDIAN
-                        std::sprintf(my_buff, "@F%.8" PRIx64 "/%" PRIx64, v1, v0);
+                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64 "/%" PRIx64, v1, v0);
 #else
-                        std::sprintf(my_buff, "@F%.8" PRIx64 "/%" PRIx64, v0, v1);
+                        std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64 "/%" PRIx64, v0, v1);
 #endif
                     }
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
 #ifdef LITTLEENDIAN
-                        o += std::sprintf(o, "{%.8" PRIx32, p[3]);
-                        o += std::sprintf(o, "/%.8" PRIx32, p[2]);
-                        o += std::sprintf(o, "/%.8" PRIx32, p[1]);
-                        o += std::sprintf(o, "/%.8" PRIx32, p[0]);
+                        o += std::snprintf(o, 12, "{%.8" PRIx32, p[3]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[2]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[1]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[0]);
 #else
-                        o += std::sprintf(o, "{%.8" PRIx32, p[0]);
-                        o += std::sprintf(o, "/%.8" PRIx32, p[1]);
-                        o += std::sprintf(o, "/%.8" PRIx32, p[2]);
-                        o += std::sprintf(o, "/%.8" PRIx32, p[3]);
+                        o += std::snprintf(o, 12, "{%.8" PRIx32, p[0]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[1]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[2]);
+                        o += std::snprintf(o, 12, "/%.8" PRIx32, p[3]);
 #endif
                         *o++ = ':';
                         o += f128_sprint_G(o, 0, 34,
@@ -3210,15 +3213,15 @@ restart:
                     {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
 #ifdef LITTLEENDIAN
-                        o += std::sprintf(o, "{%.11" PRIo32, p[3]);
-                        o += std::sprintf(o, "/%.11" PRIo32, p[2]);
-                        o += std::sprintf(o, "/%.11" PRIo32, p[1]);
-                        o += std::sprintf(o, "/%.11" PRIo32, p[0]);
+                        o += std::snprintf(o, 16, "{%.11" PRIo32, p[3]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[2]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[1]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[0]);
 #else
-                        o += std::sprintf(o, "{%.11" PRIo32, p[0]);
-                        o += std::sprintf(o, "/%.11" PRIo32, p[1]);
-                        o += std::sprintf(o, "/%.11" PRIo32, p[2]);
-                        o += std::sprintf(o, "/%.11" PRIo32, p[3]);
+                        o += std::snprintf(o, 16, "{%.11" PRIo32, p[0]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[1]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[2]);
+                        o += std::snprintf(o, 16, "/%.11" PRIo32, p[3]);
 #endif
                         *o++ = ':';
                         o += f128_sprint_G(o, 0, 34,
@@ -3234,7 +3237,7 @@ restart:
                     break;
 #endif // HAVE_SOFTFLOAT
                 default:
-                    std::sprintf(my_buff, "?%p?", bit_cast<void *>(u));
+                    std::snprintf(my_buff, sizeof(my_buff), "?%p?", bit_cast<void *>(u));
                     break;
             }
         float_print_tidyup:   // label to join in from short float printing
@@ -3305,7 +3308,7 @@ restart:
         // Else drop through to treat as an error
         default:
         error_case:
-            std::sprintf(my_buff, "?%p?", bit_cast<void *>(u));
+            std::snprintf(my_buff, sizeof(my_buff), "?%p?", bit_cast<void *>(u));
             break;
     }
 print_my_buff:
@@ -3511,7 +3514,7 @@ LispObject prinraw(LispObject u)
 // chunks.
         unsigned long long w = static_cast<unsigned long long>(u);
         unsigned long long hi = w >> 32, lo = w;
-        std::sprintf(b, "%.8x%.8x", static_cast<int>(hi),
+        std::snprintf(b, sizeof(b), "%.8x%.8x", static_cast<int>(hi),
                      static_cast<int>(lo));
         for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
     }
@@ -3524,7 +3527,7 @@ LispObject prinraw(LispObject u)
         putc_stream('Z', active_stream);
 #endif // ARITHLIB
         for (size_t i=CELL; i<len; i+=4)
-        {   std::sprintf(b, "%.8x ", (uint32_t)bignum_digits(u)[(i-CELL)/4]);
+        {   std::snprintf(b, sizeof(b), "%.8x ", (uint32_t)bignum_digits(u)[(i-CELL)/4]);
             for (p=b; *p!=0; p++) 
                 putc_stream(*p, active_stream);
         }
@@ -3534,7 +3537,7 @@ LispObject prinraw(LispObject u)
     {   len = length_of_header(h);
         my_assert(len>=8 && len < CSL_PAGE_SIZE, LOCATION);
         for (size_t i=8; i<len; i+=8)
-        {   std::sprintf(b, "%.16" PRIx64 " ",
+        {   std::snprintf(b, sizeof(b), "%.16" PRIx64 " ",
                          *(uint64_t *)(bit_cast<char *>(u) - TAG_NUMBERS + i));
             for (p=b; *p!=0; p++) putc_stream(*p, active_stream);
         }
@@ -4654,7 +4657,7 @@ static LispObject Llibrary_name(LispObject env, LispObject lib)
 
 static char error_name[32];const char *WSAErrName(int i)
 {   switch (i)
-    {   default:                 std::sprintf(error_name,
+    {   default:                 std::snprintf(error_name, sizeof(error_name),
                                               "Socket error %d", i);
                                  return error_name;
 // When I run under Unix I display both the Unix and Windows form of the
@@ -5021,8 +5024,9 @@ start_again:
         }
         trace_printf("Connection created\n");
     }
-    std::sprintf(filename1, "GET %.*s HTTP/1.0\x0d\x0a\x0d\x0a",
-                 static_cast<int>(npath), path);
+    std::snprintf(filename1, sizeof(filename1),
+                  "GET %.*s HTTP/1.0\x0d\x0a\x0d\x0a",
+                  static_cast<int>(npath), path);
 
 // MD addition from webcore.c
     i = std::strlen(filename1);
@@ -5033,7 +5037,7 @@ start_again:
 // text (?)
 // Note that above I write "*|*" where I only really mean a "/" in the
 // middle but where C comment conventions intrude!
-    std::sprintf(&filename1[i], "Accept: */*\x0d\x0a\x0d\x0a");
+    std::snprintf(&filename1[i], 20, "Accept: */*\x0d\x0a\x0d\x0a");
 
     if (send(s, filename1, std::strlen(filename1), 0) == SOCKET_ERROR)
     {   err_printf("Send error (%s)\n", WSAErrName(WSAGetLastError()));
@@ -5305,7 +5309,7 @@ void simple_prin1(LispObject x)
         return;
     }
     else if (is_fixnum(x))
-    {   int k = std::sprintf(buffer, "%" PRId64,
+    {   int k = std::snprintf(buffer, sizeof(buffer), "%" PRId64,
                              (int64_t)int_of_fixnum(x));
         simple_lineend(k);
         std::printf("%s", buffer);
@@ -5355,7 +5359,7 @@ void simple_prin1(LispObject x)
             return;
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
-        int nn = std::sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
+        int nn = std::snprintf(buffer, sizeof(buffer), "[%" PRId64 ":", (int64_t)len);
         simple_lineend(nn);
 #ifdef CONSERVATIVE
         std::printf("%s:", getPageType(x));
@@ -5365,7 +5369,7 @@ void simple_prin1(LispObject x)
         {   simple_lineend(1);
             std::printf(" ");
             if (i > 2 && is_mixed_header(vechdr(x)))
-            {   nn = std::sprintf(buffer, "%" PRIx64, (uint64_t)elt(x, i));
+            {   nn = std::snprintf(buffer, sizeof(buffer), "%" PRIx64, (uint64_t)elt(x, i));
                 simple_lineend(nn);
                 std::printf("%s", buffer);
             }
@@ -5384,8 +5388,8 @@ void simple_prin1(LispObject x)
         {   int32_t d = bignum_digits(x)[i-1];
 // I will print bignums in a manner that shows the 31-bit digits that they
 // are made up from.
-            if (i == len) clen = std::sprintf(buffer, "@#%d", d);
-            else clen = std::sprintf(buffer, ":%u", d);
+            if (i == len) clen = std::snprintf(buffer, sizeof(buffer), "@#%d", d);
+            else clen = std::snprintf(buffer, sizeof(buffer), ":%u", d);
             simple_lineend(clen);
             std::printf("%s", buffer);
         }
@@ -5403,7 +5407,7 @@ void simple_prin1(LispObject x)
 #endif // ARITHLIB
     else
     {   char buffer[32];
-        int clen = std::sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
+        int clen = std::snprintf(buffer, sizeof(buffer), "@%" PRIx64 "@", (int64_t)x);
         simple_lineend(clen);
         std::printf("%s", buffer);
         return;

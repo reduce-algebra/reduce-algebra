@@ -651,7 +651,7 @@ DWORD WINAPI WorkerProc(LPVOID parm)
 //  for (i=0; i<2; i++)
 //  {   int ch = ce_readch();
 //      char b[30];
-//      sprintf(b, "Char %#.2x\n", ch);
+//      snprintf(b, 30, "Char %#.2x\n", ch);
 //      ce_print(b);
 //  }
 //  ce_print("Done...\n");

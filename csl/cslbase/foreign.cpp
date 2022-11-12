@@ -80,7 +80,7 @@ char buffer[100];
 
 char *sff()
 {   std::printf("double sff()\n");
-    std::sprintf(buffer, "SFF%d!", static_cast<int>(k)++);
+    std::snprintf(buffer, sizeof(buffer), "SFF%d!", static_cast<int>(k)++);
     return buffer;
 }
 

@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         }
         char source[1000];
         if (searchdir==nullptr) std::strcpy(source, arg);
-        else std::sprintf(source, "%s/%s", searchdir, arg);
+        else std::snprintf(source, sizeof(source), "%s/%s", searchdir, arg);
         CXIndex index = clang_createIndex(0, 0);
         CXTranslationUnit unit = clang_parseTranslationUnit(
                                      index,      // Index

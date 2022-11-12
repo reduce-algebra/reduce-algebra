@@ -193,13 +193,13 @@ int testcase()
 extern const char *programDir;
 
 static int submain(int argc, char *argv[])
-{   char imageName[256];
+{   char imageName[1024];
     const char *nargv[5];
     int rc;
 
     std::printf("Start of demo of embedded driver\n");
 
-    std::sprintf(imageName, "%s/reduce.img", programDir);
+    std::snprintf(imageName, sizeof(imagename), "%s/reduce.img", programDir);
     nargv[0] = argv[0];
     nargv[1] = "-i";
     nargv[2] = imageName;

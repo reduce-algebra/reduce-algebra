@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     {   std::fprintf(stderr, "Failed to access \"%s\"\n", argv[1]);
         return 1;
     }
-    std::sprintf(outname, "%s.new", argv[1]);
+    std::snprintf(outname, sizeof(outname), "%s.new", argv[1]);
     out = std::fopen(outname, "w");
     if (out == nullptr)
     {   std::fprintf(stderr, "Failed to access \"%s\"\n", outname);
@@ -174,9 +174,9 @@ int main(int argc, char *argv[])
         else if (std::strncmp(curline, "#else", 5) == 0)
         {   i = 5;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) std::sprintf(&curline[i], " /* ERROR */");
+            if (depth == 0) std::snprintf(&curline[i], 16, " /* ERROR */");
             else
-            {   std::sprintf(&curline[i], " /* %s */", pending[depth-1]);
+            {   std::snprintf(&curline[i], 16, " /* %s */", pending[depth-1]);
                 elseseen[depth-1] =
                     elseseen[depth-1] == 0 ? 3 :
                     elseseen[depth-1] == 1 ? 2 : 4;
@@ -185,8 +185,8 @@ int main(int argc, char *argv[])
         else if (std::strncmp(curline, "#endif", 6) == 0)
         {   i = 6;
             while (curline[i] != 0 && curline[i] != ' ') i++;
-            if (depth == 0) std::sprintf(&curline[i], " /* ERROR */");
-            else std::sprintf(&curline[i], " /* %s */", pending[depth-1]);
+            if (depth == 0) std::snprintf(&curline[i], 16, " /* ERROR */");
+            else std::snprintf(&curline[i], 16, " /* %s */", pending[depth-1]);
             depth--;
         }
         i = std::fprintf(out, "%s", curline);

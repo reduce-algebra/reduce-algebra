@@ -707,7 +707,7 @@ int main(int argc, char *argv[])
     {   f = fontnames[fontnum];
         std::printf("Process font %s\n", f);
         relevant = kerndata = topaccent = variant = 0;
-        std::sprintf(filename, "wxfonts/metrics/%s.afm", f);
+        std::snprintf(filename, sizeof(filename), "wxfonts/metrics/%s.afm", f);
         if ((src = std::fopen(filename, "r")) == nullptr)
         {   std::printf("Unable to access %s\n", filename);
             std::exit(EXIT_FAILURE);

@@ -119,8 +119,9 @@ static char time_string[40], space_string[32];
 void report_time(int32_t t, int32_t gct)
 {
 #ifndef EMBEDDED
-    std::sprintf(time_string, "%ld.%.2ld+%ld.%.2ld secs  ",
-                 t/100L, t%100L, gct/100L, gct%100L);
+    std::snprintf(time_string, sizeof(time_string),
+                  "%ld.%.2ld+%ld.%.2ld secs  ",
+                  t/100L, t%100L, gct/100L, gct%100L);
     if ((window_heading & 1) == 0) fwin_report_left(time_string);
 #endif
 }
@@ -129,13 +130,16 @@ void report_space(uint64_t n, double percent, double mbytes)
 {
 #ifndef EMBEDDED
     if (mbytes > 9500.0)
-        std::sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dG",
-                     n, percent, static_cast<int>((mbytes+500.0)/1000.0));
+        std::snprintf(space_string, sizeof(space_string),
+                      "[GC %" PRIu64 "]:%.2f%% %dG",
+                      n, percent, static_cast<int>((mbytes+500.0)/1000.0));
     else if (mbytes > 700.0)
-        std::sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %.1fG",
-                     n, percent, mbytes/1000.0);
-    else std::sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dM",
-                          n, percent, static_cast<int>(mbytes + 0.5));
+        std::snprintf(space_string, sizeof(space_string),
+                      "[GC %" PRIu64 "]:%.2f%% %.1fG",
+                      n, percent, mbytes/1000.0);
+    else std::snprintf(space_string, sizeof(space_string),
+                       "[GC %" PRIu64 "]:%.2f%% %dM",
+                        n, percent, static_cast<int>(mbytes + 0.5));
     if ((window_heading & 4) == 0) fwin_report_right(space_string);
 #endif
 }
@@ -361,14 +365,14 @@ const char *find_image_directory(int argc, const char *argv[])
 // really an application after all. I will do a load of rather curious
 // tests here that are intended to detect the above cases and do special
 // things! My tests will be based on file names and paths.
-    std::sprintf(xname, "/%s.app/Contents/MacOS", programName);
+    std::snprintf(xname, sizeof(xname), "/%s.app/Contents/MacOS", programName);
     n = std::strlen(programDir) - std::strlen(xname);
     if (n>=0 && std::strcmp(programDir+n, xname) == 0)
     {   // Seem to be being executed from within application bundle.
 // This dates from when I thought I would put the image in merely Contents not
 // in Contents/MacOS.
-        std::sprintf(xname, "%.*s/%s.img",
-                     static_cast<int>(std::strlen(programDir)), programDir, programName);
+        std::snprintf(xname, sizeof(xname), "%.*s/%s.img",
+                      static_cast<int>(std::strlen(programDir)), programDir, programName);
     }
     else
     {   struct stat buf;
@@ -376,14 +380,17 @@ const char *find_image_directory(int argc, const char *argv[])
 // will put the image file in the application directory. Of there is no
 // such bundle I will put the image file in the location I would have used
 // with Windows of X11.
-        std::sprintf(xname, "%s/%s.app/Contents/MacOS", programDir,
-                     programName);
+        std::snprintf(xname, sizeof(xname),
+                      "%s/%s.app/Contents/MacOS", programDir,
+                      programName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
-        {   std::sprintf(xname, "%s/%s.app/Contents/MacOS/%s.img",
-                         programDir, programName, programName);
+        {   std::snprintf(xname, sizeof(xname),
+                          "%s/%s.app/Contents/MacOS/%s.img",
+                          programDir, programName, programName);
         }
-        else std::sprintf(xname, "%s/%s.img", programDir, programName);
+        else std::snprintf(xname, sizeof(xname),
+                           "%s/%s.img", programDir, programName);
 
     }
 #else
@@ -418,7 +425,8 @@ const char *find_image_directory(int argc, const char *argv[])
         i = std::strlen(bin);
         j = std::strlen(programDir);
         if (j>=i && std::strcmp(programDir+j-i, bin)==0)
-        {   std::sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, pn);
+        {   std::snprintf(xname, sizeof(xname),
+                          "%.*s%s/%s.img", j-i, programDir, data, pn);
         }
 
 // If the name I just created does not correspond to a file I will fall
@@ -428,7 +436,7 @@ const char *find_image_directory(int argc, const char *argv[])
 // installed version - do that with a copy that sits in your own private
 // writable are of disc.
         if (stat(xname, &buf) != 0)
-            std::sprintf(xname, "%s/%s.img", programDir, pn);
+            std::snprintf(xname, sizeof(xname), "%s/%s.img", programDir, pn);
     }
 #endif
     n = std::strlen(xname)+1;
@@ -485,8 +493,8 @@ int find_gnuplot(char *name)
     if (w != nullptr && (len = std::strlen(w)) > 0)
     {   if (w[len-1] == '/' ||
             w[len-1] == '\\') len--;
-        std::sprintf(name, "%.*s%c%s", static_cast<int>(len), w, DIRCHAR,
-                     GPNAME);
+        std::snprintf(name, LONGEST_LEGAL_FILENAME,
+                      "%.*s%c%s", static_cast<int>(len), w, DIRCHAR, GPNAME);
         if (executable_file(name)) return 1;
     }
     std::strcpy(name, programDir);
@@ -639,7 +647,7 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
         if (n < 10) *s++ = '0' + static_cast<int>(n);
         else *s++ = 'a' + static_cast<int>(n - 10);
         if (suffix != nullptr)
-        {   std::sprintf(s, ".%.*s", static_cast<int>(suffixlen), suffix);
+        {   std::snprintf(s, 16, ".%.*s", static_cast<int>(suffixlen), suffix);
         }
         else *s = 0;
 // If the file whose name I have just invented already exists I need to

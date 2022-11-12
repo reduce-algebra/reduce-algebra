@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
     {   std::printf("c2cpp file.c [file.cpp]\n");
         return 0;
     }
-    if (argc < 2) std::sprintf(destfile, "%spp", srcfile);
+    if (argc < 2) std::snprintf(destfile, 100, "%spp", srcfile);
     else std::strcpy(destfile, argv[2]);
     std::printf("Convert from %s to %s\n", srcfile, destfile);
     src = std::fopen(srcfile, "r");

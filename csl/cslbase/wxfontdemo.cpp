@@ -615,7 +615,7 @@ int main(int argc, const char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        std::sprintf(xname, "%s.app", programName);
+        std::snprintf(xname, sizeof(xname), "%s.app", programName);
         if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
@@ -623,7 +623,7 @@ int main(int argc, const char *argv[])
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            std::sprintf(xname, "%s.app", fullProgramName);
+            std::snprintf(xname, sizeof(xname), "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
@@ -698,7 +698,7 @@ void add_custom_fonts()
     for (int i=0;
          i<static_cast<int>(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        std::sprintf(nn, "%s/%s/%s",
+        std::snprintf(nn, sizeof(nn), "%s/%s/%s",
                      programDir, toString(fontsdir), fontNames[i]);
         std::printf("Adding %s: ", nn); std::fflush(stdout);
         wxString widename(nn);
@@ -958,14 +958,14 @@ void fontPanel::OnPaint(wxPaintEvent &event)
         gc->SetFont(glabels);
         for (int i=0; i<32; i++)
         {   char word[12];
-            std::sprintf(word, "%02x", i);
+            std::snprintf(word, sizeof(word), "%02x", i);
             gc->DrawText(word, ((static_cast<double>(CELLWIDTH))*
                                 (i+1)) + CELLWIDTH/2.2,
                          static_cast<double>(CELLHEIGHT)/10.0);
         }
         for (int i=0; i<8; i++)
         {   char word[12];
-            std::sprintf(word, "%5x", 32*i + 0x80*page);
+            std::snprintf(word, sizeof(word), "%5x", 32*i + 0x80*page);
             gc->DrawText(word, CELLWIDTH/10.0,
                          static_cast<double>(CELLHEIGHT)*(i+1) + CELLHEIGHT/2.5);
         }

@@ -263,7 +263,7 @@ int main(int argc, const char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        std::sprintf(xname, "%s.app", programName);
+        std::snprintf(xname, sizeof(xname), "%s.app", programName);
         if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
@@ -271,7 +271,7 @@ int main(int argc, const char *argv[])
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            std::sprintf(xname, "%s.app", fullProgramName);
+            std::snprintf(xname, sizeof(xname), "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
@@ -531,14 +531,14 @@ void fontPanel::OnPaint(wxPaintEvent &event)
     dc.SetFont(labels);
     for (int i=0; i<32; i++)
     {   char word[12];
-        std::sprintf(word, "%02x", i);
+        std::snprintf(word, sizeof(word), "%02x", i);
         dc.DrawText(word, ((static_cast<double>(CELLWIDTH))*
                            (i+1)) + CELLWIDTH/2.2,
                     static_cast<double>(CELLHEIGHT)/10.0);
     }
     for (int i=0; i<8; i++)
     {   char word[12];
-        std::sprintf(word, "%5x", 32*i + 0x80*page);
+        std::snprintf(word, sizeof(word), "%5x", 32*i + 0x80*page);
         dc.DrawText(word, CELLWIDTH/10.0,
                     static_cast<double>(CELLHEIGHT)*(i+1) + CELLHEIGHT/2.5);
     }

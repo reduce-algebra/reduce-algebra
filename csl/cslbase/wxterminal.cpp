@@ -383,9 +383,8 @@ public:
 
 #define FWIN_BUFFER_SIZE  1000
 // If I have vsnprintf I can be fully safe, and most modern C libraries
-// will provide this. If that is NOT available I will fall back on
-// vsprintf, and hope that all strings printed will end up less than
-// 200 bytes long.
+// will provide this. Hmmm - vsnprintf is part of C++11 and that means I
+// should now feel that I can rely on its availability!
 #define SPARE_FOR_VFPRINTF 200
 
     char fwin_buffer1[FWIN_BUFFER_SIZE];
@@ -2521,7 +2520,7 @@ void fwinText::ctrlXcommand()
         while (j < 8) buffer[i++] = ' ', j++;
         buffer[i++] = p->code | 0x01000000;
         buffer[i++] = ' ';
-        std::sprintf(h, "%.4x", p->code);
+        std::snprintf(h, sizeof(buffer)-i, "%.4x", p->code);
         buffer[i++] = h[0];
         buffer[i++] = h[1];
         buffer[i++] = h[2];
@@ -4577,13 +4576,7 @@ void fwin_printf(const char *fmt, ...)
     char *b = panel->use_buffer1 ? panel->fwin_buffer1 :
               panel->fwin_buffer2;
     int in = panel->fwin_in;
-#ifdef HAVE_VSNPRINTF
     std::vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
-#else
-// In this case I have no protection againt buffer overflow. However I
-// now really expect most C/C++ implementations to provide vsnprintf.
-    std::vsprintf(&b[in], fmt, a);
-#endif
 // Cautious about portability and old libraries, and aware of values that
 // vsnprintf may return when the data does not fit, I ignore the values
 // of the above functions and adjust the data pointers by hand.
@@ -4618,11 +4611,7 @@ void fwin_vfprintf(const char *fmt, std::va_list a)
     char *b = panel->use_buffer1 ? panel->fwin_buffer1 :
               panel->fwin_buffer2;
     int in = panel->fwin_in;
-#ifdef HAVE_VSNPRINTF
     std::vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
-#else
-    std::vsprintf(&b[in], fmt, a);
-#endif
     int n = std::strlen(&b[in]);
     std::FILE *f = panel->logfile;
     if (f != nullptr) std::fwrite(&b[in], 1, n, f);

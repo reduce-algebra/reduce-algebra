@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        std::sprintf(xname,"%s.app", programName);
+        std::snprintf(xname, sizeof(xname), "%s.app", programName);
         if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            std::sprintf(xname,"%s.app", fullProgramName);
+            std::snprintf(xname, sizeof(xname), "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {
@@ -393,7 +393,7 @@ bool showmathApp::OnInit()
     if (showmathFilename != nullptr &&
         std::strncmp(showmathFilename, "/cygdrive/", 10) == 0 &&
         showmathFilename[11] == '/')
-    {   std::sprintf(tidyFilename, "%c:%s",
+    {   std::snprintf(tidyFilename, sizeof(tifyFilename), "%c:%s",
                      showmathFilename[10], showmathFilename+11);
         showmathFilename = tidyFilename;
     }
@@ -556,7 +556,7 @@ static int32_t convert_font_name(char *dest, char *src)
                 "AR PL New Kai");
     else if (std::strcmp(src, "Math") == 0) std::strcpy(dest,
                 "cslSTIXMath");
-    else std::sprintf(dest, "cslSTIX");
+    else std::snprintf(dest, 64, "cslSTIX");
 // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
     if (std::strcmp(dest,
                     "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);

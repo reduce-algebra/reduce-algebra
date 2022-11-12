@@ -422,7 +422,7 @@ int main(int argc,char *argv[])
 // I will add exactly and only the fonts that I will be using.
     char fff[256];
     for (std::size_t i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
-    {   std::sprintf(fff,
+    {   std::snprintf(fff, sizeof(fff),
                      "%s/" toString(fontsdir) "/%s.pfb",
                      programDir, fontNames[i].name);
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);

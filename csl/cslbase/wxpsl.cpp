@@ -100,11 +100,14 @@ int fwin_main(int argc, const char **argv)
     {   i--;
         while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
     }
-    std::sprintf(bpsl_binary, "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",
+    std::snprintf(bpsl_binary, LONGEST_LEGAL_FILENAME,
+                 "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",            
                  i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
-    std::sprintf(reduce_image, "%.*s%cpslbuild%c%s%cred%creduce.img",
+    std::snprintf(reduce_image, LONGEST_LEGAL_FILENAME,
+                 "%.*s%cpslbuild%c%s%cred%creduce.img",
                  i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
-    std::sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
+    std::snprintf(memory_control, LONGEST_LEGAL_FILENAME,
+                 "%.*s%cpslbuild%c%s%cpsl%c64",
                  i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     FWIN_LOG("bin: %s\n", bpsl_binary);
     FWIN_LOG("img: %s\n", reduce_image);
@@ -174,15 +177,17 @@ int fwin_main(int argc, const char **argv)
 // With Windows I will always create the sub-process via a command line
 // and it will split that up into individual arguments when it is ready to.
 //
-    char *cmdLine = new (std::nothrow)
-        char[std::strlen(bpsl_binary) +
+    size_t bsize = std::strlen(bpsl_binary) +
              std::strlen(reduce_image) +
-             std::strlen(memory_control) + 16];
+             std::strlen(memory_control) + 16;
+    char *cmdLine = new (std::nothrow)
+        char[bsize];
     if (cmdLine  == nullptr)
     {   fwin_printf("failed to allocate space for command line\n");
         fwin_exit(EXIT_FAILURE);
     }
-    std::sprintf(cmdLine, "\"%s\" -td %s -f \"%s\"",
+    std::snprintf(cmdLine, bsize,
+                 "\"%s\" -td %s -f \"%s\"",
                  bpsl_binary, memory_control, reduce_image);
     PROCESS_INFORMATION piProcInfo;
     STARTUPINFO siStartInfo;

@@ -1249,7 +1249,8 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
 // result would not be real
             const char *name = trig_functions[which_one].name;
             char errbuff[64];
-            std::sprintf(errbuff, "Arg for %s out of range", name);
+            std::snprintf(errbuff, sizeof(errbuff),
+                "Arg for %s out of range", name);
             return aerror1(errbuff, a);
 #endif
             rp = make_boxfloat(c1r, restype);

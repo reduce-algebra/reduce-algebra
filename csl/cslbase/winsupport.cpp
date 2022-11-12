@@ -83,7 +83,7 @@ static char error_name[32];
 
 const char *WSAErrName(int i)
 {   switch (i)
-    {   default:                 std::sprintf(error_name,
+    {   default:                 std::snprintf(error_name, sizeof(error_name),
                                               "Socket error %d", i);
                                  return error_name;
         case WSAEINTR:           return "WSAEINTR";
@@ -365,12 +365,12 @@ int windowsFindGnuplot2(char *name)
 // Windows one, but I need to convert it into a Cygwin-style one. It
 // should start "x:\" with a drive name so I map that onto "/cygdrive/x/"
 // and convert every "\" to a "/". The code here is rather grotty with the
-// numeric "magic offsets" and the use of sprintf followed by patching
+// numeric "magic offsets" and the use of snprintf followed by patching
 // up after the terminating null from that, but it is at least concise.
             ll = std::strlen(name);
             for (i=ll; i>=0; i--)
                 name[i+9] = name[i]=='\\' ? '/' : name[i];
-            std::sprintf(name, "/cygdrive/%c", name[0]);
+            std::snprintf(name, 40, "/cygdrive/%c", name[0]);
             name[11] = '/';
             return 1;
         }
