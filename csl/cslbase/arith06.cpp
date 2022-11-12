@@ -39,7 +39,7 @@
 
 #include "headers.h"
 
-
+#ifndef ARITHLIB
 
 /*****************************************************************************/
 /**               Lisp-callable versions of arithmetic functions            **/
@@ -1544,6 +1544,8 @@ LispObject Lmake_random_state1(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
+#endif // ARITHLIB
+
 LispObject pack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
 {
     LispObject r;
@@ -1762,6 +1764,8 @@ LispObject Lmd60(LispObject env, LispObject a)
     return onevalue(a);
 }
 
+#ifndef ARITHLIB
+
 static LispObject Llogand_0(LispObject env)
 {   return onevalue(fixnum_of_int(-1));
 }
@@ -1830,93 +1834,87 @@ static LispObject Lvalidate_2(LispObject env, LispObject a,
     return onevalue(a);
 }
 
-// If ARITHLIB is enabled all these functions will have their names
-// prefixed with "old" so that the versions from the arithlib code
-// provide the default behaviour
-
-#ifdef ARITHLIB
-#define X "old"
-#else // ARITHLIB
-#define X
 #endif // ARITHLIB
 
 setup_type const arith06_setup[] =
 {   DEF_1("md60", Lmd60),
 
-    DEF_2(X "ash", Lash),
-    DEF_2(X "ash1", Lash1),
-    DEF_2(X "lshift", Lash),
-    DEF_2(X "ashift", Lash1),
-    DEF_2(X "divide", Ldivide_2),
-    DEF_1(X "evenp", Levenp),
-    DEF_2(X "inorm", Linorm),
+#ifndef ARITHLIB
+    DEF_2("ash", Lash),
+    DEF_2("ash1", Lash1),
+    DEF_2("lshift", Lash),
+    DEF_2("ashift", Lash1),
+    DEF_2("divide", Ldivide_2),
+    DEF_1("evenp", Levenp),
+    DEF_2("inorm", Linorm),
 // Variadic functions need to fill in all the information...
-    {X "logand",  Llogand_0, Lidentity, Llogand_2, Llogand_3, Lbool_4up},
-    {X "land",    Llogand_0, Lidentity, Llogand_2, Llogand_3, Lbool_4up},
-    {X "logeqv",  Llogeqv_0, Lidentity, Llogeqv_2, Llogeqv_3, Lbool_4up},
-    DEF_1(X "lognot", Llognot),
-    DEF_1(X "lnot", Llognot),
-    {X "logxor",  Llogxor_0, Lidentity, Llogxor_2, Llogxor_3, Lbool_4up},
-    {X "lxor",    Llogxor_0, Lidentity, Llogxor_2, Llogxor_3, Lbool_4up},
-    {X "leqv",    Llogeqv_0, Lidentity, Llogeqv_2, Llogeqv_3, Lbool_4up},
-    DEF_1(X "lsd", Llsd),
-    {X "make-random-state", G0Wother, Lmake_random_state1, Lmake_random_state, G3Wother, G4Wother},
-    DEF_1(X "manexp", Lmanexp),
-    {X "max",     G0Wother, Lidentity, Lmax_2, Lmax_3, Lmax_4up},
-    DEF_2(X "max2", Lmax_2),
-    {X "min",     G0Wother, Lidentity, Lmin_2, Lmin_3, Lmin_4up},
-    DEF_2(X "min2", Lmin_2),
-    DEF_1(X "minus", Lminus),
-    DEF_1(X "minusp", Lminusp),
-    DEF_2(X "mod", Lmod_2),
-    DEF_1(X "msd", Lmsd),
-    DEF_1(X "oddp", Loddp),
-    DEF_1(X "onep", Lonep),
-    DEF_1(X "plusp", Lplusp),
-    DEF_1(X "rational", Lrational),
-    DEF_1(X "rationalize", Lrationalize),
-    DEF_1(X "zerop", Lzerop),
-    DEF_1(X "md5", Lmd5),
-    DEF_1(X "md5string", Lmd5string),
-    DEF_1(X "trap-floating-overflow", Ltrap_floating_overflow),
-    {X "*",       Ltimes_0, Lidentity, Ltimes_2, Ltimes_3, Ltimes_4up},
-    {X "+",       Lplus_0, Lidentity, Lplus_2, Lplus_3, Lplus_4up},
-    {X "-",       Ldifference_0, Lminus, Ldifference_2, Ldifference_3, Ldifference_4up},
-    {X "/",       Lquotient_0, LCLquotient_1, LCLquotient_2, LCLquotient_3, LCLquotient_4up},
-    {X "/=",      Lnum_neq_0, Lnum_neq_1, Lnum_neq_2, Lnum_neq_3, Lnum_neq_4up},
-    DEF_1(X "1+", Ladd1),
-    DEF_1(X "1-", Lsub1),
-    {X "<",       Llessp_0, Llessp_1, Llessp_2, Llessp_3, Llessp_4up},
-    {X "<=",      Lleq_0, Lleq_1, Lleq_2, Lleq_3, Lleq_4up},
-    {X "=",       Lcl_equals_sign_0, Lcl_equals_sign_1, Lcl_equals_sign_2, Lcl_equals_sign_3, Lcl_equals_sign_4up},
-    {X ">",       Lgreaterp_0, Lgreaterp_1, Lgreaterp_2, Lgreaterp_3, Lgreaterp_4up},
-    {X ">=",      Lgeq_0, Lgeq_1, Lgeq_2, Lgeq_3, Lgeq_4up},
-    {X "logior",  Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
-    DEF_2(X "rem", Lrem_2),
-    {X "random",  G0Wother, Lrandom_1, Lrandom_2, G3Wother, G4Wother},
-    DEF_0(X "next-random-number", Lnext_random),
-    DEF_1(X "random-number", Lrandom_1),
-    DEF_0(X "random-fixnum", Lnext_random),
+    {"logand",  Llogand_0, Lidentity, Llogand_2, Llogand_3, Lbool_4up},
+    {"land",    Llogand_0, Lidentity, Llogand_2, Llogand_3, Lbool_4up},
+    {"logeqv",  Llogeqv_0, Lidentity, Llogeqv_2, Llogeqv_3, Lbool_4up},
+    DEF_1("lognot", Llognot),
+    DEF_1("lnot", Llognot),
+    {"logxor",  Llogxor_0, Lidentity, Llogxor_2, Llogxor_3, Lbool_4up},
+    {"lxor",    Llogxor_0, Lidentity, Llogxor_2, Llogxor_3, Lbool_4up},
+    {"leqv",    Llogeqv_0, Lidentity, Llogeqv_2, Llogeqv_3, Lbool_4up},
+    DEF_1("lsd", Llsd),
+    {"make-random-state", G0Wother, Lmake_random_state1, Lmake_random_state, G3Wother, G4Wother},
+    DEF_1("manexp", Lmanexp),
+    {"max",     G0Wother, Lidentity, Lmax_2, Lmax_3, Lmax_4up},
+    DEF_2("max2", Lmax_2),
+    {"min",     G0Wother, Lidentity, Lmin_2, Lmin_3, Lmin_4up},
+    DEF_2("min2", Lmin_2),
+    DEF_1("minus", Lminus),
+    DEF_1("minusp", Lminusp),
+    DEF_2("mod", Lmod_2),
+    DEF_1("msd", Lmsd),
+    DEF_1("oddp", Loddp),
+    DEF_1("onep", Lonep),
+    DEF_1("plusp", Lplusp),
+    DEF_1("rational", Lrational),
+    DEF_1("rationalize", Lrationalize),
+    DEF_1("zerop", Lzerop),
+    DEF_1("md5", Lmd5),
+    DEF_1("md5string", Lmd5string),
+    DEF_1("trap-floating-overflow", Ltrap_floating_overflow),
+    {"*",       Ltimes_0, Lidentity, Ltimes_2, Ltimes_3, Ltimes_4up},
+    {"+",       Lplus_0, Lidentity, Lplus_2, Lplus_3, Lplus_4up},
+    {"-",       Ldifference_0, Lminus, Ldifference_2, Ldifference_3, Ldifference_4up},
+    {"/",       Lquotient_0, LCLquotient_1, LCLquotient_2, LCLquotient_3, LCLquotient_4up},
+    {"/=",      Lnum_neq_0, Lnum_neq_1, Lnum_neq_2, Lnum_neq_3, Lnum_neq_4up},
+    DEF_1("1+", Ladd1),
+    DEF_1("1-", Lsub1),
+    {"<",       Llessp_0, Llessp_1, Llessp_2, Llessp_3, Llessp_4up},
+    {"<=",      Lleq_0, Lleq_1, Lleq_2, Lleq_3, Lleq_4up},
+    {"=",       Lcl_equals_sign_0, Lcl_equals_sign_1, Lcl_equals_sign_2, Lcl_equals_sign_3, Lcl_equals_sign_4up},
+    {">",       Lgreaterp_0, Lgreaterp_1, Lgreaterp_2, Lgreaterp_3, Lgreaterp_4up},
+    {">=",      Lgeq_0, Lgeq_1, Lgeq_2, Lgeq_3, Lgeq_4up},
+    {"logior",  Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
+    DEF_2("rem", Lrem_2),
+    {"random",  G0Wother, Lrandom_1, Lrandom_2, G3Wother, G4Wother},
+    DEF_0("next-random-number", Lnext_random),
+    DEF_1("random-number", Lrandom_1),
+    DEF_0("random-fixnum", Lnext_random),
 // I always provide the old style names to make porting code easier for me
-    {X "float",   G0Wother, Lfloat, Lfloat_2, G3Wother, G4Wother},
-    {X "times",   Ltimes_0, Lidentity, Ltimes_2, Ltimes_3, Ltimes_4up},
-    {X "plus",    Lplus_0, Lidentity, Lplus_2, Lplus_3, Lplus_4up},
-    DEF_2(X "times2", Ltimes_2),
-    DEF_2(X "plus2", Lplus_2),
-    {X "difference", Ldifference_0, Lminus, Ldifference_2, Ldifference_3, Ldifference_4up},
+    {"float",   G0Wother, Lfloat, Lfloat_2, G3Wother, G4Wother},
+    {"times",   Ltimes_0, Lidentity, Ltimes_2, Ltimes_3, Ltimes_4up},
+    {"plus",    Lplus_0, Lidentity, Lplus_2, Lplus_3, Lplus_4up},
+    DEF_2("times2", Ltimes_2),
+    DEF_2("plus2", Lplus_2),
+    {"difference", Ldifference_0, Lminus, Ldifference_2, Ldifference_3, Ldifference_4up},
 // I leave QUOTIENT as the integer-truncating form, while "/" gives ratios
-    {X "quotient",Lquotient_0, Lquotient_1, Lquotient_2, Lquotient_3, Lquotient_4up},
-    DEF_2(X "remainder", Lrem_2),
-    DEF_1(X "add1", Ladd1),
-    DEF_1(X "sub1", Lsub1),
-    {X "lessp",   Llessp_0, Llessp_1, Llessp_2, Llessp_3, Llessp_4up},
-    {X "leq",     Lleq_0, Lleq_1, Lleq_2, Lleq_3, Lleq_4up},
-    {X "eqn",     Leqn_0, Leqn_1, Leqn_2, Leqn_3, Leqn_4up},
-    {X "greaterp",Lgreaterp_0, Lgreaterp_1, Lgreaterp_2, Lgreaterp_3, Lgreaterp_4up},
-    {X "geq",     Lgeq_0, Lgeq_1, Lgeq_2, Lgeq_3, Lgeq_4up},
-    {X "logor",   Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
-    {X "lor",     Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
-    {X "validate-number", G0Wother, Lvalidate, Lvalidate_2, G3Wother, G4Wother},
+    {"quotient",Lquotient_0, Lquotient_1, Lquotient_2, Lquotient_3, Lquotient_4up},
+    DEF_2("remainder", Lrem_2),
+    DEF_1("add1", Ladd1),
+    DEF_1("sub1", Lsub1),
+    {"lessp",   Llessp_0, Llessp_1, Llessp_2, Llessp_3, Llessp_4up},
+    {"leq",     Lleq_0, Lleq_1, Lleq_2, Lleq_3, Lleq_4up},
+    {"eqn",     Leqn_0, Leqn_1, Leqn_2, Leqn_3, Leqn_4up},
+    {"greaterp",Lgreaterp_0, Lgreaterp_1, Lgreaterp_2, Lgreaterp_3, Lgreaterp_4up},
+    {"geq",     Lgeq_0, Lgeq_1, Lgeq_2, Lgeq_3, Lgeq_4up},
+    {"logor",   Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
+    {"lor",     Llogor_0, Lidentity, Llogor_2, Llogor_3, Lbool_4up},
+    {"validate-number", G0Wother, Lvalidate, Lvalidate_2, G3Wother, G4Wother},
+#endif // ARITHLIB
     {nullptr,   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

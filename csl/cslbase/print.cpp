@@ -3244,6 +3244,7 @@ restart:
             break;
 
         case TAG_NUMBERS:
+#ifndef ARITHLIB
             if (is_bignum(u))
             {   if (escaped_printing & escape_hex)
                     print_bighexoctbin(u, 16, escape_width(escaped_printing),
@@ -3262,7 +3263,7 @@ restart:
                                  (escaped_printing & escape_nolinebreak) || tmprint_flag);
                 return nil;
             }
-#ifdef ARITHLIB
+#else // ARITHLIB
             if (is_new_bignum(u))
             {   if (escaped_printing & escape_hex)
                     print_newbighexoctbin(u, 16, escape_width(escaped_printing),

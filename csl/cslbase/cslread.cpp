@@ -610,8 +610,13 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                 {   if (i==0 && boffo_char(i) == '-') sign = true;
                     else if (d1 == 10000000 || i == boffop-1)
                     {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
+#ifdef ARITHLIB
+                        v = Times::op(v, fixnum_of_int(d1));
+                        v = Plus::op(v, fixnum_of_int(d));
+#else // ARITHLIB
                         v = times2(v, fixnum_of_int(d1));
                         v = plus2(v, fixnum_of_int(d));
+#endif // ARITHLIB
                         d = 0;
                         d1 = 10;
                     }
@@ -620,7 +625,11 @@ LispObject intern(size_t len, bool escaped, int startAddr)
                         d1 = 10*d1;
                     }
                 }
+#ifdef ARITHLIB
+                if (sign) v = Minus::op(v);
+#else // ARITHLIB
                 if (sign) v = negate(v);
+#endif // ARITHLIB
                 return v;
             }
 
@@ -634,14 +643,22 @@ LispObject intern(size_t len, bool escaped, int startAddr)
 // be OK but 12345678987654321/3 will not. This is laziness I guess and
 // some time ideally I would come and fix this so it uses the same
 // strategy as used for bignums to read ratios with big numerators and/or
-// denominators.
+// denominators. Well worse than that I fit things into "int" and on
+// a 32-bit platfrom I will be limited to 29 bits...
+// Rework this sometime please!
             boffo_char(boffop) = 0;
 // p and q were made int not int32_t to match up with the %d in scanf ...
             std::sscanf(bit_cast<char *>(&boffo_char(0)), "%d/%d", &p,
                         &q);
+#ifdef ARITHLIB
+// Limit myself to fixnums here
+            LispObject gg = Gcdn::op(fixnum_of_int(p), fixnum_of_int(q));
+            g = static_cast<int>(int_of_fixnum(gg));
+#else // ARITHLIB
 // Limit myself to fixnums here
             g = static_cast<int>(int_of_fixnum(gcd(fixnum_of_int((int32_t)p),
                                                    fixnum_of_int((int32_t)q))));
+#endif // ARITHLIB
             p /= g;
             q /= g;
             if (q < 0)
@@ -693,6 +710,8 @@ LispObject intern(size_t len, bool escaped, int startAddr)
     }
 }
 
+#ifndef ARITHLIB
+
 LispObject intern_hex_old(size_t len)
 {   size_t i;
     LispObject v = fixnum_of_int(0);
@@ -712,6 +731,8 @@ LispObject intern_hex_old(size_t len)
     }
     return v;
 }
+
+#endif // !ARITHLIB
 
 #ifdef ARITHLIB
 
@@ -2761,18 +2782,12 @@ static LispObject read_s(LispObject stream)
                     if (curchar > 0xff || !std::isdigit(curchar))
                         return intern(boffop, false);
                 }
-                bool ishex = false, isalt = false, isflt = false;
-// The mess here should allow  nnnnnn  0Xxxxxxxx 0Znnnnnnn where n denotes
-// 0..9 and x denotes 0..9a..fA..F.
-// The "0z" notation is a TEMPORARY provision while I work on an upgraded
-// arithmetic package. It causes the OLD code and bignum representation to be
-// used.
+                bool ishex = false, isflt = false;
                 while (curchar <= 0xff &&
                        (std::isdigit(curchar) ||
-                        ((boffop == 1 &&
-                          boffo_char(0)=='0' &&
-                          (((curchar=='x' || curchar=='X') && (ishex=true)) ||
-                           ((curchar=='z' || curchar=='Z') && (isalt=true))))) ||
+                        (boffop == 1 &&
+                         boffo_char(0)=='0' &&
+                         ((curchar=='x' || curchar=='X') && (ishex=true))) ||
                         (ishex && (('a'<=curchar && curchar<='f') ||
                                    ('A'<=curchar && curchar<='F')))))
                 {   Save save(THREADARG stream);
@@ -2829,7 +2844,6 @@ static LispObject read_s(LispObject stream)
                 }
 #ifdef ARITHLIB
                 if (ishex) return intern_hex_new(boffop);
-                else if (isalt) return intern(boffop, false, 2);
                 else if (isflt) return intern(boffop, false);
                 else return intern_new(boffop);
 #else // ARITHLIB

@@ -39,7 +39,7 @@
 
 #include "headers.h"
 
-
+#ifndef ARITHLIB
 
 uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 //
@@ -406,5 +406,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
         putc_stream(static_cast<int>(a), active_stream);
     }
 }
+
+#endif // ARITHLIB
 
 // end of arith05.cpp

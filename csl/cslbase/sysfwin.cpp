@@ -638,7 +638,12 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
         for (i=0; i<7; i++)
         {   int d = static_cast<int>(n % 36);
             n = n / 36;
+#ifdef ARITHLIB
+            if (i == 1)
+                n ^= static_cast<unsigned long>(arithlib::mersenne_twister());
+#else // ARITHLIB
             if (i == 1) n ^= static_cast<unsigned long>(Crand());
+#endif // ARITHLIB
             if (d < 10) d += '0';
             else d += ('a' - 10);   // now 0-9 or 1-z
             *s++ = d;

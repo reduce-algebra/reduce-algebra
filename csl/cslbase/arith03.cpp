@@ -40,7 +40,7 @@
 
 #include "headers.h"
 
-
+#ifndef ARITHLIB
 //
 // Division
 //
@@ -1763,5 +1763,7 @@ LispObject CLquot2a(LispObject a, LispObject b)
             return aerror1("bad arg for /",  a);
     }
 }
+
+#endif // ARITHLIB
 
 // end of arith03.cpp

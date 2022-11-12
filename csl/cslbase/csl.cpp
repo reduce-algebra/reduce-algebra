@@ -1318,13 +1318,13 @@ const size_t pageMega = 8;
 size_t maxPages = 0;
 
 
-#ifndef HAVE_CILK
+#if !defined HAVE_CILK && !defined ARITHLIB
 std::thread kara_thread[2];
 std::mutex kara_mutex;
 std::condition_variable cv_kara_ready, cv_kara_done;
 unsigned int kara_ready = 0;
 int kara_done = 0;
-#endif
+#endif // HAVE_CILK, ARITHLIB
 
 // I am also putting the following segment in a separate file in case I want
 // to use a (potentially customized) version of it elsewhere...
@@ -1452,7 +1452,7 @@ unsigned int gcStop = 0;
 unsigned int gcEvery = 0;
 bool ignoreLoadTime = false;
 
-#ifndef AVOID_KARATSUBA_THREADS
+#if !defined AVOID_KARATSUBA_THREADS && !defined ARITHLIB
 
 // I have some background threads to help me, so here is the code to start
 // them up. It seems to be important to terminate detached threads (or join
@@ -1489,7 +1489,7 @@ public:
     }
 };
 
-#endif //AVOID_KARATSUBA_THREADS
+#endif //AVOID_KARATSUBA_THREADS, ARITHLIB
 
 char *mystrdup(const char *s)
 {   char *r = new char[std::strlen(s)+1];
@@ -1513,7 +1513,9 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     C_stackBase = bit_cast<uintptr_t>(&sp);
     C_stackLimit = 0;
     max_store_size = 0.0;
+#ifndef ARITHLIB
     karatsuba_parallel = 0x7fffffff;
+#endif // ARITHLIB
 
 #ifdef EMBEDDED
 // This provides a fixed limit in the embedded build
@@ -2230,7 +2232,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 
-#ifndef AVOID_KARATSUBA_THREADS
+#if !defined AVOID_KARATSUBA_THREADS && !defined ARITHLIB
             /*! options [--kara] \item [{\ttfamily --kara}] \index{{\ttfamily --kara}}
              * This it is intended for use by those maintaining CSL not for the general
              * public. By default long multiplication can use a threaded implementation
@@ -2250,7 +2252,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (kparallel < KARATSUBA_CUTOFF) kparallel = KARATSUBA_CUTOFF;
                 }
             },
-#endif // AVOID_KARATSUBA_THREADS
+#endif // AVOID_KARATSUBA_THREADS, ARITHLIB
 
             /*! options [--trace/--tr] \item [{\ttfamily --trace, --tr}] \index{{\ttfamily --trace, --tr}}
              * When followed by the name of a function this command-line option has and
@@ -2883,7 +2885,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I will seed the random number generator as requested by the user. The
 // default will be to put it in an unpredictable (well hard to predict!)
 // state
+#ifdef ARITHLIB
+    arithlib_lowlevel::reseed(initial_random_seed);
+#else // ARITHLIB
     Csrand(initial_random_seed);
+#endif // ARITHLIB
 
     if (init_flags & INIT_VERBOSE)
     {
@@ -2907,12 +2913,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If the user hits the close button here I may be in trouble
 #endif // WITH_GUI
 
-#ifndef AVOID_KARATSUBA_THREADS
+#if !defined AVOID_KARATSUBA_THREADS && !defined ARITHLIB
 // I will now ALWAYS use threads for Karatsuba even on a CPU that only has
 // a single core!
     karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
     if (kparallel > 0) karatsuba_parallel = kparallel;
-#endif // AVOID_KARATSUBA_THREADS
+#endif // AVOID_KARATSUBA_THREADS, ARITHLIB
 
 // Now I will decide how much memory to try to use. Start by finding out
 // how much memory my computer has. Well there are many circumstances where
@@ -3477,9 +3483,9 @@ static int submain(int argc, const char *argv[])
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
 #endif // HAVE_CRLIBM
-#ifndef AVOID_KARATSUBA_THREADS
+#if !defined AVOID_KARATSUBA_THREADS && !defined ARITHLIB
     KaratsubaThreads kthreads;
-#endif // AVOID_KARATSUBA_THREADS
+#endif // AVOID_KARATSUBA_THREADS, ARITHLIB
 
     cslstart(argc, argv, nullptr);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE

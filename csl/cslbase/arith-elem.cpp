@@ -1495,7 +1495,7 @@ LispObject Nlog_2(LispObject env, LispObject a, LispObject b)
     b = Ntrigfn(33, b);
     errexit();
     save1.restore(a);
-    return quot2(a, b);
+    return Quotient::op(a, b);
 }
 
 #ifdef ISQRT_IMPLEMENTED_PROPERLY
@@ -1558,10 +1558,10 @@ LispObject Nabsval(LispObject env, LispObject a)
 
 LispObject Nphase(LispObject env, LispObject a)
 {   if (is_numbers(a) && is_complex(a))
-        return Latan2(nil, imag_part(a), real_part(a));
+        return Natan2(nil, imag_part(a), real_part(a));
 // If a is not a complex number it is real, so its phase is either
 // +pi or -pi.
-    bool s = minusp(a);
+    bool s = Minusp::op(a);
     double d;
     if (s) d = -_pi;
     else d = _pi;
@@ -1575,14 +1575,11 @@ LispObject Nsignum(LispObject env, LispObject a)
 //* This seems an expensive way of doing things - huh? Maybe complex values?
     bool z;
     LispObject w;
-    z = zerop(a);
+    z = Zerop::op(a);
     if (z) return onevalue(a);
-    THREADID;
-    Save save(THREADARG a);
-    w = Labsval(nil, a);
+    w = Nabsval(nil, a);
     errexit();
-    save.restore(a);
-    a = quot2(a, w);
+    a = Quotient::op(a, w);
     return onevalue(a);
 }
 
@@ -1590,11 +1587,8 @@ LispObject Ncis(LispObject, LispObject a)
 // Implement as exp(i*a) - this permits complex args which goes
 // beyond the specification of Common Lisp.
 {   LispObject ii;
-    THREADID;
-    Save save(THREADARG a);
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     errexit();
-    save.restore(a);
 // it seems a bit gross to multiply by i by calling Times::op(), but
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).
@@ -1607,7 +1601,7 @@ LispObject Natan(LispObject, LispObject a)
 }
 
 LispObject Natan_2(LispObject env, LispObject a, LispObject b)
-{   return Latan2(env, a, b);
+{   return Natan2(env, a, b);
 }
 
 LispObject Natan2(LispObject env, LispObject y, LispObject x)

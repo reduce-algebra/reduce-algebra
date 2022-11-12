@@ -46,8 +46,9 @@
 
 // $Id$
 
-
 #include "headers.h"
+
+#ifndef ARITHLIB
 
 #ifdef HAVE_COMPLEX
 
@@ -534,43 +535,43 @@ static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
 // prefixed with "old" so that the versions from the arithlib code
 // provide the default behaviour
 
-#ifdef ARITHLIB
-#define X "old"
-#else // ARITHLIB
-#define X
 #endif // ARITHLIB
 
 setup_type const arith13_setup[] =
-{   DEF_2(X "native-carg",    Lcarg),
-    DEF_2(X "native-cabs",    Lcabs),
-    DEF_2(X "native-cexp",    Lcexp),
-    DEF_2(X "native-clog",    Lclog),
-    DEF_2(X "native-csqrt",   Lcsqrt),
-    DEF_2(X "native-csin",    Lcsin),
-    DEF_2(X "native-ccos",    Lccos),
-    DEF_2(X "native-ctan",    Lctan),
-    DEF_2(X "native-ccsc",    Lccsc),
-    DEF_2(X "native-csec",    Lcsec),
-    DEF_2(X "native-ccot",    Lccot),
-    DEF_2(X "native-casin",   Lcasin),
-    DEF_2(X "native-cacos",   Lcacos),
-    DEF_2(X "native-catan",   Lcatan),
-    DEF_2(X "native-cacsc",   Lcacsc),
-    DEF_2(X "native-casec",   Lcasec),
-    DEF_2(X "native-cacot",   Lcacot),
-    DEF_2(X "native-csinh",   Lcsinh),
-    DEF_2(X "native-ccosh",   Lccosh),
-    DEF_2(X "native-ctanh",   Lctanh),
-    DEF_2(X "native-ccsch",   Lccsch),
-    DEF_2(X "native-csech",   Lcsech),
-    DEF_2(X "native-ccoth",   Lccoth),
-    DEF_2(X "native-casinh",  Lcasinh),
-    DEF_2(X "native-cacosh",  Lcacosh),
-    DEF_2(X "native-catanh",  Lcatanh),
-    DEF_2(X "native-cacsch",  Lcacsch),
-    DEF_2(X "native-casech",  Lcasech),
-    DEF_2(X "native-cacoth",  Lcacoth),
+{
+#ifndef ARITHLIB
+    DEF_2("native-carg",    Lcarg),
+    DEF_2("native-cabs",    Lcabs),
+    DEF_2("native-cexp",    Lcexp),
+    DEF_2("native-clog",    Lclog),
+    DEF_2("native-csqrt",   Lcsqrt),
+    DEF_2("native-csin",    Lcsin),
+    DEF_2("native-ccos",    Lccos),
+    DEF_2("native-ctan",    Lctan),
+    DEF_2("native-ccsc",    Lccsc),
+    DEF_2("native-csec",    Lcsec),
+    DEF_2("native-ccot",    Lccot),
+    DEF_2("native-casin",   Lcasin),
+    DEF_2("native-cacos",   Lcacos),
+    DEF_2("native-catan",   Lcatan),
+    DEF_2("native-cacsc",   Lcacsc),
+    DEF_2("native-casec",   Lcasec),
+    DEF_2("native-cacot",   Lcacot),
+    DEF_2("native-csinh",   Lcsinh),
+    DEF_2("native-ccosh",   Lccosh),
+    DEF_2("native-ctanh",   Lctanh),
+    DEF_2("native-ccsch",   Lccsch),
+    DEF_2("native-csech",   Lcsech),
+    DEF_2("native-ccoth",   Lccoth),
+    DEF_2("native-casinh",  Lcasinh),
+    DEF_2("native-cacosh",  Lcacosh),
+    DEF_2("native-catanh",  Lcatanh),
+    DEF_2("native-cacsch",  Lcacsch),
+    DEF_2("native-casech",  Lcasech),
+    DEF_2("native-cacoth",  Lcacoth),
+#endif // ARITHLIB
     {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
 };
+
 
 // end of arith13.cpp

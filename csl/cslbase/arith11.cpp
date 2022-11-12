@@ -42,7 +42,7 @@
 
 #include "headers.h"
 
-
+#ifndef ARITHLIB
 
 LispObject rembi(LispObject a, LispObject b)
 {   if (b == fixnum_of_int(0)) return aerror2("bad arg for remainder", a, b);
@@ -1192,5 +1192,7 @@ bool SL_numeq2(LispObject a, LispObject b)
             return (a == b);
     }
 }
+
+#endif // ARITHLIB
 
 // end of arith11.cpp

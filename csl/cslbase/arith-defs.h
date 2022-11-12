@@ -415,7 +415,7 @@ extern LispObject Nmodular_quotient(LispObject env, LispObject a1, LispObject a2
 extern LispObject Nmodular_reciprocal(LispObject env, LispObject a1);
 extern LispObject Nsafe_modular_reciprocal(LispObject env, LispObject a1);
 extern LispObject Nmodular_minus(LispObject env, LispObject a1);
-extern LispObject Nset_modulus(LispObject env, LispObject a1);
+extern LispObject Nset_small_modulus(LispObject env, LispObject a1);
 extern LispObject Nmodular_number(LispObject env, LispObject a1);
 extern LispObject Niplus(LispObject env);
 extern LispObject Niplus(LispObject env, LispObject a1);
@@ -547,6 +547,8 @@ extern LispObject Ndpb(LispObject env, LispObject a1, LispObject a2, LispObject 
 extern LispObject Ndeposit_field(LispObject env, LispObject a1, LispObject a2, LispObject a3);
 
 extern LispObject Nlisp_fix_ratio(LispObject env, LispObject a1);
+extern LispObject Nlisp_fix(LispObject a, int roundmode);
+extern LispObject Nlisp_ifix(LispObject aa, LispObject bb, int roundmode);
 extern LispObject Nround(LispObject env, LispObject a1);
 extern LispObject Nround(LispObject env, LispObject a1, LispObject a2);
 extern LispObject Nfround(LispObject env, LispObject a1);

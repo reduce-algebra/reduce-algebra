@@ -41,6 +41,9 @@
 // $Id$
 
 #include "headers.h"
+
+#ifndef ARITHLIB
+
 #ifdef WITH_CILK
 //
 // If CILK is available (see www.cilkplus.com) then it can handle the
@@ -1455,5 +1458,7 @@ LispObject times2a(LispObject a, LispObject b)
             return aerror1("bad arg for times",  a);
     }
 }
+
+#endif // ARITHLIB
 
 // end of arith02.cpp

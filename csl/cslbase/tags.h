@@ -1978,6 +1978,7 @@ inline void incCount(LispObject p, uint32_t m=1)
 }
 
 #ifndef HAVE_SOFTFLOAT
+
 typedef struct _float32_t
 {   uint32_t v;
 } float32_t;
@@ -1985,7 +1986,8 @@ typedef struct _float32_t
 typedef struct _float64_t
 {   uint64_t v;
 } float64_t;
-#endif
+
+#endif // HAVE_SOFTFLOAT
 
 typedef union _Float_union
 {   float f;

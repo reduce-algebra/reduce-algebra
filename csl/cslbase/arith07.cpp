@@ -40,6 +40,7 @@
 
 #include "headers.h"
 
+#ifndef ARITHLIB
 
 LispObject copyb(LispObject a)
 //
@@ -234,6 +235,7 @@ LispObject negate(LispObject a)
     }
 }
 
+#endif // ARITHLIB
 
 /*****************************************************************************/
 //**              Transcendental functions etcetera.                       **
@@ -974,5 +976,6 @@ Complex Cpow(Complex z1, Complex z2)
 //
 // End of complex-to-complex-power code.
 //
+
 
 // end of arith07.cpp

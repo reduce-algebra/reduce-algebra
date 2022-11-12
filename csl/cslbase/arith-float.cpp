@@ -1685,7 +1685,7 @@ LispObject Ntrap_floating_overflow(LispObject env, LispObject a)
 
 LispObject Nround(LispObject env, LispObject a, LispObject b)
 {   if (!is_number(a) || !is_number(b)) return aerror1("round", a);
-    return lisp_ifix(a, b, FIX_ROUND);
+    return Nlisp_ifix(a, b, FIX_ROUND);
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1693,7 +1693,9 @@ LispObject Nround(LispObject env, LispObject a, LispObject b)
 // double precision version.
 
 static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
-{   float128_t *d = reinterpret_cast<float128_t *>(long_float_addr(
+{
+#ifdef FINISHED
+    float128_t *d = reinterpret_cast<float128_t *>(long_float_addr(
                         a));
     if (f128_nanp(*d)) return aerror("NaN in fix");
     if (f128_infinitep(*d)) return aerror("infinity in fix");
@@ -1789,6 +1791,7 @@ static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
         default:
             return make_n5_word_bignum(d4, d3, d2, d1, d0, x1);
     }
+#endif // FINISHED
 }
 #endif // HAVE_SOFTFLOAT
 
@@ -1854,17 +1857,21 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 // the input as that large then since a double precision float only has 56
 // bits for its mantissa I know now that I will not need to do any rounding,
 // and so all the complication regarding the rounding mode does not apply.
+#ifdef FINISHED
     int32_t d2;
     uint32_t d1, d0;
     intptr_t x = double_to_3_digits(d, d2, d1, d0);
     return make_n_word_bignum(d2, d1, d0, x);
+#endif // FINISHED
 }
 
 // This converts from a ratio to a Lisp integer.  It has to apply
 // rounding in the desired direction.
 
 static LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
-{   LispObject w, w1;
+{
+#ifdef FINISHED
+    LispObject w, w1;
     THREADID;
     RealSave save(THREADARG numerator(a), denominator(a), nil);
     LispObject &p = save.val(1);
@@ -1924,13 +1931,16 @@ static LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
     }
     mv_2 = p;
     return nvalues(r, 2);
+#endif // FINISHED
 }
 
 // This fixes a value a and returns (a - fix(a)) as a second result. This is
 // only ever called with a floating point argument.
 
 LispObject Nlisp_fix(LispObject a, int roundmode)
-{   LispObject r;
+{
+#ifdef FINISHED
+    LispObject r;
     THREADID;
     Save save(THREADARG a);
     r = Nlisp_fix_sub(a, roundmode);
@@ -1942,6 +1952,7 @@ LispObject Nlisp_fix(LispObject a, int roundmode)
     save1.restore(r);
     mv_2 = a;
     return nvalues(r, 2);
+#endif // FINISHED
 }
 
 // ifix is for the 2-arg variants of floor, truncate, round etc. For
@@ -1949,7 +1960,9 @@ LispObject Nlisp_fix(LispObject a, int roundmode)
 // returned as a second value is b times the residue in that fix operation.
 
 LispObject Nlisp_ifix(LispObject aa, LispObject bb, int roundmode)
-{   LispObject r2, negb;
+{
+#ifdef FINISHED
+    LispObject r2, negb;
     THREADID;
     if (is_float(aa) || is_float(bb))
     {   Save save(THREADARG bb);
@@ -2008,6 +2021,7 @@ LispObject Nlisp_ifix(LispObject aa, LispObject bb, int roundmode)
     }
     mv_2 = r;
     return nvalues(q, 2);
+#endif // FINISHED
 }
 
 LispObject Nround(LispObject env, LispObject a)
@@ -2175,6 +2189,7 @@ LispObject Nmodf(LispObject env, LispObject a1)
 }
 
 #ifdef HAVE_SOFTFLOAT
+
 LispObject Ndecode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128_infinitep(d) || f128_nanp(d))
@@ -2194,8 +2209,7 @@ LispObject Ndecode_long_float(LispObject a)
         f128_set_exponent(&d, 0x3fff);
     }
     LispObject sign = make_boxfloat128(f128_1);
-    if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(
-                                  sign)));
+    if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(sign)));
     {   THREADID;
         Save save(THREADARG sign);
         a = make_boxfloat128(d);
@@ -2254,7 +2268,9 @@ LispObject Ndecode_float(LispObject env, LispObject a)
 
 #ifdef HAVE_SOFTFLOAT
 LispObject Ninteger_decode_long_float(LispObject a)
-{   float128_t d = long_float_val(a);
+{
+#ifdef FINISHED
+    float128_t d = long_float_val(a);
     if (f128_infinitep(d) || f128_nanp(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
         else return onevalue(nil); // infinity or NaN
@@ -2287,11 +2303,14 @@ LispObject Ninteger_decode_long_float(LispObject a)
     return list3(a, fixnum_of_int(x),
                  neg ? fixnum_of_int(-1) : fixnum_of_int(1));
 #endif
+#endif // FINISHED
 }
 #endif // HAVE_SOFTFLOAT
 
 LispObject Ninteger_decode_float(LispObject env, LispObject a)
-{   double d;
+{
+#ifdef FINISHED
+    double d;
     if (!is_float(a)) return aerror("integer-decode-float");
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
@@ -2330,6 +2349,7 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
     return list3(a, fixnum_of_int(x),
                  neg ? fixnum_of_int(-1) : fixnum_of_int(1));
 #endif
+#endif // FINISHED
 }
 
 #endif // ARITHLIB
