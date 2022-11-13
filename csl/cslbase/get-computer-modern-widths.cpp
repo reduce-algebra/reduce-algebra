@@ -83,7 +83,7 @@ static int process(char *d, char *s)
     std::FILE *f;
     int c;
     int headershown = 0;
-    std::sprintf(line, "%s/%s", FONT_PATH, s);
+    std::snprintf(line, sizeof(line), "%s/%s", FONT_PATH, s);
     f = std::fopen(line, "r");
     if (f == nullptr)
     {   std::fprintf(stderr, "Failed to read \"%s\"\n", line);

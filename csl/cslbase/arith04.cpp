@@ -40,6 +40,7 @@
 
 #include "headers.h"
 
+#ifndef ARITHLIB
 
 LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0,
                               size_t n)
@@ -1785,5 +1786,7 @@ bool lesseq2(LispObject a, LispObject b)
 bool geq2(LispObject a, LispObject b)
 {   return geq(a, b);
 }
+
+#endif // ARITHLIB
 
 // end of arith04.cpp

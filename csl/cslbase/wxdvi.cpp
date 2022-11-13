@@ -341,7 +341,7 @@ int main(int argc, const char *argv[])
 // makes resources (eg fonts) that are within the bundle available and
 // it also seems to cause things to terminate more neatly.
         char xname[LONGEST_LEGAL_FILENAME];
-        std::sprintf(xname, "%s.app", programName);
+        std::snprintf(xname, sizeof(xname), "%s.app", programName);
         if (std::strstr(fullProgramName, xname) == nullptr)
         {
 // Here the binary I launched was not located as
@@ -349,7 +349,7 @@ int main(int argc, const char *argv[])
 // so I will view it is NOT being from an application bundle. I will
 // re-launch it so it is! This may be a bit of a hacky way to decide!
             struct stat buf;
-            std::sprintf(xname, "%s.app", fullProgramName);
+            std::snprintf(xname, sizeof(xname), "%s.app", fullProgramName);
             if (stat(xname, &buf) == 0 &&
                 (buf.st_mode & S_IFDIR) != 0)
             {

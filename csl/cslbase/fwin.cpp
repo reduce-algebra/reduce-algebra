@@ -338,24 +338,27 @@ void fwin_write_log(const char *s, ...)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
         std::memset(logfile_name, 0, sizeof(logfile_name));
         if (std::strcmp(programDir, ".") == 0)
-            std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+            std::snprintf(logfile_name, sizeof(logfile_name),
+                "/tmp/%s", LOGFILE_NAME);
 #ifdef __APPLE__
 // If the executable I am running exists as
 //    ...../something.app/Contents/MacOS/something
 // then I will place the log file adjacant to the .app directory rather
 // than in the MacOS directory next to the actual raw executable.
-        else if (std::sprintf(logfile_name, "%s.app/Contents/MacOS",
-                              programName),
+        else if (std::snprintf(logfile_name, sizeof(logfile_name),
+                               "%s.app/Contents/MacOS",
+                               programName),
                  std::strlen(programDir) >= std::strlen(logfile_name) &&
                  std::strcmp(programDir+std::strlen(programDir)-std::strlen(
                                  logfile_name),
                              logfile_name) == 0)
-        {   std::sprintf(logfile_name, "%.*s/%s",
+        {   std::snprintf(logfile_name, sizeof(logfile_name), "%.*s/%s",
                          static_cast<int>(std::strlen(programDir)-std::strlen(programName)-19),
                          programDir, LOGFILE_NAME);
         }
 #endif // __APPLE__
-        else std::sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+        else std::snprintf(logfile_name, sizeof(logfile_name),
+                           "%s/%s", programDir, LOGFILE_NAME);
         fwin_logfile = std::fopen(logfile_name, "a");
 // I provide a fallback in case (perhaps) permissions fail me.
         if (fwin_logfile == nullptr) fwin_logfile =
@@ -446,7 +449,7 @@ void mac_deal_with_application_bundle(int argc, const char *argv[])
 // I will try to re-launch it so it is.
         struct stat buf;
         std::memset(xname, 0, sizeof(xname));
-        std::sprintf(xname, "%s.app", fullProgramName);
+        std::snprintf(xname, sizeof(xname), "%s.app", fullProgramName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {
@@ -522,7 +525,7 @@ void consoleWait()
 // should be unimportant.
     for (int i=5; i!=0; i--)
     {   char title[32];
-        std::sprintf(title, "Exiting after %d seconds", i);
+        std::snprintf(title, sizeof(title), "Exiting after %d seconds", i);
         SetConsoleTitle(title);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
@@ -2155,13 +2158,13 @@ static char err_buf[LONGEST_LEGAL_FILENAME+100];
 char *change_directory(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0)
-    {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
+    {   std::snprintf(err_buf, sizeof(err_buf),
+            "Filename \"%s\" invalid.", old);
         return err_buf;
     }
     std::error_code ec;
     std::filesystem::current_path(
-        std::filesystem::path(filename),
-        ec);
+        std::filesystem::path(filename), ec);
     if (ec)
     {   std::strncpy(err_buf, ec.message().c_str(), sizeof(err_buf)-1);
         return err_buf;
@@ -2174,8 +2177,7 @@ int create_directory(char *filename, const char *old, size_t n)
     if (*filename == 0) return 1;
     std::error_code ec;
     std::filesystem::create_directory(
-        std::filesystem::path(filename),
-        ec);
+        std::filesystem::path(filename), ec);
     if (ec) return 1;
     return 0;
 }
@@ -2923,7 +2925,8 @@ static char err_buf[LONGEST_LEGAL_FILENAME+100];
 char *change_directory(char *filename, const char *old, size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0)
-    {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
+    {   std::snprintf(err_buf, sizeof(err_buf),
+            "Filename \"%s\" invalid.", old);
         return err_buf;
     }
     if (chdir(filename))
@@ -2945,7 +2948,7 @@ char *change_directory(char *filename, const char *old, size_t n)
                 msg = "Cannot change directory to %s.";
                 break;
         }
-        std::sprintf(err_buf, msg, filename);
+        std::snprintf(err_buf, sizeof(err_buf), msg, filename);
         return err_buf;
     }
     else return nullptr;

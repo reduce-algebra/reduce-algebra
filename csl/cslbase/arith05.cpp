@@ -39,7 +39,7 @@
 
 #include "headers.h"
 
-
+#ifndef ARITHLIB
 
 uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 //
@@ -107,11 +107,6 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
             uint32_t dig = dig0;
             int i = 0;
             if (dig0 < 0) dig = -dig0;
-//
-// I do all my conversion from binary to decimal by hand in this code,
-// where once I used sprintf - but sprintf is somewhat more powerful
-// than I need, and thus I expect it to be somewhat more costly.
-//
             do
             {   int32_t nxt = dig % 10;
                 dig = dig / 10;
@@ -411,5 +406,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
         putc_stream(static_cast<int>(a), active_stream);
     }
 }
+
+#endif // ARITHLIB
 
 // end of arith05.cpp

@@ -5069,20 +5069,20 @@ c!:direct_entrypoint (4 . "list4"))))))
 (null (setq c!:c_entrypoint_list (append c!:c_entrypoint_list (quote ((abs 
 c!:c_entrypoint "GABSVAL") (add1 c!:c_entrypoint "GADD1") (!1!+ 
 c!:c_entrypoint "GADD1") (ash1 c!:c_entrypoint "GASH1") (atan c!:c_entrypoint
-"GATAN") (eqn c!:c_entrypoint "GEQN") (evenp c!:c_entrypoint "GEVENP") (expt
-c!:c_entrypoint "GEXPT") (fix c!:c_entrypoint "GTRUNCATE") (float 
-c!:c_entrypoint "GFLOAT") (gcdn c!:c_entrypoint "GGCD") (geq c!:c_entrypoint 
-"GGEQ") (greaterp c!:c_entrypoint "GGREATERP") (iadd1 c!:c_entrypoint 
-"GIADD1") (idifference c!:c_entrypoint "GIDIFFERENCE") (igreaterp 
-c!:c_entrypoint "GIGREATERP") (ilessp c!:c_entrypoint "GILESSP") (iminus 
-c!:c_entrypoint "GIMINUS") (iminusp c!:c_entrypoint "GIMINUSP") (iplus2 
-c!:c_entrypoint "GIPLUS") (iquotient c!:c_entrypoint "GIQUOTIENT") (
-iremainder c!:c_entrypoint "GIREMAINDER") (irightshift c!:c_entrypoint 
-"GIRIGHTSHIFT") (isub1 c!:c_entrypoint "GISUB1") (itimes2 c!:c_entrypoint 
-"GITIMES") (leq c!:c_entrypoint "GLEQ") (lessp c!:c_entrypoint "GLESSP") (
-max2 c!:c_entrypoint "GMAX") (min2 c!:c_entrypoint "GMIN") (minus 
-c!:c_entrypoint "GMINUS") (minusp c!:c_entrypoint "GMINUSP") (mod 
-c!:c_entrypoint "GMOD") (modular!-difference c!:c_entrypoint 
+"GATAN") (divide c!:c_entrypoint "GDIVIDE") (eqn c!:c_entrypoint "GEQN") (
+evenp c!:c_entrypoint "GEVENP") (expt c!:c_entrypoint "GEXPT") (fix 
+c!:c_entrypoint "GTRUNCATE") (float c!:c_entrypoint "GFLOAT") (gcdn 
+c!:c_entrypoint "GGCD") (geq c!:c_entrypoint "GGEQ") (greaterp 
+c!:c_entrypoint "GGREATERP") (iadd1 c!:c_entrypoint "GIADD1") (idifference 
+c!:c_entrypoint "GIDIFFERENCE") (igreaterp c!:c_entrypoint "GIGREATERP") (
+ilessp c!:c_entrypoint "GILESSP") (iminus c!:c_entrypoint "GIMINUS") (iminusp
+c!:c_entrypoint "GIMINUSP") (iplus2 c!:c_entrypoint "GIPLUS") (iquotient 
+c!:c_entrypoint "GIQUOTIENT") (iremainder c!:c_entrypoint "GIREMAINDER") (
+irightshift c!:c_entrypoint "GIRIGHTSHIFT") (isub1 c!:c_entrypoint "GISUB1") 
+(itimes2 c!:c_entrypoint "GITIMES") (leq c!:c_entrypoint "GLEQ") (lessp 
+c!:c_entrypoint "GLESSP") (max2 c!:c_entrypoint "GMAX") (min2 c!:c_entrypoint
+"GMIN") (minus c!:c_entrypoint "GMINUS") (minusp c!:c_entrypoint "GMINUSP") 
+(mod c!:c_entrypoint "GMOD") (modular!-difference c!:c_entrypoint 
 "GMODULAR_DIFFERENCE") (modular!-expt c!:c_entrypoint "GMODULAR_EXPT") (
 modular!-minus c!:c_entrypoint "GMODULAR_MINUS") (modular!-number 
 c!:c_entrypoint "GMODULAR_NUMBER") (modular!-plus c!:c_entrypoint 
@@ -5105,16 +5105,15 @@ c!:direct_predicate (2 . "DGREATERP2")) (geq c!:direct_predicate (2 . "DGEQ2"
 
 (null (setq c!:c_entrypoint_list (append c!:c_entrypoint_list (quote ((append
 c!:c_entrypoint "Lappend_2") (assoc c!:c_entrypoint "Lassoc") (compress 
-c!:c_entrypoint "Lcompress") (delete c!:c_entrypoint "Ldelete") (divide 
-c!:c_entrypoint "Ldivide_2") (equal c!:c_entrypoint "Lequal") (intern 
-c!:c_entrypoint "Lintern") (liter c!:c_entrypoint "Lalpha_char_p") (member 
-c!:c_entrypoint "Lmember") (prin c!:c_entrypoint "Lprin") (prin1 
-c!:c_entrypoint "Lprin") (prin2 c!:c_entrypoint "Lprinc") (princ 
-c!:c_entrypoint "Lprinc") (print c!:c_entrypoint "Lprint") (printc 
-c!:c_entrypoint "Lprintc") (read c!:c_entrypoint "Lread") (readch 
-c!:c_entrypoint "Lreadch") (sublis c!:c_entrypoint "Lsublis") (vectorp 
-c!:c_entrypoint "Lsimple_vectorp") (get c!:direct_entrypoint (2 . "get"))))))
-)
+c!:c_entrypoint "Lcompress") (delete c!:c_entrypoint "Ldelete") (equal 
+c!:c_entrypoint "Lequal") (intern c!:c_entrypoint "Lintern") (liter 
+c!:c_entrypoint "Lalpha_char_p") (member c!:c_entrypoint "Lmember") (prin 
+c!:c_entrypoint "Lprin") (prin1 c!:c_entrypoint "Lprin") (prin2 
+c!:c_entrypoint "Lprinc") (princ c!:c_entrypoint "Lprinc") (print 
+c!:c_entrypoint "Lprint") (printc c!:c_entrypoint "Lprintc") (read 
+c!:c_entrypoint "Lread") (readch c!:c_entrypoint "Lreadch") (sublis 
+c!:c_entrypoint "Lsublis") (vectorp c!:c_entrypoint "Lsimple_vectorp") (get 
+c!:direct_entrypoint (2 . "get")))))))
 
 (prog (var1386) (setq var1386 c!:c_entrypoint_list) lab1385 (cond ((null 
 var1386) (return nil))) (prog (x) (setq x (car var1386)) (put (car x) (cadr x

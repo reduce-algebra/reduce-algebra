@@ -41,10 +41,6 @@
 
 #include "headers.h"
 
-#ifdef HAVE_SOFTFLOAT
-
 // All this has moved to float128_t.[h.cpp]
-
-#endif // HAVE_SOFTFLOAT
 
 // end of arith14.cpp

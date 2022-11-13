@@ -582,7 +582,7 @@ void flushPending()
         }
 // I now turn (XXX) into yyy_cast<XXX>
         char temp[64];
-        std::sprintf(temp, "%s_cast<%.*s>", castType, (q-p-2), p+1);
+        std::snprintf(temp, 64, "%s_cast<%.*s>", castType, (q-p-2), p+1);
         insert(temp, p, origLen);
     }
     std::printf("%s", b);

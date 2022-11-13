@@ -8306,6 +8306,13 @@ inline void classical_multiply_and_add(std::uint64_t a,
 // via the command line definitions when different source files are
 // being processed that could cause linker clashes otherwise.
 
+// November 2022: the Karatsuba code with the setting K=18 leads
+// to an incorrect calculation of 10^1000, and so as a measure until I
+// investigate and fix that I will set the transition level well above
+// any normal usage.
+
+#define K  100000 
+#define K1 100000
 
 #if !defined K && !defined K_DEFINED
 // I provide a default here but can override it at compile time
@@ -8321,6 +8328,9 @@ static const std::size_t K=18;
 // It may be defined globally as a severe override of what happens here!
 static std::size_t KARATSUBA_CUTOFF = K;
 #endif
+
+#undef KARATSUBA_CUTOFF
+#define KARATSUBA_CUTOFF 100000
 
 #if !defined K1 && !defined K1_DEFINED
 // I provide a default here but can override it at compile time.

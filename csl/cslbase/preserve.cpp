@@ -746,7 +746,8 @@ static int samename(const char *n1, directory *d, int j, size_t len)
         // and the use of "negative length codes" for
         // using it is dodgy!
     {   char hard[16];
-        std::sprintf(hard, "HardCode<%.2x>", static_cast<int>((-len) & 0xff));
+        std::snprintf(hard, 16, "HardCode<%.2x>",
+            static_cast<int>((-len) & 0xff));
         return (std::memcmp(n2, hard, 12) == 0);
     }
     if ((n2[11] & 0xff) > 0x80) return 0;
@@ -784,7 +785,7 @@ static void fasl_file_name(char *nn, directory *d, const char *name,
     {   if (len == IMAGE_CODE) std::strcpy(&nn[np], "InitialImage");
         else if (len == HELP_CODE) std::strcpy(&nn[np], "HelpDataFile");
         else if (len == BANNER_CODE) std::strcpy(&nn[np], "Start-Banner");
-        else if ((intptr_t)len < 0) std::sprintf(&nn[np], "HardCode-%.2x",
+        else if ((intptr_t)len < 0) std::snprintf(&nn[np], 16, "HardCode-%.2x",
                     static_cast<int>((-len) & 0xff));
     }
     else
@@ -1049,7 +1050,7 @@ bool open_output(const char *name, size_t len)
     else if (len == BANNER_CODE) name = "Start-Banner", len = IMAGE_CODE,
                                      n = 1;
     else if ((intptr_t)len < 0)
-    {   std::sprintf(hard, "HardCode<%.2x>",
+    {   std::snprintf(hard, 16, "HardCode<%.2x>",
                      static_cast<int>((-len) & 0xff));
         name = hard, len = IMAGE_CODE, n = 1;
     }
@@ -1330,9 +1331,9 @@ bool Imodulep1(int i, const char *name, size_t len, char *datestamp,
             }
             std::memcpy(datestamp, &d->d[j].D_date, date_size);
             *size = bits24(&d->d[j].D_size);
-            if (name == nullptr) std::sprintf(expanded_name,
+            if (name == nullptr) std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
                                                   "%s%sInitialImage%s", n, p1, p2);
-            else std::sprintf(expanded_name,
+            else std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
                                   "%s%s%.*s%s", n, p1, static_cast<int>(len), name, p2);
             return false;
         }
@@ -1380,12 +1381,15 @@ bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
 
         if (expanded_name != nullptr)
         {   if (hard == IMAGE_CODE)
-            {   std::sprintf(expanded_name, "%s(InitialImage)", n);
+            {   std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
+                              "%s(InitialImage)", n);
             }
             else if (hard == BANNER_CODE)
-                std::sprintf(expanded_name, "%s(InitialImage)", n);
-            else std::sprintf(expanded_name, "%s(HardCode<%.2x>)",
-                                  n, static_cast<int>((-hard) & 0xff));
+                std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
+                              "%s(InitialImage)", n);
+            else std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
+                               "%s(HardCode<%.2x>)",
+                               n, static_cast<int>((-hard) & 0xff));
         }
         if (!bad) return false;
     }
@@ -1429,8 +1433,9 @@ bool Iopen(const char *name, size_t len, int forinput,
 #endif
                     p2 = "";
                 }
-                std::sprintf(expanded_name, "%s%s%.*s%s", n, p1,
-                             static_cast<int>(len), name, p2);
+                std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
+                              "%s%s%.*s%s", n, p1,
+                              static_cast<int>(len), name, p2);
             }
             if (!bad) return false;
         }
@@ -1458,9 +1463,11 @@ bool Iopen(const char *name, size_t len, int forinput,
             p2 = "";
         }
         if (len == IMAGE_CODE)
-            std::sprintf(expanded_name, "%s%sInitialImage%s", p1, n, p2);
-        else std::sprintf(expanded_name, "%s%s%.*s%s", n, p1,
-                              static_cast<int>(len), name, p2);
+            std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
+                          "%s%sInitialImage%s", p1, n, p2);
+        else std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME,
+                           "%s%s%.*s%s", n, p1,
+                           static_cast<int>(len), name, p2);
     }
     return open_output(name, len);
 }
@@ -1475,7 +1482,7 @@ bool Iwriterootp(char *expanded_name)
     {   std::strcpy(expanded_name, "<no output file specified>");
         return true;
     }
-    std::sprintf(expanded_name, "%s(InitialImage)",
+    std::snprintf(expanded_name, LONGEST_LEGAL_FILENAME, "%s(InitialImage)",
                  would_be_output_directory);
     if (!is_library(oo)) return true;
     d = fasl_files[library_number(oo)].dir;
@@ -1624,7 +1631,7 @@ found:
     else if (len == BANNER_CODE)
         name = "Start-Banner", len = IMAGE_CODE, n = 1;
     else if ((intptr_t)len < 0)
-    {   std::sprintf(hard, "HardCode<%.2x>",
+    {   std::snprintf(hard, 16, "HardCode<%.2x>",
                      static_cast<int>((-len) & 0xff));
         name = hard, len = IMAGE_CODE, n = 1;
     }
@@ -1945,9 +1952,10 @@ void preserve(const char *banner, size_t len)
         for (i=0; i<128; i++) msg[i] = ' ';
         if (len > 60) len = 60; // truncate if necessary
         if (len == 0 || banner[0] == 0) msg[0] = 0;
-        else std::sprintf(msg, "%.*s", static_cast<int>(len), banner);
+        else std::snprintf(msg, sizeof(msg),
+            "%.*s", static_cast<int>(len), banner);
 // 26 bytes starting from byte 64 shows the time of the dump
-        std::sprintf(msg+64, "%.25s\n", std::ctime(&t0));
+        std::snprintf(msg+64, 32, "%.25s\n", std::ctime(&t0));
 // 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks
         get_user_files_checksum(reinterpret_cast<unsigned char *>(&msg[90]));
 // 106 to 109 free at present but available if checksum goes to 160 bits

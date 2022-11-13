@@ -1004,11 +1004,12 @@ LispObject set_up_variables(int restart_flag)
     faslvec = nil;
     faslgensyms = nil;
     multiplication_buffer = nil;
+#ifndef ARITHLIB
 // big_fake1 and big_fake2 represent a witty issue - when a bignum is
 // serilized and it uses only one or two words its value gets written
 // as a 64-bit numeric value. When it is re-loaded that value is packed
 // as a number - either a fixnum or a bignum as relevant. So the FAKE
-// nature of big_fake1 and big_fake2 will lead to the ser8ialization process
+// nature of big_fake1 and big_fake2 will lead to the serialization process
 // reloading fixnums when using a 64-bit machine. Thus defeating the whole
 // point of them!
     big_fake1 = make_one_word_bignum(0);
@@ -1018,6 +1019,7 @@ LispObject set_up_variables(int restart_flag)
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     big_quotient = make_four_word_bignum(0, 0, 0, 0);
+#endif // ARITHLIB
     setvalue(macroexpand_hook,
         funcall_symbol =
             make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1,

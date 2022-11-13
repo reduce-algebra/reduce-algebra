@@ -169,7 +169,7 @@ void fwin_write_log(const char *s, ...)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
         std::memset(logfile_name, 0, sizeof(logfile_name));
         if (std::strcmp(programDir, ".") == 0)
-            std::sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+            std::snprintf(logfile_name, sizeof(logfile_name), "/tmp/%s", LOGFILE_NAME);
 #ifdef MACINTOSH
 //
 // If the executable I am running exists as
@@ -177,18 +177,18 @@ void fwin_write_log(const char *s, ...)
 // then I will place the log file adjacant to the .app directory rather
 // than in the MacOS directory next to the actual raw executable.
 //
-        else if (std::sprintf(logfile_name, "%s.app/Contents/MacOS",
+        else if (std::snprintf(logfile_name, sizeof(logfile_name), "%s.app/Contents/MacOS",
                               programName),
                  std::strlen(programDir) >= std::strlen(logfile_name) &&
                  std::strcmp(programDir+std::strlen(programDir)-std::strlen(
                                  logfile_name),
                              logfile_name) == 0)
-        {   std::sprintf(logfile_name, "%.*s/%s",
+        {   std::snprintf(logfile_name, sizeof(logfile_name), "%.*s/%s",
                          static_cast<int>(std::strlen(programDir)-std::strlen(programName)-19),
                          programDir, LOGFILE_NAME);
         }
 #endif
-        else std::sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+        else std::snprintf(logfile_name, sizeof(logfile_name), "%s/%s", programDir, LOGFILE_NAME);
         fwin_logfile = std::fopen(logfile_name, "a");
     }
     if (fwin_logfile == nullptr) return; // the file can not be used
@@ -338,7 +338,7 @@ void add_custom_fonts()
     for (int i=0;
          i<static_cast<int>(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        std::sprintf(nn, "%s\\%s\\%s",
+        std::snprintf(nn, sizeof(nn), "%s\\%s\\%s",
                      programDir, toString(fontsdir), fontNames[i]);
 //      printf("Adding %s\n", nn); fflush(stdout);
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
@@ -353,7 +353,7 @@ void add_custom_fonts()
     for (int i=0;
          i<static_cast<int>(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        std::sprintf(nn, "%s\\%s\\%s",
+        std::snprintf(nn, sizeof(nn), "%s\\%s\\%s",
                      programDir, toString(fontsdir), fontNames[i]);
         FWIN_LOG("Adding %s\n", nn);
         wxString nnn(nn);
@@ -376,7 +376,7 @@ void add_custom_fonts()
     for (int i=0;
          i<static_cast<int>(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        std::sprintf(nn, "%s/%s/%s",
+        std::snprintf(nn, sizeof(nn), "%s/%s/%s",
                      programDir, toString(fontsdir), fontNames[i]);
 //      printf("Adding %s\n", nn); fflush(stdout);
         if (!FcConfigAppFontAddFile(config, (const FcChar8 *)nn))
@@ -426,7 +426,7 @@ void consoleWait()
 //
     for (int i=5; i!=0; i--)
     {   char title[32];
-        std::sprintf(title, "Exiting after %d seconds", i);
+        std::snprintf(title, sizeof(title), "Exiting after %d seconds", i);
         SetConsoleTitleA(title);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
@@ -830,7 +830,7 @@ int fwin_startup(int argc, const char *argv[],
 //
         struct stat buf;
         std::memset(xname, 0, sizeof(xname));
-        std::sprintf(xname, "%s.app", fullProgramName);
+        std::snprintf(xname, sizeof(xname), "%s.app", fullProgramName);
         if (stat(xname, &buf) == 0 &&
             (buf.st_mode & S_IFDIR) != 0)
         {
@@ -2103,7 +2103,7 @@ static char err_buf[LONGEST_LEGAL_FILENAME+100];
 char *change_directory(char *filename, const char *old, std::size_t n)
 {   process_file_name(filename, old, n);
     if (*filename == 0)
-    {   std::sprintf(err_buf, "Filename \"%s\" invalid.", old);
+    {   std::snprintf(err_buf, sizeof(err_buff), "Filename \"%s\" invalid.", old);
         return err_buf;
     }
     if (chdir(filename))
@@ -2125,7 +2125,7 @@ char *change_directory(char *filename, const char *old, std::size_t n)
                 msg = "Cannot change directory to %s.";
                 break;
         }
-        std::sprintf(err_buf, msg, filename);
+        std::snprintf(err_buf, sizeof(err_buf), msg, filename);
         return err_buf;
     }
     else return nullptr;

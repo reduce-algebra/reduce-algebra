@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 // input line. I only reset it if it has changed, so if you enter several
 // lines without semicolons then they all get the same prompt.
         if (pnumber != oldpnumber)
-        {   std::sprintf(prompt, "IN%d: ", pnumber);
+        {   std::snprintf(prompt, 16, "IN%d: ", pnumber);
             term_setprompt(prompt);
             oldpnumber = pnumber;
         }

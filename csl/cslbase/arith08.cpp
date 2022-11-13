@@ -38,6 +38,7 @@
 
 #include "headers.h"
 
+#ifndef ARITHLIB
 
 static LispObject Lboole_3(LispObject env, LispObject op,
                            LispObject a1, LispObject a2)
@@ -1325,60 +1326,59 @@ LispObject Ltruncate(LispObject env, LispObject a)
 // prefixed with "old" so that the versions from the arithlib code
 // provide the default behaviour
 
-#ifdef ARITHLIB
-#define X "old"
-#else // ARITHLIB
-#define X
 #endif // ARITHLIB
 
 setup_type const arith08_setup[] =
-{   {X "ceiling",                   G0Wother, Lceiling, Lceiling_2, G3W1, G4W1},
-    {X "floor",                     G0Wother, Lfloor, Lfloor_2, G3W1, G4W1},
-    {X "round",                     G0Wother, Lround, Lround_2, G3W1, G4W1},
-    {X "fix",                       G0Wother, Ltruncate, Ltruncate_2, G3W1, G4W1},
-    {X "truncate",                  G0Wother, Ltruncate, Ltruncate_2, G3W1, G4W1},
-    DEF_1(X "decode-float",         Ldecode_float),
+{
+#ifndef ARITHLIB
+    {"ceiling",                   G0Wother, Lceiling, Lceiling_2, G3W1, G4W1},
+    {"floor",                     G0Wother, Lfloor, Lfloor_2, G3W1, G4W1},
+    {"round",                     G0Wother, Lround, Lround_2, G3W1, G4W1},
+    {"fix",                       G0Wother, Ltruncate, Ltruncate_2, G3W1, G4W1},
+    {"truncate",                  G0Wother, Ltruncate, Ltruncate_2, G3W1, G4W1},
+    DEF_1("decode-float",         Ldecode_float),
 // The next two are old names for these functions, retained just for
 // backwards compatibility
-    DEF_1(X "float-denormalized-p", Lfp_subnorm),
-    DEF_1(X "float-infinity-p",     Lfp_infinite),
-    DEF_1(X "fp-infinite",          Lfp_infinite),
-    DEF_1(X "fp-nan",               Lfp_nan),
-    DEF_1(X "fp-finite",            Lfp_finite),
-    DEF_1(X "fp-subnorm",           Lfp_subnorm),
-    DEF_1(X "fp-signbit",           Lfp_signbit),
-    DEF_1(X "integer-decode-float", Linteger_decode_float),
-    DEF_1(X "integer-length",       Linteger_length),
-    DEF_1(X "float-digits",         Lfloat_digits),
-    DEF_1(X "float-precision",      Lfloat_precision),
-    DEF_1(X "float-radix",          Lfloat_radix),
-    {X "float-sign",                G0Wother, Lfloat_sign1, Lfloat_sign2, G3Wother, G4Wother},
-    DEF_2(X "fround",               Lfround),
-    DEF_2(X "ftruncate",            Lftruncate),
-    DEF_2(X "logbitp",              Llogbitp),
-    DEF_1(X "logcount",             Llogcount),
-    DEF_2(X "logtest",              Llogtest),
-    DEF_2(X "mask-field",           Lmask_field),
-    DEF_2(X "scale-float",          Lscale_float),
-    DEF_3(X "boole",                Lboole_3),
-    DEF_2(X "byte",                 Lbyte),
-    DEF_1(X "byte-position",        Lbyte_position),
-    DEF_1(X "byte-size",            Lbyte_size),
-    {X "complex",                   G0Wother, Lcomplex_1, Lcomplex_2, G3Wother, G4Wother},
-    DEF_1(X "conjugate",            Lconjugate),
-    DEF_1(X "decode-float",         Ldecode_float),
-    DEF_1(X "denominator",          Ldenominator),
-    DEF_3(X "deposit-field",        Ldeposit_field_3),
-    DEF_3(X "dpb",                  Ldpb_3),
-    DEF_2(X "ffloor",               Lffloor),
-    DEF_1(X "imagpart",             Limagpart),
-    DEF_2(X "ldb",                  Lldb),
-    DEF_2(X "ldb-test",             Lldb_test),
-    DEF_1(X "numerator",            Lnumerator),
-    DEF_1(X "realpart",             Lrealpart),
-    {X "gcd",                       Lgcd_0, Lgcd_1, Lgcd_2, Lgcd_3, Lgcd_4up},
-    {X "gcdn",                      Lgcd_0, Lgcd_1, Lgcd_2, Lgcd_3, Lgcd_4up},
-    {X "lcmn",                      Llcm_0, Llcm_1, Llcm_2, Llcm_3, Llcm_4up},
+    DEF_1("float-denormalized-p", Lfp_subnorm),
+    DEF_1("float-infinity-p",     Lfp_infinite),
+    DEF_1("fp-infinite",          Lfp_infinite),
+    DEF_1("fp-nan",               Lfp_nan),
+    DEF_1("fp-finite",            Lfp_finite),
+    DEF_1("fp-subnorm",           Lfp_subnorm),
+    DEF_1("fp-signbit",           Lfp_signbit),
+    DEF_1("integer-decode-float", Linteger_decode_float),
+    DEF_1("integer-length",       Linteger_length),
+    DEF_1("float-digits",         Lfloat_digits),
+    DEF_1("float-precision",      Lfloat_precision),
+    DEF_1("float-radix",          Lfloat_radix),
+    {"float-sign",                G0Wother, Lfloat_sign1, Lfloat_sign2, G3Wother, G4Wother},
+    DEF_2("fround",               Lfround),
+    DEF_2("ftruncate",            Lftruncate),
+    DEF_2("logbitp",              Llogbitp),
+    DEF_1("logcount",             Llogcount),
+    DEF_2("logtest",              Llogtest),
+    DEF_2("mask-field",           Lmask_field),
+    DEF_2("scale-float",          Lscale_float),
+    DEF_3("boole",                Lboole_3),
+    DEF_2("byte",                 Lbyte),
+    DEF_1("byte-position",        Lbyte_position),
+    DEF_1("byte-size",            Lbyte_size),
+    {"complex",                   G0Wother, Lcomplex_1, Lcomplex_2, G3Wother, G4Wother},
+    DEF_1("conjugate",            Lconjugate),
+    DEF_1("decode-float",         Ldecode_float),
+    DEF_1("denominator",          Ldenominator),
+    DEF_3("deposit-field",        Ldeposit_field_3),
+    DEF_3("dpb",                  Ldpb_3),
+    DEF_2("ffloor",               Lffloor),
+    DEF_1("imagpart",             Limagpart),
+    DEF_2("ldb",                  Lldb),
+    DEF_2("ldb-test",             Lldb_test),
+    DEF_1("numerator",            Lnumerator),
+    DEF_1("realpart",             Lrealpart),
+    {"gcd",                       Lgcd_0, Lgcd_1, Lgcd_2, Lgcd_3, Lgcd_4up},
+    {"gcdn",                      Lgcd_0, Lgcd_1, Lgcd_2, Lgcd_3, Lgcd_4up},
+    {"lcmn",                      Llcm_0, Llcm_1, Llcm_2, Llcm_3, Llcm_4up},
+#endif // ARITHLIB
     {nullptr,                     nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 

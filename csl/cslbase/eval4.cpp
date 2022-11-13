@@ -701,7 +701,7 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
    BI(Lreverse,           "reverse",                 70),  \
    BI(Lnreverse,          "nreverse",                71),  \
    BI(Lwhitespace_char_p, "whitespace-char-p",       72),  \
-   BI(Nset_modulus,       "set-small-modulus",       73),  \
+   BI(Nset_small_modulus, "set-small-modulus",       73),  \
    BI(Lxtab,              "xtab",                    74),  \
    BI(Lspecial_char,      "special-char",            75),  \
    BI(Lspecial_form_p,    "special-form-p",          76),  \
@@ -714,7 +714,7 @@ bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(
    BI(Lsymbol_name,       "symbol-name",             83),  \
    BI(Lsymbol_value,      "symbol-value",            84),  \
    BI(Lsystem,            "system",                  85),  \
-   BI(Ltruncate,          "truncate",                86),  \
+   BI(Ntruncate,          "truncate",                86),  \
    BI(Lttab,              "ttab",                    87),  \
    BI(Ltyo,               "tyo",                     88),  \
    BI(Lunintern,          "unintern",                89),  \
@@ -900,7 +900,7 @@ bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(
     BI(Ndivide,                    "divide",                 6),   \
     BI(Leqcar,                     "eqcar",                  7),   \
     BI(Leql,                       "eql",                    8),   \
-    BI(Leqn_2,                     "eqn",                    9),   \
+    BI(Neqn_a,                     "eqn",                    9),   \
     BI(Nexpt,                      "expt",                   10),  \
     BI(Lflag,                      "flag",                   11),  \
     BI(Lflagpcar,                  "flagpcar",               12),  \

@@ -3586,7 +3586,11 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                     errexit();
                     LispObject w1 = Lmd60(nil, def1);
                     errexit();
+#ifdef ARITHLIB
+                    if (!Eqn::op(w, w1)) getsavedef = false;
+#else // ARITHLIB
                     if (!numeq2(w, w1)) getsavedef = false;
+#endif // ARITHLIB
                     save1.restore(name, file, r, def);
                 }
             }
@@ -3818,14 +3822,12 @@ void write_everything()
 {   set_up_function_tables();
 // These may have been messed with during the run. Reset them here to
 // be tidy.
-#ifdef ARITHLIB
+#ifndef ARITHLIB
     garbage_collection_permitted = false;
-#endif // ARITHLIB
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
-#ifdef ARITHLIB
     garbage_collection_permitted = true;
-#endif // ARITHLIB
+#endif // !ARITHLIB
     if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;

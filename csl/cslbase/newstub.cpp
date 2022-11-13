@@ -195,7 +195,7 @@ int RunResource(int index, int forcegui, const char *modulename)
     std::fflush(stdout);
 #endif
     char *lastsep = std::strrchr(pPath, '\\');
-    std::sprintf(lastsep, "\\reduce.dir\\%s", modulename);
+    std::snprintf(lastsep, 32, "\\reduce.dir\\%s", modulename);
 #ifdef DEBUG
     std::printf("Code to run %s\n", pPath);
     std::fflush(stdout);

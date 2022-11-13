@@ -291,6 +291,14 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
 
 #endif // !__OPTIMIZE__
 
+// At one time this limit on the length of pathnames that I would
+// support aligned with most operating systems. These limits have
+// been lifted (to large extent at least) in may contexts, so the
+// one that I impose could cause trouble for any user who placed
+// material in sufficiently deeply nested directories or where
+// enough directory and file-names were especially long. Such users
+// may find that what I do silently truncates paths and gives them
+// problems. I an not terribly sympathetic!
 
 INLINE_VAR const size_t LONGEST_LEGAL_FILENAME_1 = 1024;
 

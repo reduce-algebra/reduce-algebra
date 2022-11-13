@@ -169,6 +169,12 @@ INLINE_VAR constexpr size_t MAX_PAGES = MAX_HEAPSIZE >> (PAGE_BITS-20);
 // of there being a path length restriction by setting a registry key and
 // perhaps by also putting extra stuff an an "application manifest".
 // I rather wonder how many people exploit that option?
+// Any who do may find that I silently truncate file-names and paths so
+// they are unable to access items where the full name they pass exceeds
+// my limits. It is plausible that I may also have some buffer overflow
+// issues so they could crash this code - but I do not expect that it will
+// ever be used in circumstances where that could represent a significant
+// security risk.
 
 INLINE_VAR constexpr size_t LONGEST_LEGAL_FILENAME = 1024;
 
@@ -1972,6 +1978,7 @@ inline void incCount(LispObject p, uint32_t m=1)
 }
 
 #ifndef HAVE_SOFTFLOAT
+
 typedef struct _float32_t
 {   uint32_t v;
 } float32_t;
@@ -1979,7 +1986,8 @@ typedef struct _float32_t
 typedef struct _float64_t
 {   uint64_t v;
 } float64_t;
-#endif
+
+#endif // HAVE_SOFTFLOAT
 
 typedef union _Float_union
 {   float f;

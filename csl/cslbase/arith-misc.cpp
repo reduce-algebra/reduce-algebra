@@ -1,4 +1,4 @@
-// arith-random.cpp                        Copyright (C) 2022-2022 Codemist
+// arith-misc.cpp                          Copyright (C) 2022-2022 Codemist
 
 #ifdef ARITHLIB
 
@@ -236,12 +236,12 @@ LispObject N_rationalizef(double dd, int bits)
 // If the absolute value of the input is large just convert it to an
 // integer.
     if (d >= static_cast<double>((uint64_t)1<<bits))
-        return lisp_fix(make_boxfloat(dd, WANT_DOUBLE_FLOAT), FIX_ROUND);
+        return Nlisp_fix(make_boxfloat(dd, WANT_DOUBLE_FLOAT), FIX_ROUND);
 // If the value is small first convert it to a rational number p/q, then
 // find the integer value r of q/p and return (1/r).
     if (d <= 1.0/static_cast<double>((uint64_t)1<<bits))
     {   LispObject r = N_rationalf(dd);
-        r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
+        r = Nlisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
     }
 // Here I have a case where the result will be a non-trivial fraction. Because
@@ -452,12 +452,12 @@ LispObject N_rationalizef128(float128_t *dd)
     if (f128_negative(d)) f128_negate(&d);
 // Maybe the float is in fact exactly an integer.
     if (f128M_le(&FP128_INT_LIMIT, &d))
-        return lisp_fix(make_boxfloat128(*dd), FIX_ROUND);
+        return Nlisp_fix(make_boxfloat128(*dd), FIX_ROUND);
 // I am slightly more conservative as to when I decide that the
 // result I return will be just the reciprocal of an integer.
     if (f128M_le(&d, &FP128_SMALL_LIMIT))
     {   LispObject r = N_rationalf128(d);
-        r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
+        r = Nlisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
     }
     uint128_t p, q;
@@ -939,4 +939,4 @@ LispObject Nconjugate(LispObject env, LispObject a)
 
 #endif // ARITHLIB
 
-// end of arith-random.cpp
+// end of arith-misc.cpp

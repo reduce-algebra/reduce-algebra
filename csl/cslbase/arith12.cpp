@@ -41,6 +41,7 @@
 
 #include "headers.h"
 
+#ifndef ARITHLIB
 
 LispObject Lfrexp(LispObject env, LispObject a)
 {
@@ -826,56 +827,51 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
     }
 }
 
-// If ARITHLIB is enabled all these functions will have their names
-// prefixed with "old" so that the versions from the arithlib code
-// provide the default behaviour
-
-#ifdef ARITHLIB
-#define X "old"
-#else // ARITHLIB
-#define X
 #endif // ARITHLIB
 
 setup_type const arith12_setup[] =
-{   DEF_1(X "frexp",              Lfrexp),
-    DEF_2(X "modular-difference", Lmodular_difference),
-    DEF_1(X "modular-minus",      Lmodular_minus),
-    DEF_1(X "modular-number",     Lmodular_number),
-    DEF_2(X "modular-plus",       Lmodular_plus),
-    DEF_2(X "modular-quotient",   Lmodular_quotient),
-    DEF_1(X "modular-reciprocal", Lmodular_reciprocal),
-    DEF_1(X "safe-modular-reciprocal", Lsafe_modular_reciprocal),
-    DEF_2(X "modular-times",      Lmodular_times),
-    DEF_2(X "modular-expt",       Lmodular_expt),
-    DEF_1(X "set-small-modulus",  Lset_small_modulus),
-    DEF_1(X "iadd1",              Liadd1),
-    DEF_2(X "idifference",        Lidifference_2),
-    DEF_2(X "xdifference",        Lxdifference),
-    DEF_2(X "igeq",               Ligeq_2),
-    DEF_2(X "igreaterp",          Ligreaterp_2),
-    DEF_2(X "ileq",               Lileq_2),
-    DEF_2(X "ilessp",             Lilessp_2),
-    DEF_1(X "ilognot",            Lilognot_1),
-    {X "ilogand",                 Lilogand_0, Lilogand_1, Lilogand_2, Lilogand_3, Lilogand_4up},
-    {X "ilogor",                  Lilogor_0, Lilogor_1, Lilogor_2, Lilogor_3, Lilogor_4up},
-    {X "ilogxor",                 Lilogxor_0, Lilogxor_1, Lilogxor_2, Lilogxor_3, Lilogxor_4up},
-    {X "ilogeqv",                 Lilogeqv_0, Lilogeqv_1, Lilogeqv_2, Lilogeqv_3, Lilogeqv_4up},
-    DEF_2(X "imax",               Limax_2),
-    DEF_2(X "imin",               Limin_2),
-    DEF_1(X "iminus",             Liminus),
-    DEF_1(X "iminusp",            Liminusp),
-    {X "iplus",                   Liplus_0, Liplus_1, Liplus_2, Liplus_3, Liplus_4up},
-    DEF_2(X "iplus2",             Liplus_2),
-    DEF_2(X "iquotient",          Liquotient_2),
-    DEF_2(X "iremainder",         Liremainder_2),
-    DEF_2(X "irightshift",        Lirightshift),
-    DEF_2(X "ileftshift",         Lileftshift),
-    DEF_1(X "isub1",              Lisub1),
-    {X "itimes",                  Litimes_0, Litimes_1, Litimes_2, Litimes_3, Litimes_4up},
-    DEF_2(X "itimes2",            Litimes_2),
-    DEF_1(X "ionep",              Lionep),
-    DEF_1(X "izerop",             Lizerop),
-    DEF_2(X "fp-evaluate",        Lfp_eval),
+{
+#ifndef ARITHLIB
+    DEF_1("frexp",              Lfrexp),
+    DEF_2("modular-difference", Lmodular_difference),
+    DEF_1("modular-minus",      Lmodular_minus),
+    DEF_1("modular-number",     Lmodular_number),
+    DEF_2("modular-plus",       Lmodular_plus),
+    DEF_2("modular-quotient",   Lmodular_quotient),
+    DEF_1("modular-reciprocal", Lmodular_reciprocal),
+    DEF_1("safe-modular-reciprocal", Lsafe_modular_reciprocal),
+    DEF_2("modular-times",      Lmodular_times),
+    DEF_2("modular-expt",       Lmodular_expt),
+    DEF_1("set-small-modulus",  Lset_small_modulus),
+    DEF_1("iadd1",              Liadd1),
+    DEF_2("idifference",        Lidifference_2),
+    DEF_2("xdifference",        Lxdifference),
+    DEF_2("igeq",               Ligeq_2),
+    DEF_2("igreaterp",          Ligreaterp_2),
+    DEF_2("ileq",               Lileq_2),
+    DEF_2("ilessp",             Lilessp_2),
+    DEF_1("ilognot",            Lilognot_1),
+    {"ilogand",                 Lilogand_0, Lilogand_1, Lilogand_2, Lilogand_3, Lilogand_4up},
+    {"ilogor",                  Lilogor_0, Lilogor_1, Lilogor_2, Lilogor_3, Lilogor_4up},
+    {"ilogxor",                 Lilogxor_0, Lilogxor_1, Lilogxor_2, Lilogxor_3, Lilogxor_4up},
+    {"ilogeqv",                 Lilogeqv_0, Lilogeqv_1, Lilogeqv_2, Lilogeqv_3, Lilogeqv_4up},
+    DEF_2("imax",               Limax_2),
+    DEF_2("imin",               Limin_2),
+    DEF_1("iminus",             Liminus),
+    DEF_1("iminusp",            Liminusp),
+    {"iplus",                   Liplus_0, Liplus_1, Liplus_2, Liplus_3, Liplus_4up},
+    DEF_2("iplus2",             Liplus_2),
+    DEF_2("iquotient",          Liquotient_2),
+    DEF_2("iremainder",         Liremainder_2),
+    DEF_2("irightshift",        Lirightshift),
+    DEF_2("ileftshift",         Lileftshift),
+    DEF_1("isub1",              Lisub1),
+    {"itimes",                  Litimes_0, Litimes_1, Litimes_2, Litimes_3, Litimes_4up},
+    DEF_2("itimes2",            Litimes_2),
+    DEF_1("ionep",              Lionep),
+    DEF_1("izerop",             Lizerop),
+    DEF_2("fp-evaluate",        Lfp_eval),
+#endif // ARITHLIB
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
