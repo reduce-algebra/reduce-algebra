@@ -153,6 +153,8 @@ bit_cast(const From& src) noexcept
     std::memcpy(&dst, &src, sizeof(To));
     return dst;
 }
+
+#define HAVE_BITCAST 1
 #endif // HAVE_BITCAST
 
 using std::cout;      // Make C++ output as in "cout << "string" << endl;" a

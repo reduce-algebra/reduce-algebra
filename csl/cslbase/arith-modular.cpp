@@ -589,7 +589,7 @@ LispObject Nmodular_times(LispObject env, LispObject a1, LispObject a2,
 LispObject Nmodular_times(LispObject env, LispObject a1, LispObject a2,
                                           LispObject a3, LispObject a4plus)
 {   a1 = Nmodular_times(Nmodular_times(env, a1, a2), a3);
-    while (a4plus != nil);
+    while (a4plus != nil)
     {   a1 = Nmodular_times(env, a2, car(a4plus));
         a4plus = cdr(a4plus);
     }

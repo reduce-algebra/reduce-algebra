@@ -208,7 +208,7 @@ constexpr inline bool constexpr_miller_rabin_isprime(uint64_t a, uint64_t n)
 
 constexpr inline bool constexpr_isprime(uint64_t n)
 {   if (n <= 1000)
-    {   for (int k=2; k*k<=n; k++)
+    {   for (uint64_t k=2; k*k<=n; k++)
         {   if (n%k == 0) return false;
         }
         return true;
