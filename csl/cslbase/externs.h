@@ -400,7 +400,7 @@ extern unsigned int exit_count;
 extern uint64_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
-extern intptr_t modulus_is_large;
+extern bool modulus_is_large;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;

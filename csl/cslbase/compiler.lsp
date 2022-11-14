@@ -5082,15 +5082,15 @@ irightshift c!:c_entrypoint "GIRIGHTSHIFT") (isub1 c!:c_entrypoint "GISUB1")
 (itimes2 c!:c_entrypoint "GITIMES") (leq c!:c_entrypoint "GLEQ") (lessp 
 c!:c_entrypoint "GLESSP") (max2 c!:c_entrypoint "GMAX") (min2 c!:c_entrypoint
 "GMIN") (minus c!:c_entrypoint "GMINUS") (minusp c!:c_entrypoint "GMINUSP") 
-(mod c!:c_entrypoint "GMOD") (modular!-difference c!:c_entrypoint 
+(mod c!:c_entrypoint "GMOD") (set!-small!-modulus c!:c_entrypoint 
+"GSET_SMALL_MODULUS") (modular!-difference c!:c_entrypoint 
 "GMODULAR_DIFFERENCE") (modular!-expt c!:c_entrypoint "GMODULAR_EXPT") (
 modular!-minus c!:c_entrypoint "GMODULAR_MINUS") (modular!-number 
 c!:c_entrypoint "GMODULAR_NUMBER") (modular!-plus c!:c_entrypoint 
 "GMODULAR_PLUS") (modular!-quotient c!:c_entrypoint "GMODULAR_QUOTIENT") (
 modular!-reciprocal c!:c_entrypoint "GMODULAR_RECIPROCAL") (modular!-times 
 c!:c_entrypoint "GMODULAR_TIMES") (oddp c!:c_entrypoint "GODDP") (onep 
-c!:c_entrypoint "GONEP") (plusp c!:c_entrypoint "GPLUSP") (
-set!-small!-modulus c!:c_entrypoint "GSET_SMALL_MODULUS") (!1!- 
+c!:c_entrypoint "GONEP") (plusp c!:c_entrypoint "GPLUSP") (!1!- 
 c!:c_entrypoint "GSUB1") (zerop c!:c_entrypoint "GZEROP") (plus2 
 c!:direct_entrypoint (2 . "DPLUS2")) (difference c!:direct_entrypoint (2 . 
 "DDIFFERENCE2")) (add1 c!:direct_entrypoint (1 . "DADD1")) (sub1 

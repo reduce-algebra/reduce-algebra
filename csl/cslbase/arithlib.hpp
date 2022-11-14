@@ -489,6 +489,7 @@ bit_cast(const From& src) noexcept
     return dst;
 }
 #endif // HAVE_BITCAST
+#define HAVE_BITCAST 1
 
 namespace arithlib_implementation
 {
@@ -1683,9 +1684,8 @@ inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 
 inline std::uint64_t *reserve(std::size_t n)
 {   arithlib_assert(n>0);
-// During a transition period I will use TYPE_NEW_BIGNUM rather than
-// TYPE_BIGNUM.
-    LispObject a = get_basic_vector(TAG_NUMBERS, TYPE_NEW_BIGNUM,
+    LispObject a = get_basic_vector(TAG_NUMBERS,
+                                    TYPE_NEW_BIGNUM,
                                     n*sizeof(std::uint64_t)+8);
     return bit_cast<std::uint64_t *>(a + 8 - TAG_NUMBERS);
 }
@@ -1704,16 +1704,14 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
 // The length also includes the size of a header-word, and on 32-bit platforms
 // it has to allow for padding the data to allow the array of 64-bit digits
 // to be properly aligned in memory.
-    ((LispObject *)&p[-1])[0] =
-        TAG_HDR_IMMED + TYPE_NEW_BIGNUM +
-        pack_hdrlength((final+1)*sizeof(std::uint64_t)/sizeof(std::int32_t));
+    ((LispObject *)&p[-1])[0] = make_new_bighdr(final+1);
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
 // that leaves a 4-byte gap after the header. In such a case I will write
 // in a zero just to keep memory tidy.
     if (sizeof(LispObject) == 4)
         ((LispObject *)&p[-1])[1] = 0;
-// Here I should reset fringe down by (final-n) perhaps. Think about that
-// later!
+// Here I could maybe reset fringe down by (final-n) if the current number
+// is the most recently allocated item. Think about that later!
     return vector_to_handle(p);
 }
 
@@ -8306,13 +8304,6 @@ inline void classical_multiply_and_add(std::uint64_t a,
 // via the command line definitions when different source files are
 // being processed that could cause linker clashes otherwise.
 
-// November 2022: the Karatsuba code with the setting K=18 leads
-// to an incorrect calculation of 10^1000, and so as a measure until I
-// investigate and fix that I will set the transition level well above
-// any normal usage.
-
-#define K  100000 
-#define K1 100000
 
 #if !defined K && !defined K_DEFINED
 // I provide a default here but can override it at compile time
@@ -8328,9 +8319,6 @@ static const std::size_t K=18;
 // It may be defined globally as a severe override of what happens here!
 static std::size_t KARATSUBA_CUTOFF = K;
 #endif
-
-#undef KARATSUBA_CUTOFF
-#define KARATSUBA_CUTOFF 100000
 
 #if !defined K1 && !defined K1_DEFINED
 // I provide a default here but can override it at compile time.
@@ -10313,7 +10301,8 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
     uintptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    if ((a_neg && !b_neg) || (!a_neg && b_neg))
+    if (w != int_of_handle(0) &&
+        ((a_neg && !b_neg) || (!a_neg && b_neg)))
     {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
         else return Plus::op(vector_of_handle(w), b);
     }
@@ -10331,7 +10320,8 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
     uintptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = (b < 0);
-    if ((a_neg && !b_neg) || (!a_neg && b_neg))
+    if (w != int_of_handle(0) &&
+        ((a_neg && !b_neg) || (!a_neg && b_neg)))
     {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
         else return Plus::op(vector_of_handle(w), b);
     }
@@ -10350,7 +10340,7 @@ inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t *b)
 
 inline std::intptr_t Mod::op(std::int64_t a, std::int64_t b)
 {   int64_t r = a%b;
-    if ((a<0 && b>0) || (a>0 && b<0)) r += b;
+    if (r!=0 &&((a<0 && b>0) || (a>0 && b<0))) r += b;
     return int_to_handle(r);
 }
 
@@ -10890,8 +10880,8 @@ inline void gcd_reduction(std::uint64_t *&a, std::size_t &lena,
 
 
 inline std::intptr_t Gcd::op(std::uint64_t *a, std::uint64_t *b)
-{   if (number_size(b) == 1) return Gcd::op(a,
-                                                static_cast<std::int64_t>(b[0]));
+{   if (number_size(b) == 1)
+        return Gcd::op(a, static_cast<std::int64_t>(b[0]));
 // I will start by making copies of |a| and |b| that I can overwrite
 // during the calculation and use part of in my result.
     std::size_t lena = number_size(a), lenb = number_size(b);
@@ -11013,6 +11003,7 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::int64_t bb)
 // This case involved doing a long-by-short remainder operation and then
 // it reduces to the small-small case. The main problem is the handling of
 // negative inputs.
+    if (bb == 0) return vector_to_handle(a);
     std::uint64_t b = bb < 0 ? -bb : bb;
     std::size_t lena = number_size(a);
     bool signa = negative(a[lena-1]);

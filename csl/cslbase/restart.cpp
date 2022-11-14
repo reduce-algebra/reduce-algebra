@@ -111,7 +111,8 @@ intptr_t nwork;
 unsigned int exit_count;
 uint64_t gensym_ser;
 intptr_t print_precision, miscflags;
-intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
+intptr_t current_modulus, fastget_size, package_bits;
+bool modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
@@ -615,12 +616,12 @@ static void cold_setup()
 #endif
     gensym_ser = 1;
     print_precision = 6; // I maybe prefer 15 but use 6 to agree with PSL
+    modulus_is_large = false;
     current_modulus = 1;
 // a fastget entry of 0 means no fastget stuff present, and so in the 6-bit
 // field I have the values 1-63 are available.
     fastget_size = 63;
     package_bits = 0;
-    modulus_is_large = 0;
     unset_var = nil;
 // there had better not be a need for garbage collection here...
 // ... or elsewhere in setup, since the world is not yet put together.

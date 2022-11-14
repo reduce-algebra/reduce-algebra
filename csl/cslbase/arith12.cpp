@@ -362,14 +362,14 @@ LispObject Lset_small_modulus(LispObject env, LispObject a)
             !is_bignum(a) ||
             minusp(a))
             return aerror1("set-small-modulus", a);
-        modulus_is_large = 1;
+        modulus_is_large = true;
         current_modulus = 0;   // should not be referenced.
         large_modulus = a;
         return old;
     }
     if ((intptr_t)a < 0 || a == fixnum_of_int(0))
         return aerror1("set!-small!-modulus", a);
-    modulus_is_large = 0;
+    modulus_is_large = false;
     large_modulus = nil; // Should not be referenced.
     current_modulus = int_of_fixnum(a);;
     return onevalue(old);
