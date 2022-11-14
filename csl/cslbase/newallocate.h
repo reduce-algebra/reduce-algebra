@@ -396,7 +396,7 @@ class FindConsN
                sizeof(Page::consData) };
 public:
     enum { value = FindConsN<W==0  ? ConsN :
-                            (W>16) ? ConsN + W/(sizeof(ConsCell)+2) :
+                            ((size_t)W>16) ? ConsN + W/(sizeof(ConsCell)+2) :
                                      ConsN + 1,
                             TargetSize, W>::value };
 };
@@ -418,9 +418,9 @@ class FindChunkN
                offsetof(Page,chunks) -
                sizeof(Page::chunks) };
 public:
-    enum { value = FindChunkN<W==0             ? ChunkN :
-                              (W>10*chunkSize) ? ChunkN + W/(chunkSize+2000) :
-                                                 ChunkN + 1,
+    enum { value = FindChunkN<W==0 ? ChunkN :
+          ((size_t)W>10*chunkSize) ? ChunkN + W/(chunkSize+2000) :
+                                     ChunkN + 1,
                               TargetSize, W>::value };
 };
 

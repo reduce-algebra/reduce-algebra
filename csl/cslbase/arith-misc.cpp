@@ -105,7 +105,7 @@ LispObject N_rationalf(double d)
 
 int N_rationalf128(float128_t d)
 {   uint128_t bits = static_cast<uint128_t>(d.v[HIPART])<<64 | d.v[LOPART];
-    int x = static_cast<int>(bits>>112) & 0x7fff;
+    int x = static_cast<int64_t>(bits>>112) & 0x7fff;
     bool sign = (bits>>127) != 0;
     uint128_t m = bits & ((static_cast<uint128_t>(1)<<113) - 1);
 // detect infinities and NaNs.

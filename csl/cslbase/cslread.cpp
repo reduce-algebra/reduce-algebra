@@ -99,11 +99,9 @@ LispObject make_string(const char *b)
 // of those is the padder. Using memset probably leads to compilation that
 // writes the zeros with a word memory access but avoids C++ worries
 // about strict aliasing.
-    if (n != 0)
-    {   if (SIXTY_FOUR_BIT || n%8 >= 4)
-            std::memset(s+k-8, 0, 8);
-        else std::memset(s+k-4, 0, 4);
-    }
+    if (SIXTY_FOUR_BIT || n%8 > 4)
+        std::memset(s+k-8, 0, 8);
+    else std::memset(s+k-4, 0, 4);
     std::memcpy(s + CELL, b, (size_t)n);
     validate_string(r);
     return r;
@@ -163,8 +161,8 @@ LispObject copy_string(LispObject str, size_t n)
     s = bit_cast<char *>(r) - TAG_VECTOR;
     std::memcpy(s + CELL,
                 bit_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
-    k = doubleword_align_up(CELL+n)-CELL;
-    while (n < k) s[CELL+n++] = 0;
+    k = doubleword_align_up(CELL+n);
+    while (CELL+n < k) s[CELL+n++] = 0;
     validate_string(r);
     return r;
 }
@@ -3501,7 +3499,7 @@ LispObject Llist_to_string(LispObject env, LispObject stream)
     str = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     char *s = &celt(str, 0);
     size_t k;
-    for (k=0; k<n; k++)
+    for (k=CELL; k<CELL+n; k++)
     {   LispObject ch = car(stream);
         stream = cdr(stream);
         int r;

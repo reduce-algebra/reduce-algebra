@@ -2015,6 +2015,9 @@ down:
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.
 // At present vectors containing binary can never be "large".
+// Note that if the (binary) items in the vector are over 4 bytes wide they
+// will want to end up 8-byte aligned and that will involve a padder
+// word after the header when you are oin a 32-bit machine.
             w = read_u64();
 // Here I have assembled 7 bits of type information in c. CCCCC comes from the
 // opcode. The header I want for my vector will be
@@ -2047,7 +2050,9 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f64(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+8*w));
+                    if (!SIXTY_FOUR_BIT)
+                         *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
                     double *x = bit_cast<double *>(start_contents64(prev));
 // There has to be a padder word in these objects on a 32-bit machine so
@@ -2066,7 +2071,9 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i64(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+8*w));
+                    if (!SIXTY_FOUR_BIT)
+                         *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
                     uint64_t *x = (uint64_t *)start_contents64(prev);
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
@@ -2090,14 +2097,18 @@ down:
                 }
 #ifdef HAVE_SOFTFLOAT
                 else if (vector_f128(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+16*w));
+                    if (!SIXTY_FOUR_BIT)
+                         *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
                     std::fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     my_abort("128-bit float");
                 }
 #endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+16*w));
+                    if (!SIXTY_FOUR_BIT)
+                         *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
                     std::fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     my_abort("128-bit integer arrays");

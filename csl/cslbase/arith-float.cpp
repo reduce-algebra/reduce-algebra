@@ -1868,7 +1868,7 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 // This converts from a ratio to a Lisp integer.  It has to apply
 // rounding in the desired direction.
 
-static LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
+LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 {
 #ifdef FINISHED
     LispObject w, w1;
