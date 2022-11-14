@@ -79,6 +79,8 @@
 // where a1.v and a2.v are of type LispObject and are whatever internal
 // representation the Lisp uses for the sort of data involved.
 
+// For this to make sense I need softfloat.h
+
 #include "softfloat.h"
 #define softfloat_h 1
 

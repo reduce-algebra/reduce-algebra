@@ -1054,6 +1054,7 @@ extern float128_t f128_negnormmin;
 #define GPLUS                   Nplus
 #define GPLUSP                  Nplusp
 #define GQUOTIENT               Nquotient
+#define GDIVIDE                 Ndivide
 #define GRANDOM                 Nrandom
 #define GRATIONAL               Nrational
 #define GREM                    Nrem
@@ -1135,6 +1136,7 @@ inline bool Dzerop(LispObject n)
 #define GPLUS                   Lplus_2
 #define GPLUSP                  Lplusp
 #define GQUOTIENT               Lquotient_2
+#define GDIVIDE                 Ldivide_2
 #define GRANDOM                 Lrandom
 #define GRATIONAL               Lrational
 #define GREM                    Lrem_2
