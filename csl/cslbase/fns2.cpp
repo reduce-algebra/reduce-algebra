@@ -860,7 +860,7 @@ static void trace_builtin(LispObject s, bool state)
 
 LispObject Ltrace(LispObject env, LispObject a)
 {   LispObject w = a;
-    if (symbolp(a))
+    if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
         w = a;
@@ -892,7 +892,7 @@ LispObject Ltrace(LispObject env, LispObject a)
 
 LispObject Luntrace(LispObject env, LispObject a)
 {   LispObject w = a;
-    if (symbolp(a))
+    if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
         w = a;
@@ -912,7 +912,7 @@ LispObject Luntrace(LispObject env, LispObject a)
 
 LispObject Ltraceset(LispObject env, LispObject a)
 {   LispObject w = a;
-    if (symbolp(a))
+    if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
         w = a;
@@ -928,7 +928,7 @@ LispObject Ltraceset(LispObject env, LispObject a)
 
 LispObject Luntraceset(LispObject env, LispObject a)
 {   LispObject w = a;
-    if (symbolp(a))
+    if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
         w = a;

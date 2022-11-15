@@ -1039,6 +1039,7 @@ extern float128_t f128_negnormmin;
 #define GMINUS                  Nminus
 #define GMINUSP                 Nminusp
 #define GMOD                    Nmod
+#define GSET_SMALL_MODULUS      Nset_small_modulus
 #define GMODULAR_DIFFERENCE     Nmodular_difference
 #define GMODULAR_EXPT           Nmodular_expt
 #define GMODULAR_MINUS          Nmodular_minus
@@ -1057,7 +1058,6 @@ extern float128_t f128_negnormmin;
 #define GRANDOM                 Nrandom
 #define GRATIONAL               Nrational
 #define GREM                    Nrem
-#define GSET_SMALL_MODULUS      Nset_small_modulus
 #define GSUB1                   Nsub1
 #define GTIMES                  Ntimes
 #define GZEROP                  Nzerop
@@ -1121,6 +1121,7 @@ inline bool Dzerop(LispObject n)
 #define GMINUS                  Lminus
 #define GMINUSP                 Lminusp
 #define GMOD                    Lmod_2
+#define GSET_SMALL_MODULUS      Lset_small_modulus
 #define GMODULAR_DIFFERENCE     Lmodular_difference
 #define GMODULAR_EXPT           Lmodular_expt
 #define GMODULAR_MINUS          Lmodular_minus
@@ -1139,7 +1140,6 @@ inline bool Dzerop(LispObject n)
 #define GRANDOM                 Lrandom
 #define GRATIONAL               Lrational
 #define GREM                    Lrem_2
-#define GSET_SMALL_MODULUS      Lset_small_modulus
 #define GSUB1                   Lsub1
 #define GTIMES                  Ltimes_2
 #define GZEROP                  Lzerop

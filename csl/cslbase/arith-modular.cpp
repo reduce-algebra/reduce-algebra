@@ -446,7 +446,7 @@ LispObject Nmodular_plus(LispObject env, LispObject a1, LispObject a2,
     return a1;
 }
 
-LispObject Nlarge_modular_reciprocal(LispObject n, bool safe)
+LispObject Nlarge_modular_reciprocal(LispObject n, bool safe=false)
 {   LispObject a, b, x, y;
     b = n;
     x = fixnum_of_int(0);
@@ -481,7 +481,7 @@ LispObject Nlarge_modular_reciprocal(LispObject n, bool safe)
 
 LispObject Nmodular_reciprocal(LispObject, LispObject n)
 {   intptr_t a, b, x, y;
-    if (modulus_is_large) return Nlarge_modular_reciprocal(n, false);
+    if (modulus_is_large) return Nlarge_modular_reciprocal(n);
 // If the modulus is "small" I can do all this using native integer
 // arithmetic.
     if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
@@ -675,14 +675,14 @@ LispObject Nset_small_modulus(LispObject env, LispObject a)
     else if (!is_fixnum(a))
     {   if (!is_new_bignum(a) || Minusp::op(a))
             return aerror1("set-small-modulus", a);
-        modulus_is_large = 1;
+        modulus_is_large = true;
         current_modulus = 0;   // should not be referenced.
         large_modulus = a;
         return old;
     }
     if ((intptr_t)a < 0 || a == fixnum_of_int(0))
         return aerror1("set!-small!-modulus", a);
-    modulus_is_large = 0;
+    modulus_is_large = false;
     large_modulus = nil; // Should not be referenced.
     current_modulus = int_of_fixnum(a);;
     return onevalue(old);

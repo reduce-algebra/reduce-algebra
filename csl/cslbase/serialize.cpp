@@ -3883,7 +3883,7 @@ void write_everything()
     write_u64(current_modulus);
     write_u64(fastget_size);
     write_u64(package_bits);
-    write_u64(modulus_is_large);
+    write_u64(modulus_is_large ? 1 : 0);
     write_u64(trap_floating_overflow);
 
 // At the start of a heap image I have a CRC for the tables of function
@@ -3955,7 +3955,7 @@ void warm_setup()
     current_modulus = read_u64();
     fastget_size = read_u64();
     package_bits = read_u64();
-    modulus_is_large = read_u64();
+    modulus_is_large = (read_u64() != 0);
     trap_floating_overflow = read_u64();
 
     uint64_t entrypt_checksum = read_u64();
