@@ -2043,7 +2043,7 @@ restart:
                     *cp = 0;
                     goto float_print_tidyup;
                 }
-
+                std::memmove(&uu.f, &uu.i, sizeof(uu.f));
                 fp_sprint(my_buff, static_cast<double>(uu.f), print_precision, xmark);
                 goto float_print_tidyup;
             }

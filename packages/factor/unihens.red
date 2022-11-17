@@ -327,6 +327,10 @@ symbolic procedure alphas(n,flist,gamma);
       alphas(n-k,f2,gamma2))
   end;
 
+% With this many arguments etc the automatic tail-recursion processing in CSL
+% does not catch this well, so it might be sensible to re-work it into
+% a visibly iterative version...
+
 symbolic procedure xgcd!-mod!-p(a,b,x1,y1,x2,y2);
 % Finds alpha and beta s.t. alpha*a+beta*b=1.
 % Returns alpha . beta or nil if a and b are not coprime.

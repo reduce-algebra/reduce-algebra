@@ -246,11 +246,10 @@ inline void floating_clear_flags()
 
 inline double value_of_immediate_float(LispObject a)
 {   Float_union aa;
-// Worry about strict aliasing here, at least maybe. With GCC I believe I am
-// safe, but as per the standards I think I am not.
-    if (SIXTY_FOUR_BIT) aa.i = static_cast<int32_t>(static_cast<uint64_t>
-                                   (a)>>32);
+    if (SIXTY_FOUR_BIT)
+        aa.i = static_cast<int32_t>(static_cast<uint64_t>(a)>>32);
     else aa.i = static_cast<int32_t>(a - XTAG_SFLOAT);
+    std::memmove(&aa.f, &aa.i, sizeof(aa.f)); // defeat strict aliasing!
     return aa.f;
 }
 
@@ -283,10 +282,12 @@ inline LispObject pack_short_float(double d)
     {   floating_clear_flags();
         return aerror("exception with short float");
     }
+    std::memmove(&aa.i, &aa.f, sizeof(aa.f)); // defeat strict aliasing!
+    if ((aa.i & 0x1f) != 0x08) aa.i += 8;
     aa.i &= ~0xf;
     if (SIXTY_FOUR_BIT)
-        return static_cast<LispObject>((static_cast<uint64_t>
-                                        (aa.i)) << 32) + XTAG_SFLOAT;
+        return static_cast<LispObject>(
+            (static_cast<uint64_t>(aa.i)) << 32) + XTAG_SFLOAT;
     else return aa.i + XTAG_SFLOAT;
 }
 
@@ -302,12 +303,14 @@ inline LispObject pack_single_float(double d)
         {   floating_clear_flags();
             return aerror("exception with single float");
         }
-        return static_cast<LispObject>(static_cast<uint64_t>
-                                       (aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+        std::memmove(&aa.i, &aa.f, sizeof(aa.f)); // defeat strict aliasing!
+        return static_cast<LispObject>(
+            static_cast<uint64_t>(aa.i) << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
     }
     else
     {   LispObject r = get_basic_vector(TAG_BOXFLOAT,
-                                        TYPE_SINGLE_FLOAT, sizeof(Single_Float));
+                                        TYPE_SINGLE_FLOAT,
+                                        sizeof(Single_Float));
         single_float_val(r) = static_cast<float>(d);
         if (trap_floating_overflow &&
             floating_edge_case(single_float_val(r)))
@@ -319,14 +322,16 @@ inline LispObject pack_single_float(double d)
 }
 
 // Pack either a 28 or 32-bit float with type Lisp value "l1" indicating
-// whether 28 or 32 bits are relevant. On a 32-bit machine like will always
+// whether 28 or 32 bits are relevant. On a 32-bit machine l1 will always
 // be a 28-bit value. If a second argument l2 is provided the width of the
 // result will match the wider of the two.
 
-inline LispObject pack_immediate_float(double d,
-                                       LispObject l1, LispObject l2=0)
+inline LispObject pack_immediate_float(double d, LispObject l1,
+                                                 LispObject l2=0)
 {   Float_union aa;
     aa.f = d;
+// The next line is intended to make this safe with regard to strict aliasing!
+    std::memmove(&aa.i, &aa.f, sizeof(aa.f));
     if (trap_floating_overflow &&
         floating_edge_case(aa.f))
     {   floating_clear_flags();
@@ -334,12 +339,26 @@ inline LispObject pack_immediate_float(double d,
             return aerror("exception with single float");
         else return aerror("exception with short float");
     }
+// Note the amazing fact that in IEEE floating point formats adding
+// a small integer value to the representation of a float increments that
+// float in "units in the last place". The amazing thing is that the
+// still applies if the value added causes carries that lead to a change
+// in the exponent field. So when I add 8 and then mask by ~0xf I achieve
+// rounding. If I was even more fussy I would go
+//       if ((aa.i & 0x1f) != 0x08) aa.i += 8;
+//       aa.i &= ~0xf;
+// which rounds up on the half-way case only of without rounding the result
+// would be odd. Hah that is streaightforward enough that I will do it!
     if (SIXTY_FOUR_BIT)
-    {   if (((l1 | l2) & XTAG_FLOAT32) == 0) aa.i &= ~0xf;
-        return static_cast<LispObject>((static_cast<uint64_t>
-                                        (aa.i)) << 32) + XTAG_SFLOAT +
-               ((l1 | l2) & XTAG_FLOAT32);
+    {   if (((l1 | l2) & XTAG_FLOAT32) == 0)
+        {   if ((aa.i & 0x1f) != 0x08)  aa.i += 8;
+            aa.i &= ~0xf;
+        }
+        return static_cast<LispObject>(
+            (static_cast<uint64_t>(aa.i) << 32) +
+            XTAG_SFLOAT + ((l1 | l2) & XTAG_FLOAT32));
     }
+    if ((aa.i & 0x1f) != 0x08)  aa.i += 8;
     aa.i &= ~0xf;
     return aa.i + XTAG_SFLOAT;
 }
@@ -664,9 +683,13 @@ extern size_t kparallel, karatsuba_parallel;
 // own computer - but I do not expect it to be possible to achieve much
 // by so doing.
 //
+#ifdef ARITHLIB
+#define KARATSUBA_CUTOFF 1000000  // Buggy at present!
+#else // ARITHLIB
 #define KARATSUBA_CUTOFF 12
+#endif // ARITHLIB
 
-#endif
+#endif // KARATSUBA_CUTOFF
 
 extern int double_to_binary(double d, int64_t &m);
 extern intptr_t double_to_3_digits(double d,

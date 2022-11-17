@@ -4024,7 +4024,7 @@ inline bool negative(std::uint64_t a)
 }
 
 
-// This next function might be naivly written as
+// This next function might be naively written as
 //    return ((a1==0 && positive(a2)) ||
 //            (a1==-1 && negative(a2)));
 // and it is to test if a bignum can have its top digit removed.
@@ -4831,8 +4831,7 @@ inline float128_t modf(float128_t d, float128_t &i)
 // give sensible output if passed an infinity or a NaN and so they should be
 // filtered out before it is called.
 
-inline void double_to_bits(double d, std::int64_t &mantissa,
-                           int &exponent)
+inline void double_to_bits(double d, std::int64_t &mantissa, int &exponent)
 {   if (d == 0.0)
     {   mantissa = 0;
         exponent = 0;
@@ -4915,26 +4914,25 @@ inline void shiftright(std::int64_t &hi, std::uint64_t &lo, int n)
 
 // This next sets top and next to the two top 64-bit digits for a bignum,
 // and len to the length (measured in words) of that bignum. For values
-// |d| < 2^63 next will in fact be a signed value, len==1 and top will
+// |d| < 2^63 top will hold the signed value, len==1 and next will
 // in fact be irrelevant. This should be seen as a special degenerate case.
 // Whenever len>1 on output the number should be such that to make a bignum
-// with value to match the float you append len-2 zero words. Note that
-// for inputs in 2^63 <= d < 2^64 the result will have top==0 and next
-// the integer value of d and len==2, with something similar for the
-// equivalent negative range. The leading 0 or -1 is required in those
-// cases. The result will be be any fractional part left over when d is
-// converted to an integer, and this can only be nonzero is cases where
-// |d| < 2^53.
+// with value to match the float you append len-2 zero words.
+// Note that for inputs in 2^63 <= d < 2^64 the result will have top==0
+// and next the integer value of d, with len==2. Something similar applies
+// in the equivalent negative range. The leading 0 or -1 is required in those
+// cases.
 //
 // In the case that the floating point input is small its value may lie
-// between two integers, and in that case I might want to adjust it in the
-// sense of ROUND, TRUNC, FLOOR or CEILING. I will pass an extra argument
-// to explain which I require.
+// between two integers, and in that case I adjust it in the sense of ROUND,
+// TRUNC, FLOOR or CEILING. I will pass an extra argument to explain which
+// I require.
 
 enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 inline void double_to_virtual_bignum(double d,
-                                     std::int64_t &top, std::uint64_t &next, std::size_t &len,
+                                     std::int64_t &top, std::uint64_t &next,
+                                     std::size_t &len,
                                      RoundingMode mode)
 {   if (d == 0.0)
     {   top = next = 0;
@@ -4956,10 +4954,40 @@ inline void double_to_virtual_bignum(double d,
         len = SIZE_MAX;
         return;
     }
-// From here down I do not need to worry about zero, infinity or NaNs. But
-// I may need to think about rounding!
+// If the (absolute) value is less than 2^53 I will need to consider
+// rounding, but the result would not need multiple bignum digits and I
+// can work with it here using simple 64-bit integers. But I will
+// need to consider rounding modes since there could be a significant
+// fractional part.
+    if (d >= -2.0/DBL_EPSILON && d <= 2.0/DBL_EPSILON)
+    {   int64_t i = static_cast<int64_t>(d);           // can leave a fraction
+        double fracpart = d - static_cast<double>(i);  // will be exact
+        if (fracpart != 0.0)
+        {   switch (mode)
+            {   case ROUND:
+                    if (fracpart > 0.5 ||
+                        (fracpart == 0.5 && (i&1) != 0)) i++;
+                    else if (fracpart < -0.5 ||
+                        (fracpart == -0.5 && (i&1) != 0)) i--;
+                    break;
+                case TRUNC:  // already truncated
+                    break;
+                case FLOOR:
+                    if (d < 0.0) i--;
+                    break;
+                case CEILING:
+                    if (d > 0.0) i++;
+                    break;
+            }
+        }
+        top = i;
+        next = 0;
+        len = 1;
+        return;
+    }
+// From here down I do not need to worry about zero, infinity or NaNs,
+// and there will be no rounding!
     double intpart;
-    double fracpart = std::modf(d, &intpart);
     std::int64_t mantissa;
     int exponent;
     double_to_bits(intpart, mantissa, exponent);
@@ -4969,25 +4997,7 @@ inline void double_to_virtual_bignum(double d,
     int lz = 63 - nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
-// Now mantissa has its least significant bit a "1". At this stage the
-// input 1.0 (eg) should have turned into mantissa=1, exponent==0. And 1.5
-// should have become mantissa=1, exponent=0 and fracpart = 0.5. fracpart has
-// the same sign as the original input.
-// So now I can apply my rounding mode...
-    switch (mode)
-    {   case ROUND:
-            if (fracpart >= 0.5) mantissa++;
-            else if (fracpart <= -0.5) mantissa--;
-            break;
-        case TRUNC:  // the effect of modf is this already.
-            break;
-        case FLOOR:
-            if (fracpart != 0.0 && d < 0.0) mantissa--;
-            break;
-        case CEILING:
-            if (fracpart != 0.0 && d > 0.0) mantissa++;
-            break;
-    }
+// Now mantissa has its least significant bit a "1".
     next = static_cast<std::uint64_t>(mantissa);
     top = d<0.0 && mantissa!=0 ? -1 : 0;
     if (exponent < 0)
@@ -4996,6 +5006,7 @@ inline void double_to_virtual_bignum(double d,
     }
     else
     {   len = 2 + exponent/64;
+        if (len <= 0)
         exponent = exponent%64;
 // Now shift left by exponent, which is less than 64 here.
         shiftleft(top, next, exponent);
@@ -5005,6 +5016,10 @@ inline void double_to_virtual_bignum(double d,
         {   top = next;
             next = 0;
             len--;
+        }
+        if (len <= 0)       // small enough that fixed part is zero.
+        {   top = next = 0;
+            len = 1;
         }
     }
 }
@@ -5016,7 +5031,8 @@ inline void double_to_virtual_bignum(double d,
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
 inline void float128_to_bits(float128_t d,
-                             std::int64_t &mhi, std::uint64_t &mlo, int &exponent)
+                             std::int64_t &mhi, std::uint64_t &mlo,
+                             int &exponent)
 {   if (f128_nan(d) || f128_zero(d))
     {   mhi = mlo = 0;
         exponent = 0;
@@ -5035,7 +5051,7 @@ inline void float128_to_bits(float128_t d,
         exponent -= 4096;
     }
     exponent -= 0x3ffe;
-    mhi = (d.v[HIPART] & 0xffffffffffff) | 0x0001000000000000;;
+    mhi = (d.v[HIPART] & 0xffffffffffff) | 0x0001000000000000;
     mlo = d.v[LOPART];
     if (static_cast<std::int64_t>(d.v[HIPART]) < 0)
     {   mlo = -mlo;
@@ -5057,7 +5073,9 @@ inline void dec128(std::int64_t &hi, std::uint64_t &lo)
 // the way it would end up as a bignum.
 
 inline void float128_to_virtual_bignum(float128_t d,
-                                       std::int64_t &top, std::uint64_t &mid, std::uint64_t &next,
+                                       std::int64_t &top,
+                                       std::uint64_t &mid,
+                                       std::uint64_t &next,
                                        std::size_t &len,
                                        RoundingMode mode)
 {   if (f128_zero(d))
@@ -5076,13 +5094,45 @@ inline void float128_to_virtual_bignum(float128_t d,
         len = SIZE_MAX;
         return;
     }
-    float128_t intpart;
-    float128_t fracpart = modf(d, intpart);
+    bool sign = f128_negative(d);
     std::int64_t mhi;
     std::uint64_t mlo;
     int exponent;
-    float128_to_bits(intpart, mhi, mlo, exponent);
-// Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
+    float128_to_bits(d, mhi, mlo, exponent);
+// Here (mhi,mlo) is a 113-bit integer that must be multiplied by
+// 2^exponent to yield the input value.
+    uint128_t mantissa = (static_cast<uint128_t>(mhi)<<64) | mlo;
+    if (exponent < 0)   // There is a fractional part to consider  
+    {
+// The number might have been well 
+        uint128_t fracpart = exponent  < -113 ? 1 : mantissa << (113+exponent);
+        switch (mode)
+        {   case ROUND:
+                if (fracpart > 0x8000000000000000ULL ||
+                    (fracpart == 0x8000000000000000 &&
+                     (mantissa&1) != 0)) mantissa++;
+                break;
+            case TRUNC:  // the effect of modf is this already.
+                break;
+            case FLOOR:
+                if (fracpart != 0 && f128_lt(d, f128_0)) mantissa++;
+                break;
+            case CEILING:
+                if (fracpart != 0 && !f128_lt(d, f128_0)) mantissa++;
+                break;
+        }
+        if (sign) mantissa = -mantissa;
+        top = static_cast<int64_t>(mantissa>>64);
+        mid = static_cast<uint64_t>(mantissa);
+        next = 0;
+        len = 2;
+        if (shrinkable(top, next))
+        {   top = next;
+            next = 0;
+            len--;
+        }        
+        return;
+    }
     int lz;
     if (mlo != 0)
     {   std::uint64_t lowbit = mlo & (-mlo);
@@ -5094,29 +5144,9 @@ inline void float128_to_virtual_bignum(float128_t d,
     }
     shiftright(mhi, mlo, lz);
     exponent += lz;
-// Now mantissa has its least significant bit a "1". At this stage the
-// input 1.0 (eg) should have turned into mantissa=1, exponent==0. And 1.5
-// should have become mantissa=1, exponent=0 and fracpart = 0.5. fracpart has
-// the same sign as the original input.
-// So now I can apply my rounding mode...
-    switch (mode)
-    {   case ROUND:
-            if (!f128_lt(fracpart, f128_half)) inc128(mhi, mlo);
-            else if (f128_le(fracpart, f128_mhalf)) dec128(mhi, mlo);
-            break;
-        case TRUNC:  // the effect of modf is this already.
-            break;
-        case FLOOR:
-            if (!f128_zero(fracpart) && f128_lt(d, f128_0)) dec128(mhi, mlo);
-            break;
-        case CEILING:
-            if (!f128_zero(fracpart) && !f128_lt(d, f128_0)) inc128(mhi, mlo);
-            break;
-    }
 // Now I need to shift things left so that the number of trailing zeros
 // to the right of my value is a multiple of 64. That may cause the
 // mantissa to spread into parts of 3 words: (top, mid, next).
-
     next = mlo;
     mid = mhi;
     top = mhi<0 ? -1 : 0;

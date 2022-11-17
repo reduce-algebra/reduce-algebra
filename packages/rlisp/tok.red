@@ -708,13 +708,13 @@ deflist(
    (!a 10) (!b 11) (!c 12) (!d 13) (!e 14) (!f 15)
    (!A 10) (!B 11) (!C 12) (!D 13) (!E 14) (!F 15)), 'hexdigit);
 
-% The special marker !_line!_ will be replaced in the input stream of
+% The special marker !__line__ will be replaced in the input stream of
 % tokens by the current line number. Note that if terminalp() returns
 % true that input lines are not counted - ie if !*int is on (to signal
 % interactive use) and input is direct from whatever is standard when
-% reduce starts then !_line!_ will always expand to 1. Go "off int;" or
+% reduce starts then !__line__ will always expand to 1. Go "off int;" or
 % put your material in a file that you read using "in" if this matters
-% to you. Similarly, the special marker !_file!_ will be replaced by the
+% to you. Similarly, the special marker !__file__ will be replaced by the
 % name of the file currently read in, or the string "Terminal" if not
 % reading from a file.
 
