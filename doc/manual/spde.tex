@@ -46,6 +46,7 @@ Some other useful functions for obtaining various kinds of output
 are:\pagebreak
 \begin{table}[htbp]
 \begin{center}
+\hypertarget{operator:PRGEN}{}
 \begin{tabular}{| c | c |} \hline
 Function name & Operation \\ \hline \hline
 \ttindextype[SPDE]{prsys}{operator}
@@ -127,6 +128,7 @@ When the appropriate assignments are made to the variable deq, the
 values of \var{nn} and \var{mm} (Table~\ref{spde:useful}) are determined
 automatically, i.e. they have not to be assigned by the user.
 
+\hypertarget{operator:CRESYS}{}
 \ttindextype[SPDE]{cresys}{operator}
 The function CRESYS may be called with any number of arguments, i.e.
 
@@ -152,6 +154,7 @@ is
   cresys deq 1;
 \end{verbatim}
 
+\hypertarget{operator:SIMPSYS}{}
 \ttindextype[SPDE]{simpsys}{operator}
 after the determining system has bee created, \f{simpsys} which has no
 arguments may be called for solving it. The amount of intermediate
@@ -184,6 +187,7 @@ statement (see section~\ref{sec:dependency}). Its enumeration has to be
 chosen in agreement with the current number of functions which have
 alreday been introduced.  This value is returned by \f{simpsys} too.
 
+\hypertarget{operator}{RESULT}{}
 After the determining system has been solved, the procedure \f{result},
 which has no arguments, may be called. It displays the infinitesimal
 generators and its non-vanishing commutators.
@@ -224,6 +228,7 @@ appears if there are no differential equations assigned to any deq.
 If the user wants the determining system displayed for inspection
 before starting the solution algorithm he may call
 
+\hypertarget{operator:PRSYS}{}
 \ttindextype[SPDE]{prsys}{operator}
 \begin{verbatim}
   prsys();

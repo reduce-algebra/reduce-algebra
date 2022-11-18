@@ -93,7 +93,7 @@ use \texttt{0.5 -0.23 +0.12} instead.
 \section{Identifiers}
 
 Identifiers\index{Identifier} in {\REDUCE} consist of one or more
-alphanumeric characters (i.e. alphabetic letters or decimal
+alphanumeric characters (i.e.\ alphabetic letters or decimal
 digits) the first of which must be alphabetic.  The maximum number of
 characters allowed is implementation dependent, although twenty-four is
 permitted in most implementations.  In addition, the underscore character
@@ -153,7 +153,7 @@ the identifier.  For example, with the following values assigned to
 
 \subsection*{Restrictions}
 
-The reserved words listed in appendix \ref{reservedids} may not be used as
+The reserved words listed in appendix~\ref{reservedids} may not be used as
 identifiers.  No spaces may appear within an identifier, and an identifier
 may not extend over a line of text.
 
@@ -202,7 +202,7 @@ include:
 \index{Reserved variable !Catalan@\texttt{Catalan}}
 
 \item[e] Intended to represent the base of
-\ttindextype{E}{reserved variable}
+\ttindextype{e}{reserved variable}
 the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
 automatically replaced by 1.  If \sw{rounded}\ttindexswitch{rounded} is
 on, \texttt{e} is replaced by the value of e to the current degree of
@@ -269,7 +269,8 @@ parameter or local variable in procedures, since conflict arises with the
 symbolic mode meaning of t as \emph{true}.
 \end{list}
 
-Other reserved variables, such as \var{low\_pow}, described in other sections,
+Other reserved variables, such as \hyperlink{reserved:LOW_POW}{\var{low\_pow}},
+described in other sections,
 are listed in \hyperlink{sec:appendixa}{Appendix A}.
 
 Using these reserved variables\index{Reserved variable} inappropriately
@@ -278,7 +279,7 @@ will lead to errors.
 There are also internal variables used by {\REDUCE} that have similar
 restrictions. These usually have an asterisk in their names, so it is
 unlikely a casual user would use one. An example of such a variable is
-\var{K!*} used in the asymptotic command package.
+\var{k!*} used in the asymptotic command package.
 
 Certain words are reserved in {\REDUCE}. They may only be used in the manner
 intended. A list of these is given in the section ``Reserved Identifiers''.
