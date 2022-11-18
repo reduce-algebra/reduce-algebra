@@ -1799,6 +1799,7 @@ bool equal_fn(LispObject a, LispObject b)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
+#ifndef ARITHLIB
                                 if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
@@ -1809,9 +1810,10 @@ bool equal_fn(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
+#endif // ARITHLIB
 #ifdef ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(a, b);
+                                    return Eqn::op(ca, cb);
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -1858,6 +1860,7 @@ bool equal_fn(LispObject a, LispObject b)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
+#ifndef ARITHLIB
                     if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
@@ -1868,6 +1871,7 @@ bool equal_fn(LispObject a, LispObject b)
                         }
                         return true;
                     }
+#endif // ARITHLIB
 #ifdef ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
