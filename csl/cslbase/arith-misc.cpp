@@ -43,14 +43,15 @@
 // The intent here is to take a single precision floating point value and
 // mask off its low 4 bits. The code here is a fine example of the sort
 // of thing that runs up against strict aliasing rules. Here I believe that
-// the use of memcpy ought to sort that out!
+// the use of memmove ought to sort that out!
 
 double N_truncate20(double d)
-{   Float_union aa, bb;
+{   Float_union aa;
     aa.f = d;
-    std::memcpy(&bb, &aa, sizeof(bb));
-    bb.i &= ~0xf;
-    std::memcpy(&aa, &bb, sizeof(aa));
+    std::memmove(&aa.i, &aa.f, sizeof(aa.f));
+    if ((aa.i & 0x1f) != 0x08) aa.i += 8;    // rounding.
+    aa.i &= ~0xf;
+    std::memmove(&aa.f, &aa.i, sizeof(aa.f));
     return aa.f;
 }
 
@@ -662,15 +663,16 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
     if (is_sfloat(a))
     {   Float_union d;
         Float_union v;
-// What I do here violates strict aliasing rules! I ought to use some
-// memcpy to be properly legal.
+        int32_t vi, di;
         d.f = value_of_immediate_float(a);
         do
         {   uint64_t r = arithlib::mersenne_twister();
             float r1 = static_cast<float>(r&0xffffffff)/16384.0/16384.0;
             v.f = r1*d.f;
+            std::memcpy(&vi, &v.f, sizeof(v.f));
+            std::memcpy(&di, &d.f, sizeof(d.f));
         }
-        while ((v.i & ~0xf) == (d.i & ~0xf));
+        while ((vi & ~0xf) == (di & ~0xf));
         d.f = v.f;
         return onevalue(pack_immediate_float(v.f, a));
     }

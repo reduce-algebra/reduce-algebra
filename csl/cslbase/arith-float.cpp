@@ -1142,8 +1142,7 @@ LispObject Ldexp::op(LispObject a, LispObject b)
 }
 
 LispObject Ldexp::op(Fixnum a, Fixnum b)
-{   double d = std::ldexp(static_cast<double>(a.intval()),
-                          b.intval());
+{   double d = std::ldexp(static_cast<double>(a.intval()), b.intval());
     return make_boxfloat(d);
 }
 
@@ -1223,9 +1222,8 @@ LispObject Ldexp::op(Flt a, uint64_t *b)
 }
 
 LispObject Ldexp::op(double a, uint64_t *b)
-{   if (Minusp::op(b)) return make_boxfloat(
-                                      a == a ? 0.0 : 0.0/0.0,
-                                      WANT_DOUBLE_FLOAT);
+{   if (Minusp::op(b)) return make_boxfloat(a == a ? 0.0 : 0.0/0.0,
+                                            WANT_DOUBLE_FLOAT);
     double d = std::ldexp(a, 100000000);
     return make_boxfloat(d);
 }
@@ -1689,129 +1687,82 @@ LispObject Nround(LispObject env, LispObject a, LispObject b)
 }
 
 #ifdef HAVE_SOFTFLOAT
+
 // long float version of the following function. Commentary is in the
 // double precision version.
 
 static LispObject Nlisp_fix_sub128(LispObject a, int roundmode)
-{
-#ifdef FINISHED
-    float128_t *d = reinterpret_cast<float128_t *>(long_float_addr(
-                        a));
+{   float128_t *d = reinterpret_cast<float128_t *>(long_float_addr(a));
     if (f128_nanp(*d)) return aerror("NaN in fix");
     if (f128_infinitep(*d)) return aerror("infinity in fix");
     int x = f128_exponent(*d);
-// Here I will limit the range where I convert to an int64_t value because
-// a long float could have a value of (say) INT64_MAX+0.75, and then the
-// conversion would overflow and hence fail.
+// Here I will limit the range where I convert to directly to a
+// 64-bit integer. I make this a slightly lower limit than I applied
+// when converting 64-bit floats because here the float128_t could be
+// really really close to the integer limit and so might overflow on
+// rounding the conversion.
     if (x < 62)
     {   int64_t n = f128M_to_i64(d, roundmode, false);
 // Here the softfloat library does rounding for me. Hoorah!
         return make_lisp_integer64(n);
     }
-// Now I know that the result will be at least a 62-bit integer, which means
-// it will be at least a 3-word bignum.
-// I may sometimes still need to worry about rounding.
-    int32_t d4;
-    uint32_t d3, d2, d1, d0;
-    intptr_t x1 = float128_to_5_digits(*d, d4, d3, d2, d1, d0);
-    switch (x1)
-    {   case -2:
-// The integer part is at present represented in 2s complement, so if I
-// chop bits off its end that will decrease its value. Put another way, the
-// raw value I have got is as for FLOOR.
-            if (d1 != 0 || d0 != 0)
-            {   switch (roundmode)
-            {       default:
-                    case FIX_TRUNCATE:
-                        if (d4 < 0) goto inc2;
+// Now I know that the result will be at least a 62-bit integer.
+    float128_t d2;
+    f128_frexp(*d, &d2, &x);
+    uint64_t hi, lo;
+    f128_mantissa(d2, hi, lo);
+    int128_t ii = (static_cast<uint128_t>(hi | 0x1000000000000ULL)<<64) | lo;
+    if (f128_negative(*d)) ii = -ii;
+    x -= 113;
+// Now the result needs to be shifted left by x bits. Well if x<0 it needs to
+// shift right and in that case I need to think about rounding modes.
+    if (x < 0)      // consider rounding. 
+    {   uint128_t frac = ii << (128+x);
+        const uint128_t topBit = static_cast<uint128_t>(1)<<127;
+        ii = ii >> x;
+        switch (roundmode)
+        {   default:
+            case FIX_TRUNCATE:
+// I am still in sign and magnitude mode so the right shift serves to truncate.
                         break;
-                    case FIX_ROUND:
-                        if (d1 > 0x40000000 ||
-                            (d1 == 0x40000000 && d0 != 0)) goto inc2;
-                        if (d1 == 0x40000000 && ((d2 & 1) != 0)) goto inc2;
+            case FIX_ROUND:
+                        if (frac > topBit ||
+                            (frac == topBit && (ii&1) != 0)) ii++;
                         break;
-                    case FIX_FLOOR:
-                        break;          // Nothing more to do
-                    case FIX_CEILING:   // always need to increment here
-                    inc2:
-                        d2++;
-                        if (d2 == 0x40000000)
-                        {   d2 = 0;
-                            d3++;
-                            if (d3 == 0x40000000)
-                            {   d3 = 0;
-                                d4++;
-                                if (d4 == 0x40000000) // need an extra word
-                                    return make_four_word_bignum(0, d4, 0, 0);
-                                else if (d4 == 0)
-                                    return make_two_word_bignum(0xc0000000,0);
-                            }
-                        }
+            case FIX_FLOOR:
+                        if (frac != 0 && f128_negative(*d)) ii++;
                         break;
-                }
-            }
-            return make_three_word_bignum(d4, d3, d2);
-        case -1:
-            if (d0 != 0)
-            {   switch (roundmode)
-            {       default:
-                    case FIX_TRUNCATE:
-                        if (d4 < 0) goto inc1;
+            case FIX_CEILING:
+                        if (frac != 0 && !f128_negative(*d)) ii++;
                         break;
-                    case FIX_ROUND:
-                        if (d0 > 0x40000000) goto inc1;
-                        if (d0 == 0x40000000 && ((d1 & 1) != 0)) goto inc1;
-                        break;
-                    case FIX_FLOOR:
-                        break;          // Nothing more to do
-                    case FIX_CEILING:   // always need to increment here
-                    inc1:
-                        d1++;
-                        if (d1 == 0x40000000)
-                        {   d1 = 0;
-                            d2++;
-                            if (d2 == 0x40000000)
-                                if (d2 == 0x40000000)
-                                {   d2 = 0;
-                                    d3++;
-                                    if (d3 == 0x40000000)
-                                    {   d3 = 0;
-                                        d4++;
-                                        if (d4 == 0x40000000) // need an extra word
-                                            return make_n_word_bignum(0, d4, 0, 2);
-                                        else if (d4 == 0)
-                                            return make_three_word_bignum(0xc0000000, 0, 0);
-                                    }
-                                }
-                        }
-                        break;
-                }
-            }
-            return make_four_word_bignum(d4, d3, d2, d1);
-        default:
-            return make_n5_word_bignum(d4, d3, d2, d1, d0, x1);
+        }
+        if (f128_negative(*d)) ii = -ii;
+        return make_lisp_integer128(ii);
     }
-#endif // FINISHED
+    return LeftShift::op(make_lisp_integer128(ii), fixnum_of_int(x));
 }
+
 #endif // HAVE_SOFTFLOAT
 
-static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 // This converts from a double to a Lisp integer, which will
 // quite often have to be a bignum.  No overflow is permitted - the
-// result can always be accurate.
+// result can always be accurate, save that infinities and NaNs must
+// be rejected.
+
+static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 {
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
         return Nlisp_fix_sub128(a, roundmode);
 #endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);
-    if (!(d == d)) return aerror("NaN in fix");
-    if (1.0/d == 0.0) return aerror("infinity in fix");
+    if (std::isnan(d)) return aerror("NaN in fix");
+    if (std::isinf(d)) return aerror("infinity in fix");
 // I will take a cheaper path if d is such that I can cast it to a 64-bit
 // integer without that causing (integer) overflow.
     if (d >= static_cast<double>(INT64_MIN) &&
         d < -static_cast<double>(INT64_MIN))
-    {   int64_t n = (int64_t)d;
+    {   int64_t n = static_cast<int64_t>(d);
 // Here the absolute value of d was strictly smaller than 2^63 and it
 // was truncated towards zero in the conversion to an integer, so n
 // is a value that would fit in a 64-bit integer. Fixing the rounding mode
@@ -1819,10 +1770,10 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
 // only imaginable possibility for overflow is if it starts of as
 // 0x7fffffffffffffff and has to be rounded up. But because doubles only have
 // 53 bits of mantissa any that are close to the ends of the range of 64-bit
-// integers will convert exactly to integers without and need for rounding.
-        double f;   // The fraction part that is left over...
+// integers will convert exactly to integers without any need for rounding.
+        double f;   // For the fraction part that is left over...
         switch (roundmode)
-    {       default:
+        {   default:
             case FIX_TRUNCATE:  // The cast truncated so I am done.
                 return make_lisp_integer64(n);
             case FIX_ROUND:
@@ -1852,86 +1803,78 @@ static LispObject Nlisp_fix_sub(LispObject a, int roundmode)
                 else return make_lisp_unsigned64(n);
         }
     }
-// Now I know that the result will be at least a 63-bit integer, which means
-// it will be at least a 3-word bignum. Life is even better than that. If
-// the input as that large then since a double precision float only has 56
-// bits for its mantissa I know now that I will not need to do any rounding,
-// and so all the complication regarding the rounding mode does not apply.
-#ifdef FINISHED
-    int32_t d2;
-    uint32_t d1, d0;
-    intptr_t x = double_to_3_digits(d, d2, d1, d0);
-    return make_n_word_bignum(d2, d1, d0, x);
-#endif // FINISHED
+// Now I know that the result will be at least a 63-bit integer, and is
+// going to end up as a bignum. I am going to favour simplicity and
+// code clarity over performance here! In these cases there is no
+// rounding in the conversion and so no need to consider rounding modes.
+    int x;
+    double d1 = frexp(d, &x);
+// now d is in the range +- [0.5,1) and pne wpi;d need to multiply by
+// 2^x to recover the original value;
+    double d2 = std::ldexp(d1, 55);   x -= 55;
+// Now d3 is in the range +- [2^54, 2^55) and so can be converted to
+// a 64-bit integer without any rounding. And x is the amount this
+// needs to be shifted left to yield the final result...
+    return LeftShift::op(make_lisp_integer64(static_cast<int64_t>(d2)),
+                         fixnum_of_int(x));
 }
 
 // This converts from a ratio to a Lisp integer.  It has to apply
 // rounding in the desired direction.
 
 LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
-{
-#ifdef FINISHED
-    LispObject w, w1;
-    THREADID;
-    RealSave save(THREADARG numerator(a), denominator(a), nil);
-    LispObject &p = save.val(1);
-    LispObject &q = save.val(2);  // note that q will always be positive!
-    LispObject &r = save.val(3);
-    r = quot2(p, q);
+{   LispObject p = numerator(a), q = denominator(a), q1, r1, w;
+    q1 = Quotient::op(p, q);
     errexit();
-    p = Cremainder(p, q);
+    r1 = Remainder::op(p, q);
     errexit();
-// The quotient is now in r and the remainder in p. The original divisor
-// is still in q.
+// The quotient is now in q1 and the remainder in r1. The original fraction
+// is still (p/q).
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
         case FIX_ROUND:
-// Here p is the eventual remainder. If it is less then -q/2 or greater
+// Here r1 is the eventual remainder. If it is less then -q/2 or greater
 // then q/2 I will need to adjust things. And if it is equal in either of
 // those edge cases I need to think even harder!
-            w = times2(p, fixnum_of_int(2));
+            w = Times::op(r1, fixnum_of_int(2));
             errexit();
-            {   Save save1(THREADARG w);
-                w1 = negate(w);
-                errexit();
-                save.restore(w);
-            }
-            if (greaterp2(w, q) ||
-                (numeq2(w, q) && Loddp(nil, r)!=nil))
-            {   p = difference2(p, q);
-                errexit();
-                r = add1(r);
-                errexit();
-            }
-            else if (greaterp2(w1, q) ||
-                     (numeq2(w1, q) && Loddp(nil, r)!=nil))
-            {   p = plus2(p, q);
-                errexit();
-                r = sub1(r);
+            if (Minusp::op(w)) w = Minus::op(w);
+            errexit();
+            if (Greaterp::op(w, q) ||
+                (Eqn::op(w, q) && Oddp::op(q1)))
+            {   if (Minusp::op(r1))
+                {   r1 = Plus::op(r1, q);
+                    errexit();
+                    q1 = Sub1::op(q1);
+                }
+                else
+                {   r1 = Difference::op(r1, q);
+                    errexit();
+                    q1 = Add1::op(q1);
+                }
                 errexit();
             }
             break;
         case FIX_FLOOR:
-            if (minusp(p))
-            {   p = plus2(p, q);
+            if (Minusp::op(r1))
+            {   r1 = Plus::op(r1, q);
                 errexit();
-                r = sub1(r);
+                q1 = Sub1::op(q1);
                 errexit();
             }
             break;
         case FIX_CEILING:
-            if (plusp(p))
-            {   p = difference2(p, q);
+            if (Plusp::op(r1))
+            {   r1 = Difference::op(r1, q);
                 errexit();
-                r = add1(r);
+                q1 = Add1::op(q1);
                 errexit();
             }
             break;
     }
-    mv_2 = p;
-    return nvalues(r, 2);
-#endif // FINISHED
+    mv_2 = r1;
+    return nvalues(q1, 2);
 }
 
 // This fixes a value a and returns (a - fix(a)) as a second result. This is
@@ -1939,89 +1882,67 @@ LispObject Nlisp_fix_ratio(LispObject a, int roundmode)
 
 LispObject Nlisp_fix(LispObject a, int roundmode)
 {
-#ifdef FINISHED
-    LispObject r;
-    THREADID;
-    Save save(THREADARG a);
-    r = Nlisp_fix_sub(a, roundmode);
+    LispObject r = Nlisp_fix_sub(a, roundmode);
     errexit();
-    save.restore(a);
-    Save save1(THREADARG r);
-    a = difference2(a, r);
+    a = Difference::op(a, r);
     errexit();
-    save1.restore(r);
     mv_2 = a;
     return nvalues(r, 2);
-#endif // FINISHED
 }
 
 // ifix is for the 2-arg variants of floor, truncate, round etc. For
 // floating point values a and b it computes fix(a/b) and the residue
 // returned as a second value is b times the residue in that fix operation.
 
-LispObject Nlisp_ifix(LispObject aa, LispObject bb, int roundmode)
+LispObject Nlisp_ifix(LispObject a, LispObject b, int roundmode)
 {
-#ifdef FINISHED
     LispObject r2, negb;
-    THREADID;
-    if (is_float(aa) || is_float(bb))
-    {   Save save(THREADARG bb);
-        aa = quot2(aa, bb);
+    if (is_float(a) || is_float(b))
+    {   a = Quotient::op(a, b);
         errexit();
 // If either argument was floating point then the quotient will be.
-        LispObject r = Nlisp_fix(aa, roundmode);
-        save.restore(bb);
-        Save save1(THREADARG r);
-        mv_2 = times2(mv_2, bb);
+        LispObject r = Nlisp_fix(a, roundmode);
+        mv_2 = Times::op(mv_2, b);
         errexit();
-        save1.restore(r);
         return nvalues(r, 2);
     }
-    RealSave save(THREADARG aa, bb, nil, nil);
-    LispObject &a = save.val(1);
-    LispObject &b = save.val(2);
-    LispObject &r = save.val(3);
-    LispObject &q = save.val(4);
-    q = quot2(a, b);
+    LispObject q = Quotient::op(a, b);
     errexit();
-    r = Cremainder(a, b);
+    LispObject r = Remainder::op(a, b);
     errexit();
     switch (roundmode)
     {   case FIX_TRUNCATE:
             break;
         case FIX_ROUND:
 // I will apply a round-to-nearest, with round-to-even to break ties.
-            negb = negate(b);
-            {   Save save1(THREADARG negb);
-                r2 = times2(r, fixnum_of_int(2));
+            negb = Minus::op(b);
+            {   r2 = Times::op(r, fixnum_of_int(2));
                 errexit();
-                save1.restore(negb);
             }
-            if (lessp2(b, r2) ||
-                (numeq2(b, r2) && Loddp(nil, q)!=nil)) goto increase_q;
-            if (lessp2(r2, negb) ||
-                (numeq2(r2, negb) && Loddp(nil, q)!=nil)) goto decrease_q;
+            if (Lessp::op(b, r2) ||
+                (Eqn::op(b, r2) && Oddp::op(q))) goto increase_q;
+            if (Lessp::op(r2, negb) ||
+                (Eqn::op(r2, negb) && Oddp::op(q))) goto decrease_q;
             break;
         case FIX_FLOOR:
-            if (!minusp(r)) break;
+            if (!Minusp::op(r)) break;
         decrease_q:
-            r = plus2(r, b);
+            r = Plus::op(r, b);
             errexit();
-            q = sub1(q);
+            q = Sub1::op(q);
             errexit();
             break;
         case FIX_CEILING:
-            if (!plusp(r)) break;
+            if (!Plusp::op(r)) break;
         increase_q:
-            r = difference2(r, b);
+            r = Difference::op(r, b);
             errexit();
-            q = add1(q);
+            q = Add1::op(q);
             errexit();
             break;
     }
     mv_2 = r;
     return nvalues(q, 2);
-#endif // FINISHED
 }
 
 LispObject Nround(LispObject env, LispObject a)
@@ -2041,6 +1962,7 @@ LispObject Nfround(LispObject env, LispObject a1, LispObject a2)
 }
 
 #ifdef HAVE_SOFTFLOAT
+
 LispObject Nscale_float128(LispObject a, intptr_t x)
 {   float128_t d = long_float_val(a);
     if (f128_nanp(d)) return a;
@@ -2064,6 +1986,7 @@ LispObject Nscale_float128(LispObject a, intptr_t x)
     else f128_set_exponent(&d, x);
     return make_boxfloat128(d);
 }
+
 #endif // HAVE_SOFTFLOAT
 
 LispObject Nscale_float(LispObject env, LispObject a, LispObject b)
@@ -2127,23 +2050,19 @@ LispObject Nfloor(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Floor::op(a1, a2));
 }
 
-LispObject Nceiling(LispObject env, LispObject a1,
-                           LispObject a2)
+LispObject Nceiling(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Ceiling::op(a1, a2));
 }
 
-LispObject Nftruncate(LispObject env, LispObject a1,
-                             LispObject a2)
+LispObject Nftruncate(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Ftruncate::op(a1, a2));
 }
 
-LispObject Nffloor(LispObject env, LispObject a1,
-                          LispObject a2)
+LispObject Nffloor(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Ffloor::op(a1, a2));
 }
 
-LispObject Nfceiling(LispObject env, LispObject a1,
-                            LispObject a2)
+LispObject Nfceiling(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Fceiling::op(a1,  a2));
 }
 
@@ -2164,7 +2083,7 @@ LispObject Nmodf(LispObject env, LispObject a1)
     double di, df;
     float128_t li, lf;
     switch (a1 & XTAG_BITS)
-{       default:
+    {   default:
             return cons(a1, make_boxfloat(0.0));
         case XTAG_SFLOAT:   // float28 or perhaps float32
             ff = std::modf(value_of_immediate_float(a1), &fi);
@@ -2267,10 +2186,9 @@ LispObject Ndecode_float(LispObject env, LispObject a)
 }
 
 #ifdef HAVE_SOFTFLOAT
+
 LispObject Ninteger_decode_long_float(LispObject a)
-{
-#ifdef FINISHED
-    float128_t d = long_float_val(a);
+{   float128_t d = long_float_val(a);
     if (f128_infinitep(d) || f128_nanp(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
         else return onevalue(nil); // infinity or NaN
@@ -2290,10 +2208,10 @@ LispObject Ninteger_decode_long_float(LispObject a)
     {   f128_negate(&d);
         neg = true;
     }
-    int32_t d4;
-    uint32_t d3, d2, d1, d0;
-    intptr_t x = 31*float128_to_5_digits(d, d4, d3, d2, d1, d0);
-    a = make_n5_word_bignum(d4, d3, d2, d1, d0, 0);
+    uint64_t hi, lo;
+    f128_mantissa(d, hi, lo);
+    int x = f128_exponent(d);
+    a = make_lisp_integer128((static_cast<int128_t>(hi)<<64) | lo);
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
         mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
@@ -2302,19 +2220,17 @@ LispObject Ninteger_decode_long_float(LispObject a)
 #else
     return list3(a, fixnum_of_int(x),
                  neg ? fixnum_of_int(-1) : fixnum_of_int(1));
-#endif
-#endif // FINISHED
+#endif // COMMON
 }
+
 #endif // HAVE_SOFTFLOAT
 
 LispObject Ninteger_decode_float(LispObject env, LispObject a)
-{
-#ifdef FINISHED
-    double d;
+{   double d;
     if (!is_float(a)) return aerror("integer-decode-float");
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
-        return integer_decode_long_float(a);
+        return Ninteger_decode_long_float(a);
 #endif // HAVE_SOFTFLOAT
     d = float_of_number(a);
     if (floating_edge_case(d))
@@ -2322,34 +2238,34 @@ LispObject Ninteger_decode_float(LispObject env, LispObject a)
         else return onevalue(nil); // infinity or NaN
     }
     if (d == 0.0)
+    {
 #ifdef COMMON
-    {   mv_2 = fixnum_of_int(0);
+        mv_2 = fixnum_of_int(0);
         mv_3 = fixnum_of_int(1.0/d < 0.0 ? -1 : 1);
-        nvalues(fixnum_of_int(0), 3);
-    }
+        return nvalues(fixnum_of_int(0), 3);
 #else
         return list3(fixnum_of_int(0), fixnum_of_int(0),
                      fixnum_of_int(1.0/d < 0.0 ? -1 : 1));
 #endif
+    }
     bool neg = 0;
     if (d < 0.0)
     {   d = -d;
         neg = true;
     }
-    int32_t d2;
-    uint32_t d1, d0;
-    intptr_t x = 31*double_to_3_digits(d, d2, d1, d0);
-    a = make_three_word_bignum(d2, d1, d0);
+    int x;
+    d = frexp(d, &x);
+    a = make_lisp_integer64(static_cast<int64_t>(
+        d*16384.0*16384.0*16384.9*32.0));
+    x -= 63;
 #ifdef COMMON
-    {   mv_2 = fixnum_of_int(x);
-        mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
-        return nvalues(a, 3);
-    }
+    mv_2 = fixnum_of_int(x);
+    mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
+    return nvalues(a, 3);
 #else
     return list3(a, fixnum_of_int(x),
                  neg ? fixnum_of_int(-1) : fixnum_of_int(1));
 #endif
-#endif // FINISHED
 }
 
 #endif // ARITHLIB
