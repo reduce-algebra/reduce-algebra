@@ -4987,10 +4987,9 @@ inline void double_to_virtual_bignum(double d,
     }
 // From here down I do not need to worry about zero, infinity or NaNs,
 // and there will be no rounding!
-    double intpart;
     std::int64_t mantissa;
     int exponent;
-    double_to_bits(intpart, mantissa, exponent);
+    double_to_bits(d, mantissa, exponent);
 // Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
     std::uint64_t lowbit = mantissa & -static_cast<std::uint64_t>
                            (mantissa);
@@ -11033,7 +11032,10 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::int64_t bb)
 // This case involved doing a long-by-short remainder operation and then
 // it reduces to the small-small case. The main problem is the handling of
 // negative inputs.
-    if (bb == 0) return vector_to_handle(a);
+    if (bb == 0)
+    {   if (Minusp::op(a)) return Minus::op(a);
+        else return vector_to_handle(a);
+    }
     std::uint64_t b = bb < 0 ? -bb : bb;
     std::size_t lena = number_size(a);
     bool signa = negative(a[lena-1]);
