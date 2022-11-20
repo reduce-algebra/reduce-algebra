@@ -99,7 +99,7 @@ LispObject make_string(const char *b)
 // of those is the padder. Using memset probably leads to compilation that
 // writes the zeros with a word memory access but avoids C++ worries
 // about strict aliasing.
-    if (SIXTY_FOUR_BIT || n%8 > 4)
+    if ((SIXTY_FOUR_BIT && n!=0) || n%8 > 4)
         std::memset(s+k-8, 0, 8);
     else std::memset(s+k-4, 0, 4);
     std::memcpy(s + CELL, b, (size_t)n);
