@@ -1280,7 +1280,7 @@ bool eql_fn(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
 // Here I must have a long float.
         return f128_eq(float128_of_number(a), float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
         return false;
 #endif // HAVE_SOFTFLOAT
     }
@@ -1288,8 +1288,8 @@ bool eql_fn(LispObject a, LispObject b)
     {   Header h = numhdr(a);
         if (h != numhdr(b)) return false;
 #ifdef ARITHLIIB
-        if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
-#endif // ARITHLIB
+        else if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
+#else // ARITHLIB
         else if (type_of_header(h) == TYPE_BIGNUM)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
@@ -1300,15 +1300,16 @@ bool eql_fn(LispObject a, LispObject b)
             }
             return true;
         }
+#endif // ARITHLIB
         else return eql_numbers(a, b);
     }
 }
 
 #ifdef COMMON
 #define eqcheck(a, b) eql(a, b)
-#else
+#else // COMMON
 #define eqcheck(a, b) ((a) == (b))
-#endif
+#endif // COMMON
 
 static bool cl_vec_equal(LispObject a, LispObject b)
 // here a and b are known to be vectors or arrays.  This should compare
@@ -1499,7 +1500,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_BIGNUM)
+#ifndef ARITHLIB
+                                else if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
@@ -1509,7 +1511,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
-#ifdef ARITHLIB
+#else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                                     return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -1539,7 +1541,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                              float128_of_number(ca),
                                              float128_of_number(cb))) return false;
                                 else break;
-#else
+#else // HAVE_SOFTFLOAT
                                 else return false;
 #endif // HAVE_SOFTFLOAT
                             }
@@ -1561,6 +1563,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
+#ifndef ARITHLIB
                     if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
@@ -1571,7 +1574,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         }
                         return true;
                     }
-#ifdef ARITHLIB
+#else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -1597,7 +1600,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
                     else return false;
 #endif // HAVE_SOFTFLOAT
                 }
@@ -1735,14 +1738,14 @@ bool traced_equal_fn(LispObject a, LispObject b,
 bool inner_equal(LispObject a, LispObject b,
                  const char *file, int line, int depth)
 {
-#else
+#else // TRACED_EQUAL
 bool equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code. I will also have checked that
 // the types of the two args agree, and that they are not both immediate
 // data.
 {
-#endif
+#endif // TRACED_EQUAL
 // The for loop at the top here is so that equal can iterate along the
 // length of linear lists. For MANY MANY cases in a Lisp world data
 // structures will be long but not so terribly deep and so one hopes that
@@ -1810,8 +1813,7 @@ bool equal_fn(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
-#endif // ARITHLIB
-#ifdef ARITHLIB
+#else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                                     return Eqn::op(ca, cb);
 #endif // ARITHLIB
@@ -1841,7 +1843,7 @@ bool equal_fn(LispObject a, LispObject b)
                                              float128_of_number(ca),
                                              float128_of_number(cb))) return false;
                                 else break;
-#else
+#else // HAVE_SOFTFLOAT
                                 else return false;
 #endif // HAVE_SOFTFLOAT
                             }
@@ -1871,8 +1873,7 @@ bool equal_fn(LispObject a, LispObject b)
                         }
                         return true;
                     }
-#endif // ARITHLIB
-#ifdef ARITHLIB
+#else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -1898,7 +1899,7 @@ bool equal_fn(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
                     else return false;
 #endif // HAVE_SOFTFLOAT
                 }
@@ -2014,7 +2015,8 @@ bool equalp(LispObject a, LispObject b)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_BIGNUM)
+#ifndef ARITHLIB
+                                else if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
@@ -2024,7 +2026,7 @@ bool equalp(LispObject a, LispObject b)
                                     }
                                     break;
                                 }
-#ifdef ARITHLIB
+#else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                                     return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -2055,7 +2057,7 @@ bool equalp(LispObject a, LispObject b)
                                              float128_of_number(ca),
                                              float128_of_number(cb))) return false;
                                 else break;
-#else
+#else // HAVE_SOFTFLOAT
                                 else return false;
 #endif // HAVE_SOFTFLOAT
                             }
@@ -2075,7 +2077,8 @@ bool equalp(LispObject a, LispObject b)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
-                    if (type_of_header(h) == TYPE_BIGNUM)
+#ifndef ARITHLIB
+                    else if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
@@ -2085,7 +2088,7 @@ bool equalp(LispObject a, LispObject b)
                         }
                         return true;
                     }
-#ifdef ARITHLIB
+#else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -2112,7 +2115,7 @@ bool equalp(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
                     else return false;
 #endif // HAVE_SOFTFLOAT
                 }
@@ -2161,13 +2164,13 @@ LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
 {   bool r;
 #ifdef COMMON
     r = cl_equal(a, b);
-#else
+#else // COMMON
 // Note that "equal" here is a macro that expands to something that
 // checks the EQ case in-line, so there is no merit in putting
 //   if (a == b) return onevalue(nil);
 // first.
     r = equal(a, b);
-#endif
+#endif // COMMON
     return onevalue(Lispify_predicate(!r));
 }
 
@@ -2325,7 +2328,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 #endif
 #ifdef COMMON
             if (cl_equal(a, cc)) return onevalue(c);
-#else
+#else // COMMON
             if (equal(a, cc))
             {
 #ifdef TRACED_EQUAL
@@ -2333,22 +2336,22 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
                 trace_printf("Assoc true %3d %3d ", pos, int_of_fixnum(Llength(nil,
                              save_b)));
                 prin_to_stdout(a); trace_printf("\n");
-#endif
+#endif // TRACED_EQUAL
                 return onevalue(c);
             }
-#endif
+#endif // COMMON
         }
         b = cdr(b);
 #ifdef TRACED_EQUAL
         pos++;
-#endif
+#endif // TRACED_EQUAL
     }
 #ifdef TRACED_EQUAL
 // beware stupidly long lists...
     trace_printf("Assoc false  %3d %3d ", pos, int_of_fixnum(Llength(nil,
                  save_b)));
     prin_to_stdout(a); trace_printf("\n");
-#endif
+#endif // TRACED_EQUAL
     return onevalue(nil);
 }
 
@@ -2409,9 +2412,9 @@ LispObject Lmember(LispObject env, LispObject a, LispObject b)
     {   LispObject cb = car(b);
 #ifdef COMMON
         if (cl_equal(a, cb)) return onevalue(b);
-#else
+#else // COMMON
         if (equal(a, cb)) return onevalue(b);
-#endif
+#endif // COMMON
         b = cdr(b);
     }
     return onevalue(nil);
@@ -2722,9 +2725,9 @@ LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
         {   LispObject q = car(b);
 #ifdef COMMON
             if (cl_equal(q, a))
-#else
+#else // COMMON
             if (equal(q, a))
-#endif
+#endif // COMMON
             {   b = cdr(b);
                 break;
             }
@@ -3022,9 +3025,9 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
         {
 #ifdef COMMON
             if (cl_equal(c, b))
-#else
+#else // COMMON
             if (equal(c, b))
-#endif
+#endif // COMMON
             {
 // if EQUAL said "yes" then it can not have failed.
                 if (c == a) break; // substitute by leaving unchanged
@@ -3247,9 +3250,9 @@ LispObject sublis(LispObject a1, LispObject c1)
             {   LispObject tta = car(tt);
 #ifdef COMMON
                 if (consp(tta) && cl_equal(c, car(tta)))
-#else
+#else // COMMON
                 if (consp(tta) && equal(c, car(tta)))
-#endif
+#endif // COMMON
                 {   tt = cdr(tta);
                     found = true;
                     break;
