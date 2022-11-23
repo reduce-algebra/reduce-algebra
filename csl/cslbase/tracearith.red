@@ -38,7 +38,9 @@ symbolic procedure body_traced(fnn, av);
     scalar g := gensym(), i := 0;
     return list(list('lambda, list g, 'progn .
       list('princ, "calling ") .
-      list('print, mkquote fnn) .
+      list('prin, mkquote fnn) .
+      '(princ ": ") .
+      list('print, curline!*) .
       append(for each v in av collect
          list('progn, list('prin2, "Arg"),
                       list('prin2, i := i+1),
@@ -54,7 +56,7 @@ symbolic procedure form_traced(u,vars,mode);
     scalar av := for each x in args collect gensym();
     if mode='symbolic then
        return ('lambda . av . list body_traced(fnn, av)) . args
-    else return (fnn . args);
+    else return 'list . algid(car u, vars) . args;
   end;
 
 fluid '(traced_functions);
@@ -150,4 +152,3 @@ symbolic procedure cleartrace();
       remprop(x, 'formfn);
 
 end;
-

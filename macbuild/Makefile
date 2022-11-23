@@ -38,8 +38,15 @@ source-archive:
 	./make-source.sh $(SNAPSHOT) 
 
 csl.stamp:	$(BUILDTOPDIR).stamp
-	( pushd $(BUILDTOPDIR) ; ./configure --with-csl --without-autogen ; \
-		script ../csl.log time make csl ; popd )
+	( pushd $(BUILDTOPDIR) ; \
+	  if g++ hello.cpp -arch x86_64 -arch arm64 -o hello \
+	  then \
+	    ./configure --with-csl --without-autogen --enable-universal ; \
+	  else \
+	    ./configure --with-csl --without-autogen ; \
+	  fi \
+	  script ../csl.log time make csl ; \
+	  popd )
 	touch csl.stamp
 
 psl.stamp:	$(BUILDTOPDIR).stamp
