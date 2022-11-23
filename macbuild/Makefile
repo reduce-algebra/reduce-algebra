@@ -39,7 +39,7 @@ source-archive:
 
 csl.stamp:	$(BUILDTOPDIR).stamp
 	( pushd $(BUILDTOPDIR) ; \
-	  if g++ hello.cpp -arch x86_64 -arch arm64 -o hello \
+	  if g++ hello.cpp -arch x86_64 -arch arm64 -o hello ; \
 	  then \
 	    ./configure --with-csl --without-autogen --enable-universal ; \
 	  else \
