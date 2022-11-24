@@ -32,6 +32,7 @@ $(BUILDTOPDIR).stamp:
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
 	./make-source.sh $(SNAPSHOT) 
+	cp hello.cpp $(BUILDTOPDIR}
 	touch $(BUILDTOPDIR).stamp
 
 source-archive:
@@ -44,7 +45,7 @@ csl.stamp:	$(BUILDTOPDIR).stamp
 	    ./configure --with-csl --without-autogen --enable-universal ; \
 	  else \
 	    ./configure --with-csl --without-autogen ; \
-	  fi \
+	  fi ; \
 	  script ../csl.log time make csl ; \
 	  popd )
 	touch csl.stamp

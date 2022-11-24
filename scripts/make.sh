@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # This is what "make" invokes. It gets passed as arguments
 #      make-targets
@@ -120,6 +120,7 @@ fi
 
 procids=""
 
+shopt -s nullglib
 list=""
 if test "$buildcsl" = "yes"
 then
@@ -129,7 +130,7 @@ then
     ;;
   mac_*)
     host1=${host/aarch64/universal}
-    host1=${host1/x86_64/universa}
+    host1=${host1/x86_64/universal}
     list="cslbuild/*${host}*/csl cslbuild/*${host1}*/csl"
     ;;
   *)
@@ -137,6 +138,7 @@ then
     ;;
   esac
 fi
+shopt -u nullglob
 
 firstcsl=${list%% *}
 if ! test -f "$firstcsl/Makefile"
