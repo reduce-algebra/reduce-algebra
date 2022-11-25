@@ -32,7 +32,6 @@ $(BUILDTOPDIR).stamp:
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
 	./make-source.sh $(SNAPSHOT) 
-	cp hello.cpp $(BUILDTOPDIR}
 	touch $(BUILDTOPDIR).stamp
 
 source-archive:
@@ -40,7 +39,7 @@ source-archive:
 
 csl.stamp:	$(BUILDTOPDIR).stamp
 	( pushd $(BUILDTOPDIR) ; \
-	  if g++ hello.cpp -arch x86_64 -arch arm64 -o hello ; \
+	  if gcc scripts/hello.c -arch x86_64 -arch arm64 -o hello ; \
 	  then \
 	    ./configure --with-csl --without-autogen --enable-universal ; \
 	  else \

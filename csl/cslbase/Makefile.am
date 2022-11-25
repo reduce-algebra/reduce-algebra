@@ -806,7 +806,8 @@ reduce_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../crlibm install
+	$(TRACE)@$(MAKE) -C ../crlibm/scs
+	$(TRACE)@$(MAKE) -C ../crlibm install-am
 
 else !crlibm
 CRINC =
