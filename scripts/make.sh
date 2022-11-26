@@ -120,7 +120,7 @@ fi
 
 procids=""
 
-shopt -s nullglib
+shopt -s nullglob
 list=""
 if test "$buildcsl" = "yes"
 then
