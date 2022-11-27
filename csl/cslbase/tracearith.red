@@ -124,8 +124,8 @@ traced_functions := '(
   native!-cacot   native!-csinh   native!-ccosh   native!-ctanh
   native!-ccsch   native!-csech   native!-ccoth   native!-casinh
   native!-cacosh  native!-catanh  native!-cacsch  native!-casech
-  native!-cacoth  numerator       denominator     realpart
-  imagpart        decode!-float   integer!-decode!-float
+  native!-cacoth  neq             numerator       denominator
+  realpart        imagpart        decode!-float   integer!-decode!-float
   fp!-infinite    float!-infinity!-p              fp!-nan
   fp!-finite      fp!-subnorm     fp!-denormalized!-p
   fp!-signbit     float!-sign     float!-digits   float!-precision

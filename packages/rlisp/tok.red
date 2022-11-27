@@ -759,6 +759,11 @@ symbolic procedure token;
 % not at the start of a name. Thus "-a-b+c" ends up parsing as
 %      (plus (minus a!-b) c)
 %
+% A change in November 2022 arranges that although normally "_" is
+% treated as a letter when within a symbol but needs to be escaped (with
+% "!") at the start of a symbol, a double underscore can start a symbol
+% without need for escape. This allows the token __line__ and its friends
+% to be used more easily.
    begin scalar x,y,z;
         x := crchar!*;
     a:  if (x eq !$eof!$) or
@@ -776,7 +781,8 @@ symbolic procedure token;
          else if x = '!! and null(!*micro!-version and null !*defn)
           then go to escape
          else if x = '!" then go to string
-         else if x = '!\ then go to backslash;
+         else if x = '!\ then go to backslash
+         else if x = '!_ then go to underscore;
     unicode:
         ttype!* := 3;
         if x eq !$eof!$ then prog2(crchar!* := '! ,filenderr());
@@ -794,6 +800,17 @@ symbolic procedure token;
         if numberp x then return apply1('minus,x);  % For bootstrapping.
         rplaca(cdr x,apply1('minus,cadr x));        % Also for booting.
         return x;
+    underscore:
+        x := readch1();
+        if x = '!_ then go to doubleunderscore;
+        peekchar!* := x . peekchar!*;
+        x := '!_;
+        go to unicode;
+    doubleunderscore:
+        ttype!* := 0;
+        x := wideid2list x;
+        y := car x . y;
+        go to let2;
     escape:
         begin scalar !*raise,!*lower;
            escaped!* := t;

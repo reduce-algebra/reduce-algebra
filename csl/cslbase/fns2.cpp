@@ -1237,36 +1237,13 @@ bool eql_fn(LispObject a, LispObject b)
 // check that numeric values compare properly.  Ugh.
 {
 // (these tests done before eql_fn is called).
-//  if (a == b) return true;
+//  if (a == b && !is_float(a)) return true;
 //  if ((((intptr_t)a ^ (intptr_t)b) & TAG_BITS) != 0) return false;
-//
-// Actually in Common Lisp mode where I have short floats as immediate data
-// I have further pain here with (eql 0.0s -0.0s), and (eql NaN NaN) might
-// improperly return true because of the early EQ test. For Standard Lisp
-// I am going to make +0.0 and -0.0 equal at last for now - nut maybe I
-// will review that later.
-    if (SIXTY_FOUR_BIT)
-    {   if (a == XTAG_SFLOAT &&
-            b == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
-                    true;
-        if (b == XTAG_SFLOAT &&
-            a == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
-                    true;
-// Here I need to deal with single as well as short floats.
-        if (a == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            b == static_cast<LispObject>(XTAG_SFLOAT|XTAG_FLOAT32|((
-                                             uint64_t)1<<63)))
-            return true;
-        if (b == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            a == static_cast<LispObject>(XTAG_SFLOAT|XTAG_FLOAT32|((
-                                             uint64_t)1<<63)))
-            return true;
+    if ((a & XTAG_BITS) == XTAG_SFLOAT)
+    {   float fa = short_float_val(a),
+              fb = short_float_val(b);
+        return fa == fb;
     }
-    else if ((a == XTAG_SFLOAT &&
-              b == static_cast<LispObject>(XTAG_SFLOAT|0x80000000U)) ||
-             (a == static_cast<LispObject>(XTAG_SFLOAT|0x80000000U) &&
-              b == XTAG_SFLOAT))
-        return true;
     if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -1283,6 +1260,11 @@ bool eql_fn(LispObject a, LispObject b)
 #else // HAVE_SOFTFLOAT
         return false;
 #endif // HAVE_SOFTFLOAT
+    }
+    else if ((a & XTAG_BITS) == XTAG_SFLOAT)
+    {   float fa = short_float_val(a),
+              fb = short_float_val(b);
+        return fa == fb;
     }
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
@@ -1444,10 +1426,8 @@ compare_bits:
 
 bool cl_equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
-// before entering this general purpose code.
-// I will only view short and possibly single floats as EQUAL here if they
-// has been EQ. In particular that has implications for +0.0 vs. -0.0 and
-// also NaN values...
+// before entering this general purpose code. But immediate floats still
+// need checking.
 {
 // The for loop at the top here is so that cl_equal can iterate along the
 // length of linear lists.
@@ -1464,7 +1444,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
         {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = car(a), cb = car(b);
-                if (ca == cb)
+                if (ca == cb && !is_float(ca))
                 {   a = cdr(a);
                     b = cdr(b);
                     if (a == b) return true;
@@ -1479,10 +1459,10 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = car(ca), ccb = car(cb);
-                            if (cca == ccb)
+                            if (cca == ccb && !is_float(cca))
                             {   ca = cdr(ca);
                                 cb = cdr(cb);
-                                if (ca == cb) break;
+                                if (ca == cb && !is_float(ca)) break;
                                 continue;
                             }
 // Do a real recursion when I get down to args like
@@ -1490,7 +1470,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                             if (!cl_equal(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
-                            if (ca == cb) break;
+                            if (ca == cb && !is_float(ca)) break;
                             continue;
                         }
                     }
@@ -1513,7 +1493,9 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                 }
 #else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(a, b);
+                                {   if (!Eqn::op(a, b)) return false;
+                                    else break;
+                                }
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -1550,7 +1532,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                 }
                 a = cdr(a);
                 b = cdr(b);
-                if (a == b) return true;
+                if (a == b && !is_float(a)) return true;
                 continue;
             }
         }
@@ -1766,10 +1748,10 @@ bool equal_fn(LispObject a, LispObject b)
         {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = car(a), cb = car(b);
-                if (ca == cb)
+                if (ca == cb && !is_float(ca))
                 {   a = cdr(a);
                     b = cdr(b);
-                    if (a == b) return true;
+                    if (a == b && !is_float(a)) return true;
                     continue;
                 }
 // And here, because equal() seems to be a very important low-level
@@ -1781,7 +1763,7 @@ bool equal_fn(LispObject a, LispObject b)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = car(ca), ccb = car(cb);
-                            if (cca == ccb)
+                            if (cca == ccb && !is_float(cca))
                             {   ca = cdr(ca);
                                 cb = cdr(cb);
                                 if (ca == cb) break;
@@ -1792,7 +1774,7 @@ bool equal_fn(LispObject a, LispObject b)
                             if (!equal(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
-                            if (ca == cb) break;
+                            if (ca == cb && !is_float(ca)) break;
                             continue;
                         }
                     }
@@ -1815,7 +1797,9 @@ bool equal_fn(LispObject a, LispObject b)
                                 }
 #else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(ca, cb);
+                                {   if (!Eqn::op(ca, cb)) return false;
+                                    else break;
+                                }
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -1852,7 +1836,7 @@ bool equal_fn(LispObject a, LispObject b)
                 }
                 a = cdr(a);
                 b = cdr(b);
-                if (a == b) return true;
+                if (a == b && !is_float(a)) return true;
                 continue;
             }
         }
@@ -1931,29 +1915,31 @@ static bool vec_equal(LispObject a, LispObject b)
 // will fail less often if I do not pad properly!
     l = (size_t)word_align_up(length_of_header(ha));
     if (vector_header_of_binary(ha))
-    {   while ((l -= 4) != 0)
+    {
+// I think I ough to use std::memcmp here.
+        while ((l -= 4) != 0)
             if (*((uint32_t *)(bit_cast<char *>(a) + l - TAG_VECTOR)) !=
-                *((uint32_t *)(bit_cast<char *>(b) + l - TAG_VECTOR))) return
-                        false;
+                *((uint32_t *)(bit_cast<char *>(b) + l - TAG_VECTOR)))
+                return false;
         return true;
     }
     else
     {   if (is_mixed_header(ha))
         {   while (l > 16)
-            {   uint32_t ea = *((uint32_t *)(bit_cast<char *>
-                                             (a) + l - TAG_VECTOR - 4)),
-                              eb = *((uint32_t *)(bit_cast<char *>(b) + l - TAG_VECTOR -
-                                                  4));
+            {   uint32_t ea = *((uint32_t *)(
+                                bit_cast<char *>(a) + l - TAG_VECTOR - 4)),
+                         eb = *((uint32_t *)(
+                                bit_cast<char *>(b) + l - TAG_VECTOR - 4));
                 if (ea != eb) return false;
                 l -= 4;
             }
         }
         while ((l -= CELL) != 0)
-        {   LispObject ea = *(bit_cast<LispObject *>
-                              (bit_cast<char *>(a) + l - TAG_VECTOR)),
-                            eb = *(bit_cast<LispObject *>(bit_cast<char *>
-                                    (b) + l - TAG_VECTOR));
-            if (ea == eb) continue;
+        {   LispObject ea = *(bit_cast<LispObject *>(
+                              bit_cast<char *>(a) + l - TAG_VECTOR)),
+                       eb = *(bit_cast<LispObject *>(
+                              bit_cast<char *>(b) + l - TAG_VECTOR));
+            if (ea == eb && !is_float(ea)) continue;
             if (!equal(ea, eb)) return false;
         }
         return true;
@@ -1979,10 +1965,10 @@ bool equalp(LispObject a, LispObject b)
         {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = car(a), cb = car(b);
-                if (ca == cb)
+                if (ca == cb && !is_float(ca))
                 {   a = cdr(a);
                     b = cdr(b);
-                    if (a == b) return true;
+                    if (a == b && !is_float(a)) return true;
                     continue;
                 }
 // And here, because equalp() seems to be a very important low-level
@@ -1994,10 +1980,10 @@ bool equalp(LispObject a, LispObject b)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = car(ca), ccb = car(cb);
-                            if (cca == ccb)
+                            if (cca == ccb && !is_float(cca))
                             {   ca = cdr(ca);
                                 cb = cdr(cb);
-                                if (ca == cb) break;
+                                if (ca == cb && !is_float(ca)) break;
                                 continue;
                             }
 // Do a real recursion when I get down to args like
@@ -2005,7 +1991,7 @@ bool equalp(LispObject a, LispObject b)
                             if (!equalp(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
-                            if (ca == cb) break;
+                            if (ca == cb && !is_float(ca)) break;
                             continue;
                         }
                     }
@@ -2028,7 +2014,9 @@ bool equalp(LispObject a, LispObject b)
                                 }
 #else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(a, b);
+                                {   if (!Eqn::op(a, b)) return false;
+                                    else break;
+                                }
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -2066,7 +2054,7 @@ bool equalp(LispObject a, LispObject b)
                 }
                 a = cdr(a);
                 b = cdr(b);
-                if (a == b) return true;
+                if (a == b && !is_float(a)) return true;
                 continue;
             }
         }
@@ -2127,8 +2115,7 @@ LispObject Leq(LispObject env, LispObject a, LispObject b)
 {   return onevalue(Lispify_predicate(a == b));
 }
 
-LispObject Leql(LispObject env,
-                LispObject a, LispObject b)
+LispObject Leql(LispObject env, LispObject a, LispObject b)
 {   return onevalue(Lispify_predicate(eql(a, b)));
 }
 
@@ -2138,25 +2125,31 @@ LispObject Leqcar(LispObject env, LispObject a, LispObject b)
     return onevalue(Lispify_predicate(eqcheck(a, b)));
 }
 
+// There is something of a misery in that if x has a value that is a NaN
+// then it is not equal to itself. Thus if two values a and b have exactly
+// the same bitwise representation at the C++ level one can only deduce
+// that they are equal in the Lisp sense if they do not stand for floating
+// point values.
+
 LispObject Lequalcar(LispObject env, LispObject a, LispObject b)
 {   if (!consp(a)) return onevalue(nil);
     a = car(a);
-    if (a == b) return lisp_true;
+    if (a == b && !is_float(a)) return lisp_true;
     else return onevalue(Lispify_predicate(equal(a, b)));
 }
 
 LispObject Lcl_equal(LispObject env, LispObject a, LispObject b)
-{   if (a == b) return onevalue(lisp_true);
+{   if (a == b && !is_float(a)) return onevalue(lisp_true);
     else return onevalue(Lispify_predicate(cl_equal(a, b)));
 }
 
 LispObject Lequal(LispObject env, LispObject a, LispObject b)
-{   if (a == b) return onevalue(lisp_true);
+{   if (a == b && !is_float(a)) return onevalue(lisp_true);
     else return onevalue(Lispify_predicate(equal(a, b)));
 }
 
 LispObject Lequalp(LispObject env, LispObject a, LispObject b)
-{   if (a == b) return onevalue(lisp_true);
+{   if (a == b && !is_float(a)) return onevalue(lisp_true);
     else return onevalue(Lispify_predicate(equalp(a, b)));
 }
 
@@ -2167,7 +2160,7 @@ LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
 #else // COMMON
 // Note that "equal" here is a macro that expands to something that
 // checks the EQ case in-line, so there is no merit in putting
-//   if (a == b) return onevalue(nil);
+//   if (a == b && !is_float(a)) return onevalue(nil);
 // first.
     r = equal(a, b);
 #endif // COMMON

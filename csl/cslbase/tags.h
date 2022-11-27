@@ -1043,10 +1043,15 @@ inline bool is_immed_cons_sym(LispObject p)
    bitOf(TAG_CONS) |
    bitOf(TAG_VECTOR) |
    bitOf(TAG_NUMBERS) |
-   bitOf(TAG_BOXFLOAT);
+   bitOf(TAG_BOXFLOAT) |
+   bitOf(TAG_CONS+TAG_XBIT) |
+   bitOf(TAG_VECTOR+TAG_XBIT) |
+   bitOf(TAG_NUMBERS+TAG_XBIT) |
+   bitOf(TAG_BOXFLOAT+TAG_XBIT) |
+   bitOf(XTAG_SFLOAT);
 
 inline bool need_more_than_eq(LispObject p)
-{   return ((need_more_eq_tags_mask >> (p & TAG_BITS)) & 1) != 0;
+{   return ((need_more_eq_tags_mask >> (p & XTAG_BITS)) & 1) != 0;
 }
 
 /*INLINE_VAR*/static const unsigned int vi8_tags_mask =
@@ -2114,6 +2119,16 @@ typedef struct Single_Float_
         int32_t i;
     } f;
 } Single_Float;
+
+inline float short_float_val(LispObject v)
+{   Float_union x;
+    if (SIXTY_FOUR_BIT)
+        x.i = v >> 32;
+    else
+        x.i = v - XTAG_SFLOAT;
+    std::memmove(&x.f, &x.i, sizeof(x.f));
+    return x.f;
+}
 
 inline float& single_float_val(LispObject v)
 {   return ((Single_Float *)(bit_cast<char *>(v)-TAG_BOXFLOAT))->f.f;

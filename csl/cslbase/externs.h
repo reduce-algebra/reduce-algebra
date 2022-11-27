@@ -1024,7 +1024,7 @@ public:
 // and only call the (messy) function in cases where it might be worth-while.
 // For Common Lisp I will presumably look at eql and cl_equal as well.
 // The test here says:
-//   If a and b are EQ then they are EQUAL,
+//   If a and b are EQ then they are EQUAL, unless possibly one is a NaN
 //   else if a and b have different types they are not EQUAL
 //   else if a has type fixnum, odds, sfloat, symbol
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
@@ -1036,13 +1036,13 @@ public:
 
 #ifdef TRACED_EQUAL
 #define equal(a, b)                                  \
-   ((a == b) ? true :                                \
+   ((a == b && !is_float(a)) ? true :                \
     ((a & TAG_BITS) != (b & TAG_BITS)) ? false :     \
     (need_more_than_eq(a)) ? equal_fn(a, b) :        \
     false)
 #else
 inline bool equal(LispObject a, LispObject b)
-{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
+{   if (a == b && !is_float(a)) return true;  // Beware NaNs!
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return equal_fn(a, b);
     else return false;
@@ -1065,7 +1065,7 @@ inline bool cl_equal(LispObject a, LispObject b)
 #endif
 
 inline bool eql(LispObject a, LispObject b)
-{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
+{   if (a == b && !is_float(a)) return true;  // NaNs cause pain!
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return eql_fn(a, b);
     else return false;
