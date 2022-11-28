@@ -10327,7 +10327,7 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
              true, r, olenr, lenr);
-    uintptr_t w = confirm_size(r, olenr, lenr);
+    intptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
     if (w != int_to_handle(0) &&
@@ -10346,7 +10346,7 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
     division(a, lena, bb, 1,
              false, q, olenq, lenq,
              true, r, olenr, lenr);
-    uintptr_t w = confirm_size(r, olenr, lenr);
+    intptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = (b < 0);
     if (w != int_to_handle(0) &&
