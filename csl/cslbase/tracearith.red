@@ -137,9 +137,9 @@ traced_functions := '(
   mask!-field     ldb!-test       dpb             deposit!-field
   logbitp         logtest         complex         conjugate
   fp!-evaluate    trap!-floating!-overflow        validate!-number
-
-% Now some more that rely on some of the above
-   timbf times!: plubf plus!: setprec infinityp gfplus gftimes 
+% Add extra cases here as needed on the basis of the code you are
+% debugging...
+  random random!-number next!-random!-number
 );
 
 symbolic procedure settrace();
@@ -151,4 +151,17 @@ symbolic procedure cleartrace();
    for each x in traced_functions do
       remprop(x, 'formfn);
 
+remflag('(next!-random!-number), 'lose);
+
+
+% The following is not a high quality "random" number generator but it
+% will be deterministic across versions and platforms etc.
+
+fluid '(rseed);
+rseed := 1234567;
+
+symbolic procedure next!-random!-number();
+  rseed := remainder(19937*rseed+11213, 134217689);
+
+tr  random, random!-number, next!-random!-number;
 end;

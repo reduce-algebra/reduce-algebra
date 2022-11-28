@@ -10330,7 +10330,7 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
     uintptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    if (w != int_of_handle(0) &&
+    if (w != int_to_handle(0) &&
         ((a_neg && !b_neg) || (!a_neg && b_neg)))
     {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
         else return Plus::op(vector_of_handle(w), b);
@@ -10349,7 +10349,7 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
     uintptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = (b < 0);
-    if (w != int_of_handle(0) &&
+    if (w != int_to_handle(0) &&
         ((a_neg && !b_neg) || (!a_neg && b_neg)))
     {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
         else return Plus::op(vector_of_handle(w), b);
