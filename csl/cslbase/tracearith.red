@@ -139,7 +139,7 @@ traced_functions := '(
   fp!-evaluate    trap!-floating!-overflow        validate!-number
 % Add extra cases here as needed on the basis of the code you are
 % debugging...
-  random random!-number next!-random!-number
+  random random!-number next!-random!-number apply apply1 apply2
 );
 
 symbolic procedure settrace();

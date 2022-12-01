@@ -1259,7 +1259,7 @@ uint64_t use_setup(uint64_t crc, const setup_type *p)
     return crc;
 }
 
-uint64_t function_crc = 0;
+static uint64_t function_crc = 0;
 
 void set_up_function_tables()
 {   uint64_t crc = 0;
@@ -1311,6 +1311,9 @@ void set_up_function_tables()
     while (*p != nullptr) crc = use_setup(crc, *p++);
     p++;  // setup_tables is in two parts, separated by a nullptr.
     while (*p != nullptr) crc = use_setup(crc, *p++);
+
+    for (const char* n : list_names)
+        crc = crc64(crc, n, std::strlen(n));
 
     function_crc = crc;
 }
@@ -3964,7 +3967,7 @@ void warm_setup()
 // This was of reporting the problem is not neat, but may hold the fort
 // for at least a while.
         std::fprintf(stderr, "Checksums %" PRIx64 "  vs %" PRIx64 "\n",
-                        entrypt_checksum, function_crc);
+                             entrypt_checksum, function_crc);
         std::fprintf(stderr, "do not match. Image made by incompatible version\n");
         my_exit();
     }

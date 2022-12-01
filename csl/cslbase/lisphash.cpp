@@ -534,7 +534,18 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
         size_t n;
         UPDATE(r, (uint64_t)h);
         switch (type_of_header(h))
-        {   case TYPE_BIGNUM:
+        {
+#ifdef ARITHLIB
+            case TYPE_NEW_BIGNUM:
+                n = (length_of_header(h)-16)/8;
+                for (;;)
+                {   UPDATE(r, new_bignum_digits(key)[n]);
+                    if (n == 0) break;
+                    n--;
+                }
+                return r;
+#else // ARITHLIB
+            case TYPE_BIGNUM:
                 n = (length_of_header(h)-CELL-4)/4;
                 for (;;)
                 {   UPDATE(r, bignum_digits(key)[n]);
@@ -542,6 +553,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
                     n--;
                 }
                 return r;
+#endif // ARITHLIB
             case TYPE_RATNUM:
             case TYPE_COMPLEX_NUM:
                 r = hash_eql(r, numerator(key));

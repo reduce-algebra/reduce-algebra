@@ -2122,10 +2122,11 @@ typedef struct Single_Float_
 
 inline float short_float_val(LispObject v)
 {   Float_union x;
-    if (SIXTY_FOUR_BIT)
-        x.i = v >> 32;
-    else
-        x.i = v - XTAG_SFLOAT;
+#if SIXTY_FOUT_BIT
+    x.i = v >> 32;
+#else // SIXTY_FOUR_BIT
+    x.i = v - XTAG_SFLOAT;
+#endif // SIXTY_FOUR_BIT
     std::memmove(&x.f, &x.i, sizeof(x.f));
     return x.f;
 }

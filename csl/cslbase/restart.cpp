@@ -149,7 +149,7 @@ LispObject used_space, avail_space, eof_symbol, call_stack;
 LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
 LispObject reader_workspace, named_character, read_float_format, short_float;
 LispObject single_float, double_float, long_float, bit_symbol;
-LispObject pathname_symbol, print_array_sym, read_base;
+LispObject pathname_symbol, print_array_sym, print_hash_symbol, read_base;
 LispObject initial_element, builtin0_symbol, builtin1_symbol;
 LispObject builtin2_symbol, builtin3_symbol, builtin4_symbol;
 LispObject NaN_symbol, infinity_symbol, minusinfinity_symbol;
@@ -754,9 +754,11 @@ static void cold_setup()
     lower_symbol        = make_undefined_fluid("*lower");
     echo_symbol         = make_undefined_fluid("*echo");
     comp_symbol         = make_undefined_fluid("*comp");
+    print_hash_symbol   = make_undefined_fluid("*print-hashtable");
+    qvalue(print_hash_symbol) = lisp_true;
     compiler_symbol     = make_undefined_symbol("compile");
     current_function    = // system-startup
-        startup_symbol      = make_undefined_symbol("system-startup");
+        startup_symbol  = make_undefined_symbol("system-startup");
     mv_call_symbol      = make_symbol("multiple-value-call", 0,
                                       bad_specialfn_0, mv_call_fn, bad_specialfn_2, bad_specialfn_3,
                                       bad_specialfn_4up);

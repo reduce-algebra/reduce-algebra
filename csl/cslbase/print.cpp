@@ -2551,7 +2551,6 @@ restart:
 #endif
                 case TYPE_SIMPLE_VEC:
                 case TYPE_OBJECT:
-//              case TYPE_OLDHASH:
                 case TYPE_HASH:
                 case TYPE_HASHX:
                 case TYPE_INDEXVEC:
@@ -2568,7 +2567,7 @@ restart:
                             putc_stream('#', active_stream); putc_stream('S', active_stream);
                             putc_stream('(', active_stream);
                         }
-                        else if (// type_of_header(h) == TYPE_OLDHASH ||
+                        else if (
                             type_of_header(h) == TYPE_HASH ||
                             type_of_header(h) == TYPE_HASHX)
                         {   int ch = 'H';
@@ -2577,6 +2576,14 @@ restart:
                             outprefix(blankp, 3);
                             putc_stream('#', active_stream); putc_stream(ch, active_stream);
                             putc_stream('(', active_stream);
+// If *print-hashtable is set to nil I will not display the contents of
+// the hashtable - note that they are typically in a fairly unpredictable
+// order which depends on the precise memory addresses that items end
+// up stored at.
+                            if (qvalue(print_hash_symbol) == nil)
+                            {   putc_stream(')', active_stream);
+                                return nil;
+                            }
                         }
                         else if (type_of_header(h) == TYPE_OBJECT)
                         {   outprefix(blankp, 3);

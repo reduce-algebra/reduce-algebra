@@ -172,11 +172,11 @@ do
       platforms="$platforms csl=$p"
       shift;
       ;;
-# Sitto --csl=arithlib
+# Ditto --csl=arithlib
     --csl=arithlib)
       if test "$OS" = "Windows_NT"
       then
-        p="x86_64-pc-cygwin-arithlib"
+        p="x86_64-pc-windows-arithlib"
       else
         p="$mc-arithlib"
       fi

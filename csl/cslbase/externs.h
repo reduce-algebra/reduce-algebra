@@ -411,7 +411,7 @@ extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
-extern LispObject go_symbol, cond_symbol;
+extern LispObject go_symbol, cond_symbol, print_hash_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
@@ -1208,6 +1208,7 @@ extern setup_type const om_parse_setup[];
     X(traceprint_symbol),     X(trap_time),         X(unset_var), \
     X(used_space),            X(use_symbol),        X(work_symbol), \
     X(NaN_symbol),            X(infinity_symbol),   X(minusinfinity_symbol), \
+    X(print_hash_symbol),                                                    \
  \
     X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
     X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \
