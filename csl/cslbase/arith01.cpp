@@ -208,145 +208,6 @@ LispObject make_boxfloat128(float128_t a)
     return r;
 }
 
-static double Nbignum_to_float(LispObject v, int32_t h, int *xp)
-//
-// Convert a Lisp bignum to get a floating point value.  This uses at most the
-// top 2 digits of the bignum's representation since that is enough to achieve
-// full double precision accuracy.
-// This can not overflow, because it leaves an exponent-adjustment value
-// in *xp. You need ldexp(r, *xp) afterwards, and THAT is where any overflow
-// can arise.
-//
-// Well my remark about only needing to look at 3 words is wrong if I want
-// a floating result that is always correctly rounded to even (as per IEEE).
-// Suppose I had a floating point format with 12-bit (plus an implicit bit)
-// mantissa, then consider an integer such as
-//    0x122280000000x
-//       ===
-// where I have underlined the 12 bits that will appear explicitly in the
-// floating point rendition. If x is zero then round-to-even will yield
-// a floating point value [1]222, while if x is non-zero I will need to round
-// up and deliver [1]223. There could be very very many zeros before the "x",
-// bounded only by the limit on exponents.
-{   int32_t n = (h-CELL)/8;  // Last index into the data
-    int x = 31*static_cast<int>(n);
-    int32_t msd = (int32_t)bignum_digits(v)[n];
-// NB signed conversion on next line
-    double r = static_cast<double>(msd);
-// If I have a one-word bignum then there is no messing around needed and the
-// number will be converted to floating point without any rounding.
-    if (n != 0)
-    {   if (n == 1)
-        {   r = TWO_31*r + static_cast<double>(bignum_digits(v)[--n]);
-// A two-word bignum may involve rounding, but each digit can be
-// converted exactly and a correct result should emerge from the single
-// addition that combines low and high parts.
-            x -= 31;
-        }
-        else
-        {   int32_t lo;
-// Here I have a bignum with at least 3 digits. I will do different things
-// based on whether there are less than or more then 16 bits in use in the
-// most significant digit
-            if (-0x10000 < msd && msd < 0x10000)
-            {
-// Here the top digit is reasonably small, so I can combine the top two
-// digits to get a value that will be at worst 48-bits wide and hence
-// will be converted to floating point without any rounding at all.
-                r = TWO_31*r + static_cast<double>(bignum_digits(v)[--n]);
-                x -= 31;
-// Now I need to combine in lower order bits
-                lo = bignum_digits(v)[--n];
-                while (n > 0)
-                {   if (bignum_digits(v)[--n] != 0) lo |= 1;
-                }
-// The bottom bit of lo will be well below the bits that contribute
-// directly to the result, but by ORing in 1 there if any lower word is
-// non-zero I will force rounding up in some cases where it is needed.
-                r = TWO_31*r + static_cast<double>(lo);
-                x -= 31;
-            }
-            else
-            {
-// Here the top digit is reasonably large, so I will combine it with the
-// top 15 bits from the second highest digit. That will give me a value
-// using between 31 and 46 bits. This can be computed without rounding.
-                int32_t mid = bignum_digits(v)[--n];
-                r = 32768.0*r + static_cast<double>(mid >> 16);
-                x -= 15;
-                lo = bignum_digits(v)[--n];
-                mid = ((mid & 0xffff) << 15) | (lo >> 16);
-                if ((lo & 0xffff) != 0) mid |= 1;
-                while (n > 0)
-                {   if (bignum_digits(v)[--n] != 0) mid |= 1;
-                }
-                r = TWO_31*r + static_cast<double>(mid);
-                x -= 31;
-            }
-        }
-    }
-    *xp = x;
-    return r;
-}
-
-#ifdef HAVE_SOFTFLOAT
-#ifdef LITTLEENDIAN
-static float128_t f128_TWO_31 = {{0, INT64_C(0x401e000000000000)}};
-#else
-static float128_t f128_TWO_31 = {{INT64_C(0x401e000000000000), 0}};
-#endif
-
-static float128_t Nbignum_to_float128(LispObject v, int32_t h, int *xp)
-//
-// Convert a Lisp bignum to get a 128-bit floating point value.
-// This uses at most the top 5 digits of the bignum's representation
-// since that is enough to achieve full accuracy.
-// This can not overflow, because it leaves an exponent-adjustment value
-// in *xp. You need "ldexp128(r, *xp)" afterwards.
-//
-// WELL actually just using the top 5 digits us not enough! Consider an
-// integer whose mantissa has 0.5 in the last place, then a long string of
-// zero bits and then MAYBE a final trailing 1 that could force rounding up
-// rather than down...
-{   int32_t n = (h-CELL-4)/4;  // Last index into the data
-    int x = 31*static_cast<int>(n);
-    int32_t msd = (int32_t)bignum_digits(v)[n];
-// NB signed conversion on next line
-    float128_t r, w1, w2;
-    i32_to_f128M(msd, &r);
-    switch (n)
-{       default:        // for very big numbers combine in 5 digits
-            ui32_to_f128M(bignum_digits(v)[--n], &w1);
-            f128M_mul(&r, &f128_TWO_31, &w2);
-            f128M_add(&w1, &w2, &r);
-            x -= 31;
-        // drop through
-        case 3:
-            ui32_to_f128M(bignum_digits(v)[--n], &w1);
-            f128M_mul(&r, &f128_TWO_31, &w2);
-            f128M_add(&w1, &w2, &r);
-            x -= 31;
-        // drop through
-        case 2:
-            ui32_to_f128M(bignum_digits(v)[--n], &w1);
-            f128M_mul(&r, &f128_TWO_31, &w2);
-            f128M_add(&w1, &w2, &r);
-            x -= 31;
-        // drop through
-        case 1:
-            ui32_to_f128M(bignum_digits(v)[--n], &w1);
-            f128M_mul(&r, &f128_TWO_31, &w2);
-            f128M_add(&w1, &w2, &r);
-            x -= 31;
-        // drop through
-        case 0: break;  // do no more
-    }
-    *xp = x;
-    return r;
-}
-
-#endif // HAVE_SOFTFLOAT
-
 double float_of_number(LispObject a)
 //
 // Return a (double precision) floating point value for the given Lisp
@@ -388,31 +249,18 @@ double float_of_number(LispObject a)
     }
     else
     {   Header h = numhdr(a);
-        int x1;
-        double r1;
         switch (type_of_header(h))
         {   case TYPE_NEW_BIGNUM:
-                r1 = Nbignum_to_float(a, length_of_header(h), &x1);
-                return std::ldexp(r1, x1);
+// Note that the conversion from ratios arranges to avoid premature overflow
+// the like of which would be risked with eg (10^1000+1)/(2*10^1000),
+// but if I am worried about perfect rounding I may need to review the
+// code in arith-float.cpp again.
             case TYPE_RATNUM:
-            {   int x2;
-                LispObject na = numerator(a);
-                a = denominator(a);
-                if (is_fixnum(na)) r1 = float_of_number(na), x1 = 0;
-                else r1 = Nbignum_to_float(na,
-                              length_of_header(numhdr(na)), &x1);
-                if (is_fixnum(a)) r1 = r1 / float_of_number(a), x2 = 0;
-                else r1 = r1 / Nbignum_to_float(a,
-                                   length_of_header(numhdr(a)), &x2);
-// Floating point overflow can only arise in this ldexp()
-                return std::ldexp(r1, x1 - x2);
-            }
+                return RawFloat::op(a);
             default:
-//
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - bit raising an exception seems over-keen.
-//
                 return 0.0;
         }
     }
@@ -421,10 +269,8 @@ double float_of_number(LispObject a)
 #ifdef HAVE_SOFTFLOAT
 
 float128_t float128_of_number(LispObject a)
-//
 // Return a 128-bit floating point value for the given Lisp
 // number, or 0.0 in case of trouble.
-//
 {   float128_t r;
     float64_t r64;
     float32_t r32;
@@ -461,33 +307,14 @@ float128_t float128_of_number(LispObject a)
     }
     else
     {   Header h = numhdr(a);
-        int x1;
-        float128_t r1, r2, w;
         switch (type_of_header(h))
         {   case TYPE_NEW_BIGNUM:
-                r1 = Nbignum_to_float128(a, length_of_header(h), &x1);
-                f128_ldexp(&r1, x1);
-                return r1;
             case TYPE_RATNUM:
-            {   int x2;
-                LispObject na = numerator(a);
-                a = denominator(a);
-                if (is_fixnum(na)) r1 = float128_of_number(na), x1 = 0;
-                else r1 = Nbignum_to_float128(na,
-                              length_of_header(numhdr(na)), &x1);
-                if (is_fixnum(a)) r2 = float128_of_number(a), x2 = 0;
-                else r2 = Nbignum_to_float128(a,
-                              length_of_header(numhdr(a)), &x2);
-                f128M_div(&r1, &r2, &w);
-                f128_ldexp(&w, x1 - x2);
-                return w;
-            }
+                return RawFloat128::op(a);
             default:
-//
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - but raising an exception seems over-keen.
-//
                 i32_to_f128M(0, &r);
                 return r;
         }

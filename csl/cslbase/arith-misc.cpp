@@ -545,7 +545,7 @@ LispObject N_rational(LispObject a)
         case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
-            {   case TYPE_BIGNUM:
+            {   case TYPE_NEW_BIGNUM:
                 case TYPE_RATNUM:
                     return a;
                 default:
@@ -578,7 +578,7 @@ LispObject N_rationalize(LispObject a)
         case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
-            {   case TYPE_BIGNUM:
+            {   case TYPE_NEW_BIGNUM:
                 case TYPE_RATNUM:
                     return a;
                 default:

@@ -1194,7 +1194,8 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
-            {   case TYPE_BIGNUM:
+            {
+                case TYPE_NEW_BIGNUM:
                 case TYPE_RATNUM:
                     d = float_of_number(a);
                     break;
@@ -1277,7 +1278,8 @@ static LispObject makenum(LispObject a, int32_t n)
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
-            {   case TYPE_BIGNUM:
+            {
+                case TYPE_NEW_BIGNUM:
                 case TYPE_RATNUM:
                     return fixnum_of_int(n);
                 case TYPE_COMPLEX_NUM:
@@ -1514,7 +1516,8 @@ LispObject Nisqrt(LispObject, LispObject a)
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
-            {   case TYPE_BIGNUM:
+            {
+                case TYPE_NEW_BIGNUM:
                     d = float_of_number(a);
                     break;
                 default:

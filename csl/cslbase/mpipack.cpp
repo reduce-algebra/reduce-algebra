@@ -144,15 +144,28 @@ static void pack_atom(LispObject a)
     else if (is_numbers(a))
     {   Header* h = &numhdr(a);
         int size = length_of_header(*h) - sizeof(Header);
-        if (type_of_header(*h) == TYPE_BIGNUM)
+#ifdef ARITHLIB
+#pragme message ("This code is not sorted out yet and is wrong")
+        if (type_of_header(*h) == TYPE_NEW_BIGNUM)
         {   pack_32bit(*h);
-            // Bignums are arrays of 32-bit things; we'll have to pack them
+// Bignums are arrays of 64-bit things; we'll have to pack them
 //   as such to avoid byte-ordering problems.
             check_buffer(size);
             MPI_Pack(h+1, size >> 2, MPI_UNSIGNED_LONG,
                      mpi_pack_buffer, mpi_pack_size,  &mpi_pack_position,
                      MPI_COMM_WORLD);
         }
+#else // ARITHLIB
+        if (type_of_header(*h) == TYPE_BIGNUM)
+        {   pack_32bit(*h);
+// Bignums are arrays of 32-bit things; we'll have to pack them
+//   as such to avoid byte-ordering problems.
+            check_buffer(size);
+            MPI_Pack(h+1, size >> 2, MPI_UNSIGNED_LONG,
+                     mpi_pack_buffer, mpi_pack_size,  &mpi_pack_position,
+                     MPI_COMM_WORLD);
+        }
+#endif // ARITHLIB
         else err_printf("Unsupported number type %x\n",type_of_header(*h));
     }
     else if (is_vector(a))

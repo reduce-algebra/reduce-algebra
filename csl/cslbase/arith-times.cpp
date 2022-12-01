@@ -631,7 +631,6 @@ LispObject match_type(LispObject in, int value)
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(in)))
             {   case TYPE_NEW_BIGNUM:
-                case TYPE_BIGNUM:
                     return fixnum_of_int(value);
                 case TYPE_RATNUM:
                     return make_ratio(fixnum_of_int(value), fixnum_of_int(1));
@@ -3301,7 +3300,6 @@ LispObject Reciprocal::op(Cpx a)
     {   case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
             switch (type_of_header(numhdr(d)))
             {   case TYPE_NEW_BIGNUM:
-                case TYPE_BIGNUM:
                     promote = true;
                     break;
                 default:

@@ -586,10 +586,12 @@ double RawFloat::op(uint64_t *a)
 
 double RawFloat::op(Rat a)
 {   int64_t px, qx;
-    double p = number_dispatcher::unary<double,Frexp>("frexp",
-               a.numerator(), px);
-    double q = number_dispatcher::unary<double,Frexp>("frexp",
-               a.denominator(), qx);
+// The code here avoids problems with overflow but if I am worried about
+// perfect rounding in every case I may need to do more.
+    double p =
+       number_dispatcher::unary<double,Frexp>("frexp", a.numerator(), px);
+    double q =
+       number_dispatcher::unary<double,Frexp>("frexp", a.denominator(), qx);
     return std::ldexp(p/q, px-qx);
 }
 
@@ -638,6 +640,7 @@ float128_t RawFloat128::op(Rat a)
 {   int64_t px, qx;
     float128_t p = Frexp128::op(a.numerator(), px);
     float128_t q = Frexp128::op(a.denominator(), qx);
+// Again perfect rounding might mean I really need a bit more work.
     float128_t d = f128_div(p, q);
     f128_ldexp(&d, px-qx);
     return d;
