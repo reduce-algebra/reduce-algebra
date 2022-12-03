@@ -58,6 +58,10 @@ T epsilon() {
 
 int main()
 {
+    std::cout << std::hex << QuadFloat(1) << " " << std::dec << QuadFloat(1) << "\n";
+    std::cout << std::hex << QuadFloat(0.1) << " " << std::dec << QuadFloat(0.1) << "\n";
+    std::cout << std::hex << QuadFloat(1000) << " " << std::dec << QuadFloat(1000) << "\n";
+
 //  std::cout << std::setprecision(9);
 //  std::cout << "Epsilon for float: " << epsilon<float>() << '\n';
 //  std::cout << std::setprecision(17);

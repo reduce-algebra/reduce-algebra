@@ -1117,57 +1117,58 @@ typedef struct trigfn
 {   double (*real)(double);
     double (*imag)(double);
     Complex (*complex)(Complex);
+    float128_t (*quad)(float128_t);
     const char *name;
 } trigfn_record;
 
 static trigfn_record const trig_functions[] =
-{   {racos,  iacos,  CSLcacos,  "acos"},  // acos   0  inverse cos, rads, [0, pi)
-    {racosd, iacosd, CSLcacosd, "acosd"}, // acosd  1  inverse cos, degs, [0, 180)
-    {racosh, iacosh, CSLcacosh, "acosh"}, // acosh  2  inverse hyperbolic cosine
-    {racot,  nullptr,CSLcacot,  "acot"},  // acot   3  inverse cot, rads, (0, pi)
-    {racotd, nullptr,CSLcacotd, "acotd"}, // acotd  4  inverse cot, degs, (0, 180)
-    {racoth, iacoth, CSLcacoth, "acoth"}, // acoth  5  inverse hyperbolic cotangent
-    {racsc,  iacsc,  CSLcacsc,  "acsc"},  // acsc   6  inverse cosec, [-pi/2, pi/2]
-    {racscd, iacscd, CSLcacscd, "acscd"}, // acscd  7  inverse cosec, degs, [-90, 90]
-    {racsch, nullptr,CSLcacsch, "acsch"}, // acsch  8  inverse hyperbolic coseCSLcant
-    {rasec,  iasec,  CSLcasec,  "asec"},  // asec   9  inverse sec, rads, [0, pi)
-    {rasecd, iasecd, CSLcasecd, "asecd"}, // asecd  10 inverse sec, degs, [0, 180)
-    {rasech, iasech, CSLcasech, "asech"}, // asech  11 inverse hyperbolic seCSLcant
-    {rasin,  iasin,  CSLcasin,  "asin"},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
-    {rasind, iasind, CSLcasind, "asind"}, // asind  13 inverse sin, degs, [-90, 90]
-    {CSLasinh, nullptr, CSLcasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
-    {CSLatan,nullptr,CSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
-    {ratand, nullptr,CSLcatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
-    {nullptr,nullptr,nullptr,      "atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
-    {nullptr,nullptr,nullptr,      "atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
-    {ratanh, iatanh, CSLcatanh, "atanh"}, // atanh  19 inverse hyperbolic tan
-    {rcbrt,  nullptr,ccbrt,     "cbrt"},  // cbrt   20 cube root
-    {my_cos, nullptr,Ccos,      "cos"},   // cos    21 cosine, rads
-    {rcosd,  nullptr,CSLccosd,  "cosd"},  // cosd   22 cosine, degs
-    {CSLcosh,nullptr,CSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
-    {rcot,   nullptr,CSLccot,   "cot"},   // cot    24 cotangent, rads
-    {rcotd,  nullptr,CSLccotd,  "cotd"},  // cotd   25 cotangent, degs
-    {rcoth,  nullptr,CSLccoth,  "coth"},  // coth   26 hyperbolic cotangent
-    {rcsc,   nullptr,CSLccsc,   "csc"},   // csc    27 cosecant, rads
-    {rcscd,  nullptr,CSLccscd,  "cscd"},  // cscd   28 cosecant, degs
-    {rcsch,  nullptr,CSLccsch,  "csch"},  // csch   29 hyperbolic cosecant
-    {CSLexp, nullptr,Cexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
-    {nullptr,nullptr,nullptr,   "expt"},  // expt   31 expt(a,b) = a^b
-    {nullptr,nullptr,nullptr,   "hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
-    {rln,    iln,    Cln,       "ln"},    // ln     33 log base e, e approx 2.71828
-    {nullptr,nullptr,nullptr,   "log"},   // log    34 2-arg log
-    {rlog10, ilog10, CSLclog10, "log10"}, // log10  35 log to base 10
-    {rsec,   nullptr,CSLcsec,   "sec"},   // sec    36 secant, rads
-    {rsecd,  nullptr,CSLcsecd,  "secd"},  // secd   37 secant, degs
-    {rsech,  nullptr,CSLcsech,  "sech"},  // sech   38 hyperbolic secant
-    {my_sin, nullptr,CSLcsin,   "sin"},   // sin    39 sine, rads
-    {rsind,  nullptr,CSLcsind,  "sind"},  // sind   40 sine, degs
-    {CSLsinh,nullptr,CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
-    {rsqrt,  isqrt,  CSLcsqrt,  "sqrt"},  // sqrt   42 square root
-    {CSLtan, nullptr,CSLctan,   "tan"},   // tan    43 tangent, rads
-    {rtand,  nullptr,CSLctand,  "tand"},  // tand   44 tangent, degs
-    {std::tanh,nullptr,CSLctanh,"tanh"},  // tanh   45 hyperbolic tangent
-    {rlog2,  ilog2,  CSLclog2,  "log2"}   // log2   46 log to base 2
+{   {racos,  iacos,  CSLcacos,    qacos,  "acos"},  // acos   0  inverse cos, rads, [0, pi)
+    {racosd, iacosd, CSLcacosd,   qacosd, "acosd"}, // acosd  1  inverse cos, degs, [0, 180)
+    {racosh, iacosh, CSLcacosh,   qacosh, "acosh"}, // acosh  2  inverse hyperbolic cosine
+    {racot,  nullptr,CSLcacot,    qacot,  "acot"},  // acot   3  inverse cot, rads, (0, pi)
+    {racotd, nullptr,CSLcacotd,   qacotd, "acotd"}, // acotd  4  inverse cot, degs, (0, 180)
+    {racoth, iacoth, CSLcacoth,   qacoth, "acoth"}, // acoth  5  inverse hyperbolic cotangent
+    {racsc,  iacsc,  CSLcacsc,    qacsc,  "acsc"},  // acsc   6  inverse cosec, [-pi/2, pi/2]
+    {racscd, iacscd, CSLcacscd,   qacscd, "acscd"}, // acscd  7  inverse cosec, degs, [-90, 90]
+    {racsch, nullptr,CSLcacsch,   qacsch, "acsch"}, // acsch  8  inverse hyperbolic coseCSLcant
+    {rasec,  iasec,  CSLcasec,    qasec,  "asec"},  // asec   9  inverse sec, rads, [0, pi)
+    {rasecd, iasecd, CSLcasecd,   qasecd, "asecd"}, // asecd  10 inverse sec, degs, [0, 180)
+    {rasech, iasech, CSLcasech,   qasech, "asech"}, // asech  11 inverse hyperbolic seCSLcant
+    {rasin,  iasin,  CSLcasin,    qasin,  "asin"},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
+    {rasind, iasind, CSLcasind,   qasind, "asind"}, // asind  13 inverse sin, degs, [-90, 90]
+    {CSLasinh, nullptr, CSLcasinh,qasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
+    {CSLatan,nullptr,CSLcatan,    qatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
+    {ratand, nullptr,CSLcatand,   qatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
+    {nullptr,nullptr,nullptr,     nullptr,"atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
+    {nullptr,nullptr,nullptr,     nullptr,"atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
+    {ratanh, iatanh, CSLcatanh,   qatanh, "atanh"}, // atanh  19 inverse hyperbolic tan
+    {rcbrt,  nullptr,ccbrt,       qcbrt,  "cbrt"},  // cbrt   20 cube root
+    {my_cos, nullptr,Ccos,        qcos,   "cos"},   // cos    21 cosine, rads
+    {rcosd,  nullptr,CSLccosd,    qcosd,  "cosd"},  // cosd   22 cosine, degs
+    {CSLcosh,nullptr,CSLccosh,    qcosh,  "cosh"},  // cosh   23 hyperbolic cosine
+    {rcot,   nullptr,CSLccot,     qcot,   "cot"},   // cot    24 cotangent, rads
+    {rcotd,  nullptr,CSLccotd,    qcotd,  "cotd"},  // cotd   25 cotangent, degs
+    {rcoth,  nullptr,CSLccoth,    qcoth,  "coth"},  // coth   26 hyperbolic cotangent
+    {rcsc,   nullptr,CSLccsc,     qcsc,   "csc"},   // csc    27 cosecant, rads
+    {rcscd,  nullptr,CSLccscd,    qcscd,  "cscd"},  // cscd   28 cosecant, degs
+    {rcsch,  nullptr,CSLccsch,    qcsch,  "csch"},  // csch   29 hyperbolic cosecant
+    {CSLexp, nullptr,Cexp,        qexp,   "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
+    {nullptr,nullptr,nullptr,     nullptr,"expt"},  // expt   31 expt(a,b) = a^b
+    {nullptr,nullptr,nullptr,     nullptr,"hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
+    {rln,    iln,    Cln,         qln,    "ln"},    // ln     33 log base e, e approx 2.71828
+    {nullptr,nullptr,nullptr,     nullptr,"log"},   // log    34 2-arg log
+    {rlog10, ilog10, CSLclog10,   qlog10, "log10"}, // log10  35 log to base 10
+    {rsec,   nullptr,CSLcsec,     qsec,   "sec"},   // sec    36 secant, rads
+    {rsecd,  nullptr,CSLcsecd,    qsecd,  "secd"},  // secd   37 secant, degs
+    {rsech,  nullptr,CSLcsech,    qsech,  "sech"},  // sech   38 hyperbolic secant
+    {my_sin, nullptr,CSLcsin,     qsin,   "sin"},   // sin    39 sine, rads
+    {rsind,  nullptr,CSLcsind,    qsind,  "sind"},  // sind   40 sine, degs
+    {CSLsinh,nullptr,CSLcsinh,    qsinh,  "sinh"},  // sinh   41 hyperbolic sine
+    {rsqrt,  isqrt,  CSLcsqrt,    qsqrt,  "sqrt"},  // sqrt   42 square root
+    {CSLtan, nullptr,CSLctan,     qtan,   "tan"},   // tan    43 tangent, rads
+    {rtand,  nullptr,CSLctand,    qtand,  "tand"},  // tand   44 tangent, degs
+    {std::tanh,nullptr,CSLctanh,  qtanh,  "tanh"},  // tanh   45 hyperbolic tangent
+    {rlog2,  ilog2,  CSLclog2,    qlog2,  "log2"}   // log2   46 log to base 2
 };
 
 LispObject Ntrigfn(unsigned int which_one, LispObject a)
@@ -1177,8 +1178,8 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
 #ifndef COMMON
     FloatType restype = WANT_DOUBLE_FLOAT;
 #else
-// single floats seem to me to be a bad idea! But they are the default
-// for Common Lisp. Boo Hiss.
+// Single floats seem to me to be a bad idea! But they are the default
+// for Common Lisp. Boo Hiss. Maybe I am out of touch.
     FloatType restype = WANT_SINGLE_FLOAT;
 #endif
     if (which_one > 46) return aerror("trigfn internal error");
@@ -1213,6 +1214,11 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
             break;
         }
         case TAG_BOXFLOAT:
+            if (flthdr(a) == LONG_FLOAT_HEADER)
+            {   float128_t x = float128_of_number(a);
+                x = (*trig_functions[which_one].quad)(x);
+                return make_boxfloat128(x);
+            }
             restype = floatWant(flthdr(a));
             d = float_of_number(a);
             break;
@@ -1336,30 +1342,39 @@ static Complex complex_of_number(LispObject a)
 }
 
 LispObject Nhypot(LispObject env, LispObject a, LispObject b)
-{   double u, v, r;
+{   if (is_long_float(a) || is_long_float(b))
+    {   float128_t u = float128_of_number(a),
+                   v = float128_of_number(b);
+        return make_boxfloat128(qhypot(u, v));
+    }
+    double u, v, r, scale = 1.0;
     u = float_of_number(a);
     v = float_of_number(b);
-    if (u < 0.0) u = -u;
-    if (v < 0.0) v = -v;
-    if (u > v)
-    {   r = u;
-        u = v;
-        v = r;
+    r = u*u + v*v;
+    if (std::isinf(r))
+    {   scale = 1.0e200;   // Avoid overflow
+        u /= scale;
+        v /= scale;
+        r = u*u + v*v;
     }
-    // Now 0.0 < u < v
-    if (u + v == v) r = v;  // u is very small compared to v
-    else
-    {   r = u/v;
-// A worry I have is that the multiplication on the following line can
-// overflow, blowing me out of the water.
-        r = v * std::sqrt(1.0 + r*r);
+    else if (!std::isnormal(r))
+    {   scale = 1.0e-200;  // Avoid underflow
+        u /= scale;
+        v /= scale;
+        r = u*u + v*v;
     }
+    r = scale * std::sqrt(r);
     a = make_boxfloat(r, WANT_DOUBLE_FLOAT);
     return onevalue(a);
 }
 
 LispObject Nexpt(LispObject env, LispObject a, LispObject b)
-{   double d, e;
+{   if (is_long_float(a) || is_long_float(b))
+    {   float128_t u = float128_of_number(a),
+                   v = float128_of_number(b);
+        return make_boxfloat128(qexpt(u, v));
+    }
+    double d, e;
     FloatType restype, n;
     int64_t nn;
     LispObject w;
@@ -1488,15 +1503,15 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
 
 LispObject Nlog_2(LispObject env, LispObject a, LispObject b)
 // Log with specified base.
-{   THREADID;
-    Save save(THREADARG b);
+{   if (is_long_float(a) || is_long_float(b))
+    {   float128_t u = float128_of_number(a),
+                   v = float128_of_number(b);
+        return make_boxfloat128(qlog(u, v));
+    }
     a = Ntrigfn(33, a);
     errexit();
-    save.restore(b);
-    Save save1(THREADARG a);
     b = Ntrigfn(33, b);
     errexit();
-    save1.restore(a);
     return Quotient::op(a, b);
 }
 
@@ -1608,7 +1623,12 @@ LispObject Natan_2(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Natan2(LispObject env, LispObject y, LispObject x)
-{   double u, v, r;
+{   if (is_long_float(x) || is_long_float(y))
+    {   float128_t u = float128_of_number(x),
+                   v = float128_of_number(y);
+        return make_boxfloat128(qatan2(u, v));
+    }
+    double u, v, r;
     u = float_of_number(x);
     v = float_of_number(y);
     if (u == 0.0 && v == 0.0) r = 0.0; // really an error case
@@ -1627,7 +1647,12 @@ LispObject Natan2(LispObject env, LispObject y, LispObject x)
 }
 
 LispObject Natan2d(LispObject env, LispObject y, LispObject x)
-{   double u, v, r;
+{   if (is_long_float(x) || is_long_float(y))
+    {   float128_t u = float128_of_number(x),
+                   v = float128_of_number(y);
+        return make_boxfloat128(qatan2d(u, v));
+    }
+double u, v, r;
     u = float_of_number(x);
     v = float_of_number(y);
     if (u == 0.0 && v == 0.0) r = 0.0; // really an error case

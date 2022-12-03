@@ -303,7 +303,7 @@ bool f256M_le(const float256_t *x, const float256_t *y)
     else return false;
 }
 
-// I suspect that this is noy yet right!
+// I suspect that this is not yet right!
 
 float256_t ato256(const char* s)
 {   bool sign = false;
@@ -530,10 +530,11 @@ bool f128_sprint(char* s, float128_t p, int& pdecexp)
     while (m[4] == 0)
     {   for (int i=3; i>=0; i--) m[i+1] = m[i];
         m[0] = 0;
+        bx -= 32;
     }
     int shiftBy = f160_nlz(m[4]) - 32;
     f160_leftshift(m, 0, shiftBy);
-    bx -= (shiftBy-16);
+    bx -= shiftBy;
 // Now I need to multiply or divide my number by a power of 10 until
 // it is in the range [10^18, 10^19). I choose that range because then
 // the integer part can be extracted to give the first 18 digits of the

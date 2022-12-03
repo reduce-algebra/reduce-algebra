@@ -62,13 +62,30 @@ LispObject Float::op(uint64_t *a)
 {   return make_boxfloat(arithlib_lowlevel::Double::op(a));
 }
 
-#pragma message ("conversion from ratio to float not done yet")
 // One can not just turn the numerator and denominator into floats and
 // divide because each could be outside the range of floating point even
-// though the quotient was a reasonable value.
+// though the quotient was a reasonable value. So if I start with a ratio
+// (p/q) I multiply either p pr q by a suitable power of 2 (by shifting
+// left, so it is fairly cheap) so that the integer quotient (p div q)
+// is a 24-bit number, ie the bit 0x01000000 is set. Note that I expect
+// that ratios are always non-zero! The shift amount provides an exponent
+// I will merge in later, and the remainder in the division lets me
+// know if I should round up or down.
 
 LispObject Float::op(Rat a)
-{   return aerror("float of rat not coded yet");
+{   LispObject p = a.numerator(),
+               q = a.denominstor();
+    bool neg = Minusp::op(p);
+    if (neg) p = Minus::op(p);
+    size_t lp = IntegerLength::op(p),
+           lq = IntegerLength::op(q);
+    int64_t ptop = Top64Bits::op(p),
+            qtop = Top64Bits::op(q);
+    int shift = lp - lq - 24;
+    if (ptop < qtop) shift--;
+// Now I am *almost* certain how to shift to get a 24-bit integer, but
+// just occasionally I will be off by 1 and need to adjust.
+    return aerror("float of rat not coded yet");
 //    return Float::op(a.numerator()) / Float::op(a.denominator());
 }
 
@@ -637,7 +654,7 @@ float128_t RawFloat128::op(uint64_t *a)
 }
 
 float128_t RawFloat128::op(Rat a)
-{   int64_t px, qx;
+{   int64_t px=0, qx=0;
     float128_t p = Frexp128::op(a.numerator(), px);
     float128_t q = Frexp128::op(a.denominator(), qx);
 // Again perfect rounding might mean I really need a bit more work.
@@ -1058,9 +1075,9 @@ LispObject Frexp128::op(uint64_t *a)
 }
 
 LispObject Frexp128::op(Rat a)
-{   int64_t xp;
+{   int64_t xp=0;
     float128_t p = Frexp128::op(a.numerator(), xp);
-    int64_t xq;
+    int64_t xq=0;
     float128_t q = Frexp128::op(a.denominator(), xq);
     return frexp_finalize(f128_div(p, q), xp-xq);
 }
@@ -1081,8 +1098,7 @@ LispObject Frexp128::op(double a)
 {   return frexp_finalize(a, 0);
 }
 
-LispObject Frexp128::op(LFlt
-                        a)  // maybe this should return just a double?
+LispObject Frexp128::op(LFlt a)  // maybe this should return just a double?
 {   return frexp_finalize(a.floatval(), 0);
 }
 
@@ -1104,15 +1120,15 @@ float128_t Frexp128::op(Fixnum a, int64_t &xx)
 }
 
 float128_t Frexp128::op(uint64_t *a, int64_t &xx)
-{   int64_t x;
+{   int64_t x = 0;
     float128_t d = arithlib_lowlevel::Frexp128::op(a, x);
     return frexp_finalize(d, x, xx);
 }
 
 float128_t Frexp128::op(Rat a, int64_t &xx)
-{   int64_t xp;
+{   int64_t xp = 0;
     float128_t p = Frexp128::op(a.numerator(), xp);
-    int64_t xq;
+    int64_t xq = 0;
     float128_t q = Frexp128::op(a.denominator(), xq);
     return frexp_finalize(f128_div(p, q), xp-xq, xx);
 }
@@ -1134,8 +1150,7 @@ float128_t Frexp128::op(double a, int64_t &xx)
 {   return frexp_finalize(RawFloat128::op(a), 0, xx);
 }
 
-float128_t Frexp128::op(LFlt a,
-                        int64_t &xx)  // maybe this should return just a double?
+float128_t Frexp128::op(LFlt a, int64_t &xx)  // maybe this should return just a double?
 {   return frexp_finalize(a.floatval(), 0, xx);
 }
 

@@ -225,7 +225,7 @@ fi
 
 if test "$BUILTFOR" = "unknown"
 then
-  BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
+  BUILTFOR=`eval "$SHELL $srcdir/../../scripts/findhost.sh $host $ac_configure_args"`
   AC_MSG_NOTICE([Build platform detected as $BUILTFOR])
 else
   AC_MSG_NOTICE([Build platform specified as $BUILTFOR])

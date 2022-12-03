@@ -2180,10 +2180,10 @@ public:
 class Logbitp
 {
 public:
-    static LispObject op(LispObject a);
+    static bool op(LispObject a);
 
-    static LispObject op(Fixnum a);
-    static LispObject op(uint64_t *a);
+    static bool op(Fixnum a);
+    static bool op(uint64_t *a);
 };
 
 class LowBits

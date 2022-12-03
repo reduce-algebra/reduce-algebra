@@ -1020,6 +1020,58 @@ extern float128_t f128_negmin;
 extern float128_t f128_normmin;
 extern float128_t f128_negnormmin;  
 
+// The following may eventually provide support for elementary functions
+// on 128-bit floats.
+
+extern float128_t qatan2(float128_t a, float128_t b);
+extern float128_t qatan2d(float128_t a, float128_t b);
+extern float128_t qexpt(float128_t a, float128_t b);
+extern float128_t qlog(float128_t a, float128_t b);
+extern float128_t qhypot(float128_t a, float128_t b);
+
+extern float128_t qacos(float128_t a);
+extern float128_t qacosd(float128_t a);
+extern float128_t qacosh(float128_t a);
+extern float128_t qacot(float128_t a);
+extern float128_t qacotd(float128_t a);
+extern float128_t qacoth(float128_t a);
+extern float128_t qacsc(float128_t a);
+extern float128_t qacscd(float128_t a);
+extern float128_t qacsch(float128_t a);
+extern float128_t qasec(float128_t a);
+extern float128_t qasecd(float128_t a);
+extern float128_t qasech(float128_t a);
+extern float128_t qasin(float128_t a);
+extern float128_t qasind(float128_t a);
+extern float128_t qasinh(float128_t a);
+extern float128_t qatan(float128_t a);
+extern float128_t qatand(float128_t a);
+extern float128_t qatanh(float128_t a);
+extern float128_t qcbrt(float128_t a);
+extern float128_t qcos(float128_t a);
+extern float128_t qcosd(float128_t a);
+extern float128_t qcosh(float128_t a);
+extern float128_t qcot(float128_t a);
+extern float128_t qcotd(float128_t a);
+extern float128_t qcoth(float128_t a);
+extern float128_t qcsc(float128_t a);
+extern float128_t qcscd(float128_t a);
+extern float128_t qcsch(float128_t a);
+extern float128_t qexp(float128_t a);
+extern float128_t qln(float128_t a);
+extern float128_t qlog10(float128_t a);
+extern float128_t qsec(float128_t a);
+extern float128_t qsecd(float128_t a);
+extern float128_t qsech(float128_t a);
+extern float128_t qsin(float128_t a);
+extern float128_t qsind(float128_t a);
+extern float128_t qsinh(float128_t a);
+extern float128_t qsqrt(float128_t a);
+extern float128_t qtan(float128_t a);
+extern float128_t qtand(float128_t a);
+extern float128_t qtanh(float128_t a);
+extern float128_t qlog2(float128_t a);
+
 #endif // HAVE_SOFTFLOAT
 
 // The names here are for the benefit of code compiled into C++ using

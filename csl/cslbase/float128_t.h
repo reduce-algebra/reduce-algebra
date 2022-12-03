@@ -136,6 +136,7 @@ extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 #endif // INLINE_VAR
 
 
+extern float128_t f128_NaN;         // a NaN
 extern float128_t f128_0;           // 0.0_Q . v;
 extern float128_t f128_half;        // 0.5_Q . v;
 extern float128_t f128_mhalf;       // (-0.5_Q) . v;
@@ -597,6 +598,17 @@ public:
     {   v = rhs.v;
     }
 
+    operator double()
+    {   float64_t r = f128_to_f64(v);
+// The following line is probably the most genuine use of bit_cast I have
+// written anywhere!
+        return bit_cast<double>(r.v);
+    }
+
+    operator int64_t()
+    {   return f128_to_i64(v, softfloat_round_near_even, false);
+    }
+
     friend std::ostream& operator<<(std::ostream& o, const QuadFloat& d)
     {   bool hex = (o.flags() & std::ios::hex) != 0;
         if (hex)
@@ -632,6 +644,31 @@ public:
     QuadFloat operator-(const QuadFloat& rhs) const;
     QuadFloat operator*(const QuadFloat& rhs) const;
     QuadFloat operator/(const QuadFloat& rhs) const;
+
+    QuadFloat operator+=(const QuadFloat& rhs);
+    QuadFloat operator-=(const QuadFloat& rhs);
+    QuadFloat operator*=(const QuadFloat& rhs);
+    QuadFloat operator/=(const QuadFloat& rhs);
+
+    bool isinf()
+    {   return f128_infinitep(v);
+    }
+
+    bool isfinite()
+    {   return f128_finite(v);
+    }
+
+    bool isnan()
+    {   return f128_nanp(v);
+    }
+
+    bool issubnorm()
+    {   return f128_subnorm(v);
+    }
+
+    bool isnegative()
+    {   return f128_negative(v);
+    }
 
     constexpr bool sign();
     constexpr int exponent();
@@ -684,6 +721,26 @@ inline QuadFloat QuadFloat::operator*(const QuadFloat& rhs) const
 
 inline QuadFloat QuadFloat::operator/(const QuadFloat& rhs) const
 {   return QuadFloat(f128_div(v, rhs.v));
+}
+
+inline QuadFloat QuadFloat::operator+=(const QuadFloat& rhs)
+{   v = f128_add(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator-=(const QuadFloat& rhs)
+{   v = f128_sub(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator*=(const QuadFloat& rhs)
+{   v = f128_mul(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator/=(const QuadFloat& rhs)
+{   v = f128_div(v, rhs.v);
+    return *this;
 }
 
 inline constexpr bool QuadFloat::sign()
@@ -793,6 +850,7 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
     return QuadFloat(r);
 }
 
+INLINE_VAR float128_t f128_NaN          = {fpOrder(0, 0x7fff800000000000LL)}; 
 INLINE_VAR float128_t f128_0            = 0.0_Q . v;
 INLINE_VAR float128_t f128_half         = 0.5_Q . v;
 INLINE_VAR float128_t f128_mhalf        = (-0.5_Q) . v;
@@ -963,7 +1021,9 @@ public:
 //
 // Well probably the best way to put OctFloat literal values in source code
 // will be along the lines of OctFloat(1.23_Q, 4.56e-36_Q) leveraging the
-// fact that QuadDoubles can be read in competently.
+// fact that QuadDoubles can be read in competently. Or to input then
+// as hex values with an 0x prefix and _QQX suffix and exactly 64 hex
+// digits between.
 
 
 inline OctFloat oct_10(10);

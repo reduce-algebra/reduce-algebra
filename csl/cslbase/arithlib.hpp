@@ -2636,6 +2636,13 @@ public:
     static std::intptr_t op(uint64_t *w);
 };
 
+class Top64Bits
+{
+public:
+    static std::uint64_t op(std::int64_t w);
+    static std::uint64_t op(uint64_t *w);
+};
+
 class Logbitp
 {
 public:
@@ -5754,8 +5761,7 @@ inline std::uint64_t short_divide_ten_19(std::uint64_t *r,
 // this might happen if the number occupies over 512 Mbytes and I view
 // that as a situation I will accept as a limit for 32-bit platforms.
 
-inline std::size_t bignum_bits(const std::uint64_t *a,
-                               std::size_t lena)
+inline std::size_t bignum_bits(const std::uint64_t *a, std::size_t lena)
 {   if (lena == 0 && a[0] == 0) return 1; // say that 0 has 1 bit.
     std::uint64_t top = a[lena-1];  // top digit.
 // The exact interpretation of "the length in bits of a negative number"
@@ -5763,7 +5769,7 @@ inline std::size_t bignum_bits(const std::uint64_t *a,
 // number of bits apart from the sign bit, so we have
 //      n      bignum_bits(n)   bignum_bits(-n)
 //      0           0                0
-//     1           1    1           0 ..11111:
+//      1           1    1           0 ..11111:
 //      2           2   10           1 ..1111:0
 //      3           2   11           2 ..111:01
 //      4           3  100           2 ..111:00
@@ -6181,7 +6187,8 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
 //=========================================================================
 
 
-inline bool Zerop::op(std::uint64_t *a)
+inline bool Zerop::op
+(std::uint64_t *a)
 {   return number_size(a) == 1 && a[0] == 0;
 }
 
@@ -7592,6 +7599,30 @@ inline std::intptr_t IntegerLength::op(std::int64_t aa)
     else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
     else a = aa;
     return int_to_handle(64-nlz(a));
+}
+
+// This function should return the top 64-bits of an integer in the
+// sense that the returned value should have its top bit (ie the
+// 0x8000000000000000 bit) set, and the weight associated with that
+// bit is as returned by IntegerLength. So this value plus IntegerLength
+// sort of provide a normalised floating point renditition of the
+// integer with this begin a 64-bit mantissa. This is only intended
+// to be used on positive input values.
+
+inline std::uint64_t Top64Bits::op(std::uint64_t *a)
+{   size_t n = number_size(a);
+    if (n == 1 ||
+        (n == 2 && a[2] == 0))
+        return Top64Bits::op(static_cast<int64_t>(a[0]));
+    if (a[n-1] == 0) n--;
+    int lz = nlz(a[n-1]);
+    if (lz == 0) return a[n-1];
+    return (a[n-1] << lz) | (a[n-2] >> (64-lz));
+}
+
+inline std::uint64_t Top64Bits::op(std::int64_t a)
+{   if (a == 0) return 0;    // Only non-normalised case
+    return static_cast<uint64_t>(a) << nlz(a);
 }
 
 inline std::intptr_t Logcount::op(std::uint64_t *a)
@@ -11578,6 +11609,7 @@ using arithlib_implementation::RightShift;
 using arithlib_implementation::LowBits;
 using arithlib_implementation::LowBit;
 using arithlib_implementation::IntegerLength;
+using arithlib_implementation::Top64Bits;
 using arithlib_implementation::Logbitp;
 using arithlib_implementation::Logcount;
 using arithlib_implementation::Float;

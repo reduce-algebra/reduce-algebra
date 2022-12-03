@@ -230,7 +230,10 @@ LispObject Nlogbitp(LispObject env, LispObject a1, LispObject a2)
     if (!is_fixnum(a2) && !is_new_bignum(a2))
         return aerror1("logbitp", a2);
     uintptr_t n = int_of_fixnum(a1);
-    return onebool(arithlib_lowlevel::Logbitp::op(a2, n));
+    if (is_fixnum(a2)) return onebool(arithlib_lowlevel::Logbitp::op(
+        arithlib_implementation::int_of_handle(a2), n));
+    else return onebool(arithlib_lowlevel::Logbitp::op(
+        arithlib_implementation::vector_of_handle(a2), n));
 }
 
 LispObject Nlogtest(LispObject env, LispObject a1, LispObject a2)
