@@ -240,16 +240,15 @@ LispObject Nlogtest(LispObject env, LispObject a1, LispObject a2)
 {   return onebool(Logand::op(a1, a2) != fixnum_of_int(0));
 }
 
-LispObject Logcount::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,Logcount>("logcount",
-            a);
+size_t Logcount::op(LispObject a)
+{   return number_dispatcher::iunary<size_t,Logcount>("logcount", a);
 }
 
-LispObject Logcount::op(Fixnum a)
+size_t Logcount::op(Fixnum a)
 {   return arithlib_lowlevel::Logcount::op(a.intval());
 }
 
-LispObject Logcount::op(uint64_t *a)
+size_t Logcount::op(uint64_t *a)
 {   return arithlib_lowlevel::Logcount::op(a);
 }
 
@@ -366,37 +365,47 @@ LispObject RightShift::op(uint64_t *a, uint64_t *b)
 
 // Return some low bits of an integer - up to 64 of them.
 
-uint64_t LowBits::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,LowBits>("lowbits", a);
+uint64_t Low64Bits::op(LispObject a)
+{   return number_dispatcher::iunary<LispObject,Low64Bits>("lowbits", a);
 }
-uint64_t LowBits::op(Fixnum a)
-{   return arithlib_lowlevel::LowBits::op(a.intval());
+uint64_t Low64Bits::op(Fixnum a)
+{   return arithlib_lowlevel::Low64Bits::op(a.intval());
 }
-uint64_t LowBits::op(uint64_t *a)
-{   return arithlib_lowlevel::LowBits::op(a);
-}
-
-LispObject LowBit::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,LowBit>("lsd", a);
+uint64_t Low64Bits::op(uint64_t *a)
+{   return arithlib_lowlevel::Low64Bits::op(a);
 }
 
-LispObject LowBit::op(Fixnum a)
+uint64_t Top64Bits::op(LispObject a)
+{   return number_dispatcher::iunary<LispObject,Top64Bits>("lowbits", a);
+}
+uint64_t Top64Bits::op(Fixnum a)
+{   return arithlib_lowlevel::Top64Bits::op(a.intval());
+}
+uint64_t Top64Bits::op(uint64_t *a)
+{   return arithlib_lowlevel::Top64Bits::op(a);
+}
+
+size_t LowBit::op(LispObject a)
+{   return number_dispatcher::iunary<size_t,LowBit>("lsd", a);
+}
+
+size_t LowBit::op(Fixnum a)
 {   return arithlib_lowlevel::LowBit::op(a.intval());
 }
 
-LispObject LowBit::op(uint64_t *a)
+size_t LowBit::op(uint64_t *a)
 {   return arithlib_lowlevel::LowBit::op(a);
 }
 
-LispObject IntegerLength::op(LispObject a)
-{   return number_dispatcher::iunary<LispObject,IntegerLength>("msd", a);
+size_t IntegerLength::op(LispObject a)
+{   return number_dispatcher::iunary<size_t,IntegerLength>("msd", a);
 }
 
-LispObject IntegerLength::op(Fixnum a)
+size_t IntegerLength::op(Fixnum a)
 {   return arithlib_lowlevel::IntegerLength::op(a.intval());
 }
 
-LispObject IntegerLength::op(uint64_t *a)
+size_t IntegerLength::op(uint64_t *a)
 {   return arithlib_lowlevel::IntegerLength::op(a);
 }
 
@@ -447,7 +456,7 @@ LispObject Ninorm(LispObject env, LispObject a, LispObject kk)
     else if (is_new_bignum(a))
     {   bool negative = Minusp::op(a);
         if (negative) a = Minus::op(a);
-        int highPos = int_of_fixnum(IntegerLength::op(a));
+        int highPos = IntegerLength::op(a);
 // The way this is coded will mean that bignum-storage will be allocate
 // for all sorts of intermediate results, and also that some needless
 // dispatch will be performed when values are already known to be
@@ -460,10 +469,10 @@ LispObject Ninorm(LispObject env, LispObject a, LispObject kk)
                 LeftShift::op(roundBit, fixnum_of_int(1)));
             a = Logand::op(Plus::op(a, roundBit), Lognot::op(mask));
         }
-        size_t lowBit = Sub1::op(LowBit::op(a));
-        a = RightShift::op(a, lowBit);
+        size_t lowBit = LowBit::op(a) - 1;
+        a = RightShift::op(a, fixnum_of_int(lowBit));
         if (negative) a = Minus::op(a);
-        return onevalue(cons(a, lowBit));
+        return onevalue(cons(a, fixnum_of_int(lowBit)));
     }
     else return aerror1("bad arg for inorm", a);
 }
@@ -777,15 +786,15 @@ LispObject Nlognot(LispObject env, LispObject a1)
 }
 
 LispObject Nlsd(LispObject env, LispObject a1)
-{   return onevalue(LowBit::op(a1));
+{   return onevalue(make_lisp_unsigned64(LowBit::op(a1)));
 }
 
 LispObject Nmsd(LispObject env, LispObject a1)
-{   return onevalue(IntegerLength::op(a1));
+{   return onevalue(make_lisp_unsigned64(IntegerLength::op(a1)));
 }
 
 LispObject Nlogcount(LispObject env, LispObject a1)
-{   return onevalue(Logcount::op(a1));
+{   return onevalue(make_lisp_unsigned64(Logcount::op(a1)));
 }
 
 LispObject Nleftshift(LispObject env, LispObject a1, LispObject a2)

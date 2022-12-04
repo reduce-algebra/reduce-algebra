@@ -310,7 +310,7 @@ float128_t float128_of_number(LispObject a)
         switch (type_of_header(h))
         {   case TYPE_NEW_BIGNUM:
             case TYPE_RATNUM:
-                return RawFloat128::op(a);
+                return Float128::op(a);
             default:
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already

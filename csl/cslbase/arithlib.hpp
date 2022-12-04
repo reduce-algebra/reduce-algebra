@@ -2273,6 +2273,24 @@ public:
     static std::intptr_t op(std::uint64_t *, std::uint64_t *);
 };
 
+class Floor
+{
+public:
+    static std::intptr_t op(std::int64_t, std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t *);
+    static std::intptr_t op(std::uint64_t *, std::int64_t);
+    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+};
+
+class Ceiling
+{
+public:
+    static std::intptr_t op(std::int64_t, std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t *);
+    static std::intptr_t op(std::uint64_t *, std::int64_t);
+    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+};
+
 class Divide
 {
 public:
@@ -2615,7 +2633,7 @@ public:
     static std::intptr_t op(std::uint64_t *, std::uint64_t *);
 };
 
-class LowBits
+class Low64Bits
 {
 public:
     static std::uint64_t op(std::int64_t w);
@@ -2623,21 +2641,23 @@ public:
 };
 
 class LowBit
-{
+{    // Index of least significant bit in the number 
 public:
-    static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::size_t op(std::int64_t w);
+    static std::size_t op(uint64_t *w);
 };
 
 class IntegerLength
-{
+{   // Index of most significant bit in the number
 public:
-    static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::size_t op(std::int64_t w);
+    static std::size_t op(uint64_t *w);
 };
 
 class Top64Bits
-{
+{   // For a non-zero number the top 64 bits aligned so the (1<<63) bit
+    // is set. This is a bitt like a mantissa to go with IntegerLength as
+    // an exponent.
 public:
     static std::uint64_t op(std::int64_t w);
     static std::uint64_t op(uint64_t *w);
@@ -2653,19 +2673,19 @@ public:
 class Logcount
 {
 public:
-    static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::size_t op(std::int64_t w);
+    static std::size_t op(uint64_t *w);
 };
 
 class Int64_t
-{
+{   // Convert to 64-bit native integer.
 public:
     static std::int64_t op(std::int64_t w);
     static std::int64_t op(uint64_t *w);
 };
 
 class Uint64_t
-{
+{   // Convert to 64-bit unsigned value.
 public:
     static std::uint64_t op(std::int64_t w);
     static std::uint64_t op(uint64_t *w);
@@ -2801,8 +2821,8 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa);
 
 class Bignum;
 
-inline void display(const char *label, const std::uint64_t *a,
-                    std::size_t lena);
+inline void display(const char *label,
+                    const std::uint64_t *a, std::size_t lena);
 inline void display(const char *label, std::intptr_t a);
 inline void display(const char *label, const Bignum &a);
 
@@ -2811,11 +2831,18 @@ inline void display(const char *label, const Bignum &a);
 //=========================================================================
 // I have a class Bignum that wraps up the representation of a number
 // and then allows me to overload most operators so that big numbers can be
-// used in C++ code anmost as if they were a natural proper type. The main
+// used in C++ code almost as if they were a natural proper type. The main
 // big oddity will be that to denote a Bignum literal it will be necessary
 // to use a constructor, with obvious constructors accepting integers of up
 // to 64-bits and a perhaps less obvious one taking a string that is the
-// decimal denotation of the integer concerned.
+// decimal denotation of the integer concerned. Well actually I also support
+// input notation like 12345_Z for Bignum. I would have liked to make
+// the processing of this input syntax "constexpr" so that the work was done
+// at compile time, however a big number needs some storage allocated
+// and it is not obvious how I can arrange that in a constexpr context. So
+// this is not really totally delightful. One can of course write
+//       static Bignum vv = 12345_Z;
+// and then the initialisation is done once during program startup.
 //=========================================================================
 //=========================================================================
 
@@ -3288,11 +3315,11 @@ public:
     }
 
     inline Bignum lowbit() const
-    {   return Bignum(true, op_dispatch1<LowBit,std::intptr_t>(val));
+    {   return Bignum(true, op_dispatch1<LowBit,std::size_t>(val));
     }
 
     inline Bignum highbit() const
-    {   return Bignum(true, op_dispatch1<IntegerLength,std::intptr_t>(val));
+    {   return Bignum(true, op_dispatch1<IntegerLength,std::size_t>(val));
     }
 
     friend std::ostream & operator << (std::ostream &out, const Bignum &a)
@@ -7555,50 +7582,50 @@ inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
     return int_to_handle((a & ~(q-1))/q);
 }
 
-inline std::uint64_t LowBits::op(std::uint64_t *a)
+inline std::uint64_t Low64Bits::op(std::uint64_t *a)
 {   return a[0];
 }
 
-inline std::uint64_t LowBits::op(std::int64_t aa)
+inline std::uint64_t Low64Bits::op(std::int64_t aa)
 {   return static_cast<std::uint64_t>(aa);
 }
 
-inline std::intptr_t LowBit::op(std::uint64_t *a)
+inline std::size_t LowBit::op(std::uint64_t *a)
 {   std::size_t lena = number_size(a);
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
         std::uint64_t w = ~a[i-1];
-        return int_to_handle(64-nlz(w & (-w))+r);
+        return 64-nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         std::uint64_t w = a[i-1];
-        return int_to_handle(64-nlz(w & (-w))+r);
+        return 64-nlz(w & (-w))+r;
     }
 }
 
-inline std::intptr_t LowBit::op(std::int64_t aa)
+inline std::size_t LowBit::op(std::int64_t aa)
 {   std::uint64_t a;
     if (aa == 0) return 0;
     else if (aa < 0) a = ~static_cast<std::uint64_t>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return int_to_handle(64-nlz(a));
+    return 64-nlz(a);
 }
 
-inline std::intptr_t IntegerLength::op(std::uint64_t *a)
-{   return int_to_handle(bignum_bits(a, number_size(a)));
+inline std::size_t IntegerLength::op(std::uint64_t *a)
+{   return bignum_bits(a, number_size(a));
 }
 
-inline std::intptr_t IntegerLength::op(std::int64_t aa)
+inline std::size_t IntegerLength::op(std::int64_t aa)
 {   std::uint64_t a;
-    if (aa == 0 || aa == -1) return int_to_handle(0);
+    if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
     else a = aa;
-    return int_to_handle(64-nlz(a));
+    return 64-nlz(a);
 }
 
 // This function should return the top 64-bits of an integer in the
@@ -7607,7 +7634,12 @@ inline std::intptr_t IntegerLength::op(std::int64_t aa)
 // bit is as returned by IntegerLength. So this value plus IntegerLength
 // sort of provide a normalised floating point renditition of the
 // integer with this begin a 64-bit mantissa. This is only intended
-// to be used on positive input values.
+// to be used on positive input values. If given a negative input it will
+// return the whole of the top word of a bignum or the whole of a fixnum,
+// viewing the leading 1 bits as important. The only intended use is
+// as part of the process or converting an integer into a sign-and-magnitude
+// "floating point" value with a 64-bit mantissa so I will not worry about
+// that at the moment.
 
 inline std::uint64_t Top64Bits::op(std::uint64_t *a)
 {   size_t n = number_size(a);
@@ -7625,19 +7657,19 @@ inline std::uint64_t Top64Bits::op(std::int64_t a)
     return static_cast<uint64_t>(a) << nlz(a);
 }
 
-inline std::intptr_t Logcount::op(std::uint64_t *a)
+inline std::size_t Logcount::op(std::uint64_t *a)
 {   std::size_t lena = number_size(a);
     std::size_t r = 0;
     if (negative(a[lena-1]))
     {   for (std::size_t i=0; i<lena; i++) r += popcount(~a[i]);
     }
     else for (std::size_t i=0; i<lena; i++) r += popcount(a[i]);
-    return int_to_handle(r);
+    return r;
 }
 
-inline std::intptr_t Logcount::op(std::int64_t a)
-{   if (a < 0) return int_to_handle(popcount(~a));
-    else return int_to_handle(popcount(a));
+inline std::size_t Logcount::op(std::int64_t a)
+{   if (a < 0) return popcount(~a);
+    else return popcount(a);
 }
 
 inline bool Logbitp::op(std::uint64_t *a, std::size_t n)
@@ -10369,6 +10401,10 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
     else return w;
 }
 
+// When b is positive Mod uses directed rounding as for Floor, while if
+// b is negative it is as for Ceiling, so that the sign of (P mod Q) always
+// matches that of Q.
+
 inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     std::uint64_t *q, *r;
@@ -10404,6 +10440,112 @@ inline std::intptr_t Mod::op(std::int64_t a, std::int64_t b)
     return int_to_handle(r);
 }
 
+// Here if division is not exact the quotient is rounded towards -infinity. 
+
+inline std::intptr_t Floor::op(std::uint64_t *a, std::uint64_t *b)
+{   std::size_t lena = number_size(a);
+    std::size_t lenb = number_size(b);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = negative(b[lenb-1]);
+    std::uint64_t *q, *r;
+    std::size_t olenq, olenr, lenq, lenr;
+    division(a, lena, b, lenb,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && a_neg != b_neg) return Sub1::op(w1);
+    else return w1;
+}
+
+inline std::intptr_t Floor::op(std::uint64_t *a, std::int64_t b)
+{   std::size_t lena = number_size(a);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = b < 0;
+    std::uint64_t *q, *r;
+    std::size_t olenq, olenr, lenq, lenr;
+    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    division(a, lena, bb, 1,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && a_neg != b_neg) return Sub1::op(w1);
+    else return w1;
+}
+
+// An edge case here is a-=2^63 and b=+2^63 where the exact quotient
+// is -1. In all other cases the absolute value of a is less than that
+// of be and the truncated quotient is zero. Then if a and b have the
+// same signs the required result is zero, otherwise it will be -1.
+// Hah - happily the edge case comes out right in the wash!
+
+inline std::intptr_t Floor::op(std::int64_t a, std::uint64_t *b)
+{   bool a_neg = (a < 0);
+    bool b_neg = negative(b[number_size(b)-1]);
+    if (a_neg == b_neg) return int_to_handle(0);
+    else return int_to_handle(-1);
+}
+
+inline std::intptr_t Floor::op(std::int64_t a, std::int64_t b)
+{   int64_t q = a/b;
+    int64_t r = a%b;
+    if (r == 0 ||
+        (a < 0) == (b < 0)) return int_to_handle(q);
+// q-1 can not overflow here because the only way that q could have
+// ended up as INT64_MIN would be for that to have been the value of
+// a and b bad been +1. But then the remainder would have been zero
+// so the easier exit would have been taken.
+    else return int_to_handle(q-1);
+}
+
+inline std::intptr_t Ceiling::op(std::uint64_t *a, std::uint64_t *b)
+{   std::size_t lena = number_size(a);
+    std::size_t lenb = number_size(b);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = negative(b[lenb-1]);
+    std::uint64_t *q, *r;
+    std::size_t olenq, olenr, lenq, lenr;
+    division(a, lena, b, lenb,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && (a_neg == b_neg)) return Add1::op(w1);
+    else return w1;
+}
+
+inline std::intptr_t Ceiling::op(std::uint64_t *a, std::int64_t b)
+{   std::size_t lena = number_size(a);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = b < 0;
+    std::uint64_t *q, *r;
+    std::size_t olenq, olenr, lenq, lenr;
+    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    division(a, lena, bb, 1,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && (a_neg == b_neg)) return Add1::op(w1);
+    else return w1;
+}
+
+inline std::intptr_t Ceiling::op(std::int64_t a, std::uint64_t *b)
+{   bool a_neg = (a < 0);
+    bool b_neg = negative(b[number_size(b)-1]);
+    if (a_neg == b_neg) return int_to_handle(1);
+    else return int_to_handle(0);
+}
+
+inline std::intptr_t Ceiling::op(std::int64_t a, std::int64_t b)
+{   int64_t q = a/b;
+    int64_t r = a%b;
+// if b=-1 or b=+1 then the remainder will be zero. In all other
+// cases q will be small enough not to overflow when incremented.
+    if (r!=0 && (a<0)==(b<0)) q++;
+    return int_to_handle(q);
+}
 
 
 #ifdef LISP
@@ -11577,6 +11719,8 @@ using arithlib_implementation::Times;
 using arithlib_implementation::Quotient;
 using arithlib_implementation::Remainder;
 using arithlib_implementation::Mod;
+using arithlib_implementation::Floor;
+using arithlib_implementation::Ceiling;
 using arithlib_implementation::Divide;
 using arithlib_implementation::Gcd;
 using arithlib_implementation::Lcm;
@@ -11606,14 +11750,14 @@ using arithlib_implementation::Lognot;
 using arithlib_implementation::Pow;
 using arithlib_implementation::LeftShift;
 using arithlib_implementation::RightShift;
-using arithlib_implementation::LowBits;
+using arithlib_implementation::Low64Bits;
 using arithlib_implementation::LowBit;
 using arithlib_implementation::IntegerLength;
 using arithlib_implementation::Top64Bits;
 using arithlib_implementation::Logbitp;
 using arithlib_implementation::Logcount;
-using arithlib_implementation::Float;
-using arithlib_implementation::Double;
+using arithlib_implementation::Float;    // returns 32-bit float
+using arithlib_implementation::Double;   // returns 64-bit float
 using arithlib_implementation::Frexp;
 #ifdef CSL
 using arithlib_implementation::ModularPlus;
@@ -11651,7 +11795,7 @@ using arithlib_implementation::reseed;
 using arithlib_implementation::uniform_upto;
 
 #ifdef softfloat_h
-using arithlib_implementation::Float128;
+using arithlib_implementation::Float128;   // returns 128-bit float
 using arithlib_implementation::Frexp128;
 using arithlib_implementation::round_float128_to_int;
 using arithlib_implementation::trunc_float128_to_int;

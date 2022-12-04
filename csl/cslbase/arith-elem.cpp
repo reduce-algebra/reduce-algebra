@@ -1422,7 +1422,7 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
     {   nn = -1;
         if (is_fixnum(b)) nn = int_of_fixnum(b) & 3;
         else if (is_new_bignum(b))
-            nn = LowBits::op(b) & 3;
+            nn = Low64Bits::op(b) & 3;
         switch (nn)
         {   case 0:   return onevalue(fixnum_of_int(1));
             case 2:   return onevalue(fixnum_of_int(-1));

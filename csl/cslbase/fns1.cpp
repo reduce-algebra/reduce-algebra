@@ -1944,8 +1944,7 @@ LispObject Lrepresentation1(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lrepresentation2(LispObject env, LispObject a,
-                            LispObject b)
+LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
 // Intended for debugging, and use with indirect (q.v.).  arg2, if
 // present and non-nil makes this more verbose. If arg2 is numeric it
 // prints slightly less than if it is other non-nil things!
@@ -1960,8 +1959,10 @@ LispObject Lrepresentation2(LispObject env, LispObject a,
             }
             if (is_new_bignum(a))
             {   size_t len = (length_of_header(numhdr(a))-8)/8;
+                trace_printf("Big %.16" PRIx64 ": ", numhdr(a));
                 for (size_t i=len; i>0; i--)
-                    trace_printf("%.8x ", (uint64_t)new_bignum_digits(a)[i-1]);
+                    trace_printf("%.16" PRIx64 " ",
+                        (uint64_t)new_bignum_digits(a)[i-1]);
             }
             else if (is_fixnum(a))
                 trace_printf("#%cFIX:%" PRIx64, ((intptr_t)a>=0 ? 'p' : 'n'),

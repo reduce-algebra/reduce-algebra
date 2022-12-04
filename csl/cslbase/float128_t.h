@@ -84,9 +84,13 @@ extern "C" {
 #ifdef LITTLEENDIAN
 #define fpOrder(a, b)    {a, b}
 #define fp256Order(a, b) {a, b}
+#define HIPART 1
+#define LOPART 0
 #else // LITTLEENDIAN
 #define fpOrder(a, b)    {b, a}
 #define fp256Order(a, b) {b, a}
+#define HIPART 0
+#define LOPART 1
 #endif // LITTLEENDIAN
 
 inline int  f128_exponent(const float128_t p);
@@ -100,14 +104,6 @@ inline bool f128_subnorm(const float128_t x);
 inline bool f128_negative(const float128_t x);
 inline void f128_negate(float128_t *x);
 extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
-
-#ifdef LITTLEENDIAN
-#define HIPART 1
-#define LOPART 0
-#else
-#define HIPART 0
-#define LOPART 1
-#endif
 
 // This file may be used more of less stand-alone so I will noy rely on
 // "earlier" CSL headers to define these...
