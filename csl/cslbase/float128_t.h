@@ -97,6 +97,8 @@ inline int  f128_exponent(const float128_t p);
 inline void f128_set_exponent(float128_t *p, int n);
 extern void f128_ldexp(float128_t *p, int n);
 extern void f128_frexp(float128_t p, float128_t *r, int *x);
+extern float128_t f128_modf(float128_t p, float128_t& intpart);
+
 inline bool f128_infinitep(const float128_t p);
 inline bool f128_finite(const float128_t p);
 inline bool f128_nanp(const float128_t x);
@@ -105,7 +107,7 @@ inline bool f128_negative(const float128_t x);
 inline void f128_negate(float128_t *x);
 extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 
-// This file may be used more of less stand-alone so I will noy rely on
+// This file may be used more of less stand-alone so I will not rely on
 // "earlier" CSL headers to define these...
 
 #ifndef UNUSED_NAME

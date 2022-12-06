@@ -3377,6 +3377,7 @@ LispObject prin_to_trace(LispObject u)
 
 // This is JUST for debugging. It prints a message then something (using
 // radix 16), then a newline.
+
 LispObject prinhex_to_trace(const char *msg, LispObject u)
 {   int32_t c = other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                                    qvalue(standard_output));
@@ -3935,8 +3936,7 @@ static LispObject Lprinbinary(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-static LispObject Lprinhex2(LispObject env, LispObject a,
-                            LispObject b)
+static LispObject Lprinhex2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(b)) return aerror1("prinhex", b);
     THREADID;
     Save save(THREADARG a);
@@ -3946,8 +3946,7 @@ static LispObject Lprinhex2(LispObject env, LispObject a,
     return onevalue(a);
 }
 
-static LispObject Lprinoctal2(LispObject env, LispObject a,
-                              LispObject b)
+static LispObject Lprinoctal2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(b)) return aerror1("prinoctal", b);
     THREADID;
     Save save(THREADARG a);
@@ -3957,8 +3956,7 @@ static LispObject Lprinoctal2(LispObject env, LispObject a,
     return onevalue(a);
 }
 
-static LispObject Lprinbinary2(LispObject env, LispObject a,
-                               LispObject b)
+static LispObject Lprinbinary2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(b)) return aerror1("prinbinary", b);
     THREADID;
     Save save(THREADARG a);

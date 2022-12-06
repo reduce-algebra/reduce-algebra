@@ -100,6 +100,39 @@ void f128_frexp(float128_t p, float128_t *r, int *x)
     *x = px - 0x3ffe;
 }
 
+float128_t f128_modf(float128_t p, float128_t& intpart)
+{   if (f128_zerop(p) || f128_nanp(p))
+    {   intpart = p;
+        return p;
+    }
+    else if (f128_infinitep(p))
+    {   intpart = p;
+        return f128_0;
+    }
+    int x = ((p.v[HIPART] >> 48) & 0x7fff) - 0x3fff;
+// If the input is less than 1.0 then it is all fraction
+    if (x <= 0)
+    {   intpart = f128_0;
+        return p;
+    }
+// If the value is at least 2^112 (and the exponent will be 113 then because
+// the notional mantissa range is 0.5 to 1.0) then it is an integer.
+    else if (x >= 113)
+    {   intpart = p;
+        return f128_0;
+    }
+// Now I have (113-x) bits that make up the fraction. I can set up
+// the integer part of the result by masking them out.
+    float128_t i = p;
+    int bits = 113-x;
+    if (bits < 64) i.v[LOPART] &= (1LLU<<bits) - 1;
+    else
+    {   i.v[LOPART] = 0;
+        if (bits > 64) i.v[HIPART] &= (1LLU<<(bits-64)) - 1;
+    }
+    intpart = i;
+    return p = i;
+}
 
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
