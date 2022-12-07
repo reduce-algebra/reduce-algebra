@@ -3800,9 +3800,6 @@ inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
 // the result. At least I can keep the code portable, even if I can then
 // worry about performance a bit.
 
-
-
-
 #ifdef __SIZEOF_INT128__
 
 // Well it seems that g++ and clang have different views about how to
@@ -11815,8 +11812,10 @@ using arithlib_implementation::ldexp;
 using arithlib_implementation::modf;
 #endif // softfloat_h
 
+// The next few are functions I may like to use in low-level code...
 //using arithlib_implementation::negative;
 //using arithlib_implementation::number_size;
+//using arithlib_implementation::multiply64;
 
 using arithlib_implementation::cast_to_float;
 

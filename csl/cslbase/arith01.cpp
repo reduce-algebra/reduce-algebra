@@ -68,23 +68,15 @@ LispObject make_lisp_unsigned128_fn(uint128_t r)
 
 LispObject make_complex(LispObject r, LispObject i)
 {   LispObject v;
-//
 // Here r and i are expected to be either both rational (which in this
 // context includes the case of integer values) or both of the same
 // floating point type.  It is assumed that this has already been
 // arranged by here.
-//
     if (i == fixnum_of_int(0)) return r;
     THREADID;
     stackcheck(THREADARG r, i);
-    {   v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
-                             sizeof(Complex_Number));
-        errexit();
-// The vector r has uninitialized contents here - dodgy.  If the call
-// to get_basic_vector succeeded then I fill it in, otherwise I will not
-// refer to it again, and I think that unreferenced vectors containing junk
-// are OK.
-    }
+    v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
+    errexit();
     setreal_part(v, r);
     setimag_part(v, i);
     return v;
@@ -97,10 +89,8 @@ LispObject make_ratio(LispObject p, LispObject q)
     if (q == fixnum_of_int(1)) return p;
     THREADID;
     stackcheck(THREADARG p, q);
-    {   v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
-                             sizeof(Rational_Number));
-        errexit();
-    }
+    v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
+    errexit();
     setnumerator(v, p);
     setdenominator(v, q);
     return v;
@@ -209,14 +199,12 @@ LispObject make_boxfloat128(float128_t a)
 }
 
 double float_of_number(LispObject a)
-//
 // Return a (double precision) floating point value for the given Lisp
 // number, or 0.0 in case of trouble.  This is often called in circumstances
 // where I already know the type of its argument and so its type-dispatch
 // is unnecessary - in doing so I am trading off performance against
 // code repetition. Be aware that for long floats I will need to do something
 // different!
-//
 {   if (is_fixnum(a)) return static_cast<double>(int_of_fixnum(a));
     else if (is_sfloat(a))
         return value_of_immediate_float(a);
@@ -328,13 +316,11 @@ float128_t float128_of_number(LispObject a)
 
 #ifndef ARITHLIB
 
-//
 // The following verifies that a number is properly formatted - a
 // fixnum if small enough or a decently normalised bignum.  For use when
 // there is suspicion of a bug wrt such matters. Call is
 //   validate_number("msg", numberToCheck, nX, nY)
 // where nX and nY are values shown in any diagnostic.
-//
 
 // If I make validate-number stop absolutely that can be useful if I am
 // running under a debugger, because I can put a break-point on Lstop
@@ -451,12 +437,10 @@ LispObject validate_number(const char *s, LispObject a,
 }
 
 
-//
 // I start off with a collection of utility functions that create
 // Lisp structures to represent various sorts of numbers
 // and which extract values from same.
 // The typedefs that explain the layout of these structures are in "tags.h"
-//
 
 // The functions here are called via inline functions that are in arith.h and
 // that check if all that is needed is fixnum_of_int, so here I know that
@@ -579,12 +563,10 @@ LispObject make_fake_bignum(intptr_t n)
 }
 
 LispObject make_one_word_bignum(int32_t n)
-//
 // n is an integer - create a bignum representation of it.  This is
 // done when n is outside the range 0xf8000000 to 0x07ffffff, but
 // inside the range 0xc0000000 to 0x3fffffff on a 32-bit machine. It
 // should never be needed on a 64-bit system!
-//
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
     errexit();
     bignum_digits(w)[0] = n;
@@ -592,11 +574,9 @@ LispObject make_one_word_bignum(int32_t n)
 }
 
 LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
-//
 // This make a 2-word bignum from the 2-word value (a1,a0), where it
 // must have been arranged already that a1 and a0 are correctly
 // normalized to put in the two words as indicated.
-//
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
     errexit();
     bignum_digits(w)[0] = a0;
@@ -605,11 +585,9 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 }
 
 LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
-//
 // This make a 3-word bignum from the 3-word value (a2,a1,a0), where it
 // must have been arranged already that the values are correctly
 // normalized.
-//
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
     errexit();
     bignum_digits(w)[0] = a0;
@@ -620,11 +598,9 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 
 LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
                                  uint32_t a1, uint32_t a0)
-//
 // This make a 4-word bignum from the 4-word value (a3,a2,a1,a0), where it
 // must have been arranged already that the values are correctly
 // normalized.
-//
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
     errexit();
     bignum_digits(w)[0] = a0;
@@ -636,11 +612,9 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 
 LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
                                  uint32_t a1, uint32_t a0)
-//
 // This make a 5-word bignum from the 5-word value (a4,a3,a2,a1,a0), where it
 // must have been arranged already that the values are correctly
 // normalized.
-//
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+20);
     errexit();
     bignum_digits(w)[0] = a0;
@@ -667,7 +641,6 @@ LispObject make_boxfloat128(float128_t a)
 #endif // HAVE_SOFTFLOAT
 
 static double bignum_to_float(LispObject v, int32_t h, int *xp)
-//
 // Convert a Lisp bignum to get a floating point value.  This uses at most the
 // top 3 digits of the bignum's representation since that is enough to achieve
 // full double precision accuracy. Note that this is 3 words not 2 because
@@ -757,7 +730,6 @@ static float128_t f128_TWO_31 = {{INT64_C(0x401e000000000000), 0}};
 #endif
 
 static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
-//
 // Convert a Lisp bignum to get a 128-bit floating point value.
 // This uses at most the top 5 digits of the bignum's representation
 // since that is enough to achieve full accuracy.
@@ -955,14 +927,12 @@ intptr_t float128_to_5_digits(float128_t d,
 #endif // HAVE_SOFTFLOAT
 
 double float_of_number(LispObject a)
-//
 // Return a (double precision) floating point value for the given Lisp
 // number, or 0.0 in case of trouble.  This is often called in circumstances
 // where I already know the type of its argument and so its type-dispatch
 // is unnecessary - in doing so I am trading off performance against
 // code repetition. Be aware that for long floats I will need to do something
 // different!
-//
 {   if (is_fixnum(a)) return static_cast<double>(int_of_fixnum(a));
     else if (is_sfloat(a))
         return value_of_immediate_float(a);
@@ -1015,11 +985,9 @@ double float_of_number(LispObject a)
                 return std::ldexp(r1, x1 - x2);
             }
             default:
-//
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - bit raising an exception seems over-keen.
-//
                 return 0.0;
         }
     }
@@ -1027,10 +995,8 @@ double float_of_number(LispObject a)
 
 #ifdef HAVE_SOFTFLOAT
 float128_t float128_of_number(LispObject a)
-//
 // Return a 128-bit floating point value for the given Lisp
 // number, or 0.0 in case of trouble.
-//
 {   float128_t r;
     float64_t r64;
     float32_t r32;
@@ -1089,11 +1055,9 @@ float128_t float128_of_number(LispObject a)
                 return w;
             }
             default:
-//
 // If the value was non-numeric or a complex number I hand back 0.0,
 // and since I am supposed to have checked the object type already
 // this OUGHT not to arrive - but raising an exception seems over-keen.
-//
                 i32_to_f128M(0, &r);
                 return r;
         }
@@ -1240,12 +1204,10 @@ uint64_t sixty_four_bits_unsigned(LispObject a)
 
 LispObject make_complex(LispObject r, LispObject i)
 {   LispObject v;
-//
 // Here r and i are expected to be either both rational (which in this
 // context includes the case of integer values) or both of the same
 // floating point type.  It is assumed that this has already been
 // arranged by here.
-//
     if (i == fixnum_of_int(0)) return r;
     THREADID;
     stackcheck(THREADARG r, i);
@@ -1282,7 +1244,6 @@ LispObject make_ratio(LispObject p, LispObject q)
     return v;
 }
 
-//
 // The next bit of code seems pretty dreadful, but I think that is just
 // what generic arithmetic is all about.  The code for plus2 is written
 // as a dispatch function into over 30 separate possible type-specific
@@ -1314,7 +1275,6 @@ LispObject make_ratio(LispObject p, LispObject q)
 // separate type-specific procedures and (c) doing it by hand allows me
 // total flexibility about coding various cases in-line. But at some stage
 // perhaps C++ templates will take the strain in a neat manner?
-//
 
 inline LispObject plus_i_i(LispObject a1, LispObject a2);
 inline LispObject plus_i_b(LispObject a1, LispObject a2);
@@ -1588,7 +1548,6 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
             {   bignum_digits(c)[i] = 0;   // leave the unused word tidy
                 return c;
             }
-//
 // Having shrunk the number I am leaving a doubleword of unallocated space
 // in the heap.  Dump a header word into it to make it look like an
 // 8-byte bignum since that will allow the garbage collector to handle it.
@@ -1600,19 +1559,16 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // any linear scanning of active heap, and so this (minor) extra cost could
 // be avoided. I will leave it in here as a matter of being tidy as well as
 // against the possibility that future GC re-works require it!
-//
             *reinterpret_cast<Header *>(&bignum_digits(c)[i]) = make_bighdr(2L);
             return c;
         }
         bignum_digits(c)[i] = s1;  // length unchanged
         return c;
     }
-//
 // Here the result is one word longer than the input-bignum.
 // Once again SOMTIMES this will not involve allocating more store,
 // but just encroaching into the previously unused word that was padding
 // things out to a multiple of 8 bytes.
-//
     if ((SIXTY_FOUR_BIT && ((i & 1) == 0)) ||
         (!SIXTY_FOUR_BIT && ((i & 1) == 1)))
     {   bignum_digits(c)[i++] = clear_top_bit(s1);
@@ -1628,19 +1584,15 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
     }
     for (size_t i=0; i<len-1; i++)
         bignum_digits(a2)[i] = vbignum_digits(c)[i];
-//
 // I move the top digit across by hand since if the number is negative
 // I must lose its top bit
-//
     bignum_digits(a2)[i++] = clear_top_bit(s1);
 // Now the one-word extension to the number
     bignum_digits(a2)[i++] = top_bit_set(s1) ? -1 : 0;
-//
 // Finally because I know that I expanded into a new doubleword I should
 // tidy up the second word of the newly allocated pair. I know I added two
 // extra words because if I was just filling in the second of two existing
 // words I did not do not do the fresh get_basic_vector() here...
-//
     bignum_digits(a2)[i] = 0;
     return a2;
 }
@@ -1809,11 +1761,9 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // I need to know if the top digit leads to 31-bit signed overflow.
     if (!signed_overflow(carry))
     {
-//
 // Here the number has not expanded - but it may be shrinking, and it can
 // shrink by any number of words, all the way down to a fixnum maybe.  Note
 // that I started with at least a 2-word bignum here.
-//
         int32_t msd;
         bignum_digits(c)[i] = carry;
         if (carry == 0)

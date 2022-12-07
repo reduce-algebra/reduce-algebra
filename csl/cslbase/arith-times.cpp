@@ -36,6 +36,19 @@
 
 // Times, Quotient, Remainder, Divide etc
 
+//
+// As with much of the generic arithmetic code there is real ugliness
+// dealing with all combinations of argument types. The types in play are
+//  LispObject, small integer, large integer, ratio, short, single, double
+// and long floats, complex. That is 9 cases for a unary operator and 81
+// for a binary one. In quite a few of the cases the code needed for
+// a range of the combinations is the same and one might have hoped that
+// most of them could be dealt with by a single copy of that code as the
+// body of a template. However there are also rather a lot of cases where
+// different type-specific code is called for and I have not sorted out
+// a good way to exploit templates. Thus the code here is rather unpleasantly
+// repetitive!
+
 #include "headers.h"
 
 #include <complex>
@@ -55,83 +68,67 @@ LispObject Times::op(LispObject a, LispObject b)
 }
 
 LispObject Times::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, std::uint64_t *b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(std::uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 LispObject Times::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Times>("times", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Times>("times", a, b);
 }
 
 // fixnum * fixnum
@@ -797,13 +794,13 @@ LispObject Expt::op(Fixnum a, Rat b)
 // not for today. I will however leave a message to myself in to tend to
 // remind me to come back to it!
 //
-#pragma message ("bignum ** fractional power needs attention")
+#pragma message ("all sorts of cases of ** need attention")
 LispObject Expt::op(std::uint64_t *a, Rat b)
 {   return make_boxfloat(std::pow(RawFloat::op(a), RawFloat::op(b)));
 }
 
 // rational ** rational
-// Should eg (9/16)^(1/2) remain rational rather that ending ip as a float?
+// Should eg (9/16)^(1/2) remain rational rather that ending up as a float?
 LispObject Expt::op(Rat a, Rat b)
 {   return make_boxfloat(std::pow(RawFloat::op(a), RawFloat::op(b)));
 }
@@ -918,7 +915,6 @@ LispObject Expt::op(Cpx a, Cpx b)
         float128_t rx, ry;
         rx = i64_to_f128(1);
         ry = i64_to_f128(0);
-#pragma message ("Should support expt complex with long-float components")
         return make_complex(make_boxfloat128(rx), make_boxfloat128(ry));
     }
     std::complex<double> aa(RawFloat::op(a.real_part()),
@@ -1021,28 +1017,28 @@ LispObject Expt::op(double a, SFlt b)
 // long float ** short float
 LispObject Expt::op(LFlt a, SFlt b)
 {   double aa = RawFloat::op(a),
-               bb = RawFloat::op(b);
+           bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // fixnum ** single float
 LispObject Expt::op(Fixnum a, Flt b)
 {   double aa = RawFloat::op(a),
-               bb = RawFloat::op(b);
+           bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // bignum ** single float
 LispObject Expt::op(std::uint64_t *a, Flt b)
 {   double aa = RawFloat::op(a),
-               bb = RawFloat::op(b);
+           bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // rational ** single float
 LispObject Expt::op(Rat a, Flt b)
 {   double aa = RawFloat::op(a),
-               bb = RawFloat::op(b);
+           bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
 }
 
@@ -1066,14 +1062,14 @@ LispObject Expt::op(SFlt a, Flt b)
 // single float ** single float
 LispObject Expt::op(Flt a, Flt b)
 {   double aa = RawFloat::op(a),
-               bb = RawFloat::op(b);
+           bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // double float ** single float
 LispObject Expt::op(double a, Flt b)
 {   double aa = a,
-               bb = RawFloat::op(b);
+           bb = RawFloat::op(b);
     return make_boxfloat(std::pow(aa, bb));
 }
 
@@ -1085,21 +1081,21 @@ LispObject Expt::op(LFlt a, Flt b)
 // fixnum ** double float
 LispObject Expt::op(Fixnum a, double b)
 {   double aa = RawFloat::op(a),
-               bb = b;
+           bb = b;
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // bignum ** double float
 LispObject Expt::op(std::uint64_t *a, double b)
 {   double aa = RawFloat::op(a),
-               bb = b;
+           bb = b;
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // rational ** double float
 LispObject Expt::op(Rat a, double b)
 {   double aa = RawFloat::op(a),
-               bb = b;
+           bb = b;
     return make_boxfloat(std::pow(aa, bb));
 }
 
@@ -1116,21 +1112,21 @@ LispObject Expt::op(Cpx a, double b)
 // short float ** double float
 LispObject Expt::op(SFlt a, double b)
 {   double aa = RawFloat::op(a),
-               bb = b;
+           bb = b;
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // single float ** double float
 LispObject Expt::op(Flt a, double b)
 {   double aa = RawFloat::op(a),
-               bb = b;
+           bb = b;
     return make_boxfloat(std::pow(aa, bb));
 }
 
 // double float ** double float
 LispObject Expt::op(double a, double b)
 {   double aa = a,
-               bb = b;
+           bb = b;
     return make_boxfloat(std::pow(aa, bb));
 }
 
@@ -1178,97 +1174,77 @@ LispObject Expt::op(double a, LFlt b)
 
 // long float ** long float
 
-// return f128_exp(f128_mul(b.floatval(), f128_log(a.floatval())))
 
 LispObject Expt::op(LFlt a, LFlt b)
-{   arithlib_abort("not done yet");
-//  return f128_exp(f128_mul(b.floatval(), f128_log(a.floatval())))
-#pragma message ("exponentiation involving float128_t not available yet")
+{   return make_boxfloat128(qexpt(a.floatval(), b.floatval()));
 }
 
 LispObject Quotient::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binary<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, std::uint64_t *b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryR<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(std::uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 LispObject Quotient::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient",
-            a, b);
+{   return number_dispatcher::binaryL<LispObject,Quotient>("quotient", a, b);
 }
 
 // fixnum / fixnum
@@ -1462,49 +1438,79 @@ LispObject Quotient::op(LFlt a, Rat b)
 
 // fixnum / complex
 LispObject Quotient::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
-#pragma message ("quotient involving complex incomplete code")
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // bignum / complex
 LispObject Quotient::op(std::uint64_t *a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // rational / complex
 LispObject Quotient::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // complex / complex
 LispObject Quotient::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // short float / complex
 LispObject Quotient::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // single float / complex
 LispObject Quotient::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // double float / complex
 LispObject Quotient::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // long float / complex
 LispObject Quotient::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Quotient::op(num, den);
 }
 
 // fixnum / short float
 LispObject Quotient::op(Fixnum a, SFlt b)
-{   return pack_single_float(static_cast<double>(a.intval()) /
-                             b.floatval());
+{   return pack_short_float(static_cast<double>(a.intval()) / b.floatval());
 }
 
 // bignum / short float
@@ -1513,7 +1519,7 @@ LispObject Quotient::op(std::uint64_t *a, SFlt b)
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
-    return pack_single_float(aa);
+    return pack_short_float(aa);
 }
 
 // rational / short float
@@ -1522,72 +1528,85 @@ LispObject Quotient::op(Rat a, SFlt b)
     double aa = Frexp::op(a, x);
     aa = aa/b.floatval();
     aa = std::ldexp(aa, -x);
-    return pack_single_float(aa);
+    return pack_short_float(aa);
 }
 // complex / short float
 LispObject Quotient::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
-#pragma message ("quitient involving short float incomplete code")
+{   return make_complex(
+        Quotient::op(a.real_part(), b),
+        Quotient::op(a.imag_part(), b));
 }
 
 // short float / short float
 LispObject Quotient::op(SFlt a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return pack_short_float(a.floatval() / b.floatval());
 }
 
 // single float / short float
 LispObject Quotient::op(Flt a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return pack_single_float(a.floatval() / b.floatval());
 }
 
 // double float / short float
 LispObject Quotient::op(double a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return make_boxfloat(a / b.floatval());
 }
 
 // long float / short float
 LispObject Quotient::op(LFlt a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return make_boxfloat128(f128_div(a.floatval(),
+                            Float128::op(b)));
 }
 
 // fixnum / single float
 LispObject Quotient::op(Fixnum a, Flt b)
-{   arithlib_abort("not done yet");
+{   return pack_single_float(static_cast<double>(a.value()) / b.floatval());
 }
 
 // bignum / single float
 LispObject Quotient::op(std::uint64_t *a, Flt b)
-{   arithlib_abort("quotient involving single float not done yet");
+{   std::int64_t ax;
+    int bx;
+    double aa = Frexp::op(a, ax);
+    double bb = std::frexp(b.floatval(), &bx);
+    return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // rational / single float
 LispObject Quotient::op(Rat a, Flt b)
-{   arithlib_abort("not done yet");
+{   std::int64_t ax;
+    int bx;
+    double aa = Frexp::op(a, ax);
+    double bb = std::frexp(b.floatval(), &bx);
+    return pack_single_float(std::ldexp(aa/bb, ax-bx));
 }
 
 // complex / single float
 LispObject Quotient::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return make_complex(
+        Quotient::op(a.real_part(), b),
+        Quotient::op(a.imag_part(), b));
 }
 
 // short float / single float
 LispObject Quotient::op(SFlt a, Flt b)
-{   arithlib_abort("not done yet");
+{   return pack_single_float(a.floatval() / b.floatval());
 }
 
 // single float / single float
 LispObject Quotient::op(Flt a, Flt b)
-{   arithlib_abort("not done yet");
+{   return pack_single_float(a.floatval() / b.floatval());
 }
 
 // double float / single float
 LispObject Quotient::op(double a, Flt b)
-{   arithlib_abort("not done yet");
+{   return make_boxfloat(a / b.floatval());
 }
 
 // long float / single float
 LispObject Quotient::op(LFlt a, Flt b)
-{   arithlib_abort("not done yet");
+{   return make_boxfloat128(f128_div(a.floatval(),
+                            Float128::op(b)));
 }
 
 // fixnum / double float
@@ -1605,14 +1624,15 @@ LispObject Quotient::op(std::uint64_t *a, double b)
 }
 
 // rational / double float
-#pragma message ("quotient involving double float incomplete code")
 LispObject Quotient::op(Rat a, double b)
 {   arithlib_abort("not done yet");
 }
 
 // complex / double float
 LispObject Quotient::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return make_complex(
+        Quotient::op(a.real_part(), b),
+        Quotient::op(a.imag_part(), b));
 }
 
 // short float / double float
@@ -1632,48 +1652,51 @@ LispObject Quotient::op(double a, double b)
 
 // long float / double float
 LispObject Quotient::op(LFlt a, double b)
-{   arithlib_abort("not done yet");
+{   return make_boxfloat128(f128_div(a.floatval(),
+                            Float128::op(b)));
 }
 
 // fixnum / long float
 LispObject Quotient::op(Fixnum a, LFlt b)
-{   arithlib_abort("not done yet");
-#pragma message ("quotient involving long float incomplete code")
+{   return Quotient::op(Float128::op(a), b);
 }
 
 // bignum / long float
 LispObject Quotient::op(std::uint64_t *a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return Quotient::op(Float128::op(a), b);
+// Imperfect wrt premature overflow if a is huge
 }
 
 // rational / long float
 LispObject Quotient::op(Rat a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return Quotient::op(Float128::op(a), b);
 }
 
 // complex / long float
 LispObject Quotient::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return make_complex(
+        Quotient::op(a.real_part(), b),
+        Quotient::op(a.imag_part(), b));
 }
 
 // short float / long float
 LispObject Quotient::op(SFlt a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return Quotient::op(Float128::op(a), b);
 }
 
 // single float / long float
 LispObject Quotient::op(Flt a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return Quotient::op(Float128::op(a), b);
 }
 
 // double float / long float
 LispObject Quotient::op(double a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return Quotient::op(Float128::op(a), b);
 }
 
 // long float / long float
 LispObject Quotient::op(LFlt a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return make_boxfloat128(f128_div(a.floatval(), b.floatval()));
 }
 
 // (quotient 22 7) => 3 and (!/!/ 22 7) => 3
@@ -1681,87 +1704,87 @@ LispObject Quotient::op(LFlt a, LFlt b)
 
 LispObject CLQuotient::op(LispObject a, LispObject b)
 {   return
-        number_dispatcher::binary<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binary<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, Fixnum b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, std::uint64_t *b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, Rat b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, Cpx b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, SFlt b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, Flt b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, double b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LispObject a, LFlt b)
 {   return
-        number_dispatcher::binaryR<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryR<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(Fixnum a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(std::uint64_t *a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(Rat a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(Cpx a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(SFlt a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(Flt a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(double a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 LispObject CLQuotient::op(LFlt a, LispObject b)
 {   return
-        number_dispatcher::binaryL<LispObject,CLQuotient>("quotient", a, b);
+        number_dispatcher::binaryL<LispObject,CLQuotient>("/", a, b);
 }
 
 // fixnum CL/ fixnum
@@ -1771,11 +1794,13 @@ LispObject CLQuotient::op(Fixnum a, Fixnum b)
                  u, v, g;
     u = aa >= 0 ? aa : -aa;
     v = bb >= 0 ? bb : -bb;
-    if (v > u) { g = v; v = u; u = g; }
-    while (v != 0)
-    {   g = v;
-        v = u%v;
+    if (v > u) { g = u; u = v; v = g; }
+    else g = v;
+    for (;;)
+    {   v = u%v;
+        if (v == 0) break;
         u = g;
+        g = v;
     }
     aa /= g;
     bb /= g;
@@ -1990,49 +2015,79 @@ LispObject CLQuotient::op(LFlt a, Rat b)
 
 // fixnum CL/ complex
 LispObject CLQuotient::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
-#pragma message ("CL quotient incomplete code")
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // bignum CL/ complex
 LispObject CLQuotient::op(std::uint64_t *a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // rational CL/ complex
 LispObject CLQuotient::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // complex CL/ complex
 LispObject CLQuotient::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // short float CL/ complex
 LispObject CLQuotient::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // single float CL/ complex
 LispObject CLQuotient::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // double float CL/ complex
 LispObject CLQuotient::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // long float CL/ complex
 LispObject CLQuotient::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return CLQuotient::op(num, den);
 }
 
 // fixnum CL/ short float
 LispObject CLQuotient::op(Fixnum a, SFlt b)
-{   return pack_single_float(static_cast<double>(a.intval()) /
-                             b.floatval());
+{   return pack_single_float(static_cast<double>(a.intval()) / b.floatval());
 }
 
 // bignum CL/ short float
@@ -2054,7 +2109,8 @@ LispObject CLQuotient::op(Rat a, SFlt b)
 }
 // complex CL/ short float
 LispObject CLQuotient::op(Cpx a, SFlt b)
-{   arithlib_abort("not done yet");
+{   return make_complex(CLQuotient::op(a.real_part(), b),
+                        CLQuotient::op(a.imag_part(), b));
 }
 
 // short float CL/ short float
@@ -2094,7 +2150,9 @@ LispObject CLQuotient::op(Rat a, Flt b)
 
 // complex CL/ single float
 LispObject CLQuotient::op(Cpx a, Flt b)
-{   arithlib_abort("not done yet");
+{   return make_complex(
+        CLQuotient::op(a.real_part(), b),
+        CLQuotient::op(a.imag_part(), b));
 }
 
 // short float CL/ single float
@@ -2134,7 +2192,9 @@ LispObject CLQuotient::op(Rat a, double b)
 
 // complex CL/ double float
 LispObject CLQuotient::op(Cpx a, double b)
-{   arithlib_abort("not done yet");
+{   return make_complex(
+        CLQuotient::op(a.real_part(), b),
+        CLQuotient::op(a.imag_part(), b));
 }
 
 // short float CL/ double float
@@ -2174,7 +2234,9 @@ LispObject CLQuotient::op(Rat a, LFlt b)
 
 // complex CL/ long float
 LispObject CLQuotient::op(Cpx a, LFlt b)
-{   arithlib_abort("not done yet");
+{   return make_complex(
+        CLQuotient::op(a.real_part(), b),
+        CLQuotient::op(a.imag_part(), b));
 }
 
 // short float CL/ long float
@@ -2696,8 +2758,16 @@ LispObject Mod::op(std::uint64_t *a, Fixnum b)
 // fixnum % bignum
 LispObject Mod::op(Fixnum a, std::uint64_t *b)
 {
-#pragma message ("work needed")
-    return a.value();
+// One misery here is that one can have -2^k as a fixnum but 2^k having
+// to be a bignum, and in that case the result must be zero.
+    int64_t aa = a.intval();
+    if (aa == -0x0800000000000000LL &&
+        b[0] == 0x0800000000000000LLU) return fixnum_of_int(0);
+    size_t len = arithlib_implementation::number_size(b);
+    bool a_neg = aa<0;
+    bool b_neg = static_cast<int64_t>(b[len-1])<0;
+    if (a_neg == b_neg) return a.value();
+    else return Plus::op(a, b);
 }
 
 // bignum % bignum
@@ -2706,88 +2776,71 @@ LispObject Mod::op(std::uint64_t *a, std::uint64_t *b)
 }
 
 LispObject Divide::op(LispObject a, LispObject b)
-{   return number_dispatcher::binary<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binary<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, Fixnum b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, std::uint64_t *b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, Rat b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, Cpx b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, SFlt b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, Flt b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, double b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LispObject a, LFlt b)
-{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryR<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(Fixnum a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(std::uint64_t *a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(Rat a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(Cpx a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(SFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(Flt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(double a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 LispObject Divide::op(LFlt a, LispObject b)
-{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a,
-            b);
+{   return number_dispatcher::binaryL<LispObject,Divide>("divide", a, b);
 }
 
 // fixnum divide fixnum
@@ -3287,9 +3340,9 @@ LispObject Reciprocal::op(LispObject a)
 LispObject Reciprocal::op(Fixnum a)
 {   switch (a.intval())
     {   case 0:  return aerror1("bad argument for reciprocal", a.value());
-        case 1:  return int_of_fixnum(1);
-        case -1: return int_of_fixnum(-1);
-        default: return int_of_fixnum(0);
+        case 1:  return fixnum_of_int(1);
+        case -1: return fixnum_of_int(-1);
+        default: return fixnum_of_int(0);
     }
 }
 
@@ -3618,49 +3671,79 @@ LispObject Truncate::op(LFlt a, Rat b)
 
 // fixnum truncate complex
 LispObject Truncate::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
-#pragma message ("truncate incomplete code")
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // bignum truncate complex
 LispObject Truncate::op(std::uint64_t *a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // rational truncate complex
 LispObject Truncate::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // complex truncate complex
 LispObject Truncate::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // short float truncate complex
 LispObject Truncate::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // single float truncate complex
 LispObject Truncate::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // double float truncate complex
 LispObject Truncate::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // long float truncate complex
 LispObject Truncate::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Truncate::op(num, den);
 }
 
 // fixnum truncate short float
 LispObject Truncate::op(Fixnum a, SFlt b)
-{   return pack_single_float(static_cast<double>(a.intval()) /
-                             b.floatval());
+{   return pack_single_float(static_cast<double>(a.intval()) / b.floatval());
 }
 
 // bignum truncate short float
@@ -4084,49 +4167,79 @@ LispObject Ceiling::op(LFlt a, Rat b)
 
 // fixnum ceiling complex
 LispObject Ceiling::op(Fixnum a, Cpx b)
-{   arithlib_abort("not done yet");
-#pragma message ("2-arg ceiling incomplete code")
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // bignum ceiling complex
 LispObject Ceiling::op(std::uint64_t *a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // rational ceiling complex
 LispObject Ceiling::op(Rat a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // complex ceiling complex
 LispObject Ceiling::op(Cpx a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // short float ceiling complex
 LispObject Ceiling::op(SFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // single float ceiling complex
 LispObject Ceiling::op(Flt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // double float ceiling complex
 LispObject Ceiling::op(double a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a, conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // long float ceiling complex
 LispObject Ceiling::op(LFlt a, Cpx b)
-{   arithlib_abort("not done yet");
+{   LispObject conj = make_complex(b.real_part(), Minus::op(b.imag_part()));
+    LispObject num = Times::op(a.value(), conj);
+    LispObject den =
+        Plus::op(Square::op(b.real_part()), Square::op(b.imag_part()));
+    return Ceiling::op(num, den);
 }
 
 // fixnum ceiling short float
 LispObject Ceiling::op(Fixnum a, SFlt b)
-{   return pack_single_float(static_cast<double>(a.intval()) /
-                             b.floatval());
+{   return pack_single_float(static_cast<double>(a.intval()) / b.floatval());
 }
 
 // bignum ceiling short float
@@ -4552,7 +4665,7 @@ LispObject Floor::op(LFlt a, Rat b)
 // fixnum floor complex
 LispObject Floor::op(Fixnum a, Cpx b)
 {   arithlib_abort("not done yet");
-#pragma message ("2 arg floor incomplete code")
+#pragma message ("2 arg floor and friends incomplete code")
 }
 
 // bignum floor complex
@@ -5031,7 +5144,6 @@ LispObject Ftruncate::op(LFlt a, Rat b)
 // fixnum ftruncate complex
 LispObject Ftruncate::op(Fixnum a, Cpx b)
 {   arithlib_abort("not done yet");
-#pragma message ("2 arg ftruncate incomplete code")
 }
 
 // bignum ftruncate complex
@@ -5496,7 +5608,6 @@ LispObject Fceiling::op(LFlt a, Rat b)
 // fixnum / complex
 LispObject Fceiling::op(Fixnum a, Cpx b)
 {   arithlib_abort("not done yet");
-#pragma message ("2 arg fceiling incomplete code")
 }
 
 // bignum fceiling complex
@@ -5960,7 +6071,6 @@ LispObject Ffloor::op(LFlt a, Rat b)
 // fixnum ffloor complex
 LispObject Ffloor::op(Fixnum a, Cpx b)
 {   arithlib_abort("not done yet");
-#pragma message ("2 arg ffloor incomplete code")
 }
 
 // bignum ffloor complex
@@ -6371,18 +6481,15 @@ LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
     return onevalue(w);
 }
 
-LispObject Niquotient(LispObject env, LispObject a1,
-                             LispObject a2)
+LispObject Niquotient(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Quotient::op(a1, a2));
 }
 
-LispObject Nimod(LispObject env, LispObject a1,
-                              LispObject a2)
+LispObject Nimod(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Mod::op(a1, a2));
 }
 
-LispObject Nidivide(LispObject env, LispObject a1,
-                           LispObject a2)
+LispObject Nidivide(LispObject env, LispObject a1, LispObject a2)
 {   return onevalue(Divide::op(a1, a2));
 }
 

@@ -67,12 +67,16 @@
 // format. Well I have a chance of using G format decimal printing so
 // I should use that unless the "hex" flag is set.
 
-// Note that input is FRAGILE. For instance the hex input must have
+// Note that hex input is FRAGILE. For instance the hex input must have
 // 32 hex digits (the separator "'" may be used to help make the format
-// clearer) and they must be proper hex digits. For decimal style input
-// the format should be used with caution and overflow, underflow and the
-// like avoided. This is intended for my use within just this project
-// rather than being robust code proper for general use.
+// clearer) and they must be proper hex digits.
+// Decimal input is intended to yield an exactly correct value in particular
+// when the input is a decimal rendering of an exactly representable value,
+// however I have not put any effort into coping with sub-normal numbers.
+// If the decimal provided has a value between two representable values
+// I attempt to round to the nearest, rounding to even om ambiguity. This
+// is done subject to me using a limited number of guard bits in the
+// calculation.
 
 // This builds on top of the softfloat library from John R Hauser, a copy
 // of which can be found elsewhere within the CSL/Reduce source tree.
@@ -269,8 +273,9 @@ extern int f128_print_F(int width, int precision, float128_t p);
 extern int f128_print_G(int width, int precision, float128_t p);
 
 // By making the code that generated a QuadFloat from a string of
-// characters "constexpr" I can (with luck) move all costs associated
-// with use of QuadFloat literals to compile-time.
+// characters "constexpr" I can move all costs associated with use
+// of QuadFloat literals to compile-time. At least with a sufficiently
+// good compiler implementing sufficiently recent C++ features.
 
 inline constexpr uint64_t f160_leftshift(uint64_t m[5], uint64_t carry, int bits=1)
 {   for (int i=0; i<5; i++)
@@ -604,7 +609,7 @@ public:
     }
 
     operator int64_t()
-    {   return f128_to_i64(v, softfloat_round_near_even, false);
+    {   return f128_to_i64(v, softfloat_round_minMag, false);
     }
 
     friend std::ostream& operator<<(std::ostream& o, const QuadFloat& d)

@@ -175,7 +175,7 @@
 // bits in its most significant digit. The little Reduce program that
 // generated this is included at the end of this file.
 
-uint64_t TwoOverPi[] = {
+uint64_t twoOverPi[] = {
 0xa2f9836e4e441529, 0xfc2757d1f534ddc0, 0xdb6295993c439041, 0xfe5163abdebbc561,
 0xb7246e3a424dd2e0, 0x06492eea09d1921c, 0xfe1deb1cb129a73e, 0xe88235f52ebb4484,
 0xe99c7026b45f7e41, 0x3991d639835339f4, 0x9c845f8bbdf9283b, 0x1ff897ffde05980f,
@@ -243,7 +243,69 @@ uint64_t TwoOverPi[] = {
 0x825c326b5b2746ed, 0x34007700d255f4fc, 0x4d59018071e0e13f, 0x89b295f364a8f1ae
 };
 
+const size_t twoOverPiDigits = sizeof(twoOverPi)/sizeof(twoOverPi[0]);
+uint64_t product[twoOverPiDigits + 4];
+const size_t productDigits = sizeof(product)/sizeof(product[0]);
 
+
+QuadFloat reduceMod2Pi(QuadFloat aa)
+{   int x = aa.exponent();
+    uint64_t m[3];
+    m[2] = aa.v.v[LOPART];
+// I insert the hidden bit here - so the input must not be subnormal!
+    m[1] = (aa.v.v[HIPART] & 0x0000ffffffffffffLLU) |
+                             0x0001000000000000LLU;
+    m[0] = 0;
+    int sh = (x-2) & 0x3f;
+    x = (x-sh)/64;
+    if (sh != 0)
+    {   m[0] = (m[0]<<sh) | (m[1]>>(64-sh));
+        m[1] = (m[1]<<sh) | (m[2]>>(64-sh));
+        m[2] = m[2]<<sh;
+    }
+/*
+    zprintf("Plain %x.%x.%x\n", 0x12345, 0x123, 0x12345);
+    zprintf("Prec16 %.16x.%.16x.%.16x\n", 0x123, 0x12345, 0x12345);
+    zprintf("width16 %16x.%16x.%16x\n", 0x12345, 0x123, 0x12345);
+    zprintf("Width+Prec %16.16x.%16.16x.%16.16x\n", 0x12345, 0x123, 0x12345);
+    zprintf("0W+prec %016.16x.%016.16x.%016.16x\n", 0x12345, 0x123, 0x12345);
+    zprintf("0Width %016x.%016x.%016x\n", 0x12345, 0x123, 0x12345);
+*/
+    zprintf("M(%2d) = %016x %016x %016x :: %d\n",
+        sh, m[0], m[1], m[2], x);
+
+    for (size_t i=0; i<productDigits; i++) product[i] = 0;
+
+int count = 0;
+    for (size_t i=0; i<twoOverPiDigits; i++)
+    for (size_t j=0; j<3; j++)
+    {   size_t k = i+j;
+        uint64_t hi, lo;
+        arithlib_implementation::multiply64(
+            twoOverPi[i], m[j], product[k+1], hi, lo);
+if (count < 10) zprintf("%016x * %016x + %016x = (%016x, %016x)\n",
+                        twoOverPi[i], m[j], product[k+1], hi, lo);
+        product[k+1] = lo;
+if (count++ < 10) zprintf("set p[%d] = %016x\n", k+1, lo);
+        int k1 = k;
+        while (hi != 0)
+        {   uint64_t w = product[k1] + hi;
+            product[k1] = w;
+if (count++ < 10) zprintf("carry p[%d] = %016x\n", k1, w);
+            hi = w < hi ? 1 : 0;
+            if (k1 == 0) break;
+            k1--;
+        }
+    }
+    for (size_t i=0; i<productDigits; i++)
+    {   zprintf("%016x", product[i]);
+        if (i%4 == 3) zprintf("\n");
+        else zprintf(" ");
+    }
+    zprintf("\n");
+
+    return 0.0_Q;
+}
 
 // I will start off with placeholders here that yield the correct types
 // but only compute results to double precision accuracy - ie 53-bits.
@@ -450,6 +512,12 @@ float128_t qsech(float128_t a)
   
 float128_t qsin(float128_t a)
 {   QuadFloat aa(a);
+// If the input is really tiny I will deal with it specially so that
+// I never hand a very very small argument to the range reduction code.
+    if (aa > 1.0e-17_Q && aa < 1.0e-17_Q) return a;
+    if (aa > 1.0e-8_Q && aa < 1.0e-8_Q)
+        return (aa - aa*aa*aa/120.0_Q).v;
+    QuadFloat reduced = reduceMod2Pi(aa);  // so I can test it!
     return QuadFloat(std::sin(static_cast<double>(aa))).v;
 }
 
