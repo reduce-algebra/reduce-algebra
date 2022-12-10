@@ -244,67 +244,137 @@ uint64_t twoOverPi[] = {
 };
 
 const size_t twoOverPiDigits = sizeof(twoOverPi)/sizeof(twoOverPi[0]);
-uint64_t product[twoOverPiDigits + 4];
-const size_t productDigits = sizeof(product)/sizeof(product[0]);
 
+// This is a 128-bit value for pi/4.
 
-QuadFloat reduceMod2Pi(QuadFloat aa)
+uint64_t hexPiBy4[2] =
+{   0xc90fdaa22168c234,
+    0xc4c6628b80dc1cd1
+};
+
+QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
 {   int x = aa.exponent();
     uint64_t m[3];
     m[2] = aa.v.v[LOPART];
+// Take the input, which I have arranged will be at least pi/4 in value,
+// and extract the mantissa as an integer.
 // I insert the hidden bit here - so the input must not be subnormal!
     m[1] = (aa.v.v[HIPART] & 0x0000ffffffffffffLLU) |
                              0x0001000000000000LLU;
     m[0] = 0;
-    int sh = (x-2) & 0x3f;
-    x = (x-sh)/64;
+// At present the mantissa has 64+16 leading zeros (because of how it aligns
+// within the float128, leaving space for the exponent. Also the number I
+// will multiply by is stored as 2/pi so its top word is nicely normalised,
+// but I want to multiply by 1/(2pi) and end up such that the "binary point"
+// falls between two 64-bit words. I shift the mantissa by up to 64 bits
+// to arrange that, and the fudge-number 14 here helps me get that right.
+    x += 14;
+    int sh = x & 0x3f;
+    x = (x - sh)/64;
+    my_assert(x >= 0, "arg to reduceMod2Pi was too small");
     if (sh != 0)
     {   m[0] = (m[0]<<sh) | (m[1]>>(64-sh));
         m[1] = (m[1]<<sh) | (m[2]>>(64-sh));
-        m[2] = m[2]<<sh;
+        m[2] =  m[2]<<sh;
     }
-/*
-    zprintf("Plain %x.%x.%x\n", 0x12345, 0x123, 0x12345);
-    zprintf("Prec16 %.16x.%.16x.%.16x\n", 0x123, 0x12345, 0x12345);
-    zprintf("width16 %16x.%16x.%16x\n", 0x12345, 0x123, 0x12345);
-    zprintf("Width+Prec %16.16x.%16.16x.%16.16x\n", 0x12345, 0x123, 0x12345);
-    zprintf("0W+prec %016.16x.%016.16x.%016.16x\n", 0x12345, 0x123, 0x12345);
-    zprintf("0Width %016x.%016x.%016x\n", 0x12345, 0x123, 0x12345);
-*/
-    zprintf("M(%2d) = %016x %016x %016x :: %d\n",
-        sh, m[0], m[1], m[2], x);
-
-    for (size_t i=0; i<productDigits; i++) product[i] = 0;
-
-int count = 0;
-    for (size_t i=0; i<twoOverPiDigits; i++)
+// Multiply the mantissa by some digits from 2/pi selected so that
+// the part of the product that ends up normalised in product[0] shows
+// the fraction when the input is divided by 2*pi. I will compute just
+// 256 bits of the product. Of those 2 are needed to identify the quadrant
+// my input is, 113 will be needed for the mantissa of the reduced
+// output and a couple are lost because if I had calculated further there
+// might have been some carries. This leaves me with 141 bits in hand.
+// In extreme cases I am estimating that the true result calculated this
+// way might have up to about 128 leading zero bits, and that leaves me
+// with 11 bits that are just guard bits.
+// Much of the time I could get accurate enough reduction using only 2 or
+// 3 product digits, and by watching to see if I can be confident that
+// the result has few leading zeros I will be able to exit the computation
+// her early.
+// Well for a first version I will not do that... 
+    uint64_t product[4];
+    for (size_t i=0; i<4; i++) product[i] = 0;
+    for (size_t k=0; k<10; k++)
     for (size_t j=0; j<3; j++)
-    {   size_t k = i+j;
+    {   size_t i= k+x-j;
         uint64_t hi, lo;
         arithlib_implementation::multiply64(
-            twoOverPi[i], m[j], product[k+1], hi, lo);
-if (count < 10) zprintf("%016x * %016x + %016x = (%016x, %016x)\n",
-                        twoOverPi[i], m[j], product[k+1], hi, lo);
-        product[k+1] = lo;
-if (count++ < 10) zprintf("set p[%d] = %016x\n", k+1, lo);
-        int k1 = k;
-        while (hi != 0)
-        {   uint64_t w = product[k1] + hi;
-            product[k1] = w;
-if (count++ < 10) zprintf("carry p[%d] = %016x\n", k1, w);
-            hi = w < hi ? 1 : 0;
-            if (k1 == 0) break;
-            k1--;
+            twoOverPi[i], m[j], product[k], hi, lo);
+        product[k] = lo;
+        if (k > 0)            // Propagate carry
+        {   int k1 = k-1;
+            while (hi != 0)
+            {   uint64_t w = product[k1] + hi;
+                product[k1] = w;
+                hi = w < hi ? 1 : 0;
+                if (k1 == 0) break;
+                k1--;
+            }
         }
     }
-    for (size_t i=0; i<productDigits; i++)
-    {   zprintf("%016x", product[i]);
-        if (i%4 == 3) zprintf("\n");
-        else zprintf(" ");
-    }
+    for (size_t i=0; i<4; i++)
+        zprintf("%016x ", product[i]);
     zprintf("\n");
+    int octant = product[0] >> 61;
+// Eg if I have an value that will end up between pi/4 and pi/2 I will
+// want to subtract it from pi/2 so I end up with an output in the
+// range -pi/4 to +pi/4 -- and note that floating point values are stored
+// in sign and magnitude represention.
+    if ((octant & 1) == 0) product[0] &= 0x3fffffffffffffffLLU;
+    else
+    {   product[0] |= 0xc000000000000000LLU;
+        for (size_t i=0; i<4; i++) product[i] = ~product[i];
+        if (++product[3] == 0)
+            if (++product[2] == 0)
+                if (++product[1] == 0) ++product[0];
+        octant += 2;
+    }
+// Now octant&1 gives the sign of the result and octant&6 identifies
+// the quadrant.
+    q = octant>>1;
+// Multiply the number I have by pi/4 because at present the fraction
+// is in the range -1 .. 1
 
-    return 0.0_Q;
+// For a first test assume it is normalised and only look after the top
+// 64 bits.
+    uint64_t hi, lo;
+    arithlib_implementation::multiply64(
+        hexPiBy4[0], product[0], hi, lo);
+    product[0] = hi;
+
+
+// Next I normalise the number. It is positive in the
+// product array, using all but the top 3 bits. Well I need to worry in case
+// a maximal negative number has overflowed for me...
+// I will come back to that thought in a while. @@@@
+    int zerobits;
+    if (product[0] != 0)
+    {   int lz = nlz(product[0]);
+        product[1] = (product[1] << lz) | (product[2] >> (64-lz));
+        product[0] = (product[0] << lz) | (product[1] >> (64-lz));
+        zerobits = lz;
+    }
+    else if (product[1] != 0)
+    {   int lz = nlz(product[1]);
+        product[1] = (product[2] << lz) | (product[3] >> (64-lz));
+        product[0] = (product[1] << lz) | (product[2] >> (64-lz));
+        zerobits = lz + 64;
+    }
+    else if (product[2] != 0)
+    {   int lz = nlz(product[2]);
+        product[1] = (product[3] << lz);
+        product[0] = (product[2] << lz) | (product[3] >> (64-lz));
+        zerobits = lz + 128;
+    }
+    else my_abort("192 leading zeros after argument reduction");   
+// I need to round it here.
+    float128_t r;
+    r.v[HIPART] =
+        (static_cast<uint64_t>(octant & 1)<<127) |
+        ((0x3fffLLU - zerobits)<<48) |
+        ((product[0]>>15) & 0x0000ffffffffffffLLU);
+    r.v[LOPART] = (product[0]<<49) | (product[1]>>15);
+    return QuadFloat(r);
 }
 
 // I will start off with placeholders here that yield the correct types
@@ -419,11 +489,6 @@ float128_t qcbrt(float128_t a)
     return QuadFloat(std::cbrt(static_cast<double>(aa))).v;
 }
   
-float128_t qcos(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::cos(static_cast<double>(aa))).v;
-}
-
 float128_t qcosd(float128_t a)
 {   return f128_NaN;
 }
@@ -510,21 +575,122 @@ float128_t qsech(float128_t a)
 {   return f128_NaN;
 }
   
+QuadFloat sumSeries(QuadFloat* coeffs, int n, QuadFloat x)
+{   QuadFloat r = coeffs[n-1];
+    for (int i=n-2; i>=0; i--)
+        r = x*r + coeffs[i];
+    return r;
+}
+
+// sin(x) = x + x^3*f(x^2)     on x from -pi/4 to pi/4
+//                             where f(x) is a polynomial with
+//                             the following coefficients:
+
+// I obtained these coefficients by starting with a ridiculously high
+// order Maclaurin series for (sin x - x)/x^3 [well scaled using
+// x=pi*y/4 so that as y runs from -1 to +1 x ranges over -pp/4 to +pi/4]
+// I then economised that by repeatedly replacing its higher order term
+// using a Chebyshev polyomial of the same degree.
+//
+// Using the Reduce numerics package the following table comes from:
+//    on rounded; precision 100;
+//    r := economise_series(taylor((sin x - x)/x^3, x, 0, 60),
+//                          x = (-pi/4 .. pi/4), 20, even_terms)$
+//    precision 40; r;
+
+
+
+QuadFloat sineSeries[] =
+{   -0.1666666666666666666666666666666665161768_Q,
+    +0.008333333333333333333333333333274291321512_Q,
+    -0.0001984126984126984126984126945838942912847_Q,
+    +0.000002755731922398589065255635086899284046093_Q,
+    -0.00000002505210838544171877379614179732734579831_Q,
+    +0.0000000001605904383682161364912050144894913261509_Q,
+    -7.647163731819368264977021429269857420459e-13_Q,
+    +2.811457254209755067502667439557515448311e-15_Q,
+    -8.22063498243741410362682833970773841173e-18_Q,
+    +1.957262180333927909212226395361035540378e-20_Q,
+    -3.846357925089937789632881636997650305813e-23_Q
+};
+
+QuadFloat sine_of_reduced(QuadFloat x)
+{   QuadFloat x2 = x*x;
+    QuadFloat w = sumSeries(sineSeries,
+                            sizeof(sineSeries)/sizeof(sineSeries[0]),
+                            x2);
+    std::cout << "x=" << x << "\n";
+    std::cout << "x*x=" << x2 << "\n";
+    std::cout << "w=" << w << "\n";
+    std::cout << "result=" << (x + x*x2*w)  << "\n";
+    return x + x*x2*w;
+}
+
+
+// cos(x) = 1 - x^2*f(x^2)     on x from -pi/4 to pi/4
+//                             where f(x) is a polynomial with
+//                             the following coefficients:
+//
+//    precision 100;
+//    r := economise_series(taylor((cos x - 1)/x^2, x, 0, 60),
+//                          x = (-pi/4 .. pi/4), 20, even_terms)$
+//    precision 40; r;
+
+
+QuadFloat cosineSeries[] =
+{   -0.499999999999999999999999999999996239273_Q,
+    +0.04166666666666666666666666666519120811934_Q,
+    -0.001388888888888888888888888793206775919741_Q,
+    +0.00002480158730158730158729916736304970518099_Q,
+    -0.0000002755731922398589064941861429372982839171_Q,
+    +0.000000002087675698786809660442833071684357521578_Q,
+    -0.00000000001147074559772860459828521225646037631585_Q,
+    +4.779477332048090782300295855342177350154e-14_Q,
+    -1.561920630833732710287528138159756266181e-16_Q,
+    +4.110237831753868218212498531499392508562e-19_Q,
+    -8.842272791340009500949811282518357803657e-22_Q
+};
+
+QuadFloat cosine_of_reduced(QuadFloat x)
+{   QuadFloat x2 = x*x;
+    QuadFloat w = sumSeries(cosineSeries,
+                            sizeof(cosineSeries)/sizeof(cosineSeries[0]),
+                            x2);
+    return 0.5_Q + (0.5_Q + x2*w);
+}
+
+QuadFloat piBy4 = 0.7853981633974483096156608458198757210493_Q;
+QuadFloat minusPiBy4 = -0.7853981633974483096156608458198757210493_Q;
+
+float128_t qcos(float128_t a)
+{   QuadFloat aa(a);
+    if (aa > minusPiBy4 && aa < piBy4)
+        return cosine_of_reduced(aa).v;
+    return QuadFloat(std::cos(static_cast<double>(aa))).v;
+}
+
 float128_t qsin(float128_t a)
 {   QuadFloat aa(a);
-// If the input is really tiny I will deal with it specially so that
-// I never hand a very very small argument to the range reduction code.
-    if (aa > 1.0e-17_Q && aa < 1.0e-17_Q) return a;
-    if (aa > 1.0e-8_Q && aa < 1.0e-8_Q)
-        return (aa - aa*aa*aa/120.0_Q).v;
-    QuadFloat reduced = reduceMod2Pi(aa);  // so I can test it!
-    return QuadFloat(std::sin(static_cast<double>(aa))).v;
+    if (aa > minusPiBy4 && aa < piBy4)
+        return sine_of_reduced(aa).v;
+    int q = 0;
+    QuadFloat reduced = reduceMod2Pi(aa, q);
+    switch (q)
+    {   case 0:
+            return sine_of_reduced(aa).v;
+        case 1:
+             return cosine_of_reduced(aa).v;
+        case 2:
+            return f128_minus(sine_of_reduced(aa).v);
+        case 3:
+            return f128_minus(cosine_of_reduced(aa).v);
+    }
 }
 
 float128_t qsind(float128_t a)
 {   return f128_NaN;
 }
-  
+
 float128_t qsinh(float128_t a)
 {   QuadFloat aa(a);
     return QuadFloat(std::sinh(static_cast<double>(aa))).v;

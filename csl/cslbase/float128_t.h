@@ -48,6 +48,7 @@
 #ifndef header_float128_t
 #define header_float128_t
 
+#include <bit>
 #include <cstring>
 
 // For any degree of sanity at all here I need to arrange that I can use
@@ -108,6 +109,7 @@ inline bool f128_finite(const float128_t p);
 inline bool f128_nanp(const float128_t x);
 inline bool f128_subnorm(const float128_t x);
 inline bool f128_negative(const float128_t x);
+inline void f128_minus(float128_t *x);
 inline void f128_negate(float128_t *x);
 extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 
@@ -222,6 +224,11 @@ inline void f128_mantissa(const float128_t p, uint64_t& hi, uint64_t& lo)
 
 inline void f128_negate(float128_t *x)
 {   x->v[HIPART] ^= UINT64_C(0x8000000000000000);
+}
+
+inline float128_t f128_minus(float128_t x)
+{   x.v[HIPART] ^= UINT64_C(0x8000000000000000);
+    return x;
 }
 
 inline bool floating_edge_case128(float128_t r)
@@ -403,9 +410,16 @@ inline constexpr float128_t atof128(const char* s)
 // 48 guard bits while I calculate the floating point representation.
 // With that many guard bits I will hope not to have too much pain with
 // overall accuracy of conversion once the result is packed in 128 bits.
+// Ha ha ha - if the user were to write a decimal with 48+ significant
+// decimal digits (way more than are needed to get a QuadFloat accurate)
+// then the 160-bit integer here could overflow and that would lead to
+// a grossly incorrect result! So I will want to avoid collecting digits
+// beyond say 47 - however I will need to count such skipped over digits
+// in case the input is 50 digits followed by ".0".
     uint64_t m[5] = {0,0,0,0,0};
     float128_t r = {0,0};
     int x = 0;    // decimal exponent
+    int digits = 0, skipped = 0;
     bool isZero = true, dotSeen = false, sign = false;
     int c = *s++;
     if (c == '-')
@@ -419,12 +433,16 @@ inline constexpr float128_t atof128(const char* s)
 // after each multipication. 
     while (c>='0' && c<='9')
     {   if (c != '0') isZero = false;
-        unsigned int carry = c - '0';
-        for (int i=0; i<5; i++)
-        {   uint64_t d = 10*m[i] + carry;
-            carry = d>>32;
-            m[i] = d & 0xffffffffU;
+        if (!isZero) digits++;
+        if (digits < 47)
+        {   unsigned int carry = c - '0';
+            for (int i=0; i<5; i++)
+            {   uint64_t d = 10*m[i] + carry;
+                carry = d>>32;
+                m[i] = d & 0xffffffffU;
+            }
         }
+        else skipped++;
         if (dotSeen) x--;
         c = *s++;
         if (c == '.')
@@ -441,8 +459,8 @@ inline constexpr float128_t atof128(const char* s)
         if (sign) r.v[f128_high] |= 0x8000000000000000LLU;
         return r;
     }
-    int xx = 0;    // explicitly specified decimal exponent
-                   // I allow all sorts of silly characters!
+    int xx = skipped;    // explicitly specified decimal exponent
+                         // I allow all sorts of silly characters!
     if (c == 'e' || c == 'E' || c == 'd' || c == 'D' ||
         c == 'l' || c == 'l' || c == 's' || c == 'S' ||
         c == 'f' || c == 'F')
@@ -605,7 +623,7 @@ public:
     {   float64_t r = f128_to_f64(v);
 // The following line is probably the most genuine use of bit_cast I have
 // written anywhere!
-        return bit_cast<double>(r.v);
+        return std::bit_cast<double>(r.v);
     }
 
     operator int64_t()
@@ -641,6 +659,7 @@ public:
     bool operator>(const QuadFloat& rhs) const;
     bool operator>=(const QuadFloat& rhs) const;
 
+    constexpr QuadFloat operator+() const;
     constexpr QuadFloat operator-() const;
 
     QuadFloat operator+(const QuadFloat& rhs) const;
@@ -701,6 +720,10 @@ inline bool QuadFloat::operator>(const QuadFloat& rhs) const
 
 inline bool QuadFloat::operator>=(const QuadFloat& rhs) const
 {   return f128_le(rhs.v, v);
+}
+
+constexpr inline QuadFloat QuadFloat::operator+() const
+{   return *this;
 }
 
 constexpr inline QuadFloat QuadFloat::operator-() const

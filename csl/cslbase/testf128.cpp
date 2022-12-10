@@ -49,11 +49,11 @@ template<typename T>
 T epsilon() {
     int pow = 0;
     T eps = 1;
-    while (eps + 1 != 1) {
-        eps = eps/2;
+    while (eps + 1.0_Q != 1.0_Q)
+    {   eps = eps/2.0_Q;
         --pow;
     }
-    return eps * 2;
+    return eps * 2.0_Q;
 }
 
 int main()
@@ -61,13 +61,16 @@ int main()
     std::cout << std::hex << QuadFloat(1) << " " << std::dec << QuadFloat(1) << "\n";
     std::cout << std::hex << QuadFloat(0.1) << " " << std::dec << QuadFloat(0.1) << "\n";
     std::cout << std::hex << QuadFloat(1000) << " " << std::dec << QuadFloat(1000) << "\n";
+    std::cout << std::hex << (-0.166666666666666666666666666666666666666666666666666666_Q)
+       << " " << std::dec << (-0.166666666666666666666666666666666666666666666666666666_Q)
+       << "\n";
 
 //  std::cout << std::setprecision(9);
 //  std::cout << "Epsilon for float: " << epsilon<float>() << '\n';
 //  std::cout << std::setprecision(17);
 //  std::cout << "Epsilon for double: " << epsilon<double>() << '\n';
     std::cout << "Epsilon for QuadFloat: " << epsilon<QuadFloat>() << '\n';
-    std::cout << "HalfEpsilon for QuadFloat: " << (epsilon<QuadFloat>() / 2) << '\n';
+    std::cout << "HalfEpsilon for QuadFloat: " << (epsilon<QuadFloat>() / 2.0_Q) << '\n';
 
     QuadFloat rfive = QuadFloat(1) / QuadFloat(5);
     QuadFloat rten = QuadFloat(1) / QuadFloat(10);

@@ -446,11 +446,9 @@ global '(!*trnumeric);
 switch trnumeric;
 
 defautoload(rdsolveeval,numeric);
-
 put('num_solve,'psopfn,'rdsolveeval);
 
 defautoload(rungekuttaeval,numeric);
-
 put ('num_odesolve,'psopfn,'rungekuttaeval);
 
 defautoload(boundseval,numeric);
@@ -461,7 +459,6 @@ put('bounds!-rd,'psopfn,'boundsevalrd);
 put('bounds,'numericfn,'bounds!-rd);
 
 defautoload(rdmineval,numeric);
-
 put('num_min,'psopfn,'rdmineval);
 
 defautoload(chebysheveval,numeric,expr,2);
@@ -472,17 +469,16 @@ put('chebyshev_int,'psopfn,'(lambda(u)(chebysheveval u 'int)));
 put('chebyshev_df,'psopfn,'(lambda(u)(chebysheveval u 'df)));
 
 defautoload(intrdeval,numeric);
-
 put('num_int,'psopfn,'intrdeval);
       
 defautoload(fiteval,numeric);
-
 put('num_fit,'psopfn,'fiteval);
 
 defautoload(rdsolveeval,numeric);
-
 put('num_solve,'psopfn,'rdsolveeval);
 
+defautoload(economise_series,numeric);
+put('economise_series, 'psopfn, 'economise_series);
 
 % Plot module entry points.
 
