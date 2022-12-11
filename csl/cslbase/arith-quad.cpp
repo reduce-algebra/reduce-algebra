@@ -252,7 +252,7 @@ uint64_t hexPiBy4[2] =
     0xc4c6628b80dc1cd1   // low bits
 };
 
-QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
+QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
 {   int x = aa.exponent();
     uint64_t m[3];
     m[2] = aa.v.v[LOPART];
@@ -291,31 +291,58 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
 // 3 product digits, and by watching to see if I can be confident that
 // the result has few leading zeros I will be able to exit the computation
 // her early.
-// Well for a first version I will not do that... 
     uint64_t product[4];
-    for (size_t i=0; i<4; i++) product[i] = 0;
-    for (size_t k=0; k<10; k++)
-    for (size_t j=0; j<3; j++)
-    {   size_t i= k+x-j;
-        uint64_t hi, lo;
-        arithlib_implementation::multiply64(
-            twoOverPi[i], m[j], product[k], hi, lo);
-        product[k] = lo;
-        if (k > 0)            // Propagate carry
-        {   int k1 = k-1;
-            while (hi != 0)
-            {   uint64_t w = product[k1] + hi;
-                product[k1] = w;
-                hi = w < hi ? 1 : 0;
-                if (k1 == 0) break;
-                k1--;
+    for (size_t k=0; k<4; k++) product[k] = 0;
+    for (size_t k=0; k<4; k++)
+    {   for (size_t j=0; j<3; j++)
+        {   size_t i= k+x-j;
+            uint64_t hi, lo;
+            arithlib_implementation::multiply64(
+                twoOverPi[i], m[j], product[k], hi, lo);
+            product[k] = lo;
+            if (k > 0)            // Propagate carry
+            {   int k1 = k-1;
+                while (hi != 0)
+                {   uint64_t w = product[k1] + hi;
+                    product[k1] = w;
+                    hi = w < hi ? 1 : 0;
+                    if (k1 == 0) break;
+                    k1--;
+                }
+            }
+// Here I may exit early if I am certain that the product will not have
+// too many leading zeros. Note that I will always be adding into the
+// computed product, and so the interesting case here is if its value
+// is something like   {???11111..., ...} with many leading 1 bits. When
+// k=1 I have just filled in product[0] and product[1] and I want to allow
+// for 4 guard bits at the bottom, so the limiting case will be (in binary)
+// ???11(n)110x(112)x???? in the 128-bit field. I think that means that
+// if there are less than 8 "1" bits towards the top I am happy.
+            switch (k)
+            {   case 1:
+                    hi = product[0] & 0x1fe0000000000000LLU;
+                    if (hi != 0 && hi != 0x1fe0000000000000LLU) k = 4;
+                    break;
+                case 2:
+                    hi = product[0] & 0x1fffffffffffffffLLU;
+                    lo = product[1] & 0xffe0000000000000LLU;
+                    if ((hi != 0 || lo != 0) &&
+                        (hi != 0x1fffffffffffffffLLU ||
+                         lo != 0xffe0000000000000LLU)) k = 4;
+                    break;
+                default:
+                    break;
             }
         }
     }
-//  for (size_t i=0; i<4; i++)
-//      zprintf("%016x ", product[i]);   // debugging
-    zprintf("\n");
+    if (debugging)
+    {   zprintf("2*x/pi: ");
+        for (size_t i=0; i<4; i++)
+            zprintf("%016x ", product[i]);   // debugging
+        zprintf("\n");
+    }
     int octant = product[0] >> 61;
+    if (debugging) zprintf("octant = %d\n", octant);
 // Eg if I have an value that will end up between pi/4 and pi/2 I will
 // want to subtract it from pi/2 so I end up with an output in the
 // range -pi/4 to +pi/4 -- and note that floating point values are stored
@@ -334,6 +361,13 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
                 if (++product[1] == 0) ++product[0];
         octant += 2;
     }
+    if (debugging)
+    {   zprintf("+-quad: ");
+        for (size_t i=0; i<4; i++)
+            zprintf("%016x ", product[i]);   // debugging
+        zprintf("\n");
+    }
+    if (debugging) zprintf("octant = %d\n", octant);
 // Next I normalise the number. It is positive in the
 // product array, using all but the top 3 bits.
     int zerobits;
@@ -377,6 +411,12 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
         product[1] = product[1] << 1;
         zerobits++;
     }
+    if (debugging)
+    {   zprintf("*pi/4: ");
+        for (size_t i=0; i<4; i++)
+            zprintf("%016x ", product[i]);   // debugging
+        zprintf("\n");
+    }
 // Now round it to keep just 113 bits
     uint64_t frac = product[1] & 0x7fff;
     if (frac > 0x4000 ||
@@ -387,9 +427,13 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
     float128_t r;
     r.v[HIPART] =
         (static_cast<uint64_t>(octant & 1)<<63) |
-        ((0x3fffLLU - zerobits)<<48) |
+        ((0x3fffLLU - zerobits + 2)<<48) |
         ((product[0]>>15) & 0x0000ffffffffffffLLU);
     r.v[LOPART] = (product[0]<<49) | (product[1]>>15);
+    if (debugging)
+    {   zprintf("packed as flt %016x %016x\n", r.v[HIPART], r.v[LOPART]);
+        std::cout << "reduced = " << QuadFloat(r) << "\n";
+    }
     return QuadFloat(r);
 }
 
@@ -719,7 +763,6 @@ float128_t qsin(float128_t a)
         return sine_of_reduced(aa).v;
     int q = 0;
     QuadFloat reduced = reduceMod2Pi(aa, q);
-std::cout << aa << "=> " << reduced << " in quadrant " << q << "\n";
     switch (q)
     {   default:
         case 0:
