@@ -248,8 +248,8 @@ const size_t twoOverPiDigits = sizeof(twoOverPi)/sizeof(twoOverPi[0]);
 // This is a 128-bit value for pi/4.
 
 uint64_t hexPiBy4[2] =
-{   0xc90fdaa22168c234,
-    0xc4c6628b80dc1cd1
+{   0xc90fdaa22168c234,  // high bits
+    0xc4c6628b80dc1cd1   // low bits
 };
 
 QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
@@ -312,14 +312,19 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
             }
         }
     }
-    for (size_t i=0; i<4; i++)
-        zprintf("%016x ", product[i]);
+//  for (size_t i=0; i<4; i++)
+//      zprintf("%016x ", product[i]);   // debugging
     zprintf("\n");
     int octant = product[0] >> 61;
 // Eg if I have an value that will end up between pi/4 and pi/2 I will
 // want to subtract it from pi/2 so I end up with an output in the
 // range -pi/4 to +pi/4 -- and note that floating point values are stored
-// in sign and magnitude represention.
+// in sign and magnitude represention. Well twos complement numbers can
+// hold values in the range -2^k to +2^k-1 so when I arrange to end up
+// with a positive value it might seem that I could risk overflow. However
+// any machine-input value will lead to a fraction that differs from
+// both 1 and 0 here by an amount that I estimate to be 2^-128 and this
+// means that the negation I do here can never overflow! Wow!!
     if ((octant & 1) == 0) product[0] &= 0x3fffffffffffffffLLU;
     else
     {   product[0] |= 0xc000000000000000LLU;
@@ -329,24 +334,8 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
                 if (++product[1] == 0) ++product[0];
         octant += 2;
     }
-// Now octant&1 gives the sign of the result and octant&6 identifies
-// the quadrant.
-    q = octant>>1;
-// Multiply the number I have by pi/4 because at present the fraction
-// is in the range -1 .. 1
-
-// For a first test assume it is normalised and only look after the top
-// 64 bits.
-    uint64_t hi, lo;
-    arithlib_implementation::multiply64(
-        hexPiBy4[0], product[0], hi, lo);
-    product[0] = hi;
-
-
 // Next I normalise the number. It is positive in the
-// product array, using all but the top 3 bits. Well I need to worry in case
-// a maximal negative number has overflowed for me...
-// I will come back to that thought in a while. @@@@
+// product array, using all but the top 3 bits.
     int zerobits;
     if (product[0] != 0)
     {   int lz = nlz(product[0]);
@@ -367,10 +356,37 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q)
         zerobits = lz + 128;
     }
     else my_abort("192 leading zeros after argument reduction");   
-// I need to round it here.
+// Now octant&1 gives the sign of the result and octant&6 identifies
+// the quadrant.
+    q = octant>>1;
+// Multiply the number I have by pi/4 because at present the fraction
+// is in the range -1 .. 1. I will be happy with 128-bits of product.
+    uint64_t a1, a2, a3, a4;
+    arithlib_implementation::multiply64(
+        hexPiBy4[0], product[1], a1, a2);
+    arithlib_implementation::multiply64(
+        hexPiBy4[1], product[0], a3, a4);
+    if (a2 + a4 < a2) a1++;
+    arithlib_implementation::multiply64(
+        hexPiBy4[0], product[0], a1, product[0], product[1]);
+    if ((product[1] += a3) < a3) product[0]++;
+// This may leave me in a position where I need to normalise again by
+// shifting up one bit.
+    if ((product[0] & 0x8000000000000000LLU) == 0)
+    {   product[0] = (product[0] << 1) | (product[1] >> 63);
+        product[1] = product[1] << 1;
+        zerobits++;
+    }
+// Now round it to keep just 113 bits
+    uint64_t frac = product[1] & 0x7fff;
+    if (frac > 0x4000 ||
+        (frac == 0x4000 && (product[1] & 0x8000) != 0))
+    {   if ((product[1] += 0x8000) < 0x8000) product[0]++;
+    }
+// Assemble the parts as a floating point number.
     float128_t r;
     r.v[HIPART] =
-        (static_cast<uint64_t>(octant & 1)<<127) |
+        (static_cast<uint64_t>(octant & 1)<<63) |
         ((0x3fffLLU - zerobits)<<48) |
         ((product[0]>>15) & 0x0000ffffffffffffLLU);
     r.v[LOPART] = (product[0]<<49) | (product[1]>>15);
@@ -524,6 +540,19 @@ float128_t qcsch(float128_t a)
   
 float128_t qexp(float128_t a)
 {   QuadFloat aa(a);
+    MAYBE_UNUSED static uint64_t recipLog2[] =
+    {   0xb8aa3b295c17f0bb,
+        0xbe87fed0691d3e88
+    };
+// The range for x before underflow or overflow is around -11400 to +11400.
+// exp(x) = 2^(x/log 2) and 1/log2 = 1.4426950408889634073599246810018921374
+// so I should start by multiplying x by 1/log2 and separating out the
+// integer and fraction parts. To get the fraction part correct to 113 bits
+// I need just 113+14 bits in a value of 1/log2 so using a 128-bit value
+// is (just!) good enough.
+
+
+
     return QuadFloat(std::exp(static_cast<double>(aa))).v;
 }
 
@@ -595,23 +624,28 @@ QuadFloat sumSeries(QuadFloat* coeffs, int n, QuadFloat x)
 // Using the Reduce numerics package the following table comes from:
 //    on rounded; precision 100;
 //    r := economise_series(taylor((sin x - x)/x^3, x, 0, 60),
-//                          x = (-pi/4 .. pi/4), 20, even_terms)$
+//                          x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
 //    precision 40; r;
 
-
+// I am not going to be too upset here if the number of terms in the
+// series I give here ends up excessive - if this was code intended for
+// heavy duty production it would be proper to try rather harder to
+// get as short a series as possible and to tamper with the coefficients
+// to get the best possible accuracy.
 
 QuadFloat sineSeries[] =
-{   -0.1666666666666666666666666666666665161768_Q,
-    +0.008333333333333333333333333333274291321512_Q,
-    -0.0001984126984126984126984126945838942912847_Q,
-    +0.000002755731922398589065255635086899284046093_Q,
-    -0.00000002505210838544171877379614179732734579831_Q,
-    +0.0000000001605904383682161364912050144894913261509_Q,
-    -7.647163731819368264977021429269857420459e-13_Q,
-    +2.811457254209755067502667439557515448311e-15_Q,
-    -8.22063498243741410362682833970773841173e-18_Q,
-    +1.957262180333927909212226395361035540378e-20_Q,
-    -3.846357925089937789632881636997650305813e-23_Q
+{   -0.1666666666666666666666666666666666666336_Q,
+     0.008333333333333333333333333333333317893258_Q,
+    -0.0001984126984126984126984126984115052453199_Q,
+     0.000002755731922398589065255731886290151397287_Q,
+    -0.00000002505210838544171877505154389122012327899_Q,
+     0.0000000001605904383682161459887173633108066251292_Q,
+    -7.647163731819816171510416184871594999077e-13_Q,
+     2.811457254345403619963288059632135845673e-15_Q,
+    -8.220635246323594481479584062085816809929e-18_Q,
+     1.95729405534209807707389435327187384835e-20_Q,
+    -3.868115321680493375421434984665416628402e-23_Q,
+     6.413047783362490814859672111445348908036e-26_Q
 };
 
 QuadFloat sine_of_reduced(QuadFloat x)
@@ -619,10 +653,6 @@ QuadFloat sine_of_reduced(QuadFloat x)
     QuadFloat w = sumSeries(sineSeries,
                             sizeof(sineSeries)/sizeof(sineSeries[0]),
                             x2);
-    std::cout << "x=" << x << "\n";
-    std::cout << "x*x=" << x2 << "\n";
-    std::cout << "w=" << w << "\n";
-    std::cout << "result=" << (x + x*x2*w)  << "\n";
     return x + x*x2*w;
 }
 
@@ -633,22 +663,24 @@ QuadFloat sine_of_reduced(QuadFloat x)
 //
 //    precision 100;
 //    r := economise_series(taylor((cos x - 1)/x^2, x, 0, 60),
-//                          x = (-pi/4 .. pi/4), 20, even_terms)$
+//                          x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
 //    precision 40; r;
 
 
 QuadFloat cosineSeries[] =
-{   -0.499999999999999999999999999999996239273_Q,
-    +0.04166666666666666666666666666519120811934_Q,
-    -0.001388888888888888888888888793206775919741_Q,
-    +0.00002480158730158730158729916736304970518099_Q,
-    -0.0000002755731922398589064941861429372982839171_Q,
-    +0.000000002087675698786809660442833071684357521578_Q,
-    -0.00000000001147074559772860459828521225646037631585_Q,
-    +4.779477332048090782300295855342177350154e-14_Q,
-    -1.561920630833732710287528138159756266181e-16_Q,
-    +4.110237831753868218212498531499392508562e-19_Q,
-    -8.842272791340009500949811282518357803657e-22_Q
+{   -0.4999999999999999999999999999999999999998_Q,
+     0.04166666666666666666666666666666666656687_Q,
+    -0.001388888888888888888888888888888879828654_Q,
+     0.00002480158730158730158730158730126415517564_Q,
+    -0.0000002755731922398589065255731862525470324132_Q,
+     0.00000000208767569878680989792094302574029159969_Q,
+    -0.00000000001147074559772972471338473138882069531849_Q,
+     4.779477332387385076135725648314160421e-14_Q,
+    -1.561920696858550884996584902591418644478e-16_Q,
+     4.110317623152462031116692406880874078702e-19_Q,
+    -8.896791152565126524486633907099757201201e-22_Q,
+     1.611714328860644411270619029004532191142e-24_Q,
+    -2.466479292926005187632443253355969820841e-27_Q
 };
 
 QuadFloat cosine_of_reduced(QuadFloat x)
@@ -659,14 +691,26 @@ QuadFloat cosine_of_reduced(QuadFloat x)
     return 0.5_Q + (0.5_Q + x2*w);
 }
 
-QuadFloat piBy4 = 0.7853981633974483096156608458198757210493_Q;
 QuadFloat minusPiBy4 = -0.7853981633974483096156608458198757210493_Q;
+QuadFloat piBy4      =  0.7853981633974483096156608458198757210493_Q;
 
 float128_t qcos(float128_t a)
 {   QuadFloat aa(a);
     if (aa > minusPiBy4 && aa < piBy4)
         return cosine_of_reduced(aa).v;
-    return QuadFloat(std::cos(static_cast<double>(aa))).v;
+    int q = 0;
+    QuadFloat reduced = reduceMod2Pi(aa, q);
+    switch (q)
+    {   default:
+        case 0:
+            return cosine_of_reduced(reduced).v;
+        case 1:
+            return f128_minus(sine_of_reduced(reduced).v);
+        case 2:
+            return f128_minus(cosine_of_reduced(reduced).v);
+        case 3:
+            return sine_of_reduced(reduced).v;
+    }
 }
 
 float128_t qsin(float128_t a)
@@ -675,15 +719,17 @@ float128_t qsin(float128_t a)
         return sine_of_reduced(aa).v;
     int q = 0;
     QuadFloat reduced = reduceMod2Pi(aa, q);
+std::cout << aa << "=> " << reduced << " in quadrant " << q << "\n";
     switch (q)
-    {   case 0:
-            return sine_of_reduced(aa).v;
+    {   default:
+        case 0:
+            return sine_of_reduced(reduced).v;
         case 1:
-             return cosine_of_reduced(aa).v;
+             return cosine_of_reduced(reduced).v;
         case 2:
-            return f128_minus(sine_of_reduced(aa).v);
+            return f128_minus(sine_of_reduced(reduced).v);
         case 3:
-            return f128_minus(cosine_of_reduced(aa).v);
+            return f128_minus(cosine_of_reduced(reduced).v);
     }
 }
 

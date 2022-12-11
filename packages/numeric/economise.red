@@ -222,12 +222,6 @@ symbolic procedure economise_series u;
 % to turn it into a polynomial.
     if null red w and onep ldeg w and eqcar(mvar w, 'taylor!*) then <<   
       w1 := simp taylortostandard(mvar w);
-% The Taylor series package handles sin and cos by mapping them to
-% complex exponentials, and if you use it in rounded mode a consequence
-% seems to be that sometimes a few small unwanted complex values end
-% up in its output. So I take drastic action and go "sub(i=0, ..)" here
-% to discard that!
-      w1 := subsq(w1, '((i . 0)));     % Temp measure!
       ser := multsq(w1, lc w ./ denr ser) >>;
     if eqcar(w, '!:ps!:) then <<
       w1 := prep!:ps(w, ps!:exp!-lim);

@@ -48,7 +48,29 @@
 #ifndef header_float128_t
 #define header_float128_t
 
+#ifdef HAVE_BITCAST
 #include <bit>
+using std::bit_cast;
+#else // HAVE_BITCAST
+// For most of CSL this is a redundant repeat of stuff from machine.h,
+// however by including it here I make this header free-standing.
+template <class To, class From>
+std::enable_if_t<
+    sizeof(To) == sizeof(From) &&
+    std::is_trivially_copyable_v<From> &&
+    std::is_trivially_copyable_v<To>,
+    To>
+bit_cast(const From& src) noexcept
+{   static_assert(std::is_trivially_constructible_v<To>,
+        "This implementation additionally requires "
+        "destination type to be trivially constructible");
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
+#define HAVE_BITCAST 1
+#endif // HAVE_BITCAST
+
 #include <cstring>
 
 // For any degree of sanity at all here I need to arrange that I can use
@@ -623,7 +645,7 @@ public:
     {   float64_t r = f128_to_f64(v);
 // The following line is probably the most genuine use of bit_cast I have
 // written anywhere!
-        return std::bit_cast<double>(r.v);
+        return bit_cast<double>(r.v);
     }
 
     operator int64_t()

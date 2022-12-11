@@ -121,22 +121,12 @@ using std::bit_cast;
 // C++20 introduces bit_cast<T>() but to support earlier C++ dialects I
 // use an implementation for it found at
 //     https://en.cppreference.com/w/cpp/numeric/bit_cast
-// By citing that referebce I gain permission to use it.
+// By citing that reference I gain permission to use it.
 
-// OK so now a bit of rationale for my use of it. In almost all cases use
-// of reinterpret_cast would be as good!
-// C++ specifies that a round trip from integer to pointer and back using
-// reinterpret_cast will leave the value unchanged (subject to the integer
-// being the right width). However it does not seem to give any guarantees
-// about the mapping. I *require* that it I cast and 8-byte aligned pointer
-// to an integer than the low 3 bits end up zero. I think that bit_cast comes
-// closer to guaranteeing that, and use of it maybe stresses how dubious my
-// code is!
-// I now think that the key motivating use for bit_cast will be as in
+// The key motivating use for bit_cast will be as in
 //        bit_cast<uint64_t>(3.14159)
 // which will obtain the bit representation of the floating point value in
-// a "safe" way. Well I maybe argue that I am relying on the representation
-// of aligned pointers in a manner that is spiritually close to that.
+// a "safe" way.
 
 template <class To, class From>
 std::enable_if_t<
