@@ -32,7 +32,7 @@ module numeric;  % Header module for the numeric package and
 % $Id$
 
 create!-package('(numeric numeval numsolve gauss newton steepstd
-                  bounds numint numfit chebysh rungeku economise),
+                  bounds numint numfit chebysh rungeku),
                 '(contrib numeric));
 
 imports addsq, accuracycontrol, boundserr, denr, domainpa, errorp,

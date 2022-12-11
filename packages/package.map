@@ -129,6 +129,7 @@
  (fide1         "fide"                                       csl psl)
  (fide          "fide"                  test                 csl psl)
  (numeric       "numeric"               test                 csl psl)
+ (economise     "numeric"               test                 csl psl)
  (randpoly      "misc"                  test                 csl psl)
  (reacteqn      "misc"                  test                 csl psl)
  (roots         "roots"                 test                 csl psl)

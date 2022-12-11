@@ -477,7 +477,7 @@ put('num_fit,'psopfn,'fiteval);
 defautoload(rdsolveeval,numeric);
 put('num_solve,'psopfn,'rdsolveeval);
 
-defautoload(economise_series,numeric);
+defautoload(economise_series,economise);
 put('economise_series, 'psopfn, 'economise_series);
 
 % Plot module entry points.

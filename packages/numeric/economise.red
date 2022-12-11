@@ -90,6 +90,8 @@ module economise;  % Economise series approximations via Chebyshev.
 %                          x = (-pi/4 .. pi/4), 1.0e-40);
 %    precision 40; coeff(r, x);
 
+create!-package('(economise),'(numeric));
+
 % First I have a little bit of code that can retrieve the nth Chebyshev
 % polynomial. This stores alread-calculated oned in an a-list and uses
 % the recurrence formula when it needs a new one. I could have used a hash
@@ -170,7 +172,7 @@ symbolic procedure collect_evens u;
 symbolic procedure economise_series u;
   begin
     scalar ser, var, lo, hi, eps, nterms, stop,
-           evenodd, w, w1, deg, ti, err;
+           evenodd, w, w1, deg, ti, err, olderr;
     terpri();
     if length u < 3 then rederr "economise_series(series, var, precision)";
     ser := simp car u;
@@ -192,7 +194,7 @@ symbolic procedure economise_series u;
     if eqcar(eps, '!:rd!:) then eps := cdr eps;
     if eps > 1.0 then <<
        nterms := fix eps;
-       eps := 1.0e100 >>
+       eps := nil >>
     else nterms := 1;
     u := cdddr u;
     if eqcar(u, 'even_terms) or eqcar(u, 'odd_terms) then evenodd := car u;
@@ -228,9 +230,8 @@ symbolic procedure economise_series u;
       w1 := subsq(w1, '((i . 0)));     % Temp measure!
       ser := multsq(w1, lc w ./ denr ser) >>;
     if eqcar(w, '!:ps!:) then <<
-      terpri(); prin2 "@@@@@ "; print w;
-      rederr "tps things not dealt with yet";
-      >>;
+      w1 := prep!:ps(w, ps!:exp!-lim);
+      ser := simp w1 >>;
     w := denr ser;
     ser := cdr coeff1(mk!*sq(numr ser ./ 1), mk!*sq var, nil);
     if w neq 1 then <<
@@ -240,9 +241,10 @@ symbolic procedure economise_series u;
     ser := lose_trailing_zeroes ser;
 % Now my input polynomial has been turned into a list of prefix forms. I
 % can start the economisation process...
+    olderr := 0.0;
     while (deg := length ser - 1) > nterms and not stop do <<
       ti := get_shifted_cheb(deg, lo, hi);
-      err := list('quotient, last ser, 2^(deg-1));
+      err := list('quotient, car lastpair ser, 2^(deg-1));
       w1 := !*rounded;
       if not w1 then on rounded;
       w := precision1(6, nil);
@@ -251,11 +253,17 @@ symbolic procedure economise_series u;
       if not w1 then off rounded;
       if eqcar(err, 'minus) then err := cadr err;
       if eqcar(err, '!:rd!:) then err := abs cdr err;
-      if err < eps then <<
-        w := list('quotient, last ser, last ti);
+      if not numberp err or not numberp eps or err < eps then <<
+        olderr := err;
+        w := list('quotient, car lastpair ser, car lastpair ti);
         ser := subtract_multiple(ser, w, ti);
         ser := lose_trailing_zeroes ser >>
       else stop := t >>;
+% If I stop because the user specified the number of terms wanted
+% I will display my estimate of the error in the approximation. Provided
+% I have a numeric estimate available.
+    if not stop and numberp olderr then <<
+      terpri(); prin2 "Error estimate: "; print olderr >>;
 % Having economised I will tidy up in the cases where the series
 % is expected to be even or odd.
     if evenodd = 'even_terms then
