@@ -1495,6 +1495,13 @@ taylorrevert (tpoly, x, eps);
 COMMENT Some more examples using rounded mode;
 
 
+taylor(sin x, x, 0, 6);
+
+
+                    3                     5      7
+x - 0.166666666667*x  + 0.00833333333333*x  + O(x )
+
+
 precision 13;
 
 
