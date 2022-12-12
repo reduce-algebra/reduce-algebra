@@ -129,7 +129,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
                        fixnum_of_int(allocSize/CELL-1));
 // Note that allocSize has been rounded up suitably.
     LispObject r = getNBytes(allocSize);
-    *(bit_cast<Header*>(r)) =
+    *(reinterpret_cast<Header*>(r)) =
         type + (size<<(Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
@@ -143,9 +143,9 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // gets padded out.
 #ifdef DEBUG
    for (size_t i=CELL; i<allocSize; i+=4)
-       *bit_cast<uint32_t*>(r+i) = 0xfeedface;
+       *reinterpret_cast<uint32_t*>(r+i) = 0xfeedface;
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *bit_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
+        *reinterpret_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
 #endif // DEBUG
     return static_cast<LispObject>(r + tag);
 }
@@ -174,9 +174,9 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrowNBytes(allocSize);
-    *(bit_cast<Header*>(r)) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    *(reinterpret_cast<Header*>(r)) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *bit_cast<LispObject*>(r+allocSize-CELL) = 0;
+        *reinterpret_cast<LispObject*>(r+allocSize-CELL) = 0;
     return static_cast<LispObject>(r + tag);
 }
 
@@ -241,9 +241,9 @@ bool allocateSegment(size_t n)
     {   size_t sz = n+pageSize-1;
         char* tr = new (std::nothrow) char[sz];
         heapSegmentBase[heapSegmentCount] = tr;
-        void* trv = bit_cast<void*>(tr);
+        void* trv = reinterpret_cast<void*>(tr);
         std::align(pageSize, n*pageSize, trv, sz);
-        r = bit_cast<Page*>(trv);
+        r = reinterpret_cast<Page*>(trv);
     }
 #else // MACINTOSH
     r = new (std::nothrow) Page[n/pageSize];
@@ -258,7 +258,7 @@ bool allocateSegment(size_t n)
     for (size_t i=heapSegmentCount-1; i!=0; i--)
     {   int j = i-1;
         void* h1 = heapSegment[i],* h2 = heapSegment[j];
-        if (bit_cast<uintptr_t>(h2) < bit_cast<uintptr_t>(h1))
+        if (reinterpret_cast<uintptr_t>(h2) < reinterpret_cast<uintptr_t>(h1))
             break; // Ordering is OK
 // The segment must sink a place in the tables.
         std::swap(heapSegment[i], heapSegment[j]);
@@ -701,14 +701,14 @@ void initHeapSegments(double storeSize)
         consPages.count = vecPages.count = borrowPages.count =
         consOldPages.count = vecOldPages.count = 0;
     potentiallyPinned = pinnedPages = pendingPages = oldVecPinPages = nullptr;
-    nilSegment = bit_cast<LispObject*>(
+    nilSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);
     nil = static_cast<LispObject>((uintptr_t)nilSegment + TAG_SYMBOL);
-    stackSegment = bit_cast<LispObject*>(
+    stackSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
-    stackBase = bit_cast<uintptr_t>(stackSegment);
+    stackBase = reinterpret_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
     grabFreshPage(consPageType);
     grabFreshPage(vecPageType);
@@ -747,8 +747,8 @@ void dropHeapSegments()
         delete [] static_cast<Page*>(heapSegment[i]);
 #endif // MACINTOSH
     }
-    delete [] bit_cast<Align8*>(nilSegment);
-    delete [] bit_cast<Align8*>(stackSegment);
+    delete [] reinterpret_cast<Align8*>(nilSegment);
+    delete [] reinterpret_cast<Align8*>(stackSegment);
 }
 
 void drop_heap_segments()

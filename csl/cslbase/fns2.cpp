@@ -330,7 +330,7 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     if (!consp(r)) return onevalue(nil);
     r = car(r);
     if (!is_bps(r)) return onevalue(nil);
-    b = bit_cast<unsigned char *>(data_of_bps(r));
+    b = reinterpret_cast<unsigned char *>(data_of_bps(r));
     if (f0 == bytecoded_0 ||
         f0 == f0_as_0
        ) return onevalue(fixnum_of_int(1));
@@ -566,7 +566,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
         pn = get_pname(a);
         save.restore(a);
     }
-    name = bit_cast<char *>(&celt(pn, 0));
+    name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
 // This is a potential time-sink in that it does a linear scan of all the
 // definitions in the tables that are in u01.c to u60.c.
@@ -979,7 +979,7 @@ LispObject get_pname(LispObject a)
 // distinct gensyms, and after that it wraps round. Well on a 32-bit
 // system it counts up to 2^32 and wraps there.
         std::snprintf(genname, sizeof(genname), "%.*s", static_cast<int>(len),
-                     bit_cast<const char *>(&celt(name, 0)));
+                     reinterpret_cast<const char *>(&celt(name, 0)));
         p = genname+len;
         if (gensym_ser <= 9999) std::snprintf(p, sizeof(genname)-len,
                                                  "%.4d",
@@ -1185,7 +1185,7 @@ static LispObject Lcheckpoint(LispObject env,
                 filename);
     if (failed) return aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
-    {   msg = bit_cast<char *>()&celt(banner, 0);
+    {   msg = reinterpret_cast<char *>()&celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
     }
 // Note, with some degree of nervousness, that things on the C stack will
@@ -1224,11 +1224,11 @@ static bool eql_numbers(LispObject a, LispObject b)
 // This is only called from eql, and then only when a and b are both tagged
 // as ratios or complex numbers.
 {   LispObject p, q;
-    p = *bit_cast<LispObject *>(a + (CELL - TAG_NUMBERS));
-    q = *bit_cast<LispObject *>(b + (CELL - TAG_NUMBERS));
+    p = *reinterpret_cast<LispObject *>(a + (CELL - TAG_NUMBERS));
+    q = *reinterpret_cast<LispObject *>(b + (CELL - TAG_NUMBERS));
     if (!eql(p, q)) return false;
-    p = *bit_cast<LispObject *>(a + (2*CELL - TAG_NUMBERS));
-    q = *bit_cast<LispObject *>(b + (2*CELL - TAG_NUMBERS));
+    p = *reinterpret_cast<LispObject *>(a + (2*CELL - TAG_NUMBERS));
+    q = *reinterpret_cast<LispObject *>(b + (2*CELL - TAG_NUMBERS));
     return eql(p, q);
 }
 
@@ -1277,8 +1277,8 @@ bool eql_fn(LispObject a, LispObject b)
 // Should use memcmp!
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
             {   hh -= 4;
-                if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                    *(uint32_t *)(bit_cast<char *>(b) + hh))
+                if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                    *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                     return false;
             }
             return true;
@@ -1405,8 +1405,8 @@ compare_strings:
     if (la != lb) return false;
     while (la > 0)
     {   la--;
-        if (*(bit_cast<char *>(a) + la + offa - TAG_VECTOR) !=
-            *(bit_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
+        if (*(reinterpret_cast<char *>(a) + la + offa - TAG_VECTOR) !=
+            *(reinterpret_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
     }
     return true;
 compare_bits:
@@ -1419,8 +1419,8 @@ compare_bits:
     lb = (lb + 7)/8;
     while (la > 0)
     {   la--;
-        if (*(bit_cast<char *>(a) + la + offa - TAG_VECTOR) !=
-            *(bit_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
+        if (*(reinterpret_cast<char *>(a) + la + offa - TAG_VECTOR) !=
+            *(reinterpret_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
     }
     return true;
 }
@@ -1486,8 +1486,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)(bit_cast<char *>(ca) + hh) !=
-                                            *(uint32_t *)(bit_cast<char *>(cb) + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
@@ -1551,8 +1551,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                                *(uint32_t *)(bit_cast<char *>(b) + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
@@ -1790,8 +1790,8 @@ bool equal_fn(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)(bit_cast<char *>(ca) + hh) !=
-                                            *(uint32_t *)(bit_cast<char *>(cb) + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
@@ -1852,8 +1852,8 @@ bool equal_fn(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                                *(uint32_t *)(bit_cast<char *>(b) + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
@@ -1919,8 +1919,8 @@ static bool vec_equal(LispObject a, LispObject b)
     {
 // I think I ough to use std::memcmp here.
         while ((l -= 4) != 0)
-            if (*((uint32_t *)(bit_cast<char *>(a) + l - TAG_VECTOR)) !=
-                *((uint32_t *)(bit_cast<char *>(b) + l - TAG_VECTOR)))
+            if (*((uint32_t *)(reinterpret_cast<char *>(a) + l - TAG_VECTOR)) !=
+                *((uint32_t *)(reinterpret_cast<char *>(b) + l - TAG_VECTOR)))
                 return false;
         return true;
     }
@@ -1928,18 +1928,18 @@ static bool vec_equal(LispObject a, LispObject b)
     {   if (is_mixed_header(ha))
         {   while (l > 16)
             {   uint32_t ea = *((uint32_t *)(
-                                bit_cast<char *>(a) + l - TAG_VECTOR - 4)),
+                                reinterpret_cast<char *>(a) + l - TAG_VECTOR - 4)),
                          eb = *((uint32_t *)(
-                                bit_cast<char *>(b) + l - TAG_VECTOR - 4));
+                                reinterpret_cast<char *>(b) + l - TAG_VECTOR - 4));
                 if (ea != eb) return false;
                 l -= 4;
             }
         }
         while ((l -= CELL) != 0)
-        {   LispObject ea = *(bit_cast<LispObject *>(
-                              bit_cast<char *>(a) + l - TAG_VECTOR)),
-                       eb = *(bit_cast<LispObject *>(
-                              bit_cast<char *>(b) + l - TAG_VECTOR));
+        {   LispObject ea = *(reinterpret_cast<LispObject *>(
+                              reinterpret_cast<char *>(a) + l - TAG_VECTOR)),
+                       eb = *(reinterpret_cast<LispObject *>(
+                              reinterpret_cast<char *>(b) + l - TAG_VECTOR));
             if (ea == eb && !is_float(ea)) continue;
             if (!equal(ea, eb)) return false;
         }
@@ -2007,8 +2007,8 @@ bool equalp(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)(bit_cast<char *>(ca) + hh) !=
-                                            *(uint32_t *)(bit_cast<char *>(cb) + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
@@ -2071,8 +2071,8 @@ bool equalp(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                                *(uint32_t *)(bit_cast<char *>(b) + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;

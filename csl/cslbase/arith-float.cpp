@@ -995,7 +995,7 @@ LispObject Fix::op(Fixnum a)
 }
 
 LispObject Fix::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -1032,7 +1032,7 @@ LispObject Truncate::op(Fixnum a)
 }
 
 LispObject Truncate::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>(a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Truncate::op(Rat a)
@@ -1068,7 +1068,7 @@ LispObject Floor::op(Fixnum a)
 }
 
 LispObject Floor::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>(a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Floor::op(Rat a)
@@ -1106,7 +1106,7 @@ LispObject Ceiling::op(Fixnum a)
 }
 
 LispObject Ceiling::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -1145,7 +1145,7 @@ LispObject Ftruncate::op(Fixnum a)
 }
 
 LispObject Ftruncate::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>
                                    (a) - 8 + TAG_NUMBERS);
 }
 
@@ -1183,7 +1183,7 @@ LispObject Ffloor::op(Fixnum a)
 }
 
 LispObject Ffloor::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>(a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Ffloor::op(Rat a)
@@ -1220,7 +1220,7 @@ LispObject Fceiling::op(Fixnum a)
 }
 
 LispObject Fceiling::op(uint64_t *a)
-{   return bit_cast<LispObject>(bit_cast<char *>(a) - 8 + TAG_NUMBERS);
+{   return reinterpret_cast<LispObject>(reinterpret_cast<char *>(a) - 8 + TAG_NUMBERS);
 }
 
 LispObject Fceiling::op(Rat a)
@@ -1919,7 +1919,7 @@ LispObject Nfp_eval(LispObject env, LispObject code, LispObject args)
         args = cdr(args);
     }
     n = 0;
-    p = bit_cast<unsigned char *>(&ucelt(code, 0));
+    p = reinterpret_cast<unsigned char *>(&ucelt(code, 0));
     for (;;)
     {   int op = *p++;
 // Opcodes 0 to 31 just load up the corresponding input value.

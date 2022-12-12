@@ -533,7 +533,7 @@ INLINE_VAR const uint64_t u64_1 = 1LL;
 // cast involved is present in just one place.
 
 inline uintptr_t& indirect(uintptr_t address)
-{   return *bit_cast<uintptr_t*>(address);
+{   return *reinterpret_cast<uintptr_t*>(address);
 }
 
 #endif // header_machine_h

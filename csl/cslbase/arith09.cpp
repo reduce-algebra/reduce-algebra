@@ -608,7 +608,7 @@ LispObject gcd(LispObject a, LispObject b)
                         new_lena = (new_lena + 1) & ~(size_t)1;
                     }
                     if (new_lena != lena)
-                        *bit_cast<Header *>(&bignum_digits(a)[new_lena+1]) =
+                        *reinterpret_cast<Header *>(&bignum_digits(a)[new_lena+1]) =
                             make_bighdr(lena - new_lena);
                     return a;
                 }
@@ -952,8 +952,8 @@ LispObject shrink_bignum(LispObject a, size_t lena)
     lena++;
     olen = (olen+1)|1;
     if (lena == olen) return a;
-    *bit_cast<Header *>(&bignum_digits(a)[lena]) = make_bighdr(
-                olen-lena);
+    *reinterpret_cast<Header *>(&bignum_digits(a)[lena]) =
+        make_bighdr(olen-lena);
     return a;
 }
 

@@ -286,7 +286,7 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 {   const char* _p_ = reinterpret_cast<const char*>(&_p_);
-    if (bit_cast<uintptr_t>(_p_) < C_stackLimit)
+    if (reinterpret_cast<uintptr_t>(_p_) < C_stackLimit)
     {   if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
         aerror("stack overflow");
     }
@@ -866,8 +866,8 @@ inline void zero_out(void* p)
 // view that if things went wrong that would avoid confusion when looking
 // at the wreckage. Now is the time to cease putting in that extra
 // overhead.
-    char* p1 = bit_cast<char* >(
-        doubleword_align_up(bit_cast<uintptr_t>(p)));
+    char* p1 = reinterpret_cast<char* >(
+        doubleword_align_up(reinterpret_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 #endif // 0
 }

@@ -49,7 +49,7 @@ LispObject Lfrexp(LispObject env, LispObject a)
     if (is_long_float(a))
     {   float128_t d;
         int x;
-        f128_frexp(*bit_cast<float128_t *>(long_float_addr(a)), &d, &x);
+        f128_frexp(*reinterpret_cast<float128_t *>(long_float_addr(a)), &d, &x);
         return cons(fixnum_of_int(x), make_boxfloat128(d));
     }
     else
@@ -764,7 +764,7 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
         args = cdr(args);
     }
     n = 0;
-    p = bit_cast<unsigned char *>(&ucelt(code, 0));
+    p = reinterpret_cast<unsigned char *>(&ucelt(code, 0));
     for (;;)
     {   int op = *p++;
 // Opcodes 0 to 31 just load up the corresponding input value.

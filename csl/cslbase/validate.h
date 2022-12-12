@@ -392,7 +392,9 @@ inline void validateAll(const char* why, bool forwardOK=false, bool oldSpaceVali
     validateObject(qpackage(nil), forwardOK, oldSpaceValid);
     for (LispObject* p:list_bases)
         validateObject(*p, forwardOK, oldSpaceValid);
-    for (LispObject* sp=stack; sp>bit_cast<LispObject*>(stackBase); sp--)
+    for (LispObject* sp=stack;
+         sp>reinterpret_cast<LispObject*>(stackBase);
+         sp--)
         validateObject(*sp, forwardOK, oldSpaceValid);
     if (GCTRACE) zprintf("Validation success\n");
 }

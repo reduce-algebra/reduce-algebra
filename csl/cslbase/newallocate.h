@@ -537,12 +537,12 @@ extern Page* pendingPages;         // For GC.
 extern Page* oldVecPinPages;       // For GC.
 
 inline uintptr_t endOfConsPage(Page* p)
-{   return bit_cast<uintptr_t>(p) +
+{   return reinterpret_cast<uintptr_t>(p) +
            offsetof(Page, consData) + sizeof(Page::consData);
 }
 
 inline uintptr_t endOfVecPage(Page* p)
-{   return bit_cast<uintptr_t>(p) +
+{   return reinterpret_cast<uintptr_t>(p) +
            offsetof(Page, chunks) + sizeof(Page::chunks);
 }
 
@@ -573,11 +573,11 @@ inline Page* PageListIter::operator++()
 INLINE_VAR const size_t vecDataSize = sizeof(Page) - offsetof(Page, chunks);
 
 inline Page* pageOf(uintptr_t a)
-{  return bit_cast<Page*>(a & (-pageSize));
+{  return reinterpret_cast<Page*>(a & (-pageSize));
 }
 
 inline size_t chunkNoFromAddress(Page* p, uintptr_t a)
-{   return (a - bit_cast<uintptr_t>(&p->chunks[0]))/chunkSize;
+{   return (a - reinterpret_cast<uintptr_t>(&p->chunks[0]))/chunkSize;
 }
 
 inline size_t chunkNoFromAddress(uintptr_t a)
@@ -585,7 +585,7 @@ inline size_t chunkNoFromAddress(uintptr_t a)
 }
 
 inline uintptr_t addressFromChunkNo(Page* p, size_t n)
-{   return bit_cast<uintptr_t>(&p->chunks[0]) + chunkSize*n;
+{   return reinterpret_cast<uintptr_t>(&p->chunks[0]) + chunkSize*n;
 }
 
 inline bool chunkIsNewPinned(Page* p, uintptr_t a)
@@ -637,11 +637,11 @@ inline void chunkNoClearPinned(Page* p, size_t chunkNo)
 }
 
 inline size_t consToOffset(uintptr_t a, Page* p)
-{   return (a - bit_cast<uintptr_t>(&p->consData)) / sizeof(ConsCell);
+{   return (a - reinterpret_cast<uintptr_t>(&p->consData)) / sizeof(ConsCell);
 }
 
 inline uintptr_t offsetToCons(size_t o, Page* p)
-{   return bit_cast<uintptr_t>(&p->consData) + sizeof(ConsCell)*o;
+{   return reinterpret_cast<uintptr_t>(&p->consData) + sizeof(ConsCell)*o;
 }
 
 // Here p must be a CONS page and a is a pointer within it.
@@ -668,11 +668,11 @@ inline void consClearNewPinned(uintptr_t a, Page* p)
 // objects.
 
 inline size_t vecToOffset(uintptr_t a, Page* p)
-{   return (a - bit_cast<uintptr_t>(&p->chunks)) / sizeof(LispObject);
+{   return (a - reinterpret_cast<uintptr_t>(&p->chunks)) / sizeof(LispObject);
 }
 
 inline uintptr_t offsetToVec(size_t o, Page* p)
-{   return bit_cast<uintptr_t>(&p->chunks) + sizeof(LispObject)*o;
+{   return reinterpret_cast<uintptr_t>(&p->chunks) + sizeof(LispObject)*o;
 }
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
@@ -822,7 +822,7 @@ inline void displayVecPage(Page* p)
     for (uintptr_t q=offsetToVec(0, p);
                    q<p->dataEnd && q!=vecFringe;
                    q+=sizeof(uintptr_t))
-    {   uintptr_t n = *bit_cast<uintptr_t*>(q);
+    {   uintptr_t n = *reinterpret_cast<uintptr_t*>(q);
         if (is_symbol_header_full_test(n)) symhdr = 1;
         else if (n == xSTREAM_HEADER) streamhdr = 1;
         if (n != prev)
@@ -1254,7 +1254,7 @@ inline Page* initBorrowPage(Page* p, PinStatus status)
     borrowPages.push(p);
     borrowCurrent = p;
     p->borrowStatus = status;
-    borrowEnd = bit_cast<uintptr_t>(p) + pageSize;
+    borrowEnd = reinterpret_cast<uintptr_t>(p) + pageSize;
     if (status == wasEmpty)
     {
 // I do not need to do anything with pinning bitmaps here, but I must
@@ -1581,32 +1581,32 @@ void initHeapSegments(double n);
 // generated code.
 
 inline int findSegment2(uintptr_t p, int n)
-{   if (p < bit_cast<uintptr_t>(heapSegment[n+1])) return n;
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+1])) return n;
     else return n+1;
 }
 
 inline int findSegment4(uintptr_t p, int n)
-{   if (p < bit_cast<uintptr_t>(heapSegment[n+2]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+2]))
         return findSegment2(p, n);
     else return findSegment2(p, n+2);
 }
 
 inline int findSegment8(uintptr_t p, int n)
-{   if (p < bit_cast<uintptr_t>(heapSegment[n+4]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+4]))
         return findSegment4(p, n);
     else return findSegment4(p, n+4);
 }
 
 inline int findSegment16(uintptr_t p, int n)
-{   if (p < bit_cast<uintptr_t>(heapSegment[n+8]))
+{   if (p < reinterpret_cast<uintptr_t>(heapSegment[n+8]))
         return findSegment8(p, n);
     else return findSegment8(p, n+8);
 }
 
 inline int findHeapSegment(uintptr_t p)
 {   int n = findSegment16(p, 0);
-    if (p < bit_cast<uintptr_t>(heapSegment[n]) ||
-        p >= bit_cast<uintptr_t>(heapSegment[n]) +
+    if (p < reinterpret_cast<uintptr_t>(heapSegment[n]) ||
+        p >= reinterpret_cast<uintptr_t>(heapSegment[n]) +
         heapSegmentSize[n]) return -1;
     return n;
 }
@@ -1645,10 +1645,10 @@ inline const char* Addr(uintptr_t p)
     *r = 0;
     int hs = findHeapSegment(p);
     if (hs != -1)
-    {   uintptr_t segBase = bit_cast<uintptr_t>(heapSegment[hs]);
+    {   uintptr_t segBase = reinterpret_cast<uintptr_t>(heapSegment[hs]);
         uintptr_t o = p - segBase;
         uintptr_t pNum = o/pageSize;
-        Page* pp = bit_cast<Page*>(segBase + pNum*pageSize); 
+        Page* pp = reinterpret_cast<Page*>(segBase + pNum*pageSize); 
         uintptr_t pOff = o%pageSize;
         if (pp->type==consPageType &&
             pOff >= offsetof(Page, consData))
@@ -1677,7 +1677,7 @@ inline const char* Addr(uintptr_t p)
     else if ((p & (pageSize-1)) == 0)
     {   int hs1 = findHeapSegment(p-pageSize);
         if (hs1 != -1)
-        {   uintptr_t segBase = bit_cast<uintptr_t>(heapSegment[hs1]);
+        {   uintptr_t segBase = reinterpret_cast<uintptr_t>(heapSegment[hs1]);
             uintptr_t o = p - segBase;
             uintptr_t pNum = o/pageSize;
             if (hs == 0) std::snprintf(r, 80, "#%" PRIxPTR ": end:", pNum);
@@ -1722,13 +1722,13 @@ inline const char* Addr(T p)
 // data within a Page!
 
 inline uintptr_t unAddr(uintptr_t p, uintptr_t o)
-{    return bit_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
+{    return reinterpret_cast<uintptr_t>(heapSegment[0]) + pageSize*p + o;
 }
 
 // .. and extra for the case of addresses in segments 1 and beyond.
 
 inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
-{    return bit_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
+{    return reinterpret_cast<uintptr_t>(heapSegment[s]) + pageSize*p + o;
 }
 
 // This finds a page that a potential pointer p is within, or returns nullptr
@@ -1737,7 +1737,7 @@ inline uintptr_t unAddr(unsigned int s, uintptr_t p, uintptr_t o)
 inline Page* findPage(uintptr_t p)
 {   int n = findHeapSegment(p);
     if (n < 0) return nullptr;
-    return bit_cast<Page*>(p & -pageSize);
+    return reinterpret_cast<Page*>(p & -pageSize);
 }
 
 #endif // header_newallocate_h

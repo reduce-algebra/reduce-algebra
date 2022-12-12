@@ -1794,7 +1794,7 @@ bool finished_with(int j)
                 {   size_t n =
                         (size_t)((CSL_PAGE_SIZE - 64 -
                                   ((char *)stack -
-                                   bit_cast<char *>(stackBase))) &
+                                   reinterpret_cast<char *>(stackBase))) &
                                  (~(int32_t)0xff));
 // I only perform compression of the file when I am in the process of stopping,
 // and in that case the Lisp stack is not in use, so I use if as a buffer.

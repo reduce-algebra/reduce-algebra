@@ -1022,7 +1022,7 @@ typedef char *string_handle;
 #endif
 
 inline string_handle confirm_size_string(char *p, std::size_t n,
-        std::size_t final);
+                                         std::size_t final);
 inline void abandon_string(string_handle);
 
 inline std::intptr_t vector_to_handle(std::uint64_t *p);
@@ -1124,9 +1124,8 @@ inline free_t    *free_function   = std::free;
 
 inline std::uint64_t *reserve(std::size_t n)
 {   arithlib_assert(n>0);
-    std::uint64_t *r = reinterpret_cast<std::uint64_t *>
-                       (*malloc_function)((
-                               n+1)*sizeof(std::uint64_t));
+    std::uint64_t *r = reinterpret_cast<std::uint64_t *>(
+        (*malloc_function)((n+1)*sizeof(std::uint64_t)));
     arithlib_assert(r != NULL);
     return &r[1];
 }
@@ -1134,9 +1133,9 @@ inline std::uint64_t *reserve(std::size_t n)
 inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
                                   std::size_t final)
 {   artithlib_assert(final>0 && n>=final);
-    p = reinterpret_cast<std::uint64_t *>()
+    p = reinterpret_cast<std::uint64_t *>(
         (*realloc_function)((void *)&p[-1],
-                            (final_n+1)*sizeof(std::uint64_t));
+                            (final_n+1)*sizeof(std::uint64_t)));
     arithlib_assert(p != NULL);
     p[0] = final_n;
     return vector_to_handle(&p[1]);
@@ -1157,7 +1156,7 @@ inline void abandon(std::uint64_t *p)
 // Note that I allocate space for the string data plus a NUL terminating byte.
 
 inline char *reserve_string(std::size_t n)
-{   char *r = reinterpret_cast<char *>(*malloc_function)(n+1);
+{   char *r = reinterpret_cast<char *>((*malloc_function)(n+1));
     arithlib_assert(r != NULL);
     return r;
 }
@@ -1168,8 +1167,7 @@ inline char *reserve_string(std::size_t n)
 // realloc to shrink things to the exact size that is filled would not
 // be a good bargain.
 
-inline char *confirm_size_string(char *p, std::size_t n,
-                                 std::size_t final)
+inline char *confirm_size_string(char *p, std::size_t n, std::size_t final)
 {   arithlib_assert(final>0 && (n+9)>final);
     r[final] = 0;
     return r;
@@ -1181,15 +1179,15 @@ inline void abandon_string(char *s)
 
 // In the C/malloc model I will represent a number by the intptr_t style
 // integer that is obtained from a pointer to the first digit of the bignum.
-// Use of reinterpret_cast() here is even more undefined that is obvious, and
-// future C++ compilers could
+// Note that converting to and fro between intptr_t and pointers risks
+// ending up with C++ undefined behaviour.
 
 inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p);
+{   return reinterpret_cast<std::intptr_t>(p);
 }
 
 inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n);
+{   return reinterpret_cast<std::uint64_t *>(n);
 }
 
 inline std::size_t number_size(std::uint64_t *p)
@@ -1373,7 +1371,7 @@ public:
             while (f != NULL)
             {   std::uint64_t w = f[1];
                 delete [] f;
-                f = bit_cast<std::uint64_t *>(w);
+                f = reinterpret_cast<std::uint64_t *>(w);
             }
             (freechain_table::get())[i] = NULL;
         }
@@ -1399,14 +1397,14 @@ public:
 #if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
         r = (freechain_table::get())[bits];
         if (r != NULL)
-            (freechain_table::get())[bits] = bit_cast<std::uint64_t *>
-                                             (r)[1];
+            (freechain_table::get())[bits] =
+                reinterpret_cast<std::uint64_t *>(r)[1];
 #elif defined ARITHLIB_MUTEX
         {   std::lock_guard<std::mutex> lock(freechain_mutex());
             r = (freechain_table::get())[bits];
             if (r != NULL)
                 (freechain_table::get())[bits] =
-                    bit_cast<std::uint64_t *>(r[1]);
+                    reinterpret_cast<std::uint64_t *>(r)[1];
         }
 #else
 #error Internal inconsistency in arithlib.hpp: memory allocation strategy.
@@ -1432,7 +1430,7 @@ public:
 // The casts here look (and indeed are) ugly, but when I store data into
 // memory as a 32-bit value that is how I will read it later on, and the
 // messy notation here does not correspond to complicated computation.
-        bit_cast<std::uint32_t *>(r)[0] = bits;
+        reinterpret_cast<std::uint32_t *>(r)[0] = bits;
         return r;
     }
 
@@ -1440,7 +1438,7 @@ public:
 
     static void abandon(std::uint64_t *p)
     {   arithlib_assert(p[0] != -1ULL);
-        int bits = bit_cast<std::uint32_t *>(p)[0];
+        int bits = reinterpret_cast<std::uint32_t *>(p)[0];
         arithlib_assert(bits>0 && bits<48);
 // Here I assume that sizeof(uint64_t) >= sizeof(intptr_t) so I am not
 // going to lose information here on any platform I can consider.
@@ -1451,7 +1449,7 @@ public:
 #ifdef ARITHLIB_MUTEX
         std::lock_guard<std::mutex> lock(freechain_mutex());
 #endif
-        p[1] = bit_cast<std::uint64_t>(freechain_table::get()[bits]);
+        p[1] = reinterpret_cast<std::uint64_t>(freechain_table::get()[bits]);
         (freechain_table::get())[bits] = p;
 #endif
     }
@@ -1503,7 +1501,7 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
 // I allocate a new smaller block and copy the data across.
 // That situation can most plausibly arise when two similar-values big
 // numbers are subtracted.
-    int bits = bit_cast<std::uint32_t *>(&p[-1])[0];
+    int bits = reinterpret_cast<std::uint32_t *>(&p[-1])[0];
     std::size_t capacity = (static_cast<std::size_t>(1))<<bits;
     if (capacity > 4*final)
     {   std::uint64_t *w =
@@ -1513,7 +1511,7 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
         freechains::get().abandon(&p[-1]);
         p = &w[1];
     }
-    bit_cast<std::uint32_t *>(&p[-1])[1] = final;
+    reinterpret_cast<std::uint32_t *>(&p[-1])[1] = final;
     return vector_to_handle(p);
 }
 
@@ -1524,17 +1522,17 @@ inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
 }
 
 inline std::size_t number_size(std::uint64_t *p)
-{   std::size_t r = bit_cast<std::uint32_t *>(&p[-1])[1];
+{   std::size_t r = reinterpret_cast<std::uint32_t *>(&p[-1])[1];
     arithlib_assert(r>0);
-    return bit_cast<std::uint32_t *>(&p[-1])[1];
+    return reinterpret_cast<std::uint32_t *>(&p[-1])[1];
 }
 
 inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p);
+{   return reinterpret_cast<std::intptr_t>(p);
 }
 
 inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n);
+{   return reinterpret_cast<std::uint64_t *>(n);
 }
 
 inline bool stored_as_fixnum(std::intptr_t a)
@@ -1578,8 +1576,7 @@ inline char *reserve_string(std::size_t n)
 {   return new char[n+1];
 }
 
-inline char *confirm_size_string(char *p, std::size_t n,
-                                 std::size_t final)
+inline char *confirm_size_string(char *p, std::size_t n, std::size_t final)
 {   arithlib_assert(final>0 && (n+9)>final);
     p[final] = 0;
     return p;
@@ -1632,7 +1629,7 @@ inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 }
 
 inline std::intptr_t always_copy_bignum(std::uint64_t *p)
-{   std::size_t n = bit_cast<std::uint32_t *>(&p[-1])[1];
+{   std::size_t n = reinterpret_cast<std::uint32_t *>(&p[-1])[1];
     push(p);
     std::uint64_t *r = reserve(n);
     pop(p);
@@ -1687,7 +1684,7 @@ inline std::uint64_t *reserve(std::size_t n)
     LispObject a = get_basic_vector(TAG_NUMBERS,
                                     TYPE_NEW_BIGNUM,
                                     n*sizeof(std::uint64_t)+8);
-    return bit_cast<std::uint64_t *>(a + 8 - TAG_NUMBERS);
+    return reinterpret_cast<std::uint64_t *>(a + 8 - TAG_NUMBERS);
 }
 
 inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
@@ -1724,11 +1721,11 @@ inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
 }
 
 inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p) - 8 + TAG_NUMBERS;
+{   return reinterpret_cast<std::intptr_t>(p) - 8 + TAG_NUMBERS;
 }
 
 inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n + 8 - TAG_NUMBERS);
+{   return reinterpret_cast<std::uint64_t *>(n + 8 - TAG_NUMBERS);
 }
 
 inline std::size_t number_size(std::uint64_t *p)
@@ -1786,7 +1783,7 @@ inline void abandon(std::intptr_t p)
 inline char *reserve_string(std::size_t n)
 {   LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
                                     CELL+n);
-    return bit_cast<char *>(a - TAG_VECTOR + sizeof(LispObject));
+    return reinterpret_cast<char *>(a - TAG_VECTOR + sizeof(LispObject));
 }
 
 inline LispObject confirm_size_string(char *p, std::size_t n,
@@ -1897,11 +1894,11 @@ inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
 }
 
 inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p) - 8 + BigInteger;
+{   return reinterpret_cast<std::intptr_t>(p) - 8 + BigInteger;
 }
 
 inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n + 8 - BigInteger);
+{   return reinterpret_cast<std::uint64_t *>(n + 8 - BigInteger);
 }
 
 inline std::size_t number_size(std::uint64_t *p)
@@ -1941,14 +1938,13 @@ inline void abandon(std::intptr_t p)
 
 inline char *reserve_string(std::size_t n)
 {   std::uint64_t* a = binaryAllocate((8+n+7)/8);
-    return bit_cast<char *>(a) + 8;
+    return reinterpret_cast<char *>(a) + 8;
 }
 
 // A string size is measured in bytes not words.
-inline char* confirm_size_string(char *p, std::size_t n,
-                                 std::size_t final)
+inline char* confirm_size_string(char *p, std::size_t n, std::size_t final)
 {   p[final] = 0;
-    bit_cast<std::uint64_t*>(p)[-1] = 2*final;
+    reinterpret_cast<std::uint64_t*>(p)[-1] = 2*final;
     return p;
 }
 
@@ -2028,7 +2024,7 @@ inline std::uint64_t *reserve(std::size_t n)
     if (sizeof(LispObject)==4) n = n*sizeof(std::uint64_t) + 4;
     else n = n*sizeof(std::uint64_t);
     LispObject a = allocateatom(n);
-    return bit_cast<std::uint64_t *>(a + 8 - tagATOM);
+    return reinterpret_cast<std::uint64_t *>(a + 8 - tagATOM);
 }
 
 inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
@@ -2060,11 +2056,11 @@ inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
 }
 
 inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p) - 8 + tagATOM;
+{   return reinterpret_cast<std::intptr_t>(p) - 8 + tagATOM;
 }
 
 inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n + 8 - tagATOM);
+{   return reinterpret_cast<std::uint64_t *>(n + 8 - tagATOM);
 }
 
 inline std::size_t number_size(std::uint64_t *p)
@@ -2075,7 +2071,7 @@ inline std::size_t number_size(std::uint64_t *p)
 // that I arrange to have aligned on 8-byte boundaries. So to show some
 // though about strict aliasing and the like I will access memory as
 // an array of LispObject things when I access the header of an item.
-    std::uintptr_t h = bit_cast<std::uintptr_t>()*
+    std::uintptr_t h = reinterpret_cast<std::uintptr_t>()*
                        (LispObject *)&p[-1];
     std::size_t r = veclength(h);
 // On 32-bit systems a bignum will have a wasted 32-bit word after the
@@ -2120,7 +2116,7 @@ inline void abandon(std::intptr_t p)
 
 inline char *reserve_string(std::size_t n)
 {   LispObject a = allocateatom(n);
-    return bit_cast<char *>(a - tagATOM + sizeof(LispObject));
+    return reinterpret_cast<char *>(a - tagATOM + sizeof(LispObject));
 }
 
 inline LispObject confirm_size_string(char *p, std::size_t n,
@@ -4292,10 +4288,10 @@ inline std::mt19937_64 &ref_mersenne_twister()
         static_cast<std::uint32_t>(time_now>>32),
         static_cast<std::uint32_t>(chrono_now>>32),
         static_cast<std::uint32_t>(
-            bit_cast<std::uintptr_t>(&seed_component_1)),
+            reinterpret_cast<std::uintptr_t>(&seed_component_1)),
         static_cast<std::uint32_t>(
             static_cast<std::uint64_t>(
-                bit_cast<std::uintptr_t>(&seed_component_1))>>32)
+                reinterpret_cast<std::uintptr_t>(&seed_component_1))>>32)
     };
 
     static thread_local std::mt19937_64 inner_mersenne_twister(
@@ -5909,7 +5905,7 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
 // I will only ever access data in the format that it was placed into memory!
 // Note that this will assume that the string data was allocated so as to
 // be aligned suitably for uint64_t values.
-    std::uint64_t *r = bit_cast<std::uint64_t *>(result);
+    std::uint64_t *r = reinterpret_cast<std::uint64_t *>(result);
     std::size_t i;
 // For the edge case lena==2 and m==20. I copy 2 words across. That will leave
 // 4 bytes unused.
@@ -5948,7 +5944,7 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
     std::uint64_t top = r[p++];
     if (top == 0) top = r[p++]; // discard potential leading zero!
 // Get a pointer into the buffer as character data...
-    char *p1 = bit_cast<char *>(result);
+    char *p1 = reinterpret_cast<char *>(result);
     std::size_t len = 0;
     if (sign)
     {   *p1++ = '-';
@@ -6027,7 +6023,8 @@ inline string_handle bignum_to_string(std::intptr_t aa)
 // As well as converting to decimal I can do hex, octal or binary!
 
 inline std::size_t bignum_to_string_hex_length(std::intptr_t aa)
-{   return 24;
+{   std::size_t n = IntegerLength::op(aa);
+    return (n+3)/4;
 }
 
 inline string_handle bignum_to_string_hex(std::intptr_t aa)
@@ -6072,7 +6069,7 @@ inline string_handle bignum_to_string_hex(std::intptr_t aa)
     push(a);
     char *r = reserve_string(m);
     pop(a);
-    char *p = bit_cast<char *>(r);
+    char *p = reinterpret_cast<char *>(r);
     top = a[n-1];
     if (sign)
     {   *p++ = '~';
@@ -6091,11 +6088,12 @@ inline string_handle bignum_to_string_hex(std::intptr_t aa)
             *p++ = "0123456789abcdef"[d];
         }
     }
-    return confirm_size_string(r, m, m);
+    return confirm_size_string(r, m, p-reinterpret_cast<char *>(r));
 }
 
 inline std::size_t bignum_to_string_octal_length(std::intptr_t aa)
-{   return 24;
+{   std::size_t n = IntegerLength::op(aa);
+    return (n+2)/3;
 }
 
 inline string_handle bignum_to_string_octal(std::intptr_t aa)
@@ -6130,18 +6128,18 @@ inline string_handle bignum_to_string_octal(std::intptr_t aa)
     push(a);
     char *r = reserve_string(nn);
     pop(a);
-    char *p = bit_cast<char *>(r);
+    char *p = reinterpret_cast<char *>(r);
     if (sign)
     {   *p++ = '~';
         *p++ = '7';
     }
     for (std::size_t i=0; i<width; i++)
         *p++ = '0' + read_u3(a, n, width-i-1);
-    return confirm_size_string(r, nn, width);
+    return confirm_size_string(r, nn, p-reinterpret_cast<char *>(r));
 }
 
 inline std::size_t bignum_to_string_binary_length(std::intptr_t aa)
-{   return 24;
+{   return IntegerLength::op(aa);
 }
 
 inline string_handle bignum_to_string_binary(std::intptr_t aa)
@@ -6201,7 +6199,7 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
             *p++ = '0' + d;
         }
     }
-    return confirm_size_string(r, m, m);
+    return confirm_size_string(r, m, p-reinterpret_cast<char *>(r));
 }
 
 //=========================================================================
@@ -11309,7 +11307,7 @@ inline std::vector<std::uint64_t>& large_modulus_vector()
 }
 
 inline std::uint64_t *large_modulus()
-{   return 1 + bit_cast<std::uint64_t *>(large_modulus_vector().data());
+{   return 1 + reinterpret_cast<std::uint64_t *>(large_modulus_vector().data());
 }
 
 inline std::intptr_t value_of_current_modulus()

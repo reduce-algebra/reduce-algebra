@@ -64,52 +64,52 @@ typedef struct Package
 } Package;
 
 inline Header& packhdr_(LispObject p)
-{    return     *bit_cast<Header *>(p + (0*CELL - TAG_VECTOR));
+{    return     *reinterpret_cast<Header *>(p + (0*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packid_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (1*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (1*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packint_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (2*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (2*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packnint_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (3*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (3*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packflags_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (4*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (4*CELL - TAG_VECTOR));
 }
 
 #ifdef COMMON
 inline LispObject& packext_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (5*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (5*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packnext_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (6*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (6*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packname_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (7*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (7*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packnick_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (8*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (8*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packuses_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (9*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (9*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packused_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (10*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (10*CELL - TAG_VECTOR));
 }
 
 inline LispObject& packshade_(LispObject p)
-{    return *bit_cast<LispObject *>(p + (11*CELL - TAG_VECTOR));
+{    return *reinterpret_cast<LispObject *>(p + (11*CELL - TAG_VECTOR));
 }
 
 #endif

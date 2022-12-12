@@ -66,7 +66,16 @@
 // uses type float128_t and QuadFloat with different degrees of
 // inconvenience. My input syntax for QuadFloat uses a suffix "_Q".
 
-// If I am to support the elementary functions then a key challenge
+QuadFloat sumSeries(QuadFloat* coeffs, int n, QuadFloat x)
+{   QuadFloat r = coeffs[n-1];
+    for (int i=n-2; i>=0; i--)
+        r = x*r + coeffs[i];
+    return r;
+}
+
+// First I will provide trig functions (with arguments in radians)...
+
+// In  supporting the elementary functions a key challenge
 // is range reduction, and with the wide range of QuadFloat that is
 // fairly extreme!
 
@@ -166,8 +175,6 @@
 // tabulated reciprocal of pi the difference can reduce to just how the
 // mantissa of the input is aligned! 
  
-
-
 
 // Here is 2/pi in hex to sufficient precision for range reduction in
 // IEEE-style 128-bit floating point. I am storing 2/pi rather than
@@ -318,6 +325,7 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
 // for 4 guard bits at the bottom, so the limiting case will be (in binary)
 // ???11(n)110x(112)x???? in the 128-bit field. I think that means that
 // if there are less than 8 "1" bits towards the top I am happy.
+#if 0
             switch (k)
             {   case 1:
                     hi = product[0] & 0x1fe0000000000000LLU;
@@ -333,6 +341,7 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
                 default:
                     break;
             }
+#endif
         }
     }
     if (debugging)
@@ -394,16 +403,22 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
 // the quadrant.
     q = octant>>1;
 // Multiply the number I have by pi/4 because at present the fraction
-// is in the range -1 .. 1. I will be happy with 128-bits of product.
-    uint64_t a1, a2, a3, a4;
+// is in the range -1 .. 1.
+    uint64_t a1, a2, a3, a4, b1;
     arithlib_implementation::multiply64(
-        hexPiBy4[0], product[1], a1, a2);
+        hexPiBy4[1], product[1], 0,  a3, a4);
     arithlib_implementation::multiply64(
-        hexPiBy4[1], product[0], a3, a4);
-    if (a2 + a4 < a2) a1++;
+        hexPiBy4[1], product[0], a3, a2, a3);
     arithlib_implementation::multiply64(
-        hexPiBy4[0], product[0], a1, product[0], product[1]);
-    if ((product[1] += a3) < a3) product[0]++;
+        hexPiBy4[0], product[0], a2, a1, a2);
+    arithlib_implementation::multiply64(
+        hexPiBy4[0], product[1], a3, b1, a3);
+    if ((a2 += b1) < b1) a1++;
+    if ((a3>>63) != 0)
+    {   if (++a2 == 0) a1++;
+    }
+    product[0] = a1;
+    product[1] = a2;
 // This may leave me in a position where I need to normalise again by
 // shifting up one bit.
     if ((product[0] & 0x8000000000000000LLU) == 0)
@@ -437,20 +452,248 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
     return QuadFloat(r);
 }
 
-// I will start off with placeholders here that yield the correct types
+// sin(x) = x + x^3*f(x^2)     on x from -pi/4 to pi/4
+//                             where f(x) is a polynomial with
+//                             the following coefficients:
+
+// I obtained these coefficients by starting with a ridiculously high
+// order Maclaurin series for (sin x - x)/x^3 [well scaled using
+// x=pi*y/4 so that as y runs from -1 to +1 x ranges over -pp/4 to +pi/4]
+// I then economised that by repeatedly replacing its higher order term
+// using a Chebyshev polyomial of the same degree.
+//
+// Using the Reduce numerics package the following table comes from:
+//    on rounded; precision 100;
+//    r := economise_series(taylor((sin x - x)/x^3, x, 0, 60),
+//                          x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
+//    precision 40; r;
+
+// I am not going to be too upset here if the number of terms in the
+// series I give here ends up excessive - if this was code intended for
+// heavy duty production it would be proper to try rather harder to
+// get as short a series as possible and to tamper with the coefficients
+// to get the best possible accuracy.
+
+QuadFloat sineSeries[] =
+{   -0.1666666666666666666666666666666666666336_Q,
+     0.008333333333333333333333333333333317893258_Q,
+    -0.0001984126984126984126984126984115052453199_Q,
+     0.000002755731922398589065255731886290151397287_Q,
+    -0.00000002505210838544171877505154389122012327899_Q,
+     0.0000000001605904383682161459887173633108066251292_Q,
+    -7.647163731819816171510416184871594999077e-13_Q,
+     2.811457254345403619963288059632135845673e-15_Q,
+    -8.220635246323594481479584062085816809929e-18_Q,
+     1.95729405534209807707389435327187384835e-20_Q,
+    -3.868115321680493375421434984665416628402e-23_Q,
+     6.413047783362490814859672111445348908036e-26_Q
+};
+
+QuadFloat sine_of_reduced(QuadFloat x)
+{   QuadFloat x2 = x*x;
+    QuadFloat w = sumSeries(sineSeries,
+                            sizeof(sineSeries)/sizeof(sineSeries[0]),
+                            x2);
+    return x + x*x2*w;
+}
+
+
+// cos(x) = 1 - x^2*f(x^2)     on x from -pi/4 to pi/4
+//                             where f(x) is a polynomial with
+//                             the following coefficients:
+//
+//    precision 100;
+//    r := economise_series(taylor((cos x - 1)/x^2, x, 0, 60),
+//                          x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
+//    precision 40; r;
+
+
+QuadFloat cosineSeries[] =
+{   -0.4999999999999999999999999999999999999998_Q,
+     0.04166666666666666666666666666666666656687_Q,
+    -0.001388888888888888888888888888888879828654_Q,
+     0.00002480158730158730158730158730126415517564_Q,
+    -0.0000002755731922398589065255731862525470324132_Q,
+     0.00000000208767569878680989792094302574029159969_Q,
+    -0.00000000001147074559772972471338473138882069531849_Q,
+     4.779477332387385076135725648314160421e-14_Q,
+    -1.561920696858550884996584902591418644478e-16_Q,
+     4.110317623152462031116692406880874078702e-19_Q,
+    -8.896791152565126524486633907099757201201e-22_Q,
+     1.611714328860644411270619029004532191142e-24_Q,
+    -2.466479292926005187632443253355969820841e-27_Q
+};
+
+QuadFloat cosine_of_reduced(QuadFloat x)
+{   QuadFloat x2 = x*x;
+    QuadFloat w = sumSeries(cosineSeries,
+                            sizeof(cosineSeries)/sizeof(cosineSeries[0]),
+                            x2);
+    return 0.5_Q + (0.5_Q + x2*w);
+}
+
+QuadFloat minusPiBy4 = -0.7853981633974483096156608458198757210493_Q;
+QuadFloat piBy4      =  0.7853981633974483096156608458198757210493_Q;
+
+float128_t qsin(float128_t a)
+{   QuadFloat aa(a);
+    if (aa > minusPiBy4 && aa < piBy4)
+        return sine_of_reduced(aa).v;
+    int q = 0;
+    QuadFloat reduced = reduceMod2Pi(aa, q);
+    switch (q)
+    {   default:
+        case 0:
+            return sine_of_reduced(reduced).v;
+        case 1:
+             return cosine_of_reduced(reduced).v;
+        case 2:
+            return f128_minus(sine_of_reduced(reduced).v);
+        case 3:
+            return f128_minus(cosine_of_reduced(reduced).v);
+    }
+}
+
+float128_t qcos(float128_t a)
+{   QuadFloat aa(a);
+    if (aa > minusPiBy4 && aa < piBy4)
+        return cosine_of_reduced(aa).v;
+    int q = 0;
+    QuadFloat reduced = reduceMod2Pi(aa, q, true);
+    switch (q)
+    {   default:
+        case 0:
+            return cosine_of_reduced(reduced).v;
+        case 1:
+            return f128_minus(sine_of_reduced(reduced).v);
+        case 2:
+            return f128_minus(cosine_of_reduced(reduced).v);
+        case 3:
+            return sine_of_reduced(reduced).v;
+    }
+}
+
+float128_t qtan(float128_t a)
+{   QuadFloat aa(a);
+    if (aa > minusPiBy4 && aa < piBy4)
+        return (sine_of_reduced(aa) / cosine_of_reduced(aa)).v;
+    int q = 0;
+    QuadFloat reduced = reduceMod2Pi(aa, q);
+    switch (q)
+    {   default:
+        case 0:
+        case 2:
+            return (sine_of_reduced(reduced) / cosine_of_reduced(reduced)).v;
+        case 1:
+        case 3:
+             return (-cosine_of_reduced(reduced) / sine_of_reduced(reduced)).v;
+    }
+}
+
+float128_t qcot(float128_t a)
+{   QuadFloat aa(a);
+    if (aa > minusPiBy4 && aa < piBy4)
+        return (cosine_of_reduced(aa) / sine_of_reduced(aa)).v;
+    int q = 0;
+    QuadFloat reduced = reduceMod2Pi(aa, q);
+    switch (q)
+    {   default:
+        case 0:
+        case 2:
+            return (cosine_of_reduced(reduced) /
+                    sine_of_reduced(reduced)).v;
+        case 1:
+        case 3:
+             return (-sine_of_reduced(reduced) /
+                     cosine_of_reduced(reduced)).v;
+    }
+}
+
+float128_t qcsc(float128_t a)
+{   return (1.0_Q / QuadFloat(qsin(a))).v;
+}
+
+float128_t qsec(float128_t a)
+{   return (1.0_Q / QuadFloat(qcos(a))).v;
+}
+
+// Trig functions that work in degrees are easier as regards range
+// reduction.
+// Well first express the input as intpart(x) + fracpart(a).
+// intpart(a) is in the form (m*2^k) where m is a 113-bit number and
+// k is in the range -113 to 16364. Well 2^k mod 360 repeats with
+// period 12 as k caries, and m mod 360 can be done using short division.
+
+float128_t reduceMod360(float128_t a, int& n)
+{   float128_t intpart;
+    float128_t fracpart = f128_modf(a, intpart);
+    bool sign = (intpart.v[HIPART]<<63) != 0;
+    int exponent = ((intpart.v[HIPART]>>48) & 0x7fff) - 0x3fff;
+    intpart.v[HIPART] |= 0x0001000000000000LLU;  // Force in hidden bit
+    int128_t mantissa =
+        static_cast<int128_t>(intpart.v[HIPART] & 0x0001ffffffffffffLL)<<64 |
+        intpart.v[LOPART];
+    if (exponent <= 112)
+    {   mantissa = mantissa >> (112-exponent);
+        exponent = 112;
+    }
+    exponent -= 112;
+    if (sign) mantissa = -mantissa;
+    int r = static_cast<int>(mantissa % 360);
+    if (sign && r!=0) r = 360-r;
+    const static int expmodTable[] =
+    {  136, 272, 184,    8,
+        16,  32,  64,  128,
+       256, 152, 304,  248};
+    switch (exponent)
+    {   case 1:
+            r *= 2;
+            break;
+        case 2:
+            r *= 4;
+            break;
+        default:
+            r *= expmodTable[exponent % 12];
+            break;
+    }
+    n = r % 360;
+    return fracpart;
+}
+
+float128_t qcosd(float128_t a)
+{   int n;
+    float128_t a1 = reduceMod360(a, n);
+// Just for testing at this stage!
+    std::cout << QuadFloat(a) << " -> " << n << " + " << QuadFloat(a1) << "\n";
+    return f128_NaN;
+}
+  
+float128_t qcotd(float128_t a)
+{   return f128_NaN;
+}
+
+float128_t qcscd(float128_t a)
+{   return f128_NaN;
+}
+
+float128_t qsecd(float128_t a)
+{   return f128_NaN;
+}
+
+float128_t qsind(float128_t a)
+{   return f128_NaN;
+}
+
+float128_t qtand(float128_t a)
+{   return f128_NaN;
+}
+
+
+
+// I will have placeholders here that yield the correct types
 // but only compute results to double precision accuracy - ie 53-bits.
-// Eventually maybe I will work through and replace all these with
-// proper 128-bit floating point versions, maybe adopting the Cephes maths
-// library code (which is released under the MIT licence). A challenge
-// there is that their code is written (very reasonably) using "long double"
-// as the name for the 128-bit floating type, but across all platforms
-// "long double" is sometimes not supported and is sometimes an 80-bit
-// type - all of which is why I use software floating point and a raw
-// type float128_t that has to be used via explicit function calls and
-// then a type QuadFloat that is slightly nicer to use. And for me
-// 128-bit floating point literals need to be written with a "_Q" suffix.
-// So I will have some straightforward but mildly time-consuming adaptation
-// to do!
+// Eventually I intend work through and replace all these with
+// proper 128-bit floating point versions.
 
 float128_t qatan2(float128_t a, float128_t b)
 {   QuadFloat aa(a), bb(b);
@@ -549,32 +792,12 @@ float128_t qcbrt(float128_t a)
     return QuadFloat(std::cbrt(static_cast<double>(aa))).v;
 }
   
-float128_t qcosd(float128_t a)
-{   return f128_NaN;
-}
-  
 float128_t qcosh(float128_t a)
 {   QuadFloat aa(a);
     return QuadFloat(std::cosh(static_cast<double>(aa))).v;
 }
 
-float128_t qcot(float128_t a)
-{   return f128_NaN;
-}
-
-float128_t qcotd(float128_t a)
-{   return f128_NaN;
-}
-
 float128_t qcoth(float128_t a)
-{   return f128_NaN;
-}
-
-float128_t qcsc(float128_t a)
-{   return f128_NaN;
-}
-
-float128_t qcscd(float128_t a)
 {   return f128_NaN;
 }
 
@@ -636,150 +859,10 @@ float128_t qlog10(float128_t a)
     return QuadFloat(std::log10(static_cast<double>(aa))).v;
 }
 
-float128_t qsec(float128_t a)
-{   return f128_NaN;
-}
-
-float128_t qsecd(float128_t a)
-{   return f128_NaN;
-}
-
 float128_t qsech(float128_t a)
 {   return f128_NaN;
 }
   
-QuadFloat sumSeries(QuadFloat* coeffs, int n, QuadFloat x)
-{   QuadFloat r = coeffs[n-1];
-    for (int i=n-2; i>=0; i--)
-        r = x*r + coeffs[i];
-    return r;
-}
-
-// sin(x) = x + x^3*f(x^2)     on x from -pi/4 to pi/4
-//                             where f(x) is a polynomial with
-//                             the following coefficients:
-
-// I obtained these coefficients by starting with a ridiculously high
-// order Maclaurin series for (sin x - x)/x^3 [well scaled using
-// x=pi*y/4 so that as y runs from -1 to +1 x ranges over -pp/4 to +pi/4]
-// I then economised that by repeatedly replacing its higher order term
-// using a Chebyshev polyomial of the same degree.
-//
-// Using the Reduce numerics package the following table comes from:
-//    on rounded; precision 100;
-//    r := economise_series(taylor((sin x - x)/x^3, x, 0, 60),
-//                          x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
-//    precision 40; r;
-
-// I am not going to be too upset here if the number of terms in the
-// series I give here ends up excessive - if this was code intended for
-// heavy duty production it would be proper to try rather harder to
-// get as short a series as possible and to tamper with the coefficients
-// to get the best possible accuracy.
-
-QuadFloat sineSeries[] =
-{   -0.1666666666666666666666666666666666666336_Q,
-     0.008333333333333333333333333333333317893258_Q,
-    -0.0001984126984126984126984126984115052453199_Q,
-     0.000002755731922398589065255731886290151397287_Q,
-    -0.00000002505210838544171877505154389122012327899_Q,
-     0.0000000001605904383682161459887173633108066251292_Q,
-    -7.647163731819816171510416184871594999077e-13_Q,
-     2.811457254345403619963288059632135845673e-15_Q,
-    -8.220635246323594481479584062085816809929e-18_Q,
-     1.95729405534209807707389435327187384835e-20_Q,
-    -3.868115321680493375421434984665416628402e-23_Q,
-     6.413047783362490814859672111445348908036e-26_Q
-};
-
-QuadFloat sine_of_reduced(QuadFloat x)
-{   QuadFloat x2 = x*x;
-    QuadFloat w = sumSeries(sineSeries,
-                            sizeof(sineSeries)/sizeof(sineSeries[0]),
-                            x2);
-    return x + x*x2*w;
-}
-
-
-// cos(x) = 1 - x^2*f(x^2)     on x from -pi/4 to pi/4
-//                             where f(x) is a polynomial with
-//                             the following coefficients:
-//
-//    precision 100;
-//    r := economise_series(taylor((cos x - 1)/x^2, x, 0, 60),
-//                          x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
-//    precision 40; r;
-
-
-QuadFloat cosineSeries[] =
-{   -0.4999999999999999999999999999999999999998_Q,
-     0.04166666666666666666666666666666666656687_Q,
-    -0.001388888888888888888888888888888879828654_Q,
-     0.00002480158730158730158730158730126415517564_Q,
-    -0.0000002755731922398589065255731862525470324132_Q,
-     0.00000000208767569878680989792094302574029159969_Q,
-    -0.00000000001147074559772972471338473138882069531849_Q,
-     4.779477332387385076135725648314160421e-14_Q,
-    -1.561920696858550884996584902591418644478e-16_Q,
-     4.110317623152462031116692406880874078702e-19_Q,
-    -8.896791152565126524486633907099757201201e-22_Q,
-     1.611714328860644411270619029004532191142e-24_Q,
-    -2.466479292926005187632443253355969820841e-27_Q
-};
-
-QuadFloat cosine_of_reduced(QuadFloat x)
-{   QuadFloat x2 = x*x;
-    QuadFloat w = sumSeries(cosineSeries,
-                            sizeof(cosineSeries)/sizeof(cosineSeries[0]),
-                            x2);
-    return 0.5_Q + (0.5_Q + x2*w);
-}
-
-QuadFloat minusPiBy4 = -0.7853981633974483096156608458198757210493_Q;
-QuadFloat piBy4      =  0.7853981633974483096156608458198757210493_Q;
-
-float128_t qcos(float128_t a)
-{   QuadFloat aa(a);
-    if (aa > minusPiBy4 && aa < piBy4)
-        return cosine_of_reduced(aa).v;
-    int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q);
-    switch (q)
-    {   default:
-        case 0:
-            return cosine_of_reduced(reduced).v;
-        case 1:
-            return f128_minus(sine_of_reduced(reduced).v);
-        case 2:
-            return f128_minus(cosine_of_reduced(reduced).v);
-        case 3:
-            return sine_of_reduced(reduced).v;
-    }
-}
-
-float128_t qsin(float128_t a)
-{   QuadFloat aa(a);
-    if (aa > minusPiBy4 && aa < piBy4)
-        return sine_of_reduced(aa).v;
-    int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q);
-    switch (q)
-    {   default:
-        case 0:
-            return sine_of_reduced(reduced).v;
-        case 1:
-             return cosine_of_reduced(reduced).v;
-        case 2:
-            return f128_minus(sine_of_reduced(reduced).v);
-        case 3:
-            return f128_minus(cosine_of_reduced(reduced).v);
-    }
-}
-
-float128_t qsind(float128_t a)
-{   return f128_NaN;
-}
-
 float128_t qsinh(float128_t a)
 {   QuadFloat aa(a);
     return QuadFloat(std::sinh(static_cast<double>(aa))).v;
@@ -787,15 +870,6 @@ float128_t qsinh(float128_t a)
 
 float128_t qsqrt(float128_t a)
 {   return f128_sqrt(a);
-}
-
-float128_t qtan(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::tan(static_cast<double>(aa))).v;
-}
-
-float128_t qtand(float128_t a)
-{   return f128_NaN;
 }
 
 float128_t qtanh(float128_t a)
