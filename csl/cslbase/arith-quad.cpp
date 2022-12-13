@@ -715,18 +715,20 @@ float128_t qcotd(float128_t a)
     switch (n/45)
     {   default:
         case 7:
-            n -= 360;
-        case 0:
+            n -= 180;
         case 3:
         case 4:
+            n -= 180;
+        case 0:
             a = f128_mul(f128_add(i32_to_f128(n), a1),
                          0.017453292519943295769236907684886127134_Q .v);
             return f128_div(cosine_of_reduced(QuadFloat(a)).v,
                             sine_of_reduced(QuadFloat(a)).v);
-        case 1:
-        case 2:
         case 5:
         case 6:
+            n -= 180;
+        case 1:
+        case 2:
             a = f128_mul(f128_add(i32_to_f128(n-90), a1),
                          0.017453292519943295769236907684886127134_Q .v);
             return f128_minus(f128_div(sine_of_reduced(QuadFloat(a)).v,
@@ -827,18 +829,20 @@ float128_t qtand(float128_t a)
     switch (n/45)
     {   default:
         case 7:
-            n -= 360;
-        case 0:
+            n -= 180;
         case 3:
         case 4:
+            n -= 180;
+        case 0:
             a = f128_mul(f128_add(i32_to_f128(n), a1),
                          0.017453292519943295769236907684886127134_Q .v);
             return f128_div(sine_of_reduced(QuadFloat(a)).v,
                             cosine_of_reduced(QuadFloat(a)).v);
-        case 1:
-        case 2:
         case 5:
         case 6:
+            n -= 180;
+        case 1:
+        case 2:
             a = f128_mul(f128_add(i32_to_f128(n-90), a1),
                          0.017453292519943295769236907684886127134_Q .v);
             return f128_minus(f128_div(cosine_of_reduced(QuadFloat(a)).v,
