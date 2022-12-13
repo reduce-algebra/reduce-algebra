@@ -121,17 +121,17 @@ float128_t f128_modf(float128_t p, float128_t& intpart)
     {   intpart = p;
         return f128_0;
     }
-// Now I have (113-x) bits that make up the fraction. I can set up
+// Now I have (112-x) bits that make up the fraction. I can set up
 // the integer part of the result by masking them out.
     float128_t i = p;
-    int bits = 113-x;
-    if (bits < 64) i.v[LOPART] &= (1LLU<<bits) - 1;
+    int bits = 112-x;
+    if (bits < 64) i.v[LOPART] &= ~((1LLU<<bits) - 1);
     else
     {   i.v[LOPART] = 0;
-        if (bits > 64) i.v[HIPART] &= (1LLU<<(bits-64)) - 1;
+        if (bits > 64) i.v[HIPART] &= ~((1LLU<<(bits-64)) - 1);
     }
     intpart = i;
-    return p = i;
+    return f128_sub(p, i);
 }
 
 // I will want working precision even higher than 128-bits. I will

@@ -259,6 +259,10 @@ uint64_t hexPiBy4[2] =
     0xc4c6628b80dc1cd1   // low bits
 };
 
+// Once again the overall strategy here is basically to compute
+//      2*pi*fractionpart(x*(1/2*pi))
+// with all that done to higher than 113 bit precision.
+
 QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
 {   int x = aa.exponent();
     uint64_t m[3];
@@ -361,9 +365,9 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
 // any machine-input value will lead to a fraction that differs from
 // both 1 and 0 here by an amount that I estimate to be 2^-128 and this
 // means that the negation I do here can never overflow! Wow!!
-    if ((octant & 1) == 0) product[0] &= 0x3fffffffffffffffLLU;
+    if ((octant & 1) == 0) product[0] &= 0x1fffffffffffffffLLU;
     else
-    {   product[0] |= 0xc000000000000000LLU;
+    {   product[0] |= 0xe000000000000000LLU;
         for (size_t i=0; i<4; i++) product[i] = ~product[i];
         if (++product[3] == 0)
             if (++product[2] == 0)
@@ -377,25 +381,25 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
         zprintf("\n");
     }
     if (debugging) zprintf("octant = %d\n", octant);
-// Next I normalise the number. It is positive in the
-// product array, using all but the top 3 bits.
+// Next I normalise the number. It is positive in the product array,
+// using all but the top 3 bits which are now zero.
     int zerobits;
     if (product[0] != 0)
     {   int lz = nlz(product[0]);
-        product[1] = (product[1] << lz) | (product[2] >> (64-lz));
         product[0] = (product[0] << lz) | (product[1] >> (64-lz));
+        product[1] = (product[1] << lz) | (product[2] >> (64-lz));
         zerobits = lz;
     }
     else if (product[1] != 0)
     {   int lz = nlz(product[1]);
-        product[1] = (product[2] << lz) | (product[3] >> (64-lz));
         product[0] = (product[1] << lz) | (product[2] >> (64-lz));
+        product[1] = (product[2] << lz) | (product[3] >> (64-lz));
         zerobits = lz + 64;
     }
     else if (product[2] != 0)
-    {   int lz = nlz(product[2]);
-        product[1] = (product[3] << lz);
+    {   int lz = nlz(product[2]);   // should only ever be a small number
         product[0] = (product[2] << lz) | (product[3] >> (64-lz));
+        product[1] = (product[3] << lz);
         zerobits = lz + 128;
     }
     else my_abort("192 leading zeros after argument reduction");   
@@ -404,21 +408,29 @@ QuadFloat reduceMod2Pi(QuadFloat aa, int& q, bool debugging=false)
     q = octant>>1;
 // Multiply the number I have by pi/4 because at present the fraction
 // is in the range -1 .. 1.
-    uint64_t a1, a2, a3, a4, b1;
+    uint64_t hhh, hhl, hlh, hll, lhh, lhl, llh, lll;
+    if (debugging) zprintf("0x%016x%016x * 0x%016x%016x\n",
+    hexPiBy4[0], hexPiBy4[1], product[0], product[1]);
     arithlib_implementation::multiply64(
-        hexPiBy4[1], product[1], 0,  a3, a4);
+        hexPiBy4[0], product[0], hhh, hhl);
     arithlib_implementation::multiply64(
-        hexPiBy4[1], product[0], a3, a2, a3);
+        hexPiBy4[1], product[0], hlh, hll);
     arithlib_implementation::multiply64(
-        hexPiBy4[0], product[0], a2, a1, a2);
+        hexPiBy4[0], product[1], lhh, lhl);
     arithlib_implementation::multiply64(
-        hexPiBy4[0], product[1], a3, b1, a3);
-    if ((a2 += b1) < b1) a1++;
-    if ((a3>>63) != 0)
-    {   if (++a2 == 0) a1++;
+        hexPiBy4[1], product[1], llh, lll);
+    product[3] = lll;
+    if ((llh += lhl) < lhl) lhh++;
+    if ((llh += hll) < hll) hlh++;
+    product[2] = llh;
+    if ((hhl += lhh) < lhh) hhh++;
+    if ((hhl += hlh) < hlh) hhh++;
+    product[1] = hhl;
+    product[0] = hhh;
+    if (debugging)
+    {   zprintf("= 0x%016x%016x%016x%016x\n",
+            product[0], product[1], product[2], product[3]);
     }
-    product[0] = a1;
-    product[1] = a2;
 // This may leave me in a position where I need to normalise again by
 // shifting up one bit.
     if ((product[0] & 0x8000000000000000LLU) == 0)
@@ -557,9 +569,11 @@ float128_t qsin(float128_t a)
 float128_t qcos(float128_t a)
 {   QuadFloat aa(a);
     if (aa > minusPiBy4 && aa < piBy4)
+    {   zprintf("%016x%016x\n", a.v[HIPART], a.v[LOPART]);
         return cosine_of_reduced(aa).v;
+    }
     int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q, true);
+    QuadFloat reduced = reduceMod2Pi(aa, q);
     switch (q)
     {   default:
         case 0:
@@ -646,7 +660,9 @@ float128_t reduceMod360(float128_t a, int& n)
         16,  32,  64,  128,
        256, 152, 304,  248};
     switch (exponent)
-    {   case 1:
+    {   case 0:
+            break;
+        case 1:
             r *= 2;
             break;
         case 2:
