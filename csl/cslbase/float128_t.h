@@ -52,6 +52,7 @@
 #include <bit>
 using std::bit_cast;
 #else // HAVE_BITCAST
+#ifndef CSL_BITCAST
 // For most of CSL this is a redundant repeat of stuff from machine.h,
 // however by including it here I make this header free-standing.
 template <class To, class From>
@@ -68,7 +69,8 @@ bit_cast(const From& src) noexcept
     std::memcpy(&dst, &src, sizeof(To));
     return dst;
 }
-#define HAVE_BITCAST 1
+#define CSL_BITCAST 1
+#endif // CSL_BITCAST
 #endif // HAVE_BITCAST
 
 #include <cstring>

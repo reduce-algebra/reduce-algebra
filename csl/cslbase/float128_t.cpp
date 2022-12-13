@@ -507,7 +507,7 @@ bool f160_geq_10_19(uint64_t m[5], int bx)
     else if (bx > 64) return true;
     else if (m[4] < 0x8ac72304U) return false;
     else if (m[4] > 0x8ac72304U) return true;
-    else return m[3] >= 0x76400000U;
+    else return m[3] >= 0x89e80000U;
 }
 
 
@@ -669,7 +669,8 @@ bool round_at(char *s, int ndigits)
     }
 // If I have dropped out of the loop it means that I have rounded an
 // initial '9' up.
-    s[0] = '1';        // the remaining relevant digits will all be '0' here.
+    s[0] = '1';        // most of the remaining relevant digits are '0' here.
+    s[ndigits] = '0';
     return true;
 }
 

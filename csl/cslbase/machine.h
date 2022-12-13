@@ -117,6 +117,7 @@
 #include <bit>
 using std::bit_cast;
 #else // HAVE_BITCAST
+#ifndef CSL_BITCAST
 
 // C++20 introduces bit_cast<T>() but to support earlier C++ dialects I
 // use an implementation for it found at
@@ -143,8 +144,8 @@ bit_cast(const From& src) noexcept
     std::memcpy(&dst, &src, sizeof(To));
     return dst;
 }
-
-#define HAVE_BITCAST 1
+#define CSL_BITCAST 1
+#endif // CSL_BITCAST
 #endif // HAVE_BITCAST
 
 using std::cout;      // Make C++ output as in "cout << "string" << endl;" a
