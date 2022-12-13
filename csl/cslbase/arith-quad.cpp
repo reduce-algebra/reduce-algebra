@@ -672,36 +672,178 @@ float128_t reduceMod360(float128_t a, int& n)
             r *= expmodTable[exponent % 12];
             break;
     }
-    n = r % 360;
+    r = r % 360;
+    if (r < 0) r += 360;
+    n = r;
+// The input has now been reduced to the value n + fraction where
+// 0 <= n <= 360 and 0.0 <= fraction < 1.0 
     return fracpart;
 }
 
 float128_t qcosd(float128_t a)
 {   int n;
     float128_t a1 = reduceMod360(a, n);
-// Just for testing at this stage!
-    std::cout << QuadFloat(a) << " -> " << n << " + " << QuadFloat(a1) << "\n";
-    return f128_NaN;
+    switch (n/45)
+    {   default:
+        case 7:
+            n -= 360;
+        case 0:
+            a = f128_mul(f128_add(i32_to_f128(n), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return cosine_of_reduced(QuadFloat(a)).v;
+        case 1:
+        case 2:
+            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_minus(sine_of_reduced(QuadFloat(a)).v);
+        case 3:
+        case 4:
+            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_minus(cosine_of_reduced(QuadFloat(a)).v);
+        case 5:
+        case 6:
+            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return sine_of_reduced(QuadFloat(a)).v;
+    }
 }
   
 float128_t qcotd(float128_t a)
-{   return f128_NaN;
+{   int n;
+    float128_t a1 = reduceMod360(a, n);
+    switch (n/45)
+    {   default:
+        case 7:
+            n -= 360;
+        case 0:
+        case 3:
+        case 4:
+            a = f128_mul(f128_add(i32_to_f128(n), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(cosine_of_reduced(QuadFloat(a)).v,
+                            sine_of_reduced(QuadFloat(a)).v);
+        case 1:
+        case 2:
+        case 5:
+        case 6:
+            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_minus(f128_div(sine_of_reduced(QuadFloat(a)).v,
+                                       cosine_of_reduced(QuadFloat(a)).v));
+    }
 }
 
 float128_t qcscd(float128_t a)
-{   return f128_NaN;
+{   int n;
+    float128_t a1 = reduceMod360(a, n);
+    switch (n/45)
+    {   default:
+        case 7:
+            n -= 360;
+        case 0:
+            a = f128_mul(f128_add(i32_to_f128(n), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_1, cosine_of_reduced(QuadFloat(a)).v);
+        case 1:
+        case 2:
+            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_m1, sine_of_reduced(QuadFloat(a)).v);
+        case 3:
+        case 4:
+            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_m1, cosine_of_reduced(QuadFloat(a)).v);
+        case 5:
+        case 6:
+            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_1, sine_of_reduced(QuadFloat(a)).v);
+    }
 }
 
 float128_t qsecd(float128_t a)
-{   return f128_NaN;
+{   int n;
+    float128_t a1 = reduceMod360(a, n);
+    switch (n/45)
+    {   default:
+        case 7:
+            n -= 360;
+        case 0:
+            a = f128_mul(f128_add(i32_to_f128(n), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_1, cosine_of_reduced(QuadFloat(a)).v);
+        case 1:
+        case 2:
+            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_m1, sine_of_reduced(QuadFloat(a)).v);
+        case 3:
+        case 4:
+            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_m1, cosine_of_reduced(QuadFloat(a)).v);
+        case 5:
+        case 6:
+            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(f128_1, sine_of_reduced(QuadFloat(a)).v);
+    }
 }
 
 float128_t qsind(float128_t a)
-{   return f128_NaN;
+{   int n;
+    float128_t a1 = reduceMod360(a, n);
+    switch (n/45)
+    {   default:
+        case 7:
+            n -= 360;
+        case 0:
+            a = f128_mul(f128_add(i32_to_f128(n), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return sine_of_reduced(QuadFloat(a)).v;
+        case 1:
+        case 2:
+            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return cosine_of_reduced(QuadFloat(a)).v;
+        case 3:
+        case 4:
+            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_minus(sine_of_reduced(QuadFloat(a)).v);
+        case 5:
+        case 6:
+            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_minus(cosine_of_reduced(QuadFloat(a)).v);
+    }
 }
 
 float128_t qtand(float128_t a)
-{   return f128_NaN;
+{   int n;
+    float128_t a1 = reduceMod360(a, n);
+    switch (n/45)
+    {   default:
+        case 7:
+            n -= 360;
+        case 0:
+        case 3:
+        case 4:
+            a = f128_mul(f128_add(i32_to_f128(n), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_div(sine_of_reduced(QuadFloat(a)).v,
+                            cosine_of_reduced(QuadFloat(a)).v);
+        case 1:
+        case 2:
+        case 5:
+        case 6:
+            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
+                         0.017453292519943295769236907684886127134_Q .v);
+            return f128_minus(f128_div(cosine_of_reduced(QuadFloat(a)).v,
+                                       sine_of_reduced(QuadFloat(a)).v));
+    }
 }
 
 

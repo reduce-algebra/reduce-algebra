@@ -131,6 +131,9 @@ float128_t f128_modf(float128_t p, float128_t& intpart)
         if (bits > 64) i.v[HIPART] &= ~((1LLU<<(bits-64)) - 1);
     }
     intpart = i;
+// i has the same sign as p and has been truncated twaords zero, and
+// that will mean that the sign of the fractional part matches that of
+// the input.
     return f128_sub(p, i);
 }
 
