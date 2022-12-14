@@ -75,7 +75,7 @@ mc=`$here/config.guess`
 mc=`$here/scripts/findhost.sh $mc`
 
 diffBw() {
-    case `diff -v` in
+    case `diff -v 2> /dev/null` in
     *GNU\ diffutils*)
       diff -B -w $1 $2
       ;;

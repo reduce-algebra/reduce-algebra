@@ -1,0 +1,206 @@
+% The economise_series operator takes a power-series representation of
+% a function over some (finite) interval and attempts to generate a lower
+% degree polynomial that will give an accurate approximation to it.
+% It achieves this by succesively eliminating the highest degree term in
+% the series using a Chebyshev polynomial. The Chebyshev polynomial that
+% is subtracted will lead to a good approximation to a minimax overall
+% approximation.
+
+% This first example starts with a simple explicit polynomial of
+% degree 5 and trims it down to one of degree 4 where values should
+% match reasonably well on the interval -0.5 to +0.5
+
+economise_series(1 - x + x^2 - x^3 + x^4 - x^5 + x^6,
+                 x = (-1/2 .. 1/2), 4);
+
+
+
+Error estimate: 0.0625
+
+  2049    - 251   247    - 21   11
+{------,--------,-----,-------,----}
+  2048    256     256    16     8
+
+
+% The next two cases generate coefficients suitable for computing sine
+% and cosine in the range -pi/4 to +pi/4 such that the result will
+% be accurate enough for IEEE-style 128-bit floating point. One illustrates
+% use of taylor() to generate the series, while the other uses the tps
+% package.
+
+on rounded;
+
+ precision 100;
+
+
+12
+
+r := economise_series(taylor((sin x - x)/x^3, x, 0, 60),
+                      x = (-pi/4 .. pi/4), 20, even_terms)$
+
+
+
+Error estimate: 3.05798e-32
+
+precision 40;
+
+
+100
+ r;
+
+
+{ - 0.1666666666666666666666666666666665161768,
+
+ 0.008333333333333333333333333333274291321512,
+
+  - 0.0001984126984126984126984126945838942912847,
+
+ 0.000002755731922398589065255635086899284046101,
+
+  - 0.00000002505210838544171877379614179732734589409,
+
+ 0.0000000001605904383682161364912050144894920507039,
+
+  - 7.647163731819368264977021429304026233745e-13,
+
+ 2.811457254209755067502667449904951976641e-15,
+
+  - 8.220634982437414103626848467536224828302e-18,
+
+ 1.957262180333927909214657302519369794006e-20,
+
+  - 3.846357925089937791291706765116450015986e-23}
+
+
+precision 100;
+
+
+40
+
+psexplim 60;
+
+
+6
+
+r := economise_series(ps((cos x - 1)/x^2, x, 0),
+                      x = (-pi/4 .. pi/4), 2^(-113), even_terms)$
+
+
+
+precision 40;
+
+
+100
+ r;
+
+
+{ - 0.4999999999999999999999999999999999999998,
+
+ 0.04166666666666666666666666666666666656687,
+
+  - 0.001388888888888888888888888888888879828654,
+
+ 0.00002480158730158730158730158730126415517564,
+
+  - 0.0000002755731922398589065255731862525470324132,
+
+ 0.00000000208767569878680989792094302574029159969,
+
+  - 0.00000000001147074559772972471338473138882069531849,
+
+ 4.779477332387385076135725648314160421e-14,
+
+  - 1.561920696858550884996584902591418644478e-16,
+
+ 4.110317623152462031116692406880874078702e-19,
+
+  - 8.896791152565126524486633907099757201201e-22,
+
+ 1.611714328860644411270619029004532191142e-24,
+
+  - 2.466479292926005187632443253355969820841e-27}
+
+off rounded;
+
+
+
+% The calculations do not need to be performed in rounded mode...
+% and by default the range concerned will be -1 .. 1
+
+economise_series(1 - x^3/factorial 4 + x^5/factorial 5 - x^7/factorial 7,
+                 x, 3);
+
+
+
+Error estimate: 0.000499132
+
+     - 29      - 121
+{1,-------,0,--------}
+    11520      3840
+
+
+economise_series(taylor((sin x - x)/x^3, x, 0, 15),
+                      x = (-pi/4 .. pi/4), 5, even_terms);
+
+
+
+Error estimate: 8.51561e-08
+
+        14            12                10                   8
+{(143*pi   - 574464*pi   + 1684537344*pi   - 3270248497152*pi
+
+                        6
+   + 3288935631421440*pi  - 26072164203019461092966400)/1564329852181167665577\
+ 98400,
+
+            12              10                 8                     6
+ ( - 5005*pi   + 20680704*pi   - 63170150400*pi  + 130809939886080*pi
+
+                          4
+   - 148002103413964800*pi  + 203688782836089539788800)/2444265394033074477465\
+ 6000,
+
+         10             8                 6                    4
+ (1001*pi   - 4308480*pi  + 14037811200*pi  - 32702484971520*pi
+
+                         2
+   + 49334034471321600*pi  - 37888538473974988800)/190958233908833943552000}
+
+
+% You could even do a totally general case! But then you need to specify
+% the desired degree of the result since there is no basis for guessing
+% numerical accuracy.
+
+economise_series(a0 + a1*x + a2*x^2 + a3*x^3 + a4*x^4 + a5*x^5,
+                 x = (u .. v), 4);
+
+
+
+               5          4             3  2           2  3            4       5
+{(512*a0 + a5*u  + 45*a5*u *v + 210*a5*u *v  + 210*a5*u *v  + 45*a5*u*v  + a5*v
+
+  )/512,
+
+                  4           3             2  2             3          4
+  256*a1 - 25*a5*u  - 300*a5*u *v - 630*a5*u *v  - 300*a5*u*v  - 25*a5*v
+ -------------------------------------------------------------------------,
+                                    256
+
+                 3           2               2          3
+  32*a2 + 25*a5*u  + 135*a5*u *v + 135*a5*u*v  + 25*a5*v
+ ---------------------------------------------------------,
+                            32
+
+                 2                      2
+  16*a3 - 35*a5*u  - 90*a5*u*v - 35*a5*v
+ -----------------------------------------,
+                    16
+
+  2*a4 + 5*a5*u + 5*a5*v
+ ------------------------}
+            2
+
+
+
+end;
+

@@ -250,8 +250,6 @@ uint64_t twoOverPi[] = {
 0x825c326b5b2746ed, 0x34007700d255f4fc, 0x4d59018071e0e13f, 0x89b295f364a8f1ae
 };
 
-const size_t twoOverPiDigits = sizeof(twoOverPi)/sizeof(twoOverPi[0]);
-
 // This is a 128-bit value for pi/4.
 
 uint64_t hexPiBy4[2] =

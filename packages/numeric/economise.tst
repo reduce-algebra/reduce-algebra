@@ -6,8 +6,6 @@
 % is subtracted will lead to a good approximation to a minimax overall
 % approximation.
 
-% $Id$
-
 % This first example starts with a simple explicit polynomial of
 % degree 5 and trims it down to one of degree 4 where values should
 % match reasonably well on the interval -0.5 to +0.5
