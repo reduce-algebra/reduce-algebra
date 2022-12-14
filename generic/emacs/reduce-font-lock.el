@@ -2,13 +2,11 @@
 
 ;; Copyright (C) 2022 Francis J. Wright
 
-;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: 6 June 2022 as a separate file (was part of reduce-mode.el)
-;; Time-stamp: <2022-10-20 16:04:11 franc>
-;; Keywords: languages, faces
+;; Time-stamp: <2022-12-14 15:40:11 franc>
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.9
-;; Package-Requires: ((reduce-mode "1.6"))
+;; Package-Version: 1.10
 
 ;; This file is part of REDUCE IDE.
 
@@ -48,6 +46,8 @@
 ;; commented-out REDUCE code may be mis-highlighted.
 
 ;;; Code:
+
+(eval-when-compile (require 'reduce-mode))
 
 (defconst reduce-font-lock--keywords
   '(
@@ -135,25 +135,6 @@ delimiters.")
 ;;;;; Algebraic fontification
 ;;;;; ***********************
 
-(defconst reduce-font-lock--identifier-regexp
-  "\\(?:[[:alpha:]]\\|!.\\)\
-\\(?:\\w\\|\\s_\\|!.\\)*"
-  ;; Digits have word syntax and identifier cannot begin with a digit.
-  "Regular expression matching a REDUCE identifier.
-An identifier consists of one or more alphanumeric
-characters (i.e. alphabetic letters or decimal digits), the first
-of which must be alphabetic.  In addition, the underscore
-character (_) is considered a letter if it is within an
-identifier.  Special characters may be used in identifiers too,
-even as the first character, but each must be preceded by an
-exclamation mark in input.")
-
-(defconst reduce-font-lock--whitespace-regexp
-  "\\(?:\\s-\\|\n\\|%.*?\n\\|/\\*.*?\\*/\\)"
-  "Regexp that matches a white space or comment.
-Precisely, a single white space (including newline), or a single
- %- or /**/-comment.")
-
 (defconst reduce-font-lock--keywords-1
   `(,@reduce-font-lock--keywords-0
 
@@ -162,14 +143,14 @@ Precisely, a single white space (including newline), or a single
     ;; procedure name arg ;
     ;; procedure name ( arg1 , arg2 , ... ) ;
     (,(concat "\\_<procedure\\_>"
-              reduce-font-lock--whitespace-regexp "+"
-              "\\(" reduce-font-lock--identifier-regexp "\\)"
-              reduce-font-lock--whitespace-regexp "*" "\(?")
+              reduce-whitespace-regexp "+"
+              "\\(" reduce-identifier-regexp "\\)"
+              reduce-whitespace-regexp "*" "\(?")
      (1 font-lock-function-name-face)
      ;; Highlight arguments:
-     (,(concat "\\=" reduce-font-lock--whitespace-regexp "*"
-               "\\(" reduce-font-lock--identifier-regexp "\\)"
-               reduce-font-lock--whitespace-regexp "*" "[,\)]?")
+     (,(concat "\\=" reduce-whitespace-regexp "*"
+               "\\(" reduce-identifier-regexp "\\)"
+               reduce-whitespace-regexp "*" "[,\)]?")
       nil nil
       (1 font-lock-variable-name-face)))
 
@@ -184,23 +165,23 @@ symbolic\\|lisp\\|inline\\|s?macro\\)\\_>"
     ;; Local variable type declarations, e.g.
     ;; scalar var1 , var2 , ... ;
     (,(concat "\\_<\\(?:scalar\\|integer\\|real\\)"
-              reduce-font-lock--whitespace-regexp)
+              reduce-whitespace-regexp)
      ;; Highlight variables:
-     (,(concat "\\=" reduce-font-lock--whitespace-regexp "*"
-               "\\(" reduce-font-lock--identifier-regexp "\\)"
-               reduce-font-lock--whitespace-regexp "*" "\\s.")
+     (,(concat "\\=" reduce-whitespace-regexp "*"
+               "\\(" reduce-identifier-regexp "\\)"
+               reduce-whitespace-regexp "*" "\\s.")
       ;; Pre-form -- return position of terminator to limit search:
       (save-excursion (re-search-forward "[\;$]")) nil
       (1 font-lock-variable-name-face)))
 
     ;; Labels -- go to label; ... label :
     (,(concat "\\_<go\\(?:\\s-*to\\)?"
-              reduce-font-lock--whitespace-regexp "+"
-              "\\(" reduce-font-lock--identifier-regexp "\\)")
+              reduce-whitespace-regexp "+"
+              "\\(" reduce-identifier-regexp "\\)")
      1 font-lock-constant-face)
-    (,(concat "\\(?:^\\|[\;$]\\)" reduce-font-lock--whitespace-regexp "*"
-              "\\(" reduce-font-lock--identifier-regexp "\\)"
-              reduce-font-lock--whitespace-regexp "*" ":[^=]")
+    (,(concat "\\(?:^\\|[\;$]\\)" reduce-whitespace-regexp "*"
+              "\\(" reduce-identifier-regexp "\\)"
+              reduce-whitespace-regexp "*" ":[^=]")
      1 font-lock-constant-face)
 
     ;; Operator declarations of the form ‘type op1, op2, ...’
@@ -214,9 +195,9 @@ symbolic\\|lisp\\|inline\\|s?macro\\)\\_>"
         limit))
      (1 font-lock-type-face)
      ;; Highlight function names:
-     (,(concat "\\=" reduce-font-lock--whitespace-regexp "*"
-               "\\(" reduce-font-lock--identifier-regexp "\\)"
-               reduce-font-lock--whitespace-regexp "*" "[,\;$]")
+     (,(concat "\\=" reduce-whitespace-regexp "*"
+               "\\(" reduce-identifier-regexp "\\)"
+               reduce-whitespace-regexp "*" "[,\;$]")
       ;; Pre-form -- return position of terminator to limit search:
       (save-excursion (re-search-forward "[\;$]")) nil
       (1 font-lock-function-name-face)))
@@ -230,12 +211,12 @@ symbolic\\|lisp\\|inline\\|s?macro\\)\\_>"
         limit))
      (0 font-lock-type-face)
      ;; Highlight array/matrix names:
-     (,(concat "\\=" reduce-font-lock--whitespace-regexp "*"
-               "\\(" reduce-font-lock--identifier-regexp "\\)"
+     (,(concat "\\=" reduce-whitespace-regexp "*"
+               "\\(" reduce-identifier-regexp "\\)"
                ;; Optional bounds with optional ():
-               reduce-font-lock--whitespace-regexp "*"
+               reduce-whitespace-regexp "*"
                "\\(?:\\(?:(.*?)\\)\\|\\w*\\)"
-               reduce-font-lock--whitespace-regexp "*" "[,\;$]")
+               reduce-whitespace-regexp "*" "[,\;$]")
       ;; Pre-form -- return position of terminator to limit search:
       (save-excursion (re-search-forward "[\;$]"))
       nil (1 font-lock-function-name-face)))
@@ -276,16 +257,16 @@ constants (e.g. “pi”).")
 (defconst reduce-font-lock--preprocessor-rules
   `((,(concat
        "\\(#define\\_>\\)"
-       reduce-font-lock--whitespace-regexp "+"
-       "\\(" reduce-font-lock--identifier-regexp "\\)"
-       reduce-font-lock--whitespace-regexp "+"
-       "\\(" reduce-font-lock--identifier-regexp "\\)")
+       reduce-whitespace-regexp "+"
+       "\\(" reduce-identifier-regexp "\\)"
+       reduce-whitespace-regexp "+"
+       "\\(" reduce-identifier-regexp "\\)")
      (1 font-lock-preprocessor-face)
      (2 font-lock-variable-name-face)
      (3 font-lock-variable-name-face))
 
     (,(concat "\\(#\\(?:el\\)?if\\_>\\)"
-              reduce-font-lock--whitespace-regexp "+" "\\(.*\\)")
+              reduce-whitespace-regexp "+" "\\(.*\\)")
      (1 font-lock-preprocessor-face)
      (2 'default))
 
@@ -297,8 +278,8 @@ constants (e.g. “pi”).")
   `("\\_<procedure\\_>"
     ;; anchored-highlighter to handle the rest of the statement:
     ,(concat "[^!]:"
-             reduce-font-lock--whitespace-regexp "*"
-             "\\(" reduce-font-lock--identifier-regexp "\\)")
+             reduce-whitespace-regexp "*"
+             "\\(" reduce-identifier-regexp "\\)")
     nil nil
     (1 font-lock-type-face t))
   "Rule to highlight types of procedure arguments and return values.")
@@ -306,23 +287,23 @@ constants (e.g. “pi”).")
 (defconst reduce-font-lock--assert-declare/struct-rules
   `((,(concat
        "\\(declare\\)"
-       reduce-font-lock--whitespace-regexp "+"
-       "\\(" reduce-font-lock--identifier-regexp "\\)"
-       reduce-font-lock--whitespace-regexp "*" ":")
+       reduce-whitespace-regexp "+"
+       "\\(" reduce-identifier-regexp "\\)"
+       reduce-whitespace-regexp "*" ":")
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face)
      ;; anchored-highlighter to handle the rest of the statement:
-     (,reduce-font-lock--identifier-regexp nil nil (0 font-lock-type-face)))
+     (,reduce-identifier-regexp nil nil (0 font-lock-type-face)))
     (,(concat
        "\\(struct\\)"
-       reduce-font-lock--whitespace-regexp "+"
-       "\\(" reduce-font-lock--identifier-regexp "\\)"
+       reduce-whitespace-regexp "+"
+       "\\(" reduce-identifier-regexp "\\)"
        ;; optionally followed by...
-       "\\(?:" reduce-font-lock--whitespace-regexp "+"
+       "\\(?:" reduce-whitespace-regexp "+"
        "\\(\\(?:checked\\|asserted\\)"
-       reduce-font-lock--whitespace-regexp "+"
-       "by\\)" reduce-font-lock--whitespace-regexp "+"
-       "\\(" reduce-font-lock--identifier-regexp "\\)\\)?")
+       reduce-whitespace-regexp "+"
+       "by\\)" reduce-whitespace-regexp "+"
+       "\\(" reduce-identifier-regexp "\\)\\)?")
      (1 font-lock-keyword-face)
      (2 font-lock-type-face)
      (3 font-lock-keyword-face t)
@@ -336,15 +317,15 @@ constants (e.g. “pi”).")
     ;; Fluid and global type declarations, which involve special cases
     ;; of quoted lists:
     (,(concat "\\_<\\(fluid\\|global\\)\\_>"
-              reduce-font-lock--whitespace-regexp "*" "'\(")
+              reduce-whitespace-regexp "*" "'\(")
      (1 font-lock-type-face)
-     (,(concat "\\=" reduce-font-lock--whitespace-regexp "*"
-               "\\(" reduce-font-lock--identifier-regexp "\\)")
+     (,(concat "\\=" reduce-whitespace-regexp "*"
+               "\\(" reduce-identifier-regexp "\\)")
       nil nil
       (1 font-lock-variable-name-face)))
 
     ;; Quoted identifiers:
-    (,(concat "'\\(" reduce-font-lock--identifier-regexp "\\)")
+    (,(concat "'\\(" reduce-identifier-regexp "\\)")
      (1 font-lock-constant-face))
 
     (;; Quoted lists (arbitrarily nested and multi-line):
@@ -363,8 +344,8 @@ constants (e.g. “pi”).")
 
     ;; Module keyword and module name:
     (,(concat "\\(?:^\\|[^']\\)\\_<\\(module\\)"
-              reduce-font-lock--whitespace-regexp "+"
-              "\\(" reduce-font-lock--identifier-regexp "\\)")
+              reduce-whitespace-regexp "+"
+              "\\(" reduce-identifier-regexp "\\)")
      (1 font-lock-keyword-face)
      (2 font-lock-constant-face))
 
@@ -395,10 +376,10 @@ get\\|put\\|deflist\\|flag\\|remprop\\|remflag\
     ;; lambda arg ;
     ;; lambda ( arg1 , arg2 , ... ) ;
     (,(concat "\\_<lambda\\_>"
-              reduce-font-lock--whitespace-regexp "*" "\(?")
-     (,(concat "\\=" reduce-font-lock--whitespace-regexp "*"
-               "\\(" reduce-font-lock--identifier-regexp "\\)"
-               reduce-font-lock--whitespace-regexp "*" "[,\)]?")
+              reduce-whitespace-regexp "*" "\(?")
+     (,(concat "\\=" reduce-whitespace-regexp "*"
+               "\\(" reduce-identifier-regexp "\\)"
+               reduce-whitespace-regexp "*" "[,\)]?")
       nil nil
       (1 font-lock-variable-name-face))))
   "List of “symbolic” REDUCE fontification rules.

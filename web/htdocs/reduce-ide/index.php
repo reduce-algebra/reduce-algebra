@@ -180,19 +180,39 @@ include '../include/begin-body.php';
                 selected.</li>
         </ul>
     </li>
-</ul>
+    <li>
+        <strong>REDUCE IDE version 1.10</strong> (December 2022):
+        <ul>
+            <li>Fix a trivial compilation error on Linux.</li>
+            <li>Parse comment statements robustly starting from the top of the buffer.</li>
+            <li>Fontify multi-line <code>/**/</code> comments correctly.</li>
+            <li>Support filling of <code>/**/</code> comments.</li>
+            <li>Improve indentation.</li>
+            <li>Treat REDUCE mode and REDUCE Run mode more as parts of an integrated REDUCE IDE package.
+                <ul>
+                    <li>Add a new option <code>autoload-reduce-run</code> to control whether, and if so how, to autoload
+                        REDUCE Run mode.</li>
+                    <li>Remove <code>require-reduce-run</code> as an option on <code>reduce-mode-load-hook</code>.</li>
+                    <li><strong>Note that <code>require-reduce-run</code> is now deprecated and will be removed in the
+                            next release</strong>; please use <code>autoload-reduce-run</code> instead.</li>
+                    <li>Optionally include in REDUCE mode buffers either the full Run REDUCE menu or a Run REDUCE menu
+                        stub, which can only run REDUCE or explicitly load REDUCE Run mode. Replace the stub with the
+                        full menu when REDUCE Run mode loads.</li>
+                </ul>
+            </li>
+        </ul>
 
-<p>Feedback is welcome.</p>
-<address>
-    <a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>
-</address>
+        <p>Feedback is welcome.</p>
+        <address>
+            <a href="https://sites.google.com/site/fjwcentaur/feedback">Francis Wright</a>
+        </address>
 
-</div><!-- opened in begin-body.php -->
+        </div><!-- opened in begin-body.php -->
 
-<?php
+        <?php
 include '../include/footer.php';
 ?>
 
-</body>
+        </body>
 
-</html>
+        </html>
