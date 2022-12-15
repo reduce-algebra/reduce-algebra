@@ -31,6 +31,8 @@
  *************************************************************************/
 
 
+// $Id$
+
 // My bignum package is a header-only library, so to use it you arrange
 // that the c++ compiler has a directive such as "-Idirectory_for_arithlib"
 // so that it can be found and you then just include the one file that
@@ -58,7 +60,6 @@ using namespace arithlib;
 // The tests come in sections, and these preprocessor symbols can be used
 // to select which sections get run.
 
-//#define TUNE_KARATSUBA 1
 #define COMPARE_GMP 1
 #define TEST_SOME_BASICS 1
 #define TEST_RANDOM 1
@@ -175,15 +176,6 @@ int main(int argc, char *argv[])
     const std::uint64_t MULT = 6364136223846793005U;
     const std::uint64_t ADD  = 1442695040888963407U;
 
-
-#ifdef TUNE_KARATSUBA
-
-// See the separate file kara2.cpp (which may not be available by now!) for
-// code that runs timings for a range of values of KARATSUBA_CUTOFF so that
-// it can suggest the best one to use.
-
-#endif // TUNE_KARATSUBA
-
 #ifdef COMPARE_GMP
 
     {   const std::size_t table_size = 300;
@@ -222,8 +214,8 @@ int main(int argc, char *argv[])
 // grow as n^1.585, and so to arrange that I tke roughly the same
 // absolute time on each number-length I perform my tests a number of
 // times scaled inversely by that.
-                std::size_t tests = 2+(10000*N)/static_cast<int>(std)::pow(
-                                        static_cast<double>(lena), 1.585);
+                std::size_t tests = 2+(10000*N)/static_cast<int>(std::pow(
+                                        static_cast<double>(lena), 1.585));
                 for (std::size_t n = 0; n<tests; n++)
                 {
 // The gpm function mpn_mul multiplies unsigned integers, while my
@@ -252,9 +244,11 @@ int main(int argc, char *argv[])
                             c[lena+lenb-1] = 0;
                             mpn_mul((mp_ptr)c,
                                     (mp_srcptr)a,
-                                    sizeof(std::uint64_t)/sizeof(mp_limb_t)*lena,
+                                    sizeof(std::uint64_t)/
+                                       sizeof(mp_limb_t)*lena,
                                     (mp_srcptr)b,
-                                    sizeof(std::uint64_t)/sizeof(mp_limb_t)*lenb);
+                                    sizeof(std::uint64_t)/
+                                       sizeof(mp_limb_t)*lenb);
                             ok = true;
                             for (std::size_t i=0; i<lena+lenb; i++)
                             {   if (c[i] != c1[i])

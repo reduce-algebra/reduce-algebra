@@ -681,10 +681,11 @@ extern size_t kparallel, karatsuba_parallel;
 // words, i.e. about 10 decimals).  Anyone who wants may recompile with
 // alternative values to try to get the system fine-tuned for their
 // own computer - but I do not expect it to be possible to achieve much
-// by so doing.
+// by so doing. Well uf you build using "--with-arithlib" the limit is
+// set in terms of 64-bit digits not 31-bit ones.
 //
 #ifdef ARITHLIB
-#define KARATSUBA_CUTOFF 1000000  // Buggy at present!
+#define KARATSUBA_CUTOFF 18
 #else // ARITHLIB
 #define KARATSUBA_CUTOFF 12
 #endif // ARITHLIB
