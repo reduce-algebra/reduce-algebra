@@ -1926,6 +1926,17 @@ AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
 
+# The Makefile that is built from Makefile.am will include these three
+# so it will be unhappy if they are not present... And there is a conflict
+# between the use of the word "include" in Makefile.am and Makefile...
+
+INCLUDE=include
+AC_SUBST([INCLUDE])
+AM_SUBST_NOTMAKE([INCLUDE])
+touch csl.dep
+touch bootstrapreduce.dep
+touch reduce.dep
+
 AC_OUTPUT
 
 # end of "configure.ac"

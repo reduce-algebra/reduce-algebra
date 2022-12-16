@@ -71,16 +71,12 @@ int main(int argc, char *argv[])
     std::chrono::duration<double, std::micro> elapsed;
     std::chrono::nanoseconds timing;
 
-    const int MILLION = 1000000;
-
-
-    std::size_t maxbits = 25000;
-    for (maxbits = 5000; maxbits<=25000; maxbits+=5000)
+    for (std::size_t maxbits = 250; maxbits<=2500; maxbits+=250)
     {   std::size_t ntries = 250000;
         std::cout << "Test with maxbits = " << maxbits
-           << ": " ((maxbits+63)/64) << " words\n";
+           << ": " << ((maxbits+63)/64) << " words\n";
 #define MAX_KARA_CUTOFF 35
-        for (klimit = 5; klimit < MAX_KARA_CUTOFF; klimit++)
+        for (klimit = 2; klimit < MAX_KARA_CUTOFF; klimit++)
         {   reseed(seed);
             clk = std::chrono::high_resolution_clock::now();
 

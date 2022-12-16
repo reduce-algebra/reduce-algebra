@@ -1831,7 +1831,7 @@ bootstrapreduce.prototypes:	prototypes
 reduce.prototypes:	prototypes
 	./prototypes -I $(srcdir) $(reduce_SOURCES) > reduce.prototypes
 
--include reduce.dep
+@INCLUDE@ reduce.dep
 
 reduce.dep:
 	$(TRACE)touch reduce.dep
@@ -1933,7 +1933,7 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 	-mkdir -p reduce.resources
 	$(CP) $(packages)/redlog/ofsf/qepcad.awk reduce.resources
 
--include bootstrapreduce.dep
+@INCLUDE@ bootstrapreduce.dep
 
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
@@ -2240,7 +2240,7 @@ cleanlog:
 # here in that cygwin paths that include cygwin symbolic links or that
 # are absolute (starting with "/") may not be handled well by my code.
 
--include csl.dep
+@INCLUDE@ csl.dep
 
 csl.dep:
 	$(TRACE)touch csl.dep
