@@ -424,8 +424,12 @@
 // way of achieving the same through use of C++11 annotations. And a final
 // fall back to just not worrying.
 
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif
+
 #ifndef MAYBE_UNUSED
-#ifdef __has_cpp_attribute_maybe_unused
+#if __has_cpp_attribute(maybe_unused)
 #define MAYBE_UNUSED [[maybe_unused]]
 #elif defined __GNUC__
 #define MAYBE_UNUSED [[gnu::unused]]
@@ -433,6 +437,22 @@
 #define MAYBE_UNUSED
 #endif
 #endif
+
+#ifndef LIKELY
+#if __has_cpp_attribute(likely)
+#define LIKELY [[likely]]
+#else // __has_cpp_attribute(likely)
+#define LIKELY
+#endif // __has_cpp_attribute(likely)
+#endif // LIKELY
+
+#ifndef UNLIKELY
+#if __has_cpp_attribute(unlikely)
+#define UNLIKELY [[unlikely]]
+#else // __has_cpp_attribute(unlikely)
+#define UNLIKELY
+#endif // __has_cpp_attribute(unlikely)
+#endif // UNLIKELY
 
 #include <cstdio>
 #include <cstring>
@@ -1522,15 +1542,21 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
     else return OP::op(vector_of_handle(a1), n);
 }
 
+// I am going to arrange that if the C++ compiler optimised it at all
+// it will prefer operations on small numbers.
+
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
@@ -1724,12 +1750,15 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
@@ -1874,12 +1903,15 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
@@ -2052,12 +2084,15 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
@@ -7644,7 +7679,7 @@ inline std::intptr_t Plus::op(std::int64_t a, std::int64_t b)
 // them and be certain I will not get arithmetic overflow. However the
 // resulting value may no longer be representable as a fixnum.
     std::int64_t c = a + b;
-    if (fits_into_fixnum(c)) return int_to_handle(c);
+    if (fits_into_fixnum(c)) LIKELY return int_to_handle(c);
 // Now because there had not been overflow I know that the bignum will
 // only need one word.
     std::uint64_t *r = reserve(1);
@@ -9245,6 +9280,7 @@ inline std::intptr_t Times::op(std::int64_t a, std::int64_t b)
     if ((hi==0 && positive(lo)) ||
         (hi==-1 && negative(lo)))
     {   if (fits_into_fixnum(static_cast<std::int64_t>(lo)))
+            LIKELY
             return int_to_handle(static_cast<std::int64_t>(lo));
         std::uint64_t *r = reserve(1);
         r[0] = lo;
@@ -9369,6 +9405,7 @@ inline std::intptr_t Square::op(std::int64_t a)
     if ((hi == 0 && positive(lo)) ||
         (hi == static_cast<std::uint64_t>(-1) && negative(lo)))
     {   if (fits_into_fixnum(static_cast<std::int64_t>(lo)))
+            LIKELY
             return int_to_handle(static_cast<std::int64_t>(lo));
         else
         {   std::uint64_t *p = reserve(1);
@@ -10178,14 +10215,16 @@ inline std::intptr_t Quotient::op(std::uint64_t *a, std::int64_t b)
 
 inline std::intptr_t Quotient::op(std::int64_t a, std::uint64_t *b)
 {   if (number_size(b)==1 &&
-        b[0]==-static_cast<std::uint64_t>(a)) return int_to_handle(-1);
+        b[0]==-static_cast<std::uint64_t>(a))
+        UNLIKELY
+        return int_to_handle(-1);
     return int_to_handle(0);
 }
 
 // unpleasantly -0x8000000000000000 / -1 => a bignum
 
 inline std::intptr_t Quotient::op(std::int64_t a, std::int64_t b)
-{   if (b==-1 && a == MIN_FIXNUM) return int_to_bignum(-a);
+{   if (b==-1 && a == MIN_FIXNUM) UNLIKELY return int_to_bignum(-a);
     else return int_to_handle(a / b);
 }
 
@@ -11146,8 +11185,10 @@ inline std::intptr_t value_of_current_modulus()
 }
 
 inline std::intptr_t SetModulus::op(std::int64_t n)
-{   if (n < 1) return (std::intptr_t)aerror1("Invalid arg to set-modulus",
-                                             int_to_handle(n));
+{   if (n < 1)
+        UNLIKELY
+        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+                                      int_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
     small_modulus = n;
     if (n <= 0xffffffffU) modulus_size = modulus_32;
@@ -11157,6 +11198,7 @@ inline std::intptr_t SetModulus::op(std::int64_t n)
 
 inline std::intptr_t SetModulus::op(std::uint64_t *n)
 {   if (!Plusp::op(n))
+        UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       vector_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
@@ -11217,6 +11259,7 @@ inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t *b)
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
     if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
             vector_to_handle(b));
     std::intptr_t r = Plus::op(a, b);
@@ -11236,6 +11279,7 @@ inline std::intptr_t ModularPlus::op(std::uint64_t *a, std::int64_t b)
 inline std::intptr_t ModularPlus::op(std::uint64_t *a,
                                      std::uint64_t *b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     std::intptr_t r = Plus::op(a, b);
@@ -11248,17 +11292,17 @@ inline std::intptr_t ModularPlus::op(std::uint64_t *a,
     else return r;
 }
 
-inline std::intptr_t ModularDifference::op(std::int64_t a,
-        std::int64_t b)
+inline std::intptr_t ModularDifference::op(std::int64_t a, std::int64_t b)
 {   if (a >= b) return int_to_handle(a - b);
     if (modulus_size == modulus_big) return Plus::op(large_modulus(),
-                                                a - b);
+                                                     a - b);
     else return int_to_handle(small_modulus - b + a);
 }
 
 inline std::intptr_t ModularDifference::op(std::int64_t a,
         std::uint64_t *b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(b));
     std::intptr_t r = Difference::op(b, a);
@@ -11271,6 +11315,7 @@ inline std::intptr_t ModularDifference::op(std::int64_t a,
 inline std::intptr_t ModularDifference::op(std::uint64_t *a,
         std::int64_t b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     return Difference::op(a, b);
@@ -11279,6 +11324,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t *a,
 inline std::intptr_t ModularDifference::op(std::uint64_t *a,
         std::uint64_t *b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     if (Geq::op(a, b)) return Difference::op(a, b);
@@ -11405,6 +11451,7 @@ inline std::intptr_t ModularMinus::op(std::int64_t a)
 
 inline std::intptr_t ModularMinus::op(std::uint64_t *a)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad argument for modular-minus", vector_to_handle(a));
     return Difference::op(large_modulus(), a);
 }
@@ -11424,8 +11471,10 @@ inline std::intptr_t general_modular_reciprocal(std::intptr_t aa, bool safe=fals
     {   intptr_t w, t;
         if (b == int_to_handle(0))
         {   if (safe) return nil;
-            else return (std::intptr_t)aerror(
-                "non-prime modulus in modular-reciprocal");
+            else
+                UNLIKELY
+                return (std::intptr_t)aerror(
+                    "non-prime modulus in modular-reciprocal");
         }
         w = Quotient::op(a, b);
         t = b;
@@ -11440,8 +11489,10 @@ inline std::intptr_t general_modular_reciprocal(std::intptr_t aa, bool safe=fals
 }
 
 inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
-{   if (aa <= 0) return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
-                             int_to_handle(aa));
+{   if (aa <= 0)
+        UNLIKELY
+        return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
+                                      int_to_handle(aa));
     else if (modulus_size == modulus_big)
         return general_modular_reciprocal(int_to_handle(aa));
     std::int64_t a = small_modulus,
@@ -11451,6 +11502,7 @@ inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
     while (b != 1)
     {   std::uint64_t w, t;
         if (b == 0)
+            UNLIKELY
             return (std::intptr_t)aerror2("non-prime modulus in modular-reciprocal",
                     int_to_handle(small_modulus),
                     int_to_handle(aa));
@@ -11471,9 +11523,12 @@ inline std::intptr_t ModularReciprocal::op(std::uint64_t *a)
 }
 
 inline std::intptr_t SafeModularReciprocal::op(std::int64_t aa)
-{   if (aa <= 0) return (std::intptr_t)aerror1("bad argument to safe-modular-reciprocal",
-                             int_to_handle(aa));
+{   if (aa <= 0)
+        UNLIKELY
+        return (std::intptr_t)aerror1("bad argument to safe-modular-reciprocal",
+                                      int_to_handle(aa));
     else if (modulus_size == modulus_big)
+        UNLIKELY
         return general_modular_reciprocal(int_to_handle(aa), true);
     std::int64_t a = small_modulus,
                  b = aa,

@@ -2032,8 +2032,8 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp \
 		$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
-	$(TRACE)$(RM) -f $(gensrc)/make.tmp
-	touch $(gensrc)/make.tmp
+#	$(TRACE)$(RM) -f $(gensrc)/make.tmp
+	$(TRACE)touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	$(MAKE) just-c-code

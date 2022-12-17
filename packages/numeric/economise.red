@@ -271,6 +271,123 @@ symbolic procedure economise_series u;
 
 put('economise_series, 'psopfn, 'economise_series);
 
+% The purpose of this code is to generate rational functions that
+% interpolate to give an approximation to a function. By spreading the
+% interpolation knots across a range from u to v there is a good
+% prospect that the rational function found will be a good approimation
+% to the specified function across that range. This is a useful thing
+% to do because for many functions approximations via polynomials need
+% quite large numbers of terms while rational approximations can deliver
+% accuracy much more economically.
+% Well ideally one would like minimax rational approximations but the
+% scheme here is easier to implement! Also I force my rational function to
+% match the target function perfectly as a sequence of evenly spaced
+% abscissa, and it is very probable that one could get better approximations
+% (ie the same accuracy but with fewer terms) by some other spacing.
+
+% This is going to work with rational functions expressed as generalised
+% continued fractions that are set up such that they are functions of x
+% and their values can be predicted at a series of points x_1.
+
+% Consider
+%    a function f(x) that has valued f_i at points x_i for i = 0,2,...,N-1
+% I will set up a sequnce of approximations R_i based on coefficients a_i
+% that I will want to find and a sequence
+%    R_0 =   a_0;
+%    R_1 =   a_0 + (x - x_0)/ a_1
+%    R_2 =   a_0 + (x - x_0)/(a_1 + (x - x_1)/ a_2)
+%    R_3 =   a_0 + (x - x_0)/(a_1 + (x - x_1)/(a_2 + (x - x_2)/a_3))
+%    ...
+%
+% I solve the first of these for a_0 to make R_0(x_0) = f_0. Then because of
+% the factor (x - x_0) all the subsequence R_i also have that value at x_0.
+%
+% Next I solve the second for a_1 so that R_1(x_1) = f_1. And so on.
+% I will find that R_N(x) = f for x in {x_0, x_1, ... x_N-1}. Ie I have found
+% an interpolating approximation for f through those N points. It will be a
+% rational function with about the same degree numerator as denominator.
+%
+% Now I write P_0 = a_0, Q_0 = 1
+%         and P_1 = a_0*a_1 + x-x_0, Q_2 = a_1
+% then
+%     P_i = a_i*P_i-1 + (x - x_i-1)*P_i-2
+%     Q_i = a_i*Q_i-1 + (x - x_i-1)*Q_i-2
+%
+% Now at stage k I will want to find a_k to get a value to match at x_k.
+% So I want P_k(x_k)/Q_k(x_k) - f(x_k)
+%    a_k*P_k-1 + (x - x_k-1)*P_k-2 = f(x_k)*(a_k*Q_k-1 + (x - x_k-1)*Q_k-2)
+% and if I separate out a_k I get
+%    a_k*(P_k-1 - f(x_k)*Q_k-1) = (x_k-x_k-1)*(f(x_k)*Q_k-2 - P_k-2)
+% so it is very easy to evaluate a_k. Well there is one caveat. If any of the
+% knot-points x_i were repeated then that equation would lead to a division
+% 0/0. Well in that case it would need to be evaluated as the limit as x
+% approached x_k and arranging that just involved a bit of differentiation.
+                                     
+% I limit myself to a maximum of 50 points here...
+array xx(50), a(50), p(50), q(50);
+
+fluid '(save_precision save_rounded);
+
+% If accuracy > 1 then it is treated as a request for exactly that
+% many points to be used in the interpolation. Otherwise it is a
+% target for the absolute error in the approximation. 
+
+algebraic procedure multipoint_pade(f, u, v, accuracy);
+  begin
+    scalar N, Nlimit, targetErr, stopOnErr, worst, err;
+    if accuracy > 1 then <<
+       N := fix accuracy;
+       stopOnErr := 0 >>
+    else <<
+       N := 2;
+       targetErr := accuracy;
+       worst := targetErr + 1;
+       stopOnErr := 1 >>;
+    if n > 50 then return "N too large, sorry";
+    lisp (save_rounded := !*rounded);
+    lisp (save_precision := precision (2*precision 0));
+    on rounded;
+    while (stopOnErr=0 and N<=fix accuracy) or
+          (stopOnErr=1 and worst>targetErr and N<50) do <<
+
+      for i:=0:N-1 do
+        xx(i) := u + i*(v-u)/(N-1);
+
+      a(0) := f(xx(0));
+      a(1) := (xx(1)-xx(0))/(f(xx(1)) - a(0));
+
+      p(0) := a 0;
+      q(0) := 1;
+      p(1) := a 0 * a 1 + (x - xx 0);
+      q(1) := a 1;
+
+      for i := 2:N-1 do <<
+        a(i) := (xx(i)-xx(i-1))*(f(xx(i))*sub(x=xx(i),Q(i-2)) -
+                                          sub(x=xx(i),P(i-2))) /
+                (sub(x=xx(i),P(i-1)) - f(xx(i))*sub(x=xx(i),Q(i-1)));
+
+        p(i) := a i * p(i-1) + (x - xx(i-1))*p(i-2);
+        q(i) := a i * q(i-1) + (x - xx(i-1))*q(i-2);
+        worst := 0;
+        for j := 0 : 20*N do <<
+          z := u + j*(v-u)/(20*N);
+          err := abs(f(z) - sub(x=z, p(i))/sub(x=z, q(i)));
+          if err > worst then worst := err >> >>;
+
+      if stopOnErr = 1 then <<
+         precision 6;
+         write "With N=", N, " error = ", worst;
+         lisp precision (2*save_precision) >>;
+      N := N+1 >>;
+    precision 6;
+    write "Order ", N-1, "  Worst error = ", worst;
+    lisp precision save_precision;
+    lead := sub(x=0, Q(N-2));
+    write coeff(P(N-2)/lead, x);
+    write coeff(Q(N-2)/lead, x);
+    lisp if not save_rounded then off rounded;
+  end;
+
 endmodule;
 
 end;

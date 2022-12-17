@@ -48,4 +48,18 @@ economise_series(a0 + a1*x + a2*x^2 + a3*x^3 + a4*x^4 + a5*x^5,
                  x = (u .. v), 4);
 
 
+% Now I will find a rational function that interpolates to approximate
+% exp x taking exact values at 17 point across the range 0 .. log 2, which
+% should be a range where the value runs from 1 to 2.
+
+precision 40;
+
+multipoint_pade(exp, 0, log 2, 1.0e-35);
+
+% Now similarly for log(1+x)
+
+precision 20;
+procedure ll x; log(1+x);
+multipoint_pade(ll, 0, 1, 20);
+
 end;
