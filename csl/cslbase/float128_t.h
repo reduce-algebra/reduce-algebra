@@ -165,6 +165,8 @@ extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 
 
 extern float128_t f128_NaN;         // a NaN
+extern float128_t f128_inf;         // infinity
+extern float128_t f128_minf;        // -infinity
 extern float128_t f128_0;           // 0.0_Q . v;
 extern float128_t f128_half;        // 0.5_Q . v;
 extern float128_t f128_mhalf;       // (-0.5_Q) . v;
@@ -902,6 +904,8 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
 }
 
 INLINE_VAR float128_t f128_NaN          = {fpOrder(0, 0x7fff800000000000LL)}; 
+INLINE_VAR float128_t f128_inf          = {fpOrder(0, 0x7fff000000000000LL)}; 
+INLINE_VAR float128_t f128_minf         = {fpOrder(0, 0xffff000000000000LL)}; 
 INLINE_VAR float128_t f128_0            = 0.0_Q . v;
 INLINE_VAR float128_t f128_half         = 0.5_Q . v;
 INLINE_VAR float128_t f128_mhalf        = (-0.5_Q) . v;
