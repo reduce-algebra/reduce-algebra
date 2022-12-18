@@ -10155,6 +10155,8 @@ inline void unsigned_long_division(std::uint64_t *a,
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
     lena++;
+    uint64_t w = scale_for_division(b, lenb, ss);
+    arithlib_assert(w == 0);
     lenq = lena-lenb; // potential length of quotient.
     std::size_t m = lenq-1;
     for (;;)

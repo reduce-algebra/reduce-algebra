@@ -33,10 +33,8 @@
 
 // $Id$
 
-// This is "random" in two senses! It contains some oddments of stray
-// functions, but also the ones that return random and pseudo-random
-// numbers.
-
+// This contains some oddments of stray functions, including the ones
+// that return random and pseudo-random numbers.
 
 #include "headers.h"
 

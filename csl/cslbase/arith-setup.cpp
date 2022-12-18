@@ -37,7 +37,6 @@
 
 // $Id$
 
-
 #include "headers.h"
 
 setup_type const arith_setup[] =

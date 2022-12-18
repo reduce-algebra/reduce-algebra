@@ -34,7 +34,7 @@
  *************************************************************************/
 
 
-// $Id: arith10.cpp 6405 2022-10-19 20:27:42Z arthurcnorman $
+// $Id$
 
 // NOTE:
 // This started as a copy of the older file arith10.cpp with functions
@@ -42,7 +42,6 @@
 // When everything is fully stable I will remove the original versions
 // of the code from arith10.cpp so that the versions here are the only
 // ones. Also arith13.cpp for complex elementary functions.
-
 
 #include "headers.h"
 

@@ -480,6 +480,9 @@ put('num_solve,'psopfn,'rdsolveeval);
 defautoload(economise_series,economise);
 put('economise_series, 'psopfn, 'economise_series);
 
+defautoload(multipoint_pade,economise,expr,4);
+flag('(multipoint_pade), 'opfn);
+
 % Plot module entry points.
 
 put('plot,'psopfn,'(lambda(u) (prog (!*msg) (load!-package 'gnuplot) (ploteval u))));

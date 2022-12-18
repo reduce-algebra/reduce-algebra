@@ -1394,8 +1394,7 @@ inline LispObject list2star(LispObject a, LispObject b, LispObject c)
     return r1;
 }
 
-inline LispObject list2starrev(LispObject c, LispObject b,
-                               LispObject a)
+inline LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {   if (get4WordsValid()) LIKELY
     {   LispObject r1 = get4Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
