@@ -1624,6 +1624,8 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
                                   std::size_t final)
 {   if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
     {   std::intptr_t r = int_to_handle(static_cast<std::int64_t>(p[0]));
+// The bignum that I am abandoning was given a header word when it was
+// first allocated, so it is in good order here.
         return r;
     }
 // Note that pack_hdrlength() takes its argument measured in units of
@@ -1640,7 +1642,14 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
     if (sizeof(LispObject) == 4)
         ((LispObject *)&p[-1])[1] = 0;
 // Here I could maybe reset fringe down by (final-n) if the current number
-// is the most recently allocated item. Think about that later!
+// is the most recently allocated item. Think about that later! However to
+// be garbage-collector safe I fill any gaps with valid data...
+    if (n != final)
+    {   ((LispObject *)&p[final])[0] =
+            TAG_HDR_IMMED + TYPE_PADDER + ((n-final)<<(Tw+8));
+        if (sizeof(LispObject) == 4)
+            ((LispObject *)&p[n])[1] = 0;
+    }
     return vector_to_handle(p);
 }
 
@@ -1712,15 +1721,24 @@ inline void abandon(std::intptr_t p)
 }
 
 inline char *reserve_string(std::size_t n)
-{   LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
-                                    CELL+n);
+{   LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     return reinterpret_cast<char *>(a - TAG_VECTOR + sizeof(LispObject));
 }
 
 inline LispObject confirm_size_string(char *p, std::size_t n,
-                                      std::size_t final)
-{   LispObject *a = (LispObject *)(p - sizeof(LispObject));
+                                               std::size_t final)
+{
+// The size of the string object in memory must allow for  a Lisp header
+    n += sizeof(std::uintptr_t);
     final += sizeof(std::uintptr_t);
+// The object size gets padded up to a multiple of 8 bytes.
+    size_t nPadded = (n+7) & -8;
+    size_t finalPadded = (final+7) & -8;
+    if (nPadded != finalPadded)
+        *reinterpret_cast<LispObject*>(p+finalPadded) =
+            TAG_HDR_IMMED + TYPE_PADDER +
+            ((nPadded-finalPadded)<<(Tw+5));
+    LispObject *a = reinterpret_cast<LispObject*>(p - sizeof(LispObject));
     *a = TAG_HDR_IMMED + TYPE_STRING_4 + (final<<(Tw+5));
     return (LispObject)a + TAG_VECTOR;
 }
