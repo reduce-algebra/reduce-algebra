@@ -2808,134 +2808,152 @@ LispObject Ngreaterp(LispObject env, LispObject a1,
 LispObject Ngreaterp(LispObject env, LispObject a1,
                             LispObject a2,
                             LispObject a3, LispObject a4plus)
-{   if (!Greaterp::op(a1, a2)) return onevalue(nil);
-    if (!Greaterp::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Greaterp::op(a1, a2)) return nil;
+    if (!Greaterp::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Greaterp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Greaterp::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Ngeq(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Geq::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Geq::op(a1, a2));
 }
 
 LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
-{   return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
 }
 
 LispObject Ngeq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4plus)
-{   if (!Geq::op(a1, a2)) return onevalue(nil);
-    if (!Geq::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Geq::op(a1, a2)) return nil;
+    if (!Geq::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Geq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Geq::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nlessp(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Lessp::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Lessp::op(a1, a2));
 }
 
 LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
 }
 
 LispObject Nlessp(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   if (!Lessp::op(a1, a2)) return onevalue(nil);
-    if (!Lessp::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Lessp::op(a1, a2)) return nil;
+    if (!Lessp::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Lessp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Lessp::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nleq(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Leq::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Leq::op(a1, a2));
 }
 
 LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
-{   return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
 }
 
 LispObject Nleq(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4plus)
-{   if (!Leq::op(a1, a2)) return onevalue(nil);
-    if (!Leq::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Leq::op(a1, a2)) return nil;
+    if (!Leq::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Leq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Leq::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Eqn::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Eqn::op(a1, a2));
 }
 
 LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
 }
 
 LispObject Neqn_a(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   if (!Eqn::op(a1, a2)) return onevalue(nil);
-    if (!Eqn::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Eqn::op(a1, a2)) return nil;
+    if (!Eqn::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Eqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Eqn::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(CLEqn::op(a1, a2));
+{   SingleValued fn;
+    return onebool(CLEqn::op(a1, a2));
 }
 
 LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onebool(CLEqn::op(a1, a2) && CLEqn::op(a2, a3));
+{   SingleValued fn;
+    return onebool(CLEqn::op(a1, a2) && CLEqn::op(a2, a3));
 }
 
 LispObject NCLEqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   if (!CLEqn::op(a1, a2)) return onevalue(nil);
-    if (!CLEqn::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!CLEqn::op(a1, a2)) return nil;
+    if (!CLEqn::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (CLEqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (CLEqn::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nneqn(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Neqn::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Neqn::op(a1, a2));
 }
 
 LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
-{   return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
+{   SingleValued fn;
+    return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
                    Neqn::op(a1, a3));
 }
 
@@ -2945,228 +2963,263 @@ LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nneqn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
-{   if (!Neqn::op(a1, a2)) return onevalue(nil);
-    if (!Neqn::op(a2, a3)) return onevalue(nil);
-    if (!Neqn::op(a1, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Neqn::op(a1, a2)) return nil;
+    if (!Neqn::op(a2, a3)) return nil;
+    if (!Neqn::op(a1, a3)) return nil;
     for (LispObject w=a4plus; is_cons(w); w=cdr(w))
     {   LispObject a = car(w);
-        if (!Neqn::op(a1, a)) return onevalue(nil);
-        if (!Neqn::op(a2, a)) return onevalue(nil);
-        if (!Neqn::op(a3, a)) return onevalue(nil);
+        if (!Neqn::op(a1, a)) return nil;
+        if (!Neqn::op(a2, a)) return nil;
+        if (!Neqn::op(a3, a)) return nil;
     }
     a2 = a3;
     for (; is_cons(a4plus); a4plus=cdr(a4plus))
     {   LispObject a = car(a4plus);
         for (LispObject  w = cdr(a4plus); is_cons(w); w = cdr(w))
-        {   if (!Neqn::op(a, car(w))) return onevalue(nil);
+        {   if (!Neqn::op(a, car(w))) return nil;
         }
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nmax(LispObject env)
-{   return aerror("max called witout arguments");
+{   SingleValued fn;
+    return aerror("max called witout arguments");
 }
 
 LispObject Nmax(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nmax(LispObject env, LispObject a1, LispObject a2)
-{   if (Lessp::op(a1, a2)) return onevalue(a2);
-    return onevalue(a1);
+{   SingleValued fn;
+    if (Lessp::op(a1, a2)) return a2;
+    return a1;
 }
 
 LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3)
-{   if (Lessp::op(a1, a2)) a1 = a2;
+{   SingleValued fn;
+    if (Lessp::op(a1, a2)) a1 = a2;
     if (Lessp::op(a1, a3)) a1 = a3;
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Nmax(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4plus)
-{   if (Lessp::op(a1, a2)) a1 = a2;
+{   SingleValued fn;
+    if (Lessp::op(a1, a2)) a1 = a2;
     if (Lessp::op(a1, a3)) a1 = a3;
     while (is_cons(a4plus))
     {   LispObject w = car(a4plus);
         if (Lessp::op(a1, w)) a1 = w;
         a4plus = cdr(a4plus);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Nmin(LispObject env)
-{   return aerror("min called witout arguments");
+{   SingleValued fn;
+    return aerror("min called witout arguments");
 }
 
 LispObject Nmin(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nmin(LispObject env, LispObject a1, LispObject a2)
-{   if (Greaterp::op(a1, a2)) return onevalue(a2);
-    return onevalue(a1);
+{   SingleValued fn;
+    if (Greaterp::op(a1, a2)) return a2;
+    return a1;
 }
 
 LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3)
-{   if (Greaterp::op(a1, a2)) a1 = a2;
+{   SingleValued fn;
+    if (Greaterp::op(a1, a2)) a1 = a2;
     if (Greaterp::op(a1, a3)) a1 = a3;
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Nmin(LispObject env, LispObject a1, LispObject a2,
                                 LispObject a3, LispObject a4plus)
-{   if (Greaterp::op(a1, a2)) a1 = a2;
+{   SingleValued fn;
+    if (Greaterp::op(a1, a2)) a1 = a2;
     if (Greaterp::op(a1, a3)) a1 = a3;
     while (is_cons(a4plus))
     {   LispObject w = car(a4plus);
         if (Greaterp::op(a1, w)) a1 = w;
         a4plus = cdr(a4plus);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Nionep(LispObject env, LispObject a1)
-{   return onebool(Onep::op(a1));
+{   SingleValued fn;
+    return onebool(Onep::op(a1));
 }
 
 LispObject Nievenp(LispObject env, LispObject a1)
-{   return onebool(Evenp::op(a1));
+{   SingleValued fn;
+    return onebool(Evenp::op(a1));
 }
 
 LispObject Nioddp(LispObject env, LispObject a1)
-{   return onebool(Oddp::op(a1));
+{   SingleValued fn;
+    return onebool(Oddp::op(a1));
 }
 
 LispObject Nizerop(LispObject env, LispObject a1)
-{   return onebool(Zerop::op(a1));
+{   SingleValued fn;
+    return onebool(Zerop::op(a1));
 }
 
 LispObject Niminusp(LispObject env, LispObject a1)
-{   return onebool(Minusp::op(a1));
+{   SingleValued fn;
+    return onebool(Minusp::op(a1));
 }
 
 LispObject Niminus(LispObject env, LispObject a1)
-{   return onevalue(Minus::op(a1));
+{   SingleValued fn;
+    return Minus::op(a1);
 }
 
 LispObject Niabs(LispObject env, LispObject a1)
-{   return onevalue(Abs::op(a1));
+{   SingleValued fn;
+    return Abs::op(a1);
 }
 
 LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Greaterp::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Greaterp::op(a1, a2));
 }
 
 LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   return onebool(Greaterp::op(a1, a2) && Greaterp::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Greaterp::op(a1, a2) && Greaterp::op(a2, a3));
 }
 
 LispObject Nigreaterp(LispObject env, LispObject a1, LispObject a2,
                              LispObject a3, LispObject a4plus)
-{   if (!Greaterp::op(a1, a2)) return onevalue(nil);
-    if (!Greaterp::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Greaterp::op(a1, a2)) return nil;
+    if (!Greaterp::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Greaterp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Greaterp::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nigeq(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Geq::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Geq::op(a1, a2));
 }
 
 LispObject Nigeq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Geq::op(a1, a2) && Geq::op(a2, a3));
 }
 
 LispObject Nigeq(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
-{   if (!Geq::op(a1, a2)) return onevalue(nil);
-    if (!Geq::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Geq::op(a1, a2)) return nil;
+    if (!Geq::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Geq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Geq::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nilessp(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Lessp::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Lessp::op(a1, a2));
 }
 
 LispObject Nilessp(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Lessp::op(a1, a2) && Lessp::op(a2, a3));
 }
 
 LispObject Nilessp(LispObject env, LispObject a1, LispObject a2,
                           LispObject a3, LispObject a4plus)
-{   if (!Lessp::op(a1, a2)) return onevalue(nil);
-    if (!Lessp::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Lessp::op(a1, a2)) return nil;
+    if (!Lessp::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Lessp::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Lessp::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nileq(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Leq::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Leq::op(a1, a2));
 }
 
 LispObject Nileq(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Leq::op(a1, a2) && Leq::op(a2, a3));
 }
 
 LispObject Nileq(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
-{   if (!Leq::op(a1, a2)) return onevalue(nil);
-    if (!Leq::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Leq::op(a1, a2)) return nil;
+    if (!Leq::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Leq::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Leq::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Eqn::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Eqn::op(a1, a2));
 }
 
 LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
+{   SingleValued fn;
+    return onebool(Eqn::op(a1, a2) && Eqn::op(a2, a3));
 }
 
 LispObject Nieqn_a(LispObject env, LispObject a1, LispObject a2,
                           LispObject a3, LispObject a4plus)
-{   if (!Eqn::op(a1, a2)) return onevalue(nil);
-    if (!Eqn::op(a2, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Eqn::op(a1, a2)) return nil;
+    if (!Eqn::op(a2, a3)) return nil;
     a2 = a3;
     while (is_cons(a4plus))
-    {   if (Eqn::op(a2, a3 = car(a4plus))) return onevalue(nil);
+    {   if (Eqn::op(a2, a3 = car(a4plus))) return nil;
         a2 = a3;
         a4plus = cdr(a4plus);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Nineqn(LispObject env, LispObject a1, LispObject a2)
-{   return onebool(Neqn::op(a1, a2));
+{   SingleValued fn;
+    return onebool(Neqn::op(a1, a2));
 }
 
 LispObject Nineqn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
-{   return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
+{   SingleValued fn;
+    return onebool(Neqn::op(a1, a2) && Neqn::op(a2, a3) &&
                    Neqn::op(a1, a3));
 }
 
@@ -3176,23 +3229,24 @@ LispObject Nineqn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 
 LispObject Nineqn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   if (!Neqn::op(a1, a2)) return onevalue(nil);
-    if (!Neqn::op(a2, a3)) return onevalue(nil);
-    if (!Neqn::op(a1, a3)) return onevalue(nil);
+{   SingleValued fn;
+    if (!Neqn::op(a1, a2)) return nil;
+    if (!Neqn::op(a2, a3)) return nil;
+    if (!Neqn::op(a1, a3)) return nil;
     for (LispObject w=a4plus; is_cons(w); w=cdr(w))
     {   LispObject a = car(w);
-        if (!Neqn::op(a1, a)) return onevalue(nil);
-        if (!Neqn::op(a2, a)) return onevalue(nil);
-        if (!Neqn::op(a3, a)) return onevalue(nil);
+        if (!Neqn::op(a1, a)) return nil;
+        if (!Neqn::op(a2, a)) return nil;
+        if (!Neqn::op(a3, a)) return nil;
     }
     a2 = a3;
     for (; is_cons(a4plus); a4plus=cdr(a4plus))
     {   LispObject a = car(a4plus);
         for (LispObject  w = cdr(a4plus); is_cons(w); w = cdr(w))
-        {   if (!Neqn::op(a, car(w))) return onevalue(nil);
+        {   if (!Neqn::op(a, car(w))) return nil;
         }
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 #endif // ARITHLIB

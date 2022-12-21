@@ -1522,34 +1522,33 @@ inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
 }
 
 inline LispObject Lcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get2Words() + TAG_CONS;
+{   SingleValued fn;
+    LispObject r1 = get2Words() + TAG_CONS;
     setcar(r1, a);
     setcdr(r1, b);
-    return onevalue(r1);
+    return r1;
 }
 
 inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
-{   LispObject r1 = get2Words() + TAG_CONS;
+{   SingleValued fn;
+    LispObject r1 = get2Words() + TAG_CONS;
     setcar(r1, b);
     setcdr(r1, a);
-    return onevalue(r1);
+    return r1;
 }
 
 inline LispObject Lnilfn(LispObject)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 inline LispObject Lncons(LispObject env, LispObject a)
-{   LispObject r1 = get2Words() + TAG_CONS;
+{   SingleValued fn;
+    LispObject r1 = get2Words() + TAG_CONS;
     setcar(r1, a);
     setcdr(r1, nil);
-    return onevalue(r1);
+    return r1;
 }
-
-extern LispObject Lgctest_0(LispObject);
-extern LispObject Lgctest_1(LispObject, LispObject);
-extern LispObject Lgctest_2(LispObject, LispObject, LispObject);
-extern void gcTestCode(); // temporary and for debugging.
 
 // For up to 16 segments I have...
 //   heapSegmentCount   number of allocated segments

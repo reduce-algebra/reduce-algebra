@@ -91,7 +91,7 @@ restart:
 // If the symbol was fluid or global its value cell should have been
 // initialized when it got declared, so I will not cgeck for "unset_var"
 // again here.
-        if ((h & SYM_KEYWORD_VAR) != 0) return onevalue(qvalue(u));
+        if ((h & SYM_KEYWORD_VAR) != 0) return nvalues(qvalue(u), 1);
 // If a symbol is not global or fluid then it ought to be bound locally,
 // ir mentioned in the environment. This can include as a special case it
 // being subject to a local declaration that it is global! This is
@@ -110,7 +110,7 @@ restart:
 // locally global but did not have a global value set.
                         if (v == unset_var) return error(1, err_unset_var, u);
                     }
-                    return onevalue(v);
+                    return nvalues(v, 1);
                 }
                 env = cdr(env);
             }
@@ -122,7 +122,7 @@ restart:
 // between error detection and convenience for the informal user!
             {   LispObject v = qvalue(u);
                 if (v == unset_var) return error(1, err_unset_var, u);
-                else return onevalue(v);
+                else return nvalues(v, 1);
             }
         }
     }
@@ -136,7 +136,7 @@ restart:
 // validity, and in the error case a special check for (CAR NIL) or
 // (CDR NIL) will be made... In Standard Lisp mode there is no special
 // issue to worry about here.
-    else if (t != TAG_CONS || u == nil) return onevalue(u);
+    else if (t != TAG_CONS || u == nil) return nvalues(u, 1);
     else
     {
 // The final case is that of a list (fn ...), and one case that has to
@@ -469,7 +469,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
     int args_left = 0;
     for (LispObject u=args; u!=nil; u=cdr(u)) args_left++;
     LispObject w1;
-    if (!consp(def)) return onevalue(nil);    // Should never happen
+    if (!consp(def)) return nvalues(nil,1);    // Should never happen
     THREADID;
     stackcheck(THREADARG def, args, env1, name1);
     w1 = car(def);
@@ -820,7 +820,8 @@ LispObject Leval(LispObject env, LispObject a)
 }
 
 LispObject Levlis(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     STACK_SANITY;
     save_current_function saver(THREADARG eval_symbol);
     LispObject r;
@@ -842,7 +843,7 @@ LispObject Levlis(LispObject env, LispObject a)
         }
         a = cdr(a);
     }
-    return onevalue(nreverse(r));
+    return nreverse(r);
 }
 
 // The Lisp-level APPLY functions could potentially confuse. What we have is
@@ -1068,7 +1069,7 @@ LispObject Lvalues_2(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lvalues_1(LispObject env, LispObject a)
-{   return onevalue(a);
+{   return nvalues(a, 1);
 }
 
 LispObject Lvalues_0(LispObject env)
@@ -1706,7 +1707,8 @@ static LispObject write_result(LispObject env, LispObject r, char *shared)
 }
 
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     STACK_SANITY;
     pid_t pid1, pid2, pidx, pidy;
 // Create an identifier for a private shared segment of memory of size
@@ -1816,14 +1818,14 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Need to tidy up the shared segment at the end.
             shmdt(shared);
             shmctl(segid, IPC_RMID, 0);
-            r = cons(fixnum_of_int(overflow), r);
-            return onevalue(r);
+            return cons(fixnum_of_int(overflow), r);
         }
     }
 }
 
 LispObject Lbacktrace(LispObject env)
-{   pid_t pid1;
+{   SingleValued fn;
+    pid_t pid1;
 // Split off a clone of the current process that can be used to generate the
 // backtrace leaving the main thread undamaged.
     pid1 = fork();
@@ -1833,28 +1835,31 @@ LispObject Lbacktrace(LispObject env)
     else
     {   // Wait for the sub-task to finishes.
         wait(nullptr);
-        return onevalue(nil);
+        return nil;
     }
 }
 
 #else
 
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
-{   return aerror("parallel not supported on this platform");
+{   SingleValued fn;
+    return aerror("parallel not supported on this platform");
 }
 
 LispObject Lbacktrace(LispObject env)
-{   return aerror("Standard Lisp does not mandate a BACKTRACE function");
+{   SingleValued fn;
+    return aerror("Standard Lisp does not mandate a BACKTRACE function");
 }
 
 #endif
 
 LispObject Lsleep(LispObject env, LispObject a)
-{   int n;
+{   SingleValued fn;
+    int n;
     if (is_fixnum(a)) n = int_of_fixnum(a);
     else n = 1;
     std::this_thread::sleep_for(std::chrono::milliseconds(n));
-    return onevalue(nil);
+    return nil;
 }
 
 // This is intended for use when debugging!
@@ -1867,7 +1872,8 @@ LispObject Lsleep(LispObject env, LispObject a)
 // This will refuse to handle arguments larger than 100.
 
 LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
-{   int m = 0, n = 0;
+{   SingleValued fn;
+    int m = 0, n = 0;
     if (is_fixnum(a1))
     {   m = int_of_fixnum(a1);
         if (m < 0 || m > 100) m = 0;
@@ -1885,15 +1891,17 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
         term_printf("\n");
         errexit();
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lshow_stack_1(LispObject env, LispObject a1)
-{   return Lshow_stack_2(env, fixnum_of_int(0), a1);
+{   SingleValued fn;
+    return Lshow_stack_2(env, fixnum_of_int(0), a1);
 }
 
 LispObject Lshow_stack_0(LispObject env)
-{   return Lshow_stack_2(env, fixnum_of_int(0), fixnum_of_int(0));
+{   SingleValued fn;
+    return Lshow_stack_2(env, fixnum_of_int(0), fixnum_of_int(0));
 }
 
 setup_type const eval1_setup[] =

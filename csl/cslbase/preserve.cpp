@@ -1229,7 +1229,8 @@ static void collect_modules(string Cname, string Cleafname,
 }
 
 LispObject Llibrary_members(LispObject env, LispObject oo)
-{   int i, j, k;
+{   SingleValued fn;
+    int i, j, k;
     directory *d = fasl_files[library_number(oo)].dir;
     LispObject v, r = nil;
     char *p;
@@ -1237,7 +1238,7 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
     {   mods = nil;
         string name = d->full_filename;
         scan_directory(d->full_filename, collect_modules);
-        return onevalue(mods);
+        return mods;
     }
     for (j=0; j<get_dirused(*d); j++)
     {   int n = 0;
@@ -1279,13 +1280,14 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         save.restore(r);
         r = cons(v, r);
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Llibrary_members0(LispObject env)
 // This returns a list of the modules in the first library on the current
 // search path.
-{   LispObject il = qvalue(input_libraries), w;
+{   SingleValued fn;
+    LispObject il = qvalue(input_libraries), w;
     LispObject ol = qvalue(output_library);
     while (consp(il))
     {   w = car(il); il = cdr(il);
@@ -1293,7 +1295,7 @@ LispObject Llibrary_members0(LispObject env)
         return Llibrary_members(nil, w);
     }
     if (is_library(ol)) return Llibrary_members(nil, ol);
-    else return onevalue(nil);
+    else return nil;
 }
 
 bool Imodulep1(int i, const char *name, size_t len, char *datestamp,

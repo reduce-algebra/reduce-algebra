@@ -288,19 +288,21 @@ size_t hash_where_to_insert(LispObject key)
 }
 
 LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
-{   set_hash_operations(tab);
+{   SingleValued fn;
+    set_hash_operations(tab);
     size_t pos = hash_lookup(key);
-    if (pos == NOT_PRESENT) return onevalue(nil); // item not there
+    if (pos == NOT_PRESENT) return nil; // item not there
 // I replace the deleted key with a tombstone value. Because that still
 // consumes space I will leave the record of how full the table is unchanged.
 // The table may shrink following the next garbage collection.
     ht(pos) = SPID_HASHTOMB;
     if (v_table != nil) htv(pos) = SPID_HASHEMPTY;
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Lrem_hash_1(LispObject env, LispObject a)
-{   return Lrem_hash(env, a, sys_hash_table);
+{   SingleValued fn;
+    return Lrem_hash(env, a, sys_hash_table);
 }
 
 LispObject Lmkhash_3(LispObject env, LispObject size,
@@ -316,7 +318,8 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
 //    #define HASH_AS_EQUALP    4
 //    #define HASH_AS_SYMBOL    5  // potential internal use for symbol table.
 //    #define HASH_AS_SXHASH    6  // never used for a hash table!
-{   STACK_SANITY;
+{   SingleValued fn;
+    STACK_SANITY;
     if (!is_fixnum(flavour) ||
         int_of_fixnum(flavour) < 0 ||
         int_of_fixnum(flavour) > HASH_AS_SYMBOL)
@@ -356,17 +359,19 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     write_barrier(&basic_elt(v, HASH_KEYS), v1);
     write_barrier(&basic_elt(v, HASH_VALUES), v2);
     setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
-    return onevalue(v);
+    return v;
 }
 
 LispObject Lmkhash_2(LispObject env, LispObject a, LispObject b)
-{   return Lmkhash_3(env, a, b, nil);
+{   SingleValued fn;
+    return Lmkhash_3(env, a, b, nil);
 }
 
 // With one argument the argument sets the hashing mode (eg EQ vs EQUAL).
 
 LispObject Lmkhash_1(LispObject env, LispObject a)
-{   return Lmkhash_3(env, fixnum_of_int(8), a, nil);
+{   SingleValued fn;
+    return Lmkhash_3(env, fixnum_of_int(8), a, nil);
 }
 
 // A hashset is a variant on a hash table. The operations are
@@ -378,7 +383,8 @@ LispObject Lmkhash_1(LispObject env, LispObject a)
 
 LispObject Lmkhashset(LispObject env, LispObject flavour)
 // (mkhashset flavour)
-{   STACK_SANITY;
+{   SingleValued fn;
+    STACK_SANITY;
     if (!is_fixnum(flavour)) return aerror1("mkhashset", flavour);
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
@@ -400,7 +406,7 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
 // nil can never be an up-pointer.
 //  write_barrier(&basic_elt(v, HASH_VALUES), nil);
     setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
-    return onevalue(v);
+    return v;
 }
 
 // Hashing under EQ is the easiest case, since I will just use the bitwise
@@ -1074,7 +1080,7 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
     pos = hash_lookup(key);
 // For hashsets I return T or nil.
     if (v_table == nil)
-        return onevalue(pos == NOT_PRESENT ? nil : lisp_true);
+        return nvalues(pos == NOT_PRESENT ? nil : lisp_true, 1);
     if (pos == NOT_PRESENT)
     {   mv_2 = nil;
         return nvalues(dflt, 2);
@@ -1090,7 +1096,8 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
 // the table is re-tagged from TYPE_HASH to TYPE_HASHX. So I believe
 // that provided nobody tries either lookup or set operations on the table I
 // will be OK.
-{   STACK_SANITY;
+{   SingleValued fn1;
+    STACK_SANITY;
     int32_t size, i;
     LispObject v, v1;
     if (!is_vector(tab) ||
@@ -1118,7 +1125,7 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
             save.restore(v, v1, fn);
         }
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lhash_contents(LispObject env, LispObject tab)
@@ -1126,7 +1133,8 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
 // I make this work on both hashsets and hashtables. In the former case it
 // returns a list of keys, in the latter an association list of keys
 // and values.
-{   STACK_SANITY;
+{   SingleValued fn;
+    STACK_SANITY;
     size_t size, i;
     LispObject v, v1, r;
     if (!is_vector(tab) ||
@@ -1149,7 +1157,7 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
     }
 // The ordering of items in the result a-list is unpredictable.
 // That is probably quite reasonable.
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lget_hash_1(LispObject env, LispObject key)
@@ -1159,6 +1167,7 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 #else
 // The definition implemented here is as required by Reduce in
 // the file matrix.red...  In the long term this is unsatisfactory.
+    SingleValued fn;
     LispObject r;
     THREADID;
     Save save(THREADARG key);
@@ -1169,7 +1178,7 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
     {   r = cons(key, r);
         errexit();
     }
-    return onevalue(r);
+    return r;
 #endif
 }
 
@@ -1183,7 +1192,8 @@ size_t fullest_hash_table = 0;
 
 LispObject Lput_hash(LispObject env,
                      LispObject key, LispObject tab, LispObject val)
-{   STACK_SANITY;
+{   SingleValued fn;
+    STACK_SANITY;
     LispObject k1;
     bool needs_rehashing = false;
     if (!is_vector(tab)) return aerror1("puthash", tab);
@@ -1292,25 +1302,27 @@ LispObject Lput_hash(LispObject env,
                                      HASH_COUNT)) + 0x10; // Increment count.
     write_barrier(&ht(pos), key);
     if (v_table != nil) write_barrier(&htv(pos), val);
-    return onevalue(val);
+    return val;
 }
 
 LispObject Lput_hash_2(LispObject env, LispObject a, LispObject b)
-{   return Lput_hash(env, a, sys_hash_table, b);
+{   SingleValued fn;
+    return Lput_hash(env, a, sys_hash_table, b);
 }
 
 LispObject Lset_hashset(LispObject env, LispObject a, LispObject b)
-{   return Lput_hash(env, a, b, lisp_true);
+{   SingleValued fn;
+    return Lput_hash(env, a, b, lisp_true);
 }
 
 LispObject Lclr_hash(LispObject env, LispObject tab)
-{   if (!is_vector(tab) ||
+{   SingleValued fn;
+    if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_HASH &&
          type_of_header(vechdr(tab)) != TYPE_HASHX))
         return aerror1("clrhash", tab);
     set_hash_operations(tab);
-    if (basic_elt(tab, HASH_COUNT) == fixnum_of_int(0))
-        return onevalue(nil);
+    if (basic_elt(tab, HASH_COUNT) == fixnum_of_int(0)) return nil;
     set_hash_operations(tab);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
     size_t size = ((size_t)1)<<(64-sh);
@@ -1336,7 +1348,8 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
 }
 
 LispObject Lclr_hash_0(LispObject env)
-{   return Lclr_hash(env, sys_hash_table);
+{   SingleValued fn;
+    return Lclr_hash(env, sys_hash_table);
 }
 
 // (sxhash key) is supposed to return a positive fixnum such that any
@@ -1359,7 +1372,8 @@ LispObject Lclr_hash_0(LispObject env)
 // need the cost and complication of the extra hash table.
 
 LispObject Lsxhash(LispObject env, LispObject key)
-{   uint64_t h;
+{   SingleValued fn;
+    uint64_t h;
     if (is_symbol(key))
     {   key = get_pname(key);
         h = 1;
@@ -1384,7 +1398,7 @@ LispObject Lsxhash(LispObject env, LispObject key)
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) &
         0x03ffffff; // ensure it will be a positive fixnum
-    return onevalue(fixnum_of_int(h));
+    return fixnum_of_int(h);
 }
 
 setup_type const lisphash_setup[] =

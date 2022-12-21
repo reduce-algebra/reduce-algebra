@@ -54,7 +54,8 @@
 static uintptr_t countup_counter = 0;
 
 LispObject Lcount_up(LispObject)
-{   return fixnum_of_int(countup_counter++);
+{   SingleValued fn;
+    return fixnum_of_int(countup_counter++);
 }
 
 LispObject integerp(LispObject p)
@@ -90,8 +91,9 @@ LispObject integerp(LispObject p)
  */
 
 LispObject Lcar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 // (car* a) = (car a) if a is non-atomic, but just a otherwise.
@@ -103,8 +105,9 @@ LispObject Lcar(LispObject, LispObject a)
  */
 
 LispObject Lcar_star(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(a);
-    else return onevalue(car(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return a;
+    else return car(a);
 }
 
 /*! fns [cdr] \item [{\ttfamily cdr} {\itshape expr}] \index{{\ttfamily cdr} {\itshape expr}} ~\newline
@@ -112,8 +115,9 @@ LispObject Lcar_star(LispObject, LispObject a)
  */
 
 LispObject Lcdr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [caar] \item [{\ttfamily caar \ldots cddddr} {\itshape expr}] \index{{\ttfamily caar \ldots cddddr} {\itshape expr}} ~\newline
@@ -126,10 +130,11 @@ LispObject Lcdr(LispObject, LispObject a)
  */
 
 LispObject Lcaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cadr] \item [{\ttfamily  cadr} {\itshape expr}] \index{{\ttfamily  cadr} {\itshape expr}} ~\newline
@@ -137,10 +142,11 @@ LispObject Lcaar(LispObject, LispObject a)
  */
 
 LispObject Lcadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cdar] \item[{\ttfamily cdar} {\itshape expr}] \index{{\ttfamily cdar} {\itshape expr}} ~\newline
@@ -148,10 +154,11 @@ LispObject Lcadr(LispObject, LispObject a)
  */
 
 LispObject Lcdar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cddr] \item[{\ttfamily cddr} {\itshape expr}] \index{{\ttfamily cddr} {\itshape expr}} ~\newline
@@ -159,10 +166,11 @@ LispObject Lcdar(LispObject, LispObject a)
  */
 
 LispObject Lcddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [caaar] \item[{\ttfamily caaar} {\itshape expr}] \index{{\ttfamily caaar} {\itshape expr}} ~\newline
@@ -170,12 +178,13 @@ LispObject Lcddr(LispObject, LispObject a)
  */
 
 LispObject Lcaaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [caadr] \item[{\ttfamily caadr} {\itshape expr}] \index{{\ttfamily caadr} {\itshape expr}} ~\newline
@@ -183,12 +192,13 @@ LispObject Lcaaar(LispObject, LispObject a)
  */
 
 LispObject Lcaadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cadar] \item[{\ttfamily cadar} {\itshape expr}] \index{{\ttfamily cadar} {\itshape expr}} ~\newline
@@ -196,12 +206,13 @@ LispObject Lcaadr(LispObject, LispObject a)
  */
 
 LispObject Lcadar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [caddr] \item[{\ttfamily caddr} {\itshape expr}] \index{{\ttfamily caddr} {\itshape expr}} ~\newline
@@ -209,12 +220,13 @@ LispObject Lcadar(LispObject, LispObject a)
  */
 
 LispObject Lcaddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cdaar] \item[{\ttfamily cdaar} {\itshape expr}] \index{{\ttfamily cdaar} {\itshape expr}} ~\newline
@@ -222,12 +234,13 @@ LispObject Lcaddr(LispObject, LispObject a)
  */
 
 LispObject Lcdaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cdadr] \item[{\ttfamily cdadr} {\itshape expr}] \index{{\ttfamily cdadr} {\itshape expr}} ~\newline
@@ -235,12 +248,13 @@ LispObject Lcdaar(LispObject, LispObject a)
  */
 
 LispObject Lcdadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cddar] \item[{\ttfamily cddar} {\itshape expr}] \index{{\ttfamily cddar} {\itshape expr}} ~\newline
@@ -248,12 +262,13 @@ LispObject Lcdadr(LispObject, LispObject a)
  */
 
 LispObject Lcddar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cdddr] \item[{\ttfamily cdddr} {\itshape expr}] \index{{\ttfamily cdddr} {\itshape expr}} ~\newline
@@ -261,12 +276,13 @@ LispObject Lcddar(LispObject, LispObject a)
  */
 
 LispObject Lcdddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [caaaar] \item[{\ttfamily caaaar} {\itshape expr}] \index{{\ttfamily caaaar} {\itshape expr}} ~\newline
@@ -274,14 +290,15 @@ LispObject Lcdddr(LispObject, LispObject a)
  */
 
 LispObject Lcaaaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [caaadr] \item[{\ttfamily caaadr} {\itshape expr}] \index{{\ttfamily caaadr} {\itshape expr}} ~\newline
@@ -289,14 +306,15 @@ LispObject Lcaaaar(LispObject, LispObject a)
  */
 
 LispObject Lcaaadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [caadar] \item[{\ttfamily caadar} {\itshape expr}] \index{{\ttfamily caadar} {\itshape expr}} ~\newline
@@ -304,14 +322,15 @@ LispObject Lcaaadr(LispObject, LispObject a)
  */
 
 LispObject Lcaadar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [caaddr] \item[{\ttfamily caaddr} {\itshape expr}] \index{{\ttfamily caaddr} {\itshape expr}} ~\newline
@@ -319,14 +338,15 @@ LispObject Lcaadar(LispObject, LispObject a)
  */
 
 LispObject Lcaaddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cadaar] \item[{\ttfamily cadaar} {\itshape expr}] \index{{\ttfamily cadaar} {\itshape expr}} ~\newline
@@ -334,14 +354,15 @@ LispObject Lcaaddr(LispObject, LispObject a)
  */
 
 LispObject Lcadaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cadadr] \item[{\ttfamily cadadr} {\itshape expr}] \index{{\ttfamily cadadr} {\itshape expr}} ~\newline
@@ -349,14 +370,15 @@ LispObject Lcadaar(LispObject, LispObject a)
  */
 
 LispObject Lcadadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [caddar] \item[{\ttfamily caddar} {\itshape expr}] \index{{\ttfamily caddar} {\itshape expr}} ~\newline
@@ -364,14 +386,15 @@ LispObject Lcadadr(LispObject, LispObject a)
  */
 
 LispObject Lcaddar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cadddr] \item[{\ttfamily cadddr} {\itshape expr}] \index{{\ttfamily cadddr} {\itshape expr}} ~\newline
@@ -379,14 +402,15 @@ LispObject Lcaddar(LispObject, LispObject a)
  */
 
 LispObject Lcadddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
-    else return onevalue(car(a));
+    if (!car_legal(a)) return carerror(a);
+    else return car(a);
 }
 
 /*! fns [cdaaar] \item[{\ttfamily cdaaar} {\itshape expr}] \index{{\ttfamily cdaaar} {\itshape expr}} ~\newline
@@ -394,14 +418,15 @@ LispObject Lcadddr(LispObject, LispObject a)
  */
 
 LispObject Lcdaaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cdaadr] \item[{\ttfamily cdaadr} {\itshape expr}] \index{{\ttfamily cdaadr} {\itshape expr}} ~\newline
@@ -409,14 +434,15 @@ LispObject Lcdaaar(LispObject, LispObject a)
  */
 
 LispObject Lcdaadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cdadar] \item[{\ttfamily cdadar} {\itshape expr}] \index{{\ttfamily cdadar} {\itshape expr}} ~\newline
@@ -424,14 +450,15 @@ LispObject Lcdaadr(LispObject, LispObject a)
  */
 
 LispObject Lcdadar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cdaddr] \item[{\ttfamily cdaddr} {\itshape expr}] \index{{\ttfamily cdaddr} {\itshape expr}} ~\newline
@@ -439,14 +466,15 @@ LispObject Lcdadar(LispObject, LispObject a)
  */
 
 LispObject Lcdaddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cddaar] \item[{\ttfamily cddaar} {\itshape expr}] \index{{\ttfamily cddaar} {\itshape expr}} ~\newline
@@ -454,14 +482,15 @@ LispObject Lcdaddr(LispObject, LispObject a)
  */
 
 LispObject Lcddaar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cddadr] \item[{\ttfamily cddadr} {\itshape expr}] \index{{\ttfamily cddadr} {\itshape expr}} ~\newline
@@ -469,14 +498,15 @@ LispObject Lcddaar(LispObject, LispObject a)
  */
 
 LispObject Lcddadr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(carerror(a));
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cdddar] \item[{\ttfamily cdddar} {\itshape expr}] \index{{\ttfamily cdddar} {\itshape expr}} ~\newline
@@ -484,14 +514,15 @@ LispObject Lcddadr(LispObject, LispObject a)
  */
 
 LispObject Lcdddar(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(carerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return carerror(a);
     else a = car(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [cddddr] \item[{\ttfamily cddddr} {\itshape expr}] \index{{\ttfamily cddddr} {\itshape expr}} ~\newline
@@ -499,14 +530,15 @@ LispObject Lcdddar(LispObject, LispObject a)
  */
 
 LispObject Lcddddr(LispObject, LispObject a)
-{   if (!car_legal(a)) return onevalue(cdrerror(a));
+{   SingleValued fn;
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
+    if (!car_legal(a)) return cdrerror(a);
     else a = cdr(a);
-    if (!car_legal(a)) return onevalue(cdrerror(a));
-    else return onevalue(cdr(a));
+    if (!car_legal(a)) return cdrerror(a);
+    else return cdr(a);
 }
 
 /*! fns [rplaca] \item[{\ttfamily rplaca} {\itshape expr}] \index{{\ttfamily rplaca} {\itshape expr}} ~\newline
@@ -517,9 +549,10 @@ LispObject Lcddddr(LispObject, LispObject a)
  */
 
 LispObject Lrplaca(LispObject, LispObject a, LispObject b)
-{   if (!consp(a)) return error(1, err_bad_rplac, a);
+{   SingleValued fn;
+    if (!consp(a)) return error(1, err_bad_rplac, a);
     write_barrier(caraddr(a), b);
-    return onevalue(a);
+    return a;
 }
 
 /*! fns [rplacd] \item [{\ttfamily rplacd} {\itshape expr}] \index{{\ttfamily rplacd} {\itshape expr}} ~\newline
@@ -527,169 +560,186 @@ LispObject Lrplaca(LispObject, LispObject a, LispObject b)
  */
 
 LispObject Lrplacd(LispObject, LispObject a, LispObject b)
-{   if (!consp(a)) return error(1, err_bad_rplac, a);
+{   SingleValued fn;
+    if (!consp(a)) return error(1, err_bad_rplac, a);
     write_barrier(cdraddr(a), b);
-    return onevalue(a);
+    return a;
 }
 
 // setcar and setcdr are like rplaca and rplacd save that they hand back
 // arg2 as their result rather than arg1.
 
 LispObject Lsetcar(LispObject, LispObject a, LispObject b)
-{   if (!consp(a)) return error(1, err_bad_rplac, a);
+{   SingleValued fn;
+    if (!consp(a)) return error(1, err_bad_rplac, a);
     write_barrier(caraddr(a), b);
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lsetcdr(LispObject, LispObject a, LispObject b)
-{   if (!consp(a)) return error(1, err_bad_rplac, a);
+{   SingleValued fn;
+    if (!consp(a)) return error(1, err_bad_rplac, a);
     write_barrier(cdraddr(a), b);
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lsymbolp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(symbolp(a)));
+{   SingleValued fn;
+    return Lispify_predicate(symbolp(a));
 }
 
 LispObject Latom(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(!consp(a)));
+{   SingleValued fn;
+    return Lispify_predicate(!consp(a));
 }
 
 LispObject Lconsp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(consp(a)));
+{   SingleValued fn;
+    return Lispify_predicate(consp(a));
 }
 
 LispObject Lconstantp(LispObject env, LispObject a)
 // This version is as required for Standard Lisp - it is inadequate
 // for Common Lisp.
-{
+{   SingleValued fn;
 // Standard Lisp requires that I report that "Function Pointers" are
 // "constant" here. It is not at all clear that I have a way of
 // doing that. I will go some way by ensuring that code-vectors are
 // reported as constant.
-    return onevalue(Lispify_predicate(
-                        a == nil || a == lisp_true ||
-                        is_char(a) ||
-                        is_number(a) ||
-                        is_vector(a) ||
-                        is_bps(a)));
+    return Lispify_predicate(
+               a == nil || a == lisp_true ||
+               is_char(a) ||
+               is_number(a) ||
+               is_vector(a) ||
+               is_bps(a));
 }
 
 LispObject Lidentity(LispObject, LispObject a)
-{   return onevalue(a);
+{   SingleValued fn;
+    return a;
 }
 
 LispObject Llistp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(is_cons(a)));
+{   SingleValued fn;
+    return Lispify_predicate(is_cons(a));
 }
 
 LispObject Lnumberp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(is_number(a)));
+{   SingleValued fn;
+    return Lispify_predicate(is_number(a));
 }
 
 LispObject Lintegerp(LispObject, LispObject a)
-{   return onevalue(integerp(a));
+{   SingleValued fn;
+    return integerp(a);
 }
 
 LispObject Leq_safe(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // True if you can safely use EQ tests to check equality. Thus true for
 // things that are represented in "immediate" form... and ALSO of nil
 // and all other symbols.
-    return onevalue(symbolp(a) ||
-                    is_fixnum(a) ||
-                    is_sfloat(a) ||
-                    is_odds(a) ? lisp_true : nil);
+    return (symbolp(a) ||
+            is_fixnum(a) ||
+            is_sfloat(a) ||
+            is_odds(a)) ? lisp_true : nil;
 }
 
 LispObject Lfixp(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 #ifdef COMMON
-    return onevalue(is_fixnum(a) ? lisp_true : nil);
+    return is_fixnum(a) ? lisp_true : nil;
 #else
 // Standard Lisp defines fixp to say yes to bignums as well as
 // fixnums. The code here is as in intergerp.
-    if (is_fixnum(a)) return onevalue(lisp_true);
+    if (is_fixnum(a)) return lisp_true;
     else if (is_numbers(a))
     {   Header h = *reinterpret_cast<Header *>(reinterpret_cast<char *>
                                                (a) - TAG_NUMBERS);
 #ifdef ARITHLIB
-        if (type_of_header(h) == TYPE_NEW_BIGNUM) return onevalue(lisp_true);
+        if (type_of_header(h) == TYPE_NEW_BIGNUM) return lisp_true;
 #endif // ARITHLIB
-        if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
-        else return onevalue(nil);
+        if (type_of_header(h) == TYPE_BIGNUM) return lisp_true;
+        else return nil;
     }
-    else return onevalue(nil);
+    else return nil;
 #endif
 }
 
 LispObject Lfloatp(LispObject env, LispObject p)
-{   if (is_bfloat(p)) return onevalue(lisp_true);
-    else if (is_sfloat(p)) return onevalue(lisp_true);
-    else return onevalue(nil);
+{   SingleValued fn;
+    if (is_bfloat(p)) return lisp_true;
+    else if (is_sfloat(p)) return lisp_true;
+    else return nil;
 }
 
 static LispObject Lshort_floatp(LispObject env, LispObject p)
-{   if (is_sfloat(p) &&
+{   SingleValued fn;
+    if (is_sfloat(p) &&
         (!SIXTY_FOUR_BIT ||
-         ((p & XTAG_FLOAT32) == 0))) return onevalue(lisp_true);
-    else return onevalue(nil);
+         ((p & XTAG_FLOAT32) == 0))) return lisp_true;
+    else return nil;
 }
 
 static LispObject Lsingle_floatp(LispObject env, LispObject p)
-{   int tag = TAG_BITS & static_cast<int>(p);
+{   SingleValued fn;
+    int tag = TAG_BITS & static_cast<int>(p);
     if (SIXTY_FOUR_BIT &&
         is_sfloat(p) &&
-        (p & XTAG_FLOAT32) != 0) return onevalue(lisp_true);
+        (p & XTAG_FLOAT32) != 0) return lisp_true;
     if (tag == TAG_BOXFLOAT &&
         flthdr(p) == SINGLE_FLOAT_HEADER)
-        return onevalue(lisp_true);
-    else return onevalue(nil);
+        return lisp_true;
+    else return nil;
 }
 
 static LispObject Ldouble_floatp(LispObject env, LispObject p)
-{   int tag = TAG_BITS & static_cast<int>(p);
+{   SingleValued fn;
+    int tag = TAG_BITS & static_cast<int>(p);
     if (tag == TAG_BOXFLOAT &&
         flthdr(p) == DOUBLE_FLOAT_HEADER)
-        return onevalue(lisp_true);
-    else return onevalue(nil);
+        return lisp_true;
+    else return nil;
 }
 
 static LispObject Llong_floatp(LispObject env, LispObject p)
-{   int tag = TAG_BITS & static_cast<int>(p);
+{   SingleValued fn;
+    int tag = TAG_BITS & static_cast<int>(p);
     if (tag == TAG_BOXFLOAT &&
         flthdr(p) == LONG_FLOAT_HEADER)
-        return onevalue(lisp_true);
-    else return onevalue(nil);
+        return lisp_true;
+    else return nil;
 }
 
 static LispObject Lmantissa_bits(LispObject env, LispObject p)
-{   if (Ldouble_floatp(env,
-                       p) != nil) return onevalue(fixnum_of_int(53));
-    if (Lsingle_floatp(env, p) != nil) return onevalue(fixnum_of_int(24));
-    if (Lshort_floatp(env, p) != nil) return onevalue(fixnum_of_int(20));
-    if (Llong_floatp(env, p) != nil) return onevalue(fixnum_of_int(113));
-    return onevalue(nil);
+{   SingleValued fn;
+    if (Ldouble_floatp(env,
+                       p) != nil) return fixnum_of_int(53);
+    if (Lsingle_floatp(env, p) != nil) return fixnum_of_int(24);
+    if (Lshort_floatp(env, p) != nil) return fixnum_of_int(20);
+    if (Llong_floatp(env, p) != nil) return fixnum_of_int(113);
+    return nil;
 }
 
 LispObject Lrationalp(LispObject env, LispObject a)
-{   return onevalue(
-               Lispify_predicate(
-                   is_fixnum(a) ||
-                   (is_numbers(a) &&
-                    (is_bignum(a) || is_ratio(a)))));
+{   SingleValued fn;
+    return Lispify_predicate(
+               is_fixnum(a) ||
+               (is_numbers(a) &&
+                (is_bignum(a) || is_ratio(a))));
 }
 
 LispObject Lcomplexp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(is_numbers(a) &&
-                                      is_complex(a)));
+{   SingleValued fn;
+    return Lispify_predicate(is_numbers(a) && is_complex(a));
 }
 
 bool complex_stringp(LispObject a)
 // true if the arg is a string, but NOT a simple string.  In general
 // when this is true simplify_string() will then be called to do
 // an adjustment.
-{   Header h;
+{   SingleValued fn;
+    Header h;
     LispObject w;
     if (!is_vector(a)) return false;
     h = vechdr(a);
@@ -704,29 +754,32 @@ bool complex_stringp(LispObject a)
 }
 
 LispObject Lwarn_about_protected_symbols(LispObject env, LispObject a)
-{   LispObject retval = Lispify_predicate(
+{   SingleValued fn;
+    LispObject retval = Lispify_predicate(
                             warn_about_protected_symbols);
     warn_about_protected_symbols = (a != nil);
-    return onevalue(retval);
+    return retval;
 }
 
 LispObject Lprotect_symbols(LispObject env, LispObject a)
-{   LispObject retval = Lispify_predicate(symbol_protect_flag);
+{   SingleValued fn;
+    LispObject retval = Lispify_predicate(symbol_protect_flag);
     symbol_protect_flag = (a != nil);
-    return onevalue(retval);
+    return retval;
 }
 
 bool stringp(LispObject a)
 // True if arg is a simple OR a general string
-{   Header h;
+{   SingleValued fn;
+    Header h;
     LispObject w;
     if (!is_vector(a)) return false;
     h = vechdr(a);
     if (is_string_header(h)) return true;
     else if (type_of_header(h) != TYPE_ARRAY) return false;
 // Beware abolition of 'string-char
-    else if (static_cast<LispObject>(elt(a,
-                                         0)) != string_char_sym) return false;
+    else if (static_cast<LispObject>(elt(a, 0)) != string_char_sym)
+        return false;
     w = elt(a, 1);
     if (!consp(w) || consp(cdr(w))) return false;
     else return true;
@@ -734,8 +787,9 @@ bool stringp(LispObject a)
 
 LispObject Lstringp(LispObject env, LispObject a)
 // simple-string-p
-{   if (!(is_vector(a)) || !is_string(a)) return onevalue(nil);
-    else return onevalue(lisp_true);
+{   SingleValued fn;
+    if (!(is_vector(a)) || !is_string(a)) return nil;
+    else return lisp_true;
 }
 
 // Common Lisp has "complicated strings" which may have fill pointers,
@@ -743,51 +797,58 @@ LispObject Lstringp(LispObject env, LispObject a)
 // of what one really uses.
 
 static LispObject Lc_stringp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(stringp(a)));
+{   SingleValued fn;
+    return Lispify_predicate(stringp(a));
 }
 
 LispObject Lhash_table_p(LispObject env, LispObject a)
 // hash-table-p
-{   if (!(is_vector(a)) || type_of_header(vechdr(a)) != TYPE_HASH)
-        return onevalue(nil);
-    else return onevalue(lisp_true);
+{   SingleValued fn;
+    if (!(is_vector(a)) || type_of_header(vechdr(a)) != TYPE_HASH)
+        return nil;
+    else return lisp_true;
 }
 
 static LispObject Lsimple_bit_vector_p(LispObject env,
                                        LispObject a)
 // simple-bit-vector-p
-{   if (!(is_vector(a))) return onevalue(nil);
-    else return onevalue(Lispify_predicate(is_bitvec_header(vechdr(a))));
+{   SingleValued fn;
+    if (!(is_vector(a))) return nil;
+    else return Lispify_predicate(is_bitvec_header(vechdr(a)));
 }
 
 LispObject Lsimple_vectorp(LispObject env, LispObject a)
 // simple-vector-p
-{   if (!(is_vector(a))) return onevalue(nil);
-    else return onevalue(Lispify_predicate(
-                                 type_of_header(vechdr(a))==TYPE_SIMPLE_VEC));
+{   SingleValued fn;
+    if (!(is_vector(a))) return nil;
+    else return Lispify_predicate(
+             type_of_header(vechdr(a))==TYPE_SIMPLE_VEC);
 }
 
 LispObject Lbpsp(LispObject env, LispObject a)
-{   if (!(is_bps(a))) return onevalue(nil);
-    else return onevalue(lisp_true);
+{   SingleValued fn;
+    if (!(is_bps(a))) return nil;
+    else return lisp_true;
 }
 
 LispObject Lthreevectorp(LispObject env, LispObject a)
 // This is useful for REDUCE - it checks if something is a vector
 // of size 3!
-{   if (!(is_vector(a))) return onevalue(nil);
+{   SingleValued fn;
+    if (!(is_vector(a))) return nil;
 // The "pack_hdrlength(4*CELL/4)" is because I want a vector
 // with 1 cell of header and 3 of data. So the 4*CELL deals with with that
 // but gives a size expressed in bytes. The "/4" then converts that to a
 // count expressed in 32-bit words which is what pach_hdrlength requires.
-    return onevalue(Lispify_predicate(
+    return Lispify_predicate(
         vechdr(a) ==
-        (TAG_HDR_IMMED + TYPE_SIMPLE_VEC + pack_hdrlength(4*CELL/4))));
+        (TAG_HDR_IMMED + TYPE_SIMPLE_VEC + pack_hdrlength(4*CELL/4)));
 }
 
 static LispObject Larrayp(LispObject env, LispObject a)
-{   Header h;
-    if (!(is_vector(a))) return onevalue(nil);
+{   SingleValued fn;
+    Header h;
+    if (!(is_vector(a))) return nil;
     h = vechdr(a);
 // I could consider accepting TYPE_VEC16 and TYPE_VEC32 etc here...
 //
@@ -796,95 +857,110 @@ static LispObject Larrayp(LispObject env, LispObject a)
     if (type_of_header(h)==TYPE_ARRAY ||
         is_string_header(h) ||
         type_of_header(h)==TYPE_SIMPLE_VEC ||
-        is_bitvec_header(h)) return onevalue(lisp_true);
-    else return onevalue(nil);
+        is_bitvec_header(h)) return lisp_true;
+    else return nil;
 }
 
 static LispObject Lcomplex_arrayp(LispObject env, LispObject a)
-{   if (!(is_vector(a))) return onevalue(nil);
-    else return onevalue(Lispify_predicate(
-                                 type_of_header(vechdr(a))==TYPE_ARRAY));
+{   SingleValued fn;
+    if (!(is_vector(a))) return nil;
+    else return Lispify_predicate(
+            type_of_header(vechdr(a))==TYPE_ARRAY);
 }
 
 static LispObject Lconvert_to_array(LispObject env, LispObject a)
-{   if (!(is_basic_vector(a))) return onevalue(nil);
+{   SingleValued fn;
+    if (!(is_basic_vector(a))) return nil;
     setvechdr(a, TYPE_ARRAY + (vechdr(a) & ~header_mask));
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lstructp(LispObject env, LispObject a)
 // structp
-{   if (!(is_basic_vector(a))) return onevalue(nil);
-    else return onevalue(Lispify_predicate(
-        type_of_header(vechdr(a)) == TYPE_STRUCTURE));
+{   SingleValued fn;
+    if (!(is_basic_vector(a))) return nil;
+    else return Lispify_predicate(
+        type_of_header(vechdr(a)) == TYPE_STRUCTURE);
 }
 
 static LispObject Lconvert_to_struct(LispObject env, LispObject a)
-{   if (!(is_basic_vector(a))) return onevalue(nil);
+{   SingleValued fn;
+    if (!(is_basic_vector(a))) return nil;
     setvechdr(a, TYPE_STRUCTURE + (vechdr(a) & ~header_mask));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Llist_2(LispObject env, LispObject a, LispObject b)
-{   a = list2(a, b);
-    return onevalue(a);
+{   SingleValued fn;
+    a = list2(a, b);
+    return a;
 }
 
 LispObject Lmkquote(LispObject env, LispObject a)
-{   a = list2(quote_symbol, a);
-    return onevalue(a);
+{   SingleValued fn;
+    a = list2(quote_symbol, a);
+    return a;
 }
 
 LispObject Llist_2star(LispObject env, LispObject a, LispObject b,
                        LispObject c)
-{   return onevalue(list2star(a,b,c));
+{   SingleValued fn;
+    return list2star(a,b,c);
 }
 
 LispObject Llist_2starrev(LispObject env, LispObject a, LispObject b,
                           LispObject c)
-{   return onevalue(list2starrev(a,b,c));
+{   SingleValued fn;
+    return list2starrev(a,b,c);
 }
 
 LispObject Lacons(LispObject env, LispObject a, LispObject b,
                   LispObject c)
-{   return onevalue(acons(a, b, c));
+{   SingleValued fn;
+    return acons(a, b, c);
 }
 
 LispObject Llist_3(LispObject env, LispObject a, LispObject b,
                    LispObject c)
-{   return onevalue(list3(a, b, c));
+{   SingleValued fn;
+    return list3(a, b, c);
 }
 
 LispObject Llist_3rev(LispObject env, LispObject a, LispObject b,
                       LispObject c)
-{   return onevalue(list3rev(a, b, c));
+{   SingleValued fn;
+    return list3rev(a, b, c);
 }
 
 LispObject Llist_3star(LispObject, LispObject a, LispObject b,
                        LispObject c, LispObject a4up)
-{   if (cdr(a4up) != nil)
+{   SingleValued fn;
+    if (cdr(a4up) != nil)
         return aerror("too many arrguments for list3*");
     LispObject d = car(a4up);
-    return onevalue(list3star(a,b,c,d));
+    return list3star(a,b,c,d);
 }
 
 LispObject Llist_4(LispObject env, LispObject a, LispObject b,
                    LispObject c, LispObject a4up)
-{   if (cdr(a4up) != nil)
+{   SingleValued fn;
+    if (cdr(a4up) != nil)
         return aerror("too many arguments for list4");
     LispObject d = car(a4up);
-    return onevalue(list4(a,b,c,d));
+    return list4(a,b,c,d);
 }
 
 
 LispObject Llist_4up(LispObject env, LispObject a, LispObject b,
                      LispObject c, LispObject a4up)
-{   return onevalue(list3star(a, b, c, a4up));
+{   SingleValued fn;
+    return list3star(a, b, c, a4up);
 }
 
 LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
                          LispObject c, LispObject a4up)
-{   LispObject r= nil, w;
+{   SingleValued fn;
+    LispObject r= nil, w;
     while (a4up != nil)
     {   w = cdr(a4up);
         write_barrier(cdraddr(a4up), r);
@@ -899,11 +975,12 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
         a4up = r;
         r = w;
     }
-    return onevalue(list3star(a, b, c, a4up));
+    return list3star(a, b, c, a4up);
 }
 
 LispObject Lpair(LispObject env, LispObject a, LispObject b)
-{   LispObject r = nil;
+{   SingleValued fn;
+    LispObject r = nil;
     THREADID;
     while (consp(a) && consp(b))
     {   Save save(THREADARG a, b);
@@ -919,7 +996,7 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
         a = r;
         r = b;
     }
-    return onevalue(a);
+    return a;
 }
 
 
@@ -949,7 +1026,8 @@ static size_t membercount(LispObject a, LispObject b)
 // input lists.
 
 LispObject Lintersect(LispObject env, LispObject a, LispObject b)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     THREADID;
     RealSave save(THREADARG a, b, nil);
     LispObject &aa = save.val(1);
@@ -982,7 +1060,7 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
         write_barrier(cdraddr(bb), aa);
         aa = bb;
     }
-    return onevalue(aa);
+    return aa;
 }
 
 // If you have two lists where all items in both lists are just symbols
@@ -1008,7 +1086,8 @@ public:
 
 LispObject Lintersect_symlist(LispObject env, LispObject a,
                               LispObject b)
-{   LispObject r = nil, w;
+{   SingleValued fn;
+    LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just get ignored.
     for (w = b; consp(w); w = cdr(w))
@@ -1039,7 +1118,7 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
         write_barrier(cdraddr(b), a);
         a = b;
     }
-    return onevalue(a);
+    return a;
 }
 
 // UNION(A, B)
@@ -1048,7 +1127,8 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
 // added in reversed order.  Duplicates in B remain there, and but
 // duplicates in A are dropped.
 LispObject Lunion(LispObject env, LispObject a, LispObject b)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     while (consp(a))
     {   LispObject c;
         {   Save save(THREADARG a, b);
@@ -1064,7 +1144,7 @@ LispObject Lunion(LispObject env, LispObject a, LispObject b)
         }
         a = cdr(a);
     }
-    return onevalue(b);
+    return b;
 }
 
 // union-symlist expects both arguments to be lists of symbols, and on that
@@ -1089,7 +1169,8 @@ public:
 };
 
 LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
-{   LispObject r = nil, w;
+{   SingleValued fn;
+    LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just ignored.
     for (w = b; consp(w); w = cdr(w))
@@ -1130,13 +1211,14 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
         write_barrier(cdraddr(a), b);
         b = a;
     }
-    return onevalue(b);
+    return b;
 }
 
 
 LispObject Lenable_errorset(LispObject env, LispObject a,
                             LispObject b)
-{   LispObject r = cons(fixnum_of_int(errorset_min),
+{   SingleValued fn;
+    LispObject r = cons(fixnum_of_int(errorset_min),
                         fixnum_of_int(errorset_max));
     if (a == nil || a == fixnum_of_int(0))            errorset_min = 0;
     else if (a == fixnum_of_int(1))                   errorset_min = 1;
@@ -1175,7 +1257,7 @@ LispObject Lenable_errorset(LispObject env, LispObject a,
 }
 
 LispObject Lenable_backtrace(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 //    (enable-backtrace nil)    errors silent unless ALWAYS_NOISY set
 //    (enable-backtrace 0)      ditto
 //    (enable-backtrace 1)      show 1-line messaqe on error
@@ -1193,14 +1275,15 @@ LispObject Lenable_backtrace(LispObject env, LispObject a)
     else if (a == lisp_true || a == fixnum_of_int(3))
         miscflags |= BACKTRACE_MSG_BITS;
     else miscflags = n; // Otherwise have no effect
-    return onevalue(fixnum_of_int(miscflags & ARGS_FLAG ? 3 :
-                                  miscflags & FNAME_FLAG ? 2 :
-                                  miscflags & HEADLINE_FLAG ? 1 :
-                                  0));
+    return fixnum_of_int(miscflags & ARGS_FLAG ? 3 :
+                         miscflags & FNAME_FLAG ? 2 :
+                         miscflags & HEADLINE_FLAG ? 1 :
+                         0);
 }
 
 LispObject Lunwind(LispObject env)
-{   exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+{   SingleValued fn;
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_count = 0;
@@ -1275,27 +1358,31 @@ LispObject error_N(LispObject args)
 }
 
 LispObject Lerror_1(LispObject env, LispObject a1)
-{   return error_N(ncons(a1));
+{   SingleValued fn;
+    return error_N(ncons(a1));
 }
 
 LispObject Lerror_2(LispObject env, LispObject a1,
                            LispObject a2)
-{   return error_N(list2(a1, a2));
+{   SingleValued fn;
+    return error_N(list2(a1, a2));
 }
 
 LispObject Lerror_3(LispObject env, LispObject a1,
                            LispObject a2, LispObject a3)
-{   return error_N(list3(a1, a2, a3));
+{   SingleValued fn;
+    return error_N(list3(a1, a2, a3));
 }
 
 LispObject Lerror_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up)
-{   return error_N(list3star(a1, a2, a3, a4up));
+{   SingleValued fn;
+    return error_N(list3star(a1, a2, a3, a4up));
 }
 
 LispObject Lerror_0(LispObject env)
-{
+{   SingleValued fn;
 // Silently provoked error - unwind to surrounding errorset level. Note that
 // this will NEVER enter a user-provided break loop...
 // Also note that (enable-errorset) can set a lower limit to noise levels
@@ -1320,78 +1407,88 @@ LispObject Lerror_0(LispObject env)
 }
 
 LispObject Lmake_special(LispObject, LispObject a)
-{   if (!symbolp(a)) return aerror1("make-special", a);
+{   SingleValued fn;
+    if (!symbolp(a)) return aerror1("make-special", a);
     if ((qheader(a) & SYM_GLOBAL_VAR) != 0)
         return aerror1(
             "Variable is global or keyword so can not become fluid", a);
     setheader(a, qheader(a) | SYM_SPECIAL_VAR);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lmake_global(LispObject, LispObject a)
-{   if (!symbolp(a)) return aerror("make-global");
+{   SingleValued fn;
+    if (!symbolp(a)) return aerror("make-global");
     if ((qheader(a) & SYM_SPECIAL_VAR) != 0)
         return aerror1(
             "Variable is fluid or keyword so can not become global", a);
     setheader(a, qheader(a) | SYM_GLOBAL_VAR);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lmake_keyword(LispObject, LispObject a)
-{   if (!symbolp(a)) return aerror("make-keyword");
+{   SingleValued fn;
+    if (!symbolp(a)) return aerror("make-keyword");
     if ((qheader(a) & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
         return aerror1(
             "Variable is fluid or global so can not become keyword", a);
     setheader(a, qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
     setvalue(a, a);   // value is itself.
-    return onevalue(a);
+    return a;
 }
 
 // All the "unmake" functions leave the symbol as a normal one that is
 // neither fluid, global nor keyword.
 
 LispObject Lunmake_special(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lunmake_global(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lunmake_keyword(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lsymbol_specialp(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
-             SYM_SPECIAL_VAR) return onevalue(lisp_true);
-    else return onevalue(nil);
+             SYM_SPECIAL_VAR) return lisp_true;
+    else return nil;
 }
 
 LispObject Lsymbol_globalp(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
-             SYM_GLOBAL_VAR) return onevalue(lisp_true);
-    else return onevalue(nil);
+             SYM_GLOBAL_VAR) return lisp_true;
+    else return nil;
 }
 
 LispObject Lsymbol_keywordp(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
              (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR))
-        return onevalue(lisp_true);
-    else return onevalue(nil);
+        return lisp_true;
+    else return nil;
 }
 
 LispObject Lboundp(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
 // In COMMON Lisp it seems that this is intended to just check if the
 // value cell in a shallow-bound implementation contains some marker value
 // that stands for "junk".  In Standard Lisp mode I deem that variables
@@ -1406,38 +1503,42 @@ LispObject Lboundp(LispObject env, LispObject a)
 // too many bugs even though it is an incompatible change in behavior.
 #if 0
     else if ((qheader(a) & (SYM_SPECIAL_VAR|SYM_GLOBAL_VAR)) == 0)
-        return onevalue(nil);
+        return nil;
 #endif
     else if (qvalue(a) == unset_var)
-        return onevalue(nil); // no value yet
-    else return onevalue(lisp_true);
+        return nil; // no value yet
+    else return lisp_true;
 }
 
 LispObject Lsymbol_value(LispObject, LispObject a)
-{   if (!symbolp(a)) return onevalue(a);
-    else return onevalue(qvalue(a));
+{   SingleValued fn;
+    if (!symbolp(a)) return a;
+    else return qvalue(a);
 }
 
 LispObject Lset(LispObject env, LispObject a, LispObject b)
-{   if (!symbolp(a) || a == nil || a == lisp_true) return aerror("set");
+{   SingleValued fn;
+    if (!symbolp(a) || a == nil || a == lisp_true) return aerror("set");
     setvalue(a, b);
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lmakeunbound(LispObject env, LispObject a)
-{   if (!symbolp(a) || a == nil ||
+{   SingleValued fn;
+    if (!symbolp(a) || a == nil ||
         a == lisp_true) return aerror("makeunbound");
     setvalue(a, unset_var);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lsymbol_function(LispObject env, LispObject a)
-{   no_args *f0;
+{   SingleValued fn;
+    no_args *f0;
     one_arg *f1;
     two_args *f2;
     three_args *f3;
     fourup_args *f4up;
-    if (!symbolp(a)) return onevalue(nil);
+    if (!symbolp(a)) return nil;
     f0 = qfn0(a);
     f1 = qfn1(a);
     f2 = qfn2(a);
@@ -1445,26 +1546,26 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
     f4up = qfn4up(a);
     if ((qheader(a) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
         (f0 == undefined_0 && f1 == undefined_1 && f2 == undefined_2 &&
-         f3 == undefined_3 && f4up == undefined_4up)) return onevalue(nil);
+         f3 == undefined_3 && f4up == undefined_4up)) return nil;
     else if (f0 == interpreted_0 ||
              f1 == interpreted_1 ||
              f2 == interpreted_2 ||
              f3 == interpreted_3 ||
              f4up == interpreted_4up)
-        return onevalue(cons(lambda, qenv(a)));
+        return cons(lambda, qenv(a));
     else if (f0 == funarged_0 ||
              f1 == funarged_1 ||
              f2 == funarged_2 ||
              f3 == funarged_3 ||
              f4up == funarged_4up)
-        return onevalue(cons(funarg, qenv(a)));
+        return cons(funarg, qenv(a));
     else
     {   LispObject b = get(a, work_symbol, nil);
 // If I have already manufactured a code pointer for this function I
 // can find it on the property list - in that case I will re-use it.
         while (b != nil)
         {   LispObject c = car(b);
-            if ((qheader(c) & SYM_CODEPTR) != 0) return onevalue(c);
+            if ((qheader(c) & SYM_CODEPTR) != 0) return c;
             b = cdr(b);
         }
         {   THREADID;
@@ -1505,24 +1606,26 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         setheader(b, qheader(b) ^
             (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR));
 #endif
-        return onevalue(b);
+        return b;
     }
 }
 
 LispObject Lspecial_form_p(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     else if ((qheader(a) & SYM_SPECIAL_FORM) != 0)
-        return onevalue(lisp_true);
-    else return onevalue(nil);
+        return lisp_true;
+    else return nil;
 }
 
 LispObject Lcodep(LispObject env, LispObject a)
 // This responds TRUE for the special pseudo-symbols that are used to
 // carry compiled code objects.  It returns NIL on the symbols that
 // are normally used by the user.
-{   if (!symbolp(a)) return onevalue(nil);
-    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(lisp_true);
-    else return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
+    if ((qheader(a) & SYM_CODEPTR) != 0) return lisp_true;
+    else return nil;
 }
 
 LispObject get_basic_vector_init(size_t n, LispObject k)
@@ -1690,7 +1793,8 @@ LispObject get_vector_init(size_t n, LispObject val)
 }
 
 LispObject Lstop(LispObject env, LispObject code)
-{   if (!is_fixnum(code)) return aerror("stop");
+{   SingleValued fn;
+    if (!is_fixnum(code)) return aerror("stop");
     if (Lposn(nil) != fixnum_of_int(0)) Lterpri(nil);
     exit_value = code;
     exit_tag = fixnum_of_int(0);    // Flag to say "stop"
@@ -1700,7 +1804,8 @@ LispObject Lstop(LispObject env, LispObject code)
 }
 
 LispObject Lstop(LispObject env)
-{   return Lstop(env, fixnum_of_int(0));
+{   SingleValued fn;
+    return Lstop(env, fixnum_of_int(0));
 }
 
 uint64_t base_time;
@@ -1708,27 +1813,31 @@ uint64_t gc_time;
 std::chrono::high_resolution_clock::time_point base_walltime;
 
 LispObject Ltime(LispObject env)
-{   uint64_t t0 = read_clock() - base_time;
+{   SingleValued fn;
+    uint64_t t0 = read_clock() - base_time;
     LispObject r = make_lisp_unsigned64(t0/1000);
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lwalltime(LispObject env)
-{   using namespace std::chrono;
+{   SingleValued fn;
+    using namespace std::chrono;
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     duration<double> span =
         duration_cast<duration<double>>(t0 - base_walltime);
     LispObject r = make_lisp_unsigned64((uint64_t)(1000.0*span.count()));
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lgctime(LispObject env)
-{   LispObject r = make_lisp_unsigned64(gc_time/1000);
-    return onevalue(r);
+{   SingleValued fn;
+    LispObject r = make_lisp_unsigned64(gc_time/1000);
+    return r;
 }
 
 LispObject Ldecoded_time(LispObject env)
-{   std::time_t t0 = std::time(nullptr);
+{   SingleValued fn;
+    std::time_t t0 = std::time(nullptr);
 //        tm_sec      -- seconds 0..59
 //        tm_min      -- minutes 0..59
 //        tm_hour     -- hour of day 0..23
@@ -1766,7 +1875,8 @@ LispObject Ldecoded_time(LispObject env)
 // argument will suffice).
 
 LispObject Ldate(LispObject env)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32];
     char today1[32];
@@ -1787,33 +1897,36 @@ LispObject Ldate(LispObject env)
     today1[10] = today[23];
     today1[11] = 0;             // Now as in 03-Apr-2009
     w = make_string(today1);
-    return onevalue(w);
+    return w;
 }
 
 LispObject Ldate1(LispObject env, LispObject a1)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32];
     std::strcpy(today, std::ctime(&t));
 // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
-    return onevalue(w);
+    return w;
 }
 
 LispObject Ldate_and_time(LispObject env)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32];
     std::strcpy(today, std::ctime(&t));
 // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
-    return onevalue(w);
+    return w;
 }
 
 LispObject Ldate_and_time1(LispObject env, LispObject a1)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32], today1[32];
     std::strcpy(today, std::ctime(
@@ -1831,7 +1944,7 @@ LispObject Ldate_and_time1(LispObject env, LispObject a1)
     today1[8] = today[23];
     today1[9] = 0;             // Now as in 03-Apr-09
     w = make_string(today1);
-    return onevalue(w);
+    return w;
 }
 
 LispObject Ldatestamp(LispObject env)
@@ -1839,8 +1952,9 @@ LispObject Ldatestamp(LispObject env)
 // number of seconds between 1970.0.0 and now, but which could be
 // pretty-well almost any other thing, as per the C "time_t" type.
 // I do not allow for time-zones etc here either!
-{   std::time_t t = std::time(nullptr);
-    return onevalue(make_lisp_integer64((int64_t)t));
+{   SingleValued fn;
+    std::time_t t = std::time(nullptr);
+    return make_lisp_integer64((int64_t)t);
 }
 
 LispObject Ltimeofday(LispObject env)
@@ -1848,7 +1962,8 @@ LispObject Ltimeofday(LispObject env)
 // current real time. However it returns a pair of two values, the
 // first being in seconds and the second (when available) being in
 // microseconds.
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     std::time_t t = std::time(nullptr);
 // Note that if this is a 32-bit value it will wrap in 2038. Probably some
 // other API should be used here!
@@ -1866,7 +1981,7 @@ LispObject Ltimeofday(LispObject env)
 #endif
     w = make_lisp_unsigned64(n);
     errexit();
-    return onevalue(cons(w, fixnum_of_int(un)));
+    return cons(w, fixnum_of_int(un));
 }
 
 // This will be the header for a string of length exactly 24. It is
@@ -1911,7 +2026,8 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
 // textual arrangement used here seems fairly robust (until you start
 // worrying about carrying a portable machine across time zones or switching
 // to daylight savings time).
-{   char *aa, *bb;
+{   SingleValued fn;
+    char *aa, *bb;
     bool res;
     int wa, wb;
     if (!is_vector(a) || !is_vector(b) ||
@@ -1934,20 +2050,22 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
     else if ((wa = getint(aa+17, 2)) != (wb = getint(bb+17,
                                          2))) res = wa < wb;
     else res = false;
-    return onevalue(Lispify_predicate(res));
+    return Lispify_predicate(res);
 }
 
 LispObject Lrepresentation1(LispObject env, LispObject a)
 // Intended for debugging, and use with indirect (q.v.)
-{   a = make_lisp_integer64((intptr_t)a);
-    return onevalue(a);
+{   SingleValued fn;
+    a = make_lisp_integer64((intptr_t)a);
+    return a;
 }
 
 LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
 // Intended for debugging, and use with indirect (q.v.).  arg2, if
 // present and non-nil makes this more verbose. If arg2 is numeric it
 // prints slightly less than if it is other non-nil things!
-{   if (SIXTY_FOUR_BIT)
+{   SingleValued fn;
+    if (SIXTY_FOUR_BIT)
     {   if (b != nil)
         {   if (!is_fixnum(b))
                 trace_printf("R = %.16" PRIx64 " ", (uint64_t)a);
@@ -1969,7 +2087,7 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
             trace_printf("\n");
         }
         a = make_lisp_integer64((intptr_t)a);
-        return onevalue(a);
+        return a;
     }
     else
     {   if (b != nil)
@@ -1984,13 +2102,14 @@ LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
             trace_printf("\n");
         }
         a = make_lisp_integer32((int32_t)a);
-        return onevalue(a);
+        return a;
     }
 }
 
 LispObject Lindirect(LispObject, LispObject a)
-{   return onevalue(*reinterpret_cast<LispObject *>(
-                        static_cast<intptr_t>(sixty_four_bits(a))));
+{   SingleValued fn;
+    return *reinterpret_cast<LispObject *>(
+                        static_cast<intptr_t>(sixty_four_bits(a)));
 }
 
 #ifdef WITHOUT_FFI
@@ -1998,32 +2117,38 @@ LispObject Lindirect(LispObject, LispObject a)
 // If FFI is not available all these functions just return nil.
 
 LispObject Lopen_foreign_library(LispObject env, LispObject name)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 LispObject Lfind_foreign_function(LispObject env, LispObject name,
                                   LispObject lib)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 LispObject Lcallf_1(LispObject env, LispObject entry)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 LispObject Lcallf_4up(LispObject env, LispObject a1, LispObject a2,
                       LispObject a3, LispObject a4up)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 
 LispObject Lcallf_3(LispObject env, LispObject entry, LispObject a1,
                     LispObject a2)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 
 LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 #else // WITHOUT_FFI
@@ -2039,7 +2164,7 @@ LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
 // closed when the system exits.
 
 LispObject Lopen_foreign_library(LispObject env, LispObject name)
-{
+{   SingleValued fn;
 #ifdef WIN32
     HANDLE a;
 #else
@@ -2087,7 +2212,7 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
                             nullptr, err, 0, errbuf, 80, nullptr);
         if (err != 0) std::printf("%s", errbuf);
 #endif
-        return onevalue(nil);
+        return nil;
     }
 #else
     if (w1 == nullptr) std::strcat(libname, ".so");
@@ -2107,11 +2232,11 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 #ifdef DEBUG
         std::printf("Err = <%s>\n", dlerror()); std::fflush(stdout);
 #endif
-        return onevalue(nil);
+        return nil;
     }
 #endif
     r = encapsulate_pointer(reinterpret_cast<void *>(a));
-    return onevalue(r);
+    return r;
 }
 
 // (setq entrypoint (find!-foreign!-function "fname" libobject))
@@ -2120,7 +2245,8 @@ LispObject Lopen_foreign_library(LispObject env, LispObject name)
 
 LispObject Lfind_foreign_function(LispObject env, LispObject name,
                                   LispObject lib)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     void *b;
     const char *w;
     char sname[100];
@@ -2154,11 +2280,11 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     b = dlsym(a, sname);
 #endif
 #endif
-    if (b == nullptr) return onevalue(nil);
+    if (b == nullptr) return nil;
     r = encapsulate_pointer(b);
 // Observe that the result is an encapsulated pointer to the entrypoint of the
 // function that you are interested in.
-    return onevalue(r);
+    return r;
 }
 
 // (call!-foreign!-function fnptr)
@@ -2168,7 +2294,8 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
 typedef void void_function();
 
 LispObject Lcallf_1(LispObject env, LispObject entry)
-{   void *f;
+{   SingleValued fn;
+    void *f;
     if (Lencapsulatedp(nil, entry) == nil)
         return aerror("call-foreign-function");
     f = extract_pointer(entry);
@@ -2185,7 +2312,7 @@ LispObject Lcallf_1(LispObject env, LispObject entry)
 // of C" would give a clear indication of expectations!
     ffi_call(&cif, reinterpret_cast<void_function *>(
                        reinterpret_cast<uintptr_t>(f)), nullptr, nullptr);
-    return onevalue(nil);
+    return nil;
 }
 
 // For calling foreign functions I need to know something of their type
@@ -2229,7 +2356,8 @@ void   *strres;
 // same as the value given as arg2.
 
 int name_matches(LispObject a, const char *s)
-{   size_t len = 0;
+{   SingleValued fn;
+    size_t len = 0;
     const char *w = get_string_data(a, "call-foreign", len);
     if (len == std::strlen(s) &&
         std::strncmp(w, s, len) == 0) return 1;
@@ -2270,7 +2398,8 @@ int name_matches(LispObject a, const char *s)
 //    32 or 64-bit can depend on the nature of the host system.
 
 static bool dumparg(int i, LispObject type, LispObject value)
-{   size_t len = 0;
+{   SingleValued fn;
+    size_t len = 0;
     const char *w = get_string_data(type, "call-foreign-function", len);
     if ((len==5 && std::strncmp(w, "int64", 5)==0) ||
         (sizeof(long)==8 && len==4 && std::strncmp(w, "long", 4)==0) ||
@@ -2317,7 +2446,8 @@ static bool dumparg(int i, LispObject type, LispObject value)
 }
 
 LispObject callf_n(LispObject fun, LispObject args)
-{   if (Lencapsulatedp(nil, fun) == nil)
+{   SingleValued fn;
+    if (Lencapsulatedp(nil, fun) == nil)
         return aerror1("call-foreign-function", fun);
     void_function *f = reinterpret_cast<void_function *>(
                            reinterpret_cast<uintptr_t>(extract_pointer(fun)));
@@ -2360,7 +2490,7 @@ LispObject callf_n(LispObject fun, LispObject args)
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, nullptr, vargs);
-        return onevalue(nil);
+        return nil;
     }
     if (name_matches(currenttype, "int32") ||
         name_matches(currenttype, "int") ||
@@ -2371,7 +2501,7 @@ LispObject callf_n(LispObject fun, LispObject args)
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &i32res, vargs);
-        return onevalue(make_lisp_integer32(i32res));
+        return make_lisp_integer32(i32res);
     }
     if (name_matches(currenttype, "int64") ||
         name_matches(currenttype, "longlong") ||
@@ -2382,37 +2512,40 @@ LispObject callf_n(LispObject fun, LispObject args)
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &i64res, vargs);
-        return onevalue(make_lisp_integer64(i64res));
+        return make_lisp_integer64(i64res);
     }
     if (name_matches(currenttype, "double"))
     {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_double,
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &dblres, vargs);
-        return onevalue(make_boxfloat(dblres, WANT_DOUBLE_FLOAT));
+        return make_boxfloat(dblres, WANT_DOUBLE_FLOAT);
     }
     if (name_matches(currenttype, "string"))
     {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_pointer,
                          targs) != FFI_OK)
             return aerror("call-foreign-function");
         ffi_call(&cif, f, &strres, vargs);
-        return onevalue(make_string(reinterpret_cast<const char *>(strres)));
+        return make_string(reinterpret_cast<const char *>(strres));
     }
     else return aerror1("call-foreign-function", currenttype);
 }
 
 LispObject Lcallf_4up(LispObject env, LispObject a1, LispObject a2,
                       LispObject a3, LispObject a4up)
-{   return callf_n(a1, list2star(a2, a3, a4up));
+{   SingleValued fn;
+    return callf_n(a1, list2star(a2, a3, a4up));
 }
 
 LispObject Lcallf_3(LispObject env, LispObject entry, LispObject a1,
                     LispObject a2)
-{   return callf_n(entry, list2(a1, a2));
+{   SingleValued fn;
+    return callf_n(entry, list2(a1, a2));
 }
 
 LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
-{   return callf_n(entry, ncons(a1));
+{   SingleValued fn;
+    return callf_n(entry, ncons(a1));
 }
 
 #endif // WITHOUT_FFI
@@ -2421,7 +2554,8 @@ LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
 // they can be stored and used...
 
 static LispObject Lget_callback(LispObject env, LispObject a)
-{   void *r = nullptr;
+{   SingleValued fn;
+    void *r = nullptr;
     if (!is_fixnum(a)) return aerror("get_callback needs an integer arg");
     switch (int_of_fixnum(a))
     {   case  0:  r = reinterpret_cast<void *>(execute_lisp_function);
@@ -2491,18 +2625,19 @@ static LispObject Lget_callback(LispObject env, LispObject a)
         case 32:  r = reinterpret_cast<void *>(PROC_get_raw_value);
             break;
     }
-    return onevalue(make_lisp_integer64(reinterpret_cast<LispObject>(r)));
+    return make_lisp_integer64(reinterpret_cast<LispObject>(r));
 }
 
 // This is a rather silly function put in here to help me debug exception
 // handling. It raises a SIGSEGV.
 
 static LispObject Lsigsegv(LispObject env, LispObject arg)
-{   trace_printf("\nsigsegv about to be raised\n");
+{   SingleValued fn;
+    trace_printf("\nsigsegv about to be raised\n");
     ensure_screen();
     if (arg == nil) std::raise(SIGSEGV);
     else my_abort();
-    return onevalue(nil);
+    return nil;
 }
 
 setup_type const funcs1_setup[] =

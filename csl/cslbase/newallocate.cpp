@@ -662,17 +662,19 @@ bool force_verbos = false;
 uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
-{   if (force_cons != 0 || force_vec != 0)
+{   SingleValued fn;
+    if (force_cons != 0 || force_vec != 0)
         trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
                      force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
     if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lgc_forcer1(LispObject env, LispObject a)
-{   return Lgc_forcer(env, a, a);
+{   SingleValued fn;
+    return Lgc_forcer(env, a, a);
 }
 
 LispObject* nilSegment,* stackSegment;
@@ -767,92 +769,17 @@ LispObject Lverbos(LispObject env, LispObject a)
 // (verbos 4)                       extra timing info for GC process
 // These bits can be added to get combination effects, except that
 // "4" has no effect unless "1" is present.
-{   int code, old_code = verbos_flag;
+{   SingleValued fn;
+    int code, old_code = verbos_flag;
     if (a == nil) code = 0;
     else if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
     else code = 1;
     miscflags = (miscflags & ~GC_MSG_BITS) | (code & GC_MSG_BITS);
-    return onevalue(fixnum_of_int(old_code));
+    return fixnum_of_int(old_code);
 }
 
 bool volatile already_in_gc;
 bool volatile interrupt_pending;
-
-static unsigned int MEM=2u*1024u*1024u*1024u;
 bool pageFull;
-
-LispObject Lgctest_0(LispObject env)
-{   LispObject a = nil;
-    for (unsigned int i=0; i<MEM/16u; i++)
-    {   a = cons(fixnum_of_int(i), a);
-        zprintf(":");
-        if (i % 1000000 == 0)
-        {   zprintf("%d", i);
-            LispObject b = a;
-            for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
-            {   if (!is_cons(b)) my_abort(__WHERE__);
-                if (car(b) != fixnum_of_int(j))
-                    my_abort(__WHERE__);
-                b = cdr(b);
-            }
-            if (b != nil) my_abort(__WHERE__);
-        }
-    }
-    return nil;
-}
-
-LispObject Lgctest_1(LispObject env, LispObject a1)
-{   LispObject a = nil, b;
-    size_t n = int_of_fixnum(a1);
-    for (unsigned int i=0; i<n; i++)
-        a = cons(fixnum_of_int(i), a);
-    zprintf("list created\n");
-    b = a;
-    for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
-    {   if (!is_cons(b)) goto failing2;
-        if (car(b) != fixnum_of_int(j))
-        {   zprintf("Fail3 case with j = %d\n"
-                    " fixnum_of_int(j) = %x\n"
-                    " car(b) = %x which differs\n"
-                    " %d items down the list\n",
-                j, fixnum_of_int(j), car(b), n-1-j);
-            goto failing3; //<<<<<<<<<
-        }
-        b = cdr(b);
-    }
-    if (b != nil) goto failing4;
-    return nil;
-failing2:
-    zprintf("Crashed2 b = %a car(b) = %a\n", b, car(b));
-    zprintf("n = %d\n", n);
-    for (int z=1; z<10; z++)
-    {   zprintf("%d ", car(b)/16);
-        b = cdr(b);
-    }
-    zprintf("\n");
-    return nil;
-failing3:
-    zprintf("Crashed3 b = %a car(b) = %a\n", b, car(b));
-    zprintf("n = %d\n", n);
-    for (int z=1; z<10; z++)
-    {   zprintf("%d ", car(b)/16);
-        b = cdr(b);
-    }
-    zprintf("\n");
-    return nil;
-failing4:
-    zprintf("Crashed3 4 = %a car(b) = %a\n", b, car(b));
-    zprintf("n = %d\n", n);
-    for (int z=1; z<10; z++)
-    {   zprintf("%d ", car(b)/16);
-        b = cdr(b);
-    }
-    zprintf("\n");
-    return nil;
-}
-
-LispObject Lgctest_2(LispObject env, LispObject a1, LispObject a2)
-{   return nil;
-}
 
 // end of newallocate.cpp

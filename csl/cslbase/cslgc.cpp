@@ -53,11 +53,13 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        litvecs, getvecs;
 
 LispObject Lgc(LispObject env)
-{   return Lgc(env, lisp_true);
+{   SingleValued fn;
+    return Lgc(env, lisp_true);
 }
 
 LispObject Lgc(LispObject env, LispObject a)
-{   reclaim(nil, "user request",
+{   SingleValued fn;
+    reclaim(nil, "user request",
             a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
     return nil;
 }
@@ -69,14 +71,15 @@ LispObject Lverbos(LispObject env, LispObject a)
 // (verbos 4)                       extra timing info for GC process
 // These bits can be added to get combination effects, except that
 // "4" has no effect unless "1" is present.
-{   int code, old_code = verbos_flag;
+{   SingleValued fn;
+    int code, old_code = verbos_flag;
     if (a == nil) code = 0;
     else if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
     else code = 1;
 // (enable!-errorset 3 3) will also force GC messages to appear.
     if (errorset_min == 3 && code == 0) code = 1;
     miscflags = (miscflags & ~GC_MSG_BITS) | (code & GC_MSG_BITS);
-    return onevalue(fixnum_of_int(old_code));
+    return fixnum_of_int(old_code);
 }
 
 
@@ -752,8 +755,7 @@ void reclaim(const char *why, int stg_class)
     use_gchook(lisp_true);
 }
 
-LispObject reclaim(LispObject p, const char *why, int stg_class,
-                   size_t size)
+LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
 {   THREADID;
     Save save(THREADARG p);
     reclaim(why, stg_class);

@@ -101,9 +101,9 @@ LispObject characterify(LispObject c)
 LispObject char_to_id(int ch)
 {   LispObject w;
     int n;
-    if (ch < 0) return onevalue(eof_symbol);
+    if (ch < 0) return eof_symbol;
     ch &= 0x001fffff;
-    if (ch <= 0xff) return onevalue(basic_elt(charvec, ch));
+    if (ch <= 0xff) return basic_elt(charvec, ch);
     else if (ch <= 0x7ff)
     {   celt(boffo, 0) = 0xc0 + (ch>>6);
         celt(boffo, 1) = 0x80 + (ch & 0x3f);
@@ -124,7 +124,7 @@ LispObject char_to_id(int ch)
     }
     w = iintern(boffo, n, lisp_package, 0);
     if (ch <= 0xff) elt(charvec, ch) = w;
-    return onevalue(w);
+    return w;
 }
 
 
@@ -134,13 +134,14 @@ LispObject char_to_id(int ch)
 // as part of a character object.
 
 static LispObject Lchar_downcase(LispObject, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
     if (!is_char(a)) return aerror("char-downcase");
 #ifdef COMMON
-    if (a == CHAR_EOF) return onevalue(a);
+    if (a == CHAR_EOF) return a;
 #else
-    if (a == CHAR_EOF) return onevalue(eof_symbol);
+    if (a == CHAR_EOF) return eof_symbol;
 #endif
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t)==4)
@@ -154,97 +155,102 @@ static LispObject Lchar_downcase(LispObject, LispObject a)
 }
 
 LispObject Lcharacter(LispObject env, LispObject a)
-{   if (is_char(a)) return onevalue(a);
+{   SingleValued fn;
+    if (is_char(a)) return a;
     else if (is_vector(a))
     {   Header h = vechdr(a);
         if (is_string_header(h))
-            return onevalue(characterify_string(a));
+            return characterify_string(a);
 // /* The issue of strings (especially non-simple ones) and the ELT function
 // and wide characters has NOT BEEN THOUGHT THROUGH. So this bit is a
 // mess.
         else if (stringp(a))
         {   LispObject w = Lelt(nil, a, fixnum_of_int(0));
-            return onevalue(w);
+            return w;
         }
         else return aerror1("character", a);
     }
     else if (is_fixnum(a))
-        return onevalue(pack_char(0, int_of_fixnum(a) & 0x001fffff));
-    else if (is_symbol(a)) return onevalue(characterify_string(qpname(
-                a)));
+        return pack_char(0, int_of_fixnum(a) & 0x001fffff);
+    else if (is_symbol(a)) return characterify_string(qpname(a));
     else return aerror1("character", a);
 }
 
 static LispObject Lcharacterp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(is_char(a)));
+{   SingleValued fn;
+    return Lispify_predicate(is_char(a));
 }
 
 static LispObject Lchar_bits(LispObject, LispObject a)
-{
+{   SingleValued fn;
 // "bits" are no longer supported (or needed).
     a = characterify(a);
     if (!is_char(a)) return aerror("char-bits");
-    return onevalue(fixnum_of_int(0));
+    return fixnum_of_int(0);
 }
 
 static LispObject Lchar_font(LispObject, LispObject a)
-{
+{   SingleValued fn;
 // "font" is no longer really sensible, but I will (for now) allow
 // people to pack 3 bits of information in with a character, and I will
 // hope that they never do.
     a = characterify(a);
     if (!is_char(a)) return aerror("char-font");
-    return onevalue(fixnum_of_int(font_of_char(a)));
+    return fixnum_of_int(font_of_char(a));
 }
 
 static LispObject Lchar_upcase(LispObject, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
     if (!is_char(a)) return aerror("char-upcase");
 #ifdef COMMON
-    if (a == CHAR_EOF) return onevalue(a);
+    if (a == CHAR_EOF) return a;
 #else
-    if (a == CHAR_EOF) return onevalue(eof_symbol);
+    if (a == CHAR_EOF) return eof_symbol;
 #endif
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
         cc = std::towupper(cc);
 #ifdef COMMON
-    return onevalue(pack_char(font_of_char(a), cc));
+    return pack_char(font_of_char(a), cc);
 #else
     return char_to_id(cc);
 #endif
 }
 
 LispObject Lwhitespace_char_p(LispObject env, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
-    if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a)) return nil;
+    if (a == CHAR_EOF) return nil;
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
-    {   if (std::iswspace(cc)) return onevalue(lisp_true);
+    {   if (std::iswspace(cc)) return lisp_true;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lalpha_char_p(LispObject env, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
-    if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a)) return nil;
+    if (a == CHAR_EOF) return nil;
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
-    {   if (std::iswalpha(cc)) return onevalue(lisp_true);
+    {   if (std::iswalpha(cc)) return lisp_true;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lgraphic_char_p(LispObject env, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
-    if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a)) return nil;
+    if (a == CHAR_EOF) return nil;
     cc = code_of_char(a);
 // What is goin on here is that I am expecting the if sizeof(wchar_t) is 4
 // (ie I have 32-bit wide characters) then the iswgraph() test is generally
@@ -252,93 +258,101 @@ static LispObject Lgraphic_char_p(LispObject env, LispObject a)
 // on codepoints up to U+FFFF, and I am going to declare that all codepoints
 // above that will record as "not graphics chatacters".
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
-    {   if (std::iswgraph(cc) || cc==' ') return onevalue(lisp_true);
+    {   if (std::iswgraph(cc) || cc==' ') return lisp_true;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lupper_case_p(LispObject env, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
-    if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a)) return nil;
+    if (a == CHAR_EOF) return nil;
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
-    {   if (std::iswupper(cc)) return onevalue(lisp_true);
-        else return onevalue(nil);
+    {   if (std::iswupper(cc)) return lisp_true;
+        else return nil;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Llower_case_p(LispObject env, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
-    if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a)) return nil;
+    if (a == CHAR_EOF) return nil;
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
-    {   if (std::iswlower(cc) || cc==' ') return onevalue(lisp_true);
+    {   if (std::iswlower(cc) || cc==' ') return lisp_true;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Ldigit_char_p_2(LispObject env, LispObject a,
                            LispObject radix)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     LispObject r = radix;
     if (!is_fixnum(r) || r < fixnum_of_int(2) ||
         r >= fixnum_of_int(36)) return aerror1("digit-char-p", r);
     a = characterify(a);
-    if (!is_char(a) || a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a) || a == CHAR_EOF) return nil;
     cc = code_of_char(a);
     if ((cc > 0xffff && sizeof(wchar_t) < 4) ||
-        !std::iswalnum(cc)) return onevalue(nil);
+        !std::iswalnum(cc)) return nil;
 // If I get here then cc is a valid argument of iswupper etc
     if (std::iswupper(cc)) cc = std::towlower(cc);
     if ('0' <= cc && cc <= '9') cc = cc - '0';
     else if ('a' <= cc && cc <= 'z') cc = cc - 'a' + 10;
     else cc = 255;
-    if (cc >= int_of_fixnum(r)) return onevalue(nil);
-    else return onevalue(fixnum_of_int((int32_t)cc));
+    if (cc >= int_of_fixnum(r)) return nil;
+    else return fixnum_of_int((int32_t)cc);
 }
 
 LispObject Ldigit_char_p_1(LispObject env, LispObject a)
-{   return Ldigit_char_p_2(nil, a, fixnum_of_int(10));
+{   SingleValued fn;
+    return Ldigit_char_p_2(nil, a, fixnum_of_int(10));
 }
 
 LispObject Ldigitp(LispObject env, LispObject a)
-{   int cc;
+{   SingleValued fn;
+    int cc;
     a = characterify(a);
-    if (!is_char(a)) return onevalue(nil);
-    if (a == CHAR_EOF) return onevalue(nil);
+    if (!is_char(a)) return nil;
+    if (a == CHAR_EOF) return nil;
     cc = code_of_char(a);
-    if (cc > 0xffff && sizeof(wchar_t) < 4) return onevalue(nil);
-    return onevalue(Lispify_predicate(std::iswdigit(cc)));
+    if (cc > 0xffff && sizeof(wchar_t) < 4) return nil;
+    return Lispify_predicate(std::iswdigit(cc));
 }
 
 static LispObject Ldigit_char_3(LispObject env, LispObject a,
                                 LispObject r, LispObject f)
-{   if (!is_fixnum(a) || !is_fixnum(r) || !is_fixnum(f) ||
+{   SingleValued fn;
+    if (!is_fixnum(a) || !is_fixnum(r) || !is_fixnum(f) ||
         a < 0 || r < fixnum_of_int(2) || f < 0 ||
         a >= r || r > fixnum_of_int(36) ||
-        f > fixnum_of_int(255)) return onevalue(nil);
+        f > fixnum_of_int(255)) return nil;
     a = int_of_fixnum(a);
     if (a <= 9) a = a + '0';
     else a = a + ('A' - 10);
-    return onevalue(pack_char(int_of_fixnum(f) & 0x7, a & 0xff));
+    return pack_char(int_of_fixnum(f) & 0x7, a & 0xff);
 }
 
-static LispObject Ldigit_char_2(LispObject env, LispObject a,
-                                LispObject r1)
-{   return Ldigit_char_3(nil, a, r1, fixnum_of_int(0));
+static LispObject Ldigit_char_2(LispObject env, LispObject a, LispObject r1)
+{   SingleValued fn;
+    return Ldigit_char_3(nil, a, r1, fixnum_of_int(0));
 }
 
 static LispObject Ldigit_char_1(LispObject env, LispObject a)
-{   return Ldigit_char_3(nil, a, fixnum_of_int(10), fixnum_of_int(0));
+{   SingleValued fn;
+    return Ldigit_char_3(nil, a, fixnum_of_int(10), fixnum_of_int(0));
 }
 
 LispObject Lspecial_char(LispObject, LispObject a)
-{   if (!is_fixnum(a)) return aerror("special-char");
+{   SingleValued fn;
+    if (!is_fixnum(a)) return aerror("special-char");
     switch (int_of_fixnum(a))
     {   case 0:   // space
             a = pack_char(0, ' ');
@@ -382,28 +396,26 @@ LispObject Lspecial_char(LispObject, LispObject a)
 // valid in lists handed to compress, and secondly the character object
 // for end-of-file is used for that in Standard Lisp mode. Well no - I am
 // now moving to use a symbol for end-of-file...
-    return onevalue(a);
+    return a;
 }
 
 // Given an integer this returns a list of bytes that are the utf-8 encoding
 // for that value.
 LispObject Lutf8_encode(LispObject env, LispObject a)
-{   int c;
+{   SingleValued fn;
+    int c;
     if (!is_fixnum(a)) return aerror1("utf8-encode", a);
     c = int_of_fixnum(a) & 0x001fffff;
-    if (c <= 0x7f) return onevalue(ncons(fixnum_of_int(c)));
-    else if (c <= 0x7ff) return onevalue(
-                                        list2(fixnum_of_int(0xc0 | (c>>6)),
-                                              fixnum_of_int(0x80 | (c & 0x3f))));
-    else if (c <= 0xffff) return onevalue(
-                                         list3(fixnum_of_int(0xe0 | (c>>12)),
-                                               fixnum_of_int(0x80 | ((c>>6) & 0x3f)),
-                                               fixnum_of_int(0x80 | (c & 0x3f))));
-    else return onevalue(
-                        list4(fixnum_of_int(0xf0 | (c>>18)),
-                              fixnum_of_int(0x80 | ((c>>12) & 0x3f)),
-                              fixnum_of_int(0x80 | ((c>>6) & 0x3f)),
-                              fixnum_of_int(0x80 | (c & 0x3f))));
+    if (c <= 0x7f) return ncons(fixnum_of_int(c));
+    else if (c <= 0x7ff) return list2(fixnum_of_int(0xc0 | (c>>6)),
+                                      fixnum_of_int(0x80 | (c & 0x3f)));
+    else if (c <= 0xffff) return list3(fixnum_of_int(0xe0 | (c>>12)),
+                                       fixnum_of_int(0x80 | ((c>>6) & 0x3f)),
+                                       fixnum_of_int(0x80 | (c & 0x3f)));
+    else return list4(fixnum_of_int(0xf0 | (c>>18)),
+                      fixnum_of_int(0x80 | ((c>>12) & 0x3f)),
+                      fixnum_of_int(0x80 | ((c>>6) & 0x3f)),
+                      fixnum_of_int(0x80 | (c & 0x3f)));
 }
 
 // Given four unsigned byte values this should reconstruct the value
@@ -411,9 +423,9 @@ LispObject Lutf8_encode(LispObject env, LispObject a)
 static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 {   int32_t n;
     switch (c1 & 0xf0)
-{       default:
+    {   default:
             if ((c2&0x80)==0) return aerror("utf8-decode");
-            return onevalue(fixnum_of_int(c1));
+            return fixnum_of_int(c1);
         case 0x80:
         case 0x90:
         case 0xa0:
@@ -422,13 +434,13 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
         case 0xc0:
         case 0xd0:
             if ((c2&0x80)==0) return aerror("utf8-decode");
-            return onevalue(fixnum_of_int(((c1 & 0x1f)<<6) |
-                                          (c2 & 0x3f)));
+            return fixnum_of_int(((c1 & 0x1f)<<6) |
+                                 (c2 & 0x3f));
         case 0xe0:
             if ((c2&0x80)==0 || (c3&0x80)==0) return aerror("utf8-decode");
-            return onevalue(fixnum_of_int(((c1 & 0x0f)<<12) |
-                                          ((c2 & 0x3f)<<6) |
-                                          (c3 & 0x3f)));
+            return fixnum_of_int(((c1 & 0x0f)<<12) |
+                                 ((c2 & 0x3f)<<6) |
+                                 (c3 & 0x3f));
         case 0xf0:
             if ((c1 & 0x08) != 0 || (c2&0x80)==0 || (c3&0x80)==0 || (c4&0x80)==0)
                 return aerror("utf8-decode");
@@ -437,14 +449,15 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
                 ((c3 & 0x3f)<<6) |
                 (c4 & 0x3f);
             if (n == 0x001fffff) n = -1; // special for EOF
-            return onevalue(fixnum_of_int(n));
+            return fixnum_of_int(n);
     }
 }
 
 LispObject Lutf8_decode_4up(LispObject env, LispObject a,
                             LispObject b,
                             LispObject c, LispObject d)
-{   if (cdr(d) != nil) return aerror("utf8-decode");
+{   SingleValued fn;
+    if (cdr(d) != nil) return aerror("utf8-decode");
     d = car(d);
     if (!is_fixnum(a)) return aerror1("utf8-decode", a);
     if (!is_fixnum(b)) return aerror1("utf8-decode", b);
@@ -458,7 +471,8 @@ LispObject Lutf8_decode_4up(LispObject env, LispObject a,
 
 LispObject Lutf8_decode_3(LispObject env, LispObject a, LispObject b,
                           LispObject c)
-{   if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+{   SingleValued fn;
+    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
     if (!is_fixnum(b)) return aerror1("utf8-decode", b);
     if (!is_fixnum(c)) return aerror1("utf8-decode", c);
     return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
@@ -466,14 +480,16 @@ LispObject Lutf8_decode_3(LispObject env, LispObject a, LispObject b,
 }
 
 LispObject Lutf8_decode_2(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+{   SingleValued fn;
+    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
     if (!is_fixnum(b)) return aerror1("utf8-decode", b);
     return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
                        -1, -1);
 }
 
 LispObject Lutf8_decode_1(LispObject env, LispObject a)
-{   if (car_legal(a))  // I allow for a list of ints too
+{   SingleValued fn;
+    if (car_legal(a))  // I allow for a list of ints too
     {   LispObject b=cdr(a);
         a = car(a);
         if (car_legal(b))
@@ -510,7 +526,8 @@ LispObject Lutf8_decode_1(LispObject env, LispObject a)
 // values things will wrap.
 
 LispObject Lid2int(LispObject, LispObject a)
-{   if (!is_symbol(a)) return aerror1("id2int", a);
+{   SingleValued fn;
+    if (!is_symbol(a)) return aerror1("id2int", a);
     uint32_t n = qcountLow(a) & 0x3fffffU;
 // If the symbol did not have a sequence number yet allocate it one. This
 // can happen if it was created as an uninterned value or a gensym. Well
@@ -520,78 +537,85 @@ LispObject Lid2int(LispObject, LispObject a)
     {   n = symbol_sequence++ & 0x3fffffU;
         qcountLow(a) = (qcountLow(a) & ~0x3fffffU) | n;
     }
-    return onevalue(fixnum_of_int(n));
+    return fixnum_of_int(n);
 }
 
 LispObject Lchar_code(LispObject, LispObject a)
-{   a = characterify(a);
+{   SingleValued fn;
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-code");
 // Note the special treatment of EOF here, and that characterify accepts
 // integers, symbols and strings and disentangled UTF-8 encoding to return
 // something that encapsulated the codepoint that is wanted.
-    if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
-    return onevalue(fixnum_of_int(code_of_char(a)));
+    if (a == CHAR_EOF) return fixnum_of_int(-1);
+    return fixnum_of_int(code_of_char(a));
 }
 
 static LispObject Lcode_char_3(LispObject, LispObject code,
                                LispObject bits,
                                LispObject font )
-{   if ((intptr_t)font < 0 ||
+{   SingleValued fn;
+    if ((intptr_t)font < 0 ||
         (intptr_t)font > (intptr_t)fixnum_of_int(7) ||
         (intptr_t)code < 0 ||
         (intptr_t)code > (intptr_t)fixnum_of_int(0x001fffff))
         return aerror("code-char");
     uintptr_t icode = int_of_fixnum(code) & 0x001fffff;
 #ifdef COMMON
-    return onevalue(pack_char(int_of_fixnum(font) & 0x7, icode));
+    return pack_char(int_of_fixnum(font) & 0x7, icode);
 #else
     return char_to_id(icode);
 #endif
 }
 
 static LispObject Lcode_char_1(LispObject env, LispObject a)
-{   return Lcode_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
+{   SingleValued fn;
+    return Lcode_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
 }
 
 static LispObject Lcode_char_2(LispObject env, LispObject a,
                                LispObject b)
-{   return Lcode_char_3(nil, a, b, fixnum_of_int(0));
+{   SingleValued fn;
+    return Lcode_char_3(nil, a, b, fixnum_of_int(0));
 }
 
 static LispObject Lchar_int(LispObject, LispObject a)
-{   a = characterify(a);
+{   SingleValued fn;
+    a = characterify(a);
     if (!is_char(a)) return aerror("char-int");
-    else if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
-    else return onevalue(fixnum_of_int(code_of_char(a)));
+    else if (a == CHAR_EOF) return fixnum_of_int(-1);
+    else return fixnum_of_int(code_of_char(a));
 }
 
 static LispObject Lint_char(LispObject env, LispObject a)
-{   intptr_t n;
+{   SingleValued fn;
+    intptr_t n;
     if (!is_fixnum(a)) return nil;
     n = int_of_fixnum(a);
     if (n == -1) n = 0x001fffff;
-    return onevalue(pack_char(0, n));
+    return pack_char(0, n);
 }
 
 static LispObject Lmake_char_3(LispObject, LispObject a,
                                LispObject bits, LispObject font)
-{   a = characterify(a);
+{   SingleValued fn;
+    a = characterify(a);
 // bits are ignores these days. They represented an attempt by Common Lisp
 // to put extra information into character objects that has not really
 // survived very well.
     if ((intptr_t)font < 0 || (intptr_t)font > fixnum_of_int(3L) ||
         !is_char(a)) return aerror("make-char");
-    return onevalue(pack_char(int_of_fixnum(font) & 0x3,
-                              code_of_char(a)));
+    return pack_char(int_of_fixnum(font & 0x3), code_of_char(a));
 }
 
-static LispObject Lmake_char_2(LispObject, LispObject a,
-                               LispObject bits)
-{   return Lmake_char_3(nil, a, bits, fixnum_of_int(0));
+static LispObject Lmake_char_2(LispObject, LispObject a, LispObject bits)
+{   SingleValued fn;
+    return Lmake_char_3(nil, a, bits, fixnum_of_int(0));
 }
 
 static LispObject Lmake_char_1(LispObject, LispObject a)
-{   return Lmake_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
+{   SingleValued fn;
+    return Lmake_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
 }
 
 // Character comparisons are VERY like the arithmetic ones, but need
@@ -599,7 +623,8 @@ static LispObject Lmake_char_1(LispObject, LispObject a)
 // in general terms nicer.
 
 static bool chartest(LispObject c)
-{   if (!is_char(c))
+{   SingleValued fn;
+    if (!is_char(c))
     {   aerror1("Character object expected", c);
         return true;
     }
@@ -609,274 +634,304 @@ static bool chartest(LispObject c)
 static LispObject Lchar_eqn_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 != a2) return onevalue(nil);
+    if (a1 != a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 != a3) return onevalue(nil);
+    if (a2 != a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
-        if (a3 != a1) return onevalue(nil);
+        if (a3 != a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lchar_eqn_3(LispObject env, LispObject a1,
                               LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 != a2) return onevalue(nil);
+    if (a1 != a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 != a3) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a2 != a3) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_eqn_2(LispObject env, LispObject a1,
                               LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 != a2) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a1 != a2) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_eqn_1(LispObject env, LispObject a)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_eqn_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_lessp_4up(LispObject env, LispObject a1,
                                   LispObject a2,
                                   LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 >= a2) return onevalue(nil);
+    if (a1 >= a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 >= a3) return onevalue(nil);
+    if (a2 >= a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
-        if (a3 >= a1) return onevalue(nil);
+        if (a3 >= a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lchar_lessp_3(LispObject env, LispObject a1,
                                 LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 >= a2) return onevalue(nil);
+    if (a1 >= a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 >= a3) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a2 >= a3) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_lessp_2(LispObject env, LispObject a1,
                                 LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 >= a2) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a1 >= a2) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_lessp_1(LispObject env, LispObject a)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_lessp_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
 static LispObject Lchar_greaterp_4up(LispObject env, LispObject a1,
                                      LispObject a2,
                                      LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 <= a2) return onevalue(nil);
+    if (a1 <= a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 <= a3) return onevalue(nil);
+    if (a2 <= a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
-        if (a3 <= a1) return onevalue(nil);
+        if (a3 <= a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lchar_greaterp_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 <= a2) return onevalue(nil);
+    if (a1 <= a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 <= a3) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a2 <= a3) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_greaterp_2(LispObject env, LispObject a1,
                                    LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 <= a2) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a1 <= a2) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_greaterp_1(LispObject env, LispObject a)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_greaterp_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
 static LispObject Lchar_neq_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 == a2) return onevalue(nil);
+    if (a1 == a2) return nil;
     if (chartest(a3)) return nil;
-    if (a1 == a3 || a2 == a3) return onevalue(nil);
+    if (a1 == a3 || a2 == a3) return nil;
     while (a4up != nil)
     {   LispObject a4 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a4)) return nil;
-        if (a1 == a4 || a2 == a4 || a3 == a4) return onevalue(nil);
+        if (a1 == a4 || a2 == a4 || a3 == a4) return nil;
         for (LispObject a5up=a4up; a5up!=nil; a5up=cdr(a5up))
         {   LispObject a5 = car(a5up);
             a5up = cdr(a5up);
             if (chartest(a5)) return nil;
-            if (a4 == a5) return onevalue(nil);
+            if (a4 == a5) return nil;
         }
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lchar_neq_3(LispObject env, LispObject a1,
                               LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 == a2) return onevalue(nil);
+    if (a1 == a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 == a3) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a2 == a3) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_neq_2(LispObject env, LispObject a1,
                               LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 == a2) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a1 == a2) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_neq_1(LispObject env, LispObject a)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_neq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
 static LispObject Lchar_geq_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 < a2) return onevalue(nil);
+    if (a1 < a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 < a3) return onevalue(nil);
+    if (a2 < a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
-        if (a3 < a1) return onevalue(nil);
+        if (a3 < a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lchar_geq_3(LispObject env, LispObject a1,
                               LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 < a2) return onevalue(nil);
+    if (a1 < a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 < a3) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a2 < a3) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_geq_2(LispObject env, LispObject a1,
                               LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 < a2) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a1 < a2) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_geq_1(LispObject env, LispObject a)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_geq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
 static LispObject Lchar_leq_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 > a2) return onevalue(nil);
+    if (a1 > a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 > a3) return onevalue(nil);
+    if (a2 > a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
-        if (a3 > a1) return onevalue(nil);
+        if (a3 > a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lchar_leq_3(LispObject env, LispObject a1,
                               LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 > a2) return onevalue(nil);
+    if (a1 > a2) return nil;
     if (chartest(a3)) return nil;
-    if (a2 > a3) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a2 > a3) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_leq_2(LispObject env, LispObject a1,
                               LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
-    if (a1 > a2) return onevalue(nil);
-    return onevalue(lisp_true);
+    if (a1 > a2) return nil;
+    return lisp_true;
 }
 
 static LispObject Lchar_leq_1(LispObject env, LispObject a)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lchar_leq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
@@ -888,330 +943,360 @@ static LispObject Lchar_leq_0(LispObject env)
 static LispObject casefold(LispObject c)
 {   int cc;
     if (!is_char(c)) return aerror("Character object expected");
-    if (c == CHAR_EOF) return onevalue(c);
+    if (c == CHAR_EOF) return c;
 
     cc = code_of_char(c);   // Character in the C sense
     if (cc <= 0xffff || sizeof(wchar_t)== 4) cc = std::towupper(cc);
-    return onevalue(pack_char(font_of_char(c), cc));
+    return pack_char(font_of_char(c), cc);
 }
 
 static LispObject Lcharacter_eqn_4up(LispObject env, LispObject a1,
                                      LispObject a2,
                                      LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 != a2) return onevalue(nil);
+    if (a1 != a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    if (a2 != a3) return onevalue(nil);
+    if (a2 != a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
         a1 = casefold(a1);
-        if (a3 != a1) return onevalue(nil);
+        if (a3 != a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lcharacter_eqn_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 != a2) return onevalue(nil);
+    if (a1 != a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    return onevalue(Lispify_predicate(a2 == a3));
+    return Lispify_predicate(a2 == a3);
 }
 
 static LispObject Lcharacter_eqn_2(LispObject env, LispObject a1,
                                    LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    return onevalue(Lispify_predicate(a1 == a2));
+    return Lispify_predicate(a1 == a2);
 }
 
 static LispObject Lcharacter_eqn_1(LispObject env, LispObject a1)
-{   if (chartest(a1)) return nil;
-    return onevalue(lisp_true);
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_eqn_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_lessp_4up(LispObject env, LispObject a1,
                                        LispObject a2,
                                        LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 >= a2) return onevalue(nil);
+    if (a1 >= a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    if (a2 >= a3) return onevalue(nil);
+    if (a2 >= a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
         a1 = casefold(a1);
-        if (a3 >= a1) return onevalue(nil);
+        if (a3 >= a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lcharacter_lessp_3(LispObject env, LispObject a1,
                                      LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 >= a2) return onevalue(nil);
+    if (a1 >= a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    return onevalue(Lispify_predicate(a2 < a3));
+    return Lispify_predicate(a2 < a3);
 }
 
 static LispObject Lcharacter_lessp_2(LispObject env, LispObject a1,
                                      LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    return onevalue(Lispify_predicate(a1 < a2));
+    return Lispify_predicate(a1 < a2);
 }
 
 static LispObject Lcharacter_lessp_1(LispObject env, LispObject a1)
-{   if (chartest(a1)) return nil;
-    return onevalue(lisp_true);
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_lessp_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
 static LispObject Lcharacter_greaterp_4up(LispObject env,
         LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 <= a2) return onevalue(nil);
+    if (a1 <= a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    if (a2 <= a3) return onevalue(nil);
+    if (a2 <= a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
         a1 = casefold(a1);
-        if (a3 <= a1) return onevalue(nil);
+        if (a3 <= a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lcharacter_greaterp_3(LispObject env, LispObject a1,
                                         LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 <= a2) return onevalue(nil);
+    if (a1 <= a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    return onevalue(Lispify_predicate(a2 > a3));
+    return Lispify_predicate(a2 > a3);
 }
 
 static LispObject Lcharacter_greaterp_2(LispObject env, LispObject a1,
                                         LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    return onevalue(Lispify_predicate(a1 > a2));
+    return Lispify_predicate(a1 > a2);
 }
 
 static LispObject Lcharacter_greaterp_1(LispObject env, LispObject a1)
-{   if (chartest(a1)) return nil;
-    return onevalue(lisp_true);
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_greaterp_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_neq_4up(LispObject env, LispObject a1,
                                      LispObject a2,
                                      LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 == a2) return onevalue(nil);
+    if (a1 == a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    if (a1 == a3 || a2 == a3) return onevalue(nil);
+    if (a1 == a3 || a2 == a3) return nil;
     while (a4up != nil)
     {   LispObject a4 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a4)) return nil;
         a4 = casefold(a4);
-        if (a1 == a4 || a2 == a4 || a3 == a4) return onevalue(nil);
+        if (a1 == a4 || a2 == a4 || a3 == a4) return nil;
         for (LispObject a5up=a4up; a5up!=nil; a5up=cdr(a5up))
         {   LispObject a5 = car(a5up);
             a5up = cdr(a5up);
             if (chartest(a5)) return nil;
             a5 = casefold(a5);
-            if (a4 == a5) return onevalue(nil);
+            if (a4 == a5) return nil;
         }
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lcharacter_neq_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 == a2) return onevalue(nil);
+    if (a1 == a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    return onevalue(Lispify_predicate(a2 != a3));
+    return Lispify_predicate(a2 != a3);
 }
 
 static LispObject Lcharacter_neq_2(LispObject env, LispObject a1,
                                    LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    return onevalue(Lispify_predicate(a1 != a2));
+    return Lispify_predicate(a1 != a2);
 }
 
 static LispObject Lcharacter_neq_1(LispObject env, LispObject a1)
-{   if (chartest(a1)) return nil;
-    return onevalue(lisp_true);
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_neq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_geq_4up(LispObject env, LispObject a1,
                                      LispObject a2,
                                      LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 < a2) return onevalue(nil);
+    if (a1 < a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    if (a2 < a3) return onevalue(nil);
+    if (a2 < a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
         a1 = casefold(a1);
-        if (a3 < a1) return onevalue(nil);
+        if (a3 < a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lcharacter_geq_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 < a2) return onevalue(nil);
+    if (a1 < a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    return onevalue(Lispify_predicate(a2 >= a3));
+    return Lispify_predicate(a2 >= a3);
 }
 
 static LispObject Lcharacter_geq_2(LispObject env, LispObject a1,
                                    LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    return onevalue(Lispify_predicate(a1 >= a2));
+    return Lispify_predicate(a1 >= a2);
 }
 
 static LispObject Lcharacter_geq_1(LispObject env, LispObject a1)
-{   if (chartest(a1)) return nil;
-    return onevalue(lisp_true);
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_geq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_leq_4up(LispObject env, LispObject a1,
                                      LispObject a2,
                                      LispObject a3, LispObject a4up)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 > a2) return onevalue(nil);
+    if (a1 > a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    if (a2 > a3) return onevalue(nil);
+    if (a2 > a3) return nil;
     while (a4up != nil)
     {   a1 = car(a4up);
         a4up = cdr(a4up);
         if (chartest(a1)) return nil;
         a1 = casefold(a1);
-        if (a3 > a1) return onevalue(nil);
+        if (a3 > a1) return nil;
         a3 = a1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 static LispObject Lcharacter_leq_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    if (a1 > a2) return onevalue(nil);
+    if (a1 > a2) return nil;
     if (chartest(a3)) return nil;
     a3 = casefold(a3);
-    return onevalue(Lispify_predicate(a2 <= a3));
+    return Lispify_predicate(a2 <= a3);
 }
 
 static LispObject Lcharacter_leq_2(LispObject env, LispObject a1,
                                    LispObject a2)
-{   if (chartest(a1)) return nil;
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
     if (chartest(a2)) return nil;
     a1 = casefold(a1);
     a2 = casefold(a2);
-    return onevalue(Lispify_predicate(a1 <= a2));
+    return Lispify_predicate(a1 <= a2);
 }
 
 static LispObject Lcharacter_leq_1(LispObject env, LispObject a1)
-{   if (chartest(a1)) return nil;
-    return onevalue(lisp_true);
+{   SingleValued fn;
+    if (chartest(a1)) return nil;
+    return lisp_true;
 }
 
 static LispObject Lcharacter_leq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 
@@ -1254,7 +1339,8 @@ static LispObject get_char_vec(LispObject v, int32_t *high,
 
 static LispObject Lstring_greaterp_2(LispObject env,
                                      LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1265,28 +1351,30 @@ static LispObject Lstring_greaterp_2(LispObject env,
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
-        {   if (i == la) return onevalue(nil);
-            else return onevalue(fixnum_of_int(i));
+        {   if (i == la) return nil;
+            else return fixnum_of_int(i);
         }
-        else if (i == la) return onevalue(nil);
+        else if (i == la) return nil;
 // String comparisons here go byte by byte. I believe that this is
 // actually OK despite utf-8 packing.
         ca = ucelt(a, i+oa);
         cb = ucelt(b, i+ob);
         if (ca == cb) continue;
-        if (ca > cb) return onevalue(fixnum_of_int(i));
-        else return onevalue(nil);
+        if (ca > cb) return fixnum_of_int(i);
+        else return nil;
     }
 }
 
 static LispObject Lstring_lessp_2(LispObject env,
                                   LispObject a, LispObject b)
-{   return Lstring_greaterp_2(nil, b, a);
+{   SingleValued fn;
+    return Lstring_greaterp_2(nil, b, a);
 }
 
 static LispObject Lstring_not_equal_2(LispObject env,
                                       LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1297,20 +1385,21 @@ static LispObject Lstring_not_equal_2(LispObject env,
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
-        {   if (i == la) return onevalue(nil);
-            else return onevalue(fixnum_of_int(i));
+        {   if (i == la) return nil;
+            else return fixnum_of_int(i);
         }
-        else if (i == la) return onevalue(fixnum_of_int(i));
+        else if (i == la) return fixnum_of_int(i);
         ca = ucelt(a, i+oa);
         cb = ucelt(b, i+ob);
         if (ca == cb) continue;
-        return onevalue(fixnum_of_int(i));
+        return fixnum_of_int(i);
     }
 }
 
 static LispObject Lstring_equal_2(LispObject env, LispObject a,
                                   LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1321,20 +1410,21 @@ static LispObject Lstring_equal_2(LispObject env, LispObject a,
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
-        {   if (i == la) return onevalue(lisp_true);
-            else return onevalue(nil);
+        {   if (i == la) return lisp_true;
+            else return nil;
         }
-        else if (i == la) return onevalue(nil);
+        else if (i == la) return nil;
         ca = ucelt(a, i+oa);
         cb = ucelt(b, i+ob);
         if (ca == cb) continue;
-        else return onevalue(nil);
+        else return nil;
     }
 }
 
 static LispObject Lstring_not_greaterp_2(LispObject env,
         LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1344,24 +1434,26 @@ static LispObject Lstring_not_greaterp_2(LispObject env,
     if (w == nil) return aerror1("string<=", b);
     b = w;
     for (i=0;; i++)
-    {   if (i == la) return onevalue(fixnum_of_int(i));
-        else if (i == lb) return onevalue(nil);
+    {   if (i == la) return fixnum_of_int(i);
+        else if (i == lb) return nil;
         ca = ucelt(a, i+oa);
         cb = ucelt(b, i+ob);
         if (ca == cb) continue;
-        if (ca < cb) return onevalue(fixnum_of_int(i));
-        else return onevalue(nil);
+        if (ca < cb) return fixnum_of_int(i);
+        else return nil;
     }
 }
 
 static LispObject Lstring_not_lessp_2(LispObject env,
                                       LispObject a, LispObject b)
-{   return Lstring_not_greaterp_2(nil, b, a);
+{   SingleValued fn;
+    return Lstring_not_greaterp_2(nil, b, a);
 }
 
 static LispObject L_string_greaterp_2(LispObject env,
                                       LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1372,26 +1464,28 @@ static LispObject L_string_greaterp_2(LispObject env,
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
-        {   if (i == la) return onevalue(nil);
-            else return onevalue(fixnum_of_int(i));
+        {   if (i == la) return nil;
+            else return fixnum_of_int(i);
         }
-        else if (i == la) return onevalue(nil);
+        else if (i == la) return nil;
         ca = std::toupper(celt(a, i+oa));
         cb = std::toupper(celt(b, i+ob));
         if (ca == cb) continue;
-        if (ca > cb) return onevalue(fixnum_of_int(i));
-        else return onevalue(nil);
+        if (ca > cb) return fixnum_of_int(i);
+        else return nil;
     }
 }
 
 static LispObject L_string_lessp_2(LispObject env,
                                    LispObject a, LispObject b)
-{   return L_string_greaterp_2(nil, b, a);
+{   SingleValued fn;
+    return L_string_greaterp_2(nil, b, a);
 }
 
 static LispObject L_string_not_equal_2(LispObject env,
                                        LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1402,20 +1496,21 @@ static LispObject L_string_not_equal_2(LispObject env,
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
-        {   if (i == la) return onevalue(nil);
-            else return onevalue(fixnum_of_int(i));
+        {   if (i == la) return nil;
+            else return fixnum_of_int(i);
         }
-        else if (i == la) return onevalue(fixnum_of_int(i));
+        else if (i == la) return fixnum_of_int(i);
         ca = std::toupper(celt(a, i+oa));
         cb = std::toupper(celt(b, i+ob));
         if (ca == cb) continue;
-        return onevalue(fixnum_of_int(i));
+        return fixnum_of_int(i);
     }
 }
 
 static LispObject L_string_equal_2(LispObject env,
                                    LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1426,20 +1521,21 @@ static LispObject L_string_equal_2(LispObject env,
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
-        {   if (i == la) return onevalue(lisp_true);
-            else return onevalue(nil);
+        {   if (i == la) return lisp_true;
+            else return nil;
         }
-        else if (i == la) return onevalue(nil);
+        else if (i == la) return nil;
         ca = std::toupper(celt(a, i+oa));
         cb = std::toupper(celt(b, i+ob));
         if (ca == cb) continue;
-        else return onevalue(nil);
+        else return nil;
     }
 }
 
 static LispObject L_string_not_greaterp_2(LispObject env,
         LispObject a, LispObject b)
-{   int32_t la, oa, lb, ob, i;
+{   SingleValued fn;
+    int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
@@ -1449,19 +1545,20 @@ static LispObject L_string_not_greaterp_2(LispObject env,
     if (w == nil) return aerror1("string<=", b);
     b = w;
     for (i=0;; i++)
-    {   if (i == la) return onevalue(fixnum_of_int(i));
-        else if (i == lb) return onevalue(nil);
+    {   if (i == la) return fixnum_of_int(i);
+        else if (i == lb) return nil;
         ca = std::toupper(celt(a, i+oa));
         cb = std::toupper(celt(b, i+ob));
         if (ca == cb) continue;
-        if (ca < cb) return onevalue(fixnum_of_int(i));
-        else return onevalue(nil);
+        if (ca < cb) return fixnum_of_int(i);
+        else return nil;
     }
 }
 
 static LispObject L_string_not_lessp_2(LispObject env,
                                        LispObject a, LispObject b)
-{   return L_string_not_greaterp_2(nil, b, a);
+{   SingleValued fn;
+    return L_string_not_greaterp_2(nil, b, a);
 }
 
 

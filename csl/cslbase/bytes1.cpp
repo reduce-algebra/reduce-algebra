@@ -118,7 +118,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(c);
+        return c;
     }
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   if ((w = qfastgets(a)) == nil)
@@ -127,7 +127,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(c);
+            return c;
         }
         w = basic_elt(w, n-1); // use the fastget scheme
         if (w == SPID_NOPROP) w = c;
@@ -138,7 +138,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         save.restore(w);
         errexit();
 #endif
-        return onevalue(w);
+        return w;
     }
     pl = qplist(a);
     if (pl == nil)
@@ -147,7 +147,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(c);
+        return c;
     }
     w = car(pl);
     if (car(w) == b)    // found at first position on the list
@@ -159,7 +159,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         save.restore(w);
         errexit();
 #endif
-        return onevalue(cdr(w));
+        return cdr(w);
     }
     pl = cdr(pl);
     if (pl == nil)
@@ -168,7 +168,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(c);
+        return c;
     }
     w = car(pl);
     if (car(w) == b)    // found at second position on the list
@@ -180,7 +180,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         save.restore(w);
         errexit();
 #endif
-        return onevalue(cdr(w));
+        return cdr(w);
     }
     prev = pl;
     pl = cdr(pl);
@@ -191,7 +191,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(c);
+        return c;
     }
     for (;;)
     {   w = car(pl);
@@ -208,7 +208,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             save.restore(w);
             errexit();
 #endif
-            return onevalue(cdr(w));
+            return cdr(w);
         }
         prev = pl;
         pl = cdr(pl);
@@ -219,7 +219,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(c);
+            return c;
         }
     }
 }
@@ -287,18 +287,16 @@ static LispObject remprop(LispObject a, LispObject b)
 }
 
 LispObject get_0(LispObject a, int n)
-{   LispObject w;
-    if (!symbolp(a)) return onevalue(nil);
-    {   if ((w = qfastgets(a)) == nil)
-            return onevalue(nil);
-        w = basic_elt(w, n);
-        if (w == SPID_NOPROP) w = nil;
-        return onevalue(w);
-    }
+{   if (!symbolp(a)) return nil;
+    LispObject w;
+    if ((w = qfastgets(a)) == nil) return nil;
+    if ((w = basic_elt(w, n)) != SPID_NOPROP) return w;
+    else return nil;
 }
 
 LispObject Lget(LispObject env, LispObject a, LispObject b)
-{   LispObject pl, prev, w;
+{   SingleValued fn;
+    LispObject pl, prev, w;
     int n;
 // In CSL mode plists are structured like association lists, and
 // NOT as lists with alternate tags and values.  There is also
@@ -310,7 +308,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   if ((w = qfastgets(a)) == nil)
@@ -319,7 +317,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
         w = basic_elt(w, n-1);
         if (w == SPID_NOPROP) w = nil;
@@ -330,7 +328,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         save.restore(w);
         errexit();
 #endif
-        return onevalue(w);
+        return w;
     }
     pl = qplist(a);
     if (pl == nil)
@@ -339,7 +337,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     w = car(pl);
     if (car(w) == b)
@@ -351,7 +349,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         save.restore(w);
         errexit();
 #endif
-        return onevalue(cdr(w));
+        return cdr(w);
     }
     pl = cdr(pl);
     if (pl == nil)
@@ -360,7 +358,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     w = car(pl);
     if (car(w) == b)
@@ -372,7 +370,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         save.restore(w);
         errexit();
 #endif
-        return onevalue(cdr(w));
+        return cdr(w);
     }
     prev = pl;
     pl = cdr(pl);
@@ -383,7 +381,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     for (;;)
     {   w = car(pl);
@@ -400,7 +398,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             save.restore(w);
             errexit();
 #endif
-            return onevalue(cdr(w));
+            return cdr(w);
         }
         prev = pl;
         pl = cdr(pl);
@@ -411,21 +409,24 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
     }
 }
 
 LispObject Lget_3(LispObject, LispObject a, LispObject b, LispObject c)
-{   return onevalue(get(a, b, c));
+{   SingleValued fn;
+    return get(a, b, c);
 }
 
 LispObject Lputprop(LispObject env, LispObject a, LispObject b, LispObject c)
-{   return onevalue(putprop(a, b, c));
+{   SingleValued fn;
+    return putprop(a, b, c);
 }
 
 LispObject Lflagp(LispObject env, LispObject a, LispObject b)
-{   LispObject pl, prev, w;
+{   SingleValued fn;
+    LispObject pl, prev, w;
     int n;
     if (!symbolp(a))
     {
@@ -433,7 +434,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   if ((w = qfastgets(a)) == nil)
@@ -442,7 +443,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
         w = basic_elt(w, n-1);
         if (w == SPID_NOPROP)
@@ -451,13 +452,13 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
 #ifdef RECORD_GET
         record_get(b, true);
         errexit();
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     pl = qplist(a);
     if (pl == nil)
@@ -466,7 +467,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     w = car(pl);
     if (car(w) == b)
@@ -475,7 +476,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         record_get(b, true);
         errexit();
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     pl = cdr(pl);
     if (pl == nil)
@@ -484,7 +485,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     w = car(pl);
     if (car(w) == b)
@@ -493,7 +494,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         record_get(b, true);
         errexit();
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     prev = pl;
     pl = cdr(pl);
@@ -504,7 +505,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     for (;;)
     {   w = car(pl);
@@ -518,7 +519,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
             record_get(b, true);
             errexit();
 #endif
-            return onevalue(lisp_true);
+            return lisp_true;
         }
         prev = pl;
         pl = cdr(pl);
@@ -529,13 +530,14 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
     }
 }
 
 LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
-{   LispObject pl, prev, w;
+{   SingleValued fn;
+    LispObject pl, prev, w;
     int n;
 // Fairly heavily used by Reduce test file - hence in here
     if (a != nil)
@@ -545,7 +547,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
         a = car(a);
         if (!symbolp(a))
@@ -554,7 +556,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
     }
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
@@ -564,7 +566,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
         w = basic_elt(w, n-1);
         if (w == SPID_NOPROP)
@@ -573,13 +575,13 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
 #ifdef RECORD_GET
         record_get(b, true);
         errexit();
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     pl = qplist(a);
     if (pl == nil)
@@ -588,7 +590,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     w = car(pl);
     if (car(w) == b)
@@ -597,7 +599,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         record_get(b, true);
         errexit();
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     pl = cdr(pl);
     if (pl == nil)
@@ -606,7 +608,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     w = car(pl);
     if (car(w) == b)
@@ -615,7 +617,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         record_get(b, true);
         errexit();
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     prev = pl;
     pl = cdr(pl);
@@ -626,7 +628,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         record_get(b, false);
         errexit();
 #endif
-        return onevalue(nil);
+        return nil;
     }
     for (;;)
     {   w = car(pl);
@@ -640,7 +642,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             record_get(b, true);
             errexit();
 #endif
-            return onevalue(lisp_true);
+            return lisp_true;
         }
         prev = pl;
         pl = cdr(pl);
@@ -651,13 +653,14 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
             record_get(b, false);
             errexit();
 #endif
-            return onevalue(nil);
+            return nil;
         }
     }
 }
 
 LispObject Lflag(LispObject env, LispObject a, LispObject b)
-{   int n = 0;
+{   SingleValued fn;
+    int n = 0;
     if (symbolp(b)) n = header_fastget(qheader(b));
     while (consp(a))
     {   LispObject v = car(a), pl;
@@ -699,11 +702,12 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
     already_flagged:
         save.restore(a, b);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lremflag(LispObject env, LispObject a, LispObject b)
-{   int n = 0;
+{   SingleValued fn;
+    int n = 0;
     if (symbolp(b)) n = header_fastget(qheader(b));
     while (consp(a))
     {   LispObject pl, prevp, v = car(a);
@@ -729,16 +733,18 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
             if (pl == prevp) return aerror("looped up plist in remflag");
         }
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lremprop(LispObject, LispObject a, LispObject b)
-{   return onevalue(remprop(a, b));
+{   SingleValued fn;
+    return remprop(a, b);
 }
 
 
 LispObject Lplist(LispObject env, LispObject a)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     int i;
     if (!symbolp(a)) return aerror1("plist", a);
     r = qplist(a);
@@ -752,7 +758,7 @@ LispObject Lplist(LispObject env, LispObject a)
     r = r1;
 #endif
     a = qfastgets(a);
-    if (a == nil) return onevalue(r);
+    if (a == nil) return r;
     for (i=0; i<fastget_size; i++)
     {   LispObject w = basic_elt(a, i);
         if (w != SPID_NOPROP)
@@ -769,7 +775,7 @@ LispObject Lplist(LispObject env, LispObject a)
             errexit();
         }
     }
-    return onevalue(r);
+    return r;
 }
 
 #ifndef NO_BYTECOUNT
@@ -788,7 +794,7 @@ static uint64_t total = 0, frequencies[256];
 #endif
 
 LispObject Lbytecounts_0(LispObject env)
-{
+{   SingleValued fn;
 #if !defined NO_BYTECOUNT || defined RECORD_GET
     int32_t i;
 #endif
@@ -814,7 +820,7 @@ LispObject Lbytecounts_0(LispObject env)
 
 #ifdef RECORD_GET
     v = elt(get_counts, 4);
-    if (v == nil) return onevalue(nil);
+    if (v == nil) return nil;
     size = length_of_header(vechdr(v));
     size = (size - CELL)/CELL;
     term_printf("\n %%SCORE      TOTAL   NOTFOUND  INDICATOR-NAME\n");
@@ -845,11 +851,11 @@ LispObject Lbytecounts_0(LispObject env)
     v = Lmkhash_2(nil, fixnum_of_int(5), fixnum_of_int(0));
     get_counts = v;
 #endif
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lbytecounts_1(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 #ifdef RECORD_GET
     int32_t i, size;
     LispObject v;
@@ -861,7 +867,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
 
 #ifdef RECORD_GET
     v = elt(get_counts, 4);
-    if (v == nil) return onevalue(nil);
+    if (v == nil) return nil;
     size = length_of_header(vechdr(v));
     size = (size - CELL)/CELL;
     tot = 0.0;
@@ -894,7 +900,7 @@ LispObject Lbytecounts_1(LispObject env, LispObject a)
     get_counts = v;
 #endif
 
-    return onevalue(nil);
+    return nil;
 }
 
 inline void do_freebind(LispObject bvec)
@@ -1217,6 +1223,8 @@ LispObject print_traceset(int varname, LispObject val)
 LispObject carerror(LispObject a)
 {
 #ifdef COMMON
+// This is an example of where Common Lisp has a feature that
+// adds cost!
     if (a == nil) return a;
 #endif
     return error(1, err_bad_car, a);

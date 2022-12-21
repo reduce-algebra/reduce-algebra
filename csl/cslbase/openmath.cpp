@@ -383,6 +383,7 @@ LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, Li
 //   fmode  - string    - the mode, as passed to the fopen routine.
 //   fenc   - string    - the OpenMath encoding type of the file.
 //
+{   SingleValued fn;
     char *fname, *fmode;
     OMencodingType fenc;
     std::FILE *f;
@@ -423,7 +424,7 @@ LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, Li
     // Wrap the OpenMath device in a LISP object and return it.
     lispDev = om_fromDev(dev);
 
-    return onevalue(lispDev);
+    return lispDev;
 }
 
 
@@ -439,7 +440,7 @@ LispObject om_openStringDev(LispObject env, LispObject lstr,
 //     data of a Lisp_Object - see if there is a way around that (if it is a
 //     problem).
 //
-
+    SingleValued fn;
     char **pstr = nullptr;
     OMencodingType enc;
     OMdev dev;
@@ -490,7 +491,7 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
     enc = om_toEncodingType(lenc);
 
     OMsetDeviceEncoding(dev, enc);
-    return onevalue(om_fromDev(dev));
+    return om_fromDev(dev);
 }
 
 
@@ -500,7 +501,8 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
 
 
 LispObject om_makeConn(LispObject env, LispObject ltimeout)
-{   OMconn conn;
+{   SingleValued fn;
+    OMconn conn;
     int32_t timeout;
 
     if (!is_fixnum(ltimeout))
@@ -509,12 +511,13 @@ LispObject om_makeConn(LispObject env, LispObject ltimeout)
     timeout = int_of_fixnum(ltimeout);
     conn = OMmakeConn(timeout);
 
-    return onevalue(om_fromConn(conn));
+    return om_fromConn(conn);
 }
 
 
 LispObject om_closeConn(LispObject env, LispObject lconn)
-{   OMconn conn;
+{   SingleValued fn;
+    OMconn conn;
     OMstatus status;
 
     conn = om_toConn(lconn);
@@ -529,7 +532,8 @@ LispObject om_closeConn(LispObject env, LispObject lconn)
 
 
 LispObject om_getConnInDev(LispObject env, LispObject lconn)
-{   OMconn conn;
+{   SingleValued fn;
+    OMconn conn;
     OMdev dev;
 
     conn = om_toConn(lconn);
@@ -538,12 +542,13 @@ LispObject om_getConnInDev(LispObject env, LispObject lconn)
         return aerror("om_toConn");
 
     dev = OMconnIn(conn);
-    return onevalue(om_fromDev(dev));
+    return om_fromDev(dev);
 }
 
 
 LispObject om_getConnOutDev(LispObject env, LispObject lconn)
-{   OMconn conn;
+{   SingleValued fn;
+    OMconn conn;
     OMdev dev;
 
     conn = om_toConn(lconn);
@@ -562,7 +567,8 @@ LispObject om_getConnOutDev(LispObject env, LispObject lconn)
 
 LispObject om_connectTCP(LispObject env, LispObject lconn,
                          LispObject lhost, LispObject lport)
-{   OMconn conn;
+{   SingleValued fn;
+    OMconn conn;
     char *host = nullptr;
     int32_t hostlen = 0;
     int32_t port;
@@ -1309,7 +1315,8 @@ LispObject om_getEndObject(LispObject env, LispObject ldev)
 
 
 LispObject om_getInt(LispObject env, LispObject ldev)
-{   OMdev dev;
+{   SingleValued fn;
+    OMdev dev;
     OMstatus status;
     OMtokenType ttype;
     LispObject obj;
@@ -1357,7 +1364,7 @@ LispObject om_getInt(LispObject env, LispObject ldev)
     }
     else obj = om_error(status);
 
-    return onevalue(obj);
+    return obj;
 }
 
 
@@ -1458,7 +1465,8 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
 // This returns the Lisp symbol OMS, with a cd property and a name property set
 // to appropriate string values.
 //
-{   OMdev dev;
+{   SingleValued fn;
+    OMdev dev;
     OMstatus status;
     char *cd, *name;
     int cdLen, nameLen;
@@ -1497,7 +1505,6 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
 
     delete [] cd;
     delete [] name;
-    //return onevalue(obj);
     return obj;
 }
 
