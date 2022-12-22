@@ -3350,7 +3350,7 @@ public:
 bool setup_codepointers = false;
 
 LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
-{
+{   SingleValued fn;
 #ifdef DEBUG_FASL
     THREADID;
     Save save(THREADARG a, b);
@@ -3392,11 +3392,12 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
     write_data(a);
     std::strcpy(trigger, "write-module write b");
     write_data(b);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lserialize(LispObject env, LispObject a)
-{   if (!setup_codepointers)
+{   SingleValued fn;
+    if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
     }
@@ -3411,11 +3412,12 @@ LispObject Lserialize(LispObject env, LispObject a)
     write_u64(repeat_heap_size);
     std::strcpy(trigger, "serialize write");
     write_data(a);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lserialize1(LispObject env, LispObject a)
-{   if (!setup_codepointers)
+{   SingleValued fn;
+    if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
     }
@@ -3430,7 +3432,7 @@ LispObject Lserialize1(LispObject env, LispObject a)
     write_u64(repeat_heap_size);
     std::strcpy(trigger, "serialize1 write");
     write_data(a);
-    return onevalue(nil);
+    return nil;
 }
 
 void check_no_gensyms(LispObject u)
@@ -3454,7 +3456,8 @@ void check_no_gensyms(LispObject u)
 static LispObject load_module(LispObject env, LispObject file, int option)
 // load_module() rebinds *package* in COMMON mode, but also note that
 // it also rebinds *echo to nil in case we are reading from a stream.
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     save_current_function saver(THREADARG env);
     char filename[LONGEST_LEGAL_FILENAME];
     Header h;
@@ -3664,20 +3667,22 @@ static LispObject load_module(LispObject env, LispObject file, int option)
             save.restore(name, file, r);
         }
     }
-    if (option == F_LOAD_MODULE) return onevalue(nil);
-    else return onevalue(file);
+    if (option == F_LOAD_MODULE) return nil;
+    else return file;
 }
 
 LispObject Lload_module(LispObject env, LispObject file)
-{   return load_module(env, file, F_LOAD_MODULE);
+{   SingleValued fn;
+    return load_module(env, file, F_LOAD_MODULE);
 }
 
 LispObject Lload_source(LispObject env, LispObject file)
-{   return load_module(env, file, F_LOAD_SOURCE);
+{   SingleValued fn;
+    return load_module(env, file, F_LOAD_SOURCE);
 }
 
 LispObject load_source0(int option)
-{
+{   SingleValued fn;
 // First I will scan all the input libraries collecting a list of the
 // names of modules present in them. I will discard any duplicates
 // names.
@@ -3723,29 +3728,33 @@ LispObject load_source0(int option)
         errexit();
         save.restore(mods);
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lload_selected_source(LispObject env, LispObject file)
-{   return load_module(env, file, F_SELECTED_SOURCE);
+{   SingleValued fn;
+    return load_module(env, file, F_SELECTED_SOURCE);
 }
 
 LispObject Lload_source0(LispObject env)
-{   return load_source0(F_LOAD_SOURCE);
+{   SingleValued fn;
+    return load_source0(F_LOAD_SOURCE);
 }
 
 LispObject Lload_selected_source0(LispObject env)
-{   return load_source0(F_SELECTED_SOURCE);
+{   SingleValued fn;
+    return load_source0(F_SELECTED_SOURCE);
 }
 
 LispObject Lunserialize(LispObject env)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     reader_setup_repeats(read_u64());
     r = serial_read();
     if (repeat_heap != nullptr) delete [] repeat_heap;
     repeat_heap = nullptr;
     repeat_heap_size = 0;
-    return onevalue(r);
+    return r;
 }
 
 // Here I will comments on how the previous version of warm_setup (and
@@ -4289,7 +4298,8 @@ static bool not_gensym(LispObject x)
 
 
 LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     LispObject *stacksave = stack;
     if (push_all_symbols(include_gensyms==nil ? not_gensym : always))
     {   stack = stacksave;
@@ -4300,11 +4310,12 @@ LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
     {   LispObject w = *stack--;
         r = cons(w, r);
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lall_symbols0(LispObject env)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     LispObject *stacksave = stack;
     if (push_all_symbols(interesting))
     {   stack = stacksave;
@@ -4315,7 +4326,7 @@ LispObject Lall_symbols0(LispObject env)
     {   LispObject w = *stack--;
         r = cons(w, r);
     }
-    return onevalue(r);
+    return r;
 }
 
 typedef struct mapstore_item
@@ -4394,7 +4405,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
 // The cases I seem to use while building Reduce are
 //     2  return a list (and reset counts)
 //     4  reset counts to zero
-{   int what;
+{   SingleValued fn;
+    int what;
     THREADID;
     mapstore_item *buff=nullptr;
     size_t buffp=0, buffn=0;
@@ -4407,11 +4419,11 @@ LispObject Lmapstore(LispObject env, LispObject a)
     if (what == 4)
     {   stack_restorer RAII OPTTHREAD;
         if (push_all_symbols(clear_counts)) return aerror("mapstore");
-        return onevalue(nil);
+        return nil;
     }
     if (what == 0 || what == 1)   // needed if I am printing
     {   buff = new (std::nothrow) mapstore_item[2000];
-        if (buff == nullptr) return onevalue(nil); // fail
+        if (buff == nullptr) return nil; // fail
         buffp = 0;
         buffn = 2000;
     }
@@ -4449,7 +4461,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                         {   buffn += 1000;
                             mapstore_item *bigger =
                                 new (std::nothrow) mapstore_item[buffn];
-                            if (bigger == nullptr) return onevalue(nil);
+                            if (bigger == nullptr) return nil;
                             std::memcpy(bigger, buff,
                                 (buffn-1000)*sizeof(mapstore_item));
                             delete [] buff;
@@ -4515,11 +4527,12 @@ LispObject Lmapstore(LispObject env, LispObject a)
         trace_printf("\n");
         delete [] buff;
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lmapstore0(LispObject env)
-{   return Lmapstore(env, nil);
+{   SingleValued fn;
+    return Lmapstore(env, nil);
 }
 
 // end of serialize.cpp

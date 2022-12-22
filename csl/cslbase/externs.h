@@ -990,17 +990,24 @@ inline LispObject nvalues(LispObject r, int n)
 }
 
 // If I define an instance of SingleValued at the head of a procedure
-// then every exit from it will set exit_count to 1. This would let me
-// write just "return x;" rather than "return onevalue(x);".
+// then every exit from it will set exit_count to 1. This lets me
+// write just "return x;" rather than "return onevalue(x);". This is
+// only relevent in Common Lisp mode since Standard Lisp does not
+// support multiple values - but the declaration of an object of type
+// SingleValued can be viewed as documentation and will not - I hope -
+// clutter up the code too badly. And a good C++ compiler should lead to
+// it having zero performace impact!
 
 class SingleValued
 {
 public:
     SingleValued()
     {}
+#ifdef COMMON
     ~SingleValued()
     {   exit_count = 1;
     }
+#endif // COMMON
 };
 
 // If I know how many results some function should deliver (and it is > 1)

@@ -554,88 +554,78 @@ QuadFloat cosine_of_reduced(QuadFloat x)
 QuadFloat minusPiBy4 = -0.7853981633974483096156608458198757210493_Q;
 QuadFloat piBy4      =  0.7853981633974483096156608458198757210493_Q;
 
-float128_t qsin(float128_t a)
-{   QuadFloat aa(a);
-    if (aa > minusPiBy4 && aa < piBy4)
-        return sine_of_reduced(aa).v;
+QuadFloat qsin(QuadFloat a)
+{   if (a > minusPiBy4 && a < piBy4) return sine_of_reduced(a);
     int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q);
+    QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
-            return sine_of_reduced(reduced).v;
+            return sine_of_reduced(reduced);
         case 1:
-             return cosine_of_reduced(reduced).v;
+             return cosine_of_reduced(reduced);
         case 2:
-            return f128_minus(sine_of_reduced(reduced).v);
+            return -sine_of_reduced(reduced);
         case 3:
-            return f128_minus(cosine_of_reduced(reduced).v);
+            return -cosine_of_reduced(reduced);
     }
 }
 
-float128_t qcos(float128_t a)
-{   QuadFloat aa(a);
-    if (aa > minusPiBy4 && aa < piBy4)
-    {   zprintf("%016x%016x\n", a.v[HIPART], a.v[LOPART]);
-        return cosine_of_reduced(aa).v;
-    }
+QuadFloat qcos(QuadFloat a)
+{   if (a > minusPiBy4 && a < piBy4) return cosine_of_reduced(a);
     int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q);
+    QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
-            return cosine_of_reduced(reduced).v;
+            return cosine_of_reduced(reduced);
         case 1:
-            return f128_minus(sine_of_reduced(reduced).v);
+            return -sine_of_reduced(reduced);
         case 2:
-            return f128_minus(cosine_of_reduced(reduced).v);
+            return -cosine_of_reduced(reduced);
         case 3:
-            return sine_of_reduced(reduced).v;
+            return sine_of_reduced(reduced);
     }
 }
 
-float128_t qtan(float128_t a)
-{   QuadFloat aa(a);
-    if (aa > minusPiBy4 && aa < piBy4)
-        return (sine_of_reduced(aa) / cosine_of_reduced(aa)).v;
+QuadFloat qtan(QuadFloat a)
+{   if (a > minusPiBy4 && a < piBy4)
+        return sine_of_reduced(a) / cosine_of_reduced(a);
     int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q);
+    QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
         case 2:
-            return (sine_of_reduced(reduced) / cosine_of_reduced(reduced)).v;
+            return (sine_of_reduced(reduced) / cosine_of_reduced(reduced));
         case 1:
         case 3:
-             return (-cosine_of_reduced(reduced) / sine_of_reduced(reduced)).v;
+             return (-cosine_of_reduced(reduced) / sine_of_reduced(reduced));
     }
 }
 
-float128_t qcot(float128_t a)
-{   QuadFloat aa(a);
-    if (aa > minusPiBy4 && aa < piBy4)
-        return (cosine_of_reduced(aa) / sine_of_reduced(aa)).v;
+QuadFloat qcot(QuadFloat a)
+{   if (a > minusPiBy4 && a < piBy4)
+        return cosine_of_reduced(a) / sine_of_reduced(a);
     int q = 0;
-    QuadFloat reduced = reduceMod2Pi(aa, q);
+    QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
         case 2:
-            return (cosine_of_reduced(reduced) /
-                    sine_of_reduced(reduced)).v;
+            return cosine_of_reduced(reduced) / sine_of_reduced(reduced);
         case 1:
         case 3:
-             return (-sine_of_reduced(reduced) /
-                     cosine_of_reduced(reduced)).v;
+             return -sine_of_reduced(reduced) / cosine_of_reduced(reduced);
     }
 }
 
-float128_t qcsc(float128_t a)
-{   return (1.0_Q / QuadFloat(qsin(a))).v;
+QuadFloat qcsc(QuadFloat a)
+{   return 1.0_Q / qsin(a);
 }
 
-float128_t qsec(float128_t a)
-{   return (1.0_Q / QuadFloat(qcos(a))).v;
+QuadFloat qsec(QuadFloat a)
+{   return 1.0_Q / qcos(a);
 }
 
 // Trig functions that work in degrees are easier as regards range
@@ -645,23 +635,18 @@ float128_t qsec(float128_t a)
 // k is in the range -113 to 16364. Well 2^k mod 360 repeats with
 // period 12 as k caries, and m mod 360 can be done using short division.
 
-float128_t reduceMod360(float128_t a, int& n)
-{   float128_t intpart;
-    float128_t fracpart = f128_modf(a, intpart);
-    bool sign = (intpart.v[HIPART]<<63) != 0;
-    int exponent = ((intpart.v[HIPART]>>48) & 0x7fff) - 0x3fff;
-    intpart.v[HIPART] |= 0x0001000000000000LLU;  // Force in hidden bit
-    int128_t mantissa =
-        static_cast<int128_t>(intpart.v[HIPART] & 0x0001ffffffffffffLL)<<64 |
-        intpart.v[LOPART];
+QuadFloat reduceMod360(QuadFloat a, int& n)
+{   QuadFloat intpart;
+    QuadFloat fracpart = qmodf(a, intpart);
+    int exponent = intpart.exponent();
+    int128_t mantissa = qmantissa(intpart);
     if (exponent <= 112)
     {   mantissa = mantissa >> (112-exponent);
         exponent = 112;
     }
     exponent -= 112;
-    if (sign) mantissa = -mantissa;
     int r = static_cast<int>(mantissa % 360);
-    if (sign && r!=0) r = 360-r;
+    if (r!=0 && a < 0.0_Q) r = 360-r;
     const static int expmodTable[] =
     {  136, 272, 184,    8,
         16,  32,  64,  128,
@@ -687,38 +672,38 @@ float128_t reduceMod360(float128_t a, int& n)
     return fracpart;
 }
 
-float128_t qcosd(float128_t a)
+QuadFloat qcosd(QuadFloat a)
 {   int n;
-    float128_t a1 = reduceMod360(a, n);
+    a = reduceMod360(a, n);
     switch (n/45)
     {   default:
         case 7:
             n -= 360;
         case 0:
-            a = f128_mul(f128_add(i32_to_f128(n), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return cosine_of_reduced(QuadFloat(a)).v;
+            a = (a + QuadFloat(n)) *
+                0.017453292519943295769236907684886127134_Q;
+            return cosine_of_reduced(a);
         case 1:
         case 2:
-            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_minus(sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-90)) *
+                0.017453292519943295769236907684886127134_Q;
+            return -sine_of_reduced(a);
         case 3:
         case 4:
-            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_minus(cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-180)) *
+                0.017453292519943295769236907684886127134_Q;
+            return -cosine_of_reduced(a);
         case 5:
         case 6:
-            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return sine_of_reduced(QuadFloat(a)).v;
+            a = (a + QuadFloat(n-270)) *
+                0.017453292519943295769236907684886127134_Q;
+            return sine_of_reduced(a);
     }
 }
-  
-float128_t qcotd(float128_t a)
+
+QuadFloat qcotd(QuadFloat a)
 {   int n;
-    float128_t a1 = reduceMod360(a, n);
+    a = reduceMod360(a, n);
     switch (n/45)
     {   default:
         case 7:
@@ -727,112 +712,110 @@ float128_t qcotd(float128_t a)
         case 4:
             n -= 180;
         case 0:
-            a = f128_mul(f128_add(i32_to_f128(n), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(cosine_of_reduced(QuadFloat(a)).v,
-                            sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return cosine_of_reduced(a) / sine_of_reduced(a);
         case 5:
         case 6:
             n -= 180;
         case 1:
         case 2:
-            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_minus(f128_div(sine_of_reduced(QuadFloat(a)).v,
-                                       cosine_of_reduced(QuadFloat(a)).v));
+            a = (a + QuadFloat(n-90)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -sine_of_reduced(a) / cosine_of_reduced(a);
     }
 }
 
-float128_t qcscd(float128_t a)
+QuadFloat qcscd(QuadFloat a)
 {   int n;
-    float128_t a1 = reduceMod360(a, n);
+    a = reduceMod360(a, n);
     switch (n/45)
     {   default:
         case 7:
             n -= 360;
         case 0:
-            a = f128_mul(f128_add(i32_to_f128(n), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_1, cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return 1.0_Q / cosine_of_reduced(a);
         case 1:
         case 2:
-            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_m1, sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-90)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -1.0_Q / sine_of_reduced(a);
         case 3:
         case 4:
-            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_m1, cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-180)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -1.0_Q / cosine_of_reduced(a);
         case 5:
         case 6:
-            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_1, sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-270)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return 1.0_Q / sine_of_reduced(a);
     }
 }
 
-float128_t qsecd(float128_t a)
+QuadFloat qsecd(QuadFloat a)
 {   int n;
-    float128_t a1 = reduceMod360(a, n);
+    a = reduceMod360(a, n);
     switch (n/45)
     {   default:
         case 7:
             n -= 360;
         case 0:
-            a = f128_mul(f128_add(i32_to_f128(n), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_1, cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return 1.0_Q / cosine_of_reduced(a);
         case 1:
         case 2:
-            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_m1, sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-90)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -1.0_Q / sine_of_reduced(a);
         case 3:
         case 4:
-            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_m1, cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-180)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -1.0_Q / cosine_of_reduced(a);
         case 5:
         case 6:
-            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(f128_1, sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-270)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return 1.0_Q / sine_of_reduced(a);
     }
 }
 
-float128_t qsind(float128_t a)
+QuadFloat qsind(QuadFloat a)
 {   int n;
-    float128_t a1 = reduceMod360(a, n);
+    a = reduceMod360(a, n);
     switch (n/45)
     {   default:
         case 7:
             n -= 360;
         case 0:
-            a = f128_mul(f128_add(i32_to_f128(n), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return sine_of_reduced(QuadFloat(a)).v;
+            a = (a + QuadFloat(n)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return sine_of_reduced(a);
         case 1:
         case 2:
-            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return cosine_of_reduced(QuadFloat(a)).v;
+            a = (a + QuadFloat(n-90)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return cosine_of_reduced(a);
         case 3:
         case 4:
-            a = f128_mul(f128_add(i32_to_f128(n-180), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_minus(sine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-180)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -sine_of_reduced(a);
         case 5:
         case 6:
-            a = f128_mul(f128_add(i32_to_f128(n-270), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_minus(cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n-270)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -cosine_of_reduced(a);
     }
 }
 
-float128_t qtand(float128_t a)
+QuadFloat qtand(QuadFloat a)
 {   int n;
-    float128_t a1 = reduceMod360(a, n);
+    a = reduceMod360(a, n);
     switch (n/45)
     {   default:
         case 7:
@@ -841,19 +824,17 @@ float128_t qtand(float128_t a)
         case 4:
             n -= 180;
         case 0:
-            a = f128_mul(f128_add(i32_to_f128(n), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_div(sine_of_reduced(QuadFloat(a)).v,
-                            cosine_of_reduced(QuadFloat(a)).v);
+            a = (a + QuadFloat(n)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return sine_of_reduced(a) / cosine_of_reduced(a);
         case 5:
         case 6:
             n -= 180;
         case 1:
         case 2:
-            a = f128_mul(f128_add(i32_to_f128(n-90), a1),
-                         0.017453292519943295769236907684886127134_Q .v);
-            return f128_minus(f128_div(cosine_of_reduced(QuadFloat(a)).v,
-                                       sine_of_reduced(QuadFloat(a)).v));
+            a = (a + QuadFloat(n-90)) *
+                         0.017453292519943295769236907684886127134_Q;
+            return -cosine_of_reduced(a) / sine_of_reduced(a);
     }
 }
 
@@ -864,114 +845,104 @@ float128_t qtand(float128_t a)
 // Eventually I intend work through and replace all these with
 // proper 128-bit floating point versions.
 
-float128_t qatan2(float128_t a, float128_t b)
-{   QuadFloat aa(a), bb(b);
-    return QuadFloat(std::atan2(static_cast<double>(aa),
-                                static_cast<double>(bb))).v;
+QuadFloat qatan2(QuadFloat a, QuadFloat b)
+{   return QuadFloat(std::atan2(static_cast<double>(a), static_cast<double>(b)));
 }
 
-float128_t qatan2d(float128_t a, float128_t b)
-{   return f128_NaN;
+QuadFloat qatan2d(QuadFloat a, QuadFloat b)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qexpt(float128_t a, float128_t b)
-{   return f128_NaN;
+QuadFloat qexpt(QuadFloat a, QuadFloat b)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacos(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::acos(static_cast<double>(aa))).v;
+QuadFloat qacos(QuadFloat a)
+{   return QuadFloat(std::acos(static_cast<double>(a)));
 }
 
-float128_t qacosd(float128_t a)
-{   return f128_NaN;
+QuadFloat qacosd(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacosh(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::acosh(static_cast<double>(aa))).v;
+QuadFloat qacosh(QuadFloat a)
+{   return QuadFloat(std::acosh(static_cast<double>(a)));
 }
 
-float128_t qacot(float128_t a)
-{   return f128_NaN;
+QuadFloat qacot(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacotd(float128_t a)
-{   return f128_NaN;
+QuadFloat qacotd(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacoth(float128_t a)
-{   return f128_NaN;
+QuadFloat qacoth(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacsc(float128_t a)
-{   return f128_NaN;
+QuadFloat qacsc(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacscd(float128_t a)
-{   return f128_NaN;
+QuadFloat qacscd(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qacsch(float128_t a)
-{   return f128_NaN;
+QuadFloat qacsch(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qasec(float128_t a)
-{   return f128_NaN;
+QuadFloat qasec(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qasecd(float128_t a)
-{   return f128_NaN;
+QuadFloat qasecd(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qasech(float128_t a)
-{   return f128_NaN;
+QuadFloat qasech(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qasin(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::asin(static_cast<double>(aa))).v;
+QuadFloat qasin(QuadFloat a)
+{   return QuadFloat(std::asin(static_cast<double>(a)));
 }
 
-float128_t qasind(float128_t a)
-{   return f128_NaN;
+QuadFloat qasind(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
  
-float128_t qasinh(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::asinh(static_cast<double>(aa))).v;
+QuadFloat qasinh(QuadFloat a)
+{   return QuadFloat(std::asinh(static_cast<double>(a)));
 }
 
-float128_t qatan(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::atan(static_cast<double>(aa))).v;
+QuadFloat qatan(QuadFloat a)
+{   return QuadFloat(std::atan(static_cast<double>(a)));
 }
 
-float128_t qatand(float128_t a)
-{   return f128_NaN;
+QuadFloat qatand(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qatanh(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::atanh(static_cast<double>(aa))).v;
+QuadFloat qatanh(QuadFloat a)
+{   return QuadFloat(std::atanh(static_cast<double>(a)));
 }
 
-float128_t qcbrt(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::cbrt(static_cast<double>(aa))).v;
+QuadFloat qcbrt(QuadFloat a)
+{   return QuadFloat(std::cbrt(static_cast<double>(a)));
 }
   
-float128_t qcosh(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::cosh(static_cast<double>(aa))).v;
+QuadFloat qcosh(QuadFloat a)
+{   return QuadFloat(std::cosh(static_cast<double>(a)));
 }
 
-float128_t qcoth(float128_t a)
-{   return f128_NaN;
+QuadFloat qcoth(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qcsch(float128_t a)
-{   return f128_NaN;
+QuadFloat qcsch(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
 
 // The following where generated by
@@ -1009,8 +980,8 @@ QuadFloat expSeriesQ[] =
 QuadFloat log2Hi = 0.69314718055994530941723212115505927596_Q;
 QuadFloat log2Lo = 3.03117292114106608273262565025923239575e-28_Q;
 
-float128_t qexp(float128_t a)
-{   QuadFloat aa(a);
+QuadFloat qexp(QuadFloat aa)
+{
 // I wish to write a = (x2*log 2 + frac) with x2 an integer. If I can
 // do that the exp a = 2^x2 * log frac.
 // Ideally frac will be in the range 0 to log2 but if it strays out
@@ -1022,16 +993,13 @@ float128_t qexp(float128_t a)
     if (w < -16400.0_Q) return f128_0;
     else if (w > 16400.0_Q) return f128_inf;
     int64_t ix = static_cast<int64_t>(w);
-zprintf("Integer exponent = %d\n", ix);
     QuadFloat ixq = static_cast<QuadFloat>(ix);
     QuadFloat frac = (aa - ixq*log2Hi) - ixq*log2Lo;
     if (frac < 0.0_Q)
     {   ix--;
-zprintf("Adjusted integer exponent = %d\n", ix);
         ixq = static_cast<QuadFloat>(ix);
         frac = (aa - ixq*log2Hi) - ixq*log2Lo;
     }
-    return frac.v; // Just for now!
     QuadFloat r = sumSeries(expSeriesP,
                             sizeof(expSeriesP)/sizeof(expSeriesP[0]),
                             frac) /
@@ -1039,13 +1007,15 @@ zprintf("Adjusted integer exponent = %d\n", ix);
                             sizeof(expSeriesQ)/sizeof(expSeriesQ[0]),
                             frac);
     f128_ldexp(&r.v, ix);
-    return r.v;
+    return r;
 }
 
-float128_t qhypot(float128_t x, float128_t y)
-{   QuadFloat a(x);
-    QuadFloat b(y);
-    QuadFloat scale = 1.0_Q;
+QuadFloat qsqrt(QuadFloat a)
+{   return QuadFloat(f128_sqrt(a.v));
+}
+
+QuadFloat qhypot(QuadFloat a, QuadFloat b)
+{   QuadFloat scale = 1.0_Q;
     QuadFloat r = a*a + b*b;
 // If the above calculation overflows or underflows I will repeat
 // it but on scaled inputs.
@@ -1061,7 +1031,7 @@ float128_t qhypot(float128_t x, float128_t y)
         b /= scale;
         r = a*a + b*b;
     }
-    return f128_mul(scale.v, qsqrt(r.v));
+    return scale * qsqrt(r);
 }
 
 // The strategy for ln(x) is first to write x as m*2^k with m in the
@@ -1104,14 +1074,14 @@ QuadFloat logSeriesQ[] =
     0.0010242478160094843927816562198954709553_Q
 };
 
-float128_t qln(float128_t a)
+QuadFloat qln(QuadFloat a)
 {   float128_t reduced;
     int x;
-    f128_frexp(a, &reduced, &x);
+    f128_frexp(a.v, &reduced, &x);
 // Now reduced is in the range 0.5 to 1. If it is < sqrt(2)/2 I want to
 // double it - that will leave it in the range sqrt(2)/2 to sqrt(2) 
     QuadFloat aa(reduced);
-    if (aa <= 0.0_Q) return f128_NaN;
+    if (aa <= 0.0_Q) return QuadFloat(f128_NaN);
     if (aa < 0.7071067811865475244008443621048490392848_Q)
     {   aa = 2.0_Q*aa;
         x--;
@@ -1170,39 +1140,178 @@ float128_t qln(float128_t a)
     {   r = r + static_cast<QuadFloat>(x)*log2Lo;
         r = r + static_cast<QuadFloat>(x)*log2Hi;
     }
-    return r.v;
+    return r;
 }
     
-float128_t qlog(float128_t a, float128_t b)
-{   return f128_NaN;
+QuadFloat qlog(QuadFloat a, QuadFloat b)
+{   return QuadFloat(f128_NaN);
 }
 
-float128_t qlog10(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::log10(static_cast<double>(aa))).v;
+QuadFloat qlog10(QuadFloat a)
+{   return QuadFloat(std::log10(static_cast<double>(a)));
 }
 
-float128_t qsech(float128_t a)
-{   return f128_NaN;
+QuadFloat qsech(QuadFloat a)
+{   return QuadFloat(f128_NaN);
 }
   
+QuadFloat qsinh(QuadFloat a)
+{   return QuadFloat(std::sinh(static_cast<double>(a)));
+}
+
+QuadFloat qtanh(QuadFloat a)
+{   return QuadFloat(std::tanh(static_cast<double>(a)));
+}
+
+QuadFloat qlog2(QuadFloat a)
+{   return QuadFloat(f128_NaN);
+}
+
+// It may (ugh) also be useful to have versions that work on the raw
+// float128_t type
+
+float128_t qsin(float128_t a)
+{   return qsin(QuadFloat(a)).v;
+}
+float128_t qcos(float128_t a)
+{   return qcos(QuadFloat(a)).v;
+}
+float128_t qtan(float128_t a)
+{   return qtan(QuadFloat(a)).v;
+}
+float128_t qcot(float128_t a)
+{   return qcot(QuadFloat(a)).v;
+}
+float128_t qcsc(float128_t a)
+{   return qcsc(QuadFloat(a)).v;
+}
+float128_t qsec(float128_t a)
+{   return qsec(QuadFloat(a)).v;
+}
+float128_t qcosd(float128_t a)
+{   return qcosd(QuadFloat(a)).v;
+}
+float128_t qcotd(float128_t a)
+{   return qcotd(QuadFloat(a)).v;
+}
+float128_t qcscd(float128_t a)
+{   return qcscd(QuadFloat(a)).v;
+}
+float128_t qsecd(float128_t a)
+{   return qsecd(QuadFloat(a)).v;
+}
+float128_t qsind(float128_t a)
+{   return qsind(QuadFloat(a)).v;
+}
+float128_t qtand(float128_t a)
+{   return qtand(QuadFloat(a)).v;
+}
+float128_t qatan2(float128_t a, float128_t b)
+{   return qatan2(QuadFloat(a), QuadFloat(b)).v;
+}
+float128_t qatan2d(float128_t a, float128_t b)
+{   return qatan2d(QuadFloat(a), QuadFloat(b)).v;
+}
+float128_t qexpt(float128_t a, float128_t b)
+{   return qexpt(QuadFloat(a), QuadFloat(b)).v;
+}
+float128_t qacos(float128_t a)
+{   return qacos(QuadFloat(a)).v;
+}
+float128_t qacosd(float128_t a)
+{   return qacosd(QuadFloat(a)).v;
+}
+float128_t qacosh(float128_t a)
+{   return qacosh(QuadFloat(a)).v;
+}
+float128_t qacot(float128_t a)
+{   return qacot(QuadFloat(a)).v;
+}
+float128_t qacotd(float128_t a)
+{   return qacotd(QuadFloat(a)).v;
+}
+float128_t qacoth(float128_t a)
+{   return qacoth(QuadFloat(a)).v;
+}
+float128_t qacsc(float128_t a)
+{   return qacsc(QuadFloat(a)).v;
+}
+float128_t qacscd(float128_t a)
+{   return qacscd(QuadFloat(a)).v;
+}
+float128_t qacsch(float128_t a)
+{   return qacsch(QuadFloat(a)).v;
+}
+float128_t qasec(float128_t a)
+{   return qasec(QuadFloat(a)).v;
+}
+float128_t qasecd(float128_t a)
+{   return qasecd(QuadFloat(a)).v;
+}
+float128_t qasech(float128_t a)
+{   return qasech(QuadFloat(a)).v;
+}
+float128_t qasin(float128_t a)
+{   return qasin(QuadFloat(a)).v;
+}
+float128_t qasind(float128_t a)
+{   return qasind(QuadFloat(a)).v;
+}
+float128_t qasinh(float128_t a)
+{   return qasinh(QuadFloat(a)).v;
+}
+float128_t qatan(float128_t a)
+{   return qatan(QuadFloat(a)).v;
+}
+float128_t qatand(float128_t a)
+{   return qatand(QuadFloat(a)).v;
+}
+float128_t qatanh(float128_t a)
+{   return qatanh(QuadFloat(a)).v;
+}
+float128_t qcbrt(float128_t a)
+{   return qcbrt(QuadFloat(a)).v;
+}
+float128_t qcosh(float128_t a)
+{   return qcosh(QuadFloat(a)).v;
+}
+float128_t qcoth(float128_t a)
+{   return qcoth(QuadFloat(a)).v;
+}
+float128_t qcsch(float128_t a)
+{   return qcsch(QuadFloat(a)).v;
+}
+float128_t qexp(float128_t a)
+{   return qexp(QuadFloat(a)).v;
+}
+float128_t qhypot(float128_t x, float128_t y)
+{   return qhypot(QuadFloat(x), QuadFloat(y)).v;
+}
+float128_t qln(float128_t a)
+{   return qln(QuadFloat(a)).v;
+}
+float128_t qlog(float128_t a, float128_t b)
+{   return qlog(QuadFloat(a), QuadFloat(b)).v;
+}
+float128_t qlog10(float128_t a)
+{   return qlog10(QuadFloat(a)).v;
+}
+float128_t qsech(float128_t a)
+{   return qsech(QuadFloat(a)).v;
+}
 float128_t qsinh(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::sinh(static_cast<double>(aa))).v;
+{   return qsinh(QuadFloat(a)).v;
 }
-
 float128_t qsqrt(float128_t a)
-{   return f128_sqrt(a);
+{   return qsqrt(QuadFloat(a)).v;
 }
-
 float128_t qtanh(float128_t a)
-{   QuadFloat aa(a);
-    return QuadFloat(std::tanh(static_cast<double>(aa))).v;
+{   return qtanh(QuadFloat(a)).v;
+}
+float128_t qlog2(float128_t a)
+{   return qlog2(QuadFloat(a)).v;
 }
 
-float128_t qlog2(float128_t a)
-{   return f128_NaN;
-}
 
 #if 0
 

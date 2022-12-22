@@ -48,65 +48,70 @@
 
 
 LispObject Ladd1(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   // fixnums have data shifted left 4 bits
         if (a == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
             a = make_lisp_integer64_fn(MOST_POSITIVE_FIXVAL+1);
-        else return onevalue(static_cast<LispObject>(a +
-                                 0x10));   // the cheap case
+        else return static_cast<LispObject>(a + 0x10);   // the cheap case
     }
     else a = plus2(a, fixnum_of_int(1));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lsub1(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   if (a == MOST_NEGATIVE_FIXNUM)
             return make_lisp_integer64_fn(MOST_NEGATIVE_FIXVAL - 1);
-        else return onevalue(static_cast<LispObject>(a - 0x10));
+        else return static_cast<LispObject>(a - 0x10);
     }
     else a = plus2(a, fixnum_of_int(-1));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
-{   if (is_sfloat(b))
+{   SingleValued fn;
+    if (is_sfloat(b))
     {   double d = float_of_number(a);
-        return onevalue(pack_immediate_float(d, b));
+        return pack_immediate_float(d, b);
     }
     else if (!is_bfloat(b)) return aerror1("bad arg for float",  b);
 #ifdef HAVE_SOFTFLOAT
     else if (flthdr(b) == LONG_FLOAT_HEADER)
     {   float128_t dd = float128_of_number(a);
-        return onevalue(make_boxfloat128(dd));
+        return make_boxfloat128(dd);
     }
 #endif // HAVE_SOFTFLOAT
     else
     {   double d = float_of_number(a);
-        return onevalue(make_boxfloat(d, floatWant(flthdr(b))));
+        return make_boxfloat(d, floatWant(flthdr(b)));
     }
 }
 
 LispObject Lfloat(LispObject env, LispObject a)
-{   double d;
+{   SingleValued fn;
+    double d;
     if (!is_number(a)) return aerror1("bad arg for float", a);
-    else if (is_bfloat(a) || is_sfloat(a)) return onevalue(a);
+    else if (is_bfloat(a) || is_sfloat(a)) return a;
     d = float_of_number(a);
 #ifdef COMMON
 // Do we REALLY want single precision by default here?
 // I count that as a stupid decision!
-    return onevalue(pack_single_float(d));
+    return pack_single_float(d);
 #else
-    return onevalue(make_boxfloat(d, WANT_DOUBLE_FLOAT));
+    return make_boxfloat(d, WANT_DOUBLE_FLOAT);
 #endif
 }
 
 LispObject Llognot(LispObject env, LispObject a)
-{   return onevalue(lognot(a));
+{   SingleValued fn;
+    return lognot(a);
 }
 
 LispObject Lash(LispObject env, LispObject a, LispObject b)
-{   return onevalue(ash(a, b));
+{   SingleValued fn;
+    return ash(a, b);
 }
 
 LispObject Lash1(LispObject env, LispObject a, LispObject b)
@@ -114,7 +119,8 @@ LispObject Lash1(LispObject env, LispObject a, LispObject b)
 // this corresponds to natural shifts on a sign-and-magnitude machine,
 // but is not an "arithmetic" shift as that term is understood on
 // 2's complement machines.
-{   bool negative = false;
+{   SingleValued fn;
+    bool negative = false;
     if (!is_fixnum(b)) return aerror("ash1");
     if (minusp(a))
     {   negative = true;
@@ -122,7 +128,7 @@ LispObject Lash1(LispObject env, LispObject a, LispObject b)
     }
     a = ash(a, b);
     if (negative) a = negate(a);
-    return onevalue(a);
+    return a;
 }
 
 unsigned char msd_table[256] =
@@ -145,7 +151,8 @@ unsigned char msd_table[256] =
 };
 
 LispObject Lmsd(LispObject, LispObject a)
-{   intptr_t top;
+{   SingleValued fn;
+    intptr_t top;
     intptr_t r = 0;
     if (is_fixnum(a)) top = int_of_fixnum(a);
     else if (is_numbers(a))
@@ -168,13 +175,12 @@ LispObject Lmsd(LispObject, LispObject a)
         top >= (intptr_t)INT64_C(0x100000000))
         r += 32, top = (intptr_t)((int64_t)top >> 32);
 #ifdef HAVE___BUILTIN_CTZ
-    if (top == 0) return onevalue(fixnum_of_int(r));
-    else return onevalue(fixnum_of_int(r + 32 - __builtin_clz((
-                                               uint32_t)top)));
+    if (top == 0) return fixnum_of_int(r);
+    else return fixnum_of_int(r + 32 - __builtin_clz((uint32_t)top));
 #else
     if (top >= 0x10000) r += 16, top >>= 16;
     if (top >= 0x100)   r += 8,  top >>= 8;
-    return onevalue(fixnum_of_int(r + msd_table[top]));
+    return fixnum_of_int(r + msd_table[top]);
 #endif
 }
 
@@ -198,12 +204,13 @@ unsigned char lsd_table[256] =
 };
 
 LispObject Llsd(LispObject, LispObject a)
-{   intptr_t top;
+{   SingleValued fn;
+    intptr_t top;
     intptr_t r = 0;
     if (is_fixnum(a))
     {   top = int_of_fixnum(a);
 // lsd(0) is taken to have the value 0 here - it is a bit of an odd case
-        if (top == 0) return onevalue(a);
+        if (top == 0) return a;
     }
     else if (is_numbers(a))
     {   Header h = numhdr(a);
@@ -218,12 +225,12 @@ LispObject Llsd(LispObject, LispObject a)
         (top & (uintptr_t)UINT64_C(0xffffffff)) == 0)
         r += 32, top = (intptr_t)((int64_t)top >> 32);
 #ifdef HAVE___BUILTIN_CTZ
-    if (top == 0) return onevalue(fixnum_of_int(r + 1 + 32));
-    return onevalue(fixnum_of_int(r + 1 + __builtin_ctz((uint32_t)top)));
+    if (top == 0) return fixnum_of_int(r + 1 + 32);
+    return fixnum_of_int(r + 1 + __builtin_ctz((uint32_t)top));
 #else
     if ((top & 0xffffu) == 0) r += 16, top >>= 16;
     if ((top & 0xff) == 0)    r += 8,  top >>= 8;
-    return onevalue(fixnum_of_int(r + 1 + lsd_table[top & 0xff]));
+    return fixnum_of_int(r + 1 + lsd_table[top & 0xff]);
 #endif
 }
 
@@ -233,7 +240,8 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
 // just k bits, and returns a correction to the associated exponent.
 // It combines aspects of msd, lsd, ash and a rounding operation. k must
 // be positive.
-{   uintptr_t kk;
+{   SingleValued fn;
+    uintptr_t kk;
     size_t bits;
     intptr_t top;
     uintptr_t bottom;
@@ -326,7 +334,7 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
             kk += 1;
         }
         a = cons(fixnum_of_int(top), fixnum_of_int(kk));
-        return onevalue(a);
+        return a;
     }
     else
     {   size_t wk, bk;
@@ -381,7 +389,7 @@ LispObject Linorm(LispObject env, LispObject a, LispObject k)
         else bignum_digits(a)[0] |= 1;
     }
     a = cons(a, fixnum_of_int(kk));
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lplus_4up(LispObject env, LispObject a1,
@@ -390,7 +398,8 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
 // This adds up a whole bunch of numbers together.
 //    (+ a1 a2 a3 {a4 a5})                     is computed as
 //    (+ (+ (+ (+ a1 a2) a3) a4) a5)
-{   intptr_t c;
+{   SingleValued fn;
+    intptr_t c;
     THREADID;
     Save save(THREADARG a3, a4up);
 // While the arithmetic involved fixnums I do it inline in the twin hopes that
@@ -428,13 +437,14 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
             save1.restore(a4up);
         }
     }
-    return onevalue(a1);
+    return a1;
 }
 
 static LispObject Ldifference_4up(LispObject env, LispObject a1,
                                   LispObject a2,
                                   LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3, a4up);
     a1 = difference2(a1, a2);
     errexit();
@@ -450,13 +460,14 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1,
         errexit();
         save1.restore(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 static LispObject Ltimes_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3, a4up);
     a1 = times2(a1, a2);
     errexit();
@@ -472,34 +483,39 @@ static LispObject Ltimes_4up(LispObject env, LispObject a1,
         errexit();
         save1.restore(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject LCLquotient_0(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject LCLquotient_1(LispObject env, LispObject b)
-{   return onevalue(CLquot2(fixnum_of_int(1), b));
+{   SingleValued fn;
+    return CLquot2(fixnum_of_int(1), b);
 }
 
 LispObject LCLquotient_2(LispObject env, LispObject a, LispObject b)
-{   return onevalue(CLquot2(a, b));
+{   SingleValued fn;
+    return CLquot2(a, b);
 }
 
 LispObject LCLquotient_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3);
     a1 = CLquot2(a1, a2);
     errexit();
     save.restore(a3);
-    return onevalue(CLquot2(a1, a3));
+    return CLquot2(a1, a3);
 }
 
 LispObject LCLquotient_4up(LispObject env,
                            LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3, a4up);
     a1 = CLquot2(a1, a2);
     errexit();
@@ -515,34 +531,39 @@ LispObject LCLquotient_4up(LispObject env,
         errexit();
         save1.restore(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Lquotient_0(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Lquotient_1(LispObject env, LispObject b)
-{   return onevalue(quot2(fixnum_of_int(1), b));
+{   SingleValued fn;
+    return quot2(fixnum_of_int(1), b);
 }
 
 LispObject Lquotient_2(LispObject env, LispObject a, LispObject b)
-{   return onevalue(quot2(a, b));
+{   SingleValued fn;
+    return quot2(a, b);
 }
 
 LispObject Lquotient_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3);
     a1 = quot2(a1, a2);
     errexit();
     save.restore(a3);
-    return onevalue(quot2(a1, a3));
+    return quot2(a1, a3);
 }
 
 LispObject Lquotient_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3, a4up);
     a1 = quot2(a1, a2);
     errexit();
@@ -558,11 +579,12 @@ LispObject Lquotient_4up(LispObject env,
         errexit();
         save1.restore(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
-{   LispObject q;
+{   SingleValued fn;
+    LispObject q;
     THREADID;
     stackcheck(THREADARG a, b);
     mv_2 = SPID_NIL;
@@ -570,40 +592,46 @@ LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
     errexit();
     if (is_spid(mv_2)) return aerror2("divide", a, b);
     q = cons(q, mv_2);
-    return onevalue(q);
+    return q;
 }
 
 LispObject Lrem_2(LispObject env, LispObject p, LispObject q)
-{   return onevalue(Cremainder(p, q));
+{   SingleValued fn;
+    return Cremainder(p, q);
 }
 
 LispObject Lmod_2(LispObject env, LispObject p, LispObject q)
-{   return onevalue(modulus(p, q));
+{   SingleValued fn;
+    return modulus(p, q);
 }
 
 LispObject Ltrap_floating_overflow(LispObject env, LispObject a)
-{   bool o = trap_floating_overflow;
+{   SingleValued fn;
+    bool o = trap_floating_overflow;
     trap_floating_overflow = (a != nil);
-    return onevalue(Lispify_predicate(o));
+    return Lispify_predicate(o);
 }
 
 LispObject Lplus_0(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Lplus_2(LispObject env, LispObject a1, LispObject a2)
-{   intptr_t c;
+{   SingleValued fn;
+    intptr_t c;
     if (is_fixnum(a1) &&
         is_fixnum(a2) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a2)))
         a1 = fixnum_of_int(c);
     else a1 = plus2(a1, a2);
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Lplus_3(LispObject env, LispObject a1, LispObject a2,
                    LispObject a3)
-{   intptr_t c;
+{   SingleValued fn;
+    intptr_t c;
     THREADID;
     Save save(THREADARG a3);
     if (is_fixnum(a1) &&
@@ -620,46 +648,53 @@ LispObject Lplus_3(LispObject env, LispObject a1, LispObject a2,
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a3)))
         a1 = fixnum_of_int(c);
     else a1 = plus2(a1, a3);
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Ltimes_0(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Ltimes_2(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(times2(a1, a2));
+{   SingleValued fn;
+    return times2(a1, a2);
 }
 
 LispObject Ltimes_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3);
     a1 = times2(a1, a2);
     save.restore(a3);
-    return onevalue(times2(a1, a3));
+    return times2(a1, a3);
 }
 
 LispObject Ldifference_0(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Ldifference_2(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(difference2(a1, a2));
+{   SingleValued fn;
+    return difference2(a1, a2);
 }
 
 LispObject Ldifference_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3);
     a1 = difference2(a1, a2);
     errexit();
     save.restore(a3);
-    return onevalue(difference2(a1, a3));
+    return difference2(a1, a3);
 }
 
 LispObject Lminus(LispObject env, LispObject a)
-{   return onevalue(negate(a));
+{   SingleValued fn;
+    return negate(a);
 }
 
 typedef LispObject boolopfn(LispObject, LispObject);
@@ -675,7 +710,8 @@ static boolopfn *boolop_array[] =
 static LispObject Lbool_4up(LispObject env, LispObject a1,
                             LispObject a2,
                             LispObject a3, LispObject a4up)
-{   int what = int_of_fixnum(qenv(env));
+{   SingleValued fn;
+    int what = int_of_fixnum(qenv(env));
     THREADID;
     Save save(THREADARG a3, a4up);
     a1 = (*boolop_array[what])(a1, a2);
@@ -692,44 +728,50 @@ static LispObject Lbool_4up(LispObject env, LispObject a1,
         errexit();
         save1.restore(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 LispObject Lzerop(LispObject env, LispObject a)
-{   bool fg;
+{   SingleValued fn;
+    bool fg;
     fg = zerop(a);
-    return onevalue(Lispify_predicate(fg));
+    return Lispify_predicate(fg);
 }
 
 LispObject Lonep(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(onep(a)));
+{   SingleValued fn;
+    return Lispify_predicate(onep(a));
 }
 
 LispObject Levenp(LispObject env, LispObject a)
-{   if (is_fixnum(a))
-        return onevalue(((int32_t)a & 0x10) == 0 ? lisp_true : nil);
+{   SingleValued fn;
+    if (is_fixnum(a))
+        return ((int32_t)a & 0x10) == 0 ? lisp_true : nil;
     else if (is_numbers(a) && is_bignum(a))
-        return onevalue((bignum_digits(a)[0] & 1) == 0 ? lisp_true : nil);
+        return (bignum_digits(a)[0] & 1) == 0 ? lisp_true : nil;
     return aerror1("bad arg for evenp", a);
 }
 
 LispObject Loddp(LispObject env, LispObject a)
-{   if (is_fixnum(a))
-        return onevalue(((int32_t)a & 0x10) != 0 ? lisp_true : nil);
+{   SingleValued fn;
+    if (is_fixnum(a))
+        return ((int32_t)a & 0x10) != 0 ? lisp_true : nil;
     else if (is_numbers(a) && is_bignum(a))
-        return onevalue((bignum_digits(a)[0] & 1) != 0 ? lisp_true : nil);
+        return (bignum_digits(a)[0] & 1) != 0 ? lisp_true : nil;
     return aerror1("bad arg for oddp", a);
 }
 
 LispObject Lminusp(LispObject env, LispObject a)
-{
+{   SingleValued fn;
+ 
 // For CSL I demand (minusp <non-number>) = nil.  Note that this ensures
 // that minusp will not fail...
-    return onevalue(is_number(a) && minusp(a) ? lisp_true : nil);
+    return is_number(a) && minusp(a) ? lisp_true : nil;
 }
 
 LispObject Lplusp(LispObject env, LispObject a)
-{   return onevalue(is_number(a) && plusp(a) ? lisp_true : nil);
+{   SingleValued fn;
+    return is_number(a) && plusp(a) ? lisp_true : nil;
 }
 
 // The next few functions take an arbitrary number of args in Common
@@ -741,12 +783,13 @@ LispObject Lplusp(LispObject env, LispObject a)
 
 LispObject Leqn_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a2, a3, a4up);
-        if (!SL_numeq2(a1, a2)) return onevalue(nil);
+        if (!SL_numeq2(a1, a2)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
-        if (!SL_numeq2(a2, a3)) return onevalue(nil);
+        if (!SL_numeq2(a2, a3)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
     }
@@ -760,40 +803,45 @@ LispObject Leqn_4up(LispObject env,
         }
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 
 LispObject Leqn_0(LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Leqn_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a2, a3);
-    if (!SL_numeq2(a1, a2)) return onevalue(nil);
+    if (!SL_numeq2(a1, a2)) return nil;
     errexit();
     save.restore(a2, a3);
-    return onevalue(SL_numeq2(a2, a3) ? lisp_true : nil);
+    return SL_numeq2(a2, a3) ? lisp_true : nil;
 }
 
 LispObject Leqn_2(LispObject env, LispObject a, LispObject b)
-{   return onevalue(SL_numeq2(a, b) ? lisp_true : nil);
+{   SingleValued fn;
+    return SL_numeq2(a, b) ? lisp_true : nil;
 }
 
 LispObject Lcl_equals_sign_4up(LispObject env,
                                LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a2, a3, a4up);
-        if (!numeq2(a1, a2)) return onevalue(nil);
+        if (!numeq2(a1, a2)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
-        if (!numeq2(a2, a3)) return onevalue(nil);
+        if (!numeq2(a2, a3)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
     }
@@ -802,46 +850,51 @@ LispObject Lcl_equals_sign_4up(LispObject env,
     {   LispObject q = car(a4up);
         THREADID;
         Save save(THREADARG q, a4up);
-        if (!numeq2(p, q)) return onevalue(nil);
+        if (!numeq2(p, q)) return nil;
         errexit();
         save.restore(q, a4up);
         p = q;
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 
 LispObject Lcl_equals_sign_0(LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lcl_equals_sign_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lcl_equals_sign_3(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a2, a3);
-    if (!numeq2(a1, a2)) return onevalue(nil);
+    if (!numeq2(a1, a2)) return nil;
     errexit();
     save.restore(a2, a3);
-    return onevalue(numeq2(a2, a3) ? lisp_true : nil);
+    return numeq2(a2, a3) ? lisp_true : nil;
 }
 
 LispObject Lcl_equals_sign_2(LispObject env, LispObject a,
                              LispObject b)
-{   return onevalue(numeq2(a, b) ? lisp_true : nil);
+{   SingleValued fn;
+    return numeq2(a, b) ? lisp_true : nil;
 }
 
 LispObject Llessp_4up(LispObject env,
                       LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a2, a3, a4up);
-        if (!lessp2(a1, a2)) return onevalue(nil);
+        if (!lessp2(a1, a2)) return nil;
         errexit();
-        if (!lessp2(a2, a3)) return onevalue(nil);
+        if (!lessp2(a2, a3)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
     }
@@ -850,45 +903,50 @@ LispObject Llessp_4up(LispObject env,
     {   LispObject q = car(a4up);
         THREADID;
         Save save(THREADARG p, a4up);
-        if (!lessp2(p, q)) return onevalue(nil);
+        if (!lessp2(p, q)) return nil;
         errexit();
         save.restore(p, a4up);
         p = q;
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Llessp_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a2, a3);
-    if (!lessp2(a1, a2)) return onevalue(nil);
+    if (!lessp2(a1, a2)) return nil;
     errexit();
     save.restore(a2, a3);
-    return onevalue(lessp2(a2, a3) ? lisp_true : nil);
+    return lessp2(a2, a3) ? lisp_true : nil;
 }
 
 LispObject Llessp_2(LispObject env, LispObject a, LispObject b)
-{   return onevalue(lessp2(a, b) ? lisp_true : nil);
+{   SingleValued fn;
+    return lessp2(a, b) ? lisp_true : nil;
 }
 
 LispObject Llessp_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Llessp_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lgreaterp_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a2, a3, a4up);
-        if (!lessp2(a2, a1)) return onevalue(nil);
+        if (!lessp2(a2, a1)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
-        if (!lessp2(a3, a2)) return onevalue(nil);
+        if (!lessp2(a3, a2)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
     }
@@ -897,110 +955,120 @@ LispObject Lgreaterp_4up(LispObject env,
     {   LispObject q = car(a4up);
         {   THREADID;
             Save save(THREADARG q, a4up);
-            if (!lessp2(q, p)) return onevalue(nil);
+            if (!lessp2(q, p)) return nil;
             errexit();
             save.restore(q, a4up);
         }
         p = q;
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Lgreaterp_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a2, a3);
-    if (!lessp2(a2, a1)) return onevalue(nil);
+    if (!lessp2(a2, a1)) return nil;
     errexit();
     save.restore(a2, a3);
-    return onevalue(lessp2(a3, a2) ? lisp_true : nil);
+    return lessp2(a3, a2) ? lisp_true : nil;
 }
 
 LispObject Lgreaterp_2(LispObject env, LispObject a, LispObject b)
-{   return onevalue(lessp2(b, a) ? lisp_true : nil);
+{   SingleValued fn;
+    return lessp2(b, a) ? lisp_true : nil;
 }
 
 LispObject Lgreaterp_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lgreaterp_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
                                LispObject a2,
                                LispObject a3, LispObject a4up)
 // "/=" is supposed to check that no pair of args match.
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2, a3);
     {   Save save1(THREADARG a4up);
-        if (numeq2(a1, a2)) return onevalue(nil);
+        if (numeq2(a1, a2)) return nil;
         errexit();
         save.restore(a1, a2, a3);
-        if (numeq2(a1, a3)) return onevalue(nil);
+        if (numeq2(a1, a3)) return nil;
         errexit();
         save.restore(a1, a2, a3);
-        if (numeq2(a2, a3)) return onevalue(nil);
+        if (numeq2(a2, a3)) return nil;
         errexit();
         save.restore(a1, a2, a3);
         save1.restore(a4up);
     }
     while (a4up != nil)
     {   Save save1(THREADARG a4up);
-        if (numeq2(a1, car(a4up))) return onevalue(nil);
+        if (numeq2(a1, car(a4up))) return nil;
         errexit();
         save.restore(a1, a2, a3);
         save1.restore(a4up);
-        if (numeq2(a2, car(a4up))) return onevalue(nil);
+        if (numeq2(a2, car(a4up))) return nil;
         errexit();
         save.restore(a1, a2, a3);
         save1.restore(a4up);
-        if (numeq2(a3, car(a4up))) return onevalue(nil);
+        if (numeq2(a3, car(a4up))) return nil;
         errexit();
         save.restore(a1, a2, a3);
         save1.restore(a4up);
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Lnum_neq_3(LispObject env, LispObject a1, LispObject a2,
                       LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2, a3);
-    if (!numeq2(a1, a2)) return onevalue(nil);
+    if (!numeq2(a1, a2)) return nil;
     errexit();
     save.restore(a1, a2, a3);
-    if (!numeq2(a1, a3)) return onevalue(nil);
+    if (!numeq2(a1, a3)) return nil;
     errexit();
     save.restore(a1, a2, a3);
-    if (!numeq2(a2, a3)) return onevalue(nil);
+    if (!numeq2(a2, a3)) return nil;
     errexit();
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Lnum_neq_2(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(numeq2(a1, a2) ? nil : lisp_true);
+{   SingleValued fn;
+    return numeq2(a1, a2) ? nil : lisp_true;
 }
 
 LispObject Lnum_neq_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lnum_neq_0(LispObject env)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lgeq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a2, a3, a4up);
-        if (!lesseq2(a2, a1)) return onevalue(nil);
+        if (!lesseq2(a2, a1)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
-        if (!lesseq2(a3, a2)) return onevalue(nil);
+        if (!lesseq2(a3, a2)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
     }
@@ -1009,46 +1077,51 @@ LispObject Lgeq_4up(LispObject env,
     {   LispObject q = car(a4up);
         {   THREADID;
             Save save(THREADARG q, a4up);
-            if (!lesseq2(q, p)) return onevalue(nil);
+            if (!lesseq2(q, p)) return nil;
             errexit();
             save.restore(q, a4up);
         }
         p = q;
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Lgeq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a2, a3);
-    if (!lesseq2(a2, a1)) return onevalue(nil);
+    if (!lesseq2(a2, a1)) return nil;
     errexit();
     save.restore(a2, a3);
-    return onevalue(lesseq2(a3, a2) ? lisp_true : nil);
+    return lesseq2(a3, a2) ? lisp_true : nil;
 }
 
 LispObject Lgeq_2(LispObject env, LispObject a, LispObject b)
-{   bool w = lesseq2(b, a);
-    return onevalue(w ? lisp_true : nil);
+{   SingleValued fn;
+    bool w = lesseq2(b, a);
+    return w ? lisp_true : nil;
 }
 
 LispObject Lgeq_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lgeq_0(LispObject env)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 LispObject Lleq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a2, a3, a4up);
-        if (!lesseq2(a1, a2)) return onevalue(nil);
+        if (!lesseq2(a1, a2)) return nil;
         errexit();
-        if (!lesseq2(a2, a3)) return onevalue(nil);
+        if (!lesseq2(a2, a3)) return nil;
         errexit();
         save.restore(a2, a3, a4up);
     }
@@ -1057,74 +1130,81 @@ LispObject Lleq_4up(LispObject env,
     {   LispObject q = car(a4up);
         THREADID;
         Save save(THREADARG p, a4up);
-        if (!lesseq2(p, q)) return onevalue(nil);
+        if (!lesseq2(p, q)) return nil;
         errexit();
         save.restore(p, a4up);
         p = q;
         a4up = cdr(a4up);
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Lleq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a2, a3);
-    if (!lesseq2(a1, a2)) return onevalue(nil);
+    if (!lesseq2(a1, a2)) return nil;
     errexit();
     save.restore(a2, a3);
-    return onevalue(lesseq2(a2, a3) ? lisp_true : nil);
+    return lesseq2(a2, a3) ? lisp_true : nil;
 }
 
 LispObject Lleq_2(LispObject env, LispObject a, LispObject b)
-{   bool w = lesseq2(a, b);
-    return onevalue(w ? lisp_true : nil);
+{   SingleValued fn;
+    bool w = lesseq2(a, b);
+    return w ? lisp_true : nil;
 }
 
 LispObject Lleq_1(LispObject, LispObject)
-{   return onevalue(lisp_true);
+{   SingleValued fn;
+    return lisp_true;
 }
 
 LispObject Lleq_0(LispObject env)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
-{   bool w;
+{   SingleValued fn;
+    bool w;
     THREADID;
     Save save(THREADARG a, b);
     w = lessp2(a, b);
     errexit();
     save.restore(a, b);
-    if (w) return onevalue(b);
-    else return onevalue(a);
+    if (w) return b;
+    else return a;
 }
 
 LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
-{   bool w;
+{   SingleValued fn;
+    bool w;
     THREADID;
     Save save(THREADARG a, b);
     w = lessp2(b, a);
     errexit();
     save.restore(a, b);
-    if (w) return onevalue(b);
-    else return onevalue(a);
+    if (w) return b;
+    else return a;
 }
 
 LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2, a3);
     if (lessp2(a1, a2))
     {   save.restore(a1, a2, a3);
         errexit();
         if (lessp2(a2, a3))
         {   save.restore(a1, a2, a3);
-            return onevalue(a3);
+            return a3;
         }
         else 
         {   save.restore(a1, a2, a3);
-            return onevalue(a2);
+            return a2;
         }
     }
     else
@@ -1132,29 +1212,30 @@ LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2,
         errexit();
         if (lessp2(a1, a3))
         {   save.restore(a1, a2, a3);
-            return onevalue(a3);
+            return a3;
         }
         else 
         {   save.restore(a1, a2, a3);
-            return onevalue(a1);
+            return a1;
         }
     }
 }
 
 LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2, a3);
     if (greaterp2(a1, a2))
     {   save.restore(a1, a2, a3);
         errexit();
         if (greaterp2(a2, a3))
         {   save.restore(a1, a2, a3);
-            return onevalue(a3);
+            return a3;
         }
         else 
         {   save.restore(a1, a2, a3);
-            return onevalue(a2);
+            return a2;
         }
     }
     else
@@ -1162,18 +1243,19 @@ LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2,
         errexit();
         if (greaterp2(a1, a3))
         {   save.restore(a1, a2, a3);
-            return onevalue(a3);
+            return a3;
         }
         else 
         {   save.restore(a1, a2, a3);
-            return onevalue(a1);
+            return a1;
         }
     }
 }
 
 LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     {   THREADID;
         Save save(THREADARG a4up);
         r = Lmax_3(nil, a1, a2, a3);
@@ -1191,12 +1273,13 @@ LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
         if (better) r = car(a4up);
         a4up = cdr(a4up);
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     {   THREADID;
         Save save(THREADARG a4up);
         r = Lmin_3(nil, a1, a2, a3);
@@ -1214,27 +1297,29 @@ LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
         if (better) r = car(a4up);
         a4up = cdr(a4up);
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lrational(LispObject env, LispObject a)
-{   return onevalue(rational(a));
+{   SingleValued fn;
+    return rational(a);
 }
 
 static LispObject Lmanexp(LispObject env, LispObject a)
-{   int x;
+{   SingleValued fn;
+    int x;
     double f;
 // AT present I do not support 128-bit floats here @@@
     if (!is_float(a))  return aerror1("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = std::frexp(f, &x);
-    return onevalue(cons(make_boxfloat(f, WANT_DOUBLE_FLOAT),
-                         fixnum_of_int(x)));
+    return cons(make_boxfloat(f, WANT_DOUBLE_FLOAT), fixnum_of_int(x));
 }
 
 static LispObject Lrationalize(LispObject env, LispObject a)
-{   a = rationalize(a);
-    return onevalue(a);
+{   SingleValued fn;
+    a = rationalize(a);
+    return a;
 }
 
 // I use a Mersenne Twister pseudo-random generator from the C++11 library.
@@ -1297,7 +1382,7 @@ void Csrand(uint64_t seed)
 }
 
 LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
-{
+{   SingleValued fn;
 #ifdef COMMON
     LispObject b;
 // Common Lisp expects an optional second arg to be used for the random
@@ -1309,7 +1394,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
     {   size_t v = int_of_fixnum(a), p, q;
         if (v <= 0) return aerror1("random-number", a);
 // (random 1) always returns zero - a rather silly case!
-        else if (v == 1) return onevalue(fixnum_of_int(0));
+        else if (v == 1) return fixnum_of_int(0);
 // I generate a value that is an exact multiple of my range (v) and
 // pick random bitpatterns until I find one less than that.  On average
 // I will have only VERY slightly more than one draw needed, and doing things
@@ -1321,13 +1406,13 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
             {   q = (int64_t)Crand()<<31 ^ Crand();
             }
             while (q > p);
-            return onevalue(fixnum_of_int(q % v));
+            return fixnum_of_int(q % v);
         }
         else
         {   p = v*(0x7fffffff/v);
             do q = ((uint32_t)Crand()) >> 1;
             while (q > p);
-            return onevalue(fixnum_of_int(q % v));
+            return fixnum_of_int(q % v);
         }
     }
     if (is_numbers(a))
@@ -1371,7 +1456,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         for (len--; len>=0; len--)
             bignum_digits(r)[len] = ((uint32_t)Crand())>>1;
         a = shrink_bignum(r, len1);
-        return onevalue(a);
+        return a;
     }
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -1393,7 +1478,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         }
         while (v == d);
         a = make_boxfloat(v, floatWant(h));
-        return onevalue(a);
+        return a;
     }
     if (is_sfloat(a))
     {   Float_union d;
@@ -1407,17 +1492,18 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         }
         while ((v.i & ~0xf) == (d.i & ~0xf));
         d.f = v.f;
-        return onevalue(pack_immediate_float(v.f, a));
+        return pack_immediate_float(v.f, a);
     }
     return aerror1("random-number", a);
 }
 
 LispObject Lrandom_1(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   intptr_t v = int_of_fixnum(a), p, q;
         if (v <= 0) return aerror1("random-number -ve argument", a);
 // (random 1) always returns zero - a rather silly case!
-        else if (v == 1) return onevalue(fixnum_of_int(0));
+        else if (v == 1) return fixnum_of_int(0);
 // I generate a value that is an exact multiple of my range (v) and
 // pick random bitpatterns until I find one less than that.  On average
 // I will have only VERY slightly less than one draw needed, and doing things
@@ -1429,13 +1515,13 @@ LispObject Lrandom_1(LispObject env, LispObject a)
             {   q = (int64_t)Crand()<<31 ^ Crand();
             }
             while (q > p);
-            return onevalue(fixnum_of_int(q % v));
+            return fixnum_of_int(q % v);
         }
         else
         {   p = v*(0x7fffffff/v);
             do q = ((uint32_t)Crand()) >> 1;
             while (q > p);
-            return onevalue(fixnum_of_int(q % v));
+            return fixnum_of_int(q % v);
         }
     }
     if (is_numbers(a))
@@ -1478,7 +1564,7 @@ LispObject Lrandom_1(LispObject env, LispObject a)
 // as totally independent bit-patterns.
         for (len--; len>=0; len--)
             bignum_digits(r)[len] = ((uint32_t)Crand())>>1;
-        return onevalue(shrink_bignum(r, len1));
+        return shrink_bignum(r, len1);
     }
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -1502,7 +1588,7 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         }
         while (v == d);
         a = make_boxfloat(v, floatWant(h));
-        return onevalue(a);
+        return a;
     }
     if (is_sfloat(a))
     {   Float_union d;
@@ -1516,7 +1602,7 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         }
         while ((v.i & ~0xf) == (d.i & ~0xf));
         d.f = v.f;
-        return onevalue(low32((d.i & ~0xf) + XTAG_SFLOAT));
+        return low32((d.i & ~0xf) + XTAG_SFLOAT);
     }
     return aerror1("random-number", a);
 }
@@ -1524,31 +1610,32 @@ LispObject Lrandom_1(LispObject env, LispObject a)
 LispObject Lnext_random(LispObject)
 // Returns a random positive fixnum.  27 bits in this Lisp! At present this
 // returns 27 bits whether on a 32 or 64-bit machine...
-{   int32_t r = Crand();
-    return onevalue(static_cast<LispObject>((r & 0x7ffffff0) + TAG_FIXNUM));
+{   SingleValued fn;
+    int32_t r = Crand();
+    return static_cast<LispObject>((r & 0x7ffffff0) + TAG_FIXNUM);
 }
 
 LispObject Lmake_random_state(LispObject env, LispObject a, LispObject b)
-{
+{   SingleValued fn;
 // Nasty temporary hack here to allow me to set the seed for the
 // random number generator in Standard Lisp mode.
 // The second argument (b) is utterly ignored, and if the first argument is
 // not a number in the range 1..UINT32_MAX a non-repeatable new state will
 // be established.
     Csrand(thirty_two_bits_unsigned(a));
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lmake_random_state1(LispObject env, LispObject a)
-{   Csrand(thirty_two_bits_unsigned(a));
-    return onevalue(nil);
+{   SingleValued fn;
+    Csrand(thirty_two_bits_unsigned(a));
+    return nil;
 }
 
 #endif // ARITHLIB
 
 LispObject pack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
-{
-    LispObject r;
+{   LispObject r;
     uint32_t v4 = v3 >> 28;
     v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
     v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
@@ -1602,7 +1689,8 @@ LispObject pack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
 // considered secure, so anybody worried by security needs at least sha2!
 
 LispObject Lmd5(LispObject env, LispObject a)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     unsigned char md[16];
     uint32_t v0, v1, v2, v3;
     size_t len, i;
@@ -1690,26 +1778,27 @@ LispObject Lmd5(LispObject env, LispObject a)
 // that follows!
     if (v3 == 0 && v2 == 0)
     {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
-        return onevalue(r);
+        return r;
     }
-    return onevalue(pack_md5_result(v0, v1, v2, v3));
+    return pack_md5_result(v0, v1, v2, v3);
 }
 
 // For testing the MD5 code... processes a string "raw".
 
 LispObject Lmd5string(LispObject env, LispObject a)
-{   unsigned char md[16];
+{   SingleValued fn;
+    unsigned char md[16];
     if (is_vector(a) && is_string(a))
     {   size_t len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update(reinterpret_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
-    else return onevalue(nil);
+    else return nil;
     CSL_MD5_Final(md);
     for (int i=0; i<16; i++) std::printf("%x ", md[i]);
     std::printf("\n");
-    return onevalue(pack_md5_result(md[0], md[1], md[2], md[3]));
+    return pack_md5_result(md[0], md[1], md[2], md[3]);
 }
 
 // md60 is a function that uses MD5 but then returns just about 60 bits
@@ -1726,7 +1815,8 @@ LispObject Lmd5string(LispObject env, LispObject a)
 // 59 bits.
 
 LispObject Lmd60(LispObject env, LispObject a)
-{   unsigned char md[16];
+{   SingleValued fn;
+    unsigned char md[16];
     uint32_t v0, v1;
     int32_t len, i;
     if (is_fixnum(a))
@@ -1761,84 +1851,97 @@ LispObject Lmd60(LispObject env, LispObject a)
 // machine it will almost always be a bignum using 2 digits.
     a = make_lisp_unsigned64(v >> 5);
 //  validate_number("MD60", a, a, a);
-    return onevalue(a);
+    return a;
 }
 
 #ifndef ARITHLIB
 
 static LispObject Llogand_0(LispObject env)
-{   return onevalue(fixnum_of_int(-1));
+{   SingleValued fn;
+    return fixnum_of_int(-1);
 }
 
 static LispObject Llogeqv_0(LispObject env)
-{   return onevalue(fixnum_of_int(-1));
+{   SingleValued fn;
+    return fixnum_of_int(-1);
 }
 
 static LispObject Llogxor_0(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 static LispObject Llogor_0(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 static LispObject Llogand_2(LispObject env, LispObject a1,
                             LispObject a2)
-{   return onevalue(logand2(a1, a2));
+{   SingleValued fn;
+    return logand2(a1, a2);
 }
 
 static LispObject Llogeqv_2(LispObject env, LispObject a1,
                             LispObject a2)
-{   return onevalue(logeqv2(a1, a2));
+{   SingleValued fn;
+    return logeqv2(a1, a2);
 }
 
 static LispObject Llogxor_2(LispObject env, LispObject a1,
                             LispObject a2)
-{   return onevalue(logxor2(a1, a2));
+{   SingleValued fn;
+    return logxor2(a1, a2);
 }
 
 static LispObject Llogor_2(LispObject env, LispObject a1,
                            LispObject a2)
-{   return onevalue(logior2(a1, a2));
+{   SingleValued fn;
+    return logior2(a1, a2);
 }
 
 static LispObject Llogand_3(LispObject env, LispObject a1,
                             LispObject a2, LispObject a3)
-{   return onevalue(logand2(logand2(a1, a2), a3));
+{   SingleValued fn;
+    return logand2(logand2(a1, a2), a3);
 }
 
 static LispObject Llogeqv_3(LispObject env, LispObject a1,
                             LispObject a2, LispObject a3)
-{   return onevalue(logeqv2(logeqv2(a1, a2), a3));
+{   SingleValued fn;
+    return logeqv2(logeqv2(a1, a2), a3);
 }
 
 static LispObject Llogxor_3(LispObject env, LispObject a1,
                             LispObject a2, LispObject a3)
-{   return onevalue(logxor2(logxor2(a1, a2), a3));
+{   SingleValued fn;
+    return logxor2(logxor2(a1, a2), a3);
 }
 
 static LispObject Llogor_3(LispObject env, LispObject a1,
                            LispObject a2, LispObject a3)
-{   return onevalue(logior2(logior2(a1, a2), a3));
+{   SingleValued fn;
+    return logior2(logior2(a1, a2), a3);
 }
 
 static LispObject Lvalidate(LispObject env, LispObject a)
-{   validate_number("validate-number", a, fixnum_of_int(0),
+{   SingleValued fn;
+    validate_number("validate-number", a, fixnum_of_int(0),
                     fixnum_of_int(0));
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lvalidate_2(LispObject env, LispObject a,
                               LispObject b)
-{   validate_number("validate-number", a, b, fixnum_of_int(0));
-    return onevalue(a);
+{   SingleValued fn;
+    validate_number("validate-number", a, b, fixnum_of_int(0));
+    return a;
 }
 
 #endif // ARITHLIB
 
 setup_type const arith06_setup[] =
 {   DEF_1("md60", Lmd60),
-
 #ifndef ARITHLIB
     DEF_2("ash", Lash),
     DEF_2("ash1", Lash1),

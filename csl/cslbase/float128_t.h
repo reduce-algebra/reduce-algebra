@@ -836,6 +836,16 @@ inline constexpr QuadFloat QuadFloat::mantissa()
     return QuadFloat(r);
 }
 
+inline uint128_t qmantissa(QuadFloat a)
+{   uint64_t hi, lo;
+    f128_mantissa(a.v, hi, lo);
+    return (static_cast<uint128_t>(hi)<<64) + lo;
+}
+
+inline QuadFloat qmodf(QuadFloat a, QuadFloat& intpart)
+{   return QuadFloat(f128_modf(a.v, intpart.v));
+}
+
 inline constexpr QuadFloat operator ""_Q (const char *s)
 {   return QuadFloat(s);
 }

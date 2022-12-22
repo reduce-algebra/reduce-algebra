@@ -259,12 +259,11 @@ char *trim_module_name(char *name, size_t *lenp)
 }
 
 LispObject Lcopy_module(LispObject env, LispObject file)
-//
 // copy-module will ensure that the output PDS contains a copy of
 // the module that is named. There is no provision for copying
 // startup banner data - that must be set up by hand.
-//
-{   Header h;
+{   SingleValued fn;
+    Header h;
     size_t len;
     char *modname;
     if (file == nil) Icopy(nullptr, 0);
@@ -282,15 +281,14 @@ LispObject Lcopy_module(LispObject env, LispObject file)
 #endif
         Icopy(modname, len);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Ldelete_module(LispObject env, LispObject file)
-//
 // delete-module deletes the named module from the output PDS, supposing it
 // was there to begin with.  (delete-module nil) deletes any help data.
-//
-{   Header h;
+{   SingleValued fn;
+    Header h;
     size_t len;
     char *modname;
     if (file == nil) Idelete(nullptr, 0);
@@ -308,28 +306,27 @@ LispObject Ldelete_module(LispObject env, LispObject file)
 #endif
         Idelete(modname, static_cast<int>(len));
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lbanner(LispObject env, LispObject info)
-//
 // (startup!-banner nil)      returns the current banner info (nil if none)
 // (startup!-banner "string") sets new info
 // (startup!-banner "")       deletes any that there is.
-//
-{   Header h;
+{   SingleValued fn;
+    Header h;
     int i;
     int32_t len;
     char *name;
     if (info == nil)
     {   char b[64];
-        if (Iopen_banner(0)) return onevalue(nil);
+        if (Iopen_banner(0)) return nil;
         for (i=0; i<64; i++)
             b[i] = static_cast<char>(Igetc());
         IcloseInput();
         info = make_string(b);
         validate_string(info);
-        return onevalue(info);
+        return info;
     }
     if (symbolp(info))
     {   info = get_pname(info);
@@ -349,40 +346,39 @@ LispObject Lbanner(LispObject env, LispObject info)
 // the implementation of Iopen_banner(-1) will report failure in that
 // case rather than creating a fresh image file.
 //
-        if (Iopen_banner(-1)) return onevalue(nil);
+        if (Iopen_banner(-1)) return nil;
         if (len > 63) len = 63;
 // Write banner uncompressed.
         for (i=0; i<64; i++) Iputc(i >= len ? 0 : name[i]);
         IcloseOutput();
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject Llist_modules(LispObject env)
-//
 // display information about available modules
-//
-{   Ilist();
-    return onevalue(nil);
+{   SingleValued fn;
+    Ilist();
+    return nil;
 }
 
 LispObject Lwritable_libraryp(LispObject env, LispObject file)
-//
 // This tests if a library handle refers to a writable file.
-//
-{   int i;
+{   SingleValued fn;
+    int i;
     directory *d;
-    if ((file & 0xffff) != SPID_LIBRARY) return onevalue(nil);
+    if ((file & 0xffff) != SPID_LIBRARY) return nil;
     i = (file >> 20) & 0xfff;
     d = fasl_files[i].dir;
     i = d->h.updated;
-    return onevalue(Lispify_predicate(i & D_WRITE_OK));
+    return Lispify_predicate(i & D_WRITE_OK);
 }
 
 #ifdef DEBUG_FASL
 
 static void IputcDebug(int c, int line)
-{   Iputc(c);
+{   SingleValued fn;
+    Iputc(c);
     trace_printf("Iputc(%d/%x/%s: %d %.8x %.8x)\n", c, c, fasl_code(c),
                  line, C_stack, nil);
 }
@@ -393,7 +389,8 @@ static void IputcDebug(int c, int line)
 
 
 LispObject Lmodule_exists(LispObject env, LispObject file)
-{   char filename[LONGEST_LEGAL_FILENAME], tt[32];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME], tt[32];
     Header h;
     size_t len;
     size_t size;
@@ -411,14 +408,13 @@ LispObject Lmodule_exists(LispObject env, LispObject file)
     modname = trim_module_name(modname, &len);
 #endif
     if (Imodulep(modname, static_cast<int>(len), tt, &size, filename))
-        return onevalue(nil);
+        return nil;
     tt[24] = 0;
     file = make_string(tt);
-    return onevalue(file);
+    return file;
 }
 
 LispObject Lstart_module(LispObject env, LispObject name)
-//
 // This must be called before write-module - it sets up everything
 // for writing a (compressed) FASL file.  Calling with a nil argument
 // closes the current fasl file, otherwise the arg is the name of
@@ -426,8 +422,8 @@ LispObject Lstart_module(LispObject env, LispObject name)
 // this function - it is for use from within the compiler.
 // As a special bit of magic the name passed can be a Lisp stream, in
 // which case the module data will be written to it.
-//
-{   if (name == nil)
+{   SingleValued fn;
+    if (name == nil)
     {   def_finish();   // flush out and of compressed data.
         if (fasl_output_file)
         {   int k = static_cast<int>(Ioutsize()) & 0x3;
@@ -474,16 +470,16 @@ LispObject Lstart_module(LispObject env, LispObject name)
                 trace_printf("+++ FASLEND\n");
 #endif
             }
-            return onevalue(lisp_true);
+            return lisp_true;
         }
-        else return onevalue(nil);
+        else return nil;
     }
     else if (is_stream(name))
     {   fasl_stream = name;
         fasl_output_file = true;
         Iopen_to_stdout();
         def_init();
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     else
     {   char filename[LONGEST_LEGAL_FILENAME];
@@ -520,11 +516,11 @@ LispObject Lstart_module(LispObject env, LispObject name)
         if (len >= sizeof(filename)) len = sizeof(filename);
         if (Iopen(modname, len, IOPEN_OUT, filename))
         {   err_printf("Failed to open \"%s\"\n", filename);
-            return onevalue(nil);
+            return nil;
         }
         fasl_output_file = true;
         def_init();
-        return onevalue(lisp_true);
+        return lisp_true;
     }
 }
 
@@ -540,7 +536,8 @@ LispObject Lstart_module(LispObject env, LispObject name)
 //
 
 LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
-{   const char *w;
+{   SingleValued fn;
+    const char *w;
     char *aa, *bb = nullptr;
     size_t lena, lenb;
     if (a != nil)
@@ -565,13 +562,14 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
 // and issues about who might delete the space at the end of a run are
 // unresolved!
     fwin_set_help_file(aa, bb);
-    return onevalue(nil);
+    return nil;
 }
 
 char prompt_string[MAX_PROMPT_LENGTH];
 
 LispObject Lsetpchar(LispObject env, LispObject a)
-{   LispObject old = prompt_thing;
+{   SingleValued fn;
+    LispObject old = prompt_thing;
     prompt_thing = a;
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
@@ -588,7 +586,7 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     std::memcpy(prompt_string, memory_print_buffer, MAX_PROMPT_LENGTH);
     prompt_string[MAX_PROMPT_LENGTH-1] = 0;
     fwin_set_prompt(prompt_string);
-    return onevalue(old);
+    return old;
 }
 
 // end of fasl.cpp

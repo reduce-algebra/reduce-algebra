@@ -48,7 +48,7 @@
 static LispObject macrolet_fn(LispObject args, LispObject env)
 {   LispObject d;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     THREADID;
     stackcheck(THREADARG args, env);
     d = car(args);     // The bunch of definitions
@@ -86,7 +86,7 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
 {   LispObject r, rl;
     STACK_SANITY;
     int nargs, i;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     THREADID;
     stackcheck(THREADARG args, env);
     {   Save save(THREADARG args, env);
@@ -123,7 +123,7 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
 
 static LispObject or_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
-{   if (!consp(args)) return onevalue(nil);
+{   if (!consp(args)) return nil;
     THREADID;
     stackcheck(THREADARG args, env);
     STACK_SANITY;
@@ -135,7 +135,7 @@ static LispObject or_fn(LispObject args, LispObject env)
         v = eval(v, env);
         errexit();
         save.restore(args, env);
-        if (v != nil) return onevalue(v);
+        if (v != nil) return v;
     }
 }
 
@@ -144,7 +144,7 @@ static LispObject or_fn(LispObject args, LispObject env)
 // TAGBODY.
 
 static LispObject prog_fn(LispObject iargs, LispObject ienv)
-{   if (!consp(iargs) || !consp(cdr(iargs))) return onevalue(nil);
+{   if (!consp(iargs) || !consp(cdr(iargs))) return nil;
     THREADID;
     stackcheck(THREADARG iargs, ienv);
     RealSave save(THREADARG nil, iargs, ienv);
@@ -181,14 +181,14 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
         exit_reason = _reason;
         RETHROW;
     END_CATCH;
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject progn_fn(LispObject args, LispObject env)
 {   LispObject f;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     stackcheck(THREADARG args, env);
     f = nil;
     for (;;)
@@ -218,7 +218,7 @@ static LispObject prog1_fn(LispObject args, LispObject env)
 {   LispObject f;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil); // (prog1) -> nil
+    if (!consp(args)) return nil; // (prog1) -> nil
     stackcheck(THREADARG args, env);
     errexit();
     {   Save save(THREADARG args, env);
@@ -237,14 +237,14 @@ static LispObject prog1_fn(LispObject args, LispObject env)
         save1.restore(args, env);
     }
     save.restore(f);
-    return onevalue(f);     // always hands back just 1 value
+    return f;     // always hands back just 1 value
 }
 
 static LispObject prog2_fn(LispObject args, LispObject env)
 {   LispObject f;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil); // (prog2) -> nil
+    if (!consp(args)) return nil; // (prog2) -> nil
     stackcheck(THREADARG args, env);
     errexit();
     {   Save save(THREADARG args, env);
@@ -254,7 +254,7 @@ static LispObject prog2_fn(LispObject args, LispObject env)
     }
     errexit();
     args = cdr(args);
-    if (!consp(args)) return onevalue(nil); // (prog2 x) -> nil
+    if (!consp(args)) return nil; // (prog2 x) -> nil
     {   Save save(THREADARG args, env);
         f = eval(car(args), env);                       // second arg
         errexit();
@@ -271,7 +271,7 @@ static LispObject prog2_fn(LispObject args, LispObject env)
         }
     }
     save.restore(f);
-    return onevalue(f);     // always hands back just 1 value
+    return f;     // always hands back just 1 value
 }
 
 #define specenv save.val(5)
@@ -303,7 +303,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 {   LispObject syms_x, vals_x, specenv_x, w;
     THREADID;
     STACK_SANITY;
-    if (!consp(args_x)) return onevalue(nil);
+    if (!consp(args_x)) return nil;
     stackcheck(THREADARG args_x, env_x);
     errexit();
     syms_x = vals_x = specenv_x = nil;
@@ -351,7 +351,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 #undef args
 
 LispObject quote_fn(LispObject args, LispObject)
-{   if (consp(args) && cdr(args) == nil) return onevalue(car(args));
+{   if (consp(args) && cdr(args) == nil) return car(args);
     return aerror("quote");
 }
 
@@ -508,7 +508,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
             }
         }
     }
-    return onevalue(val);
+    return val;
 }
 
 // tagbody does the bit of PROG that covers labels.
@@ -609,14 +609,14 @@ LispObject tagbody_fn(LispObject args1, LispObject env1)
     {   setcar(car(env), fixnum_of_int(2));
         env = cdr(env);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject the_fn(LispObject args, LispObject env)
 // in effect an identity function for the present
-{   if (!consp(args)) return onevalue(nil);
+{   if (!consp(args)) return nil;
     args = cdr(args);
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     args = car(args);
     return eval(args, env);
 }
@@ -661,7 +661,8 @@ tag_found:
 }
 
 LispObject Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
-{   LispObject p;
+{   SingleValued fn;
+    LispObject p;
     STACK_SANITY;
     for (p = catch_tags; p!=nil; p=cdr(p))
         if (tag == car(p)) goto tag_found;
@@ -675,14 +676,15 @@ tag_found:
 }
 
 LispObject Lthrow_nil(LispObject env, LispObject tag)
-{   return Lthrow_one_value(nil, tag, nil);
+{   SingleValued fn;
+    return Lthrow_one_value(nil, tag, nil);
 }
 
 static LispObject unless_fn(LispObject args, LispObject env)
 {   LispObject w;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     stackcheck(THREADARG args, env);
     errexit();
     {   Save save(THREADARG args, env);
@@ -690,14 +692,14 @@ static LispObject unless_fn(LispObject args, LispObject env)
         errexit();
         save.restore(args, env);
     }
-    if (w != nil) return onevalue(nil);
+    if (w != nil) return nil;
     else return progn_fn(cdr(args), env);
 }
 
 static LispObject unwind_protect_fn(LispObject args1, LispObject env1)
 {   THREADID;
     STACK_SANITY;
-    if (!consp(args1)) return onevalue(nil);
+    if (!consp(args1)) return nil;
     stackcheck(THREADARG args1, env1);
     RealSave save(THREADARG args1, env1);
     LispObject &args = save.val(1);
@@ -924,7 +926,7 @@ static LispObject errorset3(LispObject env,
             default:break;
         }
         if (consp(exit_value)) exit_value = nil;
-        return onevalue(exit_value);
+        return exit_value;
     END_CATCH;
 // Now the normal exit case...
     miscflags = (flags & BACKTRACE_MSG_BITS) |
@@ -948,7 +950,7 @@ static LispObject errorset3(LispObject env,
         default:break;
     }
     r = ncons(r);
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lerrorset_3(LispObject env, LispObject form,
@@ -956,18 +958,20 @@ LispObject Lerrorset_3(LispObject env, LispObject form,
 // This is not a special form, but is put into the code here because,
 // like unwind-protect, it has to re-gain control after an evaluation
 // error.
-{   STACK_SANITY;
+{   SingleValued fn;
+    STACK_SANITY;
     return errorset3(env, form, fg1, fg2);
 }
 
 LispObject Lerrorset_1(LispObject env, LispObject form)
-{   return errorset3(env, form, nil, nil);
+{   SingleValued fn;
+    return errorset3(env, form, nil, nil);
 }
 
 
-LispObject Lerrorset_2(LispObject env, LispObject form,
-                       LispObject ffg1)
-{   return errorset3(env, form, ffg1, nil);
+LispObject Lerrorset_2(LispObject env, LispObject form, LispObject ffg1)
+{   SingleValued fn;
+    return errorset3(env, form, ffg1, nil);
 }
 
 // (resource!-limit form time space io errors C_stack Lisp_stack)
@@ -1057,7 +1061,7 @@ static LispObject resource_limit7(LispObject env,
                                   LispObject lerrors,
                                   LispObject Csk,
                                   LispObject Lsk)
-{
+{   SingleValued fn;
 // This is being extended to make it possible to limit the C and Lisp stack
 // usage. At present the controls for that are not in place!
     THREADID;
@@ -1137,7 +1141,7 @@ static LispObject resource_limit7(LispObject env,
         errexit();
         setvalue(resources, form);
 // Here I had a resource limit trap
-        return onevalue(nil);
+        return nil;
     END_CATCH;
 // The guarded code may have exited with some other exception!
     errexit(); 
@@ -1154,13 +1158,14 @@ static LispObject resource_limit7(LispObject env,
         save.restore(r);
     }
     setvalue(resources, form);
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lresource_limit_4up(LispObject env, LispObject form,
                                LispObject ltime,
                                LispObject lspace, LispObject a4up)
-{   LispObject lio, lerrors, Csk, Lsk;
+{   SingleValued fn;
+    LispObject lio, lerrors, Csk, Lsk;
     STACK_SANITY;
     if (!is_fixnum(ltime)) ltime = fixnum_of_int(-1);
     if (!is_fixnum(lspace)) lspace = fixnum_of_int(-1);
@@ -1187,7 +1192,8 @@ LispObject Lresource_limit_4up(LispObject env, LispObject form,
 
 LispObject Lresource_limit_2(LispObject env, LispObject form,
                              LispObject ltime)
-{   return resource_limit7(env, form, ltime,
+{   SingleValued fn;
+    return resource_limit7(env, form, ltime,
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
@@ -1197,7 +1203,8 @@ LispObject Lresource_limit_2(LispObject env, LispObject form,
 
 LispObject Lresource_limit_3(LispObject env, LispObject form,
                              LispObject ltime, LispObject lspace)
-{   return resource_limit7(env, form, ltime, lspace,
+{   SingleValued fn;
+    return resource_limit7(env, form, ltime, lspace,
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
@@ -1209,14 +1216,14 @@ static LispObject when_fn(LispObject args, LispObject env)
 {   LispObject w;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     stackcheck(THREADARG args, env);
     {   Save save(THREADARG args, env);
         w = eval(car(args), env);
         errexit();
         save.restore(args, env);
     }
-    if (w == nil) return onevalue(nil);
+    if (w == nil) return nil;
     else return progn_fn(cdr(args), env);
 }
 

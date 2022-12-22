@@ -72,11 +72,12 @@ inline LispObject get_fix_arg(LispObject& v, const char *fun_name)
 // but assumptions like this should not be made.
 //
 static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
-{   int rank;
+{   SingleValued fn;
+    int rank;
     static char fun_name[] = "mpi_comm_rank";
     if (!is_fixnum(comm)) return aerror1(fun_name, v)
         MPI_Comm_rank(int_of_fixnum(comm),&rank);
-    return onevalue(fixnum_of_int(rank));
+    return fixnum_of_int(rank);
 }
 
 // returns size of communicator
@@ -84,11 +85,12 @@ static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
 //
 // Same assumption about comm.
 static LispObject Lmpi_comm_size(LispObject, LispObject comm)
-{   int size;
+{   SingleValued fn;
+    int size;
     static char fun_name[] = "mpi_comm_size";
     if (!is_fixnum(comm)) return aerror1(fun_name, v);
     MPI_Comm_size(int_of_fixnum(comm),&size);
-    return onevalue(fixnum_of_int(size));
+    return fixnum_of_int(size);
 }
 
 /********************** Blocking point-to-point functions *************/
@@ -101,7 +103,8 @@ static LispObject Lmpi_comm_size(LispObject, LispObject comm)
 static LispObject Lmpi_send(LispObject env, LispObject message,
                             LispObject dest,
                             LispObject tag, LispObject comm)
-{   static char fun_name[] = "mpi_send";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_send";
 
     get_fix_arg(dest, fun_name);
     get_fix_arg(tag, fun_name);
@@ -113,7 +116,7 @@ static LispObject Lmpi_send(LispObject env, LispObject message,
     MPI_Send(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
              dest, tag, comm);
     std::free(mpi_pack_buffer);
-    return onevalue(nil);
+    return nil;
 }
 
 // Standard blocking receive
@@ -122,7 +125,8 @@ static LispObject Lmpi_send(LispObject env, LispObject message,
 //
 static LispObject Lmpi_recv(LispObject, LispObject source,
                             LispObject tag, LispObject comm)
-{   static char fun_name[] = "mpi_recv";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_recv";
 
     MPI_Status status;
     LispObject Lstatus;
@@ -151,7 +155,7 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
                     fixnum_of_int(status.MPI_ERROR));
     errexit();
     save.restore(r);
-    return onevalue(list2(r, Lstatus));
+    return list2(r, Lstatus);
 }
 
 // Standard blocking simultaneous send and receive
@@ -164,7 +168,8 @@ static LispObject Lmpi_recv(LispObject, LispObject source,
 static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
                                 LispObject dest,
                                 LispObject tag, LispObject a4up)
-{   static char fun_name[] = "mpi_sendrecv";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_sendrecv";
 
     MPI_Status status;
     LispObject Lstatus;
@@ -202,7 +207,7 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
                     fixnum_of_int(status.MPI_ERROR));
     errexit();
     save.restore(r);
-    return onevalue(list2(r, Lstatus));
+    return list2(r, Lstatus);
 }
 
 /************** Non-Blocking point-to-point functions ***********/
@@ -214,7 +219,8 @@ static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess,
 static LispObject Lmpi_isend(LispObject, LispObject message,
                              LispObject dest,
                              LispObject tag, LispObject comm)
-{   static char fun_name[] = "mpi_isend";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_isend";
 
     LispObject message, request;
     int dest, tag, comm;
@@ -232,7 +238,7 @@ static LispObject Lmpi_isend(LispObject, LispObject message,
     MPI_Isend(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
               dest, tag, comm,  (MPI_Request*)&elt(request,0));
     elt(request,1) = static_cast<int>(mpi_pack_buffer);
-    return onevalue(request);
+    return request;
 }
 
 // Standard non-blocking receive post
@@ -255,7 +261,8 @@ struct dummy_request
 
 static LispObject Lmpi_irecv(LispObject, LispObject aource,
                              LispObject tag, LispObject comm
-{   static char fun_name[] = "mpi_irecv";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_irecv";
 
     LispObject request;
     char* buffer;
@@ -273,7 +280,7 @@ static LispObject Lmpi_irecv(LispObject, LispObject aource,
     ((struct dummy_request*)elt(request,0))->tag = tag;
     ((struct dummy_request*)elt(request,0))->comm = comm;
 
-    return onevalue(request);
+    return request;
 }
 
 // Wait to complete operation, and deallocate buffer.
@@ -282,7 +289,8 @@ static LispObject Lmpi_irecv(LispObject, LispObject aource,
 // for recv, returns (message (source tag error))
 //
 static LispObject Lmpi_wait(LispObject env, LispObject request)
-{   MPI_Status status;
+{   SingleValued fn;
+    MPI_Status status;
     LispObject message, Lstatus;
     if ( !(is_vector(request) &&
            type_of_header(vechdr(request)) == TYPE_VEC32 &&
@@ -294,7 +302,7 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
         MPI_Wait( (MPI_Request*)&elt(request,0), &status);
         if (status.MPI_ERROR == MPI_UNDEFINED)        // i.e. send request
         {   std::free(mpi_pack_buffer);
-            return onevalue(nil);
+            return nil;
         }
         else     // old-style receive
         {   LispObject r = unpack_object();
@@ -306,7 +314,7 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
                             fixnum_of_int(status.MPI_ERROR));
             errexit();
             save.restore(r);
-            return onevalue(list2(r, Lstatus));
+            return list2(r, Lstatus);
         }
     }
     else       // new-style receive
@@ -333,7 +341,7 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
                         fixnum_of_int(status.MPI_ERROR));
         errexit();
         save.restore(r);
-        return onevalue(list2(r, Lstatus));
+        return list2(r, Lstatus);
     }
 }
 
@@ -344,7 +352,8 @@ static LispObject Lmpi_wait(LispObject env, LispObject request)
 // for recv, returns nil or (message (source tag error))
 //
 static LispObject Lmpi_test(LispObject env, LispObject request)
-{   MPI_Status status;
+{   SingleValued fn;
+    MPI_Status status;
     LispObject message, Lstatus;
     int flag;
     if ( !(is_vector(request) &&
@@ -355,10 +364,10 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
     {   status.MPI_ERROR = MPI_UNDEFINED;
         mpi_pack_buffer = reinterpret_cast<void*>(elt(request,1));
         MPI_Test( (MPI_Request*)&elt(request,0), &flag, &status);
-        if (!flag) return onevalue(nil);
+        if (!flag) return nil;
         if (status.MPI_ERROR == MPI_UNDEFINED)        // send request
         {   std::free(mpi_pack_buffer);
-            return onevalue(Lispify_predicate(YES));
+            return Lispify_predicate(YES);
         }
         else    // old-style receive
         {   LispObject r = unpack_object();
@@ -370,7 +379,7 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
                             fixnum_of_int(status.MPI_ERROR));
             errexit();
             save.restore(r);
-            return onevalue(list2(r, Lstatus));
+            return list2(r, Lstatus);
         }
     }
     else          // new-style receive
@@ -379,7 +388,7 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
                 comm = ((struct dummy_request*)elt(request,0))->comm,   flag;
         MPI_Iprobe(source, tag, comm, &flag, &status);
 
-        if (!flag) return onevalue(nil);
+        if (!flag) return nil;
 
         std::free((struct dummy_request*)elt(request,0));
         MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
@@ -400,7 +409,7 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
                         fixnum_of_int(status.MPI_ERROR));
         errexit();
         save.restore(r);
-        return onevalue(list2(r, Lstatus));
+        return list2(r, Lstatus);
     }
 }
 
@@ -412,7 +421,8 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
 static LispObject Lmpi_iprobe(LispObject, LispObject source,
                               LispObject tag,
                               LispObject comm)
-{   static char fun_name[] = "impi_probe";
+{   SingleValued fn;
+    static char fun_name[] = "impi_probe";
 
     MPI_Status status;
     int flag;
@@ -425,7 +435,7 @@ static LispObject Lmpi_iprobe(LispObject, LispObject source,
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
-    return onevalue(list2(Lispify_predicate(flag), Lstatus));
+    return list2(Lispify_predicate(flag), Lstatus);
 }
 
 // Blocking probe
@@ -435,7 +445,8 @@ static LispObject Lmpi_iprobe(LispObject, LispObject source,
 static LispObject Lmpi_probe(LispObject, LispObject source,
                              LispObject tag,
                              LispObject comm)
-{   static char fun_name[] = "mpi_probe";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_probe";
 
     MPI_Status status;
     int source, tag, comm;
@@ -448,7 +459,7 @@ static LispObject Lmpi_probe(LispObject, LispObject source,
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
                     fixnum_of_int(status.MPI_TAG),
                     fixnum_of_int(status.MPI_ERROR));
-    return onevalue(Lstatus);
+    return Lstatus;
 }
 
 /************** Collective Communications *********/
@@ -458,11 +469,12 @@ static LispObject Lmpi_probe(LispObject, LispObject source,
 // returns nil
 //
 static LispObject Lmpi_barrier(LispObject env, LispObject comm)
-{   int rank;
+{   SingleValued fn;
+    int rank;
     static char fun_name[] = "mpi_barrier";
     if (!is_fixnum(comm)) return aerror1(fun_name, v);
     MPI_Barrier(int_of_fixnum(comm));
-    return onevalue(nil);
+    return nil;
 }
 
 // Broadcast; sends buffer of root to buffers of others.
@@ -471,7 +483,8 @@ static LispObject Lmpi_barrier(LispObject env, LispObject comm)
 //
 static LispObject Lmpi_bcast(LispObject, LispObject message,
                              LispObject root, LispObject comm)
-{   static char fun_name[] = "mpi_bcast";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_bcast";
 
     int rank;
     get_arg(message, fun_name);
@@ -492,7 +505,7 @@ static LispObject Lmpi_bcast(LispObject, LispObject message,
         message = unpack_object();
         std::free(mpi_pack_buffer);
     }
-    return onevalue(message);
+    return message;
 }
 
 // Gather: root receives messages from others.
@@ -502,7 +515,8 @@ static LispObject Lmpi_bcast(LispObject, LispObject message,
 static LispObject Lmpi_gather(LispObject, LispObject message,
                               LispObject root,
                               LispObject comm)
-{   static char fun_name[] = "mpi_gather";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_gather";
 
     int rank;
     get_arg(message, fun_name);
@@ -549,7 +563,7 @@ static LispObject Lmpi_gather(LispObject, LispObject message,
         std::free(mpi_pack_buffer);
         message = nil;
     }
-    return onevalue(message);
+    return message;
 }
 
 // Scatter: inverse of gather.
@@ -559,7 +573,8 @@ static LispObject Lmpi_gather(LispObject, LispObject message,
 static LispObject Lmpi_scatter(LispObject, LispObject messages,
                                LispObject root,
                                LispObject comm)
-{   static char fun_name[] = "mpi_scatter";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_scatter";
 
     LispObject message;
     int rank;
@@ -615,7 +630,7 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages,
         message = unpack_object();
         std::free(mpi_pack_buffer);
     }
-    return onevalue(message);
+    return message;
 }
 
 
@@ -626,7 +641,8 @@ static LispObject Lmpi_scatter(LispObject, LispObject messages,
 static LispObject Lmpi_allgather(LispObject,
                                  LispObject message,
                                  LispObject comm)
-{   static char fun_name[] = "mpi_gather";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_gather";
     int commsize, buffersize, count;
     int *recvcounts, *displs;
     char *recvbuffer;
@@ -660,7 +676,7 @@ static LispObject Lmpi_allgather(LispObject,
         elt(message, count) = unpack_object();
     }
     std::free(recvbuffer);
-    return onevalue(message);
+    return message;
 }
 
 // All to all scatter/gather.
@@ -669,7 +685,8 @@ static LispObject Lmpi_allgather(LispObject,
 //
 static LispObject Lmpi_alltoall(LispObject,
                                 LispObject smessages, LispObject Lcomm)
-{   static char fun_name[] = "mpi_alltoall";
+{   SingleValued fn;
+    static char fun_name[] = "mpi_alltoall";
 
     LispObject rmessages;
     int rank,comm, commsize, count;
@@ -726,92 +743,109 @@ static LispObject Lmpi_alltoall(LispObject,
         elt(rmessages, count) = unpack_object();
     }
     std::free(recvbuffer); std::free(recvcounts); std::free(rdispls);
-    return onevalue(rmessages);
+    return rmessages;
 }
 
 #else  // USE_MPI
 
 static LispObject Lmpi_comm_rank(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_comm_size(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_send(LispObject, LispObject, LispObject,
                             LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_recv(LispObject, LispObject, LispObject,
                             LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_sendrecv(LispObject, LispObject, LispObject,
                                 LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_isend(LispObject, LispObject, LispObject,
                              LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_irecv(LispObject, LispObject, LispObject,
                              LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_wait(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 
 static LispObject Lmpi_test(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_iprobe(LispObject, LispObject, LispObject,
                               LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_probe(LispObject, LispObject, LispObject,
                              LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_barrier(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_bcast(LispObject, LispObject, LispObject,
                              LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_gather(LispObject, LispObject, LispObject,
                               LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_scatter(LispObject, LispObject, LispObject,
                                LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 
 static LispObject Lmpi_allgather(LispObject,
                                  LispObject,
                                  LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_alltoall(LispObject,
                                 LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   SingleValued fn;
+    return aerror0("mpi support not built into this version of CSL");
 }
 
 #endif // USE_MPI
@@ -837,6 +871,5 @@ setup_type const mpi_setup[] =
     DEF_2("mpi_alltoall",     Lmpi_alltoall),
     {nullptr,                 nullptr, nullptr, nullptr, nullptr, nullptr}
 };
-
 
 // end of cslmpi.cpp

@@ -56,21 +56,24 @@
 
 
 static LispObject Lcarg(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     double r = carg(c);
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcabs(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     double r = cabs(c);
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcexp(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = cexp(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -82,11 +85,12 @@ static LispObject Lcexp(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lclog(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = clog(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -98,11 +102,12 @@ static LispObject Lclog(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcsqrt(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = csqrt(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -118,11 +123,12 @@ static LispObject Lcsqrt(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcsin(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = csin(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -138,11 +144,12 @@ static LispObject Lcsin(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lccos(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ccos(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -158,11 +165,12 @@ static LispObject Lccos(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lctan(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ctan(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -178,23 +186,27 @@ static LispObject Lctan(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lccsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccsc");
+{   SingleValued fn;
+    return aerror("pending function ccsc");
 }
 
 static LispObject Lcsec(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function csec");
+{   SingleValued fn;
+    return aerror("pending function csec");
 }
 
 static LispObject Lccot(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccot");
+{   SingleValued fn;
+    return aerror("pending function ccot");
 }
 
 static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = casin(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -210,11 +222,12 @@ static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcacos(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = cacos(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -230,11 +243,12 @@ static LispObject Lcacos(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = catan(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -250,23 +264,27 @@ static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcacsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacsc");
+{   SingleValued fn;
+    return aerror("pending function cacsc");
 }
 
 static LispObject Lcasec(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function casec");
+{   SingleValued fn;
+    return aerror("pending function casec");
 }
 
 static LispObject Lcacot(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacot");
+{   SingleValued fn;
+    return aerror("pending function cacot");
 }
 
 static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = csinh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -282,11 +300,12 @@ static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lccosh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ccosh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -302,11 +321,12 @@ static LispObject Lccosh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ctanh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -322,23 +342,27 @@ static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lccsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccsch");
+{   SingleValued fn;
+    return aerror("pending function ccsch");
 }
 
 static LispObject Lcsech(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function csech");
+{   SingleValued fn;
+    return aerror("pending function csech");
 }
 
 static LispObject Lccoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccoth");
+{   SingleValued fn;
+    return aerror("pending function ccoth");
 }
 
 static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = casinh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -354,11 +378,12 @@ static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcacosh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = cacosh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -374,11 +399,12 @@ static LispObject Lcacosh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = catanh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -394,19 +420,22 @@ static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcacsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacsch");
+{   SingleValued fn;
+    return aerror("pending function cacsch");
 }
 
 static LispObject Lcasech(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function casech");
+{   SingleValued fn;
+    return aerror("pending function casech");
 }
 
 static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacoth");
+{   SingleValued fn;
+    return aerror("pending function cacoth");
 }
 
 
@@ -414,119 +443,148 @@ static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
 #else // HAVE_COMPLEX
 
 static LispObject Lcarg(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function carg");
+{   SingleValued fn;
+    return aerror("unimplemented function carg");
 }
 
 static LispObject Lcabs(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cabs");
+{   SingleValued fn;
+    return aerror("unimplemented function cabs");
 }
 
 static LispObject Lcexp(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cexp");
+{   SingleValued fn;
+    return aerror("unimplemented function cexp");
 }
 
 static LispObject Lclog(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function clog");
+{   SingleValued fn;
+    return aerror("unimplemented function clog");
 }
 
 static LispObject Lcsqrt(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csqrt");
+{   SingleValued fn;
+    return aerror("unimplemented function csqrt");
 }
 
 static LispObject Lcsin(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csin");
+{   SingleValued fn;
+    return aerror("unimplemented function csin");
 }
 
 static LispObject Lccos(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccos");
+{   SingleValued fn;
+    return aerror("unimplemented function ccos");
 }
 
 static LispObject Lctan(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ctan");
+{   SingleValued fn;
+    return aerror("unimplemented function ctan");
 }
 
 static LispObject Lccsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccsc");
+{   SingleValued fn;
+    return aerror("unimplemented function ccsc");
 }
 
 static LispObject Lcsec(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csec");
+{   SingleValued fn;
+    return aerror("unimplemented function csec");
 }
 
 static LispObject Lccot(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccot");
+{   SingleValued fn;
+    return aerror("unimplemented function ccot");
 }
 
 static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casin");
+{   SingleValued fn;
+    return aerror("unimplemented function casin");
 }
 
 static LispObject Lcacos(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacos");
+{   SingleValued fn;
+    return aerror("unimplemented function cacos");
 }
 
 static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function catan");
+{   SingleValued fn;
+    return aerror("unimplemented function catan");
 }
 
 static LispObject Lcacsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacsc");
+{   SingleValued fn;
+    return aerror("unimplemented function cacsc");
 }
 
 static LispObject Lcasec(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casec");
+{   SingleValued fn;
+    return aerror("unimplemented function casec");
 }
 
 static LispObject Lcacot(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacot");
+{   SingleValued fn;
+    return aerror("unimplemented function cacot");
 }
 
 static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csinh");
+{   SingleValued fn;
+    return aerror("unimplemented function csinh");
 }
 
 static LispObject Lccosh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccosh");
+{   SingleValued fn;
+    return aerror("unimplemented function ccosh");
 }
 
 static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ctanh");
+{   SingleValued fn;
+    return aerror("unimplemented function ctanh");
 }
 
 static LispObject Lccsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccsch");
+{   SingleValued fn;
+    return aerror("unimplemented function ccsch");
 }
 
 static LispObject Lcsech(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csech");
+{   SingleValued fn;
+    return aerror("unimplemented function csech");
 }
 
 static LispObject Lccoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccoth");
+{   SingleValued fn;
+    return aerror("unimplemented function ccoth");
 }
 
 static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casinh");
+{   SingleValued fn;
+    return aerror("unimplemented function casinh");
 }
 
 static LispObject Lcacosh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacosh");
+{   SingleValued fn;
+    return aerror("unimplemented function cacosh");
 }
 
 static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function catanh");
+{   SingleValued fn;
+    return aerror("unimplemented function catanh");
 }
 
 static LispObject Lcacsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacsch");
+{   SingleValued fn;
+    return aerror("unimplemented function cacsch");
 }
 
 static LispObject Lcasech(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casech");
+{   SingleValued fn;
+    return aerror("unimplemented function casech");
 }
 
 static LispObject Lcacoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacoth");
+{   SingleValued fn;
+    return aerror("unimplemented function cacoth");
 }
 
 #endif // HAVE_COMPLEX
@@ -572,6 +630,5 @@ setup_type const arith13_setup[] =
 #endif // ARITHLIB
     {nullptr,               nullptr, nullptr, nullptr, nullptr, nullptr}
 };
-
 
 // end of arith13.cpp

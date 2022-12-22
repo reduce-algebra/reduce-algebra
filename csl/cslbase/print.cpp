@@ -234,7 +234,7 @@ void trace_printf(const char *fmt, ...)
 }
 
 LispObject Ltyo(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // Print a character given its character code.  NOTE that in earlier
 // versions of CSL this always printed to the standard output regardless
 // of what output stream was selected. Such a curious behaviour was
@@ -244,7 +244,7 @@ LispObject Ltyo(LispObject env, LispObject a)
 // accepts either a character or a numeric code.
     int c;
     LispObject stream = qvalue(standard_output);
-    if (a == CHAR_EOF || a == fixnum_of_int(-1)) return onevalue(a);
+    if (a == CHAR_EOF || a == fixnum_of_int(-1)) return a;
     else if (is_char(a)) c = static_cast<int>(code_of_char(a));
     else if (is_fixnum(a)) c = static_cast<int>(int_of_fixnum(a));
     else return aerror1("tyo", a);
@@ -254,7 +254,7 @@ LispObject Ltyo(LispObject env, LispObject a)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream(c, stream);
     save.restore(a);
-    return onevalue(a);
+    return a;
 }
 
 int char_to_illegal(int, LispObject f)
@@ -481,15 +481,17 @@ int32_t write_action_list(int32_t op, LispObject f)
 }
 
 LispObject Lstreamp(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(is_stream(a)));
+{   SingleValued fn;
+    return Lispify_predicate(is_stream(a));
 }
 
 LispObject Lis_console(LispObject env, LispObject a)
-{   int r1, r2;
-    if (!is_stream(a)) return onevalue(nil);
+{   SingleValued fn;
+    int r1, r2;
+    if (!is_stream(a)) return nil;
     r1 = other_write_action(WRITE_GET_INFO+WRITE_IS_CONSOLE, a);
     r2 = other_read_action(READ_IS_CONSOLE, a);
-    return onevalue(Lispify_predicate(r1 || r2));
+    return Lispify_predicate(r1 || r2);
 }
 
 LispObject make_stream_handle()
@@ -513,7 +515,8 @@ LispObject make_stream_handle()
 
 LispObject Lmake_broadcast_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2);
     if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
     errexit();
@@ -530,30 +533,35 @@ LispObject Lmake_broadcast_stream_4up(LispObject env,
     set_stream_write_fn(w, char_to_broadcast);
     set_stream_write_other(w, write_action_broadcast);
     stream_write_data(w) = a4up;
-    return onevalue(w);
+    return w;
 }
 
 LispObject Lmake_broadcast_stream_0(LispObject env)
-{   return Lmake_broadcast_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_broadcast_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_broadcast_stream_1(LispObject env, LispObject a)
-{   return Lmake_broadcast_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_broadcast_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_broadcast_stream_2(LispObject env, LispObject a,
                                     LispObject b)
-{   return Lmake_broadcast_stream_4up(env, a, b, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_broadcast_stream_4up(env, a, b, SPID_NOARG, nil);
 }
 
 LispObject Lmake_broadcast_stream_3(LispObject env, LispObject a,
                                     LispObject b, LispObject c)
-{   return Lmake_broadcast_stream_4up(env, a, b, c, nil);
+{   SingleValued fn;
+    return Lmake_broadcast_stream_4up(env, a, b, c, nil);
 }
 
 LispObject Lmake_concatenated_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2);
     if (a3 != SPID_NOARG) a4up = cons(a3, a4up);
     errexit();
@@ -570,29 +578,34 @@ LispObject Lmake_concatenated_stream_4up(LispObject env,
     set_stream_read_fn(w, char_from_concatenated);
     set_stream_read_other(w, read_action_concatenated);
     stream_read_data(w) = a4up;
-    return onevalue(w);
+    return w;
 }
 
 LispObject Lmake_concatenated_stream_0(LispObject env)
-{   return Lmake_concatenated_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_concatenated_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_concatenated_stream_1(LispObject env, LispObject a)
-{   return Lmake_concatenated_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_concatenated_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_concatenated_stream_2(LispObject env, LispObject a,
                                        LispObject b)
-{   return Lmake_concatenated_stream_4up(env, a, b, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_concatenated_stream_4up(env, a, b, SPID_NOARG, nil);
 }
 
 LispObject Lmake_concatenated_stream_3(LispObject env, LispObject a,
                                        LispObject b, LispObject c)
-{   return Lmake_concatenated_stream_4up(env, a, b, c, nil);
+{   SingleValued fn;
+    return Lmake_concatenated_stream_4up(env, a, b, c, nil);
 }
 
 LispObject Lmake_synonym_stream(LispObject env, LispObject a)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     if (!is_symbol(a)) return aerror1("make-synonym-stream", a);
     THREADID;
     Save save(THREADARG a);
@@ -605,12 +618,12 @@ LispObject Lmake_synonym_stream(LispObject env, LispObject a)
     set_stream_read_fn(w, char_from_synonym);
     set_stream_read_other(w, read_action_synonym);
     stream_read_data(w) = a;
-    return onevalue(w);
+    return w;
 }
 
-LispObject Lmake_two_way_stream(LispObject env, LispObject a,
-                                LispObject b)
-{   LispObject w;
+LispObject Lmake_two_way_stream(LispObject env, LispObject a, LispObject b)
+{   SingleValued fn;
+    LispObject w;
     if (!is_symbol(a)) return aerror1("make-two-way-stream", a);
     if (!is_symbol(b)) return aerror1("make-two-way-stream", b);
     THREADID;
@@ -624,12 +637,12 @@ LispObject Lmake_two_way_stream(LispObject env, LispObject a,
     set_stream_read_fn(w, char_from_synonym);
     set_stream_read_other(w, read_action_synonym);
     stream_read_data(w) = a;
-    return onevalue(w);
+    return w;
 }
 
-LispObject Lmake_echo_stream(LispObject env, LispObject a,
-                             LispObject b)
-{   LispObject w;
+LispObject Lmake_echo_stream(LispObject env, LispObject a, LispObject b)
+{   SingleValued fn;
+    LispObject w;
     if (!is_symbol(a)) return aerror1("make-echo-stream", a);
     if (!is_symbol(b)) return aerror1("make-echo-stream", b);
     THREADID;
@@ -643,7 +656,7 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a,
     set_stream_read_fn(w, char_from_echo);
     set_stream_read_other(w, read_action_synonym);
     stream_read_data(w) = a;
-    return onevalue(w);
+    return w;
 }
 
 
@@ -654,38 +667,45 @@ LispObject Lmake_echo_stream(LispObject env, LispObject a,
 
 LispObject Lmake_string_input_stream_4up(LispObject env,
     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
-{   return aerror("make-string-input-stream");
+{   SingleValued fn;
+    return aerror("make-string-input-stream");
 }
 
 LispObject Lmake_string_input_stream_0(LispObject env)
-{   return Lmake_string_input_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_string_input_stream_4up(env, SPID_NOARG, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_string_input_stream_1(LispObject env, LispObject a)
-{   return Lmake_string_input_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_string_input_stream_4up(env, a, SPID_NOARG, SPID_NOARG, nil);
 }
 
 LispObject Lmake_string_input_stream_2(LispObject env, LispObject a,
                                        LispObject b)
-{   return Lmake_string_input_stream_4up(env, a, b, SPID_NOARG, nil);
+{   SingleValued fn;
+    return Lmake_string_input_stream_4up(env, a, b, SPID_NOARG, nil);
 }
 
 LispObject Lmake_string_input_stream_3(LispObject env, LispObject a,
                                        LispObject b, LispObject c)
-{   return Lmake_string_input_stream_4up(env, a, b, c, nil);
+{   SingleValued fn;
+    return Lmake_string_input_stream_4up(env, a, b, c, nil);
 }
 
 LispObject Lmake_string_output_stream(LispObject env)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     w = make_stream_handle();
     errexit();
     set_stream_write_fn(w, code_to_list);
     set_stream_write_other(w, write_action_list);
-    return onevalue(w);
+    return w;
 }
 
 LispObject Lget_output_stream_string(LispObject env, LispObject a)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     int32_t n, k;
     if (!is_stream(a)) return aerror1("get-output-stream-string", a);
     w = stream_write_data(a);
@@ -715,7 +735,8 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
 // characters to the given function.
 
 LispObject Lmake_function_stream(LispObject env, LispObject a)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     if (!is_symbol(a)) return aerror1("make-function-stream", a);
     THREADID;
     Save save(THREADARG a);
@@ -725,7 +746,7 @@ LispObject Lmake_function_stream(LispObject env, LispObject a)
     set_stream_write_fn(w, char_to_function);
     set_stream_write_other(w, write_action_list);
     stream_write_data(w) = a;
-    return onevalue(w);
+    return w;
 }
 
 static int io_kilo = 0;
@@ -979,22 +1000,24 @@ const char *get_string_data(LispObject name, const char *why,
 }
 
 static LispObject Lfiledate(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME], tt[32];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME], tt[32];
     size_t len = 0;
     const char *w;
     std::memset(filename, 0, sizeof(filename));
     w = get_string_data(name, "filep", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     if (!file_exists(filename, w,
-                     static_cast<size_t>(len), tt)) return onevalue(nil);
+                     static_cast<size_t>(len), tt)) return nil;
     tt[24] = 0;
-    return onevalue(make_string(tt));
+    return make_string(tt);
 }
 
 static LispObject Lfilep(LispObject env, LispObject name)
-{   name = Lfiledate(env, name);
+{   SingleValued fn;
+    name = Lfiledate(env, name);
     if (name != nil) name = lisp_true;
-    return onevalue(name);
+    return name;
 }
 
 LispObject Ltmpnam1(LispObject env, LispObject extn)
@@ -1003,15 +1026,16 @@ LispObject Ltmpnam1(LispObject env, LispObject extn)
 // a fully secure thing to use, since after tmpnam() has generated the
 // name but before you get around to doing anything with the file
 // somebody else may do something that interferes.
-{   const char *suffix;
+{   SingleValued fn;
+    const char *suffix;
     const char *suffix1;
     size_t suffixlen = 0;
     LispObject r;
     suffix = get_string_data(extn, "tmpnam", suffixlen);
     suffix1 = CSLtmpnam(suffix, suffixlen);
-    if (suffix1 == nullptr) return onevalue(nil);
+    if (suffix1 == nullptr) return nil;
     r = make_string(suffix1);
-    return onevalue(r);
+    return r;
 }
 
 LispObject Ltmpnam(LispObject env)
@@ -1029,7 +1053,8 @@ LispObject Ltmpnam(LispObject env)
 // my own approximation to tmpnam. My version may well be even less
 // respectable than the standard one, but using it avoids linker messages
 // that are clearly intended to be useful but which are in fact a nuisance.
-{   return onevalue(make_string(CSLtmpnam("tmp", 3)));
+{   SingleValued fn;
+    return make_string(CSLtmpnam("tmp", 3));
 }
 
 LispObject Ltmpdir(LispObject env)
@@ -1038,7 +1063,8 @@ LispObject Ltmpdir(LispObject env)
 // "/tmp" on Unix and something like "c:\xxx\yyy" on Windows. On Cygwin
 // it is in "mixed" mode, so the dircetory is indicated with "x:" but "/"
 // rather than "\" is used as the path separator.
-{   return onevalue(make_string(CSLtmpdir()));
+{   SingleValued fn;
+    return make_string(CSLtmpdir());
 }
 
 #ifdef DEBUG
@@ -1102,7 +1128,8 @@ std::FILE *myopen(const char *f, const char *m)
 #define OPEN_PIPE                    0x100
 
 LispObject Lopen(LispObject env, LispObject name, LispObject dir)
-{   std::FILE *file;
+{   SingleValued fn;
+    std::FILE *file;
     LispObject r;
     char filename[LONGEST_LEGAL_FILENAME], fn1[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
@@ -1161,7 +1188,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             if (file == nullptr)
             {   switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
-                        return onevalue(nil);
+                        return nil;
                     case IF_MISSING_ERROR:
                         error(1, err_open_failed, name);
                     case IF_MISSING_CREATE:
@@ -1188,7 +1215,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             if (file == nullptr)
             {   switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
-                        return onevalue(nil);
+                        return nil;
                     case IF_MISSING_ERROR:
                         error(1, err_open_failed, name);
                     case IF_MISSING_CREATE:
@@ -1222,7 +1249,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
                              nullptr);
             if (file == nullptr) switch (d & IF_MISSING_MASK)
                 {   case IF_MISSING_NIL:
-                        return onevalue(nil);
+                        return nil;
                     case IF_MISSING_ERROR:
                         error(1, err_open_failed, name);
                     case IF_MISSING_CREATE:
@@ -1231,7 +1258,7 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             else switch (d & IF_EXISTS_MASK)
                 {   case IF_EXISTS_NIL:
                         std::fclose(file);
-                        return onevalue(nil);
+                        return nil;
                     case IF_EXISTS_RENAME:
 // When I open a file with :if-exists :rename I will always rename to
 // a fixed target, "oldfile.bak". If the rename fails I will not worry too
@@ -1323,13 +1350,14 @@ LispObject Lopen(LispObject env, LispObject name, LispObject dir)
             set_stream_write_other(r, write_action_file);
             break;
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lwrs(LispObject env, LispObject a)
-{   LispObject old = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject old = qvalue(standard_output);
     if (a == nil) a = qvalue(terminal_io);
-    if (a == old) return onevalue(old);
+    if (a == old) return old;
     else if (!is_stream(a)) return aerror1("wrs", a);
     else if ((character_stream_writer *)stream_write_fn(
                  a) == char_to_illegal)
@@ -1339,14 +1367,14 @@ LispObject Lwrs(LispObject env, LispObject a)
         return aerror("wrs (closed or input file)"); // closed file or input file
 #endif
     setvalue(standard_output, a);
-    return onevalue(old);
+    return old;
 }
 
 LispObject Lclose(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // I will not allow anybody to close the terminal streams
     if (a == nil ||
-        a == lisp_terminal_io) return onevalue(nil);
+        a == lisp_terminal_io) return nil;
     else if (!is_stream(a)) return aerror1("close", a);
     if (a == qvalue(standard_input))
         setvalue(standard_input, lisp_terminal_io);
@@ -1355,9 +1383,9 @@ LispObject Lclose(LispObject env, LispObject a)
     other_read_action(READ_CLOSE, a);
     other_write_action(WRITE_CLOSE, a);
 #ifdef COMMON
-    return onevalue(lisp_true);
+    return lisp_true;
 #else
-    return onevalue(nil);
+    return nil;
 #endif
 }
 
@@ -1374,7 +1402,8 @@ extern void *panel;
 #endif
 
 LispObject Lmath_display(LispObject env, LispObject a)
-{
+{   SingleValued fn;
+ 
 // In all cases where maths display is not supported (ie if output is
 // not directly to a window that has been built with SHOWMATH
 // option) this returns nil and does not do anything at all exciting. If there
@@ -1394,12 +1423,12 @@ LispObject Lmath_display(LispObject env, LispObject a)
         LispObject std = qvalue(standard_output);
 // GUI_TEST is the FXTerminal object, or corresponding wxWidgets object.
 // If it is nullptr that means that I had selected non-windowed mode....
-        if (GUI_TEST == nullptr) return onevalue(nil);
+        if (GUI_TEST == nullptr) return nil;
 // With CSL I have all these curious ways of ending up with standard output
 // redirected to elsewhere! In any such case I want this code to report "not
 // directly to a maths-aware window".
         if (alternative_stdout != nullptr ||
-            procedural_output != nullptr) return onevalue(nil);
+            procedural_output != nullptr) return nil;
 // I allow for synonym streams (which are probably only used in Common Lisp
 // mode). I do NOT allow for broadcast streams. I then check if the current
 // output stream would end up executing char_to_terminal to write a character.
@@ -1407,37 +1436,38 @@ LispObject Lmath_display(LispObject env, LispObject a)
                    std) == char_to_synonym)
             std = stream_write_data(std);
         if ((character_stream_writer *)stream_write_fn(std) !=
-            char_to_terminal) return onevalue(nil);
+            char_to_terminal) return nil;
 // Now I believe I am attached to a screen that can display maths.
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     else if (a == fixnum_of_int(1))        // test if spool file in use
     {
 // Note that I let this say TRUE if a spool file is in use regardless
 // of whether maths display is to be used...
-        if (spool_file == nullptr) return onevalue(nil);
-        else return onevalue(lisp_true);
+        if (spool_file == nullptr) return nil;
+        else return lisp_true;
     }
     else if (a == fixnum_of_int(2))        // clear out local buffer
     {   math_buffer_p = 0;
         if (math_buffer != nullptr) math_buffer[0] = 0;
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     else if (a == fixnum_of_int(3))        // display local buffer
     {   if (math_buffer == nullptr ||
-            math_buffer[0]==0) return onevalue(nil);
+            math_buffer[0]==0) return nil;
         fwin_showmath(math_buffer);
         math_buffer_p = 0;
         math_buffer[0] = 0;
-        return onevalue(lisp_true);
+        return lisp_true;
     }
     else
 #endif
-        return onevalue(nil);             // bad arg, but just return nil
+        return nil;             // bad arg, but just return nil
 }
 
 LispObject Ltruename(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     LispObject truename;
     size_t len = 0;
     const char *w = get_string_data(name, "truename", len);
@@ -1451,48 +1481,52 @@ LispObject Ltruename(LispObject env, LispObject name)
     truename = make_string(w1);
     std::free(w1);
 
-    return onevalue(truename);
+    return truename;
 }
 
 LispObject Lcreate_directory(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w;
     std::memset(filename, 0, sizeof(filename));
-    if (name == unset_var) return onevalue(nil);
+    if (name == unset_var) return nil;
     w = get_string_data(name, "create-directory", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     len = create_directory(filename, w, static_cast<size_t>(len));
-    return onevalue(Lispify_predicate(len == 0));
+    return Lispify_predicate(len == 0);
 }
 
 LispObject Lfile_readable(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w = get_string_data(name, "file-readable", len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     len = file_readable(filename, w, static_cast<size_t>(len));
-    return onevalue(Lispify_predicate(len));
+    return Lispify_predicate(len);
 }
 
 LispObject Lchange_directory(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *err;
     const char *w;
     std::memset(filename, 0, sizeof(filename));
-    if (name == unset_var) return onevalue(nil);
+    if (name == unset_var) return nil;
     w = get_string_data(name, "change-directory", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     err = change_directory(filename, w, static_cast<size_t>(len));
     if (err != nullptr) return aerror0(err);
-    return onevalue(Lispify_predicate(err == nullptr));
+    return Lispify_predicate(err == nullptr);
 }
 
 LispObject Lfile_writeable(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w;
     std::memset(filename, 0, sizeof(filename));
@@ -1504,36 +1538,39 @@ LispObject Lfile_writeable(LispObject env, LispObject name)
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     len = file_writeable(filename, w, static_cast<size_t>(len));
-    return onevalue(Lispify_predicate(len));
+    return Lispify_predicate(len);
 }
 
 LispObject Ldelete_file(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w;
     std::memset(filename, 0, sizeof(filename));
-    if (name == unset_var) return onevalue(nil);
+    if (name == unset_var) return nil;
     w = get_string_data(name, "delete-file", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     len = delete_file(filename, w, static_cast<size_t>(len));
-    return onevalue(Lispify_predicate(len == 0));
+    return Lispify_predicate(len == 0);
 }
 
 LispObject Ldelete_wildcard(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w;
     std::memset(filename, 0, sizeof(filename));
-    if (name == unset_var) return onevalue(nil);
+    if (name == unset_var) return nil;
     w = get_string_data(name, "delete-wildcard", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     len = delete_wildcard(filename, w, static_cast<size_t>(len));
-    return onevalue(Lispify_predicate(len == 0));
+    return Lispify_predicate(len == 0);
 }
 
 // Returns the length of a file in bytes
 LispObject Lfile_length(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     int64_t size;
     const char *w = get_string_data(name, "file-length", len);
@@ -1545,36 +1582,40 @@ LispObject Lfile_length(LispObject env, LispObject name)
 }
 
 LispObject Ldirectoryp(LispObject env, LispObject name)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w = get_string_data(name, "directoryp", len);
     std::memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
     len = directoryp(filename, w, static_cast<size_t>(len));
-    return onevalue(Lispify_predicate(len));
+    return Lispify_predicate(len);
 }
 
 
 LispObject Lget_current_directory(LispObject env)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     int len;
     std::memset(filename, 0, sizeof(filename));
     len = get_current_directory(filename, LONGEST_LEGAL_FILENAME);
-    if (len == 0) return onevalue(nil);
-    return onevalue(make_string(filename));
+    if (len == 0) return nil;
+    return make_string(filename);
 }
 
 LispObject Luser_homedir_pathname(LispObject env)
-{   char home[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char home[LONGEST_LEGAL_FILENAME];
     int len;
     std::memset(home, 0, sizeof(home));
     len = get_home_directory(home, LONGEST_LEGAL_FILENAME);
-    if (len == 0) return onevalue(nil);
-    return onevalue(make_string(home));
+    if (len == 0) return nil;
+    return make_string(home);
 }
 
 LispObject Lget_lisp_directory(LispObject env)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     int len;
     std::memset(filename, 0, sizeof(filename));
     std::strcpy(filename, standard_directory);
@@ -1582,13 +1623,14 @@ LispObject Lget_lisp_directory(LispObject env)
     while (len-- > 0 &&
            filename[len] != '/' &&
            filename[len] != '\\');
-    if (len == 0) return onevalue(nil);
+    if (len == 0) return nil;
     filename[len] = 0;
-    return onevalue(make_string(filename));
+    return make_string(filename);
 }
 
 LispObject Lfind_gnuplot(LispObject env)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     char *s;
     find_gnuplot(filename);
     s = filename;
@@ -1603,28 +1645,30 @@ LispObject Lfind_gnuplot(LispObject env)
     }
     s[1] = s[0];
     s[0] = '"';
-    return onevalue(make_string(filename));
+    return make_string(filename);
 }
 
 LispObject Lgetpid(LispObject env)
-{
+{   SingleValued fn;
+ 
 #ifdef WIN32
-    return onevalue(fixnum_of_int(windowsGetPid()));
+    return fixnum_of_int(windowsGetPid());
 #else
-    return onevalue(fixnum_of_int(getpid()));
+    return fixnum_of_int(getpid());
 #endif
 }
 
 LispObject Lrename_file(LispObject env, LispObject from,
                         LispObject to)
-{   char from_name[LONGEST_LEGAL_FILENAME],
+{   SingleValued fn;
+    char from_name[LONGEST_LEGAL_FILENAME],
     to_name[LONGEST_LEGAL_FILENAME];
     size_t from_len = 0, to_len = 0;
     const char *from_w, *to_w;
     std::memset(from_name, 0, sizeof(from_name));
     std::memset(to_name, 0, sizeof(to_name));
-    if (from == unset_var) return onevalue(nil);
-    if (to == unset_var) return onevalue(nil);
+    if (from == unset_var) return nil;
+    if (to == unset_var) return nil;
     THREADID;
     {   Save save(THREADARG to);
         from_w = get_string_data(from, "rename-file", from_len);
@@ -1642,20 +1686,22 @@ LispObject Lrename_file(LispObject env, LispObject from,
 
     to_len = rename_file(from_name, from_w, static_cast<size_t>(from_len),
                          to_name, to_w, static_cast<size_t>(to_len));
-    return onevalue(Lispify_predicate(to_len == 0));
+    return Lispify_predicate(to_len == 0);
 }
 
 // This function is a call-back from the file-scanning routine.
 
 static void make_dir_list(string name, string leafname, int why, long int size)
-{   LispObject w = make_string(leafname.c_str());
+{   SingleValued fn;
+    LispObject w = make_string(leafname.c_str());
     THREADID;
     w = cons(w, *stack);
     *stack = w;
 }
 
 LispObject Llist_directory(LispObject env, LispObject name)
-{   LispObject result;
+{   SingleValued fn;
+    LispObject result;
     char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     const char *w = get_string_data(name, "list-directory", len);
@@ -1665,7 +1711,7 @@ LispObject Llist_directory(LispObject env, LispObject name)
     *++stack = nil;
     list_directory_members(&filename[0], w, len, make_dir_list);
     result = *stack--;
-    return onevalue(nreverse(result));
+    return nreverse(result);
 }
 
 
@@ -1700,17 +1746,19 @@ static void outprefix(bool blankp, int32_t len)
 }
 
 static LispObject Lprint_precision(LispObject env, LispObject a)
-{   int32_t old = print_precision;
-    if (a == nil) return onevalue(fixnum_of_int(old));
+{   SingleValued fn;
+    int32_t old = print_precision;
+    if (a == nil) return fixnum_of_int(old);
     if (!is_fixnum(a)) return aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
     if (print_precision > 36) print_precision = 36;
     else if (print_precision < 1) print_precision = 15;
-    return onevalue(fixnum_of_int(old));
+    return fixnum_of_int(old);
 }
 
 static LispObject Lget_precision(LispObject env)
-{   return onevalue(fixnum_of_int(print_precision));
+{   SingleValued fn;
+    return fixnum_of_int(print_precision);
 }
 
 static void prin_buf(char *buf, int blankp)
@@ -3843,7 +3891,8 @@ static LispObject exploden(LispObject u)
 // record is kept of the linelength associated with each stream.
 
 LispObject Llinelength(LispObject env, LispObject a)
-{   int32_t oll;
+{   SingleValued fn;
+    int32_t oll;
     LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3858,12 +3907,13 @@ LispObject Llinelength(LispObject env, LispObject a)
         if (oll < 10) oll = 10;
         oll = other_write_action(WRITE_SET_LINELENGTH | oll, stream);
     }
-    if (oll == (int32_t)0x80000000) return onevalue(lisp_true);
-    else return onevalue(fixnum_of_int(oll));
+    if (oll == (int32_t)0x80000000) return lisp_true;
+    else return fixnum_of_int(oll);
 }
 
 static LispObject Llinelength0(LispObject env)
-{   return Llinelength(env, nil);
+{   SingleValued fn;
+    return Llinelength(env, nil);
 }
 
 static void internal_check(LispObject original_a, LispObject a,
@@ -3880,15 +3930,17 @@ static void internal_check(LispObject original_a, LispObject a,
 }
 
 LispObject Lcheck_list(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     internal_check(a, a, 0, 0);
     save.restore(a);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lprin(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     escaped_printing = escape_yes;
     active_stream = qvalue(standard_output);
@@ -3897,101 +3949,112 @@ LispObject Lprin(LispObject env, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinraw(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     prinraw(a);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinhex(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     prinhex(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinoctal(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     prinoctal(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinbinary(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     prinbinary(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinhex2(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(b)) return aerror1("prinhex", b);
+{   SingleValued fn;
+    if (!is_fixnum(b)) return aerror1("prinhex", b);
     THREADID;
     Save save(THREADARG a);
     prinhex(a, int_of_fixnum(b));
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinoctal2(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(b)) return aerror1("prinoctal", b);
+{   SingleValued fn;
+    if (!is_fixnum(b)) return aerror1("prinoctal", b);
     THREADID;
     Save save(THREADARG a);
     prinoctal(a, int_of_fixnum(b));
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lprinbinary2(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(b)) return aerror1("prinbinary", b);
+{   SingleValued fn;
+    if (!is_fixnum(b)) return aerror1("prinbinary", b);
     THREADID;
     Save save(THREADARG a);
     prinbinary(a, int_of_fixnum(b));
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lposn(LispObject)
-{   if (standard_output == nil) return fixnum_of_int(0);
-    return onevalue(
-        fixnum_of_int(
-            other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
-                qvalue(standard_output))));
+{   SingleValued fn;
+    if (standard_output == nil) return fixnum_of_int(0);
+    return fixnum_of_int(
+        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+            qvalue(standard_output)));
 }
 
 LispObject Lposn_1(LispObject, LispObject stream)
-{   if (!is_stream(stream)) stream = qvalue(terminal_io);
+{   SingleValued fn;
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    return onevalue(fixnum_of_int(
-        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream)));
+    return fixnum_of_int(
+        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream));
 }
 
 LispObject Llposn(LispObject)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 // This does not do anything!
 LispObject Lpagelength(LispObject, LispObject a)
-{   return onevalue(a);
+{   SingleValued fn;
+    return a;
 }
 
 LispObject Lprinc_upcase(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     escaped_printing = escape_fold_up;
     active_stream = qvalue(standard_output);
@@ -4000,11 +4063,12 @@ LispObject Lprinc_upcase(LispObject env, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lprinc_downcase(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     escaped_printing = escape_fold_down;
     active_stream = qvalue(standard_output);
@@ -4013,11 +4077,12 @@ LispObject Lprinc_downcase(LispObject env, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lprinc(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     escaped_printing = 0;
     active_stream = qvalue(standard_output);
@@ -4026,11 +4091,12 @@ LispObject Lprinc(LispObject env, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lprin2a(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     escaped_printing = escape_nolinebreak;
     active_stream = qvalue(standard_output);
@@ -4039,7 +4105,7 @@ LispObject Lprin2a(LispObject env, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 char memory_print_buffer[MAX_PROMPT_LENGTH];
@@ -4058,7 +4124,8 @@ int count_character(int c, LispObject f)
 }
 
 LispObject Llengthc(LispObject env, LispObject a)
-{
+{   SingleValued fn;
+ 
 // This counts a TAB as having width 1. It counts the number of bytes
 // used to print the argument.
     escaped_printing = escape_nolinebreak;
@@ -4069,12 +4136,12 @@ LispObject Llengthc(LispObject env, LispObject a)
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
-    return onevalue(fixnum_of_int(stream_byte_pos(lisp_work_stream)));
+    return fixnum_of_int(stream_byte_pos(lisp_work_stream));
 }
 
 
 LispObject Lwidelengthc(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // Like lengthc but counts characters (by ignoring bytes that
 //& are 10xxxxxx in binary).
     escaped_printing = escape_nolinebreak;
@@ -4085,12 +4152,13 @@ LispObject Lwidelengthc(LispObject env, LispObject a)
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
-    return onevalue(fixnum_of_int(stream_char_pos(lisp_work_stream)));
+    return fixnum_of_int(stream_char_pos(lisp_work_stream));
 }
 
 
 LispObject Ldebug_print(LispObject env, LispObject a)
-{   LispObject stream = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
     Header h;
     size_t i, len;
     const char *p;
@@ -4131,11 +4199,12 @@ LispObject Ldebug_print(LispObject env, LispObject a)
         p = reinterpret_cast<const char *>(&celt(a, 0));
     }
     putc_stream('\n', stream);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lprint(LispObject env, LispObject a)
-{   LispObject stream = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     THREADID;
@@ -4153,11 +4222,12 @@ LispObject Lprint(LispObject env, LispObject a)
 #endif
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lprintc(LispObject env, LispObject a)
-{   LispObject stream = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     THREADID;
@@ -4175,35 +4245,39 @@ LispObject Lprintc(LispObject env, LispObject a)
 #endif
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lterpri(LispObject env)
-{   LispObject stream = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream('\n', stream);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lflush(LispObject env)
-{   LispObject stream = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     other_write_action(WRITE_FLUSH, stream);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lflush1(LispObject env, LispObject stream)
-{   if (!is_stream(stream)) stream = qvalue(terminal_io);
+{   SingleValued fn;
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     other_write_action(WRITE_FLUSH, stream);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lttab(LispObject env, LispObject a)
-{   int32_t n;
+{   SingleValued fn;
+    int32_t n;
     LispObject stream = qvalue(standard_output);
     if (!is_fixnum(a)) return aerror1("ttab", a);
     n = int_of_fixnum(a);
@@ -4214,11 +4288,12 @@ LispObject Lttab(LispObject env, LispObject a)
                               stream) < n)
         putc_stream(' ', active_stream);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lxtab(LispObject env, LispObject a)
-{   int32_t n;
+{   SingleValued fn;
+    int32_t n;
     LispObject stream = qvalue(standard_output);
     if (!is_fixnum(a)) return aerror1("xtab", a);
     n = int_of_fixnum(a);
@@ -4227,23 +4302,25 @@ LispObject Lxtab(LispObject env, LispObject a)
     active_stream = stream;
     while (n-- > 0) putc_stream(' ', active_stream);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Leject(LispObject env)
-{   LispObject stream = qvalue(standard_output);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream('\f', stream);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 // I am going to take special action on exploding just a fixnum because
 // I believe that parts of Reduce do that especially often.
 
 LispObject Lexplode(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   intptr_t n = int_of_fixnum(a);
         bool sign;
         if (n < 0)
@@ -4262,32 +4339,36 @@ LispObject Lexplode(LispObject env, LispObject a)
         LispObject r = nil;
         for (int i=0; i<k; i++)
             r = cons(char_to_id(buffer[i]), r);
-        return onevalue(r);
+        return r;
     }
     escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexplodehex(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_hex+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_yes+escape_hex+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexplodeoctal(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_octal+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_yes+escape_octal+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexplodebinary(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_binary+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_yes+escape_binary+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexplodec(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   intptr_t n = int_of_fixnum(a);
         bool sign;
         if (n < 0)
@@ -4306,44 +4387,50 @@ LispObject Lexplodec(LispObject env, LispObject a)
         LispObject r = nil;
         for (int i=0; i<k; i++)
             r = cons(char_to_id(buffer[i]), r);
-        return onevalue(r);
+        return r;
     }
     escaped_printing = escape_nolinebreak+escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexplode2lc(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_down+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_fold_down+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexplode2uc(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_up+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_fold_up+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(explode(a));
+    return explode(a);
 }
 
 LispObject Lexploden(LispObject env, LispObject a)
-{   escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
-    return onevalue(exploden(a));
+{   SingleValued fn;
+    escaped_printing = escape_yes+escape_nolinebreak+escape_exploding;
+    return exploden(a);
 }
 
 LispObject Lexplodecn(LispObject env, LispObject a)
-{   escaped_printing = escape_nolinebreak+escape_exploding;
-    return onevalue(exploden(a));
+{   SingleValued fn;
+    escaped_printing = escape_nolinebreak+escape_exploding;
+    return exploden(a);
 }
 
 LispObject Lexplode2lcn(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_down+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_fold_down+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(exploden(a));
+    return exploden(a);
 }
 
 LispObject Lexplode2ucn(LispObject env, LispObject a)
-{   escaped_printing = escape_fold_up+escape_nolinebreak
+{   SingleValued fn;
+    escaped_printing = escape_fold_up+escape_nolinebreak
                        +escape_exploding;
-    return onevalue(exploden(a));
+    return exploden(a);
 }
 
 // Now a bunch of binary file access code, as required for the RAND simulation
@@ -4371,9 +4458,10 @@ static std::FILE *binary_open(LispObject env, LispObject name,
 }
 
 static LispObject Lbinary_open_output(LispObject env, LispObject name)
-{   binary_outfile = binary_open(env, name, "wb",
+{   SingleValued fn;
+    binary_outfile = binary_open(env, name, "wb",
                                  "binary_open_output");
-    return onevalue(nil);
+    return nil;
 }
 
 int binary_outchar(int c, LispObject)
@@ -4384,7 +4472,8 @@ int binary_outchar(int c, LispObject)
 }
 
 static LispObject Lbinary_prin1(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     escaped_printing = escape_yes;
     set_stream_write_fn(lisp_work_stream, binary_outchar);
@@ -4394,11 +4483,12 @@ static LispObject Lbinary_prin1(LispObject env, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lbinary_princ(LispObject, LispObject a)
-{   escaped_printing = 0;
+{   SingleValued fn;
+    escaped_printing = 0;
     THREADID;
     Save save(THREADARG a);
     set_stream_write_fn(lisp_work_stream, binary_outchar);
@@ -4408,45 +4498,49 @@ static LispObject Lbinary_princ(LispObject, LispObject a)
     internal_prin(a, 0);
     save.restore(a);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lbinary_prinbyte(LispObject env, LispObject a)
-{   int x;
-    if (binary_outfile == nullptr) return onevalue(nil);
+{   SingleValued fn;
+    int x;
+    if (binary_outfile == nullptr) return nil;
     if (!is_fixnum(a)) return aerror1("binary_prinbyte", a);
     x = static_cast<int>(int_of_fixnum(a));
     PUTC(x, binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_prin2(LispObject env, LispObject a)
-{   uint32_t x;
-    if (binary_outfile == nullptr) return onevalue(nil);
+{   SingleValued fn;
+    uint32_t x;
+    if (binary_outfile == nullptr) return nil;
     if (!is_fixnum(a)) return aerror1("binary_prin2", a);
     x = int_of_fixnum(a);
     PUTC(static_cast<int>(x >> 8), binary_outfile);
     PUTC(static_cast<int>(x), binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_prin3(LispObject env, LispObject a)
-{   uint32_t x;
-    if (binary_outfile == nullptr) return onevalue(nil);
+{   SingleValued fn;
+    uint32_t x;
+    if (binary_outfile == nullptr) return nil;
     if (!is_fixnum(a)) return aerror1("binary_prin3", a);
     x = int_of_fixnum(a);
     PUTC(static_cast<int>(x >> 16), binary_outfile);
     PUTC(static_cast<int>(x >> 8), binary_outfile);
     PUTC(static_cast<int>(x), binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_prinfloat(LispObject env, LispObject a)
-{   uint32_t *w, x;
-    if (binary_outfile == nullptr) return onevalue(nil);
+{   SingleValued fn;
+    uint32_t *w, x;
+    if (binary_outfile == nullptr) return nil;
     if (!is_float(a)) return aerror1("binary_prinfloat", a);
     w = (uint32_t *)&double_float_val(a);
     x = w[0];
@@ -4460,55 +4554,61 @@ static LispObject Lbinary_prinfloat(LispObject env, LispObject a)
     PUTC(static_cast<int>(x >> 8), binary_outfile);
     PUTC(static_cast<int>(x), binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_terpri(LispObject env)
-{   if (binary_outfile != nullptr) PUTC('\n', binary_outfile);
+{   SingleValued fn;
+    if (binary_outfile != nullptr) PUTC('\n', binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_close_output(LispObject env)
-{   if (binary_outfile != nullptr)
+{   SingleValued fn;
+    if (binary_outfile != nullptr)
     {   std::fclose(binary_outfile);
         binary_outfile = nullptr;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_open_input(LispObject env, LispObject name)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     std::FILE *fh = binary_open(env, name, "rb", "binary_open_input");
     r = make_stream_handle();
     errexit();
     set_stream_read_fn(r, char_from_file);
     set_stream_read_other(r, read_action_file);
     set_stream_file(r, fh);
-    return onevalue(r);
+    return r;
 }
 
 static LispObject Lbinary_select_input(LispObject env, LispObject a)
-{   if (!is_stream(a) ||
+{   SingleValued fn;
+    if (!is_stream(a) ||
         (std::FILE *)stream_file(a) == nullptr ||
         (character_stream_writer *)stream_write_fn(a) != 0)
         return aerror1("binary-select-input", a); // closed file or output file
 
     binary_infile = stream_file(a);
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lbinary_readbyte(LispObject)
-{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
+{   SingleValued fn;
+    if (binary_infile == nullptr) return fixnum_of_int(-1);
     if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;
     }
-    return onevalue(fixnum_of_int((int32_t)GETC(binary_infile) & 0xff));
+    return fixnum_of_int((int32_t)GETC(binary_infile) & 0xff);
 }
 
 static LispObject Lbinary_read2(LispObject)
-{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
+{   SingleValued fn;
+    if (binary_infile == nullptr) return fixnum_of_int(-1);
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         ++io_kilo;
@@ -4516,12 +4616,13 @@ static LispObject Lbinary_read2(LispObject)
         {   io_kilo = 0;
             io_now++;
         }
-        return onevalue(fixnum_of_int((c1<<8) | c2));
+        return fixnum_of_int((c1<<8) | c2);
     }
 }
 
 static LispObject Lbinary_read3(LispObject)
-{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
+{   SingleValued fn;
+    if (binary_infile == nullptr) return fixnum_of_int(-1);
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4530,12 +4631,13 @@ static LispObject Lbinary_read3(LispObject)
         {   io_kilo = 0;
             io_now++;
         }
-        return onevalue(fixnum_of_int((c1<<16) | (c2<<8) | c3));
+        return fixnum_of_int((c1<<16) | (c2<<8) | c3);
     }
 }
 
 static LispObject Lbinary_read4(LispObject)
-{   if (binary_infile == nullptr) return onevalue(fixnum_of_int(-1));
+{   SingleValued fn;
+    if (binary_infile == nullptr) return fixnum_of_int(-1);
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4546,14 +4648,15 @@ static LispObject Lbinary_read4(LispObject)
         {   io_kilo = 0;
             io_now++;
         }
-        return onevalue(fixnum_of_int(r));
+        return fixnum_of_int(r);
     }
 }
 
 static LispObject Lbinary_readfloat(LispObject env)
-{   LispObject r = make_boxfloat(0.0, WANT_DOUBLE_FLOAT);
+{   SingleValued fn;
+    LispObject r = make_boxfloat(0.0, WANT_DOUBLE_FLOAT);
     uint32_t w;
-    if (binary_infile == nullptr) return onevalue(r);
+    if (binary_infile == nullptr) return r;
 // Note that the code here treats the float as binary data so infinities and
 // NaNs are never anything special.
     w = (int32_t)GETC(binary_infile) & 0xff;
@@ -4571,15 +4674,16 @@ static LispObject Lbinary_readfloat(LispObject env)
     {   io_kilo = 0;
         io_now++;
     }
-    return onevalue(r);
+    return r;
 }
 
 static LispObject Lbinary_close_input(LispObject env)
-{   if (binary_infile != nullptr)
+{   SingleValued fn;
+    if (binary_infile != nullptr)
     {   std::fclose(binary_infile);
         binary_infile = nullptr;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 // (open-library "file" dirn) opens a new library (for use with the
@@ -4593,7 +4697,8 @@ std::vector<faslFileRecord> fasl_files;
 
 static LispObject Lopen_library(LispObject env, LispObject file,
                                 LispObject dirn)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     size_t len = 0;
     bool forinput = (dirn==nil);
     size_t i;
@@ -4625,26 +4730,29 @@ found:
     fasl_files[i].dir = open_pds(filename,
                                  forinput ? PDS_INPUT : PDS_OUTPUT);
     fasl_files[i].isOutput = !forinput;
-    return onevalue(SPID_LIBRARY + (((int32_t)i)<<20));
+    return SPID_LIBRARY + (((int32_t)i)<<20);
 }
 
 static LispObject Lopen_library_1(LispObject env, LispObject file)
-{   return Lopen_library(env, file, nil);
+{   SingleValued fn;
+    return Lopen_library(env, file, nil);
 }
 
 static LispObject Lclose_library(LispObject env, LispObject lib)
-{   if (!is_library(lib)) return aerror1("close-library", lib);
+{   SingleValued fn;
+    if (!is_library(lib)) return aerror1("close-library", lib);
     finished_with(library_number(lib));
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Llibrary_name(LispObject env, LispObject lib)
-{   LispObject a;
+{   SingleValued fn;
+    LispObject a;
     if (!is_library(lib)) return aerror1("library-name", lib);
     const char *s = fasl_files[library_number(lib)].name;
     if (s == nullptr) s = "*unknown*";
     a = make_string(s);
-    return onevalue(a);
+    return a;
 }
 
 #ifdef SOCKETS
@@ -4814,9 +4922,9 @@ int fetch_response(char *buffer, LispObject r)
     return 1; // fail if response was over-long
 }
 
-
 static LispObject Lopen_url(LispObject env, LispObject url)
-{   char filename[LONGEST_LEGAL_FILENAME],
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME],
     filename1[LONGEST_LEGAL_FILENAME], *p;
     const char *user, *pass, *proto, *hostaddr, *port, *path;
     size_t  nuser, npass, nproto, nhostaddr, nport, npath;
@@ -4962,7 +5070,7 @@ start_again:
     if (nhostaddr == 0)
     {   std::FILE *file = open_file(filename1, path, static_cast<size_t>(npath), "r",
                                     nullptr);
-        if (file == nullptr) return onevalue(nil);
+        if (file == nullptr) return nil;
         {   THREADID;
             Save save(THREADARG url);
             r = make_stream_handle();
@@ -4973,7 +5081,7 @@ start_again:
         set_stream_file(r, file);
         set_stream_read_fn(r, char_from_file);
         set_stream_read_other(r, read_action_file);
-        return onevalue(r);
+        return r;
     }
     if (nproto == 3 && std::strcmp(proto, "ftp") == 0 && nuser == 0)
     {   user = "anonymous";
@@ -5005,7 +5113,7 @@ start_again:
     if (hostnum == INADDR_NONE)
     {   err_printf("Host not found (%s)\n",
                    WSAErrName(WSAGetLastError()));
-        return onevalue(nil);
+        return nil;
     }
     s = socket(PF_INET, SOCK_STREAM, 0);  // Make a new socket
     {   struct sockaddr_in sockin;
@@ -5021,7 +5129,7 @@ start_again:
                     sizeof(sockin)) == SOCKET_ERROR)
         {   err_printf("connect failed %s\n", WSAErrName(WSAGetLastError()));
             closesocket(s);
-            return onevalue(nil);
+            return nil;
         }
         trace_printf("Connection created\n");
     }
@@ -5043,7 +5151,7 @@ start_again:
     if (send(s, filename1, std::strlen(filename1), 0) == SOCKET_ERROR)
     {   err_printf("Send error (%s)\n", WSAErrName(WSAGetLastError()));
         closesocket(s);
-        return onevalue(nil);
+        return nil;
     }
 
     {   THREADID;
@@ -5070,7 +5178,7 @@ start_again:
     if (fetch_response(filename1, r))
     {   err_printf("Error fetching status line from the server\n");
         Lclose(env,r);
-        return onevalue(nil);
+        return nil;
     }
 
 // I check if the first line returned is in the form "HTTP/n.n nnn " and if
@@ -5087,7 +5195,7 @@ start_again:
         {   err_printf("Bad protocol specification returned\n");
             err_printf(filename1); // So I can see what did come back
             Lclose(env,r);
-            return onevalue(nil);
+            return nil;
         }
     }
 // In this code I treat all unexpected responses as errors and I do not
@@ -5143,7 +5251,7 @@ start_again:
 
     if (retcode == 0)
     {   Lclose(env,r);
-        return onevalue(nil);
+        return nil;
     }
 
 // Skip further information returned by the server until a line containing
@@ -5154,14 +5262,14 @@ start_again:
             if (ch == EOF)
             {   err_printf("Error fetching additional info from the server\n");
                 Lclose(env,r);
-                return onevalue(nil);
+                return nil;
             }
             if (ch == 0x0a) break;
         }
     }
     while (i > 1);
 
-    return onevalue(r);
+    return r;
 }
 
 #endif // SOCKETS
@@ -5172,7 +5280,7 @@ char saveright[32];
 
 LispObject Lwindow_heading2(LispObject env, LispObject a,
                             LispObject b)
-{
+{   SingleValued fn;
 #ifndef EMBEDDED
     int32_t n, bit;
     const char *s;
@@ -5219,11 +5327,12 @@ LispObject Lwindow_heading2(LispObject env, LispObject a,
     if (s == nullptr || *s == 0) window_heading &= ~bit;
     else window_heading |= bit;
 #endif // !EMBEDDED
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lwindow_heading1(LispObject env, LispObject a)
-{   return Lwindow_heading2(env, a, nil);
+{   SingleValued fn;
+    return Lwindow_heading2(env, a, nil);
 }
 
 /////////////////////////////////////////////////////////////////////

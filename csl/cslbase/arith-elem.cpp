@@ -368,7 +368,6 @@ static LispObject make_complex_float(Complex v, LispObject a)
 // types and package up as a complex value, where (a) was the original input
 // value and so should defined the type needed.  Note that both
 // components of a will have the same type so only one needs testing.
-// I do the 'onevalue' here.
 //
 // Note that regardless of their input type the elementary functions deliver
 // at most double precision results.
@@ -376,8 +375,8 @@ static LispObject make_complex_float(Complex v, LispObject a)
     LispObject a1, a2;
     a = real_part(a);
     if (is_sfloat(a))
-        return onevalue(make_complex(pack_immediate_float(v.real, a),
-                                     pack_immediate_float(v.imag, a)));
+        return make_complex(pack_immediate_float(v.real, a),
+                            pack_immediate_float(v.imag, a));
     if (is_bfloat(a)) type = floatWant(flthdr(a));
     else type = WANT_SINGLE_FLOAT;
     if (type == WANT_LONG_FLOAT) type = WANT_DOUBLE_FLOAT;
@@ -386,7 +385,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
     a1 = make_boxfloat(v.real, type);
     a2 = make_boxfloat(v.imag, type);
     a1 = make_complex(a1, a2);
-    return onevalue(a1);
+    return a1;
 }
 
 static double rln(double x)
@@ -1204,7 +1203,6 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
                     c1.real = float_of_number(real_part(a));
                     c1.imag = float_of_number(imag_part(a));
                     c2 = (*trig_functions[which_one].complex)(c1);
-// make_complex_float does the onevalue() for me
                     return make_complex_float(c2, a);
                 }
                 default:
@@ -1236,7 +1234,7 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
 // Lisp if an elementary function leads to overflow.
         {   double (*rl)(double) = trig_functions[which_one].real;
             if (rl == nullptr) return aerror("unimplemented trig function");
-            return onevalue(make_boxfloat((*rl)(d), restype));
+            return make_boxfloat((*rl)(d), restype);
         }
         else
         {   double c1r, c1i;
@@ -1249,7 +1247,7 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
 // answer - this is correct since the original argument was real, but
 // it has to be done by hand here because normally complex values with
 // zero imaginary part remain complex.
-            if (c1i == 0.0) return onevalue(make_boxfloat(c1r, restype));
+            if (c1i == 0.0) return make_boxfloat(c1r, restype);
 #ifndef COMMON
 // For now at least I will keep raising an error in cases where the
 // result would not be real
@@ -1261,7 +1259,7 @@ LispObject Ntrigfn(unsigned int which_one, LispObject a)
 #endif
             rp = make_boxfloat(c1r, restype);
             ip = make_boxfloat(c1i, restype);
-            return onevalue(make_complex(rp, ip));
+            return make_complex(rp, ip);
         }
     }
 }
@@ -1293,7 +1291,7 @@ static LispObject makenum(LispObject a, int32_t n)
                     rr = makenum(a, 1);
                     ii = makenum(a, 0);
                     a = make_complex(rr, ii);
-                    return onevalue(a);
+                    return a;
                 }
             }
             return aerror1("bad arg for makenumber",  a);
@@ -1302,10 +1300,10 @@ static LispObject makenum(LispObject a, int32_t n)
             restype = floatWant(flthdr(a));
 #ifdef HAVE_SOFTFLOAT
             if (restype == WANT_LONG_FLOAT)
-                return onevalue(make_boxfloat128(
-                                    float128_of_number(fixnum_of_int(n))));
+                make_boxfloat128(
+                    float128_of_number(fixnum_of_int(n)));
 #endif // HAVE_SOFTFLOAT
-            return onevalue(make_boxfloat(static_cast<double>(n), restype));
+            return make_boxfloat(static_cast<double>(n), restype);
         default:
             return aerror1("bad arg for makenumber",  a);
     }
@@ -1341,7 +1339,8 @@ static Complex complex_of_number(LispObject a)
 }
 
 LispObject Nhypot(LispObject env, LispObject a, LispObject b)
-{   if (is_long_float(a) || is_long_float(b))
+{   SingleValued fn;
+    if (is_long_float(a) || is_long_float(b))
     {   float128_t u = float128_of_number(a),
                    v = float128_of_number(b);
         return make_boxfloat128(qhypot(u, v));
@@ -1364,11 +1363,12 @@ LispObject Nhypot(LispObject env, LispObject a, LispObject b)
     }
     r = scale * std::sqrt(r);
     a = make_boxfloat(r, WANT_DOUBLE_FLOAT);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nexpt(LispObject env, LispObject a, LispObject b)
-{   if (is_long_float(a) || is_long_float(b))
+{   SingleValued fn;
+    if (is_long_float(a) || is_long_float(b))
     {   float128_t u = float128_of_number(a),
                    v = float128_of_number(b);
         return make_boxfloat128(qexpt(u, v));
@@ -1389,25 +1389,25 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
     {   if (is_fixnum(b))
         {   nn = int_of_fixnum(b);
             switch (int_of_fixnum(a))
-            {   case 1:  return onevalue(a);
+            {   case 1:  return a;
                 case 0:  if (nn < 0) return aerror2("expt", a, b);
                     // In Common Lisp (expt 0 0) is defined to be 0
-                    else if (nn == 0) return onevalue(fixnum_of_int(1));
-                    else return onevalue(a);
-                case -1: if (nn & 1) return onevalue(a);
-                    else return onevalue(fixnum_of_int(1));
+                    else if (nn == 0) return fixnum_of_int(1);
+                    else return a;
+                case -1: if (nn & 1) return a;
+                    else return fixnum_of_int(1);
             }
         }
         else if (is_new_bignum(b))
         {   switch (int_of_fixnum(a))
             {   case 1:
-                    return onevalue(a);
+                    return a;
                 case 0:  
                     if (Minusp::op(b)) return aerror2("expt", a, b);
-                    else return onevalue(a);
+                    else return a;
                 case -1:
-                    if (Oddp::op(b)) return onevalue(a);
-                    else return onevalue(fixnum_of_int(1));
+                    if (Oddp::op(b)) return a;
+                    else return fixnum_of_int(1);
             }
         }
     }
@@ -1423,19 +1423,19 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
         else if (is_new_bignum(b))
             nn = Low64Bits::op(b) & 3;
         switch (nn)
-        {   case 0:   return onevalue(fixnum_of_int(1));
-            case 2:   return onevalue(fixnum_of_int(-1));
+        {   case 0:   return fixnum_of_int(1);
+            case 2:   return fixnum_of_int(-1);
             case 1:
             case 3:   if (int_of_fixnum(imag_part(a)) == 1) nn ^= 2;
                 a = make_complex(fixnum_of_int(0),
                                  fixnum_of_int((nn & 2) ? 1 : -1));
-                return onevalue(a);
+                return a;
             default:  break;
         }
     }
     if (is_fixnum(b))   // bignum exponents would yield silly values!
     {   nn = int_of_fixnum(b);
-        if (nn == 1) return onevalue(a);
+        if (nn == 1) return a;
         if (nn < 0)
         {
 // With floating point value if I compute a^(-n) as 1.0/a^n then I can get
@@ -1455,7 +1455,7 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
             a = N_CSLpowi(a, -nn);
         }
         else a = N_CSLpowi(a, nn);
-        return onevalue(a);
+        return a;
     }
     if (is_numbers(a) && is_complex(a)) w = real_part(a);
     else w = a;
@@ -1482,7 +1482,7 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
         a = make_boxfloat(c3.real, restype);
         b = make_boxfloat(c3.imag, restype);
         a = make_complex(a, b);
-        return onevalue(a);
+        return a;
     }
     d = float_of_number(a);
     e = float_of_number(b);
@@ -1493,16 +1493,17 @@ LispObject Nexpt(LispObject env, LispObject a, LispObject b)
         a = make_boxfloat(c3.real, restype);
         b = make_boxfloat(c3.imag, restype);
         a = make_complex(a, b);
-        return onevalue(a);
+        return a;
     }
     d = CSLpow(d, e);
     a = make_boxfloat(d, restype);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nlog_2(LispObject env, LispObject a, LispObject b)
 // Log with specified base.
-{   if (is_long_float(a) || is_long_float(b))
+{   SingleValued fn;
+    if (is_long_float(a) || is_long_float(b))
     {   float128_t u = float128_of_number(a),
                    v = float128_of_number(b);
         return make_boxfloat128(qlog(u, v));
@@ -1517,7 +1518,8 @@ LispObject Nlog_2(LispObject env, LispObject a, LispObject b)
 #ifdef ISQRT_IMPLEMENTED_PROPERLY
 // This can only be used when it is implemented properly!
 LispObject Nisqrt(LispObject, LispObject a)
-{   double d;
+{   SingleValued fn;
+    double d;
 // This makes some pretence at computing an integer square root, but it
 // does so incredibly clumsily by mapping onto a floating point value and
 // then expecting the square root computed that way to fit into a fixnum,
@@ -1544,12 +1546,13 @@ LispObject Nisqrt(LispObject, LispObject a)
     }
     d = std::sqrt(d);
 // /* This is not anything like good enough yet
-    return onevalue(fixnum_of_int((int32_t)d));
+    return fixnum_of_int((int32_t)d);
 }
 #endif
 
 LispObject Nabsval(LispObject env, LispObject a)
-{   if (is_complex(a))
+{   SingleValued fn;
+    if (is_complex(a))
     {   Complex c1;
 // This handles all complex values by mapping the two components to
 // floats. Well the eventual result is going to be sqrt(r^2 + i^2) and
@@ -1561,20 +1564,21 @@ LispObject Nabsval(LispObject env, LispObject a)
         c1.imag = float_of_number(imag_part(a));
         double d = Cabs(c1);
         a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
-        return onevalue(a);
+        return a;
     }
     else if (is_ratio(a))
     {   if (Minusp::op(numerator(a)))
-            return onevalue(make_ratio(Minus::op(numerator(a)),
-                                       denominator(a)));
-        else return onevalue(a);
+            return make_ratio(Minus::op(numerator(a)),
+                              denominator(a));
+        else return a;
     }
-    else if (Minusp::op(a)) return onevalue(Minus::op(a));
-    else return onevalue(a);
+    else if (Minusp::op(a)) return Minus::op(a);
+    else return a;
 }
 
 LispObject Nphase(LispObject env, LispObject a)
-{   if (is_numbers(a) && is_complex(a))
+{   SingleValued fn;
+    if (is_numbers(a) && is_complex(a))
         return Natan2(nil, imag_part(a), real_part(a));
 // If a is not a complex number it is real, so its phase is either
 // +pi or -pi.
@@ -1583,27 +1587,28 @@ LispObject Nphase(LispObject env, LispObject a)
     if (s) d = -_pi;
     else d = _pi;
     a = make_boxfloat(d, WANT_DOUBLE_FLOAT);
-    return onevalue(a);
+    return a;
 // /* Wrong precision, I guess
 }
 
 LispObject Nsignum(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 //* This seems an expensive way of doing things - huh? Maybe complex values?
     bool z;
     LispObject w;
     z = Zerop::op(a);
-    if (z) return onevalue(a);
+    if (z) return a;
     w = Nabsval(nil, a);
     errexit();
     a = Quotient::op(a, w);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncis(LispObject, LispObject a)
 // Implement as exp(i*a) - this permits complex args which goes
 // beyond the specification of Common Lisp.
-{   LispObject ii;
+{   SingleValued fn;
+    LispObject ii;
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     errexit();
 // it seems a bit gross to multiply by i by calling Times::op(), but
@@ -1614,15 +1619,18 @@ LispObject Ncis(LispObject, LispObject a)
 }
 
 LispObject Natan(LispObject, LispObject a)
-{   return Ntrigfn(15, a);     // atan()
+{   SingleValued fn;
+    return Ntrigfn(15, a);     // atan()
 }
 
 LispObject Natan_2(LispObject env, LispObject a, LispObject b)
-{   return Natan2(env, a, b);
+{   SingleValued fn;
+    return Natan2(env, a, b);
 }
 
 LispObject Natan2(LispObject env, LispObject y, LispObject x)
-{   if (is_long_float(x) || is_long_float(y))
+{   SingleValued fn;
+    if (is_long_float(x) || is_long_float(y))
     {   float128_t u = float128_of_number(x),
                    v = float128_of_number(y);
         return make_boxfloat128(qatan2(u, v));
@@ -1642,16 +1650,17 @@ LispObject Natan2(LispObject env, LispObject y, LispObject x)
         r = _half_pi + CSLatan(-u/v);
     else r = -_half_pi - CSLatan(u/v);
     x = make_boxfloat(r, WANT_DOUBLE_FLOAT);
-    return onevalue(x);
+    return x;
 }
 
 LispObject Natan2d(LispObject env, LispObject y, LispObject x)
-{   if (is_long_float(x) || is_long_float(y))
+{   SingleValued fn;
+    if (is_long_float(x) || is_long_float(y))
     {   float128_t u = float128_of_number(x),
                    v = float128_of_number(y);
         return make_boxfloat128(qatan2d(u, v));
     }
-double u, v, r;
+    double u, v, r;
     u = float_of_number(x);
     v = float_of_number(y);
     if (u == 0.0 && v == 0.0) r = 0.0; // really an error case
@@ -1660,179 +1669,220 @@ double u, v, r;
         r = 90.0 + n180pi*CSLatan(-u/v);
     else r = -90.0 - n180pi*CSLatan(u/v);
     x = make_boxfloat(r, WANT_DOUBLE_FLOAT);
-    return onevalue(x);
+    return x;
 }
 
 LispObject Nacos(LispObject, LispObject a)
-{   return Ntrigfn(0, a);
+{   SingleValued fn;
+    return Ntrigfn(0, a);
 }
 
 LispObject Nacosd(LispObject, LispObject a)
-{   return Ntrigfn(1, a);
+{   SingleValued fn;
+    return Ntrigfn(1, a);
 }
 
 LispObject Nacosh(LispObject, LispObject a)
-{   return Ntrigfn(2, a);
+{   SingleValued fn;
+    return Ntrigfn(2, a);
 }
 
 LispObject Nacot(LispObject, LispObject a)
-{   return Ntrigfn(3, a);
+{   SingleValued fn;
+    return Ntrigfn(3, a);
 }
 
 LispObject Nacotd(LispObject, LispObject a)
-{   return Ntrigfn(4, a);
+{   SingleValued fn;
+    return Ntrigfn(4, a);
 }
 
 LispObject Nacoth(LispObject, LispObject a)
-{   return Ntrigfn(5, a);
+{   SingleValued fn;
+    return Ntrigfn(5, a);
 }
 
 LispObject Nacsc(LispObject, LispObject a)
-{   return Ntrigfn(6, a);
+{   SingleValued fn;
+    return Ntrigfn(6, a);
 }
 
 LispObject Nacscd(LispObject, LispObject a)
-{   return Ntrigfn(7, a);
+{   SingleValued fn;
+    return Ntrigfn(7, a);
 }
 
 LispObject Nacsch(LispObject, LispObject a)
-{   return Ntrigfn(8, a);
+{   SingleValued fn;
+    return Ntrigfn(8, a);
 }
 
 LispObject Nasec(LispObject, LispObject a)
-{   return Ntrigfn(9, a);
+{   SingleValued fn;
+    return Ntrigfn(9, a);
 }
 
 LispObject Nasecd(LispObject, LispObject a)
-{   return Ntrigfn(10, a);
+{   SingleValued fn;
+    return Ntrigfn(10, a);
 }
 
 LispObject Nasech(LispObject, LispObject a)
-{   return Ntrigfn(11, a);
+{   SingleValued fn;
+    return Ntrigfn(11, a);
 }
 
 LispObject Nasin(LispObject, LispObject a)
-{   return Ntrigfn(12, a);
+{   SingleValued fn;
+    return Ntrigfn(12, a);
 }
 
 LispObject Nasind(LispObject, LispObject a)
-{   return Ntrigfn(13, a);
+{   SingleValued fn;
+    return Ntrigfn(13, a);
 }
 
 LispObject Nasinh(LispObject, LispObject a)
-{   return Ntrigfn(14, a);
+{   SingleValued fn;
+    return Ntrigfn(14, a);
 }
 
 // code 15 is for atan
 
 LispObject Natand(LispObject, LispObject a)
-{   return Ntrigfn(16, a);
+{   SingleValued fn;
+    return Ntrigfn(16, a);
 }
 
 // code 17 is atan2, 18 is atan2d
 
 LispObject Natanh(LispObject, LispObject a)
-{   return Ntrigfn(19, a);
+{   SingleValued fn;
+    return Ntrigfn(19, a);
 }
 
 LispObject Ncbrt(LispObject, LispObject a)
-{   return Ntrigfn(20, a);
+{   SingleValued fn;
+    return Ntrigfn(20, a);
 }
 
 LispObject Ncos(LispObject, LispObject a)
-{   return Ntrigfn(21, a);
+{   SingleValued fn;
+    return Ntrigfn(21, a);
 }
 
 LispObject Ncosd(LispObject, LispObject a)
-{   return Ntrigfn(22, a);
+{   SingleValued fn;
+    return Ntrigfn(22, a);
 }
 
 LispObject Ncosh(LispObject, LispObject a)
-{   return Ntrigfn(23, a);
+{   SingleValued fn;
+    return Ntrigfn(23, a);
 }
 
 LispObject Ncot(LispObject, LispObject a)
-{   return Ntrigfn(24, a);
+{   SingleValued fn;
+    return Ntrigfn(24, a);
 }
 
 LispObject Ncotd(LispObject, LispObject a)
-{   return Ntrigfn(25, a);
+{   SingleValued fn;
+    return Ntrigfn(25, a);
 }
 
 LispObject Ncoth(LispObject, LispObject a)
-{   return Ntrigfn(26, a);
+{   SingleValued fn;
+    return Ntrigfn(26, a);
 }
 
 LispObject Ncsc(LispObject, LispObject a)
-{   return Ntrigfn(27, a);
+{   SingleValued fn;
+    return Ntrigfn(27, a);
 }
 
 LispObject Ncscd(LispObject, LispObject a)
-{   return Ntrigfn(28, a);
+{   SingleValued fn;
+    return Ntrigfn(28, a);
 }
 
 LispObject Ncsch(LispObject, LispObject a)
-{   return Ntrigfn(29, a);
+{   SingleValued fn;
+    return Ntrigfn(29, a);
 }
 
 LispObject Nexp(LispObject, LispObject a)
-{   return Ntrigfn(30, a);
+{   SingleValued fn;
+    return Ntrigfn(30, a);
 }
 
 // 31 is expt, 32 is hypot
 
 LispObject Nln(LispObject, LispObject a)
-{   return Ntrigfn(33, a);
+{   SingleValued fn;
+    return Ntrigfn(33, a);
 }
 
 // 34 is 2-arg log
 
 LispObject Nlog10(LispObject, LispObject a)
-{   return Ntrigfn(35, a);
+{   SingleValued fn;
+    return Ntrigfn(35, a);
 }
 
 LispObject Nlog2(LispObject, LispObject a)
-{   return Ntrigfn(46, a);
+{   SingleValued fn;
+    return Ntrigfn(46, a);
 }
 
 LispObject Nsec(LispObject, LispObject a)
-{   return Ntrigfn(36, a);
+{   SingleValued fn;
+    return Ntrigfn(36, a);
 }
 
 LispObject Nsecd(LispObject, LispObject a)
-{   return Ntrigfn(37, a);
+{   SingleValued fn;
+    return Ntrigfn(37, a);
 }
 
 LispObject Nsech(LispObject, LispObject a)
-{   return Ntrigfn(38, a);
+{   SingleValued fn;
+    return Ntrigfn(38, a);
 }
 
 LispObject Nsin(LispObject, LispObject a)
-{   return Ntrigfn(39, a);
+{   SingleValued fn;
+    return Ntrigfn(39, a);
 }
 
 LispObject Nsind(LispObject, LispObject a)
-{   return Ntrigfn(40, a);
+{   SingleValued fn;
+    return Ntrigfn(40, a);
 }
 
 LispObject Nsinh(LispObject, LispObject a)
-{   return Ntrigfn(41, a);
+{   SingleValued fn;
+    return Ntrigfn(41, a);
 }
 
 LispObject Nsqrt(LispObject, LispObject a)
-{   return Ntrigfn(42, a);
+{   SingleValued fn;
+    return Ntrigfn(42, a);
 }
 
 LispObject Ntan(LispObject, LispObject a)
-{   return Ntrigfn(43, a);
+{   SingleValued fn;
+    return Ntrigfn(43, a);
 }
 
 LispObject Ntand(LispObject, LispObject a)
-{   return Ntrigfn(44, a);
+{   SingleValued fn;
+    return Ntrigfn(44, a);
 }
 
 LispObject Ntanh(LispObject, LispObject a)
-{   return Ntrigfn(45, a);
+{   SingleValued fn;
+    return Ntrigfn(45, a);
 }
 
 #ifdef HAVE_COMPLEX
@@ -1841,21 +1891,24 @@ LispObject Ntanh(LispObject, LispObject a)
 
 
 LispObject Ncarg(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     double r = carg(c);
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncabs(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     double r = cabs(c);
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncexp(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = cexp(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1867,11 +1920,12 @@ LispObject Ncexp(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nclog(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = clog(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1883,11 +1937,12 @@ LispObject Nclog(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncsqrt(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = csqrt(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1903,11 +1958,12 @@ LispObject Ncsqrt(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncsin(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = csin(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1923,11 +1979,12 @@ LispObject Ncsin(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nccos(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ccos(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1943,11 +2000,12 @@ LispObject Nccos(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nctan(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ctan(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1963,23 +2021,27 @@ LispObject Nctan(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nccsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccsc");
+{   SingleValued fn;
+    return aerror("pending function ccsc");
 }
 
 LispObject Ncsec(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function csec");
+{   SingleValued fn;
+    return aerror("pending function csec");
 }
 
 LispObject Nccot(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccot");
+{   SingleValued fn;
+    return aerror("pending function ccot");
 }
 
 LispObject Ncasin(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = casin(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -1995,11 +2057,12 @@ LispObject Ncasin(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncacos(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = cacos(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2015,11 +2078,12 @@ LispObject Ncacos(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncatan(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = catan(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2035,23 +2099,27 @@ LispObject Ncatan(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncacsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacsc");
+{   SingleValued fn;
+    return aerror("pending function cacsc");
 }
 
 LispObject Ncasec(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function casec");
+{   SingleValued fn;
+    return aerror("pending function casec");
 }
 
 LispObject Ncacot(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacot");
+{   SingleValued fn;
+    return aerror("pending function cacot");
 }
 
 LispObject Ncsinh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = csinh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2067,11 +2135,12 @@ LispObject Ncsinh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nccosh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ccosh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2087,11 +2156,12 @@ LispObject Nccosh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nctanh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = ctanh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2107,23 +2177,27 @@ LispObject Nctanh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nccsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccsch");
+{   SingleValued fn;
+    return aerror("pending function ccsch");
 }
 
 LispObject Ncsech(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function csech");
+{   SingleValued fn;
+    return aerror("pending function csech");
 }
 
 LispObject Nccoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function ccoth");
+{   SingleValued fn;
+    return aerror("pending function ccoth");
 }
 
 LispObject Ncasinh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = casinh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2139,11 +2213,12 @@ LispObject Ncasinh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncacosh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = cacosh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2159,11 +2234,12 @@ LispObject Ncacosh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncatanh(LispObject env, LispObject a, LispObject b)
-{   complex double c = float_of_number(a) + I*float_of_number(b);
+{   SingleValued fn;
+    complex double c = float_of_number(a) + I*float_of_number(b);
     complex double r = catanh(c);
     double rr = creal(r);
     double ri = cimag(r);
@@ -2179,145 +2255,178 @@ LispObject Ncatanh(LispObject env, LispObject a, LispObject b)
     errexit();
     save.restore(a);
     a = cons(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncacsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacsch");
+{   SingleValued fn;
+    return aerror("pending function cacsch");
 }
 
 LispObject Ncasech(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function casech");
+{   SingleValued fn;
+    return aerror("pending function casech");
 }
 
 LispObject Ncacoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("pending function cacoth");
+{   SingleValued fn;
+    return aerror("pending function cacoth");
 }
 
 #else // HAVE_COMPLEX
 
 LispObject Ncarg(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function carg");
+{   SingleValued fn;
+    return aerror("unimplemented function carg");
 }
 
 LispObject Ncabs(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cabs");
+{   SingleValued fn;
+    return aerror("unimplemented function cabs");
 }
 
 LispObject Ncexp(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cexp");
+{   SingleValued fn;
+    return aerror("unimplemented function cexp");
 }
 
 LispObject Nclog(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function clog");
+{   SingleValued fn;
+    return aerror("unimplemented function clog");
 }
 
 LispObject Ncsqrt(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csqrt");
+{   SingleValued fn;
+    return aerror("unimplemented function csqrt");
 }
 
 LispObject Ncsin(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csin");
+{   SingleValued fn;
+    return aerror("unimplemented function csin");
 }
 
 LispObject Nccos(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccos");
+{   SingleValued fn;
+    return aerror("unimplemented function ccos");
 }
 
 LispObject Nctan(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ctan");
+{   SingleValued fn;
+    return aerror("unimplemented function ctan");
 }
 
 LispObject Nccsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccsc");
+{   SingleValued fn;
+    return aerror("unimplemented function ccsc");
 }
 
 LispObject Ncsec(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csec");
+{   SingleValued fn;
+    return aerror("unimplemented function csec");
 }
 
 LispObject Nccot(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccot");
+{   SingleValued fn;
+    return aerror("unimplemented function ccot");
 }
 
 LispObject Ncasin(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casin");
+{   SingleValued fn;
+    return aerror("unimplemented function casin");
 }
 
 LispObject Ncacos(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacos");
+{   SingleValued fn;
+    return aerror("unimplemented function cacos");
 }
 
 LispObject Ncatan(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function catan");
+{   SingleValued fn;
+    return aerror("unimplemented function catan");
 }
 
 LispObject Ncacsc(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacsc");
+{   SingleValued fn;
+    return aerror("unimplemented function cacsc");
 }
 
 LispObject Ncasec(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casec");
+{   SingleValued fn;
+    return aerror("unimplemented function casec");
 }
 
 LispObject Ncacot(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacot");
+{   SingleValued fn;
+    return aerror("unimplemented function cacot");
 }
 
 LispObject Ncsinh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csinh");
+{   SingleValued fn;
+    return aerror("unimplemented function csinh");
 }
 
 LispObject Nccosh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccosh");
+{   SingleValued fn;
+    return aerror("unimplemented function ccosh");
 }
 
 LispObject Nctanh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ctanh");
+{   SingleValued fn;
+    return aerror("unimplemented function ctanh");
 }
 
 LispObject Nccsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccsch");
+{   SingleValued fn;
+    return aerror("unimplemented function ccsch");
 }
 
 LispObject Ncsech(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function csech");
+{   SingleValued fn;
+    return aerror("unimplemented function csech");
 }
 
 LispObject Nccoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccoth");
+{   SingleValued fn;
+    return aerror("unimplemented function ccoth");
 }
 
 LispObject Ncasinh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casinh");
+{   SingleValued fn;
+    return aerror("unimplemented function casinh");
 }
 
 LispObject Ncacosh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacosh");
+{   SingleValued fn;
+    return aerror("unimplemented function cacosh");
 }
 
 LispObject Ncatanh(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function catanh");
+{   SingleValued fn;
+    return aerror("unimplemented function catanh");
 }
 
 LispObject Ncacsch(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacsch");
+{   SingleValued fn;
+    return aerror("unimplemented function cacsch");
 }
 
 LispObject Ncasech(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function casech");
+{   SingleValued fn;
+    return aerror("unimplemented function casech");
 }
 
 LispObject Ncacoth(LispObject env, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacoth");
+{   SingleValued fn;
+    return aerror("unimplemented function cacoth");
 }
 
 //LispObject Nsqrt(LispObject env, LispObject a1)
-//{   return onevalue(Sqrt::op(a1));
+//{   return Sqrt::op(a1);
 //}
 
 LispObject Nisqrt(LispObject env, LispObject a1)
-{   return onevalue(Isqrt::op(a1));
+{   SingleValued fn;
+    return Isqrt::op(a1);
 }
 
 
