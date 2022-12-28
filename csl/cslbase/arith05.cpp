@@ -53,10 +53,6 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 
 void print_bignum(LispObject u, bool blankp, int nobreak)
 {   THREADID;
-#ifdef ARITHLIB
-    putc_stream('0', active_stream);
-    putc_stream('Z', active_stream);
-#endif // ARITHLIB
     size_t len = length_of_header(numhdr(u))-CELL;
     size_t i, len1;
     LispObject w;
@@ -302,12 +298,35 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // The width specifier is intended to specify a minimum width to be
 // used in the sense that printf uses the word "precision", so numbers
 // will be padded with leading zeros (of f/7/1 if negative) if necessary.
+//
 // Well actually I have not implemented support for width specification
 // yet. It will be wanted so that (prinhex 1 8) comes out as 00000001,
-// for instance. So at present some C compilers will give me a warning about
-// width being ignored - they are RIGHT!
+// for instance, but extended ti bignum printing. So at present some C++
+// compilers will give me a warning about width being ignored - they are
+// RIGHT!
 //
 {   size_t n = (bignum_length(u)-CELL-4)/4;
+    uint64_t v = 0;
+// While I do not handle widths in general here as a fudge I will
+// do so for printing integers up to 2^64. I do that because I happen
+// to have cases where I wish to generate tables of 64-bit integers...
+// and getting the general width control correct is messier than I had
+// hoped (which is why I had not done it before!).
+    switch (radix==16 ? n : -1)
+    {   char buff[64];
+        default:
+            break;
+        case 2:
+            if (bignum_digits(u)[2] > 3) break;
+            v |= static_cast<uint64_t>(bignum_digits(u)[2])<<62;
+        case 1:
+            v |= static_cast<uint64_t>(bignum_digits(u)[1])<<31;
+        case 0:
+            v |= bignum_digits(u)[0];
+            int len = std::snprintf(buff, sizeof(buff), "%.*" PRIx64, width, v);
+            for (int k=0; k<len; k++) putc_stream(buff[k], active_stream);
+            return;
+    }
     uint32_t a=0, b=0;
     size_t len = 31*(n+1);
     int flag = 0, bits;
@@ -330,14 +349,12 @@ void print_bighexoctbin(LispObject u, int radix, int width,
     else
     {   bits = 0;
     }
-//
 // As I work down the bignum, b holds the next chunk of digits to be printed,
 // and bits tells me how many valid bits are present in it.  I start off
 // with bits non-zero to (in effect) adjoin a few bits from an implicit
 // extra leading digit so as to make up to an integral multiple of 3 or 4
 // bits in all when I am printing base 8 or 16.  The variable (len) now tells
 // me how many digits remain to be printed.
-//
     THREADID;
     Save save(THREADARG u);
     if ((int32_t)bignum_digits(u)[n] < 0)
@@ -346,17 +363,13 @@ void print_bighexoctbin(LispObject u, int radix, int width,
         if (radix == 16) flag = 0xf;
         else if (radix == 8) flag = 0x7;
         else flag = 0x1;
-//
 // Set the buffer b to have a few '1' bits at its top.
-//
         if (bits != 0) b = ((int32_t)-1) << (32-bits);
     }
-//
 // I kill leading zeros - and since this is a real bignum there MUST be
 // at least one nonzero digit somewhere, so I do not have to worry about the
 // total supression of the value 0.  I will do something with leading 'f' or
 // '7' digits for negative numbers.
-//
     while (n+1 > 0 || bits > 0)
     {   if (radix == 16)
         {   a = (b >> 28);    // Grab the next 4 bits of the number

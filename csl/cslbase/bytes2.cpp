@@ -68,13 +68,13 @@ THREADID;
     size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
     char ffname[32];
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-    std::memcpy(bit_cast<void *>(&ffname[0]),
+    std::memcpy(reinterpret_cast<void *>(&ffname[0]),
                 &celt(ffpname, 0), fflength);
     ffname[fflength] = 0;
     debug_record(reinterpret_cast<const char *>(ffname));
 //
 #ifdef CHECK_STACK
-    {   char *my_stack = bit_cast<char *>(&my_stack);
+    {   char *my_stack = reinterpret_cast<char *>(&my_stack);
         if (native_stack == nullptr)
             native_stack = native_stack_base = my_stack;
         else if (my_stack + 10000 < native_stack)
@@ -127,14 +127,14 @@ THREADID;
     A_reg = nil;
 #ifdef CHECK_STACK
 #ifndef CONSERVATIVE
-    if (bit_cast<char *>(ufringe) <=
-        bit_cast<char *>(uheaplimit))
+    if (reinterpret_cast<char *>(ufringe) <=
+        reinterpret_cast<char *>(uheaplimit))
     {   A_reg = cons_gc_test(A_reg);
         errexit();
     }
 #endif
 #ifdef DEBUG
-    if (check_stack(bit_cast<char *>(&ffname[0]), __LINE__))
+    if (check_stack(reinterpret_cast<char *>(&ffname[0]), __LINE__))
     {   err_printf("\n+++ stack overflow\n");
         return aerror("stack overflow");
     }
@@ -145,8 +145,8 @@ THREADID;
     }
 #endif // DEBUG
 #else // CHECK_STACK
-    {   char *p = bit_cast<char *>(&p);
-        if (bit_cast<uintptr_t>(p) < C_stackLimit)
+    {   char *p = reinterpret_cast<char *>(&p);
+        if (reinterpret_cast<uintptr_t>(p) < C_stackLimit)
         {   err_printf("\n+++ stack overflow\n");
             if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
             return aerror("stack_overflow");
@@ -200,7 +200,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
         if (!profile_count_mode) incCount(basic_elt(litvec, 0));
         total++;
-        frequencies[(bit_cast<unsigned char *>(codevec))[ppc]]++;
+        frequencies[(reinterpret_cast<unsigned char *>(codevec))[ppc]]++;
 #endif
 
 //trace_printf("ppc=%d, byte=%.2x\n", ppc, ((unsigned char *)codevec)[ppc]);
@@ -226,7 +226,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // Here I have an unrecognised opcode - the result of a compiler error
 //
                 err_printf("\nUnrecognized opcode byte %x\n",
-                           (bit_cast<unsigned char *>(codevec))[ppc-1]);
+                           (reinterpret_cast<unsigned char *>(codevec))[ppc-1]);
                 return aerror("compiler failure");
 
             case OP_ONEVALUE:
@@ -388,15 +388,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = elt(stack[1-static_cast<int>(next_byte)], 0);
                 B_reg = A_reg;
                 w = next_byte;             // Number of levels to chain
-                while (w != 0) r1 = (bit_cast<LispObject *>(r1))[1], w--;
-                A_reg = (bit_cast<LispObject *>(r1))[next_byte];
+                while (w != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], w--;
+                A_reg = (reinterpret_cast<LispObject *>(r1))[next_byte];
                 continue;
 
             case OP_STORELEX:
                 r1 = elt(stack[1-static_cast<int>(next_byte)], 0);
                 w = next_byte;             // Number of levels to chain
-                while (w != 0) r1 = (bit_cast<LispObject *>(r1))[1], w--;
-                (bit_cast<LispObject *>(r1))[next_byte] = A_reg;
+                while (w != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], w--;
+                (reinterpret_cast<LispObject *>(r1))[next_byte] = A_reg;
                 continue;
 
             case OP_CLOSURE:
@@ -453,9 +453,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                         r1 = elt(stack[1-n], 0);
                         B_reg = A_reg;
                         n = w & 0x1f;
-                        while (n != 0) r1 = (bit_cast<LispObject *>(r1))[1], n--;
-                        if ((w & 0x20) == 0) A_reg = (bit_cast<LispObject *>(r1))[k];
-                        else (bit_cast<LispObject *>(r1))[k] = A_reg;
+                        while (n != 0) r1 = (reinterpret_cast<LispObject *>(r1))[1], n--;
+                        if ((w & 0x20) == 0) A_reg = (reinterpret_cast<LispObject *>(r1))[k];
+                        else (reinterpret_cast<LispObject *>(r1))[k] = A_reg;
                         continue;
                 }
 
@@ -697,8 +697,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // and both use of a special opcode here and removal of the checking make
 // noticable differences to performance.
 //
-                A_reg = *bit_cast<LispObject *>(
-                            bit_cast<char *>(B_reg) +
+                A_reg = *reinterpret_cast<LispObject *>(
+                            reinterpret_cast<char *>(B_reg) +
                             (CELL - TAG_VECTOR) +
                             (CELL*int_of_fixnum(A_reg)));
                 continue;
@@ -716,8 +716,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // around vectors of guff and use (getv vvv 0) etc (aka svref) to
 // grab stuff out.
 //
-                A_reg = *bit_cast<LispObject *>(
-                            bit_cast<char *>(A_reg) + (CELL - TAG_VECTOR) + (CELL*
+                A_reg = *reinterpret_cast<LispObject *>(
+                            reinterpret_cast<char *>(A_reg) + (CELL - TAG_VECTOR) + (CELL*
                                     (next_byte)));
                 continue;
 
@@ -920,8 +920,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // that case branches can not reach quite as far as regular jumps.
 //
                 if (w & 0x80) ppc = ppc - (((w & 0x7f) << 8) +
-                                               (bit_cast<unsigned char *>(codevec))[ppc]);
-                else ppc = ppc + (w << 8) + (bit_cast<unsigned char *>
+                                               (reinterpret_cast<unsigned char *>(codevec))[ppc]);
+                else ppc = ppc + (w << 8) + (reinterpret_cast<unsigned char *>
                                                  (codevec))[ppc];
                 continue;
 
@@ -1501,27 +1501,27 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CATCH:
                 w = static_cast<unsigned int>(ppc +
-                                              (bit_cast<unsigned char *>(codevec))[ppc]);
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 ppc++;
                 goto catcher;
 
             case OP_CATCH_B:
                 w = static_cast<unsigned int>(ppc -
-                                              (bit_cast<unsigned char *>(codevec))[ppc]);
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 ppc++;
                 goto catcher;
 
             case OP_CATCH_L:
                 w = next_byte;
                 w = static_cast<unsigned int>(ppc + (w << 8) +
-                                              (bit_cast<unsigned char *>(codevec))[ppc]);
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 ppc++;
                 goto catcher;
 
             case OP_CATCH_BL:
                 w = next_byte;
                 w = static_cast<unsigned int>(ppc - ((w << 8) +
-                                                     (bit_cast<unsigned char *>(codevec))[ppc]));
+                                                     (reinterpret_cast<unsigned char *>(codevec))[ppc]));
                 ppc++;
             catcher:
                 A_reg = cons(A_reg, catch_tags);
@@ -1690,7 +1690,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy(bit_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
@@ -1741,7 +1741,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy(bit_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
@@ -1786,7 +1786,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy(bit_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
@@ -1831,7 +1831,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    std::memcpy(bit_cast<void *>(&ffname[0]), &celt(ffpname, 0),
+                    std::memcpy(reinterpret_cast<void *>(&ffname[0]), &celt(ffpname, 0),
                                 fflength);
                     ffname[fflength] = 0;
                     stack = entry_stack;
@@ -1962,7 +1962,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 {   RAIIsave_codevec saver OPTTHREAD;
                     *++stack = A_reg; // the argument
-                    if (bit_cast<uintptr_t>(stack) >= stackLimit)
+                    if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-1);
@@ -2011,7 +2011,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 {   RAIIsave_codevec saver OPTTHREAD;
                     *++stack =B_reg; *++stack = A_reg;
-                    if (bit_cast<uintptr_t>(stack) >= stackLimit)
+                    if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
                                                  stack-2);
@@ -2087,7 +2087,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 errexit();
 // Here the post-byte indicates the function to be called.
                 A_reg = basic_elt(litvec,
-                                  (bit_cast<unsigned char *>(codevec))[ppc]);
+                                  (reinterpret_cast<unsigned char *>(codevec))[ppc]);
                 A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 my_assert(A_reg != 0, LOCATION);
                 ppc++;
@@ -2535,7 +2535,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (A_reg == nil) ppc = ppc + ((w << 8) +
-                                                   (bit_cast<unsigned char *>(codevec))[xppc]);
+                                                   (reinterpret_cast<unsigned char *>(codevec))[xppc]);
                 continue;
 
             case OP_JUMPNIL_BL:
@@ -2543,7 +2543,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (A_reg == nil)
-                {   ppc = ppc - ((w << 8) + (bit_cast<unsigned char *>
+                {   ppc = ppc - ((w << 8) + (reinterpret_cast<unsigned char *>
                                              (codevec))[xppc]);
                     poll_jump_back(A_reg);
                 }
@@ -2554,7 +2554,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (A_reg != nil) ppc = ppc + ((w << 8) +
-                                                   (bit_cast<unsigned char *>(codevec))[xppc]);
+                                                   (reinterpret_cast<unsigned char *>(codevec))[xppc]);
                 continue;
 
             case OP_JUMPT_BL:
@@ -2562,7 +2562,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (A_reg != nil)
-                {   ppc = ppc - ((w << 8) + (bit_cast<unsigned char *>
+                {   ppc = ppc - ((w << 8) + (reinterpret_cast<unsigned char *>
                                              (codevec))[xppc]);
                     poll_jump_back(A_reg);
                 }

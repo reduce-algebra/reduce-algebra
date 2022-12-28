@@ -82,6 +82,10 @@ module taylor;
 %*****************************************************************
 %
 %
+% 11-Dec-2022    2.4f
+%
+%   Better handling of sin and friends when rounded is on.
+%
 % 12-Sep-2022    2.4e
 %
 %   Add taylorcoefflist operator.
@@ -190,7 +194,7 @@ module taylor;
 %
 %
 % 16-Apr-1997    2.1f
-%   Slight improvement in tracing output (inline Taylor!-trace).
+%   Slight improvement in tracing output (inline taylor!-trace).
 %   Avoid infinite recursion when mcd is off (pointed out by
 %    Wolfram Koepf).
 %
@@ -1022,8 +1026,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4e";      % version number of the package
-taylor!:date!* := "12-Sep-2022"; % release date
+taylor!:version := "2.4f";      % version number of the package
+taylor!:date!* := "11-Dec-2022"; % release date
 
 if !*verboseload then
   << terpri ();

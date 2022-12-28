@@ -38,11 +38,12 @@
 #include "headers.h"
 
 LispObject Lget_bps(LispObject env, LispObject n)
-{   if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
+{   SingleValued fn;
+    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
     intptr_t n1 = int_of_fixnum(n);
 // Size limited
     n = get_basic_vector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
-    return onevalue(n);
+    return n;
 }
 
 void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2,
@@ -187,8 +188,9 @@ LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
 // symbol has and attempts to display the name of the function there.
 // There are enough tables for me to find the names of MANY things, but I
 // do not guarantee everything.
-{   const char *s0, *s1, *s2, *s3, *s4up;
-    if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    const char *s0, *s1, *s2, *s3, *s4up;
+    if (!symbolp(a)) return nil;
     freshline_trace();
     s0 = show_fn0(qfn0(a));
     s1 = show_fn1(qfn1(a));
@@ -196,7 +198,7 @@ LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
     s3 = show_fn3(qfn3(a));
     s4up = show_fn4up(qfn4up(a));
     trace_printf("%s %s %s %s %s\n", s0, s1, s2, s3, s4up);
-    return onevalue(nil);
+    return nil;
 }
 
 // This should show the header of any symbol, any vector or
@@ -204,7 +206,8 @@ LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
 // prints information but does not return a useful value.
 
 LispObject Lobject_header(LispObject env, LispObject a)
-{   if (is_symbol(a))
+{   SingleValued fn;
+    if (is_symbol(a))
     {   Header h = qheader(a);
         trace_printf("Symbol: (%" PRIxPTR ") ", h);
         if ((h & SYM_SPECIAL_VAR) != 0)
@@ -266,7 +269,7 @@ LispObject Lobject_header(LispObject env, LispObject a)
         trace_printf("Floating point: (%" PRIxPTR ") ", h);
         trace_printf("\n");
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lsymbol_argcount(LispObject env, LispObject a)
@@ -279,7 +282,8 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // somewhere. The 2 bit is present if a &rest argument is present.
 // WELL as of July 2021 I will be kinder with non-bytecoded functions that
 // take exactly 0, 1 2 or 3 args.
-{   no_args *f0;
+{   SingleValued fn;
+    no_args *f0;
     one_arg *f1;
     two_args *f2;
     three_args *f3;
@@ -287,7 +291,7 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     int low, high, hardrest;
     LispObject r;
     unsigned char *b;
-    if (!symbolp(a)) return onevalue(nil);
+    if (!symbolp(a)) return nil;
     f0 = qfn0(a);
     f1 = qfn1(a);
     f2 = qfn2(a);
@@ -297,13 +301,13 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // function cells other than the operative one will contain entrypoints
 // of code to report the error. Actually the code 
     if (f1==G1W0 && f2==G2W0 && f3==G3W0 && f4up==G4W0)
-        return onevalue(fixnum_of_int(0));
+        return fixnum_of_int(0);
     if (f0==G0W1 && f2==G2W1 && f3==G3W1 && f4up==G4W1)
-        return onevalue(fixnum_of_int(1));
+        return fixnum_of_int(1);
     if (f0==G0W2 && f1==G1W2 && f3==G3W2 && f4up==G4W2)
-        return onevalue(fixnum_of_int(2));
+        return fixnum_of_int(2);
     if (f0==G0W3 && f1==G1W3 && f2==G2W3 && f4up==G4W3)
-        return onevalue(fixnum_of_int(3));
+        return fixnum_of_int(3);
 // If a function takes 4 or more arguments all I can see is that
 // its definition is in qfn4up() and I have no obvious way to tell whether
 // it wants 4, 5, 6 or whatever args.
@@ -320,36 +324,36 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
                 car(r) == rest_key ||
                 car(r) == key_key ||
                 car(r) == aux_key ||
-                car(r) == allow_other_keys) return onevalue(nil);
+                car(r) == allow_other_keys) return nil;
             n++;
             r = cdr(r);
         }
-        return onevalue(fixnum_of_int(n));      
+        return fixnum_of_int(n);      
     }
     r = qenv(a);
-    if (!consp(r)) return onevalue(nil);
+    if (!consp(r)) return nil;
     r = car(r);
-    if (!is_bps(r)) return onevalue(nil);
-    b = bit_cast<unsigned char *>(data_of_bps(r));
+    if (!is_bps(r)) return nil;
+    b = reinterpret_cast<unsigned char *>(data_of_bps(r));
     if (f0 == bytecoded_0 ||
         f0 == f0_as_0
-       ) return onevalue(fixnum_of_int(1));
+       ) return fixnum_of_int(1);
     if (f1 == bytecoded_1 ||
         f1 == f1_as_0 ||
         f1 == f1_as_1
-       ) return onevalue(fixnum_of_int(1));
+       ) return fixnum_of_int(1);
     if (f2 == bytecoded_2 ||
         f2 == f2_as_0 ||
         f2 == f2_as_1 ||
         f2 == f2_as_2
-       ) return onevalue(fixnum_of_int(2));
+       ) return fixnum_of_int(2);
     if (f3 == bytecoded_3 ||
         f3 == f3_as_0 ||
         f3 == f3_as_1 ||
         f3 == f3_as_2 ||
         f3 == f3_as_3
-       ) return onevalue(fixnum_of_int(2));
-    if (f4up == bytecoded_4up) return onevalue(fixnum_of_int(b[0]));
+       ) return fixnum_of_int(2);
+    if (f4up == bytecoded_4up) return fixnum_of_int(b[0]);
     low = b[0];          // smallest number of valid args
     high = low + b[1];   // largest number before &rest is accounted for
     hardrest = 0;
@@ -362,17 +366,18 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     else if (f1 == byteoptrest_1) hardrest = 1;
 // hardoptrest - some &optional args with non-nil default value, plus &rest
     else if (f1 == hardoptrest_1) hardrest = 3;
-    else return onevalue(nil);
+    else return nil;
     r = list3(fixnum_of_int(low),
               fixnum_of_int(high), fixnum_of_int(hardrest));
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lsymbol_argcode(LispObject env, LispObject a)
 // This hands back a single integer that encodes what must be in the
 // five function cells for anything byte-coded.
 // Or nil if the argument did not name a bytecoded function.
-{
+{   SingleValued fn;
+ 
 #define BYTE_ARGMASK 0x007    // 0, 1, 2, 3 or 4. 4 means "4 or more"
 #define BYTE_OPT     0x008    // &optional present
 #define BYTE_HARDOPT 0x010    // "hard" case of &optional
@@ -388,16 +393,16 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
     fourup_args *f4up;
     LispObject r;
     int val;
-    if (!symbolp(a)) return onevalue(nil);
+    if (!symbolp(a)) return nil;
     f0 = qfn0(a);
     f1 = qfn1(a);
     f2 = qfn2(a);
     f3 = qfn3(a);
     f4up = qfn4up(a);
     r = qenv(a);
-    if (!consp(r)) return onevalue(nil);
+    if (!consp(r)) return nil;
     r = car(r);
-    if (!is_bps(r)) return onevalue(nil);
+    if (!is_bps(r)) return nil;
     if (f0 == bytecoded_0) val = 0;
     else if (f1 == bytecoded_1) val = 1;
     else if (f2 == bytecoded_2) val = 2;
@@ -418,52 +423,57 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 // The next two intrude on the BYTE_OPT bit-position...
     else if (f1 == f1_as_0) val = BYTE_CALLAS + 8;
     else if (f1 == f1_as_1) val = BYTE_CALLAS + 9;
-    else return onevalue(nil);
-    return onevalue(fixnum_of_int(val));
+    else return nil;
+    return fixnum_of_int(val);
 }
 
 LispObject Lsymbol_env(LispObject env, LispObject a)
 // Not Common Lisp - read the 'environment' cell associated with a
 // symbol.  This cell is deemed empty unless the symbol-function is
 // compiled code.  For use mainly for debugging.
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS
     else if ((qheader(a) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
-             interpreter_entry(a)) return onevalue(nil);
+             interpreter_entry(a)) return nil;
 #endif
-    return onevalue(qenv(a));
+    return qenv(a);
 }
 
 LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
-{   if (!is_symbol(a)) return aerror1("symbol-set-env", a);
-    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
+{   SingleValued fn;
+    if (!is_symbol(a)) return aerror1("symbol-set-env", a);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
     setenv(a, b);
-    return onevalue(b);
+    return b;
 }
 
 // Return the number of byte opcodes executed within this function, counting
 // an extra 10 for each time a bytecoded version of it is entered at all.
 
 LispObject Lsymbol_count(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
-    return onevalue(make_lisp_unsigned64(qcount(a)));
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
+    return make_lisp_unsigned64(qcount(a));
 }
 
 // Find the length in bytes of a bytecoded definition of this function.
 
 LispObject Lsymbol_bytelength(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
     LispObject e = qenv(a);
-    if (!is_cons(e)) return onevalue(fixnum_of_int(0));
+    if (!is_cons(e)) return fixnum_of_int(0);
     e = car(e);
-    if (!is_bps(e)) return onevalue(fixnum_of_int(0));
+    if (!is_bps(e)) return fixnum_of_int(0);
     size_t len = length_of_byteheader(vechdr(e)) - CELL;
-    return onevalue(make_lisp_unsigned64(len));
+    return make_lisp_unsigned64(len);
 }
 
 LispObject Lsymbol_fastgets(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
-    return onevalue(qfastgets(a));
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
+    return qfastgets(a);
 }
 
 // (protect 'name t) arranges that the function indicated (which is
@@ -471,13 +481,14 @@ LispObject Lsymbol_fastgets(LispObject env, LispObject a)
 // (protect 'name nil) restores the usual state of affairs.
 
 LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
-{   Header h;
-    if (!is_symbol(a)) return onevalue(nil);
+{   SingleValued fn;
+    Header h;
+    if (!is_symbol(a)) return nil;
     h = qheader(a);
     if (b == nil) setheader(a, h & ~SYM_CODEPTR);
     else setheader(a, h | SYM_CODEPTR);
     h &= SYM_CODEPTR;
-    return onevalue(Lispify_predicate(h!= 0));
+    return Lispify_predicate(h!= 0);
 }
 
 // (symbol-make-fastget 'xxx nil)   returns current information, nil if no
@@ -486,19 +497,20 @@ LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
 // (symbol-make-fastget 'xxx -1)    sets the option off
 
 LispObject Lsymbol_make_fastget1(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // Originally I had thought I would let people change the fastget size here,
 // but I think that is dangerous and unnecessary so I will not do so any
 // more. Anybody who tries will get a cryptic message!
     term_printf("+++ symbol-make-fastget called with only 1 argument\n");
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
                                 LispObject n)
-{   intptr_t n1, p, q;
+{   SingleValued fn;
+    intptr_t n1, p, q;
     Header h;
-    if (!symbolp(a)) return onevalue(nil);
+    if (!symbolp(a)) return nil;
     h = qheader(a);
     p = header_fastget(h);
     if (is_fixnum(n))
@@ -514,8 +526,8 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
         setheader(a, h);
         if (q != 0) elt(fastget_names, q-1) = a;
     }
-    if (p == 0) return onevalue(nil);
-    else return onevalue(fixnum_of_int(p - 1));
+    if (p == 0) return nil;
+    else return fixnum_of_int(p - 1);
 }
 
 static LispObject deleqip(LispObject a, LispObject l)
@@ -556,7 +568,8 @@ static bool restore_fn_cell(LispObject a, char *name,
 // search!
 
 static LispObject Lrestore_c_code(LispObject env, LispObject a)
-{   char *name;
+{   SingleValued fn;
+    char *name;
     size_t len;
     size_t i;
     LispObject pn;
@@ -566,7 +579,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
         pn = get_pname(a);
         save.restore(a);
     }
-    name = bit_cast<char *>(&celt(pn, 0));
+    name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
 // This is a potential time-sink in that it does a linear scan of all the
 // definitions in the tables that are in u01.c to u60.c.
@@ -578,10 +591,10 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
             env = get(a, funarg, nil);
             save.restore(a);
             setenv(a, env);
-            return onevalue(a);
+            return a;
         }
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lsymbol_set_definition(LispObject env,
@@ -602,7 +615,8 @@ LispObject Lsymbol_set_definition(LispObject env,
 // length of the function body.
 // Standard Lisp does not need &optional or &rest arguments, but it turned
 // out to be pretty easy to make the bytecode compiler support them.
-{   if (!is_symbol(a) ||
+{   SingleValued fn;
+    if (!is_symbol(a) ||
 // Something flagged with the CODEPTR bit is a gensym manufactured to
 // stand for a compiled-code object. It should NOT be reset!
         (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
@@ -611,7 +625,7 @@ LispObject Lsymbol_set_definition(LispObject env,
                undefined_2, undefined_3,
                undefined_4up); // Tidy up first
     setenv(a, a);
-    if (b == nil) return onevalue(b); // set defn to nil to undefine
+    if (b == nil) return b; // set defn to nil to undefine
     else if (symbolp(b))
     {
 // One could imagine a view that the second arg to symbol-set-definition
@@ -717,14 +731,15 @@ LispObject Lsymbol_set_definition(LispObject env,
         setenv(a, cdr(b));
     }
     else return aerror1("symbol-set-definition", b);
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lgetd(LispObject env, LispObject a)
-{   Header h;
+{   SingleValued fn;
+    Header h;
     LispObject type;
-    if (a == nil) return onevalue(nil);
-    else if (!is_symbol(a)) return onevalue(nil);
+    if (a == nil) return nil;
+    else if (!is_symbol(a)) return nil;
     h = qheader(a);
     if ((h & SYM_SPECIAL_FORM) != 0) type = fexpr_symbol;
     else if ((h & SYM_MACRO) != 0)
@@ -734,28 +749,29 @@ LispObject Lgetd(LispObject env, LispObject a)
     }
     else
     {   a = Lsymbol_function(nil, a);
-        if (a == nil) return onevalue(nil);
+        if (a == nil) return nil;
         type = expr_symbol;
     }
     a = cons(type, a);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lremd(LispObject env, LispObject a)
-{   LispObject res;
+{   SingleValued fn;
+    LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("remd", a);
-    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
+    if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
     res = Lgetd(nil, a);
-    if (res == nil) return onevalue(nil); // no definition to remove
+    if (res == nil) return nil; // no definition to remove
 // I treat an explicit use of remd as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.
     setheader(a, qheader(a) & ~SYM_MACRO);
     set_fns(a, undefined_0, undefined_1, undefined_2,
                undefined_3, undefined_4up);
     setenv(a, a);
-    return onevalue(res);
+    return res;
 }
 
 // symbolic procedure copyd(dest, src);
@@ -777,7 +793,8 @@ LispObject Lremd(LispObject env, LispObject a)
 //    end;
 
 LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG dest, src);
     if (!is_symbol(dest)) return aerror1("copyd", dest);
     LispObject x = Lgetd(nil, src);
@@ -801,7 +818,7 @@ LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
     w = get(src, lose_symbol, nil);
     if (w != nil) putprop(dest, lose_symbol, w);
     save.restore(dest, src);
-    return onevalue(dest);
+    return dest;
 }
 
 // For set-autoload the first argument must be a symbol that will name
@@ -817,14 +834,15 @@ LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
 // if that is what you really want.
 
 LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
-{   LispObject res;
+{   SingleValued fn;
+    LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         return aerror1("set-autoload", a);
     if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
-          qfn4up(a) == undefined_4up)) return onevalue(nil);
-    if ((qheader(a) & SYM_CODEPTR) != 0) return onevalue(nil);
+          qfn4up(a) == undefined_4up)) return nil;
+    if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
     {   THREADID;
         Save save(THREADARG a, b);
         if (consp(b)) res = cons(a, b);
@@ -837,7 +855,7 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     set_fns(a, autoload_0, autoload_1, autoload_2,
                autoload_3, autoload_4up);
     setenv(a, res);
-    return onevalue(res);
+    return res;
 }
 
 // If the compiler will support the symbol s as a "built-in" function
@@ -859,7 +877,8 @@ static void trace_builtin(LispObject s, bool state)
 // The arrangements here are such that traceset always includes trace.
 
 LispObject Ltrace(LispObject env, LispObject a)
-{   LispObject w = a;
+{   SingleValued fn;
+    LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
@@ -885,13 +904,14 @@ LispObject Ltrace(LispObject env, LispObject a)
             trace_builtin(s, true);
         }
     }
-    return onevalue(a);
+    return a;
 }
 
 // untrace switches off trace and also any traceset.
 
 LispObject Luntrace(LispObject env, LispObject a)
-{   LispObject w = a;
+{   SingleValued fn;
+    LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
@@ -905,13 +925,14 @@ LispObject Luntrace(LispObject env, LispObject a)
             trace_builtin(s, false);
         }
     }
-    return onevalue(a);
+    return a;
 }
 
 // traceset forces on trace as well as traceset.
 
 LispObject Ltraceset(LispObject env, LispObject a)
-{   LispObject w = a;
+{   SingleValued fn;
+    LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
@@ -923,11 +944,12 @@ LispObject Ltraceset(LispObject env, LispObject a)
         if (symbolp(s))
             setheader(s, qheader(s) | SYM_TRACESET | SYM_TRACED);
     }
-    return onevalue(a);
+    return a;
 }
 
 LispObject Luntraceset(LispObject env, LispObject a)
-{   LispObject w = a;
+{   SingleValued fn;
+    LispObject w = a;
     if (symbolp(a) && a!=nil)
     {   a = ncons(a);
         errexit();
@@ -938,14 +960,15 @@ LispObject Luntraceset(LispObject env, LispObject a)
         w = cdr(w);
         if (symbolp(s)) setheader(s, qheader(s) & ~SYM_TRACESET);
     }
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lmacro_function(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
-    else if ((qheader(a) & SYM_MACRO) == 0) return onevalue(nil);
+{   SingleValued fn;
+    if (!symbolp(a)) return nil;
+    else if ((qheader(a) & SYM_MACRO) == 0) return nil;
 // If the MACRO bit is set in the header I know there is a definition
-    else return onevalue(cons(lambda, qenv(a)));
+    else return cons(lambda, qenv(a));
 }
 
 
@@ -979,7 +1002,7 @@ LispObject get_pname(LispObject a)
 // distinct gensyms, and after that it wraps round. Well on a 32-bit
 // system it counts up to 2^32 and wraps there.
         std::snprintf(genname, sizeof(genname), "%.*s", static_cast<int>(len),
-                     bit_cast<const char *>(&celt(name, 0)));
+                     reinterpret_cast<const char *>(&celt(name, 0)));
         p = genname+len;
         if (gensym_ser <= 9999) std::snprintf(p, sizeof(genname)-len,
                                                  "%.4d",
@@ -1014,15 +1037,17 @@ LispObject get_pname(LispObject a)
 }
 
 LispObject Lsymbol_name(LispObject env, LispObject a)
-{   if (!symbolp(a)) return aerror1("symbol-name", a);
+{   SingleValued fn;
+    if (!symbolp(a)) return aerror1("symbol-name", a);
     a = get_pname(a);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lsymbol_package(LispObject env, LispObject a)
-{   if (!symbolp(a)) return aerror1("symbol-package", a);
+{   SingleValued fn;
+    if (!symbolp(a)) return aerror1("symbol-package", a);
     a = qpackage(a);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lrestart_lisp2(LispObject env,
@@ -1054,7 +1079,8 @@ static LispObject Lrestart_lisp2(LispObject env,
 // from its initial default input source, and that will be preserved across
 // the restart. A log file and the standard output should also be safe,
 // but no other files should be active when restart!-lisp is called.
-{   int n;
+{   SingleValued fn;
+    int n;
     char *v;
     ensure_screen();
     n = 0;
@@ -1115,12 +1141,14 @@ static LispObject Lrestart_lisp2(LispObject env,
 }
 
 static LispObject Lrestart_lisp(LispObject env, LispObject a)
-{   return Lrestart_lisp2(env, a, SPID_NOARG);
+{   SingleValued fn;
+    return Lrestart_lisp2(env, a, SPID_NOARG);
 }
 
 static LispObject Lpreserve_3(LispObject env, LispObject startup,
                               LispObject banner, LispObject resume)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     bool failed;
     std::memset(filename, 0, sizeof(filename));
     if (startup != nil) supervisor = startup;
@@ -1148,15 +1176,18 @@ static LispObject Lpreserve_2(LispObject env,
 // active startup function is retained.  If banner is non-nil (well really
 // I want a string) is is a message of up to 40 characters to display
 // when the system restart.
-{   return Lpreserve_3(env, startup, banner, nil);
+{   SingleValued fn;
+    return Lpreserve_3(env, startup, banner, nil);
 }
 
 static LispObject Lpreserve_1(LispObject env, LispObject startup)
-{   return Lpreserve_3(env, startup, nil, nil);
+{   SingleValued fn;
+    return Lpreserve_3(env, startup, nil, nil);
 }
 
 static LispObject Lpreserve_0(LispObject env)
-{   return Lpreserve_3(env, nil, nil, nil);
+{   SingleValued fn;
+    return Lpreserve_3(env, nil, nil, nil);
 }
 
 
@@ -1173,7 +1204,8 @@ static LispObject Lpreserve_0(LispObject env)
 
 static LispObject Lcheckpoint(LispObject env,
                               LispObject startup, LispObject banner)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     char *msg = "";
     int len = 0;
     std::memset(filename, 0, sizeof(filename));
@@ -1185,7 +1217,7 @@ static LispObject Lcheckpoint(LispObject env,
                 filename);
     if (failed) return aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
-    {   msg = bit_cast<char *>()&celt(banner, 0);
+    {   msg = reinterpret_cast<char *>()&celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
     }
 // Note, with some degree of nervousness, that things on the C stack will
@@ -1199,15 +1231,17 @@ static LispObject Lcheckpoint(LispObject env,
     errexit();
     save.restore(catch_tags, faslvec, faslgensyms);
     set_up_functions(true);
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lcheckpoint_0(LispObject env)
-{   return Lcheckpoint(env, nil, nil);
+{   SingleValued fn;
+    return Lcheckpoint(env, nil, nil);
 }
 
 static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
-{   return Lcheckpoint(env, startup, nil);
+{   SingleValued fn;
+    return Lcheckpoint(env, startup, nil);
 }
 
 #endif
@@ -1217,18 +1251,19 @@ static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
 // been an overflow.
 
 static LispObject Lresource_exceeded(LispObject env)
-{   return resource_exceeded();
+{   SingleValued fn;
+    return resource_exceeded();
 }
 
 static bool eql_numbers(LispObject a, LispObject b)
 // This is only called from eql, and then only when a and b are both tagged
 // as ratios or complex numbers.
 {   LispObject p, q;
-    p = *bit_cast<LispObject *>(a + (CELL - TAG_NUMBERS));
-    q = *bit_cast<LispObject *>(b + (CELL - TAG_NUMBERS));
+    p = *reinterpret_cast<LispObject *>(a + (CELL - TAG_NUMBERS));
+    q = *reinterpret_cast<LispObject *>(b + (CELL - TAG_NUMBERS));
     if (!eql(p, q)) return false;
-    p = *bit_cast<LispObject *>(a + (2*CELL - TAG_NUMBERS));
-    q = *bit_cast<LispObject *>(b + (2*CELL - TAG_NUMBERS));
+    p = *reinterpret_cast<LispObject *>(a + (2*CELL - TAG_NUMBERS));
+    q = *reinterpret_cast<LispObject *>(b + (2*CELL - TAG_NUMBERS));
     return eql(p, q);
 }
 
@@ -1237,36 +1272,13 @@ bool eql_fn(LispObject a, LispObject b)
 // check that numeric values compare properly.  Ugh.
 {
 // (these tests done before eql_fn is called).
-//  if (a == b) return true;
+//  if (a == b && !is_float(a)) return true;
 //  if ((((intptr_t)a ^ (intptr_t)b) & TAG_BITS) != 0) return false;
-//
-// Actually in Common Lisp mode where I have short floats as immediate data
-// I have further pain here with (eql 0.0s -0.0s), and (eql NaN NaN) might
-// improperly return true because of the early EQ test. For Standard Lisp
-// I am going to make +0.0 and -0.0 equal at last for now - nut maybe I
-// will review that later.
-    if (SIXTY_FOUR_BIT)
-    {   if (a == XTAG_SFLOAT &&
-            b == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
-                    true;
-        if (b == XTAG_SFLOAT &&
-            a == static_cast<LispObject>(XTAG_SFLOAT|((uint64_t)1<<63))) return
-                    true;
-// Here I need to deal with single as well as short floats.
-        if (a == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            b == static_cast<LispObject>(XTAG_SFLOAT|XTAG_FLOAT32|((
-                                             uint64_t)1<<63)))
-            return true;
-        if (b == (XTAG_SFLOAT|XTAG_FLOAT32) &&
-            a == static_cast<LispObject>(XTAG_SFLOAT|XTAG_FLOAT32|((
-                                             uint64_t)1<<63)))
-            return true;
+    if ((a & XTAG_BITS) == XTAG_SFLOAT)
+    {   float fa = short_float_val(a),
+              fb = short_float_val(b);
+        return fa == fb;
     }
-    else if ((a == XTAG_SFLOAT &&
-              b == static_cast<LispObject>(XTAG_SFLOAT|0x80000000U)) ||
-             (a == static_cast<LispObject>(XTAG_SFLOAT|0x80000000U) &&
-              b == XTAG_SFLOAT))
-        return true;
     if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -1280,35 +1292,42 @@ bool eql_fn(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
 // Here I must have a long float.
         return f128_eq(float128_of_number(a), float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
         return false;
 #endif // HAVE_SOFTFLOAT
+    }
+    else if ((a & XTAG_BITS) == XTAG_SFLOAT)
+    {   float fa = short_float_val(a),
+              fb = short_float_val(b);
+        return fa == fb;
     }
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
         if (h != numhdr(b)) return false;
-#ifdef ARITHLIIB
-        if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
-#endif // ARITHLIB
+#ifdef ARITHLIB
+        else if (type_of_header(h) == TYPE_NEW_BIGNUM) return Eqn::op(a, b);
+#else // ARITHLIB
         else if (type_of_header(h) == TYPE_BIGNUM)
         {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
+// Should use memcmp!
             while (hh > (intptr_t)(CELL - TAG_NUMBERS))
             {   hh -= 4;
-                if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                    *(uint32_t *)(bit_cast<char *>(b) + hh))
+                if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                    *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                     return false;
             }
             return true;
         }
+#endif // ARITHLIB
         else return eql_numbers(a, b);
     }
 }
 
 #ifdef COMMON
 #define eqcheck(a, b) eql(a, b)
-#else
+#else // COMMON
 #define eqcheck(a, b) ((a) == (b))
-#endif
+#endif // COMMON
 
 static bool cl_vec_equal(LispObject a, LispObject b)
 // here a and b are known to be vectors or arrays.  This should compare
@@ -1421,8 +1440,8 @@ compare_strings:
     if (la != lb) return false;
     while (la > 0)
     {   la--;
-        if (*(bit_cast<char *>(a) + la + offa - TAG_VECTOR) !=
-            *(bit_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
+        if (*(reinterpret_cast<char *>(a) + la + offa - TAG_VECTOR) !=
+            *(reinterpret_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
     }
     return true;
 compare_bits:
@@ -1435,18 +1454,16 @@ compare_bits:
     lb = (lb + 7)/8;
     while (la > 0)
     {   la--;
-        if (*(bit_cast<char *>(a) + la + offa - TAG_VECTOR) !=
-            *(bit_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
+        if (*(reinterpret_cast<char *>(a) + la + offa - TAG_VECTOR) !=
+            *(reinterpret_cast<char *>(b) + la + offb - TAG_VECTOR)) return false;
     }
     return true;
 }
 
 bool cl_equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
-// before entering this general purpose code.
-// I will only view short and possibly single floats as EQUAL here if they
-// has been EQ. In particular that has implications for +0.0 vs. -0.0 and
-// also NaN values...
+// before entering this general purpose code. But immediate floats still
+// need checking.
 {
 // The for loop at the top here is so that cl_equal can iterate along the
 // length of linear lists.
@@ -1463,7 +1480,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
         {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = car(a), cb = car(b);
-                if (ca == cb)
+                if (ca == cb && !is_float(ca))
                 {   a = cdr(a);
                     b = cdr(b);
                     if (a == b) return true;
@@ -1478,10 +1495,10 @@ bool cl_equal_fn(LispObject a, LispObject b)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = car(ca), ccb = car(cb);
-                            if (cca == ccb)
+                            if (cca == ccb && !is_float(cca))
                             {   ca = cdr(ca);
                                 cb = cdr(cb);
-                                if (ca == cb) break;
+                                if (ca == cb && !is_float(ca)) break;
                                 continue;
                             }
 // Do a real recursion when I get down to args like
@@ -1489,7 +1506,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                             if (!cl_equal(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
-                            if (ca == cb) break;
+                            if (ca == cb && !is_float(ca)) break;
                             continue;
                         }
                     }
@@ -1499,19 +1516,22 @@ bool cl_equal_fn(LispObject a, LispObject b)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_BIGNUM)
+#ifndef ARITHLIB
+                                else if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)(bit_cast<char *>(ca) + hh) !=
-                                            *(uint32_t *)(bit_cast<char *>(cb) + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
                                 }
-#ifdef ARITHLIB
+#else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(a, b);
+                                {   if (!Eqn::op(a, b)) return false;
+                                    else break;
+                                }
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -1539,7 +1559,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                                              float128_of_number(ca),
                                              float128_of_number(cb))) return false;
                                 else break;
-#else
+#else // HAVE_SOFTFLOAT
                                 else return false;
 #endif // HAVE_SOFTFLOAT
                             }
@@ -1548,7 +1568,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
                 }
                 a = cdr(a);
                 b = cdr(b);
-                if (a == b) return true;
+                if (a == b && !is_float(a)) return true;
                 continue;
             }
         }
@@ -1561,17 +1581,18 @@ bool cl_equal_fn(LispObject a, LispObject b)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
+#ifndef ARITHLIB
                     if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                                *(uint32_t *)(bit_cast<char *>(b) + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
                     }
-#ifdef ARITHLIB
+#else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -1597,7 +1618,7 @@ bool cl_equal_fn(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
                     else return false;
 #endif // HAVE_SOFTFLOAT
                 }
@@ -1714,7 +1735,7 @@ LispObject Lequalstats(LispObject env)
 {   dump_equals_2();
     for (size_t i=0; i<LOG_SIZE; i++)
         equal_counts[i].count = 0;
-    return onevalue(nil);
+    return nil;
 }
 
 extern bool inner_equal(LispObject a, LispObject b,
@@ -1735,14 +1756,14 @@ bool traced_equal_fn(LispObject a, LispObject b,
 bool inner_equal(LispObject a, LispObject b,
                  const char *file, int line, int depth)
 {
-#else
+#else // TRACED_EQUAL
 bool equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code. I will also have checked that
 // the types of the two args agree, and that they are not both immediate
 // data.
 {
-#endif
+#endif // TRACED_EQUAL
 // The for loop at the top here is so that equal can iterate along the
 // length of linear lists. For MANY MANY cases in a Lisp world data
 // structures will be long but not so terribly deep and so one hopes that
@@ -1763,10 +1784,10 @@ bool equal_fn(LispObject a, LispObject b)
         {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = car(a), cb = car(b);
-                if (ca == cb)
+                if (ca == cb && !is_float(ca))
                 {   a = cdr(a);
                     b = cdr(b);
-                    if (a == b) return true;
+                    if (a == b && !is_float(a)) return true;
                     continue;
                 }
 // And here, because equal() seems to be a very important low-level
@@ -1778,7 +1799,7 @@ bool equal_fn(LispObject a, LispObject b)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = car(ca), ccb = car(cb);
-                            if (cca == ccb)
+                            if (cca == ccb && !is_float(cca))
                             {   ca = cdr(ca);
                                 cb = cdr(cb);
                                 if (ca == cb) break;
@@ -1789,7 +1810,7 @@ bool equal_fn(LispObject a, LispObject b)
                             if (!equal(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
-                            if (ca == cb) break;
+                            if (ca == cb && !is_float(ca)) break;
                             continue;
                         }
                     }
@@ -1804,16 +1825,17 @@ bool equal_fn(LispObject a, LispObject b)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)(bit_cast<char *>(ca) + hh) !=
-                                            *(uint32_t *)(bit_cast<char *>(cb) + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
                                 }
-#endif // ARITHLIB
-#ifdef ARITHLIB
+#else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(ca, cb);
+                                {   if (!Eqn::op(ca, cb)) return false;
+                                    else break;
+                                }
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -1841,7 +1863,7 @@ bool equal_fn(LispObject a, LispObject b)
                                              float128_of_number(ca),
                                              float128_of_number(cb))) return false;
                                 else break;
-#else
+#else // HAVE_SOFTFLOAT
                                 else return false;
 #endif // HAVE_SOFTFLOAT
                             }
@@ -1850,7 +1872,7 @@ bool equal_fn(LispObject a, LispObject b)
                 }
                 a = cdr(a);
                 b = cdr(b);
-                if (a == b) return true;
+                if (a == b && !is_float(a)) return true;
                 continue;
             }
         }
@@ -1865,14 +1887,13 @@ bool equal_fn(LispObject a, LispObject b)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                                *(uint32_t *)(bit_cast<char *>(b) + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
                     }
-#endif // ARITHLIB
-#ifdef ARITHLIB
+#else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -1898,7 +1919,7 @@ bool equal_fn(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
                     else return false;
 #endif // HAVE_SOFTFLOAT
                 }
@@ -1913,7 +1934,8 @@ bool equal_fn(LispObject a, LispObject b)
 
 #ifndef TRACED_EQUAL
 LispObject Lequalstats(LispObject env)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 #endif // TRACED_EQUAL
 
@@ -1930,29 +1952,31 @@ static bool vec_equal(LispObject a, LispObject b)
 // will fail less often if I do not pad properly!
     l = (size_t)word_align_up(length_of_header(ha));
     if (vector_header_of_binary(ha))
-    {   while ((l -= 4) != 0)
-            if (*((uint32_t *)(bit_cast<char *>(a) + l - TAG_VECTOR)) !=
-                *((uint32_t *)(bit_cast<char *>(b) + l - TAG_VECTOR))) return
-                        false;
+    {
+// I think I ough to use std::memcmp here.
+        while ((l -= 4) != 0)
+            if (*((uint32_t *)(reinterpret_cast<char *>(a) + l - TAG_VECTOR)) !=
+                *((uint32_t *)(reinterpret_cast<char *>(b) + l - TAG_VECTOR)))
+                return false;
         return true;
     }
     else
     {   if (is_mixed_header(ha))
         {   while (l > 16)
-            {   uint32_t ea = *((uint32_t *)(bit_cast<char *>
-                                             (a) + l - TAG_VECTOR - 4)),
-                              eb = *((uint32_t *)(bit_cast<char *>(b) + l - TAG_VECTOR -
-                                                  4));
+            {   uint32_t ea = *((uint32_t *)(
+                                reinterpret_cast<char *>(a) + l - TAG_VECTOR - 4)),
+                         eb = *((uint32_t *)(
+                                reinterpret_cast<char *>(b) + l - TAG_VECTOR - 4));
                 if (ea != eb) return false;
                 l -= 4;
             }
         }
         while ((l -= CELL) != 0)
-        {   LispObject ea = *(bit_cast<LispObject *>
-                              (bit_cast<char *>(a) + l - TAG_VECTOR)),
-                            eb = *(bit_cast<LispObject *>(bit_cast<char *>
-                                    (b) + l - TAG_VECTOR));
-            if (ea == eb) continue;
+        {   LispObject ea = *(reinterpret_cast<LispObject *>(
+                              reinterpret_cast<char *>(a) + l - TAG_VECTOR)),
+                       eb = *(reinterpret_cast<LispObject *>(
+                              reinterpret_cast<char *>(b) + l - TAG_VECTOR));
+            if (ea == eb && !is_float(ea)) continue;
             if (!equal(ea, eb)) return false;
         }
         return true;
@@ -1978,10 +2002,10 @@ bool equalp(LispObject a, LispObject b)
         {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = car(a), cb = car(b);
-                if (ca == cb)
+                if (ca == cb && !is_float(ca))
                 {   a = cdr(a);
                     b = cdr(b);
-                    if (a == b) return true;
+                    if (a == b && !is_float(a)) return true;
                     continue;
                 }
 // And here, because equalp() seems to be a very important low-level
@@ -1993,10 +2017,10 @@ bool equalp(LispObject a, LispObject b)
                     {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = car(ca), ccb = car(cb);
-                            if (cca == ccb)
+                            if (cca == ccb && !is_float(cca))
                             {   ca = cdr(ca);
                                 cb = cdr(cb);
-                                if (ca == cb) break;
+                                if (ca == cb && !is_float(ca)) break;
                                 continue;
                             }
 // Do a real recursion when I get down to args like
@@ -2004,7 +2028,7 @@ bool equalp(LispObject a, LispObject b)
                             if (!equalp(cca, ccb)) return false;
                             ca = cdr(ca);
                             cb = cdr(cb);
-                            if (ca == cb) break;
+                            if (ca == cb && !is_float(ca)) break;
                             continue;
                         }
                     }
@@ -2014,19 +2038,22 @@ bool equalp(LispObject a, LispObject b)
                         {   case TAG_NUMBERS:
                             {   Header h = numhdr(ca);
                                 if (h != numhdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_BIGNUM)
+#ifndef ARITHLIB
+                                else if (type_of_header(h) == TYPE_BIGNUM)
                                 {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                                     while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                                     {   hh -= 4;
-                                        if (*(uint32_t *)(bit_cast<char *>(ca) + hh) !=
-                                            *(uint32_t *)(bit_cast<char *>(cb) + hh))
+                                        if (*(uint32_t *)(reinterpret_cast<char *>(ca) + hh) !=
+                                            *(uint32_t *)(reinterpret_cast<char *>(cb) + hh))
                                             return false;
                                     }
                                     break;
                                 }
-#ifdef ARITHLIB
+#else // ARITHLIB
                                 else if (type_of_header(h) == TYPE_NEW_BIGNUM)
-                                    return Eqn::op(a, b);
+                                {   if (!Eqn::op(a, b)) return false;
+                                    else break;
+                                }
 #endif // ARITHLIB
                                 else if (!eql_numbers(ca, cb)) return false;
                                 else break;
@@ -2055,7 +2082,7 @@ bool equalp(LispObject a, LispObject b)
                                              float128_of_number(ca),
                                              float128_of_number(cb))) return false;
                                 else break;
-#else
+#else // HAVE_SOFTFLOAT
                                 else return false;
 #endif // HAVE_SOFTFLOAT
                             }
@@ -2064,7 +2091,7 @@ bool equalp(LispObject a, LispObject b)
                 }
                 a = cdr(a);
                 b = cdr(b);
-                if (a == b) return true;
+                if (a == b && !is_float(a)) return true;
                 continue;
             }
         }
@@ -2075,17 +2102,18 @@ bool equalp(LispObject a, LispObject b)
             {   case TAG_NUMBERS:
                 {   Header h = numhdr(a);
                     if (h != numhdr(b)) return false;
-                    if (type_of_header(h) == TYPE_BIGNUM)
+#ifndef ARITHLIB
+                    else if (type_of_header(h) == TYPE_BIGNUM)
                     {   intptr_t hh = (intptr_t)length_of_header(h) - TAG_NUMBERS;
                         while (hh > (intptr_t)(CELL - TAG_NUMBERS))
                         {   hh -= 4;
-                            if (*(uint32_t *)(bit_cast<char *>(a) + hh) !=
-                                *(uint32_t *)(bit_cast<char *>(b) + hh))
+                            if (*(uint32_t *)(reinterpret_cast<char *>(a) + hh) !=
+                                *(uint32_t *)(reinterpret_cast<char *>(b) + hh))
                                 return false;
                         }
                         return true;
                     }
-#ifdef ARITHLIB
+#else // ARITHLIB
                     else if (type_of_header(h) == TYPE_NEW_BIGNUM)
                         return Eqn::op(a, b);
 #endif // ARITHLIB
@@ -2112,7 +2140,7 @@ bool equalp(LispObject a, LispObject b)
 #ifdef HAVE_SOFTFLOAT
                     else return f128_eq(float128_of_number(a),
                                         float128_of_number(b));
-#else
+#else // HAVE_SOFTFLOAT
                     else return false;
 #endif // HAVE_SOFTFLOAT
                 }
@@ -2121,68 +2149,84 @@ bool equalp(LispObject a, LispObject b)
 }
 
 LispObject Leq(LispObject env, LispObject a, LispObject b)
-{   return onevalue(Lispify_predicate(a == b));
+{   SingleValued fn;
+    return Lispify_predicate(a == b);
 }
 
-LispObject Leql(LispObject env,
-                LispObject a, LispObject b)
-{   return onevalue(Lispify_predicate(eql(a, b)));
+LispObject Leql(LispObject env, LispObject a, LispObject b)
+{   SingleValued fn;
+    return Lispify_predicate(eql(a, b));
 }
 
 LispObject Leqcar(LispObject env, LispObject a, LispObject b)
-{   if (!consp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!consp(a)) return nil;
     a = car(a);
-    return onevalue(Lispify_predicate(eqcheck(a, b)));
+    return Lispify_predicate(eqcheck(a, b));
 }
 
+// There is something of a misery in that if x has a value that is a NaN
+// then it is not equal to itself. Thus if two values a and b have exactly
+// the same bitwise representation at the C++ level one can only deduce
+// that they are equal in the Lisp sense if they do not stand for floating
+// point values.
+
 LispObject Lequalcar(LispObject env, LispObject a, LispObject b)
-{   if (!consp(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (!consp(a)) return nil;
     a = car(a);
-    if (a == b) return lisp_true;
-    else return onevalue(Lispify_predicate(equal(a, b)));
+    if (a == b && !is_float(a)) return lisp_true;
+    else return Lispify_predicate(equal(a, b));
 }
 
 LispObject Lcl_equal(LispObject env, LispObject a, LispObject b)
-{   if (a == b) return onevalue(lisp_true);
-    else return onevalue(Lispify_predicate(cl_equal(a, b)));
+{   SingleValued fn;
+    if (a == b && !is_float(a)) return lisp_true;
+    else return Lispify_predicate(cl_equal(a, b));
 }
 
 LispObject Lequal(LispObject env, LispObject a, LispObject b)
-{   if (a == b) return onevalue(lisp_true);
-    else return onevalue(Lispify_predicate(equal(a, b)));
+{   SingleValued fn;
+    if (a == b && !is_float(a)) return lisp_true;
+    else return Lispify_predicate(equal(a, b));
 }
 
 LispObject Lequalp(LispObject env, LispObject a, LispObject b)
-{   if (a == b) return onevalue(lisp_true);
-    else return onevalue(Lispify_predicate(equalp(a, b)));
+{   SingleValued fn;
+    if (a == b && !is_float(a)) return lisp_true;
+    else return Lispify_predicate(equalp(a, b));
 }
 
 LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
-{   bool r;
+{   SingleValued fn;
+    bool r;
 #ifdef COMMON
     r = cl_equal(a, b);
-#else
+#else // COMMON
 // Note that "equal" here is a macro that expands to something that
 // checks the EQ case in-line, so there is no merit in putting
-//   if (a == b) return onevalue(nil);
+//   if (a == b && !is_float(a)) return nil;
 // first.
     r = equal(a, b);
-#endif
-    return onevalue(Lispify_predicate(!r));
+#endif // COMMON
+    return Lispify_predicate(!r);
 }
 
 LispObject Lnull(LispObject env, LispObject a)
-{   return onevalue(Lispify_predicate(a == nil));
+{   SingleValued fn;
+    return Lispify_predicate(a == nil);
 }
 
 LispObject Lendp(LispObject env, LispObject a)
-{   if (a == nil) return onevalue(lisp_true);
-    else if (is_cons(a)) return onevalue(nil);
+{   SingleValued fn;
+    if (a == nil) return lisp_true;
+    else if (is_cons(a)) return nil;
     else return error(1, err_bad_endp, a);
 }
 
 LispObject Lnreverse(LispObject env, LispObject a)
-{   LispObject b = nil;
+{   SingleValued fn;
+    LispObject b = nil;
     if (is_vector(a))
     {   intptr_t n = Llength(nil, a) - 0x10;
         intptr_t i = TAG_FIXNUM;
@@ -2193,7 +2237,7 @@ LispObject Lnreverse(LispObject env, LispObject a)
             i += 0x10;
             n -= 0x10;
         }
-        return onevalue(a);
+        return a;
     }
     while (consp(a))
     {   LispObject c = a;
@@ -2201,21 +2245,23 @@ LispObject Lnreverse(LispObject env, LispObject a)
         write_barrier(cdraddr(c), b);
         b = c;
     }
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
-{   while (consp(a))
+{   SingleValued fn;
+    while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
         write_barrier(cdraddr(c), b);
         b = c;
     }
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a);
         b = ncons(b);
         errexit();
@@ -2227,12 +2273,13 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
         write_barrier(cdraddr(c), b);
         b = c;
     }
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
                        LispObject c)
-{   {   THREADID;
+{   SingleValued fn;
+    {   THREADID;
         Save save(THREADARG a);
         b = list2(b, c);
         errexit();
@@ -2244,15 +2291,16 @@ LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
         write_barrier(cdraddr(d), b);
         b = d;
     }
-    return onevalue(b);
+    return b;
 }
 
 // nreverse0 is like nreverse except that if its input is atomic it gets
 // returned intact rather than being converted to nil.
 
 LispObject Lnreverse0(LispObject env, LispObject a)
-{   LispObject b = nil;
-    if (!consp(a)) return onevalue(a);
+{   SingleValued fn;
+    LispObject b = nil;
+    if (!consp(a)) return a;
     b = a;
     a = cdr(a);
     setcdr(b, nil);
@@ -2262,11 +2310,12 @@ LispObject Lnreverse0(LispObject env, LispObject a)
         write_barrier(cdraddr(c), b);
         b = c;
     }
-    return onevalue(b);
+    return b;
 }
 
 LispObject Lreverse(LispObject env, LispObject a)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     THREADID;
     stackcheck(THREADARG a);
     r = nil;
@@ -2277,7 +2326,7 @@ LispObject Lreverse(LispObject env, LispObject a)
         save.restore(a);
         a = cdr(a);
     }
-    return onevalue(r);
+    return r;
 }
 
 #ifdef DEBUG_ASSOC
@@ -2285,7 +2334,8 @@ static int64_t assoc_calls = 0, assoc_length = 0, assoc_max = 0; //@@
 #endif
 
 LispObject Lassoc(LispObject env, LispObject a, LispObject b)
-{
+{   SingleValued fn;
+ 
 #ifdef TRACED_EQUAL
     LispObject save_b = b;
     int pos = 0;
@@ -2309,10 +2359,10 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
 //!!        if (assoc_max > 1000) return aerror("length for assoc");
 #endif
-            if (consp(c) && a == car(c)) return onevalue(c);
+            if (consp(c) && a == car(c)) return c;
             b = cdr(b);
         }
-        return onevalue(nil);
+        return nil;
     }
     while (consp(b))
     {   LispObject c = car(b);
@@ -2324,8 +2374,8 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 //!!        if (assoc_max > 1000) return aerror("length for assoc");
 #endif
 #ifdef COMMON
-            if (cl_equal(a, cc)) return onevalue(c);
-#else
+            if (cl_equal(a, cc)) return c;
+#else // COMMON
             if (equal(a, cc))
             {
 #ifdef TRACED_EQUAL
@@ -2333,36 +2383,37 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
                 trace_printf("Assoc true %3d %3d ", pos, int_of_fixnum(Llength(nil,
                              save_b)));
                 prin_to_stdout(a); trace_printf("\n");
-#endif
-                return onevalue(c);
+#endif // TRACED_EQUAL
+                return c;
             }
-#endif
+#endif // COMMON
         }
         b = cdr(b);
 #ifdef TRACED_EQUAL
         pos++;
-#endif
+#endif // TRACED_EQUAL
     }
 #ifdef TRACED_EQUAL
 // beware stupidly long lists...
     trace_printf("Assoc false  %3d %3d ", pos, int_of_fixnum(Llength(nil,
                  save_b)));
     prin_to_stdout(a); trace_printf("\n");
-#endif
-    return onevalue(nil);
+#endif // TRACED_EQUAL
+    return nil;
 }
 
 LispObject Latsoc(LispObject env, LispObject a, LispObject b)
-{
+{   SingleValued fn;
+ 
 #ifdef COMMON
 // See comments under atsoc...
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   LispObject c = car(b);
-            if (consp(c) && a == car(c)) return onevalue(c);
+            if (consp(c) && a == car(c)) return c;
             b = cdr(b);
         }
-        return onevalue(nil);
+        return nil;
     }
 #endif
     while (consp(b))
@@ -2370,55 +2421,57 @@ LispObject Latsoc(LispObject env, LispObject a, LispObject b)
 // As for memq I unroll the loop a little...
 // eql() can neither fail nor call the garbage collector, so I do
 // not need to stack things here.
-        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        if (consp(c) && eqcheck(a, car(c))) return c;
         b = cdr(b);
-        if (!consp(b)) return onevalue(nil);
+        if (!consp(b)) return nil;
         c = car(b);
-        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        if (consp(c) && eqcheck(a, car(c))) return c;
         b = cdr(b);
-        if (!consp(b)) return onevalue(nil);
+        if (!consp(b)) return nil;
         c = car(b);
-        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        if (consp(c) && eqcheck(a, car(c))) return c;
         b = cdr(b);
-        if (!consp(b)) return onevalue(nil);
+        if (!consp(b)) return nil;
         c = car(b);
-        if (consp(c) && eqcheck(a, car(c))) return onevalue(c);
+        if (consp(c) && eqcheck(a, car(c))) return c;
         b = cdr(b);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lmember(LispObject env, LispObject a, LispObject b)
-{   if (is_symbol(a) || is_fixnum(a))
+{   SingleValued fn;
+    if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   if (a == car(b)) return onevalue(b);
+        {   if (a == car(b)) return b;
             b = cdr(b);
-            if (!consp(b)) return onevalue(nil);
-            if (a == car(b)) return onevalue(b);
+            if (!consp(b)) return nil;
+            if (a == car(b)) return b;
             b = cdr(b);
-            if (!consp(b)) return onevalue(nil);
-            if (a == car(b)) return onevalue(b);
+            if (!consp(b)) return nil;
+            if (a == car(b)) return b;
             b = cdr(b);
-            if (!consp(b)) return onevalue(nil);
-            if (a == car(b)) return onevalue(b);
+            if (!consp(b)) return nil;
+            if (a == car(b)) return b;
             b = cdr(b);
         }
-        return onevalue(nil);
+        return nil;
     }
     while (consp(b))
     {   LispObject cb = car(b);
 #ifdef COMMON
-        if (cl_equal(a, cb)) return onevalue(b);
-#else
-        if (equal(a, cb)) return onevalue(b);
-#endif
+        if (cl_equal(a, cb)) return b;
+#else // COMMON
+        if (equal(a, cb)) return b;
+#endif // COMMON
         b = cdr(b);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lmemq(LispObject env, LispObject a, LispObject b)
-{
+{   SingleValued fn;
+ 
 #ifdef COMMON
 // I think it is possible that the test I need here is more along the
 // lines of "is it a number that is not a fixnum" since EQL only
@@ -2426,33 +2479,34 @@ LispObject Lmemq(LispObject env, LispObject a, LispObject b)
 // now since I am not at present too concerned about Common Lisp mode...
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
-        {   if (a == car(b)) return onevalue(b);
+        {   if (a == car(b)) return b;
             b = cdr(b);
         }
-        return onevalue(nil);
+        return nil;
     }
 #endif
     while (consp(b))
     {
 // I have unrolled this loop a bit because I found that in one of the
 // Reduce tests it was a serious hot-spot.
-        if (eqcheck(a, car(b))) return onevalue(b);
+        if (eqcheck(a, car(b))) return b;
         b = cdr(b);
-        if (!consp(b)) return onevalue(nil);
-        if (eqcheck(a, car(b))) return onevalue(b);
+        if (!consp(b)) return nil;
+        if (eqcheck(a, car(b))) return b;
         b = cdr(b);
-        if (!consp(b)) return onevalue(nil);
-        if (eqcheck(a, car(b))) return onevalue(b);
+        if (!consp(b)) return nil;
+        if (eqcheck(a, car(b))) return b;
         b = cdr(b);
-        if (!consp(b)) return onevalue(nil);
-        if (eqcheck(a, car(b))) return onevalue(b);
+        if (!consp(b)) return nil;
+        if (eqcheck(a, car(b))) return b;
         b = cdr(b);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static bool smemq(LispObject a, LispObject b)
-{
+{   SingleValued fn;
+ 
 // /* This is a bit worrying - it can use C recursion to arbitrary
 // depth without any checking for overflow, and hence it can ESCAPE
 // if (e.g.) given cyclic structures.  Some alteration is needed.  As
@@ -2468,9 +2522,10 @@ static bool smemq(LispObject a, LispObject b)
 }
 
 LispObject Lsmemq(LispObject env, LispObject a, LispObject b)
-{   bool r;
+{   SingleValued fn;
+    bool r;
     r = smemq(a, b);
-    return onevalue(Lispify_predicate(r));
+    return Lispify_predicate(r);
 }
 
 //  (defun contained (x y)
@@ -2495,30 +2550,33 @@ static bool containedequal(LispObject env, LispObject x, LispObject y)
     return equal(x, y);
 }
 
-static LispObject Lcontained(LispObject env, LispObject x,
-                             LispObject y)
-{   bool r;
+static LispObject Lcontained(LispObject env, LispObject x, LispObject y)
+{   SingleValued fn;
+    bool r;
     if (is_symbol(x) || is_fixnum(x)) r = containedeq(nil, x, y);
     else r = containedequal(nil, x, y);
-    return onevalue(Lispify_predicate(r));
+    return Lispify_predicate(r);
 }
 
 LispObject Llast(LispObject env, LispObject a)
-{   LispObject b;
+{   SingleValued fn;
+    LispObject b;
     if (!consp(a)) return aerror1("last", a);
     while (b = cdr(a), consp(b)) a = b;
-    return onevalue(car(a));
+    return car(a);
 }
 
 LispObject Llastpair(LispObject env, LispObject a)
-{   LispObject b;
-    if (!consp(a)) return onevalue(a); // return aerror1("lastpair", a);
+{   SingleValued fn;
+    LispObject b;
+    if (!consp(a)) return a; // return aerror1("lastpair", a;
     while (b = cdr(a), consp(b)) a = b;
-    return onevalue(a);
+    return a;
 }
 
 LispObject Llength(LispObject env, LispObject a)
-{   if (a == nil) return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    if (a == nil) return fixnum_of_int(0);
     if (is_cons(a))
     {   size_t n = 1;
 // Possibly I should do something to trap cyclic lists.. But doing so
@@ -2549,7 +2607,7 @@ LispObject Llength(LispObject env, LispObject a)
             n += 4;
         }
         a = make_lisp_unsigned64(n);
-        return onevalue(a);
+        return a;
     }
 // Common Lisp expects length to find the length of vectors
 // as well as lists. I might as well do that in Standard Lisp mode
@@ -2565,19 +2623,20 @@ LispObject Llength(LispObject env, LispObject a)
             if (consp(dims) && !consp(cdr(dims))) dims = car(dims);
             else return aerror1("length", a);  // Not one-dimensional
             if (is_fixnum(fillp)) dims = fillp;
-            return onevalue(dims);
+            return dims;
         }
         if (is_bitvec_header(h)) n = length_of_bitheader(h) - 8*CELL;
         else if (is_string_header(h)) n = length_of_byteheader(h) - CELL;
         else n = (length_of_header(h) - CELL)/CELL;
         a = make_lisp_unsigned64(n);
-        return onevalue(a);
+        return a;
     }
-    else return onevalue(fixnum_of_int(0));
+    else return fixnum_of_int(0);
 }
 
 LispObject Lappend_1(LispObject, LispObject a)
-{   return onevalue(a);
+{   SingleValued fn;
+    return a;
 }
 
 // LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
@@ -2601,24 +2660,24 @@ LispObject Lappend_1(LispObject, LispObject a)
 //         b = r;
 //         r = a;
 //     }
-//     return onevalue(b);
+//     return b;
 // }
 
 // New version that tries to improve speed - at the cost of some
 // extra complication.
 
 LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
-{
-    if (!consp(a)) return onevalue(b);
+{   SingleValued fn;
+    if (!consp(a)) return b;
     LispObject a1 = car(a);
     a = cdr(a);
-    if (!consp(a)) return onevalue(cons(a1, b));
+    if (!consp(a)) return cons(a1, b);
     LispObject a2 = car(a);
     a = cdr (a);
-    if (!consp(a)) return onevalue(list2star(a1, a2, b));
+    if (!consp(a)) return list2star(a1, a2, b);
     LispObject a3 = car(a);
     a = cdr (a);
-    if (!consp(a)) return onevalue(list3star(a1, a2, a3, b));
+    if (!consp(a)) return list3star(a1, a2, a3, b);
     LispObject front, p;
     THREADID;
     {   Save save(THREADARG a, b);
@@ -2634,7 +2693,7 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
             b = cons(a1, b);
             write_barrier(cdraddr(p), b);
             save.restore(front);
-            return onevalue(front);
+            return front;
         }
         a2 = car(a);
         a = cdr(a);
@@ -2643,7 +2702,7 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
             b = list2star(a1, a2, b);
             write_barrier(cdraddr(p), b);
             save.restore(front);
-            return onevalue(front);
+            return front;
         }
         a3 = car(a);
         a = cdr(a);
@@ -2652,7 +2711,7 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
             b = list3star(a1, a2, a3, b);
             write_barrier(cdraddr(p), b);
             save.restore(front);
-            return onevalue(front);
+            return front;
         }
         Save save(THREADARG front, p, a, b);
         LispObject w = list3(a1, a2, a3);
@@ -2664,7 +2723,8 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a);
     b = Lappend_2(nil, b, c);
     save.restore(a);
@@ -2673,7 +2733,8 @@ LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
 
 LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a1, a2, a3);
 // Note that the list of arguments from a4 upwards will be freshly consed
 // and so I am entitled to overwrite it as I go.
@@ -2695,11 +2756,12 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
     r = Lappend_2(nil, a2, r);
     errexit();
     save.restore(a1, a2, a3);
-    return onevalue(Lappend_2(nil, a1, r));
+    return Lappend_2(nil, a1, r);
 }
 
 LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     THREADID;
     RealSave save(THREADARG aa, bb);
     LispObject &a = save.val(1);
@@ -2722,9 +2784,9 @@ LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
         {   LispObject q = car(b);
 #ifdef COMMON
             if (cl_equal(q, a))
-#else
+#else // COMMON
             if (equal(q, a))
-#endif
+#endif // COMMON
             {   b = cdr(b);
                 break;
             }
@@ -2740,12 +2802,13 @@ LispObject Ldelete(LispObject env, LispObject aa, LispObject bb)
         bb = r;
         r = w;
     }
-    return onevalue(bb);
+    return bb;
 }
 
 
 LispObject Ldeleq(LispObject env, LispObject aa, LispObject bb)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     THREADID;
     RealSave save(THREADARG aa, bb);
     LispObject &a = save.val(1);
@@ -2768,22 +2831,24 @@ LispObject Ldeleq(LispObject env, LispObject aa, LispObject bb)
         bb = r;
         r = w;
     }
-    return onevalue(bb);
+    return bb;
 }
 
 LispObject Ldeleqip(LispObject env, LispObject aa, LispObject bb)
-{   return onevalue(deleqip(aa, bb));
+{   SingleValued fn;
+    return deleqip(aa, bb);
 }
 
 LispObject Lnconc(LispObject env, LispObject a, LispObject b)
-{   LispObject c;
-    if (!consp(a)) return onevalue(b);
+{   SingleValued fn;
+    LispObject c;
+    if (!consp(a)) return b;
     c = a;
     for (;;)
     {   LispObject next = cdr(c);
         if (!consp(next))
         {   write_barrier(cdraddr(c), b);
-            return onevalue(a);
+            return a;
         }
         else c = next;
     }
@@ -3004,7 +3069,7 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
         c1 = rx1;
         rx1 = w;
     }
-    return onevalue(c1);
+    return c1;
 }
 
 LispObject subst(LispObject a1, LispObject b1, LispObject c1)
@@ -3022,9 +3087,9 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
         {
 #ifdef COMMON
             if (cl_equal(c, b))
-#else
+#else // COMMON
             if (equal(c, b))
-#endif
+#endif // COMMON
             {
 // if EQUAL said "yes" then it can not have failed.
                 if (c == a) break; // substitute by leaving unchanged
@@ -3115,7 +3180,7 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
         c1 = rx1;
         rx1 = w;
     }
-    return onevalue(c1);
+    return c1;
 }
 
 LispObject subla(LispObject a1, LispObject c1)
@@ -3227,7 +3292,7 @@ LispObject subla(LispObject a1, LispObject c1)
         c1 = rx1;
         rx1 = w;
     }
-    return onevalue(c1);
+    return c1;
 }
 
 LispObject sublis(LispObject a1, LispObject c1)
@@ -3247,9 +3312,9 @@ LispObject sublis(LispObject a1, LispObject c1)
             {   LispObject tta = car(tt);
 #ifdef COMMON
                 if (consp(tta) && cl_equal(c, car(tta)))
-#else
+#else // COMMON
                 if (consp(tta) && equal(c, car(tta)))
-#endif
+#endif // COMMON
                 {   tt = cdr(tta);
                     found = true;
                     break;
@@ -3348,12 +3413,12 @@ LispObject sublis(LispObject a1, LispObject c1)
         c1 = rx1;
         rx1 = w;
     }
-    return onevalue(c1);
+    return c1;
 }
 
 LispObject Lsubstq(LispObject env, LispObject a, LispObject b,
                    LispObject c)
-{
+{   SingleValued fn;
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -3365,20 +3430,21 @@ LispObject Lsubstq(LispObject env, LispObject a, LispObject b,
 
 LispObject Lsubst(LispObject env, LispObject a, LispObject b,
                   LispObject c)
-{
+{   SingleValued fn;
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         return aerror("subst");
     }
 #endif
-    if (c == b) return onevalue(a);
+    if (c == b) return a;
     else if (is_symbol(b) || is_fixnum(b)) return substq(a, b, c);
     else return subst(a, b, c);
 }
 
 LispObject Lsublis(LispObject env, LispObject al, LispObject x)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     stackcheck(THREADARG al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
@@ -3386,14 +3452,15 @@ LispObject Lsublis(LispObject env, LispObject al, LispObject x)
         return aerror("sublis");
     }
 #endif
-    if (!consp(al)) return onevalue(x);
+    if (!consp(al)) return x;
     else return sublis(al, x);
 }
 
 
 LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 // as sublis, but uses eq test rather than equal
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     stackcheck(THREADARG al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
@@ -3401,7 +3468,7 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
         return aerror("subla");
     }
 #endif
-    if (!consp(al)) return onevalue(x);
+    if (!consp(al)) return x;
     else return subla(al, x);
 }
 

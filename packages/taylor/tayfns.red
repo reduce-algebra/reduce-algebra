@@ -1168,7 +1168,7 @@ symbolic procedure taysimpsin u;
   if not (car u memq '(sin cos sec csc)) or cddr u
     then confusion 'taysimpsin
    else taylor!:
-    begin scalar l,tay,result,tp,i1,l0,a0,a1,a2;
+    begin scalar l,tay,result,result2,tp,i1,l0,a0,a1,a2;
     tay := taysimpsq simp!* cadr u;
     if not taylor!-kernel!-sq!-p tay
       then return mksq({car u,mk!*sq tay},1);
@@ -1187,6 +1187,7 @@ symbolic procedure taysimpsin u;
     if not null numr a0
       then tay := addtaylor(tay,cst!-taylor!*(negsq a0,tp));
     result := taysimpexp{'exp,multtaylor(tay,cst!-taylor!*(i1,tp))};
+    result2 := taysimpexp{'exp,multtaylor(tay,cst!-taylor!*(negsq i1,tp))};
     a1 := simp!* {'sin,mk!*sq a0} . simp!* {'cos,mk!*sq a0};
     if car u memq '(sin csc) then <<
       a2 := addsq(car a1,multsq(i1,cdr a1));
@@ -1197,9 +1198,13 @@ symbolic procedure taysimpsin u;
       a1 := addsq(cdr a1,multsq(i1,car a1));
      >>;
     result := multsq(addsq(multsq(result,a1),
-                           multsq(taysimpsq!* invsq result,a2)),
+                           multsq(result2,a2)),
                      1 ./ 2);
-    if car u memq '(sec csc) then result := invsq result;
+    if car u memq '(sec csc) then <<
+       if null numr result then taylor!-error!*('not!-a!-unit,u)
+        else result := invsq result;
+    >>
+     else if null numr result then return !*tay2q cst!-taylor!*(result,tp);
     return taysimpsq!* result
   end;
 
@@ -1256,7 +1261,7 @@ symbolic procedure taysimpsinh u;
   if not (car u memq '(sinh cosh sech csch)) or cddr u
     then confusion 'taysimpsin
    else taylor!:
-    begin scalar l,tay,result,tp,l0,a0,a1,a2;
+    begin scalar l,tay,result,result2,tp,l0,a0,a1,a2;
     tay := taysimpsq simp!* cadr u;
     if not taylor!-kernel!-sq!-p tay
       then return mksq({car u,mk!*sq tay},1);
@@ -1274,6 +1279,7 @@ symbolic procedure taysimpsinh u;
     if not null numr a0
       then tay := addtaylor(tay,cst!-taylor!*(negsq a0,tp));
     result := taysimpexp{'exp,tay};
+    result2 := taysimpexp{'exp,negtaylor tay};
     a1 := simp!* {'sinh,mk!*sq a0} . simp!* {'cosh,mk!*sq a0};
     if car u memq '(sinh csch) then <<
       a2 := addsq(car a1,cdr a1);
@@ -1284,9 +1290,13 @@ symbolic procedure taysimpsinh u;
       a1 := subtrsq(cdr a1,car a1);
      >>;
     result := multsq(addsq(multsq(result,a2),
-                           multsq(taysimpsq!* invsq result,a1)),
+                           multsq(result2,a1)),
                      1 ./ 2);
-    if car u memq '(sech csch) then result := invsq result;
+    if car u memq '(sech csch) then <<
+       if null numr result then taylor!-error!*('not!-a!-unit,u)
+        else result := invsq result;
+    >>
+     else if null numr result then return !*tay2q cst!-taylor!*(result,tp);
     return taysimpsq!* result
   end;
 

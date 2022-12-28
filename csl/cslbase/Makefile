@@ -87,4 +87,12 @@ arithtest:	arithtest.cpp arithlib.hpp
 time-arith:	time-arith.sh
 	./time-arith.sh
 
+# "karatune" attepts to judge a proper value for KARATSUBA_CUTOFF
+
+.PHONY:	karatune
+
+karatune:	karatune.cpp arithlib.hpp
+	g++ -O3 karatune.cpp $(LIBS) -o karatune
+	time ./karatune
+
 # end of Makefile in cslbase

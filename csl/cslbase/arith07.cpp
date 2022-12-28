@@ -153,13 +153,13 @@ LispObject negateb(LispObject a)
             setnumhdr(b, numhdr(b) - pack_hdrlength(1));
             if (SIXTY_FOUR_BIT)
             {   if ((i & 1) != 0) bignum_digits(b)[i] = 0;
-                else *bit_cast<Header *>(&bignum_digits(b)[i]) = make_bighdr(
-                                2);
+                else *reinterpret_cast<Header *>(&bignum_digits(b)[i]) =
+                    make_bighdr(2);
             }
             else
             {   if ((i & 1) == 0) bignum_digits(b)[i] = 0;
-                else *bit_cast<Header *>(&bignum_digits(b)[i]) = make_bighdr(
-                                2);
+                else *reinterpret_cast<Header *>(&bignum_digits(b)[i]) =
+                    make_bighdr(2);
             }
         }
         else bignum_digits(b)[i] = carry;   // no shrinking needed

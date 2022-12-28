@@ -48,6 +48,31 @@
 #ifndef header_float128_t
 #define header_float128_t
 
+#ifdef HAVE_BITCAST
+#include <bit>
+using std::bit_cast;
+#else // HAVE_BITCAST
+#ifndef CSL_BITCAST
+// For most of CSL this is a redundant repeat of stuff from machine.h,
+// however by including it here I make this header free-standing.
+template <class To, class From>
+std::enable_if_t<
+    sizeof(To) == sizeof(From) &&
+    std::is_trivially_copyable_v<From> &&
+    std::is_trivially_copyable_v<To>,
+    To>
+bit_cast(const From& src) noexcept
+{   static_assert(std::is_trivially_constructible_v<To>,
+        "This implementation additionally requires "
+        "destination type to be trivially constructible");
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
+#define CSL_BITCAST 1
+#endif // CSL_BITCAST
+#endif // HAVE_BITCAST
+
 #include <cstring>
 
 // For any degree of sanity at all here I need to arrange that I can use
@@ -67,12 +92,16 @@
 // format. Well I have a chance of using G format decimal printing so
 // I should use that unless the "hex" flag is set.
 
-// Note that input is FRAGILE. For instance the hex input must have
+// Note that hex input is FRAGILE. For instance the hex input must have
 // 32 hex digits (the separator "'" may be used to help make the format
-// clearer) and they must be proper hex digits. For decimal style input
-// the format should be used with caution and overflow, underflow and the
-// like avoided. This is intended for my use within just this project
-// rather than being robust code proper for general use.
+// clearer) and they must be proper hex digits.
+// Decimal input is intended to yield an exactly correct value in particular
+// when the input is a decimal rendering of an exactly representable value,
+// however I have not put any effort into coping with sub-normal numbers.
+// If the decimal provided has a value between two representable values
+// I attempt to round to the nearest, rounding to even om ambiguity. This
+// is done subject to me using a limited number of guard bits in the
+// calculation.
 
 // This builds on top of the softfloat library from John R Hauser, a copy
 // of which can be found elsewhere within the CSL/Reduce source tree.
@@ -84,32 +113,31 @@ extern "C" {
 #ifdef LITTLEENDIAN
 #define fpOrder(a, b)    {a, b}
 #define fp256Order(a, b) {a, b}
+#define HIPART 1
+#define LOPART 0
 #else // LITTLEENDIAN
 #define fpOrder(a, b)    {b, a}
 #define fp256Order(a, b) {b, a}
+#define HIPART 0
+#define LOPART 1
 #endif // LITTLEENDIAN
 
 inline int  f128_exponent(const float128_t p);
 inline void f128_set_exponent(float128_t *p, int n);
 extern void f128_ldexp(float128_t *p, int n);
 extern void f128_frexp(float128_t p, float128_t *r, int *x);
+extern float128_t f128_modf(float128_t p, float128_t& intpart);
+
 inline bool f128_infinitep(const float128_t p);
 inline bool f128_finite(const float128_t p);
 inline bool f128_nanp(const float128_t x);
 inline bool f128_subnorm(const float128_t x);
 inline bool f128_negative(const float128_t x);
+inline float128_t f128_minus(float128_t x);
 inline void f128_negate(float128_t *x);
 extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 
-#ifdef LITTLEENDIAN
-#define HIPART 1
-#define LOPART 0
-#else
-#define HIPART 0
-#define LOPART 1
-#endif
-
-// This file may be used more of less stand-alone so I will noy rely on
+// This file may be used more of less stand-alone so I will not rely on
 // "earlier" CSL headers to define these...
 
 #ifndef UNUSED_NAME
@@ -136,10 +164,14 @@ extern void f128_split(const float128_t *x, float128_t *yhi, float128_t *ylo);
 #endif // INLINE_VAR
 
 
+extern float128_t f128_NaN;         // a NaN
+extern float128_t f128_inf;         // infinity
+extern float128_t f128_minf;        // -infinity
 extern float128_t f128_0;           // 0.0_Q . v;
 extern float128_t f128_half;        // 0.5_Q . v;
 extern float128_t f128_mhalf;       // (-0.5_Q) . v;
 extern float128_t f128_1;           // 1.0_Q . v;
+extern float128_t f128_m1;          // (-1.0_Q) . v;
 extern float128_t f128_10_16;       // 1.0e16_Q . v;
 extern float128_t f128_10_17;       // 1.0e17_Q . v;
 extern float128_t f128_10_18;       // 1.0e18_Q . v;
@@ -221,6 +253,11 @@ inline void f128_negate(float128_t *x)
 {   x->v[HIPART] ^= UINT64_C(0x8000000000000000);
 }
 
+inline float128_t f128_minus(float128_t x)
+{   x.v[HIPART] ^= UINT64_C(0x8000000000000000);
+    return x;
+}
+
 inline bool floating_edge_case128(float128_t r)
 {   return f128_infinitep(r) || f128_nanp(r);
 }
@@ -270,8 +307,9 @@ extern int f128_print_F(int width, int precision, float128_t p);
 extern int f128_print_G(int width, int precision, float128_t p);
 
 // By making the code that generated a QuadFloat from a string of
-// characters "constexpr" I can (with luck) move all costs associated
-// with use of QuadFloat literals to compile-time.
+// characters "constexpr" I can move all costs associated with use
+// of QuadFloat literals to compile-time. At least with a sufficiently
+// good compiler implementing sufficiently recent C++ features.
 
 inline constexpr uint64_t f160_leftshift(uint64_t m[5], uint64_t carry, int bits=1)
 {   for (int i=0; i<5; i++)
@@ -399,9 +437,16 @@ inline constexpr float128_t atof128(const char* s)
 // 48 guard bits while I calculate the floating point representation.
 // With that many guard bits I will hope not to have too much pain with
 // overall accuracy of conversion once the result is packed in 128 bits.
+// Ha ha ha - if the user were to write a decimal with 48+ significant
+// decimal digits (way more than are needed to get a QuadFloat accurate)
+// then the 160-bit integer here could overflow and that would lead to
+// a grossly incorrect result! So I will want to avoid collecting digits
+// beyond say 47 - however I will need to count such skipped over digits
+// in case the input is 50 digits followed by ".0".
     uint64_t m[5] = {0,0,0,0,0};
     float128_t r = {0,0};
     int x = 0;    // decimal exponent
+    int digits = 0, skipped = 0;
     bool isZero = true, dotSeen = false, sign = false;
     int c = *s++;
     if (c == '-')
@@ -415,12 +460,16 @@ inline constexpr float128_t atof128(const char* s)
 // after each multipication. 
     while (c>='0' && c<='9')
     {   if (c != '0') isZero = false;
-        unsigned int carry = c - '0';
-        for (int i=0; i<5; i++)
-        {   uint64_t d = 10*m[i] + carry;
-            carry = d>>32;
-            m[i] = d & 0xffffffffU;
+        if (!isZero) digits++;
+        if (digits < 47)
+        {   unsigned int carry = c - '0';
+            for (int i=0; i<5; i++)
+            {   uint64_t d = 10*m[i] + carry;
+                carry = d>>32;
+                m[i] = d & 0xffffffffU;
+            }
         }
+        else skipped++;
         if (dotSeen) x--;
         c = *s++;
         if (c == '.')
@@ -437,8 +486,8 @@ inline constexpr float128_t atof128(const char* s)
         if (sign) r.v[f128_high] |= 0x8000000000000000LLU;
         return r;
     }
-    int xx = 0;    // explicitly specified decimal exponent
-                   // I allow all sorts of silly characters!
+    int xx = skipped;    // explicitly specified decimal exponent
+                         // I allow all sorts of silly characters!
     if (c == 'e' || c == 'E' || c == 'd' || c == 'D' ||
         c == 'l' || c == 'l' || c == 's' || c == 'S' ||
         c == 'f' || c == 'F')
@@ -597,6 +646,17 @@ public:
     {   v = rhs.v;
     }
 
+    operator double()
+    {   float64_t r = f128_to_f64(v);
+// The following line is probably the most genuine use of bit_cast I have
+// written anywhere!
+        return bit_cast<double>(r.v);
+    }
+
+    operator int64_t()
+    {   return f128_to_i64(v, softfloat_round_minMag, false);
+    }
+
     friend std::ostream& operator<<(std::ostream& o, const QuadFloat& d)
     {   bool hex = (o.flags() & std::ios::hex) != 0;
         if (hex)
@@ -626,12 +686,38 @@ public:
     bool operator>(const QuadFloat& rhs) const;
     bool operator>=(const QuadFloat& rhs) const;
 
+    constexpr QuadFloat operator+() const;
     constexpr QuadFloat operator-() const;
 
     QuadFloat operator+(const QuadFloat& rhs) const;
     QuadFloat operator-(const QuadFloat& rhs) const;
     QuadFloat operator*(const QuadFloat& rhs) const;
     QuadFloat operator/(const QuadFloat& rhs) const;
+
+    QuadFloat operator+=(const QuadFloat& rhs);
+    QuadFloat operator-=(const QuadFloat& rhs);
+    QuadFloat operator*=(const QuadFloat& rhs);
+    QuadFloat operator/=(const QuadFloat& rhs);
+
+    bool isinf()
+    {   return f128_infinitep(v);
+    }
+
+    bool isfinite()
+    {   return f128_finite(v);
+    }
+
+    bool isnan()
+    {   return f128_nanp(v);
+    }
+
+    bool issubnorm()
+    {   return f128_subnorm(v);
+    }
+
+    bool isnegative()
+    {   return f128_negative(v);
+    }
 
     constexpr bool sign();
     constexpr int exponent();
@@ -663,6 +749,10 @@ inline bool QuadFloat::operator>=(const QuadFloat& rhs) const
 {   return f128_le(rhs.v, v);
 }
 
+constexpr inline QuadFloat QuadFloat::operator+() const
+{   return *this;
+}
+
 constexpr inline QuadFloat QuadFloat::operator-() const
 {   float128_t r{{0,0}};
     r.v[f128_high] = v.v[f128_high] ^ 0x8000000000000000ULL;
@@ -684,6 +774,26 @@ inline QuadFloat QuadFloat::operator*(const QuadFloat& rhs) const
 
 inline QuadFloat QuadFloat::operator/(const QuadFloat& rhs) const
 {   return QuadFloat(f128_div(v, rhs.v));
+}
+
+inline QuadFloat QuadFloat::operator+=(const QuadFloat& rhs)
+{   v = f128_add(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator-=(const QuadFloat& rhs)
+{   v = f128_sub(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator*=(const QuadFloat& rhs)
+{   v = f128_mul(v, rhs.v);
+    return *this;
+}
+
+inline QuadFloat QuadFloat::operator/=(const QuadFloat& rhs)
+{   v = f128_div(v, rhs.v);
+    return *this;
 }
 
 inline constexpr bool QuadFloat::sign()
@@ -724,6 +834,16 @@ inline constexpr QuadFloat QuadFloat::mantissa()
     r.v[0] = (r.v[0] & 0x8000ffffffffffffU) | 0x3fff000000000000U;
 #endif // LITTLEENDIAN
     return QuadFloat(r);
+}
+
+inline uint128_t qmantissa(QuadFloat a)
+{   uint64_t hi, lo;
+    f128_mantissa(a.v, hi, lo);
+    return (static_cast<uint128_t>(hi)<<64) + lo;
+}
+
+inline QuadFloat qmodf(QuadFloat a, QuadFloat& intpart)
+{   return QuadFloat(f128_modf(a.v, intpart.v));
 }
 
 inline constexpr QuadFloat operator ""_Q (const char *s)
@@ -793,10 +913,14 @@ inline constexpr QuadFloat operator ""_QX (const char* s)
     return QuadFloat(r);
 }
 
+INLINE_VAR float128_t f128_NaN          = {fpOrder(0, 0x7fff800000000000LL)}; 
+INLINE_VAR float128_t f128_inf          = {fpOrder(0, 0x7fff000000000000LL)}; 
+INLINE_VAR float128_t f128_minf         = {fpOrder(0, 0xffff000000000000LL)}; 
 INLINE_VAR float128_t f128_0            = 0.0_Q . v;
 INLINE_VAR float128_t f128_half         = 0.5_Q . v;
 INLINE_VAR float128_t f128_mhalf        = (-0.5_Q) . v;
 INLINE_VAR float128_t f128_1            = 1.0_Q . v;
+INLINE_VAR float128_t f128_m1           = (-1.0_Q) . v;
 INLINE_VAR float128_t f128_10_16        = 1.0e16_Q . v;
 INLINE_VAR float128_t f128_10_17        = 1.0e17_Q . v;
 INLINE_VAR float128_t f128_10_18        = 1.0e18_Q . v;
@@ -963,7 +1087,9 @@ public:
 //
 // Well probably the best way to put OctFloat literal values in source code
 // will be along the lines of OctFloat(1.23_Q, 4.56e-36_Q) leveraging the
-// fact that QuadDoubles can be read in competently.
+// fact that QuadDoubles can be read in competently. Or to input then
+// as hex values with an 0x prefix and _QQX suffix and exactly 64 hex
+// digits between.
 
 
 inline OctFloat oct_10(10);

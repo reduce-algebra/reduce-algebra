@@ -290,7 +290,7 @@ if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
-		arith-float128.cpp arith-elem.cpp arith-misc.cpp
+		arith-elem.cpp arith-misc.cpp
 else !arithlib
 arith_sources =
 endif !arithlib
@@ -303,7 +303,8 @@ endif !conservative
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
-		arith11.cpp arith12.cpp arith13.cpp arith14.cpp isprime.cpp \
+		arith11.cpp arith12.cpp arith13.cpp arith14.cpp \
+                arith-quad.cpp isprime.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
@@ -806,7 +807,8 @@ reduce_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../crlibm install
+	$(TRACE)@$(MAKE) -C ../crlibm/scs_lib
+	$(TRACE)@$(MAKE) -C ../crlibm install-am
 
 else !crlibm
 CRINC =
@@ -885,7 +887,6 @@ csl-arith-print.$(OBJEXT):	$(HDRS)
 csl-arith-compare.$(OBJEXT):	$(HDRS)
 csl-arith-logops.$(OBJEXT):	$(HDRS)
 csl-arith-modular.$(OBJEXT):	$(HDRS)
-csl-arith-float128.$(OBJEXT):	$(HDRS)
 csl-arith-elem.$(OBJEXT):	$(HDRS)
 csl-arith-misc.$(OBJEXT):	$(HDRS)
 
@@ -898,7 +899,6 @@ bootstrapreduce-arith-print.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-compare.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-float128.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
 
@@ -911,7 +911,6 @@ reduce-arith-print.$(OBJEXT):	$(HDRS)
 reduce-arith-compare.$(OBJEXT):	$(HDRS)
 reduce-arith-logops.$(OBJEXT):	$(HDRS)
 reduce-arith-modular.$(OBJEXT):	$(HDRS)
-reduce-arith-float128.$(OBJEXT):	$(HDRS)
 reduce-arith-elem.$(OBJEXT):	$(HDRS)
 reduce-arith-misc.$(OBJEXT):	$(HDRS)
 
@@ -933,6 +932,7 @@ csl-arith11.$(OBJEXT):	$(HDRS)
 csl-arith12.$(OBJEXT):	$(HDRS)
 csl-arith13.$(OBJEXT):	$(HDRS)
 csl-arith14.$(OBJEXT):	$(HDRS)
+csl-arith-quad.$(OBJEXT):	$(HDRS)
 csl-isprime.$(OBJEXT):	$(HDRS)
 csl-bytes1.$(OBJEXT):	$(HDRS)
 csl-showhdr.$(OBJEXT):	$(HDRS)
@@ -980,6 +980,7 @@ bootstrapreduce-arith11.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith12.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith13.$(OBJEXT):	$(HDRS)
 bootstrapreduce-arith14.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-quad.$(OBJEXT):	$(HDRS)
 bootstrapreduce-isprime.$(OBJEXT):	$(HDRS)
 bootstrapreduce-bytes1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-showhdr.$(OBJEXT):	$(HDRS)
@@ -1027,6 +1028,7 @@ reduce-arith11.$(OBJEXT):	$(HDRS)
 reduce-arith12.$(OBJEXT):	$(HDRS)
 reduce-arith13.$(OBJEXT):	$(HDRS)
 reduce-arith14.$(OBJEXT):	$(HDRS)
+reduce-arith-quad.$(OBJEXT):	$(HDRS)
 reduce-isprime.$(OBJEXT):	$(HDRS)
 reduce-bytes1.$(OBJEXT):	$(HDRS)
 reduce-showhdr.$(OBJEXT):	$(HDRS)
@@ -1829,7 +1831,7 @@ bootstrapreduce.prototypes:	prototypes
 reduce.prototypes:	prototypes
 	./prototypes -I $(srcdir) $(reduce_SOURCES) > reduce.prototypes
 
--include reduce.dep
+@INCLUDE@ reduce.dep
 
 reduce.dep:
 	$(TRACE)touch reduce.dep
@@ -1931,7 +1933,7 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 	-mkdir -p reduce.resources
 	$(CP) $(packages)/redlog/ofsf/qepcad.awk reduce.resources
 
--include bootstrapreduce.dep
+@INCLUDE@ bootstrapreduce.dep
 
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
@@ -2030,8 +2032,8 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 		$(cslbase)/make-c-code.red $(cslbase)/compiler.lsp \
 		$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
-	$(TRACE)$(RM) -f $(gensrc)/make.tmp
-	touch $(gensrc)/make.tmp
+#	$(TRACE)$(RM) -f $(gensrc)/make.tmp
+	$(TRACE)touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	$(MAKE) just-c-code
@@ -2238,7 +2240,7 @@ cleanlog:
 # here in that cygwin paths that include cygwin symbolic links or that
 # are absolute (starting with "/") may not be handled well by my code.
 
--include csl.dep
+@INCLUDE@ csl.dep
 
 csl.dep:
 	$(TRACE)touch csl.dep

@@ -225,13 +225,6 @@
 //   as C style strings that must be disposed of using "delete". The use of
 //   C rather than C++ style strings because I hope that makes storage
 //   management interaction clearer.
-//   In this case there is an extra option DEBUG_OVERRUN which enables some
-//   simple checks for memory block overflow. reserve() always arranges that
-//   there will be a "spare" word just beyond the top used word in a vector,
-//   and it initializes this to a slightly unlikely value. When confirm_size
-//   or abandon() are used it can then verify that this guard word has not
-//   been corrupted. This may not be 100% foolproof but is nevertheless helps
-//   while developing or maintaining the library!
 //
 // LISP:
 //   The arrangements here are based on the arrangements I have in my VSL
@@ -290,7 +283,7 @@
 //   numbers needs to live at a higher level within the Lisp then just thise
 //   code. Thus while the big-number functions here are set up so they can
 //   return fixnum results and while there are entrypoints for performing
-//   arithmetic between bignums and fixnums  (ie between uint64_t * and
+//   arithmetic between bignums and fixnums  (ie between uint64_t* and
 //   int64_t values) it is the responsibility of somebody else to decide which
 //   functions to call when.
 //   Strings are allocated using reserve_string() and finalized using
@@ -401,7 +394,7 @@
 // force information into them for tagging. Even though this is not entirely
 // proper I feel that eg std::align() would not make sense if this was not
 // going to work! Whatever the risks, using this sort of representation leads
-// to many casts beween  std::uint64_t*  and std::uintptr_t, and the
+// to many casts beween  std::uint64_t* and std::uintptr_t, and the
 // unpacking of a signed value from the immediate integer case leads to
 // further casts with signed integers, ie std::intptr_t.
 // Finally I need at times to generate a bit-fiels using code such as
@@ -420,7 +413,6 @@
 // allocation via C++ "new".
 
 #define NEW           1
-#define DEBUG_OVERRUN 1   // Overhead is not huge: watching for error is good.
 
 #endif
 
@@ -432,8 +424,12 @@
 // way of achieving the same through use of C++11 annotations. And a final
 // fall back to just not worrying.
 
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif
+
 #ifndef MAYBE_UNUSED
-#ifdef __has_cpp_attribute_maybe_unused
+#if __has_cpp_attribute(maybe_unused)
 #define MAYBE_UNUSED [[maybe_unused]]
 #elif defined __GNUC__
 #define MAYBE_UNUSED [[gnu::unused]]
@@ -441,6 +437,22 @@
 #define MAYBE_UNUSED
 #endif
 #endif
+
+#ifndef LIKELY
+#if __has_cpp_attribute(likely)
+#define LIKELY [[likely]]
+#else // __has_cpp_attribute(likely)
+#define LIKELY
+#endif // __has_cpp_attribute(likely)
+#endif // LIKELY
+
+#ifndef UNLIKELY
+#if __has_cpp_attribute(unlikely)
+#define UNLIKELY [[unlikely]]
+#else // __has_cpp_attribute(unlikely)
+#define UNLIKELY
+#endif // __has_cpp_attribute(unlikely)
+#endif // UNLIKELY
 
 #include <cstdio>
 #include <cstring>
@@ -465,31 +477,6 @@
 #include <atomic>
 #include <vector>
 #include <type_traits>
-#ifdef HAVE_BITCAST
-#include <bit>            // Note that this is a C++20 header file
-#else // HAVE_BITCAST
-// C++20 introduces bit_cast<T>() but to support earlier C++ dialects I
-// use an implementation for it found at
-//     https://en.cppreference.com/w/cpp/numeric/bit_cast
-// By citing that reference I gain permission to use it.
-
-template <class To, class From>
-std::enable_if_t<
-    sizeof(To) == sizeof(From) &&
-    std::is_trivially_copyable_v<From> &&
-    std::is_trivially_copyable_v<To>,
-    To>
-// constexpr support needs compiler magic
-bit_cast(const From& src) noexcept
-{   static_assert(std::is_trivially_constructible_v<To>,
-        "This implementation additionally requires "
-        "destination type to be trivially constructible");
-    To dst;
-    std::memcpy(&dst, &src, sizeof(To));
-    return dst;
-}
-#endif // HAVE_BITCAST
-#define HAVE_BITCAST 1
 
 namespace arithlib_implementation
 {
@@ -512,7 +499,7 @@ namespace arithlib_implementation
 // future work.
 
 #define TL_arithlibData 48
-DEFINE_INLINE_THREAD_LOCAL(void *, arithlibData);
+DEFINE_INLINE_THREAD_LOCAL(void*, arithlibData);
 #endif // CSL
 
 // A scheme "arithlib_assert" lets me write in my own code to print the
@@ -535,21 +522,21 @@ DEFINE_INLINE_THREAD_LOCAL(void *, arithlibData);
 // aborts at once would be horrid, and I will be happy if ONE of the reports
 // come out neatly!). The function diagnostic_muxex returns a reference
 // to a mutex that can be used to protect things, and there will be just
-// one of if. It also sets its argument to a reference to a const char *
+// one of if. It also sets its argument to a reference to a const char*
 // pointer that will be used for transmitting the location information.
 
 inline std::mutex my_diagnostic_mutex;
-inline const char *my_diagnostic_location;
+inline const char* my_diagnostic_location;
 
-inline std::mutex &diagnostic_mutex(const char ***where)
+inline std::mutex& diagnostic_mutex(const char ***where)
 {   *where = &my_diagnostic_location;
     return my_diagnostic_mutex;
 }
 
 [[noreturn]] inline void abort1(const char *msg)
-{   const char **where;
+{   const char** where;
 // The call to diagnostic_mutex here is just to retrieve the location of the
-// const char * variable that holds the location. I am already within
+// const char* variable that holds the location. I am already within
 // the scope of a mutex.
     static_cast<void>(diagnostic_mutex(&where));
     std::cout << std::endl << "About to abort at " << *where << ": "
@@ -558,7 +545,7 @@ inline std::mutex &diagnostic_mutex(const char ***where)
 }
 
 [[noreturn]] inline void abort1()
-{   const char **where;
+{   const char** where;
     static_cast<void>(diagnostic_mutex(&where));
     std::cout << std::endl << "About to abort at " << *where << std::endl;
     std::abort();
@@ -575,7 +562,7 @@ inline std::mutex &diagnostic_mutex(const char ***where)
 // namespace
 
 #define arithlib_abort(...)                                                \
-    {   const char **where;                                                \
+    {   const char** where;                                                \
         std::lock_guard<std::mutex> lock(                                  \
             arithlib_implementation::diagnostic_mutex(&where));            \
         *where = __FILE__ " line " STRINGIFY(__LINE__);                    \
@@ -602,8 +589,8 @@ static const bool debug_arith = true;
 #endif // __OPTIMIZE__
 
 template <typename F>
-inline void assert1(bool ok, const char *why,
-                    F&& action, const char *location)
+inline void assert1(bool ok, const char* why,
+                    F&& action, const char* location)
 {
 // Use this as in:
 //     arithlib_assert(predicate, [&]{...});
@@ -612,19 +599,19 @@ inline void assert1(bool ok, const char *why,
 // extra information about what went wrong.
     if (debug_arith && !ok)
     {   action();
-        const char **where;
+        const char** where;
         std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
         *where = location;
         abort1();
     }
 }
 
-inline void assert1(bool ok, const char *why, const char *location)
+inline void assert1(bool ok, const char* why, const char* location)
 {
 // For simple use where a customised message is not required:
 //     arithlib_assert(predicate);
     if (debug_arith && !ok)
-    {   const char **where;
+    {   const char** where;
         std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
         *where = location;
         abort1(why);
@@ -645,7 +632,7 @@ inline void assert1(bool ok, const char *why, const char *location)
 // used. So even though this may somewhat waste space when it is used,
 // I like this option.
 
-inline void logprintf(const char *fmt, ...)
+inline void logprintf(const char* fmt, ...)
 {
 // I use a fixed name for the log file. This is another respect in which
 // this has to be seen as code only suitable for temporary use. I use static
@@ -653,8 +640,8 @@ inline void logprintf(const char *fmt, ...)
 // included from multiple source files there will not be multiple-definition
 // clashes, and since this is just for diagnostics I am not worried about
 // any costs that this imposes.
-    static std::FILE *logfile = NULL;
-    const char **where;
+    static std::FILE* logfile = NULL;
+    const char** where;
     std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
     if (logfile == NULL) logfile = std::fopen("arith.log", "w");
     std::va_list args;
@@ -664,8 +651,8 @@ inline void logprintf(const char *fmt, ...)
     std::fflush(logfile);
 }
 
-inline void traceprintf(const char *fmt, ...)
-{   const char **where;
+inline void traceprintf(const char* fmt, ...)
+{   const char** where;
     std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
     std::va_list args;
     va_start(args, fmt);
@@ -746,17 +733,17 @@ public:
 // them here. Then when I restore one of them I disable the test for binary.
 // I will arrange that if nobody has ever asked for binary they do not get it,
 // just so I feel safe.
-    static void set_binary_output(std::ios_base &s, bool state = true)
+    static void set_binary_output(std::ios_base& s, bool state = true)
     {   flag(s) = state ? 1 : 0;
         s.unsetf(std::ios_base::dec);
         s.unsetf(std::ios_base::oct);
         s.unsetf(std::ios_base::hex);
     }
-    static bool is_binary_output(std::ios_base &s)
+    static bool is_binary_output(std::ios_base& s)
     {   return flag(s) != 0;
     }
 private:
-    static long & flag(std::ios_base &s)
+    static long& flag(std::ios_base& s)
     {   static int n = std::ios_base::xalloc();
         return s.iword(n);
     }
@@ -768,7 +755,7 @@ private:
 // This will be used much as std::oct, std::dec and std::hex.
 
 namespace std
-{   inline std::ostream &bin(std::ostream &os)
+{   inline std::ostream& bin(std::ostream& os)
     {   arithlib_implementation::radix::set_binary_output(os);
         return os;
     }
@@ -856,16 +843,16 @@ namespace arithlib_implementation
 extern "C"
 {   struct SecApp
     {   std::uintptr_t nLength;
-        void *lpSecurityDescriptor;
+        void* lpSecurityDescriptor;
         int bINheritHandle;
     };
 
-    extern __declspec(dllimport)  void *
-    CreateMutexA(SecApp *, std::uintptr_t, const char *);
-    extern __declspec(dllimport) int CloseHandle(void *h);
-    extern __declspec(dllimport) int ReleaseMutex(void *m);
-    extern __declspec(dllimport) void *
-    WaitForSingleObject(void *, std::uintptr_t);
+    extern __declspec(dllimport)  void* 
+    CreateMutexA(SecApp* , std::uintptr_t, const char* );
+    extern __declspec(dllimport) int CloseHandle(void* h);
+    extern __declspec(dllimport) int ReleaseMutex(void* m);
+    extern __declspec(dllimport) void* 
+    WaitForSingleObject(void* , std::uintptr_t);
 };
 
 #endif // __CYGWIN__ or __MINGW32__
@@ -875,17 +862,17 @@ class Worker_data
 public:
     std::atomic<bool> ready;
 #ifdef USE_MICROSOFT_MUTEX
-    void *mutex[4];
+    void* mutex[4];
 #else
     std::mutex mutex[4];
 #endif
     bool quit_flag;
-    const std::uint64_t *a;
+    const std::uint64_t* a;
     std::size_t lena;
-    const std::uint64_t *b;
+    const std::uint64_t* b;
     std::size_t lenb;
-    std::uint64_t *c;
-    std::uint64_t *w;
+    std::uint64_t* c;
+    std::uint64_t* w;
 
 // When I construct an instance of Worker data I set its quit_flag to
 // false and lock two of the mutexes. That sets things up so that when
@@ -915,7 +902,7 @@ public:
 #endif
 };
 
-inline void worker_thread(Worker_data *w);
+inline void worker_thread(Worker_data* w);
 
 // Then each main thread will have a structure that encapsulated the
 // two worker threads that it ends up with and the data it sets up for
@@ -997,7 +984,7 @@ public:
 // exactly one copy gets made for each top-level thread that calls this,
 // ie that uses a huge multiplication.
 
-inline DriverData *getDriverData()
+inline DriverData* getDriverData()
 {   static thread_local DriverData dd;
     return &dd;
 }
@@ -1007,33 +994,33 @@ inline DriverData *getDriverData()
 // from multiple source files because only one copy should end up in the
 // eventually-linked executable.
 
-inline std::uint64_t *reserve(std::size_t n);
-inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
+inline std::uint64_t* reserve(std::size_t n);
+inline std::intptr_t confirm_size(std::uint64_t* p, std::size_t n,
                                   std::size_t final);
-inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size_x(std::uint64_t* p, std::size_t n,
                                     std::size_t final);
-inline void abandon(std::uint64_t *p);
+inline void abandon(std::uint64_t* p);
 inline void abandon(std::intptr_t h);
 
 #if defined LISP && !defined ZAPPA
 typedef std::intptr_t string_handle;
 #else
-typedef char *string_handle;
+typedef char* string_handle;
 #endif
 
-inline string_handle confirm_size_string(char *p, std::size_t n,
-        std::size_t final);
+inline string_handle confirm_size_string(char* p, std::size_t n,
+                                         std::size_t final);
 inline void abandon_string(string_handle);
 
-inline std::intptr_t vector_to_handle(std::uint64_t *p);
-inline std::uint64_t *vector_of_handle(std::intptr_t n);
-inline std::size_t number_size(std::uint64_t *p);
+inline std::intptr_t vector_to_handle(std::uint64_t* p);
+inline std::uint64_t* vector_of_handle(std::intptr_t n);
+inline std::size_t number_size(std::uint64_t* p);
 
 inline bool fits_into_fixnum(std::int64_t n);
 inline std::intptr_t int_to_handle(std::int64_t n);
 constexpr inline std::int64_t int_of_handle(std::intptr_t n);
 
-inline std::intptr_t string_to_bignum(const char *s);
+inline std::intptr_t string_to_bignum(const char* s);
 inline std::intptr_t int_to_bignum(std::int64_t n);
 inline std::intptr_t unsigned_int_to_bignum(std::uint64_t n);
 inline std::intptr_t int128_to_bignum(std::int64_t high, std::uint64_t low);
@@ -1061,10 +1048,10 @@ inline void pop(std::intptr_t& w);
 // In many cases where I want to save things I will have a reference to
 // an array of uint64_t objects, so when I push it I must convert it back to
 // a Lisp-friendly form.
-inline void push(std::uint64_t *p)
+inline void push(std::uint64_t* p)
 {   push(vector_to_handle(p));
 }
-inline void pop(std::uint64_t *&p)
+inline void pop(std::uint64_t*& p)
 {   std::intptr_t w;
     pop(w);
     p = vector_of_handle(w);
@@ -1078,14 +1065,14 @@ inline void push(std::intptr_t p)
 inline void pop(std::intptr_t& p)
 {}
 
-inline void push(std::uint64_t *p)
+inline void push(std::uint64_t* p)
 {}
-inline void pop(std::uint64_t *&p)
+inline void pop(std::uint64_t*& p)
 {}
 
-inline void push(const std::uint64_t *p)
+inline void push(const std::uint64_t* p)
 {}
-inline void pop(const std::uint64_t *&p)
+inline void pop(const std::uint64_t*& p)
 {}
 
 #endif
@@ -1114,51 +1101,44 @@ inline void pop(const std::uint64_t *&p)
 // specialist and to be used by people who will have the skill to modify this
 // code as necessary, so this slight oddity does not worry me.
 
-typedef void *malloc_t(size_t n);
-typedef void *realloc_t(void *, std::size_t);
-typedef void free_t(void *);
+typedef void* malloc_t(size_t n);
+typedef void* realloc_t(void* , std::size_t);
+typedef void free_t(void* );
 
-inline malloc_t  *malloc_function = std::malloc;
-inline realloc_t *realloc_function = std::realloc;
-inline free_t    *free_function   = std::free;
+inline malloc_t * malloc_function = std::malloc;
+inline realloc_t* realloc_function = std::realloc;
+inline free_t   * free_function   = std::free;
 
-inline std::uint64_t *reserve(std::size_t n)
-{   arithlib_assert(n>0);
-    std::uint64_t *r = reinterpret_cast<std::uint64_t *>
-                       (*malloc_function)((
-                               n+1)*sizeof(std::uint64_t));
-    arithlib_assert(r != NULL);
+inline std::uint64_t* reserve(std::size_t n)
+{   std::uint64_t* r = reinterpret_cast<std::uint64_t*>(
+        (*malloc_function)((n+1)*sizeof(std::uint64_t)));
     return &r[1];
 }
 
-inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size(std::uint64_t* p, std::size_t n,
                                   std::size_t final)
-{   artithlib_assert(final>0 && n>=final);
-    p = reinterpret_cast<std::uint64_t *>()
-        (*realloc_function)((void *)&p[-1],
-                            (final_n+1)*sizeof(std::uint64_t));
-    arithlib_assert(p != NULL);
+{   p = reinterpret_cast<std::uint64_t*>(
+        (*realloc_function)((void* )&p[-1],
+                            (final_n+1)*sizeof(std::uint64_t)));
     p[0] = final_n;
     return vector_to_handle(&p[1]);
 }
 
 // In this model confirm_size_x() is just the same as confirm_size().
 
-inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size_x(std::uint64_t* p, std::size_t n,
                                     std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-    confirm_size(p, n, final);
+{   confirm_size(p, n, final);
 }
 
-inline void abandon(std::uint64_t *p)
-{   (*free_function)((void *)&p[-1]);
+inline void abandon(std::uint64_t* p)
+{   (*free_function)((void* )&p[-1]);
 }
 
 // Note that I allocate space for the string data plus a NUL terminating byte.
 
-inline char *reserve_string(std::size_t n)
-{   char *r = reinterpret_cast<char *>(*malloc_function)(n+1);
-    arithlib_assert(r != NULL);
+inline char* reserve_string(std::size_t n)
+{   char* r = reinterpret_cast<char*>((*malloc_function)(n+1));
     return r;
 }
 
@@ -1168,33 +1148,30 @@ inline char *reserve_string(std::size_t n)
 // realloc to shrink things to the exact size that is filled would not
 // be a good bargain.
 
-inline char *confirm_size_string(char *p, std::size_t n,
-                                 std::size_t final)
-{   arithlib_assert(final>0 && (n+9)>final);
-    r[final] = 0;
+inline char* confirm_size_string(char* p, std::size_t n, std::size_t final)
+{   r[final] = 0;
     return r;
 }
 
-inline void abandon_string(char *s)
+inline void abandon_string(char* s)
 {   (*free_function)(s);
 }
 
 // In the C/malloc model I will represent a number by the intptr_t style
 // integer that is obtained from a pointer to the first digit of the bignum.
-// Use of reinterpret_cast() here is even more undefined that is obvious, and
-// future C++ compilers could
+// Note that converting to and fro between intptr_t and pointers risks
+// ending up with C++ undefined behaviour.
 
-inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p);
+inline std::intptr_t vector_to_handle(std::uint64_t* p)
+{   return reinterpret_cast<std::intptr_t>(p);
 }
 
-inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n);
+inline std::uint64_t* vector_of_handle(std::intptr_t n)
+{   return reinterpret_cast<std::uint64_t*>(n);
 }
 
-inline std::size_t number_size(std::uint64_t *p)
-{   arithlib_assert(p[-1]!=0);
-    return p[-1];
+inline std::size_t number_size(std::uint64_t* p)
+{   return p[-1];
 }
 
 // When I use Bignums that are allocated using malloc() and operated on
@@ -1205,19 +1182,19 @@ inline std::size_t number_size(std::uint64_t *p)
 // NEW (but leaves data sharable on systems with garbage collection) while
 // the other unconditionally copies.
 
-inline std::intptr_t always_copy_bignum(std::uint64_t *p)
+inline std::intptr_t always_copy_bignum(std::uint64_t* p)
 {   std::size_t n = p[-1];
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
 }
 
-inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
+inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t* p)
 {   std::size_t n = p[-1];
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -1225,10 +1202,10 @@ inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
 
 inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 {   if (stored_as_fixnum(pp)) return pp;
-    std::uint64_t *p = vector_of_handle(pp);
+    std::uint64_t* p = vector_of_handle(pp);
     std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -1311,7 +1288,7 @@ inline std::mutex& freechain_mutex()
 }
 #endif
 
-typedef std::uint64_t *freechain_table_type[64];
+typedef std::uint64_t* freechain_table_type[64];
 
 #ifdef ARITHLIB_THREAD_LOCAL
 inline thread_local freechain_table_type freechain_table;
@@ -1353,60 +1330,34 @@ public:
 
     ~Freechains()
     {   for (std::size_t i=0; i<64; i++)
-        {   std::uint64_t *f = (freechain_table::get())[i];
-            if (debug_arith)
-// Report how many entries there are in the freechain.
-            {   std::size_t n = 0;
-// To arrange that double-free mistakes are detected I arrange to put -1
-// in the initial word of any deleted block, so that all blocks on the
-// freechains here should show that. I set and test for that in the other
-// bits of code that allocate or release memory.
-                for (std::uint64_t *b=f; b!=NULL; b = (std::uint64_t *)b[1])
-                {   arithlib_assert(b[0] == -1ULL);
-                    n++;
-                }
-                if (n != 0)
-                    std::cout << "Freechain " << i << " length: "
-                          << n << " " << ((static_cast<std::size_t>(1))<<i)
-                          << std::endl;
-            }
+        {   std::uint64_t* f = (freechain_table::get())[i];
             while (f != NULL)
             {   std::uint64_t w = f[1];
                 delete [] f;
-                f = bit_cast<std::uint64_t *>(w);
+                f = reinterpret_cast<std::uint64_t*>(w);
             }
             (freechain_table::get())[i] = NULL;
         }
     }
 
-    static std::uint64_t *allocate(std::size_t n)
+    static std::uint64_t* allocate(std::size_t n)
     {
-#ifdef DEBUG_OVERRUN
-// If I am debugging I can allocate an extra word that will lie
-// just beyond what would have been the end of my block, and I will
-// fill everything with a pattern that might let me spot some cases where
-// I write beyond the proper size of data. This option is only supported
-// when storage allocation is using NEW.
-        int bits = log_next_power_of_2(n+1);
-#else
 // Finding the number of bits in n is achieved by counting the leading
 // zeros in the representation of n, and on many platforms an intrinsic
 // function will compile this into a single machine code instruction.
         int bits = log_next_power_of_2(n);
-#endif
-        arithlib_assert(n<=((static_cast<std::size_t>(1))<<bits) && n>0);
-        std::uint64_t *r;
+        std::uint64_t* r;
 #if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
         r = (freechain_table::get())[bits];
         if (r != NULL)
-            (freechain_table::get())[bits] = bit_cast<std::uint64_t *>
-                                             (r)[1];
+            (freechain_table::get())[bits] =
+                reinterpret_cast<std::uint64_t*>(r[1]);
 #elif defined ARITHLIB_MUTEX
         {   std::lock_guard<std::mutex> lock(freechain_mutex());
             r = (freechain_table::get())[bits];
             if (r != NULL)
                 (freechain_table::get())[bits] =
-                    bit_cast<std::uint64_t *>(r[1]);
+                    reinterpret_cast<std::uint64_t*>(r[1]);
         }
 #else
 #error Internal inconsistency in arithlib.hpp: memory allocation strategy.
@@ -1417,41 +1368,25 @@ public:
         {   r = new std::uint64_t[(static_cast<std::size_t>(1))<<bits];
             if (r == NULL) arithlib_abort("Run out of memory");
         }
-#ifdef DEBUG_OVERRUN
-// When debugging I tend to initialize all memory to a known pattern
-// when it is allocated and check that the final word has not been
-// overwritten when I release it. This is not foolproof but it helps me
-// by being able to detect many possible cases of overrun.
-        if (debug_arith)
-        {   std::memset(r, 0xaa,
-                (static_cast<std::size_t>(1)<<bits)*sizeof(std::uint64_t));
-            r[0] = 0;
-        }
-#endif
 // Just the first 32-bits of the header word record the block capacity.
 // The casts here look (and indeed are) ugly, but when I store data into
 // memory as a 32-bit value that is how I will read it later on, and the
 // messy notation here does not correspond to complicated computation.
-        bit_cast<std::uint32_t *>(r)[0] = bits;
+        reinterpret_cast<std::uint32_t*>(r)[0] = bits;
         return r;
     }
 
 // When I abandon a memory block I will push it onto a relevant free chain.
 
-    static void abandon(std::uint64_t *p)
-    {   arithlib_assert(p[0] != -1ULL);
-        int bits = bit_cast<std::uint32_t *>(p)[0];
-        arithlib_assert(bits>0 && bits<48);
-// Here I assume that sizeof(uint64_t) >= sizeof(intptr_t) so I am not
-// going to lose information here on any platform I can consider.
-        if (debug_arith) p[0] = -1ULL;
+    static void abandon(std::uint64_t* p)
+    {   int bits = reinterpret_cast<std::uint32_t*>(p)[0];
 #ifdef ARITHLIB_ATOMIC
         lockfree_push(p, freechain_table::get(), bits);
 #else
 #ifdef ARITHLIB_MUTEX
         std::lock_guard<std::mutex> lock(freechain_mutex());
 #endif
-        p[1] = bit_cast<std::uint64_t>(freechain_table::get()[bits]);
+        p[1] = reinterpret_cast<std::uint64_t>(freechain_table::get()[bits]);
         (freechain_table::get())[bits] = p;
 #endif
     }
@@ -1481,19 +1416,13 @@ public:
 #endif // __cpp_inline_variables
 #endif // ARITHLIB_THREAD_LOCAL
 
-inline std::uint64_t *reserve(std::size_t n)
-{   arithlib_assert(n>0);
-    return &(freechains::get().allocate(n+1))[1];
+inline std::uint64_t* reserve(std::size_t n)
+{   return &(freechains::get().allocate(n+1))[1];
 }
 
-inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size(std::uint64_t* p, std::size_t n,
                                   std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-// Verify that the word just beyond where anything should have been
-// stored has not been clobbered.
-#ifdef DEBUG_OVERRUN
-    if (debug_arith) arithlib_assert(p[n] == 0xaaaaaaaaaaaaaaaaU);
-#endif
+{
     if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
     {   std::intptr_t r = int_to_handle(static_cast<std::int64_t>(p[0]));
         freechains::get().abandon(&p[-1]);
@@ -1503,38 +1432,36 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
 // I allocate a new smaller block and copy the data across.
 // That situation can most plausibly arise when two similar-values big
 // numbers are subtracted.
-    int bits = bit_cast<std::uint32_t *>(&p[-1])[0];
+    int bits = reinterpret_cast<std::uint32_t*>(&p[-1])[0];
     std::size_t capacity = (static_cast<std::size_t>(1))<<bits;
     if (capacity > 4*final)
-    {   std::uint64_t *w =
+    {   std::uint64_t* w =
             freechains::get().allocate(
                 (static_cast<std::size_t>(1))<<log_next_power_of_2(final+1));
         std::memcpy(&w[1], p, final*sizeof(std::uint64_t));
         freechains::get().abandon(&p[-1]);
         p = &w[1];
     }
-    bit_cast<std::uint32_t *>(&p[-1])[1] = final;
+    reinterpret_cast<std::uint32_t*>(&p[-1])[1] = final;
     return vector_to_handle(p);
 }
 
-inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size_x(std::uint64_t* p, std::size_t n,
                                     std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-    return confirm_size(p, n, final);
+{   return confirm_size(p, n, final);
 }
 
-inline std::size_t number_size(std::uint64_t *p)
-{   std::size_t r = bit_cast<std::uint32_t *>(&p[-1])[1];
-    arithlib_assert(r>0);
-    return bit_cast<std::uint32_t *>(&p[-1])[1];
+inline std::size_t number_size(std::uint64_t* p)
+{   std::size_t r = reinterpret_cast<std::uint32_t*>(&p[-1])[1];
+    return reinterpret_cast<std::uint32_t*>(&p[-1])[1];
 }
 
-inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p);
+inline std::intptr_t vector_to_handle(std::uint64_t* p)
+{   return reinterpret_cast<std::intptr_t>(p);
 }
 
-inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n);
+inline std::uint64_t* vector_of_handle(std::intptr_t n)
+{   return reinterpret_cast<std::uint64_t*>(n);
 }
 
 inline bool stored_as_fixnum(std::intptr_t a)
@@ -1563,29 +1490,27 @@ inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-inline void abandon(std::uint64_t *p)
+inline void abandon(std::uint64_t* p)
 {   freechains::get().abandon(&p[-1]);
 }
 
 inline void abandon(std::intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
-    {   std::uint64_t *pp = vector_of_handle(p);
+    {   std::uint64_t* pp = vector_of_handle(p);
         freechains::get().abandon(&pp[-1]);
     }
 }
 
-inline char *reserve_string(std::size_t n)
+inline char* reserve_string(std::size_t n)
 {   return new char[n+1];
 }
 
-inline char *confirm_size_string(char *p, std::size_t n,
-                                 std::size_t final)
-{   arithlib_assert(final>0 && (n+9)>final);
-    p[final] = 0;
+inline char* confirm_size_string(char* p, std::size_t n, std::size_t final)
+{   p[final] = 0;
     return p;
 }
 
-inline void abandon_string(char *s)
+inline void abandon_string(char* s)
 {   delete [] s;
 }
 
@@ -1612,38 +1537,44 @@ inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
     else return OP::op(vector_of_handle(a1), n);
 }
 
+// I am going to arrange that if the C++ compiler optimised it at all
+// it will prefer operations on small numbers.
+
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
 }
 
-inline std::intptr_t always_copy_bignum(std::uint64_t *p)
-{   std::size_t n = bit_cast<std::uint32_t *>(&p[-1])[1];
+inline std::intptr_t always_copy_bignum(std::uint64_t* p)
+{   std::size_t n = reinterpret_cast<std::uint32_t*>(&p[-1])[1];
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
 }
 
-inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
+inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -1651,10 +1582,10 @@ inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
 
 inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 {   if (stored_as_fixnum(pp)) return pp;
-    std::uint64_t *p = vector_of_handle(pp);
+    std::uint64_t* p = vector_of_handle(pp);
     std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -1682,19 +1613,19 @@ inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 // and it is assumed that all the relevant CSL header files have already
 // been #included.
 
-inline std::uint64_t *reserve(std::size_t n)
-{   arithlib_assert(n>0);
-    LispObject a = get_basic_vector(TAG_NUMBERS,
+inline std::uint64_t* reserve(std::size_t n)
+{   LispObject a = get_basic_vector(TAG_NUMBERS,
                                     TYPE_NEW_BIGNUM,
                                     n*sizeof(std::uint64_t)+8);
-    return bit_cast<std::uint64_t *>(a + 8 - TAG_NUMBERS);
+    return reinterpret_cast<std::uint64_t*>(a + 8 - TAG_NUMBERS);
 }
 
-inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size(std::uint64_t* p, std::size_t n,
                                   std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-    if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
+{   if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
     {   std::intptr_t r = int_to_handle(static_cast<std::int64_t>(p[0]));
+// The bignum that I am abandoning was given a header word when it was
+// first allocated, so it is in good order here.
         return r;
     }
 // Note that pack_hdrlength() takes its argument measured in units of
@@ -1704,34 +1635,41 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
 // The length also includes the size of a header-word, and on 32-bit platforms
 // it has to allow for padding the data to allow the array of 64-bit digits
 // to be properly aligned in memory.
-    ((LispObject *)&p[-1])[0] = make_new_bighdr(final+1);
+    ((LispObject* )&p[-1])[0] = make_new_bighdr(final+1);
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
 // that leaves a 4-byte gap after the header. In such a case I will write
 // in a zero just to keep memory tidy.
     if (sizeof(LispObject) == 4)
-        ((LispObject *)&p[-1])[1] = 0;
+        ((LispObject* )&p[-1])[1] = 0;
 // Here I could maybe reset fringe down by (final-n) if the current number
-// is the most recently allocated item. Think about that later!
+// is the most recently allocated item. Think about that later! However to
+// be garbage-collector safe I fill any gaps with valid data...
+    if (n != final)
+    {   ((LispObject* )&p[final])[0] =
+            TAG_HDR_IMMED + TYPE_PADDER + ((n-final)<<(Tw+8));
+        if (sizeof(LispObject) == 4)
+            ((LispObject* )&p[n])[1] = 0;
+    }
     return vector_to_handle(p);
 }
 
-inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size_x(std::uint64_t* p, std::size_t n,
                                     std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
+{
 // Here I might need to write a nice dummy object into the gap left by
 // shrinking the object.
     return confirm_size(p, n, final);
 }
 
-inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p) - 8 + TAG_NUMBERS;
+inline std::intptr_t vector_to_handle(std::uint64_t* p)
+{   return reinterpret_cast<std::intptr_t>(p) - 8 + TAG_NUMBERS;
 }
 
-inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n + 8 - TAG_NUMBERS);
+inline std::uint64_t* vector_of_handle(std::intptr_t n)
+{   return reinterpret_cast<std::uint64_t*>(n + 8 - TAG_NUMBERS);
 }
 
-inline std::size_t number_size(std::uint64_t *p)
+inline std::size_t number_size(std::uint64_t* p)
 {
 // The odd looking cast here is because in arithlib I am passing around
 // arrays of explicitly 64-bit values, however in the underlying Lisp
@@ -1739,7 +1677,7 @@ inline std::size_t number_size(std::uint64_t *p)
 // that I arrange to have aligned on 8-byte boundaries. So to show some
 // though about strict aliasing and the like I will access memory as
 // an array of LispObject things when I access the header of an item.
-    Header h = (Header)*(LispObject *)&p[-1];
+    Header h = (Header)*(LispObject* )&p[-1];
     std::size_t r = length_of_header(h);
 // On 32-bit systems a bignum will have a wasted 32-bit word after the
 // header and before the digits, so that the digits are properly aligned
@@ -1749,7 +1687,6 @@ inline std::size_t number_size(std::uint64_t *p)
 // The length value packed into the header is the length of the vector
 // including its header.
     r = (r-8)/sizeof(std::uint64_t);
-    arithlib_assert(r>0);
     return r;
 }
 
@@ -1772,28 +1709,37 @@ inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-inline void abandon(std::uint64_t *p)
+inline void abandon(std::uint64_t* p)
 {   // No need to do anything! But MIGHT reset fringe pointer?
 }
 
 inline void abandon(std::intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
-    {   std::uint64_t *pp = vector_of_handle(p);
+    {   std::uint64_t* pp = vector_of_handle(p);
         abandon(pp);
     }
 }
 
-inline char *reserve_string(std::size_t n)
-{   LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4,
-                                    CELL+n);
-    return bit_cast<char *>(a - TAG_VECTOR + sizeof(LispObject));
+inline char* reserve_string(std::size_t n)
+{   LispObject a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+    return reinterpret_cast<char*>(a - TAG_VECTOR + sizeof(LispObject));
 }
 
-inline LispObject confirm_size_string(char *p, std::size_t n,
-                                      std::size_t final)
-{   LispObject *a = (LispObject *)(p - sizeof(LispObject));
+inline LispObject confirm_size_string(char* p, std::size_t n,
+                                               std::size_t final)
+{
+// The size of the string object in memory must allow for  a Lisp header
+    n += sizeof(std::uintptr_t);
     final += sizeof(std::uintptr_t);
-    *a = TAG_HDR_IMMED + TYPE_STRING_4 + (final<<(Tw+5));
+// The object size gets padded up to a multiple of 8 bytes.
+    size_t nPadded = (n+7) & -8;
+    size_t finalPadded = (final+7) & -8;
+    if (nPadded != finalPadded)
+       * reinterpret_cast<LispObject*>(p+finalPadded) =
+            TAG_HDR_IMMED + TYPE_PADDER +
+            ((nPadded-finalPadded)<<(Tw+5));
+    LispObject* a = reinterpret_cast<LispObject*>(p - sizeof(LispObject));
+   * a = TAG_HDR_IMMED + TYPE_STRING_4 + (final<<(Tw+5));
     return (LispObject)a + TAG_VECTOR;
 }
 
@@ -1814,7 +1760,7 @@ inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
     else return OP::op(vector_of_handle(a1), n);
 }
@@ -1822,30 +1768,33 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
 }
 
-inline std::intptr_t always_copy_bignum(std::uint64_t *p)
+inline std::intptr_t always_copy_bignum(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
 }
 
-inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
+inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -1853,10 +1802,10 @@ inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
 
 inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 {   if (stored_as_fixnum(pp)) return pp;
-    std::uint64_t *p = vector_of_handle(pp);
+    std::uint64_t* p = vector_of_handle(pp);
     std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -1869,17 +1818,15 @@ inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 // and it is assumed that all the relevant Zappa header files have already
 // been #included.
 
-inline std::uint64_t *reserve(std::size_t n)
-{   arithlib_assert(n>0);
-    std::uint64_t* a = binaryAllocate(n+1);
-    *a = n;      // Record length of object in first word.
+inline std::uint64_t* reserve(std::size_t n)
+{   std::uint64_t* a = binaryAllocate(n+1);
+   * a = n;      // Record length of object in first word.
     return a+1;
 }
 
-inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size(std::uint64_t* p, std::size_t n,
                                   std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-    if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
+{   if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
     {   std::intptr_t r = int_to_handle(static_cast<std::int64_t>(p[0]));
         return r;
     }
@@ -1890,23 +1837,21 @@ inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
     return vector_to_handle(p);
 }
 
-inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size_x(std::uint64_t* p, std::size_t n,
                                     std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-    return confirm_size(p, n, final);
+{   return confirm_size(p, n, final);
 }
 
-inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p) - 8 + BigInteger;
+inline std::intptr_t vector_to_handle(std::uint64_t* p)
+{   return reinterpret_cast<std::intptr_t>(p) - 8 + BigInteger;
 }
 
-inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n + 8 - BigInteger);
+inline std::uint64_t* vector_of_handle(std::intptr_t n)
+{   return reinterpret_cast<std::uint64_t*>(n + 8 - BigInteger);
 }
 
-inline std::size_t number_size(std::uint64_t *p)
+inline std::size_t number_size(std::uint64_t* p)
 {   std::uint64_t h = p[-1]/2;
-    arithlib_assert(h>0);
     return h;
 }
 
@@ -1931,7 +1876,7 @@ inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-inline void abandon(std::uint64_t *p)
+inline void abandon(std::uint64_t* p)
 {   // No need to do anything!
 }
 
@@ -1939,16 +1884,15 @@ inline void abandon(std::intptr_t p)
 {   // Also do not do anything!
 }
 
-inline char *reserve_string(std::size_t n)
+inline char* reserve_string(std::size_t n)
 {   std::uint64_t* a = binaryAllocate((8+n+7)/8);
-    return bit_cast<char *>(a) + 8;
+    return reinterpret_cast<char*>(a) + 8;
 }
 
 // A string size is measured in bytes not words.
-inline char* confirm_size_string(char *p, std::size_t n,
-                                 std::size_t final)
+inline char* confirm_size_string(char* p, std::size_t n, std::size_t final)
 {   p[final] = 0;
-    bit_cast<std::uint64_t*>(p)[-1] = 2*final;
+    reinterpret_cast<std::uint64_t*>(p)[-1] = 2*final;
     return p;
 }
 
@@ -1969,7 +1913,7 @@ inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
     else return OP::op(vector_of_handle(a1), n);
 }
@@ -1977,30 +1921,33 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
 }
 
-inline std::intptr_t always_copy_bignum(std::uint64_t *p)
+inline std::intptr_t always_copy_bignum(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
 }
 
-inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
+inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -2008,10 +1955,10 @@ inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
 
 inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 {   if (stored_as_fixnum(pp)) return pp;
-    std::uint64_t *p = vector_of_handle(pp);
+    std::uint64_t* p = vector_of_handle(pp);
     std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -2022,52 +1969,51 @@ inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 
 #else // ZAPPA
 
-inline std::uint64_t *reserve(std::size_t n)
-{   arithlib_assert(n>0);
+inline std::uint64_t* reserve(std::size_t n)
+{
 // I must allow for alignment padding on 32-bit platforms.
     if (sizeof(LispObject)==4) n = n*sizeof(std::uint64_t) + 4;
     else n = n*sizeof(std::uint64_t);
     LispObject a = allocateatom(n);
-    return bit_cast<std::uint64_t *>(a + 8 - tagATOM);
+    return reinterpret_cast<std::uint64_t*>(a + 8 - tagATOM);
 }
 
 inline std::intptr_t confirm_size(std::uint64_t *p, std::size_t n,
                                   std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
-    if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
+{   if (final == 1 && fits_into_fixnum(static_cast<std::int64_t>(p[0])))
     {   std::intptr_t r = int_to_handle(static_cast<std::int64_t>(p[0]));
         return r;
     }
-    ((LispObject *)&p[-1])[0] =
+    ((LispObject* )&p[-1])[0] =
         tagHDR + typeBIGNUM + packlength(final*sizeof(std::uint64_t) +
                                          (sizeof(LispObject)==4 ? 4 : 0));
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
 // that leaves a 4-byte gap after the header. In such a case I will write
 // in a zero just to keep memory tidy.
     if (sizeof(LispObject) == 4)
-        ((LispObject *)&p[-1])[1] = 0;
+        ((LispObject* )&p[-1])[1] = 0;
 // Here I should reset fringe down by (final-n) perhaps. Think about that
 // later!
     return vector_to_handle(p);
 }
 
-inline std::intptr_t confirm_size_x(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirm_size_x(std::uint64_t* p, std::size_t n,
                                     std::size_t final)
-{   arithlib_assert(final>0 && n>=final);
+{
 // Here I might need to write a nice dummy object into the gap left by
 // shrinking the object.
     return confirm_size(p, n, final);
 }
 
-inline std::intptr_t vector_to_handle(std::uint64_t *p)
-{   return bit_cast<std::intptr_t>(p) - 8 + tagATOM;
+inline std::intptr_t vector_to_handle(std::uint64_t* p)
+{   return reinterpret_cast<std::intptr_t>(p) - 8 + tagATOM;
 }
 
-inline std::uint64_t *vector_of_handle(std::intptr_t n)
-{   return bit_cast<std::uint64_t *>(n + 8 - tagATOM);
+inline std::uint64_t* vector_of_handle(std::intptr_t n)
+{   return reinterpret_cast<std::uint64_t*>(n + 8 - tagATOM);
 }
 
-inline std::size_t number_size(std::uint64_t *p)
+inline std::size_t number_size(std::uint64_t* p)
 {
 // The odd looking cast here is because in arithlib I am passing around
 // arrays of explicitly 64-bit values, however in the underlying Lisp
@@ -2075,8 +2021,8 @@ inline std::size_t number_size(std::uint64_t *p)
 // that I arrange to have aligned on 8-byte boundaries. So to show some
 // though about strict aliasing and the like I will access memory as
 // an array of LispObject things when I access the header of an item.
-    std::uintptr_t h = bit_cast<std::uintptr_t>()*
-                       (LispObject *)&p[-1];
+    std::uintptr_t h = reinterpret_cast<std::uintptr_t>()*
+                       (LispObject* )&p[-1];
     std::size_t r = veclength(h);
 // On 32-bit systems a bignum will have a wasted 32-bit word after the
 // header and before the digits, so that the digits are properly aligned
@@ -2087,7 +2033,6 @@ inline std::size_t number_size(std::uint64_t *p)
 // excluding its header.
 //  if (sizeof(LispObject) == 4) r -= 4; { the remaindering does all I need! }
     r = r/sizeof(std::uint64_t);
-    arithlib_assert(r>0);
     return r;
 }
 
@@ -2107,28 +2052,28 @@ inline bool fits_into_fixnum(std::int64_t a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
-inline void abandon(std::uint64_t *p)
+inline void abandon(std::uint64_t* p)
 {   // No need to do anything! But MIGHT reset fringe pointer?
 }
 
 inline void abandon(std::intptr_t p)
 {   if (!stored_as_fixnum(p) && p!=0)
-    {   std::uint64_t *pp = vector_of_handle(p);
+    {   std::uint64_t* pp = vector_of_handle(p);
         abandon(pp);
     }
 }
 
-inline char *reserve_string(std::size_t n)
+inline char* reserve_string(std::size_t n)
 {   LispObject a = allocateatom(n);
-    return bit_cast<char *>(a - tagATOM + sizeof(LispObject));
+    return reinterpret_cast<char*>(a - tagATOM + sizeof(LispObject));
 }
 
-inline LispObject confirm_size_string(char *p, std::size_t n,
+inline LispObject confirm_size_string(char* p, std::size_t n,
                                       std::size_t final)
-{   LispObject *a = (LispObject *)(p - sizeof(LispObject));
+{   LispObject* a = (LispObject* )(p - sizeof(LispObject));
 // On 32-bit platforms I do not have a padder word before string data
 // so things are simpler here than when confirming the size of a number.
-    *a = tagHDR + typeSTRING + packlength(final);
+   * a = tagHDR + typeSTRING + packlength(final);
     return (LispObject)a +tagATOM;
 }
 
@@ -2149,7 +2094,7 @@ inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
+inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
 {   if (stored_as_fixnum(a1)) return OP::op(int_of_handle(a1), n);
     else return OP::op(vector_of_handle(a1), n);
 }
@@ -2157,30 +2102,33 @@ inline RES op_dispatch1(std::intptr_t a1, std::uint64_t *n)
 template <class OP,class RES>
 inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 {   if (stored_as_fixnum(a1))
-    {   if (stored_as_fixnum(a2))
+    {   LIKELY
+        if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(int_of_handle(a1), int_of_handle(a2));
         else return OP::op(int_of_handle(a1), vector_of_handle(a2));
     }
     else
     {   if (stored_as_fixnum(a2))
+            LIKELY
             return OP::op(vector_of_handle(a1), int_of_handle(a2));
         else return OP::op(vector_of_handle(a1), vector_of_handle(a2));
     }
 }
 
-inline std::intptr_t always_copy_bignum(std::uint64_t *p)
+inline std::intptr_t always_copy_bignum(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
 }
 
-inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
+inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t* p)
 {   std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -2188,10 +2136,10 @@ inline std::intptr_t copy_if_no_garbage_collector(std::uint64_t *p)
 
 inline std::intptr_t copy_if_no_garbage_collector(std::intptr_t pp)
 {   if (stored_as_fixnum(pp)) return pp;
-    std::uint64_t *p = vector_of_handle(pp);
+    std::uint64_t* p = vector_of_handle(pp);
     std::size_t n = number_size(p);
     push(p);
-    std::uint64_t *r = reserve(n);
+    std::uint64_t* r = reserve(n);
     pop(p);
     std::memcpy(r, p, n*sizeof(std::uint64_t));
     return confirm_size(r, n, n);
@@ -2212,9 +2160,9 @@ class Plus
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 inline std::intptr_t bigplus_small(std::intptr_t, std::int64_t);
@@ -2223,190 +2171,205 @@ class Difference
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class RevDifference
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Times
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Quotient
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Remainder
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Mod
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
+};
+
+class Floor
+{
+public:
+    static std::intptr_t op(std::int64_t, std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
+};
+
+class Ceiling
+{
+public:
+    static std::intptr_t op(std::int64_t, std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Divide
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
-    static std::intptr_t op(std::int64_t, std::int64_t, std::intptr_t &);
-    static std::intptr_t op(std::int64_t, std::uint64_t *,
-                            std::intptr_t &);
-    static std::intptr_t op(std::uint64_t *, std::int64_t,
-                            std::intptr_t &);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *,
-                            std::intptr_t &);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
+    static std::intptr_t op(std::int64_t, std::int64_t, std::intptr_t&);
+    static std::intptr_t op(std::int64_t, std::uint64_t* , std::intptr_t&);
+    static std::intptr_t op(std::uint64_t* , std::int64_t, std::intptr_t&);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* , std::intptr_t&);
 };
 
 class Gcd
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Lcm
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logand
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logor
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logxor
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logeqv
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Zerop
 {
 public:
     static bool op(std::int64_t w);
-    static bool op(std::uint64_t *w);
+    static bool op(std::uint64_t* w);
 };
 
 class Onep
 {
 public:
     static bool op(std::int64_t w);
-    static bool op(uint64_t *w);
+    static bool op(uint64_t* w);
 };
 
 class Minusp
 {
 public:
     static bool op(std::int64_t w);
-    static bool op(uint64_t *w);
+    static bool op(uint64_t* w);
 };
 
 class Plusp
 {
 public:
     static bool op(std::int64_t w);
-    static bool op(uint64_t *w);
+    static bool op(uint64_t* w);
 };
 
 class Evenp
 {
 public:
     static bool op(std::int64_t w);
-    static bool op(uint64_t *w);
+    static bool op(uint64_t* w);
 };
 
 class Oddp
 {
 public:
     static bool op(std::int64_t w);
-    static bool op(uint64_t *w);
+    static bool op(uint64_t* w);
 };
 
 class Eqn
 {
 public:
     static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t *);
-    static bool op(std::uint64_t *, std::int64_t);
-    static bool op(std::uint64_t *, std::uint64_t *);
+    static bool op(std::int64_t, std::uint64_t* );
+    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(std::uint64_t* , std::uint64_t* );
 // Even comparing a floating point number with an integer for equality
 // turns out to be messier than one might have hoped!
     static bool op(std::int64_t, float);
-    static bool op(std::uint64_t *, float);
+    static bool op(std::uint64_t* , float);
     static bool op(float, std::int64_t);
-    static bool op(float, std::uint64_t *);
+    static bool op(float, std::uint64_t* );
     static bool op(std::int64_t, double);
-    static bool op(std::uint64_t *, double);
+    static bool op(std::uint64_t* , double);
     static bool op(double, std::int64_t);
-    static bool op(double, std::uint64_t *);
+    static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
     static bool op(std::int64_t, float128_t);
-    static bool op(std::uint64_t *, float128_t);
+    static bool op(std::uint64_t* , float128_t);
     static bool op(float128_t, std::int64_t);
-    static bool op(float128_t, std::uint64_t *);
+    static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2414,24 +2377,24 @@ class Neqn
 {
 public:
     static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t *);
-    static bool op(std::uint64_t *, std::int64_t);
-    static bool op(std::uint64_t *, std::uint64_t *);
+    static bool op(std::int64_t, std::uint64_t* );
+    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(std::uint64_t* , std::uint64_t* );
 // Even comparing a floating point number with an integer for equality
 // turns out to be messier than one might have hoped!
     static bool op(std::int64_t, float);
-    static bool op(std::uint64_t *, float);
+    static bool op(std::uint64_t* , float);
     static bool op(float, std::int64_t);
-    static bool op(float, std::uint64_t *);
+    static bool op(float, std::uint64_t* );
     static bool op(std::int64_t, double);
-    static bool op(std::uint64_t *, double);
+    static bool op(std::uint64_t* , double);
     static bool op(double, std::int64_t);
-    static bool op(double, std::uint64_t *);
+    static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
     static bool op(std::int64_t, float128_t);
-    static bool op(std::uint64_t *, float128_t);
+    static bool op(std::uint64_t* , float128_t);
     static bool op(float128_t, std::int64_t);
-    static bool op(float128_t, std::uint64_t *);
+    static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2439,25 +2402,25 @@ class Geq
 {
 public:
     static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t *);
-    static bool op(std::uint64_t *, std::int64_t);
-    static bool op(std::uint64_t *, std::uint64_t *);
+    static bool op(std::int64_t, std::uint64_t* );
+    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(std::uint64_t* , std::uint64_t* );
 // Comparing a bignum against a floating point value has multiple cases
 // to consider, but needs special implementation so that neither rounding
 // nor overflow not Infinities/NaNs lead to incorrect results.
     static bool op(std::int64_t, float);
-    static bool op(std::uint64_t *, float);
+    static bool op(std::uint64_t* , float);
     static bool op(float, std::int64_t);
-    static bool op(float, std::uint64_t *);
+    static bool op(float, std::uint64_t* );
     static bool op(std::int64_t, double);
-    static bool op(std::uint64_t *, double);
+    static bool op(std::uint64_t* , double);
     static bool op(double, std::int64_t);
-    static bool op(double, std::uint64_t *);
+    static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
     static bool op(std::int64_t, float128_t);
-    static bool op(std::uint64_t *, float128_t);
+    static bool op(std::uint64_t* , float128_t);
     static bool op(float128_t, std::int64_t);
-    static bool op(float128_t, std::uint64_t *);
+    static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2465,22 +2428,22 @@ class Greaterp
 {
 public:
     static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t *);
-    static bool op(std::uint64_t *, std::int64_t);
-    static bool op(std::uint64_t *, std::uint64_t *);
+    static bool op(std::int64_t, std::uint64_t* );
+    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(std::uint64_t* , std::uint64_t* );
     static bool op(std::int64_t, float);
-    static bool op(std::uint64_t *, float);
+    static bool op(std::uint64_t* , float);
     static bool op(float, std::int64_t);
-    static bool op(float, std::uint64_t *);
+    static bool op(float, std::uint64_t* );
     static bool op(std::int64_t, double);
-    static bool op(std::uint64_t *, double);
+    static bool op(std::uint64_t* , double);
     static bool op(double, std::int64_t);
-    static bool op(double, std::uint64_t *);
+    static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
     static bool op(std::int64_t, float128_t);
-    static bool op(std::uint64_t *, float128_t);
+    static bool op(std::uint64_t* , float128_t);
     static bool op(float128_t, std::int64_t);
-    static bool op(float128_t, std::uint64_t *);
+    static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2488,22 +2451,22 @@ class Leq
 {
 public:
     static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t *);
-    static bool op(std::uint64_t *, std::int64_t);
-    static bool op(std::uint64_t *, std::uint64_t *);
+    static bool op(std::int64_t, std::uint64_t* );
+    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(std::uint64_t* , std::uint64_t* );
     static bool op(std::int64_t, float);
-    static bool op(std::uint64_t *, float);
+    static bool op(std::uint64_t* , float);
     static bool op(float, std::int64_t);
-    static bool op(float, std::uint64_t *);
+    static bool op(float, std::uint64_t* );
     static bool op(std::int64_t, double);
-    static bool op(std::uint64_t *, double);
+    static bool op(std::uint64_t* , double);
     static bool op(double, std::int64_t);
-    static bool op(double, std::uint64_t *);
+    static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
     static bool op(std::int64_t, float128_t);
-    static bool op(std::uint64_t *, float128_t);
+    static bool op(std::uint64_t* , float128_t);
     static bool op(float128_t, std::int64_t);
-    static bool op(float128_t, std::uint64_t *);
+    static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2511,22 +2474,22 @@ class Lessp
 {
 public:
     static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t *);
-    static bool op(std::uint64_t *, std::int64_t);
-    static bool op(std::uint64_t *, std::uint64_t *);
+    static bool op(std::int64_t, std::uint64_t* );
+    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(std::uint64_t* , std::uint64_t* );
     static bool op(std::int64_t, float);
-    static bool op(std::uint64_t *, float);
+    static bool op(std::uint64_t* , float);
     static bool op(float, std::int64_t);
-    static bool op(float, std::uint64_t *);
+    static bool op(float, std::uint64_t* );
     static bool op(std::int64_t, double);
-    static bool op(std::uint64_t *, double);
+    static bool op(std::uint64_t* , double);
     static bool op(double, std::int64_t);
-    static bool op(double, std::uint64_t *);
+    static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
     static bool op(std::int64_t, float128_t);
-    static bool op(std::uint64_t *, float128_t);
+    static bool op(std::uint64_t* , float128_t);
     static bool op(float128_t, std::int64_t);
-    static bool op(float128_t, std::uint64_t *);
+    static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
 
@@ -2534,155 +2497,164 @@ class Add1
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Sub1
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Minus
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Abs
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Uniform_upto
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Square
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Isqrt
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Lognot
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class Pow
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
     static double op(std::int64_t, double);
-    static double op(std::uint64_t *, double);
+    static double op(std::uint64_t* , double);
 };
 
 class LeftShift
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class RightShift
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
-class LowBits
+class Low64Bits
 {
 public:
     static std::uint64_t op(std::int64_t w);
-    static std::uint64_t op(uint64_t *w);
+    static std::uint64_t op(uint64_t* w);
 };
 
 class LowBit
-{
+{    // Index of least significant bit in the number 
 public:
-    static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::size_t op(std::int64_t w);
+    static std::size_t op(uint64_t* w);
 };
 
 class IntegerLength
-{
+{   // Index of most significant bit in the number
 public:
-    static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::size_t op(std::int64_t w);
+    static std::size_t op(uint64_t* w);
+};
+
+class Top64Bits
+{   // For a non-zero number the top 64 bits aligned so the (1<<63) bit
+    // is set. This is a bitt like a mantissa to go with IntegerLength as
+    // an exponent.
+public:
+    static std::uint64_t op(std::int64_t w);
+    static std::uint64_t op(uint64_t* w);
 };
 
 class Logbitp
 {
 public:
     static bool op(std::int64_t, std::size_t);
-    static bool op(std::uint64_t *, std::size_t);
+    static bool op(std::uint64_t* , std::size_t);
 };
 
 class Logcount
 {
 public:
-    static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::size_t op(std::int64_t w);
+    static std::size_t op(uint64_t* w);
 };
 
 class Int64_t
-{
+{   // Convert to 64-bit native integer.
 public:
     static std::int64_t op(std::int64_t w);
-    static std::int64_t op(uint64_t *w);
+    static std::int64_t op(uint64_t* w);
 };
 
 class Uint64_t
-{
+{   // Convert to 64-bit unsigned value.
 public:
     static std::uint64_t op(std::int64_t w);
-    static std::uint64_t op(uint64_t *w);
+    static std::uint64_t op(uint64_t* w);
 };
 
 class Float
 {
 public:
     static float op(std::int64_t w);
-    static float op(uint64_t *w);
+    static float op(uint64_t* w);
 };
 
 class Double
 {
 public:
     static double op(std::int64_t w);
-    static double op(uint64_t *w);
+    static double op(uint64_t* w);
 };
 
 class Frexp
 {
 public:
-    static double op(std::int64_t, std::int64_t &x);
-    static double op(std::uint64_t *, std::int64_t &x);
+    static double op(std::int64_t, std::int64_t& x);
+    static double op(std::uint64_t* , std::int64_t& x);
 };
 
 #ifdef softfloat_h
@@ -2691,14 +2663,14 @@ class Float128
 {
 public:
     static float128_t op(std::int64_t w);
-    static float128_t op(uint64_t *w);
+    static float128_t op(uint64_t* w);
 };
 
 class Frexp128
 {
 public:
-    static float128_t op(std::int64_t, std::int64_t &x);
-    static float128_t op(std::uint64_t *, std::int64_t &x);
+    static float128_t op(std::int64_t, std::int64_t& x);
+    static float128_t op(std::uint64_t* , std::int64_t& x);
 };
 
 #endif // softfloat_h
@@ -2709,80 +2681,80 @@ class ModularPlus
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularDifference
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularTimes
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularExpt
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularQuotient
 {
 public:
     static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t *);
-    static std::intptr_t op(std::uint64_t *, std::int64_t);
-    static std::intptr_t op(std::uint64_t *, std::uint64_t *);
+    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularMinus
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class ModularReciprocal
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class SafeModularReciprocal
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class ModularNumber
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 class SetModulus
 {
 public:
     static std::intptr_t op(std::int64_t w);
-    static std::intptr_t op(uint64_t *w);
+    static std::intptr_t op(uint64_t* w);
 };
 
 #endif // CSL
@@ -2794,21 +2766,28 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa);
 
 class Bignum;
 
-inline void display(const char *label, const std::uint64_t *a,
-                    std::size_t lena);
-inline void display(const char *label, std::intptr_t a);
-inline void display(const char *label, const Bignum &a);
+inline void display(const char* label,
+                    const std::uint64_t* a, std::size_t lena);
+inline void display(const char* label, std::intptr_t a);
+inline void display(const char* label, const Bignum& a);
 
 
 //=========================================================================
 //=========================================================================
 // I have a class Bignum that wraps up the representation of a number
 // and then allows me to overload most operators so that big numbers can be
-// used in C++ code anmost as if they were a natural proper type. The main
+// used in C++ code almost as if they were a natural proper type. The main
 // big oddity will be that to denote a Bignum literal it will be necessary
 // to use a constructor, with obvious constructors accepting integers of up
 // to 64-bits and a perhaps less obvious one taking a string that is the
-// decimal denotation of the integer concerned.
+// decimal denotation of the integer concerned. Well actually I also support
+// input notation like 12345_Z for Bignum. I would have liked to make
+// the processing of this input syntax "constexpr" so that the work was done
+// at compile time, however a big number needs some storage allocated
+// and it is not obvious how I can arrange that in a constexpr context. So
+// this is not really totally delightful. One can of course write
+//       static Bignum vv = 12345_Z;
+// and then the initialisation is done once during program startup.
 //=========================================================================
 //=========================================================================
 
@@ -2832,7 +2811,7 @@ public:
     {   abandon(val);
         val = 0;
     }
-    Bignum(std::uint64_t *p)
+    Bignum(std::uint64_t* p)
     {   val = vector_to_handle(p);
     }
 // The code here is more complicated than I would have liked. What I want is
@@ -2870,10 +2849,10 @@ public:
     {   val = round_float128_to_int(d);
     }
 #endif // softfloat_h
-    Bignum(const char *s)
+    Bignum(const char* s)
     {   val = string_to_bignum(s);
     }
-    Bignum(const Bignum &a)
+    Bignum(const Bignum& a)
     {   val = copy_if_no_garbage_collector(a.val);
     }
     template <typename T,
@@ -2891,7 +2870,7 @@ public:
     operator double()
     {   return op_dispatch1<Double, double>(val);
     }
-    std::uint64_t *vec() const
+    std::uint64_t* vec() const
     {   return vector_of_handle(val);
     }
 
@@ -2899,7 +2878,7 @@ public:
 // the value that is assigned. This is so I do not make gratuitous extra
 // copies of it in the common case where the value is not used, but it could
 // catch out the unwary.
-    inline void operator = (const Bignum &x)
+    inline void operator = (const Bignum& x)
     {   if (this == &x) return; // assign to self - a silly case!
         abandon(val);
 // See comment in the copy constructor.
@@ -2922,12 +2901,12 @@ public:
         val = unsigned_int_to_bignum(static_cast<std::uint64_t>(x));
     }
 
-    inline void operator = (const char *x)
+    inline void operator = (const char* x)
     {   abandon(val);
         val = string_to_bignum(x);
     }
 
-    inline Bignum operator +(const Bignum &x) const
+    inline Bignum operator +(const Bignum& x) const
     {   return Bignum(true, op_dispatch2<Plus,std::intptr_t>(val, x.val));
     }
 
@@ -2938,7 +2917,7 @@ public:
                       Bignum(x).val));
     }
 
-    inline Bignum operator -(const Bignum &x) const
+    inline Bignum operator -(const Bignum& x) const
     {   return Bignum(true, op_dispatch2<Difference,std::intptr_t>(val,
                       x.val));
     }
@@ -2950,7 +2929,7 @@ public:
                       Bignum(x).val));
     }
 
-    inline Bignum operator *(const Bignum &x) const
+    inline Bignum operator *(const Bignum& x) const
     {   return Bignum(true, op_dispatch2<Times,std::intptr_t>(val,
                       x.val));
     }
@@ -2958,13 +2937,12 @@ public:
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline Bignum operator *(const T x) const
-    {   return Bignum(true, op_dispatch2<Times,std::intptr_t>(val,
-                      Bignum(x).val));
+    {   return Bignum(true,
+            op_dispatch2<Times,std::intptr_t>(val, Bignum(x).val));
     }
 
-    inline Bignum operator /(const Bignum &x) const
-    {   return Bignum(true, op_dispatch2<Quotient,std::intptr_t>(val,
-                      x.val));
+    inline Bignum operator /(const Bignum& x) const
+    {   return Bignum(true, op_dispatch2<Quotient,std::intptr_t>(val, x.val));
     }
 
     template <typename T,
@@ -2974,9 +2952,8 @@ public:
                       Bignum(x).val));
     }
 
-    inline Bignum operator %(const Bignum &x) const
-    {   return Bignum(true, op_dispatch2<Remainder,std::intptr_t>(val,
-                      x.val));
+    inline Bignum operator %(const Bignum& x) const
+    {   return Bignum(true, op_dispatch2<Remainder,std::intptr_t>(val, x.val));
     }
 
     template <typename T,
@@ -2990,9 +2967,8 @@ public:
     {   return Bignum(true, op_dispatch1<Minus,std::intptr_t>(val));
     }
 
-    inline Bignum operator &(const Bignum &x) const
-    {   return Bignum(true, op_dispatch2<Logand,std::intptr_t>(val,
-                      x.val));
+    inline Bignum operator &(const Bignum& x) const
+    {   return Bignum(true, op_dispatch2<Logand,std::intptr_t>(val, x.val));
     }
 
     template <typename T,
@@ -3002,9 +2978,8 @@ public:
                       Bignum(x).val));
     }
 
-    inline Bignum operator |(const Bignum &x) const
-    {   return Bignum(true, op_dispatch2<Logor,std::intptr_t>(val,
-                      x.val));
+    inline Bignum operator |(const Bignum& x) const
+    {   return Bignum(true, op_dispatch2<Logor,std::intptr_t>(val, x.val));
     }
 
     template <typename T,
@@ -3014,7 +2989,7 @@ public:
                       Bignum(x).val));
     }
 
-    inline Bignum operator ^(const Bignum &x) const
+    inline Bignum operator ^(const Bignum& x) const
     {   return Bignum(true, op_dispatch2<Logxor,std::intptr_t>(val,
                       x.val));
     }
@@ -3054,7 +3029,7 @@ public:
     {   return Bignum(true, op_dispatch1<Lognot,std::intptr_t>(val));
     }
 
-    inline bool operator ==(const Bignum &x) const
+    inline bool operator ==(const Bignum& x) const
     {   return op_dispatch2<Eqn,bool>(val, x.val);
     }
     template <typename T,
@@ -3063,7 +3038,7 @@ public:
     {   return op_dispatch2<Eqn,bool>(val, Bignum(x).val);
     }
 
-    inline bool operator !=(const Bignum &x) const
+    inline bool operator !=(const Bignum& x) const
     {   return !op_dispatch2<Eqn,bool>(val, x.val);
     }
     template <typename T,
@@ -3072,7 +3047,7 @@ public:
     {   return !op_dispatch2<Eqn,bool>(val, Bignum(x).val);
     }
 
-    inline bool operator >(const Bignum &x) const
+    inline bool operator >(const Bignum& x) const
     {   return op_dispatch2<Greaterp,bool>(val, x.val);
     }
     template <typename T,
@@ -3081,7 +3056,7 @@ public:
     {   return op_dispatch2<Greaterp,bool>(val, Bignum(x).val);
     }
 
-    inline bool operator >=(const Bignum &x) const
+    inline bool operator >=(const Bignum& x) const
     {   return op_dispatch2<Geq,bool>(val, x.val);
     }
     template <typename T,
@@ -3090,7 +3065,7 @@ public:
     {   return op_dispatch2<Geq,bool>(val, Bignum(x).val);
     }
 
-    inline bool operator <(const Bignum &x) const
+    inline bool operator <(const Bignum& x) const
     {   return op_dispatch2<Lessp,bool>(val, x.val);
     }
     template <typename T,
@@ -3099,7 +3074,7 @@ public:
     {   return op_dispatch2<Lessp,bool>(val, Bignum(x).val);
     }
 
-    inline bool operator <=(const Bignum &x) const
+    inline bool operator <=(const Bignum& x) const
     {   return op_dispatch2<Leq,bool>(val, x.val);
     }
     template <typename T,
@@ -3108,7 +3083,7 @@ public:
     {   return op_dispatch2<Leq,bool>(val, Bignum(x).val);
     }
 
-    inline void operator +=(const Bignum &x)
+    inline void operator +=(const Bignum& x)
     {   std::intptr_t r = op_dispatch2<Plus,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
@@ -3123,7 +3098,7 @@ public:
         val = r;
     }
 
-    inline void operator -=(const Bignum &x)
+    inline void operator -=(const Bignum& x)
     {   std::intptr_t r = op_dispatch2<Difference,std::intptr_t>(val,
                           x.val);
         abandon(val);
@@ -3139,7 +3114,7 @@ public:
         val = r;
     }
 
-    inline void operator *=(const Bignum &x)
+    inline void operator *=(const Bignum& x)
     {   std::intptr_t r = op_dispatch2<Times,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
@@ -3147,15 +3122,13 @@ public:
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator *=(T x)
-    {   std::intptr_t r = op_dispatch2<Times,std::intptr_t>(val,
-                          Bignum(x).val);
+    {   std::intptr_t r = op_dispatch2<Times,std::intptr_t>(val, Bignum(x).val);
         abandon(val);
         val = r;
     }
 
-    inline void operator /=(const Bignum &x)
-    {   std::intptr_t r = op_dispatch2<Quotient,std::intptr_t>(val,
-                          x.val);
+    inline void operator /=(const Bignum& x)
+    {   std::intptr_t r = op_dispatch2<Quotient,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
     }
@@ -3163,15 +3136,13 @@ public:
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator /=(T x)
-    {   std::intptr_t r = op_dispatch2<Quotient,std::intptr_t>(val,
-                          Bignum(x).val);
+    {   std::intptr_t r = op_dispatch2<Quotient,std::intptr_t>(val, Bignum(x).val);
         abandon(val);
         val = r;
     }
 
-    inline void operator %=(const Bignum &x)
-    {   std::intptr_t r = op_dispatch2<Remainder,std::intptr_t>(val,
-                          x.val);
+    inline void operator %=(const Bignum& x)
+    {   std::intptr_t r = op_dispatch2<Remainder,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
     }
@@ -3185,7 +3156,7 @@ public:
         val = r;
     }
 
-    inline void operator &=(const Bignum &x)
+    inline void operator &=(const Bignum& x)
     {   std::intptr_t r = op_dispatch2<Logand,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
@@ -3194,13 +3165,12 @@ public:
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator &=(T x)
-    {   std::intptr_t r = op_dispatch2<Logand,std::intptr_t>(val,
-                          Bignum(x).val);
+    {   std::intptr_t r = op_dispatch2<Logand,std::intptr_t>(val, Bignum(x).val);
         abandon(val);
         val = r;
     }
 
-    inline void operator |=(const Bignum &x)
+    inline void operator |=(const Bignum& x)
     {   std::intptr_t r = op_dispatch2<Logor,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
@@ -3209,13 +3179,12 @@ public:
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator |=(T x)
-    {   std::intptr_t r = op_dispatch2<Logor,std::intptr_t>(val,
-                          Bignum(x).val);
+    {   std::intptr_t r = op_dispatch2<Logor,std::intptr_t>(val, Bignum(x).val);
         abandon(val);
         val = r;
     }
 
-    inline void operator ^=(const Bignum &x)
+    inline void operator ^=(const Bignum& x)
     {   std::intptr_t r = op_dispatch2<Logxor,std::intptr_t>(val, x.val);
         abandon(val);
         val = r;
@@ -3224,8 +3193,7 @@ public:
     template <typename T,
               typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline void operator ^=(T x)
-    {   std::intptr_t r = op_dispatch2<Logxor,std::intptr_t>(val,
-                          Bignum(x).val);
+    {   std::intptr_t r = op_dispatch2<Logxor,std::intptr_t>(val, Bignum(x).val);
         abandon(val);
         val = r;
     }
@@ -3252,7 +3220,7 @@ public:
     {   std::intptr_t r = bigplus_small(val, 1);
         abandon(val);
         val = r;
-        return *this;
+        return* this;
     }
 
     inline Bignum operator ++(int)
@@ -3269,7 +3237,7 @@ public:
     {   std::intptr_t r = bigplus_small(val, -1);
         abandon(val);
         val = r;
-        return *this;
+        return* this;
     }
 
     inline Bignum operator --(int)
@@ -3281,19 +3249,19 @@ public:
     }
 
     inline Bignum lowbit() const
-    {   return Bignum(true, op_dispatch1<LowBit,std::intptr_t>(val));
+    {   return Bignum(true, op_dispatch1<LowBit,std::size_t>(val));
     }
 
     inline Bignum highbit() const
-    {   return Bignum(true, op_dispatch1<IntegerLength,std::intptr_t>(val));
+    {   return Bignum(true, op_dispatch1<IntegerLength,std::size_t>(val));
     }
 
-    friend std::ostream & operator << (std::ostream &out, const Bignum &a)
+    friend std::ostream & operator << (std::ostream &out, const Bignum& a)
     {   std::ios_base::fmtflags fg = out.flags();
 #if defined LISP && !defined ZAPPA
         LispObject s;
 #else
-        char *s;
+        char* s;
 #endif
         if ((static_cast<unsigned int>(fg) & std::ios_base::hex) != 0U)
             s = bignum_to_string_hex(a.val);
@@ -3314,7 +3282,7 @@ public:
         abandon_string(s);
         return out;
     }
-    friend std::istream & operator >> (std::istream &in, Bignum &a)
+    friend std::istream & operator >> (std::istream &in, Bignum& a)
     {   std::int64_t n;
 // What I really want to do is to read in a string of digits and then
 // use string_to_bignum().
@@ -3328,7 +3296,7 @@ public:
 // I use a suffix "_Z" for bignums, with Z chosen to reminding me that this
 // gives me an Integer, the "Z" (typically written in a blackboard font)
 // standing for the ring of integers.
-inline Bignum operator "" _Z(const char *s)
+inline Bignum operator "" _Z(const char* s)
 {   return Bignum(s);
 }
 
@@ -3356,44 +3324,44 @@ inline Bignum random_upto_bits_bignum(std::size_t n)
 {   return Bignum(true, random_upto_bits(n));
 }
 
-inline Bignum square(const Bignum &x)
+inline Bignum square(const Bignum& x)
 {   return Bignum(true, op_dispatch1<Square,std::intptr_t>(x.val));
 }
 
-inline Bignum isqrt(const Bignum &x)
+inline Bignum isqrt(const Bignum& x)
 {   return Bignum(true, op_dispatch1<Isqrt,std::intptr_t>(x.val));
 }
 
-inline Bignum abs(const Bignum &x)
+inline Bignum abs(const Bignum& x)
 {   return Bignum(true, op_dispatch1<Abs,std::intptr_t>(x.val));
 }
 
-inline bool zerop(const Bignum &x)
+inline bool zerop(const Bignum& x)
 {   return op_dispatch1<Zerop,bool>(x.val);
 }
 
-inline bool onep(const Bignum &x)
+inline bool onep(const Bignum& x)
 {   return op_dispatch1<Onep,bool>(x.val);
 }
 
-inline bool minusp(const Bignum &x)
+inline bool minusp(const Bignum& x)
 {   return op_dispatch1<Minusp,bool>(x.val);
 }
 
-inline bool plusp(const Bignum &x)
+inline bool plusp(const Bignum& x)
 {   return op_dispatch1<Plusp,bool>(x.val);
 }
 
-inline bool evenp(const Bignum &x)
+inline bool evenp(const Bignum& x)
 {   return op_dispatch1<Evenp,bool>(x.val);
 }
 
-inline bool oddp(const Bignum &x)
+inline bool oddp(const Bignum& x)
 {   return op_dispatch1<Oddp,bool>(x.val);
 }
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-inline Bignum pow(const Bignum &x, T n)
+inline Bignum pow(const Bignum& x, T n)
 {   if (n == 0) return Bignum(true, int_to_bignum(1));
     else if (n == 1) return Bignum(true,
                                        copy_if_no_garbage_collector(x.val));
@@ -3402,18 +3370,18 @@ inline Bignum pow(const Bignum &x, T n)
                            op_dispatch1<Pow,std::intptr_t>(x.val, static_cast<std::int64_t>(n)));
 }
 
-inline double double_bignum(const Bignum &x);
+inline double double_bignum(const Bignum& x);
 
-inline double pow(const Bignum &x, double n)
+inline double pow(const Bignum& x, double n)
 {   return std::pow(double_bignum(x), n);
 }
 
-inline Bignum gcd(const Bignum &x, const Bignum &y)
+inline Bignum gcd(const Bignum& x, const Bignum& y)
 {   return Bignum(true, op_dispatch2<Gcd,std::intptr_t>(x.val,
                   y.val));
 }
 
-inline Bignum lcm(const Bignum &x, const Bignum &y)
+inline Bignum lcm(const Bignum& x, const Bignum& y)
 {   return Bignum(true, op_dispatch2<Lcm,std::intptr_t>(x.val,
                   y.val));
 }
@@ -3458,11 +3426,11 @@ inline Bignum ceil_bignum(float d)
 {   return ceil_bignum(static_cast<double>(d));
 }
 
-inline double float_bignum(const Bignum &x)
+inline double float_bignum(const Bignum& x)
 {   return op_dispatch1<Float,float>(x.val);
 }
 
-inline double double_bignum(const Bignum &x)
+inline double double_bignum(const Bignum& x)
 {   return op_dispatch1<Double,double>(x.val);
 }
 
@@ -3470,17 +3438,17 @@ inline double double_bignum(const Bignum &x)
 // It can be better than using frexp(double_bignum(x), ..) because it
 // avoids overflow.
 
-inline double frexp_bignum(const Bignum &x, std::int64_t &xx)
+inline double frexp_bignum(const Bignum& x, std::int64_t &xx)
 {   return op_dispatch1<Frexp,double>(x.val, xx);
 }
 
 #ifdef softfloat_h
 
-inline float128_t frexp128_bignum(const Bignum &x, std::int64_t &xx)
+inline float128_t frexp128_bignum(const Bignum& x, std::int64_t &xx)
 {   return op_dispatch1<Frexp128,float128_t>(x.val, xx);
 }
 
-inline float128_t float128_bignum(const Bignum &x)
+inline float128_t float128_bignum(const Bignum& x)
 {   return op_dispatch1<Float128,float128_t>(x.val);
 }
 
@@ -3491,7 +3459,7 @@ inline float128_t float128_bignum(const Bignum &x)
 // sequence of hex values. This is obviously useful while debugging!
 //=========================================================================
 
-inline void display(const char *label, const std::uint64_t *a,
+inline void display(const char* label, const std::uint64_t* a,
                     std::size_t lena)
 {   std::cout << label << " [" << static_cast<int>(lena) << "]";
     for (std::size_t i=0; i<lena; i++)
@@ -3508,7 +3476,7 @@ inline void display(const char *label, const std::uint64_t *a,
 // The format is    name := 0xDDDDDDD$
 // which will be easy to copy and paste into Reduce.
 
-inline void rdisplay(const char *label, const std::uint64_t *a,
+inline void rdisplay(const char* label, const std::uint64_t* a,
                      std::size_t lena)
 {   std::cout << label << " := 0x";
     for (std::size_t i=0; i<lena; i++)
@@ -3522,14 +3490,14 @@ inline void rdisplay(const char *label, const std::uint64_t *a,
 // I provide a function that accesses (b<<shift)[n]. Note that the
 // valid index values n will from from 0 up to and including lenb.
 
-inline std::uint64_t shifted_digit(std::uint64_t *b, std::size_t lenb,
+inline std::uint64_t shifted_digit(std::uint64_t* b, std::size_t lenb,
                                    int shift, std::size_t n)
 {   if (n == 0) return b[0]<<shift;
     else if (n == lenb) return b[lenb-1]>>(64-shift);
     else return (b[n]<<shift) | (b[n-1]>>(64-shift));
 }
 
-inline void display(const char *label, std::uint64_t *a,
+inline void display(const char* label, std::uint64_t* a,
                     std::size_t lena,
                     int shift)
 {   std::cout << label << " [" << static_cast<int>(lena) << "]";
@@ -3544,14 +3512,14 @@ inline void display(const char *label, std::uint64_t *a,
     std::cout << std::endl;
 }
 
-inline void display(const char *label, std::intptr_t a)
+inline void display(const char* label, std::intptr_t a)
 {   if (stored_as_fixnum(a))
     {   std::cout << label << " [fixnum] " << std::hex
                   << "0x" << a << std::dec << " = "
                   << int_of_handle(a) << std::endl;
         return;
     }
-    std::uint64_t *d = vector_of_handle(a);
+    std::uint64_t* d = vector_of_handle(a);
     std::size_t len = number_size(d);
     std::cout << label << " [" << static_cast<int>(len) << "]";
     for (std::size_t i=0; i<len; i++)
@@ -3562,7 +3530,7 @@ inline void display(const char *label, std::intptr_t a)
     std::cout << std::endl;
 }
 
-inline void display(const char *label, const Bignum &a)
+inline void display(const char* label, const Bignum& a)
 {   display(label, a.val);
 }
 
@@ -3711,7 +3679,7 @@ inline unsigned int log_next_power_of_2(std::size_t n)
 inline std::uint64_t add_with_carry(std::uint64_t a1,
                                     std::uint64_t a2,
                                     std::uint64_t &r)
-{   return ((r = a1 + a2) < a1);
+{   return ((r = a1 + a2) < a1) ? 1 : 0;
 }
 
 // Now the general version with a carry-in. Note that in fact this version
@@ -3720,7 +3688,8 @@ inline std::uint64_t add_with_carry(std::uint64_t a1,
 
 inline std::uint64_t add_with_carry(std::uint64_t a1,
                                     std::uint64_t a2,
-                                    std::uint64_t a3, std::uint64_t &r)
+                                    std::uint64_t a3,
+                                    std::uint64_t &r)
 {   std::uint64_t w;
     int c1 = add_with_carry(a1, a3, w);
     return c1 + add_with_carry(w, a2, r);
@@ -3731,7 +3700,8 @@ inline std::uint64_t add_with_carry(std::uint64_t a1,
 
 inline std::uint64_t add_with_carry(std::uint64_t a1,
                                     std::uint64_t a2,
-                                    std::uint64_t a3, std::uint64_t a4,
+                                    std::uint64_t a3,
+                                    std::uint64_t a4,
                                     std::uint64_t &r)
 {   std::uint64_t w1, w2;
     int c1 = add_with_carry(a1, a2, w1);
@@ -3744,17 +3714,18 @@ inline std::uint64_t add_with_carry(std::uint64_t a1,
 // and returns 1 is there is a borrow out.
 
 inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
-        std::uint64_t a2,
-        std::uint64_t &r)
+                                          std::uint64_t a2,
+                                          std::uint64_t &r)
 {   r = a1 - a2;
-    return (r > a1);
+    return (r > a1) ? 1 : 0;
 }
 
 inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
-        std::uint64_t a2,
-        std::uint64_t b_in, std::uint64_t &r)
+                                          std::uint64_t a2,
+                                          std::uint64_t borrow_in,
+                                          std::uint64_t &r)
 {   std::uint64_t w;
-    int b1 = subtract_with_borrow(a1, b_in, w);
+    int b1 = subtract_with_borrow(a1, borrow_in, w);
     return b1 + subtract_with_borrow(w, a2, r);
 }
 
@@ -3766,14 +3737,11 @@ inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
 // the result. At least I can keep the code portable, even if I can then
 // worry about performance a bit.
 
-
-
-
 #ifdef __SIZEOF_INT128__
 
 // Well it seems that g++ and clang have different views about how to
 // ask for unsigned 128-bit integers! So I abstract that away via a typedef
-// called UNIT128.
+// called UINT128.
 
 #ifdef __CLANG__
 typedef __int128  INT128;
@@ -3815,8 +3783,8 @@ inline void multiply64(std::uint64_t a, std::uint64_t b,
 inline void multiply64(std::uint64_t a, std::uint64_t b,
                        std::uint64_t c,
                        std::uint64_t &hi, std::uint64_t &lo)
-{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>
-                (b) + static_cast<UINT128>(c);
+{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b) +
+                static_cast<UINT128>(c);
     hi = static_cast<std::uint64_t>(r >> 64);
     lo = static_cast<std::uint64_t>(r);
 }
@@ -3845,8 +3813,7 @@ inline void signed_multiply64(std::int64_t a, std::int64_t b,
 inline void divide64(std::uint64_t hi, std::uint64_t lo,
                      std::uint64_t divisor,
                      std::uint64_t &q, std::uint64_t &r)
-{   arithlib_assert(divisor != 0 && hi < divisor);
-    UINT128 dividend = pack128(hi, lo);
+{   UINT128 dividend = pack128(hi, lo);
     q = dividend / divisor;
     r = dividend % divisor;
 }
@@ -3941,8 +3908,7 @@ inline void signed_multiply64(std::int64_t a, std::int64_t b,
 inline void divide64(std::uint64_t hi, std::uint64_t lo,
                      std::uint64_t divisor,
                      std::uint64_t &q, std::uint64_t &r)
-{   arithlib_assert(divisor != 0 && hi < divisor);
-    std::uint64_t u1 = hi;
+{   std::uint64_t u1 = hi;
     std::uint64_t u0 = lo;
     std::uint64_t c = divisor;
 // See the Hacker's Delight for commentary about what follows. The associated
@@ -4033,8 +3999,8 @@ inline bool shrinkable(std::uint64_t a1, std::uint64_t a2)
 {   return ((a1 + (a2>>63)) == 0);
 }
 
-inline void internal_copy(const std::uint64_t *a, std::size_t lena,
-                          std::uint64_t *b)
+inline void internal_copy(const std::uint64_t* a, std::size_t lena,
+                          std::uint64_t* b)
 {   std::memcpy(b, a, lena*sizeof(std::uint64_t));
 }
 
@@ -4042,8 +4008,8 @@ inline void internal_copy(const std::uint64_t *a, std::size_t lena,
 // Because length is not changed it does not need a length for the
 // destination passed to it.
 
-inline void internal_negate(const std::uint64_t *a, std::size_t lena,
-                            std::uint64_t *b)
+inline void internal_negate(const std::uint64_t* a, std::size_t lena,
+                            std::uint64_t* b)
 {   std::uint64_t carry = 1;
     for (std::size_t i=0; i<lena; i++)
     {   std::uint64_t w = b[i] = ~a[i] + carry;
@@ -4060,7 +4026,7 @@ inline void internal_negate(const std::uint64_t *a, std::size_t lena,
 // that I have a function virtual_digit64() which lets me read from a
 // bignum as if it has been usefully sign-extended.
 
-inline std::uint64_t virtual_digit64(const std::uint64_t *v,
+inline std::uint64_t virtual_digit64(const std::uint64_t* v,
                                      std::size_t n,
                                      std::size_t j)
 {   if (j < n) return v[j];
@@ -4071,7 +4037,7 @@ inline std::uint64_t virtual_digit64(const std::uint64_t *v,
 // This function reads a 3-bit digit from a bignum, and is for use when
 // printing in octal.
 
-inline int read_u3(const std::uint64_t *v, std::size_t n,
+inline int read_u3(const std::uint64_t* v, std::size_t n,
                    std::size_t i)
 {   std::size_t bits = 3*i;
     std::size_t n0 = bits/64;   // word with lowest bit of the 3
@@ -4088,12 +4054,12 @@ inline int read_u3(const std::uint64_t *v, std::size_t n,
 //=========================================================================
 // Some support for two models of memory layout. If VSL is set a number
 // will be represented as an intptr_t value with its low 3 bits used as
-// a tag. When the tag is removed and the intptr_t is cast to (uint64_t *)
+// a tag. When the tag is removed and the intptr_t is cast to (uint64_t* )
 // it points at a block of words. The first word holds a header value
 // that includes (in packed form) the length of the block. Beyond that
 // is the row of uint64_t values making up the bignum itself.
 //
-// For more direct C++ use the type is just (uint64_t *) and it refers
+// For more direct C++ use the type is just (uint64_t* ) and it refers
 // directly to the row of digits of the bignum. However at the address
 // just ahead of that (ie at v[-1]) there is a header word giving the
 // length of the bignum.
@@ -4261,10 +4227,10 @@ inline std::mt19937_64 &ref_mersenne_twister()
         static_cast<std::uint32_t>(time_now>>32),
         static_cast<std::uint32_t>(chrono_now>>32),
         static_cast<std::uint32_t>(
-            bit_cast<std::uintptr_t>(&seed_component_1)),
+            reinterpret_cast<std::uintptr_t>(&seed_component_1)),
         static_cast<std::uint32_t>(
             static_cast<std::uint64_t>(
-                bit_cast<std::uintptr_t>(&seed_component_1))>>32)
+                reinterpret_cast<std::uintptr_t>(&seed_component_1))>>32)
     };
 
     static thread_local std::mt19937_64 inner_mersenne_twister(
@@ -4352,7 +4318,7 @@ inline std::uint64_t uniform_uint64(std::uint64_t n)
 // a bignum using (up to) the given number of bits. So eg uniform_positive(3)
 // should return 0,1,2,3,4,5,6 or 7 each with equal probability.
 
-inline void uniform_positive(std::uint64_t *r, std::size_t &lenr,
+inline void uniform_positive(std::uint64_t* r, std::size_t &lenr,
                              std::size_t bits)
 {   if (bits == 0)
     {   r[0] = 0;
@@ -4374,7 +4340,7 @@ inline std::intptr_t uniform_positive(std::size_t n)
 {   std::size_t lenr = (n + 63)/64;
     if (lenr == 0) lenr = 1; // special case!
     std::size_t save = lenr;
-    std::uint64_t *r = reserve(lenr);
+    std::uint64_t* r = reserve(lenr);
     uniform_positive(r, lenr, n);
     return confirm_size(r, save, lenr);
 }
@@ -4384,7 +4350,7 @@ inline std::intptr_t uniform_positive(std::size_t n)
 // Note that while uniform_unsigned(0) can only return the value 0,
 // uniform_signed(0) can return -1 or 0.
 
-inline void uniform_signed(std::uint64_t *r, std::size_t &lenr,
+inline void uniform_signed(std::uint64_t* r, std::size_t &lenr,
                            std::size_t bits)
 {   lenr = 1 + bits/64;
     std::mt19937_64 &mt = ref_mersenne_twister();
@@ -4405,17 +4371,17 @@ inline void uniform_signed(std::uint64_t *r, std::size_t &lenr,
 inline std::intptr_t uniform_signed(std::size_t n)
 {   std::size_t lenr = n/64+1;
     std::size_t save = lenr;
-    std::uint64_t *r = reserve(lenr);
+    std::uint64_t* r = reserve(lenr);
     uniform_signed(r, lenr, n);
     return confirm_size(r, save, lenr);
 }
 
-inline std::size_t bignum_bits(const std::uint64_t *a, std::size_t lena);
+inline std::size_t bignum_bits(const std::uint64_t* a, std::size_t lena);
 
 // Generate a value in the range 0 .. a-1 using a uniform distribution
 
-inline void uniform_upto(std::uint64_t *a, std::size_t lena,
-                         std::uint64_t *r,
+inline void uniform_upto(std::uint64_t* a, std::size_t lena,
+                         std::uint64_t* r,
                          std::size_t &lenr)
 {   std::size_t n = bignum_bits(a, lena);
 // I will repeatedly generate numbers that have as many bits as a until
@@ -4441,25 +4407,25 @@ inline std::intptr_t uniform_upto(std::intptr_t aa)
                                               aa)));
         return int_to_handle(r);
     }
-    std::uint64_t *a = vector_of_handle(aa);
+    std::uint64_t* a = vector_of_handle(aa);
     std::size_t lena = number_size(a);
     push(a);
-    std::uint64_t *r = reserve(lena);
+    std::uint64_t* r = reserve(lena);
     pop(a);
     std::size_t lenr;
     uniform_upto(a, lena, r, lenr);
     return confirm_size(r, lena, lenr);
 }
 
-inline void truncate_positive(const std::uint64_t *r, std::size_t &n)
+inline void truncate_positive(const std::uint64_t* r, std::size_t &n)
 {   while (r[n-1]==0 && n>1 && positive(r[n-2])) n--;
 }
 
-inline void truncate_negative(const std::uint64_t *r, std::size_t &n)
+inline void truncate_negative(const std::uint64_t* r, std::size_t &n)
 {   while (r[n-1]==allbits && n>1 && negative(r[n-2])) n--;
 }
 
-inline void truncate_unsigned(const std::uint64_t *r, std::size_t &n)
+inline void truncate_unsigned(const std::uint64_t* r, std::size_t &n)
 {   while (r[n-1]==0 && n>1) n--;
 }
 
@@ -4486,9 +4452,9 @@ inline void truncate_unsigned(const std::uint64_t *r, std::size_t &n)
 // close to powers of 2 can easily be "edge cases" that deserve extra attention
 // during testing.
 
-inline void fudge_distribution(const std::uint64_t *a,
+inline void fudge_distribution(const std::uint64_t* a,
                                std::size_t lena,
-                               std::uint64_t *r, std::size_t &lenr, int n)
+                               std::uint64_t* r, std::size_t &lenr, int n)
 {   lenr = lena;
     switch (n&7)
     {   case 0:
@@ -4501,14 +4467,14 @@ inline void fudge_distribution(const std::uint64_t *a,
             else r[lena-1] = 1ULL << (63-nlz(a[lena-1]));
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
-                {   std::uint64_t *p = r;
-                    while (*p == 0) *p++ = static_cast<std::uint64_t>(-1);
+                {   std::uint64_t* p = r;
+                    while (*p == 0)* p++ = static_cast<std::uint64_t>(-1);
                     (*p)--;
                 }
             }
             else if ((n&7) == 2) // increment it
-            {   std::uint64_t *p = r;
-                while (*p == static_cast<std::uint64_t>(-1)) *p++ = 0;
+            {   std::uint64_t* p = r;
+                while (*p == static_cast<std::uint64_t>(-1))* p++ = 0;
                 (*p)++;
             }
             break;
@@ -4527,7 +4493,7 @@ inline void fudge_distribution(const std::uint64_t *a,
 }
 
 inline std::intptr_t fudge_distribution(std::intptr_t aa, int n)
-{   std::uint64_t *a;
+{   std::uint64_t* a;
     std::size_t lena;
     std::uint64_t w[2];
     if (stored_as_fixnum(aa))
@@ -4540,7 +4506,7 @@ inline std::intptr_t fudge_distribution(std::intptr_t aa, int n)
         lena = number_size(a);
     }
     push(a);
-    std::uint64_t *r = reserve(lena+1);
+    std::uint64_t* r = reserve(lena+1);
     pop(a);
     std::size_t lenr;
     fudge_distribution(a, lena, r, lenr, n);
@@ -4554,7 +4520,7 @@ inline std::intptr_t fudge_distribution(std::intptr_t aa, int n)
 // not a very nice distribution from a mathematical perspective, but is is
 // nevertheless a useful one to have in some test code.
 
-inline void random_upto_bits(std::uint64_t *r, std::size_t &lenr,
+inline void random_upto_bits(std::uint64_t* r, std::size_t &lenr,
                              std::size_t n)
 {   std::size_t bits = static_cast<std::size_t>(uniform_uint64(n));
     if (bits == 0)
@@ -4571,13 +4537,12 @@ inline void random_upto_bits(std::uint64_t *r, std::size_t &lenr,
         r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (64-bits%64);
     r[lenr-1] |= UINT64_C(1) << ((bits-1)%64);
     if (bits%64 == 0) r[lenr++] = 0;
-    arithlib_assert(!negative(r[lenr-1]));
 }
 
 inline std::intptr_t random_upto_bits(std::size_t bits)
 {   std::size_t m = 1+bits/64;
     if (m == 0) m = 1;
-    std::uint64_t *r = reserve(m);
+    std::uint64_t* r = reserve(m);
     std::size_t lenr;
     random_upto_bits(r, lenr, bits);
     return confirm_size(r, m, lenr);
@@ -4598,18 +4563,18 @@ inline std::intptr_t random_upto_bits(std::size_t bits)
 // perform arithmetic between a bignum and a native int64_t integer
 // directly.
 
-inline void int_to_bignum(std::int64_t n, std::uint64_t *r)
+inline void int_to_bignum(std::int64_t n, std::uint64_t* r)
 {   r[0] = static_cast<std::uint64_t>(n);
 }
 
 inline std::intptr_t int_to_bignum(std::int64_t n)
 {   if (fits_into_fixnum(n)) return int_to_handle(n);
-    std::uint64_t *r = reserve(1);
+    std::uint64_t* r = reserve(1);
     int_to_bignum(n, r);
     return confirm_size(r, 1, 1);
 }
 
-inline void unsigned_int_to_bignum(std::uint64_t n, std::uint64_t *r,
+inline void unsigned_int_to_bignum(std::uint64_t n, std::uint64_t* r,
                                    std::size_t &lenr)
 {   r[0] = n;
     if (negative(n))
@@ -4621,7 +4586,7 @@ inline void unsigned_int_to_bignum(std::uint64_t n, std::uint64_t *r,
 
 inline std::intptr_t unsigned_int_to_bignum(std::uint64_t n)
 {   std::size_t w = (negative(n) ? 2 : 1);
-    std::uint64_t *r = reserve(w);
+    std::uint64_t* r = reserve(w);
     std::size_t lenr;
     unsigned_int_to_bignum(n, r, lenr);
     return confirm_size(r, w, lenr);
@@ -4638,7 +4603,7 @@ inline std::intptr_t int128_to_bignum(std::int64_t high, std::uint64_t low)
         negative(low) &&
         fits_into_fixnum(static_cast<std::intptr_t>(low)))
         return int_to_handle(static_cast<std::intptr_t>(low));
-    std::uint64_t *r = reserve(2);
+    std::uint64_t* r = reserve(2);
     r[0] = low;
     r[1] = static_cast<std::uintptr_t>(high);
     return confirm_size(r, 2, 2);
@@ -4654,12 +4619,12 @@ inline std::intptr_t unsigned_int128_to_bignum(std::uint64_t  high, std::uint64_
         fits_into_fixnum(static_cast<std::intptr_t>(low)))
         return int_to_handle(static_cast<std::intptr_t>(low));
     else if (!negative(high))
-    {   std::uint64_t *r = reserve(2);
+    {   std::uint64_t* r = reserve(2);
         r[0] = low;
         r[1] = static_cast<std::uintptr_t>(high);
         return confirm_size(r, 2, 2);
     }
-    std::uint64_t *r = reserve(3);
+    std::uint64_t* r = reserve(3);
     r[0] = low;
     r[1] = static_cast<std::uintptr_t>(high);
     return confirm_size(r, 2, 2);
@@ -5104,7 +5069,8 @@ inline void float128_to_virtual_bignum(float128_t d,
     if (exponent < 0)   // There is a fractional part to consider  
     {
 // The number might have been well 
-        uint128_t fracpart = exponent  < -113 ? 1 : mantissa << (113+exponent);
+        uint128_t fracpart = exponent  < -113 ? static_cast<uint128_t>(1)
+                                              : mantissa << (113+exponent);
         switch (mode)
         {   case ROUND:
                 if (fracpart > 0x8000000000000000ULL ||
@@ -5185,7 +5151,7 @@ inline std::intptr_t double_to_int(double d, RoundingMode mode)
     std::uint64_t next;
     std::size_t len;
     double_to_virtual_bignum(d, top, next, len, mode);
-    std::uint64_t *r = reserve(len);
+    std::uint64_t* r = reserve(len);
     if (len == 1) r[0] = top;
     else
     {   for (std::size_t i=0; i<len-2; i++) r[i] = 0;
@@ -5221,7 +5187,7 @@ inline std::intptr_t float128_to_int(float128_t d, RoundingMode mode)
     std::uint64_t mid, next;
     std::size_t len;
     float128_to_virtual_bignum(d, top, mid, next, len, mode);
-    std::uint64_t *r = reserve(len);
+    std::uint64_t* r = reserve(len);
     if (len == 1) r[0] = top;
     else if (len == 2)
     {   r[1] = top;
@@ -5258,7 +5224,7 @@ inline std::int64_t Int64_t::op(std::int64_t a)
 {   return a;
 }
 
-inline std::int64_t Int64_t::op(std::uint64_t *a)
+inline std::int64_t Int64_t::op(std::uint64_t* a)
 {   return static_cast<std::int64_t>(a[0]);
 }
 
@@ -5266,7 +5232,7 @@ inline std::uint64_t Uint64_t::op(std::int64_t a)
 {   return static_cast<std::uint64_t>(a);
 }
 
-inline std::uint64_t Uint64_t::op(std::uint64_t *a)
+inline std::uint64_t Uint64_t::op(std::uint64_t* a)
 {   return a[0];
 }
 
@@ -5356,7 +5322,7 @@ inline float Float::op(std::int64_t a)
                          static_cast<double>(mid));
 }
 
-inline float Float::op(std::uint64_t *a)
+inline float Float::op(std::uint64_t* a)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Float::op(static_cast<std::int64_t>(a[0]));
 // Now I need to do something similar to that done for the int64_t case
@@ -5417,10 +5383,7 @@ inline float Float::op(std::uint64_t *a)
     {   if (next != 0) top24++;
         else top24 += (top24&1);
     }
-    arithlib_assert(top24 >= (1LL)<<23 &&
-                    top24 <= (1LL)<<24);
     double d = static_cast<float>(top24);
-    arithlib_assert(top24 == static_cast<std::uint64_t>(d));
     if (sign) d = -d;
     return ldexpf(d, static_cast<int>(128-24-lz+64*(lena-2)));
 }
@@ -5447,11 +5410,8 @@ inline double Frexp::op(std::int64_t a, std::int64_t &x)
     if (low > 0x8000000000000000U) top53++;
     else if (low == 0x8000000000000000U) top53 += (top53 &
                 1); // round to even
-    arithlib_assert(top53 >= (1LL)<<52 &&
-                    top53 <= (1LL)<<53);
 // The next line should never introduce any rounding at all.
     double d = static_cast<double>(top53);
-    arithlib_assert(top53 == static_cast<std::uint64_t>(d));
     if (sign) d = -d;
     x =64-53-lz;
     return d;
@@ -5473,7 +5433,7 @@ inline double Double::op(std::int64_t a)
     return d + static_cast<double>(hi);
 }
 
-inline double Frexp::op(std::uint64_t *a, std::int64_t &x)
+inline double Frexp::op(std::uint64_t* a, std::int64_t &x)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Frexp::op(static_cast<std::int64_t>(a[0]), x);
 // Now I need to do something similar to that done for the int64_t case
@@ -5534,16 +5494,13 @@ inline double Frexp::op(std::uint64_t *a, std::int64_t &x)
     {   if (next != 0) top53++;
         else top53 += (top53&1);
     }
-    arithlib_assert(top53 >= (1LL)<<52 &&
-                    top53 <= (1LL)<<53);
     double d = static_cast<double>(top53);
-    arithlib_assert(top53 == static_cast<std::uint64_t>(d));
     if (sign) d = -d;
     x = 128-53-lz+64*(lena-2);
     return d;
 }
 
-inline double Double::op(std::uint64_t *a)
+inline double Double::op(std::uint64_t* a)
 {   std::int64_t x = 0;
     double d = Frexp::op(a, x);
     if (x > 10000) x = 10000;
@@ -5564,7 +5521,7 @@ inline float128_t Frexp128::op(std::int64_t a, std::int64_t &x)
     return d1;
 }
 
-inline float128_t Frexp128::op(std::uint64_t *a, std::int64_t &x)
+inline float128_t Frexp128::op(std::uint64_t* a, std::int64_t &x)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Float128::op(static_cast<std::int64_t>(a[0]));
     std::uint64_t top113, top113a;
@@ -5653,7 +5610,7 @@ inline float128_t Frexp128::op(std::uint64_t *a, std::int64_t &x)
     return d;
 }
 
-inline float128_t Float128::op(std::uint64_t *a)
+inline float128_t Float128::op(std::uint64_t* a)
 {   std::int64_t x = 0;
     float128_t d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
@@ -5667,7 +5624,7 @@ inline float128_t Float128::op(std::uint64_t *a)
 
 inline const std::uint64_t ten19 = UINT64_C(10000000000000000000);
 
-inline std::intptr_t string_to_bignum(const char *s)
+inline std::intptr_t string_to_bignum(const char* s)
 {   bool sign = false;
     if (*s == '-')
     {   sign = true;
@@ -5686,7 +5643,7 @@ inline std::intptr_t string_to_bignum(const char *s)
 // overestimate so that the vector that I allocate never overflows. Somewhat
 // rarely it will be and overestimate and it will be necessary to trim the
 // vector at the end.
-    std::uint64_t *r = reserve(words);
+    std::uint64_t* r = reserve(words);
     for (std::size_t i=0; i<words; i++) r[i] = 0;
 // Now for each chunk of digits NNNN in the input I want to go in effect
 //     r = 10^19*r + NNNN;
@@ -5697,8 +5654,7 @@ inline std::intptr_t string_to_bignum(const char *s)
     {   std::uint64_t d = 0;
 // assemble 19 digit blocks from the input into a value (d).
         while (chars != next)
-        {   arithlib_assert(std::isdigit(*s));
-            d = 10*d + (*s++ - '0');
+        {   d = 10*d + (*s++ - '0');
             chars--;
         }
         next -= 19;
@@ -5734,7 +5690,7 @@ inline std::intptr_t string_to_bignum(const char *s)
 // with the quotient.
 
 
-inline std::uint64_t short_divide_ten_19(std::uint64_t *r,
+inline std::uint64_t short_divide_ten_19(std::uint64_t* r,
         std::size_t &n)
 {   std::uint64_t hi = 0;
     std::size_t i=n-1;
@@ -5754,8 +5710,7 @@ inline std::uint64_t short_divide_ten_19(std::uint64_t *r,
 // this might happen if the number occupies over 512 Mbytes and I view
 // that as a situation I will accept as a limit for 32-bit platforms.
 
-inline std::size_t bignum_bits(const std::uint64_t *a,
-                               std::size_t lena)
+inline std::size_t bignum_bits(const std::uint64_t* a, std::size_t lena)
 {   if (lena == 0 && a[0] == 0) return 1; // say that 0 has 1 bit.
     std::uint64_t top = a[lena-1];  // top digit.
 // The exact interpretation of "the length in bits of a negative number"
@@ -5763,7 +5718,7 @@ inline std::size_t bignum_bits(const std::uint64_t *a,
 // number of bits apart from the sign bit, so we have
 //      n      bignum_bits(n)   bignum_bits(-n)
 //      0           0                0
-//     1           1    1           0 ..11111:
+//      1           1    1           0 ..11111:
 //      2           2   10           1 ..1111:0
 //      3           2   11           2 ..111:01
 //      4           3  100           2 ..111:00
@@ -5795,7 +5750,7 @@ inline std::size_t bignum_bits(const std::uint64_t *a,
 // in this case this yields 8 as required. For negative numbers I will add 1
 // to allow for a "-" sign.
 
-inline std::size_t predict_size_in_bytes(const std::uint64_t *a,
+inline std::size_t predict_size_in_bytes(const std::uint64_t* a,
         std::size_t lena)
 {
 // I am first going to estimate the size in BITS and then I will
@@ -5807,7 +5762,7 @@ inline std::size_t predict_size_in_bytes(const std::uint64_t *a,
     return r;
 }
 
-inline std::size_t bignum_to_string_length(std::uint64_t *a, std::size_t lena)
+inline std::size_t bignum_to_string_length(std::uint64_t* a, std::size_t lena)
 {   if (lena == 1)
     {   std::int64_t v = a[0];
 // Note that the negative numbers checked against are 1 digit shorter so as
@@ -5823,8 +5778,8 @@ inline std::size_t bignum_to_string_length(std::uint64_t *a, std::size_t lena)
 // internal debugging because at times I work with values that are known
 // to be positive and so where the top digit must be treated as unsigned...
 
-inline std::size_t bignum_to_string(char *result, std::size_t m,
-                                    std::uint64_t *a, std::size_t lena,
+inline std::size_t bignum_to_string(char* result, std::size_t m,
+                                    std::uint64_t* a, std::size_t lena,
                                     bool as_unsigned=false)
 {
 // Making one-word numbers a special case simplifies things later on! It may
@@ -5879,7 +5834,7 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
 // I will only ever access data in the format that it was placed into memory!
 // Note that this will assume that the string data was allocated so as to
 // be aligned suitably for uint64_t values.
-    std::uint64_t *r = bit_cast<std::uint64_t *>(result);
+    std::uint64_t* r = reinterpret_cast<std::uint64_t*>(result);
     std::size_t i;
 // For the edge case lena==2 and m==20. I copy 2 words across. That will leave
 // 4 bytes unused.
@@ -5918,10 +5873,10 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
     std::uint64_t top = r[p++];
     if (top == 0) top = r[p++]; // discard potential leading zero!
 // Get a pointer into the buffer as character data...
-    char *p1 = bit_cast<char *>(result);
+    char* p1 = reinterpret_cast<char*>(result);
     std::size_t len = 0;
     if (sign)
-    {   *p1++ = '-';
+    {  * p1++ = '-';
         len = 1;
     }
 // I am going to convert my numbers to decimal using explicit code here.
@@ -5937,11 +5892,10 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
     }
     while (top != 0);
     do
-    {   *p1++ = buffer[--bp];
+    {  * p1++ = buffer[--bp];
         len++;
     }
     while (bp != 0);
-    arithlib_assert(len + 19*(m/sizeof(std::uint64_t)-p)<= m);
     while (p < m/sizeof(std::uint64_t))
     {
 // I will always pick up the number I am going to expand before writing any
@@ -5952,7 +5906,7 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
         {   p1[18-i] = '0' + top%10;
             top = top/10;
         }
-        *p1 = '0' + static_cast<int>(top);
+       * p1 = '0' + static_cast<int>(top);
         p1 += 19;
         len += 19;
     }
@@ -5967,12 +5921,12 @@ inline std::size_t bignum_to_string(char *result, std::size_t m,
     return len;
 }
 
-inline string_handle bignum_to_string(std::uint64_t *a,
+inline string_handle bignum_to_string(std::uint64_t* a,
                                       std::size_t lena,
                                       bool as_unsigned=false)
 {   std::size_t len = bignum_to_string_length(a, lena);
     push(a);
-    char *s = reserve_string(len);
+    char* s = reserve_string(len);
     pop(a);
     std::size_t final_len = bignum_to_string(s, len, a, lena,
                             as_unsigned);
@@ -5980,7 +5934,7 @@ inline string_handle bignum_to_string(std::uint64_t *a,
 }
 
 inline string_handle bignum_to_string(std::intptr_t aa)
-{   std::uint64_t *a, v[1];
+{   std::uint64_t* a, v[1];
     std::size_t lena;
     if (stored_as_fixnum(aa))
     {   v[0] = int_of_handle(aa);
@@ -5997,11 +5951,12 @@ inline string_handle bignum_to_string(std::intptr_t aa)
 // As well as converting to decimal I can do hex, octal or binary!
 
 inline std::size_t bignum_to_string_hex_length(std::intptr_t aa)
-{   return 24;
+{   std::size_t n = IntegerLength::op(aa);
+    return (n+3)/4;
 }
 
 inline string_handle bignum_to_string_hex(std::intptr_t aa)
-{   std::uint64_t *a, v[1];
+{   std::uint64_t* a, v[1];
     std::size_t n;
     if (stored_as_fixnum(aa))
     {   v[0] = int_of_handle(aa);
@@ -6014,7 +5969,7 @@ inline string_handle bignum_to_string_hex(std::intptr_t aa)
     }
 // Making the value zero a special case simplifies things later on!
     if (n == 1 && a[0] == 0)
-    {   char *r = reserve_string(1);
+    {   char* r = reserve_string(1);
         std::strcpy(r, "0");
         return confirm_size_string(r, 1, 1);
     }
@@ -6040,13 +5995,13 @@ inline string_handle bignum_to_string_hex(std::intptr_t aa)
         }
     }
     push(a);
-    char *r = reserve_string(m);
+    char* r = reserve_string(m);
     pop(a);
-    char *p = bit_cast<char *>(r);
+    char* p = reinterpret_cast<char*>(r);
     top = a[n-1];
     if (sign)
-    {   *p++ = '~';
-        *p++ = 'f';
+    {  * p++ = '~';
+       * p++ = 'f';
     }
     bool started = false;
     for (std::size_t i=0; i<n; i++)
@@ -6058,18 +6013,19 @@ inline string_handle bignum_to_string_hex(std::intptr_t aa)
                     (!sign && d==0)) continue;
                 started = true;
             }
-            *p++ = "0123456789abcdef"[d];
+           * p++ = "0123456789abcdef"[d];
         }
     }
-    return confirm_size_string(r, m, m);
+    return confirm_size_string(r, m, p-reinterpret_cast<char*>(r));
 }
 
 inline std::size_t bignum_to_string_octal_length(std::intptr_t aa)
-{   return 24;
+{   std::size_t n = IntegerLength::op(aa);
+    return (n+2)/3;
 }
 
 inline string_handle bignum_to_string_octal(std::intptr_t aa)
-{   std::uint64_t *a, v[1];
+{   std::uint64_t* a, v[1];
     std::size_t n;
     if (stored_as_fixnum(aa))
     {   v[0] = int_of_handle(aa);
@@ -6098,24 +6054,24 @@ inline string_handle bignum_to_string_octal(std::intptr_t aa)
         nn = width;
     }
     push(a);
-    char *r = reserve_string(nn);
+    char* r = reserve_string(nn);
     pop(a);
-    char *p = bit_cast<char *>(r);
+    char* p = reinterpret_cast<char*>(r);
     if (sign)
-    {   *p++ = '~';
-        *p++ = '7';
+    {  * p++ = '~';
+       * p++ = '7';
     }
     for (std::size_t i=0; i<width; i++)
-        *p++ = '0' + read_u3(a, n, width-i-1);
-    return confirm_size_string(r, nn, width);
+       * p++ = '0' + read_u3(a, n, width-i-1);
+    return confirm_size_string(r, nn, p-reinterpret_cast<char*>(r));
 }
 
 inline std::size_t bignum_to_string_binary_length(std::intptr_t aa)
-{   return 24;
+{   return IntegerLength::op(aa);
 }
 
 inline string_handle bignum_to_string_binary(std::intptr_t aa)
-{   std::uint64_t *a, v[1];
+{   std::uint64_t* a, v[1];
     std::size_t n;
     if (stored_as_fixnum(aa))
     {   v[0] = int_of_handle(aa);
@@ -6128,7 +6084,7 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
     }
 // Making the value zero a special case simplifies things later on!
     if (n == 1 && a[0] == 0)
-    {   char *r = reserve_string(1);
+    {   char* r = reserve_string(1);
         std::strcpy(r, "0");
         return confirm_size_string(r, 1, 1);
     }
@@ -6150,13 +6106,13 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
         }
     }
     push(a);
-    char *r = reserve_string(m);
+    char* r = reserve_string(m);
     pop(a);
-    char *p = r;
+    char* p = r;
     top = a[n-1];
     if (sign)
-    {   *p++ = '~';
-        *p++ = '1';
+    {  * p++ = '~';
+       * p++ = '1';
     }
     bool started = false;
     for (std::size_t i=0; i<n; i++)
@@ -6168,10 +6124,10 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
                     (!sign && d==0)) continue;
                 started = true;
             }
-            *p++ = '0' + d;
+           * p++ = '0' + d;
         }
     }
-    return confirm_size_string(r, m, m);
+    return confirm_size_string(r, m, p-reinterpret_cast<char*>(r));
 }
 
 //=========================================================================
@@ -6181,7 +6137,8 @@ inline string_handle bignum_to_string_binary(std::intptr_t aa)
 //=========================================================================
 
 
-inline bool Zerop::op(std::uint64_t *a)
+inline bool Zerop::op
+(std::uint64_t* a)
 {   return number_size(a) == 1 && a[0] == 0;
 }
 
@@ -6189,7 +6146,7 @@ inline bool Zerop::op(std::int64_t a)
 {   return a == 0;
 }
 
-inline bool Onep::op(std::uint64_t *a)
+inline bool Onep::op(std::uint64_t* a)
 {   return number_size(a) == 1 && a[0] == 1;
 }
 
@@ -6197,7 +6154,7 @@ inline bool Onep::op(std::int64_t a)
 {   return a == 1;
 }
 
-inline bool Minusp::op(std::uint64_t *a)
+inline bool Minusp::op(std::uint64_t* a)
 {   return negative(a[number_size(a)-1]);
 }
 
@@ -6205,7 +6162,7 @@ inline bool Minusp::op(std::int64_t a)
 {   return a < 0;
 }
 
-inline bool Plusp::op(std::uint64_t *a)
+inline bool Plusp::op(std::uint64_t* a)
 {   return !negative(a[number_size(a)-1]); // NB a bignum can not be zero
 }
 
@@ -6213,7 +6170,7 @@ inline bool Plusp::op(std::int64_t a)
 {   return a > 0;
 }
 
-inline bool Evenp::op(std::uint64_t *a)
+inline bool Evenp::op(std::uint64_t* a)
 {   return (a[0] & 1) == 0;
 }
 
@@ -6221,7 +6178,7 @@ inline bool Evenp::op(std::int64_t a)
 {   return (a & 1) == 0;
 }
 
-inline bool Oddp::op(std::uint64_t *a)
+inline bool Oddp::op(std::uint64_t* a)
 {   return (a[0] & 1) != 0;
 }
 
@@ -6231,25 +6188,25 @@ inline bool Oddp::op(std::int64_t a)
 
 // eqn
 
-inline bool bigeqn(const std::uint64_t *a, std::size_t lena,
-                   const std::uint64_t *b, std::size_t lenb)
+inline bool bigeqn(const std::uint64_t* a, std::size_t lena,
+                   const std::uint64_t* b, std::size_t lenb)
 {   if (lena != lenb) return false;
     return std::memcmp(a, b, lena*sizeof(std::uint64_t)) == 0;
 }
 
 
-inline bool Eqn::op(std::uint64_t *a, std::uint64_t *b)
+inline bool Eqn::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     return bigeqn(a, lena, b, lenb);
 }
 
-inline bool Eqn::op(std::uint64_t *a, std::int64_t b)
+inline bool Eqn::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     return lena==1 && static_cast<std::int64_t>(a[0])==b;
 }
 
-inline bool Eqn::op(std::int64_t a, std::uint64_t *b)
+inline bool Eqn::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     return lenb==1 && a==static_cast<std::int64_t>(b[0]);
 }
@@ -6262,7 +6219,7 @@ inline bool Eqn::op(std::int64_t a, float b)
 {   return Eqn::op(a, static_cast<double>(b));
 }
 
-inline bool Eqn::op(std::uint64_t *a, float b)
+inline bool Eqn::op(std::uint64_t* a, float b)
 {   return Eqn::op(a, static_cast<double>(b));
 }
 
@@ -6270,7 +6227,7 @@ inline bool Eqn::op(float a, std::int64_t b)
 {   return Eqn::op(static_cast<double>(a), b);
 }
 
-inline bool Eqn::op(float a, std::uint64_t *b)
+inline bool Eqn::op(float a, std::uint64_t* b)
 {   return Eqn::op(static_cast<double>(a), b);
 }
 
@@ -6285,7 +6242,7 @@ inline bool Eqn::op(std::int64_t a, double b)
     return a == static_cast<std::int64_t>(b);
 }
 
-inline bool eqnfloat(std::uint64_t *a, std::size_t lena, double b)
+inline bool eqnfloat(std::uint64_t* a, std::size_t lena, double b)
 {   if (std::isnan(b)||
         std::isinf(b)) return false;
     std::int64_t top = static_cast<std::int64_t>(a[lena-1]);
@@ -6308,7 +6265,7 @@ inline bool eqnfloat(std::uint64_t *a, std::size_t lena, double b)
     return true;
 }
 
-inline bool Eqn::op(std::uint64_t *a, double b)
+inline bool Eqn::op(std::uint64_t* a, double b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Eqn::op(static_cast<std::int64_t>(a[0]), b);
     return eqnfloat(a, lena, b);
@@ -6318,7 +6275,7 @@ inline bool Eqn::op(double a, std::int64_t b)
 {   return Eqn::op(b, a);
 }
 
-inline bool Eqn::op(double a, std::uint64_t *b)
+inline bool Eqn::op(double a, std::uint64_t* b)
 {   return Eqn::op(b, a);
 }
 
@@ -6354,7 +6311,7 @@ inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 #endif // HAVE_Q_LITERALS
 
 
-inline bool eqnbigfloat(std::uint64_t *a, std::size_t lena, float128_t b)
+inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
     std::int64_t top = static_cast<std::int64_t>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return false;
@@ -6394,7 +6351,7 @@ inline bool Eqn::op(std::int64_t a, float128_t b)
 {   return f128_eq(i64_to_f128(a), b);
 }
 
-inline bool Eqn::op(std::uint64_t *a, float128_t b)
+inline bool Eqn::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Eqn::op(static_cast<std::int64_t>(a[0]), b);
     return eqnbigfloat(a, lena, b);
@@ -6404,24 +6361,24 @@ inline bool Eqn::op(float128_t a, std::int64_t b)
 {   return Eqn::op(b, a);
 }
 
-inline bool Eqn::op(float128_t a, std::uint64_t *b)
+inline bool Eqn::op(float128_t a, std::uint64_t* b)
 {   return Eqn::op(b, a);
 }
 
 #endif // softfloat_h
 
-inline bool Neqn::op(std::uint64_t *a, std::uint64_t *b)
+inline bool Neqn::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     return !bigeqn(a, lena, b, lenb);
 }
 
-inline bool Neqn::op(std::uint64_t *a, std::int64_t b)
+inline bool Neqn::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     return lena!=1 || static_cast<std::int64_t>(a[0])!=b;
 }
 
-inline bool Neqn::op(std::int64_t a, std::uint64_t *b)
+inline bool Neqn::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     return lenb!=1 || a!=static_cast<std::int64_t>(b[0]);
 }
@@ -6434,7 +6391,7 @@ inline bool Neqn::op(std::int64_t a, float b)
 {   return Neqn::op(a, static_cast<double>(b));
 }
 
-inline bool Neqn::op(std::uint64_t *a, float b)
+inline bool Neqn::op(std::uint64_t* a, float b)
 {   return Neqn::op(a, static_cast<double>(b));
 }
 
@@ -6442,7 +6399,7 @@ inline bool Neqn::op(float a, std::int64_t b)
 {   return Neqn::op(static_cast<double>(a), b);
 }
 
-inline bool Neqn::op(float a, std::uint64_t *b)
+inline bool Neqn::op(float a, std::uint64_t* b)
 {   return Neqn::op(static_cast<double>(a), b);
 }
 
@@ -6457,7 +6414,7 @@ inline bool Neqn::op(std::int64_t a, double b)
     return a != static_cast<std::int64_t>(b);
 }
 
-inline bool Neqn::op(std::uint64_t *a, double b)
+inline bool Neqn::op(std::uint64_t* a, double b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Neqn::op(static_cast<std::int64_t>(a[0]), b);
     return !eqnfloat(a, lena, b);
@@ -6467,7 +6424,7 @@ inline bool Neqn::op(double a, std::int64_t b)
 {   return Neqn::op(b, a);
 }
 
-inline bool Neqn::op(double a, std::uint64_t *b)
+inline bool Neqn::op(double a, std::uint64_t* b)
 {   return Neqn::op(b, a);
 }
 
@@ -6477,7 +6434,7 @@ inline bool Neqn::op(std::int64_t a, float128_t b)
 {   return !f128_eq(i64_to_f128(a), b);
 }
 
-inline bool Neqn::op(std::uint64_t *a, float128_t b)
+inline bool Neqn::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Neqn::op(static_cast<std::int64_t>(a[0]), b);
     return !eqnbigfloat(a, lena, b);
@@ -6487,7 +6444,7 @@ inline bool Neqn::op(float128_t a, std::int64_t b)
 {   return Neqn::op(b, a);
 }
 
-inline bool Neqn::op(float128_t a, std::uint64_t *b)
+inline bool Neqn::op(float128_t a, std::uint64_t* b)
 {   return Neqn::op(b, a);
 }
 
@@ -6495,8 +6452,8 @@ inline bool Neqn::op(float128_t a, std::uint64_t *b)
 
 // greaterp
 
-inline bool biggreaterp(const std::uint64_t *a, std::size_t lena,
-                        const std::uint64_t *b, std::size_t lenb)
+inline bool biggreaterp(const std::uint64_t* a, std::size_t lena,
+                        const std::uint64_t* b, std::size_t lenb)
 {   std::uint64_t a0 = a[lena-1], b0 = b[lenb-1];
 // If one of the numbers has more digits than the other then the sign of
 // the longer one gives my the answer.
@@ -6523,9 +6480,9 @@ inline bool biggreaterp(const std::uint64_t *a, std::size_t lena,
 // This version treats the two inputs as unsigned numbers. It is used from
 // within the GCD code (at least)
 
-inline bool big_unsigned_greaterp(const std::uint64_t *a,
+inline bool big_unsigned_greaterp(const std::uint64_t* a,
                                   std::size_t lena,
-                                  const std::uint64_t *b, std::size_t lenb)
+                                  const std::uint64_t* b, std::size_t lenb)
 {
 // If one of the numbers has more digits than the other then it is the
 // larger.
@@ -6541,19 +6498,19 @@ inline bool big_unsigned_greaterp(const std::uint64_t *a,
     return false;
 }
 
-inline bool Greaterp::op(std::uint64_t *a, std::uint64_t *b)
+inline bool Greaterp::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     return biggreaterp(a, lena, b, lenb);
 }
 
-inline bool Greaterp::op(std::uint64_t *a, std::int64_t bb)
+inline bool Greaterp::op(std::uint64_t* a, std::int64_t bb)
 {   std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
     std::size_t lena = number_size(a);
     return biggreaterp(a, lena, b, 1);
 }
 
-inline bool Greaterp::op(std::int64_t aa, std::uint64_t *b)
+inline bool Greaterp::op(std::int64_t aa, std::uint64_t* b)
 {   std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
     std::size_t lenb = number_size(b);
     return biggreaterp(a, 1, b, lenb);
@@ -6571,7 +6528,7 @@ inline bool Greaterp::op(std::int64_t a, float b)
 {   return Greaterp::op(a, static_cast<double>(b));
 }
 
-inline bool Greaterp::op(std::uint64_t *a, float b)
+inline bool Greaterp::op(std::uint64_t* a, float b)
 {   return Greaterp::op(a, static_cast<double>(b));
 }
 
@@ -6579,7 +6536,7 @@ inline bool Greaterp::op(float a, std::int64_t b)
 {   return Greaterp::op(static_cast<double>(a), b);
 }
 
-inline bool Greaterp::op(float a, std::uint64_t *b)
+inline bool Greaterp::op(float a, std::uint64_t* b)
 {   return Greaterp::op(static_cast<double>(a), b);
 }
 
@@ -6615,7 +6572,7 @@ inline bool Greaterp::op(std::int64_t a, double b)
 
 enum CompareMode {GREATERP, GEQ, LESSP, LEQ};
 
-inline bool greaterpfloat(std::uint64_t *a, std::size_t lena,
+inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
                           double b,
                           CompareMode mode)
 {   if (std::isnan(b)) return false;
@@ -6690,7 +6647,7 @@ inline bool greaterpfloat(std::uint64_t *a, std::size_t lena,
     return mode==CompareMode::GEQ || mode==CompareMode::LEQ;
 }
 
-inline bool Greaterp::op(std::uint64_t *a, double b)
+inline bool Greaterp::op(std::uint64_t* a, double b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Greaterp::op(static_cast<std::int64_t>(a[0]),
                                            b);
@@ -6701,7 +6658,7 @@ inline bool Greaterp::op(double a, std::int64_t b)
 {   return Lessp::op(b, a);
 }
 
-inline bool Greaterp::op(double a, std::uint64_t *b)
+inline bool Greaterp::op(double a, std::uint64_t* b)
 {   return Lessp::op(b, a);
 }
 
@@ -6712,7 +6669,7 @@ inline bool Greaterp::op(double a, std::uint64_t *b)
 // This one function does >, >=, < and <= with "great" indicating if
 // the base is > or < and "ifequal" distinguishing > from >= and < from <=.
 
-inline bool greaterpbigfloat(std::uint64_t *a, std::size_t lena,
+inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
                              float128_t b,
                              bool great, bool ifequal)
 {   if (f128_nan(b)) return
@@ -6770,7 +6727,7 @@ inline bool Greaterp::op(std::int64_t a, float128_t b)
 {   return f128_lt(b, i64_to_f128(a));
 }
 
-inline bool Greaterp::op(std::uint64_t *a, float128_t b)
+inline bool Greaterp::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Greaterp::op(static_cast<std::int64_t>(a[0]),
                                            b);
@@ -6782,7 +6739,7 @@ inline bool Greaterp::op(float128_t a, std::int64_t b)
 {   return Lessp::op(b, a);
 }
 
-inline bool Greaterp::op(float128_t a, std::uint64_t *b)
+inline bool Greaterp::op(float128_t a, std::uint64_t* b)
 {   return Lessp::op(b, a);
 }
 
@@ -6790,15 +6747,15 @@ inline bool Greaterp::op(float128_t a, std::uint64_t *b)
 
 // geq
 
-inline bool Geq::op(std::uint64_t *a, std::uint64_t *b)
+inline bool Geq::op(std::uint64_t* a, std::uint64_t* b)
 {   return !Greaterp::op(b, a);
 }
 
-inline bool Geq::op(std::uint64_t *a, std::int64_t b)
+inline bool Geq::op(std::uint64_t* a, std::int64_t b)
 {   return !Greaterp::op(b, a);
 }
 
-inline bool Geq::op(std::int64_t a, std::uint64_t *b)
+inline bool Geq::op(std::int64_t a, std::uint64_t* b)
 {   return !Greaterp::op(b, a);
 }
 
@@ -6810,7 +6767,7 @@ inline bool Geq::op(std::int64_t a, float b)
 {   return Geq::op(a, static_cast<double>(b));
 }
 
-inline bool Geq::op(std::uint64_t *a, float b)
+inline bool Geq::op(std::uint64_t* a, float b)
 {   return Geq::op(a, static_cast<double>(b));
 }
 
@@ -6818,7 +6775,7 @@ inline bool Geq::op(float a, std::int64_t b)
 {   return Geq::op(static_cast<double>(a), b);
 }
 
-inline bool Geq::op(float a, std::uint64_t *b)
+inline bool Geq::op(float a, std::uint64_t* b)
 {   return Geq::op(static_cast<double>(a), b);
 }
 
@@ -6831,7 +6788,7 @@ inline bool Geq::op(std::int64_t a, double b)
     return a >= static_cast<std::int64_t>(b);
 }
 
-inline bool Geq::op(std::uint64_t *a, double b)
+inline bool Geq::op(std::uint64_t* a, double b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Geq::op(static_cast<std::int64_t>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::GEQ);
@@ -6841,7 +6798,7 @@ inline bool Geq::op(double a, std::int64_t b)
 {   return Leq::op(b, a);
 }
 
-inline bool Geq::op(double a, std::uint64_t *b)
+inline bool Geq::op(double a, std::uint64_t* b)
 {   return Leq::op(b, a);
 }
 
@@ -6852,7 +6809,7 @@ inline bool Geq::op(std::int64_t a, float128_t b)
     return false;
 }
 
-inline bool Geq::op(std::uint64_t *a, float128_t b)
+inline bool Geq::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Greaterp::op(static_cast<std::int64_t>(a[0]),
                                            b);
@@ -6863,7 +6820,7 @@ inline bool Geq::op(float128_t a, std::int64_t b)
 {   return Leq::op(b, a);
 }
 
-inline bool Geq::op(float128_t a, std::uint64_t *b)
+inline bool Geq::op(float128_t a, std::uint64_t* b)
 {   return Leq::op(b, a);
 }
 
@@ -6871,15 +6828,15 @@ inline bool Geq::op(float128_t a, std::uint64_t *b)
 
 // lessp
 
-inline bool Lessp::op(std::uint64_t *a, std::uint64_t *b)
+inline bool Lessp::op(std::uint64_t* a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(std::uint64_t *a, std::int64_t b)
+inline bool Lessp::op(std::uint64_t* a, std::int64_t b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(std::int64_t a, std::uint64_t *b)
+inline bool Lessp::op(std::int64_t a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
@@ -6891,7 +6848,7 @@ inline bool Lessp::op(std::int64_t a, float b)
 {   return Lessp::op(a, static_cast<double>(b));
 }
 
-inline bool Lessp::op(std::uint64_t *a, float b)
+inline bool Lessp::op(std::uint64_t* a, float b)
 {   return Lessp::op(a, static_cast<double>(b));
 }
 
@@ -6899,7 +6856,7 @@ inline bool Lessp::op(float a, std::int64_t b)
 {   return Lessp::op(static_cast<double>(a), b);
 }
 
-inline bool Lessp::op(float a, std::uint64_t *b)
+inline bool Lessp::op(float a, std::uint64_t* b)
 {   return Lessp::op(static_cast<double>(a), b);
 }
 
@@ -6912,7 +6869,7 @@ inline bool Lessp::op(std::int64_t a, double b)
     return a < static_cast<std::int64_t>(b);
 }
 
-inline bool Lessp::op(std::uint64_t *a, double b)
+inline bool Lessp::op(std::uint64_t* a, double b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Lessp::op(static_cast<std::int64_t>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::LESSP);
@@ -6922,7 +6879,7 @@ inline bool Lessp::op(double a, std::int64_t b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(double a, std::uint64_t *b)
+inline bool Lessp::op(double a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
@@ -6933,7 +6890,7 @@ inline bool Lessp::op(std::int64_t a, float128_t b)
     return false;
 }
 
-inline bool Lessp::op(std::uint64_t *a, float128_t b)
+inline bool Lessp::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Lessp::op(static_cast<std::int64_t>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, false);
@@ -6945,7 +6902,7 @@ inline bool Lessp::op(float128_t a, std::int64_t b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(float128_t a, std::uint64_t *b)
+inline bool Lessp::op(float128_t a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
@@ -6953,15 +6910,15 @@ inline bool Lessp::op(float128_t a, std::uint64_t *b)
 
 // leq
 
-inline bool Leq::op(std::uint64_t *a, std::uint64_t *b)
+inline bool Leq::op(std::uint64_t* a, std::uint64_t* b)
 {   return !Greaterp::op(a, b);
 }
 
-inline bool Leq::op(std::uint64_t *a, std::int64_t b)
+inline bool Leq::op(std::uint64_t* a, std::int64_t b)
 {   return !Greaterp::op(a, b);
 }
 
-inline bool Leq::op(std::int64_t a, std::uint64_t *b)
+inline bool Leq::op(std::int64_t a, std::uint64_t* b)
 {   return !Greaterp::op(a, b);
 }
 
@@ -6973,7 +6930,7 @@ inline bool Leq::op(std::int64_t a, float b)
 {   return Leq::op(a, static_cast<double>(b));
 }
 
-inline bool Leq::op(std::uint64_t *a, float b)
+inline bool Leq::op(std::uint64_t* a, float b)
 {   return Leq::op(a, static_cast<double>(b));
 }
 
@@ -6981,7 +6938,7 @@ inline bool Leq::op(float a, std::int64_t b)
 {   return Leq::op(static_cast<double>(a), b);
 }
 
-inline bool Leq::op(float a, std::uint64_t *b)
+inline bool Leq::op(float a, std::uint64_t* b)
 {   return Leq::op(static_cast<double>(a), b);
 }
 
@@ -6994,7 +6951,7 @@ inline bool Leq::op(std::int64_t a, double b)
     return a <= static_cast<std::int64_t>(b);
 }
 
-inline bool Leq::op(std::uint64_t *a, double b)
+inline bool Leq::op(std::uint64_t* a, double b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Lessp::op(static_cast<std::int64_t>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::LEQ);
@@ -7004,7 +6961,7 @@ inline bool Leq::op(double a, std::int64_t b)
 {   return Geq::op(b, a);
 }
 
-inline bool Leq::op(double a, std::uint64_t *b)
+inline bool Leq::op(double a, std::uint64_t* b)
 {   return Geq::op(b, a);
 }
 
@@ -7015,7 +6972,7 @@ inline bool Leq::op(std::int64_t a, float128_t b)
     return false;
 }
 
-inline bool Leq::op(std::uint64_t *a, float128_t b)
+inline bool Leq::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Leq::op(static_cast<std::int64_t>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, true);
@@ -7025,7 +6982,7 @@ inline bool Leq::op(float128_t a, std::int64_t b)
 {   return Geq::op(b, a);
 }
 
-inline bool Leq::op(float128_t a, std::uint64_t *b)
+inline bool Leq::op(float128_t a, std::uint64_t* b)
 {   return Geq::op(b, a);
 }
 
@@ -7047,8 +7004,8 @@ inline bool Leq::op(float128_t a, std::uint64_t *b)
 // [0x8000000000000000] (a negative value) you get [0,0x8000000000000000],
 // and vice versa.
 
-inline void bignegate(const std::uint64_t *a, std::size_t lena,
-                      std::uint64_t *r, std::size_t &lenr)
+inline void bignegate(const std::uint64_t* a, std::size_t lena,
+                      std::uint64_t* r, std::size_t &lenr)
 {   internal_negate(a, lena, r);
 // When I negate (-(2^(64n-1))) I will need to place a zero work ahead of the
 // value that is mow positive, making the bignum one digit longer.
@@ -7060,10 +7017,10 @@ inline void bignegate(const std::uint64_t *a, std::size_t lena,
     lenr = lena;
 }
 
-inline std::intptr_t Minus::op(std::uint64_t *a)
+inline std::intptr_t Minus::op(std::uint64_t* a)
 {   std::size_t n = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(n+1);
+    std::uint64_t* p = reserve(n+1);
     pop(a);
     std::size_t final_n;
     bignegate(a, n, p, final_n);
@@ -7081,7 +7038,7 @@ inline std::intptr_t Minus::op(std::int64_t a)
     else return int_to_handle(-a);
 }
 
-inline std::intptr_t Add1::op(std::uint64_t *a)
+inline std::intptr_t Add1::op(std::uint64_t* a)
 {   return Plus::op(a, 1);
 }
 
@@ -7089,7 +7046,7 @@ inline std::intptr_t Add1::op(std::int64_t a)
 {   return int_to_bignum(a+1);
 }
 
-inline std::intptr_t Sub1::op(std::uint64_t *a)
+inline std::intptr_t Sub1::op(std::uint64_t* a)
 {   return Plus::op(a, -1);
 }
 
@@ -7097,17 +7054,17 @@ inline std::intptr_t Sub1::op(std::int64_t a)
 {   return int_to_bignum(a-1);
 }
 
-inline std::intptr_t Abs::op(std::uint64_t *a)
+inline std::intptr_t Abs::op(std::uint64_t* a)
 {   std::size_t n = number_size(a);
     if (!negative(a[n-1]))
     {   push(a);
-        std::uint64_t *r = reserve(n);
+        std::uint64_t* r = reserve(n);
         pop(a);
         std::memcpy(r, a, n*sizeof(std::uint64_t));
         return confirm_size(r, n, n);
     }
     push(a);
-    std::uint64_t *r = reserve(n+1);
+    std::uint64_t* r = reserve(n+1);
     pop(a);
     std::size_t final_n;
     bignegate(a, n, r, final_n);
@@ -7127,18 +7084,18 @@ inline std::intptr_t Abs::op(std::int64_t a)
 
 // The "bitnot" operation is simple and length can not change.
 
-inline void biglognot(const std::uint64_t *a, std::size_t lena,
-                      std::uint64_t *r, std::size_t &lenr)
+inline void biglognot(const std::uint64_t* a, std::size_t lena,
+                      std::uint64_t* r, std::size_t &lenr)
 {   for (std::size_t i=0; i<lena; i++)
     {   r[i] = ~a[i];
     }
     lenr = lena;
 }
 
-inline std::intptr_t Lognot::op(std::uint64_t *a)
+inline std::intptr_t Lognot::op(std::uint64_t* a)
 {   std::size_t n = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(n+1);
+    std::uint64_t* p = reserve(n+1);
     pop(a);
     std::size_t final_n;
     biglognot(a, n, p, final_n);
@@ -7151,10 +7108,10 @@ inline std::intptr_t Lognot::op(std::int64_t a)
 
 // logand
 
-inline void ordered_biglogand(const std::uint64_t *a,
+inline void ordered_biglogand(const std::uint64_t* a,
                               std::size_t lena,
-                              const std::uint64_t *b, std::size_t lenb,
-                              std::uint64_t *r, std::size_t &lenr)
+                              const std::uint64_t* b, std::size_t lenb,
+                              std::uint64_t* r, std::size_t &lenr)
 {   for (std::size_t i=0; i<lenb; i++)
         r[i] = a[i] & b[i];
     if (negative(b[lenb-1]))
@@ -7165,22 +7122,22 @@ inline void ordered_biglogand(const std::uint64_t *a,
     truncate_positive(r, lenr);
 }
 
-inline void biglogand(const std::uint64_t *a, std::size_t lena,
-                      const std::uint64_t *b, std::size_t lenb,
-                      std::uint64_t *r, std::size_t &lenr)
+inline void biglogand(const std::uint64_t* a, std::size_t lena,
+                      const std::uint64_t* b, std::size_t lenb,
+                      std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogand(a, lena, b, lenb, r,
                                  lenr);
     else return ordered_biglogand(b, lenb, a, lena, r, lenr);
 }
 
-inline std::intptr_t Logand::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Logand::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     biglogand(a, lena, b, lenb, p, final_n);
@@ -7192,10 +7149,10 @@ inline std::intptr_t Logand::op(std::uint64_t *a, std::uint64_t *b)
 // I am not going to expect that to be on the critical performance path for
 // enough programs for me to worry too much!
 
-inline std::intptr_t Logand::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Logand::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(lena);
+    std::uint64_t* p = reserve(lena);
     pop(a);
     std::size_t final_n;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
@@ -7203,10 +7160,10 @@ inline std::intptr_t Logand::op(std::uint64_t *a, std::int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-inline std::intptr_t Logand::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Logand::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *p = reserve(lenb);
+    std::uint64_t* p = reserve(lenb);
     pop(b);
     std::size_t final_n;
     std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
@@ -7220,9 +7177,9 @@ inline std::intptr_t Logand::op(std::int64_t a, std::int64_t b)
 
 // logor
 
-inline void ordered_biglogor(const std::uint64_t *a, std::size_t lena,
-                             const std::uint64_t *b, std::size_t lenb,
-                             std::uint64_t *r, std::size_t &lenr)
+inline void ordered_biglogor(const std::uint64_t* a, std::size_t lena,
+                             const std::uint64_t* b, std::size_t lenb,
+                             std::uint64_t* r, std::size_t &lenr)
 {   for (std::size_t i=0; i<lenb; i++)
         r[i] = a[i] | b[i];
     if (negative(b[lenb-1])) lenr = lenb;
@@ -7233,32 +7190,32 @@ inline void ordered_biglogor(const std::uint64_t *a, std::size_t lena,
     truncate_negative(r, lenr);
 }
 
-inline void biglogor(const std::uint64_t *a, std::size_t lena,
-                     const std::uint64_t *b, std::size_t lenb,
-                     std::uint64_t *r, std::size_t &lenr)
+inline void biglogor(const std::uint64_t* a, std::size_t lena,
+                     const std::uint64_t* b, std::size_t lenb,
+                     std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogor(a, lena, b, lenb, r,
                                  lenr);
     else return ordered_biglogor(b, lenb, a, lena, r, lenr);
 }
 
-inline std::intptr_t Logor::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Logor::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     biglogor(a, lena, b, lenb, p, final_n);
     return confirm_size(p, n, final_n);
 }
 
-inline std::intptr_t Logor::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Logor::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(lena);
+    std::uint64_t* p = reserve(lena);
     pop(a);
     std::size_t final_n;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
@@ -7266,10 +7223,10 @@ inline std::intptr_t Logor::op(std::uint64_t *a, std::int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-inline std::intptr_t Logor::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Logor::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *p = reserve(lenb);
+    std::uint64_t* p = reserve(lenb);
     pop(b);
     std::size_t final_n;
     std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
@@ -7283,10 +7240,10 @@ inline std::intptr_t Logor::op(std::int64_t a, std::int64_t b)
 
 // logxor
 
-inline void ordered_biglogxor(const std::uint64_t *a,
+inline void ordered_biglogxor(const std::uint64_t* a,
                               std::size_t lena,
-                              const std::uint64_t *b, std::size_t lenb,
-                              std::uint64_t *r, std::size_t &lenr)
+                              const std::uint64_t* b, std::size_t lenb,
+                              std::uint64_t* r, std::size_t &lenr)
 {   std::size_t i;
     for (i=0; i<lenb; i++)
         r[i] = a[i] ^ b[i];
@@ -7304,32 +7261,32 @@ inline void ordered_biglogxor(const std::uint64_t *a,
     truncate_negative(r, lenr);
 }
 
-inline void biglogxor(const std::uint64_t *a, std::size_t lena,
-                      const std::uint64_t *b, std::size_t lenb,
-                      std::uint64_t *r, std::size_t &lenr)
+inline void biglogxor(const std::uint64_t* a, std::size_t lena,
+                      const std::uint64_t* b, std::size_t lenb,
+                      std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogxor(a, lena, b, lenb, r,
                                  lenr);
     else return ordered_biglogxor(b, lenb, a, lena, r, lenr);
 }
 
-inline std::intptr_t Logxor::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Logxor::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     biglogxor(a, lena, b, lenb, p, final_n);
     return confirm_size(p, n, final_n);
 }
 
-inline std::intptr_t Logxor::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Logxor::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(lena);
+    std::uint64_t* p = reserve(lena);
     pop(a);
     std::size_t final_n;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
@@ -7337,10 +7294,10 @@ inline std::intptr_t Logxor::op(std::uint64_t *a, std::int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-inline std::intptr_t Logxor::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Logxor::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *p = reserve(lenb);
+    std::uint64_t* p = reserve(lenb);
     pop(b);
     std::size_t final_n;
     std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
@@ -7353,10 +7310,10 @@ inline std::intptr_t Logxor::op(std::int64_t a, std::int64_t b)
 }
 
 
-inline void ordered_biglogeqv(const std::uint64_t *a,
+inline void ordered_biglogeqv(const std::uint64_t* a,
                               std::size_t lena,
-                              const std::uint64_t *b, std::size_t lenb,
-                              std::uint64_t *r, std::size_t &lenr)
+                              const std::uint64_t* b, std::size_t lenb,
+                              std::uint64_t* r, std::size_t &lenr)
 {   std::size_t i;
     for (i=0; i<lenb; i++)
         r[i] = ~a[i] ^ b[i];
@@ -7374,32 +7331,32 @@ inline void ordered_biglogeqv(const std::uint64_t *a,
     truncate_negative(r, lenr);
 }
 
-inline void biglogeqv(const std::uint64_t *a, std::size_t lena,
-                      const std::uint64_t *b, std::size_t lenb,
-                      std::uint64_t *r, std::size_t &lenr)
+inline void biglogeqv(const std::uint64_t* a, std::size_t lena,
+                      const std::uint64_t* b, std::size_t lenb,
+                      std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_biglogeqv(a, lena, b, lenb, r,
                                  lenr);
     else return ordered_biglogeqv(b, lenb, a, lena, r, lenr);
 }
 
-inline std::intptr_t Logeqv::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Logeqv::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     biglogeqv(a, lena, b, lenb, p, final_n);
     return confirm_size(p, n, final_n);
 }
 
-inline std::intptr_t Logeqv::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Logeqv::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(lena);
+    std::uint64_t* p = reserve(lena);
     pop(a);
     std::size_t final_n;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
@@ -7407,10 +7364,10 @@ inline std::intptr_t Logeqv::op(std::uint64_t *a, std::int64_t b)
     return confirm_size(p, lena, final_n);
 }
 
-inline std::intptr_t Logeqv::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Logeqv::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *p = reserve(lenb);
+    std::uint64_t* p = reserve(lenb);
     pop(b);
     std::size_t final_n;
     std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
@@ -7422,13 +7379,13 @@ inline std::intptr_t Logeqv::op(std::int64_t a, std::int64_t b)
 {   return int_to_handle(~a ^ b);
 }
 
-inline void bigrightshift(const std::uint64_t *a, std::size_t lena,
+inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
                           std::int64_t n,
-                          std::uint64_t *r, std::size_t &lenr);
+                          std::uint64_t* r, std::size_t &lenr);
 
-inline void bigleftshift(const std::uint64_t *a, std::size_t lena,
+inline void bigleftshift(const std::uint64_t* a, std::size_t lena,
                          std::int64_t n,
-                         std::uint64_t *r, std::size_t &lenr)
+                         std::uint64_t* r, std::size_t &lenr)
 {   if (n == 0)
     {   internal_copy(a, lena, r);
         lenr = lena;
@@ -7460,15 +7417,15 @@ inline void bigleftshift(const std::uint64_t *a, std::size_t lena,
     truncate_negative(r, lenr);
 }
 
-inline std::intptr_t rightshift_b(std::uint64_t *a, std::int64_t n);
+inline std::intptr_t rightshift_b(std::uint64_t* a, std::int64_t n);
 
-inline std::intptr_t LeftShift::op(std::uint64_t *a, std::int64_t n)
+inline std::intptr_t LeftShift::op(std::uint64_t* a, std::int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
     else if (n < 0) return RightShift::op(a, -n);
     std::size_t lena = number_size(a);
     std::size_t nr = lena + (n/64) + 1;
     push(a);
-    std::uint64_t *p = reserve(nr);
+    std::uint64_t* p = reserve(nr);
     pop(a);
     std::size_t final_n;
     bigleftshift(a, lena, n, p, final_n);
@@ -7479,16 +7436,16 @@ inline std::intptr_t LeftShift::op(std::int64_t aa, std::int64_t n)
 {   if (n == 0) return int_to_handle(aa);
     else if (n < 0) return RightShift::op(aa, -n);
     std::size_t nr = (n/64) + 2;
-    std::uint64_t *p = reserve(nr);
+    std::uint64_t* p = reserve(nr);
     std::size_t final_n;
     std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
     bigleftshift(a, 1, n, p, final_n);
     return confirm_size(p, nr, final_n);
 }
 
-inline void bigrightshift(const std::uint64_t *a, std::size_t lena,
+inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
                           std::int64_t n,
-                          std::uint64_t *r, std::size_t &lenr)
+                          std::uint64_t* r, std::size_t &lenr)
 {   if (n == 0)
     {   internal_copy(a, lena, r);
         lenr = lena;
@@ -7520,7 +7477,7 @@ inline void bigrightshift(const std::uint64_t *a, std::size_t lena,
     truncate_negative(r, lenr);
 }
 
-inline std::intptr_t RightShift::op(std::uint64_t *a, std::int64_t n)
+inline std::intptr_t RightShift::op(std::uint64_t* a, std::int64_t n)
 {   if (n == 0) return copy_if_no_garbage_collector(a);
     else if (n < 0) return LeftShift::op(a, -n);
     std::size_t lena = number_size(a);
@@ -7528,7 +7485,7 @@ inline std::intptr_t RightShift::op(std::uint64_t *a, std::int64_t n)
     if (lena > static_cast<std::size_t>(n)/64) nr = lena - n/64;
     else nr = 1;
     push(a);
-    std::uint64_t *p = reserve(nr);
+    std::uint64_t* p = reserve(nr);
     pop(a);
     std::size_t final_n;
     bigrightshift(a, lena, n, p, final_n);
@@ -7548,68 +7505,97 @@ inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
     return int_to_handle((a & ~(q-1))/q);
 }
 
-inline std::uint64_t LowBits::op(std::uint64_t *a)
+inline std::uint64_t Low64Bits::op(std::uint64_t* a)
 {   return a[0];
 }
 
-inline std::uint64_t LowBits::op(std::int64_t aa)
+inline std::uint64_t Low64Bits::op(std::int64_t aa)
 {   return static_cast<std::uint64_t>(aa);
 }
 
-inline std::intptr_t LowBit::op(std::uint64_t *a)
+inline std::size_t LowBit::op(std::uint64_t* a)
 {   std::size_t lena = number_size(a);
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
         std::uint64_t w = ~a[i-1];
-        return int_to_handle(64-nlz(w & (-w))+r);
+        return 64-nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
         std::uint64_t w = a[i-1];
-        return int_to_handle(64-nlz(w & (-w))+r);
+        return 64-nlz(w & (-w))+r;
     }
 }
 
-inline std::intptr_t LowBit::op(std::int64_t aa)
+inline std::size_t LowBit::op(std::int64_t aa)
 {   std::uint64_t a;
     if (aa == 0) return 0;
     else if (aa < 0) a = ~static_cast<std::uint64_t>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
-    return int_to_handle(64-nlz(a));
+    return 64-nlz(a);
 }
 
-inline std::intptr_t IntegerLength::op(std::uint64_t *a)
-{   return int_to_handle(bignum_bits(a, number_size(a)));
+inline std::size_t IntegerLength::op(std::uint64_t* a)
+{   return bignum_bits(a, number_size(a));
 }
 
-inline std::intptr_t IntegerLength::op(std::int64_t aa)
+inline std::size_t IntegerLength::op(std::int64_t aa)
 {   std::uint64_t a;
-    if (aa == 0 || aa == -1) return int_to_handle(0);
+    if (aa == 0 || aa == -1) return 0;
     else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
     else a = aa;
-    return int_to_handle(64-nlz(a));
+    return 64-nlz(a);
 }
 
-inline std::intptr_t Logcount::op(std::uint64_t *a)
+// This function should return the top 64-bits of an integer in the
+// sense that the returned value should have its top bit (ie the
+// 0x8000000000000000 bit) set, and the weight associated with that
+// bit is as returned by IntegerLength. So this value plus IntegerLength
+// sort of provide a normalised floating point renditition of the
+// integer with this begin a 64-bit mantissa. This is only intended
+// to be used on positive input values. If given a negative input it will
+// return the whole of the top word of a bignum or the whole of a fixnum,
+// viewing the leading 1 bits as important. The only intended use is
+// as part of the process or converting an integer into a sign-and-magnitude
+// "floating point" value with a 64-bit mantissa so I will not worry about
+// that at the moment.
+
+inline std::uint64_t Top64Bits::op(std::uint64_t* a)
+{   size_t n = number_size(a);
+    if (n == 1 ||
+        (n == 2 && a[2] == 0))
+        return Top64Bits::op(static_cast<int64_t>(a[0]));
+    if (a[n-1] == 0) n--;
+    int lz = nlz(a[n-1]);
+    if (lz == 0) return a[n-1];
+    return (a[n-1] << lz) | (a[n-2] >> (64-lz));
+}
+
+inline std::uint64_t Top64Bits::op(std::int64_t a)
+{   if (a == 0) return 0;    // Only non-normalised case
+    return static_cast<uint64_t>(a) << nlz(a);
+}
+
+inline std::size_t Logcount::op(std::uint64_t* a)
 {   std::size_t lena = number_size(a);
     std::size_t r = 0;
     if (negative(a[lena-1]))
     {   for (std::size_t i=0; i<lena; i++) r += popcount(~a[i]);
     }
     else for (std::size_t i=0; i<lena; i++) r += popcount(a[i]);
-    return int_to_handle(r);
+    return r;
 }
 
-inline std::intptr_t Logcount::op(std::int64_t a)
-{   if (a < 0) return int_to_handle(popcount(~a));
-    else return int_to_handle(popcount(a));
+inline std::size_t Logcount::op(std::int64_t a)
+{   if (a < 0) return popcount(~a);
+    else return popcount(a);
 }
 
-inline bool Logbitp::op(std::uint64_t *a, std::size_t n)
+inline bool Logbitp::op(std::uint64_t* a, std::size_t n)
 {   std::size_t lena = number_size(a);
     if (n >= 64*lena) return negative(a[lena-1]);
     return (a[n/64] & (1ULL << (n%64))) != 0;
@@ -7622,11 +7608,10 @@ inline bool Logbitp::op(std::int64_t a, std::size_t n)
 
 // Addition when the length of a is art least than that of b.
 
-inline void ordered_bigplus(const std::uint64_t *a, std::size_t lena,
-                            const std::uint64_t *b, std::size_t lenb,
-                            std::uint64_t *r, std::size_t &lenr)
-{   arithlib_assert(lena >= lenb);
-    std::uint64_t carry = 0;
+inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
+                            const std::uint64_t* b, std::size_t lenb,
+                            std::uint64_t* r, std::size_t &lenr)
+{   std::uint64_t carry = 0;
     std::size_t i = 0;
 // The lowest digits can be added without there being any carry-in.
     carry = add_with_carry(a[0], b[0], r[0]);
@@ -7653,9 +7638,9 @@ inline void ordered_bigplus(const std::uint64_t *a, std::size_t lena,
 
 // Add a small number to a bignum
 
-inline void bigplus_small(const std::uint64_t *a, std::size_t lena,
+inline void bigplus_small(const std::uint64_t* a, std::size_t lena,
                           std::int64_t n,
-                          std::uint64_t *r, std::size_t &lenr)
+                          std::uint64_t* r, std::size_t &lenr)
 {   std::uint64_t w[1];
     w[0] = static_cast<std::uint64_t>(n);
     ordered_bigplus(a, lena, w, 1, r, lenr);
@@ -7663,22 +7648,22 @@ inline void bigplus_small(const std::uint64_t *a, std::size_t lena,
 
 // When I do a general addition I will not know which input is longer.
 
-inline void bigplus(const std::uint64_t *a, std::size_t lena,
-                    const std::uint64_t *b, std::size_t lenb,
-                    std::uint64_t *r, std::size_t &lenr)
+inline void bigplus(const std::uint64_t* a, std::size_t lena,
+                    const std::uint64_t* b, std::size_t lenb,
+                    std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_bigplus(a, lena, b, lenb, r,
                                  lenr);
     else return ordered_bigplus(b, lenb, a, lena, r, lenr);
 }
 
-inline std::intptr_t Plus::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Plus::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena+1;
     else n = lenb+1;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     bigplus(a, lena, b, lenb, p, final_n);
@@ -7698,32 +7683,32 @@ inline std::intptr_t Plus::op(std::int64_t a, std::int64_t b)
 // them and be certain I will not get arithmetic overflow. However the
 // resulting value may no longer be representable as a fixnum.
     std::int64_t c = a + b;
-    if (fits_into_fixnum(c)) return int_to_handle(c);
+    if (fits_into_fixnum(c)) LIKELY return int_to_handle(c);
 // Now because there had not been overflow I know that the bignum will
 // only need one word.
-    std::uint64_t *r = reserve(1);
+    std::uint64_t* r = reserve(1);
     r[0] = c;
     return confirm_size(r, 1, 1);
 }
 
-inline std::intptr_t Plus::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Plus::op(std::int64_t a, std::uint64_t* b)
 {   std::uint64_t aa[1];
     aa[0] = a;
     std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *r = reserve(lenb+1);
+    std::uint64_t* r = reserve(lenb+1);
     pop(b);
     std::size_t final_n;
     bigplus(aa, 1, b, lenb, r, final_n);
     return confirm_size(r, lenb+1, final_n);
 }
 
-inline std::intptr_t Plus::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Plus::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     std::uint64_t bb[1];
     bb[0] = b;
     push(a);
-    std::uint64_t *r = reserve(lena+1);
+    std::uint64_t* r = reserve(lena+1);
     pop(a);
     std::size_t final_n;
     bigplus(a, lena, bb, 1, r, final_n);
@@ -7731,10 +7716,10 @@ inline std::intptr_t Plus::op(std::uint64_t *a, std::int64_t b)
 }
 
 inline std::intptr_t bigplus_small(std::intptr_t aa, std::int64_t b)
-{   std::uint64_t *a = vector_of_handle(aa);
+{   std::uint64_t* a = vector_of_handle(aa);
     std::size_t lena = number_size(a);
     push(a);
-    std::uint64_t *p = reserve(lena+1);
+    std::uint64_t* p = reserve(lena+1);
     pop(a);
     std::size_t final_n;
     bigplus_small(a, lena, b, p, final_n);
@@ -7744,12 +7729,11 @@ inline std::intptr_t bigplus_small(std::intptr_t aa, std::int64_t b)
 // For subtraction I implement both a-b and b-a. These work by
 // computing a + (~b) + 1 and (~a) + b + 1 respectively.
 
-inline void ordered_bigsubtract(const std::uint64_t *a,
+inline void ordered_bigsubtract(const std::uint64_t* a,
                                 std::size_t lena,
-                                const std::uint64_t *b, std::size_t lenb,
-                                std::uint64_t *r, std::size_t &lenr)
-{   arithlib_assert(lena >= lenb);
-    std::uint64_t carry = 1;
+                                const std::uint64_t* b, std::size_t lenb,
+                                std::uint64_t* r, std::size_t &lenr)
+{   std::uint64_t carry = 1;
     std::size_t i;
 // Add the digits that (a) and (b) have in common
     for (i=0; i<lenb; i++)
@@ -7772,12 +7756,11 @@ inline void ordered_bigsubtract(const std::uint64_t *a,
     lenr = i+1;
 }
 
-inline void ordered_bigrevsubtract(const std::uint64_t *a,
+inline void ordered_bigrevsubtract(const std::uint64_t* a,
                                    std::size_t lena,
-                                   const std::uint64_t *b, std::size_t lenb,
-                                   std::uint64_t *r, std::size_t &lenr)
-{   arithlib_assert(lena >= lenb);
-    std::uint64_t carry = 1;
+                                   const std::uint64_t* b, std::size_t lenb,
+                                   std::uint64_t* r, std::size_t &lenr)
+{   std::uint64_t carry = 1;
     std::size_t i;
 // Add the digits that (a) and (b) have in common
     for (i=0; i<lenb; i++)
@@ -7802,10 +7785,10 @@ inline void ordered_bigrevsubtract(const std::uint64_t *a,
 
 // Subtract a small number from a bignum
 
-inline void bigsubtract_small(const std::uint64_t *a,
+inline void bigsubtract_small(const std::uint64_t* a,
                               std::size_t lena,
                               std::int64_t n,
-                              std::uint64_t *r, std::size_t &lenr)
+                              std::uint64_t* r, std::size_t &lenr)
 {   std::uint64_t w[1];
     w[0] = static_cast<std::uint64_t>(n);
     ordered_bigsubtract(a, lena, w, 1, r, lenr);
@@ -7813,33 +7796,33 @@ inline void bigsubtract_small(const std::uint64_t *a,
 
 // subtract a bignum from a small number
 
-inline void bigrevsubtract_small(const std::uint64_t *a,
+inline void bigrevsubtract_small(const std::uint64_t* a,
                                  std::size_t lena,
                                  std::int64_t n,
-                                 std::uint64_t *r, std::size_t &lenr)
+                                 std::uint64_t* r, std::size_t &lenr)
 {   std::uint64_t w[1];
     w[0] = static_cast<std::uint64_t>(n);
     ordered_bigrevsubtract(a, lena, w, 1, r, lenr);
 }
 
 
-inline void bigsubtract(const std::uint64_t *a, std::size_t lena,
-                        const std::uint64_t *b, std::size_t lenb,
-                        std::uint64_t *r, std::size_t &lenr)
+inline void bigsubtract(const std::uint64_t* a, std::size_t lena,
+                        const std::uint64_t* b, std::size_t lenb,
+                        std::uint64_t* r, std::size_t &lenr)
 {   if (lena >= lenb) return ordered_bigsubtract(a, lena, b, lenb, r,
                                  lenr);
     else return ordered_bigrevsubtract(b, lenb, a, lena, r, lenr);
 }
 
-inline std::intptr_t Difference::op(std::uint64_t *a,
-                                    std::uint64_t *b)
+inline std::intptr_t Difference::op(std::uint64_t* a,
+                                    std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena+1;
     else n = lenb+1;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     bigsubtract(a, lena, b, lenb, p, final_n);
@@ -7850,30 +7833,30 @@ inline std::intptr_t Difference::op(std::int64_t a, std::int64_t b)
 {   std::uint64_t aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
-    std::uint64_t *r = reserve(2);
+    std::uint64_t* r = reserve(2);
     std::size_t final_n;
     bigsubtract(aa, 1, bb, 1, r, final_n);
     return confirm_size(r, 2, final_n);
 }
 
-inline std::intptr_t Difference::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Difference::op(std::int64_t a, std::uint64_t* b)
 {   std::uint64_t aa[1];
     aa[0] = a;
     std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *r = reserve(lenb+1);
+    std::uint64_t* r = reserve(lenb+1);
     pop(b);
     std::size_t final_n;
     bigsubtract(aa, 1, b, lenb, r, final_n);
     return confirm_size(r, lenb+1, final_n);
 }
 
-inline std::intptr_t Difference::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Difference::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
     std::uint64_t bb[1];
     bb[0] = b;
     push(a);
-    std::uint64_t *r = reserve(lena+1);
+    std::uint64_t* r = reserve(lena+1);
     pop(a);
     std::size_t final_n;
     bigsubtract(a, lena, bb, 1, r, final_n);
@@ -7881,15 +7864,15 @@ inline std::intptr_t Difference::op(std::uint64_t *a, std::int64_t b)
 }
 
 
-inline std::intptr_t RevDifference::op(std::uint64_t *a,
-                                       std::uint64_t *b)
+inline std::intptr_t RevDifference::op(std::uint64_t* a,
+                                       std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n;
     if (lena >= lenb) n = lena+1;
     else n = lenb+1;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
     bigsubtract(b, lenb, a, lena, p, final_n);
@@ -7900,32 +7883,32 @@ inline std::intptr_t RevDifference::op(std::int64_t a, std::int64_t b)
 {   std::uint64_t aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
-    std::uint64_t *r = reserve(2);
+    std::uint64_t* r = reserve(2);
     std::size_t final_n;
     bigsubtract(bb, 1, aa, 1, r, final_n);
     return confirm_size(r, 2, final_n);
 }
 
 inline std::intptr_t RevDifference::op(std::int64_t a,
-                                       std::uint64_t *b)
+                                       std::uint64_t* b)
 {   std::uint64_t aa[1];
     aa[0] = a;
     std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *r = reserve(lenb+1);
+    std::uint64_t* r = reserve(lenb+1);
     pop(b);
     std::size_t final_n;
     bigsubtract(b, lenb, aa, 1, r, final_n);
     return confirm_size(r, lenb+1, final_n);
 }
 
-inline std::intptr_t RevDifference::op(std::uint64_t *a,
+inline std::intptr_t RevDifference::op(std::uint64_t* a,
                                        std::int64_t b)
 {   std::size_t lena = number_size(a);
     std::uint64_t bb[1];
     bb[0] = b;
     push(a);
-    std::uint64_t *r = reserve(lena+1);
+    std::uint64_t* r = reserve(lena+1);
     pop(a);
     std::size_t final_n;
     bigsubtract(bb, 1, a, lena, r, final_n);
@@ -7960,10 +7943,10 @@ inline std::intptr_t RevDifference::op(std::uint64_t *a,
 //                       =========================
 
 // The multiplication code has a signature something like
-//   void mult(uint64_t *a, size_t lena,
-//             uint64_t *b, size_t lenb,
-//             uint64_t *c,
-//             uint64_t *work_vector=NULL)
+//   void mult(uint64_t* a, size_t lena,
+//             uint64_t* b, size_t lenb,
+//             uint64_t* c,
+//             uint64_t* work_vector=NULL)
 // where a and b are vectors with lena and lenb words in then respectively.
 // c is a vector and lena+lenb words of a product will be written into it.
 // Note that sometimes the top digit will end up as either 0 or -1.
@@ -7977,8 +7960,8 @@ inline std::intptr_t RevDifference::op(std::uint64_t *a,
 // I want:
 //    kadd(a, lena, c, lenc);          // c += a
 
-inline std::uint64_t kadd(const std::uint64_t *a, std::size_t lena,
-                          std::uint64_t *c, std::size_t lenc,
+inline std::uint64_t kadd(const std::uint64_t* a, std::size_t lena,
+                          std::uint64_t* c, std::size_t lenc,
                           std::uint64_t carry=0)
 {   std::size_t i;
     for (i=0; i<lena; i++)
@@ -7992,11 +7975,10 @@ inline std::uint64_t kadd(const std::uint64_t *a, std::size_t lena,
 
 // c = a - b.   must have length(a) >= length(b).
 
-inline std::uint64_t ksub(const std::uint64_t *a, std::size_t lena,
-                          const std::uint64_t *b, std::size_t lenb,
-                          std::uint64_t *c)
-{   arithlib_assert(lena >= lenb);
-    std::uint64_t borrow = 0;
+inline std::uint64_t ksub(const std::uint64_t* a, std::size_t lena,
+                          const std::uint64_t* b, std::size_t lenb,
+                          std::uint64_t* c)
+{   std::uint64_t borrow = 0;
     std::size_t i;
     for (i=0; i<lenb; i++)
         borrow = subtract_with_borrow(a[i], b[i], borrow, c[i]);
@@ -8005,10 +7987,10 @@ inline std::uint64_t ksub(const std::uint64_t *a, std::size_t lena,
     return borrow;
 }
 
-inline void kneg(std::uint64_t *a, std::size_t lena)
-{   std::uint64_t carry = 0;
+inline void kneg(std::uint64_t* a, std::size_t lena)
+{   std::uint64_t carry = 1;
     for (std::size_t i=0; i<lena; i++)
-        a[i] = add_with_carry(~a[i], carry, a[i]);
+        carry = add_with_carry(~a[i], carry, a[i]);
 }
 
 // c = |a - b| and return an indication of which branch of the absolute
@@ -8016,13 +7998,12 @@ inline void kneg(std::uint64_t *a, std::size_t lena)
 // the result is zero the value is not terribly important. Must be
 // called with the first argument at least as long as the second.
 
-inline bool absdiff(const std::uint64_t *a, std::size_t lena,
-                    const std::uint64_t *b, std::size_t lenb,
-                    std::uint64_t *c)
+inline bool absdiff(const std::uint64_t* a, std::size_t lena,
+                    const std::uint64_t* b, std::size_t lenb,
+                    std::uint64_t* c)
 {
 // I will do a cheap comparison of a and b first, based on an understanding
 // that lena >= lenb. The result will be of length lena.
-    arithlib_assert(lena >= lenb);
     if (lenb < lena ||
         b[lenb-1]<=a[lena-1])
     {
@@ -8188,10 +8169,10 @@ inline void mul4x4(std::uint64_t a3, std::uint64_t a2,
 
 // This forms a product digit by digit.
 
-inline void classical_multiply(const std::uint64_t *a,
+inline void classical_multiply(const std::uint64_t* a,
                                std::size_t lena,
-                               const std::uint64_t *b, std::size_t lenb,
-                               std::uint64_t *c)
+                               const std::uint64_t* b, std::size_t lenb,
+                               std::uint64_t* c)
 {   if (lena < lenb)
     {   std::swap(a, b);
         std::swap(lena, lenb);
@@ -8245,10 +8226,10 @@ inline void classical_multiply(const std::uint64_t *a,
 
 // c = c + a*b. Potentially carry all the way up to lenc.
 
-inline void classical_multiply_and_add(const std::uint64_t *a,
+inline void classical_multiply_and_add(const std::uint64_t* a,
                                        std::size_t lena,
-                                       const std::uint64_t *b, std::size_t lenb,
-                                       std::uint64_t *c, std::size_t lenc)
+                                       const std::uint64_t* b, std::size_t lenb,
+                                       std::uint64_t* c, std::size_t lenc)
 {   if (lena < lenb)
     {   std::swap(a, b);
         std::swap(lena, lenb);
@@ -8304,8 +8285,8 @@ inline void classical_multiply_and_add(const std::uint64_t *a,
 // as optimized cases.
 
 inline void classical_multiply(std::uint64_t a,
-                               const std::uint64_t *b, std::size_t lenb,
-                               std::uint64_t *c)
+                               const std::uint64_t* b, std::size_t lenb,
+                               std::uint64_t* c)
 {   std::uint64_t hi=0;
     for (std::size_t j=0; j<lenb; j++)
         multiply64(a, b[j], hi, hi, c[j]);
@@ -8315,8 +8296,8 @@ inline void classical_multiply(std::uint64_t a,
 // c = c + a*b and return any carry.
 
 inline void classical_multiply_and_add(std::uint64_t a,
-                                       const std::uint64_t *b, std::size_t lenb,
-                                       std::uint64_t *c, std::size_t lenc)
+                                       const std::uint64_t* b, std::size_t lenb,
+                                       std::uint64_t* c, std::size_t lenc)
 {   std::uint64_t hi=0, lo;
     for (std::size_t j=0; j<lenb; j++)
     {   multiply64(a, b[j], hi, hi, lo);
@@ -8370,16 +8351,16 @@ static std::size_t PARAKARA_CUTOFF =
     std::thread::hardware_concurrency() >= 3 ? K1 : SIZE_MAX;
 #endif
 
-inline void small_or_big_multiply(const std::uint64_t *a,
+inline void small_or_big_multiply(const std::uint64_t* a,
                                   std::size_t lena,
-                                  const std::uint64_t *b, std::size_t lenb,
-                                  std::uint64_t *c, std::uint64_t *w);
+                                  const std::uint64_t* b, std::size_t lenb,
+                                  std::uint64_t* c, std::uint64_t* w);
 
-inline void small_or_big_multiply_and_add(const std::uint64_t *a,
+inline void small_or_big_multiply_and_add(const std::uint64_t* a,
         std::size_t lena,
-        const std::uint64_t *b, std::size_t lenb,
-        std::uint64_t *c, std::size_t lenc,
-        std::uint64_t *w);
+        const std::uint64_t* b, std::size_t lenb,
+        std::uint64_t* c, std::size_t lenc,
+        std::uint64_t* w);
 
 // The key function here multiplies two numbers that are at least almost
 // the same length. The cases that can arise here are
@@ -8395,13 +8376,10 @@ inline void small_or_big_multiply_and_add(const std::uint64_t *a,
 //         a1*b1, a0*b0, |a0-a1|*|b0-b1|
 
 
-inline void karatsuba(const std::uint64_t *a, std::size_t lena,
-                      const std::uint64_t *b, std::size_t lenb,
-                      std::uint64_t *c, std::uint64_t *w)
-{   arithlib_assert(lena == lenb ||
-                    (lena%2 == 0 && lenb == lena-1));
-    arithlib_assert(lena >= 2);
-    std::size_t n = (lena+1)/2;    // size of a "half-number"
+inline void karatsuba(const std::uint64_t* a, std::size_t lena,
+                      const std::uint64_t* b, std::size_t lenb,
+                      std::uint64_t* c, std::uint64_t* w)
+{   std::size_t n = (lena+1)/2;    // size of a "half-number"
     std::size_t lenc = lena+lenb;
 // lena-n and lenb-n will each be either n or n-1.
     if (absdiff(a, n, a+n, lena-n, w) !=
@@ -8461,7 +8439,7 @@ inline void karatsuba(const std::uint64_t *a, std::size_t lena,
 // The worker_thread() function is started in each of two threads, and
 // processes requests until a "quit" request is sent to it.
 
-inline void worker_thread(Worker_data *wd)
+inline void worker_thread(Worker_data* wd)
 {
 #ifdef USE_MICROSOFT_MUTEX
     WaitForSingleObject(wd->mutex[2], 0xffffffff);
@@ -8493,17 +8471,14 @@ inline void worker_thread(Worker_data *wd)
     }
 }
 
-inline void top_level_karatsuba(const std::uint64_t *a,
+inline void top_level_karatsuba(const std::uint64_t* a,
                                 std::size_t lena,
-                                const std::uint64_t *b, std::size_t lenb,
-                                std::uint64_t *c, std::uint64_t *w,
-                                std::uint64_t *w0, std::uint64_t *w1)
+                                const std::uint64_t* b, std::size_t lenb,
+                                std::uint64_t* c, std::uint64_t* w,
+                                std::uint64_t* w0, std::uint64_t* w1)
 {
 // Here I have a HUGE case and I should use threads!
-    arithlib_assert(lena == lenb ||
-                    (lena%2 == 0 && lenb == lena-1));
-    arithlib_assert(lena >= 2);
-    DriverData *driverData = getDriverData();
+    DriverData* driverData = getDriverData();
     std::size_t n = (lena+1)/2;    // size of a "half-number"
     std::size_t lenc = lena+lenb;
 // I start by arranging that the two threads that can do things in parallel
@@ -8583,14 +8558,11 @@ inline void top_level_karatsuba(const std::uint64_t *a,
     }
 }
 
-inline void karatsuba_and_add(const std::uint64_t *a,
+inline void karatsuba_and_add(const std::uint64_t* a,
                               std::size_t lena,
-                              const std::uint64_t *b, std::size_t lenb,
-                              std::uint64_t *c, std::size_t lenc, std::uint64_t *w)
-{   arithlib_assert(lena == lenb ||
-                    (lena%2 == 0 && lenb == lena-1));
-    arithlib_assert(lena >= 2);
-    std::size_t n = (lena+1)/2;    // size of a "half-number"
+                              const std::uint64_t* b, std::size_t lenb,
+                              std::uint64_t* c, std::size_t lenc, std::uint64_t* w)
+{   std::size_t n = (lena+1)/2;    // size of a "half-number"
     std::size_t lenc1 = lena+lenb;
     if (absdiff(a, n, a+n, lena-n, w) !=
         absdiff(b, n, b+n, lenb-n, w+n))
@@ -8632,10 +8604,10 @@ inline void karatsuba_and_add(const std::uint64_t *a,
 // rather along the lines of "short" multiplication treating the size of the
 // smaller operand as the digit size.
 
-inline void certainly_big_multiply(const std::uint64_t *a,
+inline void certainly_big_multiply(const std::uint64_t* a,
                                    std::size_t lena,
-                                   const std::uint64_t *b, std::size_t lenb,
-                                   std::uint64_t *c, std::uint64_t *w)
+                                   const std::uint64_t* b, std::size_t lenb,
+                                   std::uint64_t* c, std::uint64_t* w)
 {   if (lena == lenb)
     {   karatsuba(a, lena, b, lenb, c, w);
         return;
@@ -8658,8 +8630,8 @@ inline void certainly_big_multiply(const std::uint64_t *a,
 // I will be willing to do chunks that are of an even size that is
 // either lenb or lenb+1.
     std::size_t len = lenb + (lenb & 1);
-    const std::uint64_t *a1 = a;
-    std::uint64_t *c1 = c;
+    const std::uint64_t* a1 = a;
+    std::uint64_t* c1 = c;
     std::size_t lena1 = lena;
 // Multiply-and-add will be (slightly) more expensive than just Multiply,
 // so I do a sequence of multiplications where their outputs will not overlap
@@ -8717,11 +8689,11 @@ inline void certainly_big_multiply(const std::uint64_t *a,
         small_or_big_multiply_and_add(a1, lena1, b, lenb, c1, lenc1, w);
 }
 
-inline void top_level_certainly_big_multiply(const std::uint64_t *a,
+inline void top_level_certainly_big_multiply(const std::uint64_t* a,
         std::size_t lena,
-        const std::uint64_t *b, std::size_t lenb,
-        std::uint64_t *c, std::uint64_t *w,
-        std::uint64_t *w0, std::uint64_t *w1)
+        const std::uint64_t* b, std::size_t lenb,
+        std::uint64_t* c, std::uint64_t* w,
+        std::uint64_t* w0, std::uint64_t* w1)
 {   if (lena == lenb)
     {   top_level_karatsuba(a, lena, b, lenb, c, w, w0, w1);
         return;
@@ -8744,8 +8716,8 @@ inline void top_level_certainly_big_multiply(const std::uint64_t *a,
 // I will be willing to do chunks that are of an even size that is
 // either lenb or lenb+1.
     std::size_t len = lenb + (lenb & 1);
-    const std::uint64_t *a1 = a;
-    std::uint64_t *c1 = c;
+    const std::uint64_t* a1 = a;
+    std::uint64_t* c1 = c;
     std::size_t lena1 = lena;
 // Multiply-and-add will be (slightly) more expensive than just Multiply,
 // so I do a sequence of multiplications where their outputs will not overlap
@@ -8803,11 +8775,11 @@ inline void top_level_certainly_big_multiply(const std::uint64_t *a,
         small_or_big_multiply_and_add(a1, lena1, b, lenb, c1, lenc1, w);
 }
 
-inline void certainly_big_multiply_and_add(const std::uint64_t *a,
+inline void certainly_big_multiply_and_add(const std::uint64_t* a,
         std::size_t lena,
-        const std::uint64_t *b, std::size_t lenb,
-        std::uint64_t *c, std::size_t lenc,
-        std::uint64_t *w)
+        const std::uint64_t* b, std::size_t lenb,
+        std::uint64_t* c, std::size_t lenc,
+        std::uint64_t* w)
 {   if (lena == lenb)
     {   karatsuba_and_add(a, lena, b, lenb, c, lenc, w);
         return;
@@ -8830,8 +8802,8 @@ inline void certainly_big_multiply_and_add(const std::uint64_t *a,
 // I will be willing to do chunks that are of an even size that is
 // either lenb or lenb+1.
     std::size_t len = lenb + (lenb & 1);
-    const std::uint64_t *a1 = a;
-    std::uint64_t *c1 = c;
+    const std::uint64_t* a1 = a;
+    std::uint64_t* c1 = c;
     std::size_t lena1 = lena, lenc1 = lenc;
 // because this is "certainly big" I know I can do at least one
 // Karatsuba stage.
@@ -8853,10 +8825,10 @@ inline void certainly_big_multiply_and_add(const std::uint64_t *a,
 // either certainly_big_multiply or classical_multiply with very
 // little overhead.
 
-inline void small_or_big_multiply(const std::uint64_t *a,
+inline void small_or_big_multiply(const std::uint64_t* a,
                                   std::size_t lena,
-                                  const std::uint64_t *b, std::size_t lenb,
-                                  std::uint64_t *c, std::uint64_t *w)
+                                  const std::uint64_t* b, std::size_t lenb,
+                                  std::uint64_t* c, std::uint64_t* w)
 {   if (lena < KARATSUBA_CUTOFF || lenb < KARATSUBA_CUTOFF)
     {   if (lena==1) classical_multiply(a[0], b, lenb, c);
         else if (lenb==1) classical_multiply(b[0], a, lena, c);
@@ -8865,11 +8837,11 @@ inline void small_or_big_multiply(const std::uint64_t *a,
     else certainly_big_multiply(a, lena, b, lenb, c, w);
 }
 
-inline void small_or_big_multiply_and_add(const std::uint64_t *a,
+inline void small_or_big_multiply_and_add(const std::uint64_t* a,
         std::size_t lena,
-        const std::uint64_t *b, std::size_t lenb,
-        std::uint64_t *c, std::size_t lenc,
-        std::uint64_t *w)
+        const std::uint64_t* b, std::size_t lenb,
+        std::uint64_t* c, std::size_t lenc,
+        std::uint64_t* w)
 {   if (lena < KARATSUBA_CUTOFF || lenb < KARATSUBA_CUTOFF)
     {   if (lena==1) classical_multiply_and_add(a[0], b, lenb, c, lenc);
         else if (lenb==1) classical_multiply_and_add(b[0], a, lena, c, lenc);
@@ -8893,18 +8865,18 @@ inline const std::size_t KARA_WORKSPACE_SIZE = 2050;
 // These two functions allocate workspace for Karatsuba on the stack and
 // are called when the inputs are short enough for that to feel reasonable.
 
-inline void allocate_one_array(const std::uint64_t *a,
+inline void allocate_one_array(const std::uint64_t* a,
                                std::size_t lena,
-                               const std::uint64_t *b, std::size_t lenb,
-                               std::uint64_t *c)
+                               const std::uint64_t* b, std::size_t lenb,
+                               std::uint64_t* c)
 {   std::uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
     certainly_big_multiply(a, lena, b, lenb, c, kara_workspace);
 }
 
-inline void allocate_three_arrays(const std::uint64_t *a,
+inline void allocate_three_arrays(const std::uint64_t* a,
                                   std::size_t lena,
-                                  const std::uint64_t *b, std::size_t lenb,
-                                  std::uint64_t *c)
+                                  const std::uint64_t* b, std::size_t lenb,
+                                  std::uint64_t* c)
 {   std::uint64_t kara_workspace[KARA_WORKSPACE_SIZE];
     std::uint64_t kara_workspace0[KARA_WORKSPACE_SIZE];
     std::uint64_t kara_workspace1[KARA_WORKSPACE_SIZE];
@@ -8922,9 +8894,9 @@ inline constexpr int BY(int m, int n)
 // This is the main entrypoint to the integer multiplication code. It
 // takes two signed numbers and forms their product.
 
-inline void bigmultiply(const std::uint64_t *a, std::size_t lena,
-                        const std::uint64_t *b, std::size_t lenb,
-                        std::uint64_t *c, std::size_t &lenc)
+inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
+                        const std::uint64_t* b, std::size_t lenb,
+                        std::uint64_t* c, std::size_t &lenc)
 {
 // If a and/or be are negative then I can treat their true values as
 //    a = sa + va      b = sb + vb
@@ -9246,15 +9218,15 @@ inline void bigmultiply(const std::uint64_t *a, std::size_t lena,
 // extra logarithmic bit is because each time I split a number into its top
 // and bottom parts I may have an odd number and so the workspace needed
 // gets rounded up by a constant amount for each level of division.
-            std::uint64_t *w = reserve(2*lenw);
+            std::uint64_t* w = reserve(2*lenw);
             if (lena < PARAKARA_CUTOFF ||
                 lenb < PARAKARA_CUTOFF)
             {   pop(b); pop(a);
                 certainly_big_multiply(a, lena, b, lenb, c, w);
             }
             else
-            {   std::uint64_t *w0 = reserve(4*lenw);
-                std::uint64_t *w1 = reserve(4*lenw);
+            {   std::uint64_t* w0 = reserve(4*lenw);
+                std::uint64_t* w1 = reserve(4*lenw);
                 pop(b); pop(a);
                 top_level_certainly_big_multiply(a, lena, b, lenb, c,
                                                  w, w0, w1);
@@ -9292,12 +9264,12 @@ inline void bigmultiply(const std::uint64_t *a, std::size_t lena,
 //===========================================================================
 //===========================================================================
 
-inline std::intptr_t Times::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
     std::size_t n = lena+lenb;
     push(a); push(b);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(b); pop(a);
     std::size_t final_n;
 // I might like to optimise the 2*2 case here or even 2*3 and 3*3?
@@ -9312,21 +9284,22 @@ inline std::intptr_t Times::op(std::int64_t a, std::int64_t b)
     if ((hi==0 && positive(lo)) ||
         (hi==-1 && negative(lo)))
     {   if (fits_into_fixnum(static_cast<std::int64_t>(lo)))
+            LIKELY
             return int_to_handle(static_cast<std::int64_t>(lo));
-        std::uint64_t *r = reserve(1);
+        std::uint64_t* r = reserve(1);
         r[0] = lo;
         return confirm_size(r, 1, 1);
     }
-    std::uint64_t *r = reserve(2);
+    std::uint64_t* r = reserve(2);
     r[0] = lo;
     r[1] = hi;
     return confirm_size(r, 2, 2);
 }
 
-inline std::intptr_t Times::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Times::op(std::int64_t a, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
     push(b);
-    std::uint64_t *c = reserve(lenb+1);
+    std::uint64_t* c = reserve(lenb+1);
     pop(b);
     std::uint64_t hi = 0;
     for (std::size_t i=0; i<lenb; i++)
@@ -9344,7 +9317,7 @@ inline std::intptr_t Times::op(std::int64_t a, std::uint64_t *b)
     return confirm_size(c, lenb+1, lenc);
 }
 
-inline std::intptr_t Times::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Times::op(std::uint64_t* a, std::int64_t b)
 {   return Times::op(b, a);
 }
 
@@ -9363,8 +9336,8 @@ inline std::intptr_t Times::op(std::uint64_t *a, std::int64_t b)
 // clear to me, but for now I am setting it as 3 times the point at which
 // ordinary multiplications moves on from classical methods.
 
-inline void bigsquare(std::uint64_t *a, std::size_t lena,
-                      std::uint64_t *r, std::size_t &lenr)
+inline void bigsquare(std::uint64_t* a, std::size_t lena,
+                      std::uint64_t* r, std::size_t &lenr)
 {   if (lena > 3*KARATSUBA_CUTOFF)
     {   bigmultiply(a, lena, a, lena, r, lenr);
         return;
@@ -9417,11 +9390,11 @@ inline void bigsquare(std::uint64_t *a, std::size_t lena,
     truncate_negative(r, lenr);
 }
 
-inline std::intptr_t Square::op(std::uint64_t *a)
+inline std::intptr_t Square::op(std::uint64_t* a)
 {   std::size_t lena = number_size(a);
     std::size_t n = 2*lena;
     push(a);
-    std::uint64_t *p = reserve(n);
+    std::uint64_t* p = reserve(n);
     pop(a);
     std::size_t final_n;
     bigsquare(a, lena, p, final_n);
@@ -9436,25 +9409,26 @@ inline std::intptr_t Square::op(std::int64_t a)
     if ((hi == 0 && positive(lo)) ||
         (hi == static_cast<std::uint64_t>(-1) && negative(lo)))
     {   if (fits_into_fixnum(static_cast<std::int64_t>(lo)))
+            LIKELY
             return int_to_handle(static_cast<std::int64_t>(lo));
         else
-        {   std::uint64_t *p = reserve(1);
+        {   std::uint64_t* p = reserve(1);
             p[0] = lo;
             return confirm_size(p, 1, 1);
         }
     }
-    std::uint64_t *p = reserve(2);
+    std::uint64_t* p = reserve(2);
     p[0] = lo;
     p[1] = hi;
     return confirm_size(p, 2, 2);
 }
 
-inline std::intptr_t Isqrt::op(std::uint64_t *a)
+inline std::intptr_t Isqrt::op(std::uint64_t* a)
 {   std::size_t lena = number_size(a);
     if (lena == 1) return Isqrt::op(static_cast<std::int64_t>(a[0]));
     std::size_t lenx = (lena+1)/2;
     push(a);
-    std::uint64_t *x = reserve(lenx);
+    std::uint64_t* x = reserve(lenx);
     pop(a);
     for (std::size_t i=0; i<lenx; i++) x[i] = 0;
     std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
@@ -9538,11 +9512,11 @@ inline std::intptr_t Isqrt::op(std::int64_t aa)
 // must be at least the size of the result, but it is not clear that any
 // useful saving spece saving can be found down that path.
 
-inline void bigpow(std::uint64_t *a, std::size_t lena,
+inline void bigpow(std::uint64_t* a, std::size_t lena,
                    std::uint64_t n,
-                   std::uint64_t *v,
-                   std::uint64_t *w,
-                   std::uint64_t *r, std::size_t &lenr, std::size_t maxlenr)
+                   std::uint64_t* v,
+                   std::uint64_t* w,
+                   std::uint64_t* r, std::size_t &lenr, std::size_t maxlenr)
 {   if (n == 0)
     {   r[0] = 0;
         lenr = 1;
@@ -9555,18 +9529,15 @@ inline void bigpow(std::uint64_t *a, std::size_t lena,
     while (n > 1)
     {   if (n%2 == 0)
         {   bigsquare(v, lenv, r, lenr);
-            arithlib_assert(lenr <= maxlenr);
             internal_copy(r, lenr, v);
             lenv = lenr;
             n = n/2;
         }
         else
         {   bigmultiply(v, lenv, w, lenw, r, lenr);
-            arithlib_assert(lenr <= maxlenr);
             internal_copy(r, lenr, w);
             lenw = lenr;
             bigsquare(v, lenv, r, lenr);
-            arithlib_assert(lenr <= maxlenr);
             internal_copy(r, lenr, v);
             lenv = lenr;
             n = (n-1)/2;
@@ -9582,7 +9553,7 @@ inline void bigpow(std::uint64_t *a, std::size_t lena,
 // The code that dispatches into here should have filtered cases such that
 // the exponent n is not 0, 1 or 2 here.
 
-inline std::intptr_t Pow::op(std::uint64_t *a, std::int64_t n)
+inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
 {   std::size_t lena = number_size(a);
 //  1^(-n) == 1,
 //  (-1)^(-n) == 1 if n is even or -1 if n is odd.
@@ -9616,17 +9587,15 @@ inline std::intptr_t Pow::op(std::uint64_t *a, std::int64_t n)
     std::size_t lenr = static_cast<std::size_t>(lenr1);
 // if size_t was more narrow than 64-bits I could lose information in
 // truncating from uint64_t to size_t.
-    arithlib_assert(lenr == lenr1);
     std::uint64_t olenr = lenr;
     push(a);
-    std::uint64_t *r = reserve(lenr);
+    std::uint64_t* r = reserve(lenr);
     push(r);
-    std::uint64_t *v = reserve(lenr);
+    std::uint64_t* v = reserve(lenr);
     push(v);
-    std::uint64_t *w = reserve(lenr);
+    std::uint64_t* w = reserve(lenr);
     pop(v); pop(r); pop(a);
     bigpow(a, lena, static_cast<std::uint64_t>(n), v, w, r, lenr, lenr);
-    arithlib_assert(lenr <= olenr);
     abandon(w);
     abandon(v);
     return confirm_size(r, olenr, lenr);
@@ -9650,8 +9619,6 @@ inline std::intptr_t Pow::op(std::int64_t a, std::int64_t n)
     std::size_t bitsa = 64 - nlz(absa);
     std::uint64_t hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
-    arithlib_assert(hi ==
-                    0); // Check that size is at least somewhat sane!
     std::uint64_t lenr1 = 2 + bitsr/64;
     if (bitsr < 64) // Can do all the work as machine integers.
     {   std::int64_t result = 1;
@@ -9665,23 +9632,21 @@ inline std::intptr_t Pow::op(std::int64_t a, std::int64_t n)
     std::size_t lenr = static_cast<std::size_t>(lenr1);
 // if size_t was more narrow than 64-bits I could lose information in
 // truncating from uint64_t to size_t.
-    arithlib_assert(lenr == lenr1);
     std::uint64_t olenr = lenr;
-    std::uint64_t *r = reserve(lenr);
+    std::uint64_t* r = reserve(lenr);
     push(r);
-    std::uint64_t *v = reserve(lenr);
+    std::uint64_t* v = reserve(lenr);
     push(v);
-    std::uint64_t *w = reserve(lenr);
+    std::uint64_t* w = reserve(lenr);
     pop(v); pop(r);
     std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
     bigpow(aa, 1, static_cast<std::uint64_t>(n), v, w, r, lenr, lenr);
-    arithlib_assert(lenr <= olenr);
     abandon(w);
     abandon(v);
     return confirm_size(r, olenr, lenr);
 }
 
-inline double Pow::op(std::uint64_t *a, double n)
+inline double Pow::op(std::uint64_t* a, double n)
 {   return std::pow(Double::op(a), n);
 }
 
@@ -9734,16 +9699,16 @@ inline double Pow::op(std::int64_t a, double n)
 // both. Note that at this stage a may still be negative! The value b is
 // passed in sign and magnitide form as {b, b_negative}
 
-inline void unsigned_short_division(std::uint64_t *a,
+inline void unsigned_short_division(std::uint64_t* a,
                                     std::size_t lena,
                                     std::uint64_t b, bool b_negative,
-                                    bool want_q, std::uint64_t *&q,
+                                    bool want_q, std::uint64_t*& q,
                                     std::size_t &olenq, std::size_t &lenq,
-                                    bool want_r, std::uint64_t *&r,
+                                    bool want_r, std::uint64_t*& r,
                                     std::size_t &olenr, std::size_t &lenr)
 {   std::uint64_t hi = 0;
     bool a_negative = false;
-    std::uint64_t *aa;
+    std::uint64_t* aa;
     if (negative(a[lena-1]))
     {   a_negative = true;
 // Take absolute value of a if necessary.
@@ -9821,11 +9786,11 @@ inline void unsigned_short_division(std::uint64_t *a,
     }
 }
 
-inline void signed_short_division(std::uint64_t *a, std::size_t lena,
+inline void signed_short_division(std::uint64_t* a, std::size_t lena,
                                   std::int64_t b,
-                                  bool want_q, std::uint64_t *&q,
+                                  bool want_q, std::uint64_t*& q,
                                   std::size_t &olenq, std::size_t &lenq,
-                                  bool want_r, std::uint64_t *&r,
+                                  bool want_r, std::uint64_t*& r,
                                   std::size_t &olenr, std::size_t &lenr)
 {   if (b > 0) unsigned_short_division(a, lena,
                                            static_cast<std::uint64_t>(b),
@@ -9838,10 +9803,10 @@ inline void signed_short_division(std::uint64_t *a, std::size_t lena,
                                      want_r, r, olenr, lenr);
 }
 
-inline void unsigned_long_division(std::uint64_t *a,
+inline void unsigned_long_division(std::uint64_t* a,
                                    std::size_t &lena,
-                                   std::uint64_t *b, std::size_t &lenb,
-                                   bool want_q, std::uint64_t *q,
+                                   std::uint64_t* b, std::size_t &lenb,
+                                   bool want_q, std::uint64_t* q,
                                    std::size_t &olenq, std::size_t &lenq);
 
 // The following is a major entrypoint to the division code. (a) and (b) are
@@ -9855,11 +9820,10 @@ inline void unsigned_long_division(std::uint64_t *a,
 
 // Divide a by b to obtain a quotient q and a remainder r.
 
-inline void division(std::uint64_t *a, std::size_t lena,
-                     std::uint64_t *b, std::size_t lenb,
-                     bool want_q, std::uint64_t *&q, std::size_t &olenq, std::size_t &lenq,
-                     bool want_r, std::uint64_t *&r, std::size_t &olenr, std::size_t &lenr)
-{   arithlib_assert(want_q || want_r);
+inline void division(std::uint64_t* a, std::size_t lena,
+                     std::uint64_t* b, std::size_t lenb,
+                     bool want_q, std::uint64_t*& q, std::size_t &olenq, std::size_t &lenq,
+                     bool want_r, std::uint64_t*& r, std::size_t &olenr, std::size_t &lenr)
 // First I will filter out a number of cases where the divisor is "small".
 // I only want to proceed into the general case code if it is a "genuine"
 // big number with at least two digits. This bit of the code is messier
@@ -9869,7 +9833,7 @@ inline void division(std::uint64_t *a, std::size_t lena,
 //
 // The first case is when the single digit if b is a signed value in the
 // range -2^63 to 2^63-1.
-    if (lenb == 1)
+{   if (lenb == 1)
     {
 // At present I cause an attempt to divide by zero to crash with an
 // arithlib_assert failure if I have build in debug mode or to do who
@@ -9940,7 +9904,7 @@ inline void division(std::uint64_t *a, std::size_t lena,
 // Now the absolute value of b will be at least 2 digits of 64-bits with the
 // high digit non-zero. I need to make a copy of it because I will scale
 // it during long division.
-    std::uint64_t *bb = NULL;
+    std::uint64_t* bb = NULL;
     std::size_t lenbb = lenb;
     bool b_negative = negative(b[lenb-1]);
     if (b_negative)
@@ -9961,7 +9925,6 @@ inline void division(std::uint64_t *a, std::size_t lena,
         if (bb[lenbb-1] == 0) lenbb--;
     }
     else if (b[lenb-1] == 0) lenbb--;
-    arithlib_assert(lenbb >= 2);
 // Now I should look at the dividend. If it is shorter than the divisor
 // then I know that the quotient will be zero and the dividend will be the
 // remainder. If I had made this test before normalizing the divisor I could
@@ -10001,9 +9964,6 @@ inline void division(std::uint64_t *a, std::size_t lena,
         olenr = lenb;
         internal_copy(b, lenbb, bb);
     }
-#ifdef DEBUG_OVERRUN
-    if (debug_arith) arithlib_assert(bb[olenr] == 0xaaaaaaaaaaaaaaaa);
-#endif
 // If I actually return the quotient I may need to add a leading 0 or -1 to
 // make its 2s complement representation valid. Hence the "+2" rather than
 // the more obvious "+1" here.
@@ -10027,9 +9987,6 @@ inline void division(std::uint64_t *a, std::size_t lena,
     if (a_negative) internal_negate(a, lena, r);
     else internal_copy(a, lena, r);
     unsigned_long_division(r, lenr, bb, lenbb, want_q, q, olenq, lenq);
-#ifdef DEBUG_OVERRUN
-    if (debug_arith) arithlib_assert(r[lena+1] == 0xaaaaaaaaaaaaaaaa);
-#endif
 // While performing the long division I will have had three vectors that
 // were newly allocated. r starts off containing a copy of a but ends up
 // holding the remainder. It is rather probable that this remainder will
@@ -10040,14 +9997,11 @@ inline void division(std::uint64_t *a, std::size_t lena,
 // remainder is smaller than the divisor and so it will be a closer fit into
 // bb than r. So copy it into there so that the allocate/abandon and
 // size confirmation code is given less extreme things to cope with.
-    arithlib_assert(lenr<=lenb);
     if (want_r) internal_copy(r, lenr, bb);
     abandon(r);
     if (want_q)
     {   if (negative(q[lenq-1]))
-        {   arithlib_assert(lenq < olenq);
             q[lenq++] = 0;
-        }
         if (a_negative != b_negative)
         {   internal_negate(q, lenq, q);
             truncate_negative(q, lenq);
@@ -10058,9 +10012,7 @@ inline void division(std::uint64_t *a, std::size_t lena,
     if (want_r)
     {   r = bb;
         if (negative(r[lenr-1]))
-        {   arithlib_assert(lenr < olenr);
             r[lenr++] = 0;
-        }
         if (a_negative)
         {   internal_negate(r, lenr, r);
             truncate_negative(r, lenr);
@@ -10078,7 +10030,7 @@ inline void division(std::uint64_t *a, std::size_t lena,
 // that the shift amount will be in the range 0-63.
 
 
-inline std::uint64_t scale_for_division(std::uint64_t *r,
+inline std::uint64_t scale_for_division(std::uint64_t* r,
                                         std::size_t lenr,
                                         int s)
 {
@@ -10099,11 +10051,10 @@ inline std::uint64_t scale_for_division(std::uint64_t *r,
 
 // r = r - b*q*base^(lena-lenb-1).
 
-inline void multiply_and_subtract(std::uint64_t *r, std::size_t lenr,
+inline void multiply_and_subtract(std::uint64_t* r, std::size_t lenr,
                                   std::uint64_t q0,
-                                  std::uint64_t *b, std::size_t lenb)
-{   arithlib_assert(lenr > lenb);
-    std::uint64_t hi = 0, lo, carry = 1;
+                                  std::uint64_t* b, std::size_t lenb)
+{   std::uint64_t hi = 0, lo, carry = 1;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q0, hi, hi, lo);
 // lo is now the next digit of b*q, and hi needs to be carried up to the
@@ -10119,23 +10070,19 @@ inline void multiply_and_subtract(std::uint64_t *r, std::size_t lenr,
 // result. I fix things up by decrementing q and going
 //         r = r + (b<<(lenr-lenb-1))
 
-inline void add_back_correction(std::uint64_t *r, std::size_t lenr,
-                                std::uint64_t *b, std::size_t lenb)
-{   arithlib_assert(lenr > lenb);
-    std::uint64_t carry = 0;
+inline void add_back_correction(std::uint64_t* r, std::size_t lenr,
+                                std::uint64_t* b, std::size_t lenb)
+{   std::uint64_t carry = 0;
     for (std::size_t i=0; i<lenb; i++)
         carry = add_with_carry(r[i+lenr-lenb-1], b[i], carry,
                                r[i+lenr-lenb-1]);
     r[lenr-1] += carry;
 }
 
-inline std::uint64_t next_quotient_digit(std::uint64_t *r,
+inline std::uint64_t next_quotient_digit(std::uint64_t* r,
         std::size_t &lenr,
-        std::uint64_t *b, std::size_t lenb)
-{   arithlib_assert(lenr > lenb);
-    arithlib_assert(lenb >= 2);
-    arithlib_assert(b[lenb-1] != 0);
-    std::uint64_t q0, r0;
+        std::uint64_t* b, std::size_t lenb)
+{   std::uint64_t q0, r0;
     if (r[lenr-1] == b[lenb-1])
     {   q0 = static_cast<std::uint64_t>(-1);
         r0 = r[lenr-2] + b[lenb-1];
@@ -10172,7 +10119,7 @@ inline std::uint64_t next_quotient_digit(std::uint64_t *r,
 // is in the range 0 - 63. The bits shifted out to the right should all
 // be zero.
 
-inline void unscale_for_division(std::uint64_t *r, std::size_t &lenr,
+inline void unscale_for_division(std::uint64_t* r, std::size_t &lenr,
                                  int s)
 {   if (s != 0)
     {   std::uint64_t carry = 0;
@@ -10184,7 +10131,6 @@ inline void unscale_for_division(std::uint64_t *r, std::size_t &lenr,
             if (i == 0) break;
             i--;
         }
-        arithlib_assert(carry==0);
     }
     truncate_unsigned(r, lenr);
 }
@@ -10196,26 +10142,25 @@ inline void unscale_for_division(std::uint64_t *r, std::size_t &lenr,
 // highest digit is a "1", so b must be an array that can be overwritten
 // without disturbing code elsewhere.
 
-inline void unsigned_long_division(std::uint64_t *a,
+inline void unsigned_long_division(std::uint64_t* a,
                                    std::size_t &lena,
-                                   std::uint64_t *b, std::size_t &lenb,
-                                   bool want_q, std::uint64_t *q,
+                                   std::uint64_t* b, std::size_t &lenb,
+                                   bool want_q, std::uint64_t* q,
                                    std::size_t &olenq, std::size_t &lenq)
-{   arithlib_assert(lenb >= 2);
-    arithlib_assert(lena >= lenb);
+{
 // I will multiply a and b by a scale factor that gets the top digit of "b"
 // reasonably large. The value stored in "a" can become one digit longer,
 // but there is space to store that.
 //
 // The scaling is done here using a shift, which seems cheaper to sort out
 // then multiplication by a single-digit value.
-    arithlib_assert(b[lenb-1] != 0);
     int ss = nlz(b[lenb-1]);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not.
     a[lena] = scale_for_division(a, lena, ss);
     lena++;
-    arithlib_assert(scale_for_division(b, lenb, ss) == 0);
+    uint64_t w = scale_for_division(b, lenb, ss);
+    arithlib_assert(w == 0);
     lenq = lena-lenb; // potential length of quotient.
     std::size_t m = lenq-1;
     for (;;)
@@ -10241,18 +10186,18 @@ inline void unsigned_long_division(std::uint64_t *a,
 // Here a>b and b is at least 2 words. The code corrupts b and replaces
 // a with remainder(a, b).
 
-inline void unsigned_long_remainder(std::uint64_t *a,
+inline void unsigned_long_remainder(std::uint64_t* a,
                                     std::size_t &lena,
-                                    std::uint64_t *b, std::size_t &lenb)
+                                    std::uint64_t* b, std::size_t &lenb)
 {   std::size_t w;
     unsigned_long_division(a, lena, b, lenb,
                            false, NULL, w, w);
 }
 
-inline std::intptr_t Quotient::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -10260,9 +10205,9 @@ inline std::intptr_t Quotient::op(std::uint64_t *a, std::uint64_t *b)
     return confirm_size(q, olenq, lenq);
 }
 
-inline std::intptr_t Quotient::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Quotient::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -10274,23 +10219,25 @@ inline std::intptr_t Quotient::op(std::uint64_t *a, std::int64_t b)
 // A fixnum divided by a bignum ought always to yield 0, except that
 // maybe -0x8000000000000000} / {0,0x8000000000000000) => -1
 
-inline std::intptr_t Quotient::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Quotient::op(std::int64_t a, std::uint64_t* b)
 {   if (number_size(b)==1 &&
-        b[0]==-static_cast<std::uint64_t>(a)) return int_to_handle(-1);
+        b[0]==-static_cast<std::uint64_t>(a))
+        UNLIKELY
+        return int_to_handle(-1);
     return int_to_handle(0);
 }
 
 // unpleasantly -0x8000000000000000 / -1 => a bignum
 
 inline std::intptr_t Quotient::op(std::int64_t a, std::int64_t b)
-{   if (b==-1 && a == MIN_FIXNUM) return int_to_bignum(-a);
+{   if (b==-1 && a == MIN_FIXNUM) UNLIKELY return int_to_bignum(-a);
     else return int_to_handle(a / b);
 }
 
-inline std::intptr_t Remainder::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -10298,9 +10245,9 @@ inline std::intptr_t Remainder::op(std::uint64_t *a, std::uint64_t *b)
     return confirm_size(r, olenr, lenr);
 }
 
-inline std::intptr_t Remainder::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Remainder::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -10309,7 +10256,7 @@ inline std::intptr_t Remainder::op(std::uint64_t *a, std::int64_t b)
     return confirm_size(r, olenr, lenr);
 }
 
-inline std::intptr_t Remainder::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Remainder::op(std::int64_t a, std::uint64_t* b)
 {   if (number_size(b)==1 &&
         b[0]==-static_cast<std::uint64_t>(a)) return int_to_handle(0);
     return int_to_handle(a);
@@ -10319,18 +10266,18 @@ inline std::intptr_t Remainder::op(std::int64_t a, std::int64_t b)
 {   return int_to_handle(a % b);
 }
 
-inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
              true, r, olenr, lenr);
-    uintptr_t w = confirm_size(r, olenr, lenr);
+    intptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    if (w != int_of_handle(0) &&
+    if (w != int_to_handle(0) &&
         ((a_neg && !b_neg) || (!a_neg && b_neg)))
     {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
         else return Plus::op(vector_of_handle(w), b);
@@ -10338,18 +10285,22 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::uint64_t *b)
     else return w;
 }
 
-inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
+// When b is positive Mod uses directed rounding as for Floor, while if
+// b is negative it is as for Ceiling, so that the sign of (P mod Q) always
+// matches that of Q.
+
+inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = number_size(a);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
              false, q, olenq, lenq,
              true, r, olenr, lenr);
-    uintptr_t w = confirm_size(r, olenr, lenr);
+    intptr_t w = confirm_size(r, olenr, lenr);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = (b < 0);
-    if (w != int_of_handle(0) &&
+    if (w != int_to_handle(0) &&
         ((a_neg && !b_neg) || (!a_neg && b_neg)))
     {   if (stored_as_fixnum(w)) return Plus::op(int_of_handle(w), b);
         else return Plus::op(vector_of_handle(w), b);
@@ -10357,7 +10308,7 @@ inline std::intptr_t Mod::op(std::uint64_t *a, std::int64_t b)
     else return w;
 }
 
-inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t* b)
 {   if (number_size(b)==1 &&
         b[0]==-static_cast<std::uint64_t>(a)) return int_to_handle(0);
     bool a_neg = (a < 0);
@@ -10373,6 +10324,112 @@ inline std::intptr_t Mod::op(std::int64_t a, std::int64_t b)
     return int_to_handle(r);
 }
 
+// Here if division is not exact the quotient is rounded towards -infinity. 
+
+inline std::intptr_t Floor::op(std::uint64_t* a, std::uint64_t* b)
+{   std::size_t lena = number_size(a);
+    std::size_t lenb = number_size(b);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = negative(b[lenb-1]);
+    std::uint64_t* q,* r;
+    std::size_t olenq, olenr, lenq, lenr;
+    division(a, lena, b, lenb,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && a_neg != b_neg) return Sub1::op(w1);
+    else return w1;
+}
+
+inline std::intptr_t Floor::op(std::uint64_t* a, std::int64_t b)
+{   std::size_t lena = number_size(a);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = b < 0;
+    std::uint64_t* q,* r;
+    std::size_t olenq, olenr, lenq, lenr;
+    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    division(a, lena, bb, 1,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && a_neg != b_neg) return Sub1::op(w1);
+    else return w1;
+}
+
+// An edge case here is a-=2^63 and b=+2^63 where the exact quotient
+// is -1. In all other cases the absolute value of a is less than that
+// of be and the truncated quotient is zero. Then if a and b have the
+// same signs the required result is zero, otherwise it will be -1.
+// Hah - happily the edge case comes out right in the wash!
+
+inline std::intptr_t Floor::op(std::int64_t a, std::uint64_t* b)
+{   bool a_neg = (a < 0);
+    bool b_neg = negative(b[number_size(b)-1]);
+    if (a_neg == b_neg) return int_to_handle(0);
+    else return int_to_handle(-1);
+}
+
+inline std::intptr_t Floor::op(std::int64_t a, std::int64_t b)
+{   int64_t q = a/b;
+    int64_t r = a%b;
+    if (r == 0 ||
+        (a < 0) == (b < 0)) return int_to_handle(q);
+// q-1 can not overflow here because the only way that q could have
+// ended up as INT64_MIN would be for that to have been the value of
+// a and b bad been +1. But then the remainder would have been zero
+// so the easier exit would have been taken.
+    else return int_to_handle(q-1);
+}
+
+inline std::intptr_t Ceiling::op(std::uint64_t* a, std::uint64_t* b)
+{   std::size_t lena = number_size(a);
+    std::size_t lenb = number_size(b);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = negative(b[lenb-1]);
+    std::uint64_t* q,* r;
+    std::size_t olenq, olenr, lenq, lenr;
+    division(a, lena, b, lenb,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && (a_neg == b_neg)) return Add1::op(w1);
+    else return w1;
+}
+
+inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
+{   std::size_t lena = number_size(a);
+    bool a_neg = negative(a[lena-1]);
+    bool b_neg = b < 0;
+    std::uint64_t* q,* r;
+    std::size_t olenq, olenr, lenq, lenr;
+    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    division(a, lena, bb, 1,
+             true, q, olenq, lenq,
+             true, r, olenr, lenr);
+    intptr_t w1 = confirm_size(q, olenq, lenq);
+    intptr_t w2 = confirm_size(r, olenr, lenr);
+    if (w2 != int_to_handle(0) && (a_neg == b_neg)) return Add1::op(w1);
+    else return w1;
+}
+
+inline std::intptr_t Ceiling::op(std::int64_t a, std::uint64_t* b)
+{   bool a_neg = (a < 0);
+    bool b_neg = negative(b[number_size(b)-1]);
+    if (a_neg == b_neg) return int_to_handle(1);
+    else return int_to_handle(0);
+}
+
+inline std::intptr_t Ceiling::op(std::int64_t a, std::int64_t b)
+{   int64_t q = a/b;
+    int64_t r = a%b;
+// if b=-1 or b=+1 then the remainder will be zero. In all other
+// cases q will be small enough not to overflow when incremented.
+    if (r!=0 && (a<0)==(b<0)) q++;
+    return int_to_handle(q);
+}
 
 
 #ifdef LISP
@@ -10387,10 +10444,10 @@ inline std::intptr_t Mod::op(std::int64_t a, std::int64_t b)
 namespace arithlib_implementation
 {
 
-inline std::intptr_t Divide::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -10404,9 +10461,9 @@ inline std::intptr_t Divide::op(std::uint64_t *a, std::uint64_t *b)
 #endif
 }
 
-inline std::intptr_t Divide::op(std::uint64_t *a, std::int64_t bb)
+inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
 {   std::size_t lena = number_size(a);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
     division(a, lena, b, 1,
@@ -10421,9 +10478,9 @@ inline std::intptr_t Divide::op(std::uint64_t *a, std::int64_t bb)
 #endif
 }
 
-inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t *b)
+inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t* b)
 {   std::size_t lenb = number_size(b);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
     division(a, 1, b, lenb,
@@ -10439,7 +10496,7 @@ inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t *b)
 }
 
 inline std::intptr_t Divide::op(std::int64_t aa, std::int64_t bb)
-{   std::uint64_t *q, *r;
+{   std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
     std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
@@ -10457,11 +10514,11 @@ inline std::intptr_t Divide::op(std::int64_t aa, std::int64_t bb)
 
 #else
 
-inline std::intptr_t Divide::op(std::uint64_t *a, std::uint64_t *b,
+inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
                                 std::intptr_t &rem)
 {   std::size_t lena = number_size(a);
     std::size_t lenb = number_size(b);
-    std::uint64_t *q, *r;
+    std::uint64_t* q,* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -10474,11 +10531,10 @@ inline std::intptr_t Divide::op(std::uint64_t *a, std::uint64_t *b,
 
 // a = a - b*q.
 
-inline bool reduce_for_gcd(std::uint64_t *a, std::size_t lena,
+inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
                            std::uint64_t q,
-                           std::uint64_t *b, std::size_t lenb)
-{   arithlib_assert(lena == lenb || lena == lenb+1);
-    std::uint64_t hi = 0, hi1, lo, borrow = 0;
+                           std::uint64_t* b, std::size_t lenb)
+{   std::uint64_t hi = 0, hi1, lo, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q, hi1, lo);
         hi1 += subtract_with_borrow(a[i], hi, a[i]);
@@ -10499,12 +10555,11 @@ inline bool reduce_for_gcd(std::uint64_t *a, std::size_t lena,
 // it computes it more as a = a - (b<<shift)*q.
 // It will be used with 0 < shift < 64, ie only when a genuine shift
 // between digits is required.
-inline bool shifted_reduce_for_gcd(std::uint64_t *a, std::size_t lena,
+inline bool shifted_reduce_for_gcd(std::uint64_t* a, std::size_t lena,
                                    std::uint64_t q,
-                                   std::uint64_t *b, std::size_t lenb,
+                                   std::uint64_t* b, std::size_t lenb,
                                    int shift)
-{   arithlib_assert(lena == lenb+1 || lena == lenb+2);
-    std::uint64_t hi = 0, hi1, lo, borrow = 0;
+{   std::uint64_t hi = 0, hi1, lo, borrow = 0;
     for (std::size_t i=0; i<=lenb; i++)
     {   multiply64(shifted_digit(b, lenb, shift, i), q, hi1, lo);
         hi1 += subtract_with_borrow(a[i], hi, a[i]);
@@ -10532,13 +10587,12 @@ inline bool shifted_reduce_for_gcd(std::uint64_t *a, std::size_t lena,
 // a result of length lena even though I very much expect that in at least
 // almost all cases the result will be almost 128 bits smaller!
 
-inline bool ua_minus_vb(std::uint64_t *a, std::size_t lena,
+inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
                         std::uint64_t u,
-                        std::uint64_t *b, std::size_t lenb,
+                        std::uint64_t* b, std::size_t lenb,
                         std::uint64_t v,
-                        std::uint64_t *r, std::size_t &lenr)
-{   arithlib_assert(lena == lenb || lena == lenb+1);
-    std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
+                        std::uint64_t* r, std::size_t &lenr)
+{   std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
 // hia is the high part of a product so carrying 1 into it can not cause it
@@ -10569,13 +10623,12 @@ inline bool ua_minus_vb(std::uint64_t *a, std::size_t lena,
 // for r = -u*a + b*v;
 // Again this supposes that a is at least as long as b.
 
-inline bool minus_ua_plus_vb(std::uint64_t *a, std::size_t lena,
+inline bool minus_ua_plus_vb(std::uint64_t* a, std::size_t lena,
                              std::uint64_t u,
-                             std::uint64_t *b, std::size_t lenb,
+                             std::uint64_t* b, std::size_t lenb,
                              std::uint64_t v,
-                             std::uint64_t *r, std::size_t &lenr)
-{   arithlib_assert(lena == lenb || lena == lenb+1);
-    std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
+                             std::uint64_t* r, std::size_t &lenr)
+{   std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
         hia += add_with_carry(loa, ca, loa);
@@ -10606,10 +10659,10 @@ inline bool minus_ua_plus_vb(std::uint64_t *a, std::size_t lena,
 //    swap(a, b);
 // but a Lehmer-style scheme can go distinctly faster overall.
 
-inline void gcd_reduction(std::uint64_t *&a, std::size_t &lena,
-                          std::uint64_t *&b, std::size_t &lenb,
+inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
+                          std::uint64_t*& b, std::size_t &lenb,
                           std::size_t &olena, std::size_t &olenb,
-                          std::uint64_t *&temp, std::size_t &lentemp)
+                          std::uint64_t*& temp, std::size_t &lentemp)
 {
 // I will start by collecting high bits from a and b. If I collect the
 // contents of the top 3 words (ie 192 bits in all) then I will be able
@@ -10708,7 +10761,6 @@ inline void gcd_reduction(std::uint64_t *&a, std::size_t &lena,
 // end up negative.
             q = ahi/bhi;
             if (negative(q)) break;
-            arithlib_assert(q != 0);
 // Now I need to go
 //              ua -= q*va;
 //              ub -= q*vb;
@@ -10772,24 +10824,20 @@ inline void gcd_reduction(std::uint64_t *&a, std::size_t &lena,
             pop(a);
         }
         if (ub < 0)
-        {   arithlib_assert(ua >= 0);
-            if (ua_minus_vb(a, lena, ua, b, lenb, -ub, temp, lentemp))
+        {   if (ua_minus_vb(a, lena, ua, b, lenb, -ub, temp, lentemp))
                 internal_negate(temp, lentemp, temp);
         }
         else
-        {   arithlib_assert(ua <= 0);
-            if (minus_ua_plus_vb(a, lena, -ua, b, lenb, ub, temp, lentemp))
+        {   if (minus_ua_plus_vb(a, lena, -ua, b, lenb, ub, temp, lentemp))
                 internal_negate(temp, lentemp, temp);
         }
         truncate_unsigned(temp, lentemp);
         if (vb < 0)
-        {   arithlib_assert(va >= 0);
-            if (ua_minus_vb(a, lena, va, b, lenb, -vb, a, lena))
+        {   if (ua_minus_vb(a, lena, va, b, lenb, -vb, a, lena))
                 internal_negate(a, lena, a);
         }
         else
-        {   arithlib_assert(va <= 0);
-            if (minus_ua_plus_vb(a, lena, -va, b, lenb, vb, a, lena))
+        {   if (minus_ua_plus_vb(a, lena, -va, b, lenb, vb, a, lena))
                 internal_negate(a, lena, a);
         }
         truncate_unsigned(a, lena);
@@ -10908,7 +10956,7 @@ inline void gcd_reduction(std::uint64_t *&a, std::size_t &lena,
 // what are logically multiple individual reduction steps.
 
 
-inline std::intptr_t Gcd::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
 {   if (number_size(b) == 1)
         return Gcd::op(a, static_cast<std::int64_t>(b[0]));
 // I will start by making copies of |a| and |b| that I can overwrite
@@ -10920,12 +10968,12 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::uint64_t *b)
         negative(a[lena-1]) && negative(b[lenb-1]) &&
         a[lena-1] == b[lenb-1]) olena++;
     push(a); push(b);
-    std::uint64_t *av = reserve(olena);
+    std::uint64_t* av = reserve(olena);
     pop(b); pop(a);
     if (negative(a[lena-1])) internal_negate(a, lena, av);
     else internal_copy(a, lena, av);
     push(av); push(b);
-    std::uint64_t *bv = reserve(olenb);
+    std::uint64_t* bv = reserve(olenb);
     pop(b); pop(av);
     if (negative(b[lenb-1])) internal_negate(b, lenb, bv);
     else internal_copy(b, lenb, bv);
@@ -10960,7 +11008,7 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::uint64_t *b)
     }
 // In some cases performing a reduction will require a workspace vector.
 // I will only allocate this as and when first needed.
-    std::uint64_t *temp = NULL;
+    std::uint64_t* temp = NULL;
     std::size_t lentemp = lena;
 // Now at last a and b and genuine unsigned vectors without leading digits
 // and with a > b. The next line is the key iteration in this whole procedure.
@@ -10993,17 +11041,7 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::uint64_t *b)
                 olena = olenb;
             }
             else abandon(b);
-#ifdef DEBUG_OVERRUN
-            if (debug_arith)
-            {   arithlib_assert(a[olena] == 0xaaaaaaaaaaaaaaaaU);
-            }
-#endif
             a[lena++] = 0;
-#ifdef DEBUG_OVERRUN
-            if (debug_arith)
-            {   arithlib_assert(a[olena] == 0xaaaaaaaaaaaaaaaaU);
-            }
-#endif
         }
         else abandon(b);
         return confirm_size(a, olena, lena);
@@ -11027,7 +11065,7 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::uint64_t *b)
     return unsigned_int_to_bignum(bb);
 }
 
-inline std::intptr_t Gcd::op(std::uint64_t *a, std::int64_t bb)
+inline std::intptr_t Gcd::op(std::uint64_t* a, std::int64_t bb)
 {
 // This case involved doing a long-by-short remainder operation and then
 // it reduces to the small-small case. The main problem is the handling of
@@ -11050,7 +11088,7 @@ inline std::intptr_t Gcd::op(std::uint64_t *a, std::int64_t bb)
     return Gcd::op(b, hi);
 }
 
-inline std::intptr_t Gcd::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Gcd::op(std::int64_t a, std::uint64_t* b)
 {   return Gcd::op(b, a);
 }
 
@@ -11076,7 +11114,7 @@ inline std::intptr_t Gcd::op(std::int64_t a, std::int64_t b)
 // a system with garbage collection that will not matter (hoorah) but at
 // some stage I need to come back here and look harder and tidy things up.
 
-inline std::intptr_t Lcm::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t Lcm::op(std::uint64_t* a, std::uint64_t* b)
 {   push(a); push(b);
     std::intptr_t g = Gcd::op(a, b);
     pop(b);
@@ -11088,7 +11126,7 @@ inline std::intptr_t Lcm::op(std::uint64_t *a, std::uint64_t *b)
     return op_dispatch1<Abs,std::intptr_t>(q);
 }
 
-inline std::intptr_t Lcm::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t Lcm::op(std::uint64_t* a, std::int64_t b)
 {   push(a);
     std::intptr_t g = Gcd::op(a, b);
     std::intptr_t q = op_dispatch2<Quotient,std::intptr_t>(int_to_handle(
@@ -11098,7 +11136,7 @@ inline std::intptr_t Lcm::op(std::uint64_t *a, std::int64_t b)
     return op_dispatch1<Abs,std::intptr_t>(q);
 }
 
-inline std::intptr_t Lcm::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t Lcm::op(std::int64_t a, std::uint64_t* b)
 {   return Lcm::op(b, a);
 }
 
@@ -11138,14 +11176,14 @@ inline std::vector<std::uint64_t>& large_modulus_vector()
     return v;
 }
 
-inline std::uint64_t *large_modulus()
-{   return 1 + bit_cast<std::uint64_t *>(large_modulus_vector().data());
+inline std::uint64_t* large_modulus()
+{   return 1 + reinterpret_cast<std::uint64_t*>(large_modulus_vector().data());
 }
 
 inline std::intptr_t value_of_current_modulus()
 {   if (modulus_size == modulus_big)
     {   std::size_t n = number_size(large_modulus());
-        std::uint64_t *r = reserve(n);
+        std::uint64_t* r = reserve(n);
         std::memcpy(r, large_modulus(), n*sizeof(std::uint64_t));
         return confirm_size(r, n, n);
     }
@@ -11153,8 +11191,10 @@ inline std::intptr_t value_of_current_modulus()
 }
 
 inline std::intptr_t SetModulus::op(std::int64_t n)
-{   if (n < 1) return (std::intptr_t)aerror1("Invalid arg to set-modulus",
-                                             int_to_handle(n));
+{   if (n < 1)
+        UNLIKELY
+        return (std::intptr_t)aerror1("Invalid arg to set-modulus",
+                                      int_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
     small_modulus = n;
     if (n <= 0xffffffffU) modulus_size = modulus_32;
@@ -11162,8 +11202,9 @@ inline std::intptr_t SetModulus::op(std::int64_t n)
     return r;
 }
 
-inline std::intptr_t SetModulus::op(std::uint64_t *n)
+inline std::intptr_t SetModulus::op(std::uint64_t* n)
 {   if (!Plusp::op(n))
+        UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
                                       vector_to_handle(n));
     std::intptr_t r = value_of_current_modulus();
@@ -11189,7 +11230,7 @@ inline std::intptr_t ModularNumber::op(std::int64_t a)
     }
 }
 
-inline std::intptr_t ModularNumber::op(std::uint64_t *a)
+inline std::intptr_t ModularNumber::op(std::uint64_t* a)
 {   if (Minusp::op(a))
     {   std::intptr_t r = Remainder::op(a, large_modulus());
         if (Minusp::op(r))
@@ -11219,11 +11260,12 @@ inline std::intptr_t ModularPlus::op(std::int64_t a, std::int64_t b)
     return int_to_handle(static_cast<std::int64_t>(r));
 }
 
-inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t* b)
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
     if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
             vector_to_handle(b));
     std::intptr_t r = Plus::op(a, b);
@@ -11236,13 +11278,14 @@ inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t *b)
     else return r;
 }
 
-inline std::intptr_t ModularPlus::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t ModularPlus::op(std::uint64_t* a, std::int64_t b)
 {   return ModularPlus::op(b, a);
 }
 
-inline std::intptr_t ModularPlus::op(std::uint64_t *a,
-                                     std::uint64_t *b)
+inline std::intptr_t ModularPlus::op(std::uint64_t* a,
+                                     std::uint64_t* b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     std::intptr_t r = Plus::op(a, b);
@@ -11255,17 +11298,17 @@ inline std::intptr_t ModularPlus::op(std::uint64_t *a,
     else return r;
 }
 
-inline std::intptr_t ModularDifference::op(std::int64_t a,
-        std::int64_t b)
+inline std::intptr_t ModularDifference::op(std::int64_t a, std::int64_t b)
 {   if (a >= b) return int_to_handle(a - b);
     if (modulus_size == modulus_big) return Plus::op(large_modulus(),
-                                                a - b);
+                                                     a - b);
     else return int_to_handle(small_modulus - b + a);
 }
 
 inline std::intptr_t ModularDifference::op(std::int64_t a,
-        std::uint64_t *b)
+        std::uint64_t* b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(b));
     std::intptr_t r = Difference::op(b, a);
@@ -11275,17 +11318,19 @@ inline std::intptr_t ModularDifference::op(std::int64_t a,
     return r1;
 }
 
-inline std::intptr_t ModularDifference::op(std::uint64_t *a,
+inline std::intptr_t ModularDifference::op(std::uint64_t* a,
         std::int64_t b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     return Difference::op(a, b);
 }
 
-inline std::intptr_t ModularDifference::op(std::uint64_t *a,
-        std::uint64_t *b)
+inline std::intptr_t ModularDifference::op(std::uint64_t* a,
+        std::uint64_t* b)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
                 vector_to_handle(a));
     if (Geq::op(a, b)) return Difference::op(a, b);
@@ -11300,7 +11345,7 @@ inline std::intptr_t ModularDifference::op(std::uint64_t *a,
 inline std::intptr_t ModularTimes::op(std::int64_t a, std::int64_t b)
 {   switch (modulus_size)
     {   case modulus_32:
-            return int_to_handle((static_cast<std::uint64_t>(a) *
+            return int_to_handle((static_cast<std::uint64_t>(a)* 
                                   static_cast<std::uint64_t>(b)) %
                                  small_modulus);
         case modulus_64:
@@ -11323,20 +11368,20 @@ inline std::intptr_t ModularTimes::op(std::int64_t a, std::int64_t b)
 }
 
 inline std::intptr_t ModularTimes::op(std::int64_t a,
-                                      std::uint64_t *b)
+                                      std::uint64_t* b)
 {   std::intptr_t w = Times::op(a, b);
     std::intptr_t r = op_dispatch1<Remainder,std::intptr_t>(w, large_modulus());
     abandon(w);
     return r;
 }
 
-inline std::intptr_t ModularTimes::op(std::uint64_t *a,
+inline std::intptr_t ModularTimes::op(std::uint64_t* a,
                                       std::int64_t b)
 {   return ModularTimes::op(b, a);
 }
 
-inline std::intptr_t ModularTimes::op(std::uint64_t *a,
-                                      std::uint64_t *b)
+inline std::intptr_t ModularTimes::op(std::uint64_t* a,
+                                      std::uint64_t* b)
 {   std::intptr_t w = Times::op(a, b);
     std::intptr_t r =
         op_dispatch1<Remainder,std::intptr_t>(w, large_modulus());
@@ -11349,15 +11394,15 @@ inline std::intptr_t ModularExpt::op(std::int64_t a, std::int64_t b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-inline std::intptr_t ModularExpt::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t ModularExpt::op(std::int64_t a, std::uint64_t* b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-inline std::intptr_t ModularExpt::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::int64_t b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-inline std::intptr_t ModularExpt::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
@@ -11372,7 +11417,7 @@ inline std::intptr_t ModularQuotient::op(std::int64_t a, std::int64_t b)
     return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::int64_t a, std::uint64_t *b)
+inline std::intptr_t ModularQuotient::op(std::int64_t a, std::uint64_t* b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (stored_as_fixnum(recip_b))
@@ -11382,7 +11427,7 @@ inline std::intptr_t ModularQuotient::op(std::int64_t a, std::uint64_t *b)
     return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::uint64_t *a, std::int64_t b)
+inline std::intptr_t ModularQuotient::op(std::uint64_t* a, std::int64_t b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (stored_as_fixnum(recip_b))
@@ -11392,7 +11437,7 @@ inline std::intptr_t ModularQuotient::op(std::uint64_t *a, std::int64_t b)
     return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::uint64_t *a, std::uint64_t *b)
+inline std::intptr_t ModularQuotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (stored_as_fixnum(recip_b))
@@ -11410,8 +11455,9 @@ inline std::intptr_t ModularMinus::op(std::int64_t a)
     else return int_to_handle(small_modulus - a);
 }
 
-inline std::intptr_t ModularMinus::op(std::uint64_t *a)
+inline std::intptr_t ModularMinus::op(std::uint64_t* a)
 {   if (modulus_size != modulus_big)
+        UNLIKELY
         return (std::intptr_t)aerror1("bad argument for modular-minus", vector_to_handle(a));
     return Difference::op(large_modulus(), a);
 }
@@ -11431,8 +11477,10 @@ inline std::intptr_t general_modular_reciprocal(std::intptr_t aa, bool safe=fals
     {   intptr_t w, t;
         if (b == int_to_handle(0))
         {   if (safe) return nil;
-            else (std::intptr_t)aerror(
-                "non-prime modulus in modular-reciprocal");
+            else
+                UNLIKELY
+                return (std::intptr_t)aerror(
+                    "non-prime modulus in modular-reciprocal");
         }
         w = Quotient::op(a, b);
         t = b;
@@ -11447,8 +11495,10 @@ inline std::intptr_t general_modular_reciprocal(std::intptr_t aa, bool safe=fals
 }
 
 inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
-{   if (aa <= 0) return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
-                             int_to_handle(aa));
+{   if (aa <= 0)
+        UNLIKELY
+        return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
+                                      int_to_handle(aa));
     else if (modulus_size == modulus_big)
         return general_modular_reciprocal(int_to_handle(aa));
     std::int64_t a = small_modulus,
@@ -11458,6 +11508,7 @@ inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
     while (b != 1)
     {   std::uint64_t w, t;
         if (b == 0)
+            UNLIKELY
             return (std::intptr_t)aerror2("non-prime modulus in modular-reciprocal",
                     int_to_handle(small_modulus),
                     int_to_handle(aa));
@@ -11473,14 +11524,17 @@ inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
     return int_to_handle(y);
 }
 
-inline std::intptr_t ModularReciprocal::op(std::uint64_t *a)
+inline std::intptr_t ModularReciprocal::op(std::uint64_t* a)
 {   return general_modular_reciprocal(vector_to_handle(a));
 }
 
 inline std::intptr_t SafeModularReciprocal::op(std::int64_t aa)
-{   if (aa <= 0) return (std::intptr_t)aerror1("bad argument to safe-modular-reciprocal",
-                             int_to_handle(aa));
+{   if (aa <= 0)
+        UNLIKELY
+        return (std::intptr_t)aerror1("bad argument to safe-modular-reciprocal",
+                                      int_to_handle(aa));
     else if (modulus_size == modulus_big)
+        UNLIKELY
         return general_modular_reciprocal(int_to_handle(aa), true);
     std::int64_t a = small_modulus,
                  b = aa,
@@ -11501,7 +11555,7 @@ inline std::intptr_t SafeModularReciprocal::op(std::int64_t aa)
     return int_to_handle(y);
 }
 
-inline std::intptr_t SafeModularReciprocal::op(std::uint64_t *a)
+inline std::intptr_t SafeModularReciprocal::op(std::uint64_t* a)
 {   return general_modular_reciprocal(vector_to_handle(a), true);
 }
 
@@ -11529,6 +11583,8 @@ using arithlib_implementation::reseed;
 using arithlib_implementation::uniform_uint64;
 using arithlib_implementation::uniform_positive;
 using arithlib_implementation::uniform_signed;
+using arithlib_implementation::uniform_positive_bignum;
+using arithlib_implementation::uniform_signed_bignum;
 using arithlib_implementation::random_upto_bits_bignum;
 
 using arithlib_implementation::display;
@@ -11546,6 +11602,8 @@ using arithlib_implementation::Times;
 using arithlib_implementation::Quotient;
 using arithlib_implementation::Remainder;
 using arithlib_implementation::Mod;
+using arithlib_implementation::Floor;
+using arithlib_implementation::Ceiling;
 using arithlib_implementation::Divide;
 using arithlib_implementation::Gcd;
 using arithlib_implementation::Lcm;
@@ -11575,13 +11633,14 @@ using arithlib_implementation::Lognot;
 using arithlib_implementation::Pow;
 using arithlib_implementation::LeftShift;
 using arithlib_implementation::RightShift;
-using arithlib_implementation::LowBits;
+using arithlib_implementation::Low64Bits;
 using arithlib_implementation::LowBit;
 using arithlib_implementation::IntegerLength;
+using arithlib_implementation::Top64Bits;
 using arithlib_implementation::Logbitp;
 using arithlib_implementation::Logcount;
-using arithlib_implementation::Float;
-using arithlib_implementation::Double;
+using arithlib_implementation::Float;    // returns 32-bit float
+using arithlib_implementation::Double;   // returns 64-bit float
 using arithlib_implementation::Frexp;
 #ifdef CSL
 using arithlib_implementation::ModularPlus;
@@ -11619,7 +11678,7 @@ using arithlib_implementation::reseed;
 using arithlib_implementation::uniform_upto;
 
 #ifdef softfloat_h
-using arithlib_implementation::Float128;
+using arithlib_implementation::Float128;   // returns 128-bit float
 using arithlib_implementation::Frexp128;
 using arithlib_implementation::round_float128_to_int;
 using arithlib_implementation::trunc_float128_to_int;
@@ -11639,8 +11698,10 @@ using arithlib_implementation::ldexp;
 using arithlib_implementation::modf;
 #endif // softfloat_h
 
+// The next few are functions I may like to use in low-level code...
 //using arithlib_implementation::negative;
 //using arithlib_implementation::number_size;
+//using arithlib_implementation::multiply64;
 
 using arithlib_implementation::cast_to_float;
 

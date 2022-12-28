@@ -60,7 +60,7 @@
 //                     value while on a 64-bit one it can contain the bits
 //                     that represent the floating point value.
 // 64-bit floats.      Passed as "double" values, ie in native floating point.
-// 128-bit floats.     A class LFlt containing a LispObject.
+// 128-bit floats.     A class LFlt containing a float128_t.
 
 // Because that leaves 8 different sorts of number a general operation like
 // "plus" will need to provide 64 fragments of code to cover all the
@@ -69,7 +69,7 @@
 // overloads, as in
 //    LispObject Plus::op(Rat a1, LFlt a2) { ... }
 //    LispObject Plus::op(intptr_t a1, uint64_t *a2) { ... }
-// and within a mathos that takes an argument of type Rat, Cplx, SFlt, Flt
+// and within a method that takes an argument of type Rat, Cplx, SFlt, Flt
 // or LFlt the code will go something along the lines of
 //    LispObject Plus::op(Cplx a1, Cplx a2)
 //    {   LispObject rpart = plus(real_part(a1.v), real_part(a2,v));
@@ -78,6 +78,9 @@
 //    }
 // where a1.v and a2.v are of type LispObject and are whatever internal
 // representation the Lisp uses for the sort of data involved.
+
+// Reading this file ought to convince you just how messy having generic
+// arithmetic with quite a few types can be!
 
 // For this to make sense I need softfloat.h
 
@@ -226,15 +229,15 @@ public:
 class LFlt // for long floats
 {
 public:
-    LispObject v;
-    LFlt(LispObject a)
+    float128_t v;
+    LFlt(float128_t a)
     {   v = a;
     }
-    LispObject value()
+    float128_t value()
     {   return v;
     }
     float128_t floatval()
-    {   return *long_float_addr(v);
+    {   return v;
     }
 };
 #endif // softfloat_h
@@ -261,31 +264,38 @@ inline R binaryL(const char *fname, V lhsVal, LispObject b)
 {   using namespace number_dispatcher;
     switch (b & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-numeric argument", fname, b));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(b))
             {   case SINGLE_FLOAT_HEADER:
                     return T::op(lhsVal, Flt(b));
                 case DOUBLE_FLOAT_HEADER:
+                    LIKELY
 // 64-bit floats passed as native data not via a wrapper class.
                     return T::op(lhsVal, double_float_val(b));
                 case LONG_FLOAT_HEADER:
-                    return T::op(lhsVal, LFlt(b));
+                    return T::op(lhsVal, LFlt(long_float_val(b)));
                 default:
+                    UNLIKELY
                     return static_cast<R>(static_cast<R>(aerror2("Non-numeric argument", fname, b)));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(b)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op(lhsVal, (uint64_t *)((char *)b + 8 - TAG_NUMBERS));
                 case TYPE_RATNUM:
                     return T::op(lhsVal, Rat(b));
                 case TYPE_COMPLEX_NUM:
                     return T::op(lhsVal, Cpx(b));
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, b));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(lhsVal, Fixnum(b));
         case XTAG_SFLOAT:
             return T::op(lhsVal, SFlt(b));
@@ -297,6 +307,7 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
@@ -304,24 +315,30 @@ inline R binaryR(const char *fname, LispObject a, V rhsval)
                     return T::op(Flt(a), rhsval);
                 case DOUBLE_FLOAT_HEADER:
 // 64-bit floats passed as native data not via a wrapper class.
+                    LIKELY
                     return T::op(double_float_val(a), rhsval);
                 case LONG_FLOAT_HEADER:
-                    return T::op(LFlt(a), rhsval);
+                    return T::op(LFlt(long_float_val(a)), rhsval);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), rhsval);
                 case TYPE_RATNUM:
                     return T::op(Rat(a), rhsval);
                 case TYPE_COMPLEX_NUM:
                     return T::op(Cpx(a), rhsval);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(Fixnum(a), rhsval);
         case XTAG_SFLOAT:
             return T::op(SFlt(a), rhsval);
@@ -338,21 +355,26 @@ inline R binary(const char *fname, LispObject a, LispObject b)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
                     return binaryL<R,T,Flt>(fname, Flt(a), b);
                 case DOUBLE_FLOAT_HEADER:
+                    LIKELY
                     return binaryL<R,T,double>(fname, double_float_val(a), b);
                 case LONG_FLOAT_HEADER:
-                    return binaryL<R,T,LFlt>(fname, LFlt(a), b);
+                    return binaryL<R,T,LFlt>(fname, LFlt(long_float_val(a)), b);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return binaryL<R,T,uint64_t *>(fname,
                                                    (uint64_t *)((char *)a + 8 - TAG_NUMBERS), b);
                 case TYPE_RATNUM:
@@ -360,9 +382,11 @@ inline R binary(const char *fname, LispObject a, LispObject b)
                 case TYPE_COMPLEX_NUM:
                     return binaryL<R,T,Cpx>(fname, Cpx(a), b);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return binaryL<R,T,Fixnum>(fname, Fixnum(a), b);
         case XTAG_SFLOAT:
             return binaryL<R,T,SFlt>(fname, SFlt(a), b);
@@ -377,15 +401,20 @@ inline R ibinaryL(const char *fname, V lhsVal, LispObject b)
 {   using namespace number_dispatcher;
     switch (b & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-integer argument", fname, b));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(b)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op(lhsVal, (uint64_t *)((char *)b + 8 - TAG_NUMBERS));
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-integer argument", fname, b));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(lhsVal, Fixnum(b));
     }
 }
@@ -395,15 +424,20 @@ inline R ibinaryR(const char *fname, LispObject a, V rhsval)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-integer argument", fname, a));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), rhsval);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-integer argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(Fixnum(a), rhsval);
     }
 }
@@ -413,16 +447,21 @@ inline R ibinary(const char *fname, LispObject a, LispObject b)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-integer argument", fname, a));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return ibinaryL<R,T,uint64_t *>(fname,
                                                     (uint64_t *)((char *)a + 8 - TAG_NUMBERS), b);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-integer argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return ibinaryL<R,T,Fixnum>(fname, Fixnum(a), b);
     }
 }
@@ -436,6 +475,7 @@ inline R unary(const char *fname, LispObject a)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
@@ -444,22 +484,27 @@ inline R unary(const char *fname, LispObject a)
                 case DOUBLE_FLOAT_HEADER:
                     return T::op(double_float_val(a));
                 case LONG_FLOAT_HEADER:
-                    return T::op(LFlt(a));
+                    return T::op(LFlt(long_float_val(a)));
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS));
                 case TYPE_RATNUM:
                     return T::op(Rat(a));
                 case TYPE_COMPLEX_NUM:
                     return T::op(Cpx(a));
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(Fixnum(a));
         case XTAG_SFLOAT:
             return T::op(SFlt(a));
@@ -475,15 +520,20 @@ inline R iunary(const char *fname, LispObject a)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-integer argument", fname, a));
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS));
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-integer argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(Fixnum(a));
     }
 }
@@ -493,6 +543,7 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
 {   using namespace number_dispatcher;
     switch (a & XTAG_BITS)
     {   default:
+            UNLIKELY
             return static_cast<R>(aerror2("Non-numeric argument", fname, a));
         case TAG_BOXFLOAT: case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
@@ -501,22 +552,27 @@ inline R unary(const char *fname, LispObject a, int64_t &xx)
                 case DOUBLE_FLOAT_HEADER:
                     return T::op(double_float_val(a), xx);
                 case LONG_FLOAT_HEADER:
-                    return T::op(LFlt(a), xx);
+                    return T::op(LFlt(long_float_val(a)), xx);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_NUMBERS: case TAG_NUMBERS+TAG_XBIT:
+            LIKELY
             switch (type_of_header(numhdr(a)))
             {   case TYPE_NEW_BIGNUM:
+                    LIKELY
                     return T::op((uint64_t *)((char *)a + 8 - TAG_NUMBERS), xx);
                 case TYPE_RATNUM:
                     return T::op(Rat(a), xx);
                 case TYPE_COMPLEX_NUM:
                     return T::op(Cpx(a), xx);
                 default:
+                    UNLIKELY
                     return static_cast<R>(aerror2("Non-numeric argument", fname, a));
             }
         case TAG_FIXNUM:
+            LIKELY
             return T::op(Fixnum(a), xx);
         case XTAG_SFLOAT:
             return T::op(SFlt(a), xx);
@@ -2180,13 +2236,31 @@ public:
 class Logbitp
 {
 public:
-    static LispObject op(LispObject a);
+    static bool op(LispObject a);
 
-    static LispObject op(Fixnum a);
-    static LispObject op(uint64_t *a);
+    static bool op(Fixnum a);
+    static bool op(uint64_t *a);
 };
 
-class LowBits
+class LowBit
+{
+public:
+    static size_t op(LispObject a);
+
+    static size_t op(Fixnum a);
+    static size_t op(uint64_t *a);
+};
+
+class IntegerLength
+{
+public:
+    static size_t op(LispObject a);
+
+    static size_t op(Fixnum a);
+    static size_t op(uint64_t *a);
+};
+
+class Low64Bits
 {
 public:
     static uint64_t op(LispObject a);
@@ -2195,31 +2269,22 @@ public:
     static uint64_t op(uint64_t *a);
 };
 
-class LowBit
+class Top64Bits
 {
 public:
-    static LispObject op(LispObject a);
+    static uint64_t op(LispObject a);
 
-    static LispObject op(Fixnum a);
-    static LispObject op(uint64_t *a);
-};
-
-class IntegerLength
-{
-public:
-    static LispObject op(LispObject a);
-
-    static LispObject op(Fixnum a);
-    static LispObject op(uint64_t *a);
+    static uint64_t op(Fixnum a);
+    static uint64_t op(uint64_t *a);
 };
 
 class Logcount
 {
 public:
-    static LispObject op(LispObject a);
+    static size_t op(LispObject a);
 
-    static LispObject op(Fixnum a);
-    static LispObject op(uint64_t *a);
+    static size_t op(Fixnum a);
+    static size_t op(uint64_t *a);
 };
 
 class LeftShift
@@ -2452,7 +2517,7 @@ public:
     static bool op(Fixnum b);
     static bool op(uint64_t *b);
     static bool op(Rat b);
-// While MINUSP may not be very sensible on a complex number I will
+// While PLUSP may not be very sensible on a complex number I will
 // still include that case in the dispatch.
     static bool op(Cpx b);
     static bool op(SFlt b);
@@ -2637,6 +2702,12 @@ public:
     static LispObject op(uint64_t *b);
 };
 
+// I make Float::op return a LispObject here not just a double
+// because Common Lisp specifies a two-arg variant that can return
+// one of the various widths of floating point values. I have a separate
+// class RawFloat the always returns a double and that makes sense for
+// some internal uses.
+
 class Float
 {
 public:
@@ -2750,23 +2821,22 @@ public:
     static LispObject op(Flt a, LFlt b);
     static LispObject op(double a, LFlt b);
 #endif // softfloat_h
-
 };
 
-class Float128
+class RawFloat32
 {
 public:
-    static LispObject op(LispObject a);
+    static float op(LispObject a);
 
-    static LispObject op(Fixnum b);
-    static LispObject op(uint64_t *b);
-    static LispObject op(Rat b);
-    static LispObject op(Cpx b);
-    static LispObject op(SFlt b);
-    static LispObject op(Flt b);
-    static LispObject op(double b);
+    static float op(Fixnum b);
+    static float op(uint64_t *b);
+    static float op(Rat b);
+    static float op(Cpx b);
+    static float op(SFlt b);
+    static float op(Flt b);
+    static float op(double b);
 #ifdef softfloat_h
-    static LispObject op(LFlt b);
+    static float op(LFlt b);
 #endif // softfloat_h
 };
 
@@ -2787,7 +2857,9 @@ public:
 #endif // softfloat_h
 };
 
-class RawFloat128
+// Float128 always returns a long float, so it is sort of RawFloat128
+
+class Float128
 {
 public:
     static float128_t op(LispObject a);
@@ -2820,6 +2892,8 @@ public:
     static LispObject op(LFlt b);
 #endif // softfloat_h
 };
+
+// I nay need to introduce RawTruncate etc!
 
 class Truncate
 {
@@ -3420,6 +3494,9 @@ public:
     static LispObject op(double a, LFlt b);
 #endif // softfloat_h
 };
+
+// The first batch are for support of Lisp-level functions, while the
+// rest are for internal use.
 
 class Frexp
 {

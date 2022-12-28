@@ -75,7 +75,7 @@ mc=`$here/config.guess`
 mc=`$here/scripts/findhost.sh $mc`
 
 diffBw() {
-    case `diff -v` in
+    case `diff -v 2> /dev/null` in
     *GNU\ diffutils*)
       diff -B -w $1 $2
       ;;
@@ -172,11 +172,11 @@ do
       platforms="$platforms csl=$p"
       shift;
       ;;
-# Sitto --csl=arithlib
+# Ditto --csl=arithlib
     --csl=arithlib)
       if test "$OS" = "Windows_NT"
       then
-        p="x86_64-pc-cygwin-arithlib"
+        p="x86_64-pc-windows-arithlib"
       else
         p="$mc-arithlib"
       fi

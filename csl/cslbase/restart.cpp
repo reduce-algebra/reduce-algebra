@@ -149,7 +149,7 @@ LispObject used_space, avail_space, eof_symbol, call_stack;
 LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
 LispObject reader_workspace, named_character, read_float_format, short_float;
 LispObject single_float, double_float, long_float, bit_symbol;
-LispObject pathname_symbol, print_array_sym, read_base;
+LispObject pathname_symbol, print_array_sym, print_hash_symbol, read_base;
 LispObject initial_element, builtin0_symbol, builtin1_symbol;
 LispObject builtin2_symbol, builtin3_symbol, builtin4_symbol;
 LispObject NaN_symbol, infinity_symbol, minusinfinity_symbol;
@@ -351,21 +351,23 @@ entry_point1 entries_tableio[] =
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
 
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
-{   int64_t previous = reclaim_trap_count;
+{   SingleValued fn;
+    int64_t previous = reclaim_trap_count;
     if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
     term_printf("+++ Reclaim trap set at %d, previous = %d\n",
                 reclaim_trap_count, previous);
-    return onevalue(fixnum_of_int(previous));
+    return fixnum_of_int(previous);
 }
 
 static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
-{   intptr_t previous = reclaim_stack_limit;
+{   SingleValued fn;
+    intptr_t previous = reclaim_stack_limit;
     if (!is_fixnum(a)) return aerror1("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
                 reclaim_stack_limit, previous);
-    return onevalue(fixnum_of_int(previous));
+    return fixnum_of_int(previous);
 }
 
 static const char* find_checksum(const char* name, size_t len,
@@ -413,7 +415,8 @@ setup_type const* setup_tables[] =
 
 static LispObject Lcheck_c_code(LispObject env, LispObject name,
                                 LispObject lc1, LispObject lc2, LispObject a4up)
-{   int32_t c1=-1, c2=-1, c3=-1;
+{   SingleValued fn;
+    int32_t c1=-1, c2=-1, c3=-1;
     long int x1=-2, x2=-2, x3=-2;
     int32_t len;
     const char* p;
@@ -448,7 +451,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
 
     if (std::sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
         return aerror1("check-c-code", name);
-    if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
+    if (c1 == x1 && c2 == x2 && c3 == x3) return nil;
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
     err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2,
@@ -486,9 +489,6 @@ setup_type const restart_setup[] =
     DEF_1("reclaim-stack-limit",Lreclaim_stack_limit),
     {"resource-limit",          G0Wother, G1Wother, Lresource_limit_2, Lresource_limit_3, Lresource_limit_4up},
     {"errorset",                G0Wother, Lerrorset_1, Lerrorset_2, Lerrorset_3, G4Wother},
-#ifdef CONSERVATIVE
-    {"gctest",                  Lgctest_0, Lgctest_1, Lgctest_2, G3Wother, G4Wother},
-#endif
     {nullptr,                   nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
@@ -754,9 +754,11 @@ static void cold_setup()
     lower_symbol        = make_undefined_fluid("*lower");
     echo_symbol         = make_undefined_fluid("*echo");
     comp_symbol         = make_undefined_fluid("*comp");
+    print_hash_symbol   = make_undefined_fluid("*print-hashtable");
+    qvalue(print_hash_symbol) = lisp_true;
     compiler_symbol     = make_undefined_symbol("compile");
     current_function    = // system-startup
-        startup_symbol      = make_undefined_symbol("system-startup");
+        startup_symbol  = make_undefined_symbol("system-startup");
     mv_call_symbol      = make_symbol("multiple-value-call", 0,
                                       bad_specialfn_0, mv_call_fn, bad_specialfn_2, bad_specialfn_3,
                                       bad_specialfn_4up);

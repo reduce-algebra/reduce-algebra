@@ -129,7 +129,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
                        fixnum_of_int(allocSize/CELL-1));
 // Note that allocSize has been rounded up suitably.
     LispObject r = getNBytes(allocSize);
-    *(bit_cast<Header*>(r)) =
+    *(reinterpret_cast<Header*>(r)) =
         type + (size<<(Tw+5)) + TAG_HDR_IMMED;
 //
 // DANGER: the vector allocated here is left uninitialised at this stage.
@@ -143,9 +143,9 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // gets padded out.
 #ifdef DEBUG
    for (size_t i=CELL; i<allocSize; i+=4)
-       *bit_cast<uint32_t*>(r+i) = 0xfeedface;
+       *reinterpret_cast<uint32_t*>(r+i) = 0xfeedface;
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *bit_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
+        *reinterpret_cast<LispObject*>(r+allocSize-CELL) = 0xdeadbeef;
 #endif // DEBUG
     return static_cast<LispObject>(r + tag);
 }
@@ -174,9 +174,9 @@ LispObject borrow_basic_vector(int tag, int type, size_t size)
         return aerror1("request for basic vector too big",
                        fixnum_of_int(allocSize/CELL-1));
     LispObject r = borrowNBytes(allocSize);
-    *(bit_cast<Header*>(r)) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+    *(reinterpret_cast<Header*>(r)) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
     if (!SIXTY_FOUR_BIT && allocSize != size)
-        *bit_cast<LispObject*>(r+allocSize-CELL) = 0;
+        *reinterpret_cast<LispObject*>(r+allocSize-CELL) = 0;
     return static_cast<LispObject>(r + tag);
 }
 
@@ -241,9 +241,9 @@ bool allocateSegment(size_t n)
     {   size_t sz = n+pageSize-1;
         char* tr = new (std::nothrow) char[sz];
         heapSegmentBase[heapSegmentCount] = tr;
-        void* trv = bit_cast<void*>(tr);
+        void* trv = reinterpret_cast<void*>(tr);
         std::align(pageSize, n*pageSize, trv, sz);
-        r = bit_cast<Page*>(trv);
+        r = reinterpret_cast<Page*>(trv);
     }
 #else // MACINTOSH
     r = new (std::nothrow) Page[n/pageSize];
@@ -258,7 +258,7 @@ bool allocateSegment(size_t n)
     for (size_t i=heapSegmentCount-1; i!=0; i--)
     {   int j = i-1;
         void* h1 = heapSegment[i],* h2 = heapSegment[j];
-        if (bit_cast<uintptr_t>(h2) < bit_cast<uintptr_t>(h1))
+        if (reinterpret_cast<uintptr_t>(h2) < reinterpret_cast<uintptr_t>(h1))
             break; // Ordering is OK
 // The segment must sink a place in the tables.
         std::swap(heapSegment[i], heapSegment[j]);
@@ -662,17 +662,19 @@ bool force_verbos = false;
 uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
-{   if (force_cons != 0 || force_vec != 0)
+{   SingleValued fn;
+    if (force_cons != 0 || force_vec != 0)
         trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
                      force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
     if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lgc_forcer1(LispObject env, LispObject a)
-{   return Lgc_forcer(env, a, a);
+{   SingleValued fn;
+    return Lgc_forcer(env, a, a);
 }
 
 LispObject* nilSegment,* stackSegment;
@@ -701,14 +703,14 @@ void initHeapSegments(double storeSize)
         consPages.count = vecPages.count = borrowPages.count =
         consOldPages.count = vecOldPages.count = 0;
     potentiallyPinned = pinnedPages = pendingPages = oldVecPinPages = nullptr;
-    nilSegment = bit_cast<LispObject*>(
+    nilSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
     if (nilSegment == nullptr) fatal_error(err_no_store);
     nil = static_cast<LispObject>((uintptr_t)nilSegment + TAG_SYMBOL);
-    stackSegment = bit_cast<LispObject*>(
+    stackSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
-    stackBase = bit_cast<uintptr_t>(stackSegment);
+    stackBase = reinterpret_cast<uintptr_t>(stackSegment);
     if (!allocateSegment(freeSpace)) fatal_error(err_no_store);
     grabFreshPage(consPageType);
     grabFreshPage(vecPageType);
@@ -747,8 +749,8 @@ void dropHeapSegments()
         delete [] static_cast<Page*>(heapSegment[i]);
 #endif // MACINTOSH
     }
-    delete [] bit_cast<Align8*>(nilSegment);
-    delete [] bit_cast<Align8*>(stackSegment);
+    delete [] reinterpret_cast<Align8*>(nilSegment);
+    delete [] reinterpret_cast<Align8*>(stackSegment);
 }
 
 void drop_heap_segments()
@@ -767,92 +769,17 @@ LispObject Lverbos(LispObject env, LispObject a)
 // (verbos 4)                       extra timing info for GC process
 // These bits can be added to get combination effects, except that
 // "4" has no effect unless "1" is present.
-{   int code, old_code = verbos_flag;
+{   SingleValued fn;
+    int code, old_code = verbos_flag;
     if (a == nil) code = 0;
     else if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
     else code = 1;
     miscflags = (miscflags & ~GC_MSG_BITS) | (code & GC_MSG_BITS);
-    return onevalue(fixnum_of_int(old_code));
+    return fixnum_of_int(old_code);
 }
 
 bool volatile already_in_gc;
 bool volatile interrupt_pending;
-
-static unsigned int MEM=2u*1024u*1024u*1024u;
 bool pageFull;
-
-LispObject Lgctest_0(LispObject env)
-{   LispObject a = nil;
-    for (unsigned int i=0; i<MEM/16u; i++)
-    {   a = cons(fixnum_of_int(i), a);
-        zprintf(":");
-        if (i % 1000000 == 0)
-        {   zprintf("%d", i);
-            LispObject b = a;
-            for (unsigned int j=i; j!=static_cast<unsigned int>(-1); j--)
-            {   if (!is_cons(b)) my_abort(__WHERE__);
-                if (car(b) != fixnum_of_int(j))
-                    my_abort(__WHERE__);
-                b = cdr(b);
-            }
-            if (b != nil) my_abort(__WHERE__);
-        }
-    }
-    return nil;
-}
-
-LispObject Lgctest_1(LispObject env, LispObject a1)
-{   LispObject a = nil, b;
-    size_t n = int_of_fixnum(a1);
-    for (unsigned int i=0; i<n; i++)
-        a = cons(fixnum_of_int(i), a);
-    zprintf("list created\n");
-    b = a;
-    for (unsigned int j=n-1; j!=static_cast<unsigned int>(-1); j--)
-    {   if (!is_cons(b)) goto failing2;
-        if (car(b) != fixnum_of_int(j))
-        {   zprintf("Fail3 case with j = %d\n"
-                    " fixnum_of_int(j) = %x\n"
-                    " car(b) = %x which differs\n"
-                    " %d items down the list\n",
-                j, fixnum_of_int(j), car(b), n-1-j);
-            goto failing3; //<<<<<<<<<
-        }
-        b = cdr(b);
-    }
-    if (b != nil) goto failing4;
-    return nil;
-failing2:
-    zprintf("Crashed2 b = %a car(b) = %a\n", b, car(b));
-    zprintf("n = %d\n", n);
-    for (int z=1; z<10; z++)
-    {   zprintf("%d ", car(b)/16);
-        b = cdr(b);
-    }
-    zprintf("\n");
-    return nil;
-failing3:
-    zprintf("Crashed3 b = %a car(b) = %a\n", b, car(b));
-    zprintf("n = %d\n", n);
-    for (int z=1; z<10; z++)
-    {   zprintf("%d ", car(b)/16);
-        b = cdr(b);
-    }
-    zprintf("\n");
-    return nil;
-failing4:
-    zprintf("Crashed3 4 = %a car(b) = %a\n", b, car(b));
-    zprintf("n = %d\n", n);
-    for (int z=1; z<10; z++)
-    {   zprintf("%d ", car(b)/16);
-        b = cdr(b);
-    }
-    zprintf("\n");
-    return nil;
-}
-
-LispObject Lgctest_2(LispObject env, LispObject a1, LispObject a2)
-{   return nil;
-}
 
 // end of newallocate.cpp

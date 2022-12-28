@@ -88,7 +88,7 @@ LispObject make_string(const char *b)
 // Given a C string, create a Lisp (simple-) string.
 {   size_t n = std::strlen(b);
     LispObject r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-    char *s = bit_cast<char *>(r) - TAG_VECTOR;
+    char *s = reinterpret_cast<char *>(r) - TAG_VECTOR;
     size_t k = doubleword_align_up(CELL+n);
 // The final word of the string must be zero, and get_basic_vector has
 // not arranged that. On a 32-bit system there can be a padding word beyond
@@ -99,9 +99,12 @@ LispObject make_string(const char *b)
 // of those is the padder. Using memset probably leads to compilation that
 // writes the zeros with a word memory access but avoids C++ worries
 // about strict aliasing.
-    if ((SIXTY_FOUR_BIT && n!=0) || n%8 > 4)
-        std::memset(s+k-8, 0, 8);
+#if SIXTY_FOUR_BIT
+    if ((n&7) != 0) std::memset(s+k-8, 0, 8);
+#else // SIXTY_FOUR_BIT
+    if (n%8 > 4) std::memset(s+k-8, 0, 8);
     else std::memset(s+k-4, 0, 4);
+#endif // SIXTY_FOUR_BIT
     std::memcpy(s + CELL, b, (size_t)n);
     validate_string(r);
     return r;
@@ -113,7 +116,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
         size_t len1 = doubleword_align_up((uintptr_t)len);
         while (len < len1)
         {   if (celt(s, len-CELL) != 0)
-            {   char *p = bit_cast<char *>(s - TAG_VECTOR);
+            {   char *p = reinterpret_cast<char *>(s - TAG_VECTOR);
                 size_t i;
                 if (std::strrchr(file, '/') != nullptr) file = std::strrchr(file,
                             '/')+1;
@@ -158,9 +161,9 @@ LispObject copy_string(LispObject str, size_t n)
     r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     errexit();
     save.restore(str);
-    s = bit_cast<char *>(r) - TAG_VECTOR;
+    s = reinterpret_cast<char *>(r) - TAG_VECTOR;
     std::memcpy(s + CELL,
-                bit_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
+                reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
     k = doubleword_align_up(CELL+n);
     while (CELL+n < k) s[CELL+n++] = 0;
     validate_string(r);
@@ -168,19 +171,21 @@ LispObject copy_string(LispObject str, size_t n)
 }
 
 LispObject Lvalidate_package(LispObject env, LispObject p)
-{   std::printf("package = %p\n", bit_cast<void *>(p));
+{   SingleValued fn;
+    std::printf("package = %p\n", reinterpret_cast<void *>(p));
     Lprint(env, p);
-    std::printf("%p\n", bit_cast<void *>(packhdr_(p)));
+    std::printf("%p\n", reinterpret_cast<void *>(packhdr_(p)));
     Lprint(env, packid_(p));
     Lprint(env, packint_(p));
     Lprint(env, packnint_(p));
     Lprint(env, packflags_(p));
     std::printf("Done\n");
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lvalidate_package(LispObject env)
-{   return Lvalidate_package(env, CP);
+{   SingleValued fn;
+    return Lvalidate_package(env, CP);
 }
 
 extern bool always(LispObject);
@@ -189,7 +194,8 @@ extern bool push_symbols(symbol_processor_predicate *pp,
                          LispObject p);
 
 LispObject Lsymbols_in(LispObject env, LispObject a)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     LispObject *stacksave = stack;
     push_symbols(always, a);
     LispObject r = nil;
@@ -197,11 +203,11 @@ LispObject Lsymbols_in(LispObject env, LispObject a)
     {   LispObject w = *stack--;
         r = cons(w, r);
     }
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lbatchp(LispObject env)
-{
+{   SingleValued fn;
 // If the user had specified input files on the command line I will say that
 // we are in batch mode even if there is a terminal present somewhere. So
 // a run of the form
@@ -210,7 +216,7 @@ LispObject Lbatchp(LispObject env)
 //     csl < inputfile.lsp
 // will MAYBE also be noticed as batch, but do not count on it!
     if (non_terminal_input != nullptr)
-        return onevalue(batch_flag ? nil : lisp_true);
+        return batch_flag ? nil : lisp_true;
 // "sysxxx.c" now decides if we are in "batch processing" context,
 // in general by asking "isatty(fileno(stdin))" to see if stdin is
 // attached to an interactive terminal.  Ideally this will say we are in
@@ -218,38 +224,40 @@ LispObject Lbatchp(LispObject env)
 //       csl < xxx.lsp
 // but catching such cases may be HARD with some operating systems.
 // With some operating systems we will NEVER report ourselves as "batch".
-    return onevalue(Lispify_predicate(batch_flag ? !batchp() : batchp()));
+    return Lispify_predicate(batch_flag ? !batchp() : batchp());
 }
 
 LispObject Lgetenv(LispObject env, LispObject a)
-{   char parmname[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char parmname[LONGEST_LEGAL_FILENAME];
     Header h;
     std::memset(parmname, 0, sizeof(parmname));
 #ifdef COMMON
     if (complex_stringp(a) a = simplify_string(a);
 #endif
-        if (symbolp(a))
+    if (symbolp(a))
     {   a = get_pname(a);
-            h = vechdr(a);
-        }
-        else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("getenv", a);
-        size_t len = length_of_byteheader(h) - CELL;
-                     std::memcpy(parmname, bit_cast<char *>(a) + (CELL-TAG_VECTOR),
-                                 (size_t)len);
-                     parmname[len] = 0;
-                     const char *w = my_getenv(parmname);
-                     if (w == nullptr) return onevalue(nil);    // not available
-                         return onevalue(make_string(w));
-        }
+        h = vechdr(a);
+    }
+    else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
+    return aerror1("getenv", a);
+    size_t len = length_of_byteheader(h) - CELL;
+    std::memcpy(parmname, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
+                (size_t)len);
+    parmname[len] = 0;
+    const char *w = my_getenv(parmname);
+    if (w == nullptr) return nil;    // not available
+    return make_string(w);
+}
 
 LispObject Lsystem(LispObject env, LispObject a)
-{   char parmname[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char parmname[LONGEST_LEGAL_FILENAME];
     Header h;
     std::memset(parmname, 0, sizeof(parmname));
     if (a == nil)            // enquire if command processor is available
     {   int w = my_system(nullptr);
-        return onevalue(Lispify_predicate(w != 0));
+        return Lispify_predicate(w != 0);
     }
 #ifdef COMMON
     if (complex_stringp(a)) a = simplify_string(a);
@@ -262,13 +270,13 @@ LispObject Lsystem(LispObject env, LispObject a)
         return aerror1("system", a);
     size_t len = length_of_byteheader(h) - CELL;
     if (len+1 > sizeof(parmname)) return aerror1("argument too long", a);
-    std::memcpy(parmname, bit_cast<char *>(a) + (CELL-TAG_VECTOR),
+    std::memcpy(parmname, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
                 (size_t)len);
     parmname[len] = 0;
     ensure_screen();
     int w = my_system(parmname);
     ensure_screen();
-    return onevalue(fixnum_of_int(w));
+    return fixnum_of_int(w);
 }
 
 #ifdef WIN32
@@ -276,7 +284,8 @@ LispObject Lsystem(LispObject env, LispObject a)
 // application that you are running pop up a visible console window.
 
 static LispObject Lsilent_system(LispObject env, LispObject a)
-{   char cmd[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char cmd[LONGEST_LEGAL_FILENAME];
 #ifdef SHELL_EXECUTE
     char args[LONGEST_LEGAL_FILENAME];
 #endif
@@ -286,7 +295,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
     std::memset(args, 0, sizeof(args));
 #endif
     if (a == nil)            // enquire if command processor is available
-        return onevalue(lisp_true); // always is on Windows!
+        return lisp_true; // always is on Windows!
     ensure_screen();
 #ifdef COMMON
     if (complex_stringp(a)) a = simplify_string(a);
@@ -299,7 +308,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         return aerror1("system", a);
     ensure_screen();
     size_t len = length_of_byteheader(h) - CELL;
-    std::memcpy(cmd, bit_cast<char *>(a) + (CELL-TAG_VECTOR),
+    std::memcpy(cmd, reinterpret_cast<char *>(a) + (CELL-TAG_VECTOR),
                 (size_t)len);
     cmd[len] = 0;
 #ifdef SHELL_EXECUTE
@@ -323,7 +332,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
                           ".",
                           SW_HIDE);
     ensure_screen();
-    return onevalue(fixnum_of_int(rc));
+    return fixnum_of_int(rc);
 #else
     {   STARTUPINFO startup;
         PROCESS_INFORMATION process;
@@ -336,7 +345,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         if (!CreateProcess(nullptr, cmd, nullptr, nullptr, FALSE,
                            CREATE_NEW_CONSOLE,
                            nullptr, nullptr, &startup, &process))
-        {   return onevalue(nil);
+        {   return nil;
         }
         WaitForSingleObject(process.hProcess, INFINITE);
 // If I fail to retrieve a true exit code I will return the value 1000. This
@@ -346,7 +355,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         CloseHandle(process.hProcess);
         CloseHandle(process.hThread);
         ensure_screen();
-        return onevalue(fixnum_of_int(rc));
+        return fixnum_of_int(rc);
     }
 #endif
 }
@@ -354,7 +363,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 #else
 
 static LispObject Lsilent_system(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // Other than on Windows I do not see any risk of "consoles" getting created
 // when I do not want them, so this just does what the normal execution code
 // does.
@@ -377,7 +386,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 static uint64_t hash_lisp_string(LispObject s, size_t n)
 {   uint64_t h = n;
 // Here I will hash sizeof(intptr_t) bytes at a time.
-    uintptr_t *p = bit_cast<uintptr_t *>(s-TAG_VECTOR+CELL);
+    uintptr_t *p = reinterpret_cast<uintptr_t *>(s-TAG_VECTOR+CELL);
     n -= CELL;
 //  fprintf(stderr, "About to hash <%.*s> length %d\n", (int)n, (char *)p, (int)n);
     while (n >= sizeof(uintptr_t))
@@ -646,7 +655,7 @@ LispObject intern(size_t len, bool escaped, int startAddr)
 // Rework this sometime please!
             boffo_char(boffop) = 0;
 // p and q were made int not int32_t to match up with the %d in scanf ...
-            std::sscanf(bit_cast<char *>(&boffo_char(0)), "%d/%d", &p,
+            std::sscanf(reinterpret_cast<char *>(&boffo_char(0)), "%d/%d", &p,
                         &q);
 #ifdef ARITHLIB
 // Limit myself to fixnums here
@@ -689,19 +698,19 @@ LispObject intern(size_t len, bool escaped, int startAddr)
             switch (fplength)
             {   case 0:
                     return pack_short_float(
-                        std::atof(bit_cast<char *>(&boffo_char(0))));
+                        std::atof(reinterpret_cast<char *>(&boffo_char(0))));
                 case 1:
                     return pack_single_float(
-                        std::atof(bit_cast<char *>(&boffo_char(0))));
+                        std::atof(reinterpret_cast<char *>(&boffo_char(0))));
                 default:
                 case 2:
                     return make_boxfloat(
-                        std::atof(bit_cast<char *>(&boffo_char(0))),
+                        std::atof(reinterpret_cast<char *>(&boffo_char(0))),
                         WANT_DOUBLE_FLOAT);
 #ifdef HAVE_SOFTFLOAT
                 case 3:
                     return make_boxfloat128(atof128(
-                        bit_cast<char *>(&boffo_char(0))));
+                        reinterpret_cast<char *>(&boffo_char(0))));
 #endif // HAVE_SOFTFLOAT
             }
         }
@@ -813,7 +822,7 @@ LispObject make_symbol(char const *s, int restartp,
 // For COMMON Lisp I will make all the built-in symbols upper case, unless
 // the "2" bit of restartp is set...
     char const *p1 = s;
-    char *p2 = bit_cast<char *>(&boffo_char(0));
+    char *p2 = reinterpret_cast<char *>(&boffo_char(0));
     int c;
     if ((restartp & 2) == 0)
     {   while ((c = *p1++) != 0)
@@ -824,8 +833,8 @@ LispObject make_symbol(char const *s, int restartp,
     }
     else
 #endif
-        std::strcpy(bit_cast<char *>(&boffo_char(0)), s);
-    size_t len = std::strlen(bit_cast<char *>(&boffo_char(0)));
+        std::strcpy(reinterpret_cast<char *>(&boffo_char(0)), s);
+    size_t len = std::strlen(reinterpret_cast<char *>(&boffo_char(0)));
     if (len == 0) len = 1; // Special case so I can create symbol for U+00
     v = iintern(boffo, len, CP, 0);
 // I instate the definition given if (a) the definition is a real
@@ -1028,8 +1037,8 @@ static LispObject lookup(LispObject str, size_t strsize,
 #ifdef HASH_STATISTICS
             Noputtmp++;  // A probe...
 #endif
-            if (std::memcmp(bit_cast<char *>(str) + (CELL-TAG_VECTOR),
-                            bit_cast<char *>(pn) + (CELL-TAG_VECTOR),
+            if (std::memcmp(reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR),
+                            reinterpret_cast<char *>(pn) + (CELL-TAG_VECTOR),
                             (size_t)strsize) == 0 &&
                 length_of_byteheader(vechdr(pn)) == (size_t)strsize+CELL)
             {   if (4*n > 3*size) rehash_pending = true;
@@ -1084,8 +1093,8 @@ static int ordersymbol(LispObject v1, LispObject v2)
     validate_string(pn2);
     l1 = length_of_byteheader(vechdr(pn1)) - CELL;
     l2 = length_of_byteheader(vechdr(pn2)) - CELL;
-    c = std::memcmp(bit_cast<char *>(pn1) + (CELL-TAG_VECTOR),
-                    bit_cast<char *>(pn2) + (CELL-TAG_VECTOR),
+    c = std::memcmp(reinterpret_cast<char *>(pn1) + (CELL-TAG_VECTOR),
+                    reinterpret_cast<char *>(pn2) + (CELL-TAG_VECTOR),
                     (size_t)(l1 < l2 ? l1 : l2));
     if (c == 0) c = static_cast<int>(l1 - l2);
     return c;
@@ -1151,9 +1160,9 @@ static int ordpv(LispObject u, LispObject v)
                 break;
         }
         while (n < lu && n < lv)
-        {   unsigned int eu = *bit_cast<unsigned char *>
+        {   unsigned int eu = *reinterpret_cast<unsigned char *>
                               (u - TAG_VECTOR + n),
-                              ev = *bit_cast<unsigned char *>(v - TAG_VECTOR + n);
+                              ev = *reinterpret_cast<unsigned char *>(v - TAG_VECTOR + n);
             if (eu != ev) return (eu < ev ? -1 : 1);
             n += 1;
         }
@@ -1166,12 +1175,12 @@ static int ordpv(LispObject u, LispObject v)
     else
     {   THREADID;
         while (n < lu && n < lv)
-        {   LispObject eu = *bit_cast<LispObject *>
+        {   LispObject eu = *reinterpret_cast<LispObject *>
                             (u - TAG_VECTOR + n),
-                            ev = *bit_cast<LispObject *>(v - TAG_VECTOR + n);
+                            ev = *reinterpret_cast<LispObject *>(v - TAG_VECTOR + n);
             int w;
             Save save(THREADARG u, v);
-            if (bit_cast<uintptr_t>(stack) >= stackLimit)
+            if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                 respond_to_stack_event();
             w = orderp(eu, ev);
             errexit();
@@ -1247,7 +1256,7 @@ static int orderp(LispObject u, LispObject v)
             THREADID;
             Save save(THREADARG u, v);
 //          stackcheck(threadId);
-            if (bit_cast<uintptr_t>(stack) >= stackLimit)
+            if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                 respond_to_stack_event();
             w = orderp(cu, cv);
             errexit();
@@ -1278,8 +1287,9 @@ static int orderp(LispObject u, LispObject v)
 }
 
 LispObject Lorderp(LispObject env, LispObject a, LispObject b)
-{   int w = orderp(a, b);
-    return onevalue(Lispify_predicate(w <= 0));
+{   SingleValued fn;
+    int w = orderp(a, b);
+    return Lispify_predicate(w <= 0);
 }
 
 static uint64_t removed_hash;
@@ -1316,7 +1326,8 @@ static bool remob(LispObject sym, LispObject v)
 
 static LispObject Lmake_symbol(LispObject env, LispObject str)
 // Lisp function (make-symbol ..) creates an uninterned symbol.
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     stackcheck(THREADARG str);
 // Common Lisp wants a STRING passed here, but as a matter of generosity and
 // for the benefit of some of my system code I support symbols too.
@@ -1352,12 +1363,12 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
 // allocated a sequence number.
     qcountLow(s) = 0;
     qcountHigh(s) = 0;
-    return onevalue(s);
+    return s;
 }
 
 LispObject Lgensym(LispObject env)
 // Lisp function (gensym) creates an uninterned symbol with odd name.
-{
+{   SingleValued fn;
 #ifdef COMMON
     LispObject pn;
     char genname[64];
@@ -1395,11 +1406,12 @@ LispObject Lgensym(LispObject env)
     qfn4up(id) = undefined_4up;
     qcountLow(id) = 0;
     qcountHigh(id) = 0;
-    return onevalue(id);
+    return id;
 }
 
 LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
-{   LispObject genbase;
+{   SingleValued fn;
+    LispObject genbase;
     size_t len, len1 = std::strlen(suffix);
     char genname[64];
 #ifdef COMMON
@@ -1416,7 +1428,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     if (len > 63-len1) len = 63-len1; // Unpublished truncation of the string
     std::snprintf(genname, sizeof(genname),
         "%.*s%s", static_cast<int>(len),
-        bit_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
+        reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR), suffix);
     genbase = make_string(genname);
     errexit();
     LispObject id;
@@ -1444,14 +1456,15 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     qfn4up(id) = undefined_4up;
     qcountLow(id) = 0;
     qcountHigh(id) = 0;
-    return onevalue(id);
+    return id;
 }
 
 LispObject Lgensym(LispObject env, LispObject a)
 // Lisp function (gensym1 base) creates an uninterned symbol with odd name.
 // The case (gensym <number>) is DEPRECATED by the Common Lisp standards
 // committee and so I will not implement it at least for now.
-{   LispObject genbase;
+{   SingleValued fn;
+    LispObject genbase;
 #ifdef COMMON
     size_t len;
     char genname[64];
@@ -1469,7 +1482,7 @@ LispObject Lgensym(LispObject env, LispObject a)
     if (len > 60) len = 60;     // Unpublished truncation of the string
     std::snprintf(genname, sizeof(genname),
                  "%.*s%lu", static_cast<int>(len),
-                 bit_cast<char *>(genbase) + (CELL-TAG_VECTOR),
+                 reinterpret_cast<char *>(genbase) + (CELL-TAG_VECTOR),
                  (long unsigned)(uint32_t)gensym_ser++);
     genbase = make_string(genname);
 #endif
@@ -1498,11 +1511,12 @@ LispObject Lgensym(LispObject env, LispObject a)
     qfn4up(id) = undefined_4up;
     qcountLow(id) = 0;
     qcountHigh(id) = 0;
-    return onevalue(id);
+    return id;
 }
 
 LispObject Lgensym1(LispObject env, LispObject a)
-{   return Lgensym(env, a);
+{   SingleValued fn;
+    return Lgensym(env, a);
 }
 
 LispObject Lgensym2(LispObject env, LispObject a)
@@ -1510,7 +1524,8 @@ LispObject Lgensym2(LispObject env, LispObject a)
 // argument.  This might be UNHELPFUL if one tried to print the value
 // concerned, but seems to be what the Common Lisp syntax #:ggg expects
 // to achieve!
-{   LispObject genbase;
+{   SingleValued fn;
+    LispObject genbase;
     size_t len;
 #ifdef COMMON
     if (complex_stringp(a)) a = simplify_string(a);
@@ -1544,14 +1559,15 @@ LispObject Lgensym2(LispObject env, LispObject a)
     qfn4up(id) = undefined_4up;
     qcountLow(id) = 0;
     qcountHigh(id) = 0;
-    return onevalue(id);
+    return id;
 }
 
 static LispObject Lgensymp(LispObject env, LispObject a)
-{   if (is_symbol(a) &&
+{   SingleValued fn;
+    if (is_symbol(a) &&
         (qheader(a) & SYM_CODEPTR) == 0 &&
-        (qheader(a) & SYM_ANY_GENSYM) != 0) return onevalue(lisp_true);
-    else return onevalue(nil);
+        (qheader(a) & SYM_ANY_GENSYM) != 0) return lisp_true;
+    else return nil;
 }
 
 // Normally gensyms are displayed as G0, G1, ... in sequence.
@@ -1560,7 +1576,8 @@ static LispObject Lgensymp(LispObject env, LispObject a)
 // will read that but not reset the sequence.
 
 static LispObject Lreset_gensym(LispObject env, LispObject a)
-{   LispObject old = gensym_ser;
+{   SingleValued fn;
+    LispObject old = gensym_ser;
     if (is_fixnum(a) &&
         a >= 0) gensym_ser = int_of_fixnum(a) & 0x7fffffff;
     return fixnum_of_int(old);
@@ -1711,7 +1728,8 @@ static LispObject Lfind_package(LispObject env, LispObject name);
 #endif
 
 LispObject Lintern_2(LispObject env, LispObject str, LispObject pp)
-{   return Lintern(env, str); // Ignores the package for now!
+{   SingleValued fn;
+    return Lintern(env, str); // Ignores the package for now!
 }
 
 #ifdef DEBUG
@@ -1721,7 +1739,8 @@ size_t fullest_package = 0;
 
 LispObject Lintern(LispObject env, LispObject str)
 // Lisp entrypoint for (intern ..)
-{   Header h;
+{   SingleValued fn;
+    Header h;
     LispObject p;
 #ifdef DEBUG
     intern_count++;
@@ -1738,7 +1757,7 @@ LispObject Lintern(LispObject env, LispObject str)
 // If you try to intern a symbol and it is already present in the
 // package you are trying to intern it in then just return it without
 // needing to do anything to it.
-    if (symbolp(str) && qpackage(str) == p) return onevalue(str);
+    if (symbolp(str) && qpackage(str) == p) return str;
 #ifdef COMMON
     if (complex_stringp(str))
     {   Save save1(THREADARG p);
@@ -1765,12 +1784,14 @@ LispObject Lintern(LispObject env, LispObject str)
 #ifdef COMMON
 
 LispObject Lintern(LispObject env, LispObject a)
-{   return Lintern_2(env, a, CP);
+{   SingleValued fn;
+    return Lintern_2(env, a, CP);
 }
 
 static LispObject Lfind_symbol(LispObject env, LispObject str,
                                LispObject pp)
-{   Header h;
+{   SingleValued fn;
+    Header h;
     LispObject p;
     THREADID;
     Save save(THREADARG str);
@@ -1795,7 +1816,8 @@ static LispObject Lfind_symbol(LispObject env, LispObject str,
 }
 
 LispObject Lfind_symbol(LispObject env, LispObject str)
-{   return Lfind_symbol(env, str, CP);
+{   SingleValued fn;
+    return Lfind_symbol(env, str, CP);
 }
 
 static LispObject Lextern(LispObject env, LispObject sym,
@@ -1804,7 +1826,8 @@ static LispObject Lextern(LispObject env, LispObject sym,
 // of the export function. Note that the second argument must be a real
 // package object, not a package name. Higher level code must have done
 // a find-package as necessary.
-{   if (!is_symbol(sym)) return onevalue(nil);
+{   SingleValued fn;
+    if (!is_symbol(sym)) return nil;
     if (remob(sym, packint_(package)))
     {
 // I will shrink a hash table if a sequence of remob-style operations,
@@ -1827,13 +1850,14 @@ static LispObject Lextern(LispObject env, LispObject sym,
 // was not already external, since it had been internal.
         if (qpackage(sym) == package) qheader(sym) |= SYM_EXTERN_IN_HOME;
         add_to_externals(sym, package, removed_hash);
-        return onevalue(lisp_true);
+        return lisp_true;
     }
-    return onevalue(nil);// no action if it was not internal in this package
+    return nil;// no action if it was not internal in this package
 }
 
 static LispObject Lextern(LispObject env, LispObject str)
-{   return Lextern(env, str, CP);
+{   SingleValued fn;
+    return Lextern(env, str, CP);
 }
 
 static LispObject Limport(LispObject env, LispObject sym,
@@ -1842,7 +1866,8 @@ static LispObject Limport(LispObject env, LispObject sym,
 // makes sym internal in package. The symbol MUST NOT be present there
 // before this function is called. The second argument must be a real
 // package object, not just the name of one.
-{   if (!is_symbol(sym)) return onevalue(nil);
+{   SingleValued fn;
+    if (!is_symbol(sym)) return nil;
     STACK_SANITY;
     THREADID;
     Save save(THREADARG sym, package);
@@ -1853,11 +1878,12 @@ static LispObject Limport(LispObject env, LispObject sym,
     add_to_internals(sym, package, hash);
     save1.restore(sym, package);
     if (qpackage(sym) == nil) qpackage(sym) = package;
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Limport(LispObject env, LispObject str)
-{   return Limport(env, str, CP);
+{   SingleValued fn;
+    return Limport(env, str, CP);
 }
 
 #endif
@@ -1882,7 +1908,8 @@ LispObject ndelete(LispObject a, LispObject l)
 }
 
 LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
-{   LispObject package;
+{   SingleValued fn;
+    LispObject package;
     THREADID;
 #ifdef COMMON
     {   Save save(THREADARG sym);
@@ -1893,8 +1920,8 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
 #else
     package = pp;
 #endif
-    if (!is_symbol(sym)) return onevalue(nil);
-    if (qpackage(sym) == nil) return onevalue(nil);
+    if (!is_symbol(sym)) return nil;
+    if (qpackage(sym) == nil) return nil;
     if (qpackage(sym) == package) setpackage(sym,nil);
 #ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
@@ -1912,7 +1939,7 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
             packint_(package) = v;
         }
         packnint_(package) -= (1<<4);   // decrement as fixnum
-        return onevalue(lisp_true);
+        return lisp_true;
     }
 #ifdef COMMON
     if (remob(sym, packext_(package)))
@@ -1931,14 +1958,15 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
             packext_(package) = v;
         }
         packnext_(package) -= (1<<4);   // decrement as fixnum
-        return onevalue(lisp_true);
+        return lisp_true;
     }
 #endif
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lunintern(LispObject env, LispObject str)
-{   return Lunintern(env, str, CP);
+{   SingleValued fn;
+    return Lunintern(env, str, CP);
 }
 
 // If I have a window system then getting characters from the keyboard
@@ -2096,23 +2124,25 @@ int char_from_terminal(LispObject dummy)
 }
 
 LispObject Lrds(LispObject env, LispObject a)
-{   LispObject old = qvalue(standard_input);
+{   SingleValued fn;
+    LispObject old = qvalue(standard_input);
     if (a == nil) a = qvalue(terminal_io);
-    if (a == old) return onevalue(old);
+    if (a == old) return old;
     else if (!is_stream(a)) return aerror1("rds", a);
     else if ((character_stream_reader *)stream_read_fn(
                  a) == char_from_illegal)
         return aerror("rds"); // closed stream or output stream
     setvalue(standard_input, a);
-    return onevalue(old);
+    return old;
 }
 
 LispObject Lrtell_1(LispObject env, LispObject stream)
-{   int32_t n;
-    if (!is_stream(stream)) return onevalue(nil);
+{   SingleValued fn;
+    int32_t n;
+    if (!is_stream(stream)) return nil;
     n = other_read_action(READ_TELL, stream);
-    if (n == -1) return onevalue(nil);
-    else return onevalue(fixnum_of_int(n));
+    if (n == -1) return nil;
+    else return fixnum_of_int(n);
 }
 
 LispObject Lrtell(LispObject env)
@@ -2124,27 +2154,30 @@ LispObject Lrtell(LispObject env)
 // direct indication of the position in the file and arithmetic will
 // behave predictably - for text streams the value returned should be
 // thought of as an abstract position-tag.
-{   return Lrtell_1(nil, qvalue(standard_input));
+{   SingleValued fn;
+    return Lrtell_1(nil, qvalue(standard_input));
 }
 
 LispObject Lrseekend(LispObject env, LispObject stream)
-{   if (!is_stream(stream)) stream = qvalue(terminal_io);
+{   SingleValued fn;
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     other_read_action(READ_FLUSH, stream);
-    if (other_read_action(READ_END, stream) != 0) return onevalue(nil);
-    else return onevalue(lisp_true);
+    if (other_read_action(READ_END, stream) != 0) return nil;
+    else return lisp_true;
 }
 
 LispObject Lrseek_2(LispObject env, LispObject stream, LispObject a)
-{   size_t n;
+{   SingleValued fn;
+    size_t n;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     if (is_fixnum(a)) n = (size_t)int_of_fixnum(a);
     else return aerror("rseek");
     other_read_action(READ_FLUSH, stream);
     if (other_read_action(n | 0x80000000,
-                          stream) != 0) return onevalue(nil);
-    else return onevalue(lisp_true);
+                          stream) != 0) return nil;
+    else return lisp_true;
 }
 
 LispObject Lrseek(LispObject env, LispObject a)
@@ -2154,7 +2187,8 @@ LispObject Lrseek(LispObject env, LispObject a)
 // to set the position.  For text files arguments to RSEEK should only be
 // values returned by previous calls to RTELL.  RSEEK returns nil if it
 // failed (and if it noticed that fact) or T if it succeeded.
-{   return Lrseek_2(nil, qvalue(standard_input), a);
+{   SingleValued fn;
+    return Lrseek_2(nil, qvalue(standard_input), a);
 }
 
 // The getc_stream() method must NEVER be able to cause garbage collection,
@@ -2469,7 +2503,7 @@ static LispObject read_hash(LispObject stream)
                 curchar = NOT_CHAR;
             }
             p = eval(p, nil);
-            return onevalue(p);
+            return p;
         case '+':
         case '-':
             v = (curchar == '-');
@@ -2490,7 +2524,7 @@ static LispObject read_hash(LispObject stream)
             if (w == v) read_s(stream);
 // The following flag-value shows that read_hash() has not actually read
 // anything - but it may have skipped over some unwanted stuff.
-            return onevalue(SPID_NOINPUT);
+            return SPID_NOINPUT;
 
         case 'r': case 'R':
             radix = (w>=2 && w<=36) ? static_cast<int>(w) : 10;
@@ -2606,7 +2640,7 @@ void packcharacter(int c)
     if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        std::memcpy(bit_cast<void *>(bit_cast<char *>
+        std::memcpy(reinterpret_cast<void *>(reinterpret_cast<char *>
                                              (new_boffo) + (CELL-TAG_VECTOR)),
                     &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -2638,7 +2672,7 @@ void packbyte(int c)
     if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        std::memcpy(bit_cast<void *>(bit_cast<char *>
+        std::memcpy(reinterpret_cast<void *>(reinterpret_cast<char *>
                                              (new_boffo) + (CELL-TAG_VECTOR)),
                     &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -3273,7 +3307,8 @@ int32_t read_action_vector(int32_t op, LispObject f)
 static int most_recent_read_point = 0;
 
 inline LispObject Lread_sub(LispObject stream, int cursave)
-{   if (!is_stream(stream)) stream = qvalue(terminal_io);
+{   SingleValued fn;
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     curchar = NOT_CHAR;
     most_recent_read_point = other_read_action(READ_TELL, stream);
@@ -3324,7 +3359,8 @@ public:
 LispObject Lread(LispObject env)
 // The full version of read_s() has to support extra optional args
 // that deal with error and eof returns... and a recursive-p arg!
-{   LispObject stream = qvalue(standard_input);
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_input);
 #ifdef COMMON
     THREADID;
     save_reader_workspace RAII OPTTHREAD;
@@ -3341,14 +3377,15 @@ LispObject Lread(LispObject env)
 // retrieve thsi information.
 
 static LispObject Lwhere_was_that(LispObject env)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
 #ifdef COMMON
     w = list3(current_file, fixnum_of_int(most_recent_read_point),
               packname_(CP));
 #else
     w = list2(current_file, fixnum_of_int(most_recent_read_point));
 #endif
-    return onevalue(w);
+    return w;
 }
 
 class save_stream
@@ -3376,7 +3413,8 @@ public:
 };
 
 LispObject Lread(LispObject env, LispObject stream)
-{   int cursave = curchar;
+{   SingleValued fn;
+    int cursave = curchar;
     THREADID;
     save_stream saver(THREADARG Lrds(stream, nil), cursave);
     reader_workspace = nil;
@@ -3387,7 +3425,7 @@ LispObject Lread(LispObject env, LispObject stream)
     curchar = NOT_CHAR;
     LispObject w = read_s(stream);
     if (curchar != NOT_CHAR) other_read_action(curchar, stream);
-    return onevalue(w);
+    return w;
 }
 
 // compress is not a Common Lisp function, but it is another on those
@@ -3428,7 +3466,7 @@ int char_from_list(LispObject f)
 int char_from_vector(LispObject f)
 {   LispObject ch = stream_pushed_char(f);
     if (ch == NOT_CHAR)
-    {   unsigned char *v = bit_cast<unsigned char *>(
+    {   unsigned char *v = reinterpret_cast<unsigned char *>(
                                static_cast<std::FILE *>(stream_file(f)));
         if (v == nullptr) ch = EOF;
         else
@@ -3471,11 +3509,12 @@ LispObject read_from_vector(char *v)
     r = read_s(lisp_work_stream);
     curchar = savecur;
     if (read_failure) return aerror("read-from-vector");
-    return onevalue(r);
+    return r;
 }
 
 LispObject Lcompress(LispObject env, LispObject stream)
-{   int savecur = curchar;
+{   SingleValued fn;
+    int savecur = curchar;
     stream_read_data(lisp_work_stream) = stream;
     set_stream_read_fn(lisp_work_stream, char_from_list);
     set_stream_read_other(lisp_work_stream, read_action_list);
@@ -3486,14 +3525,15 @@ LispObject Lcompress(LispObject env, LispObject stream)
     stream_read_data(lisp_work_stream) = nil;
     curchar = savecur;
     if (read_failure) return aerror("compress");
-    return onevalue(env);
+    return env;
 }
 
 // As against the old version this folds much of the internal working into
 // this function to try to avoid overhead...
 
 LispObject Llist_to_string(LispObject env, LispObject stream)
-{   size_t n = 0;
+{   SingleValued fn;
+    size_t n = 0;
     LispObject str;
     for (str=stream; consp(str); str=cdr(str)) n++;
     str = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
@@ -3538,21 +3578,23 @@ LispObject Llist_to_string(LispObject env, LispObject stream)
         *s++ = r;
     }
     for (; (k&7) != 0; k++) *s++ = 0; // zero-pad final doubleword
-    return onevalue(str);
+    return str;
 }
 
 LispObject Llist_to_symbol(LispObject env, LispObject stream)
-{   stream = Llist_to_string(nil, stream);
+{   SingleValued fn;
+    stream = Llist_to_string(nil, stream);
 #ifdef COMMON
     stream = Lintern_2(nil, stream, CP);
-    return onevalue(stream);  // NB intern would have returned 2 values
+    return stream;  // NB intern would have returned 2 values
 #else
     return Lintern(nil, stream);
 #endif
 }
 
 LispObject Lstring2list(LispObject env, LispObject a)
-{   Header h;
+{   SingleValued fn;
+    Header h;
     LispObject r;
     size_t i, len;
 #ifdef COMMON
@@ -3688,7 +3730,8 @@ LispObject read_eval_print(int noisy)
 
 LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
                  LispObject verbosep, LispObject nofilep)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     save_current_function saver(THREADARG env);
     LispObject r = nil;
     int noisy = (noisyp != nil);
@@ -3724,7 +3767,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
             return aerror1("load", file);
         len = length_of_byteheader(h) - CELL;
-        filestring = bit_cast<char *>(file) + CELL-TAG_VECTOR;
+        filestring = reinterpret_cast<char *>(file) + CELL-TAG_VECTOR;
         for (i=0; i<6; i++)
         {   if (len == 0)
             {   tail[i] = 0;
@@ -3769,9 +3812,9 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
                 trace_printf("\n");
             }
 #ifdef COMMON
-            return onevalue(lisp_true);
+            return lisp_true;
 #else
-            return onevalue(nil);
+            return nil;
 #endif
         }
         {   Save save(THREADARG file);
@@ -3788,7 +3831,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 // exception.
             if (r == nil)
             {   if (nofile) return error(1, err_open_failed, file);
-                else return onevalue(nil);
+                else return nil;
             }
 #endif
         }
@@ -3865,32 +3908,37 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         Lrds(nil, oldstream1);
     }
 #ifdef COMMON
-    return onevalue(lisp_true);
+    return lisp_true;
 #else
-    return onevalue(nil);
+    return nil;
 #endif
 }
 
 LispObject Lrdf0(LispObject env)
-{   return Lrdf4(nil, nil, lisp_true, lisp_true, lisp_true);
+{   SingleValued fn;
+    return Lrdf4(nil, nil, lisp_true, lisp_true, lisp_true);
 }
 
 LispObject Lrdf1(LispObject env, LispObject file)
-{   return Lrdf4(env, file, lisp_true, lisp_true, lisp_true);
+{   SingleValued fn;
+    return Lrdf4(env, file, lisp_true, lisp_true, lisp_true);
 }
 
 LispObject Lrdf2(LispObject env, LispObject file, LispObject noisy)
-{   return Lrdf4(env, file, noisy, lisp_true, lisp_true);
+{   SingleValued fn;
+    return Lrdf4(env, file, noisy, lisp_true, lisp_true);
 }
 
 LispObject Lrdf3(LispObject env, LispObject file, LispObject noisy,
                  LispObject verbose)
-{   return Lrdf4(env, file, noisy, verbose, lisp_true);
+{   SingleValued fn;
+    return Lrdf4(env, file, noisy, verbose, lisp_true);
 }
 
 LispObject Lrdfn(LispObject env, LispObject file, LispObject noisy,
                  LispObject verbose, LispObject nofile)
-{   if (cdr(nofile) != nil) return aerror("too many args for rdf/load");
+{   SingleValued fn;
+    if (cdr(nofile) != nil) return aerror("too many args for rdf/load");
     nofile = car(nofile);
     return Lrdf4(env, file, noisy, verbose, nofile);
 }
@@ -3902,7 +3950,8 @@ LispObject Lrdfn(LispObject env, LispObject file, LispObject noisy,
 #endif
 
 LispObject Lspool(LispObject env, LispObject file)
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   SingleValued fn;
+    char filename[LONGEST_LEGAL_FILENAME];
     Header h;
     int32_t len;
     std::memset(filename, 0, sizeof(filename));
@@ -3917,7 +3966,7 @@ LispObject Lspool(LispObject env, LispObject file)
         std::fclose(spool_file);
         spool_file = nullptr;
     }
-    if (file == nil) return onevalue(lisp_true);
+    if (file == nil) return lisp_true;
 #ifdef COMMON
     if (complex_stringp(file)) file = simplify_string(file);
 #endif
@@ -3929,7 +3978,7 @@ LispObject Lspool(LispObject env, LispObject file)
         return aerror1(spool_name, file);
     len = length_of_byteheader(h) - CELL;
     spool_file = open_file(filename,
-                           bit_cast<char *>(file) + (CELL-TAG_VECTOR),
+                           reinterpret_cast<char *>(file) + (CELL-TAG_VECTOR),
                            (size_t)len, "w", nullptr);
     if (spool_file != nullptr)
     {   std::time_t t0 = std::time(nullptr);
@@ -3943,13 +3992,14 @@ LispObject Lspool(LispObject env, LispObject file)
                      "+++ Transcript to %s started at %.24s +++\n",
                      spool_file_name, std::ctime(&t0));
 #endif
-        return onevalue(lisp_true);
+        return lisp_true;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lspool(LispObject env)
-{   return Lspool(env, nil);
+{   SingleValued fn;
+    return Lspool(env, nil);
 }
 
 #ifdef COMMON
@@ -3993,7 +4043,7 @@ LispObject make_package(LispObject name)
         save.restore(p);
     }
     all_packages = w;
-    return onevalue(p);
+    return p;
 }
 
 static LispObject want_a_string(LispObject name)
@@ -4012,13 +4062,14 @@ static LispObject Lfind_package(LispObject env, LispObject name)
 // symbol it takes its pname as the string to be used.  It scans the list
 // of all packages and returns the first that it finds where the name
 // or a nickname matches the string passed in.
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     Header h;
     int32_t len;
     if (is_vector(name))
     {   h = vechdr(name);
         if (type_of_header(h) == TYPE_STRUCTURE &&
-            packid_(name) == package_symbol) return onevalue(name);
+            packid_(name) == package_symbol) return name;
     }
     name = want_a_string(name);
     h = vechdr(name);
@@ -4026,18 +4077,18 @@ static LispObject Lfind_package(LispObject env, LispObject name)
     for (w = all_packages; w!=nil; w=cdr(w))
     {   LispObject nn, n = packname_(car(w));
         if (is_vector(n) && vechdr(n) == h &&
-            std::memcmp(bit_cast<char *>(name) + (CELL-TAG_VECTOR),
-                        bit_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
-            return onevalue(car(w));
+            std::memcmp(reinterpret_cast<char *>(name) + (CELL-TAG_VECTOR),
+                        reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
+            return car(w);
         for (nn = packnick_(car(w)); nn!=nil; nn=cdr(nn))
         {   n = car(nn);
             if (!is_vector(n) || vechdr(n) != h) continue;
-            if (std::memcmp(bit_cast<char *>(name) + (CELL-TAG_VECTOR),
-                            bit_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
-                return onevalue(car(w));
+            if (std::memcmp(reinterpret_cast<char *>(name) + (CELL-TAG_VECTOR),
+                            reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
+                return car(w);
         }
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject find_package(char *name, int len)
@@ -4049,7 +4100,7 @@ LispObject find_package(char *name, int len)
     {   LispObject nn, n = packname_(car(w));
         if (is_vector(n) &&
             length_of_byteheader(vechdr(n))==(uint32_t)(len+CELL) &&
-            std::memcmp(name, bit_cast<char *>(n) + (CELL-TAG_VECTOR),
+            std::memcmp(name, reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR),
                         (size_t)len) == 0)
             return car(w);
         for (nn = packnick_(car(w)); nn!=nil; nn=cdr(nn))
@@ -4058,22 +4109,22 @@ LispObject find_package(char *name, int len)
                 length_of_byteheader(vechdr(n)) != (uint32_t)(len+CELL))
                 continue;
             if (std::memcmp(name,
-                            bit_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
+                            reinterpret_cast<char *>(n) + (CELL-TAG_VECTOR), (size_t)len) == 0)
                 return car(w);
         }
     }
     return nil;
 }
 
-static LispObject Luse_package(LispObject env, LispObject uses,
-                               LispObject pkg)
-{   THREADID;
+static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
+{   SingleValued fn;
+    THREADID;
     {   Save save(THREADARG uses);
         pkg = Lfind_package(nil, pkg);
         errexit();
         save.restore(uses);
     }
-    if (pkg == nil) return onevalue(nil);
+    if (pkg == nil) return nil;
     if (consp(uses))
     {   while (consp(uses))
         {   Save save(THREADARG uses, pkg);
@@ -4089,7 +4140,7 @@ static LispObject Luse_package(LispObject env, LispObject uses,
         uses = Lfind_package(nil, uses);
         errexit();
         save.restore(pkg);
-        if (uses == nil || uses == pkg) return onevalue(nil);
+        if (uses == nil || uses == pkg) return nil;
         {   Save save1(THREADARG pkg, uses);
 // Around here I am supposed to do a large-scale check to ensure that there
 // are no unexpected name conflicts between the packages that are being
@@ -4106,7 +4157,7 @@ static LispObject Luse_package(LispObject env, LispObject uses,
         packuses_(pkg) = w;
         packused_(uses) = w1;
     }
-    return onevalue(lisp_true);
+    return lisp_true;
 }
 
 LispObject ensureListOfStrings(LispObject l)
@@ -4145,7 +4196,8 @@ LispObject ensureListOfStrings(LispObject l)
 static LispObject Lmake_package(LispObject env, LispObject name,
                                 LispObject k1,
                                 LispObject v1, LispObject kv2)
-{   LispObject nicknames = nil, uses = nil, w = nil;
+{   SingleValued fn;
+    LispObject nicknames = nil, uses = nil, w = nil;
     bool has_nicknames = false, has_use = false;
     LispObject k2 = nil, v2 = nil;
     k2 = car(kv2);
@@ -4203,7 +4255,7 @@ static LispObject Lmake_package(LispObject env, LispObject name,
         err_printf("\n");
         errexit();
         save.restore(w, name);
-        return onevalue(w);
+        return w;
     }
 // The package does not exist yet - so I will make one...
     {   Save save(THREADARG nicknames, uses);
@@ -4220,31 +4272,36 @@ static LispObject Lmake_package(LispObject env, LispObject name,
     Save save1(THREADARG name);
     Luse_package(nil, uses, name);
     save1.restore(name);
-    return onevalue(name);
+    return name;
 }
 
 static LispObject Lmake_package_3(LispObject env, LispObject a,
                                   LispObject b, LispObject c)
-{   return Lmake_package(env, a, b, c, SPID_NOARG);
+{   SingleValued fn;
+    return Lmake_package(env, a, b, c, SPID_NOARG);
 }
 
 static LispObject Lmake_package_2(LispObject env, LispObject a,
                                   LispObject b)
-{   return aerror("wrong number of arguments for make-package");
+{   SingleValued fn;
+    return aerror("wrong number of arguments for make-package");
 }
 
 static LispObject Lmake_package_1(LispObject env, LispObject a)
-{   return Lmake_package(env, a, SPID_NOARG, SPID_NOARG, SPID_NOARG);
+{   SingleValued fn;
+    return Lmake_package(env, a, SPID_NOARG, SPID_NOARG, SPID_NOARG);
 }
 
 static LispObject Llist_all_packagesstatic_cast<LispObject>()
-{   return onevalue(all_packages);
+{   SingleValued fn;
+    return all_packages;
 }
 
 #endif
 
 LispObject Ltyi(LispObject env)
-{   int ch;
+{   SingleValued fn;
+    int ch;
     if (curchar == NOT_CHAR)
     {   LispObject stream = qvalue(standard_input);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -4255,15 +4312,16 @@ LispObject Ltyi(LispObject env)
     {   ch = curchar;
         curchar = NOT_CHAR;
     }
-    if (ch == EOF || ch == CTRL_D) return onevalue(CHAR_EOF);
+    if (ch == EOF || ch == CTRL_D) return CHAR_EOF;
 // If tyi reads just a byte then this is what I want.  But if I want
 // a character then somewhere I need to allow for wider characters than
 // this.
-    return onevalue(pack_char(0, ch & 0xff));
+    return pack_char(0, ch & 0xff);
 }
 
 LispObject Lreadbyte(LispObject env, LispObject stream)
-{   int ch;
+{   SingleValued fn;
+    int ch;
     LispObject save = qvalue(echo_symbol);
     bool force = force_echo;
     force_echo = nil;
@@ -4282,7 +4340,8 @@ LispObject Lreadbyte(LispObject env, LispObject stream)
 }
 
 LispObject Lreadch(LispObject env, LispObject stream)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     int ch;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -4295,16 +4354,18 @@ LispObject Lreadch(LispObject env, LispObject stream)
         }
         w = char_to_id(ch);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Lreadch(LispObject env)
-{   return Lreadch(env, qvalue(standard_input));
+{   SingleValued fn;
+    return Lreadch(env, qvalue(standard_input));
 }
 
 LispObject Lpeekch2(LispObject env, LispObject type,
                     LispObject stream)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     int ch;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -4326,19 +4387,22 @@ LispObject Lpeekch2(LispObject env, LispObject type,
         }
         w = char_to_id(ch);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Lpeekch(LispObject env, LispObject type)
-{   return Lpeekch2(env, type, qvalue(standard_input));
+{   SingleValued fn;
+    return Lpeekch2(env, type, qvalue(standard_input));
 }
 
 LispObject Lpeekch(LispObject env)
-{   return Lpeekch2(env, nil, qvalue(standard_input));
+{   SingleValued fn;
+    return Lpeekch2(env, nil, qvalue(standard_input));
 }
 
 LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
-{   int ch;
+{   SingleValued fn;
+    int ch;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     if (a == eof_symbol || a == CHAR_EOF) ch = EOF;
@@ -4347,15 +4411,17 @@ LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
         ch = static_cast<char>(code_of_char(a));
     }
     other_read_action(ch, stream);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lunreadch(LispObject env, LispObject a)
-{   return Lunreadch2(env, a, qvalue(standard_input));
+{   SingleValued fn;
+    return Lunreadch2(env, a, qvalue(standard_input));
 }
 
 LispObject Lreadline1(LispObject env, LispObject stream)
-{   LispObject w;
+{   SingleValued fn;
+    LispObject w;
     int ch, n = 0;
     char *s;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -4368,7 +4434,7 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     if (ch == EOF && n == 0) w = eof_symbol;
     else
     {   w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-        s = bit_cast<char *>(w) + CELL - TAG_VECTOR;
+        s = reinterpret_cast<char *>(w) + CELL - TAG_VECTOR;
         std::memcpy(s, &boffo_char(0), n);
         while ((n&7) != 0) s[n++] = 0;
     }
@@ -4379,7 +4445,8 @@ LispObject Lreadline1(LispObject env, LispObject stream)
 }
 
 LispObject Lreadline(LispObject env)
-{   return Lreadline1(env, qvalue(standard_input));
+{   SingleValued fn;
+    return Lreadline1(env, qvalue(standard_input));
 }
 
 setup_type const read_setup[] =

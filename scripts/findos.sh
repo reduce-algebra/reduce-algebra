@@ -227,14 +227,17 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.14*)
           os="mac_10.14_mojave"
           ;;
-        *Mac*OS*X*ProductVersion*\<string\>10.15*)
+        *ProductVersion*\<string\>10.15*)
           os="mac_10.15_catalina"
           ;;
-        *Mac*OS*X*ProductVersion*\<string\>11.*)
+        *ProductVersion*\<string\>11.*)
           os="mac_11_big_sur"
           ;;
-        *mac*OS*ProductVersion*\<string\>12.*)
+        *ProductVersion*\<string\>12.*)
           os="mac_12_monterey"
+          ;;
+        *ProductVersion*\<string\>13.*)
+          os="mac_13_ventura"
           ;;
         *)
           os="mac_unknown_version"

@@ -224,7 +224,7 @@ LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
 #endif
     int nargs = countargs(a4up);
     LispObject r = car(qenv(def));   // the vector of bytecodes
-    if (nargs != (bit_cast<unsigned char *>(data_of_bps(r)))[0])
+    if (nargs != (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0])
         return error(2, err_wrong_no_args, def, fixnum_of_int(nargs));
 // I now know that there will be the right number of arguments.
     RealSave save(THREADARG def, a1, a2, a3);
@@ -292,8 +292,8 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // In this case the first 2 bytes of the bytecode stream give and upper and
 // lower bound for arguments ahead of any &REST ones.
     r = car(qenv(def));
-    wantargs = (bit_cast<unsigned char *>(data_of_bps(r)))[0];
-    wantopts = (bit_cast<unsigned char *>(data_of_bps(r)))[1];
+    wantargs = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[0];
+    wantopts = (reinterpret_cast<unsigned char *>(data_of_bps(r)))[1];
     if (nargs < wantargs || (!restp && nargs > wantargs+wantopts))
         return error(2, err_wrong_no_args, def,
                         fixnum_of_int((int32_t)nargs));
@@ -495,18 +495,21 @@ LispObject hardoptrest_4up(LispObject def, LispObject a1,
 
 LispObject Lis_spid(LispObject env, LispObject a)
 {   // Used in compilation for optional args
-    return onevalue(Lispify_predicate(is_spid(a)));
+    SingleValued fn;
+    return Lispify_predicate(is_spid(a));
 }
 
 LispObject Lspid_to_nil(LispObject env, LispObject a)
 {   // Used in compilation for optional args
+    SingleValued fn;
     if (is_spid(a)) a = nil;
-    return onevalue(a);
+    return a;
 }
 
 LispObject Lload_spid(LispObject)
 {   // Used in compilation of UNWIND-PROTECT
-    return onevalue(SPID_PROTECT);
+    SingleValued fn;
+    return SPID_PROTECT;
 }
 
 LispObject Lmv_list(LispObject env, LispObject a)
@@ -524,7 +527,8 @@ LispObject Lmv_list(LispObject env, LispObject a)
 // (multiple-value-call #'list V) and multiple-value-call is a special form.
 // so what I have here is in fact unsupportable!
 //
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
 #endif
@@ -549,7 +553,7 @@ LispObject Lmv_list(LispObject env, LispObject a)
         r = cons(w, r);
         errexit();
     }
-    return onevalue(r);
+    return r;
 }
 
 //

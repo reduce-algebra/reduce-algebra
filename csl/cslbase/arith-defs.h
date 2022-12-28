@@ -35,7 +35,7 @@
 #define header_arith_defs_h 1
 
 inline LispObject onebool(bool b)
-{   return onevalue(b ? lisp_true : nil);
+{   return b ? lisp_true : nil;
 }
 
 extern LispObject Nplus(LispObject env);

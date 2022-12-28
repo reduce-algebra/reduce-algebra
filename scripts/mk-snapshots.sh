@@ -831,16 +831,8 @@ start_remote_host() {
 }
 
 # All the options to rsync here say
-#   r             recursive copy
-#   l             copy symlinks
-#   H             copy hard links
-#   p             preserve permissions
-#   E             preserve executability
-#   P             keep any partially copied files for smoother re-start
-#                 after interruption
-#   t             preserve modification times of files
-#   z             compress network traffic
-#   e             use ssh with a specified port number
+#   -a            "archive" option for generally sensible behaviour
+#   -c            use checksumd not just datestamps to tell what to copy
 #   --exclude=... avoid sending certain files & directories
 #   --delete      get rid of files not in the local file-set
 #   --force       perform actions without requiring confirmation
@@ -849,10 +841,9 @@ start_remote_host() {
 #   --append      ditto
 #
 
-RSYNC_OPTIONS="-rlHpEPtz --force \
+RSYNC_OPTIONS="-a -c --force \
    --info=backup0,copy0,del0,flist0,misc0,mount0 \
-   --info=name0,progress0,remove0,skip0,symsafe2,stats2 \
-   --inplace --append"
+   --info=name0,progress0,remove0,skip0,symsafe2,stats2"
 
 # NOTE HORRIBLY WELL. On the Macintosh there is a version of rsync in
 # /usr/bin, but it is an old one. The settings of PATH that put the newer

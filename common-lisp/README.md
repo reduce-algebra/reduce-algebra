@@ -3,9 +3,14 @@ REDUCE on Common Lisp
 
 **Francis Wright, April 2022**
 
-From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
+From the introductory chapter of [*Common Lisp the Language, 2nd
+edition*, by Guy L. Steele
+Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
 
-> The goals of Common Lisp are thus very close to those of Standard Lisp and Portable Standard Lisp. Common Lisp differs from Standard Lisp primarily in incorporating more features, including a richer and more complicated set of data types and more complex control structures.
+> The goals of Common Lisp are thus very close to those of Standard Lisp
+and Portable Standard Lisp. Common Lisp differs from Standard Lisp
+primarily in incorporating more features, including a richer and more
+complicated set of data types and more complex control structures.
 
 **This code is currently experimental!**
 
@@ -13,7 +18,7 @@ The files in this directory are intended to build and run the current distribute
 
 I have recently built REDUCE using SBCL 2.2.4, Cygwin GNU CLISP 2.49+ and CCL 1.12.1 on Windows, and SBCL 2.2.3, GNU CLISP 2.49.92 and CCL 1.12.1 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing recently.
 
-The support for CCL is based on code provided by Marco Ferraris.  There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
+The support for CCL is based on code provided by Marco Ferraris.  There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer SchC6pf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
 
 Building REDUCE
 ---------------

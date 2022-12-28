@@ -286,7 +286,7 @@ inline void if_check_stack()
 #else
 inline void if_check_stack()
 {   const char* _p_ = reinterpret_cast<const char*>(&_p_);
-    if (bit_cast<uintptr_t>(_p_) < C_stackLimit)
+    if (reinterpret_cast<uintptr_t>(_p_) < C_stackLimit)
     {   if (C_stackLimit > 1024*1024) C_stackLimit -= 1024*1024;
         aerror("stack overflow");
     }
@@ -411,7 +411,7 @@ extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
 extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
-extern LispObject go_symbol, cond_symbol;
+extern LispObject go_symbol, cond_symbol, print_hash_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
@@ -866,8 +866,8 @@ inline void zero_out(void* p)
 // view that if things went wrong that would avoid confusion when looking
 // at the wreckage. Now is the time to cease putting in that extra
 // overhead.
-    char* p1 = bit_cast<char* >(
-        doubleword_align_up(bit_cast<uintptr_t>(p)));
+    char* p1 = reinterpret_cast<char* >(
+        doubleword_align_up(reinterpret_cast<uintptr_t>(p)));
     std::memset(p1, 0, CSL_PAGE_SIZE);
 #endif // 0
 }
@@ -990,17 +990,24 @@ inline LispObject nvalues(LispObject r, int n)
 }
 
 // If I define an instance of SingleValued at the head of a procedure
-// then every exit from it will set exit_count to 1. This would let me
-// write just "return x;" rather than "return onevalue(x);".
+// then every exit from it will set exit_count to 1. This lets me
+// write just "return x;" rather than "return onevalue(x);". This is
+// only relevent in Common Lisp mode since Standard Lisp does not
+// support multiple values - but the declaration of an object of type
+// SingleValued can be viewed as documentation and will not - I hope -
+// clutter up the code too badly. And a good C++ compiler should lead to
+// it having zero performace impact!
 
 class SingleValued
 {
 public:
     SingleValued()
     {}
+#ifdef COMMON
     ~SingleValued()
     {   exit_count = 1;
     }
+#endif // COMMON
 };
 
 // If I know how many results some function should deliver (and it is > 1)
@@ -1024,7 +1031,7 @@ public:
 // and only call the (messy) function in cases where it might be worth-while.
 // For Common Lisp I will presumably look at eql and cl_equal as well.
 // The test here says:
-//   If a and b are EQ then they are EQUAL,
+//   If a and b are EQ then they are EQUAL, unless possibly one is a NaN
 //   else if a and b have different types they are not EQUAL
 //   else if a has type fixnum, odds, sfloat, symbol
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
@@ -1036,13 +1043,13 @@ public:
 
 #ifdef TRACED_EQUAL
 #define equal(a, b)                                  \
-   ((a == b) ? true :                                \
+   ((a == b && !is_float(a)) ? true :                \
     ((a & TAG_BITS) != (b & TAG_BITS)) ? false :     \
     (need_more_than_eq(a)) ? equal_fn(a, b) :        \
     false)
 #else
 inline bool equal(LispObject a, LispObject b)
-{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
+{   if (a == b && !is_float(a)) return true;  // Beware NaNs!
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return equal_fn(a, b);
     else return false;
@@ -1065,7 +1072,7 @@ inline bool cl_equal(LispObject a, LispObject b)
 #endif
 
 inline bool eql(LispObject a, LispObject b)
-{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ?
+{   if (a == b && !is_float(a)) return true;  // NaNs cause pain!
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return eql_fn(a, b);
     else return false;
@@ -1208,6 +1215,7 @@ extern setup_type const om_parse_setup[];
     X(traceprint_symbol),     X(trap_time),         X(unset_var), \
     X(used_space),            X(use_symbol),        X(work_symbol), \
     X(NaN_symbol),            X(infinity_symbol),   X(minusinfinity_symbol), \
+    X(print_hash_symbol),                                                    \
  \
     X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
     X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \

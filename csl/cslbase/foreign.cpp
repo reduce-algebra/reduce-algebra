@@ -159,7 +159,7 @@ typedef void *PROC_handle;
 
 void register_callback(int32_t which, int64_t value)
 {   if (0<=which && which<=32)
-        callbacks[which] = bit_cast<void *>(static_cast<intptr_t>(value));
+        callbacks[which] = reinterpret_cast<void *>(static_cast<intptr_t>(value));
     std::printf("Callback number %d registered as %p\n", which,
                 callbacks[which]);
 }

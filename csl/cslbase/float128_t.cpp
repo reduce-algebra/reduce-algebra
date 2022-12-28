@@ -100,6 +100,42 @@ void f128_frexp(float128_t p, float128_t *r, int *x)
     *x = px - 0x3ffe;
 }
 
+float128_t f128_modf(float128_t p, float128_t& intpart)
+{   if (f128_zerop(p) || f128_nanp(p))
+    {   intpart = p;
+        return p;
+    }
+    else if (f128_infinitep(p))
+    {   intpart = p;
+        return f128_0;
+    }
+    int x = ((p.v[HIPART] >> 48) & 0x7fff) - 0x3fff;
+// If the input is less than 1.0 then it is all fraction
+    if (x <= 0)
+    {   intpart = f128_0;
+        return p;
+    }
+// If the value is at least 2^112 (and the exponent will be 113 then because
+// the notional mantissa range is 0.5 to 1.0) then it is an integer.
+    else if (x >= 113)
+    {   intpart = p;
+        return f128_0;
+    }
+// Now I have (112-x) bits that make up the fraction. I can set up
+// the integer part of the result by masking them out.
+    float128_t i = p;
+    int bits = 112-x;
+    if (bits < 64) i.v[LOPART] &= ~((1LLU<<bits) - 1);
+    else
+    {   i.v[LOPART] = 0;
+        if (bits > 64) i.v[HIPART] &= ~((1LLU<<(bits-64)) - 1);
+    }
+    intpart = i;
+// i has the same sign as p and has been truncated twaords zero, and
+// that will mean that the sign of the fractional part matches that of
+// the input.
+    return f128_sub(p, i);
+}
 
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
@@ -303,7 +339,7 @@ bool f256M_le(const float256_t *x, const float256_t *y)
     else return false;
 }
 
-// I suspect that this is noy yet right!
+// I suspect that this is not yet right!
 
 float256_t ato256(const char* s)
 {   bool sign = false;
@@ -471,7 +507,7 @@ bool f160_geq_10_19(uint64_t m[5], int bx)
     else if (bx > 64) return true;
     else if (m[4] < 0x8ac72304U) return false;
     else if (m[4] > 0x8ac72304U) return true;
-    else return m[3] >= 0x76400000U;
+    else return m[3] >= 0x89e80000U;
 }
 
 
@@ -530,10 +566,11 @@ bool f128_sprint(char* s, float128_t p, int& pdecexp)
     while (m[4] == 0)
     {   for (int i=3; i>=0; i--) m[i+1] = m[i];
         m[0] = 0;
+        bx -= 32;
     }
     int shiftBy = f160_nlz(m[4]) - 32;
     f160_leftshift(m, 0, shiftBy);
-    bx -= (shiftBy-16);
+    bx -= shiftBy;
 // Now I need to multiply or divide my number by a power of 10 until
 // it is in the range [10^18, 10^19). I choose that range because then
 // the integer part can be extracted to give the first 18 digits of the
@@ -632,7 +669,8 @@ bool round_at(char *s, int ndigits)
     }
 // If I have dropped out of the loop it means that I have rounded an
 // initial '9' up.
-    s[0] = '1';        // the remaining relevant digits will all be '0' here.
+    s[0] = '1';        // most of the remaining relevant digits are '0' here.
+    s[ndigits] = '0';
     return true;
 }
 

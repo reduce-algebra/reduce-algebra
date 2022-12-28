@@ -33,7 +33,6 @@
 
 // $Id$
 
-
 #include "headers.h"
 
 using number_dispatcher::Fixnum;

@@ -746,7 +746,7 @@ symbolic procedure probably_zero1(u, v);
     scalar vars, subs, u1, v1, scale, trials, !*msg;
 % Identify all the variable in the expressions.
     vars := findvars(v, findvars(u, nil));
-% Set up random substututions for each variable. Ensure that the values
+% Set up random substitutions for each variable. Ensure that the values
 % I select cause the first expression to evaluate to something in the
 % range 10^(-5) to 10^5. Hmmm if the first expression was in fact identically
 % zero this would not be possible and the code here would loop, so

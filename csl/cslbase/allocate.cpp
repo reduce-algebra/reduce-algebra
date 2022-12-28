@@ -152,7 +152,7 @@ void init_heap_segments(double store_size)
         fatal_error(err_no_store);
     }
     THREADID;
-    stackBase = bit_cast<uintptr_t>(stacksegment);
+    stackBase = reinterpret_cast<uintptr_t>(stacksegment);
 }
 
 inline bool is_in_big_chunk(void *p)
@@ -263,17 +263,19 @@ bool next_gc_is_hard = false;
 uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
-{   if (force_cons != 0 || force_vec != 0)
+{   SingleValued fn;
+    if (force_cons != 0 || force_vec != 0)
         trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
                      force_cons, force_vec);
 // If you pass a non-fixnum then that leaves the trigger-point unchanged.
     if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
     if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Lgc_forcer1(LispObject env, LispObject a)
-{   return Lgc_forcer(env, a, a);
+{   SingleValued fn;
+    return Lgc_forcer(env, a, a);
 }
 
 // All this stuff with setcar and setcdr is because while a new bit of
@@ -484,43 +486,44 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
 }
 
 LispObject Lcons(LispObject, LispObject a, LispObject b)
-{
+{   SingleValued fn;
     LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, b);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
-        return onevalue(reclaim(r, "cons", GC_CONS, 0));
-    else return onevalue(r);
+        return reclaim(r, "cons", GC_CONS, 0);
+    else return r;
 }
 
 LispObject Lxcons(LispObject, LispObject a, LispObject b)
-{
+{   SingleValued fn;
     LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, b);
     setcdr(r, a);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
-        return onevalue(reclaim(r, "xcons", GC_CONS, 0));
-    else return onevalue(r);
+        return reclaim(r, "xcons", GC_CONS, 0);
+    else return r;
 }
 
 LispObject Lnilfn(LispObject)
-{   return onevalue(nil);
+{   SingleValued fn;
+    return nil;
 }
 
 LispObject Lncons(LispObject env, LispObject a)
-{
+{   SingleValued fn;
     LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
     setcar(r, a);
     setcdr(r, nil);
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
-        return onevalue(reclaim(r, "ncons", GC_CONS, 0));
-    else return onevalue(r);
+        return reclaim(r, "ncons", GC_CONS, 0);
+    else return r;
 }
 
 LispObject get_symbol(bool gensymp)
@@ -610,7 +613,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // certain that the loop here terminates!
             continue;
         }
-        *bit_cast<Header *>(r) = type + (size <<
+        *reinterpret_cast<Header *>(r) = type + (size <<
                                          (Tw+5)) + TAG_HDR_IMMED;
 // DANGER: the vector allocated here is left uninitialised at this stage.
 // This is OK if the vector will contain binary information, but if it
@@ -625,7 +628,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // through it. By tidying this up here can feel that I do not have any
 // need to worry about it elsewhere.
         if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *bit_cast<LispObject *>(vfringe-CELL) = 0;
+            *reinterpret_cast<LispObject *>(vfringe-CELL) = 0;
         return static_cast<LispObject>(r + tag);
     }
 }
@@ -662,29 +665,29 @@ void get_borrowed_page()
     }
     void *p = pages[--borrowed_pages_count];
     borrowed_vfringe =
-        bit_cast<LispObject>(bit_cast<char *>
+        reinterpret_cast<LispObject>(reinterpret_cast<char *>
                                      (doubleword_align_up((intptr_t)p)) + 8);
     borrowed_vheaplimit =
-        bit_cast<LispObject>(bit_cast<char *>
+        reinterpret_cast<LispObject>(reinterpret_cast<char *>
                                      (borrowed_vfringe) + (CSL_PAGE_SIZE-16));
 }
 
 LispObject borrow_basic_vector(int tag, int type, size_t size)
 {   for (;;)
-    {   char *r = bit_cast<char *>(borrowed_vfringe);
-        size_t freespace = (size_t)(bit_cast<char *>
+    {   char *r = reinterpret_cast<char *>(borrowed_vfringe);
+        size_t freespace = (size_t)(reinterpret_cast<char *>
                                     (borrowed_vheaplimit) - r);
         size_t alloc_size = (size_t)doubleword_align_up(size);
         if (alloc_size > freespace)
         {   get_borrowed_page();
             continue;
         }
-        borrowed_vfringe = bit_cast<LispObject>(r + alloc_size);
-        *(bit_cast<Header *>(r)) = type + (size <<
+        borrowed_vfringe = reinterpret_cast<LispObject>(r + alloc_size);
+        *(reinterpret_cast<Header *>(r)) = type + (size <<
                                            (Tw+5)) + TAG_HDR_IMMED;
         if (!SIXTY_FOUR_BIT && alloc_size != size)
-            *bit_cast<LispObject *>(borrowed_vfringe-CELL) = 0;
-        return bit_cast<LispObject>(r + tag);
+            *reinterpret_cast<LispObject *>(borrowed_vfringe-CELL) = 0;
+        return reinterpret_cast<LispObject>(r + tag);
     }
 }
 

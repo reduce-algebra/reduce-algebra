@@ -184,11 +184,11 @@ class ThreadLocal
 public:
     T operator=(T v)
     {   write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v));
+            reinterpret_cast<void *>(v));
         return v;
     }
     operator T() const
-    {   return bit_cast<T>(
+    {   return reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
     }
     template <typename T1>
@@ -197,51 +197,51 @@ public:
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>();
     }
     T operator ++()
-    {   T v = bit_cast<T>(
+    {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
             + 1U;
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v));
+            reinterpret_cast<void *>(v));
         return v;
     }
     T operator ++(int)
-    {   T v = bit_cast<T>(
+    {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v + 1U));
+            reinterpret_cast<void *>(v + 1U));
         return v;
     }
     T operator --()
-    {   T v = bit_cast<T>(
+    {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
             - 1U;
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v));
+            reinterpret_cast<void *>(v));
         return v;
     }
     T operator --(int)
-    {   T v = bit_cast<T>(
+    {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v - 1U));
+            reinterpret_cast<void *>(v - 1U));
         return v;
     }
     template <typename T1>
     T operator +=(T1 n)
-    {   T v = bit_cast<T>(
+    {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) +
             static_cast<uintptr_t>(n);
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v));
+            reinterpret_cast<void *>(v));
         return v;
     }
     template <typename T1>
     T operator -=(T1 n)
-    {   T v = bit_cast<T>(
+    {   T v = reinterpret_cast<T>(
             read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) -
             static_cast<uintptr_t>(n);
         write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            bit_cast<void *>(v));
+            reinterpret_cast<void *>(v));
         return v;
     }
 };

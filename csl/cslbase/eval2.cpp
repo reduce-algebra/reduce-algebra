@@ -198,7 +198,7 @@ static LispObject and_fn(LispObject args, LispObject env)
 {   THREADID;
     stackcheck(THREADARG args, env);
     STACK_SANITY;
-    if (!consp(args)) return onevalue(lisp_true);
+    if (!consp(args)) return lisp_true;
     for (;;)
     {   LispObject v = car(args);
         args = cdr(args);
@@ -206,7 +206,7 @@ static LispObject and_fn(LispObject args, LispObject env)
         Save save(THREADARG args, env);
         v = eval(v, env);
         save.restore(args, env);
-        if (v == nil) return onevalue(nil);
+        if (v == nil) return nil;
     }
 }
 
@@ -231,7 +231,7 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
 {   LispObject p;
     THREADID;
     STACK_SANITY;
-    if (!consp(iargs)) return onevalue(nil);
+    if (!consp(iargs)) return nil;
     stackcheck(THREADARG iargs, ienv);
     RealSave save(THREADARG
                   car(iargs),          // my_tag
@@ -274,7 +274,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
 {   LispObject tag, v;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     stackcheck(THREADARG args, env);
     {   Save save(THREADARG args, env);
         tag = car(args);
@@ -308,7 +308,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
     catch_tags = cdr(tag);
     write_barrier(caraddr(tag), tag);
     setcdr(tag, nil);            // Invalidate the catch frame
-    return onevalue(v);
+    return v;
 }
 
 // let_fn_1 is used for various things that bind variables - and in CSL
@@ -479,7 +479,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 }
 
 static LispObject compiler_let_fn(LispObject args, LispObject env)
-{   if (!consp(args)) return onevalue(nil);
+{   if (!consp(args)) return nil;
     STACK_SANITY;
     return let_fn_1(car(args), cdr(args), env, BODY_COMPILER_LET);
 }
@@ -502,13 +502,13 @@ LispObject cond_fn(LispObject args, LispObject env)
             {   args = cdr(car(args));
 // Here I support the case "(cond (predicate) ...)" with no consequents
 // as returning the non-nil value of the predicate.
-                if (!consp(args)) return onevalue(p1);
+                if (!consp(args)) return p1;
                 else return progn_fn(args, env);
             }
         }
         args = cdr(args);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject declare_fn(LispObject, LispObject)
@@ -520,7 +520,7 @@ LispObject declare_fn(LispObject, LispObject)
 // Indeed (declare ...) probably does not ever get evaluated - still
 // a no-op here seems the safest bet. And in CSL mode this allows one to
 // have left DECLAREs in there for the benefit of the compiler.
-{   return onevalue(nil);
+{   return nil;
 }
 
 
@@ -542,12 +542,12 @@ static LispObject defun_fn(LispObject args, LispObject)
         {   LispObject fv;
             if (qheader(fname) & SYM_SPECIAL_FORM)
                 return error(1, err_redef_special, fname);
-            if ((qheader(fname) & SYM_CODEPTR) != 0) return onevalue(fname);
+            if ((qheader(fname) & SYM_CODEPTR) != 0) return fname;
             if (flagged_lose(fname))
             {   debug_printf("\n+++ ");
                 loop_print_debug(fname);
                 debug_printf(" not defined because of LOSE flag\n");
-                return onevalue(nil);
+                return nil;
             }
             setheader(fname, qheader(fname) & ~SYM_MACRO);
             if (qfn1(fname) != undefined_1)
@@ -574,7 +574,7 @@ static LispObject defun_fn(LispObject args, LispObject)
                 (*qfn1(compiler_symbol))(compiler_symbol, args);
                 save.restore(fname);
             }
-            return onevalue(fname);
+            return fname;
         }
     }
     return aerror("defun");
@@ -597,7 +597,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
             args = cons(list3(car(bvl), opt_key, Lgensym(nil)),
                         cdr(args));
         if (is_symbol(fname))
-        {   if ((qheader(fname) & SYM_CODEPTR) != 0) return onevalue(fname);
+        {   if ((qheader(fname) & SYM_CODEPTR) != 0) return fname;
             setheader(fname, qheader(fname) | SYM_MACRO);
 // Note that a name can have a definition as a macro and as a special form,
 // and in that case the qfn() cell gives the special form and the qenv()
@@ -634,7 +634,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                     save.restore(fname);
                 }
             }
-            return onevalue(fname);
+            return fname;
         }
     }
     return aerror("defmacro");
@@ -644,21 +644,21 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
 // When interpreted, eval-when just looks for the situation EVAL.
 {   LispObject situations;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     situations = car(args);
     args = cdr(args);
     while (consp(situations))
     {   if (car(situations) == eval_symbol) return progn_fn(args, env);
         situations = cdr(situations);
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject flet_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     stackcheck(THREADARG args, env);
     my_env = env;
     d = car(args);     // The bunch of definitions
@@ -697,7 +697,7 @@ LispObject function_fn(LispObject args, LispObject env)
     {   args = car(args);
         if (consp(args) && car(args) == lambda)
             args = list2star(funarg, env, cdr(args));
-        return onevalue(args);
+        return args;
     }
     return aerror("function");
 }
@@ -755,7 +755,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
     THREADID;
     STACK_SANITY;
-    if (!consp(args)) return onevalue(nil);
+    if (!consp(args)) return nil;
     stackcheck(THREADARG args, env);
     errexit();
     my_env = env;
@@ -790,7 +790,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 }
 
 static LispObject let_fn(LispObject args, LispObject env)
-{   if (!consp(args)) return onevalue(nil);
+{   if (!consp(args)) return nil;
     STACK_SANITY;
     return let_fn_1(car(args), cdr(args), env, BODY_LET);
 }
@@ -798,7 +798,7 @@ static LispObject let_fn(LispObject args, LispObject env)
 static LispObject letstar_fn(LispObject args, LispObject ienv)
 // This will have to look for (declare (special ...)), unless
 // I am in CSL mode.
-{   if (!consp(args)) return onevalue(nil);
+{   if (!consp(args)) return nil;
     THREADID;
     STACK_SANITY;
     stackcheck(THREADARG args, ienv);

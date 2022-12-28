@@ -453,10 +453,8 @@ inline SpoolStream<char>& zstream()
 
 #ifdef __cpp_consteval
 #define CONSTFN consteval
-// #pragma message ("consteval available")
 #else // __cpp_consteval
 #define CONSTFN constexpr
-// #pragma message ("consteval not available: fall back to constexpr")
 #endif // __cpp_consteval
 
 // std::type_identity was introduced in C++20 but this is how it could be
@@ -1352,8 +1350,6 @@ BadFmt(
                 std::cout << std::defaultfloat;
                 break;
             }
-            if (width != 0) std::cout << std::setw(width-1);
-            if (precision != 0) std::cout << std::setprecision(precision-1);
 // A particular oddity here is a C/printf style format specification such
 // as "%12.7d" where the range of C++ manipulators do not provide a trivial
 // sequence to map this on to. I think it needs to be turned into something
@@ -1367,6 +1363,10 @@ BadFmt(
             if (type==argTypeInt && precision != 0 && width >= precision)
             {   for (int k=0; k<width-precision; k++) std::cout << " ";
                 std::cout << std::setw(precision-1) << std::setfill('0');
+            }
+            else
+            {   if (width != 0) std::cout << std::setw(width-1);
+                if (precision != 0) std::cout << std::setprecision(precision-1);
             }
 //
 //          if (type==argTypeInt)

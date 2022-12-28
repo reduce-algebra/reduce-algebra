@@ -42,11 +42,12 @@
 
 static LispObject Lboole_3(LispObject env, LispObject op,
                            LispObject a1, LispObject a2)
-{   LispObject r;
+{   SingleValued fn;
+    LispObject r;
     THREADID;
     switch (is_fixnum(op) ? int_of_fixnum(op) : -1)
     {   case boole_clr:
-            return onevalue(fixnum_of_int(0));
+            return fixnum_of_int(0);
         case boole_and:
             r = logand2(a1, a2);
             break;
@@ -59,7 +60,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = logand2(a1, a2);
             break;
         case boole_1:
-            return onevalue(a1);
+            return a1;
         case boole_andc1:
             {   Save save(THREADARG a2);
                 a1 = lognot(a1);
@@ -69,7 +70,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = logand2(a1, a2);
             break;
         case boole_2:
-            return onevalue(a2);
+            return a2;
         case boole_xor:
             r = logxor2(a1, a2);
             break;
@@ -112,45 +113,49 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = lognot(a1);
             break;
         case boole_set:
-            return onevalue(fixnum_of_int(-1));
+            return fixnum_of_int(-1);
         default:
             return aerror1("bad arg for boole",  op);
     }
-    return onevalue(r);
+    return r;
 }
 
 static LispObject Lbyte(LispObject env, LispObject a, LispObject b)
-{   a = cons(a, b);
-    return onevalue(a);
+{   SingleValued fn;
+    a = cons(a, b);
+    return a;
 }
 
 static LispObject Lbyte_position(LispObject env, LispObject a)
-{   if (!consp(a)) return aerror1("byte-position", a);
-    else return onevalue(cdr(a));
+{   SingleValued fn;
+    if (!consp(a)) return aerror1("byte-position", a);
+    else return cdr(a);
 }
 
 static LispObject Lbyte_size(LispObject env, LispObject a)
-{   if (!consp(a)) return aerror1("byte-size", a);
-    else return onevalue(car(a));
+{   SingleValued fn;
+    if (!consp(a)) return aerror1("byte-size", a);
+    else return car(a);
 }
 
 static LispObject Lcomplex_2(LispObject env, LispObject a,
                              LispObject b)
-{
+{   SingleValued fn;
 // /* Need to coerce a and b to the same type here...
     a = make_complex(a, b);
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lcomplex_1(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // /* Need to make zero of same type as a
     a = make_complex(a, fixnum_of_int(0));
-    return onevalue(a);
+    return a;
 }
 
 static LispObject Lconjugate(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("conjugate", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("conjugate", a);
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                        i = imag_part(a);
@@ -161,21 +166,22 @@ static LispObject Lconjugate(LispObject env, LispObject a)
             save.restore(r);
         }
         a = make_complex(r, i);
-        return onevalue(a);
+        return a;
     }
-    else return onevalue(a);
+    else return a;
 }
 
 static LispObject Ldenominator(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("denominator", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("denominator", a);
     if (is_numbers(a) && is_ratio(a))
-        return onevalue(denominator(a));
-    else return onevalue(fixnum_of_int(1));
+        return denominator(a);
+    else return fixnum_of_int(1);
 }
 
 static LispObject Ldeposit_field_3(LispObject env, LispObject a1,
                                    LispObject a2, LispObject a3)
-{
+{   SingleValued fn;
 // Not implemented yet!
 #ifdef LATER
 // Perhaps I will eventually implement this!
@@ -185,7 +191,7 @@ static LispObject Ldeposit_field_3(LispObject env, LispObject a1,
 
 static LispObject Ldpb_3(LispObject env, LispObject a1,
                          LispObject a2, LispObject a3)
-{
+{   SingleValued fn;
 // Not implemented yet!
 #ifdef LATER
 // Ha ha!
@@ -194,50 +200,55 @@ static LispObject Ldpb_3(LispObject env, LispObject a1,
 }
 
 static LispObject Lldb(LispObject env, LispObject a1, LispObject a2)
-{
+{   SingleValued fn;
 // Not implemented yet!
     return aerror("ldb");
 }
 
 static LispObject Lldb_test(LispObject env, LispObject a1,
                             LispObject a2)
-{
+{   SingleValued fn;
 // Not implemented yet!
     return aerror("ldb-test");
 }
 
 static LispObject Lffloor(LispObject env, LispObject a1,
                           LispObject a2)
-{
+{   SingleValued fn;
 // Not implemented yet!
     return aerror("ffloor");
 }
 
 LispObject Lgcd_0(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Lgcd_1(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Lgcd_2(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(gcd(a1, a2));
+{   SingleValued fn;
+    return gcd(a1, a2);
 }
 
 LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3);
     a1 = gcd(a1, a2);
     errexit();
     save.restore(a3);
-    return onevalue(gcd(a1, a3));
+    return gcd(a1, a3);
 }
 
 LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     {   Save save(THREADARG a3, a4up);
         a1 = gcd(a1, a2);
         errexit();
@@ -253,42 +264,48 @@ LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
         save.restore(a4up);
         a4up = cdr(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 static LispObject Limagpart(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("imagpart", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("imagpart", a);
     if (is_numbers(a) && is_complex(a))
-        return onevalue(imag_part(a));
+        return imag_part(a);
 // /* the 0.0 returned here ought to be the same type as a has
-    else return onevalue(fixnum_of_int(0));
+    else return fixnum_of_int(0);
 }
 
 LispObject Llcm_0(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Llcm_1(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Llcm_2(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(lcm(a1, a2));
+{   SingleValued fn;
+    return lcm(a1, a2);
 }
 
 LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     Save save(THREADARG a3);
     a1 = lcm(a1, a2);
     errexit();
     save.restore(a3);
-    return onevalue(lcm(a1, a3));
+    return lcm(a1, a3);
 }
 
 LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
-{   THREADID;
+{   SingleValued fn;
+    THREADID;
     {   Save save(THREADARG a3, a4up);
         a1 = lcm(a1, a2);
         errexit();
@@ -304,21 +321,23 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
         save.restore(a4up);
         a4up = cdr(a4up);
     }
-    return onevalue(a1);
+    return a1;
 }
 
 static LispObject Lnumerator(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("numerator", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("numerator", a);
     if (is_numbers(a) && is_ratio(a))
-        return onevalue(numerator(a));
-    else return onevalue(a);
+        return numerator(a);
+    else return a;
 }
 
 static LispObject Lrealpart(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("realpart", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("realpart", a);
     if (is_numbers(a) && is_complex(a))
-        return onevalue(real_part(a));
-    else return onevalue(a);
+        return real_part(a);
+    else return a;
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -326,7 +345,7 @@ LispObject decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128_infinitep(d) || f128_nanp(d))
     {   if (trap_floating_overflow) return aerror("decode-float");
-        else return onevalue(nil); // infinity or NaN
+        else return nil; // infinity or NaN
     }
     bool neg = false;
     int x = 0;
@@ -373,7 +392,7 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     d = float_of_number(a);
     if (floating_edge_case(d))
     {   if (trap_floating_overflow) return aerror("decode-float");
-        else return onevalue(nil); // infinity or NaN
+        else return nil; // infinity or NaN
     }
 // Ha ha ha - I detect -0.0 here.
     if (d < 0.0 || (d == 0.0 && 1.0/d < 0)) d = -d, neg = -1.0;
@@ -407,11 +426,12 @@ LispObject Ldecode_float(LispObject env, LispObject a)
 
 
 static LispObject Lfp_infinite(LispObject env, LispObject a)
-{   switch (static_cast<int>(a) & XTAG_BITS)
+{   SingleValued fn;
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
             if (std::fpclassify(value_of_immediate_float(a)) == FP_INFINITE)
-                return onevalue(lisp_true);
-            return onevalue(nil);
+                return lisp_true;
+            return nil;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
@@ -420,58 +440,60 @@ static LispObject Lfp_infinite(LispObject env, LispObject a)
                 case LONG_FLOAT_HEADER:
                     if (f128_infinitep(*reinterpret_cast<float128_t *>(&long_float_val(
                                            a))))
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
 #endif // HAVE_SOFTFLOAT
                 case SINGLE_FLOAT_HEADER:
                 case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_INFINITE)
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
             }
         default:
             break;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 
 static LispObject Lfp_nan(LispObject env, LispObject a)
-{   switch (static_cast<int>(a) & XTAG_BITS)
+{   SingleValued fn;
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
             if (std::fpclassify(value_of_immediate_float(a)) == FP_NAN)
-                return onevalue(lisp_true);
-            return onevalue(nil);
+                return lisp_true;
+            return nil;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
                     if (std::fpclassify(single_float_val(a)) == FP_NAN)
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                     if (f128_nanp(*reinterpret_cast<float128_t *>(&long_float_val(a))))
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
 #endif // HAVE_SOFTFLOAT
                 case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_NAN)
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
             }
         default:
             break;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lfp_finite(LispObject env, LispObject a)
-{   switch (static_cast<int>(a) & XTAG_BITS)
+{   SingleValued fn;
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
             if (std::isfinite(value_of_immediate_float(a)))
-                return onevalue(lisp_true);
-            return onevalue(nil);
+                return lisp_true;
+            return nil;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
@@ -479,53 +501,54 @@ static LispObject Lfp_finite(LispObject env, LispObject a)
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                     if (f128_finite(*reinterpret_cast<float128_t *>(&long_float_val(a))))
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
 #endif // HAVE_SOFTFLOAT
                 case SINGLE_FLOAT_HEADER:
                     if (std::isfinite(single_float_val(a)))
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
                 case DOUBLE_FLOAT_HEADER:
                     if (std::isfinite(double_float_val(a)))
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
             }
         default:
             break;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 static LispObject Lfp_subnorm(LispObject env, LispObject a)
-{   switch (static_cast<int>(a) & XTAG_BITS)
+{   SingleValued fn;
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
         {   if (std::fpclassify(value_of_immediate_float(a)) == FP_SUBNORMAL)
-                return  onevalue(lisp_true);
-            else return onevalue(nil);
+                return  lisp_true;
+            else return nil;
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
                     if (std::fpclassify(single_float_val(a)) == FP_SUBNORMAL)
-                        return  onevalue(lisp_true);
-                    else return onevalue(nil);
+                        return  lisp_true;
+                    else return nil;
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
                     if (f128_subnorm(*reinterpret_cast<float128_t *>(&long_float_val(a))))
-                        return onevalue(lisp_true);
-                    return onevalue(nil);
+                        return lisp_true;
+                    return nil;
 #endif // HAVE_SOFTFLOAT
                 case DOUBLE_FLOAT_HEADER:
                     if (std::fpclassify(double_float_val(a)) == FP_SUBNORMAL)
-                        return  onevalue(lisp_true);
-                    else return onevalue(nil);
+                        return  lisp_true;
+                    else return nil;
             }
         default:
             break;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 // This will return T if its argument has its sign bit set. Note that this
@@ -537,28 +560,29 @@ static LispObject Lfp_subnorm(LispObject env, LispObject a)
 #define HAVE_SIGNBIT 1
 
 static LispObject Lfp_signbit(LispObject env, LispObject a)
-{   switch (static_cast<int>(a) & XTAG_BITS)
+{   SingleValued fn;
+    switch (static_cast<int>(a) & XTAG_BITS)
     {   case XTAG_SFLOAT:
-            if ((intptr_t)a < 0) return onevalue(lisp_true);
-            else return onevalue(nil);
+            if ((intptr_t)a < 0) return lisp_true;
+            else return nil;
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
-                    return onevalue(std::signbit(single_float_val(a)) ? lisp_true : nil);
+                    return std::signbit(single_float_val(a)) ? lisp_true : nil;
 #ifdef HAVE_SOFTFLOAT
                 case LONG_FLOAT_HEADER:
-                    return onevalue(f128_negative(*reinterpret_cast<float128_t *>
-                                                   (&long_float_val(a))) ?
-                                    lisp_true : nil);
+                    return f128_negative(
+                        *reinterpret_cast<float128_t *>(&long_float_val(a))) ?
+                        lisp_true : nil;
 #endif // HAVE_SOFTFLOAT
                 case DOUBLE_FLOAT_HEADER:
-                    return onevalue(std::signbit(double_float_val(a)) ? lisp_true : nil);
+                    return std::signbit(double_float_val(a)) ? lisp_true : nil;
             }
         default:
             break;
     }
-    return onevalue(nil);
+    return nil;
 }
 
 
@@ -569,21 +593,22 @@ static LispObject Lfp_signbit(LispObject env, LispObject a)
 // worry about them later on if I am really forced to.
 
 static LispObject Lfloat_digits(LispObject env, LispObject a)
-{   int tag = static_cast<int>(a) & XTAG_BITS;
+{   SingleValued fn;
+    int tag = static_cast<int>(a) & XTAG_BITS;
     switch (tag)
     {   case XTAG_SFLOAT:
             if (SIXTY_FOUR_BIT && ((a & XTAG_FLOAT32) != 0))
-                return onevalue(fixnum_of_int(24));
-            else return onevalue(fixnum_of_int(20));
+                return fixnum_of_int(24);
+            else return fixnum_of_int(20);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
-                    return onevalue(fixnum_of_int(24));
+                    return fixnum_of_int(24);
                 case DOUBLE_FLOAT_HEADER:
-                    return onevalue(fixnum_of_int(53));
+                    return fixnum_of_int(53);
                 case LONG_FLOAT_HEADER:
-                    return onevalue(fixnum_of_int(113));
+                    return fixnum_of_int(113);
             }
         default:
             return aerror("float-digits");
@@ -591,23 +616,24 @@ static LispObject Lfloat_digits(LispObject env, LispObject a)
 }
 
 static LispObject Lfloat_precision(LispObject env, LispObject a)
-{   int tag = static_cast<int>(a) & XTAG_BITS;
+{   SingleValued fn;
+    int tag = static_cast<int>(a) & XTAG_BITS;
     double d = float_of_number(a);
-    if (d == 0.0) return onevalue(fixnum_of_int(0));
+    if (d == 0.0) return fixnum_of_int(0);
     switch (tag)
     {   case XTAG_SFLOAT:
             if (SIXTY_FOUR_BIT && ((a & XTAG_FLOAT32) != 0))
-                return onevalue(fixnum_of_int(24));
-            else return onevalue(fixnum_of_int(20));
+                return fixnum_of_int(24);
+            else return fixnum_of_int(20);
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (flthdr(a))
             {   case SINGLE_FLOAT_HEADER:
-                    return onevalue(fixnum_of_int(24));
+                    return fixnum_of_int(24);
                 case DOUBLE_FLOAT_HEADER:
-                    return onevalue(fixnum_of_int(53));
+                    return fixnum_of_int(53);
                 case LONG_FLOAT_HEADER:
-                    return onevalue(fixnum_of_int(113));
+                    return fixnum_of_int(113);
             }
         default:
             return aerror("float-precision");
@@ -618,12 +644,13 @@ static LispObject Lfloat_precision(LispObject env, LispObject a)
 // find the radix does not need to look at its argument.
 
 static LispObject Lfloat_radix(LispObject env, LispObject a2)
-{   return onevalue(fixnum_of_int(FLT_RADIX));
+{   SingleValued fn;
+    return fixnum_of_int(FLT_RADIX);
 }
 
 static LispObject Lfloat_sign2(LispObject env, LispObject a,
                                LispObject b)
-{
+{   SingleValued fn;
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(b) &&
         flthdr(b) == LONG_FLOAT_HEADER)
@@ -631,46 +658,48 @@ static LispObject Lfloat_sign2(LispObject env, LispObject a,
 // If a is another long float then float_of_number may overflow, but
 // here I am only interested in its sign, and -infinity is still negative.
         if (float_of_number(a) < 0.0) f128_negate(&d);
-        return onevalue(make_boxfloat128(d));
+        return make_boxfloat128(d);
     }
 #endif // HAVE_SOFTFLOAT
     double d = float_of_number(b);
 // Worry a bit about -0.0 here
     if (float_of_number(a) < 0.0) d = -d;
-    if (is_sfloat(b)) return onevalue(pack_immediate_float(d, b));
+    if (is_sfloat(b)) return pack_immediate_float(d, b);
     else if (!is_bfloat(b)) return aerror1("bad arg for float-sign",  b);
 // make_boxfloat may detect infinity or NaN.
-    else return onevalue(make_boxfloat(d, floatWant(flthdr(b))));
+    else return make_boxfloat(d, floatWant(flthdr(b)));
 }
 
 static LispObject Lfloat_sign1(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(1) &&
         flthdr(a) == LONG_FLOAT_HEADER)
     {   float128_t d = float128_of_number(a);
         float128_t r = f128_1;
         if (f128_negative(d)) f128_negate(&r);
-        return onevalue(make_boxfloat128(r));
+        return make_boxfloat128(r);
     }
 #endif // HAVE_SOFTFLOAT
     double d = float_of_number(a);
 // worry a bit about -0.0 here
     if (d < 0.0) d = -1.0;
     else d = 1.0;
-    if (is_sfloat(a)) return onevalue(pack_immediate_float(d, a));
+    if (is_sfloat(a)) return pack_immediate_float(d, a);
     else if (!is_bfloat(a)) return aerror1("bad arg for float-sign",  a);
-    else return onevalue(make_boxfloat(d, floatWant(flthdr(a))));
+    else return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
 static LispObject Lfround(LispObject env, LispObject a1,
                           LispObject a2)
-{   return aerror("fround");
+{   SingleValued fn;
+    return aerror("fround");
 }
 
 static LispObject Lftruncate(LispObject env, LispObject a1,
                              LispObject a2)
-{   return aerror("ftruncate");
+{   SingleValued fn;
+    return aerror("ftruncate");
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -678,7 +707,7 @@ LispObject integer_decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128_infinitep(d) || f128_nanp(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
-        else return onevalue(nil); // infinity or NaN
+        else return nil; // infinity or NaN
     }
     if (f128M_eq(&d, &f128_0))
 #ifdef COMMON
@@ -713,7 +742,8 @@ LispObject integer_decode_long_float(LispObject a)
 
 
 LispObject Linteger_decode_float(LispObject env, LispObject a)
-{   double d;
+{   SingleValued fn;
+    double d;
     if (!is_float(a)) return aerror("integer-decode-float");
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
@@ -722,7 +752,7 @@ LispObject Linteger_decode_float(LispObject env, LispObject a)
     d = float_of_number(a);
     if (floating_edge_case(d))
     {   if (trap_floating_overflow) return aerror("integer-decode-float");
-        else return onevalue(nil); // infinity or NaN
+        else return nil; // infinity or NaN
     }
     if (d == 0.0)
 #ifdef COMMON
@@ -755,21 +785,22 @@ LispObject Linteger_decode_float(LispObject env, LispObject a)
 }
 
 static LispObject Linteger_length(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   intptr_t n = int_of_fixnum(a);
         if (n < 0) n = -n-1;
-        if (n == 0) return onevalue(fixnum_of_int(0));
+        if (n == 0) return fixnum_of_int(0);
 // Now n is strictly positive.
         int r = 0;
         if (SIXTY_FOUR_BIT &&
             n >= (intptr_t)INT64_C(0x100000000))
             r += 32, n = (intptr_t)((int64_t)n >> 32);
 #ifdef HAVE___BUILTIN_CLZ
-        return onevalue(fixnum_of_int(r + 32 - __builtin_clz((uint32_t)n)));
+        return fixnum_of_int(r + 32 - __builtin_clz((uint32_t)n));
 #else
         if (n >= 0x10000) r += 16, n >>= 16;
         if (n >= 0x100)   r += 8,  n >>= 8;
-        return onevalue(fixnum_of_int(r + msd_table[n]));
+        return fixnum_of_int(r + msd_table[n]);
 #endif
     }
     if (!is_numbers(a) || !is_bignum(a)) return aerror1("integer-length", a);
@@ -779,7 +810,8 @@ static LispObject Linteger_length(LispObject env, LispObject a)
 
 static LispObject Llogbitp(LispObject env, LispObject a1,
                            LispObject a2)
-{   if (!is_fixnum(a1) || (intptr_t)a1 < 0)
+{   SingleValued fn;
+    if (!is_fixnum(a1) || (intptr_t)a1 < 0)
         return aerror1("logbitp", a1);
     uintptr_t n = int_of_fixnum(a1);
     if (is_fixnum(a2))
@@ -867,10 +899,11 @@ inline int popcount(uint64_t x)
 #endif // POPCOUNT_DEFINED
 
 static LispObject Llogcount(LispObject env, LispObject a)
-{   if (is_fixnum(a))
+{   SingleValued fn;
+    if (is_fixnum(a))
     {   intptr_t n = int_of_fixnum(a);
-        if (a >= 0) return onevalue(fixnum_of_int(popcount(n)));
-        else return onevalue(fixnum_of_int(popcount(~n)));
+        if (a >= 0) return fixnum_of_int(popcount(n));
+        else return fixnum_of_int(popcount(~n));
     }
     else if (is_bignum(a))
     {   size_t len = (length_of_header(numhdr(a)) - CELL)/4;
@@ -883,19 +916,21 @@ static LispObject Llogcount(LispObject env, LispObject a)
         {   for (size_t i=0; i<len; i++)
                 n += popcount(bignum_digits(a)[i]);
         }
-        return onevalue(fixnum_of_int(n));
+        return fixnum_of_int(n);
     }
     else return aerror1("bad argument to logcount", a);
 }
 
 static LispObject Llogtest(LispObject env, LispObject a1,
                            LispObject a2)
-{   return aerror("logtest");
+{   SingleValued fn;
+    return aerror("logtest");
 }
 
 static LispObject Lmask_field(LispObject env, LispObject a1,
                               LispObject a2)
-{   return aerror("mask-field");
+{   SingleValued fn;
+    return aerror("mask-field");
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -925,13 +960,15 @@ static LispObject scale_float128(LispObject a, intptr_t x)
 #endif // HAVE_SOFTFLOAT
 
 static LispObject Lround_2(LispObject env, LispObject a, LispObject b)
-{   if (!is_number(a) || !is_number(b)) return aerror1("round", a);
+{   SingleValued fn;
+    if (!is_number(a) || !is_number(b)) return aerror1("round", a);
     return lisp_ifix(a, b, FIX_ROUND);
 }
 
 static LispObject Lscale_float(LispObject env, LispObject a,
                                LispObject b)
-{   if (!is_fixnum(b)) return aerror("scale-float");
+{   SingleValued fn;
+    if (!is_fixnum(b)) return aerror("scale-float");
     intptr_t x = int_of_fixnum(b);
 #ifdef HAVE_SOFTFLOAT
     if (is_bfloat(a) && flthdr(a) == LONG_FLOAT_HEADER)
@@ -942,9 +979,9 @@ static LispObject Lscale_float(LispObject env, LispObject a,
     else if (x <= -4096) x = -4096;
     d = std::ldexp(d, static_cast<int>(x));
 // Overflows etc handled by make_boxfloat.
-    if (is_sfloat(a)) return onevalue(pack_immediate_float(d, a));
+    if (is_sfloat(a)) return pack_immediate_float(d, a);
     else if (!is_bfloat(a)) return aerror1("bad arg for scale-float",  a);
-    else return onevalue(make_boxfloat(d, floatWant(flthdr(a))));
+    else return make_boxfloat(d, floatWant(flthdr(a)));
 }
 
 #ifdef HAVE_SOFTFLOAT
@@ -1204,7 +1241,8 @@ LispObject lisp_fix(LispObject a, int roundmode)
 }
 
 static LispObject Lround(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("round", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("round", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_ROUND);
     if (is_float(a)) return lisp_fix(a, FIX_ROUND);
     mv_2 = fixnum_of_int(0);
@@ -1282,22 +1320,26 @@ LispObject lisp_ifix(LispObject aa, LispObject bb, int roundmode)
 
 static LispObject Lceiling_2(LispObject env, LispObject a,
                              LispObject b)
-{   if (!is_number(a) || !is_number(b)) return aerror1("ceiling", a);
+{   SingleValued fn;
+    if (!is_number(a) || !is_number(b)) return aerror1("ceiling", a);
     return lisp_ifix(a, b, FIX_CEILING);
 }
 
 static LispObject Lfloor_2(LispObject env, LispObject a, LispObject b)
-{   if (!is_number(a) || !is_number(b)) return aerror1("floor", a);
+{   SingleValued fn;
+    if (!is_number(a) || !is_number(b)) return aerror1("floor", a);
     return lisp_ifix(a, b, FIX_FLOOR);
 }
 
 LispObject Ltruncate_2(LispObject env, LispObject a, LispObject b)
-{   if (!is_number(a) || !is_number(b)) return aerror1("truncate", a);
+{   SingleValued fn;
+    if (!is_number(a) || !is_number(b)) return aerror1("truncate", a);
     return lisp_ifix(a, b, FIX_TRUNCATE);
 }
 
 static LispObject Lceiling(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("ceiling", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("ceiling", a);
     if (is_numbers(a) &&
         is_ratio(a)) return lisp_fix_ratio(a, FIX_CEILING);
     if (is_float(a)) return lisp_fix(a, FIX_CEILING);
@@ -1306,7 +1348,8 @@ static LispObject Lceiling(LispObject env, LispObject a)
 }
 
 static LispObject Lfloor(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("floor", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("floor", a);
     if (is_numbers(a) && is_ratio(a)) return lisp_fix_ratio(a, FIX_FLOOR);
     if (is_float(a)) return lisp_fix(a, FIX_FLOOR);
     mv_2 = fixnum_of_int(0);
@@ -1314,7 +1357,8 @@ static LispObject Lfloor(LispObject env, LispObject a)
 }
 
 LispObject Ltruncate(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("fix", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("fix", a);
     if (is_numbers(a) &&
         is_ratio(a)) return lisp_fix_ratio(a, FIX_TRUNCATE);
     if (is_float(a)) return lisp_fix(a, FIX_TRUNCATE);

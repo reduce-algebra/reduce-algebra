@@ -35,7 +35,7 @@ module tayintro;
 exports
         confusion, constant!-sq!-p, delete!-nth, delete!-nth!-nth,
         replace!-nth, replace!-nth!-nth, smemberlp, taylor!-error,
-        var!-is!-nth;
+        taylor!-error!*, var!-is!-nth;
 
 imports
 
@@ -181,9 +181,9 @@ symbolic procedure taylor!-error (type, info);
 
 symbolic procedure taylor!-error!*(type,info);
    %
-   % Like Taylor!-error, but calls sets !*tayrestart!* and calls
-   %  error1 if !*tayexpanding!* indicates that expansion is going
-   %  on and more terms might be necessary.
+   % Like Taylor!-error, but sets !*tayrestart!* and calls error1
+   %  if !*tayexpanding!* indicates that expansion is going on
+   %  and more terms might be necessary.
    %
    if !*tayexpanding!* then <<!*tayrestart!* := t; error1()>>
     else taylor!-error(type,info);

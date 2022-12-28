@@ -167,7 +167,7 @@ static const char *stack_file[C_STACK_ALLOCATION];
 static uintptr_t c_stack_ptr = 0;
 
 int check_stack(const char *file, int line)
-{   uintptr_t temp = bit_cast<intptr_t>(&temp);
+{   uintptr_t temp = reinterpret_cast<intptr_t>(&temp);
     char *file1;
     int first = 1;
     if (!spset)
@@ -312,7 +312,7 @@ LispObject error(int nargs, int code, ...)
     std::va_list a;
     int i;
     LispObject w1;
-    LispObject *w = bit_cast<LispObject *>(&work_1);
+    LispObject *w = reinterpret_cast<LispObject *>(&work_1);
     THREADID;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
@@ -360,7 +360,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     LispObject w1;
     std::va_list a;
     int i;
-    LispObject *w = bit_cast<LispObject *>(&work_1);
+    LispObject *w = reinterpret_cast<LispObject *>(&work_1);
     THREADID;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
@@ -1061,7 +1061,7 @@ static LispObject lisp_main()
 // celt returns a vector of atomic characters but here I need to treat that
 // as just plain characters. Casting away the std<<atomic> stuff is liable
 // to be evil (eg wrt strict aliasing rules)!
-                    {   msg = bit_cast<const char *>(&celt(exit_value, 0));
+                    {   msg = reinterpret_cast<const char *>(&celt(exit_value, 0));
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
@@ -1077,7 +1077,7 @@ static LispObject lisp_main()
                     return_code = EXIT_SUCCESS;
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
-                    {   msg = bit_cast<const char *>(&celt(exit_value, 0));
+                    {   msg = reinterpret_cast<const char *>(&celt(exit_value, 0));
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
@@ -1112,20 +1112,20 @@ static LispObject lisp_main()
                         oldVecPinPages = borrowCurrent = nullptr;
 #else
                     for (size_t i=0; i<pages_count; i++)
-                    {   char *w = bit_cast<char *>(pages[i]);
+                    {   char *w = reinterpret_cast<char *>(pages[i]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
                         pages[i] = pages[--pages_count];
                         i--;
                     }
                     while (vheap_pages_count != 0)
-                    {   char *w = bit_cast<char *>
+                    {   char *w = reinterpret_cast<char *>
                                   (vheap_pages[--vheap_pages_count]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
                     while (heap_pages_count != 0)
-                    {   char *w = bit_cast<char *>
+                    {   char *w = reinterpret_cast<char *>
                                   (heap_pages[--heap_pages_count]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
@@ -1133,7 +1133,7 @@ static LispObject lisp_main()
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE;
                         while (w1 <= big_chunk_end)
-                        {   if (w != bit_cast<char *>(stacksegment))
+                        {   if (w != reinterpret_cast<char *>(stacksegment))
                                 pages[pages_count++] = w;
                             w = w1;
                             w1 = w + CSL_PAGE_SIZE;
@@ -1154,7 +1154,7 @@ static LispObject lisp_main()
                     cold_start = (exit_value == nil);
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
-                    if ((bit_cast<uintptr_t>(stack)+event_flag) >=
+                    if ((reinterpret_cast<uintptr_t>(stack)+event_flag) >=
                         stackLimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
@@ -1178,7 +1178,7 @@ static LispObject lisp_main()
                                 int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
                                 std::memcpy(new_module,
-                                            bit_cast<char *>(modname) + (CELL - TAG_VECTOR),
+                                            reinterpret_cast<char *>(modname) + (CELL - TAG_VECTOR),
                                             (size_t)len);
                                 new_module[len] = 0;
                             }
@@ -1188,7 +1188,7 @@ static LispObject lisp_main()
                                 int32_t len = length_of_byteheader(h) - CELL;
                                 if (len > 63) len = 63;
                                 std::memcpy(new_fn,
-                                            bit_cast<char *>(exit_value) + (CELL - TAG_VECTOR),
+                                            reinterpret_cast<char *>(exit_value) + (CELL - TAG_VECTOR),
                                             (size_t)len);
                                 new_fn[len] = 0;
                             }
@@ -1218,7 +1218,7 @@ static LispObject lisp_main()
 #else // CONSERVATIVE
 // This puts all recorded heap pages back in the main pool.
                     for (size_t i=0; i<pages_count; i++)
-                    {   char *w = bit_cast<char *>(pages[i]);
+                    {   char *w = reinterpret_cast<char *>(pages[i]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
 // Here the page shown as free is one in the contiguous block. Move in
@@ -1228,13 +1228,13 @@ static LispObject lisp_main()
                     }
 // Next recycle all the non-contiguous pages that have been in use.
                     while (vheap_pages_count != 0)
-                    {   char *w = bit_cast<char *>
+                    {   char *w = reinterpret_cast<char *>
                                   (vheap_pages[--vheap_pages_count]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
                     while (heap_pages_count != 0)
-                    {   char *w = bit_cast<char *>
+                    {   char *w = reinterpret_cast<char *>
                                   (heap_pages[--heap_pages_count]);
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
@@ -1243,7 +1243,7 @@ static LispObject lisp_main()
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE;
                         while (w1 <= big_chunk_end)
-                        {   if (w != bit_cast<char *>(stacksegment))
+                        {   if (w != reinterpret_cast<char *>(stacksegment))
                                 pages[pages_count++] = w;
                             w = w1;
                             w1 = w + CSL_PAGE_SIZE;
@@ -1510,7 +1510,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // or otherwise do things that run against my intent! But then to put its
 // address in C_stackBase I need to cast away the volatile qualifier.
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     C_stackLimit = 0;
     max_store_size = 0.0;
 #ifndef ARITHLIB
@@ -3132,7 +3132,7 @@ void set_up_signal_handlers()
 // exception handler. So where I can I will arrange that the exception
 // handler runs in its own small stack. This may itself lead to pain,
 // but perhaps less?
-    signal_stack.ss_sp = bit_cast<void *>(signal_stack_block);
+    signal_stack.ss_sp = reinterpret_cast<void *>(signal_stack_block);
     signal_stack.ss_size = SIGSTKSZ;
     signal_stack.ss_flags = 0;
     sigaltstack(&signal_stack, (stack_t *)0);
@@ -3238,7 +3238,7 @@ static void low_level_signal_handler(int signo)
 
 static LispObject cslaction()
 {   volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     errorset_msg = nullptr;
     THREADID;
     TRY
@@ -3287,7 +3287,7 @@ static LispObject cslaction()
 
 int cslfinish(character_writer *w)
 {   volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     procedural_output = w;
     if (Ifinished())
         term_printf("\n+++ Errors on checkpoint-image file\n");
@@ -3344,7 +3344,7 @@ int execute_lisp_function(const char *fname,
                           character_writer *w)
 {   LispObject ff;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
@@ -3479,7 +3479,7 @@ static int submain(int argc, const char *argv[])
     genuineThreadId = 0; // the thread_local master variable.
 #endif
 #endif // CONSERVATIVE
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
 #endif // HAVE_CRLIBM
@@ -3597,7 +3597,7 @@ int PROC_set_callbacks(character_reader *r,
 int PROC_prepare_for_top_level_loop()
 {   LispObject w1 = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(w1 = make_undefined_symbol("prepare-for-top-loop");
              Lapply1(nil, w1, nil),
@@ -3609,7 +3609,7 @@ int PROC_prepare_for_top_level_loop()
 int PROC_prepare_for_web_top_level()
 {   LispObject w1 = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(w1 = make_undefined_symbol("prepare-for-web-top-level");
              Lapply1(nil, w1, nil),
@@ -3634,7 +3634,7 @@ int PROC_process_one_reduce_statement(const char *s)
     THREADID;
     proc_data_string = s;
     procedural_input = char_from_string;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w1 = make_undefined_symbol("process-one-reduce-statement");
              w = Lapply0(nil, w1),
              // Error handler
@@ -3652,7 +3652,7 @@ int PROC_process_one_reduce_statement(const char *s)
 int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(w1 = make_undefined_symbol("load-package");
              Save save(THREADARG w1);
@@ -3667,7 +3667,7 @@ int PROC_load_package(const char *name)
 int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(w1 = make_undefined_symbol("onoff");
              errexit();
@@ -3700,7 +3700,7 @@ int PROC_clear_stack()
 int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(w = make_undefined_symbol(name);
              errexit();
@@ -3716,7 +3716,7 @@ int PROC_push_symbol(const char *name)
 int PROC_push_string(const char *data)
 {   LispObject w = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(w = make_string(data);
              errexit();
@@ -3737,7 +3737,7 @@ int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     THREADID;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w = make_lisp_integer32(n);
              errexit();
              w = cons(w, procstack),
@@ -3751,7 +3751,7 @@ int PROC_push_big_integer(const char *n)
     int len = 0;
     volatile uintptr_t sp;
     THREADID;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
     if_error(
@@ -3771,7 +3771,7 @@ int PROC_push_floating(double n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     THREADID;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, WANT_DOUBLE_FLOAT);
              errexit();
@@ -3792,7 +3792,7 @@ int PROC_push_floating(double n)
 int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     THREADID;
     if_error(
         while (n > 0)
@@ -3831,7 +3831,7 @@ int PROC_load(int n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     THREADID;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
     if_error(w = cons(w, procstack),
@@ -3846,7 +3846,7 @@ int PROC_dup()
 {   LispObject w = nil;
     volatile uintptr_t sp;
     THREADID;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // no item to duplicate
     w = car(procstack);
     if_error(w = cons(w, procstack),
@@ -3869,7 +3869,7 @@ int PROC_pop()
 int PROC_simplify()
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // stack is empty
     THREADID;
     if_error(
@@ -3915,7 +3915,7 @@ int PROC_lisp_eval()
     save_current_function save_fn(THREADARG eval_symbol);
     LispObject w = nil;
     volatile uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(car(procstack), nil);
@@ -3970,7 +3970,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 int PROC_make_printable()
 {   LispObject w = nil, w1 = nil;
     uintptr_t sp;
-    C_stackBase = bit_cast<uintptr_t>(&sp);
+    C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // stack is empty
 // I want to use "simp" again so that I can then use prepsq!
     THREADID;
@@ -4017,48 +4017,48 @@ PROC_handle PROC_get_raw_value()
 // return true if the expression is atomic.
 
 int PROC_atom(PROC_handle p)
-{   return !consp(bit_cast<LispObject>(p));
+{   return !consp(reinterpret_cast<LispObject>(p));
 }
 
 // return true if the expression is NIL.
 
 int PROC_null(PROC_handle p)
-{   return (bit_cast<LispObject>(p)) == nil;
+{   return (reinterpret_cast<LispObject>(p)) == nil;
 }
 
 // Return true if it is a small integer.
 
 int PROC_fixnum(PROC_handle p)
-{   return is_fixnum(bit_cast<LispObject>(p));
+{   return is_fixnum(reinterpret_cast<LispObject>(p));
 }
 
 int PROC_string(PROC_handle p)
-{   return is_vector(bit_cast<LispObject>(p)) &&
-           is_string(bit_cast<LispObject>(p));
+{   return is_vector(reinterpret_cast<LispObject>(p)) &&
+           is_string(reinterpret_cast<LispObject>(p));
 }
 
 int PROC_floatnum(PROC_handle p)
 {
 // I ignore the "sfloat" representation that would be relevant in Common
 // Lisp mode. It is not used with Reduce.
-    return is_bfloat(bit_cast<LispObject>(p));
+    return is_bfloat(reinterpret_cast<LispObject>(p));
 }
 
 // Return true if it is a symbol.
 
 int PROC_symbol(PROC_handle p)
-{   return symbolp(bit_cast<LispObject>(p));
+{   return symbolp(reinterpret_cast<LispObject>(p));
 }
 
 // Given that it is a small integer return the integer value
 
 int32_t PROC_integer_value(PROC_handle p)
 {   return static_cast<int32_t>(int_of_fixnum(
-                                    bit_cast<LispObject>(p)));
+                                    reinterpret_cast<LispObject>(p)));
 }
 
 double PROC_floating_value(PROC_handle p)
-{   return double_float_val(bit_cast<LispObject>(p));
+{   return double_float_val(reinterpret_cast<LispObject>(p));
 }
 
 // Given that it is a symbol, return a string that is its name. Note
@@ -4072,25 +4072,25 @@ double PROC_floating_value(PROC_handle p)
 static char PROC_name[256];
 
 const char *PROC_symbol_name(PROC_handle p)
-{   LispObject w = bit_cast<LispObject>(p);
+{   LispObject w = reinterpret_cast<LispObject>(p);
     intptr_t n;
     w = qpname(w);
     n = length_of_byteheader(vechdr(w)) - CELL;
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    std::strncpy(PROC_name, bit_cast<const char *>(&celt(w, 0)),
+    std::strncpy(PROC_name, reinterpret_cast<const char *>(&celt(w, 0)),
                  n);
     PROC_name[n] = 0;
     return &PROC_name[0];
 }
 
 const char *PROC_string_data(PROC_handle p)
-{   LispObject w = bit_cast<LispObject>(p);
+{   LispObject w = reinterpret_cast<LispObject>(p);
     intptr_t n;
     n = length_of_byteheader(vechdr(w)) - CELL;
 // NOTE that I truncate long strings here. Boo Hiss! This may make a mess
 // of dealing with big numbers, so in due course I will need to fix it!
     if (n > (intptr_t)sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
-    std::strncpy(PROC_name, bit_cast<const char *>(&celt(w, 0)),
+    std::strncpy(PROC_name, reinterpret_cast<const char *>(&celt(w, 0)),
                  n);
     PROC_name[n] = 0;
     return &PROC_name[0];
@@ -4100,15 +4100,15 @@ const char *PROC_string_data(PROC_handle p)
 // dispose of any atomic<> stuff.
 
 PROC_handle PROC_first(PROC_handle p)
-{   return bit_cast<PROC_handle>(
+{   return reinterpret_cast<PROC_handle>(
                static_cast<LispObject>(
-                   car(bit_cast<LispObject>(p))));
+                   car(reinterpret_cast<LispObject>(p))));
 }
 
 PROC_handle PROC_rest(PROC_handle p)
-{   return bit_cast<PROC_handle>(
+{   return reinterpret_cast<PROC_handle>(
                static_cast<LispObject>(
-                   cdr(bit_cast<LispObject>(p))));
+                   cdr(reinterpret_cast<LispObject>(p))));
 }
 
 // End of csl.cpp

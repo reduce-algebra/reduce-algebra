@@ -77,37 +77,91 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
         respond_to_stack_event();
 }
 
-#pragma message ("print_newbighexoctbin")
-// At present this is just not implemented!
-
-void print_newbighexoctbin(LispObject u, int radix, int width,
-                           bool blankp, int nobreak)
-//
-// This prints a bignum in base 16, 8 or 2.
-//
-{   unsigned int line_length =
+void print_newbigbin(LispObject u, int width, bool blankp, int nobreak)
+{   LispObject r = arithlib_lowlevel::bignum_to_string_binary(u);
+    size_t len = length_of_byteheader(vechdr(r)) - CELL;
+    unsigned int line_length =
         other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
                            active_stream);
     unsigned int column =
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
-
-    /*
-            if (blankp)
-            {   if (nobreak==0 && column+len >= line_length)
-                {   if (column != 0) putc_stream('\n', active_stream);
-                }
-                else putc_stream(' ', active_stream);
-            }
-            else if (nobreak==0 && column != 0 && column+len > line_length)
-                putc_stream('\n', active_stream);
-            while (--i >= 0) putc_stream(my_buff[i], active_stream);
-
-            if ((uintptr_t)stack >=
-                ((uintptr_t)stackLimit | event_flag))
-                respond_to_stack_event();
+    if (blankp)
+    {   if (nobreak==0 && column+len >= line_length)
+        {   if (column != 0) putc_stream('\n', active_stream);
         }
+        else putc_stream(' ', active_stream);
+    }
+    else if (nobreak==0 && column != 0 && column+len > line_length)
+        putc_stream('\n', active_stream);
+    for (size_t i=0; i<len; i++)
+        putc_stream(celt(r, i), active_stream);
+    if ((uintptr_t)stack >=
+        ((uintptr_t)stackLimit | event_flag))
+        respond_to_stack_event();
+}
 
-    */
+void print_newbigoct(LispObject u, int width, bool blankp, int nobreak)
+{   LispObject r = arithlib_lowlevel::bignum_to_string_octal(u);
+    size_t len = length_of_byteheader(vechdr(r)) - CELL;
+    unsigned int line_length =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
+                           active_stream);
+    unsigned int column =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
+    if (blankp)
+    {   if (nobreak==0 && column+len >= line_length)
+        {   if (column != 0) putc_stream('\n', active_stream);
+        }
+        else putc_stream(' ', active_stream);
+    }
+    else if (nobreak==0 && column != 0 && column+len > line_length)
+        putc_stream('\n', active_stream);
+    for (size_t i=0; i<len; i++)
+        putc_stream(celt(r, i), active_stream);
+    if ((uintptr_t)stack >=
+        ((uintptr_t)stackLimit | event_flag))
+        respond_to_stack_event();
+}
+
+void print_newbighex(LispObject u, int width, bool blankp, int nobreak)
+{   LispObject r = arithlib_lowlevel::bignum_to_string_hex(u);
+    size_t len = length_of_byteheader(vechdr(r)) - CELL;
+    unsigned int line_length =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
+                           active_stream);
+    unsigned int column =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
+    if (blankp)
+    {   if (nobreak==0 && column+len >= line_length)
+        {   if (column != 0) putc_stream('\n', active_stream);
+        }
+        else putc_stream(' ', active_stream);
+    }
+    else if (nobreak==0 && column != 0 && column+len > line_length)
+        putc_stream('\n', active_stream);
+    for (size_t i=0; i<len; i++)
+        putc_stream(celt(r, i), active_stream);
+    if ((uintptr_t)stack >=
+        ((uintptr_t)stackLimit | event_flag))
+        respond_to_stack_event();
+}
+
+void print_newbighexoctbin(LispObject u, int radix, int width,
+                           bool blankp, int nobreak)
+{   switch (radix)
+    {   case 2:
+            print_newbigbin(u, width, blankp, nobreak);
+            return;
+        case 8:
+            print_newbigoct(u, width, blankp, nobreak);
+            return;
+        case 16:
+            print_newbighex(u, width, blankp, nobreak);
+            return;
+        default:
+            aerror("bad radix for printing bignum");
+            return;
+    }
 }
 
 #endif // ARITHLIB

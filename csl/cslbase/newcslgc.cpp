@@ -106,7 +106,7 @@ const char* getPageType(uintptr_t a)
 
 bool withinObject(LispObject* v, uintptr_t a)
 {   size_t len;
-    uintptr_t uv = bit_cast<uintptr_t>(v);
+    uintptr_t uv = reinterpret_cast<uintptr_t>(v);
     LispObject h = *v;
     switch (h & 0x1f)
     {
@@ -534,7 +534,7 @@ void evacuate(LispObject &x)
     if (GCTRACE) zprintf("evacuating %a %s\n", x, objectType(x));
 #endif // EXTREME_DEBUG
 // If something is not immediate it must be x pointer!
-    LispObject* untagged_x = bit_cast<LispObject*>(x & ~TAG_BITS);
+    LispObject* untagged_x = reinterpret_cast<LispObject*>(x & ~TAG_BITS);
     LispObject hdr = *untagged_x;
     LispObject cpy;
 #ifdef EXTREME_DEBUG
@@ -582,7 +582,7 @@ void evacuate(LispObject &x)
         len = doubleword_align_up(length_of_header(hdr));
         cpy = getNBytes(len);
     }
-    std::memcpy(bit_cast<void*>(cpy), untagged_x, len);
+    std::memcpy(reinterpret_cast<void*>(cpy), untagged_x, len);
     *untagged_x = TAG_FORWARD + cpy;
     x = cpy + (x & TAG_BITS);
 #ifdef EXTREME_DEBUG
@@ -606,7 +606,7 @@ void evacuateFromUnambiguousBases()
     evacuate(qpackage(nil));
     for (LispObject* p:list_bases) evacuate(*p);
     for (LispObject* sp=stack;
-         sp>bit_cast<LispObject*>(stackBase); sp--) evacuate(*sp);
+         sp>reinterpret_cast<LispObject*>(stackBase); sp--) evacuate(*sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
@@ -632,7 +632,7 @@ void evacuateFromPinnedItems()
 #ifdef EXTREME_DEBUG
             if (GCTRACE) zprintf("About to evacuate contents of %a\n", next);
 #endif // EXTREME_DEBUG
-            Header a = *bit_cast<Header*>(next);
+            Header a = *reinterpret_cast<Header*>(next);
             size_t len, len1;
 // Now based on the low 6 bits of the first word of the object I sort
 // out whether it is a vector containing Lisp data, a vector containing
@@ -650,7 +650,7 @@ void evacuateFromPinnedItems()
                 if (GCTRACE) zprintf("Evacuate contents of pinned vector of length %s\n", len1);
 #endif // EXTREME_DEBUG
                 for (size_t i = CELL; i<len1; i += CELL)
-                    evacuate(*bit_cast<LispObject*>(next+i));
+                    evacuate(*reinterpret_cast<LispObject*>(next+i));
                 continue;
 
             case 0x12: // 0b10010:   // Header for bit-vector
@@ -660,7 +660,7 @@ void evacuateFromPinnedItems()
 
             case 0x02: // 0b00010:   // Symbol headers plus char literals etc
                 if (is_symbol_header(a))
-                {   Symbol_Head* s = bit_cast<Symbol_Head*>(next);
+                {   Symbol_Head* s = reinterpret_cast<Symbol_Head*>(next);
                     evacuate(s->value);
                     evacuate(s->env);
                     evacuate(s->plist);
@@ -718,7 +718,7 @@ bool evacuateConsPage(Page* p)
 // NB test the OLD pin flag here. And I know which page I am in so I
 // use the 2-argument version of consIsPinned().
         if (!consIsPinned(next, p))  // Pinned things evacuated elsewhere
-        {   LispObject* n = bit_cast<LispObject*>(next);
+        {   LispObject* n = reinterpret_cast<LispObject*>(next);
             if (*n != DOUBLE_FLOAT_HEADER &&
                 *n != CONS_PADDER_HEADER)  // Note special cases.
             {   didSomething = true;
@@ -780,7 +780,7 @@ bool evacuateChunk(Page* p, uintptr_t& next, size_t lastChunk)
             my_assert(len != 0 && len<pageSize,
                       where("lisp vector size zero or too big"));
             for (size_t i=CELL; i<len1; i+=CELL)
-                evacuate(*bit_cast<LispObject*>(next+i));
+                evacuate(*reinterpret_cast<LispObject*>(next+i));
             didSomething = true;
             break;
 
@@ -794,7 +794,7 @@ bool evacuateChunk(Page* p, uintptr_t& next, size_t lastChunk)
         case 0x02: // 0b00010: // Symbol headers, char literals etc.
             if (is_symbol_header(h))
             {   len = symhdr_length;
-                Symbol_Head* s = bit_cast<Symbol_Head*>(next);
+                Symbol_Head* s = reinterpret_cast<Symbol_Head*>(next);
                 evacuate(s->value);
                 evacuate(s->env);
                 evacuate(s->plist);
@@ -1573,7 +1573,7 @@ std::jmp_buf* buffer_pointer;
 static volatile std::atomic<uint64_t> volatileVar = 0xf0f0f0f012345678u;
 
 NOINLINE uintptr_t getStackFringe(double x)
-{   return bit_cast<uintptr_t>(&x);
+{   return reinterpret_cast<uintptr_t>(&x);
 }
 
 void use_gchook(LispObject arg)
