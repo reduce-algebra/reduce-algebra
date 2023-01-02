@@ -1,4 +1,4 @@
-// externs.h                               Copyright (C) Codemist 1989-2022
+// externs.h                               Copyright (C) Codemist 1989-2023
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -401,6 +401,7 @@ extern uint64_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern bool modulus_is_large;
+extern size_t karaSize;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
@@ -413,7 +414,7 @@ extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject go_symbol, cond_symbol, print_hash_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
-extern LispObject current_package, startfn;
+extern LispObject current_package, startfn, karaWork;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gcknt_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
@@ -1209,13 +1210,13 @@ extern setup_type const om_parse_setup[];
     X(rehash_vec2),           X(resources),         X(rest_key), \
     X(savedefs_symbol),       X(savedef_symbol),    X(short_float), \
     X(single_float),          X(special_symbol),    X(standard_input), \
-    X(standard_output),       X(startfn),           X(startup_symbol), \
-    X(string_char_sym),       X(supervisor),        X(sys_hash_table), \
-    X(terminal_io),           X(tracedfn),          X(trace_output), \
-    X(traceprint_symbol),     X(trap_time),         X(unset_var), \
-    X(used_space),            X(use_symbol),        X(work_symbol), \
-    X(NaN_symbol),            X(infinity_symbol),   X(minusinfinity_symbol), \
-    X(print_hash_symbol),                                                    \
+    X(standard_output),       X(startfn),           X(karaWork), \
+    X(startup_symbol),        X(string_char_sym),   X(supervisor), \
+    X(sys_hash_table),        X(terminal_io),       X(tracedfn), \
+    X(trace_output),          X(traceprint_symbol), X(trap_time), \
+    X(unset_var),             X(used_space),        X(use_symbol), \
+    X(work_symbol),           X(NaN_symbol),        X(infinity_symbol), \
+    X(minusinfinity_symbol),  X(print_hash_symbol), \
  \
     X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
     X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \

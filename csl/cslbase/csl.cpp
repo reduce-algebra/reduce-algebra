@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2022 Codemist
+// csl.cpp                                 Copyright (C) 1989-2023 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2329,7 +2329,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         the license under which this code is distributed.",
                 [&](string key, bool hasVal, string val)
                 {   fwin_restore();
-                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2022\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2023\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                 }

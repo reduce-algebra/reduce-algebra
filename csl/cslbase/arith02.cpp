@@ -1,4 +1,4 @@
-//  arith02.cpp                            Copyright (C) 1990-2022 Codemist
+//  arith02.cpp                            Copyright (C) 1990-2023 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

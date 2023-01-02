@@ -1,9 +1,9 @@
-//  arith-print.cpp                             Copyright (C) 2022 Codemist
+//  arith-print.cpp                             Copyright (C) 2023 Codemist
 
 #ifdef ARITHLIB
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -41,7 +41,7 @@ static thread_local std::vector<char> print_buffer;
 
 void print_newbignum(LispObject u, bool blankp, int nobreak)
 {   size_t approx_length =
-        arithlib_lowlevel::bignum_to_string_length(
+        arithlib_lowlevel::bignumToStringLength(
             (uint64_t *)(u - TAG_NUMBERS + 8),
             (length_of_header(numhdr(u)) - 8)/8);
     if (print_buffer.size() < approx_length)
@@ -49,7 +49,7 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
     char *b = print_buffer.data();
 // I now have a buffer long enough to put my digits in.
     size_t len =
-        arithlib_lowlevel::bignum_to_string(
+        arithlib_lowlevel::bignumToString(
             b, approx_length,
             (uint64_t *)(u - TAG_NUMBERS + 8),
             (length_of_header(numhdr(u)) - 8)/8);
@@ -78,7 +78,7 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
 }
 
 void print_newbigbin(LispObject u, int width, bool blankp, int nobreak)
-{   LispObject r = arithlib_lowlevel::bignum_to_string_binary(u);
+{   LispObject r = arithlib_lowlevel::bignumToStringBinary(u);
     size_t len = length_of_byteheader(vechdr(r)) - CELL;
     unsigned int line_length =
         other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
@@ -101,7 +101,7 @@ void print_newbigbin(LispObject u, int width, bool blankp, int nobreak)
 }
 
 void print_newbigoct(LispObject u, int width, bool blankp, int nobreak)
-{   LispObject r = arithlib_lowlevel::bignum_to_string_octal(u);
+{   LispObject r = arithlib_lowlevel::bignumToStringOctal(u);
     size_t len = length_of_byteheader(vechdr(r)) - CELL;
     unsigned int line_length =
         other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
@@ -124,7 +124,7 @@ void print_newbigoct(LispObject u, int width, bool blankp, int nobreak)
 }
 
 void print_newbighex(LispObject u, int width, bool blankp, int nobreak)
-{   LispObject r = arithlib_lowlevel::bignum_to_string_hex(u);
+{   LispObject r = arithlib_lowlevel::bignumToStringHex(u);
     size_t len = length_of_byteheader(vechdr(r)) - CELL;
     unsigned int line_length =
         other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,

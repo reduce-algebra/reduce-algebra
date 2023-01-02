@@ -1,4 +1,4 @@
-// arith-logops.cpp                        Copyright (C) 2022-2022 Codemist
+// arith-logops.cpp                        Copyright (C) 2022-2023 Codemist
 
 #ifdef ARITHLIB
 
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -212,9 +212,9 @@ LispObject Nlogbitp(LispObject env, LispObject a1, LispObject a2)
         return aerror1("logbitp", a2);
     uintptr_t n = int_of_fixnum(a1);
     if (is_fixnum(a2)) return onebool(arithlib_lowlevel::Logbitp::op(
-        arithlib_implementation::int_of_handle(a2), n));
+        arithlib_implementation::intOfHandle(a2), n));
     else return onebool(arithlib_lowlevel::Logbitp::op(
-        arithlib_implementation::vector_of_handle(a2), n));
+        arithlib_implementation::vectorOfHandle(a2), n));
 }
 
 LispObject Nlogtest(LispObject env, LispObject a1, LispObject a2)

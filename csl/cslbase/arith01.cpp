@@ -1,4 +1,4 @@
-// arith01.cpp                             Copyright (C) 1990-2022 Codemist
+// arith01.cpp                             Copyright (C) 1990-2023 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -43,25 +43,25 @@
 #ifdef ARITHLIB
 
 LispObject make_lisp_integer32_fn(int32_t n)
-{   return arithlib_lowlevel::int_to_bignum(n);
+{   return arithlib_lowlevel::intToBignum(n);
 }
 
 LispObject make_lisp_integer64_fn(int64_t n)
-{   return arithlib_lowlevel::int_to_bignum(n);
+{   return arithlib_lowlevel::intToBignum(n);
 }
 
 LispObject make_lisp_unsigned64_fn(uint64_t n)
-{   return arithlib_lowlevel::unsigned_int_to_bignum(n);
+{   return arithlib_lowlevel::unsignedIntToBignum(n);
 }
 
 LispObject make_lisp_integer128_fn(int128_t r)
-{   return arithlib_lowlevel::int128_to_bignum(
+{   return arithlib_lowlevel::int128ToBignum(
         static_cast<int64_t>(r>>64),
         static_cast<uint64_t>(r));
 }
 
 LispObject make_lisp_unsigned128_fn(uint128_t r)
-{   return arithlib_lowlevel::unsigned_int128_to_bignum(
+{   return arithlib_lowlevel::unsignedInt128ToBignum(
         static_cast<uint64_t>(r>>64),
         static_cast<uint64_t>(r));
 }
@@ -115,7 +115,7 @@ int32_t thirty_two_bits(LispObject a)
 // low 64-bits of the value. So things are rather simple here!
             if (is_new_bignum(a))
                 return static_cast<int32_t>(
-                    *arithlib_implementation::vector_of_handle(a));
+                    *arithlib_implementation::vectorOfHandle(a));
         // else drop through
         default:
 // return 0 for all non-fixnums and for varius overflow cases
@@ -140,7 +140,7 @@ uint32_t thirty_two_bits_unsigned(LispObject a)
         case TAG_NUMBERS+TAG_XBIT:
             if (is_new_bignum(a))
                 return static_cast<uint32_t>(
-                    *arithlib_implementation::vector_of_handle(a));
+                    *arithlib_implementation::vectorOfHandle(a));
         // else drop through
         default:
 // return 0 for all non-fixnums and for varius overflow cases
@@ -159,7 +159,7 @@ int64_t sixty_four_bits(LispObject a)
         case TAG_NUMBERS+TAG_XBIT:
             if (is_new_bignum(a))
                 return static_cast<int64_t>(
-                    *arithlib_implementation::vector_of_handle(a));
+                    *arithlib_implementation::vectorOfHandle(a));
         // else drop through
         default:
 // return 0 for all non-fixnums
@@ -176,7 +176,7 @@ uint64_t sixty_four_bits_unsigned(LispObject a)
         case TAG_NUMBERS+TAG_XBIT:
             if (is_new_bignum(a))
                 return static_cast<uint64_t>(
-                    *arithlib_implementation::vector_of_handle(a));
+                    *arithlib_implementation::vectorOfHandle(a));
         // else drop through
         default:
 // return 0 for all non-fixnums or for overflow

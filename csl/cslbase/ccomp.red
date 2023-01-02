@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2022,  Codemist
+% "ccomp.red"                                Copyright 1991-2023,  Codemist
 %
 % Compiler that turns Lisp code into C in a way that fits in
 % with the conventions used with CSL/CCL
@@ -6,7 +6,7 @@
 %                                                        A C Norman
 
 %%
-%% Copyright (C) 2022, following the master REDUCE source files.          *
+%% Copyright (C) 2023, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -1605,7 +1605,11 @@ symbolic procedure c!:pgoto(lab);
   begin
     if atom lab then return c!:printf("goto %s;\n", lab);
     lab := get(car lab, 'c!:chosen);
+!#if common!-lisp!-mode
     c!:printf("return onevalue(%v);\n", lab)
+!#else
+    c!:printf("return %v;\n", lab)
+!#endif
   end;
 
 symbolic procedure c!:pifnull(s);

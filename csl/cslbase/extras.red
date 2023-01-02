@@ -1,4 +1,4 @@
-% extras.red                               Copyright (C) Codemist 2004-2022
+% extras.red                               Copyright (C) Codemist 2004-2023
 %
 % Additional useful functions to have in a Lisp environment.
 %

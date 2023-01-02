@@ -1,11 +1,11 @@
-// arith-elem.cpp                               Copyright (C) 2022 Codemist
+// arith-elem.cpp                               Copyright (C) 2023 Codemist
 
 //
 // Support for elementary functions with the arithlib.hpp package.
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

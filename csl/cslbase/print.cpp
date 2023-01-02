@@ -1,11 +1,11 @@
-//  print.cpp                              Copyright (C) 1990-2022 Codemist
+//  print.cpp                              Copyright (C) 1990-2023 Codemist
 
 //
 // Printing, plus some file-related operations.
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -5507,7 +5507,7 @@ void simple_prin1(LispObject x)
     }
 #ifdef ARITHLIB
     else if (is_new_bignum(x))
-    {   intptr_t w = arithlib_lowlevel::bignum_to_string(x);
+    {   intptr_t w = arithlib_lowlevel::bignumToString(x);
         size_t len = length_of_byteheader(vechdr(w)) - CELL;
         simple_lineend(len);
         std::printf("%.*s", static_cast<int>(len),

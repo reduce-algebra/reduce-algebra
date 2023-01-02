@@ -1,10 +1,10 @@
-// foxdemo.cpp                             Copyright (C) 2016-2022 Codemist
+// foxdemo.cpp                             Copyright (C) 2016-2023 Codemist
 
 
 // A simple test of the FOX GUI library.
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

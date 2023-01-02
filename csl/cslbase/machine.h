@@ -1,4 +1,4 @@
-// machine.h                               Copyright (C) 1990-2022 Codemist
+// machine.h                               Copyright (C) 1990-2023 Codemist
 
 //
 // This was ONCE a place where all system-specific options were detected
@@ -14,7 +14,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,9 +1,9 @@
 ### Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                                     2008-2021
+# A C Norman.                                                     2008-2023
 
 # **************************************************************************
-# * Copyright (C) 2021, Codemist.                         A C Norman       *
+# * Copyright (C) 2023, Codemist.                         A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *

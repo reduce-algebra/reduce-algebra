@@ -1,4 +1,4 @@
-// arith-quad.cpp                         Copyright (C) 2022-2022 Codemist
+// arith-quad.cpp                         Copyright (C) 2022-2023 Codemist
 
 #ifdef ARITHLIB
 
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -838,30 +838,190 @@ QuadFloat qtand(QuadFloat a)
     }
 }
 
+// Here is an initial strategy for implementing inverse trig functions.
+// Start with atan, noting that atan is odd (so negative x is easy) and
+//         atan x = pi/2 - atan(1/x)
+//    and  atan x = atan y + atan(x-y)/(1+x*y))
+// And note that as a 128-bit float the value pi/2 has a couple of
+// trailing zero bits and the error is well under 1/2ulp - so the subtraction
+// there does not damage accuracy if the first of those rules is used for
+// x > 1.
+// So use y one of 0, 1/2, 1/4, 3/8, ... in the second identity and that
+// means that it is only necessary to have a way of approximating atan over
+// the range 0 to 0.125. I have a rational approximation to use for that. 
 
+QuadFloat atanSeriesP[] =
+{   1.0_Q,
+    4.2169638471654127842781678535902983313336_Q,
+    7.3708045614432712646564132757135398106863_Q,
+    6.9053870156518895732042643867002075352926_Q,
+    3.7436224549877520852436256137476236752686_Q,
+    1.1821283215274849454962819106654772566569_Q,
+    0.20755983452320744458353163225545173625799_Q,
+    0.018030064470056437520475899584976629897599_Q,
+    0.00059374111255940561144450562255848959071523_Q,
+    0.0000031559177803623824879644911196148622483657_Q
+};
+
+QuadFloat atanSeriesQ[] =
+{   1.0_Q,
+    4.5502971804987461176115011869236316360206_Q,
+    8.6875702882761866371935803380214315849384_Q,
+    9.0340414851680120858893480715098723774691_Q,
+    5.5563869023010380730776051050410959532515_Q,
+    2.0538509769794219524266455084161004983643_Q,
+    0.44293151694949621404725064419122936257289_Q,
+    0.051313802032342635248640017890108233449098_Q,
+    0.0026744753945954627264125779850797571963476_Q,
+    0.000040359600767038830229346788590539322997008_Q
+};
+
+QuadFloat atanReduced(QuadFloat a)   // 0 <= a < 0.125
+{   return a * (sumSeries(atanSeriesP,
+                          sizeof(atanSeriesP)/sizeof(atanSeriesP[0]),
+                          a) /
+        sumSeries(atanSeriesQ,
+                  sizeof(atanSeriesQ)/sizeof(atanSeriesQ[0]),
+                  a));
+}
+
+QuadFloat qatan(QuadFloat a)
+{   if (a < 0.0_Q) return -qatan(-a);
+    else if (a > 1.0_Q)
+        return 1.570796326794896619231321691639751442099_Q - qatan(1.0_Q/a);
+// Now a is in the range 0 to 1. I have 8 cases to consider!
+    if (a < 0.5_Q)
+    {   if (a < 0.25_Q)
+        {   if (a < 0.125_Q)
+                return atanReduced(a);
+            else return atanReduced((a - 0.125_Q)/(1.0_Q + a*0.125_Q)) +
+                     0.1243549945467614350313548491638710255732_Q;
+        }
+        else
+        {   if (a < 0.375_Q)
+                return atanReduced((a - 0.25_Q)/(1.0_Q + a*0.25_Q)) +
+                    0.2449786631268641541720824812112758109141_Q;        
+            else return atanReduced((a - 0.375_Q)/(1.0_Q + a*0.375_Q)) +
+                     0.358770670270572220395920063926460499777_Q;
+        }
+    }
+    else
+    {   if (a < 0.75_Q)
+        {   if (a < 0.625_Q)
+                return atanReduced((a - 0.5_Q)/(1.0_Q + a*0.5_Q)) +
+                    0.4636476090008061162142562314612144020285_Q;
+            else return atanReduced((a - 0.625_Q)/(1.0_Q + a*0.625_Q)) +
+                     0.5585993153435624359715082164016612703464_Q;
+        }
+        else
+        {   if (a < 0.875_Q)
+                return atanReduced((a - 0.75_Q)/(1.0_Q + a*0.75_Q)) +
+                    0.6435011087932843868028092287173226380415_Q;
+            else return atanReduced((a - 0.875_Q)/(1.0_Q + a*0.875_Q)) +
+                0.7188299996216245054170141515259046539514_Q;
+        }
+    }
+}
+
+// The version that returns degrees uses the same strategy.
+
+QuadFloat qatand(QuadFloat a)
+{   if (a < 0.0_Q) return -qatan(-a);
+    else if (a > 1.0_Q)
+        return 90.0_Q - qatan(1.0_Q/a);
+    QuadFloat rad = 57.29577951308232087679815481410517033241_Q;
+    if (a < 0.5_Q)
+    {   if (a < 0.25_Q)
+        {   if (a < 0.125_Q)
+                return atanReduced(a)*rad;
+            else return atanReduced((a - 0.125_Q)/(1.0_Q + a*0.125_Q))*rad +
+                     7.125016348901797561953300841206844749052_Q;
+        }
+        else
+        {   if (a < 0.375_Q)
+                return atanReduced((a - 0.25_Q)/(1.0_Q + a*0.25_Q))*rad +
+                    14.03624346792647858289232015916342432097_Q;        
+            else return atanReduced((a - 0.375_Q)/(1.0_Q + a*0.375_Q))*rad +
+                     20.55604521958346430829361274734379897911_Q;
+        }
+    }
+    else
+    {   if (a < 0.75_Q)
+        {   if (a < 0.625_Q)
+                return atanReduced((a - 0.5_Q)/(1.0_Q + a*0.5_Q))*rad +
+                    26.5650511770779893515721937204532946712_Q;
+            else return atanReduced((a - 0.625_Q)/(1.0_Q + a*0.625_Q))*rad +
+                     32.00538320808349556079064575040465935795_Q;
+        }
+        else
+        {   if (a < 0.875_Q)
+                return atanReduced((a - 0.75_Q)/(1.0_Q + a*0.75_Q))*rad +
+                    36.86989764584402129685561255909341065759_Q;
+            else return atanReduced((a - 0.875_Q)/(1.0_Q + a*0.875_Q))*rad +
+                41.18592516570964580508858636717921827842_Q;
+        }
+    }
+}
+
+QuadFloat qatan2(QuadFloat y, QuadFloat x)
+{   if (x == 0.0_Q)
+    {   if (y.isnan()) return y;
+        else if (y.isnegative())   // including negative zero!
+            return -1.570796326794896619231321691639751442099_Q;
+        else return 1.570796326794896619231321691639751442099_Q;
+    }
+    QuadFloat r = qatan(y/x);
+    if (x < 0.0_Q)
+    {   if (y.isnegative())
+            r = r - 3.141592653589793238462643383279502884197_Q;
+        else r = r + 3.141592653589793238462643383279502884197_Q;
+    }
+    return r;
+}
+
+QuadFloat qatan2d(QuadFloat y, QuadFloat x)
+{   if (x == 0.0_Q)
+    {   if (y.isnan()) return y;
+        else if (y.isnegative())   // including negative zero!
+            return -90.0_Q;
+        else return 90.0_Q;
+    }
+    QuadFloat r = qatand(y/x);
+    if (x < 0.0_Q)
+    {   if (y.isnegative())
+            r = r - 180.0_Q;
+        else r = r + 180.0_Q;
+    }
+    return r;
+}
+
+// For asin consider asin(x) = atan(x/sqrt(1-x^2)) and
+// acos(x) = atan(sqrt(1-x^2)/x) with a bit of extra care near +/-1 and also
+// to get a result in the desired quadrant.
+
+QuadFloat qacos(QuadFloat a)
+{   return QuadFloat(std::acos(static_cast<double>(a)));
+}
+
+QuadFloat qasin(QuadFloat a)
+{   return QuadFloat(std::asin(static_cast<double>(a)));
+}
+
+QuadFloat qacosd(QuadFloat a)
+{   return QuadFloat(f128_NaN);
+}
+
+QuadFloat qasind(QuadFloat a)
+{   return QuadFloat(f128_NaN);
+}
+ 
 
 // I will have placeholders here that yield the correct types
 // but only compute results to double precision accuracy - ie 53-bits.
 // Eventually I intend work through and replace all these with
 // proper 128-bit floating point versions.
 
-QuadFloat qatan2(QuadFloat a, QuadFloat b)
-{   return QuadFloat(std::atan2(static_cast<double>(a), static_cast<double>(b)));
-}
-
-QuadFloat qatan2d(QuadFloat a, QuadFloat b)
-{   return QuadFloat(f128_NaN);
-}
-
 QuadFloat qexpt(QuadFloat a, QuadFloat b)
-{   return QuadFloat(f128_NaN);
-}
-
-QuadFloat qacos(QuadFloat a)
-{   return QuadFloat(std::acos(static_cast<double>(a)));
-}
-
-QuadFloat qacosd(QuadFloat a)
 {   return QuadFloat(f128_NaN);
 }
 
@@ -905,24 +1065,8 @@ QuadFloat qasech(QuadFloat a)
 {   return QuadFloat(f128_NaN);
 }
 
-QuadFloat qasin(QuadFloat a)
-{   return QuadFloat(std::asin(static_cast<double>(a)));
-}
-
-QuadFloat qasind(QuadFloat a)
-{   return QuadFloat(f128_NaN);
-}
- 
 QuadFloat qasinh(QuadFloat a)
 {   return QuadFloat(std::asinh(static_cast<double>(a)));
-}
-
-QuadFloat qatan(QuadFloat a)
-{   return QuadFloat(std::atan(static_cast<double>(a)));
-}
-
-QuadFloat qatand(QuadFloat a)
-{   return QuadFloat(f128_NaN);
 }
 
 QuadFloat qatanh(QuadFloat a)
@@ -1348,4 +1492,3 @@ end;
 #endif // ARITHLIB
 
 // end of arith-quad.cpp
-
