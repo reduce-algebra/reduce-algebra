@@ -1,4 +1,4 @@
-% tracearith.red                               Arthur Norman, November 2022
+% tracearith.red                          Arthur Norman, November 2022-2023
 
 % Not long enough to justify license pedantry: you may do whatever you
 % want with this code!

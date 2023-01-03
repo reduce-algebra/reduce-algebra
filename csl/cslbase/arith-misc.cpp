@@ -1,9 +1,9 @@
-// arith-misc.cpp                          Copyright (C) 2022-2022 Codemist
+// arith-misc.cpp                          Copyright (C) 2022-2023 Codemist
 
 #ifdef ARITHLIB
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -602,35 +602,38 @@ LispObject N_rationalize(LispObject a)
 }
 
 LispObject Nrational(LispObject env, LispObject a)
-{   return onevalue(N_rational(a));
+{   SingleValued fn;
+    return N_rational(a);
 }
 
 LispObject Nmanexp(LispObject env, LispObject a)
-{   int x;
+{   SingleValued fn;
+    int x;
     double f;
 // At present I do not support 128-bit floats here @@@
     if (!is_float(a))  return aerror1("arg is not a floating-point number", a);
     f = float_of_number(a);
     f = std::frexp(f, &x);
-    return onevalue(cons(make_boxfloat(f, WANT_DOUBLE_FLOAT),
-                         fixnum_of_int(x)));
+    return cons(make_boxfloat(f, WANT_DOUBLE_FLOAT),
+                fixnum_of_int(x));
 }
 
 LispObject Nrationalize(LispObject env, LispObject a)
-{   return onevalue(N_rationalize(a));
+{   SingleValued fn;
+    return N_rationalize(a);
 }
 
 LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
-{
+{   SingleValued fn;
 #ifdef COMMON
 // Common Lisp expects an optional second arg to be used for the random
 // state - at present I do not support that, but it will not be too hard
 // when I get around to it...
 #endif // COMMON
     if (is_fixnum(a))
-         return arithlib_lowlevel::uniform_upto(a);
+         return arithlib_lowlevel::uniformUpto(a);
     if (is_new_bignum(a))
-        return arithlib_lowlevel::uniform_upto(a);
+        return arithlib_lowlevel::uniformUpto(a);
     if (is_bfloat(a))
     {   Header h = flthdr(a);
         if (h == LONG_FLOAT_HEADER)
@@ -656,7 +659,7 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
         } 
         while (v == d);   // loop on unusual case where FP value rounds up
         a = make_boxfloat(v, floatWant(h));
-        return onevalue(a);
+        return a;
     }
     if (is_sfloat(a))
     {   Float_union d;
@@ -672,37 +675,41 @@ LispObject Nrandom(LispObject env, LispObject a, LispObject bb)
         }
         while ((vi & ~0xf) == (di & ~0xf));
         d.f = v.f;
-        return onevalue(pack_immediate_float(v.f, a));
+        return pack_immediate_float(v.f, a);
     }
     return aerror1("random-number", a);
 }
 
 LispObject Nrandom(LispObject env, LispObject a)
-{   return Nrandom(env, a, nil);
+{   SingleValued fn;
+    return Nrandom(env, a, nil);
 }
 
 LispObject Nnext_random(LispObject)
 // Returns a random positive fixnum.  27 bits in this Lisp! At present this
 // returns 27 bits whether on a 32 or 64-bit machine...
-{   uint64_t r = arithlib::mersenne_twister();
-    return onevalue(fixnum_of_int(r & 0x07ffffff));
+{   SingleValued fn;
+    uint64_t r = arithlib::mersenne_twister();
+    return fixnum_of_int(r & 0x07ffffff);
 }
 
 LispObject Nmake_random_state(LispObject env, LispObject a, LispObject b)
-{   uint64_t seed = 0;
+{   SingleValued fn;
+    uint64_t seed = 0;
     if (!is_fixnum(a)) seed = int_of_fixnum(a); 
     arithlib_lowlevel::reseed(seed);
-    return onevalue(nil);
+    return nil;
 }
 
 LispObject Nmake_random_state(LispObject env, LispObject a)
-{   return Nmake_random_state(env, a, nil);
+{   SingleValued fn;
+    return Nmake_random_state(env, a, nil);
 }
 
 LispObject Npack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
 {   uint64_t high = v0 | (static_cast<uint64_t>(v1)<<32);
     uint64_t low = v2 | (static_cast<uint64_t>(v3)<<32);
-    return arithlib_lowlevel::int128_to_bignum(high, low);
+    return arithlib_lowlevel::int128ToBignum(high, low);
 }
 
 // The function md5() can be given a number or a string as an argument,
@@ -714,7 +721,8 @@ LispObject Npack_md5_result(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
 // considered secure, so anybody worried by security needs at least sha2!
 
 LispObject Nmd5(LispObject env, LispObject a)
-{   unsigned char md[16];
+{   SingleValued fn;
+    unsigned char md[16];
     uint32_t v0, v1, v2, v3;
     size_t len, i;
 // I want the checksums that are computed to be the same whether I am on
@@ -774,24 +782,25 @@ LispObject Nmd5(LispObject env, LispObject a)
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
     v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
-    return onevalue(Npack_md5_result(v0, v1, v2, v3));
+    return Npack_md5_result(v0, v1, v2, v3);
 }
 
 // For testing the MD5 code... processes a string "raw".
 
 LispObject Nmd5string(LispObject env, LispObject a)
-{   unsigned char md[16];
+{   SingleValued fn;
+    unsigned char md[16];
     if (is_vector(a) && is_string(a))
     {   size_t len = length_of_byteheader(vechdr(a));
         CSL_MD5_Init();
         CSL_MD5_Update(reinterpret_cast<unsigned char *>(a + CELL -
                        TAG_VECTOR), len-CELL);
     }
-    else return onevalue(nil);
+    else return nil;
     CSL_MD5_Final(md);
     for (int i=0; i<16; i++) std::printf("%x ", md[i]);
     std::printf("\n");
-    return onevalue(Npack_md5_result(md[0], md[1], md[2], md[3]));
+    return Npack_md5_result(md[0], md[1], md[2], md[3]);
 }
 
 // md60 is a function that uses MD5 but then returns just about 60 bits
@@ -808,7 +817,8 @@ LispObject Nmd5string(LispObject env, LispObject a)
 // 59 bits.
 
 LispObject Nmd60(LispObject env, LispObject a)
-{   unsigned char md[16];
+{   SingleValued fn;
+    unsigned char md[16];
     uint32_t v0, v1;
     size_t len, i;
 // I want the checksums that are computed to be the same whether I am on
@@ -866,62 +876,69 @@ LispObject Nmd60(LispObject env, LispObject a)
 // I discard 4 bits to allow for fixnum tag bits and one more so that the
 // number does not extend into the fixnum's sign bit.
 // So maybe this in fact only keeps 59 bits.
-    return onevalue(make_lisp_unsigned64(v >> 5));
+    return make_lisp_unsigned64(v >> 5);
 }
 
 LispObject Nvalidate_number(LispObject env, LispObject a)
-{   return aerror1("validate-number not available or needed here", a);
+{   SingleValued fn;
+    return aerror1("validate-number not available or needed here", a);
 }
 
 LispObject Nvalidate_number(LispObject env, LispObject a, LispObject b)
-{   return aerror2("validate-number not available or needed here", a, b);
+{   SingleValued fn;
+    return aerror2("validate-number not available or needed here", a, b);
 }
 
 LispObject Nrealpart(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("realpart", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("realpart", a);
     if (is_numbers(a) && is_complex(a))
-        return onevalue(real_part(a));
-    else return onevalue(a);
+        return real_part(a);
+    else return a;
 }
 
 LispObject Nimagpart(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("imagpart", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("imagpart", a);
     if (is_numbers(a) && is_complex(a))
-        return onevalue(imag_part(a));
+        return imag_part(a);
 // /* the 0.0 returned here ought to be the same type as a has
-    else return onevalue(fixnum_of_int(0));
+    else return fixnum_of_int(0);
 }
 
 LispObject Nnumerator(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("numerator", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("numerator", a);
     if (is_numbers(a) && is_ratio(a))
-        return onevalue(numerator(a));
-    else return onevalue(a);
+        return numerator(a);
+    else return a;
 }
 
 LispObject Ndenominator(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("denominator", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("denominator", a);
     if (is_numbers(a) && is_ratio(a))
-        return onevalue(denominator(a));
-    else return onevalue(fixnum_of_int(1));
+        return denominator(a);
+    else return fixnum_of_int(1);
 }
 
 LispObject Ncomplex_1(LispObject env, LispObject a)
-{
+{   SingleValued fn;
 // /* Need to make zero of same type as a
     a = make_complex(a, fixnum_of_int(0));
-    return onevalue(a);
+    return a;
 }
 
 LispObject Ncomplex_2(LispObject env, LispObject a, LispObject b)
-{
+{   SingleValued fn;
 // /* Need to coerce a and b to the same type here...
     a = make_complex(a, b);
-    return onevalue(a);
+    return a;
 }
 
 LispObject Nconjugate(LispObject env, LispObject a)
-{   if (!is_number(a)) return aerror1("conjugate", a);
+{   SingleValued fn;
+    if (!is_number(a)) return aerror1("conjugate", a);
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                    i = imag_part(a);
@@ -932,9 +949,9 @@ LispObject Nconjugate(LispObject env, LispObject a)
             save.restore(r);
         }
         a = make_complex(r, i);
-        return onevalue(a);
+        return a;
     }
-    else return onevalue(a);
+    else return a;
 }
 
 #endif // ARITHLIB

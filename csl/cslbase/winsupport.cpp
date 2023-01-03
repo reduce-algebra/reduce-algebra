@@ -1,10 +1,10 @@
-// winsupport.cpp                               Copyright (C) 2022 Codemist
+// winsupport.cpp                               Copyright (C) 2023 Codemist
 
 // $Id: winsupport.cpp 5728 2021-03-13 14:54:03Z arthurcnorman $
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

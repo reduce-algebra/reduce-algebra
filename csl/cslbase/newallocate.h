@@ -1,8 +1,8 @@
-// newallocate.h                          Copyright (C) Codemist, 2018-2022
+// newallocate.h                          Copyright (C) Codemist, 2018-2023
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

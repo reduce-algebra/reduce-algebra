@@ -1,4 +1,4 @@
-% opcodes.red                              Copyright (C) Codemist 2016-2022
+% opcodes.red                              Copyright (C) Codemist 2016-2023
 
 %%
 %% Copyright (C) 2022, A C Norman, Codemist.                              *

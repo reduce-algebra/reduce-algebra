@@ -1102,42 +1102,39 @@ lab1075 (cond ((null w) (return nil))) (progn (setq body (cons (car w) body))
 (setq w (cdr w))) (go lab1075)) (return (cons local_decs body))))
 
 (de s!:comlambda (bvl body args env context) (prog (s nbvl fluids fl1 w 
-local_decs) (cond ((and (equal context 0) s!:maybe_values) (s!:outopcode0 (
-quote ONEVALUE) (quote (onevalue))))) (setq nbvl (setq s (cdr env))) (setq 
-body (s!:find_local_decs body nil)) (setq local_decs (car body)) (setq body (
-cdr body)) (cond ((atom body) (setq body nil)) (t (cond ((atom (cdr body)) (
-setq body (car body))) (t (setq body (cons (quote progn) body)))))) (setq w 
-nil) (prog (var1077) (setq var1077 bvl) lab1076 (cond ((null var1077) (return
-nil))) (prog (v) (setq v (car var1077)) (setq w (s!:instate_local_decs v 
-local_decs w))) (setq var1077 (cdr var1077)) (go lab1076)) (prog (var1079) (
-setq var1079 bvl) lab1078 (cond ((null var1079) (return nil))) (prog (v) (
-setq v (car var1079)) (progn (cond ((or (globalp v) (keywordp v)) (error 0 (
-list "attempt to bind global" v)))) (cond ((fluidp v) (prog (g) (setq g (
-gensym)) (setq nbvl (cons g nbvl)) (setq fl1 (cons v fl1)) (setq fluids (cons
-(cons v g) fluids)))) (t (setq nbvl (cons v nbvl)))) (cond ((equal (car args
-) nil) (s!:outstack 1)) (t (progn (s!:comval (car args) env 1) (s!:outopcode0
-(quote PUSH) (quote (PUSH)))))) (rplacd env (cons 0 (cdr env))) (setq args (
-cdr args)))) (setq var1079 (cdr var1079)) (go lab1078)) (rplacd env nbvl) (
-cond (fluids (progn (setq fl1 (s!:vecof fl1)) (s!:outopcode1lit (quote 
-FREEBIND) fl1 env) (prog (var1081) (setq var1081 (cons nil fluids)) lab1080 (
-cond ((null var1081) (return nil))) (prog (v) (setq v (car var1081)) (rplacd 
-env (cons 0 (cdr env)))) (setq var1081 (cdr var1081)) (go lab1080)) (rplacd 
-env (cons (plus 2 (length fluids)) (cdr env))) (prog (var1083) (setq var1083 
-fluids) lab1082 (cond ((null var1083) (return nil))) (prog (v) (setq v (car 
-var1083)) (s!:comval (list (quote setq) (car v) (cdr v)) env 2)) (setq 
-var1083 (cdr var1083)) (go lab1082))))) (setq w (s!:residual_local_decs 
-local_decs w)) (s!:comval body env 1) (s!:cancel_local_decs w) (cond (fluids 
-(s!:outopcode0 (quote FREERSTR) (quote (FREERSTR))))) (s!:outlose (length bvl
-)) (rplacd env s)))
+local_decs) (setq nbvl (setq s (cdr env))) (setq body (s!:find_local_decs 
+body nil)) (setq local_decs (car body)) (setq body (cdr body)) (cond ((atom 
+body) (setq body nil)) (t (cond ((atom (cdr body)) (setq body (car body))) (t
+(setq body (cons (quote progn) body)))))) (setq w nil) (prog (var1077) (setq
+var1077 bvl) lab1076 (cond ((null var1077) (return nil))) (prog (v) (setq v 
+(car var1077)) (setq w (s!:instate_local_decs v local_decs w))) (setq var1077
+(cdr var1077)) (go lab1076)) (prog (var1079) (setq var1079 bvl) lab1078 (
+cond ((null var1079) (return nil))) (prog (v) (setq v (car var1079)) (progn (
+cond ((or (globalp v) (keywordp v)) (error 0 (list "attempt to bind global" v
+)))) (cond ((fluidp v) (prog (g) (setq g (gensym)) (setq nbvl (cons g nbvl)) 
+(setq fl1 (cons v fl1)) (setq fluids (cons (cons v g) fluids)))) (t (setq 
+nbvl (cons v nbvl)))) (cond ((equal (car args) nil) (s!:outstack 1)) (t (
+progn (s!:comval (car args) env 1) (s!:outopcode0 (quote PUSH) (quote (PUSH))
+)))) (rplacd env (cons 0 (cdr env))) (setq args (cdr args)))) (setq var1079 (
+cdr var1079)) (go lab1078)) (rplacd env nbvl) (cond (fluids (progn (setq fl1 
+(s!:vecof fl1)) (s!:outopcode1lit (quote FREEBIND) fl1 env) (prog (var1081) (
+setq var1081 (cons nil fluids)) lab1080 (cond ((null var1081) (return nil))) 
+(prog (v) (setq v (car var1081)) (rplacd env (cons 0 (cdr env)))) (setq 
+var1081 (cdr var1081)) (go lab1080)) (rplacd env (cons (plus 2 (length fluids
+)) (cdr env))) (prog (var1083) (setq var1083 fluids) lab1082 (cond ((null 
+var1083) (return nil))) (prog (v) (setq v (car var1083)) (s!:comval (list (
+quote setq) (car v) (cdr v)) env 2)) (setq var1083 (cdr var1083)) (go lab1082
+))))) (setq w (s!:residual_local_decs local_decs w)) (s!:comval body env 1) (
+s!:cancel_local_decs w) (cond (fluids (s!:outopcode0 (quote FREERSTR) (quote 
+(FREERSTR))))) (s!:outlose (length bvl)) (rplacd env s)))
 
 (de s!:loadliteral (x env) (cond ((member!*!* (list (quote quote) x) 
 s!:a_reg_values) nil) (t (progn (cond ((equal x nil) (s!:outopcode0 (quote 
 VNIL) (quote (loadlit nil)))) (t (s!:outopcode1lit (quote LOADLIT) x env))) (
 setq s!:a_reg_values (list (list (quote quote) x)))))))
 
-(de s!:comquote (x env context) (progn (cond ((and (equal context 0) 
-s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond 
-((leq context 1) (s!:loadliteral (cadr x) env)))))
+(de s!:comquote (x env context) (progn (cond ((leq context 1) (s!:loadliteral
+(cadr x) env)))))
 
 (put (quote quote) (quote s!:compfn) (function s!:comquote))
 
@@ -1177,22 +1174,21 @@ s!:local_macros) s!:lexical_env)) (prog nil lab1088 (cond ((null w) (return
 nil))) (progn (setq y (atsoc fn (cadddr (car w)))) (cond (y (setq w nil)) (t 
 (setq w (cdr w))))) (go lab1088)) (return y)))
 
-(de s!:comfunction (x env context) (progn (cond ((and (equal context 0) 
-s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond 
-((leq context 1) (progn (setq x (cadr x)) (cond ((eqcar x (quote lambda)) (
-prog (g w s!:used_lexicals) (setq s!:has_closure t) (setq g (hashtagged!-name
-(quote lambda) (cdr x))) (cond (s!:used_lexicals (s!:compile1 g (cons (
-gensym) (cadr x)) (cddr x) (cons (list (cdr env) s!:current_exitlab 
-s!:current_proglabels s!:local_macros) s!:lexical_env))) (t (s!:compile1 g (
-cadr x) (cddr x) (cons (list (cdr env) s!:current_exitlab 
-s!:current_proglabels s!:local_macros) s!:lexical_env)))) (s!:loadliteral g 
-env) (setq w (length (cdr env))) (cond (s!:used_lexicals (progn (setq 
-s!:has_closure t) (cond ((greaterp w 4095) (error 0 "stack frame > 4095")) (t
-(cond ((greaterp w 255) (s!:outopcode2 (quote BIGSTACK) (plus 128 (truncate 
-w 256)) (logand w 255) (list (quote CLOSURE) w))) (t (s!:outopcode1 (quote 
-CLOSURE) w x)))))))))) (t (cond ((setq context (s!:local_macro x)) (progn (
-cond ((atom (cdr context)) (s!:comatom (cdr context) env 1)) (t (error 0 
-"(function <local macro>) is illegal"))))) (t (s!:loadliteral x env))))))))))
+(de s!:comfunction (x env context) (progn (cond ((leq context 1) (progn (setq
+x (cadr x)) (cond ((eqcar x (quote lambda)) (prog (g w s!:used_lexicals) (
+setq s!:has_closure t) (setq g (hashtagged!-name (quote lambda) (cdr x))) (
+cond (s!:used_lexicals (s!:compile1 g (cons (gensym) (cadr x)) (cddr x) (cons
+(list (cdr env) s!:current_exitlab s!:current_proglabels s!:local_macros) 
+s!:lexical_env))) (t (s!:compile1 g (cadr x) (cddr x) (cons (list (cdr env) 
+s!:current_exitlab s!:current_proglabels s!:local_macros) s!:lexical_env)))) 
+(s!:loadliteral g env) (setq w (length (cdr env))) (cond (s!:used_lexicals (
+progn (setq s!:has_closure t) (cond ((greaterp w 4095) (error 0 
+"stack frame > 4095")) (t (cond ((greaterp w 255) (s!:outopcode2 (quote 
+BIGSTACK) (plus 128 (truncate w 256)) (logand w 255) (list (quote CLOSURE) w)
+)) (t (s!:outopcode1 (quote CLOSURE) w x)))))))))) (t (cond ((setq context (
+s!:local_macro x)) (progn (cond ((atom (cdr context)) (s!:comatom (cdr 
+context) env 1)) (t (error 0 "(function <local macro>) is illegal"))))) (t (
+s!:loadliteral x env))))))))))
 
 (put (quote function) (quote s!:compfn) (function s!:comfunction))
 
@@ -1212,25 +1208,24 @@ return (list n (length p))))) (t (return (s!:find_lexical x (cdr lex) (plus n
 (setq s!:loadlocs (s!:vecof (quote (LOADLOC0 LOADLOC1 LOADLOC2 LOADLOC3 
 LOADLOC4 LOADLOC5 LOADLOC6 LOADLOC7 LOADLOC8 LOADLOC9 LOADLOC10 LOADLOC11))))
 
-(de s!:comatom (x env context) (prog (n w) (cond ((and (equal context 0) 
-s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond 
-((greaterp context 1) (return nil)) (t (cond ((or (null x) (not (symbolp x)))
-(return (s!:loadliteral x env)))))) (setq n 0) (setq w (cdr env)) (prog nil 
-lab1089 (cond ((null (and w (not (eqcar w x)))) (return nil))) (progn (setq n
-(add1 n)) (setq w (cdr w))) (go lab1089)) (cond (w (progn (setq w (cons (
-quote loc) w)) (cond ((member!*!* w s!:a_reg_values) (return nil)) (t (progn 
-(cond ((lessp n 12) (s!:outopcode0 (getv s!:loadlocs n) (list (quote LOADLOC)
-x))) (t (cond ((greaterp n 4095) (error 0 "stack frame > 4095")) (t (cond ((
-greaterp n 255) (s!:outopcode2 (quote BIGSTACK) (truncate n 256) (logand n 
-255) (list (quote LOADLOC) x))) (t (s!:outopcode1 (quote LOADLOC) n x))))))) 
-(setq s!:a_reg_values (list w)) (return nil))))))) (cond ((setq w (
-s!:find_lexical x s!:lexical_env 0)) (progn (cond ((member!*!* (cons (quote 
-lex) w) s!:a_reg_values) (return nil))) (s!:outlexref (quote LOADLEX) (length
-(cdr env)) (car w) (cadr w) x) (setq s!:a_reg_values (list (cons (quote lex)
-w))) (return nil)))) (s!:should_be_fluid x) (cond ((flagp x (quote 
-constant!?)) (return (s!:loadliteral (eval x) env)))) (setq w (cons (quote 
-free) x)) (cond ((member!*!* w s!:a_reg_values) (return nil))) (
-s!:outopcode1lit (quote LOADFREE) x env) (setq s!:a_reg_values (list w))))
+(de s!:comatom (x env context) (prog (n w) (cond ((greaterp context 1) (
+return nil)) (t (cond ((or (null x) (not (symbolp x))) (return (
+s!:loadliteral x env)))))) (setq n 0) (setq w (cdr env)) (prog nil lab1089 (
+cond ((null (and w (not (eqcar w x)))) (return nil))) (progn (setq n (add1 n)
+) (setq w (cdr w))) (go lab1089)) (cond (w (progn (setq w (cons (quote loc) w
+)) (cond ((member!*!* w s!:a_reg_values) (return nil)) (t (progn (cond ((
+lessp n 12) (s!:outopcode0 (getv s!:loadlocs n) (list (quote LOADLOC) x))) (t
+(cond ((greaterp n 4095) (error 0 "stack frame > 4095")) (t (cond ((greaterp
+n 255) (s!:outopcode2 (quote BIGSTACK) (truncate n 256) (logand n 255) (list
+(quote LOADLOC) x))) (t (s!:outopcode1 (quote LOADLOC) n x))))))) (setq 
+s!:a_reg_values (list w)) (return nil))))))) (cond ((setq w (s!:find_lexical 
+x s!:lexical_env 0)) (progn (cond ((member!*!* (cons (quote lex) w) 
+s!:a_reg_values) (return nil))) (s!:outlexref (quote LOADLEX) (length (cdr 
+env)) (car w) (cadr w) x) (setq s!:a_reg_values (list (cons (quote lex) w))) 
+(return nil)))) (s!:should_be_fluid x) (cond ((flagp x (quote constant!?)) (
+return (s!:loadliteral (eval x) env)))) (setq w (cons (quote free) x)) (cond 
+((member!*!* w s!:a_reg_values) (return nil))) (s!:outopcode1lit (quote 
+LOADFREE) x env) (setq s!:a_reg_values (list w))))
 
 (flag (quote (t !$EOL!$ !$EOF!$)) (quote constant!?))
 
@@ -1284,63 +1279,56 @@ fn (car x)) (cond ((not (symbolp fn)) (error 0
 (setq var1092 (cdr x)) lab1091 (cond ((null var1092) (return (reversip 
 var1093)))) (prog (v) (setq v (car var1092)) (setq var1093 (cons (s!:improve 
 v) var1093))) (setq var1092 (cdr var1092)) (go lab1091))) (setq nargs (length
-args)) (setq s (cdr env)) (cond ((and (equal context 0) s!:maybe_values) (
-s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (cond ((equal nargs 0) (
-cond ((setq w2 (get fn (quote s!:builtin0))) (s!:outopcode1 (quote BUILTIN0) 
-w2 fn)) (t (progn (s!:outopcode1lit (quote CALL0) fn env) (cond ((neq fn 
-s!:current_function) (setq s!:maybe_values t))))))) (t (cond ((equal nargs 1)
-(progn (cond ((and (or (equal fn (quote car)) (equal fn (quote qcar))) (
-lessp (setq w2 (s!:islocal (car args) env)) 12)) (s!:outopcode0 (getv 
-s!:carlocs w2) (list (quote carloc) (car args)))) (t (cond ((and (or (equal 
-fn (quote cdr)) (equal fn (quote qcdr))) (lessp (setq w2 (s!:islocal (car 
-args) env)) 6)) (s!:outopcode0 (getv s!:cdrlocs w2) (list (quote cdrloc) (car
-args)))) (t (cond ((and (equal fn (quote caar)) (lessp (setq w2 (s!:islocal 
-(car args) env)) 4)) (s!:outopcode0 (getv s!:caarlocs w2) (list (quote 
-caarloc) (car args)))) (t (progn (s!:comval (car args) env 1) (cond ((flagp 
-fn (quote s!:onearg)) (s!:outopcode0 fn (list fn))) (t (cond ((setq w2 (get 
-fn (quote s!:builtin1))) (s!:outopcode1 (quote BUILTIN1) w2 fn)) (t (progn (
-cond ((and (equal context 0) s!:maybe_values) (s!:outopcode0 (quote ONEVALUE)
-(quote (onevalue))))) (s!:outopcode1lit (quote CALL1) fn env) (cond ((neq fn
-s!:current_function) (setq s!:maybe_values t))))))))))))))))) (t (cond ((
-equal nargs 2) (progn (setq sw (s!:load2 (car args) (cadr args) env)) (cond (
-(flagp fn (quote s!:symmetric)) (setq sw nil))) (cond ((flagp fn (quote 
-s!:twoarg)) (progn (cond (sw (s!:outopcode0 (quote SWOP) (quote (SWOP))))) (
-s!:outopcode0 fn (list fn)))) (t (progn (setq w3 (get fn (quote s!:builtin2))
-) (cond (sw (progn (cond (w3 (s!:outopcode1 (quote BUILTIN2R) w3 fn)) (t (
-s!:outopcode1lit (quote CALL2R) fn env))))) (t (cond (w3 (s!:outopcode1 (
-quote BUILTIN2) w3 fn)) (t (progn (cond ((and (equal context 0) 
-s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue))))) (
-s!:outopcode1lit (quote CALL2) fn env) (cond ((neq fn s!:current_function) (
-setq s!:maybe_values t))))))))))))) (t (cond ((equal nargs 3) (progn (cond ((
-equal (car args) nil) (s!:outstack 1)) (t (progn (s!:comval (car args) env 1)
-(s!:outopcode0 (quote PUSH) (quote (PUSHA3)))))) (rplacd env (cons 0 (cdr 
-env))) (setq s!:a_reg_values nil) (cond ((s!:load2 (cadr args) (caddr args) 
-env) (s!:outopcode0 (quote SWOP) (quote (SWOP))))) (cond ((flagp fn (quote 
+args)) (setq s (cdr env)) (cond ((equal nargs 0) (cond ((setq w2 (get fn (
+quote s!:builtin0))) (s!:outopcode1 (quote BUILTIN0) w2 fn)) (t (progn (
+s!:outopcode1lit (quote CALL0) fn env) (cond ((neq fn s!:current_function) (
+setq s!:maybe_values t))))))) (t (cond ((equal nargs 1) (progn (cond ((and (
+or (equal fn (quote car)) (equal fn (quote qcar))) (lessp (setq w2 (
+s!:islocal (car args) env)) 12)) (s!:outopcode0 (getv s!:carlocs w2) (list (
+quote carloc) (car args)))) (t (cond ((and (or (equal fn (quote cdr)) (equal 
+fn (quote qcdr))) (lessp (setq w2 (s!:islocal (car args) env)) 6)) (
+s!:outopcode0 (getv s!:cdrlocs w2) (list (quote cdrloc) (car args)))) (t (
+cond ((and (equal fn (quote caar)) (lessp (setq w2 (s!:islocal (car args) env
+)) 4)) (s!:outopcode0 (getv s!:caarlocs w2) (list (quote caarloc) (car args))
+)) (t (progn (s!:comval (car args) env 1) (cond ((flagp fn (quote s!:onearg))
+(s!:outopcode0 fn (list fn))) (t (cond ((setq w2 (get fn (quote s!:builtin1)
+)) (s!:outopcode1 (quote BUILTIN1) w2 fn)) (t (progn (s!:outopcode1lit (quote
+CALL1) fn env) (cond ((neq fn s!:current_function) (setq s!:maybe_values t))
+))))))))))))))) (t (cond ((equal nargs 2) (progn (setq sw (s!:load2 (car args
+) (cadr args) env)) (cond ((flagp fn (quote s!:symmetric)) (setq sw nil))) (
+cond ((flagp fn (quote s!:twoarg)) (progn (cond (sw (s!:outopcode0 (quote 
+SWOP) (quote (SWOP))))) (s!:outopcode0 fn (list fn)))) (t (progn (setq w3 (
+get fn (quote s!:builtin2))) (cond (sw (progn (cond (w3 (s!:outopcode1 (quote
+BUILTIN2R) w3 fn)) (t (s!:outopcode1lit (quote CALL2R) fn env))))) (t (cond 
+(w3 (s!:outopcode1 (quote BUILTIN2) w3 fn)) (t (progn (s!:outopcode1lit (
+quote CALL2) fn env) (cond ((neq fn s!:current_function) (setq 
+s!:maybe_values t))))))))))))) (t (cond ((equal nargs 3) (progn (cond ((equal
+(car args) nil) (s!:outstack 1)) (t (progn (s!:comval (car args) env 1) (
+s!:outopcode0 (quote PUSH) (quote (PUSHA3)))))) (rplacd env (cons 0 (cdr env)
+)) (setq s!:a_reg_values nil) (cond ((s!:load2 (cadr args) (caddr args) env) 
+(s!:outopcode0 (quote SWOP) (quote (SWOP))))) (cond ((flagp fn (quote 
 s!:threearg)) (s!:outopcode0 (cond ((equal fn (quote list2!*)) (quote 
 list2star)) (t fn)) (list fn))) (t (cond ((setq w2 (get fn (quote s!:builtin3
-))) (s!:outopcode1 (quote BUILTIN3) w2 fn)) (t (progn (cond ((and (equal 
-context 0) s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (onevalue)
-)))) (s!:outopcode1lit (quote CALL3) fn env) (cond ((neq fn 
-s!:current_function) (setq s!:maybe_values t)))))))) (rplacd env (cddr env)))
-) (t (prog (largs) (cond ((and (not (and (equal fn (quote apply3)) (equal 
-nargs 4))) (not (and (equal fn (quote apply4)) (equal nargs 5)))) (progn (
-setq w1 (car args)) (setq args (cdr args)) (setq w2 (car args)) (setq args (
-cdr args)) (setq w3 (car args)) (setq args (cdr args)) (setq args (list w1 w2
-w3 (cons (quote list) args))) (setq nargs 4)))) (setq largs (reverse args)) 
-(prog (var1095) (setq var1095 (reverse (cddr largs))) lab1094 (cond ((null 
-var1095) (return nil))) (prog (a) (setq a (car var1095)) (progn (cond ((null 
-a) (s!:outstack 1)) (t (progn (s!:comval a env 1) (cond ((equal nargs 4) (
-s!:outopcode0 (quote PUSH) (quote (PUSHA4)))) (t (s!:outopcode0 (quote PUSH) 
-(quote (PUSHARG)))))))) (rplacd env (cons 0 (cdr env))) (setq s!:a_reg_values
-nil))) (setq var1095 (cdr var1095)) (go lab1094)) (cond ((s!:load2 (cadr 
-largs) (car largs) env) (s!:outopcode0 (quote SWOP) (quote (SWOP))))) (cond (
-(and (equal fn (quote apply3)) (equal nargs 4)) (s!:outopcode0 (quote APPLY3)
-(quote (APPLY3)))) (t (cond ((and (equal fn (quote apply4)) (equal nargs 5))
-(s!:outopcode0 (quote APPLY4) (quote (APPLY4)))) (t (progn (cond ((and (
-equal context 0) s!:maybe_values) (s!:outopcode0 (quote ONEVALUE) (quote (
-onevalue))))) (s!:outopcode1lit (quote CALL4) fn env) (cond ((neq fn 
-s!:current_function) (setq s!:maybe_values t)))))))) (rplacd env s)))))))))))
-)
+))) (s!:outopcode1 (quote BUILTIN3) w2 fn)) (t (progn (s!:outopcode1lit (
+quote CALL3) fn env) (cond ((neq fn s!:current_function) (setq 
+s!:maybe_values t)))))))) (rplacd env (cddr env)))) (t (prog (largs) (cond ((
+and (not (and (equal fn (quote apply3)) (equal nargs 4))) (not (and (equal fn
+(quote apply4)) (equal nargs 5)))) (progn (setq w1 (car args)) (setq args (
+cdr args)) (setq w2 (car args)) (setq args (cdr args)) (setq w3 (car args)) (
+setq args (cdr args)) (setq args (list w1 w2 w3 (cons (quote list) args))) (
+setq nargs 4)))) (setq largs (reverse args)) (prog (var1095) (setq var1095 (
+reverse (cddr largs))) lab1094 (cond ((null var1095) (return nil))) (prog (a)
+(setq a (car var1095)) (progn (cond ((null a) (s!:outstack 1)) (t (progn (
+s!:comval a env 1) (cond ((equal nargs 4) (s!:outopcode0 (quote PUSH) (quote 
+(PUSHA4)))) (t (s!:outopcode0 (quote PUSH) (quote (PUSHARG)))))))) (rplacd 
+env (cons 0 (cdr env))) (setq s!:a_reg_values nil))) (setq var1095 (cdr 
+var1095)) (go lab1094)) (cond ((s!:load2 (cadr largs) (car largs) env) (
+s!:outopcode0 (quote SWOP) (quote (SWOP))))) (cond ((and (equal fn (quote 
+apply3)) (equal nargs 4)) (s!:outopcode0 (quote APPLY3) (quote (APPLY3)))) (t
+(cond ((and (equal fn (quote apply4)) (equal nargs 5)) (s!:outopcode0 (quote
+APPLY4) (quote (APPLY4)))) (t (progn (s!:outopcode1lit (quote CALL4) fn env)
+(cond ((neq fn s!:current_function) (setq s!:maybe_values t)))))))) (rplacd 
+env s))))))))))))
 
 (de s!:ad_name (l) (cond ((equal (car l) (quote a)) (cond ((equal (cadr l) (
 quote a)) (quote caar)) (t (quote cadr)))) (t (cond ((equal (cadr l) (quote a
@@ -3931,7 +3919,7 @@ c!:printf "    errexit();\n"))) (cond (boolfn (c!:printf
 
 (de c!:pgoto (lab) (prog nil (cond ((atom lab) (return (c!:printf 
 "goto %s;\n" lab)))) (setq lab (get (car lab) (quote c!:chosen))) (c!:printf 
-"return onevalue(%v);\n" lab)))
+"return %v;\n" lab)))
 
 (de c!:pifnull (s) (c!:printf "%v == nil" (car s)))
 

@@ -1,4 +1,4 @@
-// stream.h                              Copyright (C) Codemist, 1995-2022
+// stream.h                              Copyright (C) Codemist, 1995-2023
 //
 // Header defining the structure of stream objects in CSL, and also
 // the format for "library" files used with the fast-load mechanism.
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

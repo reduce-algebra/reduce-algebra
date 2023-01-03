@@ -1,9 +1,9 @@
-// arith-plus.cpp                          Copyright (C) 2022-2022 Codemist
+// arith-plus.cpp                          Copyright (C) 2022-2023 Codemist
 
 #ifdef ARITHLIB
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -920,59 +920,70 @@ LispObject Minus::op(LFlt a)
 // context at present, which is maybe strange!
 
 LispObject Nxdifference(LispObject env, LispObject a, LispObject b)
-{   int32_t r;
-    if (!is_fixnum(a) || !is_fixnum(b)) return onevalue(nil);
+{   SingleValued fn;
+    int32_t r;
+    if (!is_fixnum(a) || !is_fixnum(b)) return nil;
     r = int_of_fixnum(a) - int_of_fixnum(b);
-    if (r < -0x08000000 || r > 0x07ffffff) return onevalue(nil);
-    return onevalue(fixnum_of_int(r));
+    if (r < -0x08000000 || r > 0x07ffffff) return nil;
+    return fixnum_of_int(r);
 }
 
 LispObject Nplus(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Nplus(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nplus(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Plus::op(a1, a2));
+{   SingleValued fn;
+    return Plus::op(a1, a2);
 }
 
 LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
-{   return onevalue(Plus::op(Plus::op(a1, a2), a3));
+{   SingleValued fn;
+    return Plus::op(Plus::op(a1, a2), a3);
 }
 
 LispObject Nplus(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
-{   LispObject w = Plus::op(Plus::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Plus::op(Plus::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Plus::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Ndifference(LispObject env, LispObject a1,
                               LispObject a2)
-{   return onevalue(Difference::op(a1, a2));
+{   SingleValued fn;
+    return Difference::op(a1, a2);
 }
 
 LispObject Nadd1(LispObject env, LispObject a1)
-{   return onevalue(Plus::op(a1, fixnum_of_int(1)));
+{   SingleValued fn;
+    return Plus::op(a1, fixnum_of_int(1));
 }
 
 LispObject Nsub1(LispObject env, LispObject a1)
-{   return onevalue(Difference::op(a1, fixnum_of_int(1)));
+{   SingleValued fn;
+    return Difference::op(a1, fixnum_of_int(1));
 }
 
 LispObject Nminus(LispObject env, LispObject a1)
-{   return onevalue(Minus::op(a1));
+{   SingleValued fn;
+    return Minus::op(a1);
 }
 
 LispObject Nabs(LispObject env, LispObject a1)
-{   return onevalue(Abs::op(a1));
+{   SingleValued fn;
+    return Abs::op(a1);
 }
 
 // The following functions, with name like IPLUS, ITIMES etc are relatives
@@ -983,43 +994,51 @@ LispObject Nabs(LispObject env, LispObject a1)
 // that will not be guaranteed.
 
 LispObject Niplus(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Niplus(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Niplus(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Plus::op(a1, a2));
+{   SingleValued fn;
+    return Plus::op(a1, a2);
 }
 
 LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onevalue(Plus::op(Plus::op(a1, a2), a3));
+{   SingleValued fn;
+    return Plus::op(Plus::op(a1, a2), a3);
 }
 
 LispObject Niplus(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   LispObject w = Plus::op(Plus::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Plus::op(Plus::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Plus::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Nidifference(LispObject env, LispObject a1,
                                LispObject a2)
-{   return onevalue(Difference::op(a1, a2));
+{   SingleValued fn;
+    return Difference::op(a1, a2);
 }
 
 LispObject Niadd1(LispObject env, LispObject a1)
-{   return onevalue(Plus::op(a1, fixnum_of_int(1)));
+{   SingleValued fn;
+    return Plus::op(a1, fixnum_of_int(1));
 }
 
 LispObject Nisub1(LispObject env, LispObject a1)
-{   return onevalue(Difference::op(a1, fixnum_of_int(1)));
+{   SingleValued fn;
+    return Difference::op(a1, fixnum_of_int(1));
 }
 
 #endif // ARITHLIB

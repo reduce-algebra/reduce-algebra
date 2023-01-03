@@ -1,5 +1,5 @@
 // "int128_t.h":  128 bit integer types for C++
-//                             Copyright Jason Lee, Arthur Norman 2013-2022
+//                             Copyright Jason Lee, Arthur Norman 2013-2023
 
 // $Id$
   

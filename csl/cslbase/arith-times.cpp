@@ -1,9 +1,9 @@
-// arith-times.cpp                         Copyright (C) 2022-2022 Codemist
+// arith-times.cpp                         Copyright (C) 2022-2023 Codemist
 
 #ifdef ARITHLIB
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2763,7 +2763,7 @@ LispObject Mod::op(Fixnum a, std::uint64_t *b)
     int64_t aa = a.intval();
     if (aa == -0x0800000000000000LL &&
         b[0] == 0x0800000000000000LLU) return fixnum_of_int(0);
-    size_t len = arithlib_implementation::number_size(b);
+    size_t len = arithlib_implementation::numberSize(b);
     bool a_neg = aa<0;
     bool b_neg = static_cast<int64_t>(b[len-1])<0;
     if (a_neg == b_neg) return a.value();
@@ -6277,228 +6277,272 @@ LispObject Ffloor::op(LFlt a, LFlt b)
 
 
 LispObject Ntimes(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Ntimes(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Times::op(a1, a2));
+{   SingleValued fn;
+    return Times::op(a1, a2);
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onevalue(Times::op(Times::op(a1, a2), a3));
+{   SingleValued fn;
+    return Times::op(Times::op(a1, a2), a3);
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   LispObject w = Times::op(Times::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Times::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 //LispObject Nexpt(LispObject env, LispObject a1, LispObject a2)
-//{   return onevalue(Expt::op(a1, a2));
+//{   SingleValued fn;
+//    return Expt::op(a1, a2);
 //}
 
 LispObject Ngcdn(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Ngcdn(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Gcdn::op(a1, a2));
+{   SingleValued fn;
+    return Gcdn::op(a1, a2);
 }
 
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
-{   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
+{   SingleValued fn;
+    return Gcdn::op(Gcdn::op(a1, a2), a3);
 }
 
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
-{   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Gcdn::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Nlcmn(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Nlcmn(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Lcmn::op(a1, a2));
+{   SingleValued fn;
+    return Lcmn::op(a1, a2);
 }
 
 LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3)
-{   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
+{   SingleValued fn;
+    return Lcmn::op(Lcmn::op(a1, a2), a3);
 }
 
 LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4plus)
-{   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Lcmn::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Nquotient(LispObject env, LispObject a1,
                             LispObject a2)
-{   return onevalue(Quotient::op(a1, a2));
+{   SingleValued fn;
+    return Quotient::op(a1, a2);
 }
 
 LispObject NCLQuotient(LispObject env, LispObject a1,
                               LispObject a2)
-{   return onevalue(CLQuotient::op(a1, a2));
+{   SingleValued fn;
+    return CLQuotient::op(a1, a2);
 }
 
 LispObject Nremainder(LispObject env, LispObject a1,
                              LispObject a2)
-{   return onevalue(Remainder::op(a1, a2));
+{   SingleValued fn;
+    return Remainder::op(a1, a2);
 }
 
 LispObject Nmod(LispObject env, LispObject a1,
                              LispObject a2)
-{   return onevalue(Mod::op(a1, a2));
+{   SingleValued fn;
+    return Mod::op(a1, a2);
 }
 
 LispObject Ndivide(LispObject env, LispObject a1,
                           LispObject a2)
-{   return onevalue(Divide::op(a1, a2));
+{   SingleValued fn;
+    return Divide::op(a1, a2);
 }
 
 LispObject Nreciprocal(LispObject env, LispObject a1)
-{   return onevalue(Reciprocal::op(a1));
+{   SingleValued fn;
+    return Reciprocal::op(a1);
 }
 
 LispObject Nsquare(LispObject env, LispObject a1)
-{   return onevalue(Square::op(a1));
+{   SingleValued fn;
+    return Square::op(a1);
 }
 
 LispObject Nitimes(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Nitimes(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nitimes(LispObject env, LispObject a1,
                           LispObject a2)
-{   return onevalue(Times::op(a1, a2));
+{   SingleValued fn;
+    return Times::op(a1, a2);
 }
 
 LispObject Nitimes(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3)
-{   return onevalue(Times::op(Times::op(a1, a2), a3));
+{   SingleValued fn;
+    return Times::op(Times::op(a1, a2), a3);
 }
 
 LispObject Nitimes(LispObject env, LispObject a1,
                           LispObject a2,
                           LispObject a3, LispObject a4plus)
-{   LispObject w = Times::op(Times::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Times::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Niexpt(LispObject env, LispObject a1, LispObject a2)
-{   return Nexpt(env, a1, a2);
+{   SingleValued fn;
+    return Nexpt(env, a1, a2);
 }
 
 LispObject Nigcdn(LispObject env)
-{   return onevalue(fixnum_of_int(0));
+{   SingleValued fn;
+    return fixnum_of_int(0);
 }
 
 LispObject Nigcdn(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Gcdn::op(a1, a2));
+{   SingleValued fn;
+    return Gcdn::op(a1, a2);
 }
 
 LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onevalue(Gcdn::op(Gcdn::op(a1, a2), a3));
+{   SingleValued fn;
+    return Gcdn::op(Gcdn::op(a1, a2), a3);
 }
 
 LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Gcdn::op(Gcdn::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Gcdn::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Nilcmn(LispObject env)
-{   return onevalue(fixnum_of_int(1));
+{   SingleValued fn;
+    return fixnum_of_int(1);
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1)
-{   return onevalue(a1);
+{   SingleValued fn;
+    return a1;
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Lcmn::op(a1, a2));
+{   SingleValued fn;
+    return Lcmn::op(a1, a2);
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
-{   return onevalue(Lcmn::op(Lcmn::op(a1, a2), a3));
+{   SingleValued fn;
+    return Lcmn::op(Lcmn::op(a1, a2), a3);
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4plus)
-{   LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
+{   SingleValued fn;
+    LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Lcmn::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
-    return onevalue(w);
+    return w;
 }
 
 LispObject Niquotient(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Quotient::op(a1, a2));
+{   SingleValued fn;
+    return Quotient::op(a1, a2);
 }
 
 LispObject Nimod(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Mod::op(a1, a2));
+{   SingleValued fn;
+    return Mod::op(a1, a2);
 }
 
 LispObject Nidivide(LispObject env, LispObject a1, LispObject a2)
-{   return onevalue(Divide::op(a1, a2));
+{   SingleValued fn;
+    return Divide::op(a1, a2);
 }
 
 LispObject Nireciprocal(LispObject env, LispObject a1)
-{   return onevalue(Reciprocal::op(a1));
+{   SingleValued fn;
+    return Reciprocal::op(a1);
 }
 
 LispObject Nisquare(LispObject env, LispObject a1)
-{   return onevalue(Square::op(a1));
+{   SingleValued fn;
+    return Square::op(a1);
 }
 
 #endif // ARITHLIB

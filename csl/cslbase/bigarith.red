@@ -1,4 +1,4 @@
-% bigarith.red                                Copyright (C) A C Norman 2022
+% bigarith.red                           Copyright (C) A C Norman 2022-2023
 
 % Big-number arithmetic done digit by digit for use testing the
 % native arithmetic package.

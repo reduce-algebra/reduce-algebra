@@ -1,5 +1,7 @@
 # Do local maintenance in the cslbase directory
 
+SHELL=bash
+
 csl.pdf:	csl.tex
 	rm -f csl.ind
 	pdflatex csl
@@ -58,7 +60,7 @@ endif
 # "arithtest" tries to do fairly full testing of arithlib.hpp for correctness
 # while running it in the mode where it is accessed via C++. Towards the top
 # of arithtest.cpp there are a sequence of #define statements that enable
-# various papts of the testing. The complete set of tests runs for a time
+# various parts of the testing. The complete set of tests runs for a time
 # that may be of the order of 15 minutes to a few hours depending on the
 # speed of the computer being used. It starts with some dull output that is
 # just there to confirm the basic setup, but then as it runs the hoped-for
@@ -67,9 +69,15 @@ endif
 
 .PHONY:	arithtest
 
+ARITHOPT = -O3
+#ARITHOPT = -O0 -g
+
 arithtest:	arithtest.cpp arithlib.hpp
-	g++ -O3 arithtest.cpp $(LIBS) -o arithtest
-	time ./arithtest
+	time g++ $(ARITHOPT) arithtest.cpp $(LIBS) -o arithtest
+# If one runs arithtest without a command line paramater it should seed
+# its random number generator in an unpredictable way. Specifing an integer
+# uses that as the seed for repeatable behaviour.
+	time ./arithtest 1
 
 # "time-arith" tries to compare (crudely) the speed of the existing (or
 # dare I now say "old"?) CSL arithmetic based on 31-bit digits with the

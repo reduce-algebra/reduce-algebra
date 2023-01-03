@@ -1,4 +1,4 @@
-// Big Number arithmetic.                               A C Norman, 2019-22
+// Big Number arithmetic.                             A C Norman, 2019-2023
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -11,7 +11,7 @@
 //     can accompany it and illustrate its use]
 
 /**************************************************************************
- * Copyright (C) 2019-22, Codemist.                      A C Norman       *
+ * Copyright (C) 2019-2023, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

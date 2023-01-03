@@ -2,7 +2,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -142,8 +142,8 @@ inline void referencemultiply(const std::uint64_t *a,
     lenc = lena + lenb;
 // The actual value may be shorter than this.
 //  test top digit or c and if necessary reduce lenc.
-    arithlib_implementation::truncate_positive(c, lenc);
-    arithlib_implementation::truncate_negative(c, lenc);
+    arithlib_implementation::truncatePositive(c, lenc);
+    arithlib_implementation::truncateNegative(c, lenc);
 }
 
 
@@ -156,8 +156,8 @@ int main(int argc, char *argv[])
 // error is detected.
 
     std::uint64_t seed;
-    if (argc > 1) seed = std::atoi(argv[1]);
-    else seed = mersenne_twister() & 0xffff;
+    if (argc <= 1 || (seed = std::atoi(argv[1])) == 0)
+        seed = mersenne_twister() & 0xffff;
     std::cout << "seed = " << seed << std::endl;
     reseed(seed);
 
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
                                         static_cast<double>(lena), 1.585));
                 for (std::size_t n = 0; n<tests; n++)
                 {
-// The gpm function mpn_mul multiplies unsigned integers, while my
+// The gpm function mpn_mul multiplies UNSIGNED integers, while my
 // bigmultiply is at a slightly higher level and deals with signed values.
 // I want to compare their results, and so forcing all inputs to be positive
 // (in my representation) by clearing most significant bits is necessary.
@@ -239,8 +239,7 @@ int main(int argc, char *argv[])
                     bool ok;
                     switch (method)
                     {   case 0:
-                            arithlib_implementation::bigmultiply(
-                                a, lena, b, lenb, c1, lenc1);
+
                             c[lena+lenb-1] = 0;
                             mpn_mul((mp_ptr)c,
                                     (mp_srcptr)a,
@@ -249,6 +248,10 @@ int main(int argc, char *argv[])
                                     (mp_srcptr)b,
                                     sizeof(std::uint64_t)/
                                        sizeof(mp_limb_t)*lenb);
+
+                            arithlib_implementation::bigmultiply(
+                                a, lena, b, lenb, c1, lenc1);
+
                             ok = true;
                             for (std::size_t i=0; i<lena+lenb; i++)
                             {   if (c[i] != c1[i])
@@ -262,6 +265,10 @@ int main(int argc, char *argv[])
                                 display("b  ", b, lenb);
                                 display("me ", c1, lenc1);
                                 display("gmp", c, lena+lenb);
+                                rdisplay("a  ", a, lena);
+                                rdisplay("b  ", b, lenb);
+                                rdisplay("me ", c1, lenc1);
+                                rdisplay("gmp", c, lena+lenb);
                                 abort();
                             }
                             break;
@@ -396,9 +403,9 @@ int main(int argc, char *argv[])
     std::cout << "Print some random numbers in decimal and hex" <<
               std::endl;
     for (int i=1; i<=ntries; i++)
-    {   Bignum a = random_upto_bits_bignum(maxbits);
+    {   Bignum a = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        Bignum b = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
+        Bignum b = fudgeDistributionBignum(a, static_cast<int>(r) & 0xf);
 //      std::cout << a << std::endl;
         std::cout << b << " "
                   << std::hex << b << std::dec
@@ -430,11 +437,11 @@ int main(int argc, char *argv[])
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   Bignum a = random_upto_bits_bignum(maxbits);
-        Bignum b = random_upto_bits_bignum(maxbits);
+    {   Bignum a = randomUptoBitsBignum(maxbits);
+        Bignum b = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
-        b = fudge_distribution_bignum(b, static_cast<int>(r>>4) & 0xf);
+        a = fudgeDistributionBignum(a, static_cast<int>(r) & 0xf);
+        b = fudgeDistributionBignum(b, static_cast<int>(r>>4) & 0xf);
         Bignum c1 = ~(a & b);
         Bignum c2 = (~a) | (~b);
         Bignum c3 = a ^ b;
@@ -491,9 +498,9 @@ int main(int argc, char *argv[])
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   Bignum a = random_upto_bits_bignum(maxbits);
+    {   Bignum a = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
+        a = fudgeDistributionBignum(a, static_cast<int>(r) & 0xf);
         r = (r >> 4)%800;
         Bignum c1 = a << r;
         Bignum p = pow(Bignum(2), static_cast<std::int64_t>(r));
@@ -548,11 +555,11 @@ int main(int argc, char *argv[])
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
-    {   Bignum a = random_upto_bits_bignum(maxbits);
-        Bignum b = random_upto_bits_bignum(maxbits);
+    {   Bignum a = randomUptoBitsBignum(maxbits);
+        Bignum b = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, static_cast<int>(r) & 0xf);
-        b = fudge_distribution_bignum(b, static_cast<int>(r>>4) & 0xf);
+        a = fudgeDistributionBignum(a, static_cast<int>(r) & 0xf);
+        b = fudgeDistributionBignum(b, static_cast<int>(r>>4) & 0xf);
         Bignum c1 = (a + b)*(a - b);
         Bignum c2 = a*a - b*b;
         Bignum c3 = square(a) - square(b);
@@ -604,15 +611,15 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum divisor, remainder, quotient;
         do
-        {   divisor = random_upto_bits_bignum(maxbits) + 1;
-            remainder = uniform_upto_bignum(divisor);
-            quotient = random_upto_bits_bignum(maxbits);
+        {   divisor = randomUptoBitsBignum(maxbits) + 1;
+            remainder = uniformUptoBignum(divisor);
+            quotient = randomUptoBitsBignum(maxbits);
             std::uint64_t rr = mersenne_twister();
-            divisor = fudge_distribution_bignum(divisor,
+            divisor = fudgeDistributionBignum(divisor,
                                                 static_cast<int>(rr & 0xf));
-            remainder = fudge_distribution_bignum(remainder,
+            remainder = fudgeDistributionBignum(remainder,
                                                   static_cast<int>((rr>>4) & 0xf));
-            quotient = fudge_distribution_bignum(quotient,
+            quotient = fudgeDistributionBignum(quotient,
                                                  static_cast<int>((rr>>8) & 0xf));
 // While I still want my strange distribution of numbers for testing, I
 // need the sign of my target remainder to be proper, so I will generate
@@ -674,13 +681,13 @@ int main(int argc, char *argv[])
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b, g;
         do
-        {   a = random_upto_bits_bignum(maxbits);
-            b = random_upto_bits_bignum(maxbits);
-            g = random_upto_bits_bignum(maxbits);
+        {   a = randomUptoBitsBignum(maxbits);
+            b = randomUptoBitsBignum(maxbits);
+            g = randomUptoBitsBignum(maxbits);
             std::uint64_t rr = mersenne_twister();
-            a = fudge_distribution_bignum(a, static_cast<int>(rr & 0xf));
-            b = fudge_distribution_bignum(b, static_cast<int>((rr>>4) & 0xf));
-            g = fudge_distribution_bignum(g, static_cast<int>((rr>>8) & 0xf));
+            a = fudgeDistributionBignum(a, static_cast<int>(rr & 0xf));
+            b = fudgeDistributionBignum(b, static_cast<int>((rr>>4) & 0xf));
+            g = fudgeDistributionBignum(g, static_cast<int>((rr>>8) & 0xf));
         }
         while (a<=0 || b<=0 || g<=0);
 //        std::cout << i << " " << a << " " << b << " " << g << std::endl;
@@ -731,9 +738,9 @@ int main(int argc, char *argv[])
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b;
-        a = random_upto_bits_bignum(maxbits);
+        a = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, static_cast<int>(r) & 7);
+        a = fudgeDistributionBignum(a, static_cast<int>(r) & 7);
         b = isqrt(a);
         if (square(b) <= a && square(b+1) > a) continue;
         std::cout << "FAILED on test " << i << std::endl;
@@ -781,12 +788,12 @@ int main(int argc, char *argv[])
 
     for (int i=1; i<=ntries; i++)
     {   Bignum a, b;
-        a = random_upto_bits_bignum(maxbits);
+        a = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
-        a = fudge_distribution_bignum(a, static_cast<int>(r) & 15);
+        a = fudgeDistributionBignum(a, static_cast<int>(r) & 15);
 
-        double d = double_bignum(a);
-        Bignum n = fix_bignum(d);
+        double d = doubleBignum(a);
+        Bignum n = fixBignum(d);
         if (a == n) continue; // round trip was exact!
 
         fp_forcer = d + 1.0;
@@ -797,8 +804,8 @@ int main(int argc, char *argv[])
         double dminus = fp_forcer;
         if (dminus == d) dminus = std::nextafter(d, -1.0e300);
         assert(dminus != d);
-        Bignum nplus = fix_bignum(dplus);
-        Bignum nminus = fix_bignum(dminus);
+        Bignum nplus = fixBignum(dplus);
+        Bignum nminus = fixBignum(dminus);
         Bignum err = a-n;
         Bignum errplus = a-nplus;
         Bignum errminus = a-nminus;

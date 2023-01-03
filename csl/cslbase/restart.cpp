@@ -1,4 +1,4 @@
-// restart.cpp                             Copyright (C) 1989-2022 Codemist
+// restart.cpp                             Copyright (C) 1989-2023 Codemist
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -107,6 +107,7 @@ int32_t stack_segsize = 1;
 char* exit_charvec = nullptr;
 intptr_t exit_reason;
 
+size_t karaSize;
 intptr_t nwork;
 unsigned int exit_count;
 uint64_t gensym_ser;
@@ -121,7 +122,7 @@ LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 LispObject go_symbol, cond_symbol, char_0_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
-LispObject startfn, all_packages, package_symbol, internal_symbol;
+LispObject startfn, karaWork, all_packages, package_symbol, internal_symbol;
 LispObject gcknt_symbol, external_symbol, inherited_symbol;
 LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
@@ -818,6 +819,10 @@ static void cold_setup()
 // enough for the largest possible number.
     fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL,
                                           SPID_NOPROP);
+#ifdef ARITHLIB
+    karaSize = 0;
+    karaWork = nil;
+#endif // ARITHLIB
 // The next bit is a horrid fudge, used in read.c (function orderp) to
 // support REDUCE. It ensures that the flag 'noncom is subject to an
 // optimisation for flag/flagp that allows it to be tested for using a

@@ -1,4 +1,4 @@
-// cslmpi.cpp                                       Copyright (C) 1997-2022
+// cslmpi.cpp                                       Copyright (C) 1997-2023
 
 //
 // Interfaces for mpi from CSL. The bulk of this code was written by
@@ -11,7 +11,7 @@
 // other parts of CSL.
 
 /**************************************************************************
- * Copyright (C) 2022, Codemist.                         A C Norman       *
+ * Copyright (C) 2023, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

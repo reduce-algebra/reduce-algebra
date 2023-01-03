@@ -1,10 +1,10 @@
 %
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist, 1990-2022
+%       Copyright (C) Codemist, 1990-2023
 %
 
 %%
-%% Copyright (C) 2022,                                 A C Norman, Codemist
+%% Copyright (C) 2023,                                 A C Norman, Codemist
 %%
 %% Redistribution and use in source and binary forms, with or without
 %% modification, are permitted provided that the following conditions are
@@ -2060,8 +2060,10 @@ symbolic procedure s!:comlambda(bvl, body, args, env, context);
 % process out the keywords here.
   begin
     scalar s, nbvl, fluids, fl1, w, local_decs;
+!#if common!-lisp!-mode
     if context = 0 and s!:maybe_values then
       s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
     nbvl := s := cdr env;
     body := s!:find_local_decs(body, nil);
     local_decs := car body; body := cdr body;
@@ -2117,8 +2119,11 @@ symbolic procedure s!:loadliteral(x, env);
     s!:a_reg_values := list list('quote, x) >>;
 
 symbolic procedure s!:comquote(x, env, context);
-<<if context = 0 and s!:maybe_values then
+<<
+!#if common!-lisp!-mode
+  if context = 0 and s!:maybe_values then
     s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
   if context <= 1 then s!:loadliteral(cadr x, env) >>;
 
 put('quote, 's!:compfn, function s!:comquote);
@@ -2176,8 +2181,11 @@ symbolic procedure s!:local_macro fn;
   end;
 
 symbolic procedure s!:comfunction(x, env, context);
-<<if context = 0 and s!:maybe_values then
+<<
+!#if common!-lisp!-mode
+  if context = 0 and s!:maybe_values then
     s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
   if context <= 1 then
   << x := cadr x;
      if eqcar(x, 'lambda) then begin
@@ -2255,8 +2263,10 @@ s!:loadlocs := s!:vecof '(LOADLOC0 LOADLOC1 LOADLOC2 LOADLOC3
 symbolic procedure s!:comatom(x, env, context);
   begin
     scalar n, w;
+!#if common!-lisp!-mode
     if context = 0 and s!:maybe_values then
        s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
     if context > 1 then return nil
     else if null x or not symbolp x then return s!:loadliteral(x, env);
 !#if common!-lisp!-mode
@@ -2416,8 +2426,10 @@ symbolic procedure s!:comcall(x, env, context);
     args := for each v in cdr x collect s!:improve v;
     nargs := length args;
     s := cdr env;
+!#if common!-lisp!-mode
     if context = 0 and s!:maybe_values then
       s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
     if nargs = 0 then
        if (w2 := get(fn, 's!:builtin0)) then s!:outopcode1('BUILTIN0, w2, fn)
        else <<
@@ -2440,8 +2452,10 @@ symbolic procedure s!:comcall(x, env, context);
           else if (w2 := get(fn, 's!:builtin1)) then
             s!:outopcode1('BUILTIN1, w2, fn)
           else <<
+!#if common!-lisp!-mode
             if context = 0 and s!:maybe_values then
               s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
             s!:outopcode1lit('CALL1, fn, env);
             if fn neq s!:current_function then s!:maybe_values := t >> >> >>
     else if nargs = 2 then <<
@@ -2457,8 +2471,10 @@ symbolic procedure s!:comcall(x, env, context);
               else s!:outopcode1lit('CALL2R, fn, env) >>
           else if w3 then s!:outopcode1('BUILTIN2, w3, fn)
           else <<
+!#if common!-lisp!-mode
             if context = 0 and s!:maybe_values then
               s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
             s!:outopcode1lit('CALL2, fn, env);
             if fn neq s!:current_function then s!:maybe_values := t >> >> >>
     else if nargs = 3 then <<
@@ -2475,8 +2491,10 @@ symbolic procedure s!:comcall(x, env, context);
         else if w2 := get(fn, 's!:builtin3) then
            s!:outopcode1('BUILTIN3, w2, fn)
         else <<
+!#if common!-lisp!-mode
           if context = 0 and s!:maybe_values then
             s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
           s!:outopcode1lit('CALL3, fn, env);
           if fn neq s!:current_function then s!:maybe_values := t >>;
         rplacd(env, cddr env) >>
@@ -2506,8 +2524,10 @@ symbolic procedure s!:comcall(x, env, context);
       if fn = 'apply3 and nargs = 4 then s!:outopcode0('APPLY3, '(APPLY3))
       else if fn = 'apply4 and nargs = 5 then s!:outopcode0('APPLY4, '(APPLY4))
       else <<
+!#if common!-lisp!-mode
         if context = 0 and s!:maybe_values then
           s!:outopcode0('ONEVALUE, '(onevalue));
+!#endif
         s!:outopcode1lit('CALL4, fn, env);
         if fn neq s!:current_function then s!:maybe_values := t >>;
       rplacd(env, s) end

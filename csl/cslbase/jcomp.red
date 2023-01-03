@@ -1,4 +1,4 @@
-% "jcomp.red"                            Copyright (C) 1991-2022,  Codemist
+% "jcomp.red"                            Copyright (C) 1991-2023,  Codemist
 %
 % Compiler that turns Lisp code into Java in a way that fits in
 % with the conventions used with Jlisp
