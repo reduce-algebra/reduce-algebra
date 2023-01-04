@@ -50,10 +50,12 @@
 #if defined __CYGWIN__ || defined __MINGW32__
 // One thing I want to check is that declarations and definitions that I
 // have made in my library do not clash with ones in <windows.h>. So
-// even though I do not need anything from it I will include it here!
-
-//#include <windows.h>
-#endif
+// even though I do not need anything from it I will include it here
+// for SOME test builds.
+#ifdef INCLUDE_WINDOWS_H
+#include <windows.h>
+#endif // INCLUDE_WINDOWS_H
+#endif // Cygwin or Mingw32
 
 using namespace arithlib;
 
@@ -95,8 +97,7 @@ bool evenfloat(double d)
 // ones that my more complicated code produce. Note that this does signed
 // multiplication and it trims its output to "proper" length.
 
-inline void referencemultiply(const std::uint64_t *a,
-                              std::size_t lena,
+inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
                               const std::uint64_t *b, std::size_t lenb,
                               std::uint64_t *c, std::size_t &lenc)
 {   for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;

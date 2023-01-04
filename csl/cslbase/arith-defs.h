@@ -29,7 +29,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: arith.h 6408 2022-10-23 12:40:00Z arthurcnorman $
+// $Id$
 
 #ifndef header_arith_defs_h
 #define header_arith_defs_h 1

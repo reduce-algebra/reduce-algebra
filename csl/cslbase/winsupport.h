@@ -1,6 +1,6 @@
 // winsupport.h                                 Copyright (C) 2023 Codemist
 
-// $Id: winsupport.h 5728 2022-03-13 14:54:03Z arthurcnorman $
+// $Id$
 
 
 /**************************************************************************
