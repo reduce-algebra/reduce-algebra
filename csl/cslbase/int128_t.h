@@ -42,7 +42,7 @@ support my current usage. Others who pick this up might want to review
 and extent that!
 
 Copyright (c) 2013 - 2017 Jason Lee @ calccrypto at gmail.com
-              2020 - 2022 Arthur Norman
+              2020 - 2023 Arthur Norman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

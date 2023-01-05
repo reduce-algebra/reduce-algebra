@@ -1,4 +1,4 @@
-// stub.cpp                                       Copyright A C Norman 2014
+// stub.cpp                                  Copyright A C Norman 2014-2023
 //
 
 // The object of this code is to have several binaries embedded in it and
@@ -18,7 +18,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2014-2023, Codemist Ltd.                A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
