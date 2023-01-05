@@ -99,45 +99,82 @@ use Glaisher's notation. For example
 \mathrm{cd}(x,k) = \frac{\mathrm{cn}(u,k)}{\mathrm{dn}(u,k)}. \]
 
 Extensive rule lists are provided for differentiation of these functions with
-respect to either argument, to implement the standard addition formulae,
-argument shifts by multiples of the two quarter-periods $K$ and $iK'$ and
-finally Jacobi's transformations for a purely imaginary first argument.
+respect to either argument, for argument shifts by multiples of the two
+quarter-periods $K$ and $iK'$ and finally Jacobi's transformations for a
+purely imaginary first argument.
+
+Complex split functions have recently been implemented for the 12 Jacobi
+functions for the cases when the modulus $k$ is either real or imaginary.
+Thus \texttt{REPART} and \texttt{IMPART} will now return rational expressions
+involving the twelve Jacobi functions with real arguments and a real modulus
+$|k|<1$. As far as I (AB) am aware there are no known methods of implementing
+split functions for general complex values of the modulus.
 
 \hypertarget{reserved:TO_SN}{}
 \hypertarget{reserved:TO_CN}{}
 \hypertarget{reserved:TO_DN}{}
 \hypertarget{reserved:NO_GLAISHER}{}
+\hypertarget{reserved:JacobiAdditionRules}{}
 \ttindextype[ELLIPFN]{to\_sn}{rule list}
 \ttindextype[ELLIPFN]{to\_cn}{rule list}
 \ttindextype[ELLIPFN]{to\_dn}{rule list}
 \ttindextype[ELLIPFN]{no\_glaisher}{rule list}
-Four utility rule lists \texttt{to\_sn}, \texttt{to\_cn}, \texttt{to\_dn} and
-\texttt{no\_glaisher} are provided for user convenience. The first
-\texttt{to\_sn} replaces occurences of the squares of $\mathrm{cn}$ and
+\ttindextype[ELLIPFN]{jacobiadditionrules}{rule list}
+Four useful rule lists \texttt{TO\_SN}, \texttt{TO\_CN}, \texttt{TO\_DN} and
+\texttt{NO\_GLAISHER} are provided for user convenience. The first
+\texttt{TO\_SN} replaces occurences of the squares of $\mathrm{cn}$ and
 $\mathrm{dn}$ in favour of the square of $\mathrm{sn}$ using the
-`Pythagorean' identities. \texttt{to\_cn} and \texttt{to\_dn} apply these
+`Pythagorean' identities. \texttt{TO\_CN} and \texttt{TO\_DN} apply these
 identities to replace squares in favour of $\mathrm{cn}$ and $\mathrm{dn}$
 respectively. At most one of these rule sets should be active at any one time
 to avoid a potential infinite recursion in the simplification.
-The final rule list \texttt{no\_glaisher} replaces all occurences of the
+The fourth rule list \texttt{NO\_GLAISHER} replaces all occurences of the
 nine subsidiary Jacobi elliptic functions ($\mathrm{ns}$, $\mathrm{sc}$,
 $\mathrm{sd}$, \ldots by reciprocals and quotients of the `basic' Jacobi
 elliptic functions $\mathrm{sn}$, $\mathrm{cn}$ and $\mathrm{dn}$.
 
-When their arguments are purely numerical, these twelve functions will be
-evaluated numerically if the \sw{rounded} switch is ON. For
-complex arguments it is also better if the \sw{complex} switch is also ON.
-However, if \sw{complex} is OFF, an addition rule will be applied followed by
-Jacobi rules for a purely imaginary first arguments and then the result
-evaluated numerically. This will be considerably more expensive computationally
-than when switch \sw{complex} is ON and rounding errors are likely to be larger.
+A fifth rule list \texttt{JACOBIADDITIONRULES} applies addition rules when the
+first argument of any Jacobi function is a sum.  Note that this rule list is NO
+LONGER active by default. There are many equivalent ways of expressing the
+right-hand sides of these rules. Previously all the rules were expressed using
+only the `basic' Jacobi functions: $\mathrm{sn}$, $\mathrm{cn}$ and
+$\mathrm{dn}$. Currently, however, the right-hand sides of the rules for the
+reciprocal and quotient Glaisher functions $\mathrm{ns}$, $\mathrm{cs}$,
+$\mathrm{sd}$ etc are expressed using the three Glaisher functions with
+the same `denominator' as on the left-hand side. Thus the rule for $\mathrm{ns}$
+is expressed in terms of $\mathrm{ns}$, $\mathrm{cs}$ and $\mathrm{ds}$
+whilst that for $\mathrm{cd}$ is expressed in terms of $\mathrm{nd}$,
+$\mathrm{cd}$ and $\mathrm{sd}$ whereas the rules for the three `basic'
+functions are unchanged and use only $\mathrm{sn}$, $\mathrm{cn}$ and
+$\mathrm{dn}$.  Note, however, that the previous form of these rules will be
+obtained if the rule-list \texttt{NO\_GLAISHER} is also active. 
+
+If both the switches \sw{rounded} and \sw{complex} are ON and both arguments
+of a Jacobi function are purely numerical, it will be evaluated numerically 
+The numerical evaluation of the Jacobi functions now uses their definitions
+in terms of theta functions as these are valid for all complex values of the
+argument and modulus.  Note that as a consequence it is now necessary that the
+switch \sw{complex} is ON even if both the argument and the modulus are real.
+
+The traditional AGM and  $\phi$-function based algorithm which was previously
+used when the argument and modulus are both real and $|k| < 1$ as been
+superceded. It appears that there was a problem with the numerical evaluation
+of \texttt{dn, nd, sd, ds, cd, dc} resulting in largish rounding errors. There
+was no problem with previous evaluation of \texttt{sn, ns, cn, nc, sc, cs} and
+these produced the same results (modulo acceptable rounding errors) as the
+theta function based method now used.
 
 \subsubsection{Jacobi Amplitude Function}
 \hypertarget{operator:JACOBIAM}{}
 \ttindextype[ELLIPFN]{jacobiam}{operator}
 The amplitude of $u$ can be evaluated using the \f{jacobiam(u,k)}
 command.  A rule list is provided for differentiation of this
-functions with respect to either argument.
+function with respect to either argument.
+
+\subsection{Some Numerical Procedures}
+This section briefly describes several procedures which are primarily
+intended for use in the numerical evaluation of the various elliptic
+functions and integrals rather than for direct use by users.
 
 \subsubsection{Arithmetic Geometric Mean (AGM)}
 \hypertarget{operator:AGM_FUNCTION}{}
@@ -153,10 +190,6 @@ desired accuracy.
 To determine the Elliptic Integrals K($m$), E($m$) we use initial values
 \(a_0 = 1\); \(b_0 = \sqrt{1-k^2}\) ; \(c_0 = k\).
 
-This procedure and the following one are primarily intended for use in the
-numerical evaluation of the various elliptic functions and integrals rather
-than for direct use by users.
-
 \subsubsection{Descending Landen Transformation}
 The procedure to evaluate the Descending Landen Transformation of
 $\phi$ and $\alpha$ uses the following equations:
@@ -167,6 +200,9 @@ $\phi$ and $\alpha$ uses the following equations:
 It can be called using \f{landentrans}($\phi_0$, $\alpha_0$)
 and will return \\
 $\{\{\phi_0, \ldots ,\phi_n\},\{\alpha_0, \ldots ,\alpha_n\}\}$.
+
+\subsubsection{Symmetric Elliptic Integrals}
+TO BE COMPLETED.
 
 \subsection{Elliptic Integrals}
 \hypertarget{ELLIPI}{}
@@ -249,6 +285,10 @@ the \emph{Incomplete Elliptic Integral of the Second Kind}:
 The complementary Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)}
 and will return the value
 \[\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2}).\]
+
+The numerical evaluation of the complete integrals is more robust as it is
+now via symmetric elliptic integrals. It should now work for all complex values
+of the modulus. 
 
 \subsubsection{Jacobi E}
 \hypertarget{operator:JACOBIE}{}

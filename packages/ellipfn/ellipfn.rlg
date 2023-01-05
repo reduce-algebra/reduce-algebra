@@ -911,14 +911,14 @@ weierstrass_sigma3(m*u,m*v,m*w);
 weierstrass_sigma3(u,v,w)
 
 
-off complex;
+% numerical evaluations
+on rounded, complex;
 
+
+*** Domain mode complex changed to complex-rounded 
 
 
 % complete elliptic integrals of 1st kind
-on rounded;
-
-
 
 K := elliptick(0.4);
 
@@ -941,6 +941,29 @@ EE!' := elliptice!'(0.4);
 
 
 ee' := 1.15065562978
+
+
+
+% some of these used to fail or give erroneous results
+elliptick(1.4);
+
+
+1.33058400462 - 1.31823203026*i
+
+elliptice(1.4);
+
+
+0.961063419243 + 0.579836416473*i
+
+elliptick(2+i);
+
+
+0.911195563805 + 0.631334283241*i
+
+elliptice(2+i);
+
+
+1.49955352093 - 1.57787900791*i
 
 
 % Jacobi Zeta function
@@ -1015,22 +1038,22 @@ d^2+m^2*s^2;
 u := 1/2+i/3;
 
 
-u := 0.333333333333*i + 0.5
+u := 0.5 + 0.333333333333*i
 
 s := jacobisn(u,m);
 
 
-s := 0.277063460865*i + 0.505246491282
+s := 0.505246491282 + 0.277063460865*i
 
 c :=  jacobicn(u,m);
 
 
-c :=  - 0.152311999241*i + 0.91906968697
+c := 0.91906968697 - 0.152311999241*i
 
 d :=  jacobidn(u,m);
 
 
-d :=  - 0.0947148006035*i + 0.945898824328
+d := 0.945898824328 - 0.0947148006035*i
 
 s^2+c^2;
 
@@ -1043,67 +1066,180 @@ d^2+m^2*s^2;
 1
 
 
+% Some of these used to fail or give erroneous results
+% modulus > 1
+m:=3;
+
+
+m := 3
+
+s := jacobisn(u,m);
+
+
+s := 0.483258224434 + 0.0362381335034*i
+
+c :=  jacobicn(u,m);
+
+
+c := 0.876455319829 - 0.0199809113567*i
+
+d :=  jacobidn(u,m);
+
+
+d := 0.149439333651 - 1.05468473816*i
+
+s^2+c^2;
+
+
+1
+
+d^2+m^2*s^2;
+
+
+1
+
+
+%Complex modulus
+m:=3+i;
+
+
+m := 3 + i
+
+s := jacobisn(u,m);
+
+
+s := 0.648696753392 + 0.0371748677827*i
+
+c :=  jacobicn(u,m);
+
+
+c := 0.762610280537 - 0.0316219393494*i
+
+d :=  jacobidn(u,m);
+
+
+d := 0.865046532708 - 1.67759559126*i
+
+s^2+c^2;
+
+
+1
+
+d^2+m^2*s^2;
+
+
+1
+
+
+% should be purely imaginary
+jacobisn(0.5i,2);
+
+
+0.628637328511*i
+
+
+% should be real
+jacobisn(1.5,2i);
+
+
+0.573544943969
+
+
 % inverse Jacobi functions
 v := arcsn(0.5,0.7);
 
 
-v := 0.57539770089
+v := 0.53536740276
 
 jacobisn(v,0.7);
 
 
-0.531969494445
+0.5
 
 w := arcns(2.0,0.7);
 
 
-w := 0.575679225813
+w := 0.53536740276
 
 w-v;
 
 
-0.00028152492314
-
-
-arcds(100.0, 0.4);
-
-
-0.0100004186627
-
-arccs(100.0, 0.4);
-
-
-0.00999999863641
+0
 
 
 w:=arccn(-0.3,0.8);
 
 
-w := 3.01695404081
+w := 2.49031911944
 
 jacobicn(w,0.8);
 
 
- - 0.627032365872
+ - 0.3
 
 
 w:=arccs(-0.4,0.8);
 
 
-w :=  - 0.943560050934
+w :=  - 1.38498321644
 
-w:=arcsc(-2.5,0.8);
+v:=arcsc(-2.5,0.8);
 
 
-w :=  - 0.943212760238
+v :=  - 1.38498321644
+
+w-v;
+
+
+0
+
+
+w:=arcdn(3,0.8);
+
+
+w := 1.40857311958*i
+
+jacobidn(w,0.8);
+
+
+3.0
+
+
+w:=arcsn(0.5,0.8+i);
+
+
+w := 0.510385193315 + 0.032296176228*i
+
+jacobisn(w,0.8+i);
+
+
+0.5 - 8.72782748851e-18*i
+
+
+w:=arccn(-0.3,0.8+i);
+
+
+w := 1.46565831705 + 0.394994134628*i
+
+jacobicn(w,0.8+i);
+
+
+ - 0.3 + 1.15982527402e-16*i
+
+
+w:=arcdn(0.3+i,0.8+i);
+
+
+w := 0.0180403389719 - 1.09392482143*i
+
+jacobidn(w,0.8+i);
+
+
+0.3 + i
+
 
 
 % Nome and related utilities
-on complex;
-
-
-*** Domain mode rounded changed to complex-rounded 
-
 a:=nome(0.4);
 
 
@@ -1114,10 +1250,15 @@ nome2mod(a);
 
 0.4
 
-nome(0.99);
+b:=nome(0.99);
 
 
-0.22819021013
+b := 0.22819021013
+
+nome2mod(b);
+
+
+0.99
 
 
 elliptick(0.4);
@@ -1890,4 +2031,3 @@ quasi_period_factors(2+i, 1+3i);
 ;
 
 end;
-

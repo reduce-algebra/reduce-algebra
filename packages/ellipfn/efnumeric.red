@@ -120,7 +120,7 @@ symbolic procedure  n_elliptic (u);
          rederr "illegal call to n_elliptic" else
    begin scalar oldprec,res;
      oldprec := precision(0);
-     precision max(oldprec,15);
+     precision max(oldprec+3,15);
 
     res :=  aeval u;
     precision oldprec;
@@ -159,9 +159,11 @@ end;
 % New routines for the numerical evaluation of symmetric elliptic integrals
 % added by Alan Barnes, February 2022.
 
-% see DLMF 19.36(ii) and 19.25(v) for more details on the
-% numerical computation of the symmetric elliptic integrals RF, RD and RJ.
-% and the elementary intgeral RC.
+% see DLMF 19.36(ii) for more details on the numerical computation of
+% the symmetric elliptic integrals RF, RD, RJ, and the elementary intgeral RC.
+% Also for the use of these symmetric integrals in the evaluation of
+% elliptic integrals and the inverse Jacobi functions,
+% see DLMF 19.25(i)and 19.25(v).
 
 % The elementary integral RC(x,y) is the definite integral w.r.t. t
 % from zero to +infinty of
@@ -427,12 +429,155 @@ algebraic procedure RJ(x,y,z,p);
       precision(oldprec);
       return tmp;
    end;
-	    
-% the following two procedures use alternative methods of evaluation
-% (probably less efficient) and are mainly for checking consistency.
 
-% For RC, the switch COMPLEX may need to be on even for purely real arguments
-% It uses inverse hyperbolic tangent with a possibly imaginary parameter.
+% The next 4 functions may well get replaced by alternative versions
+% in efnumeric.red using the duplication method for evaluation rather
+% than quadratic transformations.
+% But they are retained at least in the short term.
+
+% see DLMF 19.36(ii) and 19.25(v) for more details on the
+% numerical computation of the symmetric elliptic integral RF and the
+% inverse Jacobi functions.
+
+% only valid for real arguments, but works when only rounded is on.
+algebraic procedure carlson_RCR(x,y);
+   (if x<0 or y=0 then
+      rederr("1st parameter of RC must be non-negative and the 2nd non-zero")
+    else if y<0 then atanh(sqrt x/z)/z  % Cauchy principal value
+    else if y<x then atanh(z/sqrt x)/z 
+    else if x = 0 then pi/(2*z)
+    else if x<y then atan(z/sqrt x)/z
+    else 1/sqrt x) where z=>sqrt(abs(x-y));
+
+% valid for complex arguments but needs both rounded and complex on
+algebraic procedure carlson_RC(x,y);
+    if y = 0 or (impart x = 0 and x<0) then
+      rederr("1st parameter of RC must be non-negative and 2nd non-zero")
+    else if x=y then 1/sqrt x
+    else if x=0 then pi/(2*sqrt y)
+    else (if impart y=0 and y<0 then
+             atanh(sqrt x/z)/z % Cauchy principal value
+          else atanh(z/sqrt x)/z)  where z => sqrt(x-y);
+
+% only valid for real arguments but works when only rounded is on
+algebraic procedure sym_int_RFR(x,y,z);
+   begin scalar t0,tn,a0,an,c0,cn,tol,theta,tmp,oldprec,n:=0;
+      if x<=0 then
+	 if x=0 then n:=n+1
+	 else rederr("divergent integral RF: negative first argument");
+      if y<=0 then
+	 if y=0 then n:=n+1
+	 else rederr("divergent integral RF: negative second argument");
+      if z<=0 then
+	 if z=0 then n:=n+1
+	 else rederr("divergent integral RF: negative third argument");
+      if n>1 then rederr("divergent integral RF: more than one zero argument");
+      oldprec := precision();
+      precision(2*oldprec);
+      tol := 10.0^-(symbolic !:prec!:);
+      % sort arguments into ascending order
+      if x>y then <<tmp := y; y:=x; x:=tmp>>;      
+      if y>z then <<tmp := z; z:=y; y:=tmp>>;      
+      if x>y then <<tmp := y; y:=x; x:=tmp>>;
+
+      % use the faster convergent scheme which depends on
+      % whether y > (x+z)/2 or not
+      if 2*y >= x+z then <<
+	 tmp:=x; x:=z; z:=tmp;
+	 % x,y,z now in descending order
+	 theta :=-1;
+      >>
+      else theta :=1; 
+
+      cn := 1;
+      t0 := sqrt x;
+      a0 := sqrt(abs(x-z));
+      c0 := sqrt(abs(x-y));
+      n:=0;
+      while (abs cn > tol) do <<
+	 tn := (t0 + sqrt(t0^2+theta*c0^2))/2;
+      	 an := (a0+sqrt(a0^2-c0^2))/2;
+         cn :=c0^2/(4*an);
+	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
+      >>;
+
+      % write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
+      y:=tn^2; x:= y+theta+an^2; z:= sqrt(abs(x-y));
+      % Now return Carlson's hyperbolic or circular function
+      % RC(tn^2+theta*an^2, tn^2) which equals RF(tn^2, tn^2, tn^2+theta*an^2)
+      % when theta +1 or -1 respectively
+      % Negative second argument not possible in this case?
+      if y<x then tmp := atanh(z/sqrt x)/z 
+      else if x = 0 then tmp := pi/(2*z)
+      else if x<y then tmp := atan(z/sqrt x)/z
+      else tmp := 1/sqrt x;
+      tmp := carlson_RCR(tn^2+theta*an^2,tn^2);
+      precision(oldprec);
+      return tmp;
+   end;
+
+% valid for complex arguments but needs both rounded and complex on
+algebraic procedure sym_int_RF(x,y,z);
+   begin scalar t0,tn,a0,an,c0,cn,tol,tmp,oldprec,n:=0;
+      if impart x=0  then
+         << tmp := sign x;
+            if tmp = -1 then
+	       rederr("divergent integral RF: negative first argument");
+ 	    if tmp = 0 then n := n+1
+	 >>;
+      if impart y=0  then
+         << tmp := sign y;
+            if tmp = -1 then
+	       rederr("divergent integral RF: negative second argument");
+ 	    if tmp = 0 then n := n+1
+	 >>;
+      if impart z=0  then
+         << tmp := sign z;
+            if tmp = -1 then
+	       rederr("divergent integral RF: negative third argument");
+ 	    if tmp = 0 then n := n+1;
+	 >>;
+      if n>1 then
+	 rederr("divergent integral RF: more than one argument is zero");
+      oldprec := precision();
+      precision(2*oldprec);
+      tol := 10.0^-(symbolic !:prec!:);
+      tmp := abs(y-x);
+      tmp2 := abs(z-x);
+      if abs(z-x) < tmp then <<
+         tmp:=y; y:=z; z:=tmp         
+      >>;
+      cn := 1;
+      t0 := sqrt x;
+      a0 := sqrt(z-x);
+      c0 := sqrt(y-x);
+      n:=0;
+      while (abs cn > tol) do <<
+	 tn := (t0 + sqrt(t0^2+c0^2))/2;
+      	 an := (a0+sqrt(a0^2-c0^2))/2;
+         cn :=c0^2/(4*an);
+	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
+      >>;
+
+      %% write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
+      y := tn^2; x := y + an^2; z := sqrt(x-y);
+      if x=y then tmp := 1/sqrt x
+      else if x=0 then tmp := pi/(2*sqrt y)
+      else if impart y=0 and y<0 then  %% can this occur??
+             tmp := atanh(sqrt x/z)/z % Cauchy principal value
+      else tmp := atanh(z/sqrt x)/z; 
+      tmp := carlson_RC(tn^2+an^2,tn^2);
+      precision(oldprec);
+      return tmp;
+   end;
+
+%% 
+%% % the following two procedures use alternative methods of evaluation
+%% % (probably less efficient) and are mainly for checking consistency.
+%% 
+%% % For RC, the switch COMPLEX may need to be on even for purely real arguments
+%% % It uses inverse hyperbolic tangent with a possibly imaginary parameter.
+
 algebraic procedure RC1(x,y);
 begin scalar oldprec, res, z;
    if y = 0 or (impart x = 0 and x<0) then
@@ -451,7 +596,7 @@ begin scalar oldprec, res, z;
    return res;
 end;
 
-% uses quadratic transformations and RC1 above
+%% % uses quadratic transformations and RC1 above
 algebraic procedure RF1(x,y,z);
    begin scalar t0,tn,a0,an,c0,cn,tol,tmp,oldprec,n:=0;
       if impart x=0  then
@@ -494,7 +639,7 @@ algebraic procedure RF1(x,y,z);
 	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
       >>;
 
-%      write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
+%% %     write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
 %%       y := tn^2; x := y + an^2; z := sqrt(x-y);
 %%       if x=y then tmp := 1/sqrt x
 %%       else if x=0 then tmp := pi/(2*sqrt y)

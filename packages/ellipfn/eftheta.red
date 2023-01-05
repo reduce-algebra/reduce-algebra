@@ -112,19 +112,21 @@ begin scalar quasip, rpq, numhqp, numhrp;
 end;
 
 procedure n_theta1(z, q, tau);
-begin scalar n, pow, term, total, tol, m;
+begin scalar n, pow, term, total, tol, m, bound, f;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     n := 0;
+    bound := exp abs impart z;
+    f := bound^2;
+    % abs sin((2n+1)z) <= exp ((2n+1) abs Im z)
     repeat <<
        pow := (-1)^n*q^(n*(n+1));
        term := pow*sin((2*n+1)*z);
        total := total + term;
        n := n+1;
-       m :=  max(abs(pow),abs(term));
+       bound := bound * f;
+       m :=  abs(pow)*bound;
     >> until (total = 0 and m < tol) or m < abs(total)*tol;
-    % max is essential here as z may be complex so |sin(2n+1)z|>1 is possible
-    % or z may be such that sin(2n+1)z is very small or zero.
     return 2*exp(i*pi*tau/4)*total;
 end;    
 
@@ -202,19 +204,22 @@ end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 procedure n_theta2(z,q,tau);
-begin scalar n, pow, term, total, tol, m;
+begin scalar n, pow, term, total, tol, m, bound, f;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     n := 0;
+    bound := exp abs impart z;
+    f := bound^2;
+    % abs cos((2n+1)z) <= exp ((2n+1) abs Im z)
+
     repeat <<
        pow := q^(n*(n+1));
        term := pow*cos((2*n+1)*z);
        total := total +  term; 
        n := n+1;
-       m :=  max(abs(pow),abs(term));
+       bound := bound * f;
+       m :=  abs(pow)*bound;
     >> until (total = 0 and m < tol) or m < abs(total)*tol;
-    %  max is essential here as z may be complex so |cos(2n+1)z|>1 is possible
-    % or z may be such that cos(2n+1)z is very small or zero.    
     return 2*exp(i*pi*tau/4)*total;
 end;
 
@@ -292,20 +297,22 @@ end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 procedure n_theta3(z, q);
-begin scalar n, pow, term, total, tol, m;
+begin scalar n, pow, term, total, tol, m, bound, f;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
+   f := exp (2*abs impart z);
+   bound :=1;
+   % abs cos(2nz) <= exp (2n abs Im z)
 
    repeat <<
       pow := q^(n*n);
       term := pow*cos(2*n*z);
       total := total + term;
       n := n+1;
-      m :=  max(abs(pow),abs(term));
+      bound := bound * f;
+      m :=  abs(pow)*bound;
    >> until (total = 0 and m < tol) or m < abs(total)*tol;
-   %  max is essential here as z may be complex so |cos 2nz| > 1 is possible
-   % or z may be such that cos 2nz is very small or zero.
    return 1 + 2*total;
 end;
 
@@ -396,20 +403,22 @@ end;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 procedure n_theta4(z, q);
-begin scalar n, pow, term, total, tol, m;
+begin scalar n, pow, term, total, tol, m, bound, f;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
+   f := exp (2*abs impart z);
+   bound :=1;
+   % abs cos(2nz) <= exp (2n abs Im z)
 
    repeat <<
       pow := (-1)^n*q^(n*n);
       term := pow*cos(2*n*z);
       total := total + term;
       n := n+1;
-      m :=  max(abs(pow),abs(term));
+      bound := bound * f;
+      m :=  abs(pow)*bound;
    >> until (total = 0 and m < tol) or m < abs(total)*tol;
-   %  max is essential here as z may be complex so |cos 2nz| > 1 is possible
-   % or z may be such that cos 2nz is very small or zero.
    return 1 + 2*total;
 end;
 
@@ -755,12 +764,16 @@ procedure n_theta1d(z, d, tau);
 % differentiate d times wrt z
 if not(fixp d and d>0) then
    rederr("d must be a positve integer: n_theta1d")
-else begin scalar n, q, pow, term, total, tol, m;
+else begin scalar n, q, pow, term, total, tol, m, bound, f;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     q := exp(i*pi*tau);
 
     n := 0;
+   bound := exp (abs impart z);
+   f := bound^2;
+   % abs sin(2n+1 z) <= exp (2n+1 abs Im z)
+
     repeat <<
        pow := (-1)^n*q^(n*(n+1));
        if evenp d then
@@ -768,11 +781,10 @@ else begin scalar n, q, pow, term, total, tol, m;
        else
           term := (-1)^((d-1)/2)*(2*n+1)^d*pow*cos((2*n+1)*z);
        total := total + term;
+       bound := bound*f; 
+       m := (2*n+1)^d*abs(pow)*bound;
        n := n+1;
-       m := max(abs(pow),abs(term));
     >> until (total=0 and m < tol) or m < abs(total)*tol;
-    % max is essential here as z may be complex so |cos(2n+1)z|>1 is possible
-    % or z may be such that cos(2n+1)z is very small or zero.
     return 2*exp(i*pi*tau/4)*total;
 end;    
 
@@ -780,10 +792,13 @@ procedure n_theta2d(z, d, tau);
 % differentiate d times wrt z
 if not(fixp d and d>0) then
    rederr("d must be a positve integer: n_theta2d")
-else begin scalar n, q, pow, term, total, tol, m;
+else begin scalar n, q, pow, term, total, tol, m, bound, f;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     q := exp(i*pi*tau);
+    bound := exp (abs impart z);
+    f := bound^2;
+   % abs sin(2n+1 z) <= exp (2n+1 abs Im z)
     
     n := 0;
     repeat <<
@@ -793,24 +808,24 @@ else begin scalar n, q, pow, term, total, tol, m;
        else
           term := (-1)^((d+1)/2)*(2*n+1)^d*pow*sin((2*n+1)*z);
        total := total +  term; 
+       bound := bound*f; 
+       m := (2*n+1)^d*abs(pow)*bound;
        n := n+1;
-       m := max(abs(pow),abs(term));
-    >> until (total=0 and m < tol) or m < abs(total)*tol;
-    %  max is essential here as z may be complex so |sin(2n+1)z|>1 is possible
-    % or z may be such that sin(2n+1)z is very small or zero.    
-    return 2*exp(i*pi*tau/4)*total;
+     >> until (total=0 and m < tol) or m < abs(total)*tol;
+     return 2*exp(i*pi*tau/4)*total;
 end;
 
 procedure n_theta3d(z, d, tau);
 % differentiate d times wrt z
 if not(fixp d and d>0) then
    rederr("d must be a positve integer: n_theta3d")
-else begin scalar n, q, pow, term, total, tol, m;
+else begin scalar n, q, pow, term, total, tol, m, bound, f;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
    q := exp(i*pi*tau);
-
+   f := exp(2*abs impart z);
+   bound :=1;
    repeat <<
       pow := q^(n*n);
       if evenp d then
@@ -818,11 +833,10 @@ else begin scalar n, q, pow, term, total, tol, m;
       else
           term := (-1)^((d+1)/2)*(2*n)^d*pow*sin(2*n*z);
       total := total + term;
+      bound := bound*f; 
+      m := (2*n)^d*abs(pow)*bound;      
       n := n+1;
-      m := max(abs(pow),abs(term));
    >> until (total=0 and m < tol) or m < abs(total)*tol;
-   %  max is essential here as z may be complex so |sin 2nz| > 1 is possible
-   % or z may be such that sin 2nz is very small or zero.
    return  2*total;
 end;
 
@@ -830,11 +844,13 @@ procedure n_theta4d(z, d, tau);
 % differentiate d times wrt z
 if not(fixp d and d>0) then
    rederr("d must be a positve integer: n_theta4d")
-else begin scalar n, q, pow, term, total, tol, m;
+else begin scalar n, q, pow, term, total, tol, m, bound, f;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
    q := exp(i*pi*tau);
+   f := exp(2*abs impart z);
+   bound :=1;
 
    repeat <<
       pow := (-1)^n*q^(n*n);
@@ -843,11 +859,10 @@ else begin scalar n, q, pow, term, total, tol, m;
       else
           term := (-1)^((d+1)/2)*(2*n)^d*pow*sin(2*n*z);
       total := total + term;
+      bound := bound*f; 
+      m := (2*n)^d*abs(pow)*bound;
       n := n+1;
-      m := max(abs(pow),abs(term));
    >> until (total=0 and m < tol) or m < abs(total)*tol;
-   %  max is essential here as z may be complex so |sin 2nz| > 1 is possible
-   % or z may be such that sin 2nz is very small or zero.
    return 2*total;
 end;
 
