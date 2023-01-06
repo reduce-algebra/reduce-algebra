@@ -3699,17 +3699,21 @@ inline unsigned int logNextPowerOf2(std::size_t n)
 // support a carry-in. This means that I view the compiler-specific options
 // as not terribly comfortable.
 // However at least on x86_64 I observe that gcc generates add-with-carry
-// instructions for "a1 = b1 + c1 + (((a0 = b0 + c0) < b0) ? 1 : 0);" but
+// instructions for "a1 = b1 + c1 + (((a0 = b0 + c0) < b0));" but
 // at present I do not think I know how to extract the carry output from
 // that two-stage process.
 
 
-#if defined __GNUC__ && defined __x86_64__
+#if defined __GNUC__ && defined __x86_64__ && 0
+
+// I disable this at present because I am not quite certain that I have
+// it right and also because at present I have only re-worked one of
+// the functions.
 
 inline std::uint64_t add_with_carry(std::uint64_t a1,
                                     std::uint64_t a2,
                                     std::uint64_t &r)
-{   return ((r = a1 + a2) < a1) ? 1 : 0;
+{   return ((r = a1 + a2) < a1);
 }
 
 // Now the general version with a carry-in. 
@@ -3758,7 +3762,7 @@ inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
                                           std::uint64_t a2,
                                           std::uint64_t &r)
 {   r = a1 - a2;
-    return (r > a1) ? 1 : 0;
+    return (r > a1);
 }
 
 inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
@@ -3775,7 +3779,7 @@ inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
 inline std::uint64_t add_with_carry(std::uint64_t a1,
                                     std::uint64_t a2,
                                     std::uint64_t &r)
-{   return ((r = a1 + a2) < a1) ? 1 : 0;
+{   return ((r = a1 + a2) < a1);
 }
 
 // Now the general version with a carry-in. 
@@ -3814,7 +3818,7 @@ inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
                                           std::uint64_t a2,
                                           std::uint64_t &r)
 {   r = a1 - a2;
-    return (r > a1) ? 1 : 0;
+    return (r > a1);
 }
 
 inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
@@ -4110,7 +4114,7 @@ inline void internalNegate(const std::uint64_t* a, std::size_t lena,
 {   std::uint64_t carry = 1;
     for (std::size_t i=0; i<lena; i++)
     {   std::uint64_t w = b[i] = ~a[i] + carry;
-        carry = (w < carry ? 1 : 0);
+        carry = (w < carry);
     }
 }
 
@@ -5827,7 +5831,7 @@ inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lena; i++)
         {   top = ~a[i] + carry;
-            carry = (top < carry ? 1 : 0);
+            carry = (top < carry);
         }
         top--;
     }
@@ -8064,9 +8068,9 @@ inline std::uint64_t subtract_with_borrow(const std::uint64_t* x,
     return b;
 }
 
-inline void mul(const std::uint64_t* u, std::size_t N,
-                const std::uint64_t* v, std::size_t M,
-                std::uint64_t* w);
+inline void generalMul(const std::uint64_t* u, std::size_t N,
+                       const std::uint64_t* v, std::size_t M,
+                       std::uint64_t* w);
 
 // Compute w = u*v where u has N digits and v has M, so w has M+N.
 // Note two versions. The template one is to be expanded to provide a
@@ -8078,9 +8082,13 @@ inline void mul(const std::uint64_t* u, std::size_t N,
 inline void classicalMul(const uint64_t* u, size_t N,
                          const uint64_t* v, size_t M,
                          uint64_t* w)
-{   if (N > M)
-    {   classicalMul(v, M, u, N, w);
-        return;
+{   if (N > M) UNLIKELY
+    {   const uint64_t* temp = u;
+        u = v;
+        v = temp;
+        size_t temp1 = N;
+        N = M;
+        M = temp1;
     }
 // Want N <= M here
     uint64_t hi;
@@ -8099,9 +8107,8 @@ inline void classicalMul(const uint64_t* u, size_t N,
         hi = carry;
         carry = 0;
         for (size_t i=0; i<=k; i++)
-        {   int j = k-i;
-            uint64_t hi1;
-            multiply64(u[i], v[j], lo, hi1, lo);
+        {   uint64_t hi1;
+            multiply64(u[i], v[k-i], lo, hi1, lo);
 // In a draft version of this code the following line was written as
 //          if ((hi += hi1) < hi1) carry++;
 // however it appears that gcc notices the idiom now used and compiles
@@ -8115,7 +8122,7 @@ inline void classicalMul(const uint64_t* u, size_t N,
 // that could otherwise notice that results were not used and end up
 // avoiding all work. For that test I had annotated classicalMul with
 // [[gnu::noinline]] as further insurance against extreme optimisation.
-            carry += ((hi += hi1) < hi1) ? 1 : 0;
+            carry += ((hi += hi1) < hi1);
         }
         w[k] = lo;
     }
@@ -8126,10 +8133,9 @@ inline void classicalMul(const uint64_t* u, size_t N,
         hi = carry;
         carry = 0;
         for (size_t i=0; i<N; i++)
-        {   int j = k-i;
-            uint64_t hi1;
-            multiply64(u[i], v[j], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1) ? 1 : 0;
+        {   uint64_t hi1;
+            multiply64(u[i], v[k-i], lo, hi1, lo);
+            carry += ((hi += hi1) < hi1);
         }
         w[k] = lo;
     }
@@ -8140,10 +8146,9 @@ inline void classicalMul(const uint64_t* u, size_t N,
         hi = carry;
         carry = 0;
         for (size_t i=k-M+1; i<N; i++)
-        {   int j = k-i;
-            uint64_t hi1;
-            multiply64(u[i], v[j], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1) ? 1 : 0;
+        {   uint64_t hi1;
+            multiply64(u[i], v[k-i], lo, hi1, lo);
+            carry += ((hi += hi1) < hi1);
         }
         w[k] = lo;
     }
@@ -8159,13 +8164,9 @@ inline void classicalMul(const uint64_t* u, size_t N,
 // happen do I duplicate the code...
 
 template <int N, int M>
-void classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
-{   if (N > M)
-    {   classicalMul<M,N>(v, u, w);
-        return;
-    }
-// Want N <= M here
-    uint64_t hi;
+  std::enable_if_t<(N <= M)>
+    classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
+{   uint64_t hi;
 // The least-significant digits can be multiplied easily.
     multiply64(u[0], v[0], 0, hi, w[0]);
     size_t k = 1;
@@ -8197,7 +8198,7 @@ void classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
 // that could otherwise notice that results were not used and end up
 // avoiding all work. For that test I had annotated classicalMul with
 // [[gnu::noinline]] as further insurance against extreme optimisation.
-            carry += ((hi += hi1) < hi1) ? 1 : 0;
+            carry += ((hi += hi1) < hi1);
         }
         w[k] = lo;
     }
@@ -8211,7 +8212,7 @@ void classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
         {   int j = k-i;
             uint64_t hi1;
             multiply64(u[i], v[j], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1) ? 1 : 0;
+            carry += ((hi += hi1) < hi1);
         }
         w[k] = lo;
     }
@@ -8225,7 +8226,7 @@ void classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
         {   int j = k-i;
             uint64_t hi1;
             multiply64(u[i], v[j], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1) ? 1 : 0;
+            carry += ((hi += hi1) < hi1);
         }
         w[k] = lo;
     }
@@ -8235,24 +8236,29 @@ void classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
     w[k] = hi;
 }
 
-// When this is called for NxM multiplication with M>=N the amount if
-// workspace used is just based on N and satisfies space(N) <=  6*(N+1).
-// This is made up of 2N only required if N!=M, then for the N=M case
-// 2*(N+1)*(1+1/2+1/4+...). For the sorts of calls delegated to other
-// threads the space requirements for each thread is bounded by 4*(N+1).
-// Well actually it is a little worse than that because the code needs
-// to round up odd numbers. The worst case applies when N=2^k+1 and then
-// the space needed is 4*(N+1+k). 
+template <int N, int M>
+  std::enable_if_t<(N > M)>
+    classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
+{   classicalMul<M,N>(v, u, w);
+}
+
+// I transition from classical to Karatsuba at different thresholds
+// for odd and even sized inputs. The numbers here may need tuning both
+// in general and for each particular target machine.
+
+#ifndef KARATSUBA_START_EVEN
+inline const std::size_t KARATSUBA_START_EVEN=10;
+#endif // KARATSUBA_START_EVEN
+
+#ifndef KARATSUBA_START_ODD
+inline const std::size_t KARATSUBA_START_ODD=22;
+#endif // KARATSUBA_START_ODD
 
 #if !defined K1 && !defined K1_DEFINED
 // I provide a default here but can override it at compile time.
-static const std::size_t K1=100000; // 170;
+static const std::size_t K1=170;
 #define K1_DEFINED 1
 #endif
-
-// When I have completed and measured things I am liable to make this a
-// "const", but for now it is a simple variable so I can tinker with the
-// value during testing and tuning.
 
 #ifndef PARAKARA_CUTOFF
 // It may be defined globally as a severe override of what happens here!
@@ -8267,24 +8273,50 @@ static std::size_t PARAKARA_CUTOFF =
 // The workerThread() function is started in each of two threads, and
 // processes requests until a "quit" request is sent to it.
 
+inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
+                                const std::uint64_t* v, std::size_t M,
+                                std::uint64_t* w);
 inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
-                          const std::uint64_t* v, std::size_t M,
-                          std::uint64_t* w);
-inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
-                          const std::uint64_t* v,
-                          std::uint64_t* w, std::uint64_t* workspace);
+                         const std::uint64_t* v,
+                         std::uint64_t* w, std::uint64_t* workspace);
 
 // This is a variant on the above - it is only called when the two
 // inputs have the same length, and it is provided with a vector for
 // use as workspace that is known to be big enough for it and all its
 // recursive calls.
 
-inline void mul(const std::uint64_t* u, std::size_t N, const std::uint64_t* v,
-                std::uint64_t* w,
+inline void mul(const std::uint64_t* u, std::size_t N,
+                const std::uint64_t* v, std::uint64_t* w,
                 std::uint64_t* workspace)
 {   if (N>=22 || (N>=10 && N%2==0))
         karatsubaMul(u, N, v, w, workspace);
-    else mul(u, N, v, N, w);
+    else switch (N)
+    {   case 1:
+            classicalMul<1,1>(u, v, w); return;
+        case 2:
+            classicalMul<2,2>(u, v, w); return;
+        case 3:
+            classicalMul<3,3>(u, v, w); return;
+        case 4:
+            classicalMul<4,4>(u, v, w); return;
+        case 5:
+            classicalMul<5,5>(u, v, w); return;
+        case 6:
+            classicalMul<6,6>(u, v, w); return;
+        case 7:
+            classicalMul<7,7>(u, v, w); return;
+        case 8:
+            classicalMul<8,8>(u, v, w); return;
+        case 9:
+            classicalMul<9,9>(u, v, w); return;
+        case 10:
+            classicalMul<10,10>(u, v, w); return;
+        case 11:
+            classicalMul<11,11>(u, v, w); return;
+        default:
+            classicalMul(u, N, v, N, w);
+            return;
+    }
 }
 
 inline void workerThread(WorkerData* wd)
@@ -8306,11 +8338,13 @@ inline void workerThread(WorkerData* wd)
         wd->mutex[receive_count].lock();
 #endif
         if (wd->quit_flag) return;
-// This is where I do some work!
-        mul(wd->a, wd->lena,
-            wd->b,
-            wd->c,
-            wd->w);
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        karatsubaMul(wd->a, wd->lena,
+                     wd->b,
+                     wd->c,
+                     wd->w);
 #ifdef USE_MICROSOFT_MUTEX
         ReleaseMutex(wd->mutex[receive_count^2]);
 #else
@@ -8327,12 +8361,25 @@ inline void classicalMul(const std::uint64_t* a, std::size_t N,
                          const std::uint64_t* b, std::size_t M,
                          std::uint64_t* c);
 
-inline void karatsuba_core(const uint64_t* u, size_t N,
-                           const uint64_t* v,
-                           uint64_t* w,
-                           uint64_t* workspace)
+// When this is called for NxM multiplication with M>=N the amount if
+// workspace used is just based on N and satisfies space(N) <=  6*(N+1).
+// This is made up of 2N only required if N!=M, then for the N=M case
+// 2*(N+1)*(1+1/2+1/4+...). For the sorts of calls delegated to other
+// threads the space requirements for each thread is bounded by 4*(N+1).
+// Well actually it is a little worse than that because the code needs
+// to round up odd numbers. The worst case applies when N=2^k+1 and then
+// the space needed is 4*(N+1+k). 
+
+inline void karatsubaCore(const uint64_t* u, size_t N,
+                             const uint64_t* v,
+                             uint64_t* w,
+                             uint64_t* workspace)
 {   std::size_t H1=N/2;
     std::size_t H2=(N+1)/2;                      // N may be odd.
+    std::uint64_t* du = workspace;
+    std::uint64_t* dv = workspace + H2;
+    std::uint64_t* t = workspace + 2*H2;
+    std::uint64_t bu, bv;
     if (N > PARAKARA_CUTOFF)
     {   size_t wsNeeded = 4*N + 4*(64-nlz(N));
 
@@ -8351,21 +8398,36 @@ inline void karatsuba_core(const uint64_t* u, size_t N,
         driverData.wd_1.w = workspace+3*wsNeeded/2;
 
         driverData.releaseWorkers();
+        bu = subtract_with_borrow(u+H2, u, du, H1); // uhigh - ulow.
+        if (H1 != H2) bu = subtract_with_borrow(0, u[H1], bu, du[H1]);
+        bv = subtract_with_borrow(v, v+H2, dv, H1); // vlow - vhigh.
+        if (H1 != H2) bv = subtract_with_borrow(v[H1], bv, dv[H1]);
+        mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
+        driverData.wait_for_workers();
     }
     else
     {   mul(u, H2, v, w, workspace);            // Product of low halves.
         mul(u+H2, H1, v+H2, w+2*H2, workspace); // Product of high halves.
+        bu = subtract_with_borrow(u+H2, u, du, H1); // uhigh - ulow.
+        if (H1 != H2) bu = subtract_with_borrow(0, u[H1], bu, du[H1]);
+        bv = subtract_with_borrow(v, v+H2, dv, H1); // vlow - vhigh.
+        if (H1 != H2) bv = subtract_with_borrow(v[H1], bv, dv[H1]);
+        mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
     }
-    std::uint64_t* du = workspace;
-    std::uint64_t* dv = workspace + H2;
-    std::uint64_t bu, bv;
-    bu = subtract_with_borrow(u+H2, u, du, H1); // uhigh - ulow.
-    if (H1 != H2) bu = subtract_with_borrow(0, u[H1], bu, du[H1]);
-    bv = subtract_with_borrow(v, v+H2, dv, H1); // vlow - vhigh.
-    if (H1 != H2) bv = subtract_with_borrow(v[H1], bv, dv[H1]);
-    std::uint64_t* t = workspace+2*H2;
-    mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
-    if (H2 >= PARAKARA_CUTOFF) driverData.wait_for_workers();
+#if 0
+    display("u", u, N);
+    display("v", v, N);
+    display("du", du, H2);
+    display("dv", dv, H2);
+    display("t", t, 2*H2);
+    display("w", w, 2*N);
+    rdisplay("u", u, N);
+    rdisplay("v", v, N);
+    rdisplay("du", du, H2);
+    rdisplay("dv", dv, H2);
+    rdisplay("t", t, 2*H2);
+    rdisplay("w", w, 2*N);
+#endif
     std::uint64_t c = add_with_carry(w, t, t, H2); // add in low and high..
     c = add_with_carry(w+H2, t+H2, c, t+H2, H2);   // ..products from earlier.
     std::uint64_t cx = add_with_carry(w+2*H2, t, t, H1);
@@ -8391,13 +8453,11 @@ inline void karatsuba_core(const uint64_t* u, size_t N,
 //  (.) Deal with multiplications where the two numbers do not
 //      have the same number of digits.
 
-inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
-                          const std::uint64_t* v, std::size_t M,
-                          std::uint64_t* w)
+inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
+                                const std::uint64_t* v, std::size_t M,
+                                std::uint64_t* w)
 {
 // Here M >= N.
-//-    std::size_t H1=N/2;
-//-    std::size_t H2=(N+1)/2;                      // N may be odd.
     size_t wsNeeded = 4*N + 4*(64-nlz(N));
     size_t wsTotal = wsNeeded;
     if (N > PARAKARA_CUTOFF) wsTotal *= 2;
@@ -8405,6 +8465,7 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
     else if (M > N) wsTotal += N+M;
     uint64_t* workspace = getWorkspace(wsTotal);
 // Here is the layout used for the workspace:
+//   H2 = (N+1)/2
 //   [0 .. H2)                     du   stores u_hi - u_lo
 //   [H2 .. 2*H2)                  dv   stores v_lo - v_hi
 //   [2*H2 .. 4*H2)                t    stored du*dv
@@ -8413,7 +8474,7 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
 //     [3*wsNeeded/2 .. 2*wsNeeded)  as from 0..wsNeeded for thread2
 //   [z=wsNeeded or 2*wsNeeded .. z+min(2*N,N+M)) used if N!=M
 //
-    karatsuba_core(u, N, v, w, workspace);
+    karatsubaCore(u, N, v, w, workspace);
 // Now the low 2*N words of the result have been set to the product
 // of two N-word parts. In an especially easy case N=M and we are done!
     if (N == M) return;
@@ -8422,26 +8483,25 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
     M -= N;
     uint64_t* temp = N < PARAKARA_CUTOFF ? workspace + wsNeeded :
                                            workspace + 2*wsNeeded;
-    while (M >= N)
-    {   karatsuba_core(u, N, v, temp, workspace);
+    do
+    {   while (M >= N)
+        {   karatsubaCore(u, N, v, temp, workspace);
+            std::uint64_t c = add_with_carry(w, temp, w, N);
+            for (size_t i=N; i<2*N; i++)
+                c = add_with_carry(w[i], temp[i], c, w[i]);
+            v += M;
+            w += M;
+            M -= N;
+        }
+    } while ((M > KARATSUBA_START_ODD ||
+             ((M%2) == 0 && M > KARATSUBA_START_EVEN)) &&
+            (std::swap(u, v), std::swap(N, M), true));
+    if (M != 0)
+    {   classicalMul(u, N, v, M, temp);
         std::uint64_t c = add_with_carry(w, temp, w, N);
-        for (size_t i=N; i<2*N; i++)
+        for (size_t i=N; i<N+M; i++)
             c = add_with_carry(w[i], temp[i], c, w[i]);
-        v += M;
-        w += M;
-        M -= N;
     }
-    if (M == 0) return;
-// The next should probably be a mul(v, M, u, N, temp, workspace); or
-// some such so that if noe M<N but M is still huge there is a chance to
-// use Karatsuba on size M*M segments of what is left. I may even be
-// able to swap the order of the parameters are iterate here in relevant
-// case. But I want to ensure that what I have so far is tested quite a lot
-// before I try that!
-    classicalMul(u, N, v, M, temp);
-    std::uint64_t c = add_with_carry(w, temp, w, N);
-    for (size_t i=N; i<N+M; i++)
-        c = add_with_carry(w[i], temp[i], c, w[i]);
 }
 
 inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
@@ -8481,7 +8541,7 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
     increment(w+3*H2, 2*H1-H2, cxx + cx + c - bu - bv);
 }
 
-// mul() is the key entrypoint here. For small inputs it uses classical
+// generalMul() is the key entrypoint here. For small inputs it uses classical
 // long multiplication. For large ones where the two inputs it will use
 // Karatsuba.
 // The cutoff values coded in here are based on measurements on x86_64
@@ -8490,13 +8550,13 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
 // started to win for bigger cases than applied for even numbers of
 // digits.
 
-inline void mul(const std::uint64_t* u, std::size_t N,
-                const std::uint64_t*v, std::size_t M,
-                std::uint64_t* w)
-{   if (N>=22 || (N>=10 && N%2==0))
-    {   if (M>=22 || (M>=10 && M%2==0))
-        {   if (M > N) karatsubaMul(u, N, v, M, w);
-            else karatsubaMul(v, M, u, N, w);
+inline void generalMul(const std::uint64_t* u, std::size_t N,
+                       const std::uint64_t*v, std::size_t M,
+                       std::uint64_t* w)
+{   if (N>=KARATSUBA_START_ODD || (N>=KARATSUBA_START_EVEN && N%2==0))
+    {   if (M>=KARATSUBA_START_ODD || (M>=KARATSUBA_START_EVEN && M%2==0))
+        {   if (M > N) generalKaratsubaMul(u, N, v, M, w);
+            else generalKaratsubaMul(v, M, u, N, w);
         }
         else classicalMul(u, N, v, M, w);
     }
@@ -8630,7 +8690,7 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
 // For this a and b must be treated as 2s complement signed numbers,
 // and the length lenc returned but ensure that the top digit of the
 // product is not a redundant zero or -1.
-    mul(a, lena, b, lenb, c);
+    generalMul(a, lena, b, lenb, c);
     if (negative(a[lena-1])) subtract_with_borrow(c+lena, b, c+lena, lenb);
     if (negative(b[lenb-1])) subtract_with_borrow(c+lenb, a, c+lenb, lena);
     lena += lenb;
@@ -8986,7 +9046,7 @@ inline std::intptr_t Pow::op(std::int64_t a, std::int64_t n)
 {   if (n < 0)
     {   int z = 0;
         if (a == 1) z = 1;
-        else if (a == -1) z = (n%1==0 ? 1 : 0);
+        else if (a == -1) z = (n%1==0);
         else arithlib_assert(a != 0);
         return intToHandle(z);
     }

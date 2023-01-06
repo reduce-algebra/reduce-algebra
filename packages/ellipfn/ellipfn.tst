@@ -193,10 +193,10 @@ weierstrass_sigma2(m*u,m*v,m*w);
 m :=-(6+i);
 weierstrass_sigma3(m*u,m*v,m*w);
 
-off complex;
+% numerical evaluations
+on rounded, complex;
 
 % complete elliptic integrals of 1st kind
-on rounded;
 
 K := elliptick(0.4);
 K!' := elliptick!'(0.4);
@@ -204,6 +204,13 @@ K!' := elliptick!'(0.4);
 % complete elliptic integrals of 2nd kind
 EE := elliptice(0.4);
 EE!' := elliptice!'(0.4);
+
+
+% some of these used to fail or give erroneous results
+elliptick(1.4);
+elliptice(1.4);
+elliptick(2+i);
+elliptice(2+i);
 
 % Jacobi Zeta function
 u := 0.6;
@@ -233,26 +240,60 @@ d :=  jacobidn(u,m);
 s^2+c^2;
 d^2+m^2*s^2;
 
+% Some of these used to fail or give erroneous results
+% modulus > 1
+m:=3;
+s := jacobisn(u,m);
+c :=  jacobicn(u,m);
+d :=  jacobidn(u,m);
+s^2+c^2;
+d^2+m^2*s^2;
+
+%Complex modulus
+m:=3+i;
+s := jacobisn(u,m);
+c :=  jacobicn(u,m);
+d :=  jacobidn(u,m);
+s^2+c^2;
+d^2+m^2*s^2;
+
+% should be purely imaginary
+jacobisn(0.5i,2);
+
+% should be real
+jacobisn(1.5,2i);
+
 % inverse Jacobi functions
 v := arcsn(0.5,0.7);
 jacobisn(v,0.7);
 w := arcns(2.0,0.7);
 w-v;
 
-arcds(100.0, 0.4);
-arccs(100.0, 0.4);
-
 w:=arccn(-0.3,0.8);
 jacobicn(w,0.8);
 
 w:=arccs(-0.4,0.8);
-w:=arcsc(-2.5,0.8);
+v:=arcsc(-2.5,0.8);
+w-v;
+
+w:=arcdn(3,0.8);
+jacobidn(w,0.8);
+
+w:=arcsn(0.5,0.8+i);
+jacobisn(w,0.8+i);
+
+w:=arccn(-0.3,0.8+i);
+jacobicn(w,0.8+i);
+
+w:=arcdn(0.3+i,0.8+i);
+jacobidn(w,0.8+i);
+
 
 % Nome and related utilities
-on complex;
 a:=nome(0.4);
 nome2mod(a);
-nome(0.99);
+b:=nome(0.99);
+nome2mod(b);
 
 elliptick(0.4);
 nome2!K(a);

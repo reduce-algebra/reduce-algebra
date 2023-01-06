@@ -31,36 +31,11 @@ module efellint;  % Procedures and Rules for Elliptic Integrals.
 algebraic;
 
 %######################################################################
-%DESCENDING LANDEN TRANSFORMATION
-% Moved to efnumeric.red by AB, Feb 2022
 
-%% procedure landentrans(phi,alpha);
-%% begin scalar alpha1, phi1, alist, plist, tol;
-%%    tol := 10.0^-(symbolic !:prec!:);
-%% 
-%%    alist :=  list alpha;
-%%    plist :=  list phi;
-%% 
-%%    while alpha > tol do <<
-%%        alpha1 := asin(2/(1+cos alpha) -1);
-%%        phi1 := phi + (atan(cos(alpha)*tan(phi)))
-%%                      + floor((floor(phi/(pi/2))+1)/2)*pi;
-%% 
-%%        alist := alpha1 . alist;
-%%        plist := phi1.plist;
-%% 
-%%        alpha := alpha1;
-%%        phi   := phi1;
-%%    >>;
-%% 
-%%    return list(reverse plist, reverse alist)
-%% end;
-
-%######################################################################
 %VALUE OF EllipticF(phi,m)
 
 procedure f_function(phi,m);
-    if phi = pi/2 then k_function(m)
+    if phi = pi/2 then num_ellk(m)
     else begin scalar  bothlists, alist, plist, phi_n;
        bothlists := landentrans(phi,asin m);
        alist := rest second bothlists;
@@ -68,6 +43,14 @@ procedure f_function(phi,m);
        phi_n  := first reverse plist;
        return (phi_n * for each y in alist product (1+sin y)/2);
     end;
+
+algebraic procedure num_ellf(phi,k);
+   if phi = pi/2 then
+       num_ellk(k)
+   else if impart phi = 0 and impart k = 0 then
+      RF(c-1,c-k^2,c) where c=>1/cos(phi)^2
+   else
+      rederr("Complex arguments for ellipticF not yet supported");
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticF definition
@@ -77,6 +60,7 @@ operator ellipticf;
 
 ellipticfrules :=
 {
+   % incomplete elliptic integral of the first kind      
    ellipticf(~phi,0)   => phi,
    ellipticf(0, ~k)    => 0,
    ellipticf(-~phi,~k) => -ellipticf(phi,k),
@@ -103,20 +87,29 @@ ellipticfrules :=
                            + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2))),
 
    ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
-            when lisp !*rounded and numberp repart phi and numberp impart phi
-                 and numberp repart m and numberp impart m
+      when lisp !*rounded and lisp !*complex and numberp phi and numberp m
 }$
 let ellipticfrules;
 
 %######################################################################
 %VALUE OF K(m)
 
-procedure k_function(m);
-begin scalar agm, an;
-   agm := agm_function(1,sqrt(1-m^2),m);
-   an  := first second agm;
-   return pi/(2*an);
-end;
+%% procedure f_function(m);
+%% begin scalar agm, an;
+%%    agm := agm_function(1,sqrt(1-m^2),m);
+%%    an  := first second agm;
+%%    return pi/(2*an);
+%% end;
+
+% complete elliptic integral of the first kind
+algebraic procedure num_ellk(k);
+   if k=1 or k=-1 then
+      rederr("Logarithmic Singularity")
+   else if k = 0 then pi/2
+   else if impart(k) = 0 and abs(k)>1 then
+      (RF(0, 1-1/k^2, 1) - i*RF(0, 1/k^2, 1))/k
+   else
+      RF(0,1-k^2,1);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticK definition
@@ -126,27 +119,27 @@ operator nome;
 
 elliptickrules :=
 
-{
-        elliptick(~m)   => num_elliptic(k_function, m)
-	       when lisp !*rounded and numberp repart m and numberp impart m,
+{% complete elliptic integral of first kind
+        elliptick(-~k)    => elliptick(k),
+	elliptick!'(-~k)  => elliptick!'(k),
+	elliptick(0)      => pi/2,
+	elliptick!'(1)    => pi/2,
 
-        elliptick!'(~m) => num_elliptic(k_function, sqrt(1-m^2))
-	       when lisp !*rounded and numberp repart m and numberp impart m,
+        elliptick(~m)   => num_ellk(m)
+	       when lisp !*rounded and lisp !*complex and numberp m,
+
+        elliptick!'(~m) => num_ellk(sqrt(1-m^2))
+	       when lisp !*rounded and lisp !*complex and numberp m,
 
         nome(0) => 0,
 
         nome(1) => 1,
 
         nome(~m) => exp(-pi*elliptick!'(m)/elliptick(m))
-	       when lisp !*rounded and numberp repart m and numberp impart m
 }$
 let elliptickrules;
 
 % ######################################################################
-% VALUE OF JacobiE(phi,m)
-
-procedure je_function(phi,m);
-  e_function(num_jacobiam(phi, m), m);
 
 procedure e_function(phi, m);
 begin scalar f, n, bothlists, alist, plist, s,
@@ -177,8 +170,48 @@ begin scalar f, n, bothlists, alist, plist, s,
      >>;
      s := sin first alist;
      return f*(1 - s^2*(1 + allz)/2) + s*allx;
-
 end;
+
+% three alternative symmetric integral methods for evaluating ellipticE(phi,k) 
+algebraic procedure num_elle(phi,k);
+   if phi = pi/2 then
+      num_ellec(k)
+   else
+      (RF(c-1, c-k^2, c) - k^2*RD(c-1, c-k^2, c)/3) where c=>1/cos(phi)^2;
+
+
+algebraic procedure num_elle2(phi,k);
+   if phi = pi/2 then
+      num_ellec(k)
+   else
+      ((k^2-1)*RD(c-k^2, c, c-1)/3 +sqrt((c-k^2)/(c^2-c)))
+ 	 where c=>1/cos(phi)^2;
+ 
+algebraic procedure num_elle1(phi,k);
+   if phi = pi/2 then
+      num_ellec(k)
+   else 
+      ((1-k^2)*(RF(c-1, c-k^2, c) +k^2*RD(c-1, c, c-k^2)/3)
+ 	 +k^2*sqrt((c-1)/(c^2-k^2*c))) where c=>1/cos(phi)^2;
+
+% complete elliptic integral of the second kind
+algebraic procedure num_ellec(k);
+   if k = 1 or k = -1 then 1
+   else if k = 0 then pi/2
+   else begin scalar kp2,rp,ip;
+      if impart(k) = 0 and abs(k)>1 then <<
+      	 kp2 := 1-1/k^2;
+      	 rp := (RD(0, kp2, 1) + RD(0, 1, kp2))*kp2/(3*k);  % E(1/k)/k
+      	 kp2 := 1-kp2;
+      	 % k*E'(1/k)-K'(1/k)/k
+      	 ip := k*(RD(0, kp2, 1) + RD(0, 1, kp2))*kp2/3
+	        - num_ellk(sqrt(1-1/k^2))/k;
+      	 return rp+i*ip;
+      >> else <<
+      	 kp2 := 1-k^2;
+      	 return (RD(0, kp2, 1) + RD(0, 1, kp2))*kp2/3;
+      >>;
+   end;
 
 
 % EllipticE(phi, m) definition     Legendre's form of elliptic integral
@@ -186,16 +219,26 @@ end;
 
 % operator elliptice; % already defined in efjacobi.red
 
-jacobidrules :=
+% Rule list renamed November 2022
+ellipticerules :=
 {
-        elliptice(0,~m)     => 0,
-        elliptice(~phi,0)   => phi,
-        elliptice(i*~phi,0) => i*phi,
-        elliptice(~phi,1)   => sin(phi),
-        elliptice(i*~phi,1) => i*sinh(phi),
-        elliptice(-~phi,~k) => -elliptice(phi,k),
-        elliptice(~phi,-~k) =>  elliptice(phi,k),
-	elliptice(pi/2,~k)  =>  elliptice(k),
+   % complete elliptic integral of second kind
+   elliptice(-~k)    => elliptice(k),
+   elliptice!'(-~k)  => elliptice!'(k),
+   elliptice(0)      => pi/2,
+   elliptice(1)      => 1,
+   elliptice!'(0)    => 1,	
+   elliptice!'(1)    => pi/2,
+
+   % Legendre's form of the incomplete elliptic integral of second kind
+   elliptice(0,~m)     => 0,
+   elliptice(~phi,0)   => phi,
+   elliptice(i*~phi,0) => i*phi,
+   elliptice(~phi,1)   => sin(phi),
+   elliptice(i*~phi,1) => i*sinh(phi),
+   elliptice(-~phi,~k) => -elliptice(phi,k),
+   elliptice(~phi,-~k) =>  elliptice(phi,k),
+   elliptice(pi/2,~k)  =>  elliptice(k),
 
 % quasi-periodicity
 
@@ -213,11 +256,17 @@ jacobidrules :=
                                  df(m,x)*(elliptice(phi,m)-ellipticf(phi,m))/m,
 
     elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
-            when lisp !*rounded and numberp repart phi and numberp impart phi
-                 and numberp repart m and numberp impart m
+       when lisp !*rounded and lisp !*complex and numberp phi and numberp m,
+	     
+    elliptice(~m) => num_ellec(m)
+            when lisp !*rounded and lisp !*complex and numberp  m,
+
+    elliptice!'(~m) => num_ellec(sqrt(1-m^2))
+	   when lisp !*rounded and lisp !*complex and numberp m
+
 }$
 
-let jacobidrules;
+let ellipticerules;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %JacobiE(phi,m) definition   Jacobi's form of the elliptic integral
@@ -232,15 +281,21 @@ let jacobidrules;
 % elliptice by \mathrm{E}. 
 %
 % The e_function(u, k) and d_functions(u,k) originally evaluated JacobiE(u,k)
-% and EllipticE(u,k) numerically.
+% and EllipticE(u,k) (formerly called EllipticD(u,k)) numerically.
 % This e_function has been renamed as je_function and the d_function
 % renamed as e_function.
 
 % operator jacobie;  % already defined in sfellip.red
 
+% VALUE OF JacobiE(phi,m)
+
+procedure je_function(phi,m);
+  e_function(num_jacobiam(phi, m), m);
+
 jacobierules :=
 
-{
+   {
+      % Jacobi's form of the incomplete elliptic integral of the second kind
         jacobie(0,~m)     => 0,
         jacobie(~phi,0)   => phi,
         jacobie(i*~phi,0) => i*phi,
@@ -250,17 +305,6 @@ jacobierules :=
         jacobie(~phi,-~m) =>  jacobie(phi,m),
 	jacobie(elliptick(~m), ~m) => elliptice(m),
 
-% complete elliptic integrals
-        elliptick(-~k)    => elliptick(k),
-	elliptick!'(-~k)  => elliptick!'(k),
-        elliptice(-~k)    => elliptice(k),
-	elliptice!'(-~k)  => elliptice!'(k),
-        elliptice(0)      => pi/2,
-        elliptice(1)      => 1,
-	elliptick(0)      => pi/2,
-	elliptick!'(1)    => pi/2,
-        elliptice!'(0)    => 1,	
-        elliptice!'(1)    => pi/2,
 	
 % quasi-periodicity
 
@@ -282,14 +326,6 @@ jacobierules :=
       end)
       when ((ratnump(ip) and abs(ip) >= 2) where ip => impart(k/d)),
 
-% quasi-addition
-
-    jacobie((~u+~v)/~~d,~m) => jacobie(u/d,m) + jacobie(v/d,m)
-         - m^2*jacobisn(u/d,m)*jacobisn(v/d,m)*jacobisn((u+v)/d,m),
-
-    jacobie(2*~u,~m) =>
-          2*jacobie(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
-	  
 % derivative rules 
     df(jacobie(~phi,~m),~x) => df(phi,x)*jacobidn(phi,m)^2 +
             df(m,x)*(m*(jacobisn(phi,m)*jacobicn(phi,m)*jacobidn(phi,m)
@@ -307,15 +343,9 @@ jacobierules :=
 % numerical evaluation
 
         jacobie(~phi,~m) => num_elliptic(je_function,phi,m)
-            when lisp !*rounded and numberp repart phi and numberp impart phi
-                 and numberp repart m and numberp impart m,
-
-        elliptice(~m) => num_elliptic(e_function,pi/2,m)
-            when lisp !*rounded and numberp repart m  and numberp impart m,
-
-        elliptice!'(~m) => num_elliptic(e_function,pi/2,sqrt(1-m^2))
-            when lisp !*rounded and numberp repart m  and numberp impart m
+	   when lisp  !*rounded and lisp !*complex and numberp phi and numberp m
 }$
+
 let jacobierules;
 
 
@@ -342,12 +372,11 @@ end;
 %JacobiZETA definition
 %=====================
 
-operator jacobizeta;
+% operator jacobizeta;
 
 jacobizetarules :=
 
 {
-
         jacobizeta(~u,0)     => 0,
         jacobizeta(~u,1)     => tanh(u),
         jacobizeta(-~u,~m)   => -jacobizeta(u,m),
@@ -376,17 +405,11 @@ jacobizetarules :=
       end)
       when ((ratnump(ip) and abs(ip) >= 2) where ip => impart(k/d)),
       
-        jacobizeta((~u+~v)/~~d,~m) => jacobizeta(u/d,m) + jacobizeta(v/d,m)
-	   - m^2*jacobisn(u/d,m)*jacobisn(v/d,m)*jacobisn((u+v)/d,m),
-        jacobizeta(2*~u,~m) =>
-             2*jacobizeta(u,m) - m^2*jacobisn(u,m)^2*jacobisn(2*u,m),
-
-        jacobizeta(~u+2*elliptick(~m),m) => jacobizeta(u,m),
+     jacobizeta(~u+2*elliptick(~m),m) => jacobizeta(u,m),
         jacobizeta(elliptick(~m) -~u,m) => -jacobizeta(elliptick(m)+u,m),
 
         jacobizeta(~u,~m) => num_elliptic(num_jacobizeta,u,m)
-            when lisp !*rounded and numberp repart u and numberp impart u
-                 and numberp repart m  and numberp impart m,             
+	   when lisp !*rounded and lisp !*complex and numberp u and numberp m,
 
 %derivative rules
     df(jacobizeta(~u, ~k),~x) =>
