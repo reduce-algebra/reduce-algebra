@@ -63,7 +63,7 @@ fluid '(traced_functions);
 
 % Here I list all the functions defined specially in the --with-arithlib
 % varient of CSL, since these are ones I especially want to check up
-% on at present. Note that the scheme here ONLY traces direct calls tp
+% on at present. Note that the scheme here ONLY traces direct calls to
 % them from the source code processed... indirect use is not looked at.
 
 traced_functions := '(

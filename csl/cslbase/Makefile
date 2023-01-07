@@ -2,6 +2,14 @@
 
 SHELL=bash
 
+ifeq ($(OS),Windows_NT)
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Darwin)
+    MACFLAGS=-I/opt/local/include -L/opt/local/lib -std=gnu++17
+  endif
+endif
+
 csl.pdf:	csl.tex
 	rm -f csl.ind
 	pdflatex csl
@@ -73,7 +81,7 @@ ARITHOPT = -O3
 #ARITHOPT = -O0 -g
 
 arithtest:	arithtest.cpp arithlib.hpp
-	time g++ $(ARITHOPT) arithtest.cpp $(LIBS) -o arithtest
+	time g++ $(ARITHOPT) $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtest
 # If one runs arithtest without a command line paramater it should seed
 # its random number generator in an unpredictable way. Specifing an integer
 # uses that as the seed for repeatable behaviour.
@@ -100,7 +108,7 @@ time-arith:	time-arith.sh
 .PHONY:	karatune
 
 karatune:	karatune.cpp arithlib.hpp
-	g++ -O3 karatune.cpp $(LIBS) -o karatune
+	g++ $(MACFLAGS) -O3 karatune.cpp $(LIBS) -o karatune
 	time ./karatune
 
 # end of Makefile in cslbase

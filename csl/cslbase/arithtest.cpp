@@ -62,7 +62,11 @@ using namespace arithlib;
 // The tests come in sections, and these preprocessor symbols can be used
 // to select which sections get run.
 
+#ifndef NO_GMP
 #define COMPARE_GMP 1
+#endif // NO_GMP
+
+#ifndef JUST_TIMINGS
 #define TEST_SOME_BASICS 1
 #define TEST_RANDOM 1
 #define TEST_BITWISE 1
@@ -72,6 +76,7 @@ using namespace arithlib;
 #define TEST_GCD 1
 #define TEST_ISQRT 1
 #define TEST_FLOAT
+#endif // JUST_TIMINGS
 
 #ifdef COMPARE_GMP
 #include "gmp.h"
@@ -124,20 +129,20 @@ inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
 // up LESS than the maximum, and so adding one to it can happen without
 // overflow.
             arithlib_implementation::multiply64(a[i], b[j], hi, hi, lo);
-            hi += arithlib_implementation::add_with_carry(lo, c[i+j], c[i+j]);
+            hi += arithlib_implementation::addWithCarry(lo, c[i+j], c[i+j]);
         }
         c[i+lenb] = hi;
     }
     if (arithlib_implementation::negative(a[lena-1]))
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lenb; i++)
-            carry = arithlib_implementation::add_with_carry(
+            carry = arithlib_implementation::addWithCarry(
                         c[i+lena], ~b[i], carry, c[i+lena]);
     }
     if (arithlib_implementation::negative(b[lenb-1]))
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lena; i++)
-            carry = arithlib_implementation::add_with_carry(
+            carry = arithlib_implementation::addWithCarry(
                         c[i+lenb], ~a[i], carry, c[i+lenb]);
     }
     lenc = lena + lenb;
