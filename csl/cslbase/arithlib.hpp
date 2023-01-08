@@ -3681,7 +3681,7 @@ inline unsigned int logNextPowerOf2(std::size_t n)
 // must only have one of the values 0 or 1. The effect will be to set r to
 // the low 64-bits of a1+a2+c_in and return any carry that is generated.
 
-// I have an overload of add_with_carry for use where it is known that
+// I have an overload of addWithCarry for use where it is known that
 // the input carry is zero. That cases saves a small amount of work.
 // The code as written here seems to lead to a good compiled version using
 // g++ on x86_64 and -O3.
@@ -3704,24 +3704,24 @@ inline unsigned int logNextPowerOf2(std::size_t n)
 // that two-stage process.
 
 
-#if defined __GNUC__ && defined __x86_64__ && 0
+#if defined __GNUC__ && defined __x86_64__
 
 // I disable this at present because I am not quite certain that I have
 // it right and also because at present I have only re-worked one of
 // the functions.
 
-inline std::uint64_t add_with_carry(std::uint64_t a1,
-                                    std::uint64_t a2,
-                                    std::uint64_t &r)
+inline std::uint64_t addWithCarry(std::uint64_t a1,
+                                  std::uint64_t a2,
+                                  std::uint64_t &r)
 {   return ((r = a1 + a2) < a1);
 }
 
 // Now the general version with a carry-in. 
 
-inline std::uint64_t add_with_carry(std::uint64_t a1,
-                                    std::uint64_t a2,
-                                    std::uint64_t carry_in,
-                                    std::uint64_t &res)
+inline std::uint64_t addWithCarry(std::uint64_t a1,
+                                  std::uint64_t a2,
+                                  std::uint64_t carry_in,
+                                  std::uint64_t &res)
 {   uint64_t w;
     asm ("negq %[c_in]\n\t"          // Sets carry flag if arg3 is nonzero
          "adcq %[a2], %[a1]\n\t"     // arg1 = arg1 + arg2 + carry
@@ -3733,101 +3733,74 @@ inline std::uint64_t add_with_carry(std::uint64_t a1,
          : [a2] "rm" (a2)
          : );
     return w;
-//- // gcc is liable to compile distinctly better code if this is
-//- // expanded in line wherever it is used!
-//-     std::uint64_t w;
-//-     int c1 = add_with_carry(a1, carry_in, w);
-//-     return c1 + add_with_carry(w, a2, r);
 }
 
-// In some places my code may be made nicer by having a version that
-// adds 4 values.
-
-inline std::uint64_t add_with_carry(std::uint64_t a1,
-                                    std::uint64_t a2,
-                                    std::uint64_t a3,
-                                    std::uint64_t a4,
-                                    std::uint64_t &r)
-{   std::uint64_t w1, w2;
-    int c1 = add_with_carry(a1, a2, w1);
-    int c2 = add_with_carry(a3, a4, w2);
-    return c1 + c2 + add_with_carry(w1, w2, r);
-}
-
-// subtract_with_borrow does
+// subtractWithBorrow does
 //     r = a1 - a2 - b_in;
 // and returns 1 is there is a borrow out.
 
-inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
-                                          std::uint64_t a2,
-                                          std::uint64_t &r)
-{   r = a1 - a2;
-    return (r > a1);
+inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
+                                        std::uint64_t a2,
+                                        std::uint64_t &r)
+{   return ((r = a1 - a2) > a1);
 }
 
-inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
-                                          std::uint64_t a2,
-                                          std::uint64_t borrow_in,
-                                          std::uint64_t &r)
-{   std::uint64_t w;
-    int b1 = subtract_with_borrow(a1, borrow_in, w);
-    return b1 + subtract_with_borrow(w, a2, r);
+inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
+                                        std::uint64_t a2,
+                                        std::uint64_t borrow_in,
+                                        std::uint64_t &res)
+{   uint64_t w;
+    asm ("negq %[b_in]\n\t"          // Sets carry flag if arg3 is nonzero
+         "sbbq %[a2], %[a1]\n\t"     // arg1 = arg1 - arg2 - carry_flag
+         "movq %[a1], %[res]\n\t"    // write result
+         "sbbq %[w], %[w]\n\t"       // res = -1 if borrow out
+         "andq $0x1, %[w]"           // now 0 or 1
+         : [w] "=r" (w), [a1] "+r" (a1),
+           [b_in] "+r" (borrow_in), [res] "=m" (res)
+         : [a2] "rm" (a2)
+         : );
+    return w;
 }
 
 #else // __x86_64__
 
-inline std::uint64_t add_with_carry(std::uint64_t a1,
-                                    std::uint64_t a2,
-                                    std::uint64_t &r)
+inline std::uint64_t addWithCarry(std::uint64_t a1,
+                                  std::uint64_t a2,
+                                  std::uint64_t &r)
 {   return ((r = a1 + a2) < a1);
 }
 
 // Now the general version with a carry-in. 
 
-inline std::uint64_t add_with_carry(std::uint64_t a1,
-                                    std::uint64_t a2,
-                                    std::uint64_t carry_in,
-                                    std::uint64_t &r)
+inline std::uint64_t addWithCarry(std::uint64_t a1,
+                                  std::uint64_t a2,
+                                  std::uint64_t carry_in,
+                                  std::uint64_t &r)
 {
 // gcc is liable to compile distinctly better code if this is
 // expanded in line wherever it is used!
     std::uint64_t w;
-    int c1 = add_with_carry(a1, carry_in, w);
-    return c1 + add_with_carry(w, a2, r);
+    int c1 = addWithCarry(a1, carry_in, w);
+    return c1 + addWithCarry(w, a2, r);
 }
 
-// In some places my code may be made nicer by having a version that
-// adds 4 values.
-
-inline std::uint64_t add_with_carry(std::uint64_t a1,
-                                    std::uint64_t a2,
-                                    std::uint64_t a3,
-                                    std::uint64_t a4,
-                                    std::uint64_t &r)
-{   std::uint64_t w1, w2;
-    int c1 = add_with_carry(a1, a2, w1);
-    int c2 = add_with_carry(a3, a4, w2);
-    return c1 + c2 + add_with_carry(w1, w2, r);
-}
-
-// subtract_with_borrow does
+// subtractWithBorrow does
 //     r = a1 - a2 - b_in;
 // and returns 1 is there is a borrow out.
 
-inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
-                                          std::uint64_t a2,
-                                          std::uint64_t &r)
-{   r = a1 - a2;
-    return (r > a1);
+inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
+                                        std::uint64_t a2,
+                                        std::uint64_t &r)
+{   return ((r = a1 - a2) > a1);
 }
 
-inline std::uint64_t subtract_with_borrow(std::uint64_t a1,
-                                          std::uint64_t a2,
-                                          std::uint64_t borrow_in,
-                                          std::uint64_t &r)
+inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
+                                        std::uint64_t a2,
+                                        std::uint64_t borrow_in,
+                                        std::uint64_t &r)
 {   std::uint64_t w;
-    int b1 = subtract_with_borrow(a1, borrow_in, w);
-    return b1 + subtract_with_borrow(w, a2, r);
+    int b1 = subtractWithBorrow(a1, borrow_in, w);
+    return b1 + subtractWithBorrow(w, a2, r);
 }
 
 #endif // __x86_64__
@@ -3883,7 +3856,7 @@ inline void multiply64(std::uint64_t a, std::uint64_t b,
 // the 128-bit result. Both hi and lo are only updated at the end
 // of this, and so they are allowed to be the same as other arguments.
 
-inline void multiply64(std::uint64_t a, std::uint64_t b,
+ inline void multiply64(std::uint64_t a, std::uint64_t b,
                        std::uint64_t c,
                        std::uint64_t &hi, std::uint64_t &lo)
 {   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b) +
@@ -4587,7 +4560,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
     if ((n&8) != 0)
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lena+1; i++)
-        {   carry = add_with_carry(~r[i], carry, r[i]);
+        {   carry = addWithCarry(~r[i], carry, r[i]);
         }
         truncateNegative(r, lenr);
     }
@@ -5701,7 +5674,7 @@ inline float128_t Frexp128::op(std::uint64_t* a, std::int64_t &x)
         {   top113a++;
             if (top113a == 0) top113++;
         }
-        else top113 += add_with_carry(top113a, top113a&1, top113a);
+        else top113 += addWithCarry(top113a, top113a&1, top113a);
     }
 //  float128_t d = i64_to_f128({top113, top113a});
     float128_t d = i64_to_f128(top113);
@@ -7717,15 +7690,15 @@ inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
 {   std::uint64_t carry = 0;
     std::size_t i = 0;
 // The lowest digits can be added without there being any carry-in.
-    carry = add_with_carry(a[0], b[0], r[0]);
+    carry = addWithCarry(a[0], b[0], r[0]);
 // Add the digits that (a) and (b) have in common
     for (i=1; i<lenb; i++)
-        carry = add_with_carry(a[i], b[i], carry, r[i]);
+        carry = addWithCarry(a[i], b[i], carry, r[i]);
 // From there on up treat (b) as if it had its sign bit extended to the
 // left.
     std::uint64_t topb = negative(b[lenb-1]) ? allbits : 0;
     for (; i<lena; i++)
-        carry = add_with_carry(a[i], topb, carry, r[i]);
+        carry = addWithCarry(a[i], topb, carry, r[i]);
 // And of course (a) must also be treated as being extended by its sign bit.
     std::uint64_t topa = negative(a[lena-1]) ? allbits : 0;
 // The result calculated here is 1 word longer than (a), and addition
@@ -7840,12 +7813,12 @@ inline void ordered_bigsubtract(const std::uint64_t* a,
     std::size_t i;
 // Add the digits that (a) and (b) have in common
     for (i=0; i<lenb; i++)
-        carry = add_with_carry(a[i], ~b[i], carry, r[i]);
+        carry = addWithCarry(a[i], ~b[i], carry, r[i]);
 // From there on up treat (b) as if it had its sign bit extended to the
 // left.
     std::uint64_t topb = negative(~b[lenb-1]) ? allbits : 0;
     for (; i<lena; i++)
-        carry = add_with_carry(a[i], topb, carry, r[i]);
+        carry = addWithCarry(a[i], topb, carry, r[i]);
 // And of course (a) must also be treated as being extended by its sign bit.
     std::uint64_t topa = negative(a[lena-1]) ? allbits : 0;
 // The result calculated here is 1 word longer than (a), and addition
@@ -7867,12 +7840,12 @@ inline void ordered_bigrevsubtract(const std::uint64_t* a,
     std::size_t i;
 // Add the digits that (a) and (b) have in common
     for (i=0; i<lenb; i++)
-        carry = add_with_carry(~a[i], b[i], carry, r[i]);
+        carry = addWithCarry(~a[i], b[i], carry, r[i]);
 // From there on up treat (b) as if it had its sign bit extended to the
 // left.
     std::uint64_t topb = negative(b[lenb-1]) ? allbits : 0;
     for (; i<lena; i++)
-        carry = add_with_carry(~a[i], topb, carry, r[i]);
+        carry = addWithCarry(~a[i], topb, carry, r[i]);
 // And of course (a) must also be treated as being extended by its sign bit.
     std::uint64_t topa = negative(~a[lena-1]) ? allbits : 0;
 // The result calculated here is 1 word longer than (a), and addition
@@ -8038,33 +8011,33 @@ inline void increment(std::uint64_t* x, std::size_t N, std::uint64_t n=1)
 
 // z = x + y and return a carry, where x, y and z are N digit numbers.
 
-inline std::uint64_t add_with_carry(const std::uint64_t* x,
+inline std::uint64_t addWithCarry(const std::uint64_t* x,
                                     const std::uint64_t* y,
                                     std::uint64_t* z, std::size_t N)
-{   std::uint64_t c = add_with_carry(x[0], y[0], z[0]);
+{   std::uint64_t c = addWithCarry(x[0], y[0], z[0]);
     for (std::size_t i=1; i<N; i++)
-        c = add_with_carry(x[i], y[i], c, z[i]);
+        c = addWithCarry(x[i], y[i], c, z[i]);
     return c;
 }
 
 // As above except that c is a "carry in".
 
-inline std::uint64_t add_with_carry(const std::uint64_t* x,
+inline std::uint64_t addWithCarry(const std::uint64_t* x,
                                    const std::uint64_t* y,
                                    std::uint64_t c,
                                    std::uint64_t* z, std::size_t N)
 {   for (std::size_t i=0; i<N; i++)
-        c = add_with_carry(x[i], y[i], c, z[i]);
+        c = addWithCarry(x[i], y[i], c, z[i]);
     return c;
 }
 // z = x - y and return a borrow.
 
-inline std::uint64_t subtract_with_borrow(const std::uint64_t* x,
+inline std::uint64_t subtractWithBorrow(const std::uint64_t* x,
                                           const std::uint64_t* y,
                                           std::uint64_t* z, std::size_t N)
-{   std::uint64_t b = subtract_with_borrow(x[0], y[0], z[0]);
+{   std::uint64_t b = subtractWithBorrow(x[0], y[0], z[0]);
     for (std::size_t i=1; i<N; i++)
-        b = subtract_with_borrow(x[i], y[i], b, z[i]);
+        b = subtractWithBorrow(x[i], y[i], b, z[i]);
     return b;
 }
 
@@ -8082,14 +8055,7 @@ inline void generalMul(const std::uint64_t* u, std::size_t N,
 inline void classicalMul(const uint64_t* u, size_t N,
                          const uint64_t* v, size_t M,
                          uint64_t* w)
-{   if (N > M) UNLIKELY
-    {   const uint64_t* temp = u;
-        u = v;
-        v = temp;
-        size_t temp1 = N;
-        N = M;
-        M = temp1;
-    }
+{
 // Want N <= M here
     uint64_t hi;
 // The least-significant digits can be multiplied easily.
@@ -8242,33 +8208,41 @@ template <int N, int M>
 {   classicalMul<M,N>(v, u, w);
 }
 
+// The following threshold values are system-specific and there is
+// a program "karatune.cpp" that can be used to collect measurements to
+// help in the selection of values.
+// Everything is delicately sensitive to compiler optimisation.
+
+#if defined __clang__
+inline const std::size_t DEFAULT_KARATSUBA_START_EVEN = 30;
+inline const std::size_t DEFAULT_KARATSUBA_START_ODD = 33;
+inline const std::size_t DEFAULT_KARATSUBA_START_PARALLEL = 190;
+#else
+inline const std::size_t DEFAULT_KARATSUBA_START_EVEN = 8;
+inline const std::size_t DEFAULT_KARATSUBA_START_ODD = 9;
+inline const std::size_t DEFAULT_KARATSUBA_START_PARALLEL = 190;
+#endif
+
 // I transition from classical to Karatsuba at different thresholds
 // for odd and even sized inputs. The numbers here may need tuning both
 // in general and for each particular target machine.
 
 #ifndef KARATSUBA_START_EVEN
-inline const std::size_t KARATSUBA_START_EVEN=10;
+inline const std::size_t KARATSUBA_START_EVEN=DEFAULT_KARATSUBA_START_EVEN;
 #endif // KARATSUBA_START_EVEN
 
 #ifndef KARATSUBA_START_ODD
-inline const std::size_t KARATSUBA_START_ODD=22;
+inline const std::size_t KARATSUBA_START_ODD=DEFAULT_KARATSUBA_START_ODD;
 #endif // KARATSUBA_START_ODD
 
-#if !defined K1 && !defined K1_DEFINED
-// I provide a default here but can override it at compile time.
-static const std::size_t K1=170;
-#define K1_DEFINED 1
-#endif
-
-#ifndef PARAKARA_CUTOFF
-// It may be defined globally as a severe override of what happens here!
-// But also if the current host computer does not support at least three
-// genuine concurrent activities I will not try use of threads because it
-// would not be helpful!
-
-static std::size_t PARAKARA_CUTOFF =
-    std::thread::hardware_concurrency() >= 3 ? K1 : SIZE_MAX;
-#endif
+#ifndef PARAKARA_START
+// If the current host computer does not support at least three
+// genuine concurrent activities I will not try use of threads
+// because it would not be helpful!
+inline const std::size_t PARAKARA_START =
+    std::thread::hardware_concurrency() >= 3 ?
+        DEFAULT_KARATSUBA_START_PARALLEL : SIZE_MAX;
+#endif // PARAKARA_START
 
 // The workerThread() function is started in each of two threads, and
 // processes requests until a "quit" request is sent to it.
@@ -8288,9 +8262,7 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
 inline void mul(const std::uint64_t* u, std::size_t N,
                 const std::uint64_t* v, std::uint64_t* w,
                 std::uint64_t* workspace)
-{   if (N>=22 || (N>=10 && N%2==0))
-        karatsubaMul(u, N, v, w, workspace);
-    else switch (N)
+{   switch (N)
     {   case 1:
             classicalMul<1,1>(u, v, w); return;
         case 2:
@@ -8314,7 +8286,10 @@ inline void mul(const std::uint64_t* u, std::size_t N,
         case 11:
             classicalMul<11,11>(u, v, w); return;
         default:
-            classicalMul(u, N, v, N, w);
+            if (N>=KARATSUBA_START_ODD ||
+                (N>=KARATSUBA_START_EVEN && N%2==0))
+                karatsubaMul(u, N, v, w, workspace);
+            else classicalMul(u, N, v, N, w);
             return;
     }
 }
@@ -8380,7 +8355,7 @@ inline void karatsubaCore(const uint64_t* u, size_t N,
     std::uint64_t* dv = workspace + H2;
     std::uint64_t* t = workspace + 2*H2;
     std::uint64_t bu, bv;
-    if (N > PARAKARA_CUTOFF)
+    if (N >= PARAKARA_START)
     {   size_t wsNeeded = 4*N + 4*(64-nlz(N));
 
         driverData.wd_0.a = u;
@@ -8398,20 +8373,20 @@ inline void karatsubaCore(const uint64_t* u, size_t N,
         driverData.wd_1.w = workspace+3*wsNeeded/2;
 
         driverData.releaseWorkers();
-        bu = subtract_with_borrow(u+H2, u, du, H1); // uhigh - ulow.
-        if (H1 != H2) bu = subtract_with_borrow(0, u[H1], bu, du[H1]);
-        bv = subtract_with_borrow(v, v+H2, dv, H1); // vlow - vhigh.
-        if (H1 != H2) bv = subtract_with_borrow(v[H1], bv, dv[H1]);
+        bu = subtractWithBorrow(u+H2, u, du, H1); // uhigh - ulow.
+        if (H1 != H2) bu = subtractWithBorrow(0, u[H1], bu, du[H1]);
+        bv = subtractWithBorrow(v, v+H2, dv, H1); // vlow - vhigh.
+        if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
         mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
         driverData.wait_for_workers();
     }
     else
     {   mul(u, H2, v, w, workspace);            // Product of low halves.
         mul(u+H2, H1, v+H2, w+2*H2, workspace); // Product of high halves.
-        bu = subtract_with_borrow(u+H2, u, du, H1); // uhigh - ulow.
-        if (H1 != H2) bu = subtract_with_borrow(0, u[H1], bu, du[H1]);
-        bv = subtract_with_borrow(v, v+H2, dv, H1); // vlow - vhigh.
-        if (H1 != H2) bv = subtract_with_borrow(v[H1], bv, dv[H1]);
+        bu = subtractWithBorrow(u+H2, u, du, H1); // uhigh - ulow.
+        if (H1 != H2) bu = subtractWithBorrow(0, u[H1], bu, du[H1]);
+        bv = subtractWithBorrow(v, v+H2, dv, H1); // vlow - vhigh.
+        if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
         mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
     }
 #if 0
@@ -8428,21 +8403,21 @@ inline void karatsubaCore(const uint64_t* u, size_t N,
     rdisplay("t", t, 2*H2);
     rdisplay("w", w, 2*N);
 #endif
-    std::uint64_t c = add_with_carry(w, t, t, H2); // add in low and high..
-    c = add_with_carry(w+H2, t+H2, c, t+H2, H2);   // ..products from earlier.
-    std::uint64_t cx = add_with_carry(w+2*H2, t, t, H1);
-    cx = add_with_carry(w+2*H2+H1, t+H1, cx, t+H1, H1);
+    std::uint64_t c = addWithCarry(w, t, t, H2); // add in low and high..
+    c = addWithCarry(w+H2, t+H2, c, t+H2, H2);   // ..products from earlier.
+    std::uint64_t cx = addWithCarry(w+2*H2, t, t, H1);
+    cx = addWithCarry(w+2*H2+H1, t+H1, cx, t+H1, H1);
     if (H1!=H2 && cx != 0)
     {   if (++t[2*H1] != 0) cx = 0;
         else if (++t[2*H1+1] != 0) cx = 0;
     }
     if (bu != 0)                                // Subtraction caused borrow?
-    {   bu = subtract_with_borrow(t+H2, dv, t+H2, H2);
+    {   bu = subtractWithBorrow(t+H2, dv, t+H2, H2);
         if (bv != 0) cx++;                      // Both subtractions borrowed.
     }
-    if (bv != 0) bv = subtract_with_borrow(t+H2, du, t+H2, H2);
-    std::uint64_t cxx = add_with_carry(w+H2, t, w+H2, H2);// Merge back into..
-    cxx = add_with_carry(w+2*H2, t+H2, cxx, w+2*H2, H2);  // ..the main result.
+    if (bv != 0) bv = subtractWithBorrow(t+H2, du, t+H2, H2);
+    std::uint64_t cxx = addWithCarry(w+H2, t, w+H2, H2);// Merge back into..
+    cxx = addWithCarry(w+2*H2, t+H2, cxx, w+2*H2, H2);  // ..the main result.
     increment(w+3*H2, 2*H1-H2, cxx + cx + c - bu - bv);
 }
 
@@ -8460,7 +8435,7 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
 // Here M >= N.
     size_t wsNeeded = 4*N + 4*(64-nlz(N));
     size_t wsTotal = wsNeeded;
-    if (N > PARAKARA_CUTOFF) wsTotal *= 2;
+    if (N >= PARAKARA_START) wsTotal *= 2;
     if (M >= 2*N) wsTotal += 2*N;
     else if (M > N) wsTotal += N+M;
     uint64_t* workspace = getWorkspace(wsTotal);
@@ -8481,26 +8456,26 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
     v += N;
     w += N;
     M -= N;
-    uint64_t* temp = N < PARAKARA_CUTOFF ? workspace + wsNeeded :
-                                           workspace + 2*wsNeeded;
+    uint64_t* temp = N < PARAKARA_START ? workspace + wsNeeded :
+                                          workspace + 2*wsNeeded;
     do
     {   while (M >= N)
         {   karatsubaCore(u, N, v, temp, workspace);
-            std::uint64_t c = add_with_carry(w, temp, w, N);
+            std::uint64_t c = addWithCarry(w, temp, w, N);
             for (size_t i=N; i<2*N; i++)
-                c = add_with_carry(w[i], temp[i], c, w[i]);
+                c = addWithCarry(w[i], temp[i], c, w[i]);
             v += M;
             w += M;
             M -= N;
         }
-    } while ((M > KARATSUBA_START_ODD ||
-             ((M%2) == 0 && M > KARATSUBA_START_EVEN)) &&
+    } while ((M >= KARATSUBA_START_ODD ||
+             ((M%2) == 0 && M >= KARATSUBA_START_EVEN)) &&
             (std::swap(u, v), std::swap(N, M), true));
     if (M != 0)
-    {   classicalMul(u, N, v, M, temp);
-        std::uint64_t c = add_with_carry(w, temp, w, N);
+    {   classicalMul(v, M, u, N, temp);
+        std::uint64_t c = addWithCarry(w, temp, w, N);
         for (size_t i=N; i<N+M; i++)
-            c = add_with_carry(w[i], temp[i], c, w[i]);
+            c = addWithCarry(w[i], temp[i], c, w[i]);
     }
 }
 
@@ -8516,28 +8491,28 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
     std::uint64_t* dv = workspace+H2;
     workspace += 2*H2;
     std::uint64_t bu, bv;
-    bu = subtract_with_borrow(u+H2, u, du, H1); // uhigh - ulow.
-    if (H1 != H2) bu = subtract_with_borrow(0, u[H1], bu, du[H1]);
-    bv = subtract_with_borrow(v, v+H2, dv, H1); // vlow - vhigh.
-    if (H1 != H2) bv = subtract_with_borrow(v[H1], bv, dv[H1]);
+    bu = subtractWithBorrow(u+H2, u, du, H1); // uhigh - ulow.
+    if (H1 != H2) bu = subtractWithBorrow(0, u[H1], bu, du[H1]);
+    bv = subtractWithBorrow(v, v+H2, dv, H1); // vlow - vhigh.
+    if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
     std::uint64_t* t = workspace;
     workspace += 2*H2;
     mul(du, H2, dv, t, workspace);                   // Product of above two.
-    std::uint64_t c = add_with_carry(w, t, t, H2);   // add in low and high..
-    c = add_with_carry(w+H2, t+H2, c, t+H2, H2);     // ..products computed earlier.
-    std::uint64_t cx = add_with_carry(w+2*H2, t, t, H1);
-    cx = add_with_carry(w+2*H2+H1, t+H1, cx, t+H1, H1);
+    std::uint64_t c = addWithCarry(w, t, t, H2);   // add in low and high..
+    c = addWithCarry(w+H2, t+H2, c, t+H2, H2);     // ..products computed earlier.
+    std::uint64_t cx = addWithCarry(w+2*H2, t, t, H1);
+    cx = addWithCarry(w+2*H2+H1, t+H1, cx, t+H1, H1);
     if (H1!=H2 && cx != 0)
     {   if (++t[2*H1] != 0) cx = 0;
         else if (++t[2*H1+1] != 0) cx = 0;
     }
     if (bu != 0)                                // Subtraction caused borrow?
-    {   bu = subtract_with_borrow(t+H2, dv, t+H2, H2);
+    {   bu = subtractWithBorrow(t+H2, dv, t+H2, H2);
         if (bv != 0) cx++;                      // Both subtractions borrowed.
     }
-    if (bv != 0) bv = subtract_with_borrow(t+H2, du, t+H2, H2);
-    std::uint64_t cxx = add_with_carry(w+H2, t, w+H2, H2);// Merge back into..
-    cxx = add_with_carry(w+2*H2, t+H2, cxx, w+2*H2, H2);  // ..the main result.
+    if (bv != 0) bv = subtractWithBorrow(t+H2, du, t+H2, H2);
+    std::uint64_t cxx = addWithCarry(w+H2, t, w+H2, H2);// Merge back into..
+    cxx = addWithCarry(w+2*H2, t+H2, cxx, w+2*H2, H2);  // ..the main result.
     increment(w+3*H2, 2*H1-H2, cxx + cx + c - bu - bv);
 }
 
@@ -8553,131 +8528,122 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
 inline void generalMul(const std::uint64_t* u, std::size_t N,
                        const std::uint64_t*v, std::size_t M,
                        std::uint64_t* w)
-{   if (N>=KARATSUBA_START_ODD || (N>=KARATSUBA_START_EVEN && N%2==0))
-    {   if (M>=KARATSUBA_START_ODD || (M>=KARATSUBA_START_EVEN && M%2==0))
-        {   if (M > N) generalKaratsubaMul(u, N, v, M, w);
-            else generalKaratsubaMul(v, M, u, N, w);
-        }
-        else classicalMul(u, N, v, M, w);
+{   
+    switch (N+7*M)
+    {   case 1+7*1:
+            classicalMul<1,1>(u, v, w); return;
+        case 1+7*2:
+            classicalMul<2,1>(v, u, w); return;
+        case 1+7*3:
+            classicalMul<3,1>(v, u, w); return;
+        case 1+7*4:
+            classicalMul<4,1>(v, u, w); return;
+        case 1+7*5:
+            classicalMul<5,1>(v, u, w); return;
+        case 1+7*6:
+            classicalMul<6,1>(v, u, w); return;
+        case 1+7*7:
+            classicalMul<7,1>(v, u, w); return;
+
+        case 2+7*1:
+            classicalMul<2,1>(u, v, w); return;
+        case 2+7*2:
+            classicalMul<2,2>(u, v, w); return;
+        case 2+7*3:
+            classicalMul<3,2>(v, u, w); return;
+        case 2+7*4:
+            classicalMul<4,2>(v, u, w); return;
+        case 2+7*5:
+            classicalMul<5,2>(v, u, w); return;
+        case 2+7*6:
+            classicalMul<6,2>(v, u, w); return;
+        case 2+7*7:
+            classicalMul<7,2>(v, u, w); return;
+
+        case 3+7*1:
+            classicalMul<3,1>(u, v, w); return;
+        case 3+7*2:
+            classicalMul<3,2>(u, v, w); return;
+        case 3+7*3:
+            classicalMul<3,3>(u, v, w); return;
+        case 3+7*4:
+            classicalMul<4,3>(v, u, w); return;
+        case 3+7*5:
+            classicalMul<5,3>(v, u, w); return;
+        case 3+7*6:
+            classicalMul<6,3>(v, u, w); return;
+        case 3+7*7:
+            classicalMul<7,3>(v, u, w); return;
+
+        case 4+7*1:
+            classicalMul<4,1>(u, v, w); return;
+        case 4+7*2:
+            classicalMul<4,2>(v, u, w); return;
+        case 4+7*3:
+            classicalMul<4,3>(u, v, w); return;
+        case 4+7*4:
+            classicalMul<4,4>(u, v, w); return;
+        case 4+7*5:
+            classicalMul<5,4>(v, u, w); return;
+        case 4+7*6:
+            classicalMul<6,4>(v, u, w); return;
+        case 4+7*7:
+            classicalMul<7,4>(v, u, w); return;
+
+        case 5+7*1:
+            classicalMul<5,1>(u, v, w); return;
+        case 5+7*2:
+            classicalMul<5,2>(u, v, w); return;
+        case 5+7*3:
+            classicalMul<5,3>(u, v, w); return;
+        case 5+7*4:
+            classicalMul<5,4>(u, v, w); return;
+        case 5+7*5:
+            classicalMul<5,5>(u, v, w); return;
+        case 5+7*6:
+            classicalMul<6,5>(v, u, w); return;
+        case 5+7*7:
+            classicalMul<7,5>(v, u, w); return;
+
+        case 6+7*1:
+            classicalMul<6,1>(u, v, w); return;
+        case 6+7*2:
+            classicalMul<6,2>(u, v, w); return;
+        case 6+7*3:
+            classicalMul<6,3>(u, v, w); return;
+        case 6+7*4:
+            classicalMul<6,4>(u, v, w); return;
+        case 6+7*5:
+            classicalMul<6,5>(u, v, w); return;
+        case 6+7*6:
+            classicalMul<6,6>(u, v, w); return;
+        case 6+7*7:
+            classicalMul<7,6>(v, u, w); return;
+
+        case 7+7*1:
+            classicalMul<7,1>(u, v, w); return;
+        case 7+7*2:
+            classicalMul<7,2>(u, v, w); return;
+        case 7+7*3:
+            classicalMul<7,3>(u, v, w); return;
+        case 7+7*4:
+            classicalMul<7,4>(u, v, w); return;
+        case 7+7*5:
+            classicalMul<7,5>(u, v, w); return;
+        case 7+7*6:
+            classicalMul<7,6>(u, v, w); return;
+        case 7+7*7:
+            classicalMul<7,7>(u, v, w); return;
+        default:
+            if (M >= N)
+            {   if (N>=KARATSUBA_START_ODD || (N>=KARATSUBA_START_EVEN && N%2==0))
+                    generalKaratsubaMul(u, N, v, M, w);
+                else classicalMul(u, N, v, M, w);
+            }
+            else if (M>=KARATSUBA_START_ODD || (M>=KARATSUBA_START_EVEN && M%2==0))
+                generalKaratsubaMul(v, M, u, N, w);
+            else classicalMul(v, M, u, N, w);
     }
-    else
-    {
-// Here both numbers are at most 7 digits and I will inline things...
-// This code is parhaps a bit over the top. It is intended to be written
-// with a hope that a compiler will map the switch statement onto use
-// of a branch table, and that then most of the template-expressed
-// calls to classicalMultiply() get expanded out in-line. The intent is
-// that a wide range of small cases get fast paths.
-        switch (N+7*M)
-        {   default:
-                classicalMul(u, N, v, M, w);
-                return;
-            case 1+7*1:
-                classicalMul<1,1>(u, v, w); return;
-            case 1+7*2:
-                classicalMul<2,1>(v, u, w); return;
-            case 1+7*3:
-                classicalMul<3,1>(v, u, w); return;
-            case 1+7*4:
-                classicalMul<4,1>(v, u, w); return;
-            case 1+7*5:
-                classicalMul<5,1>(v, u, w); return;
-            case 1+7*6:
-                classicalMul<6,1>(v, u, w); return;
-            case 1+7*7:
-                classicalMul<7,1>(v, u, w); return;
-
-            case 2+7*1:
-                classicalMul<2,1>(u, v, w); return;
-            case 2+7*2:
-                classicalMul<2,2>(u, v, w); return;
-            case 2+7*3:
-                classicalMul<3,2>(v, u, w); return;
-            case 2+7*4:
-                classicalMul<4,2>(v, u, w); return;
-            case 2+7*5:
-                classicalMul<5,2>(v, u, w); return;
-            case 2+7*6:
-                classicalMul<6,2>(v, u, w); return;
-            case 2+7*7:
-                classicalMul<7,2>(v, u, w); return;
-
-            case 3+7*1:
-                classicalMul<3,1>(u, v, w); return;
-            case 3+7*2:
-                classicalMul<3,2>(u, v, w); return;
-            case 3+7*3:
-                classicalMul<3,3>(u, v, w); return;
-            case 3+7*4:
-                classicalMul<4,3>(v, u, w); return;
-            case 3+7*5:
-                classicalMul<5,3>(v, u, w); return;
-            case 3+7*6:
-                classicalMul<6,3>(v, u, w); return;
-            case 3+7*7:
-                classicalMul<7,3>(v, u, w); return;
-
-            case 4+7*1:
-                classicalMul<4,1>(u, v, w); return;
-            case 4+7*2:
-                classicalMul<4,2>(v, u, w); return;
-            case 4+7*3:
-                classicalMul<4,3>(u, v, w); return;
-            case 4+7*4:
-                classicalMul<4,4>(u, v, w); return;
-            case 4+7*5:
-                classicalMul<5,4>(v, u, w); return;
-            case 4+7*6:
-                classicalMul<6,4>(v, u, w); return;
-            case 4+7*7:
-                classicalMul<7,4>(v, u, w); return;
-
-            case 5+7*1:
-                classicalMul<5,1>(u, v, w); return;
-            case 5+7*2:
-                classicalMul<5,2>(u, v, w); return;
-            case 5+7*3:
-                classicalMul<5,3>(u, v, w); return;
-            case 5+7*4:
-                classicalMul<5,4>(u, v, w); return;
-            case 5+7*5:
-                classicalMul<5,5>(u, v, w); return;
-            case 5+7*6:
-                classicalMul<6,5>(v, u, w); return;
-            case 5+7*7:
-                classicalMul<7,5>(v, u, w); return;
-
-            case 6+7*1:
-                classicalMul<6,1>(u, v, w); return;
-            case 6+7*2:
-                classicalMul<6,2>(u, v, w); return;
-            case 6+7*3:
-                classicalMul<6,3>(u, v, w); return;
-            case 6+7*4:
-                classicalMul<6,4>(u, v, w); return;
-            case 6+7*5:
-                classicalMul<6,5>(u, v, w); return;
-            case 6+7*6:
-                classicalMul<6,6>(u, v, w); return;
-            case 6+7*7:
-                classicalMul<7,6>(v, u, w); return;
-
-            case 7+7*1:
-                classicalMul<7,1>(u, v, w); return;
-            case 7+7*2:
-                classicalMul<7,2>(u, v, w); return;
-            case 7+7*3:       
-                classicalMul<7,3>(u, v, w); return;
-            case 7+7*4:       
-                classicalMul<7,4>(u, v, w); return;
-            case 7+7*5:       
-                classicalMul<7,5>(u, v, w); return;
-            case 7+7*6:
-                classicalMul<7,6>(u, v, w); return;
-            case 7+7*7:
-                classicalMul<7,7>(u, v, w); return;
-        }
-    } 
 }
 
 // This is the main entrypoint to the integer multiplication code. It
@@ -8691,8 +8657,8 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
 // and the length lenc returned but ensure that the top digit of the
 // product is not a redundant zero or -1.
     generalMul(a, lena, b, lenb, c);
-    if (negative(a[lena-1])) subtract_with_borrow(c+lena, b, c+lena, lenb);
-    if (negative(b[lenb-1])) subtract_with_borrow(c+lenb, a, c+lenb, lena);
+    if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
+    if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
     lena += lenb;
     if (shrinkable(c[lena-1], c[lena-2])) lena--;
     lenc = lena;
@@ -8747,7 +8713,7 @@ inline std::intptr_t Times::op(std::int64_t a, std::uint64_t* b)
     if (negative(a))
     {   std::uint64_t carry = 1;
         for (std::size_t i=0; i<lenb; i++)
-            carry = add_with_carry(c[i+1], ~b[i], carry, c[i+1]);
+            carry = addWithCarry(c[i+1], ~b[i], carry, c[i+1]);
     }
     if (negative(b[lenb-1])) c[lenb] -= a;
     std::size_t lenc = lenb+1;
@@ -8791,7 +8757,7 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
         for (std::size_t j=i+1; j<lena; j++)
         {   std::uint64_t lo;
             multiply64(a[i], a[j], hi, hi, lo);
-            hi += add_with_carry(lo, r[i+j], r[i+j]);
+            hi += addWithCarry(lo, r[i+j], r[i+j]);
         }
         r[i+lena] = hi;
     }
@@ -8808,8 +8774,8 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
     for (std::size_t i=0; i<lena; i++)
     {   std::uint64_t lo;
         multiply64(a[i], a[i], r[2*i], hi, lo);
-        carry = add_with_carry(lo, carry, r[2*i]);
-        carry = add_with_carry(hi, r[2*i+1], carry, r[2*i+1]);
+        carry = addWithCarry(lo, carry, r[2*i]);
+        carry = addWithCarry(hi, r[2*i+1], carry, r[2*i+1]);
     }
 // Now if the input had been negative I have a correction to apply...
 // I subtract 2a from the top half of the result.
@@ -8820,7 +8786,7 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
         {   std::uint64_t d = a[i];
             std::uint64_t w = (d<<1) | fromprev;
             fromprev = static_cast<int>(d>>63);
-            carry = add_with_carry(r[lena+i], ~w, carry, r[lena+i]);
+            carry = addWithCarry(r[lena+i], ~w, carry, r[lena+i]);
         }
     }
 // The actual value may be 1 word shorter than this.
@@ -9310,7 +9276,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // The next line took me some while to arrive at!
                 std::uint64_t carry = !negative(a[lena-1]) || a[0]==0 ? 1 : 0;
                 for (std::size_t i=1; i<lena; i++)
-                    carry = add_with_carry(~a[i], carry, q[i-1]);
+                    carry = addWithCarry(~a[i], carry, q[i-1]);
                 q[lena-1] = negative(a[lena-1]) ? 0 : -1ULL;
                 truncatePositive(q, lenq);
                 truncateNegative(q, lenq);
@@ -9498,7 +9464,7 @@ inline void multiply_and_subtract(std::uint64_t* r, std::size_t lenr,
     {   multiply64(b[i], q0, hi, hi, lo);
 // lo is now the next digit of b*q, and hi needs to be carried up to the
 // next one.
-        carry = add_with_carry(r[i+lenr-lenb-1], ~lo, carry,
+        carry = addWithCarry(r[i+lenr-lenb-1], ~lo, carry,
                                r[i+lenr-lenb-1]);
     }
     r[lenr-1] = r[lenr-1] + ~hi + carry;
@@ -9513,7 +9479,7 @@ inline void addBackCorrection(std::uint64_t* r, std::size_t lenr,
                                 std::uint64_t* b, std::size_t lenb)
 {   std::uint64_t carry = 0;
     for (std::size_t i=0; i<lenb; i++)
-        carry = add_with_carry(r[i+lenr-lenb-1], b[i], carry,
+        carry = addWithCarry(r[i+lenr-lenb-1], b[i], carry,
                                r[i+lenr-lenb-1]);
     r[lenr-1] += carry;
 }
@@ -9976,8 +9942,8 @@ inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
 {   std::uint64_t hi = 0, hi1, lo, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q, hi1, lo);
-        hi1 += subtract_with_borrow(a[i], hi, a[i]);
-        borrow = subtract_with_borrow(a[i], lo, borrow, a[i]);
+        hi1 += subtractWithBorrow(a[i], hi, a[i]);
+        borrow = subtractWithBorrow(a[i], lo, borrow, a[i]);
         hi = hi1;
     }
 // In the cases where this is used the difference |a - q*b| should be
@@ -10001,8 +9967,8 @@ inline bool shifted_reduce_for_gcd(std::uint64_t* a, std::size_t lena,
 {   std::uint64_t hi = 0, hi1, lo, borrow = 0;
     for (std::size_t i=0; i<=lenb; i++)
     {   multiply64(shiftedDigit(b, lenb, shift, i), q, hi1, lo);
-        hi1 += subtract_with_borrow(a[i], hi, a[i]);
-        borrow = subtract_with_borrow(a[i], lo, borrow, a[i]);
+        hi1 += subtractWithBorrow(a[i], hi, a[i]);
+        borrow = subtractWithBorrow(a[i], lo, borrow, a[i]);
         hi = hi1;
     }
 // In the cases where this is used the difference |a - q*b| should be
@@ -10036,10 +10002,10 @@ inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
     {   multiply64(a[i], u, hia, loa);
 // hia is the high part of a product so carrying 1 into it can not cause it
 // to overflow. Just!
-        hia += add_with_carry(loa, ca, loa);
+        hia += addWithCarry(loa, ca, loa);
         multiply64(b[i], v, hib, lob);
-        hib += add_with_carry(lob, cb, lob);
-        borrow = subtract_with_borrow(loa, lob, borrow, r[i]);
+        hib += addWithCarry(lob, cb, lob);
+        borrow = subtractWithBorrow(loa, lob, borrow, r[i]);
         ca = hia;
         cb = hib;
     }
@@ -10050,8 +10016,8 @@ inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
 // borrow out from the top word of the result.
     if (lena > lenb)
     {   multiply64(a[lena-1], u, hia, loa);
-        hia += add_with_carry(loa, ca, loa);
-        borrow = subtract_with_borrow(loa, cb, borrow, r[lena-1]);
+        hia += addWithCarry(loa, ca, loa);
+        borrow = subtractWithBorrow(loa, cb, borrow, r[lena-1]);
         lenr = lena;
         return negative(hia - borrow);
     }
@@ -10070,18 +10036,18 @@ inline bool minus_ua_plus_vb(std::uint64_t* a, std::size_t lena,
 {   std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
-        hia += add_with_carry(loa, ca, loa);
+        hia += addWithCarry(loa, ca, loa);
         multiply64(b[i], v, hib, lob);
-        hib += add_with_carry(lob, cb, lob);
-        borrow = subtract_with_borrow(lob, loa, borrow, r[i]);
+        hib += addWithCarry(lob, cb, lob);
+        borrow = subtractWithBorrow(lob, loa, borrow, r[i]);
         ca = hia;
         cb = hib;
     }
     lenr = lenb;
     if (lena > lenb)
     {   multiply64(a[lena-1], u, hia, loa);
-        hia += add_with_carry(loa, ca, loa);
-        borrow = subtract_with_borrow(cb, loa, borrow, r[lena-1]);
+        hia += addWithCarry(loa, ca, loa);
+        borrow = subtractWithBorrow(cb, loa, borrow, r[lena-1]);
         lenr = lena;
 // It will be perfectly reasonable for hia to be zero and borrow to be zero
 // and hence the overall result positive.
@@ -10229,9 +10195,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
             ub -= l2;
             std::uint64_t hi, lo;
             multiply64(q, b1, hi, lo);
-            hi += subtract_with_borrow(a1, lo, a1);
-            std::uint64_t borrow = subtract_with_borrow(a0, hi, a0);
-            borrow += subtract_with_borrow(a0, q*b0, a0);
+            hi += subtractWithBorrow(a1, lo, a1);
+            std::uint64_t borrow = subtractWithBorrow(a0, hi, a0);
+            borrow += subtractWithBorrow(a0, q*b0, a0);
 // Now borrow!=0 if a had become negative
             if (borrow != 0)
             {   if ((a1 = -a1) == 0) a0 = -a0;
