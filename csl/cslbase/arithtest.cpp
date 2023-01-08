@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     std::uint64_t seed;
     if (argc <= 1 || (seed = std::atoi(argv[1])) == 0)
         seed = mersenne_twister() & 0xffff;
-    std::cout << "seed = " << seed << std::endl;
+    std::cout << "seed = " << seed << "\n";
     reseed(seed);
 
     int maxbits, ntries;
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
                             {   if (c[i] != c1[i])
                                 {   ok = false;
                                     std::cout << "Failed at " << std::dec
-                                              << i << std::endl;
+                                              << i << "\n";
                                 }
                             }
                             if (!ok)
@@ -328,27 +328,27 @@ int main(int argc, char *argv[])
                 }
                 std::cout.flush();
             }
-            std::cout << std::endl;
+            std::cout << "\n";
         }
 // Display the checksum output. Note that this also ensures that the
 // result of the multiplication (well more pedantically the result of
 // the last of 500 multiplications!) is used so clever optimizing
 // compilers are not allowed to avoid computing it!
-        std::cout << std::endl;
+        std::cout << "\n";
         std::cout << (my_check == gmp_check ? "checksums match" :
                       "checksums disagree")
-                  << std::endl;
-        std::cout << std::hex << "my checksum:  " << my_check << std::endl;
-        std::cout             << "gmp checksum: " << gmp_check << std::endl;
+                  << "\n";
+        std::cout << std::hex << "my checksum:  " << my_check << "\n";
+        std::cout             << "gmp checksum: " << gmp_check << "\n";
         std::cout << std::dec;
         std::cout << "Times are reported in seconds per multiplication"
-                  << std::endl;
+                  << "\n";
         std::cout << std::setw(10) << "length"
                   << std::setw(10) << "my time"
                   << std::setw(10) << "gmp time"
                   << std::setw(10) << "  ratio mine/gmp"
                   << std::fixed << std::setprecision(3)
-                  << std::endl;
+                  << "\n";
 // In the following table times are reported in seconds per
 // multiplication. The ratio is > 1.0 when my code is slower than gmp.
         for (std::size_t i=0; i<table_size; i++)
@@ -360,7 +360,7 @@ int main(int argc, char *argv[])
                                            (gmp[i].count())/testcount[i])
                       << std::setw(10) << (static_cast<double>
                                            (mine[i].count())/gmp[i].count())
-                      << std::endl;
+                      << "\n";
         }
     }
 #endif // COMPARE_GMP
@@ -370,17 +370,17 @@ int main(int argc, char *argv[])
 // Do some very simple operations that just verify that printing and
 // basic arithmetic is in order.
 
-    std::cout << "Some simple tests involving powers of 10" << std::endl;
+    std::cout << "Some simple tests involving powers of 10" << "\n";
 // Observe the custom integer format with suffix "_Z" so that bit integers
 // can be input easily. At present I have not put in code to support other
 // than decimal notation in this style.
     Bignum a = 10000000000000000000000000_Z;
-    std::cout << "a = " << a << std::endl;
-    std::cout << "a*a = " << (a*a) << std::endl;
-    std::cout << "a*100 = " << (a*100_Z) << std::endl;
-    std::cout << "100*a = " << (100_Z*a) << std::endl;
-    std::cout << "100*100 = " << (100_Z*100_Z) << std::endl;
-    std::cout << "End of simple tests" << std::endl << std::endl;
+    std::cout << "a = " << a << "\n";
+    std::cout << "a*a = " << (a*a) << "\n";
+    std::cout << "a*100 = " << (a*100_Z) << "\n";
+    std::cout << "100*a = " << (100_Z*a) << "\n";
+    std::cout << "100*100 = " << (100_Z*100_Z) << "\n";
+    std::cout << "End of simple tests" << "\n" << "\n";
 
 #endif
 
@@ -407,18 +407,18 @@ int main(int argc, char *argv[])
     ntries = 10;
 
     std::cout << "Print some random numbers in decimal and hex" <<
-              std::endl;
+              "\n";
     for (int i=1; i<=ntries; i++)
     {   Bignum a = randomUptoBitsBignum(maxbits);
         std::uint64_t r = mersenne_twister();
         Bignum b = fudgeDistributionBignum(a, static_cast<int>(r) & 0xf);
-//      std::cout << a << std::endl;
+//      std::cout << a << "\n";
         std::cout << b << " "
                   << std::hex << b << std::dec
-                  << std::endl;
+                  << "\n";
     }
-    std::cout << "end of display of random values" << std::endl <<
-              std::endl;
+    std::cout << "end of display of random values" << "\n" <<
+              "\n";
 
 #endif // TEST_RANDOM
 
@@ -439,7 +439,7 @@ int main(int argc, char *argv[])
     maxbits = 400;
     ntries = 50*MILLION;
 
-    std::cout << "Start of bitwise operation testing" << std::endl;
+    std::cout << "Start of bitwise operation testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -453,28 +453,28 @@ int main(int argc, char *argv[])
         Bignum c3 = a ^ b;
         Bignum c4 = (a&(~b)) | (b&(~a));
         if (c1==c2 && c3==c4) continue;
-        std::cout << "FAILED on test " << i << std::hex << std::endl;
-        std::cout << "a            " << a << std::endl;
-        std::cout << "b            " << b << std::endl;
-        std::cout << "c1 ~(a&b)    " << c1 << std::endl;
-        std::cout << "c2 ~a|~b     " << c2 << std::endl;
-        std::cout << "c3 a^b       " << c3 << std::endl;
+        std::cout << "FAILED on test " << i << std::hex << "\n";
+        std::cout << "a            " << a << "\n";
+        std::cout << "b            " << b << "\n";
+        std::cout << "c1 ~(a&b)    " << c1 << "\n";
+        std::cout << "c2 ~a|~b     " << c2 << "\n";
+        std::cout << "c3 a^b       " << c3 << "\n";
         Bignum nota = ~a;
         Bignum notb = ~b;
-        std::cout << "   ~a        " << nota << std::endl;
-        std::cout << "   ~b        " << notb << std::endl;
+        std::cout << "   ~a        " << nota << "\n";
+        std::cout << "   ~b        " << notb << "\n";
 // Sending something to std::cout is the normal way of observing values
 // in the code here, but the function display() as used in the diagnostic
 // being printed at present shows the internal representation of the
 // numbers.
         display("b", b);
         display("nota", nota);
-        std::cout << "   a&~b      " << (a&~b) << std::endl;
+        std::cout << "   a&~b      " << (a&~b) << "\n";
         Bignum bnota = b & (~a);
-        std::cout << "   b&~a      " << bnota << std::endl;
+        std::cout << "   b&~a      " << bnota << "\n";
         display("bnota", bnota);
-        std::cout << "c4 a&~b|b&~a "  << c4 << std::endl;
-        std::cout << "Failed " << std::dec << std::endl;
+        std::cout << "c4 a&~b|b&~a "  << c4 << "\n";
+        std::cout << "Failed " << std::dec << "\n";
         abort();
         return 1;
     }
@@ -484,7 +484,7 @@ int main(int argc, char *argv[])
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Bitwise operation tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_BITWISE
 
@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
     maxbits = 800;
     ntries = 50*MILLION;
 
-    std::cout << "Start of shift testing" << std::endl;
+    std::cout << "Start of shift testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -515,22 +515,30 @@ int main(int argc, char *argv[])
         Bignum w = a & ~(p-1_Z);
         Bignum c4 = (a & ~(p-1_Z))/p;
         if (c1==c2 && c3==c4) continue;
-        std::cout << "FAILED on test " << i << std::hex << std::endl;
-        std::cout << "a            " << a << std::endl;
-        std::cout << "r            " << std::dec << r << std::hex <<
-                  std::endl;
-        std::cout << "divide " << std::dec << w << std::endl;
-        display("div", w);
-        std::cout << "by " << std::dec << p << std::hex << std::endl;
-        display(" by", p);
-        std::cout << "p            " << p << std::endl;
-        std::cout << "a&~(p-1)     " << (a&~(p-1_Z)) << std::endl;
-        std::cout << "c1 a<<r      " << c1 << std::endl;
-        std::cout << "c2 a*2^r     " << c2 << std::endl;
-        std::cout << "c3 a>>r      " << c3 << std::endl;
-        std::cout << "c4 a/2^r     " << c4 << std::endl;
+        std::cout << "FAILED on test " << i << "\n";
+        display("c1", c1);
+        display("c2", c2);
+        display("c3", c3);
         display("c4", c4);
-        std::cout << "Failed " << std::dec << std::endl;
+        std::cout << "c1-c2 = " << (c1-c2) << "\n"; 
+        std::cout << "c3-c4 = " << (c3-c4) << "\n"; 
+        
+        std::cout << "a            " << a << "\n";
+        std::cout << "a            " << std::hex << a << std::dec << "\n";
+        std::cout << "r            " << r << "\n";
+        std::cout << "r            " << std::hex << r << std::dec << "\n";
+                  "\n";
+        std::cout << "divide "  << w << "\n";
+        display("div", w);
+        std::cout << "by " << p << "\n";
+        display(" by", p);
+        std::cout << "p            " << p << "\n";
+        std::cout << "a&~(p-1)     " << (a&~(p-1_Z)) << "\n";
+        std::cout << "c1 a<<r      " << c1 << "\n";
+        std::cout << "c2 a*2^r     " << c2 << "\n";
+        std::cout << "c3 a>>r      " << c3 << "\n";
+        std::cout << "c4 a/2^r     " << c4 << "\n";
+        std::cout << "Failed " << "\n";
         abort();
         return 1;
     }
@@ -540,7 +548,7 @@ int main(int argc, char *argv[])
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Shift tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_SHIFTS
 
@@ -557,7 +565,7 @@ int main(int argc, char *argv[])
     maxbits = 600;
     ntries = 50*MILLION;
 
-    std::cout << "Start of Plus and Times testing" << std::endl;
+    std::cout << "Start of Plus and Times testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -570,21 +578,21 @@ int main(int argc, char *argv[])
         Bignum c2 = a*a - b*b;
         Bignum c3 = square(a) - square(b);
         if (c1 == c2 && c2 == c3) continue;
-        std::cout << "FAILED on test " << i << std::endl;
-        std::cout << "a  = " << a << std::endl;
-        std::cout << "b  = " << b << std::endl;
-        std::cout << "a+b         = " << a+b << std::endl;
-        std::cout << "a-b         = " << a-b << std::endl;
-        std::cout << "a*a         = " << a*a << std::endl;
-        std::cout << "b*b         = " << b*b << std::endl;
-        std::cout << "(a+b)*(a-b) = " << c1 << std::endl;
-        std::cout << "(a+b)*(b-a) = " << (a+b)*(b-a) << std::endl;
-        std::cout << "a*a-b*b     = " << c2 << std::endl;
-        std::cout << "square(a)   = " << square(a) << std::endl;
-        std::cout << "square(b)   = " << square(b) << std::endl;
-        std::cout << "square(-a)  = " << square(-a) << std::endl;
-        std::cout << "square(-b)  = " << square(-b) << std::endl;
-        std::cout << "Failed" << std::endl;
+        std::cout << "FAILED on test " << i << "\n";
+        std::cout << "a  = " << a << "\n";
+        std::cout << "b  = " << b << "\n";
+        std::cout << "a+b         = " << a+b << "\n";
+        std::cout << "a-b         = " << a-b << "\n";
+        std::cout << "a*a         = " << a*a << "\n";
+        std::cout << "b*b         = " << b*b << "\n";
+        std::cout << "(a+b)*(a-b) = " << c1 << "\n";
+        std::cout << "(a+b)*(b-a) = " << (a+b)*(b-a) << "\n";
+        std::cout << "a*a-b*b     = " << c2 << "\n";
+        std::cout << "square(a)   = " << square(a) << "\n";
+        std::cout << "square(b)   = " << square(b) << "\n";
+        std::cout << "square(-a)  = " << square(-a) << "\n";
+        std::cout << "square(-b)  = " << square(-b) << "\n";
+        std::cout << "Failed" << "\n";
         abort();
         return 1;
     }
@@ -594,7 +602,7 @@ int main(int argc, char *argv[])
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Plus and Times tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_PLUS_AND_TIMES
 
@@ -611,7 +619,7 @@ int main(int argc, char *argv[])
     maxbits = 400;
     ntries = 50*MILLION;
 
-    std::cout << "Start of division testing" << std::endl;
+    std::cout << "Start of division testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -646,20 +654,20 @@ int main(int argc, char *argv[])
         {   r1 = dividend % divisor;
             if (r1 == remainder) continue;
         }
-        std::cout << "FAILED on test " << i << std::endl;
-        std::cout << "divisor   " << divisor << std::endl;
-        std::cout << "remainder " << remainder << std::endl;
-        std::cout << "quotient  " << quotient << std::endl;
-        std::cout << "dividend  " << dividend << std::endl;
-        std::cout << "q1        " << q1 << std::endl;
-        std::cout << "r1        " << r1 << std::endl;
+        std::cout << "FAILED on test " << i << "\n";
+        std::cout << "divisor   " << divisor << "\n";
+        std::cout << "remainder " << remainder << "\n";
+        std::cout << "quotient  " << quotient << "\n";
+        std::cout << "dividend  " << dividend << "\n";
+        std::cout << "q1        " << q1 << "\n";
+        std::cout << "r1        " << r1 << "\n";
         display("dividend ", dividend);
         display("divisor  ", divisor);
         display("remainder", remainder);
         display("quotient ", quotient);
         display("q1       ", q1);
         display("r1       ", r1);
-        std::cout << "Failed " << std::endl;
+        std::cout << "Failed " << "\n";
         abort();
         return 1;
     }
@@ -669,7 +677,7 @@ int main(int argc, char *argv[])
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Division tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_DIVISION
 
@@ -681,7 +689,7 @@ int main(int argc, char *argv[])
     maxbits = 300;
     ntries = 20*MILLION;
 
-    std::cout << "Start of GCD testing" << std::endl;
+    std::cout << "Start of GCD testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -696,27 +704,27 @@ int main(int argc, char *argv[])
             g = fudgeDistributionBignum(g, static_cast<int>((rr>>8) & 0xf));
         }
         while (a<=0 || b<=0 || g<=0);
-//        std::cout << i << " " << a << " " << b << " " << g << std::endl;
+//        std::cout << i << " " << a << " " << b << " " << g << "\n";
 //        display("a", a);
 //        display("a", b);
         Bignum g1 = gcd(a, b);
         Bignum A = a*g;
         Bignum B = b*g;
-//        std::cout << i << " " << A << " " << B << std::endl;
+//        std::cout << i << " " << A << " " << B << "\n";
 //        display("A", A);
 //        display("B", B);
         Bignum g2 = gcd(A, B);
         if (g2 == g1*abs(g) &&
             A%g2 == 0 &&
             B%g2 == 0) continue;
-        std::cout << "FAILED on test " << i << std::endl;
-        std::cout << "a  " << a << std::endl;
-        std::cout << "b  " << b << std::endl;
-        std::cout << "g  " << g << std::endl;
-        std::cout << "A  " << A << std::endl;
-        std::cout << "B  " << B << std::endl;
-        std::cout << "g1 " << g1 << std::endl;
-        std::cout << "g2 " << g2 << std::endl;
+        std::cout << "FAILED on test " << i << "\n";
+        std::cout << "a  " << a << "\n";
+        std::cout << "b  " << b << "\n";
+        std::cout << "g  " << g << "\n";
+        std::cout << "A  " << A << "\n";
+        std::cout << "B  " << B << "\n";
+        std::cout << "g1 " << g1 << "\n";
+        std::cout << "g2 " << g2 << "\n";
         abort();
         return 1;
     }
@@ -726,7 +734,7 @@ int main(int argc, char *argv[])
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "GCD tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_GCD
 
@@ -739,7 +747,7 @@ int main(int argc, char *argv[])
     maxbits = 900;
     ntries = 50*MILLION;
 
-    std::cout << "Start of isqrt testing" << std::endl;
+    std::cout << "Start of isqrt testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -749,14 +757,14 @@ int main(int argc, char *argv[])
         a = fudgeDistributionBignum(a, static_cast<int>(r) & 7);
         b = isqrt(a);
         if (square(b) <= a && square(b+1) > a) continue;
-        std::cout << "FAILED on test " << i << std::endl;
-        std::cout << "a         " << a << std::endl;
-        std::cout << "b         " << b << std::endl;
-        std::cout << "b^2       " << square(b) << std::endl;
-        std::cout << "(b+1)^2   " << square(b+1) << std::endl;
+        std::cout << "FAILED on test " << i << "\n";
+        std::cout << "a         " << a << "\n";
+        std::cout << "b         " << b << "\n";
+        std::cout << "b^2       " << square(b) << "\n";
+        std::cout << "(b+1)^2   " << square(b+1) << "\n";
         display("a", a);
         display("b", b);
-        std::cout << "Failed " << std::endl;
+        std::cout << "Failed " << "\n";
         abort();
         return 1;
     }
@@ -767,7 +775,7 @@ int main(int argc, char *argv[])
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
 
     std::cout << "Isqrt tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_ISQRT
 
@@ -789,7 +797,7 @@ int main(int argc, char *argv[])
 // values through the following volatile variable.
     volatile double fp_forcer;
 
-    std::cout << "Start of float testing" << std::endl;
+    std::cout << "Start of float testing" << "\n";
     clk = std::chrono::high_resolution_clock::now();
 
     for (int i=1; i<=ntries; i++)
@@ -825,20 +833,20 @@ int main(int argc, char *argv[])
                 abs(err) == abs(errminus) && evenfloat(d)) continue;
         }
 
-        std::cout << "FAILED on test " << i << std::endl;
-        std::cout << "a       " << a << std::endl;
-        std::cout << "d       " << std::setprecision(19) << d << std::endl;
-        std::cout << "d-      " << dminus << std::endl;
-        std::cout << "d+      " << dplus << std::endl;
-        std::cout << "nminus  " << nminus << std::endl;
-        std::cout << "n       " << n << std::endl;
-        std::cout << "nplus   " << nplus << std::endl;
-        std::cout << "err-    " << errminus << std::endl;
-        std::cout << "err     " << err << std::endl;
-        std::cout << "err+    " << errplus << std::endl;
+        std::cout << "FAILED on test " << i << "\n";
+        std::cout << "a       " << a << "\n";
+        std::cout << "d       " << std::setprecision(19) << d << "\n";
+        std::cout << "d-      " << dminus << "\n";
+        std::cout << "d+      " << dplus << "\n";
+        std::cout << "nminus  " << nminus << "\n";
+        std::cout << "n       " << n << "\n";
+        std::cout << "nplus   " << nplus << "\n";
+        std::cout << "err-    " << errminus << "\n";
+        std::cout << "err     " << err << "\n";
+        std::cout << "err+    " << errplus << "\n";
         display("a", a);
         display("n", n);
-        std::cout << "Failed " << std::endl;
+        std::cout << "Failed " << "\n";
         abort();
         return 1;
     }
@@ -848,11 +856,11 @@ int main(int argc, char *argv[])
     timing =
         std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
     std::cout << "Float tests completed in "
-              << (timing.count()/1.0e9) << " sec" << std::endl;
+              << (timing.count()/1.0e9) << " sec" << "\n";
 
 #endif // TEST_FLOAT
 
-    std::cout << "About to exit" << std::endl;
+    std::cout << "About to exit" << "\n";
     return 0;
 }
 

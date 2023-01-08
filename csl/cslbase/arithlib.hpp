@@ -8012,8 +8012,8 @@ inline void increment(std::uint64_t* x, std::size_t N, std::uint64_t n=1)
 // z = x + y and return a carry, where x, y and z are N digit numbers.
 
 inline std::uint64_t addWithCarry(const std::uint64_t* x,
-                                    const std::uint64_t* y,
-                                    std::uint64_t* z, std::size_t N)
+                                  const std::uint64_t* y,
+                                  std::uint64_t* z, std::size_t N)
 {   std::uint64_t c = addWithCarry(x[0], y[0], z[0]);
     for (std::size_t i=1; i<N; i++)
         c = addWithCarry(x[i], y[i], c, z[i]);
@@ -8023,9 +8023,9 @@ inline std::uint64_t addWithCarry(const std::uint64_t* x,
 // As above except that c is a "carry in".
 
 inline std::uint64_t addWithCarry(const std::uint64_t* x,
-                                   const std::uint64_t* y,
-                                   std::uint64_t c,
-                                   std::uint64_t* z, std::size_t N)
+                                  const std::uint64_t* y,
+                                  std::uint64_t c,
+                                  std::uint64_t* z, std::size_t N)
 {   for (std::size_t i=0; i<N; i++)
         c = addWithCarry(x[i], y[i], c, z[i]);
     return c;
@@ -8033,8 +8033,8 @@ inline std::uint64_t addWithCarry(const std::uint64_t* x,
 // z = x - y and return a borrow.
 
 inline std::uint64_t subtractWithBorrow(const std::uint64_t* x,
-                                          const std::uint64_t* y,
-                                          std::uint64_t* z, std::size_t N)
+                                        const std::uint64_t* y,
+                                        std::uint64_t* z, std::size_t N)
 {   std::uint64_t b = subtractWithBorrow(x[0], y[0], z[0]);
     for (std::size_t i=1; i<N; i++)
         b = subtractWithBorrow(x[i], y[i], b, z[i]);
@@ -8453,6 +8453,11 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
 // Now the low 2*N words of the result have been set to the product
 // of two N-word parts. In an especially easy case N=M and we are done!
     if (N == M) return;
+// The easiest path for me here is to zero out the parts of the final
+// product that have not yet been filled in and then I can perform
+// a collection of further multiplications into temporary workspace and
+// add into the final result.
+    for (size_t i=2*N; i<N+M; i++) w[i] = 0;
     v += N;
     w += N;
     M -= N;
@@ -8528,8 +8533,7 @@ inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
 inline void generalMul(const std::uint64_t* u, std::size_t N,
                        const std::uint64_t*v, std::size_t M,
                        std::uint64_t* w)
-{   
-    switch (N+7*M)
+{   switch ((N+7*M) & -(N<=7))  // The "&" is intended to be branch-free here.
     {   case 1+7*1:
             classicalMul<1,1>(u, v, w); return;
         case 1+7*2:
@@ -8578,7 +8582,7 @@ inline void generalMul(const std::uint64_t* u, std::size_t N,
         case 4+7*1:
             classicalMul<4,1>(u, v, w); return;
         case 4+7*2:
-            classicalMul<4,2>(v, u, w); return;
+            classicalMul<4,2>(u, v, w); return;
         case 4+7*3:
             classicalMul<4,3>(u, v, w); return;
         case 4+7*4:
@@ -8659,8 +8663,23 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
     generalMul(a, lena, b, lenb, c);
     if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
     if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
+// A jolly case arises if for instance both inputs have leading digits
+// of the form {0, 0x8000000000000000, ...} with an explicit leading
+// zero so that the next digit is not taken as being negative. In such cases
+// simple multiplication can lead to a product with two leading zeros where
+// none at all are required - so in effect the "shrinkable" test here has
+// to be applied twice.
     lena += lenb;
-    if (shrinkable(c[lena-1], c[lena-2])) lena--;
+// Note that the "&" instead of "&&" and "|" rather than "||" is deliberate
+// on the next line! The code has been written that way to encourage the
+// C++ compiler to render the boolean results of the comparisons as integer
+// values 0 or 1 with a consequent possibility that the entire step can
+// be performed branch-free. I have put in casts to emphasise this intent.
+    lena -= (static_cast<size_t>(c[lena-1]==0) &
+             static_cast<size_t>(c[lena-2]==0)) |
+            (static_cast<size_t>(c[lena-1]==-1) &
+             static_cast<size_t>(c[lena-2]==-1));
+    lena -= shrinkable(c[lena-1], c[lena-2]);
     lenc = lena;
 }
 
@@ -8927,28 +8946,28 @@ inline void bigpow(std::uint64_t* a, std::size_t lena,
         lenr = 1;
         return;
     }
+//  LispObject r = fixnum_of_int(1);
+//  while (n != 1)
+//  {   if ((n & 1) != 0) r = Times::op(r, a);
+//      a = Square::op(a);
+//      n = n/2;
+//  }
+//  return Times::op(r, a);
     internalCopy(a, lena, v);
-    std::size_t lenv = lena;
-    w[0] = 1;
-    std::size_t lenw = 1;
-    while (n > 1)
-    {   if (n%2 == 0)
-        {   bigsquare(v, lenv, r, lenr);
-            internalCopy(r, lenr, v);
-            lenv = lenr;
-            n = n/2;
+    std::size_t lenv = lena, lenw;
+    r[0] = 1;
+    lenr = 1;
+    while (n != 1)
+    {   if ((n & 1) != 0)
+        {   bigmultiply(r, lenr, v, lenv, w, lenw);
+            internalCopy(w, lenr=lenw, r);
         }
-        else
-        {   bigmultiply(v, lenv, w, lenw, r, lenr);
-            internalCopy(r, lenr, w);
-            lenw = lenr;
-            bigsquare(v, lenv, r, lenr);
-            internalCopy(r, lenr, v);
-            lenv = lenr;
-            n = (n-1)/2;
-        }
+        bigsquare(v, lenv, w, lenw);
+        internalCopy(w, lenv=lenw, v);
+        n = n/2;
     }
-    bigmultiply(v, lenv, w, lenw, r, lenr);
+    bigmultiply(r, lenr, v, lenv, w, lenw);
+    internalCopy(w, lenr=lenw, r);
 }
 
 // In cases where n is too large this can fail. At present I deal with that
@@ -8981,8 +9000,7 @@ inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
     std::size_t bitsa = bignumBits(a, lena);
     std::uint64_t hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
-    arithlib_assert(hi ==
-                    0); // Check that size is at least somewhat sane!
+    arithlib_assert(hi==0); // Check that size is at least somewhat sane!
 // I estimate the largest size that my result could be, but then add
 // an extra word because the internal working of multiplication can
 // write a zero beyond its true result - eg if you are multiplying a pair
