@@ -5055,7 +5055,6 @@ inline void doubleTo_virtualBignum(double d,
     }
     else
     {   len = 2 + exponent/64;
-        if (len <= 0)
         exponent = exponent%64;
 // Now shift left by exponent, which is less than 64 here.
         shiftleft(top, next, exponent);
