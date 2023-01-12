@@ -47,26 +47,37 @@
 #include <chrono>
 #include <cassert>
 
-#if defined __CYGWIN__ || defined __MINGW32__
-// One thing I want to check is that declarations and definitions that I
-// have made in my library do not clash with ones in <windows.h>. So
-// even though I do not need anything from it I will include it here
-// for SOME test builds.
-#ifdef INCLUDE_WINDOWS_H
-#include <windows.h>
-#endif // INCLUDE_WINDOWS_H
-#endif // Cygwin or Mingw32
-
 using namespace arithlib;
 
 // The tests come in sections, and these preprocessor symbols can be used
-// to select which sections get run.
+// to select which sections get run. If you compile this code simply then
+// all tests will be enabled. However if the C++ compiler is used to
+// pre-define one or more of these symbols only that or those tests will
+// be run. So for instance
+//    g++ -DCOMPARE_GMP=1 arithtest.cpp -O3 -lgmp -o timinng_comparison
+//    g++ -DTEST_DIVISION=1 -DTEST_GCD=1 ... -o test_divide_and_gcd
+//    g++ arithtest.cpp -O3 -lgmp -o test_everything
+// Nota that some of the individual test sections run for say 20 or 30
+// minutes even on a fast computer, so sometimes (especially while
+// debugging or optimising) limiting which sectio is tested can make
+// sense. I would encourage anybody who is at all keen to look at the
+// tests here and consider additional edge cases that ought to be
+// covered - and then submit updates (for instance through the mailing
+// list on sourceforge - or at least making an enquiry there first to
+// set up a more private discussion.
 
-#ifndef NO_GMP
+#if !defined COMPARE_GMP && \
+    !defined TEST_SOME_BASICS && \
+    !defined TEST_RANDOM && \
+    !defined TEST_BITWISE && \
+    !defined TEST_SHIFTS && \
+    !defined TEST_PLUS_AND_TIMES && \
+    !defined TEST_DIVISION && \
+    !defined TEST_GCD && \
+    !defined TEST_ISQRT && \
+    !defined TEST_FLOAT
+
 #define COMPARE_GMP 1
-#endif // NO_GMP
-
-#ifndef JUST_TIMINGS
 #define TEST_SOME_BASICS 1
 #define TEST_RANDOM 1
 #define TEST_BITWISE 1
@@ -75,8 +86,9 @@ using namespace arithlib;
 #define TEST_DIVISION 1
 #define TEST_GCD 1
 #define TEST_ISQRT 1
-#define TEST_FLOAT
-#endif // JUST_TIMINGS
+#define TEST_FLOAT 1
+
+#endif // Some case predefined
 
 #ifdef COMPARE_GMP
 #include "gmp.h"
@@ -704,20 +716,17 @@ int main(int argc, char *argv[])
             g = fudgeDistributionBignum(g, static_cast<int>((rr>>8) & 0xf));
         }
         while (a<=0 || b<=0 || g<=0);
-//        std::cout << i << " " << a << " " << b << " " << g << "\n";
-//        display("a", a);
-//        display("a", b);
         Bignum g1 = gcd(a, b);
         Bignum A = a*g;
         Bignum B = b*g;
-//        std::cout << i << " " << A << " " << B << "\n";
-//        display("A", A);
-//        display("B", B);
         Bignum g2 = gcd(A, B);
         if (g2 == g1*abs(g) &&
             A%g2 == 0 &&
             B%g2 == 0) continue;
         std::cout << "FAILED on test " << i << "\n";
+        if (g2 != g1*abs(g)) std::cout << "g2 is wrong\n";
+        if (A%g2 != 0) std::cout << "g2 remainder with A\n";
+        if (B%g2 != 0) std::cout << "g2 remainder with B\n";
         std::cout << "a  " << a << "\n";
         std::cout << "b  " << b << "\n";
         std::cout << "g  " << g << "\n";
@@ -725,6 +734,13 @@ int main(int argc, char *argv[])
         std::cout << "B  " << B << "\n";
         std::cout << "g1 " << g1 << "\n";
         std::cout << "g2 " << g2 << "\n";
+        display("a  ", a);
+        display("b  ", b);
+        display("g  ", g);
+        display("A  ", A);
+        display("B  ", B);
+        display("g1 ", g1);
+        display("g2 ", g2);
         abort();
         return 1;
     }
@@ -781,10 +797,10 @@ int main(int argc, char *argv[])
 
 #ifdef TEST_FLOAT
 
-// To test FLOAT and FIX I will generate a random integer and convery to
+// To test FLOAT and FIX I will generate a random integer and convert to
 // floating point. I then look at floating point values just larger and
 // just smaller than the one that I obtained, and verify that my result
-// is closer to the original input than the other wto. If there is a tie
+// is closer to the original input than the other two. If there is a tie
 // I will expect my value to have its least significant bit zero.
 
     maxbits = 500;
@@ -835,6 +851,7 @@ int main(int argc, char *argv[])
 
         std::cout << "FAILED on test " << i << "\n";
         std::cout << "a       " << a << "\n";
+        std::cout << "a       " << std::hex << a << std::dec << "\n";
         std::cout << "d       " << std::setprecision(19) << d << "\n";
         std::cout << "d-      " << dminus << "\n";
         std::cout << "d+      " << dplus << "\n";
@@ -847,6 +864,14 @@ int main(int argc, char *argv[])
         display("a", a);
         display("n", n);
         std::cout << "Failed " << "\n";
+        if (nplus == n) std::cout << "nplus == n\n";
+        if (nminus == n) std::cout << "nminus == n\n";
+        if (abs(err) >= abs(errplus)) std::cout << "abs(err) >= abs(errplus)\n";
+        if (abs(err) >= abs(errminus)) std::cout << "abs(err) >= abs(errminus)\n";
+        if (abs(err) == abs(errplus)) std::cout << "abs(err) == abs(errplus)\n";
+        if (abs(err) == abs(errminus)) std::cout << "abs(err) == abs(errplus)\n";
+        if (evenfloat(d)) std::cout << "evenfloat(d)\n";
+        else std::cout << "oddfloat(d)\n";
         abort();
         return 1;
     }

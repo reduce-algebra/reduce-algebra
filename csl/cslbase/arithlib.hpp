@@ -76,10 +76,11 @@
 // arithmetic rather as
 //     int c = (int)((unsigned)a + (unsigned)b);
 // and I rely on the result being as would be seen with natural 2s complement
-// working. From C++20 onwards this is likely to be guaranteed by the standard,
-// but at present it is not, so although this could will work on almost all
-// known machines if judged against the standard at is at best relying on
-// implementation defined behaviour and avoiding undefined behaviour.
+// working. From C++20 onwards the conversions will be guaranteed to behave
+// as if everything is 2s complement. But note that a simple "a+b" still
+// leads to undefined behaviour if performed in signed values, and
+// optimising compilers can assume that and generate code that does not
+// perform the way a naive old-fashioned reading of it would suggest.
 //
 // If "softfloat_h" is defined I will suppose that there is a type "float128"
 // available and I will support conversions to and from that. In part because
@@ -401,6 +402,14 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
+// While debugging this (or indeed anything else) it is sometimes
+// helpful to embed information about filename and line number in
+// trace ouput. The following supports eg
+//    std::cout << ARITH_WHERE "Reached this point with x=" << x << "\n";
+
+#define ARITHLIB_STRINGIFY(x) #x
+#define ARITHLIB_TOSTRING(x) ARITHLIB_STRINGIFY(x)
+#define ARITH_WHERE " " __FILE__ ":" ARITHLIB_TOSTRING(__LINE__) " "
 
 // I provide a default configuration, but by predefining one of the
 // symbols allow other versions to be built.
@@ -8663,22 +8672,12 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
     generalMul(a, lena, b, lenb, c);
     if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
     if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
-// A jolly case arises if for instance both inputs have leading digits
-// of the form {0, 0x8000000000000000, ...} with an explicit leading
-// zero so that the next digit is not taken as being negative. In such cases
-// simple multiplication can lead to a product with two leading zeros where
-// none at all are required - so in effect the "shrinkable" test here has
-// to be applied twice.
     lena += lenb;
-// Note that the "&" instead of "&&" and "|" rather than "||" is deliberate
-// on the next line! The code has been written that way to encourage the
-// C++ compiler to render the boolean results of the comparisons as integer
-// values 0 or 1 with a consequent possibility that the entire step can
-// be performed branch-free. I have put in casts to emphasise this intent.
-    lena -= (static_cast<size_t>(c[lena-1]==0) &
-             static_cast<size_t>(c[lena-2]==0)) |
-            (static_cast<size_t>(c[lena-1]==-1) &
-             static_cast<size_t>(c[lena-2]==-1));
+// A case like {0,0x80000...} times the same leads at this stage tp
+// {0, 0, 0x40000...} and the length needs to be shrunk by two words. The
+// way I code this is intended to have a chance of compiling into branch-
+// free code and execute faster than "if (shrinkable(..)) lena--;".
+    lena -= shrinkable(c[lena-1], c[lena-2]);
     lena -= shrinkable(c[lena-1], c[lena-2]);
     lenc = lena;
 }
@@ -10016,6 +10015,28 @@ inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
                         std::uint64_t v,
                         std::uint64_t* r, std::size_t &lenr)
 {   std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
+// I wish to compute r = u A - v B where all values are treated as
+// unsigned save that if the result underflows (ie would be negative if
+// computed perfectly) I must return a "borrow" value.
+//
+// At one stage I called this going in effect
+//   if (v < 0) ua_minus_vb(..., -v, ...);
+// and in an extra case v started off as INT64_MIN. As an unsigned value
+// (-v) is properly in range, but if I performed the negation as signed
+// arithmetic it counted as an overflow since the result has just the
+// top bit set and has value (INT64_MAX+1). In that case a "sufficiently
+// clever" C++ compiler could and did argue that the value of v passed here
+// would have its top bit zero (since the only way that might not be the
+// case would involve overflow and hence represented undefined behavious).
+// So in some sense V simultaneously had the value 0x8000000000000000 and
+// also for the purposes of optimisation could be assumed to have its top
+// bit zero. In a manner that at present I do not fully understand this
+// could lead the code here to return a result that was not the one I
+// wanted. Altering the call to read
+//   if (v < 0) ua_minus_ub(..., -static_cast<uint64_t>(v), ...);
+// so that the negation was performed on an unsigned value where C++
+// does consider the result defined left my code behaving as it had
+// with earlier released of the C++ compiler that were less clever.
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
 // hia is the high part of a product so carrying 1 into it can not cause it
@@ -10199,9 +10220,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // There could be overflow in the following subtraction... So I check
 // if that was about to happen and break out of the loop if so.
             if (ua >= 0)
-            {   if (ua - INT64_MAX > static_cast<std::int64_t>(l1)) break;
+            {   if (ua - INT64_MAX >= static_cast<std::int64_t>(l1)) break;
             }
-            else if (ua - INT64_MIN < static_cast<std::int64_t>(l1)) break;
+            else if (ua - INT64_MIN <= static_cast<std::int64_t>(l1)) break;
             signedMultiply64(q, vb, h, l2);
             if (static_cast<std::uint64_t>(h) + (l2>>63) != 0) break;
             if (ub >= 0)
@@ -10246,21 +10267,29 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
             pop(b);
             pop(a);
         }
+// The static cast here is in case ua (etc) have the negative value INT64_MIN
+// because if I negate that before turning to an unsigned value to pass
+// to the sub-function that would count as overflow and in consequence the
+// behaviour of everthing here would become undefined.
         if (ub < 0)
-        {   if (ua_minus_vb(a, lena, ua, b, lenb, -ub, temp, lentemp))
+        {   if (ua_minus_vb(a, lena, ua, b, lenb,
+                            -static_cast<uint64_t>(ub), temp, lentemp))
                 internalNegate(temp, lentemp, temp);
         }
         else
-        {   if (minus_ua_plus_vb(a, lena, -ua, b, lenb, ub, temp, lentemp))
+        {   if (minus_ua_plus_vb(a, lena, -static_cast<uint64_t>(ua),
+                                 b, lenb, ub, temp, lentemp))
                 internalNegate(temp, lentemp, temp);
         }
         truncateUnsigned(temp, lentemp);
         if (vb < 0)
-        {   if (ua_minus_vb(a, lena, va, b, lenb, -vb, a, lena))
+        {   if (ua_minus_vb(a, lena, va, b, lenb,
+                            -static_cast<uint64_t>(vb), a, lena))
                 internalNegate(a, lena, a);
         }
         else
-        {   if (minus_ua_plus_vb(a, lena, -va, b, lenb, vb, a, lena))
+        {   if (minus_ua_plus_vb(a, lena, -static_cast<uint64_t>(va),
+                                 b, lenb, vb, a, lena))
                 internalNegate(a, lena, a);
         }
         truncateUnsigned(a, lena);
