@@ -77,8 +77,8 @@ endif
 
 .PHONY:	arithtest
 
-ARITHOPT = -O3
-#ARITHOPT = -O0 -g
+ARITHOPT = -O3 -std=gnu++17
+#ARITHOPT = -O0 -g -std=gnu++17
 
 arithtest:	arithtest.cpp arithlib.hpp
 	time g++ $(ARITHOPT) $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtest
@@ -108,7 +108,7 @@ time-arith:	time-arith.sh
 .PHONY:	karatune
 
 karatune:	karatune.cpp arithlib.hpp
-	g++ $(MACFLAGS) -O3 karatune.cpp $(LIBS) -o karatune
+	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp $(LIBS) -o karatune
 	time ./karatune
 
 # end of Makefile in cslbase
