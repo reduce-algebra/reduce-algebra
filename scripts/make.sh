@@ -120,7 +120,6 @@ fi
 
 procids=""
 
-shopt -s nullglob
 list=""
 if test "$buildcsl" = "yes"
 then
@@ -138,7 +137,6 @@ then
     ;;
   esac
 fi
-shopt -u nullglob
 
 firstcsl=${list%% *}
 if ! test -f "$firstcsl/Makefile"
