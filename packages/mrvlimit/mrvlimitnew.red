@@ -240,35 +240,16 @@ symbolic procedure mrv!-expt!-smember(u,v);
    smember(u,v) or eqcar(u,'expt) and
       (smember(u1,v) where u1 := {'expt,cadr u,
 	 if eqcar(caddr u,'minus) then cadr caddr u else {'minus,caddr u}});
-   
-symbolic procedure mrv!-leading!-term(u,var,omega);
-   (lambda (result,!*mrv!-recursion!-level!*);
-   <<if !*trlimit then <<
-      prin2!* "Entering mrv!-leading!-term(";
-      prin2!* !*mrv!-recursion!-level!*; prin2!* ") for ";
-      maprin u; terpri!* t;
-      prin2!* "w.r.t. var "; maprin var; terpri!* t;
-      prin2!* "Omega set = "; maprin ('list . omega); terpri!* t;
-   >>;
-   result := 
-  if mrv_constantp(u,var) then {u,0}
-   else begin scalar e0,s,w,f,logw,coeffs;
-      e0 := u;
-      omega := for each term in omega conc
-	 if mrv!-expt!-smember(term,e0) then {term};
-      if null omega then omega := mrv(e0,var);
-      if var member omega
-      then return mrv!-movedown(mrv!-leading!-term(mrv!-moveup(e0,var),var,
-	 for each term in omega collect mrv!-moveup(term,var)),var);
-      w := gensym();
-      f . logw := mrv!-rewrite(e0,var,omega,w);
+
+symbolic procedure mrv!-expand!-series(f,w);
+   begin scalar s;
       if !*trlimit then <<
 	 prin2!* "In mrv!-leading!-term(";
  	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion of ";
       	 maprin f;
       	 terpri!* t;            
       >>;
-      s := errorset!*({'simptaylor,mkquote {f,w,0,4}},!*backtrace);
+      s := errorset!*({'simptaylor,mkquote {f,w,0,2}},!*backtrace);
       if atom s then <<
 	 if !*trlimit then <<
 	    terpri!* t;
@@ -299,6 +280,35 @@ symbolic procedure mrv!-leading!-term(u,var,omega);
       	 else s := subeval({{'equal,logw,{'log,w}},s});
       coeffs := coeffeval {s,w};
       return {nth(cdr coeffs,lowpow!*+1),lowpow!*};
+   end;
+
+symbolic procedure mrv!-leading!-term(u,var,omega);
+   (lambda (result,!*mrv!-recursion!-level!*);
+   <<if !*trlimit then <<
+      prin2!* "Entering mrv!-leading!-term(";
+      prin2!* !*mrv!-recursion!-level!*; prin2!* ") for ";
+      maprin u; terpri!* t;
+      prin2!* "w.r.t. var "; maprin var; terpri!* t;
+      prin2!* "Omega set = "; maprin ('list . omega); terpri!* t;
+   >>;
+   result := 
+  if mrv_constantp(u,var) then {u,0}
+   else begin scalar e0,s,w,f,logw,coeffs;
+      e0 := u;
+      omega := for each term in omega conc
+	 if mrv!-expt!-smember(term,e0) then {term};
+      if null omega then omega := mrv(e0,var);
+      if var member omega
+      then return mrv!-movedown(mrv!-leading!-term(mrv!-moveup(e0,var),var,
+	 for each term in omega collect mrv!-moveup(term,var)),var);
+      w := gensym();
+      f . logw := mrv!-rewrite(e0,var,omega,w);
+      return evalletsub({{{'replaceby,{'log,w},logw}},{'mrv!-expand!-series,mkquote f,mkquote w}},nil);
+%      if eqcar(logw,'minus)
+%      then s := subeval({{'equal,cadr logw,{'minus,{'log,w}}},s})
+%      	 else s := subeval({{'equal,logw,{'log,w}},s});
+%      coeffs := coeffeval {s,w};
+%      return {nth(cdr coeffs,lowpow!*+1),lowpow!*};
    end;
    if !*trlimit then <<
       prin2!* "Exiting mrv!-leading!-term(";
