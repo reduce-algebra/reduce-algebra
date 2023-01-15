@@ -665,7 +665,9 @@ symbolic procedure taysimplog u;
   %
   if not (car u eq 'log) or cddr u then confusion 'taysimplog
    else taylor!:
-    begin scalar a0,clist,coefflis,il,l0,l,tay,tp,csing,singterm;
+    begin scalar a0,clist,coefflis,il,l0,l,tay,tp,csing,singterm,result;
+    taylor!-trace!-with!-level(!*taylor!-expansion!-level!*,{"computing log of"});
+    taylor!-trace!-mprint u;
     u := simplogi cadr u;
     if not kernp u then return taysimpsq u;
     u := mvar numr u;
@@ -740,7 +742,14 @@ symbolic procedure taysimplog u;
     if taylor!*!-zerop tay then return singterm;
     if !*taylorkeeporiginal and tayorig tay
       then set!-tayorig(tay,subtrsq(tayorig tay,singterm));
-    return addsq(singterm,!*tay2q tay)
+    %% Add the singular term back to the result. Pass the result through
+    %% taysimpsq as the simplification of log(singterm) above may return
+    %% a result that is free of the expansion variables (this occurs in,
+    %% e.g., the mrvlimit package).
+    result := taysimpsq addsq(singterm,!*tay2q tay);
+    taylor!-trace!-with!-level(!*taylor!-expansion!-level!*,{"result of computing log is"});
+    taylor!-trace!-mprint mk!*sq result;
+    return result;
   end;
 
 put('log,'taylorsimpfn,'taysimplog);
