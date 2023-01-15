@@ -1371,6 +1371,79 @@ QuadFloat qcoth(QuadFloat a)
 // Eventually I intend work through and replace all these with
 // proper 128-bit floating point versions.
 
+// a^b = 2^(b*log_2(a))
+// The mantissa of the result comes from the fractional part of b*log_2(a)
+// and as one approaches arithmetic overflow the integer part of that can
+// use 15 bits. So b*log_2(a) needs to be computed to about 16 extra bits.
+// if a>=2 then the integer part of log_2(a) is easy - so we see that the
+// hardest case to get correct here will be when a is in the range 1..2 and
+// n is large. I cam calculate the logarithm just abou the same way I
+// calculate ln(x) but using some extra precision, and the rational
+// approximation I need does not have very many extra terms - but each
+// coefficient in it has to be specified with extra precision.
+//
+// Well that means I need to sum series and perform a division in arithmetic
+// which has prevision at least 128 bits. This arithmetic can all be on
+// numbers of modest magnitude, so exponent range in it will be unimportant.
+// The nicest way I can see will be to use triple-double for it so each
+// number is represented by the sum of three IEEE doubles. That leads to
+// around 160 bits in all (and note that double-double is not good enough
+// for me). If I had been going to multiply by the coefficients I could
+// have stored them in 27-bit chunks, but since I only ever add them in
+// that is not helpful. Also Fabiano, Muller and Picot have a paper in this
+// are https://hal.science/hal-01869009v2/document which reduces accuracy
+// a little but improves speed. Here I will have precision to spare...
+// Note that C++17 introduced hex floating point literals which make it
+// possible to be very confident about exact values involved.
+
+void tripleAdd(double ahi, double amid, double alo,
+               double bhi, double bmid, double blo,
+               double& rhi, double& rmid, double& rlo)
+{   rhi = ahi + bhi;
+    rmid = rlo = 0.0;
+} 
+
+void tripleMultiply(double ahi, double amid, double alo,
+                    double bhi, double bmid, double blo,
+                    double& rhi, double& rmid, double& rlo)
+{   rhi = ahi + bhi;
+    rmid = rlo = 0.0;
+} 
+
+void tripleDivide(double ahi, double amid, double alo,
+                  double bhi, double bmid, double blo,
+                  double& rhi, double& rmid, double& rlo)
+{   rhi = ahi / bhi;
+    rmid = rlo = 0.0;
+}
+
+struct tripleDouble
+{   double hi;
+    double mid;
+    double lo;
+};
+
+void tripleSeries(double xhi, double xmid, double xlo,
+                  const tripleDouble coeffsP[], size_t nP,
+                  const tripleDouble coeffsQ[], size_t nQ,
+                  double& rhi, double& rmid, double& rlo)
+{   const tripleDouble* p = coeffsP+nP-1;
+    double phi = p->hi, pmid = p->mid, plo = p->lo;
+    while (nP-- != 0)
+    {   tripleMultiply(phi, pmid, plo, xhi, xmid, xlo, phi, pmid, plo);
+        p--;
+        tripleAdd(phi, pmid, plo, p->hi, p->mid, p->lo, phi, pmid, plo);
+    }
+    p = coeffsQ+nQ-1;
+    double qhi = p->hi, qmid = p->mid, qlo = p->lo;
+    while (nQ-- != 0)
+    {   tripleMultiply(qhi, qmid, qlo, xhi, xmid, xlo, qhi, qmid, qlo);
+        p--;
+        tripleAdd(qhi, qmid, qlo, p->hi, p->mid, p->lo, qhi, qmid, qlo);
+    }
+    tripleDivide(phi, pmid, plo, qhi, qmid, qlo, rhi, rmid, rlo);
+}
+
 QuadFloat qexpt(QuadFloat a, QuadFloat b)
 {   return QuadFloat(f128_NaN);
 }

@@ -66,7 +66,7 @@ module economise;  % Economise series approximations via Chebyshev.
 % range.
 
 % The final parameter "evenodd" is optional. If it is present it should
-% be one of the words "even_terms" or "odd)terms" and when present it
+% be one of the words "even_terms" or "odd_terms" and when present it
 % expects the output series to have alternate entries zero, and it filters
 % them out.
 
@@ -334,7 +334,7 @@ fluid '(save_precision save_rounded);
 
 algebraic procedure multipoint_pade(f, u, v, accuracy);
   begin
-    scalar N, Nlimit, targetErr, stopOnErr, worst, err;
+    scalar N, Nlimit, targetErr, stopOnErr, worst, err, res;
     if accuracy > 1 then <<
        N := fix accuracy;
        stopOnErr := 0 >>
@@ -383,9 +383,136 @@ algebraic procedure multipoint_pade(f, u, v, accuracy);
     write "Order ", N-1, "  Worst error = ", worst;
     lisp precision save_precision;
     lead := sub(x=0, Q(N-2));
-    write coeff(P(N-2)/lead, x);
-    write coeff(Q(N-2)/lead, x);
+    res := {coeff(P(N-2)/lead, x),
+            coeff(Q(N-2)/lead, x)};
     lisp if not save_rounded then off rounded;
+    return res;
+  end;
+
+% One of the uses of the above will be to generate C or C++ code for
+% the avaluation of special functions. From C99 onwards and from C++17
+% it has been possible to write floating point literals in hexadecimal
+% format with a guarantee that they end up in the eventual code properly
+% rounded. Here is some stuff to format the output as a sequence of
+% floats in hex notation, and then the same for "double-double" and
+% "triple double" format.
+
+% This function aprinhex is present to ensure that this code is
+% valid under PSL as well as CSL.
+
+symbolic procedure aprinhex x;
+  if not fixp x then rederr "aprinhex only handles integer arguments"
+  else if x < 0 then << prin2 "-"; aprinhex(-x) >>
+  else if x < 10 then prin2 x
+  else if x < 16 then prin2 nth('(a b c d e f), x-9)
+  else << aprinhex (x/16);
+          aprinhex remainder(x, 16) >>;
+
+flag('(aprinhex), 'opfn); 
+
+% Display a real value in hex floating point notation and return
+% any residual error.
+
+% The notation required will be 0x1NNNNNNNNNNNNNpXX with exactly 13 hex
+% digits (NN.NN) and a leading 1 bit. The (optionally signed) exponent
+% the indicates the power of 2 that the 53-bit integer as written must be
+% scaled by to get the value that is wanted. Note that this is not the
+% value stored in the exponent field of the representation  if the float
+% in memory. I will avoid thinking about sub-normal numbers, NaNs and
+% infinities, but 0.0 will be a special case.
+
+% This function switches "on rounded" on a temporary basis while it works.
+% It is up to the user to ensure that "precision N" has been suitably set.
+% The function should only be passed numeric arguments. But it should
+% be happy with integers or fractions as well as floats. You need to
+% set "precision" to suit your needs.
+
+algebraic procedure prinhexlit xx;
+  begin
+    scalar x, bx, hi, lo, ix, err, save_rounded;
+    lisp (save_rounded := !*rounded);
+    on rounded;
+    if xx = 0.0 then lisp prin2 "0.0"
+    else <<
+      bx := 0;
+      hi := 2.0^53;
+      lo := 2.0^52;
+      x := xx;
+      if x < 0 then <<
+         lisp prin2 "-";
+         x := -x >>;
+      while x < lo do <<
+        x := x+x;
+        bx := bx-1 >>;
+      while x >= hi do <<
+        x := x/2;
+        bx := bx+1 >>;
+      ix := fix x;
+      err := x - ix;
+      if err >= 0.5 then ix := ix+1
+      else if err < -0.5 then ix := ix-1;
+      lisp prin2 "0x";
+      aprinhex ix;
+      lisp prin2 "p";
+      lisp prin2 bx;
+      if xx < 0 then ix := -ix;
+      xx := xx - ix*2.0^bx;
+      lisp if not save_rounded then off rounded >>;
+    return xx;
+  end;
+
+algebraic procedure prinhexlitlist l;
+  begin
+     lisp terpri();
+     lisp prin2 "{";
+     while length l neq 0 do <<
+        lisp ttab 4;
+        prinhexlit first l;
+        if length l neq 1 then lisp prin2 ",";
+        l := rest l;
+        lisp terpri() >>;
+     lisp prin2 "}";
+     lisp terpri()
+  end;
+
+algebraic procedure prinhexlitlist2 l;
+  begin
+     scalar w;
+     lisp terpri();
+     lisp prin2 "{";
+     while length l neq 0 do <<
+        lisp ttab 4;
+        lisp prin2 "{";
+        w := prinhexlit first l;
+        lisp prin2 ", ";
+        prinhexlit w;
+        lisp prin2 "}";
+        if length l neq 1 then lisp prin2 ",";
+        l := rest l;
+        lisp terpri() >>;
+     lisp prin2 "}";
+     lisp terpri()
+  end;
+
+algebraic procedure prinhexlitlist3 l;
+  begin
+     scalar w;
+     lisp terpri();
+     lisp prin2 "{";
+     while length l neq 0 do <<
+        lisp ttab 4;
+        lisp prin2 "{";
+        w := prinhexlit first l;
+        lisp prin2 ", ";
+        w := prinhexlit w;
+        lisp prin2 ", ";
+        prinhexlit w;
+        lisp prin2 "}";
+        if length l neq 1 then lisp prin2 ",";
+        l := rest l;
+        lisp terpri() >>;
+     lisp prin2 "}";
+     lisp terpri()
   end;
 
 endmodule;
