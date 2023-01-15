@@ -3026,6 +3026,32 @@ log(log(log(x)       + x))
 *log(log( - log(ww) + (log(x) + x)*ww + ( - log(x)  - 2*log(x)*x - x )/2*ww ))
 
 
+
+COMMENT Another example where a logarithm together woth a rule returned a
+        non-optimal result.
+
+	This used to return
+
+                            2     2         3     3       4       -1
+        ((log(x)*ww - log(x) /2*ww  + log(x) /3*ww  + O(ww )) + x)
+
+	;
+
+
+f := log(log(x) + ww^(-1))^(-1);
+
+
+                    -1 -1
+f := log(log(x) + ww  )
+
+
+taylor(f,ww,0,2) where {log(ww) => -x};
+
+
+ -1           2             2              3    2       3
+x   - log(x)/x *ww + (log(x) *(x + 2))/(2*x )*ww  + O(ww )
+
+
 on mcd;
 
 

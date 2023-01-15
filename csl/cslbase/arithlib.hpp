@@ -4269,7 +4269,7 @@ inline int readU3(const std::uint64_t* v, std::size_t n,
 // function until the function is first used!
 
 inline std::mt19937_64 &ref_mersenne_twister()
-{   std::random_device basic_randomness;
+{   static std::random_device basic_randomness;
 // Yes the static procedure-local variables here may carry some
 // overhead as the system considers whether it wants to initialize them, but
 // the overall cost here is already probably high as I accumulate entropy
@@ -4332,7 +4332,8 @@ inline std::mt19937_64 &ref_mersenne_twister()
 // I investigates thread_local support had fairly high overhead.
 
 MAYBE_UNUSED static std::uint64_t mersenne_twister()
-{   return ref_mersenne_twister()();
+{   static auto mm = ref_mersenne_twister();
+    return mm();
 }
 
 // To re-seed I can just call this. I think that when I re-seed it will

@@ -291,6 +291,8 @@ int main(int argc, char *argv[])
                             }
                             break;
                         case 1:
+                            for (std::size_t i=0; i<lena+lenb; i++)
+                                c[i] = 0;
                             for (std::size_t m=0; m<500; m++)
                                 arithlib_implementation::bigmultiply(
                                     a, lena, b, lenb, c1, lenc1);
@@ -301,6 +303,8 @@ int main(int argc, char *argv[])
                                 my_check = my_check*MULT + c1[i];
                             break;
                         case 2:
+                            for (std::size_t i=0; i<lena+lenb; i++)
+                                c[i] = 0;
                             for (std::size_t m=0; m<500; m++)
                                 mpn_mul((mp_ptr)c,
                                         (mp_srcptr)a, lena,
@@ -539,7 +543,7 @@ int main(int argc, char *argv[])
         std::cout << "a            " << std::hex << a << std::dec << "\n";
         std::cout << "r            " << r << "\n";
         std::cout << "r            " << std::hex << r << std::dec << "\n";
-                  "\n";
+
         std::cout << "divide "  << w << "\n";
         display("div", w);
         std::cout << "by " << p << "\n";

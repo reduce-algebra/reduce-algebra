@@ -959,6 +959,21 @@ series_exp := taylor(f,ww,0,1);
 
 taylortostandard ws;
 
+
+COMMENT Another example where a logarithm together woth a rule returned a
+        non-optimal result.
+
+	This used to return
+
+                            2     2         3     3       4       -1
+        ((log(x)*ww - log(x) /2*ww  + log(x) /3*ww  + O(ww )) + x)
+
+	;
+
+f := log(log(x) + ww^(-1))^(-1);
+
+taylor(f,ww,0,2) where {log(ww) => -x};
+
 on mcd;
 
 

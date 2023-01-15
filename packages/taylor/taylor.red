@@ -82,6 +82,13 @@ module taylor;
 %*****************************************************************
 %
 %
+% 15-Jan-2023    2.4g
+%
+%   Correct a bug in expansion of logarithms: a singular term like
+%    log(var) may be replaced by a constant when a corresponding rule
+%    log(var) => cst is in effect.  Thsi constand should be added into
+%    the resulting Taylor kernel.
+%
 % 11-Dec-2022    2.4f
 %
 %   Better handling of sin and friends when rounded is on.
@@ -1026,8 +1033,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.4f";      % version number of the package
-taylor!:date!* := "11-Dec-2022"; % release date
+taylor!:version := "2.4g";      % version number of the package
+taylor!:date!* := "15-Jan-2023"; % release date
 
 if !*verboseload then
   << terpri ();
