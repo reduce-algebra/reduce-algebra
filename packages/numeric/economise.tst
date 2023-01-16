@@ -47,6 +47,7 @@ economise_series(taylor((sin x - x)/x^3, x, 0, 15),
 economise_series(a0 + a1*x + a2*x^2 + a3*x^3 + a4*x^4 + a5*x^5,
                  x = (u .. v), 4);
 
+on rounded;
 
 % Now I will find a rational function that interpolates to approximate
 % exp x taking exact values at around 20 points across the range 0 ..
@@ -59,6 +60,13 @@ multipoint_pade(exp, 0, log 2, 1.0e-35);
 % Now similarly for log(1+x)/x
 
 procedure ll x; if x = 0 then 1 else log(1+x)/x;
-multipoint_pade(ll, 1/1.03125-1, 1.03125-1, 1.0e-35);
+r := multipoint_pade(ll, 1/1.03125-1, 1.03125-1, 1.0e-35);
+
+% I now illutrate display of the output in the form of hexedecimal
+% double precision floats and "double-double".
+
+prinhexlitlist first r;
+prinhexlitlist2 second r;
+
 
 end;
