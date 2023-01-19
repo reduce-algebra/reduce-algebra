@@ -35,6 +35,14 @@ int(x**9+y+y**x+x,x,0,2);
               5*log(y)
 
 
+int(sqrt(x*(1-x)),x,0,1);
+
+
+ pi
+----
+ 8
+
+
 
 % Collected by Kerry Gaskell, ZIB, 1993/94.
 
@@ -687,7 +695,7 @@ laplace_transform(x,x);
 ----
   2
  s
- 
+
 
 laplace_transform(x^a/factorial(a),x);
 
@@ -714,7 +722,7 @@ laplace_transform(x^k,e^(-a*x),x);
 -------------------------
         k            k
  (a + s) *a + (a + s) *s
-	
+
 
 laplace_transform(cosh(a*x),x);
 
@@ -723,7 +731,7 @@ laplace_transform(cosh(a*x),x);
 ---------
   2    2
  a  - s
-	
+
 
 laplace_transform(1/(2*a^3),sinh(a*x)-sin(a*x),x);
 
@@ -741,7 +749,7 @@ laplace_transform(1/(a^2),1-cos(a*x),x);
 -----------
   2      3
  a *s + s
-	
+
 
 laplace_transform(1/(b^2-a^2),cos(a*x)-cos(b*x),x);
 
@@ -759,7 +767,7 @@ laplace_transform(BesselJ(0,2*sqrt(k*x)),x);
 --------
   k/s
  e   *s
-	
+
 
 laplace_transform(Heaviside(x-1),x);
 
@@ -784,7 +792,7 @@ laplace_transform(1/(k*sqrt(pi)),e^(-x^2/(4*k^2)),x);
      2  2              2  2
     k *s              k *s
  - e     *erf(k*s) + e
-	
+
 
 laplace_transform(1/k,e^(-k^2/(4*x)),x);
 
@@ -802,7 +810,7 @@ laplace_transform(2/(sqrt(pi*x)),BesselK(0,2*sqrt(2*k*x)),x);
                  s
 ---------------------
        sqrt(s)
-	
+
 
 hankel_transform(x,x);
 
@@ -814,7 +822,7 @@ hankel_transform(x,x);
         n - 2    2
  gamma(-------)*s
           2
-	
+
 
 y_transform(x,x);
 
@@ -826,7 +834,7 @@ y_transform(x,x);
          - n + 3          n - 1    2
  gamma(----------)*gamma(-------)*s
            2                2
-	
+
 
 k_transform(x,x);
 
@@ -837,7 +845,7 @@ k_transform(x,x);
 ----------------------------------
                   2
                2*s
-	
+
 
 struveh_transform(x,x);
 
@@ -858,7 +866,7 @@ fourier_sin(e^(-x),x);
 --------
   2
  s  + 1
-	
+
 
 fourier_sin(sqrt(x),e^(-1/2*x),x);
 
@@ -869,7 +877,7 @@ fourier_sin(sqrt(x),e^(-1/2*x),x);
 --------------------------------
               2     3/4
  sqrt(pi)*(4*s  + 1)   *sqrt(2)
-	
+
 
 fourier_sin(1/x,e^(-a*x),x);
 
@@ -877,7 +885,7 @@ fourier_sin(1/x,e^(-a*x),x);
       s
 atan(---)
       a
-	
+
 
 fourier_sin(x^k,x);
 
@@ -888,7 +896,7 @@ fourier_sin(x^k,x);
 ---------------------------------
          k  k
       4*s *2 *gamma( - k)*s
-	
+
 
 fourier_sin(1/(b-a),(e^(-a*x)-e^(-b*x)),x);
 
@@ -939,7 +947,7 @@ fourier_cos(e^(-1/2x),x);
 ----------
     2
  4*s  + 1
-	
+
 
 fourier_cos(x,e^(-x),x);
 
@@ -949,7 +957,7 @@ fourier_cos(x,e^(-x),x);
 ---------------
   4      2
  s  + 2*s  + 1
-	
+
 
 fourier_cos(x,e^(-1/2*x^2),x);
 
@@ -962,7 +970,7 @@ fourier_cos(x,e^(-1/2*x^2),x);
                   2
                  s /2
                 e    *sqrt(2)
-	
+
 
 fourier_cos(2*x^2,e^(-1/2x),x);
 
@@ -972,7 +980,7 @@ fourier_cos(2*x^2,e^(-1/2x),x);
 ---------------------------
      6       4       2
  64*s  + 48*s  + 12*s  + 1
-	
+
 
 fourier_cos(x,e^(-a*x),x);
 
@@ -982,7 +990,7 @@ fourier_cos(x,e^(-a*x),x);
 -------------------
   4      2  2    4
  a  + 2*a *s  + s
-	
+
 
 fourier_cos(x^n,e^(-a*x),x);
 
@@ -993,7 +1001,7 @@ fourier_cos(x^n,e^(-a*x),x);
 -------------------------------------------
               2    2 (n + 1)/2
             (a  + s )
-	
+
 
 fourier_cos(1/x,sin(k*x),x);
 
@@ -1012,7 +1020,7 @@ fourier_cos(1/sqrt(pi*x),cos(2*sqrt(k*x)),x);
                       s                          s
 -----------------------------------------------------
                          2*s
-	
+
 
 fourier_cos(1/(k*sqrt(pi)),e^(-x^2/(4*k^2)),x);
 
@@ -1031,7 +1039,7 @@ fourier_cos(1/(pi*x),sin(2*k*sqrt(x)),x);
        k             k
 intfc(----) + intfs(----)
        s             s
-	
+
 
 fourier_cos(1/(sqrt(pi*x)),e^(-2*k*sqrt(x)),x);
 
@@ -1073,7 +1081,7 @@ laplace_transform(k*a^k/x*BesselJ(k,a*x),x);
 ----------------------
         2    2      k
  (sqrt(a  + s ) + s)
-	
+
 
 fourier_sin(1/x*e^(-3*x),x);
 
@@ -1081,7 +1089,7 @@ fourier_sin(1/x*e^(-3*x),x);
       s
 atan(---)
       3
-	
+
 
 fourier_sin(1/(pi*x)*sin(2*k*sqrt(x)),x);
 
@@ -1101,7 +1109,7 @@ fourier_cos(x^n*e^(-a*x),x);
 -------------------------------------------
               2    2 (n + 1)/2
             (a  + s )
-	
+
 
 fourier_cos(1/(k*sqrt(pi))*e^(-x^2/(4*k^2)),x);
 
