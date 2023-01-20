@@ -159,14 +159,28 @@ ret2: if c then on complex;
 
 symbolic procedure defint1 u; defint11s(car u,cadr u,caddr u,cadddr u);
 
+% FJW, January 2023: defint0 is normally called from mkdint in
+% "int/dint.red", which sets "off precise" to avoid square roots
+% leading to "constant" factors such as abs(p)/p in the result.
+% However, this can cause splitfactors to split out an imaginary
+% "constant" factor from the integrand, which leads to the result
+% being on the wrong branch in the complex plane.  I avoid this by not
+% factoring the integrand, which seems to be the best compromise.
+
 symbolic procedure defint11s(exp,var,llim,ulim);
-  % removes from integrand any factors independent of var, and passes
-  % the dependent factors to defint11.  Based on FACTOR being on.
-   <<% off complex; % not needed here since complex is off already.
-     exp := splitfactors(simp!* aeval exp,var);
-     on complex; % at this point it is safe to turn complex on.
-     multsq(simp!* car exp,
-        defint11(cadr exp,var,llim,ulim,t))>>;
+   % removes from integrand any factors independent of var, and passes
+   % the dependent factors to defint11.  Based on FACTOR being on.
+   % But don't factor the integrand if the constant factor would be
+   % imaginary, i.e. i or (times ... i ...), because this causes
+   % int(sqrt(x*(1-x)),x,0,1) --> -pi/8 when it should be pi/8.
+   begin scalar split_exp := splitfactors(simp!* aeval exp,var);
+      on complex; % at this point it is safe to turn complex on.
+      return if ((x eq 'i or  (eqcar(x, 'times) and memq('i, x)))
+         where x = car split_exp)
+      then defint11(exp,var,llim,ulim,t) % don't factor integrand
+      else multsq(simp!* car split_exp,
+         defint11(cadr split_exp,var,llim,ulim,t))
+   end;
 
 symbolic procedure fxinfinity x;
   if x eq 'infinity then 'inf
@@ -179,19 +193,20 @@ symbolic procedure defint11(exp,var,llim,ulim,dtst);
      scalar m,n;
      if ulim = 'minf or llim = 'inf then
         return defint11({'minus,exp},var,ulim,llim,dtst);
-     exp := simp!* exp;
     % Now the lower limit must be 'minf or a finite value,
     % and the upper limit must be 'inf or a finite value. There are
     % four cases:
     % Upper limit is 'inf.  Convert lower limit to zero if necessary,
     % and use methods for infinite integrals.
      if ulim = 'inf then
-        <<if not(llim member '(0 minf)) then
+       << exp := simp!* exp;
+          if not(llim member '(0 minf)) then
             <<exp := subsq(exp,{var . {'plus,var,llim}}); llim := 0>>;
           go to c0>>;
     % lower limit is 'minf.  Convert this case to upper limit 'inf.
      if llim = 'minf then
-        <<off complex;
+       << exp := simp!* exp;
+          off complex;
           exp := reval prepsq subsq(exp,{var . {'minus,var}});
           llim := reval {'minus,ulim};
           on complex;
@@ -199,7 +214,7 @@ symbolic procedure defint11(exp,var,llim,ulim,dtst);
     % Both limits are finite, so check for indef integral and
     % substitute values if it exists; else check for special forms with
     % finite limits, try substitutions, or abort.
-     r := simpint {prepsq exp,var};
+     r := simpint {exp,var};
      if eqcar(prepsq r,'int) then go to c1;
      p := errorset2 list('subsq, mkquote r, mkquote {var . ulim});
      q := errorset2 list('subsq, mkquote r, mkquote {var . llim});
