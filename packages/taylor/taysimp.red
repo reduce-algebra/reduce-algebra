@@ -88,7 +88,7 @@ symbolic procedure taysimpsq u;
   % We have four possible cases here, as both expressions
   %  may or may not be Taylor kernels.
   %
-  begin scalar nm,dd;
+  begin scalar nm,dd,!*mcd:=t;
     dd := taysimpf denr u;
     if null numr dd then taylor!-error('zero!-denom,'taysimpsq)
      else if taylor!-kernel!-sq!-p dd

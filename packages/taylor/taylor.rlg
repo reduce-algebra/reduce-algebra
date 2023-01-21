@@ -3027,7 +3027,7 @@ log(log(log(x)       + x))
 
 
 
-COMMENT Another example where a logarithm together woth a rule returned a
+COMMENT Another example where a logarithm together with a rule returned a
         non-optimal result.
 
 	This used to return
@@ -3048,8 +3048,8 @@ f := log(log(x) + ww  )
 taylor(f,ww,0,2) where {log(ww) => -x};
 
 
- -1           2             2              3    2       3
-x   - log(x)/x *ww + (log(x) *(x + 2))/(2*x )*ww  + O(ww )
+              2             2              3    2       3
+1/x - log(x)/x *ww + (log(x) *(x + 2))/(2*x )*ww  + O(ww )
 
 
 on mcd;

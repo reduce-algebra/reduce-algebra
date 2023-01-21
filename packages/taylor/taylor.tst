@@ -960,7 +960,7 @@ series_exp := taylor(f,ww,0,1);
 taylortostandard ws;
 
 
-COMMENT Another example where a logarithm together woth a rule returned a
+COMMENT Another example where a logarithm together with a rule returned a
         non-optimal result.
 
 	This used to return

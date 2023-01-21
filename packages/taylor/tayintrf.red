@@ -32,7 +32,7 @@ module tayintrf;
 %*****************************************************************
 
 
-exports simptaylor, simptaylor!*, taylorexpand, TayApplyOpfn$
+exports simptaylor, simptaylor!*, TayApplyOpfn$
 
 imports
 
