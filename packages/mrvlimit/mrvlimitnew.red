@@ -54,12 +54,6 @@ switch trlimit=off;			% off by default
 
 flag('(sqchk),'opfn);
 
-%symbolic procedure max_power(f,x);
-%  if domainp f then 0 else
-%    if mvar f eq x then ldeg f else
-%          max(max_power(lc f,x),max_power(red f,x))
-
-%put('max2,'psopfn,'max_power)
 load_package limits;
 load_package sets;
 
@@ -120,7 +114,7 @@ symbolic procedure mrv!-logsimp exptterm;
 symbolic procedure mrv(u,var);
    begin scalar li2,op,argl;
 
-   if  mrv_constantp(u,var) then return nil
+   if mrv_constantp(u,var) then return nil
     else if u='(list) then return nil
     else if u=var then return {u};
    if eqcar(u,'!*sq) then u := prepsq cadr u;
@@ -242,7 +236,7 @@ symbolic procedure mrv!-expt!-smember(u,v);
 	 if eqcar(caddr u,'minus) then cadr caddr u else {'minus,caddr u}});
 
 symbolic procedure mrv!-expand!-series(f,w);
-   begin scalar s;
+   begin scalar s,coeffs;
       if !*trlimit then <<
 	 prin2!* "In mrv!-leading!-term(";
  	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion of ";
@@ -275,9 +269,9 @@ symbolic procedure mrv!-expand!-series(f,w);
 	 else return {prepsq cdar s,caaaar s};
       s := aeval {'taylor,f,w,0,4};
       s := taylortostandard s;
-      if eqcar(logw,'minus)
-      then s := subeval({{'equal,cadr logw,{'minus,{'log,w}}},s})
-      	 else s := subeval({{'equal,logw,{'log,w}},s});
+%      if eqcar(logw,'minus)
+%      then s := subeval({{'equal,cadr logw,{'minus,{'log,w}}},s})
+%      	 else s := subeval({{'equal,logw,{'log,w}},s});
       coeffs := coeffeval {s,w};
       return {nth(cdr coeffs,lowpow!*+1),lowpow!*};
    end;
@@ -293,7 +287,7 @@ symbolic procedure mrv!-leading!-term(u,var,omega);
    >>;
    result := 
   if mrv_constantp(u,var) then {u,0}
-   else begin scalar e0,s,w,f,logw,coeffs;
+   else begin scalar e0,s,w,f,logw;
       e0 := u;
       omega := for each term in omega conc
 	 if mrv!-expt!-smember(term,e0) then {term};
@@ -350,44 +344,15 @@ symbolic procedure mrv!-sign(u,var);
       %% For x>0, sign(log(x)) = sign(1+x)
       if sign!-of cadr u = -1 then rerror(mrvlimit,2,"Complex limit")
       else mrv!-sign({'plus,-1,cadr u},var)
-   else if eqcar(u,'quotient) and mrv_constantp(cadr u,var)
-   then mrv!-sign(caddr u,var)
+   else if eqcar(u,'quotient) then
+      (if denom!-sign = 0 then rerror(mrvlimit,2,{"Cannot compute the sign of",u})
+        else mrv!-sign(cadr u,var)*denom!-sign)
+      	 where denom!-sign := mrv!-sign(caddr u,var)
    else if eqcar(u,'plus) or eqcar(u,'difference)
    then car mrv!-leading!-term(u,var,nil)
    else rerror(mrvlimit,2,{"Cannot compute the sign of",u});
 	    
 	 
-
-      
-%symbolic procedure flatten(li);
-%  % This procedure turns a list with possibly nested sub_lists into a single
-%  % List with no nested sub-lists. Easier to search this list.
-%  makeflat(li,nil);
-%
-%symbolic procedure makeflat(li,answer);
-%  if null li then nil
-%   else if atom li then li.answer
-%   else if null cdr li then makeflat(car li,answer)
-%   else append(makeflat(car li,answer),makeflat(cdr li,answer));
-%
-%algebraic;
-%procedure flat(li); lisp(flatten li);
-%procedure mkflat(li); lisp(makeflat(li,nil));
-%in "max";
-%trst mrv_maxi;
-
-%symbolic procedure lim(exp,var,val);
-%begin scalar mrv_list, rule;
-%  mrv_list:=mrv1(exp);
-%  if mrv_list = '(list) then rederr "unable to compute mrv set"
-%   else
-%     <<
-%        rule:=list(list ('replaceby, cdr mrv_list,'w));
-%        let rule;
-%     >>;
-%
-%end;
-% need to consider if x belongs to mrv(exp), then follow rest of alg.
 algebraic;
 expr procedure move_up(exp,x);
 %sub({log(x)=x,x=e^x},exp);
@@ -419,16 +384,6 @@ begin scalar ans_list,summ,k,g,c,A;
     >>;
   return ans_list;
 end;
-
-%expr procedure mrv_smallest(li);
-%begin scalar current,k;
-%current:=part(li,1);
-%for k:=1:arglength(li) do <<
-%             if(length(current)>length(part(li,k))) then
-%             current:=part(li,k);
-%                           >>;
-%return current;
-%end;
 
 procedure mrv_smallest(li);
    %% li is a list of expression of the same compatibility class
@@ -480,8 +435,6 @@ symbolic procedure mrv!-limit1(u,var);
    r  >>
       where r := mrv!-limit1a(u,var); 
 
-%operator x;
-%operator series;
 algebraic;
 
 expr procedure mrv_limit(f,var,val);
