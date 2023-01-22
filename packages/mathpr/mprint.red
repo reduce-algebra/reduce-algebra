@@ -116,6 +116,13 @@ symbolic procedure maprint(l,p!*!*);
                   else <<prin2!* "("; prin2!* l; prin2!* ")">>;
                  return l >>
          else if not atom car l then maprint(car l,p)
+         else if p!*!*= 0 and eqcar(l, 'minus) and numberp cadr l then
+           << prin2!* (- cadr l);
+              return l >>
+         else if p!*!* = 0 and eqcar(l, 'minus) and
+            eqcar(cadr l, '!:rd!:) then <<
+              rd!:prin rd!:minus cadr l;
+              return l >> 
          else if ((x := get(car l,'pprifn)) and
                    not(apply2(x,l,p) eq 'failed)) or
                  ((x := get(car l,'prifn)) and
@@ -201,7 +208,7 @@ symbolic procedure exptpri(l,p);
 put('expt,'pprifn,'exptpri);
 
 symbolic procedure inprint(op,p,l);
-   begin scalar x,y,z;
+   begin scalar x,y;
         if op='times and !*nat and null !*asterisk then
         <<op:='times2; put('times2,'infix,get('times,'infix));
           put('times2,'prtch," ")>>;
@@ -286,7 +293,8 @@ symbolic procedure prin2!* u;
                 or (not testing!-width!*
        % The next line controls whether to add a newline before a long id.
        % At present it causes one in front of a number too.
-                   and <<not fixp u and terpri!* t; (m := posn!* #+ n)<=p>>)
+                   and << %not fixp u and
+                          terpri!* t; (m := posn!* #+ n)<=p>>)
                then add_prin_char(u,m)
              % Identifier longer than one line.
               else if testing!-width!*

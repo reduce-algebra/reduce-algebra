@@ -533,7 +533,7 @@ QuadFloat sineSeries[] =
      6.413047783362490814859672111445348908036e-26_Q
 };
 
-QuadFloat sine_of_reduced(QuadFloat x)
+QuadFloat sineReduced(QuadFloat x)
 {   QuadFloat x2 = x*x;
     QuadFloat w = sumSeries(sineSeries,
                             sizeof(sineSeries)/sizeof(sineSeries[0]),
@@ -568,7 +568,7 @@ QuadFloat cosineSeries[] =
     -2.466479292926005187632443253355969820841e-27_Q
 };
 
-QuadFloat cosine_of_reduced(QuadFloat x)
+QuadFloat cosineReduced(QuadFloat x)
 {   QuadFloat x2 = x*x;
     QuadFloat w = sumSeries(cosineSeries,
                             sizeof(cosineSeries)/sizeof(cosineSeries[0]),
@@ -580,68 +580,68 @@ QuadFloat minusPiBy4 = -0.7853981633974483096156608458198757210493_Q;
 QuadFloat piBy4      =  0.7853981633974483096156608458198757210493_Q;
 
 QuadFloat qsin(QuadFloat a)
-{   if (a > minusPiBy4 && a < piBy4) return sine_of_reduced(a);
+{   if (a > minusPiBy4 && a < piBy4) return sineReduced(a);
     int q = 0;
     QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
-            return sine_of_reduced(reduced);
+            return sineReduced(reduced);
         case 1:
-             return cosine_of_reduced(reduced);
+             return cosineReduced(reduced);
         case 2:
-            return -sine_of_reduced(reduced);
+            return -sineReduced(reduced);
         case 3:
-            return -cosine_of_reduced(reduced);
+            return -cosineReduced(reduced);
     }
 }
 
 QuadFloat qcos(QuadFloat a)
-{   if (a > minusPiBy4 && a < piBy4) return cosine_of_reduced(a);
+{   if (a > minusPiBy4 && a < piBy4) return cosineReduced(a);
     int q = 0;
     QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
-            return cosine_of_reduced(reduced);
+            return cosineReduced(reduced);
         case 1:
-            return -sine_of_reduced(reduced);
+            return -sineReduced(reduced);
         case 2:
-            return -cosine_of_reduced(reduced);
+            return -cosineReduced(reduced);
         case 3:
-            return sine_of_reduced(reduced);
+            return sineReduced(reduced);
     }
 }
 
 QuadFloat qtan(QuadFloat a)
 {   if (a > minusPiBy4 && a < piBy4)
-        return sine_of_reduced(a) / cosine_of_reduced(a);
+        return sineReduced(a) / cosineReduced(a);
     int q = 0;
     QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
         case 2:
-            return (sine_of_reduced(reduced) / cosine_of_reduced(reduced));
+            return (sineReduced(reduced) / cosineReduced(reduced));
         case 1:
         case 3:
-             return (-cosine_of_reduced(reduced) / sine_of_reduced(reduced));
+             return (-cosineReduced(reduced) / sineReduced(reduced));
     }
 }
 
 QuadFloat qcot(QuadFloat a)
 {   if (a > minusPiBy4 && a < piBy4)
-        return cosine_of_reduced(a) / sine_of_reduced(a);
+        return cosineReduced(a) / sineReduced(a);
     int q = 0;
     QuadFloat reduced = reduceMod2Pi(a, q);
     switch (q)
     {   default:
         case 0:
         case 2:
-            return cosine_of_reduced(reduced) / sine_of_reduced(reduced);
+            return cosineReduced(reduced) / sineReduced(reduced);
         case 1:
         case 3:
-             return -sine_of_reduced(reduced) / cosine_of_reduced(reduced);
+             return -sineReduced(reduced) / cosineReduced(reduced);
     }
 }
 
@@ -707,22 +707,22 @@ QuadFloat qcosd(QuadFloat a)
         case 0:
             a = (a + QuadFloat(n)) *
                 0.017453292519943295769236907684886127134_Q;
-            return cosine_of_reduced(a);
+            return cosineReduced(a);
         case 1:
         case 2:
             a = (a + QuadFloat(n-90)) *
                 0.017453292519943295769236907684886127134_Q;
-            return -sine_of_reduced(a);
+            return -sineReduced(a);
         case 3:
         case 4:
             a = (a + QuadFloat(n-180)) *
                 0.017453292519943295769236907684886127134_Q;
-            return -cosine_of_reduced(a);
+            return -cosineReduced(a);
         case 5:
         case 6:
             a = (a + QuadFloat(n-270)) *
                 0.017453292519943295769236907684886127134_Q;
-            return sine_of_reduced(a);
+            return sineReduced(a);
     }
 }
 
@@ -739,7 +739,7 @@ QuadFloat qcotd(QuadFloat a)
         case 0:
             a = (a + QuadFloat(n)) *
                          0.017453292519943295769236907684886127134_Q;
-            return cosine_of_reduced(a) / sine_of_reduced(a);
+            return cosineReduced(a) / sineReduced(a);
         case 5:
         case 6:
             n -= 180;
@@ -747,7 +747,7 @@ QuadFloat qcotd(QuadFloat a)
         case 2:
             a = (a + QuadFloat(n-90)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -sine_of_reduced(a) / cosine_of_reduced(a);
+            return -sineReduced(a) / cosineReduced(a);
     }
 }
 
@@ -761,22 +761,22 @@ QuadFloat qcscd(QuadFloat a)
         case 0:
             a = (a + QuadFloat(n)) *
                          0.017453292519943295769236907684886127134_Q;
-            return 1.0_Q / cosine_of_reduced(a);
+            return 1.0_Q / cosineReduced(a);
         case 1:
         case 2:
             a = (a + QuadFloat(n-90)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -1.0_Q / sine_of_reduced(a);
+            return -1.0_Q / sineReduced(a);
         case 3:
         case 4:
             a = (a + QuadFloat(n-180)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -1.0_Q / cosine_of_reduced(a);
+            return -1.0_Q / cosineReduced(a);
         case 5:
         case 6:
             a = (a + QuadFloat(n-270)) *
                          0.017453292519943295769236907684886127134_Q;
-            return 1.0_Q / sine_of_reduced(a);
+            return 1.0_Q / sineReduced(a);
     }
 }
 
@@ -790,22 +790,22 @@ QuadFloat qsecd(QuadFloat a)
         case 0:
             a = (a + QuadFloat(n)) *
                          0.017453292519943295769236907684886127134_Q;
-            return 1.0_Q / cosine_of_reduced(a);
+            return 1.0_Q / cosineReduced(a);
         case 1:
         case 2:
             a = (a + QuadFloat(n-90)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -1.0_Q / sine_of_reduced(a);
+            return -1.0_Q / sineReduced(a);
         case 3:
         case 4:
             a = (a + QuadFloat(n-180)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -1.0_Q / cosine_of_reduced(a);
+            return -1.0_Q / cosineReduced(a);
         case 5:
         case 6:
             a = (a + QuadFloat(n-270)) *
                          0.017453292519943295769236907684886127134_Q;
-            return 1.0_Q / sine_of_reduced(a);
+            return 1.0_Q / sineReduced(a);
     }
 }
 
@@ -819,22 +819,22 @@ QuadFloat qsind(QuadFloat a)
         case 0:
             a = (a + QuadFloat(n)) *
                          0.017453292519943295769236907684886127134_Q;
-            return sine_of_reduced(a);
+            return sineReduced(a);
         case 1:
         case 2:
             a = (a + QuadFloat(n-90)) *
                          0.017453292519943295769236907684886127134_Q;
-            return cosine_of_reduced(a);
+            return cosineReduced(a);
         case 3:
         case 4:
             a = (a + QuadFloat(n-180)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -sine_of_reduced(a);
+            return -sineReduced(a);
         case 5:
         case 6:
             a = (a + QuadFloat(n-270)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -cosine_of_reduced(a);
+            return -cosineReduced(a);
     }
 }
 
@@ -851,7 +851,7 @@ QuadFloat qtand(QuadFloat a)
         case 0:
             a = (a + QuadFloat(n)) *
                          0.017453292519943295769236907684886127134_Q;
-            return sine_of_reduced(a) / cosine_of_reduced(a);
+            return sineReduced(a) / cosineReduced(a);
         case 5:
         case 6:
             n -= 180;
@@ -859,7 +859,7 @@ QuadFloat qtand(QuadFloat a)
         case 2:
             a = (a + QuadFloat(n-90)) *
                          0.017453292519943295769236907684886127134_Q;
-            return -cosine_of_reduced(a) / sine_of_reduced(a);
+            return -cosineReduced(a) / sineReduced(a);
     }
 }
 
@@ -1307,7 +1307,7 @@ QuadFloat sinhSeriesQ[] =
    -0.00000000001651946482822164798011442964050758613972_Q
 };
 
-QuadFloat sinh_of_reduced(QuadFloat x)
+QuadFloat sinhReduced(QuadFloat x)
 {   return x * sumSeries(sinhSeriesP,
                          sizeof(sinhSeriesP)/sizeof(sinhSeriesP[0]),
                          x) /
@@ -1318,7 +1318,7 @@ QuadFloat sinh_of_reduced(QuadFloat x)
 
 QuadFloat qsinh(QuadFloat a)
 {   if (a < 0.0_Q) return -qsinh(-a);
-    else if (a < 0.5_Q) return sinh_of_reduced(a);
+    else if (a < 0.5_Q) return sinhReduced(a);
     else if (a < 50.0_Q)
     {   a = qexp(a);
         return 0.5_Q*(a - 1.0_Q/a);
@@ -1445,37 +1445,116 @@ void tripleSeries(double xhi, double xmid, double xlo,
 }
 
 QuadFloat qexpt(QuadFloat a, QuadFloat b)
-{   return QuadFloat(f128_NaN);
+{
+#pragma warning ("qexpt not coded yet")
+    return QuadFloat(f128_NaN);
+}
+
+// Inverse hyperbolic are not yet sorted out! @@@@@@@@@@@@@@@@@@@@@
+
+QuadFloat qasinh(QuadFloat a)
+{   if (a < 0.0_Q) return -qasinh(-a);
+    else if (a > 1.0e18_Q)
+        return qln(a) + 0.69314718055994530941723212145817656808_Q;
+// The accuracy for x < 1 will be poor - I need a special scheme for that
+// and it MAY be that it should depend on atanh?
+    else return qln(a + qsqrt(a*a + 1.0_Q));
+} 
+
+QuadFloat acoshSeriesP[] =
+{   2.0_Q,
+    4.573726520452417807171268768515610292387_Q,
+    4.411554549735021309090012618236551828362_Q,
+    2.334647242667432986985636405873008473724_Q,
+    0.738550977806416204483478973977232533429_Q,
+    0.1426637934980780136295706871955481199867_Q,
+    0.01648764899985040010627718720762701603674_Q,
+    0.001068536231878337570000884880056358445833_Q,
+    0.00003386813964905144839271200665865412695975_Q,
+    0.0000003843822583643860106237617677513481365136_Q,
+    0.0000000004299955549509479726768648960401825419524_Q
+};
+
+QuadFloat acoshSeriesQ[] =
+{   1.0_Q,
+    2.453529926892875570252301050924471009528_Q,
+    2.570254484905212138475945373161361083829_Q,
+    1.500939308575060554719659210478193611197_Q,
+    0.5351695701176069887504830684078168616219_Q,
+    0.1199979602926230668613544320641974706121_Q,
+    0.01680435224969007983342221596953450298294_Q,
+    0.00141169791290463882285466771145620712303_Q,
+    0.00006531911457879437174343163614406494565249_Q,
+    0.000001404104676953070664698314007224770322481_Q,
+    0.00000000934657083565342791375294042289593318608_Q
+};
+
+QuadFloat acoshReduced(QuadFloat a)   // 0 <= a < 0.125
+{   return a * (sumSeries(acoshSeriesP,
+                          sizeof(acoshSeriesP)/sizeof(acoshSeriesP[0]),
+                          a) /
+                sumSeries(acoshSeriesQ,
+                          sizeof(acoshSeriesQ)/sizeof(acoshSeriesQ[0]),
+                          a));
 }
 
 QuadFloat qacosh(QuadFloat a)
-{   return QuadFloat(std::acosh(static_cast<double>(a)));
+{   if (a < 1.0_Q) return QuadFloat(f128_NaN);
+    else if (a > 1.0e18_Q)
+        return qln(a) + 0.69314718055994530941723212145817656808_Q;
+    else if (a < 1.5_Q)
+        return qsqrt(acoshReduced(a - 1.0_Q));
+    else return qln(a + qsqrt((a - 1.0_Q)*(a + 1.0_Q)));
 }
 
-QuadFloat qacoth(QuadFloat a)
-{   return QuadFloat(f128_NaN);
-}
+// I should probably model atanh() code on that for atan, using
+//       atanh(x) = atanh(y) + atanh((x-y)/(1-x*y))
+// or    asinh(x) = asinh(v) + asinh(u*sqrt(1+v^2) - v*sqrt(1+u^2))
+// I might use one of
+//   asinh(x) = atanh(x/sqrt(1+x^2))
+//   atanh(x) = asinh(x/sqrt(1-x^2))
 
-QuadFloat qacsch(QuadFloat a)
-{   return QuadFloat(f128_NaN);
-}
+QuadFloat atanhSeriesP[] =
+{   1.0_Q
+};
 
-QuadFloat qasech(QuadFloat a)
-{   return QuadFloat(f128_NaN);
-}
+QuadFloat atanhSeriesQ[] =
+{   1.0_Q
+};
 
-QuadFloat qasinh(QuadFloat a)
-{   return QuadFloat(std::asinh(static_cast<double>(a)));
+QuadFloat atanhReduced(QuadFloat a)
+{   return a * (sumSeries(atanhSeriesP,
+                          sizeof(atanhSeriesP)/sizeof(atanhSeriesP[0]),
+                          a) /
+                sumSeries(atanhSeriesQ,
+                          sizeof(atanhSeriesQ)/sizeof(atanhSeriesQ[0]),
+                          a));
 }
 
 QuadFloat qatanh(QuadFloat a)
-{   return QuadFloat(std::atanh(static_cast<double>(a)));
+{   if (a < 0.0_Q) return -qatanh(-a);
+    else if (a >= 1.0_Q) return QuadFloat(f128_NaN);
+// At present the accuract for small a is poor.
+//  else if (a < 0.5_Q) return atanhReduced(a);
+    else return 0.5_Q*qln((1.0_Q + a)/(1.0_Q - a));
+}
+
+QuadFloat qacoth(QuadFloat a)
+{   return qatanh(1.0_Q / a);
+}
+
+QuadFloat qacsch(QuadFloat a)
+{   return qacosh(1.0_Q / a);
+}
+
+QuadFloat qasech(QuadFloat a)
+{   return qasinh(1.0_Q/a);
 }
 
 QuadFloat qcbrt(QuadFloat a)
 {   if (a.isinf() || a.isnan() || a==0.0_Q) return a;
 // I do some scaing here some that the the double precision value I
-// work through will ne in range.
+// work through will be in range.
     int x = a.exponent();
     QuadFloat scale = 1.0_Q .set_exponent(x/3);
     a = a / (scale*scale*scale);

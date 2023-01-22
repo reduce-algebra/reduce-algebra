@@ -62,7 +62,7 @@ multipoint_pade(exp, 0, log 2, 1.0e-35);
 procedure ll x; if x = 0 then 1 else log(1+x)/x;
 r := multipoint_pade(ll, 1/1.03125-1, 1.03125-1, 1.0e-35);
 
-% I now illutrate display of the output in the form of hexedecimal
+% I now illutrate display of the output in the form of hexadecimal
 % double precision floats and "double-double".
 
 prinhexlitlist first r;

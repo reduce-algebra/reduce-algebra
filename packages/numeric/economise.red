@@ -169,6 +169,8 @@ symbolic procedure collect_evens u;
 %    ecomomise_series(series, variable(and range), degree/error limit,
 %                     ?indication is results is an odd or ecen series);
 
+fluid '(ps!:exp!-lim);
+
 symbolic procedure economise_series u;
   begin
     scalar ser, var, lo, hi, eps, nterms, stop,
@@ -323,8 +325,8 @@ put('economise_series, 'psopfn, 'economise_series);
 % 0/0. Well in that case it would need to be evaluated as the limit as x
 % approached x_k and arranging that just involved a bit of differentiation.
                                      
-% I limit myself to a maximum of 50 points here...
-array xx(50), a(50), p(50), q(50);
+% I limit myself to a maximum of 100 points here...
+array !~pade_xx(100), !~pade_a(100), !~pade_p(100), !~pade_q(100);
 
 fluid '(save_precision save_rounded);
 
@@ -337,6 +339,7 @@ algebraic procedure multipoint_pade(f, u, v, accuracy);
     scalar N, Nlimit, targetErr, stopOnErr, worst, err, res;
     if accuracy > 1 then <<
        N := fix accuracy;
+       if N > 100 then rederr "multipoint_pade precision must be at most 100";
        stopOnErr := 0 >>
     else <<
        N := 2;
@@ -348,45 +351,79 @@ algebraic procedure multipoint_pade(f, u, v, accuracy);
     lisp (save_precision := precision (2*precision 0));
     on rounded;
     while (stopOnErr=0 and N<=fix accuracy) or
-          (stopOnErr=1 and worst>targetErr and N<50) do <<
+          (stopOnErr=1 and worst>targetErr and N<100) do <<
 
       for i:=0:N-1 do
-        xx(i) := u + i*(v-u)/(N-1);
+        !~pade_xx(i) := u + i*(v-u)/(N-1);
 
-      a(0) := f(xx(0));
-      a(1) := (xx(1)-xx(0))/(f(xx(1)) - a(0));
+      !~pade_a(0) := f(!~pade_xx(0));
+      !~pade_a(1) := (!~pade_xx(1)-!~pade_xx(0))/(f(!~pade_xx(1)) - !~pade_a(0));
 
-      p(0) := a 0;
-      q(0) := 1;
-      p(1) := a 0 * a 1 + (x - xx 0);
-      q(1) := a 1;
+      !~pade_p(0) := !~pade_a 0;
+      !~pade_q(0) := 1;
+      !~pade_p(1) := !~pade_a 0 * !~pade_a 1 + (x - !~pade_xx 0);
+      !~pade_q(1) := !~pade_a 1;
 
       for i := 2:N-1 do <<
-        a(i) := (xx(i)-xx(i-1))*(f(xx(i))*sub(x=xx(i),Q(i-2)) -
-                                          sub(x=xx(i),P(i-2))) /
-                (sub(x=xx(i),P(i-1)) - f(xx(i))*sub(x=xx(i),Q(i-1)));
+        !~pade_a(i) := (!~pade_xx(i)-!~pade_xx(i-1))*(f(!~pade_xx(i))*sub(x=!~pade_xx(i),!~pade_q(i-2)) -
+                                          sub(x=!~pade_xx(i),!~pade_p(i-2))) /
+                (sub(x=!~pade_xx(i),!~pade_p(i-1)) - f(!~pade_xx(i))*sub(x=!~pade_xx(i),!~pade_q(i-1)));
 
-        p(i) := a i * p(i-1) + (x - xx(i-1))*p(i-2);
-        q(i) := a i * q(i-1) + (x - xx(i-1))*q(i-2);
+        !~pade_p(i) := !~pade_a i * !~pade_p(i-1) + (x - !~pade_xx(i-1))*!~pade_p(i-2);
+        !~pade_q(i) := !~pade_a i * !~pade_q(i-1) + (x - !~pade_xx(i-1))*!~pade_q(i-2);
         worst := 0;
-        for j := 0 : 20*N do <<
-          z := u + j*(v-u)/(20*N);
-          err := abs(f(z) - sub(x=z, p(i))/sub(x=z, q(i)));
+        for j := 0 : 50*N do <<
+          z := u + j*(v-u)/(50*N);
+          err := abs(f(z) - sub(x=z, !~pade_p(i))/sub(x=z, !~pade_q(i)));
           if err > worst then worst := err >> >>;
 
       if stopOnErr = 1 then <<
          precision 6;
-         write "With N=", N, " error = ", worst;
+         lisp assgnpri("With N=", nil, nil);
+         lisp assgnpri(N, nil, nil);
+         lisp assgnpri(" error = ", nil, nil);
+         lisp assgnpri(worst, nil, nil);
+         lisp terpri!* nil;
          lisp precision (2*save_precision) >>;
       N := N+1 >>;
     precision 6;
     write "Order ", N-1, "  Worst error = ", worst;
     lisp precision save_precision;
-    lead := sub(x=0, Q(N-2));
-    res := {coeff(P(N-2)/lead, x),
-            coeff(Q(N-2)/lead, x)};
+    lead := sub(x=0, !~pade_q(N-2));
+    res := {coeff(!~pade_p(N-2)/lead, x),
+            coeff(!~pade_q(N-2)/lead, x)};
     lisp if not save_rounded then off rounded;
     return res;
+  end;
+
+% r should be the output from multipoint_pade. This evaluates it at
+% x which can be symbolic or numeric.
+% Very typically evaluate_pade will return an ugly result where numerator
+% and denominator will have been normalised more based on the highest
+% degree terms rather than the constant terms (which will oftent start off
+% with values close to 1). So separating out numerator and denominator
+% separately using num_pade and den_pade may often feel more useful.
+
+algebraic procedure evaluate_pade(r, x);
+  begin
+    scalar p:=0, q:=0;
+    foreach v in reverse first r do p := p*x + v;
+    foreach v in reverse second r do q := q*x + v;
+    return p/q;
+  end;
+
+algebraic procedure num_pade(r, x);
+  begin
+    scalar p:=0;
+    foreach v in reverse first r do p := p*x + v;
+    return p;
+  end;
+
+algebraic procedure den_pade(r, x);
+  begin
+    scalar q:=0;
+    foreach v in reverse second r do q := q*x + v;
+    return q;
   end;
 
 % One of the uses of the above will be to generate C or C++ code for
@@ -398,7 +435,10 @@ algebraic procedure multipoint_pade(f, u, v, accuracy);
 % "triple double" format.
 
 % This function aprinhex is present to ensure that this code is
-% valid under PSL as well as CSL.
+% valid under PSL as well as CSL (CSL has a built in "prinhex" function.
+% psl has outputbase!*, but rather than having code that is conditional
+% to select between the two scheme I just do things explicitly and
+% not terribly efficiently here. 
 
 symbolic procedure aprinhex x;
   if not fixp x then rederr "aprinhex only handles integer arguments"
@@ -427,17 +467,17 @@ flag('(aprinhex), 'opfn);
 % be happy with integers or fractions as well as floats. You need to
 % set "precision" to suit your needs.
 
-algebraic procedure prinhexlit xx;
+algebraic procedure prinhexlit !~pade_xx;
   begin
     scalar x, bx, hi, lo, ix, err, save_rounded;
     lisp (save_rounded := !*rounded);
     on rounded;
-    if xx = 0.0 then lisp prin2 "0.0"
+    if !~pade_xx = 0.0 then lisp prin2 "0.0"
     else <<
       bx := 0;
       hi := 2.0^53;
       lo := 2.0^52;
-      x := xx;
+      x := !~pade_xx;
       if x < 0 then <<
          lisp prin2 "-";
          x := -x >>;
@@ -455,10 +495,10 @@ algebraic procedure prinhexlit xx;
       aprinhex ix;
       lisp prin2 "p";
       lisp prin2 bx;
-      if xx < 0 then ix := -ix;
-      xx := xx - ix*2.0^bx;
+      if !~pade_xx < 0 then ix := -ix;
+      !~pade_xx := !~pade_xx - ix*2.0^bx;
       lisp if not save_rounded then off rounded >>;
-    return xx;
+    return !~pade_xx;
   end;
 
 algebraic procedure prinhexlitlist l;
@@ -518,4 +558,3 @@ algebraic procedure prinhexlitlist3 l;
 endmodule;
 
 end;
-

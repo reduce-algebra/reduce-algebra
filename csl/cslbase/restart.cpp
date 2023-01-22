@@ -819,10 +819,6 @@ static void cold_setup()
 // enough for the largest possible number.
     fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL,
                                           SPID_NOPROP);
-#ifdef ARITHLIB
-    karaSize = 0;
-    karaWork = nil;
-#endif // ARITHLIB
 // The next bit is a horrid fudge, used in read.c (function orderp) to
 // support REDUCE. It ensures that the flag 'noncom is subject to an
 // optimisation for flag/flagp that allows it to be tested for using a
@@ -2095,6 +2091,13 @@ void setup(int restart_flag, double store_size)
 
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();
+#ifdef ARITHLIB
+// Note that the vector pointed at within arithlib is based on karaWork
+// but it must not be moved if garbage collection occurs while it is
+// in use. The conservative GC will ensure this is so.
+    karaSize = 0;
+    karaWork = nil;
+#endif // ARITHLIB
 
     if (init_flags & INIT_QUIET) Lverbos(nil, fixnum_of_int(1));
     if (init_flags & INIT_VERBOSE) Lverbos(nil, fixnum_of_int(3));
