@@ -60,7 +60,7 @@ fluid '(!*taylorkeeporiginal);
 put ('taylor!*, 'subfunc, 'subsubtaylor);
 
 symbolic procedure subsubtaylor(l,v);
-  begin scalar x,clist,delete_list,tp,pl;
+  begin scalar x,clist,delete_list,tp,pl,!*mcd:=t;
     clist := for each u in taycoefflist v collect
                taymakecoeff(taycfpl u,subsq(taycfsq u,l));
     tp := taytemplate v;
