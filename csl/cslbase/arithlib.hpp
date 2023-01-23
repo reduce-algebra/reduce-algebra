@@ -8398,20 +8398,6 @@ inline void karatsubaCore(const uint64_t* u, size_t N,
         if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
         mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
     }
-#if 0
-    display("u", u, N);
-    display("v", v, N);
-    display("du", du, H2);
-    display("dv", dv, H2);
-    display("t", t, 2*H2);
-    display("w", w, 2*N);
-    rdisplay("u", u, N);
-    rdisplay("v", v, N);
-    rdisplay("du", du, H2);
-    rdisplay("dv", dv, H2);
-    rdisplay("t", t, 2*H2);
-    rdisplay("w", w, 2*N);
-#endif
     std::uint64_t c = addWithCarry(w, t, t, H2); // add in low and high..
     c = addWithCarry(w+H2, t+H2, c, t+H2, H2);   // ..products from earlier.
     std::uint64_t cx = addWithCarry(w+2*H2, t, t, H1);
