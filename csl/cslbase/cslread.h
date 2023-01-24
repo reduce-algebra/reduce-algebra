@@ -141,11 +141,7 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 // next larger or smaller one rapidly.
 
 INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
-#if SIXTY_FOUR_BIT
-INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[48]; // 562949953421231
-#else // SIXTY_FOUR_BIT
 INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[30]; // 2147483647
-#endif // SIXTY_FOUR_BIT
 
 #endif // header_read_h
 
