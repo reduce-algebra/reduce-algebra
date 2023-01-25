@@ -265,8 +265,10 @@ inline FloatType floatWant(Header h)
         return WANT_SINGLE_FLOAT;
     case DOUBLE_FLOAT_HEADER:
         return WANT_DOUBLE_FLOAT;
+#ifdef HAVE_SOFTFLOAT
     case LONG_FLOAT_HEADER:
         return WANT_LONG_FLOAT;
+#endif
     default:
         my_abort("bad header for boxed floating point number");
     }
@@ -897,8 +899,6 @@ stgclass type name(LispObject a1)                                   \
             return name##_f(a1);                                    \
         case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1);                                    \
-        case LONG_FLOAT_HEADER:                                     \
-            return name##_l(a1);                                    \
         default:                                                    \
             return static_cast<type>(                               \
                 aerror1("bad arg for " #name, a1));                 \
@@ -939,8 +939,6 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return name##_f(a1, a2);                                \
         case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1, a2);                                \
-        case LONG_FLOAT_HEADER:                                     \
-            return name##_l(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(aerror2("bad arg for " #rawname, a1, a2)); \
         }                                                           \
@@ -992,8 +990,6 @@ stgclass type name(LispObject a1, LispObject a2)                    \
             return name##_f(a1, a2);                                \
         case DOUBLE_FLOAT_HEADER:                                   \
             return name##_d(a1, a2);                                \
-        case LONG_FLOAT_HEADER:                                     \
-            return name##_l(a1, a2);                                \
         default:                                                    \
             return static_cast<type>(                               \
                 aerror2("bad arg for " #name, a1, a2));             \

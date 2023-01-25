@@ -261,7 +261,7 @@ constexpr inline auto goodPrime(int n)
 
 #ifdef DEFINE_GOODPRIMES
 
-constexpr inline uint64_t goodPrimes[51] =
+constexpr inline uint64_t goodPrimes[31] =
 {   goodPrime( 0), goodPrime( 1), goodPrime( 2), goodPrime( 3),
     goodPrime( 4), goodPrime( 5), goodPrime( 6), goodPrime( 7),
     goodPrime( 8), goodPrime( 9), goodPrime(10), goodPrime(11),
@@ -269,16 +269,11 @@ constexpr inline uint64_t goodPrimes[51] =
     goodPrime(16), goodPrime(17), goodPrime(18), goodPrime(19),
     goodPrime(20), goodPrime(21), goodPrime(22), goodPrime(23),
     goodPrime(24), goodPrime(25), goodPrime(26), goodPrime(27),
-    goodPrime(28), goodPrime(29), goodPrime(30), goodPrime(31),
-    goodPrime(32), goodPrime(33), goodPrime(34), goodPrime(35),
-    goodPrime(36), goodPrime(37), goodPrime(38), goodPrime(39),
-    goodPrime(40), goodPrime(41), goodPrime(42), goodPrime(43),
-    goodPrime(44), goodPrime(45), goodPrime(46), goodPrime(47),
-    goodPrime(48), goodPrime(49), goodPrime(50)
+    goodPrime(28), goodPrime(29), goodPrime(30)
 };
 
 #else // DEFINE_GOODPRIMES
-extern uint64_t goodPrimes[51];
+extern uint64_t goodPrimes[31];
 #endif // DEFINE_GOODPRIMES
 
 constexpr inline unsigned int goodPrimesCount =

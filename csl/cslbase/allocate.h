@@ -134,7 +134,8 @@ inline const char* Addr(uintptr_t p)
     {   std::strcpy(r, "nil");
         return r;
     }
-    std::snprintf(r, 40, "%#" PRIxPTR "/%" PRIdPTR, p, p);
+    std::snprintf(r, 40, "%#" PRIx64 "/%" PRId64,
+        static_cast<uint64_t>(p), static_cast<uint64_t>(p));
     return r;
 }
 
