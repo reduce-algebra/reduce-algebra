@@ -179,6 +179,13 @@ symbolic procedure mrv!-rewrite(u,var,omega,w);
       omega := sort(omega, function mrv!-ordp);
       %% find the smallest subexpression
       g := mrv!-smallest omega;
+      if !*trlimit then <<
+      	 prin2!* "In mrv!-rewrite(";
+      	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): Rewriting ";
+	 maprin u; terpri!* t;
+	 prin2!* " omega is "; maprin ('list . omega); terpri!* t;
+	 prin2!* "Smallest subexpression is "; maprin g; terpri!* t;
+      >>;
       logw := logg := mrv!-logsimp g;
       s := mrv!-sign(logg,var);
       if s=1 then << w := {'expt,w,-1}; logw := {'minus,logw} >>;
@@ -250,7 +257,9 @@ symbolic procedure mrv!-expand!-series(f,w);
 	    prin2!* "Error "; prin2!* s; prin2!* " during Taylor expansion of";
 	    mathprint f;
 	 >>;
-	 rerror(mrvlimit,3,{"Error in Taylor expansion"}) >>
+	 rerror(mrvlimit,3,{"Error in Taylor expansion"});
+	 return list 
+      >>
       else if not kernp (s := car s) then <<
 	 if !*trlimit then <<
 	    terpri!* t;
@@ -260,7 +269,13 @@ symbolic procedure mrv!-expand!-series(f,w);
 	    printsq s;
 	    terpri!* t
 	 >>;
-	 rerror(mrvlimit,3,{"Error in Taylor expansion"})>>;
+	 rerror(mrvlimit,3,{"mrv_limit: Error in Taylor expansion"})>>
+      else if !*trlimit then <<
+	 prin2!* "In mrv!-leading!-term(";
+ 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion is ";
+      	 printsq s;
+      	 terpri!* t;
+         >>;
 %      resetklist('taylor!*, oldklist);
       s := mvar numr s;
       s := cadr s;
@@ -279,11 +294,12 @@ symbolic procedure mrv!-expand!-series(f,w);
 symbolic procedure mrv!-leading!-term(u,var,omega);
    (lambda (result,!*mrv!-recursion!-level!*);
    <<if !*trlimit then <<
+      terpri!* t;
       prin2!* "Entering mrv!-leading!-term(";
       prin2!* !*mrv!-recursion!-level!*; prin2!* ") for ";
       maprin u; terpri!* t;
       prin2!* "w.r.t. var "; maprin var; terpri!* t;
-      prin2!* "Omega set = "; maprin ('list . omega); terpri!* t;
+      prin2!* "omega = "; maprin ('list . omega); terpri!* t;
    >>;
    result := 
   if mrv_constantp(u,var) then {u,0}
@@ -292,6 +308,13 @@ symbolic procedure mrv!-leading!-term(u,var,omega);
       omega := for each term in omega conc
 	 if mrv!-expt!-smember(term,e0) then {term};
       if null omega then omega := mrv(e0,var);
+      if !*trlimit then <<
+      	 prin2!* "Omega set of ";
+      	 maprin e0;
+      	 prin2!* " is ";
+	 maprin ('list . omega);
+	 terpri!* t;
+      >>;
       if var member omega
       then return mrv!-movedown(mrv!-leading!-term(mrv!-moveup(e0,var),var,
 	 for each term in omega collect mrv!-moveup(term,var)),var);
@@ -349,7 +372,7 @@ symbolic procedure mrv!-sign(u,var);
         else mrv!-sign(cadr u,var)*denom!-sign)
       	 where denom!-sign := mrv!-sign(caddr u,var)
    else if eqcar(u,'plus) or eqcar(u,'difference)
-   then car mrv!-leading!-term(u,var,nil)
+   then mrv!-sign(car mrv!-leading!-term(u,var,nil),var)
    else rerror(mrvlimit,2,{"Cannot compute the sign of",u});
 	    
 	 
