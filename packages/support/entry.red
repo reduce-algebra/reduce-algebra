@@ -53,7 +53,7 @@ symbolic procedure do!-autoload(name, u, loadname);
        eqcar(w, 'lambda) and
        not atom (w := cddr w) and
        eqcar(car w, 'do!-autoload) then <<
-       lprim list("Autoloading for", name, "did not defined it"); 
+       lprim list("Autoloading for", name, "did not define it");
        error(99, list("Presumed build failure:", name, loadname)) >>;
     return lispapply(name, u)
   end;
@@ -158,7 +158,7 @@ if 'psl memq lispsystem!* then defautoload(lap,compiler)
 
 remd 'crefon;  % don't use PSL version
 
-% Protect against "off cref;" calling crefoff before the rcref module 
+% Protect against "off cref;" calling crefoff before the rcref module
 % is loaded.
 put('cref,'simpfg,'((t (crefon))
                     (nil (and (getd (quote crefoff)) (crefoff)))));
@@ -470,7 +470,7 @@ put('chebyshev_df,'psopfn,'(lambda(u)(chebysheveval u 'df)));
 
 defautoload(intrdeval,numeric);
 put('num_int,'psopfn,'intrdeval);
-      
+
 defautoload(fiteval,numeric);
 put('num_fit,'psopfn,'fiteval);
 
@@ -742,7 +742,7 @@ switch zb_factor=on, zb_timer,zb_proof, zb_trace,zb_inhomogeneous;
 
 defautoload(gosper!-eval,zeilberg);
 
-put ('gosper,'psopfn,'gosper!-eval); 
+put ('gosper,'psopfn,'gosper!-eval);
 
 defautoload(extended_gosper!-eval,zeilberg);
 
@@ -952,7 +952,7 @@ deflist('((qpochhammer simpiden) (qbrackets simpiden) (qfac simpiden)
 defautoload(qpsihyperterm,qsum,expr,5);
 
 defautoload(qphihyperterm,qsum,expr,5);
-	     
+
 flag('(qphihyperterm qpsihyperterm),'opfn);
 
 defautoload(qgosper,qsum);
@@ -991,7 +991,7 @@ flag('(down_qratio up_qratio), 'opfn);
      defautoload_operator(jacobicd, ellipfn);
      defautoload_operator(jacobidc, ellipfn);
      defautoload_operator(jacobie,  ellipfn);
-% Elliptic integrals     
+% Elliptic integrals
      defautoload_operator(elliptice,       ellipfn);
      defautoload_operator(elliptice!',     ellipfn);
      defautoload_operator(ellipticf,       ellipfn);
@@ -1015,7 +1015,7 @@ flag('(down_qratio up_qratio), 'opfn);
      defautoload_operator(arcds, ellipfn);
      defautoload_operator(arccd, ellipfn);
      defautoload_operator(arcdc, ellipfn);
-% Weierstrassian elliptic and sigma functions 
+% Weierstrassian elliptic and sigma functions
      defautoload_operator(weierstrass, ellipfn);
      defautoload_operator(weierstrass1, ellipfn);
      defautoload_operator(weierstrasszeta, ellipfn);
@@ -1024,7 +1024,7 @@ flag('(down_qratio up_qratio), 'opfn);
      defautoload_operator(weierstrass_sigma1, ellipfn);
      defautoload_operator(weierstrass_sigma2, ellipfn);
      defautoload_operator(weierstrass_sigma3, ellipfn);
-    
+
 % specfn2 module entry points
 
 defautoload_operator(hypergeometric,(specfn specfn2));

@@ -146,7 +146,8 @@ case $a in
   case "`uname -s` `uname -m`" in
   *Darwin*arm64*)
     L="$L ./libraries/libffi-for-mac/libffi-3.3-arm64"
-    L="$L ./libraries/libffi-for-mac/libffi-3.3-x86_6464"
+    L="$L ./libraries/libffi-for-mac/libffi-3.3-x86_64"
+    L="$L ./libraries/libffi"
     ;;
   *)
     L="$L ./libraries/libffi"

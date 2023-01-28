@@ -1,7 +1,7 @@
 % "csl/new-embedded/for-emscripten/package.map"
 
 %**************************************************************************
-%* Copyright (C) 2022, the REDUCE developers                              *
+%* Copyright (C) 2022-2023, the REDUCE developers                         *
 %*                                                                        *
 %* Redistribution and use in source and binary forms, with or without     *
 %* modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
 %(atensor       "atensor"     core      test                 csl psl)
  (avector       "avector"     core      test                 csl psl)
 %(invbase       "invbase"     core      test                 csl psl)
-%(misc          "misc"        core                           csl psl)
+ (misc          "misc"        core                           csl psl)
 %(boolean       "misc"        core      test                 csl psl)
 %(cedit         "misc"        core                           csl psl)
 %(rcref         "misc"        core                           csl psl)
@@ -95,6 +95,7 @@
 %(fide1         "fide"                                       csl psl)
 %(fide          "fide"                  test                 csl psl)
 %(numeric       "numeric"               test                 csl psl)
+%(economise     "numeric"               test                 csl psl)
 %(randpoly      "misc"                  test                 csl psl)
 %(reacteqn      "misc"                  test                 csl psl)
 %(roots         "roots"                 test                 csl psl)
@@ -201,7 +202,9 @@
 %(cde           "cde"                   test                 csl psl)
 %(sstools       "sstools"               test                 csl psl)
 %(coeff2        "misc"                                       csl psl)
-%(heugcd        "heugcd"               test                 csl psl)
+%(heugcd        "heugcd"                test                 csl psl)
+%(grinder       "hephys"                                     csl psl)
+%(f5            "f5"                    test                 csl psl)
 )
 
 % End of package.map
