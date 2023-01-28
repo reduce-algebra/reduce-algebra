@@ -599,9 +599,9 @@ c_exp := co1(dv3)
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: dummy  0  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.01+0.04 seconds
-real 0.19
-user 0.00
-sys 0.09
+
+End of Lisp run after 0.06+0.00 seconds

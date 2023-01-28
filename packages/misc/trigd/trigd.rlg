@@ -468,7 +468,7 @@ acotd(2)+acotd(-2), asecd(-2/sqrt(3))};
 reslist := {atan2d(sqrt 3-1, sqrt 3+1), atan2d( -(1+sqrt 3), 1-sqrt 3)};
 
 
-reslist := {15.0, - 105.0}
+reslist := {15.0,-105.0}
 
 sind(second reslist)+ sqrt(2)/4*(sqrt 3+1);
 
@@ -524,7 +524,7 @@ on complex;
 {argd(1+i), argd(-1-i), argd(1-sqrt(3)*i)};
 
 
-{45.0, - 135.0, - 60.0}
+{45.0,-135.0,-60.0}
  
 
 reslist := {acotd(3i), acotd(-3i), atand(3i)};
@@ -686,7 +686,7 @@ on complex;
 {argd(1+i), argd(-1-i), argd(1-sqrt(3)*i)};
 
 
-{45.0, - 135.0, - 60.0}
+{45.0,-135.0,-60.0}
  
 
 reslist := {acotd(3i), acotd(-3i), atand(3i)};
@@ -744,3 +744,10 @@ off complex, rounded;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: trigd  47  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.09+0.00 seconds

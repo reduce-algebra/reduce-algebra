@@ -215,12 +215,12 @@ fps(((1 + sqrt x)/x)^(1/3),x);
 infsum(----------------------------------,k,0,infinity)
               3*factorial(2*k + 1)
 
-            k              - 1
-           x *pochhammer(------,2*k)
-                           3
- + infsum(---------------------------,k,0,infinity)
-               1/3
-              x   *factorial(2*k)
+            k             -1
+           x *pochhammer(----,2*k)
+                          3
+ + infsum(-------------------------,k,0,infinity)
+              1/3
+             x   *factorial(2*k)
 
 
 fps(asech x,x);
@@ -707,3 +707,10 @@ infsum(( - x   *( - 1) *108 *factorial(k)*x)/(6*46656 *factorial(3*k + 1)
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: fps  2796  16
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 2.85+0.03 seconds

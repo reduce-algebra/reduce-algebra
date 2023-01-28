@@ -1359,7 +1359,7 @@ tan(---)
 testint(1/(1-cos x),x);
 
 
-    - 1
+    -1
 ----------
       x
  tan(---)
@@ -2642,7 +2642,7 @@ COMMENT the following set came from Herbert Stoyan;
 testint(1/(x-3)**4,x);
 
 
-            - 1
+            -1
 ---------------------------
      3      2
  3*(x  - 9*x  + 27*x - 27)
@@ -3287,10 +3287,10 @@ sqrt( - cos(x) + 1)
 
 end;
 
-Tested on x86_64-unknown-ubuntu16.04 CSL
-Time (counter 1): 1910 ms  plus GC time: 60 ms
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: algint  719  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 1.95+0.08 seconds
-real 2.23
-user 2.12
-sys 0.06
+
+End of Lisp run after 0.76+0.00 seconds

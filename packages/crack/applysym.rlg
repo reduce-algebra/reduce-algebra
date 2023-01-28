@@ -239,3 +239,10 @@ with arbitrary function ff(..).
 
 -------------------
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: applysym  141  63
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.18+0.06 seconds

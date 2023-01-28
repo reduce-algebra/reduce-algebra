@@ -1192,7 +1192,7 @@ trigsimp( mat((sin(2x),cos(2x)),
 [                              2    ]
 [ 2*cos(x)*sin(x)    - 2*sin(x)  + 1]
 [                                   ]
-[        1                - 1       ]
+[        1                -1        ]
 [-----------------  --------------- ]
 [ 2*cos(x)*sin(x)            2      ]
 [                    2*sin(x)  - 1  ]
@@ -1403,9 +1403,9 @@ trigfactorize(1 + cos(2x) + 2cos(x)*cosh(x), x/2);
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 407 ms  plus GC time: 62 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: trigsimp  531  16
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.40+0.10 seconds
-real 0.67
-user 0.01
-sys 0.04
+
+End of Lisp run after 0.59+0.01 seconds

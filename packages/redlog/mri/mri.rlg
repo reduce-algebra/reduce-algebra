@@ -81,3 +81,10 @@ rlexpand ws;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: mri  0  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.10+0.04 seconds

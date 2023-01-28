@@ -443,6 +443,7 @@ p(1) :=  - [( - -----*e )cos[5u-v+w-x-y+z] + (---*b*e )cos[4u+w-x-y+z] + (
           2                       17   2  2                       9    2  2
         *e )cos[3u+v+w+x+y-z] + (----*d *e )sin[3u+v+w+x+y-z] + (----*b *e )cos[
                                   12                              64
+
                            9    4                       9     2
         3u+v+w-x-y+z] + (-----*e )cos[3u+v-w+x+y-z] + (---*b*e )cos[3u+w-x-y+z]
                           128                           8
@@ -638,9 +639,11 @@ cos[5u-3v+2w-2x-2y+2z] + ( - ----*d *e )cos[4u+2w] + ( - 2*d *e )sin[4u+2w] + (
     9    2  2                          3      3                  5   2
  - ----*a *e )cos[3u-v+w-x-y+z] + ( - ----*b*e )cos[3u-v] + ( - ---*a *b)cos[3u-
     64                                 32                        8
+
                        15   2      3   2      57   3    3
 2v+3w-3x-3y+3z] + ( - ----*b *e - ---*d *e - ----*e  + ---*e)cos[3u-2v+2w-2x-2y+
                        8           2          32        4
+
            15   2  2    15   2  2    15   2  2    5   2
 2z] + ( - ----*a *b  - ----*a *d  - ----*a *e  + ---*a )cos[3u-3v+3w-3x-3y+3z]
            4            8            4            8
@@ -664,6 +667,7 @@ cos[5u-3v+2w-2x-2y+2z] + ( - ----*d *e )cos[4u+2w] + ( - 2*d *e )sin[4u+2w] + (
     11   2  2                      13   2  2                   1    4
  - ----*b *d )cos[2u+2v+2w] + ( - ----*b *d )sin[2u+2v+2w] + (----*b )cos[2u+2v+
     4                              4                           32
+
                  2  2                            3   2  2
 2w-2x-2y+2z] + (d *e )cos[2u+2v+2x+2y-2z] + ( - ---*d *e )sin[2u+2v+2x+2y-2z] + 
                                                  4
@@ -815,6 +819,7 @@ y+z] + ( - ----*b *e + ---*b*d *e + ----*b*e  - ---*b*e)cos[u-v] + (
                      153   2                                2535   3
 -3v-2x-2y+2z] + ( - -----*b *e)cos[u-4v+2w-2x-2y+2z] + ( - ------*b *e)cos[u-5v+
                       8                                      64
+
                     63   2  2                         19   2  2
 2w-2x-2y+2z] + ( - ----*b *d )cos[4v+2x+2y-2z] + ( - ----*b *d )sin[4v+2x+2y-2z]
                     8                                 2
@@ -826,6 +831,7 @@ y+z] + ( - ----*b *e + ---*b*d *e + ----*b*e  - ---*b*e)cos[u-v] + (
                7     2                      53   3             105     2
 +2y-2z] + ( - ---*b*d )sin[3v+2x+2y-2z] + (----*b )cos[3v] + (-----*b*e )cos[3v-
                2                            32                 16
+
                  17   2  2    1   4    7   2  2    1   2
 2w+2x+2y-2z] + (----*b *d  + ---*d  - ---*d *e  - ---*d )cos[2v+2x+2y-2z] + (
                  4            2        4           2
@@ -873,9 +879,9 @@ showtime;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 31 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: camal  47  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.03+0.06 seconds
-real 0.21
-user 0.01
-sys 0.04
+
+End of Lisp run after 0.11+0.00 seconds

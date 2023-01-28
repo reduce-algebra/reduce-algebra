@@ -222,9 +222,9 @@ partial(x2)
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 750 ms  plus GC time: 47 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: lpdo  719  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.75+0.14 seconds
-real 1.13
-user 0.01
-sys 0.06
+
+End of Lisp run after 0.79+0.06 seconds

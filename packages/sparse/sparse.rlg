@@ -3523,29 +3523,29 @@ mat3inv := sppseudo_inverse(mat3);
 
 
 
-spm(1,1) :=  - 2.0$
+spm(1,1) := -2.0$
 
 spm(1,2) := 1$
 
 spm(2,1) := 1.5$
 
-spm(2,2) :=  - 0.5$
+spm(2,2) := -0.5$
 
-spm(3,3) :=  - 2.0$
+spm(3,3) := -2.0$
 
 spm(3,4) := 1$
 
 spm(4,3) := 1.5$
 
-spm(4,4) :=  - 0.5$
+spm(4,4) := -0.5$
 
-spm(5,5) :=  - 2.0$
+spm(5,5) := -2.0$
 
 spm(5,6) := 1$
 
 spm(6,5) := 1.5$
 
-spm(6,6) :=  - 0.5$
+spm(6,6) := -0.5$
 mat3inv := 
 
 mat3 * mat3inv;
@@ -3613,9 +3613,9 @@ off rounded;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 48 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: sparse  62  16
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.04+0.06 seconds
-real 0.27
-user 0.03
-sys 0.06
+
+End of Lisp run after 0.10+0.03 seconds

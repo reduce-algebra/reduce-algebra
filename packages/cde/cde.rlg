@@ -172,3 +172,10 @@ sb22(1);
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: cde  31  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.09+0.00 seconds

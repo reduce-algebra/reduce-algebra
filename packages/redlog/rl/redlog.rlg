@@ -983,3 +983,10 @@ m <> 0 or b = 0
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: redlog  203  47
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.28+0.06 seconds

@@ -4082,3 +4082,9 @@ x  + 35*x *y + 490*x *y  + 3430*x *y
 end;
 
 nil
+Tested on x86_64-pc-windows CSL
+Time: rltools  234  16
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.28+0.03 seconds

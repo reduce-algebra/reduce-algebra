@@ -3,7 +3,7 @@
 ineq_solve(  (2*x^2+x-1)/(x-1) >=  (x+1/2)^2 ,x);
 
 
-{x=( - 0.894358 .. 0.326583),x=(1 .. 2.56777)}
+{x=(-0.894358 .. 0.326583),x=(1 .. 2.56777)}
 
 
 ineq_solve({(2*x^2+x-1)/(x-1) >=  (x+1/2)^2, x>0});
@@ -96,9 +96,9 @@ clear lfcond,lvars;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: ineq  16  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.01+0.06 seconds
-real 0.20
-user 0.03
-sys 0.04
+
+End of Lisp run after 0.06+0.01 seconds

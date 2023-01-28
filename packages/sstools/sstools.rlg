@@ -1968,3 +1968,10 @@ but a field form does not exist.
 #####################################################
 
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: sstools  12671  32
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 12.73+0.03 seconds
