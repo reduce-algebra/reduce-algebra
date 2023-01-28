@@ -20,25 +20,25 @@ dirs:
 
 doarm64:
 	cd build-arm64 && \
-	../../../../libraries/libffi-for-mac/libffi-3.3-arm64/configure \
+	@srcdir@/libraries/libffi-for-mac/libffi-3.3-arm64/configure \
 	    --host=arm64-apple-darwin \
 	    CFLAGS="-arch arm64" \
 	    CXXFLAGS="-arch arm64" \
 	    LDFLAGS="-arch arm64" \
 	    --disable-multi-os-directory \
 	    --prefix=`pwd`/../arm64 && \
-	make && make install
+	arch -arm64 make && make install
 
 dox86_64:
 	cd build-x86_64 && \
-	../../../../libraries/libffi-for-mac/libffi-3.3-x86_64/configure \
+	@srcdir@/libraries/libffi-for-mac/libffi-3.3-x86_64/configure \
 	    --host=x86_64-apple-darwin \
 	    CFLAGS="-arch x86_64" \
 	    CXXFLAGS="-arch x86_64" \
 	    LDFLAGS="-arch x86_64" \
 	    --disable-multi-os-directory \
 	    --prefix=`pwd`/../x86_64 && \
-	make && make install
+	arch -x86_64 make && make install
 
 libs:
 	mkdir -p ../lib && \
