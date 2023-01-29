@@ -2686,7 +2686,7 @@ CRACK is now called with the assumption 0 = e_19 :
 e_13 is a consequence of e_19
 
 Substitution of n found in e_19 : 
-n= - 5
+n=-5
 
 
 
@@ -2716,9 +2716,9 @@ n
 
 
 Substitution of n found in e_13 : 
-    - 20
-n=-------
-     7
+   -20
+n=-----
+    7
 
 
 Separation of e_14 yields (e_16 e_15)
@@ -2761,9 +2761,9 @@ n
 
 
 Substitution of n found in e_13 : 
-    - 15
-n=-------
-     7
+   -15
+n=-----
+    7
 
 
 Separation of e_14 yields (e_15 e_16)
@@ -2831,7 +2831,7 @@ n
 
 
 Substitution of n found in e_13 : 
-n= - 3
+n=-3
 
 
 Separation of e_15 yields (e_18 e_17 e_16)
@@ -2887,7 +2887,7 @@ Old ordering: c_173,n,c_178,c_177,c_179
 New ordering: c_173,c_178,c_177,c_179,n
 
 Substitution of n found in e_12 : 
-n= - 2
+n=-2
 
 
 new constant: c_182
@@ -2933,7 +2933,7 @@ CRACK is now called with the assumption 0 = e_15 :
 e_12 is a consequence of e_15
 
 Substitution of n found in e_15 : 
-n= - 1
+n=-1
 
 
 new constant: c_183
@@ -3002,9 +3002,9 @@ n + 1
 
 
 Substitution of n found in e_12 : 
-    - 5
-n=------
-    2
+   -5
+n=----
+   2
 
 
 new constant: c_184
@@ -3043,9 +3043,9 @@ CRACK is now called with the assumption 0 = e_13 :
 
 
 Substitution of n found in e_12 : 
-    - 5
-n=------
-    2
+   -5
+n=----
+   2
 
 
 leads to a contradiction in : 
@@ -3352,3 +3352,10 @@ eta_yxx=--------------------------------------
 
 -------- 
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: liepde  1469  31
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 1.51+0.03 seconds

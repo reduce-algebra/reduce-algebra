@@ -1301,7 +1301,9 @@ if test "$enable_universal" = "yes"
 then
 # This is a messy script that arranges to build a universal version of
 # the library on MacOS.
-  cp $abssrcdir/libraries/libffi-for-mac/Makefile libffi
+  sed "s+@srcdir@+$abssrcdir+" \
+     < $abssrcdir/libraries/libffi-for-mac/Makefile \
+     > libffi/Makefile
 else
   cd libffi
   setpasscc

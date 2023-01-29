@@ -1927,9 +1927,9 @@ torder oo;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 62 ms  plus GC time: 16 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: cgb  63  31
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.06+0.07 seconds
-real 0.30
-user 0.00
-sys 0.07
+
+End of Lisp run after 0.14+0.04 seconds

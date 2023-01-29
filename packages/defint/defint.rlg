@@ -378,9 +378,9 @@ e   *( - erf(---) + 1)
 int(BesselI(2,x)*e^(-x),x,0,infinity);
 
 
-                    - 1                            1
-2*hypergeometric({------},{},1) + hypergeometric({---},{},1) - 2
-                    2                              2
+                   -1                            1
+2*hypergeometric({----},{},1) + hypergeometric({---},{},1) - 2
+                   2                             2
 
 
 int(e^(-x^2)*cos(x),x,0,infinity);
@@ -736,7 +736,7 @@ laplace_transform(cosh(a*x),x);
 laplace_transform(1/(2*a^3),sinh(a*x)-sin(a*x),x);
 
 
-   - 1
+   -1
 ---------
   4    4
  a  - s
@@ -1177,3 +1177,10 @@ int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,infinity);
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: defint  2719  16
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 2.78+0.04 seconds

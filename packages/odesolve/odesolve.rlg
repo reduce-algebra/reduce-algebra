@@ -326,9 +326,9 @@ The Wronskian is --------
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 109 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: odesolve  156  16
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.10+0.06 seconds
-real 0.35
-user 0.00
-sys 0.06
+
+End of Lisp run after 0.21+0.01 seconds

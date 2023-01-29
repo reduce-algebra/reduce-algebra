@@ -355,3 +355,10 @@ part(sol, 5, 2);
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: pasf  1047  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 1.10+0.03 seconds

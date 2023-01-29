@@ -1732,6 +1732,7 @@ pol:=(x-2*y+3*z**2-1)**3;
 
         3    2               2               2              2              4
 pol := x  + x *( - 6*y + 9*s1  - 3) + x*(12*y  + y*( - 36*s1  + 12) + 27*s1  - 
+
             2           3    2       2                    4        2
        18*s1  + 3) - 8*y  + y *(36*s1  - 12) + y*( - 54*s1  + 36*s1  - 6) + 27*
 
@@ -1803,6 +1804,7 @@ polp:=redexpr polp;
 
          2               2               2              2              4
 polp := x *( - 6*y + 9*s1  - 3) + x*(12*y  + y*( - 36*s1  + 12) + 27*s1  - 18*s1
+
         2           3    2       2                    4        2             6
           + 3) - 8*y  + y *(36*s1  - 12) + y*( - 54*s1  + 36*s1  - 6) + 27*s1  -
 
@@ -2588,9 +2590,9 @@ clear g,op;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: assist  16  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.01+0.04 seconds
-real 0.21
-user 0.04
-sys 0.03
+
+End of Lisp run after 0.07+0.00 seconds

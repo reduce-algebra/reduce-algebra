@@ -28,9 +28,9 @@ limit(-1/x,x,0);
 limit((sin(x)-x)/x^3,x,0);
 
 
-  - 1
-------
-  6
+ -1
+----
+ 6
  % -1/6
 limit(x*sin(1/x),x,infinity);
 
@@ -72,9 +72,9 @@ limit((sqrt(4+h)-2)/h,h,0);
 limit((sqrt(x)-2)/(4-x),x,4);
 
 
-  - 1
-------
-  4
+ -1
+----
+ 4
  % -1/4
 limit((x^2-4)/(x-2),x,2);
 
@@ -84,9 +84,9 @@ limit((x^2-4)/(x-2),x,2);
 limit(1/(2x-5),x,-1);
 
 
-  - 1
-------
-  7
+ -1
+----
+ 7
  % -1/7
 limit(sqrt(x)/(x+1),x,1);
 
@@ -717,7 +717,7 @@ f2:=((f1-l1)/x^(1/3))$
 l2:=limit(f2,x,0);
 
 
-        - 1
+        -1
 l2 := ------
         1/3
        2
@@ -933,3 +933,11 @@ off rounded;
 
 
 end;
+
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: limits  500  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.56+0.00 seconds

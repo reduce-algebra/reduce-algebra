@@ -313,6 +313,7 @@ factor z;
 
 integ(k) := d w(k) ^ w(1) ^ w(2);
 
+
      1
 integ  := d z ^d z ^d x^d y*z *( - @ a1 + @ a2 + b1*f2 - b2*f1) + 
              1    2          1      y      x
@@ -383,6 +384,7 @@ let @(r,q 1)=q(1)/r,@(r,q 2)=q(2)/r,q(1)**2+q(2)**2=r**2;
 
 lam(k) := -m*q(k)/r;
 
+
              1
    1      - q *m
 lam  := ---------
@@ -420,6 +422,7 @@ s := y |_ theta - d f$
 
 
 glq(k) := @(q k) _| s;
+
 
                                                 1   1                1   2
                                         - @  (xi )*q *m      - @  (xi )*q *m
@@ -481,6 +484,7 @@ glq  := @  (xi )*v  + @  (xi )*v  + 2*@  (xi )*v  + ------------------
 
 
 glv(k) := @(v k) _| s;
+
 
                                                          1 2       2 2
                                             @  tau*( - (v ) *r - (v ) *r + 2*m)
@@ -560,6 +564,7 @@ tau := 1
 
 glq k := glq k;
 
+
    1
 glq  :=  - @  f
              1
@@ -572,6 +577,7 @@ glq  :=  - @  f
 
 
 glv k := glv k;
+
 
    1
 glv  :=  - @  f
@@ -985,6 +991,7 @@ factor @;
 
 nast(-k) := x(-k) _| nasteq;
 
+
            - @     (v   )*mu     @   (v   )*(mu + 2*nu)      - @       (v )*nu
               phi r  phi          phi  phi                      phi phi  r
 nast  := -------------------- + ------------------------ + --------------------
@@ -1320,6 +1327,7 @@ index_symmetries chck(k,l): antisymmetric;
 
 chck(k,l) := 1/2*eps(k,l,m,n)*curv2(-m,-n) + curv2(k,l);
 
+
     r theta
 chck        := 0
 
@@ -1400,6 +1408,7 @@ index_symmetries curv(k,l): antisymmetric,
 
 
 curv(k,l) := d om(k,l) + om(k,-m)^om(m,l);
+
 
              t  1
             o ^o *@   r
@@ -1499,6 +1508,7 @@ curv    := ------------------
 
 riemann(a,b,c,d) := e(d) _| (e (c) _| curv(a,b));
 
+
                     - @   r
        t 1 t 1         t t
 riemann        := ----------
@@ -1587,6 +1597,7 @@ riemann        := ----------
 % The rest is done in the Ricci calculus language,
 
 ricci(-a,-b) := riemann(c,-a,-d,-b)*g(-c,d);
+
 
               - 3*@   r*s - 2*@   s*r
                    t t         t t
@@ -1727,6 +1738,7 @@ hlang(-i,-j) := 2*(riemc3(-i,-j) - riemri(-i,-j) -
 		   2*ricci(-i,-k)*ricci(-j,k) +
 		   riccisc*ricci(-i,-j) - (1/2)*laglanc*g(-i,-j));
 
+
 hlang    := 
      t t
 
@@ -1806,6 +1818,7 @@ factor alp2;
 
 
 einst(-i,-j) := einst(-i,-j);
+
 
                            3              2    2        2
 einst    := (12*alp2*(2*@ r *@ s*s + 3*@ r *@ s *r + @ r *r + 2*@ r*@ s*k*s
@@ -1991,6 +2004,7 @@ gamma(-a,-b) := (1/2)*( e(-b) _| (e(-c) _| gwt(-a))
 	               +e(-c) _| (e(-a) _| gwt(-b))
                        -e(-a) _| (e(-b) _| gwt(-c)) )*o(c);
 
+
              4
 gamma    := o *(@ ff - u5)
      4 1         r
@@ -2042,6 +2056,7 @@ factor ^;
 
 
 curv(-a,b) := d gamma(-a,b) + gamma(-c,b)^gamma(-a,c);
+
 
       4        2  3
 curv    := (2*o ^o
@@ -2322,3 +2337,10 @@ showtime;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: excalc  250  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.29+0.01 seconds

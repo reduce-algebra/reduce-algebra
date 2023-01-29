@@ -253,9 +253,9 @@ mkset{1,2,1};
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: sets  0  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.00+0.06 seconds
-real 0.20
-user 0.00
-sys 0.07
+
+End of Lisp run after 0.06+0.00 seconds

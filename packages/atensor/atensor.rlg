@@ -315,9 +315,9 @@ $
 end$
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 813 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: atensor  969  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.81+0.06 seconds
-real 1.03
-user 0.01
-sys 0.06
+
+End of Lisp run after 1.01+0.00 seconds

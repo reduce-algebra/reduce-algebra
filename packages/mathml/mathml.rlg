@@ -117,9 +117,9 @@ x>y
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: mathml  15  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.00+0.06 seconds
-real 0.21
-user 0.03
-sys 0.04
+
+End of Lisp run after 0.06+0.01 seconds

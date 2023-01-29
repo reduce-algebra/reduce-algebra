@@ -3579,3 +3579,10 @@ false
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: ibalp  1797  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 1.86+0.01 seconds

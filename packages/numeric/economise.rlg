@@ -380,3 +380,10 @@ prinhexlitlist2 second r;
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: economise  17203  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 17.26+0.00 seconds

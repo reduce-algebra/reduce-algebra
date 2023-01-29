@@ -545,9 +545,9 @@ laplace(-2/3*intl(1/2*y*e**(a*y)*sin(k*y),y,0,x), x, p);
 laplace(-1/2*delta(x), x, p);
 
 
-  - 1
-------
-  2
+ -1
+----
+ 2
  laplace(delta(x-tau), x, p);
 
 
@@ -972,7 +972,7 @@ laplace(--------,x,p)
 laplace(x/sin(-3*a**2),x,p);
 
 
-      - 1
+      -1
 --------------
   2        2
  p *sin(3*a )
@@ -1770,7 +1770,7 @@ invlap(1/(p**2-p*sin(p)+a**2),p,t);
 
 *** Invlap for (p**2 - p*sin(p) + a**2)**(-1) not known 
 
-                - 1
+                -1
 invlap(--------------------,p,t)
                     2    2
         sin(p)*p - a  - p
@@ -1796,9 +1796,9 @@ invlap(--------,p,t)
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 109 ms  plus GC time: 31 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: laplace  157  0
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.10+0.07 seconds
-real 0.35
-user 0.04
-sys 0.04
+
+End of Lisp run after 0.20+0.00 seconds

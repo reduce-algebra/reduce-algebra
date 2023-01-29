@@ -1184,7 +1184,7 @@ gamma =--------------
             8*v
 
 
-         - 3
+         -3
 gamma =------
      1     2
         8*v
@@ -2206,6 +2206,7 @@ index_symmetries f(i,j):antisymmetric;
 
 f(-i,-j) := -g(-i,-k)*o(k,-a)^o(a,-j);
 
+
          1 10  2 10    1 5  2 5    1 6  2 6    1 7  2 7    1 8  2 8    1 9  2 9
 f    := o    ^o     + o   ^o    + o   ^o    + o   ^o    + o   ^o    + o   ^o
  1 2
@@ -2839,9 +2840,9 @@ clear x,y,z,u,v,w,c,s;
 end;
 
 Tested on x86_64-pc-windows CSL
-Time (counter 1): 922 ms  plus GC time: 63 ms
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: eds  1094  62
+1: Leaving REDUCE ... 
 
-End of Lisp run after 0.92+0.12 seconds
-real 1.30
-user 0.00
-sys 0.06
+
+End of Lisp run after 1.14+0.07 seconds

@@ -366,3 +366,10 @@ mrv_limit(misc4,x,infinity);
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: mrvlimit  141  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.20+0.01 seconds

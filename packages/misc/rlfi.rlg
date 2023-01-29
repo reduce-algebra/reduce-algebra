@@ -120,3 +120,10 @@ off latex,verbatim;
 \end{verbatim}
 \end{document}
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: rlfi  16  0
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.06+0.01 seconds

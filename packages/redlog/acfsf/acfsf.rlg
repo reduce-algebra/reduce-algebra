@@ -203,3 +203,10 @@ true
 
 end;
 
+Tested on x86_64-pc-windows CSL
+1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
+Time: acfsf  16  16
+1: Leaving REDUCE ... 
+
+
+End of Lisp run after 0.09+0.03 seconds
