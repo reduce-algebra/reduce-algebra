@@ -41,8 +41,6 @@
 #   --enable-profile  build for profiling at the C++ level
 #
 #   --with-cygwin     Build native cygwin X11 based system, 
-#   --with-smallpage  build in way that may be better for small embedded
-#                     machines.
 #   --enable-conservative   development version not working yet!
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
@@ -168,25 +166,6 @@ AC_ARG_WITH(pslbuild,
 
 AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might live])
 
-AC_ARG_WITH(cygbuild,
-   AS_HELP_STRING([--with-cygbuild], [used if I wish to call the cygwin version]),
-   [],
-   [with_cygbuild=""])
-
-AC_ARG_WITH(cygwin64,
-   AS_HELP_STRING([--with-cygwin64], [used if I wish to call the cygwin version]),
-   [],
-   [with_cygwin64=""])
-
-AC_SUBST(with_cygwin64)
-
-AC_ARG_WITH(cygbuild64,
-   AS_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
-   [],
-   [with_cygbuild64=""])
-
-AC_SUBST(with_cygbuild64)
-
 AC_ARG_WITH(crlibm,
    AS_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm]),
    [],
@@ -258,16 +237,10 @@ AC_MSG_NOTICE([--with-fox=$with_fox])
 
 AC_ARG_WITH(wx,
   AS_HELP_STRING([--with-wx],
-                 [enable use of wxWidgets]),
+                 [enable use of wxWidgets (unfinished work!)]),
   [],
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
-
-AC_ARG_WITH(cygwin,
-  AS_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin]),
-  [],
-  [with_cygwin="no"])
 
 AC_ARG_WITH(autogen,
   AS_HELP_STRING([--with-autogen],
@@ -314,30 +287,21 @@ fi
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
-AC_SUBST(STRIP)
 AC_SUBST(SED)
-AC_SUBST(WINDRES)
-AC_SUBST(REZ)
-AC_SUBST(DLLTOOL)
-AC_SUBST(OBJDUMP)
 
-# The next two should only be required if you are building for windows
-# (cygwin or native style) and are wanting to create a DLL to be loaded
-# by my code.
+# windres compiles textual Windows resource files into versions that can
+# be linked in. This may icnlude icon data.
+
+AC_SUBST(WINDRES)
+
+# "rez" is an old-fashioned way of making Mac things clickable and I
+# should probably update what I do and retire its use.
+
+AC_SUBST(REZ)
 
 if test "$WINDRES" = ""
 then
   AC_CHECK_TOOL(WINDRES, windres, windres)
-fi
-
-if test "$DLLTOOL" = ""
-then
-  AC_CHECK_TOOL(DLLTOOL, dlltool, dlltool)
-fi
-
-if test "$OBJDUMP" = ""
-then
-  AC_CHECK_TOOL(OBJDUMP, objdump, objdump)
 fi
 
 AC_MSG_NOTICE([Building with host: $host])
@@ -437,10 +401,6 @@ case $host in
   if test "$AR" = ""
   then
     AC_PATH_PROGS(AR, [gar ar], ar, [/usr/sfw/bin:$PATH])
-  fi
-  if test "$STRIP" = ""
-  then
-    AC_PATH_PROGS(STRIP, [gstrip strip], strip, [/usr/sfw/bin:$PATH])
   fi
   if test "$SED" = ""
   then
@@ -595,10 +555,6 @@ if test "$AR" = ""
 then
   AC_CHECK_PROGS(AR,[gar ar],[ar])
 fi
-if test "$STRIP" = ""
-then
-  AC_CHECK_PROGS(STRIP,[gstrip strip],[echo])
-fi
 if test "$SED" = ""
 then
   AC_CHECK_PROGS(SED,[gsed sed],[sed])
@@ -607,28 +563,15 @@ fi
 AC_CHECK_PROGS(VALGRIND,[valgrind],[x])
 
 # I need a C++ compiler that is use to compile small utility programs.
-# Im some cases I can not use $CXX because that is a cross-compiler that
+# In some cases I can not use $CXX because that is a cross-compiler that
 # generates binaries that I can not run. I used to just use "g++" and hope,
 # but here I will see which of g++, clang++, c++ and CC is at least present.
 # I will then assume that that is a viable compiler to use.
 
-case $host in
-*-*-cygwin* | *-*-mingw*)
-# I use the native windows compilers here so that my scripts can run hosted
-# on 64-bit cygwin using the x86_64-w64-mingw toolchain
-# should work on any varient of a Windows platform.
-  LOCALCXX="x86_64-w64-mingw32-g++ -static"
-  LOCALSTRIP="x86_64-w64-mingw32-strip"
-  ;;
-*)
-  AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
-  LOCALCXX="$LOCALCXX -std=gnu++20"
-  LOCALSTRIP="$STRIP"
-  ;;
-esac
+AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
+LOCALCXX="$LOCALCXX -std=gnu++17"
 
 AC_SUBST(LOCALCXX)
-AC_SUBST(LOCALSTRIP)
 
 # Debugging turned on?
 AC_MSG_CHECKING(for debugging)
@@ -1744,7 +1687,8 @@ then
 # 10.15 Catalina
 # 11.x  Big Sur         Ha ha - from late 2020 there is a transition to
 #                       "Apple Silicon", ie ARM64.                     
-# 12.x  Monterey        Now the version I build and test on.
+# 12.x  Monterey
+# 13.x  Ventura         Now the version I build and test on.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment

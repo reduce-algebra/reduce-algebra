@@ -131,7 +131,6 @@ plain_wxfontdemo1 = wxfontdemo1
 plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
-plain_dyndemo = dyndemo
 plain_testf128 = testf128
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
@@ -150,7 +149,6 @@ plain_wxfontdemo1 = wxfontdemo1.unnecessary.except.on.windows
 plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
-plain_dyndemo = dyndemo.unnecessary.except.on.windows
 plain_testf128 = testf128.unnecessary.except.on.windows
 endif !exeext
 
@@ -170,7 +168,6 @@ endif !exeext
 .PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
-.PHONY: $(plain_dyndemo)
 .PHONY: $(plain_testf128)
 
 .PHONY:	bootstraprecompile
@@ -295,7 +292,7 @@ else !mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	dyndemo$(EXEEXT) testf128$(EXEEXT) $(wxdemotarget)
+	testf128$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
 
 if mac_framework
@@ -613,31 +610,6 @@ wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
 AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
 
-if windows
-DLLEXT=dll
-else !windows
-DLLEXT=so
-endif !windows
-
-dyndemo_SOURCES = dyndemo.cpp
-
-if !windows
-dyndemo_DEPENDENCIES = dynmodule.so
-
-if cygwin
-libdyndemo.a: $(cslbase)/dyndemo.def
-	$(TRACE)$(DLLTOOL) --input-def $(cslbase)/dyndemo.def --dllname=dyndemo.exe --output-lib libdyndemo.a
-endif cygwin
-endif !windows
-
-dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES)
-	$(CXXLINKTO) $(DEST)dyndemo$(EXEEXT) $(dyndemo_OBJECTS) $(LIBS)
-if !debug
-if !darwin
-	$(STRIP) dyndemo$(EXEEXT)
-endif !darwin
-endif !debug
-
 testf128_SOURCES = testf128.cpp float128_t.cpp
 testf128_LDADD = ../lib/libsoftfloat.a
 
@@ -653,33 +625,6 @@ if windows
 # pain!
 #
 
-# At one time I was considering CSL as a Windows DLL and needed to provide
-# a collection of specially exported symbols. I have not tried that for AGES
-# now, and in particular not since I moved to use of C++. So I will remove
-# features that related to it. For a WHILE I will leave comments in to show
-# what I used to have.
-
-#local-bootstrapreduceexe.def:	$(cslbase)/bootstrapreduceexe.def $(cslbase)/impex.def
-#	cat $(cslbase)/bootstrapreduceexe.def $(cslbase)/impex.def > local-bootstrapreduceexe.def
-
-#local-reduceexe.def:	$(cslbase)/reduceexe.def $(cslbase)/impex.def
-#	cat $(cslbase)/reduceexe.def $(cslbase)/impex.def > local-reduceexe.def
-
-#local-reducecom.def:	$(cslbase)/reducecom.def $(cslbase)/impex.def
-#	cat $(cslbase)/reducecom.def $(cslbase)/impex.def > local-reducecom.def
-
-#local-cslexe.def:	$(cslbase)/cslexe.def $(cslbase)/impex.def
-#	cat $(cslbase)/cslexe.def $(cslbase)/impex.def > local-cslexe.def
-
-#local-cslcom.def:	$(cslbase)/cslcom.def $(cslbase)/impex.def
-#	cat $(cslbase)/cslcom.def $(cslbase)/impex.def > local-cslcom.def
-
-#CSLEXEDEF = local-cslexe.def
-#CSLCOMDEF = local-cslcom.def
-#BOOTSTRAPREDUCEEXEDEF = local-bootstrapreduceexe.def
-#REDUCEEXEDEF = local-reduceexe.def
-#REDUCECOMDEF = local-reducecom.def
-
 # For a build on Windows with a GUI I want to add an icon into each binary,
 # via a resource-file. I also want linking to be in "windows-subsystem-mode",
 # but I also want matching ".com" files to be created to be console
@@ -691,8 +636,6 @@ WINAP=-Wl,--subsystem,windows
 else !gui
 WINAP=-Wl,--subsystem,console
 endif !gui
-
-dyndemo_LDADD = $(cslbase)/dyndemo.def
 
 reduceres = fwin-reduce.$(OBJEXT)
 
@@ -717,10 +660,6 @@ wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
-dyndemo_DEPENDENCIES = $(cslbase)/dyndemo.def dynmodule.dll
-
-libdyndemo.a: $(cslbase)/dyndemo.def
-	$(DLLTOOL) --input-def $(cslbase)/dyndemo.def --dllname dyndemo.exe --output-lib libdyndemo.a
 
 fwin-icon.$(OBJEXT):	$(cslbase)/fwin-icon.rc
 	$(WINDRES) $(cslbase)/fwin-icon.rc \
@@ -766,9 +705,6 @@ else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
 
-if cygwin
-dyndemo_LDADD = $(cslbase)/dyndemo.def
-endif cygwin
 # end of windows vs non-windows conditions
 endif !windows
 
@@ -805,7 +741,7 @@ SHARED=$(cslbase)/fwin.h $(cslbase)/log.h $(cslbase)/termed.h \
 
 $(FOXDEPS):	$(csl)/fox/CHANGED $(SHARED)
 	@printf "About to build FOX for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../fox install
+	-$(TRACE)@$(MAKE) -C ../fox install
 
 
 if crlibm
@@ -837,8 +773,8 @@ reduce_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../crlibm/scs_lib
-	$(TRACE)@$(MAKE) -C ../crlibm install-am
+	-$(TRACE)@$(MAKE) -C ../crlibm/scs_lib
+	-$(TRACE)@$(MAKE) -C ../crlibm install-am
 
 else !crlibm
 CRINC =
@@ -873,7 +809,7 @@ reduce_DEPENDENCIES += $(LIBFFIDEPS)
 
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../libffi install
+	-$(TRACE)@$(MAKE) -C ../libffi install
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 
@@ -901,7 +837,7 @@ reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
 
 $(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../softfloat install
+	-$(TRACE)@$(MAKE) -C ../softfloat install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
@@ -1187,7 +1123,7 @@ WXDEPS=../bin/wx-config
 
 ../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
 	@printf "About to build wxWidgets for %s ($@)\n" `pwd`
-	$(TRACE)@$(MAKE) -C ../wxWidgets install
+	-$(TRACE)@$(MAKE) -C ../wxWidgets install
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
@@ -1696,9 +1632,6 @@ endif wx
 $(plain_termdemo):	termdemo.exe
 	printf "$(MAKE) termdemo.exe is preferred\n"
 
-$(plain_dyndemo):	dyndemo.exe
-	printf "$(MAKE) dyndemo.exe is preferred\n"
-
 $(plain_testf128):	testf128.exe
 	printf "$(MAKE) testf128.exe is preferred\n"
 
@@ -1819,27 +1752,6 @@ endif !windows
 
 
 default:	reduce$(EXEEXT) $(REDUCE_IMG)
-
-# This is the command needed to compile a module for use as a DLL or other
-# dynamically loaded module
-
-DLL_CFLAGS = @DLL_CFLAGS@
-
-COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
-
-if windows
-dyndef =
-dyndep = libdyndemo.a
-else !windows
-if cygwin
-dyndef =
-dyndep = libdyndemo.a
-else !cygwin
-dyndef =
-dyndep =
-endif !cygwin
-endif !windows
 
 # "prototypes" is a utility that will only be available if libclang has
 # been installed, and the recipe provided here perhaps works on Ubuntu and
