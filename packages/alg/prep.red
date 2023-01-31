@@ -41,7 +41,7 @@ symbolic procedure negnumberchk u;
    if eqcar(u,'minus) then <<
       if numberp cadr u then - cadr u
 % If this is a good idea with integers it probably is for floating point too.
-      else if eqcar(cadr u, !:rd!:) then rd!:minus cadr u
+      else if eqcar(cadr u, '!:rd!:) then rd!:minus cadr u
       else u >>
    else u;
 
