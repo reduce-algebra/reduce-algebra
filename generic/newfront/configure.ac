@@ -47,6 +47,7 @@ AC_CANONICAL_HOST
 
 # Checks for programs.
 AC_PROG_CC
+AC_CHECK_TOOL([STRIP], [strip])
 
 on_windows="no"
 on_linux="no"

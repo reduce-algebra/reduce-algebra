@@ -5,6 +5,6 @@ have not been modified from the versions used with macports even though
 I will not use all of them. The "Makefile" here is copies into a Reduce
 build tree for use there and is not suitable for general purposes. It
 should work on either Intel or ARM-based Macs provided a sufficiently up
-tp date Xcode is installed, and should then build universal versions of
+to date Xcode is installed, and should then build universal versions of
 the library.
     Arthur Norman. January 2021

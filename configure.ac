@@ -448,6 +448,8 @@ CFLAGS="$OLD_CFLAGS"
 CXXFLAGS="$OLD_CXXFLAGS"
 CPPFLAGS="$OLD_CPPFLAGS"
 
+AC_CHECK_TOOL([STRIP], [strip])
+
 uname_m=`uname -m`
 uname_s=`uname -s`
 case "$uname_s" in
@@ -527,12 +529,6 @@ AC_ARG_WITH(lto,
                   [Experiment with extreme optimisation in gcc (CSL only)]),
    [],
    [with_lto="no"])
-
-AC_ARG_WITH(cygwin,
-  AS_HELP_STRING([--with-cygwin],
-                 [Force use of raw cygwin (CSL only)]),
-  [],
-  [with_cygwin="no"])
 
 AC_ARG_WITH(xft,
   AS_HELP_STRING([--with-xft],
@@ -727,6 +723,7 @@ setpasscc ()
   if test "$CXXCPP" != ""; then passcc="$passcc CXXCPP=\"$CXXCPP\""; fi
   if test "$CXX" != ""; then passcc="$passcc CXX=\"$CXX\""; fi
   if test "$LD" != ""; then passcc="$passcc LD=\"$LD\""; fi
+  if test "$STRIP" != ""; then passcc="$passcc STRIP=\"$STRIP\""; fi
   AC_MSG_NOTICE([passcc = $passcc])
 }
 
@@ -758,7 +755,7 @@ csl_inplace_cygwin_build ()
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
-          STRIP=\"$STRIP\" RANLIB=\"$RANLIB\" \ 
+          RANLIB=\"$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $pass_build --with-cygwin"
