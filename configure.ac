@@ -421,6 +421,40 @@ then
   fi
 fi
 
+# Temporarily clear cross-compile mode because the cross compiled code may
+# in fact be executable!
+save_cross_compiling=$cross_compiling
+cross_compiling=no
+
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+  [[return 0;]])],
+  [can_run_compiled_code="yes"],
+  [can_run_compiled_code="no"])
+
+AC_MSG_NOTICE([Can compiled code be run: $can_run_compiled_code])
+
+cross_compiling=$save_cross_compiling
+
+# If I am cross compiling where built executables can not be executed
+# (note that sometimes, eg using binfmt and qemu etc, they can) I will
+# want a native version configured as well so I can run it to create
+# image files/
+
+if test "$with_csl" != "no" && test "$can_run_compiled_code" = "no"
+then
+   d=`pwd`
+   cd $abssrcdir
+   w=`./config.guess`
+   w=`./scripts/findhost.sh $w`
+# If it has already been configured then the Makefile should exist. If
+# not I will configure to make one.
+   if ! test -f ./cslbuild/$w/csl/Makefile
+   then
+     ./configure --with-csl
+   fi
+   cd $d
+fi
+
 # I will only attempt to build a Mac univeral binary if things are
 # configured with "--enable-universal", and even then such a build will
 # only be possible if enough build libraries have been installed in

@@ -782,6 +782,20 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
+# Temporarily clear cross-compile mode because the cross compiled code may
+# in fact be executable!
+save_cross_compiling=$cross_compiling
+cross_compiling=no
+
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+  [[return 0;]])],
+  [can_run_compiled_code="yes"],
+  [can_run_compiled_code="no"])
+
+AC_MSG_NOTICE([Can compiled code be run: $can_run_compiled_code])
+
+cross_compiling=$save_cross_compiling
+
 LT_INIT([disable-static])
 
 AC_ARG_WITH(ccache,
@@ -891,7 +905,6 @@ if test "$arithmetic_shifts" = "yes"
 then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
 fi
-
 
 AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
 AC_MSG_NOTICE([HAVE_CXX20=$HAVE_CXX20])
@@ -1011,13 +1024,18 @@ then
 # resulting binary to a Fedora machine it works OK but you get an annoying
 # warning about whether the library has a proper version number. This hack
 # will link in libtinfo statically and ought to avoid that ugly warning at
-# a rather modest increase in the size of the shipped binary.
-  if test -f /usr/lib/*/libtinfo.a
-  then
-    LIBS="-l:libtinfo.a $LIBS"
-  else
+# a rather modest increase in the size of the shipped binary. HOWEVER this
+# will be a problem when cross-compiling and for that case I ought to
+# seek a version specific to the architecture I am building for. Ugh!
+  case /usr/lib/*/libtinfo.a
+  in
+  *\**)  % No libtinfo found
     AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
-  fi
+    ;;
+  *)     % At least one version found.
+    LIBS="-l:libtinfo.a $LIBS"
+    ;;
+  esac
 fi
 
 OLIBS="$LIBS"
@@ -1869,6 +1887,7 @@ AM_CONDITIONAL(softfloat, test "$with_softfloat" != "no")
 AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
+AM_CONDITIONAL(cross, test "$can_run_compiled_code"="no")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict

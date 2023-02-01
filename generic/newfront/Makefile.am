@@ -43,9 +43,9 @@ if !NATIVEWIN
 # I want gets put in the .libs directory - this is (I believe) to do with
 # libtool.
 if !DEBUG
-	strip .libs/rfcsl$(EXEEXT)
-	strip .libs/rfboot$(EXEEXT)
-	strip .libs/rfpsl$(EXEEXT)
+	$(STRIP) .libs/rfcsl$(EXEEXT)
+	$(STRIP) .libs/rfboot$(EXEEXT)
+	$(STRIP) .libs/rfpsl$(EXEEXT)
 endif
 	cp .libs/rfcsl$(EXEEXT) $(srcdir)/../../bin
 	cp .libs/rfboot$(EXEEXT) $(srcdir)/../../bin
@@ -53,9 +53,9 @@ endif
 endif
 else
 if !DEBUG
-	strip rfcsl$(EXEEXT)
-	strip rfboot$(EXEEXT)
-	strip rfpsl$(EXEEXT)
+	$(STRIP) rfcsl$(EXEEXT)
+	$(STRIP) rfboot$(EXEEXT)
+	$(STRIP) rfpsl$(EXEEXT)
 endif
 	cp rfcsl$(EXEEXT) $(srcdir)/../../bin
 	cp rfboot$(EXEEXT) $(srcdir)/../../bin
