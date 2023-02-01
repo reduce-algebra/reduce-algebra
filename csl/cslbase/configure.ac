@@ -186,7 +186,7 @@ then
   AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
 fi
 
-# The next option is intended just for debugging. By configureing with
+# The next option is intended just for debugging. By configuring with
 # "--without-karatsuba-threads" the big-multiplication code is left single
 # threaded. Slso some code to do with local editing of keyboard input
 # (which normally uses a worker thread) is disabled.
@@ -782,19 +782,20 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
+if test "$cross_compiling" = "yes"
+then
 # Temporarily clear cross-compile mode because the cross compiled code may
 # in fact be executable!
-save_cross_compiling=$cross_compiling
-cross_compiling=no
-
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
-  [[return 0;]])],
-  [can_run_compiled_code="yes"],
-  [can_run_compiled_code="no"])
-
-AC_MSG_NOTICE([Can compiled code be run: $can_run_compiled_code])
-
-cross_compiling=$save_cross_compiling
+  cross_compiling="no"
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+    [[return 0;]])],
+    [can_run_compiled_code="yes"],
+    [can_run_compiled_code="no"])
+  AC_MSG_NOTICE([can_run_compiled_code = $can_run_compiled_code])
+  cross_compiling="yes"
+else
+  can_run_compiled_code="yes"
+fi
 
 LT_INIT([disable-static])
 
@@ -832,18 +833,6 @@ if test "$XLIBS" != ""
 then
   AC_PATH_X
 fi
-
-# If "-std=gnu++20" is available I will add it to CXXFLAGS, at least
-# provided "consteval" is recognised.
-
-OLDCXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -std=gnu++20"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
-    [[  consteval int f(int x) { return x*x; }
-        int main() {return 0;}]])],
-  [AC_MSG_NOTICE(Will use -std=gnu++20)],
-  [CXXFLAGS="$OLDCXXFLAGS"
-   AC_MSG_NOTICE(C++20 not available)])
 
 if test "$enable_debug" = "yes"
 then
