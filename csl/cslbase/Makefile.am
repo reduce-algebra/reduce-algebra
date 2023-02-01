@@ -47,7 +47,7 @@ cslbuild = $(reduce)/cslbuild
 packages = $(reduce)/packages
 generic = $(reduce)/generic
 
-if cross
+if xcross
 w0001 := $(shell $(srcdir)/../../config.guess)
 w0002 := $(shell $(srcdir)/../../scripts/findhost.sh $(w0001) --csl)
 xdir := $(srcdir)/../../cslbuild/$(w0002)/csl
@@ -64,11 +64,11 @@ XBOOTSTRAPREDUCE:
 XREDUCE:
 	-$(TRACE)@$(MAKE) -C $(xdir) reduce
 
-else !cross
+else !xcross
 XCSL=./csl$(COM)
 XBOOTSTRAPREDUCE=./bootstrapreduce$(EXEEXT)
 XREDUCE=./reduce$(COM)
-endif !cross
+endif !xcross
 
 if windows
 if !cygwin

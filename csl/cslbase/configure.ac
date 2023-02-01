@@ -782,20 +782,21 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
+can_run_compiled_code="yes"
 if test "$cross_compiling" = "yes"
 then
 # Temporarily clear cross-compile mode because the cross compiled code may
 # in fact be executable!
+  AC_MSG_NOTICE([Cross compiling; check if built files can be executed])
   cross_compiling="no"
   AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
     [[return 0;]])],
-    [can_run_compiled_code="yes"],
+    [],
     [can_run_compiled_code="no"])
-  AC_MSG_NOTICE([can_run_compiled_code = $can_run_compiled_code])
   cross_compiling="yes"
-else
-  can_run_compiled_code="yes"
 fi
+
+AC_MSG_NOTICE([can_run_compiled_code = $can_run_compiled_code])
 
 LT_INIT([disable-static])
 
@@ -1876,7 +1877,8 @@ AM_CONDITIONAL(softfloat, test "$with_softfloat" != "no")
 AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
-AM_CONDITIONAL(cross, test "$can_run_compiled_code"="no")
+AC_MSG_NOTICE([@@@ can_run_compiled_code = $can_run_compiled_code])
+AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict
