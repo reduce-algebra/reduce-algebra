@@ -450,7 +450,7 @@ then
 # not I will configure to make one.
    if ! test -f ./cslbuild/$w/csl/Makefile
    then
-     ./configure --with-csl
+     ./configure --without-autogen --with-csl
    fi
    cd $d
 fi

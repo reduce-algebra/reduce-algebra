@@ -1017,15 +1017,15 @@ then
 # a rather modest increase in the size of the shipped binary. HOWEVER this
 # will be a problem when cross-compiling and for that case I ought to
 # seek a version specific to the architecture I am building for. Ugh!
-  case /usr/lib/*/libtinfo.a
-  in
-  *\**)  % No libtinfo found
+# Well it seems that if I list ALL versions that I find then ones that are
+# not the relevant architecture get ignored...
+  a=`find /usr/lib -name libtinfo.a -printf "%p "`
+  if test "$a" = ""
+  then    % No libtinfo found
     AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
-    ;;
-  *)     % At least one version found.
-    LIBS="-l:libtinfo.a $LIBS"
-    ;;
-  esac
+  else    % At least one version found.
+    LIBS="$LIBS $a"
+  fi
 fi
 
 OLIBS="$LIBS"
@@ -1877,7 +1877,6 @@ AM_CONDITIONAL(softfloat, test "$with_softfloat" != "no")
 AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
-AC_MSG_NOTICE([@@@ can_run_compiled_code = $can_run_compiled_code])
 AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
 
 # The Makefile that is built from Makefile.am will include these three
