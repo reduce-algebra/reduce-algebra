@@ -31,7 +31,7 @@
 # (re-)build all versions of Reduce that have been configured.
 
 all:
-	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
+	-+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
 # The next will re-profile Reduce. It uses the first configured version
 # in the cslbuild directory.
