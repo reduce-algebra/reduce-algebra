@@ -444,17 +444,19 @@ extern "C"
 
 inline int32_t ASR(int32_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(int32_t))) n=0;
-    return a/(1<<n);
+    return a/(1<<n) - (a<0 && (a & ((1<<n)-1)) != 0);
 }
 
 inline int64_t ASR(int64_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(int64_t))) n=0;
-    return a/static_cast<int64_t>(1)<<n);
+    return a/(static_cast<int64_t>(1)<<n) -
+        (a<0 && (a & ((static_cast<int64_t>(1)<<n)-1)) != 0);
 }
 
 inline int128_t ASR(int128_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(int128_t))) n=0;
-    return a/static_cast<int128_t>(1)<<n);
+    return a/(static_cast<int128_t>(1)<<n) -
+        (a<0 && (a & ((static_cast<int128_t>(1)<<n)-1)) != 0);
 }
 
 // The behaviour of left shifts on negative (signed) values seems to be
