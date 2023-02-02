@@ -186,7 +186,7 @@ then
   AC_DEFINE(HAVE_SOFTFLOAT, [1], [support for 128-bit long double/float128_t])
 fi
 
-# The next option is intended just for debugging. By configureing with
+# The next option is intended just for debugging. By configuring with
 # "--without-karatsuba-threads" the big-multiplication code is left single
 # threaded. Slso some code to do with local editing of keyboard input
 # (which normally uses a worker thread) is disabled.
@@ -782,6 +782,22 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
+can_run_compiled_code="yes"
+if test "$cross_compiling" = "yes"
+then
+# Temporarily clear cross-compile mode because the cross compiled code may
+# in fact be executable!
+  AC_MSG_NOTICE([Cross compiling; check if built files can be executed])
+  cross_compiling="no"
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+    [[return 0;]])],
+    [],
+    [can_run_compiled_code="no"])
+  cross_compiling="yes"
+fi
+
+AC_MSG_NOTICE([can_run_compiled_code = $can_run_compiled_code])
+
 LT_INIT([disable-static])
 
 AC_ARG_WITH(ccache,
@@ -818,18 +834,6 @@ if test "$XLIBS" != ""
 then
   AC_PATH_X
 fi
-
-# If "-std=gnu++20" is available I will add it to CXXFLAGS, at least
-# provided "consteval" is recognised.
-
-OLDCXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -std=gnu++20"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
-    [[  consteval int f(int x) { return x*x; }
-        int main() {return 0;}]])],
-  [AC_MSG_NOTICE(Will use -std=gnu++20)],
-  [CXXFLAGS="$OLDCXXFLAGS"
-   AC_MSG_NOTICE(C++20 not available)])
 
 if test "$enable_debug" = "yes"
 then
@@ -891,7 +895,6 @@ if test "$arithmetic_shifts" = "yes"
 then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
 fi
-
 
 AX_CXX_COMPILE_STDCXX([20], [ext], [optional])
 AC_MSG_NOTICE([HAVE_CXX20=$HAVE_CXX20])
@@ -1011,12 +1014,17 @@ then
 # resulting binary to a Fedora machine it works OK but you get an annoying
 # warning about whether the library has a proper version number. This hack
 # will link in libtinfo statically and ought to avoid that ugly warning at
-# a rather modest increase in the size of the shipped binary.
-  if test -f /usr/lib/*/libtinfo.a
-  then
-    LIBS="-l:libtinfo.a $LIBS"
-  else
+# a rather modest increase in the size of the shipped binary. HOWEVER this
+# will be a problem when cross-compiling and for that case I ought to
+# seek a version specific to the architecture I am building for. Ugh!
+# Well it seems that if I list ALL versions that I find then ones that are
+# not the relevant architecture get ignored...
+  a=`find /usr/lib -name libtinfo.a -printf "%p "`
+  if test "$a" = ""
+  then    % No libtinfo found
     AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
+  else    % At least one version found.
+    LIBS="$LIBS $a"
   fi
 fi
 
@@ -1869,6 +1877,7 @@ AM_CONDITIONAL(softfloat, test "$with_softfloat" != "no")
 AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
+AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict
