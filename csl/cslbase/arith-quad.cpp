@@ -1446,7 +1446,7 @@ void tripleSeries(double xhi, double xmid, double xlo,
 
 QuadFloat qexpt(QuadFloat a, QuadFloat b)
 {
-#pragma warning ("qexpt not coded yet")
+#pragma message ("qexpt not coded yet")
     return QuadFloat(f128_NaN);
 }
 

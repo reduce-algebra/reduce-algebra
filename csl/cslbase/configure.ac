@@ -242,6 +242,12 @@ AC_ARG_WITH(wx,
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
 
+AC_ARG_WITH(cygwin,
+  AC_HELP_STRING([--with-cygwin],
+                 [Force use of raw cywgin]),
+  [],
+  [with_cygwin="no"])
+
 AC_ARG_WITH(autogen,
   AS_HELP_STRING([--with-autogen],
                  [Used at a higher level]),

@@ -51,6 +51,8 @@ else
 # fasl="$cfasl"
 fi
 
+revision=$($reduce/scripts/revision.sh)
+
 logdir=$here/buildlogs
 logfile=reduce.img.blg
 
@@ -116,6 +118,8 @@ cd psl
 (load!-package 'rtools)
 (load!-package 'mathpr)
 (load!-package 'entry)
+(cond ((not (equal "$revision" ""))
+       (setq revision!* "$revision")))
 (setq version!* (compress (append
    (explode2 """Reduce (Free PSL version, revision ")
    (append (explode2 revision!*) '(!) !")))))

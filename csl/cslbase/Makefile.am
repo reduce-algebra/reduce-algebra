@@ -64,7 +64,7 @@ XREDUCE:
 
 else !xcross
 XCSL=./csl$(COM)
-XBOOTSTRAPREDUCE=./bootstrapreduce$(EXEEXT)
+XBOOTSTRAPREDUCE=./bootstrapreduce$(COM)
 XREDUCE=./reduce$(COM)
 endif !xcross
 
@@ -1820,7 +1820,7 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 #
 # A user may go "make CSLFLAGS=-g" to force "-g" into build-times Lisp flags...
 	chmod 664 $(gensrc)/*
-	$(XREDUCE)$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
+	$(XREDUCE) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \

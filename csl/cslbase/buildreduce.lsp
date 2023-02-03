@@ -1663,10 +1663,20 @@ symbolic restart!-csl nil;
 (load!-package 'entry)
 
 
-(setq version!* (compress (cons '!"
-  (append
-    (explodec "Reduce (CSL, rev ")
-    (append (explodec revision!*) (explodec ")"""))))))
+%(setq version!* (compress (cons '!"
+%  (append
+%    (explodec "Reduce (CSL, rev ")
+%    (append (explodec revision!*) (explodec ")"""))))))
+
+(prog (ff)
+  (setq ff (pipe!-open (print (concat !@reduce "/scripts/revision.sh")) 'input))
+  (setq ff (rds ff))
+  (setq revision!* (read))
+  (close (rds ff))
+  (setq version!* (compress (cons '!"
+    (append
+      (explodec "Reduce (CSL, rev ")
+      (append (explodec revision!*) (explodec ")""")))))))
 
 (setq date!* (date))
 
