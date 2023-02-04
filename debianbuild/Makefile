@@ -34,6 +34,7 @@ update-changelog:
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
+	( LANG=C svnversion .. $(REVISION) > $(BUILDTOPDIR)/svnversion.txt )
 	( cd $(BUILDTOPDIR) ; ./autogen.sh -f )
 	-rm -rf reduce-source_$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp
