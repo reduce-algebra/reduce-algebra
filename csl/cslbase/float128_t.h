@@ -48,6 +48,11 @@
 #ifndef header_float128_t
 #define header_float128_t
 
+#include <type_traits>
+#include <cstring>
+#include <iostream>
+#include <iomanip>
+
 #ifdef HAVE_BITCAST
 #include <bit>
 using std::bit_cast;
@@ -73,7 +78,7 @@ bit_cast(const From& src) noexcept
 #endif // CSL_BITCAST
 #endif // HAVE_BITCAST
 
-#include <cstring>
+#include "int128_t.h"
 
 // For any degree of sanity at all here I need to arrange that I can use
 // 128-bit floats using the normal arithmetic operators even though they

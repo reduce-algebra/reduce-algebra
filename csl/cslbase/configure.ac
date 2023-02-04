@@ -71,7 +71,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist])
 
-AC_PREREQ(2.69)
+AC_PREREQ([2.69])
 
 # My source file is expected to have "csl.cpp" in it. This is just a small
 # sanity check in case somebody tries to configure with directories
@@ -243,8 +243,7 @@ AC_ARG_WITH(wx,
 AC_MSG_NOTICE([--with-wx=$with_wx])
 
 AC_ARG_WITH(cygwin,
-  AC_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin]),
+  AS_HELP_STRING([--with-cygwin],[Force use of raw cywgin]),
   [],
   [with_cygwin="no"])
 
