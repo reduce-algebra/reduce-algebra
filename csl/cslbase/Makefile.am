@@ -2048,11 +2048,11 @@ $(generated_source_deps):	$(gensrc)/make.stamp $(HDRS)
 
 standard-c-code $(generated_lisp):	$(gensrc)/make.stamp $(HDRS)
 ## Recover from the removal of $@
-	if test -f $@; then touch $@; else \
+	+if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
-	  +$(MAKE) $(gensrc)/make.stamp; \
+	  $(MAKE) $(gensrc)/make.stamp; \
 	  $(RM) -f $(generated-objects); \
-	  +$(MAKE) reduce; \
+	  $(MAKE) reduce; \
 	fi
 
 
@@ -2318,7 +2318,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redsig.c \
 		$(generic)/newfront/redstrings.c $(HDRS)
 	@printf "Relinking $@ because of $?\n"
-	@printf "About to build redfront for %s\n" `pwd`; \
+	@printf "About to build redfront for %s\n" `pwd`
 	+$(MAKE) -C ../redfront
 
 endif redfront
