@@ -43,6 +43,7 @@ all:	package-win
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR); \
+	  LANG=C svnversion .. $(REVISION) > $(BUILDTOPDIR)/svnversion.txt ; \
 	  cd $(BUILDTOPDIR); ./autogen.sh ) > $(BUILDTOPDIR).log
 	touch $(BUILDTOPDIR).stamp
 
