@@ -1499,7 +1499,7 @@ public:
 
     template <typename T>
     typename std::enable_if<std::is_arithmetic<T>::value, int128_t>::type
-    operator-(const T & rhs) const
+    operator=(const T & rhs)
     {   return *this = int128_t(rhs);
     }
 

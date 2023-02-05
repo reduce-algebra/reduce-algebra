@@ -1668,11 +1668,12 @@ symbolic restart!-csl nil;
 %    (explodec "Reduce (CSL, rev ")
 %    (append (explodec revision!*) (explodec ")"""))))))
 
-(prog (ff)
+(prog (ff rev)
   (setq ff (pipe!-open (print (concat !@reduce "/scripts/revision.sh")) 'input))
   (setq ff (rds ff))
-  (setq revision!* (read))
+  (setq rev (read))
   (close (rds ff))
+  (cond ((fixp rev) (setq revision!* rev)))
   (setq version!* (compress (cons '!"
     (append
       (explodec "Reduce (CSL, rev ")

@@ -456,7 +456,9 @@ inline int64_t ASR(int64_t a, int n)
 inline int128_t ASR(int128_t a, int n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(int128_t))) n=0;
     return a/(static_cast<int128_t>(1)<<n) -
-        (a<0 && (a & ((static_cast<int128_t>(1)<<n)-1)) != 0);
+        static_cast<int128_t>(a<0 &&
+                              (a & ((static_cast<int128_t>(1)<<n)-
+                                     static_cast<int128_t>(1))) != 0);
 }
 
 // The behaviour of left shifts on negative (signed) values seems to be

@@ -51,7 +51,9 @@ else
 # fasl="$cfasl"
 fi
 
+# Get SVN revision from script and make sure that it is numeric
 revision=$($reduce/scripts/revision.sh)
+echo "$revision" | grep "[^0-9]" >/dev/null && revision=""
 
 logdir=$here/buildlogs
 logfile=reduce.img.blg
