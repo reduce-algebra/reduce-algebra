@@ -672,15 +672,15 @@ symbolic procedure token!-number x;
    endhexint:
       if x neq '!. then go to notdot;
       dotp := t;
-      goto hexnum1;
+      go to hexnum1;
    notdot:
       if (x neq '!p and x neq '!P) then go to ret1; 
       dotp := t;
       if (x := readch1()) = '!- then sign := t
       else if x = '!+ then nil
       else if (x eq !$eof!$) or
-              (null (string!-length id2string x = 1)) then go to hfret
-      else if null digit x then go to hfret
+              (null (string!-length id2string x = 1)) then go to hexe2
+      else if null digit x then go to hexe2
       else z := list x;
    hexe1:
       x := readch1();
@@ -689,11 +689,11 @@ symbolic procedure token!-number x;
       z := x . z;
       go to hexe1;
    hexe2:
-      z := compress reversip!* z;
-      if sign then z := -z;
-      power := power + z;
+      if null z then z := 0
+      else z := compress reversip!* z;
+      if sign then power := power - z else power := power + z;
       if power >= 0 then nxtsym!* := y * expt(2, power)
-      else nxtsym!* := mkrn(y , expt(2, -power));
+      else nxtsym!* := mkrn(y , expt(2, 0-power));
       crchar!* := x;
       return nxtsym!*;
    nume2:
