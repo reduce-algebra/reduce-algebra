@@ -2948,7 +2948,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If the system is running in a window then this message may not be very
 // readily visible. Apologies!
         term_printf("\n+++++ This package needs at least 100Mbytes of free memory and\n");
-        term_printf("that does not seem to be available. Giving up\n);
+        term_printf("that does not seem to be available. Giving up\n");
         my_exit();
     }
 // store_size is as set by "-k" or "--mem" and max_store_size by "--max-mem"
