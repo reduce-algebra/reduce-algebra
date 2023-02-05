@@ -45,29 +45,6 @@ cslbuild = $(reduce)/cslbuild
 packages = $(reduce)/packages
 generic = $(reduce)/generic
 
-if xcross
-w0001 := $(shell $(srcdir)/../../config.guess)
-w0002 := $(shell $(srcdir)/../../scripts/findhost.sh $(w0001) --csl)
-xdir := $(srcdir)/../../cslbuild/$(w0002)/csl
-XCSL=$(xdir)/csl
-XBOOTSTRAPREDUCE=$(xdir)/bootstrapreduce
-XREDUCE=$(xdir)/reduce
-
-XCSL:
-	-+$(TRACE)@$(MAKE) -C $(xdir) csl
-
-XBOOTSTRAPREDUCE:
-	-+$(TRACE)@$(MAKE) -C $(xdir) bootstrapreduce
-
-XREDUCE:
-	-+$(TRACE)@$(MAKE) -C $(xdir) reduce
-
-else !xcross
-XCSL=./csl$(COM)
-XBOOTSTRAPREDUCE=./bootstrapreduce$(COM)
-XREDUCE=./reduce$(COM)
-endif !xcross
-
 if windows
 if !cygwin
 
@@ -286,6 +263,29 @@ else !cygwin
 COM=
 endif !cygwin
 endif !windows
+
+if xcross
+w0001 := $(shell $(srcdir)/../../config.guess)
+w0002 := $(shell $(srcdir)/../../scripts/findhost.sh $(w0001) --csl)
+xdir := $(srcdir)/../../cslbuild/$(w0002)/csl
+XCSL=$(xdir)/csl
+XBOOTSTRAPREDUCE=$(xdir)/bootstrapreduce
+XREDUCE=$(xdir)/reduce
+
+XCSL:
+	-+$(TRACE)@$(MAKE) -C $(xdir) csl
+
+XBOOTSTRAPREDUCE:
+	-+$(TRACE)@$(MAKE) -C $(xdir) bootstrapreduce
+
+XREDUCE:
+	-+$(TRACE)@$(MAKE) -C $(xdir) reduce
+
+else !xcross
+XCSL=./csl$(COM)
+XBOOTSTRAPREDUCE=./bootstrapreduce$(COM)
+XREDUCE=./reduce$(COM)
+endif !xcross
 
 if fox
 foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)

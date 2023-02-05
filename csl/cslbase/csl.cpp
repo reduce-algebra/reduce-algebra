@@ -2943,6 +2943,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     mem = sysPageCount*static_cast<size_t>(sysPageSize);
 #endif // WIN32
     double dmem = mem/(1024.0*1024.0);    // Physical memory now in megabytes
+    if (dmem < 100)
+    {
+// If the system is running in a window then this message may not be very
+// readily visible. Apologies!
+        term_printf("\n+++++ This package needs at least 100Mbytes of free memory and\n");
+        term_printf("that does not seem to be available. Giving up\n);
+        my_exit();
+    }
 // store_size is as set by "-k" or "--mem" and max_store_size by "--max-mem"
 // and in each case the value will be zero if the user has not provided an
 // explicit setting.
@@ -2960,12 +2968,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         max_store_size = 1600.0;
     if (store_size == 0.0) store_size = dmem/2.0;
     if (store_size > max_store_size) store_size = max_store_size;
-#ifdef CONSERVATIVE
-// With this variant at least 32 Mbytes will be needed, so force that in
+// I take the view that at least 48 Mbytes will be needed, so force that in
 // case anybody has tried to set a lower limit.
-    if (store_size < 32.0) store_size = 32.0;
-    if (max_store_size < 32.0) max_store_size = 32.0;
-#endif // CONSERVATIVE
+    if (store_size < 48.0) store_size = 48.0;
+    if (max_store_size < 48.0) max_store_size = 48.0;
     maxPages = static_cast<size_t>(max_store_size)/pageMega;
 
 // Up until the time I call setup() I may only use term_printf for
