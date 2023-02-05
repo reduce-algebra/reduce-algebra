@@ -871,7 +871,7 @@ int main(int argc, const char *argv[])
 //     (none)               run in gui mode in "sensible" cases
 //     -w   -w-   --nogui   run in console mode
 //     -w+  --gui           run in gui mode if at all possible, fail otherwise.
-//     -w.  --guimin        run in guie mode but start minimised.
+//     -w.  --guimin        run in gui mode but start minimised.
 //
 // I run as a minimise window (by default) in the "--" case since I can use
 // the window title-bar to report progress even when all output is directed to

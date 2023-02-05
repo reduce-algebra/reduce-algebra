@@ -759,6 +759,12 @@ symbolic procedure mkarg(u,vars);
 
 % Form functions needed for number input.
 
+put('!:rn!:,'formfn,'rnform);
+
+symbolic procedure rnform(u,vars,mode);
+   if mode = 'symbolic then float cadr u / float cddr u
+   else mkquote list('quotient, cadr u, cddr u);
+
 put('!:dn!:,'formfn,'dnform);
 put('!:dn!-s!:,'formfn,'dnform!-s);
 put('!:dn!-f!:,'formfn,'dnform!-f);

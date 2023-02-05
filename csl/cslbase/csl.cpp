@@ -1341,7 +1341,7 @@ int kara_done = 0;
 // associated value which can be written as either "-xVAL" or "-x VAL".
 // Well that is not good in the case "-w" because I want "-w" on its own to
 // be valid but also "-w+" and "-w-", so what about "-w -"? Well that needs
-// to be treated as "-w" on its own followed be a quite separte argument "-"
+// to be treated as "-w" on its own followed be a quite separate argument "-"
 // which indicated an input source.
 // Arguments written in the form "--word" can have an associated value
 // either as "--word=VAL" or "--word VAL".

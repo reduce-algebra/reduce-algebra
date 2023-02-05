@@ -241,6 +241,7 @@ flatcsl_CPPFLAGS    += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 # .com version to be a console application. If I only have command-line
 # versions it is easiest to make everything .exe
 if windows
+
 if cygwin
 COM=.exe
 else !cygwin
@@ -256,7 +257,9 @@ else !gui
 COM=.exe
 endif !gui
 endif !cygwin
+
 else !windows
+
 if cygwin
 COM=.exe
 else !cygwin

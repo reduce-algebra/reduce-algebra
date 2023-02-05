@@ -577,6 +577,8 @@ if !*csl then <<
 % a short float by using ":dn!-s!:" to tag it rather than just ":dn:", but
 % then in algebraic mode form() will map that back onto just !:dn!: so that
 % the short nature of the float is only used in symbolic mode.
+%  put('!p, 'exponent!-mark, '!:dn!-p!:);
+%  put('!P, 'exponent!-mark, '!:dn!-p!:);
   put('!s, 'exponent!-mark, '!:dn!-s!:);
   put('!S, 'exponent!-mark, '!:dn!-s!:);
   put('!f, 'exponent!-mark, '!:dn!-f!:);
@@ -594,7 +596,9 @@ else <<
 symbolic procedure token!-number x;
    % Read and return a valid number from input.
    % Adjusted by A.C. Norman to be less sensitive to input case and to
-   % support hex numbers.
+   % support hex numbers. And now hex floats in form such as 0x1.ABC5p-7
+   % where the exponent is a scale in powers of 2, so for instance
+   % 0x1.0P10 == 1024.0
    begin scalar dotp,power,sign,y,z,xmark;
       power := 0;
       ttype!* := 2;
@@ -614,15 +618,6 @@ symbolic procedure token!-number x;
          go to num2 >>
        else if digit x then go to num1
        else if y = '(!0) and (x = '!x or x = '!X) then go to hexnum
-% The next line is a HACK so that 0zNNNNN will let ACN read in a potentially
-% big integer explicitly using an experimental version of the CSL bignum
-% arithmetic. The syntax will only be available if a function called "newplus"
-% is defined, which I take to be a signature of the testing code. When (and
-% I should probably say "if") CSL has fully adopted its new code I can get
-% rid of this!
-       else if y = '(!0) and
-               (x = '!z or x = '!Z) and
-               getd 'newplus then go to znum
 % For whatever original reason this ignores backslashes within numbers. This
 % I guess lets one write 12\34567\89000 and group digits in fives if you like.
 % I can not see this mentioned in the manual and wonder if anybody uses it.
@@ -670,17 +665,37 @@ symbolic procedure token!-number x;
    hexnum:
       y := 0;
    hexnum1:
-      if not (z := get(x := readch1(), 'hexdigit)) then go to ret1;
+      if not (z := get(x := readch1(), 'hexdigit)) then go to endhexint;
       y := 16*y + z;
+      if dotp then power := power-4;
       go to hexnum1;
-   znum:
-      y := 0;
-   znum1:
-      if not digit (x := readch1()) then go to ret1;
-% This uses functions newplus and newtimes that are only available in
-% non-standard testing builds of the CSL version...
-      y := newplus(newtimes(10, y), get(x, 'hexdigit));
-      go to znum1;
+   endhexint:
+      if x neq '!. then go to notdot;
+      dotp := t;
+      goto hexnum1;
+   notdot:
+      if (x neq '!p and x neq '!P) then go to ret1; 
+      dotp := t;
+      if (x := readch1()) = '!- then sign := t
+      else if x = '!+ then nil
+      else if (x eq !$eof!$) or
+              (null (string!-length id2string x = 1)) then go to hfret
+      else if null digit x then go to hfret
+      else z := list x;
+   hexe1:
+      x := readch1();
+      if null (string!-length id2string x = 1) then go to hexe2
+       else if null digit x then go to hexe2;
+      z := x . z;
+      go to hexe1;
+   hexe2:
+      z := compress reversip!* z;
+      if sign then z := -z;
+      power := power + z;
+      if power >= 0 then nxtsym!* := y * expt(2, power)
+      else nxtsym!* := mkrn(y , expt(2, -power));
+      crchar!* := x;
+      return nxtsym!*;
    nume2:
       if null z then rerror('rlisp,4,
          concat("Syntax error: improper number ",
