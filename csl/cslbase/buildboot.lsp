@@ -1,12 +1,13 @@
+(setq !*echo t)
 % "buildreduce.lsp"
 %
 % Build a CSL REDUCE.
 %
 % This create a first-stage bootstrap version of Reduce. Normally you
-# should use buildreduce.lsp which does than and then follows on to
-# build everything else, but during development por debugging if that full
-# build gives trouble it may be useful to use this to create the first
-# bootstrap stage for further testing.
+% should use buildreduce.lsp which does than and then follows on to
+% build everything else, but during development por debugging if that full
+% build gives trouble it may be useful to use this to create the first
+% bootstrap stage for further testing.
 %
 
 % Author: Anthony C. Hearn, Stanley L. Kameny and Arthur Norman
