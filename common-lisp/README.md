@@ -1,29 +1,22 @@
-REDUCE on Common Lisp
-=====================
+# REDUCE on Common Lisp
 
-**Francis Wright, April 2022**
+**[Francis Wright](https://sites.google.com/site/fjwcentaur), February 2023**
 
-From the introductory chapter of [*Common Lisp the Language, 2nd
-edition*, by Guy L. Steele
-Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
+From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
 
-> The goals of Common Lisp are thus very close to those of Standard Lisp
-and Portable Standard Lisp. Common Lisp differs from Standard Lisp
-primarily in incorporating more features, including a richer and more
-complicated set of data types and more complex control structures.
+> The goals of Common Lisp are thus very close to those of Standard Lisp and Portable Standard Lisp. Common Lisp differs from Standard Lisp primarily in incorporating more features, including a richer and more complicated set of data types and more complex control structures.
 
 **This code is currently experimental!**
 
 The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows and Linux, where, "Linux" means the current or recent versions of Ubuntu and Fedora.  There is also some code to support macOS and I understand that REDUCE builds and runs on SBCL and CCL, but not CLISP, on macOS, although I don't run macOS myself.
 
-I have recently built REDUCE using SBCL 2.2.4, Cygwin GNU CLISP 2.49+ and CCL 1.12.1 on Windows, and SBCL 2.2.3, GNU CLISP 2.49.92 and CCL 1.12.1 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing recently.
+I have built REDUCE using SBCL 2.2.4, Cygwin GNU CLISP 2.49+ and CCL 1.12.1 on Windows, and SBCL 2.2.3, GNU CLISP 2.49.92 and CCL 1.12.1 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing recently.
 
-The support for CCL is based on code provided by Marco Ferraris.  There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer SchC6pf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
+The support for CCL is based on code provided by Marco Ferraris.  There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
 
-Building REDUCE
----------------
+## Building REDUCE
 
-Create a build directory somewhere convenient.  If you download the whole [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/) then you can use the `common-lisp` directory as your build directory with no additions.
+Create a build directory somewhere convenient.  I recommend that you use [Subversion](https://en.wikipedia.org/wiki/Apache_Subversion) (`svn`) to install and maintain a copy of the whole [REDUCE trunk](https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/), in which case you can use the `common-lisp` sub-directory as your build directory with no additions, and the build process should determine the REDUCE revision automatically; see [Determining the REDUCE revision](#determining-the-reduce-revision).
 
 You need an appropriate version of SBCL, CLISP, CCL and/or ABCL (see links above).  Possibly out-of-date versions of SBCL and CLISP on Linux should be available via a Linux package manager such as Synaptic (but not via a software installer for windowed applications).
 
@@ -52,19 +45,27 @@ If you do not build within the REDUCE Subversion file tree then the following tw
 
 Open a window running `bash` and make your chosen build directory current.  If you need to set the `$reduce` environment variable, you can do it like this.  For example, to use the `packages` directory from a _default_ REDUCE installation to build SBCL REDUCE on MS Windows, execute the `bash` command
 
-    export reduce='C:/Program Files/Reduce'
+```sh
+export reduce='C:/Program Files/Reduce'
+```
 
 or to build CLISP REDUCE on Cygwin, execute the `bash` command
 
-    export reduce='/cygdrive/c/Program Files/Reduce'
+```sh
+export reduce='/cygdrive/c/Program Files/Reduce'
+```
 
 On Linux, use something like the following for all versions of Common Lisp:
 
-    export reduce='/usr/share/reduce'
+```sh
+export reduce='/usr/share/reduce'
+```
 
 Then run the build script by executing the `bash` command
 
-    ./build.sh -l <lisp>
+```sh
+./build.sh -l <lisp>
+```
 
 where `<lisp>` is either `sbcl`, `clisp`, `ccl` or `abcl`.
 
@@ -72,21 +73,35 @@ The build process should create two sub-directories in the build directory calle
 
 The build script supports some optional flags: `-c` provides a clean build, by first deleting all the files that get built; `-f` forces all REDUCE packages to be recompiled, even if they appear to be up to date; `-b` builds only bootstrap REDUCE; `-h` displays help.  To build using an updated version of Common Lisp, you should do a clean build, i.e.
 
-    ./build.sh -l <lisp> -c
+```sh
+./build.sh -l <lisp> -c
+```
 
+## Determining the REDUCE revision
 
-Running REDUCE
---------------
+If you used Subversion to download or update a copy of the REDUCE distribution files from [SourceForge](https://sourceforge.net/projects/reduce-algebra/) then the build process should correctly determine the REDUCE revision from the `packages` directory, which contains all the REDUCE source code.  This determination uses the programs [`svnversion`](https://svnbook.red-bean.com/en/1.7/svn.ref.svnversion.re.html) and [`readlink`](https://www.gnu.org/software/coreutils/manual/html_node/readlink-invocation.html) (if available).  If this determination fails then the build process uses the file `packages/support/revision.red`, but beware that this file is obsolescent and may not continue to give the correct revision.  If necessary, the REDUCE revision can be specified by hand using the `-r` option to `build.sh`, e.g.
+
+```sh
+./build.sh -l <lisp> -r revision -c
+```
+
+The order of precedence of the various mechanisms for determining the REDUCE revision is first the `-r` option, then `svnversion`, then `revision.red`.
+
+## Running REDUCE
 
 The general convention is that REDUCE on `<lisp>` is run by executing a shell script file named `red<lisp>`, where `<lisp>` is either `sbcl`, `clisp` or `ccl`.
 
 On MS Windows, SBCL or CCL REDUCE can be run by double-clicking the file `red<lisp>.bat`, or from a Windows command prompt with the build directory current by executing the command
 
-    red<lisp>
+```sh
+red<lisp>
+```
 
 On Linux or Cygwin, open a terminal window with the build directory current and execute the command
 
-    ./red<lisp>
+```sh
+./red<lisp>
+```
 
 Beware that input editing may not work using the shell interface; one solution is to use [Run-REDUCE](https://fjwright.github.io/Run-REDUCE/).
 
@@ -94,8 +109,7 @@ REDUCE can be run from any directory provided the command to start it is specifi
 
 Interrupting REDUCE (with Control-C) invokes a Lisp break loop and aborting that should return you to REDUCE.  Within the break loop you can run arbitrary Lisp code, but remember that you are running Common Lisp and in particular Lisp output uses Common Lisp syntax, although you are initially in the Standard Lisp package.  However, package prefixes are recognised (which they are not from within REDUCE) so you can access most of Common Lisp, but beware that you might break REDUCE so that you cannot return to it!  Evaluating the Lisp expression `(exit)` from a Lisp break loop should completely terminate REDUCE.
 
-Implementation-specific functionality
--------------------------------------
+## Implementation-specific functionality
 
 The following facilities are modelled on those provided by PSL; please see the PSL manual for further details.
 
@@ -111,8 +125,7 @@ The identifier `common-lisp` is always included in the list assigned to the stan
 
 For Cygwin CLISP REDUCE (on MS Windows), the REDUCE `gnuplot` package tries to run Cygwin gnuplot if it is available and if not then it tries to run native MS Windows gnuplot (which is included in REDUCE binary distributions for MS Windows).  Cygwin gnuplot produces graphical output if REDUCE is run under the X Window System and text output otherwise.  For CLISP REDUCE on Linux and SBCL REDUCE on both MS Windows and Linux, gnuplot produces graphical output.
 
-Status (July 2019)
-------------------
+## Status (July 2019)
 
 The process described above should build all of REDUCE without any obvious errors.  So far, I have avoided the need to customise the main REDUCE source code (apart from the file `gnuintfc.red`).
 
@@ -125,8 +138,7 @@ All available test files produce output that agrees with CSL REDUCE apart for ti
 * The `rubi_red` test is very slow, generates very much output, and timeouts can't work on CLISP (see below), but otherwise the early part of the test file appears to run correctly &ndash; excluded from regular testing.  On SBCL, the first error is similar to that shown on CSL, but SBCL REDUCE does not recover after this error, probably due to the currently crude general error handling.
 * The `xcolor` test only runs to completion on SBCL with `(declaim (optimize speed))`. I think this is because it involves a highly recursive procedure (color1), which runs out of stack on the most complicated examples at the end of the test file unless optimized for maximum speed.
 
-Timings (July 2019)
--------------------
+## Timings (July 2019)
 
 New timing methodology uses the bash time command.  "Best" means the fastest previous time.  Numbers in parentheses are times relative to the CSL times.
 
@@ -146,13 +158,11 @@ Run (and check) most noncore test files |  7 m 09 s |           | 26 m 02 s (3.6
 
 The CSL test times do not include checking, which involves running `diff`.  The times for the noncore tests do not include `reduce4`, `ibalp` or `rubi_red` as explained above. The `gnuplot` and `turtle` tests are excluded because they need to be run interactively, but they seems to work OK on both MS Windows and Linux.
 
-Known limitations
------------------
+## Known limitations
 
 I cannot see any way to support the facilities for restricting execution time on CLISP.  In more detail: the file "rlisp/inter.red" defines procedures `with!-timeout` and similar that use garbage collection to provide an interrupt by assigning a function to the variable `!*gc!-hook!*`, but no garbage collection hooks exist in CLISP.  The procedures `with!-timeout` and similar just run without any restriction so don't use CLISP REDUCE is you need this facility!  This affects `rubi_red` and possibly other packages.  It works on SBCL!
 
-To do
------
+## To do
 
 * Optimise SL-on-CL to improve its speed.
 * Better error handling.
