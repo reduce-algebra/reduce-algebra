@@ -98,9 +98,12 @@ if [ -z "$revision" ] && type svnversion > /dev/null; then
     packages="$reduce/packages"
     # If $packages is a symlink then follow it (if possible):
     if [ -L $packages ] && type readlink > /dev/null; then
-        packages="$(readlink -n "$packages")"
+        packages=$(readlink -n "$packages")
     fi
-    revision="$(svnversion -n "$packages")"
+    revision=$(svnversion -n "$packages")
+    # Value may be 4123:4168MSP so extract the second number:
+    revision=${revision/#*:}     # delete first number and ":"
+    revision=${revision/%[A-Z]*} # delete trailing letters
 fi
 if [[ "$revision" =~ ^[[:digit:]]+$ ]]; then
     echo '+++++ REDUCE revision number set to' $revision
