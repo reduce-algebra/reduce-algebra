@@ -3,38 +3,36 @@
 # Test all package
 
 # Usage:
-#   scripts/testall.sh [--noregressions]
-#                      [--csl] [--cslboot] [--installed-csl]
-#                      [--csl-XXX] [--cslboot-XXX] [--cslboot1]
-#                      [--csl=host-triple]
-#                      [--jlisp] [[jlispboot]
-#                      [--psl] [--installed-psl]
-#                      [--uncached] [--install] [--keep] [--just-time]
-#                      [--skip-missing-rlg] [--no-timeout]
+#   scripts/testall.sh [options] [systems-to-test] [[a few package names]]
+# Options:             --noregressions --install --keep
+#                      --just-time --skip-missing-rlg --no-timeout
+# Systems-to-test:     --csl --bootstrapreduce
+#                      --csl=XXX --bootstrapreduce=XXX
+#                      --jlisp jlispboot
+#                      --psl --psl=XXX
+# See explanation in scripts/test1.sh regarding valid "XXX" but the
+# most common and general use will be if it is a directory name within
+# cslbuild or pslbuild.
 #
-# If present the argument "--noregressions" must come first and it
-# causes the script to avoid running the regression tests. This may be useful
-# when just checking performance of the core of Reduce.
-#
-# Other arguments can be given in any order. "--install" will lead to
-# a fresh set of reference logs being places in the source tree based on
-# testing the CSL version. "--keep" preserves some temporary files created
-# during testing and may be useful when debugging this script. "--uncached"
-# runs the tests with symbolic(!*uncached := t).
-# --skip-missing-rlg skips the .tst files that don't have a corressponding .rlg
-# file. --no-timeout places no restrictions on the runtime of the tests.
-# --csl, --psl, --jlisp, --cslboot and --jlispboot select the variants
-# of Reduce to test, and any number of those options can be given. If none
-# are then "--csl --psl" is assumed. --csl-XXX stands for something like
-# --csl-debug, --csl-nothrow, --csl-nothrow-debug or some other collection
-# of options referring to a copy of Reduce (or bootstrareduce) in the cslbuild
-# directory.
-# --installed-csl and --installed-psl use versions of the redcsl and redpsl
-# command present on your PATH.
-
-# Part of the intent here is that if any further variants of Reduce get
-# created it should be reasonably straightforward to extent the code here
-# to support testing them. Changes will be needed in "test1.sh" too.
+# --noregressions: Arrange that the large number of small regressions tests
+#    are not run.
+# --install: Install test in the main tree after they are generated.
+# --keep: Preserve temporary files used while running the tests, parhaps
+#    to help with debugging the test framework.
+# --just-time: Do not re-run all the tests but report on timings
+#    collected on the last occasion testall.sh was run.
+# --skip-missing-rlg: Skip any .tst files that don't have a corresponding
+#    .rlg file. Ideally the Reduce tree should not have any cases of this,
+#    but when a new package is added sometimes there is a delay before the
+#    log file for its test is put in place.
+# --no-timeout places no restrictions on the runtime of the tests. This
+#    may be especially useful when running tests of cross-build versions
+#    via an emulator, since without this option the CPU or wallclock time
+#    for each test is capped.
+# In normal use one will not give "a few package names" and the script
+# will run tests on all packages. An explicit list will especially be
+# useful while testing this script so that it does not take the time involved
+# in working through everything!
 
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives. The logs directories
@@ -44,73 +42,71 @@
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
+scripthere="$here"
 here=`dirname "$here"`
+
+#######################################################################
+# Procedures that sort out directory names for me
+#######################################################################
+
+. "$scripthere/getplatform.sh"
 
 # Well I want to tidy up files relating to platforms being tested so I
 # do need to scan the argument list and collect them
 
 noregressions="no"
-if test "$1" = "--noregressions"
-then
-  noregressions="yes"
-  shift
-fi
-
-platforms=""
-plist=""
-base=""
-extras=""
-version=""
 just_time="no"
-for a in $*
+args_for_test1=""
+platforms=""
+basecase=""
+
+while test $# != 0
 do
-  case $a
+  case $1
   in
-  --install | --keep | --uncached | --skip-missing-rlg | --no-timeout)
-    extras="$extras $a"
+  --install | --keep | --skip-missing-rlg | --no-timeout)
+    args_for_test1="$args_for_test1 $1"
+    shift
     ;;
-  --csl | --csl-* | --cslboot | --cslboot1 | --cslboot-* | --csl=* | \
-  --jlisp | --jlispboot | --installed-csl | --psl | --installed-psl)
-# I will build up two lists of the platforms to test, plus a variable.
-#    $platforms will be a sequence of names like "csl psl" etc and is used in
-#       this file to deal with directories within which logs accumulate.
-#    $base is the first entry on $platforms and is used as the base-system
-#       against which others are evaluated.
-#    $plist is a list like "--psl --csl" used to pass down to test1.sh
-    sys=${a#--}
-    if test "$base" = ""
-    then
-      plist="$a"
-      platforms="$sys"
-      base=$sys
-    else
-      plist="$plist $a"
-      platforms="$platforms $sys"
-    fi
+  --noregressions)
+    noregressions="yes"
+    shift
     ;;
   --just-time)
     just_time="yes"
+    shift
+    ;;
+  --csl* | --bootstrapreduce* | --psl* | --jlisp | --jlispboot)
+    platforms="$platforms $1"
+    if test "$basecase" = ""
+    then
+      basecase="$1"
+    fi
+    shift
     ;;
   *)
-    printf "\"$a\" is not a valid argument to this script.\n"
-    printf "Valid options are: --csl* --cslboot* --jlisp --jlispboot --psl\n"
-    printf "    --noregressions --install --keep --uncached\n"
-    printf "Stopping.\n"
-    exit 1
+    break
     ;;
   esac
 done
 
 # Apply default if no platforms specified
-if test "$base" = ""
+if test "$platforms" = ""
 then
-  plist="--csl --psl"
-  platforms="csl psl"
-  base="csl"
+  platforms="--csl --psl"
+  basecase="--csl"
 fi
 
-dbase=`$here/scripts/alias.sh $here $base`
-dbase=`$here/scripts/logdirname.sh $dbase`
+# If the user has explicitly listed some packages to test then do not
+# include the regrssions.
+
+if test $# != 0
+then
+  noregressions="yes"
+fi
+
+baseplat=`getplatform $basecase`
+baselogdir=`getlogdir $baseplat`
 
 if test "$just_time" = "no"
 then
@@ -118,80 +114,73 @@ then
 #
 # Remove old log files
 #
-  for sys in $platforms
+  for pp in $platforms
   do
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    sys=${sys#csl=}
-    sys=${sys#*-*-}
-    if test "$sys" = "cslboot1"
-    then
-      sys="cslboot"
-    fi
-    rm -f $dsys-times/*.rlg* $dsys-times/showtimes \
-          $dbase-$dsys-times-comparison/*.rlg.diff
-    mkdir -p $dsys-times
-    echo "showtimes := '(" > $dsys-times/showtimes
+    pp=`getplatform $pp`
+    logdir=`getlogdir $pp`
+    rm -f $logdir/*.rlg* $logdir/showtimes
+    rm -f ${baselogdir%-times}-${logdir%-times}-comparison/*.rlg.diff
+    mkdir -p $logdir
+    echo "showtimes := '(" > $logdir/showtimes
   done
 
-  packages=`sed -e '/^\%/d' $here/packages/package.map | \
-            grep ' test ' | \
-            sed -e 's/(//; s/".*//'`
+  if test $# != 0
+  then
+    packages=$*
+  else
+    packages=`sed -e '/^\%/d' $here/packages/package.map | \
+              grep ' test ' | \
+              sed -e 's/(//; s/".*//'`
+  fi
 
-  for p in $packages
+  for pkg in $packages
   do
-    $here/scripts/test1.sh $extras $plist $p
+    $scripthere/test1.sh $args_for_test1 $platforms $pkg
   done
 
   if test "$noregressions" = "no"
   then
-    for p1 in $here/packages/regressions/*.tst
+    for pkg in $here/packages/regressions/*.tst
     do
-      p=${p1%.tst}
-      p=${p##*/}
-      $here/scripts/test1.sh $extras $plist regressions $p
+      pkg=${pkg%.tst}
+      pkg=${pkg##*/}
+      $scripthere/test1.sh $args_for_test1 $platforms regressions $pkg
     done
   fi
 
-  for sys in $platforms
+  for pp in $platforms
   do
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    echo ")\$ end\$" >> $dsys-times/showtimes
+    pp=`getplatform $pp`
+    logdir=`getlogdir $pp`
+    echo ")\$ end\$" >> $logdir/showtimes
   done
 fi
 
-printf "\nSummary of test runs for $platforms\n\n"
+printf "\nSummary of test runs\n"
 
 if test "$just_time" = "no"
 then
-  for sys in $platforms
+  for pp in $platforms
   do
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    sys=${sys#csl=}
-    sys=${sys#*-*-}
-    d=`cd $dsys-times; echo *.rlg.diff`
+    pp=`getplatform $pp`
+    logdir=`getlogdir $pp`
+    d=`cd $logdir; echo *.rlg.diff`
     if test "$d" != '*.rlg.diff'
     then
-      printf "\nDifferences for $sys: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+      printf "\nDifferences for ${logdir%-times}: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
     fi
   done
 
-  for sys in $platforms
+  for pp in $platforms
   do
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    if test "$sys" != "$base"
+    pp=`getplatform $pp`
+    logdir=`getlogdir $pp`
+    if test "$logdir" != "$baselogdir"
     then
-      sys1=${sys#csl=}
-      sys1=${sys1#*-*-}
-      base1=${base#csl=}
-      base1=${base1#*-*-}
-      d=`cd $dbase-$dsys-times-comparison; echo *.rlg.diff`
+      d=`cd ${baselogdir%-times}-${logdir%-times}-comparison; echo *.rlg.diff`
       if test "$d" != '*.rlg.diff'
       then
-        printf "\nDifferences between $base1 and $sys1: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
+        printf "\nDifferences between ${baselogdir%-times} and ${logdir%-times}: `echo $d | sed -e 's/\.rlg\.diff//g'`\n"
       fi
     fi
   done
@@ -232,52 +221,11 @@ quit; >>$
 XXX
 }
 
-for sys in $platforms
+for pp in $platforms
 do
-  case $sys in
-  cslboot1)
-    reporttime "CSLBOOT1" "cslboot-times"
-    ;;
-  cslboot*)
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    reporttime "CSLBOOT${sys#cslboot}" "$dsys-times"
-    ;;
-  installed-cslboot)
-    reporttime "installedCSLBOOT" "installed-cslboot-times"
-    ;;
-  csl | csl-*)
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    reporttime "CSL${sys#csl}" "$dsys-times"
-    ;;
-  installed-csl)
-    reporttime "installedCSL" "installed-csl-times"
-    ;;
-  csl=*)
-    dsys=`$here/scripts/alias.sh $here $sys`
-    dsys=`$here/scripts/logdirname.sh $dsys`
-    sys=${sys#csl=}
-    sys=${sys#*-*-}
-    reporttime "$sys" "$dsys-times"
-    ;;
-  jlisp)
-    reporttime "Jlisp" "jlisp-times"
-    ;;
-  jlispboot)
-    reporttime "Jlispboot" "jlispboot-times"
-    ;;
-  psl)
-    reporttime "PSL" "psl-times"
-    ;;
-  installed-psl)
-    reporttime "installedPSL" "installed-psl-times"
-    ;;
-  *)
-    printf "+++ $sys unknown\n"
-    ;;
-  esac
+  pp=`getplatform $pp`
+  logdir=`getlogdir $pp`
+  reporttime ${logdir%-times} $logdir
 done
 
 # end of script
-

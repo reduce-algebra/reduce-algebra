@@ -2,61 +2,60 @@
 
 # Test a package
 #
-#    scripts/test1.sh [options] package_name
-#    scripts/test1.sh [options] regressions testname
+#    scripts/test1.sh [options] [versions to test] package_name
+#    scripts/test1.sh [options] [versions to test] REGRESSIONS testname
 #
-# The available options are
 #
-#  VERSIONS TO TEST:
-#     --csl       run tests using CSL,
-#                 [can also use eg --csl-debug, --csl-nothrow etc].
-#     --cslboot   run tests using CSL "bootstrapreduce",
-#                 [can also use --cslboot-debug etc].
-#     --cslboot1  run tests using CSL "bootstrapreduce",
-#                 but collect just counts of procedure entries not full
-#                 bytecode use.
-#     --csl=host-triple
-#                 use executable ...cslbuild/host-triple/csl/reduce
-#                 so eg "--csl=x86_64-pc-cygwin-debug" is rather like
-#                 just using "--csl-debug".
-#     --psl       run tests using PSL.
-#     --jlisp     run tests using Jlisp.
-#     --jlispboot run tests using Jlisp "bootstrapreduce.jar".
-#     --installed-csl  Use a version installed as "redcsl" in $PATH.
-#     --installed-cslboot  Use "bootstrapreduce" from PATH.
-#     --installed-psl  Use "redpsl", ie version from PATH.
-#
-#  GENERAL OPTIONS:
+#  OPTIONS:
 #     --keep      preserve raw intermediate files at end of test, eg for
 #                 debugging.
 #     --install   copy CSL results back into the main source tree as
 #                 a fresh set of reference log files
-#     --uncached  run tests with symbolic(!*uncached := t);
 #     --skip-missing-rlg
 #                 do not run test when the .rlg file is missing
 #     --no-timeout
 #                 do not limit the time for test runs
 #
-# For --csl and --cslboot the end of the name can be some subset of
-# CSL variant builds. As of early 2021 this is some of the following
-# in the order shown
-#     -m32-m64-nogui-fox-wx-test-arithlib-conservative-nothrow-debug
-# but of these -m32 and -m64 are historical relics, -wx a stalled potential
-# development and -arithlib, -conservative and -nothrow are to varying extents
-# incomplete and experimental. This feature is present for sensible reasons
-# like comparing results and timing for a release vs. a debug build and
-# while testing those incomplete experiments to see how close to running the
-# full set of tests they get. And what impact they have on timings.
-# If any such suffix is given a relevent built version must be present in
-#     cslbuild/$host_triple$suffix/csl
-# [eg cslbuild/x86_64-pc-cygwin-test-debug/cslor whatever].
 #
-# It is legal and reasonable and proper to specify multiple Lisp variants to
-# be tested. If none are explicitly mentioned the code will default to
-# behaving as if "--csl --psl" has been specified. Note that this means that
-# if you specify ANY platform explitly then only listed platforms will be
-# tested.
 #
+#  VERSIONS TO TEST:
+# Several versions can be specified. If none are listed testing is
+# performed as of "--csl --psl" had been indicated.
+#
+#     --csl=VARIANT
+#                 Use executable ...cslbuild/VARIANT/csl/reduce
+#                 so eg "--csl=x86_64-pc-cygwin-debug" is a way to
+#                 test and report on a debug-build.
+#     --bootstrapreduce=VARIANT
+#                 similarly but use bootstrapreduce
+# There are a collection of abbreviations that can be used for VARIANT
+# so that plausibly common cases are less cumbersome to use:
+#      --csl, --bootstrapreduce, --psl: Use the default build within
+#           the build tree. Note these are without a "=" sign.
+#      --X=installed: Use a version from the system $PATH rather than
+#           one in the current tree.
+#      --X=debug: For CSL based versions use the debug build.
+#      {--X-debug: temporary synonym for --X=debug for backwards compatibility} 
+#      --X=windows, =cygwin, =windows, =native, =universal, =cygwin-debug,
+#           =windows-debug, =native-debug, =universal-debuf: On Windows
+#           for CSL based versions this allows selection as between a native
+#           windows version and a cygwin one. On the Macintosh between
+#           a native (only) build and an universal one. 
+#
+#     --psl=VARIANT
+#                 Use a PSL Reduce from .../pslbuild/VARIANT.
+#
+# Jlisp is not very much supported, but these will parhaps be of use to
+# anyone trying to use it again. 
+#     --jlisp     Run tests using Jlisp.
+#     --jlispboot Run tests using Jlisp "bootstrapreduce.jar".
+#
+#
+# PACKAGE or REGRESSION
+# After all the other options there is either an (optional) package
+# name - which defaults to "alg", or the word "regressions" followed by
+# the name of one of the tests in the packages/regressions directory.
+
 
 # I want this script to be one I can launch from anywhere, so
 # to access files etc I need to know where it lives.
@@ -64,15 +63,16 @@
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
+scripthere="$here"
 here=`dirname "$here"`
 
-# I will annotate the script with the identity of the machine on which the
-# test was run... mc ends up as (probably!) the host-triple used in the
-# cslbuild directory. There is perhaps one oddity in that if that comes
-# out as x86_64-pc-windows than x86_64-pc-cygwin may also be relevant!
+# Procedures to help me sort out file names etc.
 
-mc=`$here/config.guess`
-mc=`$here/scripts/findhost.sh $mc`
+. "$scripthere/getplatform.sh"
+
+#######################################################################
+# Start of main action
+#######################################################################
 
 diffBw() {
     case `diff -v 2> /dev/null` in
@@ -91,163 +91,65 @@ diffBw() {
     esac
 }
 
-# platforms is a list of the cases to be tested
-platforms=""
 
 install="no"
 keep="no"
-slow="no"
-uncached=""
-skipmissingrlg=""
-notimeout="no"
+skip_missing_rlg="no"
+no_timeout="no"
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
-# stop if I either upperly run put of arguments (detected when $# = 0) or
+# stop if I either utterly run put of arguments (detected when $# = 0) or
 # if $1 fails to match one of the keywords.
 
-stop="no"
-until test "$stop" = "yes"
+while test "$#" != 0
 do
-  if test "$#" = "0"
+  case "$1" in
+  --install)
+    install="yes"
+    shift
+    ;;
+  --keep)
+    keep="yes"
+    shift
+    ;;
+  --skip-missing-rlg)
+    skip_missing_rlg="yes"
+    shift
+    ;;
+  --no-timeout)
+    no_timeout="yes"
+    shift
+    ;;
+  --noregressions)
+# This is not a useful option here so it is ignored, but doing so
+# simplifies things for testall.sh. 
+    shift
+    ;;
+  *)
+    break;
+  esac
+done
+
+# platforms is a list of the cases to be tested
+platforms=""
+
+while test "$#" != 0
+do
+  pp=`getplatform "$1"`
+  if test "$pp" = ""
   then
-    stop="yes"
+    break
   else
-    case $1 in
-    --csl | --installed-csl | --csl-*)
-      platforms="$platforms ${1#--}"
-      shift
-      ;;
-    --cslboot | --cslboot1 | --installed-cslboot | --cslboot-*)
-      slow="yes"
-      platforms="$platforms ${1#--}"
-      shift
-      ;;
-# I will have a few special shorthands that will make things nicer for
-# at least one of the developers!
-# Perhaps the main issue is on Windows where there are two builds, one for
-# native Windows and the other for Cygwin. Similarly on the Mac there can
-# potentially be x86_64, arm64 and universal builds all present and testing
-# one against the other can be desirable.
-    --csl=windows)
-      platforms="$platforms csl=x86_64-pc-windows"
-      shift;
-      ;;
-    --csl=cygwin)
-      platforms="$platforms csl=x86_64-pc-cygwin"
-      shift;
-      ;;
-    --csl=mac-arm | --csl=mac-aarch64)
-# On the Mac I need to allow foc changing releases of the operating
-# system, so I search the cslbuild directory to see what makes sense.
-      p=`echo $here/cslbuild/aarch64-mac*`
-      p=${p%% *}
-      p=${p#*cslbuild/}
-      platforms="$platforms csl=$p"
-      shift;
-      ;;
-    --csl=mac-intel | --csl=mac-x86_64)
-      p=`echo $here/cslbuild/x86_6464-mac*`
-      p=${p%% *}
-      p=${p#*cslbuild/}
-      platforms="$platforms csl=$p"
-      shift;
-      ;;
-    --csl=mac-universal)
-      p=`echo $here/cslbuild/universal*`
-      p=${p%% *}
-      p=${p#*cslbuild/}
-      platforms="$platforms csl=$p"
-      shift;
-      ;;
-# Now during development of the "conservative" experiment I want
-# --csl=conservative to be an easy way of specifying a test.
-    --csl=conservative)
-      if test "$OS" = "Windows_NT"
-      then
-        p="x86_64-pc-cygwin-conservative"
-      else
-        p="$mc-conservative"
-      fi
-      platforms="$platforms csl=$p"
-      shift;
-      ;;
-# Ditto --csl=arithlib
-    --csl=arithlib)
-      if test "$OS" = "Windows_NT"
-      then
-        p="x86_64-pc-windows-arithlib"
-      else
-        p="$mc-arithlib"
-      fi
-      platforms="$platforms csl=$p"
-      shift;
-      ;;
-# Otherwise in general the usage is "--csl=full-host-triple-opt1-opt2" etc.
-    --csl=*)
-      platforms="$platforms ${1#--}"
-      shift
-      ;;
-    --jlisp)
-      slow="yes"
-      platforms="$platforms jlisp"
-      shift
-      ;;
-    --jlispboot)
-      slow="yes"
-      platforms="$platforms jlispboot"
-      shift
-      ;;
-    --psl | --installed-psl)
-      platforms="$platforms ${1#--}"
-      shift
-      ;;
-    --uncached)
-      uncached='symbolic (!*uncached := t);'
-      shift
-      ;;
-    --skip-missing-rlg)
-      skipmissingrlg="yes"
-      shift
-      ;;
-    --no-timeout)
-      notimeout="yes"
-      shift
-      ;;
-    --install)
-      if test "$install" = "yes"
-      then
-        printf "You should only specify --install once. Stopping.\n"
-        exit 1
-      fi
-      install="yes";
-      shift
-      ;;
-    --keep)
-      if test "$keep" = "yes"
-      then
-        printf "You should only specify --keep once. Stopping.\n"
-        exit 1
-      fi
-      keep="yes";
-      shift
-      ;;
-    -*)
-      printf "\"$1\" looks like an option but is not recognized.\n"
-      printf "Stopping.\n"
-      exit 1
-      ;;
-    *)
-      stop="yes"
-      ;;
-    esac
+    platforms="$platforms $1"
+    shift
   fi
 done
 
 # If no specific choice of platform was made I use a default...
 if test "$platforms" = ""
 then
-  platforms=" csl psl"
+  platforms=" --csl --psl"
 fi
 
 loader=""
@@ -257,8 +159,7 @@ LANG=C ; export LANG
 
 # If no argument is provided then this runs alg.tst
 p=${1:-alg}
-# WARNING - the "-n" option to echo is not portable. So I use printf
-# which should be available in all Posix systems.
+
 if test "$p" = "regressions"
 then
   r=${2:-aug-29-2011}
@@ -266,12 +167,7 @@ then
   p="$r"
   d="regressions"
 else
-  if test "$2" = ""
-  then
-    printf "Test %-11s " "$p:"
-  else
-    printf "Test %-11s " "$p/$2:"
-  fi
+  printf "Test %-11s " "$p:"
   w=`grep " test " $here/packages/package.map | grep "($p "`
   case $w in
   *$p*) ;;
@@ -452,51 +348,14 @@ ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
 # identically, so I wrap up the recipe in a function.
 
 csltest() {
-  name=$1
-  command=$2
-  showname=$3
-  variant="$4"
-  profilemode=4
-  profilemode1=2
-  profilename="bytecounts"
+  command=$1
+  logdir=$2
 
-  lname=`$here/scripts/alias.sh $here $name`
-  lname=`$here/scripts/logdirname.sh $lname`
+  fullcommand="$command $CSLFLAGS"
 
-  if test "$variant" = ""
-  then
-    case $name in
-    installed* | csl=*)
-      fullcommand="$command $CSLFLAGS"
-# When I put "--csl=HOST-TRIPLE" 
-      name="${name#csl=}"
-      name="${name#*-*-}"
-      showname="${showname#*-*-}"
-      ;;
-    *)
-      if test "$name" = "cslboot1"
-      then
-        profilemode=12
-        profilemode1=10
-        profilename="callcounts"
-        name="cslboot"
-      fi
-      fullcommand="$here/bin/$command $CSLFLAGS"
-      ;;
-    esac
-  else
-    exename="$here/cslbuild/$mc-$variant/csl/$command"
-    if ! test -x "$exename"
-    then
-      printf "\n+++ Unable to use $exename\n";
-      exit 1
-    fi
-    fullcommand="$exename $CSLFLAGS"
-  fi
-
-  mkdir -p $lname-times
+  mkdir -p $logdir
   ( limittime $fullcommand $extras -v -w $otherflags ) > \
-    $lname-times/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
+    $logdir/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -518,11 +377,11 @@ symbolic eval '
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
-    (wrs (setq o (open "$lname-times/$p.showtime" 'output)))
+    (wrs (setq o (open "$logdir/$p.showtime" 'output)))
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
     (cond ((memq 'bytecounts lispsystem!*)
-           (wrs (setq o (open "$lname-times/$p.$profilename" 'output)))
+           (wrs (setq o (open "$logdir/$p.$profilename" 'output)))
            (setq tot 0)
            (dolist (a w) (setq tot (plus tot (caddr a))))
            (set!-print!-precision 3)
@@ -541,30 +400,30 @@ symbolic eval '
 end$
 quit$
 XXX
-  if test -f $lname-times/$p.showtime
+  if test -f $logdir/$p.showtime
   then
-    cat $lname-times/$p.showtime >> $lname-times/showtimes
+    cat $logdir/$p.showtime >> $logdir/showtimes
   fi
-  cat $p.howlong.tmp >> $lname-times/$p.rlg.tmp
-  printf $showname..
+  cat $p.howlong.tmp >> $logdir/$p.rlg.tmp
+  printf ${logdir%-times}..
   sed -e "/^Tested on /,//d" <$rlgfile |
-    sed -e "$SED1" >$lname-times/$p.rlg.orig
+    sed -e "$SED1" >$logdir/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-      -e "/OMIT/,/TIMO/d" <$lname-times/$p.rlg.tmp | \
+      -e "/OMIT/,/TIMO/d" <$logdir/$p.rlg.tmp | \
     sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
     sed -e "s/${ESCAPED_DIR}.//" | \
-    sed -e "$SED1" >$lname-times/$p.rlg
-  diffBw $lname-times/$p.rlg.orig $lname-times/$p.rlg >$lname-times/$p.rlg.diff
-  if test -s $lname-times/$p.rlg.diff
-    then printf "Diff is in $lname-times/$p.rlg.diff "
-    else printf "OK " ; rm -f $lname-times/$p.rlg.diff $lname-times/$p.rlg.orig
+    sed -e "$SED1" >$logdir/$p.rlg
+  diffBw $logdir/$p.rlg.orig $logdir/$p.rlg >$logdir/$p.rlg.diff
+  if test -s $logdir/$p.rlg.diff
+    then printf "Diffs: $logdir/$p.rlg.diff "
+    else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
   fi
-  printf "Tested on $mc CSL\n" > $lname-times/$p.time
-  sed -e "1,/END OF REDUCE TEST RUN/d"  <$lname-times/$p.rlg.tmp | \
-    sed -e '/^1: *$/d;' >>$lname-times/$p.time
+  printf "Tested on $mc CSL\n" > $logdir/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$logdir/$p.rlg.tmp | \
+    sed -e '/^1: *$/d;' >>$logdir/$p.time
   if test "$keep" = "no"
   then
-    rm -f $lname-times/$p.rlg.tmp
+    rm -f $logdir/$p.rlg.tmp
   fi
 }
 
@@ -574,11 +433,10 @@ XXX
 #######################################################################
 
 jlisptest() {
-  name=$1
-  command=$2
-  showname=$3
+  command=$1
+  logdir=$2
 
-  mkdir -p $name-times
+  mkdir -p $logdir
 
   wh="$here"
   if test -f /usr/bin/cygpath
@@ -586,7 +444,7 @@ jlisptest() {
     wh=`cygpath -m $wh`
   fi
 
-  ( limittime java -jar $wh/jlisp/$command -v -w $otherflags ) > $name-times/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
+  ( limittime java -jar $wh/jlisp/$command -v -w $otherflags ) > $logdir/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -605,7 +463,7 @@ symbolic eval '
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
-    (wrs (setq o (open "$name-times/$p.showtime" 'output)))
+    (wrs (setq o (open "$logdir/$p.showtime" 'output)))
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
     (prin2 "Time: ") (prin2 "$p")
@@ -615,29 +473,29 @@ symbolic eval '
 end$
 quit$
 XXX
-  if test -f $name-times/$p.showtime
+  if test -f $logdir/$p.showtime
   then
-    cat $name-times/$p.showtime >> $name-times/showtimes
+    cat $logdir/$p.showtime >> $logdir/showtimes
   fi
-  cat $p.howlong.tmp >> $name-times/$p.rlg.tmp
+  cat $p.howlong.tmp >> $logdir/$p.rlg.tmp
   printf $showname..
   sed -e "/^Tested on /,//d" <$rlgfile |
-    sed -e "$SED1" >$name-times/$p.rlg.orig
+    sed -e "$SED1" >$logdir/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-      -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
+      -e "/OMIT/,/TIMO/d" <$logdir/$p.rlg.tmp | \
     sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
-    sed -e "$SED1" >$name-times/$p.rlg
-  diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
-  if test -s $name-times/$p.rlg.diff
-    then printf "Diff is in $name-times/$p.rlg.diff "
-    else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
+    sed -e "$SED1" >$logdir/$p.rlg
+  diffBw $logdir/$p.rlg.orig $logdir/$p.rlg >$logdir/$p.rlg.diff
+  if test -s $logdir/$p.rlg.diff
+    then printf "Diff is in $logdir/$p.rlg.diff "
+    else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
   fi
-  printf "Tested on $mc Jlisp\n" > $name-times/$p.time
-  sed -e "1,/END OF REDUCE TEST RUN/d"  <$name-times/$p.rlg.tmp | \
-    sed -e '/^1: *$/d;' >>$name-times/$p.time
+  printf "Tested on $mc Jlisp\n" > $logdir/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$logdir/$p.rlg.tmp | \
+    sed -e '/^1: *$/d;' >>$logdir/$p.time
   if test "$keep" = "no"
   then
-    rm -f $name-times/$p.rlg.tmp
+    rm -f $logdir/$p.rlg.tmp
   fi
 }
 
@@ -646,22 +504,11 @@ XXX
 #######################################################################
 
 psltest() {
-  name="$1"
-  mkdir -p $name-times
-  case $name in
-  installed-psl)
-    showname="installedPSL"
-    cmd=redpsl
-    outdir="installed-psl-times"
-    ;;
-  *)
-    showname="PSL"
-    cmd="$here/bin/redpsl"
-    outdir="psl-times"
-    ;;
-  esac
-  mkdir -p "$outdir"
-  ( limittime $cmd > $outdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
+  cmd="$1"
+  logdir="$2"
+
+  mkdir -p "$logdir"
+  ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -682,7 +529,7 @@ symbolic eval '
     (cond
       ((memq 'psl lispsystem!*)
        (setq cpu_time (difference cpu_time gc_time))))
-    (wrs (setq o (open "$name-times/$p.showtime" 'output)))
+    (wrs (setq o (open "$logdir/$p.showtime" 'output)))
     (print (list "$p" cpu_time gc_time))
     (wrs nil)
     (prin2 "Time: ") (prin2 "$p")
@@ -691,70 +538,82 @@ symbolic eval '
     (terpri))$
 quit$
 XXX
-  if test -f $name-times/$p.showtime
+  if test -f $logdir/$p.showtime
   then
-    cat $name-times/$p.showtime >> $name-times/showtimes
+    cat $logdir/$p.showtime >> $logdir/showtimes
   fi
-  cat $p.howlong.tmp >> $outdir/$p.rlg.tmp
-  printf "$showname.."
+  cat $p.howlong.tmp >> $logdir/$p.rlg.tmp
+  printf "${logdir%-times}.."
   sed -e "/^Tested on /,//d" <$rlgfile | \
-    sed -e "$SED1" >$outdir/$p.rlg.orig
+    sed -e "$SED1" >$logdir/$p.rlg.orig
   sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
-      -e "/OMIT/,/TIMO/d" <$outdir/$p.rlg.tmp | \
+      -e "/OMIT/,/TIMO/d" <$logdir/$p.rlg.tmp | \
     sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
     sed -e "s/${ESCAPED_DIR}.//" | \
-    sed -e "$SED1" >$outdir/$p.rlg
-  diffBw $outdir/$p.rlg.orig $outdir/$p.rlg >$outdir/$p.rlg.diff
-  if test -s $outdir/$p.rlg.diff
-    then printf "diff is in $outdir/$p.rlg.diff\n"
-    else printf "OK " ; rm -f $outdir/$p.rlg.diff $outdir/$p.rlg.orig
+    sed -e "$SED1" >$logdir/$p.rlg
+  diffBw $logdir/$p.rlg.orig $logdir/$p.rlg >$logdir/$p.rlg.diff
+  if test -s $logdir/$p.rlg.diff
+    then printf "diff is in $logdir/$p.rlg.diff\n"
+    else printf "OK " ; rm -f $logdir/$p.rlg.diff $logdir/$p.rlg.orig
   fi
-  printf "Tested on $mc PSL\n" > $outdir/$p.time
-  sed -e "1,/END OF REDUCE TEST RUN/d"  <$outdir/$p.rlg.tmp | \
-    sed -e '/^1: /d;' >>$outdir/$p.time
+  printf "Tested on $mc PSL\n" > $logdir/$p.time
+  sed -e "1,/END OF REDUCE TEST RUN/d"  <$logdir/$p.rlg.tmp | \
+    sed -e '/^1: /d;' >>$logdir/$p.time
   if test "$keep" = "no"
   then
-    rm -f $outdir/$p.rlg.tmp
+    rm -f $logdir/$p.rlg.tmp
   fi
 }
 
 for pp in $platforms
 do
+  pp=`getplatform "$pp"`
+  logdir=`getlogdir "$pp"`
+
   case $pp in
   csl)
-    csltest "$pp" "redcsl" "CSL"
-# If the test cases include simple "--csl" and "--install" is specified
-# the log files will be installed in the main tree.
+    csltest "$here/bin/redcsl" "$logdir"
+# If the command specified "--install" and "--csl" then the log files
+# will be installed in the main tree.
     if test "$install" = "yes"
     then
       cat $here/packages/$d/$p.tst > $here/xmpl/$p.tst
-      cat csl-times/$p.rlg csl-times/$p.time > $here/xmpl/$p.rlg
-      cat csl-times/$p.rlg csl-times/$p.time > $here/packages/$d/$p.rlg
+      cat $logdir/$p.rlg $logdir/$p.time > $here/xmpl/$p.rlg
+      cat $logdir/$p.rlg $logdir/$p.time > $here/packages/$d/$p.rlg
     fi
     ;;
-  installed-csl)
-    csltest "$pp" "redcsl" "installedCSL"
+  csl=installed)
+    csltest "redcsl" "$logdir"
     ;;
-  csl-*)
-    csltest "$pp" "reduce" "CSL${pp#csl}" "${pp#csl-}"
+  bootstrapreduce)
+    csltest "$here/bin/bootstrapreduce" "$logdir"
     ;;
-  cslboot | cslboot1 | installed-cslboot)
-    csltest "$pp" "bootstrapreduce" "BootstrapCSL"
-    ;;
-  cslboot-*)
-    csltest "$pp" "bootstrapreduce" "BootstrapCSL${pp#cslboot}" "${pp#cslboot-}"
+  bootstrapreduce=installed)
+    csltest "bootstrapreduce" "$logdir"
     ;;
   csl=*)
-    csltest "$pp" "$here/cslbuild/${pp#csl=}/csl/reduce" "${pp#csl=}"
+    csltest "$here/cslbuild/${pp#csl=}/csl/reduce" "$logdir"
     ;;
+  bootstrapreduce=*)
+    csltest "$here/cslbuild/${pp#csl=}/csl/bootstrapreduce" "$logdir"
+    ;;
+  psl)
+    psltest "$here/bin/redpsl" "$logdir"
+    ;;
+  installed-psl)
+    psltest "redpsl" "$logdir"
+    ;;
+  psl=*)
+    psltest "$here/pslbuild/${pp#psl=}/psl/bpsl -t 1000 \
+             -f $here/pslbuild/${pp#psl=}/red/reduce.img" \
+            "$logdir"
+    ;;
+
   jlisp)
-    jlisptest "jlisp" "reduce.jar" "Jlisp"
+    jlisptest "reduce.jar" "$logdir"
     ;;
   jlispboot)
-    jlisptest "jlispboot" "bootstrapreduce.jar" "JlispBootstrap"
-    ;;
-  psl | installed-psl)
-    psltest "$pp"
+    jlisptest "jlispboot" "bootstrapreduce.jar" "$logdir"
     ;;
   *)
     printf "\n+++ Platform $pp not recognized\n"
@@ -794,20 +653,14 @@ then
 # Append on the end of the output line a list of speed ratios.
   base=""
   none="yes"
-  for sys in $platforms
+  for pp in $platforms
   do
-    lsys=`$here/scripts/alias.sh $here $sys`
-    lsys=`$here/scripts/logdirname.sh $lsys`
-    sys="${sys#csl=}"
-    sys="${sys#*-*-}"
-    if test "$sys" = "cslboot1"
-    then
-      sys="cslboot"
-    fi
+    pp=`getplatform "$pp"`
+    logdir=`getlogdir $pp`
 # Each file packageName.showtime will contain just one line of the form
 #       ("packageName" cputime gctime)
 # where the times are recorded in milliseconds.
-    tt=`cat $lsys-times/$p.showtime | \
+    tt=`cat $logdir/$p.showtime | \
         sed -e 's/[^ ]* //; s/ .*//'`
 # base gets set to the time recorded for the first platform in the list.
     
@@ -836,7 +689,7 @@ then
     fi
     if test "$none" = "no"
     then
-      printf "$sys:%8s " "$reliable$ratio%"
+      printf "${logdir%-times}:%8s " "$reliable$ratio%"
     fi
     none="no"
   done
@@ -844,28 +697,22 @@ then
 
 # Now if any test logs disagree (using the first platform to define
 # a reference) print messages that explain that fact.
-  base=""
-  for sys in $platforms
+  basedir=""
+  for pp in $platforms
   do
-    lsys=`$here/scripts/alias.sh $here $sys`
-    lsys=`$here/scripts/logdirname.sh $lsys`
-    sys="${sys#csl=}"
-    sys="${sys#*-*-}"
-    if test "$sys" = "cslboot1"
+    pp=`getplatform $pp`
+    logdir=`getlogdir $pp`
+    if test "$basedir" = ""
     then
-      sys="cslboot"
-    fi
-    if test "$base" = ""
-    then
-      base="$sys"
-      lbase="$lsys"
+      basedir="$logdir"
     else
-      mkdir -p $lbase-$lsys-times-comparison
-      diffBw $lbase-times/$p.rlg $lsys-times/$p.rlg >$lbase-$lsys-times-comparison/$p.rlg.diff
-      if test -s $lbase-$lsys-times-comparison/$p.rlg.diff
+      mkdir -p ${basedir%-times}-${logdir%-times}-comparison
+      diffBw $basedir/$p.rlg $logdir/$p.rlg > ${basedir%-times}-${logdir%-times}-comparison/$p.rlg.diff
+      if test -s ${basedir%-times}-${logdir%-times}-comparison/$p.rlg.diff
       then
-        printf "***** $base and $sys test logs differ!\n"
-      else rm -f $lbase-$lsys-times-comparison/$p.rlg.diff
+        printf "***** ${basedir%--times} and ${logdir%-times} test logs differ!\n"
+      else
+        rm -f ${basedir%-times}-${logdir%-times}-comparison/$p.rlg.diff
       fi
     fi
   done
