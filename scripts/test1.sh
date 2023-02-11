@@ -75,20 +75,29 @@ here=`dirname "$here"`
 #######################################################################
 
 diffBw() {
-    case `diff -v 2> /dev/null` in
-    *GNU\ diffutils*)
-      diff -B -w $1 $2
-      ;;
-    *)
+# If gdiff is present I will expect it to be the GNU diff program from
+# "port install diffutils". If that is not available but the plain diff
+# command is the GNU one I will use that. Otherwise I have to work a
+# bit harder.
+    if which gdiff 1>/dev/null 2>/dev/null
+    then
+      gdiff -B -w $1 $2
+    else
+      case `diff -v 2> /dev/null` in
+      *GNU\ diffutils*)
+        diff -B -w $1 $2
+        ;;
+      *)
 # if "diff" is not the GNU version it may not support the "-B" or "-w"
 # options that ignore whitespace, so here I use sed to get rid of it
 # before running diff.
-      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $lname-times/temp1.tmp
-      sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $lname-times/temp2.tmp
-      diff $lname-times/temp1.tmp $lname-times/temp2.tmp
-      rm $lname-times/temp1.tmp $lname-times/temp2.tmp
-      ;;
-    esac
+        sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $logdir/temp1.tmp
+        sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $logdir/temp2.tmp
+        diff $logdir/temp1.tmp $logdir/temp2.tmp
+        rm $logdir/temp1.tmp $logdir/temp2.tmp
+        ;;
+      esac
+    fi
 }
 
 
