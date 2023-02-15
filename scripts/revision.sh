@@ -14,7 +14,7 @@ LANG=C
 # If a file called svnversion.txt exists in the toplevel directory, use
 # its contents instead of svnversion's output. 
 svnversiontxt=$here/../svnversion.txt
-if test -r $svnversiontxt
+if test -s $svnversiontxt
 then
   a=$(cat $svnversiontxt)
 else

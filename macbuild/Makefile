@@ -30,6 +30,7 @@ all:	package-mac
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
+	LANG=C svnversion .. $(REVISION) > $(BUILDTOPDIR)/svnversion.txt
 	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
 	./make-source.sh $(SNAPSHOT) 
 	touch $(BUILDTOPDIR).stamp
