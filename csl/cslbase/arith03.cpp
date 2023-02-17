@@ -453,17 +453,20 @@ static LispObject quotbi(LispObject a, LispObject b)
     int128_t p;
     switch (lena)
     {   case 0: // should never arise but put code in for frivolity!
-            p = bignum_digits64(a, 0);
+            p = static_cast<uint128_t>(bignum_digits64(a, 0));
             break;
         case 1:
-            p = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
+            p = static_cast<uint128_t>(
+                    ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0]);
             break;
         case 2:
-            p = ASL(bignum_digits64(a, 2), 31) | bignum_digits(a)[1];
+            p = static_cast<uint128_t>(
+                    ASL(bignum_digits64(a, 2), 31) | bignum_digits(a)[1]);
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
         case 3:
-            p = ASL(bignum_digits64(a, 3), 31) | bignum_digits(a)[2];
+            p = static_cast<uint128_t>(
+                    ASL(bignum_digits64(a, 3), 31) | bignum_digits(a)[2]);
             p = (uint128(p) << 31) | bignum_digits(a)[1];
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
@@ -500,17 +503,20 @@ static LispObject quotrembi(LispObject a, LispObject b)
     int128_t p;
     switch (lena)
     {   case 0: // should never arise but put code in for frivolity!
-            p = bignum_digits64(a, 0);
+            p = static_cast<uint128_t>(bignum_digits64(a, 0));
             break;
         case 1:
-            p = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
+            p = static_cast<uint128_t>(
+                    ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0]);
             break;
         case 2:
-            p = ASL(bignum_digits64(a, 2), 31) | bignum_digits(a)[1];
+            p = static_cast<uint128_t>(
+                    ASL(bignum_digits64(a, 2), 31) | bignum_digits(a)[1]);
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;
         case 3:
-            p = ASL(bignum_digits64(a, 3), 31) | bignum_digits(a)[2];
+            p = static_cast<uint128_t>(
+                    ASL(bignum_digits64(a, 3), 31) | bignum_digits(a)[2]);
             p = (uint128(p) << 31) | bignum_digits(a)[1];
             p = (uint128(p) << 31) | bignum_digits(a)[0];
             break;

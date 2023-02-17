@@ -1429,7 +1429,7 @@ public:
     template <typename T>
     typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
     operator!=(const T & rhs) const
-    {   return (UPPER != (rhs>0 ? 0 : -1) |
+    {   return (UPPER != (rhs>0 ? 0 : -1) ||
                (LOWER != static_cast<std::uint64_t>(rhs)));
     }
 
