@@ -141,6 +141,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <cerrno>
 
 using std::cout;
 using std::endl;
@@ -282,9 +283,13 @@ static HANDLE keyboardThreadHandle = (HANDLE)(-1);
 static HANDLE keyboardNeeded; // a mutex
 
 static void quitKeyboardThread()
-{   while (keyboardThreadHandle == (HANDLE)(-1)) Sleep(10);
-    ReleaseMutex(keyboardNeeded);
-    keyboardThread.join();
+{   if (keyboardThreadActive &&
+        keyboardThread->get_id() != std::this_thread::get_id())
+    {   keyboardThreadActive = false;
+        while (keyboardThreadHandle == (HANDLE)(-1)) Sleep(10);
+        ReleaseMutex(keyboardNeeded);
+        keyboardThread.join();
+    }
 }
 static INPUT_RECORD keyboardBuffer[1];
 static HANDLE consoleInputHandle, consoleOutputHandle;
@@ -294,9 +299,13 @@ static HANDLE consoleInputHandle, consoleOutputHandle;
 static int keyboardPipe[2];    // entry 0 is read end, 1 is write end
 
 static void quitKeyboardThread()
-{   write(keyboardPipe[1], "\n\n\n\n", 4);
-    keyboardThread.join();
-    close(keyboardPipe[1]);
+{   if (keyboardThreadActive &&
+        keyboardThread.get_id() != std::this_thread::get_id())
+    {   keyboardThreadActive = false;
+        write(keyboardPipe[1], "\n\n\n\n", 4);
+        keyboardThread.join();
+        close(keyboardPipe[1]);
+    }
 }
 
 #endif // !WIN32
@@ -416,7 +425,10 @@ int getFromKeyboard()
     FD_SET(n2, &readFd);
     int n = n1 > n2 ? n1 : n2;
     int r = select(n+1, &readFd, nullptr, nullptr, nullptr);
-    if (r == -1) my_abort(); // select failed
+    if (r == -1)
+    {   std::printf("select failed, errno=%d\n", errno);
+        my_abort(where("select failed")); // select failed
+    }
     if (FD_ISSET(n2, &readFd))
     {   close(n2);
         return EOF; // pipe told us to quit!
@@ -1710,12 +1722,20 @@ int term_setup(const char *argv0, const char *colour)
     input_history_init(argv0, historyFirst, historyLast, historyNumber,
                        input_history_next, longest_history_line);
     invert_start = invertEnd = -1;
-// The terminal is now set up. Start the thread that keeps trying to
-// read from it!
-    startKeyboardThread();
     termEnabled = true;
     return 0;
 #endif // !EMBEDDED
+}
+
+void enable_keyboard(bool terminalUsed)
+{
+#if defined embedded || defined AVOID_TERMINAL_THREADS
+    return;
+#else // AVOID_TERMINAL_THREADS
+    if (!terminalUsed) return;
+// Start the thread that keeps trying to read from the terminal
+    startKeyboardThread();
+#endif // AVOID_TERMINAL_THREADS
 }
 
 void term_close()

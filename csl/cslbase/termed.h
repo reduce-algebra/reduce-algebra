@@ -70,7 +70,15 @@
 
 extern bool termEnabled;
 
+// term_setup gets things ready and establishes output parameters for
+// the console. It gets ready to set up keyboard input but does not
+// change any settings (although it records the existing ones so that
+// they can be restored). If the program is going to use the keyboard
+// it must call enable_keyboard(true) which will set console input into
+// raw mode and start a thread that watches it.
+
 extern int term_setup(const char *argv0, const char *colours);
+extern void enable_keyboard(bool terminalUsed);
 
 // Before returning from your code it would be a really good idea to
 // call "term_close" since that can re-set all sorts of terminal
