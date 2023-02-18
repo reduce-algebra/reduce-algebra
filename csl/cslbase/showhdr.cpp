@@ -75,9 +75,9 @@ const char *decodeObject(LispObject a)
         return r;
     case TAG_FIXNUM:
         if ((a & TAG_XBIT) != 0)
-        {   double f;
+        {   float f;
             a &= ~XTAG_SFLOAT;
-            std::memcpy(&f, &a, sizeof(double));
+            std::memcpy(&f, &a, sizeof(float));
             std::snprintf(r, sizeof(r), "short float %g", f);
         }
         else std::snprintf(r, sizeof(r), "fixnum %" PRIdPTR, a>>4);
