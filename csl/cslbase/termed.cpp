@@ -1732,7 +1732,7 @@ void enable_keyboard(bool terminalUsed)
 #if defined embedded || defined AVOID_TERMINAL_THREADS
     return;
 #else // AVOID_TERMINAL_THREADS
-    if (!terminalUsed) return;
+    if (!terminalUsed || !termEnabled) return;
 // Start the thread that keeps trying to read from the terminal
     startKeyboardThread();
 #endif // AVOID_TERMINAL_THREADS
