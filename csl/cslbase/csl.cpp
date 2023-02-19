@@ -1365,6 +1365,7 @@ static std::unordered_map<string, argSpec *> argIndex;
 // read from. Also an isolated "-" is treated this way so it can be used
 // to indicate a default value.
 
+static bool terminalUsed = false;
 static std::vector<string> simpleArgs;
 
 // If an item is not recognized I will collect it here. This will also
@@ -1377,6 +1378,7 @@ static std::vector<string> badArgs;
 void setupArgs(argSpec *v, int argc, const char *argv[])
 {   argIndex.clear(); // Just to be safe!
     simpleArgs.clear();
+    terminalUsed = false;
     badArgs.clear();
 // I start by putting all the key values into my unordered_map.
     for (int i=0; v[i].name != nullptr; i++)  argIndex[v[i].name] = &v[i];
@@ -1406,6 +1408,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         }
         else
         {   simpleArgs.push_back(a); // No initial "-" (or JUST "-").
+            if (a.compare("-") == 0) terminalUsed = true;
             continue;
         }
         argSpec *aspec;
@@ -1444,6 +1447,8 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 // Now invoke the action that this calls for.
         (aspec->action)(a, hasVal, val);
     }
+    if (simpleArgs.empty()) terminalUsed = true;
+    enable_keyboard(terminalUsed);
 }
 
 size_t waste = 0;

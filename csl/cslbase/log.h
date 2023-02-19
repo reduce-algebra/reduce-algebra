@@ -218,7 +218,10 @@ inline const char* whereFn(const char* file, int line, const char* msg=nullptr)
     const char* p = std::strrchr(file, '/');
     if (p != nullptr) file = p+1;
     std::snprintf(whereMsg, sizeof(whereMsg), "%.40s:%d", file, line);
-    if (msg != nullptr) std::strcat(whereMsg, msg);
+    if (msg != nullptr)
+    {   std::strcat(whereMsg, " ");
+        std::strcat(whereMsg, msg);
+    }
     return whereMsg;
 }
 

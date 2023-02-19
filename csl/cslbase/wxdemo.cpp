@@ -320,7 +320,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // default behaviour is that the body of letters get written but the
 // background is untouched. This is as per SetBackgroundMode(wxTRANSPARENT).
     dc.SetTextForeground(*wxRED);
-// Uncommenting these two lines causes bacground to letters to be filled with
+// Uncommenting these two lines causes background to letters to be filled with
 // yellow... and by the fact it confirms that the default behaviour is
 // to write letters with a transparent background.
 //  dc.SetTextBackground(*wxYELLOW);

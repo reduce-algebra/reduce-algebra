@@ -96,7 +96,7 @@ uintptr_t   stackBases[maxThreads];
 uintptr_t   stackFringes[maxThreads];
 uintptr_t   stackLimits[maxThreads];
 uintptr_t   C_stackBases[maxThreads];
-Bintptr_t   C_stackFringes[maxThreads];
+uintptr_t   C_stackFringes[maxThreads];
 uintptr_t   C_stackLimits[maxThreads];
 #endif // NO_THREADS
 

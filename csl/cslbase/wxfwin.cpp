@@ -928,6 +928,7 @@ int plain_worker(int argc, const char *argv[], fwin_entrypoint *main)
     {   TermSetup ts(argv[0], colour_spec);
         using_termed = true;
         InputHistory ih;
+        enable_keyboard();
         r = (*main)(argc, argv);
     }
     else

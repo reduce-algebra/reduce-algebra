@@ -219,6 +219,7 @@ int fwin_main(int argc, const char **argv)
 {   char line[1000];
     fwin_printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
+    enable_keyboard();
     for (;;)
     {   int c;
         std::size_t i = 0, j;
