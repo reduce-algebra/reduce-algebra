@@ -98,10 +98,43 @@ use Glaisher's notation. For example
 \mathrm{cs}(x,k) = \frac{\mathrm{cn}(u,k)}{\mathrm{sn}(u,k)}, \qquad
 \mathrm{cd}(x,k) = \frac{\mathrm{cn}(u,k)}{\mathrm{dn}(u,k)}. \]
 
+All twelve functions are doubly periodic in the complex plane.
+The primitive periods and the positions of the zeros and poles of the
+functions are conveniently expressed in terms of the so-called quarter periods
+$\mathrm{K}(k)$ and $i\mathrm{K}^\prime(k)$ which are complete elliptic
+integrals of the first kind. The details are displayed in the table below.
+As the functions are doubly periodic, there are, of course, infinitely many
+other zeros and poles. These occur at points 'congruent` to the points
+given in the table obtained by translating by
+$2m\mathrm{K} +2i n\mathrm{K}^\prime$ where $m$ and $n$ are arbitrary integers.
+
+\begin{tabular}{lllll}
+  Function & Period1 & Period2 & Zero & Pole\\
+$\mathop{\mathrm{sn}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$0$&$i\mathrm{K}^\prime$\\
+$\mathop{\mathrm{ns}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$i\mathrm{K}^\prime$&$0$\\
+$\mathop{\mathrm{cd}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$\\  
+$\mathop{\mathrm{dc}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$\mathrm{K}+i\mathrm{K}^\prime$&$\mathrm{K}$\\ 
+
+$\mathop{\mathrm{cn}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$\mathrm{K}$&$i\mathrm{K}^\prime$\\
+$\mathop{\mathrm{nc}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$i\mathrm{K}^\prime$&$\mathrm{K}$\\
+$\mathop{\mathrm{sd}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$0$&$\mathrm{K}+i\mathrm{K}^\prime$\\
+$\mathop{\mathrm{ds}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$\mathrm{K}+i\mathrm{K}^\prime$&$0$\\
+
+$\mathop{\mathrm{dn}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&$i\mathrm{K}^\prime$\\
+$\mathop{\mathrm{nd}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$i\mathrm{K}^\prime$&$\mathrm{K}+i\mathrm{K}^\prime$\\
+$\mathop{\mathrm{sc}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$0$&$\mathrm{K}$\\
+$\mathop{\mathrm{cs}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$\mathrm{K}$&$0$\\
+\end{tabular}
+
+All other periods of the Jacobi functions can be expressed as linear
+combinations of the two primitive periods with integer coefficients.
+Thus, for example, $4i\mathrm{K}^\prime$ is a period of $\mathrm{cn}$ as
+\[4i\mathrm{K}^\prime = 2(\mathrm{K}+\mathrm{K}^\prime) -4\mathrm{K}\]
+
 Extensive rule lists are provided for differentiation of these functions with
-respect to either argument, for argument shifts by multiples of the two
-quarter-periods $K$ and $iK'$ and finally Jacobi's transformations for a
-purely imaginary first argument.
+respect to either argument, for argument shifts by integer multiples of the
+two quarter-periods $\mathrm{K}(k)$ and $i\mathrm{K}^\prime(k)$ and finally
+Jacobi's transformations for a purely imaginary first argument.
 
 Complex split functions have recently been implemented for the 12 Jacobi
 functions for the cases when the modulus $k$ is either real or imaginary.
@@ -264,7 +297,7 @@ functions and is often used in the calculation of other elliptic functions.
 The complementary Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)}
 and will return the value
 \[\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})\]
-which is the other quarter-period of the Jacobi elliptic functions.
+$iK^\prime(k)$ is the other quarter-period of the Jacobi elliptic functions.
 
 \subsubsection{Elliptic E}
 \hypertarget{operator:ELLIPTICE}{}
@@ -745,42 +778,74 @@ arguments such $x=0$, $k=0$ and $k=1$, to implement the inverse function
 simplification formulae illustrated immediately above and for differentiation
 of these functions with respect to their two arguments.
 
-Note that for simplicity $ \mathrm{arccs}$ is now defined to be an odd
-function of its first argument like $\mathrm{cs}$.
-This choice means that the range of (real) principal values is
-\emph{no longer connected} as it is the open set
-$(-\mathrm{K}(k), \mathrm{K}(k)) \setminus 0$.
-It brings it into line with $\mathrm{arcns}$ and
-$\mathrm{arcds}$ whose principal value ranges are necessarily not connected
-as they have poles at zero;
-similarly for the range of principal values of $\mathrm{arcdc}$ which has
-a pole at $\mathrm{K}(k)$.
-  
-In earlier versions of the package it was taken to satisfy:
+Note that $\mathrm{arccs}$ is not defined to be an odd
+function of its first argument unlike $\mathrm{cs}$.
+Instead it is taken to satisfy:
 \[ \mathrm{arccs}(-x, k) = 2\mathrm{K}(k)-\mathrm{arccs}(x, k).\]
-This was analogous to the situation in Reduce for $\mathrm{acot}$ where
+This is analogous to the situation in Reduce for $\mathrm{acot}$ where
 \[ \mathrm{arctan}(-x) = -\mathrm{arctan}(x),\qquad
   \mathrm{arccot}(-x) = \pi -\mathrm{arccot}(x). \]
 
-When their arguments are \emph{numerical and real}, these functions will be
-evaluated numerically if the \sw{rounded} switch is ON provided, of course that
-the defining elliptic integral is convergent. Note that in some cases the result
-may be imaginary even if both arguments are real. In these cases if further computation
-is required involving the result, it is better if the switch \sw{complex} is also ON
+This choice means that the range of (real) principal values of
+$\mathrm{arccs}$ is \emph{connected} -- it is the open set $(0, 2K(k))$.
 
-Note also that for $\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of the modulus $k$
-is excluded (since $\mathrm{dn}(x,0) = \mathrm{nd}(x,0) = 1 \quad \forall x$).
+When their arguments are \emph{numerical}, these functions will be
+evaluated numerically if the \sw{rounded} and \sw{complex} switches are
+both ON.  Note that in some cases the result may have an imaginary
+part even if both arguments are real, hence the necessity of the switch
+\sw{complex} being ON.
 
-As the Jacobi elliptic functions are doubly periodic, the inverse functions
-are multi-valued. When both arguments are real and $|k|<=1$ and when the
-result exists and is real there are certain restrictions on the range of
-acceptable values of the first parameter $x$ (see the table below).
+Note also that for $\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of
+the modulus $k$ is excluded (since
+$\mathrm{dn}(x,0) = \mathrm{nd}(x,0) = 1 \quad \forall x$).
 
-The numerical value returned is the principal value which
-lies in the range  given in the third column of the table below. 
-(c.f. the inverse trigonometric functions). Other \emph{real} values of the
-inverse functions are indicated in the fourth column of the table below where
-$n$ is an arbitrary integer.
+As the Jacobi elliptic functions are doubly periodic, their inverse functions
+are multi-valued. The numerical value returned is the principal value $v$ which
+lies in the parallelogram in the complex plane whose vertices are given in the
+table below. Other values of the inverse functions are indicated in the
+fifth column of the table below where $m$ and $n$ are arbitrary integers.
+
+\begin{tabular}{lllll}
+  & Quarter&Periods&Principal&Other\\
+Function&$p$&$q$&Parallelogram&Values\\
+$\mathop{\mathrm{arcsn}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
+$-(p+q)$, $-p+q$,&$2m p+2n q +(-1)^mv$\\
+&&&$p+q$, $p-q$.&\\
+$\mathop{\mathrm{arccn}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
+  $0$, $2q$, $2(p+q)$, $2p$.&$4m p +2n q \pm v$\\
+$\mathop{\mathrm{arcdn}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
+  $0$, $2q$, $2(p+q)$, $2p$.&$2m q+4n p \pm v$\\
+$\mathop{\mathrm{arcns}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
+$-(p+q)$, $-p+q$,&$2m p+2n q +(-1)^mv$\\
+&&&$p+q$, $p-q$.&\\
+$\mathop{\mathrm{arcnc}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
+  $0$, $2q$, $2(p+q)$, $2p$.&$4m p +2n q \pm v$\\
+$\mathop{\mathrm{arcnd}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
+ $0$, $2q$, $2(p+q)$, $2p$.&$2m q+4n p \pm v$\\
+$\mathop{\mathrm{arccd}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
+ $0$, $2q$, $2(p+q)$, $2p$.&$4m p+2n q \pm v$\\
+$\mathop{\mathrm{arcdc}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
+ $0$, $2q$, $2(p+q)$, $2p$.&$4m p+2n q \pm v$\\
+$\mathop{\mathrm{arcsd}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
+$-(p+q)$, $-p+q$,&$2m p +2n q +(-1)^mv$\\
+&&&$p+q$, $p-q$.&\\
+$\mathop{\mathrm{arcds}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
+$-(p+q)$, $-p+q$,&$2m p +2n q +(-1)^mv$\\
+&&&$p+q$, $p-q$.&\\
+$\mathop{\mathrm{arcsc}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
+$-(p+q)$, $-p+q$,&$2m q +2n q +(-1)^nv$\\
+&&&$p+q$, $p-q$.&\\
+$\mathop{\mathrm{arccs}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
+  $-p$, $p$, $p+2q$, $-p+2q$&$2m q +2n q +(-1)^nv$\\
+\end{tabular}
+
+When both arguments are real and $|k|<=1$ and when there are certain
+restrictions on the range of the first parameter $x$ (see the
+table below), then the principal value of the inverse function is
+real. It lies in the range  given in the third column of the table
+below. (c.f. the inverse trigonometric functions). Other \emph{real}
+values of the inverse functions are indicated in the fourth column
+of the table below where $n$ is an arbitrary integer.
 
 \begin{tabular}{llll}
   Fn & Domain & Principal Value $v$ & Other real values\\
@@ -818,40 +883,31 @@ $\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
   $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) + v$ \\  
 $\mathop{\mathrm{arccs}}$: & $ x \in \mathbb{R}$ &
-$-\mathrm{K}(k) < v < \mathrm{K}(k)$ \& $v \neq 0$ 
+$0 < v < 2\mathrm{K}(k)$ \& $v \neq 0$ 
   $2 n\mathrm{K}(k) + v$ \\
 \end{tabular}
-
-If one or both arguments are complex, the current version of the package
-attempts to evaluate the result numerically \emph{provided that} the switch
-\sw{complex} is also ON. This code is still under development and whilst
-it succeeds in many cases, it may fail with a \emph{divergent integral error
-message}. If the function in question has a branch point or pole at the
-evaluation point, this is of course correct, but in other cases the value may
-exist, but the current choice of symmetric integral in the algorithm may
-diverge. This can occur when the first parameter is a subrange of the real or
-imaginary axis.
-
-The value currently returned may not always be the principal value
-(ie. the value in the fundamental period parallelogram of the elliptic
-function concerned). However, the value returned should be \emph
-{an inverse value}
-
-(ie. $\mathrm{jacobipq}(\mathrm{arcpq}(z,k),k)) = z$ where
-$\mathrm{pq} = \mathrm{sn, cn, dn, cs} \ldots $).
 
 The numerical values of the inverse functions are calculated by
 expressing them in terms of the symmetric elliptic integral:
 \[ R_F(x,y,z)=\int_0^\infty 1/\sqrt{(t-x)(t-y)(t-z)}\,\mathrm{d}t. \]
-This is then evaluated using a sequence of quadratic transformations 
+For more details see the DLMF website:
+\href{https://dlmf.nist.gov/19.25#v}{Inverse Jacobian
+Elliptic Functions}.
+Currently the Carlson's duplication method is used to evaluate the
+symmetric elliptic integrals of the first, second and third kinds
+$R_F$, $R_D$ and $R_J$ (and also the related elementary integral
+$R_C$).  For more details see the DLMF website:
+\href{https://dlmf.nist.gov/19.36#i}{Duplication Method}.
+
+Alternatively the symmetric integral $R_F$ may be evaluated
+using a sequence of quadratic transformations 
 which converge rapidly to the elementary hyperbolic integral:
 \[R_c(X^2+Y^2,X^2) = R_F(X^2,X^2,X^2+Y^2) = \mathrm{arctanh}
 (Y/(X^2+Y^2))/Y.\]
 More information on this method due to Carlson in the 1990's
 may be found on the DLMF website:
-\href{https://dlmf.nist.gov/19.36#ii}{Quadratic Transformations}
-and \href{https://dlmf.nist.gov/19.25#v}{Inverse Jacobian
-Elliptic Functions}.
+\href{https://dlmf.nist.gov/19.36#ii}{Quadratic Transformations}.
+
 
 \subsection{Table of Elliptic Functions and Integrals}
 \hypertarget{ELLIPFNTAB}{}

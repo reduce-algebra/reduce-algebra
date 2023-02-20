@@ -95,15 +95,6 @@ jacobiamrules :=
 let jacobiamrules;
 
 %######################################################################
-%This procedure is called by Jacobisn when the on rounded switch is
-%used. It evaluates the value of Jacobisn numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded
-procedure num_jacobisn1(u,m);
-    sin first phi_function(1,sqrt(1-m^2),m,u);
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisn definition
 %===================
 
@@ -147,8 +138,6 @@ jacobisnrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-	jacobisn(i*elliptick!'(~m)/2,~m) => i/sqrt(m),
-				
         jacobisn(i*~~u/~~d,~m) => i*jacobisc(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -168,16 +157,6 @@ jacobisnrules :=
 }$
 let jacobisnrules;
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobicn when the on rounded switch is
-%used. It evaluates the value of Jacobicn numerically.
-
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded
-procedure num_jacobicn1(u,m);
-    cos first phi_function(1,sqrt(1-m^2),m,u);
- 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobicn definition
 %===================
@@ -227,8 +206,6 @@ jacobicnrules :=
 
 %Change of Argument
 
-        jacobicn(i*elliptick!'(~m)/2,~m) => sqrt(1+m)/sqrt(m),
-	
         jacobicn(i*~~u/~~d,~m) => jacobinc(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -251,33 +228,6 @@ jacobicnrules :=
 
 }$
 let jacobicnrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobidn when the on rounded switch is
-%used. It evaluates the value of Jacobidn numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded as it was subject to largish rounding errors.
-procedure num_jacobidn1(u,m);
-   begin scalar phi, phi0,  phi1, denom;
-        phi  := phi_function(1,sqrt(1-m^2),m,u);
-        phi0 := first phi;
-        phi1 := second phi;
-        denom := cos(phi1 - phi0);
-
-        if denom < 10.0^(-(symbolic !:prec!:)) then  return otherdn(u,m)
-        else return cos(phi0)/denom;
-   end;
-
-procedure otherdn(u,m);
-   begin scalar mu, approx, v;
-        m := sqrt(1-m^2);
-        m := (1-m)/(1+m);
-        u  := u/(1+m);
-	approx := (1 - (m * sin u)^2/2)^2;
-        return (approx - 1+m)/(1+m - approx);
-   end;
-
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobidn definition
@@ -323,8 +273,6 @@ jacobidnrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-        jacobidn(i*elliptick!'(~m)/2,~m) => sqrt(1+m),
-	
        jacobidn(i*~~u/~~d,~m) => jacobidc(u/d,sqrt(1-m^2)),
        
 %Derivatives, Intergal
@@ -345,24 +293,6 @@ jacobidnrules :=
 
 }$
 let jacobidnrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobicd when the on rounded switch is
-%used. It evaluates the value of Jacobicd numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded as it was subject to largish rounding errors.
-procedure num_jacobicd1(u,m);
-   begin scalar phi, phi0,  phi1, dendn;
-        phi  := phi_function(1,sqrt(1-m^2),m,u);
-        phi0 := first phi;
-        phi1 := second phi;
-        dendn := cos(phi1 - phi0);
-
-        if dendn < 10.0^(-(symbolic !:prec!:)) then
-	   return cos(phi0)/otherdn(u,m)
-        else return dendn;
-   end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % Jacobicd 
@@ -407,8 +337,6 @@ jacobicdrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-   jacobicd(i*elliptick!'(~m)/2,~m) => 1/sqrt(m),
-
    jacobicd(i*~~u/~~d,~m) => jacobind(u/d,sqrt(1-m^2)),
       
 %Derivatives,Integral
@@ -427,24 +355,6 @@ jacobicdrules :=
 
 }$
 let jacobicdrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobisd when the on rounded switch is
-%used. It evaluates the value of Jacobisd numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded as it was subject to largish rounding errors.
-procedure num_jacobisd1(u,m);
-   begin scalar phi, phi0,  phi1, denom, jdn;
-        phi  := phi_function(1,sqrt(1-m^2),m,u);
-        phi0 := first phi;
-        phi1 := second phi;
-        denom := cos(phi1 - phi0);
-
-        if denom < 10.0^(-(symbolic !:prec!:)) then  jdn := otherdn(u,m)
-        else jdn := cos(phi0)/denom;
-	return sin(phi0)/jdn;
-   end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisd definition
@@ -493,8 +403,6 @@ jacobisdrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-   jacobisd(i*elliptick!'(~m)/2,~m) => i/(sqrt(m)*sqrt(1+m)),
-
    jacobisd(i*~~u/~~d,~m) => i*jacobisd(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -512,15 +420,6 @@ jacobisdrules :=
 	        numberp u and numberp m
 }$
 let jacobisdrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobind when the on rounded switch is
-%used. It evaluates the value of Jacobind numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded as it was subject to largish rounding errors.
-procedure num_jacobind1(u,m);
-   1 / num_jacobidn1(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobind definition
@@ -568,8 +467,6 @@ jacobindrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-    jacobind(i*elliptick!'(~m)/2,~m) => 1/sqrt(1+m),
-
     jacobind(i*~~u/~~d,~m) => jacobicd(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -589,15 +486,6 @@ jacobindrules :=
         	numberp u and numberp m
 }$
 let jacobindrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobidc when the on rounded switch is
-%used. It evaluates the value of Jacobidc numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded as it was subject to largish rounding errors.
-procedure num_jacobidc1(u,m);
-     1/num_jacobicd1(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobidc definition
@@ -642,8 +530,6 @@ jacobidcrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-   jacobidc(i*elliptick!'(~m)/2,~m) => sqrt(m),
-
    jacobidc(i*~~u/~~d,~m) => jacobidn(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -660,15 +546,6 @@ jacobidcrules :=
 	        numberp u and numberp m
 }$
 let jacobidcrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobinc when the on rounded switch is
-%used. It evaluates the value of Jacobinc numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded.
-procedure num_jacobinc1(u,m);
-    1 / num_jacobicn1(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobinc definition
@@ -717,8 +594,6 @@ jacobincrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-   jacobinc(i*elliptick!'(~m)/2,~m) => sqrt(m)/sqrt(1+m),
-
    jacobinc(i*~~u/~~d,~m) => jacobicn(u/d,sqrt(1-m^2)),
    
 %Derivatives, Integral
@@ -739,15 +614,6 @@ jacobincrules :=
 
 }$
 let jacobincrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobisc when the on rounded switch is
-%used. It evaluates the value of Jacobisc numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded.
-procedure num_jacobisc1(u,m);
-    tan first phi_function(1,sqrt(1-m^2),m,u);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobisc definition
@@ -793,8 +659,6 @@ jacobiscrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-   jacobisc(i*elliptick!'(~m)/2,~m) => i/sqrt(1+m),
-
    jacobisc(i*~~u/~~d,~m) => i*jacobisn(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -813,15 +677,6 @@ jacobiscrules :=
 	        numberp u and numberp m
 }$
 let jacobiscrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobins when the on rounded switch is
-%used. It evaluates the value of Jacobins numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded.
-procedure num_jacobins1(u,m);
-     1 / num_jacobisn1(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobins definition
@@ -868,8 +723,6 @@ jacobinsrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-    jacobins(i*elliptick!'(~m)/2,~m) => -i*sqrt(m),
-
     jacobins(i*~~u/~~d,~m) => -i*jacobics(u/d,sqrt(1-m^2)),
     
 %Derivatives, Integral
@@ -888,15 +741,6 @@ jacobinsrules :=
 	        numberp u and numberp m
 }$
 let jacobinsrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobids when the on rounded switch is
-%used. It evaluates the value of Jacobids numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded as it was subject to largish roundiing errors.
-procedure num_jacobids1(u,m);
-      1/num_jacobisd1(u,m);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobids definition
@@ -943,8 +787,6 @@ jacobidsrules :=
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
 
-   jacobids(i*elliptick!'(~m)/2,~m) => -i*sqrt(m)*sqrt(1+m),
-
    jacobids(i*~~u/~~d,~m) => -i*jacobids(u/d,sqrt(1-m^2)),
 
 %Derivatives, Integral
@@ -962,15 +804,6 @@ jacobidsrules :=
 	        numberp u and numberp m
 }$
 let jacobidsrules;
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%This procedure is called by Jacobics when the on rounded switch is
-%used. It evaluates the value of Jacobics numerically.
-
-% old version was used only when u & m are real with abs m <=1
-% now superceded.
-procedure num_jacobics1(u,m);
-    cot first phi_function(1,sqrt(1-m^2),m,u);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %Jacobics definition
@@ -1013,8 +846,6 @@ jacobicsrules :=
 	    return -s*i*jacobidn(arg, m);
 	end)
       when ((ratnump(ip) and abs(ip) >= 1) where ip => impart(k/d)),
-
-   jacobics(i*elliptick!'(~m)/2,~m) => -i*sqrt(1+m),
 
    jacobics(i*~~u/~~d,~m) => -i*jacobins(u/d,sqrt(1-m^2)),
 
