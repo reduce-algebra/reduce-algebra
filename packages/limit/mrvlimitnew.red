@@ -446,7 +446,7 @@ symbolic procedure mrv_limit(argl);
       x0 := caddr argl;
       if x0='infinity then newvar := x
       else if x0='(minus infinity)
-      then u := subeval({{{'equal,x,{'minus,newvar}}},u})
+      then u := subeval({{'equal,x,{'minus,newvar}},u})
       else rederr{"mrv_limit: Invalid 3rd argument",x0};
       r := errorset!*({'mrv!-limit1,mkquote u,mkquote newvar},!*backtrace);
       return if errorp r then <<erfg!*:=nil; {'mrv_limit,u,x,x0}>>
