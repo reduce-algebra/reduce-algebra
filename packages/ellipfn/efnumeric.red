@@ -120,7 +120,7 @@ symbolic procedure  n_elliptic (u);
          rederr "illegal call to n_elliptic" else
    begin scalar oldprec,res;
      oldprec := precision(0);
-     precision max(oldprec+3,15);
+     precision max(oldprec+4,16);
 
     res :=  aeval u;
     precision oldprec;
@@ -220,10 +220,10 @@ algebraic procedure RC(x,y);
 	 x := tmp;
       >>;
       oldprec := precision(0);
-      precision(2*oldprec);
-      tmp := round(oldprec/3); 
+      precision max(oldprec+4,16);
+      tmp := ceiling(oldprec/3); 
       tol := 10.0^(-tmp);  
-      % relative trunction error of result approx. 10^-(2*oldprec)
+      % relative truncation error of result approx. 10^-(2*oldprec)
       tmp := t;
       while tmp do <<
 	 mu := (x+2*y)/3;
@@ -267,8 +267,8 @@ algebraic procedure RF(x,y,z);
 	 rederr("divergent integral RF: more than one argument is zero");
       
       oldprec := precision(0);
-      precision(2*oldprec);    % probably larger than necessary
-      n := round(oldprec/3); 
+      precision max(oldprec+4,16);
+      n := ceiling(oldprec/3); 
       tol := 10.0^(-n);  
       % relative trunction error of result approx. 10^-(2*oldprec)
       tmp := t;
@@ -305,7 +305,7 @@ algebraic procedure RD(x,y,z);
       	 rederr("divergent integral RD: third argument <= 0");
 
       oldprec := precision(0);
-      precision(2*oldprec);
+      precision max(oldprec+4,16);
       tmp := ceiling(oldprec/3); 
       tol := 10.0^(-tmp);  
       tmp := t; sigma := 0; pow := 1;
@@ -365,7 +365,7 @@ algebraic procedure RJ(x,y,z,p);
 	 rederr("divergent integral RJ: more than 1 of first 3 args are zero");
       
       oldprec := precision(0);
-      precision(2*oldprec);    % probably larger than necessary
+      precision max(oldprec+4,16);
       n := ceiling(oldprec/3); 
       tol := 10.0^(-n);  
 
@@ -382,7 +382,7 @@ algebraic procedure RJ(x,y,z,p);
 	 p := tmp;
 	 precision(oldprec);
 	 rcx:= RC(tmp1,tmp2);
-	 precision(2*oldprec);
+      	 precision max(oldprec+4,16);
       >>;
        
       tmp := t; pow := 1; sigma := 0;
@@ -402,7 +402,7 @@ algebraic procedure RJ(x,y,z,p);
 	    beta := p*(p+lamda)^2;
 	    precision(oldprec);
 	    tmp2 := RC(alfa,beta);
-	    precision(2*oldprec);
+	    precision max(oldprec+4,16);
 	    sigma := sigma+pow*tmp2;
 	    pow := pow/4;
 	    x := (x+lamda)/4;
@@ -423,7 +423,7 @@ algebraic procedure RJ(x,y,z,p);
       if oldp < 0 then <<
 	 precision(oldprec);
       	 tmp2 := RF(x,y,z);
-	 precision(2*oldprec);
+      	 precision max(oldprec+4,16);
          tmp := a*(b*tmp + 3*(rcx-tmp2));
       >>;
       precision(oldprec);
@@ -473,7 +473,7 @@ algebraic procedure sym_int_RFR(x,y,z);
 	 else rederr("divergent integral RF: negative third argument");
       if n>1 then rederr("divergent integral RF: more than one zero argument");
       oldprec := precision();
-      precision(2*oldprec);
+      precision max(oldprec+4,16);
       tol := 10.0^-(symbolic !:prec!:);
       % sort arguments into ascending order
       if x>y then <<tmp := y; y:=x; x:=tmp>>;      
@@ -540,7 +540,7 @@ algebraic procedure sym_int_RF(x,y,z);
       if n>1 then
 	 rederr("divergent integral RF: more than one argument is zero");
       oldprec := precision();
-      precision(2*oldprec);
+      precision max(oldprec+4,16);
       tol := 10.0^-(symbolic !:prec!:);
       tmp := abs(y-x);
       tmp2 := abs(z-x);
@@ -583,7 +583,7 @@ begin scalar oldprec, res, z;
    if y = 0 or (impart x = 0 and x<0) then
       rederr("1st parameter of RC must be non-negative and 2nd non-zero");
    oldprec := precision(0);
-   precision(2*oldprec);
+   precision max(oldprec+4,16);
    if x=y then res := 1/sqrt x
    else if x=0 then res :=pi/(2*sqrt y)
    else <<
@@ -620,7 +620,7 @@ algebraic procedure RF1(x,y,z);
       if n>1 then
 	 rederr("divergent integral RF: more than one argument is zero");
       oldprec := precision(0);
-      precision(2*oldprec);
+      precision max(oldprec+4,16);
       tol := 10.0^-(symbolic !:prec!:);
       tmp := abs(y-x);
       tmp2 := abs(z-x);
