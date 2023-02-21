@@ -274,7 +274,7 @@ jacobicn(w,0.8);
 
 w:=arccs(-0.4,0.8);
 v:=arcsc(-2.5,0.8);
-w-v;
+w-v-2*elliptick(0.8);
 
 w:=arcdn(3,0.8);
 jacobidn(w,0.8);
