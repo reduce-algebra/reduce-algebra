@@ -709,7 +709,7 @@ AC_ARG_WITH(throw,
   [],
   [with_throw="yes"])
 
-if test "$with_throw" = "no"
+if test "$with_throw" != "yes"
 then
   AC_DEFINE(NO_THROW, [1], [Avoid use of catch and throw])
 fi
@@ -722,9 +722,9 @@ AC_ARG_WITH(threads,
 
 # I will only allow "--with-threads" if "--enable-conservative" is set
 
-if test "$with_threads" = "no" || test "$enable_conservative" = "no"
+if test "$enable_conservative" != "yes"
 then
-  AC_DEFINE(NO_THREADS, [1], [Disable thread support])
+  with_threads="no"
 fi
 
 # Two things intersect here. The first is that use of thread-local variable
@@ -738,7 +738,7 @@ fi
 # some std::atomic<T> variables and those too can have extraordinary costs,
 # So --without-threads will avoid some (but not all) of them.
 
-if test "$with_threads" = "no"
+if test "$with_threads" != "yes"
 then
   AC_DEFINE(NO_THREADS, [1], [Avoid use of thread_local and other thread support])
 fi
