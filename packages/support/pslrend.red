@@ -532,11 +532,19 @@ if getd 'get!-image!-path then flag('(get!-image!-path),'lose);
 %% extract image file name from command line arguments
 %%
 symbolic procedure get!-image!-path();
-  begin scalar found;     
+  begin scalar found;
     for i:=0 : upbv unixargs!* do
        if getv(unixargs!*,i)="-f" and i<upbv unixargs!* then found := i+1;
     if fixp found then return getv(unixargs!*,found);
   end;
+
+%% prevent redefinition
+if getd 'get!-exec!-path then flag('(get!-exec!-path),'lose);
+%%
+%% extract executable file name from command line arguments
+%%
+symbolic procedure get!-exec!-path();
+  if upbv unixargs!* > 0 then getv(unixargs!*,0);
 
 symbolic procedure commandline_setq();
   % executes a setq(var,value); from  commandline arg
@@ -549,11 +557,13 @@ symbolic procedure commandline_setq();
      %% process special args
      if "--no-rcfile" member extraargs then no!_init!_file := t;
      if "--texmacs" member extraargs then lispsystem!* := 'texmacs . lispsystem!*;
+     lispsystem!* := ('executable . get!-exec!-path()) . lispsystem!*;
      if null imagefilename!*
        then imagefilename!* := get!-image!-path(); % -f image file argument
 
      if stringp imagefilename!*		% we have a valid image flename
-       then << lastentry := lastcar path!-to!-entries imagefilename!*;
+       then << lispsystem!* := ('imagepath . imagefilename!*) . lispsystem!*;
+               lastentry := lastcar path!-to!-entries imagefilename!*;
 	       l := string!-length lastentry;
 	       if l>4 and substring(lastentry,l-4,l) = ".img"
                  then shortname := substring(lastentry,0,l-4)
@@ -572,7 +582,9 @@ symbolic procedure commandline_setq();
   end;
 
 symbolic procedure reduce!-init!-forms();
-   << commandline_setq();
+   << if not null revision!* then lispsystem!* := ('revision . revision!*) . lispsystem!*;
+      if not null architecture!* then lispsystem!* := ('platform . architecture!*) . lispsystem!*;
+      commandline_setq();
       set!-load!-directories();
 %      if null ("--no-rcfile" member vecter2list unixargs!*)
 %        then read!-init!-file "reduce";
