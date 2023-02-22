@@ -284,7 +284,7 @@ static HANDLE keyboardNeeded; // a mutex
 
 static void quitKeyboardThread()
 {   if (keyboardThreadActive &&
-        keyboardThread->get_id() != std::this_thread::get_id())
+        keyboardThread.get_id() != std::this_thread::get_id())
     {   keyboardThreadActive = false;
         while (keyboardThreadHandle == (HANDLE)(-1)) Sleep(10);
         ReleaseMutex(keyboardNeeded);
