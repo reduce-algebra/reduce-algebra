@@ -584,6 +584,8 @@ symbolic procedure commandline_setq();
 symbolic procedure reduce!-init!-forms();
    << if not null revision!* then lispsystem!* := ('revision . revision!*) . lispsystem!*;
       if not null architecture!* then lispsystem!* := ('platform . architecture!*) . lispsystem!*;
+      if not null sysname!* then lispsystem!* := ('name . sysname!*) . lispsystem!*;
+      if not null opsys!* then lispsystem!* := ('opsys . opsys!*) . opsys!* . lispsystem!*;
       commandline_setq();
       set!-load!-directories();
 %      if null ("--no-rcfile" member vecter2list unixargs!*)
