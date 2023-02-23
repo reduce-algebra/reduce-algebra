@@ -72,6 +72,8 @@ then
   logfile=reduce.blg
   #logfile=saveimage.blg
 
+  architecture=`basename "$1"`
+
 else
 
   builddir=.
@@ -82,9 +84,11 @@ else
   logdir=../buildlogs
   logfile=reduce.img.blg
 
-  echo Create red/reduce.img for architecture $1
+  architecture="$1"
 
 fi
+
+echo Create red/reduce.img for architecture $architecture
 
 cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
 creduce=$cpsldir/..
@@ -138,6 +142,8 @@ cd psl
 
 (setq symbolfilename!* "$bhere/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$bhere/red/" "$bhere/psl/")))
+(cond ((not (equal "$architecture" ""))
+       (setq architecture!* "$architecture")))
 
 (reclaim)
 (setq !*init!-stats!* (list (time) (gtheap nil) (free-bps) nextsymbol))

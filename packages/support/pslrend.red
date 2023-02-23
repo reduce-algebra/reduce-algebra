@@ -590,6 +590,7 @@ symbolic procedure reduce!-init!-forms();
 %        then read!-init!-file "reduce";
       if ("--texmacs" member vector2list unixargs!*) or getenv "TEXMACS_REDUCE_PATH"
         then load tmprint;
+      lispsystem!* := 'reduce . lispsystem!*;
    >>;
 
 % got used to Perl/php split WN
