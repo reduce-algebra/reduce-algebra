@@ -1,5 +1,4 @@
 packages/gcref/gcref
-packages/redlog/regressions/make.sh
 packages/redlog/test/ptest1.sh
 packages/redlog/test/ptest1_new.sh
 packages/redlog/test/testredlog.sh
