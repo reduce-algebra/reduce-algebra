@@ -1,6 +1,10 @@
 #! /bin/sh
 
-echo Create red/reduce.img for architecture $1
+architecture="$1"
+
+
+
+echo Create red/reduce.img for architecture $architecture
 
 a=$0
 c=unknown
@@ -78,7 +82,9 @@ fi
 
 cd psl
 
-./bpsl -td $STORE <<XXX > $logdir/$logfile
+env
+
+./bpsl -td $STORE <<XXX > "$logdir/$logfile"
 
 % This re-starts a bare reduce and loads in the modules compiled
 % by the very first step. It then checkpoints a system that can be
@@ -86,6 +92,8 @@ cd psl
 
 (setq symbolfilename!* "$here/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$here/red/" "$here/psl/")))
+(cond ((not (equal "$architecture" ""))
+       (setq architecture!* "$architecture")))
 
 (reclaim)
 (setq !*init!-stats!* (list (time) (gtheap nil) (free-bps) nextsymbol))
