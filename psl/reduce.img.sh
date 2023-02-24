@@ -2,8 +2,6 @@
 
 architecture="$1"
 
-
-
 echo Create red/reduce.img for architecture $architecture
 
 a=$0
@@ -35,6 +33,10 @@ case $a in
   fi
   ;;
 esac
+
+mydir=`dirname $0`
+line=`(hostinfo=\`$mydir/../config.guess\`; IFS="-"; set -- $hostinfo ; host_cpu="$1"; shift; shift; host_os="$*" ; echo sysname="$host_os:$host_cpu" ";" opsys="$host_os")`
+eval $line
 
 cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
 creduce=$cpsldir/..
@@ -82,8 +84,6 @@ fi
 
 cd psl
 
-env
-
 ./bpsl -td $STORE <<XXX > "$logdir/$logfile"
 
 % This re-starts a bare reduce and loads in the modules compiled
@@ -92,8 +92,12 @@ env
 
 (setq symbolfilename!* "$here/psl/bpsl")
 (setq loaddirectories!* (quote ("" "$here/red/" "$here/psl/")))
-(cond ((not (equal "$architecture" ""))
-       (setq architecture!* "$architecture")))
+(cond ((equal "$architecture" "") (setq architecture!* nil))
+      (t (setq architecture!* "$architecture")))
+(cond ((equal "$opsys" "") (setq opsys!* nil))
+      (t (setq opsys!* "$opsys")))
+(cond ((equal "$sysname" "") (setq sysname!* nil))
+      (t (setq sysname!* "$sysname")))
 
 (reclaim)
 (setq !*init!-stats!* (list (time) (gtheap nil) (free-bps) nextsymbol))
