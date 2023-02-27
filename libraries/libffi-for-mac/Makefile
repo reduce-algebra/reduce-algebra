@@ -27,7 +27,7 @@ doarm64:
 	    LDFLAGS="-arch arm64" \
 	    --disable-multi-os-directory \
 	    --prefix=`pwd`/../arm64 && \
-	arch -arm64 make && make install
+	make && make install
 
 dox86_64:
 	cd build-x86_64 && \
@@ -38,7 +38,7 @@ dox86_64:
 	    LDFLAGS="-arch x86_64" \
 	    --disable-multi-os-directory \
 	    --prefix=`pwd`/../x86_64 && \
-	arch -x86_64 make && make install
+	make && make install
 
 libs:
 	mkdir -p ../lib && \
