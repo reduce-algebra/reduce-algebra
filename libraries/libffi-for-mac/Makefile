@@ -38,7 +38,7 @@ dox86_64:
 	    LDFLAGS="-arch x86_64" \
 	    --disable-multi-os-directory \
 	    --prefix=`pwd`/../x86_64 && \
-	make && make install
+	arch --x86_64 make && make install
 
 libs:
 	mkdir -p ../lib && \
