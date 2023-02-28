@@ -113,8 +113,10 @@ interpreted as a product.  For example, \texttt{2ab3c} is interpreted as
 \texttt{2*ab3c}.  There is one exception to this:  If the first letter after a
 digit is \texttt{E}, the system will try to interpret that part of the
 sequence as a real number\index{Real number}, which may fail in some cases.  For
-example, \texttt{2E12} is the real number $2.0*10^{12}$, \texttt{2e3c} is
-2000.0*C, and \texttt{2ebc} gives an error.
+example, \texttt{2E12} is the real number $2.0*10^{12}$ and \texttt{2e3c} is
+2000.0*C. If the \texttt{E} is not followed by a number, 0 is assumed as the
+decimal exponent, thus \texttt{2e} is interpreted as 2 and \texttt{2ebc} as
+2*bc.
 
 Special characters, such as \texttt{-}, \texttt{*}, and blank, may be
 used in identifiers
