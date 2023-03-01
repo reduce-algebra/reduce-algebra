@@ -1,3 +1,4 @@
+
 \subsection{Elliptic Functions: Introduction}
 \index{Elliptic functions}
 \index{Jacobi Elliptic functions}
@@ -101,40 +102,57 @@ use Glaisher's notation. For example
 All twelve functions are doubly periodic in the complex plane.
 The primitive periods and the positions of the zeros and poles of the
 functions are conveniently expressed in terms of the so-called quarter periods
-$\mathrm{K}(k)$ and $i\mathrm{K}^\prime(k)$ which are complete elliptic
-integrals of the first kind. The details are displayed in the table below.
-As the functions are doubly periodic, there are, of course, infinitely many
-other zeros and poles. These occur at points 'congruent` to the points
+$\mathrm{K}(k)$ and $i\mathrm{K}'(k)$ which are complete elliptic
+integrals of the first kind. The details are displayed in the table below;
+in all cases the pole is single and the corresponding residue is given in
+the last column of the table.
+As the functions are doubly-periodic, there are, of course, infinitely many
+other zeros and poles. These occur at points `congruent' to the points
 given in the table obtained by translating by
-$2m\mathrm{K} +2i n\mathrm{K}^\prime$ where $m$ and $n$ are arbitrary integers.
+$2m\mathrm{K} +2i n\mathrm{K}'$ where $m$ and $n$ are arbitrary integers.
 
-\begin{tabular}{lllll}
-  Function & Period1 & Period2 & Zero & Pole\\
-$\mathop{\mathrm{sn}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$0$&$i\mathrm{K}^\prime$\\
-$\mathop{\mathrm{ns}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$i\mathrm{K}^\prime$&$0$\\
-$\mathop{\mathrm{cd}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$\\  
-$\mathop{\mathrm{dc}}$&$4\mathrm{K}$&$2i\mathrm{K}^\prime$&$\mathrm{K}+i\mathrm{K}^\prime$&$\mathrm{K}$\\ 
+\begin{tabular}{llllll}
+  Function & Period1 & Period2 & Zero & Pole & Residue\\
+$\mathop{\mathrm{sn}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$0$&$i\mathrm{K}'$&$1/k$\\
+$\mathop{\mathrm{ns}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$i\mathrm{K}'$&$0$&$1$\\
+$\mathop{\mathrm{cd}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&$-1/k$\\  
+$\mathop{\mathrm{dc}}$&$4\mathrm{K}$&$2i\mathrm{K}'$&$\mathrm{K}+i\mathrm{K}'$&$\mathrm{K}$&$-1$\\ 
 
-$\mathop{\mathrm{cn}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$\mathrm{K}$&$i\mathrm{K}^\prime$\\
-$\mathop{\mathrm{nc}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$i\mathrm{K}^\prime$&$\mathrm{K}$\\
-$\mathop{\mathrm{sd}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$0$&$\mathrm{K}+i\mathrm{K}^\prime$\\
-$\mathop{\mathrm{ds}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}^\prime)$&$\mathrm{K}+i\mathrm{K}^\prime$&$0$\\
+$\mathop{\mathrm{cn}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}')$&$\mathrm{K}$&$i\mathrm{K}'$&$-i/k$\\
+$\mathop{\mathrm{nc}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}')$&$i\mathrm{K}'$&$\mathrm{K}$&$-1/k'$\\
+$\mathop{\mathrm{sd}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}')$&$0$&$\mathrm{K}+i\mathrm{K}'$&$-i/(k k')$\\
+$\mathop{\mathrm{ds}}$&$4\mathrm{K}$&$2(\mathrm{K}+i\mathrm{K}')$&$\mathrm{K}+i\mathrm{K}'$&$0$&$1$\\
 
-$\mathop{\mathrm{dn}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&$i\mathrm{K}^\prime$\\
-$\mathop{\mathrm{nd}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$i\mathrm{K}^\prime$&$\mathrm{K}+i\mathrm{K}^\prime$\\
-$\mathop{\mathrm{sc}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$0$&$\mathrm{K}$\\
-$\mathop{\mathrm{cs}}$&$4i\mathrm{K}^\prime$&$2\mathrm{K}$&$\mathrm{K}$&$0$\\
+$\mathop{\mathrm{dn}}$&$4i\mathrm{K}'$&$2\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&$i\mathrm{K}'$&$-i$\\
+$\mathop{\mathrm{nd}}$&$4i\mathrm{K}'$&$2\mathrm{K}$&$i\mathrm{K}'$&$\mathrm{K}+i\mathrm{K}'$&$-i/k'$\\
+$\mathop{\mathrm{sc}}$&$4i\mathrm{K}'$&$2\mathrm{K}$&$0$&$\mathrm{K}$&$-1/k'$\\
+$\mathop{\mathrm{cs}}$&$4i\mathrm{K}'$&$2\mathrm{K}$&$\mathrm{K}$&$0$&$1$\\
 \end{tabular}
 
 All other periods of the Jacobi functions can be expressed as linear
 combinations of the two primitive periods with integer coefficients.
-Thus, for example, $4i\mathrm{K}^\prime$ is a period of $\mathrm{cn}$ as
-\[4i\mathrm{K}^\prime = 2(\mathrm{K}+\mathrm{K}^\prime) -4\mathrm{K}\]
+Thus, for example, $4i\mathrm{K}'$ is a period of $\mathrm{cn}$ as
+\[4i\mathrm{K}' = 2(\mathrm{K}+\mathrm{K}') -4\mathrm{K}\]
 
 Extensive rule lists are provided for differentiation of these functions with
 respect to either argument, for argument shifts by integer multiples of the
-two quarter-periods $\mathrm{K}(k)$ and $i\mathrm{K}^\prime(k)$ and finally
+two quarter periods $\mathrm{K}(k)$ and $i\mathrm{K}'(k)$ and finally
 Jacobi's transformations for a purely imaginary first argument.
+Rules are also provided for the values of the twelve Jacobi functions at the
+`eighth' period values: $\mathrm{K}/2$, $i\mathrm{K}'/2$ and
+$(\mathrm{K}+i\mathrm{K}')/2$. For these rules to yield correct values it
+is essential that the switch \sw{precise\_complex} is ON, otherwise Reduce will
+often incorrectly simplify the results if they involve complex values of $k$ or
+$k'$. It should also be noted that the rule for
+$\mathrm{dn}((\mathrm{K}(k)+i\mathrm{K}'(k))/2, k)$ differs from that on
+\href{https://dlmf.nist.gov/22.5#i}{DLMF:NIST} which appears to give incorrect
+values for some values of $k$. The rule used in \REDUCE is not only simpler,
+but appears to give correct values in all cases as do the derived rules for
+$\mathrm{cd}$, $\mathrm{sd}$, $\mathrm{nd}$, $\mathrm{ds}$ and $\mathrm{dc}$.
+It is derived from the third of the identities (2.2.19) of Lawden
+\cite{Lawden:89} with $u =-(\mathrm{K}(k)+i\mathrm{K}'(k))/2$ and
+the corresponding identities for $\mathrm{sn}$ and $\mathrm{cn}$ on the
+DLMF NIST site.
 
 Complex split functions have recently been implemented for the 12 Jacobi
 functions for the cases when the modulus $k$ is either real or imaginary.
@@ -162,7 +180,7 @@ identities to replace squares in favour of $\mathrm{cn}$ and $\mathrm{dn}$
 respectively. At most one of these rule sets should be active at any one time
 to avoid a potential infinite recursion in the simplification.
 The fourth rule list \texttt{NO\_GLAISHER} replaces all occurences of the
-nine subsidiary Jacobi elliptic functions ($\mathrm{ns}$, $\mathrm{sc}$,
+nine subsidiary Jacobi elliptic functions $\mathrm{ns}$, $\mathrm{sc}$,
 $\mathrm{sd}$, \ldots by reciprocals and quotients of the `basic' Jacobi
 elliptic functions $\mathrm{sn}$, $\mathrm{cn}$ and $\mathrm{dn}$.
 
@@ -263,9 +281,9 @@ the Legendre form and others for Jacobi's form.
 To bring the notation more into line with that in the NIST Digital Library of
 Mathematical Functions and avoid any possible confusion, $\mathrm{E}(u, k)$ is used for
 the Legendre form and $\mathcal{E}(u, k)$ for Jacobi's form.
-This differs from the 2019 version of this section which followed Lawden \cite{Lawden:89},
-where the notation $\mathrm{D}(\phi, k)$  and $\mathrm{E}(u, k)$ were used for the
-Legendre and Jacobi forms respectively.
+This differs from the 2019 version of this section which followed Lawden
+\cite{Lawden:89} chapter 3, where the notation $\mathrm{D}(\phi, k)$ and
+$\mathrm{E}(u, k)$ were used for the Legendre and Jacobi forms respectively.
 
 A number of rule lists have been provided to implement, where appropriate,
 derivatives of these functions, addition rules and periodicity and
@@ -280,7 +298,12 @@ The Elliptic F function can be used as \f{EllipticF(phi,k)} and
 will return the value of the \emph{Incomplete Elliptic Integral of the
 First Kind}:
 \[\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.\]
-
+This is actually closely related to the inverse Jacobi function
+$\mathrm{arcsn}$; in fact for $0 <= \Re \phi <=\pi/2$:
+\[ \mathrm{F}(\phi, k) = \mathrm{arcsn}(\sin \phi, k) \].
+Currently numerical evaluation is only available for this range of values
+of $\phi$.
+  
 \subsubsection{Elliptic K}
 \hypertarget{operator:ELLIPTICK}{}
 \hypertarget{operator:ELLIPTICK'}{}
@@ -293,11 +316,9 @@ First Kind}:
 \[\mathrm{K}(k)=\mathrm{F}(\pi/2, k) =\int_0^{\pi/2}(1-k^2 \sin^2 \theta)^{-1/2}\mathrm{d}\theta.\]
 This is one of the quarter periods of the Jacobi elliptic
 functions and is often used in the calculation of other elliptic functions.
-
-The complementary Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)}
-and will return the value
-\[\mathrm{K}(k')=\mathrm{K}(\sqrt{1-k^2})\]
-$iK^\prime(k)$ is the other quarter-period of the Jacobi elliptic functions.
+The complementary Elliptic K$'$ function can be used as \f{EllipticK!$'$(k)}.
+Note that $i\mathrm{K}'(k)$ is the other quarter period of the Jacobi
+elliptic functions.  
 
 \subsubsection{Elliptic E}
 \hypertarget{operator:ELLIPTICE}{}
@@ -314,14 +335,46 @@ the \emph{Incomplete Elliptic Integral of the Second Kind}:
 \emph{Complete Elliptic Integral of the Second Kind}:
 \[\mathrm{E}(k)=\mathrm{E}(\pi/2, k) =
 \int_0^{\pi/2} \sqrt{1-k^2 \sin^2 \theta} \,\mathrm{d}\theta.\]
+The complementary Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)}.
 
-The complementary Elliptic E$'$ function can be used as \f{EllipticE!$'$(k)}
-and will return the value
-\[\mathrm{E}(k') = \mathrm{E}(\sqrt{1-k^2}).\]
+The complete integrals are actually multi-valued; to obtain single valued
+functions it is necessary to introduce branch cuts. For $\mathrm{K}(k)$ and
+$\mathrm{E}(k)$  these are $(-\infty, -1] \cup [1, +\infty)$.
+The functions are continuous if the two components of the branch cut are
+approached from the second and fourth quadrants respectively.
+For $\mathrm{K}'(k)$ and $\mathrm{E}'(k)$ the branch cut is
+$(-\infty, 0]$ with continuity if the cut is approached from the second
+quadrant. For more details, see Lawden \cite{lawden:89} sections 8.12 to 8.14.
+The principal values of $\mathrm{K}(k)$ and $\mathrm{E}(k)$ are even functions
+of $k$.
 
-The numerical evaluation of the complete integrals is more robust as it is
-now via symmetric elliptic integrals. It should now work for all complex values
-of the modulus. 
+The numerical evaluation of the complete integrals is more robust and
+ uses symmetric elliptic integrals. They should now work for all complex
+values of the modulus and return the principal value of the integral concerned.
+Note that for all complex values of $k$, the well-known identities:
+\[\mathrm{K}'(k)=\mathrm{K}(\sqrt{1-k^2})\qquad 
+\mathrm{E}'(k) = \mathrm{E}(\sqrt{1-k^2}).\]
+are not actually valid for the principal values of the functions concerned.
+It is necessary that $\Re k >=0$ with in addition if $\Re k=0$, $\Im k>=0$.
+One of the consequences of this is that the principal values of
+$\mathrm{K}'(k)$ and $\mathrm{E}'(k)$ are not even functions.
+
+General values for the four complete integrals together with the principal value
+when $\Re{k} <0$ are given in the table below, where
+ $n$ is an arbitrary integer, $k' = \sqrt{1-k^2}$ and the expressions
+in the second and third columns refer always to principal values:
+
+\begin{tabular}  {lll}
+  Function&General Value&Principal Value when $\Re(k) <0$\\
+$\mathrm{K}(k)$& $\mathrm{K}(k)-2in\mathrm{K}(k')$&$\mathrm{K}(-k)$\\
+$\mathrm{K}'(k)$& $\mathrm{K}(k')-4in\mathrm{K}(k)$&$\mathrm{K}(k')\mp 2i\mathrm{K}(-k)$\\
+$\mathrm{E}(k)$& $\mathrm{K}(k)-2in(\mathrm{K}(k')-\mathrm{E}(k'))$&$\mathrm{E}(-k)$\\
+  $\mathrm{E}'(k)$& $\mathrm{E}(k')-4in(\mathrm{K}(k)-\mathrm{E}(k))$&
+  $\mathrm{E}(k')\mp 2i(\mathrm{K}(-k)-\mathrm{E}(-k))$\\
+\end{tabular}
+
+In the third column the upper and lower alternative signs are taken when
+$k$ lies in the second and third quadrants respectively.
 
 \subsubsection{Jacobi E}
 \hypertarget{operator:JACOBIE}{}
@@ -387,7 +440,7 @@ argument is numerical. The first pair relate the nome $q$ of the theta
 functions with the moduli $k$ and $k'=\sqrt{1-k^2}$ of the associated Jacobi
 elliptic functions.
 
-The second pair return the quarter-periods K and K$'$ respectively of
+The second pair return the quarter periods K and K$'$ respectively of
 the Jacobi elliptic functions associated with the nome $q$.
 
 Finally, \f{nome(k)} returns the nome $q$ associated with the modulus $k$ of
@@ -582,7 +635,7 @@ The Zeta and Sigma functions are only quasi-periodic on the lattice. Zeta is odd
 1 at all lattice points. The basic Sigma function $\sigma(u,\omega_1,\omega_3)$ is odd and regular everywhere as is
 the function $\vartheta_1(u,\tau)$ to which it is closely related. It has zeros at all lattice points. All three functions
 $\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respectively. The functions are related by
-\[ \wp(u) = -\zeta_w^\prime(u),\qquad\qquad \zeta_w(u) = \sigma^\prime(u)/\sigma(u),\]
+\[ \wp(u) = -\zeta_w'(u),\qquad\qquad \zeta_w(u) = \sigma'(u)/\sigma(u),\]
 where the lattice parameters have been omitted for conciseness.
 
 Rule sets are provided which implement all the properties such as double periodicity discussed above. For numerical evaluation
@@ -608,7 +661,7 @@ by separating the first and
 second arguments by a vertical bar rather than a comma. The rule for
 differentiation of the Weierstrass function is simpler when expressed in
 this  alternative:
-\[ \wp^\prime(u \mid g_2,g_3)^2 = 4\,\wp(u \mid g_2,g_3)^3
+\[ \wp'(u \mid g_2,g_3)^2 = 4\,\wp(u \mid g_2,g_3)^3
    - g_2\, \wp(u \mid g_2,g_3) -g_3. \]
 
 \subsubsection{Other Sigma Functions}
@@ -808,34 +861,34 @@ fifth column of the table below where $m$ and $n$ are arbitrary integers.
 \begin{tabular}{lllll}
   & Quarter&Periods&Principal&Other\\
 Function&$p$&$q$&Parallelogram&Values\\
-$\mathop{\mathrm{arcsn}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
+$\mathop{\mathrm{arcsn}}$&$\mathrm{K}$&$i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p+2n q +(-1)^mv$\\
 &&&$p+q$, $p-q$.&\\
-$\mathop{\mathrm{arccn}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
-  $0$, $2q$, $2(p+q)$, $2p$.&$4m p +2n q \pm v$\\
-$\mathop{\mathrm{arcdn}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
-  $0$, $2q$, $2(p+q)$, $2p$.&$2m q+4n p \pm v$\\
-$\mathop{\mathrm{arcns}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
+$\mathop{\mathrm{arccn}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
+  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+$\mathop{\mathrm{arcdn}}$&$i\mathrm{K}'$&$\mathrm{K}$&
+  $0$, $2p$, $2(p+q)$, $2q$.&$2m q+4n p \pm v$\\
+$\mathop{\mathrm{arcns}}$&$\mathrm{K}$&$i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p+2n q +(-1)^mv$\\
 &&&$p+q$, $p-q$.&\\
-$\mathop{\mathrm{arcnc}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
-  $0$, $2q$, $2(p+q)$, $2p$.&$4m p +2n q \pm v$\\
-$\mathop{\mathrm{arcnd}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
- $0$, $2q$, $2(p+q)$, $2p$.&$2m q+4n p \pm v$\\
-$\mathop{\mathrm{arccd}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
- $0$, $2q$, $2(p+q)$, $2p$.&$4m p+2n q \pm v$\\
-$\mathop{\mathrm{arcdc}}$&$\mathrm{K}$&$i\mathrm{K}^\prime$&
- $0$, $2q$, $2(p+q)$, $2p$.&$4m p+2n q \pm v$\\
-$\mathop{\mathrm{arcsd}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
+$\mathop{\mathrm{arcnc}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
+  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+$\mathop{\mathrm{arcnd}}$&$i\mathrm{K}'$&$\mathrm{K}$&
+  $0$, $2p$, $2(p+q)$, $2q$.&$2m q+4n p \pm v$\\
+$\mathop{\mathrm{arccd}}$&$\mathrm{K}$&$i\mathrm{K}'$&
+  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+$\mathop{\mathrm{arcdc}}$&$\mathrm{K}$&$i\mathrm{K}'$&
+  $-q$, $q$, $2p+q$, $2p-q$.&$4m p +2n q \pm v$\\
+$\mathop{\mathrm{arcsd}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p +2n q +(-1)^mv$\\
 &&&$p+q$, $p-q$.&\\
-$\mathop{\mathrm{arcds}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}^\prime$&
+$\mathop{\mathrm{arcds}}$&$\mathrm{K}$&$\mathrm{K}+i\mathrm{K}'$&
 $-(p+q)$, $-p+q$,&$2m p +2n q +(-1)^mv$\\
 &&&$p+q$, $p-q$.&\\
-$\mathop{\mathrm{arcsc}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
+$\mathop{\mathrm{arcsc}}$&$i\mathrm{K}'$&$\mathrm{K}$&
 $-(p+q)$, $-p+q$,&$2m q +2n q +(-1)^nv$\\
 &&&$p+q$, $p-q$.&\\
-$\mathop{\mathrm{arccs}}$&$i\mathrm{K}^\prime$&$\mathrm{K}$&
+$\mathop{\mathrm{arccs}}$&$i\mathrm{K}'$&$\mathrm{K}$&
   $-p$, $p$, $p+2q$, $-p+2q$&$2m q +2n q +(-1)^nv$\\
 \end{tabular}
 
@@ -935,10 +988,10 @@ $\mathrm{arccn}(u,k)$ & \f{arccn(u,k)}\\
 $\mathrm{arccs}(u,k)$ & \f{arccs(u,k)}\\
 
 Complete Integral (1st kind) $\mathrm{K}(k)$ & \f{ellipticK(k)}\\
-$\mathrm{K}^\prime(k)$ & \f{ellipticK!'(k)}\\
+$\mathrm{K}'(k)$ & \f{ellipticK!'(k)}\\
 Incomplete Integral (1st kind) $\mathrm{F}(\phi,k)$ & \f{ellipticF(phi,k)}\\
 Complete Integral (2nd kind) $\mathrm{E}(k)$ & \f{ellipticE(k)}\\
-$\mathrm{E}^\prime(k)$ & \f{ellipticE!'(k)}\\
+$\mathrm{E}'(k)$ & \f{ellipticE!'(k)}\\
 Legendre Incomplete Int (2nd kind) $\mathrm{E}(u,k)$ & \f{ellipticE(u,k)}\\
 Jacobi Incomplete Int (2nd kind) $\mathcal{E}(u,k)$ & \f{jacobiE(u,k)}\\
 Jacobi's Zeta $\mathrm{Z}(u,k)$ & \f{jacobiZeta(u,k)}\\
