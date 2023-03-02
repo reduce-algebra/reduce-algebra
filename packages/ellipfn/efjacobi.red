@@ -105,13 +105,17 @@ jacobisnrules :=
 {
 % When m=0 or 1, Change of Parameter
 %----------------------------------
-       jacobisn(~u,0)   => sin u,
-       jacobisn(~u,1)   => tanh u,
-       jacobisn(-~u,~m) => -jacobisn(u,m),
-       jacobisn(~u,-~m) => jacobisn(u,m),
-       jacobisn(0,~m) => 0,
-       jacobisn(ellipticK(~k)/2,~k) => 1/sqrt(1+sqrt(1-k^2)),
-       jacobisn(i*ellipticK!'(~k)/2,~k) => i/sqrt(k),
+   jacobisn(~u,0)   => sin u,
+   jacobisn(~u,1)   => tanh u,
+   jacobisn(-~u,~m) => -jacobisn(u,m),
+   jacobisn(~u,-~m) => jacobisn(u,m),
+   jacobisn(0,~m) => 0,
+   jacobisn(ellipticK(~k)/2,~k) => 1/sqrt(1+sqrt(1-k^2)),
+   jacobisn(i*ellipticK!'(~k)/2,~k) => i/sqrt(k),
+   jacobisn(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+      (sqrt(1+k)+i*sqrt(1-k))/sqrt(2*k),
+   % the following are necessary if the rules jacobisn(~u,-~k)
+   % and ellipticK(-~k) are applied  before those immediately above
        
 % generalised shift rules added by A Barnes
    jacobisn((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
@@ -168,13 +172,15 @@ jacobicnrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobicn(~u,0)   => cos u,
-        jacobicn(~u,1)   => sech u,
-        jacobicn(~u,-~m) => jacobicn(u,m),
-        jacobicn(-~u,~m) => jacobicn (u,m),
-        jacobicn(0,~m) => 1,
-	jacobicn(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2))/sqrt(1+sqrt(1-k^2)),
-       	jacobicn(i*ellipticK!'(~k)/2,~k) => sqrt(1+k)/sqrt(k),
+   jacobicn(~u,0)   => cos u,
+   jacobicn(~u,1)   => sech u,
+   jacobicn(~u,-~m) => jacobicn(u,m),
+   jacobicn(-~u,~m) => jacobicn (u,m),
+   jacobicn(0,~m) => 1,
+   jacobicn(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2))/sqrt(1+sqrt(1-k^2)),
+   jacobicn(i*ellipticK!'(~k)/2,~k) => sqrt(1+k)/sqrt(k),
+   jacobicn(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+       (1-i)*sqrt sqrt(1-k^2)/sqrt(2*k),         
 
 % generalised shift rules added by A Barnes
 
@@ -240,14 +246,20 @@ jacobidnrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobidn(~u,0)   => 1,
-        jacobidn(~u,1)   => sech u,
-        jacobidn(~u,-~m) => jacobidn(u,m),
-        jacobidn(-~u,~m) => jacobidn(u,m),
-        jacobidn(0,~m) => 1,
-       	jacobidn(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2)),
-   	jacobidn(i*ellipticK!'(~k)/2,~k) => sqrt(1+k),
-	
+   jacobidn(~u,0)   => 1,
+   jacobidn(~u,1)   => sech u,
+   jacobidn(~u,-~m) => jacobidn(u,m),
+   jacobidn(-~u,~m) => jacobidn(u,m),
+   jacobidn(0,~m) => 1,
+   jacobidn(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2)),
+   jacobidn(i*ellipticK!'(~k)/2,~k) => sqrt(1+k),
+   jacobidn(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+      % sqrt sqrt(1-k^2)*(sqrt(1+sqrt(1-k^2))-i*sqrt(1-sqrt(1-k^2)))/sqrt 2,
+      % the above is from DLMF: 22.5 and incorrect in some cases.
+      % The following is simpler and uses the third of (2.2.29) of Lawden
+      % with u=-(K+iK')/2. It appears to be correct in all cases.
+      sqrt sqrt(1-k^2)*(sqrt(1-k)-i*sqrt(1+k))/(1-i),
+   
 % Shift rules
    jacobidn((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg;
@@ -305,14 +317,18 @@ jacobicdrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobicd(~u,0)   => cos u,
-        jacobicd(~u,1)   => 1,
-        jacobicd(~u,-~m) => jacobicd(u,m),
-        jacobicd(-~u,~m) => jacobicd(u,m),
-        jacobicd(0,~m)   => 1,
-       	jacobicd(ellipticK(~k)/2,~k) => 1/sqrt(1+sqrt(1-k^2)),
-       	jacobicd(i*ellipticK!'(~k)/2,~k) => 1/sqrt(k),
-	
+   jacobicd(~u,0)   => cos u,
+   jacobicd(~u,1)   => 1,
+   jacobicd(~u,-~m) => jacobicd(u,m),
+   jacobicd(-~u,~m) => jacobicd(u,m),
+   jacobicd(0,~m)   => 1,
+   jacobicd(ellipticK(~k)/2,~k) => 1/sqrt(1+sqrt(1-k^2)),
+   jacobicd(i*ellipticK!'(~k)/2,~k) => 1/sqrt(k),
+   jacobicd(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+%      (1-i)*(sqrt(1+sqrt(1-k^2))+i*sqrt(1-sqrt(1-k^2)))/(2*sqrt(2*k)),
+       (sqrt(1+k)-i*sqrt(1-k))/sqrt(2*k),
+   % above uses the third of (2.2.17) of Lawden with u = -(K+iK')/2
+   
  jacobicd((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg, r, s;
          shift := fix repart(k/d);
@@ -367,15 +383,19 @@ jacobisdrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobisd(~u,0)   => sin u,
-        jacobisd(~u,1)   => sinh u,
-        jacobisd(~u,-~m) => jacobisd(u,m),
-        jacobisd(-~u,~m) => -jacobisd(u,m),
-        jacobisd(0,~m)   => 0,
-       	jacobisd(ellipticK(~k)/2,~k) =>
- 	                1/(sqrt(1+sqrt(1-k^2))*sqrt(sqrt(1-k^2))),
-       	jacobisd(i*ellipticK!'(~k)/2,~k) => i/(sqrt(k)*sqrt(1+k)),
-	
+   jacobisd(~u,0)   => sin u,
+   jacobisd(~u,1)   => sinh u,
+   jacobisd(~u,-~m) => jacobisd(u,m),
+   jacobisd(-~u,~m) => -jacobisd(u,m),
+   jacobisd(0,~m)   => 0,
+   jacobisd(ellipticK(~k)/2,~k) =>
+      1/(sqrt(1+sqrt(1-k^2))*sqrt(sqrt(1-k^2))),
+   jacobisd(i*ellipticK!'(~k)/2,~k) => i/(sqrt(k)*sqrt(1+k)),
+   jacobisd(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+%      (sqrt(1+k)+i*sqrt(1-k))*(sqrt(1+sqrt(1-k^2))+i*sqrt(1-sqrt(1-k^2)))/
+%	 (2*sqrt sqrt(1-k^2)*sqrt k),
+      (1+i)/(sqrt(2*k)*sqrt sqrt(1-k^2)),
+  	 
 % Shift rules
    jacobisd((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg, r, s;
@@ -432,14 +452,17 @@ jacobindrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobind(~u,0)   => 1,
-        jacobind(~u,1)   => cosh u,
-        jacobind(~u,-~m) => jacobind(u,m),
-        jacobind(-~u,~m) => jacobind(u,m),
-        jacobind(0,~m)   => 1,
-       	jacobind(ellipticK(~k)/2,~k) => 1/sqrt(sqrt(1-k^2)),
-       	jacobind(i*ellipticK!'(~k)/2,~k) => 1/sqrt(1+k),
-	
+   jacobind(~u,0)   => 1,
+   jacobind(~u,1)   => cosh u,
+   jacobind(~u,-~m) => jacobind(u,m),
+   jacobind(-~u,~m) => jacobind(u,m),
+   jacobind(0,~m)   => 1,
+   jacobind(ellipticK(~k)/2,~k) => 1/sqrt(sqrt(1-k^2)),
+   jacobind(i*ellipticK!'(~k)/2,~k) => 1/sqrt(1+k),
+   jacobind(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+%     (sqrt(1+sqrt(1-k^2))+i*sqrt(1-sqrt(1-k^2)))/sqrt(2*sqrt(1-k^2)),
+      (1-i)*(sqrt(1-k)+i*sqrt(1+k))/(2*sqrt sqrt(1-k^2)),
+   
 %Change of Argument
 
    jacobind((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
@@ -498,14 +521,18 @@ jacobidcrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobidc(~u,0)   => sec u,
-        jacobidc(~u,1)   => 1,
-        jacobidc(~u,-~m) => jacobidc(u,m),
-        jacobidc(-~u,~m) => jacobidc(u,m),
-        jacobidc(0,~m)   => 1,
-       	jacobidc(ellipticK(~k)/2,~k) => sqrt(1+sqrt(1-k^2)),	
-       	jacobidc(i*ellipticK!'(~k)/2,~k) => sqrt(k),
-
+   jacobidc(~u,0)   => sec u,
+   jacobidc(~u,1)   => 1,
+   jacobidc(~u,-~m) => jacobidc(u,m),
+   jacobidc(-~u,~m) => jacobidc(u,m),
+   jacobidc(0,~m)   => 1,
+   jacobidc(ellipticK(~k)/2,~k) => sqrt(1+sqrt(1-k^2)),
+   jacobidc(i*ellipticK!'(~k)/2,~k) => sqrt(k),
+   jacobidc(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+%      (1+i)*sqrt(k)*(sqrt(1+sqrt(1-k^2))-i*sqrt(1-sqrt(1-k^2)))/sqrt(2),
+       sqrt(k)*(sqrt(1+k)+i*sqrt(1-k))/sqrt 2,
+   % above uses the third of (2.2.17) of Lawden with u = -(K+iK')/2
+   
    jacobidc((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg, r, s;
          shift := fix repart(k/d);
@@ -558,14 +585,16 @@ jacobincrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobinc(~u,0)   => sec u,
-        jacobinc(~u,1)   => cosh u,
-        jacobinc(~u,-~m) => jacobinc(u,m),
-        jacobinc(-~u,~m) => jacobinc(u,m),
-        jacobinc(0,~m)   => 1,
-	jacobinc(ellipticK(~k)/2,~k) => sqrt(1+sqrt(1-k^2))/sqrt(sqrt(1-k^2)),
-       	jacobinc(i*ellipticK!'(~k)/2,~k) => sqrt(k)/sqrt(1+k),
-	
+   jacobinc(~u,0)   => sec u,
+   jacobinc(~u,1)   => cosh u,
+   jacobinc(~u,-~m) => jacobinc(u,m),
+   jacobinc(-~u,~m) => jacobinc(u,m),
+   jacobinc(0,~m)   => 1,
+   jacobinc(ellipticK(~k)/2,~k) => sqrt(1+sqrt(1-k^2))/sqrt(sqrt(1-k^2)),
+   jacobinc(i*ellipticK!'(~k)/2,~k) => sqrt(k)/sqrt(1+k),
+   jacobinc(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+      sqrt(k/2)*(1+i)/sqrt sqrt(1-k^2),
+
 %Change of Argument
 
    jacobinc((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
@@ -626,14 +655,16 @@ jacobiscrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobisc(~u,0)   => tan u,
-        jacobisc(~u,1)   => sinh u,
-        jacobisc(~u,-~m) => jacobisc(u,m),
-        jacobisc(-~u,~m) => -jacobisc(u,m),
-        jacobisc(0,~m)   => 0,
-       	jacobisc(ellipticK(~k)/2,~k) => 1/sqrt(sqrt(1-k^2)),
-       	jacobisc(i*ellipticK!'(~k)/2,~k) => i/sqrt(1+k),
-	
+   jacobisc(~u,0)   => tan u,
+   jacobisc(~u,1)   => sinh u,
+   jacobisc(~u,-~m) => jacobisc(u,m),
+   jacobisc(-~u,~m) => -jacobisc(u,m),
+   jacobisc(0,~m)   => 0,
+   jacobisc(ellipticK(~k)/2,~k) => 1/sqrt(sqrt(1-k^2)),
+   jacobisc(i*ellipticK!'(~k)/2,~k) => i/sqrt(1+k),
+   jacobisc(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+      (1+i)*(sqrt(1+k)+i*sqrt(1-k))/(2*sqrt sqrt(1-k^2)),
+
 % generalised shift rules added by A Barnes
    jacobisc((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg;
@@ -689,14 +720,16 @@ jacobinsrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobins(~u,0)   => csc u,
-        jacobins(~u,1)   => coth u,
-        jacobins(~u,-~m) => jacobins(u,m),
-        jacobins(-~u,~m) => -jacobins(u,m),
-        jacobins(0,~m)   => 1/jacobisn(0,m),     % pole
-       	jacobins(ellipticK(~k)/2,~k) => sqrt(1+sqrt(1-k^2)),
-       	jacobins(i*ellipticK!'(~k)/2,~k) => -i*sqrt(k),
-	
+   jacobins(~u,0)   => csc u,
+   jacobins(~u,1)   => coth u,
+   jacobins(~u,-~m) => jacobins(u,m),
+   jacobins(-~u,~m) => -jacobins(u,m),
+   jacobins(0,~m)   => 1/jacobisn(0,m),     % pole
+   jacobins(ellipticK(~k)/2,~k) => sqrt(1+sqrt(1-k^2)),
+   jacobins(i*ellipticK!'(~k)/2,~k) => -i*sqrt(k),
+   jacobins(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+        sqrt(2*k)/(sqrt(1+k)+i*sqrt(1-k)),
+
 %Change of Argument
 
    jacobins((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
@@ -753,14 +786,18 @@ jacobidsrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobids(~u,0)   => csc u,
-        jacobids(~u,1)   => csch u,
-        jacobids(~u,-~m) => jacobids(u,m),
-        jacobids(-~u,~m) => -jacobids(u,m),
-        jacobids(0,~m)   => 1/jacobisd(0,m),      % pole
-       	jacobids(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2))*sqrt(1+sqrt(1-k^2)),
-       	jacobids(i*ellipticK!'(~k)/2,~k) => -i*sqrt(k)*sqrt(1+k),
-	
+   jacobids(~u,0)   => csc u,
+   jacobids(~u,1)   => csch u,
+   jacobids(~u,-~m) => jacobids(u,m),
+   jacobids(-~u,~m) => -jacobids(u,m),
+   jacobids(0,~m)   => 1/jacobisd(0,m),      % pole
+   jacobids(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2))*sqrt(1+sqrt(1-k^2)),
+   jacobids(i*ellipticK!'(~k)/2,~k) => -i*sqrt(k)*sqrt(1+k),
+   jacobids(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+%      sqrt sqrt(1-k^2)*sqrt k*(sqrt(1+k)-i*sqrt(1-k))*
+%      (sqrt(1+sqrt(1-k^2))-i*sqrt(1-sqrt(1-k^2)))/2,
+      (1-i)*sqrt(k/2)*sqrt sqrt(1-k^2),
+	 
    jacobids((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg, r, s;
          shift := fix repart(k/d);
@@ -814,14 +851,16 @@ jacobicsrules :=
 {
 %When m=0 or 1, Change of Parameter
 %----------------------------------
-        jacobics(~u,0)   => cot u,
-        jacobics(~u,1)   => csch u,
-        jacobics(~u,-~m) => jacobics(u,m),
-        jacobics(-~u,~m) =>-jacobics(u,m),
-        jacobics(0,~m)   => 1/jacobisc(0,m),      % pole
-       	jacobics(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2)),
-       	jacobics(i*ellipticK!'(~k)/2,~k) => -i*sqrt(1+k),
-	
+   jacobics(~u,0)   => cot u,
+   jacobics(~u,1)   => csch u,
+   jacobics(~u,-~m) => jacobics(u,m),
+   jacobics(-~u,~m) =>-jacobics(u,m),
+   jacobics(0,~m)   => 1/jacobisc(0,m),      % pole
+   jacobics(ellipticK(~k)/2,~k) => sqrt(sqrt(1-k^2)),
+   jacobics(i*ellipticK!'(~k)/2,~k) => -i*sqrt(1+k),
+   jacobics(ellipticK(~k)/2+i*ellipticK!'(~k)/2, ~k) =>
+      (1-i)*sqrt sqrt(1-k^2)*(sqrt(1+k)-i*sqrt(1-k))/2,
+
 % generalised shift rules added by A Barnes
    jacobics((~~w + ~~k*elliptick(~m))/~~d, ~m) =>
       (begin scalar shift, arg;
@@ -885,8 +924,6 @@ algebraic procedure k2tau(k);
 algebraic procedure num_jacobisn(x,k);
    if k = 0 then sin x
    else if k=1 or k=-1 then tanh x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%     num_jacobisn1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -898,8 +935,6 @@ algebraic procedure num_jacobisn(x,k);
 algebraic procedure num_jacobins(x,k);
    if k = 0 then csc x
    else if k=1 or k=-1 then coth x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobins1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -911,8 +946,6 @@ algebraic procedure num_jacobins(x,k);
 algebraic procedure num_jacobicn(x,k);
    if k = 0 then cos x
    else if k=1 or k=-1 then sech x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobicn1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -924,8 +957,6 @@ algebraic procedure num_jacobicn(x,k);
 algebraic procedure num_jacobinc(x,k);
    if k = 0 then sec x
    else if k=1 or k=-1 then cosh x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobinc1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -937,8 +968,6 @@ algebraic procedure num_jacobinc(x,k);
 algebraic procedure num_jacobidn(x,k);
    if k = 0 then 1
    else if k=1 or k=-1 then sech x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobidn1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -950,8 +979,6 @@ algebraic procedure num_jacobidn(x,k);
 algebraic procedure num_jacobind(x,k);
    if k = 0 then 1
    else if k=1 or k=-1 then cosh x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobind1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -963,8 +990,6 @@ algebraic procedure num_jacobind(x,k);
 algebraic procedure num_jacobisc(x,k);
    if k = 0 then tan x
    else if k=1 or k=-1 then sinh x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobisc1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -976,8 +1001,6 @@ algebraic procedure num_jacobisc(x,k);
 algebraic procedure num_jacobics(x,k);
   if k = 0 then cot x
    else if k=1 or k=-1 then csch x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobics1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -1002,8 +1025,6 @@ algebraic procedure num_jacobisd(x,k);
 algebraic procedure num_jacobids(x,k);
   if k = 0 then csc x
    else if k=1 or k=-1 then csch x
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobids1(x,k)  % use old AGM-based method
    else begin scalar tau, t32, y;
       tau := k2tau(k);
       t32 := num1_theta3(0,tau)^2;
@@ -1015,8 +1036,6 @@ algebraic procedure num_jacobids(x,k);
 algebraic procedure num_jacobicd(x,k);
   if k = 0 then cos x
    else if k=1 or k=-1 then 1
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobicd1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
@@ -1028,8 +1047,6 @@ algebraic procedure num_jacobicd(x,k);
 algebraic procedure num_jacobidc(x,k);
   if k = 0 then sec x
    else if k=1 or k=-1 then 1
-%   else if impart k = 0 and impart x = 0 and abs k <1 then
-%      num_jacobidc1(x,k)  % use old AGM-based method
    else begin scalar tau, t3, y;
       tau := k2tau(k);
       t3 := num1_theta3(0,tau);
