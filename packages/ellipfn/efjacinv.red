@@ -92,13 +92,15 @@ invjacobirules :=
 
  arcdn(~x,1) => asech(x),
  arcdn(0,~k) => elliptick(k)+i*elliptick!'(k),
- arcdn(-~x,~k) => 2*i*elliptick!'(k)-arcdn(x,k) when not numberp x,
+ arcdn(-~x,~k) => 2*(elliptick(k)+i*elliptick!'(k))-arcdn(x,k)
+                      when not numberp x,
  arcdn(sqrt(1-~k^2),~k) => elliptick(k),
  arcdn(~x,-~k) => arcdn(x,k),
  
  arcnd(~x,1) => acosh(x),
  arcnd(0,~k) => i*elliptick!'(k),
- arcnd(-~x,~k) => 2*i*elliptick!'(k)-arcnd(x,k) when not numberp x,
+ arcnd(-~x,~k) => 2*(elliptick(k)+i*elliptick!'(k))-arcnd(x,k)
+                        when not numberp x,
  arcnd(1/sqrt(1-~k^2),~k) => elliptick(k),
  arcnd(~x,-~k) => arcdn(x,k),
 
@@ -578,7 +580,7 @@ algebraic procedure num1_adn(x,k);
       qp2 := num_ellk(k);
       if x=0 then return qp1+qp2
       else return principal_value(qp1+qp2 - num1_asc(i*x/kp,k),
-	                          qp1, qp2, 'even);
+	                          qp1, qp2, 'arcdn);
    end;
 
 algebraic procedure num_and(x,k);
@@ -593,7 +595,7 @@ algebraic procedure num1_and(x,k);
       Kp := i*num_ellk(sqrt(1-k^2));
       if x=0 then  return Kp 
       else return principal_value(Kp + num1_asc(x/i,k), Kp,
-	                          num_ellk(k), 'even);
+	                          num_ellk(k), 'arcdn);
    end;
 
 algebraic procedure num_acd(x,k);
@@ -664,6 +666,8 @@ begin scalar a, b;
 	    b := 2-b;
        	 >>;
 	 % now 0 <= a <= 2 and  0 <= b < 2
+      	 if b > 1 then
+	    b := 2-b;
          return a*z1+b*z2;
       >>;
 
@@ -689,6 +693,63 @@ begin scalar a, b;
       return a*z1+b*z2;
 end;
 
+algebraic procedure principal_value(z,z1,z2,parity);
+   % z1 and z2 are the so called 'quarter' periods;
+   % K and iK' respectively for arcsn, arcns, arccd and arcdc
+   % K and K+iK' respectively for arccn, arcnc, arcsd and arcds
+   % iK' and K respectively for arcdn, arcnd, arcsc and arccs
+   % the actual primitive periods are 4*z1 and 2*z2.
+begin scalar a, b;
+      z := lattice_coords(z,z1,z2);
+      a := first z;
+      b := second z;
+
+      % First shift lattice coordinates so 0<=a<4 and 0<=b<2.
+      % In practice all of these while loops are likely to terminate
+      % after a handful of iterations at most.
+      while a>=4 do 
+         a := a-4;
+      while a<0 do
+	 a := a+4;
+
+      while b>2 do
+       	 b := b-2;
+      while b<0 do
+       	 b := b+2;
+
+      if parity = 'even or parity = 'arcdn then <<
+	 if a > 2 then <<
+	    a := 4-a;
+	    b := 2-b;
+       	 >>;
+	 % now 0 <= a <= 2 and 0 <= b < 2 
+      	 if parity neq 'arcdn and b > 1 then
+	    % ensure  -1 < b <= 1
+	    b := b-2;
+         return a*z1+b*z2;
+      >>;
+
+      if parity = 'odd or parity = 'arccs then <<
+	 if a > 1 and a < 3 then <<
+	    a := 2-a;
+	    b := -b;
+	 >>
+	 else if a > 1 and a < 4 then 
+	    a := a - 4;
+         % now -1 <= a <= 1 and  -2 < b < 2
+	 if b > 1 then
+	    b := b-2
+	 else if b <= -1 then
+            b := 2+b;
+         % now -1 <= a <= 1 and  -1 <= b <= 1
+      >>;
+
+      % cf the principal values of acot are not treated as odd in Reduce 
+      if parity = 'arccs and b < 0 then <<
+	 b := 2+b;
+      >>;
+      return a*z1+b*z2;
+end;
 symbolic;
 
 put('arcsn,'fancy!-functionsymbol,"\mathrm{arcsn}");

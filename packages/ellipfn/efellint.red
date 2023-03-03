@@ -44,13 +44,13 @@ procedure f_function(phi,m);
        return (phi_n * for each y in alist product (1+sin y)/2);
     end;
 
-algebraic procedure num_ellf(phi,k);
-   if phi = pi/2 then
-       num_ellk(k)
-   else if impart phi = 0 and impart k = 0 then
-      RF(c-1,c-k^2,c) where c=>1/cos(phi)^2
-   else
-      rederr("Complex arguments for ellipticF not yet supported");
+%% algebraic procedure num_ellf(phi,k);
+%%    if phi = pi/2 then
+%%        num_ellk(k)
+%%    else if impart phi = 0 and impart k = 0 then
+%%       RF(c-1,c-k^2,c) where c=>1/cos(phi)^2
+%%    else
+%%       rederr("Complex arguments for ellipticF not yet supported");
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticF definition
@@ -72,8 +72,7 @@ ellipticfrules :=
    ellipticf(pi/2,~k)  =>  elliptick(k),
    
 % quasi-periodicity
-
-   ellipticf((~~w + ~~k*pi)/~~d, ~m) =>
+    ellipticf((~~w + ~~k*pi)/~~d, ~m) =>
       (begin scalar shift, arg;
          shift := fix repart(2*k/d);
  	 arg := w/d + ((2*k/d)-shift)*pi/2;
@@ -86,7 +85,7 @@ ellipticfrules :=
                  df(k,x)*((elliptice(u,k)/(k^2-1)+ellipticf(u,k))/k
                            + k*sin(u)*cos(u)/((k^2-1)*sqrt(1-k^2*sin(u)^2))),
 
-   ellipticf(~phi,~m)  => num_elliptic(f_function,phi,m)
+   ellipticf(~phi,~m)  => num_ellf(phi,m)
       when lisp !*rounded and lisp !*complex and numberp phi and numberp m
 }$
 let ellipticfrules;
@@ -101,15 +100,37 @@ let ellipticfrules;
 %%    return pi/(2*an);
 %% end;
 
+% incomplete elliptic integral of the first kind
+algebraic procedure num_ellf(phi,k);
+   if abs repart phi > pi/2 then
+      rederr("num_ellf: Re(phi) must lie in the interval [-pi/2, pi/2]")
+   else
+      num_elliptic(num2_asn, sin phi, k);
+
 % complete elliptic integral of the first kind
 algebraic procedure num_ellk(k);
    if k=1 or k=-1 then
       rederr("Logarithmic Singularity")
    else if k = 0 then pi/2
    else if impart(k) = 0 and abs(k)>1 then
-      (RF(0, 1-1/k^2, 1) - i*RF(0, 1/k^2, 1))/k
+      (RF(0, 1-1/k^2, 1) - i*RF(0, 1/k^2, 1))/abs k
    else
       RF(0,1-k^2,1);
+
+% complementary elliptic integral
+% NB the identity K'(k)=K(k') only holds if repart k >= 0.
+algebraic procedure num_ellkc(k);
+   if k=0 then
+      rederr("Logarithmic Singularity")
+   else if repart k > 0 or (repart k = 0 and impart k > 0) then
+      num_ellk(sqrt(1-k^2))
+   else <<
+      k := -k;
+      if impart k>0 then
+      	 num_ellk(sqrt(1-k^2)) + 2i*num_ellk(k)
+      else
+	 num_ellk(sqrt(1-k^2)) - 2i*num_ellk(k)
+   >>;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %EllipticK definition
@@ -121,15 +142,16 @@ elliptickrules :=
 
 {% complete elliptic integral of first kind
         elliptick(-~k)    => elliptick(k),
-	elliptick!'(-~k)  => elliptick!'(k),
 	elliptick(0)      => pi/2,
 	elliptick!'(1)    => pi/2,
 
-        elliptick(~m)   => num_ellk(m)
-	       when lisp !*rounded and lisp !*complex and numberp m,
+        elliptick(~m)   => num_elliptic(num_ellk, m)
+	   when lisp !*rounded and lisp !*complex and
+	        numberp m and m neq 1 and m neq -1,
 
-        elliptick!'(~m) => num_ellk(sqrt(1-m^2))
-	       when lisp !*rounded and lisp !*complex and numberp m,
+        elliptick!'(~m) => num_elliptic(num_ellkc, m)
+	   when lisp !*rounded and lisp !*complex and
+	        numberp m and m neq 0,
 
         nome(0) => 0,
 
@@ -172,27 +194,27 @@ begin scalar f, n, bothlists, alist, plist, s,
      return f*(1 - s^2*(1 + allz)/2) + s*allx;
 end;
 
-% three alternative symmetric integral methods for evaluating ellipticE(phi,k) 
-algebraic procedure num_elle(phi,k);
-   if phi = pi/2 then
-      num_ellec(k)
-   else
-      (RF(c-1, c-k^2, c) - k^2*RD(c-1, c-k^2, c)/3) where c=>1/cos(phi)^2;
-
-
-algebraic procedure num_elle2(phi,k);
-   if phi = pi/2 then
-      num_ellec(k)
-   else
-      ((k^2-1)*RD(c-k^2, c, c-1)/3 +sqrt((c-k^2)/(c^2-c)))
- 	 where c=>1/cos(phi)^2;
- 
-algebraic procedure num_elle1(phi,k);
-   if phi = pi/2 then
-      num_ellec(k)
-   else 
-      ((1-k^2)*(RF(c-1, c-k^2, c) +k^2*RD(c-1, c, c-k^2)/3)
- 	 +k^2*sqrt((c-1)/(c^2-k^2*c))) where c=>1/cos(phi)^2;
+%% three alternative symmetric integral methods for evaluating ellipticE(phi,k) 
+%% algebraic procedure num_elle(phi,k);
+%%    if phi = pi/2 then
+%%       num_ellec(k)
+%%    else
+%%       (RF(c-1, c-k^2, c) - k^2*RD(c-1, c-k^2, c)/3) where c=>1/cos(phi)^2;
+%% 
+%% 
+%% algebraic procedure num_elle2(phi,k);
+%%    if phi = pi/2 then
+%%       num_ellec(k)
+%%    else
+%%       ((k^2-1)*RD(c-k^2, c, c-1)/3 +sqrt((c-k^2)/(c^2-c)))
+%%  	 where c=>1/cos(phi)^2;
+%%  
+%% algebraic procedure num_elle1(phi,k);
+%%    if phi = pi/2 then
+%%       num_ellec(k)
+%%    else 
+%%       ((1-k^2)*(RF(c-1, c-k^2, c) +k^2*RD(c-1, c, c-k^2)/3)
+%%  	 +k^2*sqrt((c-1)/(c^2-k^2*c))) where c=>1/cos(phi)^2;
 
 % complete elliptic integral of the second kind
 algebraic procedure num_ellec(k);
@@ -200,20 +222,31 @@ algebraic procedure num_ellec(k);
    else if k = 0 then pi/2
    else begin scalar kp2,rp,ip;
       if impart(k) = 0 and abs(k)>1 then <<
-      	 kp2 := 1-1/k^2;
-      	 rp := (RD(0, kp2, 1) + RD(0, 1, kp2))*kp2/(3*k);  % E(1/k)/k
-      	 kp2 := 1-kp2;
-      	 % k*E'(1/k)-K'(1/k)/k
-      	 ip := k*(RD(0, kp2, 1) + RD(0, 1, kp2))*kp2/3
-	        - num_ellk(sqrt(1-1/k^2))/k;
-      	 return rp+i*ip;
+       	 kp2 := 1-1/k^2;
+ 	 % = k*(E(1/k)-K(1/k))+K(1/k)/k	 
+	 rp := RF(0, kp2, 1)/abs k-RD(0, kp2, 1)/(3*abs k);
+       	 kp2 := 1-kp2; % =1/k^2
+       	 % k*E'(1/k)-K'(1/k)/k
+       	 ip := k*(RD(0,kp2,1) + RD(0,1,kp2))*kp2/3-RF(0,kp2,1)/k;
+	 return rp+i*ip;
       >> else <<
       	 kp2 := 1-k^2;
       	 return (RD(0, kp2, 1) + RD(0, 1, kp2))*kp2/3;
       >>;
    end;
 
-
+% The identity E'(k) = E(k') only holds if repart k >= 0
+algebraic procedure num_ellecp(k);
+ if repart k > 0 or (repart k = 0 and impart k > 0) then
+    num_ellec(sqrt(1-k^2))
+ else <<
+     k := -k;
+     if impart k>0 then
+      	 num_ellec(sqrt(1-k^2)) + 2i*(num_ellk(k)-num_ellec(k))
+      else
+	 num_ellec(sqrt(1-k^2)) - 2i*(num_ellk(k)-num_ellec(k))
+   >>;
+    
 % EllipticE(phi, m) definition     Legendre's form of elliptic integral
 % ============================     of the second kind.
 
@@ -224,7 +257,6 @@ ellipticerules :=
 {
    % complete elliptic integral of second kind
    elliptice(-~k)    => elliptice(k),
-   elliptice!'(-~k)  => elliptice!'(k),
    elliptice(0)      => pi/2,
    elliptice(1)      => 1,
    elliptice!'(0)    => 1,	
@@ -258,10 +290,10 @@ ellipticerules :=
     elliptice(~phi,~m) => num_elliptic(e_function,phi,m)
        when lisp !*rounded and lisp !*complex and numberp phi and numberp m,
 	     
-    elliptice(~m) => num_ellec(m)
+    elliptice(~m) => num_elliptic(num_ellec, m)
             when lisp !*rounded and lisp !*complex and numberp  m,
 
-    elliptice!'(~m) => num_ellec(sqrt(1-m^2))
+    elliptice!'(~m) => num_elliptic(num_ellecp, m)
 	   when lisp !*rounded and lisp !*complex and numberp m
 
 }$

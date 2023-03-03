@@ -138,6 +138,7 @@ Extensive rule lists are provided for differentiation of these functions with
 respect to either argument, for argument shifts by integer multiples of the
 two quarter periods $\mathrm{K}(k)$ and $i\mathrm{K}'(k)$ and finally
 Jacobi's transformations for a purely imaginary first argument.
+
 Rules are also provided for the values of the twelve Jacobi functions at the
 `eighth' period values: $\mathrm{K}/2$, $i\mathrm{K}'/2$ and
 $(\mathrm{K}+i\mathrm{K}')/2$. For these rules to yield correct values it
@@ -153,6 +154,13 @@ It is derived from the third of the identities (2.2.19) of Lawden
 \cite{Lawden:89} with $u =-(\mathrm{K}(k)+i\mathrm{K}'(k))/2$ and
 the corresponding identities for $\mathrm{sn}$ and $\mathrm{cn}$ on the
 DLMF NIST site.
+
+Some care must be exercised when applying the `eighth' period rules when
+the modulus $k$ belongs to the negative real or imaginary axes as
+$\mathrm{E}(k)$ and all twelve Jacobi functions $\mathrm{sn}(x,k)$ etc. are
+even functions of the modulus $k$. The rule should be applied when the modulus
+has no assigned value and then resimplifying the result after assigning the
+modulus its required value.
 
 Complex split functions have recently been implemented for the 12 Jacobi
 functions for the cases when the modulus $k$ is either real or imaginary.
@@ -344,7 +352,7 @@ The functions are continuous if the two components of the branch cut are
 approached from the second and fourth quadrants respectively.
 For $\mathrm{K}'(k)$ and $\mathrm{E}'(k)$ the branch cut is
 $(-\infty, 0]$ with continuity if the cut is approached from the second
-quadrant. For more details, see Lawden \cite{lawden:89} sections 8.12 to 8.14.
+quadrant. For more details, see Lawden \cite{Lawden:89} sections 8.12 to 8.14.
 The principal values of $\mathrm{K}(k)$ and $\mathrm{E}(k)$ are even functions
 of $k$.
 
@@ -368,7 +376,7 @@ in the second and third columns refer always to principal values:
   Function&General Value&Principal Value when $\Re(k) <0$\\
 $\mathrm{K}(k)$& $\mathrm{K}(k)-2in\mathrm{K}(k')$&$\mathrm{K}(-k)$\\
 $\mathrm{K}'(k)$& $\mathrm{K}(k')-4in\mathrm{K}(k)$&$\mathrm{K}(k')\mp 2i\mathrm{K}(-k)$\\
-$\mathrm{E}(k)$& $\mathrm{K}(k)-2in(\mathrm{K}(k')-\mathrm{E}(k'))$&$\mathrm{E}(-k)$\\
+$\mathrm{E}(k)$& $\mathrm{E}(k)-2in(\mathrm{K}(k')-\mathrm{E}(k'))$&$\mathrm{E}(-k)$\\
   $\mathrm{E}'(k)$& $\mathrm{E}(k')-4in(\mathrm{K}(k)-\mathrm{E}(k))$&
   $\mathrm{E}(k')\mp 2i(\mathrm{K}(-k)-\mathrm{E}(-k))$\\
 \end{tabular}
