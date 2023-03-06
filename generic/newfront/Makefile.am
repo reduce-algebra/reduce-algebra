@@ -64,9 +64,9 @@ endif
 
 if WINDOWS
 if !DEBUG
-	i686-w64-mingw32-strip rfcslwin.exe
-	i686-w64-mingw32-strip rfbootwin.exe
-	i686-w64-mingw32-strip rfpslwin.exe
+	x86_64-w64-mingw32-strip rfcslwin.exe
+	x86_64-w64-mingw32-strip rfbootwin.exe
+	x86_64-w64-mingw32-strip rfpslwin.exe
 endif
 # On Windows generally PATHEXT will pick up a ".com" file before a ".exe"
 # one. However Cygwin sees ".exe" rather than ".com". So by giving the
@@ -96,14 +96,6 @@ rfcsl_CPPFLAGS = -DCSL=1 -I../include
 rfboot_CPPFLAGS = -DBOOT=1 -I../include
 rfpsl_CPPFLAGS = -DPSL=1 -I../include
 
-if LINUX
-# What I have here is a horrid hack that carried maintenance pains for the
-# future. It links in all the object files that go to make up libedit. This
-# done because if I go via libedit.a in a sane way I seem to pick up a
-# demand for a copy of libtinfo where Fedora and Ubuntu disagree about
-# absence or presence of version numbers. Doing things this way lets me
-# link in libtinfo statically (using "-l:") and perhaps avoids the misery.
-
 L = ../libedit/src
 
 LIBEDIT =	$(L)/chared.o $(L)/chartype.o $(L)/common.o $(L)/eln.o \
@@ -114,15 +106,6 @@ LIBEDIT =	$(L)/chared.o $(L)/chartype.o $(L)/common.o $(L)/eln.o \
                 $(L)/search.o $(L)/sig.o $(L)/strlcat.o $(L)/strlcpy.o \
                 $(L)/terminal.o $(L)/tokenizern.o $(L)/tokenizer.o $(L)/tty.o \
                 $(L)/unvis.o $(L)/vi.o $(L)/vis.o $(L)/wcsdup.o
-
-rfcsl_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
-rfboot_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
-rfpsl_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
-else !LINUX
-rfcsl_LDADD = ../lib/libedit.a -lncurses
-rfboot_LDADD = ../lib/libedit.a -lncurses
-rfpsl_LDADD = ../lib/libedit.a -lncurses
-endif !LINUX
 
 rfcsl_DEPENDENCIES = ../lib/libedit.a
 rfboot_DEPENDENCIES = ../lib/libedit.a
@@ -173,7 +156,7 @@ rfcslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DCSL=1 \
+	x86_64-w64-mingw32-gcc $(CFLAGS) -DCSL=1 \
 		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
 		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
@@ -192,7 +175,7 @@ rfbootwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DBOOT=1 \
+	x86_64-w64-mingw32-gcc $(CFLAGS) -DBOOT=1 \
 		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
 		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \
@@ -211,7 +194,7 @@ rfpslwin.exe:	$(srcdir)/redchild.c $(srcdir)/reddeb.c $(srcdir)/redfront.c \
 	$(srcdir)/redstrings.c $(srcdir)/findself.c \
 	../wineditline/src/editline.c ../wineditline/src/fn_complete.c \
 	../wineditline/src/history.c
-	i686-w64-mingw32-gcc $(CFLAGS) -DPSL=1 \
+	x86_64-w64-mingw32-gcc $(CFLAGS) -DPSL=1 \
 		-DREDCSL=\"$(REDCSL)\" -DREDPSL=\"$(REDPSL)\" \
 		-DBOOTSTRAPREDUCE=\"$(BOOTSTRAPREDUCE)\" -DBAT=\"$(BAT)\" \
 		-DBUILDTIME="\"$(DATESTAMP)\"" \

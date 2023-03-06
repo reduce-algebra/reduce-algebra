@@ -16,7 +16,7 @@
 
 # FOX gets built in a directory whose name is based on the platform
 # it supports. In simple cases this is just the GNU triple, as in
-# i686-pc-linux etc. However there are a range of cases when I will
+# x86_64-pc-linux etc. However there are a range of cases when I will
 # change that. These are the things I note above as "special flags"
 
 # Specify the name of this "application" and a version number
@@ -142,7 +142,7 @@ x86_64-w64-*)
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS "
-# In this case I make the machine appear to be "i686-pc-windows" or some
+# In this case I make the machine appear to be "x86_64-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
   fi
@@ -229,7 +229,7 @@ x86_64-w64-*)
     xtarget="$target"
   fi
   case $xtarget in
-  *i386* | *i486* | *i586* | *i686* | *x86* | *amd64*)
+  *x86* | *amd64*)
      x86="yes"
      ;;
   esac
@@ -257,7 +257,7 @@ x86_64-w64-*)
     xtarget="$target"
   fi
   case $xtarget in
-  *i386* | *i486* | *i586* | *i686* | *x86* | *amd64*)
+  *x86* | *amd64*)
      x86="yes"
      ;;
   esac
@@ -302,9 +302,9 @@ AC_ARG_WITH(fox-pending, [  --with-fox-pending        do not check dir from --wi
 # Here I will adjust foxdir to mention the Linux distribution involved
 # in case that I can discover that. The effect is that my (adjusted)
 # "triple" will be something like say
-#     i686-pc-fedora_6    OR   powerpc-macos_10.4_tiger-darwin8.8.0
+#     x86__64-pc-fedora_6    OR   powerpc-macos_10.4_tiger-darwin8.8.0
 # rather than
-#     i686-pc=linux-gnu   OR   powerpc-apple-darwin8.8.0
+#     x86_64-pc-linux-gnu    OR   powerpc-apple-darwin8.8.0
 
 distrib=`"$srcdir/../../scripts/findos.sh"`
 AC_MSG_NOTICE([distrib = $distrib])
@@ -722,7 +722,7 @@ else
 # NB that for FOX I am going to expect the library to be in 
 #       $with_fox/lib
 # and $with_fox has had a subdir tagged on its end to reflect a 
-# modified GNU-style triple, as in i686-pc-linux. So if the
+# modified GNU-style triple, as in x86_64-pc-linux. So if the
 # user says --with-fox=/homes/myself/foxplace and the build is for
 # Windows-64 the location inspected will end up
 # /homes/myself/foxplace/x86_64-w64-windows64. Etc etc.

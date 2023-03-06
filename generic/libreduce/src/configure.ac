@@ -82,34 +82,20 @@ case $host in *darwin*)
 
   AS_IF([test "$universal" = yes],[
    AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
-# If it seems to be supported at all I will go "-arch ppc -arch i386" to
-# build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs.
+# If it seems to be supported at all I will go "-arch x86_64 -arch arm64" to
+# build a fat binary that will run on both intel and arm based macs
    sysroot=""
    AC_MSG_NOTICE([Checking for OSX10.5 framework])
    OLDCFLAGS="$CFLAGS"
-   CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+   CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                    [[printf("Hello\n");]])],
-     [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-      AC_MSG_NOTICE([MacOS10.5 SDK found])
-      sysroot="/Developer/SDKs/MacOSX10.5.sdk"],
+     [CXXFLAGS="$CXXFLAGS  -arch x86_64 -arch arm64"
+      AC_MSG_NOTICE([universal build possible])],
      [CFLAGS="$OLDCFLAGS"
-      AC_MSG_NOTICE([MacOS10.5 SKD NOT found])])
-  if test "x$sysroot" = "x"
-  then
-    AC_MSG_NOTICE([Checking for OSX10.4u framework])
-    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("Hello\n");]])],
-      [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-       AC_MSG_NOTICE([MacOS10.4u SDK found])
-       sysroot="/Developer/SDKs/MacOSX10.4u"],
-      [CFLAGS="$OLDCFLAGS"
-       AC_MSG_NOTICE([MacOS10.4u SKD NOT found])])
-  fi
-  AC_SUBST(FAT,"-arch ppc -arch i386 -arch x86_64")
-  AC_MSG_NOTICE([fat_support=$fat_support_available])
+      AC_MSG_NOTICE(universal buiold not possible])])
+  AC_SUBST(FAT,"-arch x86_64 -arch arm64")
+  AC_MSG_NOTICE([fat_support available])
 ])
 ;;
 esac

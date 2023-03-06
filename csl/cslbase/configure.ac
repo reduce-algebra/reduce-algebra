@@ -355,7 +355,7 @@ case $host in
 # end up with a binary that relies on some awkward DLLs unless I add in
 # the extra curious directive here.
     LIBS="$LIBS -static-libgcc -Wl,-Bstatic -lstdc++ -lpthread"
-# In this case I make the machine appear to be "i686-pc-windows" or some
+# In this case I make the machine appear to be "x86_64-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
     windows_build="yes"
@@ -375,7 +375,7 @@ case $host in
     CXXFLAGS="$CXXFLAGS -mfsgsbase"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
-# In this case I make the machine appear to be "i686-pc-windows" or some
+# In this case I make the machine appear to be "x86_64-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
     windows_build="yes"
@@ -483,7 +483,7 @@ case $host in
     xtarget="$target"
   fi
   case $xtarget in
-  *i386* | *i486* | *i586* | *i686* | *x86* | *amd64*)
+  *x86* | *amd64*)
      x86="yes"
      ;;
   esac
@@ -517,7 +517,7 @@ case $host in
     xtarget="$target"
   fi
   case $xtarget in
-  *i386* | *i486* | *i586* | *i686* | *x86* | *amd64*)
+  *x86* | *amd64*)
      x86="yes"
      ;;
   esac

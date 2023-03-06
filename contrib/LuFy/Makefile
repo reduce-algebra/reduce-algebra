@@ -23,7 +23,7 @@ tex.p:	tex.web
 
 # "Free Pascal" (https://www.freepascal.org/) comes with a utility "ptop"
 # that can prettyprint Pascal code, and the raw output from tangle is
-# in pretty despate need of prettyprinting. The path to ptop corresponds
+# in pretty desperate need of prettyprinting. The path to ptop corresponds
 # to the default location the Free Pascal installer put it for me. The
 # sed script is to get rid of {nn:} and {:mm} comments that tangle leave in
 # its expanded code that may refer back to the literate documentation but
@@ -42,6 +42,8 @@ tex.pas:	tex.p
 		sed "s/{[^}]*}/ /g" | \
 		sed '/{/,/}/d' | \
 		sed -e "s/@@@1/'{'/g" -e "s/@@@2/'}'/g" > tex.tmp
+# HA HA - if you try to use this you will need to install Free Pascal and
+# change the path here suitably!
 	/cygdrive/c/FPC/3.0.2/bin/i386-win32/ptop -l 72 tex.tmp tex.pas
 	rm tex.tmp
 

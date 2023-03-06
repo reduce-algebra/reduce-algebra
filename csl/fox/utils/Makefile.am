@@ -21,7 +21,7 @@ if cygwinshell
 # include cygwin links and "/cygdrive/x" drive specifications. For these
 # to be processed properly it is vital that reswrap be compiled using the
 # native cygwin tool-chain, and that in particular it must not use
-# i686-w64-mingw-gcc etc in ways that could create a native
+# x86_64-w64-mingw-gcc etc in ways that could create a native
 # windows-mode binary. So I will have defined the conditional "cygwinshell"
 # when I am building for mingw-style Windows.
 

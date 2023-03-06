@@ -314,7 +314,7 @@ x86_64-w64-*)
     xtarget="$target"
   fi
   case $xtarget in
-  *i386* | *i486* | *i586* | *i686* | *x86* | *amd64*)
+  *x86* | *amd64*)
      x86="yes"
      ;;
   esac
@@ -338,7 +338,7 @@ x86_64-w64-*)
     xtarget="$target"
   fi
   case $xtarget in
-  *i386* | *i486* | *i586* | *i686* | *x86* | *amd64*)
+  *x86* | *amd64*)
      x86="yes"
      ;;
   esac
