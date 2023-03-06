@@ -223,8 +223,44 @@ symbolic procedure bfprin0x(m,ex);
     ex := cadr lst;
     dotpos := caddr lst;
     lst := car lst;
+    return prin2!* bfprin!:lst (lst,ex,dotpos)
+  end;
+
+% This turns the floating point value into a string, using a
+% precision as set by the second argument
+symbolic procedure bfexpl0(u, !:prec!:);
+  begin scalar r; integer m, ex;
+    r := round!:dec1 (u, if !:print!-prec!: then !:print!-prec!:
+                          else !:prec!: - 2);
+    m := car r; ex := cdr r;
+    return bfexpl0x (m, ex)
+  end;
+
+symbolic procedure bfexpl0x(m,ex);
+  begin scalar lst; integer dotpos;
+    lst := bfexplode0x(m,ex);
+    ex := cadr lst;
+    dotpos := caddr lst;
+    lst := car lst;
     return bfprin!:lst (lst,ex,dotpos)
   end;
+
+% The idea here is that one may often set a rether high precision for
+% floating point work but only want the results displayed to a smaller
+% number of digits. The function fpprec(F, n) reduces the floating point
+% value F to width n (well you may need to experiment to discover exactly
+% what width is used!). This is NOT intended for use in ongoing computation
+% since the narrow version will in fact be represented as a string.
+% The expected usage is as in
+%     write "value = ", a, " and better ", fpprec(a, 6);
+
+
+symbolic procedure fpprec(a, n);
+  if not eqcar(a, '!:rd!:) then "[not a biffloat]"
+  else if not fixp n or n < 2 then "[second arg must bne integer > 2]"
+  else bfexpl0(a, n);
+
+flag('(fpprec), 'opfn);
 
 symbolic procedure bfexplode0 u;
   % returns a list (lst ex dotpos) where
@@ -297,7 +333,7 @@ symbolic procedure bfprin!:lst (lst, ex, dotpos);
       if j=5 then <<if !*nat and !*bfspace then result := '!  . result;
                     j := 0>>>>>>;
  %  if !*nat then for each char in reversip result do prin2!* char else
-    prin2!* smallcompress reversip result
+    return smallcompress reversip result
   end;
 
 symbolic procedure smallcompress (li);

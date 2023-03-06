@@ -370,10 +370,15 @@ symbolic procedure p_prefix(u, prec);
       op := "(";
 % A function with no args needs "()" after it.
       if atom (u := cdr u) then p_princ("(", nil)
-      else for each x in u do <<
-        p_princ(op, nil);
-        op := ",";
-        p_prefix(x, 0) >>;
+      else <<
+        while not atom u do <<
+          p_princ(op, nil);
+          op := ",";
+          p_prefix(car u, 0);
+          u := cdr u >>;
+        if not null u then <<
+          p_princ(" . ", nil);
+          p_princ(u, nil) >> >>;
       return p_princ(")", nil)
     end;
 
