@@ -111,6 +111,16 @@ rfcsl_DEPENDENCIES = ../lib/libedit.a
 rfboot_DEPENDENCIES = ../lib/libedit.a
 rfpsl_DEPENDENCIES = ../lib/libedit.a
 
+if LINUX
+rfcsl_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
+rfboot_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
+rfpsl_LDADD = -l:libtinfo.a $(LIBEDIT) -lncurses
+else !LINUX
+rfcsl_LDADD = ../lib/libedit.a -lncurses
+rfboot_LDADD = ../lib/libedit.a -lncurses
+rfpsl_LDADD = ../lib/libedit.a -lncurses
+endif !LINUX
+
 # The next bunch are to get libedit built before attempts to build other
 # things. It is in fact the header files installed by libedit that matter
 # first.
