@@ -19,7 +19,7 @@ SYSTEMNAME=$(shell $(TOPDIR)/config.guess)
 
 OSVER=$(shell $(TOPDIR)/scripts/findos.sh)
 PSLVER=$(shell $(TOPDIR)/scripts/pslver.sh)
-KNOWNPSLVER=AMD64 AMD64_ext amd64 linux
+KNOWNPSLVER=AMD64 AMD64_ext amd64 linux armv6 aarch64
 
 BUILDPSL=$(filter $(PSLVER),$(KNOWNPSLVER))
 
