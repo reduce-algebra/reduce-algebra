@@ -38,10 +38,9 @@ AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 LT_INIT
 
 # For MUCH of the Reduce code on Windows I configure multiple times using
-# --host=i686-pc-cygwin, i686-w64-mingw32, x86_64-w64-mingw32 and
-# x86_64-pc-cygwin. This package is different and I really will NOT want
-# that to happen, so the scripts that call for the configuration here should
-# NOT pass down "--host" please.
+# x86_64-w64-mingw32 and x86_64-pc-cygwin. This package is different and I
+# really will NOT want that to happen, so the scripts that call for the
+# configuration here should NOT pass down "--host" please.
 
 AC_CANONICAL_HOST
 
@@ -90,6 +89,52 @@ then
 fi
 
 # Checks for libraries.
+
+# This is done on ALL hosts, and that is potentially dodgy.
+# So let me explain what it is about. If one builds on Ubuntu without this
+# then libtinfo (used by ncurses) is linked dynamically. If you take the
+# resulting binary to a Fedora machine it works OK but you get an annoying
+# warning about whether the library has a proper version number. This hack
+# will link in libtinfo statically and ought to avoid that ugly warning at
+# a rather modest increase in the size of the shipped binary. HOWEVER this
+# will be a problem when cross-compiling and for that case I ought to
+# seek a version specific to the architecture I am building for. Ugh!
+# Well it seems that if I list ALL versions that I find then ones that are
+# not the relevant architecture get ignored...
+a=`find /usr/lib -name libtinfo.a -printf "%p "`
+if test "$a" = ""
+then    % No libtinfo found
+  AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
+else    % At least one version found.
+  LIBS="$LIBS $a"
+fi
+
+OLIBS="$LIBS"
+LIBS="$OLIBS -lncurses"
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([#include <ncurses.h>
+     #include <term.h>
+     int main()
+     {  (void)tgetent(NULL, "xterm");
+        return 0;
+     } ])],
+  [AC_MSG_NOTICE([tgetent found in ncurses])],
+  [AC_MSG_NOTICE([tgetent NOT found in ncurses])
+   LIBS="$OLIBS -lcurses"
+   AC_LINK_IFELSE(
+     [AC_LANG_SOURCE([#include <curses.h>
+        #include <term.h>
+        int main()
+        {  (void)tgetent(NULL, "xterm");
+           return 0;
+        } ])],
+     [AC_MSG_NOTICE([tgetent found in curses])],
+     [AC_MSG_NOTICE([tgetent NOT found in curses])
+      LIBS="$OLIBS"
+      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+      AC_SEARCH_LIBS([tgetent], [ncurses curses])
+     ])
+  ])
 
 curses_header="no"
 AC_CHECK_HEADER(curses.h,

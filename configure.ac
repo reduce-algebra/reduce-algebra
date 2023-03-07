@@ -287,7 +287,7 @@ then
 
 # The things the user can reasonably say will be
 #    <nothing>         build using default GUI in directory x-y-z
-#                      (eg in cslbuild/i386-pc-windows)
+#                      (eg in cslbuild/x86_64-pc-windows)
 #    --without-gui     build non-GUI version in x-y-x-nogui
 #    --with-fox        build FOX version in x-y-z
 #    --with-wx         build wxWidgets version in x-y-z-wx

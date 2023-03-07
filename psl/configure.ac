@@ -153,7 +153,7 @@ unm=`uname -m`
 uns=`uname -s`
 
 AM_CONDITIONAL(windows, test "X$OS" = "XWindows_NT")
-AM_CONDITIONAL(i686, test "$unm" = "i686")
+# AM_CONDITIONAL(i686, test "$unm" = "i686")
 AM_CONDITIONAL(x86_64, test "$unm" = "x86_64")
 AM_CONDITIONAL(macintosh, test "$uns" = "Darwin")
 AM_CONDITIONAL(linux, test "$uns" = "Linux")
