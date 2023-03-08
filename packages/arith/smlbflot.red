@@ -230,6 +230,8 @@ symbolic procedure bfprin0x(m,ex);
 % precision as set by the second argument
 symbolic procedure bfexpl0(u, !:prec!:);
   begin scalar r; integer m, ex;
+    if floatp u then u := fl2bf u
+    else if floatp cdr u then u := fl2bf cdr u;
     r := round!:dec1 (u, if !:print!-prec!: then !:print!-prec!:
                           else !:prec!: - 2);
     m := car r; ex := cdr r;
@@ -256,8 +258,9 @@ symbolic procedure bfexpl0x(m,ex);
 
 
 symbolic procedure fpprec(a, n);
-  if not eqcar(a, '!:rd!:) then "[not a biffloat]"
-  else if not fixp n or n < 2 then "[second arg must bne integer > 2]"
+  if fixp a then a
+  else if not floatp a and not eqcar(a, '!:rd!:) then "[not a float]"
+  else if not fixp n or n < 2 then "[second arg must be integer > 2]"
   else bfexpl0(a, n);
 
 flag('(fpprec), 'opfn);
