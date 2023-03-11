@@ -1,3 +1,4 @@
+
 module simp; % Functions to convert prefix forms into canonical forms.
 
 % Author: Anthony C. Hearn.
@@ -240,6 +241,7 @@ symbolic procedure simp u;
              rerror(alg,12,"Simplification recursion too deep")>>
      else if eqcar(u,'!*sq) and caddr u and null !*resimp
       then return cadr u
+     else if vectorp u then return simpatom u
      else if null !*uncached and (x := search_alglist(u,car alglist!*))
       then return <<if car x then !*sub2 := t; cdr x>>;
     simpcount!* := simpcount!*+1; % undone by returning through !*SSAVE.

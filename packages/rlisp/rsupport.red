@@ -257,6 +257,19 @@ symbolic procedure assgnpri(u, v, w);
     print w;
     nil >>;
 
+% The next line arranges that one can create "vector objects". So condider
+%   algebraic procedure something x;
+%   begin array workspace(10);
+%   ... workspace(3) := workspace(2)*x; ...
+% and note that the array is set up with global scope and so could lead to
+% clashes with other code. The alternative style is a little more ugly and
+% like using symbolic mode codem but makes the array purely local:
+%   algebraic procedure something x;
+%   begin scalar workspace := mkvect 10;
+%   ... putv(workspace, 3, getv(workspace, 2)*x); ...
+
+flag('(mkvect putv getv), 'opfn);
+
 % It looks to me as if this name-mapping was an idea that was being looked
 % at but never ended up activated...
 
