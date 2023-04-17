@@ -145,19 +145,23 @@ df(elliptice(u,k),k);
 elliptice(u+pi/2,k);
 
 
-E(k) + E(u,k)
+   pi + 2*u
+E(----------,k)
+      2
 
 ellipticf(u-5*pi/2,k);
 
 
-F(u,k) - 5*K(k)
+    - pi + 2*u
+F(-------------,k) - 4*K(k)
+        2
 
 elliptice(u+11*pi/3,k);
 
 
-   pi + 6*u
-E(----------,k) + 7*E(k)
-      6
+   2*pi + 3*u
+E(------------,k) + 6*E(k)
+       3
 
 
 % inverse Jacobian elliptic functions: special cases and derivatives
@@ -943,7 +947,6 @@ EE!' := elliptice!'(0.4);
 ee' := 1.15065562978
 
 
-
 % some of these used to fail or give erroneous results
 elliptick(1.4);
 
@@ -964,6 +967,28 @@ elliptice(2+i);
 
 
 1.49955352093 - 1.57787900791*i
+
+
+% some incomplete elliptic integrals
+elliptice(pi/4, 1/2);
+
+
+0.767195985711
+
+elliptice(pi/4, 3);
+
+
+0.265596407637 + 0.529686114995*i
+
+elliptice(pi/2+i,1/2);
+
+
+1.46746220934 + 0.802652362068*i
+
+elliptice(i/2,i);
+
+
+0.47712205187*i
 
 
 % Jacobi Zeta function
