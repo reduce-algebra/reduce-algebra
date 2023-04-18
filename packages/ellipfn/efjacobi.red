@@ -65,9 +65,42 @@ operator elliptick, elliptick!', elliptice, elliptice!';
 
 %JACOBI AMPLITUDE
 
+procedure n_jacam(z, k);
+   % computes Jacobi Amplitude from its Fourier series
+   % It fails to converge if Im z is not small -- if q*exp(2*abs Imz) >1
+   % which is equivalent to Im z > K'.
+   % Rounding errors are  large near to this limiting value
+begin scalar n, pow, term, total, tol, m, bound, f, kp, kk, q;
+   tol := 10.0^-(symbolic !:prec!:);
+   kp := num_ellkc(k);
+   kk := num_ellk(k);
+   q := exp(-pi*kp/kk);
+   z := pi*z/(2*kk);
+   n := 1;
+   total := z;
+   bound := exp abs impart z;
+   f := bound^2;
+    % abs sin(2nz) <= exp (2n abs Im z)
+    repeat <<
+       pow := q^n;
+       pow := pow/(n*(1+pow^2));
+       term := 2*pow*sin(2*n*z);
+       total := total + term;
+       n := n+1;
+       bound := bound * f;
+       m :=  abs(pow)*bound;
+    >> until (total = 0 and m < tol) or m < abs(total)*tol;
+    return total;
+end;    
+
 %This computes the Amplitude of u.
 
 procedure num_jacobiam(u,m);
+   % produces results in agreement with Fourier Series method for
+   % real arguments and also when Im u is small.
+   % Moreover sn(u,k) = sin am(u,k) holds in these cases
+   % However this identity fails for larger  ie. Im u > K'
+   % Also rounding errors become large when Im u is near to K'
      first phi_function(1,sqrt(1-m^2),m,u);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,8 +121,7 @@ jacobiamrules :=
 
    jacobiam(~u,~m) =>
      num_elliptic(num_jacobiam, u, m)
-       when lisp !*rounded and numberp repart u and numberp impart u
-             and numberp repart m and numberp impart m
+       	when lisp !*rounded and lisp !*complex and numberp u and numberp m
 }$
 
 let jacobiamrules;
@@ -1332,13 +1364,14 @@ put('jacobizeta,'plain!-functionsymbol,'!Z);
 put('jacobie,'plain!-functionsymbol, "E_j");
 
 put('elliptice, 'plain!-functionsymbol, '!E);
+put('ellipticd, 'plain!-functionsymbol, '!D);
 put('elliptick, 'plain!-functionsymbol, '!K);
 put('ellipticf, 'plain!-functionsymbol, '!F);
 put('elliptick!', 'plain!-functionsymbol, '!K!');
 put('elliptice!', 'plain!-functionsymbol,  '!E!');
 
-% put('ellipticd, 'fancy!-functionsymbol, "\mathrm{D}");
 put('elliptice, 'fancy!-functionsymbol, "\mathrm{E}");
+put('ellipticd, 'fancy!-functionsymbol, "\mathrm{D}");
 put('elliptick, 'fancy!-functionsymbol, "\mathrm{K}");
 put('ellipticf, 'fancy!-functionsymbol, "\mathrm{F}");
 put('elliptick!', 'fancy!-functionsymbol,  "\mathrm{K}^\prime");
@@ -1355,6 +1388,7 @@ do << put(x, 'fancy!-symbol!-length, 4);
    >>;
 
 put('elliptice, 'prifn, 'plain!-symbol);
+put('ellipticd, 'prifn, 'plain!-symbol);
 put('elliptick, 'prifn, 'plain!-symbol);
 put('elliptick!', 'prifn, 'plain!-symbol);
 put('elliptice!', 'prifn, 'plain!-symbol);
@@ -1372,13 +1406,13 @@ put('jacobie, 'prifn, 'plain!-symbol);
 flag('(jacobisn jacobicn jacobidn jacobins jacobinc jacobind 
        jacobisc jacobisd jacobics jacobicd jacobids jacobidc
        jacobiam jacobizeta jacobie ellipticK ellipticK!'
-       ellipticF ellipticE ellipticE!'), 'specfn);
+       ellipticF ellipticE ellipticE!' ellipticD), 'specfn);
 
 deflist('((jacobisn 2) (jacobicn 2) (jacobidn 2)
           (jacobins 2) (jacobinc 2) (jacobind 2) (jacobisc 2) (jacobisd 2)
 	  (jacobics 2) (jacobicd 2) (jacobids 2) (jacobidc 2) (jacobiam 2)
-	  (ellipticF 2)  (jacobiZeta 2) (jacobie 2)
-	  (ellipticK 1) (ellipticK!' 1) (ellipticE (1 2)) (ellipticE!' 1)
+	  (ellipticF 2)  (jacobiZeta 2) (jacobie 2) (ellipticK 1)
+	  (ellipticK!' 1) (ellipticE (1 2)) (ellipticE!' 1) (ellipticD (1 2))
 	 ), 'number!-of!-args);
 
 endmodule;

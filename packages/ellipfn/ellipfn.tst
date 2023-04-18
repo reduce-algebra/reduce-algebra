@@ -205,12 +205,17 @@ K!' := elliptick!'(0.4);
 EE := elliptice(0.4);
 EE!' := elliptice!'(0.4);
 
-
 % some of these used to fail or give erroneous results
 elliptick(1.4);
 elliptice(1.4);
 elliptick(2+i);
 elliptice(2+i);
+
+% some incomplete elliptic integrals
+elliptice(pi/4, 1/2);
+elliptice(pi/4, 3);
+elliptice(pi/2+i,1/2);
+elliptice(i/2,i);
 
 % Jacobi Zeta function
 u := 0.6;

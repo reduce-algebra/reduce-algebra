@@ -111,6 +111,77 @@ begin scalar agm, alist, clist, n, an, cn, phi_n, phi_list;
     return phi_list;
 end;
 
+%######################################################################
+% The following procedures have been superseded as they sometimes fail for
+% complex arguments. They have been replaced by methods using thta functions
+% or symmetric elliptic integrals
+
+%VALUE OF EllipticF(phi,m)
+
+procedure f_function(phi,m);
+    if phi = pi/2 then num_ellk(m)
+    else begin scalar  bothlists, alist, plist, phi_n;
+       bothlists := landentrans(phi,asin m);
+       alist := rest second bothlists;
+       plist := first bothlists;
+       phi_n  := first reverse plist;
+       return (phi_n * for each y in alist product (1+sin y)/2);
+    end;
+
+% VALUE OF K(m)
+
+procedure k_function(m);
+begin scalar agm, an;
+   agm := agm_function(1,sqrt(1-m^2),m);
+   an  := first second agm;
+   return pi/(2*an);
+end;
+
+%######################################################################
+
+% Value of EllipticE(phi,m)
+
+procedure e_function(phi, m);
+begin scalar f, n, bothlists, alist, plist, s,
+             sinalist, sinplist, b, blist, allz, z, allx, x;
+
+    f := f_function(phi,m);
+    bothlists := landentrans(phi,asin m);
+	
+    alist := second bothlists;
+    plist := first bothlists;
+
+    n := length alist - 1;
+
+    sinalist := foreach a in rest alist collect sin a;
+    sinplist := foreach p in rest plist collect sin p;
+    b := first sinalist;
+    blist := foreach c in rest sinalist collect (b := b*c);
+    blist := first(sinalist) . blist;
+
+    allz := 0;  allx := 0;
+    for w := 1:n do <<
+        z := first blist/(2^w);
+	x := sqrt(first blist)*first(sinplist)/(2^w);
+        allz := allz + z;
+	allx := allx + x;
+	blist := rest blist;
+	sinplist := rest sinplist;
+     >>;
+     s := sin first alist;
+     return f*(1 - s^2*(1 + allz)/2) + s*allx;
+end;
+
+%######################################################################
+
+% Value of Jacobi epsilon function
+
+procedure je_function(phi,m);
+   %% This function crashed for m >1 and some complex values of m
+   %% and is not currently used.
+   e_function(num_jacobiam(phi, m), m);
+
+%######################################################################
 
 %Increases the precision used to evaluate algebraic arguments.
 

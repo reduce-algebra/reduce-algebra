@@ -47,7 +47,7 @@ module ellipfn;  % Elliptic functions package for REDUCE.
 %              -- Various utility functions (not autoloading)    %
 %                                                                %
 %     accessible through the new operators:                      %
-%     jacobi{am,sn,cn,dn,sc...}, elliptic{E,F,K...}, jacobiE     %
+%     jacobi{am,sn,cn,dn,sc...}, elliptic{D,E,F,K...}, jacobiE     %
 %     elliptictheta{1,2,3,4}                                     %
 %     weierstrass, weierstrassZeta, Weierstrass1,                %
 %     weierstrassZeta1, weierstrass_sigma, weierstrass_sigma1,   %
@@ -74,6 +74,7 @@ remprop('jacobie,'simpfn);
 remprop('elliptick,'simpfn);
 remprop('elliptick!','simpfn);
 remprop('elliptice,'simpfn);
+remprop('ellipticd,'simpfn);
 remprop('elliptice!','simpfn);
 remprop('ellipticf,'simpfn);
 
