@@ -993,6 +993,7 @@ flag('(down_qratio up_qratio), 'opfn);
      defautoload_operator(jacobie,  ellipfn);
 % Elliptic integrals
      defautoload_operator(elliptice,       ellipfn);
+     defautoload_operator(ellipticd,       ellipfn);
      defautoload_operator(elliptice!',     ellipfn);
      defautoload_operator(ellipticf,       ellipfn);
      defautoload_operator(elliptick,       ellipfn);
