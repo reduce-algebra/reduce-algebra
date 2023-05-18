@@ -97,7 +97,9 @@ public:
 public:
 
   /// Construct popup pane
-  FXPopup(FXWindow* owner,FXuint opts=POPUP_VERTICAL|FRAME_RAISED|FRAME_THICK,FXint x=0,FXint y=0,FXint w=0,FXint h=0);
+  FXPopup(FXWindow* owner,
+      FXuint opts=(FXuint)POPUP_VERTICAL|(FXuint)FRAME_RAISED|(FXuint)FRAME_THICK,
+      FXint x=0,FXint y=0,FXint w=0,FXint h=0);
 
   /// Return the default width of this window
   virtual FXint getDefaultWidth();

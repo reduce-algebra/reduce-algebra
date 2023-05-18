@@ -58,7 +58,12 @@ public:
 public:
 
   /// Constructor
-  FXOption(FXComposite* p,const FXString& text,FXIcon* ic=NULL,FXObject* tgt=NULL,FXSelector sel=0,FXuint opts=JUSTIFY_NORMAL|ICON_BEFORE_TEXT,FXint x=0,FXint y=0,FXint w=0,FXint h=0,FXint pl=DEFAULT_PAD,FXint pr=DEFAULT_PAD,FXint pt=DEFAULT_PAD,FXint pb=DEFAULT_PAD);
+  FXOption(FXComposite* p,const FXString& text,FXIcon* ic=NULL,
+      FXObject* tgt=NULL,FXSelector sel=0,
+      FXuint opts=(FXuint)JUSTIFY_NORMAL|(FXuint)ICON_BEFORE_TEXT,
+      FXint x=0,FXint y=0,FXint w=0,FXint h=0,
+      FXint pl=DEFAULT_PAD,FXint pr=DEFAULT_PAD,
+      FXint pt=DEFAULT_PAD,FXint pb=DEFAULT_PAD);
 
   /// Return default width
   virtual FXint getDefaultWidth();
@@ -124,7 +129,11 @@ public:
 public:
 
   /// Constructor
-  FXOptionMenu(FXComposite* p,FXPopup* pup=NULL,FXuint opts=JUSTIFY_NORMAL|ICON_BEFORE_TEXT,FXint x=0,FXint y=0,FXint w=0,FXint h=0,FXint pl=DEFAULT_PAD,FXint pr=DEFAULT_PAD,FXint pt=DEFAULT_PAD,FXint pb=DEFAULT_PAD);
+  FXOptionMenu(FXComposite* p,FXPopup* pup=NULL,
+      FXuint opts=(FXuint)JUSTIFY_NORMAL|(FXuint)ICON_BEFORE_TEXT,
+      FXint x=0,FXint y=0,FXint w=0,FXint h=0,
+      FXint pl=DEFAULT_PAD,FXint pr=DEFAULT_PAD,
+      FXint pt=DEFAULT_PAD,FXint pb=DEFAULT_PAD);
 
   /// Create server-side resources
   virtual void create();

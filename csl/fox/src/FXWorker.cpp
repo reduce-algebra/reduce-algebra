@@ -1104,10 +1104,9 @@ int fwin_getchar()
 }
 
 
-void fwin_set_prompt(const char *s)
+void fwin_set_prompt(std::string s)
 {
-    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
-    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    fwin_prompt_string = s;
     if (!windowed) return;
     wake_up_terminal(FXTerminal::SET_PROMPT);
     regain_lockstep();

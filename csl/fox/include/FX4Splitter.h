@@ -97,16 +97,16 @@ public:
     };
 public:
   enum {
-    ID_EXPAND_NONE=FXComposite::ID_LAST+ExpandNone,
-    ID_EXPAND_TOP=ID_EXPAND_NONE+ExpandTop,
-    ID_EXPAND_BOTTOM=ID_EXPAND_NONE+ExpandBottom,
-    ID_EXPAND_LEFT=ID_EXPAND_NONE+ExpandLeft,
-    ID_EXPAND_RIGHT=ID_EXPAND_NONE+ExpandRight,
-    ID_EXPAND_TOPLEFT=ID_EXPAND_NONE+ExpandTopLeft,
-    ID_EXPAND_TOPRIGHT=ID_EXPAND_NONE+ExpandTopRight,
-    ID_EXPAND_BOTTOMLEFT=ID_EXPAND_NONE+ExpandBottomLeft,
-    ID_EXPAND_BOTTOMRIGHT=ID_EXPAND_NONE+ExpandBottomRight,
-    ID_EXPAND_ALL=ID_EXPAND_NONE+ExpandAll,
+    ID_EXPAND_NONE=(FXuint)FXComposite::ID_LAST+(FXuint)ExpandNone,
+    ID_EXPAND_TOP=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandTop,
+    ID_EXPAND_BOTTOM=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandBottom,
+    ID_EXPAND_LEFT=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandLeft,
+    ID_EXPAND_RIGHT=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandRight,
+    ID_EXPAND_TOPLEFT=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandTopLeft,
+    ID_EXPAND_TOPRIGHT=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandTopRight,
+    ID_EXPAND_BOTTOMLEFT=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandBottomLeft,
+    ID_EXPAND_BOTTOMRIGHT=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandBottomRight,
+    ID_EXPAND_ALL=(FXuint)ID_EXPAND_NONE+(FXuint)ExpandAll,
     ID_LAST
     };
 public:

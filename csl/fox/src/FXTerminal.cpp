@@ -272,10 +272,8 @@ FXDEFMAP(FXTerminal) FXTerminalMap[] =
 static int type_in = 0, type_out = 0;
 static int ahead_buffer[TYPEAHEAD_SIZE];
 
-static char *paste_buffer;
+static FXchar* paste_buffer;
 static int paste_flags, paste_n, paste_p, paste_is_html;
-
-static int longest_history_line;
 
 FXIMPLEMENT(FXTerminal, FXText, FXTerminalMap, ARRAYNUMBER(FXTerminalMap))
 
@@ -298,7 +296,8 @@ FXTerminal::FXTerminal(const char *argv0,
     promptColor = FXRGB(0, 64, 200);
     inputColor = FXRGB(200, 64, 128);
 
-    fwin_in = fwin_out = 0;
+    fwin_in = 0;
+    fwin_out = 0;
     inputBufferLen = inputBufferP = 0;
     logfile = NULL;
 
@@ -311,8 +310,7 @@ FXTerminal::FXTerminal(const char *argv0,
     historyNumber = 0;
     pauseFlags = keyFlags = searchFlags = 0;
     promptEnd = length;
-    input_history_init(argv0, historyFirst, historyLast, historyNumber,
-                       input_history_next, longest_history_line);
+    input_history_init(argv0);
     InitMutex(pauseMutex);
 
     InitMutex(mutex1);
@@ -1323,8 +1321,7 @@ long FXTerminal::onCmdCopySelText(FXObject *, FXSelector, void *)
 // Paste clipboard
 
 long FXTerminal::onCmdPasteSel(FXObject *, FXSelector, void *)
-{
-    if (!isEditable() || paste_buffer)
+{   if (!isEditable() || paste_buffer)
     {   getApp()->beep();
         return 1;
     }
@@ -1336,11 +1333,15 @@ long FXTerminal::onCmdPasteSel(FXObject *, FXSelector, void *)
         flags |= FLAG_CHANGED;
         modified = TRUE;
     }
-    FXchar *string;
+    FXuchar*string;
     FXint len;
+// getDNDData obtains text in utf8 and insists that that lives in
+// a vector of unsigned bytes. Here I only want to cope with simple
+// stuff so I will rather improperly cast that to a vector of signed
+// bytes.
     if (getDNDData(FROM_CLIPBOARD, stringType,
                    (FXuchar*&)string, (FXuint&)len))
-        performPaste(string, len);
+        performPaste((FXchar*)string, len);
     return 1;
 }
 
@@ -1348,26 +1349,25 @@ long FXTerminal::onCmdPasteSel(FXObject *, FXSelector, void *)
 // Paste selection (used for middle mouse button)
 
 long FXTerminal::onCmdPasteMiddle(FXObject *, FXSelector, void *)
-{
-    if (!isEditable() || paste_buffer)
+{   if (!isEditable() || paste_buffer)
     {   getApp()->beep();
         return 1;
     }
-    FXchar *string; FXint len;
+    FXuchar* string;
+    FXuint len;
     if (selstartpos==selendpos ||
         cursorpos<=selstartpos ||
         selendpos<=cursorpos)
     {   // Avoid paste inside selection
         if (getDNDData(FROM_SELECTION, stringType,
                        (FXuchar*&)string, (FXuint&)len))
-            performPaste(string, len);
+            performPaste((FXchar*)string, len);
     }
     return 1;
 }
 
-void FXTerminal::performPaste(FXchar *string, FXint len)
-{
-    paste_buffer = string;
+void FXTerminal::performPaste(FXchar *string, FXuint len)
+{   paste_buffer = string;   // Signed vs unsigned chars and utf8 etc!
     paste_n = len;
     paste_p = 0;
     paste_flags = 0;
@@ -1638,7 +1638,7 @@ long FXTerminal::onCmdResetFont(FXObject *c, FXSelector s, void *ptr)
     FXFont *o = font;
     FXFont *f = selectFont(DEFAULT_FONT_NAME, 0,  // 0 means "choose for me"
         FXFont::Bold, FXFont::Straight, FONTENCODING_DEFAULT,
-        0, FXFont::Fixed|FXFont::Modern);
+        0, (FXuint)FXFont::Fixed|(FXuint)FXFont::Modern);
     setFont(f);
     delete o;
     setFocus();   // I am uncertain, but without this I lose focus...
@@ -2267,12 +2267,12 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
     try
     {   p2 = std::filesystem::canonical(p1);
     }
-    catch (std::filesystem::filesystem_error e)
+    catch (std::filesystem::filesystem_error& e)
     {   FXMessageBox about(this,
             "Help request",
             "This program does not have embedded help",
             main_window->getIcon(),
-            MBOX_OK|DECOR_TITLE|DECOR_BORDER);
+            (FXuint)MBOX_OK|(FXuint)DECOR_TITLE|(FXuint)DECOR_BORDER);
         about.execute(PLACEMENT_OWNER);
         setFocus();
         return 1;
@@ -2342,7 +2342,7 @@ long FXTerminal::onCmdAbout(FXObject *c, FXSelector s, void *ptr)
         about_box_title,
         msg,
         main_window->getIcon(),
-        MBOX_OK|DECOR_TITLE|DECOR_BORDER);
+        (FXuint)MBOX_OK|(FXuint)DECOR_TITLE|(FXuint)DECOR_BORDER);
     about.execute(PLACEMENT_OWNER);
     setFocus();
     return 1;
@@ -2539,7 +2539,7 @@ default:
 // D    Delete forward       Delete word          (also the Delete key)
 //      Also ^D before any other input on a line sends EOF
 // E    To end               [Edit menu]          (also End key)
-// F    Forward char         Foward word          (also right arrow key)
+// F    Forward char         Forward word         (also right arrow key)
 // G    ^G backtrace         enter Break Loop     <<also escape search mode>>
 //
 // H    Delete back          Del word back
@@ -2617,7 +2617,7 @@ long FXTerminal::onKeyPress(FXObject *c, FXSelector s, void *ptr)
 {
     int ch;
     FXEvent *event = (FXEvent *)ptr;
-    const wchar_t *history_string = L"";
+    std::wstring history_string = L"";
     if (!isEnabled()) return 0;
     switch (event->code)
     {
@@ -2687,7 +2687,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             startMatch = trySearch();
             history_string = input_history_get(historyNumber);
 // ought not to return NULL here!
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, history_string.length());
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2715,7 +2715,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             }
             startMatch = r;
             history_string = input_history_get(historyNumber);
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, history_string.length());
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2743,7 +2743,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             }
             startMatch = r;
             history_string = input_history_get(historyNumber);
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, history_string.length());
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -2804,7 +2804,7 @@ case KEY_VoidSymbol:  // used when just ALT (say) is pressed and a
             }
             startMatch = r;
             history_string = input_history_get(historyNumber);
-            ls = setInputText(history_string, std::wcslen(history_string));
+            ls = setInputText(history_string, history_string.length());
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -3391,22 +3391,34 @@ int FXTerminal::setInputText(const wchar_t *newtext, int n)
     return n1;
 }
 
+int FXTerminal::setInputText(std::wstring newtext, int n)
+{
+    FXString foxtext(newtext.c_str());
+    int n2 = length;
+    int n1 = lineStart(n2);
+    while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
+    replaceStyledText(n1, n2-n1, foxtext.text(), n, STYLE_INPUT);
+    setCursorPos(length);
+    makePositionVisible(length);
+    return n1;
+}
+
 
 // The history routines here are never invoked unless we are awaiting input
 
 int FXTerminal::editHistoryNext()
 {
-    const wchar_t *history_string;
+    std::wstring history_string;
     if (historyLast == -1) // no history lines at all to retrieve!
     {   getApp()->beep();
         return 1;
     }
     if (historyNumber < historyLast) historyNumber++;
-    if ((history_string = input_history_get(historyNumber)) == NULL)
+    if ((history_string = input_history_get(historyNumber)).length() == 0)
     {   getApp()->beep();
         return 1;
     }
-    setInputText(history_string, std::wcslen(history_string));
+    setInputText(history_string, history_string.length());
     return 1;
 }
 
@@ -3462,9 +3474,9 @@ int FXTerminal::editSearchHistoryNext()
 int FXTerminal::trySearch()
 {
     int r = -1;
-    const wchar_t *history_string = input_history_get(historyNumber);
-    if (history_string == NULL) return -1;
-    while ((r = matchString(searchString, SEARCH_LENGTH, history_string)) < 0)
+    std::wstring history_string = input_history_get(historyNumber);
+    if (history_string.length() == 0) return -1;
+    while ((r = matchString(searchString, SEARCH_LENGTH, history_string.c_str())) < 0)
     {   if (searchFlags & SEARCH_FORWARD)
         {   if (historyNumber == historyLast) return -1;
             historyNumber++;
@@ -3474,7 +3486,7 @@ int FXTerminal::trySearch()
             historyNumber--;
         }
         history_string = input_history_get(historyNumber);
-        if (history_string == NULL) return -1;
+        if (history_string.length() == 0) return -1;
     }
     return r;
 }
@@ -3506,7 +3518,7 @@ int FXTerminal::matchString(const wchar_t *pat, int n, const wchar_t *targettext
 
 int FXTerminal::editHistoryPrev()
 {
-    const wchar_t *history_string;
+    std::wstring history_string;
     if (historyLast == -1) // no previous lines to retrieve
     {   getApp()->beep();
         return 1;
@@ -3515,11 +3527,11 @@ int FXTerminal::editHistoryPrev()
 // range of valid history entries.
     if (historyNumber > historyFirst) historyNumber--;
     history_string = input_history_get(historyNumber);
-    if (history_string == NULL)
+    if (history_string.length() == 0)
     {   getApp()->beep();
         return 1;
     }
-    setInputText(history_string, std::wcslen(history_string));
+    setInputText(history_string, history_string.length());
     return 1;
 }
 
@@ -3766,11 +3778,8 @@ long FXTerminal::onCmdInsertNewline(FXObject *c, FXSelector s, void *ptr)
     }
     inputWBuffer[k] = 0;
     input_history_add(inputWBuffer);
-// Adding an entry could cause an old one to be discarded. So I now ensure
-// that I know what the first and last recorded numbers are.
-    historyLast = input_history_next - 1;
-    historyFirst = input_history_next - INPUT_HISTORY_SIZE;
-    if (historyFirst < 0) historyFirst = 0;
+    historyLast = input_history.size() - 1;
+    historyFirst = 0;
     historyNumber = historyLast + 1; // so that ALT-P moves to first entry
 // Now I add a newline to the text, since the user will expect to see that.
     inputBuffer[n] = '\n';
@@ -3816,7 +3825,8 @@ long FXTerminal::requestFlushBuffer()
             makePositionVisible(rowStart(length));
         }
 // After this call fwin_in and fwin_out are always both zero.
-        fwin_out = fwin_in = 0;
+        fwin_out = 0;
+        fwin_in = 0;
         sync_even = 0;
         UnlockMutex(mutex3);
         LockMutex(mutex2);
@@ -3833,7 +3843,8 @@ long FXTerminal::requestFlushBuffer()
             }
             makePositionVisible(rowStart(length));
         }
-        fwin_out = fwin_in = 0;
+        fwin_out = 0;
+        fwin_in = 0;
         sync_even = 1;
         UnlockMutex(mutex1);
         LockMutex(mutex4);
@@ -4231,14 +4242,13 @@ long FXTerminal::requestShowMath()
 }
 
 
-static char promptString[MAX_PROMPT_LENGTH] = "> ";
+static std::string promptString = "> ";
 static int promptLength = 2;
 
 long FXTerminal::requestSetPrompt()
 {
-    strncpy(promptString, fwin_prompt_string, MAX_PROMPT_LENGTH);
-    promptString[MAX_PROMPT_LENGTH-1] = 0;
-    promptLength = strlen(promptString);
+    promptString = fwin_prompt_string;
+    promptLength = promptString.length();
     if (sync_even)
     {   LockMutex(mutex1);
         sync_even = 0;
@@ -4530,7 +4540,7 @@ long FXTerminal::requestRequestInput()
     }
     if (pauseFlags & PAUSE_DISCARD) main_window->setTitle(window_full_title);
     pauseFlags &= ~PAUSE_DISCARD;
-    FXText::appendStyledText(promptString, promptLength, STYLE_PROMPT);
+    FXText::appendStyledText(promptString.c_str(), promptLength, STYLE_PROMPT);
     promptEnd = length; // start of final line, list after the prompt
     makePositionVisible(rowStart(length));
     makePositionVisible(length);
