@@ -92,7 +92,7 @@ $switchesA = array(
     array('MSG', 'ON', 'Output', 'When off, REDUCE suppresses warning messages.'),
     array('MULTIPLICITIES', 'OFF', 'SOLVE', 'When on, SOLVE outputs multiple solutions explicitly as repeated solutions.'),
     array('MULTIROOT', 'ON', 'ROOTS', 'When on, ROOTS indicates the multiplicity of a root by outputting it repeatedly, according to its multiplicity.'),
-    array('NAT', 'ON', 'Output', 'When on, REDUCE outputs expressions in linear input-compatible form with each expression terminated by a dollar sign.'),
+    array('NAT', 'ON', 'Output', 'When off, REDUCE outputs expressions in linear input-compatible form with each expression terminated by a dollar sign.'),
     array('NERO', 'OFF', 'Output', 'When on, REDUCE does not output the results of zero assignments (i.e. assignments of the form <code>&lt;expression&gt; := 0</code>).'),
     array('NOCOMMUTEDF', 'OFF', 'DF', 'When on, DF does not commute the order of differentiation.'),
     array('NOCONVERT', 'OFF', 'Arithmetic', 'When on with ON ROUNDED, REDUCE does not convert the floating-point number 1.0 to the integer 1.'),
