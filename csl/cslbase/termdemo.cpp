@@ -206,7 +206,9 @@
 
 #include "termed.h"
 
+FILE* spool_file = nullptr;
 const char *programDir = ".";
+static std::string EOFstring = "\x04";
 
 int main(int argc, char *argv[])
 {   bool wait = 0;
@@ -231,6 +233,7 @@ int main(int argc, char *argv[])
         if (a[0] == '-' && a[1] == 'b') colours = &a[2];
     }
     TermSetup ts(argv[0], colours);
+    enable_keyboard(true);
 
 // On at least some non-Windows platforms console output will be in RAW mode
 // where '\n' is interpreted as line feed and causes the cursor to move
@@ -246,7 +249,7 @@ int main(int argc, char *argv[])
 
 // This reads and echoes 10 lines or until EOF.
     for (i=0; i<10; i++)
-    {   char *d;
+    {   std::string d;
         char prompt[16];
 // The prompt number starts at 1 and increases if there is a ";" on the
 // input line. I only reset it if it has changed, so if you enter several
@@ -257,15 +260,13 @@ int main(int argc, char *argv[])
             oldpnumber = pnumber;
         }
         d = term_getline();
-        if (d == nullptr)
-        {   std::printf("EOF detected" EOL);
-            break;
-        }
+        if (d.compare(EOFstring) == 0) break;
         else
-        {   if (std::strchr(d, ';') != nullptr) pnumber++;
+        {   if (d.find(";") != std::string::npos) pnumber++;
             std::printf("Input line was <");
-            while (*d != 0)
-            {   int ch = *d++ & 0xff;
+            while (d.length() != 0)
+            {   int ch = d.front() & 0xff;
+                d = d.substr(1);
 // In the echo of the input line I make unprintable characters visible. This
 // is liable to mean that end-of-line shows up as "^J".
                 if (ch < 0x20) std::printf("^%c", ch | 0x40);

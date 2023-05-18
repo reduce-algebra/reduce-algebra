@@ -1,3 +1,6 @@
+#error "This file is not maintained and will need serious review for revival.
+
+
 // wxterminal.cpp                        Copyright (C) A C Norman 2012-2023
 //
 //

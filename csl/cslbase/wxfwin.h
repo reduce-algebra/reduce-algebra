@@ -465,16 +465,13 @@ extern void fwin_move_to_column(int column);
 
 #define INPUT_HISTORY_SIZE 100
 
-extern wchar_t *input_history[INPUT_HISTORY_SIZE];
-extern int input_history_next;
-
-extern void input_history_init();
+extern void input_history_init(const char* argv0);
 
 extern void input_history_end();
 
-extern void input_history_add(const wchar_t *s);
+extern void input_history_add(std::wstring s);
 
-extern const wchar_t *input_history_get(int n);
+extern std::wstring input_history_get(size_t n);
 
 //
 // This is for version-specific control

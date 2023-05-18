@@ -44,6 +44,9 @@
 // $Id$
 
 #include <cstdlib>
+#include <string>
+#include <vector>
+#include <deque>
 
 //
 // This supports modest line-editing and history for terminal-mode
@@ -112,8 +115,8 @@ public:
 //
 // Set the prompt string.
 //
-extern void term_setprompt(const char *s);
-extern void term_wide_setprompt(const wchar_t *s);
+extern void term_setprompt(std::string s);
+extern void term_wide_setprompt(std::wstring s);
 
 //
 // This sets callbacks for ^C and ^G and ALT-^C and ALT-^G input
@@ -132,8 +135,8 @@ extern void set_keyboard_callbacks(keyboard_interrupt_callback *f1);
 // Read a line from the terminal, applying history and local editing
 // operations as it goes
 //
-extern char *term_getline(void);
-extern wchar_t *term_wide_getline(void);
+extern std::string term_getline(void);
+extern std::wstring term_wide_getline(void);
 
 //
 // What follows is to do with a history mechanism... it is not
@@ -141,27 +144,22 @@ extern wchar_t *term_wide_getline(void);
 // needed by the implementation of the "termed" stuff..
 //
 
-#define INPUT_HISTORY_SIZE 100
+extern std::vector<std::wstring> input_history;
 
-extern wchar_t *input_history[INPUT_HISTORY_SIZE];
-extern int input_history_next;
-
-extern void input_history_init(const char *argv0,
-                               int &historyFirst, int &historyLast, int &historyNumber,
-                               int &input_history_next, int &longest_history_line);
+extern void input_history_init(const char *argv0);
 
 extern void input_history_end(void);
 
-extern void input_history_add(const wchar_t *s);
+extern void input_history_add(std::wstring s);
 
-extern const wchar_t *input_history_get(int n);
+extern std::wstring input_history_get(size_t n);
 
 //
 // The next few are so I can access the Unicode conversion code here
 // by pretending to be in console mode even if I am not.
 //
 
-extern wchar_t *input_line;
+extern std::wstring input_line;
 extern int prompt_length, insert_point;
 
 //

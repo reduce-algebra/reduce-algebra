@@ -59,6 +59,9 @@
 #include <cstdlib>
 #include <csignal>
 #include <atomic>
+#include <vector>
+#include <string>
+#include <deque>
 
 using std::atomic;
 
@@ -230,9 +233,7 @@ extern atomic<bool> mustQuit;
 // number of characters) should be used as a prompt.
 //
 
-#define MAX_PROMPT_LENGTH 80
-
-extern void fwin_set_prompt(const char *s);
+extern void fwin_set_prompt(std::string s);
 
 //
 // Clears screen.
@@ -410,18 +411,15 @@ extern void fwin_move_to_column(int column);
 // intended for public export.
 //
 
-#define INPUT_HISTORY_SIZE 100
+extern std::vector<std::wstring> input_history;
 
-extern wchar_t *input_history[INPUT_HISTORY_SIZE];
-extern int input_history_next;
-
-extern void input_history_init();
+extern void input_history_init(const char* argv0);
 
 extern void input_history_end();
 
-extern void input_history_add(const wchar_t *s);
+extern void input_history_add(std::wstring s);
 
-extern const wchar_t *input_history_get(int n);
+extern std::wstring input_history_get(size_t n);
 
 //
 // This is for version-specific control
@@ -489,7 +487,7 @@ extern void sigint_handler(int signo);
 
 extern int plain_worker(int argc, const char *argv[],
                         fwin_entrypoint *fwin_main);
-extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
+extern std::string fwin_prompt_string;
 
 extern int get_current_directory(char *s, size_t n);
 extern bool file_readable(char *filename, const char *old, size_t n);
