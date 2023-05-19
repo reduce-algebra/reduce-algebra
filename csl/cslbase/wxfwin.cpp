@@ -951,7 +951,7 @@ int fwin_plain_getchar()
     {   while (chars_left == 0)
         {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
-            if (current_line == nullptr) return EOF;  // failed or EOF
+            if (current_line.compare("\x04") == 0) return EOF;// failed or EOF
             chars_left = std::strlen(current_line);
         }
     }

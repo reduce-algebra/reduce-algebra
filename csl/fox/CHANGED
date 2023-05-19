@@ -277,4 +277,12 @@ Oct 2022.     Increase a buffer length from around 500 to 2000 so that
               address the underlying issue - it just means that you have
               to have much longer lines to trigger it.
 
+March 2023.   Altering much of my code to use std::wstring where originally
+April 2023.   it has used char* and wchar_t*. Also vector<T>. Insert casts
+              and make other adjustments so that gcc warnings about
+              deprecated code go away - eg cases where values from several
+              distinct enumerations are added or combined with "|".
+              Rework history stuff to use Vector<T> rather that a C style
+              array.
+
 <end of CHANGED>

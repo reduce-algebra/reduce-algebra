@@ -228,6 +228,8 @@ using std::uint32_t;
 using std::uint64_t;
 using std::string;
 
+static string EOFstring = "\x04";
+
 // An "my_assert" scheme that lets me write in my own code to print the
 // diagnostics. Included here because this files does not icnlude "fx.h".
 
@@ -408,7 +410,7 @@ char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
 
 const char *colour_spec = "-";
 
-char fwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
+std::string fwin_prompt_string = "> ";
 
 int fwin_linelength = 80;
 
@@ -1014,15 +1016,13 @@ int plain_worker(int argc, const char *argv[],
 #endif // !HAVE_SIGACTION
 #endif // !EMBEDDED
     TermSetup ts(argv[0], colour_spec);
-    std::strcpy(fwin_prompt_string, "> ");
+    fwin_prompt_string = "> ";
     return (*fwin_main)(argc, argv);
 }
 
 
-#define INPUT_BUFFER_SIZE 100
-
-static const char *current_line;
-UNUSED_NAME static char input_buffer[INPUT_BUFFER_SIZE];
+static std::string current_line;
+UNUSED_NAME static std::string input_buffer;
 static int chars_left = 0;
 UNUSED_NAME static int prompt_needed = 1;
 
@@ -1031,12 +1031,13 @@ int fwin_plain_getchar()
     {   while (chars_left == 0)
         {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
-            if (current_line == nullptr) return EOF;  // failed or EOF
-            chars_left = std::strlen(current_line);
+            if (current_line.compare(EOFstring) == 0) return EOF; // error/EOF
+            chars_left = current_line.length();
         }
     }
     chars_left--;
-    ch = *current_line++;
+    ch = current_line.front();
+    current_line = current_line.substr(1);
     if (ch == (0x1f & 'D')) ch = EOF;
     return ch;
 }

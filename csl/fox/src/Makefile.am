@@ -14,7 +14,7 @@
 # If is very probable that the passage of time has let to libtool becoming
 # stable, but the scheme used here is also stable so I will not move back.
 
-CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
+CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@ -fmax-errors=7
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 # ACN change to use abs_top_builddir - an absolute pathname...
 RESWRAP  = $(abs_top_builddir)/utils/reswrap$(EXEEXT)

@@ -223,8 +223,6 @@ extern char **loadable_packages, **switches;
 #include <cstring>
 #include <csignal>
 
-// I require C++-11 or later.
-
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -240,6 +238,8 @@ extern char **loadable_packages, **switches;
 using std::string;
 
 #include "termed.h"
+
+static std::string EOFstring = "\x04";
 
 // When the code is built it can still determine (dynamically) that it
 // should not intervene, Eg when stdin/stdout have been redirected. When
@@ -302,7 +302,8 @@ static void quitKeyboardThread()
 {   if (keyboardThreadActive &&
         keyboardThread.get_id() != std::this_thread::get_id())
     {   keyboardThreadActive = false;
-        write(keyboardPipe[1], "\n\n\n\n", 4);
+        if (write(keyboardPipe[1], "\n\n\n\n", 4) != 4)
+           my_abort("failed to send terminate message to keyboard thread");
         keyboardThread.join();
         close(keyboardPipe[1]);
     }
@@ -523,7 +524,8 @@ static void keyboardThreadFunction()
 // and if the main program asks for a wide character then a sequence of those
 // will be assembled as necessary using UTF8 encoding.
 // If ^C or ^G is encountered that will flush the buffer...
-    aheadIn = aheadOut = 0;
+    aheadIn = 0;
+    aheadOut = 0;
     eofSeen = false;
     bool prevWasEsc = false;
     while (true)
@@ -683,14 +685,12 @@ static void startKeyboardThread()
 
 #if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
 
-wchar_t *input_history[100]; // Not used in the case that
-// cursor control is not  available
-int input_history_next = 0;
+std::vector<std::wstring> input_history; // Not used in the case that
+                                         // cursor control is not  available
 
-void input_history_init(const char *argv0,
-                        int &phistoryFirst, int &phistoryLast, int &phistoryNumber,
-                        int &pinput_history_next, int &plongest_history_line)
-{}
+void input_history_init(const char *argv0)
+{   return;
+}
 
 void input_history_end()
 {}
@@ -698,8 +698,8 @@ void input_history_end()
 void input_history_add(const wchar_t *s)
 {}
 
-const wchar_t *input_history_get(int n)
-{   return L"History not available in EMBEDDED version";
+std::wstring input_history_get(int n)
+{   return std::wstring(L"History not available in this version");
 }
 
 #else // !EMBEDDED
@@ -753,11 +753,8 @@ static int outputColour = -1;  // whatever user had been using
 // This needs to be improved - among other upgrades I should save history
 // when my application exits so it can be reloaded next time.
 
-wchar_t *input_history[INPUT_HISTORY_SIZE];
-wchar_t *pending_history_line = nullptr;
-int input_history_next = 0,
-    input_history_current = 0,
-    longest_history_line = 0;
+std::vector<std::wstring> input_history;
+std::wstring pending_history_line = L"";
 static bool history_active = false;
 
 static string history_filename;
@@ -769,31 +766,46 @@ static string history_filename;
 // would have found a good way to share more of the code and avoid
 // this potential muddle.
 
-static int historyFirst, historyNumber, historyLast;
+static size_t historyNumber;
 static int searchFlags;
-
 
 bool is_reduce = false;
 
-void input_history_init(const char *argv0,
-                        int &phistoryFirst, int &phistoryLast, int &phistoryNumber,
-                        int &pinput_history_next, int &plongest_history_line)
-{   // printlog("input_history_init %s\n", argv0);
-    int i;
-    pinput_history_next = plongest_history_line = 0;
-    for (i=0; i<INPUT_HISTORY_SIZE; i++)
-        input_history[i] = nullptr;
-    pending_history_line = nullptr;
+static int digofhex(wchar_t ch)
+{   switch (ch)
+    {
+    case '0': return 0;
+    case '1': return 1;
+    case '2': return 2;
+    case '3': return 3;
+    case '4': return 4;
+    case '5': return 5;
+    case '6': return 6;
+    case '7': return 7;
+    case '8': return 8;
+    case '9': return 9;
+    case 'a': return 10;
+    case 'b': return 11;
+    case 'c': return 12;
+    case 'd': return 13;
+    case 'e': return 14;
+    case 'f': return 15;
+    default:  return -1;
+    }
+}
+
+void input_history_init(const char *argv0)
+{   input_history.clear();
+    pending_history_line = L"";
 // Set up the filename for history storage
     const char *p = std::strrchr(argv0, '/');
     if (p == nullptr) p = std::strrchr(argv0, '\\');
     if (p != nullptr) argv0 = p + 1; // now just the leaf part
-// I am going to handle input in a way that I want for Reduce is the
+// I am going to handle input in a way that I want for Reduce whenever the
 // current executable has a name including the string "red" in its leaf-part,
 // so for instance "redcsl" and "bootstrapreduce" as well as "reduce" will
 // qualify, while "csl" should not.
     is_reduce = (std::strstr(argv0, "red") != nullptr);
-//  printlog("is_reduce = %s\n", is_reduce ? "true" : "false");
     const char *h1, *h2, *h3;
 #ifdef WIN32
     h1 = std::getenv("HOMEDRIVE");
@@ -809,254 +821,131 @@ void input_history_init(const char *argv0,
     history_filename = fname.str();
     history_active = true;
 // Now re-load the history
-    std::ifstream h(history_filename, std::ifstream::in);
+    std::wifstream h(history_filename, std::ifstream::in);
     if (h.fail()) return;
 // Can now re-load.
-    plongest_history_line = 0;
-    string histline;
-// I read into a string because that means I do not need to worry about
-// the length of the input line.
+    std::wstring histline;
     std::getline(h, histline);
     if (h.fail()) return;
-// But then because I am old fashioned I will decode the input as a C string!
-    const char *hl = histline.c_str();
-    unsigned int hsize;
-    if (std::sscanf(hl, "History %u %u", &hsize,
-                    &pinput_history_next) != 2 ||
-        hsize != INPUT_HISTORY_SIZE)
-        return; // malformed
-    phistoryLast = pinput_history_next - 1;
-    phistoryNumber = pinput_history_next;
-//  printlog("phistoryNumber = %d\n", phistoryNumber);
-//  printlog("phistoryLast = %d\n", phistoryLast);
-//  printlog("pinput_history_next = %d\n", pinput_history_next);
-// Headline OK
-    for (i=0; i<INPUT_HISTORY_SIZE; i++)
+    if (histline.compare(L"History") != 0) return; // Not proper format
+    for (;;)
     {   std::getline(h, histline);
-        if (h.fail()) return;
-        hl = histline.c_str();
-        if (std::strncmp(hl, "History end", 11) == 0) break;
-// Now the line I have read is either "-NN" to indicate NN blank entries
-// or it is a string with potential embedded escapes denoting a wide character
-// C-string.
-        else if (hl[0] == '-')
-        {   int nblanks = std::atoi(hl+1);
-            if (nblanks <= 0) nblanks = 1;
-            for (int j=0; j<nblanks; j++) input_history[i++] = nullptr;
-            i--; // avoid overshoot
-            continue;
-        }
-        else if (hl[0] == '"')
-        {   size_t len=0;
-            for (const char *q=&hl[1]; *q!='"'; q++)
-            {   len++;
-                if (*q == '\\') q+=4;
+        if (histline[0] != '\"' ||
+            histline[histline.length()-1] != '\"') break;
+// Now the line starts and ends with double quotes. Within it there may
+// be sequences "\dddd" that I must decode.
+        std::wstringbuf vv;
+        size_t len = 0;
+        for (size_t ii=1; ii<histline.length()-1; ii++)
+        {   wchar_t ch = histline[ii];
+            if (ch != '\\')
+            {   vv.sputc(ch);
+                len++;
+                continue;
             }
-            wchar_t *hl1 = new wchar_t[len+1];
-            if (hl1 != nullptr)
-            {   const char *q = &hl[1];
-                wchar_t *q1 = hl1;
-                while (*q != '"')
-                {   if (*q == '\\')
-                    {   int val  = 0;
-                        q++;
-                        for (int k=0; k<4; k++)
-                        {   int c = *q++;
-                            if ('0' <= c && c <= '9') c = c - '0';
-                            else if ('a' <= c && c <= 'f') c = c - 'a' + 10;
-                            else if ('A' <= c && c <= 'F') c = c - 'A' + 10;
-                            else c = 0;
-                            val = 16*val + c;
-                        }
-                        *q1++ = val;
-                    }
-                    else *q1++ = *q++;
-                }
-                *q1 = 0;
-                input_history[i] = hl1;
-                int size = std::wcslen(hl1);
-                if (size > plongest_history_line) plongest_history_line = size;
-            }
+            int u1, u2, u3, u4;
+            if ((u1 = digofhex(histline[++ii])) < 0) break;
+            if ((u2 = digofhex(histline[++ii])) < 0) break;
+            if ((u3 = digofhex(histline[++ii])) < 0) break;
+            if ((u4 = digofhex(histline[++ii])) < 0) break;
+            vv.sputc(static_cast<wchar_t>(((u1<<4 | u2)<<4 | u3)<<4 | u4));
+            len++;
         }
-        else return; // bad format;
+        input_history.push_back(vv.str());
     }
-#if defined __GNUC__ && !defined __OPTIMIZE__
-    int blankcount = 0;
-    for (int j=0; j<INPUT_HISTORY_SIZE; j++)
-    {   wchar_t *l = input_history[j];
-        if (l == nullptr) blankcount++;
-        else
-        {   if (blankcount != 0)
-            {   // printlog("-%d\n", blankcount);
-                blankcount = 0;
-            }
-//          printlog("%d: \"", j);
-//          int ch;
-//          wchar_t *ll = l;
-//          while ((ch = *ll++) != 0)
-//          {   if (0x20 <= ch && ch <= 0x7e &&
-//                  ch != '\\' && ch != '"') printlog("%c", ch);
-//              else printlog("\\%0.4x", ch & 0xffff);
-//          }
-//          printlog("\"\n");
-        }
-    }
-//  if (blankcount != 0) printlog("-%d\n", blankcount);
-#endif // __OPTIMIZE__
+// Here histline should be "History End" but I am not going to check!
+// After all the only thing I could do would be to ignore it and anything
+// following. Or (I suppose) complain to the user about a corrupted history
+// file, but that does not feel helpful.
 // The input stream is closed at end of block
+    historyNumber = input_history.size();
 }
 
 void input_history_end()
 {   if (!history_active) return;
-//  printlog("Write out updated history\n");
+// I will only store the last (up to) 100 entries. More may have build
+// up and will be accessible during a session, but when I come to dump
+// history to disc I will get rid of any beyond the final 100 entries.
+    if (input_history.size() > 100)
+        input_history.erase(input_history.begin(),
+                            input_history.begin()+input_history.size()-100);
 // Dump_history_to_file.
 // The format that I use is:
-//      History <size> <index>
-//      <size> times:
-//          either - for an empty entry, or
-//          a string starting and ending in '"' with most simple printable
-//          characters rendered as themselves, but '\', '"' and unprintable
-//          things included as \dddd where dddd stands for a 4-byte hex
-//          value. I suspect I should render the inner text as UTF8.
-// This format is UGLY in that empty entries are shown as a line with a single
-// "-" on. I should consolidate those in a run-length encoded style so that
-// "-NN" stands for the next NN entries being blank.
-    std::ofstream h(history_filename, std::ofstream::out);
-    h << std::dec << "History " << INPUT_HISTORY_SIZE
-      << " " << input_history_next << endl;
-    int blankcount = 0;
-    for (int i=0; i<INPUT_HISTORY_SIZE; i++)
-    {   wchar_t *l = input_history[i];
-        if (l == nullptr) blankcount++;
-        else
-        {   if (blankcount != 0)
-            {   h << std::dec << "-" << blankcount << endl;
-                blankcount = 0;
-            }
-            h << "\"";
-            int ch;
-// I emit a line with (most) printable ASCII characters rendered as themselves
-// but with control characters, the special cases '\' and '"', and any
-// character from 0x7f upwards shown as a '\' followed by 4 hexadecimal
-// digits. A special case of that will be that a newline will be "\000a".
-            wchar_t *ll = l;
-            while ((ch = *ll++) != 0)
-            {   if (0x20 <= ch && ch <= 0x7e &&
-                    ch != '\\' && ch != '"') h << static_cast<char>(ch);
-                else h << "\\" << std::hex << std::setw(4) <<
-                           std::setfill('0') << (ch & 0xffff);
-            }
-            h << "\"" << endl;
-            delete [] l;
+//      History
+//      "each history line enclosed in quote marks"
+//      "special characters rendered as \dddd with exactly 4 hex digits"
+//      History End
+    std::wofstream h(history_filename, std::ios_base::out);
+    if (h.fail()) return;               // Unable to open the file.
+    h << L"History\n" << std::hex;
+    if (h.fail()) return;               // Unable to write to the file.
+// If the writes fail from now on then the history file may end up
+// malformed, but the consequeces should just be that when it is re-read
+// it will not fill in the history information.
+    for (std::wstring hline : input_history)
+    {   h << L"\"";
+        for (wchar_t ch : hline)
+        {   int code = static_cast<int>(ch) & 0xffff;
+            if (ch == '\'' || ch == '\\' || ch == '\"' ||
+                code < 32 || code >= 127)
+                h << L"\\" << ((code>>12)&0xf) << ((code>>8)&0xf)
+                           << ((code>>4)&0xf) << (code&0xf);
+            else h << ch;
         }
+        h << L"\"\n";
     }
-    if (blankcount != 0) h << std::dec << "-" << blankcount << endl;
-    h << "History end" << endl;
-    if (pending_history_line != nullptr) delete [] pending_history_line;
+    h << L"History End\n";
     history_active = false;
 // Now as h goes out of scope the output stream will be closed.
 }
 
-
-void input_history_stage(const wchar_t *s)
-{   size_t n;
-    if (s == nullptr) return;
+void input_history_stage(std::wstring s)
+{   if (s.length() == 0) return;
 // The first line after a new prompt just simply forms the pending input
 // line.
-    if (pending_history_line == nullptr)
-    {   pending_history_line = new (std::nothrow) wchar_t[std::wcslen(s)+1];
-        if (pending_history_line != nullptr) // in case "new" fails
-            std::wcscpy(pending_history_line, s);
+    if (pending_history_line.length() == 0)
+    {   pending_history_line = s;
         return;
     }
 // Second and subsequent lines get added to the end of the stored line, with
 // "\n" characters to mark the line-breaks. This means that when I retrieve
 // something from the history I will need to worry about those newlines
 // and potentially how they display with or without associated prompts.
-    n = std::wcslen(pending_history_line);
-    wchar_t *bigger = new (std::nothrow) wchar_t[std::wcslen(s) + n + 2];
-    if (bigger == nullptr) return;
-    std::memcpy(bigger, pending_history_line, n*sizeof(wchar_t));
-    delete [] pending_history_line;
-    pending_history_line = bigger;
-    pending_history_line[n] = '\n';
-    std::wcscpy(pending_history_line+n+1, s);
+    pending_history_line += L"\n";
+    pending_history_line += s;
 }
 
-void input_history_add(const wchar_t *s)
-{   wchar_t *scopy;
-//  printlog("input_history_add(%ls)\n", s);
-    int p;
-// If the line I am attempting to add is empty or is identical to the
-// most recently added entry that is already present I will do nothing.
-// HMMMM - the removal of duplicates can make sense but that needs to be
-// duplicate COMPLETE input blocks. So input such as
-//   a := {1,2,
-//         1,2,
-//         1,2,
-//         3};
-// had better not discard any of the "1,2," lines.
-    if (s==nullptr || *s==0) return;
-//  printlog("input_history_next = %d\n", input_history_next);
-    p = input_history_next;
-    if (p > 0 &&
-        (scopy = input_history[(p-1)%INPUT_HISTORY_SIZE]) != nullptr &&
-        std::wcscmp(s, scopy) == 0) return;
-// Make a copy of the input string...
-    scopy = new (std::nothrow) wchar_t[std::wcslen(s) + 1];
-    p = input_history_next % INPUT_HISTORY_SIZE;
-// If new returns nullptr I just store an empty history entry.
-    if (scopy != nullptr) std::wcscpy(scopy, s);
-//  LOG("History entry has %d characters in it\n", wcslen(s));
-// I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
-// entries.
-    if (input_history[p] != nullptr) delete [] input_history[p];
-//  printlog("insert new item in slot %d\n", p);
-    input_history[p] = scopy;
-    historyLast = input_history_next;
-    input_history_next++;
-    historyNumber = input_history_next;
-    if (scopy != nullptr)
-    {   p = std::wcslen(scopy);
-        if (p > longest_history_line) longest_history_line = p;
-    }
+void input_history_add(std::wstring s)
+{
+// If the line I am attempting to add is empty I will do nothing.
+    if (s.length() == 0) return;
+    input_history.push_back(s);
+    historyNumber = input_history.size();
 }
 
-const wchar_t *input_history_get(int n)
-{   const wchar_t *s;
-// Filter our values that are out of range and in those cases return nullptr
-// as a flag to report the error.
-    if (n == input_history_next) return L"";
-    if (n < 0 ||
-        n >= input_history_next ||
-        n < input_history_next-INPUT_HISTORY_SIZE) return nullptr;
-    s = input_history[n % INPUT_HISTORY_SIZE];
-// The nullptr here would be if new had failed earlier.
-//  printlog("input_history_get(%d) = %ls\n", n,
-//           s==nullptr ? L"<nil>" : s);
-    if (s == nullptr) return L"";
-    else return s;
+std::wstring input_history_get(size_t n)
+{
+// Filter our values that are out of range and in those cases return
+// and empty string.
+    if (n < 0 || n >= input_history.size()) return L"";
+    else return input_history[n];
 }
 
 #endif // !EMBEDDED
 
-#define MAX_PROMPT_LENGTH 80
+static std::string termed_prompt_string = ">";
 
-static wchar_t termed_prompt_string[MAX_PROMPT_LENGTH+1] = L">";
-
-wchar_t *input_line;
+std::wstring input_line = L"";
 #if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-static wchar_t *display_line;
+static std::wstring display_line = L"";
 #endif // !EMBEDDED
 int prompt_length = 1, prompt_width = 1;
-static int input_line_size;
 
 // term_wide_plain_getline() can be called when cursor addressing is not
 // available. It just reads characters into a line-buffer (which it
 // extends as necessary). The data returned includes the newline
 // that terminated the line. If an error is detected (and in particular
-// at end of file) the value nullptr is returned rather than a pointer to
-// an array of characters.
+// at end of file) the value L"\x04".
 //
 // Nothing at all is done here to fuss about special characters, so
 // things like ^C, backspace, ^Q etc etc etc are handled, if at all, by
@@ -1064,13 +953,12 @@ static int input_line_size;
 
 static void term_putchar(int c);
 
-static wchar_t *term_wide_plain_getline()
+static std::wstring term_wide_plain_getline()
 {   std::fflush(stdout); std::fflush(stderr);
     for (int i=0; i<prompt_length; i++)
         term_putchar(termed_prompt_string[i]);
     std::fflush(stdout);
-    if (input_line_size == 0) return nullptr;
-    input_line[0] = 0;
+    input_line = L"";
     int n = 0;
     std::wint_t ch;
     for (ch=getwcFromThread();
@@ -1078,36 +966,12 @@ static wchar_t *term_wide_plain_getline()
          ch!=CTRL_C && ch!=CTRL_G &&
          ch!=CTRL_D;
          ch=getwcFromThread())
-    {
-// I will expand the buffer so that if sizeof(wchar_t)==2 I have 1.5 times
-// as many bytes as there are wchar_t items in use. This is so that when and
-// if I convert to utf-8 format there will still be enough space. The most
-// dangerous case would arise if the buffer contained a sequence of codes all
-// in the range u+800 to u+ffff since each of those could fit in a 2 byte
-// wchar_t but needs 3 bytes in utf-8.
-        if ((n+20)*(5-sizeof(wchar_t)) >=
-            input_line_size*(4/sizeof(wchar_t)))
-        {   wchar_t *bigger = new (std::nothrow) wchar_t[2*input_line_size];
-            if (bigger == nullptr)
-            {   delete [] input_line;
-                input_line_size = 0;
-                return nullptr;
-            }
-            std::memcpy(bigger, input_line, input_line_size*sizeof(wchar_t));
-            delete [] input_line;
-            input_line = bigger;
-            input_line_size = 2*input_line_size;
-        }
-        input_line[n++] = ch;
-        input_line[n] = 0;
+    {   input_line.push_back(ch);
     }
     if (ch==WEOF || ch==CTRL_D)
-    {   if (n == 0) return nullptr;
+    {   if (n == 0) return L"\x04";
     }
-    else
-    {   input_line[n++] = '\n';
-        input_line[n] = 0;
-    }
+    else input_line.push_back('\n');
     return input_line;
 }
 
@@ -1118,38 +982,11 @@ static wchar_t *term_wide_plain_getline()
 // character set used with this is 8-bit Unicode... but the stored prompt
 // is in a wide string.
 
-void term_setprompt(const char *s)
-{   int i;
-    prompt_length = prompt_width = std::strlen(s);
-//  log("prompt = %s len %d\n", s, prompt_length);
-// I truncate prompts if they are really ridiculous in length since otherwise
-// it may look silly.
-    if (prompt_length > MAX_PROMPT_LENGTH) prompt_length =
-            MAX_PROMPT_LENGTH;
-// Here I widen the characters in the prompt by merely using the passed
-// characters as the low 8-bits of each desired character. That is fine
-// for 7-bit ASCII characters but not if the 8-bit values depend on some
-// particular code page... or if the prompt is expressed in UTF8. However
-// this version is explicity for narrow character prompt strings - see the
-// following function for the more general case.
-#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-    bool changed = false;
-#endif // !EMBEDDED
-    for (i=0; i<prompt_length; i++)
-    {   wchar_t c = *s++ & 0xff;
-        if (c != termed_prompt_string[i])
-        {   termed_prompt_string[i] = c;
-#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-            changed = true;
-#endif // !EMBEDDED
-        }
-    }
-    if (termed_prompt_string[i] != 0)
-    {   termed_prompt_string[i] = 0;
-#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-        changed = true;
-#endif // !EMBEDDED
-    }
+void term_setprompt(std::string s)
+{   if (s.length() > 50) s.erase(50, SIZE_MAX);
+    bool changed = termed_prompt_string.compare(s) != 0;
+    termed_prompt_string = s;
+    prompt_length = prompt_width = s.length();
 #if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
     if (is_reduce)
     {
@@ -1158,66 +995,10 @@ void term_setprompt(const char *s)
 // in doing this if I do not have cursor-editing enabled! And if I am not
 // using Reduce I will not expect the prompts to change and so history
 // will be collected line by line.
-        if (termEnabled && pending_history_line != nullptr && changed)
+        if (termEnabled && pending_history_line.length()!=0 && changed)
         {   input_history_add(pending_history_line);
-// Adding an entry could cause an old one to be discarded. So I now ensure
-// that I know what the first and last recorded numbers are.
-            historyLast = input_history_next - 1;
-            historyFirst = input_history_next - INPUT_HISTORY_SIZE;
-            if (historyFirst < 0) historyFirst = 0;
-            historyNumber = historyLast + 1; // so that ALT-P moves to first entry
-            delete [] pending_history_line;
-            pending_history_line = nullptr;
+            pending_history_line = L"";
         }
-    }
-#endif // !EMBEDDED
-}
-
-// Now a version that takes a wide string so that it is possible to
-// set prompts that include characters with codes over 0xff, and at least
-// up to 0xffff. On Windows there is a special nuisance if the truncation
-// at MAX_PROMPT_LENGTH tries to truncate half way through a surrogate
-// pair. In that case I will truncate one code earlier.
-
-void term_wide_setprompt(const wchar_t *s)
-{   prompt_length = std::wcslen(s);
-// I truncate the prompt if it seems too long
-    if (prompt_length > MAX_PROMPT_LENGTH) prompt_length =
-            MAX_PROMPT_LENGTH;
-// If I truncate it part way through a surrogate pair I need to lose
-// both parts of the pair.
-    if (prompt_length > 0 &&
-        is_high_surrogate(termed_prompt_string[prompt_length-1]))
-        prompt_length--;
-    wchar_t temp[MAX_PROMPT_LENGTH+1];
-    std::wcsncpy(temp, s, prompt_length);
-    temp[prompt_length] = 0;
-#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-    bool changed = false;
-#endif // !EMBEDDED
-    if (std::wcscmp(temp, termed_prompt_string) != 0)
-    {   std::wcscpy(termed_prompt_string, temp);
-#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-        changed = true;
-#endif // !EMBEDDED
-    }
-// Now in the face of possible surrogate pairs the width in columns of the
-// prompt may not be the same as the number of wchar_t items that make it
-// up, so I will sort that out by counting units ignoring any high surrogates.
-    prompt_width = 0;
-    for (s=termed_prompt_string; *s!=0; s++)
-        if (!is_high_surrogate(*s)) prompt_width++;
-#if !defined EMBEDDED && !defined AVOID_TERMINAL_THREADS
-    if (termEnabled && pending_history_line != nullptr && changed)
-    {   input_history_add(pending_history_line);
-// Adding an entry could cause an old one to be discarded. So I now ensure
-// that I know what the first and last recorded numbers are.
-        historyLast = input_history_next - 1;
-        historyFirst = input_history_next - INPUT_HISTORY_SIZE;
-        if (historyFirst < 0) historyFirst = 0;
-        historyNumber = historyLast + 1; // so that ALT-P moves to first entry
-        delete [] pending_history_line;
-        pending_history_line = nullptr;
     }
 #endif // !EMBEDDED
 }
@@ -1538,12 +1319,7 @@ static int direct_to_terminal()
 int term_setup(const char *argv0, const char *colour)
 {
 #if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
-    input_line = new (std::nothrow) wchar_t[200];
-    if (input_line == nullptr)
-    {   input_line_size = 0;
-        return 1;  // failed to allocate buffers
-    }
-    else input_line_size = 200;
+    input_line = L"";
     termEnabled = false;
     return 2;
 #else // !EMBEDDED
@@ -1559,13 +1335,8 @@ int term_setup(const char *argv0, const char *colour)
     termEnabled = false;
     keyboardBuffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == nullptr ? "-" : colour);
-    input_line = new (std::nothrow) wchar_t[200];
-    display_line = new (std::nothrow) wchar_t[200];
-    if (input_line == nullptr || display_line == nullptr)
-    {   input_line_size = 0;
-        return 1;  // failed to allocate buffers
-    }
-    else input_line_size = 200;
+    input_line = L"";
+    display_line = L"";
 // Standard input must be from a character device and must be accepted
 // by the GetConsoleMode function
     consoleInputHandle = GetStdHandle(STD_INPUT_HANDLE);
@@ -1624,13 +1395,8 @@ int term_setup(const char *argv0, const char *colour)
             promptColour = c;
         }
     }
-    input_line = new (std::nothrow) wchar_t[200];
-    display_line = new (std::nothrow) wchar_t[200];
-    if (input_line == nullptr || display_line == nullptr)
-    {   input_line_size = 0;
-        return 1; // no space for buffer
-    }
-    else input_line_size = 200;
+    input_line = L"";
+    display_line = L"";
 // I rather expect the handles for stdin and sstout to be 0 and 1, but
 // let's extract them explictly!
     stdin_handle = fileno(stdin);
@@ -1676,8 +1442,8 @@ int term_setup(const char *argv0, const char *colour)
 // the use of tcgetattr/tcsetattr would only do things to the stdin
 // one here.
     tcgetattr(stdin_handle, &my_term);
-    tcflag_t oflag = my_term.c_oflag,
-             rawoflag;
+    tcflag_t oflag = my_term.c_oflag;
+    tcflag_t rawoflag;
 #ifdef HAVE_CFMAKERAW
 // If I have cfmakeraw that is liable to be a definitive way of setting
 // raw mode. Otherwise I will set the flags that I expect cfmakeraw to set.
@@ -1716,11 +1482,8 @@ int term_setup(const char *argv0, const char *colour)
     my_term.c_oflag = rawoflag;
     std::memcpy(&cursor_term, &my_term, sizeof(my_term));
 #endif // WIN32
-    historyFirst = historyNumber = 0;
-    historyLast = -1;
     searchFlags = 0;
-    input_history_init(argv0, historyFirst, historyLast, historyNumber,
-                       input_history_next, longest_history_line);
+    input_history_init(argv0);
     invert_start = invertEnd = -1;
     termEnabled = true;
     return 0;
@@ -1774,15 +1537,9 @@ void term_close()
 //      log("closing terminal\n");
     }
 #endif // !WIN32
-    if (display_line != nullptr)
-    {   delete [] display_line;
-        display_line = nullptr;
-    }
+    display_line = L"";
 #endif // !EMBEDDED
-    if (input_line != nullptr)
-    {   delete [] input_line;
-        input_line = nullptr;
-    }
+    input_line = L"";
     input_history_end();
     termEnabled = false;
 #endif // AVOID_TERMINAL_THREADS
@@ -2245,7 +2002,7 @@ static void refresh_display()
                  finx, finy;
     bool window_size_changed;
 //  log("refresh_display cx=%d cy=%d\n", cursorx, cursory);
-//  log("il:<%ls>\ndl:<%ls>\n", input_line, display_line);
+//  log("il:<%ls>\ndl:<%ls>\n", input_line.c_str(), display_line.c_str());
 //
 // Rather than believing in any SIGWINCH signal (or some such!) to alert
 // me to screen size changes, I will (on systems that give me a way to)
@@ -2265,14 +2022,15 @@ static void refresh_display()
                            cury!=static_cast<unsigned int>(lines));
     if (window_size_changed)
     {
-// I want to force a fairly complete re-write here, so I explain that
+// I want to force a fairly complete re-write here, so I pretend that
 // the screen now holds stuff that is totally different to what is
 // desired, and that there may be residual stuff on the screen down as far
 // as the almost-rightmost column of the bottom line that I have ever put
 // anything on.
 //      log("Window size has changed\n");
-        display_line[0] = input_line[0] + 1;
-        display_line[1] = 0;
+// Ensure that display_line differs from input_line.
+        display_line = L"?";
+        if (input_line.length() != 0) display_line[0] = input_line[0] ^ 1;
         final_cursory = max_cursory;
         final_cursorx = columns-1;
         term_move_first_column();
@@ -2439,7 +2197,7 @@ static void refresh_display()
     if (curx != cursorx) term_move_right(curx-cursorx);
     std::fflush(stdout);
 // Now the display should be up to date, so record that situation.
-    std::wcscpy(display_line, input_line);
+    display_line = input_line;
 }
 
 static void term_set_mark()
@@ -2459,7 +2217,7 @@ static void term_to_start()
 
 
 static void term_toEnd()
-{   while (input_line[insert_point] != 0) insert_point++;
+{   insert_point = input_line.length();
     refresh_display();
 }
 
@@ -2469,8 +2227,8 @@ static void term_toEnd()
 // hope will also be an emacs-like interpretation.
 
 static int term_findNext_word_forwards()
-{   int n = insert_point;
-    if (input_line[n] == 0) return n;
+{   size_t n = insert_point;
+    if (n == input_line.length()) return n;
     do
     {   n++;
     }
@@ -2537,39 +2295,28 @@ static void term_back_word()
 
 
 static void term_delete_forwards()
-{   int i = insert_point;
+{   size_t i = insert_point;
 // If the unit at the insertion point is a high surrogate I must delete
 // two units not just one - ie the high and then the low surrogate.
-    if (is_high_surrogate(input_line[i]))
-    {   input_line[i] = ' ';
-        term_delete_forwards();
-    }
-    if (input_line[i] == 0) term_bell();
-    else for (;;)
-        {   input_line[i] = input_line[i+1];
-            if (input_line[i] == 0) break;
-            i++;
-        }
+    if (i == input_line.length()) term_bell();
+    else if (is_high_surrogate(input_line[i]))
+        input_line = input_line.erase(i, 2);
+    else input_line = input_line.erase(i, 1);
     refresh_display();
 }
 
 
 static void term_delete_backwards()
 {   if (insert_point == prompt_length) term_bell();
-    else
-    {   int i = insert_point - 1;
-        insert_point = i;
-        for (;;)
-        {   input_line[i] = input_line[i+1];
-            if (input_line[i] == 0) break;
-            i++;
-        }
+    else if (insert_point-1 > prompt_length &&
+             is_high_surrogate(input_line[insert_point-2]))
+    {   insert_point -= 2;
+        input_line = input_line.erase(insert_point, 2);
     }
-// If I just deleted a low surrogate so that there is now a high one left
-// then I need to delete that too.
-    if (insert_point != prompt_length &&
-        is_high_surrogate(input_line[insert_point-1]))
-        term_delete_backwards();
+    else
+    {   insert_point -= 1;
+        input_line = input_line.erase(insert_point, 1);
+    }
     refresh_display();
 }
 
@@ -2577,14 +2324,8 @@ static void term_delete_backwards()
 static void term_delete_word_forwards()
 {   if (input_line[insert_point] == 0) term_bell();
     else
-    {   int i = insert_point;
-        int n = term_findNext_word_forwards() - insert_point;
-        for (;;)
-        {   input_line[i] = input_line[i+n];
-            if (input_line[i] == 0) break;
-            i++;
-        }
-        refresh_display();
+    {   int n = term_findNext_word_forwards() - insert_point;
+        for (int i=0; i<n; i++) term_delete_forwards();
     }
 }
 
@@ -2595,66 +2336,42 @@ static void term_delete_word_backwards()
     {   int i = term_findNext_word_backwards();
         int n = insert_point - i;
         insert_point = i;
-        for (;;)
-        {   input_line[i] = input_line[i+n];
-            if (input_line[i] == 0) break;
-            i++;
-        }
+        for (int j=0; j<n; j++) term_delete_forwards();
     }
-    refresh_display();
 }
 
 
 static void term_kill_line()
 {   insert_point = prompt_length;
-    input_line[insert_point] = 0;
+    input_line = input_line.erase(prompt_length, SIZE_MAX);
     refresh_display();
 }
 
 
 static void term_history_next()
-{   const wchar_t *history_string;
-    if (historyLast == -1)
+{   if (historyNumber+1 >= input_history.size())
     {   term_bell();
         return;
     }
-//  printlog("term_history_next hNum=%d hLast=%d\n", historyNumber,
-//           historyLast);
-    if (historyNumber < historyLast) historyNumber++;
-    if ((history_string = input_history_get(historyNumber)) == nullptr)
-    {   term_bell();
-        return;
-    }
-//  printlog("history string = %ls\n", history_string);
-    insert_point = std::wcslen(history_string);
-    std::wcsncpy(input_line+prompt_length, history_string, insert_point);
-    insert_point += prompt_length;
-    input_line[insert_point] = 0;
+    historyNumber++;
+    input_line.replace(prompt_length,
+                       input_line.length()-prompt_length,
+                       input_history[historyNumber]);
+    insert_point = input_line.length();
     refresh_display();
 }
 
 
 static void term_history_previous()
-{   // printlog("term_history_previous hNum=%d hFirst=%dhLast=%d\n",
-    //          historyNumber, historyFirst, historyLast);
-    const wchar_t *history_string;
-    if (historyLast == -1) // no previous lines to retrieve
+{   if (historyNumber == 0)
     {   term_bell();
         return;
     }
-// If I have not moved the history pointer at all yet move it into the
-// range of valid history entries.
-    if (historyNumber > historyFirst) historyNumber--;
-    history_string = input_history_get(historyNumber);
-    if (history_string == nullptr)
-    {   term_bell();
-        return;
-    }
-//  printlog("history string = %ls\n", history_string);
-    insert_point = std::wcslen(history_string);
-    std::wcsncpy(input_line+prompt_length, history_string, insert_point);
-    insert_point += prompt_length;
-    input_line[insert_point] = 0;
+    historyNumber--;
+    input_line.replace(prompt_length,
+                       input_line.length()-prompt_length,
+                       input_history[historyNumber]);
+    insert_point = input_line.length();
     refresh_display();
 }
 
@@ -2662,7 +2379,7 @@ static void term_history_previous()
 static int regular_lineEnd = 0;
 static int search_saved_point = 0;
 static int search_found = 0;
-static wchar_t searchBuff[100];
+static std::wstring searchBuff;
 static int searchStack[100];
 static int searchLen;
 
@@ -2671,11 +2388,11 @@ static void term_searchNext()
 // I remember where I was on the input line but then move to the end and
 // append a message that indicates to the user that a search is in progress.
     search_found = search_saved_point = insert_point;
-    regular_lineEnd = std::wcslen(input_line);
-    std::wcscpy(&input_line[regular_lineEnd], L"\nN-search: ");
+    regular_lineEnd = input_line.length();
+    input_line += L"\nN-search: ";
     insert_point = regular_lineEnd + 11;
     searchLen = 0;
-    searchBuff[0] = 0;
+    searchBuff = L"";
     searchFlags = 1;
     refresh_display();
 }
@@ -2683,11 +2400,11 @@ static void term_searchNext()
 
 static void term_search_previous()
 {   search_found = search_saved_point = insert_point;
-    regular_lineEnd = std::wcslen(input_line);
-    std::wcscpy(&input_line[regular_lineEnd], L"\nP-search: ");
+    regular_lineEnd = input_line.length();
+    input_line += L"\nP-search: ";
     insert_point = regular_lineEnd + 11;
     searchLen = 0;
-    searchBuff[0] = 0;
+    searchBuff = L"";
     searchFlags = -1;
     refresh_display();
 }
@@ -2710,22 +2427,20 @@ static int matchString(const wchar_t *pat, int n, const wchar_t *text)
     return -1;
 }
 
-
 static int trySearch()
 {   int r = -1;
-    const wchar_t *history_string = input_history_get(historyNumber);
-    if (history_string == nullptr) return -1;
-    while ((r = matchString(searchBuff, searchLen, history_string)) < 0)
+    std::wstring history_string = input_history_get(historyNumber);
+    while ((r = matchString(searchBuff.c_str(), searchLen,
+                            history_string.c_str())) < 0)
     {   if (searchFlags > 0)
-        {   if (historyNumber == historyLast) return -1;
+        {   if (historyNumber == input_history.size()) return -1;
             historyNumber++;
         }
         else
-        {   if (historyNumber == historyFirst) return -1;
+        {   if (historyNumber == 0) return -1;
             historyNumber--;
         }
         history_string = input_history_get(historyNumber);
-        if (history_string == nullptr) return -1;
     }
     return r;
 }
@@ -2741,16 +2456,14 @@ static int trySearch()
 // of the longest line I have stuck into the history and I measure against
 // that when accepting search characters. So do not worry after all!!
 
-static void set_input(const wchar_t *s)
-{   std::wcscpy(&input_line[prompt_length], s);
-    insert_point = prompt_length + std::wcslen(s);
+static void set_input(std::wstring s)
+{   input_line.replace(prompt_length, input_line.length()-prompt_length, s);
+    insert_point = input_line.length();
     regular_lineEnd = insert_point;
-    input_line[insert_point++] = '\n';
-    input_line[insert_point++] = searchFlags > 0 ? 'N' : 'P';
-    std::wcscpy(&input_line[insert_point], L"-search: ");
-    insert_point += 9;
-    std::wcscpy(&input_line[insert_point], searchBuff);
-    insert_point += searchLen;
+    input_line += L"\n";
+    input_line += searchFlags > 0 ? L"N" : L"P";
+    input_line += L"-search: ";
+    insert_point = input_line.length();
 }
 
 // This is called when I am in the process of searching and a character is
@@ -2767,7 +2480,7 @@ static int term_search_char(int ch)
         case CTRL('N') + ALT_BIT: case 'N' + ALT_BIT: case 'n' + ALT_BIT:
         case ARROW_BIT + TERM_DOWN + ALT_BIT:
             searchFlags = 1;    // search downwards
-            if (historyNumber >= historyLast) term_bell();
+            if (historyNumber+1 >= input_history.size()) term_bell();
             else
             {   int r;
                 int save = historyNumber;
@@ -2790,7 +2503,7 @@ static int term_search_char(int ch)
         case CTRL('P') + ALT_BIT: case 'P' + ALT_BIT: case 'p' + ALT_BIT:
         case ARROW_BIT + TERM_UP + ALT_BIT:
             searchFlags = -1;    // search upwards
-            if (historyNumber <= historyFirst) term_bell();
+            if (historyNumber == 0) term_bell();
             else
             {   int r;
                 int save = historyNumber;
@@ -2811,12 +2524,18 @@ static int term_search_char(int ch)
 
 // Ctrl-H deletes exist search mode if the search string is empty, otherwise
 // it deletes a char from the search string and pops back to wherever the
-// shorter string had matched.
+// shorter string had matched. For this to be a valid statement I must
+// only have accepted the extra character (that is now being deleted)
+// following a successful earlier search.
         case CTRL('H'):                   // Backspace
-        case 0x7f:                         // Delete
+        case 0x7f:                        // Delete
             if (searchLen != 0)
-            {   input_line[--insert_point] = 0;
-                searchBuff[--searchLen] = 0;
+            {   insert_point--;
+                input_line =
+                    input_line.erase(insert_point, SIZE_MAX);
+                searchLen--;
+                searchBuff =
+                    searchBuff.erase(searchLen, SIZE_MAX);
                 historyNumber = searchStack[searchLen];
                 search_found = trySearch();   // ought to succeed
                 set_input(input_history_get(historyNumber));
@@ -2842,7 +2561,7 @@ static int term_search_char(int ch)
 // been in inverse video... ie leave invert_start at the start of where
 // inverting had started, but set invertEnd to the same value.
                 invertEnd = invert_start;
-                input_line[regular_lineEnd] = 0;
+                input_line.erase(regular_lineEnd, SIZE_MAX);
                 insert_point = prompt_length + search_found + searchLen;
                 refresh_display();
 // "^U" will exit search mode, and when it does that it does not do anything
@@ -2854,19 +2573,22 @@ static int term_search_char(int ch)
     }
 // So not accept search characters beyond some limit since I have a fixed-
 // size buffer for the search string. Just beep and ignore the chararcter.
+// I could make the search buffer a std::string rather than a char[], but
+// having really long search strings seems so ridiculous to me that I
+// an not going to change things!
     if (searchLen > 98)
     {   term_bell();
         return 1;
     }
     searchStack[searchLen] = historyNumber;
-    searchBuff[searchLen++] = ch;
-    searchBuff[searchLen] = 0;
+    searchBuff += ch;
+    searchLen++;
 // Now perform a search...
     {   int r;
         int save = historyNumber;
         if ((r = trySearch()) == -1)
         {   historyNumber = save;         // search failed this time
-            searchBuff[--searchLen] = 0;
+            searchBuff = searchBuff.erase(--searchLen, 1);
             term_bell();
             return 1;
         }
@@ -3003,8 +2725,8 @@ static void term_transpose_chars()
 static void term_undo()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<^U>");
+    input_line += L"<^U>";
+    insert_point = input_line.size();
     term_bell();
 }
 
@@ -3012,8 +2734,8 @@ static void term_undo()
 static void term_quoted_insert()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<^V>");
+    input_line += L"<^V>";
+    insert_point = input_line.size();
     term_bell();
 }
 
@@ -3021,8 +2743,8 @@ static void term_quoted_insert()
 static void term_copy_previous_word()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<^W>");
+    input_line += L"<^W>";
+    insert_point = input_line.size();
     term_bell();
 }
 
@@ -3030,8 +2752,8 @@ static void term_copy_previous_word()
 static void term_copy_region()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&W>");
+    input_line += L"<&W>";
+    insert_point = input_line.size();
     term_bell();
 }
 
@@ -3039,8 +2761,8 @@ static void term_copy_region()
 static void term_yank()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<^Y>");
+    input_line += L"<^Y>";
+    insert_point = input_line.size();
     term_bell();
 }
 
@@ -3048,8 +2770,8 @@ static void term_yank()
 static void term_reinput()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<^R>");
+    input_line += L"<^R>";
+    insert_point = input_line.size();
     term_bell();
 }
 
@@ -3059,8 +2781,8 @@ static void term_redisplay()
 // To get as much of the active area redrawn as I can I will reset the
 // record of what is visible to suggest that everything is totally out of
 // date.
-    display_line[0] = input_line[0] + 1;
-    display_line[1] = 0;
+    display_line = L"?";
+    if (input_line.length() != 0) display_line[0] = input_line[0] ^ 1;
     refresh_display();
 }
 
@@ -3086,8 +2808,8 @@ static void term_clear_screen()
     std::fflush(stdout); std::fflush(stderr);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
 #endif // !WIN32
-    display_line[0] = input_line[0] + 1;
-    display_line[1] = 0;
+    display_line = L"?";
+    if (input_line.length() != 0) display_line[0] = input_line[0] ^ 1;
     term_redisplay();
 }
 
@@ -5360,27 +5082,14 @@ static void term_replace_chars_backwards(int n, const wchar_t *s)
 {
 // Replace n characters that are before the caret with bytes from the
 // string s. The caret had better not be in the middle of a surrogate pair!
-    int m = std::wcslen(s);
-    if (n > m)        // Overall this deletes characters
-    {   int i = insert_point - n;
-        for (;;)
-        {   input_line[i] = input_line[i+n-m];
-            if (input_line[i] == 0) break;
-            i++;
-        }
-        insert_point -= (n-m);
+    size_t m = std::wcslen(s);
+// Do this by first deleting n characters backwards and then inserting
+// the chars from s.
+    for (int i=0; i<n; i++) term_delete_backwards();
+    for (size_t i=0; i<m; i++)
+    {   input_line.insert(insert_point, 1, s[i]);
+        insert_point++;
     }
-    else if (m > n)   // Overall this inserts characters
-    {   int i = insert_point;
-        while (input_line[i] != 0) i++;
-        while (i >= insert_point)
-        {   input_line[i+m-n] = input_line[i];
-            i--;
-        }
-        insert_point += (m-n);
-    }
-    m = insert_point - m;
-    while (*s != 0) input_line[m++] = *s++;
 }
 
 static wchar_t input_word[40];
@@ -5403,8 +5112,8 @@ static void term_ctrl_z_command()
 {
 // It is not yet clear that I have anything much to allocate this to. In
 // emacs it would be "obey extended command".
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<^X>");
+    input_line += L"<^X>";
+    insert_point = input_line.size();
     term_bell();
     term_redisplay();
 }
@@ -5673,8 +5382,8 @@ static void term_exit_program()
 static void term_edit_menu()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&E>");
+    input_line += L"<&E>";
+    insert_point = input_line.size();
     term_redisplay();
 }
 
@@ -5682,8 +5391,8 @@ static void term_edit_menu()
 static void term_file_menu()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&I>");
+    input_line += L"<&I>";
+    insert_point = input_line.size();
     term_redisplay();
 }
 
@@ -5691,8 +5400,8 @@ static void term_file_menu()
 static void term_module_menu()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&M>");
+    input_line += L"<&M>";
+    insert_point = input_line.size();
     term_redisplay();
 }
 
@@ -5700,8 +5409,8 @@ static void term_module_menu()
 static void term_font_menu()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&O>");
+    input_line += L"<&O>";
+    insert_point = input_line.size();
     term_redisplay();
 }
 
@@ -5709,8 +5418,8 @@ static void term_font_menu()
 static void term_break_menu()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&B>");
+    input_line += L"<&B>";
+    insert_point = input_line.size();
     term_redisplay();
 }
 
@@ -5718,8 +5427,8 @@ static void term_break_menu()
 static void term_switch_menu()
 {
 // @@@@@
-    insert_point += std::swprintf(&input_line[insert_point],
-                                  input_line_size-insert_point, L"<&S>");
+    input_line += L"<&S>";
+    insert_point = input_line.size();
     term_redisplay();
 }
 
@@ -5804,7 +5513,7 @@ static void set_default_colour()
 
 static int left_over = 0;
 
-static wchar_t *term_wide_fancy_getline()
+static std::wstring term_wide_fancy_getline()
 {   int ch, i;
     bool any_keys = false;
     if (left_over != 0)
@@ -5818,72 +5527,25 @@ static wchar_t *term_wide_fancy_getline()
     for (i=0; i<prompt_length; i++)
         term_putchar(termed_prompt_string[i]);
     std::fflush(stdout);
-    if (input_line_size == 0)
-    {   set_default_colour();
-        return nullptr;
-    }
     set_foreground_colour(inputColour);
-    std::wcsncpy(input_line, termed_prompt_string, prompt_length);
-    std::wcsncpy(display_line, termed_prompt_string, prompt_length);
-    input_line[prompt_length] = 0;
-    display_line[prompt_length] = 0;
+//  input_line = termed_prompt_string;
+//  display_line = termed_prompt_string;
+    input_line = L"";
+    display_line = L"";
+    for (auto c : termed_prompt_string)
+    {   input_line += c;
+        display_line += c;
+    }
     insert_point = final_cursorx = cursorx = prompt_length;
     final_cursory = max_cursory = cursory = 0;
     for (;;)
-    {   int n;
-        ch = term_getchar();
+    {   ch = term_getchar();
 //      printlog("term_getchar = %x\n", ch);
         if (ch == EOF || (ch == CTRL_D && !any_keys))
         {   set_default_colour();
-            return nullptr;
+            return L"\x04"; // EOF or error
         }
         any_keys = true;
-// First ensure there is space in the buffer. In some cases maybe putting
-// the test here is marginally over-keen, since the keystroke entered
-// might not be one that was going to add a character. But it is harmless
-// to be safe! If I need to extend the buffer and I fail then I just
-// give up and return an error marker. Note that the insert_point may not
-// be at the end of the line, so I use wcslen() to find out how long the
-// line actually is.
-        n = std::wcslen(input_line);
-// The curious activity here is to ensure that the buffer would not overflow
-// even if the "regular" part of it was replaced by the longest line
-// that can possibly get into the history-record.
-        if (n > longest_history_line) longest_history_line = n;
-        if (searchFlags != 0)
-            n = n - regular_lineEnd + longest_history_line;
-// Again allow extra space in case of a need to convert to utf-8.
-        if ((n+20)*(5-sizeof(wchar_t)) >=
-            input_line_size*(4/sizeof(wchar_t)))
-        {   wchar_t *bigger = new (std::nothrow) wchar_t[2*input_line_size];
-            if (bigger != nullptr)
-            {   std::memcpy(bigger, input_line, input_line_size*sizeof(wchar_t));
-                delete [] input_line;
-                input_line = bigger;
-            }
-            else
-            {   delete [] input_line;
-                delete [] display_line;
-                input_line_size = 0;
-                set_default_colour();
-                return nullptr;
-            }
-            bigger = new (std::nothrow) wchar_t[2*input_line_size];
-            if (bigger != nullptr)
-            {   std::memcpy(bigger, display_line, input_line_size*sizeof(wchar_t));
-                delete [] display_line;
-                display_line = bigger;
-            }
-            else
-            {   delete [] input_line;
-                delete [] display_line;
-                input_line_size = 0;
-                set_default_colour();
-                return nullptr;
-            }
-            input_line_size = 2*input_line_size;
-        }
-// There are cases where I need to treat characters specially:
 //   (1) I am in the middle of a history search, and the
 //       character is thus to be treated as part of the incremental
 //       string, unless it terminates the search;
@@ -5910,8 +5572,8 @@ static wchar_t *term_wide_fancy_getline()
             case CTRL_C:
                 insert_point = final_cursorx = cursorx = prompt_length;
                 final_cursory = max_cursory = cursory = 0;
-                input_line[insert_point++] = '\n';
-                input_line[insert_point] = 0;
+                input_line += '\n';
+                insert_point++;
                 break;
             case CTRL_D:
             case ARROW_BIT+TERM_DELETE:
@@ -5929,8 +5591,8 @@ static wchar_t *term_wide_fancy_getline()
             case CTRL_G:
                 insert_point = final_cursorx = cursorx = prompt_length;
                 final_cursory = max_cursory = cursory = 0;
-                input_line[insert_point++] = ch;
-                input_line[insert_point] = 0;
+                input_line += ch;
+                insert_point++;
                 break;
             case CTRL('H'):
             case 0x7f:     // The "delete backwards" key, I hope
@@ -6132,19 +5794,11 @@ static wchar_t *term_wide_fancy_getline()
             case '}' + ALT_BIT:
                 continue;  // Ignored
             default:
-// Here I need to insert a character into the buffer. I may not be inserting
-// at the end, so I perhaps have to shuffle existing stuff upwards.
-            {   int n1 = insert_point;
-                while (input_line[n1] != 0) n1++;
-                while (n1 >= insert_point)
-                {   input_line[n1+1] = input_line[n1];
-                    n1--;
-                }
-            }
-            input_line[insert_point] = ch & (~(ALT_BIT|ARROW_BIT));
-            insert_point++;
-            refresh_display();
-            continue;
+// Here I need to insert a character into the buffer.
+                input_line.insert(insert_point, 1, ch & (~(ALT_BIT|ARROW_BIT)));
+                insert_point++;
+                refresh_display();
+                continue;
         }
         break;
     }
@@ -6155,17 +5809,16 @@ static wchar_t *term_wide_fancy_getline()
     set_default_colour();
     term_putchar('\n');
     std::fflush(stdout);
-    insert_point = std::wcslen(input_line);
-    if (insert_point==prompt_length && ch==EOF) return nullptr;
+    insert_point = input_line.length();
+    if (insert_point==prompt_length && ch==EOF) return L"\x04";
 // Stick the line into my history record: WITHOUT any newline at its end.
-    input_line[insert_point] = 0;
-    if (is_reduce) input_history_stage(input_line+prompt_length);
-    else input_history_add(input_line+prompt_length);
+    if (is_reduce) input_history_stage(input_line.substr(prompt_length));
+    else input_history_add(input_line.substr(prompt_length));
 // Whether the user terminated the line with CR or LF I will always
 // return "\n" to the program.
-    input_line[insert_point++] = L'\n';
-    input_line[insert_point] = 0;
-    return input_line + prompt_length;
+    input_line += L'\n';
+    insert_point = input_line.length();
+    return input_line.substr(prompt_length);
 }
 
 #endif // EMBEDDED, AVOID_TERMINAL_THREADS
@@ -6249,7 +5902,7 @@ int utf_decode(const unsigned char *b)
     }
 }
 
-wchar_t *term_wide_getline()
+std::wstring term_wide_getline()
 {
 #if defined EMBEDDED || defined AVOID_TERMINAL_THREADS
     return term_wide_plain_getline();
@@ -6259,47 +5912,23 @@ wchar_t *term_wide_getline()
 #endif // !EMBEDDED, !AVOID_TERMINAL_THREADS
 }
 
-char *term_getline()
-{   wchar_t *r = term_wide_getline();
-    if (r == nullptr) return nullptr;
+std::string term_getline()
+{   std::wstring wide = term_wide_getline();
 // To get a "narrow char" line I read a wide char line and then expand
-// it into utf-8 form.
-    char *p = reinterpret_cast<char *>(r);
-    wchar_t *q = r;
-    int c;
-    unsigned char buffer[8];
-    if (sizeof(wchar_t)==4)
-    {   while ((c = *q++) != 0)
-        {   int n = utf_encode(buffer, c), i;
-            for (i=0; i<n; i++) *p++ = buffer[i];
-        }
+// it into utf-8 form. The C++ function that looked natural for making
+// the conversion here was depracated in C++17 so I do not use it and so
+// far no standard replacement has been offered.
+    std::string narrow = "";
+    for (auto c : wide)
+    {   unsigned char buffer[8];
+// Note that for EOF I return the string "\x04" and the character there
+// will not be altered in conversion between wide and narrow form,
+// while if I had used a "-1" character or some especially high Unicode
+// codepoint things would have been messier.
+        int n = utf_encode(buffer, c);
+        for (int i=0; i<n; i++) narrow += buffer[i];
     }
-    else
-    {
-// Expanding a code such as 0x1111 unto utf-8 will expand it from a 2-byte
-// wchar_t to 3 bytes. This risks clobbering the input data. To avoid that
-// I will move the raw input data up the buffer first.
-        size_t n = std::wcslen(r);
-        wchar_t *s = r + n;  // end of original data
-        q = s + (n/2) + 2;   // safe place for end of copied version
-        for (;;)
-        {   *q = *s;
-            if (s == r) break; // will leave q pointing at the copy
-            s--;
-            q--;
-        }
-        while ((c = *q++) != 0)
-        {   int i, n1;
-// I assume that surrogate pairs are indeed properly paired: I consolidate
-// them into single characters here.
-            if (is_low_surrogate(c))
-                c = 0x10000 + ((c & 0x3ff)<<10) + (*q++ & 0x3ff);
-            n1 = utf_encode(buffer, c);
-            for (i=0; i<n1; i++) *p++ = buffer[i];
-        }
-    }
-    *p = 0;
-    return reinterpret_cast<char *>(r);
+    return narrow;
 }
 
 #ifdef RECORD_KEYS

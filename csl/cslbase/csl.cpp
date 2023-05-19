@@ -406,7 +406,7 @@ LispObject resource_exceeded()
 LispObject interrupted()
 {   errorNest safe;
     LispObject w;
-    char save_prompt[80];
+    string save_prompt;
     THREADID;
 // If I have a windowed system I expect that the mechanism for
 // raising an exception will have had a menu that gave me a chance
@@ -418,8 +418,7 @@ LispObject interrupted()
         ensure_screen();
         RealSave save(THREADARG prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
-        std::strncpy(save_prompt, fwin_prompt_string, sizeof(save_prompt));
-        save_prompt[sizeof(save_prompt)-1] = 0;
+        save_prompt = fwin_prompt_string;
 // Well I will want this to run a break-loop, but doing what I once did will
 // at least give me something to test!
         fwin_set_prompt("+++ Type C to continue, A to abort, X to exit: ");

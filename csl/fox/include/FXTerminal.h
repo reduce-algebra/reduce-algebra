@@ -105,11 +105,12 @@ extern int pipedes[2];
 #define PIPE_READ_PORT 0
 #define PIPE_WRITE_PORT 1
 
-extern FXMenuBar *main_menu_bar;
+extern FXMenuBar* main_menu_bar;
 
-extern char **modules_list, **switches_list;
+extern char** modules_list;
+extern char** switches_list;
 
-extern const char *fwin_maths;
+extern const char* fwin_maths;
 
 //
 // I derive a sub-class from MainWindow just so I can notice when the
@@ -120,27 +121,27 @@ class FXAPI FXMainWindow1 : public FXMainWindow
 {
     FXDECLARE(FXMainWindow1)
 public:
-    FXMainWindow1(FXApp *, const FXString &, FXIcon *, FXIcon *, FXuint,
+    FXMainWindow1(FXApp*, const FXString&, FXIcon*, FXIcon*, FXuint,
         FXint,FXint,FXint,FXint,FXint,FXint,FXint,FXint,FXint,FXint);
     FXMainWindow1();
     virtual void create();
-    long onConfigure(FXObject *,FXSelector,void *);
+    long onConfigure(FXObject*,FXSelector,void*);
 };
 
 
-extern const char *colour_spec;
-extern FXApp *application_object;
-extern FXMainWindow1 *main_window;
-extern const char *reduceMenus[];
+extern const char* colour_spec;
+extern FXApp* application_object;
+extern FXMainWindow1* main_window;
+extern const char* reduceMenus[];
 #ifdef WIN32
-extern DWORD __stdcall worker_thread(void *);
+extern DWORD __stdcall worker_thread(void*);
 #else
-extern void *worker_thread(void *);
+extern void* worker_thread(void*);
 #endif
-extern FXTimer *timer;
+extern FXTimer* timer;
 extern char mid_stuff[32], full_title[90];
 
-extern FXFont *selectFont(const char *name, int size,
+extern FXFont* selectFont(const char* name, int size,
     int weight, int slant, int encoding, int setwidth, int hints);
 
 #ifdef WIN32
@@ -181,46 +182,46 @@ public:
   long requestSetMenus();
   long requestRefreshSwitches();
 
-  long onCmdRead(FXObject *c, FXSelector s, void *ptr);
-  long onCmdSave(FXObject *c, FXSelector s, void *ptr);
-  long onCmdSaveSelection(FXObject *c, FXSelector s, void *ptr);
-  long onCmdToFile(FXObject *c, FXSelector s, void *ptr);
-  long onCmdPrint(FXObject *c, FXSelector s, void *ptr);
-  long onCmdPrintSelection(FXObject *c, FXSelector s, void *ptr);
+  long onCmdRead(FXObject* c, FXSelector s, void* ptr);
+  long onCmdSave(FXObject* c, FXSelector s, void* ptr);
+  long onCmdSaveSelection(FXObject* c, FXSelector s, void* ptr);
+  long onCmdToFile(FXObject* c, FXSelector s, void* ptr);
+  long onCmdPrint(FXObject* c, FXSelector s, void* ptr);
+  long onCmdPrintSelection(FXObject* c, FXSelector s, void* ptr);
   long doPrinting(int startp, int endp);
-  long onCmdCutSel(FXObject *c, FXSelector s, void *ptr);
-  long onCmdPasteSel(FXObject *c, FXSelector s, void *ptr);
-  long onCmdPasteMiddle(FXObject *c, FXSelector s, void *ptr);
-  long onCmdCopySel(FXObject *c, FXSelector s, void *ptr);
-  long onCmdCopySelText(FXObject *c, FXSelector s, void *ptr);
-  long onCmdReinput(FXObject *c, FXSelector s, void *ptr);
-  long onCmdClear(FXObject *c, FXSelector s, void *ptr);
-  long onCmdRedraw(FXObject *c, FXSelector s, void *ptr);
-  long onCmdHome(FXObject *c, FXSelector s, void *ptr);
-  long onCmdEnd(FXObject *c, FXSelector s, void *ptr);
-  long onCmdFont(FXObject *c, FXSelector s, void *ptr);
-  long onCmdResetFont(FXObject *c, FXSelector s, void *ptr);
-  long onCmdResetWindow(FXObject *c, FXSelector s, void *ptr);
-  long onCmdBreak(FXObject *c, FXSelector s, void *ptr);
-  long onCmdBacktrace(FXObject *c, FXSelector s, void *ptr);
-  long onCmdBreakLoop(FXObject *c, FXSelector s, void *ptr);
-  long onCmdPause(FXObject *c, FXSelector s, void *ptr);
-  long onCmdResume(FXObject *c, FXSelector s, void *ptr);
-  long onCmdStop(FXObject *c, FXSelector s, void *ptr);
-  long onCmdDiscard(FXObject *c, FXSelector s, void *ptr);
-  long onCmdLoadModule(FXObject *c, FXSelector s, void *ptr);
-  long onCmdFlipSwitch(FXObject *c, FXSelector s, void *ptr);
-  long onCmdSelectBrowser(FXObject *c, FXSelector s, void *ptr);
-  long onCmdReduce(FXObject *c, FXSelector s, void *ptr);
-  long onCmdHelp(FXObject *c, FXSelector s, void *ptr);
-  long onCmdAbout(FXObject *c, FXSelector s, void *ptr);
+  long onCmdCutSel(FXObject* c, FXSelector s, void* ptr);
+  long onCmdPasteSel(FXObject* c, FXSelector s, void* ptr);
+  long onCmdPasteMiddle(FXObject* c, FXSelector s, void* ptr);
+  long onCmdCopySel(FXObject* c, FXSelector s, void* ptr);
+  long onCmdCopySelText(FXObject* c, FXSelector s, void* ptr);
+  long onCmdReinput(FXObject* c, FXSelector s, void* ptr);
+  long onCmdClear(FXObject* c, FXSelector s, void* ptr);
+  long onCmdRedraw(FXObject* c, FXSelector s, void* ptr);
+  long onCmdHome(FXObject* c, FXSelector s, void* ptr);
+  long onCmdEnd(FXObject* c, FXSelector s, void* ptr);
+  long onCmdFont(FXObject* c, FXSelector s, void* ptr);
+  long onCmdResetFont(FXObject* c, FXSelector s, void* ptr);
+  long onCmdResetWindow(FXObject* c, FXSelector s, void* ptr);
+  long onCmdBreak(FXObject* c, FXSelector s, void* ptr);
+  long onCmdBacktrace(FXObject* c, FXSelector s, void* ptr);
+  long onCmdBreakLoop(FXObject* c, FXSelector s, void* ptr);
+  long onCmdPause(FXObject* c, FXSelector s, void* ptr);
+  long onCmdResume(FXObject* c, FXSelector s, void* ptr);
+  long onCmdStop(FXObject* c, FXSelector s, void* ptr);
+  long onCmdDiscard(FXObject* c, FXSelector s, void* ptr);
+  long onCmdLoadModule(FXObject* c, FXSelector s, void* ptr);
+  long onCmdFlipSwitch(FXObject* c, FXSelector s, void* ptr);
+  long onCmdSelectBrowser(FXObject* c, FXSelector s, void* ptr);
+  long onCmdReduce(FXObject* c, FXSelector s, void* ptr);
+  long onCmdHelp(FXObject* c, FXSelector s, void* ptr);
+  long onCmdAbout(FXObject* c, FXSelector s, void* ptr);
 
   void setEOF();
   void setEditable(FXbool st = TRUE);
-  void performPaste(FXchar *, FXint);
+  void performPaste(FXchar*, FXuint);
   int insertFromPaste();
-  int isStartPrompt(const char *s);
-  int isStyle(const char *s);
+  int isStartPrompt(const char* s);
+  int isStyle(const char* s);
 
 // The next batch are for the "readline-like" input interface
   int keyFlags, searchFlags, startMatch, pauseFlags,
@@ -238,7 +239,7 @@ public:
 #define PAUSE_DISCARD  4
   int getHistoryEvent();
   int trySearch();
-  int matchString(const wchar_t *p, int n, const wchar_t *t);
+  int matchString(const wchar_t* p, int n, const wchar_t* t);
 
   int editBacktrace();
   int editRedisplay();
@@ -278,14 +279,15 @@ public:
   int editUndo();
   int editCopyPreviousWord();
 
-  int setInputText(const char *text, int n);
-  int setInputText(const wchar_t *text, int n);
+  int setInputText(const char* text, int n);
+  int setInputText(const wchar_t* text, int n);
+  int setInputText(std::wstring text, int n);
 
   void findTeXstart() const;
   int charForShowMath();
   void insertMathsLines();
-  void recordBoxAddress(int n, union Box *b);
-  union Box *getBoxAddress(int n) const;
+  void recordBoxAddress(int n, union Box* b);
+  union Box* getBoxAddress(int n) const;
 
   enum {  // used with signalling
     FLUSH_BUFFER,
@@ -355,7 +357,7 @@ public:
   int cmrFontsEmbedded;  // Used in ShowMath case
 
   int printBufferText(FXDCNativePrinter &dc, FXint x, FXint y,
-                      char *str, FXint n,
+                      char* str, FXint n,
                       FXuint style);
 
   int printTextRow(FXDCNativePrinter &dc, int p, int y, int left, int right);
@@ -364,8 +366,8 @@ public:
        int left, int right, int top, int bottom);
 
   /// Construct multi-line text widget
-  FXTerminal(const char *argv0,
-             FXComposite *p, FXObject* tgt=NULL, FXSelector sel=0,
+  FXTerminal(const char* argv0,
+             FXComposite* p, FXObject* tgt=NULL, FXSelector sel=0,
              FXuint opts=0, FXint x=0, FXint y=0, FXint w=0, FXint h=0);
 
   virtual void create();
@@ -386,17 +388,17 @@ public:
   void setVisibleColumns(FXint cols);
 
   /// Append n characters of text at the end of the buffer
-  void appendText(const FXchar *text,FXint n,FXbool notify=FALSE);
+  void appendText(const FXchar* text,FXint n,FXbool notify=FALSE);
 
   /// Append n characters of text at the end of the buffer
-  void appendStyledText(const FXchar *text,FXint n,
+  void appendStyledText(const FXchar* text,FXint n,
                         FXint style=0,FXbool notify=FALSE);
 
   void appendStyledText(const FXString &text,
                         FXint style=0,FXbool notify=FALSE);
 
   /// Handle keyboard input
-  long onKeyPress(FXObject *,FXSelector, void *);
+  long onKeyPress(FXObject*,FXSelector, void*);
 
   /// Test if editable
   FXbool isEditable();
@@ -405,7 +407,7 @@ public:
   /// Destructor
   virtual ~FXTerminal();
 
-  FXTimer *timer;
+  FXTimer* timer;
 
   void setupShowMath();
   void reportDestroy(int p);
@@ -413,10 +415,10 @@ public:
   int sync_even;
   Mutex mutex1, mutex2, mutex3, mutex4;
 
-  FILE *logfile;
+  FILE* logfile;
 
   void type_ahead(int c);
-  void string_ahead(const char *s);
+  void string_ahead(const char* s);
 
 // I will have a buffer for transfer of characters from the application
 // to the user-interface. Use of printf-like things is a bit delicate
@@ -439,7 +441,7 @@ public:
 // assume that my hardware makes simple reads and writes of these variables
 // atomic.
 
-  volatile int fwin_in, fwin_out;
+  int fwin_in, fwin_out;
 
 #define INPUT_BUFFER_LENGTH 2000
 
@@ -451,12 +453,12 @@ public:
   int recently_flushed;
 
   int argc;
-  const char **argv;
+  const char** argv;
 
 #ifdef WIN32
-  DWORD worker_thread(void *);
+  DWORD worker_thread(void*);
 #else
-  void *worker_thread(void *);
+  void* worker_thread(void*);
 #endif
 
   int lineSpacing;
@@ -468,7 +470,7 @@ public:
 
 extern void setEOF();
 
-extern FXTerminal *text;
+extern FXTerminal* text;
 
 #ifdef WIN32
 #define DEFAULT_FONT_NAME "Courier New"
@@ -484,13 +486,13 @@ extern FXTerminal *text;
 #define DEFAULT_FONT_NAME get_mac_default_font()
 
 
-inline const char *get_mac_default_font()
+inline const char* get_mac_default_font()
 {   static char mac_default_font[40] = "";
     if (mac_default_font[0] == 0)
 // This is now a list of the fixed pitch fonts installed on my mid 2014
 // Macbook. I hope that at least one of these will be available for use
 // on both older and newer platforms.
-    {   static const char *possible_fonts[] =
+    {   static const char* possible_fonts[] =
         {   "/System/Library/Fonts/Menlo.ttc",
             "/System/Library/Fonts/Monaco.dfont",
             "/Library/Fonts/Courier New.ttf",
@@ -499,7 +501,7 @@ inline const char *get_mac_default_font()
         };
         bool found = false;
         for (int i=0; i<sizeof(possible_fonts)/sizeof(possible_fonts[0]); i++)
-        {   FILE *f = fopen(possible_fonts[i], "rb");
+        {   FILE* f = fopen(possible_fonts[i], "rb");
             if (f == NULL)
             {   printlog("%s not found\n", possible_fonts[i]);
                 continue;

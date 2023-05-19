@@ -141,10 +141,8 @@ void validate_string_fn(LispObject s, const char *file, int line)
         }
         return;
     }
-    std::fprintf(stderr, "\n+++ Not even a string at %s %d\n", file,
-                 line);
-    std::fprintf(stderr, "Header = %" PRIxMAX "\n",
-                 (std::intmax_t)vechdr(s));
+    std::fprintf(stderr, "\n+++ Not even a string at %s %d\n", file, line);
+    std::fprintf(stderr, "Header = %" PRIxMAX "\n", (std::intmax_t)vechdr(s));
     std::fflush(stderr);
     my_abort("string format invalid");
 }

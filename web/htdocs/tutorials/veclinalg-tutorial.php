@@ -371,7 +371,7 @@ det(lam*mat((1,0,0),(0,1,0),(0,0,1))-A);
 % (c)
 solve ws;  ev := mateigen(A, lam);
 for each el in ev collect third el;
-let arbcomplex(~j) => 1;  bases := ws; clear arbcomplex(~j);
+bases := (ws where arbcomplex(~j) => 1);
 % (d)
 % Construct D from the eigenvalues:
 for each el in ev collect rhs first solve first el;

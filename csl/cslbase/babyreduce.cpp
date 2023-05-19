@@ -51,19 +51,19 @@
 #include "termed.h"
 #include "proc.h"
 
-static const char *line = nullptr, *linep = nullptr;
+static std::string line = "";
 
 static int iget()
-{   if (linep == nullptr)
+{   if (line.length() == 0)
     {   term_setprompt(prompt_string);
-        line = linep = term_getline();
-        if (line == nullptr) return EOF;
+        line = term_getline();
+        if (line.compare("\x04") == 0) return EOF;
     }
-    if (*linep == 0)
-    {   linep = nullptr;
+    if (linep.length() == 0)
         return '\n';
-    }
-    return *linep++;
+    int c = line.front();
+    line = lins.substr(1);
+    return c;
 }
 
 static int iput(int c)

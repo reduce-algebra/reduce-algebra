@@ -214,12 +214,15 @@
 #else
 #include "fwin.h"
 #endif
+#include "termed.h"
+
+FILE* spool_file = nullptr;
 
 int fwin_main(int argc, const char **argv)
 {   char line[1000];
-    fwin_printf("Type lines. Type \"quit\" to exit\n");
+    printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
-    enable_keyboard();
+    enable_keyboard(true);
     for (;;)
     {   int c;
         std::size_t i = 0, j;
@@ -227,16 +230,16 @@ int fwin_main(int argc, const char **argv)
         {   if (i < sizeof(line)-10) line[i++] = c;
         }
         line[i] = 0;
-        fwin_printf("Line was <");
+        printf("Line was <");
         for (j=0; j<i; j++)
         {   c = line[j];
-            if (c < 0x20 || c >= 0x7f) fwin_printf("[%x]", c & 0xff);
-            else fwin_printf("%c", c);
+            if (c < 0x20 || c >= 0x7f) printf("[%x]", c & 0xff);
+            else printf("%c", c);
         }
-        fwin_printf(">\n");
+        printf(">\n");
         if (c == EOF || std::strcmp(line, "quit") == 0) break;
     }
-    fwin_printf("Done\n");
+    printf("Done\n");
     // fwin_exit(0);
     return 0;
 }

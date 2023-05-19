@@ -546,7 +546,7 @@ bootstrapreduce_SOURCES = $(core_sources) $(fwin_sources) stubs.cpp
 
 reduce_SOURCES = $(core_sources) $(fwin_sources) $(generated_sources)
 
-fwindemo_SOURCES=fwindemo.cpp $(fwin_sources)
+fwindemo_SOURCES=fwindemo.cpp $(fwin_sources) termed.cpp
 if wx
 wxpsl_SOURCES=wxpsl.cpp $(fwin_sources)
 endif wx
