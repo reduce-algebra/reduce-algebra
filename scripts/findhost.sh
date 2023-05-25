@@ -121,12 +121,11 @@ test=
 arithlib=
 conservative=
 nothrow=
-m32=
-m64=
-nogui=
 original=$host
-fox=
-wx=
+
+nogui=default
+fox=default
+wx=default
 
 # The decoding here is NOT PERFECT and will not be fully compatible with
 # all that the configure script does, but it should be sufficient for
@@ -152,12 +151,6 @@ do
     ;;
   --enable-test*)
     test=-test
-    ;;
-  --enable-experiment=no | disable-experiment)
-    experiment=
-    ;;
-  --enable-experiment*)
-    experiment=-experiment
     ;;
   --with-arithlib=no | --without-arithlib)
     arithlib=
@@ -187,52 +180,48 @@ do
     host=$original
     ;;
   --with-cygwin*)
-# Here I will map the host identity to signify 32 or 64-bit cygwin
-# in a way that I hope will be relevant.
-    case $host
-    in
-    *x86_64*)
-      host=x86_64-pc-cygwin
-      ;;
-    intel-*)
-      ;;
-    *)
-      host=i686-pc-cygwin
-      ;;
-    esac
+    host=x86_64-pc-cygwin
     ;;
-  --with-m32=no | --without-m32)
-    m32=
-    ;;
-  --with-m32*)
-    m32=-m32
-    m64=
-    ;;
-  --with-m64=no | --without-m64)
-    m64=
-    ;;
-  --with-m64*)
-    m64=-m64
-    m32=
-    ;;
-  --without-fox | --with-fox=no | --without-wx | --with-wx=no | --without-gui | --with-gui=no)
+  --without-fox | --with-fox=no)
     fox=
+    ;;
+   --without-wx | --with-wx=no)
     wx=
+    ;;
+   --without-gui | --with-gui=no)
     nogui=-nogui
     ;;
   --with-fox*)
     fox=-fox
-    wx=
-    nogui=
     ;;
   --with-wx*)
-    fox=
     wx=-wx
-    nogui=
     ;;
   esac
 done
 
-echo $host$m32$m64$nogui$fox$wx$test$experiment$arithlib$conservative$nothrow$debug$profile
+# If --without-gui is specified then neither fox nor wx will be in use
+if test "$nogui" = "-nogui"
+then
+  fox=
+  wx=
+else
+  nogui=
+fi
+
+# At present fox is the default, but if "-with-wx" is set I will use
+# wxWidgets.
+if test "$wx" = "-wx"
+then
+  fox=
+  nogui=
+else
+  wx=
+fi
+
+# Now I do not need to include "-fox" in the string sice it is the default!
+fox=
+
+echo $host$nogui$fox$wx$test$arithlib$conservative$nothrow$debug$profile
 
 exit 0
