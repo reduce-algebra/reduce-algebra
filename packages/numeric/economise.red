@@ -434,22 +434,6 @@ algebraic procedure den_pade(r, x);
 % floats in hex notation, and then the same for "double-double" and
 % "triple double" format.
 
-% This function aprinhex is present to ensure that this code is
-% valid under PSL as well as CSL (CSL has a built in "prinhex" function.
-% psl has outputbase!*, but rather than having code that is conditional
-% to select between the two scheme I just do things explicitly and
-% not terribly efficiently here. 
-
-symbolic procedure aprinhex x;
-  if not fixp x then rederr "aprinhex only handles integer arguments"
-  else if x < 0 then << prin2 "-"; aprinhex(-x) >>
-  else if x < 10 then prin2 x
-  else if x < 16 then prin2 nth('(a b c d e f), x-9)
-  else << aprinhex (x/16);
-          aprinhex remainder(x, 16) >>;
-
-flag('(aprinhex), 'opfn); 
-
 % Display a real value in hex floating point notation and return
 % any residual error.
 
@@ -492,7 +476,7 @@ algebraic procedure prinhexlit !~pade_xx;
       if err >= 0.5 then ix := ix+1
       else if err < -0.5 then ix := ix-1;
       lisp prin2 "0x";
-      aprinhex ix;
+      lisp prin2 hex ix;
       lisp prin2 "p";
       lisp prin2 bx;
       if !~pade_xx < 0 then ix := -ix;

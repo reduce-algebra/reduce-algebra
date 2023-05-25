@@ -269,17 +269,8 @@ symbolic procedure assgnpri(u, v, w);
 %   ... putv(workspace, 3, getv(workspace, 2)*x); ...
 
 flag('(mkvect putv getv), 'opfn);
-
-% It looks to me as if this name-mapping was an idea that was being looked
-% at but never ended up activated...
-
-%put('t,'map!-reserved,'t!-reserved);
-%put('t!-reserved,'oldnam,'t);
-
-%% nil will be done later, needs more modifications to the parser
-%put('nil,'map!-reserved,'nil!-reserved);
-% The following doesn't work, as get('reserved!-nil,'oldnam) returns nil
-%put('nil!-reserved,'oldnam,'nil);
+flag('(representation), 'opfn);    % I find this useful for debugging
+flag('(representation), 'variadic);
 
 endmodule;
 
