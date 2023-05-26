@@ -276,13 +276,13 @@ XBOOTSTRAPREDUCE=$(xdir)/bootstrapreduce
 XREDUCE=$(xdir)/reduce
 
 XCSL:
-	-+$(TRACE)@$(MAKE) -C $(xdir) csl
+	-$(TRACE)@$(MAKE) -C $(xdir) csl
 
 XBOOTSTRAPREDUCE:
-	-+$(TRACE)@$(MAKE) -C $(xdir) bootstrapreduce
+	-$(TRACE)@$(MAKE) -C $(xdir) bootstrapreduce
 
 XREDUCE:
-	-+$(TRACE)@$(MAKE) -C $(xdir) reduce
+	-$(TRACE)@$(MAKE) -C $(xdir) reduce
 
 else !xcross
 XCSL=./csl$(COM)
@@ -765,7 +765,7 @@ SHARED=$(cslbase)/fwin.h $(cslbase)/log.h $(cslbase)/termed.h \
 
 $(FOXDEPS):	$(csl)/fox/CHANGED $(SHARED)
 	@printf "About to build FOX for %s ($@)\n" `pwd`
-	-+$(TRACE)@$(MAKE) -C ../fox install
+	-$(TRACE)@$(MAKE) -C ../fox install
 
 
 if crlibm
@@ -797,8 +797,8 @@ reduce_DEPENDENCIES += $(CRLIBMDEPS)
 
 $(CRLIBMDEPS):
 	@printf "About to build crlibm for %s ($@)\n" `pwd`
-	-+$(TRACE)@$(MAKE) -C ../crlibm/scs_lib
-	-+$(TRACE)@$(MAKE) -C ../crlibm install-am
+	-$(TRACE)@$(MAKE) -C ../crlibm/scs_lib
+	-$(TRACE)@$(MAKE) -C ../crlibm install-am
 
 else !crlibm
 CRINC =
@@ -833,7 +833,7 @@ reduce_DEPENDENCIES += $(LIBFFIDEPS)
 
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
-	-+$(TRACE)@$(MAKE) -C ../libffi install
+	-$(TRACE)@$(MAKE) -C ../libffi install
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 
@@ -861,7 +861,7 @@ reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
 
 $(SOFTFLOATDEPS):
 	@printf "About to build softfloat for %s ($@)\n" `pwd`
-	-+$(TRACE)@$(MAKE) -C ../softfloat install
+	-$(TRACE)@$(MAKE) -C ../softfloat install
 
 # Note that all the compilation of these files must be performed using
 # a Make "default" action so that the dependencies shown here are not
@@ -1147,7 +1147,7 @@ WXDEPS=../bin/wx-config
 
 ../bin/wx-config:	$(csl)/wxWidgets/wxWidgets_revision
 	@printf "About to build wxWidgets for %s ($@)\n" `pwd`
-	-+$(TRACE)@$(MAKE) -C ../wxWidgets install
+	-$(TRACE)@$(MAKE) -C ../wxWidgets install
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
@@ -1874,10 +1874,10 @@ recompile:	$(HDRS) reduce.img
 # can be used to trigger recompilation of just a single package.
 
 %.bootfasl:	$(HDRS)
-	+$(MAKE) bootstraprecompile which=$*
+	$(MAKE) bootstraprecompile which=$*
 
 %.fasl:	$(HDRS)
-	+$(MAKE) recompile which=$*
+	$(MAKE) recompile which=$*
 
 
 # Copy HTML help files in a directory reduce.doc.
@@ -1978,7 +1978,7 @@ profile:	$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*
-	+$(MAKE) just-c-code
+	$(MAKE) just-c-code
 
 # After profiling you may wish to invoke this to put the new profile
 # information where it would be picked up if you remove cslbuild and
@@ -2002,7 +2002,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	$(TRACE)touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	+$(MAKE) just-c-code
+	$(MAKE) just-c-code
 	chmod 664 $(gensrc)/*
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
@@ -2047,11 +2047,11 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # to let any previous steps complete.
 
 $(generated_source_deps):	$(gensrc)/make.stamp $(HDRS)
-	+$(MAKE) standard_c_code
+	$(MAKE) standard_c_code
 
 standard-c-code $(generated_lisp):	$(gensrc)/make.stamp $(HDRS)
 ## Recover from the removal of $@
-	+if test -f $@; then touch $@; else \
+	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(gensrc)/make.stamp; \
 	  $(RM) -f $(generated-objects); \
@@ -2322,7 +2322,7 @@ $(reduce)/bin/rfcsl$(EXEEXT): \
 		$(generic)/newfront/redstrings.c $(HDRS)
 	@printf "Relinking $@ because of $?\n"
 	@printf "About to build redfront for %s\n" `pwd`
-	+$(MAKE) -C ../redfront
+	$(MAKE) -C ../redfront
 
 endif redfront
 

@@ -143,6 +143,100 @@ symbolic inline procedure arg1of2(u, v); u;
 
 symbolic inline procedure arg2of2(u, v); v;
 
+% Round a floating point number so that it has at most n significant bits.
+
+algebraic procedure fpmaxbits(ff, n);
+  if ff = 0.0 then ff
+  else if ff < 0.0 then -fpmaxbits(-ff, n)
+  else
+    begin
+      scalar x := 0, k := 2^(n-1);
+      while ff >= k do << x := x+1; ff := 0.5*ff >>;
+      while ff < k do << x := x-1; ff := 2.0*ff >>;
+      k := fix ff;
+      if (ff - k) = 0.5 then <<
+        if remainder(b, 2) = 1 then k := k+1 >>
+      else if (ff - k) >= 0.5 then k := k+1;
+      return k*2.0^x
+    end;
+
+% floatp1 is in internal function here that finds a native floating point
+% value even if it is wrapped in any of the structures that Reduce uses.
+
+symbolic procedure floatp1 u;
+  if floatp u then u
+  else if eqcar(u, '!:rd!:) and floatp cdr u then cdr u
+  else if eqcar(u, '!*sq) and denr cadr u = 1 then floatp1 numr cadr u
+  else nil;
+
+symbolic procedure bfloatp1 u;
+  if eqcar(u, '!:rd!:) and not atom cdr u then cdr u
+  else if eqcar(u, '!*sq) and denr cadr u = 1 then bfloatp1 numr cadr u
+  else nil;
+
+symbolic procedure hexfloat u;
+  begin
+    scalar r, neg, bx := 0, hi := 2.0^53, lo := 2.0^52;
+    if u = 0.0 then return "0.0"
+    else if u < 0 then << neg := t; u := -u >>;
+    while u < lo do <<
+      u := 2.0*u;
+      bx := bx-1 >>;
+    while u >= hi do <<
+      u := u/2;
+      bx := bx+1 >>;
+    r := '!p . append(explode2 bx, '(!"));
+    r := '!0 . '!x . append(explode2 hex fix u, r);
+    if neg then r := '!- . r;
+    return compress ('!" . r)
+  end;
+
+symbolic procedure hexbfloat u;
+  begin
+    scalar m:=car u, x:=cdr u, neg, r;
+    if m = 0 then return "0.0"
+    else if m < 0 then << neg := t; m := -m >>;
+    r := '!p . append(explode2 x, '(!"));
+    r := '!0 . '!x . append(explode2 hex m, r);
+    if neg then r := '!- . r;
+    return compress ('!" . r)
+  end;
+
+% hex() is intended for use within a "write" statement. If its argument is
+% an integer it is rendered as a string. Negative integers are shown with
+% their first two characters "~f" where the "~" can be though of as an
+% infinite stream of leading "f" digits.
+% Floats are displayed in the way that C++ presents binary floats.
+% There may be an initial "-", then "0x" and a sequence of hex digits
+% for the mantissa, then a "p" followed by the decimal rendering of
+% an exponent (which is the power of 2 that the mantissa must be
+% multiplied by).
+% In each case the result is returned as a string, and so it is useful
+% for pprinting but not necessarily further computation.
+
+symbolic procedure hex n;
+  begin
+    scalar r := '(!"), w := nil;
+    if fixp n then <<
+      if n < 0 then <<
+        w := 16;
+        while w+n <= 0 do w := 16*w;
+        n := w + n >>;
+      repeat <<
+        r := nth('(!0 !1 !2 !3 !4 !5 !6 !7
+                   !8 !9 !a !b !c !d !e !f), add1 remainder(n, 16)) . r;
+        n := n/16 >> until zerop n;
+      if w then <<
+        if not eqcar(r, '!f) then r := '!f . r;
+        r := '!~ . r >>;
+      return compress ('!" . r) >>
+    else if (w := floatp1 n) then return hexfloat w
+    else if (w := bfloatp1 n) then return hexbfloat w;
+    return n
+  end;
+
+flag('(hex), 'opfn);
+
 endmodule;
 
 end;

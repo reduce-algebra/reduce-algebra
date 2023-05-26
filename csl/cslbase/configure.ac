@@ -166,6 +166,25 @@ AC_ARG_WITH(pslbuild,
 
 AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might live])
 
+AC_ARG_WITH(cygbuild,
+   AS_HELP_STRING([--with-cygbuild], [used if I wish to call the cygwin version]),
+   [],
+   [with_cygbuild=""])
+
+AC_ARG_WITH(cygwin64,
+   AS_HELP_STRING([--with-cygwin64], [used if I wish to call the cygwin version]),
+   [],
+   [with_cygwin64=""])
+
+AC_SUBST(with_cygwin64)
+
+AC_ARG_WITH(cygbuild64,
+   AS_HELP_STRING([--with-cygbuild64], [used if I wish to call the 64-bit cygwin version]),
+   [],
+   [with_cygbuild64=""])
+
+AC_SUBST(with_cygbuild64)
+
 AC_ARG_WITH(crlibm,
    AS_HELP_STRING([--with-crlibm], [Can be used to disable use of crlibm]),
    [],
@@ -292,6 +311,7 @@ fi
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
+AC_SUBST(STRIP)
 AC_SUBST(SED)
 
 # windres compiles textual Windows resource files into versions that can
@@ -406,6 +426,10 @@ case $host in
   if test "$AR" = ""
   then
     AC_PATH_PROGS(AR, [gar ar], ar, [/usr/sfw/bin:$PATH])
+  fi
+  if test "$STRIP" = ""
+  then
+    AC_PATH_PROGS(STRIP, [gstrip strip], strip, [/usr/sfw/bin:$PATH])
   fi
   if test "$SED" = ""
   then
@@ -559,6 +583,10 @@ fi
 if test "$AR" = ""
 then
   AC_CHECK_PROGS(AR,[gar ar],[ar])
+fi
+if test "$STRIP" = ""
+then
+  AC_CHECK_PROGS(STRIP,[gstrip strip],[echo])
 fi
 if test "$SED" = ""
 then
@@ -787,6 +815,11 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
+# I can normally run compiled code - and SOMETIMES I can even if I
+# am cross-compiling. For instance rosetta on a Mac or qemu using binfmt
+# trickery may be in play. So I first declare that I will be able to
+# run compiled code and then clear the setting if in fact I can not.
+
 can_run_compiled_code="yes"
 if test "$cross_compiling" = "yes"
 then
@@ -839,6 +872,18 @@ if test "$XLIBS" != ""
 then
   AC_PATH_X
 fi
+
+# If "-std=gnu++20" is available I will add it to CXXFLAGS, at least
+# provided "consteval" is recognised.
+
+OLDCXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -std=gnu++20"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+    [[  consteval int f(int x) { return x*x; }
+        int main() {return 0;}]])],
+  [AC_MSG_NOTICE(Will use -std=gnu++20)],
+  [CXXFLAGS="$OLDCXXFLAGS"
+   AC_MSG_NOTICE(C++20 not available)])
 
 if test "$enable_debug" = "yes"
 then

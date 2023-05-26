@@ -195,6 +195,39 @@ symbolic procedure form2(u,vars,mode);
 
 put('lambda,'form2fn,'formlis);
 
+% I want the notation "[x,y,z] A" to parse as if it has been
+% "lambda x,y,z; A" since in some languages that is the notation used.
+% Things here are a bit strange because the Reduce parser (in its default
+% state) treats both [x,y,z] and [x;y;z] as if they had been <<x;y;z>> and
+% so returns (progn x y z). Furthermore the degenerate case "[]" gets
+% turned into "(progn nil)" rather than merely "(progn)". And then if
+% the rlisp88 package is loaded then "[a,b,c]" will end up treated as a
+% vector... 
+
+symbolic procedure check_all_symbols l;
+  if null l then nil
+  else if not idp car l then typerr('progn, "operator")
+  else check_all_symbols cdr l;
+
+symbolic procedure formabstract(u, vars, mode);
+  begin
+% Typical input here:
+%   u     ((progn x y z) A)
+%   vars  a-list showing info about variable in scope
+%   mode  algebraic or symbolic.
+    scalar bvl := cdar u, body := cadr u;
+% Turn the case "[]" info an ampty list rather than "[nil]".
+    if bvl = '(nil) then bvl := nil;
+% If any of the items in the list are not symbols this is an error.
+%   for each v in bvl do   % Syntax not available yet!
+%      if not idp v then typerr('progn, "operator");
+    check_all_symbols bvl;
+    u := list('lambda, bvl, body);
+    return formlamb(u, vars, mode);
+  end;
+
+put('progn, 'form2fn, 'formabstract);
+
 symbolic procedure argnochk u;
    begin scalar x;
       if null !*argnochk then return u
