@@ -807,6 +807,8 @@ symbolic procedure trap!-floating!-overflow bool;
 
 trap!-floating!-overflow nil;   % set IEEE mode
 
+putd('lambda, 'fexpr, '(lambda (u) (cons 'lambda u)));
+
 global '(!*psl !*csl);
 
 !*psl := t;

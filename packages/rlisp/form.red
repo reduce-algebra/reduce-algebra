@@ -241,14 +241,6 @@ symbolic procedure formabstract(u, vars, mode);
 
 put('progn, 'form2fn, 'formabstract);
 
-
-
-
-%!*backtrace := t;
-%enable!-errorset(3,3);
-%symbolic macro procedure lambda u;
-%  << terpri(); princ "&&& "; print u; mkquote u >>;
-
 symbolic procedure argnochk u;
    begin scalar x;
       if null !*argnochk then return u
