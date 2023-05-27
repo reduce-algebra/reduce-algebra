@@ -552,11 +552,17 @@ symbolic procedure terminalp;
    !*int and null ifl!*;
 
 symbolic procedure dfprint u;
+   begin
+      if not zerop posn() then terpri();
+      return dfprint1 u
+   end;;
+
+symbolic procedure dfprint1 u;
    % Looks for special action on a form, otherwise prettyprints it.
    if dfprint!* then lispapply(dfprint!*,list u)
     else if cmsg!* then nil
     else if null eqcar(u,'progn) then prettyprint u
-    else while (u := cdr u) do dfprint car u;
+    else while (u := cdr u) do dfprint1 car u;
 
 
 symbolic procedure showtime optarg;
