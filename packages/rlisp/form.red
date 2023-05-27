@@ -190,6 +190,11 @@ symbolic procedure form1(u,vars,mode);
 symbolic procedure form2(u,vars,mode);
    begin scalar x;
       if x := get(caar u,'form2fn) then return apply3(x,u,vars,mode)
+        else if eqcar(caar u, 'progn) and
+                check_all_symbols cdaar u then <<
+          x := cdaar u;
+          if x = '(nil) then x := nil;
+          return form1(list('lambda, x, cadar u) . cdr u, vars, mode) >>
         else typerr(car u,"operator")
    end;
 
@@ -202,10 +207,18 @@ put('lambda,'form2fn,'formlis);
 % so returns (progn x y z). Furthermore the degenerate case "[]" gets
 % turned into "(progn nil)" rather than merely "(progn)". And then if
 % the rlisp88 package is loaded then "[a,b,c]" will end up treated as a
-% vector... 
+% vector... in that case [a,b,c] is parsed as (vec!* (list a b c)). Note that
+% the documentation of "lambda" says that it is only to be used in symbolic
+% mode, and that rlisp88 is also only expecting to be used in symbolic
+% mode. So at some later stage if I want better rlisp88 support here I
+% can make this code take special action on (vec!* ...) very much as it
+% does here on (progn ...), but I am not viewing that as high priority.
+% Well on looking further, if rlisp88 is enabled the entire "form"
+% activity seems to be avoided, so I would not get a chance to handle
+% the case here!
 
 symbolic procedure check_all_symbols l;
-  if null l then nil
+  if null l then t
   else if not idp car l then typerr('progn, "operator")
   else check_all_symbols cdr l;
 
@@ -215,7 +228,7 @@ symbolic procedure formabstract(u, vars, mode);
 %   u     ((progn x y z) A)
 %   vars  a-list showing info about variable in scope
 %   mode  algebraic or symbolic.
-    scalar bvl := cdar u, body := cadr u;
+    scalar bvl := cdar u, body := form1(cadr u, vars, mode);
 % Turn the case "[]" info an ampty list rather than "[nil]".
     if bvl = '(nil) then bvl := nil;
 % If any of the items in the list are not symbols this is an error.
@@ -227,6 +240,14 @@ symbolic procedure formabstract(u, vars, mode);
   end;
 
 put('progn, 'form2fn, 'formabstract);
+
+
+
+
+%!*backtrace := t;
+%enable!-errorset(3,3);
+%symbolic macro procedure lambda u;
+%  << terpri(); princ "&&& "; print u; mkquote u >>;
 
 symbolic procedure argnochk u;
    begin scalar x;

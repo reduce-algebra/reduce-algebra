@@ -66,6 +66,13 @@ here=`cd "$here"; pwd -P`
 scripthere="$here"
 here=`dirname "$here"`
 
+if test -f /usr/bin/cygpath
+then
+  winhere=`cygpath -m "$here"`
+else
+  winhere="$here"
+fi
+
 # Procedures to help me sort out file names etc.
 
 . "$scripthere/getplatform.sh"
@@ -297,17 +304,9 @@ fi
 # (close to) native windows form. I can usefully retain "/" rather than
 # "\", but eg it will be in the form "d:/directory/file.ext"
 
-f="$here/packages/$d/$p.tst"
-if test -f /usr/bin/cygpath
-then
-  f=`cygpath -m $f`
-fi
+f="$winhere/packages/$d/$p.tst"
 
-dd="$here/packages/$d"
-if test -f /usr/bin/cygpath
-then
-  dd=`cygpath -m $dd`
-fi
+dd="$winhere/packages/$d"
 
 # 
 # Use /dev/null if the .rlg file doesn't exist
@@ -447,11 +446,7 @@ jlisptest() {
 
   mkdir -p $logdir
 
-  wh="$here"
-  if test -f /usr/bin/cygpath
-  then
-    wh=`cygpath -m $wh`
-  fi
+  wh="$winhere"
 
   ( limittime java -jar $wh/jlisp/$command -v -w $otherflags ) > $logdir/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
@@ -515,7 +510,6 @@ XXX
 psltest() {
   cmd="$1"
   logdir="$2"
-
   mkdir -p "$logdir"
   ( limittime $cmd > $logdir/$p.rlg.tmp ) <<XXX 2>$p.howlong.tmp
 off int;
@@ -614,7 +608,7 @@ do
     ;;
   psl=*)
     psltest "$here/pslbuild/${pp#psl=}/psl/bpsl -t 1000 \
-             -f $here/pslbuild/${pp#psl=}/red/reduce.img" \
+             -f $winhere/pslbuild/${pp#psl=}/red/reduce.img" \
             "$logdir"
     ;;
 
