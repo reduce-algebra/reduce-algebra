@@ -703,6 +703,13 @@ LispObject function_fn(LispObject args, LispObject env)
 }
 
 
+LispObject lambda_fn(LispObject args, LispObject env)
+{
+// (lambda ...) evaluates to itself.
+    return cons(lambda, args);
+}
+
+
 LispObject go_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
     STACK_SANITY;
@@ -901,6 +908,9 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         {   LispObject w = car(bvl), v = car(w), z = cdr(w);
             setvalue(v, z);
         }
+// WELL: the following line will just return from an inner (lambda)
+// function not from the whole of letstar_fn, and the value returned
+// is then ignored!
         return body;
     CATCH(LispException)
         for (bvl = specenv; bvl != nil; bvl = cdr(bvl))
@@ -909,7 +919,11 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         }
         RETHROW;
     END_CATCH;
-    return nil;
+    errexit();
+// Note that body goes out of scope as the destructor for save1 runs,
+// so it is important that C++ picks up its value before performing the
+// destructor action!
+    return body;
 }
 
 // In many ways I think it is astonishing how few special forms there are.
@@ -922,6 +936,7 @@ setup_type const eval2_setup[] =
     DEF_special("cond",          cond_fn),
     DEF_special("eval-when",     eval_when_fn),
     DEF_special("function",      function_fn),
+    DEF_special("lambda",        lambda_fn),
     DEF_special("go",            go_fn),
     DEF_special("if",            if_fn),
     DEF_special("let*",          letstar_fn),

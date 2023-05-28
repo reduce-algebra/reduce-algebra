@@ -97,7 +97,7 @@ restart:
 // being subject to a local declaration that it is global! This is
 // "deep binding".
         else
-        {   while (env != nil)
+        {   while (consp(env))
             {   LispObject p = car(env);
                 if (car(p) == u)
                 {   LispObject v =cdr(p);
@@ -151,7 +151,7 @@ restart:
 // extra "fun" here.
         {   LispObject p;
             if (is_symbol(fn)) // can only be a local function if atomic.
-                for (p=env; p!=nil; p=cdr(p))
+                for (p=env; consp(p); p=cdr(p))
                 {   LispObject w = car(p);
 // The form (<list> . sym) is used in an environment to indicate a local
 // binding of a function, either as a regular function or as a macro
@@ -239,7 +239,7 @@ restart:
 // things rather directly.
         LispObject eargs = nil;
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        {   if (args == nil) return (*qfn0(fn))(fn);
+        {   if (!consp(args)) return (*qfn0(fn))(fn);
             LispObject a1 = car(args);
             {   THREADID;
                 Save save(THREADARG fn, args, env);
@@ -252,7 +252,7 @@ restart:
                 save.restore(fn, args, env);
             }
             args = cdr(args);
-            if (args == nil) return (*qfn1(fn))(fn, a1);
+            if (!consp(args)) return (*qfn1(fn))(fn, a1);
             LispObject a2 = car(args);
             {   THREADID;
                 Save save(THREADARG fn, args, env, a1);
@@ -266,7 +266,7 @@ restart:
                 save.restore(fn, args, env, a1);
             }
             args = cdr(args);
-            if (args == nil) return (*qfn2(fn))(fn, a1, a2);
+            if (!consp(args)) return (*qfn2(fn))(fn, a1, a2);
             LispObject a3 = car(args);
             {   THREADID;
                 Save save(THREADARG fn, args, env, a1, a2);
@@ -280,7 +280,7 @@ restart:
                 save.restore(fn, args, env, a1, a2);
             }
             args = cdr(args);
-            if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
+            if (!consp(args)) return (*qfn3(fn))(fn, a1, a2, a3);
             THREADID;
             Save save(THREADARG fn, env, args);
             eargs = list3(a3, a2, a1);
