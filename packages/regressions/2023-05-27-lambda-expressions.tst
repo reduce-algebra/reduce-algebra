@@ -128,18 +128,12 @@ algebraic;
 
 
 
-% The next cases fail at present even though the right hand sides in these
-% assignments behave a bit better when issued free-standing. I expect that
-% this will be straightforward to fix!
-
-off int;
-
 p := (lambda (); 12345);
-%p := (lambda x; (x+1));
-%p := (lambda (x,y); (x + y + 1));
-%p := ([] 12345);
-%p := ([x] (x+1));
-%p := ([x, y] (x + y + 1));
+p := (lambda x; (x+1));
+p := (lambda (x,y); (x + y + 1));
+p := ([] 12345);
+p := ([x] (x+1));
+p := ([x, y] (x + y + 1));
 
 % End of tests
 

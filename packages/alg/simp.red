@@ -226,7 +226,6 @@ symbolic inline procedure delete_from_alglist(key, l);
 
 #endif
 
-
 symbolic procedure simp u;
    (begin scalar x,y;
     % This case is sufficiently common it is done first.
@@ -246,6 +245,8 @@ symbolic procedure simp u;
       then return <<if car x then !*sub2 := t; cdr x>>;
     simpcount!* := simpcount!*+1; % undone by returning through !*SSAVE.
     if atom u then return !*ssave(simpatom u,u)
+     else if (x := lambdap car u) then
+       return !*ssave(simp apply(x, cdr u), u)
      else if not idp car u or null car u
       then if atom car u then typerr(car u,"operator")
             else if idp caar u and (x := get(caar u,'name))
@@ -1704,6 +1705,79 @@ symbolic procedure simp!*sq u;
 
 put('!*sq,'simpfn,'simp!*sq);
 
+% This introduces data of the form "(lambda ..)" as a new Reduce domain.
+% This allows lambda expressions to be passed around as values.
+%    
+
+symbolic procedure simplambda u;
+  ('lambda . u) . 1;
+
+put('lambda, 'simpfn, 'simplambda);
+
+
+global '(domainlist!*);
+
+domainlist!* := union('(lambda),domainlist!*);
+put('lambda,'tag,'lambda);
+put('lambda,'dname,'lambda);
+
+
+symbolic procedure always_nil x; nil;
+
+symbolic procedure not_arithmetic x;
+   rederr "lambda expressions can not participate in arithmetic";
+
+symbolic procedure preplambda u; u;
+
+symbolic procedure prinlambda u;
+  begin
+    scalar sep;
+    prin2!* "(lambda (";
+    for each v in cadr u do <<
+      if sep then prin2!* ", ";
+      sep := t;
+      prin2!* v >>;
+    prin2!* "); ";
+    maprin caddr u;
+    prin2!* ")";
+    return t
+  end;
+
+symbolic procedure lambdap u;
+  if atom u then
+    if u:=get(u, 'avalue) then
+      eqcar(u, 'scalar) and lambdap cadr u
+    else nil
+  else if eqcar(u, 'lambda) then u
+  else if eqcar(u, '!*sq) then
+    denr (u := cadr u) = 1 and
+    lambdap numr u
+  else nil;
+
+put('lambda,'zerop, 'always_nil);
+put('lambda,'onep, 'always_nil);
+put('lambda,'minusp, 'always_nil);
+put('lambda,'intequivfn,'always_nil);
+
+put('lambda,'prepfn,'preplambda);
+put('lambda,'prifn,'prinlambda);
+
+put('lambda,'i2d,'not_arithmetic);
+put('lambda,'!:ft!:,'not_arithmetic);
+put('lambda,'minus,'not_arithmetic);
+put('lambda,'plus,'not_arithmetic);
+put('lambda,'times,'not_arithmetic);
+put('lambda,'difference,'not_arithmetic);
+put('lambda,'quotient,'not_arithmetic);
+put('lambda,'divide,'not_arithmetic);
+put('lambda,'gcd,'not_arithmetic);
+put('lambda,'factorfn,'not_arithmetic);
+put('lambda,'expt,'not_arithmetic);
+put('lambda,'rootfn,'not_arithmetic);
+
+initdmode 'lambda;
+
 endmodule;
 
 end;
+
