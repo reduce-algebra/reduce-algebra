@@ -67,7 +67,11 @@ symbolic procedure formlamb(u,vars,mode);
          if null car v or car v = 't then rsverr car v;
          v := cdr v >>;
       v := cadr u;
-      b := list form1(caddr u, pairvars(v, vars, mode), mode);
+      b := form1(caddr u, pairvars(v, vars, mode), mode);
+% To make CSL and PSL expansions closer I will expand some used
+% of PLUS and TIMES in the CSL case here.
+      if mode='symbolic and !*csl then b := pslmacros b;
+      b := list b;
 #if (getd 'declare)
 % See comments elsewhere in the source about why DECLARE is important here.
       while v do <<
@@ -80,6 +84,28 @@ symbolic procedure formlamb(u,vars,mode);
    end;
 
 put('lambda,'formfn,'formlamb);
+
+symbolic procedure pslmacros u;
+  begin
+% "plus" and "times" could appear in literal data etc. So to expand
+% them properly I rename, then macroexpand and then any uses of them
+% not removed by the macroexpansion are put back in their original state.
+    u := sublis('((plus . psl!:plus) (times . psl!:times)), u);
+% This code is only used with CSL...
+    u := fully!-macroexpand u;
+    return sublis('((psl!:plus . plus) (psl!:times . times)), u);
+  end;
+
+% Bootstrapping issues may mean that "symbolic macro procedure..." can not
+% be used yet! Hence this uglier used of putd.
+
+putd('psl!:plus, 'macro, '(lambda (u)
+  (cond ((null (cdr u)) 0)
+        (t (expand (cdr u) 'plus2)))));
+
+putd('psl!:times, 'macro, '(lambda (u)
+  (cond ((null (cdr u)) 1)
+        (t (expand (cdr u) 'times2)))));
 
 symbolic procedure formprogn(u,vars,mode);
    'progn . formclis(cdr u,vars,mode);
@@ -228,8 +254,8 @@ symbolic procedure formabstract(u, vars, mode);
 %   u     ((progn x y z) A)
 %   vars  a-list showing info about variable in scope
 %   mode  algebraic or symbolic.
-    scalar bvl := cdar u, body := form1(cadr u, vars, mode);
-% Turn the case "[]" info an ampty list rather than "[nil]".
+    scalar bvl := cdar u, body := cadr u;
+% Turn the case "[]" info an empty list rather than "[nil]".
     if bvl = '(nil) then bvl := nil;
 % If any of the items in the list are not symbols this is an error.
 %   for each v in bvl do   % Syntax not available yet!

@@ -5885,9 +5885,9 @@ symbolic procedure s!:compile0 name;
 
 symbolic procedure s!:fully_macroexpand_list l;
    if atom l then l
-   else for each u in l collect s!:fully_macroexpand u;
+   else for each u in l collect fully!-macroexpand u;
 
-symbolic procedure s!:fully_macroexpand x;
+symbolic procedure fully!-macroexpand x;
 % This MUST match the logic in s!:comval, so that there are no oddities
 % about which order expansions are done in. 
   begin
@@ -5899,17 +5899,17 @@ symbolic procedure s!:fully_macroexpand x;
 !#if common!-lisp!-mode
     else if helper := s!:local_macro car x then <<
        if atom cdr helper then
-          s!:fully_macroexpand('funcall . cdr helper . cdr x)
-       else s!:fully_macroexpand funcall('lambda . cdr helper, x) >>
+          fully!-macroexpand('funcall . cdr helper . cdr x)
+       else fully!-macroexpand funcall('lambda . cdr helper, x) >>
 !#endif
 % NB I do not expand compilermacros here. Actually at present "vector"
 % seems to be the only function that has one.
     else if (helper := get(car x, 's!:newname)) then
-        return s!:fully_macroexpand (helper . cdr x)
+        return fully!-macroexpand (helper . cdr x)
     else if helper := get(car x, 's!:expandfn) then
         return funcall(helper, x)
     else if helper := macro!-function car x then
-       return s!:fully_macroexpand funcall(helper, x)
+       return fully!-macroexpand funcall(helper, x)
     else return car x . s!:fully_macroexpand_list cdr x
   end;
 
@@ -5965,7 +5965,7 @@ symbolic procedure s!:expandcond u;
    car u . for each x in cdr u collect s!:fully_macroexpand_list x;
 
 symbolic procedure s!:expandcase u;
-   car u . s!:fully_macroexpand cadr u . for each x in cddr u collect 
+   car u . fully!-macroexpand cadr u . for each x in cddr u collect 
            (car x . s!:fully_macroexpand_list cdr x);
 
 symbolic procedure s!:expandeval!-when u;

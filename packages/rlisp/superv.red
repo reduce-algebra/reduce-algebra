@@ -196,6 +196,9 @@ symbolic procedure command;
               else << rprint y; terpri() >>;
       if !*slin then return list('symbolic,y);
       x := form y;
+      if !*mode='algebraic and
+         not atom x and
+         eqcar(car x, 'lambda) then x := list('aeval, x);
       % Determine target mode.
       if flagp(key!*,'modefn) then mode := key!*
        else if null atom x % and null !*micro!-version
