@@ -294,7 +294,7 @@ symbolic procedure intexprnp(u,vars);
 symbolic procedure intexprlisp(u,vars);
    null u or intexprnp(car u,vars) and intexprlisp(cdr u,vars);
 
-flag('(difference minus plus times),'intfn);
+flag('(difference minus plus times lambda),'intfn);
    % EXPT is not included in this list, because a negative exponent can
    % cause problems (i.e., result can be rational);
 

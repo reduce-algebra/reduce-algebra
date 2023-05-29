@@ -21,13 +21,13 @@ algebraic;
 
 
 (lambda (); 12345);
-(lambda nil 12345)
+(aeval (lambda nil 12345))
 
 (lambda x; x+1);
-(lambda (x) (list 'plus x 1))
+(aeval (lambda (x) (list 'plus x 1)))
 
 (lambda (x, y); x + y + 1);
-(lambda (x y) (list 'plus x y 1))
+(aeval (lambda (x y) (list 'plus x y 1)))
 
 
 % Then the same but applied to suitable arguments.
@@ -86,13 +86,13 @@ algebraic;
 
 
 ([] 12345);
-(lambda nil 12345)
+(aeval (lambda nil 12345))
 
 ([x] (x+1));
-(lambda (x) (list 'plus 'x 1))
+(aeval (lambda (x) (list 'plus 'x 1)))
 
 ([x, y] (x + y + 1));
-(lambda (x y) (list 'plus 'x 'y 1))
+(aeval (lambda (x y) (list 'plus 'x 'y 1)))
 
 
 ([] 12345) ();
@@ -145,17 +145,17 @@ algebraic;
 (lambda (); 12345);
 
 
-(lambda nil 12345)
+(lambda (); 12345)
 
 (lambda x; x+1);
 
 
-(lambda (x) (list (quote plus) x 1))
+(lambda (x); {quote(plus),x,1})
 
 (lambda (x, y); x + y + 1);
 
 
-(lambda (x y) (list (quote plus) x y 1))
+(lambda (x, y); {quote(plus),x,y,1})
 
 
 % Then the same but applied to suitable arguments.
@@ -239,17 +239,17 @@ algebraic;
 ([] 12345);
 
 
-(lambda nil 12345)
+(lambda (); 12345)
 
 ([x] (x+1));
 
 
-(lambda (x) (list (quote plus) (quote x) 1))
+(lambda (x); {quote(plus),quote(x),1})
 
 ([x, y] (x + y + 1));
 
 
-(lambda (x y) (list (quote plus) (quote x) (quote y) 1))
+(lambda (x, y); {quote(plus),quote(x),quote(y),1})
 
 
 ([] 12345) ();
@@ -312,26 +312,36 @@ algebraic;
 
 
 
-% The next cases fail at present even though the right hand sides in these
-% assignments behave a bit better when issued free-standing. I expect that
-% this will be straightforward to fix!
-
-off int;
-
-
-
 p := (lambda (); 12345);
 
 
-*** lambda declared operator 
+p := (lambda (); 12345)
 
-***** The symbol "lambda" invalid as operator
+p := (lambda x; (x+1));
 
-%p := (lambda x; (x+1));
-%p := (lambda (x,y); (x + y + 1));
-%p := ([] 12345);
-%p := ([x] (x+1));
-%p := ([x, y] (x + y + 1));
+
+p := (lambda (x); {quote(plus),x,1})
+
+p := (lambda (x,y); (x + y + 1));
+
+
+p := (lambda (x, y); {quote(plus),x,y,1})
+
+p := ([] 12345);
+
+
+p := (lambda (); 12345)
+
+p := ([x] (x+1));
+
+
+p := (lambda (x); {quote(plus),quote(x),1})
+
+p := ([x, y] (x + y + 1));
+
+
+p := (lambda (x, y); {quote(plus),quote(x),quote(y),1})
+
 
 % End of tests
 
