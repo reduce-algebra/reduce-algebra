@@ -2941,17 +2941,17 @@ lab1196))))))))))))
 (de s!:fully_macroexpand_list (l) (cond ((atom l) l) (t (prog (var1199 
 var1200) (setq var1199 l) lab1198 (cond ((null var1199) (return (reversip 
 var1200)))) (prog (u) (setq u (car var1199)) (setq var1200 (cons (
-s!:fully_macroexpand u) var1200))) (setq var1199 (cdr var1199)) (go lab1198))
-)))
+fully!-macroexpand u) var1200))) (setq var1199 (cdr var1199)) (go lab1198))))
+)
 
-(de s!:fully_macroexpand (x) (prog (helper) (cond ((or (atom x) (eqcar x (
-quote quote))) (return x)) (t (cond ((eqcar (car x) (quote lambda)) (return (
-cons (cons (quote lambda) (cons (cadar x) (s!:fully_macroexpand_list (cddar x
-)))) (s!:fully_macroexpand_list (cdr x))))) (t (cond ((setq helper (get (car 
-x) (quote s!:newname))) (return (s!:fully_macroexpand (cons helper (cdr x))))
-) (t (cond ((setq helper (get (car x) (quote s!:expandfn))) (return (funcall 
-helper x))) (t (cond ((setq helper (macro!-function (car x))) (return (
-s!:fully_macroexpand (funcall helper x)))) (t (return (cons (car x) (
+(de fully!-macroexpand (x) (prog (helper) (cond ((or (atom x) (eqcar x (quote
+quote))) (return x)) (t (cond ((eqcar (car x) (quote lambda)) (return (cons 
+(cons (quote lambda) (cons (cadar x) (s!:fully_macroexpand_list (cddar x)))) 
+(s!:fully_macroexpand_list (cdr x))))) (t (cond ((setq helper (get (car x) (
+quote s!:newname))) (return (fully!-macroexpand (cons helper (cdr x))))) (t (
+cond ((setq helper (get (car x) (quote s!:expandfn))) (return (funcall helper
+x))) (t (cond ((setq helper (macro!-function (car x))) (return (
+fully!-macroexpand (funcall helper x)))) (t (return (cons (car x) (
 s!:fully_macroexpand_list (cdr x))))))))))))))))
 
 (de s!:expandfunction (u) u)
@@ -3000,10 +3000,10 @@ cdr u)) lab1207 (cond ((null var1208) (return (reversip var1209)))) (prog (x)
 (setq x (car var1208)) (setq var1209 (cons (s!:fully_macroexpand_list x) 
 var1209))) (setq var1208 (cdr var1208)) (go lab1207))))
 
-(de s!:expandcase (u) (cons (car u) (cons (s!:fully_macroexpand (cadr u)) (
-prog (var1211 var1212) (setq var1211 (cddr u)) lab1210 (cond ((null var1211) 
-(return (reversip var1212)))) (prog (x) (setq x (car var1211)) (setq var1212 
-(cons (cons (car x) (s!:fully_macroexpand_list (cdr x))) var1212))) (setq 
+(de s!:expandcase (u) (cons (car u) (cons (fully!-macroexpand (cadr u)) (prog
+ (var1211 var1212) (setq var1211 (cddr u)) lab1210 (cond ((null var1211) (
+return (reversip var1212)))) (prog (x) (setq x (car var1211)) (setq var1212 (
+cons (cons (car x) (s!:fully_macroexpand_list (cdr x))) var1212))) (setq 
 var1211 (cdr var1211)) (go lab1210)))))
 
 (de s!:expandeval!-when (u) (cons (car u) (cons (cadr u) (

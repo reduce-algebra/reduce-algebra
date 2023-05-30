@@ -151,7 +151,9 @@ COMMENT Actual Entry Point Definitions;
 defautoload(compile,compiler);
 
 if 'psl memq lispsystem!* then defautoload(lap,compiler)
- else defautoload(faslout,compiler);
+ else <<
+  defautoload(faslout,compiler);
+  defautoload(fully!-macroexpand,compiler) >>;
 
 
 % Cross-reference module entry points.

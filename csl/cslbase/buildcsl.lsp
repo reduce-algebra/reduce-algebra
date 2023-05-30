@@ -106,10 +106,11 @@
 
 (setq !*comp nil)
 
-(set!-autoload 'compile      'compiler)
-(set!-autoload 'compile!-all 'compiler)
-(set!-autoload 'faslout      'compiler)
-(set!-autoload 'c_out        'compiler)
+(set!-autoload 'compile           'compiler)
+(set!-autoload 'compile!-all      'compiler)
+(set!-autoload 'faslout           'compiler)
+(set!-autoload 'c_out             'compiler)
+(set!-autoload 'fully-macroexpand 'compiler)
 
 
 (when (file!-readablep "stubs.lsp")
