@@ -5,22 +5,22 @@
 \index{Barnes, Alan}\index{People!Barnes, Alan}
 
 
-\newcommand{\odesolve}{\texttt{odesolve}}
+\newcommand{\odesolve}{\f{odesolve}}
 
 
 \subsection{Introduction}
 
-ODESOLVE \cite{MacCallum:88,MacCallum:ODESOLVE,Wright:97,Wright:99}
+\package{ODESOLVE} \cite{MacCallum:88,Wright:97,Wright:99}
 was developed partly under the auspices of the European CATHODE
 project \cite{CATHODE}.  Various test files that illustrate the
-capabilities of ODESOLVE, including three versions (with names
+capabilities of \package{ODESOLVE}, including three versions (with names
 beginning with \texttt{zim}) based on a published review of ODE
 (ordinary differential equation) solvers \cite{PostelZimmermann:96},
 are included in the source code distribution in the directory
 \texttt{packages/odesolve}, which you can access online at\\
 \url{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/odesolve/}.
 
-ODESOLVE implements most of the simple and well known solution
+\package{ODESOLVE} implements most of the simple and well known solution
 techniques \cite{Zwillinger:92}.  It also provides an extension
 interface (see \S\ref{OEI}), which could be used to support more
 sophisticated solvers, such as PSODE
@@ -28,12 +28,12 @@ sophisticated solvers, such as PSODE
 handle cases where simple techniques fail, although none of these
 extensions is implemented yet.
 
-The main motivation behind ODESOLVE is pragmatic.  It is intended to
+The main motivation behind \package{ODESOLVE} is pragmatic.  It is intended to
 meet user expectations, to have an easy user-interface that normally
 does the right thing automatically, and to return solutions in the
 form that the user wants and expects.
 
-The ODESOLVE package autoloads the first time the normal
+The \package{ODESOLVE} package autoloads the first time the normal
 algebraic-mode \odesolve{} operator is used.
 
 
@@ -56,7 +56,7 @@ names are arbitrary.  The general input syntax is
 odesolve(ode, y, x, conditions, options);
 \end{verbatim}
 All arguments except the first are optional.  This is possible
-because, if necessary, ODESOLVE attempts to deduce the dependent and
+because, if necessary, \package{ODESOLVE} attempts to deduce the dependent and
 independent variables used and to make any necessary \texttt{DEPEND}
 declarations.  Messages are output to indicate any assumptions or
 dependence declarations that are made.  Here is an example of what is
@@ -72,7 +72,7 @@ odesolve(df(y,x));
 
 {y=arbconst(1)}
 \end{verbatim}
-Output of ODESOLVE messages is controlled by the standard \REDUCE{}
+Output of \package{ODESOLVE} messages is controlled by the standard \REDUCE{}
 switch \sw{msg}.
 
 
@@ -84,7 +84,7 @@ ODE\@.  Automatic dependence declaration works \emph{only} when the
 ODE is input \emph{directly} as an argument to the \odesolve{}
 operator.  Here, ``ODE'' means an equation or expression containing
 one or more derivatives of $y$ with respect to $x$.  Derivatives of
-$y$ with respect to other variables are not allowed because ODESOLVE
+$y$ with respect to other variables are not allowed because \package{ODESOLVE}
 does not solve \emph{partial} differential equations, and symbolic
 derivatives of variables other than $y$ are treated as symbolic
 constants.  An expression is implicitly equated to zero, as is usual
@@ -93,7 +93,7 @@ in equation solvers.
 The independent variable may be either an operator that explicitly
 depends on the independent variable, e.g.\ $y(x)$ (as required in
 Maple), or a simple variable that is declared (by the user or
-automatically by ODESOLVE) to depend on the independent variable.  If
+automatically by \package{ODESOLVE}) to depend on the independent variable.  If
 the independent variable is an operator then it may depend on
 parameters as well as the independent variable.  Variables may be
 simple identifiers or, more generally, \REDUCE{} ``kernels'', e.g.
@@ -119,7 +119,7 @@ assumed to be an option.
 Generally in \REDUCE{} it is not recommended to use the identifier
 \texttt{t} as a variable, since it is reserved in Lisp.  However, it is
 very common practice in applied mathematics to use it as a variable to
-represent time, and for that reason ODESOLVE provides special support
+represent time, and for that reason \package{ODESOLVE} provides special support
 to allow it as either the independent or a dependent variable.  But,
 of course, its use may still cause trouble in other parts of \REDUCE!
 
@@ -261,8 +261,8 @@ one or more of its solutions.  A ``parametric'' solution expresses
 both $x$ and $y$ in terms of some additional parameter.  Some solution
 techniques naturally produce an explicit solution, but some produce
 either an implicit or a parametric solution.  The ``explicit'' option
-causes ODESOLVE to attempt to convert solutions to explicit form,
-whereas the ``implicit'' option causes ODESOLVE to attempt to convert
+causes \package{ODESOLVE} to attempt to convert solutions to explicit form,
+whereas the ``implicit'' option causes \package{ODESOLVE} to attempt to convert
 parametric solutions (only) to implicit form (by eliminating the
 parameter).  These solution conversions may be slow or may fail in
 complicated cases.
@@ -271,31 +271,31 @@ complicated cases.
 \ttindextype{plus\_or\_minus}{operator}
 \hypertarget{operator:ROOT_OF_UNITY}{}
 \hypertarget{operator:PLUS_OR_MINUS}{}
-ODESOLVE introduces two operators used in solutions:
+\package{ODESOLVE} introduces two operators used in solutions:
 \texttt{root\_of\_unity} and \texttt{plus\_or\_minus}, the latter
 being a special case of the former, i.e.\ a second root of unity.
 These operators carry a tag that associates the same root of unity
 when it appears in more than one place in a solution (cf.\ the
 standard \texttt{root\_of} operator).  The ``expand'' option expands a
 single solution expressed in terms of these operators into a set of
-solutions that do not involve them.  ODESOLVE also introduces two
+solutions that do not involve them.  \package{ODESOLVE} also introduces two
 operators \texttt{expand\_roots\_of\_unity} and
 \texttt{expand\_plus\_or\_minus}, that are used internally to perform
 the expansion described above, and can be used explicitly.
 
 The ``algint'' option turns on ``algebraic integration'' locally only
-within ODESOLVE.  It also loads the \texttt{algint} package if
-necessary.  Algint allows ODESOLVE to solve some ODEs for which the
+within \package{ODESOLVE}.  It also loads the \texttt{algint} package if
+necessary.  Algint allows \package{ODESOLVE} to solve some ODEs for which the
 standard \REDUCE{} integrator hangs (i.e.\ takes an extremely long
 time to return).  If the resulting solution contains unevaluated
-integrals then the algint switch should be turned on outside ODESOLVE
+integrals then the algint switch should be turned on outside \package{ODESOLVE}
 before the solution is re-evaluated, otherwise the standard integrator
 may well hang again!  For some ODEs, the algint option leads to better
 solutions than the standard \REDUCE{} integrator.
 
 Alternatively, the ``noint'' option prevents \REDUCE{} from attempting
 to evaluate the integrals that arise in some solution techniques.  If
-ODESOLVE takes too long to return a result then you might try adding
+\package{ODESOLVE} takes too long to return a result then you might try adding
 this option to see if it helps solve this particular ODE, as
 illustrated in the test files.  This option is provided to speed up
 the computation of solutions that contain integrals that cannot be
@@ -306,41 +306,41 @@ operator.  If a solution containing an unevaluated integral that was
 returned using the ``noint'' option is re-evaluated, it may again take
 \REDUCE{} a very long time to fail to evaluate the integral, so
 considerable caution is recommended!  (A global switch called
-``noint'' is also installed when ODESOLVE is loaded, and can be
+``noint'' is also installed when \package{ODESOLVE} is loaded, and can be
 turned on to prevent \REDUCE{} from attempting to evaluate \emph{any}
 integrals.  But this effect may be very confusing, so this switch
 should be used only with extreme care.  If you turn it on and then
 forget, you may wonder why \REDUCE{} seems unable to evaluate even
 trivial integrals!)
 
-The ``verbose'' option causes ODESOLVE to display the ODE, variables
+The ``verbose'' option causes \package{ODESOLVE} to display the ODE, variables
 and conditions as it sees them internally, after pre-processing.  This
 is intended for use in demonstrations and possibly for debugging, and
 not really for general users.
 
-The ``basis'' option causes ODESOLVE to output the general solutions
+The ``basis'' option causes \package{ODESOLVE} to output the general solutions
 of linear ODEs in basis format (explained below).  Special solutions
 (of ODEs with conditions) and solutions of nonlinear ODEs are not
 affected.
 
 The ``trode'' (or ``trace'' or ``tracing'') option turns on tracing of
-the algorithms used by ODESOLVE.  It reports its classification of
+the algorithms used by \package{ODESOLVE}.  It reports its classification of
 the ODE and any intermediate results that it computes, such as a chain
 of progressively simpler (in some sense) ODEs that finally leads to a
 solution.  Tracing can produce a lot of output, e.g.\ see the test log
 file ``\texttt{zimmer.rlg}''.  The option ``\texttt{trode = 1}'' or
-the global assignment ``\texttt{!*trode := 1}'' causes ODESOLVE to
+the global assignment ``\texttt{!*trode := 1}'' causes \package{ODESOLVE} to
 report every test that it tries in its classification process,
 producing even more tracing output.  This is probably most useful for
 debugging, but it may give the curious user further insight into the
-operation of ODESOLVE.
+operation of \package{ODESOLVE}.
 
 The ``fast'' option disables all non-deterministic solution techniques
 (including most of those for nonlinear ODEs of order $> 1$).  It may
-be most useful if ODESOLVE is used as a subroutine, including calling
-it recursively in a hook.  It makes ODESOLVE behave like the version
+be most useful if \package{ODESOLVE} is used as a subroutine, including calling
+it recursively in a hook.  It makes \package{ODESOLVE} behave like the version
 distributed with \REDUCE{} 3.7, and so does not affect the
-\texttt{odesolve.tst} file.  The ``fast'' option causes ODESOLVE to
+\texttt{odesolve.tst} file.  The ``fast'' option causes \package{ODESOLVE} to
 return no solution fast in cases where, by default, if would return
 either a solution or no solution more slowly (perhaps much more
 slowly).  Solution of sufficiently simple
@@ -354,7 +354,7 @@ of the order of 30\%.  A check is made that each component solution
 satisfies the ODE and that a general solution contains at least enough
 arbitrary constants, or equivalently that a basis solution contains
 enough basis functions.  Otherwise, warning messages are output.  It
-is possible that ODESOLVE may fail to verify a solution because the
+is possible that \package{ODESOLVE} may fail to verify a solution because the
 automatic simplification fails, which indicates a failure in the
 checker rather than in the solver.
 
@@ -366,7 +366,7 @@ switch \sw{expanddf} locally only.
 
 \subsection{Output syntax}
 
-If ODESOLVE is successful it outputs a list of sub-solutions that
+If \package{ODESOLVE} is successful it outputs a list of sub-solutions that
 together represent the solution of the input ODE\@.  Each sub-solution
 is either an equation that defines a branch of the solution,
 explicitly or implicitly, or it is a list of equations that define a
@@ -391,17 +391,17 @@ solution is normally omitted if it is zero.  The dependent variable
 $y$ does not appear in a basis solution.  The linear solver uses basis
 solutions internally.
 
-Currently, there are cases where ODESOLVE cannot solve a linear ODE
+Currently, there are cases where \package{ODESOLVE} cannot solve a linear ODE
 using its linear solution techniques, in which case it will try
 nonlinear techniques.  These may generate a solution that is not
 (obviously) a linear combination of basis solutions.  In this case, if
-a basis solution has been requested, ODESOLVE will report that it
+a basis solution has been requested, \package{ODESOLVE} will report that it
 cannot separate the nonlinear combination, which it will return as the
 default linear combination solution.
 
-If ODESOLVE fails to solve the ODE then it will return a list
+If \package{ODESOLVE} fails to solve the ODE then it will return a list
 containing the input ODE (always in the form of a differential
-expression equated to 0).  At present, ODESOLVE does not return
+expression equated to 0).  At present, \package{ODESOLVE} does not return
 partial solutions.  If it fails to solve any part of the problem then
 it regards this as complete failure.  (You can probably see if this
 has happened by turning on algorithm tracing.)
@@ -409,11 +409,11 @@ has happened by turning on algorithm tracing.)
 
 \subsection{Solution techniques}
 
-The ODESOLVE interface module pre-processes the problem and applies
+The \package{ODESOLVE} interface module pre-processes the problem and applies
 any conditions to the solution.  The other modules deal with the
 actual solution.
 
-ODESOLVE first classifies the input ODE according to whether it
+\package{ODESOLVE} first classifies the input ODE according to whether it
 is linear or nonlinear and calls the appropriate solver.  An ODE that
 consists of a product of linear factors is regarded as nonlinear.  The
 second main classification is based on whether the input ODE is of
@@ -423,16 +423,16 @@ Solution proceeds essentially by trying to reduce nonlinear ODEs to
 linear ones, and to reduce higher order ODEs to first order ODEs.
 Only simple linear ODEs and simple first-order nonlinear ODEs can be
 solved directly.  This approach involves considerable recursion within
-ODESOLVE.
+\package{ODESOLVE}.
 
-If all solution techniques fail then ODESOLVE attempts to
+If all solution techniques fail then \package{ODESOLVE} attempts to
 factorize the derivative of the whole ODE, which sometimes leads to a
 solution.
 
 
 \subsubsection{Linear solution techniques}
 
-ODESOLVE splits every linear ODE into a ``reduced ODE'' and a
+\package{ODESOLVE} splits every linear ODE into a ``reduced ODE'' and a
 ``driver'' term.  The driver is the component of the ODE that is
 independent of $y$, the reduced ODE is the component of the ODE that
 depends on $y$, and the sign convention is such that the ODE can be
@@ -441,7 +441,7 @@ split into a list of ``ODE coefficients''.
 
 The linear solver now determines the order of the ODE\@.  If it is 1
 then the ODE is immediately solved using an integrating factor (if
-necessary).  For a higher order linear ODE, ODESOLVE considers a
+necessary).  For a higher order linear ODE, \package{ODESOLVE} considers a
 sequence of progressively more complicated solution techniques.  For
 most purposes, the ODE is made ``monic'' by dividing through by the
 coefficient of the highest order derivative.  This puts the ODE into a
@@ -456,7 +456,7 @@ If the ODE has constant coefficients then it can (in principle) be
 solved using elementary ``D-operator'' techniques in terms of
 exponentials via an auxiliary equation.  However, this works only if
 the polynomial auxiliary equation can be solved.  Assuming that it can
-and there is a driver term, ODESOLVE tries to use a method based
+and there is a driver term, \package{ODESOLVE} tries to use a method based
 on inverse ``D-operator'' techniques that involves repeated
 integration of products of the solutions of the reduced ODE with the
 driver.  Experience (by Malcolm MacCallum) suggests that this normally
@@ -483,7 +483,7 @@ functions.  It could easily be extended to other orders and other
 special functions.  Shifts in $x$ could also be accommodated in the
 pattern matching.
 
-If all linear techniques fail then ODESOLVE currently calls the
+If all linear techniques fail then \package{ODESOLVE} currently calls the
 variable interchange routine (described below), which takes it into
 the nonlinear solver.  Occasionally, this is successful in producing
 some, although not necessarily the best, solution of a linear ODE.
@@ -491,21 +491,21 @@ some, although not necessarily the best, solution of a linear ODE.
 
 \subsubsection{Nonlinear solution techniques}
 
-In order to handle trivial nonlinearity, ODESOLVE first
+In order to handle trivial nonlinearity, \package{ODESOLVE} first
 factorizes the ODE algebraically, solves each factor that depends on
 $y$ and then merges the resulting solutions.  Other factors are
 ignored, but a warning is output unless they are purely numerical.
 
-If all attempts at solution fail then ODESOLVE checks whether the
+If all attempts at solution fail then \package{ODESOLVE} checks whether the
 original (unfactored) ODE was exact, because factorization could
-destroy exactness.  Currently, ODESOLVE handles only first and
+destroy exactness.  Currently, \package{ODESOLVE} handles only first and
 second order nonlinear exact ODEs.
 
 A version of the main solver applied to each algebraic factor branches
 depending on whether the ODE factor is linear or nonlinear, and the
 nonlinear solver branches depending on whether the order is 1 or
 higher and calls one of the solvers described in the next two
-sections.  If that solver fails, ODESOLVE checks for exactness
+sections.  If that solver fails, \package{ODESOLVE} checks for exactness
 (of the factor).  If that fails, it checks whether only a single order
 derivative is involved and tries to solve algebraically for that.  If
 successful, this decomposes the ODE into components that are, in some
@@ -514,7 +514,7 @@ components are algebraically very complicated examples of simple types
 of ODE that the integrator cannot in practice handle, and it can take
 a very long time before returning an unevaluated integral.)
 
-If all else fails, ODESOLVE interchanges the dependent and
+If all else fails, \package{ODESOLVE} interchanges the dependent and
 independent variables and calls the top-level solver recursively.  It
 keeps a list of all ODEs that have entered the top-level solver in
 order to break infinite loops that could arise if the solution of the
@@ -524,7 +524,7 @@ variable-interchanged ODE fails.
 \subsubsubsection{First-order nonlinear solution techniques}
 
 If the ODE is a first-degree polynomial in the derivative then
-ODESOLVE represents it in terms of the ``gradient'', which is a
+\package{ODESOLVE} represents it in terms of the ``gradient'', which is a
 function of $x$ and $y$ such that the ODE can be written as ``$dy/dx =
 \textit{gradient}$''.  It then checks \emph{in sequence} for the
 following special types of ODE, each of which it can (in principle)
@@ -581,7 +581,7 @@ An ODE is ``solvable for $x$'' if it can be put into the form $x =
 f(y,y')$.  Differentiating with respect to $y$ leads to a first-order
 ODE for $y'(y)$, which may be easier to solve than the original ODE.
 
-Currently, ODESOLVE recognises the above forms only if the ODE
+Currently, \package{ODESOLVE} recognises the above forms only if the ODE
 manifestly has the specified form and does not try very hard to
 actually solve for $x$ or $y$, which perhaps it should!
 
@@ -599,7 +599,7 @@ derivatives, which allows trivial order reduction.  The second filter
 tests whether the ODE manifestly depends on $x+k$ for some constant
 $k$, in which case it shifts $x$ to remove $k$.
 
-After that, ODESOLVE tests for each of the following special
+After that, \package{ODESOLVE} tests for each of the following special
 forms in sequence.  The sequence used here is important, because the
 classification is not unique, so it is important to try the most
 useful classification first.
@@ -624,7 +624,7 @@ guarantee of this.  All (reduced) linear ODEs are trivially
 equidimensional in $y$.
 \end{description}
 
-The recursive nature of ODESOLVE, especially the thread described
+The recursive nature of \package{ODESOLVE}, especially the thread described
 in this section, can lead to complicated ``arbitrary constant
 expressions''.  Arbitrary constants must be included at the point
 where an ODE is solved by quadrature.  Further processing of such a
@@ -640,13 +640,13 @@ and not entirely successful.
 The idea is that the ODESolve extension interface allows any user to
 add solution techniques without needing to edit and recompile the main
 source code, and (in principle) without needing to be intimately
-familiar with the internal operation of ODESOLVE.
+familiar with the internal operation of \package{ODESOLVE}.
 
 The extension interface consists of a number of ``hooks'' at various
-critical places within ODESOLVE.  These hooks are modelled in part on
+critical places within \package{ODESOLVE}.  These hooks are modelled in part on
 the hook mechanism used to extend and customize the Emacs editor,
 which is a large Lisp-based system with a structure similar to that of
-\REDUCE.  Each ODESOLVE hook is an identifier which can be defined to
+\REDUCE.  Each \package{ODESOLVE} hook is an identifier which can be defined to
 be a function (i.e.\ a procedure), or have assigned to it (in symbolic
 mode) a function name or a (symbolic mode) list of function names.
 The function should be written to accept the arguments specified for
@@ -654,13 +654,13 @@ the particular hook, and it should return either a solution to the
 specified class of ODE in the specified form or nil.
 
 If a hook returns a non-nil value then that value is used by
-ODESOLVE as the solution of the ODE at that stage of the solution
+\package{ODESOLVE} as the solution of the ODE at that stage of the solution
 process.  (If the ODE being solved was generated internally by
-ODESOLVE or conditions are imposed then the solution will be
-re-processed before being finally returned by ODESOLVE.)  If a
-hook returns nil then it is ignored and ODESOLVE proceeds as if
+\package{ODESOLVE} or conditions are imposed then the solution will be
+re-processed before being finally returned by \package{ODESOLVE}.)  If a
+hook returns nil then it is ignored and \package{ODESOLVE} proceeds as if
 the hook function had not been called at all.  This is the same
-mechanism that it used internally by ODESOLVE to run sub-solvers.
+mechanism that it used internally by \package{ODESOLVE} to run sub-solvers.
 If a hook evaluates to a list of function names then they are applied
 in turn to the hook arguments until a non-nil value is returned and
 this is the value of the hook; otherwise the hook returns nil.  The
@@ -668,15 +668,15 @@ same code is used to run all hooks and it checks that an identifier is
 the name of a function before it tries to apply it; otherwise the
 identifier is ignored.  However, the hook code does not perform any
 other checks, so errors within functions run by hooks will probably
-terminate ODESOLVE and errors in the return value will probably
-cause fatal errors later in ODESOLVE.  Such errors are user
-errors rather than ODESOLVE errors!
+terminate \package{ODESOLVE} and errors in the return value will probably
+cause fatal errors later in \package{ODESOLVE}.  Such errors are user
+errors rather than \package{ODESOLVE} errors!
 
 Hooks are defined in pairs which are inserted before and after
 critical stages of the solver, which currently means the general ODE
 solver, the nonlinear ODE solver, and the solver for linear ODEs of
 order greater than one (on the grounds that solving first order linear
-ODEs is trivial and the standard ODESOLVE code should always
+ODEs is trivial and the standard \package{ODESOLVE} code should always
 suffice).  The precise interface definition is as follows.
 
 A reference to an ``algebraic expression'' implies that the \REDUCE{}
@@ -687,10 +687,10 @@ return value of a hook function must always be either nil or an
 algebraic-mode list (which must be represented as a prefix form).
 Since the input and output of hook functions uses prefix forms (and
 never standard quotient forms), hook functions can equally well be
-written in either algebraic or symbolic mode, and in fact ODESOLVE
+written in either algebraic or symbolic mode, and in fact \package{ODESOLVE}
 uses a mixture internally.  (An algebraic-mode procedure can return
 nil by returning nothing.  The integer zero is \emph{not} equivalent
-to nil in the context of ODESOLVE hooks.)
+to nil in the context of \package{ODESOLVE} hooks.)
 
 \noindent\hrulefill
 
@@ -706,7 +706,7 @@ denominator that must be made identically zero by the solution.
 \item The independent variable.
 \end{enumerate}
 \item[Return value:] A list of equations exactly as returned by
-ODESOLVE itself.
+\package{ODESOLVE} itself.
 \end{description}
 
 \noindent\hrulefill
@@ -724,7 +724,7 @@ denominator that must be made identically zero by the solution.
 \item The order of the ODE.
 \end{enumerate}
 \item[Return value:] A list of equations exactly as returned by
-ODESOLVE itself.
+\package{ODESOLVE} itself.
 \end{description}
 
 \noindent\hrulefill
@@ -777,7 +777,7 @@ equates the derivative.
 \item The independent variable.
 \end{enumerate}
 \item[Return value:] A list of equations exactly as returned by
-ODESOLVE itself.  (In this case the list should normally contain
+\package{ODESOLVE} itself.  (In this case the list should normally contain
 precisely one equation.)
 \end{description}
 
