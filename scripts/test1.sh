@@ -607,7 +607,13 @@ do
     psltest "redpsl" "$logdir"
     ;;
   psl=*)
-    psltest "$here/pslbuild/${pp#psl=}/psl/bpsl -t 1000 \
+    if test -f "$here/pslbuild/${pp#psl=}/psl/64"
+    then
+      mem=1000
+    else
+      mem=256000000
+    fi
+    psltest "$here/pslbuild/${pp#psl=}/psl/bpsl -td $mem \
              -f $winhere/pslbuild/${pp#psl=}/red/reduce.img" \
             "$logdir"
     ;;
