@@ -4241,13 +4241,7 @@ inline int readU3(const std::uint64_t* v, std::size_t n,
 // Note that Wikipedia explains "Multiple instances that differ only in
 // seed value (but not other parameters) are not generally appropriate
 // for Monte-Carlo simulations that require independent random number
-// generators" and here even the independence of my thread-specific
-// seed values is questionable.
-
-// I perform all this setup at initialization time, but by wrapping the
-// same sequence of steps as a critical region I could use it to re-seed
-// generators whenever I felt the need to.
-//
+// generators".
 
 // The code here is explicitly aware of the prospect of threading, and
 // should lead to different pseudo-random sequences in each thread.
@@ -4268,25 +4262,21 @@ inline int readU3(const std::uint64_t* v, std::size_t n,
 // delays initialization of any of the variables within the following
 // function until the function is first used!
 
-inline std::mt19937_64 &ref_mersenne_twister()
-{   static std::random_device basic_randomness;
-// Yes the static procedure-local variables here may carry some
-// overhead as the system considers whether it wants to initialize them, but
-// the overall cost here is already probably high as I accumulate entropy
-// and so I am not going to worry.
-    static thread_local std::uint64_t threadid =
+inline std::seed_seq* get_random_seed()
+{   std::uint64_t threadid =
         static_cast<std::uint64_t>(std::hash<std::thread::id>()(
                                        std::this_thread::get_id()));
-    static std::uint64_t seed_component_1 = static_cast<std::uint64_t>
+    std::random_device basic_randomness;
+    std::uint64_t seed_component_1 = static_cast<std::uint64_t>
                                             (basic_randomness());
-    static std::uint64_t seed_component_2 = static_cast<std::uint64_t>
+    std::uint64_t seed_component_2 = static_cast<std::uint64_t>
                                             (basic_randomness());
-    static std::uint64_t seed_component_3 = static_cast<std::uint64_t>
+    std::uint64_t seed_component_3 = static_cast<std::uint64_t>
                                             (basic_randomness());
-    static thread_local std::uint64_t time_now =
+    std::uint64_t time_now =
         static_cast<std::uint64_t>
         (std::time(NULL));
-    static thread_local std::uint64_t chrono_now =
+    std::uint64_t chrono_now =
         static_cast<std::uint64_t>(
             std::chrono::high_resolution_clock::now().
                 time_since_epoch().count());
@@ -4296,8 +4286,7 @@ inline std::mt19937_64 &ref_mersenne_twister()
 // alignment of some values passed as arguments in obscure cases). Building
 // the seed sequence using 32-bit values avoids that issue, and since this
 // is only done during initialization it is not time-critical.
-//
-    static thread_local std::seed_seq random_seed
+    static std::seed_seq random_seed
     {   static_cast<std::uint32_t>(threadid),
         static_cast<std::uint32_t>(seed_component_1),
         static_cast<std::uint32_t>(seed_component_2),
@@ -4316,25 +4305,10 @@ inline std::mt19937_64 &ref_mersenne_twister()
             static_cast<std::uint64_t>(
                 reinterpret_cast<std::uintptr_t>(&seed_component_1))>>32)
     };
-
-    static thread_local std::mt19937_64 inner_mersenne_twister(
-        random_seed);
-// mersenne_twister() now generates 64-bit unsigned integers.
-    return inner_mersenne_twister;
+   return &random_seed;
 }
 
-// If you are going to use very many random numbers and you might be
-// running under Cygwin or mingw32 it could be a good idea to
-// use ref_mersenne_twister() once to collect the thread local instance
-// relevant to you [note that it is a class object that provides operator(),
-// not really a function, despite appearances!]. That way you only do the
-// thread_local activity once (I hope). On those platforms at the time
-// I investigates thread_local support had fairly high overhead.
-
-MAYBE_UNUSED static std::uint64_t mersenne_twister()
-{   static auto mm = ref_mersenne_twister();
-    return mm();
-}
+MAYBE_UNUSED thread_local std::mt19937_64 mersenne_twister(*get_random_seed());
 
 // To re-seed I can just call this. I think that when I re-seed it will
 // often be to gain repeatable behaviour, and so I am fairly happy about
@@ -4366,7 +4340,7 @@ MAYBE_UNUSED static void reseed(std::uint64_t n)
         n = threadid ^ seed_component ^ time_now ^ chrono_now ^
             reinterpret_cast<uint64_t>(&n);
     }
-    ref_mersenne_twister().seed(n);
+    mersenne_twister.seed(n);
 }
 
 // Now a number of functions for setting up random bignums. These may be
@@ -4391,9 +4365,8 @@ inline std::uint64_t uniformUint64(std::uint64_t n)
 // as 1. In that case on average I will need to call mersenne_twister
 // twice. Either larger or smaller inputs will behave better, and rather
 // small inputs will mean I hardly ever need to re-try.
-    std::mt19937_64 &mt = ref_mersenne_twister();
     do
-    {   r = mt();
+    {   r = mersenne_twister();
     }
     while (r >= w);
     return r%n;
@@ -4410,12 +4383,8 @@ inline void uniformPositive(std::uint64_t* r, std::size_t &lenr,
         lenr = 1;
     }
     lenr = (bits+63)/64;
-// ref_mersenne_twister returns a reference to a thread_local entity and
-// I hope that my cacheing its value here I reduce thread local access
-// overheads.
-    std::mt19937_64 &mt = ref_mersenne_twister();
     for (std::size_t i=0; i<lenr; i++)
-        r[i] = mt();
+        r[i] = mersenne_twister();
     if (bits%64 == 0) r[lenr-1] = 0;
     else r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (64-bits%64);
     while (lenr!=1 && shrinkable(r[lenr-1], r[lenr-2])) lenr--;
@@ -4438,9 +4407,8 @@ inline std::intptr_t uniformPositive(std::size_t n)
 inline void uniformSigned(std::uint64_t* r, std::size_t &lenr,
                            std::size_t bits)
 {   lenr = 1 + bits/64;
-    std::mt19937_64 &mt = ref_mersenne_twister();
     for (std::size_t i=0; i<lenr; i++)
-        r[i] = mt();
+        r[i] = mersenne_twister();
 // Now if the "extra" bit is zero my number will end up positive.
     if ((r[lenr-1] & (UINT64_C(1) << (bits%64))) == 0)
     {   r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (63-bits%64);
@@ -4615,9 +4583,8 @@ inline void randomUptoBits(std::uint64_t* r, std::size_t &lenr,
     }
 // The number will have from 1 to 64 bits in its top digit.
     lenr = (bits+63)/64;
-    std::mt19937_64 &mt = ref_mersenne_twister();
     for (std::size_t i=0; i<lenr; i++)
-        r[i] = mt();
+        r[i] = mersenne_twister();
     if (n%64 != 0)
         r[lenr-1] &= UINT64_C(0xffffffffffffffff) >> (64-bits%64);
     r[lenr-1] |= UINT64_C(1) << ((bits-1)%64);

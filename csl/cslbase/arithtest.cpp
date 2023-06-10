@@ -200,9 +200,10 @@ int main(int argc, char *argv[])
 
         const int N = 30;
         const int LEN = 1600;
+        const int REPEATS = 1000;
 
         std::uint64_t a[2000], b[2000], c[5000], c1[5000];
-        std::size_t lena, lenb, lenc1;
+        std::size_t lena, lenb, lenc, lenc1;
 
         std::size_t size[table_size];
         std::size_t testcount[table_size];
@@ -247,30 +248,32 @@ int main(int argc, char *argv[])
                     a[lena-1] &= 0x7fffffff7fffffffU;
                     b[lenb-1] &= 0x7fffffff7fffffffU;
 // For the benefit of gmp on 32-bit platforms I will ensure that the numbers
-// always have at least one bit set within the top 32-bits. For the beneit of
+// always have at least one bit set within the top 32-bits. For the benefit of
 // my code I will arrange that the most significant bit of the top digit is 0
 // so that the value is treated as positive.
                     a[lena-1] |= 0x0010000000000000U;
                     b[lenb-1] |= 0x0000001000000000U;
 // So that all the administration here does not corrupt my measurement
-// I do the actual multiplication of each test case 500 times.
+// I do the actual multiplication of each test case REPEATS times.
                     bool ok;
+                    mp_limb_t top;
                     switch (method)
                     {   case 0:
-
                             c[lena+lenb-1] = 0;
-                            mpn_mul((mp_ptr)c,
+                            top = mpn_mul((mp_ptr)c,
                                     (mp_srcptr)a,
-                                    sizeof(std::uint64_t)/
-                                       sizeof(mp_limb_t)*lena,
+                                    lena*(sizeof(std::uint64_t)/sizeof(mp_limb_t)),
                                     (mp_srcptr)b,
-                                    sizeof(std::uint64_t)/
-                                       sizeof(mp_limb_t)*lenb);
-
+                                    lenb*(sizeof(std::uint64_t)/sizeof(mp_limb_t)));
+                            lenc = lena+lenb-(top==0);
                             arithlib_implementation::bigmultiply(
                                 a, lena, b, lenb, c1, lenc1);
 
                             ok = true;
+                            if (lenc != lenc1)
+                            {   std::cout << "lenc=" << lenc << " lenc1=" << lenc1 << "\n";
+                                ok=false;
+                            }
                             for (std::size_t i=0; i<lena+lenb; i++)
                             {   if (c[i] != c1[i])
                                 {   ok = false;
@@ -291,9 +294,8 @@ int main(int argc, char *argv[])
                             }
                             break;
                         case 1:
-                            for (std::size_t i=0; i<lena+lenb; i++)
-                                c[i] = 0;
-                            for (std::size_t m=0; m<500; m++)
+                            for (std::size_t i=0; i<lena+lenb; i++) c1[i] = 0;
+                            for (std::size_t m=0; m<REPEATS; m++)
                                 arithlib_implementation::bigmultiply(
                                     a, lena, b, lenb, c1, lenc1);
 // By accumulating a sort of checksum on all the products that I compute
@@ -303,12 +305,11 @@ int main(int argc, char *argv[])
                                 my_check = my_check*MULT + c1[i];
                             break;
                         case 2:
-                            for (std::size_t i=0; i<lena+lenb; i++)
-                                c[i] = 0;
-                            for (std::size_t m=0; m<500; m++)
+                            for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
+                            for (std::size_t m=0; m<REPEATS; m++)
                                 mpn_mul((mp_ptr)c,
-                                        (mp_srcptr)a, lena,
-                                        (mp_srcptr)b, lenb);
+                                        (mp_srcptr)a, lena*(sizeof(std::uint64_t)/sizeof(mp_limb_t)),
+                                        (mp_srcptr)b, lenb*(sizeof(std::uint64_t)/sizeof(mp_limb_t)));
                             for (std::size_t i=0; i<lena+lenb; i++)
                                 gmp_check = gmp_check*MULT + c[i];
                             break;
