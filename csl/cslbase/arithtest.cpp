@@ -54,7 +54,7 @@ using namespace arithlib;
 // all tests will be enabled. However if the C++ compiler is used to
 // pre-define one or more of these symbols only that or those tests will
 // be run. So for instance
-//    g++ -DCOMPARE_GMP=1 arithtest.cpp -O3 -lgmp -o timinng_comparison
+//    g++ -DCOMPARE_GMP=1 arithtest.cpp -O3 -lgmp -o timing_comparison
 //    g++ -DTEST_DIVISION=1 -DTEST_GCD=1 ... -o test_divide_and_gcd
 //    g++ arithtest.cpp -O3 -lgmp -o test_everything
 // Nota that some of the individual test sections run for say 20 or 30
@@ -164,6 +164,24 @@ inline void referencemultiply(const std::uint64_t *a, std::size_t lena,
     arithlib_implementation::truncateNegative(c, lenc);
 }
 
+inline void referenceunsignedmultiply(
+                              const std::uint64_t *a, std::size_t lena,
+                              const std::uint64_t *b, std::size_t lenb,
+                              std::uint64_t *c, std::size_t &lenc)
+{   for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
+    for (std::size_t i=0; i<lena; i++)
+    {   std::uint64_t hi = 0;
+        for (std::size_t j=0; j<lenb; j++)
+        {   std::uint64_t lo;
+            arithlib_implementation::multiply64(a[i], b[j], hi, hi, lo);
+            hi += arithlib_implementation::addWithCarry(lo, c[i+j], c[i+j]);
+        }
+        c[i+lenb] = hi;
+    }
+    lenc = lena + lenb;
+    arithlib_implementation::truncatePositive(c, lenc);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -202,18 +220,20 @@ int main(int argc, char *argv[])
         const int LEN = 1600;
         const int REPEATS = 1000;
 
-        std::uint64_t a[2000], b[2000], c[5000], c1[5000];
-        std::size_t lena, lenb, lenc, lenc1;
+        std::uint64_t a[2000], b[2000], c[5000], c1[5000], c2[5000];
+        std::size_t lena, lenb, lenc, lenc1, lenc2;
 
         std::size_t size[table_size];
         std::size_t testcount[table_size];
         std::chrono::nanoseconds mine[table_size];
         std::chrono::nanoseconds gmp[table_size];
+        std::chrono::nanoseconds ref[table_size];
 
         std::uint64_t my_check = 1;
         std::uint64_t gmp_check = 1;
+        std::uint64_t ref_check = 1;
 
-        for (int method=0; method<3; method++)
+        for (int method=0; method<4; method++)
         {   reseed(seed);
             lena = 1;
             for (std::size_t trial=0; trial<table_size; trial++)
@@ -268,14 +288,16 @@ int main(int argc, char *argv[])
                             lenc = lena+lenb-(top==0);
                             arithlib_implementation::bigmultiply(
                                 a, lena, b, lenb, c1, lenc1);
+                            referenceunsignedmultiply(
+                                a, lena, b, lenb, c2, lenc2);
 
                             ok = true;
-                            if (lenc != lenc1)
-                            {   std::cout << "lenc=" << lenc << " lenc1=" << lenc1 << "\n";
+                            if (lenc != lenc1 || lenc != lenc2)
+                            {   std::cout << "lenc=" << lenc << " lenc1=" << lenc1 << " lenc2=" << lenc2 << "\n";
                                 ok=false;
                             }
                             for (std::size_t i=0; i<lena+lenb; i++)
-                            {   if (c[i] != c1[i])
+                            {   if (c[i] != c1[i] || c[i] != c2[i])
                                 {   ok = false;
                                     std::cout << "Failed at " << std::dec
                                               << i << "\n";
@@ -286,10 +308,12 @@ int main(int argc, char *argv[])
                                 display("b  ", b, lenb);
                                 display("me ", c1, lenc1);
                                 display("gmp", c, lena+lenb);
+                                display("ref", c2, lenc2);
                                 rdisplay("a  ", a, lena);
                                 rdisplay("b  ", b, lenb);
                                 rdisplay("me ", c1, lenc1);
                                 rdisplay("gmp", c, lena+lenb);
+                                rdisplay("ref", c2, lenc2);
                                 abort();
                             }
                             break;
@@ -312,6 +336,17 @@ int main(int argc, char *argv[])
                                         (mp_srcptr)b, lenb*(sizeof(std::uint64_t)/sizeof(mp_limb_t)));
                             for (std::size_t i=0; i<lena+lenb; i++)
                                 gmp_check = gmp_check*MULT + c[i];
+                            break;
+                        case 3:
+                            for (std::size_t i=0; i<lena+lenb; i++) c2[i] = 0;
+                            for (std::size_t m=0; m<REPEATS; m++)
+                                referenceunsignedmultiply(
+                                    a, lena, b, lenb, c2, lenc2);
+// By accumulating a sort of checksum on all the products that I compute
+// I will be able to reassure myself that the output from gmp and from my
+// own code agrees.
+                            for (std::size_t i=0; i<lena+lenb; i++)
+                                ref_check = ref_check*MULT + c2[i];
                             break;
                     }
 // I alter the inputs using a linear congruential scheme (which is cheap)
@@ -342,6 +377,10 @@ int main(int argc, char *argv[])
                         gmp[trial] = timing;
                         std::cout << "|";
                         break;
+                    case 3:
+                        ref[trial] = timing;
+                        std::cout << "*";
+                        break;
                 }
                 std::cout.flush();
             }
@@ -352,18 +391,22 @@ int main(int argc, char *argv[])
 // the last of 500 multiplications!) is used so clever optimizing
 // compilers are not allowed to avoid computing it!
         std::cout << "\n";
-        std::cout << (my_check == gmp_check ? "checksums match" :
+        std::cout << (my_check == gmp_check &&
+                      my_check == ref_check ? "checksums match" :
                       "checksums disagree")
                   << "\n";
         std::cout << std::hex << "my checksum:  " << my_check << "\n";
         std::cout             << "gmp checksum: " << gmp_check << "\n";
+        std::cout             << "ref checksum: " << ref_check << "\n";
         std::cout << std::dec;
         std::cout << "Times are reported in seconds per multiplication"
                   << "\n";
         std::cout << std::setw(10) << "length"
                   << std::setw(10) << "my time"
                   << std::setw(10) << "gmp time"
-                  << std::setw(10) << "  ratio mine/gmp"
+                  << std::setw(10) << "ref time"
+                  << std::setw(10) << "  mine/gmp"
+                  << std::setw(10) << "  ref/mine"
                   << std::fixed << std::setprecision(3)
                   << "\n";
 // In the following table times are reported in seconds per
@@ -375,8 +418,12 @@ int main(int argc, char *argv[])
                                            (mine[i].count())/testcount[i])
                       << std::setw(10) << (1.0e-3*static_cast<double>
                                            (gmp[i].count())/testcount[i])
+                      << std::setw(10) << (1.0e-3*static_cast<double>
+                                           (ref[i].count())/testcount[i])
                       << std::setw(10) << (static_cast<double>
                                            (mine[i].count())/gmp[i].count())
+                      << std::setw(10) << (static_cast<double>
+                                           (ref[i].count())/mine[i].count())
                       << "\n";
         }
     }

@@ -1721,6 +1721,25 @@ LispObject Llist_directory(LispObject env, LispObject name)
 
 int escaped_printing;
 
+bool force_hex = false, force_octal = false, force_binary = false;
+uintptr_t prev_force = 10;
+
+// This forces all output to use the specified radix, which can be
+// 16, 8 or 2, with any other value treated as 10. It returns the
+// previous state.
+
+LispObject Lforce_output_radix(LispObject env, LispObject arg)
+{   force_hex = force_octal = force_binary = false;
+    if (arg == fixnum_of_int(16)) force_hex = true;
+    else if (arg == fixnum_of_int(8)) force_octal = true;
+    else if (arg == fixnum_of_int(2)) force_binary = true;
+    uintptr_t w = prev_force;
+    if (is_fixnum(arg)) prev_force = int_of_fixnum(arg);
+    else prev_force = 10;
+    return fixnum_of_int(w);
+}
+
+
 // I should make WRS save tmprint_flag so that it always refers to
 // a setting of the stream currently in use, ie active_stream. That should
 // not be hard but I will do it later. @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2070,15 +2089,15 @@ restart:
                     if ((u & XTAG_FLOAT32) != 0) xmark = 'f';
                 }
                 else uu.i = u - XTAG_SFLOAT;
-                if (escaped_printing & escape_hex)
+                if ((escaped_printing & escape_hex) || force_hex)
                 {   std::snprintf(my_buff, sizeof(my_buff), "%.8x%c", uu.i, xmark);
                     goto float_print_tidyup;
                 }
-                else if (escaped_printing & escape_octal)
+                else if ((escaped_printing & escape_octal || force_octal))
                 {   std::snprintf(my_buff, sizeof(my_buff), "%.11o%c", uu.i, xmark);
                     goto float_print_tidyup;
                 }
-                else if (escaped_printing & escape_binary)
+                else if ((escaped_printing & escape_binary) || force_binary)
                 {   char *cp = my_buff;
                     for (int b=31; b>=0; b--)
                         *cp++ = '0' + ((uu.i >> b) & 1);
@@ -2090,7 +2109,7 @@ restart:
                 fp_sprint(my_buff, static_cast<double>(uu.f), print_precision, xmark);
                 goto float_print_tidyup;
             }
-            if (escaped_printing & escape_hex)
+            if ((escaped_printing & escape_hex) || force_hex)
             {   intptr_t v = int_of_fixnum(u);
                 int width = escape_width(escaped_printing);
                 uintptr_t mask;
@@ -2127,7 +2146,7 @@ restart:
                 std::snprintf(&my_buff[len], 32, "%" PRIx64,
                     static_cast<int64_t>(v));
             }
-            else if (escaped_printing & escape_octal)
+            else if ((escaped_printing & escape_octal) || force_octal)
             {   intptr_t v = int_of_fixnum(u);
                 int width = escape_width(escaped_printing);
                 uintptr_t mask;
@@ -3184,12 +3203,12 @@ restart:
                     {   int32_t v = intfloat32_t_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "@F%.8x", v);
                     }
-                    else if (escaped_printing & escape_hex)
+                    else if ((escaped_printing & escape_hex) || force_hex)
                     {   uint32_t *p = (uint32_t *)&single_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "{%.8" PRIx32 ":%#.8g}",
                                      p[0], static_cast<double>(single_float_val(u)));
                     }
-                    else if (escaped_printing & escape_octal)
+                    else if ((escaped_printing & escape_octal) || force_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 ":%#.8g}",
                                      p[0], static_cast<double>(single_float_val(u)));
@@ -3205,7 +3224,7 @@ restart:
                     {   int64_t v = intfloat64_t_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64, v);
                     }
-                    else if (escaped_printing & escape_hex)
+                    else if ((escaped_printing & escape_hex) || force_hex)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff),
                                      "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
@@ -3215,7 +3234,7 @@ restart:
                                      p[0], p[1], static_cast<double>(double_float_val(u)));
 #endif
                     }
-                    else if (escaped_printing & escape_octal)
+                    else if ((escaped_printing & escape_octal) || force_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
                         std::snprintf(my_buff, sizeof(my_buff), "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
 #ifdef LITTLEENDIAN
@@ -3238,7 +3257,7 @@ restart:
                         std::snprintf(my_buff, sizeof(my_buff), "@F%.8" PRIx64 "/%" PRIx64, v0, v1);
 #endif
                     }
-                    else if (escaped_printing & escape_hex)
+                    else if ((escaped_printing & escape_hex) || force_hex)
                     {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
 #ifdef LITTLEENDIAN
@@ -3259,7 +3278,7 @@ restart:
                         *o++ = '}';
                         *o = 0;
                     }
-                    else if (escaped_printing & escape_octal)
+                    else if ((escaped_printing & escape_octal) || force_octal)
                     {   uint32_t *p = (uint32_t *)&long_float_val(u);
                         char *o = my_buff;
 #ifdef LITTLEENDIAN
@@ -3296,15 +3315,15 @@ restart:
         case TAG_NUMBERS:
 #ifndef ARITHLIB
             if (is_bignum(u))
-            {   if (escaped_printing & escape_hex)
+            {   if ((escaped_printing & escape_hex) || force_hex)
                     print_bighexoctbin(u, 16, escape_width(escaped_printing),
                                        blankp,
                                        (escaped_printing & escape_nolinebreak) || tmprint_flag);
-                else if (escaped_printing & escape_octal)
+                else if ((escaped_printing & escape_octal) || force_octal)
                     print_bighexoctbin(u, 8, escape_width(escaped_printing),
                                        blankp,
                                        (escaped_printing & escape_nolinebreak) || tmprint_flag);
-                else if (escaped_printing & escape_binary)
+                else if ((escaped_printing & escape_binary) || force_binary)
                     print_bighexoctbin(u, 2, escape_width(escaped_printing),
                                        blankp,
                                        (escaped_printing & escape_nolinebreak) || tmprint_flag);
@@ -3315,15 +3334,15 @@ restart:
             }
 #else // ARITHLIB
             if (is_new_bignum(u))
-            {   if (escaped_printing & escape_hex)
+            {   if ((escaped_printing & escape_hex) || force_hex)
                     print_newbighexoctbin(u, 16, escape_width(escaped_printing),
                                           blankp,
                                           (escaped_printing & escape_nolinebreak) || tmprint_flag);
-                else if (escaped_printing & escape_octal)
+                else if ((escaped_printing & escape_octal) || force_octal)
                     print_newbighexoctbin(u, 8, escape_width(escaped_printing),
                                           blankp,
                                           (escaped_printing & escape_nolinebreak) || tmprint_flag);
-                else if (escaped_printing & escape_binary)
+                else if ((escaped_printing & escape_binary) || force_binary)
                     print_newbighexoctbin(u, 2, escape_width(escaped_printing),
                                           blankp,
                                           (escaped_printing & escape_nolinebreak) || tmprint_flag);
@@ -5616,6 +5635,7 @@ setup_type const print_setup[] =
     {"prinhex",                   G0Wother, Lprinhex, Lprinhex2, G3Wother, G4Wother},
     {"prinoctal",                 G0Wother, Lprinoctal, Lprinoctal2, G3Wother, G4Wother},
     {"prinbinary",                G0Wother, Lprinbinary, Lprinbinary2, G3Wother, G4Wother},
+    DEF_1("force-output-radix",   Lforce_output_radix),
     DEF_1("math-display",         Lmath_display),
     DEF_1("debug-print",          Ldebug_print),
     DEF_1("set-print-precision",  Lprint_precision),

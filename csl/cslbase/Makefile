@@ -87,6 +87,13 @@ arithtest:	arithtest.cpp arithlib.hpp
 # uses that as the seed for repeatable behaviour.
 	time ./arithtest 1
 
+arithtestunrolled:	arithtest.cpp arithlib.hpp
+	time g++ -DUNROLLED=1 $(ARITHOPT) $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtestunrolled
+# If one runs arithtest without a command line paramater it should seed
+# its random number generator in an unpredictable way. Specifing an integer
+# uses that as the seed for repeatable behaviour.
+	time ./arithtestunrolled 1
+
 # "time-arith" tries to compare (crudely) the speed of the existing (or
 # dare I now say "old"?) CSL arithmetic based on 31-bit digits with the
 # performance of arithlib that used 64-bit digits. On a 64-bit machine
@@ -112,3 +119,14 @@ karatune:	karatune.cpp arithlib.hpp
 	time ./karatune
 
 # end of Makefile in cslbase
+
+
+### TEMP
+
+newmul:	newmul.cpp genmul.cpp
+	g++ -O2 genmul.cpp -o genmul
+	./genmul > gm.cpp
+	sed -i -e 's/classicalMul/classicalMulNew/g' gm.cpp
+	g++ -O3 newmul.cpp -o newmul
+
+
