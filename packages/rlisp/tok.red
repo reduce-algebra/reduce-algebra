@@ -539,9 +539,10 @@ a:  if null terminalp() then <<
 % Check for explicit hex marker, as in #Xdddd
     if eqcar(x, '!x) or eqcar(x, '!X) then x := cdr x;
 hex:if null x then go to ok;
-    w := get(car x, 'hexdigit);
-    if null w then go to fail;
-    n := 16*n + w;
+    if car x neq '!_ then <<
+      w := get(car x, 'hexdigit);
+      if null w then go to fail;
+      n := 16*n + w >>;
     x := cdr x;
     go to hex;
 dec1:
@@ -670,6 +671,7 @@ symbolic procedure token!-number x;
       if dotp then power := power-4;
       go to hexnum1;
    endhexint:
+      if x = '!_ then go to hexnum1; % Allow and ignore underscores
       if x neq '!. then go to notdot;
       dotp := t;
       go to hexnum1;

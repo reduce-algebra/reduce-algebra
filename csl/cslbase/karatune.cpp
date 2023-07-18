@@ -114,9 +114,12 @@ void fillInSpecials(size_t N)
                            DEFAULT_KARATSUBA_START_ODD,
                            DEFAULT_KARATSUBA_START_PARALLEL));
     size_t topN = N;
-    while (N > 7)
+    while (N > 6)
     {   N = (N+1)/2;
         special.push_back(pack(N+1, N+1, 999));
+        special.push_back(pack(N+2, N+2, 999));
+        special.push_back(pack(N+3, N+3, 999));
+        special.push_back(pack(N+4, N+4, 999));
 // I will take the view that trying threads on less than 80 digits will
 // be over-costly.
         if (topN >= 80) special.push_back(pack(N+1, N+1, topN));
@@ -155,7 +158,7 @@ int main(int argc, char *argv[])
     {   size_t ntries = 100000/N;
         size_t innerTries = 1000;
         cout << "\n" << N  << " words\n";
-        fillInSpecials(N);
+        fillInSpecials(N+3);
         for (auto packed:special)
         {   start_even = packed&0x3ff;
             start_odd = (packed>>10) & 0x3ff;

@@ -237,6 +237,21 @@ symbolic procedure hex n;
 
 flag('(hex), 'opfn);
 
+% As an alternative way to go, prinhex is a function that prints its
+% argument with integers shown in hex. 
+
+!#if (memq 'psl lispsystem!*)
+
+symbolic procedure prinhex a;
+  begin
+    scalar outputbase!* := 16;
+    prin1 a;
+  end;
+
+!#endif
+
+flag('(prinhex), 'opfn);
+
 endmodule;
 
 end;

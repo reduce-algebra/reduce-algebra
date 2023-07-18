@@ -1026,6 +1026,7 @@ inline void abandonString(string_handle);
 inline std::intptr_t vectorToHandle(std::uint64_t* p);
 inline std::uint64_t* vectorOfHandle(std::intptr_t n);
 inline std::size_t numberSize(std::uint64_t* p);
+inline void setNumberSize(std::uint64_t* p, std::size_t n);
 
 inline bool fitsIntoFixnum(std::int64_t n);
 inline std::intptr_t intToHandle(std::int64_t n);
@@ -1198,6 +1199,10 @@ inline std::size_t numberSize(std::uint64_t* p)
 {   return p[-1];
 }
 
+inline void setNumberSize(std::uint64_t* p, std::size_t n)
+{   p[-1] = n;
+}
+
 // When I use Bignums that are allocated using malloc() and operated on
 // via C++ overloaded operators I often need to copy the data. However when
 // memory management uses garbage collection I can allow multiple references
@@ -1207,7 +1212,7 @@ inline std::size_t numberSize(std::uint64_t* p)
 // the other unconditionally copies.
 
 inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
-{   std::size_t n = p[-1];
+{   std::size_t n = numberSize(p);
     push(p);
     std::uint64_t* r = reserve(n);
     pop(p);
@@ -1216,7 +1221,7 @@ inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 }
 
 inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
-{   std::size_t n = p[-1];
+{   std::size_t n = numberSize(p);
     push(p);
     std::uint64_t* r = reserve(n);
     pop(p);
@@ -1250,8 +1255,7 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 
 inline unsigned int logNextPowerOf2(std::size_t n);
 
-// There is a serious issue here as regards thread safety. And a subsidiary
-// one about C++17.
+// There is a serious issue here as regards thread safety.
 //
 // As things stand if you use C++ memory allocation the local allocation
 // and reallocation here is not thread safe. The result could be a disaster
@@ -1337,6 +1341,26 @@ public:
 #endif // __cpp_inline_variables
 #endif // ARITHLIB_THREAD_LOCAL
 
+// In this case the header word at r[-1] is treated as a pair of 32-bit
+// values. One indicates the size of the memory block as allocated, The
+// other the number of words actually in use.
+// In this model the use of a 32-bit number-length limits things so that
+// the largest valid number will take up around 32Gbytes. That is because
+// the size can be up to 4G (ie unsigned 32-bits) and that count is in
+// terms of 8 bit digits. That does not feel like a worrying restriction
+// to me!
+
+inline uint32_t& bitSize(uint64_t* p)
+{   return reinterpret_cast<std::uint32_t*>(&p[-1])[0];
+}
+
+inline std::size_t numberSize(std::uint64_t* p)
+{   return reinterpret_cast<std::uint32_t*>(&p[-1])[1];
+}
+
+inline void setNumberSize(std::uint64_t* p, size_t n)
+{   reinterpret_cast<std::uint32_t*>(&p[-1])[1] = static_cast<uint32_t>(n);
+}
 class Freechains
 {
 private:
@@ -1355,6 +1379,9 @@ public:
     ~Freechains()
     {   for (std::size_t i=0; i<64; i++)
         {   std::uint64_t* f = (freechainTable::get())[i];
+// Here I am assumung that uint64_t is at least as wide as uintptr_t.
+// I think that will in reality always be the case but that the C++ standard
+// will not guarantee it!
             while (f != NULL)
             {   std::uint64_t w = f[1];
                 delete [] f;
@@ -1396,14 +1423,16 @@ public:
 // The casts here look (and indeed are) ugly, but when I store data into
 // memory as a 32-bit value that is how I will read it later on, and the
 // messy notation here does not correspond to complicated computation.
-        reinterpret_cast<std::uint32_t*>(r)[0] = bits;
+// The second 32-bit word in the header will be used to store the number
+// of words actually used in the bignum.
+        bitSize(r+1) = bits;
         return r;
     }
 
 // When I abandon a memory block I will push it onto a relevant free chain.
 
     static void abandon(std::uint64_t* p)
-    {   int bits = reinterpret_cast<std::uint32_t*>(p)[0];
+    {   int bits = bitSize(p+1);
 #ifdef ARITHLIB_ATOMIC
         lockfreePush(p, freechainTable::get(), bits);
 #else
@@ -1456,7 +1485,7 @@ inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
 // I allocate a new smaller block and copy the data across.
 // That situation can most plausibly arise when two similar-values big
 // numbers are subtracted.
-    int bits = reinterpret_cast<std::uint32_t*>(&p[-1])[0];
+    int bits = bitSize(p);
     std::size_t capacity = (static_cast<std::size_t>(1))<<bits;
     if (capacity > 4*final)
     {   std::uint64_t* w =
@@ -1466,17 +1495,13 @@ inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
         freechains::get().abandon(&p[-1]);
         p = &w[1];
     }
-    reinterpret_cast<std::uint32_t*>(&p[-1])[1] = final;
+    setNumberSize(p, final);
     return vectorToHandle(p);
 }
 
 inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
                                    std::size_t final)
 {   return confirmSize(p, n, final);
-}
-
-inline std::size_t numberSize(std::uint64_t* p)
-{   return reinterpret_cast<std::uint32_t*>(&p[-1])[1];
 }
 
 inline std::intptr_t vectorToHandle(std::uint64_t* p)
@@ -1598,7 +1623,7 @@ inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 }
 
 inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
-{   std::size_t n = reinterpret_cast<std::uint32_t*>(&p[-1])[1];
+{   std::size_t n = numberSize(p);
     push(p);
     std::uint64_t* r = reserve(n);
     pop(p);
@@ -1669,7 +1694,8 @@ inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
 // given to halfword, byte and bit-vectors to allow for their finer grain).
 // The length also includes the size of a header-word, and on 32-bit platforms
 // it has to allow for padding the data to allow the array of 64-bit digits
-// to be properly aligned in memory.
+// to be properly aligned in memory. I do not use setNumberSize() here
+// because the proper abstraction here belongs in a different world!
     ((LispObject* )&p[-1])[0] = make_new_bighdr(final+1);
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
 // that leaves a 4-byte gap after the header. In such a case I will write
@@ -1876,7 +1902,7 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 
 inline std::uint64_t* reserve(std::size_t n)
 {   std::uint64_t* a = binaryAllocate(n+1);
-   * a = n;      // Record length of object in first word.
+    a[0] = n;      // Record length of object in first word.
     return a+1;
 }
 
@@ -1886,10 +1912,7 @@ inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
     {   std::intptr_t r = intToHandle(static_cast<std::int64_t>(p[0]));
         return r;
     }
-// I put the length of a bignum in stored as 2 times the number of words
-// (not including the header word). This leaves valid headers even, and so
-// odd values can be used for forwarding addresses.
-    p[-1] = 2*final;
+    setNumberSize(p, final);
     return vectorToHandle(p);
 }
 
@@ -1906,8 +1929,17 @@ inline std::uint64_t* vectorOfHandle(std::intptr_t n)
 {   return reinterpret_cast<std::uint64_t*>(n + 8 - BigInteger);
 }
 
+// I put the length of a bignum in stored as 2 times the number of words
+// (not including the header word). This leaves valid headers even, and so
+// odd values can be used for forwarding addresses (in Zappa).
+
 inline std::size_t numberSize(std::uint64_t* p)
 {   std::uint64_t h = p[-1]/2;
+    return h;
+}
+
+inline void setNumberSize(std::uint64_t* p, size_t n)
+{   p[-1] = 2*n;
     return h;
 }
 
@@ -1948,7 +1980,7 @@ inline char* reserveString(std::size_t n)
 // A string size is measured in bytes not words.
 inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
 {   p[final] = 0;
-    reinterpret_cast<std::uint64_t*>(p)[-1] = 2*final;
+    setNumberSize(p, final);
     return p;
 }
 
