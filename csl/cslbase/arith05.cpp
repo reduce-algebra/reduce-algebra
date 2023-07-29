@@ -306,24 +306,56 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // RIGHT!
 //
 {   size_t n = (bignum_length(u)-CELL-4)/4;
+    unsigned int line_length =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
+                           active_stream);
+    unsigned int column =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
     uint64_t v = 0;
 // While I do not handle widths in general here as a fudge I will
 // do so for printing integers up to 2^64. I do that because I happen
 // to have cases where I wish to generate tables of 64-bit integers...
 // and getting the general width control correct is messier than I had
-// hoped (which is why I had not done it before!).
-    switch (radix==16 ? n : -1)
+// hoped (which is why I had not done it before!). At present I will not
+// treat negative numbers nicely!
+    int32_t top = signed_bignum_digit(u, n);
+    switch (radix==16 && top>0 ? n : -1)
     {   char buff[64];
         default:
             break;
         case 2:
-            if (bignum_digits(u)[2] > 3) break;
+// Here the value is 3 32-bit digits.
+            if (top > 3 || top < -4) break;
             v |= static_cast<uint64_t>(bignum_digits(u)[2])<<62;
-        case 1:
             v |= static_cast<uint64_t>(bignum_digits(u)[1])<<31;
-        case 0:
             v |= bignum_digits(u)[0];
-            int len = std::snprintf(buff, sizeof(buff), "%.*" PRIx64, width, v);
+            goto v_set;
+        case 1:
+            if (top<0) v |= 0xc000000000000000;
+            v |= static_cast<uint64_t>(bignum_digits(u)[1])<<31;
+            v |= bignum_digits(u)[0];
+            goto v_set;
+        case 0:
+            if (top<0) v |= 0xffffffff00000000;
+            v |= bignum_digits(u)[0];
+        v_set:
+            if (top<0 && width>2) width -= 2;
+            int len = std::snprintf(buff, sizeof(buff), "%.*" PRIx64,
+                                    width, v);
+            if (top<0) len += 2;
+            if (blankp)
+            {   if (nobreak==0 && column+len >= line_length)
+                {   if (column != 0) putc_stream('\n', active_stream);
+                }
+                else putc_stream(' ', active_stream);
+            }
+            else if (nobreak==0 && column != 0 && column+len > line_length)
+                putc_stream('\n', active_stream);
+            if (top<0)
+            {   putc_stream('~', active_stream);
+                putc_stream('f', active_stream);
+                len -= 2;
+            }
             for (int k=0; k<len; k++) putc_stream(buff[k], active_stream);
             return;
     }
@@ -331,11 +363,6 @@ void print_bighexoctbin(LispObject u, int radix, int width,
     size_t len = 31*(n+1);
     int flag = 0, bits;
     bool sign = false, started = false;
-    unsigned int line_length =
-        other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
-                           active_stream);
-    unsigned int column =
-        other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
     if (radix == 16)
     {   bits = len % 4;
         len = len / 4;
@@ -408,7 +435,8 @@ void print_bighexoctbin(LispObject u, int radix, int width,
                 if (sign) putc_stream('~', active_stream);
                 started = true;
                 if (flag > 0) putc_stream(radix == 16 ? 'f' :
-                                              radix == 8  ? '7' : '1', active_stream);
+                                          radix == 8  ? '7' :
+                                                        '1', active_stream);
                 flag = -1;
             }
         }
