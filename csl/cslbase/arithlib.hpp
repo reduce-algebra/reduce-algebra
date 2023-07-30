@@ -9445,7 +9445,9 @@ inline std::uint64_t scale_for_division(std::uint64_t* r,
 // first is that it is cheap because no data needs moving at all. But the
 // more subtle reason is that if I tried using the general code as below
 // that would execute a right shift by 64, which is out of the proper range
-// for C++ right shifts.
+// for C++ right shifts. But NOTE that if I shift by zero (which happens if
+// my divisor already has the top bit of its top word set) I do not alter
+// any memory.
     if (s == 0) return 0;
     std::uint64_t carry = 0;
     for (std::size_t i=0; i<lenr; i++)
@@ -9547,7 +9549,9 @@ inline void unscale_for_division(std::uint64_t* r, std::size_t &lenr,
 // the remainder. It only fills in a value for the quotient q if want_q is
 // true. Note also that this code will scale (b) so that the top bit of its
 // highest digit is a "1", so b must be an array that can be overwritten
-// without disturbing code elsewhere.
+// without disturbing code elsewhere. Well if the top bit is already set
+// I promise I will not corrupt it, so in that case b still has to be
+// uint64_t* not const uint64_t* but it will not be overwritten.
 
 inline void unsigned_long_division(std::uint64_t* a,
                                    std::size_t &lena,
