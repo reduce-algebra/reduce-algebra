@@ -57,8 +57,6 @@ off1 'gcrefudg;
 
 put('gcref ,'simpfg ,'((t (crefon)) (nil (gcref_off))));
 
-gcref_nolist!* := '(cell_desc cell_testpt cell_mk testpt_defpol testpt_ivl testpt_var testpt_mk ivl_lb ivl_ub ivl_mk);
-
 anlfn procedure exports(u);
    <<
       gcref_exportl!* := append(gcref_exportl!*,w);
@@ -71,28 +69,60 @@ procedure gcref_off;
       gcref_off1();
       tim := time()-btime!*;
       pfiles!* := for each z in pfiles!* collect <<
-	 put(cdr z,'cref_name,car z);
-	 cdr z
+         put(cdr z,'cref_name,car z);
+         cdr z
       >>;
       if !*gcrefall then
-	 gcref_mkgraph gcref_select seen!*
+         gcref_mkgraph gcref_select seen!*
       else
-      	 gcref_mkegraph gcref_eselect seen!*;
+         gcref_mkegraph gcref_eselect seen!*;
       if not !*saveprops then
-	 gcref_remprops()
+         gcref_remprops()
    end;
 
 procedure gcref_select(idl);
    for each fn in idl join
       if flagp(fn,'defd) and not memq(fn,gcref_nolist!*) then
- 	 {fn};
+         {fn};
 
 procedure gcref_eselect(idl);
    for each fn in idl join
       if flagp(fn,'exported) and not memq(fn,gcref_nolist!*) then
- 	 {fn};
+         {fn};
 
-procedure gcref_mkegraph(efnl);
+procedure gcref_mkegraph(seen);
+   if !*gcrefudg then
+      gcref_mkegraph!-udg(seen)
+   else
+      gcref_mkegraph!-tgf(seen);
+
+procedure gcref_mkegraph!-tgf(seen);
+   begin scalar rnodes;
+      rnodes := gcref_rmknode!-tgf(seen);
+      for each node in rnodes do
+         gcref_mknode!-tgf node;
+      prin2t "#";
+      for each node in rnodes do
+         gcref_mkedges!-tgf(node, gcref_select get(node,'calls))
+   end;
+
+procedure gcref_rmknode!-tgf(fnl);
+   begin scalar rnodes;
+%%       if memq(fn, rnodes) then
+%%          return rnodes;
+%%       push(fn, rnodes);
+%%       fnl := gcref_select get(fn,'calls);
+      while fnl do <<
+         fn := pop fnl;
+         if not memq(fn, rnodes) then <<
+            push(fn, rnodes);
+            fnl := nconc(fnl, gcref_select get(fn, 'calls))
+         >>
+      >>;
+      return rnodes
+   end;
+
+procedure gcref_mkegraph!-udg(efnl);
    for each efn in efnl do <<
       prin2t "[";
       gcref_rmknode efn;
@@ -106,18 +136,18 @@ procedure gcref_rmknode(fn);
       readyl := {fn};
       fnl := gcref_select get(fn,'calls);
       while fnl do <<
-      	 fn := car fnl;
-	 fnl := cdr fnl;
-	 if not memq(fn,readyl) then <<
-	    readyl := fn . readyl;
-	    prin2t ",";
-	    if flagp(fn,'exported) then
-	       gcref_mknode1(fn,nil)
-	    else <<
-	       gcref_mknode fn;
-	       fnl := nconc(fnl,gcref_select get(fn,'calls))
-	    >>
-	 >>
+         fn := car fnl;
+         fnl := cdr fnl;
+         if not memq(fn,readyl) then <<
+            readyl := fn . readyl;
+            prin2t ",";
+            if flagp(fn,'exported) then
+               gcref_mknode1(fn,nil)
+            else <<
+               gcref_mknode fn;
+               fnl := nconc(fnl,gcref_select get(fn,'calls))
+            >>
+         >>
       >>
    end;
 
@@ -130,10 +160,10 @@ procedure gcref_mkgraph(seen);
 procedure gcref_mkgraph!-tgf(seen);
    <<
       for each fn in seen do
-	 gcref_mknode!-tgf fn;
+         gcref_mknode!-tgf fn;
       prin2t "#";
       for each fn in seen do
-	 gcref_mkedges!-tgf(fn,gcref_select get(fn,'calls))
+         gcref_mkedges!-tgf(fn,gcref_select get(fn,'calls))
    >>;
 
 procedure gcref_mknode!-tgf(fn);
@@ -146,9 +176,9 @@ procedure gcref_mknode!-tgf(fn);
 procedure gcref_mkedges!-tgf(fn,calls);
    <<
       for each c in calls do <<
-	 prin2 fn;
-	 prin2 " ";
-	 prin2t c
+         prin2 fn;
+         prin2 " ";
+         prin2t c
       >>
    >>;
 
@@ -156,12 +186,12 @@ procedure gcref_mkgraph!-udg(seen);
    <<
       prin2t "[";
       if seen then <<
-      	 gcref_mknode!-udg car seen;
-	 seen := cdr seen
+         gcref_mknode!-udg car seen;
+         seen := cdr seen
       >>;
       for each fn in seen do <<
-	 prin2t ",";
-	 gcref_mknode!-udg fn
+         prin2t ",";
+         gcref_mknode!-udg fn
       >>;
       prin2t "]"
    >>;
@@ -178,8 +208,8 @@ procedure gcref_mknode1!-udg(fn,c);
       prin2 fn;
       prin2 """)";
       if flagp(fn,'exported) then <<
-	 prin2t ",";
-	 prin2 "a(""BORDER"",""double"")"
+         prin2t ",";
+         prin2 "a(""BORDER"",""double"")"
       >>;
       prin2 "],[";
       gcref_mkedges!-udg c;
@@ -189,13 +219,13 @@ procedure gcref_mknode1!-udg(fn,c);
 procedure gcref_mkedges!-udg(calls);
    <<
       if calls then <<
-	 terpri();
-      	 gcref_mkedge!-udg car calls;
-      	 calls := cdr calls
+         terpri();
+         gcref_mkedge!-udg car calls;
+         calls := cdr calls
       >>;
       for each c in calls do <<
-	 prin2t ",";
-	 gcref_mkedge!-udg c
+         prin2t ",";
+         gcref_mkedge!-udg c
       >>
    >>;
 
@@ -225,23 +255,23 @@ procedure gcref_off1();
       dfprint!* := nil;
       !*defn := nil;
       if not !*algebraics then
-	 remprop('algebraic,'newnam);     % Back to normal.
+         remprop('algebraic,'newnam);     % Back to normal.
       for each fn in seen!* do <<
-	 if null get(fn,'calledby) then
-	    entpts!*:=fn . entpts!*;
-	 undefdchk fn
+         if null get(fn,'calledby) then
+            entpts!*:=fn . entpts!*;
+         undefdchk fn
       >>;
       tseen!* := for each z in idsort tseen!* collect <<
-	 remprop(z,'tseen);
-	 for each fn in (x:=get(z,'funs)) do <<
-	    undefdchk fn;
-	    remprop(fn,'rccnam)
-	 >>;
-	 z . x
+         remprop(z,'tseen);
+         for each fn in (x:=get(z,'funs)) do <<
+            undefdchk fn;
+            remprop(fn,'rccnam)
+         >>;
+         z . x
       >>;
       for each z in gseen!* do
          if get(z,'usedunby) then
-	    undefg!* := z . undefg!*;
+            undefg!* := z . undefg!*;
    end;
 
 endmodule;  % gcref
