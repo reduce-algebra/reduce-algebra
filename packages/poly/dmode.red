@@ -80,6 +80,9 @@ To introduce a new domain, we need to define:
     not provided, the corresponding instance of MINUSP is used to determine
     the absolute value.
 
+12) Optionally (for complex domains), functions for computing the real and
+    imaginary part.
+   
 To facilitate this, all such modes should be listed in the global
 variable DOMAINLIST!*.
 

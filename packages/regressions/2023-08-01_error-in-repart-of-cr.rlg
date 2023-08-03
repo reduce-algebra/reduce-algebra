@@ -1,0 +1,33 @@
+
+on complex,rounded;
+
+
+*** Domain mode complex changed to complex-rounded 
+
+
+precision 20;
+
+
+12
+
+
+z := sqrt(2)+i*sqrt(3);
+
+
+z := 1.4142135623730950488 + 1.7320508075688772935*i
+
+
+precision 12;
+
+
+20
+
+
+repart z;
+
+
+1.41421356237
+
+
+end;
+

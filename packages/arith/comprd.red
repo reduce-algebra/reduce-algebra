@@ -95,6 +95,9 @@ put('!:cr!:,'cmpxfn,'mkcr);
 put('!:cr!:,'ivalue,'mkdcrn);
 put('!:cr!:,'realtype,'!:rd!:);
 put('!:rd!:,'cmpxtype,'!:cr!:);
+put('!:cr!:,'abs,'crnorm!*);
+put('!:cr!:,'repart,'cr!:repart);
+put('!:cr!:,'impart,'cr!:impart);
 
 symbolic procedure cr!:minusp u;
    (if atom x then zerop y and x<0 else zerop car y and car x<0)
@@ -122,6 +125,10 @@ put('!:cr!:,'simpfn,'cr!:simp);
 flag('(!:cr!:),'full);
 
 %symbolic procedure mkdcr u; cri!*() ./ 1;
+
+symbolic procedure cr!:repart u; tagrl u;
+
+symbolic procedure cr!:impart u; tagim u;
 
 symbolic procedure i2cr!* u;
    %converts integer U to tagged cr form.
