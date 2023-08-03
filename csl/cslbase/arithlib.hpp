@@ -485,7 +485,7 @@
 namespace arithlib_implementation
 {
 
-inline const char* version = "$Id:";
+inline const char* version = "$Id$";
 
 #ifdef CSL
 // For use within CSL I will provide a single thread-local pointer that
