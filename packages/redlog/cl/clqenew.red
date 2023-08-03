@@ -552,6 +552,40 @@ asserted procedure cl_esetsubst_new(node: List, variable: Kernel, eliminationSet
       return successorNodes . newTheory
    end;
 
+asserted procedure cl_esetsubst(f: QfFormula, v: Kernel, eset: List, vl: KernelL, an: List, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
+   % Elimination set substitution. [f] is a quantifier-free formula; [v] is a
+   % kernel; [eset] is an elimination set; [an] is an answer; [theo] is the
+   % current theory; [ans] is Boolean. Returns a pair $l . \Theta$, where
+   % $\Theta$ is the new theory and $l$ is a list of container elements. If
+   % there is a container element with ['break] as varlist, this is the only
+   % one.
+   begin scalar a, d, u, elimres, junct, bvl, w;
+      while eset do <<
+         a . d := pop eset;
+         while d do <<
+            u := pop d;
+            w := apply(a, bvl . theo . f . v . u);
+            theo := union(theo, car w);
+            elimres := rl_simpl(cdr w, theo, -1);
+            if !*rlqegsd then
+               elimres := rl_gsn(elimres, theo, 'dnf);
+            if elimres eq 'true then <<
+               an := cl_updans(v, a, u, f, an, ans);
+               for each vv in vl do
+                  an := cl_updans(vv, 'arbitrary, nil, nil, an, ans);
+               junct := {ce_mk('break, elimres, nil, nil, an)};
+               eset := d := nil
+            >> else if elimres neq 'false then
+               if rl_op elimres eq 'or then
+                  for each subf in rl_argn elimres do
+                     junct := ce_mk(vl, subf, nil, nil, cl_updans(v, a, u, f, an, ans)) . junct
+               else
+                  junct := ce_mk(vl, elimres, nil, nil, cl_updans(v, a, u, f, an, ans)) . junct;
+         >>
+      >>;
+      return junct . theo
+   end;
+
 asserted procedure cl_betterp_new(current: DottedPair, best: DottedPair): Boolean;
    % Both arguments are a pair of a lists of nodes and a theory. The theories are not used.
    begin integer currentNumberOfNodes, bestNumberOfNodes;
