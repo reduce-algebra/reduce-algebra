@@ -1,0 +1,32 @@
+The file ofsftrop.tst contains meaningful test data related subtropical
+solving [4]. However, this testing has not been set up yet. Note that
+subtropical solving requires the installation of gurobi and its use via
+the foreign function interface, which is not robust.
+
+References:
+
+[1] A. Dolzmann, T. Sturm. Simplification of Quantifier-Free Formulae
+    over Ordered Fields. J. Symb. Comput. 24(2):209–231, Aug 1997.
+    doi:10.1006/jsco.1997.0123
+
+[2] Marek Kosta. New Concepts for Real Quantifier Elimination by Virtual
+    Substitution. Doctoral dissertation, Saarland University, Germany,
+    Dec 2016. doi:10.22028/D291-26679
+
+[3] A Seidl. Cylindrical Decomposition Under Application-Oriented
+    Paradigms. Doctoral thesis, University of Passau, Germany, Mar 2006.
+    urn:nbn:de:bvb:739-opus-816
+
+[4] T. Sturm. Subtropical Real Root Finding. ISSAC 2015, pp.347–354, ACM
+    Press, Jul 2015. doi:10.1145/2755996.2756677
+
+[5] T. Sturm. Thirty Years of Virtual Substitution: Foundations,
+    Techniques, Applications. ISSAC 2018, pp.11–16, ACM Press, Jul 2018.
+    doi:10.1145/3208976.3209030
+
+[6]  V. Weispfenning. A New Approach to Quantifier Elimination for Real
+     Algebra. In Quantifier Elimination and Cylindrical Algebraic
+     Decomposition, pp.376–392. Springer, 1998.
+     10.1007/978-3-7091-9459-1_20
+
+Thomas Sturm, August 2023
