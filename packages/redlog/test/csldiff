@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# opendiff will start or use an existing FileMerge and then exit. I Start opendiff in the
+# background, because it does not exit fast enough.
+
+opendiff $redlog/test/csl-times/$1.rlg.orig $redlog/test/csl-times/$1.rlg &
