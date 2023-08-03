@@ -1,0 +1,12 @@
+The test file ibalp-big.tst is a superset of ibalp.tst containing
+additional large examples.
+
+References:
+
+[1] A. Seidl, T. Sturm. Boolean Quantification in a First-Order Context.
+    CASC 2003, pp.329–345, TUM, München, Sep 2003
+
+[2] T. Sturm, C. Zengler. Parametric Quantified SAT Solving. ISSAC 2010,
+    pp.77–84. ACM Press, Jul 2010. doi:10.1145/1837934.1837954
+
+Thomas Sturm, August 2023
