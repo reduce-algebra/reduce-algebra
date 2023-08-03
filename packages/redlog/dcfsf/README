@@ -1,0 +1,10 @@
+The domain dcfsf (differentially closed fields) has bot been thoroughly
+used and tested. The file dcfsf.tst contains meaningful test data.
+However, testing has not been set up yet.
+
+References:
+
+[1] A. Dolzmann, T. Sturm. Generalized Constraint Solving over
+    Differential Algebras. CASC 2004, pp.111–125, TUM, Munich, Sep 2004
+
+Thomas Sturm, August 2023
