@@ -2032,26 +2032,17 @@ inline uint32_t* vbignum_digits(LispObject b)
 }
 
 inline uint32_t& bignum_digit(LispObject b, size_t n)
-{   return reinterpret_cast<uint32_t *>(
-               reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS))[n];
+{   return bignum_digits(b)[n];
 }
 
 inline int32_t signed_bignum_digit(LispObject b, size_t n)
-{   return static_cast<int32_t>(reinterpret_cast<uint32_t *>(
-               reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS))[n]);
+{   return static_cast<int32_t>(bignum_digits(b)[n]);
 }
 
 // For work on bignums when I have a 64-bit machine I frequently need the
 // top word of a bignum as a 64-bit (signed) value...
-inline uint64_t bignum_digits64(LispObject b, size_t n)
-{   return reinterpret_cast<int32_t *>(
-                   reinterpret_cast<char *>(b)+(CELL-TAG_NUMBERS))[n];
-}
-
-inline int64_t signed_bignum_digits64(LispObject b, size_t n)
-{   return static_cast<int64_t>(
-               reinterpret_cast<int32_t *>(
-                   reinterpret_cast<char *>(b)+(CELL-TAG_NUMBERS))[n]);
+inline int64_t bignum_digits64(LispObject b, size_t n)
+{   return static_cast<int64_t>(signed_bignum_digit(b, n));
 }
 
 
@@ -2074,13 +2065,11 @@ inline uint64_t* new_bignum_digits(LispObject b)
 }
 
 inline uint64_t& new_bignum_digit(LispObject b, size_t n)
-{   return reinterpret_cast<uint64_t *>(
-               reinterpret_cast<char *>(b)  + (8-TAG_NUMBERS))[n];
+{   return new_bignum_digits(b)[n];
 }
 
 inline int64_t signed_new_bignum_digit(LispObject b, size_t n)
-{   return static_cast<int64_t>(reinterpret_cast<uint64_t *>(
-               reinterpret_cast<char *>(b)  + (8-TAG_NUMBERS))[n]);
+{   return static_cast<int64_t>(new_bignum_digit(b, n));
 }
 
 // pack_hdrlength takes a length in 32-bit words (including the size of

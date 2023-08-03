@@ -424,15 +424,15 @@ procedure dip_init(newvars,newsortmode,newsortextension);
    % as argument to dip_cleanup.
    begin scalar vars,sortmode,sortextension,sortevcomp,evlist,newsortevcomp,z;
       if not idp newsortmode or not flagp(newsortmode,'dipsortmode) then
- 	 return typerr(newsortmode,"term ordering mode");
+         return typerr(newsortmode,"term ordering mode");
       % following saves thousands of calls to GET:
       newsortevcomp := get(newsortmode,'ev_comp);
       if not getd newsortevcomp then
-	 rederr "dip_init: no comparison routine found";
+         rederr "dip_init: no comparison routine found";
       if (z := get(newsortmode,'evcompinit)) then
- 	 apply(z,nil);
+         apply(z,nil);
       if (z := get(newsortmode,'evlength)) and z neq length newvars then
- 	 rederr "dip_init: wrong variable number for fixed length term order";
+         rederr "dip_init: wrong variable number for fixed length term order";
       vars := dip_vars!*;
       sortmode := dip_sortmode!*;
       sortextension := dip_sortextension!*;
