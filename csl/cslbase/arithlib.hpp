@@ -39,8 +39,6 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-
-
 // There are quite a lot of bignumber packages out there on the web,
 // but none of them seemed to be such that I could readily use them
 // for arithmetic within a Lisp at all easily, for instance because of
@@ -486,6 +484,8 @@
 
 namespace arithlib_implementation
 {
+
+inline const char* version = "$Id$";
 
 #ifdef CSL
 // For use within CSL I will provide a single thread-local pointer that
@@ -9613,7 +9613,8 @@ inline void unsigned_long_remainder(std::uint64_t* a,
 inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9623,7 +9624,8 @@ inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 
 inline std::intptr_t Quotient::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -9653,7 +9655,8 @@ inline std::intptr_t Quotient::op(std::int64_t a, std::int64_t b)
 inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -9663,7 +9666,8 @@ inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 
 inline std::intptr_t Remainder::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -9685,7 +9689,8 @@ inline std::intptr_t Remainder::op(std::int64_t a, std::int64_t b)
 inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              false, q, olenq, lenq,
@@ -9707,7 +9712,8 @@ inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 
 inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -9747,7 +9753,8 @@ inline std::intptr_t Floor::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9762,7 +9769,8 @@ inline std::intptr_t Floor::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -9804,7 +9812,8 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t lenb = numberSize(b);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = negative(b[lenb-1]);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9819,7 +9828,8 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
 {   std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
     division(a, lena, bb, 1,
@@ -9863,7 +9873,8 @@ namespace arithlib_implementation
 inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,
@@ -9879,7 +9890,8 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
 
 inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
     division(a, lena, b, 1,
@@ -9896,7 +9908,8 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
 
 inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
     division(a, 1, b, lenb,
@@ -9912,7 +9925,8 @@ inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t* b)
 }
 
 inline std::intptr_t Divide::op(std::int64_t aa, std::int64_t bb)
-{   std::uint64_t* q,* r;
+{   std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
     std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
@@ -9934,7 +9948,8 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
                                 std::intptr_t &rem)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
-    std::uint64_t* q,* r;
+    std::uint64_t* q;
+    std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
     division(a, lena, b, lenb,
              true, q, olenq, lenq,

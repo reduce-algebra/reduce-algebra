@@ -248,14 +248,7 @@ symbolic procedure take!-realpart u;
 symbolic procedure repartf u;
    % We can't check for null dmode!* as there may still be complex
    % domain elements in the expression (e.g., e^repart x).
-  (if domainp u
-      then if atom u then u
-            else if get(car u,'cmpxfn)
-            % We now know u is of form (<tag> <re> . <im>).
-              then int!-equiv!-chk(car u . cadr u .
-                        cadr apply1(get(car u,'i2d),0))
-        % Otherwise we assume it is real
-       else u
+  (if domainp u then !:repart u
     else if mvar u eq 'i then repartf red u
 %    else if null dmode!* then addf(!*t2f lt u,repartf red u)
     else addf(multpf(lpow u,repartf lc u),repartf red u))
@@ -270,14 +263,7 @@ symbolic procedure take!-impart u;
 symbolic procedure impartf u;
    % We can't check for null dmode!* as there may still be complex
    % domain elements in the expression.
-  (if domainp u
-     then if atom u then nil
-           else if get(car u,'cmpxfn)
-            % We now know u is of form (<tag> <re> . <im>).
-             then int!-equiv!-chk(car u . cddr u .
-                                  cadr apply1(get(car u,'i2d),0))
-        % Otherwise we assume it is real
-       else nil
+  (if domainp u then !:impart u
     else if mvar u eq 'i then addf(lc u,impartf red u)
 %   else if null dmode!* then impartf red u
     else addf(multpf(lpow u,impartf lc u),impartf red u))

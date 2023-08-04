@@ -238,6 +238,28 @@ symbolic procedure !:abs u;
            else u)
        where x=get(car u,'abs);
 
+% RmS 2014-08-08: support for repart/impart, improvement for complex domain modes
+
+symbolic procedure !:repart u;
+   if atom u then u                     % includes case nil ->  nil
+    else (if x then apply1(x,u)
+           else if get(car u,'cmpxfn)
+           % We assume that u is of form (<tag> <re> . <im>).
+            then int!-equiv!-chk(car u . cadr u . cadr apply1(get(car u,'i2d),0))
+           % Otherwise we assume it is real
+           else u)
+       where x=get(car u,'repart);
+
+symbolic procedure !:impart u;
+   if atom u then nil                   % includes case nil ->  nil
+    else (if x then apply1(x,u)
+           else if get(car u,'cmpxfn)
+           % We assume that u is of form (<tag> <re> . <im>).
+            then int!-equiv!-chk(car u . cddr u . cadr apply1(get(car u,'i2d),0))
+           % Otherwise we assume it is real
+           else nil)
+       where x=get(car u,'impart);
+
 endmodule;
 
 end;
