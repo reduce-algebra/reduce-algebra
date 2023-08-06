@@ -531,6 +531,23 @@ next_opcode:   // This label is so that I can restart what I am doing
 // I do not in-line even the integer case here, since overflow checking
 // is a slight mess.
 #ifdef ARITHLIB
+#ifndef NO_STATISTICS
+                if (is_new_bignum(A_reg) && is_new_bignum(B_reg))
+                {   extern uint64_t multSizes[48][48];
+                    extern uint64_t multCosts[48][48];
+                    extern size_t biggestMult;
+                    uint64_t* a = number_dispatcher::bignum_intval(A_reg);
+                    uint64_t* b = number_dispatcher::bignum_intval(B_reg);
+                    size_t lena = arithlib_implementation::numberSize(a);
+                    size_t lenb = arithlib_implementation::numberSize(b);
+                    if (lena > 48) lena = 48;
+                    if (lenb > 48) lenb = 48;
+                    biggestMult = std::max(biggestMult, std::max(lena, lenb));
+                    multSizes[lena-1][lenb-1]++;
+                    multCosts[lena-1][lenb-1] += lena*lenb;
+                }
+#endif
+
                 A_reg = Times::op(B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = times2(B_reg, A_reg);

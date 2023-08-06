@@ -281,6 +281,13 @@ extern int batchp(void);
 //
 extern uint64_t read_clock(void);
 
+extern uint64_t read_clock_cycles();
+extern uint64_t read_clock_microsecond();
+extern uint64_t read_clock_nanosecond();
+extern uint64_t read_process_nanosecond();
+extern uint64_t read_elapsed_nanosecond();
+
+
 #ifdef SHOW_COUNTS_AVAILABLE
 //
 // show_counts() can be called via mapstore(), and would be expected to
