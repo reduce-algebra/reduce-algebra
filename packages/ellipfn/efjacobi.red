@@ -1369,6 +1369,7 @@ put('elliptick, 'plain!-functionsymbol, '!K);
 put('ellipticf, 'plain!-functionsymbol, '!F);
 put('elliptick!', 'plain!-functionsymbol, '!K!');
 put('elliptice!', 'plain!-functionsymbol,  '!E!');
+put('ellipticpi, 'plain!-functionsymbol,  '!Pi);
 
 put('elliptice, 'fancy!-functionsymbol, "\mathrm{E}");
 put('ellipticd, 'fancy!-functionsymbol, "\mathrm{D}");
@@ -1376,6 +1377,8 @@ put('elliptick, 'fancy!-functionsymbol, "\mathrm{K}");
 put('ellipticf, 'fancy!-functionsymbol, "\mathrm{F}");
 put('elliptick!', 'fancy!-functionsymbol,  "\mathrm{K}^\prime");
 put('elliptice!', 'fancy!-functionsymbol,  "\mathrm{E}^\prime");
+put('ellipticpi, 'fancy!-functionsymbol,  "\Pi");
+
 put('elliptice!', 'fancy!-symbol!-length, 4);
 put('elliptick!', 'fancy!-symbol!-length, 4);
 
@@ -1393,6 +1396,7 @@ put('elliptick, 'prifn, 'plain!-symbol);
 put('elliptick!', 'prifn, 'plain!-symbol);
 put('elliptice!', 'prifn, 'plain!-symbol);
 put('ellipticf, 'prifn, 'plain!-symbol);
+put('ellipticpi, 'prifn, 'plain!-symbol);
 put('jacobizeta, 'prifn, 'plain!-symbol);
 put('jacobie, 'prifn, 'plain!-symbol);
 
@@ -1413,6 +1417,7 @@ deflist('((jacobisn 2) (jacobicn 2) (jacobidn 2)
 	  (jacobics 2) (jacobicd 2) (jacobids 2) (jacobidc 2) (jacobiam 2)
 	  (ellipticF 2)  (jacobiZeta 2) (jacobie 2) (ellipticK 1)
 	  (ellipticK!' 1) (ellipticE (1 2)) (ellipticE!' 1) (ellipticD (1 2))
+	  (ellipticPi (2 3))	
 	 ), 'number!-of!-args);
 
 endmodule;

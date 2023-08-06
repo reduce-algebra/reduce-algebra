@@ -99,8 +99,92 @@ algebraic procedure num_ellf(phi,k);
       if second l neq 0 then
       	 return second(l)*num_ellk(k) + num_ellf(first l, k)
       else
-	 return num_elliptic(num2_asn, sin phi, k);
+	 return num_elliptic(elliptic_F, phi, k);
    end;
+
+algebraic procedure elliptic_F(phi, k);
+begin scalar sgn;
+   if repart(k)<0 or (repart(k)=0 and impart(k)<0) then k := -k;
+   if repart(phi)<0 or (repart(phi)=0 and impart(phi)<0) then <<
+      sgn := -1;
+      phi := -phi;
+   >>
+   else sgn := 1;
+   
+   if impart(phi)=0 then <<
+      s := sin phi;
+      if impart(k) neq 0 or k*s<1 then
+    	    return sgn*ellint_1st(0,s^2, {0,1},{1,-1},{1,-k^2},{1,0})/2   
+      else return
+ 	 sgn*(ellint_1st(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_1st(1/k^2,s^2, {0,1},{1,-1},{-1,k^2},{1,0}))/2;
+   >>;
+  
+   if repart(phi)=pi/2 then <<
+      s := cosh impart phi;
+      if impart(k) neq 0 or k*s<1 then return
+	 sgn*(ellint_1st(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_1st(1,s^2, {0,1},{-1,1},{1,-k^2},{1,0}))/2
+      else if k<1 then return
+	 sgn*(ellint_1st(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_1st(1,1/k^2, {0,1},{-1,1},{1,-k^2},{1,0}) -
+  	      ellint_1st(1/k^2,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2
+      else return
+	 sgn*(ellint_1st(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_1st(1/k^2,1, {0,1},{1,-1},{-1,k^2},{1,0}) -
+  	      ellint_1st(1,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2;
+   >>;
+   if repart(phi)=0 then <<
+      s := sinh impart phi;
+      if repart(k) neq 0 then return
+	    i*sgn*ellint_1st(0,s^2, {0,1},{1,1},{1,k^2},{1,0})/2
+      else <<
+	 k := impart k;
+	 if k*s <1 then return
+	    i*sgn*ellint_1st(0,s^2, {0,1},{1,1},{1,-k^2},{1,0})/2
+	 else return
+	       sgn*(i*ellint_1st(0,1/k^2, {0,1},{1,1},{1,-k^2},{1,0}) +
+	       	  ellint_1st(1/k^2,s^2, {0,1},{1,1},{-1,k^2},{1,0}))/2;
+	 >>;
+   >>;
+   
+   % sin(phi) must be complex here
+   s := sin phi;
+   if impart(k*s)=0 and (k*s)^2 > 1 then return sgn*s*
+      	 (ellint_1st(0,1/(k*s)^2, {0,1},{1,-s^2},{1,-(k*s)^2},{1,0}) -
+	  i*ellint_1st(1/(k*s)^2,1, {0,1},{1,-s^2},{-1,(k^s)^2},{1,0}))/2
+   else return
+          sgn*s*ellint_1st(0,1, {0,1},{1,-s^2},{1,-k^2*s^2},{1,0})/2;
+end;
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%EllipticK definition
+%====================
+
+operator nome;
+
+elliptickrules :=
+
+{% complete elliptic integral of first kind
+        elliptick(-~k)    => elliptick(k),
+	elliptick(0)      => pi/2,
+	elliptick!'(1)    => pi/2,
+
+        elliptick(~m)   => num_ellk(m)
+	   when lisp !*rounded and lisp !*complex and
+	        numberp m and m neq 1 and m neq -1,
+
+        elliptick!'(~m) => num_ellkc(m)
+	   when lisp !*rounded and lisp !*complex and
+	        numberp m and m neq 0,
+
+        nome(0) => 0,
+
+        nome(1) => 1,
+
+        nome(~m) => exp(-pi*elliptick!'(m)/elliptick(m))
+}$
+let elliptickrules;
 
 % complete elliptic integral of the first kind
 algebraic procedure num_ellk(k);
@@ -127,35 +211,6 @@ algebraic procedure num_ellkc(k);
 	 num_ellk(sqrt(1-k^2)) - 2i*num_ellk(k)
    >>;
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%EllipticK definition
-%====================
-
-operator nome;
-
-elliptickrules :=
-
-{% complete elliptic integral of first kind
-        elliptick(-~k)    => elliptick(k),
-	elliptick(0)      => pi/2,
-	elliptick!'(1)    => pi/2,
-
-        elliptick(~m)   => num_elliptic(num_ellk, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp m and m neq 1 and m neq -1,
-
-        elliptick!'(~m) => num_elliptic(num_ellkc, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp m and m neq 0,
-
-        nome(0) => 0,
-
-        nome(1) => 1,
-
-        nome(~m) => exp(-pi*elliptick!'(m)/elliptick(m))
-}$
-let elliptickrules;
-
 % ######################################################################
 
 algebraic procedure num_elle(phi,k);
@@ -167,8 +222,65 @@ algebraic procedure num_elle(phi,k);
       if second l neq 0 then
 	 return second(l)*num_ellec(k) + num_elle(first l, k)
       else
-	 return num_ellf(phi, k)-k^2*num_elliptic(num_elld, phi, k);
+         return num_elliptic(elliptic_E,phi,k);
    end;
+
+algebraic procedure elliptic_E(phi, k);
+begin scalar sgn;
+   if repart(k)<0 or (repart(k)=0 and impart(k)<0) then k := -k;
+   if repart(phi)<0 or (repart(phi)=0 and impart(phi)<0) then <<
+      sgn := -1;
+      phi := -phi;
+   >>
+   else sgn := 1;
+   
+   if impart(phi)=0 then <<
+      s := sin phi;
+      if impart(k) neq 0 or k*s<1 then
+    	 return sgn*
+	    ellint_2nd(0,s^2, {1,-k^2},{1,-1},{0,1},{1,0})/2
+      else return sgn*
+	 (ellint_2nd(0,1/k^2, {1,-k^2},{1,-1},{0,1},{1,0}) +
+	    i*ellint_2nd(1/k^2,s^2, {-1,k^2},{1,-1},{0,1},{1,0}))/2;
+   >>;
+  
+   if repart(phi)=pi/2 then <<
+      s := cosh impart phi;
+      if impart(k) neq 0 or k*s<1 then return
+ 	 sgn*(ellint_2nd(0,1, {1,-k^2},{1,-1},{0,1},{1,0}) -
+              i*ellint_2nd(1,s^2, {1,-k^2},{-1,1},{0,1},{1,0}))/2
+      else if k<1 then return
+	 sgn*(ellint_2nd(0,1, {1,-k^2},{1,-1},{0,1},{1,0}) -
+              i*ellint_2nd(1,1/k^2, {1,-k^2},{-1,1},{0,1},{1,0}) +
+   	      ellint_2nd(1/k^2,s^2, {-1,k^2},{-1,1},{0,1},{1,0}))/2
+      else return
+	 sgn*(ellint_2nd(0,1/k^2, {1,-k^2},{1,-1},{0,1},{1,0}) +
+	      i*ellint_2nd(1/k^2,1, {-1,k^2},{1,-1},{0,1},{1,0}) +
+  	      ellint_2nd(1,s^2, {-1,k^2},{-1,1},{0,1},{1,0}))/2;
+   >>;
+   
+   if repart(phi)=0 then <<
+      s := sinh impart phi;
+      if repart(k) neq 0 then return
+	 i*sgn*ellint_2nd(0,s^2, {1,k^2},{1,1},{0,1},{1,0})/2
+      else <<
+	 k := impart k;
+	 if k*s<1 then  return
+	    i*sgn*ellint_2nd(0,s^2, {1,-k^2},{1,1},{0,1},{1,0})/2
+	 else return   
+	    sgn*(i*ellint_2nd(0,1/k^2, {1,-k^2},{1,1},{0,1},{1,0}) -
+	         ellint_2nd(1/k^2,s^2, {-1,k^2},{1,1},{0,1},{1,0}))/2;
+      >>;
+   >>;
+   
+   % sin(phi) must be complex here
+   s := sin phi;
+   if impart(k*s)=0 and (k*s)^2>1 then return sgn*s*
+      (ellint_2nd(0,1/(k*s)^2, {1,-(k*s)^2},{1,-s^2},{0,1},{1,0}) +
+       i*ellint_2nd(1/(k*s)^2,1, {-1,(k*s)^2},{1,-s^2},{0,1},{1,0}))/2
+   else return sgn*
+      s*ellint_2nd(0,1, {1,-k^2*s^2},{1,-s^2},{0,1},{1,0})/2;
+end;
 
 algebraic procedure num_ellec(k);
    if k = 1 or k = -1 then 1
@@ -310,7 +422,7 @@ algebraic procedure num_elldc(k);
    else
       RD(0, 1-k^2, 1)/3;
 
-% incomplete elliptic integral of the first kind
+% incomplete elliptic integral of the second kind
 
 algebraic procedure n_elld(phi,k);
    if phi=0 then 0
@@ -322,132 +434,229 @@ algebraic procedure n_elld(phi,k);
       if second l neq 0 then
       	 return second(l)*n_elldc(k) + n_elld(first(l),k)
       else
-	 return num_elliptic(num_elld, phi, k);
+	 return num_elliptic(elliptic_D, phi, k);
    end;
 
-algebraic procedure num_elld(phi, k);
-   begin scalar s, k2, arg, sgn;
-      sgn := 1;
-      if repart k <0 or (repart k =0 and impart k < 0) then
-      	 k:= -k;
-      if impart k = 0 and impart(phi)=0 then <<
-      	 % |sin phi| <=1 and k  real
-      	 if phi<0 then <<
-	    phi := -phi;
-	    sgn := -1;
-      	 >>;
-	 s := sin phi;
-	 if k*s > 1 then <<  % one branch point  when k*sin theta =1
-	    k2 := sqrt(1-1/k^2);
-	    res := RD(0, 1-1/k^2, 1)/(3*k^3) - i*n_and(k*s,k2)/k;
-	    arg := sqrt(k^2*s^2-1)/(k*s);
-	    res := res +i*arg*sqrt(1-s^2)/k;
-	    arg := arg/k2;
- 	    res := res +i*k2^2*arg^3*RD(1-arg^2, 1-k2^2*arg^2,1)/(3*k);
-	    return sgn*res;
-	 >>
-	 else % no branch points
-	    return sgn*s^3*RD(1-s^2, 1-(k*s)^2, 1)/3;
-      >>;
 
-      if impart k = 0 and abs repart phi = pi/2 then <<
-	 % sin phi real > 1
-	 if repart phi < 0 then <<
-	    phi := -phi;
-	    sgn := -1;
-	 >>;
-	 s := cosh impart phi;
-	 if k*s <=1 then << % k<1   one branch point (sin theta =1)
-	    k2 := sqrt(1-k^2);
-	    res := RD(0,1-k^2, 1)/3+i*(n_adn(k*s,k2)-RF(0, k^2, 1))/k^2;
-	    arg := sqrt(1-k^2*s^2)/k2;
-	    res := res -
-	       i*k2^2*(arg^3*RD(1-arg^2,1-k2^2*arg^2,1)-RD(0,k^2,1))/(3*k^2);
-	    return sgn*res;
-	 >>
-	 else if k<1 then << % two branch points sin theta =1,
-	       % then k*sin theta =1
-	       res := -i*(RF(0, k^2, 1)-(1-k^2)*RD(0, k^2, 1)/3)/k^2;
-	       res := res -sqrt((s^2-1)*(k^2*s^2-1))/(k^2*s);
-	       arg := 1/(k*s);
-	       res := res+arg^3*RD(1-arg^2, 1-k^2*arg^2, 1)/3;
-	       return sgn*res;
-	 >>
-	 else <<  % k > 1 so two branch points k* sin theta =1,
-	       % then sin theta =1
-	       res := i*((1-1/k^2)*RD(0, 1/k^2, 1)/3 - RF(0, 1/k^2, 1))/k;
-	       res := res + RD(1-1/s^2, 1-1/(k*s)^2, 1)/(3*(k*s)^3);
-	       res := res - sqrt((k^2*s^2-1)*(s^2-1))/(k^2*s);
-	       return sgn *res;
-	 >>;
-      >>;
-
-      if repart k=0 and repart phi=0 then <<
-	 if impart phi<0 then <<
-	    phi := -phi;
-	    sgn := -1;
-	 >>;
-	 s := sinh impart phi;
-	 k := impart k;
-
-	 if k*s <= 1 then <<
-	    k2 := 1/sqrt(1+k^2);
-            res := n_acn(k*s, k2)-RF(0, 1-k2^2, 1);
-            arg := sqrt(1-k^2*s^2);
-	    res := res + (RD(0,1-k2^2,1)-arg^3*RD(1-arg^2,1-k2^2*arg^2,1))/3;
-	    return sgn*i*k2*res/k^2;
-	 >>;
-
-	 % one branch point abs (k*sinh impart theta) = 1 
-	 k2 := k/sqrt(k^2+1);
-	 res := i*k2*(RD(0, k2^2, 1)/3-RF(0, k2^2, 1))/k^3;
-	 arg := sqrt(k^2*s^2-1)/(k*s);
-	 res := res -sqrt(s^2+1)*arg/k;
-	 res := res + n_anc(k*s,k2)/sqrt(1+k^2);
-	 res := res -arg^3*RD(1-arg^2,1-k2^2*arg^2,1)/(3*sqrt(1+k^2));
-	 return sgn*res;
-      >>;
-	    
-      if abs repart phi = pi/2 then <<
-	 % one branch point when abs sin theta = 1
-	 % sin phi real > 1.    k is not purely real here
-	 if repart phi < 0 then <<
-	    phi := -phi;
-	    sgn := -1;
-	 >>;
-	 s := cosh impart phi;
-	 k2 := sqrt(1-k^2);
-	 res := RD(0,1-k^2, 1)/3+i*(n_adn(s,k2)-RF(0, k^2, 1))/k^2;
-	    arg := sqrt(1-k^2*s^2)/k2;
-	    res := res -
-	       i*k2^2*(arg^3*RD(1-arg^2,1-k2^2*arg^2,1)-RD(0,k^2,1))/(3*k^2);
-	    return sgn*res;
-      >>;
-
-      % phi is complex here
-      sgn := 1;
-      if repart phi < 0 then <<
-	 phi := -phi;
-	 sgn := -1;
-      >>;
+algebraic procedure elliptic_D(phi, k);
+begin scalar sgn;
+   if repart(k)<0 or (repart(k)=0 and impart(k)<0) then k := -k;
+   if repart(phi)<0 or (repart(phi)=0 and impart(phi)<0) then <<
+      sgn := -1;
+      phi := -phi;
+   >>
+   else sgn := 1;
+   
+   if impart(phi)=0 then <<
       s := sin phi;
-      if impart (k*s) = 0 and abs repart(k*s) > 1 then <<
-	 % one branch point when abs(k*sin theta) = 1
-	    k2 := sqrt(1-1/k^2);
-	    res := RD(0, 1-1/k^2, 1)/(3*k^3);
-%%	    arg := sqrt(k^2*s^2-1)/(k*s);
-%%	    res := res + i*arg*sqrt(1-s^2)/k - i*n_and(k*s,k2)/k;
-%%	    arg := arg/k2;
-%%	    res := res -i*k2^2*arg^3*RD(1-arg^2, 1-k2^2*arg^2,1)/(3*k);
-            res := res +i*n_adn(ks, k2)/k;
-	    arg := sqrt(k^2*s^2-1)/k2;
-	    res := res -i*k2^2*arg^3*RD(1-arg^2,1-k2^2*arg^2,1)/(3*k);
-	    return sgn*res;
-      >>;
-      return sgn*s^3*RD(1-s^2, 1-(k*s)^2, 1)/3;	 
-   end;
+      if impart(k) neq 0 or k*s<1 then
+   	 return sgn*ellint_2nd(0,s^2, {0,1},{1,-1},{1,-k^2},{1,0})/2   
+      else return sgn*
+  	 (ellint_2nd(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	   i*ellint_2nd(1/k^2,s^2, {0,1},{1,-1},{-1,k^2},{1,0}))/2;
+   >>;
+  
+   if repart(phi)=pi/2 then <<
+      s := cosh impart phi;
+      if impart(k) neq 0 or k*s<1 then return
+	 sgn*(ellint_2nd(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_2nd(1,s^2, {0,1},{-1,1},{1,-k^2},{1,0}))/2
+      else if k<1 then return
+	 sgn*(ellint_2nd(0,1, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_2nd(1,1/k^2, {0,1},{-1,1},{1,-k^2},{1,0}) -
+  	      ellint_2nd(1/k^2,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2
+      else return
+	 sgn*(ellint_2nd(0,1/k^2, {0,1},{1,-1},{1,-k^2},{1,0}) -
+	      i*ellint_2nd(1/k^2,1, {0,1},{1,-1},{-1,k^2},{1,0}) -
+  	      ellint_2nd(1,s^2, {0,1},{-1,1},{-1,k^2},{1,0}))/2;
+   >>;
+   if repart(phi)=0 then <<
+      s := sinh impart phi;
+      if repart(k) neq 0 then return
+	    -i*sgn*ellint_2nd(0,s^2, {0,1},{1,1},{1,k^2},{1,0})/2
+      else <<
+	 k := impart k;
+	 if k*s <1 then return
+	    -i*sgn*ellint_2nd(0,s^2, {0,1},{1,1},{1,-k^2},{1,0})/2
+	 else return
+	       sgn*(-i*ellint_2nd(0,1/k^2, {0,1},{1,1},{1,-k^2},{1,0}) -
+	       	  ellint_2nd(1/k^2,s^2, {0,1},{1,1},{-1,k^2},{1,0}))/2;
+	 >>;
+   >>;
+   
+   % sin(phi) must be complex here
+   s := sin phi;
+   if impart(k*s)=0 and (k*s)^2>1 then return sgn*s^3*
+         (ellint_2nd(0,1/(k*s)^2, {0,1},{1,-s^2},{1,-k^2*s^2},{1,0}) -
+          i*ellint_2nd(1/(k*s)^2,1, {0,1},{1,-s^2},{-1,k^2*s^2},{1,0}))/2
+   else return
+      sgn*s^3*ellint_2nd(0,1, {0,1},{1,-s^2},{1,-k^2*s^2},{1,0})/2;
+end;
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% EllipticPi(alpha, k)  & EllipticPi(phi, alpha, k)
+% ==================================================
+% Legendre's forms of the complete and incomplete elliptic integrals
+% of the third kind.
+
+operator ellipticpi;
+ellipticpirules :=
+{  
+   ellipticpi(-~a, ~k) => ellipticpi(a,k),
+   ellipticpi(~a, -~k) => ellipticpi(a,k),
+   ellipticpi(~k, ~k) => elliptice(k)/(1-k^2),
+   ellipticpi(0, ~k) => elliptick(k),
+   ellipticpi(~a, 0) => pi/(2*sqrt(1-a)),
+   ellipticpi(-~k^2, ~k) => pi/(4*(1+k)) + elliptick(k)/2,
+   
+   ellipticpi(pi/2,~a, ~k) => ellipticpi(a,k),
+   ellipticpi(-~phi, ~a, ~k) => -ellipticpi(phi,a,k),
+   ellipticpi(~phi, -~a, ~k) => ellipticpi(phi,a,k),
+   ellipticpi(~phi, ~a, -~k) => ellipticpi(phi,a,k),
+   ellipticpi(~phi, 0, 0) => phi,
+   ellipticpi(~phi, 1, 0) => tan phi,
+   ellipticpi(~phi, 0, ~k) => ellipticf(phi,k),
+   ellipticpi(~phi, ~k, ~k) => (elliptice(phi,k)-
+          k^2*sin phi*cos phi/(sqrt(1-k^2*sin(phi)^2)))/(1-k^2),
+   ellipticpi(~phi, 1, ~k) => ellipticf(phi,k) -
+   (elliptice(phi,k) - tan phi/(sqrt(1-k^2*sin(phi)^2)))/(1-k^2),
+
+      % quasi-periodicity
+   
+    ellipticPi((~~w + ~~k*pi)/~~d,~a,~m) =>
+      (begin scalar shift, arg;
+         shift := fix repart(k/d);
+	 arg := w/d +(k/d-shift)*pi;
+	 return ellipticPi(arg,a,m) + 2*shift*ellipticPi(a,m);
+      end)
+      	 when ((ratnump(rp) and abs(rp) >= 1) where rp => repart(k/d)),
+
+   % ************************************************
+% derivative rules
+   df(ellipticPi(~a,~k),~x) =>
+      df(k,x)*k*(ellipticPi(a,k)-ellipticE(k)/(1-k^2))/(a^2-k^2) +
+      df(a,x)*(ellipticPi(a,k)*(k^2-a^4) - ellipticK(k)*(k^2-a^2) -
+               a^2*ellipticE(k))/((1-a^2)*(k^2-a^2)*a),
+   
+   df(ellipticPi(~u,a,~k),~x) =>
+      df(u,x)/(sqrt(1-k^2*sin u^2)*(1-a^2*sin u^2)) +
+      df(k,x)*k*(ellipticPi(u,a,k)-ellipticE(u,k)/(1-k^2) +
+	         k^2*sin u*cos u/sqrt(1-k^2*sin u^2)/(1-k^2))/(a^2-k^2) +
+      df(a,x)*(ellipticPi(u,a,k)*(k^2-a^4) -
+	       ellipticF(u,k)*(k^2-a^2) - a^2*ellipticE(u,k) +
+    a^4*sqrt(1-k^2*sin u^2)*sin u*cos u/(1-a^2*sin u^2))/((1-a^2)*(k^2-a^2)*a),
+	  
+   ellipticPi(~phi,~a, ~k) => num_elliptic(n_ellpi,phi,a,k)
+       when lisp !*rounded and lisp !*complex and numberp phi and
+                numberp a and numberp k,
+	     
+   ellipticPi(~a,~k) => num_elliptic(n_ellpic,a,k)
+      when lisp !*rounded and lisp !*complex and numberp a and numberp k
+	   and k^2 neq 1
+
+}$      
+
+let ellipticpirules;
+algebraic procedure n_ellpic(a,k);
+   if k=0 then RC(0,1-a^2)
+   else if a=0 then num_ellk(k)
+   else if a=k or a=-k then num_ellec(k)/(1-k^2)
+   else if impart k =0 and abs k>1 then
+      (ellint_3rd(0,1/k^2,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2}) -
+      i*ellint_3rd(1/k^2,1,{1,0},{1,-1},{-1,k^2},{0,1},{1,-a^2}))/2
+   else
+      ellint_3rd(0,1,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2})/2;
+
+algebraic procedure n_ellpi(phi,a,k);
+   if phi=0 then 0
+   else if phi = pi/2 or phi = -pi/2 then sign(phi)*n_ellpic(a,k)
+   else if k=0 and a=0 then phi
+   else if k=0 then
+      if a=1 or a =-1 then tan phi
+      else (s*RC(1-s^2, 1-a^2*s^2)) where s=> sin phi
+   else if k^2=1 then
+      if a^2=1 then
+	 ((s*RC(1,1-s^2)+s/(1-s^2))/2) where s => sin phi
+      else
+      	 (s/(1-a^2)*(RC(1, 1-s^2)-a^2*RC(1, 1-a^2*s^2))) where s => sin phi
+   else if a^2=1 then
+      num_ellf(phi,k)-(num_elle(phi,k)-tan phi*sqrt(1-k^2*sin(phi)^2))/(1-k^2)
+   else if a=0 then num_ellf(phi,k)
+   else if a^2=k^2 then
+      (num_elle(phi,k)-k^2*sin phi*cos phi/sqrt(1-k^2*sin(phi)^2))/(1-k^2)
+   else begin scalar l;
+      l := pi_shift phi;
+      if second l neq 0 then
+         return second(l)*n_ellpic(a,k) + n_ellpi(first(l),a,k)
+      else
+	 return elliptic_Pi(phi,a,k);
+   end;
+
+algebraic procedure elliptic_Pi(phi,a,k);
+begin scalar sgn;
+   if a=0 then return elliptic_f(phi,k)
+   else if a^2=1 then return
+      elliptic_f(phi,k) - elliptic_e(phi,k)/(1-k^2) +
+          tan(phi)/((1-k^2)*sqrt(1-k^2*sin(phi)^2))
+   else if a^2=k^2 then return elliptic_e(phi,k)/(1-k^2) -
+                    sin(phi)*cos(phi)/((1-k^2)*sqrt(1-k^2*sin(phi)^2));
+
+   if repart(k)<0 or (repart(k)=0 and impart(k)<0) then k := -k;
+   if repart(phi)<0 or (repart(phi)=0 and impart(phi)<0) then <<
+      sgn := -1;
+      phi := -phi;
+   >>
+   else sgn := 1;
+   
+   if impart(phi)=0 then <<
+      s := sin phi;
+      if impart(k) neq 0 or k*s <1 then return sgn*
+	 ellint_3rd(0,s^2,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2})/2	    
+      else return sgn*
+	 (ellint_3rd(0,1/k^2,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2}) -
+	  i*ellint_3rd(1/k^2,s^2,{1,0},{1,-1},{-1,k^2},{0,1},{1,-a^2}))/2;
+   >>;
+  
+   if repart(phi)=pi/2 then <<
+      s := cosh impart phi;
+      if impart(k) neq 0 or k*s<1 then return sgn*
+	 (ellint_3rd(0,1,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2})/2 -
+	  i*ellint_3rd(1,s^2,{1,0},{-1,1},{1,-k^2},{0,1},{1,-a^2})/2)
+      else if k<1 then return sgn*
+	   (ellint_3rd(0,1,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2}) -
+	    i*ellint_3rd(1,1/k^2,{1,0},{-1,1},{1,-k^2},{0,1},{1,-a^2}) -
+	    ellint_3rd(1/k^2,s^2,{1,0},{-1,1},{-1,k^2},{0,1},{1,-a^2}))/2
+      else return sgn*
+	   (ellint_3rd(0,1/k^2,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2}) -
+	    i*ellint_3rd(1/k^2,1,{1,0},{1,-1},{-1,k^2},{0,1},{1,-a^2}) -
+	    ellint_3rd(1,s^2,{1,0},{-1,1},{-1,k^2},{0,1},{1,-a^2}))/2;
+   >>;
+   
+   if repart(phi)=0 then <<
+      s := sinh impart phi;
+      if repart(k) neq 0 then return
+	 i*sgn*ellint_3rd(0,s^2,{1,0},{1,1},{1,k^2},{0,1},{1,a^2})/2	
+      else <<
+	 k := impart k;
+	 if k*s<1 then  return i*sgn*
+	    ellint_3rd(0,s^2,{1,0},{1,1},{1,-k^2},{0,1},{1,a^2})/2	
+	 else return sgn*
+	    (i*ellint_3rd(0,1/k^2,{1,0},{1,1},{1,-k^2},{0,1},{1,a^2})-
+	     ellint_3rd(1/k^2,s^2,{1,0},{1,1},{-1,k^2},{0,1},{1,a^2}))/2;	
+      >>;
+   >>;
+   
+   % sin(phi) must be complex here
+   s := sin phi;
+   if impart(k*s)=0 and (k*s)^2>1 then return sgn*s*
+     (ellint_3rd(0,1/(k*s)^2,{1,0},{1,-s^2},{1,-(k*s)^2},{0,1},{1,-(a*s)^2})-
+      i*ellint_3rd(1/(k*s)^2,1,{1,0},{1,-s^2},{-1,(k*s)^2},{0,1},{1,-(a*s)^2}))/2
+   else return sgn*s*
+      ellint_3rd(0,1,{1,0},{1,-s^2},{1,-k^2*s^2},{0,1},{1,-a^2*s^2})/2;
+end;
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %JacobiE(phi,m) definition   Jacobi's form of the elliptic integral
 %=========================   of the second kind.
 % There is often confusion between Jacobi's form of the incomplete elliptic 
@@ -625,6 +834,3 @@ let jacobizetarules;
 
 endmodule;
 end;
-
-
-
