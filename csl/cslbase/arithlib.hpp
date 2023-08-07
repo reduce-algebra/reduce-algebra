@@ -4340,7 +4340,8 @@ inline std::seed_seq* get_random_seed()
    return &random_seed;
 }
 
-MAYBE_UNUSED thread_local std::mt19937_64 mersenne_twister(*get_random_seed());
+// Should this be thread_local? 
+inline std::mt19937_64 mersenne_twister(*get_random_seed());
 
 // To re-seed I can just call this. I think that when I re-seed it will
 // often be to gain repeatable behaviour, and so I am fairly happy about
@@ -8653,7 +8654,7 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
     if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
     if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
     lena += lenb;
-// A case like {0,0x80000...} times the same leads at this stage tp
+// A case like {0,0x80000...} times the same leads at this stage to
 // {0, 0, 0x40000...} and the length needs to be shrunk by two words. The
 // way I code this is intended to have a chance of compiling into branch-
 // free code and execute faster than "if (shrinkable(..)) lena--;".

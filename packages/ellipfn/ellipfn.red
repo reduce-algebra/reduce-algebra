@@ -77,6 +77,7 @@ remprop('elliptice,'simpfn);
 remprop('ellipticd,'simpfn);
 remprop('elliptice!','simpfn);
 remprop('ellipticf,'simpfn);
+remprop('ellipticpi,'simpfn);
 
 remprop('elliptictheta1,'simpfn);
 remprop('elliptictheta2,'simpfn);

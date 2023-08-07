@@ -1819,6 +1819,33 @@ LispObject Ltime(LispObject env)
     return r;
 }
 
+LispObject Lmicrotime(LispObject env)
+{   SingleValued fn;
+    uint64_t t0 = read_clock() - base_time;
+    LispObject r = make_lisp_unsigned64(t0);
+    return r;
+}
+
+LispObject Lnanocpu(LispObject env)
+{   SingleValued fn;
+    return make_lisp_unsigned64(read_clock_nanosecond());
+}
+
+LispObject Lclock_cycles(LispObject env)
+{   SingleValued fn;
+    return make_lisp_unsigned64(read_clock_cycles());
+}
+
+LispObject Lnanoprocess(LispObject env)
+{   SingleValued fn;
+    return make_lisp_unsigned64(read_process_nanosecond());
+}
+
+LispObject Lnanoelapsed(LispObject env)
+{   SingleValued fn;
+    return make_lisp_unsigned64(read_elapsed_nanosecond());
+}
+
 LispObject Lwalltime(LispObject env)
 {   SingleValued fn;
     using namespace std::chrono;
@@ -2738,6 +2765,11 @@ setup_type const funcs1_setup[] =
     DEF_1("symbol-function",    Lsymbol_function),
     DEF_1("symbol-value",       Lsymbol_value),
     DEF_0("time",               Ltime),
+    DEF_0("microtime",          Lmicrotime),
+    DEF_0("clock-cycles",       Lclock_cycles),
+    DEF_0("nanocpu",            Lnanocpu),
+    DEF_0("nanoprocess",        Lnanoprocess),
+    DEF_0("nanoelapsed",        Lnanoelapsed),
     DEF_0("walltime",           Lwalltime),
     DEF_2("datelessp",          Ldatelessp),
     DEF_2("union",              Lunion),

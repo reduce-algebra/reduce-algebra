@@ -2958,11 +2958,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // store_size is as set by "-k" or "--mem" and max_store_size by "--max-mem"
 // and in each case the value will be zero if the user has not provided an
 // explicit setting.
-    if (max_store_size == 0) max_store_size = static_cast<double>(SIZE_MAX);
+    if (max_store_size == 0.0) max_store_size = static_cast<double>(SIZE_MAX);
 // First apply some limits to maxmem - I will allow the user to
-// specify up to twice the physical memory of their computer, but
+// specify up to 80% of the physical memory of their computer, but
 // beyond that is liable to be ridiculous.
-    if (max_store_size > 2.0*dmem) max_store_size = 2.0*dmem;
+    max_store_size = std::max(max_store_size, 0.8*dmem);
 // On 32-bit systems I will restrict myself to 1.6Gbytes max because over
 // 2Gbytes I start to risk trouble with sign bits and address arithmetic
 // overflow. There OUGHT not to be too much trouble and the main reasons
@@ -3481,6 +3481,50 @@ public:
 };
 #endif
 
+#if !defined NO_STATISTICS && defined ARITHLIB
+
+void showMultStats(uint64_t stats[48][48])
+{   uint64_t total = 0;
+    for (size_t i=0; i<48; i++)
+       for (size_t j=0; j<48; j++) total += stats[i][j];
+    if (total == 0) total = 1; // Avoid divison by zero!
+// This displays 1-4, 5-8, 9-12, 13-16 ... 45-48 which is
+// much more compact than the full table and is probably at least
+// as useful.
+    printf( " 1-4"  "  5-8"  " 9-12" "  -16" "  -20" "  -24"
+           "  -28"  "  -32"  "  -36" "  -40" "  -44" "  45+" "\n");
+    uint64_t soFar = 0;
+    for (int i=1; i<=48; i+=4)
+    {   uint64_t rowSum = 0;
+        for (int j=1; j<=48; j+=4)
+        {   uint64_t val = 0;
+            for (int ii=0; ii<4; ii++)
+                for (int jj=0; jj<4; jj++)
+                    val += stats[i+ii-1][j+jj-1];
+            if (i < j)
+            {   for (int ii=0; ii<4; ii++)
+                    for (int jj=0; jj<4; jj++)
+                        val += stats[j+jj-1][i+ii-1];
+            }
+            uint64_t val1 = (uint64_t)((10000.0*val) + total/2)/total;
+            if (val1 == 10000) val1 = 9999;
+            if (i <= j)
+            {   std::printf("%4u ", (unsigned int)val1);
+                rowSum += val;
+            }
+            else if (i==45 && j==1)
+                std::printf("%10u", (unsigned int)total);
+            else if (i!=45 || j!=5) std::printf("     ");
+        }
+        soFar += rowSum;
+        std::printf(" (%u, %u)\n",
+            (unsigned int)((10000.0*rowSum)/total),
+            (unsigned int)((10000.0*soFar)/total));
+    }
+}
+
+#endif // !NO_STATISTICS && ARITHLIB
+
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
     THREADID;
@@ -3577,6 +3621,16 @@ int ENTRYPOINT(int argc, const char *argv[])
         res = EXIT_FAILURE;
     }
     report_dependencies();
+#if !defined NO_STATISTICS && defined ARITHLIB
+    extern uint64_t multSizes[48][48];
+    extern uint64_t multCosts[48][48];
+    extern size_t biggestMult;
+    std::printf("\n++MultSizes (biggest = %u)++\n",
+                (unsigned int)biggestMult);
+    showMultStats(multSizes);
+    std::printf("\n++MultCosts++\n");
+    showMultStats(multCosts);
+#endif // !NO_STATISTICS && ARITHLIB
 #ifdef USE_MPI
     MPI_Finalize();
 #endif // USE_MPI

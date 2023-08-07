@@ -634,6 +634,20 @@ AC_ARG_ENABLE(profile,
   [enable_profile="no"])
 AC_MSG_RESULT([$enable_profile])
 
+AC_ARG_ENABLE(statistics,
+  AS_HELP_STRING([--enable-statistics],
+                 [Collect info on use of bignum multiplication]),
+  [],
+  [enable_statistics="no"])
+AC_MSG_RESULT([$enable_statistics])
+
+if test "$enable_statistics" != "yes"
+then
+  AC_DEFINE(NO_STATISTICS, [1], [Do not measure multiplication])
+fi
+
+
+
 if test "$enable_debug" = "yes"
 then
   foxdir="$foxdir-debug"

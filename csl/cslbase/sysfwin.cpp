@@ -267,55 +267,6 @@ char *look_in_lisp_variable(char *o, int prefix)
 }
 
 
-// What follows can be replaced by stuff from the C++ chrono:: package.
-
-#if defined HAVE_CLOCK_GETTIME && defined HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
-
-// Where possible I read the time used by the current thread... I return
-// a value expressed in microseconds, but of course there is no guarantee that
-// I will have anything like that as my actual granularity!
-
-uint64_t read_clock_microsecond()
-{   struct std::timespec tt;
-    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
-    double w1 = static_cast<double>(tt.tv_sec) + static_cast<double>
-                (tt.tv_nsec)/1000000000.0;
-    return (uint64_t)(1000000.0*w1);
-}
-
-
-#elif defined HAVE_SYS_TIME_H && defined HAVE_TIMES && !defined WIN32 && !defined EMBEDDED
-
-// This is a BSD-style clock facility, possibly giving a resolution of
-// only 1/100 second.
-
-double unix_ticks = 0.0;
-
-uint64_t read_clock()
-{   struct tms tmsbuf;
-    times(&tmsbuf);
-    std::clock_t w1 = tmsbuf.tms_utime;   // User time in UNIX_TIMES ticks
-#ifdef HAVE_UNISTD_H
-    if (unix_ticks == 0.0) unix_ticks =
-        static_cast<double>(sysconf(_SC_CLK_TCK));
-#endif
-    if (unix_ticks == 0.0) unix_ticks = 100.0;
-    return (uint64_t)((1000000.0/unix_ticks) * static_cast<double>(w1));
-}
-
-#elif defined WIN32
-#else
-
-// In cases where clock_t is a 32-bit data type this fallback version
-// will wraps round after around 20 minutes of CPU time!
-
-uint64_t read_clock()
-{   return static_cast<uint64_t>((1000000.0/CLOCKS_PER_SEC)*
-                                 static_cast<double>(std::clock()));
-}
-
-#endif
-
 int batchp()
 {   return !isatty(fileno(stdin));
 }
@@ -719,6 +670,131 @@ bool valid_address(void *pointer)
 
 bool valid_address(uintptr_t pointer)  // an overload to accept integer types
 {   return valid_address(reinterpret_cast<void *>(pointer));
+}
+
+// The C++ chrono functions read elapsed time not CPU time and certainly do
+// not provide facilities for distinguishing between CPU time used in the
+// current thread as against that used across all threads. There are
+// potential issues when the task being measured shares the CPU with other
+// activity or waits (for instace for keyboard input).
+
+#if defined WIN32 || defined __CYGWIN__
+// Including this may define WIN32 and hence confuse subsequent code
+// in the source file. That is why I have put this as the last thing that
+// I do here.
+#include <processthreadsapi.h>
+#include <realtimeapiset.h>
+#endif
+
+#include <atomic>
+
+uint64_t read_clock()
+{   return read_clock_nanosecond()/1000;
+}
+
+uint64_t read_clock_microsecond()
+{   return read_clock_nanosecond()/1000;
+}
+
+uint64_t read_clock_nanosecond()
+{
+#if defined WIN32 || defined __CYGWIN__
+// The clock granularity here may be of the order of 15ms, so despite
+// this function delivering a value in nanoseconds is is really rather
+// low accuracy!
+    FILETIME a,b,c,d;
+    if (GetThreadTimes(GetCurrentThread(), &a, &b, &c, &d) != 0)
+    {   uint64_t hi = d.dwHighDateTime,
+                 lo = d.dwLowDateTime;
+        return 100*((hi<<32) + lo);
+    }
+    else return 0; // Failed to read the clock
+#else // Windows
+// There is no tidy guarantee about the resolution of the clock used
+// here on any particular platform.
+    struct std::timespec tt;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
+    return 1.0e9*static_cast<double>(tt.tv_sec) +
+           static_cast<double>(tt.tv_nsec);
+#endif // Windows
+}
+
+#if defined WIN32 || defined __CYGWIN__
+double clock_cycle_calibration = -1.0;
+std::uint64_t threadClockBase = 0;
+
+void calibrate_clock_cycle()
+{   auto t0 = std::chrono::steady_clock::now();  // a time_point
+    unsigned long long int tt0, tt1;
+    QueryThreadCycleTime(GetCurrentThread(), &tt0);
+// The following loop is just to use some time up so I can compare
+// elapsed time measured by chrono::steady_clock with the information
+// returned by QueryThreadCycleTime()
+    std::atomic var(0);
+    for (uint64_t i=0; i<50000000; i++) var = i; 
+    QueryThreadCycleTime(GetCurrentThread(), &tt1);
+    auto t1 = std::chrono::steady_clock::now();  // a time_point
+    std::chrono::nanoseconds t0a = t0.time_since_epoch();
+    std::chrono::nanoseconds t1a = t1.time_since_epoch();
+    clock_cycle_calibration =
+        (t1a.count() - t0a.count()) / static_cast<double>(tt1-tt0);
+    threadClockBase = tt1;
+}
+
+#endif
+
+uint64_t read_clock_cycles()
+{
+#if defined WIN32 || defined __CYGWIN__
+    unsigned long long int tt;
+    if (clock_cycle_calibration < 0.0)
+        calibrate_clock_cycle();
+    QueryThreadCycleTime(GetCurrentThread(), &tt);
+    return static_cast<uint64_t>(
+        (tt - threadClockBase)*clock_cycle_calibration);
+#else // Windows
+// There is no tidy guarantee about the resolution of the clock used
+// here on any particular platform.
+    struct std::timespec tt;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tt);
+    return 1.0e9*static_cast<double>(tt.tv_sec) +
+           static_cast<double>(tt.tv_nsec);
+#endif // Windows
+}
+
+uint64_t read_process_nanosecond()
+{
+#if defined WIN32 || defined __CYGWIN__
+// The clock granularity here may be of the order of 15ms, so despite
+// this function delivering a value in nanoseconds is is really rather
+// low accuracy!
+    FILETIME a,b,c,d;
+    if (GetProcessTimes(GetCurrentProcess(), &a, &b, &c, &d) != 0)
+    {   uint64_t hi = d.dwHighDateTime,
+                 lo = d.dwLowDateTime;
+        return 100*((hi<<32) + lo);
+    }
+    else return 0; // Failed to read the clock
+#else // Windows
+// There is no tidy guarantee about the resolution of the clock used
+// here on any particular platform.
+    struct std::timespec tt;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tt);
+    return 1.0e9*static_cast<double>(tt.tv_sec) +
+           static_cast<double>(tt.tv_nsec);
+#endif // Windows
+}
+
+uint64_t read_elapsed_nanosecond()
+{
+// Use of steady_clock means that even if crond or the user resets the
+// system date the time returned will increase monotonically. This case
+// is PORTABLE!
+// There is no tidy guarantoo about the resolution of the clock used
+// here on any particular platform.
+    auto t = std::chrono::steady_clock::now();  // a time_point
+    std::chrono::nanoseconds t1 = t.time_since_epoch();
+    return t1.count();
 }
 
 // end of sysfwin.cpp

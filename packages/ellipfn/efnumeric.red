@@ -722,6 +722,228 @@ algebraic procedure RF1(x,y,z);
       return tmp;
    end;
 
+%#####################################################################
+% Basic elliptic integrals
+
+algebraic procedure check_dependence(f1, f2);
+   if first(f1)*second(f2) - first(f2)*second(f1) = 0 then
+      rederr "Factors in elliptic integral not independent";
+
+algebraic procedure check_factors(fac1, fac2, fac3, fac4, fac5);
+<<
+   check_dependence(fac1, fac2);
+   check_dependence(fac1, fac3);
+   check_dependence(fac1, fac4);
+   check_dependence(fac2, fac3);
+   check_dependence(fac2, fac4);
+   check_dependence(fac3, fac4);
+   if fac5 neq 0 then <<
+      check_dependence(fac1, fac5);
+      check_dependence(fac2, fac5);
+      check_dependence(fac3, fac5);
+      check_dependence(fac4, fac5);
+   >>;
+>>;
+
+algebraic procedure ellint_1st(lowlim, uplim, fac1, fac2, fac3, fac4);
+   begin scalar x1,x2,x3,x4, y1,y2,y3,y4, u12, u13, u23;
+      check_factors(fac1, fac2, fac3, fac4, 0);
+      if uplim=infinity and lowlim=-infinity then
+      	 ellint_1st(-infinity, 0, fac1, fac2, fac3, fac4) +
+	 ellint_1st(0, infinity, fac1, fac2, fac3, fac4);
+
+      if uplim = infinity then <<
+	 x1 := sqrt(second(fac1));
+	 x2 := sqrt(second(fac2));
+	 x3 := sqrt(second(fac3));
+	 x4 := sqrt(second(fac4));
+      >>
+      else <<
+	 x1 := sqrt(first(fac1)+second(fac1)*uplim);
+	 x2 := sqrt(first(fac2)+second(fac2)*uplim);
+	 x3 := sqrt(first(fac3)+second(fac3)*uplim);
+	 x4 := sqrt(first(fac4)+second(fac4)*uplim);
+      >>;
+
+      if lowlim = -infinity then <<
+	 y1 := sqrt(-second(fac1));
+	 y2 := sqrt(-second(fac2));
+	 y3 := sqrt(-second(fac3));
+	 y4 := sqrt(-second(fac4));
+      >> else <<
+	 y1 := sqrt(first(fac1)+second(fac1)*lowlim);
+	 y2 := sqrt(first(fac2)+second(fac2)*lowlim);
+	 y3 := sqrt(first(fac3)+second(fac3)*lowlim);
+	 y4 := sqrt(first(fac4)+second(fac4)*lowlim);
+      >>;
+
+      u12 := x1*x2*y3*y4 + y1*y2*x3*x4;
+      u13 := x1*x3*y2*y4 + y1*y3*x2*x4;
+      u23 := x2*x3*y1*y4 + y2*y3*x1*x4;
+
+      if uplim neq infinity and lowlim neq -infinity then <<
+	 u12 := u12/(uplim-lowlim);
+	 u13 := u13/(uplim-lowlim);
+	 u23 := u23/(uplim-lowlim);
+      >>;
+      return 2*RF(u12^2, u13^2, u23^2);
+   end;
+
+
+algebraic procedure ellint_2nd(lowlim, uplim, fac1, fac2, fac3, fac4);
+   begin scalar x1,x2,x3,x4, y1,y2,y3,y4, u12, u13, u23, d12, d13;
+      check_factors(fac1, fac2, fac3, fac4, 0);
+      if uplim=infinity and lowlim=-infinity then return
+   	 ellint_2nd(-infinity, 0, fac1, fac2, fac3, fac4) +
+      	 ellint_2nd(0, infinity, fac1, fac2, fac3, fac4);
+
+      if uplim = infinity then <<
+	 x1 := sqrt(second(fac1));
+	 x2 := sqrt(second(fac2));
+	 x3 := sqrt(second(fac3));
+	 x4 := sqrt(second(fac4));
+      >>
+      else <<
+	 x1 := sqrt(first(fac1)+second(fac1)*uplim);
+	 x2 := sqrt(first(fac2)+second(fac2)*uplim);
+	 x3 := sqrt(first(fac3)+second(fac3)*uplim);
+	 x4 := sqrt(first(fac4)+second(fac4)*uplim);
+      >>;
+
+      if lowlim = -infinity then <<
+	 y1 := sqrt(-second(fac1));
+	 y2 := sqrt(-second(fac2));
+	 y3 := sqrt(-second(fac3));
+	 y4 := sqrt(-second(fac4));
+      >> else <<
+	 y1 := sqrt(first(fac1)+second(fac1)*lowlim);
+	 y2 := sqrt(first(fac2)+second(fac2)*lowlim);
+	 y3 := sqrt(first(fac3)+second(fac3)*lowlim);
+	 y4 := sqrt(first(fac4)+second(fac4)*lowlim);
+      >>;
+
+      u23 := x2*x3*y1*y4 + y2*y3*x1*x4;
+      if u23=0 then   % awkward case. Note confusing use of d12, d13, u12
+	 if second(fac2) neq 0 then <<
+	    d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
+	    d13 := first(fac2)*second(fac4) - first(fac4)*second(fac2); % d24
+	    u12 := ellint_2nd(lowlim,uplim,fac2,fac1,fac3,fac4);
+	    return (second(fac1)+second(fac4)*d12/d13)*u12/second(fac2) -
+	       d12/d13*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	 >> else <<
+	    d12 := first(fac1)*second(fac3) - first(fac3)*second(fac1); % d13
+	    d13 := first(fac3)*second(fac4) - first(fac4)*second(fac3); % d34 
+	    u12 := ellint_2nd(lowlim,uplim,fac3,fac1,fac3,fac4);
+	    return (second(fac1)+second(fac4)*d12/d13)*u12/second(fac3) -
+	       d12/d13*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	 >>;
+
+      % generic case
+      u12 := x1*x2*y3*y4 + y1*y2*x3*x4;
+      u13 := x1*x3*y2*y4 + y1*y3*x2*x4;
+
+      if uplim neq infinity and lowlim neq -infinity then <<
+	 u12 := u12/(uplim-lowlim);
+	 u13 := u13/(uplim-lowlim);
+	 u23 := u23/(uplim-lowlim);
+      >>;
+
+      d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
+      if u23 neq 0 and u12^2 neq u13^2 then
+	 d13 := first(fac1)*second(fac3) - first(fac3)*second(fac1)
+      else <<  % swap  u232 & u13
+	 y2 := u13; u13 := u23; u23 := y2;
+	 d13 := first(fac2)*second(fac3) - first(fac3)*second(fac2);
+      >>;
+      return 2*d12*d13*RD(u12^2, u13^2, u23^2)/3 +2*x1*y1/(x4*y4*u23);
+   end;
+
+
+algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
+   begin scalar x1,x2,x3,x4,y1,y2,y3,y4,
+	 u12,u13,u23,  d12,d13,d14,d15,d25, u15,s15,q15;
+      check_factors(fac1, fac2, fac3, fac4, 0);
+      if uplim=infinity and lowlim=-infinity then
+   	 ellint_3rd(-infinity, 0, fac1, fac2, fac3, fac4, fac5) +
+      	 ellint_3rd(0, infinity, fac1, fac2, fac3, fac4, fac5);
+
+      if uplim = infinity then <<
+      	 x1 := sqrt(second(fac1));
+      	 x2 := sqrt(second(fac2));
+      	 x3 := sqrt(second(fac3));
+      	 x4 := sqrt(second(fac4));
+      	 x5 := sqrt(second(fac5));
+      >>
+      else <<
+      	 x1 := sqrt(first(fac1)+second(fac1)*uplim);
+      	 x2 := sqrt(first(fac2)+second(fac2)*uplim);
+      	 x3 := sqrt(first(fac3)+second(fac3)*uplim);
+      	 x4 := sqrt(first(fac4)+second(fac4)*uplim);
+      	 x5 := sqrt(first(fac5)+second(fac5)*uplim);
+      >>;
+    
+      if lowlim = -infinity then <<
+      	 y1 := sqrt(-second(fac1));
+      	 y2 := sqrt(-second(fac2));
+      	 y3 := sqrt(-second(fac3));
+      	 y4 := sqrt(-second(fac4));
+      	 y5 := sqrt(-second(fac5));
+      >> else <<
+      	 y1 := sqrt(first(fac1)+second(fac1)*lowlim);
+      	 y2 := sqrt(first(fac2)+second(fac2)*lowlim);
+      	 y3 := sqrt(first(fac3)+second(fac3)*lowlim);
+      	 y4 := sqrt(first(fac4)+second(fac4)*lowlim);
+      	 y5 := sqrt(first(fac5)+second(fac5)*lowlim);
+      >>;
+      if x1=0 or y1=0 then   % awkward case
+	 if x2 neq 0 and y2 neq 0 and second(fac2) neq 0 then <<
+	    d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
+	    d25 := first(fac2)*second(fac5) - first(fac5)*second(fac2); 
+	    u12 := ellint_3rd(lowlim,uplim,fac2,fac1,fac3,fac4,fac5);
+	    return (second(fac1)+second(fac5)*d12/d25)*u12/second(fac2) -
+	       d12/d25*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	 >>
+	 else if x3 neq 0 and y3 neq 0 and second(fac3) neq 0 then
+     	 <<
+	    d13 := first(fac1)*second(fac3) - first(fac3)*second(fac1);
+	    d35 := first(fac3)*second(fac4) - first(fac4)*second(fac3);
+	    u12 := ellint_3rd(lowlim,uplim,fac3,fac1,fac2,fac4,fac5);
+	    return (second(fac1)+second(fac5)*d13/d35)*u12/second(fac3) -
+	       d13/d35*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	 >> else <<
+	    d14 := first(fac1)*second(fac4) - first(fac4)*second(fac1);
+	    d45 := first(fac4)*second(fac5) - first(fac5)*second(fac4);
+	    u12 := ellint_3rd(lowlim,uplim,fac4,fac1,fac2,fac3,fac5);
+	    return (second(fac1)+second(fac5)*d14/d45)*u12/second(fac4) -
+	       d14/d45*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
+	 >>;
+	 
+      % generic case	    
+      u12 := x1*x2*y3*y4 + y1*y2*x3*x4;
+      u13 := x1*x3*y2*y4 + y1*y3*x2*x4;
+      u23 := x2*x3*y1*y4 + y2*y3*x1*x4;
+      s15 := (x2*x3*x4*y5^2/x1  + y2*y3*y4*x5^2/y1);
+ 
+      if uplim neq infinity and lowlim neq -infinity then <<
+      	 u12 := u12/(uplim-lowlim);
+      	 u13 := u13/(uplim-lowlim);
+      	 u23 := u23/(uplim-lowlim);
+      	 s15 := s15/(uplim-lowlim);
+      >>;
+
+      d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
+      d13 := first(fac1)*second(fac3) - first(fac3)*second(fac1);
+      d14 := first(fac1)*second(fac4) - first(fac4)*second(fac1);
+      d15 := first(fac1)*second(fac5) - first(fac5)*second(fac1);
+      d25 := first(fac2)*second(fac5) - first(fac5)*second(fac2);
+      d35 := first(fac3)*second(fac5) - first(fac5)*second(fac3);
+      d45 := first(fac4)*second(fac5) - first(fac5)*second(fac4);
+
+      u15 := u12^2 - d13*d14*d25/d15;  % actually u15^2
+      q15 := (x5*y5)^2/(x1*y1)^2*u15; % actually q15^2
+      return 2*d12*d13*d14*RJ(u12^2, u13^2, u23^2, u15)/(3*d15) + 2*RC(s15^2,q15);
+   end;
+
 endmodule;
 
 ;end;

@@ -31,19 +31,17 @@ many elliptic functions, namely:
 \item \hyperlink{INVELL}{Inverse Elliptic Functions}.
 \end{itemize}
 
-\subsection{Elliptic Functions}
-\index{Elliptic functions}
 The implementation of the functions in this and the next two subsections have
 been substantially revised by Alan Barnes in 2019. This is to bring the
 notation more into line with standard (British) texts such as Whittaker
 \& Watson \cite{WhittakerWatson:69} and Lawden \cite{Lawden:89} and also to correct
 a number of errors and omissions. These changes and additions will be itemised in the relevant
-sections below.  New subsections has been added in 2021 to support  Weierstrassian Elliptic
-functions, Sigma functions and inverse Jacobi elliptic functions.
+sections below.  New subsections has been added starting in 2021 to support  Weierstrassian Elliptic
+functions, Sigma functions, inverse Jacobi elliptic functions and finally symmetric elliptic integrals.
 
 The functions in this subsection are for the most part autoloading;
 the exceptions being the subsidiary utility functions such as the AGM function,
-the quasi-period factors, lattice functions and derivatives of the theta functions.
+the quasi-period factors, lattice functions, derivatives of the theta functions and symmetric elliptic integrals.
 
 \hypertarget{JACEF}{}
 \subsection{Jacobi Elliptic  Functions}
@@ -157,7 +155,7 @@ DLMF NIST site.
 
 Some care must be exercised when applying the `eighth' period rules when
 the modulus $k$ belongs to the negative real or imaginary axes as
-$\mathrm{E}(k)$ and all twelve Jacobi functions $\mathrm{sn}(x,k)$ etc. are
+$\mathrm{K}(k)$ and all twelve Jacobi functions $\mathrm{sn}(x,k)$ etc. are
 even functions of the modulus $k$. The rule should be applied when the modulus
 has no assigned value and then resimplifying the result after assigning the
 modulus its required value.
@@ -297,19 +295,17 @@ It can be called using \f{landentrans}($\phi_0$, $\alpha_0$)
 and will return \\
 $\{\{\phi_0, \ldots ,\phi_n\},\{\alpha_0, \ldots ,\alpha_n\}\}$.
 
-\subsubsection{Symmetric Elliptic Integrals}
-TO BE COMPLETED.
-
-\subsection{Elliptic Integrals}
+\subsection{Legendre's Elliptic Integrals}
 \hypertarget{ELLIPI}{}
-\index{Elliptic Integrals}
+\index{Legendre Elliptic Integrals}
 The following functions have been implemented:
 
 \begin{itemize}
 \item Complete \& Incomplete Elliptic Integrals of the First Kind
 \item Complete \& Incomplete Elliptic Integrals of the Second Kind
-%\item Ellpitic Integrals of the Third Kind
-\item Jacobi's Zeta Function
+\item Jacobi's Epsilon \& Zeta Functions
+\item Complete \& Incomplete Ellpitic Integrals of the Third Kind
+\item Some Utility Functions  
 \end{itemize}
 
 These again differ somewhat from the originals implemented by Lisa Temme
@@ -344,7 +340,7 @@ will return the value of the \emph{Incomplete Elliptic Integral of the
 First Kind}:
 \[\mathrm{F}(\phi, k)=\int_0^\phi(1-k^2 \sin^2 \theta)^{-1/2} \mathrm{d}\theta.\]
 This is actually closely related to the inverse Jacobi function
-$\mathrm{arcsn}$; in fact for $0 <= \Re \phi <=\pi/2$:
+$\mathrm{arcsn}$; in fact for $-\pi/2 <= \Re \phi <=\pi/2$:
 \[ \mathrm{F}(\phi, k) = \mathrm{arcsn}(\sin \phi, k) \].
   
 \subsubsection{Elliptic K}
@@ -421,13 +417,14 @@ In the third column the upper and lower alternative signs are taken when
 $k$ lies in the second and third quadrants respectively.
 
 One quite subtle point arises: although the twelve Jacobi elliptic functions
-are even functions of the modulus $k$, the quarter period $i\mathrm{K}^\prime(k)$
-is not (see the second row of the table above). If $\Re(k)>0$, then for example
-$4\mathrm{K}(k)$ and  $2i\mathrm{K}^\prime(k)=2i\mathrm{K}(k^\prime)$ are
+and $\mathrm{K}(k)$ are even functions of the modulus $k$, the quarter period
+$i\mathrm{K}'(k)$ is not (see the second row of the table above).
+If $\Re(k)>0$, then for example
+$4\mathrm{K}(k)$ and  $2i\mathrm{K}'(k)=2i\mathrm{K}(k')$ are
 primitive periods of $\mathrm{sn}(x,k)$. However, if we use $-k$ as the modulus,
 the first primitive period obtained is the same (since $\mathrm{K}(k)$ is an
 even function) but the second is different namely:
-$2i\mathrm{K}^\prime(-k)=2i\mathrm{K}(k^\prime) \pm 4\mathrm{K}(k)$.
+$2i\mathrm{K}'(-k)=2i\mathrm{K}(k') \pm 4\mathrm{K}(k)$.
 This explains why some of the values returned by the `eighth' period rules for
 $\mathrm{sn}$ etc.\ are not even functions of k.
 
@@ -448,9 +445,9 @@ When called with one argument \f{EllipticD(k)} will return the value of the
 The integrals of the first and second kind are related:
 \[\mathrm{E}(k) = \mathrm{K}(k)-k^2\mathrm{D}(k), \qquad
 \mathrm{E}(\phi, k) = \mathrm{F}(\phi, k)-k^2\mathrm{D}(\phi, k).\]
-For numerical computations \f{EllipticD(u,k)} is preferred to
-\f{EllipticE(u,k)} as it involves only one invocation of the symmetric elliptic
-integral $\mathrm{RD}$.
+% For numerical computations \f{EllipticD(u,k)} is preferred to
+% \f{EllipticE(u,k)} as it involves only one invocation of the symmetric
+%  elliptic integral $\mathrm{RD}$.
 
 For all the elliptic integrals, rule lists are provided for simplification for
 special values of the argument(s), differentiation with respect to either
@@ -458,20 +455,68 @@ argument and shift rules for the incomplete integrals so that their first
 argument lies in the range  $0 <= \phi <= \pi/2$.
 
 If the arguments of the elliptic integral function are numeric and the switches
-\sw{ROUNDED} and \sw{COMPLEX} are both ON, the corresponding principal
-numerical value will be returned. The numerical evaluation routines should now
-succeed for all complex values of the arguments provided, of course, the
-corresponding integral exists.
+\sw{ROUNDED} and \sw{COMPLEX} are both ON, the numerical value will be returned. The
+numerical evaluation routines should now succeed for all complex values of the arguments
+provided, of course, the corresponding integral exists. The incomplete integrals
+$\mathrm{F}(\phi, k)$, $\mathrm{E}(\phi, k)$, $\mathrm{D}(\phi, k)$ and $\Pi(\phi, a, k)$
+are all multi-valued as there are branch points in the  defining integrands  when
+$\sin(\phi) =\pm 1$ and $k\sin(\phi) = \pm 1$.
 
-The incomplete integrals $\mathrm{F}(\phi, k)$, $\mathrm{E}(\phi, k)$ and
-$\mathrm{D}(\phi, k)$ are all multi-valued as there are branch points in the
-defining integrands  when $\sin(\phi) =\pm 1$ and $k\sin(\phi) = \pm 1$.
-The value returned by the numerical routines uses the straight line contour
-between 0 and $\sin(\phi)$, except when $|\Re{\phi}| > \pi/2$ when the contour
-used is the straight line segment along the real axis from 0 to the multiple
-of $\pi$ nearest to $\phi$ followed by the straight line segment from this
-value to $\sin(\phi)$.
+For mumerical evaluation when the first argument $\phi$ is complex there are issues that
+arise which are absent when $\phi$ is real. One might use the the straight line contour
+from $\theta=0$ to $\theta=\phi$, but this is leads to integrals that are difficult to
+evaluate. When $|\Re{\phi}| \leq \pi/2$, the change of variable $x=\sin \theta$ is applied
+and the value returned uses the straight line contour between $x=0$ and $x=\sin(\phi)$.
+This will  produce a different value if the loop formed by the two contours encloses a
+branch point. When $|\Re{\phi}| > \pi/2$ the contour used is the straight line segment
+along the real axis from 0 to the multiple of $\pi$ nearest to $\phi$ followed by the
+straight line segment from between $x=0$ and $x=\sin(\phi)$. When $\phi$ is real the
+contours in the $\theta$ and $x$ planes coincide. Other contours between the
+two endpoints will yield different values depending on how the contour winds around the
+two branch points.
 
+Note also that if the contour contains a branch point, there is sign ambiguity as the
+branch point is crossed depending on which branch of the square root in the integrand is
+chosen. It seems logical to choose the principal branch. 
+
+For example when $k>1$ \& $1/k < y <1$
+\[ \int_0^y \frac{\mathrm{d}x}{\sqrt{1-x^2}\sqrt{1-k^2x^2}}\]
+is taken to be
+\[\int_0^{1/k} \frac{\mathrm{d}x}{\sqrt{1-x^2}\sqrt{1-k^2x^2}}
+-i\int_{1/k}^y \frac{\mathrm{d}x}{\sqrt{1-x^2}\sqrt{k^2x^2-1}}.\]
+
+\subsubsection{Elliptic $\Pi$}
+\hypertarget{operator:ELLIPTICPI}{}
+\ttindextype[ELLIPFN]{EllipticPi}{operator}
+The Elliptic $\Pi$ function can be used as \f{EllipticPi( )} and
+will return the value of the \emph{Elliptic Integral of the
+Third Kind}.
+
+The Elliptic $\Pi$ function comes with either two or three arguments;
+when called with three arguments \f{EllipticPi(phi,a,k)} will return the
+value of the \emph{Incomplete Elliptic Integral of the Third Kind}:
+\[\Pi(\phi,a,k)=\int_0^{\phi}
+\left((1-a^2\sin^2 \theta)\sqrt{1-k^2 \sin^2 \theta}\right)^{-1}
+\,\mathrm{d}\theta.\]
+For $-\pi/2 \leq \Re{\phi} \leq \pi/2$, the incomplete integral may be written in
+the form:
+\[\Pi(\phi,a,k)=\int_0^{sin \phi}
+\left((1-a^2t^2)\sqrt{(1-t^2)(1-k^2t^2)}\right)^{-1}\,\mathrm{d}t.\]
+When called with two arguments as \f{EllipticPi(a,k)}
+it will return the value of the
+\emph{Complete Elliptic Integral of the Third Kind}:
+\begin{eqnarray*}
+  \Pi(a, k)= \Pi(\pi/2,a,k) & = &
+\int_0^{\pi/2} \left((1-a^2\sin^2 \theta)\sqrt{1-k^2 \sin^2 \theta}\right)^{-1}
+\,\mathrm{d}\theta \\
+& =& \int_0^1 \left((1-a^2t^2)\sqrt{(1-t^2)(1-k^2t^2)}\right)^{-1}\,\mathrm{d}t.
+\end{eqnarray*}
+
+For certain values of $a$ namely $0$, $\pm 1$ and $\pm k$ the integrals reduce
+to elliptic integrals of the first and second kinds.
+
+\subsection{Jacobi's Elliptic Integrals}
+\index{Jacobi Elliptic Integrals}
 \subsubsection{Jacobi E}
 \hypertarget{operator:JACOBIE}{}
 \ttindextype[ELLIPFN]{JacobiE}{operator}
@@ -492,21 +537,248 @@ CSL GUI), there is no problem and it is rendered as $\mathcal{E}(u,k)$
 in accordance with NIST usage.
 On non-GUI interfaces the Jacobi E function is rendered as E\_j.
 
-%\subsection{Ellpitic $\Pi$}
-%
-%The Elliptic $\pi$ function can be used as \f{EllipticPi( )} and
-%will return the value of the {\underline {Elliptic Integral of the
-%Third Kind}}.
-%
-
 \subsubsection{Jacobi's Zeta Function}
 \hypertarget{operator:JACOBIZETA}{}
-\ttindextype[ELLIPFN]{jacobiZeta}{operator}\index{Zeta function of Jacobi!\package{Ellipfn} package}
+\ttindextype[ELLIPFN]{jacobiZeta}{operator}
+\index{Zeta function of Jacobi!\package{Ellipfn} package}
 
 This can be called as \f{jacobiZeta(u,k)} and refers to Jacobi's (elliptic)
 Zeta function $\mathrm{Z}(u,k)$ whereas the operator \f{Zeta} will invoke
-Riemann's $\zeta$ function.
+Riemann's $\zeta$ function. It is closely related to Jacobi's Epsilon function
+\f{jacobie}; in fact
+\[\mathrm{Z}(u,k) = \mathcal{E}(u,k)-u\mathrm{E}(k)/\mathrm{K}(k).\]
 
+\
+\subsection{Symmetric Elliptic Integrals}
+\index{Symmetric Elliptic Integrals}
+The functions in this section are currently only intended for use for in the
+numerical evaluation of the `classical' elliptic integrals discussed above and
+in certain other `basic' elliptic integrals. The switches \sw{ROUNDED} and
+\sw{COMPLEX} should both be ON.
+
+Symmetric elliptic integrals are a relatively new development in the theory of
+elliptic functions mainly due to Carlson and his collaborators; an extensive
+bibliography is available on the NIST Digital Library of Mathematical Functions
+starting at the link \href{https://dlmf.nist.gov/bib/C#bib449}
+{DLMF:NIST, Bibliography}. They have a number of advantages over more
+traditional approaches; see for example
+\href{https://dlmf.nist.gov/19.15}{Advantages of Symmetry}.
+
+The fundamental symmetric integrals are all integrals over the positive real
+line and involve the function $s(t)=\sqrt{t+x}\sqrt{t+y}\sqrt{t+z}$ where
+$x,y,z\in \mathbb{C} \setminus(-\infty, 0]$ but, except where otherwise stated, at most
+one of $x,y,z$ may be zero.
+\ttindextype[ELLIPFN]{RF}{operator}
+\ttindextype[ELLIPFN]{RD}{operator}
+\ttindextype[ELLIPFN]{RJ}{operator}
+\ttindextype[ELLIPFN]{RC}{operator}
+\begin{eqnarray*}
+\mathrm{RF}(x,y,z) & = & \frac{1}{2}\int_0^\infty \frac{\mathrm{d}t}{s(t)}\\
+\mathrm{RG}(x,y,z) & = & \frac{1}{4}\int_0^\infty \frac{1}{s(t)}\left(
+     \frac{x}{t+x}+\frac{y}{t+y}+\frac{z}{t+z}\right)t\mathrm{d}t\\
+\mathrm{RJ}(x,y,z,p) & = & \frac{3}{2}\int_0^\infty \frac{\mathrm{d}t}{s(t)(t+p)}\\
+\mathrm{RD}(x,y,z) & = & \frac{3}{2}\int_0^\infty \frac{\mathrm{d}t}{s(t)(t+z)}
+\qquad z \neq 0, \quad x+y \neq 0\\
+\mathrm{RC}(x,y) & = & \frac{1}{2}\int_0^\infty\frac{\mathrm{d}t}{\sqrt{t+x)}(t+y)}\qquad y \neq 0
+\end{eqnarray*}
+The first three integrals defined above are symmetric in $x,y,z$ and are termed
+\emph{symmetric elliptic integrals of the first, second and third kinds}
+respectively. $\mathrm{RD}$ and $\mathrm{RC}$ are degnerate versions of
+$\mathrm{RJ}$ and $\mathrm{RF}$ respectively as
+\[\mathrm{RD}(x,y,z) =\mathrm{RJ}(x,y,z,z) \qquad 
+\mathrm{RC}(x,y) =\mathrm{RF}(x,y,y) \]
+$\mathrm{RD}$ is an elliptic integral of the second kind and is only symmetric
+in $x,y$ whilst $\mathrm{RC}$ is an elementary integral, but can be numerically
+evaluated efficiently without needing to distinguish between the trigonometric
+and hyperbolic cases. For certain special values of $p$ the integral
+$\mathrm{RJ}$ of the third kind degenerates into integrals of the first and
+second kinds. For numeric evaluations it turns out that the use of $\mathrm{RD}$
+is more convenient than that of $\mathrm{RG}$ (which is not currently
+implemented in \REDUCE). For more information see
+\href{https://dlmf.nist.gov/19#PT3}{\S19.15-19.29} of the DLMF:NIST.
+
+The Legendre elliptic integrals may all be expressed in terms of the symmetric
+integrals; the complete integrals satisfy
+\begin{eqnarray*}
+\mathrm{K}(k) &=& \mathrm{RF}(0,k^{\prime 2},1) \\
+\mathrm{D}(k) &=& \mathrm{RD}(0,k^{\prime 2},1)/3 \\
+\mathrm{E}(k) &=& \mathrm{RF}(0,k^{\prime 2},1)-k^2\mathrm{RD}(0,k^{\prime 2},1)/3\\
+\Pi(a,k) &=&\mathrm{RF}(0,k^{\prime 2},1)+a^2\mathrm{RJ}(0,k^{\prime 2},1,1-a^2)/3
+\end{eqnarray*}
+where here and below $k^\prime=\sqrt{1-k^2}$. For the incomplete integrals,
+defining $s=\sin \phi$ with $-\pi/2 \leq \Re{\phi} \leq \pi/2$, we have
+\begin{eqnarray*}
+\mathrm{F}(\phi,k) &=& s \mathrm{RF}(1-s^2, 1-k^2s^2, 1)\\
+\mathrm{D}(\phi,k) &=& s^3 \mathrm{RD}(1-s^2, 1-k^2s^2, 1)/3\\
+\mathrm{E}(\phi,k) &=&\mathrm{F}(\phi,k)-k^2s^3\mathrm{RD}(1-s^2,1-k^2s^2,1)/3\\
+\Pi(\phi,a,k) &=&\mathrm{F}(\phi,k) +a^2s^3\mathrm{RJ}(1-s^2,1-k^2s^2,1,1-a^2s^2)/3
+\end{eqnarray*}
+The above formulae are only valid when the range of integration does not
+include one or more branch points of the integrand (when $s$ is real and
+$s^2>1$ or when $k s$ is real and $(k s)^2 >1$).  In these cases it is necessary
+to split the range of integration at the branch points resulting in two or three
+elliptic integrals.
+
+Currently the Carlson's duplication method is used to evaluate the
+symmetric elliptic integrals of the first, second and third kinds
+$\mathrm{RF}$, $\mathrm{RD}$ and $\mathrm{RJ}$ (and also the related
+elementary integral $\mathrm{RC}$).  For more details see the DLMF website:
+\href{https://dlmf.nist.gov/19.36#i}{Duplication Method}.
+In particular the \REDUCE code  is essentially a translation from
+Fortran of the code of Carlson \& Notis \cite{CarlsonNotis:81} generalised
+for complex arguments and structured to avoid GO TO.
+
+Alternatively the symmetric integral $\mathrm{RF}$ may be evaluated
+using a sequence of quadratic transformations 
+which converge rapidly to the elementary hyperbolic integral:
+\[\mathrm{RC}(X^2+Y^2,X^2) = \mathrm{RF}(X^2,X^2,X^2+Y^2) = \mathrm{arctanh}
+(Y/(X^2+Y^2))/Y.\]
+More information on this method due to Carlson in the 1990's
+may be found on the DLMF website:
+\href{https://dlmf.nist.gov/19.36#ii}{Quadratic Transformations}.
+
+\subsubsection{Basic Elliptic Integrals}
+\index{Basic Elliptic Integrals}
+Elliptic integrals involving the square root $s(t)$ of a cubic or quartic
+polynomial in which the range of integration is an arbitrary interval $[y,x]$
+of the real line are considered. Again there are three basic kinds: first,
+second and third. Carlson \cite{Carlson:88} \& \cite{Carlson:99} showed how each
+of these can be expressed as a fundamental symmetric elliptic integral of the
+corresponding kind over the range $[0,\infty)$. Let
+\begin{eqnarray*}
+X_\alpha  = & \sqrt{a_\alpha+b_\alpha x} \quad & 1 \leq \alpha \leq 5\\
+Y_\beta  = & \sqrt{a_\beta+b_\beta y} \quad & 1 \leq \beta \leq 5\\
+d_{\alpha\beta}  = & a_\alpha b_\beta - a_\beta b_\alpha \quad & d_{\alpha\beta} \neq 0\mbox{ if } \alpha \neq \beta\\
+s(t)  = &  \prod^4_{\alpha=1} \sqrt{a_\alpha+b_\alpha t}
+\end{eqnarray*}
+and where the four line segments with end points $a_\alpha+b_\alpha y$ and
+$a_\alpha+b_\alpha x$ for $1\leq\alpha\leq 4$ lie in $ \mathbb{C} \setminus (-\infty, 0)$.
+Note that if $s(t)$ is a cubic then one simply chooses supplies unity
+i.e. $a_\alpha=1, b_\alpha=0$ as a fourth factor of $s(t)$.
+
+Then integrals of the first and second kinds take the form:
+\ttindextype[ELLIPFN]{ellint\_1st}{operator}
+\ttindextype[ELLIPFN]{ellint\_2nd}{operator}
+\begin{eqnarray*}
+\int_y^x \frac{\mathrm{d}t}{s(t)} &=& 2\mathrm{RF}(U_{12}^2, U_{13}^2, U_{23}^2)\\
+\int_y^x\frac{(a_1+b_1t)\mathrm{d}t}{(a_4+b_4t)s(t)} &=& \frac{2}{3}d_{12}d_{14}
+\mathrm{RD}(U_{12}^2, U_{13}^2, U_{23}^2) +\frac{2X_1Y_1}{X_4Y_4U_{23}}\qquad
+\mbox{if }U_{23}\neq 0
+\end{eqnarray*}
+where in the second equation we have chosen (wlog) the distinguished factors to have
+indices 1 \& 4.
+
+For any permutation $\alpha,\beta,\gamma,\delta$ of 1,2,3,4, let
+\begin{eqnarray*}
+U_{\alpha\beta} & = &(X_\alpha X_\beta Y_\gamma Y_\delta + X_\gamma X_\delta Y_\alpha Y_\beta)
+  /(x-y) \qquad \mbox{for } x,y \mbox{ finite}\\
+  & = & \sqrt{b_\alpha}\sqrt{b_\beta}Y_\gamma Y_\delta + Y_\alpha Y_\beta
+  \sqrt{b_\gamma}\sqrt{b_\delta} \qquad \qquad \mbox{for } x = \infty\\
+  & = & X_\alpha X_\beta \sqrt{-b_\gamma}\sqrt{-b_\delta}+X_\gamma X_\delta
+      \sqrt{-b_\alpha}\sqrt{-b_\beta}X_\gamma \qquad \mbox{for } y = -\infty
+\end{eqnarray*}
+Clearly $U_{\alpha\beta}=U_{\beta\alpha}=U_{\gamma\delta}=U_{\delta\gamma}$ and at most
+one of $U_{12}, U_{13}, U_{23}$ is zero since
+$U_{\alpha\beta}^2 - U_{\alpha\gamma}^2 = d_{\alpha\delta}d_{\beta\gamma} \neq 0$, thus
+at most one of the parameters of $\mathrm{RF}$ and $\mathrm{RD}$ is zero.
+If $X_4$ or $Y_4$ is zero,that is if $a_4+b_4t$ vanishes at one end of the range
+of integration, the integral of the second kind diverges.
+
+In the `awkward' case when $U_{23}=0$ or $U_{12}^2+U_{13}^2=0$, the above method breaks
+down. However it is still possible to calculate the required integral; choose
+$\beta =2$ or $\beta=3$ so that $b_\beta \neq 0$ and note that
+\begin{eqnarray*}
+b_\beta\int \frac{(a_1+b_1t)\mathrm{d}t} {(a_4+b_4t)s(t)}
+-b_1\int \frac{(a_\beta+b_\beta t)\mathrm{d}t}{(a_4+b_4t)s(t)}
+&=& d_{1\beta}\int \frac{\mathrm{d}t}{(a_4+b_4t)s(t)} \\
+b_4\int \frac{(a_\beta+b_\beta t)\mathrm{d}t}{(a_4+b_4t)s(t)}
+-b_\beta\int\frac{(a_4+b_4 t)\mathrm{d}t}{(a_4+b_4t)s(t)}
+&=& d_{\beta 4}\int \frac{\mathrm{d}t}{(a_4+b_4t)s(t)}.
+\end{eqnarray*}
+The second term on the lhs of the second equation reduces to
+$b_\beta\int 1/s(t)\mathrm{d}t$ and so is an integral of the first kind.
+Thus the required integral can be expressed in terms of an integral of the
+second kind and one of the first kind.
+
+Integrals of the third kind take the form
+\ttindextype[ELLIPFN]{ellint\_3rd}{operator}
+\[\int_y^x\frac{(a_1+b_1t)\mathrm{d}t}{(a_5+b_5t)s(t)} = \frac{2d_{12}d_{13}
+d_{14}}{3d_{15}}\mathrm{RJ}(U_{12}^2, U_{13}^2, U_{23}^2,U_{15}^2) +
+\mathrm{RC}(S_{15}^2,Q_{15}^2)\]
+where
+\begin{eqnarray*}
+S_{15}  &=& \left(\frac{X_2X_3X_4}{X_1}Y_5^2+\frac{Y_2Y_3Y_4}{Y_1}X_5^2\right)/(x-y) \qquad
+\mbox{for }x,y\mbox{ finite}\\
+&=& \frac{X_2X_3X_4}{X_1}Y_5^2+\frac{Y_2Y_3Y_4}{Y_1}X_5^2 \quad \qquad \mbox{for }
+x = \infty \mbox{ or } y = -\infty \\
+U_{15}^2 &=& U_{1\beta}^2-\frac{d_{1\gamma}d_{1\delta}d_{\beta 5}}{d_{15}}
+= U_{\beta\gamma}^2-\frac{d_{1\beta}d_{1\gamma}d_{\delta 5}}{d_{15}} \neq 0\\
+Q_{15}^2 &=& \frac{(X_5Y_5)^2}{(X_1Y_1)^2}U_{15}^2\qquad\mbox{ where }
+S_{15}^2-Q_{15}^2 = \frac{d_{25}d_{35}d_{45}}{d_{15}} \neq 0
+\end{eqnarray*}
+where $\beta,\gamma,\delta$ is a permutation of 2,3,4. Again at most one of the
+parameters of $\mathrm{RJ}$ is zero. This method will break down when calculating
+$S_{15}$ if $a_1+b_1t$ vanishes at either the upper or lower limit of integration as
+either $X_1$ or $Y_1$ is zero. However the situation can be remedied by choosing $\beta$
+so that $X_\beta \neq 0$, $Y_\beta \neq 0$ and $b_\beta \neq 0$ and using similar
+methods to that used for the awkward case for integrals of the second kind.
+
+Note if the integration range is $(-\infty, +\infty)$, the above formulae for
+integrals of all three kinds are not valid and the integral needs to be split
+into two at, say, zero.
+Similarly if the integration range is such that the integrand has branch points,
+the integration range will need to be split into two at each of these branch
+points.
+
+In \REDUCE elliptic integrals of the three kinds may be evaluated numerically
+when the switches \sw{ROUNDED} \& \sw{COMPLEX} are both ON by calling the functions
+\f{ellint\_1st},  \f{ellint\_2nd} and \f{ellint\_3rd}. The first two
+parameters are the lower and upper limits of the integration range; these are
+followed by 4 (or 5 for \f{ellint\_3rd}) two-element lists
+$\{a_1,b_1\}, \{a_2,b_2\} \ldots$.
+
+
+\textbf{Known bug:} As pointed out by Carlson \& FitzSimmons \cite{CarlsonFitzSimmons:00},
+the algorithms for $\mathrm{RF}$ \& $\mathrm{RJ}$ may break down when $s(t)$ is the product
+of two quadratic factors each with complex conjugate zeros $x_1\pm i y_1$ \&
+$x_2\pm i y_2$. One of the three quantities
+$U_{12}, U_{13}, U_{23}$ may be negative and this causes the algorithm to return an
+incorrect result. This error only arises when the crossing point (neccessarily real) of
+the diagonals of the parallellogram in the complex plane formed by the four zeros of
+$s(t)$  lies inside the range of integration. The algorithm also appears to produce the
+correct result when the crossing point is inside the range of integration but is
+`sufficiently close' to either end of the range -- the precise condition appears to be
+unknown.
+In the same paper Carlson \& FitzSimmons propose a modified algorithm of the same ilk
+to overcome these difficulties, however it is yet to be implemented in \REDUCE.
+
+\subsubsection{Some Examples}
+In this subsection some of the advantages of symmetry are illustrated; the formula for the
+integral of the first kind replaces the 28 formulae in Gradshteyn and Ryzhik. For the cubic
+case one of the factors in $s(t)$ is simply taken to be unity whilst for cases of the form
+\[\int_\alpha^\beta \frac{\mathrm{d}x}{\sqrt{(a+b x^2)(c+d x^2)}}\]
+one must use the substitution $t=x^2$ to obtain
+\[\frac{1}{2}\int_{\alpha^2}^{\beta^2} \frac{\mathrm{d}t}{\sqrt{t(a+b t)(c+d t)}}\]
+Moreover the restriction that one limit of integration be a branch point of the integrand is
+eliminated without doubling the number of standard integrals in the result.
+Similarly the formula for the integral of the second kind replaces no less than 144 cases
+in Gradshteyn and Ryzhik (72 each for the quartic and cubic cases). For cases where the
+numerator in the integrand is unity one simply takes $a_1=0, b_1=1$ and if there is to be no
+apparent term of the form $(a_4+b_4t)^{3/2}$ in its denominator one takes $a_4=0, b_4=1$.
+
+When $0 \leq \phi \leq \pi/2$, the fundamental integrals of the first, second
+and third kinds $\mathrm{F}(\phi,k)$, $\mathrm{E}(\phi,k)$, $\mathrm{D}(\phi,k)$
+and $\Pi(\phi,a,k)$ may be written as
+\begin{eqnarray*}
+\mathrm{F}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\mathrm{d}t}{\sqrt{t(1-t)(1-k^2t)}}\\  
+\mathrm{E}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\sqrt{1-k^2t}\mathrm{d}t}{\sqrt{t(1-t)}}\\
+\mathrm{D}(\phi,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\sqrt{t}\mathrm{d}t}{\sqrt{(1-t)(1-k^2t)}}\\
+\Pi(\phi,a,k) &=& \frac{1}{2}\int_0^{s^2} \frac{\mathrm{d}t}{\sqrt{t(1-t)(1-k^2t)}(1-a^2t)}
+\end{eqnarray*}
+where in all four cases use has been made of the substitution $t=\sin^2 \theta$
+and $s=\sin\phi$. In the last three equations one takes $a_4=1, b_4 =0$ so that
+the fourth factor in $s(t)$ is unity and in the fourth equation one also takes
+$a_1=1,b_1=0$.
 
 \subsection{Some Numerical Utility Functions}
 \hypertarget{operator:NOME}{}
@@ -1042,21 +1314,6 @@ expressing them in terms of the symmetric elliptic integral:
 For more details see the DLMF website:
 \href{https://dlmf.nist.gov/19.25#v}{Inverse Jacobian
 Elliptic Functions}.
-Currently the Carlson's duplication method is used to evaluate the
-symmetric elliptic integrals of the first, second and third kinds
-$R_F$, $R_D$ and $R_J$ (and also the related elementary integral
-$R_C$).  For more details see the DLMF website:
-\href{https://dlmf.nist.gov/19.36#i}{Duplication Method}.
-
-Alternatively the symmetric integral $R_F$ may be evaluated
-using a sequence of quadratic transformations 
-which converge rapidly to the elementary hyperbolic integral:
-\[R_c(X^2+Y^2,X^2) = R_F(X^2,X^2,X^2+Y^2) = \mathrm{arctanh}
-(Y/(X^2+Y^2))/Y.\]
-More information on this method due to Carlson in the 1990's
-may be found on the DLMF website:
-\href{https://dlmf.nist.gov/19.36#ii}{Quadratic Transformations}.
-
 
 \subsection{Table of Elliptic Functions and Integrals}
 \hypertarget{ELLIPFNTAB}{}
