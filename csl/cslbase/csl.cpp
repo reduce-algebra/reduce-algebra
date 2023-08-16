@@ -3481,49 +3481,6 @@ public:
 };
 #endif
 
-#if !defined NO_STATISTICS && defined ARITHLIB
-
-void showMultStats(uint64_t stats[48][48])
-{   uint64_t total = 0;
-    for (size_t i=0; i<48; i++)
-       for (size_t j=0; j<48; j++) total += stats[i][j];
-    if (total == 0) total = 1; // Avoid divison by zero!
-// This displays 1-4, 5-8, 9-12, 13-16 ... 45-48 which is
-// much more compact than the full table and is probably at least
-// as useful.
-    printf( " 1-4"  "  5-8"  " 9-12" "  -16" "  -20" "  -24"
-           "  -28"  "  -32"  "  -36" "  -40" "  -44" "  45+" "\n");
-    uint64_t soFar = 0;
-    for (int i=1; i<=48; i+=4)
-    {   uint64_t rowSum = 0;
-        for (int j=1; j<=48; j+=4)
-        {   uint64_t val = 0;
-            for (int ii=0; ii<4; ii++)
-                for (int jj=0; jj<4; jj++)
-                    val += stats[i+ii-1][j+jj-1];
-            if (i < j)
-            {   for (int ii=0; ii<4; ii++)
-                    for (int jj=0; jj<4; jj++)
-                        val += stats[j+jj-1][i+ii-1];
-            }
-            uint64_t val1 = (uint64_t)((10000.0*val) + total/2)/total;
-            if (val1 == 10000) val1 = 9999;
-            if (i <= j)
-            {   std::printf("%4u ", (unsigned int)val1);
-                rowSum += val;
-            }
-            else if (i==45 && j==1)
-                std::printf("%10u", (unsigned int)total);
-            else if (i!=45 || j!=5) std::printf("     ");
-        }
-        soFar += rowSum;
-        std::printf(" (%u, %u)\n",
-            (unsigned int)((10000.0*rowSum)/total),
-            (unsigned int)((10000.0*soFar)/total));
-    }
-}
-
-#endif // !NO_STATISTICS && ARITHLIB
 
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
@@ -3622,14 +3579,33 @@ int ENTRYPOINT(int argc, const char *argv[])
     }
     report_dependencies();
 #if !defined NO_STATISTICS && defined ARITHLIB
-    extern uint64_t multSizes[48][48];
-    extern uint64_t multCosts[48][48];
-    extern size_t biggestMult;
-    std::printf("\n++MultSizes (biggest = %u)++\n",
-                (unsigned int)biggestMult);
-    showMultStats(multSizes);
-    std::printf("\n++MultCosts++\n");
-    showMultStats(multCosts);
+    {   using namespace std::chrono_literals;
+        std::stringstream buf;
+        auto t = std::time(nullptr);
+        auto tm = std::localtime(&t);
+// If the environment variable PACKAGE is set I base the log-file name
+// on that. In all cases its name has the day-number-in-year, hour, minute
+// and second present.
+        auto pp = std::getenv("PACKAGE");
+        if (pp == nullptr)
+            buf << std::put_time(tm, "multstats%j:%H:%M:%S.data");
+        else buf << pp << std::put_time(tm, ":stats%j:%H:%M:%S.data");
+// If I sleep for just over a second any subsequent log file from this
+// process will end up with a different name!
+        std::this_thread::sleep_for(1050ms);
+        FILE* stats = std::fopen(buf.str().c_str(), "w");
+        if (stats != nullptr)
+        {   std::fprintf(stats, "\n++ MultSizes (%d, biggest = %u)++ \n",
+                MULSIZE, (unsigned int)biggestMult);
+            for (size_t i=0; i<MULSIZE; i++)
+            {   for (size_t j=0; j<MULSIZE; j++)
+                    std::fprintf(stats, "%u, ", (unsigned int)multSizes[i][j]);
+                std::fprintf(stats, "\n");
+            }
+            std::fprintf(stats, "-1\n");
+            std::fclose(stats);
+        }
+    }
 #endif // !NO_STATISTICS && ARITHLIB
 #ifdef USE_MPI
     MPI_Finalize();
