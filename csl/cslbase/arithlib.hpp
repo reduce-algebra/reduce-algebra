@@ -8217,6 +8217,7 @@ template <int N, int M>
 // help in the selection of values.
 // Everything is delicately sensitive to compiler optimisation.
 
+
 #if defined __clang__
 inline const std::size_t DEFAULT_KARATSUBA_START_EVEN = 30;
 inline const std::size_t DEFAULT_KARATSUBA_START_ODD = 33;
@@ -8423,6 +8424,7 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
                                 std::uint64_t* w)
 {
 // Here M >= N.
+    size_t wTop = M+N;
     size_t wsNeeded = 4*N + 4*(64-nlz(N));
     size_t wsTotal = wsNeeded;
     if (N >= PARAKARA_START) wsTotal *= 2;
@@ -8450,17 +8452,19 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
     for (size_t i=2*N; i<N+M; i++) w[i] = 0;
     v += N;
     w += N;
+    wTop -= N;
     M -= N;
     uint64_t* temp = N < PARAKARA_START ? workspace + wsNeeded :
                                           workspace + 2*wsNeeded;
     do
     {   while (M >= N)
         {   karatsubaCore(u, N, v, temp, workspace);
-            std::uint64_t c = addWithCarry(w, temp, w, N);
-            for (size_t i=N; i<2*N; i++)
-                c = addWithCarry(w[i], temp[i], c, w[i]);
+            std::uint64_t c = addWithCarry(w, temp, w, 2*N);
+            for (size_t i=2*N; c!=0 && i<wTop; i++)
+                c = addWithCarry(w[i], c, w[i]);
             v += N;
             w += N;
+            wTop -= N;
             M -= N;
         }
     } while ((M >= KARATSUBA_START_ODD ||
@@ -8468,9 +8472,7 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
             (std::swap(u, v), std::swap(N, M), true));
     if (M != 0)
     {   classicalMul(v, M, u, N, temp);
-        std::uint64_t c = addWithCarry(w, temp, w, N);
-        for (size_t i=N; i<N+M; i++)
-            c = addWithCarry(w[i], temp[i], c, w[i]);
+        addWithCarry(w, temp, w, M+N);
     }
 }
 

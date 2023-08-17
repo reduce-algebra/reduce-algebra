@@ -62,6 +62,10 @@ using number_dispatcher::SFlt;
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
+#ifndef NO_STATISTICS
+uint64_t multSizes[MULSIZE][MULSIZE] = {0};
+size_t biggestMult = 0;
+#endif
 
 LispObject Times::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Times>("times", a, b);
@@ -133,12 +137,23 @@ LispObject Times::op(LFlt a, LispObject b)
 
 // fixnum * fixnum
 LispObject Times::op(Fixnum a, Fixnum b)
-{   return arithlib_lowlevel::Times::op(a.intval(), b.intval());
+{
+#ifndef NO_STATISTICS
+    multSizes[0][0]++;
+#endif
+    return arithlib_lowlevel::Times::op(a.intval(), b.intval());
 }
 
 // bignum * fixnum
 LispObject Times::op(std::uint64_t* a, Fixnum b)
-{   return arithlib_lowlevel::Times::op(a, b.intval());
+{
+#ifndef NO_STATISTICS
+    size_t lena = arithlib_implementation::numberSize(a);
+    if (lena >= MULSIZE) lena = MULSIZE-1;
+    biggestMult = std::max(biggestMult, lena);
+    multSizes[lena][0]++;
+#endif
+    return arithlib_lowlevel::Times::op(a, b.intval());
 }
 
 // rational * fixnum
@@ -178,15 +193,15 @@ LispObject Times::op(LFlt a, Fixnum b)
 
 // fixnum * bignum
 LispObject Times::op(Fixnum a, std::uint64_t* b)
-{   return Times::op(b, a);
-}
-
+{
 #ifndef NO_STATISTICS
-#define MULSIZE 48
-uint64_t multSizes[MULSIZE][MULSIZE] = {0};
-uint64_t multCosts[MULSIZE][MULSIZE] = {0};
-size_t biggestMult = 0;
+    size_t lenb = arithlib_implementation::numberSize(b);
+    if (lenb >= MULSIZE) lenb = MULSIZE-1;
+    biggestMult = std::max(biggestMult, lenb);
+    multSizes[0][lenb]++;
 #endif
+    return Times::op(b, a);
+}
 
 // bignum * bignum
 LispObject Times::op(std::uint64_t* a, std::uint64_t* b)
@@ -194,11 +209,10 @@ LispObject Times::op(std::uint64_t* a, std::uint64_t* b)
 #ifndef NO_STATISTICS
     size_t lena = arithlib_implementation::numberSize(a);
     size_t lenb = arithlib_implementation::numberSize(b);
-    if (lena > MULSIZE) lena = MULSIZE;
-    if (lenb > MULSIZE) lenb = MULSIZE;
+    if (lena >= MULSIZE) lena = MULSIZE-1;
+    if (lenb >= MULSIZE) lenb = MULSIZE-1;
     biggestMult = std::max(biggestMult, std::max(lena, lenb));
-    multSizes[lena-1][lenb-1]++;
-    multCosts[lena-1][lenb-1] += lena*lenb;
+    multSizes[lena][lenb]++;
 #endif
     return arithlib_lowlevel::Times::op(a, b);
 }

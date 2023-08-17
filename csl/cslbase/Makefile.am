@@ -173,6 +173,7 @@ endif !exeext
 .PHONY:	profile
 .PHONY:	profile-install
 .PHONY:	c-code
+.PHONY:	bootimage
 .PHONY:	just-c-code
 .PHONY:	standard-c-code
 .PHONY:	partial-c-code
@@ -1903,6 +1904,25 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
+
+# Build bootstrapreduce.img just once using any existint inline-defs
+
+bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
+	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)
+	mkdir -p buildlogs
+	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
+	chmod 664 $(gensrc)/*
+	$(XBOOTSTRAPREDUCE) \
+		-w -z -x $(CSLFLAGS) -Dno_init_file \
+		$(CYGSRC)/buildreduce.lsp \
+		-D@srcdir=$(CYGSRC) \
+		-D@reduce=$(CYGREDUCE) \
+		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
+		-j bootstrapreduce.dep
+	chmod 664 $(gensrc)/*
+	if test -f $(BOOTSTRAPREDUCE_IMG); \
+	then $(CP) $(BOOTSTRAPREDUCE_IMG) $(gensrc); fi
+	chmod 664 $(gensrc)/*
 
 $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)
