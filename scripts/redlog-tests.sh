@@ -29,8 +29,8 @@
 # an issue that should be for redlog to address. There are further
 # problems when files from SUPPORT are included, and as will be the case
 # for most others I do not have a wayo to convince myself that things are
-% otherwise OK. But this as is can be a start that can maybe be improved on
-% in the future!
+# otherwise OK. But this as is can be a start that can maybe be improved on
+# in the future!
 
 # The first checkin will just support CSL, but adaptation to provide
 # --csl and --psl flags so that PSL can also be exercised can come later.
@@ -80,16 +80,18 @@ for x in $tests
 do
   logdir="$count-`basename ${x%red}log`"
   echo Test ${logdir%.log}
-% Use an installed versiun of Reduce. Note that I have a symbolic
+# Use an installed versiun of Reduce. Note that I have a symbolic
 # link to make scripting this simple for me:
 # /usr/local/bin/redcsl -> /cygdrive/C/Program Files/Reduce/lib/csl/reduce.exe
-  timeout $TIME redcsl -w $x -- "$logdir" > /dev/null
+  echo "on echo;" > /tmp/test.red
+  cat $x >> /tmp/test.red
+  timeout $TIME redcsl -w /tmp/test.red -- "$logdir" > /dev/null
   sed -i -e "1d" "$logdir"
   if test "$install" = "true"
   then
     mv $logdir ${logdir%log}rlg 
   else
-    if !diff $logdir ${logdir%log}rlg > /tmp/diffs
+    if ! diff $logdir ${logdir%log}rlg > /tmp/diffs
     then
       mv /tmp/diffs ${logdir%log}diff
       echo Difference in $logdir
