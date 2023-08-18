@@ -3578,7 +3578,7 @@ int ENTRYPOINT(int argc, const char *argv[])
         res = EXIT_FAILURE;
     }
     report_dependencies();
-#if !defined NO_STATISTICS && defined ARITHLIB
+#if defined COUNT_MULTIPLICATION && defined ARITHLIB
     {   using namespace std::chrono_literals;
         std::stringstream buf;
         auto t = std::time(nullptr);
@@ -3588,25 +3588,38 @@ int ENTRYPOINT(int argc, const char *argv[])
 // and second present.
         auto pp = std::getenv("PACKAGE");
         if (pp == nullptr)
-            buf << std::put_time(tm, "multstats%j:%H:%M:%S.data");
+            buf << std::put_time(tm, "multcounts%j:%H:%M:%S.data");
         else buf << pp << std::put_time(tm, ":stats%j:%H:%M:%S.data");
 // If I sleep for just over a second any subsequent log file from this
 // process will end up with a different name!
         std::this_thread::sleep_for(1050ms);
         FILE* stats = std::fopen(buf.str().c_str(), "w");
         if (stats != nullptr)
-        {   std::fprintf(stats, "\n++ MultSizes (%d, biggest = %u)++ \n",
-                MULSIZE, (unsigned int)biggestMult);
+        {
+// A header line that indicates the size of the big table that follows.
+           std::fprintf(stats, "\n++ MultCounts ++\n");
+// Largest number of digits in a bignum seen as INPUT to a multiplication.
+            std::fprintf(stats, "biggest bignum: %u\n",
+                                (unsigned int)biggestMult);
+// For products of fixnums the number of cases the result was
+// still a fixnum and the number of cases it had become a bignum.
+            std::fprintf(stats, "fixnum*fixnum: %" PRIu64 " %" PRIu64 "\n",
+                                shortResult, longResult);
+// A square table showing the number of cases of an N*M-digit multiplication
+// where N or M being zero indicated a fixnum input. The final row and
+// column include counts for all cases beyond that limit.
+            std::fprintf(stats, "data: %d\n", MULSIZE);
             for (size_t i=0; i<MULSIZE; i++)
             {   for (size_t j=0; j<MULSIZE; j++)
                     std::fprintf(stats, "%u, ", (unsigned int)multSizes[i][j]);
                 std::fprintf(stats, "\n");
             }
-            std::fprintf(stats, "-1\n");
+// A line that marks the end of the data.
+            std::fprintf(stats, "++ End of counts ++\n");
             std::fclose(stats);
         }
     }
-#endif // !NO_STATISTICS && ARITHLIB
+#endif // COUNT_MULTIPLICATION && ARITHLIB
 #ifdef USE_MPI
     MPI_Finalize();
 #endif // USE_MPI

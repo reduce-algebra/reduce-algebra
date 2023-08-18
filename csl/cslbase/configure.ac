@@ -634,16 +634,16 @@ AC_ARG_ENABLE(profile,
   [enable_profile="no"])
 AC_MSG_RESULT([$enable_profile])
 
-AC_ARG_ENABLE(statistics,
-  AS_HELP_STRING([--enable-statistics],
-                 [Collect info on use of bignum multiplication]),
+AC_ARG_ENABLE(count-multiplication,
+  AS_HELP_STRING([--enable-count-multiplication],
+                 [Collect counts of use of multiplication to a file]),
   [],
-  [enable_statistics="no"])
-AC_MSG_RESULT([$enable_statistics])
+  [enable_count_multiplication="no"])
+AC_MSG_RESULT([$enable_count_multiplication])
 
-if test "$enable_statistics" != "yes"
+if test "$enable_count_multiplication" = "yes"
 then
-  AC_DEFINE(NO_STATISTICS, [1], [Do not measure multiplication])
+  AC_DEFINE(COUNT_MULTIPLICATION, [1], [Collect counts of multiplication])
 fi
 
 

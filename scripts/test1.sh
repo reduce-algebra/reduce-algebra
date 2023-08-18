@@ -358,6 +358,7 @@ ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
 csltest() {
   command=$1
   logdir=$2
+  export PACKAGE="$p"
 
   fullcommand="$command $CSLFLAGS"
 

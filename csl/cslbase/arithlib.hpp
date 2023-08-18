@@ -8423,6 +8423,14 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
                                 const std::uint64_t* v, std::size_t M,
                                 std::uint64_t* w)
 {
+#ifdef CHECK_MULTIPLY
+    uint64_t* w1 = new uint64_t[M+N+1];
+    classicalMul(u, N, v, M, w1);   // Reference result
+    const uint64_t* uu = u;
+    const uint64_t* vv = v;
+    const uint64_t* ww = w;
+    size_t MM=M, NN=N;
+#endif    
 // Here M >= N.
     size_t wTop = M+N;
     size_t wsNeeded = 4*N + 4*(64-nlz(N));
@@ -8474,6 +8482,33 @@ inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
     {   classicalMul(v, M, u, N, temp);
         addWithCarry(w, temp, w, M+N);
     }
+#ifdef CHECK_MULTIPLY
+    bool ok = true;
+    for (size_t i=0; i<MM+NN; i++)
+        if (ww[i] != w1[i]) ok=false;
+    if (!ok)
+    {   std::cout << "% Karatsuba multiplication messed up\n";
+        std::cout << "% N=" << NN << " M=" << MM << "\n";
+        std::printf("u:=0x");
+        for (int i=NN-1; i>=0; i--)
+            std::printf("_%016" PRIx64, uu[i]);
+        std::printf(";\n");
+        std::printf("v:=0x");
+        for (int i=MM-1; i>=0; i--)
+            std::printf("_%016" PRIx64, vv[i]);
+        std::printf(";\n");
+        std::printf("w:=0x");
+        for (int i=NN+MM-1; i>=0; i--)
+            std::printf("_%016" PRIx64, ww[i]);
+        std::printf(";\n");
+        std::printf("w1:=0x");
+        for (int i=NN+MM-1; i>=0; i--)
+            std::printf("_%016" PRIx64, w1[i]);
+        std::printf(";\n");
+        arithlib_abort("multiplication failed");
+    }
+    delete [] w1;
+#endif
 }
 
 inline void karatsubaMul(const std::uint64_t* u, std::size_t N,

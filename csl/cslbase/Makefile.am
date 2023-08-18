@@ -1905,7 +1905,7 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
 
-# Build bootstrapreduce.img just once using any existint inline-defs
+# Build bootstrapreduce.img just once using any existing inline-defs
 
 bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)

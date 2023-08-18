@@ -62,9 +62,11 @@ using number_dispatcher::SFlt;
 using number_dispatcher::Flt;
 using number_dispatcher::LFlt;
 
-#ifndef NO_STATISTICS
+#ifdef COUNT_MULTIPLICATION
 uint64_t multSizes[MULSIZE][MULSIZE] = {0};
 size_t biggestMult = 0;
+uint64_t shortResult = 0;
+uint64_t longResult = 0;
 #endif
 
 LispObject Times::op(LispObject a, LispObject b)
@@ -138,16 +140,21 @@ LispObject Times::op(LFlt a, LispObject b)
 // fixnum * fixnum
 LispObject Times::op(Fixnum a, Fixnum b)
 {
-#ifndef NO_STATISTICS
+#ifdef COUNT_MULTIPLICATION
     multSizes[0][0]++;
-#endif
+    LispObject r = arithlib_lowlevel::Times::op(a.intval(), b.intval());
+    if (is_fixnum(r)) shortResult++;
+    else longResult++;
+    return r;
+#else
     return arithlib_lowlevel::Times::op(a.intval(), b.intval());
+#endif
 }
 
 // bignum * fixnum
 LispObject Times::op(std::uint64_t* a, Fixnum b)
 {
-#ifndef NO_STATISTICS
+#ifdef COUNT_MULTIPLICATION
     size_t lena = arithlib_implementation::numberSize(a);
     if (lena >= MULSIZE) lena = MULSIZE-1;
     biggestMult = std::max(biggestMult, lena);
@@ -194,7 +201,7 @@ LispObject Times::op(LFlt a, Fixnum b)
 // fixnum * bignum
 LispObject Times::op(Fixnum a, std::uint64_t* b)
 {
-#ifndef NO_STATISTICS
+#ifdef COUNT_MULTIPLICATION
     size_t lenb = arithlib_implementation::numberSize(b);
     if (lenb >= MULSIZE) lenb = MULSIZE-1;
     biggestMult = std::max(biggestMult, lenb);
@@ -206,7 +213,7 @@ LispObject Times::op(Fixnum a, std::uint64_t* b)
 // bignum * bignum
 LispObject Times::op(std::uint64_t* a, std::uint64_t* b)
 {
-#ifndef NO_STATISTICS
+#ifdef COUNT_MULTIPLICATION
     size_t lena = arithlib_implementation::numberSize(a);
     size_t lenb = arithlib_implementation::numberSize(b);
     if (lena >= MULSIZE) lena = MULSIZE-1;
