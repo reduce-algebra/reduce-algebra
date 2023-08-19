@@ -1234,10 +1234,11 @@ inline bool Dzerop(LispObject n)
 
 #endif // ARITHLIB
 
-#ifndef NO_STATISTICS
+#ifdef COUNT_MULTIPLICATION
 #define MULSIZE 50
 extern uint64_t multSizes[MULSIZE][MULSIZE];
 extern size_t biggestMult;
+extern uint64_t shortResult, longResult;
 #endif
 
 #endif // header_arith_h

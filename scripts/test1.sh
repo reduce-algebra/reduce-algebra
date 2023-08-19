@@ -240,7 +240,7 @@ fi
 
 limittime() {
 # This is intended to run a command for a limited amount of CPU time.
-# Note that ounder Cygwin it only checks the time DIRECTLY in the
+# Note that under Cygwin it only checks the time DIRECTLY in the
 # command that is launched, not in any sub-processes. So perhaps
 # unexpectedly 'limittime "time ./expensiveCommand"' does not manage
 # to time-out even if 'limittime ./expensiveCommand' might.
@@ -358,6 +358,7 @@ ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
 csltest() {
   command=$1
   logdir=$2
+  export PACKAGE="$p"
 
   fullcommand="$command $CSLFLAGS"
 

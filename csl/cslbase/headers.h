@@ -220,12 +220,12 @@ inline double CSLpow(double x, double y)
 #include "allocate.h"
 #endif // CONSERVATIVE
 #include "syscsl.h"
+#include "entries.h"
 #include "arith.h"
 #ifdef ARITHLIB
 #include "arith-defs.h"
 #include "dispatch.h"
 #endif // ARITHLIB"
-#include "entries.h"
 #include "proc.h"
 #include "stream.h"
 #include "isprime.h"
