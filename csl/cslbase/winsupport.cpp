@@ -262,6 +262,10 @@ void my_pclose(std::FILE *stream)
     _pclose(stream);
 }
 
+#if 0
+
+// I now try a different scheme with the code in sysfwin.cpp
+
 uint64_t read_clock()
 {   FILETIME t0, t1, t2, t3;
     if (GetProcessTimes(GetCurrentProcess(), &t0, &t1, &t2, &t3) == 0)
@@ -277,6 +281,7 @@ uint64_t read_clock()
 // microseconds.
     return n/10;
 }
+#endif // 0
 
 int windowsFindGnuplot1(char *name)
 {   HKEY keyhandle;
