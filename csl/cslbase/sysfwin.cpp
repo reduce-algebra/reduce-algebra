@@ -698,7 +698,9 @@ uint64_t read_clock_microsecond()
 
 uint64_t read_clock_nanosecond()
 {
-#if defined WIN32 || defined __CYGWIN__
+#if defined __ANDROID__
+    return 0;
+#elif defined WIN32 || defined __CYGWIN__
 // The clock granularity here may be of the order of 15ms, so despite
 // this function delivering a value in nanoseconds is is really rather
 // low accuracy!
@@ -745,7 +747,9 @@ void calibrate_clock_cycle()
 
 uint64_t read_clock_cycles()
 {
-#if defined WIN32 || defined __CYGWIN__
+#if defined __ANDROID__
+    return 0;
+#elif defined WIN32 || defined __CYGWIN__
     unsigned long long int tt;
     if (clock_cycle_calibration < 0.0)
         calibrate_clock_cycle();
@@ -764,7 +768,9 @@ uint64_t read_clock_cycles()
 
 uint64_t read_process_nanosecond()
 {
-#if defined WIN32 || defined __CYGWIN__
+#if defined __ANDROID__
+    return 0;
+#elif defined WIN32 || defined __CYGWIN__
 // The clock granularity here may be of the order of 15ms, so despite
 // this function delivering a value in nanoseconds is is really rather
 // low accuracy!

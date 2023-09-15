@@ -234,6 +234,7 @@ extern atomic<bool> mustQuit;
 //
 
 extern void fwin_set_prompt(std::string s);
+extern void fwin_set_prompt(const char* s);
 
 //
 // Clears screen.
