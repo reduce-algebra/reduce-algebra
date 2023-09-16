@@ -1120,13 +1120,9 @@ int fwin_getchar()
 }
 
 
-void fwin_set_prompt(const char *s)
-{   fwin_prompt_string = s;
-    term_setprompt(fwin_prompt_string);
-}
-
 void fwin_set_prompt(std::string s)
-{   fwin_set_prompt(s.c_str());
+{   fwin_prompt_string = s.c_str();
+    term_setprompt(fwin_prompt_string.c_str());
 }
 
 void fwin_menus(char **modules, char **switches,

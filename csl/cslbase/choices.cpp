@@ -130,7 +130,7 @@ thread_local std::uintptr_t TLfringe;
 
 #include "threadloc.h"
 
-#define TL_fringe 48
+#define TL_fringe 49
 DEFINE_THREAD_LOCAL(std::uintptr_t, WINfringe);
 
 // Use A special Windows hack!

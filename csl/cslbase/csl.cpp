@@ -421,7 +421,8 @@ LispObject interrupted()
         save_prompt = fwin_prompt_string;
 // Well I will want this to run a break-loop, but doing what I once did will
 // at least give me something to test!
-        fwin_set_prompt("+++ Type C to continue, A to abort, X to exit: ");
+        fwin_set_prompt(std::string(
+            "+++ Type C to continue, A to abort, X to exit: "));
         other_read_action(READ_FLUSH, lisp_terminal_io);
         for (;;)
         {   int c = char_from_terminal(nil);

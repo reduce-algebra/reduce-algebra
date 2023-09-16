@@ -271,7 +271,7 @@ extern int fwin_getchar(void);
 
 #define MAX_PROMPT_LENGTH 80
 
-extern void fwin_set_prompt(const char *s);
+extern void fwin_set_prompt(std::string s);
 
 //
 // Clears screen.

@@ -585,7 +585,7 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     save.restore(old);
     std::memcpy(prompt_string, memory_print_buffer, MAX_PROMPT_LENGTH);
     prompt_string[MAX_PROMPT_LENGTH-1] = 0;
-    fwin_set_prompt(prompt_string);
+    fwin_set_prompt(std::string(prompt_string));
     return old;
 }
 
