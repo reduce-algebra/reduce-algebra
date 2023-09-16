@@ -1120,10 +1120,9 @@ int fwin_getchar()
 }
 
 
-void fwin_set_prompt(const char *s)
-{   std::strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
-    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
-    term_setprompt(fwin_prompt_string);
+void fwin_set_prompt(std::string s)
+{   fwin_prompt_string = s.c_str();
+    term_setprompt(fwin_prompt_string.c_str());
 }
 
 void fwin_menus(char **modules, char **switches,
@@ -2212,6 +2211,9 @@ int delete_wildcard(char *filename, const char *old, size_t n)
             FindClose(h);
         }
 #else // WIN32
+#if defined __ANDROID__
+// Not supported here (yet?)
+#else
         glob_t gg;
         size_t i;
         if (glob(filename, GLOB_NOSORT, nullptr, &gg) == 0)
@@ -2221,6 +2223,8 @@ int delete_wildcard(char *filename, const char *old, size_t n)
                     std::filesystem::path(gg.gl_pathv[i]), ec);
             globfree(&gg);
         }
+
+#endif
 #endif // WIN32
     }
     return 0;

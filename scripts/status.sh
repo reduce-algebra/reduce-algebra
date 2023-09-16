@@ -10,8 +10,8 @@ case ${1:-nothing} in
   svn status | grep -v ^?
   ;;
 *)
-  svn status | grep -v ^? > /tmp/work
-  cut -b 9- < /tmp/work > /tmp/svnfiles
+  svn status | grep -v ^? > ${TEMP:-/tmp}/work
+  cut -b 9- < ${TEMP:-/tmp}/work > ${TEMP:-/tmp}/svnfiles
   gen="aclocal.m4 compile config.guess config.sub configure depcomp Makefile.in \
   install-sh ltmain.sh missing test-driver config.h.in mdate-sh mkinstalldirs \
   py-compile texinfo.tex ylwrap ar-lib libtool.m4 ltoptions.m4 \
@@ -19,12 +19,12 @@ case ${1:-nothing} in
   for x in $gen
   do
 #   printf "Getting rid of %s\n" "$x"
-    grep -v "/$x\$" < /tmp/svnfiles | \
-      grep -v "^$x\$" > /tmp/work
-    mv /tmp/work /tmp/svnfiles
+    grep -v "/$x\$" < ${TEMP:-/tmp}/svnfiles | \
+      grep -v "^$x\$" > ${TEMP:-/tmp}/work
+    mv ${TEMP:-/tmp}/work ${TEMP:-/tmp}/svnfiles
   done
   printf "Added or modified files:\n"
-  cat /tmp/svnfiles
-###  rm -f /tmp/work /tmp/svnfiles
+  cat ${TEMP:-/tmp}/svnfiles
+###  rm -f ${TEMP:-/tmp}/work /tmp/svnfiles
   ;;
 esac

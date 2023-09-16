@@ -60,11 +60,11 @@ then
   mv revision.tmp $here/../packages/support/revision.red
   newrevision="$here/../packages/support/revision.red "
 fi
-svn status > /tmp/svnstatus
-grep ^A < /tmp/svnstatus  > /tmp/svndiffs
-grep ^D < /tmp/svnstatus >> /tmp/svndiffs
-grep ^M < /tmp/svnstatus >> /tmp/svndiffs
-cut -b 9- < /tmp/svndiffs > /tmp/svnfiles
+svn status > ${TEMP:-/tmp}/svnstatus
+grep ^A < ${TEMP:-/tmp}/svnstatus  > ${TEMP:-/tmp}/svndiffs
+grep ^D < ${TEMP:-/tmp}/svnstatus >> ${TEMP:-/tmp}/svndiffs
+grep ^M < ${TEMP:-/tmp}/svnstatus >> ${TEMP:-/tmp}/svndiffs
+cut -b 9- < ${TEMP:-/tmp}/svndiffs > ${TEMP:-/tmp}/svnfiles
 gen="aclocal.m4 compile config.guess config.sub configure depcomp Makefile.in \
   install-sh ltmain.sh missing test-driver config.h.in mdate-sh mkinstalldirs \
   py-compile texinfo.tex ylwrap ar-lib libtool.m4 ltoptions.m4 \
@@ -72,13 +72,13 @@ gen="aclocal.m4 compile config.guess config.sub configure depcomp Makefile.in \
 for x in $gen
 do
 # printf "Getting rid of %s\n" "$x"
-  grep -v "/$x\$" < /tmp/svnfiles | \
-    grep -v "^$x\$" > /tmp/work
-  mv /tmp/work /tmp/svnfiles
+  grep -v "/$x\$" < ${TEMP:-/tmp}/svnfiles | \
+    grep -v "^$x\$" > ${TEMP:-/tmp}/work
+  mv ${TEMP:-/tmp}/work ${TEMP:-/tmp}/svnfiles
 done
 
 tmp="svn ci $newrevision"
-for x in `cat /tmp/svnfiles`
+for x in `cat ${TEMP:-/tmp}/svnfiles`
 do
   tmp="$tmp $x"
 done
