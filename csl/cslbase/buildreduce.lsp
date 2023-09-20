@@ -1736,6 +1736,10 @@ symbolic restart!-csl nil;
 (setq !*native_code nil)   % The native compilation option that I was
                            % considering at one stage is no longer available.
 
+(makeunbound '!@srcdir)
+(makeunbound '!@reduce)
+(makeunbound 'no_init_file)
+
 (preserve 'begin (bldmsg "%w, %w ..." version!* date!*) t)
 % Note that (preserve) here arranges to reload the image that it
 % creates, and it then runs (begin) the start-up function. This will

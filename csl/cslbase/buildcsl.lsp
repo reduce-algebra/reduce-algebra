@@ -141,8 +141,8 @@
 (setq !*comp t)
 (setq !*native_code nil)
 
-% The next line unsets !@cslbase since the gensym will not have a real value.
-(setq !@cslbase (setq !@srcdir (symbol!-value (gensym))))
+(makeunbound '!@cslbase)
+(makeunbound '!@srcdir)
 
 (preserve)
 
