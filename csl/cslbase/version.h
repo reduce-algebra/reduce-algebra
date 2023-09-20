@@ -41,6 +41,8 @@
 
 #define REVISION 6594
 
+#define VERSION_ID "$Id:"
+
 #endif // header_version_h
 
 // end of version.h
