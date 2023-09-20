@@ -41,7 +41,8 @@
 
 #define REVISION 6594
 
-#define VERSION_ID "$Id:"
+#define VERSION_STRINGIFY(x) #x
+#define VERSION_ID VERSION_STRINGIFY($Id:)
 
 #endif // header_version_h
 
