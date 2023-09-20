@@ -1,4 +1,4 @@
-% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2022
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2022sate
 %
 % Build a CSL REDUCE.
 %
@@ -29,6 +29,12 @@
 % $Id$
 
 (verbos 3)
+
+% Datestamps in the image created here will be based in the last
+% checkin date for version.h rather than on the time the build
+% is performed.
+
+(use!-version!-time t)
 
 (window!-heading "basic CSL")
 
@@ -1690,7 +1696,7 @@ symbolic restart!-csl nil;
       (explodec "Reduce (CSL, rev ")
       (append (explodec revision!*) (explodec ")""")))))))
 
-(setq date!* (date))
+(setq date!* (version!-date))
 
 (setq !*backtrace nil)
 

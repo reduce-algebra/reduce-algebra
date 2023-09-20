@@ -107,6 +107,8 @@ typedef struct _directory_entry
 //
 } directory_entry;
 
+extern bool use_version_time;
+
 //
 // I use these macros rather than just the structure definition shown above
 // so that the behaviour of the code is not sensitive to attempts by a C
@@ -328,6 +330,8 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 #define debug_assert(x)
 
 #endif
+
+extern const char* version_date();
 
 #define first_nil_offset         50     // GC collector marks from here up
 

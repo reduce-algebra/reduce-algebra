@@ -703,10 +703,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         setenv(a, cdr(b));
     }
     else if (car(b) == lambda)
-    {   LispObject bvl = car(cdr(b));
-        int nargs = 0;
-        while (consp(bvl)) nargs++, bvl = cdr(bvl);
-        setheader(a, qheader(a) & ~SYM_MACRO);
+    {   setheader(a, qheader(a) & ~SYM_MACRO);
         set_fns(a, interpreted_0, interpreted_1, interpreted_2,
                    interpreted_3, interpreted_4up);
         setenv(a, cdr(b));
@@ -722,10 +719,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
     }
     else if (car(b) == funarg)
-    {   LispObject bvl = car(cdr(b));
-        int nargs = 0;
-        while (consp(bvl)) nargs++, bvl = cdr(bvl);
-        setheader(a, qheader(a) & ~SYM_MACRO);
+    {   setheader(a, qheader(a) & ~SYM_MACRO);
         set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3,
                 funarged_4up);
         setenv(a, cdr(b));

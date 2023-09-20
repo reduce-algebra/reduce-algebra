@@ -40,6 +40,8 @@
 
 (verbos 3)
 
+(use!-version!-time t)
+
 (rdf "$cslbase/compat.lsp")
 (rdf "$cslbase/extras.lsp")
 (rdf (cond

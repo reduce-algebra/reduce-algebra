@@ -1085,9 +1085,9 @@ then
 # not the relevant architecture get ignored...
   a=`find /usr/lib -name libtinfo.a -printf "%p "`
   if test "$a" = ""
-  then    % No libtinfo found
+  then    # No libtinfo found
     AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])
-  else    % At least one version found.
+  else    # At least one version found.
     LIBS="$LIBS $a"
   fi
 fi

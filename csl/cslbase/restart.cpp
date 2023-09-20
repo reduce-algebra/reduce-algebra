@@ -461,6 +461,13 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
     return aerror1("check-c-code", name);
 }
 
+LispObject Luse_version_time(LispObject env, LispObject a1)
+{   SingleValued Fn;
+    bool old = use_version_time;
+    use_version_time = a1 != nil;
+    return old ? lisp_true : nil;
+}
+
 setup_type const restart_setup[] =
 // things that are in modules that do not define enough Lisp entrypoints
 // to be worth giving separate entry-tables.
@@ -470,6 +477,7 @@ setup_type const restart_setup[] =
     DEF_1("~mv-list",           Lmv_list),
     DEF_4up("check-c-code",     Lcheck_c_code),
     DEF_1("modulep",            Lmodule_exists),
+    DEF_1("use-version-time",   Luse_version_time),
     DEF_1("start-module",       Lstart_module),
     DEF_2("write-module",       Lwrite_module),
     DEF_1("copy-module",        Lcopy_module),
@@ -2023,7 +2031,7 @@ void setup(int restart_flag, double store_size)
 // The initial record at the start of an image file is not compressed...
         Iread(junkbuf, 112);
         if (init_flags & INIT_VERBOSE)
-        {   term_printf("Created: %.25s\n", &junkbuf[64]);
+        {   term_printf("Dated: %.25s\n", &junkbuf[64]);
             // Time dump was taken
         }
         unsigned char chk[16];

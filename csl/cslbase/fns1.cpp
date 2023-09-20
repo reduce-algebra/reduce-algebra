@@ -1941,14 +1941,12 @@ LispObject Ldate1(LispObject env, LispObject a1)
 
 LispObject Ldate_and_time(LispObject env)
 {   SingleValued fn;
-    LispObject w;
     std::time_t t = std::time(nullptr);
     char today[32];
     std::strcpy(today, std::ctime(&t));
 // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
-    w = make_string(today);
-    return w;
+    return make_string(today);
 }
 
 LispObject Ldate_and_time1(LispObject env, LispObject a1)
@@ -2009,6 +2007,16 @@ LispObject Ltimeofday(LispObject env)
     w = make_lisp_unsigned64(n);
     errexit();
     return cons(w, fixnum_of_int(un));
+}
+
+LispObject Lversion_date(LispObject env)
+{   SingleValued fn;
+    return make_string(version_date());
+}
+
+LispObject Lversion_date_and_time(LispObject env)
+{   SingleValued fn;
+    return make_string(version_date_and_time());
 }
 
 // This will be the header for a string of length exactly 24. It is
@@ -2718,6 +2726,8 @@ setup_type const funcs1_setup[] =
     {"date-and-time",           Ldate_and_time, Ldate_and_time1, G2Wother, G3Wother, G4Wother},
     DEF_0("datestamp",          Ldatestamp),
     DEF_0("timeofday",          Ltimeofday),
+    DEF_0("version-date",       Lversion_date),
+    DEF_0("version-date-and-time", Lversion_date_and_time),
     DEF_2("enable-errorset",    Lenable_errorset),
     DEF_1("enable-backtrace",   Lenable_backtrace),
     {"error",                   Lerror_0, Lerror_1, Lerror_2, Lerror_3, Lerror_4up},
