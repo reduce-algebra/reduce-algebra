@@ -699,7 +699,10 @@ uint64_t read_clock_microsecond()
 uint64_t read_clock_nanosecond()
 {
 #if defined __ANDROID__
-    return 0;
+// Dubious resolution here, but this is better than nothing. And on
+// termux std::timespec seems not to be available.
+    std::clock_t c = std::clock();
+    return (1.0e9*c)/CLOCKS_PER_SEC;
 #elif defined WIN32 || defined __CYGWIN__
 // The clock granularity here may be of the order of 15ms, so despite
 // this function delivering a value in nanoseconds is is really rather
@@ -748,7 +751,7 @@ void calibrate_clock_cycle()
 uint64_t read_clock_cycles()
 {
 #if defined __ANDROID__
-    return 0;
+    return read_clock_nanosecond();
 #elif defined WIN32 || defined __CYGWIN__
     unsigned long long int tt;
     if (clock_cycle_calibration < 0.0)
@@ -769,7 +772,7 @@ uint64_t read_clock_cycles()
 uint64_t read_process_nanosecond()
 {
 #if defined __ANDROID__
-    return 0;
+    return read_clock_nanosecond();
 #elif defined WIN32 || defined __CYGWIN__
 // The clock granularity here may be of the order of 15ms, so despite
 // this function delivering a value in nanoseconds is is really rather

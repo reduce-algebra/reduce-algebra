@@ -1119,6 +1119,8 @@ AC_LINK_IFELSE(
      ])
   ])
 
+AC_SEARCH_LIBS([glob], [libandroid-glob])
+
 # I have alternative ways of doing things on Windows and Macintosh, but
 # for systems that use gcc (and I am perhaps most thinking of Linux here)
 # I want the flag "-rdynamic" enabled (if possible) so that dynamic modules

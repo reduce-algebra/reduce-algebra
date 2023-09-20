@@ -1650,6 +1650,10 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
 //      While this code is in development it may genatate a certain amount
 //      of unwanted trace or logging information.
 
+// As of September 2023 use of "termux" on aarch64 android perhaps needs
+// to be linked with special libraries to support the shared memory APIs,
+// but the easy way to get a system built there is just to disable this!
+
 #if defined HAVE_UNISTD_H && \
     defined HAVE_SYS_TYPES_H && \
     defined HAVE_SYS_STAT_H && \
@@ -1663,7 +1667,8 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
     defined HAVE_SHMGET && \
     defined HAVE_SHMAT && \
     defined HAVE_SHMDT && \
-    defined HAVE_SHMCTL
+    defined HAVE_SHMCTL && \
+    !defined __ANDROID__
 
 #include <sys/types.h>
 #include <sys/stat.h>

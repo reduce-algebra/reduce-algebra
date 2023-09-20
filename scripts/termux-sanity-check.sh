@@ -6,7 +6,7 @@
 
 apt-get -y install build-essential binutils clang
 apt-get -y install autoconf ccache git gnuplot imagemagick ncurses
-apt-get -y install automake libtool
+apt-get -y install automake libtool libandroid-glob
 apt-get -y install openssh time polyml bc
 apt-get -y install subversion rsync
 apt-get -y install bison flex which vim
