@@ -39,11 +39,11 @@ if test -f trunk/csl/cslbase/version.h || \
    test -f cslbase/version.h || \
    test -f version.h
 then
-# If I touch the file it will get checked in by subversion and in the
+# I must change the file to get checked in by subversion. Then in that
 # process its "$Id:" will be updated, capturing a revision number and
 # a date.
 
-  touch $here/../csl/cslbase/version.h
+  sed -i $here/../csl/cslbase/version.h -e 's/Id: version.h/Id: xversion.h/'
 fi
 # I will update the Reduce-based record of revision if the checkin
 # either includes support/revision.red or is in some lower-level
