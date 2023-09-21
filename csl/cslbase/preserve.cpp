@@ -1019,7 +1019,7 @@ bool open_output(const char *name, size_t len)
 // Note that I treat the result handed back by ctime() as delicate, in that
 // I do not do any library calls between calling ctime and copying the
 // string it returns to somewhere that is under my own control.
-            std::strncpy(&d->d[i].D_date, ct, date_size);
+            std::memcpy(&d->d[i].D_date, ct, date_size);
             binary_write_file = d->f;
             write_bytes_written = 0;
             std::memcpy(&d->d[i].D_position, d->h.eof, 4);

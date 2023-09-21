@@ -665,7 +665,7 @@ void write_delayed(int byte, const char *msg, ...)
 #ifdef DEBUG_SERIALIZE
         std::va_list a;
         va_start(a, msg);
-        std::vspnrintf(delayed_message, sizeof(delayed_message), msg, a);
+        std::vsnprintf(delayed_message, sizeof(delayed_message), msg, a);
         va_end(a);
 #endif // DEBUG_SERIALIZE
         delayed_byte = byte;
@@ -777,7 +777,7 @@ void write_byte(int byte, const char *msg, ...)
     std::fprintf(stderr, "%.2x: ", byte & 0xff);
     va_start(a, msg);
     std::vfprintf(stderr, msg, a);
-    std::printf("\n");
+    std::fprintf(stderr, "\n");
     va_end(a);
 #endif // DEBUG_SERIALIZE
     Zputc(byte);
@@ -2154,12 +2154,12 @@ up:
 // I am almost complete
     if (!is_cons(s))
     {   std::fprintf(stderr, "s bad at line %d in serialize.cpp\n", __LINE__);
-        simple_print(s);
+        simple_print(stderr, s);
         my_abort("serialization");
     }
     if (!is_fixnum(car(s)))
     {   std::fprintf(stderr, "car s bad at line %d in serialize.cpp\n", __LINE__);
-        simple_print(car(s));
+        simple_print(stderr, car(s));
         my_abort("serialization");
     }
     intptr_t n = int_of_fixnum(car(s)) - 1;
@@ -2167,7 +2167,7 @@ up:
     {   std::fprintf(stderr, "car s negative at line %d in serialize.cpp\n", __LINE__);
         std::fprintf(stderr, "car(s) = %" PRIx64 " in raw hex\n", (int64_t)car(s));
         std::fprintf(stderr, "value of car(s) as list: ");
-        simple_print(car(s));
+        simple_print(stderr, car(s));
         my_abort("serialization");
     }
     if (n == 0)
@@ -3557,7 +3557,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
         r = serial_read();
 #ifdef DEBUG_SERIALIZE
         std::fprintf(stderr, "Re-input: ");
-        simple_print(r);
+        simple_print(stderr, r);
         std::fprintf(stderr, "\n");
 #endif // DEBUG_SERIALIZE
         if (r != eof_symbol &&

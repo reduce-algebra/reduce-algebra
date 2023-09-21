@@ -5375,29 +5375,29 @@ extern const char* getPageType(uintptr_t a);
 
 static int simple_column = 0;
 
-void simple_lineend(int n)
+void simple_lineend(FILE* f, int n)
 {   if (simple_column + n > 70)
-    {   std::printf("\r\n");
+    {   std::fprintf(f, "\r\n");
         simple_column = n;
     }
     else simple_column += n;
 }
 
-void simple_prin1(LispObject x)
+void simple_prin1(FILE* f, LispObject x)
 {   char buffer[40];
     if (x == nil)
-    {   simple_lineend(3);
-        std::printf("nil");
+    {   simple_lineend(f, 3);
+        std::fprintf(f, "nil");
         return;
     }
     if (x == 0)
-    {   simple_lineend(3);
-        std::printf("@0@");
+    {   simple_lineend(f, 3);
+        std::fprintf(f, "@0@");
         return;
     }
     if (is_forward(x))
     {
-        std::printf("Forward_%" PRIx64, static_cast<uint64_t>(x));
+        std::fprintf(f, "Forward_%" PRIx64, static_cast<uint64_t>(x));
         return;
     }
     if (is_pointer_type(x))
@@ -5405,9 +5405,9 @@ void simple_prin1(LispObject x)
         if (is_forward(h))
         {
 #ifdef CONSERVATIVE
-            std::printf("%s:", getPageType(x));
+            std::fprintf(f, "%s:", getPageType(x));
 #endif
-            std::printf("[forward to]");
+            std::fprintf(f, "[forward to]");
             x = (h&~TAG_BITS) + (x&TAG_BITS);
         }
     }
@@ -5415,33 +5415,33 @@ void simple_prin1(LispObject x)
     {   int len = 0;
         const char *sep = "(";
         while (consp(x))
-        {   simple_lineend(1);
+        {   simple_lineend(f, 1);
 #ifdef CONSERVATIVE
-            std::printf("%s:", getPageType(x));
+            std::fprintf(f, "%s:", getPageType(x));
 #endif
-            std::printf("%s", sep);
+            std::fprintf(f, "%s", sep);
             sep = " ";
-            simple_prin1(car(x));
+            simple_prin1(f, car(x));
             x = cdr(x);
             if (len++ > 20)
-            {   std::printf(" ...!...");
+            {   std::fprintf(f, " ...!...");
                 x = nil;
             }
         }
         if (x != nil)
-        {   simple_lineend(3);
-            std::printf(" . ");
-            simple_prin1(x);
+        {   simple_lineend(f, 3);
+            std::fprintf(f, " . ");
+            simple_prin1(f, x);
         }
-        simple_lineend(3);
-        std::printf(")");
+        simple_lineend(f, 3);
+        std::fprintf(f, ")");
         return;
     }
     else if (is_fixnum(x))
     {   int k = std::snprintf(buffer, sizeof(buffer), "%" PRId64,
                              (int64_t)int_of_fixnum(x));
-        simple_lineend(k);
-        std::printf("%s", buffer);
+        simple_lineend(f, k);
+        std::fprintf(f, "%s", buffer);
         return;
     }
     else if (is_symbol(x))
@@ -5449,11 +5449,11 @@ void simple_prin1(LispObject x)
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
         if (len > 80) len = 80;
-        simple_lineend(len);
+        simple_lineend(f, len);
 #ifdef CONSERVATIVE
-        std::printf("%s:", getPageType(x));
+        std::fprintf(f, "%s:", getPageType(x));
 #endif
-        std::printf("%.*s", static_cast<int>(len),
+        std::fprintf(f, "%.*s", static_cast<int>(len),
                      reinterpret_cast<const char *>(&celt(x, 0)));
     }
     else if (is_vector(x))
@@ -5461,52 +5461,52 @@ void simple_prin1(LispObject x)
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             if (len > 80) len = 80;
-            simple_lineend(len+2);
+            simple_lineend(f, len+2);
 #ifdef CONSERVATIVE
-            std::printf("%s:", getPageType(x));
+            std::fprintf(f, "%s:", getPageType(x));
 #endif
-            std::printf("\"%.*s\"", static_cast<int>(len),
+            std::fprintf(f, "\"%.*s\"", static_cast<int>(len),
                          reinterpret_cast<const char *>(&celt(x, 0)));
             return;
         }
         else if (vector_header_of_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            std::printf("<Header is %" PRIx64 ">",
+            std::fprintf(f, "<Header is %" PRIx64 ">",
                          static_cast<uint64_t>(vechdr(x)));
-            simple_lineend(2*len+3);
+            simple_lineend(f, 2*len+3);
 #ifdef CONSERVATIVE
-            std::printf("%s:", getPageType(x));
+            std::fprintf(f, "%s:", getPageType(x));
 #endif
-            std::printf("#8[");
+            std::fprintf(f, "#8[");
             for (size_t i=0; i<(len>80?80:len); i++)
-            {   simple_lineend(2);
-                std::printf("%.2x", celt(x, i) & 0xff);
+            {   simple_lineend(f, 2);
+                std::fprintf(f, "%.2x", celt(x, i) & 0xff);
             }
-            if (len > 80) std::printf("...]");
-            else std::printf("]");
+            if (len > 80) std::fprintf(f, "...]");
+            else std::fprintf(f, "]");
             return;
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = std::snprintf(buffer, sizeof(buffer), "[%" PRId64 ":", (int64_t)len);
-        simple_lineend(nn);
+        simple_lineend(f, nn);
 #ifdef CONSERVATIVE
-        std::printf("%s:", getPageType(x));
+        std::fprintf(f, "%s:", getPageType(x));
 #endif
-        std::printf("%s", buffer);
+        std::fprintf(f, "%s", buffer);
         for (i=0; i<(len>40?40:len); i++)
-        {   simple_lineend(1);
-            std::printf(" ");
+        {   simple_lineend(f, 1);
+            std::fprintf(f, " ");
             if (i > 2 && is_mixed_header(vechdr(x)))
             {   nn = std::snprintf(buffer, sizeof(buffer), "%" PRIx64, (uint64_t)elt(x, i));
-                simple_lineend(nn);
-                std::printf("%s", buffer);
+                simple_lineend(f, nn);
+                std::fprintf(f, "%s", buffer);
             }
-            else simple_prin1(elt(x, i));
+            else simple_prin1(f, elt(x, i));
         }
-        simple_lineend(1);
-        if (len > 20) std::printf("...]");
-        else std::printf("]");
+        simple_lineend(f, 1);
+        if (len > 20) std::fprintf(f, "...]");
+        else std::fprintf(f, "]");
         return;
     }
     else if (is_numbers(x) && is_bignum(x))
@@ -5519,8 +5519,8 @@ void simple_prin1(LispObject x)
 // are made up from.
             if (i == len) clen = std::snprintf(buffer, sizeof(buffer), "@#%d", d);
             else clen = std::snprintf(buffer, sizeof(buffer), ":%u", d);
-            simple_lineend(clen);
-            std::printf("%s", buffer);
+            simple_lineend(f, clen);
+            std::fprintf(f, "%s", buffer);
         }
         return;
     }
@@ -5529,7 +5529,7 @@ void simple_prin1(LispObject x)
     {   intptr_t w = arithlib_lowlevel::bignumToString(x);
         size_t len = length_of_byteheader(vechdr(w)) - CELL;
         simple_lineend(len);
-        std::printf("%.*s", static_cast<int>(len),
+        std::fprintf(f, "%.*s", static_cast<int>(len),
                      reinterpret_cast<const char *>(&celt(w, 0)));
         return;
     }
@@ -5537,24 +5537,42 @@ void simple_prin1(LispObject x)
     else
     {   char buffer[32];
         int clen = std::snprintf(buffer, sizeof(buffer), "@%" PRIx64 "@", (int64_t)x);
-        simple_lineend(clen);
-        std::printf("%s", buffer);
+        simple_lineend(f, clen);
+        std::fprintf(f, "%s", buffer);
         return;
     }
 }
 
 void simple_prin1(atomic<LispObject> &x)
-{   simple_prin1(static_cast<LispObject>(x));
+{   simple_prin1(stdout, static_cast<LispObject>(x));
 }
 
-void simple_print(LispObject x)
-{   simple_prin1(x);
-    std::printf("\r\n");
+void simple_prin1(FILE* f, atomic<LispObject> &x)
+{   simple_prin1(f, static_cast<LispObject>(x));
+}
+
+void simple_print(FILE* f, LispObject x)
+{   simple_prin1(f, x);
+    std::fprintf(f, "\r\n");
     simple_column = 0;
 }
 
+void simple_print(LispObject x)
+{   simple_print(stdout, x);
+}
+
+void simple_print(FILE* f, atomic<LispObject> &x)
+{   simple_print(f, static_cast<LispObject>(x));
+}
+
 void simple_print(atomic<LispObject> &x)
-{   simple_print(static_cast<LispObject>(x));
+{   simple_print(stdout, static_cast<LispObject>(x));
+}
+
+void simple_msg(FILE* f, const char *s, LispObject x)
+{   std::fprintf(f, "%s", s);
+    simple_print(f, x);
+    std::fprintf(f, "\r\n");
 }
 
 void simple_msg(const char *s, LispObject x)

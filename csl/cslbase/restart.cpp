@@ -1490,22 +1490,19 @@ LispObject set_up_variables(int restart_flag)
     }
 // lispargs* and full-lispargs!* give access to command line args used at
 // launch. lispargs!* just contains anything beyond the keyword "--args"
-// while full-lispargs contains everything.
-    {   LispObject aa = nil, faa = nil;
+// while full-lispargs!* contains everything.
+// Well full-lispargs!* is now no longer provided.
+    {   LispObject aa = nil;
         LispObject n = make_undefined_symbol("lispargs*");
         int i, seen_args_keyword=0;
         for (i=0; i<csl_argc; i++)
         {   LispObject s = make_string(csl_argv[i]);
-            faa = cons(s, faa);
             if (seen_args_keyword) aa = cons(s, aa);
             if (std::strcmp(csl_argv[i], "--args") == 0) seen_args_keyword = 1;
         }
         aa = Lreverse(nil, aa);
-        faa = Lreverse(nil, faa);
         setheader(n, qheader(n) | SYM_SPECIAL_VAR);
         setvalue(n, aa);
-        n = make_undefined_fluid("full-lispargs*");
-        setvalue(n, faa);
     }
 // Floating point characteristics are taken from <cfloat> where it is
 // supposed that the C compiler involved has got the values correct.
