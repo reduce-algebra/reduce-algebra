@@ -1197,6 +1197,7 @@ static LispObject lisp_main()
 #ifdef CONSERVATIVE
 // Again I need to do a fairly full tidy up when I recycle all memory.
                     for (LispObject *p:list_bases) *p = nil;
+                    karaSize = 0;
                     THREADID;
                     *stack = nil;
                     setvalue(nil, nil);

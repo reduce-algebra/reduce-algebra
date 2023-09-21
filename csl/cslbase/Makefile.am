@@ -3,6 +3,7 @@
 ## to build your usable Makefile (probably in another directory)
 
 # Copyright A C Norman, Codemist -2023
+
 #**************************************************************************
 #* Copyright (C) 2023, Codemist.                         A C Norman       *
 #*                                                                        *
@@ -1824,7 +1825,7 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 #
 # A user may go "make CSLFLAGS=-g" to force "-g" into build-times Lisp flags...
 	chmod 664 $(gensrc)/*
-	$(XREDUCE) -w -z $(CSLFLAGS) -Dno_init_file \
+	$(XREDUCE) -w -r1 -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1851,7 +1852,7 @@ bootstraprecompile:	$(HDRS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) -v -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -1863,7 +1864,7 @@ recompile:	$(HDRS) reduce.img
 	chmod 664 $(gensrc)/*
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XREDUCE) -v -w $(CSLFLAGS) \
+	$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -1913,7 +1914,7 @@ bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1934,14 +1935,14 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	$(XBOOTSTRAPREDUCE) \
-		-w -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1958,7 +1959,7 @@ noinlines.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1978,7 +1979,7 @@ boot.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -z $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1988,7 +1989,7 @@ profile:	$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w $(CSLFLAGS) -Dno_init_file \
+		-w -r1 $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2031,7 +2032,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # while debugging.
 
 just-c-code:	$(BOOTSTRAPREDUCE_IMG)
-	$(XBOOTSTRAPREDUCE) -i- -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -i- -w -r1 $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2084,7 +2085,7 @@ standard-c-code $(generated_lisp):	$(gensrc)/make.stamp $(HDRS)
 partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat $(HDRS)
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -w -r1 $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2097,7 +2098,7 @@ partial-c-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat $(HDRS)
 full-c-code:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -w -r1 $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2111,7 +2112,7 @@ full-c-code:	$(BOOTSTRAPREDUCE_IMG)
 j-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 	mkdir -p buildlogs
 	mkdir -p $(CYGREDUCE)/cslbuild/generated-java
-	$(XBOOTSTRAPREDUCE) -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -w -r1 $(CSLFLAGS) \
 		-Dno_init_file $(CYGSRC)/make-j-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
@@ -2120,7 +2121,7 @@ j-code:	$(BOOTSTRAPREDUCE_IMG) $(gensrc)/profile.dat
 smacros smacros.red:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -w -r1 $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
@@ -2129,13 +2130,13 @@ smacros smacros.red:	$(BOOTSTRAPREDUCE_IMG)
 
 testslow:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p testlogs
-	$(XBOOTSTRAPREDUCE) -v -w \
+	$(XBOOTSTRAPREDUCE) -v -w -r1 \
 		$(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/testslow.log
-	$(XBOOTSTRAPREDUCE) -v -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2144,14 +2145,14 @@ testslow:	$(BOOTSTRAPREDUCE_IMG)
 
 testall:	$(REDUCE_IMG)
 	mkdir -p testlogs
-	$(XREDUCE) -v -w $(CSLFLAGS) \
+	$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
-	$(XREDUCE) -v -w $(CSLFLAGS) \
+	$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2160,7 +2161,7 @@ testall:	$(REDUCE_IMG)
 
 testslow1:	$(BOOTSTRAPREDUCE_IMG)
 	mkdir -p testlogs
-	$(XBOOTSTRAPREDUCE) -v -w $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2173,7 +2174,7 @@ if valgrind
 countall:	$(REDUCE_IMG)
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
-		$(XREDUCE) -v -w $(CSLFLAGS) \
+		$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2185,7 +2186,7 @@ endif valgrind
 
 test1:	$(REDUCE_IMG)
 	mkdir -p testlogs
-	$(XREDUCE) -v -w $(CSLFLAGS) \
+	$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2198,7 +2199,7 @@ if valgrind
 count1:	$(REDUCE_IMG)
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
-		$(XREDUCE) -v -w $(CSLFLAGS) \
+		$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2210,7 +2211,7 @@ endif valgrind
 
 checkall:	$(REDUCE_IMG)
 	mkdir -p testlogs
-	$(XREDUCE) -v -w $(CSLFLAGS) \
+	$(XREDUCE) -v -w -r1 $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2235,7 +2236,7 @@ $(CSL_IMG):	$(XCSL) $(csldep)
 	-$(TRACE): > $(CSL_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
-	$(XCSL) -w -v -z $(CSLFLAGS) \
+	$(XCSL) -w -r1 -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o $(CSL_IMG) -- buildlogs/csl.img.log \
@@ -2248,7 +2249,7 @@ csli.img:	$(XCSL) $(csldep)
 	-$(TRACE): > csli.img
 	mkdir -p buildlogs
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
-	$(XCSL) -w -v -z $(CSLFLAGS) \
+	$(XCSL) -w -r1 -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsli.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \

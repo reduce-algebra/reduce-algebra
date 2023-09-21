@@ -39,7 +39,74 @@
 // (scripts/commit.sh) that is used to update the subversion repository to
 // update the revision number here.
 
-#define REVISION 6592
+//#define REVISION 6594
+
+// What follows arranges that I can extract information from the "$Id"
+// record that subersion updates on check-in.
+
+#include <cstdio>
+
+#define VERSION_ID "$Id$"
+
+// Extract the revision number.
+
+inline constexpr int REVISION = [](){
+    const char* d = VERSION_ID+15;
+    int v = 0, ch;
+    while ((ch = *d++) >= '0' && ch <= '9') v = 10*v + ch - '0';
+    return v;
+    }();
+
+// This returns eg "18-Aug-2023"
+
+inline const char* version_date()
+{   static char date_string[12];
+    const char* v = VERSION_ID;
+    int yyyy, mm, dd;
+// Format:         "$Id: xversion.h nnn yyyy-mm-dd hh:mm:ss..."
+    if (std::sscanf(v, "%*s  %*s       %*s %d-%d-%d",
+                                         &yyyy, &mm, &dd) != 3)
+        return "unknown-date";
+    const char* month[] =
+    {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    std::snprintf(date_string, 10, "%02d-%s-%d", dd, month[mm-1], yyyy);
+    return date_string;
+}
+
+// This one returns eg "Fri Aug 18 16:52:29 2023"
+
+
+// Decode fay of week - from cs.uwaterloo.ca/~alopez-o/math-faq/node73.html
+// and attributed to sakamoto@sm.sony.co.jp (Tomohiko Sakamoto) on comp.lang.c
+// on March 10th, 1993
+
+inline int day_of_week(int m, int d,int y)
+{   y-=m<3;
+    return (y+y/4-y/100+y/400+"-bed=pen+mad."[m]+d)%7;
+}
+
+inline const char* version_date_and_time()
+{   static char date_and_time_string[25];
+    const char* v = VERSION_ID;
+    int yyyy, mm, dd, day;
+    int hour, minute, second;
+// Format:         "$Id: xversion.h nnn yyyy-mm-dd hh:mm:ss..."
+    if (std::sscanf(v, "%*s  %*s       %*s %d-%d-%d %d:%d:%d",
+                                         &yyyy, &mm, &dd,
+                                         &hour, &minute, &second) != 6)
+        return "unknown-date";
+    const char* month[] =
+    {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    const char* weekday[] =
+    {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    day = day_of_week(mm, dd, yyyy);
+    std::snprintf(date_and_time_string, 25,
+        "%s %s %02d %02d:%02d:%02d %d",
+        weekday[day], month[mm-1], dd, hour, minute, second, yyyy);
+    return date_and_time_string;
+}
 
 #endif // header_version_h
 

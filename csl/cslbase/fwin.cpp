@@ -2211,11 +2211,10 @@ int delete_wildcard(char *filename, const char *old, size_t n)
             FindClose(h);
         }
 #else // WIN32
-#if defined __ANDROID__
-// Not supported here (yet?)
-#else
         glob_t gg;
         size_t i;
+// Note that on termux you need "pkg install libandroid-glob" and a
+// linker request for -landroid-glob.
         if (glob(filename, GLOB_NOSORT, nullptr, &gg) == 0)
         {   std::error_code ec;
              for (i=0; i<gg.gl_pathc; i++)
@@ -2223,8 +2222,6 @@ int delete_wildcard(char *filename, const char *old, size_t n)
                     std::filesystem::path(gg.gl_pathv[i]), ec);
             globfree(&gg);
         }
-
-#endif
 #endif // WIN32
     }
     return 0;

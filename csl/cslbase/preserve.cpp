@@ -234,7 +234,7 @@ int Zgetc()
 // buffer while there is space in the output buffer.
         if (strm.avail_in == 0)
         {
-// The compressed material is arrabnged in blocks. Each block starts with
+// The compressed material is arranged in blocks. Each block starts with
 // a 2-byte length field.
             int ch, n = Igetc();
 // If I get an end of file (or error) report when trying to read part of the
@@ -959,6 +959,8 @@ static directory *enlarge_directory(int current_size)
     return d2;
 }
 
+bool use_version_time = false;
+
 bool open_output(const char *name, size_t len)
 // Set up binary_write_file to access the given module, returning true
 // if anything went wrong. Remember name==nullptr for initial image & help
@@ -1011,7 +1013,8 @@ bool open_output(const char *name, size_t len)
     {   if (samename(name, d, i, len))
         {   current_output_entry = &d->d[i];
             d->h.updated |= D_COMPACT | D_UPDATED;
-            if (t == (std::time_t)(-1)) ct = "not dated";
+            if (use_version_time) ct = version_date_and_time();
+            else if (t == (std::time_t)(-1)) ct = "* ** ** undated ** ** * ";
             else ct = std::ctime(&t);
 // Note that I treat the result handed back by ctime() as delicate, in that
 // I do not do any library calls between calling ctime and copying the
@@ -1097,7 +1100,8 @@ bool open_output(const char *name, size_t len)
 #undef next_char_of_name
         }
     }
-    if (t == (std::time_t)(-1)) ct = "** *** not dated *** ** ";
+    if (use_version_time) ct = version_date_and_time();
+    else if (t == (std::time_t)(-1)) ct = "** *** not dated *** ** ";
     else ct = std::ctime(&t);
     std::memcpy(&d->d[i].D_date, ct, date_size);
     set_dirused(&d->h, get_dirused(*d)+n);
@@ -1957,7 +1961,10 @@ void preserve(const char *banner, size_t len)
         else std::snprintf(msg, sizeof(msg),
             "%.*s", static_cast<int>(len), banner);
 // 26 bytes starting from byte 64 shows the time of the dump
-        std::snprintf(msg+64, 32, "%.25s\n", std::ctime(&t0));
+        const char* d =
+            use_version_time ? version_date_and_time() :
+            std::ctime(&t0);
+        std::snprintf(msg+64, 32, "%.24s\n\n", d);
 // 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks
         get_user_files_checksum(reinterpret_cast<unsigned char *>(&msg[90]));
 // 106 to 109 free at present but available if checksum goes to 160 bits

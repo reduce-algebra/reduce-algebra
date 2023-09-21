@@ -39,13 +39,17 @@ if test -f trunk/csl/cslbase/version.h || \
    test -f cslbase/version.h || \
    test -f version.h
 then
-  sed -e "s/#define REVISION.*/#define REVISION $rev/" \
-      < $here/../csl/cslbase/version.h > version.tmp
-  mv version.tmp $here/../csl/cslbase/version.h
+# I must change the file to get checked in by subversion. Then in that
+# process its "$Id:" will be updated, capturing a revision number and
+# a date.
+
+  sed -i $here/../csl/cslbase/version.h -e 's/Id: version.h/Id: xversion.h/'
 fi
 # I will update the Reduce-based record of revision if the checkin
 # either includes support/revision.red or is in some lower-level
-# part of the packages directory.
+# part of the packages directory. I maintain this because PSL is not
+# set up to inspect "$Id:" information.
+
 newrevision=""
 if test -f trunk/packages/support/revision.red || \
    test -f packages/support/revision.red || \

@@ -647,6 +647,9 @@ top (cond ((null a) (return (reversip r))))
       (newminus (newbig (minus a)))
       (compress (cons '!0 (cons '!z (explode a))))))
 
+(cond
+  ((null (getd 'version!-date))
+   (copyd 'version!-date 'date)))
 
 % end of compat.lsp
 

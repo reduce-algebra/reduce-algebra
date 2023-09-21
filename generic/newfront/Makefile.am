@@ -80,8 +80,12 @@ endif
 	cp rfpslwin$(EXEEXT) $(srcdir)/../../bin/rfpsl.com
 endif
 
-DATESTAMP = $(shell date +%d-%b-%Y)
+DATESTAMP := $(shell $(srcdir)/getdate.sh $(srcdir))
 CPPFLAGS += -DBUILDTIME="\"$(DATESTAMP)\""
+
+.phony:	showdate
+showdate:
+	echo $(DATESTAMP)
 
 rfcsl_SOURCES = redchild.c reddeb.c redfront.c redline.c \
 	redparent.c redsig.c redstrings.c findself.c
