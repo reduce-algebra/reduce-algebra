@@ -1169,7 +1169,7 @@ static int ordpv(LispObject u, LispObject v)
 // At present it is an ERROR to include mixed vectors in structures passed
 // to ordering functions, and if it is done the system may crash.  Note that
 // stream objects count as mixed for these purposes. I will get around to
-// fixing things sometime...
+// fixing things sometime... maybe!
     else
     {   THREADID;
         while (n < lu && n < lv)

@@ -43,7 +43,7 @@ then
 # process its "$Id:" will be updated, capturing a revision number and
 # a date.
 
-  sed -i $here/../csl/cslbase/version.h -e 's/Id: version.h/Id: xversion.h/'
+sed -i $here/../csl/cslbase/version.h -e 's/Id: /Id: x/'
 fi
 # I will update the Reduce-based record of revision if the checkin
 # either includes support/revision.red or is in some lower-level

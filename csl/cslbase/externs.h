@@ -550,6 +550,8 @@ extern void copy_out_of_nilseg();
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char* s, LispObject x);
+extern void simple_print(FILE* f, LispObject x);
+extern void simple_msg(FILE* f, const char* s, LispObject x);
 extern uint64_t hash_equal(LispObject key);
 
 extern char* exit_charvec;

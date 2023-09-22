@@ -1557,6 +1557,8 @@ load!-module 'remake;
 
 << initreduce();
    date!* := "Bootstrap version";
+   otime!* := otime1!* := otime2!* := otime3!* := 0;
+   ogctime!* := ogctime1!* := ogctime2!* := ogctime3!* := 0;
    preserve('begin, "REDUCE", t) >>;
 
 symbolic;
@@ -1740,6 +1742,9 @@ symbolic restart!-csl nil;
 (makeunbound '!@reduce)
 (makeunbound 'no_init_file)
 
+(progn
+(setq otime!* 0) (setq otime1!* 0) (setq otime2!* 0) (setq otime3!* 0)
+(setq ogctime!* 0) (setq ogctime1!* 0) (setq ogctime2!* 0) (setq ogctime3!* 0))
 (preserve 'begin (bldmsg "%w, %w ..." version!* date!*) t)
 % Note that (preserve) here arranges to reload the image that it
 % creates, and it then runs (begin) the start-up function. This will
@@ -1764,7 +1769,11 @@ symbolic;
 "**** **** REDUCE FULLY REBUILD **** ****";
 
 % At this stage I have a complete workable REDUCE. If built using a
+#ifndef XXX
+% basic CSL (I call it "bootstrapreduce" here) nothing has been compiled into
+#else /* XXX */
 % basic CSL (I call it "bootstrapreduce" here)  nothing has been compiled into
+#endif /* XXX */
 % C (everything is bytecoded), and it is big because it has retained all
 % Lisp source code in the image file. If however I built using a version
 % of CSL ("reduce") that did have things compiled into C then these will
