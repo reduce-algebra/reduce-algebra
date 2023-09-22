@@ -92,7 +92,7 @@ typedef struct _directory_header
              dirused,  // Number currently in use.
              updated;  // In need of compaction & other flags.
     char eof[4];            // fseek/ftell location of end of file.
-    // Does this assume no fiules > 4G?
+    // Does this assume no files > 4G?
 } directory_header;
 
 typedef struct _directory_entry

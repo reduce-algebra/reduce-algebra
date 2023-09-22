@@ -5528,7 +5528,7 @@ void simple_prin1(FILE* f, LispObject x)
     else if (is_new_bignum(x))
     {   intptr_t w = arithlib_lowlevel::bignumToString(x);
         size_t len = length_of_byteheader(vechdr(w)) - CELL;
-        simple_lineend(len);
+        simple_lineend(f, len);
         std::fprintf(f, "%.*s", static_cast<int>(len),
                      reinterpret_cast<const char *>(&celt(w, 0)));
         return;

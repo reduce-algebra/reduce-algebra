@@ -143,6 +143,7 @@
 
 (makeunbound '!@cslbase)
 (makeunbound '!@srcdir)
+(setq lispsystem!* (setq lispargs!* (setq full!-lispargs!* nil)))
 
 (preserve)
 

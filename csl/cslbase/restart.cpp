@@ -1053,7 +1053,6 @@ LispObject set_up_variables(int restart_flag)
 //       (executable . "string")  name of current executable (if available)
 //       (shortname . "string")   executable wuithout path or extension
 //       pipes                    do I support open-pipe?
-//       parallel                 "parallel" function supported
 //       (revision . number)      eg 4020. The most recent subversion checkin.
 //       (name . "string")        eg "MSDOS/386"
 //       (opsys . id)             unix/msdos/riscos/win32/finder/riscos/...
