@@ -1220,10 +1220,10 @@ static LispObject Lcheckpoint(LispObject env,
 // relative addresses nor unadjusted (and hence restored) by in the
 // image-writing. But the image writing will not actually move any data
 // around so all is still OK, I hope!
-    RealSave save(THREADARG catch_tags, faslvec, faslgensyms);
+    RealSave save(THREADARG catch_tags);
     preserve(msg, len);
     errexit();
-    save.restore(catch_tags, faslvec, faslgensyms);
+    save.restore(catch_tags);
     set_up_functions(true);
     return nil;
 }

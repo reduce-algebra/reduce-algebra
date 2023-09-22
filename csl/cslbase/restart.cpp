@@ -131,10 +131,10 @@ LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 LispObject codevec, litvec, supervisor, B_reg;
 LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
-LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
+LispObject compiler_symbol, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
-LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
+LispObject prompt_thing, prinl_symbol, emsg_star, redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module, autoload_symbol, features_symbol;
@@ -1013,8 +1013,6 @@ LispObject set_up_variables(int restart_flag)
         }
         basic_elt(charvec, i) = make_undefined_symbol(buffer);
     }
-    faslvec = nil;
-    faslgensyms = nil;
     multiplication_buffer = nil;
 #ifndef ARITHLIB
 // big_fake1 and big_fake2 represent a witty issue - when a bignum is
@@ -1491,18 +1489,21 @@ LispObject set_up_variables(int restart_flag)
 // lispargs* and full-lispargs!* give access to command line args used at
 // launch. lispargs!* just contains anything beyond the keyword "--args"
 // while full-lispargs!* contains everything.
-// Well full-lispargs!* is now no longer provided.
-    {   LispObject aa = nil;
+    {   LispObject aa = nil, faa = nil;
         LispObject n = make_undefined_symbol("lispargs*");
         int i, seen_args_keyword=0;
         for (i=0; i<csl_argc; i++)
         {   LispObject s = make_string(csl_argv[i]);
+            faa = cons(s, faa);
             if (seen_args_keyword) aa = cons(s, aa);
             if (std::strcmp(csl_argv[i], "--args") == 0) seen_args_keyword = 1;
         }
         aa = Lreverse(nil, aa);
         setheader(n, qheader(n) | SYM_SPECIAL_VAR);
         setvalue(n, aa);
+        faa = Lreverse(nil, faa);
+        n = make_undefined_fluid("full-lispargs*");
+        setvalue(n, faa);
     }
 // Floating point characteristics are taken from <cfloat> where it is
 // supposed that the C compiler involved has got the values correct.

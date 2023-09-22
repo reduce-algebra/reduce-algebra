@@ -424,10 +424,10 @@ extern LispObject err_table, progn_symbol, gcknt_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
 extern LispObject echo_symbol, codevec, litvec, supervisor, B_reg;
 extern LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
-extern LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
+extern LispObject compiler_symbol, tracedfn, lisp_terminal_io;
 extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
-extern LispObject prompt_thing, faslgensyms;
+extern LispObject prompt_thing;
 extern LispObject prinl_symbol, emsg_star, redef_msg;
 extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
@@ -1190,7 +1190,7 @@ extern setup_type const om_parse_setup[];
     X(error_output),          X(err_table),         X(evalhook), \
     X(eval_symbol),           X(exit_tag),          X(exit_value), \
     X(expand_def_symbol),     X(expr_symbol),       X(external_symbol), \
-    X(faslgensyms),           X(fasl_stream),       X(faslvec), \
+                              X(fasl_stream),                   \
     X(fastget_names),         X(features_symbol),   X(fexpr_symbol), \
     X(format_symbol),         X(funarg),            X(funcall_symbol), \
     X(function_symbol),       X(gchook),            X(gcknt_symbol), \
