@@ -1951,7 +1951,7 @@ void preserve(const char *banner, size_t len)
 // heap and waste a lot of space...
     for (i=0; i<=50; i++) workbase[i] = nil;
     exit_tag = exit_value = catch_tags =
-                                codevec = litvec = B_reg = faslvec = faslgensyms = nil;
+                                codevec = litvec = B_reg = nil;
     Lmapstore(nil, fixnum_of_int(4)); // Reset all counts to zero.
     {   char msg[128];
         std::time_t t0 = std::time(0);
