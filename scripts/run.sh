@@ -169,7 +169,8 @@ xWindows_NT)
   host0=`$here/../config.guess`
   host=`$here/findhost.sh $host0`
   $maybe_echo if test -x $here/../cslbuild/$host$version/csl/$ap
-  if ! test -x $here/../cslbuild/$host$version/csl/$ap
+  if ! test -x $here/../cslbuild/$host$version/csl/$ap &&
+       test -x $here/../cslbuild/$host$version-nogui/csl/$ap
   then
     version="$version-nogui"
   fi
