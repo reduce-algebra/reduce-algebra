@@ -458,7 +458,7 @@ symbolic procedure indxpri1 u;
         if null(!*nero and (z = 0)) then
          <<maprin list('setq,subla(x,'ns . il),z);
            if not !*nat then prin2!* "$";
-           terpri!* t>>>>
+           terpri!* t>> else maprin " ">>
        end;
 
 symbolic procedure indxpri(v,u);
@@ -472,7 +472,7 @@ symbolic procedure indxpri(v,u);
          if null(!*nero and (z = 0)) then
          <<maprin list('setq,subla(x,v),z);
          if not !*nat then prin2!* "$";
-         terpri!* t>>>>
+         terpri!* t>> else maprin " ">>
     end;
 
 symbolic procedure coposp u;
