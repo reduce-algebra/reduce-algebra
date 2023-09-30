@@ -832,11 +832,11 @@ inline bool uint128_t::operator<(const uint128_t & rhs) const
 }
 
 inline bool uint128_t::operator>=(const uint128_t & rhs) const
-{   return ((*this > rhs) | (*this == rhs));
+{   return ((*this > rhs) || (*this == rhs));
 }
 
 inline bool uint128_t::operator<=(const uint128_t & rhs) const
-{   return ((*this < rhs) | (*this == rhs));
+{   return ((*this < rhs) || (*this == rhs));
 }
 
 inline uint128_t uint128_t::operator+(const uint128_t & rhs) const
@@ -1778,24 +1778,28 @@ operator!=(const T & lhs, const int128_t & rhs)
 }
 
 template <typename T> bool operator>(const T & lhs, const int128_t & rhs)
-{   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) > INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
+{   return INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >
+           INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
 }
 
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
 operator<(const T & lhs, const int128_t & rhs)
-{   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) < INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
+{   return INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <
+           INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
 }
 
 template <typename T> bool operator>=(const T & lhs,
                                       const int128_t & rhs)
-{   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) >= INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
+{   return INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) >=
+           INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
 }
 
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
 operator<=(const T & lhs, const int128_t & rhs)
-{   return INT128::UNSIGNED_FLIP_TOP_BIT(int128_t(lhs)) <= INT128::UNSIGNED_FLIP_TOP_BIT(rhs);
+{   return INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(lhs)) <=
+           INT128::UNSIGNED_FLIP_TOP_BIT(uint128_t(rhs));
 }
 
 // Arithmetic Operators
