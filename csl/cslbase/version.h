@@ -52,7 +52,7 @@
 
 inline constexpr int REVISION = []() constexpr {
     const char* d = VERSION_ID+15;
-    int v = 0, ch;
+    int v = 0, ch = 0;
     while ((ch = *d++) >= '0' && ch <= '9') v = 10*v + ch - '0';
     return v;
     }();
@@ -63,7 +63,7 @@ inline const char* version_date()
 {   static char date_string[12];
     const char* v = VERSION_ID;
     int yyyy, mm, dd;
-// Format:         "$Id: xxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
+// Format:         "$Id: xxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
     if (std::sscanf(v, "%*s  %*s       %*s %d-%d-%d",
                                          &yyyy, &mm, &dd) != 3)
         return "unknown-date";
@@ -91,7 +91,7 @@ inline const char* version_date_and_time()
     const char* v = VERSION_ID;
     int yyyy, mm, dd, day;
     int hour, minute, second;
-// Format:         "$Id: xxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
+// Format:         "$Id: xxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
     if (std::sscanf(v, "%*s  %*s       %*s %d-%d-%d %d:%d:%d",
                                          &yyyy, &mm, &dd,
                                          &hour, &minute, &second) != 6)
