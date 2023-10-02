@@ -39,8 +39,6 @@
 // (scripts/commit.sh) that is used to update the subversion repository to
 // update the revision number here.
 
-//#define REVISION 6594
-
 // What follows arranges that I can extract information from the "$Id"
 // record that subersion updates on check-in.
 
@@ -53,60 +51,69 @@
 inline constexpr int REVISION = []() constexpr {
     const char* d = &VERSION_ID[15];
     int v = 0, ch = 0;
-    while ((ch = *d++) >= '0' && ch <= '9') v = 10*v + ch - '0';
+    while ((ch = *d++) >= '0' && ch <= '9') v = 10*v + (ch-'0');
     return v;
     }();
 
-// This returns eg "18-Aug-2023"
+inline char version_date[16] = "18-Aug-2023";
+inline char version_date_and_time[32] = "Fri Aug 18 16:52:29 2023\n";
 
-inline const char* version_date()
-{   static char date_string[12];
-    const char* v = VERSION_ID;
-    int yyyy, mm, dd;
-// Format:         "$Id: xxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
-    if (std::sscanf(v, "%*s  %*s       %*s %d-%d-%d",
-                                         &yyyy, &mm, &dd) != 3)
-        return "unknown-date";
-    const char* month[] =
-    {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    std::snprintf(date_string, 10, "%02d-%s-%d", dd, month[mm-1], yyyy);
-    return date_string;
+
+// Now code that exists to get version_date and version_date_and_time
+// synchronized with VERSION_ID. This works by having an inline variable
+// that will be initialized before main() is called.
+
+
+inline constexpr unsigned int get_integer(const char* s, int width)
+{   unsigned int r = 0;
+    while (width-- != 0)
+    {   int ch = *s++;
+        if (ch < '0' || ch > '9') return 0;
+        r = 10*r + (ch - '0');
+    }
+    return r;
 }
 
-// This one returns eg "Fri Aug 18 16:52:29 2023"
-
-
-// Decode fay of week - from cs.uwaterloo.ca/~alopez-o/math-faq/node73.html
+// Decode day of week - from cs.uwaterloo.ca/~alopez-o/math-faq/node73.html
 // and attributed to sakamoto@sm.sony.co.jp (Tomohiko Sakamoto) on comp.lang.c
 // on March 10th, 1993
 
-inline int day_of_week(int m, int d,int y)
-{   y-=m<3;
+inline constexpr int day_of_week(int m, int d,int y)
+{   y -= m<3;
     return (y+y/4-y/100+y/400+"-bed=pen+mad."[m]+d)%7;
 }
 
-inline const char* version_date_and_time()
-{   static char date_and_time_string[25];
-    const char* v = VERSION_ID;
-    int yyyy, mm, dd, day;
-    int hour, minute, second;
-// Format:         "$Id: xxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
-    if (std::sscanf(v, "%*s  %*s       %*s %d-%d-%d %d:%d:%d",
-                                         &yyyy, &mm, &dd,
-                                         &hour, &minute, &second) != 6)
-        return "unknown-date";
-    const char* month[] =
+inline bool initialize_version_date()
+{
+    const char* v = &VERSION_ID[15];
+// Format:         "$Id: xversion.h nnn yyyy-mm-dd hh:mm:ss..."
+//                                 ^
+    while (std::isdigit(*v)) v++;
+    v++;
+    unsigned int year = get_integer(v, 4);
+    unsigned int month = get_integer(v+5, 2);
+    unsigned int dayofmonth = get_integer(v+8, 2);
+    unsigned int hour = get_integer(v+11, 2);
+    unsigned int minute = get_integer(v+14, 2);
+    unsigned int second = get_integer(v+17, 2);
+    static const char* monthname[] =
     {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    const char* weekday[] =
+    static const char* weekday[] =
     {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    day = day_of_week(mm, dd, yyyy);
-    std::snprintf(date_and_time_string, 25,
-        "%s %s %02d %02d:%02d:%02d %d",
-        weekday[day], month[mm-1], dd, hour, minute, second, yyyy);
-    return date_and_time_string;
+// First:              "18-Aug-2023"
+    std::snprintf(version_date, 12, "%2u-%s-%u",
+                  dayofmonth, monthname[month-1], year);
+// Now:                "Fri Aug 18 16:52:29 2023\n"
+    unsigned int dayindex = day_of_week(month, dayofmonth, year);
+    std::snprintf(version_date_and_time, 25,
+        "%s %s %2u %02u:%02u:%02u %u",
+        weekday[dayindex], monthname[month-1], dayofmonth,
+        hour, minute, second, year);
+    return true;
 }
+
+inline bool version_date_initialized = initialize_version_date();
 
 #endif // header_version_h
 
