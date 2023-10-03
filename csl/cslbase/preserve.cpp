@@ -966,7 +966,7 @@ bool open_output(const char *name, size_t len)
 // if anything went wrong. Remember name==nullptr for initial image & help
 // data.
 {   int i, j, n;
-    const char *ct;
+    char *ct = version_date_and_time;
     char hard[16];
     directory *d;
     std::time_t t = std::time(nullptr);
@@ -1013,9 +1013,10 @@ bool open_output(const char *name, size_t len)
     {   if (samename(name, d, i, len))
         {   current_output_entry = &d->d[i];
             d->h.updated |= D_COMPACT | D_UPDATED;
-            if (use_version_time) ct = version_date_and_time();
-            else if (t == (std::time_t)(-1)) ct = "* ** ** undated ** ** * ";
-            else ct = std::ctime(&t);
+            if (!use_version_time)
+            {   if (t == (std::time_t)(-1)) t = (std::time_t)0;
+                ct = std::ctime(&t);
+            }
 // Note that I treat the result handed back by ctime() as delicate, in that
 // I do not do any library calls between calling ctime and copying the
 // string it returns to somewhere that is under my own control.
@@ -1100,9 +1101,10 @@ bool open_output(const char *name, size_t len)
 #undef next_char_of_name
         }
     }
-    if (use_version_time) ct = version_date_and_time();
-    else if (t == (std::time_t)(-1)) ct = "** *** not dated *** ** ";
-    else ct = std::ctime(&t);
+    if (!use_version_time)
+    {   if (t == (std::time_t)(-1)) t = (std::time_t)0;
+        ct = std::ctime(&t);
+    }
     std::memcpy(&d->d[i].D_date, ct, date_size);
     set_dirused(&d->h, get_dirused(*d)+n);
     binary_write_file = d->f;
@@ -1962,7 +1964,7 @@ void preserve(const char *banner, size_t len)
             "%.*s", static_cast<int>(len), banner);
 // 26 bytes starting from byte 64 shows the time of the dump
         const char* d =
-            use_version_time ? version_date_and_time() :
+            use_version_time ? version_date_and_time :
             std::ctime(&t0);
         std::snprintf(msg+64, 32, "%.24s\n\n", d);
 // 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks

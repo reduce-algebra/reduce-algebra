@@ -2011,12 +2011,12 @@ LispObject Ltimeofday(LispObject env)
 
 LispObject Lversion_date(LispObject env)
 {   SingleValued fn;
-    return make_string(version_date());
+    return make_string(version_date);
 }
 
 LispObject Lversion_date_and_time(LispObject env)
 {   SingleValued fn;
-    return make_string(version_date_and_time());
+    return make_string(version_date_and_time);
 }
 
 // This will be the header for a string of length exactly 24. It is
@@ -2076,15 +2076,11 @@ static LispObject Ldatelessp(LispObject env, LispObject a,
 // no special terrors JUST here.
     if ((wa = getint(aa+20, 4)) != (wb = getint(bb+20, 4))) res = wa < wb;
     else if ((wa = getmon(aa+4)) != (wb = getmon(bb+4))) res = wa < wb;
-    else if ((wa = getint(aa+8, 2)) != (wb = getint(bb+8,
-                                        2))) res = wa < wb;
-    else if ((wa = getint(aa+11, 2)) != (wb = getint(bb+11,
-                                         2))) res = wa < wb;
-    else if ((wa = getint(aa+14, 2)) != (wb = getint(bb+14,
-                                         2))) res = wa < wb;
-    else if ((wa = getint(aa+17, 2)) != (wb = getint(bb+17,
-                                         2))) res = wa < wb;
-    else res = false;
+    else if ((wa = getint(aa+8, 2)) != (wb = getint(bb+8, 2))) res = wa < wb;
+    else if ((wa = getint(aa+11, 2)) != (wb = getint(bb+11, 2))) res = wa < wb;
+    else if ((wa = getint(aa+14, 2)) != (wb = getint(bb+14, 2))) res = wa < wb;
+    else if ((wa = getint(aa+17, 2)) != (wb = getint(bb+17, 2))) res = wa < wb;
+    else res = true;
     return Lispify_predicate(res);
 }
 

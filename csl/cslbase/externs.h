@@ -331,8 +331,6 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 
 #endif
 
-extern const char* version_date();
-
 #define first_nil_offset         50     // GC collector marks from here up
 
 //
