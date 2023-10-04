@@ -77,21 +77,34 @@ shift
 
 # Any command line arguments beyond the first are passed as extra options to
 # the configure step, so eg
-#   scripts/make-prinstine.sh --csl --enable-debug --enable-universal
+#   "scripts/make-prinstine.sh --csl --enable-debug --enable-universal"
 # might be of interest.
+# Also I then show the sizes of the executables and image files created.
 
 case "x$key" in
 *csl*)
-  ./configure --with csl $*
+  ./configure --with-csl $*
   make
+  ls -l cslbuild/*/csl/csl cslbuild/*/csl/bootstrapreduce \
+        cslbuild/*/csl/reduce cslbuild/*/csl/*.img
   ;;
 *bootstrapreduce*)
-  ./configure --with csl $*
+  ./configure --with-csl $*
   make bootstrapreduce.img
+  ls -l cslbuild/*/csl/bootstrapreduce \
+        cslbuild/*/csl/bootstrapreduce.img
   ;;
 *psl*)
-  ./configure --with psl $*
+  ./configure --with-psl $*
   make
+  ls -l pslbuild/*/red/*.img
+  ;;
+*both*)
+  ./configure --with-both $*
+  make
+  ls -l cslbuild/*/csl/csl cslbuild/*/csl/bootstrapreduce \
+        cslbuild/*/csl/reduce cslbuild/*/csl/*.img \
+        pslbuild/*/red/*.img
   ;;
 *)
   ;;
