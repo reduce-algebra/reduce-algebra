@@ -72,21 +72,25 @@ svn status
 
 printf "Distribution directory cleaned up\n"
 
-case "x$1" in
-*debug-csl*)
-  ./configure --with csl --enable-debug
-  make
-*debug-bootstrapreduce*)
-  ./configure --with csl --enable-debug
-  make bootstrapreduce.img
+key="$1"
+shift
+
+# Any command line arguments beyond the first are passed as extra options to
+# the configure step, so eg
+#   scripts/make-prinstine.sh --csl --enable-debug --enable-universal
+# might be of interest.
+
+case "x$key" in
 *csl*)
-  ./configure --with csl
+  ./configure --with csl $*
   make
+  ;;
 *bootstrapreduce*)
-  ./configure --with csl
+  ./configure --with csl $*
   make bootstrapreduce.img
+  ;;
 *psl*)
-  ./configure --with psl
+  ./configure --with psl $*
   make
 *)
   ;;
