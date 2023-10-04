@@ -6,6 +6,8 @@ printf "bring the local copy as closely into step with the files on subversion\n
 printf "as possible. In doing this it will DELETE any locally-built files and\n"
 printf "DISCARD any local changes. So if you are a developer then use of this\n"
 printf "script really risks leading to loss of your work.\n"
+printf "If given an argument it will build a system based on that in the clean tree\n"
+printf "so for instance 'scripts/make-prinstine.sh csl' should make a CSL version.
 printf "\n"
 printf "Are you certain that you wish to continue. Type YES in capitals if\n"
 printf "you are\n"
@@ -69,5 +71,26 @@ printf "svn status report:\n"
 svn status
 
 printf "Distribution directory cleaned up\n"
+
+case "x$1" in
+*debug-csl*)
+  ./configure --with csl --enable-debug
+  make
+*debug-bootstrapreduce*)
+  ./configure --with csl --enable-debug
+  make bootstrapreduce.img
+*csl*)
+  ./configure --with csl
+  make
+*bootstrapreduce*)
+  ./configure --with csl
+  make bootstrapreduce.img
+*psl*)
+  ./configure --with psl
+  make
+*)
+  ;;
+esac
+
 
 cd $save
