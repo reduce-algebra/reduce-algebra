@@ -7,7 +7,7 @@ printf "as possible. In doing this it will DELETE any locally-built files and\n"
 printf "DISCARD any local changes. So if you are a developer then use of this\n"
 printf "script really risks leading to loss of your work.\n"
 printf "If given an argument it will build a system based on that in the clean tree\n"
-printf "so for instance 'scripts/make-prinstine.sh csl' should make a CSL version.
+printf "so for instance 'scripts/make-prinstine.sh csl' should make a CSL version.\n"
 printf "\n"
 printf "Are you certain that you wish to continue. Type YES in capitals if\n"
 printf "you are\n"
