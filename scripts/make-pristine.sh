@@ -92,6 +92,7 @@ case "x$key" in
 *psl*)
   ./configure --with psl $*
   make
+  ;;
 *)
   ;;
 esac
