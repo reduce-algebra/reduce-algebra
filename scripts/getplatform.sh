@@ -1,3 +1,12 @@
+# getplatform.sh
+
+# To be included from other scripts...
+
+here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
+here=`dirname "$here"`
+here=`cd "$here"; pwd -P`
+scripthere="$here"
+here=`dirname "$here"`
 
 mc=`$here/config.guess`
 mc=`$here/scripts/findhost.sh $mc`
@@ -6,13 +15,13 @@ getplatform() {
   case $1 in
 # Plain --csl --bootstrapreduce --psl
   --csl)
-    printf "csl=$mc"
+    printf "csl"
     ;;
   --bootstrapreduce)
-    printf "bootstrapreduce=$mc"
+    printf "bootstrapreduce"
     ;;
   --psl)
-    printf "psl=$mc"
+    printf "psl"
     ;;
 
   --csl=installed)
@@ -142,3 +151,5 @@ getlogdir() {
   esac
   printf "%s" "$logdir-times"
 }
+
+# end of getplatform.sh
