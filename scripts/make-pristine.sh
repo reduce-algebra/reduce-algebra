@@ -73,7 +73,6 @@ svn status
 printf "Distribution directory cleaned up\n"
 
 key="$1"
-shift
 
 # Any command line arguments beyond the first are passed as extra options to
 # the configure step, so eg
@@ -83,23 +82,27 @@ shift
 
 case "x$key" in
 *csl*)
+  shift
   ./configure --with-csl $*
   make
   ls -l cslbuild/*/csl/csl cslbuild/*/csl/bootstrapreduce \
         cslbuild/*/csl/reduce cslbuild/*/csl/*.img
   ;;
 *bootstrapreduce*)
+  shift
   ./configure --with-csl $*
   make bootstrapreduce.img
   ls -l cslbuild/*/csl/bootstrapreduce \
         cslbuild/*/csl/bootstrapreduce.img
   ;;
 *psl*)
+  shift
   ./configure --with-psl $*
   make
   ls -l pslbuild/*/red/*.img
   ;;
 *both*)
+  shift
   ./configure --with-both $*
   make
   ls -l cslbuild/*/csl/csl cslbuild/*/csl/bootstrapreduce \
@@ -109,6 +112,5 @@ case "x$key" in
 *)
   ;;
 esac
-
 
 cd $save

@@ -1574,15 +1574,13 @@ get_configuration_data();
 
 package!-remake2(prolog_file,'support);
 
-package!-remake2('revision,'support);
+%package!-remake2('revision,'support);
 
 package!-remake2(rend_file,'support);
 
 package!-remake2('entry,'support);
 
 package!-remake2('smacros,'support);
-
-package!-remake2('remake,'support);
 
 
 % The next lines have LOTS of hidden depth!  They restart CSL repeatedly
@@ -1670,12 +1668,6 @@ symbolic restart!-csl nil;
    ((modulep 'tmprint) (load!-package 'tmprint)))
 
 (load!-package 'entry)
-
-
-%(setq version!* (compress (cons '!"
-%  (append
-%    (explodec "Reduce (CSL, rev ")
-%    (append (explodec revision!*) (explodec ")"""))))))
 
 (prog (ff rev)
 % The following line has a delicacy that may be unexpected in the case

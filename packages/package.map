@@ -80,7 +80,6 @@
  (alg           "alg"         core      test                 csl psl)
  (poly          "poly"        core      test                 csl psl)
  (rtools        "rtools"      core                           csl psl)
- (polydiv       "poly"        core      test                 csl psl)
  (arith         "arith"       core      test                 csl psl)
  (mathpr        "mathpr"      core                           csl psl)
  (ezgcd         "factor"      core                           csl psl)
