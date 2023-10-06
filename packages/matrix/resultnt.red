@@ -47,9 +47,6 @@ module resultnt;
 
 %imports reorder,setkorder,degr,addf,negf,multf,multpf;
 
-%% polydiv now part of the Reduce core
-%load_package polydiv;
-
 fluid '(!*bezout !*exp kord!*);
 
 switch bezout;

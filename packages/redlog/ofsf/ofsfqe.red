@@ -2773,7 +2773,7 @@ procedure ofsf_fbqe(f, theo);
       ofsf_cad1(f, ofsf_cadporder f, theo)
    >>;
 
-procedure ofsf_fbexternalu(f, call, argl, name);
+procedure ofsf_fbexternal(f, call, argl, name);
    % Fallback quantifier elimination using Qepcad. [f] is a formula.
    % Returns a quantifier-free formula. If the switches [rlqefb] and
    % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
