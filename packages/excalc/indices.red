@@ -438,7 +438,7 @@ symbolic procedure subfindices(u,l);
    end;
 
 symbolic procedure indxpri1 u;
-   begin scalar metricu,il,dnlist,uplist,r,x,y,z;
+   begin scalar metricu,il,dnlist,uplist,r,x,y,z,b;
      metricu := metricu!*;
      metricu!* := nil;
      il := allind !*t2f lt numr simp0 u;
@@ -457,12 +457,14 @@ symbolic procedure indxpri1 u;
      z := exc!-mk!*sq2 multsq(subfindices(numr r,x),1 ./ denr r);
         if null(!*nero and (z = 0)) then
          <<maprin list('setq,subla(x,'ns . il),z);
+           b := t;
            if not !*nat then prin2!* "$";
-           terpri!* t>> else maprin " ">>
+           terpri!* t>> >>;
+       if !*nero and null b then maprin " "
        end;
 
 symbolic procedure indxpri(v,u);
-   begin scalar x,y,z;
+   begin scalar x,y,z,b;
      y := flatindxl allindk v;
      for each j in mkaindxc(y,if coposp cdr v
                                  then get(car v,'indxsymmetries)
@@ -471,8 +473,10 @@ symbolic procedure indxpri(v,u);
          z := aeval subla(x,v);
          if null(!*nero and (z = 0)) then
          <<maprin list('setq,subla(x,v),z);
+         b := t;
          if not !*nat then prin2!* "$";
-         terpri!* t>> else maprin " ">>
+         terpri!* t>> >>;
+     if !*nero and null b then maprin " "
     end;
 
 symbolic procedure coposp u;
