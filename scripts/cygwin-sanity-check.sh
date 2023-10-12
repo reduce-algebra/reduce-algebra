@@ -39,6 +39,7 @@ case `uname -m` in
 i686)
     printf "32-bit systems no longer supported\n"
     exit
+    ;;
 x86_64)
     width="x86_64"
     printf "Checking 64-bit cygwin environment...\n"
