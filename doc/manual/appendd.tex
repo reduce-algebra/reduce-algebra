@@ -399,15 +399,19 @@ For example after calculating the following laplace transform
 using the \f{print\_conditions} operator would produce
 
 \begin{verbatim}
-repart(sum(ai) - sum(bj)) + 1/2 (q + 1 - p)>(q - p) repart(s)
+                             1
+repart(sum(ai) - sum(bj)) + ---*(q + 1 - p)
+                             2
 
- and ( - min(repart(bj))<repart(s))<1 - max(repart(ai))
+>(q - p)*repart(s) and 
 
- or mod(arg(eta))=pi*delta
+( - min(repart(bj))<repart(s))<1 - max(repart(ai))
 
- or ( - min(repart(bj))<repart(s))<1 - max(repart(ai))
+ or arg(eta)=pi*delta or 
 
- or mod(arg(eta))<pi*delta
+( - min(repart(bj))<repart(s))<1 - max(repart(ai))
+
+ or arg(eta)<pi*delta
 \end{verbatim}
 
 where
@@ -474,9 +478,9 @@ G^{1 0}_{0 2} \left(\frac{x^{2}}{4} \ \Bigg\vert
   defint_choose(besselj(~n,~x),~var) => f1(50,x,n);
 
   symbolic putv(mellin!-transforms!*,50,'
-                ((n) (1 0 0 2) () ((quotient n 2)
-                                   (minus quotient n 2)) 1
-                                   (quotient (expt x 2) 4)));
+          ((n) (1 0 0 2) () ((quotient n 2)
+                             (minus (quotient n 2))) 1
+                            (quotient (expt x 2) 4)));
 \end{verbatim} 
 
 

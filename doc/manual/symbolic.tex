@@ -114,7 +114,7 @@ value, it is necessary to add to {\REDUCE} the concept of a quoted expression
 by analogy with the Lisp \texttt{quote} function. This is provided by the single
 quote mark \texttt{'}.  For example,
 \begin{quote}
-\begin{tabular}{l@{\hspace{0.5in}}ll}
+\begin{tabular}{l@{\hspace{0.2in}}ll}
 \texttt{'a} &  represents the Lisp S-expression & \texttt{(quote a)} \\
 \texttt{'(a b c)} & represents the Lisp S-expression & \texttt{(quote (a b c))}
 \end{tabular}
@@ -163,12 +163,12 @@ In those cases where a \texttt{lambda} expression is used to introduce local
 variables to avoid recomputation, a \texttt{where} statement can also be
 used.  For example, the expression
 \begin{verbatim}
-        (lambda (x,y); list(car x,cdr x,car y,cdr y))
-            (reverse u,reverse v)
+    (lambda (x,y); list(car x,cdr x,car y,cdr y))
+        (reverse u,reverse v)
 \end{verbatim}
 can also be written
 \begin{verbatim}
-      {car x,cdr x,car y,cdr y} where x=reverse u,y=reverse v
+    {car x,cdr x,car y,cdr y} where x=reverse u,y=reverse v
 \end{verbatim}
 Where possible, \texttt{where} syntax is preferred to \texttt{lambda} syntax,
 since it is more natural.
@@ -481,32 +481,17 @@ The following is the complete code for doing the above steps. The end
 result will be that the square of the leading term of $(a+b)^{2}$ is
 calculated.
 
-%%\begin{tabular}{lp{\rboxwidth}}
-%%\texttt{share x,y;} & \texttt{\% declare {\tt X} and
-%%\texttt{Y} as shared} \\
-%%\texttt{x := (a+b)\textasciicircum2;} & \texttt{\% store (a+b)\textasciicircum2 in X} \\
-%%\texttt{symbolic;} & \texttt{\% transfer to symbolic mode} \\
-%%\texttt{z := cadr x;} & {\tt \% store a true standard quotient \newline
-%%                          \% in Z} \\[1.7pt]
-%%\texttt{lt numr z;} & {\tt \% print the leading term of the \newline
-%%                        \% numerator of Z} \\
-%%\texttt{y := mk!*sq !*t2q lt numr z;} & {\tt \% store the
-%%                       prefix form of this \newline
-%%                     \% leading term in Y} \\
-%%\texttt{algebraic;} & \texttt{\% return to algebraic mode} \\
-%%\texttt{y\textasciicircum2;} & {\tt \% evaluate square of the leading \newline
-%%\% term of (a+b)\textasciicircum2}
-%%\end{tabular}
 \begin{verbatim}
-share x,y;                   % declare X and Y as shared
+share x,y;                   % declare X and Y
+                             % as shared
 x := (a+b)^2;                % store (a+b)^2 in X
 symbolic;                    % transfer to symbolic mode
-z := cadr x;                 % store a true standard quotient
-                             % in Z
-lt numr z;                   % print the leading term of the
-                             % numerator of Z
-y := mk!*sq !*t2q lt numr z; % store the prefix form of this
-                             % leading term in Y
+z := cadr x;                 % store a true standard
+                             % quotient in Z
+lt numr z;                   % print the leading term
+                             % of the numerator of Z
+y := mk!*sq !*t2q lt numr z; % store the prefix form of
+                             % this leading term in Y
 algebraic;                   % return to algebraic mode
 y^2;                         % evaluate square of the
                              % leading term of (a+b)^2

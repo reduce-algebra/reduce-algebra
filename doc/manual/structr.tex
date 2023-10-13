@@ -561,7 +561,7 @@ The following {\REDUCE} statements
 \end{verbatim}
 will generate a file \texttt{forfil} that contains:
 
-{\small
+{\footnotesize
 \begin{verbatim}
 c     this is a fortran program
  1    format(e13.5)
@@ -688,7 +688,8 @@ convenient to display the skeletal structure of the answer.  The operator
 \texttt{structr},\ttindextype{STRUCTR}{operator} that takes a single expression as argument,
 will do this for you.  Its syntax is:
 \begin{verbatim}
-   structr(exprn:algebraic[,id1:identifier[,id2:identifier]]);
+   structr(exprn:algebraic
+           [,id1:identifier[,id2:identifier]]);
 \end{verbatim}
 The structure is printed effectively as a tree, in which the subparts are
 laid out with auxiliary names.  If the optional \texttt{id1} is absent, the
@@ -944,8 +945,8 @@ presence of side relations.  It applies the side relations to the
 polynomial so that an equivalent expression results with as few terms as
 possible.  For example, the evaluation of
 \begin{verbatim}
-     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,
-             {cos x^2+sin x^2=1});
+   compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,
+           {cos x^2+sin x^2=1});
 \end{verbatim}
 yields the result
 \begin{verbatim}

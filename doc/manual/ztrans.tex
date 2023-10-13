@@ -41,8 +41,7 @@
 \subsection[Input for the Z-Transform]{Input for the $Z$-Transform}
 
 This package can compute the $Z$-Transforms of the following
-list of $f_n$, and certain combinations thereof.
-
+list of functions $f_n$, and certain combinations thereof.
 \begin{center}
   \renewcommand{\arraystretch}{2}
   \setlength{\tabcolsep}{5mm}
@@ -164,11 +163,13 @@ z*( - cos(b) + log(------------------------------)*z)
 
 4: ztrans(n*cos(b*n)/factorial(n),n,z);
 
-  cos(b)/z       sin(b)                 sin(b)
- e        *(cos(--------)*cos(b) - sin(--------)*sin(b))
-                   z                      z
----------------------------------------------------------
-                            z
+  cos(b)/z
+(e
+
+        sin(b)                 sin(b)
+ *(cos(--------)*cos(b) - sin(--------)*sin(b)))/z
+          z                      z
+
 5: ztrans(sum(1/factorial(k),k,0,n),n,z);
 
   1/z
@@ -240,40 +241,53 @@ cosh(a*n)
   $Q(z)=z^5-2z^3+2z^2-3z+2=(z-1)^2(z+2)(z^2+1)$, which can be inverted
   to give
   \[ f_n = 2n + (-2)^n - \cos \frac{\pi}{2}n\;. \]
-  The following REDUCE session shows how the present package can be
+  The following \REDUCE session shows how the present package can be
   used to solve the above problem.
 \end{description}
 
 \begin{verbatim}
-14: operator f$ f(0):=0$ f(1):=0$ f(2):=9$ f(3):=-2$ f(4):=23$
+1: operator f;
+
+2: f(0):=0$ f(1):=0$ f(2):=9$ f(3):=-2$ f(4):=23$
 
 
-20: equation:=ztrans(f(n+5)-2*f(n+3)+2*f(n+2)-3*f(n+1)+2*f(n),n,z);
+7: equation := 
+   ztrans(f(n+5)-2*f(n+3)+2*f(n+2)-3*f(n+1)+2*f(n),n,z);
 
-                              5                       3
-equation := ztrans(f(n),n,z)*z  - 2*ztrans(f(n),n,z)*z
+                              5
+equation := ztrans(f(n),n,z)*z
+
+                                   3
+             - 2*ztrans(f(n),n,z)*z
 
                                    2
-             + 2*ztrans(f(n),n,z)*z  - 3*ztrans(f(n),n,z)*z
+             + 2*ztrans(f(n),n,z)*z
+
+             - 3*ztrans(f(n),n,z)*z
 
                                        3      2
-             + 2*ztrans(f(n),n,z) - 9*z  + 2*z  - 5*z
+             + 2*ztrans(f(n),n,z) - 9*z  + 2*z
 
+             - 5*z
 
-21: ztransresult:=solve(equation,ztrans(f(n),n,z));
+8: ztransresult:=solve(equation,ztrans(f(n),n,z));
 
-                                             2
-                                       z*(9*z  - 2*z + 5)
-ztransresult := {ztrans(f(n),n,z)=----------------------------}
-                                    5      3      2
-                                   z  - 2*z  + 2*z  - 3*z + 2
+ztransresult := 
 
-22: result:=invztrans(part(first(ztransresult),2),z,n);
+                             2
+                       z*(9*z  - 2*z + 5)
+{ztrans(f(n),n,z)=----------------------------}
+                    5      3      2
+                   z  - 2*z  + 2*z  - 3*z + 2
 
-                   n    n       n    n
-           2*( - 2)  - i *( - 1)  - i  + 4*n
-result := -----------------------------------
-                          2
+9: result:=invztrans(part(first(ztransresult),2),z,n);
+
+result := 
+
+     n       n           n  n    n
+  - i *( - 1)  + 2*( - 1) *2  - i  + 4*n
+-----------------------------------------
+                    2
 \end{verbatim}
 
 \begin{description}
@@ -289,31 +303,38 @@ result := -----------------------------------
   \end{align*}
   The Inverse $Z$-Transform results in the solution
   \[f_n = \frac{1}{2} \left( \frac{3^{n+1}-1}{2}-(n+1) \right).\]
-  The following REDUCE session shows how the present package can be
+  The following \REDUCE session shows how the present package can be
   used to solve the above problem.
 \end{description}
 
 \begin{verbatim}
-23: clear(f)$ operator f$ f(0):=0$ f(1):=1$
+10: clear(f)$ operator f$ f(0):=0$ f(1):=1$
 
 
-27: equation:=ztrans(f(n+2)-4*f(n+1)+3*f(n)-1,n,z);
+14: equation:=ztrans(f(n+2)-4*f(n+1)+3*f(n)-1,n,z);
 
-                               3                       2
-equation := (ztrans(f(n),n,z)*z  - 5*ztrans(f(n),n,z)*z
+                               3
+equation := (ztrans(f(n),n,z)*z
 
-                                                           2
-    + 7*ztrans(f(n),n,z)*z - 3*ztrans(f(n),n,z) - z )/(z - 1)
+                                    2
+              - 5*ztrans(f(n),n,z)*z
 
-28: ztransresult:=solve(equation,ztrans(f(n),n,z));
+              + 7*ztrans(f(n),n,z)*z
 
                                       2
-                                     z
-result := {ztrans(f(n),n,z)=---------------------}
-                              3      2
-                             z  - 5*z  + 7*z - 3
+              - 3*ztrans(f(n),n,z) - z )/(z - 1)
 
-29: result:=invztrans(part(first(ztransresult),2),z,n);
+15: ztransresult:=solve(equation,ztrans(f(n),n,z));
+
+ztransresult := 
+
+                            2
+                           z
+{ztrans(f(n),n,z)=---------------------}
+                    3      2
+                   z  - 5*z  + 7*z - 3
+
+16: result:=invztrans(part(first(ztransresult),2),z,n);
 
               n
            3*3  - 2*n - 3
@@ -330,36 +351,40 @@ result := ----------------
 \end{description}
 
 \begin{verbatim}
-30: clear(f)$ operator f$ f(0):=1$ f(1):=1$
+17: clear(f)$ operator f$ f(0):=1$ f(1):=1$
 
 
-34: equation:=ztrans((n+1)*f(n+1)-f(n),n,z);
+21: equation:=ztrans((n+1)*f(n+1)-f(n),n,z);
 
-                                        2
-equation :=  - (df(ztrans(f(n),n,z),z)*z  + ztrans(f(n),n,z))
+equation := 
 
-35: operator tmp;
+                            2
+ - (df(ztrans(f(n),n,z),z)*z  + ztrans(f(n),n,z))
 
-36: equation:=sub(ztrans(f(n),n,z)=tmp(z),equation);
+22: operator tmp;
+
+23: equation:=sub(ztrans(f(n),n,z)=tmp(z),equation);
 
                               2
 equation :=  - (df(tmp(z),z)*z  + tmp(z))
 
-37: load(odesolve);
+24: load_package(odesolve);
 
-38: ztransresult:=odesolve(equation,tmp(z),z);
+25: ztransresult:=odesolve(equation,tmp(z),z);
 
                          1/z
 ztransresult := {tmp(z)=e   *arbconst(1)}
 
-39: preresult:=invztrans(part(first(ztransresult),2),z,n);
+39: preresult :=
+      invztrans(part(first(ztransresult),2),z,n);
 
               arbconst(1)
 preresult := --------------
               factorial(n)
 
-40: solve({sub(n=0,preresult)=f(0),sub(n=1,preresult)=f(1)},
-arbconst(1));
+40: solve({sub(n=0,preresult)=f(0),
+           sub(n=1,preresult)=f(1)},
+          arbconst(1));
 
 {arbconst(1)=1}
 
