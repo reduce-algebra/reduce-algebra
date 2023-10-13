@@ -63,7 +63,11 @@ flag('(newrederr),'opfn);
 %Ztrans procedure
 
 algebraic operator ztrans_aux;
-algebraic operator !~f,!~g,!~summ,binomial;
+
+% Suppress redefined msg when loading
+begin scalar !*msg;
+   algebraic operator !~f,!~g,!~summ;
+end;
 
 algebraic procedure ztrans(f,n,z);
  begin
