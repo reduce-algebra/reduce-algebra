@@ -162,7 +162,8 @@ trigsimp(sin(x)^4, cos, combine);
 
 Sometimes, it is necessary to handle an expression in separate steps:
 \begin{verbatim}
-trigsimp((sinh(x)+cosh(x))^n+(cosh(x)-sinh(x))^n, expon);
+trigsimp((sinh(x)+cosh(x))^n+(cosh(x)-sinh(x))^n,
+         expon);
 
   1   n    n*x
 (----)  + e
@@ -173,8 +174,9 @@ trigsimp(ws, hyp);
 
 2*cosh(n*x)
 
-trigsimp((cosh(a*n)*sinh(a)*sinh(p)+cosh(a)*sinh(a*n)*sinh(p)+
-    sinh(a - p)*sinh(a*n))/sinh(a));
+trigsimp((cosh(a*n)*sinh(a)*sinh(p)+
+          cosh(a)*sinh(a*n)*sinh(p)+
+          sinh(a - p)*sinh(a*n))/sinh(a));
 
 cosh(a*n)*sinh(p) + cosh(p)*sinh(a*n)
 
@@ -229,7 +231,15 @@ The polynomial can consist of both trigonometric and hyperbolic functions:
 \begin{verbatim}
 trigfactorize(sin(2x)*sinh(2x), x);
 
-{{4,1}, {sinh(x),1}, {cosh(x),1}, {sin(x),1}, {cos(x),1}}
+{{4,1},
+
+ {sinh(x),1},
+
+ {cosh(x),1},
+
+ {sin(x),1},
+
+ {cos(x),1}}
 \end{verbatim}
 
 The \texttt{trigfactorize} operator respects the standard \REDUCE{}

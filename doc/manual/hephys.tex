@@ -87,7 +87,7 @@ line may be written in a contracted form.
 
 Thus
 \begin{verbatim}
-        g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .
+   g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .
 \end{verbatim}
 The vector \texttt{a} is reserved in arguments of G to denote the special
 $\gamma$ matrix $\gamma^{5}$. Thus
@@ -109,8 +109,8 @@ $\gamma$ matrices.
 \hypertarget{operator:EPS}{}
 Syntax:
 \begin{verbatim}
-         eps(exprn1:vector_expression,...,exprn4:vector_exp)
-            :vector_exp.
+     eps(exprn1:vector_expression,...,exprn4:vector_exp)
+        :vector_exp.
 \end{verbatim}
 The operator \texttt{eps} has four arguments, and is used only to denote the
 completely antisymmetric tensor of order 4 and its contraction with Lorentz
@@ -294,19 +294,21 @@ A straightforward \REDUCE{} program for this, with appropriate substitutions
 (using \texttt{p1} for $p_i$, \texttt{pf} for $p_f$, \texttt{ki}
 for $k_i$ and \texttt{kf} for $k_f$) is
 \begin{verbatim}
- on div; % this gives output in same form as Bjorken and Drell.
+ on div; % this gives output in same form
+         % as Bjorken and Drell.
  mass ki= 0, kf= 0, p1= m, pf= m; vector e,ep;
- % if e is used as a vector, it loses its scalar identity
- %      as the base of natural logarithms.
+ % if e is used as a vector, it loses its scalar
+ %      identity as the base of natural logarithms.
  mshell ki,kf,p1,pf;
- let p1.e= 0, p1.ep= 0, p1.pf= m^2+ki.kf, p1.ki= m*k,p1.kf=
-     m*kp, pf.e= -kf.e, pf.ep= ki.ep, pf.ki= m*kp, pf.kf=
-     m*k, ki.e= 0, ki.kf= m*(k-kp), kf.ep= 0, e.e= -1,
-     ep.ep=-1;
+ let p1.e= 0, p1.ep= 0, p1.pf= m^2+ki.kf, p1.ki= m*k,
+     p1.kf= m*kp, pf.e= -kf.e, pf.ep= ki.ep, 
+     pf.ki= m*kp, pf.kf= m*k, ki.e= 0, ki.kf= m*(k-kp),
+     kf.ep= 0, e.e= -1, ep.ep=-1;
  operator gp;
  for all p let gp(p)= g(l,p)+m;
  comment this is just to save us a lot of writing;
- gp(pf)*(g(l,ep,e,ki)/(2*ki.p1) + g(l,e,ep,kf)/(2*kf.p1))
+ gp(pf)*(g(l,ep,e,ki)/(2*ki.p1) + g(l,e,ep,kf)/
+     (2*kf.p1))
    * gp(p1)*(g(l,ki,e,ep)/(2*ki.p1) + g(l,kf,ep,e)/
      (2*kf.p1))$
  write "The Compton cxn is ",ws;

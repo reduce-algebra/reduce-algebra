@@ -140,8 +140,11 @@ algebraic procedure gegenbauer_base(x,n,a);
 
 algebraic <<
 
-operator HermiteP,JacobiP,LegendreP,LegendreQ, !~f,
-         LaguerreP,ChebyshevT,ChebyshevU,GegenbauerP;
+% Suppress redefined msg when loading
+begin scalar !*msg;
+   operator HermiteP,JacobiP,LegendreP,LegendreQ, !~f,
+      LaguerreP,ChebyshevT,ChebyshevU,GegenbauerP;
+end;
 
 let limit(~f(~n,~x),~x,~lim) => f(n,lim) when freeof (lim,infinity)
        and member (f,{LegendreP,ChebyshevT,ChebyshevU,HermiteP,

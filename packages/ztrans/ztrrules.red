@@ -289,7 +289,10 @@ acoth(coth(~xx))=>xx,
 (cosh(~xx)-sinh(~xx))^~nn=>cosh(nn*xx)-sinh(nn*xx)
 } $
 
-operator invztrans,invztrans_aux,invztrans1,invztrans_end;
+% Suppress redefined msg when loading
+begin scalar !*msg;
+   operator invztrans,invztrans_aux,invztrans1,invztrans_end;
+end;
 
 % let {binomial(~n,~k)=>prod(n-i,i,0,k-1)/factorial(k) when fixp(k)};
 let {binomial(~n,~k)=>

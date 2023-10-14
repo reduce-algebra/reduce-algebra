@@ -787,6 +787,13 @@ flag('(hyperterm sumtohyper simplify_gamma simplify_combinatorial
 
 deflist('((summ simpiden) (zb_f simpiden) (zb_sigma simpiden)),'simpfn);
 
+% Ztrans module entry points
+
+defautoload(ztrans,ztrans,expr,3);
+
+defautoload_operator(invztrans,ztrans);
+
+flag('(ztrans),'opfn);
 
 % Taylor module entry points
 
@@ -1395,10 +1402,11 @@ operator smt_mainloop;
 defautoload(smt_mainloop, smt, expr, 0);
 
 % mrvlimit
-global '(!*tracelimit);
-switch tracelimit;
-symbolic operator mrv_limit;
-defautoload(mrv_limit, mrvlimit, expr, 3);
+switch trlimit;
+
+put('mrv_limit,'psopfn,'mrv_limit);
+
+defautoload(mrv_limit, mrvlimit, expr, 1);
 
 % F5
 switch f5fractionfree=off;
