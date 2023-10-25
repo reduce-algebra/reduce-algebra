@@ -229,7 +229,8 @@ The angle multipliers are held in a separate vector in order to allow
 for future flexibility.  This leads to a representation as a vector of
 length 6 or 4;
 \begin{verbatim}
-Version1:  [ BalanceBits, Coeff, Function, Angles, LeftTree, RightTree ]
+Version1:  [ BalanceBits, Coeff, Function, Angles,
+                 LeftTree, RightTree ]
 Version2:  [ Coeff, Function, Angles, Next ]
 \end{verbatim}
 where the \texttt{Angles} field is a vector of length 8, for the
@@ -355,12 +356,12 @@ This is of course precisely the case for which the HSUB operation is
 designed, and so in order to calculate $E_n - u$ all one requires is
 the code
 \begin{verbatim}
-    bige := fourier 0;
-    for k:=1:n do <<
-      wtlevel k;
-      bige:=fourier e * hsub(fourier(sin u), u, u, bige, k);
-    >>;
-    write "Kepler Eqn solution:", bige$
+bige := fourier 0;
+for k:=1:n do <<
+  wtlevel k;
+  bige:=fourier e * hsub(fourier(sin u), u, u, bige, k);
+>>;
+write "Kepler Eqn solution:", bige$
 \end{verbatim}
 It is possible to create a regular \REDUCE program to simulate this (as
 is done for example in Barton and Fitch\cite{Barton72}, page 254).

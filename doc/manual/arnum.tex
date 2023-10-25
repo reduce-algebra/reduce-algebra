@@ -112,28 +112,28 @@ substitution.
 \example \index{Arnum package@\textsc{Arnum} package!example}
 
 \begin{verbatim}
-     defpoly sqrt2**2-2;
+defpoly sqrt2**2-2;
 
-     1/(sqrt2+1);
+1/(sqrt2+1);
 
-     sqrt2 - 1
+sqrt2 - 1
 
-     (x**2+2*sqrt2*x+2)/(x+sqrt2);
+(x**2+2*sqrt2*x+2)/(x+sqrt2);
 
-     x + sqrt2
+x + sqrt2
 
-     on gcd;
+on gcd;
 
-     (x**3+(sqrt2-2)*x**2-(2*sqrt2+3)*x-3*sqrt2)/(x**2-2);
+(x**3+(sqrt2-2)*x**2-(2*sqrt2+3)*x-3*sqrt2)/(x**2-2);
 
-       2
-     (x  - 2*x - 3)/(x - sqrt2)
+  2
+(x  - 2*x - 3)/(x - sqrt2)
 
-     off gcd;
+off gcd;
 
-     sqrt(x**2-2*sqrt2*x*y+2*y**2);
+sqrt(x**2-2*sqrt2*x*y+2*y**2);
 
-     abs(x - sqrt2*y)
+abs(x - sqrt2*y)
 \end{verbatim}
 
 Until now we have dealt with only a single algebraic number.  In practice
@@ -152,22 +152,24 @@ algebraic numbers are then expressed in terms of the primitive element.
 \example\index{Arnum package@\textsc{Arnum} package!example}
 
 \begin{verbatim}
-   defpoly sqrt2**2-2,cbrt5**3-5;
+defpoly sqrt2**2-2,cbrt5**3-5;
 
-   *** defining polynomial for primitive element:
+*** defining polynomial for primitive element:
 
-     6       4        3        2
-   a1  - 6*a1  - 10*a1  + 12*a1  - 60*a1 + 17
+  6       4        3        2
+a1  - 6*a1  - 10*a1  + 12*a1  - 60*a1 + 17
 
-   sqrt2;
+sqrt2;
 
-             5             4              3              2
-   48/1187*a1  + 45/1187*a1  - 320/1187*a1  - 780/1187*a1  +
+  48     5     45     4    320     3    780     2
+------*a1  + ------*a1  - ------*a1  - ------*a1
+ 1187         1187         1187         1187
 
+    735         1820
+ + ------*a1 - ------
+    1187        1187
 
-   735/1187*a1 - 1820/1187
-
-   sqrt2**2;
+sqrt2**2;
 
    2
 \end{verbatim}

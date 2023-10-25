@@ -340,19 +340,23 @@ Some difficult expressions can be simplified:
 \begin{verbatim}
 df(sqrt(1+cos(x)), x, 4);
 
-            5           4            3       2            3
-( - 4*cos(x)  - 4*cos(x)  - 20*cos(x) *sin(x)  + 12*cos(x)
+            5           4            3       2
+( - 4*cos(x)  - 4*cos(x)  - 20*cos(x) *sin(x)
 
-             2       2            2                   4
-  - 24*cos(x) *sin(x)  + 20*cos(x)  - 15*cos(x)*sin(x)
+             3            2       2            2
+  + 12*cos(x)  - 24*cos(x) *sin(x)  + 20*cos(x)
 
-                    2                       4            2
-  + 12*cos(x)*sin(x)  + 8*cos(x) - 15*sin(x)  + 16*sin(x) )/
+                    4                   2
+  - 15*cos(x)*sin(x)  + 12*cos(x)*sin(x)
 
-(16*sqrt(cos(x) + 1)
+                        4            2
+  + 8*cos(x) - 15*sin(x)  + 16*sin(x) )/(16
 
-         4           3           2
- *(cos(x)  + 4*cos(x)  + 6*cos(x)  + 4*cos(x) + 1))
+                            4           3
+   *sqrt(cos(x) + 1)*(cos(x)  + 4*cos(x)
+
+                 2
+       + 6*cos(x)  + 4*cos(x) + 1))
 
 on rationalize;
 trigsimp(ws);
@@ -362,7 +366,6 @@ trigsimp(ws);
         16
 
 off rationalize;
-load_package taylor;
 
 taylor(sin(x+a)*cos(x+b), x, 0, 4);
 
@@ -381,13 +384,17 @@ cos(b)*sin(a) + (cos(a)*cos(b) - sin(a)*sin(b))*x
 
 trigsimp(ws, combine);
 
- sin(a - b) + sin(a + b)                               2
-------------------------- + cos(a + b)*x - sin(a + b)*x
+ sin(a - b) + sin(a + b)
+------------------------- + cos(a + b)*x
             2
 
-    2*cos(a + b)   3    sin(a + b)   4      5
- - --------------*x  + ------------*x  + O(x )
-         3                  3
+               2    2*cos(a + b)   3
+ - sin(a + b)*x  - --------------*x
+                         3
+
+    sin(a + b)   4      5
+ + ------------*x  + O(x )
+        3
 \end{verbatim}
 
 Certain integrals whose evaluation was not possible in \REDUCE{}

@@ -91,14 +91,14 @@ a factored form.  For example, with \sw{factor} on, the expression
 It is also possible to factorize a given expression explicitly.  The
 operator \texttt{factorize}\ttindex{factorize} that invokes this facility is
 used with the syntax
-\begin{verbatim}
-     factorize(exprn:polynomial[,intexp:prime integer]):list,
-\end{verbatim}
+\begin{syntax}
+   \texttt{factorize(}(\meta{polynomial}\optional{,prime integer}\texttt{)}:\meta{list},
+\end{syntax}
 the optional argument of which will be described later. Thus to find and
 display all factors of the cyclotomic polynomial $x^{105}-1$, one could
 write:
 \begin{verbatim}
-        factorize(x^105-1);
+    factorize(x^105-1);
 \end{verbatim}
 The result is a list of factor,exponent pairs.
 In the above example, there is no overall numerical factor in the result,
@@ -110,11 +110,11 @@ It will however not be factored further.  Prime factors of such numbers
 can be found, using a probabilistic algorithm, by turning on the switch
 \sw{ifactor}.\ttindexswitch{ifactor}  For example,
 \begin{verbatim}
-        on ifactor; factorize(12x^2-12);
+    on ifactor; factorize(12x^2-12);
 \end{verbatim}
 would result in the output
 \begin{verbatim}
-        {{2,2},{3,1},{x + 1,1},{x - 1,1}}.
+    {{2,2},{3,1},{x + 1,1},{x - 1,1}}.
 \end{verbatim}
 
 If the first argument of \texttt{factorize} is an integer, it will be
@@ -173,7 +173,7 @@ of detail.
 \texttt{on overview;}\ttindexswitch{overview} reduces the amount of detail presented in other forms of
 trace.  Other forms of trace output are enabled by directives of the form
 \begin{verbatim}
-        symbolic set!-trace!-factor(<number>,<filename>);
+    symbolic set!-trace!-factor(<number>,<filename>);
 \end{verbatim}
 where useful numbers are 1, 2, 3 and 100, 101, ... .  This facility is
 intended to make it possible to discover in fairly great detail what just
@@ -184,7 +184,7 @@ factors from these.  If \texttt{nil} is used in place of a filename the trace
 output requested is directed to the standard output stream.  After use of
 this trace facility the generated trace files should be closed by calling
 \begin{verbatim}
-        symbolic close!-trace!-files();
+    symbolic close!-trace!-files();
 \end{verbatim}
 \textit{NOTE:} Using the factorizer with \sw{mcd}\ttindexswitch{mcd} off will
 result in an error.
@@ -239,7 +239,7 @@ if both \sw{ezgcd} and \sw{heugcd} are on, the former takes precedence.
 \hypertarget{operator:GCD}{}
 This operator, used with the syntax
 \begin{verbatim}
-        gcd(exprn1:polynomial,exprn2:polynomial):polynomial,
+    gcd(exprn1:polynomial,exprn2:polynomial):polynomial,
 \end{verbatim}
 returns the greatest common divisor of the two polynomials \texttt{exprn1} and
 \texttt{exprn2}.
@@ -269,15 +269,15 @@ is available for this purpose, and is normally on.
 \hypertarget{operator:LCM}{}
 In addition, the operator \texttt{lcm},\ttindextype{lcm}{operator} used with the syntax
 \begin{verbatim}
-        lcm(exprn1:polynomial,exprn2:polynomial):polynomial,
+    lcm(exprn1:polynomial,exprn2:polynomial):polynomial,
 \end{verbatim}
 returns the least common multiple of the two polynomials \texttt{exprn1} and
 \texttt{exprn2}.
 
 \textit{Examples:}
 \begin{verbatim}
-        lcm(x^2+2*x+1,x^2+3*x+2) ->  x**3 + 4*x**2 + 5*x + 2
-        lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(x**2 - y**2)
+    lcm(x^2+2*x+1,x^2+3*x+2) ->  x**3 + 4*x**2 + 5*x + 2
+    lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(x**2 - y**2)
 \end{verbatim}
 
 \section{Controlling Use of Common Denominators}
@@ -541,10 +541,9 @@ is required (as does the standard remainder operator).
 \hypertarget{switch:BEZOUT}{}
 
 This is used with the syntax
-\begin{verbatim}
-     resultant(exprn1:polynomial,exprn2:polynomial,var:kernel):
-        polynomial.
-\end{verbatim}
+\begin{syntax}
+  \texttt{resultant(}\meta{polynomial},\meta{polynomial},\meta{kernel}\texttt{)}:\meta{polynomial}.
+\end{syntax}
 It computes the resultant of the two given polynomials with respect to the
 given variable, the coefficients of the polynomials can be taken from any
 domain. The result can be identified as the determinant of a
@@ -561,17 +560,12 @@ are permitted.
 
 %\begin{samepage}
 The sign conventions used by the resultant function follow those in \cite{Loos:1982}.
-namely, with \texttt{a} and \texttt{b} not dependent on \texttt{x}:
-
-\begin{verbatim}
-                               deg(p)*deg(q)
-   resultant(p(x),q(x),x)= (-1)             *resultant(q,p,x)
-
-                            deg(p)
-   resultant(a,p(x),x)   = a
-
-   resultant(a,b,x)      = 1
-\end{verbatim}
+namely, with $a$ and $b$ not dependent on $x$:
+\begin{align*}
+  \mathrm{resultant}(p(x),q(x),x) &= (-1)^{\deg(p)\cdot\deg(q)}\cdot\mathrm{resultant}(q(x),p(x),x) \\
+  \mathrm{resultant}(a,q(x),x) &= a^{\deg(p)} \\
+  \mathrm{resultant}(a,b,x) &= 1
+\end{align*}
 %\end{samepage}
 
 \textit{Examples:}
@@ -618,7 +612,7 @@ For example:
      decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-
                     218900*x^3+65690*x^2-7700*x+234)
                    2                  2            2
-              -> {u  + 35*u + 234, u=v  + 10*v, v=x  - 22*x}
+          -> {u  + 35*u + 234, u=v  + 10*v, v=x  - 22*x}
                                      2
      decompose(u^2+v^2+2u*v+1)  -> {w  + 1, w=u + v}
 \end{verbatim}
@@ -697,7 +691,7 @@ It returns the denominator of the rational expression \texttt{exprn}.  If
 \begin{verbatim}
         den(x/y^2)   ->  Y**2
         den(100/6)   ->  3
-                [since 100/6 is first simplified to 50/3]
+             % since 100/6 is first simplified to 50/3
         den(a/4+b/6) ->  12
         den(a+b)     ->  1
 \end{verbatim}
@@ -753,9 +747,9 @@ If \texttt{exprn} does not depend on \texttt{var}, \texttt{exprn} is returned.
 
 \textit{Examples:}
 \begin{verbatim}
-        lterm((a+b)*(c+2*d)^2,a) ->  a*(c**2+4*c*d+4*d**2)
-        lterm((a+b)*(c+2*d)^2,d) ->  4*d**2*(a+b)
-        lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
+    lterm((a+b)*(c+2*d)^2,a) ->  a*(c**2+4*c*d+4*d**2)
+    lterm((a+b)*(c+2*d)^2,d) ->  4*d**2*(a+b)
+    lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
 \end{verbatim}
 
 {\COMPATNOTE} In some earlier versions of \REDUCE, \texttt{lterm} returned
