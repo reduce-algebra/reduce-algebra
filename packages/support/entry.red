@@ -808,6 +808,12 @@ put('taylor,'simpfn,'simptaylor);
 
 defautoload(simptaylor,taylor);
 
+defautoload(implicit_taylor,taylor,expr,6);
+
+defautoload(inverse_taylor,taylor,expr,5);
+
+flag('(implicit_taylor inverse_taylor),'opfn);
+
 % TPS entry points
 
 switch psprintorder=on;

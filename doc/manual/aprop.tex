@@ -27,14 +27,14 @@ You may also declare an operator as real valued
 with the meaning, that this operator maps real arguments always to
 real values. Example:
 \begin{verbatim}
-        operator h; realvalued h,x;
-        impart h(x);
+    operator h; realvalued h,x;
+    impart h(x);
    
-           0
+       0
   
-        impart h(w);
+    impart h(w);
 
-           impart(h(w))
+       impart(h(w))
 \end{verbatim}
 Such declarations are not needed for the standard elementary functions.
         
@@ -43,7 +43,7 @@ To remove the propery from a variable or an operator use the declaration
 \index{Declaration!\texttt{notrealvalued}}
 with the syntax:
 \begin{verbatim}
-        notrealvalued v1,...vn;
+    notrealvalued v1,...vn;
 \end{verbatim}
 
 \hypertarget{operator:REALVALUEDP}{}
@@ -52,21 +52,21 @@ allows you to check if a variable, an operator, or
 an operator expression is known as real valued.
 Thus, 
 \begin{verbatim}
-        realvalued x;
-        write if realvaluedp(sin x) then "yes" else "no";
-        write if realvaluedp(sin z) then "yes" else "no";
+    realvalued x;
+    write if realvaluedp(sin x) then "yes" else "no";
+    write if realvaluedp(sin z) then "yes" else "no";
 \end{verbatim}
 would print first \texttt{yes} and then \texttt{no}. For general
 expressions test the impart for checking the value range:
 \begin{verbatim}
-        realvalued x,y; w:=(x+i*y); w1:=conj w;
-        impart(w*w1);
+    realvalued x,y; w:=(x+i*y); w1:=conj w;
+    impart(w*w1);
 
-           0
+       0
 
-        impart(w*w);
+    impart(w*w);
 
-           2*x*y
+       2*x*y
 \end{verbatim}
 
 \section{SELFCONJUGATE Declaration}

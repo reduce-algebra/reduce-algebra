@@ -231,25 +231,25 @@ one is  to \emph{remove} the existing definition first using the function
 which takes any number of space-names as
 its argument. Here is the illustration:
 \begin{verbatim}
-      rem_spaces eucl; ==> t
+   rem_spaces eucl; ==> t
 
-      show_spaces(); ==>
+   show_spaces(); ==>
 
-                 {{wholespace,11,signature=1},
+             {{wholespace,11,signature=1},
 
-                   {mink,4,signature=1,indexrange=0..3}}
+              {mink,4,signature=1,indexrange=0..3}}
 
-      define_spaces eucl=
+   define_spaces eucl=
 
-                 {7,euclidian,indexrange=4 .. 10}; ==> t
+             {7,euclidian,indexrange=4 .. 10}; ==> t
 
-      show_spaces(); ==>
+   show_spaces(); ==>
 
-                  {{wholespace,11,signature=1},
+             {{wholespace,11,signature=1},
 
-                    {mink,4,signature=1,indexrange=0..3},
+              {mink,4,signature=1,indexrange=0..3},
 
-                    {eucl,7,euclidian,indexrange=4..10}}
+              {eucl,7,euclidian,indexrange=4..10}}
 \end{verbatim} 
 Here, the user is entirely responsible of the coherence of his construction.
 The system does \emph{NOT} verify it but will incorrectly run if there is a mistake
@@ -907,24 +907,24 @@ correctly \emph{when} \sw{onespace} is switched off \emph{one must also give the
 indexrange}\ttindextype[CANTENS]{indexrange}{declaration}.
 So the previous run must be corrected to
 \begin{verbatim}
-      define_spaces eucl=
+   define_spaces eucl=
 
-                 {1,signature=0,indexrange=1 .. 1}; ==> t
+              {1,signature=0,indexrange=1 .. 1}; ==> t
 
-      make_tensor_belong_space(te,eucl); ==> eucl
+   make_tensor_belong_space(te,eucl); ==> eucl
 
-      te(0); ==>
+   te(0); ==>
 
-        ***** numeric indices do not belong to (sub)-space
+     ***** numeric indices do not belong to (sub)-space
 
-      te(1); ==>
+   te(1); ==>
 
-               1
-             te
+            1
+          te
 
-      te(2); ==>
+   te(2); ==>
 
-        ***** numeric indices do not belong to (sub)-space
+     ***** numeric indices do not belong to (sub)-space
 \end{verbatim} 
 Notice that the error message has also changed accordingly.
 So, now one can even constrain the 0 component to belong to
@@ -1060,27 +1060,27 @@ the Dirac \emph{delta function}\ttindextype[CANTENS]{delta}{function}
 Next we work in the context of several spaces:
 \index{onespace switch@\texttt  {onespace} switch!Off}
 \begin{verbatim}
-      off onespace;
+  off onespace;
 
-      define_spaces wholespace={5,signature=1}; ==> t
+  define_spaces wholespace={5,signature=1}; ==> t
 
   % we need to assign delta to wholespace when it exists:
 
-      make_tensor_belong_space(delt,wholespace);
+  make_tensor_belong_space(delt,wholespace);
 
-      delt(a,-a); ==> 5
+  delt(a,-a); ==> 5
 
-      delt(0,-0); ==>1
+  delt(0,-0); ==>1
 
-      rem_spaces wholespace; ==> t
+  rem_spaces wholespace; ==> t
 
-      define_spaces wholespace={5,signature=0}; ==> t
+  define_spaces wholespace={5,signature=0}; ==> t
 
-      delt(a,-a); ==> 5
+  delt(a,-a); ==> 5
 
-      delt(0,-a); ==>
+  delt(0,-a); ==>
 
-          ***** bad value of indices for DELTA tensor
+      ***** bad value of indices for DELTA tensor
 \end{verbatim}
 The checking of consistency of chosen indices is made in the same way as for
 generic tensor. In fact, all the previous functions which act on generic tensors
@@ -1138,44 +1138,44 @@ and to make it active, one proceeds as in the above run.
 Starting from a fresh environment, the following sample run
 is illustrative\ttindextype[CANTENS]{make\_bloc\_diagonal}{operator}:
 \begin{verbatim}
-      off onespace;
+  off onespace;
 
-      define_spaces wholespace={6,signature=1}$
+  define_spaces wholespace={6,signature=1}$
 
-      define_spaces mink={4,signature=1,indexrange=0 .. 3}$
+  define_spaces mink={4,signature=1,indexrange=0 .. 3}$
 
-      define_spaces eucl={3,euclidian,indexrange=4 .. 6}$
+  define_spaces eucl={3,euclidian,indexrange=4 .. 6}$
 
-      tensor te;
+  tensor te;
 
-      make_tensor_belong_space(te,eucl); ==> eucl
+  make_tensor_belong_space(te,eucl); ==> eucl
 
 
   % the key declaration:
 
-      make_bloc_diagonal te; ==> t
+  make_bloc_diagonal te; ==> t
 
 
   % bloc-diagonal property activation:
 
-      mk_ids_belong_space({a,b,c},eucl); ==> t
+  mk_ids_belong_space({a,b,c},eucl); ==> t
 
-      mk_ids_belong_space({m1,m2},mink); ==> t
-
-
-      te(a,b,m1); ==> 0
-
-      te(a,b,m2); ==> 0
-
-   % bloc-diagonal property suppression:
-
-      mk_ids_belong_anyspace a,b,c,m1,m2; ==> t
+  mk_ids_belong_space({m1,m2},mink); ==> t
 
 
-      te(a,b,m2); ==>
+  te(a,b,m1); ==> 0
 
-               a b m2
-             te
+  te(a,b,m2); ==> 0
+
+  % bloc-diagonal property suppression:
+
+  mk_ids_belong_anyspace a,b,c,m1,m2; ==> t
+
+
+  te(a,b,m2); ==>
+
+           a b m2
+         te
 \end{verbatim}
 
 \subsubsection{ETA\ Minkowski tensor}
@@ -1194,35 +1194,35 @@ context and a warning when in an OFF \sw{onespace} context.
 Illustration:
 \ttindextype[CANTENS]{signature}{command}
 \begin{verbatim}
-      on onespace;
+  on onespace;
 
-      make_partic_tens(et,eta); ==> t
+  make_partic_tens(et,eta); ==> t
 
-      signature 0; ==> 0;
+  signature 0; ==> 0;
 
-      et(-b,-a); ==>
+  et(-b,-a); ==>
 
-         *****  signature must be equal to 1 for ETA tensor
+     *****  signature must be equal to 1 for ETA tensor
 
 
-      off onespace;
+  off onespace;
 
-      et(a,b); ==>
+  et(a,b); ==>
 
-          ***  ETA tensor not properly assigned to a space
+     ***  ETA tensor not properly assigned to a space
 
   % it is then evaluated to zero:
 
-          0
+      0
 
-      on onespace;
+  on onespace;
 
-      signature 1; ==> 1
+  signature 1; ==> 1
 
-      et(-b,-a); ==>
+  et(-b,-a); ==>
 
-             et
-               a b
+         et
+           a b
 \end{verbatim}
 Since \texttt{et(a,-a)} is evaluated to the corresponding \texttt{delta} tensor,
  one cannot define properly an \texttt{eta}\ttindextype[CANTENS]{eta}{tensor} tensor without a
@@ -1322,53 +1322,53 @@ mixed positions of the indices. In that case, the output of the system
 is changed compared to the input  only to place all contravariant indices
 to the left of the covariant ones.
 \begin{verbatim}
-      make_partic_tens(eps,epsilon); ==> t
+  make_partic_tens(eps,epsilon); ==> t
 
-      eps(a,d,b,-g,e,-f); ==>
+  eps(a,d,b,-g,e,-f); ==>
 
-                   a d b e
-              - eps
-                           g f
+               a d b e
+          - eps
+                       g f
 
-      eps(a,d,b,-f,e,-f); ==> 0
+  eps(a,d,b,-f,e,-f); ==> 0
 
   % indices have all the same variance:
 
-      eps(-b,-a); ==>
+  eps(-b,-a); ==>
 
-              - eps
-                   a b
-
-
-      signature ?; ==> 0
-
-      eps(1,2,3,4); ==> 1
-
-      eps(-1,-2,-3,-4); ==> 1
-
-      wholespace_dim 3; ==> 3
-
-      eps(-1,-2,-3); ==> 1
-
-      eps(-1,-2,-3,-4); ==>
-
-             ***** numeric indices out of range
-
-      eps(-1,-2,-3,-3); ==>
-
-             ***** bad number of indices for (eps) tensor
-
-      eps(a,b); ==>
-
-             ***** bad number of indices for (eps) tensor
-
-      eps(a,b,c); ==>
-
-                a b c
-             eps
+          - eps
+               a b
 
 
-      eps(a,b,b); ==> 0
+  signature ?; ==> 0
+
+  eps(1,2,3,4); ==> 1
+
+  eps(-1,-2,-3,-4); ==> 1
+
+  wholespace_dim 3; ==> 3
+
+  eps(-1,-2,-3); ==> 1
+
+  eps(-1,-2,-3,-4); ==>
+
+         ***** numeric indices out of range
+
+  eps(-1,-2,-3,-3); ==>
+
+         ***** bad number of indices for (eps) tensor
+
+  eps(a,b); ==>
+
+         ***** bad number of indices for (eps) tensor
+
+  eps(a,b,c); ==>
+
+            a b c
+         eps
+
+
+  eps(a,b,b); ==> 0
 \end{verbatim}
 When the signature\index{Signature!Cantens package}%
 \index{Cantens package@\textsc{Cantens} package!signature} is equal to 1, it is known that

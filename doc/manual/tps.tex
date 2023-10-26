@@ -382,12 +382,12 @@ If TPS is not a power series object after evaluation an error results.
 
 Some examples:
 \begin{verbatim}
-    ps(sin x,x,0);
-    psreverse(ws); % produces series for asin x about x=0.
-    ps(exp x,x,0);
-    psreverse ws; % produces series for log x about x=1.
-    ps(sin(1/x),x,infinity);
-    psreverse(ws); % series for 1/asin(x) about x=0.
+ps(sin x,x,0);
+psreverse(ws); % produces series for asin x about x=0.
+ps(exp x,x,0);
+psreverse ws; % produces series for log x about x=1.
+ps(sin(1/x),x,infinity);
+psreverse(ws); % series for 1/asin(x) about x=0.
 \end{verbatim}
 
 \subsection{Power Series Composition}
@@ -476,25 +476,25 @@ LOWLIM to \texttt{infinity}.
 
 Some examples:
 \begin{verbatim}
-   pssum(n=0,1,x,0,n*n);
-   % Produces the power series summation for n=0 to
-   % infinity of x**(n*n).
+pssum(n=0,1,x,0,n*n);
+% Produces the power series summation for n=0 to
+% infinity of x**(n*n).
 
-   pssum(n=1,n,x,0,n);
-   % Produces the power series summation for n=1 to
-   % infinity of n*x**n.
+pssum(n=1,n,x,0,n);
+% Produces the power series summation for n=1 to
+% infinity of n*x**n.
 
-   pssum(m=1,(-1)**(m-1)/(2m-1),y,1,2m-1);
-   % Produces a power series which is actually the expansion
-   % of atan(y-1)  about y=1.
+pssum(m=1,(-1)**(m-1)/(2m-1),y,1,2m-1);
+% Produces a power series which is actually the
+% expansion of atan(y-1)  about y=1.
 
-   pssum(j=1,-1/j,x,infinity,j);
-   % Produces a power series which is actually the expansion
-   % of log(1-1/x) about the point at infinity.
+pssum(j=1,-1/j,x,infinity,j);
+% Produces a power series which is actually the
+% expansion of log(1-1/x) about the point at infinity.
 
-   pssum(n=0,1,x,0,2n**2+3n) + pssum(n=1,1,x,0,2n**2-3n);
-   % Produces the power series summation for n=-infinity
-   % to +infinity of x**(2n**2+3n).
+pssum(n=0,1,x,0,2n**2+3n) + pssum(n=1,1,x,0,2n**2-3n);
+% Produces the power series summation for n=-infinity
+% to +infinity of x**(2n**2+3n).
 \end{verbatim}
 It should be noted that a formal power series is produced which may not have
 a non-zero radius of convergence; the second example above illustrates this.

@@ -62,7 +62,7 @@ parameters:
       \texttt{x\^{}3 - y\^{}2 + x*y = \{-2,-1,0,1,2\}}.
     \item a list of points in 2 or 3 dimensions, e.g.
       \texttt{\{\{0,0\},\{0,1\},\{1,1\}\}} representing a curve,
-    \item a list of lists of points in 2 or 3 dimensions
+    \item a list of lists of points in 2 or 3 dimensions,
       e.g. \texttt{\{\{\{0,0\},\{0,1\},\{1,1\}\}, \{\{0,0\},\{0,1\},\{1,1\}\}\}}
       representing a family of curves.
   \end{itemize}
@@ -108,13 +108,16 @@ automatically, it is not necessary to turn on rounded mode explicitly.
 plot(cos x);
 plot(s=sin phi, phi=(-3 .. 3));
 plot(sin phi, cos phi, phi=(-3 .. 3));
-plot (cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3), hidden3d);
-plot {{0,0},{0,1},{1,1},{0,0},{1,0},{0,1},{0.5,1.5},{1,1},{1,0}};
+plot (cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3),
+      hidden3d);
+plot {{0,0},{0,1},{1,1},{0,0},{1,0},{0,1},
+      {0.5,1.5},{1,1},{1,0}};
 
 % parametric: screw
 
 on rounded;
-w := for j := 1:200 collect {1/j*sin j, 1/j*cos j, j/200}$
+w := for j := 1:200 collect
+                {1/j*sin j, 1/j*cos j, j/200}$
 plot w;
 
 % parametric: globe
@@ -179,7 +182,8 @@ The following additional {\Gnuplot} options are supported in the \texttt{plot} c
     names used in the expressions.
  \begin{verbatim}
  plot(1,x,(4*x^2-1)/2,(x*(12*x^2-5))/3, x=(-1 .. 1),
-      ylabel="L(x,n)", title="Legendre Polynomials");
+      ylabel="L(x,n)",
+      title="Legendre Polynomials");
  \end{verbatim}
   \item \texttt{terminal=name}: prepare output for device type \texttt{name}.
     Every installation uses a default terminal as output device; some
@@ -191,13 +195,15 @@ The following additional {\Gnuplot} options are supported in the \texttt{plot} c
     are $s_x=1,x_z=1$.  Note that scaling factors greater than 1 will often
     cause the picture to be too big for the window.
 \begin{verbatim}
-plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5), size="0.7,1");
+plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5),
+     size="0.7,1");
 \end{verbatim}
   \item \texttt{view="r\_x,r\_z"}: set the viewpoint in 3 dimensions by turning
     the object around the $x$ or $z$ axis; the values are degrees (integers).
     Defaults are $r_x=60,r_z=30$.
 \begin{verbatim}
-plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5), view="30,130");
+plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5),
+     view="30,130");
 \end{verbatim}
   \item \texttt{contour} resp. \texttt{nocontour}: in 3 dimensions an additional
     contour map is drawn (default: \texttt{nocontour}).  Note that
@@ -220,7 +226,8 @@ variable in the {\Gnuplot} documentation.
 For a PostScript printer, add the options \texttt{terminal=postscript} and \allowbreak
 \texttt{output="filename"} to your plot command, e.g.
 \begin{verbatim}
-plot(sin x, x=(0 .. 10), terminal=postscript, output="sin.ps");
+plot(sin x, x=(0 .. 10), terminal=postscript,
+     output="sin.ps");
 \end{verbatim}
 
 
@@ -365,7 +372,8 @@ plot(sin(1/x), x=(-1 .. 1), y=(-3 .. 3));
 
 Some implicitly-defined curves:
 \begin{verbatim}
-plot(x^3 + y^3 - 3*x*y = {0,1,2,3}, x=(-2.5 .. 2), y=(-5 .. 5));
+plot(x^3 + y^3 - 3*x*y = {0,1,2,3}, 
+     x=(-2.5 .. 2), y=(-5 .. 5));
 \end{verbatim}
 \unitlength=1cm
 \begin{picture}(10,8)(0,0)
@@ -376,7 +384,8 @@ plot(x^3 + y^3 - 3*x*y = {0,1,2,3}, x=(-2.5 .. 2), y=(-5 .. 5));
 %\newpage
 A test for hidden surfaces:
 \begin{verbatim}
-plot(cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3), hidden3d);
+plot(cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3),
+     hidden3d);
 \end{verbatim}
 
 \begin{picture}(12,8)(0,0)
@@ -398,7 +407,8 @@ plot(sinh(x*y)/sinh(2*x*y), hidden3d);
 
 \begin{verbatim}
 on rounded;
-w:= {for j:=1 step 0.1 until 20 collect {1/j*sin j, 1/j*cos j, j},
+w:= {for j:=1 step 0.1 until 20 collect
+       {1/j*sin j, 1/j*cos j, j},
      for j:=1 step 0.1 until 20 collect
        {(0.1+1/j)*sin j, (0.1+1/j)*cos j, j} }$
 plot w;
@@ -410,8 +420,8 @@ plot w;
 
 An example taken from: Cox, Little, O'Shea, \emph{Ideals, Varieties and Algorithms}:
 \begin{verbatim}
-plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2), hidden3d,
-     title="Enneper Surface");
+plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2),
+     hidden3d, title="Enneper Surface");
 \end{verbatim}
 
 \begin{picture}(10,7)(0,1)
@@ -440,8 +450,9 @@ plot(chebyshevt(1,x), chebyshevt(2,x), chebyshevt(3,x),
 \end{picture}
 \enlargethispage{1cm}
 \begin{verbatim}
-plot(bessely(0,x), bessely(1,x), bessely(2,x), x=(0.1 .. 10),
-     y=(-1 .. 1), title="Bessel functions of 2nd kind");
+plot(bessely(0,x), bessely(1,x), bessely(2,x),
+     x=(0.1 .. 10), y=(-1 .. 1),
+     title="Bessel functions of 2nd kind");
 \end{verbatim}
 
 \begin{picture}(12,7.5)(0,0)

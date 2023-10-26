@@ -118,7 +118,8 @@ of applicability is \emph{extended}.
 \end{quote}
 {\item Handling of Grassmann Operators:}
 \begin{quote}
-\f{putgrass} \f{remgrass} \f{grassp} \f{grassparity} \f{ghostfactor}
+  \f{putgrass} \f{remgrass} \f{grassp} \f{grassparity}\\
+  \f{ghostfactor}
 \end{quote}
 \item{Handling of Matrices:}
 \begin{quote}
@@ -183,9 +184,9 @@ Generation of a list of length n with all its elements initialized to 0
 and possibility to append to a list $l$ a certain number of
 zero's to make it of length $n$:
 \begin{verbatim}
-        mklist n ;    n is an integer
+    mklist n ;    n is an integer
 
-        mklist(l,n);    l is List-like, n is an integer
+    mklist(l,n);    l is List-like, n is an integer
 \end{verbatim}
 
 \item[ii.]
@@ -196,28 +197,28 @@ equal to 0 and q elements equal to 1 such that  \[p+q=n .\]
 The operator \f{sequences} works both in algebraic and
 symbolic modes.  Here is an example in the algebraic mode:
 \begin{verbatim}
-        sequences 2 ; ==> {{0,0},{0,1},{1,0},{1,1}}
+    sequences 2 ; ==> {{0,0},{0,1},{1,0},{1,1}}
 \end{verbatim}
 \ttindextype[ASSIST]{split}{operator}
 \hypertarget{operator:SPLIT}{}%
 An arbitrary splitting of a list can be done. The operator \f{split} 
 generates a list which contains the splitted parts of the original list.
 \begin{verbatim}
-        split({a,b,c,d},{1,1,2}) ==> {{a},{b},{c,d}}
+    split({a,b,c,d},{1,1,2}) ==> {{a},{b},{c,d}}
 \end{verbatim}
 \ttindextype[ASSIST]{algnlist}{operator}
 \hypertarget{operator:ALGNLIST}{}%
 The operator \f{algnlist} constructs a list which contains n copies  
 of a list bound to its first argument.
 \begin{verbatim}
-        algnlist({a,b,c,d},2); ==> {{a,b,c,d},{a,b,c,d}}
+    algnlist({a,b,c,d},2); ==> {{a,b,c,d},{a,b,c,d}}
 \end{verbatim}
 \ttindextype[ASSIST]{kernlist}{operator}
 \hypertarget{operator:KERNLIST}{}%
 The operator \f{kernlist} transforms any prefix of a kernel into the
 \texttt{list} prefix. The output list is a copy:
 \begin{verbatim}
-        kernlist (<kernel>); ==> {<kernel arguments>}
+    kernlist (<kernel>); ==> {<kernel arguments>}
 \end{verbatim}
 \item[iii.]
   \ttindextype[ASSIST]{delete}{operator}
@@ -235,13 +236,13 @@ elements equal to its first argument. The fourth acts on a list of pairs
 and eliminates from it the \emph{first} pair whose first element is equal to
 its first argument :
 \begin{verbatim}
-        delete(x,{a,b,x,f,x}); ==> {a,b,f,x}
+    delete(x,{a,b,x,f,x}); ==> {a,b,f,x}
 
-        remove({a,b,x,f,x},3); ==> {a,b,f,x}
+    remove({a,b,x,f,x},3); ==> {a,b,f,x}
 
-        delete_all(x,{a,b,x,f,x}); ==> {a,b,f}
+    delete_all(x,{a,b,x,f,x}); ==> {a,b,f}
 
-        delpair(a,{{a,1},{b,2},{c,3}}; ==> {{b,2},{c,3}}
+    delpair(a,{{a,1},{b,2},{c,3}}; ==> {{b,2},{c,3}}
 \end{verbatim}
 \item[iv.]
   \ttindextype[ASSIST]{elmult}{operator}
@@ -255,9 +256,9 @@ The operator \f{frequency} gives a list of pairs
 whose second element indicates the number of times the first element
 appears inside the original list:
 \begin{verbatim}
-        elmult(x,{a,b,x,f,x}) ==> 2
+    elmult(x,{a,b,x,f,x}) ==> 2
 
-        frequency({a,b,c,a}); ==> {{a,2},{b,1},{c,1}}
+    frequency({a,b,c,a}); ==> {{a,2},{b,1},{c,1}}
 \end{verbatim}
 \item[v.]
   \ttindextype[ASSIST]{insert}{operator}
@@ -274,13 +275,13 @@ keep a given ordering when inserting one element inside a list or
 when merging two lists. Both have 3 arguments. The last one  is
 the name of a binary boolean ordering function:
 \begin{verbatim}
-        ll:={1,2,3}$
+    ll:={1,2,3}$
 
-        insert(x,ll,3); ==> {1,2,x,3}
+    insert(x,ll,3); ==> {1,2,x,3}
 
-        insert_keep_order(5,ll,lessp); ==> {1,2,3,5}
+    insert_keep_order(5,ll,lessp); ==> {1,2,3,5}
 
-        merge_list(ll,ll,lessp); ==> {1,1,2,2,3,3}
+    merge_list(ll,ll,lessp); ==> {1,1,2,2,3,3}
 \end{verbatim}
 Notice that \f{merge\_list} will act correctly only if the two lists 
 are well ordered themselves. 
@@ -323,12 +324,12 @@ several different operations.
 \item If one applies it on the left of a list, it acts as the \f{cons}
 infix operator. Note however that blank spaces are required around the dot:
 \begin{verbatim}
-        4 . {a,b}; ==> {4,a,b}
+    4 . {a,b}; ==> {4,a,b}
 \end{verbatim}
 \item If one applies it on the right of a list, it has the same
 effect as the \f{part} operator:
 \begin{verbatim}
-         {a,b,c}.2; ==> b
+    {a,b,c}.2; ==> b
 \end{verbatim}
 \item If one applies it to  a 4-dimensional vectors, it acts as in the
 HEPHYS package.
@@ -364,22 +365,22 @@ original list. It is analogous to the symbolic mode (lisp) function \f{rplacd}.
 \ttindextype{rplacd}{lisp function}
 Here are examples:
 \begin{verbatim}
-        ll:={{a,b}}$
-        ll1:=ll.1; ==> {a,b}
-        ll.0; ==> list
-        0 . ll; ==> {0,{a,b}}
+    ll:={{a,b}}$
+    ll1:=ll.1; ==> {a,b}
+    ll.0; ==> list
+    0 . ll; ==> {0,{a,b}}
 
-        depth ll; ==> 2
+    depth ll; ==> 2
 
-        pair(ll1,ll1); ==> {{a,a},{b,b}}
+    pair(ll1,ll1); ==> {{a,a},{b,b}}
 
-        repfirst{new,ll); ==> {new}
+    repfirst{new,ll); ==> {new}
 
-        ll3:=appendn(ll1,ll1,ll1); ==> {a,b,a,b,a,b}
+    ll3:=appendn(ll1,ll1,ll1); ==> {a,b,a,b,a,b}
 
-        position(b,ll3); ==> 2
+    position(b,ll3); ==> 2
 
-        represt(new,ll3); ==> {a,new}
+    represt(new,ll3); ==> {a,new}
 \end{verbatim}
 \item[vii.]
   \ttindextype[ASSIST]{asfirst}{operator}
@@ -415,21 +416,21 @@ is also an association list.\\
 their second element equal to the first argument.\\
 Here are a few examples:
 \begin{verbatim}
-        lp:={{a,1},{b,2},{c,3}}$
+    lp:={{a,1},{b,2},{c,3}}$
 
-        asfirst(a,lp); ==> {a,1}
+    asfirst(a,lp); ==> {a,1}
 
-        aslast(1,lp); ==> {a,1}
+    aslast(1,lp); ==> {a,1}
 
-        asrest({1},lp); ==> {a,1}
+    asrest({1},lp); ==> {a,1}
 
-        restaslist({a,b},lp); ==> {{1},{2}}
+    restaslist({a,b},lp); ==> {{1},{2}}
 
-        lpp:=append(lp,lp)$
+    lpp:=append(lp,lp)$
 
-        asflist(a,lpp); ==> {{a,1},{a,1}}
+    asflist(a,lpp); ==> {{a,1},{a,1}}
 
-        asslist(1,lpp); ==> {{a,1},{a,1}}
+    asslist(1,lpp); ==> {{a,1},{a,1}}
 \end{verbatim}
 \item[vii.]
   \ttindextype[ASSIST]{substitute}{operator}
@@ -450,7 +451,7 @@ groups of objects which are, a priori, unknown. This structure is
 endowed with other properties such as ``mapping'' i.e. the fact that
 if \texttt{op} is an operator one gets, by default,
 \begin{verbatim}
-        op({x,y}); ==> {op(x),op(y)}
+    op({x,y}); ==> {op(x),op(y)}
 \end{verbatim}
 It is not permitted to submit lists to the operations valid on rings
 so that, for example, lists cannot be indeterminates of polynomials.\\
@@ -501,20 +502,20 @@ to be a bag. \textbf{When and only when} the identifier is not an already define
 function then \f{putbag} set for it the property of an \emph{operator prefix}.
 The command:
 \begin{verbatim}
-        putbag id1,id2,....idn;
+    putbag id1,id2,....idn;
 \end{verbatim}
 declares \texttt{id1},\ldots,\texttt{idn} as bag envelopes.
 Analogously, the command
 \begin{verbatim}
-        clearbag id1,...idn;
+    clearbag id1,...idn;
 \end{verbatim}
 eliminates the bag property on \texttt{id1},\ldots,\texttt{idn}.
 \item[ii.] The boolean operator \f{bagp} detects the bag property.
 Here is an example:
 \begin{verbatim}
-        aa:=bag(x,y,z)$
+    aa:=bag(x,y,z)$
 
-        if bagp aa then "ok"; ==> ok
+    if bagp aa then "ok"; ==> ok
 \end{verbatim}
 \item[iii.] The functions listed below may act both on lists or bags.
 Moreover, functions subsequently  defined for  \emph{sets}SETS also work for a bag
@@ -536,25 +537,25 @@ the \emph{name} of the \emph{envelope} is \emph{kept} by the operators \\[3pt]
 Here are a few examples (more examples are
 given inside the test file):
 \begin{verbatim}
-        putbag op; ==> t
+    putbag op; ==> t
 
-        aa:=op(x,y,z)$
+    aa:=op(x,y,z)$
 
-        first op(x,y,z); ==> op(x)
+    first op(x,y,z); ==> op(x)
 
-        rest op(x,y,z); ==> op(y,z)
+    rest op(x,y,z); ==> op(y,z)
 
-        belast op(x,y,z); ==> op(x,y)
+    belast op(x,y,z); ==> op(x,y)
 
-        append(aa,aa); ==> op(x,y,z,x,y,z)
+    append(aa,aa); ==> op(x,y,z,x,y,z)
 
-        appendn(aa,aa,aa); ==> {x,y,z,x,y,z,x,y,z}
+    appendn(aa,aa,aa); ==> {x,y,z,x,y,z,x,y,z}
 
-        length aa; ==> 3
+    length aa; ==> 3
 
-        depth aa; ==> 1
+    depth aa; ==> 1
 
-        member(y,aa); ==> op(y,z)
+    member(y,aa); ==> op(y,z)
 \end{verbatim}
 When ``appending'' two bags with \emph{different} envelopes, the resulting bag
 gets the name of the one bound to the first parameter of \f{append}. When  
@@ -650,20 +651,20 @@ It generates an identifier which has not yet been used before.
 \f{dellastdigit} takes an integer as argument and strips from it its last
 digit.
 \begin{verbatim}
-        dellastdigit 45; ==> 4
+    dellastdigit 45; ==> 4
 \end{verbatim}
 \f{detidnum} deletes the last digit from an
 identifier. It is a very convenient function when one wants to make a do
 loop starting from a set of indices $ a_1, \ldots , a_{n} $.
 \begin{verbatim}
-        detidnum a23; ==> 23
+    detidnum a23; ==> 23
 \end{verbatim}
 
 \f{list\_to\_ids} generalizes the function \f{mkid} to a list of
 atoms. It creates and intern an identifier from the concatenation of
 the atoms. The first atom cannot be an integer.
 \begin{verbatim}
-        list_to_ids {a,1,id,10}; ==> a1id10
+    list_to_ids {a,1,id,10}; ==> a1id10
 \end{verbatim}
 \ttindextype[ASSIST]{oddp}{boolean operator}
 \hypertarget{operator:ODDP}{}
@@ -676,9 +677,9 @@ It allows one to format output text in a much more flexible way than with
 the \texttt{write} statement\ttindextype{write}{statement}. \\
 Try the following examples :
 \begin{verbatim}
-        <<prin2 2; prin2 5>>$ ==> ?
+    <<prin2 2; prin2 5>>$ ==> ?
 
-        <<prin2 2; followline(5); prin2 5;>>; ==> ?
+    <<prin2 2; followline(5); prin2 5;>>; ==> ?
 \end{verbatim}
 \ttindextype[ASSIST]{== (setvalue)}{infix operator}
 \hypertarget{reserved:setvalueop}{}
@@ -686,15 +687,15 @@ The infix operator \texttt{==} is a short and convenient notation for the \f{set
 function. In fact it is a \emph{generalization} of it to allow one to
 deal also with kernels:
 \begin{verbatim}
-        operator op;
+    operator op;
 
-        op(x):=abs(x)$
+    op(x):=abs(x)$
 
-        op(x) == x; ==> x
+    op(x) == x; ==> x
 
-        op(x); ==> x
+    op(x); ==> x
         
-        abs(x); ==> x
+    abs(x); ==> x
 \end{verbatim}
 \ttindextype[ASSIST]{randomlist}{operator}
 \hypertarget{operator:RANDOMLIST}{}
@@ -704,7 +705,7 @@ inside which the random numbers are chosen. The second one indicates how
 many numbers are to be generated. Its output is the list of 
 generated numbers.
 \begin{verbatim}
-        randomlist(10,5); ==> {2,1,3,9,6}
+    randomlist(10,5); ==> {2,1,3,9,6}
 \end{verbatim}
 \ttindextype[ASSIST]{mkrandtabl}{operator}
 \hypertarget{operator:MKRANDTABL}{}
@@ -717,11 +718,11 @@ to generate the random numbers. The third is the chosen name for the
 generated array. In the example below a two-dimensional table of
 random integers is generated as array elements of the identifier {\f ar}.
 \begin{verbatim}
-        mkrandtabl({3,4},10,ar); ==>
+    mkrandtabl({3,4},10,ar); ==>
 
-               *** array ar redefined
+           *** array ar redefined
 
-                      {3,4}
+                 {3,4}
 \end{verbatim}
 The output is the dimension of the constructed array.
 
@@ -734,11 +735,11 @@ Each permutation is itself a list. \f{cyclicpermlist} gives the list of
 \emph{cyclic} permutations. For both functions, the argument may
 also be a {\tt bag}.
 \begin{verbatim}
-        permutations {1,2} ==> {{1,2},{2,1}}
+    permutations {1,2} ==> {{1,2},{2,1}}
 
-        cyclicpermlist {1,2,3} ==>
+    cyclicpermlist {1,2,3} ==>
 
-                {{1,2,3},{2,3,1},{3,1,2}}
+            {{1,2,3},{2,3,1},{3,1,2}}
 \end{verbatim}
 \ttindextype[ASSIST]{perm\_to\_num}{operator}
 \ttindextype[ASSIST]{num\_to\_perm}{operator}
@@ -751,9 +752,9 @@ as its arguments and it returns an integer. The second one has an integer
 as its first argument and a list as its second argument. It returns the 
 list of permutated objects.
 \begin{verbatim}
-        perm_to_num({4,3,2,1},{1,2,3,4}) ==> 23
+    perm_to_num({4,3,2,1},{1,2,3,4}) ==> 23
 
-        num_to_perm(23,{1,2,3,4}); ==> {4,3,2,1}
+    num_to_perm(23,{1,2,3,4}); ==> {4,3,2,1}
 \end{verbatim}
 \ttindextype[ASSIST]{combnum}{operator}
 \hypertarget{operator:COMBNUM}{}
@@ -766,7 +767,7 @@ taken $p$ at a time. It has the two integer arguments $n$ and $p$.
 at a time. It has two arguments. The first one is a list (or a bag) and
 the second one is the integer $p$.
 \begin{verbatim}
-        combinations({1,2,3},2) ==> {{2,3},{1,3},{1,2}}
+    combinations({1,2,3},2) ==> {{2,3},{1,3},{1,2}}
 \end{verbatim}
 \f{remsym} is a command that suppresses the effect of the \REDUCE commands
 \texttt{symmetric} or \texttt{antisymmetric} .
@@ -782,15 +783,15 @@ function may be constructed by the user. Within this package
 the two functions \f{permutations} and \f{cyclicpermlist} may be used.
 Examples:
 \begin{verbatim}
-        ll:={a,b,c}$
+    ll:={a,b,c}$
 
-        symmetrize(ll,op,cyclicpermlist); ==>
+    symmetrize(ll,op,cyclicpermlist); ==>
 
-                op(a,b,c) + op(b,c,a) + op(c,a,b)
+            op(a,b,c) + op(b,c,a) + op(c,a,b)
 
-        symmetrize(list ll,op,cyclicpermlist); ==>
+    symmetrize(list ll,op,cyclicpermlist); ==>
 
-                op({a,b,c}) + op({b,c,a}) + op({c,a,b})
+            op({a,b,c}) + op({b,c,a}) + op({c,a,b})
 \end{verbatim}
 Notice that, taking for the first argument a list of lists gives rise to
 an expression where  each kernel has a \emph{list as argument}. Another
@@ -799,21 +800,21 @@ made on the operator \texttt{op}, it needs to be reevaluated. This peculiarity
 is convenient when \texttt{op} is an abstract operator if one wants to 
 control the subsequent simplification process. Here is an illustration:
 \begin{verbatim}
-        op(a,b,c):=a*b*c$
+    op(a,b,c):=a*b*c$
 
-        symmetrize(ll,op,cyclicpermlist); ==>
+    symmetrize(ll,op,cyclicpermlist); ==>
 
-                 op(a,b,c) + op(b,c,a) + op(c,a,b)
+             op(a,b,c) + op(b,c,a) + op(c,a,b)
 
-        reval ws; ==>
+    reval ws; ==>
                  
-                 op(b,c,a) + op(c,a,b) + a*b*c
+             op(b,c,a) + op(c,a,b) + a*b*c
 
-        for all x let op(x,a,b)=sin(x*a*b);
+    for all x let op(x,a,b)=sin(x*a*b);
 
-        symmetrize(ll,op,cyclicpermlist); ==>
+    symmetrize(ll,op,cyclicpermlist); ==>
 
-                  op(b,c,a) + sin(a*b*c) + op(a,b,c)
+              op(b,c,a) + sin(a*b*c) + op(a,b,c)
 \end{verbatim}
 \ttindextype[ASSIST]{sortnumlist}{operator}
 \ttindextype[ASSIST]{sortlist}{operator}
@@ -837,11 +838,11 @@ has a meaning.
 \f{algsort} exploits the PSL \f{sort} function. It is intended to replace
 the two functions above.
 \begin{verbatim}
-        l:={1,3,4,0}$  sortnumlist l; ==> {0,1,3,4}
+    l:={1,3,4,0}$  sortnumlist l; ==> {0,1,3,4}
 
-        ll:={1,a,tt,z}$ sortlist(ll,ordp); ==> {a,z,tt,1}
+    ll:={1,a,tt,z}$ sortlist(ll,ordp); ==> {a,z,tt,1}
 
-        l:={-1,3,4,0}$  algsort(l,>); ==> {4,3,0,-1}
+    l:={-1,3,4,0}$  algsort(l,>); ==> {4,3,0,-1}
 \end{verbatim}
 It is important to realise that using these functions for kernels or bags
 may be dangerous since they are destructive. If it is necessary, it is
@@ -854,7 +855,7 @@ The function \f{extremum} is a generalization of the already defined functions
 The first is the list and the second is the ordering function.
 With the list \texttt{ll} defined in the last example, one gets
 \begin{verbatim}
-        extremum(ll,ordp); ==> 1
+    extremum(ll,ordp); ==> 1
 \end{verbatim}
 
 \ttindextype[ASSIST]{gcdnl}{operator}
@@ -866,7 +867,7 @@ With the list \texttt{ll} defined in the last example, one gets
 \f{funcvar} takes any expression as argument and returns the set of
 variables on which it depends. Constants are  eliminated.
 \begin{verbatim}
-        funcvar(e+pi+sin(log(y)); ==> {y}
+    funcvar(e+pi+sin(log(y)); ==> {y}
 \end{verbatim}
 \ttindextype[ASSIST]{depatom}{operator}
 \hypertarget{operator:DEPATOM}{}
@@ -875,9 +876,9 @@ a number or if no dependency has previously been declared. Otherwise,
 it returns the list of variables which the previous \f{DEPEND} declarations
 imply.
 \begin{verbatim}
-        depend a,x,y;
+    depend a,x,y;
 
-        depatom a; ==> {x,y}
+    depatom a; ==> {x,y}
 \end{verbatim}
 \ttindextype[ASSIST]{explicit}{operator}
 \ttindextype[ASSIST]{implicit}{operator}
@@ -886,11 +887,11 @@ imply.
 The operators \f{explicit} and \f{implicit} make explicit or
 implicit the dependencies. This example shows how they work:
 \begin{verbatim}
-        depend a,x; depend x,y,z;
+    depend a,x; depend x,y,z;
 
-        explicit a; ==> a(x(y,z))
+    explicit a; ==> a(x(y,z))
 
-        implicit ws; ==> a
+    implicit ws; ==> a
 \end{verbatim}
 These are useful when one wants to trace the names of the independent 
 variables
@@ -901,9 +902,9 @@ and (or) the nature of the dependencies.
 \f{korderlist} is a zero argument function which displays the actual
 ordering.
 \begin{verbatim}
-        korder x,y,z;
+    korder x,y,z;
 
-        korderlist; ==> (x,y,z)
+    korderlist; ==> (x,y,z)
 \end{verbatim}
 
 \item[iv.]
@@ -929,13 +930,13 @@ is the list, its second argument is a boolean operator
 the elements which satisfy the boolean function given as its second
 argument. For example:
 \begin{verbatim}
-        if checkproplist({1,2},fixp) then "ok"; ==> ok
+    if checkproplist({1,2},fixp) then "ok"; ==> ok
 
-        l:={1,a,b,"st")$
+    l:={1,a,b,"st")$
 
-        extractlist(l,fixp); ==> {1}
+    extractlist(l,fixp); ==> {1}
 
-        extractlist(l,stringp); ==> {st}
+    extractlist(l,stringp); ==> {st}
 \end{verbatim}
 \item[vi.] Coercion.
 
@@ -956,9 +957,9 @@ the list depth, an error message is issued.
 As an illustration suppose that $ar$ is an array whose components are  
 1,2,3,4. then
 \begin{verbatim}
-        array_to_list ar; ==> {1,2,3,4}
+    array_to_list ar; ==> {1,2,3,4}
 
-        list_to_array({1,2,3,4},1,arr}; ==> 
+    list_to_array({1,2,3,4},1,arr}; ==> 
 \end{verbatim}
 generates the array $arr$ with the components 1,2,3,4.
 \item[vii.] Control of the \textsc{HEPHYS} package.  
@@ -1013,17 +1014,17 @@ When the third argument is \var{t}, it creates the flag, when it is 0 it
 destroys it. In this last case, the function does return nil (not seen 
 inside the algebraic mode).
 \begin{verbatim}
-        putflag(z1,flag_name,t); ==> flag_name
+    putflag(z1,flag_name,t); ==> flag_name
 
-        putflag({z1,z2},flag1_name,t); ==> t
+    putflag({z1,z2},flag1_name,t); ==> t
 
-        putflag(z2,flag1_name,0) ==>
+    putflag(z2,flag1_name,0) ==>
 \end{verbatim}
 \f{displayflag} allows one to extract flags. The previous actions give:
 \begin{verbatim}
-        displayflag z1; ==>{flag_name,flag1_name}
+    displayflag z1; ==>{flag_name,flag1_name}
 
-        displayflag z2 ; ==> {}
+    displayflag z2 ; ==> {}
 \end{verbatim}
 \f{clearflag} is a command which clears \emph{all} flags associated with
 the identifiers $id_1, \ldots , id_n .$
@@ -1032,13 +1033,13 @@ the identifiers $id_1, \ldots , id_n .$
 \hypertarget{operator:PUTPROP}{}
 \f{putprop} has four arguments. The second argument is, here, the
 \emph{indicator} of the property. The third argument may be \emph{any
-valid expression}. The fourth one is also T or 0.
+valid expression}. The fourth one is also t or 0.
 \begin{verbatim}
-        putprop(z1,property,x^2,t); ==> z1
+    putprop(z1,property,x^2,t); ==> z1
 \end{verbatim}
 In general, one enters
 \begin{verbatim}
-        putprop(LIST(idp1,idp2,..),<propname>,<value>,T);
+    putprop(list(idp1,idp2,..),<propname>,<value>,t);
 \end{verbatim}
   \ttindextype[ASSIST]{displayprop}{operator}
 \hypertarget{operator:DISPLAYPROP}{}
@@ -1046,8 +1047,8 @@ To display a specific property, one uses
 \f{displayprop} which takes two arguments. The first is the name of the
 identifier, the second is the indicator of the property.
 \begin{verbatim}
-                                                 2
-        displayprop(z1,property); ==> {property,x  }
+                                             2
+    displayprop(z1,property); ==> {property,x  }
 \end{verbatim}
   \ttindextype[ASSIST]{clearprop}{operator}
 \hypertarget{operator:CLEARPROP}{}
@@ -1068,9 +1069,9 @@ improve user control on the environment.
 The first set of functions is composed of unary and binary boolean functions.
 They are:
 \begin{verbatim}
-        alatomp x;    x is anything.
-        alkernp x;    x is anything.
-        depvarp(x,v); x is anything.
+     alatomp x;    x is anything.
+     alkernp x;    x is anything.
+     depvarp(x,v); x is anything.
 \end{verbatim}
 (\texttt{v} is an atom or a kernel.)
 \f{alatomp} has the value \var{t} iff \texttt{x} is an integer or  an identifier
@@ -1107,40 +1108,40 @@ assigned from the input of files are \emph{ignored}.
 Both functions have one argument and the same options for this
 argument:
 \begin{verbatim}
-       show (suppress) all
-       show (suppress) scalars
-       show (suppress) lists
-       show (suppress) saveids    (for saved expressions)
-       show (suppress) matrices
-       show (suppress) arrays
-       show (suppress) vectors
-                    (contains vector, index and tvector)
-       show (suppress) forms
+    show (suppress) all
+    show (suppress) scalars
+    show (suppress) lists
+    show (suppress) saveids    (for saved expressions)
+    show (suppress) matrices
+    show (suppress) arrays
+    show (suppress) vectors
+                (contains vector, index and tvector)
+    show (suppress) forms
 \end{verbatim}
 The option \texttt{all} is the most convenient for \f{show} but,
 with it, it may
 takes some time to get the answer after one has worked several hours.
 When entering \REDUCE the option \texttt{all} for \f{show} gives:
 \begin{verbatim}
-        show all; ==>
+    show all; ==>
 
-                scalars are: NIL
-                arrays are: NIL
-                lists are: NIL
-                matrices are: NIL
-                vectors are: NIL
-                forms are: NIL
+            scalars are: NIL
+            arrays are: NIL
+            lists are: NIL
+            matrices are: NIL
+            vectors are: NIL
+            forms are: NIL
 \end{verbatim}
 It is a convenient way to remind the various options. Here is an example
 which is valid when one starts from a fresh environment:
 \begin{verbatim}
-        a:=b:=1$
+    a:=b:=1$
 
-        show scalars; ==>  scalars are: (a b)
+    show scalars; ==>  scalars are: (a b)
 
-        suppress scalars; ==> t
+    suppress scalars; ==> t
 
-        show scalars; ==>  scalars are: nil
+    show scalars; ==>  scalars are: nil
 \end{verbatim}
 \item[iii.]
 The \f{clear} command \ttindextype{clear}{command} of the system does not do a complete cleaning of
@@ -1157,7 +1158,7 @@ Their names are \f{clearop} and \f{clearfunctions}.
 \f{clearop} takes one operator as its argument.\\
 \f{clearfunctions} is a nary command. If one issues
 \begin{verbatim}
-        clearfunctions a1,a2, ... , an $
+    clearfunctions a1,a2, ... , an $
 \end{verbatim}
 The functions with names \texttt{a1}, \texttt{a2}, \ldots, \texttt{an} are cleared.
 One should be careful when  using this facility since the
@@ -1183,22 +1184,22 @@ from a symbolic prefix lisp expression  to an algebraic one.
 Here, is an example, showing how the wellknown lisp function
 \f{flattens} can be trivially transposed inside the algebraic mode:
 \begin{verbatim}
-     algebraic procedure ecrase x;
-     lisp symb_to_alg flattens1 alg_to_symb algebraic x;
+    algebraic procedure ecrase x;
+    lisp symb_to_alg flattens1 alg_to_symb algebraic x;
 
-      symbolic procedure flattens1 x;
-      % ll; ==> ((a b) ((c d) e))
-      % flattens1 ll; (a b c d e)
-        if atom x then list x else
-        if cdr x then
-            append(flattens1 car x, flattens1 cdr x)
-          else flattens1 car x;
+    symbolic procedure flattens1 x;
+    % ll; ==> ((a b) ((c d) e))
+    % flattens1 ll; (a b c d e)
+      if atom x then list x else
+      if cdr x then
+          append(flattens1 car x, flattens1 cdr x)
+        else flattens1 car x;
 \end{verbatim}
 gives, for instance,
 \begin{verbatim}
-        ll:={a,{b,{c},d,e},{{{z}}}}$
+    ll:={a,{b,{c},d,e},{{{z}}}}$
 
-        ecrase ll; ==> {a, b, c, d, e, z}
+    ecrase ll; ==> {a, b, c, d, e, z}
 \end{verbatim}
 \ttindextype[ASSIST]{mkdepth\_one}{operator}
 The function \f{mkdepth\_one} described above implements that functionality.
@@ -1214,15 +1215,15 @@ for rational functions. Their interest lies in the fact that they do not
 require one to extract the main variable. They work according to the current
 ordering of the system:
 \begin{verbatim}
-        pol:=x++y+z$
+    pol:=x++y+z$
 
-        leadterm pol; ==> x
+    leadterm pol; ==> x
 
-        korder y,x,z;
+    korder y,x,z;
 
-        leadterm pol; ==> y
+    leadterm pol; ==> y
 
-        redexpr pol; ==> x + z
+    redexpr pol; ==> x + z
 \end{verbatim}
 By default, the representation of multivariate polynomials is recursive.
 It is justified since it is the one which takes the least memory.
@@ -1281,11 +1282,11 @@ ones for hyperbolic functions \f{hypreduce} and \f{hypexpand}
 make the transformations to multiple arguments and from
 multiple arguments to elementary arguments. Here is a simple example:
 \begin{verbatim}
-        aa:=sin(x+y)$
+    aa:=sin(x+y)$
 
-        trigexpand aa; ==> sin(x)*cos(y) + sin(y)*cos(x)
+    trigexpand aa; ==> sin(x)*cos(y) + sin(y)*cos(x)
 
-        trigreduce ws; ==> sin(y + x)
+    trigreduce ws; ==> sin(y + x)
 \end{verbatim}
 When a trigonometric or hyperbolic expression is symmetric with
 respect to the interchange of \f{sin} (\f{sinh}) and \f{cos} (\f{cosh}),
@@ -1295,25 +1296,25 @@ application of \f{trigreduce} (\f{hypreduce}) followed by the use of
 \f{trigexpand} (\f{hypexpand}) will lead to \emph{more} complicated
 but more symmetric expressions:
 \begin{verbatim}
-        aa:=(sin(x)^2+cos(x)^2)^3$
+    aa:=(sin(x)^2+cos(x)^2)^3$
 
-        trigreduce aa; ==> 1
+    trigreduce aa; ==> 1
 \end{verbatim}
 \begin{verbatim}
-        bb:=1+sin(x)^3$
+    bb:=1+sin(x)^3$
 
-        trigreduce bb; ==>
+    trigreduce bb; ==>
 
-                - sin(3*x) + 3*sin(x) + 4
-               ---------------------------
-                           4
+            - sin(3*x) + 3*sin(x) + 4
+           ---------------------------
+                       4
 
-         trigexpand ws; ==>
+    trigexpand ws; ==>
 
-                3                  2
-          sin(x)  - 3*sin(x)*cos(x)  + 3*sin(x) + 4
-          -------------------------------------------
-                             4
+            3                  2
+      sin(x)  - 3*sin(x)*cos(x)  + 3*sin(x) + 4
+     -------------------------------------------
+                         4
 \end{verbatim}
 %\end{itemize}
 %\subsection{Coercion from lists to arrays and converse}
@@ -1348,19 +1349,19 @@ for the cross and mixed products.
 \f{mpvect} has three arguments. The following example
 is sufficient to explain how they work:
 \begin{verbatim}
-       l:={1,2,3}$
+   l:={1,2,3}$
 
-       ll:=list(a,b,c)$
+   ll:=list(a,b,c)$
 
-       sumvect(l,ll); ==> {a + 1,b + 2,c + 3}
+   sumvect(l,ll); ==> {a + 1,b + 2,c + 3}
 
-       minvect(l,ll); ==> { - a + 1, - b + 2, - c + 3}
+   minvect(l,ll); ==> { - a + 1, - b + 2, - c + 3}
 
-       scalvect(l,ll); ==> a + 2*b + 3*c
+   scalvect(l,ll); ==> a + 2*b + 3*c
 
-       crossvect(l,ll); ==> { - 3*b + 2*c,3*a - c, - 2*a + b}
+   crossvect(l,ll); ==> { - 3*b + 2*c,3*a - c, - 2*a + b}
 
-       mpvect(l,ll,l); ==> 0
+   mpvect(l,ll,l); ==> 0
 \end{verbatim}
 \subsection{Handling of Grassmann Operators}
 Grassman variables are often used in physics. For them the multiplication
@@ -1397,35 +1398,35 @@ If the monom is a simple grassmann kernel it returns 1.
 \hypertarget{operator:GHOSTFACTOR}{}
 \f{GHOSTFACTOR} has two arguments. Each one is a monom. It is equal to
 \begin{verbatim}
-        (-1)**(grassparity u * grassparity v)
+    (-1)**(grassparity u * grassparity v)
 \end{verbatim}
 Here is an illustration to show how the above functions work:
 \begin{verbatim}
-        putgrass eta; ==> t
+    putgrass eta; ==> t
 
-        if grassp eta(1) then "grassmann kernel"; ==>
+    if grassp eta(1) then "grassmann kernel"; ==>
 
-                        grassmann kernel
+                    grassmann kernel
 
-        aa:=eta(1)*eta(2)-eta(2)*eta(1); ==>
+    aa:=eta(1)*eta(2)-eta(2)*eta(1); ==>
 
-                aa :=  - eta(2)*eta(1) + eta(1)*eta(2)
+            aa :=  - eta(2)*eta(1) + eta(1)*eta(2)
 
-        grassparity eta(1); ==> 1
+    grassparity eta(1); ==> 1
 
-        grassparity (eta(1)*eta(2)); ==> 0
+    grassparity (eta(1)*eta(2)); ==> 0
 
-        ghostfactor(eta(1),eta(2)); ==> -1
+    ghostfactor(eta(1),eta(2)); ==> -1
 
-        grasskernel:=
-          {eta(~x)*eta(~y) => -eta y * eta x when nordp(x,y),
-          (~x)*(~x) => 0 when grassp x};
+    grasskernel:=
+      {eta(~x)*eta(~y) => -eta y * eta x when nordp(x,y),
+      (~x)*(~x) => 0 when grassp x};
 
-        exp:=eta(1)^2$
+    exp:=eta(1)^2$
 
-        exp where grasskernel; ==> 0
+    exp where grasskernel; ==> 0
 
-        aa where grasskernel; ==>  - 2*eta(2)*eta(1)
+    aa where grasskernel; ==>  - 2*eta(2)*eta(1)
 \end{verbatim}
 \subsection{Handling of Matrices}
 This module provides functions for handling matrices more comfortably.

@@ -58,9 +58,12 @@ On output, the
 operators \textbf{and} and \textbf{or} are represented as
 \texttt{/\textbackslash} and \texttt{\textbackslash /}, respectively.
 \begin{verbatim}
-boolean(true and false);    ->   0
-boolean(a or not(b and c)); -> boolean(not(b) \/ not(c) \/ a)
-boolean(a equiv not c);     -> boolean(not(a)/\c \/ a/\not(c))
+boolean(true and false);
+    ->   0
+boolean(a or not(b and c));
+    -> boolean(not(b) \/ not(c) \/ a)
+boolean(a equiv not c);
+    -> boolean(not(a)/\c \/ a/\not(c))
 \end{verbatim}
 
 \subsection{Normal forms}
@@ -98,7 +101,9 @@ when you set the additional keyword \textbf{full}:
 \begin{verbatim}
 boolean (a or b implies c, full);
                    ->
-boolean(a/\b/\c \/ a/\not(b)/\c \/ not(a)/\b/\c \/ not(a)/\not(b)/\c
+boolean(a/\b/\c \/ a/\not(b)/\c \/ not(a)/\b/\c
+
+         \/ not(a)/\not(b)/\c
 
          \/ not(a)/\not(b)/\not(c))
 \end{verbatim}
