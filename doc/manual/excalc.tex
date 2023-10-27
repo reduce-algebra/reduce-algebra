@@ -474,15 +474,16 @@ Syntax:
 
   pform l=4,a=1,j=3;
 
-  l:=-1/2*d a ^ # d a - a^# j$  %Lagrangian of the e.m. field
+  %Lagrangian of the e.m. field
+  l:=-1/2*d a ^ # d a - a^# j$
 
   vardf(l,a);
 
-  - (# j + d # d a)             %Maxwell's equations
+  - (# j + d # d a)         %Maxwell's equations
 
   bndeq!*;
 
-  - 'a^# d a                    %Equation at the boundary
+  - 'a^# d a                %Equation at the boundary
 \end{verbatim}
 Restrictions:
 
@@ -510,9 +511,9 @@ is provided.  It has the syntax:
 
   noether(l,a,x);
 
-    - 2*d(x _| a)^# d a + d a^x _| # d a - x _| d a^# d a
-   --------------------------------------------------------
-                           2
+   ( - 2*d(x _| a)^# d a + d a^x _| # d a
+
+     - x _| d a^# d a)/2
 
 
 \end{verbatim}
@@ -672,9 +673,10 @@ follows
 
 \begin{verbatim}
 
-    index_symmetries u(k,l,m,n): symmetric     in {k,l},{m,n}
-                                 antisymmetric in {{k,l},{m,n}},
-                     g(k,l),h(k,l): symmetric;
+  index_symmetries u(k,l,m,n):
+                        symmetric     in {k,l},{m,n}
+                        antisymmetric in {{k,l},{m,n}},
+                   g(k,l),h(k,l): symmetric;
 
 \end{verbatim}
 
@@ -728,19 +730,25 @@ orthonormal frame and a coordinate frame.
 \example\index{EXCALC package!example}
 
 \begin{verbatim}
+
+ %Polar coframe 
  coframe e r=d r, e(ph)=r*d ph
-   with metric g=e(r)*e(r)+e(ph)*e(ph);    %Polar coframe
+   with metric g=e(r)*e(r)+e(ph)*e(ph);
 
- coframe e(r)=d r,e(ph)=r*d(ph);           %Same as before
+ %Same as before
+ coframe e(r)=d r,e(ph)=r*d(ph);
 
+ %A Lorentz coframe
  coframe o(t)=d t, o x=d x
-   with signature -1,1;                    %A Lorentz coframe
+   with signature -1,1;
 
- coframe b(xi)=d xi, b(eta)=d eta          %A lightcone coframe
+ %A lightcone coframe
+ coframe b(xi)=d xi, b(eta)=d eta
    with metric w=-1/2*(b(xi)*b(eta)+b(eta)*b(xi));
 
- coframe e r=d r, e ph=d ph                %Polar coordinate
-   with metric g=e r*e r+r**2*e ph*e ph;   %basis
+ %Polar coordinate basis
+ coframe e r=d r, e ph=d ph
+   with metric g=e r*e r+r**2*e ph*e ph;
 
 \end{verbatim}
 
@@ -795,7 +803,9 @@ knows how to take the exterior derivative of the basis one-forms.
 \example\ (Spherical coordinates)\index{EXCALC package!example}
 
 \begin{verbatim}
-     coframe e(r)=d(r), e(th)=r*d(th), e(ph)=r*sin(th)*d(ph);
+     coframe e(r)=d(r),
+             e(th)=r*d(th),
+             e(ph)=r*sin(th)*d(ph);
 
      d r^d th;
 
@@ -816,7 +826,8 @@ knows how to take the exterior derivative of the basis one-forms.
 
      on rat;
 
-     d f;       %the "gradient" of f in spherical coordinates;
+     %the "gradient" of f in spherical coordinates;
+     d f;
 
       r          th              ph
      e *@  f + (e  *@   f)/r + (e  *@   f)/(r*sin(th))
@@ -836,7 +847,8 @@ coordinate functions are replaced by the frame basis vectors.
 \example\index{EXCALC package!example}
 
 \begin{verbatim}
-   coframe b r=d r,b ph=r*d ph,e z=d z; %Cylindrical coframe;
+   %Cylindrical coframe;
+   coframe b r=d r,b ph=r*d ph,e z=d z;
 
    frame x;
 
@@ -856,16 +868,17 @@ coordinate functions are replaced by the frame basis vectors.
    ns    := 1
      z
 
-   x(-k) |_ x(-l);       %The commutator of the dual frame;
+   %The commutator of the dual frame;
+   x(-k) |_ x(-l);
 
 
    ns     := x  /r
      ph r     ph
 
-
-   ns     := ( - x  )/r  %i.e. it is not a coordinate base;
+   ns     := ( - x  )/r
      r ph         ph
 
+   %i.e. it is not a coordinate base;
 \end{verbatim}
 
 \ttindextype[EXCALC]{displayframe}{command} \index{Tracing!EXCALC package}\index{EXCALC package!tracing}
@@ -903,7 +916,7 @@ inner products.
 
    riemannconx om;
 
-   om(k,-l);                 %Display the connection forms;
+   om(k,-l);           %Display the connection forms;
 
      th
    ns      := 0
@@ -933,8 +946,9 @@ inner products.
 
        ph            th  ph   2
    curv      := ( - e  ^e  )/r
-          th               %Of course it was a sphere with
-                           %radius R.
+          th
+               %Of course it was a sphere with
+               %radius R.
 
        th         th  ph   2
    curv      := (e  ^e  )/r
@@ -1139,16 +1153,18 @@ The examples are on a test file distributed with \package{EXCALC}.
 \index{EXCALC package!example}
 {\small
 \begin{verbatim}
-% Problem: Calculate the PDE's for the isovector of the heat equation.
+% Problem:
 % --------
-%         (c.f. B.K. Harrison, f.B. Estabrook, "Geometric Approach...",
+% Calculate the PDE's for the isovector of the heat equation.
+%         (c.f. B.K. Harrison, f.B. Estabrook,
+%          "Geometric Approach...",
 %          J. Math. Phys. 12, 653, 1971)
 
-% The heat equation @   psi = @  psi is equivalent to the set of exterior
+% The heat equation @   psi = @  psi is equivalent to the set
 %                    xx        t
 
-% equations (with u=@ psi, y=@ psi):
-%                    T        x
+%  of exterior equations (with u=@ psi, y=@ psi):
+%                                 T        x
 
 
 pform {psi,u,x,y,t}=0,a=1,{da,b}=2;
@@ -1165,8 +1181,9 @@ b := u*d x^d t - d y^d t;
 tvector v;
 
 pform {vpsi,vt,vu,vx,vy}=0;
-fdomain vpsi=vpsi(psi,t,u,x,y),vt=vt(psi,t,u,x,y),vu=vu(psi,t,u,x,y),
-                               vx=vx(psi,t,u,x,y),vy=vy(psi,t,u,x,y);
+fdomain vpsi=vpsi(psi,t,u,x,y),
+        vt=vt(psi,t,u,x,y),vu=vu(psi,t,u,x,y),
+        vx=vx(psi,t,u,x,y),vy=vy(psi,t,u,x,y);
 
 v := vpsi*@ psi + vt*@ t + vu*@ u + vx*@ x + vy*@ y;
 
@@ -1184,8 +1201,8 @@ fdomain f=f(psi,t,u,x,y);
 
 i11 := v _| d a - l*a + d f;
 
-let vx=-@(f,y),vt=-@(f,u),vu=@(f,t)+u*@(f,psi),vy=@(f,x)+y*@(f,psi),
-    vpsi=f-u*@(f,u)-y*@(f,y);
+let vx=-@(f,y),vt=-@(f,u),vu=@(f,t)+u*@(f,psi),
+    vy=@(f,x)+y*@(f,psi),vpsi=f-u*@(f,u)-y*@(f,y);
 
 factor ^;
 
@@ -1200,7 +1217,8 @@ let zeta=-@(f,u,x)-@(f,u,y)*u-@(f,u,psi)*y;
 
 i2;
 
-let xi=-@(f,t,u)-u*@(f,u,psi)+@(f,x,y)+u*@(f,y,y)+y*@(f,y,psi)+@(f,psi);
+let xi=-@(f,t,u)-u*@(f,u,psi)+@(f,x,y)
+       +u*@(f,y,y)+y*@(f,y,psi)+@(f,psi);
 
 i2;
 
@@ -1216,8 +1234,10 @@ clear @(f,u,u);
 
 % Problem:
 % --------
-% Calculate the integrability conditions for the system of PDE's:
-% (c.f. B.F. Schutz, "Geometrical Methods of Mathematical Physics"
+% Calculate the integrability conditions for the
+% system of PDE's:
+% (c.f. B.F. Schutz,
+% "Geometrical Methods of Mathematical Physics"
 % Cambridge University Press, 1984, p. 156)
 
 
@@ -1264,11 +1284,12 @@ remfdomain a1,a2,b1,c1,c2,f1,f2,g1,g2,h1,h2;
 
 % Problem:
 % --------
-% Calculate the PDE's for the generators of the d-theta symmetries of
-% the Lagrangian system of the planar Kepler problem.
+% Calculate the PDE's for the generators of the
+% d-theta symmetries of the Lagrangian system of the
+% planar Kepler problem.
 % c.f. W.Sarlet, F.Cantrijn, Siam Review 23, 467, 1981
-% Verify that time translation is a d-theta symmetry and calculate the
-% corresponding integral.
+% Verify that time translation is a d-theta symmetry
+% and calculate the corresponding integral.
 
 pform {t,q(k),v(k),lam(k),tau,xi(k),eta(k)}=0,theta=1,f=0,
       {l,glq(k),glv(k),glt}=0;
@@ -1277,7 +1298,8 @@ tvector gam,y;
 
 indexrange 1,2;
 
-fdomain tau=tau(t,q(k),v(k)),xi=xi(t,q(k),v(k)),f=f(t,q(k),v(k));
+fdomain tau=tau(t,q(k),v(k)),xi=xi(t,q(k),v(k)),
+        f=f(t,q(k),v(k));
 
 l := 1/2*(v(1)**2 + v(2)**2) + m/r$      % The Lagrangian.
 
@@ -1285,13 +1307,14 @@ pform r=0;
 fdomain r=r(q(k));
 let @(r,q 1)=q(1)/r,@(r,q 2)=q(2)/r,q(1)**2+q(2)**2=r**2;
 
-lam(k) := -m*q(k)/r;                                % The force.
+lam(k) := -m*q(k)/r;                           % The force.
 
 gam := @ t + v(k)*@(q(k)) + lam(k)*@(v(k))$
 
 eta(k) := gam _| d xi(k) - v(k)*gam _| d tau$
 
-y  := tau*@ t + xi(k)*@(q(k)) + eta(k)*@(v(k))$     % Symmetry generator.
+% Symmetry generator.
+y  := tau*@ t + xi(k)*@(q(k)) + eta(k)*@(v(k))$
 
 theta := l*d t + @(l,v(k))*(d q(k) - v(k)*d t)$
 
@@ -1315,13 +1338,15 @@ glt;
 integ := - y _| theta;
 
 
-clear l,lam k,gam,eta k,y,theta,s,glq k,glv k,glt,t,q k,v k,tau,xi k;
+clear l,lam k,gam,eta k,y,theta,s,glq k,glv k,glt,t,
+      q k,v k,tau,xi k;
 remfdomain r,f,tau,xi;
 
 % Problem:
 % --------
-% Calculate the "gradient" and "Laplacian" of a function and the "curl"
-% and "divergence" of a one-form in elliptic coordinates.
+% Calculate the "gradient" and "Laplacian" of a function
+% and the "curl" and "divergence" of a one-form in
+% elliptic coordinates.
 
 
 coframe e u = sqrt(cosh(v)**2 - sin(u)**2)*d u,
@@ -1347,7 +1372,8 @@ factor @;
 
 remfac @;
 
-% Now calculate the "curl" and the "divergence" of a one-form.
+% Now calculate the "curl" and the "divergence"
+% of a one-form.
 
 pform w=1,a(k)=0;
 
@@ -1369,9 +1395,11 @@ remfdomain a,f;
 
 % Problem:
 % --------
-% Calculate in a spherical coordinate system the Navier Stokes equations.
+% Calculate in a spherical coordinate system
+% the Navier Stokes equations.
 
-coframe e r=d r, e theta =r*d theta, e phi = r*sin theta *d phi;
+coframe e r=d r, e theta =r*d theta,
+        e phi = r*sin theta *d phi;
 frame x;
 
 fdomain v=v(t,r,theta,phi),p=p(r,theta,phi);
@@ -1390,8 +1418,8 @@ cdv := @(w,t) + (v(k)*x(-k)) |_ w - 1/2*d(v(k)*v(-k));
 
 visc := nu*(d#d# w - #d#d w) + mu*d#d# w;
 
-% Finally we add the pressure term and print the components of the
-% whole equation.
+% Finally we add the pressure term and print the components
+% of the whole equation.
 
 pform nasteq=1,nast(k)=0;
 
@@ -1409,9 +1437,9 @@ remfdomain p,v;
 
 % Problem:
 % --------
-% Calculate from the Lagrangian of a vibrating rod the equation of
-% motion and show that the invariance under time translation leads
-% to a conserved current.
+% Calculate from the Lagrangian of a vibrating rod
+% the equation of motion and show that the invariance
+% under time translation leads to a conserved current.
 
 pform {y,x,t,q,j}=0,lagr=2;
 
@@ -1423,16 +1451,18 @@ lagr := 1/2*(rho*q*@(y,t)**2 - e*j*@(y,x,x)**2)*d x^d t;
 
 vardf(lagr,y);
 
-% The Lagrangian does not explicitly depend on time; therefore the
-% vector field @ t generates a symmetry. The conserved current is
+% The Lagrangian does not explicitly depend on time;
+% therefore the vector field @ t generates a symmetry.
+% The conserved current is
 
 pform c=1;
 factor d;
 
 c := noether(lagr,y,@ t);
 
-% The exterior derivative of this must be zero or a multiple of the
-% equation of motion (weak conservation law) to be a conserved current.
+% The exterior derivative of this must be zero or a multiple
+% of the equation of motion (weak conservation law)
+% to be a conserved current.
 
 remfac d;
 
@@ -1445,10 +1475,11 @@ remfdomain y,q,j;
 
 % Problem:
 % --------
-% Show that the metric structure given by Eguchi and Hanson induces a
-% self-dual curvature.
-% c.f. T. Eguchi, P.B. Gilkey, A.J. Hanson, "Gravitation, Gauge Theories
-% and Differential Geometry", Physics Reports 66, 213, 1980
+% Show that the metric structure given by Eguchi and Hanson
+% induces a self-dual curvature.
+% c.f. T. Eguchi, P.B. Gilkey, A.J. Hanson,
+% "Gravitation, Gauge Theories and Differential Geometry",
+% Physics Reports 66, 213, 1980
 
 for all x let cos(x)**2=1-sin(x)**2;
 
@@ -1456,8 +1487,10 @@ pform f=0,g=0;
 fdomain f=f(r), g=g(r);
 
 coframe   o(r) = f*d r,
-      o(theta) = (r/2)*(sin(psi)*d theta - sin(theta)*cos(psi)*d phi),
-        o(phi) = (r/2)*(-cos(psi)*d theta - sin(theta)*sin(psi)*d phi),
+      o(theta) = (r/2)*(sin(psi)*d theta
+                  - sin(theta)*cos(psi)*d phi),
+        o(phi) = (r/2)*(-cos(psi)*d theta
+                  - sin(theta)*sin(psi)*d phi),
         o(psi) = (r/2)*g*(d psi + cos(theta)*d phi);
 
 frame e;
@@ -1469,8 +1502,8 @@ index_symmetries gamma(a,b),curv2(a,b): antisymmetric;
 factor o;
 
 gamma(-a,-b) := -(1/2)*( e(-a) _| (e(-c) _| (d o(-b)))
-		        -e(-b) _| (e(-a) _| (d o(-c)))
-		        +e(-c) _| (e(-b) _| (d o(-a))) )*o(c)$
+                        -e(-b) _| (e(-a) _| (d o(-c)))
+                        +e(-c) _| (e(-b) _| (d o(-a))) )*o(c)$
 
 
 curv2(-a,b) := d gamma(-a,b) + gamma(-c,b)^gamma(-a,c)$
@@ -1484,11 +1517,13 @@ index_symmetries chck(k,l): antisymmetric;
 
 chck(k,l) := 1/2*eps(k,l,m,n)*curv2(-m,-n) + curv2(k,l);
 
-clear gamma(a,b),curv2(a,b),f,g,chck(a,b),o(k),e(k),r,phi,psi;
+clear gamma(a,b),curv2(a,b),f,g,chck(a,b),o(k),e(k),
+      r,phi,psi;
 remfdomain f,g;
 
-% Example: 6-dimensional FRW model with quadratic curvature terms in
+% Example:
 % -------
+% 6-dimensional FRW model with quadratic curvature terms in
 % the Lagrangian (Lanczos and Gauss-Bonnet terms).
 % cf. Henriques, Nuclear Physics, B277, 621 (1986)
 
@@ -1514,10 +1549,11 @@ riemannconx om;
 
 pform curv(k,l)=2,{riemann(a,b,c,d),ricci(a,b),riccisc}=0;
 
-index_symmetries curv(k,l): antisymmetric,
-                 riemann(k,l,m,n): antisymmetric in {k,l},{m,n}
-                                   symmetric in {{k,l},{m,n}},
-                 ricci(k,l): symmetric;
+index_symmetries
+       curv(k,l): antisymmetric,
+       riemann(k,l,m,n): antisymmetric in {k,l},{m,n}
+                         symmetric in {{k,l},{m,n}},
+       ricci(k,l): symmetric;
 
 curv(k,l) := d om(k,l) + om(k,-m)^om(m,l);
 
@@ -1546,33 +1582,36 @@ laglanc := (1/2)*(inv1 - 4*inv2 + riccisc**2);
 pform {einst(a,b),hlang(a,b)}=0;
 
 hlang(-i,-j) := 2*(riemc3(-i,-j) - riemri(-i,-j) -
-		   2*ricci(-i,-k)*ricci(-j,K) +
-		   riccisc*ricci(-i,-j) - (1/2)*laglanc*g(-i,-j));
+                   2*ricci(-i,-k)*ricci(-j,K) +
+                   riccisc*ricci(-i,-j) - (1/2)*laglanc*g(-i,-j));
 
 % The complete Einstein tensor:
 
-einst(-i,-j) := (ricci(-i,-j) - (1/2)*riccisc*g(-i,-j))*alp1 +
-		hlang(-i,-j)*alp2$
+einst(-i,-j) := (ricci(-i,-j) - (1/2)*riccisc*g(-i,-j))*alp1
+                 + hlang(-i,-j)*alp2$
 
 alp1 := 1$
 factor alp2;
 
 einst(-i,-j) := einst(-i,-j);
 
-clear o(k),e(k),riemc3(i,j),riemri(i,j),curv(k,l),riemann(a,b,c,d),
-      ricci(a,b),riccisc,t,u,v1,v2,theta,phi,r,om(k,l),einst(a,b),
-      hlang(a,b);
+clear o(k),e(k),riemc3(i,j),riemri(i,j),curv(k,l),
+      riemann(a,b,c,d),ricci(a,b),riccisc,t,u,v1,v2,
+      theta,phi,r,om(k,l),einst(a,b),hlang(a,b);
 
 remfdomain r,s;
 
 % Problem:
 % --------
-% Calculate for a given coframe and given torsion the Riemannian part and
-% the torsion induced part of the connection. Calculate the curvature.
+% Calculate for a given coframe and given torsion the Riemannian
+% part and the torsion induced part of the connection.
+% Calculate the curvature.
 
-% For a more elaborate example see E.Schruefer, F.W. Hehl, J.D. McCrea,
-% "Application of the REDUCE package EXCALC to the Poincare gauge field
-% theory of gravity", GRG Journal, vol. 19, (1988)  197--218
+% For a more elaborate example see:
+% E.Schruefer, F.W. Hehl, J.D. McCrea,
+% "Application of the REDUCE package EXCALC to the Poincare
+%  gauge field theory of gravity", 
+% GRG Journal, vol. 19, (1988)  197--218
 
 pform {ff, gg}=0;
 
@@ -1604,11 +1643,11 @@ tor(3) := u1*o(4)^o(3) - u3*o(4)^o(2)$
 gwt(-a) := d o(-a) - tor(-a)$
 
 % The following is the combined connection.
-% The Riemannian part could have equally well been calculated by the
-% RIEMANNCONX statement.
+% The Riemannian part could have equally well been
+% calculated by the RIEMANNCONX statement.
 
 gamma(-a,-b) := (1/2)*( e(-b) _| (e(-c) _| gwt(-a))
-	               +e(-c) _| (e(-a) _| gwt(-b))
+                       +e(-c) _| (e(-a) _| gwt(-b))
                        -e(-a) _| (e(-b) _| gwt(-c)) )*o(c);
 
 pform curv(a,b)=2;
@@ -1617,7 +1656,8 @@ factor ^;
 
 curv(-a,b) := d gamma(-a,b) + gamma(-c,b)^gamma(-a,c);
 
-clear o(k),e(k),curv(a,b),gamma(a,b),theta,phi,x,y,z,r,s,t,u,v,p,q,c,cs;
+clear o(k),e(k),curv(a,b),gamma(a,b),theta,phi,
+      x,y,z,r,s,t,u,v,p,q,c,cs;
 remfdomain u1,u3,u5,ff,gg;
 
 showtime;
