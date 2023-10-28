@@ -118,11 +118,11 @@ AC_FUNC_STAT
 AC_CHECK_FUNCS([endpwent isascii memchr memset re_comp regcomp strcasecmp strchr strcspn strdup strerror strrchr strstr strtol issetugid wcsdup strlcpy strlcat fgetln vis strvis strunvis __secure_getenv secure_getenv])
 
 # strlcpy
-AC_CHECK_FUNC(strlcpy, found_strlcpy=yes, found_strlcpy=no)
+#AC_CHECK_FUNC(strlcpy, found_strlcpy=yes, found_strlcpy=no)
 AM_CONDITIONAL(HAVE_STRLCPY, [test "x$found_strlcpy" = xyes])
 
 # strlcat
-AC_CHECK_FUNC(strlcat, found_strlcat=yes, found_strlcat=no)
+#AC_CHECK_FUNC(strlcat, found_strlcat=yes, found_strlcat=no)
 AM_CONDITIONAL(HAVE_STRLCAT, [test "x$found_strlcat" = xyes])
 
 # vis
