@@ -114,7 +114,7 @@ value, it is necessary to add to {\REDUCE} the concept of a quoted expression
 by analogy with the Lisp \texttt{quote} function. This is provided by the single
 quote mark \texttt{'}.  For example,
 \begin{quote}
-\begin{tabular}{l@{\hspace{0.2in}}ll}
+\begin{tabular}{l@{\hspace{0.1in}}ll}
 \texttt{'a} &  represents the Lisp S-expression & \texttt{(quote a)} \\
 \texttt{'(a b c)} & represents the Lisp S-expression & \texttt{(quote (a b c))}
 \end{tabular}
@@ -168,7 +168,8 @@ used.  For example, the expression
 \end{verbatim}
 can also be written
 \begin{verbatim}
-    {car x,cdr x,car y,cdr y} where x=reverse u,y=reverse v
+    {car x,cdr x,car y,cdr y}
+        where x=reverse u,y=reverse v
 \end{verbatim}
 Where possible, \texttt{where} syntax is preferred to \texttt{lambda} syntax,
 since it is more natural.
@@ -520,11 +521,12 @@ For example, if you want to define a procedure \texttt{leadterm} which gives the
 leading term of an algebraic expression, one could do this as follows:
 \begin{samepage}
 \begin{verbatim}
-symbolic operator leadterm; % Declare leadterm as a symbolic
-                            % mode procedure to be used in
-                            % algebraic mode.
+% Declare leadterm as a symbolic mode procedure to
+% be used in algebraic mode.
+symbolic operator leadterm; 
 
-symbolic procedure leadterm u; % Define leadterm.
+% Define leadterm.
+symbolic procedure leadterm u;
    mk!*sq !*t2q lt numr simp!* u;
 \end{verbatim}
 \end{samepage}

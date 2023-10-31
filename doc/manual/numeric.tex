@@ -115,11 +115,13 @@ minima.
 
 Syntax:
 \begin{syntaxtable}
-  \f{num\_min} (\meta{exp}, \meta{$var_1$}\optional{=$val_1$} [,$var_2$[=$val_2$] \ldots]
-             [,accuracy=a][,iterations=i]) \\
+  \f{num\_min} (\meta{exp}, \meta{$var_1$}\optional{=$val_1$} [,$var_2$[=$val_2$] \ldots]\\
+  \hphantom{\f{num\_min} (}
+             [,accuracy=\meta{a}][,iterations=\meta{i}]) \\
 \intertext{or}\\
-  \f{num\_min} (\meta{exp}, \{\meta{$var_1$}\optional{=$val_1$} [,$var_2$[=$val_2$] \ldots]\}
-             [,accuracy=a][,iterations=i])
+  \f{num\_min} (\meta{exp}, \{\meta{$var_1$}\optional{=$val_1$} [,$var_2$[=$val_2$] \ldots]\}\\
+  \hphantom{\f{num\_min} (}
+             [,accuracy=\meta{a}][,iterations=\meta{i}])
 \end{syntaxtable}
 where \meta{exp} is a function expression, \meta{$var_{1}$}, \meta{$var_{2}$}, \ldots\ are
 the variables in \meta{exp} and \meta{$val_{1}$}, \meta{$val_{2}$}, \ldots\  are

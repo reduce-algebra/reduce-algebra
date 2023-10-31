@@ -68,7 +68,6 @@ REDUCE Development Version,  4-Nov-96 ...
 
 1: trigint(3/(5-4*cos(x)),x);
 
-
                x              - pi + x
 2*(atan(3*tan(---)) + floor(-----------)*pi)
                2               2*pi
@@ -77,26 +76,23 @@ REDUCE Development Version,  4-Nov-96 ...
 \begin{verbatim}
 2: trigint(3/(5+4*sin(x)),x);
 
-                                         2
-               pi + 2*x              - pi  + 2*pi*x
-2*(atan(3*tan(----------)) + floor(-----------------)*pi
-                  4                        4
+               pi + 2*x
+2*(atan(3*tan(----------))
+                  4
 
               - pi + 2*x
     + floor(-------------)*pi)
                 4*pi
 
-
 3: trigint(15/(cos(x)*(5-4*cos(x))),x);
 
+              x                - pi + x
+8*atan(3*tan(---)) + 8*floor(-----------)*pi
+              2                 2*pi
 
-              x                - pi + x                   x
-8*atan(3*tan(---)) + 8*floor(-----------)*pi - 3*log(tan(---) - 1)
-              2                 2*pi                      2
-
-              x
- + 3*log(tan(---) + 1)
-              2
+              x                     x
+ - 3*log(tan(---) - 1) + 3*log(tan(---) + 1)
+              2                     2
 \end{verbatim}
 \subsection{Definite Integration}
 The corrected expressions can now be used to calculate some definite integrals, provided the region of integration lies between adjacent singularities. For example, using our earlier function, we can use the corrected primitive to calculate
@@ -108,7 +104,7 @@ trigint returns the answer below to give an indefinite integral, $F(x)$:
                        2               - pi + x
  2*sqrt(3)*(atan(----------) + floor(-----------)*pi)
                   sqrt(3)               2*pi
-------------------------------------------------------                   (*)
+------------------------------------------------------
                           3
 \end{verbatim}
 And now, we can apply the Fundamental Theorem of Calculus to give

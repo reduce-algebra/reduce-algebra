@@ -150,7 +150,8 @@ ShowRules BesselI;
 
  besseli(~n,~z) => 0
 
-  when numberp(~z) and ~z=0 and numberp(~n) and ~n neq 0,
+  when numberp(~z) and ~z=0
+   and numberp(~n) and ~n neq 0,
 
  besseli(~n,~z) => besseli( - ~n,~z) when numberp(~n)
 
@@ -306,7 +307,7 @@ The unnormalised and nomalised incomplete Beta funtions are defined by
 B_x(a,b) & = \int_0^x t^a (1-t)^b\, \mathrm{d}t,\\
 I_x(a,b) & = \frac{B_x(a,b)}{B(a,b)}
 \end{align*}
-respectively. The normalised one is represented by the ternary function
+respectively. $I_x(a,b)$ is represented by the ternary function
 \texttt{ibeta(a,b,x)}.
 
 \subsubsection{The Digamma Function, $\psi$}
@@ -1075,17 +1076,18 @@ the polynomial systems) the function of order $n$ is the $n+1$-th
 element.
 
 \begin{verbatim}
-
      monomial_base(x,n)       {1,x,...,x**n}
-     trigonometric_base(x,n)  {1,sin x,cos x,sin(2x),cos(2x)...}
+     trigonometric_base(x,n)  {1,sin x,cos x,
+                                 sin(2x),cos(2x)...}
      Bernstein_base(x,n)      Bernstein polynomials
      Legendre_base(x,n,a,b)   Legendre polynomials
      Laguerre_base(x,n,a)     Laguerre polynomials
      Hermite_base(x,n)        Hermite polynomials
-     Chebyshev_base_T(x,n)    Chebyshev polynomials first kind
-     Chebyshev_base_U(x,n)    Chebyshev polynomials second kind
+     Chebyshev_base_T(x,n)    Chebyshev polynomials
+                               of the first kind
+     Chebyshev_base_U(x,n)    Chebyshev polynomials
+                               of the second kind
      Gegenbauer_base(x,n,a)   Gegenbauer polynomials
-
 \end{verbatim}
 
 Example:

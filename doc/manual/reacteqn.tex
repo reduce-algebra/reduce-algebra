@@ -96,11 +96,18 @@ This input
 gives the output
 \begin{verbatim}
 
-{df(a1,t)=rho*a1*a4 - beta*a1  - gamma*a1*a2 + epsilon*a3,
+{df(a1,t)
 
- df(a2,t)= - gamma*a1*a2 + epsilon*a3 + theta*a3 - mue*a2*a5,
+                     2
+ =rho*a1*a4 - beta*a1  - gamma*a1*a2 + epsilon*a3,
 
- df(a3,t)=gamma*a1*a2 - epsilon*a3 - theta*a3 + mue*a2*a5,
+ df(a2,t)= - gamma*a1*a2 + epsilon*a3 + theta*a3
+
+  - mue*a2*a5,
+
+ df(a3,t)
+
+ =gamma*a1*a2 - epsilon*a3 - theta*a3 + mue*a2*a5,
 
                                 2
  df(a4,t)= - rho*a1*a4 + beta*a1 ,
@@ -112,30 +119,30 @@ The corresponding matrices are
 \begin{verbatim}
  inputmat;
 
-[ 1 0 0 1 0 ]
-[           ]
-[ 1 1 0 0 0 ]
-[           ]
-[ 0 0 1 0 0 ]
+[1  0  0  1  0]
+[             ]
+[1  1  0  0  0]
+[             ]
+[0  0  1  0  0]
 
  outputmat;
 
-[ 2 0 0 0 0 ]
-[           ] 
-[ 0 0 1 0 0 ] 
-[           ] 
-[ 0 1 0 0 1 ] 
+[2  0  0  0  0]
+[             ]
+[0  0  1  0  0]
+[             ]
+[0  1  0  0  1]
 
-% computation of the classical reaction matrix as difference
-% of output and input matrix:
+% computation of the classical reaction matrix as
+% difference of output and input matrix:
 
   reactmat := outputmat-inputmat;
 
-             [ 1   0   0   -1  0 ]
-             [                   ] 
-REACTMAT :=  [ -1  -1  1   0   0 ] 
-             [                   ] 
-             [ 0   1   -1  0   1 ]
+            [1   0   0   -1  0]
+            [                 ]
+reactmat := [-1  -1  1   0   0]
+            [                 ]
+            [0   1   -1  0   1]
 
 % Example with automatic generation of rate constants
 % and automatic extraction of species
@@ -153,16 +160,20 @@ new species: a3
 new species: a5
 
                2
-{df(a1,t)= - a1 *rate(2) + a1*a4*rate(1) - a1*a2*rate(3) + 
+{df(a1,t)= - a1 *rate(2) + a1*a4*rate(1)
 
-     a3*rate(4),
+  - a1*a2*rate(3) + a3*rate(4),
 
             2
  df(a4,t)=a1 *rate(2) - a1*a4*rate(1),
 
- df(a2,t)= - a1*a2*rate(3) - a2*a5*rate(6) + a3*rate(5) + a3*rate(4),
+ df(a2,t)= - a1*a2*rate(3) - a2*a5*rate(6)
 
- df(a3,t)=a1*a2*rate(3) + a2*a5*rate(6) - a3*rate(5) - a3*rate(4),
+  + a3*rate(5) + a3*rate(4),
+
+ df(a3,t)=a1*a2*rate(3) + a2*a5*rate(6)
+
+  - a3*rate(5) - a3*rate(4),
 
  df(a5,t)= - a2*a5*rate(6) + a3*rate(5)}
 
@@ -176,9 +187,12 @@ new species: a5
 new species: a1
 new species: a4
 
-                       2
-{df(a1,t)= - 4.24065*a1 + 1834.08*a1*a4,
+{df(a1,t)
 
-                    2
- df(a4,t)=4.24065*a1 - 1834.08*a1*a4}
+                     2
+ = - 4.24064598853*a1  + 1834.07939004*a1*a4,
+
+                          2
+ df(a4,t)=4.24064598853*a1  - 1834.07939004*a1*a4}
+
 \end{verbatim}

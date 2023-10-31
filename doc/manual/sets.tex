@@ -60,8 +60,9 @@ The set operators are currently inserted into the standard \REDUCE
 precedence list (see page \pageref{sect:infix}, \S\ref{sect:infix}, of the \REDUCE manual) as
 follows:
 \begin{verbatim}
-or and not member memq = set_eq neq eq >= > <= < subset_eq
-subset freeof + - setdiff union intersection * / ^ .
+or and not member memq = set_eq neq eq >= > <= <
+subset_eq subset freeof + - setdiff union intersection
+* / ^ .
 \end{verbatim}
 
 
@@ -356,8 +357,8 @@ An undecidable predicate causes a normal \REDUCE error, e.g.
 \begin{verbatim}
 evalb(a subset_eq {b});
 
-***** Cannot evaluate a subset_eq {b} as Boolean-valued set
- expression
+***** Cannot evaluate a subset_eq {b}
+as Boolean-valued set expression
 
 evalb(a subset_eq b);  %%% BUG
 

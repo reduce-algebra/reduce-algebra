@@ -206,12 +206,17 @@ which are:%
 ((binomial(n + 1,k) *binomial(2*n,n)
 
                                             2
-   - binomial(2*(n + 1),n + 1)*binomial(n,k) )*(2*k - 3*n - 1)
+   - binomial(2*(n + 1),n + 1)*binomial(n,k) )
 
-             2                                       3      2
- *(k - n - 1) )/((2*(2*(n + 1) - k)*(2*n + 1)*k - 3*n  - 7*n  - 5*n
+                             2
+ *(2*k - 3*n - 1)*(k - n - 1) )/((
 
-                     - 1)*binomial(2*(n + 1),n + 1)*binomial(2*n,n))
+      2*(2*(n + 1) - k)*(2*n + 1)*k
+
+                          2
+       - (3*n + 1)*(n + 1) )
+
+   *binomial(2*(n + 1),n + 1)*binomial(2*n,n))
 
 4: gosper(binomial(k,n),k);
 
@@ -347,7 +352,7 @@ Zeilberger algorithm.
 \texttt{sumrecursion(f,k,n)} determines a holonomic recurrence equation
 for
 \[
-\texttt{sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)
+\texttt{summ(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)
 \]
 with respect to $n$, applying
 \texttt{extended\_sumrecursion} if necessary,
@@ -368,7 +373,7 @@ A simple example deals with Equation (\eqnref{eq:nchoosek})%
 \begin{verbatim}
 14: sumrecursion(binomial(n,k),k,n);
 
-2*sum(n - 1) - sum(n)
+2*summ(n - 1) - summ(n)
 \end{verbatim}
 }\noindent
 The whole \textsl{hypergeometric database} of the
@@ -379,29 +384,35 @@ As examples, we consider the difficult cases of Clausen and Dougall:%
 
 {\small
 \begin{verbatim}
-15: summand:=factorial(a+k-1)*factorial(b+k-1)/(factorial(k)*
-    factorial(-1/2+a+b+k))*factorial(a+n-k-1)*factorial(b+n-k-1)/
-    (factorial(n-k)*factorial(-1/2+a+b+n-k))$
+15: summand:=factorial(a+k-1)*factorial(b+k-1)/
+      (factorial(k)*factorial(-1/2+a+b+k))
+     *factorial(a+n-k-1)*factorial(b+n-k-1)/
+      (factorial(n-k)*factorial(-1/2+a+b+n-k))$
 
 16: sumrecursion(summand,k,n);
 
-(2*a + 2*b + 2*n - 1)*(2*a + 2*b + n - 1)*sum(n)*n
+(2*a + 2*b + 2*n - 1)*(2*a + 2*b + n - 1)*summ(n)*n
 
- - 2*(2*a + n - 1)*(a + b + n - 1)*(2*b + n - 1)*sum(n - 1)
+ - 2*(2*a + n - 1)*(a + b + n - 1)*(2*b + n - 1)*summ(n - 1)
 
-17: summand:=pochhammer(d,k)*pochhammer(1+d/2,k)*pochhammer(d+b-a,k)*
-    pochhammer(d+c-a,k)*pochhammer(1+a-b-c,k)*pochhammer(n+a,k)*
-    pochhammer(-n,k)/(factorial(k)*pochhammer(d/2,k)*
-    pochhammer(1+a-b,k)*pochhammer(1+a-c,k)*pochhammer(b+c+d-a,k)*
-    pochhammer(1+d-a-n,k)*pochhammer(1+d+n,k))$
+17: summand:=pochhammer(d,k)*pochhammer(1+d/2,k)*
+     pochhammer(d+b-a,k)*pochhammer(d+c-a,k)*
+     pochhammer(1+a-b-c,k)*pochhammer(n+a,k)*
+     pochhammer(-n,k)/(factorial(k)*pochhammer(d/2,k)*
+     pochhammer(1+a-b,k)*pochhammer(1+a-c,k)*
+     pochhammer(b+c+d-a,k)*pochhammer(1+d-a-n,k)*
+     pochhammer(1+d+n,k))$
 
 18: sumrecursion(summand,k,n);
 
-(2*a - b - c - d + n)*(b + n - 1)*(c + n - 1)*(d + n)*sum(n - 1) +
 
-(a - b - c - d - n + 1)*(a - b + n)*(a - c + n)*(a - d + n - 1)
+ - (n - 1 + d + c + b - a)*(n - 1 - d + a)
 
-*sum(n)
+*(b - n - a)*(c - n - a)*summ(n) - 
+
+(d - n + c + b - 2*a)*(n - 1 + b)*(n - 1 + c)
+
+*(d + n)*summ(n - 1)
 \end{verbatim}
 }\noindent
 corresponding to the statements
@@ -448,13 +459,22 @@ e.\ g., we may prove that both sums satisfy the same recurrence equation
 \begin{verbatim}
 19: sumrecursion(binomial(n,k)^3,k,n);
 
-    2                                  2                      2
-(7*n  - 7*n + 2)*sum(n - 1) + 8*(n - 1) *sum(n - 2) - sum(n)*n
+
+         2                        2
+8*(n - 1) *summ(n - 2) - summ(n)*n
+
+       2
+ + (7*n  - 7*n + 2)*summ(n - 1)
 
 20: sumrecursion(binomial(n,k)^2*binomial(2*k,n),k,n);
 
-    2                                  2                      2
-(7*n  - 7*n + 2)*sum(n - 1) + 8*(n - 1) *sum(n - 2) - sum(n)*n
+
+         2                        2
+8*(n - 1) *summ(n - 2) - summ(n)*n
+
+       2
+ + (7*n  - 7*n + 2)*summ(n - 1)
+
 \end{verbatim}
 }\noindent
 and finally check the initial conditions:
@@ -469,7 +489,8 @@ and finally check the initial conditions:
 
 1
 
-23: sub(n=1,k=0,binomial(n,k)^3)+sub(n=1,k=1,binomial(n,k)^3);
+23: sub(n=1,k=0,binomial(n,k)^3)
+    +sub(n=1,k=1,binomial(n,k)^3);
 
 2
 
@@ -491,7 +512,7 @@ of an extension of the (fast) Zeilberger algorithm given by Koepf
 \begin{itemize}
 \item
 \texttt{extended\_sumrecursion(f,k,n,m,l)} determines a holonomic recurrence
-equation for $\texttt{sum(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$
+equation for $\texttt{summ(n)} =\sum\limits_{k=-\infty}^\infty f(n,k)$
 with respect to $n$ if $f(n,k)$ is an \textsl{$(m,l)$-fold hypergeometric term}
 with respect to $(n,k)$, i.e.
 \[
@@ -512,9 +533,10 @@ Examples:
 
 {\small
 \begin{verbatim}
-25: extended_sumrecursion(binomial(n,k)*binomial(k/2,n),k,n,1,2);
+25: extended_sumrecursion(binomial(n,k)*binomial(k/2,n),
+                          k,n,1,2);
 
-sum(n - 1) + 2*sum(n)
+summ(n - 1) + 2*summ(n)
 \end{verbatim}
 }\noindent
 which can be obtained automatically by
@@ -522,7 +544,7 @@ which can be obtained automatically by
 \begin{verbatim}
 26: sumrecursion(binomial(n,k)*binomial(k/2,n),k,n);
 
-sum(n - 1) + 2*sum(n)
+summ(n - 1) + 2*summ(n)
 \end{verbatim}
 }\noindent
 Similarly, we get
@@ -530,17 +552,18 @@ Similarly, we get
 \begin{verbatim}
 27: extended_sumrecursion(binomial(n/2,k),k,n,2,1);
 
-2*sum(n - 2) - sum(n)
+2*summ(n - 2) - summ(n)
 
 28: sumrecursion(binomial(n/2,k),k,n);
 
-2*sum(n - 2) - sum(n)
+2*summ(n - 2) - summ(n)
 
 29: sumrecursion(hyperterm({a,b,a+1/2-b,1+2*a/3,-n},
     {2*a+1-2*b,2*b,2/3*a,1+a+n/2},4,k)/(factorial(n)*2^(-n)/
-    factorial(n/2))/hyperterm({a+1,1},{a-b+1,b+1/2},1,n/2),k,n);
+    factorial(n/2))/
+     hyperterm({a+1,1},{a-b+1,b+1/2},1,n/2),k,n);
 
-sum(n - 2) - sum(n)
+summ(n - 2) - summ(n)
 \end{verbatim}
 }\noindent
 In the last example, the progam chooses $m=2$, and $l=1$ to derive the
@@ -594,7 +617,7 @@ Therefore
 \begin{verbatim}
 30: hyperrecursion({-n,b},{c},1,n);
 
-(b - c - n + 1)*sum(n - 1) + (c + n - 1)*sum(n)
+(b - c - n + 1)*summ(n - 1) + (c + n - 1)*summ(n)
 \end{verbatim}
 }\noindent
 establishes the Vandermonde identity
@@ -614,13 +637,15 @@ whereas
 {\small
 \begin{verbatim}
 31: hyperrecursion({d,1+d/2,d+b-a,d+c-a,1+a-b-c,n+a,-n},
-                   {d/2,1+a-b,1+a-c,b+c+d-a,1+d-a-n,1+d+n},1,n);
+              {d/2,1+a-b,1+a-c,b+c+d-a,1+d-a-n,1+d+n},1,n);
 
-(2*a - b - c - d + n)*(b + n - 1)*(c + n - 1)*(d + n)*sum(n - 1) +
+ - (n - 1 + d + c + b - a)*(n - 1 - d + a)
 
-(a - b - c - d - n + 1)*(a - b + n)*(a - c + n)*(a - d + n - 1)
+*(b - n - a)*(c - n - a)*summ(n) - 
 
-*sum(n)
+(d - n + c + b - 2*a)*(n - 1 + b)*(n - 1 + c)
+
+*(d + n)*summ(n - 1)
 \end{verbatim}
 }\noindent
 proves Dougall's identity, again.
@@ -674,21 +699,23 @@ and get the three three-term recurrence equations
 \begin{verbatim}
 33: sumrecursion(krawtchoukterm,k,n);
 
-((2*p - 1)*n - nn*p - 2*p + x + 1)*sum(n - 1)
+((2*p - 1)*n - nn*p - 2*p + x + 1)*summ(n - 1)
 
- - (n - nn - 2)*(p - 1)*sum(n - 2)*p - sum(n)*n
+ - (n - nn - 2)*(p - 1)*summ(n - 2)*p - summ(n)*n
 
 34: sumrecursion(krawtchoukterm,k,x);
 
-(2*(x - 1)*p + n - nn*p - x + 1)*sum(x - 1)
+(2*(x - 1)*p + n - nn*p - x + 1)*summ(x - 1)
 
- - ((x - 1) - nn)*sum(x)*p - (p - 1)*(x - 1)*sum(x - 2)
+ - ((x - 1) - nn)*summ(x)*p - (p - 1)*(x - 1)*summ(x - 2)
 
 35: sumrecursion(krawtchoukterm,k,NN);
 
-((p - 2)*nn + n + x + 1)*sum(nn - 1) + (n - nn)*(p - 1)*sum(nn)
+(x + 1 + n + (p - 2)*nn)*summ(nn - 1) - (
 
- + (nn - x - 1)*sum(nn - 2)
+   (x + 1 - nn)*summ(nn - 2)
+
+    - (n - nn)*(p - 1)*summ(nn))
 \end{verbatim}
 }\noindent
 with respect to the parameters $n$, $x$, and $N$ respectively.
@@ -845,14 +872,15 @@ Examples:
 
 hypergeometric({ - n, - n, - n},{1,1},-1)
 
-42: sumtohyper(binomial(n,k)/2^n-sub(n=n-1,binomial(n,k)/2^n),k);
+42: sumtohyper(binomial(n,k)/2^n
+               -sub(n=n-1,binomial(n,k)/2^n),k);
 
-                      - n + 2               - n
-  - hypergeometric({----------, - n,1},{1,------},-1)
-                        2                   2
-------------------------------------------------------
-                           n
-                          2
+                 - n + 2           - n
+  - hypergeom({----------, - n},{------},-1)
+                   2               2
+---------------------------------------------
+                      n
+                     2
 \end{verbatim}
 }\noindent
 
@@ -910,7 +938,8 @@ Example:
 
 {\small
 \begin{verbatim}
-43: simplify_combinatorial(sub(k=k+1,krawtchoukterm)/krawtchoukterm);
+43: simplify_combinatorial(sub(k=k+1,krawtchoukterm)/
+                           krawtchoukterm);
 
   (k - n)*(k - x)
 --------------------
@@ -1042,7 +1071,7 @@ p:= -------------------------------------------------
 
 Zeilberger algorithm successful
 
-4*sum(n - 1)*n - 2*sum(n - 1) - sum(n)*n
+4*summ(n - 1)*n - 2*summ(n - 1) - summ(n)*n
 
 51: off zb_trace;
 \end{verbatim}
@@ -1095,7 +1124,7 @@ recurrence equation is returned. Example:
 
 53: sumrecursion(binomial(n,k)^2,k,n);
 
-sum(n + 1)*n + sum(n + 1) - 4*sum(n)*n - 2*sum(n)
+summ(n + 1)*n + summ(n + 1) - 4*summ(n)*n - 2*summ(n)
 
 54: zb_direction:=down$
 \end{verbatim}
@@ -1141,9 +1170,12 @@ see \cite{Gosper:78}. Examples:
 {k,k,1,1}
 
 58: gosper(
-    1/(k+1)*binomial(2*k,k)/(n-k+1)*binomial(2*n-2*k,n-k),k);
+       1/(k+1)*binomial(2*k,k)/(n-k+1)
+         *binomial(2*n-2*k,n-k),k);
 
-((2*k - n + 1)*(2*k + 1)*binomial( - 2*(k - n), - (k - n))
+((2*k - n + 1)*(2*k + 1)
+
+ *binomial( - 2*(k - n), - (k - n))
 
  *binomial(2*k,k))/((k + 1)*(n + 2)*(n + 1))
 
