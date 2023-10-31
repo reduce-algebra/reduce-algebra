@@ -1,5 +1,7 @@
 \index{Langmead, Neil} \index{People!Langmead, Neil}
 
+\newcommand{\logsum}{\mathop{\mathrm{log\_sum}}}
+
 \subsection{Rational Integration}
 
 This package implements the Horowitz/ Rothstein/ Trager algorithms ~\cite{Geddes:92} for the integration of rational functions in \REDUCE. We work within a field $K$ of characteristic $0$ and functions $p,q \in K[x]$. $K$ is normally the field $Q$ of rational numbers, but not always. These procedures return $\int \frac{p}{q} dx.$
@@ -25,29 +27,33 @@ ratint(1,x^2-2,x);
  log_sum(beta,beta  - ---,0,log(2*beta*x - 1)*beta)}
                        8
 
-p:=441*x^7+780*x^6-2861*x^5+4085*x^4+7695*x^3+3713*x^2-43253*x
-                                                       +24500;
+p:=441*x^7+780*x^6-2861*x^5+4085*x^4+7695*x^3+3713*x^2
+          -43253*x+24500;
 
 q:=9*x^6+6*x^5-65*x^4+20*x^3+135*x^2-154*x+49;
 
 ratint(p,q,x);
 
 
-    49   6  226  5   268  4   1332  3   2809  2   752     256
-   ---*(x + ---*x  - ---*x  + ----*x  - ----*x  - ---*x + ---)
-    2       147      49        49       147       21       9
- {-----------------------------------------------------------      , 0  }
-              4    2   3      2          7
-             x  - ---*x  - 4*x  + 6*x - ---
-                   3                     3
+   49    6    226   5    268   4    1608   3
+{(----*(x  + -----*x  - -----*x  - ------*x
+   2          147        49          49
 
+            6011   2    536       256      4
+         + ------*x  + -----*x - -----))/(x
+            147         21         9
 
+        2   3      2          7
+     - ---*x  - 4*x  + 6*x - ---),
+        3                     3
 
-k:=36*x^6+126*x^5+183*x^4+(13807/6)*x^3-407*x^2-(3242/5)*x+(3044/15);
+ 0}
+
+k:=36*x^6+126*x^5+183*x^4+(13807/6)*x^3-407*x^2
+      -(3242/5)*x+(3044/15);
 l:=(x^2+(7/6)*x+(1/3))^2*(x-(2/5))^3;
 
 ratint(k,l,x);
-
 
    5271    3    39547   2    31018       7142
   ------*(x  + -------*x  - -------*x + -------)
@@ -57,10 +63,13 @@ ratint(k,l,x);
       x  + ----*x  - ----*x  - ----*x + ----
             30        25        25       75
 
-  37451            2      91125           2      128000           1
- -------*(log(x - ---) + -------*log(x + ---) - --------*log(x + ---))}
-   16              5      37451           3      37451            2
+  37451            2      91125           2
+ -------*(log(x - ---) + -------*log(x + ---)
+   16              5      37451           3
 
+              128000           1
+           - --------*log(x + ---))}
+              37451            2
 
 
 ratint(1,x^2+1,x);
@@ -86,7 +95,7 @@ return($rat\_part+c/d+poly\_part$) \\
 end
 \end{flushleft}
 
-The algorithm contains two subroutines, \emph{HorowitzReduction} and \emph{rt}.\ \emph{HorowitzReduction} is an implementation of Horowitz' method to reduce a given rational function into a polynomial part and a logarithmic part. The integration of the polynomial part is a trivial task, and is done by the \emph{int} operator in \REDUCE. The integration of the logarithmic part is done by the routine \emph{rt}, which is an impementation of the Rothstein and Trager method. These two answers are outputed in a list, the complete answer being the sum of these two parts.
+The algorithm contains two subroutines, \emph{HorowitzReduction} and \emph{rt}.\ \emph{HorowitzReduction} is an implementation of Horowitz' method to reduce a given rational function into a polynomial part and a logarithmic part. The integration of the polynomial part is a trivial task, and is done by the \emph{int} operator in \REDUCE. The integration of the logarithmic part is done by the routine \emph{rt}, which is an implementation of the Rothstein and Trager method. These two answers are outputed in a list, the complete answer being the sum of these two parts.
 \\
 These two algorithms are as follows:
 
@@ -114,7 +123,7 @@ for $i$ from $0$ to $m+n-1$ do \\
 
 $solve(eqns,\{a(0),....,a(m-1),c(0),....,c(n-1)\});$
 
-return($c/d+\int poly\_part + \int a/b$); \\
+return($c/d+\int poly\_part + a/b$); \\
 end;
 \end{flushleft}
 
@@ -123,7 +132,7 @@ procedure RothsteinTrager($a,b,x$)
 
 \% Given a rational function $a/b$ in $x$ with $deg(a)<deg(b)$, \\
 with $b$ monic and square free, we calculate $\int(a/b)$ \\
-$R(z) \leftarrow residue(a-zb',b)$ \\
+$R(z) \leftarrow resultant(a-zb',b)$ \\
 $(r_{1}(z)...r_{k}(z)) \leftarrow factors(R(z))$ \\
 integral $\leftarrow 0$
 
@@ -183,10 +192,10 @@ Continuting with the Rothstein Trager algorithm, we now calculate
 Thus we can write
 \[ \int \frac{a}{b}= \sum_{\alpha \mid \alpha^3-\alpha^2+\alpha+1=0} \alpha*\log(x^2+2\alpha x-5x+\alpha^2), \]
 
-and this is the answer now returned by \REDUCE, via a function called $log\_sum$. This has the following syntax:
-\begin{center}$ log\_sum(\alpha,eqn(\alpha),0,sum\_term,var)$ \end{center}
+and this is the answer now returned by \REDUCE, via a function called \f{log\_sum}. This has the following syntax:
+\begin{center}$ \logsum(\alpha,eqn(\alpha),0,sum\_term,var)$ \end{center}
 where $\alpha$ satisfies $eqn=0$, and $sum\_term$ is the term of the summation in the variable $var$. Thus in the above example, we have
-\[ \int \frac{a}{b}\,dx= log\_sum(\alpha,\alpha^3-\alpha^2+\alpha+1,0,\alpha*\log(x^2+2\alpha x-5x+\alpha^2),x) \]
+\[ \int \frac{a}{b}\,dx= \logsum(\alpha,\alpha^3-\alpha^2+\alpha+1,0,\alpha*\log(x^2+2\alpha x-5x+\alpha^2),x) \]
 
 Many rational functions that could not be integrated by \REDUCE previously can now be integrated with this package. The above is one example; some more are given on the next page.
 
@@ -195,7 +204,7 @@ Many rational functions that could not be integrated by \REDUCE previously can n
 \displaystyle \int \frac{1}{x^5+1} \, dx = \frac{1}{5}\log(x + 1)
 \)
 \[
-\mbox{} + 5 log\_sum(\beta,\beta^4+\frac{1}{5}\beta^3+\frac{1}{25}\beta^2+\frac{1}{125}\beta+\frac{1}{625},0,\log(5*\beta+x)*\beta)
+\mbox{} + 5 \logsum(\beta,\beta^4+\frac{1}{5}\beta^3+\frac{1}{25}\beta^2+\frac{1}{125}\beta+\frac{1}{625},0,\log(5*\beta+x)*\beta)
 \]
 
 which should be read as
@@ -208,41 +217,47 @@ which should be read as
 \int \frac{7x^{13}+10x^8+4x^7-7x^6-4x^3-4x^2+3x+3}{x^{14}-2x^8-2x^7-2x^4-4x^3-x^2+2x+1} \, dx  =
 \)
 \[
-log\_sum(\alpha,\alpha^2  -\alpha -\frac{1}{4},0,\log( - 2\alpha x^2  - 2\alpha x + x^7  + x^2  - 1)*\alpha,x) ,
+\logsum(\alpha,\alpha^2  -\alpha -\frac{1}{4},0,\log( - 2\alpha x^2  - 2\alpha x + x^7  + x^2  - 1)*\alpha,x) ,
 \]
-\[ \int \frac{1}{x^3+x+1} \, dx = log\_sum(\beta,\beta^3-\frac{3}{31}\beta^2-\frac{1}{31},0,\beta \log(-\frac{62}{9}\beta^2+\frac{31}{9} \beta +x+\frac{4}{9})). \]
+\[ \int \frac{1}{x^3+x+1} \, dx = \logsum(\beta,\beta^3-\frac{3}{31}\beta^2-\frac{1}{31},0,\beta \log(-\frac{62}{9}\beta^2+\frac{31}{9} \beta +x+\frac{4}{9})). \]
 
 \subsection{Options}
-There are several alternative forms that the answer to the integration problem can take. One output is the $log\_sum$ form shown in the examples above. There is an option with this package to convert this to a ``normal'' sum of logarithms in the case when the degree of $eqn$ in $\alpha$ is two, and $\alpha$ can be expressed in surds. To do this, use the function \f{convert}, which has the following syntax:
-\begin{center}  convert(exp) \end{center}
-If exp is free of $log\_sum$ terms, then $exp$ itself is returned. If $\exp$ contains $log\_sum$ terms, then $\alpha$ is represented as surds, and substituted into the $log\_sum$ expression. For example, using the last example, we have in \REDUCE:
+There are several alternative forms that the answer to the integration problem can take. One output is the \f{log\_sum} form shown in the examples above. There is an option with this package to convert this to a ``normal'' sum of logarithms in the case when the degree of $eqn$ in $\alpha$ is two, and $\alpha$ can be expressed in surds. To do this, use the function \f{convert}, which has the following syntax:
+\begin{syntax}
+ \f{convert(}\meta{exp}\f{)}
+\end{syntax}
+If \meta{exp} is free of \f{log\_sum} terms, then \meta{exp} itself is returned. If \meta{exp} contains \f{log\_sum} terms, then $\alpha$ is represented as surds, and substituted into the \f{log\_sum} expression. For example, using the last example, we have in \REDUCE:
 \begin{verbatim}
 2: ratint(a,b,x);
 
-
-  {0,
+{0,
 
                     2            1
-  log_sum(alpha,alpha  - alpha - ---,0,
+ log_sum(alpha,alpha  - alpha - ---,0,log(
                                  4
 
-                         2                7    2
-         log( - 2*alpha*x  - 2*alpha*x + x  + x  - 1)*alpha,x)}
+                        2                7    2
+             - 2*alpha*x  - 2*alpha*x + x  + x
 
-
+             - 1)*alpha,x)}
 
 3: convert(ws);
 
 
- 1                           2                7
----*(sqrt(2)*log( - sqrt(2)*x  - sqrt(2)*x + x  - x - 1)
+ 1
+---*(sqrt(2)
  2
 
-                             2                7
-      - sqrt(2)*log(sqrt(2)*x  + sqrt(2)*x + x  - x - 1)
+                      2                7
+     *log( - sqrt(2)*x  - sqrt(2)*x + x  - x - 1) 
 
-                        2                7
-      + log( - sqrt(2)*x  - sqrt(2)*x + x  - x - 1)
+     - sqrt(2)
+
+                   2                7
+     *log(sqrt(2)*x  + sqrt(2)*x + x  - x - 1) + 
+
+                     2                7
+     log( - sqrt(2)*x  - sqrt(2)*x + x  - x - 1)
 
                      2                7
       + log(sqrt(2)*x  + sqrt(2)*x + x  - x - 1))
@@ -253,8 +268,7 @@ The user could then combine these to form a more elegant answer, using the switc
 \begin{syntax}
   \texttt{convert\_log(\meta{exp})}
 \end{syntax}
-\begin{center} \textbf{convert\_log(exp)}, \end{center}
-where \meta{exp} is any expression containing $log\_sum$ terms.
+where \meta{exp} is any expression containing \f{log\_sum} terms.
 
 The procedure to convert complex logarithms to real arctangents is based on an algorithm by Rioboo. Here is what it does:
 
@@ -271,7 +285,12 @@ Substituting $\alpha=i/2$ and $\alpha=-i/2$ gives the result
 
 Applying logtoAtan now with $A=x^3-3 x$, and $B=x^2-2$ we obtain
 
-\[ \int \frac{x^4-3*x^2+6}{x^6-5*x^4+5*x^2+4} \, dx = \arctan(\frac{x^5-3 x^3+x}{2})+\arctan(x^3)+\arctan(x) , \]
+\[
+  \begin{split}
+    \int \frac{x^4-3*x^2+6}{x^6-5*x^4+5*x^2+4} \, dx \\
+    = \arctan(\frac{x^5-3 x^3+x}{2})+\arctan(x^3)+\arctan(x) ,
+  \end{split}
+\]
 
 and this is the formula which should be used for definite integration.
 
@@ -318,15 +337,10 @@ on traceratint;
 This switch is off by default. Here is an example of the output obtained with this switch on:
 
 \begin{verbatim}
-Loading image file: /silo/tony/red/lisp/psl/solaris/red/reduce.img
-REDUCE Development Version, 21-May-97 ...
-
-1: load_package ratint;
-
-2: on traceratint;
+1: on traceratint;
 
 
-3: ratint(1+x,x^2-2*x+1,x);
+2: ratint(1+x,x^2-2*x+1,x);
 
                                      x + 1
 performing Howoritz reduction on --------------
