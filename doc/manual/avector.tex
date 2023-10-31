@@ -301,7 +301,8 @@ respectively.
 Definite volume integrals may be calculated using the \f{volintegral}
 function whose syntax is as follows :
 \begin{syntax}
-  \f{volintegral}(\meta{integrand:expression},\meta{lower-bound:vector},\meta{upper-bound:vector})
+  \f{volintegral}(\meta{integrand:expression},\\
+  \hphantom{\f{volintegral}(}\meta{lower-bound:vector},\meta{upper-bound:vector})
 \end{syntax}
 
 \example\index{Avector package!example}
@@ -361,7 +362,8 @@ Line integrals may be calculated using the \f{lineint} and \f{deflineint}
 operators. Their general syntax is
 \begin{syntax}
   \f{lineint}(\meta{vector-function},\meta{vector-curve},\meta{variable:kernel}) \\
-  \f{deflineint}(\meta{vector-function},\meta{vector-curve},\meta{variable:kernel},\meta{lower-bound},\meta{upper-bound})  
+  \f{deflineint}(\meta{vector-function},\meta{vector-curve},\meta{variable:kernel},\\
+  \hphantom{\f{deflineint}(}\meta{lower-bound},\meta{upper-bound})  
 \end{syntax}
 where
 \begin{description}

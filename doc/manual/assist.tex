@@ -81,9 +81,9 @@ of applicability is \emph{extended}.
 \begin{quote}
 \f{list\_to\_ids} \f{mkidn} \f{mkidnew} \f{dellastdigit} \f{detidnum} \\
 \f{oddp} \f{followline} \f{} \f{==} \f{randomlist} \f{mkrandtabl} \\
-\f{permutations} \f{cyclicpermlist} \f{perm\_to\_num} \f{num\_to\_perm} \\
-\f{combnum} \f{combinations} \f{symmetrize} \f{remsym} \\
-\f{sortnumlist} \f{sortlist} \f{algsort} \f{extremum} \f{gcdnl} \\
+\f{permutations} \f{cyclicpermlist} \f{perm\_to\_num} \\
+\f{num\_to\_perm} \f{combnum} \f{combinations} \f{symmetrize} \\
+\f{remsym} \f{sortnumlist} \f{sortlist} \f{algsort} \f{extremum} \f{gcdnl} \\
 \f{depatom} \f{funcvar} \f{implicit} \f{explicit} \f{remnoncom} \\
 \f{korderlist} \f{simplify} \f{checkproplist} \f{extractlist} 
 \end{quote}
@@ -395,7 +395,7 @@ Here are examples:
 \hypertarget{operator:ASFLIST}{}
 \hypertarget{operator:ASSLIST}{}
 \hypertarget{operator:RESTASLIST}{}
-The functions \f{asfirst}, \f{aslast}, \f{asrest}, \f{asflist}, \f{asslist}, \f{restaslist}
+The functions \f{asfirst}, \f{aslast}, \f{asrest}, \f{asflist}, \f{asslist}, and \f{restaslist}
 act on alists or on lists of lists of well defined depths
 and have two arguments. The first is the key object
 which one seeks to associate in some way with an element of the association
@@ -638,7 +638,7 @@ to them in this package is adjusted to maximize their range of applications.
 \hypertarget{operator:DELLASTDIGIT}{}
 \hypertarget{operator:DETIDNUM}{}
 \hypertarget{operator:LIST_TO_IDS}{}
-The operators \f{mkidnew}, \f{dellastdigit}, \f{detidnum}, and \f{list\_to\_ids}
+The operators \f{mkidnew}, \f{dellastdigit}, \f{detidnum}, \f{list\_to\_ids}
 handle identifiers. 
 
 \f{mkidnew} has either 0 or 1 argument. 
@@ -838,11 +838,11 @@ has a meaning.
 \f{algsort} exploits the PSL \f{sort} function. It is intended to replace
 the two functions above.
 \begin{verbatim}
-    l:={1,3,4,0}$  sortnumlist l; ==> {0,1,3,4}
+ l:={1,3,4,0}$  sortnumlist l; ==> {0,1,3,4}
 
-    ll:={1,a,tt,z}$ sortlist(ll,ordp); ==> {a,z,tt,1}
+ ll:={1,a,tt,z}$ sortlist(ll,ordp); ==> {a,z,tt,1}
 
-    l:={-1,3,4,0}$  algsort(l,>); ==> {4,3,0,-1}
+ l:={-1,3,4,0}$  algsort(l,>); ==> {4,3,0,-1}
 \end{verbatim}
 It is important to realise that using these functions for kernels or bags
 may be dangerous since they are destructive. If it is necessary, it is
@@ -1039,7 +1039,7 @@ valid expression}. The fourth one is also t or 0.
 \end{verbatim}
 In general, one enters
 \begin{verbatim}
-    putprop(list(idp1,idp2,..),<propname>,<value>,t);
+ putprop(list(idp1,idp2,..),<propname>,<value>,t);
 \end{verbatim}
   \ttindextype[ASSIST]{displayprop}{operator}
 \hypertarget{operator:DISPLAYPROP}{}
@@ -1111,7 +1111,8 @@ argument:
     show (suppress) all
     show (suppress) scalars
     show (suppress) lists
-    show (suppress) saveids    (for saved expressions)
+    show (suppress) saveids
+                (for saved expressions)
     show (suppress) matrices
     show (suppress) arrays
     show (suppress) vectors
@@ -1185,7 +1186,8 @@ Here, is an example, showing how the wellknown lisp function
 \f{flattens} can be trivially transposed inside the algebraic mode:
 \begin{verbatim}
     algebraic procedure ecrase x;
-    lisp symb_to_alg flattens1 alg_to_symb algebraic x;
+    lisp symb_to_alg
+       flattens1 alg_to_symb algebraic x;
 
     symbolic procedure flattens1 x;
     % ll; ==> ((a b) ((c d) e))
@@ -1359,7 +1361,8 @@ is sufficient to explain how they work:
 
    scalvect(l,ll); ==> a + 2*b + 3*c
 
-   crossvect(l,ll); ==> { - 3*b + 2*c,3*a - c, - 2*a + b}
+   crossvect(l,ll); ==> { - 3*b + 2*c,
+                         3*a - c, - 2*a + b}
 
    mpvect(l,ll,l); ==> 0
 \end{verbatim}
@@ -1419,7 +1422,8 @@ Here is an illustration to show how the above functions work:
     ghostfactor(eta(1),eta(2)); ==> -1
 
     grasskernel:=
-      {eta(~x)*eta(~y) => -eta y * eta x when nordp(x,y),
+      {eta(~x)*eta(~y) 
+           => -eta y * eta x when nordp(x,y),
       (~x)*(~x) => 0 when grassp x};
 
     exp:=eta(1)^2$

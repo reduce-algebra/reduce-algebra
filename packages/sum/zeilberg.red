@@ -68,7 +68,8 @@ zeilberger_representation:=nil;
 % operator gamma,binomial;   % Now in entry.red.
 symbolic <<
    (algebraic operator hypergeom,Pochhammer) where !*msg = nil>>;
-operator summ,zb_f,zb_sigma;
+
+% operator summ,zb_f,zb_sigma; % Now in entry.red.
 operator local_gamma,local_prod;
 %%%
 %%%Rules for gamma and pochhammer now part of the core

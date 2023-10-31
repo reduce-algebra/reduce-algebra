@@ -248,7 +248,7 @@ expr       & :- & a scalar expression.
 \item[Synopsis:]\mbox{}\\
 \texttt{spadd\_columns} replaces column $c2$ of $\mathcal{A}$ by\\
 $\texttt{expr} * \texttt{column($\mathcal{A}$,c1)} + \texttt{column($\mathcal{A}$,c2)}$.\\
-\texttt{add\_rows} performs the equivalent task on the rows of $\mathcal{A}$.
+\texttt{spadd\_rows} performs the equivalent task on the rows of $\mathcal{A}$.
 
 \item[Examples:]\mbox{}\\
 \texttt{spadd\_columns}\((\mathcal{A},1,2,x)  =
@@ -258,7 +258,7 @@ $\texttt{expr} * \texttt{column($\mathcal{A}$,c1)} + \texttt{column($\mathcal{A}
 
 \item[Related functions:]\mbox{}\\
 \texttt{spadd\_to\_columns}, \texttt{spadd\_to\_rows},
-\texttt{spmult\_columns}, \texttt{spmult\_rows}.
+\texttt{spmult\_columns},\linebreak[2] \texttt{spmult\_rows}.
 \end{description}
 
 \subsubsection{spadd\_rows}

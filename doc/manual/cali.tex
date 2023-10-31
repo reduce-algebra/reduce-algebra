@@ -194,7 +194,7 @@ divided into three types with the following naming convention:
 \item[\normalfont\texttt{module!=procedure}]\mbox{}\\
   internal to the given module.
 
-\item[\normalfont\texttt{module\textbackslash procedure}]\mbox{}\\
+\item[\normalfont\texttt{module\_procedure}]\mbox{}\\
   exported by the given module into the local \package{CALI} environment.
 
 \item[\normalfont\texttt{procedure!*}]\mbox{}\\
@@ -232,159 +232,6 @@ this concept interferes with the second one. Different \emph{versions}
 of algorithms, that apply different functions in a common driver, are
 \emph{not} implemented through switches.
 \end{description}
-
-\subsubsection{New and Improved Facilities in v.~2.1}
-
-The major changes in v.~2.1 reflect the experience we've got from the
-use of \package{CALI} 2.0. The following changes are worth mentioning
-explicitely:
-\begin{enumerate}
-\item The algebraic rule concept was adapted to \package{CALI}. It allows to
-supply rule based coefficient domains. This is a more efficient way
-to deal with (easy) algebraic numbers than through the \emph{arnum
-package}.
-
-\item \ind{listtest} and \ind{listminimize} provide an unified
-concept for different list operations previously scattered in the
-source text.
-
-\item There are several new quotient algorithms at the symbolic level
-(both the general element and the intersection approaches are
-available) and new features for the computation of equidimensional
-hull and equidimensional radical.
-
-\item A new \ind{module scripts} offers advanced applications of Gr\"obner
-bases.
-
-\item Several advanced procedures initialize a Gr\"obner basis computation
-over a certain intermediate base ring or term order as e.g.\
-\ind{eliminate}, \ind{resolve}, \ind{matintersect} or all
-\ind{primary decomposition} procedures. Interrupting a computation in
-v.~2.1 now restores the original values of \package{CALI}'s global variables,
-since all intermediate procedures work with local copies of
-the global variables.\footnote{Note that recovering the base
-ring this way may cause some trouble since the intermediate ring,
-installed with \ind{setring}, changed possibly the internal variable
-order set by \emph{setkorder}.} This doesn't apply to advanced
-procedures that change the current base ring as e.g.\ \ind{blowup},
-\ind{preimage}, \ind{sym} etc.
-
-\end{enumerate}
-
-\subsubsection{New and Improved Facilities in v.~2.2}
-
-Version 2.2 (beside bug fixes) incorporates several new facilities of
-constructive non linear algebra that we investigated the last two
-years, as e.g.\ dual bases, the Gr\"obner factorizer, triangular systems, and
-local standard bases. Essential changes concern the following topics:
-\begin{enumerate}
-\item The \package{CALI} modules \ind{red} and \ind{groeb} were rewritten and
-the \ind{module mora} was removed. This is
-due to new theoretical insight into standard bases theory as
-e.g.\ described in \cite{Graebe:94} or \cite{Graebe:95a}. The Gr\"obner basis algorithm
-is reorganized as a Gr\"obner driver with simplifier and base lists, that
-involves different versions of polynomial reduction according to the
-setting via \ind{gbtestversion}. It applies now to
-both noetherian and non noetherian term orders in a unified way.
-
-The switches \sw{binomial} and  \sw{lazy} were removed.
-
-\item The Gr\"obner factorizer was thoroughly revised, extended along the
-lines explained in \cite{Graebe:94a}, and collected into a separate
-\ind{module groebf}. It now allows a list of constraints also in
-algebraic mode. Two versions of an \ind{extended Gr\"obner factorizer}
-produce \ind{triangular systems},
-i.e.\ a decomposition into quasi prime components, see \cite{Graebe:95b},
-that are well suited for further (numerical) evaluation. There is also
-a version of the Gr\"obner factorizer that allows a list of problems as
-input. This is especially useful, if a system is splitted with respect
-to a ``cheap'' (e.g. degrevlex) term order and the pieces are
-recomputed with respect to a ``hard'' (e.g. pure lex) term order.
-
-The extended Gr\"obner factorizer involves, after change to dimension zero,
-the computation of \ind{triangular systems}. The corresponding module
-\ind{triang} extends the facilities for zero dimensional ideals and
-modules in the \ind{module odim}.
-
-\item A new \ind{module lf} implements the \ind{dual bases} approach
-as described in \cite{Marinari:91}. On this basis there are new
-implementations of \indf{affine\_points}{operator} and \indf{proj\_points}{operator}, that
-are significantly faster than the old ones. The linear algebra
-\ind{change of term orders} \cite{Faugere:93} is available, too. There are
-two versions, one with precomputed \ind{border basis}, the other with
-conventional normal forms.
-
-\item \ind{dpmat}s now have a \ind{gb-tag} that indicates, whether the
-given ideal or module basis is already a Gr\"obner basis. This avoids
-certain Gr\"obner basis recomputations especially during advanced algorithms
-as e.g.\ prime decomposition. In the algebraic interface Gr\"obner bases are
-computed automatically when needed rather than to issue an error
-message as in v.~2.1. So one can call \indf{modequalp}{operator} or \indf{dim}{operator}
-etc. not having computed Gr\"obner bases in advance. Note that such
-automatic computation can be avoided with \ind{setgbasis}.
-
-\item Hilbert series are now \ind{weighted Hilbert series}, since
-e.g.\ for blow up rings the generating ideal is multigraded. Usual
-Hilbert series are computed as in v.~2.1 with respect to the
-\ind{ecart vector}. Weighted Hilbert series accept a list of (integer)
-weight lists as second parameter.
-
-\item There are some name and conceptual changes to existing
-procedures and variables to have a more concise semantic concept. This
-concerns
-\begin{quote}
-\ind{Tracing} (the trace parameter is now stored on the property list
-of \texttt{cali} and should be set with \ind{setcalitrace}),
-
-choosing different versions of the Gr\"obner algorithm (through
-\ind{gbtestversion}) and the Hilbert series computation (through
-\ind{hftestversion}),
-
-some names (\ind{mat2list} replaced \ind{flatten}, \ind{HilbertSeries}
-replaced \emph{hilbseries}) and
-
-parameter lists of some local and internal procedures %(consult \emph{cali.chg} for details).
-\end{quote}
-
-\item The \ind{revlex term order} is now the reverse lexicographic
-term order on the \textbf{reversely} ordered variables. This is consistent
-with other computer algebra systems (e.g.\ SINGULAR or
-AXIOM)\footnote{But different to the currently distibuted \texttt{groebner} package in \REDUCE. Note that the computations in
-\cite{Graebe:94a} were done \emph{before} these changes.} and implies the same
-order on the variables for deglex and degrevlex term orders (this was
-the main reason to change the definition).
-
-\item Ideals of minors, pfaffians and related stuff are now
-implemented as extension of the internal \texttt{matrix} package and
-collected into a separate \ind{module calimat}. Thus they allow more
-general expressions, especially with variable exponents, as general
-\REDUCE matrices do. So one can define generic ideals as e.g.\ ideals
-of minors or pfaffians of matrices, containing generic expressions as
-elements. They must be specified for further use in \package{CALI} substituting
-general exponents by integers.
-
-\end{enumerate}
-
-\subsubsection{New and Improved Facilities in v.~2.2.1\label{221}}
-
-The main change concerns the primary decomposition algorithm, where I
-fixed a serious bug for deciding, which embedded primes are really
-embedded\footnote{That there must be a bug was pointed out to me by
-Shimoyama Takeshi who compared different p.d.\ implementations. The
-bug is due to an incorrect test for embedded primes: A (superfluous)
-primary component may contain none of the isolated primary components,
-but their intersection! Note that neither \cite{Gianni:88} nor \cite{Becker:93}
-comment on that. Details of the implementation will appear in
-\cite{Graebe:97}.}. During that remake I incorporated also the Gr\"obner
-factorizer to compute isolated primes. Since \REDUCE has no
-multivariate \emph{modular} factorizer, the switch \ind{factorprimes}
-may be turned off to switch to the former algorithm.
-
-
-
-Some minor bugs are fixed, too, e.g.\ the bug that made \ind{radical}
-crashing.
-
 
 
 
@@ -3530,3 +3377,156 @@ lf & The dual bases approach & --- & ---\\
 triang & (Zero dimensional) triangular systems & --- & ---\\
 \hline
 \end{tabular}
+
+\subsection{Changelog}
+
+\subsubsection{New and Improved Facilities in v.~2.1}
+
+The major changes in v.~2.1 reflect the experience we've got from the
+use of \package{CALI} 2.0. The following changes are worth mentioning
+explicitely:
+\begin{enumerate}
+\item The algebraic rule concept was adapted to \package{CALI}. It allows to
+supply rule based coefficient domains. This is a more efficient way
+to deal with (easy) algebraic numbers than through the \emph{arnum
+package}.
+
+\item \ind{listtest} and \ind{listminimize} provide an unified
+concept for different list operations previously scattered in the
+source text.
+
+\item There are several new quotient algorithms at the symbolic level
+(both the general element and the intersection approaches are
+available) and new features for the computation of equidimensional
+hull and equidimensional radical.
+
+\item A new \ind{module scripts} offers advanced applications of Gr\"obner
+bases.
+
+\item Several advanced procedures initialize a Gr\"obner basis computation
+over a certain intermediate base ring or term order as e.g.\
+\ind{eliminate}, \ind{resolve}, \ind{matintersect} or all
+\ind{primary decomposition} procedures. Interrupting a computation in
+v.~2.1 now restores the original values of \package{CALI}'s global variables,
+since all intermediate procedures work with local copies of
+the global variables.\footnote{Note that recovering the base
+ring this way may cause some trouble since the intermediate ring,
+installed with \ind{setring}, changed possibly the internal variable
+order set by \emph{setkorder}.} This doesn't apply to advanced
+procedures that change the current base ring as e.g.\ \ind{blowup},
+\ind{preimage}, \ind{sym} etc.
+
+\end{enumerate}
+
+\subsubsection{New and Improved Facilities in v.~2.2}
+
+Version 2.2 (beside bug fixes) incorporates several new facilities of
+constructive non linear algebra that we investigated the last two
+years, as e.g.\ dual bases, the Gr\"obner factorizer, triangular systems, and
+local standard bases. Essential changes concern the following topics:
+\begin{enumerate}
+\item The \package{CALI} modules \ind{red} and \ind{groeb} were rewritten and
+the \ind{module mora} was removed. This is
+due to new theoretical insight into standard bases theory as
+e.g.\ described in \cite{Graebe:94} or \cite{Graebe:95a}. The Gr\"obner basis algorithm
+is reorganized as a Gr\"obner driver with simplifier and base lists, that
+involves different versions of polynomial reduction according to the
+setting via \ind{gbtestversion}. It applies now to
+both noetherian and non noetherian term orders in a unified way.
+
+The switches \sw{binomial} and  \sw{lazy} were removed.
+
+\item The Gr\"obner factorizer was thoroughly revised, extended along the
+lines explained in \cite{Graebe:94a}, and collected into a separate
+\ind{module groebf}. It now allows a list of constraints also in
+algebraic mode. Two versions of an \ind{extended Gr\"obner factorizer}
+produce \ind{triangular systems},
+i.e.\ a decomposition into quasi prime components, see \cite{Graebe:95b},
+that are well suited for further (numerical) evaluation. There is also
+a version of the Gr\"obner factorizer that allows a list of problems as
+input. This is especially useful, if a system is splitted with respect
+to a ``cheap'' (e.g. degrevlex) term order and the pieces are
+recomputed with respect to a ``hard'' (e.g. pure lex) term order.
+
+The extended Gr\"obner factorizer involves, after change to dimension zero,
+the computation of \ind{triangular systems}. The corresponding module
+\ind{triang} extends the facilities for zero dimensional ideals and
+modules in the \ind{module odim}.
+
+\item A new \ind{module lf} implements the \ind{dual bases} approach
+as described in \cite{Marinari:91}. On this basis there are new
+implementations of procedures \indf{affine\_points}{operator} and \indf{proj\_points}{operator} that
+are significantly faster than the old ones. The linear algebra
+\ind{change of term orders} \cite{Faugere:93} is available, too. There are
+two versions, one with precomputed \ind{border basis}, the other with
+conventional normal forms.
+
+\item \ind{dpmat}s now have a \ind{gb-tag} that indicates, whether the
+given ideal or module basis is already a Gr\"obner basis. This avoids
+certain Gr\"obner basis recomputations especially during advanced algorithms
+as e.g.\ prime decomposition. In the algebraic interface Gr\"obner bases are
+computed automatically when needed rather than to issue an error
+message as in v.~2.1. So one can call \indf{modequalp}{operator} or \indf{dim}{operator}
+etc. not having computed Gr\"obner bases in advance. Note that such
+automatic computation can be avoided with \ind{setgbasis}.
+
+\item Hilbert series are now \ind{weighted Hilbert series}, since
+e.g.\ for blow up rings the generating ideal is multigraded. Usual
+Hilbert series are computed as in v.~2.1 with respect to the
+\ind{ecart vector}. Weighted Hilbert series accept a list of (integer)
+weight lists as second parameter.
+
+\item There are some name and conceptual changes to existing
+procedures and variables to have a more concise semantic concept. This
+concerns
+\begin{quote}
+\ind{Tracing} (the trace parameter is now stored on the property list
+of \texttt{cali} and should be set with \ind{setcalitrace}),
+
+choosing different versions of the Gr\"obner algorithm (through
+\ind{gbtestversion}) and the Hilbert series computation (through
+\ind{hftestversion}),
+
+some names (\ind{mat2list} replaced \ind{flatten}, \ind{HilbertSeries}
+replaced \emph{hilbseries}) and
+
+parameter lists of some local and internal procedures %(consult \emph{cali.chg} for details).
+\end{quote}
+
+\item The \ind{revlex term order} is now the reverse lexicographic
+term order on the \textbf{reversely} ordered variables. This is consistent
+with other computer algebra systems (e.g.\ SINGULAR or
+AXIOM)\footnote{But different to the currently distibuted \texttt{groebner} package in \REDUCE. Note that the computations in
+\cite{Graebe:94a} were done \emph{before} these changes.} and implies the same
+order on the variables for deglex and degrevlex term orders (this was
+the main reason to change the definition).
+
+\item Ideals of minors, pfaffians and related stuff are now
+implemented as extension of the internal \texttt{matrix} package and
+collected into a separate \ind{module calimat}. Thus they allow more
+general expressions, especially with variable exponents, as general
+\REDUCE matrices do. So one can define generic ideals as e.g.\ ideals
+of minors or pfaffians of matrices, containing generic expressions as
+elements. They must be specified for further use in \package{CALI} substituting
+general exponents by integers.
+
+\end{enumerate}
+
+\subsubsection{New and Improved Facilities in v.~2.2.1\label{221}}
+
+The main change concerns the primary decomposition algorithm, where I
+fixed a serious bug for deciding which embedded primes are really
+embedded\footnote{That there must be a bug was pointed out to me by
+Shimoyama Takeshi who compared different p.d.\ implementations. The
+bug is due to an incorrect test for embedded primes: A (superfluous)
+primary component may contain none of the isolated primary components,
+but their intersection! Note that neither \cite{Gianni:88} nor \cite{Becker:93}
+comment on that. Details of the implementation will appear in
+\cite{Graebe:97}.}. During that remake I incorporated also the Gr\"obner
+factorizer to compute isolated primes. Since \REDUCE has no
+multivariate \emph{modular} factorizer, the switch \ind{factorprimes}
+may be turned off to switch to the former algorithm.
+
+Some minor bugs were fixed as well, e.g., the bug that made \ind{radical}
+crashing.
+

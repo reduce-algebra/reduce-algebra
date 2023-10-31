@@ -61,23 +61,3 @@ create!-package('(normform jordan jordsymb ratjord froben matarg
 endmodule;
 
 end;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
