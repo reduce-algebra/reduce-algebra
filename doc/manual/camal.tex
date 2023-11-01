@@ -588,13 +588,15 @@ for k:=1:n do <<
 %% too high an order
 wtlevel n;
 
-%%%%%%%%%%%%%%%% Step 2: Calculate r/a in terms of e and l
+%%%%%%%%%%%%%%%% Step 2: Calculate r/a
+%%%%%%%%%%%%%%%%         in terms of e and l
 dd:=-e*e; hh:=3/2; j:=1; cc := 1;
 for i:=1:n/2 do <<
   j:=i*j; hh:=hh-1; cc:=cc+hh*(dd^i)/j
 >>;
 bb:=hsub(fourier(1-e*cos u), u, u, bige, n);
-aa:=fourier 1+hdiff(bige,u); ff:=hint(aa*aa*fourier cc,u);
+aa:=fourier 1+hdiff(bige,u);
+ff:=hint(aa*aa*fourier cc,u);
 
 %%%%%%%%%%%%%%%% Step 3: a/r and f
 uu := hsub(bb,u,v); uu:=hsub(uu,e,b);

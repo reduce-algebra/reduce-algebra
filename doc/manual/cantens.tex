@@ -438,56 +438,56 @@ They are \ttindextype[CANTENS]{dummy\_indices}{operator}\texttt{dummy\_indices},
 The following illustrates their use as well as the behaviour of the
 system:
 \begin{verbatim}
-      dummy_indices(); ==> {} % In a fresh environment
+  dummy_indices(); ==> {} % In a fresh environment
 
-      te(a,b,-c,-a); ==>
+  te(a,b,-c,-a); ==>
 
-               a b
-             te
-                   c a
+           a b
+         te
+               c a
 
-      dummy_indices(); ==> {a}
+  dummy_indices(); ==> {a}
 
-      te(a,b,-c,a); ==>
+  te(a,b,-c,a); ==>
 
-      ***** ((c)(a b a)) are inconsistent lists of indices
+  ***** ((c)(a b a)) are inconsistent lists of indices
 
-               % a cannot be found twice as an upper index
+           % a cannot be found twice as an upper index
 
-      te(a,b,-b,-a); ==>
+  te(a,b,-b,-a); ==>
 
-               a b
-            te
-                   b a
+           a b
+        te
+               b a
 
-      dummy_indices(); ==> {b,a}
+  dummy_indices(); ==> {b,a}
 
-      te(d,-d,d); ==>
+  te(d,-d,d); ==>
 
-        ***** ((d)(d d)) are inconsistent lists of indices
+    ***** ((d)(d d)) are inconsistent lists of indices
 
-      dummy_indices(); ==> {d,b,a}
+  dummy_indices(); ==> {d,b,a}
 
-      rem_dummy_indices d; ==> t
+  rem_dummy_indices d; ==> t
 
-     dummy_indices(); ==> {b,a}
+  dummy_indices(); ==> {b,a}
 
-      te(d,d); ==>
+  te(d,d); ==>
 
-               d d
-            te              %  This is allowed again.
+           d d
+         te              %  This is allowed again.
 
-     dummy_indices(); ==> {b,a}
+  dummy_indices(); ==> {b,a}
 
-      rem_dummy_indices(); ==> t
+  rem_dummy_indices(); ==> t
 
-      dummy_indices(); ==> {}
+  dummy_indices(); ==> {}
 \end{verbatim}
 Other verifications of coherence are made when space specifications
 are introduced both in the ON and OFF \sw{onespace} environment. We shall
 discuss them later\ttindexswitch[CANTENS]{onespace}.
 
-\subsubsubsection{Substitutions, assignements and rewriting rules}
+\subsubsubsection{Substitutions, assignments and rewriting rules}
 
 \index{Cantens package@\textsc{Cantens} package!let@\texttt{let}}
 \index{Rewriting rules!CANTENS package}
@@ -780,48 +780,46 @@ if the signature is 0 or less than that integer if the signature is equal to 1.
 The following illustrates what happens.
 \index{onespace switch@\texttt  {onespace} switch!On}
 \begin{verbatim}
-      on onespace;
+  on onespace;
 
-      wholespace_dim 4; ==> 4
+  wholespace_dim 4; ==> 4
 
-      signature 0; ==> 0
+  signature 0; ==> 0
 
-      te(3,a,-b,7); ==> ***** numeric indices out of range
+  te(3,a,-b,7); ==> ***** numeric indices out of range
 
-      te(3,a,-b,3); ==>
-
-
-               3 a   3
-             te
-                   b
+  te(3,a,-b,3); ==>
 
 
+           3 a   3
+         te
+               b
 
-      te(4,a,-b,4); ==>
 
+  te(4,a,-b,4); ==>
 
-               4 a   4
-             te
-                   b
+           4 a   4
+         te
+               b
 
-      sub(a=5,te(3,a,-b,3));
+  sub(a=5,te(3,a,-b,3));
 
-                   ==> ***** numeric indices out of range
+               ==> ***** numeric indices out of range
 
-      signature 1; ==> 1
+  signature 1; ==> 1
 
   % Now indices range from 0 to 3:
 
-      te(4,a,-b,4);
+  te(4,a,-b,4);
 
-                    ==> ***** numeric indices out of range
+               ==> ***** numeric indices out of range
 
-      te(0,a,-b,3); ==>
+  te(0,a,-b,3); ==>
 
 
-                0 a   3
-              te
-                    b
+            0 a   3
+          te
+                b
 \end{verbatim}
 When \sw{onespace} is OFF\index{onespace switch@\texttt  {onespace} switch!Off},
 many more possibilities to control the input or to
@@ -1064,7 +1062,8 @@ Next we work in the context of several spaces:
 
   define_spaces wholespace={5,signature=1}; ==> t
 
-  % we need to assign delta to wholespace when it exists:
+  % we need to assign delta to wholespace
+  % when it exists:
 
   make_tensor_belong_space(delt,wholespace);
 
@@ -1457,31 +1456,31 @@ For example:
 \end{verbatim}
 Next, let us define an \emph{additional} \texttt{epsilon}-type tensor:
 \begin{verbatim}
-      define_spaces eucl={3,euclidian}; ==> t
+  define_spaces eucl={3,euclidian}; ==> t
 
-      make_partic_tens(ep,epsilon); ==>
+  make_partic_tens(ep,epsilon); ==>
 
-              *** Warning: ep MUST belong to a space
+          *** Warning: ep MUST belong to a space
                 t
 
-      make_tensor_belong_space(ep,eucl); ==> eucl
+  make_tensor_belong_space(ep,eucl); ==> eucl
 
 
-      show_epsilons(); ==> {{ep,eucl},{eps,wholespace}}
+  show_epsilons(); ==> {{ep,eucl},{eps,wholespace}}
 
   % We show that it is indeed working inside eucl:
 
-      ep(-1,-2,-3); ==> 1
+  ep(-1,-2,-3); ==> 1
 
-      ep(1,2,3); ==> 1
+  ep(1,2,3); ==> 1
 
-      ep(a,b,c,d); ==>
+  ep(a,b,c,d); ==>
 
-            ***** bad number of indices for  (ep)  tensor
+        ***** bad number of indices for  (ep)  tensor
 
-      ep(1,2,4); ==>
+  ep(1,2,4); ==>
 
-            ***** numeric indices out of range
+        ***** numeric indices out of range
 \end{verbatim}
 As previously, the discrimation between symbolic indices
 \index{Symbolic indices!Cantens package}%
@@ -1622,7 +1621,7 @@ The indices which are summed over are always simplified:
 
       gd(a,b,-a,-b);
 
-             ==> dim*(dim - 1) % summed over dummy indices
+         ==> dim*(dim - 1) % summed over dummy indices
 
       gd(a,b,c,-a,-d,-e); ==>
 
@@ -1649,21 +1648,29 @@ One can force evaluation in terms of the determinant in all cases.
 To this end, the switch \ttindexswitch[CANTENS]{exdelt}\sw{exdelt} is provided. It is initially
 \texttt{OFF}. Switching it \texttt{ON} will most often give inconveniently large outputs:
 \begin{verbatim}
-      on exdelt;
+  on exdelt;
 
-      gd(a,b,c,-d,-e,-f); ==>
+  gd(a,b,c,-d,-e,-f); ==>
 
-           a       b       c         a       b       c
-      delta  *delta  *delta   - delta  *delta  *delta
-           d       e       f         d       f       e
+       a       b       c         a       b       c 
+  delta  *delta  *delta   - delta  *delta  *delta
+       d       e       f         d       f       e
 
-              a       b       c         a       b       c
-       - delta  *delta  *delta   + delta  *delta  *delta
-              e       d       f         e       f       d
+          a       b       c 
+   - delta  *delta  *delta
+          e       d       f
 
-              a       b       c         a       b       c
-       + delta  *delta  *delta   - delta  *delta  *delta
-              f       d       e         f       e       d
+          a       b       c 
+   + delta  *delta  *delta
+          e       f       d
+
+          a       b       c 
+   + delta  *delta  *delta
+          f       d       e
+
+          a       b       c 
+   - delta  *delta  *delta
+          f       e       d
 \end{verbatim}
 In a multi-space environment, it is never necessary to define several
 such tensor. The reason is that \ttindextype[CANTENS]{canonical}{operator}\texttt{canonical} uses it
@@ -1761,18 +1768,20 @@ than one except if it is a trace\index{Trace!Cantens package}%
 \index{Cantens package@\textsc{Cantens} package!trace}.
 The following is a tensor expression:
 \begin{verbatim}
-   aa:= delt({x - y})*delt(a, - g)*delt(d, - g)*delt(g, -r)
+   aa:= delt({x - y})*delt(a, - g)*delt(d, - g)
 
-         *eps( - d, - e, - f)*eps(a,b,c)*op(x,y) + 1; ==>
+     *delt(g, -r)
 
-
-                                a      d      g
-          aa := delt(x - y)*delt  *delt  *delt  *eps
-                                g      g      r     d e f
+     *eps( - d, - e, - f)*eps(a,b,c)*op(x,y) + 1; ==>
 
 
-                    a b c
-                *eps     *op(x,y) + 1
+                            a      d      g
+      aa := delt(x - y)*delt  *delt  *delt  *eps
+                            g      g      r     d e f
+
+
+                a b c
+            *eps     *op(x,y) + 1
 \end{verbatim}
 In the above expression, \texttt{delt} and \texttt{eps} are, respectively, the
 \texttt{delta}\ttindextype[CANTENS]{delta}{tensor} and the \texttt{epsilon}\ttindextype[CANTENS]{epsilon}{tensor} tensors,
@@ -1839,48 +1848,48 @@ Dummy indices for individual tensors are kept in the memory of
 the system. If they are badly distributed over several tensors,
 it is \f{canonical} which gives an error message:
 \begin{verbatim}
-      tensor te,tf; ==> t
+  tensor te,tf; ==> t
 
-      bb:=te(a,b,b)*te(-b); ==>
+  bb:=te(a,b,b)*te(-b); ==>
 
-                         a b b
-             bb := te *te
-                     b
-
-
-      canonical bb; ==>
-
-      ***** ((b)(a b b)) are inconsistent lists of indices
+                     a b b
+         bb := te *te
+                 b
 
 
-      aa:=te(b,-c)*tf(b,-c); ==>
+  canonical bb; ==>
 
-                     b     b
-             aa := te   *tf     % b and c are free.
-                       c     c
-
-      canonical aa; ==>
-
-               b     b
-             te   *tf
-                 c     c
-
-      bb:=te(a,c,b)*te(-b)*tf(a)$
+  ***** ((b)(a b b)) are inconsistent lists of indices
 
 
-      canonical bb; ==>
+  aa:=te(b,-c)*tf(b,-c); ==>
+
+                 b     b
+         aa := te   *tf     % b and c are free.
+                   c     c
+
+  canonical aa; ==>
+
+           b     b
+         te   *tf
+             c     c
+
+  bb:=te(a,c,b)*te(-b)*tf(a)$
 
 
-               a c     b   a
-             te     *te *tf
-                   b
-
-      delt(a,-a); ==> dim  % a is now a dummy index
+  canonical bb; ==>
 
 
-      canonical bb; ==>
+           a c     b   a
+         te     *te *tf
+               b
 
-             ***** wrong use of indices (a)
+  delt(a,-a); ==> dim  % a is now a dummy index
+
+
+  canonical bb; ==>
+
+         ***** wrong use of indices (a)
 \end{verbatim}
 The message of canonical is clear, the first sublist contains the
 list of all lower indices, and the second one the list of all upper
@@ -1898,23 +1907,23 @@ In the fourth example there are no problems as \texttt{b} and
 \f{canonical}\ttindextype[CANTENS]{canonical}{operator} checks that in a tensor polynomial
 all do possess the \emph{same} variance:
 \begin{verbatim}
-      aa:=te(a,c)+x^2; ==>
+  aa:=te(a,c)+x^2; ==>
 
-                     a c    2
-             aa := te    + x
+                 a c    2
+         aa := te    + x
 
-      canonical aa; ==>
+  canonical aa; ==>
 
-             ***** scalar added with tensor(s)
+         ***** scalar added with tensor(s)
 
-      aa:=te(a,b)+tf(a,c); ==>
+  aa:=te(a,b)+tf(a,c); ==>
 
-                     a b     a c
-             aa := te    + tf
+                 a b     a c
+         aa := te    + tf
 
-      canonical aa; ==>
+  canonical aa; ==>
 
-            ***** mismatch in free indices :  ((a c) (a b))
+        ***** mismatch in free indices :  ((a c) (a b))
 \end{verbatim}
 In the message the first two lists of incompatible indices are
 explicitly indicated. So, it is not an exhaustive message and a more
@@ -2158,28 +2167,28 @@ First, we introduce  \texttt{eta}:
 Let us add a generic metric \index{Metric tensor!Cantens package}%
 \index{Cantens package@\textsc{Cantens} package!metric tensor} tensor:
 \begin{verbatim}
-      aa:=g(a,b)*g(-b,-d); ==>
+  aa:=g(a,b)*g(-b,-d); ==>
 
-                         a b
-             aa := g   *g
-                    b d
+                     a b
+         aa := g   *g
+                b d
 
-      canonical aa; ==>
+  canonical aa; ==>
 
-                 a
-             delt
-                 d
+             a
+         delt
+             d
 
-      aa:=g(a,b)*g(c,d)*eta(-c,-e)*eta(e,f)*te(-f,g); ==>
+  aa:=g(a,b)*g(c,d)*eta(-c,-e)*eta(e,f)*te(-f,g); ==>
 
-                             e f  a b  c d     g
-             aa := eta   *eta   *g   *g   *te
-                      c e                    f
+                         e f  a b  c d     g
+         aa := eta   *eta   *g   *g   *te
+                  c e                    f
 
-      canonical aa; ==>
+  canonical aa; ==>
 
-              a b   d g
-             g   *te
+          a b   d g
+         g   *te
 \end{verbatim}
 \begin{center}
 The case of \texttt{epsilon}\ttindextype[CANTENS]{epsilon}{tensor}\ttindextype[CANTENS]{del}{tensor}
@@ -2544,33 +2553,33 @@ If one wants to symmetrise an expression which is not a kernel, one
 can also use \f{symmetrize} to obtain the desired result as the next
 example shows:
 \begin{verbatim}
-      ex:=te(a,-b,c)*te1(-a,-d,-e); ==>
+  ex:=te(a,-b,c)*te1(-a,-d,-e); ==>
 
-                     a   c
-             ex := te     *te1
-                      b      a d e
+                 a   c
+         ex := te     *te1
+                  b      a d e
 
-      ll:=list(b,c,d,e)$ % the chosen relevant indices
+  ll:=list(b,c,d,e)$ % the chosen relevant indices
 
-      lls:=symmetrize(ll,list,cyclicpermlist); ==>
+  lls:=symmetrize(ll,list,cyclicpermlist); ==>
 
-         lls := {{b,c,d,e},{c,d,e,b},{d,e,b,c},{e,b,c,d}}
+     lls := {{b,c,d,e},{c,d,e,b},{d,e,b,c},{e,b,c,d}}
 
   % The sum over the cyclic permutations is:
 
-   excyc:=for each i in lls sum
+  excyc:=for each i in lls sum
 
-                   sub(b=i.1,c=i.2,d=i.3,e=i.4,ex);  ==>
-
-
-                 a   c              a   d
-      excyc := te     *te1      + te     *te1
-                   b      a d e       c      a e b
+               sub(b=i.1,c=i.2,d=i.3,e=i.4,ex);  ==>
 
 
-                   a   e              a   b
-               + te     *te1      + te      *te1
-                     d      a b c       e       a c d
+             a   c              a   d
+  excyc := te     *te1      + te     *te1
+               b      a d e       c      a e b
+
+
+               a   e              a   b
+           + te     *te1      + te      *te1
+                 d      a b c       e       a c d
 \end{verbatim}
 
 \subsubsection{\texttt{canonical} and tensor derivatives}
