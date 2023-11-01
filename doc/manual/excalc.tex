@@ -1503,7 +1503,8 @@ factor o;
 
 gamma(-a,-b) := -(1/2)*( e(-a) _| (e(-c) _| (d o(-b)))
                         -e(-b) _| (e(-a) _| (d o(-c)))
-                        +e(-c) _| (e(-b) _| (d o(-a))) )*o(c)$
+                        +e(-c) _| (e(-b) _| (d o(-a))) )
+                      *o(c)$
 
 
 curv2(-a,b) := d gamma(-a,b) + gamma(-c,b)^gamma(-a,c)$
@@ -1583,7 +1584,8 @@ pform {einst(a,b),hlang(a,b)}=0;
 
 hlang(-i,-j) := 2*(riemc3(-i,-j) - riemri(-i,-j) -
                    2*ricci(-i,-k)*ricci(-j,K) +
-                   riccisc*ricci(-i,-j) - (1/2)*laglanc*g(-i,-j));
+                   riccisc*ricci(-i,-j) - 
+                   (1/2)*laglanc*g(-i,-j));
 
 % The complete Einstein tensor:
 
@@ -1603,9 +1605,9 @@ remfdomain r,s;
 
 % Problem:
 % --------
-% Calculate for a given coframe and given torsion the Riemannian
-% part and the torsion induced part of the connection.
-% Calculate the curvature.
+% Calculate for a given coframe and given torsion the
+% Riemannian part and the torsion induced part of the
+% connection.  Calculate the curvature.
 
 % For a more elaborate example see:
 % E.Schruefer, F.W. Hehl, J.D. McCrea,

@@ -115,16 +115,17 @@ Precedence can be set using \texttt{lalr\_precedence}. See examples below.
 %    S  -> C C        { }
 %    C  -> "c" C      { }
 %        | "d"        { }
-% This is example 4.42 from Aho, Sethi and Ullman's Red Dragon book.
+% This is example 4.42 from Aho, Sethi and Ullman's
+% Red Dragon book.
 % It is example 4.54 in the more recent Purple book.
 %
 %
 grammar := '(
-  (s  ((cc cc)  )   % Use default semantic action here
-  )
-  (cc (("c" cc) (list 'c !$2))   % First production for C
-      (("d")    'd           )   % Second production for C
-  ))$
+ (s  ((cc cc)  )   % Use default semantic action here
+ )
+ (cc (("c" cc) (list 'c !$2))  % First production for C
+     (("d")    'd           )  % Second production for C
+ ))$
 
 parsertables := lalr_create_parser(nil, grammar)$
 
