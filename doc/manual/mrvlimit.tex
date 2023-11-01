@@ -1,7 +1,13 @@
 
 
 \subsection{The Exp-Log Limits package}
-This package  arises from the PhD thesis of Dominik Gruntz, of the ETH  Z\"{u}rich. He developed a new algorithm to compute limits of "exp-log" functions. Many of the examples he gave were unable to be computed by the present limits package in \REDUCE, the simplest example being the following, whose limit is obviously $0$:
+
+This package arises from the PhD thesis of Dominik
+Gruntz\cite{Gruntz:96}, of the ETH Z\"{u}rich. He developed a new
+algorithm to compute limits of "exp-log" functions. Many of the
+examples he gave were unable to be computed by the present
+\package{limits} package in \REDUCE, the simplest example being the
+following, whose limit is obviously $0$:
 \begin{verbatim}
 load limits;
 
@@ -13,13 +19,28 @@ limit(----,x,infinity)
         x
        e
 \end{verbatim}
+This particular problem arises, because L'H\^{o}pital's rule for the
+computation of indefinite forms (such as $0/0$, or
+$\frac{\infty}{\infty}$) can only be applied in a CAS a finite number
+of times, and in \REDUCE, this number is 3. Appling L'H\^{o}pital's rule 7 times to the
+above problem would have yielded the correct answer 0.
 
-This particular problem arises, because L'H\^{o}pital's rule for the computation of indefinite forms (such as $0/0$, or $\frac{\infty}{\infty}$) can only be applied in a CAS a finite number of times, and in \REDUCE, this number is 3. Applied 7 times to the above problem would have yielded the correct answer 0.
-The new algorithm solves this particular problem, and enables the computation of many more limit calculations in \REDUCE. We first define the domain in which we work, and then give a statement of the main algorithm that is used in this package. \\[\baselineskip]
-Definition: \\
-Let $\Re[x]$ be the ring of polynomials in $x$ with real coefficients, and let $f$ be an element in this ring. The field which is obtained from $\Re[x]$ by closing it under the operations $f\rightarrow\exp(f)$ and $f\rightarrow\log |f|$ is called the $L$- field (or logarithmico-exponential field, or field of exp-log functions for short).
+The new algorithm solves this particular problem, and enables the
+computation of many more limit calculations in \REDUCE. We first
+define the domain in which we work, and then give a statement of the
+main algorithm that is used in this package.
+
+\noindent Definition: \\
+Let $\Re[x]$ be the ring of polynomials in $x$ with real coefficients,
+and let $f$ be an element in this ring. The field which is obtained
+from $\Re[x]$ by closing it under the operations $f\rightarrow\exp(f)$
+and $f\rightarrow\log |f|$ is called the $\mathcal{L}$-field (or
+logarithmico-exponential field, or field of exp-log functions for
+short).
 \\[\baselineskip]
-Hardy proved that every $L$ function is ultimately continuous, of constant sign, monotonic, and tends to $\pm \infty$ or to a finite real constant as $x\rightarrow +\infty.$
+Hardy proved \cite{Hardy:1912} that every $\mathcal{L}$ function is ultimately continuous, of
+constant sign, monotonic, and tends to $\pm \infty$ or to a finite
+real constant as $x\rightarrow +\infty.$
 
 Here are some examples of exp-log functions, which the package is able to deal with:
 \begin{align*}
@@ -32,14 +53,33 @@ Here are some examples of exp-log functions, which the package is able to deal w
 \subsection{The Algorithm}
 A complete statement of the algorithm now follows:
 %\hspace{-1cm}\shadowbox{\parbox{9cm}{
-Let $f$ be a log-exp function in $x$, whose limit we wish to compute as $x\rightarrow x_0.$ The main steps of the algorithm to do this are as follows:
+Let $f$ be a log-exp function in $x$, whose limit we wish to compute
+as $x\rightarrow x_0.$ The main steps of the algorithm to do this are
+as follows:
 \begin{itemize}
-\item{Determine the set $\Omega$ of the most rapidly varying subexpressions of $f(x)$. Limits may have to be computed recursively at this stage.}
-\item{Choose an expression $\omega$ such that $\omega>0$, $\lim_{x \rightarrow \infty} \omega=0 $ and $\omega$ is in the same comparability class as any element of $\Omega$. Rewrite the other expressions in $\Omega$ as $A(x)\omega^{c}$, where $A(x)$ only contains subexpressions in lower comparability classes than $\Omega$.}
-\item{Let $f(\omega)$ be the function obtained from $f(x)$ by replacing all elements of $\Omega $ by their representation in terms of $\omega$. Consider all expressions independent of $\omega$ as constants and compute the leading term of the power series of f($\omega$) around $\omega=0^{+}$ }
-\item{If the leading exponent $e_0>0$, then the limit is 0, and we stop. If the leading exponent $e_0<0$ then the limit is $\pm \infty$. The sign is defined by the sign of the leading coefficient $c_0$. If the leading exponent $e_0=0$ then the limit is the limit of the leading coeficient $c_0$. If $c_0\not \in C$, where $C=\text{Const}(L)$, the set of exp-log constants, we apply the same algorithm recursively on $c_0$.}
+\item Determine the set $\Omega$ of the most rapidly varying
+  subexpressions of $f(x)$. Limits may have to be computed recursively
+  at this stage.
+\item Choose an expression $\omega$ such that $\omega>0$,
+  $\lim_{x \rightarrow \infty} \omega=0 $ and $\omega$ is in the same
+  comparability class as any element of $\Omega$. Rewrite the other
+  expressions in $\Omega$ as $A(x)\omega^{c}$, where $A(x)$ only
+  contains subexpressions in lower comparability classes than
+  $\Omega$.
+\item Let $f(\omega)$ be the function obtained from $f(x)$ by
+  replacing all elements of $\Omega $ by their representation in terms
+  of $\omega$. Consider all expressions independent of $\omega$ as
+  constants and compute the leading term of the power series of
+  f($\omega$) around $\omega=0^{+}$ as $c_{0}\omega^{e_{0}}$.
+\item If the leading exponent $e_0>0$, then the limit is 0, and we
+  stop. If the leading exponent $e_0<0$ then the limit is
+  $\pm \infty$. The sign is defined by the sign of the leading
+  coefficient $c_0$. If the leading exponent $e_0=0$ then the limit is
+  the limit of the leading coeficient $c_0$. If $c_0\not \in C$, where
+  $C=\text{Const}(L)$, the set of exp-log constants, we apply the same
+  algorithm recursively on $c_0$.
 \end{itemize}
-%}}
+
 The algorithm to compute the most rapidly varying subset (the mrv set) of a function f is given below:
 
 \begin{flushleft}
@@ -58,10 +98,10 @@ else if $f=e^{g} \rightarrow$ \\
 \textbf{end}
 \end{flushleft}
 
-%\vspace{5 mm}
-The function max() computes the maximum of the two sets of expressions. Max() compares two elements of its argument sets and returns the set which is in the higher comparability class or the union of both if they have the same order of variation. \\[\baselineskip]
-%
-For further details, proofs and explanations of the algorithm, please consult~\cite{Gruntz:96}.
+The function max() computes the maximum of the two sets of
+expressions. Max() compares two elements of its argument sets and
+returns the set which is in the higher comparability class or the
+union of both if they have the same order of variation.
 
 For example, we have
 \begin{align*}
@@ -71,10 +111,13 @@ For example, we have
 &\text{mrv}(e^x+e^{-x}+x^2+x \log(x))= \{e^x,e^{-x} \} \\
 &\text{mrv}(e^{e^{-x}})=\{e^{-x} \}
 \end{align*}
+For further details, proofs and explanations of the algorithm, please consult Gruntz' thesis\cite{Gruntz:96}.
+
 
 \subsubsection{Mrv\_limit Examples}
 \ttindextype{MRV\_LIMIT}{operator}
 Consider the following in \REDUCE:
+\begin{small}
 \begin{verbatim}
 mrv_limit(e^x,x,infinity);
 
@@ -98,17 +141,12 @@ mrv_limit(b,x,infinity);
 -1
 
 
-                                       -1
-  ex:=  - log(log(log(log(x))) + log(x))  *log(x)
+ex := (log(-log(x)+log(log(x)))-log(log(x)))
+        /(log(log(x)+log(log(log(x)))))*log(x);
 
-                       *(log(log(x)) - log(log(log(x)) + log(x)));
-
-
-            - log(x)*(log(log(x)) - log(log(log(x)) + log(x)))
-ex:=     -----------------------------------------------------
-                    log(log(log(log(x))) + log(x))
-
-off mcd;
+       log(x)*( - log(log(x)) + log(log(log(x)) - log(x)))
+ex := -----------------------------------------------------
+                 log(log(log(log(x))) + log(x))
 
 mrv_limit(ex,x,infinity);
 
@@ -127,28 +165,28 @@ mrv_limit(ws,x,infinity);
 mrv_limit((log(x)*e^-x)/e^(log(x)+e^(x^2)),x,infinity);
 
 0
+\end{verbatim}
+\end{small}
+More examples can be found in the \texttt{mrvlimit.tst} file.
 
-\end{verbatim}
-\normalsize
-\subsection{The tracing facility}
-The package provides a means of tracing the $mrv\_limit$ function at its main steps, and is intended to help the user if he encounters problems. Messages are displayed informing the user which Taylor expansion is being computed, all recursive calls are listed, and the value returned by the $mrv$ function is given. This information is displayed when  a switch $tracelimit$ is on. This is off by default, but can be switched on with the command
+\subsection{Tracing the algorihm}
+The package provides a means of tracing the \f{mrv\_limit} function at
+its main steps, and is intended to help the user if he encounters
+problems. Messages are displayed informing the user which Taylor
+expansion is being computed, all recursive calls are listed, and the
+value returned by the \f{mrv} function is given. This information is
+displayed when a switch \sw{trlimit} is on.
+\iffalse
+This is off by default,
+but can be switched on with the command
 \begin{verbatim}
-on tracelimit;
+on trlimit;
 \end{verbatim}
-For a more complete examination of the workings of the algorithm, the user could also try the command
-\begin{verbatim}
-tr mrv_limit;
-\end{verbatim}
-This is not recommended, as the amount of information returned is often huge and difficult to wade through.
 Here is a simple example in \REDUCE:
 \begin{verbatim}
-
-Loading image file: /silo/cons/reduce35/Alpha/binary/redu37a.img
-REDUCE Development Version,  4-Nov-96 ...
-
 1: load mrvlimit;
 
-2: on tracelimit;
+2: on trlimit;
 
 3: mrv_limit(e^x,x,infinity);
 
@@ -214,5 +252,11 @@ leading exponent e0 is {expt,-1}
 
 infinity
 \end{verbatim}
-\vspace{10 mm}
-Note that, due to the recursiveness of the functions $mrv$ and $mrv\_limit$, many calls to each function are made, and information is given on all calls when the \sw{tracelimit} switch is on.
+%\vspace{10 mm}
+Note that, due to the recursiveness of the functions
+\f{mrv} and \f{mrv\_limit}, many calls to each function are made, and
+information is given on all calls when the \sw{trlimit} switch is on.
+\fi
+
+Note that, due to the recursiveness of the algorithm there is a lot of output
+when the \sw{trlimit} switch is on. 
