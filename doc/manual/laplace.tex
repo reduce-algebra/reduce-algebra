@@ -52,18 +52,22 @@ transforming derivatives are entered in such a form.
 \textbf{Examples:}
 \begin{verbatim}
 
-    let {laplace(log(~x),x) => -log(Euler_Gamma * il!&)/il!&,
+    let {laplace(log(~x),x)
+             => -log(Euler_Gamma * il!&)/il!&,
 
-    invlap(log(Euler_Gamma * ~x)/x,x) => -log(lp!&)};
+         invlap(log(Euler_Gamma * ~x)/x,x) 
+             => -log(lp!&)};
 
 
     operator f;
 
     let{
 
-    laplace(df(f(~x),x),x) => il!&*laplace(f(x),x) - sub(x=0,f(x)),
+    laplace(df(f(~x),x),x)
+           => il!&*laplace(f(x),x) - sub(x=0,f(x)),
 
-    laplace(df(f(~x),x,~n),x) => il!&**n*laplace(f(x),x) -
+    laplace(df(f(~x),x,~n),x)
+           => il!&**n*laplace(f(x),x) -
 
     for i:=n-1 step -1 until 0 sum
 

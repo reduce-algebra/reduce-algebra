@@ -45,11 +45,11 @@ input expressions.
 All \REDUCE kernels can play the role of ``variables'' in this context;
 examples are
 
-%{\small
+{\small
 \begin{verbatim}
 x y z22 sin(alpha) cos(alpha) c(1,2,3) c(1,3,2) farina4711
 \end{verbatim}
-%}
+}
 
 The domain $d$ is the current \REDUCE domain with those kernels
 adjoined that are not members of the list of variables. So the
@@ -385,7 +385,7 @@ $h$--polynomials and the counters for the hits of the criteria.
 \item[\f{trgroeb} --]
   \hypertarget{switch:TRGROEB}{}
   Includes \f{groebstat} and the printing of the
-intermediate $h$-polynomials.
+intermediate $h$-poly\-nomials.
 
 \ttindexswitch[GROEBNER]{trgroebs}
 \item[\f{trgroebs} --]
@@ -488,11 +488,11 @@ the non zero-dimensional case, if such a polynomial exists.
 If the polynomial does not exist, the algorithm computes  until \f{maxdeg}
 has been reached.
 \begin{verbatim}
-   torder({{w,p,z,t,s,b},gradlex)
+  torder({{w,p,z,t,s,b},gradlex)
 
-   g  :=  groebner  { f1 := 45*p + 35*s -165*b -36,
-         35*p + 40*z + 25*t - 27*s, 15*w + 25*p*s +30*z -18*t
-        -165*b**2, -9*w + 15*p*t  + 20*z*s,
+  g  :=  groebner  { f1 := 45*p + 35*s -165*b -36,
+         35*p + 40*z + 25*t - 27*s, 15*w + 25*p*s +30*z
+        -18*t -165*b**2, -9*w + 15*p*t  + 20*z*s,
         w*p + 2*z*t - 11*b**3, 99*w - 11*s*b +3*b**2,
         b**2 + 33/50*b + 2673/10000};
 
@@ -604,7 +604,8 @@ empty list if the third parameter is to be used.
 \begin{verbatim}
    torder({x,y},lex)$
    groebnerf { 3*x**2*y + 2*x*y + y + 9*x**2 + 5*x = 3,
-               2*x**3*y - x*y - y + 6*x**3 - 2*x**2 - 3*x = -3,
+               2*x**3*y - x*y - y + 6*x**3 - 2*x**2
+                 - 3*x = -3,
                 x**3*y + x**2*y + 3*x**3 + 2*x**2 };
 
 
@@ -811,10 +812,11 @@ be activated first.
 \begin{verbatim}
   torder({x,y},lex);
   gb:=groebner{3*x**2*y + 2*x*y + y + 9*x**2 + 5*x - 3,
-               2*x**3*y - x*y - y + 6*x**3 - 2*x**2 - 3*x + 3,
+               2*x**3*y - x*y - y + 6*x**3 - 2*x**2
+                 - 3*x + 3,
                x**3*y + x**2*y + 3*x**3 + 2*x**2}$
   preduce (5*y**2 + 2*x**2*y + 5/2*x*y + 3/2*y
-<             + 8*x**2 + 3/2*x - 9/2, gb);
+             + 8*x**2 + 3/2*x - 9/2, gb);
 
       2
      y
@@ -904,8 +906,9 @@ domain, the input coefficients may be changed by global factors.
 
 groebprotfile;
 
-                  2         2                     2
-    {candidate=4*x *y + 16*x  + 5*x*y + 3*x + 10*y  + 3*y - 9,
+    {candidate
+         2         2                     2
+     =4*x *y + 16*x  + 5*x*y + 3*x + 10*y  + 3*y - 9,
 
               2
      poly1=8*x - 2*y  + 5*y + 3,
@@ -1300,14 +1303,14 @@ again of triangular type.
 \[ groesolve(\{x**2 - y**2 - a, p*x+q*y+s\},\{x,y\}); \]
 
 \begin{verbatim}
+                2      2    2             2    2
+{{x=(sqrt( - a*p  + a*q  + s )*q - p*s)/(p  - q ),
                    2      2    2             2    2
-   {{x=(sqrt( - a*p  + a*q  + s )*q - p*s)/(p  - q ),
-                      2      2    2             2    2
-     y= - (sqrt( - a*p  + a*q  + s )*p - q*s)/(p  - q )},
-                      2      2    2             2    2
-    {x= - (sqrt( - a*p  + a*q  + s )*q + p*s)/(p  - q ),
+  y= - (sqrt( - a*p  + a*q  + s )*p - q*s)/(p  - q )},
                    2      2    2             2    2
-     y=(sqrt( - a*p  + a*q  + s )*p + q*s)/(p  - q )}}
+ {x= - (sqrt( - a*p  + a*q  + s )*q + p*s)/(p  - q ),
+                2      2    2             2    2
+  y=(sqrt( - a*p  + a*q  + s )*p + q*s)/(p  - q )}}
 \end{verbatim}
 
 If the system is zero--dimensional (has a number of isolated solutions),
@@ -1528,10 +1531,12 @@ eliminated from the result.
     dip := alpha *beta *gamma + 2*alpha *beta*gamma
 
            2                     2
-    + alpha *gamma - 2*alpha*beta *gamma - 4*alpha*beta*gamma
+    + alpha *gamma - 2*alpha*beta *gamma
 
-                           2
-     - 2*alpha*gamma + beta *gamma + 2*beta*gamma + gamma
+    - 4*alpha*beta*gamma - 2*alpha*gamma
+
+           2
+     + beta *gamma + 2*beta*gamma + gamma
 \end{verbatim}
 
 \subsubsection{Splitting of a Polynomial into Leading Term and Reductum}
@@ -1547,19 +1552,20 @@ and splits it into leading monomial and reductum. The result is a list
 with two elements, the leading monomial and the reductum.
 
 \begin{verbatim}
-   gslit dip;
+   gsplit dip;
 
           2     2
     {alpha *beta *gamma,
 
-            2                   2                     2
-     2*alpha *beta*gamma + alpha *gamma - 2*alpha*beta *gamma
+            2                   2
+     2*alpha *beta*gamma + alpha *gamma
 
-                         2
-     - 4*alpha*beta*gamma - 2*alpha*gamma + beta *gamma
+                    2                           2
+      - 2*alpha*beta *gamma - 4*alpha*beta*gamma
 
+      - 2*alpha*gamma + beta *gamma + 2*beta*gamma
 
-     + 2*beta*gamma + gamma}
+      + gamma}
 \end{verbatim}
 
 \subsubsection{Calculation of Buchberger's S-polynomial}

@@ -33,12 +33,12 @@ parameters:
 \begin{itemize}
 \item A function to plot; a function can be
   \begin{itemize}
-    \item an expression with one unknown, e.g. \texttt{u*sin(u)\^{}2}.
+    \item an expression with one unknown, e.g., \texttt{u*sin(u)\^{}2}.
     \item a list of expressions with one (identical) unknown,
-      e.g. \texttt{\{sin(u),\allowbreak cos(u)\}}.
-    \item an expression with two unknowns, e.g. \texttt{u*sin(u)\^{}2+sqrt(v)}.
+      e.g., \texttt{\{sin(u),\allowbreak cos(u)\}}.
+    \item an expression with two unknowns, e.g., \texttt{u*sin(u)\^{}2+sqrt(v)}.
     \item a list of expressions with two (identical) unknowns,
-      e.g. \linebreak
+      e.g., \linebreak
       \texttt{\{x\textasciicircum{2}+y\textasciicircum{2},\allowbreak x\textasciicircum{2}-y\textasciicircum{2}\}}.
     \item a parametic expression of the form \texttt{point(<u>,<v>)} or
       \texttt{point(<u>,\allowbreak <v>,<w>)} where \texttt{u,v,w} are
@@ -48,22 +48,23 @@ parameters:
       describes a surface in 3D. The parameters are treated as independent
       variables.  Example: \texttt{point(sin t,cos t,t/10)}.
     \item an equation with a symbol on the left-hand side and an expression with
-      one or two unknowns on the right-hand side, e.g.\linebreak[3]
+      one or two unknowns on the right-hand side, e.g.,\linebreak[3]
       \texttt{dome=\allowbreak
         1/(x\^{}2+y\^{}2)}.
     \item an equation with an expression on the left-hand side and a zero on
       right-hand side describing implicitly a one dimensional variety in the
-      plane (implicitly given curve), e.g.
+      plane (implicitly given curve), e.g.,
       \texttt{x\^{}3 + x*y\^{}2-9x = 0}, or a
       two-dimensional surface in 3-dimensional Euclidean space,
     \item an equation with an expression in two variables on the left-hand side
       and a list of numbers on the right-hand side; the contour lines
-      corresponding to the given values are drawn, e.g. \\
+      corresponding to the given values are drawn, e.g., \\
       \texttt{x\^{}3 - y\^{}2 + x*y = \{-2,-1,0,1,2\}}.
-    \item a list of points in 2 or 3 dimensions, e.g.
+    \item a list of points in 2 or 3 dimensions, e.g.,
       \texttt{\{\{0,0\},\{0,1\},\{1,1\}\}} representing a curve,
     \item a list of lists of points in 2 or 3 dimensions,
-      e.g. \texttt{\{\{\{0,0\},\{0,1\},\{1,1\}\}, \{\{0,0\},\{0,1\},\{1,1\}\}\}}
+      e.g.,\\
+      \texttt{\{\{\{0,0\},\{0,1\},\{1,1\}\}, \{\{0,0\},\{0,1\},\{1,1\}\}\}}\\
       representing a family of curves.
   \end{itemize}
   \hypertarget{reserved:intervalop}
@@ -80,8 +81,8 @@ parameters:
   interval from $1$ to $5$ subdivided into $30$ pieces of equal size. A
   subdivision parameter overrides the value of the variable \texttt{points} for
   this variable.
-\item A plot option, either as fixed keyword, e.g. \texttt{hidden3d} or as
-  equation e.g. \texttt{term=pictex}; free texts such as titles and labels
+\item A plot option, either as fixed keyword, e.g., \texttt{hidden3d} or as
+  equation e.g., \texttt{term=pictex}; free texts such as titles and labels
   should be enclosed in string quotes.
 \end{itemize}
 Please note that a blank has to be inserted between a number and a dot,
@@ -135,7 +136,7 @@ plot((x^2+y^2-9)*x*y = 0);
 \subsubsection{Piecewise-defined functions}
 A composed graph can be defined by a rule-based operator.  In that case each
 rule must contain a clause which restricts the rule application to numeric
-arguments, e.g.
+arguments, e.g.,
 \begin{verbatim}
    operator my_step1;
    let {my_step1(~x) => -1 when numberp x and x<-pi/2,
@@ -224,7 +225,7 @@ different communication, please find the correct setting for the \texttt{termina
 variable in the {\Gnuplot} documentation.
 
 For a PostScript printer, add the options \texttt{terminal=postscript} and \allowbreak
-\texttt{output="filename"} to your plot command, e.g.
+\texttt{output="filename"} to your plot command, e.g.,
 \begin{verbatim}
 plot(sin x, x=(0 .. 10), terminal=postscript,
      output="sin.ps");
@@ -303,7 +304,7 @@ from the {\Gnuplot} text window - it offers an exit function.
 \ttindexswitch[GNUPLOT]{trplot}\ttindexswitch{GNUPLOT}{plotkeep}
 \index{Tracing!GNUPLOT package}
 If you want to use the internal {\Gnuplot} command sequence more than once
-(e.g. for producing a picture for a publication), you may set
+(e.g., for producing a picture for a publication), you may set
 \begin{verbatim}
 on trplot, plotkeep;
 \end{verbatim}
@@ -345,7 +346,7 @@ when \texttt{plot} is called.  Note that {\Gnuplot} restrictions with respect to
 variable and function names have to be taken into account when using this type
 of operation. \textbf{Important}: String quotes are not transferred to the {\Gnuplot}
 executable; if the {\Gnuplot} syntax needs string quotes, you must add doubled
-stringquotes \emph{inside} the argument string, e.g.
+stringquotes \emph{inside} the argument string, e.g.,
 \begin{verbatim}
      gnuplot(plot, """mydata""", "using 2:1");
 \end{verbatim}
