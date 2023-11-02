@@ -220,7 +220,7 @@ recomputing such properties, an \meta{EDS} object carries a list of
 \begin{syntax}
 	\{\meta{keyword} = \meta{value},$\cdots$\}
 \end{syntax}
-where \meta{keyword} is one of \f{closed}, \f{quasilinear}, \f{pfaffian} or
+where \meta{keyword} is one of the following: \f{closed}, \f{quasilinear}, \f{pfaffian} or
 \f{involutive}, and \meta{value} is either \f{0} (false) or \f{1}
 (true). These properties are suppressed when an \meta{EDS} is printed,
 unless the \f{nat} switch is \f{off}. They can be examined using the
@@ -464,19 +464,28 @@ coframing {x,y,z};
 coframing({e 1,e 2},{r},{r neq 0},
           {d r=>e 1,d e 1=>0,d e 2=>e 1^e 2/r});
 
-                                            1  2
-               1  2          1        2    e ^e           1
-   coframing({e ,e },{r},{d e => 0,d e => -------,d r => e },
-                                             r
-             {r neq 0})
+            1  2
+coframing({e ,e },{r},
 
-coframing({e 2}) where {d r=e 1,d e 1=0,d e 2=e 1^e 2/r};
+                               1  2
+              1         2     e ^e           1
+          {d e  => 0,d e  => -------,d r => e },
+                                r
 
-                                            1  2
-               1  2          1        2    e ^e           1
-   coframing({e ,e },{r},{d e => 0,d e => -------,d r => e },
-                                             r
-             {r neq 0})
+          {r neq 0})
+
+coframing({e 2})
+     where {d r=e 1,d e 1=0,d e 2=e 1^e 2/r};
+
+            1  2
+coframing({e ,e },{r},
+
+                               1  2
+              1         2     e ^e           1
+          {d e  => 0,d e  => -------,d r => e },
+                                r
+
+          {r neq 0})
 \end{verbatim}
 
 \subsubsection{\f{eds}}
@@ -526,7 +535,8 @@ eds({d z - p*d x - q*d y, d p^d q},{d x,d y});
    EDS({d z - p*d x - q*d y,d p^d q},{d x,d y})
 
 OMrules :=
-   index_expand {d e(i)=>-w(i,-j)^e(j),w(i,-j)+w(j,-i)=>0}$
+   index_expand {d e(i)=>-w(i,-j)^e(j),
+                 w(i,-j)+w(j,-i)=>0}$
 
 eds({e(a)},{e(i)}) where OMrules;
 
@@ -572,7 +582,9 @@ contact(1,{x,y,z},{u,v});
         d v - v *d x - v *d y - v *d z},{d x,d y,d z})
                x        y        z
 
-OMrules := index_expand{d e(1)=>e(1)^e(2),d e(2)=>0,d w(a)=>0};
+OMrules := index_expand{d e(1)=>e(1)^e(2),
+                        d e(2)=>0,d w(a)=>0}$
+
 contact(2,{e(i)},{w(a)}) where OMrules;
 
          1    1    1    1    2
@@ -581,9 +593,12 @@ contact(2,{e(i)},{w(a)}) where OMrules;
            1      1      1    1      2
         d w    - w     *e  - w     *e ,
              1      1 1         1 2
-           1          1        1     1    1      2    1  2
-        d w    + ( - w      + w   )*e  - w     *e },{e ,e })
+           1          1        1     1    1      2
+        d w    + ( - w      + w   )*e  - w     *e },
              2          1 2      1          2 2
+
+         1  2
+       {e ,e })
 \end{verbatim}
 
 \subsubsection{\f{pde2eds}}
@@ -955,7 +970,7 @@ pullback(M,{r=1/x});
 
 pullback(ws,{x=0});
 
-   ***** Map image not within target coframing in pullback
+ ***** Map image not within target coframing in pullback
 
 pullback({y*d y,d y - d x},{y=x});
 
@@ -980,7 +995,8 @@ variables are unchanged.
 
 \paragraph{\textit{Examples:}}
 \begin{verbatim}
-% Bring a system into normal form by restricting the coframing
+% Bring a system into normal form
+%  by restricting the coframing
 
 S := eds({u*d v - v*d u},{d x});
 
@@ -1185,7 +1201,7 @@ s_{n-1})$, where $d$ is the manifold dimension, allows Cartan's test to be
 used even when Cauchy characteristics are present.
 
 For a nonlinear \meta{EDS}, the Cartan characters can vary from stratum to
-stratum of the Grassmann bundle variety of ordinary integral elements (cf
+stratum of the Grassmann bundle variety of ordinary integral elements (cf. the operator
 \f{grassmann\_variety} in section \ref{grassmann_variety}). Nonetheless,
 they are constant on each stratum, so it suffices to calculate them at one
 point (ie at one integral element). This is done using the syntax
@@ -1632,7 +1648,8 @@ are non-Pfaffian by definition in \package{EDS}.
 
 \paragraph{\textit{Examples:}}
 \begin{verbatim}
-pfaffian eds({d u - p*d x - q*d y,d p^d x+d q^d y},{d x,d y});
+pfaffian eds({d u - p*d x - q*d y,d p^d x+d q^d y},
+             {d x,d y});
 
    1
 
@@ -1659,7 +1676,8 @@ succeed. Systems with 0-forms are not quasilinear by definition in \package{EDS}
 
 \paragraph{\textit{Examples:}}
 \begin{verbatim}
-% A system where pi(rho)={d p,d q}, and which looks non-linear
+% A system where pi(rho)={d p,d q},
+%  and which looks non-linear
 
 S := eds({d u - p*d x - q*d y,d p^d q^d y},{d x,d y})$
 
@@ -1674,7 +1692,8 @@ linearise closure S;
 
 % One which is really non-linear
 
-quasilinear eds({d u - p*d x - q*d y,d p^d q},{d x,d y});
+quasilinear
+     eds({d u - p*d x - q*d y,d p^d q},{d x,d y});
 
    0
 \end{verbatim}
@@ -1737,11 +1756,13 @@ is a completely integrable Pfaffian system.
 
 \paragraph{\textit{Examples:}}
 \begin{verbatim}
-if frobenius eds({d u -p*(d x+d y)},d x^d y) then yes else no;
+if frobenius eds({d u -p*(d x+d y)},d x^d y)
+  then yes else no;
 
    no
 
-if frobenius eds({d u -u*(d x+d y)},d x^d y) then yes else no;
+if frobenius eds({d u -u*(d x+d y)},d x^d y)
+  then yes else no;
 
    yes
 \end{verbatim}
@@ -1759,7 +1780,8 @@ exterior systems (ie generate the same algebraic ideal).
 \paragraph{\textit{Examples:}}
 \begin{verbatim}
 S1 := contact(2,{x,y},{u})$
-S2 := augment(S1,foreach f in system S1 join {d f,d x^d f})$
+S2 := augment(S1,foreach f in system S1
+                       join {d f,d x^d f})$
 if S1 equiv S2 then yes else no;
 
    no
@@ -1874,7 +1896,9 @@ invert {d u = 3*d x - d y + 5*d z, d v = d x + 2*d z};
 
 invert {d u = 3*d x - y*d y + 5*d z, d v = d x + 2*d z};
 
-   {d x=2*d u - 5*d v + 2*d y*y,d z= - d u + 3*d v - d y*y}
+   {d x=2*d u - 5*d v + 2*d y*y,
+
+    d z= - d u + 3*d v - d y*y}
 \end{verbatim}
 
 
@@ -2179,7 +2203,8 @@ invariants {d x*y + d y*x*z + d z*log(y)*x*y};
         z
    { - y *x}
 
-invariants {d y*z**2 - d y*z + d z*y,d x*(1 - z) + d z*x};
+invariants {d y*z**2 - d y*z + d z*y,
+            d x*(1 - z) + d z*x};
 
        x     y*(z - 1)
    {-------,-----------}
@@ -2313,7 +2338,7 @@ characteristic_variety(S,xi);
    {%\savebox\commandtablecaption{#1} % save caption for the end
     \def\mkcaption{\caption{#1}\label{#2}}
     \def\header##1{\rule[-.7\baselineskip]{0pt}{2\baselineskip}\textbf{##1}}
-    \table[htbp]\small\tabular{|p{.4\hsize}|p{.5\hsize}|}\hline}
+    \table[htbp]\small\tabular{|p{.4\hsize}|>{\raggedright}p{.5\hsize}|}\hline}
    {\endtabular%\caption{\usebox\commandtablecaption}
     \mkcaption\endtable}
 \def\nl{\par}             % for use within columns
@@ -2347,240 +2372,240 @@ $P$         &\meta{integral element}\\
 
 \begin{commandtable}{Commands for constructing \package{EDS} objects}{constructors}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{coframing($cob$,$crd$,$rsx$,$drv$)}
     &constructs a \meta{coframing} with the given cobasis $cob$, coordinates $crd$,
      restrictions $rsx$ and structure equations $drv$: $crd$, $rsx$ and $drv$
-     are optional\\\hline
+     are optional\tabularnewline\hline
 \literal{coframing($S$)}
     &constructs a \meta{coframing} capable of supporting the given
-     \meta{system}\\\hline
+     \meta{system}\tabularnewline\hline
 \literal{eds($S$,$\Omega$,$M$)}
     &constructs a simple \meta{EDS} object with given system and independence
-     condition: if $M$ is not supplied, it is deduced from the rest\\\hline
+     condition: if $M$ is not supplied, it is deduced from the rest\tabularnewline\hline
 \literal{contact($r$,$M$,$N$)}
     &constructs the \meta{EDS} for the contact system of the jet bundle
-     $J^r(M,N)$\\\hline
+     $J^r(M,N)$\tabularnewline\hline
 \literal{pde2eds($pde$,$dep$,$ind$)}
     &converts a PDE system to an \package{EDS}: dependent and independent
     variables are deduced if they are not specified (variable dependencies
-    are removed)\\\hline
+    are removed)\tabularnewline\hline
 \literal{set\_coframing($M$)}\nl
 \literal{set\_coframing($E$)}
-    &sets background coframing and returns previous one\\\hline
+    &sets background coframing and returns previous one\tabularnewline\hline
 \literal{set\_coframing()}
-    &clears background coframing and returns previous one\\\hline
+    &clears background coframing and returns previous one\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Commands for inspecting \package{EDS} objects}{selectors}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{coframing($E$)}
-    &extracts the underlying \meta{coframing}\\\hline
+    &extracts the underlying \meta{coframing}\tabularnewline\hline
 \literal{coframing()}
-    &returns the current background coframing\\\hline
+    &returns the current background coframing\tabularnewline\hline
 \literal{cobasis($M$)}\nl \literal{cobasis($E$)}
-    &extracts the underlying cobasis\\\hline
+    &extracts the underlying cobasis\tabularnewline\hline
 \literal{coordinates($M$)}\nl \literal{coordinates($E$)}
-    &extracts the coordinates\\\hline
+    &extracts the coordinates\tabularnewline\hline
 \literal{structure\_equations($M$)}\nl \literal{structure\_equations($E$)}
     &extracts the rules for exterior derivatives for cobasis and
-     coordinates\\\hline
+     coordinates\tabularnewline\hline
 \literal{restrictions($M$)}\nl \literal{restrictions($E$)}
     &extracts the inequalities describing the restrictions
-     in the \meta{coframing}\\\hline
+     in the \meta{coframing}\tabularnewline\hline
 \literal{system($E$)}
-    &extracts the \meta{system} part of $E$\\\hline
+    &extracts the \meta{system} part of $E$\tabularnewline\hline
 \literal{independence($E$)}
     &extracts the independence condition from $E$ as a Pfaffian
-     \meta{system}\\\hline
+     \meta{system}\tabularnewline\hline
 \literal{properties($E$)}
     &returns the currently known properties of the \meta{EDS} $E$ as a list of
-     equations \meta{keyword}$ = $\meta{value}\\\hline
+     equations \meta{keyword}$ = $\meta{value}\tabularnewline\hline
 \literal{one\_forms($E$)}\nl \literal{one\_forms($S$)}
-    &selects the $1$-forms from a system\\\hline
+    &selects the $1$-forms from a system\tabularnewline\hline
 \literal{zero\_forms($E$)}\nl \literal{zero\_forms($S$)}
-    &selects the 0-forms from a system\\\hline
+    &selects the 0-forms from a system\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Commands for manipulating \package{EDS} objects}{manipulators}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{augment($E$,$S$)}
-    &appends the extra forms in $S$ to the system in $E$\\\hline
+    &appends the extra forms in $S$ to the system in $E$\tabularnewline\hline
 \literal{$M$ cross $N$}\nl \literal{$E$ cross $N$}
     &forms the direct product of two coframings: an \meta{EDS} $E$ is lifted
-     to the extended space\\\hline
+     to the extended space\tabularnewline\hline
 \literal{pullback($E$,$f$)}\nl \literal{pullback($S$,$f$)}\nl \literal{pullback($\Omega$,$f$)}
-    &pulls back the first argument using the \meta{map} $f$\\\hline
+    &pulls back the first argument using the \meta{map} $f$\tabularnewline\hline
 \literal{pullback($M$,$f$)}
-    &returns a \meta{coframing} $N$ suitable as the source for $f:N\to M$\\\hline
+    &returns a \meta{coframing} $N$ suitable as the source for $f:N\to M$\tabularnewline\hline
 \literal{restrict($E$,$f$)}\nl \literal{restrict($S$,$f$)}\nl \literal{restrict($\Omega$,$f$)}
     &restricts the first argument to the points specified by the
-     \meta{map} $f$\\\hline
+     \meta{map} $f$\tabularnewline\hline
 \literal{restrict($M$,$f$)}
-    &adds the restrictions in $f$ to $M$\\\hline
+    &adds the restrictions in $f$ to $M$\tabularnewline\hline
 \literal{transform($M$,$X$)}\nl \literal{transform($E$,$X$)}\nl
 \literal{transform($S$,$X$)}\nl \literal{transform($\Omega$,$X$)}
     &applies the change of cobasis $X$ to the first argument: for a \meta{coframing}
      $M$ or an \meta{EDS} $E$, $X$ may be specified in either the forward or
-     reverse direction\\\hline
+     reverse direction\tabularnewline\hline
 \literal{lift($E$)}
-    &eliminates any 0-forms in $E$ by solving and pulling back\\\hline
+    &eliminates any 0-forms in $E$ by solving and pulling back\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Commands for analysing exterior systems}{analysers}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{cartan\_system($E$)}\nl \literal{cartan\_system($S$)}\nl \literal{cartan\_system($\Omega$)}
     &calculates the Cartan system (associated Pfaff system, retracting
-     space): no differentiations are performed\\\hline
+     space): no differentiations are performed\tabularnewline\hline
 \literal{cauchy\_system($E$)}\nl \literal{cauchy\_system($S$)}\nl \literal{cauchy\_system($\Omega$)}
     &calculates the Cauchy system: the Cartan system of the closure under
-     exterior differentiation\\\hline
+     exterior differentiation\tabularnewline\hline
 \literal{characters($E$)} \nl \literal{characters($T$)}
     &calculates the (reduced) Cartan characters $\{s_1,...,s_n\}$
-     ($E$ quasilinear)\\\hline
+     ($E$ quasilinear)\tabularnewline\hline
 \literal{characters($E$,$P$)}
-    &Cartan characters for a non-linear $E$ at integral element $P$\\\hline
+    &Cartan characters for a non-linear $E$ at integral element $P$\tabularnewline\hline
 \literal{closure($E$)}
     &calculates the closure of $E$ under exterior
-    differentiation\\\hline
+    differentiation\tabularnewline\hline
 \literal{derived\_system($E$)}\nl \literal{derived\_system($S$)}
     &calculates the first derived system of the Pfaffian system $E$ or
-    $S$\\\hline
+    $S$\tabularnewline\hline
 \literal{dim\_grassmann\_variety($E$)}\nl \literal{dim\_grassmann\_variety($E$,$P$)}
     &dimension of the Grassman bundle variety of integral elements: for
-    non-linear $E$, the base element $P$ must be given\\\hline
+    non-linear $E$, the base element $P$ must be given\tabularnewline\hline
 \literal{dim($M$)}\nl \literal{dim($E$)}
-    &returns the manifold dimension\\\hline
+    &returns the manifold dimension\tabularnewline\hline
 \literal{involution($E$)}
-    &repeatedly prolongs $E$ to involution (or inconsistency)\\\hline
+    &repeatedly prolongs $E$ to involution (or inconsistency)\tabularnewline\hline
 \literal{linearise($E$,$P$)}
     &linearise the (non-linear) \package{EDS} $E$ with respect to the integral element
-     $P$\\\hline
+     $P$\tabularnewline\hline
 \literal{integral\_element($E$)}
-    &find a random \meta{integral element} of $E$\\\hline
+    &find a random \meta{integral element} of $E$\tabularnewline\hline
 \literal{prolong($E$)}
     &prolongs $E$, and projects back down to a subvariety of the
-     original manifold if integrability conditions arise\\\hline
+     original manifold if integrability conditions arise\tabularnewline\hline
 \literal{tableau($E$)}
     &calculates the \meta{tableau} of the quasilinear Pfaffian \meta{EDS}
-     $E$\\\hline
+     $E$\tabularnewline\hline
 \literal{torsion($E$)}
     &returns a \meta{system} of 0-forms specifying the integrability
      conditions for the semilinear or quasilinear Pfaffian \meta{EDS}
-     $E$\\\hline
+     $E$\tabularnewline\hline
 \literal{grassmann\_variety($E$)}
     &returns the contact \meta{EDS} for the Grassmann bundle of $n$-planes
      over the manifold of $E$, augmented by the 0-forms specifying the
-     variety of integral elements of $E$\\\hline
+     variety of integral elements of $E$\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Commands for testing exterior systems}{testers}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{closed($E$)}\nl \literal{closed($S$)}\nl \literal{closed($\Omega$)}
-    &checks for closure under exterior differ\-entiation\\\hline
+    &checks for closure under exterior differ\-entiation\tabularnewline\hline
 \literal{involutive($E$)}
-    &applies Cartan's test for involution\\\hline
+    &applies Cartan's test for involution\tabularnewline\hline
 \literal{pfaffian($E$)}
     &checks if $E$ is generated by $1$-forms and their exterior
-     derivatives\\\hline
+     derivatives\tabularnewline\hline
 \literal{quasilinear($E$)}
     &tests if the \textit{closure} of $E$ can be generated by forms at
-     most linear in the complement of the independence condition\\\hline
+     most linear in the complement of the independence condition\tabularnewline\hline
 \literal{semilinear($E$)}
     &tests if the \textit{closure} of $E$ is quasilinear and, in addition, the
     coefficients of the linear terms contain only independent variables or
-    constants\\\hline
+    constants\tabularnewline\hline
 \literal{$E$ equiv $E'$}
-    &checks whether $E$ and $E'$ are algebraically equivalent\\\hline
+    &checks whether $E$ and $E'$ are algebraically equivalent\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Switches (all \literal{off} by default)}{edsswitches}
 \header{Switch}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{edsverbose}
     &if \literal{on}, displays additional information as calculations
-    progress\\\hline
+    progress\tabularnewline\hline
 \literal{edsdebug}
     &if \literal{on}, produces copious quantities of internal information,
-    in addition to that produced by \literal{edsverbose}\\\hline
+    in addition to that produced by \literal{edsverbose}\tabularnewline\hline
 \literal{edssloppy}
     &if \literal{on}, allows \package{EDS} to divide by expressions not known to be non-zero
-    and treats quasilinear systems as semilinear\\\hline
+    and treats quasilinear systems as semilinear\tabularnewline\hline
 \literal{edsdisjoint}
     &if \literal{on}, forces varieties to be decomposed into disjoint
-    components\\\hline
+    components\tabularnewline\hline
 \literal{ranpos}\nl \literal{genpos}
     &if \literal{on}, uses a random or generic flag of integral elements when
     calculating Cartan characters: otherwise the independence condition as
-    presented guides the choice of flag\\\hline
+    presented guides the choice of flag\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Auxilliary functions}{auxilliaries}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \nl \literal{coordinates($S$)}
-    &scans the expressions in $S$ for coordinates\\\hline
+    &scans the expressions in $S$ for coordinates\tabularnewline\hline
 \literal{invert($X$)}
-    &returns the inverse \meta{transform} $X^{-1}$\\\hline
+    &returns the inverse \meta{transform} $X^{-1}$\tabularnewline\hline
 \literal{structure\_equations($X$)} \nl
 \literal{structure\_equations($X$,$X^{-1}$)}
-    &returns exterior derivatives of $\mathop{\hbox{lhs}}(X)$\\\hline
+    &returns exterior derivatives of $\mathop{\hbox{lhs}}(X)$\tabularnewline\hline
 \literal{linear\_divisors($\Omega$)}
     &calculates a basis for the space of 1-form factors of
-     $\Omega$\\\hline
+     $\Omega$\tabularnewline\hline
 \literal{exfactors($\Omega$)}
-    &as for \literal{linear\_divisors}, but with the additional (non-linear) factor\\\hline
+    &as for \literal{linear\_divisors}, but with the additional (non-linear) factor\tabularnewline\hline
 \literal{index\_expand($any$)}
     &returns a list of copies of its argument, with free \package{EXCALC} indices
-     replaced by successive values from the relevant index range\\\hline
+     replaced by successive values from the relevant index range\tabularnewline\hline
 \literal{pde2jet($pde$,$dep$,$ind$)}
     &converts a PDE system into jet bundle notation, replacing derivatives by
-     jet bundle coordinates (variable dependencies are not affected)\\\hline
+     jet bundle coordinates (variable dependencies are not affected)\tabularnewline\hline
 \literal{mkdepend($list$)}
-    &restores variable dependencies destroyed by \literal{pde2eds}\\\hline
+    &restores variable dependencies destroyed by \literal{pde2eds}\tabularnewline\hline
 \literal{disjoin($\{f,g,...\}$)}
     &decomposes the variety specified by the given \meta{map} variables into
-     a disjoint union\\\hline
+     a disjoint union\tabularnewline\hline
 \literal{cleanup($E$)}\nl \literal{cleanup($M$)}
     &returns a fresh copy of $E$ or $M$ with all properties and stored
-     results removed\\\hline
+     results removed\tabularnewline\hline
 \literal{reorder($E$)}\nl \literal{reorder($M$)}
     &returns a fresh copy of $E$ or $M$, conforming to the prevailing
-    \REDUCE kernel order\\\hline
+    \REDUCE kernel order\tabularnewline\hline
 \end{commandtable}
 
 
 \begin{commandtable}{Experimental functions (unstable)}{experiments}
 \header{Command}
-    &\header{Function}\\\hline
+    &\header{Function}\tabularnewline\hline
 \literal{poincare($\Omega$)}
     &calculates the homotopy integral from the proof of Poincar{\'e}'s lemma:
     if $\Omega$ is exact, then the result is a form whose exterior derivative
-    gives back $\Omega$\\\hline
+    gives back $\Omega$\tabularnewline\hline
 \literal{invariants($E$,$crd$)}\nl \literal{invariants($S$,$crd$)}
     &calculates the invariants (first integrals) of a completely
     integrable Pfaffian system using the inductive proof of the Frobenius
     theorem: the optional second argument specifies the
-    order in which the coordinates are to be projected away\\\hline
+    order in which the coordinates are to be projected away\tabularnewline\hline
 \literal{symbol\_relations($E$,$\pi$)}
     &returns relations between the entries of the tableau
-    matrix, represented by 2-indexed \meta{1-form} variables $\pi^a{}_i$\\\hline
+    matrix, represented by 2-indexed \meta{1-form} variables $\pi^a{}_i$\tabularnewline\hline
 \literal{symbol\_matrix($E$,$\xi$)}
     &returns the symbol matrix for a quasilinear \meta{EDS} $E$ as a function
-    of \meta{0-form} variables $\xi_i$\\\hline
+    of \meta{0-form} variables $\xi_i$\tabularnewline\hline
 \literal{characteristic\_variety($E$,$\xi$)}
     &returns equations describing the characteristic variety of
-    $E$ in terms of \meta{0-form} variables $\xi_i$\\\hline
+    $E$ in terms of \meta{0-form} variables $\xi_i$\tabularnewline\hline
 \end{commandtable}
 
 %\catcode`\"=12\relax

@@ -303,16 +303,21 @@ algorithm.
    qpochhammer(q^(-n),q,k)*q^(n*k)/(qpochhammer(a,q^2,k)*
    qpochhammer(a*q^(n+1),q,k)*qpochhammer(q,q,k)),q,k);
 
-     k*n   k          k    n               1
-( - q   *(q *a - 1)*(q  - q )*qpochhammer(----,q,k)
-                                            n
-                                           q
+    k*n   k          k    n
+( - q   *(q *a - 1)*(q  - q )
 
-                 2  2                           2*k          n
- *qpochhammer(a*q ,q ,k)*qpochhammer(a,q,k))/((q   *a - 1)*(q  - 1)
+               1                       2  2
+ *qpochhammer(----,q,k)*qpochhammer(a*q ,q ,k)
+                n
+               q
 
-               n                         2
- *qpochhammer(q *a*q,q,k)*qpochhammer(a,q ,k)*qpochhammer(q,q,k))
+                         2*k          n
+ *qpochhammer(a,q,k))/((q   *a - 1)*(q  - 1)
+
+                 n                         2
+   *qpochhammer(q *a*q,q,k)*qpochhammer(a,q ,k)
+
+   *qpochhammer(q,q,k))
 \end{redoutput}
 
 Here are some other simple examples:

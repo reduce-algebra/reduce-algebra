@@ -880,10 +880,10 @@ or REVLEX), and the \texttt{ecart}. The name list contains a phantom
 name \texttt{cali!=mk} for the module component at place 0.
 \medskip
 
-The \ind{module ring} exports among others the selectors
+The \ind{module ring} exports among others the following selectors:
 \indf{ring\_names}{symbolic procedure}, \indf{ring\_degrees}{symbolic procedure},
 \indf{ring\_tag}{symbolic procedure},
-\indf{ring\_ecart}{symbolic procedure}, the test function \indf{ring\_isnoetherian}{symbolic procedure} and the
+\indf{ring\_ecart}{symbolic procedure}, the symbolic mode test function \indf{ring\_isnoetherian}{symbolic procedure} and the
 transfer procedures from/to an (appropriate, printable by
 \indf{mathprint}{symbolic procedure}) algebraic prefix form \indf{ring\_from\_a}{symbolic procedure} (including
 extensive tests of the supplied parameters for consistency) and
@@ -915,7 +915,7 @@ strongly recommended to use \texttt{setring!* \ldots} instead of
 \ttindextype[CALI]{localorder"!*}{symbolic procedure}
 \ttindextype[CALI]{eliminationorder"!*}{symbolic procedure}
 \ttindextype[CALI]{blockorder"!*}{symbolic procedure}
-\f{degreeorder!*} , \f{localorder!*}, \f{eliminationorder!*}, and
+The procedures \f{degreeorder!*} , \f{localorder!*}, \f{eliminationorder!*}, and
 \f{blockorder!*}
 define term order matrices in full analogy to algebraic mode.
 \medskip
@@ -2162,7 +2162,7 @@ computes the radical of the dpmat ideal $m$, reducing as in
   \hypertarget{procedure:EASYPRIMARYDECOMPOSITION!*}{}
 computes the primary components of the dpmat $m$, if it has no
 embedded components. The algorithm uses prime splitting with the
-isolated prime ideals of $Ann\ F/M$. It returns a list of pairs as in
+isolated prime ideals of $Ann\ F/M$. It returns a list of pairs as described in
 \f{zeroprimarydecomposition!*}.
 
 \item[]
@@ -2172,7 +2172,7 @@ isolated prime ideals of $Ann\ F/M$. It returns a list of pairs as in
   \ttindextype[CALI]{primarydecomposition"!*}{symbolic procedure}
   \hypertarget{procedure:PRIMARYDECOMPOSITION!*}{}
 computes the primary components of the dpmat $m$ along the lines
-  of \cite{Gianni:88}. It returns a list of two-element lists as in
+  of \cite{Gianni:88}. It returns a list of two-element lists as described above in
   \f{zeroprimarydecomposition!*}.
 
 \item[]
@@ -3083,8 +3083,9 @@ polynomial map and sets the current base ring to the preimage ring.
   \end{syntax}
   \ttindextype[CALI]{primarydecomposition}{operator}
   \hypertarget{operator:PRIMARYDECOMPOSITION}{}
-returns the primary decomposition of the dpmat $m$ as a list of
-$\{component, associated\ prime\}$ pairs.
+  returns the primary decomposition of the dpmat $m$ as a list of
+  pairs of the form
+\{\meta{component}, \meta{associated\ prime}\}.
 
 \item[]
   \begin{syntax}
@@ -3319,11 +3320,10 @@ and \f{zerosolve2} incorporated the FGLM term order change into \f{zerosolve1}.
 
 
 \subsection{The \textsc{Cali} Module Structure}
-\vfill
 
-\begin{tabular}{|p{1.5cm}||>{\raggedright}p{5.5cm}|p{2cm}|p{4cm}|}
+
+\begin{tabular}{|p{1.2cm}||>{\raggedright}p{4.5cm}|>{\raggedright}p{1.9cm}|p{3.4cm}|}
 \hline
-\sloppy
 
 name & subject & data type & representation \\
 \hline
@@ -3479,19 +3479,23 @@ weight lists as second parameter.
 \item There are some name and conceptual changes to existing
 procedures and variables to have a more concise semantic concept. This
 concerns
-\begin{quote}
+\begin{itemize}
+  \item
 \ind{Tracing} (the trace parameter is now stored on the property list
 of \texttt{cali} and should be set with \ind{setcalitrace}),
 
+\item
 choosing different versions of the Gr\"obner algorithm (through
 \ind{gbtestversion}) and the Hilbert series computation (through
 \ind{hftestversion}),
 
+\item
 some names (\ind{mat2list} replaced \ind{flatten}, \ind{HilbertSeries}
 replaced \emph{hilbseries}) and
 
+\item
 parameter lists of some local and internal procedures %(consult \emph{cali.chg} for details).
-\end{quote}
+\end{itemize}
 
 \item The \ind{revlex term order} is now the reverse lexicographic
 term order on the \textbf{reversely} ordered variables. This is consistent
