@@ -6,14 +6,15 @@ The most important operator is \texttt{taylor}.\ttindextype{taylor}{operator}
 It is used as follows:
 \hypertarget{operator:TAYLOR}{}
 \begin{syntax}
-  \texttt{taylor(}\meta{exp:algebraic}\texttt{,}
+  \texttt{taylor(}\meta{exp:algebraic}\texttt{,}\newline
+         \hphantom{\texttt{taylor(}}%
          \meta{var:kernel}\texttt{,}\meta{var0:algebraic}\texttt{,}\meta{order:integer}[,\ldots]\texttt{)}
-         \,:\,algebraic.
+         :\,algebraic.
 \end{syntax}
 where \f{exp} is the expression to be expanded. It can be any \REDUCE{}
 object, even an expression containing other Taylor kernels. \f{var} is
 the kernel with respect to which \f{exp} is to be expanded. \f{var0}
-denotes the point about which and \f{order} the order up to which
+denotes the expansion point about which and \f{order} the order up to which
 expansion is to take place. If more than one \f{(var, var0, order)} triple
 is specified \f{taylor} will expand its first argument independently
 with respect to each variable in turn. For example,
@@ -304,7 +305,7 @@ operator.
     You will get this warning if you try to expand a Taylor kernel to
     a higher order.
 
-\item[\msg{*** Converting Taylor kernels to standard representation}]\mbox{}\\
+\item[\msg{*** Converting Taylor kernels to standard representation}\hspace*{-2mm}]%\mbox{}\\
     This warning appears if you try to integrate an expression
     containing Taylor kernels.
 

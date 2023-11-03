@@ -19,14 +19,16 @@ periodic representation back to a rational number.
 \hypertarget{operator:RATIONAL2PERIODIC}{}
 \hypertarget{operator:PERIODIC2RATIONAL}{}
 \hypertarget{operator:PERIODIC}{}
-\textbf{\underline{Periodic Representation of a Rational Number}}
 
-\begin{list}{}{
-    \setlength{\leftmargin}{22mm}
-    \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
-    \renewcommand{\makelabel}[1]{#1}
-  }
-\item[\textbf{SYNTAX:}]\ttindextype[RATAPRX]{rational2periodic}{operator}
+\subsubsection*{\textbf{\underline{Periodic Representation of a Rational Number}}}
+
+%\begin{list}{}{
+%    \setlength{\leftmargin}{22mm}
+%    \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
+%    \renewcommand{\makelabel}[1]{#1}
+%  }
+\begin{description}[style=nextline]
+\item[\textbf{SYNTAX:}]%\ttindextype[RATAPRX]{rational2periodic}{operator}
   \texttt{rational2periodic(n);}\\
   \texttt{rational2periodic(n, b);}
 
@@ -49,19 +51,21 @@ periodic representation back to a rational number.
   $1/80$ written as a hexadecimal is $0.0\overline{3}$\\
   \texttt{2: rational2periodic(1/80,16);}\\
   \texttt{\hspace*{1em}periodic(\{0\}, \{0\}, \{3\}, 16)}
-\end{list}
+\end{description}
 
-Normally the operator \texttt{periodic} will not be seen as the output
+Normally the operator \f{periodic} will not be seen as the output
 will be prettyprinted as $-0.8\overline{428571}$ and
 $0.0\overline{3}\ (\mbox{base }16)$ respectively.
 
-\textbf{\underline{Rational Number of a Periodic Representation}}\\[\baselineskip]
-\begin{description}
-\item[\textbf{SYNTAX:}]\mbox{}\ttindextype[RATAPRX]{periodic2rational}{operator}\\
+\subsubsection*{\textbf{\underline{Rational Number of a Periodic Representation}}}
+
+\begin{description}[style=nextline]
+
+\item[\textbf{SYNTAX:}]\ttindextype[RATAPRX]{periodic2rational}{operator}
   \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$))}\\
   \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$)}
 
-\item[\textbf{INPUT:}]\mbox{}\\
+\item[\textbf{INPUT:}]
   \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
   \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
   \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
@@ -69,10 +73,10 @@ $0.0\overline{3}\ (\mbox{base }16)$ respectively.
   indicating the rational number result should be negative. \\
   If the base is omitted, 10 is assumed.
 
-\item[\textbf{RESULT:}]\mbox{}\\
+\item[\textbf{RESULT:}]
   A rational number.
 
-\item[\textbf{EXAMPLES:}]\mbox{}\\[\baselineskip]
+\item[\textbf{EXAMPLES:}]\mbox{}\\
   $0.8\overline{428571}$ written as $59/70$ \\
   \texttt{3: periodic2rational(periodic(\{0\},\{8\},\{4,2,8,5,7,1\}));}
   \\[\baselineskip]

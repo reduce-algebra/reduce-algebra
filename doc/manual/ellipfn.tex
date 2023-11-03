@@ -1122,7 +1122,7 @@ there are four functions which return a list as their value:
 \hypertarget{operator:QUASI_PERIOD_FACTORS}{}
 \ttindextype[ELLIPFN]{lattice\_roots}{operator}\ttindextype[ELLIPFN]{lattice\_invariants}{operator}
 \ttindextype[ELLIPFN]{lattice\_generators}{operator}\ttindextype[ELLIPFN]{quasi\_period\_factors}{operator}
-\begin{itemize}
+\begin{itemize}[left=3mm]
 \item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$;
 \item \f{lattice\_invariants(omega1, omega3)} --- returns
   $\{g_2,\ g_3,\ \Delta,\ \mathrm{G}\}$;
@@ -1142,8 +1142,8 @@ Note that the call sequence:
   {first ws, second ws};
 \end{verbatim}
 should reproduce the list \{g2, g3\}, perhaps with small rounding errors. The
-corresponding sequence with the calls to \f{lattice\_generators} and
-\f{lattice\_invariants} interchanged (and g2 \& g3 replaced by w1 \& w3),
+corresponding sequence with the function \f{lattice\_generators} being called after
+\f{lattice\_invariants} (and g2 \& g3 replaced by w1 \& w3),
 in general, will not produce the same pair of lattice generators since the
 generators are only defined up to a unimodular bilinear transformation.
 

@@ -40,8 +40,8 @@ parameters:
     \item a list of expressions with two (identical) unknowns,
       e.g., \linebreak
       \texttt{\{x\textasciicircum{2}+y\textasciicircum{2},\allowbreak x\textasciicircum{2}-y\textasciicircum{2}\}}.
-    \item a parametic expression of the form \texttt{point(<u>,<v>)} or
-      \texttt{point(<u>,\allowbreak <v>,<w>)} where \texttt{u,v,w} are
+    \item a parametic expression of the form \texttt{point(<u>,<v>)} (for 2D plots) or
+      \texttt{point(<u>,\allowbreak <v>,<w>)} (for 3D plots) where \texttt{u,v,w} are
       expressions which depend of one or two parameters; if there is one
       parameter, the object describes a curve in the plane (only \texttt{u} and
       \texttt{v}) or in 3D space; if there are two parameters, the object
@@ -224,7 +224,7 @@ The following example works for a PostScript printer.  If your printer uses a
 different communication, please find the correct setting for the \texttt{terminal}
 variable in the {\Gnuplot} documentation.
 
-For a PostScript printer, add the options \texttt{terminal=postscript} and \allowbreak
+For a PostScript output, you need to add the options \texttt{terminal=postscript} and \allowbreak
 \texttt{output="filename"} to your plot command, e.g.,
 \begin{verbatim}
 plot(sin x, x=(0 .. 10), terminal=postscript,
