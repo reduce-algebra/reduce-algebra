@@ -144,7 +144,8 @@ to the same $x$ value.  For example:
 \end{description}
 Here is an example of boundary conditions:
 \begin{verbatim}
-odesolve(df(y,x,2) = y, y, x, {{x = 0, y = A}, {x = 1, y = B}});
+odesolve(df(y,x,2) = y, y, x,
+         {{x = 0, y = A}, {x = 1, y = B}});
 
         2*x      2*x          2
      - e   *a + e   *b*e + a*e  - b*e
@@ -154,7 +155,8 @@ odesolve(df(y,x,2) = y, y, x, {{x = 0, y = A}, {x = 1, y = B}});
 \end{verbatim}
 Here is an example of initial conditions:
 \begin{verbatim}
-odesolve(df(y,x,2) = y, y, x, {x = 0, y = A, df(y,x) = B});
+odesolve(df(y,x,2) = y, y, x,
+         {x = 0, y = A, df(y,x) = B});
 
      2*x      2*x
     e   *a + e   *b + a - b
@@ -164,7 +166,8 @@ odesolve(df(y,x,2) = y, y, x, {x = 0, y = A, df(y,x) = B});
 \end{verbatim}
 Here is an example of combined conditions:
 \begin{verbatim}
-odesolve(df(y,x,2) = y, y, x, {{x=0, y=A}, {x=1, df(y,x)=B}});
+odesolve(df(y,x,2) = y, y, x,
+         {{x=0, y=A}, {x=1, df(y,x)=B}});
 
      2*x      2*x          2
     e   *a + e   *b*e + a*e  - b*e
@@ -712,7 +715,7 @@ denominator that must be made identically zero by the solution.
 \noindent\hrulefill
 
 \begin{description}
-\item[Hook names:] \texttt{ODESolve\_Before\_Non\_Hook},
+\item[Hook names:] \texttt{ODESolve\_Before\_Non\_Hook},\\
 \texttt{ODESolve\_After\_Non\_Hook}.
 \item[Run before and after:] The nonlinear ODE solver.
 \item[Arguments:] 4
@@ -728,10 +731,10 @@ denominator that must be made identically zero by the solution.
 \end{description}
 
 \noindent\hrulefill
-\pagebreak
+%\pagebreak
 
 \begin{description}
-\item[Hook names:] \texttt{ODESolve\_Before\_Lin\_Hook},
+\item[Hook names:] \texttt{ODESolve\_Before\_Lin\_Hook},\\
 \texttt{ODESolve\_After\_Lin\_Hook}.
 \item[Run before and after:] The general linear ODE solver.
 \item[Arguments:] 6
