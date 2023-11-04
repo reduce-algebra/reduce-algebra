@@ -290,11 +290,14 @@ randpoly({x, y}, terms = 20);
     5       4         4       3  2       3         3
 31*x  - 17*x *y - 48*x  - 15*x *y  + 80*x *y + 92*x
 
-       2  3      2         2         4         3         2
- + 86*x *y  + 2*x *y - 44*x  + 83*x*y  + 85*x*y  + 55*x*y
+       2  3      2         2         4         3
+ + 86*x *y  + 2*x *y - 44*x  + 83*x*y  + 85*x*y 
 
-                       5       4      3       2
- - 27*x*y + 33*x - 98*y  + 51*y  - 2*y  + 70*y  - 60*y - 10
+         2                      5       4      3
+ + 55*x*y - 27*x*y + 33*x - 98*y  + 51*y  - 2*y 
+
+       2
+ + 70*y  - 60*y - 10
 
 
 randpoly({x, sin(x), cos(x)});
@@ -316,30 +319,34 @@ randpoly(z, expons = rand(-5 .. 5));
  - 39*z  + 14*z  - 77*z   - 37*z   - 8*z
 
 off div; on allfac;
-% randpoly([x], coeffs = proc() randpoly(y) end);  % Maple
+% Maple
+% randpoly([x], coeffs = proc() randpoly(y) end);
 randpoly({x}, coeffs = proc randpoly(y));
 
-    5  5       5  4       5  3       5  2       5         5
-95*x *y  - 53*x *y  - 78*x *y  + 69*x *y  + 58*x *y - 58*x
+    5  5       5  4       5  3       5  2       5  
+95*x *y  - 53*x *y  - 78*x *y  + 69*x *y  + 58*x *y
 
-       4  5       4  4       4  3       4  2       4
- + 64*x *y  + 93*x *y  - 21*x *y  + 24*x *y  - 13*x *y
+       5       4  5       4  4       4  3       4  2
+ - 58*x  + 64*x *y  + 93*x *y  - 21*x *y  + 24*x *y 
 
-       4       3  5       3  4       3  3       3  2
- - 28*x  - 57*x *y  - 78*x *y  - 44*x *y  + 37*x *y
+       4         4       3  5       3  4       3  3
+ - 13*x *y - 28*x  - 57*x *y  - 78*x *y  - 44*x *y 
 
-       3         3       2  5       2  4    2  3       2  2
- - 64*x *y - 95*x  - 71*x *y  - 69*x *y  - x *y  - 49*x *y
+       3  2       3         3       2  5       2  4
+ + 37*x *y  - 64*x *y - 95*x  - 71*x *y  - 69*x *y 
 
-       2         2         5         4         3         2
- + 77*x *y + 48*x  + 38*x*y  + 93*x*y  - 65*x*y  - 83*x*y
+    2  3       2  2       2         2         5
+ - x *y  - 49*x *y  + 77*x *y + 48*x  + 38*x*y 
 
-                       5       4       3       2
- + 25*x*y + 51*x + 35*y  - 18*y  - 59*y  + 73*y  - y + 31
+         4         3         2                       5
+ + 93*x*y  - 65*x*y  - 83*x*y  + 25*x*y + 51*x + 35*y 
 
+       4       3       2         
+ - 18*y  - 59*y  + 73*y  - y + 31
 
 % A more conventional alternative is ...
-%   procedure r; randpoly(y)$  randpoly({x}, coeffs = r);
+%   procedure r; randpoly(y)$
+%   randpoly({x}, coeffs = r);
 % or, in fact, equivalently ...
 %   randpoly({x}, coeffs = procedure r; randpoly(y));
 
@@ -348,11 +355,14 @@ randpoly({x, y}, dense);
     5       4         4       3  2       3         3
 85*x  + 43*x *y + 68*x  + 87*x *y  - 93*x *y - 20*x
 
-       2  2       2        2         4         3         2
- - 74*x *y  - 29*x *y + 7*x  + 10*x*y  + 62*x*y  - 86*x*y
+       2  2       2        2         4         3
+ - 74*x *y  - 29*x *y + 7*x  + 10*x*y  + 62*x*y 
 
-                       5       4       3       2
- + 15*x*y - 97*x - 53*y  + 71*y  - 46*y  - 28*y  + 79*y + 44
+         2                       5       4       3
+ - 86*x*y  + 15*x*y - 97*x - 53*y  + 71*y  - 46*y 
+
+       2            
+ - 28*y  + 79*y + 44
 \end{verbatim}
 
 

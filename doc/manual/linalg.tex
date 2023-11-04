@@ -714,8 +714,8 @@ See: \texttt{get\_columns}.
 It returns a list of orthogonal normalised vectors.
 
 \item[Examples:]\mbox{}\\*
-\texttt{gram\_schmidt(\{\{1,0,0\},\{1,1,0\},\{1,1,1\}\})} =
-\{\{1,0,0\},\{0,1,0\},\{0,0,1\}\}\\
+\texttt{gram\_schmidt(\{\{1,0,0\},\{1,1,0\},\{1,1,1\}\})} = \\
+     \hspace*{5cm}\{\{1,0,0\},\{0,1,0\},\{0,0,1\}\}\\
 \texttt{gram\_schmidt(\{\{1,2\},\{3,4\}\})} $\displaystyle=
 \{\{ \frac{1}{{\sqrt{5}}} , \frac{2}{\sqrt{5}} \},
 \{ \frac{2*\sqrt{5}}{5} , \frac{-\sqrt{5}}{5} \}\}$
@@ -838,8 +838,7 @@ variable\_list &:-& either a single variable or a list of variables.
 \item[Synopsis:]\mbox{}\\*
 \texttt{mat\_jacobian} computes the jacobian matrix of \texttt{expr\_list} w.r.t.
 \texttt{variable\_list}.
-
-This is a matrix whose $(i,j)$th entry
+This is a matrix whose entry at position $(i,j)$
 is \texttt{df(expr\_list(i),variable\_list(j))}.  The matrix is $n\times m$
 where $n$ is the number of variables and $m$ the number of expressions.
 
@@ -922,13 +921,14 @@ numeric entries or imaginary entries with numeric coefficients.}
 \(
 \mathcal{K} = \begin{pmatrix} 1 & 3 & 5 \\ -4 & 3 & 7 \\ 8 & 6 & 4 \end{pmatrix}
 \)
-
-\texttt{lu} $:=$ \texttt{lu\_decom}\((\mathcal{K}) =
+\begin{multline*}
+\text{\var{lu}} := \text{\f{lu\_decom}} (\mathcal{K}) = \\
 \left\{
         \begin{pmatrix} 8 & 0 & 0 \\ -4 & 6 & 0 \\ 1 & 2.25 & 1.125 1 \end{pmatrix},
         \begin{pmatrix} 1 & 0.75 & 0.5 \\ 0 & 1 & 1.5 \\ 0 & 0 & 1 \end{pmatrix},
 	[\; 3 \; 2 \; 3 \; ]
-\right\}\)
+\right\}
+\end{multline*}
 
 \(\texttt{first lu * second lu} =
         \begin{pmatrix} 8 & 6 & 4 \\ -4 & 3 & 7 \\ 1 & 3 & 5 \end{pmatrix}\)
@@ -1245,7 +1245,7 @@ range $-\text{limit} < \text{entry} < \text{limit}$.
 \ttindexswitch[LINALG]{lower\_matrix}
 \ttindexswitch[LINALG]{upper\_matrix}
 \item[Switches:]\mbox{}\\*
-\begin{tabular}{l l p{0.685\linewidth}}
+\begin{tabular}{l l p{0.65\linewidth}}
 \texttt{imaginary}  &:-& if
 on, then matrix entries are $x+iy$ where $-\text{limit} < x,y < \text{limit}$.\\
 \texttt{not\_negative} &:-& if on then $0 <
@@ -1265,12 +1265,14 @@ matrix is upper triangular. \\
     - 9.418455 & - 9.94318 & - 0.730980
   \end{pmatrix}\)
 
-  \texttt{on only\_integer, not\_negative, upper\_matrix, imaginary;}
+  \sw{on only\_integer}, \sw{not\_negative}, \sw{upper\_matrix}, \sw{imaginary;}
 
-  \texttt{random\_matrix}\((4,4,10) =
+  \begin{multline*}
+  \text{\var{random\_matrix}}(4,4,10) = \\
   \begin{pmatrix} 2*i+5 & 3*i+7 & 7*i+3 & 6 \\ 0 & 2*i+5 &
     5*i+1 & 2*i+1 \\ 0 & 0 & 8 & i \\ 0 & 0 & 0& 5*i+9
-  \end{pmatrix}\)
+  \end{pmatrix}    
+\end{multline*}
 \end{description}
 
 
@@ -1360,18 +1362,20 @@ the pivot only to the rows specified in row\_list.
 \ttindextype[LINALG]{simplex}{operator}
 
 \begin{description}
-\item[Syntax:]\mbox{}\\*
-\texttt{simplex(max/min,objective function,\{linear
-inequalities\},[\{bounds\}]);}\\[2mm]
+\item[Syntax:]
+  \begin{syntax}
+    \f{simplex(}\meta{max/min},\meta{objective function},\{\meta{linear inequalities}\},\\
+    \hphantom{\f{simplex(}}\optional{\{\meta{bounds}\}})
+  \end{syntax}
 \begin{tabular}{l l p{.63\linewidth}}
-  max/min             & :- & either max or min
+  \meta{max/min}             & :- & either \var{max} or \var{min}
     (signifying maximise and minimise). \\
-  objective function  & :- & the function you are maximising or
+  \meta{objective function}  & :- & the function you are maximising or
   minimising. \\
-  linear inequalities & :- & the constraint
-    inequalities. Each one must be of the form
-    \textit{sum of variables ($<=,=,>=$) number}.\\
-  bounds & :- & bounds on the variables as
+  \meta{linear inequalities} & :- & the constraint
+    inequalities. Each one must be of the form\newline
+    \meta{sum of variables} \meta{compop} \meta{number}\newline where \meta{compop} is one of \f{<=},\f{=},\f{>=}. \\
+  \meta{bounds} & :- & bounds on the variables as
     specified for the LP file format. Each bound is of one of the forms $l\leq
     v$, $v\leq u$, or $l\leq v\leq u$, where $v$ is a variable and $l$, $u$ are
     numbers or \texttt{infinity} or \texttt{-infinity}
@@ -1396,7 +1400,8 @@ variables are non-negative.
 \begin{verbatim}
 simplex(max,x+y,{x>=10,y>=20,x+y<=25});
 
-***** Error in simplex: Problem has no feasible solution.
+*****
+Error in simplex: Problem has no feasible solution.
 
 simplex(max,10x+5y+5.5z,{5x+3z<=200,x+0.1y+0.5z<=12,
         0.1x+0.2y+0.3z<=9, 30x+10y+50z<=1500});

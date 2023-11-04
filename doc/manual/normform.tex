@@ -81,7 +81,7 @@ $x$ is the variable name.
 Calculations are performed in $\mathbf{Q}$. To extend this field the
 \package{ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-\item[Synopsis:]\mbox{}\\*
+\item[Synopsis:]\mbox{\hspace*{8cm}}
 \begin{itemize}
 \item The Smith normal form $\mathcal{S}$ of an n by m matrix $\mathcal{A}$
 with univariate polynomial entries in $x$ over a field $\mathbf{F}$ is
@@ -118,7 +118,7 @@ computed. That is, the polynomials are then regarded as elements of the
 
 \end{itemize}
 
-\item[Example:]\mbox{}\\*
+\item[Example:]\mbox{\hspace*{8cm}}
 %\texttt{load\_package normform;}
 \[
  \mathcal{A} = \begin{pmatrix} x & x+1 \\ 0 & 3*x^2 \end{pmatrix}
@@ -147,8 +147,7 @@ It returns $\{\mathcal{S}, \mathcal{P}, \mathcal{ P}^{-1}\}$ where $\mathcal{S}$
 $\mathcal{P}$, and $\mathcal{ P}^{-1}$ are such that $\mathcal{P S P}^{-1} =
 \mathcal{A}$.
 
-
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]\mbox{\hspace*{8cm}}
 
 \begin{itemize}
 \item The Smith normal form $\mathcal{ S}$ of an $n$ by $m$ matrix
@@ -177,18 +176,18 @@ $\mathcal{ A}$ with integer entries is computed.
       multiples of one row (column) to another.
 \end{itemize}
 
-\item[Example]\mbox{}\\*
+\item[Example]\mbox{\hspace*{8cm}}
 %\texttt{load\_package normform;}
 \[
  \mathcal{A} =
     \begin{pmatrix} 9 & -36 & 30 \\ -36 & 192 & -180 \\ 30 & -180 & 180 \end{pmatrix}
 \]
-\[
-\mathtt{smithex\_int}(\mathcal{A}) =
+\begin{multline*}
+\text{\texttt{smithex\_int}}(\mathcal{A}) = \\
 \left\{ \begin{pmatrix} 3 & 0 & 0 \\ 0 & 12 & 0 \\ 0 & 0 & 60 \end{pmatrix},
         \begin{pmatrix} -17 & -5 & -4 \\ 64 & 19 & 15 \\ -50 & -15 & -12 \end{pmatrix},
         \begin{pmatrix} 1 & -24 & 30 \\ -1 & 25 & -30 \\ 0 & -1 & 1 \end{pmatrix} \right\}
-\]
+\end{multline*}
 \end{description}
 
 \subsection{frobenius}
@@ -215,7 +214,7 @@ Calculations are performed in $\mathbf{Q}$. To extend this field the
 \f{frobenius} can be calculated in a modular base. For details see
 subsection \ref{sec:normform-modular}.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]\mbox{\hspace*{8cm}}
 
 \begin{itemize}
 \item $\mathcal{F}$ has the following structure:
@@ -234,7 +233,7 @@ subsection \ref{sec:normform-modular}.
       we require that $p_{i}$ divides $p_{i+1}$ as above).
 \end{itemize}
 
-\item[Example]\mbox{}\\*
+\item[Example]\mbox{\hspace*{8cm}}
 %\texttt{load\_package normform;}
 \[
 \mathcal{A} = \begin{pmatrix} \frac{-x^2+y^2+y}{y} &
@@ -280,7 +279,7 @@ Calculations are performed in $\mathbf{Q}$. To extend this field the
 \f{ratjordan} can be calculated in a modular base. For details see
 subsection \ref{sec:normform-modular}.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]\mbox{\hspace*{8cm}}
 \begin{itemize}
 \item $\mathcal{R}$ has the following structure:
       \[
@@ -303,7 +302,7 @@ subsection \ref{sec:normform-modular}.
       unmarked entries are zero.
 \end{itemize}
 
-\item[Example]\mbox{}\\*
+\item[Example]\mbox{\hspace*{8cm}}
 %\texttt{load\_package normform;}
 \[
 \mathcal{A} = \begin{pmatrix} x+y & 5 \\ y & x^2 \end{pmatrix}
@@ -355,7 +354,7 @@ $\Rightarrow \xi_{12}$. The example below shows the
 output when this switch is on.
 \fi
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]\mbox{\hspace*{8cm}}
 \begin{itemize}
 \item A \emph{Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$
       upper triangular matrix of the form:
@@ -398,7 +397,7 @@ output when this switch is on.
       $\mathcal{P}^{-1}$ are as above.
 \end{itemize}
 
-\item[Example]\mbox{}\\*
+\item[Example]\mbox{\hspace*{8cm}}
 %
 %\texttt{load\_package normform;}\\
 %\texttt{on looking\_good;}
@@ -427,7 +426,8 @@ output when this switch is on.
 \[
 \{ \xi = \sqrt{y^3+1} + 2,\, \xi = -\sqrt{y^3+1}+2 \} \\
 \]
-\texttt{J = sub(\{xi(1,1)=sqrt(y\^{}3+1)+2, xi(1,2)=-sqrt(y\^{}3+1)+2\},
+\texttt{J = sub(\{xi(1,1)=sqrt(y\^{}3+1)+2,\\
+   \mbox{}\ \ \ \ \ \ \ \ \ xi(1,2)=-sqrt(y\^{}3+1)+2\},\\
    \mbox{}\ \ \ \ \ \ \ \ first  jordansymbolic (A))}
 %
 \[
@@ -464,11 +464,11 @@ Calculations are performed in $\mathbf{Q}$. To extend this field the
 In certain polynomial cases the switch \sw{fullroots} is turned on to compute the
 zeroes. This can lead to the calculation taking a long time, as well as
 the output being very large. In this case a message \\
-\texttt{***** WARNING: fullroots turned on. May take a while.}\\
+\texttt{*****\newline WARNING: fullroots turned on. May take a while.}\\
 will be printed. It may be
 better to kill the calculation and compute \f{jordansymbolic} instead.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]\mbox{\hspace*{8cm}}
 \begin{itemize}
 \item The Jordan normal form $\mathcal{J}$ with entries in an algebraic
       extension of $\mathbf{Q}$ is computed.
@@ -506,7 +506,7 @@ better to kill the calculation and compute \f{jordansymbolic} instead.
       approximated by floating point numbers.
 \end{itemize}
 
-\item[Example]\mbox{}\\*
+\item[Example]\mbox{\hspace*{8cm}}
 %
 %\texttt{load\_package normform;}
 \[
@@ -528,9 +528,8 @@ better to kill the calculation and compute \f{jordansymbolic} instead.
 \subsection{Algebraic extensions: Using the \textsc{arnum} package}
 \label{sec:normform-arnum}
 
-%The package is loaded by the command \texttt{load\_package arnum;}.
 The algebraic
-field $\mathbf{Q}$ can now be extended. For example,
+field $\mathbf{Q}$ can now be extended. E.g.,
 \texttt{defpoly sqrt2**2-2;} will extend it to include ${\sqrt{2}}$ (defined here by
 \texttt{sqrt2}). The \package{ARNUM} package was written by Eberhard
 Schr\"ufer and is described in section \ref{sec:package-arnum}.

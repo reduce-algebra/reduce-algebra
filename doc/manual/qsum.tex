@@ -322,7 +322,8 @@ algorithm.
 
 Here are some other simple examples:
 \begin{redoutput}
-\redprompt qgosper(qpochhammer(q^(-n),q,k)*z^k/qpochhammer(q,q,k),q,k);
+\redprompt qgosper(qpochhammer(q^(-n),q,k)*z^k
+                    /qpochhammer(q,q,k),q,k);
 
 ***** No q-hypergeometric antidifference exists.
 
@@ -373,10 +374,12 @@ to \f{qsumrecursion}:
 		\texttt{k} is the summation variable and \texttt{n} the recursion
 		variable, \texttt{q} is a symbol.
 	\item \texttt{qsumrecursion(upper,lower,q,z,n)} is a shortcut for \\
-		\texttt{qsumrecursion(qphihyperterm(upper,lower,q,z,k),q,k,n)}
+          \texttt{qsumrecursion(qphihyperterm(upper,lower,q,z,k),\\
+                 \hspace*{3cm} q,k,n)}
 	\item \texttt{qsumrecursion(f,upper,lower,q,z,n)} is a similar
 		shortcut for\\
-		\texttt{qsumrecursion(f*qphihyperterm(upper,lower,q,z,k),q,k,n)},
+		\texttt{qsumrecursion(f*qphihyperterm(upper,lower,q,z,k),\\
+                  \hspace*{3cm} q,k,n)},
 \end{itemize}
 %
 i.\,e.\ \texttt{upper} and \texttt{lower} are lists of upper and lower
@@ -487,24 +490,28 @@ equation (\eqnref{eq:f_n_k-recursion}):
 \redprompt lhside:= qsimpcomb(sub(summ(n)=part(proof,3),
     summ(n-1)=sub(n=n-1,part(proof,3)),part(proof,1)));
 
-            k   k   n         n                       1
-           z *(q *(q  - z) + q *(z - 1))*qpochhammer(----,q,k)
-                                                       n
-                                                      q
-lhside := -----------------------------------------------------
-                         n
-                       (q  - 1)*qpochhammer(q,q,k)
+            k   k   n         n
+lhside := (z *(q *(q  - z) + q *(z - 1))
+
+                         1            n
+           *qpochhammer(----,q,k))/((q  - 1)
+                          n
+                         q
+
+             *qpochhammer(q,q,k))
 
 \redprompt rhside:= qsimpcomb((part(proof,2)*part(proof,3)-
     sub(k=k-1,part(proof,2)*part(proof,3))));
 
-               k    k    n       n   k                    1
-            - z *((q  - q )*z - q *(q  - 1))*qpochhammer(----,q,k)
-                                                           n
-                                                          q
-rhside := ---------------------------------------------------------
-                           n
-                         (q  - 1)*qpochhammer(q,q,k)
+               k    k    n       n   k
+rhside := ( - z *((q  - q )*z - q *(q  - 1))
+
+                         1            n
+           *qpochhammer(----,q,k))/((q  - 1)
+                          n
+                         q
+
+             *qpochhammer(q,q,k))
 
 \redprompt qsimpcomb((rhside-lhside)/part(proof,3));
 
@@ -524,73 +531,118 @@ polynomials.
 \begin{redoutput}
 \redprompt operator qlaguerre,qcharlier;
 
-\redprompt qsumrecursion(qpochhammer(q^(alpha+1),q,n)/qpochhammer(q,q,n),
-    \{q^(-n)\}, \{q^(alpha+1)\}, q, -x*q^(n+alpha+1), qlaguerre(n));
+\redprompt qsumrecursion(qpochhammer(q^(alpha+1),q,n)/
+           qpochhammer(q,q,n),
+           \{q^(-n)\}, \{q^(alpha+1)\}, q, -x*q^(n+alpha+1),
+           qlaguerre(n));
 
            n       alpha + n   n
-((q + 1 - q )*q - q         *(q *x + q))*qlaguerre(n - 1)
+((q + 1 - q )*q - q         *(q *x + q))
 
-      alpha + n                           n
- + ((q          - q)*qlaguerre(n - 2) + (q  - 1)*qlaguerre(n))*q
+*qlaguerre(n - 1) + (
 
-\redprompt qsumrecursion(\{q^(-n),q^(-x)\},\{0\},q,-q^(n+1)/a,qcharlier(n));
+     alpha + n
+   (q          - q)*qlaguerre(n - 2)
+
+        n
+    + (q  - 1)*qlaguerre(n))*q
+
+\redprompt qsumrecursion(\{q^(-n),q^(-x)\},\{0\},q,-q^(n+1)/a,
+           qcharlier(n));
 
       x            n       n       2*n
- - ((q *((q + 1 - q )*a + q )*q - q   )*qcharlier(n - 1)
+ - ((q *((q + 1 - q )*a + q )*q - q   )
 
-	  x    n          n
-  + q *((q  + a*q)*(q  - q)*qcharlier(n - 2) - qcharlier(n)*a*q))
+                         x
+    *qcharlier(n - 1) + q *(
+
+         n          n
+       (q  + a*q)*(q  - q)*qcharlier(n - 2)
+
+        - qcharlier(n)*a*q))
 
 \redprompt on qsum_nullspace;
 
 \redprompt term:= qpochhammer(q^(alpha+1),q,n)/qpochhammer(q,q,n)*
-    qphihyperterm(\{q^(-n),q^(n+alpha+beta+1),
-    q^(alpha/2+1/4)*exp(I*theta), q^(alpha/2+1/4)*exp(-I*theta)\},
-    \{q^(alpha+1), -q^((alpha+beta+1)/2), -q^((alpha+beta+2)/2)\},
-    q,q,k)$
+       qphihyperterm(\{q^(-n),q^(n+alpha+beta+1),
+                      q^(alpha/2+1/4)*exp(I*theta),
+                      q^(alpha/2+1/4)*exp(-I*theta)\},
+                    \{q^(alpha+1),
+                     -q^((alpha+beta+1)/2),
+                     -q^((alpha+beta+2)/2)\},
+       q,q,k)$
 
 \redprompt qsumrecursion(term,q,k,n,2);
 \end{redoutput}
 {\footnotesize
 \begin{alltt}
+
       n  i*theta   alpha   beta   n
- - ((q *e       *(q     *(q    *(q *(q + 1) - q) - q
+ - ((q *e       *(q     *(q    *(q *(q + 1) - q)
 
-               alpha + beta + n           n    beta + n
-            + q                *(q + 1 - q  - q        )) -
+                   alpha + beta + n
 
-         (alpha + beta)/2   alpha   n                beta + n           n
-        q                *(q     *(q *(q + 1) - q + q        *(q + 1 - q ))
+
+                      n    beta + n
+           *(q + 1 - q  - q        )) - 
+
+         (alpha + beta)/2   alpha   n
+        q                *(q     *(q *(q + 1) - q
+
+                  beta + n           n
+               + q        *(q + 1 - q ))
 
                 2*alpha + beta + 2*n
-            - (q                     + q)))*(sqrt(q) + q) +
+            - (q                     + q)))
 
-      (2*alpha + 1)/4   2*i*theta        alpha + beta + 2*n    2
-     q               *(e          + 1)*(q                   - q )
+                       (2*alpha + 1)/4
+     *(sqrt(q) + q) + q
 
-        alpha + beta + 2*n         alpha + beta + 2*n
-     *(q                   - 1))*(q                   - q)*summ(n - 1) -
+        2*i*theta        alpha + beta + 2*n    2
+     *(e          + 1)*(q                   - q )
 
-     i*theta    (alpha + beta + 2*n)/2   (alpha + beta + 2*n)/2
-    e       *((q                      *(q                       + q)
+        alpha + beta + 2*n
+     *(q                   - 1))
+
+       alpha + beta + 2*n
+    *(q                   - q)*summ(n - 1) - 
+
+     i*theta    (alpha + beta + 2*n)/2
+    e       *((q
 
                   (alpha + beta + 2*n)/2
-               *(q                       - q)*(sqrt(q) + q) +
+               *(q                       + q)
 
-                 (2*alpha + 2*beta + 4*n + 1)/2
-               (q                               + q)
+                  (alpha + beta + 2*n)/2
+               *(q                       - q)
 
-                  alpha + beta + 2*n    2     alpha + beta + n
-               *(q                   - q ))*(q                 - 1)
+               *(sqrt(q) + q) + (
 
-                 n                  alpha               alpha + beta + 2*n
-              *(q  - 1)*summ(n) + (q     *(sqrt(q)*q + q                  )
+                   (2*alpha + 2*beta + 4*n + 1)/2
+                  q
 
-                     (3*alpha + beta + 2*n)/2
-                  + q                        *(sqrt(q) + q))
+                          alpha + beta + 2*n    2
+                   + q)*(q                   - q )
 
-                 alpha + beta + 2*n        alpha + n        beta + n
-              *(q                   - 1)*(q          - q)*(q         - q)
+                   alpha + beta + n        n
+               )*(q                 - 1)*(q  - 1)
+
+                           alpha
+              *summ(n) + (q     *(sqrt(q)*q
+
+                        alpha + beta + 2*n
+                     + q                  ) + 
+
+                  (3*alpha + beta + 2*n)/2
+                 q
+
+                 *(sqrt(q) + q))
+
+                 alpha + beta + 2*n
+              *(q                   - 1)
+
+                 alpha + n        beta + n
+              *(q          - q)*(q         - q)
 
               *summ(n - 2)))
 
@@ -640,7 +692,7 @@ e.\,g.\ complex variables.
 
 The following synomyms may be used:
 \begin{itemize}
-	\item \texttt{up\_qratio(f,k)} or \texttt{qratio(f,k)} for
+	\item \texttt{up\_qratio(f,k)} or \texttt{qratio(f,k)} for \\
 		\texttt{qsimpcomb(sub(k=k+1,f)/f)} and
 	\item \texttt{down\_qratio(f,k)} for \texttt{qsimpcomp(f/sub(k=k-1,f))}.
 \end{itemize}
@@ -703,7 +755,7 @@ the \texttt{QSUM} package:
 
 		If it is set on, instead of simply returning the
 		resulting recurrence equation (for the sum)---if one
-		exists---\texttt{qsumrecursion} returns
+		exists---calling \texttt{qsumrecursion} returns
 		a list \texttt{\{rec,cert,f,k,dir\}} with
 		five items: The first entry contains the
 		recurrence equation, while the other items enable you to
@@ -714,10 +766,10 @@ the \texttt{QSUM} package:
 		by the input term \\texttt{f} (with the corresponding shifts
 		in \texttt{n}) then the following equation is valid:
 		\[  \texttt{r = cert*f - sub(k=k-1,cert*f)}  \]
+                if \texttt{dir=downward\_antidifference}
 		or
 		\[  \texttt{r = sub(k=k+1,cert*f) - cert*f}  \]
-		if \texttt{dir=downward\_antidifference} or
-		\texttt{dir=upward\_antidifference} respectively.
+		if \texttt{dir=upward\_antidifference}.
 \end{itemize}
 
 The global variable \var{qsumrecursion\_recrange!*} controls for
@@ -731,7 +783,7 @@ to search for. By default it is set to \texttt{\{1,5\}}.
 \subsection{Messages}
 
 The following messages may occur:
-\begin{itemize}
+\begin{itemize}[left=1mm]
 %
 	\item If your call to \texttt{qgosper} or \texttt{qsumrecursion}
 		reveals some incorrect syntax, e.\,g.\ wrong number of
