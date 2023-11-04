@@ -33,54 +33,63 @@ same as the syntax of the majority of programming languages.  We aimed
 at speeding up the process of formula typesetting, because we are
 convinced, that the writing of correct complicated formulas in the
 \REDUCE{} syntax is a much more simpler task than writing them in the
-\LaTeX{} syntax full of keywords and special characters \verb+ \, {, ^+
-etc.  It is clear, that not every formula produced by the interface is
+\LaTeX{} syntax full of keywords and special characters
+\texttt{\textbackslash}, \texttt{\textbraceleft}, \texttt{\textasciicircum},
+etc.  It is clear that not every formula produced by the interface is
 typeset in the best format from an aesthetic point of view.  When a user
 is not satisfied with the result, he can add some \LaTeX{} commands to the
 \REDUCE{} output - \LaTeX{} input.
 
 The interface is connected to \REDUCE{} by three new switches and
-several statements.  To activate the \LaTeX{} output mode the switch {\tt
-latex} must be set {\tt on}.  this switch, similar to the switch {\tt
-fort} producing FORTRAN output, being {\tt on} causes all outputs to be
-written in the \LaTeX{} syntax of formulas.  The switch {\tt VERBATIM} is
-used for input printing control.  If it is {\tt on} input to \REDUCE{} system
+several statements.  To activate the \LaTeX{} output mode the switch \sw{latex}
+must be set \texttt{on}.  this switch, similar to the switch \sw{fort}
+producing FORTRAN output, being \texttt{on} causes all outputs to be
+written in the \LaTeX{} syntax of formulas.  The switch \sw{verbatim} is
+used for input printing control.  If it is \texttt{on} input to \REDUCE{} system
 is typeset in \LaTeX{} verbatim environment after the line containing
-the string {\tt REDUCE Input:}.
+the string \texttt{REDUCE Input:}.
 
-The switch {\tt lasimp} controls the algebraic evaluation of input
-formulas.  If it is {\tt on} every formula is evaluated, simplified and
+The switch \sw{lasimp} controls the algebraic evaluation of input
+formulas.  If it is \texttt{on} every formula is evaluated, simplified and
 written in the form given by ordinary \REDUCE{} statements and switches
-such as {\tt factor}, {\tt order}, {\tt rat} etc.  In the case when the
-{\tt lasimp} switch is {\tt off} evaluation, simplification or
+such as \f{factor}, \f{order}, \sw{rat} etc.  In the case when the
+\sw{lasimp} switch is \texttt{off} evaluation, simplification or
 reordering of formulas is not performed and \REDUCE{} acts only as a
 formula parser and the form of the formula output is exactly the same as
 that of the input, the only difference remains in the syntax.  The mode
-{\tt off lasimp} is designed especially for typesetting of formulas for
+\texttt{off lasimp} is designed especially for typesetting of formulas for
 which the user needs preservation of their structure.  This switch has
-no meaning if the switch {\tt Latex} is {\tt off} and thus is working
+no meaning if the switch \texttt{Latex} is \texttt{off} and thus is working
 only for \LaTeX{} output.
 
+\ttindextype[RLFI]{defid}{statement}
+\hypertarget{command:DEFID}{}
 For every  identifier  used  in  the  typeset  \REDUCE{}  formula
-the following properties can be defined by the statement {\tt defid}:
+the following properties can be defined by the statement \texttt{defid}:
 \begin{itemize}
 \item its printing symbol (Greek letters can be used).
 \item the font in which the symbol will be typeset.
 \item accent which will be typeset above the symbol.
 \end{itemize}
 
+\ttindextype[RLFI]{defindex}{statement}
+\hypertarget{command:DEFINDEX}{}
 Symbols with indexes are treated in \REDUCE{} as operators.  Each index
 corresponds to an argument of the operator.  The meaning of operator
 arguments (where one wants to typeset them) is declared by the statement
-{\tt defindex}.  This statement causes the arguments to be typeset as
+\texttt{defindex}.  This statement causes the arguments to be typeset as
 subscripts or superscripts (on left or right-hand side of the operator)
 or as arguments of the operator.
 
-The statement {\tt mathstyle} defines the style of formula typesetting.
-The variable {\tt laline!*} defines the length of output lines.
+\ttindextype[RLFI]{mathstyle}{statement}
+\hypertarget{command:MATHSTYLE}{}\
+ttindextype[RLFI]{laline"!*}{variable}
+\hypertarget{reserved:LALINE!*}{}
+The statement \f{mathstyle} defines the style of formula typesetting.
+The variable \var{laline!*} defines the length of output lines.
 
 The fractions with horizontal divide bars are typeset by using the
-new \REDUCE{} infix operator \verb+//+.  This operator is not
+new \REDUCE{} infix operator \f{//}.  This operator is not
 algebraically simplified.  During typesetting of powers the checking on
 the form of the power base and exponent is performed to determine the
 form of the typeset expression (eg.  sqrt symbol, using parentheses).
@@ -88,13 +97,13 @@ form of the typeset expression (eg.  sqrt symbol, using parentheses).
 Some special forms can be typeset by using \REDUCE{} prefix operators.
 These are as follows:
 \begin{itemize}
-\item {\tt int} - integral of an expression.
-\item {\tt dint} - definite integral of an expression.
-\item {\tt df} - derivative of an expression.
-\item {\tt pdf} - partial derivative of an expression.
-\item {\tt sum} - sum of expressions.
-\item {\tt product} - product of expressions.
-\item {\tt sqrt} - square root of expression.
+\item \texttt{int} - integral of an expression.
+\item \texttt{dint} - definite integral of an expression.
+\item \texttt{df} - derivative of an expression.
+\item \texttt{pdf} - partial derivative of an expression.
+\item \texttt{sum} - sum of expressions.
+\item \texttt{product} - product of expressions.
+\item \texttt{sqrt} - square root of expression.
 \end{itemize}
 There are still some problems unsolved in the present version of the
 interface as follows:
@@ -107,7 +116,6 @@ interface as follows:
 \end{itemize}
 
 
-
 \centerline\textbf{Remark}
 
 After finishing presented interface, we have found another work
@@ -116,104 +124,111 @@ been described in \cite{Drska:90} too.
 
 
 
-
 \subsection{APPENDIX: Summary and syntax}
 
 \textbf{Warning}
 
 The RLFI package can be used only on systems supporting lower case
-letters with {\tt off raise} statement. The package distinquishes the
+letters with \texttt{off raise} statement. The package distinquishes the
 upper and lower case letters, so be carefull in typing them.
 In \REDUCE 3.6 the \REDUCE commands have to be typed in lower-case
-while the switch {\tt latex} is {\tt on}, in previous versions
+while the switch \texttt{latex} is \texttt{on}, in previous versions
 the commands had to be typed in upper-case.
 
 \textbf{Switches}
 
+\ttindexswitch[RLFI]{latex}
+\hypertarget{switch:LATEX}{}
+\ttindexswitch[RLFI]{lasimp}
+\hypertarget{switch:LASIMP}{}
+\ttindexswitch[RLFI]{verbatim}
+\hypertarget{switch:VERBATIM}{}
 \begin{description}
-\item[{\tt latex}]
-- If {\tt on} output is in \LaTeX{} format. It turns {\tt off} the {\tt
-raise} switch if it is set {\tt on} and {\tt on} the {\tt raise} switch
-if it is set {\tt off}. By default is {\tt off}.
-\item[{\tt lasimp}]
-- If {\tt on} formulas are evaluated (simplified), \REDUCE{} works
-as usually. If {\tt off} no evaluation is performed and the structure
-of formulas is preserved. By default is {\tt on}.
-\item[{\tt verbatim}]
-- If {\tt on} the \REDUCE{} input, while {\tt latex} switch being {\tt
-on}, is printed in \LaTeX{} verbatim environment. The acutal \REDUCE{}
-input is printed after the line containing the string {\tt "REDUCE
-Input:"}.  It turns {\tt on} resp. {\tt off} the {\tt echo} switch when
-turned {\tt on} resp. {\tt off}. by default is {\tt off}.
+\item[\texttt{latex}]
+  - If \texttt{on} output is in \LaTeX{} format. It turns \texttt{off} the \sw{raise}
+  switch if it is set \texttt{on} and \texttt{on} the \sw{raise} switch
+if it is set \texttt{off}. By default is \texttt{off}.
+\item[\texttt{lasimp}]
+- If \texttt{on} formulas are evaluated (simplified), \REDUCE{} works
+as usually. If \texttt{off} no evaluation is performed and the structure
+of formulas is preserved. By default is \texttt{on}.
+\item[\texttt{verbatim}]
+- If \texttt{on} the \REDUCE{} input, while \texttt{latex} switch being {\tt
+on}, is printed in \LaTeX{} verbatim environment. The actual \REDUCE{}
+input is printed after the line containing the string \texttt{"REDUCE
+Input:"}.  It turns \texttt{on} resp. \texttt{off} the \sw{echo} switch when
+turned \texttt{on} resp. \texttt{off}. by default is \texttt{off}.
 \end{description}
 
 \textbf{Operators}
 
 \begin{description}
-\item[infix] - \verb+//+
-\item[prefix] - {\tt int,dint,df,pdf,sum,product,sqrt} and all \REDUCE{}
+\item[infix] - \f{//}
+\item[prefix] - \f{int},\f{dint},\f{df},\f{pdf},\f{sum},\f{product},\f{sqrt} and all \REDUCE{}
 prefix operators defined in the \REDUCE{} kernel and the SOLVE module.
 \end{description}
 
-\begin{verbatim}
-   <alg. expression> // <alg. expression>
-   int(<function>,<variable>)
-   dint(<from>,<to>,<function>,<variable>)
-   df(<function>,<variables>)
-   <variables> ::= <o-variable>|<o-variable>,<variables>
-   <o-variable> ::= <variable>|<variable>,<order>
-   <variable> ::= <kernel>
-   <order> ::= <integer>
-   <function> ::= <alg. expression>
-   <from> ::= <alg. expression>
-   <to> ::= <alg. expression>
-   pdf(<function>,<variables>)
-   sum(<from>,<to>,<function>)
-   product(<from>,<to>,<function>)
-   sqrt(<alg. expression>)
-\end{verbatim}
+\begin{syntaxtable}
+   \multicolumn{3}{@{}l}{\meta{alg. expression} \f{//} \meta{alg. expression}} \\
+   \multicolumn{3}{@{}l}{\f{int(}\meta{function},\meta{variable}) } \\
+   \multicolumn{3}{@{}l}{\f{dint(}\meta{from},\meta{to},\meta{function},\meta{variable}) } \\
+   \multicolumn{3}{@{}l}{\f{df(}\meta{function},\meta{variables}) } \\
+   \meta{variables} &::=& \meta{o-variable} | \meta{o-variable},\meta{variables} \\
+   \meta{o-variable} &::=& \meta{variable}|\meta{variable} \meta{order} \\
+     \meta{variable} &::=& \meta{kernel} \\
+     \meta{order} &::=& \meta{integer} \\
+     \meta{function} &::=& \meta{alg. expression} \\
+     \meta{from} &::=& \meta{alg. expression} \\
+     \meta{to} &::=& \meta{alg. expression} \\
+     \multicolumn{3}{@{}l}{\f{pdf(}\meta{function},\meta{variables}) } \\
+     \multicolumn{3}{@{}l}{\f{sum(}\meta{from},\meta{to},\meta{function}) } \\
+     \multicolumn{3}{@{}l}{\f{product(}\meta{from},\meta{to},\meta{function}) } \\
+     \multicolumn{3}{@{}l}{\f{sqrt(}\meta{alg. expression}) } 
+\end{syntaxtable}
 
-{\tt <alg. expression>} is any algebraic expression. Where appropriate,
-it can include also relational operators (e.g. argument {\tt <from>} of
-{\tt sum} or {\tt product} operators is usually equation). {\tt
-<kernel>} is identifier or prefix operator with arguments as described
-in \cite{Hearn:91}. Interface supports typesetting lists of algebraic
+\meta{alg. expression} is any algebraic expression. Where appropriate,
+it can include also relational operators (e.g. argument \meta{from} of
+\f{sum} or \f{product} operators is usually equation). \meta{kernel}
+is an identifier or prefix operator with arguments as described
+in section~\ref{sec:kernel}. The interface supports typesetting lists of algebraic
 expressions.
 
 
 \textbf{Statements}
 
-\begin{verbatim}
-   mathstyle <m-style>;
-   <m-style> ::= math | displaymath | equation
-   defid <identifier>,<d-equations>;
-   <d-equations> ::= <d-equation> | <d-equation>,<d-equations>
-   <d-equation> ::= <d-print symbol> | <d-font>|<d-accent>
-   <d-print symbol> ::= name = <print symbol>
-   <d-font> ::= font = <font>
-   <d-accent> ::= accent = <accent>
-   <print symbol> ::= <character> | <special symbol>
-   <special symbol> ::= alpha|beta|gamma|delta|epsilon|
-      varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|
-      mu|nu|xi|pi|varpi|rho|varrho|sigma|varsigma|tau|
-      upsilon|phi|varphi|chi|psi|omega|Gamma|Delta|Theta|
-      Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|infty|hbar
-   <font> ::= bold|roman
-   <accent> ::=hat|check|breve|acute|grave|tilde|bar|vec|
-      dot|ddot
-\end{verbatim}
+\begin{syntaxtable}
+  \multicolumn{3}{@{}l}{\f{mathstyle} \meta{m-style>} ;} \\
+  \meta{m-style} &::=& \f{math} | \f{displaymath} | \f{equation} \\
+  \multicolumn{3}{@{}l}{\f{defid} \meta{identifier},\meta{d-equations}} \\
+  \meta{d-equations} &::=& \meta{d-equation} | \meta{d-equation},\meta{d-equations} \\
+  \meta{d-equation} &::=& \meta{d-print symbol} | \meta{d-font} | \meta{d-accent} \\
+  \meta{d-print symbol} &::=& \f{name = } \meta{print symbol} \\
+  \meta{d-font} &::=& \f{font = } \meta{font} \\
+  \meta{d-accent} &::=& \f{accent = } \meta{accent} \\
+  \meta{print symbol} &::=& \meta{character} | \meta {special symbol} \\
+  \meta{special symbol} &::=& \f{alpha}|\f{beta}|\f{gamma}|\f{delta}|\f{epsilon}| \\
+     && \f{varepsilon}|\f{zeta}|\f{eta}|\f{theta}|\f{vartheta}| \\
+     && \f{iota}|\f{kappa}|\f{lambda}| \f{mu}|\f{nu}|\f{xi}|\f{pi}| \\
+     && \f{varpi}|\f{rho}|\f{varrho}|\f{sigma}|\f{varsigma}| \\
+     && \f{tau}|\f{upsilon}|\f{phi}|\f{varphi}|\f{chi}|\f{psi}| \\
+     && \f{omega}|\f{Gamma}|\f{Delta}|\f{Theta}| \f{Lambda}|\f{Xi}| \\
+     && \f{Pi}|\f{Sigma}|\f{Upsilon}|\f{Phi}|\f{Psi}|\f{Omega}| \\
+     && \f{infty}|\f{hbar} \\
+  \meta{font} &::=& \f{bold}|\f{roman} \\
+  \meta{accent} &::=& \f{hat}|\f{check}|\f{breve}|\f{acute}|\f{grave}|\f{tilde}| \\
+     && \f{bar}|\f{vec}|\f{dot}|\f{ddot}
+\end{syntaxtable}
 
 For special symbols and accents see \cite{Lamport:86}, p. 43, 45, 51.
 
-\begin{verbatim}
-   defindex <d-operators>;
-   <d-operators> ::= <d-operator> | <d-operator>,<d-operators>
-   <d-operator> ::= <prefix operator>(<descriptions>)
-   <prefix operator> ::= <identifier>
-   <descriptions> ::= <description> | <description>,
-      <descriptions>
-   <description> ::= arg | up | down | leftup | leftdown
-\end{verbatim}
+\begin{syntaxtable}
+  \multicolumn{3}{@{}l}{\f{defindex} \meta{d-operators} ;} \\
+  \meta{d-operators} &::=& \meta{d-operator} | \meta{d-operator},\meta{d-operators} \\
+  \meta{d-operator} &::=& \meta{prefix operator}(\meta{descriptions}) \\
+  \meta{prefix operator} &::=& \meta{identifier} \\
+  \meta{descriptions} &::=& \meta{description} | \meta{description},\meta{descriptions} \\
+  \meta{description} &::=& \f{arg} | \f{up} | \f{down} | \f{leftup} | \f{leftdown}
+\end{syntaxtable}
 
 The meaning of the statements is briefly described in the preceding
 text.

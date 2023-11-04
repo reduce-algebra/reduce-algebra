@@ -722,6 +722,18 @@ flag('(frobenius companion jordan jordansymbolic jordanblock submatrix
        smithex_int smithex),'opfn);
 
 
+% Randpoly module entry points
+
+defautoload(randpoly,randpoly);
+defautoload(rand,randpoly);
+
+put('randpoly, 'simpfn, 'randpoly);
+
+flag('(randpoly), 'listargp);
+
+put('rand, 'psopfn, 'rand);
+
+
 % Sum module entry points.
 
 switch trsum;

@@ -1,6 +1,7 @@
 
 \index{Temme, Lisa}\index{People!Temme, Lisa}
 \index{Koepf, Wolfram}\index{People!Koepf, Wolfram}
+\index{Barnes, Alan}\index{People!Barnes, Alan}
 
 \subsection{Periodic Decimal Representation}
 \label{sec:rataprx}
@@ -27,30 +28,43 @@ periodic representation back to a rational number.
 %    \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
 %    \renewcommand{\makelabel}[1]{#1}
 %  }
-\begin{description}[style=nextline]
-\item[\textbf{SYNTAX:}]%\ttindextype[RATAPRX]{rational2periodic}{operator}
-  \texttt{rational2periodic(n);}\\
-  \texttt{rational2periodic(n, b);}
+
+%\begin{description}%[style=nextline]
+\begin{description}[labelwidth=!,leftmargin=20mm]
+\item[\textbf{SYNTAX:}]\ttindextype[RATAPRX]{rational2periodic}{operator}
+  \begin{syntax}
+    \f{rational2periodic(\meta{n})}\\
+    \f{rational2periodic(\meta{n},\meta{b})}
+  \end{syntax}
 
 \item[\textbf{INPUT:}]
-  \texttt{n} \hspace{3mm} is a rational number\\
-  \texttt{b} \hspace{3mm} is the number base, if absent the default is 10.
+  \meta{n} \hspace{3mm} is a rational number\\
+  \meta{b} \hspace{3mm} is the number base, if absent the default is $10$.
 
 \item[\textbf{RESULT:}]\ttindextype[RATAPRX]{periodic}{operator}
-  \texttt{periodic(\{a1,...,an\},\{b1,...,bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$)}\\
-  where  \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
-  \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
-  \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
-  and $\pm$\texttt{b} where \texttt{b} is the number base $2 \leq \mathrm{b} \leq 16$, \\
-  a minus indicating the rational number \texttt{n} was negative.
+  \begin{syntax}
+    \f{periodic(}\{\meta{a1},\ldots,\meta{an}\},\\
+    \hphantom{\f{periodic(}}\{\meta{b1},\ldots,\meta{bm}\},\\
+    \hphantom{\f{periodic(}}\{\meta{c1},\ldots,\meta{ck}\},\\
+    \hphantom{\f{periodic(}}$\pm$\meta{b})
+    \end{syntax}
+  where  \texttt{\{\meta{a1},\ldots,\meta{an}\}} is a list of the digits in the integer part,\\
+  \texttt{\{\meta{b1},\ldots,\meta{bm}\}} is a list of the digits in the non-periodic part,\\
+  \texttt{\{\meta{c1},\ldots,\meta{ck}\}} is a list of the digits in the periodic part\\
+  and $\pm$\meta{b} where \meta{b} is the number base $2 \leq \mathrm{b} \leq 16$, \\
+  a minus indicating the rational number \meta{n} was negative.
 
 \item[\textbf{EXAMPLES:}]\mbox{}\\
-  $-59/70$ written as $-0.8\overline{428571}$\\
-  \texttt{1: rational2periodic(-59/70);}\\
-  \texttt{\hspace*{1em}periodic(\{0\}, \{8\}, \{4,2,8,5,7,1\}, -10)}\\[\baselineskip]
-  $1/80$ written as a hexadecimal is $0.0\overline{3}$\\
-  \texttt{2: rational2periodic(1/80,16);}\\
-  \texttt{\hspace*{1em}periodic(\{0\}, \{0\}, \{3\}, 16)}
+  $-59/70$ written as $-0.8\overline{428571}$
+\begin{verbatim}
+  1: rational2periodic(-59/70);
+
+  periodic({0}, {8}, {4,2,8,5,7,1}, -10)}
+
+  2: rational2periodic(1/80,16);
+
+  periodic({0}, {0}, {3}, 16)  
+\end{verbatim}
 \end{description}
 
 Normally the operator \f{periodic} will not be seen as the output
@@ -59,17 +73,28 @@ $0.0\overline{3}\ (\mbox{base }16)$ respectively.
 
 \subsubsection*{\textbf{\underline{Rational Number of a Periodic Representation}}}
 
-\begin{description}[style=nextline]
+%\begin{description}%[style=nextline]
+\begin{description}[labelwidth=!,leftmargin=20mm]
 
 \item[\textbf{SYNTAX:}]\ttindextype[RATAPRX]{periodic2rational}{operator}
-  \texttt{periodic2rational(periodic(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$))}\\
-  \texttt{periodic2rational(\{a1,...,an\},\{b1...bm\},\{c1,...,ck\},$\pm{\mathrm{b}}$)}
 
+  \begin{syntax}
+    \f{periodic2rational(}\\
+    \quad\f{periodic(}\{\meta{a1},\ldots,\meta{an}\},\\
+    \quad\hphantom{\f{periodic(}}\{\meta{b1},\ldots,\meta{bm}\},\\
+    \quad\hphantom{\f{periodic(}}\{\meta{c1},\ldots,\meta{ck}\},\\
+    \quad\hphantom{\f{periodic(}}$\pm$\meta{b}))\\[\baselineskip]
+    \f{periodic2rational(}\{\meta{a1},\ldots,\meta{an}\},\\
+    \hphantom{\f{periodic2rational(}}\{\meta{b1},\ldots,\meta{bm}\},\\
+    \hphantom{\f{periodic2rational(}}\{\meta{c1},\ldots,\meta{ck}\},\\
+    \hphantom{\f{periodic2rational(}}$\pm$\meta{b})
+  \end{syntax}
+  
 \item[\textbf{INPUT:}]
-  \texttt{\{a1,...,an\}} is a list of the digits in the integer part,\\
-  \texttt{\{b1,...,bm\}} is a list of the digits in the non-periodic part,\\
-  \texttt{\{c1,...,ck\}} is a list of the digits in the periodic part\\
-  and \texttt{b} is the number base $2 \leq \mathrm{b} \leq 16$, a minus\\
+  \texttt{\{\meta{a1},\ldots,\meta{an}\}} is a list of the digits in the integer part,\\
+  \texttt{\{\meta{b1},\ldots,\meta{bm}\}} is a list of the digits in the non-periodic part,\\
+  \texttt{\{\meta{c1},\ldots,\meta{ck}\}} is a list of the digits in the periodic part\\
+  and where \meta{b} is the number base $2 \leq \mathrm{b} \leq 16$, a minus\\
   indicating the rational number result should be negative. \\
   If the base is omitted, 10 is assumed.
 
@@ -77,17 +102,21 @@ $0.0\overline{3}\ (\mbox{base }16)$ respectively.
   A rational number.
 
 \item[\textbf{EXAMPLES:}]\mbox{}\\
-  $0.8\overline{428571}$ written as $59/70$ \\
-  \texttt{3: periodic2rational(periodic(\{0\},\{8\},\{4,2,8,5,7,1\}));}
-  \\[\baselineskip]
-  \texttt{\mbox{}~59}\\
-  \texttt{-{}-{}-{}-}\\
-  \texttt{\mbox{}~70}\\[\baselineskip]
-  \texttt{4: periodic2rational(\{0\},\{8\},\{4,2,8,5,7,1\}, -10);}
-  \\[\baselineskip]
-  \texttt{\mbox{}~~~~59}\\
-  \texttt{\mbox{} -\ -{}-{}-{}-}\\
-  \texttt{\mbox{}~~~~70}
+  $0.8\overline{428571}$ written as $59/70$
+  \begin{verbatim}
+  3: periodic2rational(
+         periodic({0},{8},{4,2,8,5,7,1}));
+   59
+  ----
+   70
+
+  4: periodic2rational(
+         {0},{8},{4,2,8,5,7,1}, -10);
+
+      59
+   - ----
+      70
+\end{verbatim}
 \end{description}
 
 Note that \texttt{periodic2rational} will produce the correct rational result
@@ -304,7 +333,7 @@ synonym for the operator \texttt{continued\_fraction}\ttindextype{continued\_fra
   \texttt{,}\,\meta{numterms}\texttt{)}
 \end{syntaxtable}
 
-The meaning of the arguments is the same as for the operator
+The operator takes the same arguments as the operator
 \texttt{continued\_fraction}: the original number to be expanded
 \meta{num}, an optional maximum size \meta{size} permitted for the
 denominator of the convergent and an optional maximum number of continuents
@@ -319,9 +348,9 @@ pretty-printed so the operator \texttt{confract} will not be seen.
 \hypertarget{operator:CF_CONVERGENT}{}
 \hypertarget{operator:CF_CONVERGENTS}{}
 
-The accessor operators \ttindextype[RATAPRX]{cf\_expression}{operator}\texttt{cf\_expression},
+The operators \ttindextype[RATAPRX]{cf\_expression}{operator}\texttt{cf\_expression},
 \ttindextype[RATAPRX]{cf\_convergent}{operator}\texttt{cf\_convergent} and
-\ttindextype[RATAPRX]{cf\_continuents}{operator}\texttt{cf\_continuents} allow
+\ttindextype[RATAPRX]{cf\_continuents}{operator}\texttt{cf\_continuents} are accessors and allow
 the various parts of a continued fraction object \meta{cf\_object}
 (as returned by any of the operators \texttt{cf}, \texttt{cfrac},
 \texttt{continued\_fraction} and \texttt{cf\_euler}) to be extracted.
@@ -379,9 +408,53 @@ a := {pi,-----,3 + ----------------}
 
 7: cf pi;
 
-     21053343141
-{pi,-------------,{3,7,15,1,292,1,1,1,2,1,3,1,14,2,1,1,2,2,2,2,1}}
-     6701487259
+{pi,
+
+  21053343141
+ -------------,
+  6701487259
+
+ {3,
+
+  {1,7},
+
+  {1,15},
+
+  {1,1},
+
+  {1,292},
+
+  {1,1},
+
+  {1,1},
+
+  {1,1},
+
+  {1,2},
+
+  {1,1},
+
+  {1,3},
+
+  {1,1},
+
+  {1,14},
+
+  {1,2},
+
+  {1,1},
+
+  {1,1},
+
+  {1,2},
+
+  {1,2},
+
+  {1,2},
+
+  {1,2},
+
+  {1,1}}}
 \end{verbatim}
 
 \ttindextype[RATAPRX]{cf\_euler}{operator}
@@ -499,19 +572,19 @@ a := {4*atan(x),
       -----------------------------------,
                       105
 
-                               4*x
-      -----------------------------------------------------}
-                                  2
-                                 x
-       1 + -----------------------------------------------
-                                          2
-                 2                     9*x
-            ( - x  + 3) + -------------------------------
-                                                   2
-                                  2            25*x
-                           ( - 3*x  + 5) + -------------
-                                                  2
-                                             - 5*x  + 7
+                  2       2
+      (4*x)/(1 + x /(( - x  + 3)
+
+                                   2
+                                9*x
+                 + -------------------------------
+                                            2
+                           2            25*x
+                    ( - 3*x  + 5) + -------------
+                                           2
+                                      - 5*x  + 7
+
+                ))}
 
 b := (a where x => 1);
 
@@ -575,9 +648,13 @@ d := {{pi,--------,3 + ----------------------},
                                        3
 cf_convergents c;
 
-    22   333   355   103993   104348   208341   312689
-{3,----,-----,-----,--------,--------,--------,--------}
-    7    106   113   33102    33215    66317    99532
+    22   333   355   103993   104348   208341
+{3,----,-----,-----,--------,--------,--------,
+    7    106   113   33102    33215    66317
+
+  312689
+ --------}
+  99532
 
 cf_convergents first d;
 
@@ -608,34 +685,43 @@ $a_i,\, b_i$ in the Pad\'{e} approximant
 
 \hypertarget{operator:PADE}{}
 \ttindextype[RATAPRX]{pade}{operator}
-\textbf{SYNTAX:} \hspace{5mm} \texttt{pade(f, x, h, n, d);}\\[\baselineskip]
+\begin{description}[labelwidth=!,leftmargin=20mm]
+\item[\textbf{SYNTAX:}]
+  \begin{syntax}
+    \f{pade(\meta{f}, \meta{x}, \meta{h}, \meta{n}, \meta{d})}
+  \end{syntax}
 
-\textbf{INPUT:}\\[\baselineskip]
-\texttt{f} \hspace{6mm} the funtion to be approximated\\
-\texttt{x} \hspace{6mm} the function variable\\
-\texttt{h} \hspace{6mm} the point at which the approximation is evaluated\\
-\texttt{n} \hspace{6mm} the (specified) degree of the numerator\\
-\texttt{d} \hspace{6mm} the (specified) degree of the denominator\\[\baselineskip]
-\textbf{RESULT:} \\
-Pad\'{e} Approximant, ie. a rational function.\\[\baselineskip]
+\item[\textbf{INPUT:}]
+\meta{f} \hspace{6mm} the funtion to be approximated\\
+\meta{x} \hspace{6mm} the function variable\\
+\meta{h} \hspace{6mm} the point at which the approximation is evaluated\\
+\meta{n} \hspace{6mm} the (specified) degree of the numerator\\
+\meta{d} \hspace{6mm} the (specified) degree of the denominator
 
-\textbf{ERROR MESSAGES:}\\
+\item[\textbf{RESULT:}]
+Pad\'{e} Approximant, ie. a rational function.
 
- \hspace{6mm} \texttt{***** not yet implemented}\\
+\item[\textbf{ERROR MESSAGES:}]\hspace*{8cm}
+  
+  \begin{itemize}[left=-15mm,label={}]
 
-The Taylor series expansion for the function, f, has not yet
-been implemented in the {\REDUCE} Taylor Package.\\[\baselineskip]
+\item
+  \texttt{***** not yet implemented}\\
+  The Taylor series expansion for the function, f, has not yet
+  been implemented in the {\REDUCE} Taylor Package.
 
- \hspace{6mm} \texttt{***** no Pade Approximation exists}\\
+\item
+  \texttt{***** no Pade Approximation exists}\\
+  A Pad\'{e} Approximant of this function does not exist.
 
-A Pad\'{e} Approximant of this function does not exist.\\[\baselineskip]
-
-%\newpage
- \hspace{6mm} \texttt{***** Pade Approximation of this order does not exist}\\
-
-A Pad\'{e} Approximant of this order (ie. the specified
-numerator and denominator orders) does not exist but one
-of a different order may exist.\\[\baselineskip]
+\item
+  \texttt{***** Pade Approximation of this order does not exist}\\
+  A Pad\'{e} Approximant of this order (ie. the specified
+  numerator and denominator orders) does not exist but one
+  of a different order may exist.
+  \end{itemize}
+  
+\end{description}
 
 {\large\textbf{EXAMPLES}}
 
