@@ -43,11 +43,14 @@ The built-in simplification rules are totally analogous to those of the standard
 \item Use of the odd and even properties of the trig.\ functions so that for example 
 \texttt{sind(-x) => -sind(x)}, \texttt{cosd(-x) => cosd(x)}  and \\
 \texttt{acosd(-x) => 180 - acosd(x)}. 
-\item  Argument shifts by integral multiples of $180^\circ$ so that any residual numerical argument  lies in the range $-90^\circ \ldots  90^\circ$.  \\
-Thus \texttt{sind(x+540) => -sind(x)}, \texttt{cosd(x+350) => cosd(x-10)}.
+\item  Argument shifts by integral multiples of $180^\circ$ so that any residual numerical argument  lies in the range $-90^\circ \ldots  90^\circ$. Thus
+  \begin{verbatim}
+    sind(x+540) => -sind(x), 
+    cosd(x+350) => cosd(x-10).
+\end{verbatim}
 \item  Removal of argument shifts of $\pm 90^\circ$ so that for example \\
  \texttt{sind(x-90) => -cosd(x)} and  \texttt{cotd(x+90) => -tand(x)}.
-\item Replacement of \texttt{tand(x)} by \texttt{sind(x)/cosd(x)}, \texttt{secd(x)} by \texttt{1/cosd(x)} and the like, but \emph{only when the final result is simpler than the original}.
+\item Replacement of \texttt{tand(x)} by \texttt{sind(x)/cosd(x)} and e.g., \texttt{secd(x)} by \texttt{1/cosd(x)} and the like, but \emph{only when the final result is simpler than the original}.
 \item Basic properties relating a function and it inverse so that for example \\
 \texttt{sind(asind(x)) => x}.
 \item A few basic rules for \f{atan2d} when the signs of its arguments can be determined. For example \texttt{atan2d(y, 0)} is replaced by $\pm 90$ depending on the sign of $y$.

@@ -599,8 +599,12 @@ prob:={{-20*h**4+16*h**6+3*r**2*h*df(h,r,2)+5*r*h*df(h,r)
 sym:=liepde(prob, {"point"},{},{});
 end; \end{verbatim}}
 gives {\small \begin{verbatim}
-                          3                       2
-sym := {{}, {xi_r= - c10*r  - c11*r, eta_h=c10*h*r }, {c10,c11}}.
+sym := {{},
+
+                      3                       2
+        {xi_r= - c10*r  - c11*r, eta_h=c10*h*r },
+
+        {c10,c11}}.
 \end{verbatim}}
 All conditions have been solved because the first element of \texttt{sym}
 is $\{\}$. The two existing symmetries are therefore
@@ -614,14 +618,14 @@ transformations can be calculated with \texttt{APPLYSYM} through
 newde:=applysym(prob,rest sym);
 \end{verbatim}}
 The interactive session is given below with the user input following
-the prompt `\texttt{Input:3:}' or following `?'. (Empty lines have been deleted.)
+the prompt `\texttt{:}' or following `?'. (Empty lines have been deleted.)
 {\small \begin{verbatim}
-Do you want to find similarity and symmetry variables (enter `1;')
-or generalize a special solution with new parameters  (enter `2;')
-or exit the program                                   (enter  `;')
+Do you want to find similarity and symmetry variables (1)
+or generalize a special solution with new parameters  (2)
+or exit the program                                   (3)
 Input:3: 1;
 \end{verbatim}}
-We enter `1;' because we want to reduce dependencies by finding similarity
+We enter `1' because we want to reduce dependencies by finding similarity
 variables and one symmetry variable and then doing the transformation such
 that the symmetry variable does not explicitly occur in the DE.
 {\small \begin{verbatim}
@@ -635,7 +639,8 @@ xi_r= - r
 ----------------------
 Which single symmetry or linear combination of symmetries
 do you want to apply?
-Enter an expression with `sy_(i)' for the i'th symmetry.
+Enter an expression with `sy_(i)' for the i'th
+symmetry. Terminate input with `$' or `;'.
 sy_(1);
 \end{verbatim}}
 We could have entered `sy\_(2);' or a combination of both
@@ -643,12 +648,13 @@ as well with the calculation running then
 differently.
 {\small \begin{verbatim}
 The symmetry to be applied in the following is
-          3          2
-{xi_r= - r ,eta_h=h*r }
-Enter the name of the new dependent variables:
-Input:3: u;
+            3            2
+{xi_r =  - r ,eta_h = h*r }
+Terminate the following input with $ or ;  .
+Enter the name of the new dependent variable
+(which will get an index attached): u;
 Enter the name of the new independent variables:
-Input:3: v;
+(which will get an index attached): v;
 \end{verbatim}}
 This was the input part, now the real calculation starts.
 {\small \begin{verbatim}
@@ -679,8 +685,7 @@ The general solution of the PDE is given through
 with arbitrary function ff(..).
 A suggestion for this function ff provides:
 0 =  - h*r + u_
-Do you like this choice? (Y or N)
-?y
+Do you like this choice? (Y or N) y
 \end{verbatim}
 \end{small}
 For the following calculation only a single special solution of the PDE is
@@ -729,8 +734,7 @@ A suggestion for this function ff(..) yields:
      h *( - 2*r *u_ + 1)
 0 = ---------------------
               2
-Do you like this choice? (Y or N)
-?y
+Do you like this choice? (Y or N) y
 \end{verbatim}}
 Similar to above.
 {\small \begin{verbatim}
@@ -739,14 +743,12 @@ do the transformation is:
                         sqrt(v)*sqrt(2)
 {h=sqrt(v)*sqrt(2)*u,r=-----------------}
                               2*v
-Is the solution ok? (Y or N)
-?y
+Is the solution ok? (Y or N) y
 In the intended transformation shown above the dependent
 variable is u and the independent variable is v.
 The symmetry variable is v, i.e. the transformed expression
 will be free of v.
-Is this selection of dependent and independent variables ok? (Y or N)
-?n
+Is this selection of dependent and independent variables ok? (Y or N) n
 \end{verbatim}}
 We so far assumed that the symmetry variable is one of the new variables, but,
 of course we also could choose it to be one of the new functions.
@@ -763,27 +765,34 @@ Please enter a list of substitutions. For example, to
 make the variable, which is so far call u1, to an
 independent variable v2 and the variable, which is
 so far called v2, to an dependent variable u1,
-enter: `{u1=v2, v2=u1};'
-Input:3: {u=v,v=u};
+enter: `{u1=v2, v2=u1};'{u=v,v=u};
 
 The transformed equation which should be free of u:
-                            3  6             2  3
-0=3*df(u,v,2)*v - 16*df(u,v) *v  - 20*df(u,v) *v  + 5*df(u,v)
-Do you want to find similarity and symmetry variables (enter `1;')
-or generalize a special solution with new parameters  (enter `2;')
-or exit the program                                   (enter  `;')
-Input:3: ;
+                 3  6        2  3
+0=3*u  *v - 16*u  *v  - 20*u  *v  + 5*u
+     2v         v           v          v
+Do you want to find similarity and symmetry variables (1)
+or generalize a special solution with new parameters  (2)
+or exit the program                                   (3) :
 \end{verbatim}}
 We stop here. The following is returned from our \texttt{APPLYSYM} call:
 \begin{small}
 \begin{verbatim}
-                             3  6             2  3
-{{{3*df(u,v,2)*v - 16*df(u,v) *v  - 20*df(u,v) *v + 5*df(u,v)},
+                             3  6
+{{{3*df(u,v,2)*v - 16*df(u,v) *v
+
+                2  3
+    - 20*df(u,v) *v  + 5*df(u,v)},
+
   {u},
+
   {v}},
-     sqrt(u)*sqrt(2)
- {r=-----------------, h=sqrt(u)*sqrt(2)*v }}
-           2*u
+
+            1                 2*u*v
+ {r=-----------------,h=-----------------
+     sqrt(u)*sqrt(2)     sqrt(u)*sqrt(2)
+
+           }}
 \end{verbatim}
 \end{small}
 The use of \texttt{APPLYSYM} effectively provided us the finite

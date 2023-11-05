@@ -377,7 +377,7 @@ A simple example deals with Equation (\eqnref{eq:nchoosek})%
 \end{verbatim}
 }\noindent
 The whole \textsl{hypergeometric database} of the
-\textsl{Vandermonde, Gau{\ss}, Kummer, Saalsch\"utz, Dixon, Clausen} and \textsl{Dougall
+\textsl{Vandermonde, Gau{\ss}, Kummer, Saal\-sch\"utz, Dixon, Clausen} and \textsl{Dougall
 identities} (see \cite{Wilf:93}), and many more identities (see e.\ g.\
 \cite{Koepf:94b}), can be obtained using \texttt{sumrecursion}.
 As examples, we consider the difficult cases of Clausen and Dougall:%
@@ -525,8 +525,10 @@ with respect to $(n,k)$, i.e.
 are rational functions with respect to both $n$ and $k$.
 The resulting expression equals zero.
 \item
-\texttt{sumrecursion(f,k,n)} invokes \texttt{extended\_sumrecursion(f,k,n,m,l)}
-with suitable values $m$ and $l$, and covers therefore the extended
+  Internally, 
+  \texttt{sumrecursion(f,k,n)} calls (with suitable values $m$ and $l$)
+  \texttt{extended\_sumrecursion(f,k,n,m,l)}
+and covers therefore the extended
 algorithm completely.
 \end{itemize}
 Examples:
@@ -824,20 +826,20 @@ _3 F_2\left.
 }
 \]
 and
-\[
+\begin{multline*}
 _3 F_2\left.
 \left(
 \begin{array}{c}
 -n\;, n+3a\;, a\\[1mm]
 3a/2\;,(3a+1)/2
 \end{array}
-\right| \frac{3}{4}\right)
+\right| \frac{3}{4}\right) \\
 =
 \funkdef{0}{n\neq 0 {\mbox{ (mod }} 3)}{\displaystyle
 \frac{(1/3)_{n/3}\,(2/3)_{n/3}}
 {(a+1/3)_{n/3}\,(a+2/3)_{n/3}}
 }
-\]
+\end{multline*}
 
 \subsection{\REDUCE{} operator \texttt{SUMTOHYPER}}
 \ttindextype[ZEILBERG]{sumtohyper}{operator}
@@ -1210,7 +1212,8 @@ representation used, see \cite{Koornwinder:93}.
 The following messages may occur:
 \begin{itemize}
 \item
-\texttt{***** Gosper algorithm:\ no closed form solution exists}
+  \texttt{*****\\
+    Gosper algorithm:\ no closed form solution exists}
 
 Example input:
 
