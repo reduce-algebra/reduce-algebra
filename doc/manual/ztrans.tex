@@ -57,26 +57,29 @@ list of functions $f_n$, and certain combinations thereof.
 
 \underline{\textbf{Other Combinations}}
 
-\begin{list}{}{
-    \setlength{\leftmargin}{35mm}
-    \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
-    \renewcommand{\makelabel}[1]{#1}
-  }
-\item[\underline{Linearity}]
-  ${\cal Z} \{a f_n+b g_n \} = a{\cal Z} \{f_n\}+b{\cal Z}\{g_n\}$
-\item[\underline{Multiplication by $n$}]
-  ${\cal Z} \{n^k \cdot f_n\} = -z \frac{d}{dz} \left({\cal Z}\{n^{k-1} \cdot f_n,n,z\} \right)$
-\item[\underline {Multiplication by $\lambda^n$}]
-  ${\cal Z} \{\lambda^n \cdot f_n\}=F \left(\frac{z}{\lambda}\right)$
-\item[\underline {Shift Equation}]
+%\begin{list}{}{
+%    \setlength{\leftmargin}{35mm}
+%    \setlength{\labelwidth}{\leftmargin}\addtolength{\labelwidth}{-\labelsep}
+%    \renewcommand{\makelabel}[1]{#1}
+%  }
+  \begin{setlength}{\extrarowheight}{4mm}
+\begin{tabular}{ll}
+\underline{Linearity} &
+  ${\cal Z} \{a f_n+b g_n \} = a{\cal Z} \{f_n\}+b{\cal Z}\{g_n\}$ \\
+\underline{Multiplication by $n$} & 
+  ${\cal Z} \{n^k \cdot f_n\} = -z \frac{d}{dz} \left({\cal Z}\{n^{k-1} \cdot f_n,n,z\} \right)$ \\
+\underline {Multiplication by $\lambda^n$} &
+  ${\cal Z} \{\lambda^n \cdot f_n\}=F \left(\frac{z}{\lambda}\right)$ \\
+\underline {Shift Equation} &
   ${\cal Z} \{f_{n+k}\} =
-           z^k \left(F(z) - \sum\limits^{k-1}_{j=0} f_j z^{-j}\right)$
-\item[\underline {Symbolic Sums}]
+           z^k \left(F(z) - \sum\limits^{k-1}_{j=0} f_j z^{-j}\right)$ \\
+\underline {Symbolic Sums} & 
   ${\cal Z} \left\{ \sum\limits_{k=0}^{n} f_k \right\} =
-  \frac{z}{z-1} \cdot {\cal Z} \{f_n\}$ \\[\baselineskip]
-  ${\cal Z} \left\{ \sum\limits_{k=p}^{n+q} f_k \right\}$
-  \ \ \ combination of the above
-\end{list}
+  \frac{z}{z-1} \cdot {\cal Z} \{f_n\}$ \\[1.5\baselineskip]
+   & ${\cal Z} \left\{ \sum\limits_{k=p}^{n+q} f_k \right\}$
+  \quad combination of the above
+\end{tabular}
+\end{setlength}
 
 where $k,\lambda \in \mathbf{N} \setminus \{0\}$; and $a,b$ are variables or
 fractions; and $p,q \in \mathbf{Z}$ or are functions of $n$; and

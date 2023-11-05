@@ -505,13 +505,16 @@ calling
   z11;
 
                                2
- - (4*u(1,2)*x(2) - u(1,1)*x(2)  + 10*u(1,1)*x(1) + 2*u(1))
+ - (4*u(1,2)*x(2) - u(1,1)*x(2)  + 10*u(1,1)*x(1)
+
+ + 2*u(1))
 
   z111;
 
                                    2
- - (8*u(1,1,2)*x(2) - u(1,1,1)*x(2)  + 18*u(1,1,1)*x(1) +
-   12*u(1,1))
+ - (8*u(1,1,2)*x(2) - u(1,1,1)*x(2)  + 18*u(1,1,1)*x(1)
+
+ +  12*u(1,1))
 \end{verbatim}
 
 
@@ -553,7 +556,8 @@ deq 1:= u(1,1)+u(2,2,2)+2*u 1**2*u 2+2*u 2**3$
 
 deq 2:=-u(2,1)+u(1,2,2)+2*u 1*u 2**2+2*u 1**3$
 
-%Because this is not a single equation the two assignments
+%Because this is not a single equation
+% the two assignments
 
 sder 1:=u(2,2,2)$  sder 2:=u(1,2,2)$
 
@@ -561,7 +565,8 @@ sder 1:=u(2,2,2)$  sder 2:=u(1,2,2)$
 
 cresys()$ simpsys()$ result()$
 
-%The symmetries of the system comprising the four equations
+%The symmetries of the system comprising
+% the four equations
 
 deq 1:=u(1,1)+u 1*u(1,2)+u(1,2,2)$
 
