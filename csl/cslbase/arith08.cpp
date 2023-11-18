@@ -830,91 +830,23 @@ static LispObject Llogbitp(LispObject env, LispObject a1,
     else return aerror1("logbitp", a2);
 }
 
-
-#ifndef NLZ_DEFINED
-#ifdef __GNUC__
-
-// Note that __GNUC__ also gets defined by clang on the Macintosh, so
-// this code is probably optimized there too. This must NEVER be called
-// with a zero argument.
-
-// Count the leading zeros in a 64-bit word.
-
-inline int nlz(uint64_t x)
-{   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
-}
-
-#else // __GNUC__
-
-inline int nlz(uint64_t x)
-{   int n = 0;
-    if (x <= 0x00000000FFFFFFFFU)
-    {   n = n +32;
-        x = x <<32;
-    }
-    if (x <= 0x0000FFFFFFFFFFFFU)
-    {   n = n +16;
-        x = x <<16;
-    }
-    if (x <= 0x00FFFFFFFFFFFFFFU)
-    {   n = n + 8;
-        x = x << 8;
-    }
-    if (x <= 0x0FFFFFFFFFFFFFFFU)
-    {   n = n + 4;
-        x = x << 4;
-    }
-    if (x <= 0x3FFFFFFFFFFFFFFFU)
-    {   n = n + 2;
-        x = x << 2;
-    }
-    if (x <= 0x7FFFFFFFFFFFFFFFU)
-    {   n = n + 1;
-    }
-    return n;
-}
-
-#endif // __GNUC__
-#endif // NLZ_DEFINED
-
-#ifndef POPCOUNT_DEFINED
-#ifdef __GNUC__
-
-inline int popcount(uint64_t x)
-{   return __builtin_popcountll(x);
-}
-
-#else // __GNUC__
-
-inline int popcount(uint64_t x)
-{   x = (x & 0x5555555555555555U) + (x >> 1 & 0x5555555555555555U);
-    x = (x & 0x3333333333333333U) + (x >> 2 & 0x3333333333333333U);
-    x = x + (x >> 4) & 0x0f0f0f0f0f0f0f0fU;
-    x = x + (x >> 8);
-    x = x + (x >> 16);
-    x = x + (x >> 32) & 0x7f;
-}
-
-#endif // __GNUC__
-#endif // POPCOUNT_DEFINED
-
 static LispObject Llogcount(LispObject env, LispObject a)
 {   SingleValued fn;
     if (is_fixnum(a))
     {   intptr_t n = int_of_fixnum(a);
-        if (a >= 0) return fixnum_of_int(popcount(n));
-        else return fixnum_of_int(popcount(~n));
+        if (a >= 0) return fixnum_of_int(countBits(n));
+        else return fixnum_of_int(countBits(~n));
     }
     else if (is_bignum(a))
     {   size_t len = (length_of_header(numhdr(a)) - CELL)/4;
         int n = 0;
         if ((int32_t)bignum_digits(a)[len-1] < 0)
         {   for (size_t i=0; i<len; i++)
-                n += popcount(~bignum_digits(a)[i]);
+                n += countBits(~bignum_digits(a)[i]);
         }
         else
         {   for (size_t i=0; i<len; i++)
-                n += popcount(bignum_digits(a)[i]);
+                n += countBits(bignum_digits(a)[i]);
         }
         return fixnum_of_int(n);
     }
