@@ -245,7 +245,7 @@ done
 # I have succeded in installing a universal variant it will get rid of the
 # single-architecture version. However I am concerned that it might discard
 # some things that are in fact still useful, so I will not do it automatically
-# here... Anybidy who feels they want to may do it for themselves!
+# here... Anybody who feels they want to may do it for themselves!
 #
 # port -N reclaim
 

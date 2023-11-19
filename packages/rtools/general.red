@@ -252,6 +252,33 @@ symbolic procedure prinhex a;
 
 flag('(prinhex), 'opfn);
 
+% hex64 is rather like prinhex except that it displays the hex
+% representation of a number with an inital "0x" and then with underscores
+% every 16 places. This should be suitable for re-input to Reduce.
+
+symbolic procedure hex64 n;
+  begin
+    scalar w, b:=2**64;
+    if n < 0 then <<
+      prin2 "-";
+      n := -n >>;
+    while n >= b do <<
+      w := remainder(n, b) . w;
+      n := n/b >>;
+    w := n . w;
+    prin2 "0x0";
+    for each d in w do <<
+      if posn()+17 >= linelength nil then terpri();
+      prin2 "_";
+      prinhex d >>;
+    prin2 "$";
+  end; 
+
+symbolic procedure hex64t n;
+ << if posn() neq 0 then terpri();
+    hex64 n;
+    terpri() >>;
+
 endmodule;
 
 end;

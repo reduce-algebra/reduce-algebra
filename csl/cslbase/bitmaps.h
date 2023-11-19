@@ -64,6 +64,8 @@
 using std::uint64_t;
 using std::size_t;
 
+#ifndef  HAVE_NLZ_AND_NTZ
+
 #if defined _cpp_lib_bitops
 
 // C++20 provides functions for counting zeros. Unlike the GNU intrinsics
@@ -219,6 +221,10 @@ inline int countBits(uint64_t x)
 }
 
 #endif // __GNUC__
+
+#define HAVE_NLZ_AND_NTZ
+#endif // HAVE_NLZ_AND_NTZ
+
 
 #define NLZ_DEFINED 1
 #define NTZ_DEFINED 1
