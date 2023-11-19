@@ -105,11 +105,9 @@ symbolic procedure yesp u;
 symbolic procedure yesp1;
    % Basic loop for reading response.
    begin scalar bool,x,y;
-    a:  x := readch();
-        if x eq !$eol!$ then go to a
+    a:  while (x := readch()) eq !$eol do nil;
         % Assume an end-of-file means lost control and exit.
-         else if x eq !$eof!$ then eval '(bye)
-         %% else if (y := x = 'y) or x = 'n then return y
+         if x eq !$eof!$ then eval '(bye)
          else if (y := x memq '(!y !Y)) or x memq '(!n !N)
           then return y % F.J. Wright.
          else if null bool then <<prin2t "Type Y or N"; bool := t>>;

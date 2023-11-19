@@ -268,8 +268,8 @@ symbolic procedure hex64 n;
     w := n . w;
     prin2 "0x0";
     for each d in w do <<
-      if posn()+17 >= linelength nil then terpri();
       prin2 "_";
+      if posn()+18 >= linelength nil then terpri();
       prinhex d >>;
     prin2 "$";
   end; 
