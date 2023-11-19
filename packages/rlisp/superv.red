@@ -188,6 +188,7 @@ symbolic procedure command;
          % Note key!* not set in this case.
          setcloc!*();
          y := if lreadfn!* then lispapply(lreadfn!*,nil) else read() >>;
+    b:
       if !*reduce4 then go to c
        else if !*struct then y := structchk y;
       if !*pret and (atom y or null (car y memq '(in out shut)))
@@ -213,7 +214,10 @@ symbolic procedure command;
       return list(mode,convertmode1(x,nil,'symbolic,mode));
    c: if !*debug then << prin2 "Parse: "; prettyprint y >>;
     % Mode analyze input.
-      if key!* = '!*semicol!* then go to a;  % Should be a comment.
+      if key!* = '!*semicol!* then <<  % Should be a comment.
+         while (crchar!* := readch1()) = !$eol!$ do nil;
+         y := command1();
+         go to b >>;
       if null !*reduce4 then y := form y else y := n!_form y;
 %     y := n!_form y;
       if !*debug then << terpri(); prin2 "Form: "; prettyprint y >>;
