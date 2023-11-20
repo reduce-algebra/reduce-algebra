@@ -52,7 +52,7 @@ case $@ in
 *help*)
   printf "$0: This script is for making snapshots of Reduce\n"
   printf "Usage: $0 machine1 machine2 ...\n"
-  printf "   or  %0 --test machine1 ...\n"
+  printf "   or  $0 --test machine1 ...\n"
   printf "where the supported 'machines' are\n"
   printf "    windows (win64), macintosh, linux (linux64),\n"
   printf "and rpi (rpi32), rpi64.\n"

@@ -29,16 +29,24 @@ module tok; % Identifier and reserved character reading.
 %
 
 % $Id$
-% Parts of the coding style here look antique and ugly with lots of
-% goto statements. The notations for  "for" and "while" loops are not
-% used here.
-% This is not because we do not care about style, but because in the
-% process of bootstrapping Reduce this file is first read by a somewhat
-% minimalist cut-down version of the parser that does not support the
-% full language syntax.
 
 % Substantial changes in March 2014 to put in support for wide characters
 % generally packed in the underlying Lisp string type using utf-8 encoding.
+
+% Up to the end of 2023 the code in this file has had a HUGE number of
+% "go to" statements. This is because the historical bootstrapping
+% process for Reduce had only a very primitive version of the parser
+% available at this stage. In December 2023 support for "<<...>>" groups
+% and for "while" loops has been put in so that those syntacic features
+% can be used here. So GRADUALLY very many of the "go to" statements and
+% their associated labels can be removed and replaced with equivalent
+% code that (with luck) will look a lot tidier. There are still plenty of
+% "go to" statements because the code is not being radically re-written
+% using many much smaller procedures (in more modern programming styles
+% a procedure name often serves the purpose that a label used to and a
+% call to it does what a goto used to). But parhaps gradual incremental
+% tidying up here will end up with something that looks at least half
+% reasonable.
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
         peekchar!* !*quotenewnam !*raise semic!* !*report!_colons
@@ -666,16 +674,24 @@ symbolic procedure token!-number x;
    hexnum:
       y := 0;
    hexnum1:
-      if not (z := get(x := readch1(), 'hexdigit)) then go to endhexint;
-      y := 16*y + z;
-      if dotp then power := power-4;
-      go to hexnum1;
-   endhexint:
-      if x = '!_ then go to hexnum1; % Allow and ignore underscores
-      if x neq '!. then go to notdot;
-      dotp := t;
-      go to hexnum1;
-   notdot:
+% A hexadecimal number start off with "0x". After that there are hex
+% digits 0-8a-f. Also a "." can be included to indicate a hexadecimally
+% specified floating point number. Within this sequence "_" is special in
+% that it together with any following whitespace is ignored. The consequence
+% is that huge hex numbers can be input using "_" for line-breaks:  0x1234_
+%      5678_9abc_
+%      def0
+% where obviously the "%" comment markers are not used!
+      while (z := get(x := readch1(), 'hexdigit)) do
+      << y := 16*y + z;
+         if dotp then power := power-4 >>;
+      if x = '!_ then <<
+        while (x := readch1()) = '!  or x = '!	 or x = !$eol!$ do nil;
+        peekchar!* := x . peekchar!*;
+        go to hexnum1 >>;
+      if x = '!. then <<
+        dotp := t;
+        go to hexnum1 >>;
       if (x neq '!p and x neq '!P) then go to ret1; 
       dotp := t;
       if (x := readch1()) = '!- then sign := t

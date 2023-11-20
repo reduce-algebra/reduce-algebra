@@ -776,7 +776,7 @@ csl_inplace_cygwin_build ()
     AC_MSG_NOTICE([target=$target => build=$build/$cygver])
     mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
     cp "$abssrcdir/csl/$CSLBASE/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
-    cp "$abssrcdir/csl/$CSLBASE/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020.c"
+    cp "$abssrcdir/csl/$CSLBASE/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020x.c"
     cp "$abssrcdir/csl/$CSLBASE/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
     cp "$abssrcdir/csl/$CSLBASE/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
     cd "$abssrcdir/cslbuild/$build/$cygver"

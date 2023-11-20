@@ -30,30 +30,24 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: newstub.c 2462 2014-03-26 20:48:39Z arthurcnorman $
+// $Id$
 
 
 //
 // The purpose of this program is to decide whether CSL/Reduce should
-// run as a Cygwin or a Native Windows program. It also wants to help
-// me sort out as between 32- and 64-bit variants of each.
+// run as a Cygwin or a Native Windows program.
 //
 // When compiling it you must define NAME to be the name of the eventual
 // target.
 //
 // So some fundamentals first:
 // This must be compiled using
-//    i686-w64-mingw32-gcc -static -DNAME=xxx ...
+//    x86_64-w64-mingw32-gcc -static -DNAME=xxx ...
 // where the "-static" is needed so that this is sufficiently self contained,
-// and it is a 32-bit executable so it will run on both 32 and 64-bit versions
-// of Windows. I had tried a version of this built using g++ not gcc but the
+// I had tried a version of this built using g++ not gcc but the
 // C++ libraries that got sucked in made the executable unreasonably large.
 //
-// If compiled with NO_32_BIT defined it will only support 64-bit cases
-// and should be built using x86_64-w64-mingw32-gcc
-// With NO_CYGWIN it will not support the Cygwin variants. If you defined
-// both at once you would get something that was pretty pointless because
-// it would always just chain to the 64-bit Windows binary!
+// With NO_CYGWIN it will not support the Cygwin variants.
 
 
 #include <inttypes.h>
@@ -66,7 +60,6 @@
 #define ERROR_NO_MEMORY 84
 #define ERROR_PROCESS_INFO 85
 #define ERROR_CREATEPROCESS 86
-
 #define str(x) stringify(x)
 #define stringify(x) #x
 
@@ -187,21 +180,6 @@ static const char *dll64[] =
     NULL
 };
 
-#ifndef NO_32_BIT
-
-const char *dll32[] =
-{
-// "dll32.c" has been created by a bit of script that starts
-//    objdump -p reduce.exe | grep DLL | sed ...
-// to build a list of all the DLLs mentioned by reduce.exe, each as
-// a string with a comma at the end of the line. I need the NULL here to
-// follow on from the final comma.
-#include "dll32.c"
-    NULL
-};
-
-#endif // NO_32_BIT
-
 // This reads a DLL and checks its headers to verify the architecture
 // it had been created for.
 
@@ -219,8 +197,7 @@ int PEcheck(FILE *f, int width)
 #ifdef DEBUG
     printf("Machine type given as %#x\n", mc);
 #endif
-    return width == 32 ? (mc == IMAGE_FILE_MACHINE_I386) :
-           (mc == IMAGE_FILE_MACHINE_AMD64);
+    return (mc == IMAGE_FILE_MACHINE_AMD64);
 }
 
 const char *PATH = NULL;
@@ -259,59 +236,14 @@ int cygcheck(const char *dlls[], int width)
 
 #endif // NO_CYGWIN
 
-#ifndef NO_32_BIT
-
-// The next function is as shown at
-// msdn.microsoft.com/en-us/library/windows/desktop/ms684139%28v=vs.85%29.aspx
-// as the proper way to detect when the current 32-bit program is in fact
-// running under Wow64 (ie with a 64-bit version of Windows beneath its feet).
-
-typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-
-LPFN_ISWOW64PROCESS fnIsWow64Process;
-
-BOOL IsWow64()
-{   BOOL bIsWow64 = FALSE;
-    // IsWow64Process is not available on all supported versions of Windows.
-    // Use GetModuleHandle to get a handle to the DLL that contains the
-    // function and GetProcAddress to get a pointer to the function if
-    // available. Well probably these days it is always available on operating
-    // systems that matter, but the hack here is fairly simple and local so to
-    // be kind to the historical world I will preserve it for a while!
-    fnIsWow64Process =
-        (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")),
-                                            "IsWow64Process");
-    if(NULL != fnIsWow64Process)
-    {   if(!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
-        {   // handle error - well here I just return "no"
-            return FALSE;
-        }
-    }
-    return bIsWow64;
-}
-
-#endif // NO_32_BIT
-
-// Run either the 32-bit Windows binary or the 64-bit one. If the regular
-// name if the program is XXX then this launches wither XXXwin32 or
-// XXXwin64. The names I will in fact use are "boot", "red" and "wred" and
+// Run the 64-bit binary. If the regular
+// name if the program is XXX then this launches XXXwin64
+// The names I will in fact use are "boot", "red" and "wred" and
 // I should probably include "csl".
 
 int runWindows(const char *extra)
 {
-#ifdef NO_32_BIT
     return runResource(str(NAME) "win64", extra);
-#else  // NO_32_BIT
-    // This stub runs as 32-bit code, but if it is on a 64-bit version of
-    // windows it will be running under "Wow64". Checking for that should
-    // allow me to know if there is any prospect of running a 64-bit version
-    // of the application - and if I can then I should!
-    //
-    if(IsWow64())
-        return runResource(str(NAME) "win64", extra);
-    else
-        return runResource(str(NAME) "win32", extra);
-#endif // NO_32_BIT
 }
 
 int main(int argc, char *argv[])
@@ -346,17 +278,7 @@ int main(int argc, char *argv[])
         if(nogui == 0) return runWindows(NULL);
     }
 // Here I will use a Cygwin version if it is available.
-#ifdef NO_32_BIT
     if(cygcheck(dll64, 64)) return runResource(str(NAME) "cyg64", NULL);
-#else  // NO_32_BIT
-    // This has to involve considering both 32 and 64-bit cygwin if I am
-    // on a 64-bit platform or just the 32-bit one if on a 32-bit machine.
-    int cygwin;
-    if(IsWow64() && cygcheck(dll64, 64))
-        return runResource(str(NAME) "cyg64", NULL);
-    else if(cygcheck(dll32, 32))
-        return runResource(str(NAME) "cyg32", NULL);
-#endif // NO_32_BIT
 #endif // NO_CYGWIN
     return runWindows(NULL);
 }

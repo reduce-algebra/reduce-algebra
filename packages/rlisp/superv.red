@@ -180,16 +180,16 @@ symbolic procedure command1;
 symbolic procedure command;
    begin scalar errmsg!*,loopdelimslist!*,mode,x,y;
       if !*demo and ifl!* then return commdemo()
-       else if null !*slin or !*reduce4 then go to a;
-      % Note key!* not set in this case.
-      setcloc!*();
-      y := if lreadfn!* then lispapply(lreadfn!*,nil) else read();
-      go to b;
-   a: crchar!* := readch1();  % Initialize crchar!*.
-      if crchar!* = !$eol!$ then go to a;
-      % Parse input.
-      y := command1();
-   b: if !*reduce4 then go to c
+       else if null !*slin or !*reduce4 then <<
+         while (crchar!* := readch1()) = !$eol!$ do nil; % Initialize crchar!*.
+         % Parse input.
+         y := command1() >>
+       else <<
+         % Note key!* not set in this case.
+         setcloc!*();
+         y := if lreadfn!* then lispapply(lreadfn!*,nil) else read() >>;
+    b:
+      if !*reduce4 then go to c
        else if !*struct then y := structchk y;
       if !*pret and (atom y or null (car y memq '(in out shut)))
         then if null y and cursym!* = 'end then rprint 'end
@@ -214,7 +214,10 @@ symbolic procedure command;
       return list(mode,convertmode1(x,nil,'symbolic,mode));
    c: if !*debug then << prin2 "Parse: "; prettyprint y >>;
     % Mode analyze input.
-      if key!* = '!*semicol!* then go to a;  % Should be a comment.
+      if key!* = '!*semicol!* then <<  % Should be a comment.
+         while (crchar!* := readch1()) = !$eol!$ do nil;
+         y := command1();
+         go to b >>;
       if null !*reduce4 then y := form y else y := n!_form y;
 %     y := n!_form y;
       if !*debug then << terpri(); prin2 "Form: "; prettyprint y >>;
@@ -314,7 +317,9 @@ symbolic procedure process!-one!-reduce!-statement();
                 lreadfn!* := cdr tslin!*;
                 tslin!* := nil >>;
       !~x!~ := initl!*;
- b:   if !~x!~ then << sinitl car !~x!~; !~x!~ := cdr !~x!~; go to b >>;
+      while !~x!~ do <<
+        sinitl car !~x!~;
+        !~x!~ := cdr !~x!~ >>;
       remflag(forkeywords!*,'delim);
       remflag(repeatkeywords!*,'delim);
       remflag( whilekeywords!*,'delim);
@@ -368,9 +373,8 @@ symbolic procedure process!-one!-reduce!-statement();
 symbolic procedure begin1a !~prefixchars!~;
    begin scalar w;
       prepare!-for!-top!-loop !~prefixchars!~;
-  a:  w := process!-one!-reduce!-statement();
-      if atom w then go to a
-      else return car w;
+      while atom (w := process!-one!-reduce!-statement()) do nil;
+      return car w;
    end;
 
 % Newrule!* is initialized in the following function, since it is not
