@@ -254,7 +254,8 @@ flag('(prinhex), 'opfn);
 
 % hex64 is rather like prinhex except that it displays the hex
 % representation of a number with an inital "0x" and then with underscores
-% every 16 places. This should be suitable for re-input to Reduce.
+% every 16 places. This should be suitable for re-input to Reduce. I make
+% it produce each chunk as exactly 16 digits.
 
 symbolic procedure hex64 n;
   begin
@@ -270,7 +271,8 @@ symbolic procedure hex64 n;
     for each d in w do <<
       prin2 "_";
       if posn()+18 >= linelength nil then terpri();
-      prinhex d >>;
+      for i := 1:16 do
+        prinhex land(lshift(d, 4*i-64), 15) >>;
     prin2 "$";
   end; 
 

@@ -187,24 +187,23 @@ symbolic procedure list2widestring u;
     scalar u1, n, s, len;
     len := 0;
     u1 := u;
- a: if null u1 then go to b;
-    n := car u1;
-    u1 := cdr u1;
-    if idp n then n := car widestring2list symbol!-name n
-    else if stringp n and n neq "" then n := car widestring2list n
-    else if not fixp n then rederr "Invalid item in arg to list2widestring";
-    if n < 0 then error(1, "Negative integer in list2widestring")
+    while u1 do <<
+      n := car u1;
+      u1 := cdr u1;
+      if idp n then n := car widestring2list symbol!-name n
+      else if stringp n and n neq "" then n := car widestring2list n
+      else if not fixp n then rederr "Invalid item in arg to list2widestring";
+      if n < 0 then error(1, "Negative integer in list2widestring")
 % I put the constants in decimal because hex reading may not be
 % available yet.
-    else if n < 128 then len := len + 1
-    else if n < 2048 then len := len + 2
-    else if n < 65536 then len := len + 3
-    else if n < 1114112 then len := len + 4
-    else error(1, "Integer too large in list2widestring");
-    go to a;
- b: s := allocate!-string len;
+      else if n < 128 then len := len + 1
+      else if n < 2048 then len := len + 2
+      else if n < 65536 then len := len + 3
+      else if n < 1114112 then len := len + 4
+      else error(1, "Integer too large in list2widestring") >>;
+    s := allocate!-string len;
     len := 0;
- c: while u do <<
+    while u do <<
        n := car u;
        if idp n then n := car widestring2list symbol!-name n
        else if stringp n and n neq "" then n := car widestring2list n;
@@ -573,8 +572,6 @@ symbolic procedure tokquote;
 
 put('!','tokprop,'tokquote);
 
-% Check GOTO here
-
 if !*csl then <<
 % I will accept input such as 1.23S0. I preserve the fact that it named
 % a short float by using ":dn!-s!:" to tag it rather than just ":dn:", but
@@ -862,11 +859,9 @@ symbolic procedure token;
     let1:
         x := wideid2list x;
     let2:
-        if null x then go to let3;
-        y := car x . y;
-        x := cdr x;
-        go to let2;
-    let3:
+        while x do <<
+          y := car x . y;
+          x := cdr x >>;
         x := readch1();
         if (x eq !$eof!$) or
             (not (string!-length id2string crchar!*  = 1)) then go to ordinarysym
@@ -1332,14 +1327,12 @@ symbolic procedure scan;
 symbolic procedure read!-comment1 u;
    begin scalar !*lower,!*raise;
       named!-character!* := nil;
- comm1:
-      if named!-character!* or
+      while named!-character!* or
          (null (string!-length id2string crchar!* = 1)) or
          (null (delcp crchar!*)) or
-         (crchar!* eq !$eol!$) then <<
+         (crchar!* eq !$eol!$) do <<
              named!-character!* := nil;
-             crchar!* := readch1();
-             go to comm1 >>;
+             crchar!* := readch1() >>;
       crchar!* := '! ;
       condterpri()
    end;
