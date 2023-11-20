@@ -36,17 +36,11 @@ module tok; % Identifier and reserved character reading.
 % Up to the end of 2023 the code in this file has had a HUGE number of
 % "go to" statements. This is because the historical bootstrapping
 % process for Reduce had only a very primitive version of the parser
-% available at this stage. In December 2023 support for "<<...>>" groups
-% and for "while" loops has been put in so that those syntacic features
-% can be used here. So GRADUALLY very many of the "go to" statements and
-% their associated labels can be removed and replaced with equivalent
-% code that (with luck) will look a lot tidier. There are still plenty of
-% "go to" statements because the code is not being radically re-written
-% using many much smaller procedures (in more modern programming styles
-% a procedure name often serves the purpose that a label used to and a
-% call to it does what a goto used to). But parhaps gradual incremental
-% tidying up here will end up with something that looks at least half
-% reasonable.
+% available at this stage.
+% But it turns out that for some while both the CSL and the PSL build
+% processes have supported both "<<...>>" blocks and "while" loops, so
+% this comment is intended to set an agenda of exploiting that to clean
+% some of this code up!
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
         peekchar!* !*quotenewnam !*raise semic!* !*report!_colons
