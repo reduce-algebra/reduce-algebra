@@ -75,7 +75,11 @@ symbolic procedure xcomment(u,commentlist);
 
 % The code here has MANY labels and goto statements and may be in need
 % or re-writing to make it clearer... If I get to work on this it will
-% need to be re-worked in phases I suspect...
+% need to be re-worked in phases I suspect... Note that it is OK to use
+% <<...>> and while loops here but that when this was first written
+% that was not se (because of details of the bootstrapping process) and
+% that is the biggest reason that this code is expressed in the way that
+% it is.
 
 symbolic procedure xread1 u;
    begin scalar v,w,x,y,z,z1,z2,commentlist;

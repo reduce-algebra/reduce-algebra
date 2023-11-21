@@ -36,17 +36,11 @@ module tok; % Identifier and reserved character reading.
 % Up to the end of 2023 the code in this file has had a HUGE number of
 % "go to" statements. This is because the historical bootstrapping
 % process for Reduce had only a very primitive version of the parser
-% available at this stage. In December 2023 support for "<<...>>" groups
-% and for "while" loops has been put in so that those syntacic features
-% can be used here. So GRADUALLY very many of the "go to" statements and
-% their associated labels can be removed and replaced with equivalent
-% code that (with luck) will look a lot tidier. There are still plenty of
-% "go to" statements because the code is not being radically re-written
-% using many much smaller procedures (in more modern programming styles
-% a procedure name often serves the purpose that a label used to and a
-% call to it does what a goto used to). But parhaps gradual incremental
-% tidying up here will end up with something that looks at least half
-% reasonable.
+% available at this stage.
+% But it turns out that for some while both the CSL and the PSL build
+% processes have supported both "<<...>>" blocks and "while" loops, so
+% this comment is intended to set an agenda of exploiting that to clean
+% some of this code up!
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
         peekchar!* !*quotenewnam !*raise semic!* !*report!_colons
@@ -193,24 +187,23 @@ symbolic procedure list2widestring u;
     scalar u1, n, s, len;
     len := 0;
     u1 := u;
- a: if null u1 then go to b;
-    n := car u1;
-    u1 := cdr u1;
-    if idp n then n := car widestring2list symbol!-name n
-    else if stringp n and n neq "" then n := car widestring2list n
-    else if not fixp n then rederr "Invalid item in arg to list2widestring";
-    if n < 0 then error(1, "Negative integer in list2widestring")
+    while u1 do <<
+      n := car u1;
+      u1 := cdr u1;
+      if idp n then n := car widestring2list symbol!-name n
+      else if stringp n and n neq "" then n := car widestring2list n
+      else if not fixp n then rederr "Invalid item in arg to list2widestring";
+      if n < 0 then error(1, "Negative integer in list2widestring")
 % I put the constants in decimal because hex reading may not be
 % available yet.
-    else if n < 128 then len := len + 1
-    else if n < 2048 then len := len + 2
-    else if n < 65536 then len := len + 3
-    else if n < 1114112 then len := len + 4
-    else error(1, "Integer too large in list2widestring");
-    go to a;
- b: s := allocate!-string len;
+      else if n < 128 then len := len + 1
+      else if n < 2048 then len := len + 2
+      else if n < 65536 then len := len + 3
+      else if n < 1114112 then len := len + 4
+      else error(1, "Integer too large in list2widestring") >>;
+    s := allocate!-string len;
     len := 0;
- c: while u do <<
+    while u do <<
        n := car u;
        if idp n then n := car widestring2list symbol!-name n
        else if stringp n and n neq "" then n := car widestring2list n;
@@ -579,8 +572,6 @@ symbolic procedure tokquote;
 
 put('!','tokprop,'tokquote);
 
-% Check GOTO here
-
 if !*csl then <<
 % I will accept input such as 1.23S0. I preserve the fact that it named
 % a short float by using ":dn!-s!:" to tag it rather than just ":dn:", but
@@ -868,11 +859,9 @@ symbolic procedure token;
     let1:
         x := wideid2list x;
     let2:
-        if null x then go to let3;
-        y := car x . y;
-        x := cdr x;
-        go to let2;
-    let3:
+        while x do <<
+          y := car x . y;
+          x := cdr x >>;
         x := readch1();
         if (x eq !$eof!$) or
             (not (string!-length id2string crchar!*  = 1)) then go to ordinarysym
@@ -1338,14 +1327,12 @@ symbolic procedure scan;
 symbolic procedure read!-comment1 u;
    begin scalar !*lower,!*raise;
       named!-character!* := nil;
- comm1:
-      if named!-character!* or
+      while named!-character!* or
          (null (string!-length id2string crchar!* = 1)) or
          (null (delcp crchar!*)) or
-         (crchar!* eq !$eol!$) then <<
+         (crchar!* eq !$eol!$) do <<
              named!-character!* := nil;
-             crchar!* := readch1();
-             go to comm1 >>;
+             crchar!* := readch1() >>;
       crchar!* := '! ;
       condterpri()
    end;
