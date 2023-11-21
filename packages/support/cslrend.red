@@ -609,13 +609,9 @@ symbolic procedure begin;
               erfg!* := nil;
               read!-init!-file name end >>
         else !*mode := 'symbolic;
-        if boundp '!*lispmode and !*lispmode then !*mode := symbolic;
+        if boundp '!*lispmode and !*lispmode then !*mode := 'symbolic;
         % date!* := nil;
         >>;
-% % If there is a patches module that is later than one that I currently
-% % have installed then load it up now.
-%      if version!* neq "REDUCE Development Version"
-%        then load!-patches!-file();
      w := assoc('opsys, lispsystem!*);
      if not atom w then w := cdr w;
 % For MOST systems I will let ^G (bell) be the escape character, but
