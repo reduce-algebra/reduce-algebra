@@ -521,7 +521,7 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
 
 
 fluid '(no!_init!_file reduce!-startup!-hooks!*);
-global '(loaded!-packages!* personal!-dir!*);
+global '(loaded!-packages!* personal!-dir!* !*lispmode);
 
 personal!-dir!* := "$HOME";
 
@@ -609,6 +609,7 @@ symbolic procedure begin;
               erfg!* := nil;
               read!-init!-file name end >>
         else !*mode := 'symbolic;
+        if boundp '!*lispmode and !*lispmode then !*mode := symbolic;
         % date!* := nil;
         >>;
 % % If there is a patches module that is later than one that I currently

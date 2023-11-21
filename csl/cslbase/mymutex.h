@@ -1,7 +1,7 @@
-// winmutex.h                                   Copyright (C) 2023 Codemist
+// mymutex.h                                   Copyright (C) 2023 Codemist
 
-#ifndef header_winmutex_h
-#define header_winmutex_h 1
+#ifndef header_mymutex_h
+#define header_mymutex_h 1
 
 /**************************************************************************
  * Copyright (C) 2023, Codemist.                         A C Norman       *
@@ -32,7 +32,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: winmutex.h March 2022 arthurcnorman $
+// $Id: mymutex.h March 2022 arthurcnorman $
 
 
 #include <mutex>
@@ -78,7 +78,7 @@ public:
     }
 };
 
-// It appears that under Cygwin the us of std::mutex carries a significant
+// It appears that under Cygwin the use of std::mutex carries a significant
 // burden even in the case that contention is very low, 
 
 #ifdef __CYGWIN__
@@ -88,6 +88,6 @@ typedef std::mutex myMutex;
 #endif // __CYGWIN__
 
 
-#endif // header_winmutex_h
+#endif // header_mymutex_h
 
-// end of winmutex.h
+// end of mymutex.h
