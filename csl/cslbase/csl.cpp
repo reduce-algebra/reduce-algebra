@@ -2563,6 +2563,16 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 
+            /*! options [--lisp] \item [{\ttfamily --lisp}] \index{{\ttfamily --lisp}}
+             * This option causes Reduce to start up in symbolic mode.
+             */
+            {   "--lisp", false, false,
+                "--lisp       Start up in symbolic mode.",
+                [&](string key, bool hasVal, string val)
+                {   symbolsToDefine.push_back(stringBoolString("*lispmode", true, "t"));
+                }
+            },
+
             /*! options [-m] \item [{\ttfamily -m}] \index{{\ttfamily -m}}
              * Not used at present.
              */
@@ -2626,7 +2636,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             {   "-q", false, false,
                 "-q       Set *echo to nil to avoid echoed input.",
                 [&](string key, bool hasVal, string val)
-                {   symbolsToDefine.push_back(stringBoolString("echo", true, "nil"));
+                {   symbolsToDefine.push_back(stringBoolString("*echo", true, "nil"));
                 }
             },
 
