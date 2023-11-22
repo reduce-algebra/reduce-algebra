@@ -25,7 +25,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 .\" OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH REDCSL 1 "2010 October 10" "redcsl"
+.TH REDCSL 1 "2023 November 22" "redcsl"
 .
 .
 .SH NAME
@@ -34,6 +34,9 @@ redcsl \- Run REDUCE under PSL
 .
 .SH Synopsis
 .B redcsl
+[
+.I command-line switches
+]
 .
 .
 .SH DESCRIPTION
@@ -43,3 +46,22 @@ runs REDUCE based on the
 Lisp system.
 .
 .
+.SH REDPSL Options
+.TP
+.BI -d " symbol[=value]"
+defines Lisp symbol
+.I symbol
+at system start, with value 
+.I value
+.TP#
+.B --lisp
+Start Reduce in symbolic mode.
+.TP
+.B --no-rcfile
+Do not load the Reduce init file.
+tells the system to avoid any attempt to recolour prompts and input text.
+It will mainly be needed on X terminals that have been set up so that they
+use colours that make the defaults here unhelpful, like white-on-black.
+.TP
+.B --symbolic
+Start Reduce in symbolic mode.
