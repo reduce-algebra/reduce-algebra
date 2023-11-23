@@ -63,6 +63,7 @@ fluid '(!*break
 
 global '(!$eol!$
          !*extraecho
+         !*lispmode
          !*loadversion
          crbuflis!*
          crchar!*
@@ -367,6 +368,7 @@ symbolic procedure begin;
 %         then progn(prin2 ", patched to ",prin2 patch!-date!*);
         prin2t " ...";
         !*mode := if getd 'addsq then 'algebraic else 'symbolic;
+	if boundp '!*lispmode and !*lispmode then !*mode := 'symbolic;
         if !*mode eq 'algebraic then !*break := nil; % since most REDUCE users won't use LISP
 	if null getd 'mathprint then no!_init!_file := t; % since bootstrap Reduce should not read the init file
         date!* := nil;
@@ -557,6 +559,7 @@ symbolic procedure commandline_setq();
      %% process special args
      if "--no-rcfile" member extraargs then no!_init!_file := t;
      if "--texmacs" member extraargs then lispsystem!* := 'texmacs . lispsystem!*;
+     if ("--lisp" member extraargs or "--symbolic" member extraargs) then !*lispmode := t;
      lispsystem!* := ('executable . get!-exec!-path()) . lispsystem!*;
      if null imagefilename!*
        then imagefilename!* := get!-image!-path(); % -f image file argument
