@@ -239,6 +239,9 @@ else
         *ProductVersion*\<string\>13.*)
           os="mac_13_ventura"
           ;;
+        *ProductVersion*\<string\>14.*)
+          os="mac_14_sonoma"
+          ;;
         *)
           os="mac_unknown_version"
           ;;
