@@ -57,9 +57,10 @@
 #if __has_include(<bit>)
 #include <bit>
 #endif // <bit> header
-#if __has_include(<bitset>)
-#include <bitset>
-#endif // <bitset> header
+
+//#if __has_include(<bitset>)
+//#include <bitset>
+//#endif // <bitset> header
 
 using std::uint64_t;
 using std::size_t;

@@ -1,7 +1,7 @@
 AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 
 # **************************************************************************
-# * Copyright (C) 2017-22, Codemist.                      A C Norman       *
+# * Copyright (C) 2017-23, Codemist.                      A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -215,11 +215,6 @@ AC_ARG_WITH(psl,
   [],
   [with_psl="no"])
 
-AC_ARG_WITH(both,
-  AS_HELP_STRING([--with-both], [Use both the CSL and PSL Lisp systems]),
-  [],
-  [with_both="no"])
-
 if test "$with_both" != "no"
 then
   with_csl="yes"
@@ -421,8 +416,30 @@ then
   fi
 fi
 
+AC_ARG_WITH(clang,
+  AS_HELP_STRING([--with-clang], [Use clang rather than gcc]),
+  [],
+  [with_clang="no"])
+
+ORIG="$CC$CXX"
+OLD_CFLAGS="$CFLAGS"
+OLD_CXXFLAGS="$CXXFLAGS"
+OLD_CPPFLAGS="$CPPFLAGS"
+if test "$with_clang" = "yes"
+then
+  AC_PROG_CC([clang gcc])
+  AC_PROG_CXX([clang++ g++])
+else
+  AC_PROG_CC
+  AC_PROG_CXX
+fi
+CFLAGS="$OLD_CFLAGS"
+CXXFLAGS="$OLD_CXXFLAGS"
+CPPFLAGS="$OLD_CPPFLAGS"
+
 # Temporarily clear cross-compile mode because the cross compiled code may
-# in fact be executable!
+# in fact be executable! This NICE case applies if eg binfmt/qemu is
+# in play.
 save_cross_compiling=$cross_compiling
 cross_compiling=no
 
@@ -465,22 +482,15 @@ fi
 # try to establish a suitable encironment. Note that make-universal.sh will
 # NOT manage to make every "port" universal, but for me it manages enough.
 # and over time the rest may catch up, for what that is worth.
+# As of December 2023 Sonoma is now the up to date macOS and macports
+# has caught up well so I make universal builds the default. Anybody NOT
+# wanting one will need an explicit "--disable-universal"
 
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],
-                 [Try to build universal binary on Mac Big Sur (CSL only)]),
+                 [Try to build universal binary on Mac Big Sur+ (CSL only)]),
   [],
-  [enable_universal="no"])
-
-ORIG="$CC$CXX"
-OLD_CFLAGS="$CFLAGS"
-OLD_CXXFLAGS="$CXXFLAGS"
-OLD_CPPFLAGS="$CPPFLAGS"
-AC_PROG_CC
-AC_PROG_CXX
-CFLAGS="$OLD_CFLAGS"
-CXXFLAGS="$OLD_CXXFLAGS"
-CPPFLAGS="$OLD_CPPFLAGS"
+  [enable_universal="yes"])
 
 AC_CHECK_TOOL([STRIP], [strip])
 
@@ -831,8 +841,17 @@ csl_inplace_nativewin_build ()
     cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
     AC_MSG_NOTICE([cygextra = $cygextra])
   fi
+  if test "$with_clang" = "yes"
+  then
+    CC=x86_64-w64-mingw32-clang
+    CXX=x86_64-w64-mingw32-clang++    
+  else
+    CC=x86_64-w64-mingw32-gcc
+    CXX=x86_64-w64-mingw32-g++
+  fi
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
+          CC=\"$CC\" CXX=\"$CXX\" \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $cygextra $pass_build --host=$host"
@@ -1103,10 +1122,10 @@ then
     then
       LDFLAGS="$LDFLAGS -L/opt/local/lib"
     fi
-#   CPPFLAGS="$CPPFLAGS -mmacosx-version-min=10.13"
-#   CFLAGS="$CFLAGS -mmacosx-version-min=10.13"
-#   CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.13"
-#   LDFLAGS="$LDFLAGS -mmacosx-version-min=10.13"
+    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=11.0"
+    CFLAGS="$CFLAGS -mmacosx-version-min=11.0"
+    CXXFLAGS="$CXXFLAGS -mmacosx-version-min=11.0"
+    LDFLAGS="$LDFLAGS -mmacosx-version-min=11.0"
     ;;
   esac
 
