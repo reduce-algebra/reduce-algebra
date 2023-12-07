@@ -36,6 +36,8 @@ sudo dnf -y group install Development\ Tools
 #   doxygen              git                 gettext 
 #   subversion           highlight           patch   
 
+sudo dnf -y install clang
+
 sudo dnf -y install openssh
 sudo dnf -y install vim
 
@@ -55,7 +57,7 @@ sudo dnf -y install redhat-lsb-core
 sudo dnf -y install bc
 sudo dnf -y install dc
 
-# The following pull in a lot of subpackages. Maybe we should be more selective.
+# The following pull in a lot of subpackages. Maybe be more selective?
 
 sudo dnf -y install texlive-collection-fontsextra
 sudo dnf -y install texlive-collection-fontsrecommended

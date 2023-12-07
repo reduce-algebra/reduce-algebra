@@ -1754,15 +1754,15 @@ then
 # 10.10 Yosemite      )
 # 10.11 El Capitan    )
 # 10.12 Sierra        )
-# 10.13 High Sierra     Now the oldest deployment target I support
-#                       (this is because it is the best release my very
-#                       old macbook can install!).
-# 10.14 Mojave
-# 10.15 Catalina
+# 10.13 High Sierra   )
+# 10.14 Mojave        )
+# 10.15 Catalina      )
+
 # 11.x  Big Sur         Ha ha - from late 2020 there is a transition to
 #                       "Apple Silicon", ie ARM64.                     
-# 12.x  Monterey
-# 13.x  Ventura         Now the version I build and test on.
+# 12.x  Monterey        (last version that PSL runs on as of 2023)
+# 13.x  Ventura
+# 14.x  Sonoma          Now the version I build and test on.
 #
 # Every few years maybe I should review how old a MacOS can be supported, but
 # note very well that one needs to configure Macports to use a deployment
@@ -1770,7 +1770,7 @@ then
 # macports stuff is liable to need rebuilding or re-installing so as to
 # avoid moans about version support conflicts when things are linked.
 #
-# ENVP="MACOSX_DEPLOYMENT_TARGET=10.13"
+  ENVP="MACOSX_DEPLOYMENT_TARGET=11.0"
   AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"

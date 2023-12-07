@@ -17,12 +17,9 @@ exit
 # not be possible.
 
 apt-get -y install texinfo
-apt-get -y install texlive-latex-base
-apt-get -y install texlive-fonts-extra
-apt-get -y install texlive-fonts-recommended
-apt-get -y install texlive-latex-recommended
-apt-get -y install texlive-latex-extra
-apt-get -y install texlive-plain-generic
+apt-get -y install texlive-latex-base texlive-fonts-extra \
+    texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra \
+    texlive-plain-generic
 apt-get -y install tex4ht
 apt-get -y install xorg-dev
 

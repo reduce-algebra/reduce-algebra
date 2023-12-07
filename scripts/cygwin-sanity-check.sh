@@ -46,7 +46,7 @@ x86_64)
     for m in automake bc bison ccache \
         gcc-g++ libffi-devel libgtk2.0-devel \
         libncurses-devel libpng-devel libtool libXext-devel libXft-devel \
-        make mingw64-x86_64-gcc-g++ \
+        make mingw64-x86_64-gcc-g++ clang mingw64-x86_64-clang \
         mingw64-x86_64-zlib openssh subversion texinfo time wget gcab \
         $fordistrib
     do

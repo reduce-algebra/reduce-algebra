@@ -8,14 +8,14 @@
 # Linux:
 # (1) Package names and exact contents may vary between distributions, and
 #     perhaps between releases of the same distribution.
-# (2) I rely on the apt-get dependancy mechanism to expand the list of
+# (2) I rely on the apt dependancy mechanism to expand the list of
 #     packages that I list explicitly here. The dependency information may
 #     also not be universal or long-term stable.
 # (3) I include some obviously Ubuntu-specific packages here, and I do
 #     not document just what they are needed for or what to replace them
 #     with elsewhere!
 # Despite the above limitations I believe that this will provide a very good
-# start on most "apt-get" systems.
+# start on most "apt" systems.
 #
 # I install some things that are not needed at all when merely building a
 # simple version of Reduce for local use, but which are needed or useful
@@ -27,84 +27,36 @@ here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
-sudo apt-get -y install alien astyle autoconf ccache devscripts \
+sudo apt -y install alien astyle autoconf ccache devscripts \
  git gnuplot imagemagick libedit-dev libffi-dev libgtk2.0-dev libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some
 # where it has to be "libtool-bin". By making the install requests each
 # individual when one of the following two fails it should not wreck
 # the whole attempt to get stuff installed! Ditto libltdl-dev.
-sudo apt-get -y install libtool
-sudo apt-get -y install libtool-bin
-sudo apt-get -y install libltdl-dev
+sudo apt -y install libtool
+sudo apt -y install libtool-bin
+sudo apt -y install libltdl-dev
 # Sort of similarly ssh may be either ssh or openssh... so some of these
 # requests are liable to moan.
-sudo apt-get -y install openssh
-sudo apt-get -y install ssh
-sudo apt-get -y install time
-sudo apt-get -y install dvipng
-sudo apt-get -y install linux-generic
-sudo apt-get -y install polyml
-sudo apt-get -y install rpm
-sudo apt-get -y install ssh
-sudo apt-get -y install bc
-sudo apt-get -y install dc
-sudo apt-get -y install subversion
-sudo apt-get -y install texinfo
-sudo apt-get -y install texlive-latex-base
-sudo apt-get -y install texlive-fonts-extra
-sudo apt-get -y install texlive-fonts-recommended
-sudo apt-get -y install texlive-latex-recommended
-sudo apt-get -y install texlive-latex-extra
-sudo apt-get -y install texlive-plain-generic
-sudo apt-get -y install tex4ht
-sudo apt-get -y install xorg-dev
-sudo apt-get -y install devscripts
-sudo apt-get -y install fakeroot
-sudo apt-get -y install alien
-sudo apt-get -y install rsync
-
-# These last few will not be useful on non-Ubuntu platforms I suspect!
-# sudo apt-get -y install ubuntu-desktop
-# sudo apt-get -y install ubuntu-minimal
-# sudo apt-get -y install ubuntu-restricted-addons
-# sudo apt-get -y install ubuntu-standard 
-
-# CSL now depends on C++-11, and versions of g++ prior to 4.9 (at least)
-# have enough support to seen plausible but enough missing deatures to cause
-# me pain. So I intend to take a view that gcc 5.X shhould be seen as the
-# earliest version to be used without worrying too much. For Ubuntu LTS
-# releases 12.04 and 14.04 the initially shipped gcc is earlier than that, but
-# the following script can be used to fetch a newer toolchain and make it the
-# default.
-
-case `gcc -v 2>&1` in
-*gcc\ version\ 4*)
-  sudo apt-get -y install python-software-properties
-  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-  sudo apt-get update
-  sudo apt-get -y install gcc-5 g++-5
-  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 \
-       60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
-  ;;
-*)
-  printf "gcc is already probably recent enough\n"
-  ;;
-esac
-
-# In some cases "make", "autoconf", "automake" "libtool" or "rsync" might be
-# too old a version. So if I have a command line option "necessary" I will
-# install better versions
-
-case $* in
-*necessary*)
-  tar xvfj $here/csl/support-packages/necessary-updates.tar.bz2
-  pushd necessary-updates
-  ./build-them.sh
-  popd
-  ;;
-*)
-  ;;
-esac
+sudo apt -y install openssh
+sudo apt -y install ssh
+sudo apt -y install clang
+sudo apt -y install time
+sudo apt -y install dvipng
+sudo apt -y install linux-generic
+sudo apt -y install polyml
+sudo apt -y install bc
+sudo apt -y install dc
+sudo apt -y install subversion
+sudo apt -y install texinfo
+sudo apt -y install texlive-latex-base texlive-fonts-extra \
+    texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra \
+    texlive-plain-generic
+sudo apt -y install tex4ht
+sudo apt -y install xorg-dev
+sudo apt -y install rpm
+sudo apt -y install devscripts fakeroot alien
+sudo apt -y install rsync
 
 exit 0
 # end of script
