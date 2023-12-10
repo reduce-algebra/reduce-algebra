@@ -486,11 +486,29 @@ fi
 # has caught up well so I make universal builds the default. Anybody NOT
 # wanting one will need an explicit "--disable-universal"
 
+
+OLDCFLAGS="$CFLAGS"
+OLDCXXFLAGS="$CXXFLAGS"
+OLDLDFLAGS="$LDFLAGS"
+CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
+CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
+LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+  [[return 0]])],
+[AC_MSG_NOTICE(Can build in universal mode)
+  default_univ="yes"],
+[AC_MSG_NOTICE(Universal build not possible on this host)
+  default_univ="no"])
+CFLAGS="$OLDCFLAGS"
+CXXFLAGS="$OLDCXXFLAGS"
+LDFLAGS="$OLDLDFLAGS"
+
+
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],
                  [Try to build universal binary on Mac Big Sur+ (CSL only)]),
   [],
-  [enable_universal="yes"])
+  [enable_universal="$default_univ"])
 
 AC_CHECK_TOOL([STRIP], [strip])
 
