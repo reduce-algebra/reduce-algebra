@@ -65,6 +65,19 @@ port       selfupdate
 # if I moved xorg-libX11 up then various of its dependencies would end up
 # compiled from source in an unnecessary way.
 
+# If this computer can no create universal binaries I should not play with
+# that at all.
+
+echo "int main() { return 0; }" > /tmp/sample.c
+rm -f /tmp/sample
+gcc -arch x86_64 -arch arm64 /tmp/sample.c -o /tmp/sample
+if test -f /tmp/sample
+then
+  UNIVERSAL=yes
+else
+  UNIVERSAL=no
+fi
+
 # For each port I first try installing in +universal mode than if that
 # fails I try again in plain single-architecture mode. I use "port clean"
 # frequently because without it incomplete installs in one mode can clash
@@ -95,7 +108,7 @@ install ()
 # to build some or even all of those, and if any are in an untidy state
 # that could disrupt the entire build.
   port -N clean --all $P rdepof:$P
-  if ! port -N $S install $P +universal
+  if test "$UNIVERSAL" = "no" || ! port -N $S install $P +universal
   then
     printf "### Fallback to simple install of $P\n"
     port -N clean --all $P rdepof:$P
@@ -210,36 +223,40 @@ fi
 # at the end on any that still fail. In January 2022 there are some but none
 # that cause serious problems for me.
 
-all=`port installed installed | grep active | tail -n +2 | sed -e 's/@.*$//g'`
-failures=""
+if test "$UNIVERSAL" = "yes"
+then
+
+  all=`port installed installed | grep active | tail -n +2 | sed -e 's/@.*$//g'`
+  failures=""
 
 # The above sets all to a list of all the ports that are at present active.
 # I will then check each to see if a universal version is already installed,
 # and if not whether one may be available.
 
-for P in $all
-do
-  if port installed $P | grep "universal.*active" >/dev/null
-  then
+  for P in $all
+  do
+    if port installed $P | grep "universal.*active" >/dev/null
+    then
 # If the current version is already universal I do not have to do more for
 # this package.
-    continue
-  fi
-  if port variants $P | grep "universal:" > /dev/null
-  then
+      continue
+    fi
+    if port variants $P | grep "universal:" > /dev/null
+    then
 # Here the currently active port is not universal but the option +universal
 # will be understood.
-    printf "$P is not universal yet but potentially could be\n"
-  else
-    continue
-  fi
-  port -N clean --all $P rdepof:$P
-  if ! port -N install $P +universal
-  then
+      printf "$P is not universal yet but potentially could be\n"
+    else
+      continue
+    fi
+    port -N clean --all $P rdepof:$P
+    if ! port -N install $P +universal
+    then
 # Collect a list of cases where the universal build fails.
-    failures="$failures $P"
-  fi
-done
+      failures="$failures $P"
+    fi
+  done
+fi
 
 # "port reclaim" will discard all the non-active versions of ports, so when
 # I have succeded in installing a universal variant it will get rid of the
