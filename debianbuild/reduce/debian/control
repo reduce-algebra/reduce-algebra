@@ -10,7 +10,7 @@ Package: reduce-complete
 Architecture: i386 amd64
 Depends: gnuplot-x11 | gnuplot-qt, ${shlibs:Depends}, ${misc:Depends}
 Conflicts: reduce-common, reduce-csl, reduce-psl, reduce-addons
-Description: REDUCE Computer Algebra System -- common files
+Description: REDUCE Computer Algebra System
  REDUCE is a system for doing scalar, vector and matrix algebra by computer,
  which also supports arbitrary precision numerical approximation and
  interfaces to gnuplot to provide graphics. It can be used interactively
