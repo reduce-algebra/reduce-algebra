@@ -807,13 +807,14 @@ LispObject make_symbol(char const *s, int restartp,
 // using command-line options like -Dname could cause trouble?
 #ifdef DEBUG
     if (!valid_address((void *)s))
-    {   my_abort("s is not a valid address");
+    {   fprintf(stderr, "s = %p\n", (void *)s);
+        my_abort("make_symbol: s is not a valid address");
     }
     if (!valid_address((void *)&boffo_char(0)))
-    {   my_abort("boffo is not a valid address");
+    {   my_abort("make_symbol: boffo is not a valid address");
     }
     if (std::strlen(s) > 200)
-    {   my_abort("over-long string");
+    {   my_abort("make_symbol: over-long string");
     }
 #endif // DEBUG
 #ifdef COMMON

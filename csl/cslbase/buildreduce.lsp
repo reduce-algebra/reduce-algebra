@@ -1735,6 +1735,14 @@ symbolic restart!-csl nil;
 (makeunbound '!@reduce)
 (makeunbound 'no_init_file)
 
+% can discard the fast files for things that I havce loaded into the main
+% image...
+(dolist (m loaded!-modules!*)
+   (princ "Tidy up ") (print m)
+   (dolist (m1 (get m 'package))
+      (princ "  component module: ") (print m1)
+      (delete!-module m1)))
+
 (setq otime!* (setq otime1!* (setq otime2!* (setq otime3!* 0))))
 (setq ogctime!* (setq ogctime1!* (setq ogctime2!* (setq ogctime3!* 0))))
 (setq lispargs!* (setq full!-lispargs!* (setq lispsystem!* nil)))

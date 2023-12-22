@@ -70,7 +70,7 @@ port       selfupdate
 
 echo "int main() { return 0; }" > /tmp/sample.c
 rm -f /tmp/sample
-gcc -arch x86_64 -arch arm64 /tmp/sample.c -o /tmp/sample
+gcc -arch x86_64 -arch arm64 /tmp/sample.c -o /tmp/sample >/dev/null 2>/dev/null
 if test -f /tmp/sample
 then
   UNIVERSAL=yes
@@ -110,8 +110,13 @@ install ()
   port -N clean --all $P rdepof:$P
   if test "$UNIVERSAL" = "no" || ! port -N $S install $P +universal
   then
-    printf "### Fallback to simple install of $P\n"
-    port -N clean --all $P rdepof:$P
+    if test "$UNIVERSAL" = "no"
+    then
+      printf "### Using single-architecture install of $P\n"
+    else
+      printf "### Fallback to simple install of $P\n"
+      port -N clean --all $P rdepof:$P
+    fi
     port -N $S install $P
   fi
 }
