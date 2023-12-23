@@ -399,8 +399,8 @@ typedef struct Cons_Cell_
 
 
 extern bool valid_address(void *pointer);
-[[noreturn]] extern void my_abort();
-[[noreturn]] extern void my_abort(const char *msg);
+//[[noreturn]] extern void my_abort();
+//[[noreturn]] extern void my_abort(const char *msg);
 
 // Going forward I may want to be able to control where I have memory
 // fences and what sort get used, so these access functions have (optional)

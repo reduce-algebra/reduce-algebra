@@ -1058,6 +1058,10 @@ then
   AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
 fi
 
+AC_CHECK_MEMBER([timespec.tv_sec],
+    [AC_DEFINE(HAVE_TIMESPEC, [1], [std::timespec present])],
+    [], [[#include <time.h>]])
+
 AC_COMPILE_IFELSE(
   [AC_LANG_SOURCE([
     #include <bit>
@@ -1805,6 +1809,20 @@ then
     then 
       LL=$HOME/ports/lib
     fi
+# On some version of macOS/macports/etc these two are not apparently
+# supplied.
+    if test -f $LL/libbrotlicommon-static.a
+    then
+      BROTLI=$LL/libbrotlicommon-static.a
+    else
+      BROTLI=-lbrotlicommon
+    fi
+    if test -f $LL/libbrotlidec-static.a
+    then
+      BROTLI=$LL/libbrotlidec-static.a
+    else
+      BROTLI=-lbrotlidec
+    fi
     LIBS="$LL/libXrandr.a \
       $LL/libXcursor.a \
       $LL/libXrender.a \
@@ -1827,6 +1845,7 @@ then
       $LL/libfontconfig.a \
       $LL/libintl.a \
       $LL/libexpat.a \
+      $BROTLI \
       -lpthread \
       -ldl"
     if test "$with_wx" = "yes"
