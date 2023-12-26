@@ -196,7 +196,6 @@ then
 # seems to be possible.
 
 default_univ="no"
-
 if test `uname` = "Darwin"
 then
   if printf "int main() {return 0;}\n" | \
@@ -208,6 +207,7 @@ then
   AC_MSG_NOTICE([default_univ=$default_univ])
 fi
 
+enable_universal="no"
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],
                  [Try to build universal binary on Mac Big Sur+ (CSL only)]),
@@ -759,7 +759,7 @@ else
 # For CSL find an initial name for the directory to build in. In the Windows
 # case this will be messed with further.
   build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $host $ac_configure_args"`
-  if test "$enable_universal" != "no"
+  if test `uname` == "Darwin" && test "$enable_universal" != "no"
   then
     build=`echo $build | sed s/x86_64/universal/`
     build=`echo $build | sed s/aarch64/universal/`
