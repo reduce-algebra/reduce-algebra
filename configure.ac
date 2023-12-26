@@ -215,6 +215,11 @@ AC_ARG_WITH(psl,
   [],
   [with_psl="no"])
 
+AC_ARG_WITH(both,
+  AS_HELP_STRING([--with-both], [Use both the CSL and PSL Lisp systems]),
+  [],
+  [with_both="no"])
+
 if test "$with_both" != "no"
 then
   with_csl="yes"
@@ -455,7 +460,7 @@ esac
 AC_ARG_WITH(macosxver,
   AS_HELP_STRING([--with-macosxver=NNN], [set -mmacosx_version_min]),
   [],
-  [with_macosxver=DEFAULTVER])
+  [with_macosxver=$DEFAULTVER])
 
 ORIG="$CC$CXX"
 OLD_CFLAGS="$CFLAGS"
@@ -518,6 +523,9 @@ fi
 # try to establish a suitable encironment. Note that make-universal.sh will
 # NOT manage to make every "port" universal, but for me it manages enough.
 # and over time the rest may catch up, for what that is worth.
+#
+# Well.....
+#
 # As of December 2023 Sonoma is now the up to date macOS and macports
 # has caught up well so I make universal builds the default. Anybody NOT
 # wanting one will need an explicit "--disable-universal"

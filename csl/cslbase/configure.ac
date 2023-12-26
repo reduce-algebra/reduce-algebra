@@ -1314,6 +1314,7 @@ then
           CXXFLAGS="$CXXFLAGS $freetype_cflags"
           CPPFLAGS="$CPPFLAGS $freetype_cflags"
           freetype_libs=`$FREETYPE_CONFIG --libs`
+          AC_MSG_NOTICE([freetype_libs=$freetype_libs])
           XLIBS="$XLIBS $freetype_libs"
           xft_found="yes"
           AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
@@ -1811,18 +1812,22 @@ then
     fi
 # On some version of macOS/macports/etc these two are not apparently
 # supplied.
+    BROTLI=
     if test -f $LL/libbrotlicommon-static.a
     then
-      BROTLI=$LL/libbrotlicommon-static.a
+      BROTLI="$LL/libbrotlicommon-static.a"
+      AC_MSG_NOTICE([libbrotlicommon-static.a found +++])
     else
-      BROTLI=-lbrotlicommon
+      BROTLI="-lbrotlicommon"
     fi
     if test -f $LL/libbrotlidec-static.a
     then
-      BROTLI=$LL/libbrotlidec-static.a
+      BROTLI="$BROTLI $LL/libbrotlidec-static.a"
+      AC_MSG_NOTICE([libbrotlidec-static.a found +++])
     else
-      BROTLI=-lbrotlidec
+      BROTLI="$BROTLI -lbrotlidec"
     fi
+    AC_MSG_NOTICE([BROTLI=$BROTLI])
     LIBS="$LL/libXrandr.a \
       $LL/libXcursor.a \
       $LL/libXrender.a \
@@ -1838,8 +1843,6 @@ then
       $LL/libz.a \
       $LL/libbz2.a \
       $LL/libfreetype.a \
-      $LL/libbrotlicommon-static.a \
-      $LL/libbrotlidec-static.a \
       $LL/libiconv.a \
       $LL/libXft.a \
       $LL/libfontconfig.a \
