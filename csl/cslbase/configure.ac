@@ -1810,23 +1810,41 @@ then
     then 
       LL=$HOME/ports/lib
     fi
-# On some version of macOS/macports/etc these two are not apparently
-# supplied.
+# With older versions of macports therte was a file libbrotlicommon-static.s
+# for the static version of this library. For a little while no static
+# version was provided at all, but more recently one has reappeared but
+# with a changed name - merely libbrotlicommon.a (and similarly for
+# libbrotlidec). If neither static library is present (which could arise if
+# somebody had installed macports during the window, or have not manually
+# installed the brotli-static package because they had not noticed it) I link
+# in a dynamic library which should be OK on the machine being built on
+# but which will be a binary that will not run on other macs if macports
+# and brotli have not bee installed. 
     BROTLI=
-    if test -f $LL/libbrotlicommon-static.a
-    then
-      BROTLI="$LL/libbrotlicommon-static.a"
-      AC_MSG_NOTICE([libbrotlicommon-static.a found +++])
-    else
-      BROTLI="-lbrotlicommon"
-    fi
-    if test -f $LL/libbrotlidec-static.a
-    then
-      BROTLI="$BROTLI $LL/libbrotlidec-static.a"
-      AC_MSG_NOTICE([libbrotlidec-static.a found +++])
-    else
-      BROTLI="$BROTLI -lbrotlidec"
-    fi
+
+     if test -f $LL/libbrotlicommon.a
+     then
+       BROTLI="$LL/libbrotlicommon.a"
+       AC_MSG_NOTICE([libbrotlicommon.a found +++])
+     elif test -f $LL/libbrotlicommon-static.a
+     then
+       BROTLI="$LL/libbrotlicommon-static.a"
+       AC_MSG_NOTICE([libbrotlicommon-static.a found +++])
+     else
+       BROTLI="-lbrotlicommon"
+     fi
+
+     if test -f $LL/libbrotlidec.a
+     then
+       BROTLI="$BROTLI $LL/libbrotlidec.a"
+       AC_MSG_NOTICE([libbrotlidec.a found +++])
+     elif test -f $LL/libbrotlidec-static.a
+     then
+       BROTLI="$BROTLI $LL/libbrotlidec-static.a"
+       AC_MSG_NOTICE([libbrotlidec-static.a found +++])
+     else
+       BROTLI="$BROTLI -lbrotlidec"
+     fi
     AC_MSG_NOTICE([BROTLI=$BROTLI])
     LIBS="$LL/libXrandr.a \
       $LL/libXcursor.a \
