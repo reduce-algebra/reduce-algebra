@@ -190,6 +190,32 @@ then
   fi
   cd $here
 
+# If I am on a Macintosh I may need to create Universal binaries, and
+# an option "--enable-universal" or "--disable-universal" will control
+# that. The default behaviour will be to build in universal mode if that
+# seems to be possible.
+
+default_univ="no"
+if test `uname` = "Darwin"
+then
+  if printf "int main() {return 0;}\n" | \
+     gcc -c -x c -arch x86_64 -arch arm64 - -o temp.o >/dev/null 2>/dev/null
+  then
+    default_univ="yes"
+  fi
+  rm -f temp.o
+  AC_MSG_NOTICE([default_univ=$default_univ])
+fi
+
+enable_universal="no"
+AC_ARG_ENABLE(universal,
+  AS_HELP_STRING([--enable-universal],
+                 [Try to build universal binary on Mac Big Sur+ (CSL only)]),
+  [],
+  [enable_universal="$default_univ"])
+
+ac_configure_args="--enable-universal=$enable_universal $ac_configure_args"
+
 # It is unexpectedly important the the "--without-autogen" be provided as
 # the first argument in the re-try. This is because otherwise some malformed
 # input later on (eg "--") could cause it not to be recognised, leading
@@ -445,7 +471,7 @@ case `uname -a` in
   version=`sw_vers | grep ProductVersion`
   case $version in
   *\ 10.)
-    DEFAULTVER="10.10"
+    DEFAULTVER="10.13"
     ;;
   *)
     DEFAULTVER="11.0"
@@ -513,47 +539,6 @@ then
    cd $d
 fi
 
-# I will only attempt to build a Mac univeral binary if things are
-# configured with "--enable-universal", and even then such a build will
-# only be possible if enough build libraries have been installed in
-# universal mode. At the time of updating this comment (January 2022)
-# this seems possible on either an Intel or arm-based Mac running Big Sur.
-# It needs universal versions of many of the libraries etc that get
-# set up using macports, and scripts/make-universal.sh is available to
-# try to establish a suitable encironment. Note that make-universal.sh will
-# NOT manage to make every "port" universal, but for me it manages enough.
-# and over time the rest may catch up, for what that is worth.
-#
-# Well.....
-#
-# As of December 2023 Sonoma is now the up to date macOS and macports
-# has caught up well so I make universal builds the default. Anybody NOT
-# wanting one will need an explicit "--disable-universal"
-
-
-OLDCFLAGS="$CFLAGS"
-OLDCXXFLAGS="$CXXFLAGS"
-OLDLDFLAGS="$LDFLAGS"
-CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
-CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
-LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([],
-  [[return 0]])],
-[AC_MSG_NOTICE(Can build in universal mode)
-  default_univ="yes"],
-[AC_MSG_NOTICE(Universal build not possible on this host)
-  default_univ="no"])
-CFLAGS="$OLDCFLAGS"
-CXXFLAGS="$OLDCXXFLAGS"
-LDFLAGS="$OLDLDFLAGS"
-
-
-AC_ARG_ENABLE(universal,
-  AS_HELP_STRING([--enable-universal],
-                 [Try to build universal binary on Mac Big Sur+ (CSL only)]),
-  [],
-  [enable_universal="$default_univ"])
-
 AC_CHECK_TOOL([STRIP], [strip])
 
 uname_m=`uname -m`
@@ -568,19 +553,10 @@ Darwin)
   then
 # I must not add these to CPPFLAGS because the pre-processor does not like
 # the idea of dual targets!
-    OLDCFLAGS="$CFLAGS"
-    OLDCXXFLAGS="$CXXFLAGS"
-    OLDLDFLAGS="$LDFLAGS"
     CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
     CXXFLAGS="$CXXFLAGS -arch x86_64 -arch arm64"
     LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([],
-      [[return 0]])],
-    [AC_MSG_NOTICE(Will build in universal mode)],
-    [CFLAGS="$OLDCFLAGS"
-     CXXFLAGS="$OLDCXXFLAGS"
-     LDFLAGS="$OLDLDFLAGS"
-     AC_MSG_NOTICE(Universal build not possible on this host)])
+    AC_MSG_NOTICE([Will build in universal mode])
   fi
   ;;
 *)
@@ -619,7 +595,11 @@ AC_ARG_WITH(force,
 # ever need to alter this.
 
 # This is set here so that if I need to experiment with or chance to a
-# different version that will be reasonably tidy.
+# different version that will be reasonably tidy. I should probably upgrade
+# to use a recent version of libedit - but there are two reasons that I have
+# not. (1) I am not aware of serious deficiencies in the old version used
+# at present and (2) Making the change would take time and effort and would
+# risk breaking things. Maybe somebody else would like to look at this?
 LIBEDIT_VERSION=20140620-3.1
 #LIBEDIT_VERSION=20210216-3.1
 
@@ -776,9 +756,14 @@ then
     ;;
   esac
 else
-# For PSL find an initial name for the directory to build in. In the Windows
+# For CSL find an initial name for the directory to build in. In the Windows
 # case this will be messed with further.
   build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $host $ac_configure_args"`
+  if test `uname` == "Darwin" && test "$enable_universal" != "no"
+  then
+    build=`echo $build | sed s/x86_64/universal/`
+    build=`echo $build | sed s/aarch64/universal/`
+  fi
 fi
 
 AC_MSG_NOTICE([Will build in the $build subdirectory])
@@ -1410,10 +1395,11 @@ fi
 
 AC_MSG_NOTICE([About to configure libffi])
 mkdir -p libffi
-if test "$enable_universal" = "yes"
+if test "$enable_universal" != "no"
 then
 # This is a messy script that arranges to build a universal version of
-# the library on MacOS.
+# the library on MacOS. It does this by building arm64 and an x86_64
+# separately and then merging the resulting libraries.
   sed "s+@srcdir@+$abssrcdir+" \
      < $abssrcdir/libraries/libffi-for-mac/Makefile \
      > libffi/Makefile
@@ -1444,6 +1430,9 @@ cd softfloat
 setpasscc
 
 # NOTE that there is now a SoftFloat-3e and I should migrate to use of it!
+# However the changes are such that the move is not totally trivial and so
+# some work is needed by sonmebody to make that happen. I would like
+# if if somebody else had a go please!
 
 doconfig="$SHELL $abssrcdir/libraries/SoftFloat-3a/source/configure -C \
         $filtered \

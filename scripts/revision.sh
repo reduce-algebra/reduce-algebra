@@ -25,4 +25,3 @@ fi
 a=`echo $a | grep -v 'Unversioned\|Uncommitted' | sed -e 's/[A-Z]*$//'` 
 a=${a#*:}
 echo $a
-
