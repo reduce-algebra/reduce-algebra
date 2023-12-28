@@ -806,4 +806,17 @@ uint64_t read_elapsed_nanosecond()
     return t1.count();
 }
 
+// What follows was a hack to let things link at a stage when the
+// static brotli libraries were not supplied by macports.
+
+//-- extern "C" {
+//--
+//-- int BrotliDecoderDecompress(size_t encsize, const uint8_t* inbuff,
+//--                             size_t* outsize, uint8_t* outbuff)
+//-- {   *outsize = 0;
+//--     return 0;     // This return value signals an error.
+//-- }
+//--
+//-- };
+
 // end of sysfwin.cpp

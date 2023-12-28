@@ -159,7 +159,8 @@ for p in                      \
   timeout                     \
   xorg-libXrandr:s            \
   xorg-libXcursor:s           \
-  brotli
+  brotli                      \
+  brotli-static
 do
   install $p
 done

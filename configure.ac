@@ -460,11 +460,19 @@ AC_ARG_WITH(clang,
 # reasonable. Buf if you try to build on an Mac that is older than
 # Big Sur this would fail. What I try here is along the lines of
 # build hosts 10.x (ie up as far as Catalina) ask for support to go
-# back as far as 10.10 (Yosemite), while others (which are liable to be
+# back as far as 10.13 (High Sierra), while others (which are liable to be
 # 11.0 onwards) set 11.0 (Big Sur) as the baseline. I hope that with this
 # few people will feel the need to override the option by hand.
 # NOTE VERY WELL that /opt/local/etc/macports/macports.conf must have
 # a suitable setting for this as well.
+#
+# High Sierra (10.13) can run on many Macintosh machines from 2009 onwards
+# but some models need to be from 2010. In 2014 that means that any Macintosh
+# less than 14 years old could run it. The last security update for it was
+# in November 2020 and from then on it has counted as being unsupported by
+# Apple, with that now having been its status for over 3 years. All in
+# all I am taking a view that pretending to support versions of macOS
+# older than that is now not necessary.
 
 case `uname -a` in
 *Darwin*)
@@ -759,7 +767,7 @@ else
 # For CSL find an initial name for the directory to build in. In the Windows
 # case this will be messed with further.
   build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $host $ac_configure_args"`
-  if test `uname` == "Darwin" && test "$enable_universal" != "no"
+  if test `uname` = "Darwin" && test "$enable_universal" != "no"
   then
     build=`echo $build | sed s/x86_64/universal/`
     build=`echo $build | sed s/aarch64/universal/`
@@ -1395,7 +1403,7 @@ fi
 
 AC_MSG_NOTICE([About to configure libffi])
 mkdir -p libffi
-if test "$enable_universal" != "no"
+if test `uname` = "Darwin" && test "$enable_universal" != "no"
 then
 # This is a messy script that arranges to build a universal version of
 # the library on MacOS. It does this by building arm64 and an x86_64
