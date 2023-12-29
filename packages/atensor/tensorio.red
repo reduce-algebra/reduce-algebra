@@ -65,7 +65,7 @@ symbolic procedure bassoc(th,bl)$
   else if th_match(th,caar bl) then bl
   else bassoc(th,cdr bl)$
 
-global '(!*basis,tensors!*)$
+global '(!*basis tensors!*)$
 
 remprop('tensor,'stat)$
 remprop('tsym,'stat)$

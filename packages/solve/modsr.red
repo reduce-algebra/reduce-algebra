@@ -229,10 +229,10 @@ symbolic procedure general!-reduce!-degree!-mod!-p(a,b);
 symbolic procedure modp(a,p);
    <<a:=remainder(a,p); if a<0 then a+p else a>>;
 
-symbolic procedure lowestdeg(f,x,n);
+symbolic procedure lowestdeg1(f,x,n);
    if null f then n else
    if domainp f or mvar f neq x then 0 else
-   lowestdeg(red f,x,ldeg f);
+   lowestdeg1(red f,x,ldeg f);
 
 symbolic procedure reduce!-mod!-p!*(f,p);
   (general!-reduce!-mod!-p f) where current!-modulus = p;

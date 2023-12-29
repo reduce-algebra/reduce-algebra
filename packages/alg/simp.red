@@ -364,15 +364,21 @@ symbolic procedure mkop u;
     if null u then typerr("Local variable","operator")
      else if u eq 'lambda then typerr("The symbol ""lambda""","operator")
      else if get(u, 'formfn) then typerr("Reserved word", "operator")
-     % check for psopfn property added since it cannot yet be included in gettype, messes up assist
-     else if (x := gettype u) eq 'operator or get(u,'psopfn)
+     % check for psopfn property added since it cannot yet be included
+     % in gettype, messes up assist.
+     else if (x := gettype u) eq 'operator
+      then <<
+% If mkop gets to the end it just sets the simpfn to simpiden, so if that
+% is the situation anyway it seems excessive to complain.
+        if get(u, 'simpfn) neq 'simpiden then
+           lprim list(u,"already defined as operator") >>
+     else if get(u,'psopfn)
       then lprim list(u,"already defined as operator")
      else if x eq 'algebraic_procedure
       then lprim list(u,"already defined as algebraic procedure")
     % Allow a scalar to also be an operator.
      else if x and not(x memq '(fluid global procedure scalar))
       then typerr(u,'operator)
-%    else if u memq frlis!* then typerr(u,"free variable")
      else put(u,'simpfn,'simpiden)
    end;
 

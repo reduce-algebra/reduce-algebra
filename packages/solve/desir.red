@@ -900,7 +900,7 @@ procedure delire(x,k,grille,lcoeff,param) ;
 % differentielle lineaire homogene, a coefficients polynomiaux sur Q et
 % d'ordre quelconque, au voisinage de l'origine, point singulier
 % regulier ou irregulier ou point regulier. En fait, elle initialise
-% l'appel de la procedure NEWTON qui est une procedure recursive
+% l'appel de la procedure NEWTON_POLY qui est une procedure recursive
 % (algorithme de NEWTON-RAMIS-MALGRANGE)
 %
 %  x      : variable
@@ -951,18 +951,18 @@ begin
   % initialisation de l'exponentielle ;
   qx(0):=0 ;
 
-  % l'appel initial de l'algorithme NEWTON se fait avec l'operateur
+  % l'appel initial de l'algorithme NEWTON_POLY se fait avec l'operateur
   % complet l'ordre maximum (ordremax) pour lequel on calcule le
   % polygone NRM est n;
   ordremax:=n ;
 
   % initialisation de prof :  prof indique le nombre d'appels recursifs
-  % de l'algorithme NEWTON ;
+  % de l'algorithme NEWTON_POLY ;
   prof:=1 ;
 
   condprof(0):={};
-  % appel de l'algorithme NEWTON ;
-  ns:=newton(prof,ordremax,n,x,k,0) ;
+  % appel de l'algorithme NEWTON_POLY ;
+  ns:=newton_poly(prof,ordremax,n,x,k,0) ;
   l:=for i:=1:ns collect solequ(i);
   clear der,!&solution,!&aa,gri,lu,qx,equ,cl,clu,nbarete,xpoly,ypoly,
         ppoly,lpoly,xsq,ysq,rxm,tj,ru,multi,nbracine,parm ;
@@ -1112,7 +1112,7 @@ else if fixp n and (n>0) then return !&hp(xt)*df(!&d(xt,n-1),xt) ;
 end;
 
 
-procedure newton(prof,ordremax,n,x,k,ns) ;
+procedure newton_poly(prof,ordremax,n,x,k,ns) ;
 %======================================= ;
 
 % algorithme de NEWTON-RAMIS-MALGRANGE.
@@ -1182,13 +1182,13 @@ begin
 
   % iteration sur le nombre d'aretes ;
   for na:=nadep:nbarete(prof) do
-        nbs:=newtonarete(prof,na,n,x,k,nbs);
+        nbs:=newton_polyarete(prof,na,n,x,k,nbs);
            % iteration sur les aretes ;
 
   return nbs ;
 end ;
 
-procedure newtonarete(prof,na,n,x,k,nbs);
+procedure newton_polyarete(prof,na,n,x,k,nbs);
 %---------------------------------------;
 begin  scalar q,ordremax;
          q:=den(ppoly(prof,na)) ;
@@ -1232,7 +1232,7 @@ begin  scalar q,ordremax;
 
               if lisp !*trdesir then
               write "Racine eq. carac. : ",ru(prof,nk);
-              if prof <20 then nbs:=newton(prof+1,ordremax,n,x,k,nbs)
+              if prof <20 then nbs:=newton_poly(prof+1,ordremax,n,x,k,nbs)
                           else write "la profondeur 20 est atteinte :",
                               " le calcul est arrete pour cette racine";
            >> ; % fin de l'iteration sur les racines  ;

@@ -63,7 +63,6 @@ fluid '(!*backtrace
 % !*nowarnings:    flag to lose messages.
 
 global '(!*number!*
-         !*ratintspecial
          !*seplogs
          !*spsize!*
          !*statistics
@@ -76,7 +75,7 @@ exports transcendentalcase;
 imports backsubst4cs,countz,createcmap,createindices,df2q,dfnumr,
   difflogs,fsdf,factorlistlist,findsqrts,findtrialdivs,gcdf,mkvect,
   interr,logstosq,mergin,multbyarbpowers,!*multf, % multsqfree,
-  printdf,printsq,quotf,rationalintegrate,putv,
+  printdf,printsq,quotf,putv,
   simpint1,solve!-for!-u,sqfree,sqmerge,sqrt2top,substinulist,trialdiv,
   mergein,negsq,addsq,f2df,mknill,pnth,invsq,multsq,domainp,mk!*sq,
   mksp,prettyprint;
@@ -96,8 +95,6 @@ symbolic
       integrand:=sqrt2top integrand; % Move the sqrts to the numerator.
       if !*trint then << printc "Extension variables z<i> are";
           print zlist>>;
-%     if !*ratintspecial and null cdr zlist then
-%           return rationalintegrate(integrand,svar);
      % *** now unnormalize integrand, maybe ***.
      begin scalar w,gg;
         gg:=1;

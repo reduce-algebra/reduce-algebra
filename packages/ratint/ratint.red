@@ -427,7 +427,7 @@ end;
 % -------------------------------------------------------------------------
 %in "eea"; in "rem"; in "phi";
 
-expr procedure newton(a,p,u1,w1,b);
+expr procedure ri_newton(a,p,u1,w1,b);
 begin scalar alpha,gamma,eea_result,s,tt,u,w,ef,modulus,c,sigma,
 sigma_tilde,tau, tau_tilde,re,r,quo;
 
@@ -482,13 +482,13 @@ while(ef neq 0 and modulus<2*b*gamma) do
 return {u,w};
 end;
 
-%trst newton;
- %newton(12*x^3+10*x^2-36*x+35,5,x,x^2+3,10000);
+%trst ri_newton;
+ %ri_newton(12*x^3+10*x^2-36*x+35,5,x,x^2+3,10000);
 % in "phi.red";
 % in "eea.red"; in "rem.red"; %in "replace_lc";
 clear p;
-%trst newton;trst newton;
-%newton(12*x^3+10*x^2-36*x+35,5,2*x,x^2+2,10000)
+%trst ri_newton;trst ri_newton;
+%ri_newton(12*x^3+10*x^2-36*x+35,5,2*x,x^2+2,10000)
 
 % -------------------------------------------------------------------------
 expr procedure replace_lc(exp,var,val);
@@ -728,21 +728,5 @@ end;
 %-----------------------------------------------------------------------------
 
 end;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

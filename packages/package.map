@@ -76,6 +76,15 @@
 % indicates which they are relevant for. But if you find a module which
 % is NOT for use with both at least beware!
 
+% "preload" is specified if the module can be placed in the initial
+% Reduce heap image without that causing test scripts to misbehave. In
+% a number of cases I have put a different symbol in that column - and that
+% is a reminder to me of why that module may not be pre-loaded at present.
+% It is often rather cryptic. But e,g, if "int" is preloaded the output
+% from "fps.tst" changes. And if "cali" is preloaded that sets kernel
+% ordering for variable names t, x, y and z and that obviously impacts
+% many test packages.
+
 (
  (support       "support"     core    preload                    psl)
  (revision      "support"     core    preload                csl psl)
@@ -87,40 +96,44 @@
  (mathpr        "mathpr"      core    preload                csl psl)
  (ezgcd         "factor"      core    preload                csl psl)
  (factor        "factor"      core    preload      test      csl psl)
- (hephys        "hephys"      core    preload                csl psl)
- (int           "int"         core    preload      test      csl psl)
+ (hephys        "hephys"      core    fide_linalg_etc        csl psl)
+ (int           "int"         core    fps          test      csl psl)
  (matrix        "matrix"      core    preload      test      csl psl)
- (rlisp88       "rlisp88"     core    preload                csl psl)
- (rprint        "rprint"      core    preload                csl psl)
- (fmprint       "rprint"      core    preload                csl psl)
+ (rlisp88       "rlisp88"     core    infrequent             csl psl)
+ (rprint        "rprint"      core    cons_dot_spaced        csl psl)
+ (fmprint       "rprint"      core    infrequent             csl psl)
  (pretty        "rtools"      core    preload                csl psl)
  (solve         "solve"       core    preload      test      csl psl)
- (desir         "solve"       core    preload      test      csl psl)
+ (desir         "solve"       core    off_precise  test      csl psl)
  (ineq          "solve"       core    preload      test      csl psl)
  (modsr         "solve"       core    preload      test      csl psl)
  (rsolve        "solve"       core    preload      test      csl psl)
- (algint        "algint"      core    preload      test      csl psl)
+ (algint        "algint"      core    int_solve    test      csl psl)
  (arnum         "arnum"       core    preload      test      csl psl)
- (assist        "assist"      core    preload      test      csl psl)
- (dummy         "assist"      core    preload      test      csl psl)
- (cantens       "assist"      core    preload      test      csl psl)
+ (assist        "assist"      core    simpsumsym   test      csl psl)
+ (dummy         "assist"      core    many_modules test      csl psl)
+ (cantens       "assist"      core    simpsumsym   test      csl psl)
  (atensor       "atensor"     core    preload      test      csl psl)
- (avector       "avector"     core    preload      test      csl psl)
+ (avector       "avector"     core    arith        test      csl psl)
  (invbase       "invbase"     core    preload      test      csl psl)
  (misc          "misc"        core    preload                csl psl)
- (boolean       "misc"        core    preload      test      csl psl)
+
+ (boolean       "misc"        core    print_and_or test      csl psl)
  (cedit         "misc"        core    preload                csl psl)
  (rcref         "misc"        core    preload                csl psl)
-%(ftr           "misc"        core    preload                csl psl)
  (reset         "misc"        core    preload                csl psl)
- (cali          "cali"        core    preload      test      csl psl)
+ (cali          "cali"        core    t_x_y_z      test      csl psl)
  (camal         "camal"       core    preload      test      csl psl)
  (changevr      "misc"        core    preload      test      csl psl)
- (compact       "misc"        core    preload      test      csl psl)
+ (compact       "misc"        core    dfpart       test      csl psl)
  (dfpart        "misc"        core    preload      test      csl psl)
  (lie           "misc"        core    preload      test      csl psl)
+
+% Now the modules that are not "core"... It may be possible and it may
+% be desirable to promote some to core status...
+
  (assert        "assert"                                     csl psl)
- (odesolve      "odesolve"    noncore              test      csl psl)
+ (odesolve      "odesolve"                         test      csl psl)
  (pf            "misc"                             test      csl psl)
  (trigd         "misc/trigd"                       test      csl psl)
  (cvit          "hephys"                           test      csl psl)

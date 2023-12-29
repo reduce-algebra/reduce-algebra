@@ -31,7 +31,7 @@ copyright('ibalpqsat, "(c) 2007-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
 
 fluid '(ibalp_qsatoptions!* !*rlverbose);
 
-fluid '(donel!*, numcdcl!*, numlocs!*);
+fluid '(donel!* numcdcl!* numlocs!*);
 
 procedure my_mkvect(n);
    <<

@@ -46,7 +46,7 @@ module susy2;
 % $Id$
 
 algebraic;
-operator !@f_f,!@g_g,newton,delta,b_part,bf_part,pg,chan,s_part,prykr,prykl;
+operator !@f_f,!@g_g,su_newton,delta,b_part,bf_part,pg,chan,s_part,prykr,prykl;
 operator bos,fer,der,del,d,axp,axx,zan,zen,fun,tet,gras,ber,fir,berz,firr,dr,
 stp,byk,r_r,!&a,p_p,s_s,waga;
 noncom   bos,fer,der,del,d,axp,axx,zan,zen,fun,tet,gras,ber,fir,berz,firr,dr,
@@ -388,7 +388,7 @@ axx(~f)*gras(~g,~n) => gras(g,n)*axx(f),
 axx(~f)*fun(~g,~n,~m) => fun(g,n,m)*axx(f),
 axx(~f)*fun(~g,~n,~m,~k,~l) => fun(g,n,m,~k,~l)*axx(f),
 fun(~f,~n,~g,~m,~k) => (for s:=0:k sum
-(-1)**s*newton(k,s)*fun(f,n,k-s)*fun(g,m,s)/(2**s))
+(-1)**s*su_newton(k,s)*fun(f,n,k-s)*fun(g,m,s)/(2**s))
 when numberp(k) and k >=0,
 %ordering other,
 bos(~g,~x,~h)*zan(~f,~n,~m)    => zan(f,n,m)*bos(g,x,h),
@@ -434,7 +434,7 @@ pg(~n,~x)       => sub(d(1)=0,d(1)**n*x),
 chan(~x)        => sub(d(2)=d(1),sub(d(1)=d(2),x)),
 s_part(~x,~n)   => coeffn(sub(der(1)=!@k,der(2)=(!@k)^2,der(3)=(!@k)^3,
                     del(1)=!@k,del(2)=(!@k)^2,der(3)=(!@k)^3,x),!@k,n),
-newton(~n,~m)   => factorial(n)/(factorial(m)*factorial(n-m)),
+su_newton(~n,~m)   => factorial(n)/(factorial(m)*factorial(n-m)),
 prykr(~f,~g)    => if g = 1 then der(1)*f else if g = 2 then der(2)*f,
 prykl(~f,~g)    => if g = 1 then f*del(1) else if g = 2 then f*del(2)}$
 %adjoint
@@ -770,22 +770,22 @@ for k:=0:ww-1 sum d(-2)**(k+1)*pg(k,axp(f)) else
 rederr "introduce the precision e.g. give the value of ww > 0",
 %acceleration;
 dr(~x)*bos(~f,~n,~m) => if numberp(ww) then
-for s:=0:ww sum (-1)**s*newton(-x+s-1,-x-1)*bos(f,n,m+s)*dr(x-s)
+for s:=0:ww sum (-1)**s*su_newton(-x+s-1,-x-1)*bos(f,n,m+s)*dr(x-s)
 else rederr "introduce the precision e.g. give the value of ww > 0",
 dr(~x)*fer(~f,~n,~m) => if numberp(ww) then
-for s:=0:ww sum (-1)**s*newton(-x+s-1,-x-1)*fer(f,n,m+s)*dr(x-s)
+for s:=0:ww sum (-1)**s*su_newton(-x+s-1,-x-1)*fer(f,n,m+s)*dr(x-s)
 else rederr "introduce the precision e.g. give the value of ww > 0",
 dr(~x)*bos(~f,~n,~m,~l) => if numberp(ww) then
-for s:=0:ww sum (-1)**s*newton(-x+s-1,-x-1)*pg(s,bos(f,n,m,l))*dr(x-s)
+for s:=0:ww sum (-1)**s*su_newton(-x+s-1,-x-1)*pg(s,bos(f,n,m,l))*dr(x-s)
 else rederr "introduce the precision e.g. give the value of ww > 0",
 dr(~x)*fun(~f,~n) => if numberp(ww) then
-for s:=0:ww sum (-1)**s*newton(-x+s-1,-x-1)*fun(f,n+s)*dr(x-s)
+for s:=0:ww sum (-1)**s*su_newton(-x+s-1,-x-1)*fun(f,n+s)*dr(x-s)
 else rederr "introduce the precision e.g. give the value of ww > 0",
 dr(~x)*gras(~f,~n) => if numberp(ww) then
-for s:=0:ww sum (-1)**s*newton(-x+s-1,-x-1)*gras(f,n+s)*dr(x-s)
+for s:=0:ww sum (-1)**s*su_newton(-x+s-1,-x-1)*gras(f,n+s)*dr(x-s)
 else rederr "introduce the precision e.g. give the value of ww > 0",
 dr(~x)*fun(~f,~n,~l) => if numberp(ww) then
-for s:=0:ww sum (-1)**s*newton(-x+s-1,-x-1)*pg(s,fun(f,n,l))*dr(x-s)
+for s:=0:ww sum (-1)**s*su_newton(-x+s-1,-x-1)*pg(s,fun(f,n,l))*dr(x-s)
 else rederr "introduce the precision e.g. give the value of ww > 0",
 %classical
 d(-1)*fun(~f,~n,~m) => if numberp(ww) then
