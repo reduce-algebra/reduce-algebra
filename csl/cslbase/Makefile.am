@@ -2394,7 +2394,7 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 	mkdir -p $(DESTDIR)$(prefix)/share/reduce/fonts
 	mkdir -p $(DESTDIR)$(docdir)
 	mkdir -p $(DESTDIR)$(prefix)/bin
-	mkdir -p $(DESTDIR)$(prefix)/man
+	mkdir -p $(DESTDIR)$(mandir)/man1
 	cp csl $(DESTDIR)$(libdir)/reduce/cslbuild/csl
 	cp bootstrapreduce $(DESTDIR)$(libdir)/reduce/cslbuild/csl
 	cp reduce $(DESTDIR)$(libdir)/reduce/cslbuild/csl
@@ -2404,7 +2404,7 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 	cp -r reduce.resources/* $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.resources
 	cp -r reduce.fonts/* $(DESTDIR)$(prefix)/share/reduce/fonts
 	cp -r reduce.doc/* $(DESTDIR)$(docdir)
-	cp  $(cslbase)/redcsl.1 $(DESTDIR)$(mandir)
+	cp  $(cslbase)/redcsl.1 $(DESTDIR)$(mandir)/man1
 	rm -f $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.doc
 	rm -f $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.fonts
 	rm -f $(DESTDIR)$(prefix)/share/reduce/cslbuild
@@ -2447,7 +2447,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(prefix)/bin/csl
 	rm -f $(DESTDIR)$(prefix)/bin/bootstrapreduce
 	rm -f $(DESTDIR)$(prefix)/bin/redcsl
-	rm -f $(DESTDIR)$(mandir)/redcsl.1
+	rm -f $(DESTDIR)$(mandir)/man1/redcsl.1
 	printf "Uninstalled for CSL in $(DESTDIR)$(prefix)\n"
 
 endif !windows
