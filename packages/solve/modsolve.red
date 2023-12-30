@@ -106,7 +106,7 @@ symbolic procedure msolve!-poly1(f,x);
      w:={w};
      go to done>>;
  enum:
-    l:=lowestdeg(f,x,0);
+    l:=lowestdeg1(f,x,0);
     if l>0 then f:=quotf(f,numr simp{'expt,x,l});
     f:=general!-reduce!-mod!-p moduntag f;
     w:=for i:=1:current!-modulus -1 join

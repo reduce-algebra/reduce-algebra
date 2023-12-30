@@ -142,7 +142,7 @@ switch nopropzero;
 switch pgnoarbcomplex;
 
 fluid '(!*pggeneric !*pginfosm !*pginfosol !*pgsourcedirect !*pgspsimpl
-   !*pgspqe !*pgverbose !*pgaftermath,!*nopropzero);
+   !*pgspqe !*pgverbose !*pgaftermath !*nopropzero);
 
 procedure pg_gauss(eqtl, varl);
    % Gauss. eqtl is a list of equations. varl is a list of identifiers. Entry

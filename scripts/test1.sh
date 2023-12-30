@@ -311,9 +311,9 @@ dd="$winhere/packages/$d"
 # 
 # Use /dev/null if the .rlg file doesn't exist
 
-if test -f $here/packages/$d/$p.rlg
+if test -f "$here/packages/$d/$p.rlg"
 then
-  rlgfile=$here/packages/$d/$p.rlg
+  rlgfile="$here/packages/$d/$p.rlg"
 elif test "$skipmissingrlg" != ""
 then
   printf "Missing log file $here/packages/$d/$p.rlg - skipping test!\n"

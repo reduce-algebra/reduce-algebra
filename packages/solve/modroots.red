@@ -90,7 +90,7 @@ symbolic procedure modroots3(f,current!-modulus);
      % gcd(f, x^p - x)
    a := general!-gcd!-mod!-p(f , x!*!*p!-w(x,p,!*k2f x));
    d := ldeg a;
-   n := lowestdeg(a,x,0);
+   n := lowestdeg1(a,x,0);
    if n>0 then
    <<r:='(0); a:=general!-quotient!-mod!-p(a,x!*!*p!-w(x,n,nil))>>;
    return append(r,modroots31(a,x,p));

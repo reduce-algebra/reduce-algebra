@@ -676,9 +676,9 @@ load!-module "user";
 
 in "$reduce/packages/support/remake.red"$
 
-global '(reduce_base_modules reduce_extra_modules
-         reduce_test_cases reduce_regression_tests
-         !*reduce!-packages!*);
+fluid '(reduce_base_modules reduce_extra_modules
+        reduce_test_cases reduce_regression_tests
+        !*reduce!-packages!*);
 
 symbolic procedure get_configuration_data();
 % Read data from a configuration file that lists the modules that must
@@ -1646,28 +1646,49 @@ symbolic restart!-csl nil;
 
 (setq loaded!-packages!* '(cslcompat user cslprolo))
 
+% I will load a number of things explicitly just to be certain that any
+% ordering requirements are satisfied. Perhaps the most important of these
+% will be "entry" since then things loaded after that will replace the
+% autoload stub with a real function.
+
 (load!-package 'revision)
-
 (load!-package 'rlisp)
-
 (load!-package 'cslrend)
-
 (load!-package 'smacros)
-
 (load!-package 'poly)
-
 (load!-package 'arith)
-
 (load!-package 'alg)
-
 (load!-package 'rtools)
-
 (load!-package 'mathpr)
-
-(cond
-   ((modulep 'tmprint) (load!-package 'tmprint)))
-
+(cond ((modulep 'tmprint) (load!-package 'tmprint)))
 (load!-package 'entry)
+
+% Now load everything marked as "preload" in packages.map
+
+(prog (i w e r r1 mods)
+    (cond
+       ((and (boundp 'minireduce) (symbol!-value 'minireduce))
+        (setq i "package.map"))
+       (t (setq i "$reduce/packages/package.map")))
+    (setq i (open i 'input))
+    (setq i (rds i))
+    (setq e !*echo)
+    (setq !*echo nil)
+    (setq w (read))
+    (setq !*echo e)
+    (setq i (rds i))
+    (close i)
+    (setq mods nil)
+    (dolist (x w)
+       (cond
+          ((and (member 'preload (cddr x))
+                (member 'csl (cddr x)))
+           (setq mods
+              (nconc mods (list (car x)))))))
+    (dolist (m mods)
+       (cond
+          ((not (member m loaded!-modules!*)) (load!-package m)))))
+
 
 (prog (ff rev)
 % The following line has a delicacy that may be unexpected in the case
@@ -1736,12 +1757,17 @@ symbolic restart!-csl nil;
 (makeunbound 'no_init_file)
 
 % can discard the fast files for things that I havce loaded into the main
-% image...
-(dolist (m loaded!-modules!*)
-   (princ "Tidy up ") (print m)
-   (dolist (m1 (get m 'package))
-      (princ "  component module: ") (print m1)
-      (delete!-module m1)))
+% image... However note that the bootstrap version for CSL *MUST* have
+% all those fasl files because they get scanned to find "saved definitions"
+% when I come to compile some of the Lisp into C++.
+
+(cond
+  ((null !*savedef)
+   (dolist (m loaded!-modules!*)
+      (princ "Tidy up ") (print m)
+      (dolist (m1 (get m 'package))
+         (princ "  component module: ") (print m1)
+         (delete!-module m1)))))
 
 (setq otime!* (setq otime1!* (setq otime2!* (setq otime3!* 0))))
 (setq ogctime!* (setq ogctime1!* (setq ogctime2!* (setq ogctime3!* 0))))

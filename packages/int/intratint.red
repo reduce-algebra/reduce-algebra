@@ -1,4 +1,8 @@
-module ratint;   % Support for direct rational integration.
+% I believe that this is no longer used, and there is a separate
+% body of code ratint/ratint.red where the names used to clash...
+
+
+module intratint;   % Support for direct rational integration.
 
 % Authors: Mary Ann Moore and Arthur C. Norman.
 
