@@ -1,5 +1,8 @@
+module newtok1;  % More multi-character tokens.
 
-% Authors: Arthur Norman
+% Author: Anthony C. Hearn.
+
+% Copyright (c) 1987 The RAND Corporation.  All rights reserved.
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -26,11 +29,24 @@
 
 % $Id$
 
-% This file will be automatically updated by the code in scripts/commit.sh
-% to show the latest subversion revision number.
 
-fluid '(revision!*);
+% The notation #bullet; (which includes the terminating semicolon) stands
+% for U+2022 and #times; is U+d7. See rtools/charname.red, and the conversion
+% is arranged in rlisp/tok.red on lines near 530. So users who have Unicode
+% input capability might be able to use some extended characters and the
+% Reduce sources can include mention of them by name so that the source
+% code remains using a limited character set.
+%::
+% HOWEVER note well that the "#name;" notation is not available until tok.red
+% has been read - and newtok.red is processed before that. So I put these
+% in newtok1.red that gets build slightly later than newtok.red.
 
-revision!* := 6671;
+% The thoght here is that perhaps a number of additional unicode symbols
+% might be useful...
+
+newtok '((#bullet;) dotprod);
+newtok '((#times;) crossprod);
+
+endmodule;
 
 end;
