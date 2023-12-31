@@ -2,10 +2,9 @@
 
 % TESTS OF BASIC CONSTRUCTS.
 
-% These names are used with varing numbers of arguments here in this
-% test script, so to avoid messages of complaint I tag them as
-% variadic.
-lisp flag('(f h !@), 'variadic);
+% @ is defined as the dfpart operator in the excalc package.
+% Remove this token definition for thsi test file.
+remprop('!@,'switch!*)$
 
 operator f, h$
 
@@ -154,11 +153,7 @@ if si(trig 10,scs) = 10 then write("Pm ok") else write("PM failed");
 
 % Hypergeometric Function simplification.
 
-newtok '((!#) !#);
-
-flag('(#), 'symmetric);
-
-operator #,@,ghg;
+operator @,ghg;
 
 xx := ghg(4,3,@(a,b,c,d),@(d,1+a-b,1+a-c),1);
 

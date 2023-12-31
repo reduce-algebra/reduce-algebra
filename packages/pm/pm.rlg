@@ -2,10 +2,10 @@
 
 % TESTS OF BASIC CONSTRUCTS.
 
-% These names are used with varing numbers of arguments here in this
-% test script, so to avoid messages of complaint I tag them as
-% variadic.
-lisp flag('(f h !@), 'variadic);
+% @ is defined as the dfpart operator in the excalc package.
+% Remove this token definition for thsi test file.
+
+remprop('!@,'switch!*)$
 
 
 
@@ -328,24 +328,14 @@ Pm ok
 
 % Hypergeometric Function simplification.
 
-newtok '((!#) !#);
-
-
-*** # redefined 
-
-
-flag('(#), 'symmetric);
-
-
-
-operator #,@,ghg;
+operator @,ghg;
 
 
 
 xx := ghg(4,3,@(a,b,c,d),@(d,1+a-b,1+a-c),1);
 
 
-xx := ghg(4,3,partdf(a,b,c,d),partdf(d,a - b + 1,a - c + 1),1)
+xx := ghg(4,3,@(a,b,c,d),@(d,a - b + 1,a - c + 1),1)
 
 
 s(xx,sghg(3));
@@ -353,45 +343,45 @@ s(xx,sghg(3));
 
 *** sghg declared operator 
 
-ghg(4,3,partdf(a,b,c,d),partdf(d,a - b + 1,a - c + 1),1)
+ghg(4,3,@(a,b,c,d),@(d,a - b + 1,a - c + 1),1)
 
 
 s(ws,sghg(2));
 
 
-ghg(4,3,partdf(a,b,c,d),partdf(d,a - b + 1,a - c + 1),1)
+ghg(4,3,@(a,b,c,d),@(d,a - b + 1,a - c + 1),1)
 
 
 yy := ghg(3,2,@(a-1,b,c/2),@((a+b)/2,c),1);
 
 
-                              c           a + b
-yy := ghg(3,2,partdf(a - 1,b,---),partdf(-------,c),1)
-                              2             2
+                         c      a + b
+yy := ghg(3,2,@(a - 1,b,---),@(-------,c),1)
+                         2        2
 
 
 s(yy,sghg(1));
 
 
-                        c           a + b
-ghg(3,2,partdf(a - 1,b,---),partdf(-------,c),1)
-                        2             2
+                   c      a + b
+ghg(3,2,@(a - 1,b,---),@(-------,c),1)
+                   2        2
 
 
 yy := ghg(3,2,@(a-1,b,c/2),@(a/2+b/2,c),1);
 
 
-                              c           a + b
-yy := ghg(3,2,partdf(a - 1,b,---),partdf(-------,c),1)
-                              2             2
+                         c      a + b
+yy := ghg(3,2,@(a - 1,b,---),@(-------,c),1)
+                         2        2
 
 
 s(yy,sghg(1));
 
 
-                        c           a + b
-ghg(3,2,partdf(a - 1,b,---),partdf(-------,c),1)
-                        2             2
+                   c      a + b
+ghg(3,2,@(a - 1,b,---),@(-------,c),1)
+                   2        2
 
 
 % Some Ghg theorems.
@@ -408,13 +398,13 @@ sghg(1) := ghg(3,2,@(?a,?b,?c),@(?d _=?d=(1+?a+?b)/2,?e _=?e=2*?c),1) ->
 	*gamma((1-?b)/2+?c));
 
 
-                                                     1 + ?a + ?b
-sghg(1) := ghg(3,2,partdf(?a,?b,?c),partdf(?d _= ?d=-------------,?e _= ?e=2*?c)
-                                                          2
+                                           1 + ?a + ?b
+sghg(1) := ghg(3,2,@(?a,?b,?c),@(?d _= ?d=-------------,?e _= ?e=2*?c),1)->(
+                                                2
 
-                                      - ?a - ?b + 2*?c + 1          2*?c + 1
-               ,1)->(sqrt(pi)*gamma(-----------------------)*gamma(----------)
-                                               2                       2
+                               - ?a - ?b + 2*?c + 1          2*?c + 1
+              sqrt(pi)*gamma(-----------------------)*gamma(----------)
+                                        2                       2
 
                       ?a + ?b + 1             - ?a + 2*?c + 1
               *gamma(-------------))/(gamma(------------------)
@@ -432,41 +422,37 @@ sghg(2) := ghg(3,2,@(?a,?b,?c),@(?d _=?d=1+?a-?b,?e _=?e=1+?a-?c),1) ->
      (gamma(1+?a)*gamma(1+?a/2-?b)*gamma(1+?a/2-?c)*gamma(1+?a-?b-?c));
 
 
-sghg(2) := ghg(3,2,partdf(?a,?b,?c),
+sghg(2) := ghg(3,2,@(?a,?b,?c),@(?d _= ?d=1 + ?a - ?b,?e _= ?e=1 + ?a - ?c),1)->
 
-               partdf(?d _= ?d=1 + ?a - ?b,?e _= ?e=1 + ?a - ?c),1)->(
+                                                         ?a - 2*?b - 2*?c + 2
+           (gamma(?a - ?b + 1)*gamma(?a - ?c + 1)*gamma(----------------------)
+                                                                  2
 
-              gamma(?a - ?b + 1)*gamma(?a - ?c + 1)
+                    ?a + 2
+            *gamma(--------))/(gamma(?a - ?b - ?c + 1)*gamma(?a + 1)
+                      2
 
-                      ?a - 2*?b - 2*?c + 2          ?a + 2
-              *gamma(----------------------)*gamma(--------))/(
-                               2                      2
-
-                                                           ?a - 2*?b + 2
-              gamma(?a - ?b - ?c + 1)*gamma(?a + 1)*gamma(---------------)
-                                                                 2
-
-                      ?a - 2*?c + 2
-              *gamma(---------------))
-                            2
+                      ?a - 2*?b + 2          ?a - 2*?c + 2
+              *gamma(---------------)*gamma(---------------))
+                            2                      2
 
 
 sghg(3) := ghg(?p,?q,@(?a,??b),@(?a,??c),?z)
 		   -> ghg(?p-1,?q-1,@(??b),@(??c),?z);
 
 
-sghg(3) := ghg(?p,?q,partdf(?a,??b),partdf(?a,??c),?z)
+sghg(3) := 
 
-           ->ghg(?p - 1,?q - 1,partdf(??b),partdf(??c),?z)
+ghg(?p,?q,@(??b,?a),@(??c,?a),?z)->ghg(?p - 1,?q - 1,@(??b),@(??c),?z)
 
 
 sghg(9) := ghg(1,0,@(?a),?b,?z )       ->  (1-?z)^(-?a);
 
 
-                                             1
-sghg(9) := ghg(1,0,partdf(?a),?b,?z)->---------------
-                                                  ?a
-                                       ( - ?z + 1)
+                                        1
+sghg(9) := ghg(1,0,@(?a),?b,?z)->---------------
+                                             ?a
+                                  ( - ?z + 1)
 
 sghg(10) := ghg(0,0,?a,?b,?z)          ->  e^?z;
 
@@ -477,7 +463,7 @@ sghg(10) := ghg(0,0,?a,?b,?z)->e
 sghg(11) := ghg(?p,?q,@(??t),@(??b),0) ->  1;
 
 
-sghg(11) := ghg(?p,?q,partdf(??t),partdf(??b),0)->1
+sghg(11) := ghg(?p,?q,@(??t),@(??b),0)->1
 
 
 % If one of the bottom parameters is zero or a negative integer the
@@ -493,13 +479,16 @@ sghg(11) := ghg(?p,?q,partdf(??t),partdf(??b),0)->1
 s(ghg(3,2,@(a,b,c),@(b,c),z),sghg(3));
 
 
-ghg(3,2,partdf(a,b,c),partdf(b,c),z)
+ghg(2,1,@(a,b),@(b),z)
 
 
 si(ghg(3,2,@(a,b,c),@(b,c),z),{sghg(3),sghg(9)});
 
 
-ghg(3,2,partdf(a,b,c),partdf(b,c),z)
+      1
+-------------
+           a
+ ( - z + 1)
 
 
 s(ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
