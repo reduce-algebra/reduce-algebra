@@ -257,17 +257,25 @@ flag('(prinhex), 'opfn);
 % every 16 places. This should be suitable for re-input to Reduce. I make
 % it produce each chunk as exactly 16 digits.
 
+% split64 takes a (big) integer and returns a list that has split the
+% number into 64-bit "digits".
+
+symbolic procedure split64 n;
+  begin
+    scalar base := 2^64, r;
+    while n >= base or n < -1 do <<
+      r := land(n, base-1) . r;
+      n := (n-car r)/base >>;
+    return n . r
+  end;
+
 symbolic procedure hex64 n;
   begin
-    scalar w, b:=2**64;
-    if n < 0 then <<
-      prin2 "-";
-      n := -n >>;
-    while n >= b do <<
-      w := remainder(n, b) . w;
-      n := n/b >>;
-    w := n . w;
-    prin2 "0x0";
+    scalar w := split64 n;
+    if car w = -1 then <<
+      prin2 "0x-f";
+      w := cdr w >>
+    else prin2 "0x0";
     for each d in w do <<
       prin2 "_";
       if posn()+18 >= linelength nil then terpri();

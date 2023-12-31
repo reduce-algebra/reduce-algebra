@@ -1,6 +1,8 @@
-% module rlisp;  % Header module for rlisp package.
+module newtok1;  % More multi-character tokens.
 
 % Author: Anthony C. Hearn.
+
+% Copyright (c) 1987 The RAND Corporation.  All rights reserved.
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -27,30 +29,24 @@
 
 % $Id$
 
-global '(date!* patch!-date!* version!*);
 
-create!-package('(rlisp module newtok rsupport slfns superv tok xread
-                  lpri parser block form proc forstat loops statmisc
-                  smacro io infix switch where list array inter newtok1),
-                 nil);
+% The notation #bullet; (which includes the terminating semicolon) stands
+% for U+2022 and #times; is U+d7. See rtools/charname.red, and the conversion
+% is arranged in rlisp/tok.red on lines near 530. So users who have Unicode
+% input capability might be able to use some extended characters and the
+% Reduce sources can include mention of them by name so that the source
+% code remains using a limited character set.
+%::
+% HOWEVER note well that the "#name;" notation is not available until tok.red
+% has been read - and newtok.red is processed before that. So I put these
+% in newtok1.red that gets build slightly later than newtok.red.
 
-flag('(rlisp), 'core!_package);
+% The thoght here is that perhaps a number of additional unicode symbols
+% might be useful...
 
-date!* := date();
+newtok '((#bullet;) dotprod);
+newtok '((#times;) crossprod);
 
-fluid '(revision!*);
-if null version!* then <<
-  if null revision!* then version!* := "REDUCE"
-  else version!* :=
-    compress ('!" . append (explode2 "REDUCE (",
-      append(explode2 revision!*, '(!) !")))) >>;
-
-% Hook to Rlisp88.
-
-put('rlisp88, 'simpfg, '((t (load!-package 'rlisp88) (rlisp88!_on))));
-
-flag('(rlisp88), 'switch);
-
-% endmodule;
+endmodule;
 
 end;

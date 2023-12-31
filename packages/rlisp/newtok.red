@@ -87,7 +87,10 @@ symbolic procedure newtok u;
           cdr newtok1(car u,cadr u,get(caar u,'switch!*)));
       % set up PRTCH property.
       y := intern list2string car u;
-      if !*redeflg!* then lprim list(y,"redefined");
+% A redefinition that does not seem to be changing anything does not
+% need to be warned about.
+      if get(cadr u, 'prtch) neq y and
+          !*redeflg!* then lprim list(y,"redefined");
       put(cadr u,'prtch,y);
       if x := get(cadr u,'unary) then put(x,'prtch,y)
    end;
@@ -132,13 +135,113 @@ newtok '((!: !=) setq);
 newtok '((!.) cons);
 newtok '((!<) lessp);
 newtok '((!< !=) leq);
-newtok '((![) !*lsqbkt!*);
-newtok '((!< !<) !*lsqbkt!*);
+newtok '((![) !*lsqbkt!*);      % Strange to have both of these the same!
+newtok '((!< !<) !*lsqbkt!*);   %
 newtok '((!>) greaterp);
 newtok '((!> !=) geq);
-newtok '((!]) !*rsqbkt!*);
-newtok '((!> !>) !*rsqbkt!*);
+newtok '((!]) !*rsqbkt!*);      % Strange to have both of these the same!
+newtok '((!> !>) !*rsqbkt!*);   %
 newtok '((!/ !*) !*comment!*);
+
+
+% The following is the collection of all uses of newtok from modules
+% throughout Reduce. I have prefixed with "%   " where there seem to be
+% clashes or potential clashes. I have left the "newtok" statements that
+% these are copies of in place elsewhere. Also note that at present
+% "[" and "<<" ars synonyms, as are "]" and ">>". It would perhaps be
+% nice to be able to re-use "[" and "]" for other purposes, and I hope
+% that few if any people use "[...]" for a progn-style block of code.
+%
+% As well as some of the definitions here clashing as between modules
+% some can clash with things other than "newtok" and cause compilation
+% to fail!
+
+newtok '((!- !- !>) repd);
+%   newtok '((!- !>) rep);
+%   newtok '((!- !>) mapped_to); % For now. Should only be active inside the stat.
+%   newtok '((!- !>) rightarrow);
+newtok '((!#) hash);
+newtok '((!# !-) idifference);
+newtok '((!# !*) itimes2);
+newtok '((!# !/) iquotient);
+newtok '((!# !+) iplus2);
+newtok '((!# !<) ilessp);
+newtok '((!# !=) iequal);
+newtok '((!# !>) igreaterp);
+%   newtok '((!&) hornand);           % also makes pm.red fail to build
+%   newtok '((!& !&), and);
+%   newtok '((!-) formoutminus);
+%   newtok '((!-) vectordifference);
+newtok '((!* !* !*) lpdotimes);
+newtok '((!* !.) ldot);
+%   newtok '((!*) vectortimes);
+newtok '((!. !* !*) to);
+newtok '((!. !* !.) crossprod);
+newtok '((!. !*) mult);
+newtok '((!. !. !=) myequal);
+%   newtok '((!. !.) !*interval!*)
+%   newtok '((!. !.) isgr);
+newtok '((!. !/) over);
+newtok '((!. !:) id!-quotient);
+newtok '((!. !^) to);
+newtok '((!. !~ !*) int_mult);
+newtok '((!. !~ !+) int_add);
+newtok '((!. !+) add);
+newtok '((!. !=) id!-equal);
+newtok '((!/ !/) slash);
+newtok '((!/ !\), wedge);
+%   newtok '((!/) vectorquotient);
+%   newtok '((!: !-) rset);
+%   newtok '((!: !-) hornrepl);
+newtok '((!: !: !-) rsetd);
+newtok '((!: !: != !:) lrsetq);
+newtok '((!: !: !=) lsetq);
+newtok '((!: !:) range);
+newtok '((!: != !:) rsetq);
+newtok '((!@) partdf);
+newtok '((![) !*lsqb!*);
+%   newtok '((!\) setdiff);
+%   newtok '((!\) backslash);
+newtok '((!]) !*rsqb!*);
+newtok '((!^ !^) super_product);
+%   newtok '((!^) vectorexpt);
+%   newtok '((!^) wedge);
+%   newtok '((!^) cross);
+%   newtok '((!_) lnth);
+%   newtok '((!_) prop!-alg);
+%   newtok '((!_) vectorcomponent);
+%   newtok '((!_ !|) innerprod);
+%   newtok '((!_ !=) such!-that);
+newtok '((!{) !*lcbkt!*);
+newtok '((!}) !*rcbkt!*);
+%   newtok '((!| !_) liedf);
+%   newtok '((!| !|), or);
+%   newtok '((!|) dotprod);       % Some of these upset pm.red
+%   newtok '((!|) opapply);
+%   newtok '((!+) formoutplus);   % clash with main versin of "+"
+%   newtok '((!+) vectoradd);
+%   newtok '((!< !>) doublearrow);% clashing values
+%   newtok '((!< !>) neq);
+%   newtok '((!= !=) setvalue ! !=!=!);
+newtok '((!= !>) replaceby);
+newtok '((!> !<) vectorcross);
+
+% The notation #bullet; (which includes the terminating semicolon) stands
+% for U+2022 and #times; is U+d7. See rtools/charname.red, and the conversion
+% is arranged in rlisp/tok.red on lines near 530. So users who have Unicode
+% input capability might be able to use some extended characters and the
+% Reduce sources can include mention of them by name so that the source
+% code remains using a limited character set.
+%::
+% HOWEVER note well that the "#name;" notation is not available until tok.red
+% has been read - and newtok.red is processed before that. So if these two
+% are to be activated that has to be in a different file that is scanned
+% a bit later!
+%
+%   newtok '((#bullet;) dotprod);    % "#" notation not yet available
+%   newtok '((#times;) crossprod);   % "#" notation not yet available
+%   newtok '((|) opapply);           % upsets pm.red   In physop.red
+%   newtok '((d o t) dot);           % upsets int.red? In physop.red
 
 % ... and from here on the full set of infix operators may be used with
 % their standard notation. So the ONLY files where (eg) "+" may not be used

@@ -2350,8 +2350,6 @@ r(1)*fer(f,0,0)*bos(f,2,0)
 pse_ele(2,{{f,2,b}},c);
 
 
-*** c already defined as operator 
-
 c(2)*bos(f,0,0)
 
           2
@@ -2361,8 +2359,6 @@ c(2)*bos(f,0,0)
 
 pse_ele(3,{{f,2,b}},c);
 
-
-*** c already defined as operator 
 
 c(2)*bos(f,3,0)
 
@@ -2388,8 +2384,6 @@ c(2)*bos(f,3,0)
 
 pse_ele(4,{{f,2,b}},c);
 
-
-*** c already defined as operator 
 
 c(2)*bos(f,3,1)
 
@@ -2435,8 +2429,6 @@ c(2)*bos(f,3,1)
 
 pse_ele(3,{{f,1,b},{g,2,b}},r);
 
-
-*** r already defined as operator 
 
 r(2)*bos(f,3,1)
 
@@ -2522,8 +2514,6 @@ r(2)*bos(f,3,1)
 
 xxx:=pse_ele(2,{{f,1,b},{g,2,b}},r);
 
-
-*** r already defined as operator 
 
 xxx := r(2)*bos(f,3,0)
 
@@ -4081,8 +4071,6 @@ let trad;
 
 ham:=fcomb({{u,1,b}},3,a,b);
 
-
-*** a already defined as operator 
 
 ham := a(1)*bos(u,3,0)*bos(u,0,0)
 
@@ -8102,8 +8090,6 @@ let trad;
 vira:=pse_ele(2,{{f,1,b}},a);
 
 
-*** a already defined as operator 
-
 vira := a(2)*bos(f,3,0)
 
         +a(3)*bos(f,0,1)
@@ -9569,10 +9555,3 @@ as5 := fer(f,2,1)*bos(f,0,0)
 
 end;
 
-Tested on x86_64-pc-windows CSL
-1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
-Time: susy2  5704  15
-1: Leaving REDUCE ... 
-
-
-End of Lisp run after 5.75+0.03 seconds
