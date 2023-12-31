@@ -2294,6 +2294,7 @@ long FXTerminal::onCmdHelp(FXObject *c, FXSelector s, void *ptr)
             "xdg-open",
             "opera",
             "firefox",
+            "chrome",
             "midori",
             "safari",
             "mozilla",
@@ -3007,7 +3008,7 @@ case KEY_x:
 // Well that is an overstatement - what I mean is that I am not yet
 // implementing anything!
         if (event->state & CONTROLMASK) return editExtendedCommand();
-        else if (event->state & ALTMASK) return editObeyCommand();
+        else if (event->state & ALTMASK) return editUnicodeConvert();
         else goto defaultlabel;
 case KEY_y:
 // ^Y is short for YANK, otherwise known as PASTE
@@ -3642,10 +3643,40 @@ int FXTerminal::editExtendedCommand()
 
 // ALT-X  obey command
 
-int FXTerminal::editObeyCommand()
+int FXTerminal::editUnicodeConvert()
 {
-// @@@@@   Use this to do Unicode conversion ...
-// @ I really want to implement this!
+// Use this to do Unicode conversion ... I do this by pretending to be in
+// the console-mode version of things...
+//
+// SO... I set input_line (of type wstring) to be the current input
+// line that the GUI is managing (omitting any prompt characters). I
+// set prompt_length to 0 and insert_point to indicate where the cursor
+// is within that line (it may not be at the end). I can then call
+// the converter from term.cpp which will update input_line and
+// insert_point, and transcribe that output to where the GUI acts on
+// it. And refresh the display so that changes become visible.
+    prompt_length = 0;
+    int n = lineStart(cursorpos);
+    while (n < length && (getStyle(n) & STYLE_PROMPT)) n++;    
+    std::wstringbuf bb;
+    int p = 0;
+std::wcerr << L"n=" << n << L" cursor=" << cursorpos << L" len=" << length << L"\n";
+    insert_point = length;
+    for (int i=n; i<length;)
+    {   FXwchar c = getChar(i);
+        if (i == cursorpos) insert_point = p;
+        i += getCharLen(i);
+        bb.sputc(c);
+        p++;
+    }
+    input_line = bb.str();
+std::wcerr << L"Trace: <" << input_line << L"> insert at " << insert_point << L"\n";
+    usingGUI = true;
+    term_unicode_convert();
+std::wcerr << L"Output: <" << input_line << L"> insert at " << insert_point << L"\n";
+    FXTerminal::setInputText(input_line.c_str(), input_line.length());
+// This next line is wrong!
+    cursorpos = n + insert_point;
     return 1;
 }
 

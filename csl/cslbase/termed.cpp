@@ -1864,8 +1864,11 @@ static void term_move_first_column()
 #endif // !WIN32
 }
 
+bool usingGUI = false;
+
 static void term_bell()
-{   std::fflush(stdout); std::fflush(stderr);
+{   if (usingGUI) return;
+    std::fflush(stdout); std::fflush(stderr);
 #ifdef WIN32
     Beep(1000, 100);
 #else // !WIN32
@@ -1993,6 +1996,7 @@ static int line_wrap(int ch, int tab_offset)
 
 static void refresh_display()
 {
+    if (usingGUI) return;
 // The version here right now is done as directly as I can without
 // thought for optimisation. That is in the hope that I can get it
 // right, and then put in performance upgrades later on.
@@ -2869,7 +2873,7 @@ static int hexval(int c)
 // convenience of Reduce. There are also a few other additions that
 // are to assist my conversions to and from HEX. E.g. there is a name
 // &frac12; where the suffix "ac12" could be seen as 4 hex digits. For
-// reasons that apply within my code it is usefil to arrange that the
+// reasons that apply within my code it is useful to arrange that the
 // name &ac12; will ba mapped onto U+ac12.
 //
 // Just so you know, there are somewhat over 2000 names here.
@@ -5118,6 +5122,13 @@ static void term_ctrl_z_command()
     term_redisplay();
 }
 
+// Uses
+//   insert_point                    int
+//   prompt_length                   int
+//   input_line                      wstring
+//   term_bell()
+
+
 void term_unicode_convert()
 {
 // If you position the caret to the right of (up to) 6 hex digits and
@@ -5189,6 +5200,11 @@ void term_unicode_convert()
 // 4 hex of name with prefix     -> hex expanded    oli2260    -> 203e
 // 4 hex of name                 -> name            203e       -> oline
 // 4 hex of unnamed character    -> character       1234       -> (u+1234)
+
+// BUG REPORT:
+//   epsilon -> {\epsilon} -> e{\psi} -> e03c8 -> 03b5 -> epsi -> {\epsilon}
+// and the "lon" gets lost when the string "psi" is spotted.
+
     int i, n, c;
     const wchar_t *p;
     if (insert_point == prompt_length)

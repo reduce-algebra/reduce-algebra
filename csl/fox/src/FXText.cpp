@@ -649,7 +649,8 @@ FXwchar FXText::getChar(FXint pos) const {
 
 // Get length of wide character at position pos
 FXint FXText::getCharLen(FXint pos) const {
-  return FXString::utfBytes[(FXuchar)buffer[pos<gapstart ? pos : pos-gapstart+gapend]];
+  return FXString::utfBytes[
+      (FXuchar)buffer[pos<gapstart ? pos : pos-gapstart+gapend]];
   }
 
 
