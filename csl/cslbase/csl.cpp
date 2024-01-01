@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2023 Codemist
+// csl.cpp                                 Copyright (C) 1989-2024 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2023, Codemist.                         A C Norman       *
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

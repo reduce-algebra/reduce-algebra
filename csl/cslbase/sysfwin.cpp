@@ -1,4 +1,4 @@
-// sysfwin.cpp                             Copyright (C) 1989-2023 Codemist
+// sysfwin.cpp                             Copyright (C) 1989-2024 Codemist
 
 //
 // System-specific code for use with the "fwin" window interface code.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2023, Codemist.                         A C Norman       *
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -696,6 +696,40 @@ uint64_t read_clock_microsecond()
 {   return read_clock_nanosecond()/1000;
 }
 
+// The following were offered by Jeffrey Johnson as a sane and portable way
+// of reading the "best available" clock for a variety of purposes. He
+// reportts compatibility across a seriously wide range of systems and
+// compilers.
+
+/** The clock used to obtain timestamps. */
+#  if defined(CLOCK_REALTIME_FAST)
+#   define SIR_WALLCLOCK CLOCK_REALTIME_FAST
+#  elif defined(CLOCK_REALTIME_COARSE)
+#   define SIR_WALLCLOCK CLOCK_REALTIME_COARSE
+#  else
+#   define SIR_WALLCLOCK CLOCK_REALTIME
+#  endif
+
+/** The clock used to measure intervals. */
+#  if defined(CLOCK_UPTIME)
+#   define SIR_INTERVALCLOCK CLOCK_UPTIME
+#  elif defined(CLOCK_BOOTTIME) && !defined(__EMSCRIPTEN__)
+#   define SIR_INTERVALCLOCK CLOCK_BOOTTIME
+#  elif defined(CLOCK_HIGHRES)
+#   define SIR_INTERVALCLOCK CLOCK_HIGHRES
+#  elif defined(CLOCK_MONOTONIC)
+#   define SIR_INTERVALCLOCK CLOCK_MONOTONIC
+#  else
+#   define SIR_INTERVALCLOCK CLOCK_REALTIME
+#  endif
+
+// The CLOCK_UPTIME and BOOTTIME timers restart at 0 at system boot
+// time, and it *does* take into account time that a system may be
+// suspended (like a snapshotted virtual machine, or a
+// checkpointed/migrates process).  The regular MONOTONIC clock usually
+// does not necessarily 'tick' when the machine is not actually running.
+
+
 uint64_t read_clock_nanosecond()
 {
 #if !defined HAVE_TIMESPEC
@@ -763,7 +797,7 @@ uint64_t read_clock_cycles()
 // There is no tidy guarantee about the resolution of the clock used
 // here on any particular platform.
     struct std::timespec tt;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &tt);
+    clock_gettime(SIR_INTERVALCLOCK, &tt);
     return 1.0e9*static_cast<double>(tt.tv_sec) +
            static_cast<double>(tt.tv_nsec);
 #endif // Windows

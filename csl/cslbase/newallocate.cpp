@@ -1,4 +1,4 @@
-// newallocate.cpp                         Copyright (C) 2018-2023 Codemist
+// newallocate.cpp                         Copyright (C) 2018-2024 Codemist
 
 //
 // Code to deal with storage allocation, both grabbing memory at the start
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2023, Codemist.                         A C Norman       *
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
