@@ -285,4 +285,7 @@ April 2023.   it has used char* and wchar_t*. Also vector<T>. Insert casts
               Rework history stuff to use Vector<T> rather that a C style
               array.
 
+Dec 2023.     attempt to make ALT-x do unicode conversion between names
+              and glyphs for the GUI.
+
 <end of CHANGED>

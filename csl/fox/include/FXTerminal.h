@@ -246,7 +246,7 @@ public:
   int editUppercase();
   int editCopyRegion();
   int editExtendedCommand();
-  int editObeyCommand();
+  int editUnicodeConvert();
   int editSetMark();
   int editMoveLineStart();
   int editPrevChar();

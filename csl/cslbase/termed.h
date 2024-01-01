@@ -176,6 +176,7 @@ extern int utf_encode(unsigned char *b, int c);
 extern int utf_bytes;
 extern int utf_decode(const unsigned char *b);
 
+extern bool usingGUI;
 extern void term_unicode_convert();
 
 typedef struct _uniname
