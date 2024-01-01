@@ -1,4 +1,3 @@
-
 (setq !*echo t)
 
 %

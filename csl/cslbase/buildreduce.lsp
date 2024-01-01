@@ -1,5 +1,5 @@
-% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2022sate
-%
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2024
+
 % Build a CSL REDUCE.
 %
 % Depending on how this file is used it will EITHER create a bootstrap

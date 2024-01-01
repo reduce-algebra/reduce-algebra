@@ -1,7 +1,9 @@
-% "jcomp.red"                            Copyright (C) 1991-2023,  Codemist
+% "jcomp.red"                            Copyright (C) 1991-2024,  Codemist
 %
 % Compiler that turns Lisp code into Java in a way that fits in
-% with the conventions used with Jlisp
+% with the conventions used with Jlisp. This is now archaic code from
+% a project that was never completed, but is left here in case
+% anybody wants to pick it up and run.
 %
 %                                                        A C Norman
 %
@@ -10,7 +12,7 @@
 % generate Java over time.
 
 %%
-%% Copyright (C) 2022, following the master REDUCE source files.          *
+%% Copyright (C) 2024, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

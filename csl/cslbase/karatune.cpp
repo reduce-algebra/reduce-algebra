@@ -1,4 +1,4 @@
-// Code to suggest value for KARSTSUBA_EVEN_START etc A C Norman, 2020-2022
+// Code to suggest value for KARATSUBA_EVEN_START etc A C Norman, 2020-2024
 
 
 /**************************************************************************
