@@ -818,7 +818,7 @@ static int staticCharForShowMath();
 int FXTerminal::printTextRow(FXDCNativePrinter &dc,
                              int p, int y, int left, int right)
 {
-    int firstThis = p < length ? getByte(p) : 'x';
+    int firstThis = p < length ? getChar(p) : 'x';
     int line = 0;
     if (firstThis == 0x02)
     {   int realbeg=lineStart(p);
@@ -828,7 +828,7 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
 // the top of a formula will not be visible. I will therefore step
 // back to the start of the line and adjust my y position accordingly.
         line-=(p-realbeg);
-        charPointer = p+1;
+        charPointer = p+1;  // past the 0x02
 // now I may be at something other than the final row of a formula, so I will
 // need to skip over any extra 0x02 chars that there might be.
         while (charPointer<length && getChar(charPointer)==0x02) charPointer++;
@@ -837,6 +837,8 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         int extra=extraLines*h;
         int x=right;
         int edge=left;
+// The bytes I grab here are magic ones that are all in a range from
+// character '0' to that plus 63. So they are one byte characters.
 // Recover the scale that is to be used.
         int scale = getByte(charPointer+1) & 0x07;
         setMathsFontScale(scale);
@@ -889,11 +891,11 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         bool shifted=false;
         for (;;)
         {   if (p == length) return p;           // end of buffer
-            c=getByte(p);
+            c=getChar(p);
             if (c==0x0e) shifted=true;
             else if (c==0x0f) shifted=false;
             else if (!shifted && c=='\n') return p+1;  // end of line
-            p++;
+            p+=getCharLen(c);
         }
     }
     int column = 0;
@@ -913,7 +915,7 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
                                           // stop on style change
             buff[bp++] = ch;
             column++;
-            p++;
+            p+=getCharLen(ch);
         }
         if (bp!=0)
         {   buff[bp] = 0;     // Make sure the string is NUL-terminated
@@ -1087,6 +1089,11 @@ long FXTerminal::doPrinting(int startp, int endp)
 // "courier" in the relevant case, but it still makes sense that at this
 // point I alert the gentle reader to the fact that screen and printer
 // fonts may differ.
+//
+// It is worse than the above. I am trying to move to DejeVuSansMono as my
+// standard font and supporting that for Postscript printing would involve
+// embedding it. For now I take a view that printing - and especially with
+// "extended" characters - may not work well.
 //
 // A yet further qualification to the above commentary is that if I have
 // any mathematics displayed via SHOWMATH then I will need to Computer
@@ -3661,14 +3668,16 @@ int FXTerminal::editUnicodeConvert()
     std::wstringbuf bb;
     int p = 0;
 std::wcerr << L"n=" << n << L" cursor=" << cursorpos << L" len=" << length << L"\n";
-    insert_point = length;
-    for (int i=n; i<length;)
+    insert_point = 0;
+    int i = n;
+    while (i<length)
     {   FXwchar c = getChar(i);
         if (i == cursorpos) insert_point = p;
         i += getCharLen(i);
         bb.sputc(c);
         p++;
     }
+    if (cursorpos == length) insert_point = p;
     input_line = bb.str();
 std::wcerr << L"Trace: <" << input_line << L"> insert at " << insert_point << L"\n";
     usingGUI = true;
@@ -3892,13 +3901,13 @@ static int staticCharForShowMath()
 int FXTerminal::charForShowMath()
 {
     if (charPointer >= length) return 0;
-// At present the "showmath" material should never contain exotic
-// characters since it should contain TeX-like text. So I can use
-// getByte not getChar. It I used getChar I should use inc to increment
-// charPointer...
-    int c = getByte(charPointer) & 0xff;
+// Originally the "showmath" material could never contain exotic
+// characters since it was expected to contain just TeX-like text.
+// However now I am moving towards allowing characters beyond basic
+// latin in it.
+    int c = getChar(charPointer) & 0xff;
     if (c == '\n') return 0;
-    charPointer++;
+    charPointer+=getCharLen(charPointer);
     return c;
 }
 
@@ -3908,7 +3917,9 @@ int FXTerminal::charForShowMath()
 // Specifically it will be what arises if "off nat" is used to print stuff.
 // I had originally hoped that this would not contain any control characters
 // but in some cases it can contain newlines. Here I skip until the
-// TeX material that follows it.
+// TeX material that follows it. I note that for 0x0e and 0x0f the entities
+// are represented by one byte even if everything is in utf-8, and neither
+// of those values should appear within an utf-8 sequence. Phew!
 
 void FXTerminal::findTeXstart() const
 {
@@ -3991,12 +4002,14 @@ void FXTerminal::insertMathsLines()
 //       box-structure representing the given line of the mathematical
 //       formula. The handle will use 6-bits per byte so I have 24-bits here.
 //       A consquence is that I have built in an architectural limit at
-//       16 Mbytes of display buffer. I will sometimes need to indidate
+//       16 Mbytes of display buffer. I will sometimes need to indicate
 //       that there is no box structure yet... that is done by putting xxxx
 //       in place. That can not be interpreted as a proper handle because
 //       the 6-bits per byte used there use the characters
 //         0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmno
 //       notably stopping before "x".
+// Again all the above are bytes in the range 0x00 to 0x7f so utf-8 issues do
+// not arise.
 //
 // Note that when I parse a bit of TeX I may run out of memory in the
 // area reserved for box structures, and in that case I will discard some
@@ -4053,11 +4066,11 @@ void FXTerminal::insertMathsLines()
 // put in the buffer will NEVER include a newline character except within SO/SI
         bool shifted1=false;
         while (p1<length)
-        {   int c=getByte(p1);
+        {   int c=getChar(p1);
             if (c==0x0e) shifted1=true;
             else if (c==0x0f) shifted1=false;
             else if (!shifted1 && c=='\n') break;
-            p1++;
+            p1+=getCharLen(c);
         }
         if (p1 < length) p1++;
     }
@@ -4125,11 +4138,11 @@ void FXTerminal::insertMathsLines()
         replaceStyledText(p1, 2, heightString, 2, STYLE_MATH);
         bool shifted2=false;
         while (p1<length)
-        {   int c=getByte(p1);
+        {   int c=getChar(p1);
             if (c==0x0e) shifted2=true;
             else if (c==0x0f) shifted2=false;
             else if (!shifted2 && c=='\n') break;
-            p1++;
+            p1+=getCharLen(c);
         }
         if (p1 < length) p1++;
     }
@@ -4178,11 +4191,11 @@ void FXTerminal::insertMathsLines()
         if (b != NULL) updateOwner(b, p1+3);
         bool shifted3=false;
         while (p1<length)
-        {   int c=getByte(p1);
+        {   int c=getChar(p1);
             if (c==0x0e) shifted3=true;
             else if (c==0x0f) shifted3=false;
             else if (!shifted3 && c=='\n') break;
-            p1++;
+            p1+=getCharLen(c);
         }
         if (p1 < length) p1++;
     }

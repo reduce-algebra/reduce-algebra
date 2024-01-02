@@ -745,11 +745,13 @@ typedef struct localFonts
 
 static localFonts fontNames[] =
 {
-    {"cmex10", NULL},
-    {"cmmi10", NULL},
-    {"cmr10",  NULL},
-    {"cmsy10", NULL},
-    {"cmuntt", NULL}
+    {"cmex10",         NULL},
+    {"cmmi10",         NULL},
+    {"cmr10",          NULL},
+    {"cmsy10",         NULL},
+    {"cmuntt",         NULL},
+    {"DejaVuSansMono", NULL}
+
 };
 
 #ifdef WIN32

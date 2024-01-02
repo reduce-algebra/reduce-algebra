@@ -1,11 +1,11 @@
-//  print.cpp                              Copyright (C) 1990-2023 Codemist
+//  print.cpp                              Copyright (C) 1990-2024 Codemist
 
 //
 // Printing, plus some file-related operations.
 //
 
 /**************************************************************************
- * Copyright (C) 2023, Codemist.                         A C Norman       *
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

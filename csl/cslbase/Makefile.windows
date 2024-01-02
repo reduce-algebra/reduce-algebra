@@ -60,29 +60,56 @@ ifeq "$(cyg64)" "no"
 $(error The cyg64 directory must be present)
 endif
 
-FONTS = reduce.fonts/cmex10.pfa reduce.fonts/cmex10.pfb \
-	reduce.fonts/cmex10.ttf reduce.fonts/cmex7.ttf \
-	reduce.fonts/cmex8.ttf reduce.fonts/cmex9.ttf \
-	reduce.fonts/cmmi10.pfa reduce.fonts/cmmi10.pfb \
-	reduce.fonts/cmmi10.ttf reduce.fonts/cmmi12.ttf \
-	reduce.fonts/cmmi5.ttf reduce.fonts/cmmi6.ttf \
-	reduce.fonts/cmmi7.ttf reduce.fonts/cmmi8.ttf \
-	reduce.fonts/cmmi9.ttf reduce.fonts/cmr10.pfa \
-	reduce.fonts/cmr10.pfb reduce.fonts/cmr10.ttf \
-	reduce.fonts/cmr12.ttf reduce.fonts/cmr17.ttf \
-	reduce.fonts/cmr5.ttf reduce.fonts/cmr6.ttf \
-	reduce.fonts/cmr7.ttf reduce.fonts/cmr8.ttf reduce.fonts/cmr9.ttf \
-	reduce.fonts/cmsy10.pfa reduce.fonts/cmsy10.pfb \
-	reduce.fonts/cmsy10.ttf reduce.fonts/cmsy5.ttf \
-	reduce.fonts/cmsy6.ttf reduce.fonts/cmsy7.ttf \
-	reduce.fonts/cmsy8.ttf reduce.fonts/cmsy9.ttf \
-	reduce.fonts/cmuntt.pfb reduce.fonts/cmuntt.ttf \
-	reduce.fonts/fonts.dir reduce.fonts/fonts.scale \
-	reduce.fonts/pfmfiles/cmex10.pfm reduce.fonts/pfmfiles/cmmi10.pfm \
-	reduce.fonts/pfmfiles/cmr10.pfm reduce.fonts/pfmfiles/cmsy10.pfm \
-	reduce.fonts/README reduce.fonts/README.BaKoMa \
-	reduce.fonts/README.cmps-fonts reduce.fonts/src/cmex10.asm.gz \
-	reduce.fonts/src/cmmi10.asm.gz reduce.fonts/src/cmr10.asm.gz \
+FONTS = reduce.fonts/cmex10.pfa \
+	reduce.fonts/cmex10.pfb \
+	reduce.fonts/cmex10.ttf \
+	reduce.fonts/cmex7.ttf \
+	reduce.fonts/cmex8.ttf \
+	reduce.fonts/cmex9.ttf \
+	reduce.fonts/cmmi10.pfa \
+	reduce.fonts/cmmi10.pfb \
+	reduce.fonts/cmmi10.ttf \
+	reduce.fonts/cmmi12.ttf \
+	reduce.fonts/cmmi5.ttf \
+	reduce.fonts/cmmi6.ttf \
+	reduce.fonts/cmmi7.ttf \
+	reduce.fonts/cmmi8.ttf \
+	reduce.fonts/cmmi9.ttf \
+	reduce.fonts/cmr10.pfa \
+	reduce.fonts/cmr10.pfb \
+	reduce.fonts/cmr10.ttf \
+	reduce.fonts/cmr12.ttf \
+	reduce.fonts/cmr17.ttf \
+	reduce.fonts/cmr5.ttf \
+	reduce.fonts/cmr6.ttf \
+	reduce.fonts/cmr7.ttf \
+	reduce.fonts/cmr8.ttf \
+	reduce.fonts/cmr9.ttf \
+	reduce.fonts/cmsy10.pfa \
+	reduce.fonts/cmsy10.pfb \
+	reduce.fonts/cmsy10.ttf \
+	reduce.fonts/cmsy5.ttf \
+	reduce.fonts/cmsy6.ttf \
+	reduce.fonts/cmsy7.ttf \
+	reduce.fonts/cmsy8.ttf \
+	reduce.fonts/cmsy9.ttf \
+	reduce.fonts/cmuntt.pfb \
+	reduce.fonts/cmuntt.ttf \
+	reduce.fonts/DejaVuSansMono.ttf \
+	reduce.fonts/DejaVuMathTeXGyre.ttf \
+	reduce.fonts/fonts.dir \
+	reduce.fonts/fonts.scale \
+	reduce.fonts/pfmfiles/cmex10.pfm \
+	reduce.fonts/pfmfiles/cmmi10.pfm \
+	reduce.fonts/pfmfiles/cmr10.pfm \
+	reduce.fonts/pfmfiles/cmsy10.pfm \
+	reduce.fonts/README \
+	reduce.fonts/README.BaKoMa \
+	reduce.fonts/README.cmps-fonts \
+	reduce.fonts/DejaVuLICENSE \
+	reduce.fonts/src/cmex10.asm.gz \
+	reduce.fonts/src/cmmi10.asm.gz \
+	reduce.fonts/src/cmr10.asm.gz \
 	reduce.fonts/src/cmsy10.asm.gz
 
 RESOURCES = reduce.resources/mma.awk reduce.resources/qepcad.awk
@@ -119,8 +146,7 @@ $(FONTS):	fonts.stamp
 
 fonts.stamp:	win.stamp
 	rm -f fonts.stamp
-	cp -r win64/csl/reduce.fonts . && \
-		touch fonts.stamp
+	cp -r win64/csl/reduce.fonts . && touch fonts.stamp
 
 $(RESOURCES):	resources.stamp
 

@@ -1536,6 +1536,7 @@ else !wx
 	$(CP) $(cslbase)/$(fontsdir)/README reduce.$(fontsdir)
 	$(CP) $(cslbase)/$(fontsdir)/README.cmps-fonts reduce.$(fontsdir)
 	$(CP) $(cslbase)/$(fontsdir)/README.BaKoMa reduce.$(fontsdir)
+	$(CP) $(cslbase)/$(fontsdir)/DejaVuLICENSE reduce.$(fontsdir)
 	$(CP) $(cslbase)/$(fontsdir)/*.ttf reduce.$(fontsdir)
 	$(CP) $(cslbase)/$(fontsdir)/*.pfb reduce.$(fontsdir)
 	$(CP) $(cslbase)/$(fontsdir)/*.pfa reduce.$(fontsdir)

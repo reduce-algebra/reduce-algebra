@@ -89,7 +89,7 @@ symbolic procedure newtok u;
       y := intern list2string car u;
 % A redefinition that does not seem to be changing anything does not
 % need to be warned about.
-      if get(cadr u, 'prtch) neq y and
+      if not (get(cadr u, 'prtch) = y) and
           !*redeflg!* then lprim list(y,"redefined");
       put(cadr u,'prtch,y);
       if x := get(cadr u,'unary) then put(x,'prtch,y)

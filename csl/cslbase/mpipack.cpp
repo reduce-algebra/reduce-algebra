@@ -1,10 +1,10 @@
-// mpipack.cpp                             Copyright (C) 2016-2023 Codemist
+// mpipack.cpp                             Copyright (C) 2016-2024 Codemist
 //
 // Packing stuff into buffers for cross-PE communication
 //
 
 /**************************************************************************
- * Copyright (C) 2023, Codemist.                         A C Norman       *
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
