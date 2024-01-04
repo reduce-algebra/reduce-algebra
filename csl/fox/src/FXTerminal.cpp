@@ -29,7 +29,7 @@
 * makes that infeasible hence this is just under LGPL.                        *
 ******************************************************************************/
 
-// However as a special exception to LGPL 2.1 I grant permission for my code
+// However as a special exception to LGPL 2.1 I grant permission for MY code
 // to be merged or linked with other code that is subject to LGPL version 3
 // or GPL version 3. This provision does not represent permission to alter the
 // license of my code to be that of LGPL 3 or GPL 3 - of itself and when
@@ -44,7 +44,7 @@
 // out (L)GPL 3 users but guarantee continued support for (L)GPL 2.1 in a way
 // that the "or later" clause does not (since that permits anybody to
 // unilaterally select just one version of the library to use, to the
-// potential detriment of those whose choice differs).
+// potential detriment of those whose choice differs). A C Norman
 
 
 /* $Id$ */
@@ -176,7 +176,6 @@ namespace FX {
 int pipedes[2];
 
 #endif /* WIN32 */
-
 
 static FXPrinter printer;
 
@@ -810,6 +809,8 @@ int FXTerminal::printBufferText(FXDCNativePrinter &dc, FXint x, FXint y,
 // scans the buffer spotting runs of characters that agree in their
 // style, and send such runs in blocks to printBufferText.
 
+// Printing is NOT liable to support Unicode characters for now. Well
+// printing is hardly supported at all.
 
 static int charPointer;
 
@@ -818,7 +819,7 @@ static int staticCharForShowMath();
 int FXTerminal::printTextRow(FXDCNativePrinter &dc,
                              int p, int y, int left, int right)
 {
-    int firstThis = p < length ? getChar(p) : 'x';
+    int firstThis = p < length ? getByte(p) : 'x';
     int line = 0;
     if (firstThis == 0x02)
     {   int realbeg=lineStart(p);
@@ -831,7 +832,7 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         charPointer = p+1;  // past the 0x02
 // now I may be at something other than the final row of a formula, so I will
 // need to skip over any extra 0x02 chars that there might be.
-        while (charPointer<length && getChar(charPointer)==0x02) charPointer++;
+        while (charPointer<length && getByte(charPointer)==0x02) charPointer++;
         int extraLines=charPointer-realbeg-1;
         int h=dc.fntGetFontHeight();
         int extra=extraLines*h;
@@ -891,11 +892,11 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         bool shifted=false;
         for (;;)
         {   if (p == length) return p;           // end of buffer
-            c=getChar(p);
+            c=getByte(p);
             if (c==0x0e) shifted=true;
             else if (c==0x0f) shifted=false;
             else if (!shifted && c=='\n') return p+1;  // end of line
-            p+=getCharLen(c);
+            p++;;
         }
     }
     int column = 0;
@@ -906,7 +907,7 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
         int bp = 0;
         for (;;)           // accumulate a segment
         {   if (p == length) break;       // stop at end of text buffer
-            ch = getChar(p);
+            ch = getByte(p);
             if (ch == '\n') break;        // stop at end of this line
             if (column >= 80) break;      // need to wrap the line
             st = getStyle(p);
@@ -915,7 +916,7 @@ int FXTerminal::printTextRow(FXDCNativePrinter &dc,
                                           // stop on style change
             buff[bp++] = ch;
             column++;
-            p+=getCharLen(ch);
+            p+=p++;
         }
         if (bp!=0)
         {   buff[bp] = 0;     // Make sure the string is NUL-terminated
@@ -3389,11 +3390,11 @@ int FXTerminal::setInputText(const char *newtext, int n)
 
 int FXTerminal::setInputText(const wchar_t *newtext, int n)
 {
-    FXString foxtext(newtext);
+    FXString foxtext(newtext, n);
     int n2 = length;
     int n1 = lineStart(n2);
     while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
-    replaceStyledText(n1, n2-n1, foxtext.text(), n, STYLE_INPUT);
+    replaceStyledText(n1, n2-n1, foxtext, STYLE_INPUT);
     setCursorPos(length);
     makePositionVisible(length);
     return n1;
@@ -3401,11 +3402,11 @@ int FXTerminal::setInputText(const wchar_t *newtext, int n)
 
 int FXTerminal::setInputText(std::wstring newtext, int n)
 {
-    FXString foxtext(newtext.c_str());
+    FXString foxtext(newtext.c_str(), n);
     int n2 = length;
     int n1 = lineStart(n2);
     while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
-    replaceStyledText(n1, n2-n1, foxtext.text(), n, STYLE_INPUT);
+    replaceStyledText(n1, n2-n1, foxtext, STYLE_INPUT);
     setCursorPos(length);
     makePositionVisible(length);
     return n1;
@@ -3650,6 +3651,22 @@ int FXTerminal::editExtendedCommand()
 
 // ALT-X  obey command
 
+// Debug help
+
+void FXTerminal::showBuffer(const wchar_t* msg)
+{
+    std::wcerr << L"showBuffer " << cursorpos << L" " << length << L" :"
+               << msg << L"  ";
+    std::wcerr << std::hex << L"{";
+    for (int i=length-10; i<length;)
+    {   if (i<0) continue;
+        int c = getChar(i);
+        std::wcerr << (wchar_t)c; //  << L"[" << c << L"]";
+        i += getCharLen(i);
+    }
+    std::wcerr << std::dec << L"}\n";
+}
+
 int FXTerminal::editUnicodeConvert()
 {
 // Use this to do Unicode conversion ... I do this by pretending to be in
@@ -3663,6 +3680,7 @@ int FXTerminal::editUnicodeConvert()
 // insert_point, and transcribe that output to where the GUI acts on
 // it. And refresh the display so that changes become visible.
     prompt_length = 0;
+showBuffer(L"start");
     int n = lineStart(cursorpos);
     while (n < length && (getStyle(n) & STYLE_PROMPT)) n++;    
     std::wstringbuf bb;
@@ -3683,9 +3701,18 @@ std::wcerr << L"Trace: <" << input_line << L"> insert at " << insert_point << L"
     usingGUI = true;
     term_unicode_convert();
 std::wcerr << L"Output: <" << input_line << L"> insert at " << insert_point << L"\n";
-    FXTerminal::setInputText(input_line.c_str(), input_line.length());
-// This next line is wrong!
-    cursorpos = n + insert_point;
+    FXTerminal::setInputText(input_line, input_line.length());
+// Now I need to set cursorPos to insert_point, but (oh misery!) adjusted
+// because cursorpos counts in bytes while insert_point counts in characters.
+    cursorpos = n;
+    for (i=0; i<insert_point; i++)
+    {   int c = input_line[i];
+        if (c < 0x7f) cursorpos += 1;
+        else if (c < 0x7ff) cursorpos += 2;
+        else if (c < 0xffff) cursorpos += 3;
+        else cursorpos += 4;
+    }
+showBuffer(L"done");
     return 1;
 }
 
@@ -3905,9 +3932,9 @@ int FXTerminal::charForShowMath()
 // characters since it was expected to contain just TeX-like text.
 // However now I am moving towards allowing characters beyond basic
 // latin in it.
-    int c = getChar(charPointer) & 0xff;
+    int c = getByte(charPointer) & 0xff;
     if (c == '\n') return 0;
-    charPointer+=getCharLen(charPointer);
+    charPointer++;
     return c;
 }
 
@@ -4412,7 +4439,7 @@ long FXTerminal::requestSetMenus()
                 tempMenu = new FXMenuPane(main_window);
                 for (int i=0; i<chunks; i++)
                 {   FXMenuPane *sub = new FXMenuPane(main_window);
-                    char partname[10];
+                    char partname[16];
                     sprintf(partname, "Part %d", i+1);
                     for (int j=0; j<step; j++)
                     {   if (*switches==NULL || switches==p1) break;

@@ -2310,15 +2310,19 @@ if windows
 	-$(RM) -f reduce-windows-$(shell date +%Y%m%d).zip
 	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
-	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
+	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc \
+		reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
+	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip \
+		reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).zip
 else !windows
 	-$(RM) -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	$(CP) -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
-	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
+	$(CP) -r reduce reduce.img reduce.doc reduce.fonts \
+		reduce-$(NAME)-$(shell date +%Y%m%d)
+	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 \
+		reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi

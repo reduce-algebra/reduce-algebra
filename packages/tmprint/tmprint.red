@@ -1474,98 +1474,83 @@ symbolic procedure fancy!-oprin op;
     if overflowed!* then return 'failed
    end;
 
-put('alpha,'fancy!-special!-symbol,"\alpha");
-put('beta,'fancy!-special!-symbol,"\beta");
-put('gamma,'fancy!-special!-symbol,"\Gamma");
-put('delta,'fancy!-special!-symbol,"\delta");
-put('epsilon,'fancy!-special!-symbol,"\varepsilon");
-put('zeta,'fancy!-special!-symbol,"\zeta");
-put('eta,'fancy!-special!-symbol,"\eta");
-put('theta,'fancy!-special!-symbol,"\theta");
-put('iota,'fancy!-special!-symbol,"\iota");
-put('kappa,'fancy!-special!-symbol,"\varkappa");
-put('lambda,'fancy!-special!-symbol,"\lambda");
-put('mu,'fancy!-special!-symbol,"\mu");
-put('nu,'fancy!-special!-symbol,"\nu");
-put('xi,'fancy!-special!-symbol,"\xi");
-put('omicron,'fancy!-special!-symbol,'!o);
-put('pi,'fancy!-special!-symbol,"\pi");
-put('rho,'fancy!-special!-symbol,"\rho");
-put('sigma,'fancy!-special!-symbol,"\sigma");
-put('tau,'fancy!-special!-symbol,"\tau");
-put('upsilon,'fancy!-special!-symbol,"\upsilon");
-put('phi,'fancy!-special!-symbol,"\phi");
-put('chi,'fancy!-special!-symbol,"\chi");
-put('psi,'fancy!-special!-symbol,"\psi");
-put('omega,'fancy!-special!-symbol,"\omega");
+% I have definitions here that lead to names like "alpha" and so on
+% ending up mapped onto TeX Greek symbols, with "Alpha" being the
+% upper case version. But also there can be Unicode characters that
+% denote Greek letters directly. Reduce notation such as "#alpha;"
+% gives access to these, and thay may also be entered for the CSL
+% version by typing either a name of a numeric code and pressing ALT-x.
+% these also get mapped onto TeX notation for rendering the proper symbol.
+% It is in fact possible that if the Unicode things were left without
+% treatment here they would pass as themselves into the TeX and end
+% up rendered directly.
 
-put('#alpha;,'fancy!-special!-symbol,"\alpha");
-put('#beta;,'fancy!-special!-symbol,"\beta");
-put('#gamma;,'fancy!-special!-symbol,"\Gamma");
-put('#delta;,'fancy!-special!-symbol,"\delta");
-put('#epsilon;,'fancy!-special!-symbol,"\varepsilon");
-put('#zeta;,'fancy!-special!-symbol,"\zeta");
-put('#eta;,'fancy!-special!-symbol,"\eta");
-put('#theta;,'fancy!-special!-symbol,"\theta");
-put('#iota;,'fancy!-special!-symbol,"\iota");
-put('#kappa;,'fancy!-special!-symbol,"\varkappa");
-put('#lambda;,'fancy!-special!-symbol,"\lambda");
-put('#mu;,'fancy!-special!-symbol,"\mu");
-put('#nu;,'fancy!-special!-symbol,"\nu");
-put('#xi;,'fancy!-special!-symbol,"\xi");
-put('#pi;,'fancy!-special!-symbol,"\pi");
-put('#rho;,'fancy!-special!-symbol,"\rho");
-put('#sigma;,'fancy!-special!-symbol,"\sigma");
-put('#tau;,'fancy!-special!-symbol,"\tau");
-put('#upsilon;,'fancy!-special!-symbol,"\upsilon");
-put('#phi;,'fancy!-special!-symbol,"\phi");
-put('#chi;,'fancy!-special!-symbol,"\chi");
-put('#psi;,'fancy!-special!-symbol,"\psi");
-put('#omega;,'fancy!-special!-symbol,"\omega");
+% I put the words I want defined as strings here and then use intern
+% because I want to distinguish between "alpha" and "Alpha" and "ALPHA".
+% And I want this to behave regardless of a system setting of "raise"
+% and "lower". For that reason there are a bunch of really odd-looking
+% cases like "aLPHA". That is the symbol that will arise if "on raise" is in
+% force and somebody write "!alpha" in the same spirit that one who
+% has "on lower" set might have written "!Alpha" so that the first letter
+% of the word if explicitly upper or explicitly lower case. Can you hear
+% me saying "ha ha ha"?
 
-#if (memq 'csl lispsystem!*)
+for each x in '(
+ ("alpha"   "\alpha")      ("aLPHA"   "\alpha")      (#alpha;   "\alpha")         
+ ("beta"    "\beta")       ("bETA"    "\beta")       (#beta;    "\beta")
+ ("gamma"   "\gamma")      ("gAMMA"   "\gamma")      (#gamma;   "\gamma")
+ ("delta"   "\delta")      ("dELTA"   "\delta")      (#delta;   "\delta")
+ ("epsilon" "\varepsilon") ("ePSILON" "\varepsilon") (#epsilon; "\varepsilon")
+ ("zeta"    "\zeta")       ("zETA"    "\zeta")       (#zeta;    "\zeta")
+ ("eta"     "\eta")        ("eTA"     "\eta")        (#eta;     "\eta")
+ ("theta"   "\theta")      ("tHETA"   "\theta")      (#theta;   "\theta")
+ ("iota"    "\iota")       ("iOTA"    "\iota")       (#iota;    "\iota")
+ ("kappa"   "\varkappa")   ("kAPPA"   "\varkappa")   (#kappa;   "\varkappa")
+ ("lambda"  "\lambda")     ("lAMBDA"  "\lambda")     (#lambda;  "\lambda")
+ ("mu"      "\mu")         ("mU"      "\mu")         (#mu;      "\mu")
+ ("nu"      "\nu")         ("nU"      "\nu")         (#nu;      "\nu")
+ ("xi"      "\xi")         ("xI"      "\xi")         (#xi;      "\xi")
+ ("omicron" '!o)           ("oMICRON" '!o)           (#omicron; '!o)
+ ("pi"      "\pi")         ("pI"      "\pi")         (#pi;      "\pi")
+ ("rho"     "\rho")        ("rHO"     "\rho")        (#rho;     "\rho")
+ ("sigma"   "\sigma")      ("sIGMA"   "\sigma")      (#sigma;   "\sigma")
+ ("tau"     "\tau")        ("tAU"     "\tau")        (#tau;     "\tau")
+ ("upsilon" "\upsilon")    ("uPSILON" "\upsilon")    (#upsilon; "\upsilon")
+ ("phi"     "\phi")        ("pHI"     "\phi")        (#phi;     "\phi")
+ ("chi"     "\chi")        ("cHI"     "\chi")        (#chi;     "\chi")
+ ("psi"     "\psi")        ("pSI"     "\psi")        (#psi;     "\psi")
+ ("omega"   "\omega")      ("oMEGA"   "\omega")      (#omega;   "\omega")
 
-deflist('(
-% Many of these are just the same glyphs as ordinary upper case letters,
-% and so for compatibility with external viewers I map those ones onto
-% letters with the "\mathit" qualifier to force the font.
-     (!Alpha "\mathit{A}") (!Beta "\mathit{B}") (!Chi "\Chi ")
-     (!Delta "\Delta ") (!Epsilon "\mathit{E}") (!Phi "\Phi ")
-     (!Gamma "\Gamma ") (!Eta "\mathit{H}") (!Iota "\mathit{I}")
-     (!vartheta "\vartheta") (!Kappa "\Kappa ") (!Lambda "\Lambda ")
-     (!Mu "\mathit{M}") (!Nu "\mathit{N}") (!Omicron "\mathit{O}")
-     (!Pi "\Pi ") (!Theta "\Theta ") (!Rho "\mathit{R}")
-     (!Sigma "\Sigma ") (!Tau "\Tau ") (!Upsilon "\Upsilon ")
-     (!Omega "\Omega ") (!Xi "\Xi ") (!Psi "\Psi ")
-     (!Zeta "\mathit{Z}") (!varphi "\varphi ") (pound "\pound ")
-        ),'fancy!-special!-symbol);
+% Note that for a number of the upper case letters the Greek letter
+% looks just like a related Roman letter so I use that from the
+% math-italic font.
 
-% Now for some Unicode versions!
-deflist('(
-     (!#alpha; "\mathit{A}") (!#beta; "\mathit{B}") (!#chi; "\Chi ")
-     (!#delta; "\Delta ") (!#epsilon; "\mathit{E}") (!#phi; "\Phi ")
-     (!#gamma; "\Gamma ") (!#eta; "\mathit{H}") (!#iota; "\mathit{I}")
-     (!vartheta "\vartheta") (!#kappa; "\Kappa ") (!#lambda; "\Lambda ")
-     (!#mu; "\mathit{M}") (!#nu; "\mathit{N}") (!Omicron "\mathit{O}")
-     (!#pi; "\Pi ") (!#theta; "\Theta ") (!#rho; "\mathit{R}")
-     (!#sigma; "\Sigma ") (!#tau; "\Tau ") (!#upsilon; "\Upsilon ")
-     (!#omega; "\Omega ") (!#xi; "\Xi ") (!#psi; "\Psi ")
-     (!#zeta; "\mathit{Z}") (!varphi "\varphi ") (!#pound; "\pound ")
-        ),'fancy!-special!-symbol);
+ ("Alpha"   "\mathit{A}") ("ALPHA"   "\mathit{A}") (#Alpha;   "\mathit{A}")
+ ("Beta"    "\mathit{B}") ("BETA"    "\mathit{B}") (#Beta;    "\mathit{B}")
+ ("Gamma"   "\Gamma")     ("GAMMA"   "\Gamma")     (#Gamma;   "\Gamma")
+ ("Delta"   "\Delta")     ("DELTA"   "\Delta")     (#Delta;   "\Delta")
+ ("Epsilon" "\epsilon")   ("EPSILON" "\epsilon")   (#Epsilon; "\epsilon")
+ ("Zeta"    "\mathit{Z}") ("ZETA"    "\mathit{Z}") (#Zeta;    "\mathit{Z}")
+ ("Eta"     "\mathit{H}") ("ETA"     "\mathit{H}") (#Eta;     "\mathit{H}")
+ ("Theta"   "\Theta")     ("THETA"   "\Theta")     (#Theta;   "\Theta")
+ ("Iota"    "\mathit{I}") ("IOTA"    "\mathit{I}") (#Iota;    "\mathit{I}")
+ ("Kappa"   "\Kappa")     ("KAPPA"   "\Kappa")     (#Kappa;   "\Kappa")
+ ("Lambda"  "\Lambda")    ("LAMBDA"  "\Lambda")    (#Lambda;  "\Lambda")
+ ("Mu"      "\mathit{M}") ("MU"      "\mathit{M}") (#Mu;      "\mathit{M}")
+ ("Nu"      "\mathit{N}") ("NU"      "\mathit{N}") (#Nu;      "\mathit{N}")
+ ("Xi"      "\Xi")        ("XI"      "\Xi")        (#Xi;      "\Xi")
+ ("Omicron" "\mathit{O}") ("OMICRON" "\mathit{O}") (#Omicron; "\mathit{O}")
+ ("Pi"      "\Pi")        ("PI"      "\Pi")        (#Pi;      "\Pi")
+ ("Rho"     "\mathit{R}") ("RHO"     "\mathit{R}") (#Rho;     "\mathit{R}")
+ ("Sigma"   "\Sigma")     ("SIGMA"   "\Sigma")     (#Sigma;   "\Sigma")
+ ("Tau"     "\Tau")       ("TAU"     "\Tau")       (#Tau;     "\Tau")
+ ("Upsilon" "\Upsilon")   ("UPSILON" "\Upsilon")   (#Upsilon; "\Upsilon")
+ ("Phi"     "\Phi")       ("PHI"     "\Phi")       (#Phi;     "\Phi")
+ ("Chi"     "\Chi")       ("CHI"     "\Chi")       (#Chi;     "\Chi")
+ ("Psi"     "\Psi")       ("PSI"     "\Psi")       (#Psi;     "\Psi")
+ ("Omega"   "\Omega")     ("OMEGA"   "\Omega")     (#Omega;   "\Omega")         
+) do put(intern car x, 'fancy!-special!-symbol, cadr x);
 
-#else
-
-if 'a neq '!A then deflist('(
-    (!Alpha 65) (!Beta 66) (!Chi 67) (!Delta 68)
-    (!Epsilon 69)(!Phi 70) (!Gamma 71)(!Eta 72)
-    (!Iota 73) (!vartheta 74)(!Kappa 75)(!Lambda 76)
-    (!Mu 77)(!Nu 78)(!O 79)(!Pi 80)(!Theta 81)
-    (!Rho 82)(!Sigma 83)(!Tau 84)(!Upsilon 85)
-    (!Omega 87) (!Xi 88)(!Psi 89)(!Zeta 90)
-    (!varphi 106)
-       ),'fancy!-special!-symbol);
-
-#endif
 
 put('infinity,'fancy!-special!-symbol,"\infty ");
 put('partial!-df,'fancy!-special!-symbol,"\partial ");
@@ -3017,3 +3002,4 @@ statcounter := 0;
 endmodule;
 
 end;
+

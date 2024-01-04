@@ -96,6 +96,7 @@ FONTS = reduce.fonts/cmex10.pfa \
 	reduce.fonts/cmuntt.pfb \
 	reduce.fonts/cmuntt.ttf \
 	reduce.fonts/DejaVuSansMono.ttf \
+	reduce.fonts/DejaVuSansMono.pfb \
 	reduce.fonts/DejaVuMathTeXGyre.ttf \
 	reduce.fonts/fonts.dir \
 	reduce.fonts/fonts.scale \

@@ -246,6 +246,7 @@ public:
   int editUppercase();
   int editCopyRegion();
   int editExtendedCommand();
+  void showBuffer(const wchar_t*);
   int editUnicodeConvert();
   int editSetMark();
   int editMoveLineStart();
@@ -476,7 +477,15 @@ extern FXTerminal* text;
 #define DEFAULT_FONT_NAME "DejaVuSansMono"
 #else
 #ifdef __APPLE__
+// As of April 2016 it seems that Menlo is probably a better
+// default font to use on a Macintosh than Courier...
+//#define DEFAULT_FONT_NAME "Menlo"
+
+// July 2019: a user does not have Menlo on their machine. So here is some
+// horrid code to try a range of options in the hope of selecting something! 
+
 #define DEFAULT_FONT_NAME get_mac_default_font()
+
 
 inline const char* get_mac_default_font()
 {   static char mac_default_font[40] = "";
@@ -521,7 +530,7 @@ inline const char* get_mac_default_font()
 }
 
 #else
-#define DEFAULT_FONT_NAME "DejaVuSansMono"
+#define DEFAULT_FONT_NAME "DevaVuSansMono"
 #endif
 #endif
 
