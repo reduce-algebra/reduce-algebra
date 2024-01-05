@@ -32,10 +32,11 @@ cp $srcdir/cm-unicode/LICENSE                    $F/LICENSE.cm-unicode
 cp $srcdir/cm-unicode/README                     $F/README.cm-unicode
 cp $srcdir/cm-unicode/cmuntt.otf                 $F
 # The DejaVu Sans Mono font covers a range of characters that CMTT does not..
-cp $srcdir/dejavu-fonts-ttf-2.32/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.32
-cp $srcdir/dejavu-fonts-ttf-2.32/README           $F/README.dejavu-fonts-ttf-2.32
-cp $srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
-cp $srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
+cp $srcdir/dejavu-fonts-ttf-2.37/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.32
+cp $srcdir/dejavu-fonts-ttf-2.37/README.md        $F/README.dejavu-fonts-ttf-2.32
+cp $srcdir/dejavu-fonts-ttf-2.37/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
+cp $srcdir/dejavu-fonts-ttf-2.37/ttf/DejaVuSansMono.ttf $F
+cp $srcdir/fonts/DejaVuSansMono.pfb                     $F
 # I will use fireflysung fonts to cover the CJK range. I hope that at some
 # time I may be able to move to use of SourceHanSans/Noto... but that time
 # has not yet come.

@@ -2934,9 +2934,11 @@ static LispObject read_s(LispObject stream)
 #endif
                         if (curchar != EOF &&
                             (curchar<=0xffff || sizeof(wchar_t)==4))
-                        {   if (qvalue(lower_symbol) != nil)
+                        {   if (qvalue(lower_symbol) != nil &&
+                                curchar < 0x7f)
                                 curchar = std::towlower(curchar);
-                            else if (qvalue(raise_symbol) != nil)
+                            else if (qvalue(raise_symbol) != nil &&
+                                     curchar < 0x7f)
                                 curchar = std::towupper(curchar);
                         }
                     }
@@ -2974,9 +2976,11 @@ static LispObject read_s(LispObject stream)
                         }
 #endif
                         else if (curchar<=0xffff || sizeof(wchar_t)==4)
-                        {   if (qvalue(lower_symbol) != nil)
+                        {   if (qvalue(lower_symbol) != nil &&
+                                curchar < 0x7f)
                                 curchar = std::towlower(curchar);
-                            else if (qvalue(raise_symbol) != nil)
+                            else if (qvalue(raise_symbol) != nil &&
+                                     curchar < 0x7f)
                                 curchar = std::towupper(curchar);
                         }
 #ifdef COMMON
@@ -4347,7 +4351,7 @@ LispObject Lreadch(LispObject env, LispObject stream)
     ch = getc_stream(stream);  // may now be large value
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
-    {   if (ch <= 0xffff || sizeof(wchar_t)==4)
+    {   if (ch <= 0xff)
         {   if (qvalue(lower_symbol) != nil) ch = std::towlower(ch);
             else if (qvalue(raise_symbol) != nil) ch = std::towupper(ch);
         }
@@ -4380,7 +4384,7 @@ LispObject Lpeekch2(LispObject env, LispObject type,
     other_read_action(ch, stream);
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
-    {   if (ch <= 0xffff || sizeof(wchar_t)==4)
+    {   if (ch <= 0xff)
         {   if (qvalue(lower_symbol) != nil) ch = std::towlower(ch);
             else if (qvalue(raise_symbol) != nil) ch = std::towupper(ch);
         }
