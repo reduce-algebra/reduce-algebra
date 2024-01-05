@@ -33,8 +33,9 @@ cp -r $srcdir/fontconfig.conf                         $F
 # Copy everything from my source tree. This makes sense if the tree is
 # clean and does not contain any local extras!
 cp -r $srcdir/fonts/*READ*                            $F
+cp -r $srcdir/fonts/*LICEN*                           $F
 cp -r $srcdir/fonts/*.pfb                             $F
-#cp -r $srcdir/fonts/*.ttf                             $F
+cp -r $srcdir/fonts/*.ttf                             $F
 mkdir -p $1.app/Contents/Resources/reduce.resources
 AA="$1.app/Contents/Resources/reduce.resources"
 cp $srcdir/../../packages/redlog/ofsf/mma.awk          $AA
