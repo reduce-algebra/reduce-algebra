@@ -14,7 +14,7 @@ Unicode
     enough
     % feel like worrying about things like &Afr;
 (Capital letter A rendered
- % in a Fractur font at codepoint U+1d504) but support for Unicode
+% in a Fractur font at codepoint U+1d504) but support for Unicode
 % combining marks and composites is a step too far for me at present!
 
     % I have added a special extra &hash; to stand for "#" just for the
@@ -525,9 +525,19 @@ Unicode
             ("epar"                                      8917)
             ("eparsl"                                    10723)
             ("eplus"                                     10865)
-            ("epsi"                                      949)
+% The HTML standard seems to allow epsi as a synonym for epsilon. This
+% caused me pain with my input-level conversion in that with that in place
+% if I enter epsilonALT-x I get an epsilon symbol. If I then press ALT-x
+% again that decodes back to just epsi which is rendered as e followed by
+% a psi symbol. ALt-x again maps that to e03e8, then 03bf and finally back to
+% just epsi - and the "lon" has been lost forever. I am swapping the order
+% of the two definitions so that "epsilon" now comes before "epsi" to see
+% if that makes me happier. That will still be a bit odd even if it works
+% the way I hope in that if one enters epsi and repeatedlu hits ALT-x
+% things will eventually say epsilon.
             ("Epsilon"                                   917)
             ("epsilon"                                   949)
+            ("epsi"                                      949)
             ("epsiv"                                     1013)
             ("eqcirc"                                    8790)
             ("eqcolon"                                   8789)

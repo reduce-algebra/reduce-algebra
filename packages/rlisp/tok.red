@@ -674,15 +674,18 @@ symbolic procedure token!-number x;
 %      def0
 % where obviously the "%" comment markers are not used!
 % Negative numbers in hex are a bit of an oddity. I arrange that the
-% notation "0x-" will stand for an inifinite string of leading 1 bits so
-% that 0x-f will be -1 and 0x-1 will be as 0x...ffff1 = -15. 
+% notation "0x~" will stand for an inifinite string of leading 1 bits so
+% that 0x~f will be -1 and 0x~1 will be as 0x...ffff1 = -15. 
       x := readch1();
-      if x = '!- then y := minus 1       % bootstrapping: "-1" not legal yet!
-      else if (z := get(x, 'hexdigit)) then <<
-         y := z;
+      if (z := get(x, 'hexdigit)) then <<
+         y := 16*y + z;
+         if dotp then power := power-4;
          while (z := get(x := readch1(), 'hexdigit)) do
          << y := 16*y + z;
-            if dotp then power := power-4 >> >>;
+            if dotp then power := power-4 >> >>
+      else if x = '!~ and y = 0 then <<
+        y := minus 1;   % Can not yet write "-1" because of bootstrapping issues!
+        goto hexnum1 >>;
       if x = '!_ then <<
         while (x := readch1()) = '!  or x = '!	 or x = !$eol!$ do nil;
         peekchar!* := x . peekchar!*;
