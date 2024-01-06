@@ -28,7 +28,7 @@ module rtools;  % Header module for rtools package.
 % $Id$
 
 create!-package('(rtools general rprintf random genmod smallmod
-                  sort charname simplertrace),
+                  sort simplertrace),
                 nil);
 
 flag('(rtools),'core_package);
