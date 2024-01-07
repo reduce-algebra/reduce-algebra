@@ -260,9 +260,9 @@ smacro procedure with!-normalized!-timeout(n, u);
 %    with!-timeout(7000,               % allow 7 seconds.
 %                  perform_some_calculation());
 % or
-%    with!-normalized_timeout(70000, % 70000 "abstract time units"
-%                                    % About as previous case on a mid-range
-%                                    % computer of 2018.
+%    with!-normalized!-timeout(70000, % 70000 "abstract time units"
+%                                     % About as previous case on a mid-range
+%                                     % computer of 2018.
 %                             perform_some_calculation());
 %
 % These return an atom if the time limit was exceeded, and otherwise a list

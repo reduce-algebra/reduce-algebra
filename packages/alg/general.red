@@ -40,6 +40,12 @@ symbolic procedure carx(u,v);
    if not null u and null cdr u then car u
     else rerror(alg,5,list("Wrong number of arguments to",v));
 
+symbolic procedure safe!-car x;
+  if atom x then nil else car x;
+
+symbolic procedure safe!-cdr x;
+  if atom x then nil else cdr x;
+
 symbolic procedure eqexpr u;
    % Returns true if U is an equation or similar structure
    % (e.g., a rule).
