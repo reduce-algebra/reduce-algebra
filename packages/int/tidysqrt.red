@@ -71,16 +71,37 @@ symbolic procedure tidysqrtf p;
     end;
 
 
+global '(multoutdenr!*);
+multoutdenr!* := 6;
+
 symbolic procedure multoutdenr q;
-  % Move sqrts in a sq to the numerator.
-    begin  scalar n,d,root,conj;
+% Move sqrts in a sq to the numerator.
+% Eg to tidy up A/(1+sqrt x) both numerator and denominator are multiplied
+% by (1-sqrt x). When called while trying to evaluate
+% int(x*(1+x)^(2/3)*(1-x)^(1/2) /
+%     (-(1-x)^(5/6)*(1+x)^(1/3) + (1-x)^(2/3)*(1+x)^(1/2)), x);
+% this code gets stuck in one of the while loops and ends up
+% failing to terminate whiel using absurd amounts of memory. To avoid
+% the disaster case I limit the number of transformations here. The
+% limit can be configured, but eg a denominator such as
+%   for i:=1:20 sum sqrt(1+i)
+% would need 20 transformation steps, one for each sqrt. So setting any
+% limit at all will cause some cases to misbehave. But the consequence
+% then is liable to be merely an integral failing to be found while
+% the non-limited case can lead to a crash. At some time in the future I
+% hope that somebody will put in a fix that makes this clear all roots
+% from the denominator even in extreme cases, then this long-stop count
+% will become redundant and can be removed.   ACN Jan 2024.
+    begin  scalar n,d,root,conj, count := 0;
         n:=numr q;
         d:=denr q;
-        while (root:=findsquareroot d) do <<
+        while (root:=findsquareroot d) and count < multoutdenr!* do <<
+          count := count + 1;
           conj:=conjugatewrt(d,root);
           n:=!*multf(n,conj);
           d:=!*multf(d,conj) >>;
-        while (root:=findnthroot d) do <<
+        while (root:=findnthroot d) and count < multoutdenr!* do <<
+          count := count + 1;
           conj:=conjugateexpt(d,root,kord!*);
           n:=!*multf(n,conj);
           d:=!*multf(d,conj) >>;
