@@ -107,11 +107,13 @@ diffBw() {
     fi
 }
 
-
+TIME=600
 install="no"
 keep="no"
 skip_missing_rlg="no"
 no_timeout="no"
+slow="no"
+fast="no"
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
@@ -134,7 +136,18 @@ do
     shift
     ;;
   --no-timeout)
+    TIME=100000
     no_timeout="yes"
+    shift
+    ;;
+  --slow)
+    TIME=2400
+    slow="yes"
+    shift
+    ;;
+  --fast)
+    TIME=50
+    fast="yes"
     shift
     ;;
   --noregressions)
@@ -146,6 +159,10 @@ do
     break;
   esac
 done
+
+# I make the within-Lisp timeout occur 20 seconds before the system imposed
+# one.
+TIME1=$((1000 * $TIME - 20000))
 
 # platforms is a list of the cases to be tested
 platforms=""
@@ -250,22 +267,16 @@ then
   $timecmd $*
   exit $?
 else
-  if test "$slow" = "yes"
-  then
-    TIME=2400
-  else
-    TIME=600
-  fi
   case `uname -s` in
 
   *CYGWIN*)
-echo Cygwin special
-for x in $*
-do
-  echo $x
-done
-    $* &
-    PID=$!
+    echo Cygwin special
+    for x in $*
+    do
+      echo $x
+    done
+   $* &
+   PID=$!
 
     tick=`getconf CLK_TCK`
 
@@ -375,8 +386,11 @@ lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 lisp if memq('bytecounts, lispsystem!*) then mapstore $profilemode;
 resettime1;
-write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-% What follows is in Lisp to avoid parsing issues if some packages are loaded!
+write "START OF REDUCE TEST RUN ON $mc"\$ \
+lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$ \
+write "END OF REDUCE TEST RUN"\$
+% What follows is in Lisp to avoid parsing issues because some packages,
+% when loaded for testing, change input syntax and so on.
 symbolic eval '
   (prog (cpu_time gc_time o w tot)
     (setq cpu_time  (difference (time) otime1!*))
@@ -405,9 +419,9 @@ symbolic eval '
     (prin2 "Time: ") (prin2 "$p")
     (prin2 "  ") (prin2 cpu_time)
     (prin2 "  ") (prin2 gc_time)
-    (terpri))$
-end$
-quit$
+    (terpri))\$
+end\$
+quit\$
 XXX
   if test -f $logdir/$p.showtime
   then
@@ -459,8 +473,9 @@ $loader
 lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
-write "START OF REDUCE TEST RUN ON $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-% What follows is in Lisp to avoid parsing issues if some packages are loaded!
+write "START OF REDUCE TEST RUN ON $mc"\$ \
+lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$ \
+write "END OF REDUCE TEST RUN"\$
 symbolic eval '
   (prog (cpu_time gc_time o)
     (setq cpu_time  (difference (time) otime1!*))
@@ -474,9 +489,9 @@ symbolic eval '
     (prin2 "Time: ") (prin2 "$p")
     (prin2 "  ") (prin2 cpu_time)
     (prin2 "  ") (prin2 gc_time)
-    (terpri))$
-end$
-quit$
+    (terpri))\$
+end\$
+quit\$
 XXX
   if test -f $logdir/$p.showtime
   then
@@ -524,8 +539,9 @@ $loader
 lisp (testdirectory:="$dd");
 lisp random_new_seed 1;
 resettime1;
-write "START OF REDUCE TEST RUN on $mc"$ in "$f"; write "END OF REDUCE TEST RUN"$
-% What follows is in Lisp to avoid parsing issues if some packages are loaded!
+write "START OF REDUCE TEST RUN on $mc"\$ \
+lisp begin with!-timeout($TIME1, << semic!* := '!;; in "$f">>) end\$ \
+write "END OF REDUCE TEST RUN"\$
 symbolic eval '
   (prog (cpu_time gc_time o)
     (setq cpu_time  (difference (time) otime1!*))
@@ -539,8 +555,9 @@ symbolic eval '
     (prin2 "Time: ") (prin2 "$p")
     (prin2 "  ") (prin2 cpu_time)
     (prin2 "  ") (prin2 gc_time)
-    (terpri))$
-quit$
+    (terpri))\$
+end\$
+quit\$
 XXX
   if test -f $logdir/$p.showtime
   then
