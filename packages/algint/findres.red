@@ -155,7 +155,8 @@ begin
 hard:
   taylorvariable:=x;
   func:=taylorevaluate(taylorform func,-1);
-  printsq func;
+  
+  if !*tra then printsq func;
   interr "so far"
   end;
 
