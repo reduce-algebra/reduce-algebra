@@ -289,6 +289,13 @@ symbolic procedure hex64t n;
     hex64 n;
     terpri() >>;
 
+symbolic procedure leafcount x;
+  if atom x then 1
+  else foreach y in cdr x sum leafcount y;
+
+symbolic operator leafcount;
+
+
 endmodule;
 
 end;

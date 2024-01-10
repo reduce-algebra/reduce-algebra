@@ -476,17 +476,34 @@ end;
 %precedence 'backslash,'quotient;
 put('slash,'simpfn,'simpiden);
 
+fluid '(!*string!-result !*string!-output);
+
 symbolic procedure prin2la u;
 % Prints atom or string U, checks the length of line
 % CHUNDEXP makes the change _ -> \_
 begin
   scalar l;
   u:=chundexp u;
-  l:=length u;
-  if ncharspr!* + l > laline!* then <<terpri(); ncharspr!*:=0 >>;
-  for each a in u do prin2 a;
-  ncharspr!*:=ncharspr!* + l
+  if !*string!-output then
+    for each a in u do !*string!-result := a . !*string!-result
+  else <<
+    l:=length u;
+    if ncharspr!* + l > laline!* then <<terpri(); ncharspr!*:=0 >>;
+    for each a in u do prin2 a;
+    ncharspr!*:=ncharspr!* + l >>
 end;
+
+% latex!-string can be called from algebraic mode and it returns the
+% latex for an expression as a string without line breaks
+
+symbolic procedure latex!-string u;
+  begin
+    scalar !*string!-result, !*string!-output := t;
+    latexprin u;
+    return list2string reverse !*string!-result
+  end;
+
+symbolic operator latex!-string;
 
 symbolic procedure prinfrac(l,p);
 % Prints the fraction with horizontal division line
