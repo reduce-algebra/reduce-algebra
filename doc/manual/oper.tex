@@ -377,6 +377,7 @@ positive only as long as the switch \texttt{complex} is off.
 \hypertarget{operator:NORM}{}
 \hypertarget{operator:ARG}{}
 \hypertarget{operator:ARGD}{}
+\hypertarget{operator:LN}{}
 
 {\REDUCE} knows that the following represent mathematical functions
 \index{Mathematical functions} that can
@@ -398,8 +399,8 @@ take arbitrary scalar expressions as their argument(s).
 \ttindextype{sqrt}{numerical operator}
 \ttindextype{tan}{numerical operator}\ttindextype{tand}{numerical operator}\ttindextype{tanh}{numerical operator}
 \ttindextype{norm}{numerical operator}
-\ttindextype{arg}{numerical operator}
-\ttindextype{argd}{numerical operator}
+\ttindextype{arg}{numerical operator}\ttindextype{argd}{numerical operator}
+\ttindextype{ln}{numerical operator}
 
 \index{Elementary functions}
 \subsection{Elementary Functions}
@@ -412,7 +413,7 @@ take arbitrary scalar expressions as their argument(s).
 The trigonometric functions listed above take arguments given in
 radians; degree-based versions are described below.
 
-\textbf{Their inverse functions:}
+\textbf{Inverse trigonometric, hyperbolic and exponential functions:}
 \begin{verbatim}
     asin acos atan acot acsc asec
     asinh acosh atanh acoth acsch asech
@@ -421,8 +422,15 @@ radians; degree-based versions are described below.
 where \f{log} is the natural logarithm, \f{log10} is the logarithm to
 base 10, and \f{logb} has two arguments of which the second is the
 logarithmic base.
-Note on the CSL GUI and other graphical interfaces
-the inverse trig and hyperbolic functions are output as $\arcsin$ etc.
+Note on the CSL GUI and other graphical interfaces the inverse
+trigonometric and hyperbolic functions are output as $\arcsin$ etc.
+
+REDUCE does not define the name \f{ln} (in algebraic mode).  You can
+use it to represent the natural logarithm (for input only) if you
+execute the \hyperlink{command:DEFINE}{command}
+\begin{verbatim}
+    define ln = log;
+\end{verbatim}
 
 \textbf{The degree variants of the trigonometric functions and their inverses:}
 \begin{verbatim}

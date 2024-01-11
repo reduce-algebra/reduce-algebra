@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Requires the following texlive packages:
+# as for the PDF version, plus
+# plain generic
+
 cd `dirname $0`
 
 JOBNAME=manual

@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Requires the following texlive packages:
+# latex base
+# latex recommended
+# latex extra
+# fonts recommended
+# fonts extra
+
 cd `dirname $0`
 
 JOBNAME=manual
