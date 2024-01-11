@@ -1754,7 +1754,6 @@ symbolic restart!-csl nil;
 
 (makeunbound '!@srcdir)
 (makeunbound '!@reduce)
-(makeunbound 'no_init_file)
 
 % can discard the fast files for things that I havce loaded into the main
 % image... However note that the bootstrap version for CSL *MUST* have
