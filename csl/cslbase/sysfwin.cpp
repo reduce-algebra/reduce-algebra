@@ -653,13 +653,14 @@ bool valid_address(void *pointer)
         fd_handle = fileno(file_handle);
         file_handle_set = true;   // I will open the fd just once.
     }
-// I will not bother to check errno, and just take any failure as
-// indicating a bad memory address in the pointer.
-    return (write(fd_handle, pointer, 1) != -1);
+    if (write(fd_handle, pointer, 1) == -1)
+        return (errno != EFAULT);
+    else return true;
 }
 
 #elif defined WIN32
-// ???
+// code for this is in winsupport.cpp
+
 #else
 
 bool valid_address(void *pointer)

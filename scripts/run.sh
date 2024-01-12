@@ -48,8 +48,8 @@ do
     arithlib="-arithlib"
     shift
     ;;
-  --conservative)
-    conservative="-conservative"
+  --oldgc)
+    oldgc="-oldgc"
     shift
     ;;
   *)
@@ -58,7 +58,7 @@ do
   esac
 done
 
-version="$fox$wx$arithlib$conservative$debug"
+version="$fox$wx$arithlib$oldgc$debug"
 
 # Note that the shell variable OS is liable to be set to "Windows_NT"
 # in a Windows world but it is probably otherwise unset.

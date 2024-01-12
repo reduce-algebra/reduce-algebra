@@ -648,11 +648,12 @@ AC_ARG_ENABLE(profile,
   [],
   [enable_profile="no"])
 
+# This becomes the default as if January 2024.
 AC_ARG_ENABLE(conservative,
   AS_HELP_STRING([--enable-conservative],
-                 [garbage collect option: testing and development use (CSL only)]),
+                 [garbage collect option: (CSL only)]),
   [],
-  [enable_conservative="no"])
+  [enable_conservative="yes"])
 
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],

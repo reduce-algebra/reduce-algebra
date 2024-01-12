@@ -1082,7 +1082,7 @@ static LispObject resource_limit7(LispObject env,
 // (2) It fails with a regular Lisp error.
 // [ (3) It fails because it raises a C-level signal. ... maybe no longer!]
 // (4) It fails by raising a resource-exhausted complaint.
-    time_now = read_clock()/1000;
+    time_now = read_clock()/1000;  // Now expressed in milliseconds
     TRY
         time_base   = time_now;
         space_base  = space_now;
@@ -1090,26 +1090,25 @@ static LispObject resource_limit7(LispObject env,
         errors_base = errors_now;
         if (lltime >= 0)
         {   int w;
-// I make 2 seconds the smallest I can specify as a timeout because with
-// my clock resolution at 1 sec if I specified "1" I could do so just a
-// smidgin before the clock time and end up with no slack at all.
-            if (lltime == 0 || lltime == 1) lltime = 2;
+// I make 2 seconds the smallest I can specify as a timeout because
+// I could do so just a smidgin before the clock time and end up with no
+// slack at all.
+            if (lltime < 2) lltime = 2;
             w = time_base + 1000*lltime;
             if (time_limit >= 0 && time_limit < w) w = time_limit;
+// This sets time_limit to an absolute time expressed in milliseconds.
             time_limit = w;
         }
         if (llspace >= 0)
         {   int w;
-// I make 2 megaconses the smallest request here for much the same
-// reason I put a lower limit on time. Actually if go further and make
-// 4 megaconses my limit...
-            if (llspace >= 0 && llspace < 4) llspace = 4;
 // Ok, the USER specified things in megaconses, but internally I will
 // count in "CSL pages". The standard CSL page size is 4Mbytes, ie 0.5 or
 // 0.25 megaconses so I multiply by 2 or 4 here (for 32 or 64-bit systems).
             llspace *= (2*sizeof(LispObject)*1024*1024)/PAGE_POWER_OF_TWO;
+            if (llspace < 2) llspace = 2;
             w = space_base + llspace;
             if (space_limit >= 0 && space_limit < w) w = space_limit;
+// keep going until space_base reaches space_limit. This counts in CSL pages.
             space_limit = w;
         }
         if (llio >= 0)
@@ -1134,6 +1133,9 @@ static LispObject resource_limit7(LispObject env,
         r2 = io_now - io_base;
         r3 = errors_now - errors_base;
     CATCH(LispResource)
+// It is really important that the code here does not repeat the
+// raising of the resource overflow!
+        time_limit = -1; space_limit = -1; io_limit = -1; errors_limit = 0;
         form = list4(fixnum_of_int(r0),
                      fixnum_of_int(r1),
                      fixnum_of_int(r2),

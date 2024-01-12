@@ -41,7 +41,7 @@
 #   --enable-profile  build for profiling at the C++ level
 #
 #   --with-cygwin     Build native cygwin X11 based system, 
-#   --enable-conservative   development version not working yet!
+#   --enable-conservative   Newer garbage collector
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
 #                     for testing purposes I allow a build here.
@@ -662,20 +662,20 @@ ARCHITECTURE="$foxdir"
 # Want to build "conservative" variant?
 AC_ARG_ENABLE(conservative,
   AS_HELP_STRING([--enable-conservative],
-                 [garbage collect option that is under development]),
+                 [garbage collect now standard. --disable-conservative reverts]),
   [],
-  [enable_conservative="no"])
+  [enable_conservative="yes"])
 AC_MSG_RESULT([$enable_conservative])
 
 if test "$enable_conservative" = "yes"
 then
-  AC_DEFINE(CONSERVATIVE, [1], [True if GC experiment enabled])
+  AC_DEFINE(CONSERVATIVE, [1], [True if new GC enabled])
 fi
 
 # Want to build "generational" variant?
 AC_ARG_ENABLE(conservative,
   AS_HELP_STRING([--enable-generational],
-                 [garbage collect option that is under development]),
+                 [garbage collect option was under development]),
   [],
   [enable_generational="no"])
 AC_MSG_RESULT([$enable_generational])
