@@ -86,7 +86,7 @@ deflist('((sind rdsind!*) (cosd rdcosd!*) (asind rdasind!*) (acosd rdacosd!*)
 
 for each n in '(exp sin cos tan asin acos atan sinh cosh  % log
     sec csc cot tanh coth sech csch asinh acosh acot asec acsc atanh
-    acoth asech acsch ln hypot % logb log10
+    acoth asech acsch hypot % ln logb log10
     sind cosd asind acosd tand cotd atand acotd secd cscd asecd acscd
 %    atan2 atan2d cbrt
     deg2rad rad2deg deg2dms rad2dms dms2deg dms2rad norm arg argd)
@@ -164,7 +164,7 @@ symbolic procedure rde!*; mkround if !*!*roundbf then e!*() else !!ee;
 symbolic procedure rdpi!*;
    mkround if !*!*roundbf then pi!*() else !!pii;
 
-symbolic procedure pi!/2!*; 
+symbolic procedure pi!/2!*;
    mkround if !*!*roundbf then timbf(bfhalf!*,pi!*()) else !!pii2;
 
 symbolic procedure deg2rad!* u;
