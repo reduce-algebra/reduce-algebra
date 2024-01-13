@@ -396,7 +396,11 @@ LispObject cerror(int nargs, int code1, int code2, ...)
 
 // This can be used when a resource expires...
 LispObject resource_exceeded()
-{   errorNest safe;
+{
+// When I exceed a resource limit I instantly switch off resource control
+// so that my recovery can proceed uninterrupted.
+    time_limit = -1; space_limit = -1; io_limit = -1; errors_limit = 0;
+    errorNest safe;
     exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -2982,12 +2986,16 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // people who want more memory than 1.6G should move to a 64-bit platform.
     if (!SIXTY_FOUR_BIT && max_store_size > 1600.0)
         max_store_size = 1600.0;
-    if (store_size == 0.0) store_size = dmem/2.0;
+    if (store_size == 0.0)
+    {   if (SIXTY_FOUR_BIT) store_size = 2048.0;  // 2GB on 64 bit machine
+        else store_size = 512.0;                  // 512 Mbytes on 32 bits
+    }
     if (store_size > max_store_size) store_size = max_store_size;
 // I take the view that at least 48 Mbytes will be needed, so force that in
 // case anybody has tried to set a lower limit.
     if (store_size < 48.0) store_size = 48.0;
     if (max_store_size < 48.0) max_store_size = 48.0;
+    if (store_size > max_store_size) store_size = max_store_size;
     maxPages = static_cast<size_t>(max_store_size)/pageMega;
 
 // Up until the time I call setup() I may only use term_printf for

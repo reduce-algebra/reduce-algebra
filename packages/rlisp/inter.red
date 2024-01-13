@@ -195,6 +195,13 @@ symbolic procedure machine_speed();
 % takes its limit in abstract "time units" that are VERY ROUGHLY milliseconds
 % on a Raspberry pi, and are of course then much smaller on faster systems.
 
+% With CSL and the conservative garbage collector (which is becoming standard
+% for CSL in early 2024) I have a lower-level resource!-limit function that
+% I can use which does not have as much latency because it is able to
+% check for a timeout what I hope will be seen as "reasonably" frequently.
+% Even if that is in place I will use the gc hook scheme as well as a matter
+% of braces and belt.
+
 trap!-time!* := nil; % nil here means no trapping active.
 
 % Note that when I detect a timeout I not only throw an exception, but I
@@ -230,6 +237,34 @@ symbolic procedure trap!-time!-value();
 
 % Absolute time limit in milliseconds...
 
+#if (member 'csl lispsystem!*)
+
+smacro procedure with!-timeout(n, u);
+  (lambda !~ott!~;
+    (lambda trap!-time!*;
+      << trap!-time!* := time() + fix n;
+         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
+            trap!-time!* := !~ott!~;
+         catch('!@timeout!@, resource!-limit(u, fix n/1000))>>)(nil))
+    (trap!-time!-value());
+
+% Time limit in arbitrary units such that (very roughly) slow and fast
+% machines get to do about the same amount of work before being interrupted.
+% I think of the argument as being very roughly "Raspberry Pi milliseconds",
+% so mid or high-range laptops or desktops will take less than that time.
+
+smacro procedure with!-normalized!-timeout(n, u);
+  (lambda !~ott!~;
+    (lambda trap!-time!*;
+      << trap!-time!* := time() + fix (n/machine_speed());
+         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
+             trap!-time!* := !~ott!~;
+         catch('!@timeout!@,
+             resource!-limit(u, fix (n/machine_speed())/1000))>>)(nil))
+    (trap!-time!-value());
+
+#else
+
 smacro procedure with!-timeout(n, u);
   (lambda !~ott!~;
     (lambda trap!-time!*;
@@ -238,7 +273,6 @@ smacro procedure with!-timeout(n, u);
             trap!-time!* := !~ott!~;
          catch('!@timeout!@, u . nil)>>)(nil))
     (trap!-time!-value());
-
 
 % Time limit in arbitrary units such that (very roughly) slow and fast
 % machines get to do about the same amount of work before being interrupted.
@@ -253,6 +287,8 @@ smacro procedure with!-normalized!-timeout(n, u);
              trap!-time!* := !~ott!~;
          catch('!@timeout!@, u . nil)>>)(nil))
     (trap!-time!-value());
+
+#endif
 
 
 % A typical use of this would be:
@@ -286,6 +322,11 @@ smacro procedure with!-normalized!-timeout(n, u);
 % of its argument. Note that this needs to be used with some case to
 % ensure that the computation that it guards is not terribly length, since
 % it is an absolute escape from any surrounding timeout!
+
+% Also these options will not cooperate with the 2024 CSL resource limit
+% scheme which does not (at present?) provide these capabilities, so
+% users who need really find control should use the CSL facilities directly
+% and request extensions to same if they can justify a need.
 
 smacro procedure without!-timeout u;
   (lambda trap!-time!*; u)(nil);

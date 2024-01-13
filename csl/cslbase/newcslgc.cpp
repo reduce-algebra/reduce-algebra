@@ -1623,10 +1623,6 @@ static void report_at_end(uint64_t t0)
     uint64_t t1 = read_clock();
     gc_time += t1 - t0;
     base_time += t1 - t0;
-    if ((space_limit >= 0 && space_now > space_limit) ||
-        (time_limit >= 0 && time_now > time_limit) ||
-        (io_limit >= 0 && io_now > io_limit))
-        resource_exceeded();
     THREADID;
 #ifdef NO_THREADS
     stackcheck();
@@ -1677,9 +1673,6 @@ NOINLINE void garbage_collect(const char* why)
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
         time_now = t0/1000;
-        if ((time_limit >= 0 && time_now > time_limit) ||
-            (io_limit >= 0 && io_now > io_limit))
-            resource_exceeded();
         freshline_trace();
         trace_printf(
             "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",

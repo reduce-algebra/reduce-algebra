@@ -119,7 +119,7 @@ debug=
 profile=
 test=
 arithlib=
-conservative=
+oldgc=
 nothrow=
 original=$host
 
@@ -159,13 +159,13 @@ do
     arithlib=-arithlib
     ;;
   --enable-conservative=no | --disable-conservative)
-    conservative=
+    oldgc="-oldgc"
     ;;
   --with-throw=no | --without-throw)
     nothrow=-nothrow
     ;;
   --enable-conservative*)
-    conservative=-conservative
+    oldgc=""
     ;;
   --with-throw=no | --without-throw)
     nothrow=nothrow
@@ -222,6 +222,6 @@ fi
 # Now I do not need to include "-fox" in the string sice it is the default!
 fox=
 
-echo $host$nogui$fox$wx$test$arithlib$conservative$nothrow$debug$profile
+echo $host$nogui$fox$wx$test$arithlib$oldgc$nothrow$debug$profile
 
 exit 0

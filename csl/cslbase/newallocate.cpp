@@ -480,6 +480,16 @@ bool canAllocateAvoidingClogged(PageType type)
 
 void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
+    space_now++;
+    if (!mustGrab)
+    {   // Check for timeoutand spaceout.
+        time_now = read_clock()/1000;
+        if ((space_limit >= 0 && space_now > space_limit) ||
+            (time_limit >= 0 && time_now > time_limit) ||
+            (io_limit >= 0 && io_now > io_limit))
+            resource_exceeded();
+
+    }
 // When called from within the GC this MUST succeed! So the key issue is
 // to trigger a GC early enough to make this so. The criterion I will
 // use is to imagine that a page of the specified type gets allocated and
@@ -576,11 +586,11 @@ void grabFreshPage(PageType type)
     }
 
 // I try expanding memory with a target that the heap should be at
-// most 25% full at the end of GC. Ie that the half-space within which
-// I am working be at most 50% full. In the test applied here I am not
+// most 12.5% full at the end of GC. Ie that the half-space within which
+// I am working be at most 25% full. In the test applied here I am not
 // counting cons and vector pages independently and in particular I am
 // not worrying about the type-commitment represented by pinned Pages etc.
-    if (consPages.count + vecPages.count > totalAllocatedMemory/4 &&
+    if (consPages.count + vecPages.count > totalAllocatedMemory/8 &&
         totalAllocatedMemory < maxPages)
         allocateAnotherSegment();
 // I am going to take a somewhat neurotic stance regarding cons pinning...
@@ -719,8 +729,8 @@ void initHeapSegments(double storeSize)
 // --maxmem can be used to force a smaller limit.
 
 void init_heap_segments(double d)
-{   if (d < 1000.0) zprintf("init_heap_segments %.3g Mbytes\n", d);
-    else zprintf("init_heap_segments %.3g Gbytes\n", d/1000.0);
+{   //if (d < 1000.0) zprintf("init_heap_segments %.3g Mbytes\n", d);
+    //else zprintf("init_heap_segments %.3g Gbytes\n", d/1000.0);
 // For historical reasons initHeapSegments takes its size in Kbytes not Mbytes
     initHeapSegments(d*1024.0);
 }

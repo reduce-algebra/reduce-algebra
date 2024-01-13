@@ -320,9 +320,10 @@ size_t windowsGetTempPath(size_t n, char *s)
 bool valid_address(void *pointer)
 {   MEMORY_BASIC_INFORMATION mbi = {0};
     if (::VirtualQuery(pointer, &mbi, sizeof(mbi)))
-    {   // check the page is not a guard page
+    {   if (mbi.State != MEM_COMMIT) return false;
+        // check the page is not a guard page
         if (mbi.Protect & (PAGE_GUARD|PAGE_NOACCESS)) return false;
-        return ((mbi.Protect & (PAGE_READWRITE|PAGE_EXECUTE_READWRITE)) != 0);
+        return ((mbi.Protect & (PAGE_NOACCESS)) == 0);
     }
     return false;  // ::VirtualQuery failed.
 }

@@ -15,7 +15,7 @@
 #    --csl=mac-arm              )
 #    --csl=mac-intel            ) relevant full versions
 #    --csl=mac-universal        )
-#    --csl=conservative         --csl=$HOST-conservative
+#    --csl=oldgc                --csl=$HOST-oldgc
 
 here="$1"
 # The version specified here can have its initial "--" either present or
@@ -53,16 +53,16 @@ in
   p=${p#*cslbuild/}
   printf -- "--csl=$p"
   ;;
-# Now during development of the "conservative" experiment I want
-# --csl=conservative to be an easy way of specifying a test.
-"csl=conservative")
+# Now that the conservative GC is standard it may be useful to be
+# able to revert to the old one in case of concerns.
+"csl=oldgc")
   if test "$OS" = "Windows_NT"
   then
-    p="x86_64-pc-cygwin-conservative"
+    p="x86_64-pc-cygwin-oldgc"
   else
     mc=`$here/config.guess`
     mc=`$here/scripts/findhost.sh $mc`
-    p="$mc-conservative"
+    p="$mc-oldgc"
   fi
   printf -- "--csl=$p"
   ;;
