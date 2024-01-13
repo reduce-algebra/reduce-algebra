@@ -1,0 +1,15 @@
+rsync-web.sh
+.rsync-exclude
+copy-manual.sh
+README*
+LICENSE
+.vscode/
+htdocs/manual/
+htdocs/web-reduce/tsconfig.json
+htdocs/web-reduce/reduce.web.*
+htdocs/web-reduce/emscripten/
+htdocs/web-reduce/mobile/
+htdocs/web-reduce/tests/
+htdocs/web-reduce/typescript/
+search/
+sitemap/
