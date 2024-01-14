@@ -1,11 +1,12 @@
 \chapter{File Handling Commands}\index{File handling}
 
-In many applications, it is desirable to load previously prepared {\REDUCE}
-files into the system, or to write output on other files. {\REDUCE} offers
-four commands for this purpose, namely, \texttt{in}, \texttt{out}, \texttt{shut},
-\texttt{load}, and \texttt{load\_package}.
-The first three operators are described here; \texttt{load} and
-\texttt{load\_package} are discussed in Section~\ref{sec-load}.
+In many applications, it is desirable to load previously prepared
+{\REDUCE} files into the system, or to write output on other
+files. {\REDUCE} offers five main commands for this purpose, namely,
+\texttt{in}, \texttt{out}, \texttt{shut}, \texttt{load}, and
+\texttt{load\_package}.  The first three are described here;
+\texttt{load} and \texttt{load\_package} are discussed in
+Section~\ref{sec-load}.
 
 \section{IN Command}\ttindextype{in}{command}
 \hypertarget{command:IN}{}
@@ -45,18 +46,18 @@ Similarly, \texttt{!\_\_file\_\_}\ttindextype{"!\_\_file\_\_}{(special identifie
 is replaced by the name of the file currently
 being read.
 
-\section{in\_tex Command}\ttindextype{in\_tex}{command}
+\section{IN\_TEX Command}\ttindextype{in\_tex}{command}
 \hypertarget{command:IN_TEX}{}
 
-This is a variant of the \texttt{in} command. Its purpose is to document a Reduce session
-by interspersing a \LaTeX{} document with Reduce commands to be executed.
+This is a variant of the \texttt{in} command. Its purpose is to document a \REDUCE session
+by interspersing a \LaTeX{} document with \REDUCE commands to be executed.
 
-When a file is input into Reduce with this command, every line is simply echoed to the output
-except those enclosed in by
+When a file is input into \REDUCE with this command, every line is simply echoed to the output
+except those enclosed by
 \texttt{\textbackslash begin\textbraceleft reduce\textbraceright\ldots\textbackslash end\textbraceleft reduce\textbraceright},
 which are processed as usual.
 
-The effect is to produce a \LaTeX{} document with Reduce output.
+The effect is to produce a \LaTeX{} document with \REDUCE output.
 
 
 \section{OUT Command}\ttindextype{out}{command}
@@ -111,6 +112,20 @@ is written.
 If it is the current output file that is shut, output will switch to the
 terminal.  Attempts to shut files that have not been opened by \texttt{out},
 or an input file, will lead to errors.
+
+\section{Using Variables as Filenames}
+
+The commands \texttt{in}, \texttt{out} and \texttt{shut} treat their
+arguments as constants, but you can use variables if you make them
+into \hyperlink{command:GROUP}{group}\index{Group statement}
+\index{Statement!Group} expressions by enclosing them between
+\texttt{<}\texttt{<} and \texttt{>}\texttt{>} symbols, e.g.
+\begin{verbatim}
+     filename := "something/long/and/complicated.red";
+     out <<filename>>;
+     % perform some computation...
+     shut <<filename>>;
+\end{verbatim}
 
 \section{\REDUCE Startup File}\index{Startup file}
 \index{Startup file}\index{File, startup}

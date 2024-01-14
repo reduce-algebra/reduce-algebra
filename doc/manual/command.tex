@@ -146,15 +146,39 @@ of {\REDUCE}, closes all open output files, and returns you to the calling
 program (usually the operating system).  Your {\REDUCE} session is
 normally destroyed.
 
-\section{SHOWTIME Command}\ttindextype{SHOWTIME}{command}
+\section{Timing Facilities}\ttindextype{SHOWTIME}{command}
 \hypertarget{command:SHOWTIME}{}
 
-\index{Command!showtime@\texttt{showtime}}
-\texttt{showtime}; prints the elapsed time since the last call of this
-command or, on its first call, since the current {\REDUCE} session began.
-The time is normally given in milliseconds and gives the time as measured
-by a system clock.  The operations covered by this measure are system
-dependent.
+The command
+\texttt{showtime}\index{Command!showtime@\texttt{showtime}} causes
+\REDUCE to print the elapsed time since the last call of this command
+or, on its first call, since the current {\REDUCE} session began.
+
+Turning on the \hyperlink{switch:TIME}{switch}
+\sw{time}\ttindexswitch{time} causes {\REDUCE} to print a message
+after each command giving the elapsed CPU time since the last command,
+or since \sw{time} was last turned off, or the session began.
+
+The time is normally given in milliseconds and gives the time as
+measured by a system clock.  The operations covered by this measure
+are system dependent.
+
+The Lisp function \texttt{time()} returns CPU time since the session
+began in milliseconds as an integer.  It could be used in algebraic
+mode to time a computation like this:
+\begin{verbatim}
+        % Make time() available in algebraic mode:
+        symbolic operator time;
+
+        start_time := time();
+        % perform a computation...
+        time_taken := time() - start_time;
+
+        write "Time taken was ", time_taken, " ms.";
+\end{verbatim}
+Beware that modern computers can perform many computations in less
+than a millisecond, so the time taken may be reported inaccurately as
+zero.
 
 \section{DEFINE Command}
 \hypertarget{command:DEFINE}{}

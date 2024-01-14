@@ -25,10 +25,11 @@ zip -rq9 manual.zip manual
 # This assumes SSH key posted so no explicit authentication required;
 # see https://sourceforge.net/p/forge/documentation/SSH%20Keys/
 
+echo 'Uploading'
 scp manual.zip fjwright@web.sourceforge.net:/home/project-web/reduce-algebra/htdocs
 
 # It seems that operations at SourceForge can only be done
 # interactively, so do:
 
 # ssh -t fjwright@shell.sourceforge.net create
-# /home/project-web/reduce-algebra/unzip-manual
+# cd /home/project-web/reduce-algebra && ./unzip-manual.sh
