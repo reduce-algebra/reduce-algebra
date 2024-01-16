@@ -71,7 +71,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
 // bx and by will be returned as ((1, 0), (0, 1)).  Note that through the
 // body of this code axy and bxy hold ax+ay and bx+by
 {   int32_t ax = 1, axy = 1,
-                bx = 0, bxy = 1;
+            bx = 0, bxy = 1;
     uint32_t q;
     int n = 0;
 // I will keep A and B as double-precision values with a view to getting
@@ -414,9 +414,9 @@ static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b,
 // a and b are just about the same length, and provided that I use b0
 // for the leading digit of b I can treat both as having length lena
             {   uint32_t carryax = 0, carryay = 0,
-                             carrybx = 0, carryby = 0,
-                             borrowa = 1, borrowb = 1,
-                             aix, aiy, bix, biy, aa, bb;
+                         carrybx = 0, carryby = 0,
+                         borrowa = 1, borrowb = 1,
+                         aix, aiy, bix, biy, aa, bb;
                 for (i=0; i<lena; i++)
                 {   Dmultiply(carryax, aix, a[i], ax, carryax);
                     Dmultiply(carryay, aiy, b[i], ay, carryay);
@@ -837,8 +837,10 @@ LispObject ash(LispObject a, LispObject b)
 // the parts that do not get A copied in will end up in a proper state.  This
 // should include the word that pads the vector out to an even number of
 // words.
-        for (i=0; i<=lenc; i++) bignum_digits(c)[i] = 0;
-        if ((lenc & 1) != 0) bignum_digits(c)[i] = 0; // The spare word
+        for (i=0; i<lenc; i++) bignum_digits(c)[i] = 0;
+        if ((SIXTY_FOUR_BIT && ((lenc & 1) != 0)) ||
+            (!SIXTY_FOUR_BIT && ((lenc & 1) == 0)))
+            bignum_digits(c)[lenc] = 0; // The spare word
         d0 = 0;
         for (i=0; i<=lena; i++)
         {   d1 = bignum_digits(a)[i];
@@ -857,7 +859,7 @@ LispObject ash(LispObject a, LispObject b)
 // Here for bignum right-shifts. This may sometimes collapse things to give
 // a fixnum result.
     {   size_t lena = (bignum_length(a)-CELL)/4 - 1;
-        size_t words = (-bb) / 31;    // words to shift right by
+        size_t words = (-bb) / 31;     // words to shift right by
         int32_t bits = (-bb) % 31;     // bits to shift right by
         int32_t msd = bignum_digits(a)[lena];
         int32_t d0 = ASR(msd, bits);
@@ -884,7 +886,8 @@ LispObject ash(LispObject a, LispObject b)
             errexit();
             save.restore(a);
         }
-        if ((lenc & 1) != 0) bignum_digits(c)[lenc+1] = 0;// The spare word
+        if ((SIXTY_FOUR_BIT && ((lenc & 1) != 0)) ||
+            (!SIXTY_FOUR_BIT && ((lenc & 1) == 0))) bignum_digits(c)[lenc] = 0;// The spare word
         d0 = bignum_digits(a)[words];
         for (i=0; i<lenc; i++)
         {   d1 = bignum_digits(a)[words+i+1];
@@ -946,8 +949,7 @@ LispObject shrink_bignum(LispObject a, size_t lena)
 // put a dummy vector in to pad out the heap.
     setnumhdr(a, numhdr(a) - pack_hdrlength(olen-lena));
     msd = bignum_digits(a)[lena];
-    if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd |
-                ~0x7fffffff;
+    if ((msd & 0x40000000) != 0) bignum_digits(a)[lena] = msd | ~0x7fffffff;
     if ((lena & 1) != 0) bignum_digits(a)[++lena] = 0;
     lena++;
     olen = (olen+1)|1;

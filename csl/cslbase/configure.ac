@@ -1058,6 +1058,20 @@ then
   AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
 fi
 
+# E.g. on 32-bit ARM the use of 8-byte atomics needs "-latomic" linked in.
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+    [[  #include <iostream>
+        #include <cstdint>
+        #include <atomic>
+        int main()
+        {   std::atomic<uint64_t> a(1);
+            a.fetch_add(1);
+            return 0;
+        }]])],
+  [],
+  [LIBS="$LIBS -latomic"])
+
 AC_CHECK_MEMBER([timespec.tv_sec],
     [AC_DEFINE(HAVE_TIMESPEC, [1], [std::timespec present])],
     [], [[#include <time.h>]])
