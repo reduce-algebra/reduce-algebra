@@ -201,7 +201,7 @@ using std::dec;
 // overhead in the compiled binary of builds that happen not to use them.
 
 INLINE_VAR const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
-INLINE_VAR const size_t chunkSizep = 16*1024u;        // 16 Kbyte chunks
+INLINE_VAR const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
 INLINE_VAR const size_t chunkMask = chunkSize-1;
 
 extern bool allocateSegment(size_t);
