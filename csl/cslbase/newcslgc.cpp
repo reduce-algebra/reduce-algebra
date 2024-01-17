@@ -355,6 +355,10 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
     bool thisChunkHasPins = false;
     while (s < lastAddr)
     {   uintptr_t h = indirect(s);
+        if (h == 0)
+        {   zprintf("zero word at %a\n", s);
+            my_abort(where("zero word in heap"));
+        }
         size_t len;
 // Based on its first word I need to decode the LispObject at address s.
 // In many cases it will have an explicit header word that contains length

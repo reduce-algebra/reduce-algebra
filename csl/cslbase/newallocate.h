@@ -1150,7 +1150,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // Ugh - the request will not fit in this block. I need to fill this block
 // with a padder and scan on looking for another. Well fill each basic
 // chunk with a padder that totally fills it.
-        if (limit != fringe+chunkSize && !borrowing)
+        if (!borrowing)
             for (size_t i=chunkNo; i<stopPoint; i++)
                 if (!borrowing)
                     setHeaderWord(addressFromChunkNo(current, i), chunkSize);
