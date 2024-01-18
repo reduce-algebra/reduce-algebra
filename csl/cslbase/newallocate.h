@@ -641,7 +641,7 @@ inline size_t consToOffset(uintptr_t a, Page* p)
 }
 
 inline uintptr_t offsetToCons(size_t o, Page* p)
-r{   return reinterpret_cast<uintptr_t>(&p->consData) + sizeof(ConsCell)*o;
+{   return reinterpret_cast<uintptr_t>(&p->consData) + sizeof(ConsCell)*o;
 }
 
 // Here p must be a CONS page and a is a pointer within it.
