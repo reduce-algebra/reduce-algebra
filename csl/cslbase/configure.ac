@@ -493,7 +493,7 @@ case $host in
       LDFLAGS="$LDFLAGS -L/opt/local/lib"
     fi
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/X11/lib"
-    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
+    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework CoreFoundation -framework ApplicationServices"
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
   ;;

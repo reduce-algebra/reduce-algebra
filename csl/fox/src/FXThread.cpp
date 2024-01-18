@@ -33,6 +33,10 @@
 #ifndef WIN32
 #include <sys/time.h>
 #ifdef __APPLE__
+#if 1
+#include <mach/mach_error.h>
+#include <mach/semaphore.h>
+#endif
 #ifdef Status
 #undef Status
 #endif
@@ -149,6 +153,47 @@ FXMutex::~FXMutex(){
 
 #ifdef __APPLE__
 
+#if 1
+
+// Initialize semaphore
+FXSemaphore::FXSemaphore(FXint initial){
+  // If this fails on your machine, determine what value
+  // of sizeof(MPSemaphoreID*) is supposed to be on your
+  // machine and mail it to: jeroen@fox-toolkit.org!!
+  //FXTRACE((150,"sizeof(semaphore_t*)=%d\n",sizeof(semaphore_t*)));
+  FXASSERT(sizeof(data)>=sizeof(semaphore_t*));
+  semaphore_create(mach_task_self(),(semaphore_t*)data,SYNC_POLICY_FIFO,initial);
+  }
+
+
+// Decrement semaphore
+void FXSemaphore::wait(){
+  semaphore_wait(*((semaphore_t*)data));
+  }
+
+
+// Decrement semaphore but don't block
+FXbool FXSemaphore::trywait(){
+#if 1
+  abort();
+#else
+  return semaphore_wait_deadline(*((semaphore_t*)data), 0)==noErr;
+#endif
+  }
+
+
+// Increment semaphore
+void FXSemaphore::post(){
+  semaphore_signal(*((semaphore_t*)data));
+  }
+
+
+// Delete semaphore
+FXSemaphore::~FXSemaphore(){
+  semaphore_destroy(mach_task_self(), *((semaphore_t*)data));
+  }
+
+#else
 
 // Initialize semaphore
 FXSemaphore::FXSemaphore(FXint initial){
@@ -183,6 +228,8 @@ void FXSemaphore::post(){
 FXSemaphore::~FXSemaphore(){
   MPDeleteSemaphore(*((MPSemaphoreID*)data));
   }
+
+#endif
 
 #else
 
