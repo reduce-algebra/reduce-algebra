@@ -733,12 +733,7 @@ uint64_t read_clock_microsecond()
 
 uint64_t read_clock_nanosecond()
 {
-#if !defined HAVE_TIMESPEC
-// Dubious resolution here, but this is better than nothing. And on
-// termux and Xcode 10.1 std::timespec seems not to be available.
-    std::clock_t c = std::clock();
-    return (1.0e9*c)/CLOCKS_PER_SEC;
-#elif defined WIN32 || defined __CYGWIN__
+#if defined WIN32 || defined __CYGWIN__
 // The clock granularity here may be of the order of 15ms, so despite
 // this function delivering a value in nanoseconds is is really rather
 // low accuracy!
@@ -749,14 +744,19 @@ uint64_t read_clock_nanosecond()
         return 100*((hi<<32) + lo);
     }
     else return 0; // Failed to read the clock
-#else // Windows
+#elif !defined HAVE_TIMESPEC
+// Dubious resolution here, but this is better than nothing. And on
+// termux and Xcode 10.1 timespec seems not to be available.
+    std::clock_t c = std::clock();
+    return (1.0e9*c)/CLOCKS_PER_SEC;
+#else
 // There is no tidy guarantee about the resolution of the clock used
 // here on any particular platform.
-    struct std::timespec tt;
+    struct timespec tt;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt);
     return 1.0e9*static_cast<double>(tt.tv_sec) +
            static_cast<double>(tt.tv_nsec);
-#endif // Windows
+#endif
 }
 
 #if defined WIN32 || defined __CYGWIN__
@@ -797,7 +797,7 @@ uint64_t read_clock_cycles()
 #else // Windows
 // There is no tidy guarantee about the resolution of the clock used
 // here on any particular platform.
-    struct std::timespec tt;
+    struct timespec tt;
     clock_gettime(SIR_INTERVALCLOCK, &tt);
     return 1.0e9*static_cast<double>(tt.tv_sec) +
            static_cast<double>(tt.tv_nsec);
@@ -822,7 +822,7 @@ uint64_t read_process_nanosecond()
 #else // Windows
 // There is no tidy guarantee about the resolution of the clock used
 // here on any particular platform.
-    struct std::timespec tt;
+    struct timespec tt;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tt);
     return 1.0e9*static_cast<double>(tt.tv_sec) +
            static_cast<double>(tt.tv_nsec);

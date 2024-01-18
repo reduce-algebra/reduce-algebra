@@ -978,7 +978,7 @@ void rePinConsCurrent(Page* p)
     {   nPins++;
         consFringe += sizeof(ConsCell);
     }
-// If that tkes consFringe up to the end of the page then this page is
+// If that takes consFringe up to the end of the page then this page is
 // full and the next allocation request will replace it.
     if (consFringe == endOfConsPage(p))
     {   consLimit = consFringe;
@@ -1576,9 +1576,33 @@ std::jmp_buf* buffer_pointer;
 
 static volatile std::atomic<uint64_t> volatileVar = 0xf0f0f0f012345678u;
 
+#if 0
+// The following definition is what I mean if I follow "the Spirit of C"
+// and the compiler does what I clearly intend. However C++ takes the
+// view that returning the address of a local variable leads to undefined
+// behaviour and on some compilers (I am observing g++ on 32 bit platforms)
+// the function getStackFringe as defined here always returns zero. Leading
+// to collapse!
+
 NOINLINE uintptr_t getStackFringe(double x)
 {   return reinterpret_cast<uintptr_t>(&x);
 }
+#else
+// This attempts to guide g++ into doing what I want. The "NOINLINE" is
+// to reduce its ability to compile code based on full analysis of the
+// dodgy thing I am asking. getStackFringe now passes the address of
+// its local variable to a called function which in fact will be
+// getStackFringeHelper, but it should not be able to count on that.
+
+NOINLINE uintptr_t getStackFringeHelper(double* dd)
+{   return reinterpret_cast<uintptr_t>(dd);
+}
+
+NOINLINE uintptr_t getStackFringe(uintptr_t (*f)(double*), double x)
+{   return (*f)(&x);
+
+}
+#endif
 
 void use_gchook(LispObject arg)
 {   LispObject g = gchook;
@@ -1660,7 +1684,7 @@ NOINLINE void garbage_collect(const char* why)
         if ((verbos_flag & 1) || force_verbos)
         {   freshline_trace();
             trace_printf(
-                "+++ Garbage collection %" PRId64
+                "+++ Garbage collection %d"
                 " (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
                 gcNumber, why, t/100, t%100, gct/100, gct%100);
         }
@@ -1704,7 +1728,11 @@ NOINLINE void garbage_collect(const char* why)
     uint64_t a16 = volatileVar; uint64_t a17 = volatileVar; uint64_t a18 = volatileVar;
     for (int i=0; i<1000000; i++)
     {   if (setjmp(buffer) == 0)
-        {   C_stackFringe = getStackFringe(1.0);
+        {
+// See the comments by the definition of getStackFringe for comments on
+// how a C++ compiler can react sharply to me trying to get the current
+// C stack pointer.
+            C_stackFringe = getStackFringe(getStackFringeHelper, 1.0);
             inner_garbage_collect();
 // Now I reference all the variables a1-a18. Because I multiply each
 // by a value that is notionally unpredictable I can not perform any

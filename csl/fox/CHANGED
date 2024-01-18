@@ -288,4 +288,7 @@ April 2023.   it has used char* and wchar_t*. Also vector<T>. Insert casts
 Dec 2023.     attempt to make ALT-x do unicode conversion between names
               and glyphs for the GUI.
 
+Jan 2024.     MPSemaphore seems to have stopped being supported so
+              I have to put a draft change into fox/src/FXThread.cpp
+
 <end of CHANGED>
