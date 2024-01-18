@@ -1,9 +1,9 @@
 ### Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                                     2008-2023
+# A C Norman.                                                      2008-2024
 
 # **************************************************************************
-# * Copyright (C) 2023, Codemist.                         A C Norman       *
+# * Copyright (C) 2024, Codemist.                         A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -104,7 +104,7 @@ fi
 # All the source files for CSL are in C++ not C
 # and so it is best to make configuration tests match.
 
-AC_LANG(C++)
+AC_LANG([C++])
 
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
@@ -494,6 +494,7 @@ case $host in
     fi
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework CoreFoundation -framework ApplicationServices"
+    AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
   fi
   AC_CHECK_PROGS(REZ,[/usr/bin/Rez /Developer/tools/Rez],[Rez])
   ;;
@@ -1060,17 +1061,16 @@ fi
 
 # E.g. on 32-bit ARM the use of 8-byte atomics needs "-latomic" linked in.
 
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
     [[  #include <iostream>
         #include <cstdint>
-        #include <atomic>
-        int main()
-        {   std::atomic<uint64_t> a(1);
-            a.fetch_add(1);
-            return 0;
-        }]])],
-  [],
-  [LIBS="$LIBS -latomic"])
+        #include <atomic> ]],
+    [[  std::atomic<uint64_t> a(1);
+        a.fetch_add(1);
+        return 0; ]])],
+  [AC_MSG_NOTICE([8-byte atomic supported without extra libraries])],
+  [LIBS="$LIBS -latomic"
+   AC_MSG_NOTICE([Will link in -latomic. LIBS=$LIBS])])
 
 AC_CHECK_MEMBER([timespec.tv_sec],
     [AC_DEFINE(HAVE_TIMESPEC, [1], [std::timespec present])],
@@ -1201,7 +1201,7 @@ then
   if test "$GCC" = "yes"
   then
     OLDLDFLAGS="$LDFLAGS"
-    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
+    LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework CoreFoundation -framework ApplicationServices"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
                                     [[std::printf("\n");]])],
       [framework_available="yes"],

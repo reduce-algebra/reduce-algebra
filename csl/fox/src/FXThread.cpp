@@ -153,8 +153,6 @@ FXMutex::~FXMutex(){
 
 #ifdef __APPLE__
 
-#if 1
-
 // Initialize semaphore
 FXSemaphore::FXSemaphore(FXint initial){
   // If this fails on your machine, determine what value
@@ -192,44 +190,6 @@ void FXSemaphore::post(){
 FXSemaphore::~FXSemaphore(){
   semaphore_destroy(mach_task_self(), *((semaphore_t*)data));
   }
-
-#else
-
-// Initialize semaphore
-FXSemaphore::FXSemaphore(FXint initial){
-  // If this fails on your machine, determine what value
-  // of sizeof(MPSemaphoreID*) is supposed to be on your
-  // machine and mail it to: jeroen@fox-toolkit.org!!
-  //FXTRACE((150,"sizeof(MPSemaphoreID*)=%d\n",sizeof(MPSemaphoreID*)));
-  FXASSERT(sizeof(data)>=sizeof(MPSemaphoreID*));
-  MPCreateSemaphore(2147483647,initial,(MPSemaphoreID*)data);
-  }
-
-
-// Decrement semaphore
-void FXSemaphore::wait(){
-  MPWaitOnSemaphore(*((MPSemaphoreID*)data),kDurationForever);
-  }
-
-
-// Decrement semaphore but don't block
-FXbool FXSemaphore::trywait(){
-  return MPWaitOnSemaphore(*((MPSemaphoreID*)data),kDurationImmediate)==noErr;
-  }
-
-
-// Increment semaphore
-void FXSemaphore::post(){
-  MPSignalSemaphore(*((MPSemaphoreID*)data));
-  }
-
-
-// Delete semaphore
-FXSemaphore::~FXSemaphore(){
-  MPDeleteSemaphore(*((MPSemaphoreID*)data));
-  }
-
-#endif
 
 #else
 
