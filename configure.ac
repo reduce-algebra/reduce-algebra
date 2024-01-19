@@ -1,7 +1,7 @@
 AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 
 # **************************************************************************
-# * Copyright (C) 2017-23, Codemist.                      A C Norman       *
+# * Copyright (C) 2017-24, Codemist.                      A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -198,6 +198,7 @@ then
 default_univ="no"
 if test `uname` = "Darwin"
 then
+  AC_MSG_NOTICE([Test if universal build is possible])
   if printf "int main() {return 0;}\n" | \
      gcc -c -x c -arch x86_64 -arch arm64 - -o temp.o >/dev/null 2>/dev/null
   then
@@ -207,12 +208,13 @@ then
   AC_MSG_NOTICE([default_univ=$default_univ])
 fi
 
-enable_universal="no"
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],
                  [Try to build universal binary on Mac Big Sur+ (CSL only)]),
   [],
   [enable_universal="$default_univ"])
+
+AC_MSG_NOTICE([enable_universal=$enable_universal])
 
 ac_configure_args="--enable-universal=$enable_universal $ac_configure_args"
 
