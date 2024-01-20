@@ -3,3 +3,5 @@ Disallow: /images/
 Disallow: /include/
 Disallow: /sitemap.php
 Disallow: /web-reduce/
+Disallow: /documentation38.php
+Disallow: /reduce38-docs/

@@ -9,7 +9,7 @@ include './include/begin-body.php';
     <i><a href="lisp-docs/sl.pdf">Standard Lisp</a></i>, and the main
     differences between versions of REDUCE are the result of different
     implementations of Standard Lisp; in each case the source code for
-    REDUCE itself remains essentially the same.  The binary
+    REDUCE itself remains essentially the same. The binary
     distributions of REDUCE available from SourceForge are based on
     two different implementations of Standard Lisp, namely PSL and
     CSL:
@@ -27,10 +27,11 @@ include './include/begin-body.php';
         computing system. PSL is supported on many architectures and
         is an ideal system for those wanting to run REDUCE as a
         stand-alone system. The principal developer of PSL before it
-        became Open Source was the Konrad Zuse Center, Berlin
-        (<a href="http://www.zib.de/">ZIB</a>).
+        became Open Source was the Zuse Institute Berlin
+        (<a href="https://www.zib.de/">ZIB</a>).
+        PSL REDUCE offers only a command-line interface.
     </dd>
-    <dt>
+    <dt id="csl">
         Codemist Standard Lisp (CSL)
     </dt>
     <dd>
@@ -50,41 +51,42 @@ include './include/begin-body.php';
         in a C or C++ programming environment. The developer of CSL
         before it became Open Source was
         <a href="http://www.codemist.co.uk/">Codemist Ltd</a>.
+        CSL REDUCE offers both a graphical and a command-line interface.
     </dd>
     <dt>
         Other Lisps
     </dt>
     <dd>
         There is also experimental code in the SourceForge Subversion
-        repository to build REDUCE on
+        repository to build REDUCE on several other Lisps, including
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/REDUCE/">GNU
-            Emacs Lisp</a>, three versions of
+            Emacs Lisp</a>, several versions of
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/common-lisp/">Common
-            Lisp</a> (SBCL, CLISP and ABCL), and a
+            Lisp</a> (SBCL, CLISP, CCL and ABCL), and a
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/new-embedded/for-emscripten/">version
-        of CSL compiled to Javascript and webassemply</a> (to run
+            of CSL compiled to Javascript and webassemply</a> (to run
         using Node.js or in a web browser).
     </dd>
 </dl>
 <h2>REDUCE version numbers and releases</h2>
 <p>
     The commercial releases of REDUCE had version numbers, the last of
-    which was version 3.8 released in 2004.  The Open Source releases
+    which was version 3.8 released in 2004. The Open Source releases
     of REDUCE available since 2008 do not have version numbers, but
-    are now identified by revision numbers.  A REDUCE release includes
+    are now identified by their Subversion revision numbers. A REDUCE release includes
     all necessary binary files for a specific platform and releases
     are currently provided irregularly every few months for Microsoft
-    Windows, Apple MacOS and GNU/Linux (all at the same time).  Every
+    Windows, Apple macOS and GNU/Linux (all at the same time). Every
     so often there may also be a release for a more esoteric platform,
     such as the Raspberry Pi!
 </p>
 <p>
     A release is essentially a set of files built from a snapshot of
     the source code, which evolves on a daily (if not hourly) basis as
-    the developers commit updates.  The source code is managed using
+    the developers commit updates. The source code is managed using
     Subversion, which increments the revision number (of the whole
     code base) with each commit, and this now serves as a version
-    number.  Since the whole code base is now publicly available,
+    number. Since the whole code base is now publicly available,
     formal releases are no longer very significant.
 </p>
 
@@ -95,4 +97,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>
