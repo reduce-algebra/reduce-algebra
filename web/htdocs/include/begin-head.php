@@ -11,8 +11,7 @@
     <title>
         <?= isset($page_title) ? $page_title : "REDUCE $header_title" ?>
     </title>
-    <link rel="canonical" href="https://reduce-algebra.sourceforge.io<?=$_SERVER['SCRIPT_NAME']?>" />
+    <link rel="canonical" href="https://reduce-algebra.sourceforge.io<?= $_SERVER['SCRIPT_NAME'] ?>" />
     <link rel="icon" type="image/png" href="/images/icon.png" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
-        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="/StyleSheet.css" />

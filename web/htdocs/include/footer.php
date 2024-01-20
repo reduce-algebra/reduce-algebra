@@ -17,13 +17,15 @@
             <a href="https://sites.google.com/site/fjwcentaur/feedback">webmaster</a>.
         </p>
         <p>
-            This web site is built using <a href="https://www.php.net/">PHP</a>
-            and <a href="https://getbootstrap.com/">Bootstrap</a>.
+            This web site is built using <a id="php" href="https://www.php.net/">PHP</a>
+            and <a id="bootstrap" href="https://getbootstrap.com/">Bootstrap</a>.
             It should be
             <a href="javascript:void(location.href =
                      'https://html5.validator.nu/?doc='+encodeURIComponent(location.href))" style="color:black;text-decoration:none;">valid</a>
             <!-- target="_blank" or holding down ctrl causes this to fail! -->
             <a href="https://en.wikipedia.org/wiki/XHTML#XHTML5">XHTML5</a>.
+        </p>
+        <p>
             Microsoft Internet Explorer does not display this web site
             correctly; please use a current web browser.
         </p>
@@ -54,4 +56,8 @@
 </div>
 
 <!-- Bootstrap JavaScript bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script>
+    document.getElementById("php").append(" " + "<?= PHP_VERSION ?>");
+    document.getElementById("bootstrap").append(" " + bootstrap.Tooltip.VERSION);
+</script>
