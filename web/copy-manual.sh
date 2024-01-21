@@ -32,4 +32,4 @@ scp manual.zip fjwright@web.sourceforge.net:/home/project-web/reduce-algebra/htd
 # interactively, so do:
 
 # ssh -t fjwright@shell.sourceforge.net create
-# cd /home/project-web/reduce-algebra && ./unzip-manual.sh
+# /home/project-web/reduce-algebra/unzip-manual.sh
