@@ -105,7 +105,8 @@ include './include/begin-body.php';
         <a href="manual-lookup.php?GENTRAN">with common numerical
             programming languages</a> (such as C or Fortran) or
         <a href="manual-lookup.php?RLFI">document processors</a> such
-        as <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span>.</dd>
+        as <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span>.
+    </dd>
     <dt>State-of-the-art algorithms</dt>
     <dd>Another advantage of an &quot;open&quot; system is that there
         is a shared development effort involving both distributors and
@@ -115,14 +116,15 @@ include './include/begin-body.php';
         superior code for solving non-linear polynomial equations
         using
         <a href="manual-lookup.php?GROEBNER">Gr&ouml;bner bases</a>,
-        real and complex <a href="manual-lookup.php?ROOTS">root finding</a> to
-        any precision, <a href="manual-lookup.php?EXCALC">exterior
+        real and complex <a href="manual-lookup.php?Finding Roots">root finding</a>
+        to any precision, <a href="manual-lookup.php?EXCALC">exterior
             calculus</a> calculations and
         <a href="manual-lookup.php?SCOPE">optimized numerical code
             generation</a> among others. Its simplification strategy,
         using a combination of efficient polynomial manipulation and
         flexible pattern matching is focused on giving users as
-        natural a result as possible without excessive programming.</dd>
+        natural a result as possible without excessive programming.
+    </dd>
 </dl>
 <h2>Specialist packages</h2>
 <p>
@@ -145,4 +147,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>

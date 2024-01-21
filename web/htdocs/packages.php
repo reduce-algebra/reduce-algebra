@@ -5,9 +5,9 @@ include './include/begin-head.php';
 ?>
 
 <style type="text/css">
- dd {
-     margin-bottom: 0.5em;
- }
+    dd {
+        margin-bottom: 0.5em;
+    }
 </style>
 
 <?php
@@ -23,7 +23,7 @@ include './include/begin-body.php';
 <h2>Packages available separately for download</h2>
 <dl>
     <dt>
-        <a href="https://www.latrobe.edu.au/mathematics-and-statistics/research/geometric-and-algebraic-techniques-for-differential-equations/dimsym">Dimsym</a>
+        <a href="https://github.com/reduce-algebra/dimsym">Dimsym</a>
         &ndash; symmetry determination and linear differential
         equation package
     </dt>
@@ -49,26 +49,15 @@ include './include/begin-body.php';
 </dl>
 <h2>Dynamical Systems Packages</h2>
 <dl>
-    <!-- <dt><a href="http://www.maths.adelaide.edu.au/anthony.roberts/holistic1.php">Holistic discretisation of a dynamical Partial Differential Equation</a><br /> -->
-    <!--   <a href="http://www.maths.adelaide.edu.au/anthony.roberts/holistic3.php">Holistic discretisation of three coupled dynamical Partial Differential Equations</a><br /> -->
-    <!--   <a href="http://www.maths.adelaide.edu.au/anthony.roberts/sdenf.php">Normal form of stochastic or deterministic multiscale differential equations</a><br /> -->
-    <!--   <a href="http://www.maths.adelaide.edu.au/anthony.roberts/sdesm.php">Slow manifold of stochastic or deterministic multiscale differential equations</a><br /> -->
-    <!--   <a href="http://www.maths.adelaide.edu.au/anthony.roberts/gencm.php">Construct centre manifolds of ordinary or delay differential equations (autonomous)</a></dt> -->
-
-    <!-- The links above seem to be broken and the links below don't
-         seem to run the demos, although they provide links to some
-         downloadable software! -->
-
     <dt>
         <a href="https://profajroberts.github.io/holistic1.html">Holistic
-            discretisation of a dynamical Partial Differential
-            Equation</a><br />
+            discretisation of a dynamical Partial Differential Equation</a><br />
         <a href="https://profajroberts.github.io/holistic3.html">Holistic
             discretisation of three coupled dynamical Partial
             Differential Equations</a><br />
-        <a href="https://profajroberts.github.io/sdenf.html">Normal
-            form of stochastic or deterministic multiscale
-            differential equations</a><br />
+        <a href="https://profajroberts.github.io/sdenf.html">Derive
+            invariant manifolds and/or normal forms of general
+            stochastic or non-autonomous, multiscale, differential equations</a><br />
         <a href="https://profajroberts.github.io/sdesm.html">Slow
             manifold of stochastic or deterministic multiscale
             differential equations</a><br />
@@ -88,4 +77,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>
