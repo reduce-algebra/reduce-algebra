@@ -425,9 +425,11 @@ logarithmic base.
 Note on the CSL GUI and other graphical interfaces the inverse
 trigonometric and hyperbolic functions are output as $\arcsin$ etc.
 
-REDUCE does not define the name \f{ln} (in algebraic mode).  You can
-use it to represent the natural logarithm (for input only) if you
-execute the \hyperlink{command:DEFINE}{command}
+\REDUCE defines the identifier \f{ln} to be an abstract operator with
+no properties; see section \ref{sec-operators}. You can use it any way
+you want. One way to use the identifier \f{ln} to represent the
+natural logarithm (for input only) is to execute the
+\hyperlink{command:DEFINE}{command}
 \begin{verbatim}
     define ln = log;
 \end{verbatim}
