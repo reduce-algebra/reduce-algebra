@@ -200,9 +200,15 @@ using std::dec;
 // Pages here for use while debugging and expect there not to be any space
 // overhead in the compiled binary of builds that happen not to use them.
 
+#ifdef MINIPAGE
+INLINE_VAR const size_t pageSize = 2*1024*1024u;     // Use 2 Mbyte pages
+#else // MINIPAGE
 INLINE_VAR const size_t pageSize = 8*1024*1024u;     // Use 8 Mbyte pages
+#endif // MINIPAGE
 INLINE_VAR const size_t chunkSize = 16*1024u;        // 16 Kbyte chunks
 INLINE_VAR const size_t chunkMask = chunkSize-1;
+
+INLINE_VAR const size_t vecAlign = 8;
 
 extern bool allocateSegment(size_t);
 
@@ -260,14 +266,24 @@ class alignas(pageSize) PageTemplate
     using Page = PageTemplate<ConsN,ChunkN>;
 
 public:
+// Cons cells are either 8 or 16 bytes and I have one bit in the pin bitmap
+// for each. So ConsN will be a little less than pageSize/2*sizeof(LispObject)
+// where the extent to which it is less is to allow space for the bitmaps etc.
     static const size_t consDataCount = ConsN;
     static const size_t consPinWords = (consDataCount+63)/64;
 
+// Items in the vector heap are always aligned on 8 byte boundaries so
+// regardless of word-size I need on pin bit per 8 bytes. There are always
+// chunkSize = 16384 bytes in each Chunk and that leads all this to
+// a number of pin bits of around pageSize/8. Here as well as space for the
+// bitmaps this can be reduced by the need to have full Chunks all properly
+// aligned, so there can be a waste of almost chunkSize if things do not
+// fit perfectly.
     static const size_t chunkDataCount = ChunkN;
     static const size_t chunkInfoSize = chunkDataCount;
-    static const size_t vecPinWords = (chunkSize*ChunkN+8*64-1)/(8*64);
+    static const size_t vecPinWords = (chunkSize*ChunkN+8*64-1)/(vecAlign*64);
     static const size_t chunkBitmapWords = (chunkDataCount+63)/64;
-    
+
     union
     {
 // A Page can be either a Cons page or a Vector page. The initial components
@@ -662,17 +678,18 @@ inline void consClearNewPinned(uintptr_t a, Page* p)
 {   clearBit(p->newConsPins, consToOffset(a, p));
 }
 
-// And versions for VEC pages, which pin with granularity a single
-// LispObject, so the bitmaps are twice as large as the ones for CONS pages
-// where granularity only needs to be the size of a pair of adjacent
-// objects.
+// And versions for VEC pages, which pin with granularity the 8 bytes
+// that vector data is aligned to, so on a 64-bit system the bitmaps
+// are twice as large as the ones for CONS pages where granularity only
+// needs to be the size of a pair of adjacent objects. On a 32-bit system
+// the sized are rather similar to one another.
 
 inline size_t vecToOffset(uintptr_t a, Page* p)
-{   return (a - reinterpret_cast<uintptr_t>(&p->chunks)) / sizeof(LispObject);
+{   return (a - reinterpret_cast<uintptr_t>(&p->chunks)) / vecAlign;
 }
 
 inline uintptr_t offsetToVec(size_t o, Page* p)
-{   return reinterpret_cast<uintptr_t>(&p->chunks) + sizeof(LispObject)*o;
+{   return reinterpret_cast<uintptr_t>(&p->chunks) + vecAlign*o;
 }
 
 inline bool vecIsPinned(uintptr_t a, Page* p)
@@ -1047,7 +1064,7 @@ inline void setHeaderWord(uintptr_t a, size_t n, int type=TYPE_PADDER)
 // is liable to cause a prompt disaster if encountered.
     if (type==TYPE_PADDER)
     {   for (size_t i=CELL; i<n; i+=CELL)
-            indirect(a+i) = 0xfeedadeadbeefc03;
+            indirect(a+i) = static_cast<LispObject>(0xfeedadeadbeefc03);
     }
 #endif // EXTREME_DEBUG
 }

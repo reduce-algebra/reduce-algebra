@@ -290,5 +290,9 @@ Dec 2023.     attempt to make ALT-x do unicode conversion between names
 
 Jan 2024.     MPSemaphore seems to have stopped being supported so
               I have to put a draft change into fox/src/FXThread.cpp
+              but really all that file could be re-worked to use
+              the C++ std::thread stuff. When I check through the rest
+              of FOX and CSL the only things from FXThread.cpp that I see
+              used are a sleep() function and one to report timing.
 
 <end of CHANGED>

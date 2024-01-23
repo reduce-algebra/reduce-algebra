@@ -339,7 +339,7 @@ void identifyPinnedItems()
 // now means that just one scan of a potentially pinned chunk serves for
 // all the ambiguous pointers into it.
 // Note that chunks that has been pinned by a previous GC will have
-// padders written into all unused space in them, so bew references
+// padders written into all unused space in them, so new references
 // into them are only accepted it to existing pinned data.
 
 void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
@@ -383,7 +383,19 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
                                     vecToOffset(s, p),
                                     len/sizeof(LispObject)))
             {   zprintf("Pinned vector head at %a: ", s);
-                simple_print(s+TAG_VECTOR);  // well floats & bignums may mess up printing here
+                LispObject s1 = s;
+                switch (type_of_header(h))
+                {   case TYPE_FLOAT:
+                        s1 += TAG_BOXFLOAT;
+                        break;
+                    case TYPE_BIGNUM: case TYPE_NEW_BIGNUM:
+                        s1 += TAG_NUMBERS;
+                        break;
+                    default:
+                        s1 += TAG_VECTOR;
+                        break;
+                }
+                simple_print(s1);
             }
 #endif // EXTREME_DEBUG
             break;

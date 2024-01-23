@@ -673,10 +673,22 @@ then
   AC_DEFINE(CONSERVATIVE, [1], [True if new GC enabled])
 fi
 
+AC_ARG_ENABLE(minipage,
+  AS_HELP_STRING([--enable-minipage],
+                 [use smaller internal "page" size]),
+  [],
+  [enable_minipage="no"])
+AC_MSG_RESULT([$enable_minipage])
+
+if test "$enable_minipage" = "yes"
+then
+  AC_DEFINE(MINIPAGE, [1], [Smaller pages for the heap])
+fi
+
 # Want to build "generational" variant?
 AC_ARG_ENABLE(conservative,
   AS_HELP_STRING([--enable-generational],
-                 [garbage collect option was under development]),
+                 [garbage collect option that was once under development]),
   [],
   [enable_generational="no"])
 AC_MSG_RESULT([$enable_generational])
@@ -1059,7 +1071,8 @@ then
   AC_DEFINE(FILESYSTEM_NOT_USABLE, [1], "std::filesystem not available")
 fi
 
-# E.g. on 32-bit ARM the use of 8-byte atomics needs "-latomic" linked in.
+# E.g. on some 32-bit systems the use of 8-byte atomics needs "-latomic"
+# linked in.
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
     [[  #include <iostream>

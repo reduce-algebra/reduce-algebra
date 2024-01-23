@@ -499,8 +499,9 @@ INLINE_VAR constexpr unsigned int Tw = 3;
 // size of the header itself. Because this is in 32-bit words rather than bytes
 // this allows the largest object to be 16 Mbytes if your word length is 32
 // bits. That limit larger than the previous CSL tagging scheme permitted, but
-// note that the size of objects is syill also limited by the csl "page" size,
-// which is now 8 Mbytes.
+// note that the size of objects is still also limited by the csl "page" size,
+// which is now 8 Mbytes (unless MINPAGE is defined in which case it is even
+// smaller).
 //
 // For vectors of bits, bytes and halfwords the high bits of yyyyy indicate the
 // number of bits used in the final 32-bit word that is indicated by xxx.
@@ -1130,7 +1131,17 @@ inline bool vector_f128(Header h)
 }
 
 inline LispObject& basic_elt(LispObject v, size_t n)
-{   return *reinterpret_cast<LispObject *>
+{
+#ifdef DEBUG
+    size_t limit = length_of_header(*(reinterpret_cast<Header*>(v & ~TAG_BITS)));
+    limit = (limit - sizeof(LispObject))/sizeof(LispObject);
+// on 32-bit platforms I have to pad the array of digits so I end up with
+// and even number of words in all, and that is an odd number of digits
+// because of the header word. 
+    if (!SIXTY_FOUR_BIT) limit |= 1;
+    my_assert(n < limit, "basic_elt index out of range");
+#endif // DEBUG
+    return *reinterpret_cast<LispObject *>
            (reinterpret_cast<char *>(v) +
             (CELL-TAG_VECTOR) +
             (n*sizeof(LispObject)));
@@ -2032,11 +2043,31 @@ inline uint32_t* vbignum_digits(LispObject b)
 }
 
 inline uint32_t& bignum_digit(LispObject b, size_t n)
-{   return bignum_digits(b)[n];
+{
+#ifdef DEBUG
+    size_t limit = length_of_header(*(reinterpret_cast<Header*>(b & ~TAG_BITS)));
+    limit = (limit - sizeof(LispObject))/sizeof(uint32_t);
+// on 32-bit platforms I have to pad the array of digits so I end up with
+// and even number of words in all, and that is an odd number of digits
+// because of the header word. 
+    if (!SIXTY_FOUR_BIT) limit |= 1;
+    my_assert(n < limit, "bignum_digit out of range");
+#endif // DEBUG
+    return bignum_digits(b)[n];
 }
 
 inline int32_t signed_bignum_digit(LispObject b, size_t n)
-{   return static_cast<int32_t>(bignum_digits(b)[n]);
+{
+#ifdef DEBUG
+    size_t limit = length_of_header(*(reinterpret_cast<Header*>(b & ~TAG_BITS)));
+    limit = (limit - sizeof(LispObject))/sizeof(uint32_t);
+// on 32-bit platforms I have to pad the array of digits so I end up with
+// and even number of words in all, and that is an odd number of digits
+// because of the header word. 
+    if (!SIXTY_FOUR_BIT) limit |= 1;
+    my_assert(n < limit, "bignum_digit out of range");
+#endif // DEBUG
+    return static_cast<int32_t>(bignum_digits(b)[n]);
 }
 
 // For work on bignums when I have a 64-bit machine I frequently need the
