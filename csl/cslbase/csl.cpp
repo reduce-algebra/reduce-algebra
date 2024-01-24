@@ -1825,7 +1825,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // zero or more than 10 stack chunks) will be rejected. I will also require
 // at least 8 Mbytes be allocated, or 32/512 for the conservative version
 #ifdef CONSERVATIVE
+#ifdef MINIPAGE
+                    if (valD <  8.0 || valD > 512.0*1024.0 ||
+#else // MINIPAGE
                     if (valD < 32.0 || valD > 512.0*1024.0 ||
+#endif // MINIPAGE
 #else // CONSERVATIVE
                     if (valD < 8.0 || valD > 256.0*1024.0 ||
 #endif // CONSERVATIVE
