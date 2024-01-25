@@ -1938,9 +1938,10 @@ down:
 // "elt" - and that survives whichever case I am in.
 // Now if I am on a 32-bit system and the vector uses a header word and then
 // and even number of words of data it will use a padder word to bring its
-// total size up to a 64-bit boundary. Tidy up that final word. This OUGHT
-// not to matter, but is still tidy.
+// total size up to a 64-bit boundary. Tidy up that final word. This matters
+// for garbage collection even if it probably should not.
                 size_t n1 = n;
+                if (!SIXTY_FOUR_BIT && n%2==0) n1++;
 // In case there is a GC before I have finished filling in proper values
 // in the vector I will out in values that are at least safe.
                 for (size_t i=0; i<n1; i++) vselt(w, i) = fixnum_of_int(0);
@@ -3517,9 +3518,10 @@ static LispObject load_module(LispObject env, LispObject file, int option)
     class serializer_tidy
     {   LispObject *saveStack;
         bool from_stream;
-        uint64_t t0b;
+        uint64_t t0b, bt, gt;
     public:
-        serializer_tidy(bool fg, uint64_t t0a, LispObject file)
+        serializer_tidy(bool fg, uint64_t t0a, LispObject file,
+                        uint64_t base, uint64_t gc)
         {   THREADID;
             if (fg)
             {   *++stack = qvalue(standard_input);
@@ -3531,6 +3533,8 @@ static LispObject load_module(LispObject env, LispObject file, int option)
             saveStack = stack;
             from_stream = fg;
             t0b = t0a;
+            bt = base;
+            gt = gc;
         }
         ~serializer_tidy()
         {   THREADID;
@@ -3548,11 +3552,11 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 setvalue(standard_input, *stack--);
             }
             uint64_t delta = read_clock() - t0b;
-            if (!ignoreLoadTime) gc_time += delta;
-            base_time += delta;
+            if (!ignoreLoadTime) gc_time = gt + delta;
+            base_time = bt + delta;
         }
     };
-    {   serializer_tidy tidy(from_stream, t0, file);
+    {   serializer_tidy tidy(from_stream, t0, file, base_time, gc_time);
         reader_setup_repeats(read_u64());
         r = serial_read();
 #ifdef DEBUG_SERIALIZE

@@ -80,7 +80,7 @@ extern void displayAllPages(const char*);
 #endif // CONSERVATIVE && EXTREME_DEBUG
 
 [[noreturn]] inline void my_abort()
-{   std::fprintf(stdout, "\n\n!!! Aborting\n\n");
+{   std::fprintf(stdout, "\n!!! Aborting\n\n");
 #if defined CONSERVATIVE && defined EXTREME_DEBUG
     displayAllPages("Failure");
     extern unsigned int gcNumber;
@@ -106,7 +106,7 @@ extern void displayAllPages(const char*);
 }
 
 [[noreturn]] inline void my_abort(const char* msg)
-{   std::fprintf(stdout, "\n\n!!! Aborting: %s\n\n", msg);
+{   std::fprintf(stdout, "\n!!! Aborting: %s\n\n", msg);
 #if defined CONSERVATIVE && defined EXTREME_DEBUG
     displayAllPages("Failure");
     extern unsigned int gcNumber;
@@ -131,17 +131,20 @@ extern void displayAllPages(const char*);
 #endif // HAVE_QUICK_EXIT
 }
 
-inline void my_assert(bool ok, const char* msg)
-{   if (!ok) my_abort(msg);
+[[noreturn]] inline void my_abort(unsigned int line, const char* file,
+                                  const char* msg)
+{   std::fprintf(stdout, "\n!!! Line %u of file %s:", line, file);
+    my_abort(msg);
 }
 
-inline void my_assert(bool ok, std::string msg)
-{   if (!ok) my_abort(msg.c_str());
-}
+#define preprocessor_arg1(a, ...) #a
 
+#define my_assert(...) \
+   my_assert1(__LINE__, __FILE__, preprocessor_arg1(__VA_ARGS__), __VA_ARGS__)
 
 template <typename F>
-inline void my_assert(bool ok, F&& action)
+inline void my_assert1(unsigned int line, const char* file,
+                       const char* ok_as_string, bool ok, F&& action)
 {
 // Use this as in
 //     my_assert(predicate, [&]{...});
@@ -149,12 +152,23 @@ inline void my_assert(bool ok, F&& action)
 // if the assertion fails.
     if (!ok)
     {   action();
-        my_abort("assertion failed");
+        my_abort(line, file, "assertion failed");
     }
 }
 
-inline void my_assert(bool ok)
-{   if (!ok) my_abort("my_assert without specific message");
+inline void my_assert1(unsigned int line, const char* file,
+                       const char* ok_as_string, bool ok)
+{   if (!ok) my_abort(line, file, ok_as_string);
+}
+
+inline void my_assert1(unsigned int line, const char* file,
+                       const char* ok_as_string, bool ok, const char* msg)
+{   if (!ok) my_abort(line, file, msg);
+}
+
+inline void my_assert1(unsigned int line, const char* file,
+                       const char* ok_as_string, bool ok, std::string msg)
+{   if (!ok) my_abort(line, file, msg.c_str());
 }
 
 // give_up is a bit like my_abort but does not generate any messages.

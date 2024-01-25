@@ -353,9 +353,8 @@ extern int terminal_eof_seen;
 // The next two call-backs tell the window manager how much time has
 // been spent and how many garbage collections have been done.
 //
-extern void report_time(int32_t t, int32_t gct);
-extern void report_space(uint64_t gccount, double percent,
-                         double mbytes);
+extern void report_time(uint64_t t, uint64_t gct);
+extern void report_space(uint64_t gccount, double percent, double mbytes);
 
 // These can be used (without 100% reliability!) to check if memory
 // addresses are proper. They are only for use in desparate debugging

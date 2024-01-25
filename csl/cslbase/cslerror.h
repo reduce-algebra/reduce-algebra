@@ -216,8 +216,8 @@ extern LispObject rplacd_fails(LispObject a);
 #define ERROR_MESSAGES                                                      \
 X(err_bad_car,                "attempt to take car of an atom")             \
 X(err_bad_cdr,                "attempt to take cdr of an atom")             \
-X(err_no_store,               "insufficient freestore to run this package") \
-X(err_no_store_in_gc,         "run out of store while garbage collecting")  \
+X(err_no_store,               "not enough memory available - stopping")     \
+X(err_no_store_in_gc,         "insufficient memory for garbage collection - stopping")  \
 X(err_undefined_function_0,   "undefined function (0 args)")                \
 X(err_undefined_function_1,   "undefined function (1 arg)")                 \
 X(err_undefined_function_2,   "undefined function (2 args)")                \
@@ -253,9 +253,10 @@ X(err_pipe_failed,            "unable to establish pipe")                   \
 X(err_stack_overflow,         "stack overflow")                             \
 X(err_top_bit,                "top bit of address has unexpected value")    \
 X(err_mem_spans_zero,         "memory block spans the zero address")        \
-X(err_read_failure,           "failure reading from an image file")         \
+X(err_read_failure,           "failure reading from an image file - stopping")\
 X(err_no_tempdir,             "unable to find a directory for temporary files") \
-X(err_bad_serialize,          "corruption in fasl or image file")
+X(err_bad_serialize,          "corruption in fasl or image file = stopping")
+
 #define X(name, text) name,
 enum
 {

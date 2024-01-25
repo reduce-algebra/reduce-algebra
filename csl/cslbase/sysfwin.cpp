@@ -116,12 +116,13 @@ static char time_string[40], space_string[32];
 // are called periodically - ideally so that the user gets to see things
 // chance roughtly once per second.
 
-void report_time(int32_t t, int32_t gct)
+void report_time(uint64_t t, uint64_t gct)
 {
 #ifndef EMBEDDED
     std::snprintf(time_string, sizeof(time_string),
-                  "%ld.%.2ld+%ld.%.2ld secs  ",
-                  t/100L, t%100L, gct/100L, gct%100L);
+                  "%" PRIu64 ".%.2" PRIu64 "+"
+                  "%" PRIu64 ".%.2" PRIu64 " secs  ",
+                  t/100, t%100, gct/100, gct%100);
     if ((window_heading & 1) == 0) fwin_report_left(time_string);
 #endif
 }
