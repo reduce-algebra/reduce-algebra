@@ -560,7 +560,8 @@ void grabFreshPage(PageType type)
             initPage(type, r, false);
             return;
         }
-        my_abort(where("I had expected to be able to allocate a Page"));
+        fatal_error(err_no_store);
+//      my_abort(where("I had expected to be able to allocate a Page"));
     }
 // Here I need to garbage collect.
     if (withinGarbageCollector) fatal_error(err_no_store_in_gc);

@@ -871,6 +871,7 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     save.restore(a);
     for(n=0; consp(a); a = cdr(a), n++)
         elt(v, n) = static_cast<LispObject>(car(a));
+    if (!SIXTY_FOUR_BIT && n%2==0) elt(v, n) = TAG_FIXNUM;
     return v;
 }
 
@@ -1690,12 +1691,15 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
     {   write_barrier(&elt(r, i), car(a4up));
         a4up = cdr(a4up);
     }
+    if (!SIXTY_FOUR_BIT && n%2==0) elt(r, n) = TAG_FIXNUM;
     return r;
 }
 
 LispObject Lvector_0(LispObject env)
 {   SingleValued fn;
-    return get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL);
+    LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL);
+    if (!SIXTY_FOUR_BIT) elt(r, 0) = TAG_FIXNUM;
+    return r;
 }
 
 LispObject Lvector_1(LispObject env, LispObject a)
@@ -1718,6 +1722,7 @@ LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
     save.restore(a, b);
     write_barrier(&elt(r, 0), a);
     write_barrier(&elt(r, 1), b);
+    if (!SIXTY_FOUR_BIT) elt(r, 2) = TAG_FIXNUM;
     return r;
 }
 

@@ -1637,6 +1637,7 @@ LispObject get_basic_vector_init(size_t n, LispObject k)
         save.restore(k);
     }
     n = n/CELL - 1;
+    if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
     for (size_t i=0; i<n; i++)
         basic_elt(p, i) = k;
     return p;
@@ -1674,8 +1675,8 @@ LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 
 static LispObject gvector(int tag, int type, size_t size)
 {   STACK_SANITY;
-// I will never let odd sized vectors participate in this recycling
-// process.
+// I will never let vectors whose size is not a multiple of CELL participate
+// in this recycling process. That rules out e.g. most strings.
     if (size%CELL != 0) return get_basic_vector(tag, type, size);
     size_t n = size/CELL - 1;  // size in words of data part in cells.
     if (is_power_of_two(n))    // special if size is a power of 2.
@@ -1687,11 +1688,11 @@ static LispObject gvector(int tag, int type, size_t size)
             basic_elt(r, 0) = nil; // Just to be tidy!
 // reset type field
             setvechdr(r, type + (size << (Tw+5)) + TAG_HDR_IMMED);
-// I am going to claim that this is a recycled vector, and if I am on a 32-bit
-// system and it had a padder word at the end to bring its size up to a
-// multiple of 8 bytes then that word was tidily zeroed out when I first
-// created it, and nothing should have messed with it since - so I should not
-// need to do anything special here to maintain that tidy state.
+// I will protect myself against the posisbility that the previous use
+// had been for binary data and left junk in the padder word at the end
+// of the vector on a 32-bit machine. There IS a padder since here the
+// data size is a power of 2!
+            if (!SIXTY_FOUR_BIT) basic_elt(r, n/CELL) = TAG_FIXNUM;
             return r - TAG_VECTOR + tag;
         }
     }
@@ -1785,6 +1786,7 @@ LispObject get_vector_init(size_t n, LispObject val)
     errexit();
     save.restore(val);
     n = n/CELL - 1;
+    if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
     while (n != 0)
     {   n--;
         elt(p, n) = val;

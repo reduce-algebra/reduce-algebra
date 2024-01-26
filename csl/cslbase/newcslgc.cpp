@@ -41,7 +41,7 @@
 
 unsigned int gcNumber = 0;
 
-// The dafault is gcTrace=0 which leads to no trace.
+// The default is gcTrace=0 which leads to no trace.
 // If the user specified just "--gc-trace" then the value is set to 1 and
 // tracing happens for all GCs. --gc-trace=N sets tracing for garbage
 // collection N and beyond.
@@ -223,7 +223,7 @@ void processAmbiguousInPage(Page* p, uintptr_t a)
 // will re-visit the pages that contain new "potentially pinned" stuff and
 // put things in the state they need to be. The chain potentiallyPinned is
 // one of pages I will need to re-visit.
-        a = a & -(sizeof(LispObject));   // align the pointer.
+        a = a & -8;   // align the pointer.
         dataStart = offsetToVec(0, p);
         if (a < dataStart) return;
         chunkNo = chunkNoFromAddress(p, a);
@@ -381,7 +381,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 #ifdef EXTREME_DEBUG
             if (GCTRACE && testBits(p->newVecPins,
                                     vecToOffset(s, p),
-                                    len/sizeof(LispObject)))
+                                    len/8))
             {   zprintf("Pinned vector head at %a: ", s);
                 LispObject s1 = s;
                 switch (type_of_header(h))
@@ -407,7 +407,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
             {   len = symhdr_length;
                 if (GCTRACE && testBits(p->newVecPins,
                                         vecToOffset(s, p),
-                                        len/sizeof(LispObject)))
+                                        len/8))
                 {   zprintf("Pinned symbol head at %a: ", s);
                     simple_print(s+TAG_SYMBOL);
                 }
@@ -421,7 +421,7 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 // some cons cells into vector pages I will allow for that case here!
             if (GCTRACE && testBits(p->newVecPins,
                                     vecToOffset(s, p),
-                                    len/sizeof(LispObject)))
+                                    len/8))
             {   zprintf("Pinned cons head at %a: ", s);
                 simple_print(s);
             }
@@ -434,19 +434,19 @@ void findHeadersInChunk(size_t firstChunk, size_t lastChunk, Page* p)
 // pointer refers into a block of memory pinned by a previous GC but
 // does not identify live data within it.
         if (is_padder_header(h))
-        {   clearBits(p->newVecPins, o1, len/sizeof(LispObject));
+        {   clearBits(p->newVecPins, o1, len/8);
             s += len;
             continue;
         }
 // For other objects I need to test if there are any pin bits at all within
 // the object, and if so set one for the first bit while clearing all others.
-        else if (testBits(p->newVecPins, o1, len/sizeof(LispObject)))
+        else if (testBits(p->newVecPins, o1, len/8))
         {   thisChunkHasPins = true;
 // Move the pin bit so it is on the head of the item.
 #ifdef EXTREME_DEBUG
             if (GCTRACE) zprintf("Move pin bit to head of %a\n", s); 
 #endif // EXTREME_DEBUG
-            clearBits(p->newVecPins, o1, len/sizeof(LispObject));
+            clearBits(p->newVecPins, o1, len/8);
             setBit(p->newVecPins, o1);
             if (p->hasPinned == 0)
             {   p->hasPinned = 1;
@@ -658,6 +658,13 @@ void evacuateFromPinnedItems()
             {
             case 0x0a: // 0b01010:   // Header for vector of Lisp pointers
                                      // Note TYPE_STREAM etc is in with this.
+// If I am on a 32-bit system there are complications about the "length".
+// There will be proper Lisp data up to length_of_header(a) but the
+// object in memory will be that size but rounded up to a multiple of
+// 8 bytes. That means there can be a padder word at the end. Either
+// I must ensure it always contains valid Lisp data (such as a reference to
+// nil) and that the garbage collector always updates it if needbe, or
+// I must arrange that it is never inspected at all.
                 len = doubleword_align_up(length_of_header(a));
                 if (is_mixed_header(a)) len1 = 4*CELL;
                 else len1 = len;
@@ -1594,7 +1601,14 @@ static volatile std::atomic<uint64_t> volatileVar = 0xf0f0f0f012345678u;
 // view that returning the address of a local variable leads to undefined
 // behaviour and on some compilers (I am observing g++ on 32 bit platforms)
 // the function getStackFringe as defined here always returns zero. Leading
-// to collapse!
+// to collapse! g++ is probably within its rights since using the address
+// of a local item when its scope has been exited  will count as
+// "undefined behaviour" and so the language specification allows utterly
+// any consequences that the compiler writer settles on. Furthermore g++
+// issues a warning message. But this all means that I go through a more
+// complicated scheme that is intended to achieve exactly the effect I
+// originally intended but that will bemuse compilers into not playing
+// too many silly games.
 
 NOINLINE uintptr_t getStackFringe(double x)
 {   return reinterpret_cast<uintptr_t>(&x);
@@ -1661,8 +1675,8 @@ static void report_at_end(uint64_t t0)
     setvalue(used_space, fixnum_of_int(static_cast<int>(1024.0*fn)));
     setvalue(avail_space, fixnum_of_int(static_cast<int>(1024.0*fn1)));
     uint64_t t1 = read_clock();
-    gc_time += t1 - t0;
-    base_time += t1 - t0;
+    gc_time += (t1 - t0);
+    base_time += (t1 - t0);
     THREADID;
 #ifdef NO_THREADS
     stackcheck();
@@ -1682,8 +1696,8 @@ NOINLINE void garbage_collect(const char* why)
 // generating GC messages. If I am not on a GUI system then  I only
 // report time if GC messages are enabled, so I will only read the clock
 // in that situation.
-    {   long int t = (t0 - base_time)/10000; // in centiseconds
-        long int gct = gc_time/10000;
+    {   uint64_t t = (t0 - base_time)/10000; // in centiseconds
+        uint64_t gct = gc_time/10000;
 // @@@@
 // I guess that I want garbage collection messages, if any, to
 // be sent to stderr rather than whatever output stream happens to
@@ -1697,14 +1711,15 @@ NOINLINE void garbage_collect(const char* why)
         {   freshline_trace();
             trace_printf(
                 "+++ Garbage collection %d"
-                " (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
+                " (%s) after %" PRIu64 ".%.2" PRIu64 "+"
+                "%" PRIu64 ".%.2" PRIu64 " seconds\n",
                 gcNumber, why, t/100, t%100, gct/100, gct%100);
         }
     }
 #else // !WITH_GUI
     if ((verbos_flag & 1) || force_verbos)
-    {   long int t = (t0 - base_time)/10000;
-        long int gct = gc_time/10000;
+    {   uint64_t t = (t0 - base_time)/10000;
+        uint64_t gct = gc_time/10000;
 // @@@@
 // I guess that I want garbage collection messages, if any, to
 // be sent to stderr rather than whatever output stream happens to
@@ -1715,7 +1730,8 @@ NOINLINE void garbage_collect(const char* why)
         time_now = t0/1000;
         freshline_trace();
         trace_printf(
-            "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
+            "+++ Garbage collection %ld (%s) after %" PRIu64 ".%.2" PRIu64"+"
+            "%" PRIu64 ".%.2" PRIu64 " seconds\n",
             static_cast<long>(gcNumber), why, t/100, t%100, gct/100, gct%100);
     }
 #endif // !WITH_GUI
@@ -1822,7 +1838,7 @@ uintptr_t V(int pageNumber, size_t offset)
 {   Page* p = reinterpret_cast<Page*>(heapSegment[0]) + pageNumber;
     if (p->type == consPageType)
         return offsetToCons(offset/sizeof(ConsCell), p);
-    else return offsetToVec(offset/sizeof(LispObject), p);
+    else return offsetToVec(offset/8, p);
 }
 
 // This does a displayAllPages but redirects the output so it gets

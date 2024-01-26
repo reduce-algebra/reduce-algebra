@@ -1757,7 +1757,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         Since internal allocation is granular this is an approximate\n"
                 "         setting. Also since the system auto-expands memory as it needs\n"
                 "         to it should be very rare to need to use this option.\n"
-                "         See also --maxmem",
+                "         See also --maxmem and --kmax",
                 [&](string key, bool hasVal, string val)
                 {   if (!hasVal || val.length() == 0)
                     {   badArgs.push_back(key);
@@ -1774,6 +1774,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // point notation is allowed one can use "-k1.2e3" (1200 Mbytes), or
 // "-k1.2e6K" (1200000 Kbytes, ie the same!) or "-k1.2e-1G" for 120 Mbytes.
 // Ignore case in the specifier.
+
                     string valLow(val);
                     std::transform(valLow.begin(), valLow.end(), valLow.begin(),
                                    [](int c)
@@ -2211,6 +2212,48 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
              */
             {   "--maxmem", true, true,
                 "--maxmem NNN Prevent memory expansion beyond NNN.",
+                [&](string key, bool hasVal, string val)
+                {   string valLow(val);
+                    std::transform(valLow.begin(), valLow.end(), valLow.begin(),
+                    [](int c)
+                    {   return std::tolower(c);
+                    });
+                    const char *valS = valLow.c_str();
+                    double valD;
+                    unsigned int len=std::strlen(valS), pos;
+// This is basically the same as the code used to decode "-kNNN".
+                    if (std::sscanf(valS, "%lg%n", &valD, &pos)==1 && pos==len)
+                    {
+                    }
+                    else if (std::sscanf(valS, "%lgk%n", &valD, &pos)==1 && pos==len)
+                    {   valD /= 1024.0;
+                    }
+                    else if (std::sscanf(valS, "%lgm%n", &valD, &pos)==1 && pos==len)
+                    {
+                    }
+                    else if (std::sscanf(valS, "%lgg%n", &valD, &pos)==1 && pos==len)
+                    {   valD *= 1024.0;
+                    }
+                    else
+                    {   badArgs.push_back(key.append(val));
+                        return;
+                    }
+// Negative requests or requests for more than 256Gbytes
+                    if (valD <= 0.0 || valD > 256.0e3)
+                    {   badArgs.push_back(key.append(val));
+                        return;
+                    }
+                    max_store_size = valD;
+                }
+            },
+
+            /*! options [--kmax] \item [{\ttfamily --kmax}] \index{{\ttfamily --kmax}}
+             * Normally this code goes back to the operating system and requests more memory
+             * at any time when it feels that would be useful.This option can be used to
+             * set an approximate limit on the amount it will use. See also -k
+             */
+            {   "--kmax", true, true,
+                "--kmax NNN Prevent memory expansion beyond NNN.",
                 [&](string key, bool hasVal, string val)
                 {   string valLow(val);
                     std::transform(valLow.begin(), valLow.end(), valLow.begin(),
@@ -2982,7 +3025,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // First apply some limits to maxmem - I will allow the user to
 // specify up to 80% of the physical memory of their computer, but
 // beyond that is liable to be ridiculous.
-    max_store_size = std::max(max_store_size, 0.8*dmem);
+    max_store_size = std::min(max_store_size, 0.8*dmem);
 // On 32-bit systems I will restrict myself to 1.6Gbytes max because over
 // 2Gbytes I start to risk trouble with sign bits and address arithmetic
 // overflow. There OUGHT not to be too much trouble and the main reasons
@@ -2996,9 +3039,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     }
     if (store_size > max_store_size) store_size = max_store_size;
 // I take the view that at least 48 Mbytes will be needed, so force that in
-// case anybody has tried to set a lower limit.
-    if (store_size < 48.0) store_size = 48.0;
-    if (max_store_size < 48.0) max_store_size = 48.0;
+// case anybody has tried to set a lower limit. Or 16M if MINPAGE was set
+#ifdef MINPAGE
+#define MINMEM 16.0
+#else // MINPAGE
+#define MINMEM 48.0
+#endif // MINPAGE
+    if (store_size < MINMEM) store_size = MINMEM;
+    if (max_store_size < MINMEM) max_store_size = MINMEM;
     if (store_size > max_store_size) store_size = max_store_size;
     maxPages = static_cast<size_t>(max_store_size)/pageMega;
 

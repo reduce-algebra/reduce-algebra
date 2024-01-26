@@ -1212,6 +1212,10 @@ inline uintptr_t getNBytes(size_t n)
 // the page. I expect this to be the most common case
     if ((r&chunkMask) + n <= chunkSize && r!=vecLimit)
     {   vecFringe += n;
+#ifdef DEBUG
+// This is intended to make any error show up more clearly.
+        memset((void *)r, 0x33, n);
+#endif // DEBUG
         return r;
     }
     while ((r = getNBytes(n, vecCurrent, vecFringe,
@@ -1228,6 +1232,9 @@ inline uintptr_t getNBytes(size_t n)
         pendingPages = vecCurrent;
         grabFreshPage(vecPageType);
     }
+#ifdef DEBUG
+    memset((void *)r, 0x33, n);
+#endif // DEBUG
     return r;
 }
 
