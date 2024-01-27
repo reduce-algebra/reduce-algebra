@@ -466,6 +466,10 @@ extern void put_fileinfo(date_and_type *p, const char *name);
 
 extern int windowed;
 
+// Delay a few seconds, eg to let people read a screen.
+
+extern void consoleWait();
+
 extern int windowed_worker(int argc, const char *argv[],
                            fwin_entrypoint *fwin_main);
 

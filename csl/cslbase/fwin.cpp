@@ -523,7 +523,7 @@ void consoleWait()
 // to give at least a minimal chance for the user to inspect it I will
 // put in a delay here. I will still use atexit() with this because I feel
 // reasonably confident that it does not interact with any CSL data at all
-// and so the order of invocatio nof it and any other termination processes
+// and so the order of invocation of it and any other termination processes
 // should be unimportant.
     for (int i=5; i!=0; i--)
     {   char title[32];
@@ -987,8 +987,8 @@ void sigint_handler(int signo, siginfo_t *t, void *v)
 #else // !HAVE_SIGACTION
 void sigint_handler(int signo)
 #endif // !HAVE_SIGACTION
-{   if (async_interrupt_callback != nullptr) (
-            *async_interrupt_callback)(QUIET_INTERRUPT);
+{   if (async_interrupt_callback != nullptr)
+        (*async_interrupt_callback)(QUIET_INTERRUPT);
 }
 
 #endif // !EMBEDDED
