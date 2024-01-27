@@ -1726,7 +1726,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     }
                     term_printf("[end of --help output]\n");
                     term_close();
-                    if (windowed) console_wait();
+                    if (windowed) consoleWait();
 #ifdef HAVE_QUICK_EXIT
 // I do not need to perfrom any atexit() cleanups here.
                     std::quick_exit(EXIT_SUCCESS);
