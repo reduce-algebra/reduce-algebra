@@ -3584,7 +3584,12 @@ static int submain(int argc, const char *argv[])
     CATCH(LispStop)
         return EXIT_SUCCESS;
     END_CATCH
-
+// These next 2 lines are ODD but are here because my TRY/CATCH abstraction
+// preserves and restores stack, but cslstart() initializes it so the
+// saved value is the uninitialized one - with bad consequences. So I
+// repeat the relevant initialization here. 
+    stack = reinterpret_cast<LispObject*>(stackBase);
+ 
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     std::strcpy(ibuff, "(print '(a b c d))");
     execute_lisp_function("oem-supervisor", iget, iput);

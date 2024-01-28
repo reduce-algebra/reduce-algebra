@@ -2005,10 +2005,25 @@ void setup(int restart_flag, double store_size)
 //            allocated, and to re-use what there is.
 //    4, 8, ...   not used yet!
     int32_t i;
-    if ((restart_flag & 2) != 0) init_heap_segments(store_size);
+    if ((restart_flag & 2) != 0)
+    {
+// My scheme to handle assynchronous events works by testing stack
+// against stackLimit. init_heap_segments needs to allocate a first
+// chunnk of memory before it can set up the proper memory range for the
+// stack. So to prevent the event polling from causing trouble I need to
+// preset stack and stackLimit to values that can not be used as such but
+// that are safe against tests for events.
+        stack = 0; stackLimit = (uintptr_t)(-1);
+        init_heap_segments(store_size);
+    }
     garbage_collection_permitted = false;
     THREADID;
     stack = reinterpret_cast<LispObject*>(stackBase);
+    stackLimit = ~static_cast<uintptr_t>(0xff) &
+                 reinterpret_cast<uintptr_t>(
+                     &stack[stack_segsize*CSL_PAGE_SIZE/CELL-200]);
+    // allow some slop at end
+
     *stack = nil;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -2075,11 +2090,6 @@ void setup(int restart_flag, double store_size)
         }
     }
     else for (LispObject* p:list_bases) *p = nil;
-
-    stackLimit = ~static_cast<uintptr_t>(0xff) &
-                 reinterpret_cast<uintptr_t>(
-                     &stack[stack_segsize*CSL_PAGE_SIZE/CELL-200]);
-    // allow some slop at end
 
 #ifndef CONSERVATIVE
     void* p = vheap_pages[vheap_pages_count++] =
