@@ -482,13 +482,13 @@ void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
     space_now++;
     if (!mustGrab)
-    {   // Check for timeoutand spaceout.
+    {   // Check for timeout and spaceout.
         time_now = read_clock()/1000;
         if ((space_limit >= 0 && space_now > space_limit) ||
             (time_limit >= 0 && time_now > time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
             resource_exceeded();
-
+        stackcheck();  // can pick up any pending SIGINT
     }
 // When called from within the GC this MUST succeed! So the key issue is
 // to trigger a GC early enough to make this so. The criterion I will

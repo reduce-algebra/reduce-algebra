@@ -108,7 +108,7 @@
 
 // Jollies re GC statistics...
 
-static char time_string[40], space_string[32];
+static char time_string[64], space_string[64];
 
 // If I am running the CSL GUI then on the top bar of the window I
 // display some status information about how much time and space the

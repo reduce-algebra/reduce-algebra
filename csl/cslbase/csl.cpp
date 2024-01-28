@@ -1158,7 +1158,7 @@ static LispObject lisp_main()
                     cold_start = (exit_value == nil);
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
-                    if ((reinterpret_cast<uintptr_t>(stack)+event_flag) >=
+                    if ((reinterpret_cast<uintptr_t>(stack)|event_flag) >=
                         stackLimit) respond_to_stack_event();
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
@@ -1724,8 +1724,20 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     {   for (char &c : s) char_to_terminal(c, 0);
                         char_to_terminal('\n', 0);
                     }
+                    term_printf("[end of --help output]\n");
                     term_close();
+                    if (windowed)
+                        std::this_thread::sleep_for(std::chrono::seconds(7));
+#ifdef HAVE_QUICK_EXIT
+// I do not need to perfrom any atexit() cleanups here.
+                    std::quick_exit(EXIT_SUCCESS);
+#else // HAVE_QUICK_EXIT
+#ifdef HAVE__EXIT
+                    std::_Exit(EXIT_SUCCESS);
+#else // HAVE__EXIT
                     std::exit(EXIT_SUCCESS);
+#endif // HAVE__EXIT
+#endif // HAVE_QUICK_EXIT
                 }
             },
 
