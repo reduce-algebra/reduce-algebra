@@ -38,7 +38,7 @@
 
 // When built using wxWidgets this code will use the Latin Modern
 // fonts, which are subject to the LaTeX Project Public License. This
-// comment is places somewhere I view as pretty prominent - ie at the head
+// comment is placed somewhere I view as pretty prominent - ie at the head
 // of the source of the main part of the code. I have further comments
 // and explanation lower in this file such that invoking CSL or
 // Reduce with an option "--help" will generate the required credits and
@@ -1451,6 +1451,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
         }
 // Now invoke the action that this calls for.
         (aspec->action)(a, hasVal, val);
+        errexitvoid();
     }
     if (simpleArgs.empty()) terminalUsed = true;
     enable_keyboard(terminalUsed);
@@ -1699,25 +1700,25 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     std::sort(helpText.begin(), helpText.end());
 #ifdef HAVE_LIBWX
 // NOTE that the LaTeX Project Public License requires that every
-// component of a derived work contain priminent notices logging
+// component of a derived work contain prominent notices logging
 // changes of LPPL material and that it also provides information
 // sufficient to obtain complete, unmodified versions of the original.
-// Having text that can be displated via the "--help" command-line option
+// Having text that can be displayed via the "--help" command-line option
 // will (I hope) satisfy these requirements for binary versions of this
 // code. Those who read the source can find this comment as well, which
 // notes that csl/support-packages contains original archives of
 // font-related files that I have used, and that csl/cslbase/wxfonts
 // contains both fonts and documentation explaining what might have
-// changed. And in case anybody receives this file separate from
+// changed. And in case anybody receives this file separately from
 // other parts of the code, I will note that all these files can be
 // downloaded from reduce-algebra.sf.net.
                     helpText.push_back(
-                        "This software contains code that is subject to the LaTeX Project\n"
-                        "Public License. In accordance with Clause 6 of that (which governs\n"
-                        "distribution, there are README in a directory called wxfonts or\n"
-                        "reduce.wxfonts present as part of this distribution that explain\n"
-                        "both changes that have been made and where to obtain copies of\n"
-                        "relevant complete, unmodified original font-related material.\n");
+"This software contains code that is subject to the LaTeX Project\n"
+"Public License. In accordance with Clause 6 of that (which governs\n"
+"distribution), there is README in a directory called wxfonts or\n"
+"reduce.wxfonts present as part of this distribution that explains\n"
+"both changes that have been made and where to obtain copies of\n"
+"relevant complete, unmodified original font-related material.\n");
 #endif
                     term_printf("Options:\n");
                     for (auto s:helpText)
@@ -1725,19 +1726,14 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         char_to_terminal('\n', 0);
                     }
                     term_printf("[end of --help output]\n");
-                    term_close();
+// If I am using the GUI I want two things to happen. First I want to
+// scroll to the top of the output. Then I want the windows to remain
+// open until the used explicitly closes it. Well the byte "\xc1\x9e" is
+// not valid Unicode - it is an overlong representation of '^'. 
                     if (windowed)
-                        std::this_thread::sleep_for(std::chrono::seconds(7));
-#ifdef HAVE_QUICK_EXIT
-// I do not need to perfrom any atexit() cleanups here.
-                    std::quick_exit(EXIT_SUCCESS);
-#else // HAVE_QUICK_EXIT
-#ifdef HAVE__EXIT
-                    std::_Exit(EXIT_SUCCESS);
-#else // HAVE__EXIT
-                    std::exit(EXIT_SUCCESS);
-#endif // HAVE__EXIT
-#endif // HAVE_QUICK_EXIT
+                        term_printf("\xc1\x9e\n");
+                    term_close();
+                    THROW(LispStop);
                 }
             },
 
@@ -2213,7 +2209,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
                         REVISION, IMPNAME, __DATE__);
                     term_close();
-                    std::exit(EXIT_SUCCESS);
+                    THROW(LispStop);
                 }
             },
 
@@ -2843,6 +2839,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         argTableP = &argTable[0];
 
         setupArgs(argTable, argc, argv);
+        errexitvoid();
         for (auto msg : badArgs)
             cout << "+++ " << msg << " not accepted" << endl;
     }
@@ -2956,7 +2953,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         init_flags &= ~INIT_VERBOSE;
         fwin_pause_at_end = true;
         term_close();
-        std::exit(EXIT_SUCCESS);
+        THROW(LispStop);
     }
     base_time = read_clock();
     gc_time = 0;
@@ -3565,7 +3562,6 @@ public:
 };
 #endif
 
-
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
     THREADID;
@@ -3578,11 +3574,17 @@ static int submain(int argc, const char *argv[])
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
 #endif // HAVE_CRLIBM
+
 #if !defined AVOID_KARATSUBA_THREADS && !defined ARITHLIB
     KaratsubaThreads kthreads;
 #endif // AVOID_KARATSUBA_THREADS, ARITHLIB
+    TRY
+// The try block is needed so that fwin_pause_at_end works as intended.
+        cslstart(argc, argv, nullptr);
+    CATCH(LispStop)
+        return EXIT_SUCCESS;
+    END_CATCH
 
-    cslstart(argc, argv, nullptr);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     std::strcpy(ibuff, "(print '(a b c d))");
     execute_lisp_function("oem-supervisor", iget, iput);
