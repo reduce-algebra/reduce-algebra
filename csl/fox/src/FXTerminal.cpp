@@ -3882,14 +3882,23 @@ long FXTerminal::requestFlushBuffer()
 // adjust fwin_in and fwin_out.
     if (sync_even)
     {   LockMutex(mutex1);
+        bool goHome = false;
         if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
         {   if (fwin_in > fwin_out)
-                FXText::appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out);
+            {   FXText::appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out);
+                if (std::memchr(&fwin_buffer[fwin_out], 0xc1, fwin_in-fwin_out) != nullptr)
+                    goHome = true;
+            }
             else
             {   FXText::appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE-fwin_out);
                 FXText::appendText(&fwin_buffer[0], fwin_in);
+                if (std::memchr(&fwin_buffer[fwin_out], 0xc1, FWIN_BUFFER_SIZE-fwin_out) != nullptr)
+                    goHome = true;
+                if (std::memchr(&fwin_buffer[0], 0xc1, fwin_in) != nullptr)
+                    goHome = true;
             }
-            makePositionVisible(rowStart(length));
+            makePositionVisible(goHome ? 0 : rowStart(length));
+            update();
         }
 // After this call fwin_in and fwin_out are always both zero.
         fwin_out = 0;
@@ -3901,14 +3910,22 @@ long FXTerminal::requestFlushBuffer()
     }
     else
     {   LockMutex(mutex3);
+        bool goHome = false;
         if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
         {   if (fwin_in > fwin_out)
-                FXText::appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out);
+            {   FXText::appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out);
+                if (std::memchr(&fwin_buffer[fwin_out], 0xc1, fwin_in-fwin_out) != nullptr)
+                    goHome = true;
+            }
             else
             {   FXText::appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE-fwin_out);
                 FXText::appendText(&fwin_buffer[0], fwin_in);
+                if (std::memchr(&fwin_buffer[fwin_out], 0xc1, FWIN_BUFFER_SIZE-fwin_out) != nullptr)
+                    goHome = true;
+                if (std::memchr(&fwin_buffer[0], 0xc1, fwin_in) != nullptr)
+                    goHome = true;
             }
-            makePositionVisible(rowStart(length));
+            makePositionVisible(goHome ? 0 : rowStart(length));
         }
         fwin_out = 0;
         fwin_in = 0;
@@ -4685,13 +4702,22 @@ long FXTerminal::onTimeout(FXObject *c, FXSelector s, void *p)
 // no other interface code is running. This it may update fwin_out. However
 // it is not interlocked with the worker thread so it MUST NOT allter fwin_in.
     if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
-    {   if (fwin_in > fwin_out)
-            FXText::appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out);
+    {   bool goHome = false;
+        if (fwin_in > fwin_out)
+        {   FXText::appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out);
+            if (std::memchr(&fwin_buffer[fwin_out], 0xc1, fwin_in-fwin_out) != nullptr)
+                goHome = true;
+        }
         else
         {   FXText::appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE-fwin_out);
             FXText::appendText(&fwin_buffer[0], fwin_in);
+            if (std::memchr(&fwin_buffer[fwin_out], 0xc1, FWIN_BUFFER_SIZE-fwin_out) != nullptr)
+                goHome = true;
+            if (std::memchr(&fwin_buffer[0], 0xc1, fwin_in) != nullptr)
+                goHome = true;
         }
-        makePositionVisible(rowStart(length));
+        makePositionVisible(goHome ? 0 : rowStart(length));
+        update();
     }
     fwin_out = fwin_in;
     recently_flushed = 0;

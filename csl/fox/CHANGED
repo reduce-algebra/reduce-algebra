@@ -294,5 +294,8 @@ Jan 2024.     MPSemaphore seems to have stopped being supported so
               the C++ std::thread stuff. When I check through the rest
               of FOX and CSL the only things from FXThread.cpp that I see
               used are a sleep() function and one to report timing.
+              Get "--help" window to scroll to its start on being displayed.
+              This is achieved by using the byte sequence \xc1\x9e which
+              is invalid in utf8 so ought not to clash with any proper usage.
 
 <end of CHANGED>

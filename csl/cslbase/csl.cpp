@@ -1729,9 +1729,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If I am using the GUI I want two things to happen. First I want to
 // scroll to the top of the output. Then I want the windows to remain
 // open until the used explicitly closes it. Well the byte "\xc1\x9e" is
-// not valid Unicode - it is an overlong representation of '^'. 
-                    if (windowed)
-                        term_printf("\xc1\x9e\n");
+// not valid Unicode - it is an overlong representation of '^'. But I
+// arrange that the terminal code detects the 0xc1 byte and when it sees it
+// it scrolls to the top. Since this is a character that can not be
+// present in valid utf8 this ought not to mess too much up! 
+                    if (windowed) term_printf("\xc1\x9e\n");
                     term_close();
                     THROW(LispStop);
                 }
