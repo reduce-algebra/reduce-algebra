@@ -830,11 +830,12 @@ enum LispExceptionTag
     LispReturnFrom  = 0x08,
     LispThrow       = 0x10,
 
-// A final case exits from everything and then sometimes restarts.
+// The final cases exit from everything and then sometimes restarts.
     LispRestart     = 0x20,
+    LispStop        = 0x40,
 
 // Any sort of the above.
-    LispException   = 0x3f
+    LispException   = 0x7f
 };
 
 // There were two ways I could have implemented software catch and thow.
@@ -855,6 +856,7 @@ enum LispExceptionTag
 #define SPID_ReturnFrom       (SPID_ERROR+(static_cast<int>(LispReturnFrom)<<20))
 #define SPID_Throw            (SPID_ERROR+(static_cast<int>(LispThrow)<<20))
 #define SPID_Restart          (SPID_ERROR+(static_cast<int>(LispRestart)<<20))
+#define SPID_Stop             (SPID_ERROR+(static_cast<int>(LispStop)<<20))
 
 
 inline LispExceptionTag exceptionFlag = LispNormal;
@@ -862,9 +864,12 @@ inline LispExceptionTag exceptionFlag = LispNormal;
 inline bool exceptionPending()
 {   return exceptionFlag != LispNormal;
 }
-
-#define errexit()  if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
-#define errexitint()  if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
+#define errexit() \
+    if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
+#define errexitint() \
+    if (exceptionPending()) UNLIKELY return SPID_ERROR+(exceptionFlag<<20)
+#define errexitvoid() \
+    if (exceptionPending()) UNLIKELY return
 
 #ifdef NO_THREADS
 #define TRY ([&]()->LispObject \
@@ -908,6 +913,12 @@ inline int exceptionLine = -1;
         UNLIKELY return SPID_ERROR+(exceptionFlag<<20);
 
 #else // NO_THROW
+
+struct LispStop : public std::exception
+{   virtual const char *what() const throw()
+    {   return "Used to exit the system";
+    }
+};
 
 struct LispException : public std::exception
 {   virtual const char *what() const throw()

@@ -759,8 +759,7 @@ int char_to_terminal(int c, LispObject)
     if (c == '\n' || c == '\f') terminal_column = 0;
     else if (c == '\b') terminal_column--;
     else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
-    else if ((c & 0xc0) == 0x80) /* do nothing */;
-    else terminal_column++;
+    else if ((c & 0xc0) != 0x80) terminal_column++;
     if (spool_file != nullptr)
     {   PUTC(c, spool_file);
 #ifdef DEBUG
