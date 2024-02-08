@@ -34,7 +34,7 @@
 
 // $Id$
 
-#include "headers.h"
+#include "arith-headers.h"
 
 
 static thread_local std::vector<char> print_buffer;

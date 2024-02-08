@@ -1,4 +1,4 @@
-// cslread.h                             Copyright (C) Codemist, 1989-2023
+// cslread.h                             Copyright (C) Codemist, 1989-2024
 
 //
 // Header defining the structure of the package system for use by

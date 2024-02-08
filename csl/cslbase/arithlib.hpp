@@ -1,4 +1,4 @@
-// Big Number arithmetic.                             A C Norman, 2019-2023
+// Big Number arithmetic.                            A C Norman, 2019-2024
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -9,9 +9,10 @@
 //    Write full documentation! [Meanwhile there is a reasonably extended
 //     commentary included as comments here, and a file arithtest.cpp that
 //     can accompany it and illustrate its use]
+//    Re-work long division to approximate Karatsuba complexity.
 
 /**************************************************************************
- * Copyright (C) 2019-2023, Codemist.                    A C Norman       *
+ * Copyright (C) 2019-2024, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -312,14 +313,16 @@
 //     assembly code that GMP uses. This reduces the total size of the
 //     package substantially and makes building/installing/using it especially
 //     easy even when a packaged version is not instantly available for
-//     your machine.
+//     your machine. However the author of this code does not trust
+//     compilers unconditionally - testing has used g++-13 and up to date
+//     versions of clang.
 // (3) By being a header-only library, arithlib imposes a cost at program
 //     build time as it all has to be processed by the compiler - but these
 //     days compile-times are pretty short anyway. And by having all of
 //     its souce code available when code that uses it is built there are
 //     potential whole-program optimisations that can be made.
 // (4) arithlib is coded in C++ not C, and this allows it to leverage features
-//     of C++11. For instance it can rely on the random number generation
+//     of C++17. For instance it can rely on the random number generation
 //     facilities that C++ provides rather than needing to implement its
 //     own. There are places within it where template code leads to a neater
 //     implementation, and the operator overloading scheme that various other
@@ -418,11 +421,11 @@
 
 #define NEW           1
 
-#endif
+#endif // default the allocation scheme
 
 #ifndef __cpp_inline_variables
 #error "Arithlib.hpp needs __cpp_inline_variables (ie C++17 or above)"
-#endif
+#endif // inline_variables
 
 // A useful C++17 feature.... with a fallback to a GNU-specific
 // way of achieving the same through use of C++11 annotations. And a final
@@ -430,17 +433,17 @@
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
-#endif
+#endif // has_attribute
 
 #ifndef MAYBE_UNUSED
 #if __has_cpp_attribute(maybe_unused)
 #define MAYBE_UNUSED [[maybe_unused]]
 #elif defined __GNUC__
 #define MAYBE_UNUSED [[gnu::unused]]
-#else
+#else // GNUC
 #define MAYBE_UNUSED
-#endif
-#endif
+#endif // GNUC
+#endif // MAYBE_UNUSED
 
 #ifndef LIKELY
 #if __has_cpp_attribute(likely)
@@ -471,24 +474,1500 @@
 #include <random>
 #include <iostream>
 #include <iomanip>
-#include <thread>
 #include <ctime>
 #include <chrono>
 #include <utility>
 #include <string>
 #include <chrono>
+#include <thread>
 #include <mutex>
 #include <atomic>
 #include <vector>
 #include <type_traits>
 
+// acnutil.h                               Copyright (C) 2024 Arthur Norman
+
+/**************************************************************************
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// $Id$
+
+#ifndef __header_acnutil
+#define __header_acnutil
+
+// This is going to have any generic bits of helpfulness I would like
+// to provide myself with.
+
+#include <cstdint>
+#include <chrono>
+#include <iostream>
+#include <sstream>
+#include <type_traits>
+#include <utility>
+
+
+// This is to provide me with compile-time "for loops" which I can
+// write as
+//    forloop<start, limit> ([&] (auto variableName)
+//    {   BODY within which variableName is constexpr
+//    });
+//
+// For instance
+//    forloop<7,12> ([&] (auto i)
+//    {   constexpr size_t ii = i;
+//        std::cout << ii << "\n";
+//    });
+// prints the values from 7 to 11. The introduction of ii there is just
+// to illustrate that the control variable is a constexpr.
+
+// The synytax for use there is not a disaster but I provide a #define
+// macro that some may fine more to their taste, used as
+//    forconstexpr (i, 7, 12,
+//    {   constexpr size_t ii = i;
+//        std::cout << ii << "\n";
+//    });
+
+template <class T1, std::size_t V1, class T2, std::size_t V2>
+[[gnu::always_inline]] inline auto add_integral_constants(
+                                       std::integral_constant<T1,V1> t1,
+                                       std::integral_constant<T2,V2> t2)
+{   return std::integral_constant<std::size_t, t1()+t2()>{};
+}
+
+namespace acnutil {
+
+template<std::size_t start, std::size_t... inds, class F>
+[[gnu::always_inline]] inline constexpr void loopInner(
+    std::integer_sequence<std::size_t, inds...>, F&& f)
+{   (f(add_integral_constants(std::integral_constant<std::size_t, start>{},
+                              std::integral_constant<std::size_t, inds>{})),
+       ...);
+}
+
+};
+
+template<std::size_t start, std::size_t count, class F>
+[[gnu::always_inline]] inline constexpr void forloop(F&& f)
+{   acnutil::loopInner<start>(std::make_index_sequence<count-start>{},
+                              std::forward<F>(f));
+}
+
+#define forconstexpr(_var, _init, _limit, _body) \
+    forloop<_init, _limit> ([&] (auto _var) [[gnu::always_inline]] { _body }) 
+
+
+// Using the high resolution clock is in many respects easy, but it is
+// also pretty clumsy because the function names are so long. So here is
+// a compact protocol for my own use:
+//   auto t0 = now(); DO SOMETHING; auto t1 = now();
+//   ... microseconds(t1, t0) ...
+
+inline auto now()
+{   return std::chrono::high_resolution_clock::now();
+}
+
+inline std::uint64_t microseconds(
+    std::chrono::time_point<std::chrono::high_resolution_clock> t1,
+    std::chrono::time_point<std::chrono::high_resolution_clock> t0)
+{   return
+        std::chrono::duration_cast<std::chrono::microseconds>(t1-t0).count();
+}
+
+// Given a string and an integer make a string that concatena tes them,
+// so that e.g. concat("sss", 123) will yield "sss123".
+
+inline std::string concat(std::string a, int n)
+{   std::stringstream ss;
+    ss << a << n;
+    return ss.str();
+}
+
+#endif // __header_acnutil
+
+// end of acnutil.h
+// lvector.h                                  Copyright (C) A C Norman 2024
+
+// This is intended to behave much as a C++ "T*" pointer except that it
+// performs bound checking if DEBUG is defined at compile-time.
+
+/**************************************************************************
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// $Id$
+
+#ifndef __header_lvector_h
+#define __header_lvector_h 1
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// BEWARE:                                                         //
+// Every thread must start by calling ThreadLocal::initialize().   //
+// This applies only on Windows where some special handling of     //
+// thread-local values is applied here for performance reasons.    //
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+// Overview
+//
+// There are some classes:
+//   stkvector<T>   a vector of n items of type T for stack/static allocation.
+//   newvector<T>   a vector as above but synamically allocated (eg heap).
+//   vecpointer<T>  a pointer to one of the above.
+
+// This is something like what I want...
+//== template <typename T>
+//== using stkvector<T> = T[];   used in file of block scope definitions.
+//== using newvector<T> = T[];   can create a vector using "new" or
+//==                             encapsulate one that already exists/
+//== using vecpointer<T> = T*;   pointer to one of these.
+// however that can not let me establish locally defined vectors
+// of dynamic size, and I want to support declarations such as
+//         stkvector<int> myLocalArray(std::atoi(argv[1]));
+// to set up a block scope vector where the size is not known at
+// compile time. Also following
+//         vecpointer<int> p = new int[100];
+//  or     vecpointer<int> p = newvector<int>(100);
+// this would mean I needed to discard the space explicitly.
+// Ordinary code uses
+//   T* p = new T[20]; ... ; delete[] p;
+// here it is necessary to write
+//   vecpointer<T> p = new T[20]; ... ; p.discard();
+// because overriding "delete[]" suitably is not possible.
+//
+// I want sizeof(vecpointer<T>) == sizeof(T*). The size of the stkvector
+// object is less important: in raw C++ after "int vec[N];" sizeof(vec)
+// will be N*sizeof(int) but rather than supporting that I will provide
+// a "size()" method to retrieve that information. And I will view
+// stkvector as only suitable for use with a compilation unit or block
+// scope declaration. "new stkvector" is not to be allowed.
+// However "newvector<T>(N)" mau be used to create an vecpointer to
+// a heap-allocated vector of length N and that will be preferred to
+// use of "new" directly.
+//    ...
+// stkvector<T> will need to support
+//    creation via a declaration at file or block scope.
+//    reclamation of all its space at block exit.
+//    convert to vecpointer<T>
+//    convert to vecpointer<const T> 
+//    a function size() [because sizeof on it will not work]
+// T must not be a "const" type.
+
+// vecpointer<T> will need to support
+//    a default constuctor that makes an uninitialized pointer.
+//    a copy constructor.
+//    constructor from nullptr.
+//    constructor from a T*.
+//    constructor from a T* but with a length specifier.
+//    construction from a SizedPointer.
+//    constructor from an stkvector<T>.
+//    a "discard" function for deleting its contents
+//    operator*             indirection
+//    operator[]            subscripting
+//    operator=
+//    operator+(integer)
+//    operator-(integer)
+//    operator+= and operator-=
+//    operator++ and operator--  (pre and post versions of each)
+//    operator== and operator!= to compare against a nullptr or
+//                              another vecpointer<T>
+//    casts into T* and const T*
+//
+// I will require sizeof(vecpointer<T>) == sizeof(T*). I am going to
+// assume all pointer types have the same size which C++ may not
+// guarantee by all general-purpose versions arrange.
+
+// In non-DEBUG mode I want the use of vecpointer<T> to map onto the
+// use of T* so there is no overhead.
+//
+// In DEBUG mode when an vecpointer will be a pointer to a heap allocated
+// vecpointerInfo strucure that has fields
+//     T* data;        reference to underlying data
+//     size_t limit;   length of the underlying data in units of T
+//     size_t offset;  offset within data that is toi be used   
+// Any operation that would leave offset>=limit, offset<0 or would
+// attempt to access data outside those bounds will raise an exception.
+// If the LPointer<T> is created directly from a T* then if no limit is
+// given then SIZE_MAX is used.
+
+#include <cstdint>
+#include <cstddef>
+#include <cstring>
+#include <iostream>
+
+template <typename T>
+class vecpointer;
+
+template <typename T>
+class newvector
+{
+public:
+    T* data;
+    std::size_t limit;
+    newvector(size_t n)
+    {   data = static_cast<T*>(new T[n]);
+        if (data != nullptr)
+        {   std::memset(data, 0x99, n*sizeof(T));
+            limit = n;
+        }
+        else limit = 0;
+    }
+    newvector(T* v, size_t n)
+    {   data = v;
+        limit = n;
+    }
+    operator vecpointer<T>()
+    {   return vecpointer<T>(data, limit);
+    }
+    friend std::ostream & operator << (std::ostream &out, const newvector& a)
+    {   out << a.data;
+        return out;
+    }
+};
+
+#ifndef DEBUG
+
+template <typename T>
+class vecpointer
+{
+private:
+    T* data;
+public:
+
+//    a default constuctor
+    vecpointer()
+    {   data = nullptr;
+    }
+
+//    a copy constructor
+    vecpointer(const vecpointer<T>& a)
+    {   data = a.data;
+    }
+
+//    constructor from nullptr
+    vecpointer(std::nullptr_t a)
+    {   data = nullptr;
+    }
+
+//    constructor from a T*
+    vecpointer(T* a)
+    {   data = a;
+    }
+
+//    constructor from a T* but with a length specifier
+    vecpointer(T* a, size_t n)
+    {   data = a;
+    }
+
+//    setsize() - a no-op in this case.
+    void setsize(size_t n)
+    {}
+
+//    discard()     for deleting its contents
+    void discard()
+    {   delete [] data;
+        data = nullptr;
+    }
+
+//    operator*             indirection
+    T& operator*()
+    {   return *data;
+    }
+    T operator*() const
+    {   return *data;
+    }
+
+//    operator[]            subscripting
+    T& operator[](size_t n)
+    {   return data[n];
+    }
+    T operator[](size_t n) const
+    {   return data[n];
+    }
+
+//    operator=
+    vecpointer<T>& operator=(newvector<T>& a)
+    {   data = a.data;
+        return *this;
+    }
+    vecpointer<T>& operator=(const vecpointer<T> a)
+    {   data = a.data;
+        return *this;
+    }
+
+//    operator+(integer)
+    vecpointer<T> operator+(std::ptrdiff_t n)
+    {   return vecpointer<T>(data + n);
+    }
+
+//    operator-(integer)
+    vecpointer<T> operator-(std::ptrdiff_t n)
+    {   return vecpointer<T>(data - n);
+    }
+
+//    operator+= and operator-=
+    vecpointer<T>& operator+=(std::ptrdiff_t n)
+    {   data += n;
+        return *this;
+    }
+    vecpointer<T>& operator-=(std::ptrdiff_t n)
+    {   data -= n;
+        return *this;
+    }
+
+//    operator++ and operator--  (pre and post versions of each)
+    vecpointer<T>& operator++()
+    {   ++data;
+        return *this;
+    }
+    vecpointer<T>& operator--()
+    {   --data;
+        return *this;
+    }
+    vecpointer<T> operator++(int)
+    {   return vecpointer<T>(data++);
+    }
+    vecpointer<T> operator--(int)
+    {   return vecpointer<T>(data--);
+    }
+
+//    operator== and operator!= to compare against a nullptr or
+//                              another vecpointer<T>
+    bool operator==(std::nullptr_t a)
+    {   return data == nullptr;
+    }
+    bool operator!=(std::nullptr_t a)
+    {   return data != nullptr;
+    }
+    bool operator==(const vecpointer<T> a)
+    {   return data == a.data;
+    }
+    bool operator!=(const vecpointer<T> a)
+    {   return data != a.data;
+    }
+
+//    casts into T*
+    operator T*()
+    {   return data;
+    }
+
+    operator void*()
+    {   return static_cast<void*>(data);
+    }
+
+    operator const void*()
+    {   return static_cast<const void*>(data);
+    }
+
+    operator vecpointer<const T>()
+    {   return vecpointer<const T>(data);
+    }
+
+    void show()
+    {   if (data == nullptr) std::cout << "empty pointer\n";
+        else std::cout << "non-debug pointer "
+                       << this << "/" << *this << " holds " << data << "\n";
+    }
+    void show(const char* s)
+    {   std::cout << s << ": ";
+        show();
+    }
+    friend std::ostream & operator << (std::ostream &out, const vecpointer& a)
+    {   out << a.data;
+        return out;
+    }
+};
+
+#else // DEBUG 
+
+inline void lvector_assert(bool b)
+{   if (b) return;
+    std::cerr << "\n+++ Access outside vector bound +++\n";
+    std::abort();
+}
+
+template <typename T>
+class vecpointerData
+{
+// This is a vector "T* data" with length "limit" where the reference into
+// it is "offset" units from the start. So at all times we must have
+// 0 <= offset < limit.
+public:
+    T* data;
+    size_t limit;
+    size_t offset;
+
+// normal constructor
+    vecpointerData(T* d, size_t l, size_t o)
+    {   data = d;
+        limit = l;
+        offset = o;
+    }
+
+// null-pointer constructor.
+    vecpointerData(std::nullptr_t d, size_t l, size_t o)
+    {   data = nullptr;
+        limit = l;
+        offset = o;
+    }
+    friend std::ostream & operator << (std::ostream &out, const vecpointerData& a)
+    {   out << a.data;
+        return out;
+    }
+};
+
+template <typename T>
+class vecpointer
+{
+private:
+    vecpointerData<T>* data;
+public:
+
+//    a default constuctor
+    vecpointer()
+    {   data = new vecpointerData<T>(nullptr, 0, 0);
+    }
+
+    ~vecpointer()
+    {   if (data != nullptr)
+        {   delete data;
+            data = nullptr;
+        }
+    }
+
+//    a copy constructor
+    vecpointer(const vecpointer<T>& a)
+    {   data = new vecpointerData<T>(a.data->data, a.data->limit, a.data->offset);
+    }
+
+//    constructor from nullptr
+    vecpointer(std::nullptr_t a)
+    {   data = new vecpointerData<T>(nullptr, 0, 0);
+    }
+
+//    constructor from a T*
+    vecpointer(T* a)
+    {   data = new vecpointerData<T>(a, SIZE_MAX, 0);
+    }
+
+//    constructor from a T* but with a length specifier
+    vecpointer(T* a, size_t n)
+    {   data = new vecpointerData<T>(a, n, 0);
+    }
+
+//    constructor from a T* but with a length specifier and an offset
+    vecpointer(T* a, size_t n, size_t o)
+    {   data = new vecpointerData<T>(a, n, o);
+    }
+
+//    setsize() - may be useful in debug mode.
+    void setsize(size_t n)
+    {   data->limit = n;
+    }
+
+//    discard()     for deleting its contents
+    void discard()
+    {   delete [] data;
+        data = nullptr;
+    }
+
+//    operator*             indirection
+    T& operator*()
+    {   return data->data[data->offset];
+    }
+    T operator*() const
+    {   return data->data[data->offset];
+    }
+
+//    operator[]            subscripting
+    T& operator[](size_t n)
+    {   size_t nn = n + data->offset;
+        lvector_assert(nn < data->limit);
+        return data->data[nn];
+    }
+    T operator[](size_t n) const
+    {   size_t nn = n + data->offset;
+        lvector_assert(nn < data->limit);
+        return data->data[nn];
+    }
+
+//    operator=
+    vecpointer<T>& operator=(const vecpointer<T> a)
+    {   data->data = a.data->data;
+        data->limit = a.data->limit;
+        data->offset = a.data->offset;
+        return *this;
+    }
+
+//    operator+(integer)
+    vecpointer<T> operator+(std::ptrdiff_t n)
+    {   size_t nn = n + data->offset;
+        lvector_assert(nn < data->limit);
+        return vecpointer<T>(data->data, data->limit, nn);
+    }
+
+//    operator-(integer)
+    vecpointer<T> operator-(std::ptrdiff_t n)
+    {   size_t nn = data->offset - n;
+        lvector_assert(nn < data->limit);
+        return vecpointer<T>(data->data, data->limit, nn);
+    }
+
+//    operator+= and operator-=
+    vecpointer<T>& operator+=(std::ptrdiff_t n)
+    {   data->offset += n;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+    vecpointer<T>& operator-=(std::ptrdiff_t n)
+    {   data->offset -= n;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+
+//    operator++ and operator--  (pre and post versions of each)
+    vecpointer<T>& operator++()
+    {   ++data->offset;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+    vecpointer<T>& operator--()
+    {   --data->offset;
+        lvector_assert(data->offset < data->limit);
+        return *this;
+    }
+    vecpointer<T> operator++(int)
+    {   lvector_assert(data->offset+1 < data->limit);
+        return vecpointer<T>(data->data, data->limit, data->offset++);
+    }
+    vecpointer<T> operator--(int)
+    {   lvector_assert(data->offset >= 1);
+        return vecpointer<T>(data->data, data->limit, data->offset--);
+    }
+
+//    operator== and operator!= to compare against a nullptr or
+//                              another vecpointer<T>
+    bool operator==(std::nullptr_t a)
+    {   return data->data == nullptr;
+    }
+    bool operator!=(std::nullptr_t a)
+    {   return data->data != nullptr;
+    }
+    bool operator==(const vecpointer<T> a)
+    {   return data->data == a.data->data &&
+               data->offset == a.data->offset;
+    }
+    bool operator!=(const vecpointer<T> a)
+    {   return data->data != a.data->data ||
+               data->offset != a.data->offset;
+    }
+
+//    casts into T*
+    operator T*()
+    {   return &data->data[data->offset];
+    }
+
+    operator void*()
+    {   return static_cast<void*>(&data->data[data->offset]);
+    }
+
+    operator const void*()
+    {   return static_cast<const void*>(&data->data[data->offset]);
+    }
+
+    operator vecpointer<const T>()
+    {   return vecpointer<const T>(data->data, data->limit, data->offset);
+    }
+
+// show() is really just for debugging.
+    void show()
+    {   if (data == nullptr) std::cout << "empty pointer\n";
+        else
+        {   std::cout << "debug pointer " << this << "/" << *this
+                      << " holds " << data << "\n";
+            std::cout << data->data << " " << data->limit
+                      << " " << data->offset << "\n";
+        }
+    }
+    void show(const char* s)
+    {   std::cout << s << ": ";
+        show();
+    }
+    friend std::ostream & operator << (std::ostream &out, const vecpointer& a)
+    {   out << a.data;
+        return out;
+    }
+};
+
+#endif // DEBUG
+
+
+//=========================================================================
+
+// Here I want to be able to allocate a vector such that it is
+// automatically discarded when it goes out of scope, but I want
+// as little overhead as I can manage. I could use std::unique_ptr
+// to get the "auto-delete" functionality but I am not fully confident
+// that the C++ storage management overheads will be truly small. What
+// I do here is I allocate a vector and maintain a record of its size
+// and a fringe. If an allocation request will fit I just allocate at the
+// fringe. If not I will new "new" to grab a fresh vector that is at least
+// twice the size of the existing one and also big enough for the request.
+// I must not delete the existing chunk since data within it is still in
+// use. So all allocated vectors are places in a "recycleBin" that
+// arranges deletion when the program terminates. Because expansion
+// allocated new blocks twice the size of a previous one even in the
+// worst case will be that these orphaned vectors only take up as much
+// space as the current active chunk. This could be viewed as a factor
+// of 2 waste - I consider it acceptable.
+// When a local vector is done with the fringe gets decreased by its
+// size (so I need to have recorded its size). The case fringe==0 when
+// deletion is attempted corresponds to discarding a block of memory in
+// one of the vectors that are in the recycle bin, and I do not need to
+// so anything.
+// I allocate in bytes in an "char[]" array so that I only use one pool
+// of memory across all types of object allocated, but then there may
+// still need to be one pool per thread. I only support allocation
+// aligned up to std::max_align_t, so anybody with over-aligned data should
+// beware.
+
+// The following structure contains everything a thread needs to manage
+// its allocation. So a thread_local instance of it will cope with
+// everything I do.
+
+#include <vector>
+
+// threadloc.h                                  Copyright (C) 2024 Codemist
+
+#ifndef header_threadloc_h
+#define header_threadloc_h 1
+
+/**************************************************************************
+ * Copyright (C) 2024, Codemist.                         A C Norman       *
+ *                                                                        *
+ * Redistribution and use in source and binary forms, with or without     *
+ * modification, are permitted provided that the following conditions are *
+ * met:                                                                   *
+ *                                                                        *
+ *     * Redistributions of source code must retain the relevant          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer.                                                      *
+ *     * Redistributions in binary form must reproduce the above          *
+ *       copyright notice, this list of conditions and the following      *
+ *       disclaimer in the documentation and/or other materials provided  *
+ *       with the distribution.                                           *
+ *                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+ * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+ * DAMAGE.                                                                *
+ *************************************************************************/
+
+// $Id$
+
+// Using the "thread_local" qualifier in the declaration of a variable
+// imposes overheads that I found unexpected on Windows. The code here
+// is intended to address that issue. I can predefined USE_CXX_TLS to
+// fall back to standard code.
+
+// The costs follow from the C++ need to support objects with non-trivial
+// destructors. For my purposes I will be content to have just a thread-
+// local varriable of pointer type. I can use that to point at a structure
+// managed by the general and slower mechanism that contains all the
+// values I need. So usage is expected to be along the lines of:
+
+//::  struct MyThreadLocalStruct
+//::  {
+//::      int var1;
+//::      double array[10];
+//::      std::vector<std::string> vs;
+//::  };
+//::  inline constexpr int TL_tlStruct = 55; // Value in the range 48-63
+//::  DEFINE_THREAD_LOCAL(MyThreadLocalStruct, tlStruct);
+//::
+//::  .. then use      tlStruct->var1    etc.
+//::
+
+// For an integer or pointer values it may be useful to save one indirection
+// and go eg
+
+//::  inline constexpr int TL_intVar = 56;
+//::  DEFINE_THREAD_LOCAL_POD(int, intVar, 99);
+//::  inline constexpr int TL_ptrVar = 56;
+//::  DEFINE_THREAD_LOCAL_POD(const char*, ptrVar, "Some String Data");
+//::
+//::  .. then use intVar and ptrVar directly.
+
+
+// For initialization to work every thread-function needs to start by
+// calling ThreadLocal::initialize().
+// This is needed (well only on Windows!) because the reference to something
+// looks like a thread-local variable X is in fact a call to a function
+// that does not use C++ thread support directly. It used the Microsoft API.
+// That means that C++ is utterly unaware of any need for initialization
+// beyond the base thread. I use trickery involving a vector of
+// lambda-functions to get things initialized in subsidiary threads, and
+// the call to initialize() deals with this.
+
+// I will explain what the expansion needs to be. First in the
+// non-Windows case, all of which is pretty straightforward:
+//
+//   DEFINE_THREAD_LOCAL(T, name) =>
+//       [/static/inline] thread_local T TLDATA_name;
+//       [/static/inline] T* name = &TLDATA__name;
+//
+//   DEFINE_THREAD_LOCAL_POD(T, name, init) =>
+//       [/static/inline] T name = init;
+//
+// The Windows cases are different... and is messy enough that it deserves
+// explantion. TL_name will be a const giving a numerical offset within the
+// Microsoft TLS vector. The ThreadLocalObject is a wrapper that causes
+// its instance to behave (almost) as if it is a simple thread local
+// variable of type T (which must be consistent with intptr or void*) but
+// that uses the slot in the Microsoft vector addressed relative to a segment
+// register. When constructed it sets the slot for the thread it is running
+// in to the initial value give. This is expected to be in the main thread.
+// In other threads  the slots are not automatically initialized, so
+// initVec is set up holding a number of zero-argument functions each of
+// which initializes one of the thread local objects that have been declared
+// this way. A method 
+//
+//   DEFINE_THREAD_LOCAL_POD(T, name, init)
+//       ThreadLocal::ThreadLocalObject<T, TL_name> name(init);
+//       inline bool INIT_name = [](){
+//           ThreadLocal::initVec.push_back([]()
+//               { name = init; });
+//           return true; } ();
+//
+//   DEFINE_THREAD_LOCAL(T, name)
+//       [/static] T TLDATA_name;
+//       DEFINE_THREAD_LOCAL_POD(T*, name, &TLDATA__name);
+//
+//   DEFINE_INLINE_THREAD_LOCAL(T, name)
+//       inline auto TLFN_name()
+//       {   static thread_local T TLDATA_name;
+//           return &TLDATA_name;
+//       }
+//       DEFINE_THREAD_DATA_POD(T*, name, &TLFN__name());
+
+
+#include <cstdint>
+#include <cinttypes>
+
+namespace ThreadLocal
+{
+#ifndef NO_THREADS
+#if (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
+
+// With Cygwin and mingw32 (as of 2021) the support of thread-local variables
+// uses a mechanism "emutls". For code that makes extensive use of such
+// variables in many separate little functions this can add severe overhead.
+// Microsoft provides a scheme of rather different style to support
+// thread-local. Direct use of it just allows the storage of "void *" values,
+// and there is a limit to how many can be stored -- although for my purposes
+// the limit is plenty high enough. Using it tends to lead to much better
+// performance (though lower flexibility) than emutls. If one has a set of
+// large functions that do heavy work within them then thread_local overheads
+// can be low regardless - the C++ compiler can load a base address for
+// thread local data once and re-use it. So costs are only bad when one
+// has SMALL functions that reference thread local values and where these
+// small functions are code hot-spots. However with Reduce I found that
+// making just one key variable thread_local under Windows slowed the entire
+// system down by a factor of more than 2, and that led eventually to the
+// dubious scheme implemented here.
+
+// I define system entrypoints by hand here because if I were to
+// include <windows.h> that would bring in many more definitions some
+// of which I might really not want. Specifically it can defined some macros
+// that clash with Cygwin.
+
+extern "C"
+{
+
+// TlsAlloc() allocates a small integer that acts as a handle for a
+// fresh thread-local. Once such a handle has been allocated TlsSetValue and
+// TlsGetValue can save and load void* values from a location that it
+// refers to. When the handle is no longer required it will be
+// proper to call TlsFree to release it. One can certainly not allocate more
+// than 1088 handles (this value is 64+1024, and access via the first 64
+// handles will be slightly cheaper than via the remaining 1024). If a
+// value that you want to be thread-local can not be stored in a void * using
+// TlsSetValue then it is necessary to allocate space elsewhere and set the
+// Microsoft slot to point to it.
+
+#ifdef __LP64__
+    typedef unsigned int tls_handle;
+#else // __LP64__
+    typedef unsigned long tls_handle;
+#endif // __LP64__
+
+    extern __declspec(dllimport) tls_handle TlsAlloc(void);
+    extern __declspec(dllimport) int TlsFree(tls_handle);
+};
+
+// The first 64 TLS handles are supported with greater efficiency than
+// ones beyond that. I wish to reserve 48-63 for my own use. This function
+// that claims them must be run before any other part of the applications
+// has grabbed enough to conflict. After it has run the Microsoft scheme
+// should remain available for all other purposes.
+// I am going to ASSUME that during static initialization no more than
+// 48 thread handles are allocated by library and other parts of the code.
+// This is not a fully safe assumption in general!
+
+// I do things that way I do so that each user thread_local slot is
+// allocated at compile time so that the run-time indexing uses a
+// known value. Doing this gives a slight performance edge!
+
+inline bool initThreadHandles()
+{   static bool initialized = false;
+    if (initialized) return true;     // I will only do this once.
+    std::uint64_t map = -1;
+// Here I rely on TlsAlloc() returning handles in the range 0-63
+// before any larger ones.
+    for (;;)
+    {   tls_handle h = TlsAlloc();
+        if (h >= 64) return false;
+        map &= ~(UINT64_C(1)<<h);
+        if ((map & 0xffff000000000000U) == 0) break;
+    }
+// I will have reserved some handles that I am not about to use, and
+// those are identified in the bitmap. Free them.
+    for (int i=0; i<48; i++)
+        if ((map & (UINT64_C(1)<<i)) == 0) TlsFree(i);
+    initialized = true;
+    return true;
+}
+
+// This static initialization will guarantee that initThreadHandles is
+// called before main(). If enough DLLs are linked in and use thread-local
+// slots then this may fail! This initilizer must also be run before that
+// of any of my ThreadLocal objects.
+
+inline bool getThreadhandles = initThreadHandles();
+
+
+// I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
+// www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
+// which has repeated comments about the long term stability of the memory
+// layout involved. Specificall the judgement expressed there is that so
+// much extant code will rely on the details of all this that it can not
+// be changed.
+
+// The basic concept is that Microsoft keep a segment register (FS on 32-bit
+// systems and GS on 64) pointing to a thread-specific block of memory.
+// Within that block there is a 64-bit region for user thread-locals and
+// then a pointer to a larger block that provides and extended number
+// of user thread-locals. TlsAlloc() allocates a "thread slot number" and
+// if that is less than 64 it refers to a word in the first block, otherwise
+// in the extended region. Here I will not support the extended region!
+
+#if __SIZEOF_POINTER__ == 4
+#define MOVE_INSTRUCTION "movl"
+#define SEGMENT_REGISTER "%%fs"
+#define TLS_offset           0xE10
+#else // Windows 32 vs 64 bit
+#define MOVE_INSTRUCTION "movq"
+#define SEGMENT_REGISTER "%%gs"
+#define TLS_offset           0x1480
+#endif // Windows 32 vs 64 bit
+
+// The next two functions access values relative to the proper
+// segment register. The template argument must allow for the offset of
+// the block of 64 slots in the region pointed at by the segment register
+// and also the size of each slot.
+
+// Experimentally I seem to need to put "asm volatile" in both of these
+// cases to end up with code that does not fail. I do not think I
+// understand why that could be vital on read_via_segmemt_register...
+// But at present this seems to work!
+
+template <int N>
+inline void *read_via_segment()
+{   void *r;
+    asm volatile
+    (   MOVE_INSTRUCTION "  " SEGMENT_REGISTER ":%c1, %0"
+        : "=r" (r)
+        : "i" (N)
+    );
+    return r;
+}
+
+template <int N>
+inline void write_via_segment(void *v)
+{   asm volatile
+    (   MOVE_INSTRUCTION " %0, " SEGMENT_REGISTER ":%c1"
+        :
+        : "r" (v), "i" (N)
+    );
+}
+
+// The purpose of the following class is to arrange that when you
+// have declared an instance of it that then access to the value get mapped
+// onto the "via_segment_register" functions above. 
+// I overload and hence support those operations used within CSL, and
+// will add support for others here as and when I find I need to so that
+// the class instance can be used almost as if it was a simple variable
+// of type T. But its address may not be taken.
+
+// I will require the type T to be one where its data can be held
+// in a "void *" location. So any pointer type will be OK and
+// intptr_t/uintptr_t should work. char/short/int will probably be OK.
+
+template <typename T, int N>
+class ThreadLocalObject
+{
+public:
+// Here I use a C style case rather than eg reinterpret_cast because I
+// want to adjust the data come what may, including any case with "const"
+// qualifiers.
+    ThreadLocalObject(T v)
+    {   write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
+    }
+    T operator=(T v)
+    {   write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
+        return v;
+    }
+    T operator ->()
+    {   return reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+    }
+    T& operator [](size_t n)
+    {   return reinterpret_cast<T*>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>())[n];
+    }
+//    T& operator *()
+//    {   return *reinterpret_cast<T*>(
+//            read_via_segment<TLS_offset+N*sizeof(void *)>());
+//    }
+    operator T() const
+    {   return reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+    }
+    template <typename T1>
+    operator T1() const
+    {   return (T1)
+            read_via_segment<TLS_offset+N*sizeof(void *)>();
+    }
+    T operator ++()
+    {   T v = reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>())
+            + 1U;
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
+        return v;
+    }
+    T operator ++(int)
+    {   T v = reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)(v + 1U));
+        return v;
+    }
+    T operator --()
+    {   T v = reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>())
+            - 1U;
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
+        return v;
+    }
+    T operator --(int)
+    {   T v = reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)(v - 1U));
+        return v;
+    }
+    template <typename T1>
+    T operator +=(T1 n)
+    {   T v = reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>()) +
+            static_cast<uintptr_t>(n);
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
+        return v;
+    }
+    template <typename T1>
+    T operator -=(T1 n)
+    {   T v = reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>()) -
+            static_cast<uintptr_t>(n);
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)(v));
+        return v;
+    }
+// I could put in overrides for &, &= and all the other operators that C++
+// lets me defined, but at present I do not really even need all that is
+// included here already.
+};
+typedef void ZeroArgFunction();
+std::vector <ZeroArgFunction*> initVec;
+
+inline void initialize()
+{   for (auto fn:initVec) (fn)();
+}
+
+   
+#endif // MICROSOFT special version.
+
+#endif // NO_THREADS
+
+
+
+//###########################################
+
+#ifdef NO_THREADS
+
+// The versions in this section are dummies in that they do nor make
+// things thead_local at all. There are in case these macros are used in
+// a library or a version of a program than can never need to be thread
+// safe. They also perhaps serve as tidy explanations of the overall
+// behaviour of all these macros.
+
+inline void initialize()
+{
+}
+
+// These versions are all about having a pointer to an object of
+// the given type - which will often be a struct or class.
+
+#define DECLARE_THREAD_LOCAL(T, name) \
+   extern T* name;
+
+#define DEFINE_THREAD_LOCAL(T, name) \
+   T TLSTRUCT_##name;                \
+   T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_STATIC_THREAD_LOCAL(T, name) \
+   static T TLSTRUCT_##name;                \
+   static T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
+   inline T TLSTRUCT_##name;                \
+   inline T* name = &TLSTRUCT_##name;
+   
+// The "_POD" versions are for when the payload is "Plain Old Data" and
+// in particular it is a value that can be stored in a slot that is
+// an intptr_t or a void*. The definitions include an initialiser.
+
+#define DECLARE_THREAD_LOCAL_POD(T, name) \
+   extern T name;
+
+#define DEFINE_THREAD_LOCAL_POD(T, name, init) \
+   T name = init;
+   
+#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
+   static T name = init;
+   
+#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
+   inline T name = init;
+   
+#elif (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
+
+// The Windows cases are different... and is messy enough that it deserves
+// explantion. TL_name will be a const giving a numerical offset within the
+// Microsoft TLS vector. The ThreadLocalObject is a wrapper that causes
+// its instance to behave (almost) as if it is a simple thread local
+// variable of type T (which must be consistent with intptr or void*) but
+// that uses the slot in the Microsoft vector addressed relative to a segment
+// register. When constructed it sets the slot for the thread it is running
+// in to the initial value give. This is expected to be in the main thread.
+// In other threads  the slots are not automatically initialized, so
+// initVec is set up holding a number of zero-argument functions each of
+// which initializes one of the thread local objects that have been declared
+// this way. A method 
+//
+//   DEFINE_THREAD_LOCAL_POD(T, name, init)
+//       ThreadLocal::ThreadLocalObject<T, TL_name> name(init);
+//       inline bool INIT_name = [](){
+//           ThreadLocal::initVec.push_back([]()
+//               { name = init; });
+//           return true; } ();
+//
+//   DEFINE_THREAD_LOCAL(T, name)
+//       [/static] T TLDATA_name;
+//       DEFINE_THREAD_LOCAL_POD(T*, name, &TLDATA__name);
+//
+//   DEFINE_INLINE_THREAD_LOCAL(T, name)
+//       inline auto TLFN_name()
+//       {   static thread_local T TLDATA_name;
+//           return &TLDATA_name;
+//       }
+//       DEFINE_THREAD_DATA_POD(T*, name, &TLFN__name());
+
+#define DECLARE_THREAD_LOCAL(T, name) \
+   extern ThreadLocal::ThreadLocalObject<T, TL_##name> name;
+
+#define DEFINE_THREAD_LOCAL(T, name)              \
+   thread_local T TLSTRUCT_##name;                \
+   DEFINE_THREAD_LOCAL_POD(T*, name, &TLSTRUCT_##name);
+   
+#define DEFINE_STATIC_THREAD_LOCAL(T, name)              \
+   static thread_local T TLSTRUCT_##name;                \
+   DEFINE_STATIC_THREAD_LOCAL_POD(T*, name, &TLSTRUCT_##name);
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name)              \
+   inline T* TLFN_##name()                               \
+   {   static thread_local T TLSTRUCT_##name;            \
+       return &TLSTRUCT_##name;                          \
+   }                                                     \
+   DEFINE_INLINE_THREAD_LOCAL_POD(T*, name, TLFN_##name());
+   
+// The "_POD" versions are for when the payload is "Plain Old Data" and
+// in particular it is a value that can be stored in a slot that is
+// an intptr_t or a void*. The definitions include an initialiser.
+
+#define DECLARE_THREAD_LOCAL_POD(T, name) \
+   extern ThreadLocal::ThreadLocalObject<T, name> name;
+
+#define DEFINE_THREAD_LOCAL_POD(T, name, init)                      \
+    thread_local ThreadLocal::ThreadLocalObject<T,name> name(init); \
+    bool INIT_##name = [](){                                        \
+        ThreadLocal::initVec.push_back([]()                         \
+            { name = init; });                                      \
+        return true; } ();
+   
+#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
+   static thread_local T name = init;
+   
+#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
+   inline thread_local T name = init;
+   
+
+
+
+#else
+
+inline void initialize()
+{
+}
+
+#define DECLARE_THREAD_LOCAL(T, name) \
+   extern thread_local T* name;
+
+#define DEFINE_THREAD_LOCAL(T, name)              \
+   thread_local T TLSTRUCT_##name;                \
+   thread_local T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_STATIC_THREAD_LOCAL(T, name)              \
+   static thread_local T TLSTRUCT_##name;                \
+   static thread_local T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name)              \
+   inline thread_local T TLSTRUCT_##name;                \
+   inline thread_local T* name = &TLSTRUCT_##name;
+   
+// The "_POD" versions are for when the payload is "Plain Old Data" and
+// in particular it is a value that can be stored in a slot that is
+// an intptr_t or a void*. The definitions include an initialiser.
+
+#define DECLARE_THREAD_LOCAL_POD(T, name) \
+   extern T name;
+
+#define DEFINE_THREAD_LOCAL_POD(T, name, init) \
+   thread_local T name = init;
+   
+#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
+   static thread_local T name = init;
+   
+#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
+   inline thread_local T name = init;
+   
+#endif
+
+
+
+
+
+// The following relate to a CSL experiment that at present is stalled.
+
+#ifdef NO_THREADS
+#define maxThreads   1U
+#define THREADID     UNUSED_NAME const uintptr_t threadId = 0
+#define THREADARG    /* NOTHING */
+#define THREADFORMAL /* NOTHING */
+#define OPTTHREAD    /* NOTHING */
+#else // NO_THREADS
+#ifdef DEBUG
+#define maxThreads   2U
+#else // DEBUG
+#define maxThreads  64U
+#endif // DEBUG
+#define TL_threadId  50
+DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
+#define THREADID UNUSED_NAME const uintptr_t threadId = genuineThreadId
+#define THREADARG threadId,
+#define THREADFORMAL uintptr_t threadId,
+#define OPTTHREAD (threadId)
+#endif // NO_THREADS
+
+
+} // end of namespace ThreadLocal
+
+#endif // header_threadloc_h
+
+// end of threadloc.h
+
+class allocationInfoStruct
+{
+public:
+    char* chunk;
+    size_t currentChunkSize;
+    size_t fringe;
+    std::vector<char*> listOfPointers;
+    void discard(char* v) { listOfPointers.push_back(v); }
+    ~allocationInfoStruct()
+    {   for (auto v:listOfPointers) delete [] v;
+    }
+};
+
+constexpr inline int TL_allocationInfoPtr=63;
+DEFINE_INLINE_THREAD_LOCAL(allocationInfoStruct, allocationInfoPtr)
+
+template <typename T>
+class stkvector
+{
+private:
+    size_t oldFringe;
+public:
+    T* data;
+#ifdef DEBUG
+    size_t limit;
+#endif // DEBUG
+
+// default constructor
+    stkvector()
+    {   data = nullptr;
+#ifdef DEBUG
+        limit = 0;
+#endif // DEBUG
+    }
+
+// Create an stkvector of size n.
+    stkvector(size_t n)
+    {
+#ifdef DEBUG
+        limit = n;
+#endif // DEBUG
+        size_t nbytes = n*sizeof(T);
+// Ensure that the block I allocate will have size that is a multiple of
+// max_align even if T would be happy with less allignment - so that the
+// next allocation will be properly aligned whatever it is.
+        if constexpr (alignof(T) < alignof(std::max_align_t))
+            nbytes = (nbytes+alignof(std::max_align_t)-1) & -alignof(std::max_align_t);
+// If the current chunk does not have anough space I will allocate another
+// bigger one.
+        if (allocationInfoPtr->fringe+nbytes > allocationInfoPtr->currentChunkSize)
+        {   size_t newChunkSize =
+                std::max(nbytes, 2*allocationInfoPtr->currentChunkSize);
+            allocationInfoPtr->chunk = new char[newChunkSize];
+            allocationInfoPtr->currentChunkSize = newChunkSize;
+// Arrange that the chunk will eventually be deleted... typically when the
+// program terminates but in a thread context when the thread terminates.
+            allocationInfoPtr->discard(allocationInfoPtr->chunk);
+            allocationInfoPtr->fringe = 0;
+        }
+        data = reinterpret_cast<T*>(
+            allocationInfoPtr->chunk+allocationInfoPtr->fringe);
+        oldFringe = allocationInfoPtr->fringe;
+        allocationInfoPtr->fringe = oldFringe + nbytes;
+#ifdef DEBUG
+        std::memset(data, 0x99, nbytes);
+        limit = n;
+#endif // DEBUG
+    }
+
+// new (not permitted)
+    void* operator new(std::size_t n) = delete;
+
+// delete (not permitted)
+    void operator delete(void *) = delete;
+    void operator delete[](void *) = delete;
+
+// destructor
+    ~stkvector()
+    {
+// Note that fringe could be zero if this vector is in an "old"
+// chunk. fringe is just used within the current chunk.
+        if (allocationInfoPtr->fringe != 0)
+            allocationInfoPtr->fringe = oldFringe;
+    }
+
+// convert to vecpointer
+    operator vecpointer<T>()
+    {
+#ifdef DEBUG
+        return vecpointer<T>(data, limit, 0);
+#else // DEBUG
+        return vecpointer<T>(data);
+#endif // DEBUG
+    }
+    operator vecpointer<const T>()
+    {
+#ifdef DEBUG
+        return vecpointer<const T>(data, limit, 0);
+#else // DEBUG
+        return vecpointer<const T>(data);
+#endif // DEBUG
+    }
+
+    vecpointer<T> operator+(size_t n)
+    {
+#ifdef DEBUG
+        return vecpointer<T>(data, limit, n);
+#else // DEBUG
+        return vecpointer<T>(data+n);
+#endif // DEBUG
+    }
+
+// convert to T*
+    operator T*()
+    {   return data;
+    }
+    operator const T*()
+    {   return data;
+    }
+    operator void*()
+    {   return static_cast<void*>(data);
+    }
+
+//    operator[]            subscripting
+    T& operator[](size_t n)
+    {
+#ifdef DEBUG
+        lvector_assert(n < limit);
+#endif // DEBUG
+        return data[n];
+    }
+    T operator[](size_t n) const
+    {
+#ifdef DEBUG
+        lvector_assert(n < limit);
+#endif // DEBUG
+        return data[n];
+    }
+
+//    operator*            subscripting
+    T& operator*()
+    {
+#ifdef DEBUG
+        lvector_assert(limit != 0);
+#endif // DEBUG
+        return data[0];
+    }
+    T operator*() const
+    {
+#ifdef DEBUG
+        lvector_assert(limit != 0);
+#endif // DEBUG
+        return data[0];
+    }
+
+// retport size
+    size_t size()
+    {
+#ifdef DEBUG
+        return limit;
+#else // DEBUG
+        return SIZE_MAX;
+#endif // DEBUG
+    }
+    friend std::ostream & operator << (std::ostream &out, const stkvector& a)
+    {   out << a.data;
+        return out;
+    }
+};
+
+#endif // __header_lvector_h
+
+// end of lvector.h
+
 namespace arithlib_implementation
 {
 
-inline const char* version = "$Id$";
+// Over coming weeks I intend to migrate from direct use of uint64_t and
+// uint64_t* to Digit and DigitPtr.
 
-#ifdef CSL
-// For use within CSL I will provide a single thread-local pointer that
+using Digit = std::uint64_t;
+using SignedDigit = std::int64_t;
+
+#ifdef DEBUG
+using DigitPtr = vecpointer<Digit>;
+using ConstDigitPtr = vecpointer<const Digit>;
+#else // DEBUG
+using DigitPtr = Digit*;
+using ConstDigitPtr = const Digit*;
+#endif // DEBUG
+
+
+inline const char* version_string =
+    "$Id$";
+
+inline int version()
+{   static int seq = -1;
+// This extracts the subversion revision number from version_string.
+    if (seq <= 0)
+    {   const char *s = version_string;   // "$Id: filename verno ..."
+        while (*s++ != ' ');              // " filename verno ..."
+        while (*s++ != ' ');              // " verno ..."
+        seq = std::atoi(s+1);
+    }
+    return seq;
+}
+
+// I will provide a single thread-local pointer that
 // can be accessed fast even on Windows. All value that are to be
 // thread_local within this library can (eventually) be migrated to live in
 // a chunk of memory referenced by this.
@@ -501,12 +1980,19 @@ inline const char* version = "$Id$";
 // used from a threaded application, but that does not use the special
 // treatment indicated just here.
 
-// While this pointer is defined here it is not at present used! It is for
-// future work.
+struct MyArithlibData
+{
+    int someThreadLocalInteger;
+    std::vector<int> someThreadLocalVector;
+}; 
 
 #define TL_arithlibData 48
-DEFINE_INLINE_THREAD_LOCAL(void*, arithlibData);
-#endif // CSL
+DEFINE_INLINE_THREAD_LOCAL(MyArithlibData, arithlibData);
+
+// Now the fields within arithlibData can be accessed as in
+// arithlibData->someThreadLocalInteger and this is expected to
+// be reasonably cheap (even on Windows!).
+
 
 // A scheme "arithlib_assert" lets me write in my own code to print the
 // diagnostics. To use this version you must include arithlib.hpp after
@@ -540,10 +2026,11 @@ inline std::mutex& diagnostic_mutex(const char ***where)
 }
 
 [[noreturn]] inline void abort1(const char *msg)
-{   const char** where;
+{
 // The call to diagnostic_mutex here is just to retrieve the location of the
 // const char* variable that holds the location. I am already within
 // the scope of a mutex.
+    const char** where;
     static_cast<void>(diagnostic_mutex(&where));
     std::cout << std::endl << "About to abort at " << *where << ": "
               << msg << std::endl;
@@ -551,7 +2038,8 @@ inline std::mutex& diagnostic_mutex(const char ***where)
 }
 
 [[noreturn]] inline void abort1()
-{   const char** where;
+{
+    const char** where;
     static_cast<void>(diagnostic_mutex(&where));
     std::cout << std::endl << "About to abort at " << *where << std::endl;
     std::abort();
@@ -564,7 +2052,7 @@ inline std::mutex& diagnostic_mutex(const char ***where)
 // information is not passed as an extra argument to abort1() is because
 // of limitations in __VA_ARGS__ in portable code until C++2a.
 
-// bacause arithlib_abort is a macro it does not live in any particular
+// because arithlib_abort is a macro it does not live in any particular
 // namespace
 
 #define arithlib_abort(...)                                                \
@@ -612,7 +2100,8 @@ inline void assert1(bool ok, const char* why,
     }
 }
 
-inline void assert1(bool ok, const char* why, const char* location)
+inline void assert1
+(bool ok, const char* why, const char* location)
 {
 // For simple use where a customised message is not required:
 //     arithlib_assert(predicate);
@@ -844,46 +2333,73 @@ namespace arithlib_implementation
 // Microsoft version of mutexes directly on that platform.
 
 #if defined __CYGWIN__ || defined __MINGW32__
-#define USE_MICROSOFT_MUTEX 1
 
-// going "#include <windows.h>" pollutes the name-space rather heavily
-// and so despit it being somewhat despicable I declare the rather small
-// number of things I need by hand.
+// It is possible that SRW locks have lower overhead than Mutex. So I will
+// use them, but have an "#ifdef" so I can revert if needbe.
+
+#define USE_MICROSOFT_SRW 1
+
+#ifndef USE_MICROSOFT_SRW
+#define USE_MICROSOFT_MUTEX 1
+#endif // USE_MICROSOFT_SRW
+
+// Going "#include <windows.h>" pollutes the name-space rather heavily
+// and so despite it being somewhat despicable I declare the rather small
+// number of things I need by hand. Note that some of the issues are
+// macros rather than extern definitions, so it is not obvious that
+// C++ "namespace" treatment can make things nice for me.
 
 extern "C"
-{   struct SecApp
-    {   std::uintptr_t nLength;
-        void* lpSecurityDescriptor;
-        int bINheritHandle;
-    };
-
-    extern __declspec(dllimport)  void* 
-    CreateMutexA(SecApp* , std::uintptr_t, const char* );
-    extern __declspec(dllimport) int CloseHandle(void* h);
-    extern __declspec(dllimport) int ReleaseMutex(void* m);
-    extern __declspec(dllimport) void* 
-    WaitForSingleObject(void* , std::uintptr_t);
-    inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+{
+struct SecApp
+{   std::uintptr_t nLength;
+    void* lpSecurityDescriptor;
+    int bInheritHandle;
 };
+
+typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
+#define RTL_SRWLOCK_INIT {0}
+#define SRWLOCK_INIT RTL_SRWLOCK_INIT
+typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
+
+extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
+
+extern __declspec(dllimport)  void* 
+    CreateMutexA(SecApp* , std::uintptr_t, const char* );
+extern __declspec(dllimport) int CloseHandle(void* h);
+extern __declspec(dllimport) int ReleaseMutex(void* m);
+extern __declspec(dllimport) void* 
+    WaitForSingleObject(void* , std::uintptr_t);
+inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+
+};   // end of extern "C" scope.
 
 #endif // __CYGWIN__ or __MINGW32__
 
 class WorkerData
 {
 public:
+    int which;
     std::atomic<bool> ready;
-#ifdef USE_MICROSOFT_MUTEX
+#if defined USE_MICROSOFT_SRW
+    SRWLOCK mutex[4];
+#elif defined USE_MICROSOFT_MUTEX
     void* mutex[4];
-#else
+#else // The final case is C++ std::mutex
     std::mutex mutex[4];
-#endif
+#endif // end of mutex selection
     bool quit_flag;
-    const std::uint64_t* a;
+    ConstDigitPtr a;
     std::size_t lena;
-    const std::uint64_t* b;
+    ConstDigitPtr b;
     std::size_t lenb;
-    std::uint64_t* c;
-    std::uint64_t* w;
+    DigitPtr c;
 
 // When I construct an instance of Worker data I set its quit_flag to
 // false and lock two of the mutexes. That sets things up so that when
@@ -892,16 +2408,30 @@ public:
     WorkerData()
     {   ready = false;
         quit_flag = false;
-#ifdef USE_MICROSOFT_MUTEX
+#if defined USE_MICROSOFT_SRW
+        InitializeSRWLock(&mutex[0]);
+        InitializeSRWLock(&mutex[1]);
+        AcquireSRWLockExclusive(&mutex[0]);
+        AcquireSRWLockExclusive(&mutex[1]);
+        InitializeSRWLock(&mutex[2]);
+        InitializeSRWLock(&mutex[3]);
+#elif defined USE_MICROSOFT_MUTEX
         mutex[0] = CreateMutexA(NULL, 1, NULL);
         mutex[1] = CreateMutexA(NULL, 1, NULL);
         mutex[2] = CreateMutexA(NULL, 0, NULL);
         mutex[3] = CreateMutexA(NULL, 0, NULL);
-#else
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "4 mutexes in worker created\n");
+        fflush(stderr);
+#endif
+#else // use C++ std::mutex
 // The next two must be locked by the main thread.
         mutex[0].lock();
         mutex[1].lock();
-#endif
+#endif // Mutexes now initialized and locked as needed
+    }
+    void setWhich(int n)
+    {   which = n;
     }
 #ifdef USE_MICROSOFT_MUTEX
     ~WorkerData()
@@ -910,7 +2440,7 @@ public:
         CloseHandle(mutex[2]);
         CloseHandle(mutex[3]);
     }
-#endif
+#endif // USE_MICROSOFT_MUTEX
 };
 
 inline void workerThread(WorkerData* w);
@@ -924,24 +2454,32 @@ class DriverData
 {
 public:
     int        send_count = 0;
+    int        send_count2 = 0;
     WorkerData wd_0,
-               wd_1;
-// When an instance of DriverData is created the two sets of WorkerData
+               wd_1,
+               wd_2;
+// When the instance of DriverData is created the three sets of WorkerData
 // get constructed with two of their mutexes locked. This will mean that when
 // worker threads are created and start running they will politely wait for
 // work.
 
-    std::thread w_0, w_1;
+    std::thread w_0, w_1, w_2;
     DriverData()
-    {   w_0 = std::thread(workerThread, &wd_0),
+    {   wd_0.setWhich(0);
+        wd_1.setWhich(1);
+        wd_2.setWhich(2);
+        w_0 = std::thread(workerThread, &wd_0),
         w_1 = std::thread(workerThread, &wd_1);
-// I busy-wait until the two threads have both claimed the mutexes that they
+        w_2 = std::thread(workerThread, &wd_2);
+// I busy-wait until all the threads have both claimed the mutexes that they
 // need to own at the start! Without this the main thread may post a
 // multiplication, so its part of the work and try to check that the worker
 // has finished (by claiming one of these mutexes) before the worker thread
 // has got started up and has claimed them. This feels clumsy, but it only
 // happens at system-startup.
-        while (!wd_0.ready.load() && !wd_1.ready.load())
+        while (!wd_0.ready.load() &&
+               !wd_1.ready.load() &&
+               !wd_2.ready.load())
             std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 
@@ -952,10 +2490,15 @@ public:
 // before that of the WorkerData and the mutexes within that.
 
     ~DriverData()
-    {   wd_0.quit_flag = wd_1.quit_flag = true;
-        releaseWorkers();
+    {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "Release workers to quit\n");
+        fflush(stderr);
+#endif
+        releaseWorkers(true);
         w_0.join();
         w_1.join(); // These calls to join wait for the threads to shut down.
+        w_2.join();
     }
 
 // Using the worker threads is then rather easy: one sets up data in
@@ -966,40 +2509,85 @@ public:
 // are expected to have left their results in the WorkerData object so
 // you can find it.
 
-    void releaseWorkers()
+    void releaseWorkers(bool third)
     {
-#ifdef USE_MICROSOFT_MUTEX
+#if defined USE_MICROSOFT_SRW
+        ReleaseSRWLockExclusive(&wd_0.mutex[send_count]);
+        ReleaseSRWLockExclusive(&wd_1.mutex[send_count]);
+        if (third) ReleaseSRWLockExclusive(&wd_2.mutex[send_count2]);
+#elif defined USE_MICROSOFT_MUTEX
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "Release both mutexes %d\n", send_count); //@@@
+        fflush(stderr);
+#endif
         ReleaseMutex(wd_0.mutex[send_count]);
         ReleaseMutex(wd_1.mutex[send_count]);
-#else
+        if (third) ReleaseMutex(wd_2.mutex[send_count2]);
+#else // use std::mutex
         wd_0.mutex[send_count].unlock();
         wd_1.mutex[send_count].unlock();
-#endif
+        if (third) wd_2.mutex[send_count2].unlock();
+#endif // mutexed unlocked
     }
 
-    void wait_for_workers()
+    void wait_for_workers(bool third)
     {
-#ifdef USE_MICROSOFT_MUTEX
+#if defined USE_MICROSOFT_SRW
+        AcquireSRWLockExclusive(&wd_0.mutex[send_count^2]);
+        AcquireSRWLockExclusive(&wd_1.mutex[send_count^2]);
+        if (third) AcquireSRWLockExclusive(&wd_2.mutex[send_count2^2]);
+#elif defined USE_MICROSOFT_MUTEX
+// WaitForSingleObject takes a timeout limit measured in milliseconds as
+// its second argument. I will allow waits of up to 2 seconds. There
+// should be a response by then since the workere are just performing a
+// multiplication and at all plausible number-sizes 2 seconds is plenty
+// even on slow computers. The main case where there could be
+// failure here would be when running under a debugger and with one
+// of the worker threads being subject to breaks or single stepping.
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "main thread will wait for mutex %d from each thread\n", send_count^2);
+        fflush(stderr);
+        if (WaitForSingleObject(wd_0.mutex[send_count^2], 2000) != 0)
+        {   fprintf(stderr, "Timeout %d:%d on mutex line %d\n", wd_0.which, send_count^2, __LINE__);
+            fflush(stderr);
+            std::abort();
+        }
+        if (WaitForSingleObject(wd_1.mutex[send_count^2], 2000) != 0)
+        {   fprintf(stderr, "Timeout %d:%d on mutex line %d\n", wd_1.which, send_count^2, __LINE__);
+            fflush(stderr);
+            std::abort();
+        }
+        if (third)
+        if (WaitForSingleObject(wd_2.mutex[send_count2^2], 2000) != 0)
+        {   fprintf(stderr, "Timeout %d:%d on mutex line %d\n", wd_2.which, send_count2^2, __LINE__);
+            fflush(stderr);
+            std::abort();
+        }
+        fprintf(stderr, "main thread has both results %d\n", send_count^2);
+        fflush(stderr);
+#else
         WaitForSingleObject(wd_0.mutex[send_count^2], MICROSOFT_INFINITE);
         WaitForSingleObject(wd_1.mutex[send_count^2], MICROSOFT_INFINITE);
-#else
+        if (third) WaitForSingleObject(wd_2.mutex[send_count2^2], MICROSOFT_INFINITE);
+#endif
+#else // use std::mutex
         wd_0.mutex[send_count^2].lock();
         wd_1.mutex[send_count^2].lock();
-#endif
+        if (third) wd_2.mutex[send_count2^2].lock();
+#endif // synchronized
         send_count = (send_count+1)&3;
+        if (third) send_count2 = (send_count2+1)&3;
     }
 
 };
 
-// This definition arranges that every thread that references driverData
-// will cause an instence of it to be constructed and that leads to the
-// launching of a pair of helper threads. When the thread that used
-// driverData terminates the destructor for the object causes those helper
-// threads to shut down.
-//
-// In early 2023 if I write "inline thread_local DriverData driverData;"
-// then some versions of g++ lead to complaints about a multiply defined
-// TLS init function. So for now at least this is not thread-local.
+// Even if there are multiple user threads I will only have a single
+// instance of DriverData and hence I will always have just three
+// worker threads. If multiple threads all call generalMul at (almost) the
+// same time a compare-and-exchange operation arranges that only one of
+// them gets to offload parts of the multiplication work to those worker
+// threads and the others work sequentially. This avoids extreme growth
+// in the number of threads I try to use.
 
 inline DriverData driverData;
 
@@ -1015,9 +2603,9 @@ inline void abandon(std::intptr_t h);
 
 #if defined LISP && !defined ZAPPA
 typedef std::intptr_t string_handle;
-#else
+#else // LISP
 typedef char* string_handle;
-#endif
+#endif // LISP
 
 inline string_handle confirmSizeString(char* p, std::size_t n,
                                        std::size_t final);
@@ -1069,7 +2657,7 @@ inline void pop(std::uint64_t*& p)
     pop(w);
     p = vectorOfHandle(w);
 }
-#else
+#else // PRECISE_GC
 // In cases where these are not required I will just defined them as
 // empty procedures and hope that the C++ compiler will inline them and
 // hence lead to them not adding any overhead at all.
@@ -1088,7 +2676,7 @@ inline void push(const std::uint64_t* p)
 inline void pop(const std::uint64_t*& p)
 {}
 
-#endif
+#endif // PRECISE_GC
 
 #if defined MALLOC
 
@@ -1168,18 +2756,6 @@ inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
 
 inline void abandonString(char* s)
 {   (*free_function)(s);
-}
-
-inline size_t karaSize = 0;
-inline uint64_t* karaWork = nullptr;
-
-inline uint64_t* getWorkspace(size_t n)
-{   if (n > karaSize)
-    {   karaSize += karaSize/2;
-        while (n > karaSize) karaSize += 2 + karaSize/2;
-        karaWork = new uint64_t[karaSize];
-    }
-    return karaWork;
 }
 
 // In the C/malloc model I will represent a number by the intptr_t style
@@ -1278,6 +2854,9 @@ inline unsigned int logNextPowerOf2(std::size_t n);
 //                 I do not make this the default because I can imagine
 //                 people extending a program to use threads and then not
 //                 looking here!
+// Note that even with ARITHLIB_NO_THREADS I will use threads to speed
+// up huge multiplication. The issue here is if the user calling functions
+// from here is multi-threaded...
 //
 // I looked into having an ARITHLIB_LOCK_FREE to use compare-and-swap
 // operations to maintain the freestore pool, but support via gcc on x86_64
@@ -1298,7 +2877,7 @@ inline unsigned int logNextPowerOf2(std::size_t n);
     !defined ARITHLIB_THREAD_LOCAL && \
     !defined ARITHLIB_NO_THREADS
 #define ARITHLIB_MUTEX 1
-#endif
+#endif // set default thread policy
 
 // Attempts to select more that one option at once get detected and moaned
 // about.
@@ -1307,14 +2886,14 @@ inline unsigned int logNextPowerOf2(std::size_t n);
     (defined ARITHLIB_THREAD_LOCAL && defined ARITHLIB_NO_THREADS) || \
     (defined ARITHLIB_NO_THREADS && defined ARITHLIB_MUTEX)
 #error Only one thread-support policy can be selected.
-#endif
+#endif // Some thread policy
 
 #ifdef ARITHLIB_MUTEX
 inline std::mutex& freechain_mutex()
 {   static std::mutex m;
     return m;
 }
-#endif
+#endif // ARITHLIB_MUTEX
 
 typedef std::uint64_t* FreehainTable_t[64];
 
@@ -1404,15 +2983,16 @@ public:
             (freechainTable::get())[bits] =
                 reinterpret_cast<std::uint64_t*>(r[1]);
 #elif defined ARITHLIB_MUTEX
-        {   std::lock_guard<std::mutex> lock(freechain_mutex());
+        {
+            std::lock_guard<std::mutex> lock(freechain_mutex());
             r = (freechainTable::get())[bits];
             if (r != NULL)
                 (freechainTable::get())[bits] =
                     reinterpret_cast<std::uint64_t*>(r[1]);
         }
-#else
+#else // ARITHLIB_MUTEX
 #error Internal inconsistency in arithlib.hpp: memory allocation strategy.
-#endif
+#endif // ARITHLIB_MUTEX
 // If no memory had been found on the freechain I need to allocate some
 // more.
         if (r == NULL)
@@ -1435,13 +3015,13 @@ public:
     {   int bits = bitSize(p+1);
 #ifdef ARITHLIB_ATOMIC
         lockfreePush(p, freechainTable::get(), bits);
-#else
+#else // ARITHLIB_ATOMIC
 #ifdef ARITHLIB_MUTEX
         std::lock_guard<std::mutex> lock(freechain_mutex());
-#endif
+#endif // ARITHLIB_MUTEX
         p[1] = reinterpret_cast<std::uint64_t>(freechainTable::get()[bits]);
         (freechainTable::get())[bits] = p;
-#endif
+#endif // ARITHLIB_ATOMIC
     }
 
 };
@@ -1560,18 +3140,6 @@ inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
 
 inline void abandonString(char* s)
 {   delete [] s;
-}
-
-inline size_t karaSize = 0;
-inline uint64_t* karaWork = nullptr;
-
-inline uint64_t* getWorkspace(size_t n)
-{   if (n > karaSize)
-    {   karaSize += karaSize/2;
-        while (n > karaSize) karaSize += 2 + karaSize/2;
-        karaWork = new uint64_t[karaSize];
-    }
-    return karaWork;
 }
 
 // In the NEW case I will want to make all operations cope with both
@@ -1700,8 +3268,7 @@ inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
 // that leaves a 4-byte gap after the header. In such a case I will write
 // in a zero just to keep memory tidy.
-    if (sizeof(LispObject) == 4)
-        ((LispObject* )&p[-1])[1] = 0;
+    if (sizeof(LispObject) == 4) ((LispObject* )&p[-1])[1] = 0;
 // Here I could maybe reset fringe down by (final-n) if the current number
 // is the most recently allocated item. Think about that later! However to
 // be garbage-collector safe I fill any gaps with valid data...
@@ -1806,27 +3373,6 @@ inline LispObject confirmSizeString(char* p, std::size_t n,
 
 inline void abandonString(string_handle s)
 {   // Do nothing.
-}
-
-// In this case karaSize and karaWork were established by the core
-// parts of CSL, with karaSize initialized to zero.
-// What I do here sets a limit on big multiplication because a
-// basic vector can be of size at most vecDataSize which is around
-// 7900 Kbytes. If I multiply a pair of N digit numbers I require
-// workspace about 6*N, i.e. 3 times the size of the result. This
-// means that the biggest result from multiplication here gets capped at
-// around 337000 (64-bit) words. This is around 6.5 million decimal
-// digits. For now at least I am content with this!
-
-inline uint64_t* getWorkspace(size_t n)
-{   if (n > karaSize)
-    {   karaSize += karaSize/2;
-        while (n > karaSize) karaSize += 2 + karaSize/2;
-        karaWork = get_basic_vector(TAG_NUMBERS,
-                                    TYPE_NEW_BIGNUM,
-                                    8*(karaSize+1));
-    }
-    return reinterpret_cast<uint64_t*>(karaWork-TAG_NUMBERS+8);
 }
 
 template <class OP,class RES>
@@ -2234,7 +3780,7 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 
 #else // none if MALLOC, LISP or NEW specified.
 #error Unspecified memory model
-#endif
+#endif // No memory model givem
 
 // The main arithmetic operations are supported by code that can work on
 // Bignums stored as vectors of digits or on Fixnums represented as (tagged)
@@ -2851,11 +4397,26 @@ inline string_handle bignumToStringBinary(std::intptr_t aa);
 
 class Bignum;
 
-inline void display(const char* label,
-                    const std::uint64_t* a, std::size_t lena);
+inline void display(const char& label,
+                    ConstDigitPtr a,
+                    std::size_t lena);
 inline void display(const char* label, std::intptr_t a);
 inline void display(const char* label, const Bignum& a);
 
+inline void display(std::string label,
+                    ConstDigitPtr a,
+                    std::size_t lena);
+inline void display(std::string label, std::intptr_t a);
+inline void display(std::string label, const Bignum& a);
+
+inline void display(const char& label,
+                    SignedDigit top,
+                    ConstDigitPtr a,
+                    std::size_t lena);
+inline void display(std::string label,
+                    SignedDigit top,
+                    ConstDigitPtr a,
+                    std::size_t lena);
 
 //=========================================================================
 //=========================================================================
@@ -3350,9 +4911,9 @@ public:
     {   std::ios_base::fmtflags fg = out.flags();
 #if defined LISP && !defined ZAPPA
         LispObject s;
-#else
+#else // LISP
         char* s;
-#endif
+#endif // LISP
         if ((static_cast<unsigned int>(fg) & std::ios_base::hex) != 0U)
             s = bignumToStringHex(a.val);
         else if ((static_cast<unsigned int>(fg) & std::ios_base::oct) != 0U)
@@ -3366,9 +4927,9 @@ public:
         std::string ss(s, length_of_byteheader(qheader(s)) -
                           sizeof(std::uintptr_t));
         out << ss;
-#else
+#else // lISP
         out << s;
-#endif
+#endif // LISP
         abandonString(s);
         return out;
     }
@@ -3544,81 +5105,79 @@ inline float128_t float128Bignum(const Bignum& x)
 //=========================================================================
 // display() will show the internal representation of a bignum as a
 // sequence of hex values. This is obviously useful while debugging!
+// The format used is
+//    label := 0xHEXVAL$
+// which is something I can use especially happily using cut & paste to
+// enter it into Reduce. So the HEXVAL can have embedded underscores
+// followed by whitespace and I used that to keep line lengths under 80.
 //=========================================================================
 
-inline void display(const char* label, const std::uint64_t* a,
+inline void display(const char* label,
+                    ConstDigitPtr a,
                     std::size_t lena)
-{   std::cout << label << " [" << static_cast<int>(lena) << "]";
-    for (std::size_t i=0; i<lena; i++)
-    {   if (i!=0 && i%3==0) std::cout << std::endl << "     ";
-        std::cout << " "
-                  << std::hex << std::setfill('0')
-                  << "0x" << std::setw(16) << a[i]
-                  << std::dec << std::setfill(' ');
-    }
-    std::cout << std::endl;
+{   display(label, 0, a, lena);
 }
 
-// "rdisplay" is for generating trace output for use with Reduce.
-// The format is    name := 0xDDDDDDD$
-// which will be easy to copy and paste into Reduce.
-
-inline void rdisplay(const char* label, const std::uint64_t* a,
-                     std::size_t lena)
-{   std::cout << label << " := 0x";
-    for (std::size_t i=0; i<lena; i++)
-    {   std::cout << std::hex << std::setfill('0')
-                  << std::setw(16) << a[lena-i-1]
-                  << std::dec << std::setfill(' ');
+inline void display(const char* label,
+                    SignedDigit top,
+                    ConstDigitPtr a,
+                    std::size_t lena)
+{   int len = std::printf("%s := 0x", label);
+    if (top >= 0)
+        len += std::printf("%" PRIx64, top);
+    else
+    {   Digit mask = 0xf;
+// I use Digit here rather than SignedDigit because C++ might view
+// left shifts of signed values as being able to overflow.
+        while ((top|mask) != static_cast<Digit>(-1)) mask=(mask<<4)|0xf;
+        len += std::printf("~%" PRIx64, top & mask);
     }
-    std::cout << "$" << std::endl;
-}
-
-// I provide a function that accesses (b<<shift)[n]. Note that the
-// valid index values n will from from 0 up to and including lenb.
-
-inline std::uint64_t shiftedDigit(std::uint64_t* b, std::size_t lenb,
-                                  int shift, std::size_t n)
-{   if (n == 0) return b[0]<<shift;
-    else if (n == lenb) return b[lenb-1]>>(64-shift);
-    else return (b[n]<<shift) | (b[n-1]>>(64-shift));
-}
-
-inline void display(const char* label, std::uint64_t* a,
-                    std::size_t lena,
-                    int shift)
-{   std::cout << label << " [" << static_cast<int>(lena) << "]";
-    for (std::size_t i=0; i<=lena; i++)
-    {   if (i!=0 && i%3==0) std::cout << std::endl << "     ";
-        std::cout << " "
-                  << std::hex << std::setfill('0')
-                  << "0x" << std::setw(16)
-                  << shiftedDigit(a, lena, shift, lena-i)
-                  << std::dec << std::setfill(' ');
+    for (size_t i=lena; i!=0; i--)
+    {   len += std::printf("_");
+        if (len > 80-18)
+        {   std::printf("\n");
+            len = 0;
+        }
+        len += std::printf("%.16" PRIx64, a[i-1]);
     }
-    std::cout << std::endl;
+    std::printf("$\n");
 }
 
 inline void display(const char* label, std::intptr_t a)
 {   if (storedAsFixnum(a))
-    {   std::cout << label << " [fixnum] " << std::hex
-                  << "0x" << a << std::dec << " = "
-                  << intOfHandle(a) << std::endl;
-        return;
+    {   std::cout << label << " := 0x" << std::hex
+                  << "0x" << intOfHandle(a) << std::dec << "$\n";
     }
-    std::uint64_t* d = vectorOfHandle(a);
-    std::size_t len = numberSize(d);
-    std::cout << label << " [" << static_cast<int>(len) << "]";
-    for (std::size_t i=0; i<len; i++)
-        std::cout << " "
-                  << std::hex << std::setfill('0')
-                  << "0x" << std::setw(16) << d[len-i-1]
-                  << std::dec << std::setfill(' ');
-    std::cout << std::endl;
+    else
+    {   std::uint64_t* d = vectorOfHandle(a);
+        std::size_t len = numberSize(d);
+        display(label, d, len);
+    }
 }
 
 inline void display(const char* label, const Bignum& a)
 {   display(label, a.val);
+}
+
+inline void display(std::string label,
+                    ConstDigitPtr a,
+                    std::size_t lena)
+{   display(label.c_str(), a, lena);
+}
+
+inline void display(std::string label,
+                    SignedDigit top,
+                    ConstDigitPtr a,
+                    std::size_t lena)
+{   display(label.c_str(), top, a, lena);
+}
+
+inline void display(std::string label, std::intptr_t a)
+{   display(label.c_str(), a);
+}
+
+inline void display(std::string label, const Bignum& a)
+{   display(label.c_str(), a);
 }
 
 
@@ -3630,19 +5189,41 @@ inline void display(const char* label, const Bignum& a)
 //=========================================================================
 //=========================================================================
 
-#ifdef __GNUC__
+#ifndef HAVE_NLZ_AND_NTZ
+
+#ifdef _cpp_lib_bitops
+
+// C++20 provides functions for counting zeros. Unlike the GNU intrinsics
+// they have defined behaviour when presented with a zero word.
+
+inline int nlz(uint64_t x)
+{   return countl_zero(x);
+}
+
+inline int ntz(uint64_t x)
+{   return countr_zero(x);
+}
+
+inline int countBits(uint64_t x)
+{   return std::popcount(x);
+}
+
+#elif defined __GNUC__
 
 // Note that __GNUC__ also gets defined by clang on the Macintosh, so
-// this code is probably optimized there too. This must NEVER be called
-// with a zero argument.
+// this code is probably optimized there too.
 
 // Count the leading zeros in a 64-bit word.
 
 inline int nlz(std::uint64_t x)
-{   return __builtin_clzll(x);  // Must use the 64-bit version of clz.
+{   return x==0 ? 64 : __builtin_clzll(x);
 }
 
-inline int popcount(std::uint64_t x)
+inline int ntz(std::uint64_t x)
+{   return x==0 ? 64 : __builtin_ctzll(x);
+}
+
+inline int countBits(std::uint64_t x)
 {   return __builtin_popcountll(x);
 }
 
@@ -3656,21 +5237,93 @@ inline int nlz(uint64_t x)
     x |= x>>16;
     x |= x>>32;
 // Now x is a number with all bits up as far as its highest one set, and I
-// have achieved that without performing any tests. Now I can use a lookup
-// table in much the same way as I do for trailing zero bits.
-    static int8_t nlzTable[67] =
-    {   64,  63,  25,  62,  49,  24,  41,  61,  52,  48,
-         5,  23,  45,  40,  10,  60,   0,  51,  54,  47,
-         2,   4,  36,  22,  34,  44,  13,  39,  20,   9,
-        17,  59,  32,  -1,  26,  50,  42,  53,   6,  46,
-        11,   1,  55,   3,  37,  35,  14,  21,  18,  33,
-        27,  43,   7,  12,  56,  38,  15,  19,  28,   8,
-        57,  16,  29,  58,  30,  31,  -1
+// have achieved that without performing any tests.
+// 2 is a primitive root mod 67, so all the values of 2^k (0<=k<64) are
+// distinct mod 67. So the same will apply for (2^k-1) which are the
+// values I have here. So a simple lookup in a table of size 67 does the
+// job for me. I will fill the table using code here that computes the
+// relevant values since that feels safer than having a table of "magic
+// numbers".
+    auto nlzf = [](int n)
+    {   if (n==0) return 64;
+        uint64_t v = 0;
+        int r = -1;
+        for (int k=0; k<64; k++)
+        {   v = 2*v + 1;
+            if (v%67 == n) r = 63-k;
+        }
+        return r;
+    };
+// The way this is written out is tolerable because 67 is a reasonably
+// small number, but it would have been neater if C++ provided a way to
+// initialize arrays a bit like this. It does if one uses std::vector
+// rather than a plain array. Note the use of constexpr so that the table
+// is set up during compilation.
+    constexpr static int8_t nlzTable[67] =
+    {   nlzf( 0), nlzf( 1), nlzf( 2), nlzf( 3), nlzf( 4),
+        nlzf( 5), nlzf( 6), nlzf( 7), nlzf( 8), nlzf( 9),
+        nlzf(10), nlzf(11), nlzf(12), nlzf(13), nlzf(14),
+        nlzf(15), nlzf(16), nlzf(17), nlzf(18), nlzf(19),
+        nlzf(20), nlzf(21), nlzf(22), nlzf(23), nlzf(24),
+        nlzf(25), nlzf(26), nlzf(27), nlzf(28), nlzf(29),
+        nlzf(30), nlzf(31), nlzf(32), nlzf(33), nlzf(34),
+        nlzf(35), nlzf(36), nlzf(37), nlzf(38), nlzf(39),
+        nlzf(40), nlzf(41), nlzf(42), nlzf(43), nlzf(44),
+        nlzf(45), nlzf(46), nlzf(47), nlzf(48), nlzf(49),
+        nlzf(50), nlzf(51), nlzf(52), nlzf(53), nlzf(54),
+        nlzf(55), nlzf(56), nlzf(57), nlzf(58), nlzf(59),
+        nlzf(60), nlzf(61), nlzf(62), nlzf(63), nlzf(64),
+        nlzf(65), nlzf(66)
     };
     return nlzTable[x % 67];
 }
 
-inline int popcount(std::uint64_t x)
+// ntz find the bit-number of the least significant bit, So here are some
+// values it will return:
+//    1      0
+//    2      1
+//    4      2
+//    8      3
+//   16      4
+// etc. The name is for "Number of Trailing Zeros".
+// If the input value is zero it returns 64, but the GNU builtin does not
+// guarantee any such behaviour, so zero input should be considered illegal.
+
+// This is related to the function intlog2() in tags.h, but that function
+// is only to be applied on inputs that are a power of 2.
+
+inline int ntz(uint64_t n)
+{   auto ntzf = [](int n)
+    {   if (n==0) return 64;
+        uint64_t v=0;
+        int r = -1;
+        for (int k=0; k<64; k++)
+        {   v = 1ULL<<k;
+            if (v%67 == n) r = k;
+        }
+        return r;
+    };
+    constexpr static int8_t ntzTable[67] =
+    {   ntzf( 0), ntzf( 1), ntzf( 2), ntzf( 3), ntzf( 4),
+        ntzf( 5), ntzf( 6), ntzf( 7), ntzf( 8), ntzf( 9),
+        ntzf(10), ntzf(11), ntzf(12), ntzf(13), ntzf(14),
+        ntzf(15), ntzf(16), ntzf(17), ntzf(18), ntzf(19),
+        ntzf(20), ntzf(21), ntzf(22), ntzf(23), ntzf(24),
+        ntzf(25), ntzf(26), ntzf(27), ntzf(28), ntzf(29),
+        ntzf(30), ntzf(31), ntzf(32), ntzf(33), ntzf(34),
+        ntzf(35), ntzf(36), ntzf(37), ntzf(38), ntzf(39),
+        ntzf(40), ntzf(41), ntzf(42), ntzf(43), ntzf(44),
+        ntzf(45), ntzf(46), ntzf(47), ntzf(48), ntzf(49),
+        ntzf(50), ntzf(51), ntzf(52), ntzf(53), ntzf(54),
+        ntzf(55), ntzf(56), ntzf(57), ntzf(58), ntzf(59),
+        ntzf(60), ntzf(61), ntzf(62), ntzf(63), ntzf(64),
+        ntzf(65), ntzf(66)
+    };
+    return ntzTable[leastBit(n) % 67];
+}
+
+
+inline int countBits(std::uint64_t x)
 {   x = (x & 0x5555555555555555U) + ((x >> 1) & 0x5555555555555555U);
     x = (x & 0x3333333333333333U) + ((x >> 2) & 0x3333333333333333U);
     x = x + ((x >> 4) & 0x0f0f0f0f0f0f0f0fU);
@@ -3680,6 +5333,10 @@ inline int popcount(std::uint64_t x)
 }
 
 #endif // __GNUC__
+
+#define HAVE_NLZ_AND_NTZ 1
+
+#endif // HAVE_NLZ_AND_NTZ
 
 // Round a size_t integer up to the next higher power of 2.
 // I do this based on counting the number of leading zeros in the
@@ -3724,104 +5381,27 @@ inline unsigned int logNextPowerOf2(std::size_t n)
 
 // I have an overload of addWithCarry for use where it is known that
 // the input carry is zero. That cases saves a small amount of work.
-// The code as written here seems to lead to a good compiled version using
-// g++ on x86_64 and -O3.
-
-// I had hoped to find reasonably portable intrinsics to support these
-// operations. Well clang provides a function __builtin_addcll but there
-// are two inconvenieces. One is that it returns the sum and puts the
-// carry out in a location passed using a pointer, while I wish to return the
-// carry and write out the sum. And then the pointer type clang uses is
-// "unsigned long long" which on some platforms differs from "uint64_t*"
-// thereby causing pain. gcc on Intel can provide __addcarry_u64 which
-// suffers from similar issues but at least as seriously worrying is that
-// it is not available across all platforms. And then there is also
-// __builtin_uaddll_overflow which provides a carry-out but no facility to
-// support a carry-in. This means that I view the compiler-specific options
-// as not terribly comfortable.
-// However at least on x86_64 I observe that gcc generates add-with-carry
-// instructions for "a1 = b1 + c1 + (((a0 = b0 + c0) < b0));" but
-// at present I do not think I know how to extract the carry output from
-// that two-stage process.
 
 
-#if defined __GNUC__ && defined __x86_64__
-
-// I disable this at present because I am not quite certain that I have
-// it right and also because at present I have only re-worked one of
-// the functions.
-
+[[gnu::always_inline]]
 inline std::uint64_t addWithCarry(std::uint64_t a1,
                                   std::uint64_t a2,
                                   std::uint64_t &r)
-{   return ((r = a1 + a2) < a1);
+{   return static_cast<std::uint64_t>(__builtin_add_overflow(a1, a2, &r));
 }
 
-// Now the general version with a carry-in. 
+// Now the general version with a carry-in. Note that I require that this
+// can cope with a carry-in that may be bigger than 1 and that thus the
+// carry out can be 0, 1 or 2. So reallt this is an "add 3 values"
+// function.
 
-inline std::uint64_t addWithCarry(std::uint64_t a1,
-                                  std::uint64_t a2,
-                                  std::uint64_t carry_in,
-                                  std::uint64_t &res)
-{   uint64_t w;
-    asm ("negq %[c_in]\n\t"          // Sets carry flag if arg3 is nonzero
-         "adcq %[a2], %[a1]\n\t"     // arg1 = arg1 + arg2 + carry
-         "movq %[a1], %[res]\n\t"    // write result
-         "sbbq %[w], %[w]\n\t"       // res = -1 if carry out
-         "andq $0x1, %[w]"           // now 0 or 1
-         : [w] "=r" (w), [a1] "+r" (a1),
-           [c_in] "+r" (carry_in), [res] "=m" (res)
-         : [a2] "rm" (a2)
-         : );
-    return w;
-}
-
-// subtractWithBorrow does
-//     r = a1 - a2 - b_in;
-// and returns 1 is there is a borrow out.
-
-inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
-                                        std::uint64_t a2,
-                                        std::uint64_t &r)
-{   return ((r = a1 - a2) > a1);
-}
-
-inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
-                                        std::uint64_t a2,
-                                        std::uint64_t borrow_in,
-                                        std::uint64_t &res)
-{   uint64_t w;
-    asm ("negq %[b_in]\n\t"          // Sets carry flag if arg3 is nonzero
-         "sbbq %[a2], %[a1]\n\t"     // arg1 = arg1 - arg2 - carry_flag
-         "movq %[a1], %[res]\n\t"    // write result
-         "sbbq %[w], %[w]\n\t"       // res = -1 if borrow out
-         "andq $0x1, %[w]"           // now 0 or 1
-         : [w] "=r" (w), [a1] "+r" (a1),
-           [b_in] "+r" (borrow_in), [res] "=m" (res)
-         : [a2] "rm" (a2)
-         : );
-    return w;
-}
-
-#else // __x86_64__
-
-inline std::uint64_t addWithCarry(std::uint64_t a1,
-                                  std::uint64_t a2,
-                                  std::uint64_t &r)
-{   return ((r = a1 + a2) < a1);
-}
-
-// Now the general version with a carry-in. 
-
+[[gnu::always_inline]]
 inline std::uint64_t addWithCarry(std::uint64_t a1,
                                   std::uint64_t a2,
                                   std::uint64_t carry_in,
                                   std::uint64_t &r)
-{
-// gcc is liable to compile distinctly better code if this is
-// expanded in line wherever it is used!
-    std::uint64_t w;
-    int c1 = addWithCarry(a1, carry_in, w);
+{   std::uint64_t w;
+    std::uint64_t c1 = addWithCarry(a1, carry_in, w);
     return c1 + addWithCarry(w, a2, r);
 }
 
@@ -3829,12 +5409,14 @@ inline std::uint64_t addWithCarry(std::uint64_t a1,
 //     r = a1 - a2 - b_in;
 // and returns 1 is there is a borrow out.
 
+[[gnu::always_inline]]
 inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
                                         std::uint64_t a2,
                                         std::uint64_t &r)
-{   return ((r = a1 - a2) > a1);
+{   return static_cast<std::uint64_t>(__builtin_sub_overflow(a1, a2, &r));
 }
 
+[[gnu::always_inline]]
 inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
                                         std::uint64_t a2,
                                         std::uint64_t borrow_in,
@@ -3844,7 +5426,6 @@ inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
     return b1 + subtractWithBorrow(w, a2, r);
 }
 
-#endif // __x86_64__
 
 // I want code that will multiply two 64-bit values and yield a 128-bit
 // result. The result must be expressed as a pair of 64-bit integers.
@@ -4091,10 +5672,8 @@ again2:
 // that in C++ the consequences of overflow are defined) I need to treat
 // some top-digits as signed: here are values and tests relating to that.
 
-inline const std::uint64_t allbits   =
-    ~static_cast<std::uint64_t>(0);
-inline const std::uint64_t topbit    = static_cast<std::uint64_t>
-        (1)<<63;
+inline const std::uint64_t allbits   = ~static_cast<std::uint64_t>(0);
+inline const std::uint64_t topbit    = static_cast<std::uint64_t>(1)<<63;
 inline const std::uint64_t allbuttop = topbit - 1;
 
 inline bool positive(std::uint64_t a)
@@ -4103,6 +5682,14 @@ inline bool positive(std::uint64_t a)
 
 inline bool negative(std::uint64_t a)
 {   return static_cast<std::int64_t>(a) < 0;
+}
+
+inline bool strictlyPositive(std::uint64_t a)
+{   return static_cast<std::int64_t>(a) > 0;
+}
+
+inline bool negativeOrZero(std::uint64_t a)
+{   return static_cast<std::int64_t>(a) <= 0;
 }
 
 // This next function might be naively written as
@@ -4288,7 +5875,7 @@ inline int readU3(const std::uint64_t* v, std::size_t n,
 
 // Note that the thread local status information for a random number
 // generator will be initialized in EVERY thread that is created. This
-// includes the worker threads for Karatsuba multiplicatin and in a
+// includes the worker threads for Karatsuba multiplication and in a
 // broader context where I use this library it will include threads that
 // are used for GUI or other I/O purposes. So there is a benefit if C++
 // delays initialization of any of the variables within the following
@@ -7089,14 +8676,10 @@ inline bool Leq::op(float128_t a, std::uint64_t* b)
 inline void bignegate(const std::uint64_t* a, std::size_t lena,
                       std::uint64_t* r, std::size_t &lenr)
 {   internalNegate(a, lena, r);
-// When I negate (-(2^(64n-1))) I will need to place a zero work ahead of the
-// value that is mow positive, making the bignum one digit longer.
-// If I have 2^(64n-1) it will have been represented with that padding zero
-// ahead of it, but when negated the bignum can shrink.
-    if (r[lena-1]==topbit) r[lena++] = 0;
-    else if (r[lena-1]==UINT64_C(0xffffffffffffffff) && lena>1 &&
-             negative(r[lena-2])) lena--;
-    lenr = lena;
+    r[lena] = negative(a[lena-1]) ? 0 : -1;
+    lenr = lena+1;
+    truncatePositive(r, lenr);
+    truncateNegative(r, lenr);
 }
 
 inline std::intptr_t Minus::op(std::uint64_t* a)
@@ -7662,15 +9245,15 @@ inline std::size_t Logcount::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     std::size_t r = 0;
     if (negative(a[lena-1]))
-    {   for (std::size_t i=0; i<lena; i++) r += popcount(~a[i]);
+    {   for (std::size_t i=0; i<lena; i++) r += countBits(~a[i]);
     }
-    else for (std::size_t i=0; i<lena; i++) r += popcount(a[i]);
+    else for (std::size_t i=0; i<lena; i++) r += countBits(a[i]);
     return r;
 }
 
 inline std::size_t Logcount::op(std::int64_t a)
-{   if (a < 0) return popcount(~a);
-    else return popcount(a);
+{   if (a < 0) return countBits(~a);
+    else return countBits(a);
 }
 
 inline bool Logbitp::op(std::uint64_t* a, std::size_t n)
@@ -8041,640 +9624,6963 @@ inline std::uint64_t subtractWithBorrow(const std::uint64_t* x,
     return b;
 }
 
-inline void generalMul(const std::uint64_t* u, std::size_t N,
-                       const std::uint64_t* v, std::size_t M,
-                       std::uint64_t* w);
+// A second (or third!) attempt at general multiplication for large
+// integers.
 
-// Compute w = u*v where u has N digits and v has M, so w has M+N.
-// Note two versions. The template one is to be expanded to provide a
-// number of in-line versions of the code for small cases, while
-// the one where the input sizes are provided as parameters covers the
-// general case. This works with u and v as unsigned numbers and can
-// leave the top digit of w zero.
+// Overall plan:
+//    (1) Cases from 1x1 to 7x7 are dealt with using special code
+//        in the hope that those small cases can be handled really
+//        fast. I unroll and inline everything. Also cases of Nx1 to
+//        Nx7 have their inner x1 to x7 loops unrolled.
+//    (2) min(N,M)<=threshold. Use simple long multiplication because
+//        anything like Karatsuba will not pay off.
+//    (3) N>1.5*M or M>1.5*N and the smaller is >7. Do a sequence of
+//        MxM multiplications until the residual N is small enough
+//        that a different case applies.
+//    (5) If N,M and less than another threshold do Karatsuba rather as if
+//        NxN. Because of the threshold I have a known bound on workspace
+//        needs so use fixed size stack allocated workspace.
+//    (6) Use 3-thread Karatsuba with workspace allocation via my
+//        "stkvector" scheme. Or 4-thread Toom32.
+//
+// Possibly consider Toom23 for some unbalanced cases. This would be based
+// on (a*x^2+b*x+c)*(d*x+e) having 4 digits in its result and obtaining those
+// via interpolation base on evaluations at 0, -1, +1 and infinity. The
+// idea here is that it would then be possible to guarantee that cases
+// proceeding beyound step 3 above would have the two numbers closer to
+// each other in length.
 
-inline void classicalMul(const uint64_t* u, size_t N,
-                         const uint64_t* v, size_t M,
-                         uint64_t* w)
+// So the chain of functions goes
+//     generalMul(a, N, b, M, result)         entrypoint
+//       oneWordMul                           1*1
+//       smallCaseMul                         up to 7x7
+//       bigBySmallMul                        up to 7*x
+//       balancedMul                          8*8 to 14*14
+//       simpleMul                            classical method
+//       biggerMul                            as it says!
+// The oddest looking choice for a special case is that of 8*8 to 14*14.
+// I cite three use-cases for multiplications of equal sized numbers:
+// (1) Within an implementation of extended precision floating point;
+// (2) Modular arithmetic where the modulus is that large;
+// (3) Base cases for Karatsuba, where many of the sub-products are of
+//     equal-sized values and ones that are small enough not to call
+//     for further Karatsuba-style decomosition get caught here.
+//
+//     biggerMul(a, N, b, M, result)
+//       unbalancedMul                        3N > 2M
+//       threeByTwoMul
+//       kara
+//
+//     kara                                   N>=some threshold Ks
+//       kara                                 2 or 3 times
+//       generalMul
+//
+//     threeByTwoMul
+//       kara
+//       generalMul
+//
+
+
+// I hide almost all of the functions here as private within this
+// class as a way of controlling the namespace and also so that
+// if some of the functions are only used once there is a chance for
+// compilers to notice this fact.
+
+#include <atomic>
+
+class BigMultiplication
 {
-// Want N <= M here
-    if (N > M)
-    {   std::swap(u, v);
-        std::swap(N, M);
+
+public:
+
+// I need some commentary about this! I have three worker threads
+// available and a multiplication can decompose either a 2N by 2N
+// multiplication into 3 tasks or a 3N by 2N one into 4 tasks.
+// If the caller is a multi-threaded program then several of those
+// threads might each start to perform a multiplication, but I need to
+// ensure that only one of them gets to use the worker threads.
+// To achieve this I have an atomic variable threadsInUse and I
+// use a compare_exchange operation that will always end up with it
+// having the value true, but that leaves mayUseThreads true if it had
+// initially been false. The class destructor for ManageWorkers ensures
+// that when a scope where use of the worker threads exits the access
+// control flag is reset. Using compare_exchange_weak means that requests
+// for access to the workers may spuriously fail (!) but the _strong
+// version may have higher overheads. On architectures where there is
+// a genuine compare-exchange function the spurious failure will not arise,
+// but on machines where atomic access is supported using load-locked
+// and store-conditional combinations (eg arm processors, including code
+// compiled for aarch64 before version 8.1) the store conditional can be
+// rejected because some other activity has touched the memory - even if
+// the value in the memory is the "expected" one. This can lead the
+// compare_exchange to report failure even in a case that could have been
+// deemed a success. With low contention this will hardly ever happen!
+
+class ManageWorkers
+{
+public:
+    static std::atomic<bool> threadsInUse;
+    bool mayUseThreads;
+    ManageWorkers()
+    {   bool expected = false;
+        mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
     }
-    uint64_t hi;
-// The least-significant digits can be multiplied easily.
-    multiply64(u[0], v[0], 0, hi, w[0]);
-    size_t k = 1;
-    uint64_t carry = 0;
-// I will now fill in the rest of the digits of the result in order from
-// lowest to highest significance. In each case as a compute digit k I will
-// generate a value "hi" that contributes to digit k+1, and a small value
-// "carry" that must add in to digit k+2.
-// A first part of the calculation covers a range of values of k where at
-// each step more and more partial product are involved.
-    for (; k<N-1; k++)
-    {   uint64_t lo = hi;
-        hi = carry;
-        carry = 0;
-        for (size_t i=0; i<=k; i++)
-        {   uint64_t hi1;
-            multiply64(u[i], v[k-i], lo, hi1, lo);
-// In a draft version of this code the following line was written as
-//          if ((hi += hi1) < hi1) carry++;
-// however it appears that gcc notices the idiom now used and compiles
-// a version using an "add with carry" instruction (on at least x86_64),
-// and by so doing avoids conditional branches. Amazingly this improved
-// timing by 14% (!!!) on a trivial loop
-//        for (size_t i=0; i<10000000; i++)
-//        {   classicalMul(a, 90, b, 90, c); w+=c[0];
-//        }
-// where the update of a (volatile) variable w is to discourage optimisations
-// that could otherwise notice that results were not used and end up
-// avoiding all work. For that test I had annotated classicalMul with
-// [[gnu::noinline]] as further insurance against extreme optimisation.
+    ~ManageWorkers()
+    {   if (mayUseThreads) threadsInUse.store(false);
+    }
+};
+
+private:
+
+// Set (hi,lo) to the 128-bit product of a by b.
+
+// Ha ha - because this is a method defined within a class the word
+// "static" implies "inline" in that the class definition may be included
+// in multiple compilation units but only one copy of the method is liable
+// to arise.
+
+static void oneWordMul(std::uint64_t a, std::uint64_t b,
+                       std::uint64_t &hi, std::uint64_t &lo)
+{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b);
+    hi = static_cast<std::uint64_t>(r >> 64);
+    lo = static_cast<std::uint64_t>(r);
+}
+
+// Now much the same but forming a*b+c. Note that this can not overflow
+// the 128-bit result. Both hi and lo are only updated at the end
+// of this, and so they are allowed to be the same as input arguments.
+
+static void oneWordMul(std::uint64_t a, std::uint64_t b,
+                       std::uint64_t c,
+                       std::uint64_t &hi, std::uint64_t &lo)
+{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b) +
+                static_cast<UINT128>(c);
+    hi = static_cast<std::uint64_t>(r >> 64);
+    lo = static_cast<std::uint64_t>(r);
+}
+
+// The version here has to have N>=M but given that the loops on i
+// all have a simpler starting condition and a single test for their
+// end condition. Here is a fine case where a "sufficiently smart compiler"
+// could take the above commented out code and split the loop into three
+// just as I have done here. But until that is available I make
+// transformations of this sort for myself.
+
+// verySimpleMul exists ONLY for testing - specifically to generate
+// reference products that the output from other more complicated code
+// can be compared against.
+
+public:
+
+static void verySimpleMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result)
+{   Digit carry = 0, lo = 0, hi = 0;
+    for (std::size_t k=0; k<N+M-1; k++)
+    {   for (std::size_t i=0; i<N; i++)
+        {   if (k < i) continue;
+            if (k-i >= M) continue;
+            Digit hi1;
+            oneWordMul(a[i], b[k-i], lo, hi1, lo);
             carry += ((hi += hi1) < hi1);
         }
-        w[k] = lo;
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
     }
-// When N < M there can be a stage where each digit in the output depends on
-// exactly N partial products.
+    result[N+M-1] = lo;
+}
+
+private:
+
+// I have a general idiom I intend to use for loops where the
+// body of the iteration is small. If one has
+//     for (i=A; i<B; i++) { X(i); }
+// I will unroll the loop, writing
+//     for (i=A; i<B-1; i+=2)
+//     {   X(i);
+//         X(i+1);
+//     }
+//     if (i<B) { X(i); i++; }
+// This adds to the cost if the loop is traversed only once, is broadly
+// cost neutral if it is traversed twice and from there up it saves tests
+// and control-flow. Of course it increases code bulk. 
+
+// Here I have classical multiplication for the case N>=M and as
+// used here M>7. This is written out as succession of 3 loops since
+// that leads to each having simpler start and end conditions, and I
+// hope that reduces overhead.
+
+static void simpleMul(ConstDigitPtr a, std::size_t N,
+                      ConstDigitPtr b, std::size_t M,
+                      DigitPtr result)
+{
+// For this I will require N>=M
+    Digit carry = 0, lo, hi = 0, hi1;
+// The lowest Digit can be handled specially to get things going.
+    oneWordMul(a[0], b[0], lo, result[0]);
+    std::size_t k=1;
     for (; k<M; k++)
-    {   uint64_t lo = hi;
+    {   std::size_t i;
+// Here I want k<M<=N so certainly if i<k then i<N
+//@@    for (i=0; i<=k; i++)
+//@@    {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+//@@        carry += addWithCarry(hi, hi1, hi);
+//@@    }
+        for (i=0; i<=k-1; i+=2)
+        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+            oneWordMul(a[i+1], b[k-i-1], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+        }
+        if (i<=k)
+        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+        }
+        result[k] = lo;
+        lo = hi;
         hi = carry;
         carry = 0;
-        for (size_t i=0; i<N; i++)
-        {   uint64_t hi1;
-            multiply64(u[i], v[k-i], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1);
-        }
-        w[k] = lo;
     }
-// Eventually the number of partial products contributing to each digit of
-// the result drops...
-    for (;k<N+M-1; k++)
-    {   uint64_t lo = hi;
+// Now k>=M, I want i<=k to imply i<N so go as far as k<N
+    for (; k<N; k++)
+    {
+//@@    for (std::size_t j=0; j<M; j++)
+//@@    {
+//@@ // Ha ha in this loop I iterate on j=k-i which makes the loop
+//@@ // just a little nicer to express.
+//@@        oneWordMul(a[k-j], b[j], lo, hi1, lo);
+//@@        carry += addWithCarry(hi, hi1, hi);
+//@@    }
+        std::size_t j;
+        for (j=0; j<M-1; j+=2)
+        {   oneWordMul(a[k-j], b[j], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+            oneWordMul(a[k-j-1], b[j+1], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+        }
+        if (j<M)
+        {   oneWordMul(a[k-j], b[j], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+        }
+        result[k] = lo;
+        lo = hi;
         hi = carry;
         carry = 0;
-        for (size_t i=k-M+1; i<N; i++)
-        {   uint64_t hi1;
-            multiply64(u[i], v[k-i], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1);
-        }
-        w[k] = lo;
     }
-// At the very end the top digit of the answer will be just the high
-// component of the final partial product, and there can be no carry beyond
-// that.
-    w[k] = hi;
+// Finally k>=N so i<N will imply i<=k
+    for (; k<N+M-1; k++)
+    {
+//@@    for (std::size_t i=k+1-M; i<N; i++)
+//@@    {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+//@@        carry += addWithCarry(hi, hi1, hi);
+//@@    }
+        std::size_t i;
+        for (i=k+1-M; i<N-1; i+=2)
+        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+            oneWordMul(a[i+1], b[k-i-1], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+        }
+        if (i<N)
+        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+            carry += addWithCarry(hi, hi1, hi);
+        }
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+// The very final digit of the result drops out here.
+    result[k] = lo;
 }
 
-// I had hoped that if this template version merely called the normal
-// version then the compiler would see compile-time known values for the
-// length parameters are optimise and inline. But that does not always
-// happen do I duplicate the code...
 
-template <int N, int M>
-  std::enable_if_t<(N <= M)>
-    classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
-{   uint64_t hi;
-// The least-significant digits can be multiplied easily.
-    multiply64(u[0], v[0], 0, hi, w[0]);
-    size_t k = 1;
-    uint64_t carry = 0;
-// I will now fill in the rest of the digits of the result in order from
-// lowest to highest significance. In each vase as a compute digit k I will
-// generate a value "hi" that contributes to digit k+1, and a small value
-// "carry" that must add in to digit k+2.
-// A first part of the calculation covers a range of values of k where at
-// each step more and more partial product are involved.
-    for (; k<N-1; k++)
-    {   uint64_t lo = hi;
-        hi = carry;
-        carry = 0;
-        for (size_t i=0; i<=k; i++)
-        {   int j = k-i;
-            uint64_t hi1;
-            multiply64(u[i], v[j], lo, hi1, lo);
-// In a draft version of this code the following line was written as
-//          if ((hi += hi1) < hi1) carry++;
-// however it appears that gcc notices the idiom now used and compiles
-// a version using an "add with carry" instruction (on at least x86_64),
-// and by so doing avoids conditional branches. Amazingly this improved
-// timing by 14% (!!!) on a trivial loop
-//        for (size_t i=0; i<10000000; i++)
-//        {   classicalMul(a, 90, b, 90, c); w+=c[0];
-//        }
-// where the update of a (volatile) variable w is to discourage optimisations
-// that could otherwise notice that results were not used and end up
-// avoiding all work. For that test I had annotated classicalMul with
-// [[gnu::noinline]] as further insurance against extreme optimisation.
-            carry += ((hi += hi1) < hi1);
-        }
-        w[k] = lo;
-    }
-// When N < M there can be a stage where each digit in the output depends on
-// exactly N partial products.
-    for (; k<M; k++)
-    {   uint64_t lo = hi;
-        hi = carry;
-        carry = 0;
-        for (size_t i=0; i<N; i++)
-        {   int j = k-i;
-            uint64_t hi1;
-            multiply64(u[i], v[j], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1);
-        }
-        w[k] = lo;
-    }
-// Eventually the number of partial products contributing to each digit of
-// the result drops...
-    for (;k<N+M-1; k++)
-    {   uint64_t lo = hi;
-        hi = carry;
-        carry = 0;
-        for (size_t i=k-M+1; i<N; i++)
-        {   int j = k-i;
-            uint64_t hi1;
-            multiply64(u[i], v[j], lo, hi1, lo);
-            carry += ((hi += hi1) < hi1);
-        }
-        w[k] = lo;
-    }
-// At the very end the top digit of the answer will be just the high
-// component of the final partial product, and there can be no carry beyond
-// that.
-    w[k] = hi;
-}
+// Multiplications where M and N are both no more than than 7
+// are done by unrolled and inlined special code.
+// From when the larger is at least KARASTART I will use Karatsuba,
+// and from KARABIG on it will not be just Karatsuba but the top
+// level decomosition will be run using three threads. Also up as
+// far as KARABIG I will use some stack allocated space while from
+// there up I will use my "stkvector" scheme so that there is no
+// serious limit to the amount that can be used.
 
-template <int N, int M>
-  std::enable_if_t<(N > M)>
-    classicalMul(const uint64_t* u, const uint64_t* v, uint64_t* w)
-{   classicalMul<M,N>(v, u, w);
-}
+static const std::size_t MUL_INLINE_LIMIT = 7;
 
-// The following threshold values are system-specific and there is
-// a program "karatune.cpp" that can be used to collect measurements to
-// help in the selection of values.
-// Everything is delicately sensitive to compiler optimisation.
-
-
-#if defined __clang__
-inline const std::size_t DEFAULT_KARATSUBA_START_EVEN = 30;
-inline const std::size_t DEFAULT_KARATSUBA_START_ODD = 33;
-inline const std::size_t DEFAULT_KARATSUBA_START_PARALLEL = 190;
+public:
+#ifdef START
+static const std::size_t KARASTART        = START;
 #else
-inline const std::size_t DEFAULT_KARATSUBA_START_EVEN = 8;
-inline const std::size_t DEFAULT_KARATSUBA_START_ODD = 9;
-inline const std::size_t DEFAULT_KARATSUBA_START_PARALLEL = 190;
+static const std::size_t KARASTART        = 15;
 #endif
 
-// I transition from classical to Karatsuba at different thresholds
-// for odd and even sized inputs. The numbers here may need tuning both
-// in general and for each particular target machine.
+#ifdef BIG
+static const std::size_t KARABIG          = BIG;
+#else
+static const std::size_t KARABIG          = 60;
+#endif
+private:
 
-#ifndef KARATSUBA_START_EVEN
-inline const std::size_t KARATSUBA_START_EVEN=DEFAULT_KARATSUBA_START_EVEN;
-#endif // KARATSUBA_START_EVEN
+// Now I want code for multiplying N*M digit numbers with N up to some
+// small limit as fast as I can. Here I have all the cases with both
+// N and M up to 7 covered. Also cases where N=M<=14 and ones where
+// M<=7 but N can be arbitrary. These cases represent bulky and perhaps
+// ugly in-line code but I expect them to be the most performance
+// critical parts of the base for multiplication.
 
-#ifndef KARATSUBA_START_ODD
-inline const std::size_t KARATSUBA_START_ODD=DEFAULT_KARATSUBA_START_ODD;
-#endif // KARATSUBA_START_ODD
 
-#ifndef PARAKARA_START
-// If the current host computer does not support at least three
-// genuine concurrent activities I will not try use of threads
-// because it would not be helpful!
-inline const std::size_t PARAKARA_START =
-    std::thread::hardware_concurrency() >= 3 ?
-        DEFAULT_KARATSUBA_START_PARALLEL : SIZE_MAX;
-#endif // PARAKARA_START
+[[gnu::always_inline]]
+static void inlineMul_1_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   oneWordMul(a[0], b[0], result[1], result[0]);
+}
 
-// The workerThread() function is started in each of two threads, and
-// processes requests until a "quit" request is sent to it.
+[[gnu::always_inline]]
+static void inlineMul_2_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[2] = dlo;
+}
 
-inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
-                                const std::uint64_t* v, std::size_t M,
-                                std::uint64_t* w);
-inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
-                         const std::uint64_t* v,
-                         std::uint64_t* w, std::uint64_t* workspace);
+[[gnu::always_inline]]
+static void inlineMul_2_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[3] = dlo;
+}
 
-// This is a variant on the above - it is only called when the two
-// inputs have the same length, and it is provided with a vector for
-// use as workspace that is known to be big enough for it and all its
-// recursive calls.
+[[gnu::always_inline]]
+static void inlineMul_3_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[3] = dlo;
+}
 
-inline void mul(const std::uint64_t* u, std::size_t N,
-                const std::uint64_t* v, std::uint64_t* w,
-                std::uint64_t* workspace)
-{   switch (N)
-    {   case 1:
-            classicalMul<1,1>(u, v, w); return;
-        case 2:
-            classicalMul<2,2>(u, v, w); return;
-        case 3:
-            classicalMul<3,3>(u, v, w); return;
-        case 4:
-            classicalMul<4,4>(u, v, w); return;
-        case 5:
-            classicalMul<5,5>(u, v, w); return;
-        case 6:
-            classicalMul<6,6>(u, v, w); return;
-        case 7:
-            classicalMul<7,7>(u, v, w); return;
-        case 8:
-            classicalMul<8,8>(u, v, w); return;
-        case 9:
-            classicalMul<9,9>(u, v, w); return;
-        case 10:
-            classicalMul<10,10>(u, v, w); return;
-        case 11:
-            classicalMul<11,11>(u, v, w); return;
-        default:
-            if (N>=KARATSUBA_START_ODD ||
-                (N>=KARATSUBA_START_EVEN && N%2==0))
-                karatsubaMul(u, N, v, w, workspace);
-            else classicalMul(u, N, v, N, w);
+[[gnu::always_inline]]
+static void inlineMul_3_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[4] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_3_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[5] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_4_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[4] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_4_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[5] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_4_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[6] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_4_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[7] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_5_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[5] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_5_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[6] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_5_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[7] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_5_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[8] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_5_5(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[9] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[6] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[7] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[8] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[9] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6_5(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[10] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6_6(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[11] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_1(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[7] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_2(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[8] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_3(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[9] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_4(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[10] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_5(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[11] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_6(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[12] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7_7(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[13] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_8_8(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[15] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_9_9(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[17] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_10_10(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[17] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[9], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[18] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[19] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_11_11(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[17] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[18] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[9], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[19] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[10], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[20] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[21] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_12_12(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[17] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[18] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[19] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[9], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[20] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[10], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[21] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[11], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[22] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[23] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_13_13(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[17] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[18] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[19] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[20] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[9], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[21] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[10], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[22] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[11], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[23] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[12], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[24] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[25] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_14_14(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[17] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[18] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[19] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[20] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[21] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[9], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[22] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[10], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[23] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[11], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[24] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[12], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[25] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[13], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[26] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[27] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_15_15(ConstDigitPtr a,
+                          ConstDigitPtr b,
+                          DigitPtr result)
+{   uint64_t dhi, dlo;
+    oneWordMul(a[0], b[0], dlo, result[0]);
+    dhi = 0;
+    uint64_t whi, carry;
+    carry = 0;
+    oneWordMul(a[0], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[1] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[2] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[3] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[4] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[5] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[6] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[7] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[8] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[9] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[10] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[11] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[12] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[13] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[1], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[0], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[14] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[1], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[2], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[1], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[15] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[2], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[3], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[2], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[16] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[3], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[4], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[3], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[17] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[4], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[5], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[4], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[18] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[5], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[6], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[5], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[19] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[6], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[7], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[6], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[20] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[7], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[8], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[7], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[21] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[8], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[9], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[8], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[22] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[9], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[10], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[9], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[23] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[10], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[11], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[10], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[24] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[11], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[12], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[11], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[25] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[12], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[13], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[12], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[26] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[13], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    oneWordMul(a[14], b[13], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[27] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    carry = 0;
+    oneWordMul(a[14], b[14], dlo, whi, dlo);
+    carry += addWithCarry(dhi, whi, dhi);
+    result[28] = dlo;
+    dlo = dhi;
+    dhi = carry;
+    result[29] = dlo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_1(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    for (std::size_t k=1; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    result[N+0] = lo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_2(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    oneWordMul(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=2; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    oneWordMul(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+1] = lo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_3(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    oneWordMul(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=3; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    oneWordMul(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+2] = lo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_4(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    oneWordMul(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=4; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-3], b[3], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    oneWordMul(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+3] = lo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_5(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    oneWordMul(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[4], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[4] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=5; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-3], b[3], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-4], b[4], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    oneWordMul(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-4], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+4] = lo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_6(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    oneWordMul(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[4], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[4] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[4], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[5], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[5] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=6; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-3], b[3], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-4], b[4], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-5], b[5], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    oneWordMul(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-4], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-5], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-4], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+4] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+5] = lo;
+}
+
+[[gnu::always_inline]]
+static void inlineMul_7(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b,
+                        DigitPtr result)
+{   Digit carry = 0, lo, hi = 0, hi1;
+    oneWordMul(a[0], b[0], lo, result[0]);
+    oneWordMul(a[0], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[4], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[4] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[4], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[5], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[5] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[0], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[1], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[2], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[3], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[4], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[5], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[6], b[0], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[6] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    for (std::size_t k=7; k<N; k++)
+    {
+        oneWordMul(a[k-0], b[0], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-1], b[1], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-2], b[2], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-3], b[3], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-4], b[4], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-5], b[5], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        oneWordMul(a[k-6], b[6], lo, hi1, lo);
+        carry += addWithCarry(hi, hi1, hi);
+        result[k] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    oneWordMul(a[N-1], b[1], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-4], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-5], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-6], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+0] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[2], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-4], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-5], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+1] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[3], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-4], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+2] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[4], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-3], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+3] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[5], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    oneWordMul(a[N-2], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+4] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    oneWordMul(a[N-1], b[6], lo, hi1, lo);
+    carry += addWithCarry(hi, hi1, hi);
+    result[N+5] = lo;
+    lo = hi;
+    hi = carry;
+    carry = 0;
+    result[N+6] = lo;
+}
+static void smallCaseMul(ConstDigitPtr a, std::size_t N,
+                         ConstDigitPtr b, std::size_t M,
+                         DigitPtr result)
+{
+// For this I will already have checked that both M and N are at most
+// 7 and so that switch statement will cover all the possibilities and
+// everything should then expand to inline code.
+    switch (MUL_INLINE_LIMIT*N + M)
+    {
+        case 7*1+2:
+            std::swap(a, b);
+        case 7*2+1:
+            inlineMul_2_1(a, b, result);
+            return;
+        case 7*2+2:
+            inlineMul_2_2(a, b, result);
+            return;
+        case 7*1+3:
+            std::swap(a, b);
+        case 7*3+1:
+            inlineMul_3_1(a, b, result);
+            return;
+        case 7*2+3:
+            std::swap(a, b);
+        case 7*3+2:
+            inlineMul_3_2(a, b, result);
+            return;
+        case 7*3+3:
+            inlineMul_3_3(a, b, result);
+            return;
+        case 7*1+4:
+            std::swap(a, b);
+        case 7*4+1:
+            inlineMul_4_1(a, b, result);
+            return;
+        case 7*2+4:
+            std::swap(a, b);
+        case 7*4+2:
+            inlineMul_4_2(a, b, result);
+            return;
+        case 7*3+4:
+            std::swap(a, b);
+        case 7*4+3:
+            inlineMul_4_3(a, b, result);
+            return;
+        case 7*4+4:
+            inlineMul_4_4(a, b, result);
+            return;
+        case 7*1+5:
+            std::swap(a, b);
+        case 7*5+1:
+            inlineMul_5_1(a, b, result);
+            return;
+        case 7*2+5:
+            std::swap(a, b);
+        case 7*5+2:
+            inlineMul_5_2(a, b, result);
+            return;
+        case 7*3+5:
+            std::swap(a, b);
+        case 7*5+3:
+            inlineMul_5_3(a, b, result);
+            return;
+        case 7*4+5:
+            std::swap(a, b);
+        case 7*5+4:
+            inlineMul_5_4(a, b, result);
+            return;
+        case 7*5+5:
+            inlineMul_5_5(a, b, result);
+            return;
+        case 7*1+6:
+            std::swap(a, b);
+        case 7*6+1:
+            inlineMul_6_1(a, b, result);
+            return;
+        case 7*2+6:
+            std::swap(a, b);
+        case 7*6+2:
+            inlineMul_6_2(a, b, result);
+            return;
+        case 7*3+6:
+            std::swap(a, b);
+        case 7*6+3:
+            inlineMul_6_3(a, b, result);
+            return;
+        case 7*4+6:
+            std::swap(a, b);
+        case 7*6+4:
+            inlineMul_6_4(a, b, result);
+            return;
+        case 7*5+6:
+            std::swap(a, b);
+        case 7*6+5:
+            inlineMul_6_5(a, b, result);
+            return;
+        case 7*6+6:
+            inlineMul_6_6(a, b, result);
+            return;
+        case 7*1+7:
+            std::swap(a, b);
+        case 7*7+1:
+            inlineMul_7_1(a, b, result);
+            return;
+        case 7*2+7:
+            std::swap(a, b);
+        case 7*7+2:
+            inlineMul_7_2(a, b, result);
+            return;
+        case 7*3+7:
+            std::swap(a, b);
+        case 7*7+3:
+            inlineMul_7_3(a, b, result);
+            return;
+        case 7*4+7:
+            std::swap(a, b);
+        case 7*7+4:
+            inlineMul_7_4(a, b, result);
+            return;
+        case 7*5+7:
+            std::swap(a, b);
+        case 7*7+5:
+            inlineMul_7_5(a, b, result);
+            return;
+        case 7*6+7:
+            std::swap(a, b);
+        case 7*7+6:
+            inlineMul_7_6(a, b, result);
+            return;
+        case 7*7+7:
+            inlineMul_7_7(a, b, result);
             return;
     }
 }
 
+static void bigBySmallMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result)
+{   switch (M)
+    {
+        case 1:
+            inlineMul_1(a, N, b, result); return;
+        case 2:
+            inlineMul_2(a, N, b, result); return;
+        case 3:
+            inlineMul_3(a, N, b, result); return;
+        case 4:
+            inlineMul_4(a, N, b, result); return;
+        case 5:
+            inlineMul_5(a, N, b, result); return;
+        case 6:
+            inlineMul_6(a, N, b, result); return;
+        case 7:
+            inlineMul_7(a, N, b, result); return;
+    }
+}
+static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,
+                       DigitPtr result)
+{   switch (N)
+    {   default: generalMul(a, N, b, N, result); return;
+        case 6:  inlineMul_6_6(a, b, result);   return;
+        case 7:  inlineMul_7_7(a, b, result);   return;
+        case 8:  inlineMul_8_8(a, b, result);   return;
+        case 9:  inlineMul_9_9(a, b, result);   return;
+        case 10:  inlineMul_10_10(a, b, result);   return;
+        case 11:  inlineMul_11_11(a, b, result);   return;
+        case 12:  inlineMul_12_12(a, b, result);   return;
+        case 13:  inlineMul_13_13(a, b, result);   return;
+        case 14:  inlineMul_14_14(a, b, result);   return;
+    }
+}
+
+// The vector a has M digits and result has N (with N>=M). Add the
+// value in a into result and return any carry.
+
+static Digit addMdigits(ConstDigitPtr a, std::size_t M, DigitPtr result, std::size_t N)
+{   Digit carry = addWithCarry(a[0], result[0], result[0]);
+    std::size_t i=1;
+//@@for (; i<M; i++)
+//@@    carry = addWithCarry(a[i], result[i], carry, result[i]);
+    for (; i<M-1; i+=2)
+    {   carry = addWithCarry(a[i], result[i], carry, result[i]);
+        carry = addWithCarry(a[i+1], result[i+1], carry, result[i+1]);
+    }
+    if (i<M)
+    {   carry = addWithCarry(a[i], result[i], carry, result[i]);
+        i++;
+    }
+    while (carry != 0 && i<N)
+    {   carry = addWithCarry(result[i], 1, result[i]);
+        i++;
+    }
+    return carry;
+}
+
+public:
+
+// Some of the functions here have are tempalated with a boolean
+// called "thread". When this is true the code is entitled to cause
+// worker threads to be launched to perform subsidiary multiplications.
+// The multi-thread decomposition may only happen once, and that is enforced
+// by making thread=false for all the lower level calls.
+
+// Now the main entrypoint to my new code for multiplying
+// unsigned values. It tries to put simple cheap tests to spot
+// cheap cases inline and then dispatch to the separate procedures
+// that apply in each case.
+// The small cases covered here are liable to get expanded in line
+// in rather extreme manners!
+
+[[gnu::always_inline]]
+static void generalMul(ConstDigitPtr a, std::size_t N,
+                       ConstDigitPtr b, std::size_t M,
+                       DigitPtr result)
+{
+// I take a view that case of single word multiplication as both so
+// special and so important that I do that in-line here.
+    if ((N|M) == 1)
+    {   oneWordMul(a[0], b[0], 0, result[1], result[0]);
+        return;
+    }
+// I next have special treatment for all the cases where both M and N are
+// at most 7. I make the cut off there because I can test if either N
+// or M exceeds the bound using a bitwide OR here which I expect to be
+// nice and cheap! Also because I expect small cases like this to be
+// especially commonly used, and to be ones where loop overheads might
+// intrude.
+    if ((N|M) <= 7)
+    {   LIKELY
+        smallCaseMul(a, N, b, M, result);
+        return;
+    }
+    if (N < M)
+    {   std::swap(a, b);
+        std::swap(N, M);
+    }
+// If the smaller number is fairly small I again use classical long
+// multiplication, but with the inner loop unrolled.
+    if (M <= 7)
+    {   bigBySmallMul(a, N, b, M, result);
+        return;
+    }
+    if (N < KARASTART)    // Too small for Karatsuba.
+    {   if (N==M && N<=14) balancedMul(a, b, N, result);
+        else simpleMul(a, N, b, M, result);
+    }
+    else biggerMul(a, N, b, M, result);
+}
+
+private:
+
+template <bool threads>
+[[gnu::always_inline]]
+static void unbalancedMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result)
+{
+// Here N is (much) bigger than M
+    generalMul(a, M, b, M, result);
+    N -= M;
+    a += M;
+    result += M;
+    stkvector<Digit> temp(M);
+    while (2*N > 3*M)
+    {   std::memcpy(temp, result, M*sizeof(Digit));
+        generalMul(a, M, b, M, result);
+// Now add M digits from temp into the 2M digit number in result. There
+// can not be an overflow.
+        addMdigits(temp, M, result, 2*M);
+        N -= M;
+        a += M;
+        result += M;
+    }
+    if (N != 0)
+    {   std::memcpy(temp, result, M*sizeof(Digit));
+        generalMul(a, N, b, M, result);
+// Now add M digits from temp into the M+N digit number in result. There
+// can not be an overflow.
+        addMdigits(temp, M, result, M+N);
+    }
+}
+
+// Some sub-functions that I will need that add, subtract and halve
+// integers and arrange associated carries and borrows.
+
+[[gnu::always_inline]]
+static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
+                     ConstDigitPtr b, std::size_t lenB,
+                     Digit carry,
+                     DigitPtr result)
+{   std::size_t i;
+#ifdef DEBUG
+    assert(lenA >= lenB);
+#endif
+    for (i=0; i<lenB-1; i+=2)
+    {   carry = addWithCarry(a[i], b[i], carry, result[i]);
+        carry = addWithCarry(a[i+1], b[i+1], carry, result[i+1]);
+    }
+    if (i<lenB)
+    {   carry = addWithCarry(a[i], b[i], carry, result[i]);
+        i++;
+    }
+    for (; i<lenA; i++)
+        carry = addWithCarry(a[i], carry, result[i]);
+    return carry;
+}
+
+[[gnu::always_inline]]
+static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
+                     ConstDigitPtr b, std::size_t lenB,
+                     DigitPtr result)
+{   return karaAdd(a, lenA, b, lenB, 0, result);
+}
+
+
+[[gnu::always_inline]]
+static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
+                          ConstDigitPtr b, std::size_t lenB,
+                          DigitPtr result)
+{   Digit borrow = 0;
+#ifdef DEBUG
+    assert(lenA >= lenB);
+#endif
+    std::size_t i;
+    for (i=0; i<lenB-1; i+=2)
+    {   borrow = subtractWithBorrow(a[i], b[i], borrow, result[i]);
+        borrow = subtractWithBorrow(a[i+1], b[i+1], borrow, result[i+1]);
+    }
+    if (i<lenB)
+    {   borrow = subtractWithBorrow(a[i], b[i], borrow, result[i]);
+        i++;
+    }
+    for (; i<lenA; i++)
+        borrow = subtractWithBorrow(a[i], 0, borrow, result[i]);
+    return borrow;
+}
+
+[[gnu::always_inline]]
+static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
+                          ConstDigitPtr b, std::size_t lenB,
+                          DigitPtr result)
+{   Digit borrow = 0;
+#ifdef DEBUG
+    assert(lenA >= lenB);
+#endif
+    std::size_t i;
+    for (i=0; i<lenB-1; i+=2)
+    {   borrow = subtractWithBorrow(b[i], a[i], borrow, result[i]);
+        borrow = subtractWithBorrow(b[i+1], a[i+1], borrow, result[i+1]);
+    }
+    if (i<lenB)
+    {   borrow = subtractWithBorrow(b[i], a[i], borrow, result[i]);
+        i++;
+    }
+    for (; i<lenA; i++)
+        borrow = subtractWithBorrow(0, a[i], borrow, result[i]);
+    return borrow;
+}
+
+[[gnu::always_inline]]
+static void karaCarry(Digit carry, DigitPtr v)
+{   size_t i = 0;
+    while (carry != 0)
+    {   carry = addWithCarry(v[i], carry, v[i]);
+        i++;
+    }
+}
+
+[[gnu::always_inline]]
+static void karaBorrow(Digit borrow, DigitPtr v)
+{   size_t i = 0;
+    while (borrow != 0)
+    {   borrow = subtractWithBorrow(v[i], borrow, v[i]);
+        i++;
+    }
+}
+
+static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
+{   Digit carry = top & 1;
+    top = top - carry;
+    for (size_t i=len-1; i!=0; i--)
+    {   Digit w = a[i];
+        a[i] = (w>>1) | (carry<<63);
+        carry = w & 1;
+    }
+    a[0] = (a[0]>>1) | (carry<<63);
+    return top/2;
+}
+
+// I have special code for multiplying N*M numbers when N is about
+// 1.5 times M. This splits the big number into 3 chunks and the
+// smaller into two.
+
+// Here is a description of the procedure in nice readable compact form.
+//
+// a := ahigh*x^2 + amid*x + alow;
+// b :=            bhigh*x + blow;
+//
+// x^3 * (ahigh*bhigh) +
+// x^2 * (ahigh*blow + amid*bhigh) +
+// x   * (alow*bhigh + amid*blow) +
+//       (alow*blow)
+//
+// asum := ahigh+amid+alow;
+// bsum := bhigh+blow;
+// adiff := ahigh-amid+alow;
+// bdiff := blow-bhigh;
+// p0 := alow*blow;
+// p1 := asum*bsum;
+// p2 := adiff*bdiff;
+// p3 := ahigh*bhigh;
+//
+// d0 := p0;                         alow*blow
+// d1 := (p1 - p2)/2 - p3;           alow*bhigh + amid*blow
+// d2 := (p1 + p2)/2 - p0;           ahigh*blow + amid*bhigh
+// d3 := p3;                         ahigh*bhigh
+
+// This divides a value by 2, where the value has a signed top digit
+// and a vector of unsigned additional digits.
+
+template <bool thread=false>
+static void threeByTwoMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr c)
+{
+// I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
+// where amid, alow, blow all have the same size (toomLen). Then
+// ahigh and bhigh need to have at least some digits but may not have more
+// then toomLen.
+// I let a(t) = ahigh*t^2 + anid*t + alow and b(t) - bhigh*t + blow.
+// then I evaluate a() and b() at 0, +1, -1 and infinity - and I can
+// interpolate through products of those values to get digits for my result.
+// A classical 3x2 multiplication would use 6 partial products - this uses
+// just 4 but obviously a bunch of extra additions and subtractions together
+// with some general overhead. 
+    size_t toomLen = (M+1)/2;
+    size_t lenALow = toomLen;
+    size_t lenAMid = toomLen;
+    assert(N > 2*toomLen);
+    size_t lenAHigh = N-2*toomLen;
+    assert(lenAHigh <= toomLen);
+    size_t lenBLow = toomLen;
+    size_t lenBHigh = M-toomLen;
+    ConstDigitPtr aLow = a;
+    ConstDigitPtr aMid = a + toomLen;
+    ConstDigitPtr aHigh = aMid + toomLen;
+    ConstDigitPtr bLow = b;
+    ConstDigitPtr bHigh = b + toomLen;
+// Now we have
+//     a = (aHigh*B^2, aMid*B, aLow)
+//     b = (bHigh*B, bLow)
+// and I will need to compute
+//     aSum = aHigh + aMid + Alow   (c = 0, 1, 2)
+//     bSum = bHigh + blow          (c = 0, 1)
+// and
+//     aDiff = aHigh - aMid + aLow  (c = -1, 0, 1)
+//     bDiff = bLow - bHigh         (c = 0, -1)
+//
+// Next
+//     P0 = aLow*bLow
+//     P1 = aSum*bSum
+//     P2 = aDiff*bDiff
+//     P3 = aHigh*bHigh
+// I will use the result space as workspace to start with.
+    DigitPtr P0 = c;
+    DigitPtr P1 = c;                 SignedDigit P1Top;
+    stkvector<Digit> D1(thread ? 8*toomLen :4*toomLen); SignedDigit D1Top;
+    DigitPtr D2 = D1 + 2*toomLen;    SignedDigit D2Top; 
+    DigitPtr P2 = c + 2*toomLen;     SignedDigit P2Top; 
+    DigitPtr P3 = c + 3*toomLen;
+    if constexpr (thread)
+    {   P2 = D1 + 4*toomLen;
+        P3 = D1 + 6*toomLen;
+    }
+    DigitPtr aSum = D1;              Digit aSumTop;
+    DigitPtr aDiff = D1 + toomLen;   SignedDigit aDiffTop;
+    DigitPtr bSum = D2;              Digit bSumTop;
+    DigitPtr bDiff = D2 + toomLen;   SignedDigit bDiffTop; 
+    aSumTop = karaAdd(aLow, toomLen, aHigh, lenAHigh, aSum);
+    aDiffTop = aSumTop - karaSubtract(aSum, toomLen, aMid, toomLen, aDiff);
+    aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
+    bSumTop = karaAdd(bLow, toomLen, bHigh, lenBHigh, bSum);
+    bDiffTop = -karaSubtract(bLow, toomLen, bHigh, lenBHigh, bDiff);
+    if constexpr (thread)
+    {   setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1);
+        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2);
+// In this case to use all available threads I will be computing P0 and P3
+// now. That means I can not use their memory as workspace, which is
+// what I do in the purely sequential case.
+        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0);
+        driverData.releaseWorkers(true);
+            generalMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
+        driverData.wait_for_workers(true);
+    }
+    else
+    {   generalMul(aSum, toomLen, bSum, toomLen, P1);
+//      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
+        generalMul(aDiff, toomLen, bDiff, toomLen, P2);
+//      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
+// noting that aDiffTop and bDiffTop are signed values.
+    }
+    P1Top = 0;
+    switch (aSumTop)
+    {   case 2:
+            P1Top = karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            [[fallthrough]];
+        case 1:
+            P1Top += karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            break;
+        case 0:
+            break;
+    }
+    if (bSumTop != 0)
+        P1Top += karaAdd(aSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+    P1Top += aSumTop*bSumTop;   
+    P2Top = 0;
+    switch (aDiffTop)
+    {   case 1:
+            P2Top = karaAdd(bDiff, toomLen, P2+toomLen, toomLen, P2+toomLen);
+            break;
+        case -1:
+            P2Top = -karaSubtract(P2+toomLen, toomLen,
+                                  bDiff, toomLen, P2+toomLen);
+            break;
+        case 0:
+            break;
+    }        
+    switch (bDiffTop)
+    {   case -1:
+            P2Top -= karaSubtract(P2+toomLen, toomLen,
+                                  aDiff, toomLen, P2+toomLen);
+        break;
+    }
+    P2Top += aDiffTop*bDiffTop;   
+// Now set D1 = P1-P2, D2=P1+P2
+    D1Top = P1Top - P2Top - karaSubtract(P1, 2*toomLen, P2, 2*toomLen, D1);
+    D2Top = P1Top + P2Top + karaAdd(P1, 2*toomLen, P2, 2*toomLen, D2);
+// Halve both of these
+    D1Top = karaHalve(D1Top, D1, 2*toomLen);
+    D2Top = karaHalve(D2Top, D2, 2*toomLen);
+    if constexpr (thread) // These already computed in the threaded version
+    {   generalMul(aLow, toomLen, bLow, toomLen, P0);
+        generalMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
+    }
+// I need to D1 -= P3; D2 -= P0;
+    D1Top -= karaSubtract(D1, 2*toomLen, P3, lenAHigh+lenBHigh, D1);
+    D2Top -= karaSubtract(D2, 2*toomLen, P0, 2*toomLen, D2);
+// Now to assemble the final result I just need to cope with the fact
+// the the partial products P0, D1, D1 and P3 overlap.
+// So now I have
+//   c:     P3hi  P3lo   xxx   P0Hi P0Lo
+//                D1Top  D1Hi  D1Lo
+//          D2Top D2Hi   D2Low
+    Digit carry = karaAdd(D1, toomLen,            // D1Lo
+                          c+toomLen, toomLen,     // P0Hi
+                          c+toomLen);
+    carry = karaAdd(D1+toomLen, toomLen,          // D1Hi
+                    D2, toomLen, carry,           // D2Lo
+                    c+2*toomLen);
+    carry = karaAdd(D2+toomLen, toomLen,          // D2Hi
+                    c+3*toomLen, toomLen, carry,  // P3Lo
+                    c+3*toomLen);
+    // karaCarry(carry, c+4*toomLen); by adding carry into D2Top I do this
+    D2Top += carry;
+// I need to merge in D1Top and D2TOP. Note that either could be positive
+// or negative, and that is part of why I did not merge them in earlier.
+    if (D1Top > 0)      karaCarry(D1Top, c+3*toomLen);
+    else if (D1Top < 0) karaBorrow(-D1Top, c+3*toomLen);
+    if (D2Top > 0)      karaCarry(D2Top, c+4*toomLen);
+    else if (D2Top < 0) karaBorrow(-D2Top, c+4*toomLen);
+}
+
+static void biggerMul(ConstDigitPtr a, std::size_t N,
+                      ConstDigitPtr b, std::size_t M,
+                      DigitPtr result)
+{   ManageWorkers manager;
+// Now manager.mayUseThreads will be true if I am allowed to use the
+// worker threads.
+//
+// Now look at out-of balance cases. Here I take the view that if N>1.5M
+// I will hive off square multiplications as much as I can. They will each
+// be MxM so I need M space to keep some digits already computed that I
+// will need to combine with the output from the next square multiply.
+#ifdef DEBUG_TIMES
+    display("\na", a, N);
+    display("\nb", b, M);
+#endif // DEBUG_TIMES
+    if (2*N > 3*M)
+    {   if (manager.mayUseThreads) unbalancedMul<true>(a, N, b, M, result);
+        else unbalancedMul<false>(a, N, b, M, result);
+    }
+// Karatsuba cases here.
+    else if (N < KARABIG || !manager.mayUseThreads)
+        kara<false>(a, N, b, M, result);
+    else kara<true>(a, N, b, M, result);
+}
+
+[[gnu::always_inline]]
+static void differenceLengthsMatch(ConstDigitPtr low, std::size_t length,
+                                   ConstDigitPtr high, DigitPtr result)
+{   Digit borrow = subtractWithBorrow(low[0], high[0], result[0]);
+//@@for (std::size_t i=1; i<length; i++)
+//@@    borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
+    std::size_t i;
+    for (i=1; i<length-1; i+=2)
+    {   borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
+        borrow = subtractWithBorrow(low[i+1], high[i+1], borrow, result[i+1]);
+    }
+    if (i<length)
+        borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
+}
+
+[[gnu::always_inline]]
+static bool differenceLengthsDiffer(ConstDigitPtr low, std::size_t lenLow,
+                                    ConstDigitPtr high, std::size_t lenHigh,
+                                    DigitPtr result)
+{   Digit borrow = subtractWithBorrow(low[0], high[0], result[0]);
+    std::size_t i=1;
+//@@for (; i<lenHigh; i++)
+//@@    borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
+    for (; i<lenHigh-1; i+=2)
+    {   borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
+        borrow = subtractWithBorrow(low[i+1], high[i+1], borrow, result[i+1]);
+    }
+    if (i<lenHigh)
+    {   borrow = subtractWithBorrow(low[i], high[i], borrow, result[i]);
+        i++;
+    }
+// I will not unwind this loop because I expect that lenHigh will usually
+// be very close to lenLow so there will be little to save.
+    for (; i<lenLow; i++)
+        borrow = subtractWithBorrow(low[i], borrow, result[i]);
+    if (borrow == 0) return false;
+// If necessary negate the result. This case arises if low has at least one
+// zero leading digit and is less that high in magnitide.
+    borrow = 0;
+    for (i=0; i<lenLow; i++)
+        borrow = subtractWithBorrow(0, result[i], borrow, result[i]);
+    return true;
+}
+
+// set result = |low-high| and return true if high>low.
+// A special feature here is that the "low" values here can have
+// leading zeros - for instance consider the partitioned form of
+// the number 1234_5678:0000_0234_5678 where I have used ":" to mark
+// where the whole number is split into high and low parts. The high
+// part has 2 digits and the low has 3, however the low part has the
+// smaller value. So in that case the correct absolute value of
+// the differenfce will be 0000_1000_0000
+
+[[gnu::always_inline]]
+static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
+                          ConstDigitPtr high, std::size_t lenHigh,
+                          DigitPtr result)
+{   if (lenHigh != lenLow)
+        return differenceLengthsDiffer(low, lenLow, high, lenHigh, result);
+// Here the two numbers both have the same number of digits. I need to
+// work out which is the larger. Usually I will only need to look at
+// the top digit. On that basis I make the code capable of scanning all
+// the way down the number.
+// An alternative stretegy would be do compute (low-high) always, detect
+// a borrow at the end (ie that the difference was negative) and in that
+// case negate the answer. That might do a full linear-cost negation about
+// half the time where what I do here frequently only tests one digit.
+    std::size_t i = lenLow-1; 
+    for (;;)
+    {   if (high[i] < low[i])
+        {   differenceLengthsMatch(low, lenLow, high, result);
+            return false;
+        }
+        else if (high[i] > low[i])
+        {   differenceLengthsMatch(high, lenLow, low, result);
+            return true;
+        }
+        if (i == 0)   // Here the two numbers are equal.
+        {   std::memset(result, 0, lenLow*sizeof(Digit));
+            return false;
+        }
+        i--;
+    }
+}
+
+[[gnu::always_inline]]
+static void setupKara(arithlib_implementation::WorkerData& wd,
+                      ConstDigitPtr a, std::size_t lena,
+                      ConstDigitPtr b, std::size_t lenb,
+                      DigitPtr result)
+{   wd.a = a;
+    wd.lena = lena;
+    wd.b = b;
+    wd.lenb = lenb;
+    wd.c = result;
+}
+
+// This is the entrypoint for Karatsuba multiplication, and it
+// will be called with N>=M amd with a workspace vector big enough for
+// its needs.
+
+public:
+
+template <bool thread=false>
+static void kara(ConstDigitPtr a, std::size_t N,
+                 ConstDigitPtr b, std::size_t M,
+                 DigitPtr result)
+{   std::size_t lowSize = (N+1)/2;
+    std::size_t aHighSize = N-lowSize;
+    std::size_t bHighSize = M-lowSize;
+    ConstDigitPtr aHigh = a+lowSize;
+    ConstDigitPtr bHigh = b+lowSize;
+#ifdef DEBUG_TIMES
+    display("\nahigh", aHigh, aHighSize);
+    display("\nalow", a, lowSize);
+    display("\nbhigh", bHigh, bHighSize);
+    display("\nblow", b, lowSize);
+#endif // DEBUG_TIMES
+// I have now split a and b into low and and high parts where the two
+// low parts are half the size of the larger input (rounded up if that
+// was odd). I now want to form |aHigh - aLow| and similarly for b
+// keeping track of whether taking the absolute values involved a sign flip.
+    DigitPtr aDiff, bDiff;
+    stkvector<Digit> workspace((thread?4:2)*lowSize);
+    if constexpr (thread)
+    {   aDiff = workspace+2*lowSize;
+        bDiff = workspace+3*lowSize;
+    }
+    else
+    {   aDiff = result;
+        bDiff = result+lowSize;
+    }
+    bool sign = absDifference(a, lowSize, aHigh, aHighSize, aDiff);
+    if (absDifference(b, lowSize, bHigh, bHighSize, bDiff)) sign = !sign;
+#ifdef DEBUG_TIMES
+    display("\nadiff", aDiff, lowSize);
+    display("\nbdiff", bDiff, lowSize);
+    std::cout << "% sign = " << sign << "\n";
+#endif // DEBUG_TIMES
+    if constexpr (thread)
+    {   setupKara(driverData.wd_0, aDiff, lowSize, bDiff, lowSize, workspace);
+        setupKara(driverData.wd_1, a, lowSize, b, lowSize, result);
+// Let the threads run while I do aHigh*bHigh. I expect that I will only
+// launch threads when the inputs are rather large, and in particular large
+// enough that the half-sized multiplications triggered here will be
+// Karatsuba rather than classical.
+        driverData.releaseWorkers(false);
+            // Do this while worker threads do their stuff.
+            generalMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize);
+        driverData.wait_for_workers(false);
+    }
+    else
+    {   generalMul(aDiff, lowSize, bDiff, lowSize, workspace);
+        generalMul(a, lowSize, b, lowSize, result);
+        generalMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize);
+#ifdef DEBUG_TIMES
+    display("\nlowprod", result, 2*lowSize);
+    display("\nmidprod", workspace, 2*lowSize);
+    display("\nhighprod", result+2*lowSize, aHighSize+bHighSize);
+#endif // DEBUG_TIMES
+    }
+// At this stage result has aHigh*bHigh in its top half and aLow*bLow
+// in its bottom half. Then workspace hold aDiff*bDiff. I now need to
+// combine these to get my final result. 
+// If sign is false workspace holds aHigh*bHigh+aLow*bLow-middleTerms
+// so I want to go
+// 1.    workspace = aHigh*bHigh - workspace
+// 2.    workspace = aLow*bLow + workspace
+// 3.    result[middle] += workspace --- carry up into high part if needed.
+// Step 1 can generate a borrow and step 2 a carry, so on input to step 3
+// there is an extra -1, 0 or +1 to deal with.
+// If sign is true I want
+// 1.    workspace = aHigh*bHigh + workspace
+// 2.    workspace = aLow*bLow + workspace
+// 3.    result[middle] += workspace --- carry up into high part if needed.
+// and now each of steps 1 and 2 may generate a carry, so step 3 starts
+// with an extra 0, +1 or +2.
+    int extra = 0;
+    if (sign) extra =
+        karaAdd(workspace, 2*lowSize,
+                result+2*lowSize, aHighSize+bHighSize,
+                workspace);
+    else extra =
+        -karaRevSubtract(workspace, 2*lowSize,
+                         result+2*lowSize, aHighSize+bHighSize,
+                         workspace);
+    extra += karaAdd(result, 2*lowSize,
+                     workspace, 2*lowSize, workspace);
+// extra can now be -1, 0, 1 or 2
+    Digit carry = karaAdd(workspace, 2*lowSize,
+                          result+lowSize, 2*lowSize, result+lowSize);
+    karaCarry(carry, result+3*lowSize);
+    if (extra > 0) karaCarry(extra, result+3*lowSize);
+    else if (extra < 0) karaBorrow(-extra, result+3*lowSize);
+#ifdef DEBUG_TIMES
+    display("\nresult", result, M+N);
+#endif // DEBUG_TIMES
+}  
+
+private:
+
+
+};
+
+inline std::atomic<bool> BigMultiplication::ManageWorkers::threadsInUse(false);
+
+// Now the external world needs access to the entrypoint "generalMul"
+// so I provide a shim that calls it so that others do not need to
+// fuss about the class name.
+
+[[gnu::always_inline]]
+inline void generalMul(ConstDigitPtr a, std::size_t N,
+                       ConstDigitPtr b, std::size_t M,
+                       DigitPtr result)
+{   BigMultiplication::generalMul(a, N, b, M, result);
+}
+
+// verySimpleMul is intended to deliver the same results as generalMul
+// but using clear (if less efficient code) so it can be use as a
+// reference implementation during testing.
+
+inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result)
+{   BigMultiplication::verySimpleMul(a, N, b, M, result);
+}
+
+// End of integer multiplication code.
+//=========================================================================
+
+#if defined USE_MICROSOFT_SRW
+
+inline void workerThread(WorkerData* wd)
+{   ThreadLocal::initialize();
+    AcquireSRWLockExclusive(&wd->mutex[2]);
+    AcquireSRWLockExclusive(&wd->mutex[3]);
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {   AcquireSRWLockExclusive(&wd->mutex[receive_count]);
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c);
+        ReleaseSRWLockExclusive(&wd->mutex[receive_count^2]);
+        receive_count = (receive_count + 1) & 3;
+    }
+}
+
+#elif defined USE_MICROSOFT_MUTEX
+
 inline void workerThread(WorkerData* wd)
 {
-#ifdef USE_MICROSOFT_MUTEX
+#ifdef WORRY_ABOUT_DEADLOCK
+    fprintf(stderr, "Grabbing mutexes as worker thread %d starts\n", wd->which);
+    fflush(stderr);
+    if (WaitForSingleObject(wd->mutex[2], 2000) != 0)
+    {   fprintf(stderr, "Timeout on mutex line %d\n", __LINE__);
+        fflush(stderr);
+        std::abort();
+    }
+    if (WaitForSingleObject(wd->mutex[3], 2000) != 0)
+    {   fprintf(stderr, "Timeout on mutex line %d\n", __LINE__);
+        fflush(stderr);
+        std::abort();
+    }
+    fprintf(stderr, "thread %d ready\n", wd->which);
+    fflush(stderr);
+#else
     WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
     WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
-#else
-    wd->mutex[2].lock();
-    wd->mutex[3].lock();
 #endif
     wd->ready = true;
     int receive_count = 0;
     for (;;)
     {
-#ifdef USE_MICROSOFT_MUTEX
+// This WaitFor could wait for the entire Reduce run any only be signalled
+// during close-down, so putting a timeout on it would nor make sense.
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "wait on %d:%d\n", wd->which, receive_count);
+        fflush(stderr);
+#endif
         WaitForSingleObject(wd->mutex[receive_count], MICROSOFT_INFINITE);
-#else
-        wd->mutex[receive_count].lock();
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "released %d:%d quit=%d\n", wd->which, receive_count, wd->quit_flag);
+        fflush(stderr);
 #endif
         if (wd->quit_flag) return;
 // This is where I do some work! I think it would in general have been
 // silly to launch a thread if the sub-multiplication was small enough to
 // call for classical multiplication... so I always use Karatsuba here.
-        karatsubaMul(wd->a, wd->lena,
-                     wd->b,
-                     wd->c,
-                     wd->w);
-#ifdef USE_MICROSOFT_MUTEX
-        ReleaseMutex(wd->mutex[receive_count^2]);
-#else
-        wd->mutex[receive_count^2].unlock();
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c);
+#ifdef WORRY_ABOUT_DEADLOCK
+        fprintf(stderr, "Thread %d about to release mutex %d\n",
+                        wd->which, receive_count^2);
+        fflush(stderr);
 #endif
+        ReleaseMutex(wd->mutex[receive_count^2]);
         receive_count = (receive_count + 1) & 3;
     }
 }
 
-// I start with a helper function that copes with top-level multiplications
-// of equally sized numbers in a situation where workspace has been allocated.
+#else // Here I use C++ std::mutex
 
-inline void classicalMul(const std::uint64_t* a, std::size_t N,
-                         const std::uint64_t* b, std::size_t M,
-                         std::uint64_t* c);
+inline void workerThread(WorkerData* wd)
+{   wd->mutex[2].lock();
+    wd->mutex[3].lock();
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {   wd->mutex[receive_count].lock();
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c);
+        wd->mutex[receive_count^2].unlock();
+        receive_count = (receive_count + 1) & 3;
+    }
+}
 
-// When this is called for NxM multiplication with M>=N the amount if
-// workspace used is just based on N and satisfies space(N) <=  6*(N+1).
-// This is made up of 2N only required if N!=M, then for the N=M case
-// 2*(N+1)*(1+1/2+1/4+...). For the sorts of calls delegated to other
-// threads the space requirements for each thread is bounded by 4*(N+1).
-// Well actually it is a little worse than that because the code needs
-// to round up odd numbers. The worst case applies when N=2^k+1 and then
-// the space needed is 4*(N+1+k). 
+#endif // definition of workerThread
 
-inline void karatsubaCore(const uint64_t* u, size_t N,
-                          const uint64_t* v,
-                          uint64_t* w,
-                          uint64_t* workspace)
-{   std::size_t H1=N/2;
-    std::size_t H2=(N+1)/2;                      // N may be odd.
-    std::uint64_t* du = workspace;
-    std::uint64_t* dv = workspace + H2;
-    std::uint64_t* t = workspace + 2*H2;
-    std::uint64_t bu, bv;
-    if (N >= PARAKARA_START)
-    {   size_t wsNeeded = 4*N + 4*(64-nlz(N));
 
-        driverData.wd_0.a = u;
-        driverData.wd_0.lena = H2;
-        driverData.wd_0.b = v;
-        driverData.wd_0.lenb = H2;
-        driverData.wd_0.c = w;
-        driverData.wd_0.w = workspace+wsNeeded;
+// Now some code that delivers just some of the digits from a product.
 
-        driverData.wd_1.a = u+H2;
-        driverData.wd_1.lena = H1;
-        driverData.wd_1.b = v+H2;
-        driverData.wd_1.lenb = H1;
-        driverData.wd_1.c = w+2*H2;
-        driverData.wd_1.w = workspace+3*wsNeeded/2;
+// Return (in w) the digits from "from" to "to" (inclusive) from
+// the product of u by v. "from" defaults to zero and "to" to a high
+// value - the product runs from 0 (inclusive) to N+M (exclusive)
+// and if "to" is overlarge no output data beyond the real digits of
+// the product are put into w.
+// When "from" is non-zero the lowest result in w may be incorrect by
+// being low by up to [maybe] min(N,M). That is because in the perfect
+// result there may have been carries passed on up from lower partial
+// products.
 
-        driverData.releaseWorkers();
-        bu = subtractWithBorrow(u+H2, u, du, H1); // uhigh - ulow.
-        if (H1 != H2) bu = subtractWithBorrow(0, u[H1], bu, du[H1]);
-        bv = subtractWithBorrow(v, v+H2, dv, H1); // vlow - vhigh.
-        if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
-        mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
-        driverData.wait_for_workers();
+// Note that the digit correspoding to "from" is put in the first
+// location in the output vector, and that vector should be
+// (min(N+M-1, to)-from) in length.
+
+// The "reference" version does a full multiplication (which may use
+// Karatsuba) and then keeps just some of the digits. If only a small
+// slice of the result is needed the full multiplication will generate
+// many unnecessary digits. But the code here is very simple and
+// can be used to document the intent of everything else. I will also use
+// it when the sizes M and N are very different.
+
+inline void referencePartMul(ConstDigitPtr u, size_t N,
+                             ConstDigitPtr v, size_t M,
+                             DigitPtr w,
+                             size_t from=0, size_t to=SIZE_MAX)
+{   stkvector<Digit> temp(N+M);
+// This reference implementation just forms the full product and then
+// copies the words [from..to] to where they are needed. It needs
+// workspace for the full product to calculated, and
+// stkvector<Digit> temp(N+M) arranges for that one way or another.
+    generalMul(u, N, v, M, temp);
+    to = std::min(to, N+M-1);
+    for (size_t i=from; i<=to; i++) w[i-from] = temp[i];
+}
+
+// The "classical" version is what will be used for multiplications
+// involving not too many digits, and is pretty straightforward.
+
+inline void classicalPartMul(ConstDigitPtr u, size_t N,
+                             ConstDigitPtr v, size_t M,
+                             DigitPtr w,
+                             size_t from=0, size_t to=SIZE_MAX)
+{   Digit lo=0, hi=0, carry=0, hi1;
+    to = std::min(to, N+M-1);
+// The curious expression here is intended to lead to branch-free code
+// that sets the range of digits to be combined forming partial
+// products. The idea is that ((-boolVal) & X will) yield the
+// same result as (boolVal ? X : 0). So here we have
+//     k < M :    imin = 0
+//     k >= M :   imin = k - kenv + 1
+//     k < N :    imax = k
+//     k >= N :   imax = N - 1
+    if (from != 0)
+    {
+        size_t imin = (-(from>=M+1)) & (from - M);
+        size_t imax = N - 1 - ((-(from<N+1)) & (N - from));
+        for (size_t i=imin; i<=imax; i++)
+        {   arithlib_assert(from>=i+1);
+            multiply64(u[i], v[from-i-1], lo, hi1, lo);
+            carry += ((hi += hi1) < hi1);
+        }
+// I form the partial products for one earlier row because the high
+// parts of them contribute fully to the digits that I want. But I discard
+// the result apart from keeping anything that has carried out from it.
+        // w[-1] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+    for (size_t k=from; k<=to; k++)
+    {   size_t imin = (-(k>=M)) & (k - M + 1);
+        size_t imax = N - 1 - ((-(k<N)) & (N - 1 - k));
+        for (size_t i=imin; i<=imax; i++)
+        {   multiply64(u[i], v[k-i], lo, hi1, lo);
+            carry += ((hi += hi1) < hi1);
+        }
+        w[k-from] = lo;
+        lo = hi;
+        hi = carry;
+        carry = 0;
+    }
+}
+
+// A "fast" multiply decomposes the calculation in a way based on
+// work by Mulder.
+//
+// See Mulder, T. "On Short Multiplications and Divisions." AAECC 11,
+// 6988 (2000). https://doi.org/10.1007/s002000000037
+// and also see
+// G Henriot and P Zimmermanm, "A long note on Mulder's Short Product"
+// Journal of Symbolic Computation Volume 37, 3, March 2004, Pages 391-401
+
+inline Digit fastPartMulAdd(ConstDigitPtr u, size_t N,
+                            ConstDigitPtr v, size_t M,
+                            DigitPtr w,
+                            size_t from, size_t to);
+
+// This forms a sub-product and adds it in. This is made into
+// a separate function allowing for a shift by uShift, vShift
+// because from, to and w need adjustment and the calculations that
+// set their values seemed most easily expressed here.
+
+inline Digit shiftedFastPartMulAdd(ConstDigitPtr u, size_t N,
+                                   ConstDigitPtr v, size_t M,
+                                   DigitPtr w,
+                                   size_t from, size_t to,
+                                   size_t uShift, size_t vShift)
+{   size_t h = uShift + vShift;
+    if (to <= h) return 0;
+    to -= h;
+    if (from < h)
+    {   w = w + (h-from);
+        from = 0;
     }
     else
-    {   mul(u, H2, v, w, workspace);            // Product of low halves.
-        mul(u+H2, H1, v+H2, w+2*H2, workspace); // Product of high halves.
-        bu = subtractWithBorrow(u+H2, u, du, H1); // uhigh - ulow.
-        if (H1 != H2) bu = subtractWithBorrow(0, u[H1], bu, du[H1]);
-        bv = subtractWithBorrow(v, v+H2, dv, H1); // vlow - vhigh.
-        if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
-        mul(du, H2, dv, t, workspace+4*H2);        // Product of above two.
+    {   from -= h;
     }
-    std::uint64_t c = addWithCarry(w, t, t, H2); // add in low and high..
-    c = addWithCarry(w+H2, t+H2, c, t+H2, H2);   // ..products from earlier.
-    std::uint64_t cx = addWithCarry(w+2*H2, t, t, H1);
-    cx = addWithCarry(w+2*H2+H1, t+H1, cx, t+H1, H1);
-    if (H1!=H2 && cx != 0)
-    {   if (++t[2*H1] != 0) cx = 0;
-        else if (++t[2*H1+1] != 0) cx = 0;
-    }
-    if (bu != 0)                                // Subtraction caused borrow?
-    {   bu = subtractWithBorrow(t+H2, dv, t+H2, H2);
-        if (bv != 0) cx++;                      // Both subtractions borrowed.
-    }
-    if (bv != 0) bv = subtractWithBorrow(t+H2, du, t+H2, H2);
-    std::uint64_t cxx = addWithCarry(w+H2, t, w+H2, H2);// Merge back into..
-    cxx = addWithCarry(w+2*H2, t+H2, cxx, w+2*H2, H2);  // ..the main result.
-    increment(w+3*H2, 2*H1-H2, cxx + cx + c - bu - bv);
+    return fastPartMulAdd(u+uShift, N,
+                          v+vShift, M,
+                          w,
+                          from, to);
 }
 
-// This overload is the top level entry to Karatsuba multiplication. It
-// has several special things to do:
-//  (.) Set up workspace needed by the scheme.
-//  (.) In large cases run sub-calculations in helper threads.
-//  (.) Deal with multiplications where the two numbers do not
-//      have the same number of digits.
+// This computes the product of two numbers each of which are N digits long
+// and where "to" is such that quite a lot of the high digits of the
+// result are not wanted.
 
-inline void generalKaratsubaMul(const std::uint64_t* u, std::size_t N,
-                                const std::uint64_t* v, std::size_t M,
-                                std::uint64_t* w)
+inline void lowPartMul(ConstDigitPtr u,
+                       ConstDigitPtr v, size_t N,
+                       DigitPtr  w,
+                       size_t from, size_t to)
+{   size_t split = std::min(N, ((7*to)/10 + 1) & ~1);
+    size_t gap = N-split;
+    if (gap <= 3) split = N;
+    referencePartMul(u, split,
+                     v, split,
+                     w,
+                     from, to);
+    if (split == N) return;
+    shiftedFastPartMulAdd(u, N,
+                          v, gap,
+                          w,
+                          from, to,
+                          0, split);
+    shiftedFastPartMulAdd(u, split,
+                          v, gap,
+                          w,
+                          from, to,
+                          split, 0);
+}
+
+// I code this so that w does not overshoot the end of the vector w,
+// even though in C++ it is legal to have a pointer to the location
+// one beyond a vector.
+
+inline Digit propagateCarry(Digit carry, DigitPtr w, size_t len)
+{   if (carry==0 || len==0) return carry;
+    for (;;)
+    {   carry = addWithCarry(*w, carry, *w);
+        if (carry==0) return 0;
+        len--;
+        if (len==0) return carry;
+        w++;
+    }
+}
+
+inline const size_t midmul_threshold = 20;
+
+inline void fastPartMul(ConstDigitPtr u, size_t N,
+                        ConstDigitPtr v, size_t M,
+                        DigitPtr w,
+                        size_t from=0, size_t to=SIZE_MAX)
 {
-#ifdef CHECK_MULTIPLY
-    uint64_t* w1 = new uint64_t[M+N+1];
-    classicalMul(u, N, v, M, w1);   // Reference result
-    const uint64_t* uu = u;
-    const uint64_t* vv = v;
-    const uint64_t* ww = w;
-    size_t MM=M, NN=N;
-#endif    
-// Here M >= N.
-    size_t wTop = M+N;
-    size_t wsNeeded = 4*N + 4*(64-nlz(N));
-    size_t wsTotal = wsNeeded;
-    if (N >= PARAKARA_START) wsTotal *= 2;
-    if (M >= 2*N) wsTotal += 2*N;
-    else if (M > N) wsTotal += N+M;
-    uint64_t* workspace = getWorkspace(wsTotal);
-// Here is the layout used for the workspace:
-//   H2 = (N+1)/2
-//   [0 .. H2)                     du   stores u_hi - u_lo
-//   [H2 .. 2*H2)                  dv   stores v_lo - v_hi
-//   [2*H2 .. 4*H2)                t    stored du*dv
-//   [4*H2 .. wsNeeded)            used in recursive calls in simple case
-//     [wsneeded .. 3*wsNeeded/2)  as from 0..wsNeeded for thread1
-//     [3*wsNeeded/2 .. 2*wsNeeded)  as from 0..wsNeeded for thread2
-//   [z=wsNeeded or 2*wsNeeded .. z+min(2*N,N+M)) used if N!=M
-//
-    karatsubaCore(u, N, v, w, workspace);
-// Now the low 2*N words of the result have been set to the product
-// of two N-word parts. In an especially easy case N=M and we are done!
-    if (N == M) return;
-// The easiest path for me here is to zero out the parts of the final
-// product that have not yet been filled in and then I can perform
-// a collection of further multiplications into temporary workspace and
-// add into the final result.
-    for (size_t i=2*N; i<N+M; i++) w[i] = 0;
-    v += N;
-    w += N;
-    wTop -= N;
-    M -= N;
-    uint64_t* temp = N < PARAKARA_START ? workspace + wsNeeded :
-                                          workspace + 2*wsNeeded;
-    do
-    {   while (M >= N)
-        {   karatsubaCore(u, N, v, temp, workspace);
-            std::uint64_t c = addWithCarry(w, temp, w, 2*N);
-            for (size_t i=2*N; c!=0 && i<wTop; i++)
-                c = addWithCarry(w[i], c, w[i]);
-            v += N;
-            w += N;
-            wTop -= N;
-            M -= N;
+// Any digits in either u or v beyond "to" can be discarded since they can
+// not contribute to the desired part of the result.
+    if (to<N-1) N = to+1;
+    if (to<M-1) M = to+1;
+    if (N > M)          // ensure that u is the shorter argument
+    {   std::swap(u, v);
+        std::swap(N, M);
+    }
+    if (from>N-1)
+    {   size_t shift = from-(N-1);
+        if (M-shift >= N)
+        {   v += shift;
+            M -= shift;
+            to -= shift;
+            from -= shift;
         }
-    } while ((M >= KARATSUBA_START_ODD ||
-             ((M%2) == 0 && M >= KARATSUBA_START_EVEN)) &&
-            (std::swap(u, v), std::swap(N, M), true));
-    if (M != 0)
-    {   classicalMul(v, M, u, N, temp);
-        addWithCarry(w, temp, w, M+N);
     }
-#ifdef CHECK_MULTIPLY
-    bool ok = true;
-    for (size_t i=0; i<MM+NN; i++)
-        if (ww[i] != w1[i]) ok=false;
-    if (!ok)
-    {   std::cout << "% Karatsuba multiplication messed up\n";
-        std::cout << "% N=" << NN << " M=" << MM << "\n";
-        std::printf("u:=0x");
-        for (int i=NN-1; i>=0; i--)
-            std::printf("_%016" PRIx64, uu[i]);
-        std::printf(";\n");
-        std::printf("v:=0x");
-        for (int i=MM-1; i>=0; i--)
-            std::printf("_%016" PRIx64, vv[i]);
-        std::printf(";\n");
-        std::printf("w:=0x");
-        for (int i=NN+MM-1; i>=0; i--)
-            std::printf("_%016" PRIx64, ww[i]);
-        std::printf(";\n");
-        std::printf("w1:=0x");
-        for (int i=NN+MM-1; i>=0; i--)
-            std::printf("_%016" PRIx64, w1[i]);
-        std::printf(";\n");
-        arithlib_abort("multiplication failed");
+    to = std::min(to, N+M-1);
+// If either the smaller operand is small or if the slice of the result
+// I want is narrow I fall back to classical long multiplication.
+    if ((to-from) < midmul_threshold || N < midmul_threshold)
+    {   classicalPartMul(u, N, v, M, w, from, to);
+        return;
     }
-    delete [] w1;
-#endif
-}
-
-inline void karatsubaMul(const std::uint64_t* u, std::size_t N,
-                         const std::uint64_t* v,
-                         std::uint64_t* w,
-                         std::uint64_t* workspace)
-{   std::size_t H1=N/2;
-    std::size_t H2=(N+1)/2;                         // N may be odd.
-    mul(u, H2, v, w, workspace);                    // Product of low halves.
-    mul(u+H2, H1, v+H2, w+2*H2, workspace);         // Product of high halves.
-    std::uint64_t* du = workspace;
-    std::uint64_t* dv = workspace+H2;
-    workspace += 2*H2;
-    std::uint64_t bu, bv;
-    bu = subtractWithBorrow(u+H2, u, du, H1); // uhigh - ulow.
-    if (H1 != H2) bu = subtractWithBorrow(0, u[H1], bu, du[H1]);
-    bv = subtractWithBorrow(v, v+H2, dv, H1); // vlow - vhigh.
-    if (H1 != H2) bv = subtractWithBorrow(v[H1], bv, dv[H1]);
-    std::uint64_t* t = workspace;
-    workspace += 2*H2;
-    mul(du, H2, dv, t, workspace);                   // Product of above two.
-    std::uint64_t c = addWithCarry(w, t, t, H2);   // add in low and high..
-    c = addWithCarry(w+H2, t+H2, c, t+H2, H2);     // ..products computed earlier.
-    std::uint64_t cx = addWithCarry(w+2*H2, t, t, H1);
-    cx = addWithCarry(w+2*H2+H1, t+H1, cx, t+H1, H1);
-    if (H1!=H2 && cx != 0)
-    {   if (++t[2*H1] != 0) cx = 0;
-        else if (++t[2*H1+1] != 0) cx = 0;
+    if (3*N < M)
+    {
+// This special case will apply if the two input integers are very
+// different in size. It is here because a previous revision of this
+// code could end up recursing ridiculously deeply in such cases when
+// in fact almost all of the product needed computing so calculating
+// it all as is done here was not a severe overhead.
+        referencePartMul(u, N, v, M, w, from, to);
+        return;
     }
-    if (bu != 0)                                // Subtraction caused borrow?
-    {   bu = subtractWithBorrow(t+H2, dv, t+H2, H2);
-        if (bv != 0) cx++;                      // Both subtractions borrowed.
-    }
-    if (bv != 0) bv = subtractWithBorrow(t+H2, du, t+H2, H2);
-    std::uint64_t cxx = addWithCarry(w+H2, t, w+H2, H2);// Merge back into..
-    cxx = addWithCarry(w+2*H2, t+H2, cxx, w+2*H2, H2);  // ..the main result.
-    increment(w+3*H2, 2*H1-H2, cxx + cx + c - bu - bv);
-}
-
-// generalMul() is the key entrypoint here. For small inputs it uses classical
-// long multiplication. For large ones where the two inputs it will use
+// The following rather strange calculation decide how to split the
+// full product calculation into parts. The ideas built into it
+// are:
+// . We can never split off a balanced multiplication larger than NxN.
+// . When we split one off it should have an even size since we hope
+//   to be able to use Karatsuba on it.
+// . The size should be such that the split-off square multiplication
+//   uses input data beyond the "from" threshold. Here I set things
+//   such that if I will want K high digits in my result I form the
+//   product of two 0.7K digit numbers for form a 1.4K digit intermediate
+//   result and then ignore the low 0.4K digits of that. The fraction 0.7
+//   is not going to be optimal - even more in the case of unbalanced
+//   lengths of inputs, but is probably a reasonable approximation to the
+//   best and so is what I use. If one was in a situation where both
+//   arguments were the same fixed size and the fraction of the output
+//   needed was fixed it would be proper to tune this carefully.
+    size_t split = std::min(N, ((7*(N+M-from))/10 + 1) & ~1);
+// Do the first square multiplication... This is always done as by forming a
+// full 2*split digit product and the intent is that it always uses
 // Karatsuba.
-// The cutoff values coded in here are based on measurements on x86_64
-// which among other things showed that (at least my implementation of)
-// Karatsuba on pairs of numbers with an odd number of digits only
-// started to win for bigger cases than applied for even numbers of
-// digits.
-
-inline void generalMul(const std::uint64_t* u, std::size_t N,
-                       const std::uint64_t*v, std::size_t M,
-                       std::uint64_t* w)
-{   switch ((N+7*M) & -(N<=7))  // The "&" is intended to be branch-free here.
-    {   case 1+7*1:
-            classicalMul<1,1>(u, v, w); return;
-        case 1+7*2:
-            classicalMul<2,1>(v, u, w); return;
-        case 1+7*3:
-            classicalMul<3,1>(v, u, w); return;
-        case 1+7*4:
-            classicalMul<4,1>(v, u, w); return;
-        case 1+7*5:
-            classicalMul<5,1>(v, u, w); return;
-        case 1+7*6:
-            classicalMul<6,1>(v, u, w); return;
-        case 1+7*7:
-            classicalMul<7,1>(v, u, w); return;
-
-        case 2+7*1:
-            classicalMul<2,1>(u, v, w); return;
-        case 2+7*2:
-            classicalMul<2,2>(u, v, w); return;
-        case 2+7*3:
-            classicalMul<3,2>(v, u, w); return;
-        case 2+7*4:
-            classicalMul<4,2>(v, u, w); return;
-        case 2+7*5:
-            classicalMul<5,2>(v, u, w); return;
-        case 2+7*6:
-            classicalMul<6,2>(v, u, w); return;
-        case 2+7*7:
-            classicalMul<7,2>(v, u, w); return;
-
-        case 3+7*1:
-            classicalMul<3,1>(u, v, w); return;
-        case 3+7*2:
-            classicalMul<3,2>(u, v, w); return;
-        case 3+7*3:
-            classicalMul<3,3>(u, v, w); return;
-        case 3+7*4:
-            classicalMul<4,3>(v, u, w); return;
-        case 3+7*5:
-            classicalMul<5,3>(v, u, w); return;
-        case 3+7*6:
-            classicalMul<6,3>(v, u, w); return;
-        case 3+7*7:
-            classicalMul<7,3>(v, u, w); return;
-
-        case 4+7*1:
-            classicalMul<4,1>(u, v, w); return;
-        case 4+7*2:
-            classicalMul<4,2>(u, v, w); return;
-        case 4+7*3:
-            classicalMul<4,3>(u, v, w); return;
-        case 4+7*4:
-            classicalMul<4,4>(u, v, w); return;
-        case 4+7*5:
-            classicalMul<5,4>(v, u, w); return;
-        case 4+7*6:
-            classicalMul<6,4>(v, u, w); return;
-        case 4+7*7:
-            classicalMul<7,4>(v, u, w); return;
-
-        case 5+7*1:
-            classicalMul<5,1>(u, v, w); return;
-        case 5+7*2:
-            classicalMul<5,2>(u, v, w); return;
-        case 5+7*3:
-            classicalMul<5,3>(u, v, w); return;
-        case 5+7*4:
-            classicalMul<5,4>(u, v, w); return;
-        case 5+7*5:
-            classicalMul<5,5>(u, v, w); return;
-        case 5+7*6:
-            classicalMul<6,5>(v, u, w); return;
-        case 5+7*7:
-            classicalMul<7,5>(v, u, w); return;
-
-        case 6+7*1:
-            classicalMul<6,1>(u, v, w); return;
-        case 6+7*2:
-            classicalMul<6,2>(u, v, w); return;
-        case 6+7*3:
-            classicalMul<6,3>(u, v, w); return;
-        case 6+7*4:
-            classicalMul<6,4>(u, v, w); return;
-        case 6+7*5:
-            classicalMul<6,5>(u, v, w); return;
-        case 6+7*6:
-            classicalMul<6,6>(u, v, w); return;
-        case 6+7*7:
-            classicalMul<7,6>(v, u, w); return;
-
-        case 7+7*1:
-            classicalMul<7,1>(u, v, w); return;
-        case 7+7*2:
-            classicalMul<7,2>(u, v, w); return;
-        case 7+7*3:
-            classicalMul<7,3>(u, v, w); return;
-        case 7+7*4:
-            classicalMul<7,4>(u, v, w); return;
-        case 7+7*5:
-            classicalMul<7,5>(u, v, w); return;
-        case 7+7*6:
-            classicalMul<7,6>(u, v, w); return;
-        case 7+7*7:
-            classicalMul<7,7>(u, v, w); return;
-        default:
-            if (M >= N)
-            {   if (N>=KARATSUBA_START_ODD || (N>=KARATSUBA_START_EVEN && N%2==0))
-                    generalKaratsubaMul(u, N, v, M, w);
-                else classicalMul(u, N, v, M, w);
-            }
-            else if (M>=KARATSUBA_START_ODD || (M>=KARATSUBA_START_EVEN && M%2==0))
-                generalKaratsubaMul(v, M, u, N, w);
-            else classicalMul(v, M, u, N, w);
+// Well if "to" is a significant limit on how many digits are required
+// this might be improved upon by doing Mulder-like decompostion upwards
+// towards "to" as well as downwards towards "from".
+    size_t shift = N+M-2*split;
+// I will generally need to add in components of the final result, and
+// so I zero out parts of w that will not be set by filling in the first
+// product.
+    for (size_t i=from; i<shift && i<=to; i++) w[i-from] = 0;
+    lowPartMul(u+(N-split), v+(M-split), split,
+               from>shift ? w : w + (shift-from),
+               from>shift ? from-shift : 0,
+               to-shift);
+    size_t P = N+M-1-split;     // higest digit from lower parts
+    if (from > P) return;
+    Digit carry;
+    if (split == N)
+    {   if (N == M) return;
+        carry = fastPartMulAdd(u, N, v, M-split, w, from, to);
     }
+    else
+    {   shift = M-split;
+// This can recurse and as such is ugly - but at an earlier stage I have
+// ensured that M can only be a modest multiple of N so the recursion
+// depth here can never be deep enough to worry me.
+        carry = fastPartMulAdd(u, N,
+                               v, shift,
+                               w,
+                               from, to);
+        carry += shiftedFastPartMulAdd(u, N-split,
+                                       v, split,
+                                       w,
+                                       from, to,
+                                       0, shift);
+    }
+    if (to > P) propagateCarry(carry, w+(P-from+1), to-P);
+}
+
+// Note that default values for from and to were set up in the declaration
+// and must not be repeated here.
+
+inline Digit fastPartMulAdd(ConstDigitPtr u, size_t N,
+                            ConstDigitPtr v, size_t M,
+                            DigitPtr w,
+                            size_t from, size_t to)
+{   to = std::min(to, N+M-1);
+// A special case here is when M is much larger then N, since with
+// naive code this can end up allocating a really big temporary vector
+// and calling fastMul to fill it in - and that will hive of a chunk
+// of size N at the top and then recurse to get here again. The effect
+// can be both very deep recursion and use of a quite unreasonable
+// amount of working space. But I avoid getting here in that case!
+    stkvector<Digit> temp(to-from+1);
+    fastPartMul(u, N, v, M, temp, from, to);
+    Digit carry = 0;
+    for (size_t i=0; i<N+M-from+1 && i<=to-from; i++)
+        carry = addWithCarry(w[i], temp[i], carry, w[i]);
+    return carry;
+}
+
+// Returns the digit at position "from:bits" from the product of u by v.
+// Some low bits of the result may be incorrect with the result being
+// potentially less than the ideal result by at most min(M,N).
+// This is because in the perfect result there may have been carries
+// passed on up from lower partial products.
+
+inline Digit fastSlice(ConstDigitPtr u, size_t N,
+                       ConstDigitPtr v, size_t M,
+                       size_t from=0, size_t bits = 0)
+{   stkvector<Digit> shiftedU(N+1);
+    if (bits != 0)
+    {   Digit carry = 0;
+        for (size_t i=N; i!=0; i--)
+        {   Digit d = u[i-1];
+            shiftedU[i] = (d>>bits) | (carry<<(64-bits));
+            carry = d;
+        }
+        shiftedU[0] = carry<<(64-bits);
+        u = shiftedU;
+        N++;
+        from++;
+    }
+    Digit lo=0, hi=0, hi1;
+// The curious expression here is intended to lead to branch-free code
+// that sets the range of digits to be combined forming partial
+// products. The idea is that ((-boolVal) & X will) yield the
+// same result as (boolVal ? X : 0). So here we have
+//     k < M :    imin = 0
+//     k >= M :   imin = k - kenv + 1
+//     k < N :    imax = k
+//     k >= N :   imax = N - 1
+//
+// First generate high parts of the partial products from the row
+// below "from" and leave that in hi.
+    size_t imin = (-(from>=M+1)) & (from - M);
+    size_t imax = N - 1 - ((-(from<N+1)) & (N - from));
+    for (size_t i=imin; i<=imax; i++)
+    {   multiply64(u[i], v[from-i-1], lo, hi1, lo);
+        hi += hi1;
+    }
+// Now add in the low parts of the partial products in row "from".
+    imin = (-(from>=M)) & (from - M + 1);
+    imax = N - 1 - ((-(from<N)) & (N - 1 - from));
+    for (size_t i=imin; i<=imax; i++)
+        multiply64(u[i], v[from-i], hi, hi1, hi);
+    return hi;
 }
 
 // This is the main entrypoint to the integer multiplication code. It
@@ -9181,11 +17087,13 @@ inline void unsigned_short_division(std::uint64_t* a,
     if (want_q)
     {   lenq = lena;
 // The quotient will be negative if divisor and dividend had different signs.
-        if (aNegative != bNegative)
-        {   internalNegate(q, lenq, q);
-            truncateNegative(q, lenq);
-        }
-        else truncatePositive(q, lenq);
+        if (aNegative != bNegative) internalNegate(q, lenq, q);
+// Things here are sort of amazing in that eg if internalNegate is called
+// on the previous line then q can still end up positive and so need
+// a call to truncatePositive. That happens if it is zero. So I call BOTH
+// truncatePositive and truncateNegative to ensure I cover all situations.
+        truncateNegative(q, lenq);
+        truncatePositive(q, lenq);
     }
     if (want_r)
     {
@@ -9249,11 +17157,13 @@ inline void unsigned_long_division(std::uint64_t* a,
                                    bool want_q, std::uint64_t* q,
                                    std::size_t &olenq, std::size_t &lenq);
 
+#ifdef FASTDIVISION
 inline void fastDivision(std::uint64_t* a,
                          std::size_t &lena,
                          std::uint64_t* b, std::size_t &lenb,
                          bool want_q, std::uint64_t* q,
                          std::size_t &olenq, std::size_t &lenq);
+#endif // FASTDIVISION
 
 // The following is a major entrypoint to the division code. (a) and (b) are
 // vectors of digits such that the top digit of a number is treated as signed
@@ -9292,7 +17202,10 @@ inline void division(std::uint64_t* a, std::size_t lena,
         return;
     }
 // Next I have b in the range 2^63 to 2^64-1. Such values can be represented
-// in uint64_t.
+// in uint64_t. These values have had to have a leading zero in the bignum
+// representation so that the value as a whold is not interpreted as being
+// negative and although they are stored using 2 Digits they are "really"
+// just 1-Digit values.
     else if (lenb == 2 && b[1]==0)
     {   unsigned_short_division(a, lena, b[0], false,
                                 want_q, q, olenq, lenq,
@@ -9300,32 +17213,53 @@ inline void division(std::uint64_t* a, std::size_t lena,
         return;
     }
 // Now for b in -2^64 to -2^63-1. The 2s complement representetation will be
-// of the form (-1,nnn) with nnn an unsigned 64-bit value.
+// of the form (-1,nnn) with nnn an unsigned 64-bit value. It is ALMOST the
+// case that this can be handled using a short division by -nnn, but there
+// is a special case where the value stored in the Digit there is zero and
+// the value represented is exactly -2^64. I handle that individually!
     else if (lenb == 2 && b[1]==static_cast<std::uint64_t>(-1))
-    {
-// -b(0) is an unsigned representation of the absolute value of b. There is
-// one special case when -b(0) is zero, and that corresponds to division
-// by -2^64, so I will need to detect that and turn the division into a
-// combination of shift and negate operations.
-        if (b[0] == 0)
+    {   if (b[0] == 0)
         {   if (want_q)
             {   lenq = lena;
                 olenq = lena;
                 push(a);
                 q = reserve(lena);
                 pop(a);
-// The next line took me some while to arrive at!
-                std::uint64_t carry = !negative(a[lena-1]) || a[0]==0 ? 1 : 0;
-                for (std::size_t i=1; i<lena; i++)
-                    carry = addWithCarry(~a[i], carry, q[i-1]);
-                q[lena-1] = negative(a[lena-1]) ? 0 : -1ULL;
-                truncatePositive(q, lenq);
-                truncateNegative(q, lenq);
+// I will now take cases based on the sign of a.
+                if (negative(a[lena-1]))
+                {
+// Here I have a<0 being divided by -2^64. I will compute (-a)>>64 and
+// in the worst case that can use as many Digits as a originally did.
+                    MAYBE_UNUSED Digit notUsed;
+                    Digit carry = addWithCarry(~a[0], 1, notUsed);
+                    for (std::size_t i=1; i<lena; i++)
+                        carry = addWithCarry(~a[i], carry, q[i-1]);
+                    q[lena-1] = carry;
+                    lenq = lena;
+                    truncatePositive(q, lenq);
+                }
+                else
+                {
+// With a>=0 I want to compute -(a>>64) and this will always be shorter
+// than a.
+                    Digit carry = 1;
+                    q[0] = 0; // in case lena==1!
+                    for (std::size_t i=1; i<lena; i++)
+                        carry = addWithCarry(~a[i], carry, q[i-1]);
+                    addWithCarry(-1, carry, q[lena-1]);
+                    lenq = lena;
+                    truncateNegative(q, lenq);
+                    truncatePositive(q, lenq);
+                }
             }
             if (want_r)
-            {   std::uint64_t rr = a[0], padr = 0;
+            {
+// The remainder will be essentially the bottom digit of a. But sometimes
+// an additional digit that will be either 0 or -1 must be placed ahead of
+// it.
+                std::uint64_t rr = a[0], padr = 0;
                 lenr = 1;
-                if (negative(a[lena-1]) && positive(rr))
+                if (negative(a[lena-1]) && strictlyPositive(rr))
                 {   padr = -1;
                     lenr++;
                 }
@@ -9453,22 +17387,18 @@ inline void division(std::uint64_t* a, std::size_t lena,
     if (want_q)
     {   if (negative(q[lenq-1]))
             q[lenq++] = 0;
-        if (aNegative != bNegative)
-        {   internalNegate(q, lenq, q);
-            truncateNegative(q, lenq);
-        }
-        else truncatePositive(q, lenq);
+        if (aNegative != bNegative) internalNegate(q, lenq, q);
+        truncateNegative(q, lenq);
+        truncatePositive(q, lenq);
     }
 //  else abandon(q);
     if (want_r)
     {   r = bb;
         if (negative(r[lenr-1]))
             r[lenr++] = 0;
-        if (aNegative)
-        {   internalNegate(r, lenr, r);
-            truncateNegative(r, lenr);
-        }
-        else truncatePositive(r, lenr);
+        if (aNegative) internalNegate(r, lenr, r);
+        truncateNegative(r, lenr);
+        truncatePositive(r, lenr);
     }
     else abandon(bb);
 }
@@ -9661,7 +17591,21 @@ inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 inline std::intptr_t Quotient::op(std::uint64_t* a, std::int64_t b)
-{   std::size_t lena = numberSize(a);
+{   switch (b)
+    {
+    case 1:
+// Making division by 1 a special case is merely optimisation.
+        return vectorToHandle(a);
+    case -1:
+// Making division by -1 a special case tidies up the code within
+// the function division() because when -2^(64*K) is divided by -1 the
+// resulting bignum needs to be one word longer than the input. That is the
+// only case where division causes a number to grow, so disposing of it
+// early makes storage allocation for all the other cases just a little
+// easier.
+        return Minus::op(a);
+    }
+    std::size_t lena = numberSize(a);
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
@@ -9703,7 +17647,13 @@ inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 inline std::intptr_t Remainder::op(std::uint64_t* a, std::int64_t b)
-{   std::size_t lena = numberSize(a);
+{   switch (b)
+    {
+    case 1:
+    case -1:   // avoid calling division() in this case.
+        return intToHandle(0);
+    }
+    std::size_t lena = numberSize(a);
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
@@ -9749,7 +17699,13 @@ inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 // matches that of Q.
 
 inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
-{   std::size_t lena = numberSize(a);
+{   switch (b)
+    {
+    case 1:
+    case -1:
+        return intToHandle(0);
+    }
+    std::size_t lena = numberSize(a);
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
@@ -9769,8 +17725,9 @@ inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
 }
 
 inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t* b)
-{   if (numberSize(b)==1 &&
-        b[0]==-static_cast<std::uint64_t>(a)) return intToHandle(0);
+{   if (a==0 ||
+        (numberSize(b)==1 &&
+         b[0]==-static_cast<std::uint64_t>(a))) return intToHandle(0);
     bool a_neg = (a < 0);
     bool b_neg = negative(b[numberSize(b)-1]);
     if ((a_neg && !b_neg) || (!a_neg && b_neg))
@@ -9804,7 +17761,14 @@ inline std::intptr_t Floor::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 inline std::intptr_t Floor::op(std::uint64_t* a, std::int64_t b)
-{   std::size_t lena = numberSize(a);
+{   switch (b)
+    {
+    case 1:
+        return vectorToHandle(a);
+    case -1:
+        return Minus::op(a);
+    }
+    std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
     std::uint64_t* q;
@@ -9863,7 +17827,14 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
-{   std::size_t lena = numberSize(a);
+{   switch (b)
+    {
+    case 1:
+        return vectorToHandle(a);
+    case -1:
+        return Minus::op(a);
+    }
+    std::size_t lena = numberSize(a);
     bool a_neg = negative(a[lena-1]);
     bool b_neg = b < 0;
     std::uint64_t* q;
@@ -9880,7 +17851,9 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
 }
 
 inline std::intptr_t Ceiling::op(std::int64_t a, std::uint64_t* b)
-{   bool a_neg = (a < 0);
+{   if (numberSize(b) == 1 &&
+        a == -static_cast<int64_t>(b[0])) return intToHandle(-1);
+    bool a_neg = (a < 0);
     bool b_neg = negative(b[numberSize(b)-1]);
     if (a_neg == b_neg) return intToHandle(1);
     else return intToHandle(0);
@@ -9921,13 +17894,20 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
 #ifdef ZAPPA
     return cons(qq, rr).v;
-#else
+#else // ZAPPA
     return cons(qq, rr);
-#endif
+#endif // ZAPPA
 }
 
 inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
-{   std::size_t lena = numberSize(a);
+{   switch (bb)
+    {
+    case 1:
+        return cons(vectorToHandle(a), intToHandle(0));
+    case -1:
+        return cons(Minus::op(a), intToHandle(0));
+    }
+    std::size_t lena = numberSize(a);
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
@@ -9939,9 +17919,9 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
 #ifdef ZAPPA
     return cons(qq, rr).v;
-#else
+#else // ZAPPA
     return cons(qq, rr);
-#endif
+#endif // ZAPPA
 }
 
 inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t* b)
@@ -9957,9 +17937,9 @@ inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t* b)
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
 #ifdef ZAPPA
     return cons(qq, rr).v;
-#else
+#else // ZAPPA
     return cons(qq, rr);
-#endif
+#endif // ZAPPA
 }
 
 inline std::intptr_t Divide::op(std::int64_t aa, std::int64_t bb)
@@ -9975,12 +17955,12 @@ inline std::intptr_t Divide::op(std::int64_t aa, std::int64_t bb)
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
 #ifdef ZAPPA
     return cons(qq, rr).v;
-#else
+#else // ZAPPA
     return cons(qq, rr);
-#endif
+#endif // ZAPPA
 }
 
-#else
+#else // LISP
 
 inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
                                 std::intptr_t &rem)
@@ -9996,7 +17976,7 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
     return confirmSize_x(q, olenq, lenq);
 }
 
-#endif
+#endif // LISP
 
 // a = a - b*q.
 
@@ -10018,6 +17998,16 @@ inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
 // argument a bit better!
     if (lena > lenb) a[lena-1] = a[lena-1] - hi - borrow;
     return negative(a[lena-1]);
+}
+
+// I provide a function that accesses (b<<shift)[n]. Note that the
+// valid index values n will from from 0 up to and including lenb.
+
+inline std::uint64_t shiftedDigit(std::uint64_t* b, std::size_t lenb,
+                                  int shift, std::size_t n)
+{   if (n == 0) return b[0]<<shift;
+    else if (n == lenb) return b[lenb-1]>>(64-shift);
+    else return (b[n]<<shift) | (b[n-1]>>(64-shift));
 }
 
 // The next function performs a = a = b*(q<<shift), but
@@ -11075,6 +19065,9 @@ namespace arithlib
 using arithlib_implementation::operator"" _Z;
 using arithlib_implementation::Bignum;
 
+using arithlib_implementation::version_string;
+using arithlib_implementation::version;
+
 using arithlib_implementation::mersenne_twister;
 using arithlib_implementation::reseed;
 using arithlib_implementation::uniformUint64;
@@ -11085,7 +19078,6 @@ using arithlib_implementation::uniformSignedBignum;
 using arithlib_implementation::randomUptoBitsBignum;
 
 using arithlib_implementation::display;
-using arithlib_implementation::rdisplay;
 using arithlib_implementation::fixBignum;
 }
 

@@ -37,7 +37,7 @@
 
 // $Id$
 
-#include "headers.h"
+#include "arith-headers.h"
 
 setup_type const arith_setup[] =
 {   DEF_1("modf",         Nmodf),

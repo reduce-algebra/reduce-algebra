@@ -32,26 +32,101 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: threadloc.h March 2022 arthurcnorman $
+// $Id: threadloc.h 127 2024-01-05 22:03:06Z acn1 $
+
+// Using the "thread_local" qualifier in the declaration of a variable
+// imposes overheads that I found unexpected on Windows. The code here
+// is intended to address that issue. I can predefined USE_CXX_TLS to
+// fall back to standard code.
+
+// The costs follow from the C++ need to support objects with non-trivial
+// destructors. For my purposes I will be content to have just a thread-
+// local varriable of pointer type. I can use that to point at a structure
+// managed by the general and slower mechanism that contains all the
+// values I need. So usage is expected to be along the lines of:
+
+//::  struct MyThreadLocalStruct
+//::  {
+//::      int var1;
+//::      double array[10];
+//::      std::vector<std::string> vs;
+//::  };
+//::  inline constexpr int TL_tlStruct = 55; // Value in the range 48-63
+//::  DEFINE_THREAD_LOCAL(MyThreadLocalStruct, tlStruct);
+//::
+//::  .. then use      tlStruct->var1    etc.
+//::
+
+// For an integer or pointer values it may be useful to save one indirection
+// and go eg
+
+//::  inline constexpr int TL_intVar = 56;
+//::  DEFINE_THREAD_LOCAL_POD(int, intVar, 99);
+//::  inline constexpr int TL_ptrVar = 56;
+//::  DEFINE_THREAD_LOCAL_POD(const char*, ptrVar, "Some String Data");
+//::
+//::  .. then use intVar and ptrVar directly.
 
 
-#ifdef AVOID_THREADLOCAL
-#define thread_local
-#endif //AVOID_THREADLOCAL
+// For initialization to work every thread-function needs to start by
+// calling ThreadLocal::initialize().
+// This is needed (well only on Windows!) because the reference to something
+// looks like a thread-local variable X is in fact a call to a function
+// that does not use C++ thread support directly. It used the Microsoft API.
+// That means that C++ is utterly unaware of any need for initialization
+// beyond the base thread. I use trickery involving a vector of
+// lambda-functions to get things initialized in subsidiary threads, and
+// the call to initialize() deals with this.
 
-#if defined CONSERVATIVE && defined SUPPORT_MULTIPLE_THREADS
+// I will explain what the expansion needs to be. First in the
+// non-Windows case, all of which is pretty straightforward:
+//
+//   DEFINE_THREAD_LOCAL(T, name) =>
+//       [/static/inline] thread_local T TLDATA_name;
+//       [/static/inline] T* name = &TLDATA__name;
+//
+//   DEFINE_THREAD_LOCAL_POD(T, name, init) =>
+//       [/static/inline] T name = init;
+//
+// The Windows cases are different... and is messy enough that it deserves
+// explantion. TL_name will be a const giving a numerical offset within the
+// Microsoft TLS vector. The ThreadLocalObject is a wrapper that causes
+// its instance to behave (almost) as if it is a simple thread local
+// variable of type T (which must be consistent with intptr or void*) but
+// that uses the slot in the Microsoft vector addressed relative to a segment
+// register. When constructed it sets the slot for the thread it is running
+// in to the initial value give. This is expected to be in the main thread.
+// In other threads  the slots are not automatically initialized, so
+// initVec is set up holding a number of zero-argument functions each of
+// which initializes one of the thread local objects that have been declared
+// this way. A method 
+//
+//   DEFINE_THREAD_LOCAL_POD(T, name, init)
+//       ThreadLocal::ThreadLocalObject<T, TL_name> name(init);
+//       inline bool INIT_name = [](){
+//           ThreadLocal::initVec.push_back([]()
+//               { name = init; });
+//           return true; } ();
+//
+//   DEFINE_THREAD_LOCAL(T, name)
+//       [/static] T TLDATA_name;
+//       DEFINE_THREAD_LOCAL_POD(T*, name, &TLDATA__name);
+//
+//   DEFINE_INLINE_THREAD_LOCAL(T, name)
+//       inline auto TLFN_name()
+//       {   static thread_local T TLDATA_name;
+//           return &TLDATA_name;
+//       }
+//       DEFINE_THREAD_DATA_POD(T*, name, &TLFN__name());
 
-// The CONSERVATIVE build of CSL will be working towards support for
-// multiple threads. So this code is activated there. Prior versions do
-// not have any user threads and so do not need it, and so I disable it
-// to avoid introducing any overhead, even small.
 
-#if (defined __CYGWIN__ || defined __MINGW32__) && \
-    !defined USE_CXX_TLS
-#define MICROSOFT_TLS 1
-#endif
+#include <cstdint>
+#include <cinttypes>
 
-#ifdef MICROSOFT_TLS
+namespace ThreadLocal
+{
+#ifndef NO_THREADS
+#if (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
 
 // With Cygwin and mingw32 (as of 2021) the support of thread-local variables
 // uses a mechanism "emutls". For code that makes extensive use of such
@@ -104,26 +179,48 @@ extern "C"
 // that claims them must be run before any other part of the applications
 // has grabbed enough to conflict. After it has run the Microsoft scheme
 // should remain available for all other purposes.
+// I am going to ASSUME that during static initialization no more than
+// 48 thread handles are allocated by library and other parts of the code.
+// This is not a fully safe assumption in general!
 
-inline void initThreadLocals()
-{   static bool initialised = false;
-    if (initialised) return;
+// I do things that way I do so that each user thread_local slot is
+// allocated at compile time so that the run-time indexing uses a
+// known value. Doing this gives a slight performance edge!
+
+inline bool initThreadHandles()
+{   static bool initialized = false;
+    if (initialized) return true;     // I will only do this once.
     std::uint64_t map = -1;
+// Here I rely on TlsAlloc() returning handles in the range 0-63
+// before any larger ones.
     for (;;)
     {   tls_handle h = TlsAlloc();
-        if (h >= 64) my_abort("Failed to grab thread handles");
+        if (h >= 64) return false;
         map &= ~(UINT64_C(1)<<h);
         if ((map & 0xffff000000000000U) == 0) break;
     }
+// I will have reserved some handles that I am not about to use, and
+// those are identified in the bitmap. Free them.
     for (int i=0; i<48; i++)
-        if ((map & (1U<<i)) == 0) TlsFree(i);
-    initialised = true;
+        if ((map & (UINT64_C(1)<<i)) == 0) TlsFree(i);
+    initialized = true;
+    return true;
 }
+
+// This static initialization will guarantee that initThreadHandles is
+// called before main(). If enough DLLs are linked in and use thread-local
+// slots then this may fail! This initilizer must also be run before that
+// of any of my ThreadLocal objects.
+
+inline bool getThreadhandles = initThreadHandles();
+
 
 // I abstract away 32 vs 64-bit Windows issues here. The offsets used are from
 // www.geoffchappell.com/studies/windows/win32/ntdll/structs/teb/index.htm
 // which has repeated comments about the long term stability of the memory
-// layout involved.
+// layout involved. Specificall the judgement expressed there is that so
+// much extant code will rely on the details of all this that it can not
+// be changed.
 
 // The basic concept is that Microsoft keep a segment register (FS on 32-bit
 // systems and GS on 64) pointing to a thread-specific block of memory.
@@ -136,11 +233,11 @@ inline void initThreadLocals()
 #if __SIZEOF_POINTER__ == 4
 #define MOVE_INSTRUCTION "movl"
 #define SEGMENT_REGISTER "%%fs"
-#define basic_TLS_offset           0xE10
+#define TLS_offset           0xE10
 #else // Windows 32 vs 64 bit
 #define MOVE_INSTRUCTION "movq"
 #define SEGMENT_REGISTER "%%gs"
-#define basic_TLS_offset           0x1480
+#define TLS_offset           0x1480
 #endif // Windows 32 vs 64 bit
 
 // The next two functions access values relative to the proper
@@ -151,9 +248,10 @@ inline void initThreadLocals()
 // Experimentally I seem to need to put "asm volatile" in both of these
 // cases to end up with code that does not fail. I do not think I
 // understand why that could be vital on read_via_segmemt_register...
+// But at present this seems to work!
 
 template <int N>
-inline void *read_via_segment_register()
+inline void *read_via_segment()
 {   void *r;
     asm volatile
     (   MOVE_INSTRUCTION "  " SEGMENT_REGISTER ":%c1, %0"
@@ -164,145 +262,287 @@ inline void *read_via_segment_register()
 }
 
 template <int N>
-inline void write_via_segment_register(void *v)
+inline void write_via_segment(void *v)
 {   asm volatile
     (   MOVE_INSTRUCTION " %0, " SEGMENT_REGISTER ":%c1"
         :
-        : "ri" (v), "i" (N)
+        : "r" (v), "i" (N)
     );
 }
 
 // The purpose of the following class is to arrange that when you
-// have declared an instance of it that access to that value get mapped
+// have declared an instance of it that then access to the value get mapped
 // onto the "via_segment_register" functions above. 
 // I overload and hence support those operations used within CSL, and
-// will add support for others here as and when I find I need to.
+// will add support for others here as and when I find I need to so that
+// the class instance can be used almost as if it was a simple variable
+// of type T. But its address may not be taken.
+
+// I will require the type T to be one where its data can be held
+// in a "void *" location. So any pointer type will be OK and
+// intptr_t/uintptr_t should work. char/short/int will probably be OK.
 
 template <typename T, int N>
-class ThreadLocal
+class ThreadLocalObject
 {
 public:
+// Here I use a C style case rather than eg reinterpret_cast because I
+// want to adjust the data come what may, including any case with "const"
+// qualifiers.
+    ThreadLocalObject(T v)
+    {   write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
+    }
     T operator=(T v)
-    {   write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v));
+    {   write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
         return v;
     }
+    T operator ->()
+    {   return reinterpret_cast<T>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+    }
+    T& operator [](size_t n)
+    {   return reinterpret_cast<T*>(
+            read_via_segment<TLS_offset+N*sizeof(void *)>())[n];
+    }
+//    T& operator *()
+//    {   return *reinterpret_cast<T*>(
+//            read_via_segment<TLS_offset+N*sizeof(void *)>());
+//    }
     operator T() const
     {   return reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
     }
     template <typename T1>
     operator T1() const
     {   return (T1)
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>();
+            read_via_segment<TLS_offset+N*sizeof(void *)>();
     }
     T operator ++()
     {   T v = reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
+            read_via_segment<TLS_offset+N*sizeof(void *)>())
             + 1U;
-        write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v));
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
         return v;
     }
     T operator ++(int)
     {   T v = reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
-        write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v + 1U));
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)(v + 1U));
         return v;
     }
     T operator --()
     {   T v = reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>())
+            read_via_segment<TLS_offset+N*sizeof(void *)>())
             - 1U;
-        write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v));
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
         return v;
     }
     T operator --(int)
     {   T v = reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>());
-        write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v - 1U));
+            read_via_segment<TLS_offset+N*sizeof(void *)>());
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)(v - 1U));
         return v;
     }
     template <typename T1>
     T operator +=(T1 n)
     {   T v = reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) +
+            read_via_segment<TLS_offset+N*sizeof(void *)>()) +
             static_cast<uintptr_t>(n);
-        write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v));
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)v);
         return v;
     }
     template <typename T1>
     T operator -=(T1 n)
     {   T v = reinterpret_cast<T>(
-            read_via_segment_register<basic_TLS_offset+N*sizeof(void *)>()) -
+            read_via_segment<TLS_offset+N*sizeof(void *)>()) -
             static_cast<uintptr_t>(n);
-        write_via_segment_register<basic_TLS_offset+N*sizeof(void *)>(
-            reinterpret_cast<void *>(v));
+        write_via_segment<TLS_offset+N*sizeof(void *)>((void *)(v));
         return v;
     }
+// I could put in overrides for &, &= and all the other operators that C++
+// lets me defined, but at present I do not really even need all that is
+// included here already.
 };
+typedef void ZeroArgFunction();
+std::vector <ZeroArgFunction*> initVec;
 
-// Now for the abstraction. DECLARE_THREAD_LOCAL and DEFINE_THREAD_LOCAL
-// do what you might expect, save that they each take a final argument
-// which must be in the range 48-63 and must be distict for each item
-// declared.
+inline void initialize()
+{   for (auto fn:initVec) (fn)();
+}
 
-#define DECLARE_THREAD_LOCAL(T, name) \
-   extern ThreadLocal<T, TL_##name> name
+   
+#endif // MICROSOFT special version.
 
-#define DEFINE_THREAD_LOCAL(T, name) \
-   ThreadLocal<T, TL_##name> name
+#endif // NO_THREADS
 
-#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
-   inline ThreadLocal<T, TL_##name> name
 
-#else // MICROSOFT TLS
 
-inline void initThreadLocals()
+//###########################################
+
+#ifdef NO_THREADS
+
+// The versions in this section are dummies in that they do nor make
+// things thead_local at all. There are in case these macros are used in
+// a library or a version of a program than can never need to be thread
+// safe. They also perhaps serve as tidy explanations of the overall
+// behaviour of all these macros.
+
+inline void initialize()
 {
 }
 
+// These versions are all about having a pointer to an object of
+// the given type - which will often be a struct or class.
+
 #define DECLARE_THREAD_LOCAL(T, name) \
-   extern thread_local T name;
+   extern T* name;
 
 #define DEFINE_THREAD_LOCAL(T, name) \
-   thread_local T name;
+   T TLSTRUCT_##name;                \
+   T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_STATIC_THREAD_LOCAL(T, name) \
+   static T TLSTRUCT_##name;                \
+   static T* name = &TLSTRUCT_##name;
    
 #define DEFINE_INLINE_THREAD_LOCAL(T, name) \
-   inline thread_local T name;
+   inline T TLSTRUCT_##name;                \
+   inline T* name = &TLSTRUCT_##name;
    
-#endif // MICROSOFT_TLS
+// The "_POD" versions are for when the payload is "Plain Old Data" and
+// in particular it is a value that can be stored in a slot that is
+// an intptr_t or a void*. The definitions include an initialiser.
 
-#else // CONSERVATIVE
-
-inline void initThreadLocals()
-{
-}
-
-#define DECLARE_THREAD_LOCAL(T, name) \
+#define DECLARE_THREAD_LOCAL_POD(T, name) \
    extern T name;
 
-#define DEFINE_THREAD_LOCAL(T, name) \
-   T name;
+#define DEFINE_THREAD_LOCAL_POD(T, name, init) \
+   T name = init;
    
-#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
-   inline T name;
+#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
+   static T name = init;
    
-#endif // CONSERVATIVE
+#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
+   inline T name = init;
+   
+#elif (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
 
-// I am only going to have a single genuine C++-style thread-local
-// variable (ie threadId) and all other values I want to be treated as
-// thread local will be kept in arrays indexed by that. Well it will be
-// messier than that! There is "thread_local uintptr_t genuineThreadId" and
-// any fragment of code that uses thread local items must go
-//   const uintptr_t threadId = genuineThreadId;
-// to set up the name threadId as a local variable initialised based on
-// the current thread. The object of this mess is to overcome overheads in
-// accessing thread-local values that arise on some systems.
+// The Windows cases are different... and is messy enough that it deserves
+// explantion. TL_name will be a const giving a numerical offset within the
+// Microsoft TLS vector. The ThreadLocalObject is a wrapper that causes
+// its instance to behave (almost) as if it is a simple thread local
+// variable of type T (which must be consistent with intptr or void*) but
+// that uses the slot in the Microsoft vector addressed relative to a segment
+// register. When constructed it sets the slot for the thread it is running
+// in to the initial value give. This is expected to be in the main thread.
+// In other threads  the slots are not automatically initialized, so
+// initVec is set up holding a number of zero-argument functions each of
+// which initializes one of the thread local objects that have been declared
+// this way. A method 
+//
+//   DEFINE_THREAD_LOCAL_POD(T, name, init)
+//       ThreadLocal::ThreadLocalObject<T, TL_name> name(init);
+//       inline bool INIT_name = [](){
+//           ThreadLocal::initVec.push_back([]()
+//               { name = init; });
+//           return true; } ();
+//
+//   DEFINE_THREAD_LOCAL(T, name)
+//       [/static] T TLDATA_name;
+//       DEFINE_THREAD_LOCAL_POD(T*, name, &TLDATA__name);
+//
+//   DEFINE_INLINE_THREAD_LOCAL(T, name)
+//       inline auto TLFN_name()
+//       {   static thread_local T TLDATA_name;
+//           return &TLDATA_name;
+//       }
+//       DEFINE_THREAD_DATA_POD(T*, name, &TLFN__name());
+
+#define DECLARE_THREAD_LOCAL(T, name) \
+   extern ThreadLocal::ThreadLocalObject<T, TL_##name> name;
+
+#define DEFINE_THREAD_LOCAL(T, name)              \
+   thread_local T TLSTRUCT_##name;                \
+   DEFINE_THREAD_LOCAL_POD(T*, name, &TLSTRUCT_##name);
+   
+#define DEFINE_STATIC_THREAD_LOCAL(T, name)              \
+   static thread_local T TLSTRUCT_##name;                \
+   DEFINE_STATIC_THREAD_LOCAL_POD(T*, name, &TLSTRUCT_##name);
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name)              \
+   inline T* TLFN_##name()                               \
+   {   static thread_local T TLSTRUCT_##name;            \
+       return &TLSTRUCT_##name;                          \
+   }                                                     \
+   DEFINE_INLINE_THREAD_LOCAL_POD(T*, name, TLFN_##name());
+   
+// The "_POD" versions are for when the payload is "Plain Old Data" and
+// in particular it is a value that can be stored in a slot that is
+// an intptr_t or a void*. The definitions include an initialiser.
+
+#define DECLARE_THREAD_LOCAL_POD(T, name) \
+   extern ThreadLocal::ThreadLocalObject<T, name> name;
+
+#define DEFINE_THREAD_LOCAL_POD(T, name, init)                      \
+    thread_local ThreadLocal::ThreadLocalObject<T,name> name(init); \
+    bool INIT_##name = [](){                                        \
+        ThreadLocal::initVec.push_back([]()                         \
+            { name = init; });                                      \
+        return true; } ();
+   
+#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
+   static thread_local T name = init;
+   
+#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
+   inline thread_local T name = init;
+   
+
+
+
+#else
+
+inline void initialize()
+{
+}
+
+#define DECLARE_THREAD_LOCAL(T, name) \
+   extern thread_local T* name;
+
+#define DEFINE_THREAD_LOCAL(T, name)              \
+   thread_local T TLSTRUCT_##name;                \
+   thread_local T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_STATIC_THREAD_LOCAL(T, name)              \
+   static thread_local T TLSTRUCT_##name;                \
+   static thread_local T* name = &TLSTRUCT_##name;
+   
+#define DEFINE_INLINE_THREAD_LOCAL(T, name)              \
+   inline thread_local T TLSTRUCT_##name;                \
+   inline thread_local T* name = &TLSTRUCT_##name;
+   
+// The "_POD" versions are for when the payload is "Plain Old Data" and
+// in particular it is a value that can be stored in a slot that is
+// an intptr_t or a void*. The definitions include an initialiser.
+
+#define DECLARE_THREAD_LOCAL_POD(T, name) \
+   extern T name;
+
+#define DEFINE_THREAD_LOCAL_POD(T, name, init) \
+   thread_local T name = init;
+   
+#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
+   static thread_local T name = init;
+   
+#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
+   inline thread_local T name = init;
+   
+#endif
+
+
+
+
+
+// The following relate to a CSL experiment that at present is stalled.
 
 #ifdef NO_THREADS
 #define maxThreads   1U
@@ -323,6 +563,9 @@ DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
 #define THREADFORMAL uintptr_t threadId,
 #define OPTTHREAD (threadId)
 #endif // NO_THREADS
+
+
+} // end of namespace ThreadLocal
 
 #endif // header_threadloc_h
 

@@ -55,8 +55,11 @@ inline constexpr int REVISION = []() constexpr {
     return v;
     }();
 
-inline char version_date[16] = "18-Aug-2023";
-inline char version_date_and_time[32] = "Fri Aug 18 16:52:29 2023\n";
+// The initial data here is just to show the intended format and
+// it gets updated to proper values during system initialization.
+
+inline char version_date[16] = "05-Nov-1605";
+inline char version_date_and_time[32] = "Mon Nov 11 11:11:00 1918\n";
 
 
 // Now code that exists to get version_date and version_date_and_time
@@ -86,7 +89,7 @@ inline constexpr int day_of_week(int m, int d,int y)
 inline bool initialize_version_date()
 {
     const char* v = &VERSION_ID[15];
-// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
+// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
 //                                 ^
     while (std::isdigit(*v)) v++;
     v++;

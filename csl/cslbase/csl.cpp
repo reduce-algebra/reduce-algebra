@@ -2396,7 +2396,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 "         the license under which this code is distributed.",
                 [&](string key, bool hasVal, string val)
                 {   fwin_restore();
-                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2023\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2024\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                 }
@@ -3630,7 +3630,14 @@ static int submain(int argc, const char *argv[])
 extern int ENTRYPOINT(int argc, const char *argv[]);
 
 int main(int argc, const char *argv[])
-{   initThreadLocals();
+{
+// On Windows and other platforms where thread local things are supported
+// using "emutls" the native C++ use of the "thread_local" qualifier leads to
+// poor performance. I provide an alternative using the Windows mechanisms
+// at a lower level. My scheme is restrictive in that it can not cope with
+// C++ constructors and destructors, and it requires each thread that may
+// access thread local data to start by calling this initializer.
+    ThreadLocal::initialize();
     fwin_set_lookup(look_in_lisp_variable);
     return fwin_startup(argc, argv, ENTRYPOINT);
 }

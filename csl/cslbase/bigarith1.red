@@ -1,14 +1,12 @@
 on echo;
-lisp spool "bigarith.log";
+lisp spool "bigarith1.log";
 lisp enable!-errorset(3,3);
 
 % bigarith.red                           Copyright (C) A C Norman 2022-2024
 
+% Big-number arithmetic code for use testing the native arithmetic package.
+
 % $Id$
-
-
-% Big-number arithmetic done digit by digit for use testing the
-% native arithmetic package.
 
 % Load this file with the variable nocheck set and it just defines functions
 % without runnning the test. If you do run the test then setting
@@ -176,318 +174,67 @@ symbolic procedure logxorfn(a, b); lxor(a,b);
 symbolic procedure logeqvfn(a, b); lnot lxor(a,b);
 
 
+global '(magic);
+magic := 777167;   % Well not very magic! But a prime.
 
-% Numbers are stored radix 10 with the least significant digit first
-% in a list. They use sign and mangnitude representation with the symbol
-% '!- on the front of a list that denotes a nagative number. Really
-% crude!
+% I am going to believe that arithmetic involving magic*x will be different
+% enough from that on just x that any errors will differ. The two cases
+% "ought not" to hit special cases at the same time. So that can be a basis
+% for validation. It is OK if it is the arithmetic scaled by magic that
+% fails provided that it fails in a way inconsistent with the direct version!
 
-symbolic procedure mynum n;
-   <<validate!-number(n,"mynum"); 
-     if zerop n then nil
-      else if n<0 then '!- . mynum validate!-number( - n,"negated")
-      else if n<10 then {n}
-      else append(mynum validate!-number(n/10,{"quotient",n,10}),
-                  {validate!-number(remainder(n,10),"remainder")})>>;
+symbolic procedure myminus a;
+   magic - (a + magic);
 
-symbolic procedure mynum1 n; 
-   if numberp n then mynum n
-    else if not atom n then mynum1 car n . mynum1 cdr n
-    else n;
+symbolic procedure myplus(a,b);
+    (magic*a + magic*b)/magic;
 
-symbolic procedure myzerop a;
-   a=nil;
+symbolic procedure mydifference(a,b);
+    (magic*a - magic*b)/magic;
 
-symbolic procedure myonep a;
-   a='(1);
-
-symbolic procedure myminusp a;
-   eqcar(a,'!-);
-
-symbolic procedure myabs a;
-   if eqcar(a,'!-) then cdr a else a;
-
-symbolic procedure myplusp a;
-   not null a and not eqcar(a,'!-);
-
-symbolic procedure myminus a; 
-   if eqcar(a,'!-) then cdr a else if null a then nil else '!- . a;
-
-symbolic procedure mygreaterp(a,b); 
-   if eqcar(a,'!-) then if eqcar(b,'!-) then mygreaterp(cdr b,cdr a) else nil
-    else if eqcar(b,'!-) then t
-    else if a=b then nil
-    else if length a>length b then t
-    else if length a<length b then nil
-    else if null a then nil
-    else if car a=car b then mygreaterp(cdr a,cdr b)
-    else car a>car b;
-
-symbolic procedure mylessp(a,b);
-   mygreaterp(b,a);
-
-symbolic procedure mygeq(a,b);
-   not mygreaterp(b,a);
-
-symbolic procedure myleq(a,b);
-   not mygreaterp(a,b);
-
-symbolic procedure myplus(a,b); 
-   if eqcar(a,'!-) then mydifference(b,cdr a)
-    else if eqcar(b,'!-) then mydifference(a,cdr b)
-    else if null a then b
-    else if null b then a
-    else myadd(reverse a,reverse b,0);
-
-symbolic procedure mydifference(a,b); 
-   if eqcar(a,'!-) then myminus myplus(b,cdr a)
-    else if eqcar(b,'!-) then myplus(a,cdr b)
-    else if null a then myminus b
-    else if null b then a
-    else if mygreaterp(a,b) then mysubtract(reverse a,reverse b,0)
-    else myminus mysubtract(reverse b,reverse a,0);
-
-symbolic procedure myadd1 a;
-   myplus(a,'(1));
-
-symbolic procedure mysub1 a;
-   mydifference(a,'(1));
-
-% myadd and mysubtract handle just positive values and each has an extra
-% argument that is a carry or borrow.
-
-symbolic procedure myadd(a,b,c); 
-   begin scalar d,r; 
-    top: 
-      if null a and null b and zerop c then return r; 
-      if null a then d := c else <<d := car a + c; a:= cdr a>>; 
-      if b then <<d := d + car b; b := cdr b>>; 
-      if d>9 then <<d := d - 10; c := 1>> else c := 0; 
-      r := d . r; 
-      go to top
-   end;
-
-% for mysubtract I should have ensured that a >= b.
-
-symbolic procedure mysubtract(a,b,c); 
-   begin scalar d,r; 
-    top: 
-      if null a and zerop c then go to done; 
-      if null a then d := c else <<d := car a + c; a := cdr a>>;
-      if b then <<d := d - car b; b := cdr b>>; 
-      if d<0 then <<d := d + 10; c := -1>> else c := 0; 
-      r := d . r; 
-      go to top; 
-    done: 
-      if null r or not zerop car r then return r; 
-      r := cdr r; 
-      go to done
-   end;
-
-symbolic procedure myhalve a; 
-   if eqcar(a,'!-) then myminus myhalve myminus a
-    else <<a := myhalve1 a;
-           if eqcar(a, 0) then cdr a else a>>;
-
-symbolic procedure myhalve1 a; 
-   if null a then nil
-    else if null cdr a then list(car a/2)
-    else if evenp car a then (car a/2) . myhalve1 cdr a
-    else (car a/2) . myhalve1 ((10 + cadr a) . cddr a);
-
-% Some demo cases just to check...
-
-myhalve '(1 0 0);
-myhalve '(5 0);
-myhalve '(2 5);
-
-symbolic procedure mydouble a;
-   myplus(a,a);
-
-symbolic procedure myoddp a;
-   a and oddp last a;
-
-symbolic procedure myevenp a;
-   null a or evenp last a;
-
-symbolic procedure mytimes(a,b); 
-   if eqcar(a,'!-) then myminus mytimes(cdr a,b)
-    else if eqcar(b,'!-) then myminus mytimes(a,cdr b)
-    else if null a then nil
-    else if a='(1) then b
-    else if myevenp a then mydouble mytimes(myhalve a,b)
-    else myplus(mydouble mytimes(myhalve a,b),b);
-
-symbolic procedure myexpt(a,n); 
-   if zerop n then '(1)
-    else if onep n then a
-    else if evenp n then <<n := myexpt(a,n/2); mytimes(n,n)>>
-    else <<n := myexpt(a,n/2); mytimes(a,mytimes(n,n))>>;
-
-symbolic procedure mydivide(a,b); 
-   begin scalar a1,a2,q1,r1,q,r,w,w1; 
-      a1 := myvalof a; 
-      a2 := myvalof b; 
-      a2 := myvalof b; 
-      a1 := myvalof a; 
-      a1 := myvalof a; 
-      a2 := myvalof b; 
-      w := divide(a1,a2); 
-      q := mynum car w; 
-      r := mynum cdr w; 
-      w1 := myplus(mytimes(q,b),r); 
-      if not (w1=a)
-        then <<princ "Divide  "; 
-               print a; 
-               princ "by "; 
-               print b; 
-               princ "giving "; 
-               print w; 
-               princ "q*b+r = "; 
-               print w1; 
-               error(1,"Problem with division")>>; 
-      if not null r
-        then if myminusp a and not myminusp r or not myminusp a and myminusp r
-               then error(1,"Problem with sign of remainder"); 
-      if mygreaterp(myabs b,myabs r) then nil
-       else error(1,"Problem with magnitude of remainder"); 
-      return q . r
-   end;
+symbolic procedure mytimes(a,b);
+    (a-magic)*(b+magic) - a*magic + b*magic + magic*magic;
 
 symbolic procedure myquotient(a,b);
-   car mydivide(a,b);
+    (a*magic)/(b*magic);
+
+symbolic procedure mymod(a,b);
+    mod(a*magic, b*magic)/magic;
 
 symbolic procedure myremainder(a,b);
-   cdr mydivide(a,b);
-
-% For mymod the sign of the result will match the sign of b.
-
-symbolic procedure mymod(a,b); 
-   begin scalar c; 
-      c := myremainder(a,b); 
-      if myminusp b and myplusp c then return myplus(b,c)
-       else if myplusp b and myminusp c then return myplus(b,c)
-       else return c
-   end;
-
-symbolic procedure mylshift(a,n); 
-   if null a or zerop n then a
-    else if n>0 then mytimes(a,mynum (2**n))
-    else if not eqcar(a,'!-) then myquotient(a,mynum (2** - n))
-    else mydifference(myquotient(myplus(a,'(1)),mynum (2** - n)),'(1));
-
-% For boolean operations there is some fun because I am storing things
-% in decimal and with a variable number of digits. I need to (in effect)
-% convert to binary and treat negative values as if they had an inifinite
-% number of leading "1" bits . I cope with this by using DeMorgan so that
-% I either end up performing an OR on a pair of positive numbers or an AND
-% where at least one of the numbers is positive (and hence it provides
-% a limit on the number of bits I will generate in the result).
-
-symbolic procedure mylognot n;
-   myplus(myminus n,'(!- 1));
-
-symbolic procedure mylogand!-bin(a,b); 
-   if null a or null b then nil
-    else if a='(!- 1) and b='(!- 1) then a
-    else if myevenp a
-     then if myevenp b then append(mylogand!-bin(myhalve a,myhalve b),'(0))
-           else append(mylogand!-bin(myhalve a,myhalve mysub1 b),'(0))
-    else if myevenp b
-           then append(mylogand!-bin(myhalve mysub1 a,myhalve b),'(0))
-          else append(mylogand!-bin(myhalve mysub1 a,myhalve mysub1 b),'(1));
-
-symbolic procedure flipbits a; 
-   if null a then nil
-    else if eqcar(a,0) then 1 . flipbits cdr a
-    else 0 . flipbits cdr a;
-
-symbolic procedure mybinnum a; 
-   if eqcar(a,'!-) then mylognot mybinnum flipbits cdr a
-    else if null a then nil
-    else if zerop car a then mybinnum cdr a
-    else begin scalar r; 
-          top: 
-            if null a then return r; 
-            r := mydouble r; 
-            if not zerop car a then r := myadd1 r; 
-            a := cdr a; 
-            go to top
-         end;
+    remainder(a*magic, b*magic)/magic;
 
 symbolic procedure mylogand(a,b);
-   mybinnum mylogand!-bin(a,b);
-
-symbolic procedure mylogor!-bin(a,b); 
-   if a='(!- 1) or b='(!- 1) then '(!- 1)
-    else if null a and null b then nil
-    else if myevenp a
-     then if myevenp b then append(mylogor!-bin(myhalve a,myhalve b),'(0))
-           else append(mylogor!-bin(myhalve a,myhalve mysub1 b),'(1))
-    else if myevenp b then append(mylogor!-bin(myhalve mysub1 a,myhalve b),'(1))
-          else append(mylogor!-bin(myhalve mysub1 a,myhalve mysub1 b),'(1));
+   lshift(logand(lshift(a, 23), lshift(b, 23)), -23);
 
 symbolic procedure mylogor(a,b);
-   mybinnum mylogor!-bin(a,b);
-
-symbolic procedure mylogxor!-bin(a,b); 
-   if a='(!- 1) and b='(!- 1) then nil
-    else if null a and null b then nil
-    else if a='(!- 1) and null b then '(!- 1)
-    else if null a and b='(!- 1) then '(!- 1)
-    else if myevenp a
-     then if myevenp b then append(mylogxor!-bin(myhalve a,myhalve b),'(0))
-           else append(mylogxor!-bin(myhalve a,myhalve mysub1 b),'(1))
-    else if myevenp b
-           then append(mylogxor!-bin(myhalve mysub1 a,myhalve b),'(1))
-          else append(mylogxor!-bin(myhalve mysub1 a,myhalve mysub1 b),'(0));
+   lshift(logor(lshift(a, 23), lshift(b, 23)), -23);
 
 symbolic procedure mylogxor(a,b);
-   mybinnum mylogxor!-bin(a,b);
+   lshift(logxor(lshift(a, 23), lshift(b, 23)), -23);
 
 symbolic procedure mylogeqv(a,b);
-   mylognot mylogxor(a,b);
+   lshift(logeqv(lshift(a, 23), lshift(b, 23)), -23);
 
-symbolic procedure myprinhex n;
-   if null n then princ "0"
-    else if eqcar(n,'!-)
-     then <<princ "~f"; myprinneg myplus(myminus n,'(!- 1))>>
-    else myprinpos n;
+symbolic procedure mygreaterp(a,b);
+    a*magic > b*magic;
 
-symbolic procedure myvalof n; 
-   begin scalar r; 
-      if eqcar(n,'!-) then return  - myvalof cdr n; 
-      r := 0; 
-    top: 
-      if null n then return r; 
-      r := r*10 + car n; 
-      n := cdr n; 
-      go to top
-   end;
+symbolic procedure mylshift(a, n);
+   if n = 0 then a
+   else if n = 1 then 2*a
+   else if n = -1 then
+      if a>=0 then a/2
+      else (a-1)/2
+   else mylshift(mylshift(a, n/2), n-n/2);
 
-symbolic procedure myprinpos n; 
-   if mylessp(n,'(1 6)) then prinhex myvalof n
-    else <<myprinpos myquotient(n,'(1 6));
-           prinhex myvalof myremainder(n,'(1 6))>>;
-
-symbolic procedure myprinneg n; 
-   if mylessp(n,'(1 6)) then prinhex logxor(15,myvalof n)
-    else <<myprinneg mylshift(n,-4);
-           prinhex logxor(15,myvalof mymod(n,'(1 6)))>>;
-
-% The function that is being checked is called using "apply" which
-% calls it as from the interpreter. That means that if the compiler
-% generates in-line code that will need checking independently and if the
-% bytecode interpreter has its own special version of anything that too
-% will need special treatment...
+% tr mylshift;
 
 symbolic procedure check!-one!-arg(native,mine,a); 
    begin scalar r1,r2; 
       validate!-number(a,list("one arg",native,mine)); 
-      r1 := 
-       mynum1 validate!-number(apply1(native,a),
-                               list("one arg result",native,mine,a)); 
-      r2 := apply1(mine,mynum a); 
+      r1 := validate!-number(apply1(native,a),
+                             list("one arg result",native,mine,a)); 
+      r2 := apply1(mine, a); 
       if r1=r2 then return nil; 
       terpri(); 
       princ "+++ Failure with "; 
@@ -498,13 +245,13 @@ symbolic procedure check!-one!-arg(native,mine,a);
       princ "computed: "; 
       prin r1; 
       princ " "; 
-      myprinhex r1; 
+      prinhex r1; 
       terpri(); 
       princ "reference:"; 
       prin r2; 
       princ " "; 
-      myprinhex r2; 
-      terpri(); 
+      prinhex r2; 
+      terpri();  
       representation(a,t); 
       representation(apply1(native,a),t); 
       terpri(); 
@@ -519,10 +266,9 @@ symbolic procedure check!-one!-plus!-int!-arg(native,mine,a,n);
    begin scalar r1,r2; 
       validate!-number(a,list("one+n arg",native,mine)); 
       validate!-number(n,list("one+n arg",native,mine)); 
-      r1 := 
-       mynum1 validate!-number(apply2(native,a,n),
-                               list("one+n arg result",native,mine,a,n)); 
-      r2 := apply2(mine,mynum a,n); 
+      r1 := validate!-number(apply2(native,a,n),
+                             list("one+n arg result",native,mine,a,n)); 
+      r2 := apply2(mine,a,n); 
       if r1=r2 then return nil; 
       terpri(); 
       princ "+++ Failure with "; 
@@ -536,12 +282,12 @@ symbolic procedure check!-one!-plus!-int!-arg(native,mine,a,n);
       princ "computed: "; 
       prin r1; 
       princ " "; 
-      myprinhex r1; 
+      prinhex r1; 
       terpri(); 
       princ "reference:"; 
       prin r2; 
       princ " "; 
-      myprinhex r2; 
+      prinhex r2; 
       terpri(); 
       representation(a,t); 
       representation(n,t); 
@@ -556,10 +302,9 @@ symbolic procedure check!-two!-args(native,mine,a,b);
    begin scalar r1,r2; 
       validate!-number(a,list("two args",native,mine,a,b)); 
       validate!-number(b,list("two args",native,mine,a,b)); 
-      r1 := 
-       mynum1 validate!-number(apply2(native,a,b),
-                               list("two args result",native,mine,a,b)); 
-      r2 := apply2(mine,mynum a,mynum b); 
+      r1 := validate!-number(apply2(native,a,b),
+                             list("two args result",native,mine,a,b)); 
+      r2 := apply2(mine,a, b); 
       if r1=r2 then return nil; 
       terpri(); 
       princ "+++ Failure with "; 
@@ -573,16 +318,17 @@ symbolic procedure check!-two!-args(native,mine,a,b);
       princ "computed: "; 
       prin r1; 
       princ " "; 
-      myprinhex r1; 
+      prinhex r1; 
       terpri(); 
       princ "reference:"; 
       prin r2; 
       princ " "; 
-      myprinhex r2; 
+      prinhex r2; 
       terpri(); 
-      representation(a,t); 
-      representation(b,t); 
-      representation(apply2(native,a,b),t); 
+      prin2 "a="; representation(a,t); 
+      prin2 "b="; representation(b,t); 
+      prin2 "native="; representation(r1,t); 
+      prin2 "checking="; representation(r2,t); 
       terpri(); 
       printc "+++ Stopping"; 
       stop 1
@@ -593,7 +339,7 @@ symbolic procedure check!-two!-args!-bool(native,mine,a,b);
       validate!-number(a,list("two args",native,mine,a,b)); 
       validate!-number(b,list("two args",native,mine,a,b)); 
       r1 := apply2(native,a,b);
-      r2 := apply2(mine,mynum a,mynum b); 
+      r2 := apply2(mine,a,b); 
       if r1=r2 then return nil; 
       terpri(); 
       princ "+++ Failure with "; 
@@ -607,12 +353,12 @@ symbolic procedure check!-two!-args!-bool(native,mine,a,b);
       princ "computed: "; 
       prin r1; 
       princ " "; 
-      myprinhex r1; 
+      prinhex r1; 
       terpri(); 
       princ "reference:"; 
       prin r2; 
       princ " "; 
-      myprinhex r2; 
+      prinhex r2; 
       terpri(); 
       representation(a,t); 
       representation(b,t); 
@@ -727,7 +473,7 @@ symbolic procedure checknear(a,b,mode);
 
 symbolic procedure checkall1 a;
    <<check!-minus a;
-     for i := 0:140 do check!-lshift(a,i - 70);
+     for i := 0:163 do check!-lshift(a,i - 70);
      nil>>;
 
 symbolic procedure checksigns1 a;
@@ -747,7 +493,7 @@ symbolic procedure checknear1 a;
 % If the variable !*nocheck is set when this file is read in it
 % will define all the functions but not actually run any tests!
 
-% This will check near 2^0 to 2^100.
+% This will check near 2^0 to some bigger power of 2.
 
 % While testing it is sometimes useful to be able to resume testing some
 % way through, so one can set the variable "startat" so that small cases
@@ -785,7 +531,7 @@ if not boundp 'nocheck or not nocheck then <<
   if boundp 'seed then random_new_seed compress explodec seed;
   startat := -1;
   if boundp 'start then startat := compress explodec eval 'start;
-  endat := 100;
+  endat := 163;
   if boundp 'end then endat := compress explodec eval 'end;
   cc := 0;
   if boundp 'cons then cc := compress explodec eval 'cons;

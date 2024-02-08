@@ -1,6 +1,7 @@
-// pro.cpp                                 Copyright (C) 1989-2024 Codemist
+// arith-headers.h                              Copyright (C) 2024 Codemist
 
-// Watcom C stack checking code. This only remains as a historical relic!
+#ifndef header_arith_headers_h
+#define header_arith_headers_h 1
 
 /**************************************************************************
  * Copyright (C) 2024, Codemist.                         A C Norman       *
@@ -33,37 +34,21 @@
 
 // $Id$
 
+//
+// The header-only library "arithlib.hpp" is a bulky file and it does
+// not make sense to include it when compiling parts of CSL that do not
+// need it. So those files that do need it will #include "arith-headers.h"
+// rather than merely #include "headers.h".
+// The dispatch code that copes with selecting which version of an
+// arithmetic operation is needed based on operand types is also only
+// #included here.
+//
+
 #include "headers.h"
 
-static int spset = 0;
-static int32_t spbase = 0, spmin;
+#include "arithlib.hpp"
+#include "dispatch.h"
 
-static std::FILE *stack_log = nullptr;
+#endif // header_arith_headers_h
 
-#pragma aux __PRO modify [];
-
-#pragma aux __PRO "__PRO";
-
-extern int pusha(void);
-#pragma aux pusha = "push eax" "push ecx" "push edx" value [eax] modify [];
-extern int popa(void);
-#pragma aux popa = "pop edx" "pop ecx" "pop eax" value [eax] modify [eax ecx edx];
-
-void __PRO()
-{   int32_t temp;
-    pusha();
-    temp = (int32_t)&temp;
-    if (!spset)
-    {   spbase = spmin = temp;
-        spset = 1;
-    }
-    if (stack_log == nullptr) stack_log = std::fopen("stack.log", "w");
-    if (temp <= spmin-64)  // Only check at granularity of 64 bytes
-    {   std::fprintf(stack_log, "Stack depth %d\n", spbase-temp);
-        spmin = temp;
-    }
-    popa();
-    return;
-}
-
-// End of pro.cpp
+// end of arith-headers.h

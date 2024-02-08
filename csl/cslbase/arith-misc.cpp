@@ -36,7 +36,7 @@
 // This contains some oddments of stray functions, including the ones
 // that return random and pseudo-random numbers.
 
-#include "headers.h"
+#include "arith-headers.h"
 
 // The intent here is to take a single precision floating point value and
 // mask off its low 4 bits. The code here is a fine example of the sort
@@ -879,14 +879,25 @@ LispObject Nmd60(LispObject env, LispObject a)
     return make_lisp_unsigned64(v >> 5);
 }
 
-LispObject Nvalidate_number(LispObject env, LispObject a)
-{   SingleValued fn;
-    return aerror1("validate-number not available or needed here", a);
-}
-
 LispObject Nvalidate_number(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    return aerror2("validate-number not available or needed here", a, b);
+    if (!is_number(a)) return aerror2("not even a number", a, b);
+    if (is_fixnum(a)) return a;
+    if (!is_new_bignum(a)) return aerror2("validate_number expects an integer", a, b);
+    size_t len = (bignum_length(a) - CELL)/sizeof(uint64_t);
+    int64_t top = (int64_t)new_bignum_digit(a, len-1);
+    if (len == 1)
+    {   if (int_of_fixnum(fixnum_of_int(top)) == top)
+            return aerror2("should have been a fixnum", a, b);
+    }
+    int64_t next = (int64_t)new_bignum_digit(a, len-2);
+    if (top == 0 && next >= 0 ) return aerror2("bad bignum", a, b);
+    if (top == -1 && next < 0) return aerror2("bad bignum", a, b);
+    return a;
+}
+
+LispObject Nvalidate_number(LispObject env, LispObject a)
+{   return Nvalidate_number(env, a, nil);
 }
 
 LispObject Nrealpart(LispObject env, LispObject a)

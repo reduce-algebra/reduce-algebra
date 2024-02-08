@@ -1,4 +1,4 @@
-// Test code for Big-number arithmetic.                    A C Norman, 2020
+// Test code for Big-number arithmetic.               A C Norman, 2020-2024
 
 
 /**************************************************************************
@@ -38,7 +38,11 @@
 // so that it can be found and you then just include the one file that
 // contains everything.
 
+#ifdef OLDVERSION
+#include "arithlib.old.hpp"
+#else
 #include "arithlib.hpp"
+#endif
 
 #include <cstdlib>
 #include <cmath>
@@ -309,11 +313,6 @@ int main(int argc, char *argv[])
                                 display("me ", c1, lenc1);
                                 display("gmp", c, lena+lenb);
                                 display("ref", c2, lenc2);
-                                rdisplay("a  ", a, lena);
-                                rdisplay("b  ", b, lenb);
-                                rdisplay("me ", c1, lenc1);
-                                rdisplay("gmp", c, lena+lenb);
-                                rdisplay("ref", c2, lenc2);
                                 abort();
                             }
                             break;
@@ -404,9 +403,9 @@ int main(int argc, char *argv[])
         std::cout << std::setw(10) << "length"
                   << std::setw(10) << "my time"
                   << std::setw(10) << "gmp time"
-                  << std::setw(10) << "ref time"
+//                << std::setw(10) << "ref time"
                   << std::setw(10) << "  mine/gmp"
-                  << std::setw(10) << "  ref/mine"
+//                << std::setw(10) << "  ref/mine"
                   << std::fixed << std::setprecision(3)
                   << "\n";
 // In the following table times are reported in seconds per
@@ -418,12 +417,12 @@ int main(int argc, char *argv[])
                                            (mine[i].count())/testcount[i])
                       << std::setw(10) << (1.0e-3*static_cast<double>
                                            (gmp[i].count())/testcount[i])
-                      << std::setw(10) << (1.0e-3*static_cast<double>
-                                           (ref[i].count())/testcount[i])
+//                    << std::setw(10) << (1.0e-3*static_cast<double>
+//                                         (ref[i].count())/testcount[i])
                       << std::setw(10) << (static_cast<double>
                                            (mine[i].count())/gmp[i].count())
-                      << std::setw(10) << (static_cast<double>
-                                           (ref[i].count())/mine[i].count())
+//                    << std::setw(10) << (static_cast<double>
+//                                         (ref[i].count())/mine[i].count())
                       << "\n";
         }
     }

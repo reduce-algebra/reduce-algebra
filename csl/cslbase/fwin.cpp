@@ -120,15 +120,10 @@ extern void initThreadLocals();
 // defined if the C++17 feature was not actually going to be available. But
 // there we go!
 
-//#define STR_HELPER(x) #x
-//#define STR(x) STR_HELPER(x)
-//#pragma message "MIN VER: " STR(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-
 #if defined __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ && \
             __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 101500 && \
             !defined FILESYSTEM_NOT_USABLE
 
-#pragma message "Disabling use of std::filesystem because of OS version min"
 #define FILESYSTEM_NOT_USABLE 1
 
 #endif // Hack for Macintosh.
