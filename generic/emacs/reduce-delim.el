@@ -1,12 +1,11 @@
 ;;; reduce-delim.el --- Highlight matching group or block delimiter  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018, 2022 Francis J. Wright
+;; Copyright (C) 2018, 2022-2024 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: 22 March 2018
-;; Time-stamp: <2022-12-14 15:40:12 franc>
+;; Time-stamp: <2024-01-28 17:23:27 franc>
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.10
 
 ;; This file is part of REDUCE IDE.
 
@@ -83,21 +82,8 @@ it is visible, and the expression otherwise)."
   :type '(choice (const delimiter) (const expression) (const mixed))
   :group 'reduce-delim-showing)
 
-(defvar reduce-show-delim-mode)	; defined by ‘define-minor-mode’ below
-
-(defcustom reduce-show-delim-delay show-paren-delay
-  "Time in seconds to delay before showing a matching delimiter.
-If you change this without using customize while ‘reduce-show-delim-mode’ is
-active, you must toggle the mode off and on again for this to take effect."
-  :type '(number :tag "seconds")
-  :initialize 'custom-initialize-default
-  :set (lambda (sym val)
-		 (if (not reduce-show-delim-mode)
-			 (set sym val)
-		   (reduce-show-delim-mode -1)
-		   (set sym val)
-		   (reduce-show-delim-mode 1)))
-  :group 'reduce-delim-showing)
+(define-obsolete-variable-alias 'reduce-show-delim-delay
+  'show-paren-delay "1.11")
 
 (defcustom reduce-show-delim-priority show-paren-priority
   "Priority of delimiter highlighting overlays."
@@ -133,11 +119,14 @@ highlighted, the cursor being regarded as adequate to mark its position."
   :type 'boolean
   :group 'reduce-delim-showing)
 
-(defvar reduce-show-delim--idle-timer nil)
-(defvar reduce-show-delim--overlay
+(defvar-local reduce-show-delim--idle-timer nil
+  "Timer to highlight matching group or block delimiters.")
+
+(defconst reduce-show-delim--overlay
   (let ((ol (make-overlay (point) (point) nil t))) (delete-overlay ol) ol)
   "Overlay used to highlight the matching delimiter.")
-(defvar reduce-show-delim--overlay-1
+
+(defconst reduce-show-delim--overlay-1
   (let ((ol (make-overlay (point) (point) nil t))) (delete-overlay ol) ol)
   "Overlay used to highlight the delimiter at point.")
 
@@ -147,24 +136,16 @@ highlighted, the cursor being regarded as adequate to mark its position."
 
 ;;;###autoload
 (define-minor-mode reduce-show-delim-mode
-  "Toggle visualization of matching delimiters (REDUCE Show Delim mode).
-With a prefix argument ARG, enable Show Delim mode if ARG is
-positive, and disable it otherwise.  If called from Lisp, enable
-the mode if ARG is omitted or nil.
-
-Show Delim mode is a buffer-local minor mode.  When enabled, any
-matching delimiter is highlighted in ‘reduce-show-delim-style’ after
-‘reduce-show-delim-delay’ seconds of Emacs idle time."
-  :group 'reduce-delim-showing
-  ;; Enable or disable the mechanism.
-  ;; First get rid of the old idle timer.
+  "Toggle REDUCE Show Delim mode.
+REDUCE Show Delim mode highlights matching group or block
+delimiters after ‘show-paren-delay’ seconds of Emacs idle time."
+  :init-value nil
   (when reduce-show-delim--idle-timer
-    (cancel-timer reduce-show-delim--idle-timer)
-    (setq reduce-show-delim--idle-timer nil))
-  (setq reduce-show-delim--idle-timer (run-with-idle-timer
-									   reduce-show-delim-delay t
-									   #'reduce-show-delim-function))
-  (unless reduce-show-delim-mode
+    (cancel-timer reduce-show-delim--idle-timer))
+  (if reduce-show-delim-mode
+      (setq reduce-show-delim--idle-timer
+            (run-with-idle-timer show-paren-delay t
+								 #'reduce-show-delim))
     (delete-overlay reduce-show-delim--overlay)
     (delete-overlay reduce-show-delim--overlay-1)))
 
@@ -249,31 +230,31 @@ OUTSIDE is the buffer position of the outside of the delimiter.
       (reduce-show-delim--categorize-delim
 	   (reduce-show-delim--locate-delim-backward eol-pos))))))
 
-(defun reduce-show-delim-skip-group-forward (pos)
+(defun reduce-show-delim--skip-group-forward (pos)
   "Move forwards to end of group immediately following POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (+ pos 2))
   (reduce--forward-group))
 
-(defun reduce-show-delim-skip-group-backward (pos)
+(defun reduce-show-delim--skip-group-backward (pos)
   "Move backwards to start of group immediately preceding POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (- pos 2))
   (reduce--backward-group))
 
-(defun reduce-show-delim-skip-block-forward (pos)
+(defun reduce-show-delim--skip-block-forward (pos)
   "Move forwards to end of block immediately following POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (+ pos 5))
   (reduce--forward-block))
 
-(defun reduce-show-delim-skip-block-backward (pos)
+(defun reduce-show-delim--skip-block-backward (pos)
   "Move backwards to start of block immediately preceding POS.
 Return t if successful; otherwise move as far as possible and return nil."
   (goto-char (- pos 3))
   (reduce--backward-block))
 
-(defun reduce-show-delim-data-function ()
+(defun reduce-show-delim--data-function ()
   "Find the opening/closing delimiter \"near\" point and its match.
 The function is called with no argument and should return either nil
 if there's no opener/closer near point, or a list of the form
@@ -302,13 +283,13 @@ Where HERE-BEG..HERE-END is expected to be near point."
 			(condition-case ()
 				(progn
 				  (if (cond ((eq dir +2)
-							 (reduce-show-delim-skip-group-forward outside))
+							 (reduce-show-delim--skip-group-forward outside))
 							((eq dir -2)
-							 (reduce-show-delim-skip-group-backward outside))
+							 (reduce-show-delim--skip-group-backward outside))
 							((eq dir +5)
-							 (reduce-show-delim-skip-block-forward outside))
+							 (reduce-show-delim--skip-block-forward outside))
 							((eq dir -3)
-							 (reduce-show-delim-skip-block-backward outside)))
+							 (reduce-show-delim--skip-block-backward outside)))
 					  (setq pos (point))
 					(setq pos t mismatch t)))
 			  (error (setq pos t mismatch t)))
@@ -320,13 +301,13 @@ Where HERE-BEG..HERE-END is expected to be near point."
 			  (unless (condition-case ()
 						  (progn
 							(cond ((eq dir +2)
-								   (reduce-show-delim-skip-group-backward pos))
+								   (reduce-show-delim--skip-group-backward pos))
 								  ((eq dir -2)
-								   (reduce-show-delim-skip-group-forward pos))
+								   (reduce-show-delim--skip-group-forward pos))
 								  ((eq dir +5)
-								   (reduce-show-delim-skip-block-backward pos))
+								   (reduce-show-delim--skip-block-backward pos))
 								  ((eq dir -3)
-								   (reduce-show-delim-skip-block-forward pos)))
+								   (reduce-show-delim--skip-block-forward pos)))
 							(eq outside (point)))
 						(error nil))
 				(setq pos nil)))
@@ -349,10 +330,10 @@ Where HERE-BEG..HERE-END is expected to be near point."
 						(if (= dir -3) (+ pos 5) (+ pos 2)))
 					  mismatch)))))))))
 
-(defun reduce-show-delim-function ()
+(defun reduce-show-delim ()
   "Highlight the delimiters until the next input arrives."
   (let ((data (and reduce-show-delim-mode
-				   (reduce-show-delim-data-function))))
+				   (reduce-show-delim--data-function))))
     (if (not data)
         (progn
           ;; If reduce-show-delim-mode is nil in this buffer or if not
