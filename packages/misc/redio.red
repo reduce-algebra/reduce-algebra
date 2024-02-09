@@ -96,7 +96,7 @@ symbolic procedure princn eee;
 % output a list of chars, update POSN();
          while (eee:=cdr eee) do prin2 car eee;
 
-symbolic procedure spaces n; for i:=1:n do prin2 '!  ;
+symbolic procedure spaces n; for i:=1:n do prin2 blank ;
 
 symbolic procedure spaces!-to n;
    begin scalar x;
@@ -167,7 +167,7 @@ symbolic procedure lprint(u,n);
                   else if length eee<(m := l) then princn(nil . eee)
                   else go to a
                 end;
-             if posn()<linelength nil then prin2 '! >>
+             if posn()<linelength nil then prin2 blank>>
    end;
 
 symbolic procedure rempropss(atmlst,lst);

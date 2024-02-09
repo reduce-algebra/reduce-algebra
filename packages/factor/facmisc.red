@@ -80,7 +80,7 @@ symbolic procedure quotfail(a,b);
   if polyzerop a then polyzero
   else begin scalar w;
     w:=quotf(a,b);
-    if didntgo w then errorf list("UNEXPECTED DIVISION FAILURE",a,b)
+    if didntgo w then errorf list("Unexpected division failure",a,b)
     else return w
   end;
 

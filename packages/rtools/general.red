@@ -212,7 +212,7 @@ symbolic procedure hexbfloat u;
 % an exponent (which is the power of 2 that the mantissa must be
 % multiplied by).
 % In each case the result is returned as a string, and so it is useful
-% for pprinting but not necessarily further computation.
+% for printing but not necessarily further computation.
 
 symbolic procedure hex n;
   begin

@@ -46,7 +46,7 @@ symbolic procedure p_princ(u, blankfirst);
 % same in PSL then you may or may not survive...
     w := explode2 u;
     if bldmsg_chars!* then <<
-      if blankfirst then bldmsg_chars!* := '!  . bldmsg_chars!*;
+      if blankfirst then bldmsg_chars!* := blank . bldmsg_chars!*;
       for each c in w do bldmsg_chars!* := c . bldmsg_chars!* >>
     else <<
       if blankfirst then <<
@@ -66,7 +66,7 @@ symbolic procedure p_prin(u, blankfirst);
 % escape character.
     if eqcar(w, '!_) then w := '!! . w;
     if bldmsg_chars!* then <<
-      if blankfirst then bldmsg_chars!* := '!  . bldmsg_chars!*;
+      if blankfirst then bldmsg_chars!* := blank . bldmsg_chars!*;
       for each c in w do bldmsg_chars!* := c . bldmsg_chars!* >>
     else <<
       if blankfirst then <<

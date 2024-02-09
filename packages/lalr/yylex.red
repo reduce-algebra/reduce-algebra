@@ -905,7 +905,7 @@ symbolic procedure lex_basic_token();
 % be out of luck - anybody needing that will need to provide their own
 % lexer. Possibly by modifying this one, or possibly by starting from
 % scratch.
-    while lex_char = '!  or
+    while lex_char = blank or
           lex_char = !$eol!$ or
           lex_char =  '!	 or  % Note a tab character on this line
           (lex_start_line_comment lex_char and
@@ -1051,7 +1051,7 @@ symbolic procedure lex_basic_token();
       if (yylval = '!# and lexer_option lexer_hashif) or
          get(yylval, 'lex_dipthong) or
          sml_opchar yylval then yyreadch()
-      else lex_char := '! ;  % Try to avoid reading beyond where I HAVE to.
+      else lex_char := blank;  % Try to avoid reading beyond where I HAVE to.
 % There is a bit of horribly magic needed here. I want
 %  #if #else #elif #endif #eval and #define
 % to be accepted without needing an initial exclamation mark.
@@ -1131,7 +1131,7 @@ symbolic procedure read_s_expression();
  <<
 % At the start of an S-expression I want to check for the characters
 % "(", "[" and ",". Thus I need to skip whitespace.
-    while lex_char = '!  or lex_char = '!$eol!$ do yyreadch();
+    while lex_char = blank or lex_char = '!$eol!$ do yyreadch();
     if lex_char = '!( then begin
       scalar r, w, w1;
       yyreadch();
@@ -1152,11 +1152,11 @@ symbolic procedure read_s_expression();
           w := r;
           r := w1 >>;
         yylval := w;
-        while lex_char = '!  or lex_char = '!$eol!$ do
+        while lex_char = blank or lex_char = '!$eol!$ do
             yyreadch();
 % When I find a ")" I do not read beyond it immediately, but reset lex_char
 % to whitespace. This may help prevent unwanted hangups in interactive use.
-        if lex_char = '!) then lex_char := '!   % turn ')' into a blank.
+        if lex_char = '!) then lex_char := blank  % turn ')' into a blank.
         else yyerror "Syntax error with '.' notation in a list" >>;
       return '!:list end
 % "[" introduces a simple vector.
@@ -1196,7 +1196,7 @@ symbolic procedure read_s_expression();
 % Care with ")" and "]" not to read ahead further than is essential.
     else if lex_char = '!) or lex_char = '!] or lex_char = '!. then <<
       yylval := lex_char;
-      lex_char := '! ;
+      lex_char := blank;
       char!-code yylval >>      
 % In most cases (including "'" and "`") I just hand down to read a token.
 % This covers the cases of symbols, numbers and strings.

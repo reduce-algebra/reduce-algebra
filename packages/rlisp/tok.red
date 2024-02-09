@@ -73,15 +73,19 @@ global '(!$eof!$
          escaped!*
          !*csl
          !*psl
-
+         blank
+         tab
          named!-character!*);
+
+blank := '! ;
+tab := '!	;
 
 flag('(adjprec),'switch);
 
 !*quotenewnam := t;
 put('quotenewnam,'switchdefault,t);
 
-crchar!* := '! ;
+crchar!* := blank;
 peekchar!* := nil;
 
 curline!* := 1;
@@ -618,10 +622,24 @@ symbolic procedure token!-number x;
          go to num2 >>
        else if digit x then go to num1
        else if y = '(!0) and (x = '!x or x = '!X) then go to hexnum
-% For whatever original reason this ignores backslashes within numbers. This
-% I guess lets one write 12\34567\89000 and group digits in fives if you like.
-% I can not see this mentioned in the manual and wonder if anybody uses it.
-       else if x = '!\ then << readch1(); go to num2 >>
+% Within a number any "\" together with the following character is ignored.
+% I believe this will have been introduced for the case where the backslash
+% is the final character on a line, so it provides for continuation of
+% huge numbers. I am altering the code so that if the character after the
+% "\" is not a newline the number terminates.
+       else if x = '!\ then <<
+          if (x := readch1()) = !$eol!$ then go to num2;
+          peekchar!* := '!\ . x . peekchar!*;
+          go to ret >>
+% In a way intended to be consistent with the treatment within hex numbers
+% one can embed an underscore followed by any amount of whitespace in
+% a number. This allows for continuation over a line with the continuation
+% neatly indented, and also for grouping digits as in 12_34567_89012.
+       else if x = '!_ then <<
+          while x = '!_ or x =!$eol!$ or x = blank or x = tab do
+             x := readch1();
+          peekchar!* := x . peekchar!*;
+          go to num2 >>
        else if null(xmark := get(x, 'exponent!-mark)) then go to ret;
 % I want to let exponent markers S, F, E, D and L be available for
 % writing floating point literals with some specified width. However there
@@ -674,7 +692,7 @@ symbolic procedure token!-number x;
 %      def0
 % where obviously the "%" comment markers are not used!
 % Negative numbers in hex are a bit of an oddity. I arrange that the
-% notation "0x~" will stand for an inifinite string of leading 1 bits so
+% notation "0x~" will stand for an infinite string of leading 1 bits so
 % that 0x~f will be -1 and 0x~1 will be as 0x...ffff1 = -15. 
       x := readch1();
       if (z := get(x, 'hexdigit)) then <<
@@ -687,7 +705,7 @@ symbolic procedure token!-number x;
         y := minus 1;   % Can not yet write "-1" because of bootstrapping issues!
         goto hexnum1 >>;
       if x = '!_ then <<
-        while (x := readch1()) = '!  or x = '!	 or x = !$eol!$ do nil;
+        while (x := readch1()) = blank or x = tab or x = !$eol!$ do nil;
         peekchar!* := x . peekchar!*;
         go to hexnum1 >>;
       if x = '!. then <<
@@ -819,11 +837,11 @@ symbolic procedure token;
          else if x = '!_ then go to underscore;
     unicode:
         ttype!* := 3;
-        if x eq !$eof!$ then prog2(crchar!* := '! ,filenderr());
+        if x eq !$eof!$ then prog2(crchar!* := blank,filenderr());
         nxtsym!* := x;
         if not (x eq !$eof!$) then <<
            if (string!-length id2string x = 1) and (delcp x) then
-             crchar!*:= '!  else crchar!*:= readch1() >>;
+             crchar!*:= blank else crchar!*:= readch1() >>;
         if null(x = '!- and
                 (not (crchar!* eq !$eof!$)) and
                 (string!-length id2string crchar!*  = 1) and
@@ -921,7 +939,7 @@ symbolic procedure token;
     bssrch:
         if x = '!% then go to bscomm
         else if x eq !$eof!$ then <<
-           crchar!* := '! ;
+           crchar!* := blank;
            filenderr();
            nxtsym!* := x;
            return x >>;
@@ -1000,7 +1018,7 @@ symbolic procedure token;
        dumped:
            named!-character!* := nil;
            if (x := readch1()) eq !$eof!$
-             then << crchar!* := '! ;
+             then << crchar!* := blank;
                      lpriw("***** End-of-file in string",nil);
                      filenderr() >>
             else if (null(x = '!")) or named!-character!* then go to strinx;
@@ -1049,10 +1067,10 @@ symbolic procedure filenderr;
 symbolic procedure ptoken;
    begin scalar x;
         x := token();
-        if x = '!) and eqcar(outl!*,'! ) then outl!*:= cdr outl!*;
+        if x = '!) and eqcar(outl!*,blank) then outl!*:= cdr outl!*;
            %an explicit reference to OUTL!* used here;
         prin2x x;
-        if null ((x = '!() or (x = '!))) then prin2x '! ;
+        if null ((x = '!() or (x = '!))) then prin2x blank;
         return x
    end;
 
@@ -1343,7 +1361,7 @@ symbolic procedure read!-comment1 u;
          (crchar!* eq !$eol!$) do <<
              named!-character!* := nil;
              crchar!* := readch1() >>;
-      crchar!* := '! ;
+      crchar!* := blank;
       condterpri()
    end;
 

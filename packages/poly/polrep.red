@@ -649,7 +649,7 @@ symbolic procedure quotf!-fail(a,b);
   else begin scalar w;
     w:=quotf(a,b);
     if null w and !*rounded and !*roundall then (w:=quotf(a,b) where !*roundall:=nil);
-    if null w then rerror(poly,99,{"UNEXPECTED DIVISION FAILURE",a,b})
+    if null w then rerror(poly,99,{"Unexpected division failure",a,b})
     else return w
   end;
 

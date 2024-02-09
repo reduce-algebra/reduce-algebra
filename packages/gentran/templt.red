@@ -46,7 +46,7 @@ switch gendecs$
 global '(!*space!* !*stdout!* !$eof!$ !$eol!$)$
         % GENTRAN Global Variables      %
 
-!*space!* := '! $
+!*space!* := blank$
 
 fluid '(!*mode)$
 

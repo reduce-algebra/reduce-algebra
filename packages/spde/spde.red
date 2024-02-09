@@ -199,7 +199,7 @@ symbolic inline procedure prload; nil;
  symbolic procedure blanks l;
    begin scalar u;
    u := '(!");
-   for k:=1:l do u:='! . u;
+   for k:=1:l do u:=blank. u;
    return compress('!" . u)
    end$
 

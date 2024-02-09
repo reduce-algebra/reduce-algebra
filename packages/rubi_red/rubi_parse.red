@@ -39,7 +39,7 @@ switch trrubi;  % Make a file "testcase.red" of all the examples tried.
 
 fluid '(mmachar);  % variable to hold next character
 
-mmachar := '! ;    % starts off as a space character
+mmachar := blank;  % starts off as a space character
 
 
 global '(blank tab);

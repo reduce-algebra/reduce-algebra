@@ -317,23 +317,23 @@ symbolic procedure bfprin!:lst (lst, ex, dotpos);
      else if dotpos = length lst then dotpos := -1;
     for each char in lst do <<
       result := char . result; j := j + 1; dotpos := dotpos - 1;
-      if j=5 then <<if !*nat and !*bfspace then result := '!  . result;
+      if j=5 then <<if !*nat and !*bfspace then result := blank . result;
                     j := 0>>;
       if dotpos = 0 then <<result := '!. . result; j := j + 1>>;
-      if j=5 then <<if !*nat and !*bfspace then result := '!  . result;
+      if j=5 then <<if !*nat and !*bfspace then result := blank . result;
                     j := 0>>>>;
     if ex neq 0 or w then <<
     if not (!*nat and !*bfspace) then result := ee . result
-     else if j=0 then <<result := '!  . ee . result; j := 2>>
-     else if j=1 then <<result := '!  . ee . '!  . result; j := 4>>
+     else if j=0 then <<result := blank . ee . result; j := 2>>
+     else if j=1 then <<result := blank . ee . blank . result; j := 4>>
      else if j=2
-      then <<result := '!  . '!  . ee . '!  . result; j := 0>>
-     else if j=3 then <<result := '!  . ee . '!  . result; j := 0>>
-     else if j=4 then <<result := '!  . ee . '!  . result; j := 2>>;
+      then <<result := blank . blank . ee . blank . result; j := 0>>
+     else if j=3 then <<result := blank . ee . blank . result; j := 0>>
+     else if j=4 then <<result := blank . ee . blank . result; j := 2>>;
     lst := if ex > 0 then '!+ . explode ex else explode ex;
     for each char in lst do <<
       result := char . result; j := j + 1;
-      if j=5 then <<if !*nat and !*bfspace then result := '!  . result;
+      if j=5 then <<if !*nat and !*bfspace then result := blank . result;
                     j := 0>>>>>>;
  %  if !*nat then for each char in reversip result do prin2!* char else
     return smallcompress reversip result

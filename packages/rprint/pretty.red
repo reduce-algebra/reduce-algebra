@@ -113,7 +113,7 @@ symbolic procedure eqcar(a,b);
     pairp a and car a eq b;
 
 symbolic procedure spaces n;
-    for i:=1:n do prin2 '! ;
+    for i:=1:n do prin2 blank;
 
 % End of compatibility section.
 
@@ -185,7 +185,7 @@ symbolic procedure prindent(x,n);
             cx:=get(cx,'ppformat) else cx:=nil;
         if cx=2 and atom cddr x then cx:=nil;
         if cx='prog then <<
-            putch '! ;
+            putch blank;
             prindent(car (x:=cdr x),n+3) >>;
 % CX now controls the formatting of what follows:
 %    nil      default action
@@ -204,12 +204,12 @@ symbolic procedure prindent(x,n);
                  x:=cdr x;
                  if not atom x and atom car x then go to scan;
                  if lmar+bn>n then putblank()
-                 else for i:=lmar+bn:n - 1 do putch '! ;
+                 else for i:=lmar+bn:n - 1 do putch blank;
                  if atom x then go to outt>> >>
          else if numberp cx then <<
              cx:=cx - 1;
              if cx=0 then cx:=nil;
-             putch '!  >>
+             putch blank >>
          else putblank();
          prindent(car x,n+3);
          x:=cdr x;
@@ -219,7 +219,7 @@ symbolic procedure prindent(x,n);
             finishpending();
             putblank();
             putch '!.;
-            putch '! ;
+            putch blank;
             prindent(x,n+5) >>;
         putch ('rpar . (n - 3));
         if indenting top()='indent and not null blanklist top() then
@@ -279,7 +279,7 @@ symbolic procedure finishpending();
  << for each stackframe in pendingrpars do <<
         if indenting stackframe neq 'indent then
             for each b in blanklist stackframe do
-              << rplaca(b,'! ); indblanks:=indblanks - 1>>;
+              << rplaca(b,blank); indblanks:=indblanks - 1>>;
 % blanklist of stackframe must be non-nil so that overflow
 % will not treat the '(' specially.
         setblanklist(stackframe,t) >>;
@@ -333,7 +333,7 @@ symbolic procedure putch c;
         rparcount:=rparcount+1;
 % format for a long string of rpars is:
 %    )))) ))) ))) ))) )))   ;
-        if rparcount>4 then << putch '! ; rparcount:=2 >> >>
+        if rparcount>4 then << putch blank; rparcount:=2 >> >>
     else rparcount:=0;
     while lmar+bn>=rmar do overflow 'more;
 nocheck:
@@ -378,7 +378,7 @@ fblank:
     c:=car buffero;
     if atom c then << prin2 c; go to fblank >>
     else if blankp c then if not atom blankstoskip then <<
-        prin2 '! ;
+        prin2 blank;
         indblanks:=indblanks - 1;
 % blankstoskip = (stack-frame . skip-count).
         if c eq car blankstoskip then <<
@@ -411,7 +411,7 @@ blankfound:
 % check if next level represents new indentation.
     if depth c>indentlevel then <<
         if flg='none then << %just print an ordinary blank.
-            prin2 '! ;
+            prin2 blank;
             go to fblank >>;
 % here I increase the indentation level by one.
         if blankstoskip then blankstoskip:=nil
@@ -424,7 +424,7 @@ blankfound:
         setindenting(c,'thin);
         setblankcount(c,1);
         indentlevel:=(depth c) - 1;
-        prin2 '! ;
+        prin2 blank;
         go to fblank >>;
     setblankcount(c,(blankcount c) - 1);
     terpri();

@@ -399,7 +399,7 @@ a:u:=cdr u;
     else go to er;
   if car x eq 'name then
       if flagp(cadr x,'symbol)
-        then put(at,'name,incompe3('!\,cadr x,'! ))
+        then put(at,'name,incompe3('!\,cadr x,blank))
         else put(at,'name,testchar1 cadr x)
     else if car x eq 'font then
       if y:=get(cadr x,'fontdef) then put(at,'font,y)
@@ -465,7 +465,7 @@ begin
   scalar x;
   if x:=get(op,'lapr) then prin2la x
     else if x:=get(op,'prtch) then prin2la x
-    else if x:=get(op,'lapop) then <<prin2la x; prin2la '! >>
+    else if x:=get(op,'lapop) then <<prin2la x; prin2la blank>>
     else prinlatom op
 end;
 

@@ -79,7 +79,7 @@ symbolic procedure cedit0(u,n);
    begin scalar x;
       if not(x := assoc(n,inputbuflis!*)) or ((x := cadr x) eq !*mode)
         then return u
-       else return append(explode x,append(cdr explode '! ,u))
+       else return append(explode x,append(cdr explode blank,u))
    end;
 
 symbolic procedure cedit1 u;
@@ -88,7 +88,7 @@ symbolic procedure cedit1 u;
       if not !*eagain
         then <<prin2t "For help, type ?"; !*eagain := t>>;
       while u and (car u eq !$eol!$) do u := cdr u;
-      u := append(u,list '! );   %to avoid 'last char' problem.
+      u := append(u,list blank);   %to avoid 'last char' problem.
       if !*full then editp u;
     top:
       x := u;   %current pointer position.
@@ -106,9 +106,9 @@ symbolic procedure cedit1 u;
        else if y eq '!B or y eq '!b then go to top
        else if y eq '!K or y eq '!k then editf(x,t)
        else if y eq '!S or y eq '!s then x := edits x
-       else if y eq '!  and not !*blanknotok!* or y eq '!X or y eq '!x
+       else if y eq blank and not !*blanknotok!* or y eq '!X or y eq '!x
         then x := editn x
-       else if y eq '!  and !*blanknotok!* then go to a
+       else if y eq blank and !*blanknotok!* then go to a
        else if y eq !$eol!$ then go to a
        else lprim!* list(y,"Invalid editor character");
       go to a
