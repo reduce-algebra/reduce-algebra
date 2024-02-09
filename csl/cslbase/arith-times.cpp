@@ -49,7 +49,7 @@
 // a good way to exploit templates. Thus the code here is rather unpleasantly
 // repetitive!
 
-#include "headers.h"
+#include "arith-headers.h"
 
 #include <complex>
 
@@ -1328,7 +1328,15 @@ LispObject Quotient::op(LFlt a, Fixnum b)
 
 // fixnum / bignum
 LispObject Quotient::op(Fixnum a, std::uint64_t* b)
-{   return fixnum_of_int(0);
+{
+// There is one special case where this is not zero. That is when
+// a = -K and b is K where the first is representable as a fixnum and
+// the second has to be a bignum... all because of twos complement
+// assymetry of range.
+    if (arithlib_implementation::numberSize(b) == 1 &&
+        a.intval() == -static_cast<int64_t>(b[0]))
+        return fixnum_of_int(-1);
+    return fixnum_of_int(0);
 }
 
 // bignum / bignum
@@ -2423,7 +2431,10 @@ LispObject Remainder::op(LFlt a, Fixnum b)
 
 // fixnum % bignum
 LispObject Remainder::op(Fixnum a, std::uint64_t* b)
-{   return a.value();
+{   if (arithlib_implementation::numberSize(b) == 1 &&
+        a.intval() == -static_cast<int64_t>(b[0]))
+        return fixnum_of_int(0);
+    return a.value();
 }
 
 // bignum % bignum
@@ -2792,8 +2803,9 @@ LispObject Mod::op(Fixnum a, std::uint64_t* b)
 // One misery here is that one can have -2^k as a fixnum but 2^k having
 // to be a bignum, and in that case the result must be zero.
     int64_t aa = a.intval();
-    if (aa == -0x0800000000000000LL &&
-        b[0] == 0x0800000000000000LLU) return fixnum_of_int(0);
+    if (aa == 0 ||
+        (aa == -0x0800000000000000LL &&
+         b[0] == 0x0800000000000000LLU)) return fixnum_of_int(0);
     size_t len = arithlib_implementation::numberSize(b);
     bool a_neg = aa<0;
     bool b_neg = static_cast<int64_t>(b[len-1])<0;
@@ -2932,7 +2944,10 @@ LispObject Divide::op(LFlt a, Fixnum b)
 
 // fixnum divide bignum
 LispObject Divide::op(Fixnum a, std::uint64_t* b)
-{   LispObject q = Truncate::op(a, b);
+{   if (arithlib_implementation::numberSize(b) == 1 &&
+        a.intval() == -static_cast<int64_t>(b[0]))
+        return cons(fixnum_of_int(-1), fixnum_of_int(0));
+    LispObject q = Truncate::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
@@ -3559,7 +3574,10 @@ LispObject Truncate::op(LFlt a, Fixnum b)
 
 // fixnum truncate bignum
 LispObject Truncate::op(Fixnum a, std::uint64_t* b)
-{   return fixnum_of_int(0);
+{   if (arithlib_implementation::numberSize(b) == 1 &&
+        a.intval() == -static_cast<int64_t>(b[0]))
+        return fixnum_of_int(-1);
+    return fixnum_of_int(0);
 }
 
 // bignum truncate bignum
@@ -4053,7 +4071,10 @@ LispObject Ceiling::op(LFlt a, Fixnum b)
 
 // fixnum ceiling bignum
 LispObject Ceiling::op(Fixnum a, std::uint64_t* b)
-{   return fixnum_of_int(0);
+{   if (arithlib_implementation::numberSize(b) == 1 &&
+        a.intval() == -static_cast<int64_t>(b[0]))
+        return fixnum_of_int(-1);
+    return fixnum_of_int(0);
 }
 
 // bignum ceiling bignum
@@ -4548,7 +4569,10 @@ LispObject Floor::op(LFlt a, Fixnum b)
 
 // fixnum floor bignum
 LispObject Floor::op(Fixnum a, std::uint64_t* b)
-{   return fixnum_of_int(0);
+{   if (arithlib_implementation::numberSize(b) == 1 &&
+        a.intval() == -static_cast<int64_t>(b[0]))
+        return fixnum_of_int(-1);
+    return fixnum_of_int(0);
 }
 
 // bignum floor bignum
@@ -6400,32 +6424,27 @@ LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
     return w;
 }
 
-LispObject Nquotient(LispObject env, LispObject a1,
-                            LispObject a2)
+LispObject Nquotient(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     return Quotient::op(a1, a2);
 }
 
-LispObject NCLQuotient(LispObject env, LispObject a1,
-                              LispObject a2)
+LispObject NCLQuotient(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     return CLQuotient::op(a1, a2);
 }
 
-LispObject Nremainder(LispObject env, LispObject a1,
-                             LispObject a2)
+LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     return Remainder::op(a1, a2);
 }
 
-LispObject Nmod(LispObject env, LispObject a1,
-                             LispObject a2)
+LispObject Nmod(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     return Mod::op(a1, a2);
 }
 
-LispObject Ndivide(LispObject env, LispObject a1,
-                          LispObject a2)
+LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     return Divide::op(a1, a2);
 }
@@ -6450,22 +6469,18 @@ LispObject Nitimes(LispObject env, LispObject a1)
     return a1;
 }
 
-LispObject Nitimes(LispObject env, LispObject a1,
-                          LispObject a2)
+LispObject Nitimes(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
     return Times::op(a1, a2);
 }
 
-LispObject Nitimes(LispObject env, LispObject a1,
-                          LispObject a2,
-                          LispObject a3)
+LispObject Nitimes(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
     return Times::op(Times::op(a1, a2), a3);
 }
 
-LispObject Nitimes(LispObject env, LispObject a1,
-                          LispObject a2,
-                          LispObject a3, LispObject a4plus)
+LispObject Nitimes(LispObject env, LispObject a1, LispObject a2,
+                   LispObject a3, LispObject a4plus)
 {   SingleValued fn;
     LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
@@ -6495,8 +6510,7 @@ LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2)
     return Gcdn::op(a1, a2);
 }
 
-LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2,
-                         LispObject a3)
+LispObject Nigcdn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
     return Gcdn::op(Gcdn::op(a1, a2), a3);
 }
@@ -6527,14 +6541,13 @@ LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2)
     return Lcmn::op(a1, a2);
 }
 
-LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
-                         LispObject a3)
+LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   SingleValued fn;
     return Lcmn::op(Lcmn::op(a1, a2), a3);
 }
 
 LispObject Nilcmn(LispObject env, LispObject a1, LispObject a2,
-                         LispObject a3, LispObject a4plus)
+                  LispObject a3, LispObject a4plus)
 {   SingleValued fn;
     LispObject w = Lcmn::op(Lcmn::op(a1, a2), a3);
     while (is_cons(a4plus))

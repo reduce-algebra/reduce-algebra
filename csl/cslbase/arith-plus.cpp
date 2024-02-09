@@ -33,7 +33,7 @@
 
 // $Id$
 
-#include "headers.h"
+#include "arith-headers.h"
 
 // Each generic arithmetic operation will involve a class styled rather
 // along the lines of this one. It will use mechanisms from the header

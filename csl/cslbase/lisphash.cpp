@@ -1,4 +1,4 @@
-// lisphash.cpp                                       A C Norman, 2020-2023
+// lisphash.cpp                                       A C Norman, 2020-2024
 
 /**************************************************************************
  * Copyright (C) 2024, Codemist.                         A C Norman       *

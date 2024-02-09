@@ -1,9 +1,10 @@
+
 % Character metrics for the STIX (and some other) fonts...
 
 % Character metric hash table created using the program charmetrics.cpp
 % sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts
 % contains README files with full credits to the fonts this is used with
-% Author: Arthur Norman
+% Author: Arthur Norman                                               -2024
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -29,7 +30,7 @@
 %
 
 % Also be aware of the (generally permissive) licenses associated with the
-% fonts. Fill README files and license terms for the fonts themselves
+% fonts. Full README files and license terms for the fonts themselves
 % are in csl/cslbase/wxfonts.
 
 

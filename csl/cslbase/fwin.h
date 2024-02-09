@@ -1,4 +1,4 @@
-// "fwin.h"                                           2003-2023, A C Norman
+// "fwin.h"                                           2003-2024, A C Norman
 //
 // This defines the public interface supported by the "fwin" window
 // interface.

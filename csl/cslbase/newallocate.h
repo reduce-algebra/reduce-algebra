@@ -365,7 +365,7 @@ public:
 
 // With meta-programming one NEEDS some debugging tools!
 // I want to see the value of (eg) sizeof(Page) at compile-time. C++ does
-// not have a built-in static_print function to help me, but
+// not (yet?) have a built-in static_print function to help me, but
 // https://stackoverflow.com/questions/28852574/
 //         how-to-print-result-of-a-compile-time-calculation-in-c
 // contained a suggestion that works with g++ and clang++ by putting the

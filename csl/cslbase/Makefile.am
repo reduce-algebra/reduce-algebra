@@ -2,10 +2,10 @@
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
-# Copyright A C Norman, Codemist -2023
+# Copyright A C Norman, Codemist -2024
 
 #**************************************************************************
-#* Copyright (C) 2023, Codemist.                         A C Norman       *
+#* Copyright (C) 2024, Codemist.                         A C Norman       *
 #*                                                                        *
 #* Redistribution and use in source and binary forms, with or without     *
 #* modification, are permitted provided that the following conditions are *
@@ -344,8 +344,10 @@ arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
 		arith-elem.cpp arith-misc.cpp
+ARITHDEP=arithlib.hpp lvector.h threadloc.h
 else !arithlib
 arith_sources =
+ARITHDEP=lvector.h threadloc.h
 endif !arithlib
 
 if conservative
@@ -1221,7 +1223,39 @@ else !wx
 WXDEPS=
 endif !wx
 
-HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP)
+# The file arithlib.hpp is maintained in the form of a top level file
+# arithlib.base.hpp and a collection of files that it uses "#include" to
+# get merged in. The utility flatten performs the expansion for me. The
+# consequence of this is that arithlib.hpp is a single free-standing
+# header-only library, but if you also #include one of the things it
+# incorporates (eg threadloc.h or lvector.h) then there will be no clash.
+
+$(cslbase)/flatten:	flatten.cpp
+	g++ $(cslbase)/flatten.cpp -o $(cslbase)/flatten
+
+$(cslbase)/lvector.h:	$(cslbase)/flatten $(cslbase)/lvector.base.h \
+		$(cslbase)/threadloc.h
+	cd $(cslbase) && ./flatten lvector.base.h lvector.h
+
+$(cslbase)/multiply.cpp:	$(cslbase)/flatten \
+		$(cslbase)/multiply.base.cpp $(cslbase)/inlinemul.cpp
+	cd $(cslbase) && ./flatten multiply.base.cpp multiply.cpp
+
+$(cslbase)/arithlib.hpp:	$(cslbase)/flatten \
+		$(cslbase)/arithlib.base.hpp $(cslbase)/lvector.h \
+		$(cslbase)/acnutil.h $(cslbase)/multiply.cpp \
+		$(cslbase)/inlinemul.cpp
+	cd $(cslbase) && ./flatten arithlib.base.hpp arithlib.hpp
+
+$(cslbase)/geninline:	$(cslbase)/geninline.cpp
+	g++ $(CXXFLAGS) $(cslbase)/geninline.cpp -o $(cslbase)/geninline
+
+$(cslbase)/inlinemul.cpp:	$(cslbase)/geninline
+	cd $(cslbase) && ./geninline > inlinemul.cpp
+
+
+
+HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(ARITHDEP)
 
 csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM) $(CYG_CSL)
 	@printf "Relinking $@ because of $?\n"

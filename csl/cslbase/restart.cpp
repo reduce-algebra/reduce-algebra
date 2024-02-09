@@ -79,7 +79,7 @@ extern int showmathInitialised;
 #endif
 #endif
 
-DEFINE_THREAD_LOCAL(uintptr_t, genuineThreadId);
+DEFINE_THREAD_LOCAL_POD(uintptr_t, genuineThreadId, 0);
 
 LispObject nil;
 #ifdef NO_THREADS
