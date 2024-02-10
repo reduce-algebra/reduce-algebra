@@ -1231,7 +1231,7 @@ endif !wx
 # incorporates (eg threadloc.h or lvector.h) then there will be no clash.
 
 $(cslbase)/flatten:	flatten.cpp
-	g++ $(cslbase)/flatten.cpp -o $(cslbase)/flatten
+	g++ $(CXXFLAGS) $(cslbase)/flatten.cpp -o $(cslbase)/flatten
 
 $(cslbase)/lvector.h:	$(cslbase)/flatten $(cslbase)/lvector.base.h \
 		$(cslbase)/threadloc.h
@@ -1822,7 +1822,7 @@ default:	reduce$(EXEEXT) $(REDUCE_IMG)
 # sort of material that might properly appear in header files.
 
 prototypes:	$(srcdir)/prototypes.cpp
-	g++ -std=gnu++14 -I/usr/lib/llvm-4.0/include $(srcdir)/prototypes.cpp \
+	g++ $(CXXFLAGS) -I/usr/lib/llvm-4.0/include $(srcdir)/prototypes.cpp \
 		-L /usr/lib/llvm-4.0/lib -lclang -o prototypes
 
 csl.prototypes:	prototypes
