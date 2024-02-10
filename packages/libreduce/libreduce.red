@@ -219,7 +219,7 @@ procedure lr_break_prompt();
 procedure sysmaxbuffer(fd);
    2^16;
 
-putv(iobuffer, 0, mkstring(sysmaxbuffer nil, '! ));
+putv(iobuffer, 0, mkstring(sysmaxbuffer nil, blank));
 
 #endif
 

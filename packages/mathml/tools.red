@@ -116,7 +116,7 @@ begin scalar d, d2;
    if ch neq !$eol!$ then
    d:=cons(ch,d)
  >>;
- d2:=delall('!  , d);
+ d2:=delall(blank , d);
  if d2 eq nil then d:=nil
  else
    <<if car d2 neq '!"  and car reverse d2 neq '!"  then
@@ -143,24 +143,24 @@ begin scalar l, stop,d;
  att:= find2(att, key);
  if att neq '(stop) then
  <<
- while (car att='! ) do att:=cdr att;
+ while (car att=blank) do att:=cdr att;
  if (car att = '!=) then
    <<
      att:=cdr att;
-     while (car att='! ) do att:=cdr att;
+     while (car att=blank) do att:=cdr att;
      if (car att='!") then
       << att:=cdr att;
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) or (car att='!$) then stop:=1
+             if (car att=blank ) or (car att='!$) then stop:=1
           >>
       >>
       else
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) or (car att='!$) then stop:=1
+             if (car att=blank ) or (car att='!$) then stop:=1
           >>
    >>
  else
@@ -177,7 +177,7 @@ symbolic procedure attributes(a,b);
 begin scalar l;
  l:=length a;
  for a:=1:l do b:=cdr b;
- while (car b='! ) do b:=cdr b;
+ while (car b=blank) do b:=cdr b;
  if b neq '(!$) then  atts:=b;
 end;
 
@@ -187,7 +187,7 @@ end;
 symbolic procedure butes( str );
 begin scalar cha;
 cha:=car str;
-return if (cha='!  or cha='!$) then nil
+return if (cha=blank or cha='!$) then nil
         else  cons(car str, butes cdr str);
 end;
 
@@ -214,7 +214,7 @@ begin scalar a;
     if car reverse a = '!/ then
         a:=reverse cdr reverse a;              %will remove the !/ character at the end.
   if a neq '(stop) then
-    if fkey = '(d e f i n i t i o n u r l)  then return delall('!  ,a)
+    if fkey = '(d e f i n i t i o n u r l)  then return delall(blank ,a)
     else return compress!* a
   else return nil;
 end;
@@ -280,7 +280,7 @@ end;
 
 symbolic procedure notstring(a);
 begin scalar a, a2;
- a2:=delall('!  , a);
+ a2:=delall(blank , a);
  if car a2 neq '!"  and car reverse a2 neq '!"
  then return t else return nil;
 end;

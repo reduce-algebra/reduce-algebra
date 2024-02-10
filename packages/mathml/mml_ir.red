@@ -65,7 +65,7 @@ symbolic procedure mml2ir();
 begin scalar res;
  res:=nil;
  mmlatts:=nil;
- space:='! ;
+ space:=blank;
  count:=0;
  ch:=readch();
  temp2:=nil;

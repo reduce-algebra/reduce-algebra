@@ -504,7 +504,7 @@ procedure mkfpascdo;
 list(mkpasctab(), !*do!*, mkpascterpri())$
 
 procedure mkfpascuntil exp;
-append(append(list(mkpasctab(), 'until, '! ),
+append(append(list(mkpasctab(), 'until, blank),
               pascexp exp),
        list('!;, mkpascterpri() ));
 
@@ -519,20 +519,20 @@ list(mkpasctab(), 'svr, '!(, '!0, '!), '!;, mkpascterpri())$
 
 procedure mkfpascfor(var1, lo, hi, stepexp);
 <<
-    stepexp := if stepexp = 1 then list('! , 'to, '! )  else
+    stepexp := if stepexp = 1 then list(blank, 'to, blank)  else
            if (stepexp = -1) or (stepexp = '(minus 1)) then
-           list('! , 'downto, '! )  else list('error);
-    hi:=append(pascexp hi,list('! , !*do!*, mkpascterpri()));
+           list(blank, 'downto, blank)  else list('error);
+    hi:=append(pascexp hi,list(blank, !*do!*, mkpascterpri()));
     hi:=append(pascexp lo, nconc(stepexp, hi));
-    append(list(mkpasctab(), !*for!*, '! , var1, '!:!=), hi)
+    append(list(mkpasctab(), !*for!*, blank, var1, '!:!=), hi)
 >>$
 
 procedure mkfpascgo label;
-list(mkpasctab(), 'goto, '! , label, '!;, mkpascterpri())$
+list(mkpasctab(), 'goto, blank, label, '!;, mkpascterpri())$
 
 procedure mkfpascif exp;
-append(append(list(mkpasctab(), 'if, '! ), pascexp exp),
-       list('!  , 'then, mkpascterpri()))$
+append(append(list(mkpasctab(), 'if, blank), pascexp exp),
+       list(blank , 'then, mkpascterpri()))$
 
 procedure mkfpasclabel label;
 list(label, '!:, mkpascterpri())$
@@ -554,10 +554,10 @@ procedure mkfpascprocdec(type, name, params, paramtypes);
                               conc '!, . pascdum(p, paramtypes),
                      list '!));
     if type then
-        append(mkpasctab() . 'function . '!  . pascexp name,
+        append(mkpasctab() . 'function . blank . pascexp name,
                append(params,list( '!:, type,  '!;, mkpascterpri())))
     else
-        append(mkpasctab() . 'procedure . '!  . pascexp name,
+        append(mkpasctab() . 'procedure . blank . pascexp name,
                append(params, list('!;, mkpascterpri())))
 >>$
 
@@ -588,11 +588,11 @@ procedure mkfpascrepeat;
 list(mkpasctab(), 'repeat, mkpascterpri())$
 
 procedure mkfpascreturn;
-   list(mkpasctab(), 'goto, '! , 99999, '!;,
+   list(mkpasctab(), 'goto, blank, 99999, '!;,
         '!{return!}, mkpascterpri())$
 
 procedure mkfpascwhile exp;
-append(append(list(mkpasctab(), 'while, '! , '!(), pascexp exp),
+append(append(list(mkpasctab(), 'while, blank, '!(), pascexp exp),
        list('!), mkpascterpri()))$
 
 

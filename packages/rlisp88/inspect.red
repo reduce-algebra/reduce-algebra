@@ -334,7 +334,7 @@ expr procedure i!&makelines(x, l);
 expr procedure i!&spcount l;
 % I!&SPCOUNT(l) -- Count spaces in front of line l and return.
 if null l then 0
-  else if eqcar(l, '! ) then add1 i!&spcount cdr l
+  else if eqcar(l, blank) then add1 i!&spcount cdr l
   else 0;
 
 expr procedure i!&delspace(n, l);
@@ -343,7 +343,7 @@ expr procedure i!&delspace(n, l);
 %  non-blank character.
 if null l then nil
   else if zerop n then l
-  else if eqcar(l, '! ) then i!&delspace(n - 1, cdr l)
+  else if eqcar(l, blank) then i!&delspace(n - 1, cdr l)
   else l;
 
 expr procedure i!&prn x;
@@ -453,7 +453,7 @@ loop: if null la then return prin2 " */";
         go to loop >>
   else if eqcar(la, !$eol!$) then
      << terpri(); spaces ind3;go to loop >>
-  else if eqcar(la, '! ) then go to state4;
+  else if eqcar(la, blank) then go to state4;
 
   % STATE 2: Collect characters to EOL, blank, or NIL.
 state2: coll := colle := {car la};
@@ -466,7 +466,7 @@ state2a: if null la then
        << fmtdumptok(coll, ind3, rm);
           la := cdr la;
           go to loop >>
-    else if eqcar(la, '! ) then
+    else if eqcar(la, blank) then
        << fmtdumptok(coll, ind3, rm);
           go to state3 >>;
     cdr colle := {car la};
@@ -477,7 +477,7 @@ state2a: if null la then
   % STATE 3: Skip blanks to NIL, EOL, or next token.
 state3: if null la then go to loop
      else if eqcar(la, !$eol!$) then << la := cdr la; go to loop >>
-     else if eqcar(la, '! ) then << la := cdr la; go to state3 >>
+     else if eqcar(la, blank) then << la := cdr la; go to state3 >>
      else go to state2;
 
 
@@ -485,7 +485,7 @@ state3: if null la then go to loop
   % output line.
 state4: curbl := 0; cbl := t;
 state4a: prin2 car la;
-  if cbl and eqcar(la, '! ) then curbl := add1 curbl else cbl := nil;
+  if cbl and eqcar(la, blank) then curbl := add1 curbl else cbl := nil;
   la := cdr la;
   if null la then go to loop;
   if eqcar(la, !$eol!$) then
@@ -500,7 +500,7 @@ expr procedure fmtblankline l;
 % FMTBLANKLINE(L) -- returns T if the rest of the current line is
 %  all blanks.
 if null l or eqcar(l, !$eol!$) then t
-  else if eqcar(l, '! ) then fmtblankline cdr l;
+  else if eqcar(l, blank) then fmtblankline cdr l;
 
 
 expr procedure fmtfulllineof(c, la);

@@ -1263,7 +1263,7 @@ begin scalar a,d,dl,avf;
                     else cons('df,car d);
   if cdr d=1 then a else {'expt,a,cdr d}
  >>$
- mathprint cons('! ,dl);
+ mathprint cons(blank,dl);
  dl:=get(p,'non_rat_kern)$
  if dl then mathprint cons('list,dl)$
 
@@ -2871,7 +2871,7 @@ begin scalar dv,dl,dlc,dr,fdl,avf,ur;
  terpri()$
  if fdl then <<
   write "Leading derivatives with non-zero separant: "$
-  % terpri()$ mathprint cons('! ,fdl)$
+  % terpri()$ mathprint cons(blank,fdl)$
   write cdr reval cons('list,fdl)$
  >>     else
  write "No leading derivative with non-zero separant. "$
@@ -2914,7 +2914,7 @@ begin scalar dv,dl,dlc,dr,fdl,avf,l;
  >>          else
  if cdr fdl then <<
   write"Which term shall be substituted by the rule?"$ terpri()$
-  mathprint cons('! ,fdl)$
+  mathprint cons(blank,fdl)$
   write"Input its number + Enter: "$
   l:=termread()$
   if not fixp l then <<

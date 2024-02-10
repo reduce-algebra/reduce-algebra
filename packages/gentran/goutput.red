@@ -118,7 +118,7 @@ max(min(n1, n2), 0)$
 procedure nspaces n;
    % Note n is assumed > 0 here.
    begin scalar s;
-      for i := 1:n do s := ('!! . '!  . s);
+      for i := 1:n do s := ('!! . blank . s);
       return intern compress s
    end$
 

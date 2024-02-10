@@ -286,24 +286,24 @@ begin scalar l, stop,d;
  att:= find(att, key);
  if att neq '(stop) then
  <<
- while (car att='! ) do att:=cdr att;
+ while (car att=blank) do att:=cdr att;
  if (car att = '!=) then
    <<
      att:=cdr att;
-     while (car att='! ) do att:=cdr att;
+     while (car att=blank) do att:=cdr att;
      if (car att='!") then
       << att:=cdr att;
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) or (car att='!$) then stop:=1
+             if (car att=blank ) or (car att='!$) then stop:=1
           >>
       >>
       else
          while (stop=0) do
           << d:=cons(car att, d);
              att:=cdr att;
-             if (car att='!  ) or (car att='!$) then stop:=1
+             if (car att=blank ) or (car att='!$) then stop:=1
           >>
    >>
  else
@@ -324,7 +324,7 @@ symbolic procedure attributes(a,b);
 begin scalar l;
  l:=length a;
  for a:=1:l do b:=cdr b;
- while (car b='! ) do b:=cdr b;
+ while (car b=blank) do b:=cdr b;
  if b neq '(!$) then  atts:=b;
 end;
 
@@ -333,7 +333,7 @@ symbolic procedure butes( str );
 %Removes all attributes to a token.
 begin scalar cha;
 cha:=car str;
-return if (cha='!  or cha='!$) then nil
+return if (cha=blank or cha='!$) then nil
         else  cons(car str, butes cdr str);
 end;
 
@@ -360,7 +360,7 @@ begin scalar res, vswitch;
  res:=nil;
  vswitch:=nil;
 %  FLUID '(safe_atts char ch atts count temp space temp2);
- space:='! ;
+ space:=blank;
  count:=0;
  ch:=readch();
  temp2:=nil;

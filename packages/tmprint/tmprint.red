@@ -907,7 +907,7 @@ symbolic procedure fancy!-prin2!*(u,n);
        %% fancy!-line!* := '!{ . '!m . '!r . '!h . '!t . '!a . '!m . '!\ . fancy!-line!*;
        fancy!-line!* := '!\mathrm!{ . fancy!-line!*;
     for each x in u do
-    <<if str and (x='!    or x='!_)
+    <<if str and (x=blank   or x='!_)
          then fancy!-line!* := '!\ . fancy!-line!*;
       fancy!-line!* :=
         (if id and !*fancy!-lower
@@ -1220,12 +1220,6 @@ fluid '(pound1!* pound2!* bad_chars!*);
 % at least a while!
 pound1!* := int2id 0x9c; % In code page 850 (ie DOS style)
 pound2!* := int2id 0xa3; % Unicode
-
-% I will force blank and tab to be declared and set here since there
-% are signs that in PSL they might not be!
-global '(blank tab);
-blank := '! ;
-tab := '!	;
 
 bad_chars!* := blank . tab . !$eol!$ . pound1!* . pound2!* .
                '(!# !$ !% !& !{ !} !~ !^ !\);
@@ -1963,7 +1957,7 @@ symbolic procedure fancy!-limpri(u,p);
      fancy!-prin2!*('!{,0);
      fancy!-maprint(var,0);
      fancy!-prin2!*("\rightarrow",0);
-     fancy!-prin2!*('! ,0); % make sure there is space before the following symbol
+     fancy!-prin2!*(blank,0); % make sure there is space before the following symbol
      fancy!-maprint(lo,0) where !*list=nil;
      fancy!-prin2!*('!},0);
      w:=fancy!-maprint(cadr u,0);
@@ -2831,7 +2825,7 @@ procedure tm_bprompt();
 
 procedure tm_eprompt();
    % End of prompt
-   {'!],'!\,'! ,int2id 5};
+   {'!],'!\,blank,int2id 5};
 
 % This always gets a list of the characters that make up the prompt...
 procedure tm_coloredp(ec);
@@ -2864,7 +2858,7 @@ procedure tm_color(c);
                ec := string!-to!-list c;
                sf := t >>
       else ec := explode2 c;   % Original code has explode not explode2 here.
-      ec := '!  . ec; % add space
+      ec := blank . ec; % add space
       if not !*promptnumbers then << % strip numbers from prompt
                while ec and memq(car ec,'(!  !0 !1 !2 !3 !4 !5 !6 !7 !8 !9)) do
             ec := cdr ec;
@@ -2885,7 +2879,7 @@ procedure tm_uncolor(c);
        else ec := explode2 c;  % cf explode?
        if not tm_coloredp ec then return c;
        ec := tm_prunelhead(ec, tm_bprompt());
-       if car ec eq '!  then ec := cdr ec; % strip space
+       if car ec eq blank then ec := cdr ec; % strip space
        ec := tm_pruneltail(ec, tm_eprompt());
        ec := list2string ec;
        if sf then return ec

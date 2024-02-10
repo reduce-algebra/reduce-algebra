@@ -1,6 +1,6 @@
 module oczusatz;
 
-% Author: Rainer Schöpf 
+% Author: Rainer SchC6pf 
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -636,10 +636,10 @@ end;
 %                               conc '!, . pascdum(p, paramtypes),
 %                      list '!));
 %     if type then
-%         append(mkpasctab() . 'function . '!  . pascexp name,
+%         append(mkpasctab() . 'function . blank . pascexp name,
 %                append(params,list( '!:, type,  '!;, mkpascterpri())))
 %     else
-%         append(mkpasctab() . 'procedure . '!  . pascexp name,
+%         append(mkpasctab() . 'procedure . blank . pascexp name,
 %                append(params, list('!;, mkpascterpri())))
 % >>;
 % 

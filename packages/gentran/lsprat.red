@@ -494,14 +494,14 @@ procedure mkfratcall(fname, params);
     % If we want to generate bits of statements, then what might
     % appear a subroutine call may in fact be a function reference.
     if !*makecalls then
-            append(append(list(mkrattab(), 'call, '! ), ratexp fname),
+            append(append(list(mkrattab(), 'call, blank), ratexp fname),
            append(params, list mkratterpri()))
     else
         append(ratexp fname,params)
 >>$
 
 procedure mkfratcontinue stmtnum;
-list(stmtnum, '! , mkrattab(), 'continue, mkratterpri())$
+list(stmtnum, blank, mkrattab(), 'continue, mkratterpri())$
 
 
 symbolic procedure mkfratdec(type, varlist); %Ammended mcd 3/12/87
@@ -525,10 +525,10 @@ symbolic procedure mkfratdec(type, varlist); %Ammended mcd 3/12/87
     varlist := for each v in insertcommas varlist
                    conc ratexp_name v;
     if implicitp type then
-        append(list(mkrattab(), type, '! , '!(),
+        append(list(mkrattab(), type, blank, '!(),
                append(varlist, list('!), mkratterpri())))
     else
-        append(list(mkrattab(), type, '! ),
+        append(list(mkrattab(), type, blank),
                append(varlist, list mkratterpri()))
 >>$
 
@@ -538,7 +538,7 @@ procedure mkfratdo(var, lo, hi, incr);
         incr := nil
     else if incr then
         incr := '!, . ratexp incr;
-    append(append(append(list(mkrattab(), !*do!*, '! ), ratexp var),
+    append(append(append(list(mkrattab(), !*do!*, blank), ratexp var),
                   append('!= . ratexp lo, '!, . ratexp hi)),
            append(incr, list mkratterpri()))
 >>$
@@ -547,7 +547,7 @@ procedure mkfratelse;
 list(mkrattab(), 'else, mkratterpri())$
 
 procedure mkfratelseif exp;
-append(append(list(mkrattab(), 'else, '! , 'if, '! , '!(), ratexp exp),
+append(append(list(mkrattab(), 'else, blank, 'if, blank, '!(), ratexp exp),
        list('!), mkratterpri()))$
 
 procedure mkfratend;
@@ -557,10 +557,10 @@ procedure mkfratendgp;
 list(mkrattab(), '!}, mkratterpri())$
 
 procedure mkfratgo stmtnum;
-list(mkrattab(), 'goto, '! , stmtnum, mkratterpri())$
+list(mkrattab(), 'goto, blank, stmtnum, mkratterpri())$
 
 procedure mkfratif exp;
-append(append(list(mkrattab(), 'if, '! , '!(), ratexp exp),
+append(append(list(mkrattab(), 'if, blank, '!(), ratexp exp),
        list('!), mkratterpri()))$
 
 procedure mkfratliteral args;
@@ -575,7 +575,7 @@ for each a in args conc
         list stripquotes a$
 
 procedure mkfratread var;
-append(list(mkrattab(), 'read, '!(!*!,!*!), '! ),
+append(list(mkrattab(), 'read, '!(!*!,!*!), blank),
        append(ratexp var, list mkratterpri()))$
 
 procedure mkfratrepeat;
@@ -598,23 +598,23 @@ procedure mkfratsubprogdec(type, stype, name, params);
                                   conc ratexp p,
                          list '!));
     if type then
-        type := list(mkrattab(), type, '! , stype, '! )
+        type := list(mkrattab(), type, blank, stype, blank)
     else
-        type := list(mkrattab(), stype, '! );
+        type := list(mkrattab(), stype, blank);
     append(append(type, ratexp name),
            append(params,list mkratterpri()))
 >>$
 
 procedure mkfratuntil logexp;
-append(list(mkrattab(), 'until, '! , '!(),
+append(list(mkrattab(), 'until, blank, '!(),
        append(ratexp logexp, list('!), mkratterpri())))$
 
 procedure mkfratwhile exp;
-append(append(list(mkrattab(), 'while, '! , '!(), ratexp exp),
+append(append(list(mkrattab(), 'while, blank, '!(), ratexp exp),
        list('!), mkratterpri()))$
 
 procedure mkfratwrite arglist;
-append(append(list(mkrattab(), 'write, '!(!*!,!*!), '! ),
+append(append(list(mkrattab(), 'write, '!(!*!,!*!), blank),
               for each arg in insertcommas arglist conc ratexp arg),
        list mkratterpri())$
 

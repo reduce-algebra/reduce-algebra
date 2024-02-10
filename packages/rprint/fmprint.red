@@ -285,7 +285,7 @@ symbolic procedure fancy!-prin2!*(u,n);
     if id and not numberp n then
        u:=fancy!-lower!-digits(fancy!-esc u);
     for each x in u do
-    <<if str and (x='!    or x='!_)
+    <<if str and (x=blank   or x='!_)
          then fancy!-line!* := '!\ . fancy!-line!*;
       fancy!-line!* :=
         (if id and !*fancy!-lower
@@ -1177,7 +1177,7 @@ symbolic procedure fancy!-limpri(u,p);
      fancy!-prin2!*('!{,0);
      fancy!-maprint(var,0);
      fancy!-prin2!*("\to",0);
-     fancy!-prin2!*('! ,0); % make sure there is space before the following symbol
+     fancy!-prin2!*(blank,0); % make sure there is space before the following symbol
      fancy!-maprint(lo,0) where !*list=nil;
      fancy!-prin2!*('!},0);
      w:=fancy!-maprint(cadr u,0);

@@ -528,11 +528,11 @@ end$
 
 
 symbolic procedure mkffortif exp;
-append(append(list(mkforttab(), 'if, '! , '!(), fortexp exp),
-              list('!),'! , 'then , mkfortterpri()))$
+append(append(list(mkforttab(), 'if, blank, '!(), fortexp exp),
+              list('!),blank, 'then , mkfortterpri()))$
 
 symbolic procedure mkffortelseif exp;
-append(append(list(mkforttab(), 'else, '! , 'if, '! , '!(),
+append(append(list(mkforttab(), 'else, blank, 'if, blank, '!(),
               fortexp exp),
        list('!), 'then,  mkcterpri()))$
 
@@ -605,7 +605,7 @@ stmtlst := cddr stmt;
 n1 := genstmtnum();
 n2 := genstmtnum();
 !*endofloopstack!* := n2 . !*endofloopstack!*;
-result := append(list(n1, '! ), mkffortifgo(list('not, logexp), n2));
+result := append(list(n1, blank), mkffortifgo(list('not, logexp), n2));
 indentfortlevel(+1);
 result := append(result, for each st in stmtlst conc fortstmt st);
 result := append(result, mkffortgo n1);
@@ -650,14 +650,14 @@ symbolic procedure mkffortcall(fname, params);
     % If we want to generate bits of statements, then what might
     % appear a subroutine call may in fact be a function reference.
     if !*makecalls then
-            append(append(list(mkforttab(), 'call, '! ), fortexp fname),
+            append(append(list(mkforttab(), 'call, blank), fortexp fname),
            append(params, list mkfortterpri()))
     else
         append(fortexp fname,params)
 >>$
 
 procedure mkffortcontinue stmtnum;
-list(stmtnum, '! , mkforttab(), 'continue, mkfortterpri())$
+list(stmtnum, blank, mkforttab(), 'continue, mkfortterpri())$
 
 symbolic procedure mkffortdec(type, varlist); %Ammended mcd 13/11/87
 <<
@@ -680,10 +680,10 @@ symbolic procedure mkffortdec(type, varlist); %Ammended mcd 13/11/87
     varlist := for each v in insertcommas varlist
                    conc fortexp_name v;
     if implicitp type then
-        append(list(mkforttab(), type, '! , '!(),
+        append(list(mkforttab(), type, blank, '!(),
                append(varlist, list('!), mkfortterpri())))
     else
-        append(list(mkforttab(), type, '! ),
+        append(list(mkforttab(), type, blank),
                append(varlist,list mkfortterpri()))
 >>$
 
@@ -693,7 +693,7 @@ procedure mkffortdo(stmtnum, var, lo, hi, incr);
         incr := nil
     else if incr then
         incr := '!, . fortexp incr;
-    append(append(append(list(mkforttab(), !*do!*, '! , stmtnum, '! ),
+    append(append(append(list(mkforttab(), !*do!*, blank, stmtnum, blank),
                          fortexp var),
                   append('!= . fortexp lo, '!, . fortexp hi)),
            append(incr, list mkfortterpri()))
@@ -703,11 +703,11 @@ procedure mkffortend;
 list(mkforttab(), 'end, mkfortterpri())$
 
 procedure mkffortgo stmtnum;
-list(mkforttab(), 'goto, '! , stmtnum, mkfortterpri())$
+list(mkforttab(), 'goto, blank, stmtnum, mkfortterpri())$
 
 procedure mkffortifgo(exp, stmtnum);
-append(append(list(mkforttab(), 'if, '! , '!(), fortexp exp),
-       list('!), '! , 'goto, '! , stmtnum, mkfortterpri()))$
+append(append(list(mkforttab(), 'if, blank, '!(), fortexp exp),
+       list('!), blank, 'goto, blank, stmtnum, mkfortterpri()))$
 
 symbolic procedure mkffortliteral args;
    begin scalar !*lower;
@@ -719,7 +719,7 @@ symbolic procedure mkffortliteral args;
    end$
 
 procedure mkffortread var;
-append(list(mkforttab(), 'read, '!(!*!,!*!), '! ),
+append(list(mkforttab(), 'read, '!(!*!,!*!), blank),
        append(fortexp var, list mkfortterpri()))$
 
 procedure mkffortreturn;
@@ -735,15 +735,15 @@ procedure mkffortsubprogdec(type, stype, name, params);
                                    conc fortexp p,
                           list '!));
     if type then
-        type := list(mkforttab(), type, '! , stype, '! )
+        type := list(mkforttab(), type, blank, stype, blank)
     else
-        type := list(mkforttab(), stype, '! );
+        type := list(mkforttab(), stype, blank);
     append(append(type, fortexp name),
            append(params, list mkfortterpri()))
 >>$
 
 procedure mkffortwrite arglist;
-append(append(list(mkforttab(), 'write, '!(!*!,!*!), '! ),
+append(append(list(mkforttab(), 'write, '!(!*!,!*!), blank),
               for each arg in insertcommas arglist conc fortexp arg),
        list mkfortterpri())$
 

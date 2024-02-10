@@ -362,7 +362,7 @@ symbolic procedure quotoxx u;
       omark '(m u);
   a:  if atom u then <<prin2ox " . "; prinox u; u := nil>>
        else <<mprino car u; u := cdr u;
-              if u then <<prin2ox '! ; omarko curmark>>>>;
+              if u then <<prin2ox blank; omarko curmark>>>>;
       if u then go to a;
       omark '(m d);
       prin2ox ")";
@@ -640,17 +640,17 @@ symbolic procedure princom u;
    begin scalar w,x,y,z; integer n;
       x := explode2 u;
       % Process first line.
-      while car x eq '!  do x := cdr x;
+      while car x eq blank do x := cdr x;
       while x and car x neq !$eol!$ do <<y := car x . y; x := cdr x>>;
-      while y and car y eq '!  do y := cdr y;
+      while y and car y eq blank do y := cdr y;
       w := reversip!* y;    % Header line.
       % Process remaining lines.
       while x and (x := cdr x) do
        <<y := nil;
          n := 0;
-         while car x eq '!  do <<x := cdr x; n := n+1>>;
+         while car x eq blank do <<x := cdr x; n := n+1>>;
          while x and car x neq !$eol!$ do <<y := car x . y; x:= cdr x>>;
-         while y and car y eq '!  do y := cdr y;
+         while y and car y eq blank do y := cdr y;
          z := (n . reversip!* y) . z>>;
       % Find line with least blanks.
       y := z;
@@ -660,8 +660,8 @@ symbolic procedure princom u;
       % Now merge lines where possible.
       while y do
        <<z := car y;
-         if not(car z eq '!  ) and not(car w eq '! )
-           then <<z := '!  . z; w := nconc!*(w,z)>>
+         if not(car z eq blank ) and not(car w eq blank)
+           then <<z := blank . z; w := nconc!*(w,z)>>
           else <<x := w . x; w := z>>;
          y := cdr y>>;
       x := w . x;
@@ -672,12 +672,12 @@ symbolic procedure princom u;
    end;
 
 symbolic procedure addblanks(u,n);
-   if n=0 then u else '!  . addblanks(u,n - 1);
+   if n=0 then u else blank . addblanks(u,n - 1);
 
 symbolic procedure addmarks u;
    begin scalar bool,x;
       while u do
-         <<if car u eq '!  then (if null bool
+         <<if car u eq blank then (if null bool
                 then <<bool := t; x := {'m,'l} . x>>)
                else bool := nil;
            x := car u . x; u := cdr u>>;
@@ -778,8 +778,8 @@ symbolic procedure charspace(u,char,mark);
    end;
 
 symbolic procedure spaces20x n;
-   %for i := 1:n do prin20x '! ;
-   while n>0 do <<prin20x '! ; n := n - 1>>;
+   %for i := 1:n do prin20x blank;
+   while n>0 do <<prin20x blank; n := n - 1>>;
 
 symbolic procedure prin2rox u;
    begin integer m,n; scalar x,y;
@@ -798,7 +798,7 @@ symbolic procedure prin2rox u;
                  u := cdr u;
                  !*n := !*n+2;
                  x := y := nil>>
-         else if atom car u and not(car u eq '!  and (!*n=0 or null x
+         else if atom car u and not(car u eq blank and (!*n=0 or null x
               or cdr u and breakp cadr u or breakp x and not(y eq '!!)))
           then <<y := x; prin20x(x := car u); !*n := !*n+1;
          u := cdr u;
@@ -811,7 +811,7 @@ symbolic procedure nospace(u,n);
    if n<1 then t
     else if null u then nil
     else if not atom car u then nospace(cdr u,n)
-    else if not(car u eq '!!) and (cadr u eq '!  or breakp cadr u)
+    else if not(car u eq '!!) and (cadr u eq blank or breakp cadr u)
      then nil
     else nospace(cdr u,n - 1);
 

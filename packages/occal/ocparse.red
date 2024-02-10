@@ -1,6 +1,6 @@
 module oc_simple_read;
 
-% Author: Rainer Schöpf 
+% Author: Rainer SchC6pf 
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -357,12 +357,12 @@ symbolic procedure read_time_var;
 
 symbolic procedure read_abbrevs;
    !*oc!-parse!-abbrevs!* :=
-     for each ab in split_at_char (read_to_par '! ,'!;) collect ltrim ab;
+     for each ab in split_at_char (read_to_par blank,'!;) collect ltrim ab;
 
 
 symbolic procedure read_dgls;
    begin scalar bl;
-     bl := read_to_par '! ;
+     bl := read_to_par blank;
      bl := split_at_char(bl,'!;);
      for each dgl in bl do parse_dgl dgl;
    end;
@@ -398,12 +398,12 @@ symbolic procedure read_funct;
      lprim {"I have already read the definition of your functional!"};
      ocparse!:errcount := ocparse!:errcount + 1;
      nil>>
-    else !*oc!-parse!-functional!* := car split_at_char(read_to_par '! ,'!;);
+    else !*oc!-parse!-functional!* := car split_at_char(read_to_par blank,'!;);
 
 
 symbolic procedure read_bounds;
    begin scalar b;
-     b := split_at_char (ltrim read_to_par '! ,'!;);
+     b := split_at_char (ltrim read_to_par blank,'!;);
      if length b = 3 and null caddr b then b := {car b, cadr b};
      if !*oc!-parse!-boundaries!* then <<
        lprim "I've already read a boundary definition -- ignoring this one.";
@@ -416,7 +416,7 @@ symbolic procedure read_bounds;
 
 
 symbolic procedure read_bconds;
-   !*oc!-parse!-bconds!* := split_at_char (read_to_par '! ,'!;);
+   !*oc!-parse!-bconds!* := split_at_char (read_to_par blank,'!;);
 
 
 symbolic procedure skip_comment;
@@ -424,7 +424,7 @@ symbolic procedure skip_comment;
 
 
 symbolic procedure read_restr;
-   !*oc!-parse!-restrictions!* := split_at_char(read_to_par '! ,'!;);
+   !*oc!-parse!-restrictions!* := split_at_char(read_to_par blank,'!;);
 
 
 symbolic procedure free_rhs;

@@ -146,7 +146,7 @@ symbolic procedure commdemo;
                 crbuf1 := crbuf1!*;
                 crbuf1!* := list y;
                 crchar := crchar!*;
-                crchar!* := '! ;
+                crchar!* := blank;
                 ifl := ifl!*;
                 ifl!* := nil;
                 z := errorset!*('(command),t);

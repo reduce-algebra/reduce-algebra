@@ -63,7 +63,7 @@ symbolic inline procedure get!-f!-numvec s; cadr cddr cdddr s;
 symbolic procedure ttab!* n;
 <<if n>(linelength nil - spare!*) then n:=0;
   if posn!* > n then terpri!*(nil);
-  while not(posn!*=n) do prin2!* '!  >>;
+  while not(posn!*=n) do prin2!* blank >>;
 
 % trace control package.
 

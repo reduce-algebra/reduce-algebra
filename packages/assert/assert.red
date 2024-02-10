@@ -237,11 +237,11 @@ procedure assert_format(fn, argtypel, restype);
       ass := '!! . '!' . ass;
       if restype then <<
          ass := nconc(explode restype, ass);
-         ass := '!! . '!: . '!! . '!  . ass
+         ass := '!! . '!: . '!! . blank . ass
       >>;
       ass := '!! . '!) . ass;
       for each a in reverse argtypel do
-         ass := '!! . '!, . '!! . '!  . nconc(explode a, ass);
+         ass := '!! . '!, . '!! . blank . nconc(explode a, ass);
       ass := cddddr ass;
       ass := '!! . '!( . ass;
       ass := nconc(explode fn, ass);
@@ -486,10 +486,10 @@ procedure assert_string2idl(s);
    % occurs literally within an assertion, then it will not show up in the
    % output.
    if s = " " then
-      {'!!, '! }
+      {'!!, blank}
    else
       for each c in explode s join
-         if eq(c, '!") or eq(c, '! ) then {'!!, c} else {c};
+         if eq(c, '!") or eq(c, blank) then {'!!, c} else {c};
 
 % The following are copies of rltools/lto.red, because I do not want to depend
 % on other modules here:

@@ -39,7 +39,7 @@ begin scalar res;
 
  res:=nil;
  fluid '(safe_atts char ch atts count temp space temp2);
- space:='! ;
+ space:=blank;
  count:=0;
  ch:=readch();
  temp2:=nil;
@@ -165,7 +165,7 @@ end;
 
 symbolic procedure encodeir(name);
 begin scalar sem;
-  sem:=append(char, cons('!  , atts));
+  sem:=append(char, cons(blank , atts));
   sem:=delall('!$, sem);
   return cons('semantic, list cons(name, list sem));
 end;

@@ -426,7 +426,7 @@ begin scalar result;
        else                 inxextend(item ,'!{!}!^!{,'!}) else
     if atom item then       inxextend(item ,'!{!}!^!{,'!}) else
     if car item='minus then inxextend(cadr item ,'!{!}!_!{,'!})
-    else                    inxextend('! ,'!{!}!_!{,'!});
+    else                    inxextend(blank,'!{!}!_!{,'!});
   return nconc(result,'!}.nil)
 end;
 
@@ -707,7 +707,7 @@ begin scalar b;
       or if numberp(a) then TeXcollect(explode(a))
          else if stringp(a) then strcollect(explode2(a))
          else TeXexplist(TeXcollect(explode2(a))));
-   b:=if null b then list '!  else if not atom b then b else list b;
+   b:=if null b then list blank else if not atom b then b else list b;
    return b
 end;
 
@@ -717,11 +717,11 @@ symbolic procedure TeXcollect(l);
     else tri_gettexitem(el).nil;
 
 inline procedure strtexitem(e);
-  if e='!  then list '!\!        % space after ! is necessary
+  if e=blank then list '!\!        % space after ! is necessary
   else if e='!	 then list '!\!   % there is a tab before the "then"
   else if liter(e) then {e}
   else if tri_gettexitem(e) then {tri_gettexitem(e)}
-  else unknownitem(e); % or '! ;
+  else unknownitem(e); % or blank;
 
 symbolic procedure strcollect(l);
   for each el in l join strtexitem el;
@@ -1312,9 +1312,9 @@ begin
        then item:=list('!/,list(655360,-10000))
        else item:=list('!/);
      if lflag then << rplaca(l,'!\!(); item:='!\!).item >>
-     else rplaca(l,'! );
+     else rplaca(l,blank);
      if rflag then << rplaca(r,'!\!)); nconc(item,'!\!(.nil) >>
-     else rplaca(r,'! );
+     else rplaca(r,blank);
      rplaca(m,car item); item:=cdr item;
      if item then rplacd(m,nconc(item,cdr m))
   >> else if car l='!\!s!q!r!t!{ then
@@ -1659,7 +1659,7 @@ begin
       then tri_newline();
       if nlflag then << nlflag:=nil; spaces(cc) >>;
       if tag='cr  then lines:=lines+1;
-      if not(item='! ) then prin2(item);   % print the item and
+      if not(item=blank) then prin2(item);   % print the item and
       cc:=cc+len;                          % count the characters
       if groupvs(tag) or                   % vertical seperator ?
          (groupend(tag) and                % end of a large group,

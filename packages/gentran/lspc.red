@@ -573,12 +573,12 @@ symbolic procedure mkfcdec(type, varlist); %Amended mcd 13/11/87,3/3/88
                v
            else
                car v . for each dim in cdr v collect
-                       if dim eq 'times then '!  %
+                       if dim eq 'times then blank
                        else if numberp dim then add1 dim
                        else if eqcar (dim, 'range) and cadr dim = 0
                          then add1 caddr dim
                        else gentranerr('e,dim,"Not C dimension",nil);
-    append(mkctab() . type . '!  . for each v in insertcommas varlist
+    append(mkctab() . type . blank . for each v in insertcommas varlist
                                        conc cexp_name v,
            list('!;, mkcterpri()))
 >>$
@@ -587,14 +587,14 @@ symbolic procedure mkfcdo;
 list(mkctab(), '!d!o, mkcterpri())$
 
 symbolic procedure mkfcdowhile exp;
-append(append(list(mkctab(), '!w!h!i!l!e, '! , '!(), cexp exp),
+append(append(list(mkctab(), '!w!h!i!l!e, blank, '!(), cexp exp),
        list('!), '!;, mkcterpri()))$
 
 symbolic procedure mkfcelse;
 list(mkctab(), '!e!l!s!e, mkcterpri())$
 
 symbolic procedure mkfcelseif exp;
-append(append(list(mkctab(), '!e!l!s!e, '! , '!i!f, '! , '!(),
+append(append(list(mkctab(), '!e!l!s!e, blank, '!i!f, blank, '!(),
               cexp exp),
        list('!), mkcterpri()))$
 
@@ -615,16 +615,16 @@ symbolic procedure mkfcfor(var1, lo, cond, var2, nextexp);
         var2 := cdr mkfcassign(var2, nextexp);
         var2 := reverse cddr reverse var2
     >>;
-    append(append(append(list(mkctab(), '!f!o!r! , '! , '!(), var1),
+    append(append(append(list(mkctab(), '!f!o!r! , blank, '!(), var1),
                          '!; . cond),
            append('!; . var2, list('!), mkcterpri())))
 >>$
 
 symbolic procedure mkfcgo label;
-list(mkctab(), '!g!o!t!o, '! , label, '!;, mkcterpri())$
+list(mkctab(), '!g!o!t!o, blank, label, '!;, mkcterpri())$
 
 symbolic procedure mkfcif exp;
-append(append(list(mkctab(), '!i!f, '! , '!(), cexp exp),
+append(append(list(mkctab(), '!i!f, blank, '!(), cexp exp),
        list('!), mkcterpri()))$
 
 symbolic procedure mkfclabel label;
@@ -647,7 +647,7 @@ symbolic procedure mkfcprocdec(type, name, params);
                               conc cexp p,
                      list '!));
     if type then
-        append(mkctab() . type . '!  . cexp name,
+        append(mkctab() . type . blank . cexp name,
                append(params,list mkcterpri()))
     else
         append(mkctab() . cexp name, append(params, list mkcterpri()))
@@ -661,7 +661,7 @@ else
     list(mkctab(), '!r!e!t!u!r!n, '!;, mkcterpri())$
 
 symbolic procedure mkfcwhile exp;
-append(append(list(mkctab(), '!w!h!i!l!e, '! , '!(), cexp exp),
+append(append(list(mkctab(), '!w!h!i!l!e, blank, '!(), cexp exp),
        list('!), mkcterpri()))$
 
 
