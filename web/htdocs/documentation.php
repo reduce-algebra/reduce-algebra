@@ -36,6 +36,10 @@ include './include/begin-body.php';
         <strong><a href="/switches.php">Switch Summary</a></strong> &ndash;
         an overview of the switches that control REDUCE.
     </li>
+    <li>
+        <strong><a href="/directories.php">Working Directories</a></strong> &ndash;
+        an overview of working directory support in PSL and CSL REDUCE.
+    </li>
 </ul>
 <p>For advanced users:</p>
 <ul>
