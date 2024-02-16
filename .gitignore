@@ -442,6 +442,8 @@
 
 # /web/htdocs/reduce-ide/
 /web/htdocs/reduce-ide/packages
+/web/htdocs/reduce-ide/reduce-ide.pdf
+/web/htdocs/reduce-ide/reduce-ide_html
 
 # /winbuild64/
 /winbuild64/Output
