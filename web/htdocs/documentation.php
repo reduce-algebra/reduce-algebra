@@ -91,17 +91,17 @@ include './include/begin-body.php';
         $chapterAnchor = $xpath->query(
             "/html/body/div[@class='tableofcontents']/span[@class='chapterToc']/a[.='User Contributed Packages']"
         )->item(0);
-        $chapterAnchor->removeAttribute('id');
+        if ($chapterAnchor instanceof DOMElement) $chapterAnchor->removeAttribute('id');
         echo "<span style='font-size:x-large'>{$doc->saveHTML($chapterAnchor)}</span><br/>\n";
         $sectionSpans = $xpath->query("parent::span/following-sibling::span", $chapterAnchor);
         foreach ($sectionSpans as $sectionSpan) {
             if ($sectionSpan->getAttribute('class') == 'chapterToc') break;
             $sectionAnchor = $sectionSpan->getElementsByTagName('a')->item(0);
             $sectionAnchor->removeAttribute('id');
-            // The following works but utf8_decode is deprecated in PHP 8.2.
+            // I fail to see why this conversion is necessary, but it is!
             // I think 'manual/manual.html' really is encoded as UTF-8,
-            // but without utf8_decode the output is mangled!
-            $sectionAnchorString = utf8_decode($doc->saveHTML($sectionAnchor));
+            // but without conversion the output is mangled!
+            $sectionAnchorString = mb_convert_encoding($doc->saveHTML($sectionAnchor), 'ISO-8859-1', 'UTF-8');
             // Embolden the package name (before the colon):
             $sectionAnchorString = preg_replace('/>(.*):/', '><b>$1</b>:', $sectionAnchorString);
             echo "&emsp;&emsp;$sectionAnchorString<br/>\n";
