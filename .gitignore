@@ -440,6 +440,9 @@
 /web/htdocs/reduce38-docs
 /web/htdocs/reduce40.pdf
 
+# /web/htdocs/manpages/
+/web/htdocs/manpages/*.html *.pdf
+
 # /web/htdocs/reduce-ide/
 /web/htdocs/reduce-ide/packages
 /web/htdocs/reduce-ide/reduce-ide.pdf
