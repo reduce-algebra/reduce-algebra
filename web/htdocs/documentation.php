@@ -40,6 +40,10 @@ include './include/begin-body.php';
         <strong><a href="/directories.php">Working Directories</a></strong> &ndash;
         an overview of working directory support in PSL and CSL REDUCE.
     </li>
+    <li>
+        <strong><a href="/manpages">Unix-style Man Pages</a></strong> &ndash;
+        details of commands for running REDUCE.
+    </li>
 </ul>
 <p>For advanced users:</p>
 <ul>
