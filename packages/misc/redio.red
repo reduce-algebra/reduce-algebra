@@ -32,7 +32,7 @@ module redio; % General Purpose I/O package, sorting and positioning.
 fluid '(orig!*);
 
 global '(!*formfeed lnnum!* maxln!* pgnum!*);
-fluid '(title!*);    % To be compatible with use elsewhere in Redice
+fluid '(title!*);    % To be compatible with use elsewhere in Reduce
 
 % This module is functionally equivalent to the PSL file PSL-CREFIO.RED.
 
