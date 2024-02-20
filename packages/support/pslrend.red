@@ -362,7 +362,7 @@ symbolic procedure begin;
         !*usermode := nil;
         linelength 80;
         prin2 version!*;
-        prin2 ", ";
+        prin2 ", build date ";
         prin2 date!*;
 %       if patch!-date!*
 %         then progn(prin2 ", patched to ",prin2 patch!-date!*);
