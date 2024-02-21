@@ -278,8 +278,8 @@ int main()
     std::cout << "static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,\n";
     std::cout << "                       DigitPtr result)\n";
     std::cout << "{   switch (N)\n";
-    std::cout << "    {   default: generalMul(a, N, b, N, result); return;\n";
-    for (std::size_t N=6; N<=14; N++)
+    std::cout << "    {   default: simpleMul(a, N, b, N, result); return;\n";
+    for (std::size_t N=1; N<=14; N++)
         std::cout << "        case " << N << ":  inlineMul_" << N
                   << "_" << N << "(a, b, result);   return;\n";
     std::cout << "    }\n";

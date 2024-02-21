@@ -1,4 +1,4 @@
-// Big Number arithmetic.                            A C Norman, 2019-2024
+// Big Number arithmetic.                             A C Norman, 2019-2024
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -255,24 +255,7 @@
 //   concern for garbage collector safety of other pointers, and so in its
 //   current form this code insists on running in a context where the garbage
 //   collector is conservative, so that for instance the untagged pointers to
-//   raw vectors of digits are safe. This aspect of the code may well limit
-//   its direct usefulness. So too allow for a system that uses a precise
-//   garbage collector I allow for a "#define PRECISE_GC 1" option and in
-//   that case whenever calls to memory allocation are performed within the
-//   low-level code I will use functions "push()" and "pop()" and
-//   expect that they save values somewhere that the garbage collector can
-//   find. Note that this scheme does not automate keeping large bignum
-//   calculations expressed via operator overloading safe! It is mostly aimed
-//   at making the low level code usable. A typical case where push() and
-//   pop() are needed will be the code to multiply two big numbers. That can
-//   work out how large its result will be and then needs to call reserve()
-//   to get space for it. Across the call to reserve it will need to push
-//   its two arguments, because a copying garbage collector might relocate
-//   them.
-//   Further though: having "push and pop" suggests that a potentially large
-//   number of items might need to be saved. I suspect that the most I can
-//   ever encounter here will be perhaps 3. So having a fixed number of
-//   dedicated list basis to stash things in might be nicer.
+//   raw vectors of digits are safe. 
 //   In Lisp mode it is anticipated that as well as a tagged representation
 //   of small integers that the generic arithemetic will need to support
 //   floating point numbers (and possibly multiple widths of floating point
@@ -662,14 +645,11 @@ inline std::string concat(std::string a, int n)
 //
 // There are some classes:
 //   stkvector<T>   a vector of n items of type T for stack/static allocation.
-//   newvector<T>   a vector as above but synamically allocated (eg heap).
 //   vecpointer<T>  a pointer to one of the above.
 
 // This is something like what I want...
 //== template <typename T>
 //== using stkvector<T> = T[];   used in file of block scope definitions.
-//== using newvector<T> = T[];   can create a vector using "new" or
-//==                             encapsulate one that already exists/
 //== using vecpointer<T> = T*;   pointer to one of these.
 // however that can not let me establish locally defined vectors
 // of dynamic size, and I want to support declarations such as
@@ -677,7 +657,6 @@ inline std::string concat(std::string a, int n)
 // to set up a block scope vector where the size is not known at
 // compile time. Also following
 //         vecpointer<int> p = new int[100];
-//  or     vecpointer<int> p = newvector<int>(100);
 // this would mean I needed to discard the space explicitly.
 // Ordinary code uses
 //   T* p = new T[20]; ... ; delete[] p;
@@ -691,9 +670,6 @@ inline std::string concat(std::string a, int n)
 // a "size()" method to retrieve that information. And I will view
 // stkvector as only suitable for use with a compilation unit or block
 // scope declaration. "new stkvector" is not to be allowed.
-// However "newvector<T>(N)" mau be used to create an vecpointer to
-// a heap-allocated vector of length N and that will be preferred to
-// use of "new" directly.
 //    ...
 // stkvector<T> will need to support
 //    creation via a declaration at file or block scope.
@@ -709,6 +685,7 @@ inline std::string concat(std::string a, int n)
 //    constructor from nullptr.
 //    constructor from a T*.
 //    constructor from a T* but with a length specifier.
+//    constructors from intptr_t and uint64_t*
 //    construction from a SizedPointer.
 //    constructor from an stkvector<T>.
 //    a "discard" function for deleting its contents
@@ -717,11 +694,12 @@ inline std::string concat(std::string a, int n)
 //    operator=
 //    operator+(integer)
 //    operator-(integer)
+//    operator-(vecpointer<T>)
 //    operator+= and operator-=
 //    operator++ and operator--  (pre and post versions of each)
 //    operator== and operator!= to compare against a nullptr or
 //                              another vecpointer<T>
-//    casts into T* and const T*
+//    casts into T* and const T* and intptr_t
 //
 // I will require sizeof(vecpointer<T>) == sizeof(T*). I am going to
 // assume all pointer types have the same size which C++ may not
@@ -748,33 +726,6 @@ inline std::string concat(std::string a, int n)
 template <typename T>
 class vecpointer;
 
-template <typename T>
-class newvector
-{
-public:
-    T* data;
-    std::size_t limit;
-    newvector(size_t n)
-    {   data = static_cast<T*>(new T[n]);
-        if (data != nullptr)
-        {   std::memset(data, 0x99, n*sizeof(T));
-            limit = n;
-        }
-        else limit = 0;
-    }
-    newvector(T* v, size_t n)
-    {   data = v;
-        limit = n;
-    }
-    operator vecpointer<T>()
-    {   return vecpointer<T>(data, limit);
-    }
-    friend std::ostream & operator << (std::ostream &out, const newvector& a)
-    {   out << a.data;
-        return out;
-    }
-};
-
 #ifndef DEBUG
 
 template <typename T>
@@ -800,13 +751,19 @@ public:
     }
 
 //    constructor from a T*
-    vecpointer(T* a)
-    {   data = a;
+    template <typename S>
+    vecpointer(S* a)
+    {   data = reinterpret_cast<T*>(a);
     }
 
 //    constructor from a T* but with a length specifier
     vecpointer(T* a, size_t n)
     {   data = a;
+    }
+
+//    constructor from a intptr_t
+    vecpointer(std::intptr_t a)
+    {   data = reinterpret_cast<T*>(a);
     }
 
 //    setsize() - a no-op in this case.
@@ -836,10 +793,6 @@ public:
     }
 
 //    operator=
-    vecpointer<T>& operator=(newvector<T>& a)
-    {   data = a.data;
-        return *this;
-    }
     vecpointer<T>& operator=(const vecpointer<T> a)
     {   data = a.data;
         return *this;
@@ -853,6 +806,11 @@ public:
 //    operator-(integer)
     vecpointer<T> operator-(std::ptrdiff_t n)
     {   return vecpointer<T>(data - n);
+    }
+
+//    operator-(vecpointer<T>)
+    std::ptrdiff_t operator-(vecpointer<T> a)
+    {   return data - (T*)a;
     }
 
 //    operator+= and operator-=
@@ -901,6 +859,11 @@ public:
     {   return data;
     }
 
+//    casts into intptr_t
+    operator std::intptr_t()
+    {   return reinterpret_cast<std::intptr_t>(data);
+    }
+
     operator void*()
     {   return static_cast<void*>(data);
     }
@@ -933,6 +896,12 @@ public:
 inline void lvector_assert(bool b)
 {   if (b) return;
     std::cerr << "\n+++ Access outside vector bound +++\n";
+    std::abort();
+}
+
+inline void lvector_assert(bool b, const char* msg)
+{   if (b) return;
+    std::cerr << "\n+++ " << msg << " +++\n";
     std::abort();
 }
 
@@ -969,9 +938,8 @@ public:
 template <typename T>
 class vecpointer
 {
-private:
-    vecpointerData<T>* data;
 public:
+    vecpointerData<T>* data;
 
 //    a default constuctor
     vecpointer()
@@ -996,8 +964,9 @@ public:
     }
 
 //    constructor from a T*
-    vecpointer(T* a)
-    {   data = new vecpointerData<T>(a, SIZE_MAX, 0);
+    template <typename S>
+    vecpointer(S* a)
+    {   data = new vecpointerData<T>(reinterpret_cast<T*>(a), SIZE_MAX, 0);
     }
 
 //    constructor from a T* but with a length specifier
@@ -1008,6 +977,16 @@ public:
 //    constructor from a T* but with a length specifier and an offset
     vecpointer(T* a, size_t n, size_t o)
     {   data = new vecpointerData<T>(a, n, o);
+    }
+
+//    constructor from a uint64_t*
+    vecpointer(std::uint64_t* a)
+    {   data = new vecpointerData((T*)a, SIZE_MAX, 0);
+    }
+
+//    constructor from a intptr_t
+    vecpointer(std::intptr_t a)
+    {   data = new vecpointerData<T>(reinterpret_cast<T*>(a), SIZE_MAX, 0);
     }
 
 //    setsize() - may be useful in debug mode.
@@ -1063,6 +1042,13 @@ public:
         return vecpointer<T>(data->data, data->limit, nn);
     }
 
+//    operator-(vecpointer<T>)
+    std::ptrdiff_t operator-(vecpointer<T> a)
+    {   lvector_assert(data->data == a.data->data,
+                       "illegal difference between vectors");
+        return (data->offset - a.data->offset);
+    }
+
 //    operator+= and operator-=
     vecpointer<T>& operator+=(std::ptrdiff_t n)
     {   data->offset += n;
@@ -1115,6 +1101,11 @@ public:
 //    casts into T*
     operator T*()
     {   return &data->data[data->offset];
+    }
+
+//    casts into intptr_t
+    operator std::intptr_t()
+    {   return reinterpret_cast<std::intptr_t>(&data->data[data->offset]);
     }
 
     operator void*()
@@ -1745,7 +1736,7 @@ inline void initialize()
 #else // DEBUG
 #define maxThreads  64U
 #endif // DEBUG
-#define TL_threadId  50
+#define TL_genuineThreadId  50
 DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
 #define THREADID UNUSED_NAME const uintptr_t threadId = genuineThreadId
 #define THREADARG threadId,
@@ -1937,9 +1928,6 @@ public:
 namespace arithlib_implementation
 {
 
-// Over coming weeks I intend to migrate from direct use of uint64_t and
-// uint64_t* to Digit and DigitPtr.
-
 using Digit = std::uint64_t;
 using SignedDigit = std::int64_t;
 
@@ -1972,7 +1960,7 @@ inline int version()
 // thread_local within this library can (eventually) be migrated to live in
 // a chunk of memory referenced by this.
 //
-// The data involved will be
+// The data involved might/should be
 // (1) Information related to the worker threads for Karatsuba multiplication.
 // (2) Information about the modulus used with modular arithmetic.
 // Note that the allocation of memory when that is done within this library
@@ -2135,10 +2123,10 @@ inline void logprintf(const char* fmt, ...)
 // included from multiple source files there will not be multiple-definition
 // clashes, and since this is just for diagnostics I am not worried about
 // any costs that this imposes.
-    static std::FILE* logfile = NULL;
+    static std::FILE* logfile = nullptr;
     const char** where;
     std::lock_guard<std::mutex> lock(diagnostic_mutex(&where));
-    if (logfile == NULL) logfile = std::fopen("arith.log", "w");
+    if (logfile == nullptr) logfile = std::fopen("arith.log", "w");
     std::va_list args;
     va_start(args, fmt);
     std::vfprintf(logfile, fmt, args);
@@ -2167,7 +2155,7 @@ inline void traceprintf(const char* fmt, ...)
 // the "obvious way" already, so the code here is something of an exercise
 // in pedantry.
 
-inline std::int32_t ASR(std::int32_t a, std::int64_t n)
+inline std::int32_t ASR(std::int32_t a, SignedDigit n)
 {   if (n<0 || n>=8*static_cast<int>(sizeof(std::int32_t))) n=0;
     std::uint32_t r = static_cast<std::uint32_t>(a) >> n;
     std::uint32_t signbit = static_cast<std::uint32_t>(a) >>
@@ -2176,17 +2164,17 @@ inline std::int32_t ASR(std::int32_t a, std::int64_t n)
     return static_cast<std::int32_t>(r);
 }
 
-inline std::int64_t ASR(std::int64_t a, std::int64_t n)
-{   if (n<0 || n>=8*static_cast<int>(sizeof(std::int64_t))) n=0;
-    std::uint64_t r = static_cast<std::uint64_t>(a) >> n;
-    std::uint64_t signbit = static_cast<std::uint64_t>(a) >> (8*sizeof(
-                                std::uint64_t)-1);
-    if (n != 0) r |= ((-signbit) << (8*sizeof(std::uint64_t) - n));
-    return static_cast<std::int64_t>(r);
+inline SignedDigit ASR(SignedDigit a, SignedDigit n)
+{   if (n<0 || n>=8*static_cast<int>(sizeof(SignedDigit))) n=0;
+    Digit r = static_cast<Digit>(a) >> n;
+    Digit signbit = static_cast<Digit>(a) >> (8*sizeof(
+                                Digit)-1);
+    if (n != 0) r |= ((-signbit) << (8*sizeof(Digit) - n));
+    return static_cast<SignedDigit>(r);
 }
 
-inline std::uint64_t ASR(std::uint64_t a, std::int64_t n)
-{   return ASR(static_cast<std::int64_t>(a), n);
+inline Digit ASR(Digit a, SignedDigit n)
+{   return ASR(static_cast<SignedDigit>(a), n);
 }
 
 // The behaviour of left shifts on negative (signed) values seems to be
@@ -2199,14 +2187,14 @@ inline std::uint64_t ASR(std::uint64_t a, std::int64_t n)
 // In the comparisons I case the sizeof value to an int so that I can compare
 // it against the signed amount n.
 
-inline std::int32_t ASL(std::int32_t a, std::int64_t n)
+inline std::int32_t ASL(std::int32_t a, SignedDigit n)
 {   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint32_t))) n = 0;
     return static_cast<std::int32_t>(static_cast<std::uint32_t>(a) << n);
 }
 
-inline std::int64_t ASL(std::int64_t a, std::int64_t n)
-{   if (n < 0 || n>=8*static_cast<int>(sizeof(std::uint64_t))) n = 0;
-    return static_cast<std::int64_t>(static_cast<std::uint64_t>(a) << n);
+inline SignedDigit ASL(SignedDigit a, SignedDigit n)
+{   if (n < 0 || n>=8*static_cast<int>(sizeof(Digit))) n = 0;
+    return static_cast<SignedDigit>(static_cast<Digit>(a) << n);
 }
 
 //=========================================================================
@@ -2261,336 +2249,6 @@ namespace std
 namespace arithlib_implementation
 {
 
-// When I get to big-integer multiplication I will use two worker threads
-// so that elapsed times for really large multiplications are reduced
-// somewhat. Well ideally by a factor approaching 3. I set up a framework
-// of support for the threads here. Each main program thread will want
-// its own pair of worker threads here. Each worker thread gets passed a
-// nice object called "worker_data" that encapsulates the way it receives
-// data from the caller and passes results back.
-
-// Each worker thread needs some data that it shares with the main thread.
-// this structure encapsulates that.
-
-// Probably the most "official" way to coordinate threads would be to use
-// condition variables, but doing so involves several synchronization
-// primitives for each step of the transaction. For the simple level of
-// coordination I need here it would be more costly that necessary. I can
-// manage here with a scheme that when thread A want to allow thread B to
-// proceed it unlocks a mutex that thread B was waiting on. There is some
-// mess associated with ensuring that the main thread waits for results and
-// that there are no race situations where all threads compete for a single
-// mutex.
-//
-// There are 4 mutexes for each worker thread, but each synchronization step
-// just involves a single mutex, transferring ownership between main and worker
-// thread. Here is the patter of transfer and subsequent ownership, with "?"
-// marking a muxex that has been waiting and the ">n" or <n" in the middle
-// also showing which muxex has just been activated:
-//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
-// To start a transaction the main thread sets up data and unlocks mutex 0.
-// That allows the worker to proceed and pick up the data.
-//       .  X  .  .   >0    ?X .  X  X    first transaction
-// The main thread must not alter data until the worker is finished. It waits
-// on mutex 1 until the worker tells it that a result is available.
-//       .  X ?X  .   <2    X  .  .  X
-// The main thread is now entitles to start using the results of the activity
-// just completed and setting up data for the next one. It can not release
-// mutex 0 to restart the worker because the worker alread owns that. And even
-// though it owns mutex 2 it had better not release that, because for that
-// to make sense the worker would need to be waiting on it, and that would mean
-// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
-// might have led it to grab m3 rather than the main program managing to. So
-// use the third mutex, which the worker must be waiting on.
-//       .  .  X  .   >1    X ?X  .  X    second transaction
-// When it has finished its task the worker now unlocks mutex 3. This leaves
-// a situation symmetric with the initial one
-//       .  .  X ?X   <3    X  X  .  .
-//       .  .  .  X   >2    X  X  ?X .    third transaction
-//       ?X .  .  X   <0    .  X  X  .
-//       X  .  .  .   >3    .  X  X ?X    fourth transaction
-//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
-//
-// The pattern is thus that the master goes
-//  [initially lock 0 and 1]
-//  unlock 0  wait 2
-//  unlock 1  wait 3
-//  unlock 2  wait 0
-//  unlock 3  wait 1
-// while the worker goes
-//  [initially lock 2 and 3]
-//  wait 0    unlock 2
-//  wait 1    unlock 3
-//  wait 2    unlock 0
-//  wait 3    unlock 1
-// Observe that I can use (n^2) to map between the mutex number in the first
-// and second columns here. That counting is what send_count and
-// receive_count are doing.
-
-// In a nice world I would use just the C++ std::mutex scheme for
-// synchronization, however here I am performance critical and to save
-// a bit when performing medium-sized multiplications I will use the
-// Microsoft version of mutexes directly on that platform.
-
-#if defined __CYGWIN__ || defined __MINGW32__
-
-// It is possible that SRW locks have lower overhead than Mutex. So I will
-// use them, but have an "#ifdef" so I can revert if needbe.
-
-#define USE_MICROSOFT_SRW 1
-
-#ifndef USE_MICROSOFT_SRW
-#define USE_MICROSOFT_MUTEX 1
-#endif // USE_MICROSOFT_SRW
-
-// Going "#include <windows.h>" pollutes the name-space rather heavily
-// and so despite it being somewhat despicable I declare the rather small
-// number of things I need by hand. Note that some of the issues are
-// macros rather than extern definitions, so it is not obvious that
-// C++ "namespace" treatment can make things nice for me.
-
-extern "C"
-{
-struct SecApp
-{   std::uintptr_t nLength;
-    void* lpSecurityDescriptor;
-    int bInheritHandle;
-};
-
-typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
-#define RTL_SRWLOCK_INIT {0}
-#define SRWLOCK_INIT RTL_SRWLOCK_INIT
-typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
-
-extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
-extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
-extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
-
-extern __declspec(dllimport)  void* 
-    CreateMutexA(SecApp* , std::uintptr_t, const char* );
-extern __declspec(dllimport) int CloseHandle(void* h);
-extern __declspec(dllimport) int ReleaseMutex(void* m);
-extern __declspec(dllimport) void* 
-    WaitForSingleObject(void* , std::uintptr_t);
-inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
-
-};   // end of extern "C" scope.
-
-#endif // __CYGWIN__ or __MINGW32__
-
-class WorkerData
-{
-public:
-    int which;
-    std::atomic<bool> ready;
-#if defined USE_MICROSOFT_SRW
-    SRWLOCK mutex[4];
-#elif defined USE_MICROSOFT_MUTEX
-    void* mutex[4];
-#else // The final case is C++ std::mutex
-    std::mutex mutex[4];
-#endif // end of mutex selection
-    bool quit_flag;
-    ConstDigitPtr a;
-    std::size_t lena;
-    ConstDigitPtr b;
-    std::size_t lenb;
-    DigitPtr c;
-
-// When I construct an instance of Worker data I set its quit_flag to
-// false and lock two of the mutexes. That sets things up so that when
-// it is passed to a new worker thread that thread behaves in the way I
-// want it to.
-    WorkerData()
-    {   ready = false;
-        quit_flag = false;
-#if defined USE_MICROSOFT_SRW
-        InitializeSRWLock(&mutex[0]);
-        InitializeSRWLock(&mutex[1]);
-        AcquireSRWLockExclusive(&mutex[0]);
-        AcquireSRWLockExclusive(&mutex[1]);
-        InitializeSRWLock(&mutex[2]);
-        InitializeSRWLock(&mutex[3]);
-#elif defined USE_MICROSOFT_MUTEX
-        mutex[0] = CreateMutexA(NULL, 1, NULL);
-        mutex[1] = CreateMutexA(NULL, 1, NULL);
-        mutex[2] = CreateMutexA(NULL, 0, NULL);
-        mutex[3] = CreateMutexA(NULL, 0, NULL);
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "4 mutexes in worker created\n");
-        fflush(stderr);
-#endif
-#else // use C++ std::mutex
-// The next two must be locked by the main thread.
-        mutex[0].lock();
-        mutex[1].lock();
-#endif // Mutexes now initialized and locked as needed
-    }
-    void setWhich(int n)
-    {   which = n;
-    }
-#ifdef USE_MICROSOFT_MUTEX
-    ~WorkerData()
-    {   CloseHandle(mutex[0]);
-        CloseHandle(mutex[1]);
-        CloseHandle(mutex[2]);
-        CloseHandle(mutex[3]);
-    }
-#endif // USE_MICROSOFT_MUTEX
-};
-
-inline void workerThread(WorkerData* w);
-
-// Then each main thread will have a structure that encapsulated the
-// two worker threads that it ends up with and the data it sets up for
-// them and that they then access. When this structures is created it will
-// cause the worker threads and the data block they need to be constructed.
-
-class DriverData
-{
-public:
-    int        send_count = 0;
-    int        send_count2 = 0;
-    WorkerData wd_0,
-               wd_1,
-               wd_2;
-// When the instance of DriverData is created the three sets of WorkerData
-// get constructed with two of their mutexes locked. This will mean that when
-// worker threads are created and start running they will politely wait for
-// work.
-
-    std::thread w_0, w_1, w_2;
-    DriverData()
-    {   wd_0.setWhich(0);
-        wd_1.setWhich(1);
-        wd_2.setWhich(2);
-        w_0 = std::thread(workerThread, &wd_0),
-        w_1 = std::thread(workerThread, &wd_1);
-        w_2 = std::thread(workerThread, &wd_2);
-// I busy-wait until all the threads have both claimed the mutexes that they
-// need to own at the start! Without this the main thread may post a
-// multiplication, so its part of the work and try to check that the worker
-// has finished (by claiming one of these mutexes) before the worker thread
-// has got started up and has claimed them. This feels clumsy, but it only
-// happens at system-startup.
-        while (!wd_0.ready.load() &&
-               !wd_1.ready.load() &&
-               !wd_2.ready.load())
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
-    }
-
-// When the DriverData object is to be destroyed it must arrange to
-// stop and then join the two threads that it set up. This code that sends
-// a "quit" message to each thread will be executed before the thread object
-// is deleted, and the destructor of the thread object should be activated
-// before that of the WorkerData and the mutexes within that.
-
-    ~DriverData()
-    {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "Release workers to quit\n");
-        fflush(stderr);
-#endif
-        releaseWorkers(true);
-        w_0.join();
-        w_1.join(); // These calls to join wait for the threads to shut down.
-        w_2.join();
-    }
-
-// Using the worker threads is then rather easy: one sets up data in
-// the WorkerData structures and then call releaseWorkers(). Then
-// you can do your own thing in parallel with the two workers picking up
-// the tasks that they had been given. When you are ready you call
-// wait_for_workers() which does what one might imagine, and the workers
-// are expected to have left their results in the WorkerData object so
-// you can find it.
-
-    void releaseWorkers(bool third)
-    {
-#if defined USE_MICROSOFT_SRW
-        ReleaseSRWLockExclusive(&wd_0.mutex[send_count]);
-        ReleaseSRWLockExclusive(&wd_1.mutex[send_count]);
-        if (third) ReleaseSRWLockExclusive(&wd_2.mutex[send_count2]);
-#elif defined USE_MICROSOFT_MUTEX
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "Release both mutexes %d\n", send_count); //@@@
-        fflush(stderr);
-#endif
-        ReleaseMutex(wd_0.mutex[send_count]);
-        ReleaseMutex(wd_1.mutex[send_count]);
-        if (third) ReleaseMutex(wd_2.mutex[send_count2]);
-#else // use std::mutex
-        wd_0.mutex[send_count].unlock();
-        wd_1.mutex[send_count].unlock();
-        if (third) wd_2.mutex[send_count2].unlock();
-#endif // mutexed unlocked
-    }
-
-    void wait_for_workers(bool third)
-    {
-#if defined USE_MICROSOFT_SRW
-        AcquireSRWLockExclusive(&wd_0.mutex[send_count^2]);
-        AcquireSRWLockExclusive(&wd_1.mutex[send_count^2]);
-        if (third) AcquireSRWLockExclusive(&wd_2.mutex[send_count2^2]);
-#elif defined USE_MICROSOFT_MUTEX
-// WaitForSingleObject takes a timeout limit measured in milliseconds as
-// its second argument. I will allow waits of up to 2 seconds. There
-// should be a response by then since the workere are just performing a
-// multiplication and at all plausible number-sizes 2 seconds is plenty
-// even on slow computers. The main case where there could be
-// failure here would be when running under a debugger and with one
-// of the worker threads being subject to breaks or single stepping.
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "main thread will wait for mutex %d from each thread\n", send_count^2);
-        fflush(stderr);
-        if (WaitForSingleObject(wd_0.mutex[send_count^2], 2000) != 0)
-        {   fprintf(stderr, "Timeout %d:%d on mutex line %d\n", wd_0.which, send_count^2, __LINE__);
-            fflush(stderr);
-            std::abort();
-        }
-        if (WaitForSingleObject(wd_1.mutex[send_count^2], 2000) != 0)
-        {   fprintf(stderr, "Timeout %d:%d on mutex line %d\n", wd_1.which, send_count^2, __LINE__);
-            fflush(stderr);
-            std::abort();
-        }
-        if (third)
-        if (WaitForSingleObject(wd_2.mutex[send_count2^2], 2000) != 0)
-        {   fprintf(stderr, "Timeout %d:%d on mutex line %d\n", wd_2.which, send_count2^2, __LINE__);
-            fflush(stderr);
-            std::abort();
-        }
-        fprintf(stderr, "main thread has both results %d\n", send_count^2);
-        fflush(stderr);
-#else
-        WaitForSingleObject(wd_0.mutex[send_count^2], MICROSOFT_INFINITE);
-        WaitForSingleObject(wd_1.mutex[send_count^2], MICROSOFT_INFINITE);
-        if (third) WaitForSingleObject(wd_2.mutex[send_count2^2], MICROSOFT_INFINITE);
-#endif
-#else // use std::mutex
-        wd_0.mutex[send_count^2].lock();
-        wd_1.mutex[send_count^2].lock();
-        if (third) wd_2.mutex[send_count2^2].lock();
-#endif // synchronized
-        send_count = (send_count+1)&3;
-        if (third) send_count2 = (send_count2+1)&3;
-    }
-
-};
-
-// Even if there are multiple user threads I will only have a single
-// instance of DriverData and hence I will always have just three
-// worker threads. If multiple threads all call generalMul at (almost) the
-// same time a compare-and-exchange operation arranges that only one of
-// them gets to offload parts of the multiplication work to those worker
-// threads and the others work sequentially. This avoids extreme growth
-// in the number of threads I try to use.
-
-inline DriverData driverData;
-
 // Declare a number of functions that might usefully be used elsewhere.
 
 inline std::uint64_t* reserve(std::size_t n);
@@ -2601,7 +2259,7 @@ inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
 inline void abandon(std::uint64_t* p);
 inline void abandon(std::intptr_t h);
 
-#if defined LISP && !defined ZAPPA
+#if defined LISP
 typedef std::intptr_t string_handle;
 #else // LISP
 typedef char* string_handle;
@@ -2616,16 +2274,16 @@ inline std::uint64_t* vectorOfHandle(std::intptr_t n);
 inline std::size_t numberSize(std::uint64_t* p);
 inline void setNumberSize(std::uint64_t* p, std::size_t n);
 
-inline bool fitsIntoFixnum(std::int64_t n);
-inline std::intptr_t intToHandle(std::int64_t n);
-constexpr inline std::int64_t intOfHandle(std::intptr_t n);
+inline bool fitsIntoFixnum(SignedDigit n);
+inline std::intptr_t intToHandle(SignedDigit n);
+constexpr inline SignedDigit intOfHandle(std::intptr_t n);
 
 inline std::intptr_t stringToBignum(const char* s);
-inline std::intptr_t intToBignum(std::int64_t n);
-inline std::intptr_t unsignedIntToBignum(std::uint64_t n);
-inline std::intptr_t int128ToBignum(std::int64_t high, std::uint64_t low);
-inline std::intptr_t unsignedInt128ToBignum(std::uint64_t high,
-                                            std::uint64_t low);
+inline std::intptr_t intToBignum(SignedDigit n);
+inline std::intptr_t unsignedIntToBignum(Digit n);
+inline std::intptr_t int128ToBignum(SignedDigit high, Digit low);
+inline std::intptr_t unsignedInt128ToBignum(Digit high,
+                                            Digit low);
 inline std::intptr_t roundDoubleToInt(double d);
 inline std::intptr_t truncDoubleToInt(double d);
 inline std::intptr_t floorDoubleToInt(double d);
@@ -2641,42 +2299,6 @@ inline std::intptr_t uniformSigned(std::size_t n);
 inline std::intptr_t uniformUpto(std::intptr_t a);
 inline std::intptr_t randomUptoBits(std::size_t bits);
 inline std::intptr_t fudgeDistribution(std::intptr_t, int);
-
-#ifdef PRECISE_GC
-inline void push(std::intptr_t w);
-inline void pop(std::intptr_t& w);
-
-// In many cases where I want to save things I will have a reference to
-// an array of uint64_t objects, so when I push it I must convert it back to
-// a Lisp-friendly form.
-inline void push(std::uint64_t* p)
-{   push(vectorToHandle(p));
-}
-inline void pop(std::uint64_t*& p)
-{   std::intptr_t w;
-    pop(w);
-    p = vectorOfHandle(w);
-}
-#else // PRECISE_GC
-// In cases where these are not required I will just defined them as
-// empty procedures and hope that the C++ compiler will inline them and
-// hence lead to them not adding any overhead at all.
-inline void push(std::intptr_t p)
-{}
-inline void pop(std::intptr_t& p)
-{}
-
-inline void push(std::uint64_t* p)
-{}
-inline void pop(std::uint64_t*& p)
-{}
-
-inline void push(const std::uint64_t* p)
-{}
-inline void pop(const std::uint64_t*& p)
-{}
-
-#endif // PRECISE_GC
 
 #if defined MALLOC
 
@@ -2712,7 +2334,7 @@ inline free_t   * free_function   = std::free;
 
 inline std::uint64_t* reserve(std::size_t n)
 {   std::uint64_t* r = reinterpret_cast<std::uint64_t*>(
-        (*malloc_function)((n+1)*sizeof(std::uint64_t)));
+        (*malloc_function)((n+1)*sizeof(Digit)));
     return &r[1];
 }
 
@@ -2720,7 +2342,7 @@ inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final)
 {   p = reinterpret_cast<std::uint64_t*>(
         (*realloc_function)((void* )&p[-1],
-                            (final_n+1)*sizeof(std::uint64_t)));
+                            (final_n+1)*sizeof(Digit)));
     p[0] = final_n;
     return vectorToHandle(&p[1]);
 }
@@ -2789,19 +2411,15 @@ inline void setNumberSize(std::uint64_t* p, std::size_t n)
 
 inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
 inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -2809,10 +2427,8 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -2948,11 +2564,11 @@ private:
 // that initilization happening early helps a LITTLE bit to reassure me
 // that the standard streams should still be alive during the destructor
 // for this class.
-    std::ios_base::Init forceIostreamsInitialization;
+    std::ios_base::Init forceIOStreamsInitialization;
 
 public:
     Freechains()
-    {   for (int i=0; i<64; i++) (freechainTable::get())[i] = NULL;
+    {   for (int i=0; i<64; i++) (freechainTable::get())[i] = nullptr;
     }
 
     ~Freechains()
@@ -2961,12 +2577,12 @@ public:
 // Here I am assumung that uint64_t is at least as wide as uintptr_t.
 // I think that will in reality always be the case but that the C++ standard
 // will not guarantee it!
-            while (f != NULL)
+            while (f != nullptr)
             {   std::uint64_t w = f[1];
                 delete [] f;
                 f = reinterpret_cast<std::uint64_t*>(w);
             }
-            (freechainTable::get())[i] = NULL;
+            (freechainTable::get())[i] = nullptr;
         }
     }
 
@@ -2979,14 +2595,14 @@ public:
         std::uint64_t* r;
 #if defined ARITHLIB_THREAD_LOCAL || ARITHLIB_NO_THREADS
         r = (freechainTable::get())[bits];
-        if (r != NULL)
+        if (r != nullptr)
             (freechainTable::get())[bits] =
                 reinterpret_cast<std::uint64_t*>(r[1]);
 #elif defined ARITHLIB_MUTEX
         {
             std::lock_guard<std::mutex> lock(freechain_mutex());
             r = (freechainTable::get())[bits];
-            if (r != NULL)
+            if (r != nullptr)
                 (freechainTable::get())[bits] =
                     reinterpret_cast<std::uint64_t*>(r[1]);
         }
@@ -2995,9 +2611,9 @@ public:
 #endif // ARITHLIB_MUTEX
 // If no memory had been found on the freechain I need to allocate some
 // more.
-        if (r == NULL)
+        if (r == nullptr)
         {   r = new std::uint64_t[(static_cast<std::size_t>(1))<<bits];
-            if (r == NULL) arithlib_abort("Run out of memory");
+            if (r == nullptr) arithlib_abort("Run out of memory");
         }
 // Just the first 32-bits of the header word record the block capacity.
 // The casts here look (and indeed are) ugly, but when I store data into
@@ -3056,8 +2672,8 @@ inline std::uint64_t* reserve(std::size_t n)
 inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final)
 {
-    if (final == 1 && fitsIntoFixnum(static_cast<std::int64_t>(p[0])))
-    {   std::intptr_t r = intToHandle(static_cast<std::int64_t>(p[0]));
+    if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
+    {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
         freechains::get().abandon(&p[-1]);
         return r;
     }
@@ -3096,14 +2712,14 @@ inline bool storedAsFixnum(std::intptr_t a)
 {   return (a & 1) != 0;
 }
 
-constexpr inline std::int64_t intOfHandle(std::intptr_t a)
-{   return (static_cast<std::int64_t>(a) & ~1LL)/2;
+constexpr inline SignedDigit intOfHandle(std::intptr_t a)
+{   return (static_cast<SignedDigit>(a) & ~1LL)/2;
 }
 
 // This function should only ever be called in situations where the
 // arithmetic indicated will not overflow.
 
-inline std::intptr_t intToHandle(std::int64_t n)
+inline std::intptr_t intToHandle(SignedDigit n)
 {   return static_cast<std::intptr_t>(2*n + 1);
 }
 
@@ -3111,10 +2727,10 @@ inline std::intptr_t intToHandle(std::int64_t n)
 // may not have the low tag bits to be proper fixnums. But if I implement
 // intOfHandle so that it ignores tag bits that will be OK.
 
-inline const std::int64_t MIN_FIXNUM = intOfHandle(INTPTR_MIN);
-inline const std::int64_t MAX_FIXNUM = intOfHandle(INTPTR_MAX);
+inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
+inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
 
-inline bool fitsIntoFixnum(std::int64_t a)
+inline bool fitsIntoFixnum(SignedDigit a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
@@ -3159,7 +2775,7 @@ inline RES op_dispatch1(std::intptr_t a1)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
+inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
@@ -3192,19 +2808,15 @@ inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 
 inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
 inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -3212,10 +2824,8 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -3223,7 +2833,7 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 
 //=========================================================================
 //=========================================================================
-// The LISP code is for incorporation in VSL or CSL or Zappa
+// The LISP code is for incorporation in VSL or CSL
 //=========================================================================
 //=========================================================================
 
@@ -3244,14 +2854,14 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 inline std::uint64_t* reserve(std::size_t n)
 {   LispObject a = get_basic_vector(TAG_NUMBERS,
                                     TYPE_NEW_BIGNUM,
-                                    n*sizeof(std::uint64_t)+8);
+                                    n*sizeof(Digit)+8);
     return reinterpret_cast<std::uint64_t*>(a + 8 - TAG_NUMBERS);
 }
 
 inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
                                  std::size_t final)
-{   if (final == 1 && fitsIntoFixnum(static_cast<std::int64_t>(p[0])))
-    {   std::intptr_t r = intToHandle(static_cast<std::int64_t>(p[0]));
+{   if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
+    {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
 // The bignum that I am abandoning was given a header word when it was
 // first allocated, so it is in good order here.
         return r;
@@ -3314,7 +2924,7 @@ inline std::size_t numberSize(std::uint64_t* p)
 //      | hdr32 | gap32 | digit64 | digit64 | ... |    (32-bit world)
 // The length value packed into the header is the length of the vector
 // including its header.
-    r = (r-8)/sizeof(std::uint64_t);
+    r = (r-8)/sizeof(Digit);
     return r;
 }
 
@@ -3322,18 +2932,18 @@ inline bool storedAsFixnum(std::intptr_t a)
 {   return is_fixnum(a);
 }
 
-constexpr inline std::int64_t intOfHandle(std::intptr_t a)
+constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 {   return int_of_fixnum(a);
 }
 
-inline std::intptr_t intToHandle(std::int64_t n)
+inline std::intptr_t intToHandle(SignedDigit n)
 {   return fixnum_of_int(n);
 }
 
-inline const std::int64_t MIN_FIXNUM = intOfHandle(INTPTR_MIN);
-inline const std::int64_t MAX_FIXNUM = intOfHandle(INTPTR_MAX);
+inline const SignedDigit MIN_FIXNUM = intOfHandle(INTPTR_MIN);
+inline const SignedDigit MAX_FIXNUM = intOfHandle(INTPTR_MAX);
 
-inline bool fitsIntoFixnum(std::int64_t a)
+inline bool fitsIntoFixnum(SignedDigit a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
@@ -3382,7 +2992,7 @@ inline RES op_dispatch1(std::intptr_t a1)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
+inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
@@ -3412,19 +3022,15 @@ inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 
 inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
 inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -3432,191 +3038,30 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
-
-#elif defined ZAPPA // and end of CSL
-
-// The code here can only make sense in the context of the Zappa sources,
-// and it is assumed that all the relevant Zappa header files have already
-// been #included.
-
-inline std::uint64_t* reserve(std::size_t n)
-{   std::uint64_t* a = binaryAllocate(n+1);
-    a[0] = n;      // Record length of object in first word.
-    return a+1;
-}
-
-inline std::intptr_t confirmSize(std::uint64_t* p, std::size_t n,
-                                 std::size_t final)
-{   if (final == 1 && fitsIntoFixnum(static_cast<std::int64_t>(p[0])))
-    {   std::intptr_t r = intToHandle(static_cast<std::int64_t>(p[0]));
-        return r;
-    }
-    setNumberSize(p, final);
-    return vectorToHandle(p);
-}
-
-inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
-                                   std::size_t final)
-{   return confirmSize(p, n, final);
-}
-
-inline std::intptr_t vectorToHandle(std::uint64_t* p)
-{   return reinterpret_cast<std::intptr_t>(p) - 8 + BigInteger;
-}
-
-inline std::uint64_t* vectorOfHandle(std::intptr_t n)
-{   return reinterpret_cast<std::uint64_t*>(n + 8 - BigInteger);
-}
-
-// I put the length of a bignum in stored as 2 times the number of words
-// (not including the header word). This leaves valid headers even, and so
-// odd values can be used for forwarding addresses (in Zappa).
-
-inline std::size_t numberSize(std::uint64_t* p)
-{   std::uint64_t h = p[-1]/2;
-    return h;
-}
-
-inline void setNumberSize(std::uint64_t* p, size_t n)
-{   p[-1] = 2*n;
-    return h;
-}
-
-inline bool storedAsFixnum(std::intptr_t a)
-{   return (a & tagXMask) == SmallInteger;
-}
-
-constexpr inline std::int64_t intOfHandle(std::intptr_t a)
-{   return static_cast<std::int64_t>(
-               (a & ~static_cast<std::int64_t>(tagXMask)) /
-               static_cast<std::int64_t>(valXMult));
-}
-
-inline std::intptr_t intToHandle(std::int64_t n)
-{   return static_cast<std::intptr_t>(n*valXMult + SmallInteger);
-}
-
-inline const std::int64_t MIN_FIXNUM = intOfHandle(INTPTR_MIN);
-inline const std::int64_t MAX_FIXNUM = intOfHandle(INTPTR_MAX);
-
-inline bool fitsIntoFixnum(std::int64_t a)
-{   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
-}
-
-inline void abandon(std::uint64_t* p)
-{   // No need to do anything!
-}
-
-inline void abandon(std::intptr_t p)
-{   // Also do not do anything!
-}
-
-inline char* reserveString(std::size_t n)
-{   std::uint64_t* a = binaryAllocate((8+n+7)/8);
-    return reinterpret_cast<char*>(a) + 8;
-}
-
-// A string size is measured in bytes not words.
-inline char* confirmSizeString(char* p, std::size_t n, std::size_t final)
-{   p[final] = 0;
-    setNumberSize(p, final);
-    return p;
-}
-
-inline void abandonString(string_handle s)
-{   // Do nothing.
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1));
-    else return OP::op(vectorOfHandle(a1));
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
-    else return OP::op(vectorOfHandle(a1), n);
-}
-
-template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::uint64_t* n)
-{   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
-    else return OP::op(vectorOfHandle(a1), n);
-}
-
-template <class OP,class RES>
-inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
-{   if (storedAsFixnum(a1))
-    {   LIKELY
-        if (storedAsFixnum(a2))
-            LIKELY
-            return OP::op(intOfHandle(a1), intOfHandle(a2));
-        else return OP::op(intOfHandle(a1), vectorOfHandle(a2));
-    }
-    else
-    {   if (storedAsFixnum(a2))
-            LIKELY
-            return OP::op(vectorOfHandle(a1), intOfHandle(a2));
-        else return OP::op(vectorOfHandle(a1), vectorOfHandle(a2));
-    }
-}
-
-inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    push(p);
-    std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
-{   std::size_t n = numberSize(p);
-    push(p);
-    std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
-    return confirmSize(r, n, n);
-}
-
-inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
-{   if (storedAsFixnum(pp)) return pp;
-    std::uint64_t* p = vectorOfHandle(pp);
-    std::size_t n = numberSize(p);
-    push(p);
-    std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
-    return confirmSize(r, n, n);
-}
-
-#else // ZAPPA
+#else // CSL
 
 inline std::uint64_t* reserve(std::size_t n)
 {
 // I must allow for alignment padding on 32-bit platforms.
-    if (sizeof(LispObject)==4) n = n*sizeof(std::uint64_t) + 4;
-    else n = n*sizeof(std::uint64_t);
+    if (sizeof(LispObject)==4) n = n*sizeof(Digit) + 4;
+    else n = n*sizeof(Digit);
     LispObject a = allocateatom(n);
     return reinterpret_cast<std::uint64_t*>(a + 8 - tagATOM);
 }
 
-inline std::intptr_t confirmSize(std::uint64_t *p, std::size_t n,
+inline std::intptr_t confirmSize(Digit *p, std::size_t n,
                                  std::size_t final)
-{   if (final == 1 && fitsIntoFixnum(static_cast<std::int64_t>(p[0])))
-    {   std::intptr_t r = intToHandle(static_cast<std::int64_t>(p[0]));
+{   if (final == 1 && fitsIntoFixnum(static_cast<SignedDigit>(p[0])))
+    {   std::intptr_t r = intToHandle(static_cast<SignedDigit>(p[0]));
         return r;
     }
     ((LispObject* )&p[-1])[0] =
-        tagHDR + typeBIGNUM + packlength(final*sizeof(std::uint64_t) +
+        tagHDR + typeBIGNUM + packlength(final*sizeof(Digit) +
                                          (sizeof(LispObject)==4 ? 4 : 0));
 // If I am on a 32-bit system the data for a bignum is 8 bit aligned and
 // that leaves a 4-byte gap after the header. In such a case I will write
@@ -3628,8 +3073,8 @@ inline std::intptr_t confirmSize(std::uint64_t *p, std::size_t n,
     return vectorToHandle(p);
 }
 
-inline std::intptr_t confirmSize_x(std::uint64_t* p, std::size_t n,
-                                   std::size_t final)
+inline std::intptr_t confirmSize_x(std::uint64_t* p,
+                                   std::size_t n, std::size_t final)
 {
 // Here I might need to write a nice dummy object into the gap left by
 // shrinking the object.
@@ -3652,8 +3097,7 @@ inline std::size_t numberSize(std::uint64_t* p)
 // that I arrange to have aligned on 8-byte boundaries. So to show some
 // though about strict aliasing and the like I will access memory as
 // an array of LispObject things when I access the header of an item.
-    std::uintptr_t h = reinterpret_cast<std::uintptr_t>()*
-                       (LispObject* )&p[-1];
+    std::uintptr_t h = reinterpret_cast<std::uintptr_t>(*(LispObject*)&p[-1]);
     std::size_t r = veclength(h);
 // On 32-bit systems a bignum will have a wasted 32-bit word after the
 // header and before the digits, so that the digits are properly aligned
@@ -3663,7 +3107,7 @@ inline std::size_t numberSize(std::uint64_t* p)
 // The length value packed into the header is the length of the vector
 // excluding its header.
 //  if (sizeof(LispObject) == 4) r -= 4; { the remaindering does all I need! }
-    r = r/sizeof(std::uint64_t);
+    r = r/sizeof(Digit);
     return r;
 }
 
@@ -3671,15 +3115,15 @@ inline bool storedAsFixnum(std::intptr_t a)
 {   return isFIXNUM(a);
 }
 
-constexpr inline std::int64_t intOfHandle(std::intptr_t a)
+constexpr inline SignedDigit intOfHandle(std::intptr_t a)
 {   return qfixnum(a);
 }
 
-inline std::intptr_t intToHandle(std::int64_t n)
+inline std::intptr_t intToHandle(SignedDigit n)
 {   return packfixnum(n);
 }
 
-inline bool fitsIntoFixnum(std::int64_t a)
+inline bool fitsIntoFixnum(SignedDigit a)
 {   return a>=MIN_FIXNUM && a<=MAX_FIXNUM;
 }
 
@@ -3719,7 +3163,7 @@ inline RES op_dispatch1(std::intptr_t a1)
 }
 
 template <class OP,class RES>
-inline RES op_dispatch1(std::intptr_t a1, std::int64_t n)
+inline RES op_dispatch1(std::intptr_t a1, SignedDigit n)
 {   if (storedAsFixnum(a1)) return OP::op(intOfHandle(a1), n);
     else return OP::op(vectorOfHandle(a1), n);
 }
@@ -3749,19 +3193,15 @@ inline RES op_dispatch2(std::intptr_t a1, std::intptr_t a2)
 
 inline std::intptr_t alwaysCopyBignum(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
 inline std::intptr_t copyIfNoGarbageCollector(std::uint64_t* p)
 {   std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -3769,10 +3209,8 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 {   if (storedAsFixnum(pp)) return pp;
     std::uint64_t* p = vectorOfHandle(pp);
     std::size_t n = numberSize(p);
-    push(p);
     std::uint64_t* r = reserve(n);
-    pop(p);
-    std::memcpy(r, p, n*sizeof(std::uint64_t));
+    std::memcpy(r, p, n*sizeof(Digit));
     return confirmSize(r, n, n);
 }
 
@@ -3790,216 +3228,227 @@ inline std::intptr_t copyIfNoGarbageCollector(std::intptr_t pp)
 class Plus
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
-inline std::intptr_t bigplus_small(std::intptr_t, std::int64_t);
+inline std::intptr_t bigplus_small(std::intptr_t, SignedDigit);
 
 class Difference
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class RevDifference
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Times
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
+    static std::intptr_t op(std::uint64_t* , std::uint64_t* );
+};
+
+// ClassicalTimes is provided just for debugging.
+
+class ClassicalTimes
+{
+public:
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Quotient
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Remainder
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Mod
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Floor
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Ceiling
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Divide
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
-    static std::intptr_t op(std::int64_t, std::int64_t, std::intptr_t&);
-    static std::intptr_t op(std::int64_t, std::uint64_t* , std::intptr_t&);
-    static std::intptr_t op(std::uint64_t* , std::int64_t, std::intptr_t&);
+    static std::intptr_t op(SignedDigit, SignedDigit, std::intptr_t&);
+    static std::intptr_t op(SignedDigit, std::uint64_t* , std::intptr_t&);
+    static std::intptr_t op(std::uint64_t* , SignedDigit, std::intptr_t&);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* , std::intptr_t&);
 };
 
 class Gcd
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Lcm
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logand
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logor
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logxor
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Logeqv
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Zerop
 {
 public:
-    static bool op(std::int64_t w);
+    static bool op(SignedDigit w);
     static bool op(std::uint64_t* w);
 };
 
 class Onep
 {
 public:
-    static bool op(std::int64_t w);
+    static bool op(SignedDigit w);
     static bool op(uint64_t* w);
 };
 
 class Minusp
 {
 public:
-    static bool op(std::int64_t w);
+    static bool op(SignedDigit w);
     static bool op(uint64_t* w);
 };
 
 class Plusp
 {
 public:
-    static bool op(std::int64_t w);
+    static bool op(SignedDigit w);
     static bool op(uint64_t* w);
 };
 
 class Evenp
 {
 public:
-    static bool op(std::int64_t w);
+    static bool op(SignedDigit w);
     static bool op(uint64_t* w);
 };
 
 class Oddp
 {
 public:
-    static bool op(std::int64_t w);
+    static bool op(SignedDigit w);
     static bool op(uint64_t* w);
 };
 
 class Eqn
 {
 public:
-    static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t* );
-    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(SignedDigit, SignedDigit);
+    static bool op(SignedDigit, std::uint64_t* );
+    static bool op(std::uint64_t* , SignedDigit);
     static bool op(std::uint64_t* , std::uint64_t* );
 // Even comparing a floating point number with an integer for equality
 // turns out to be messier than one might have hoped!
-    static bool op(std::int64_t, float);
+    static bool op(SignedDigit, float);
     static bool op(std::uint64_t* , float);
-    static bool op(float, std::int64_t);
+    static bool op(float, SignedDigit);
     static bool op(float, std::uint64_t* );
-    static bool op(std::int64_t, double);
+    static bool op(SignedDigit, double);
     static bool op(std::uint64_t* , double);
-    static bool op(double, std::int64_t);
+    static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(std::int64_t, float128_t);
+    static bool op(SignedDigit, float128_t);
     static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, std::int64_t);
+    static bool op(float128_t, SignedDigit);
     static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
@@ -4007,24 +3456,24 @@ public:
 class Neqn
 {
 public:
-    static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t* );
-    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(SignedDigit, SignedDigit);
+    static bool op(SignedDigit, std::uint64_t* );
+    static bool op(std::uint64_t* , SignedDigit);
     static bool op(std::uint64_t* , std::uint64_t* );
 // Even comparing a floating point number with an integer for equality
 // turns out to be messier than one might have hoped!
-    static bool op(std::int64_t, float);
+    static bool op(SignedDigit, float);
     static bool op(std::uint64_t* , float);
-    static bool op(float, std::int64_t);
+    static bool op(float, SignedDigit);
     static bool op(float, std::uint64_t* );
-    static bool op(std::int64_t, double);
+    static bool op(SignedDigit, double);
     static bool op(std::uint64_t* , double);
-    static bool op(double, std::int64_t);
+    static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(std::int64_t, float128_t);
+    static bool op(SignedDigit, float128_t);
     static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, std::int64_t);
+    static bool op(float128_t, SignedDigit);
     static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
@@ -4032,25 +3481,25 @@ public:
 class Geq
 {
 public:
-    static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t* );
-    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(SignedDigit, SignedDigit);
+    static bool op(SignedDigit, std::uint64_t* );
+    static bool op(std::uint64_t* , SignedDigit);
     static bool op(std::uint64_t* , std::uint64_t* );
 // Comparing a bignum against a floating point value has multiple cases
 // to consider, but needs special implementation so that neither rounding
 // nor overflow not Infinities/NaNs lead to incorrect results.
-    static bool op(std::int64_t, float);
+    static bool op(SignedDigit, float);
     static bool op(std::uint64_t* , float);
-    static bool op(float, std::int64_t);
+    static bool op(float, SignedDigit);
     static bool op(float, std::uint64_t* );
-    static bool op(std::int64_t, double);
+    static bool op(SignedDigit, double);
     static bool op(std::uint64_t* , double);
-    static bool op(double, std::int64_t);
+    static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(std::int64_t, float128_t);
+    static bool op(SignedDigit, float128_t);
     static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, std::int64_t);
+    static bool op(float128_t, SignedDigit);
     static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
@@ -4058,22 +3507,22 @@ public:
 class Greaterp
 {
 public:
-    static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t* );
-    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(SignedDigit, SignedDigit);
+    static bool op(SignedDigit, std::uint64_t* );
+    static bool op(std::uint64_t* , SignedDigit);
     static bool op(std::uint64_t* , std::uint64_t* );
-    static bool op(std::int64_t, float);
+    static bool op(SignedDigit, float);
     static bool op(std::uint64_t* , float);
-    static bool op(float, std::int64_t);
+    static bool op(float, SignedDigit);
     static bool op(float, std::uint64_t* );
-    static bool op(std::int64_t, double);
+    static bool op(SignedDigit, double);
     static bool op(std::uint64_t* , double);
-    static bool op(double, std::int64_t);
+    static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(std::int64_t, float128_t);
+    static bool op(SignedDigit, float128_t);
     static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, std::int64_t);
+    static bool op(float128_t, SignedDigit);
     static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
@@ -4081,22 +3530,22 @@ public:
 class Leq
 {
 public:
-    static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t* );
-    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(SignedDigit, SignedDigit);
+    static bool op(SignedDigit, std::uint64_t* );
+    static bool op(std::uint64_t* , SignedDigit);
     static bool op(std::uint64_t* , std::uint64_t* );
-    static bool op(std::int64_t, float);
+    static bool op(SignedDigit, float);
     static bool op(std::uint64_t* , float);
-    static bool op(float, std::int64_t);
+    static bool op(float, SignedDigit);
     static bool op(float, std::uint64_t* );
-    static bool op(std::int64_t, double);
+    static bool op(SignedDigit, double);
     static bool op(std::uint64_t* , double);
-    static bool op(double, std::int64_t);
+    static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(std::int64_t, float128_t);
+    static bool op(SignedDigit, float128_t);
     static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, std::int64_t);
+    static bool op(float128_t, SignedDigit);
     static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
@@ -4104,22 +3553,22 @@ public:
 class Lessp
 {
 public:
-    static bool op(std::int64_t, std::int64_t);
-    static bool op(std::int64_t, std::uint64_t* );
-    static bool op(std::uint64_t* , std::int64_t);
+    static bool op(SignedDigit, SignedDigit);
+    static bool op(SignedDigit, std::uint64_t* );
+    static bool op(std::uint64_t* , SignedDigit);
     static bool op(std::uint64_t* , std::uint64_t* );
-    static bool op(std::int64_t, float);
+    static bool op(SignedDigit, float);
     static bool op(std::uint64_t* , float);
-    static bool op(float, std::int64_t);
+    static bool op(float, SignedDigit);
     static bool op(float, std::uint64_t* );
-    static bool op(std::int64_t, double);
+    static bool op(SignedDigit, double);
     static bool op(std::uint64_t* , double);
-    static bool op(double, std::int64_t);
+    static bool op(double, SignedDigit);
     static bool op(double, std::uint64_t* );
 #ifdef softfloat_h
-    static bool op(std::int64_t, float128_t);
+    static bool op(SignedDigit, float128_t);
     static bool op(std::uint64_t* , float128_t);
-    static bool op(float128_t, std::int64_t);
+    static bool op(float128_t, SignedDigit);
     static bool op(float128_t, std::uint64_t* );
 #endif // softfloat_h
 };
@@ -4127,106 +3576,106 @@ public:
 class Add1
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Sub1
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Minus
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Abs
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class UniformUpto
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Square
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Isqrt
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Lognot
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class Pow
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
-    static double op(std::int64_t, double);
+    static double op(SignedDigit, double);
     static double op(std::uint64_t* , double);
 };
 
 class LeftShift
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class RightShift
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class Low64Bits
 {
 public:
-    static std::uint64_t op(std::int64_t w);
-    static std::uint64_t op(uint64_t* w);
+    static Digit op(SignedDigit w);
+    static Digit op(uint64_t* w);
 };
 
 class LowBit
 {    // Index of least significant bit in the number 
 public:
-    static std::size_t op(std::int64_t w);
+    static std::size_t op(SignedDigit w);
     static std::size_t op(uint64_t* w);
 };
 
 class IntegerLength
 {   // Index of most significant bit in the number
 public:
-    static std::size_t op(std::int64_t w);
+    static std::size_t op(SignedDigit w);
     static std::size_t op(uint64_t* w);
 };
 
@@ -4235,57 +3684,57 @@ class Top64Bits
     // is set. This is a bitt like a mantissa to go with IntegerLength as
     // an exponent.
 public:
-    static std::uint64_t op(std::int64_t w);
-    static std::uint64_t op(uint64_t* w);
+    static Digit op(SignedDigit w);
+    static Digit op(uint64_t* w);
 };
 
 class Logbitp
 {
 public:
-    static bool op(std::int64_t, std::size_t);
+    static bool op(SignedDigit, std::size_t);
     static bool op(std::uint64_t* , std::size_t);
 };
 
 class Logcount
 {
 public:
-    static std::size_t op(std::int64_t w);
+    static std::size_t op(SignedDigit w);
     static std::size_t op(uint64_t* w);
 };
 
 class Int64_t
 {   // Convert to 64-bit native integer.
 public:
-    static std::int64_t op(std::int64_t w);
-    static std::int64_t op(uint64_t* w);
+    static SignedDigit op(SignedDigit w);
+    static SignedDigit op(uint64_t* w);
 };
 
 class Uint64_t
 {   // Convert to 64-bit unsigned value.
 public:
-    static std::uint64_t op(std::int64_t w);
-    static std::uint64_t op(uint64_t* w);
+    static Digit op(SignedDigit w);
+    static Digit op(uint64_t* w);
 };
 
 class Float
 {
 public:
-    static float op(std::int64_t w);
+    static float op(SignedDigit w);
     static float op(uint64_t* w);
 };
 
 class Double
 {
 public:
-    static double op(std::int64_t w);
+    static double op(SignedDigit w);
     static double op(uint64_t* w);
 };
 
 class Frexp
 {
 public:
-    static double op(std::int64_t, std::int64_t& x);
-    static double op(std::uint64_t* , std::int64_t& x);
+    static double op(SignedDigit, SignedDigit& x);
+    static double op(std::uint64_t* , SignedDigit& x);
 };
 
 #ifdef softfloat_h
@@ -4293,15 +3742,15 @@ public:
 class Float128
 {
 public:
-    static float128_t op(std::int64_t w);
+    static float128_t op(SignedDigit w);
     static float128_t op(uint64_t* w);
 };
 
 class Frexp128
 {
 public:
-    static float128_t op(std::int64_t, std::int64_t& x);
-    static float128_t op(std::uint64_t* , std::int64_t& x);
+    static float128_t op(SignedDigit, SignedDigit& x);
+    static float128_t op(std::uint64_t* , SignedDigit& x);
 };
 
 #endif // softfloat_h
@@ -4311,80 +3760,80 @@ public:
 class ModularPlus
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularDifference
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularTimes
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularExpt
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularQuotient
 {
 public:
-    static std::intptr_t op(std::int64_t, std::int64_t);
-    static std::intptr_t op(std::int64_t, std::uint64_t* );
-    static std::intptr_t op(std::uint64_t* , std::int64_t);
+    static std::intptr_t op(SignedDigit, SignedDigit);
+    static std::intptr_t op(SignedDigit, std::uint64_t* );
+    static std::intptr_t op(std::uint64_t* , SignedDigit);
     static std::intptr_t op(std::uint64_t* , std::uint64_t* );
 };
 
 class ModularMinus
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class ModularReciprocal
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class SafeModularReciprocal
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class ModularNumber
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
 class SetModulus
 {
 public:
-    static std::intptr_t op(std::int64_t w);
+    static std::intptr_t op(SignedDigit w);
     static std::intptr_t op(uint64_t* w);
 };
 
@@ -4398,24 +3847,24 @@ inline string_handle bignumToStringBinary(std::intptr_t aa);
 class Bignum;
 
 inline void display(const char& label,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena);
 inline void display(const char* label, std::intptr_t a);
 inline void display(const char* label, const Bignum& a);
 
 inline void display(std::string label,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena);
 inline void display(std::string label, std::intptr_t a);
 inline void display(std::string label, const Bignum& a);
 
 inline void display(const char& label,
                     SignedDigit top,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena);
 inline void display(std::string label,
                     SignedDigit top,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena);
 
 //=========================================================================
@@ -4476,13 +3925,13 @@ public:
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
         typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
     Bignum(T n)
-    {   val = intToBignum(static_cast<std::int64_t>(n));
+    {   val = intToBignum(static_cast<SignedDigit>(n));
     }
     template <typename T,
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
         typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
     Bignum(T n)
-    {   val = unsignedIntToBignum(static_cast<std::uint64_t>(n));
+    {   val = unsignedIntToBignum(static_cast<Digit>(n));
     }
     Bignum(float d)
     {   val = roundDoubleToInt(static_cast<double>(d));
@@ -4505,13 +3954,13 @@ public:
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
         typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
     operator T()
-    {   return static_cast<T>(op_dispatch1<Int64_t, std::int64_t>(val));
+    {   return static_cast<T>(op_dispatch1<Int64_t, SignedDigit>(val));
     }
     template <typename T,
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr,
         typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
     operator T()
-    {   return static_cast<T>(op_dispatch1<Uint64_t, std::uint64_t>(val));
+    {   return static_cast<T>(op_dispatch1<Uint64_t, Digit>(val));
     }
     operator double()
     {   return op_dispatch1<Double, double>(val);
@@ -4536,7 +3985,7 @@ public:
         typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
     inline void operator = (const T x)
     {   abandon(val);
-        val = intToBignum(static_cast<std::int64_t>(x));
+        val = intToBignum(static_cast<SignedDigit>(x));
     }
 
     template <typename T,
@@ -4544,7 +3993,7 @@ public:
         typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
     inline void operator = (const T x)
     {   abandon(val);
-        val = unsignedIntToBignum(static_cast<std::uint64_t>(x));
+        val = unsignedIntToBignum(static_cast<Digit>(x));
     }
 
     inline void operator = (const char* x)
@@ -4651,24 +4100,24 @@ public:
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline Bignum operator <<(T n) const
     {   return Bignum(true, op_dispatch1<LeftShift,std::intptr_t>(val,
-                      static_cast<std::int64_t>(n)));
+                      static_cast<SignedDigit>(n)));
     }
 
     inline Bignum operator <<(Bignum n) const
     {   return Bignum(true, op_dispatch1<LeftShift,std::intptr_t>(val,
-                      static_cast<std::int64_t>(n)));
+                      static_cast<SignedDigit>(n)));
     }
 
     template <typename T,
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline Bignum operator >>(T n) const
     {   return Bignum(true, op_dispatch1<RightShift,std::intptr_t>(val,
-                      static_cast<std::int64_t>(n)));
+                      static_cast<SignedDigit>(n)));
     }
 
     inline Bignum operator >>(Bignum n) const
     {   return Bignum(true, op_dispatch1<RightShift,std::intptr_t>(val,
-                      static_cast<std::int64_t>(n)));
+                      static_cast<SignedDigit>(n)));
     }
 
     inline Bignum operator ~() const
@@ -4852,7 +4301,7 @@ public:
     inline void operator <<=(T n)
     {   std::intptr_t r =
             op_dispatch1<LeftShift,std::intptr_t>(val,
-                static_cast<std::int64_t>(n));
+                static_cast<SignedDigit>(n));
         abandon(val);
         val = r;
     }
@@ -4862,7 +4311,7 @@ public:
     inline void operator >>=(T n)
     {   std::intptr_t r =
             op_dispatch1<RightShift,std::intptr_t>(val,
-                static_cast<std::int64_t>(n));
+                static_cast<SignedDigit>(n));
         abandon(val);
         val = r;
     }
@@ -4909,7 +4358,7 @@ public:
 
     friend std::ostream & operator << (std::ostream &out, const Bignum& a)
     {   std::ios_base::fmtflags fg = out.flags();
-#if defined LISP && !defined ZAPPA
+#if defined LISP
         LispObject s;
 #else // LISP
         char* s;
@@ -4923,7 +4372,7 @@ public:
         else if (radix::is_binary_output(out))
             s = bignumToStringBinary(a.val);
         else s = bignumToString(a.val);
-#if defined LISP && !defined ZAPPA
+#if defined LISP
         std::string ss(s, length_of_byteheader(qheader(s)) -
                           sizeof(std::uintptr_t));
         out << ss;
@@ -4934,7 +4383,7 @@ public:
         return out;
     }
     friend std::istream & operator >> (std::istream &in, Bignum& a)
-    {   std::int64_t n;
+    {   SignedDigit n;
 // What I really want to do is to read in a string of digits and then
 // use stringToBignum().
         in >> n;
@@ -5017,7 +4466,7 @@ inline Bignum pow(const Bignum& x, T n)
     else if (n == 1) return Bignum(true, copyIfNoGarbageCollector(x.val));
     else if (n == 2) return square(x);
     else return Bignum(true,
-        op_dispatch1<Pow,std::intptr_t>(x.val, static_cast<std::int64_t>(n)));
+        op_dispatch1<Pow,std::intptr_t>(x.val, static_cast<SignedDigit>(n)));
 }
 
 inline double doubleBignum(const Bignum& x);
@@ -5086,13 +4535,13 @@ inline double doubleBignum(const Bignum& x)
 // It can be better than using frexp(doubleBignum(x), ..) because it
 // avoids overflow.
 
-inline double frexpBignum(const Bignum& x, std::int64_t &xx)
+inline double frexpBignum(const Bignum& x, SignedDigit &xx)
 {   return op_dispatch1<Frexp,double>(x.val, xx);
 }
 
 #ifdef softfloat_h
 
-inline float128_t frexp128Bignum(const Bignum& x, std::int64_t &xx)
+inline float128_t frexp128Bignum(const Bignum& x, SignedDigit &xx)
 {   return op_dispatch1<Frexp128,float128_t>(x.val, xx);
 }
 
@@ -5113,14 +4562,14 @@ inline float128_t float128Bignum(const Bignum& x)
 //=========================================================================
 
 inline void display(const char* label,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena)
 {   display(label, 0, a, lena);
 }
 
 inline void display(const char* label,
                     SignedDigit top,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena)
 {   int len = std::printf("%s := 0x", label);
     if (top >= 0)
@@ -5160,14 +4609,14 @@ inline void display(const char* label, const Bignum& a)
 }
 
 inline void display(std::string label,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena)
 {   display(label.c_str(), a, lena);
 }
 
 inline void display(std::string label,
                     SignedDigit top,
-                    ConstDigitPtr a,
+                    const std::uint64_t* a,
                     std::size_t lena)
 {   display(label.c_str(), top, a, lena);
 }
@@ -5215,15 +4664,15 @@ inline int countBits(uint64_t x)
 
 // Count the leading zeros in a 64-bit word.
 
-inline int nlz(std::uint64_t x)
+inline int nlz(Digit x)
 {   return x==0 ? 64 : __builtin_clzll(x);
 }
 
-inline int ntz(std::uint64_t x)
+inline int ntz(Digit x)
 {   return x==0 ? 64 : __builtin_ctzll(x);
 }
 
-inline int countBits(std::uint64_t x)
+inline int countBits(Digit x)
 {   return __builtin_popcountll(x);
 }
 
@@ -5323,7 +4772,7 @@ inline int ntz(uint64_t n)
 }
 
 
-inline int countBits(std::uint64_t x)
+inline int countBits(Digit x)
 {   x = (x & 0x5555555555555555U) + ((x >> 1) & 0x5555555555555555U);
     x = (x & 0x3333333333333333U) + ((x >> 2) & 0x3333333333333333U);
     x = x + ((x >> 4) & 0x0f0f0f0f0f0f0f0fU);
@@ -5344,11 +4793,11 @@ inline int countBits(std::uint64_t x)
 
 inline std::size_t next_power_of_2(std::size_t n)
 {   return (static_cast<std::size_t>(1)) << (64-nlz(
-                static_cast<std::uint64_t>(n-1)));
+                static_cast<Digit>(n-1)));
 }
 
 inline unsigned int logNextPowerOf2(std::size_t n)
-{   return (64-nlz(static_cast<std::uint64_t>(n-1)));
+{   return (64-nlz(static_cast<Digit>(n-1)));
 }
 
 // I am going to represent bignums as arrays of 64-bit digits.
@@ -5384,10 +4833,10 @@ inline unsigned int logNextPowerOf2(std::size_t n)
 
 
 [[gnu::always_inline]]
-inline std::uint64_t addWithCarry(std::uint64_t a1,
-                                  std::uint64_t a2,
-                                  std::uint64_t &r)
-{   return static_cast<std::uint64_t>(__builtin_add_overflow(a1, a2, &r));
+inline Digit addWithCarry(Digit a1,
+                                  Digit a2,
+                                  Digit &r)
+{   return static_cast<Digit>(__builtin_add_overflow(a1, a2, &r));
 }
 
 // Now the general version with a carry-in. Note that I require that this
@@ -5396,12 +4845,12 @@ inline std::uint64_t addWithCarry(std::uint64_t a1,
 // function.
 
 [[gnu::always_inline]]
-inline std::uint64_t addWithCarry(std::uint64_t a1,
-                                  std::uint64_t a2,
-                                  std::uint64_t carry_in,
-                                  std::uint64_t &r)
-{   std::uint64_t w;
-    std::uint64_t c1 = addWithCarry(a1, carry_in, w);
+inline Digit addWithCarry(Digit a1,
+                                  Digit a2,
+                                  Digit carry_in,
+                                  Digit &r)
+{   Digit w;
+    Digit c1 = addWithCarry(a1, carry_in, w);
     return c1 + addWithCarry(w, a2, r);
 }
 
@@ -5410,18 +4859,18 @@ inline std::uint64_t addWithCarry(std::uint64_t a1,
 // and returns 1 is there is a borrow out.
 
 [[gnu::always_inline]]
-inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
-                                        std::uint64_t a2,
-                                        std::uint64_t &r)
-{   return static_cast<std::uint64_t>(__builtin_sub_overflow(a1, a2, &r));
+inline Digit subtractWithBorrow(Digit a1,
+                                        Digit a2,
+                                        Digit &r)
+{   return static_cast<Digit>(__builtin_sub_overflow(a1, a2, &r));
 }
 
 [[gnu::always_inline]]
-inline std::uint64_t subtractWithBorrow(std::uint64_t a1,
-                                        std::uint64_t a2,
-                                        std::uint64_t borrow_in,
-                                        std::uint64_t &r)
-{   std::uint64_t w;
+inline Digit subtractWithBorrow(Digit a1,
+                                        Digit a2,
+                                        Digit borrow_in,
+                                        Digit &r)
+{   Digit w;
     int b1 = subtractWithBorrow(a1, borrow_in, w);
     return b1 + subtractWithBorrow(w, a2, r);
 }
@@ -5457,60 +4906,60 @@ typedef unsigned __int128 UINT128;
 
 inline std::ostream & operator << (std::ostream &out, UINT128 a)
 {   out << std::hex << std::setw(16) << std::setfill('0') <<
-        static_cast<std::uint64_t>(a>>64)
+        static_cast<Digit>(a>>64)
         << " "
-        << static_cast<std::uint64_t>(a) << std::dec << std::setfill(' ');
+        << static_cast<Digit>(a) << std::dec << std::setfill(' ');
     return out;
 }
 
-inline UINT128 pack128(std::uint64_t hi, std::uint64_t lo)
+inline UINT128 pack128(Digit hi, Digit lo)
 {   return (static_cast<UINT128>(hi)<<64) | lo;
 }
 
-inline void multiply64(std::uint64_t a, std::uint64_t b,
-                       std::uint64_t &hi, std::uint64_t &lo)
+inline void multiply64(Digit a, Digit b,
+                       Digit &hi, Digit &lo)
 {   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b);
-    hi = static_cast<std::uint64_t>(r >> 64);
-    lo = static_cast<std::uint64_t>(r);
+    hi = static_cast<Digit>(r >> 64);
+    lo = static_cast<Digit>(r);
 }
 
 // Now much the same but forming a*b+c. Note that this can not overflow
 // the 128-bit result. Both hi and lo are only updated at the end
 // of this, and so they are allowed to be the same as other arguments.
 
-inline void multiply64(std::uint64_t a, std::uint64_t b,
-                       std::uint64_t c,
-                       std::uint64_t &hi, std::uint64_t &lo)
+inline void multiply64(Digit a, Digit b,
+                       Digit c,
+                       Digit &hi, Digit &lo)
 {   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b) +
                 static_cast<UINT128>(c);
-    hi = static_cast<std::uint64_t>(r >> 64);
-    lo = static_cast<std::uint64_t>(r);
+    hi = static_cast<Digit>(r >> 64);
+    lo = static_cast<Digit>(r);
 }
 
-inline void signedMultiply64(std::int64_t a, std::int64_t b,
-                             std::int64_t &hi, std::uint64_t &lo)
+inline void signedMultiply64(SignedDigit a, SignedDigit b,
+                             SignedDigit &hi, Digit &lo)
 {   INT128 r = static_cast<INT128>(a)*static_cast<INT128>(b);
-    hi = static_cast<std::int64_t>(static_cast<UINT128>(r) >> 64);
-    lo = static_cast<std::uint64_t>(r);
+    hi = static_cast<SignedDigit>(static_cast<UINT128>(r) >> 64);
+    lo = static_cast<Digit>(r);
 }
 
-inline void signedMultiply64(std::int64_t a, std::int64_t b,
-                             std::uint64_t c,
-                             std::int64_t &hi, std::uint64_t &lo)
+inline void signedMultiply64(SignedDigit a, SignedDigit b,
+                             Digit c,
+                             SignedDigit &hi, Digit &lo)
 {   UINT128 r = static_cast<UINT128>(
                     static_cast<INT128>(a)*static_cast<INT128>(b))
                 + static_cast<UINT128>(c);
-    hi = static_cast<std::int64_t>(r >> 64);
-    lo = static_cast<std::uint64_t>(r);
+    hi = static_cast<SignedDigit>(r >> 64);
+    lo = static_cast<Digit>(r);
 }
 
 // divide {hi,lo} by divisor and generate a quotient and a remainder. The
 // version of the code that is able to use __int128 can serve as clean
 // documentation of the intent.
 
-inline void divide64(std::uint64_t hi, std::uint64_t lo,
-                     std::uint64_t divisor,
-                     std::uint64_t &q, std::uint64_t &r)
+inline void divide64(Digit hi, Digit lo,
+                     Digit divisor,
+                     Digit &q, Digit &r)
 {   UINT128 dividend = pack128(hi, lo);
     q = dividend / divisor;
     r = dividend % divisor;
@@ -5523,16 +4972,16 @@ inline void divide64(std::uint64_t hi, std::uint64_t lo,
 // lots of 64-bit operations, with each 64-bit value often treated as
 // two 32-bit halves.
 
-inline void multiply64(std::uint64_t a, std::uint64_t b,
-                       std::uint64_t &hi, std::uint64_t &lo)
-{   std::uint64_t a1 = a >> 32,           // top half
+inline void multiply64(Digit a, Digit b,
+                       Digit &hi, Digit &lo)
+{   Digit a1 = a >> 32,           // top half
                   a0 = a & 0xFFFFFFFFU;   // low half
-    std::uint64_t b1 = b >> 32,           // top half
+    Digit b1 = b >> 32,           // top half
                   b0 = b & 0xFFFFFFFFU;   // low half
-    std::uint64_t u1 = a1*b1,             // top of result
+    Digit u1 = a1*b1,             // top of result
                   u0 = a0*b0;             // bottom of result
 // Now I need to add in the two "middle" bits a0*b1 and a1*b0
-    std::uint64_t w = a0*b1;
+    Digit w = a0*b1;
     u1 += w >> 32;
     w <<= 32;
     u0 += w;
@@ -5551,17 +5000,17 @@ inline void multiply64(std::uint64_t a, std::uint64_t b,
 // the 128-bit result. Both hi and lo are only updated at the end
 // of this, and so they are allowed to be the same as other arguments.
 
-inline void multiply64(std::uint64_t a, std::uint64_t b,
-                       std::uint64_t c,
-                       std::uint64_t &hi, std::uint64_t &lo)
-{   std::uint64_t a1 = a >> 32,           // top half
+inline void multiply64(Digit a, Digit b,
+                       Digit c,
+                       Digit &hi, Digit &lo)
+{   Digit a1 = a >> 32,           // top half
                   a0 = a & 0xFFFFFFFFU;   // low half
-    std::uint64_t b1 = b >> 32,           // top half
+    Digit b1 = b >> 32,           // top half
                   b0 = b & 0xFFFFFFFFU;   // low half
-    std::uint64_t u1 = a1*b1,             // top of result
+    Digit u1 = a1*b1,             // top of result
                   u0 = a0*b0;             // bottom of result
 // Now I need to add in the two "middle" bits a0*b1 and a1*b0
-    std::uint64_t w = a0*b1;
+    Digit w = a0*b1;
     u1 += w >> 32;
     w <<= 32;
     u0 += w;
@@ -5578,36 +5027,36 @@ inline void multiply64(std::uint64_t a, std::uint64_t b,
     lo = u0;
 }
 
-inline void signedMultiply64(std::int64_t a, std::int64_t b,
-                             std::int64_t &hi, std::uint64_t &lo)
-{   std::uint64_t h, l;
-    multiply64(static_cast<std::uint64_t>(a),
-               static_cast<std::uint64_t>(b), h, l);
-    if (a < 0) h -= static_cast<std::uint64_t>(b);
-    if (b < 0) h -= static_cast<std::uint64_t>(a);
-    hi = static_cast<std::int64_t>(h);
+inline void signedMultiply64(SignedDigit a, SignedDigit b,
+                             SignedDigit &hi, Digit &lo)
+{   Digit h, l;
+    multiply64(static_cast<Digit>(a),
+               static_cast<Digit>(b), h, l);
+    if (a < 0) h -= static_cast<Digit>(b);
+    if (b < 0) h -= static_cast<Digit>(a);
+    hi = static_cast<SignedDigit>(h);
     lo = l;
 }
 
-inline void signedMultiply64(std::int64_t a, std::int64_t b,
-                             std::uint64_t c,
-                             std::int64_t &hi, std::uint64_t &lo)
-{   std::uint64_t h, l;
-    multiply64(static_cast<std::uint64_t>(a),
-               static_cast<std::uint64_t>(b), c, h,
+inline void signedMultiply64(SignedDigit a, SignedDigit b,
+                             Digit c,
+                             SignedDigit &hi, Digit &lo)
+{   Digit h, l;
+    multiply64(static_cast<Digit>(a),
+               static_cast<Digit>(b), c, h,
                l);
-    if (a < 0) h -= static_cast<std::uint64_t>(b);
-    if (b < 0) h -= static_cast<std::uint64_t>(a);
-    hi = static_cast<std::int64_t>(h);
+    if (a < 0) h -= static_cast<Digit>(b);
+    if (b < 0) h -= static_cast<Digit>(a);
+    hi = static_cast<SignedDigit>(h);
     lo = l;
 }
 
-inline void divide64(std::uint64_t hi, std::uint64_t lo,
-                     std::uint64_t divisor,
-                     std::uint64_t &q, std::uint64_t &r)
-{   std::uint64_t u1 = hi;
-    std::uint64_t u0 = lo;
-    std::uint64_t c = divisor;
+inline void divide64(Digit hi, Digit lo,
+                     Digit divisor,
+                     Digit &q, Digit &r)
+{   Digit u1 = hi;
+    Digit u0 = lo;
+    Digit c = divisor;
 // See the Hacker's Delight for commentary about what follows. The associated
 // web-site explains usage rights:
 // "You are free to use, copy, and distribute any of the code on this web
@@ -5624,8 +5073,8 @@ inline void divide64(std::uint64_t hi, std::uint64_t lo,
 // Any error that have crept in in my adapaptation of the original code
 // will be my fault, but you see in the BSD license at the top of this
 // file that I disclaim any possible liability for consequent loss or damage.
-    const std::uint64_t base = 0x100000000U; // Number base (32 bits).
-    std::uint64_t un1, un0,        // Norm. dividend LSD's.
+    const Digit base = 0x100000000U; // Number base (32 bits).
+    Digit un1, un0,        // Norm. dividend LSD's.
         vn1, vn0,        // Norm. divisor digits.
         q1, q0,          // Quotient digits.
         un32, un21, un10,// Dividend digit pairs.
@@ -5672,24 +5121,24 @@ again2:
 // that in C++ the consequences of overflow are defined) I need to treat
 // some top-digits as signed: here are values and tests relating to that.
 
-inline const std::uint64_t allbits   = ~static_cast<std::uint64_t>(0);
-inline const std::uint64_t topbit    = static_cast<std::uint64_t>(1)<<63;
-inline const std::uint64_t allbuttop = topbit - 1;
+inline const Digit allbits   = ~static_cast<Digit>(0);
+inline const Digit topbit    = static_cast<Digit>(1)<<63;
+inline const Digit allbuttop = topbit - 1;
 
-inline bool positive(std::uint64_t a)
-{   return static_cast<std::int64_t>(a) >= 0;
+inline bool positive(Digit a)
+{   return static_cast<SignedDigit>(a) >= 0;
 }
 
-inline bool negative(std::uint64_t a)
-{   return static_cast<std::int64_t>(a) < 0;
+inline bool negative(Digit a)
+{   return static_cast<SignedDigit>(a) < 0;
 }
 
-inline bool strictlyPositive(std::uint64_t a)
-{   return static_cast<std::int64_t>(a) > 0;
+inline bool strictlyPositive(Digit a)
+{   return static_cast<SignedDigit>(a) > 0;
 }
 
-inline bool negativeOrZero(std::uint64_t a)
-{   return static_cast<std::int64_t>(a) <= 0;
+inline bool negativeOrZero(Digit a)
+{   return static_cast<SignedDigit>(a) <= 0;
 }
 
 // This next function might be naively written as
@@ -5697,13 +5146,13 @@ inline bool negativeOrZero(std::uint64_t a)
 //            (a1==-1 && negative(a2)));
 // and it is to test if a bignum can have its top digit removed.
 
-inline bool shrinkable(std::uint64_t a1, std::uint64_t a2)
+inline bool shrinkable(Digit a1, Digit a2)
 {   return ((a1 + (a2>>63)) == 0);
 }
 
 inline void internalCopy(const std::uint64_t* a, std::size_t lena,
                          std::uint64_t* b)
-{   std::memcpy(b, a, lena*sizeof(std::uint64_t));
+{   std::memcpy(b, a, lena*sizeof(Digit));
 }
 
 // This internal functions sets b to be -a without altering its length.
@@ -5712,9 +5161,9 @@ inline void internalCopy(const std::uint64_t* a, std::size_t lena,
 
 inline void internalNegate(const std::uint64_t* a, std::size_t lena,
                            std::uint64_t* b)
-{   std::uint64_t carry = 1;
+{   Digit carry = 1;
     for (std::size_t i=0; i<lena; i++)
-    {   std::uint64_t w = b[i] = ~a[i] + carry;
+    {   Digit w = b[i] = ~a[i] + carry;
         carry = (w < carry);
     }
 }
@@ -5728,7 +5177,7 @@ inline void internalNegate(const std::uint64_t* a, std::size_t lena,
 // that I have a function virtualDigit64() which lets me read from a
 // bignum as if it has been usefully sign-extended.
 
-inline std::uint64_t virtualDigit64(const std::uint64_t* v,
+inline Digit virtualDigit64(const std::uint64_t* v,
                                     std::size_t n,
                                     std::size_t j)
 {   if (j < n) return v[j];
@@ -5745,7 +5194,7 @@ inline int readU3(const std::uint64_t* v, std::size_t n,
     std::size_t n0 = bits/64;   // word with lowest bit of the 3
     std::size_t s0 =
         bits%64;   // amount to shift right to align it properly
-    std::uint64_t w = virtualDigit64(v, n, n0) >> s0;
+    Digit w = virtualDigit64(v, n, n0) >> s0;
 // If I needed to shift by 62 or 63 bits then the octal digit I am interested
 // in needs some bits from the next word up.
     if (s0 >= 62) w |= (virtualDigit64(v, n, n0+1) << (64-s0));
@@ -5882,21 +5331,21 @@ inline int readU3(const std::uint64_t* v, std::size_t n,
 // function until the function is first used!
 
 inline std::seed_seq* get_random_seed()
-{   std::uint64_t threadid =
-        static_cast<std::uint64_t>(std::hash<std::thread::id>()(
+{   Digit threadid =
+        static_cast<Digit>(std::hash<std::thread::id>()(
                                        std::this_thread::get_id()));
     std::random_device basic_randomness;
-    std::uint64_t seed_component_1 = static_cast<std::uint64_t>
+    Digit seed_component_1 = static_cast<Digit>
                                             (basic_randomness());
-    std::uint64_t seed_component_2 = static_cast<std::uint64_t>
+    Digit seed_component_2 = static_cast<Digit>
                                             (basic_randomness());
-    std::uint64_t seed_component_3 = static_cast<std::uint64_t>
+    Digit seed_component_3 = static_cast<Digit>
                                             (basic_randomness());
-    std::uint64_t time_now =
-        static_cast<std::uint64_t>
-        (std::time(NULL));
-    std::uint64_t chrono_now =
-        static_cast<std::uint64_t>(
+    Digit time_now =
+        static_cast<Digit>
+        (std::time(nullptr));
+    Digit chrono_now =
+        static_cast<Digit>(
             std::chrono::high_resolution_clock::now().
                 time_since_epoch().count());
 // In my first draft of this library I had made the random seed directly
@@ -5921,7 +5370,7 @@ inline std::seed_seq* get_random_seed()
         static_cast<std::uint32_t>(
             reinterpret_cast<std::uintptr_t>(&seed_component_1)),
         static_cast<std::uint32_t>(
-            static_cast<std::uint64_t>(
+            static_cast<Digit>(
                 reinterpret_cast<std::uintptr_t>(&seed_component_1))>>32)
     };
    return &random_seed;
@@ -5942,19 +5391,19 @@ inline std::mt19937_64 mersenne_twister(*get_random_seed());
 // of threads.
 //
 
-MAYBE_UNUSED static void reseed(std::uint64_t n)
+MAYBE_UNUSED static void reseed(Digit n)
 {   if (n == 0)
     {   std::random_device basic_randomness;
-        std::uint64_t threadid =
-            static_cast<std::uint64_t>(
+        Digit threadid =
+            static_cast<Digit>(
                 std::hash<std::thread::id>()(
                     std::this_thread::get_id()));
-        std::uint64_t seed_component =
-            static_cast<std::uint64_t>(basic_randomness());
-        std::uint64_t time_now =
-            static_cast<std::uint64_t>(std::time(NULL));
-        std::uint64_t chrono_now =
-            static_cast<std::uint64_t>(
+        Digit seed_component =
+            static_cast<Digit>(basic_randomness());
+        Digit time_now =
+            static_cast<Digit>(std::time(nullptr));
+        Digit chrono_now =
+            static_cast<Digit>(
                 std::chrono::high_resolution_clock::now().
                     time_since_epoch().count());
         n = threadid ^ seed_component ^ time_now ^ chrono_now ^
@@ -5973,14 +5422,14 @@ MAYBE_UNUSED static void reseed(std::uint64_t n)
 // values. To get a full 64-bit range merely call mersenne_twister()
 // directly.
 
-inline std::uint64_t uniformUint64(std::uint64_t n)
+inline Digit uniformUint64(Digit n)
 {   if (n <= 1) return 0;
 // I I want the remainder operation on the last line of this function to
 // return a uniformly distributed result. To ensure that I want r to be
 // drawn uniformly from a range that is a multiple of n.
-    std::uint64_t q = UINT64_MAX/n;
-    std::uint64_t w = n*q;
-    std::uint64_t r;
+    Digit q = UINT64_MAX/n;
+    Digit w = n*q;
+    Digit r;
 // In the worst case here n was just over UINT64_MAX/2 and q came out
 // as 1. In that case on average I will need to call mersenne_twister
 // twice. Either larger or smaller inputs will behave better, and rather
@@ -6061,9 +5510,7 @@ inline void uniformUpto(std::uint64_t* a, std::size_t lena,
 // I get one that has a value less than a has. On average that should only
 // take two tries.
     for (;;)
-    {   push(a);
-        uniformPositive(r, lenr, n);
-        pop(a);
+    {   uniformPositive(r, lenr, n);
         if (lena > lenr) return;
         for (std::size_t len=lena;;)
         {   len--;
@@ -6075,16 +5522,14 @@ inline void uniformUpto(std::uint64_t* a, std::size_t lena,
 
 inline std::intptr_t uniformUpto(std::intptr_t aa)
 {   if (storedAsFixnum(aa))
-    {   std::uint64_t r = uniformUint64(static_cast<std::uint64_t>
+    {   Digit r = uniformUint64(static_cast<Digit>
                                          (intOfHandle(
                                               aa)));
         return intToHandle(r);
     }
     std::uint64_t* a = vectorOfHandle(aa);
     std::size_t lena = numberSize(a);
-    push(a);
     std::uint64_t* r = reserve(lena);
-    pop(a);
     std::size_t lenr;
     uniformUpto(a, lena, r, lenr);
     return confirmSize(r, lena, lenr);
@@ -6141,13 +5586,13 @@ inline void fudgeDistribution(const std::uint64_t* a,
             if ((n&7) == 0) // decrement it
             {   if (lena!=1 || a[0]!=0) // avoid decrementing zero.
                 {   std::uint64_t* p = r;
-                    while (*p == 0)* p++ = static_cast<std::uint64_t>(-1);
+                    while (*p == 0)* p++ = static_cast<Digit>(-1);
                     (*p)--;
                 }
             }
             else if ((n&7) == 2) // increment it
             {   std::uint64_t* p = r;
-                while (*p == static_cast<std::uint64_t>(-1))* p++ = 0;
+                while (*p == static_cast<Digit>(-1))* p++ = 0;
                 (*p)++;
             }
             break;
@@ -6156,7 +5601,7 @@ inline void fudgeDistribution(const std::uint64_t* a,
             break;
     }
     if ((n&8) != 0)
-    {   std::uint64_t carry = 1;
+    {   Digit carry = 1;
         for (std::size_t i=0; i<lena+1; i++)
         {   carry = addWithCarry(~r[i], carry, r[i]);
         }
@@ -6168,9 +5613,9 @@ inline void fudgeDistribution(const std::uint64_t* a,
 inline std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
 {   std::uint64_t* a;
     std::size_t lena;
-    std::uint64_t w[2];
+    Digit w[2];
     if (storedAsFixnum(aa))
-    {   w[1] = static_cast<std::uint64_t>(intOfHandle(aa));
+    {   w[1] = static_cast<Digit>(intOfHandle(aa));
         lena = 1;
         a = &w[1];
     }
@@ -6178,9 +5623,7 @@ inline std::intptr_t fudgeDistribution(std::intptr_t aa, int n)
     {   a = vectorOfHandle(aa);
         lena = numberSize(a);
     }
-    push(a);
     std::uint64_t* r = reserve(lena+1);
-    pop(a);
     std::size_t lenr;
     fudgeDistribution(a, lena, r, lenr, n);
     return confirmSize(r, lena+1, lenr);
@@ -6235,18 +5678,18 @@ inline std::intptr_t randomUptoBits(std::size_t bits)
 // perform arithmetic between a bignum and a native int64_t integer
 // directly.
 
-inline void intToBignum(std::int64_t n, std::uint64_t* r)
-{   r[0] = static_cast<std::uint64_t>(n);
+inline void intToBignum(SignedDigit n, std::uint64_t* r)
+{   r[0] = static_cast<Digit>(n);
 }
 
-inline std::intptr_t intToBignum(std::int64_t n)
+inline std::intptr_t intToBignum(SignedDigit n)
 {   if (fitsIntoFixnum(n)) return intToHandle(n);
     std::uint64_t* r = reserve(1);
     intToBignum(n, r);
     return confirmSize(r, 1, 1);
 }
 
-inline void unsignedIntToBignum(std::uint64_t n, std::uint64_t* r,
+inline void unsignedIntToBignum(Digit n, std::uint64_t* r,
                                 std::size_t &lenr)
 {   r[0] = n;
     if (negative(n))
@@ -6256,7 +5699,7 @@ inline void unsignedIntToBignum(std::uint64_t n, std::uint64_t* r,
     else lenr = 1;
 }
 
-inline std::intptr_t unsignedIntToBignum(std::uint64_t n)
+inline std::intptr_t unsignedIntToBignum(Digit n)
 {   std::size_t w = (negative(n) ? 2 : 1);
     std::uint64_t* r = reserve(w);
     std::size_t lenr;
@@ -6266,7 +5709,7 @@ inline std::intptr_t unsignedIntToBignum(std::uint64_t n)
 
 // The next two pass an 128-bit value as two 64-bit words.
 
-inline std::intptr_t int128ToBignum(std::int64_t high, std::uint64_t low)
+inline std::intptr_t int128ToBignum(SignedDigit high, Digit low)
 {   if (high == 0 &&
         !negative(low) &&
         fitsIntoFixnum(static_cast<std::intptr_t>(low)))
@@ -6281,8 +5724,8 @@ inline std::intptr_t int128ToBignum(std::int64_t high, std::uint64_t low)
     return confirmSize(r, 2, 2);
 }
 
-inline std::intptr_t unsignedInt128ToBignum(std::uint64_t  high,
-                                            std::uint64_t low)
+inline std::intptr_t unsignedInt128ToBignum(Digit  high,
+                                            Digit low)
 {   if (high == 0 &&
         !negative(low) &&
         fitsIntoFixnum(static_cast<std::intptr_t>(low)))
@@ -6393,11 +5836,11 @@ inline float128_t ldexp(float128_t p, int x)
 // not lead to a sub-norm and then using a multiply to scale it down.
     if (x <= 0)
     {   p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                      (static_cast<std::uint64_t>(x+4096) << 48);
+                      (static_cast<Digit>(x+4096) << 48);
         p = f128_div(p, f128_N1);
     }
     else p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                           (static_cast<std::uint64_t>(x) << 48);
+                           (static_cast<Digit>(x) << 48);
     return p;
 }
 
@@ -6420,7 +5863,7 @@ inline float128_t frexp(float128_t p, int &x)
 // Now I can set the exponent field such that the resulting number is in
 // the range 0.5 <= p < 1.0.
     p.v[HIPART] = (p.v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-                  (static_cast<std::uint64_t>(0x3ffe) << 48);
+                  (static_cast<Digit>(0x3ffe) << 48);
 // .. and adjust the exponent value that I will return so it is if the
 // scaled mantissa is now exactly the same as the input.
     x = px - 0x3ffe;
@@ -6441,7 +5884,7 @@ inline float128_t modf(float128_t d, float128_t &i)
 // the high word.
     else if (x <= 49)   // 49 not 48 because of hidden bit.
     {   i.v[HIPART] &=
-            ASR(static_cast<std::int64_t>(0xffff000000000000), x-1);
+            ASR(static_cast<SignedDigit>(0xffff000000000000), x-1);
         i.v[LOPART] = 0;
     }
     else if (x <= 112)
@@ -6469,7 +5912,7 @@ inline float128_t modf(float128_t d, float128_t &i)
 // give sensible output if passed an infinity or a NaN and so they should be
 // filtered out before it is called.
 
-inline void doubleToBits(double d, std::int64_t &mantissa, int &exponent)
+inline void doubleToBits(double d, SignedDigit &mantissa, int &exponent)
 {   if (d == 0.0)
     {   mantissa = 0;
         exponent = 0;
@@ -6482,14 +5925,14 @@ inline void doubleToBits(double d, std::int64_t &mantissa, int &exponent)
 // by to achieve this.
     d = d*9007199254740992.0; // 2^53;
 // The conversion to an integer here will always be exact.
-    mantissa = static_cast<std::int64_t>(d);
+    mantissa = static_cast<SignedDigit>(d);
     exponent = x - 53;
 }
 
 // There are places where I need to shift a 128 or 192-bit number that is
 // represented using several int64 values...
 
-inline void shiftleft(std::int64_t &hi, std::uint64_t &lo, int n)
+inline void shiftleft(SignedDigit &hi, Digit &lo, int n)
 {   if (n == 0) return;
     else if (n < 64)
     {   hi = ASL(hi, n) | (lo >> (64-n));
@@ -6505,8 +5948,8 @@ inline void shiftleft(std::int64_t &hi, std::uint64_t &lo, int n)
     }
 }
 
-inline void shiftleft(std::int64_t &hi, std::uint64_t &mid,
-                      std::uint64_t &lo,
+inline void shiftleft(SignedDigit &hi, Digit &mid,
+                      Digit &lo,
                       int n)
 {   if (n == 0) return;
     else if (n < 64)
@@ -6534,7 +5977,7 @@ inline void shiftleft(std::int64_t &hi, std::uint64_t &mid,
     }
 }
 
-inline void shiftright(std::int64_t &hi, std::uint64_t &lo, int n)
+inline void shiftright(SignedDigit &hi, Digit &lo, int n)
 {   if (n == 0) return;
     else if (n < 64)
     {   lo = (lo >> n) | ASL(hi, 64-n);
@@ -6569,7 +6012,7 @@ inline void shiftright(std::int64_t &hi, std::uint64_t &lo, int n)
 enum RoundingMode {ROUND, TRUNC, FLOOR, CEILING};
 
 inline void doubleTo_virtualBignum(double d,
-                                   std::int64_t &top, std::uint64_t &next,
+                                   SignedDigit &top, Digit &next,
                                    std::size_t &len,
                                    RoundingMode mode)
 {   if (d == 0.0)
@@ -6625,17 +6068,17 @@ inline void doubleTo_virtualBignum(double d,
     }
 // From here down I do not need to worry about zero, infinity or NaNs,
 // and there will be no rounding!
-    std::int64_t mantissa;
+    SignedDigit mantissa;
     int exponent;
     doubleToBits(d, mantissa, exponent);
 // Now I know intpart(d) = mantissa*2^exponent and mantissa is an integer.
-    std::uint64_t lowbit = mantissa & -static_cast<std::uint64_t>
+    Digit lowbit = mantissa & -static_cast<Digit>
                            (mantissa);
     int lz = 63 - nlz(lowbit); // low zero bits
     mantissa = ASR(mantissa, lz);
     exponent += lz;
 // Now mantissa has its least significant bit a "1".
-    next = static_cast<std::uint64_t>(mantissa);
+    next = static_cast<Digit>(mantissa);
     top = d<0.0 && mantissa!=0 ? -1 : 0;
     if (exponent < 0)
     {   top = 0;
@@ -6667,7 +6110,7 @@ inline void doubleTo_virtualBignum(double d,
 // lead to nonsense output. Subnormal numbers are got wrong at present!
 
 inline void float128ToBits(float128_t d,
-                           std::int64_t &mhi, std::uint64_t &mlo,
+                           SignedDigit &mhi, Digit &mlo,
                            int &exponent)
 {   if (f128_nan(d) || f128_zero(d))
     {   mhi = mlo = 0;
@@ -6689,7 +6132,7 @@ inline void float128ToBits(float128_t d,
     exponent -= 0x3ffe;
     mhi = (d.v[HIPART] & 0xffffffffffff) | 0x0001000000000000;
     mlo = d.v[LOPART];
-    if (static_cast<std::int64_t>(d.v[HIPART]) < 0)
+    if (static_cast<SignedDigit>(d.v[HIPART]) < 0)
     {   mlo = -mlo;
         if (mlo == 0) mhi = -mhi;
         else mhi = ~mhi;
@@ -6697,11 +6140,11 @@ inline void float128ToBits(float128_t d,
     exponent -= 113;
 }
 
-inline void inc128(std::int64_t &hi, std::uint64_t &lo)
+inline void inc128(SignedDigit &hi, Digit &lo)
 {   if (++lo == 0) hi++;
 }
 
-inline void dec128(std::int64_t &hi, std::uint64_t &lo)
+inline void dec128(SignedDigit &hi, Digit &lo)
 {   if (lo-- == 0) hi--;
 }
 
@@ -6709,9 +6152,9 @@ inline void dec128(std::int64_t &hi, std::uint64_t &lo)
 // the way it would end up as a bignum.
 
 inline void float128To_virtualBignum(float128_t d,
-                                     std::int64_t &top,
-                                     std::uint64_t &mid,
-                                     std::uint64_t &next,
+                                     SignedDigit &top,
+                                     Digit &mid,
+                                     Digit &next,
                                      std::size_t &len,
                                      RoundingMode mode)
 {   if (f128_zero(d))
@@ -6731,8 +6174,8 @@ inline void float128To_virtualBignum(float128_t d,
         return;
     }
     bool sign = f128_negative(d);
-    std::int64_t mhi;
-    std::uint64_t mlo;
+    SignedDigit mhi;
+    Digit mlo;
     int exponent;
     float128ToBits(d, mhi, mlo, exponent);
 // Here (mhi,mlo) is a 113-bit integer that must be multiplied by
@@ -6772,11 +6215,11 @@ inline void float128To_virtualBignum(float128_t d,
     }
     int lz;
     if (mlo != 0)
-    {   std::uint64_t lowbit = mlo & (-mlo);
+    {   Digit lowbit = mlo & (-mlo);
         lz = 63 - nlz(lowbit); // low zero bits
     }
     else
-    {   std::uint64_t lowbit = mhi & (-static_cast<std::uint64_t>(mhi));
+    {   Digit lowbit = mhi & (-static_cast<Digit>(mhi));
         lz = 64 + 63 - nlz(lowbit); // low zero bits
     }
     shiftright(mhi, mlo, lz);
@@ -6819,8 +6262,8 @@ inline std::intptr_t doubleToInt(double d, RoundingMode mode)
 // This is somewhat arbitrary, but right now I am not minded to raise an
 // exception.
     if (!std::isfinite(d) || d==0.0) return intToHandle(0);
-    std::int64_t top;
-    std::uint64_t next;
+    SignedDigit top;
+    Digit next;
     std::size_t len;
     doubleTo_virtualBignum(d, top, next, len, mode);
     std::uint64_t* r = reserve(len);
@@ -6855,8 +6298,8 @@ inline std::intptr_t float128ToInt(float128_t d, RoundingMode mode)
 {   if (f128_zero(d) ||
         f128_infinite(d) ||
         f128_nan(d)) return intToHandle(0);
-    std::int64_t top;
-    std::uint64_t mid, next;
+    SignedDigit top;
+    Digit mid, next;
     std::size_t len;
     float128To_virtualBignum(d, top, mid, next, len, mode);
     std::uint64_t* r = reserve(len);
@@ -6892,19 +6335,19 @@ inline std::intptr_t ceilingFloat128ToInt(float128_t d)
 
 #endif // softfloat_h
 
-inline std::int64_t Int64_t::op(std::int64_t a)
+inline SignedDigit Int64_t::op(SignedDigit a)
 {   return a;
 }
 
-inline std::int64_t Int64_t::op(std::uint64_t* a)
-{   return static_cast<std::int64_t>(a[0]);
+inline SignedDigit Int64_t::op(std::uint64_t* a)
+{   return static_cast<SignedDigit>(a[0]);
 }
 
-inline std::uint64_t Uint64_t::op(std::int64_t a)
-{   return static_cast<std::uint64_t>(a);
+inline Digit Uint64_t::op(SignedDigit a)
+{   return static_cast<Digit>(a);
 }
 
-inline std::uint64_t Uint64_t::op(std::uint64_t* a)
+inline Digit Uint64_t::op(std::uint64_t* a)
 {   return a[0];
 }
 
@@ -6974,14 +6417,14 @@ inline float ldexpf(float a, int n)
 {   return castTo_float(std::ldexp(static_cast<double>(a), n));
 }
 
-inline float Float::op(std::int64_t a)
+inline float Float::op(SignedDigit a)
 {
 // if |a| < 2^52 I can convert to a double exactly
     if (a > -0x10000000000000 && a < 0x10000000000000)
         return castTo_float(static_cast<double>(a));
-    std::int64_t hi  = a & 0xfffffc0000000000;   // 22 bits
-    std::int64_t mid = a & 0x000003fffff00000;   // 22 bits
-    std::int64_t lo  = a & 0x00000000000fffff;   // 20 bits
+    SignedDigit hi  = a & 0xfffffc0000000000;   // 22 bits
+    SignedDigit mid = a & 0x000003fffff00000;   // 22 bits
+    SignedDigit lo  = a & 0x00000000000fffff;   // 20 bits
     if (hi == 0 || hi == 0xfffffc000000000)
         return castTo_float(static_cast<double>(hi) +
                              static_cast<double>(mid) + static_cast<double>(lo));
@@ -6996,15 +6439,15 @@ inline float Float::op(std::int64_t a)
 
 inline float Float::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Float::op(static_cast<std::int64_t>(a[0]));
+    if (lena == 1) return Float::op(static_cast<SignedDigit>(a[0]));
 // Now I need to do something similar to that done for the int64_t case
 // but written larger. Specifically I want to split my input number into
 // its top 24 bits and then all the rest. I will take separate paths
 // for the positive and negative cases.
-    std::uint64_t top24;
+    Digit top24;
     int lz;
     bool sign = false;
-    std::uint64_t top, next;
+    Digit top, next;
     bool carried = true;
     for (std::size_t i=0; i<lena-2; i++)
     {   if (a[i] != 0)
@@ -7060,7 +6503,7 @@ inline float Float::op(std::uint64_t* a)
     return ldexpf(d, static_cast<int>(128-24-lz+64*(lena-2)));
 }
 
-inline double Frexp::op(std::int64_t a, std::int64_t &x)
+inline double Frexp::op(SignedDigit a, SignedDigit &x)
 {
 // The bad news here is that I am not confident that C++ will guarantee
 // to round large integer values in any particular way when it converts
@@ -7068,16 +6511,16 @@ inline double Frexp::op(std::int64_t a, std::int64_t &x)
 // conversions that I do are ones that will be exact, and I will perform
 // rounding in IEEE style myself.
 // First I will see if the value is small enough that I can work directly.
-    const std::int64_t range = 1LL<<53;
+    const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a);
 // I will now drop down to a sign and magnitude representation
     bool sign = a < 0;
-    std::uint64_t top53 = sign ? -static_cast<std::uint64_t>(a) : a;
+    Digit top53 = sign ? -static_cast<Digit>(a) : a;
 // Because top53 >= 2^53 the number of leading zeros in its representation is
 // at most 10. Ha ha. That guaranteed that the shift below will not overflow
 // and is why I chose my range as I did.
     int lz = nlz(top53);
-    std::uint64_t low = top53 << (lz+53);
+    Digit low = top53 << (lz+53);
     top53 = top53 >> (64-53-lz);
     if (low > 0x8000000000000000U) top53++;
     else if (low == 0x8000000000000000U) top53 += (top53 &
@@ -7089,7 +6532,7 @@ inline double Frexp::op(std::int64_t a, std::int64_t &x)
     return d;
 }
 
-inline double Double::op(std::int64_t a)
+inline double Double::op(SignedDigit a)
 {
 // One would obviously like to go "return (double)a;" however C++ says
 //  "If the value being converted is in the range of values that can
@@ -7099,23 +6542,23 @@ inline double Double::op(std::int64_t a)
 // and I feel I should guarantee to round in IEEE style. I can do that
 // by splitting the integer into two parts. Each of the two casts can deliver
 // a double precision result without need for rounding
-    std::int64_t hi = a & 0xffffffff00000000;
-    std::int64_t lo = a & 0x00000000ffffffff;
+    SignedDigit hi = a & 0xffffffff00000000;
+    SignedDigit lo = a & 0x00000000ffffffff;
     double d = static_cast<double>(lo);
     return d + static_cast<double>(hi);
 }
 
-inline double Frexp::op(std::uint64_t* a, std::int64_t &x)
+inline double Frexp::op(std::uint64_t* a, SignedDigit &x)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Frexp::op(static_cast<std::int64_t>(a[0]), x);
+    if (lena == 1) return Frexp::op(static_cast<SignedDigit>(a[0]), x);
 // Now I need to do something similar to that done for the int64_t case
 // but written larger. Specifically I want to split my input number into
 // its top 53 bits and then all the rest. I will take separate paths
 // for the positive and negative cases.
-    std::uint64_t top53;
+    Digit top53;
     int lz;
     bool sign = false;
-    std::uint64_t top, next;
+    Digit top, next;
     bool carried = true;
     for (std::size_t i=0; i<lena-2; i++)
     {   if (a[i] != 0)
@@ -7173,7 +6616,7 @@ inline double Frexp::op(std::uint64_t* a, std::int64_t &x)
 }
 
 inline double Double::op(std::uint64_t* a)
-{   std::int64_t x = 0;
+{   SignedDigit x = 0;
     double d = Frexp::op(a, x);
     if (x > 10000) x = 10000;
     return std::ldexp(d, static_cast<int>(x));
@@ -7181,11 +6624,11 @@ inline double Double::op(std::uint64_t* a)
 
 #ifdef softfloat_h
 
-inline float128_t Float128::op(std::int64_t a)
+inline float128_t Float128::op(SignedDigit a)
 {   return i64_to_f128(a);
 }
 
-inline float128_t Frexp128::op(std::int64_t a, std::int64_t &x)
+inline float128_t Frexp128::op(SignedDigit a, SignedDigit &x)
 {   float128_t d = i64_to_f128(a), d1;
     int xi = 0;
     f128_frexp(d, &d1, &xi); // in the CSL sources.
@@ -7193,13 +6636,13 @@ inline float128_t Frexp128::op(std::int64_t a, std::int64_t &x)
     return d1;
 }
 
-inline float128_t Frexp128::op(std::uint64_t* a, std::int64_t &x)
+inline float128_t Frexp128::op(std::uint64_t* a, SignedDigit &x)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Float128::op(static_cast<std::int64_t>(a[0]));
-    std::uint64_t top113, top113a;
+    if (lena == 1) return Float128::op(static_cast<SignedDigit>(a[0]));
+    Digit top113, top113a;
     int lz;
     bool sign = false;
-    std::uint64_t top, next1, next2;
+    Digit top, next1, next2;
     bool carried = true;
     for (std::size_t i=0; i<lena-3; i++)
     {   if (a[i] != 0)
@@ -7283,7 +6726,7 @@ inline float128_t Frexp128::op(std::uint64_t* a, std::int64_t &x)
 }
 
 inline float128_t Float128::op(std::uint64_t* a)
-{   std::int64_t x = 0;
+{   SignedDigit x = 0;
     float128_t d = Frexp128::op(a, x);
     if (x > 100000) x = 100000;
 // There is an implementation of ldexp() for 128-bit floats in
@@ -7294,7 +6737,7 @@ inline float128_t Float128::op(std::uint64_t* a)
 
 #endif // softfloat_t
 
-inline const std::uint64_t ten19 = UINT64_C(10000000000000000000);
+inline const Digit ten19 = UINT64_C(10000000000000000000);
 
 inline std::intptr_t stringToBignum(const char* s)
 {   bool sign = false;
@@ -7303,7 +6746,7 @@ inline std::intptr_t stringToBignum(const char* s)
         s++;
     }
     std::size_t chars = std::strlen(s);
-    std::size_t words = 1 + (108853*static_cast<std::uint64_t>
+    std::size_t words = 1 + (108853*static_cast<Digit>
                              (chars))/0x200000;
 // I have predicted the number of 64-bit digits that will be needed to
 // represent an s-digit (decimal) number based an approximation
@@ -7323,7 +6766,7 @@ inline std::intptr_t stringToBignum(const char* s)
 // that fits in a 64-bit word.
     std::size_t next = 19*((chars-1)/19);
     while (chars != 0)
-    {   std::uint64_t d = 0;
+    {   Digit d = 0;
 // assemble 19 digit blocks from the input into a value (d).
         while (chars != next)
         {   d = 10*d + (*s++ - '0');
@@ -7362,9 +6805,9 @@ inline std::intptr_t stringToBignum(const char* s)
 // with the quotient.
 
 
-inline std::uint64_t short_divide_ten_19(std::uint64_t* r,
+inline Digit short_divide_ten_19(std::uint64_t* r,
                                          std::size_t &n)
-{   std::uint64_t hi = 0;
+{   Digit hi = 0;
     std::size_t i=n-1;
     for (;;)
     {   divide64(hi, r[i], ten19, r[i], hi);
@@ -7384,7 +6827,7 @@ inline std::uint64_t short_divide_ten_19(std::uint64_t* r,
 
 inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
 {   if (lena == 0 && a[0] == 0) return 1; // say that 0 has 1 bit.
-    std::uint64_t top = a[lena-1];  // top digit.
+    Digit top = a[lena-1];  // top digit.
 // The exact interpretation of "the length in bits of a negative number"
 // is something I need to think through. Well Common Lisp counts the
 // number of bits apart from the sign bit, so we have
@@ -7397,7 +6840,7 @@ inline std::size_t bignumBits(const std::uint64_t* a, std::size_t lena)
 //      7           3  111           3 ..11:001
 //      8           4 1000           3 ..11:000
     if (negative(top))
-    {   std::uint64_t carry = 1;
+    {   Digit carry = 1;
         for (std::size_t i=0; i<lena; i++)
         {   top = ~a[i] + carry;
             carry = (top < carry);
@@ -7429,14 +6872,14 @@ inline std::size_t predictSize_in_bytes(const std::uint64_t* a,
 // see how that maps onto bytes.
     std::size_t r = bignumBits(a, lena);
     r = 1 + static_cast<std::size_t>(
-            (617*static_cast<std::uint64_t>(r))/2048);
+            (617*static_cast<Digit>(r))/2048);
     if (negative(a[lena-1])) r += 2; // allow space for a "-" sign.
     return r;
 }
 
 inline std::size_t bignumToStringLength(std::uint64_t* a, std::size_t lena)
 {   if (lena == 1)
-    {   std::int64_t v = a[0];
+    {   SignedDigit v = a[0];
 // Note that the negative numbers checked against are 1 digit shorter so as
 // to allow space for the "-" sign.
         if (v <= 9999999 && v >= -999999) return 7;
@@ -7457,7 +6900,7 @@ inline std::size_t bignumToString(char* result, std::size_t m,
 // Making one-word numbers a special case simplifies things later on! It may
 // also make this case go just slightly faster.
     if (lena == 1)
-    {   std::uint64_t v = a[0];
+    {   Digit v = a[0];
         bool sign;
         if (negative(v) && !asUnsigned)
         {   sign = true;
@@ -7511,7 +6954,7 @@ inline std::size_t bignumToString(char* result, std::size_t m,
 // For the edge case lena==2 and m==20. I copy 2 words across. That will leave
 // 4 bytes unused.
     for (i=0; i<lena; i++) r[i] = a[i];
-    for (; i<m/sizeof(std::uint64_t); i++) r[i] = 0;
+    for (; i<m/sizeof(Digit); i++) r[i] = 0;
 // Make the number positive
     bool sign = false;
     if (negative(r[lena-1]) && !asUnsigned)
@@ -7524,7 +6967,7 @@ inline std::size_t bignumToString(char* result, std::size_t m,
 // down from the top of the vector. That should JUST keep up so that I
 // never overwrite digits of the reducing part! I will stop when the
 // number I have been working with end up < 10^19.
-    std::size_t p = m/sizeof(std::uint64_t)
+    std::size_t p = m/sizeof(Digit)
                     -1; // where to put next output digit
 // Each value written into the vector here will stand for 19 decimal
 // digits, and will use 8 bytes. So here the nastiest case will be when the
@@ -7533,7 +6976,7 @@ inline std::size_t bignumToString(char* result, std::size_t m,
 // belief is that numbers from 10^16 upwards will lead to there being enough
 // space.
     while (lena > 1 || r[0] > ten19)
-    {   std::uint64_t d = short_divide_ten_19(r, lena);
+    {   Digit d = short_divide_ten_19(r, lena);
         r[p--] = d;
     }
     r[p] = r[0];
@@ -7542,7 +6985,7 @@ inline std::size_t bignumToString(char* result, std::size_t m,
 // to character data. I write in the string data just over what has been
 // digits data, and I have arranged to position everything to (just)
 // avoid overwriting myself.
-    std::uint64_t top = r[p++];
+    Digit top = r[p++];
     if (top == 0) top = r[p++]; // discard potential leading zero!
 // Get a pointer into the buffer as character data...
     char* p1 = reinterpret_cast<char*>(result);
@@ -7568,7 +7011,7 @@ inline std::size_t bignumToString(char* result, std::size_t m,
         len++;
     }
     while (bp != 0);
-    while (p < m/sizeof(std::uint64_t))
+    while (p < m/sizeof(Digit))
     {
 // I will always pick up the number I am going to expand before writing any
 // digits into the buffer.
@@ -7597,20 +7040,19 @@ inline string_handle bignumToString(std::uint64_t* a,
                                     std::size_t lena,
                                     bool asUnsigned=false)
 {   std::size_t len = bignumToStringLength(a, lena);
-    push(a);
     char* s = reserveString(len);
-    pop(a);
     std::size_t final_len = bignumToString(s, len, a, lena,
                             asUnsigned);
     return confirmSizeString(s, len, final_len);
 }
 
 inline string_handle bignumToString(std::intptr_t aa)
-{   std::uint64_t* a, v[1];
+{   std::uint64_t* a;
+    Digit v[1];
     std::size_t lena;
     if (storedAsFixnum(aa))
-    {   v[0] = intOfHandle(aa);
-        a = v;
+    {   v[0] = intOfHandle(aa);   // This is sort of faking a 1-digit bignum
+        a = reinterpret_cast<std::uint64_t*>(&v[0]);
         lena = 1;
     }
     else
@@ -7628,11 +7070,12 @@ inline std::size_t bignumToStringHexLength(std::intptr_t aa)
 }
 
 inline string_handle bignumToStringHex(std::intptr_t aa)
-{   std::uint64_t* a, v[1];
+{   std::uint64_t* a;
+    Digit v[1];
     std::size_t n;
     if (storedAsFixnum(aa))
     {   v[0] = intOfHandle(aa);
-        a = v;
+        a = reinterpret_cast<std::uint64_t*>(&v[0]);
         n = 1;
     }
     else
@@ -7647,7 +7090,7 @@ inline string_handle bignumToStringHex(std::intptr_t aa)
     }
 // printing in hexadecimal should be way easier!
     std::size_t m = 16*n;
-    std::uint64_t top = a[n-1];
+    Digit top = a[n-1];
     bool sign = negative(top);
     if (sign)
     {   m += 2; // for "~f"
@@ -7666,9 +7109,7 @@ inline string_handle bignumToStringHex(std::intptr_t aa)
             m--;
         }
     }
-    push(a);
     char* r = reserveString(m);
-    pop(a);
     char* p = reinterpret_cast<char*>(r);
     top = a[n-1];
     if (sign)
@@ -7677,7 +7118,7 @@ inline string_handle bignumToStringHex(std::intptr_t aa)
     }
     bool started = false;
     for (std::size_t i=0; i<n; i++)
-    {   std::uint64_t v = a[n-i-1];
+    {   Digit v = a[n-i-1];
         for (int j=0; j<16; j++)
         {   int d = static_cast<int>(v >> (60-4*j)) & 0xf;
             if (!started)
@@ -7697,11 +7138,12 @@ inline std::size_t bignumToStringOctalLength(std::intptr_t aa)
 }
 
 inline string_handle bignumToStringOctal(std::intptr_t aa)
-{   std::uint64_t* a, v[1];
+{   std::uint64_t* a;
+    Digit v[1];
     std::size_t n;
     if (storedAsFixnum(aa))
     {   v[0] = intOfHandle(aa);
-        a = v;
+        a = reinterpret_cast<std::uint64_t*>(&v[0]);
         n = 1;
     }
     else
@@ -7710,7 +7152,7 @@ inline string_handle bignumToStringOctal(std::intptr_t aa)
     }
     std::size_t width = (64*n +
                          2)/3; // raw number of octal digits needed.
-    std::uint64_t top = a[n-1];
+    Digit top = a[n-1];
     bool sign = negative(top);
 // There is a slight misery in that 64 is not a multiple of 3 (!) and so
 // the octal representation of a value has some digits that depend on a pair
@@ -7725,9 +7167,7 @@ inline string_handle bignumToStringOctal(std::intptr_t aa)
     {   while (readU3(a, n, width-1) == 0 && width > 1) width--;
         nn = width;
     }
-    push(a);
     char* r = reserveString(nn);
-    pop(a);
     char* p = reinterpret_cast<char*>(r);
     if (sign)
     {  * p++ = '~';
@@ -7743,11 +7183,12 @@ inline std::size_t bignumToStringBinaryLength(std::intptr_t aa)
 }
 
 inline string_handle bignumToStringBinary(std::intptr_t aa)
-{   std::uint64_t* a, v[1];
+{   std::uint64_t* a;
+    Digit v[1];
     std::size_t n;
     if (storedAsFixnum(aa))
     {   v[0] = intOfHandle(aa);
-        a = v;
+        a = reinterpret_cast<std::uint64_t*>(&v[0]);
         n = 1;
     }
     else
@@ -7761,7 +7202,7 @@ inline string_handle bignumToStringBinary(std::intptr_t aa)
         return confirmSizeString(r, 1, 1);
     }
     std::size_t m = 64*n;
-    std::uint64_t top = a[n-1];
+    Digit top = a[n-1];
     bool sign = negative(top);
     if (sign)
     {   m += 2; // for "~1"
@@ -7777,9 +7218,7 @@ inline string_handle bignumToStringBinary(std::intptr_t aa)
             m--;
         }
     }
-    push(a);
     char* r = reserveString(m);
-    pop(a);
     char* p = r;
     top = a[n-1];
     if (sign)
@@ -7788,7 +7227,7 @@ inline string_handle bignumToStringBinary(std::intptr_t aa)
     }
     bool started = false;
     for (std::size_t i=0; i<n; i++)
-    {   std::uint64_t v = a[n-i-1];
+    {   Digit v = a[n-i-1];
         for (int j=0; j<64; j++)
         {   int d = static_cast<int>(v >> (63-j)) & 0x1;
             if (!started)
@@ -7814,7 +7253,7 @@ inline bool Zerop::op
 {   return numberSize(a) == 1 && a[0] == 0;
 }
 
-inline bool Zerop::op(std::int64_t a)
+inline bool Zerop::op(SignedDigit a)
 {   return a == 0;
 }
 
@@ -7822,7 +7261,7 @@ inline bool Onep::op(std::uint64_t* a)
 {   return numberSize(a) == 1 && a[0] == 1;
 }
 
-inline bool Onep::op(std::int64_t a)
+inline bool Onep::op(SignedDigit a)
 {   return a == 1;
 }
 
@@ -7830,7 +7269,7 @@ inline bool Minusp::op(std::uint64_t* a)
 {   return negative(a[numberSize(a)-1]);
 }
 
-inline bool Minusp::op(std::int64_t a)
+inline bool Minusp::op(SignedDigit a)
 {   return a < 0;
 }
 
@@ -7838,7 +7277,7 @@ inline bool Plusp::op(std::uint64_t* a)
 {   return !negative(a[numberSize(a)-1]); // NB a bignum can not be zero
 }
 
-inline bool Plusp::op(std::int64_t a)
+inline bool Plusp::op(SignedDigit a)
 {   return a > 0;
 }
 
@@ -7846,7 +7285,7 @@ inline bool Evenp::op(std::uint64_t* a)
 {   return (a[0] & 1) == 0;
 }
 
-inline bool Evenp::op(std::int64_t a)
+inline bool Evenp::op(SignedDigit a)
 {   return (a & 1) == 0;
 }
 
@@ -7854,7 +7293,7 @@ inline bool Oddp::op(std::uint64_t* a)
 {   return (a[0] & 1) != 0;
 }
 
-inline bool Oddp::op(std::int64_t a)
+inline bool Oddp::op(SignedDigit a)
 {   return (a & 1) != 0;
 }
 
@@ -7863,7 +7302,7 @@ inline bool Oddp::op(std::int64_t a)
 inline bool bigeqn(const std::uint64_t* a, std::size_t lena,
                    const std::uint64_t* b, std::size_t lenb)
 {   if (lena != lenb) return false;
-    return std::memcmp(a, b, lena*sizeof(std::uint64_t)) == 0;
+    return std::memcmp(a, b, lena*sizeof(Digit)) == 0;
 }
 
 
@@ -7873,21 +7312,21 @@ inline bool Eqn::op(std::uint64_t* a, std::uint64_t* b)
     return bigeqn(a, lena, b, lenb);
 }
 
-inline bool Eqn::op(std::uint64_t* a, std::int64_t b)
+inline bool Eqn::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    return lena==1 && static_cast<std::int64_t>(a[0])==b;
+    return lena==1 && static_cast<SignedDigit>(a[0])==b;
 }
 
-inline bool Eqn::op(std::int64_t a, std::uint64_t* b)
+inline bool Eqn::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    return lenb==1 && a==static_cast<std::int64_t>(b[0]);
+    return lenb==1 && a==static_cast<SignedDigit>(b[0]);
 }
 
-inline bool Eqn::op(std::int64_t a, std::int64_t b)
+inline bool Eqn::op(SignedDigit a, SignedDigit b)
 {   return (a == b);
 }
 
-inline bool Eqn::op(std::int64_t a, float b)
+inline bool Eqn::op(SignedDigit a, float b)
 {   return Eqn::op(a, static_cast<double>(b));
 }
 
@@ -7895,7 +7334,7 @@ inline bool Eqn::op(std::uint64_t* a, float b)
 {   return Eqn::op(a, static_cast<double>(b));
 }
 
-inline bool Eqn::op(float a, std::int64_t b)
+inline bool Eqn::op(float a, SignedDigit b)
 {   return Eqn::op(static_cast<double>(a), b);
 }
 
@@ -7903,34 +7342,34 @@ inline bool Eqn::op(float a, std::uint64_t* b)
 {   return Eqn::op(static_cast<double>(a), b);
 }
 
-inline bool Eqn::op(std::int64_t a, double b)
-{   const std::int64_t range = (1LL)<<53;
+inline bool Eqn::op(SignedDigit a, double b)
+{   const SignedDigit range = (1LL)<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) == b;
 // The value on the next line is a floating point representation of 2^63,
 // so any floating value at least that large is bigger than any int64_t value.
     if (b >= 9223372036854775808.0) return false;
     else if (b < -9223372036854775808.0) return false;
     if (std::isnan(b)) return false;
-    return a == static_cast<std::int64_t>(b);
+    return a == static_cast<SignedDigit>(b);
 }
 
 inline bool eqnfloat(std::uint64_t* a, std::size_t lena, double b)
 {   if (std::isnan(b)||
         std::isinf(b)) return false;
-    std::int64_t top = static_cast<std::int64_t>(a[lena-1]);
+    SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
 // If the signs differn than the values are certainly not equal.
     if (top >= 0 && b <= 0.0) return false;
     if (top < 0 && b >= 0.0) return false;
     double ipart;
     double fpart = std::modf(b, &ipart);
     if (fpart != 0.0) return false; // not an integer so not equal.
-    std::int64_t hi;
-    std::uint64_t next;
+    SignedDigit hi;
+    Digit next;
     std::size_t len;
     doubleTo_virtualBignum(ipart, hi, next, len, RoundingMode::TRUNC);
     if (len != lena) return false;
-    if (len == 1) return a[0] == static_cast<std::uint64_t>(top);
-    if (a[len-1] != static_cast<std::uint64_t>(top) ||
+    if (len == 1) return a[0] == static_cast<Digit>(top);
+    if (a[len-1] != static_cast<Digit>(top) ||
         a[len-2] != next) return false;
     for (std::size_t i=0; i<len-2; i++)
         if (a[i] != 0) return false;
@@ -7939,11 +7378,11 @@ inline bool eqnfloat(std::uint64_t* a, std::size_t lena, double b)
 
 inline bool Eqn::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Eqn::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Eqn::op(static_cast<SignedDigit>(a[0]), b);
     return eqnfloat(a, lena, b);
 }
 
-inline bool Eqn::op(double a, std::int64_t b)
+inline bool Eqn::op(double a, SignedDigit b)
 {   return Eqn::op(b, a);
 }
 
@@ -7985,7 +7424,7 @@ inline float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
 
 inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
 {   if (!f128_eq(b, b)) return false;  // a NaN if b!=b
-    std::int64_t top = static_cast<std::int64_t>(a[lena-1]);
+    SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return false;
     if (top < 0 && !f128_lt(b, f128_0)) return false;
 // Now the two inputs have the same sign.
@@ -7993,7 +7432,7 @@ inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
         (lena == 2 &&
          !((a[1] > 0x0001000000000000 ||
             (a[1] == 0x0001000000000000 && a[0] != 0)) ||
-           static_cast<std::int64_t>(a[1]) < -static_cast<std::int64_t>
+           static_cast<SignedDigit>(a[1]) < -static_cast<SignedDigit>
            (0x0001000000000000))))
     {
 // Here the integer is of modest size - if the float is huge we can
@@ -8019,17 +7458,17 @@ inline bool eqnbigfloat(std::uint64_t* a, std::size_t lena, float128_t b)
     }
 }
 
-inline bool Eqn::op(std::int64_t a, float128_t b)
+inline bool Eqn::op(SignedDigit a, float128_t b)
 {   return f128_eq(i64_to_f128(a), b);
 }
 
 inline bool Eqn::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Eqn::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Eqn::op(static_cast<SignedDigit>(a[0]), b);
     return eqnbigfloat(a, lena, b);
 }
 
-inline bool Eqn::op(float128_t a, std::int64_t b)
+inline bool Eqn::op(float128_t a, SignedDigit b)
 {   return Eqn::op(b, a);
 }
 
@@ -8045,21 +7484,21 @@ inline bool Neqn::op(std::uint64_t* a, std::uint64_t* b)
     return !bigeqn(a, lena, b, lenb);
 }
 
-inline bool Neqn::op(std::uint64_t* a, std::int64_t b)
+inline bool Neqn::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    return lena!=1 || static_cast<std::int64_t>(a[0])!=b;
+    return lena!=1 || static_cast<SignedDigit>(a[0])!=b;
 }
 
-inline bool Neqn::op(std::int64_t a, std::uint64_t* b)
+inline bool Neqn::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    return lenb!=1 || a!=static_cast<std::int64_t>(b[0]);
+    return lenb!=1 || a!=static_cast<SignedDigit>(b[0]);
 }
 
-inline bool Neqn::op(std::int64_t a, std::int64_t b)
+inline bool Neqn::op(SignedDigit a, SignedDigit b)
 {   return (a != b);
 }
 
-inline bool Neqn::op(std::int64_t a, float b)
+inline bool Neqn::op(SignedDigit a, float b)
 {   return Neqn::op(a, static_cast<double>(b));
 }
 
@@ -8067,7 +7506,7 @@ inline bool Neqn::op(std::uint64_t* a, float b)
 {   return Neqn::op(a, static_cast<double>(b));
 }
 
-inline bool Neqn::op(float a, std::int64_t b)
+inline bool Neqn::op(float a, SignedDigit b)
 {   return Neqn::op(static_cast<double>(a), b);
 }
 
@@ -8075,24 +7514,24 @@ inline bool Neqn::op(float a, std::uint64_t* b)
 {   return Neqn::op(static_cast<double>(a), b);
 }
 
-inline bool Neqn::op(std::int64_t a, double b)
-{   const std::int64_t range = (1LL)<<53;
+inline bool Neqn::op(SignedDigit a, double b)
+{   const SignedDigit range = (1LL)<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) != b;
 // The value on the next line is a floating point representation of 2^63,
 // so any floating value at least that large is bigger than any int64_t value.
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return true;
     if (std::isnan(b)) return false;   // Ha Ha Ha!
-    return a != static_cast<std::int64_t>(b);
+    return a != static_cast<SignedDigit>(b);
 }
 
 inline bool Neqn::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Neqn::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Neqn::op(static_cast<SignedDigit>(a[0]), b);
     return !eqnfloat(a, lena, b);
 }
 
-inline bool Neqn::op(double a, std::int64_t b)
+inline bool Neqn::op(double a, SignedDigit b)
 {   return Neqn::op(b, a);
 }
 
@@ -8102,17 +7541,17 @@ inline bool Neqn::op(double a, std::uint64_t* b)
 
 #ifdef softfloat_h
 
-inline bool Neqn::op(std::int64_t a, float128_t b)
+inline bool Neqn::op(SignedDigit a, float128_t b)
 {   return !f128_eq(i64_to_f128(a), b);
 }
 
 inline bool Neqn::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Neqn::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Neqn::op(static_cast<SignedDigit>(a[0]), b);
     return !eqnbigfloat(a, lena, b);
 }
 
-inline bool Neqn::op(float128_t a, std::int64_t b)
+inline bool Neqn::op(float128_t a, SignedDigit b)
 {   return Neqn::op(b, a);
 }
 
@@ -8126,17 +7565,17 @@ inline bool Neqn::op(float128_t a, std::uint64_t* b)
 
 inline bool biggreaterp(const std::uint64_t* a, std::size_t lena,
                         const std::uint64_t* b, std::size_t lenb)
-{   std::uint64_t a0 = a[lena-1], b0 = b[lenb-1];
+{   Digit a0 = a[lena-1], b0 = b[lenb-1];
 // If one of the numbers has more digits than the other then the sign of
 // the longer one gives my the answer.
     if (lena > lenb) return positive(a0);
     else if (lenb > lena) return negative(b0);
 // When the two numbers are the same length but the top digits differ
 // then comparing those digits tells me all I need to know.
-    if (static_cast<std::int64_t>(a0) >
-        static_cast<std::int64_t>(b0)) return true;
-    if (static_cast<std::int64_t>(a0) <
-        static_cast<std::int64_t>(b0)) return false;
+    if (static_cast<SignedDigit>(a0) >
+        static_cast<SignedDigit>(b0)) return true;
+    if (static_cast<SignedDigit>(a0) <
+        static_cast<SignedDigit>(b0)) return false;
 // Otherwise I need to scan down through digits...
     lena--;
     while (lena != 0)
@@ -8162,8 +7601,8 @@ inline bool bigUnsignedGreaterp(const std::uint64_t* a,
     else if (lenb > lena) return false;
     while (lena != 0)
     {   lena--;
-        std::uint64_t a0 = a[lena];
-        std::uint64_t b0 = b[lena];
+        Digit a0 = a[lena];
+        Digit b0 = b[lena];
         if (a0 > b0) return true;
         if (a0 < b0) return false;
     }
@@ -8176,19 +7615,19 @@ inline bool Greaterp::op(std::uint64_t* a, std::uint64_t* b)
     return biggreaterp(a, lena, b, lenb);
 }
 
-inline bool Greaterp::op(std::uint64_t* a, std::int64_t bb)
-{   std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
+inline bool Greaterp::op(std::uint64_t* a, SignedDigit bb)
+{   Digit b[1] = {static_cast<Digit>(bb)};
     std::size_t lena = numberSize(a);
     return biggreaterp(a, lena, b, 1);
 }
 
-inline bool Greaterp::op(std::int64_t aa, std::uint64_t* b)
-{   std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
+inline bool Greaterp::op(SignedDigit aa, std::uint64_t* b)
+{   Digit a[1] = {static_cast<Digit>(aa)};
     std::size_t lenb = numberSize(b);
     return biggreaterp(a, 1, b, lenb);
 }
 
-inline bool Greaterp::op(std::int64_t a, std::int64_t b)
+inline bool Greaterp::op(SignedDigit a, SignedDigit b)
 {   return a > b;
 }
 
@@ -8196,7 +7635,7 @@ inline bool Greaterp::op(std::int64_t a, std::int64_t b)
 // so all the cases of comparisons with floats (as distinct from with
 // double) are easy to delegate.
 
-inline bool Greaterp::op(std::int64_t a, float b)
+inline bool Greaterp::op(SignedDigit a, float b)
 {   return Greaterp::op(a, static_cast<double>(b));
 }
 
@@ -8204,7 +7643,7 @@ inline bool Greaterp::op(std::uint64_t* a, float b)
 {   return Greaterp::op(a, static_cast<double>(b));
 }
 
-inline bool Greaterp::op(float a, std::int64_t b)
+inline bool Greaterp::op(float a, SignedDigit b)
 {   return Greaterp::op(static_cast<double>(a), b);
 }
 
@@ -8212,11 +7651,11 @@ inline bool Greaterp::op(float a, std::uint64_t* b)
 {   return Greaterp::op(static_cast<double>(a), b);
 }
 
-inline bool Greaterp::op(std::int64_t a, double b)
+inline bool Greaterp::op(SignedDigit a, double b)
 {
 // If the integer is small enough it can be converted to a double
 // without any rounding, so then I can do the comparison easily.
-    const std::int64_t range = 1LL<<53;
+    const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) > b;
 // NaNs must always return false from a comparison, so all the cases so
 // far will have yielded correct results. But here I must filter out
@@ -8229,7 +7668,7 @@ inline bool Greaterp::op(std::int64_t a, double b)
     else if (b < -9223372036854775808.0) return true;
 // Because |b| >= 2^53 but < 2^63 it can be converted to an int64_t value
 // without rounding.
-    return a > static_cast<std::int64_t>(b);
+    return a > static_cast<SignedDigit>(b);
 }
 
 // This compares a bignum against a double. It may in fact only be called
@@ -8251,8 +7690,8 @@ inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
 // If the integer is small enough it can be converted to a double
 // without any rounding, so then I can do the comparison easily.
     if (lena == 1)
-    {   std::int64_t aa = a[0];
-        const std::int64_t range = (1LL)<<53;
+    {   SignedDigit aa = a[0];
+        const SignedDigit range = (1LL)<<53;
         if (aa >= -range && aa <= range)
         {   double ad = static_cast<double>(aa);
             switch (mode)
@@ -8284,8 +7723,8 @@ inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
 // part in the case when b is small. But given that |a| is large if I
 // truncate b as I map it onto an integer the comparisons I make will still
 // be valid.
-    std::int64_t top;
-    std::uint64_t next;
+    SignedDigit top;
+    Digit next;
     std::size_t len;
     doubleTo_virtualBignum(b, top, next, len, RoundingMode::TRUNC);
 // If the numbers now differ in length that can tell me what the result is.
@@ -8303,11 +7742,11 @@ inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
     }
 // Now the arguments have the same length as bignums. First check for
 // differences in the top two digits.
-    if (static_cast<std::int64_t>(a[lena-1]) < top ||
-        (static_cast<std::int64_t>(a[lena-1]) == top && a[lena-2] < next))
+    if (static_cast<SignedDigit>(a[lena-1]) < top ||
+        (static_cast<SignedDigit>(a[lena-1]) == top && a[lena-2] < next))
         return (mode==CompareMode::LESSP || mode==CompareMode::LEQ);
-    if (static_cast<std::int64_t>(a[lena-1]) > top ||
-        (static_cast<std::int64_t>(a[lena-1]) == top && a[lena-2] > next))
+    if (static_cast<SignedDigit>(a[lena-1]) > top ||
+        (static_cast<SignedDigit>(a[lena-1]) == top && a[lena-2] > next))
         return (mode==CompareMode::GREATERP || mode==CompareMode::GEQ);
 // Now the top two digits of the two inputs match. If all lower digits of a
 // are zero then the two inputs are equal.
@@ -8321,11 +7760,11 @@ inline bool greaterpfloat(std::uint64_t* a, std::size_t lena,
 
 inline bool Greaterp::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Greaterp::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::GREATERP);
 }
 
-inline bool Greaterp::op(double a, std::int64_t b)
+inline bool Greaterp::op(double a, SignedDigit b)
 {   return Lessp::op(b, a);
 }
 
@@ -8345,7 +7784,7 @@ inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
                              bool great, bool ifequal)
 {   if (f128_nan(b)) return
             false;  // Comparisons involving a NaN => false.
-    std::int64_t top = static_cast<std::int64_t>(a[lena-1]);
+    SignedDigit top = static_cast<SignedDigit>(a[lena-1]);
     if (top >= 0 && f128_lt(b, f128_0)) return great;
     if (top < 0 && !f128_lt(b, f128_0)) return !great;
 // Now the two inputs have the same sign.
@@ -8353,7 +7792,7 @@ inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
         (lena == 2 &&
          !((a[1] > 0x0001000000000000 ||
             (a[1] == 0x0001000000000000 && a[0] != 0)) ||
-           static_cast<std::int64_t>(a[1]) < -static_cast<std::int64_t>
+           static_cast<SignedDigit>(a[1]) < -static_cast<SignedDigit>
            (0x0001000000000000))))
     {
 // Here the integer is of modest size - if the float is huge we can
@@ -8394,18 +7833,18 @@ inline bool greaterpbigfloat(std::uint64_t* a, std::size_t lena,
     }
 }
 
-inline bool Greaterp::op(std::int64_t a, float128_t b)
+inline bool Greaterp::op(SignedDigit a, float128_t b)
 {   return f128_lt(b, i64_to_f128(a));
 }
 
 inline bool Greaterp::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Greaterp::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, true, false);
 
 }
 
-inline bool Greaterp::op(float128_t a, std::int64_t b)
+inline bool Greaterp::op(float128_t a, SignedDigit b)
 {   return Lessp::op(b, a);
 }
 
@@ -8421,19 +7860,19 @@ inline bool Geq::op(std::uint64_t* a, std::uint64_t* b)
 {   return !Greaterp::op(b, a);
 }
 
-inline bool Geq::op(std::uint64_t* a, std::int64_t b)
+inline bool Geq::op(std::uint64_t* a, SignedDigit b)
 {   return !Greaterp::op(b, a);
 }
 
-inline bool Geq::op(std::int64_t a, std::uint64_t* b)
+inline bool Geq::op(SignedDigit a, std::uint64_t* b)
 {   return !Greaterp::op(b, a);
 }
 
-inline bool Geq::op(std::int64_t a, std::int64_t b)
+inline bool Geq::op(SignedDigit a, SignedDigit b)
 {   return a >= b;
 }
 
-inline bool Geq::op(std::int64_t a, float b)
+inline bool Geq::op(SignedDigit a, float b)
 {   return Geq::op(a, static_cast<double>(b));
 }
 
@@ -8441,7 +7880,7 @@ inline bool Geq::op(std::uint64_t* a, float b)
 {   return Geq::op(a, static_cast<double>(b));
 }
 
-inline bool Geq::op(float a, std::int64_t b)
+inline bool Geq::op(float a, SignedDigit b)
 {   return Geq::op(static_cast<double>(a), b);
 }
 
@@ -8449,22 +7888,22 @@ inline bool Geq::op(float a, std::uint64_t* b)
 {   return Geq::op(static_cast<double>(a), b);
 }
 
-inline bool Geq::op(std::int64_t a, double b)
-{   const std::int64_t range = 1LL<<53;
+inline bool Geq::op(SignedDigit a, double b)
+{   const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) >= b;
     if (std::isnan(b)) return false;
     if (b >= 9223372036854775808.0) return false;
     else if (b < -9223372036854775808.0) return true;
-    return a >= static_cast<std::int64_t>(b);
+    return a >= static_cast<SignedDigit>(b);
 }
 
 inline bool Geq::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Geq::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Geq::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::GEQ);
 }
 
-inline bool Geq::op(double a, std::int64_t b)
+inline bool Geq::op(double a, SignedDigit b)
 {   return Leq::op(b, a);
 }
 
@@ -8474,18 +7913,18 @@ inline bool Geq::op(double a, std::uint64_t* b)
 
 #ifdef softfloat_h
 
-inline bool Geq::op(std::int64_t a, float128_t b)
+inline bool Geq::op(SignedDigit a, float128_t b)
 {   return f128_le(b, i64_to_f128(a));
     return false;
 }
 
 inline bool Geq::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Greaterp::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Greaterp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, true, true);
 }
 
-inline bool Geq::op(float128_t a, std::int64_t b)
+inline bool Geq::op(float128_t a, SignedDigit b)
 {   return Leq::op(b, a);
 }
 
@@ -8501,19 +7940,19 @@ inline bool Lessp::op(std::uint64_t* a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(std::uint64_t* a, std::int64_t b)
+inline bool Lessp::op(std::uint64_t* a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(std::int64_t a, std::uint64_t* b)
+inline bool Lessp::op(SignedDigit a, std::uint64_t* b)
 {   return Greaterp::op(b, a);
 }
 
-inline bool Lessp::op(std::int64_t a, std::int64_t b)
+inline bool Lessp::op(SignedDigit a, SignedDigit b)
 {   return a < b;
 }
 
-inline bool Lessp::op(std::int64_t a, float b)
+inline bool Lessp::op(SignedDigit a, float b)
 {   return Lessp::op(a, static_cast<double>(b));
 }
 
@@ -8521,7 +7960,7 @@ inline bool Lessp::op(std::uint64_t* a, float b)
 {   return Lessp::op(a, static_cast<double>(b));
 }
 
-inline bool Lessp::op(float a, std::int64_t b)
+inline bool Lessp::op(float a, SignedDigit b)
 {   return Lessp::op(static_cast<double>(a), b);
 }
 
@@ -8529,22 +7968,22 @@ inline bool Lessp::op(float a, std::uint64_t* b)
 {   return Lessp::op(static_cast<double>(a), b);
 }
 
-inline bool Lessp::op(std::int64_t a, double b)
-{   const std::int64_t range = 1LL<<53;
+inline bool Lessp::op(SignedDigit a, double b)
+{   const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) < b;
     if (std::isnan(b)) return false;
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return false;
-    return a < static_cast<std::int64_t>(b);
+    return a < static_cast<SignedDigit>(b);
 }
 
 inline bool Lessp::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Lessp::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::LESSP);
 }
 
-inline bool Lessp::op(double a, std::int64_t b)
+inline bool Lessp::op(double a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
@@ -8554,20 +7993,20 @@ inline bool Lessp::op(double a, std::uint64_t* b)
 
 #ifdef softfloat_h
 
-inline bool Lessp::op(std::int64_t a, float128_t b)
+inline bool Lessp::op(SignedDigit a, float128_t b)
 {   return f128_lt(i64_to_f128(a), b);
     return false;
 }
 
 inline bool Lessp::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Lessp::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, false);
 
     return false;
 }
 
-inline bool Lessp::op(float128_t a, std::int64_t b)
+inline bool Lessp::op(float128_t a, SignedDigit b)
 {   return Greaterp::op(b, a);
 }
 
@@ -8583,19 +8022,19 @@ inline bool Leq::op(std::uint64_t* a, std::uint64_t* b)
 {   return !Greaterp::op(a, b);
 }
 
-inline bool Leq::op(std::uint64_t* a, std::int64_t b)
+inline bool Leq::op(std::uint64_t* a, SignedDigit b)
 {   return !Greaterp::op(a, b);
 }
 
-inline bool Leq::op(std::int64_t a, std::uint64_t* b)
+inline bool Leq::op(SignedDigit a, std::uint64_t* b)
 {   return !Greaterp::op(a, b);
 }
 
-inline bool Leq::op(std::int64_t a, std::int64_t b)
+inline bool Leq::op(SignedDigit a, SignedDigit b)
 {   return a <= b;
 }
 
-inline bool Leq::op(std::int64_t a, float b)
+inline bool Leq::op(SignedDigit a, float b)
 {   return Leq::op(a, static_cast<double>(b));
 }
 
@@ -8603,7 +8042,7 @@ inline bool Leq::op(std::uint64_t* a, float b)
 {   return Leq::op(a, static_cast<double>(b));
 }
 
-inline bool Leq::op(float a, std::int64_t b)
+inline bool Leq::op(float a, SignedDigit b)
 {   return Leq::op(static_cast<double>(a), b);
 }
 
@@ -8611,22 +8050,22 @@ inline bool Leq::op(float a, std::uint64_t* b)
 {   return Leq::op(static_cast<double>(a), b);
 }
 
-inline bool Leq::op(std::int64_t a, double b)
-{   const std::int64_t range = 1LL<<53;
+inline bool Leq::op(SignedDigit a, double b)
+{   const SignedDigit range = 1LL<<53;
     if (a >= -range && a <= range) return static_cast<double>(a) <= b;
     if (std::isnan(b)) return false;
     if (b >= 9223372036854775808.0) return true;
     else if (b < -9223372036854775808.0) return false;
-    return a <= static_cast<std::int64_t>(b);
+    return a <= static_cast<SignedDigit>(b);
 }
 
 inline bool Leq::op(std::uint64_t* a, double b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Lessp::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Lessp::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpfloat(a, lena, b, CompareMode::LEQ);
 }
 
-inline bool Leq::op(double a, std::int64_t b)
+inline bool Leq::op(double a, SignedDigit b)
 {   return Geq::op(b, a);
 }
 
@@ -8636,18 +8075,18 @@ inline bool Leq::op(double a, std::uint64_t* b)
 
 #ifdef softfloat_h
 
-inline bool Leq::op(std::int64_t a, float128_t b)
+inline bool Leq::op(SignedDigit a, float128_t b)
 {   return f128_le(i64_to_f128(a), b);
     return false;
 }
 
 inline bool Leq::op(std::uint64_t* a, float128_t b)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Leq::op(static_cast<std::int64_t>(a[0]), b);
+    if (lena == 1) return Leq::op(static_cast<SignedDigit>(a[0]), b);
     return greaterpbigfloat(a, lena, b, false, true);
 }
 
-inline bool Leq::op(float128_t a, std::int64_t b)
+inline bool Leq::op(float128_t a, SignedDigit b)
 {   return Geq::op(b, a);
 }
 
@@ -8684,9 +8123,7 @@ inline void bignegate(const std::uint64_t* a, std::size_t lena,
 
 inline std::intptr_t Minus::op(std::uint64_t* a)
 {   std::size_t n = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(n+1);
-    pop(a);
     std::size_t final_n;
     bignegate(a, n, p, final_n);
     return confirmSize(p, n+1, final_n);
@@ -8698,7 +8135,7 @@ inline std::intptr_t Minus::op(std::uint64_t* a)
 // even in that case (-a) can not overflow 64-bit arithmetic because
 // the fixnum will have had at least one tag bit.
 
-inline std::intptr_t Minus::op(std::int64_t a)
+inline std::intptr_t Minus::op(SignedDigit a)
 {   if (a == MIN_FIXNUM) return intToBignum(-a);
     else return intToHandle(-a);
 }
@@ -8707,7 +8144,7 @@ inline std::intptr_t Add1::op(std::uint64_t* a)
 {   return Plus::op(a, 1);
 }
 
-inline std::intptr_t Add1::op(std::int64_t a)
+inline std::intptr_t Add1::op(SignedDigit a)
 {   return intToBignum(a+1);
 }
 
@@ -8715,22 +8152,18 @@ inline std::intptr_t Sub1::op(std::uint64_t* a)
 {   return Plus::op(a, -1);
 }
 
-inline std::intptr_t Sub1::op(std::int64_t a)
+inline std::intptr_t Sub1::op(SignedDigit a)
 {   return intToBignum(a-1);
 }
 
 inline std::intptr_t Abs::op(std::uint64_t* a)
 {   std::size_t n = numberSize(a);
     if (!negative(a[n-1]))
-    {   push(a);
-        std::uint64_t* r = reserve(n);
-        pop(a);
-        std::memcpy(r, a, n*sizeof(std::uint64_t));
+    {   std::uint64_t* r = reserve(n);
+            std::memcpy(r, a, n*sizeof(Digit));
         return confirmSize(r, n, n);
     }
-    push(a);
     std::uint64_t* r = reserve(n+1);
-    pop(a);
     std::size_t final_n;
     bignegate(a, n, r, final_n);
     return confirmSize(r, n+1, final_n);
@@ -8742,7 +8175,7 @@ inline std::intptr_t Abs::op(std::uint64_t* a)
 // even in that case (-a) can not overflow 64-bit arithmetic because
 // the fixnum will have had at least one tag bit.
 
-inline std::intptr_t Abs::op(std::int64_t a)
+inline std::intptr_t Abs::op(SignedDigit a)
 {   if (a == MIN_FIXNUM) return unsignedIntToBignum(-a);
     else return intToHandle(a<0 ? -a : a);
 }
@@ -8759,15 +8192,13 @@ inline void biglognot(const std::uint64_t* a, std::size_t lena,
 
 inline std::intptr_t Lognot::op(std::uint64_t* a)
 {   std::size_t n = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(n+1);
-    pop(a);
     std::size_t final_n;
     biglognot(a, n, p, final_n);
     return confirmSize(p, n+1, final_n);
 }
 
-inline std::intptr_t Lognot::op(std::int64_t a)
+inline std::intptr_t Lognot::op(SignedDigit a)
 {   return intToHandle(~a);
 }
 
@@ -8800,9 +8231,7 @@ inline std::intptr_t Logand::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     biglogand(a, lena, b, lenb, p, final_n);
     return confirmSize(p, n, final_n);
@@ -8813,29 +8242,25 @@ inline std::intptr_t Logand::op(std::uint64_t* a, std::uint64_t* b)
 // I am not going to expect that to be on the critical performance path for
 // enough programs for me to worry too much!
 
-inline std::intptr_t Logand::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Logand::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(lena);
-    pop(a);
     std::size_t final_n;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     biglogand(a, lena, bb, 1, p, final_n);
     return confirmSize(p, lena, final_n);
 }
 
-inline std::intptr_t Logand::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Logand::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* p = reserve(lenb);
-    pop(b);
     std::size_t final_n;
-    std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
+    Digit aa[1] = {static_cast<Digit>(a)};
     biglogand(aa, 1, b, lenb, p, final_n);
     return confirmSize(p, lenb, final_n);
 }
 
-inline std::intptr_t Logand::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Logand::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a & b);
 }
 
@@ -8867,37 +8292,31 @@ inline std::intptr_t Logor::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     biglogor(a, lena, b, lenb, p, final_n);
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Logor::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Logor::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(lena);
-    pop(a);
     std::size_t final_n;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     biglogor(a, lena, bb, 1, p, final_n);
     return confirmSize(p, lena, final_n);
 }
 
-inline std::intptr_t Logor::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Logor::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* p = reserve(lenb);
-    pop(b);
     std::size_t final_n;
-    std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
+    Digit aa[1] = {static_cast<Digit>(a)};
     biglogor(aa, 1, b, lenb, p, final_n);
     return confirmSize(p, lenb, final_n);
 }
 
-inline std::intptr_t Logor::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Logor::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a | b);
 }
 
@@ -8937,37 +8356,31 @@ inline std::intptr_t Logxor::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     biglogxor(a, lena, b, lenb, p, final_n);
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Logxor::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Logxor::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(lena);
-    pop(a);
     std::size_t final_n;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     biglogxor(a, lena, bb, 1, p, final_n);
     return confirmSize(p, lena, final_n);
 }
 
-inline std::intptr_t Logxor::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Logxor::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* p = reserve(lenb);
-    pop(b);
     std::size_t final_n;
-    std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
+    Digit aa[1] = {static_cast<Digit>(a)};
     biglogxor(aa, 1, b, lenb, p, final_n);
     return confirmSize(p, lenb, final_n);
 }
 
-inline std::intptr_t Logxor::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Logxor::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a ^ b);
 }
 
@@ -9006,46 +8419,40 @@ inline std::intptr_t Logeqv::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t n;
     if (lena >= lenb) n = lena;
     else n = lenb;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     biglogeqv(a, lena, b, lenb, p, final_n);
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Logeqv::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Logeqv::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(lena);
-    pop(a);
     std::size_t final_n;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     biglogeqv(a, lena, bb, 1, p, final_n);
     return confirmSize(p, lena, final_n);
 }
 
-inline std::intptr_t Logeqv::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Logeqv::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* p = reserve(lenb);
-    pop(b);
     std::size_t final_n;
-    std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
+    Digit aa[1] = {static_cast<Digit>(a)};
     biglogeqv(aa, 1, b, lenb, p, final_n);
     return confirmSize(p, lenb, final_n);
 }
 
-inline std::intptr_t Logeqv::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Logeqv::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(~a ^ b);
 }
 
 inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
-                          std::int64_t n,
+                          SignedDigit n,
                           std::uint64_t* r, std::size_t &lenr);
 
 inline void bigleftshift(const std::uint64_t* a, std::size_t lena,
-                         std::int64_t n,
+                         SignedDigit n,
                          std::uint64_t* r, std::size_t &lenr)
 {   if (n == 0)
     {   internalCopy(a, lena, r);
@@ -9070,7 +8477,7 @@ inline void bigleftshift(const std::uint64_t* a, std::size_t lena,
             r[i+words] = (a[i]<<bits) |
                          (a[i-1]>>(64-bits));
         r[words+lena] = (negative(a[lena-1]) ?
-                         static_cast<std::uint64_t>(-1)<<bits :
+                         static_cast<Digit>(-1)<<bits :
                          0) | (a[lena-1]>>(64-bits));
         lenr = lena+words+1;
     }
@@ -9078,34 +8485,32 @@ inline void bigleftshift(const std::uint64_t* a, std::size_t lena,
     truncateNegative(r, lenr);
 }
 
-inline std::intptr_t rightshift_b(std::uint64_t* a, std::int64_t n);
+inline std::intptr_t rightshift_b(std::uint64_t* a, SignedDigit n);
 
-inline std::intptr_t LeftShift::op(std::uint64_t* a, std::int64_t n)
+inline std::intptr_t LeftShift::op(std::uint64_t* a, SignedDigit n)
 {   if (n == 0) return copyIfNoGarbageCollector(a);
     else if (n < 0) return RightShift::op(a, -n);
     std::size_t lena = numberSize(a);
     std::size_t nr = lena + (n/64) + 1;
-    push(a);
     std::uint64_t* p = reserve(nr);
-    pop(a);
     std::size_t final_n;
     bigleftshift(a, lena, n, p, final_n);
     return confirmSize(p, nr, final_n);
 }
 
-inline std::intptr_t LeftShift::op(std::int64_t aa, std::int64_t n)
+inline std::intptr_t LeftShift::op(SignedDigit aa, SignedDigit n)
 {   if (n == 0) return intToHandle(aa);
     else if (n < 0) return RightShift::op(aa, -n);
     std::size_t nr = (n/64) + 2;
     std::uint64_t* p = reserve(nr);
     std::size_t final_n;
-    std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
+    Digit a[1] = {static_cast<Digit>(aa)};
     bigleftshift(a, 1, n, p, final_n);
     return confirmSize(p, nr, final_n);
 }
 
 inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
-                          std::int64_t n,
+                          SignedDigit n,
                           std::uint64_t* r, std::size_t &lenr)
 {   if (n == 0)
     {   internalCopy(a, lena, r);
@@ -9138,22 +8543,20 @@ inline void bigrightshift(const std::uint64_t* a, std::size_t lena,
     truncateNegative(r, lenr);
 }
 
-inline std::intptr_t RightShift::op(std::uint64_t* a, std::int64_t n)
+inline std::intptr_t RightShift::op(std::uint64_t* a, SignedDigit n)
 {   if (n == 0) return copyIfNoGarbageCollector(a);
     else if (n < 0) return LeftShift::op(a, -n);
     std::size_t lena = numberSize(a);
     std::size_t nr;
     if (lena > static_cast<std::size_t>(n)/64) nr = lena - n/64;
     else nr = 1;
-    push(a);
     std::uint64_t* p = reserve(nr);
-    pop(a);
     std::size_t final_n;
     bigrightshift(a, lena, n, p, final_n);
     return confirmSize(p, nr, final_n);
 }
 
-inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
+inline std::intptr_t RightShift::op(SignedDigit a, SignedDigit n)
 {   if (n == 0) return intToHandle(a);
     else if (n < 0) return LeftShift::op(a, -n);
 // Shifts of 64 and up obviously lose all the input data apart from its
@@ -9162,16 +8565,16 @@ inline std::intptr_t RightShift::op(std::int64_t a, std::int64_t n)
 // Because C++ does not guarantee that right shifts on signed values
 // duplicate the sign bit I perform the "shift" here using division by
 // a power of 2. Because I have n <= 62 here I will not get overflow.
-    std::int64_t q = 1LL<<n;
+    SignedDigit q = 1LL<<n;
     return intToHandle((a & ~(q-1))/q);
 }
 
-inline std::uint64_t Low64Bits::op(std::uint64_t* a)
+inline Digit Low64Bits::op(std::uint64_t* a)
 {   return a[0];
 }
 
-inline std::uint64_t Low64Bits::op(std::int64_t aa)
-{   return static_cast<std::uint64_t>(aa);
+inline Digit Low64Bits::op(SignedDigit aa)
+{   return static_cast<Digit>(aa);
 }
 
 inline std::size_t LowBit::op(std::uint64_t* a)
@@ -9179,22 +8582,22 @@ inline std::size_t LowBit::op(std::uint64_t* a)
     if (negative(a[lena-1])) // count trailing 1 bits!
     {   std::size_t r=0, i=0;
         while (a[i++]==-1ULL) r += 64;
-        std::uint64_t w = ~a[i-1];
+        Digit w = ~a[i-1];
         return 64-nlz(w & (-w))+r;
     }
     else if (lena==1 && a[0]==0) return 0;
     else
     {   std::size_t r=0, i=0;
         while (a[i++]==0) r += 64;
-        std::uint64_t w = a[i-1];
+        Digit w = a[i-1];
         return 64-nlz(w & (-w))+r;
     }
 }
 
-inline std::size_t LowBit::op(std::int64_t aa)
-{   std::uint64_t a;
+inline std::size_t LowBit::op(SignedDigit aa)
+{   Digit a;
     if (aa == 0) return 0;
-    else if (aa < 0) a = ~static_cast<std::uint64_t>(aa);
+    else if (aa < 0) a = ~static_cast<Digit>(aa);
     else a = aa;
     a = a & (-a); // keeps only the lowest bit
     return 64-nlz(a);
@@ -9204,10 +8607,10 @@ inline std::size_t IntegerLength::op(std::uint64_t* a)
 {   return bignumBits(a, numberSize(a));
 }
 
-inline std::size_t IntegerLength::op(std::int64_t aa)
-{   std::uint64_t a;
+inline std::size_t IntegerLength::op(SignedDigit aa)
+{   Digit a;
     if (aa == 0 || aa == -1) return 0;
-    else if (aa < 0) a = -static_cast<std::uint64_t>(aa) - 1;
+    else if (aa < 0) a = -static_cast<Digit>(aa) - 1;
     else a = aa;
     return 64-nlz(a);
 }
@@ -9225,7 +8628,7 @@ inline std::size_t IntegerLength::op(std::int64_t aa)
 // "floating point" value with a 64-bit mantissa so I will not worry about
 // that at the moment.
 
-inline std::uint64_t Top64Bits::op(std::uint64_t* a)
+inline Digit Top64Bits::op(std::uint64_t* a)
 {   size_t n = numberSize(a);
     if (n == 1 ||
         (n == 2 && a[2] == 0))
@@ -9236,7 +8639,7 @@ inline std::uint64_t Top64Bits::op(std::uint64_t* a)
     return (a[n-1] << lz) | (a[n-2] >> (64-lz));
 }
 
-inline std::uint64_t Top64Bits::op(std::int64_t a)
+inline Digit Top64Bits::op(SignedDigit a)
 {   if (a == 0) return 0;    // Only non-normalised case
     return static_cast<uint64_t>(a) << nlz(a);
 }
@@ -9251,7 +8654,7 @@ inline std::size_t Logcount::op(std::uint64_t* a)
     return r;
 }
 
-inline std::size_t Logcount::op(std::int64_t a)
+inline std::size_t Logcount::op(SignedDigit a)
 {   if (a < 0) return countBits(~a);
     else return countBits(a);
 }
@@ -9262,7 +8665,7 @@ inline bool Logbitp::op(std::uint64_t* a, std::size_t n)
     return (a[n/64] & (1ULL << (n%64))) != 0;
 }
 
-inline bool Logbitp::op(std::int64_t a, std::size_t n)
+inline bool Logbitp::op(SignedDigit a, std::size_t n)
 {   if (n >= 64) return (a < 0);
     else return (a & (1ULL << n)) != 0;
 }
@@ -9272,7 +8675,7 @@ inline bool Logbitp::op(std::int64_t a, std::size_t n)
 inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
                             const std::uint64_t* b, std::size_t lenb,
                             std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t carry = 0;
+{   Digit carry = 0;
     std::size_t i = 0;
 // The lowest digits can be added without there being any carry-in.
     carry = addWithCarry(a[0], b[0], r[0]);
@@ -9281,11 +8684,11 @@ inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
         carry = addWithCarry(a[i], b[i], carry, r[i]);
 // From there on up treat (b) as if it had its sign bit extended to the
 // left.
-    std::uint64_t topb = negative(b[lenb-1]) ? allbits : 0;
+    Digit topb = negative(b[lenb-1]) ? allbits : 0;
     for (; i<lena; i++)
         carry = addWithCarry(a[i], topb, carry, r[i]);
 // And of course (a) must also be treated as being extended by its sign bit.
-    std::uint64_t topa = negative(a[lena-1]) ? allbits : 0;
+    Digit topa = negative(a[lena-1]) ? allbits : 0;
 // The result calculated here is 1 word longer than (a), and addition
 // can never carry further than that.
     r[i] = topa + topb + carry;
@@ -9300,10 +8703,10 @@ inline void ordered_bigplus(const std::uint64_t* a, std::size_t lena,
 // Add a small number to a bignum
 
 inline void bigplus_small(const std::uint64_t* a, std::size_t lena,
-                          std::int64_t n,
+                          SignedDigit n,
                           std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t w[1];
-    w[0] = static_cast<std::uint64_t>(n);
+{   Digit w[1];
+    w[0] = static_cast<Digit>(n);
     ordered_bigplus(a, lena, w, 1, r, lenr);
 }
 
@@ -9322,9 +8725,7 @@ inline std::intptr_t Plus::op(std::uint64_t* a, std::uint64_t* b)
     std::size_t n;
     if (lena >= lenb) n = lena+1;
     else n = lenb+1;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     bigplus(a, lena, b, lenb, p, final_n);
     return confirmSize(p, n, final_n);
@@ -9336,13 +8737,13 @@ inline std::intptr_t Plus::op(std::uint64_t* a, std::uint64_t* b)
 // most efficient implementation, so at a later stage I will want to hone
 // the code to make it better!
 
-inline std::intptr_t Plus::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Plus::op(SignedDigit a, SignedDigit b)
 {
 // The two integer arguments will in fact each have been derived from a
 // tagged representation, and a consequence of that is that I can add
 // them and be certain I will not get arithmetic overflow. However the
 // resulting value may no longer be representable as a fixnum.
-    std::int64_t c = a + b;
+    SignedDigit c = a + b;
     if (fitsIntoFixnum(c)) LIKELY return intToHandle(c);
 // Now because there had not been overflow I know that the bignum will
 // only need one word.
@@ -9351,36 +8752,30 @@ inline std::intptr_t Plus::op(std::int64_t a, std::int64_t b)
     return confirmSize(r, 1, 1);
 }
 
-inline std::intptr_t Plus::op(std::int64_t a, std::uint64_t* b)
-{   std::uint64_t aa[1];
+inline std::intptr_t Plus::op(SignedDigit a, std::uint64_t* b)
+{   Digit aa[1];
     aa[0] = a;
     std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* r = reserve(lenb+1);
-    pop(b);
     std::size_t final_n;
     bigplus(aa, 1, b, lenb, r, final_n);
     return confirmSize(r, lenb+1, final_n);
 }
 
-inline std::intptr_t Plus::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Plus::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t bb[1];
+    Digit bb[1];
     bb[0] = b;
-    push(a);
     std::uint64_t* r = reserve(lena+1);
-    pop(a);
     std::size_t final_n;
     bigplus(a, lena, bb, 1, r, final_n);
     return confirmSize(r, lena+1, final_n);
 }
 
-inline std::intptr_t bigplus_small(std::intptr_t aa, std::int64_t b)
+inline std::intptr_t bigplus_small(std::intptr_t aa, SignedDigit b)
 {   std::uint64_t* a = vectorOfHandle(aa);
     std::size_t lena = numberSize(a);
-    push(a);
     std::uint64_t* p = reserve(lena+1);
-    pop(a);
     std::size_t final_n;
     bigplus_small(a, lena, b, p, final_n);
     return confirmSize(p, lena+1, final_n);
@@ -9393,18 +8788,18 @@ inline void ordered_bigsubtract(const std::uint64_t* a,
                                 std::size_t lena,
                                 const std::uint64_t* b, std::size_t lenb,
                                 std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t carry = 1;
+{   Digit carry = 1;
     std::size_t i;
 // Add the digits that (a) and (b) have in common
     for (i=0; i<lenb; i++)
         carry = addWithCarry(a[i], ~b[i], carry, r[i]);
 // From there on up treat (b) as if it had its sign bit extended to the
 // left.
-    std::uint64_t topb = negative(~b[lenb-1]) ? allbits : 0;
+    Digit topb = negative(~b[lenb-1]) ? allbits : 0;
     for (; i<lena; i++)
         carry = addWithCarry(a[i], topb, carry, r[i]);
 // And of course (a) must also be treated as being extended by its sign bit.
-    std::uint64_t topa = negative(a[lena-1]) ? allbits : 0;
+    Digit topa = negative(a[lena-1]) ? allbits : 0;
 // The result calculated here is 1 word longer than (a), and addition
 // can never carry further than that.
     r[i] = topa + topb + carry;
@@ -9420,18 +8815,18 @@ inline void ordered_bigrevsubtract(const std::uint64_t* a,
                                    std::size_t lena,
                                    const std::uint64_t* b, std::size_t lenb,
                                    std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t carry = 1;
+{   Digit carry = 1;
     std::size_t i;
 // Add the digits that (a) and (b) have in common
     for (i=0; i<lenb; i++)
         carry = addWithCarry(~a[i], b[i], carry, r[i]);
 // From there on up treat (b) as if it had its sign bit extended to the
 // left.
-    std::uint64_t topb = negative(b[lenb-1]) ? allbits : 0;
+    Digit topb = negative(b[lenb-1]) ? allbits : 0;
     for (; i<lena; i++)
         carry = addWithCarry(~a[i], topb, carry, r[i]);
 // And of course (a) must also be treated as being extended by its sign bit.
-    std::uint64_t topa = negative(~a[lena-1]) ? allbits : 0;
+    Digit topa = negative(~a[lena-1]) ? allbits : 0;
 // The result calculated here is 1 word longer than (a), and addition
 // can never carry further than that.
     r[i] = topa + topb + carry;
@@ -9447,10 +8842,10 @@ inline void ordered_bigrevsubtract(const std::uint64_t* a,
 
 inline void bigsubtract_small(const std::uint64_t* a,
                               std::size_t lena,
-                              std::int64_t n,
+                              SignedDigit n,
                               std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t w[1];
-    w[0] = static_cast<std::uint64_t>(n);
+{   Digit w[1];
+    w[0] = static_cast<Digit>(n);
     ordered_bigsubtract(a, lena, w, 1, r, lenr);
 }
 
@@ -9458,10 +8853,10 @@ inline void bigsubtract_small(const std::uint64_t* a,
 
 inline void bigrevsubtract_small(const std::uint64_t* a,
                                  std::size_t lena,
-                                 std::int64_t n,
+                                 SignedDigit n,
                                  std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t w[1];
-    w[0] = static_cast<std::uint64_t>(n);
+{   Digit w[1];
+    w[0] = static_cast<Digit>(n);
     ordered_bigrevsubtract(a, lena, w, 1, r, lenr);
 }
 
@@ -9480,16 +8875,14 @@ inline std::intptr_t Difference::op(std::uint64_t* a,
     std::size_t n;
     if (lena >= lenb) n = lena+1;
     else n = lenb+1;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     bigsubtract(a, lena, b, lenb, p, final_n);
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Difference::op(std::int64_t a, std::int64_t b)
-{   std::uint64_t aa[1], bb[1];
+inline std::intptr_t Difference::op(SignedDigit a, SignedDigit b)
+{   Digit aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
     std::uint64_t* r = reserve(2);
@@ -9498,25 +8891,21 @@ inline std::intptr_t Difference::op(std::int64_t a, std::int64_t b)
     return confirmSize(r, 2, final_n);
 }
 
-inline std::intptr_t Difference::op(std::int64_t a, std::uint64_t* b)
-{   std::uint64_t aa[1];
+inline std::intptr_t Difference::op(SignedDigit a, std::uint64_t* b)
+{   Digit aa[1];
     aa[0] = a;
     std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* r = reserve(lenb+1);
-    pop(b);
     std::size_t final_n;
     bigsubtract(aa, 1, b, lenb, r, final_n);
     return confirmSize(r, lenb+1, final_n);
 }
 
-inline std::intptr_t Difference::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Difference::op(std::uint64_t* a, SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t bb[1];
+    Digit bb[1];
     bb[0] = b;
-    push(a);
     std::uint64_t* r = reserve(lena+1);
-    pop(a);
     std::size_t final_n;
     bigsubtract(a, lena, bb, 1, r, final_n);
     return confirmSize(r, lena+1, final_n);
@@ -9530,16 +8919,14 @@ inline std::intptr_t RevDifference::op(std::uint64_t* a,
     std::size_t n;
     if (lena >= lenb) n = lena+1;
     else n = lenb+1;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
     bigsubtract(b, lenb, a, lena, p, final_n);
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t RevDifference::op(std::int64_t a, std::int64_t b)
-{   std::uint64_t aa[1], bb[1];
+inline std::intptr_t RevDifference::op(SignedDigit a, SignedDigit b)
+{   Digit aa[1], bb[1];
     aa[0] = a;
     bb[0] = b;
     std::uint64_t* r = reserve(2);
@@ -9548,27 +8935,23 @@ inline std::intptr_t RevDifference::op(std::int64_t a, std::int64_t b)
     return confirmSize(r, 2, final_n);
 }
 
-inline std::intptr_t RevDifference::op(std::int64_t a,
+inline std::intptr_t RevDifference::op(SignedDigit a,
                                        std::uint64_t* b)
-{   std::uint64_t aa[1];
+{   Digit aa[1];
     aa[0] = a;
     std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* r = reserve(lenb+1);
-    pop(b);
     std::size_t final_n;
     bigsubtract(b, lenb, aa, 1, r, final_n);
     return confirmSize(r, lenb+1, final_n);
 }
 
 inline std::intptr_t RevDifference::op(std::uint64_t* a,
-                                       std::int64_t b)
+                                       SignedDigit b)
 {   std::size_t lena = numberSize(a);
-    std::uint64_t bb[1];
+    Digit bb[1];
     bb[0] = b;
-    push(a);
     std::uint64_t* r = reserve(lena+1);
-    pop(a);
     std::size_t final_n;
     bigsubtract(bb, 1, a, lena, r, final_n);
     return confirmSize(r, lena+1, final_n);
@@ -9585,7 +8968,7 @@ inline std::intptr_t RevDifference::op(std::uint64_t* a,
 
 // increment the N-digit number x by n.
 
-inline void increment(std::uint64_t* x, std::size_t N, std::uint64_t n=1)
+inline void increment(std::uint64_t* x, std::size_t N, Digit n=1)
 {   if ((x[0] += n) >= n) return;
     for (std::size_t i=1; i<N; i++)
     {   if (++x[i] != 0) return;
@@ -9594,10 +8977,10 @@ inline void increment(std::uint64_t* x, std::size_t N, std::uint64_t n=1)
 
 // z = x + y and return a carry, where x, y and z are N digit numbers.
 
-inline std::uint64_t addWithCarry(const std::uint64_t* x,
+inline Digit addWithCarry(const std::uint64_t* x,
                                   const std::uint64_t* y,
                                   std::uint64_t* z, std::size_t N)
-{   std::uint64_t c = addWithCarry(x[0], y[0], z[0]);
+{   Digit c = addWithCarry(x[0], y[0], z[0]);
     for (std::size_t i=1; i<N; i++)
         c = addWithCarry(x[i], y[i], c, z[i]);
     return c;
@@ -9605,9 +8988,9 @@ inline std::uint64_t addWithCarry(const std::uint64_t* x,
 
 // As above except that c is a "carry in".
 
-inline std::uint64_t addWithCarry(const std::uint64_t* x,
+inline Digit addWithCarry(const std::uint64_t* x,
                                   const std::uint64_t* y,
-                                  std::uint64_t c,
+                                  Digit c,
                                   std::uint64_t* z, std::size_t N)
 {   for (std::size_t i=0; i<N; i++)
         c = addWithCarry(x[i], y[i], c, z[i]);
@@ -9615,10 +8998,10 @@ inline std::uint64_t addWithCarry(const std::uint64_t* x,
 }
 // z = x - y and return a borrow.
 
-inline std::uint64_t subtractWithBorrow(const std::uint64_t* x,
+inline Digit subtractWithBorrow(const std::uint64_t* x,
                                         const std::uint64_t* y,
                                         std::uint64_t* z, std::size_t N)
-{   std::uint64_t b = subtractWithBorrow(x[0], y[0], z[0]);
+{   Digit b = subtractWithBorrow(x[0], y[0], z[0]);
     for (std::size_t i=1; i<N; i++)
         b = subtractWithBorrow(x[i], y[i], b, z[i]);
     return b;
@@ -9637,61 +9020,394 @@ inline std::uint64_t subtractWithBorrow(const std::uint64_t* x,
 //    (3) N>1.5*M or M>1.5*N and the smaller is >7. Do a sequence of
 //        MxM multiplications until the residual N is small enough
 //        that a different case applies.
-//    (5) If N,M and less than another threshold do Karatsuba rather as if
-//        NxN. Because of the threshold I have a known bound on workspace
-//        needs so use fixed size stack allocated workspace.
-//    (6) Use 3-thread Karatsuba with workspace allocation via my
-//        "stkvector" scheme. Or 4-thread Toom32.
-//
-// Possibly consider Toom23 for some unbalanced cases. This would be based
-// on (a*x^2+b*x+c)*(d*x+e) having 4 digits in its result and obtaining those
-// via interpolation base on evaluations at 0, -1, +1 and infinity. The
-// idea here is that it would then be possible to guarantee that cases
-// proceeding beyound step 3 above would have the two numbers closer to
-// each other in length.
-
-// So the chain of functions goes
-//     generalMul(a, N, b, M, result)         entrypoint
-//       oneWordMul                           1*1
-//       smallCaseMul                         up to 7x7
-//       bigBySmallMul                        up to 7*x
-//       balancedMul                          8*8 to 14*14
-//       simpleMul                            classical method
-//       biggerMul                            as it says!
-// The oddest looking choice for a special case is that of 8*8 to 14*14.
-// I cite three use-cases for multiplications of equal sized numbers:
-// (1) Within an implementation of extended precision floating point;
-// (2) Modular arithmetic where the modulus is that large;
-// (3) Base cases for Karatsuba, where many of the sub-products are of
-//     equal-sized values and ones that are small enough not to call
-//     for further Karatsuba-style decomosition get caught here.
-//
-//     biggerMul(a, N, b, M, result)
-//       unbalancedMul                        3N > 2M
-//       threeByTwoMul
-//       kara
-//
-//     kara                                   N>=some threshold Ks
-//       kara                                 2 or 3 times
-//       generalMul
-//
-//     threeByTwoMul
-//       kara
-//       generalMul
+//    (5) If N,M and less than another threshold do Karatsuba.
+//    (6) Use 3-thread Karatsuba or 4-thread Toom32.
 //
 
+// So here is a more detailed commentary talking about the thresholds in
+// the treatment of large cases in extra detail.
+//
+// Suppose I am multiplying an N digit number by an M digit one with N>=M.
+// I can go classical which is straightforward and for small cases that is
+// good. But for the rest there are two other base schemes:
+//
+// I can go Karatsuba. That will use sub-digits of size D=ceiling(N/2) and
+// will demand that M>D at least since otherwise the high sub-digit of M
+// will be zero and by then use of Karatsuba is surely silly.
+// The calculation forms two products on D*D and one on (N-D)*(M-D). If
+// things start off even slightly unbalanced this last one is more so and
+// so eventually you should not use Karatsuba for it even N it is big.
+// But for reasonably balanced cases it is good. My estimates are that
+// I should use it up as far as N=1.25*M.
+//
+// Then I have Toom32 that multiplies a 3-digit number by a 2 digit one via
+// evaluation at 0, +1, -1 and infinity. The sub-digit size D must be
+// max((N+2)/3, (M+1)/2) to keep top sub-digits both in existence. So
+// the cost is then three products D*D and one of (N-2D)*(M-D).
+// That final product may be noticably out of balance if N is not very close
+// to 1.5M and I will discuss that later, it being a close relative of the
+// similar situation that arises in Karatsuba.
+//
+// So given arbitrary N,M where they are not the same value but are tolerably
+// close do I use Karatsuba or Toom32? And what do I do when N and M are
+// more widely different?
+//
+// My plan for a ramge of values of alpha=N/M (where wlog N>=M) will be
+//    1 <= alpha < 1.25      Karatsuba. 1 is the best case here
+//    1.25 <= alpha < 1.85    Toom32 where 1.5 is the best case
+//
+// So now I need to consider alpha >= 1.85.
+// I will split off the low 3M/2 digits and use Toom32 to form that
+/// part of the result - I am then left with the case (N-3M/2)*M. That
+// can be continued until N<3M/2, which I will write as alpha<1.5.
+// If alpha > 1.25 I will use a sub-optimal Toom32. For 0.85<alpha<1.25
+// I will use Karatsuba (with reversed arguments in the alpha<1 case).
+// Then if akpha > 0.54 (=1/1.85) I will use Toom32 with reversed arguments.
+// So we are left with alpha<0.54, otherwise M>1.85*N. I reverse the
+// arguments and continue until the I drop down to use of classical
+// methods. 
+//
+// In all this there is an issue of workspace allocation. And a top-level
+// use of either Toom32 or Karatsuba needs extra space because the recursive
+// calls that are made run concurrently so each need separate space.
+// But for all the recursive calls things are nicer and I can use and
+// re-use space.
+// I have made several attempts to chart how much will be used but the
+// interaction between levels of call and the fact that when I "halve" the
+// size of a number there has to be rounding when that number is of odd
+// length make that messy enough that anything I come up with using
+// calculation will not be a sharp bound and will be very fragile against
+// small changes in the code. So I will work empirically. For multiplications
+// of N*M with N>=M I will have (at the end of this file) some code that
+// if MEASURE_WORKSPACE is defined runs comprehensive tests for N and M up
+// to some threshold (initially 2000) and assesses workspace use relative
+// to the smaller of those. I wish to observe both assymptotic behaviour and
+// smaller cases (I will only worry about N>=M>7) so that I can allow for
+// both. While I am doing that I disable the top-level distribution of work
+// into threads.
 
-// I hide almost all of the functions here as private within this
-// class as a way of controlling the namespace and also so that
-// if some of the functions are only used once there is a chance for
-// compilers to notice this fact.
+inline std::size_t worstN = 0;
+inline std::size_t worstM = 0;
+inline std::size_t thisN = 0;
+inline std::size_t thisM = 0;
+inline double worstRatio = 0.0;
+inline DigitPtr workspaceBase;
 
 #include <atomic>
 
+// When I get to big-integer multiplication I will use two or three
+// worker threads so that elapsed times for really large multiplications
+// are reduced somewhat. Well ideally by a factor approaching 3. I set up
+// a framework of support for the threads here. A main program thread will
+// want its own worker threads here. Each worker thread gets passed a
+// nice object called "worker_data" that encapsulates the way it receives
+// data from the caller and passes results back.
+
+// Each worker thread needs some data that it shares with the main thread.
+// this structure encapsulates that.
+
+// Probably the most "official" way to coordinate threads would be to use
+// condition variables, but doing so involves several synchronization
+// primitives for each step of the transaction. For the simple level of
+// coordination I need here it would be more costly that necessary. I can
+// manage here with a scheme that when thread A want to allow thread B to
+// proceed it unlocks a mutex that thread B was waiting on. There is some
+// mess associated with ensuring that the main thread waits for results and
+// that there are no race situations where all threads compete for a single
+// mutex.
+//
+// There are 4 mutexes for each worker thread, but each synchronization step
+// just involves a single mutex, transferring ownership between main and worker
+// thread. Here is the patter of transfer and subsequent ownership, with "?"
+// marking a muxex that has been waiting and the ">n" or <n" in the middle
+// also showing which muxex has just been activated:
+//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
+// To start a transaction the main thread sets up data and unlocks mutex 0.
+// That allows the worker to proceed and pick up the data.
+//       .  X  .  .   >0    ?X .  X  X    first transaction
+// The main thread must not alter data until the worker is finished. It waits
+// on mutex 1 until the worker tells it that a result is available.
+//       .  X ?X  .   <2    X  .  .  X
+// The main thread is now entitles to start using the results of the activity
+// just completed and setting up data for the next one. It can not release
+// mutex 0 to restart the worker because the worker alread owns that. And even
+// though it owns mutex 2 it had better not release that, because for that
+// to make sense the worker would need to be waiting on it, and that would mean
+// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
+// might have led it to grab m3 rather than the main program managing to. So
+// use the third mutex, which the worker must be waiting on.
+//       .  .  X  .   >1    X ?X  .  X    second transaction
+// When it has finished its task the worker now unlocks mutex 3. This leaves
+// a situation symmetric with the initial one
+//       .  .  X ?X   <3    X  X  .  .
+//       .  .  .  X   >2    X  X  ?X .    third transaction
+//       ?X .  .  X   <0    .  X  X  .
+//       X  .  .  .   >3    .  X  X ?X    fourth transaction
+//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
+//
+// The pattern is thus that the master goes
+//  [initially lock 0 and 1]
+//  unlock 0  wait 2
+//  unlock 1  wait 3
+//  unlock 2  wait 0
+//  unlock 3  wait 1
+// while the worker goes
+//  [initially lock 2 and 3]
+//  wait 0    unlock 2
+//  wait 1    unlock 3
+//  wait 2    unlock 0
+//  wait 3    unlock 1
+// Observe that I can use (n^2) to map between the mutex number in the first
+// and second columns here. That counting is what send_count and
+// receive_count are doing.
+
+// In a nice world I would use just the C++ std::mutex scheme for
+// synchronization, however here I am performance critical and to save
+// a bit when performing medium-sized multiplications I will use the
+// Microsoft version of mutexes directly on that platform.
+
+#if defined __CYGWIN__ || defined __MINGW32__
+
+// It is possible that SRW locks have lower overhead than Mutex. So I will
+// use them, but have an "#ifdef" so I can revert if needbe.
+
+#define USE_MICROSOFT_SRW 1
+
+#ifndef USE_MICROSOFT_SRW
+#define USE_MICROSOFT_MUTEX 1
+#endif // USE_MICROSOFT_SRW
+
+// Going "#include <windows.h>" pollutes the name-space rather heavily
+// and so despite it being somewhat despicable I declare the rather small
+// number of things I need by hand. Note that some of the issues are
+// macros rather than extern definitions, so it is not obvious that
+// C++ "namespace" treatment can make things nice for me.
+
+extern "C"
+{
+struct SecApp
+{   std::uintptr_t nLength;
+    void* lpSecurityDescriptor;
+    int bInheritHandle;
+};
+
+typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
+#define RTL_SRWLOCK_INIT {0}
+#define SRWLOCK_INIT RTL_SRWLOCK_INIT
+typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
+
+extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
+
+extern __declspec(dllimport)  void* 
+    CreateMutexA(SecApp* , std::uintptr_t, const char* );
+extern __declspec(dllimport) int CloseHandle(void* h);
+extern __declspec(dllimport) int ReleaseMutex(void* m);
+extern __declspec(dllimport) void* 
+    WaitForSingleObject(void* , std::uintptr_t);
+inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+
+};   // end of extern "C" scope.
+
+#endif // __CYGWIN__ or __MINGW32__
+
+class WorkerData
+{
+public:
+    int which;
+    std::atomic<bool> ready;
+#if defined USE_MICROSOFT_SRW
+    SRWLOCK mutex[4];
+#elif defined USE_MICROSOFT_MUTEX
+    void* mutex[4];
+#else // The final case is C++ std::mutex
+    std::mutex mutex[4];
+#endif // end of mutex selection
+    bool quit_flag;
+
+    ConstDigitPtr a;   std::size_t lena;
+    ConstDigitPtr b;   std::size_t lenb;
+    DigitPtr c;
+    DigitPtr w;
+
+// When I construct an instance of Worker data I set its quit_flag to
+// false and lock two of the mutexes. That sets things up so that when
+// it is passed to a new worker thread that thread behaves in the way I
+// want it to.
+    WorkerData()
+    {   ready = false;
+        quit_flag = false;
+#if defined USE_MICROSOFT_SRW
+        InitializeSRWLock(&mutex[0]);
+        InitializeSRWLock(&mutex[1]);
+        AcquireSRWLockExclusive(&mutex[0]);
+        AcquireSRWLockExclusive(&mutex[1]);
+        InitializeSRWLock(&mutex[2]);
+        InitializeSRWLock(&mutex[3]);
+#elif defined USE_MICROSOFT_MUTEX
+        mutex[0] = CreateMutexA(NULL, 1, NULL);
+        mutex[1] = CreateMutexA(NULL, 1, NULL);
+        mutex[2] = CreateMutexA(NULL, 0, NULL);
+        mutex[3] = CreateMutexA(NULL, 0, NULL);
+#else // use C++ std::mutex
+// The next two must be locked by the main thread.
+        mutex[0].lock();
+        mutex[1].lock();
+#endif // Mutexes now initialized and locked as needed
+    }
+    void setWhich(int n)
+    {   which = n;
+    }
+#ifdef USE_MICROSOFT_MUTEX
+    ~WorkerData()
+    {   CloseHandle(mutex[0]);
+        CloseHandle(mutex[1]);
+        CloseHandle(mutex[2]);
+        CloseHandle(mutex[3]);
+    }
+#endif // USE_MICROSOFT_MUTEX
+};
+
+// Then each main thread will have a structure that encapsulated the
+// worker threads that it ends up with and the data it sets up for
+// them and that they then access. When this structures is created it will
+// cause the worker threads and the data block they need to be constructed.
+
+inline void workerThread(WorkerData* wd);
+
+class DriverData
+{
+public:
+    int        send_count = 0;
+    int        send_count2 = 0;
+    WorkerData wd_0,
+               wd_1,
+               wd_2;
+// When the instance of DriverData is created the three sets of WorkerData
+// get constructed with two of their mutexes locked. This will mean that when
+// worker threads are created and start running they will politely wait for
+// work.
+
+    std::thread w_0, w_1, w_2;
+    DriverData()
+    {   wd_0.setWhich(0);
+        wd_1.setWhich(1);
+        wd_2.setWhich(2);
+        w_0 = std::thread(workerThread, &wd_0),
+        w_1 = std::thread(workerThread, &wd_1);
+        w_2 = std::thread(workerThread, &wd_2);
+// I busy-wait until all the threads have both claimed the mutexes that they
+// need to own at the start! Without this the main thread may post a
+// multiplication, so its part of the work and try to check that the worker
+// has finished (by claiming one of these mutexes) before the worker thread
+// has got started up and has claimed them. This feels clumsy, but it only
+// happens at system-startup.
+        while (!wd_0.ready.load() &&
+               !wd_1.ready.load() &&
+               !wd_2.ready.load())
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
+    }
+
+// When the DriverData object is to be destroyed it must arrange to
+// stop and then join the two threads that it set up. This code that sends
+// a "quit" message to each thread will be executed before the thread object
+// is deleted, and the destructor of the thread object should be activated
+// before that of the WorkerData and the mutexes within that.
+
+    ~DriverData()
+    {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
+        releaseWorkers(true);
+        w_0.join();
+        w_1.join(); // These calls to join wait for the threads to shut down.
+        w_2.join();
+    }
+
+// Using the worker threads is then rather easy: one sets up data in
+// the WorkerData structures and then call releaseWorkers(). Then
+// you can do your own thing in parallel with the two workers picking up
+// the tasks that they had been given. When you are ready you call
+// wait_for_workers() which does what one might imagine, and the workers
+// are expected to have left their results in the WorkerData object so
+// you can find it.
+
+    void releaseWorkers(bool third)
+    {
+#if defined USE_MICROSOFT_SRW
+        ReleaseSRWLockExclusive(&wd_0.mutex[send_count]);
+        ReleaseSRWLockExclusive(&wd_1.mutex[send_count]);
+        if (third) ReleaseSRWLockExclusive(&wd_2.mutex[send_count2]);
+#elif defined USE_MICROSOFT_MUTEX
+        ReleaseMutex(wd_0.mutex[send_count]);
+        ReleaseMutex(wd_1.mutex[send_count]);
+        if (third) ReleaseMutex(wd_2.mutex[send_count2]);
+#else // use std::mutex
+        wd_0.mutex[send_count].unlock();
+        wd_1.mutex[send_count].unlock();
+        if (third) wd_2.mutex[send_count2].unlock();
+#endif // mutexed unlocked
+    }
+
+    void wait_for_workers(bool third)
+    {
+#if defined USE_MICROSOFT_SRW
+        AcquireSRWLockExclusive(&wd_0.mutex[send_count^2]);
+        AcquireSRWLockExclusive(&wd_1.mutex[send_count^2]);
+        if (third) AcquireSRWLockExclusive(&wd_2.mutex[send_count2^2]);
+#elif defined USE_MICROSOFT_MUTEX
+// WaitForSingleObject takes a timeout limit measured in milliseconds as
+// its second argument. I will allow waits of up to 2 seconds. There
+// should be a response by then since the workere are just performing a
+// multiplication and at all plausible number-sizes 2 seconds is plenty
+// even on slow computers. The main case where there could be
+// failure here would be when running under a debugger and with one
+// of the worker threads being subject to breaks or single stepping.
+        WaitForSingleObject(wd_0.mutex[send_count^2], MICROSOFT_INFINITE);
+        WaitForSingleObject(wd_1.mutex[send_count^2], MICROSOFT_INFINITE);
+        if (third) WaitForSingleObject(wd_2.mutex[send_count2^2], MICROSOFT_INFINITE);
+#else // use std::mutex
+        wd_0.mutex[send_count^2].lock();
+        wd_1.mutex[send_count^2].lock();
+        if (third) wd_2.mutex[send_count2^2].lock();
+#endif // synchronized
+        send_count = (send_count+1)&3;
+        if (third) send_count2 = (send_count2+1)&3;
+    }
+};
+
+// Even if there are multiple user threads I will only have a single
+// instance of DriverData and hence I will always have just three
+// worker threads. If multiple threads all call generalMul at (almost) the
+// same time a compare-and-exchange operation arranges that only one of
+// them gets to offload parts of the multiplication work to those worker
+// threads and the others work sequentially. This allows me to have a fixed
+// number of worker threads.
+
+static DriverData driverData;
+
+class ManageWorkers
+{
+public:
+    static std::atomic<bool> threadsInUse;
+    bool mayUseThreads;
+    ManageWorkers()
+    {   bool expected = false;
+        mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
+#ifdef MEASURE_WORKSPACE
+        mayUseThreads = false;
+#endif // MEASURE_THREADS
+   }
+    ~ManageWorkers()
+    {   if (mayUseThreads) threadsInUse.store(false);
+    }
+};
+
 class BigMultiplication
 {
-
-public:
 
 // I need some commentary about this! I have three worker threads
 // available and a multiplication can decompose either a 2N by 2N
@@ -9715,22 +9431,95 @@ public:
 // the value in the memory is the "expected" one. This can lead the
 // compare_exchange to report failure even in a case that could have been
 // deemed a success. With low contention this will hardly ever happen!
-
-class ManageWorkers
-{
-public:
-    static std::atomic<bool> threadsInUse;
-    bool mayUseThreads;
-    ManageWorkers()
-    {   bool expected = false;
-        mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
-    }
-    ~ManageWorkers()
-    {   if (mayUseThreads) threadsInUse.store(false);
-    }
-};
+// But here the worst possible consquence is that the code will drop back
+// to do sub-multiplcations sequentially and quite possibly one of those
+// will succeed in the compare_exchange and use concurrency only starting
+// at its level.
 
 private:
+
+// Multiplications where M and N are both no more than than 7
+// are done by unrolled and inlined special code.
+// From when the larger is at least KARASTART I will use Karatsuba,
+// and from KARABIG on it will not be just Karatsuba but the top
+// level decomosition will be run using three threads. Also up as
+// far as KARABIG I will use some stack allocated space while from
+// there up I will use my "stkvector" scheme so that there is no
+// serious limit to the amount that can be used.
+
+static const std::size_t MUL_INLINE_LIMIT = 7;
+
+#ifdef START
+static const std::size_t KARASTART        = START;
+#else
+static const std::size_t KARASTART        = 15;
+#endif
+
+// I want the "half sized" multiplications to be large enough that
+// there is no need to try the heavily inlined tiny-case code. I want
+// this to apply to Toom as well.
+
+static_assert((KARASTART+1)/2 > 7);
+
+#ifdef BIG
+static const std::size_t KARABIG          = BIG;
+#else
+static const std::size_t KARABIG          = 6000;
+#endif
+
+// Beyond the classical multiplication I have kara and toom32 and
+// each of those has constraints on valid and on desirable input number
+// lengths.
+
+// kara() is only valid if M is bigger than half N so that when
+// its second argument is split in two there is some data in the
+// high part.
+
+static bool karaValid(size_t N, size_t M)
+{   return N>=M && M>((N+1)/2);
+}
+
+// This test assumes that the call to kara() will be valid but provides
+// a threshold to unbalance between the input number sizes beyond which
+// a different scheme should be used.
+
+static bool karaSensible(size_t N, size_t M)
+{   return 4*N <= 5*M;
+}
+
+// For toom32() to be valid it must be that when it selects a
+// part-digit size L that the first argument fits in 3 chunks and the
+// second in two.
+
+static bool toom32Valid(size_t N, size_t M)
+{   size_t L=std::max((N+2)/3, (M+1)/3);
+    return N>2*L && M>L && M<2*L;
+}
+
+// The test code activated via MEASURE_WORKSPACE shows that the
+// amount of workspace is bounded by 5>M where M is the smaller of
+// the two number-lengths - at least over comprehensive testing of
+// a great meny small to fairly large cases.
+
+static std::size_t workspaceSize(std::size_t M)
+{   return 5*M;
+}
+
+// For multiplying where N > 1.85*M it would be better to do two
+// uses of Karatsuba rather than one Toom32. For N<M.25M a single
+// Karatsuba would be better. 
+
+static bool toom32Sensible(size_t N, size_t M)
+{   return 20*N <= 37*M && !karaSensible(N, M);
+}
+
+// When I am multiplying with sized N and M I want to carve off
+// a sub-product of size (N',M) with N' as large as I can such as it
+// takes full advantage of toom32. This tells me the size to use.
+
+static size_t toom32IdealSize(size_t M)
+{    return 3*((M+1)/2);
+}
 
 // Set (hi,lo) to the 128-bit product of a by b.
 
@@ -9759,18 +9548,11 @@ static void oneWordMul(std::uint64_t a, std::uint64_t b,
     lo = static_cast<std::uint64_t>(r);
 }
 
-// The version here has to have N>=M but given that the loops on i
-// all have a simpler starting condition and a single test for their
-// end condition. Here is a fine case where a "sufficiently smart compiler"
-// could take the above commented out code and split the loop into three
-// just as I have done here. But until that is available I make
-// transformations of this sort for myself.
+public:
 
 // verySimpleMul exists ONLY for testing - specifically to generate
 // reference products that the output from other more complicated code
 // can be compared against.
-
-public:
 
 static void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           ConstDigitPtr b, std::size_t M,
@@ -9897,29 +9679,6 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 }
 
 
-// Multiplications where M and N are both no more than than 7
-// are done by unrolled and inlined special code.
-// From when the larger is at least KARASTART I will use Karatsuba,
-// and from KARABIG on it will not be just Karatsuba but the top
-// level decomosition will be run using three threads. Also up as
-// far as KARABIG I will use some stack allocated space while from
-// there up I will use my "stkvector" scheme so that there is no
-// serious limit to the amount that can be used.
-
-static const std::size_t MUL_INLINE_LIMIT = 7;
-
-public:
-#ifdef START
-static const std::size_t KARASTART        = START;
-#else
-static const std::size_t KARASTART        = 15;
-#endif
-
-#ifdef BIG
-static const std::size_t KARABIG          = BIG;
-#else
-static const std::size_t KARABIG          = 60;
-#endif
 private:
 
 // Now I want code for multiplying N*M digit numbers with N up to some
@@ -15478,7 +15237,12 @@ static void bigBySmallMul(ConstDigitPtr a, std::size_t N,
 static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,
                        DigitPtr result)
 {   switch (N)
-    {   default: generalMul(a, N, b, N, result); return;
+    {   default: simpleMul(a, N, b, N, result); return;
+        case 1:  inlineMul_1_1(a, b, result);   return;
+        case 2:  inlineMul_2_2(a, b, result);   return;
+        case 3:  inlineMul_3_3(a, b, result);   return;
+        case 4:  inlineMul_4_4(a, b, result);   return;
+        case 5:  inlineMul_5_5(a, b, result);   return;
         case 6:  inlineMul_6_6(a, b, result);   return;
         case 7:  inlineMul_7_7(a, b, result);   return;
         case 8:  inlineMul_8_8(a, b, result);   return;
@@ -15514,95 +15278,7 @@ static Digit addMdigits(ConstDigitPtr a, std::size_t M, DigitPtr result, std::si
     return carry;
 }
 
-public:
-
-// Some of the functions here have are tempalated with a boolean
-// called "thread". When this is true the code is entitled to cause
-// worker threads to be launched to perform subsidiary multiplications.
-// The multi-thread decomposition may only happen once, and that is enforced
-// by making thread=false for all the lower level calls.
-
-// Now the main entrypoint to my new code for multiplying
-// unsigned values. It tries to put simple cheap tests to spot
-// cheap cases inline and then dispatch to the separate procedures
-// that apply in each case.
-// The small cases covered here are liable to get expanded in line
-// in rather extreme manners!
-
-[[gnu::always_inline]]
-static void generalMul(ConstDigitPtr a, std::size_t N,
-                       ConstDigitPtr b, std::size_t M,
-                       DigitPtr result)
-{
-// I take a view that case of single word multiplication as both so
-// special and so important that I do that in-line here.
-    if ((N|M) == 1)
-    {   oneWordMul(a[0], b[0], 0, result[1], result[0]);
-        return;
-    }
-// I next have special treatment for all the cases where both M and N are
-// at most 7. I make the cut off there because I can test if either N
-// or M exceeds the bound using a bitwide OR here which I expect to be
-// nice and cheap! Also because I expect small cases like this to be
-// especially commonly used, and to be ones where loop overheads might
-// intrude.
-    if ((N|M) <= 7)
-    {   LIKELY
-        smallCaseMul(a, N, b, M, result);
-        return;
-    }
-    if (N < M)
-    {   std::swap(a, b);
-        std::swap(N, M);
-    }
-// If the smaller number is fairly small I again use classical long
-// multiplication, but with the inner loop unrolled.
-    if (M <= 7)
-    {   bigBySmallMul(a, N, b, M, result);
-        return;
-    }
-    if (N < KARASTART)    // Too small for Karatsuba.
-    {   if (N==M && N<=14) balancedMul(a, b, N, result);
-        else simpleMul(a, N, b, M, result);
-    }
-    else biggerMul(a, N, b, M, result);
-}
-
-private:
-
-template <bool threads>
-[[gnu::always_inline]]
-static void unbalancedMul(ConstDigitPtr a, std::size_t N,
-                          ConstDigitPtr b, std::size_t M,
-                          DigitPtr result)
-{
-// Here N is (much) bigger than M
-    generalMul(a, M, b, M, result);
-    N -= M;
-    a += M;
-    result += M;
-    stkvector<Digit> temp(M);
-    while (2*N > 3*M)
-    {   std::memcpy(temp, result, M*sizeof(Digit));
-        generalMul(a, M, b, M, result);
-// Now add M digits from temp into the 2M digit number in result. There
-// can not be an overflow.
-        addMdigits(temp, M, result, 2*M);
-        N -= M;
-        a += M;
-        result += M;
-    }
-    if (N != 0)
-    {   std::memcpy(temp, result, M*sizeof(Digit));
-        generalMul(a, N, b, M, result);
-// Now add M digits from temp into the M+N digit number in result. There
-// can not be an overflow.
-        addMdigits(temp, M, result, M+N);
-    }
-}
-
-// Some sub-functions that I will need that add, subtract and halve
-// integers and arrange associated carries and borrows.
+// result = a + b with a carry-in
 
 [[gnu::always_inline]]
 static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
@@ -15626,6 +15302,8 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
     return carry;
 }
 
+// result = a + b
+
 [[gnu::always_inline]]
 static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
                      ConstDigitPtr b, std::size_t lenB,
@@ -15633,6 +15311,7 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
 {   return karaAdd(a, lenA, b, lenB, 0, result);
 }
 
+// result = a - b
 
 [[gnu::always_inline]]
 static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
@@ -15656,10 +15335,12 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
     return borrow;
 }
 
+// result = b - a;
+
 [[gnu::always_inline]]
 static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
-                          ConstDigitPtr b, std::size_t lenB,
-                          DigitPtr result)
+                             ConstDigitPtr b, std::size_t lenB,
+                             DigitPtr result)
 {   Digit borrow = 0;
 #ifdef DEBUG
     assert(lenA >= lenB);
@@ -15678,6 +15359,8 @@ static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
     return borrow;
 }
 
+// Propogate a carry.
+
 [[gnu::always_inline]]
 static void karaCarry(Digit carry, DigitPtr v)
 {   size_t i = 0;
@@ -15687,6 +15370,8 @@ static void karaCarry(Digit carry, DigitPtr v)
     }
 }
 
+// Propogate a borrow.
+
 [[gnu::always_inline]]
 static void karaBorrow(Digit borrow, DigitPtr v)
 {   size_t i = 0;
@@ -15695,6 +15380,9 @@ static void karaBorrow(Digit borrow, DigitPtr v)
         i++;
     }
 }
+
+// This divides a value by 2, where the value has a signed top digit
+// and a vector of unsigned additional digits.
 
 static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
 {   Digit carry = top & 1;
@@ -15706,214 +15394,6 @@ static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
     }
     a[0] = (a[0]>>1) | (carry<<63);
     return top/2;
-}
-
-// I have special code for multiplying N*M numbers when N is about
-// 1.5 times M. This splits the big number into 3 chunks and the
-// smaller into two.
-
-// Here is a description of the procedure in nice readable compact form.
-//
-// a := ahigh*x^2 + amid*x + alow;
-// b :=            bhigh*x + blow;
-//
-// x^3 * (ahigh*bhigh) +
-// x^2 * (ahigh*blow + amid*bhigh) +
-// x   * (alow*bhigh + amid*blow) +
-//       (alow*blow)
-//
-// asum := ahigh+amid+alow;
-// bsum := bhigh+blow;
-// adiff := ahigh-amid+alow;
-// bdiff := blow-bhigh;
-// p0 := alow*blow;
-// p1 := asum*bsum;
-// p2 := adiff*bdiff;
-// p3 := ahigh*bhigh;
-//
-// d0 := p0;                         alow*blow
-// d1 := (p1 - p2)/2 - p3;           alow*bhigh + amid*blow
-// d2 := (p1 + p2)/2 - p0;           ahigh*blow + amid*bhigh
-// d3 := p3;                         ahigh*bhigh
-
-// This divides a value by 2, where the value has a signed top digit
-// and a vector of unsigned additional digits.
-
-template <bool thread=false>
-static void threeByTwoMul(ConstDigitPtr a, std::size_t N,
-                          ConstDigitPtr b, std::size_t M,
-                          DigitPtr c)
-{
-// I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
-// where amid, alow, blow all have the same size (toomLen). Then
-// ahigh and bhigh need to have at least some digits but may not have more
-// then toomLen.
-// I let a(t) = ahigh*t^2 + anid*t + alow and b(t) - bhigh*t + blow.
-// then I evaluate a() and b() at 0, +1, -1 and infinity - and I can
-// interpolate through products of those values to get digits for my result.
-// A classical 3x2 multiplication would use 6 partial products - this uses
-// just 4 but obviously a bunch of extra additions and subtractions together
-// with some general overhead. 
-    size_t toomLen = (M+1)/2;
-    size_t lenALow = toomLen;
-    size_t lenAMid = toomLen;
-    assert(N > 2*toomLen);
-    size_t lenAHigh = N-2*toomLen;
-    assert(lenAHigh <= toomLen);
-    size_t lenBLow = toomLen;
-    size_t lenBHigh = M-toomLen;
-    ConstDigitPtr aLow = a;
-    ConstDigitPtr aMid = a + toomLen;
-    ConstDigitPtr aHigh = aMid + toomLen;
-    ConstDigitPtr bLow = b;
-    ConstDigitPtr bHigh = b + toomLen;
-// Now we have
-//     a = (aHigh*B^2, aMid*B, aLow)
-//     b = (bHigh*B, bLow)
-// and I will need to compute
-//     aSum = aHigh + aMid + Alow   (c = 0, 1, 2)
-//     bSum = bHigh + blow          (c = 0, 1)
-// and
-//     aDiff = aHigh - aMid + aLow  (c = -1, 0, 1)
-//     bDiff = bLow - bHigh         (c = 0, -1)
-//
-// Next
-//     P0 = aLow*bLow
-//     P1 = aSum*bSum
-//     P2 = aDiff*bDiff
-//     P3 = aHigh*bHigh
-// I will use the result space as workspace to start with.
-    DigitPtr P0 = c;
-    DigitPtr P1 = c;                 SignedDigit P1Top;
-    stkvector<Digit> D1(thread ? 8*toomLen :4*toomLen); SignedDigit D1Top;
-    DigitPtr D2 = D1 + 2*toomLen;    SignedDigit D2Top; 
-    DigitPtr P2 = c + 2*toomLen;     SignedDigit P2Top; 
-    DigitPtr P3 = c + 3*toomLen;
-    if constexpr (thread)
-    {   P2 = D1 + 4*toomLen;
-        P3 = D1 + 6*toomLen;
-    }
-    DigitPtr aSum = D1;              Digit aSumTop;
-    DigitPtr aDiff = D1 + toomLen;   SignedDigit aDiffTop;
-    DigitPtr bSum = D2;              Digit bSumTop;
-    DigitPtr bDiff = D2 + toomLen;   SignedDigit bDiffTop; 
-    aSumTop = karaAdd(aLow, toomLen, aHigh, lenAHigh, aSum);
-    aDiffTop = aSumTop - karaSubtract(aSum, toomLen, aMid, toomLen, aDiff);
-    aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
-    bSumTop = karaAdd(bLow, toomLen, bHigh, lenBHigh, bSum);
-    bDiffTop = -karaSubtract(bLow, toomLen, bHigh, lenBHigh, bDiff);
-    if constexpr (thread)
-    {   setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1);
-        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2);
-// In this case to use all available threads I will be computing P0 and P3
-// now. That means I can not use their memory as workspace, which is
-// what I do in the purely sequential case.
-        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0);
-        driverData.releaseWorkers(true);
-            generalMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
-        driverData.wait_for_workers(true);
-    }
-    else
-    {   generalMul(aSum, toomLen, bSum, toomLen, P1);
-//      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
-        generalMul(aDiff, toomLen, bDiff, toomLen, P2);
-//      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
-// noting that aDiffTop and bDiffTop are signed values.
-    }
-    P1Top = 0;
-    switch (aSumTop)
-    {   case 2:
-            P1Top = karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-            [[fallthrough]];
-        case 1:
-            P1Top += karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-            break;
-        case 0:
-            break;
-    }
-    if (bSumTop != 0)
-        P1Top += karaAdd(aSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-    P1Top += aSumTop*bSumTop;   
-    P2Top = 0;
-    switch (aDiffTop)
-    {   case 1:
-            P2Top = karaAdd(bDiff, toomLen, P2+toomLen, toomLen, P2+toomLen);
-            break;
-        case -1:
-            P2Top = -karaSubtract(P2+toomLen, toomLen,
-                                  bDiff, toomLen, P2+toomLen);
-            break;
-        case 0:
-            break;
-    }        
-    switch (bDiffTop)
-    {   case -1:
-            P2Top -= karaSubtract(P2+toomLen, toomLen,
-                                  aDiff, toomLen, P2+toomLen);
-        break;
-    }
-    P2Top += aDiffTop*bDiffTop;   
-// Now set D1 = P1-P2, D2=P1+P2
-    D1Top = P1Top - P2Top - karaSubtract(P1, 2*toomLen, P2, 2*toomLen, D1);
-    D2Top = P1Top + P2Top + karaAdd(P1, 2*toomLen, P2, 2*toomLen, D2);
-// Halve both of these
-    D1Top = karaHalve(D1Top, D1, 2*toomLen);
-    D2Top = karaHalve(D2Top, D2, 2*toomLen);
-    if constexpr (thread) // These already computed in the threaded version
-    {   generalMul(aLow, toomLen, bLow, toomLen, P0);
-        generalMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
-    }
-// I need to D1 -= P3; D2 -= P0;
-    D1Top -= karaSubtract(D1, 2*toomLen, P3, lenAHigh+lenBHigh, D1);
-    D2Top -= karaSubtract(D2, 2*toomLen, P0, 2*toomLen, D2);
-// Now to assemble the final result I just need to cope with the fact
-// the the partial products P0, D1, D1 and P3 overlap.
-// So now I have
-//   c:     P3hi  P3lo   xxx   P0Hi P0Lo
-//                D1Top  D1Hi  D1Lo
-//          D2Top D2Hi   D2Low
-    Digit carry = karaAdd(D1, toomLen,            // D1Lo
-                          c+toomLen, toomLen,     // P0Hi
-                          c+toomLen);
-    carry = karaAdd(D1+toomLen, toomLen,          // D1Hi
-                    D2, toomLen, carry,           // D2Lo
-                    c+2*toomLen);
-    carry = karaAdd(D2+toomLen, toomLen,          // D2Hi
-                    c+3*toomLen, toomLen, carry,  // P3Lo
-                    c+3*toomLen);
-    // karaCarry(carry, c+4*toomLen); by adding carry into D2Top I do this
-    D2Top += carry;
-// I need to merge in D1Top and D2TOP. Note that either could be positive
-// or negative, and that is part of why I did not merge them in earlier.
-    if (D1Top > 0)      karaCarry(D1Top, c+3*toomLen);
-    else if (D1Top < 0) karaBorrow(-D1Top, c+3*toomLen);
-    if (D2Top > 0)      karaCarry(D2Top, c+4*toomLen);
-    else if (D2Top < 0) karaBorrow(-D2Top, c+4*toomLen);
-}
-
-static void biggerMul(ConstDigitPtr a, std::size_t N,
-                      ConstDigitPtr b, std::size_t M,
-                      DigitPtr result)
-{   ManageWorkers manager;
-// Now manager.mayUseThreads will be true if I am allowed to use the
-// worker threads.
-//
-// Now look at out-of balance cases. Here I take the view that if N>1.5M
-// I will hive off square multiplications as much as I can. They will each
-// be MxM so I need M space to keep some digits already computed that I
-// will need to combine with the output from the next square multiply.
-#ifdef DEBUG_TIMES
-    display("\na", a, N);
-    display("\nb", b, M);
-#endif // DEBUG_TIMES
-    if (2*N > 3*M)
-    {   if (manager.mayUseThreads) unbalancedMul<true>(a, N, b, M, result);
-        else unbalancedMul<false>(a, N, b, M, result);
-    }
-// Karatsuba cases here.
-    else if (N < KARABIG || !manager.mayUseThreads)
-        kara<false>(a, N, b, M, result);
-    else kara<true>(a, N, b, M, result);
 }
 
 [[gnu::always_inline]]
@@ -16001,45 +15481,492 @@ static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
     }
 }
 
+//=========================================================================
+
+// Some of the functions here have are templated with a boolean
+// called "thread". When this is true the code is entitled to cause
+// worker threads to be launched to perform subsidiary multiplications.
+// The multi-thread decomposition may only happen once, and that is enforced
+// by making thread=false for all the lower level calls.
+
+// Now the main entrypoint to my new code for multiplying
+// unsigned values. It tries to put simple cheap tests to spot
+// cheap cases inline and then dispatch to the separate procedures
+// that apply in each case.
+// The small cases covered here are liable to get expanded in line
+// in rather extreme manners!
+
+public:
+
+[[gnu::always_inline]]
+static void generalMul(ConstDigitPtr a, std::size_t N,
+                       ConstDigitPtr b, std::size_t M,
+                       DigitPtr result)
+{
+#ifdef MEASURE_WORKSPACE
+//@@    std::cout << N << "*" << M << ". ";
+    thisN = N;
+    thisM = M;
+#endif // MEASURE_WOREKSPACE
+// I take a view that case of single word multiplication as both so
+// special and so important that I do that in-line here.
+    if ((N|M) == 1)
+    {   oneWordMul(a[0], b[0], 0, result[1], result[0]);
+        return;
+    }
+// I next have special treatment for all the cases where both M and N are
+// at most 7. I make the cut off there because I can test if either N
+// or M exceeds the bound using a bitwide OR here which I expect to be
+// nice and cheap! Also because I expect small cases like this to be
+// especially commonly used, and to be ones where loop overheads might
+// intrude.
+    if ((N|M) <= 7)
+    {   LIKELY
+        smallCaseMul(a, N, b, M, result);
+        return;
+    }
+    if (N < M)
+    {   std::swap(a, b);
+        std::swap(N, M);
+    }
+// If the smaller number is fairly small I again use classical long
+// multiplication, but with the inner loop unrolled.
+    if (M <= 7)
+    {   bigBySmallMul(a, N, b, M, result);
+        return;
+    }
+    if (M < KARASTART)    // Too small for Karatsuba.
+    {   if (N==M && N<=14) balancedMul(a, b, N, result);
+        else simpleMul(a, N, b, M, result);
+    }
+    else biggerMul(a, N, b, M, result);
+}
+
+private:
+
+static void biggerMul(ConstDigitPtr a, std::size_t N,
+                      ConstDigitPtr b, std::size_t M,
+                      DigitPtr result)
+{   ManageWorkers manager;
+// Now manager.mayUseThreads will be true if I am allowed to use the
+// worker threads.
+//
+// Now look at out-of balance cases. Here I take the view that if N>1.5M
+// I will hive off toom32 multiplications as much as I can. They will each
+// be (3*M)/2xM and I need M space to keep some digits already computed that I
+// will need to combine with the output from the next square multiply.
+#ifdef TRACE_TIMES
+    display("\na", a, N);
+    display("\nb", b, M);
+#endif // TRACE_TIMES
+    if (4*N <= 5*M)
+    {   stkvector<Digit> workspace(1000000); // @@@
+#ifdef MEASURE_WORKSPACE
+        workspaceBase = workspace;
+#endif // MEASURE_WORKSPACE
+        if (N < KARABIG || !manager.mayUseThreads)
+            kara(a, N, b, M, result, workspace);
+        else kara<true>(a, N, b, M, result, workspace);
+    }
+    else if (20*N <= 37*M)
+    {   stkvector<Digit> workspace(1000000); // @@@
+#ifdef MEASURE_WORKSPACE
+        workspaceBase = workspace;
+#endif // MEASURE_WORKSPACE
+        if (N < KARABIG || !manager.mayUseThreads)
+            toom32(a, N, b, M, result, workspace);
+        else toom32<true>(a, N, b, M, result, workspace);
+    }
+    else 
+    {   stkvector<Digit> workspace(1000000); // @@@
+#ifdef MEASURE_WORKSPACE
+        workspaceBase = workspace;
+#endif // MEASURE_WORKSPACE
+        if (manager.mayUseThreads) unbalancedMul<true>(a, N, b, M, result, workspace);
+        else unbalancedMul(a, N, b, M, result, workspace);
+    }
+}
+
+// The following overload is the one used in recursive calls (it has
+// workspace as its final argument). It is called when Kara or Toom32
+// recurses and so most of the time we will have M==N>KARASTART/2
+
+// @@@ [[gnu::always_inline]]
+static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
+                            ConstDigitPtr b, std::size_t M,
+                            DigitPtr result,
+                            DigitPtr workspace)
+{   if (N < M)
+    {   std::swap(a, b);
+        std::swap(N, M);
+    }
+#ifdef MEASURE_WORKSPACE
+// This is where the recursion can stop, so I update info on how much
+// workspace has been used.
+    std::size_t workspaceUsed = workspace - workspaceBase;
+    if (workspaceUsed > 900000)
+    {   std::cout << "\nnot converging\n";
+        arithlib_abort();
+    }
+    double ratio = workspaceUsed/(double)thisM;
+    if (ratio > worstRatio)
+    {   std::cout << worstRatio << " -> " << ratio
+                  << " : " << (ratio/std::log(thisM))
+                  << " at " << thisN << "*" << thisM << "\n";
+        worstRatio= ratio;
+        worstM = thisM;
+        worstN = thisN;
+    }
+#endif
+    if (M <= 7)
+    {
+#ifndef MEASURE_WORKSPACE
+// If I am just meassuring space I will not actually do the base-case
+// multiplications!
+        bigBySmallMul(a, N, b, M, result);
+#endif // MEASURE_WORKSPACE
+        return;
+    }
+    else if (M < KARASTART)
+    {
+#ifndef MEASURE_WORKSPACE
+        if (N==M &&  N<=11) balancedMul(a, b, N, result);
+        else simpleMul(a, N, b, M, result);
+#endif // MEASURE_WORKSPACE
+        return;
+    }
+#ifdef TRACE_TIMES
+    display("\na", a, N);
+    display("\nb", b, M);
+#endif // TRACE_TIMES
+// Here I will call Kara if N <= 1.25*M.
+    if (4*N <= 5*M) kara(a, N, b, M, result, workspace);
+// If N <= 1.85*M I will use toom32.
+    else if (20*N <= 37*M) toom32(a, N, b, M, result, workspace);
+    else
+    {   DigitPtr save = workspace;
+        workspace += M;
+        size_t step = (3*M)/2;
+        toom32(a, step, b, M, result, workspace);
+        a += step;
+        N -= step;
+        result += step;
+        for (;;)
+        {   while (N >= step)
+            {   std::memcpy(save, result, M*sizeof(Digit));
+                toom32(a, step, b, M, result, workspace);
+                addMdigits(workspace, M, result, step+M);
+                a += step;
+                N -= step;
+                result += step;
+            }
+            if (N == 0) return;
+// Here N < 1.5*M. If N>=M I can finish the job using a single step that
+// is either Toom32 or Karatsuba. And I should also take this case
+// if N<KARASTART. Also if N>=M/1.25 I can finish with Karatsuba. This
+// set of end conditions is more complicated than I had originally thought!
+            if (5*N >= 4*M || N < KARASTART)
+            {   std::memcpy(save, result, M*sizeof(Digit));
+                if (4*N > 5*M) toom32(a, N, b, M, result, workspace);
+                else if (N >= M) kara(a, N, b, M, result, workspace);
+                else if (N < KARASTART) simpleMul(a, N, b, M, result);
+                else kara(b, M, a, N, result, workspace);
+                addMdigits(workspace, M, result, step+M);
+                return;
+            }
+            else
+            {
+// If N<M I flip the order of the arguments (and recompute step).
+                std::swap(a, b);
+                std::swap(N, M);
+                step = (3*M)/2;
+            }
+        }
+    }
+}
+
+template <bool threads=false>
+[[gnu::always_inline]]
+static void unbalancedMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result,
+                          DigitPtr workspace)
+{
+    innerGeneralMul(a, N, b, M, result, workspace);
+    return;
+
+
+//@@@@
+// Here N is (much) bigger than M
+    innerGeneralMul(a, M, b, M, result, workspace);
+    N -= M;
+    a += M;
+    result += M;
+    while (2*N > 3*M)
+    {   std::memcpy(workspace, result, M*sizeof(Digit));
+        innerGeneralMul(a, M, b, M, result, workspace+M);
+// Now add M digits from workspace into the 2M digit number in result. There
+// can not be an overflow.
+        addMdigits(workspace, M, result, 2*M);
+        N -= M;
+        a += M;
+        result += M;
+    }
+    if (N != 0)
+    {   std::memcpy(workspace, result, M*sizeof(Digit));
+        innerGeneralMul(a, N, b, M, result, workspace+M);
+// Now add M digits from workspace into the M+N digit number in result. There
+// can not be an overflow.
+        addMdigits(workspace, M, result, M+N);
+    }
+}
+
+// I have code for multiplying N*M numbers when N is about
+// 1.5 times M. This splits the big number into 3 chunks and the
+// smaller into two.
+//
+// Here is a description of the procedure in a somewhat readable compact form.
+//
+// a := ahigh*x^2 + amid*x + alow;
+// b :=            bhigh*x + blow;      
+//
+// x^3 * (ahigh*bhigh) +
+// x^2 * (ahigh*blow + amid*bhigh) +
+// x   * (alow*bhigh + amid*blow) +
+//       (alow*blow)
+//
+// asum := ahigh+amid+alow;    preserve carry
+// bsum := bhigh+blow;         preserve carry
+// adiff := ahigh-amid+alow;   preserve carry or borrow
+// bdiff := blow-bhigh;        preserve borrow
+// p0 := alow*blow;
+// p1 := asum*bsum;            adjust for carries, borrows in asum, bsum,
+// p2 := adiff*bdiff;          adiff, bdiff and generate carries or borrows.
+// p3 := ahigh*bhigh;
+//
+// d0 := p0;                         alow*blow
+// d1 := (p1 - p2)/2 - p3;           alow*bhigh + amid*blow   record carry etc
+// d2 := (p1 + p2)/2 - p0;           ahigh*blow + amid*bhigh  record carry etc
+// d3 := p3;                         ahigh*bhigh
+//
+// merge d1, d2 in accounting for how they overlap each other and d0, d3.
+
+template <bool thread=false>
+static void toom32(ConstDigitPtr a, std::size_t N,
+                   ConstDigitPtr b, std::size_t M,
+                   DigitPtr c,
+                   DigitPtr workspace)
+{
+// I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
+// where amid, alow, blow all have the same size (toomLen). Then
+// ahigh and bhigh need to have at least some digits but may not have more
+// then toomLen.
+// I let a(t) = ahigh*t^2 + amid*t + alow and b(t) = bhigh*t + blow.
+// then I evaluate a() and b() at 0, +1, -1 and infinity - then I can
+// interpolate through products of those values to get digits for my result.
+// A classical 3x2 multiplication would use 6 partial products - this uses
+// just 4 but obviously a bunch of extra additions and subtractions together
+// with some general overhead. 
+    size_t toomLen = std::max((N+2)/3, (M+1)/2);
+    assert(3*toomLen >= N && N > 2*toomLen);
+    assert(2*toomLen >= M && M > toomLen);
+    assert(N > 2*toomLen);
+    size_t lenAHigh = N-2*toomLen;
+    assert(lenAHigh <= toomLen);
+    size_t lenBHigh = M-toomLen;
+    ConstDigitPtr aLow = a;
+    ConstDigitPtr aMid = a + toomLen;
+    ConstDigitPtr aHigh = aMid + toomLen;
+    ConstDigitPtr bLow = b;
+    ConstDigitPtr bHigh = b + toomLen;
+// Now we have
+//     a = (aHigh*B^2, aMid*B, aLow)
+//     b = (bHigh*B, bLow)
+// and I will need to compute
+//     aSum = aHigh + aMid + Alow   (c = 0, 1, 2)
+//     bSum = bHigh + blow          (c = 0, 1)
+// and
+//     aDiff = aHigh - aMid + aLow  (c = -1, 0, 1)
+//     bDiff = bLow - bHigh         (c = 0, -1)
+//
+// Next
+//     P0 = aLow*bLow
+//     P1 = aSum*bSum
+//     P2 = aDiff*bDiff
+//     P3 = aHigh*bHigh
+// I will use the result space as workspace to start with.
+    DigitPtr P0 = c;
+    DigitPtr P1 = c;                 SignedDigit P1Top;
+    DigitPtr D1 = workspace;         SignedDigit D1Top;
+    DigitPtr D2 = D1 + 2*toomLen;    SignedDigit D2Top; 
+    DigitPtr ws = D1 + 4*toomLen;
+    DigitPtr P2 = c + 2*toomLen;     SignedDigit P2Top; 
+    DigitPtr P3 = c + 3*toomLen;
+    if constexpr (thread)
+    {   P2 = D1 + 4*toomLen;
+        P3 = D1 + 6*toomLen;
+        ws = D1 + 8*toomLen;
+    }
+    DigitPtr aSum = D1;              Digit aSumTop;
+    DigitPtr aDiff = D1 + toomLen;   SignedDigit aDiffTop;
+    DigitPtr bSum = D2;              Digit bSumTop;
+    DigitPtr bDiff = D2 + toomLen;   SignedDigit bDiffTop; 
+    aSumTop = karaAdd(aLow, toomLen, aHigh, lenAHigh, aSum);
+    aDiffTop = aSumTop - karaSubtract(aSum, toomLen, aMid, toomLen, aDiff);
+    aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
+    bSumTop = karaAdd(bLow, toomLen, bHigh, lenBHigh, bSum);
+    bDiffTop = -karaSubtract(bLow, toomLen, bHigh, lenBHigh, bDiff);
+    if constexpr (thread)
+    {   setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0, ws);
+        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1, ws+workspaceSize(toomLen));
+        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2, workspace+2*workspaceSize(toomLen));
+        driverData.releaseWorkers(true);
+        if (lenBHigh <= 7)
+            bigBySmallMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
+        if (lenAHigh <= 7)
+            bigBySmallMul(bHigh, lenBHigh, aHigh, lenAHigh, P3);
+        else innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, P3, workspace+2*workspaceSize(toomLen));
+        driverData.wait_for_workers(true);
+    }
+    else
+    {   innerGeneralMul(aSum, toomLen, bSum, toomLen, P1, ws);
+//      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
+        innerGeneralMul(aDiff, toomLen, bDiff, toomLen, P2, ws);
+//      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
+// noting that aDiffTop and bDiffTop are signed values.
+    }
+    P1Top = 0;
+    switch (aSumTop)
+    {   case 2:
+            P1Top = karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            [[fallthrough]];
+        case 1:
+            P1Top += karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            break;
+        case 0:
+            break;
+    }
+    if (bSumTop != 0)
+        P1Top += karaAdd(aSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+    P1Top += aSumTop*bSumTop;   
+    P2Top = 0;
+    switch (aDiffTop)
+    {   case 1:
+            P2Top = karaAdd(bDiff, toomLen, P2+toomLen, toomLen, P2+toomLen);
+            break;
+        case -1:
+            P2Top = -karaSubtract(P2+toomLen, toomLen,
+                                  bDiff, toomLen, P2+toomLen);
+            break;
+        case 0:
+            break;
+    }        
+    switch (bDiffTop)
+    {   case -1:
+            P2Top -= karaSubtract(P2+toomLen, toomLen,
+                                  aDiff, toomLen, P2+toomLen);
+        break;
+    }
+    P2Top += aDiffTop*bDiffTop;   
+// Now set D1 = P1-P2, D2=P1+P2
+    D1Top = P1Top - P2Top - karaSubtract(P1, 2*toomLen, P2, 2*toomLen, D1);
+    D2Top = P1Top + P2Top + karaAdd(P1, 2*toomLen, P2, 2*toomLen, D2);
+// Halve both of these
+    D1Top = karaHalve(D1Top, D1, 2*toomLen);
+    D2Top = karaHalve(D2Top, D2, 2*toomLen);
+    if constexpr (!thread) // These already computed in the threaded version
+    {   innerGeneralMul(aLow, toomLen, bLow, toomLen, P0, ws);
+        innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, P3, ws);
+    }
+// I need to D1 -= P3; D2 -= P0;
+    D1Top -= karaSubtract(D1, 2*toomLen, P3, lenAHigh+lenBHigh, D1);
+    D2Top -= karaSubtract(D2, 2*toomLen, P0, 2*toomLen, D2);
+// Now to assemble the final result I just need to cope with the fact
+// the the partial products P0, D1, D1 and P3 overlap.
+// So now I have
+//   c:     P3hi  P3lo   xxx   P0Hi P0Lo
+//                D1Top  D1Hi  D1Lo
+//          D2Top D2Hi   D2Low
+    Digit carry = karaAdd(D1, toomLen,            // D1Lo
+                          c+toomLen, toomLen,     // P0Hi
+                          c+toomLen);
+    carry = karaAdd(D1+toomLen, toomLen,          // D1Hi
+                    D2, toomLen, carry,           // D2Lo
+                    c+2*toomLen);
+    carry = karaAdd(D2+toomLen, toomLen,          // D2Hi
+                    c+3*toomLen, toomLen, carry,  // P3Lo
+                    c+3*toomLen);
+    // karaCarry(carry, c+4*toomLen); by adding carry into D2Top I do this
+    D2Top += carry;
+// I need to merge in D1Top and D2TOP. Note that either could be positive
+// or negative, and that is part of why I did not merge them in earlier.
+    if (D1Top > 0)      karaCarry(D1Top, c+3*toomLen);
+    else if (D1Top < 0) karaBorrow(-D1Top, c+3*toomLen);
+    if (D2Top > 0)      karaCarry(D2Top, c+4*toomLen);
+    else if (D2Top < 0) karaBorrow(-D2Top, c+4*toomLen);
+}
+
 [[gnu::always_inline]]
 static void setupKara(arithlib_implementation::WorkerData& wd,
                       ConstDigitPtr a, std::size_t lena,
                       ConstDigitPtr b, std::size_t lenb,
-                      DigitPtr result)
+                      DigitPtr result,
+                      DigitPtr workspace)
 {   wd.a = a;
     wd.lena = lena;
     wd.b = b;
     wd.lenb = lenb;
     wd.c = result;
+    wd.w = workspace;
 }
 
 // This is the entrypoint for Karatsuba multiplication, and it
 // will be called with N>=M amd with a workspace vector big enough for
 // its needs.
 
-public:
+// a := ahigh*x + alow;
+// b := bhigh*x + blow;
+//
+// x^2 * (ahigh*bhigh) +
+// x   * (alow*bhigh + ahigh*blow) +
+//       (alow*blow)
+//
+// adiff := alow-ahigh;
+// bdiff := blow-bhigh;
+// p0 := alow*blow;
+// p1 := adiff*bdiff;       ahigh*bhigh + alow*blow - alow*bhigh - ahigh*blow
+// p2 := ahigh*bhigh;
+//
+// d0 := p0;                alow*blow
+// d1 := p0 + p2 - p1;      alow*bhigh + amid*blow
+// d2 := p2;                ahigh*bhigh
+//
+// Well sometimes adiff and/or bdiff are computed with the subtraction
+// the other way round so as to leave a positive value there. In which
+// case we need
+// d1 := p1 - p0 - p2;      alow*bhigh + amid*blow
 
 template <bool thread=false>
 static void kara(ConstDigitPtr a, std::size_t N,
                  ConstDigitPtr b, std::size_t M,
-                 DigitPtr result)
+                 DigitPtr result,
+                 DigitPtr workspace)
 {   std::size_t lowSize = (N+1)/2;
     std::size_t aHighSize = N-lowSize;
     std::size_t bHighSize = M-lowSize;
     ConstDigitPtr aHigh = a+lowSize;
     ConstDigitPtr bHigh = b+lowSize;
-#ifdef DEBUG_TIMES
+#ifdef TRACE_TIMES
     display("\nahigh", aHigh, aHighSize);
     display("\nalow", a, lowSize);
     display("\nbhigh", bHigh, bHighSize);
     display("\nblow", b, lowSize);
-#endif // DEBUG_TIMES
+#endif // TRACE_TIMES
 // I have now split a and b into low and and high parts where the two
 // low parts are half the size of the larger input (rounded up if that
 // was odd). I now want to form |aHigh - aLow| and similarly for b
 // keeping track of whether taking the absolute values involved a sign flip.
     DigitPtr aDiff, bDiff;
-    stkvector<Digit> workspace((thread?4:2)*lowSize);
     if constexpr (thread)
     {   aDiff = workspace+2*lowSize;
         bDiff = workspace+3*lowSize;
@@ -16050,33 +15977,33 @@ static void kara(ConstDigitPtr a, std::size_t N,
     }
     bool sign = absDifference(a, lowSize, aHigh, aHighSize, aDiff);
     if (absDifference(b, lowSize, bHigh, bHighSize, bDiff)) sign = !sign;
-#ifdef DEBUG_TIMES
+#ifdef TRACE_TIMES
     display("\nadiff", aDiff, lowSize);
     display("\nbdiff", bDiff, lowSize);
     std::cout << "% sign = " << sign << "\n";
-#endif // DEBUG_TIMES
+#endif // TRACE_TIMES
     if constexpr (thread)
-    {   setupKara(driverData.wd_0, aDiff, lowSize, bDiff, lowSize, workspace);
-        setupKara(driverData.wd_1, a, lowSize, b, lowSize, result);
+    {   setupKara(driverData.wd_0, aDiff, lowSize, bDiff, lowSize, workspace, workspace+000);
+        setupKara(driverData.wd_1, a, lowSize, b, lowSize, result, workspace+000);
 // Let the threads run while I do aHigh*bHigh. I expect that I will only
 // launch threads when the inputs are rather large, and in particular large
 // enough that the half-sized multiplications triggered here will be
 // Karatsuba rather than classical.
         driverData.releaseWorkers(false);
-            // Do this while worker threads do their stuff.
-            generalMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize);
+        // Do this while worker threads do their stuff.
+        innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize, workspace+000);
         driverData.wait_for_workers(false);
     }
     else
-    {   generalMul(aDiff, lowSize, bDiff, lowSize, workspace);
-        generalMul(a, lowSize, b, lowSize, result);
-        generalMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize);
-#ifdef DEBUG_TIMES
+    {   innerGeneralMul(aDiff, lowSize, bDiff, lowSize, workspace, workspace+2*lowSize);
+        innerGeneralMul(a, lowSize, b, lowSize, result, workspace+2*lowSize);
+        innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize, workspace+2*lowSize);
+    }
+#ifdef TRACE_TIMES
     display("\nlowprod", result, 2*lowSize);
     display("\nmidprod", workspace, 2*lowSize);
     display("\nhighprod", result+2*lowSize, aHighSize+bHighSize);
-#endif // DEBUG_TIMES
-    }
+#endif // TRACE_TIMES
 // At this stage result has aHigh*bHigh in its top half and aLow*bLow
 // in its bottom half. Then workspace hold aDiff*bDiff. I now need to
 // combine these to get my final result. 
@@ -16110,17 +16037,92 @@ static void kara(ConstDigitPtr a, std::size_t N,
     karaCarry(carry, result+3*lowSize);
     if (extra > 0) karaCarry(extra, result+3*lowSize);
     else if (extra < 0) karaBorrow(-extra, result+3*lowSize);
-#ifdef DEBUG_TIMES
+#ifdef TRACE_TIMES
     display("\nresult", result, M+N);
-#endif // DEBUG_TIMES
+#endif // TRACE_TIMES
 }  
 
-private:
+public:
 
+#if defined USE_MICROSOFT_SRW
 
-};
+static void workerThread(WorkerData* wd)
+{   ThreadLocal::initialize();
+    AcquireSRWLockExclusive(&wd->mutex[2]);
+    AcquireSRWLockExclusive(&wd->mutex[3]);
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {   AcquireSRWLockExclusive(&wd->mutex[receive_count]);
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c,
+                                wd->w);
+        ReleaseSRWLockExclusive(&wd->mutex[receive_count^2]);
+        receive_count = (receive_count + 1) & 3;
+    }
+}
 
-inline std::atomic<bool> BigMultiplication::ManageWorkers::threadsInUse(false);
+#elif defined USE_MICROSOFT_MUTEX
+
+static void workerThread(WorkerData* wd)
+{   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
+    WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {
+// This WaitFor could wait for the entire Reduce run any only be signalled
+// during close-down, so putting a timeout on it would nor make sense.
+        WaitForSingleObject(wd->mutex[receive_count], MICROSOFT_INFINITE);
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c,
+                                wd->w);
+        ReleaseMutex(wd->mutex[receive_count^2]);
+        receive_count = (receive_count + 1) & 3;
+    }
+}
+
+#else // Here I use C++ std::mutex
+
+static void workerThread(WorkerData* wd)
+{   wd->mutex[2].lock();
+    wd->mutex[3].lock();
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {   wd->mutex[receive_count].lock();
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c,
+                                wd->w);
+        wd->mutex[receive_count^2].unlock();
+        receive_count = (receive_count + 1) & 3;
+    }
+}
+
+#endif // definition of workerThread
+
+}; // end of BigMultiplication class
+
+inline void workerThread(WorkerData* wd)
+{   BigMultiplication::workerThread(wd);
+}
+
+inline std::atomic<bool> ManageWorkers::threadsInUse(false);
 
 // Now the external world needs access to the entrypoint "generalMul"
 // so I provide a shim that calls it so that others do not need to
@@ -16143,108 +16145,32 @@ inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
 {   BigMultiplication::verySimpleMul(a, N, b, M, result);
 }
 
+#ifdef MEASURE_WORKSPACE
+
+int main()
+{
+    const std::size_t limit = 2000;
+    Digit a[10*limit];
+    Digit b[10*limit];
+    Digit res[20*limit];
+    for (int i=0; i<limit; i++) a[i] = b[i] = 0xbad999bad999bad9;
+    worstN = worstM = 0;
+    worstRatio = 0.0;
+    for (std::size_t M=8; M<limit; M++)
+    for (std::size_t N=M; N<limit; N++)
+    {   if (N==limit-1) N = 10*limit-1;
+        generalMul(a, N, b, M, res);
+    }
+    std::cout << "worst ratio = " << worstRatio
+              << " : " << (worstRatio/std::log(worstM))
+              << " with N=" << worstN << " M=" << worstM << "\n";
+    return 0;
+}
+
+#endif // MEASURE_WORKSPACE
+
 // End of integer multiplication code.
 //=========================================================================
-
-#if defined USE_MICROSOFT_SRW
-
-inline void workerThread(WorkerData* wd)
-{   ThreadLocal::initialize();
-    AcquireSRWLockExclusive(&wd->mutex[2]);
-    AcquireSRWLockExclusive(&wd->mutex[3]);
-    wd->ready = true;
-    int receive_count = 0;
-    for (;;)
-    {   AcquireSRWLockExclusive(&wd->mutex[receive_count]);
-        if (wd->quit_flag) return;
-// This is where I do some work! I think it would in general have been
-// silly to launch a thread if the sub-multiplication was small enough to
-// call for classical multiplication... so I always use Karatsuba here.
-        BigMultiplication::kara(wd->a, wd->lena,
-                                wd->b, wd->lenb,
-                                wd->c);
-        ReleaseSRWLockExclusive(&wd->mutex[receive_count^2]);
-        receive_count = (receive_count + 1) & 3;
-    }
-}
-
-#elif defined USE_MICROSOFT_MUTEX
-
-inline void workerThread(WorkerData* wd)
-{
-#ifdef WORRY_ABOUT_DEADLOCK
-    fprintf(stderr, "Grabbing mutexes as worker thread %d starts\n", wd->which);
-    fflush(stderr);
-    if (WaitForSingleObject(wd->mutex[2], 2000) != 0)
-    {   fprintf(stderr, "Timeout on mutex line %d\n", __LINE__);
-        fflush(stderr);
-        std::abort();
-    }
-    if (WaitForSingleObject(wd->mutex[3], 2000) != 0)
-    {   fprintf(stderr, "Timeout on mutex line %d\n", __LINE__);
-        fflush(stderr);
-        std::abort();
-    }
-    fprintf(stderr, "thread %d ready\n", wd->which);
-    fflush(stderr);
-#else
-    WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
-    WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
-#endif
-    wd->ready = true;
-    int receive_count = 0;
-    for (;;)
-    {
-// This WaitFor could wait for the entire Reduce run any only be signalled
-// during close-down, so putting a timeout on it would nor make sense.
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "wait on %d:%d\n", wd->which, receive_count);
-        fflush(stderr);
-#endif
-        WaitForSingleObject(wd->mutex[receive_count], MICROSOFT_INFINITE);
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "released %d:%d quit=%d\n", wd->which, receive_count, wd->quit_flag);
-        fflush(stderr);
-#endif
-        if (wd->quit_flag) return;
-// This is where I do some work! I think it would in general have been
-// silly to launch a thread if the sub-multiplication was small enough to
-// call for classical multiplication... so I always use Karatsuba here.
-        BigMultiplication::kara(wd->a, wd->lena,
-                                wd->b, wd->lenb,
-                                wd->c);
-#ifdef WORRY_ABOUT_DEADLOCK
-        fprintf(stderr, "Thread %d about to release mutex %d\n",
-                        wd->which, receive_count^2);
-        fflush(stderr);
-#endif
-        ReleaseMutex(wd->mutex[receive_count^2]);
-        receive_count = (receive_count + 1) & 3;
-    }
-}
-
-#else // Here I use C++ std::mutex
-
-inline void workerThread(WorkerData* wd)
-{   wd->mutex[2].lock();
-    wd->mutex[3].lock();
-    wd->ready = true;
-    int receive_count = 0;
-    for (;;)
-    {   wd->mutex[receive_count].lock();
-        if (wd->quit_flag) return;
-// This is where I do some work! I think it would in general have been
-// silly to launch a thread if the sub-multiplication was small enough to
-// call for classical multiplication... so I always use Karatsuba here.
-        BigMultiplication::kara(wd->a, wd->lena,
-                                wd->b, wd->lenb,
-                                wd->c);
-        wd->mutex[receive_count^2].unlock();
-        receive_count = (receive_count + 1) & 3;
-    }
-}
-
-#endif // definition of workerThread
 
 
 // Now some code that delivers just some of the digits from a product.
@@ -16270,9 +16196,9 @@ inline void workerThread(WorkerData* wd)
 // can be used to document the intent of everything else. I will also use
 // it when the sizes M and N are very different.
 
-inline void referencePartMul(ConstDigitPtr u, size_t N,
-                             ConstDigitPtr v, size_t M,
-                             DigitPtr w,
+inline void referencePartMul(const std::uint64_t* u, size_t N,
+                             const std::uint64_t* v, size_t M,
+                             std::uint64_t* w,
                              size_t from=0, size_t to=SIZE_MAX)
 {   stkvector<Digit> temp(N+M);
 // This reference implementation just forms the full product and then
@@ -16287,9 +16213,9 @@ inline void referencePartMul(ConstDigitPtr u, size_t N,
 // The "classical" version is what will be used for multiplications
 // involving not too many digits, and is pretty straightforward.
 
-inline void classicalPartMul(ConstDigitPtr u, size_t N,
-                             ConstDigitPtr v, size_t M,
-                             DigitPtr w,
+inline void classicalPartMul(const std::uint64_t* u, size_t N,
+                             const std::uint64_t* v, size_t M,
+                             std::uint64_t* w,
                              size_t from=0, size_t to=SIZE_MAX)
 {   Digit lo=0, hi=0, carry=0, hi1;
     to = std::min(to, N+M-1);
@@ -16341,9 +16267,9 @@ inline void classicalPartMul(ConstDigitPtr u, size_t N,
 // G Henriot and P Zimmermanm, "A long note on Mulder's Short Product"
 // Journal of Symbolic Computation Volume 37, 3, March 2004, Pages 391-401
 
-inline Digit fastPartMulAdd(ConstDigitPtr u, size_t N,
-                            ConstDigitPtr v, size_t M,
-                            DigitPtr w,
+inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
+                            const std::uint64_t* v, size_t M,
+                            std::uint64_t* w,
                             size_t from, size_t to);
 
 // This forms a sub-product and adds it in. This is made into
@@ -16351,9 +16277,9 @@ inline Digit fastPartMulAdd(ConstDigitPtr u, size_t N,
 // because from, to and w need adjustment and the calculations that
 // set their values seemed most easily expressed here.
 
-inline Digit shiftedFastPartMulAdd(ConstDigitPtr u, size_t N,
-                                   ConstDigitPtr v, size_t M,
-                                   DigitPtr w,
+inline Digit shiftedFastPartMulAdd(const std::uint64_t* u, size_t N,
+                                   const std::uint64_t* v, size_t M,
+                                   std::uint64_t* w,
                                    size_t from, size_t to,
                                    size_t uShift, size_t vShift)
 {   size_t h = uShift + vShift;
@@ -16376,9 +16302,9 @@ inline Digit shiftedFastPartMulAdd(ConstDigitPtr u, size_t N,
 // and where "to" is such that quite a lot of the high digits of the
 // result are not wanted.
 
-inline void lowPartMul(ConstDigitPtr u,
-                       ConstDigitPtr v, size_t N,
-                       DigitPtr  w,
+inline void lowPartMul(const std::uint64_t* u,
+                       const std::uint64_t* v, size_t N,
+                       std::uint64_t*  w,
                        size_t from, size_t to)
 {   size_t split = std::min(N, ((7*to)/10 + 1) & ~1);
     size_t gap = N-split;
@@ -16404,7 +16330,7 @@ inline void lowPartMul(ConstDigitPtr u,
 // even though in C++ it is legal to have a pointer to the location
 // one beyond a vector.
 
-inline Digit propagateCarry(Digit carry, DigitPtr w, size_t len)
+inline Digit propagateCarry(Digit carry, std::uint64_t* w, size_t len)
 {   if (carry==0 || len==0) return carry;
     for (;;)
     {   carry = addWithCarry(*w, carry, *w);
@@ -16417,9 +16343,9 @@ inline Digit propagateCarry(Digit carry, DigitPtr w, size_t len)
 
 inline const size_t midmul_threshold = 20;
 
-inline void fastPartMul(ConstDigitPtr u, size_t N,
-                        ConstDigitPtr v, size_t M,
-                        DigitPtr w,
+inline void fastPartMul(const std::uint64_t* u, size_t N,
+                        const std::uint64_t* v, size_t M,
+                        std::uint64_t* w,
                         size_t from=0, size_t to=SIZE_MAX)
 {
 // Any digits in either u or v beyond "to" can be discarded since they can
@@ -16516,9 +16442,9 @@ inline void fastPartMul(ConstDigitPtr u, size_t N,
 // Note that default values for from and to were set up in the declaration
 // and must not be repeated here.
 
-inline Digit fastPartMulAdd(ConstDigitPtr u, size_t N,
-                            ConstDigitPtr v, size_t M,
-                            DigitPtr w,
+inline Digit fastPartMulAdd(const std::uint64_t* u, size_t N,
+                            const std::uint64_t* v, size_t M,
+                            std::uint64_t* w,
                             size_t from, size_t to)
 {   to = std::min(to, N+M-1);
 // A special case here is when M is much larger then N, since with
@@ -16541,8 +16467,8 @@ inline Digit fastPartMulAdd(ConstDigitPtr u, size_t N,
 // This is because in the perfect result there may have been carries
 // passed on up from lower partial products.
 
-inline Digit fastSlice(ConstDigitPtr u, size_t N,
-                       ConstDigitPtr v, size_t M,
+inline Digit fastSlice(const std::uint64_t* u, size_t N,
+                       const std::uint64_t* v, size_t M,
                        size_t from=0, size_t bits = 0)
 {   stkvector<Digit> shiftedU(N+1);
     if (bits != 0)
@@ -16606,6 +16532,30 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
     lenc = lena;
 }
 
+inline void classicalbigmultiply(const std::uint64_t* a, std::size_t lena,
+                                 const std::uint64_t* b, std::size_t lenb,
+                                 std::uint64_t* c, std::size_t &lenc)
+{
+// For this a and b must be treated as 2s complement signed numbers,
+// and the length lenc returned but ensure that the top digit of the
+// product is not a redundant zero or -1.
+    if (lena < lenb)
+    {   std::swap(a, b);
+        std::swap(lena, lenb);
+    }
+    verySimpleMul(a, lena, b, lenb, c);
+    if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
+    if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
+    lena += lenb;
+// A case like {0,0x80000...} times the same leads at this stage to
+// {0, 0, 0x40000...} and the length needs to be shrunk by two words. The
+// way I code this is intended to have a chance of compiling into branch-
+// free code and execute faster than "if (shrinkable(..)) lena--;".
+    lena -= shrinkable(c[lena-1], c[lena-2]);
+    lena -= shrinkable(c[lena-1], c[lena-2]);
+    lenc = lena;
+}
+
 //===========================================================================
 //===========================================================================
 
@@ -16613,9 +16563,7 @@ inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
 {   std::size_t lena = numberSize(a);
     std::size_t lenb = numberSize(b);
     std::size_t n = lena+lenb;
-    push(a); push(b);
     std::uint64_t* p = reserve(n);
-    pop(b); pop(a);
     std::size_t final_n;
 // bigmultiply already tries to detect and handle small cases specially,
 // but it could be that detecting some very small cases here - ie even
@@ -16624,15 +16572,15 @@ inline std::intptr_t Times::op(std::uint64_t* a, std::uint64_t* b)
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Times::op(std::int64_t a, std::int64_t b)
-{   std::int64_t hi;
-    std::uint64_t lo;
+inline std::intptr_t Times::op(SignedDigit a, SignedDigit b)
+{   SignedDigit hi;
+    Digit lo;
     signedMultiply64(a, b, hi, lo);
     if ((hi==0 && positive(lo)) ||
         (hi==-1 && negative(lo)))
-    {   if (fitsIntoFixnum(static_cast<std::int64_t>(lo)))
+    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
             LIKELY
-            return intToHandle(static_cast<std::int64_t>(lo));
+            return intToHandle(static_cast<SignedDigit>(lo));
         std::uint64_t* r = reserve(1);
         r[0] = lo;
         return confirmSize(r, 1, 1);
@@ -16643,17 +16591,15 @@ inline std::intptr_t Times::op(std::int64_t a, std::int64_t b)
     return confirmSize(r, 2, 2);
 }
 
-inline std::intptr_t Times::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Times::op(SignedDigit a, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
-    push(b);
     std::uint64_t* c = reserve(lenb+1);
-    pop(b);
-    std::uint64_t hi = 0;
+    Digit hi = 0;
     for (std::size_t i=0; i<lenb; i++)
         multiply64(a, b[i], hi, hi, c[i]);
     c[lenb] = hi;
     if (negative(a))
-    {   std::uint64_t carry = 1;
+    {   Digit carry = 1;
         for (std::size_t i=0; i<lenb; i++)
             carry = addWithCarry(c[i+1], ~b[i], carry, c[i+1]);
     }
@@ -16664,8 +16610,63 @@ inline std::intptr_t Times::op(std::int64_t a, std::uint64_t* b)
     return confirmSize(c, lenb+1, lenc);
 }
 
-inline std::intptr_t Times::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Times::op(std::uint64_t* a, SignedDigit b)
 {   return Times::op(b, a);
+}
+
+inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
+{   std::size_t lena = numberSize(a);
+    std::size_t lenb = numberSize(b);
+    std::size_t n = lena+lenb;
+    std::uint64_t* p = reserve(n);
+    std::size_t final_n;
+// bigmultiply already tries to detect and handle small cases specially,
+// but it could be that detecting some very small cases here - ie even
+// earlier - would be worthwhile.
+    classicalbigmultiply(a, lena, b, lenb, p, final_n);
+    return confirmSize(p, n, final_n);
+}
+
+inline std::intptr_t ClassicalTimes::op(SignedDigit a, SignedDigit b)
+{   SignedDigit hi;
+    Digit lo;
+    signedMultiply64(a, b, hi, lo);
+    if ((hi==0 && positive(lo)) ||
+        (hi==-1 && negative(lo)))
+    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
+            LIKELY
+            return intToHandle(static_cast<SignedDigit>(lo));
+        std::uint64_t* r = reserve(1);
+        r[0] = lo;
+        return confirmSize(r, 1, 1);
+    }
+    std::uint64_t* r = reserve(2);
+    r[0] = lo;
+    r[1] = hi;
+    return confirmSize(r, 2, 2);
+}
+
+inline std::intptr_t ClassicalTimes::op(SignedDigit a, std::uint64_t* b)
+{   std::size_t lenb = numberSize(b);
+    std::uint64_t* c = reserve(lenb+1);
+    Digit hi = 0;
+    for (std::size_t i=0; i<lenb; i++)
+        multiply64(a, b[i], hi, hi, c[i]);
+    c[lenb] = hi;
+    if (negative(a))
+    {   Digit carry = 1;
+        for (std::size_t i=0; i<lenb; i++)
+            carry = addWithCarry(c[i+1], ~b[i], carry, c[i+1]);
+    }
+    if (negative(b[lenb-1])) c[lenb] -= a;
+    std::size_t lenc = lenb+1;
+    truncatePositive(c, lenc);
+    truncateNegative(c, lenc);
+    return confirmSize(c, lenb+1, lenc);
+}
+
+inline std::intptr_t ClassicalTimes::op(std::uint64_t* a, SignedDigit b)
+{   return ClassicalTimes::op(b, a);
 }
 
 // For big multi-digit numbers squaring can be done almost twice as fast
@@ -16690,14 +16691,14 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
         return;
     }
     for (std::size_t i=0; i<2*lena; i++) r[i] = 0;
-    std::uint64_t carry;
+    Digit carry;
     lenr = 2*lena;
     for (std::size_t i=0; i<lena; i++)
-    {   std::uint64_t hi = 0;
+    {   Digit hi = 0;
 // Note that all the terms I add in here will need to be doubled in the
 // final accounting.
         for (std::size_t j=i+1; j<lena; j++)
-        {   std::uint64_t lo;
+        {   Digit lo;
             multiply64(a[i], a[j], hi, hi, lo);
             hi += addWithCarry(lo, r[i+j], r[i+j]);
         }
@@ -16706,15 +16707,15 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
 // Double the part that has been computed so far.
     carry = 0;
     for (std::size_t i=0; i<2*lena; i++)
-    {   std::uint64_t w = r[i];
+    {   Digit w = r[i];
         r[i] = (w << 1) | carry;
         carry = w >> 63;
     }
 // Now add in the bits that do not get doubled.
     carry = 0;
-    std::uint64_t hi = 0;
+    Digit hi = 0;
     for (std::size_t i=0; i<lena; i++)
-    {   std::uint64_t lo;
+    {   Digit lo;
         multiply64(a[i], a[i], r[2*i], hi, lo);
         carry = addWithCarry(lo, carry, r[2*i]);
         carry = addWithCarry(hi, r[2*i+1], carry, r[2*i+1]);
@@ -16722,11 +16723,11 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
 // Now if the input had been negative I have a correction to apply...
 // I subtract 2a from the top half of the result.
     if (negative(a[lena-1]))
-    {   std::uint64_t carry = 1;
+    {   Digit carry = 1;
         int fromprev = 0;
         for (std::size_t i=0; i<lena; i++)
-        {   std::uint64_t d = a[i];
-            std::uint64_t w = (d<<1) | fromprev;
+        {   Digit d = a[i];
+            Digit w = (d<<1) | fromprev;
             fromprev = static_cast<int>(d>>63);
             carry = addWithCarry(r[lena+i], ~w, carry, r[lena+i]);
         }
@@ -16740,24 +16741,22 @@ inline void bigsquare(std::uint64_t* a, std::size_t lena,
 inline std::intptr_t Square::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
     std::size_t n = 2*lena;
-    push(a);
     std::uint64_t* p = reserve(n);
-    pop(a);
     std::size_t final_n;
     bigsquare(a, lena, p, final_n);
     return confirmSize(p, n, final_n);
 }
 
-inline std::intptr_t Square::op(std::int64_t a)
-{   std::uint64_t hi, lo;
+inline std::intptr_t Square::op(SignedDigit a)
+{   Digit hi, lo;
     multiply64(a, a, hi, lo);
-    if (a < 0) hi -= 2u*static_cast<std::uint64_t>(a);
+    if (a < 0) hi -= 2u*static_cast<Digit>(a);
 // Now I have a 128-bit product of the inputs
     if ((hi == 0 && positive(lo)) ||
-        (hi == static_cast<std::uint64_t>(-1) && negative(lo)))
-    {   if (fitsIntoFixnum(static_cast<std::int64_t>(lo)))
+        (hi == static_cast<Digit>(-1) && negative(lo)))
+    {   if (fitsIntoFixnum(static_cast<SignedDigit>(lo)))
             LIKELY
-            return intToHandle(static_cast<std::int64_t>(lo));
+            return intToHandle(static_cast<SignedDigit>(lo));
         else
         {   std::uint64_t* p = reserve(1);
             p[0] = lo;
@@ -16772,11 +16771,9 @@ inline std::intptr_t Square::op(std::int64_t a)
 
 inline std::intptr_t Isqrt::op(std::uint64_t* a)
 {   std::size_t lena = numberSize(a);
-    if (lena == 1) return Isqrt::op(static_cast<std::int64_t>(a[0]));
+    if (lena == 1) return Isqrt::op(static_cast<SignedDigit>(a[0]));
     std::size_t lenx = (lena+1)/2;
-    push(a);
     std::uint64_t* x = reserve(lenx);
-    pop(a);
     for (std::size_t i=0; i<lenx; i++) x[i] = 0;
     std::size_t bitstop = a[lena-1]==0 ? 0 : 64 - nlz(a[lena-1]);
     bitstop /= 2;
@@ -16799,25 +16796,13 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
 //         bigx = (bigx + biga/bigx) >> 1;
 // The push/pop mess here feels extreme and I should probably re-code this
 // using lower level interfaces.
-    push(bigx.val); push(biga.val);
     Bignum w1 = biga/bigx;
-    pop(biga.val); pop(bigx.val);
-    push(bigx.val); push(biga.val);
     w1 = bigx + w1;
-    pop(biga.val); pop(bigx.val);
-    push(bigx.val); push(biga.val);
     bigx = w1 >> 1;
-    pop(biga.val); pop(bigx.val);
     for (;;)
-    {   push(bigx.val); push(biga.val);
-        w1 = biga/bigx;
-        pop(biga.val); pop(bigx.val);
-        push(bigx.val); push(biga.val);
+    {   w1 = biga/bigx;
         w1 = bigx + w1;
-        pop(biga.val); pop(bigx.val);
-        push(bigx.val); push(biga.val);
         Bignum y = w1 >> 1;
-        pop(biga.val); pop(bigx.val);
         if (y >= bigx) break;
         bigx = y;
     }
@@ -16830,24 +16815,24 @@ inline std::intptr_t Isqrt::op(std::uint64_t* a)
     return r;
 }
 
-inline std::intptr_t Isqrt::op(std::int64_t aa)
+inline std::intptr_t Isqrt::op(SignedDigit aa)
 {   if (aa <= 0) return intToBignum(0);
-    std::uint64_t a = static_cast<std::uint64_t>(aa);
+    Digit a = static_cast<Digit>(aa);
     std::size_t w = 64 - nlz(a);
-    std::uint64_t x0 = a >> (w/2);
+    Digit x0 = a >> (w/2);
 // The iteration here converges to sqrt(a) from above, but I believe that
 // when the value stops changing it will be at floor(sqrt(a)). There are
 // some cases where the sequence ends up alternating between two adjacent
 // values. Because my input is at most 2^63-1 the number of iterations
 // written here will always suffice.
-    std::uint64_t x1 = (x0 + a/x0)/2;
-    std::uint64_t x2 = (x1 + a/x1)/2;
+    Digit x1 = (x0 + a/x0)/2;
+    Digit x2 = (x1 + a/x1)/2;
     if (x2 >= x1) return unsignedIntToBignum(x1);
-    std::uint64_t x3 = (x2 + a/x2)/2;
+    Digit x3 = (x2 + a/x2)/2;
     if (x3 >= x2) return unsignedIntToBignum(x2);
-    std::uint64_t x4 = (x3 + a/x3)/2;
+    Digit x4 = (x3 + a/x3)/2;
     if (x4 >= x3) return unsignedIntToBignum(x3);
-    std::uint64_t x5 = (x4 + a/x4)/2;
+    Digit x5 = (x4 + a/x4)/2;
     if (x5 >= x4) return unsignedIntToBignum(x4);
     return unsignedIntToBignum(x5);
 }
@@ -16860,7 +16845,7 @@ inline std::intptr_t Isqrt::op(std::int64_t aa)
 // useful saving spece saving can be found down that path.
 
 inline void bigpow(std::uint64_t* a, std::size_t lena,
-                   std::uint64_t n,
+                   Digit n,
                    std::uint64_t* v,
                    std::uint64_t* w,
                    std::uint64_t* r, std::size_t &lenr, std::size_t maxlenr)
@@ -16900,7 +16885,7 @@ inline void bigpow(std::uint64_t* a, std::size_t lena,
 // The code that dispatches into here should have filtered cases such that
 // the exponent n is not 0, 1 or 2 here.
 
-inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
+inline std::intptr_t Pow::op(std::uint64_t* a, SignedDigit n)
 {   std::size_t lena = numberSize(a);
 //  1^(-n) == 1,
 //  (-1)^(-n) == 1 if n is even or -1 if n is odd.
@@ -16908,8 +16893,8 @@ inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
     if (n < 0)
     {   int z = 0;
         if (lena == 0)
-        {   if (static_cast<std::int64_t>(a[0]) == 1) z = 1;
-            else if (static_cast<std::int64_t>(a[0]) == -1)
+        {   if (static_cast<SignedDigit>(a[0]) == 1) z = 1;
+            else if (static_cast<SignedDigit>(a[0]) == -1)
                 z = (n%1==0 ? 1 : -1);
             else arithlib_assert(a[0] != 0u);
         }
@@ -16921,7 +16906,7 @@ inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
     }
 // 6^n = 0
     std::size_t bitsa = bignumBits(a, lena);
-    std::uint64_t hi, bitsr;
+    Digit hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
     arithlib_assert(hi==0); // Check that size is at least somewhat sane!
 // I estimate the largest size that my result could be, but then add
@@ -16929,19 +16914,15 @@ inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
 // write a zero beyond its true result - eg if you are multiplying a pair
 // of 1-word numbers together it will believe that the result could be 2
 // words wide even if in fact you know it will not be.
-    std::uint64_t lenr1 = 2 + bitsr/64;
+    Digit lenr1 = 2 + bitsr/64;
     std::size_t lenr = static_cast<std::size_t>(lenr1);
 // if size_t was more narrow than 64-bits I could lose information in
 // truncating from uint64_t to size_t.
-    std::uint64_t olenr = lenr;
-    push(a);
+    Digit olenr = lenr;
     std::uint64_t* r = reserve(lenr);
-    push(r);
     std::uint64_t* v = reserve(lenr);
-    push(v);
     std::uint64_t* w = reserve(lenr);
-    pop(v); pop(r); pop(a);
-    bigpow(a, lena, static_cast<std::uint64_t>(n), v, w, r, lenr, lenr);
+    bigpow(a, lena, static_cast<Digit>(n), v, w, r, lenr, lenr);
     abandon(w);
     abandon(v);
     return confirmSize(r, olenr, lenr);
@@ -16949,7 +16930,7 @@ inline std::intptr_t Pow::op(std::uint64_t* a, std::int64_t n)
 
 // Again the cases n = 0, 1 and 2 have been filtered out
 
-inline std::intptr_t Pow::op(std::int64_t a, std::int64_t n)
+inline std::intptr_t Pow::op(SignedDigit a, SignedDigit n)
 {   if (n < 0)
     {   int z = 0;
         if (a == 1) z = 1;
@@ -16960,14 +16941,14 @@ inline std::intptr_t Pow::op(std::int64_t a, std::int64_t n)
     if (a == 0) return intToHandle(0);
     else if (a == 1) return intToHandle(a);
     else if (n == 0) return intToHandle(1);
-    std::uint64_t absa = (a < 0 ? -static_cast<std::uint64_t>
-                          (a) : static_cast<std::uint64_t>(a));
+    Digit absa = (a < 0 ? -static_cast<Digit>
+                          (a) : static_cast<Digit>(a));
     std::size_t bitsa = 64 - nlz(absa);
-    std::uint64_t hi, bitsr;
+    Digit hi, bitsr;
     multiply64(n, bitsa, hi, bitsr);
-    std::uint64_t lenr1 = 2 + bitsr/64;
+    Digit lenr1 = 2 + bitsr/64;
     if (bitsr < 64) // Can do all the work as machine integers.
-    {   std::int64_t result = 1;
+    {   SignedDigit result = 1;
         for (;;)
         {   if (n%2 != 0) result *= a;
             if ((n = n/2) == 0) break;
@@ -16978,15 +16959,12 @@ inline std::intptr_t Pow::op(std::int64_t a, std::int64_t n)
     std::size_t lenr = static_cast<std::size_t>(lenr1);
 // if size_t was more narrow than 64-bits I could lose information in
 // truncating from uint64_t to size_t.
-    std::uint64_t olenr = lenr;
+    Digit olenr = lenr;
     std::uint64_t* r = reserve(lenr);
-    push(r);
     std::uint64_t* v = reserve(lenr);
-    push(v);
     std::uint64_t* w = reserve(lenr);
-    pop(v); pop(r);
-    std::uint64_t aa[1] = {static_cast<std::uint64_t>(a)};
-    bigpow(aa, 1, static_cast<std::uint64_t>(n), v, w, r, lenr, lenr);
+    Digit aa[1] = {static_cast<Digit>(a)};
+    bigpow(aa, 1, static_cast<Digit>(n), v, w, r, lenr, lenr);
     abandon(w);
     abandon(v);
     return confirmSize(r, olenr, lenr);
@@ -16996,7 +16974,7 @@ inline double Pow::op(std::uint64_t* a, double n)
 {   return std::pow(Double::op(a), n);
 }
 
-inline double Pow::op(std::int64_t a, double n)
+inline double Pow::op(SignedDigit a, double n)
 {   return std::pow(Double::op(a), n);
 }
 
@@ -17047,21 +17025,19 @@ inline double Pow::op(std::int64_t a, double n)
 
 inline void unsigned_short_division(std::uint64_t* a,
                                     std::size_t lena,
-                                    std::uint64_t b, bool bNegative,
+                                    Digit b, bool bNegative,
                                     bool want_q, std::uint64_t*& q,
                                     std::size_t &olenq, std::size_t &lenq,
                                     bool want_r, std::uint64_t*& r,
                                     std::size_t &olenr, std::size_t &lenr)
-{   std::uint64_t hi = 0;
+{   Digit hi = 0;
     bool aNegative = false;
     std::uint64_t* aa;
     if (negative(a[lena-1]))
     {   aNegative = true;
 // Take absolute value of a if necessary.
-        push(a);
         aa = reserve(lena);
-        pop(a);
-        internalNegate(a, lena, aa);
+            internalNegate(a, lena, aa);
         a = aa;
     }
 // Now both a and b are positive so I can do the division fairly simply.
@@ -17070,12 +17046,10 @@ inline void unsigned_short_division(std::uint64_t* a,
     std::size_t i=lena-1;
     if (want_q)
     {   olenq = lena;
-        push(a);
         q = reserve(olenq);
-        pop(a);
-    }
+        }
     for (;;)
-    {   std::uint64_t d;
+    {   Digit d;
         divide64(hi, a[i], b, d, hi);
         if (want_q) q[i] = d;
         if (i == 0) break;
@@ -17102,7 +17076,6 @@ inline void unsigned_short_division(std::uint64_t* a,
 // the remainder will be strictly smaller then b, and the largest possible
 // value for b is 0xffffffffffffffff. The remainder may need to be returned
 // as a 2-digit bignum.
-        if (want_q) push(q);
         if (aNegative)
         {   hi = -hi;
             if (positive(hi) && hi!=0)
@@ -17130,22 +17103,21 @@ inline void unsigned_short_division(std::uint64_t* a,
                 r[0] = hi;
             }
         }
-        if (want_q) pop(q);
     }
 }
 
 inline void signed_short_division(std::uint64_t* a, std::size_t lena,
-                                  std::int64_t b,
+                                  SignedDigit b,
                                   bool want_q, std::uint64_t*& q,
                                   std::size_t &olenq, std::size_t &lenq,
                                   bool want_r, std::uint64_t*& r,
                                   std::size_t &olenr, std::size_t &lenr)
 {   if (b > 0) unsigned_short_division(a, lena,
-                                       static_cast<std::uint64_t>(b),
+                                       static_cast<Digit>(b),
                                        false,
                                        want_q, q, olenq, lenq,
                                        want_r, r, olenr, lenr);
-    else unsigned_short_division(a, lena, -static_cast<std::uint64_t>(b),
+    else unsigned_short_division(a, lena, -static_cast<Digit>(b),
                                  true,
                                  want_q, q, olenq, lenq,
                                  want_r, r, olenr, lenr);
@@ -17196,7 +17168,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // knows what (possibly raise an exception) otherwise. This maybe needs
 // review. I wonder if I should throw a "division by zero" exception?
         arithlib_assert(b[0] != 0); // would be division by zero
-        signed_short_division(a, lena, static_cast<std::int64_t>(b[0]),
+        signed_short_division(a, lena, static_cast<SignedDigit>(b[0]),
                               want_q, q, olenq, lenq,
                               want_r, r, olenr, lenr);
         return;
@@ -17217,15 +17189,13 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // case that this can be handled using a short division by -nnn, but there
 // is a special case where the value stored in the Digit there is zero and
 // the value represented is exactly -2^64. I handle that individually!
-    else if (lenb == 2 && b[1]==static_cast<std::uint64_t>(-1))
+    else if (lenb == 2 && b[1]==static_cast<Digit>(-1))
     {   if (b[0] == 0)
         {   if (want_q)
             {   lenq = lena;
                 olenq = lena;
-                push(a);
                 q = reserve(lena);
-                pop(a);
-// I will now take cases based on the sign of a.
+            // I will now take cases based on the sign of a.
                 if (negative(a[lena-1]))
                 {
 // Here I have a<0 being divided by -2^64. I will compute (-a)>>64 and
@@ -17257,7 +17227,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // The remainder will be essentially the bottom digit of a. But sometimes
 // an additional digit that will be either 0 or -1 must be placed ahead of
 // it.
-                std::uint64_t rr = a[0], padr = 0;
+                Digit rr = a[0], padr = 0;
                 lenr = 1;
                 if (negative(a[lena-1]) && strictlyPositive(rr))
                 {   padr = -1;
@@ -17267,9 +17237,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
                 {   padr = 0;
                     lenr++;
                 }
-                if (want_q) push(q);
                 r = reserve(lenr);
-                if (want_q) pop(q);
                 olenr = lenr;
                 r[0] = rr;
                 if (lenr != 1) r[1] = padr;
@@ -17284,7 +17252,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // Now the absolute value of b will be at least 2 digits of 64-bits with the
 // high digit non-zero. I need to make a copy of it because I will scale
 // it during long division.
-    std::uint64_t* bb = NULL;
+    std::uint64_t* bb = nullptr;
     std::size_t lenbb = lenb;
     bool bNegative = negative(b[lenb-1]);
     if (bNegative)
@@ -17297,9 +17265,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // and extra leading 0. Because the value I generate here is to be treated
 // as unsigned this leading top bit does not matter and so the absolute value
 // of b fits in the same amount of space that b did with no risk of overflow.
-        push(a); push(b);
         bb = reserve(lenb);
-        pop(b); pop(a);
         olenr = lenb;
         internalNegate(b, lenb, bb);
         if (bb[lenbb-1] == 0) lenbb--;
@@ -17320,10 +17286,8 @@ inline void division(std::uint64_t* a, std::size_t lena,
             lenq = 1;
         }
         if (want_r)
-        {   push(a);
-            r = reserve(lena);
-            pop(a);
-            olenr = lena;
+        {   r = reserve(lena);
+                    olenr = lena;
             internalCopy(a, lena, r);
             lenr = lena;
         }
@@ -17338,9 +17302,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // it yet. I delay creation of that copy until now because that lets my
 // avoid a spurious allocation in the various small cases.
     if (!bNegative)
-    {   push(a); push(b);
-        bb = reserve(lenb);
-        pop(b); pop(a);
+    {   bb = reserve(lenb);
         olenr = lenb;
         internalCopy(b, lenbb, bb);
     }
@@ -17349,20 +17311,14 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // the more obvious "+1" here.
     if (want_q)
     {   lenq = lena - lenb + 2;
-        push(a); push(b); push(bb);
         q = reserve(lenq);
-        pop(bb); pop(b); pop(a);
         olenq = lenq;
     }
 // I will need space where I store something that starts off as a scaled
 // copy of the dividend and gradually have values subtracted from it until
 // it ends up as the remainder.
     lenr = lena;
-    push(a); push(b); push(bb);
-    if (want_q) push(q);
     r = reserve(lenr+1);
-    if (want_q) pop(q);
-    pop(bb); pop(b); pop(a);
     bool aNegative = negative(a[lena-1]);
     if (aNegative) internalNegate(a, lena, r);
     else internalCopy(a, lena, r);
@@ -17411,7 +17367,7 @@ inline void division(std::uint64_t* a, std::size_t lena,
 // that the shift amount will be in the range 0-63.
 
 
-inline std::uint64_t scale_for_division(std::uint64_t* r,
+inline Digit scale_for_division(std::uint64_t* r,
                                         std::size_t lenr,
                                         int s)
 {
@@ -17423,9 +17379,9 @@ inline std::uint64_t scale_for_division(std::uint64_t* r,
 // my divisor already has the top bit of its top word set) I do not alter
 // any memory.
     if (s == 0) return 0;
-    std::uint64_t carry = 0;
+    Digit carry = 0;
     for (std::size_t i=0; i<lenr; i++)
-    {   std::uint64_t w = r[i];
+    {   Digit w = r[i];
         r[i] = (w << s) | carry;
         carry = w >> (64-s);
     }
@@ -17435,9 +17391,9 @@ inline std::uint64_t scale_for_division(std::uint64_t* r,
 // r = r - b*q*base^(lena-lenb-1).
 
 inline void multiply_and_subtract(std::uint64_t* r, std::size_t lenr,
-                                  std::uint64_t q0,
+                                  Digit q0,
                                   std::uint64_t* b, std::size_t lenb)
-{   std::uint64_t hi = 0, lo, carry = 1;
+{   Digit hi = 0, lo, carry = 1;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q0, hi, hi, lo);
 // lo is now the next digit of b*q, and hi needs to be carried up to the
@@ -17455,19 +17411,19 @@ inline void multiply_and_subtract(std::uint64_t* r, std::size_t lenr,
 
 inline void addBackCorrection(std::uint64_t* r, std::size_t lenr,
                               std::uint64_t* b, std::size_t lenb)
-{   std::uint64_t carry = 0;
+{   Digit carry = 0;
     for (std::size_t i=0; i<lenb; i++)
         carry = addWithCarry(r[i+lenr-lenb-1], b[i], carry,
                              r[i+lenr-lenb-1]);
     r[lenr-1] += carry;
 }
 
-inline std::uint64_t nextQuotientDigit(std::uint64_t* r,
+inline Digit nextQuotientDigit(std::uint64_t* r,
                                        std::size_t &lenr,
                                        std::uint64_t* b, std::size_t lenb)
-{   std::uint64_t q0, r0;
+{   Digit q0, r0;
     if (r[lenr-1] == b[lenb-1])
-    {   q0 = static_cast<std::uint64_t>(-1);
+    {   q0 = static_cast<Digit>(-1);
         r0 = r[lenr-2] + b[lenb-1];
 // Here perhaps q0 is still an over-estimate by 1?
     }
@@ -17478,7 +17434,7 @@ inline std::uint64_t nextQuotientDigit(std::uint64_t* r,
 //
 // The tests on the next lines should detect all case where q0 was in error
 // by 2 and most when it was in error by 1.
-        std::uint64_t hi, lo;
+        Digit hi, lo;
         multiply64(q0, b[lenb-2], hi, lo);
         if (hi > r0 ||
             (hi == r0 && lo > r[lenr-3])) q0--;
@@ -17504,10 +17460,10 @@ inline std::uint64_t nextQuotientDigit(std::uint64_t* r,
 
 inline void unscale_for_division(std::uint64_t* r, std::size_t &lenr, int s)
 {   if (s != 0)
-    {   std::uint64_t carry = 0;
+    {   Digit carry = 0;
         std::size_t i = lenr-1;
         for (;;)
-        {   std::uint64_t w = r[i];
+        {   Digit w = r[i];
             r[i] = (w >> s) | carry;
             carry = w << (64-s);
             if (i == 0) break;
@@ -17548,7 +17504,7 @@ inline void unsigned_long_division(std::uint64_t* a,
     lenq = lena-lenb; // potential length of quotient.
     std::size_t m = lenq-1;
     for (;;)
-    {   std::uint64_t qd = nextQuotientDigit(a, lena, b, lenb);
+    {   Digit qd = nextQuotientDigit(a, lena, b, lenb);
 // If I am only computing the remainder I do not need to store the quotient
 // digit that I have just found.
         if (want_q) q[m] = qd;
@@ -17575,7 +17531,7 @@ inline void unsigned_long_remainder(std::uint64_t* a,
                                     std::uint64_t* b, std::size_t &lenb)
 {   std::size_t w;
     unsigned_long_division(a, lena, b, lenb,
-                           false, NULL, w, w);
+                           false, nullptr, w, w);
 }
 
 inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
@@ -17590,7 +17546,7 @@ inline std::intptr_t Quotient::op(std::uint64_t* a, std::uint64_t* b)
     return confirmSize(q, olenq, lenq);
 }
 
-inline std::intptr_t Quotient::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Quotient::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -17609,7 +17565,7 @@ inline std::intptr_t Quotient::op(std::uint64_t* a, std::int64_t b)
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
              true, q, olenq, lenq,
              false, r, olenr, lenr);
@@ -17619,9 +17575,9 @@ inline std::intptr_t Quotient::op(std::uint64_t* a, std::int64_t b)
 // A fixnum divided by a bignum ought always to yield 0, except that
 // maybe -0x8000000000000000} / {0,0x8000000000000000) => -1
 
-inline std::intptr_t Quotient::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Quotient::op(SignedDigit a, std::uint64_t* b)
 {   if (numberSize(b)==1 &&
-        b[0]==-static_cast<std::uint64_t>(a))
+        b[0]==-static_cast<Digit>(a))
         UNLIKELY
         return intToHandle(-1);
     return intToHandle(0);
@@ -17629,7 +17585,7 @@ inline std::intptr_t Quotient::op(std::int64_t a, std::uint64_t* b)
 
 // unpleasantly -0x8000000000000000 / -1 => a bignum
 
-inline std::intptr_t Quotient::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Quotient::op(SignedDigit a, SignedDigit b)
 {   if (b==-1 && a == MIN_FIXNUM) UNLIKELY return intToBignum(-a);
     else return intToHandle(a / b);
 }
@@ -17646,7 +17602,7 @@ inline std::intptr_t Remainder::op(std::uint64_t* a, std::uint64_t* b)
     return confirmSize(r, olenr, lenr);
 }
 
-inline std::intptr_t Remainder::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Remainder::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -17657,20 +17613,20 @@ inline std::intptr_t Remainder::op(std::uint64_t* a, std::int64_t b)
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
              false, q, olenq, lenq,
              true, r, olenr, lenr);
     return confirmSize(r, olenr, lenr);
 }
 
-inline std::intptr_t Remainder::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Remainder::op(SignedDigit a, std::uint64_t* b)
 {   if (numberSize(b)==1 &&
-        b[0]==-static_cast<std::uint64_t>(a)) return intToHandle(0);
+        b[0]==-static_cast<Digit>(a)) return intToHandle(0);
     return intToHandle(a);
 }
 
-inline std::intptr_t Remainder::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Remainder::op(SignedDigit a, SignedDigit b)
 {   return intToHandle(a % b);
 }
 
@@ -17698,7 +17654,7 @@ inline std::intptr_t Mod::op(std::uint64_t* a, std::uint64_t* b)
 // b is negative it is as for Ceiling, so that the sign of (P mod Q) always
 // matches that of Q.
 
-inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Mod::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -17709,7 +17665,7 @@ inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
              false, q, olenq, lenq,
              true, r, olenr, lenr);
@@ -17724,10 +17680,10 @@ inline std::intptr_t Mod::op(std::uint64_t* a, std::int64_t b)
     else return w;
 }
 
-inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Mod::op(SignedDigit a, std::uint64_t* b)
 {   if (a==0 ||
         (numberSize(b)==1 &&
-         b[0]==-static_cast<std::uint64_t>(a))) return intToHandle(0);
+         b[0]==-static_cast<Digit>(a))) return intToHandle(0);
     bool a_neg = (a < 0);
     bool b_neg = negative(b[numberSize(b)-1]);
     if ((a_neg && !b_neg) || (!a_neg && b_neg))
@@ -17735,7 +17691,7 @@ inline std::intptr_t Mod::op(std::int64_t a, std::uint64_t* b)
     else return intToHandle(a);
 }
 
-inline std::intptr_t Mod::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Mod::op(SignedDigit a, SignedDigit b)
 {   int64_t r = a%b;
     if (r!=0 &&((a<0 && b>0) || (a>0 && b<0))) r += b;
     return intToHandle(r);
@@ -17760,7 +17716,7 @@ inline std::intptr_t Floor::op(std::uint64_t* a, std::uint64_t* b)
     else return w1;
 }
 
-inline std::intptr_t Floor::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Floor::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -17774,7 +17730,7 @@ inline std::intptr_t Floor::op(std::uint64_t* a, std::int64_t b)
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
              true, q, olenq, lenq,
              true, r, olenr, lenr);
@@ -17790,14 +17746,14 @@ inline std::intptr_t Floor::op(std::uint64_t* a, std::int64_t b)
 // same signs the required result is zero, otherwise it will be -1.
 // Hah - happily the edge case comes out right in the wash!
 
-inline std::intptr_t Floor::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Floor::op(SignedDigit a, std::uint64_t* b)
 {   bool a_neg = (a < 0);
     bool b_neg = negative(b[numberSize(b)-1]);
     if (a_neg == b_neg) return intToHandle(0);
     else return intToHandle(-1);
 }
 
-inline std::intptr_t Floor::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Floor::op(SignedDigit a, SignedDigit b)
 {   int64_t q = a/b;
     int64_t r = a%b;
     if (r == 0 ||
@@ -17826,7 +17782,7 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::uint64_t* b)
     else return w1;
 }
 
-inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t Ceiling::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
@@ -17840,7 +17796,7 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t bb[1] = {static_cast<std::uint64_t>(b)};
+    Digit bb[1] = {static_cast<Digit>(b)};
     division(a, lena, bb, 1,
              true, q, olenq, lenq,
              true, r, olenr, lenr);
@@ -17850,7 +17806,7 @@ inline std::intptr_t Ceiling::op(std::uint64_t* a, std::int64_t b)
     else return w1;
 }
 
-inline std::intptr_t Ceiling::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Ceiling::op(SignedDigit a, std::uint64_t* b)
 {   if (numberSize(b) == 1 &&
         a == -static_cast<int64_t>(b[0])) return intToHandle(-1);
     bool a_neg = (a < 0);
@@ -17859,7 +17815,7 @@ inline std::intptr_t Ceiling::op(std::int64_t a, std::uint64_t* b)
     else return intToHandle(0);
 }
 
-inline std::intptr_t Ceiling::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Ceiling::op(SignedDigit a, SignedDigit b)
 {   int64_t q = a/b;
     int64_t r = a%b;
 // if b=-1 or b=+1 then the remainder will be zero. In all other
@@ -17892,14 +17848,10 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b)
              true, r, olenr, lenr);
     std::intptr_t rr = confirmSize(r, olenr, lenr);
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
-#ifdef ZAPPA
-    return cons(qq, rr).v;
-#else // ZAPPA
     return cons(qq, rr);
-#endif // ZAPPA
 }
 
-inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
+inline std::intptr_t Divide::op(std::uint64_t* a, SignedDigit bb)
 {   switch (bb)
     {
     case 1:
@@ -17911,53 +17863,41 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::int64_t bb)
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
+    Digit b[1] = {static_cast<Digit>(bb)};
     division(a, lena, b, 1,
              true, q, olenq, lenq,
              true, r, olenr, lenr);
     std::intptr_t rr = confirmSize(r, olenr, lenr);
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
-#ifdef ZAPPA
-    return cons(qq, rr).v;
-#else // ZAPPA
     return cons(qq, rr);
-#endif // ZAPPA
 }
 
-inline std::intptr_t Divide::op(std::int64_t aa, std::uint64_t* b)
+inline std::intptr_t Divide::op(SignedDigit aa, std::uint64_t* b)
 {   std::size_t lenb = numberSize(b);
     std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
+    Digit a[1] = {static_cast<Digit>(aa)};
     division(a, 1, b, lenb,
              true, q, olenq, lenq,
              true, r, olenr, lenr);
     std::intptr_t rr = confirmSize(r, olenr, lenr);
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
-#ifdef ZAPPA
-    return cons(qq, rr).v;
-#else // ZAPPA
     return cons(qq, rr);
-#endif // ZAPPA
 }
 
-inline std::intptr_t Divide::op(std::int64_t aa, std::int64_t bb)
+inline std::intptr_t Divide::op(SignedDigit aa, SignedDigit bb)
 {   std::uint64_t* q;
     std::uint64_t* r;
     std::size_t olenq, olenr, lenq, lenr;
-    std::uint64_t a[1] = {static_cast<std::uint64_t>(aa)};
-    std::uint64_t b[1] = {static_cast<std::uint64_t>(bb)};
+    Digit a[1] = {static_cast<Digit>(aa)};
+    Digit b[1] = {static_cast<Digit>(bb)};
     division(a, 1, b, 1,
              true, q, olenq, lenq,
              true, r, olenr, lenr);
     std::intptr_t rr = confirmSize(r, olenr, lenr);
     std::intptr_t qq = confirmSize_x(q, olenq, lenq);
-#ifdef ZAPPA
-    return cons(qq, rr).v;
-#else // ZAPPA
     return cons(qq, rr);
-#endif // ZAPPA
 }
 
 #else // LISP
@@ -17981,9 +17921,9 @@ inline std::intptr_t Divide::op(std::uint64_t* a, std::uint64_t* b,
 // a = a - b*q.
 
 inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
-                           std::uint64_t q,
+                           Digit q,
                            std::uint64_t* b, std::size_t lenb)
-{   std::uint64_t hi = 0, hi1, lo, borrow = 0;
+{   Digit hi = 0, hi1, lo, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(b[i], q, hi1, lo);
         hi1 += subtractWithBorrow(a[i], hi, a[i]);
@@ -18003,7 +17943,7 @@ inline bool reduce_for_gcd(std::uint64_t* a, std::size_t lena,
 // I provide a function that accesses (b<<shift)[n]. Note that the
 // valid index values n will from from 0 up to and including lenb.
 
-inline std::uint64_t shiftedDigit(std::uint64_t* b, std::size_t lenb,
+inline Digit shiftedDigit(std::uint64_t* b, std::size_t lenb,
                                   int shift, std::size_t n)
 {   if (n == 0) return b[0]<<shift;
     else if (n == lenb) return b[lenb-1]>>(64-shift);
@@ -18015,10 +17955,10 @@ inline std::uint64_t shiftedDigit(std::uint64_t* b, std::size_t lenb,
 // It will be used with 0 < shift < 64, ie only when a genuine shift
 // between digits is required.
 inline bool shifted_reduce_for_gcd(std::uint64_t* a, std::size_t lena,
-                                   std::uint64_t q,
+                                   Digit q,
                                    std::uint64_t* b, std::size_t lenb,
                                    int shift)
-{   std::uint64_t hi = 0, hi1, lo, borrow = 0;
+{   Digit hi = 0, hi1, lo, borrow = 0;
     for (std::size_t i=0; i<=lenb; i++)
     {   multiply64(shiftedDigit(b, lenb, shift, i), q, hi1, lo);
         hi1 += subtractWithBorrow(a[i], hi, a[i]);
@@ -18047,11 +17987,11 @@ inline bool shifted_reduce_for_gcd(std::uint64_t* a, std::size_t lena,
 // almost all cases the result will be almost 128 bits smaller!
 
 inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
-                        std::uint64_t u,
+                        Digit u,
                         std::uint64_t* b, std::size_t lenb,
-                        std::uint64_t v,
+                        Digit v,
                         std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
+{   Digit hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
 // I wish to compute r = u A - v B where all values are treated as
 // unsigned save that if the result underflows (ie would be negative if
 // computed perfectly) I must return a "borrow" value.
@@ -18105,11 +18045,11 @@ inline bool ua_minus_vb(std::uint64_t* a, std::size_t lena,
 // Again this supposes that a is at least as long as b.
 
 inline bool minus_ua_plus_vb(std::uint64_t* a, std::size_t lena,
-                             std::uint64_t u,
+                             Digit u,
                              std::uint64_t* b, std::size_t lenb,
-                             std::uint64_t v,
+                             Digit v,
                              std::uint64_t* r, std::size_t &lenr)
-{   std::uint64_t hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
+{   Digit hia, loa, ca = 0, hib, lob, cb = 0, borrow = 0;
     for (std::size_t i=0; i<lenb; i++)
     {   multiply64(a[i], u, hia, loa);
         hia += addWithCarry(loa, ca, loa);
@@ -18149,9 +18089,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // contents of the top 3 words (ie 192 bits in all) then I will be able
 // to normalize that to get 128 bits to work with however the top bits
 // of a and b lie within the words.
-    std::uint64_t a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
+    Digit a0=a[lena-1], a1=a[lena-2], a2=(lena>2 ? a[lena-3] : 0);
     int lza = nlz(a0);
-    std::uint64_t b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
+    Digit b0=b[lenb-1], b1=b[lenb-2], b2=(lenb>2 ? b[lenb-3] : 0);
     int lzb = nlz(b0);
 // I will sort out how many more bits are involved in a than in b. If
 // this number is large I will invent a number q of the form q=q0*2^q1
@@ -18168,7 +18108,7 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // 1 extra bit in reduction in the size of a for each step.
 // If the estimated quotient is accurate enough the this will leave
 // a < b and by swapping a and b we have a new pair ready to continue from.
-    std::int64_t diff = 64*(lena-lenb) + lzb - lza;
+    SignedDigit diff = 64*(lena-lenb) + lzb - lza;
 // If however the length-difference between a and b is small a subtraction
 // "a = a - q0*(b<<0);" would often find q0 rather small and completing
 // the remainder sequence would take many steps. So in such cases I take
@@ -18216,9 +18156,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // are working ones calculated along the way. Note horribly well here that
 // I am keeping these values as signed... but the code U have above that
 // calculates u*a-b*v will take unsigned inputs!
-        std::int64_t ua = 1, va = 0, ub = 0, vb = 1;
+        SignedDigit ua = 1, va = 0, ub = 0, vb = 1;
         while (b0!=0 || b1!=0)
-        {   std::uint64_t q;
+        {   Digit q;
 // Here I want to set q = {a0,a1}/{b0,b1}, and I expect that the answer
 // is a reasonably small integer. But it could potentially be huge.
 // At least I have filtered away the possibility {b0,b1}={0,0}.
@@ -18227,7 +18167,7 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
             int lza1 = a0==0 ? 64+nlz(a1) : nlz(a0);
             int lzb1 = b0==0 ? 64+nlz(b1) : nlz(b0);
             if (lzb1 > lza1+60) break; // quotient will be too big
-            std::uint64_t ahi, bhi;
+            Digit ahi, bhi;
             if (lza1 == 0) ahi = a0;
             else if (lza1 < 64) ahi = (a0<<lza1) | (a1>>(64-lza1));
             else if (lza1 == 64) ahi = a1;
@@ -18250,29 +18190,29 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // Finally, if (as I mostly expect) now a<b I swap a<=>b, ua<=>ub and va<=>vb
 // If I would get an overflow in updating ua or ub I will break out of the
 // loop.
-            std::int64_t h;
-            std::uint64_t l1, l2;
+            SignedDigit h;
+            Digit l1, l2;
             signedMultiply64(q, va, h, l1);
-            if (static_cast<std::uint64_t>(h) + (l1>>63) != 0) break;
+            if (static_cast<Digit>(h) + (l1>>63) != 0) break;
 // There could be overflow in the following subtraction... So I check
 // if that was about to happen and break out of the loop if so.
             if (ua >= 0)
-            {   if (ua - INT64_MAX >= static_cast<std::int64_t>(l1)) break;
+            {   if (ua - INT64_MAX >= static_cast<SignedDigit>(l1)) break;
             }
-            else if (ua - INT64_MIN <= static_cast<std::int64_t>(l1)) break;
+            else if (ua - INT64_MIN <= static_cast<SignedDigit>(l1)) break;
             signedMultiply64(q, vb, h, l2);
-            if (static_cast<std::uint64_t>(h) + (l2>>63) != 0) break;
+            if (static_cast<Digit>(h) + (l2>>63) != 0) break;
             if (ub >= 0)
-            {   if (ub - INT64_MAX > static_cast<std::int64_t>(l2)) break;
+            {   if (ub - INT64_MAX > static_cast<SignedDigit>(l2)) break;
             }
-            else if (ub - INT64_MIN < static_cast<std::int64_t>(l2)) break;
+            else if (ub - INT64_MIN < static_cast<SignedDigit>(l2)) break;
 // I must either update both or neither of ua, ub.
             ua -= l1;
             ub -= l2;
-            std::uint64_t hi, lo;
+            Digit hi, lo;
             multiply64(q, b1, hi, lo);
             hi += subtractWithBorrow(a1, lo, a1);
-            std::uint64_t borrow = subtractWithBorrow(a0, hi, a0);
+            Digit borrow = subtractWithBorrow(a0, hi, a0);
             borrow += subtractWithBorrow(a0, q*b0, a0);
 // Now borrow!=0 if a had become negative
             if (borrow != 0)
@@ -18297,13 +18237,9 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 // and in the first two lines I need to be aware that one or the other
 // (but not both) or ua and ub will be negative so I really have a subtraction,
 // and similarly for v1, vb.
-        if (temp == NULL)
-        {   push(a);
-            push(b);
-            temp = reserve(lena>lenb ? lena : lenb);
-            pop(b);
-            pop(a);
-        }
+        if (temp == nullptr)
+        {   temp = reserve(lena>lenb ? lena : lenb);
+                        }
 // The static cast here is in case ua (etc) have the negative value INT64_MIN
 // because if I negate that before turning to an unsigned value to pass
 // to the sub-function that would count as overflow and in consequence the
@@ -18363,7 +18299,7 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
         lza = lza-1;
         diff = diff+1;
     }
-    std::uint64_t q, r;
+    Digit q, r;
 // I want to get as close an approximation to the full quotient as I can,
 // and a "correction" of the form {a0,a1} -= a0*b1/b0 should do the trick.
     multiply64(a0, b1, q, r);
@@ -18447,7 +18383,7 @@ inline void gcd_reduction(std::uint64_t*& a, std::size_t &lena,
 
 inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
 {   if (numberSize(b) == 1)
-        return Gcd::op(a, static_cast<std::int64_t>(b[0]));
+        return Gcd::op(a, static_cast<SignedDigit>(b[0]));
 // I will start by making copies of |a| and |b| that I can overwrite
 // during the calculation and use part of in my result.
     std::size_t lena = numberSize(a), lenb = numberSize(b);
@@ -18456,14 +18392,10 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
         // See comments later for an explanation of this!
         negative(a[lena-1]) && negative(b[lenb-1]) &&
         a[lena-1] == b[lenb-1]) olena++;
-    push(a); push(b);
     std::uint64_t* av = reserve(olena);
-    pop(b); pop(a);
     if (negative(a[lena-1])) internalNegate(a, lena, av);
     else internalCopy(a, lena, av);
-    push(av); push(b);
     std::uint64_t* bv = reserve(olenb);
-    pop(b); pop(av);
     if (negative(b[lenb-1])) internalNegate(b, lenb, bv);
     else internalCopy(b, lenb, bv);
     a = av;
@@ -18480,14 +18412,14 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
     if (b[lenb-1] == 0) lenb--;
     if (a[lena-1] == 0) lena--;
     if (lenb == 1)
-    {   std::uint64_t bb = b[0];
-        std::uint64_t hi = 0, q;
+    {   Digit bb = b[0];
+        Digit hi = 0, q;
         for (std::size_t i=lena-1;; i--)
         {   divide64(hi, a[i], bb, q, hi);
             if (i == 0) break;
         }
         while (hi != 0)
-        {   std::uint64_t cc = bb % hi;
+        {   Digit cc = bb % hi;
             bb = hi;
             hi = cc;
         }
@@ -18497,7 +18429,7 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
     }
 // In some cases performing a reduction will require a workspace vector.
 // I will only allocate this as and when first needed.
-    std::uint64_t* temp = NULL;
+    std::uint64_t* temp = nullptr;
     std::size_t lentemp = lena;
 // Now at last a and b and genuine unsigned vectors without leading digits
 // and with a > b. The next line is the key iteration in this whole procedure.
@@ -18509,7 +18441,7 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
             std::swap(olena, olenb);
         }
     }
-    if (temp != NULL) abandon(temp);
+    if (temp != nullptr) abandon(temp);
 // One possibility is that b==0 and then a holds the GCD. There is a
 // pathological case where an input was -2^(64*n-1), which fits within n
 // words, and the GCD ends up as +2^(64*n-1) which needs an extra word.
@@ -18538,23 +18470,23 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::uint64_t* b)
 // If b is not zero here then it represents a value up to 2^64-1, and I can
 // complete the GCD by doing a long-by-short remainder and then a short-num
 // GCD...
-    std::uint64_t bb = b[0];
+    Digit bb = b[0];
     abandon(b);
-    std::uint64_t hi = 0, q;
+    Digit hi = 0, q;
     for (std::size_t i=lena-1;; i--)
     {   divide64(hi, a[i], bb, q, hi);
         if (i == 0) break;
     }
     abandon(a);
     while (hi != 0)
-    {   std::uint64_t cc = bb % hi;
+    {   Digit cc = bb % hi;
         bb = hi;
         hi = cc;
     }
     return unsignedIntToBignum(bb);
 }
 
-inline std::intptr_t Gcd::op(std::uint64_t* a, std::int64_t bb)
+inline std::intptr_t Gcd::op(std::uint64_t* a, SignedDigit bb)
 {
 // This case involved doing a long-by-short remainder operation and then
 // it reduces to the small-small case. The main problem is the handling of
@@ -18563,10 +18495,10 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::int64_t bb)
     {   if (Minusp::op(a)) return Minus::op(a);
         else return vectorToHandle(a);
     }
-    std::uint64_t b = bb < 0 ? -bb : bb;
+    Digit b = bb < 0 ? -bb : bb;
     std::size_t lena = numberSize(a);
     bool signa = negative(a[lena-1]);
-    std::uint64_t hi = 0, q;
+    Digit hi = 0, q;
     for (std::size_t i=lena-1;; i--)
     {   divide64(hi, (signa ? ~a[i] : a[i]), b, q, hi);
         if (i == 0) break;
@@ -18577,20 +18509,20 @@ inline std::intptr_t Gcd::op(std::uint64_t* a, std::int64_t bb)
     return Gcd::op(b, hi);
 }
 
-inline std::intptr_t Gcd::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Gcd::op(SignedDigit a, std::uint64_t* b)
 {   return Gcd::op(b, a);
 }
 
-inline std::intptr_t Gcd::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Gcd::op(SignedDigit a, SignedDigit b)
 {
 // Take absolute values of both arguments.
-    std::uint64_t aa = a < 0 ? -static_cast<std::uint64_t>(a) : a;
-    std::uint64_t bb = b < 0 ? -static_cast<std::uint64_t>(b) : b;
+    Digit aa = a < 0 ? -static_cast<Digit>(a) : a;
+    Digit bb = b < 0 ? -static_cast<Digit>(b) : b;
 // Ensure that aa >= bb
     if (bb > aa) std::swap(aa, bb);
 // Do simple Euclidean algorithm
     while (bb != 0)
-    {   std::uint64_t cc = aa % bb;
+    {   Digit cc = aa % bb;
         aa = bb;
         bb = cc;
     }
@@ -18604,32 +18536,27 @@ inline std::intptr_t Gcd::op(std::int64_t a, std::int64_t b)
 // some stage I need to come back here and look harder and tidy things up.
 
 inline std::intptr_t Lcm::op(std::uint64_t* a, std::uint64_t* b)
-{   push(a); push(b);
-    std::intptr_t g = Gcd::op(a, b);
-    pop(b);
+{   std::intptr_t g = Gcd::op(a, b);
     std::intptr_t q = op_dispatch2<Quotient,std::intptr_t>
                       (vectorToHandle(b),
                        g);
-    pop(a);
     q = op_dispatch2<Times,std::intptr_t>(vectorToHandle(a), q);
     return op_dispatch1<Abs,std::intptr_t>(q);
 }
 
-inline std::intptr_t Lcm::op(std::uint64_t* a, std::int64_t b)
-{   push(a);
-    std::intptr_t g = Gcd::op(a, b);
+inline std::intptr_t Lcm::op(std::uint64_t* a, SignedDigit b)
+{   std::intptr_t g = Gcd::op(a, b);
     std::intptr_t q = op_dispatch2<Quotient,std::intptr_t>(intToHandle(
                           b), g);
-    pop(a);
     q = op_dispatch2<Times,std::intptr_t>(vectorToHandle(a), q);
     return op_dispatch1<Abs,std::intptr_t>(q);
 }
 
-inline std::intptr_t Lcm::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t Lcm::op(SignedDigit a, std::uint64_t* b)
 {   return Lcm::op(b, a);
 }
 
-inline std::intptr_t Lcm::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t Lcm::op(SignedDigit a, SignedDigit b)
 {   std::intptr_t g = Gcd::op(a, b);
 // The GCD can only be a bignum if a = b = MIN_FIXNUM.
     if (storedAsFixnum(g))
@@ -18637,7 +18564,7 @@ inline std::intptr_t Lcm::op(std::int64_t a, std::int64_t b)
         std::intptr_t q = Times::op(a, b); // possibly a bignum now
         return op_dispatch1<Abs,std::intptr_t>(q);
     }
-    else return unsignedIntToBignum(-static_cast<std::uint64_t>
+    else return unsignedIntToBignum(-static_cast<Digit>
                                            (MIN_FIXNUM));
 }
 
@@ -18653,15 +18580,15 @@ inline const int modulus_big = 2;
 // On Windows these thread-locals may introduce serious overhead. I
 // will worry about that later if needbe.
 thread_local inline int modulusSize = 0;
-thread_local inline std::uint64_t smallModulus = 2;
+thread_local inline Digit smallModulus = 2;
 
 // When I tried "thread_local inline std::vector<T> V;" I got complaints
 // about the TLS init function being multiply defined at least on one of
 // the platforms I was interested in, so I use a slightly more contorted
 // code style that seems to survive better...
 
-inline std::vector<std::uint64_t>& largeModulusVector()
-{   static thread_local std::vector<std::uint64_t> v;
+inline std::vector<Digit>& largeModulusVector()
+{   static thread_local std::vector<Digit> v;
     return v;
 }
 
@@ -18673,13 +18600,13 @@ inline std::intptr_t value_of_currentModulus()
 {   if (modulusSize == modulus_big)
     {   std::size_t n = numberSize(largeModulus());
         std::uint64_t* r = reserve(n);
-        std::memcpy(r, largeModulus(), n*sizeof(std::uint64_t));
+        std::memcpy(r, largeModulus(), n*sizeof(Digit));
         return confirmSize(r, n, n);
     }
     else return intToHandle(smallModulus);
 }
 
-inline std::intptr_t SetModulus::op(std::int64_t n)
+inline std::intptr_t SetModulus::op(SignedDigit n)
 {   if (n < 1)
         UNLIKELY
         return (std::intptr_t)aerror1("Invalid arg to set-modulus",
@@ -18698,7 +18625,7 @@ inline std::intptr_t SetModulus::op(std::uint64_t* n)
                                       vectorToHandle(n));
     std::intptr_t r = value_of_currentModulus();
     std::size_t lenn = numberSize(n);
-    std::size_t bytes = (lenn+1)*sizeof(std::uint64_t);
+    std::size_t bytes = (lenn+1)*sizeof(Digit);
     if (bytes > largeModulusVector().size())
         largeModulusVector().resize(bytes);
     std::memcpy(largeModulusVector().data(), &n[-1], bytes);
@@ -18706,7 +18633,7 @@ inline std::intptr_t SetModulus::op(std::uint64_t* n)
     return r;
 }
 
-inline std::intptr_t ModularNumber::op(std::int64_t a)
+inline std::intptr_t ModularNumber::op(SignedDigit a)
 {   if (a >= 0)
     {   if (modulusSize == modulus_big) return intToHandle(a);
         else return intToHandle(a % smallModulus);
@@ -18733,23 +18660,23 @@ inline std::intptr_t ModularNumber::op(std::uint64_t* a)
     else return Remainder::op(a, largeModulus());
 }
 
-inline std::intptr_t ModularPlus::op(std::int64_t a, std::int64_t b)
-{   std::uint64_t ua = a, ub = b;
+inline std::intptr_t ModularPlus::op(SignedDigit a, SignedDigit b)
+{   Digit ua = a, ub = b;
 // Because a and b are 64-bit signed values and they should be positive,
 // their sum will fit within a 64-bit unsigned integer, but if the modulus
 // is large it could be just a 1-word bignum...
     if (modulusSize == modulus_big)
-    {   std::uint64_t r = ua + ub;
+    {   Digit r = ua + ub;
         if (numberSize(largeModulus()) == 1 &&
             r >= largeModulus()[0]) r -= largeModulus()[0];
         return unsignedIntToBignum(r);
     }
-    std::uint64_t r = ua + ub;
+    Digit r = ua + ub;
     if (r >= smallModulus) r -= smallModulus;
-    return intToHandle(static_cast<std::int64_t>(r));
+    return intToHandle(static_cast<SignedDigit>(r));
 }
 
-inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t ModularPlus::op(SignedDigit a, std::uint64_t* b)
 {
 // One of the inputs here is a bignum, and that can only be valid if we
 // have a large modulus.
@@ -18767,7 +18694,7 @@ inline std::intptr_t ModularPlus::op(std::int64_t a, std::uint64_t* b)
     else return r;
 }
 
-inline std::intptr_t ModularPlus::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t ModularPlus::op(std::uint64_t* a, SignedDigit b)
 {   return ModularPlus::op(b, a);
 }
 
@@ -18787,13 +18714,13 @@ inline std::intptr_t ModularPlus::op(std::uint64_t* a,
     else return r;
 }
 
-inline std::intptr_t ModularDifference::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t ModularDifference::op(SignedDigit a, SignedDigit b)
 {   if (a >= b) return intToHandle(a - b);
     if (modulusSize == modulus_big) return Plus::op(largeModulus(), a - b);
     else return intToHandle(smallModulus - b + a);
 }
 
-inline std::intptr_t ModularDifference::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t ModularDifference::op(SignedDigit a, std::uint64_t* b)
 {   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
@@ -18805,7 +18732,7 @@ inline std::intptr_t ModularDifference::op(std::int64_t a, std::uint64_t* b)
     return r1;
 }
 
-inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t ModularDifference::op(std::uint64_t* a, SignedDigit b)
 {   if (modulusSize != modulus_big)
         UNLIKELY
         return (std::intptr_t)aerror1("bad arg for modular-plus",
@@ -18827,16 +18754,16 @@ inline std::intptr_t ModularDifference::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 
-inline std::intptr_t ModularTimes::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t ModularTimes::op(SignedDigit a, SignedDigit b)
 {   switch (modulusSize)
     {   case modulus_32:
-            return intToHandle((static_cast<std::uint64_t>(a)* 
-                                  static_cast<std::uint64_t>(b)) %
+            return intToHandle((static_cast<Digit>(a)* 
+                                  static_cast<Digit>(b)) %
                                  smallModulus);
         case modulus_64:
-        {   std::uint64_t hi, lo, q, r;
-            multiply64(static_cast<std::uint64_t>(a),
-                       static_cast<std::uint64_t>(b),
+        {   Digit hi, lo, q, r;
+            multiply64(static_cast<Digit>(a),
+                       static_cast<Digit>(b),
                        hi, lo);
             divide64(hi, lo, smallModulus, q, r);
             return intToHandle(r);
@@ -18852,7 +18779,7 @@ inline std::intptr_t ModularTimes::op(std::int64_t a, std::int64_t b)
     }
 }
 
-inline std::intptr_t ModularTimes::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t ModularTimes::op(SignedDigit a, std::uint64_t* b)
 {   std::intptr_t w = Times::op(a, b);
     std::intptr_t r =
         op_dispatch1<Remainder,std::intptr_t>(w, largeModulus());
@@ -18860,7 +18787,7 @@ inline std::intptr_t ModularTimes::op(std::int64_t a, std::uint64_t* b)
     return r;
 }
 
-inline std::intptr_t ModularTimes::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t ModularTimes::op(std::uint64_t* a, SignedDigit b)
 {   return ModularTimes::op(b, a);
 }
 
@@ -18873,15 +18800,15 @@ inline std::intptr_t ModularTimes::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 
-inline std::intptr_t ModularExpt::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t ModularExpt::op(SignedDigit a, SignedDigit b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-inline std::intptr_t ModularExpt::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t ModularExpt::op(SignedDigit a, std::uint64_t* b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
-inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t ModularExpt::op(std::uint64_t* a, SignedDigit b)
 {   return (std::intptr_t)aerror("incomplete ModularExpt");
 }
 
@@ -18890,7 +18817,7 @@ inline std::intptr_t ModularExpt::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 
-inline std::intptr_t ModularQuotient::op(std::int64_t a, std::int64_t b)
+inline std::intptr_t ModularQuotient::op(SignedDigit a, SignedDigit b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -18900,7 +18827,7 @@ inline std::intptr_t ModularQuotient::op(std::int64_t a, std::int64_t b)
     return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::int64_t a, std::uint64_t* b)
+inline std::intptr_t ModularQuotient::op(SignedDigit a, std::uint64_t* b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -18910,7 +18837,7 @@ inline std::intptr_t ModularQuotient::op(std::int64_t a, std::uint64_t* b)
     return r;
 }
 
-inline std::intptr_t ModularQuotient::op(std::uint64_t* a, std::int64_t b)
+inline std::intptr_t ModularQuotient::op(std::uint64_t* a, SignedDigit b)
 {   std::intptr_t recip_b = ModularReciprocal::op(b);
     std::intptr_t r;
     if (storedAsFixnum(recip_b))
@@ -18931,7 +18858,7 @@ inline std::intptr_t ModularQuotient::op(std::uint64_t* a, std::uint64_t* b)
 }
 
 
-inline std::intptr_t ModularMinus::op(std::int64_t a)
+inline std::intptr_t ModularMinus::op(SignedDigit a)
 {   if (a == 0) return intToHandle(a);
     if (modulusSize == modulus_big)
         return Difference::op(largeModulus(), a);
@@ -18979,19 +18906,19 @@ inline std::intptr_t generalModularReciprocal(std::intptr_t aa,
     return y;
 }
 
-inline std::intptr_t ModularReciprocal::op(std::int64_t aa)
+inline std::intptr_t ModularReciprocal::op(SignedDigit aa)
 {   if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1("bad argument to modular-reciprocal",
                                       intToHandle(aa));
     else if (modulusSize == modulus_big)
         return generalModularReciprocal(intToHandle(aa));
-    std::int64_t a = smallModulus,
+    SignedDigit a = smallModulus,
                  b = aa,
                  x = 0,
                  y = 1;
     while (b != 1)
-    {   std::uint64_t w, t;
+    {   Digit w, t;
         if (b == 0)
             UNLIKELY
             return (std::intptr_t)aerror2(
@@ -19014,7 +18941,7 @@ inline std::intptr_t ModularReciprocal::op(std::uint64_t* a)
 {   return generalModularReciprocal(vectorToHandle(a));
 }
 
-inline std::intptr_t SafeModularReciprocal::op(std::int64_t aa)
+inline std::intptr_t SafeModularReciprocal::op(SignedDigit aa)
 {   if (aa <= 0)
         UNLIKELY
         return (std::intptr_t)aerror1(
@@ -19023,12 +18950,12 @@ inline std::intptr_t SafeModularReciprocal::op(std::int64_t aa)
     else if (modulusSize == modulus_big)
         UNLIKELY
         return generalModularReciprocal(intToHandle(aa), true);
-    std::int64_t a = smallModulus,
+    SignedDigit a = smallModulus,
                  b = aa,
                  x = 0,
                  y = 1;
     while (b != 1)
-    {   std::uint64_t w, t;
+    {   Digit w, t;
         if (b == 0) return nil;
         w = a / b;
         t = b;
@@ -19089,6 +19016,7 @@ using arithlib_implementation::Plus;
 using arithlib_implementation::Difference;
 using arithlib_implementation::RevDifference;
 using arithlib_implementation::Times;
+using arithlib_implementation::ClassicalTimes;
 using arithlib_implementation::Quotient;
 using arithlib_implementation::Remainder;
 using arithlib_implementation::Mod;
@@ -19196,6 +19124,15 @@ using arithlib_implementation::modf;
 using arithlib_implementation::castTo_float;
 
 }
+
+#ifdef MEASURE_WORKSPACE
+
+int main(int argc, char* argv[])
+{   arithlib_implementation::main();
+    return 0;
+}
+
+#endif // MEASURE_WORKSPACE
 
 #endif // __arithlib_hpp
 

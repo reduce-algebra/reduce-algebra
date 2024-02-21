@@ -59,6 +59,34 @@ c2cpp:	c2cpp.cpp
 
 # Tests and demonstrations of arithlib.hpp
 
+# The file arithlib.hpp is maintained in the form of a top level file
+# arithlib.base.hpp and a collection of files that it uses "#include" to
+# get merged in. The utility flatten performs the expansion for me. The
+# consequence of this is that arithlib.hpp is a single free-standing
+# header-only library, but if you also #include one of the things it
+# incorporates (eg threadloc.h or lvector.h) then there will be no clash.
+
+flatten:	flatten.cpp
+	g++ $(CXXFLAGS) flatten.cpp -o flatten
+
+lvector.h:	flatten lvector.base.h threadloc.h
+	./flatten lvector.base.h lvector.h
+
+multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp
+	./flatten multiply.base.cpp multiply.cpp
+
+arithlib.hpp:	flatten arithlib.base.hpp lvector.h \
+		acnutil.h multiply.cpp inlinemul.cpp
+	./flatten arithlib.base.hpp arithlib.hpp
+
+geninline:	geninline.cpp
+	g++ $(CXXFLAGS) geninline.cpp -o geninline
+
+inlinemul.cpp:	geninline
+	./geninline > inlinemul.cpp
+
+
+
 ifeq ($(shell uname -o),Cygwin)
 LIBS=-lgmp
 else
@@ -87,13 +115,6 @@ arithtest:	arithtest.cpp arithlib.hpp
 # uses that as the seed for repeatable behaviour.
 	time ./arithtest 1
 
-arithtestunrolled:	arithtest.cpp arithlib.hpp
-	time g++ -DUNROLLED=1 $(ARITHOPT) $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtestunrolled
-# If one runs arithtest without a command line paramater it should seed
-# its random number generator in an unpredictable way. Specifing an integer
-# uses that as the seed for repeatable behaviour.
-	time ./arithtestunrolled 1
-
 # "time-arith" tries to compare (crudely) the speed of the existing (or
 # dare I now say "old"?) CSL arithmetic based on 31-bit digits with the
 # performance of arithlib that used 64-bit digits. On a 64-bit machine
@@ -117,6 +138,20 @@ time-arith:	time-arith.sh
 karatune:	karatune.cpp arithlib.hpp
 	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp $(LIBS) -o karatune
 	time ./karatune
+
+measureworkspace:	measureworkspace.cpp arithlib.hpp
+	g++ $(ARITHOPT) $(MACFLAGS) measureworkspace.cpp -o measureworkspace
+	-./measureworkspace
+
+# for debugging
+measureworkspaceg:	measureworkspace.cpp arithlib.hpp
+	g++ -O0 -g $(MACFLAGS) measureworkspace.cpp \
+		-fmax-errors=5 -o measureworkspaceg
+	-./measureworkspaceg
+
+measureworkspacegg:	measureworkspace.cpp arithlib.hpp
+	g++ -O0 -g $(MACFLAGS) measureworkspace.cpp -DDEBUG=1 \
+		-fmax-errors=5 -o measureworkspacegg
 
 # end of Makefile in cslbase
 

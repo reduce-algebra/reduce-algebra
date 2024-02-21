@@ -556,7 +556,7 @@ inline void initialize()
 #else // DEBUG
 #define maxThreads  64U
 #endif // DEBUG
-#define TL_threadId  50
+#define TL_genuineThreadId  50
 DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
 #define THREADID UNUSED_NAME const uintptr_t threadId = genuineThreadId
 #define THREADARG threadId,
