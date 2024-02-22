@@ -581,15 +581,14 @@ inline void stackcheck(uintptr_t id)
 #endif // NO_THREADS
 {   THREADID;
     if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >=
-        stackLimit) respond_to_stack_event();
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
+        respond_to_stack_event();
 }
 
 inline void stackcheck(DECLAREID LispObject& a1)
 {   THREADID;
     if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >=
-        stackLimit)
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
     {   Save saver(THREADARG a1);
         respond_to_stack_event();
         saver.restore(a1);
@@ -599,8 +598,7 @@ inline void stackcheck(DECLAREID LispObject& a1)
 inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2)
 {   THREADID;
     if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >=
-        stackLimit)
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
     {   Save saver(THREADARG a1, a2);
         respond_to_stack_event();
         saver.restore(a1, a2);
@@ -610,8 +608,7 @@ inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2)
 inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2, LispObject& a3)
 {   THREADID;
     if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >=
-        stackLimit)
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
     {   Save saver(THREADARG a1, a2, a3);
         respond_to_stack_event();
         saver.restore(a1, a2, a3);
@@ -622,8 +619,7 @@ inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2,
                        LispObject& a3, LispObject& a4)
 {   THREADID;
     if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >=
-        stackLimit)
+    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
     {   Save saver(THREADARG a1, a2, a3, a4);
         respond_to_stack_event();
         saver.restore(a1, a2, a3, a4);

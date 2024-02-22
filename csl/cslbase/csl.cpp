@@ -3138,7 +3138,7 @@ int async_interrupt(int type)
             break;
 //        case TICK_INTERRUPT:
 //// The non-zero values used here have some information about what the
-//// request was in their low order 4 bits, but otherwise all bits are set.
+//// request was in their low order 8 bits, but otherwise all bits are set.
 //// By having separate bits for each request it is OK to OR these together.
 //           newval = INTPTR_MAX - 0xff + RECEIVE_TICK;
 //           break;

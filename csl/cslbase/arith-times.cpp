@@ -542,6 +542,479 @@ LispObject Times::op(LFlt a, LFlt b)
 {   return make_boxfloat128(f128_mul(a.floatval(), b.floatval()));
 }
 
+LispObject ClassicalTimes::op(LispObject a, LispObject b)
+{   return number_dispatcher::binary<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, Fixnum b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, std::uint64_t* b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, Rat b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, Cpx b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, SFlt b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, Flt b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, double b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LispObject a, LFlt b)
+{   return number_dispatcher::binaryR<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(Fixnum a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(std::uint64_t* a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(Rat a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(Cpx a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(SFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(Flt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(double a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+LispObject ClassicalTimes::op(LFlt a, LispObject b)
+{   return number_dispatcher::binaryL<LispObject,ClassicalTimes>("times", a, b);
+}
+
+// fixnum * fixnum
+LispObject ClassicalTimes::op(Fixnum a, Fixnum b)
+{
+#ifdef COUNT_MULTIPLICATION
+    multSizes[0][0]++;
+    LispObject r = arithlib_lowlevel::ClassicalTimes::op(a.intval(), b.intval());
+    if (is_fixnum(r)) shortResult++;
+    else longResult++;
+    return r;
+#else
+    return arithlib_lowlevel::ClassicalTimes::op(a.intval(), b.intval());
+#endif
+}
+
+// bignum * fixnum
+LispObject ClassicalTimes::op(std::uint64_t* a, Fixnum b)
+{
+#ifdef COUNT_MULTIPLICATION
+    size_t lena = arithlib_implementation::numberSize(a);
+    if (lena >= MULSIZE) lena = MULSIZE-1;
+    biggestMult = std::max(biggestMult, lena);
+    multSizes[lena][0]++;
+#endif
+    return arithlib_lowlevel::ClassicalTimes::op(a, b.intval());
+}
+
+// rational * fixnum
+LispObject ClassicalTimes::op(Rat a, Fixnum b)
+{   if (b.intval() == 0) return a.value();
+    return make_ratio(ClassicalTimes::op(a.numerator(),
+                                ClassicalTimes::op(a.denominator(), b)),
+                      a.denominator());
+}
+
+// complex * fixnum
+LispObject ClassicalTimes::op(Cpx a, Fixnum b)
+{   return make_complex(ClassicalTimes::op(a.real_part(), b),
+                        ClassicalTimes::op(a.imag_part(), b));
+}
+
+// short float * fixnum
+LispObject ClassicalTimes::op(SFlt a, Fixnum b)
+{   return pack_short_float(a.floatval() * static_cast<double>(b.value()));
+}
+
+// single float * fixnum
+LispObject ClassicalTimes::op(Flt a, Fixnum b)
+{   return pack_single_float(a.floatval() * static_cast<double>(b.intval()));
+}
+
+// double float * fixnum
+LispObject ClassicalTimes::op(double a, Fixnum b)
+{   return make_boxfloat(a * static_cast<double>(b.intval()));
+}
+
+// long float * fixnum
+LispObject ClassicalTimes::op(LFlt a, Fixnum b)
+{   return make_boxfloat128(f128_mul(a.floatval(),
+                                     i64_to_f128(b.intval())));
+}
+
+// fixnum * bignum
+LispObject ClassicalTimes::op(Fixnum a, std::uint64_t* b)
+{
+#ifdef COUNT_MULTIPLICATION
+    size_t lenb = arithlib_implementation::numberSize(b);
+    if (lenb >= MULSIZE) lenb = MULSIZE-1;
+    biggestMult = std::max(biggestMult, lenb);
+    multSizes[0][lenb]++;
+#endif
+    return ClassicalTimes::op(b, a);
+}
+
+// bignum * bignum
+LispObject ClassicalTimes::op(std::uint64_t* a, std::uint64_t* b)
+{
+#ifdef COUNT_MULTIPLICATION
+    size_t lena = arithlib_implementation::numberSize(a);
+    size_t lenb = arithlib_implementation::numberSize(b);
+    if (lena >= MULSIZE) lena = MULSIZE-1;
+    if (lenb >= MULSIZE) lenb = MULSIZE-1;
+    biggestMult = std::max(biggestMult, std::max(lena, lenb));
+    multSizes[lena][lenb]++;
+#endif
+    return arithlib_lowlevel::ClassicalTimes::op(a, b);
+}
+
+// rational * bignum
+LispObject ClassicalTimes::op(Rat a, std::uint64_t* b)
+{   LispObject g = Gcdn::op(a.denominator(), b);
+    LispObject cofactor = Quotient::op(b, g);
+    return make_ratio(ClassicalTimes::op(a.numerator(), cofactor),
+                      Quotient::op(a.denominator(), g));
+}
+
+// complex * bignum
+LispObject ClassicalTimes::op(Cpx a, std::uint64_t* b)
+{   return make_complex(ClassicalTimes::op(a.real_part(), b),
+                        ClassicalTimes::op(a.imag_part(), b));
+}
+
+// short float * bignum
+LispObject ClassicalTimes::op(SFlt a, std::uint64_t* b)
+{   return pack_short_float(a.floatval() * RawFloat::op(b));
+}
+
+// single float * bignum
+LispObject ClassicalTimes::op(Flt a, std::uint64_t* b)
+{   return pack_single_float(a.floatval() * RawFloat::op(b));
+}
+
+// double float * bignum
+LispObject ClassicalTimes::op(double a, std::uint64_t* b)
+{   return make_boxfloat(a * arithlib_lowlevel::Double::op(b));
+}
+
+// long float * bignum
+LispObject ClassicalTimes::op(LFlt a, std::uint64_t* b)
+{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+}
+
+// fixnum * rational
+LispObject ClassicalTimes::op(Fixnum a, Rat b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// bignum * rational
+LispObject ClassicalTimes::op(std::uint64_t* a, Rat b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// rational * rational
+LispObject ClassicalTimes::op(Rat a, Rat b)
+{   LispObject g1 = Gcdn::op(a.numerator(), b.denominator());
+    LispObject g2 = Gcdn::op(a.denominator(), b.numerator());
+    LispObject na = Quotient::op(a.numerator(), g1);
+    LispObject nb = Quotient::op(b.numerator(), g2);
+    LispObject da = Quotient::op(a.denominator(), g2);
+    LispObject db = Quotient::op(b.denominator(), g1);
+    return make_ratio(ClassicalTimes::op(na, nb), ClassicalTimes::op(da, db));
+}
+
+// complex * rational
+LispObject ClassicalTimes::op(Cpx a, Rat b)
+{   return make_complex(ClassicalTimes::op(a.real_part(), b),
+                        ClassicalTimes::op(a.imag_part(), b));
+}
+
+// short float * rational
+// The key mess here is that I do not want to trigger exponent overflow
+// early, but the numerator and denominators of the rational could be
+// really huge.
+LispObject ClassicalTimes::op(SFlt a, Rat b)
+{   std::int64_t xb;
+    double d = Frexp::op(b, xb); // A special version for internal use!
+    int x;
+    d *= std::frexp(a.floatval(), &x);
+    x += xb;
+    d = std::ldexp(d, x);
+    return pack_short_float(d);
+}
+
+// single float * rational
+LispObject ClassicalTimes::op(Flt a, Rat b)
+{   std::int64_t xb;
+    double d = Frexp::op(b, xb);
+    int x;
+    d *= std::frexp(a.floatval(), &x);
+    x += xb;
+    d = std::ldexp(d, x);
+    return pack_single_float(d);
+}
+
+// double float * rational
+LispObject ClassicalTimes::op(double a, Rat b)
+{   std::int64_t xb;
+    double d = Frexp::op(b, xb);
+    int x;
+    d *= std::frexp(a, &x);
+    x += xb;
+    d = std::ldexp(d, x);
+    return make_boxfloat(d);
+}
+
+// long float * rational
+LispObject ClassicalTimes::op(LFlt a, Rat b)
+{   std::int64_t xb;
+    float128_t d = Frexp128::op(b, xb);
+    int x;
+    float128_t d1 = a.floatval();
+    f128_frexp(d1, &d1, &x);
+    x += xb;
+    d = f128_mul(d, d1);
+    f128_ldexp(&d, x);
+    return make_boxfloat128(d);
+}
+
+// fixnum * complex
+LispObject ClassicalTimes::op(Fixnum a, Cpx b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// bignum * complex
+LispObject ClassicalTimes::op(std::uint64_t* a, Cpx b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// rational * complex
+LispObject ClassicalTimes::op(Rat a, Cpx b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// complex * complex
+LispObject ClassicalTimes::op(Cpx a, Cpx b)
+{   return make_complex(
+               Difference::op(ClassicalTimes::op(a.real_part(), b.real_part()),
+                              ClassicalTimes::op(a.imag_part(), b.imag_part())),
+               Plus::op(ClassicalTimes::op(a.real_part(), b.imag_part()),
+                        ClassicalTimes::op(a.imag_part(), b.real_part())));
+}
+
+// short float * complex
+LispObject ClassicalTimes::op(SFlt a, Cpx b)
+{   return make_complex(ClassicalTimes::op(b.real_part(), a),
+                        ClassicalTimes::op(b.imag_part(), a));
+}
+
+// single float * complex
+LispObject ClassicalTimes::op(Flt a, Cpx b)
+{   return make_complex(ClassicalTimes::op(b.real_part(), a),
+                        ClassicalTimes::op(b.imag_part(), a));
+}
+
+// double float * complex
+LispObject ClassicalTimes::op(double a, Cpx b)
+{   return make_complex(ClassicalTimes::op(b.real_part(), a),
+                        ClassicalTimes::op(b.imag_part(), a));
+}
+
+// long float * complex
+LispObject ClassicalTimes::op(LFlt a, Cpx b)
+{   return make_complex(ClassicalTimes::op(b.real_part(), a),
+                        ClassicalTimes::op(b.imag_part(), a));
+}
+
+// fixnum * short float
+LispObject ClassicalTimes::op(Fixnum a, SFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// bignum * short float
+LispObject ClassicalTimes::op(std::uint64_t* a, SFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// rational * short float
+LispObject ClassicalTimes::op(Rat a, SFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// complex * short float
+LispObject ClassicalTimes::op(Cpx a, SFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// short float * short float
+LispObject ClassicalTimes::op(SFlt a, SFlt b)
+{   return pack_short_float(a.floatval() * b.floatval());
+}
+
+// single float * short float
+LispObject ClassicalTimes::op(Flt a, SFlt b)
+{   return pack_single_float(a.floatval() * b.floatval());
+}
+
+// double float * short float
+LispObject ClassicalTimes::op(double a, SFlt b)
+{   return make_boxfloat(a * b.floatval());
+}
+
+// long float * short float
+LispObject ClassicalTimes::op(LFlt a, SFlt b)
+{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+}
+
+// fixnum * single float
+LispObject ClassicalTimes::op(Fixnum a, Flt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// bignum * single float
+LispObject ClassicalTimes::op(std::uint64_t* a, Flt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// rational * single float
+LispObject ClassicalTimes::op(Rat a, Flt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// complex * single float
+LispObject ClassicalTimes::op(Cpx a, Flt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// short float * single float
+LispObject ClassicalTimes::op(SFlt a, Flt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// single float * single float
+LispObject ClassicalTimes::op(Flt a, Flt b)
+{   return pack_short_float(a.floatval() * b.floatval());
+}
+
+// double float * single float
+LispObject ClassicalTimes::op(double a, Flt b)
+{   return make_boxfloat(a * b.floatval());
+}
+
+// long float * single float
+LispObject ClassicalTimes::op(LFlt a, Flt b)
+{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+}
+
+// fixnum * double float
+LispObject ClassicalTimes::op(Fixnum a, double b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// bignum * double float
+LispObject ClassicalTimes::op(std::uint64_t* a, double b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// rational * double float
+LispObject ClassicalTimes::op(Rat a, double b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// complex * double float
+LispObject ClassicalTimes::op(Cpx a, double b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// short float * double float
+LispObject ClassicalTimes::op(SFlt a, double b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// single float * double float
+LispObject ClassicalTimes::op(Flt a, double b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// double float * double float
+LispObject ClassicalTimes::op(double a, double b)
+{   return make_boxfloat(a * b);
+}
+
+// long float * double float
+LispObject ClassicalTimes::op(LFlt a, double b)
+{   return make_boxfloat128(f128_mul(a.floatval(), Float128::op(b)));
+}
+
+// fixnum * long float
+LispObject ClassicalTimes::op(Fixnum a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// bignum * long float
+LispObject ClassicalTimes::op(std::uint64_t* a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// rational * long float
+LispObject ClassicalTimes::op(Rat a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// complex * long float
+LispObject ClassicalTimes::op(Cpx a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// short float * long float
+LispObject ClassicalTimes::op(SFlt a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// single float * long float
+LispObject ClassicalTimes::op(Flt a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// double float * long float
+LispObject ClassicalTimes::op(double a, LFlt b)
+{   return ClassicalTimes::op(b, a);
+}
+
+// long float * long float
+LispObject ClassicalTimes::op(LFlt a, LFlt b)
+{   return make_boxfloat128(f128_mul(a.floatval(), b.floatval()));
+}
+
 LispObject Expt::op(LispObject a, LispObject b)
 {   return number_dispatcher::binary<LispObject,Expt>("expt", a, b);
 }
@@ -3338,7 +3811,16 @@ LispObject Divide::op(LFlt a, LFlt b)
 }
 
 LispObject Square::op(LispObject a)
-{   return number_dispatcher::unary<LispObject,Square>("square", a);
+{
+#ifdef CHECK_TIMES
+    LispObject v1 = number_dispatcher::unary<LispObject,Square>("square", a);
+    LispObject v2 = Times::op(a, a);
+    if (v1 != v2 && !equal_fn(v1, v2))
+        aerror2("squaring failure", a, cons(v1, v2));
+    return v1;
+#else // CHECK_TIMES
+    return number_dispatcher::unary<LispObject,Square>("square", a);
+#endif // CHECK_TIMES
 }
 
 LispObject Square::op(Fixnum a)
@@ -6336,7 +6818,22 @@ LispObject Ntimes(LispObject env, LispObject a1)
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifdef CHECK_TIMES
+// Here I verify that a product is correct by comparison against the
+// function "classicaltimes" which will perform big-integer arithmetic
+// using code that is intended to be as simple and hence as reliable
+// as possible. The checking will not make any tests on cases other
+// than where both operands are bignums. Well - until and unless I
+// make classicaltimes include independent implementations for those
+// cases too.
+    LispObject v1 = Times::op(a1, a2);
+    LispObject v2 = ClassicalTimes::op(a1, a2);
+    if (v1 != v2 && !equal_fn(v1, v2))
+        aerror2("multiplication failure", cons(a1, a2), cons(v1, v2));
+    return v1;
+#else
     return Times::op(a1, a2);
+#endif
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
@@ -6351,6 +6848,38 @@ LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,
     LispObject w = Times::op(Times::op(a1, a2), a3);
     while (is_cons(a4plus))
     {   w = Times::op(w, car(a4plus));
+        a4plus = cdr(a4plus);
+    }
+    return w;
+}
+
+LispObject Nclassicaltimes(LispObject env)
+{   SingleValued fn;
+    return fixnum_of_int(1);
+}
+
+LispObject Nclassicaltimes(LispObject env, LispObject a1)
+{   SingleValued fn;
+    return a1;
+}
+
+LispObject Nclassicaltimes(LispObject env, LispObject a1, LispObject a2)
+{   SingleValued fn;
+    return ClassicalTimes::op(a1, a2);
+}
+
+LispObject Nclassicaltimes(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3)
+{   SingleValued fn;
+    return ClassicalTimes::op(ClassicalTimes::op(a1, a2), a3);
+}
+
+LispObject Nclassicaltimes(LispObject env, LispObject a1, LispObject a2,
+                         LispObject a3, LispObject a4plus)
+{   SingleValued fn;
+    LispObject w = ClassicalTimes::op(ClassicalTimes::op(a1, a2), a3);
+    while (is_cons(a4plus))
+    {   w = ClassicalTimes::op(w, car(a4plus));
         a4plus = cdr(a4plus);
     }
     return w;
@@ -6426,7 +6955,13 @@ LispObject Nlcmn(LispObject env, LispObject a1, LispObject a2,
 
 LispObject Nquotient(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifdef CHECK_TIMES
+// For quotients and remainders I will use divide() here and I will put the
+// testing there.
+    return car(Ndivide(env, a1, a2));
+#else // CHECK_TIMES
     return Quotient::op(a1, a2);
+#endif // CHECK_TIMES
 }
 
 LispObject NCLQuotient(LispObject env, LispObject a1, LispObject a2)
@@ -6436,7 +6971,11 @@ LispObject NCLQuotient(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Nremainder(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifdef CHECK_TIMES
+    return cdr(Ndivide(env, a1, a2));
+#else // CHECK_TIMES
     return Remainder::op(a1, a2);
+#endif // CHECK_TIMES
 }
 
 LispObject Nmod(LispObject env, LispObject a1, LispObject a2)
@@ -6446,6 +6985,40 @@ LispObject Nmod(LispObject env, LispObject a1, LispObject a2)
 
 LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifdef CHECK_TIMES
+    if ((is_fixnum(a1) || is_new_bignum(a1)) &&
+        (is_fixnum(a2) || is_new_bignum(a2)))
+    {   LispObject w = Divide::op(a1, a2);
+        LispObject quo = car(w);
+        LispObject rem = cdr(w);
+// quotient & remainder will be correct if a1 = a2*quo + rem and
+// also rem is between 0 and sign(a1)*|a2|
+        LispObject xa1 = Plus::op(Times::op(a2, quo), rem);
+        if (a1 != xa1 && !equal_fn(a1, xa1))
+            aerror2("quotient failure", cons(a1, a2), w);
+        if (rem == fixnum_of_int(0)) return w; // zero remainder OK
+        if (Minusp::op(a1))
+        {   if (Minusp::op(a2))
+            {   // a1 and a2 must both negative. remainder must satisfy
+                // a2 < remainder < 0
+                if (Lessp::op(a2, rem) && Minusp::op(rem)) return w;
+            }
+            else
+            {   // a1 negative, a2 positive. Want -a2 < remainder < 0
+                if (Lessp::op(Minus::op(a2), rem) && Minusp::op(rem)) return w;
+            }
+        }
+        else if (Minusp::op(a2))
+        {   // a1 positive, a2 negative. 0 <= remainder < -a2
+            if (Plusp::op(rem) && Lessp::op(rem, Minus::op(a2))) return w;
+        }
+        else
+        {   // both a1 and a2 positive. 0 <= remainder < a2
+            if (Plusp::op(rem) && Lessp::op(rem, a2)) return w;
+        }
+        aerror2("quotient failure", cons(a1, a2), w);
+    }
+#endif // CHECK_TIMES 
     return Divide::op(a1, a2);
 }
 

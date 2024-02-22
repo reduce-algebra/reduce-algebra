@@ -52,6 +52,8 @@ setup_type const arith_setup[] =
     {"times",             Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
     {"times2",            Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
     {"*",                 Ntimes, Ntimes, Ntimes, Ntimes, Ntimes},
+    {"classicaltimes",    Nclassicaltimes, Nclassicaltimes, Nclassicaltimes,
+                          Nclassicaltimes, Nclassicaltimes},
     DEF_2("quotient",     Nquotient),
     DEF_2("//",           Nquotient),
     DEF_2("/",            NCLQuotient),

@@ -49,14 +49,11 @@
 //
 // There are some classes:
 //   stkvector<T>   a vector of n items of type T for stack/static allocation.
-//   newvector<T>   a vector as above but synamically allocated (eg heap).
 //   vecpointer<T>  a pointer to one of the above.
 
 // This is something like what I want...
 //== template <typename T>
 //== using stkvector<T> = T[];   used in file of block scope definitions.
-//== using newvector<T> = T[];   can create a vector using "new" or
-//==                             encapsulate one that already exists/
 //== using vecpointer<T> = T*;   pointer to one of these.
 // however that can not let me establish locally defined vectors
 // of dynamic size, and I want to support declarations such as
@@ -64,7 +61,6 @@
 // to set up a block scope vector where the size is not known at
 // compile time. Also following
 //         vecpointer<int> p = new int[100];
-//  or     vecpointer<int> p = newvector<int>(100);
 // this would mean I needed to discard the space explicitly.
 // Ordinary code uses
 //   T* p = new T[20]; ... ; delete[] p;
@@ -78,9 +74,6 @@
 // a "size()" method to retrieve that information. And I will view
 // stkvector as only suitable for use with a compilation unit or block
 // scope declaration. "new stkvector" is not to be allowed.
-// However "newvector<T>(N)" mau be used to create an vecpointer to
-// a heap-allocated vector of length N and that will be preferred to
-// use of "new" directly.
 //    ...
 // stkvector<T> will need to support
 //    creation via a declaration at file or block scope.
@@ -96,6 +89,7 @@
 //    constructor from nullptr.
 //    constructor from a T*.
 //    constructor from a T* but with a length specifier.
+//    constructors from intptr_t and uint64_t*
 //    construction from a SizedPointer.
 //    constructor from an stkvector<T>.
 //    a "discard" function for deleting its contents
@@ -104,11 +98,12 @@
 //    operator=
 //    operator+(integer)
 //    operator-(integer)
+//    operator-(vecpointer<T>)
 //    operator+= and operator-=
 //    operator++ and operator--  (pre and post versions of each)
 //    operator== and operator!= to compare against a nullptr or
 //                              another vecpointer<T>
-//    casts into T* and const T*
+//    casts into T* and const T* and intptr_t
 //
 // I will require sizeof(vecpointer<T>) == sizeof(T*). I am going to
 // assume all pointer types have the same size which C++ may not
@@ -135,33 +130,6 @@
 template <typename T>
 class vecpointer;
 
-template <typename T>
-class newvector
-{
-public:
-    T* data;
-    std::size_t limit;
-    newvector(size_t n)
-    {   data = static_cast<T*>(new T[n]);
-        if (data != nullptr)
-        {   std::memset(data, 0x99, n*sizeof(T));
-            limit = n;
-        }
-        else limit = 0;
-    }
-    newvector(T* v, size_t n)
-    {   data = v;
-        limit = n;
-    }
-    operator vecpointer<T>()
-    {   return vecpointer<T>(data, limit);
-    }
-    friend std::ostream & operator << (std::ostream &out, const newvector& a)
-    {   out << a.data;
-        return out;
-    }
-};
-
 #ifndef DEBUG
 
 template <typename T>
@@ -187,13 +155,19 @@ public:
     }
 
 //    constructor from a T*
-    vecpointer(T* a)
-    {   data = a;
+    template <typename S>
+    vecpointer(S* a)
+    {   data = reinterpret_cast<T*>(a);
     }
 
 //    constructor from a T* but with a length specifier
     vecpointer(T* a, size_t n)
     {   data = a;
+    }
+
+//    constructor from a intptr_t
+    vecpointer(std::intptr_t a)
+    {   data = reinterpret_cast<T*>(a);
     }
 
 //    setsize() - a no-op in this case.
@@ -223,10 +197,6 @@ public:
     }
 
 //    operator=
-    vecpointer<T>& operator=(newvector<T>& a)
-    {   data = a.data;
-        return *this;
-    }
     vecpointer<T>& operator=(const vecpointer<T> a)
     {   data = a.data;
         return *this;
@@ -240,6 +210,11 @@ public:
 //    operator-(integer)
     vecpointer<T> operator-(std::ptrdiff_t n)
     {   return vecpointer<T>(data - n);
+    }
+
+//    operator-(vecpointer<T>)
+    std::ptrdiff_t operator-(vecpointer<T> a)
+    {   return data - (T*)a;
     }
 
 //    operator+= and operator-=
@@ -288,6 +263,11 @@ public:
     {   return data;
     }
 
+//    casts into intptr_t
+    operator std::intptr_t()
+    {   return reinterpret_cast<std::intptr_t>(data);
+    }
+
     operator void*()
     {   return static_cast<void*>(data);
     }
@@ -320,6 +300,12 @@ public:
 inline void lvector_assert(bool b)
 {   if (b) return;
     std::cerr << "\n+++ Access outside vector bound +++\n";
+    std::abort();
+}
+
+inline void lvector_assert(bool b, const char* msg)
+{   if (b) return;
+    std::cerr << "\n+++ " << msg << " +++\n";
     std::abort();
 }
 
@@ -356,9 +342,8 @@ public:
 template <typename T>
 class vecpointer
 {
-private:
-    vecpointerData<T>* data;
 public:
+    vecpointerData<T>* data;
 
 //    a default constuctor
     vecpointer()
@@ -383,8 +368,9 @@ public:
     }
 
 //    constructor from a T*
-    vecpointer(T* a)
-    {   data = new vecpointerData<T>(a, SIZE_MAX, 0);
+    template <typename S>
+    vecpointer(S* a)
+    {   data = new vecpointerData<T>(reinterpret_cast<T*>(a), SIZE_MAX, 0);
     }
 
 //    constructor from a T* but with a length specifier
@@ -395,6 +381,16 @@ public:
 //    constructor from a T* but with a length specifier and an offset
     vecpointer(T* a, size_t n, size_t o)
     {   data = new vecpointerData<T>(a, n, o);
+    }
+
+//    constructor from a uint64_t*
+    vecpointer(std::uint64_t* a)
+    {   data = new vecpointerData((T*)a, SIZE_MAX, 0);
+    }
+
+//    constructor from a intptr_t
+    vecpointer(std::intptr_t a)
+    {   data = new vecpointerData<T>(reinterpret_cast<T*>(a), SIZE_MAX, 0);
     }
 
 //    setsize() - may be useful in debug mode.
@@ -450,6 +446,13 @@ public:
         return vecpointer<T>(data->data, data->limit, nn);
     }
 
+//    operator-(vecpointer<T>)
+    std::ptrdiff_t operator-(vecpointer<T> a)
+    {   lvector_assert(data->data == a.data->data,
+                       "illegal difference between vectors");
+        return (data->offset - a.data->offset);
+    }
+
 //    operator+= and operator-=
     vecpointer<T>& operator+=(std::ptrdiff_t n)
     {   data->offset += n;
@@ -502,6 +505,11 @@ public:
 //    casts into T*
     operator T*()
     {   return &data->data[data->offset];
+    }
+
+//    casts into intptr_t
+    operator std::intptr_t()
+    {   return reinterpret_cast<std::intptr_t>(&data->data[data->offset]);
     }
 
     operator void*()

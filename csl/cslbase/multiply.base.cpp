@@ -11,61 +11,394 @@
 //    (3) N>1.5*M or M>1.5*N and the smaller is >7. Do a sequence of
 //        MxM multiplications until the residual N is small enough
 //        that a different case applies.
-//    (5) If N,M and less than another threshold do Karatsuba rather as if
-//        NxN. Because of the threshold I have a known bound on workspace
-//        needs so use fixed size stack allocated workspace.
-//    (6) Use 3-thread Karatsuba with workspace allocation via my
-//        "stkvector" scheme. Or 4-thread Toom32.
-//
-// Possibly consider Toom23 for some unbalanced cases. This would be based
-// on (a*x^2+b*x+c)*(d*x+e) having 4 digits in its result and obtaining those
-// via interpolation base on evaluations at 0, -1, +1 and infinity. The
-// idea here is that it would then be possible to guarantee that cases
-// proceeding beyound step 3 above would have the two numbers closer to
-// each other in length.
-
-// So the chain of functions goes
-//     generalMul(a, N, b, M, result)         entrypoint
-//       oneWordMul                           1*1
-//       smallCaseMul                         up to 7x7
-//       bigBySmallMul                        up to 7*x
-//       balancedMul                          8*8 to 14*14
-//       simpleMul                            classical method
-//       biggerMul                            as it says!
-// The oddest looking choice for a special case is that of 8*8 to 14*14.
-// I cite three use-cases for multiplications of equal sized numbers:
-// (1) Within an implementation of extended precision floating point;
-// (2) Modular arithmetic where the modulus is that large;
-// (3) Base cases for Karatsuba, where many of the sub-products are of
-//     equal-sized values and ones that are small enough not to call
-//     for further Karatsuba-style decomosition get caught here.
-//
-//     biggerMul(a, N, b, M, result)
-//       unbalancedMul                        3N > 2M
-//       threeByTwoMul
-//       kara
-//
-//     kara                                   N>=some threshold Ks
-//       kara                                 2 or 3 times
-//       generalMul
-//
-//     threeByTwoMul
-//       kara
-//       generalMul
+//    (5) If N,M and less than another threshold do Karatsuba.
+//    (6) Use 3-thread Karatsuba or 4-thread Toom32.
 //
 
+// So here is a more detailed commentary talking about the thresholds in
+// the treatment of large cases in extra detail.
+//
+// Suppose I am multiplying an N digit number by an M digit one with N>=M.
+// I can go classical which is straightforward and for small cases that is
+// good. But for the rest there are two other base schemes:
+//
+// I can go Karatsuba. That will use sub-digits of size D=ceiling(N/2) and
+// will demand that M>D at least since otherwise the high sub-digit of M
+// will be zero and by then use of Karatsuba is surely silly.
+// The calculation forms two products on D*D and one on (N-D)*(M-D). If
+// things start off even slightly unbalanced this last one is more so and
+// so eventually you should not use Karatsuba for it even N it is big.
+// But for reasonably balanced cases it is good. My estimates are that
+// I should use it up as far as N=1.25*M.
+//
+// Then I have Toom32 that multiplies a 3-digit number by a 2 digit one via
+// evaluation at 0, +1, -1 and infinity. The sub-digit size D must be
+// max((N+2)/3, (M+1)/2) to keep top sub-digits both in existence. So
+// the cost is then three products D*D and one of (N-2D)*(M-D).
+// That final product may be noticably out of balance if N is not very close
+// to 1.5M and I will discuss that later, it being a close relative of the
+// similar situation that arises in Karatsuba.
+//
+// So given arbitrary N,M where they are not the same value but are tolerably
+// close do I use Karatsuba or Toom32? And what do I do when N and M are
+// more widely different?
+//
+// My plan for a ramge of values of alpha=N/M (where wlog N>=M) will be
+//    1 <= alpha < 1.25      Karatsuba. 1 is the best case here
+//    1.25 <= alpha < 1.85    Toom32 where 1.5 is the best case
+//
+// So now I need to consider alpha >= 1.85.
+// I will split off the low 3M/2 digits and use Toom32 to form that
+/// part of the result - I am then left with the case (N-3M/2)*M. That
+// can be continued until N<3M/2, which I will write as alpha<1.5.
+// If alpha > 1.25 I will use a sub-optimal Toom32. For 0.85<alpha<1.25
+// I will use Karatsuba (with reversed arguments in the alpha<1 case).
+// Then if akpha > 0.54 (=1/1.85) I will use Toom32 with reversed arguments.
+// So we are left with alpha<0.54, otherwise M>1.85*N. I reverse the
+// arguments and continue until the I drop down to use of classical
+// methods. 
+//
+// In all this there is an issue of workspace allocation. And a top-level
+// use of either Toom32 or Karatsuba needs extra space because the recursive
+// calls that are made run concurrently so each need separate space.
+// But for all the recursive calls things are nicer and I can use and
+// re-use space.
+// I have made several attempts to chart how much will be used but the
+// interaction between levels of call and the fact that when I "halve" the
+// size of a number there has to be rounding when that number is of odd
+// length make that messy enough that anything I come up with using
+// calculation will not be a sharp bound and will be very fragile against
+// small changes in the code. So I will work empirically. For multiplications
+// of N*M with N>=M I will have (at the end of this file) some code that
+// if MEASURE_WORKSPACE is defined runs comprehensive tests for N and M up
+// to some threshold (initially 2000) and assesses workspace use relative
+// to the smaller of those. I wish to observe both assymptotic behaviour and
+// smaller cases (I will only worry about N>=M>7) so that I can allow for
+// both. While I am doing that I disable the top-level distribution of work
+// into threads.
 
-// I hide almost all of the functions here as private within this
-// class as a way of controlling the namespace and also so that
-// if some of the functions are only used once there is a chance for
-// compilers to notice this fact.
+inline std::size_t worstN = 0;
+inline std::size_t worstM = 0;
+inline std::size_t thisN = 0;
+inline std::size_t thisM = 0;
+inline double worstRatio = 0.0;
+inline DigitPtr workspaceBase;
 
 #include <atomic>
 
+// When I get to big-integer multiplication I will use two or three
+// worker threads so that elapsed times for really large multiplications
+// are reduced somewhat. Well ideally by a factor approaching 3. I set up
+// a framework of support for the threads here. A main program thread will
+// want its own worker threads here. Each worker thread gets passed a
+// nice object called "worker_data" that encapsulates the way it receives
+// data from the caller and passes results back.
+
+// Each worker thread needs some data that it shares with the main thread.
+// this structure encapsulates that.
+
+// Probably the most "official" way to coordinate threads would be to use
+// condition variables, but doing so involves several synchronization
+// primitives for each step of the transaction. For the simple level of
+// coordination I need here it would be more costly that necessary. I can
+// manage here with a scheme that when thread A want to allow thread B to
+// proceed it unlocks a mutex that thread B was waiting on. There is some
+// mess associated with ensuring that the main thread waits for results and
+// that there are no race situations where all threads compete for a single
+// mutex.
+//
+// There are 4 mutexes for each worker thread, but each synchronization step
+// just involves a single mutex, transferring ownership between main and worker
+// thread. Here is the patter of transfer and subsequent ownership, with "?"
+// marking a muxex that has been waiting and the ">n" or <n" in the middle
+// also showing which muxex has just been activated:
+//       X  X  .  .         ?  .  X  X    Idle state. Worker waiting on mutex 0
+// To start a transaction the main thread sets up data and unlocks mutex 0.
+// That allows the worker to proceed and pick up the data.
+//       .  X  .  .   >0    ?X .  X  X    first transaction
+// The main thread must not alter data until the worker is finished. It waits
+// on mutex 1 until the worker tells it that a result is available.
+//       .  X ?X  .   <2    X  .  .  X
+// The main thread is now entitles to start using the results of the activity
+// just completed and setting up data for the next one. It can not release
+// mutex 0 to restart the worker because the worker alread owns that. And even
+// though it owns mutex 2 it had better not release that, because for that
+// to make sense the worker would need to be waiting on it, and that would mean
+// the worker had just done m3.unlock(); m3.lock() in quick succesion, which
+// might have led it to grab m3 rather than the main program managing to. So
+// use the third mutex, which the worker must be waiting on.
+//       .  .  X  .   >1    X ?X  .  X    second transaction
+// When it has finished its task the worker now unlocks mutex 3. This leaves
+// a situation symmetric with the initial one
+//       .  .  X ?X   <3    X  X  .  .
+//       .  .  .  X   >2    X  X  ?X .    third transaction
+//       ?X .  .  X   <0    .  X  X  .
+//       X  .  .  .   >3    .  X  X ?X    fourth transaction
+//       X ?X  .  .   <1    .  .  X  X    back in initial configuration!
+//
+// The pattern is thus that the master goes
+//  [initially lock 0 and 1]
+//  unlock 0  wait 2
+//  unlock 1  wait 3
+//  unlock 2  wait 0
+//  unlock 3  wait 1
+// while the worker goes
+//  [initially lock 2 and 3]
+//  wait 0    unlock 2
+//  wait 1    unlock 3
+//  wait 2    unlock 0
+//  wait 3    unlock 1
+// Observe that I can use (n^2) to map between the mutex number in the first
+// and second columns here. That counting is what send_count and
+// receive_count are doing.
+
+// In a nice world I would use just the C++ std::mutex scheme for
+// synchronization, however here I am performance critical and to save
+// a bit when performing medium-sized multiplications I will use the
+// Microsoft version of mutexes directly on that platform.
+
+#if defined __CYGWIN__ || defined __MINGW32__
+
+// It is possible that SRW locks have lower overhead than Mutex. So I will
+// use them, but have an "#ifdef" so I can revert if needbe.
+
+#define USE_MICROSOFT_SRW 1
+
+#ifndef USE_MICROSOFT_SRW
+#define USE_MICROSOFT_MUTEX 1
+#endif // USE_MICROSOFT_SRW
+
+// Going "#include <windows.h>" pollutes the name-space rather heavily
+// and so despite it being somewhat despicable I declare the rather small
+// number of things I need by hand. Note that some of the issues are
+// macros rather than extern definitions, so it is not obvious that
+// C++ "namespace" treatment can make things nice for me.
+
+extern "C"
+{
+struct SecApp
+{   std::uintptr_t nLength;
+    void* lpSecurityDescriptor;
+    int bInheritHandle;
+};
+
+typedef struct _RTL_SRWLOCK { void* Ptr; } RTL_SRWLOCK,*PRTL_SRWLOCK;
+#define RTL_SRWLOCK_INIT {0}
+#define SRWLOCK_INIT RTL_SRWLOCK_INIT
+typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
+
+extern __declspec(dllimport) void InitializeSRWLock (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void ReleaseSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) void AcquireSRWLockShared (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockExclusive (PSRWLOCK SRWLock);
+extern __declspec(dllimport) bool TryAcquireSRWLockShared (PSRWLOCK SRWLock);
+
+extern __declspec(dllimport)  void* 
+    CreateMutexA(SecApp* , std::uintptr_t, const char* );
+extern __declspec(dllimport) int CloseHandle(void* h);
+extern __declspec(dllimport) int ReleaseMutex(void* m);
+extern __declspec(dllimport) void* 
+    WaitForSingleObject(void* , std::uintptr_t);
+inline const long unsigned int MICROSOFT_INFINITE = 0xffffffff;
+
+};   // end of extern "C" scope.
+
+#endif // __CYGWIN__ or __MINGW32__
+
+class WorkerData
+{
+public:
+    int which;
+    std::atomic<bool> ready;
+#if defined USE_MICROSOFT_SRW
+    SRWLOCK mutex[4];
+#elif defined USE_MICROSOFT_MUTEX
+    void* mutex[4];
+#else // The final case is C++ std::mutex
+    std::mutex mutex[4];
+#endif // end of mutex selection
+    bool quit_flag;
+
+    ConstDigitPtr a;   std::size_t lena;
+    ConstDigitPtr b;   std::size_t lenb;
+    DigitPtr c;
+    DigitPtr w;
+
+// When I construct an instance of Worker data I set its quit_flag to
+// false and lock two of the mutexes. That sets things up so that when
+// it is passed to a new worker thread that thread behaves in the way I
+// want it to.
+    WorkerData()
+    {   ready = false;
+        quit_flag = false;
+#if defined USE_MICROSOFT_SRW
+        InitializeSRWLock(&mutex[0]);
+        InitializeSRWLock(&mutex[1]);
+        AcquireSRWLockExclusive(&mutex[0]);
+        AcquireSRWLockExclusive(&mutex[1]);
+        InitializeSRWLock(&mutex[2]);
+        InitializeSRWLock(&mutex[3]);
+#elif defined USE_MICROSOFT_MUTEX
+        mutex[0] = CreateMutexA(NULL, 1, NULL);
+        mutex[1] = CreateMutexA(NULL, 1, NULL);
+        mutex[2] = CreateMutexA(NULL, 0, NULL);
+        mutex[3] = CreateMutexA(NULL, 0, NULL);
+#else // use C++ std::mutex
+// The next two must be locked by the main thread.
+        mutex[0].lock();
+        mutex[1].lock();
+#endif // Mutexes now initialized and locked as needed
+    }
+    void setWhich(int n)
+    {   which = n;
+    }
+#ifdef USE_MICROSOFT_MUTEX
+    ~WorkerData()
+    {   CloseHandle(mutex[0]);
+        CloseHandle(mutex[1]);
+        CloseHandle(mutex[2]);
+        CloseHandle(mutex[3]);
+    }
+#endif // USE_MICROSOFT_MUTEX
+};
+
+// Then each main thread will have a structure that encapsulated the
+// worker threads that it ends up with and the data it sets up for
+// them and that they then access. When this structures is created it will
+// cause the worker threads and the data block they need to be constructed.
+
+inline void workerThread(WorkerData* wd);
+
+class DriverData
+{
+public:
+    int        send_count = 0;
+    int        send_count2 = 0;
+    WorkerData wd_0,
+               wd_1,
+               wd_2;
+// When the instance of DriverData is created the three sets of WorkerData
+// get constructed with two of their mutexes locked. This will mean that when
+// worker threads are created and start running they will politely wait for
+// work.
+
+    std::thread w_0, w_1, w_2;
+    DriverData()
+    {   wd_0.setWhich(0);
+        wd_1.setWhich(1);
+        wd_2.setWhich(2);
+        w_0 = std::thread(workerThread, &wd_0),
+        w_1 = std::thread(workerThread, &wd_1);
+        w_2 = std::thread(workerThread, &wd_2);
+// I busy-wait until all the threads have both claimed the mutexes that they
+// need to own at the start! Without this the main thread may post a
+// multiplication, so its part of the work and try to check that the worker
+// has finished (by claiming one of these mutexes) before the worker thread
+// has got started up and has claimed them. This feels clumsy, but it only
+// happens at system-startup.
+        while (!wd_0.ready.load() &&
+               !wd_1.ready.load() &&
+               !wd_2.ready.load())
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
+    }
+
+// When the DriverData object is to be destroyed it must arrange to
+// stop and then join the two threads that it set up. This code that sends
+// a "quit" message to each thread will be executed before the thread object
+// is deleted, and the destructor of the thread object should be activated
+// before that of the WorkerData and the mutexes within that.
+
+    ~DriverData()
+    {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
+        releaseWorkers(true);
+        w_0.join();
+        w_1.join(); // These calls to join wait for the threads to shut down.
+        w_2.join();
+    }
+
+// Using the worker threads is then rather easy: one sets up data in
+// the WorkerData structures and then call releaseWorkers(). Then
+// you can do your own thing in parallel with the two workers picking up
+// the tasks that they had been given. When you are ready you call
+// wait_for_workers() which does what one might imagine, and the workers
+// are expected to have left their results in the WorkerData object so
+// you can find it.
+
+    void releaseWorkers(bool third)
+    {
+#if defined USE_MICROSOFT_SRW
+        ReleaseSRWLockExclusive(&wd_0.mutex[send_count]);
+        ReleaseSRWLockExclusive(&wd_1.mutex[send_count]);
+        if (third) ReleaseSRWLockExclusive(&wd_2.mutex[send_count2]);
+#elif defined USE_MICROSOFT_MUTEX
+        ReleaseMutex(wd_0.mutex[send_count]);
+        ReleaseMutex(wd_1.mutex[send_count]);
+        if (third) ReleaseMutex(wd_2.mutex[send_count2]);
+#else // use std::mutex
+        wd_0.mutex[send_count].unlock();
+        wd_1.mutex[send_count].unlock();
+        if (third) wd_2.mutex[send_count2].unlock();
+#endif // mutexed unlocked
+    }
+
+    void wait_for_workers(bool third)
+    {
+#if defined USE_MICROSOFT_SRW
+        AcquireSRWLockExclusive(&wd_0.mutex[send_count^2]);
+        AcquireSRWLockExclusive(&wd_1.mutex[send_count^2]);
+        if (third) AcquireSRWLockExclusive(&wd_2.mutex[send_count2^2]);
+#elif defined USE_MICROSOFT_MUTEX
+// WaitForSingleObject takes a timeout limit measured in milliseconds as
+// its second argument. I will allow waits of up to 2 seconds. There
+// should be a response by then since the workere are just performing a
+// multiplication and at all plausible number-sizes 2 seconds is plenty
+// even on slow computers. The main case where there could be
+// failure here would be when running under a debugger and with one
+// of the worker threads being subject to breaks or single stepping.
+        WaitForSingleObject(wd_0.mutex[send_count^2], MICROSOFT_INFINITE);
+        WaitForSingleObject(wd_1.mutex[send_count^2], MICROSOFT_INFINITE);
+        if (third) WaitForSingleObject(wd_2.mutex[send_count2^2], MICROSOFT_INFINITE);
+#else // use std::mutex
+        wd_0.mutex[send_count^2].lock();
+        wd_1.mutex[send_count^2].lock();
+        if (third) wd_2.mutex[send_count2^2].lock();
+#endif // synchronized
+        send_count = (send_count+1)&3;
+        if (third) send_count2 = (send_count2+1)&3;
+    }
+};
+
+// Even if there are multiple user threads I will only have a single
+// instance of DriverData and hence I will always have just three
+// worker threads. If multiple threads all call generalMul at (almost) the
+// same time a compare-and-exchange operation arranges that only one of
+// them gets to offload parts of the multiplication work to those worker
+// threads and the others work sequentially. This allows me to have a fixed
+// number of worker threads.
+
+static DriverData driverData;
+
+class ManageWorkers
+{
+public:
+    static std::atomic<bool> threadsInUse;
+    bool mayUseThreads;
+    ManageWorkers()
+    {   bool expected = false;
+        mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
+#ifdef MEASURE_WORKSPACE
+        mayUseThreads = false;
+#endif // MEASURE_THREADS
+   }
+    ~ManageWorkers()
+    {   if (mayUseThreads) threadsInUse.store(false);
+    }
+};
+
 class BigMultiplication
 {
-
-public:
 
 // I need some commentary about this! I have three worker threads
 // available and a multiplication can decompose either a 2N by 2N
@@ -89,22 +422,95 @@ public:
 // the value in the memory is the "expected" one. This can lead the
 // compare_exchange to report failure even in a case that could have been
 // deemed a success. With low contention this will hardly ever happen!
-
-class ManageWorkers
-{
-public:
-    static std::atomic<bool> threadsInUse;
-    bool mayUseThreads;
-    ManageWorkers()
-    {   bool expected = false;
-        mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
-    }
-    ~ManageWorkers()
-    {   if (mayUseThreads) threadsInUse.store(false);
-    }
-};
+// But here the worst possible consquence is that the code will drop back
+// to do sub-multiplcations sequentially and quite possibly one of those
+// will succeed in the compare_exchange and use concurrency only starting
+// at its level.
 
 private:
+
+// Multiplications where M and N are both no more than than 7
+// are done by unrolled and inlined special code.
+// From when the larger is at least KARASTART I will use Karatsuba,
+// and from KARABIG on it will not be just Karatsuba but the top
+// level decomosition will be run using three threads. Also up as
+// far as KARABIG I will use some stack allocated space while from
+// there up I will use my "stkvector" scheme so that there is no
+// serious limit to the amount that can be used.
+
+static const std::size_t MUL_INLINE_LIMIT = 7;
+
+#ifdef START
+static const std::size_t KARASTART        = START;
+#else
+static const std::size_t KARASTART        = 15;
+#endif
+
+// I want the "half sized" multiplications to be large enough that
+// there is no need to try the heavily inlined tiny-case code. I want
+// this to apply to Toom as well.
+
+static_assert((KARASTART+1)/2 > 7);
+
+#ifdef BIG
+static const std::size_t KARABIG          = BIG;
+#else
+static const std::size_t KARABIG          = 6000;
+#endif
+
+// Beyond the classical multiplication I have kara and toom32 and
+// each of those has constraints on valid and on desirable input number
+// lengths.
+
+// kara() is only valid if M is bigger than half N so that when
+// its second argument is split in two there is some data in the
+// high part.
+
+static bool karaValid(size_t N, size_t M)
+{   return N>=M && M>((N+1)/2);
+}
+
+// This test assumes that the call to kara() will be valid but provides
+// a threshold to unbalance between the input number sizes beyond which
+// a different scheme should be used.
+
+static bool karaSensible(size_t N, size_t M)
+{   return 4*N <= 5*M;
+}
+
+// For toom32() to be valid it must be that when it selects a
+// part-digit size L that the first argument fits in 3 chunks and the
+// second in two.
+
+static bool toom32Valid(size_t N, size_t M)
+{   size_t L=std::max((N+2)/3, (M+1)/3);
+    return N>2*L && M>L && M<2*L;
+}
+
+// The test code activated via MEASURE_WORKSPACE shows that the
+// amount of workspace is bounded by 5>M where M is the smaller of
+// the two number-lengths - at least over comprehensive testing of
+// a great meny small to fairly large cases.
+
+static std::size_t workspaceSize(std::size_t M)
+{   return 5*M;
+}
+
+// For multiplying where N > 1.85*M it would be better to do two
+// uses of Karatsuba rather than one Toom32. For N<M.25M a single
+// Karatsuba would be better. 
+
+static bool toom32Sensible(size_t N, size_t M)
+{   return 20*N <= 37*M && !karaSensible(N, M);
+}
+
+// When I am multiplying with sized N and M I want to carve off
+// a sub-product of size (N',M) with N' as large as I can such as it
+// takes full advantage of toom32. This tells me the size to use.
+
+static size_t toom32IdealSize(size_t M)
+{    return 3*((M+1)/2);
+}
 
 // Set (hi,lo) to the 128-bit product of a by b.
 
@@ -133,18 +539,11 @@ static void oneWordMul(std::uint64_t a, std::uint64_t b,
     lo = static_cast<std::uint64_t>(r);
 }
 
-// The version here has to have N>=M but given that the loops on i
-// all have a simpler starting condition and a single test for their
-// end condition. Here is a fine case where a "sufficiently smart compiler"
-// could take the above commented out code and split the loop into three
-// just as I have done here. But until that is available I make
-// transformations of this sort for myself.
+public:
 
 // verySimpleMul exists ONLY for testing - specifically to generate
 // reference products that the output from other more complicated code
 // can be compared against.
-
-public:
 
 static void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           ConstDigitPtr b, std::size_t M,
@@ -271,29 +670,6 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 }
 
 
-// Multiplications where M and N are both no more than than 7
-// are done by unrolled and inlined special code.
-// From when the larger is at least KARASTART I will use Karatsuba,
-// and from KARABIG on it will not be just Karatsuba but the top
-// level decomosition will be run using three threads. Also up as
-// far as KARABIG I will use some stack allocated space while from
-// there up I will use my "stkvector" scheme so that there is no
-// serious limit to the amount that can be used.
-
-static const std::size_t MUL_INLINE_LIMIT = 7;
-
-public:
-#ifdef START
-static const std::size_t KARASTART        = START;
-#else
-static const std::size_t KARASTART        = 15;
-#endif
-
-#ifdef BIG
-static const std::size_t KARABIG          = BIG;
-#else
-static const std::size_t KARABIG          = 60;
-#endif
 private:
 
 // Now I want code for multiplying N*M digit numbers with N up to some
@@ -328,95 +704,7 @@ static Digit addMdigits(ConstDigitPtr a, std::size_t M, DigitPtr result, std::si
     return carry;
 }
 
-public:
-
-// Some of the functions here have are tempalated with a boolean
-// called "thread". When this is true the code is entitled to cause
-// worker threads to be launched to perform subsidiary multiplications.
-// The multi-thread decomposition may only happen once, and that is enforced
-// by making thread=false for all the lower level calls.
-
-// Now the main entrypoint to my new code for multiplying
-// unsigned values. It tries to put simple cheap tests to spot
-// cheap cases inline and then dispatch to the separate procedures
-// that apply in each case.
-// The small cases covered here are liable to get expanded in line
-// in rather extreme manners!
-
-[[gnu::always_inline]]
-static void generalMul(ConstDigitPtr a, std::size_t N,
-                       ConstDigitPtr b, std::size_t M,
-                       DigitPtr result)
-{
-// I take a view that case of single word multiplication as both so
-// special and so important that I do that in-line here.
-    if ((N|M) == 1)
-    {   oneWordMul(a[0], b[0], 0, result[1], result[0]);
-        return;
-    }
-// I next have special treatment for all the cases where both M and N are
-// at most 7. I make the cut off there because I can test if either N
-// or M exceeds the bound using a bitwide OR here which I expect to be
-// nice and cheap! Also because I expect small cases like this to be
-// especially commonly used, and to be ones where loop overheads might
-// intrude.
-    if ((N|M) <= 7)
-    {   LIKELY
-        smallCaseMul(a, N, b, M, result);
-        return;
-    }
-    if (N < M)
-    {   std::swap(a, b);
-        std::swap(N, M);
-    }
-// If the smaller number is fairly small I again use classical long
-// multiplication, but with the inner loop unrolled.
-    if (M <= 7)
-    {   bigBySmallMul(a, N, b, M, result);
-        return;
-    }
-    if (N < KARASTART)    // Too small for Karatsuba.
-    {   if (N==M && N<=14) balancedMul(a, b, N, result);
-        else simpleMul(a, N, b, M, result);
-    }
-    else biggerMul(a, N, b, M, result);
-}
-
-private:
-
-template <bool threads>
-[[gnu::always_inline]]
-static void unbalancedMul(ConstDigitPtr a, std::size_t N,
-                          ConstDigitPtr b, std::size_t M,
-                          DigitPtr result)
-{
-// Here N is (much) bigger than M
-    generalMul(a, M, b, M, result);
-    N -= M;
-    a += M;
-    result += M;
-    stkvector<Digit> temp(M);
-    while (2*N > 3*M)
-    {   std::memcpy(temp, result, M*sizeof(Digit));
-        generalMul(a, M, b, M, result);
-// Now add M digits from temp into the 2M digit number in result. There
-// can not be an overflow.
-        addMdigits(temp, M, result, 2*M);
-        N -= M;
-        a += M;
-        result += M;
-    }
-    if (N != 0)
-    {   std::memcpy(temp, result, M*sizeof(Digit));
-        generalMul(a, N, b, M, result);
-// Now add M digits from temp into the M+N digit number in result. There
-// can not be an overflow.
-        addMdigits(temp, M, result, M+N);
-    }
-}
-
-// Some sub-functions that I will need that add, subtract and halve
-// integers and arrange associated carries and borrows.
+// result = a + b with a carry-in
 
 [[gnu::always_inline]]
 static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
@@ -440,6 +728,8 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
     return carry;
 }
 
+// result = a + b
+
 [[gnu::always_inline]]
 static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
                      ConstDigitPtr b, std::size_t lenB,
@@ -447,6 +737,7 @@ static Digit karaAdd(ConstDigitPtr a, std::size_t lenA,
 {   return karaAdd(a, lenA, b, lenB, 0, result);
 }
 
+// result = a - b
 
 [[gnu::always_inline]]
 static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
@@ -470,10 +761,12 @@ static Digit karaSubtract(ConstDigitPtr a, std::size_t lenA,
     return borrow;
 }
 
+// result = b - a;
+
 [[gnu::always_inline]]
 static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
-                          ConstDigitPtr b, std::size_t lenB,
-                          DigitPtr result)
+                             ConstDigitPtr b, std::size_t lenB,
+                             DigitPtr result)
 {   Digit borrow = 0;
 #ifdef DEBUG
     assert(lenA >= lenB);
@@ -492,6 +785,8 @@ static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
     return borrow;
 }
 
+// Propogate a carry.
+
 [[gnu::always_inline]]
 static void karaCarry(Digit carry, DigitPtr v)
 {   size_t i = 0;
@@ -501,6 +796,8 @@ static void karaCarry(Digit carry, DigitPtr v)
     }
 }
 
+// Propogate a borrow.
+
 [[gnu::always_inline]]
 static void karaBorrow(Digit borrow, DigitPtr v)
 {   size_t i = 0;
@@ -509,6 +806,9 @@ static void karaBorrow(Digit borrow, DigitPtr v)
         i++;
     }
 }
+
+// This divides a value by 2, where the value has a signed top digit
+// and a vector of unsigned additional digits.
 
 static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
 {   Digit carry = top & 1;
@@ -520,214 +820,6 @@ static SignedDigit karaHalve(SignedDigit top, DigitPtr a, std::size_t len)
     }
     a[0] = (a[0]>>1) | (carry<<63);
     return top/2;
-}
-
-// I have special code for multiplying N*M numbers when N is about
-// 1.5 times M. This splits the big number into 3 chunks and the
-// smaller into two.
-
-// Here is a description of the procedure in nice readable compact form.
-//
-// a := ahigh*x^2 + amid*x + alow;
-// b :=            bhigh*x + blow;
-//
-// x^3 * (ahigh*bhigh) +
-// x^2 * (ahigh*blow + amid*bhigh) +
-// x   * (alow*bhigh + amid*blow) +
-//       (alow*blow)
-//
-// asum := ahigh+amid+alow;
-// bsum := bhigh+blow;
-// adiff := ahigh-amid+alow;
-// bdiff := blow-bhigh;
-// p0 := alow*blow;
-// p1 := asum*bsum;
-// p2 := adiff*bdiff;
-// p3 := ahigh*bhigh;
-//
-// d0 := p0;                         alow*blow
-// d1 := (p1 - p2)/2 - p3;           alow*bhigh + amid*blow
-// d2 := (p1 + p2)/2 - p0;           ahigh*blow + amid*bhigh
-// d3 := p3;                         ahigh*bhigh
-
-// This divides a value by 2, where the value has a signed top digit
-// and a vector of unsigned additional digits.
-
-template <bool thread=false>
-static void threeByTwoMul(ConstDigitPtr a, std::size_t N,
-                          ConstDigitPtr b, std::size_t M,
-                          DigitPtr c)
-{
-// I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
-// where amid, alow, blow all have the same size (toomLen). Then
-// ahigh and bhigh need to have at least some digits but may not have more
-// then toomLen.
-// I let a(t) = ahigh*t^2 + anid*t + alow and b(t) - bhigh*t + blow.
-// then I evaluate a() and b() at 0, +1, -1 and infinity - and I can
-// interpolate through products of those values to get digits for my result.
-// A classical 3x2 multiplication would use 6 partial products - this uses
-// just 4 but obviously a bunch of extra additions and subtractions together
-// with some general overhead. 
-    size_t toomLen = (M+1)/2;
-    size_t lenALow = toomLen;
-    size_t lenAMid = toomLen;
-    assert(N > 2*toomLen);
-    size_t lenAHigh = N-2*toomLen;
-    assert(lenAHigh <= toomLen);
-    size_t lenBLow = toomLen;
-    size_t lenBHigh = M-toomLen;
-    ConstDigitPtr aLow = a;
-    ConstDigitPtr aMid = a + toomLen;
-    ConstDigitPtr aHigh = aMid + toomLen;
-    ConstDigitPtr bLow = b;
-    ConstDigitPtr bHigh = b + toomLen;
-// Now we have
-//     a = (aHigh*B^2, aMid*B, aLow)
-//     b = (bHigh*B, bLow)
-// and I will need to compute
-//     aSum = aHigh + aMid + Alow   (c = 0, 1, 2)
-//     bSum = bHigh + blow          (c = 0, 1)
-// and
-//     aDiff = aHigh - aMid + aLow  (c = -1, 0, 1)
-//     bDiff = bLow - bHigh         (c = 0, -1)
-//
-// Next
-//     P0 = aLow*bLow
-//     P1 = aSum*bSum
-//     P2 = aDiff*bDiff
-//     P3 = aHigh*bHigh
-// I will use the result space as workspace to start with.
-    DigitPtr P0 = c;
-    DigitPtr P1 = c;                 SignedDigit P1Top;
-    stkvector<Digit> D1(thread ? 8*toomLen :4*toomLen); SignedDigit D1Top;
-    DigitPtr D2 = D1 + 2*toomLen;    SignedDigit D2Top; 
-    DigitPtr P2 = c + 2*toomLen;     SignedDigit P2Top; 
-    DigitPtr P3 = c + 3*toomLen;
-    if constexpr (thread)
-    {   P2 = D1 + 4*toomLen;
-        P3 = D1 + 6*toomLen;
-    }
-    DigitPtr aSum = D1;              Digit aSumTop;
-    DigitPtr aDiff = D1 + toomLen;   SignedDigit aDiffTop;
-    DigitPtr bSum = D2;              Digit bSumTop;
-    DigitPtr bDiff = D2 + toomLen;   SignedDigit bDiffTop; 
-    aSumTop = karaAdd(aLow, toomLen, aHigh, lenAHigh, aSum);
-    aDiffTop = aSumTop - karaSubtract(aSum, toomLen, aMid, toomLen, aDiff);
-    aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
-    bSumTop = karaAdd(bLow, toomLen, bHigh, lenBHigh, bSum);
-    bDiffTop = -karaSubtract(bLow, toomLen, bHigh, lenBHigh, bDiff);
-    if constexpr (thread)
-    {   setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1);
-        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2);
-// In this case to use all available threads I will be computing P0 and P3
-// now. That means I can not use their memory as workspace, which is
-// what I do in the purely sequential case.
-        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0);
-        driverData.releaseWorkers(true);
-            generalMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
-        driverData.wait_for_workers(true);
-    }
-    else
-    {   generalMul(aSum, toomLen, bSum, toomLen, P1);
-//      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
-        generalMul(aDiff, toomLen, bDiff, toomLen, P2);
-//      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
-// noting that aDiffTop and bDiffTop are signed values.
-    }
-    P1Top = 0;
-    switch (aSumTop)
-    {   case 2:
-            P1Top = karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-            [[fallthrough]];
-        case 1:
-            P1Top += karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-            break;
-        case 0:
-            break;
-    }
-    if (bSumTop != 0)
-        P1Top += karaAdd(aSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-    P1Top += aSumTop*bSumTop;   
-    P2Top = 0;
-    switch (aDiffTop)
-    {   case 1:
-            P2Top = karaAdd(bDiff, toomLen, P2+toomLen, toomLen, P2+toomLen);
-            break;
-        case -1:
-            P2Top = -karaSubtract(P2+toomLen, toomLen,
-                                  bDiff, toomLen, P2+toomLen);
-            break;
-        case 0:
-            break;
-    }        
-    switch (bDiffTop)
-    {   case -1:
-            P2Top -= karaSubtract(P2+toomLen, toomLen,
-                                  aDiff, toomLen, P2+toomLen);
-        break;
-    }
-    P2Top += aDiffTop*bDiffTop;   
-// Now set D1 = P1-P2, D2=P1+P2
-    D1Top = P1Top - P2Top - karaSubtract(P1, 2*toomLen, P2, 2*toomLen, D1);
-    D2Top = P1Top + P2Top + karaAdd(P1, 2*toomLen, P2, 2*toomLen, D2);
-// Halve both of these
-    D1Top = karaHalve(D1Top, D1, 2*toomLen);
-    D2Top = karaHalve(D2Top, D2, 2*toomLen);
-    if constexpr (thread) // These already computed in the threaded version
-    {   generalMul(aLow, toomLen, bLow, toomLen, P0);
-        generalMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
-    }
-// I need to D1 -= P3; D2 -= P0;
-    D1Top -= karaSubtract(D1, 2*toomLen, P3, lenAHigh+lenBHigh, D1);
-    D2Top -= karaSubtract(D2, 2*toomLen, P0, 2*toomLen, D2);
-// Now to assemble the final result I just need to cope with the fact
-// the the partial products P0, D1, D1 and P3 overlap.
-// So now I have
-//   c:     P3hi  P3lo   xxx   P0Hi P0Lo
-//                D1Top  D1Hi  D1Lo
-//          D2Top D2Hi   D2Low
-    Digit carry = karaAdd(D1, toomLen,            // D1Lo
-                          c+toomLen, toomLen,     // P0Hi
-                          c+toomLen);
-    carry = karaAdd(D1+toomLen, toomLen,          // D1Hi
-                    D2, toomLen, carry,           // D2Lo
-                    c+2*toomLen);
-    carry = karaAdd(D2+toomLen, toomLen,          // D2Hi
-                    c+3*toomLen, toomLen, carry,  // P3Lo
-                    c+3*toomLen);
-    // karaCarry(carry, c+4*toomLen); by adding carry into D2Top I do this
-    D2Top += carry;
-// I need to merge in D1Top and D2TOP. Note that either could be positive
-// or negative, and that is part of why I did not merge them in earlier.
-    if (D1Top > 0)      karaCarry(D1Top, c+3*toomLen);
-    else if (D1Top < 0) karaBorrow(-D1Top, c+3*toomLen);
-    if (D2Top > 0)      karaCarry(D2Top, c+4*toomLen);
-    else if (D2Top < 0) karaBorrow(-D2Top, c+4*toomLen);
-}
-
-static void biggerMul(ConstDigitPtr a, std::size_t N,
-                      ConstDigitPtr b, std::size_t M,
-                      DigitPtr result)
-{   ManageWorkers manager;
-// Now manager.mayUseThreads will be true if I am allowed to use the
-// worker threads.
-//
-// Now look at out-of balance cases. Here I take the view that if N>1.5M
-// I will hive off square multiplications as much as I can. They will each
-// be MxM so I need M space to keep some digits already computed that I
-// will need to combine with the output from the next square multiply.
-#ifdef DEBUG_TIMES
-    display("\na", a, N);
-    display("\nb", b, M);
-#endif // DEBUG_TIMES
-    if (2*N > 3*M)
-    {   if (manager.mayUseThreads) unbalancedMul<true>(a, N, b, M, result);
-        else unbalancedMul<false>(a, N, b, M, result);
-    }
-// Karatsuba cases here.
-    else if (N < KARABIG || !manager.mayUseThreads)
-        kara<false>(a, N, b, M, result);
-    else kara<true>(a, N, b, M, result);
 }
 
 [[gnu::always_inline]]
@@ -815,45 +907,492 @@ static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
     }
 }
 
+//=========================================================================
+
+// Some of the functions here have are templated with a boolean
+// called "thread". When this is true the code is entitled to cause
+// worker threads to be launched to perform subsidiary multiplications.
+// The multi-thread decomposition may only happen once, and that is enforced
+// by making thread=false for all the lower level calls.
+
+// Now the main entrypoint to my new code for multiplying
+// unsigned values. It tries to put simple cheap tests to spot
+// cheap cases inline and then dispatch to the separate procedures
+// that apply in each case.
+// The small cases covered here are liable to get expanded in line
+// in rather extreme manners!
+
+public:
+
+[[gnu::always_inline]]
+static void generalMul(ConstDigitPtr a, std::size_t N,
+                       ConstDigitPtr b, std::size_t M,
+                       DigitPtr result)
+{
+#ifdef MEASURE_WORKSPACE
+//@@    std::cout << N << "*" << M << ". ";
+    thisN = N;
+    thisM = M;
+#endif // MEASURE_WOREKSPACE
+// I take a view that case of single word multiplication as both so
+// special and so important that I do that in-line here.
+    if ((N|M) == 1)
+    {   oneWordMul(a[0], b[0], 0, result[1], result[0]);
+        return;
+    }
+// I next have special treatment for all the cases where both M and N are
+// at most 7. I make the cut off there because I can test if either N
+// or M exceeds the bound using a bitwide OR here which I expect to be
+// nice and cheap! Also because I expect small cases like this to be
+// especially commonly used, and to be ones where loop overheads might
+// intrude.
+    if ((N|M) <= 7)
+    {   LIKELY
+        smallCaseMul(a, N, b, M, result);
+        return;
+    }
+    if (N < M)
+    {   std::swap(a, b);
+        std::swap(N, M);
+    }
+// If the smaller number is fairly small I again use classical long
+// multiplication, but with the inner loop unrolled.
+    if (M <= 7)
+    {   bigBySmallMul(a, N, b, M, result);
+        return;
+    }
+    if (M < KARASTART)    // Too small for Karatsuba.
+    {   if (N==M && N<=14) balancedMul(a, b, N, result);
+        else simpleMul(a, N, b, M, result);
+    }
+    else biggerMul(a, N, b, M, result);
+}
+
+private:
+
+static void biggerMul(ConstDigitPtr a, std::size_t N,
+                      ConstDigitPtr b, std::size_t M,
+                      DigitPtr result)
+{   ManageWorkers manager;
+// Now manager.mayUseThreads will be true if I am allowed to use the
+// worker threads.
+//
+// Now look at out-of balance cases. Here I take the view that if N>1.5M
+// I will hive off toom32 multiplications as much as I can. They will each
+// be (3*M)/2xM and I need M space to keep some digits already computed that I
+// will need to combine with the output from the next square multiply.
+#ifdef TRACE_TIMES
+    display("\na", a, N);
+    display("\nb", b, M);
+#endif // TRACE_TIMES
+    if (4*N <= 5*M)
+    {   stkvector<Digit> workspace(1000000); // @@@
+#ifdef MEASURE_WORKSPACE
+        workspaceBase = workspace;
+#endif // MEASURE_WORKSPACE
+        if (N < KARABIG || !manager.mayUseThreads)
+            kara(a, N, b, M, result, workspace);
+        else kara<true>(a, N, b, M, result, workspace);
+    }
+    else if (20*N <= 37*M)
+    {   stkvector<Digit> workspace(1000000); // @@@
+#ifdef MEASURE_WORKSPACE
+        workspaceBase = workspace;
+#endif // MEASURE_WORKSPACE
+        if (N < KARABIG || !manager.mayUseThreads)
+            toom32(a, N, b, M, result, workspace);
+        else toom32<true>(a, N, b, M, result, workspace);
+    }
+    else 
+    {   stkvector<Digit> workspace(1000000); // @@@
+#ifdef MEASURE_WORKSPACE
+        workspaceBase = workspace;
+#endif // MEASURE_WORKSPACE
+        if (manager.mayUseThreads) unbalancedMul<true>(a, N, b, M, result, workspace);
+        else unbalancedMul(a, N, b, M, result, workspace);
+    }
+}
+
+// The following overload is the one used in recursive calls (it has
+// workspace as its final argument). It is called when Kara or Toom32
+// recurses and so most of the time we will have M==N>KARASTART/2
+
+// @@@ [[gnu::always_inline]]
+static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
+                            ConstDigitPtr b, std::size_t M,
+                            DigitPtr result,
+                            DigitPtr workspace)
+{   if (N < M)
+    {   std::swap(a, b);
+        std::swap(N, M);
+    }
+#ifdef MEASURE_WORKSPACE
+// This is where the recursion can stop, so I update info on how much
+// workspace has been used.
+    std::size_t workspaceUsed = workspace - workspaceBase;
+    if (workspaceUsed > 900000)
+    {   std::cout << "\nnot converging\n";
+        arithlib_abort();
+    }
+    double ratio = workspaceUsed/(double)thisM;
+    if (ratio > worstRatio)
+    {   std::cout << worstRatio << " -> " << ratio
+                  << " : " << (ratio/std::log(thisM))
+                  << " at " << thisN << "*" << thisM << "\n";
+        worstRatio= ratio;
+        worstM = thisM;
+        worstN = thisN;
+    }
+#endif
+    if (M <= 7)
+    {
+#ifndef MEASURE_WORKSPACE
+// If I am just meassuring space I will not actually do the base-case
+// multiplications!
+        bigBySmallMul(a, N, b, M, result);
+#endif // MEASURE_WORKSPACE
+        return;
+    }
+    else if (M < KARASTART)
+    {
+#ifndef MEASURE_WORKSPACE
+        if (N==M &&  N<=11) balancedMul(a, b, N, result);
+        else simpleMul(a, N, b, M, result);
+#endif // MEASURE_WORKSPACE
+        return;
+    }
+#ifdef TRACE_TIMES
+    display("\na", a, N);
+    display("\nb", b, M);
+#endif // TRACE_TIMES
+// Here I will call Kara if N <= 1.25*M.
+    if (4*N <= 5*M) kara(a, N, b, M, result, workspace);
+// If N <= 1.85*M I will use toom32.
+    else if (20*N <= 37*M) toom32(a, N, b, M, result, workspace);
+    else
+    {   DigitPtr save = workspace;
+        workspace += M;
+        size_t step = (3*M)/2;
+        toom32(a, step, b, M, result, workspace);
+        a += step;
+        N -= step;
+        result += step;
+        for (;;)
+        {   while (N >= step)
+            {   std::memcpy(save, result, M*sizeof(Digit));
+                toom32(a, step, b, M, result, workspace);
+                addMdigits(workspace, M, result, step+M);
+                a += step;
+                N -= step;
+                result += step;
+            }
+            if (N == 0) return;
+// Here N < 1.5*M. If N>=M I can finish the job using a single step that
+// is either Toom32 or Karatsuba. And I should also take this case
+// if N<KARASTART. Also if N>=M/1.25 I can finish with Karatsuba. This
+// set of end conditions is more complicated than I had originally thought!
+            if (5*N >= 4*M || N < KARASTART)
+            {   std::memcpy(save, result, M*sizeof(Digit));
+                if (4*N > 5*M) toom32(a, N, b, M, result, workspace);
+                else if (N >= M) kara(a, N, b, M, result, workspace);
+                else if (N < KARASTART) simpleMul(a, N, b, M, result);
+                else kara(b, M, a, N, result, workspace);
+                addMdigits(workspace, M, result, step+M);
+                return;
+            }
+            else
+            {
+// If N<M I flip the order of the arguments (and recompute step).
+                std::swap(a, b);
+                std::swap(N, M);
+                step = (3*M)/2;
+            }
+        }
+    }
+}
+
+template <bool threads=false>
+[[gnu::always_inline]]
+static void unbalancedMul(ConstDigitPtr a, std::size_t N,
+                          ConstDigitPtr b, std::size_t M,
+                          DigitPtr result,
+                          DigitPtr workspace)
+{
+    innerGeneralMul(a, N, b, M, result, workspace);
+    return;
+
+
+//@@@@
+// Here N is (much) bigger than M
+    innerGeneralMul(a, M, b, M, result, workspace);
+    N -= M;
+    a += M;
+    result += M;
+    while (2*N > 3*M)
+    {   std::memcpy(workspace, result, M*sizeof(Digit));
+        innerGeneralMul(a, M, b, M, result, workspace+M);
+// Now add M digits from workspace into the 2M digit number in result. There
+// can not be an overflow.
+        addMdigits(workspace, M, result, 2*M);
+        N -= M;
+        a += M;
+        result += M;
+    }
+    if (N != 0)
+    {   std::memcpy(workspace, result, M*sizeof(Digit));
+        innerGeneralMul(a, N, b, M, result, workspace+M);
+// Now add M digits from workspace into the M+N digit number in result. There
+// can not be an overflow.
+        addMdigits(workspace, M, result, M+N);
+    }
+}
+
+// I have code for multiplying N*M numbers when N is about
+// 1.5 times M. This splits the big number into 3 chunks and the
+// smaller into two.
+//
+// Here is a description of the procedure in a somewhat readable compact form.
+//
+// a := ahigh*x^2 + amid*x + alow;
+// b :=            bhigh*x + blow;      
+//
+// x^3 * (ahigh*bhigh) +
+// x^2 * (ahigh*blow + amid*bhigh) +
+// x   * (alow*bhigh + amid*blow) +
+//       (alow*blow)
+//
+// asum := ahigh+amid+alow;    preserve carry
+// bsum := bhigh+blow;         preserve carry
+// adiff := ahigh-amid+alow;   preserve carry or borrow
+// bdiff := blow-bhigh;        preserve borrow
+// p0 := alow*blow;
+// p1 := asum*bsum;            adjust for carries, borrows in asum, bsum,
+// p2 := adiff*bdiff;          adiff, bdiff and generate carries or borrows.
+// p3 := ahigh*bhigh;
+//
+// d0 := p0;                         alow*blow
+// d1 := (p1 - p2)/2 - p3;           alow*bhigh + amid*blow   record carry etc
+// d2 := (p1 + p2)/2 - p0;           ahigh*blow + amid*bhigh  record carry etc
+// d3 := p3;                         ahigh*bhigh
+//
+// merge d1, d2 in accounting for how they overlap each other and d0, d3.
+
+template <bool thread=false>
+static void toom32(ConstDigitPtr a, std::size_t N,
+                   ConstDigitPtr b, std::size_t M,
+                   DigitPtr c,
+                   DigitPtr workspace)
+{
+// I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
+// where amid, alow, blow all have the same size (toomLen). Then
+// ahigh and bhigh need to have at least some digits but may not have more
+// then toomLen.
+// I let a(t) = ahigh*t^2 + amid*t + alow and b(t) = bhigh*t + blow.
+// then I evaluate a() and b() at 0, +1, -1 and infinity - then I can
+// interpolate through products of those values to get digits for my result.
+// A classical 3x2 multiplication would use 6 partial products - this uses
+// just 4 but obviously a bunch of extra additions and subtractions together
+// with some general overhead. 
+    size_t toomLen = std::max((N+2)/3, (M+1)/2);
+    assert(3*toomLen >= N && N > 2*toomLen);
+    assert(2*toomLen >= M && M > toomLen);
+    assert(N > 2*toomLen);
+    size_t lenAHigh = N-2*toomLen;
+    assert(lenAHigh <= toomLen);
+    size_t lenBHigh = M-toomLen;
+    ConstDigitPtr aLow = a;
+    ConstDigitPtr aMid = a + toomLen;
+    ConstDigitPtr aHigh = aMid + toomLen;
+    ConstDigitPtr bLow = b;
+    ConstDigitPtr bHigh = b + toomLen;
+// Now we have
+//     a = (aHigh*B^2, aMid*B, aLow)
+//     b = (bHigh*B, bLow)
+// and I will need to compute
+//     aSum = aHigh + aMid + Alow   (c = 0, 1, 2)
+//     bSum = bHigh + blow          (c = 0, 1)
+// and
+//     aDiff = aHigh - aMid + aLow  (c = -1, 0, 1)
+//     bDiff = bLow - bHigh         (c = 0, -1)
+//
+// Next
+//     P0 = aLow*bLow
+//     P1 = aSum*bSum
+//     P2 = aDiff*bDiff
+//     P3 = aHigh*bHigh
+// I will use the result space as workspace to start with.
+    DigitPtr P0 = c;
+    DigitPtr P1 = c;                 SignedDigit P1Top;
+    DigitPtr D1 = workspace;         SignedDigit D1Top;
+    DigitPtr D2 = D1 + 2*toomLen;    SignedDigit D2Top; 
+    DigitPtr ws = D1 + 4*toomLen;
+    DigitPtr P2 = c + 2*toomLen;     SignedDigit P2Top; 
+    DigitPtr P3 = c + 3*toomLen;
+    if constexpr (thread)
+    {   P2 = D1 + 4*toomLen;
+        P3 = D1 + 6*toomLen;
+        ws = D1 + 8*toomLen;
+    }
+    DigitPtr aSum = D1;              Digit aSumTop;
+    DigitPtr aDiff = D1 + toomLen;   SignedDigit aDiffTop;
+    DigitPtr bSum = D2;              Digit bSumTop;
+    DigitPtr bDiff = D2 + toomLen;   SignedDigit bDiffTop; 
+    aSumTop = karaAdd(aLow, toomLen, aHigh, lenAHigh, aSum);
+    aDiffTop = aSumTop - karaSubtract(aSum, toomLen, aMid, toomLen, aDiff);
+    aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
+    bSumTop = karaAdd(bLow, toomLen, bHigh, lenBHigh, bSum);
+    bDiffTop = -karaSubtract(bLow, toomLen, bHigh, lenBHigh, bDiff);
+    if constexpr (thread)
+    {   setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0, ws);
+        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1, ws+workspaceSize(toomLen));
+        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2, workspace+2*workspaceSize(toomLen));
+        driverData.releaseWorkers(true);
+        if (lenBHigh <= 7)
+            bigBySmallMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
+        if (lenAHigh <= 7)
+            bigBySmallMul(bHigh, lenBHigh, aHigh, lenAHigh, P3);
+        else innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, P3, workspace+2*workspaceSize(toomLen));
+        driverData.wait_for_workers(true);
+    }
+    else
+    {   innerGeneralMul(aSum, toomLen, bSum, toomLen, P1, ws);
+//      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
+        innerGeneralMul(aDiff, toomLen, bDiff, toomLen, P2, ws);
+//      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
+// noting that aDiffTop and bDiffTop are signed values.
+    }
+    P1Top = 0;
+    switch (aSumTop)
+    {   case 2:
+            P1Top = karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            [[fallthrough]];
+        case 1:
+            P1Top += karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            break;
+        case 0:
+            break;
+    }
+    if (bSumTop != 0)
+        P1Top += karaAdd(aSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+    P1Top += aSumTop*bSumTop;   
+    P2Top = 0;
+    switch (aDiffTop)
+    {   case 1:
+            P2Top = karaAdd(bDiff, toomLen, P2+toomLen, toomLen, P2+toomLen);
+            break;
+        case -1:
+            P2Top = -karaSubtract(P2+toomLen, toomLen,
+                                  bDiff, toomLen, P2+toomLen);
+            break;
+        case 0:
+            break;
+    }        
+    switch (bDiffTop)
+    {   case -1:
+            P2Top -= karaSubtract(P2+toomLen, toomLen,
+                                  aDiff, toomLen, P2+toomLen);
+        break;
+    }
+    P2Top += aDiffTop*bDiffTop;   
+// Now set D1 = P1-P2, D2=P1+P2
+    D1Top = P1Top - P2Top - karaSubtract(P1, 2*toomLen, P2, 2*toomLen, D1);
+    D2Top = P1Top + P2Top + karaAdd(P1, 2*toomLen, P2, 2*toomLen, D2);
+// Halve both of these
+    D1Top = karaHalve(D1Top, D1, 2*toomLen);
+    D2Top = karaHalve(D2Top, D2, 2*toomLen);
+    if constexpr (!thread) // These already computed in the threaded version
+    {   innerGeneralMul(aLow, toomLen, bLow, toomLen, P0, ws);
+        innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, P3, ws);
+    }
+// I need to D1 -= P3; D2 -= P0;
+    D1Top -= karaSubtract(D1, 2*toomLen, P3, lenAHigh+lenBHigh, D1);
+    D2Top -= karaSubtract(D2, 2*toomLen, P0, 2*toomLen, D2);
+// Now to assemble the final result I just need to cope with the fact
+// the the partial products P0, D1, D1 and P3 overlap.
+// So now I have
+//   c:     P3hi  P3lo   xxx   P0Hi P0Lo
+//                D1Top  D1Hi  D1Lo
+//          D2Top D2Hi   D2Low
+    Digit carry = karaAdd(D1, toomLen,            // D1Lo
+                          c+toomLen, toomLen,     // P0Hi
+                          c+toomLen);
+    carry = karaAdd(D1+toomLen, toomLen,          // D1Hi
+                    D2, toomLen, carry,           // D2Lo
+                    c+2*toomLen);
+    carry = karaAdd(D2+toomLen, toomLen,          // D2Hi
+                    c+3*toomLen, toomLen, carry,  // P3Lo
+                    c+3*toomLen);
+    // karaCarry(carry, c+4*toomLen); by adding carry into D2Top I do this
+    D2Top += carry;
+// I need to merge in D1Top and D2TOP. Note that either could be positive
+// or negative, and that is part of why I did not merge them in earlier.
+    if (D1Top > 0)      karaCarry(D1Top, c+3*toomLen);
+    else if (D1Top < 0) karaBorrow(-D1Top, c+3*toomLen);
+    if (D2Top > 0)      karaCarry(D2Top, c+4*toomLen);
+    else if (D2Top < 0) karaBorrow(-D2Top, c+4*toomLen);
+}
+
 [[gnu::always_inline]]
 static void setupKara(arithlib_implementation::WorkerData& wd,
                       ConstDigitPtr a, std::size_t lena,
                       ConstDigitPtr b, std::size_t lenb,
-                      DigitPtr result)
+                      DigitPtr result,
+                      DigitPtr workspace)
 {   wd.a = a;
     wd.lena = lena;
     wd.b = b;
     wd.lenb = lenb;
     wd.c = result;
+    wd.w = workspace;
 }
 
 // This is the entrypoint for Karatsuba multiplication, and it
 // will be called with N>=M amd with a workspace vector big enough for
 // its needs.
 
-public:
+// a := ahigh*x + alow;
+// b := bhigh*x + blow;
+//
+// x^2 * (ahigh*bhigh) +
+// x   * (alow*bhigh + ahigh*blow) +
+//       (alow*blow)
+//
+// adiff := alow-ahigh;
+// bdiff := blow-bhigh;
+// p0 := alow*blow;
+// p1 := adiff*bdiff;       ahigh*bhigh + alow*blow - alow*bhigh - ahigh*blow
+// p2 := ahigh*bhigh;
+//
+// d0 := p0;                alow*blow
+// d1 := p0 + p2 - p1;      alow*bhigh + amid*blow
+// d2 := p2;                ahigh*bhigh
+//
+// Well sometimes adiff and/or bdiff are computed with the subtraction
+// the other way round so as to leave a positive value there. In which
+// case we need
+// d1 := p1 - p0 - p2;      alow*bhigh + amid*blow
 
 template <bool thread=false>
 static void kara(ConstDigitPtr a, std::size_t N,
                  ConstDigitPtr b, std::size_t M,
-                 DigitPtr result)
+                 DigitPtr result,
+                 DigitPtr workspace)
 {   std::size_t lowSize = (N+1)/2;
     std::size_t aHighSize = N-lowSize;
     std::size_t bHighSize = M-lowSize;
     ConstDigitPtr aHigh = a+lowSize;
     ConstDigitPtr bHigh = b+lowSize;
-#ifdef DEBUG_TIMES
+#ifdef TRACE_TIMES
     display("\nahigh", aHigh, aHighSize);
     display("\nalow", a, lowSize);
     display("\nbhigh", bHigh, bHighSize);
     display("\nblow", b, lowSize);
-#endif // DEBUG_TIMES
+#endif // TRACE_TIMES
 // I have now split a and b into low and and high parts where the two
 // low parts are half the size of the larger input (rounded up if that
 // was odd). I now want to form |aHigh - aLow| and similarly for b
 // keeping track of whether taking the absolute values involved a sign flip.
     DigitPtr aDiff, bDiff;
-    stkvector<Digit> workspace((thread?4:2)*lowSize);
     if constexpr (thread)
     {   aDiff = workspace+2*lowSize;
         bDiff = workspace+3*lowSize;
@@ -864,33 +1403,33 @@ static void kara(ConstDigitPtr a, std::size_t N,
     }
     bool sign = absDifference(a, lowSize, aHigh, aHighSize, aDiff);
     if (absDifference(b, lowSize, bHigh, bHighSize, bDiff)) sign = !sign;
-#ifdef DEBUG_TIMES
+#ifdef TRACE_TIMES
     display("\nadiff", aDiff, lowSize);
     display("\nbdiff", bDiff, lowSize);
     std::cout << "% sign = " << sign << "\n";
-#endif // DEBUG_TIMES
+#endif // TRACE_TIMES
     if constexpr (thread)
-    {   setupKara(driverData.wd_0, aDiff, lowSize, bDiff, lowSize, workspace);
-        setupKara(driverData.wd_1, a, lowSize, b, lowSize, result);
+    {   setupKara(driverData.wd_0, aDiff, lowSize, bDiff, lowSize, workspace, workspace+000);
+        setupKara(driverData.wd_1, a, lowSize, b, lowSize, result, workspace+000);
 // Let the threads run while I do aHigh*bHigh. I expect that I will only
 // launch threads when the inputs are rather large, and in particular large
 // enough that the half-sized multiplications triggered here will be
 // Karatsuba rather than classical.
         driverData.releaseWorkers(false);
-            // Do this while worker threads do their stuff.
-            generalMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize);
+        // Do this while worker threads do their stuff.
+        innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize, workspace+000);
         driverData.wait_for_workers(false);
     }
     else
-    {   generalMul(aDiff, lowSize, bDiff, lowSize, workspace);
-        generalMul(a, lowSize, b, lowSize, result);
-        generalMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize);
-#ifdef DEBUG_TIMES
+    {   innerGeneralMul(aDiff, lowSize, bDiff, lowSize, workspace, workspace+2*lowSize);
+        innerGeneralMul(a, lowSize, b, lowSize, result, workspace+2*lowSize);
+        innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize, workspace+2*lowSize);
+    }
+#ifdef TRACE_TIMES
     display("\nlowprod", result, 2*lowSize);
     display("\nmidprod", workspace, 2*lowSize);
     display("\nhighprod", result+2*lowSize, aHighSize+bHighSize);
-#endif // DEBUG_TIMES
-    }
+#endif // TRACE_TIMES
 // At this stage result has aHigh*bHigh in its top half and aLow*bLow
 // in its bottom half. Then workspace hold aDiff*bDiff. I now need to
 // combine these to get my final result. 
@@ -924,17 +1463,92 @@ static void kara(ConstDigitPtr a, std::size_t N,
     karaCarry(carry, result+3*lowSize);
     if (extra > 0) karaCarry(extra, result+3*lowSize);
     else if (extra < 0) karaBorrow(-extra, result+3*lowSize);
-#ifdef DEBUG_TIMES
+#ifdef TRACE_TIMES
     display("\nresult", result, M+N);
-#endif // DEBUG_TIMES
+#endif // TRACE_TIMES
 }  
 
-private:
+public:
 
+#if defined USE_MICROSOFT_SRW
 
-};
+static void workerThread(WorkerData* wd)
+{   ThreadLocal::initialize();
+    AcquireSRWLockExclusive(&wd->mutex[2]);
+    AcquireSRWLockExclusive(&wd->mutex[3]);
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {   AcquireSRWLockExclusive(&wd->mutex[receive_count]);
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c,
+                                wd->w);
+        ReleaseSRWLockExclusive(&wd->mutex[receive_count^2]);
+        receive_count = (receive_count + 1) & 3;
+    }
+}
 
-inline std::atomic<bool> BigMultiplication::ManageWorkers::threadsInUse(false);
+#elif defined USE_MICROSOFT_MUTEX
+
+static void workerThread(WorkerData* wd)
+{   WaitForSingleObject(wd->mutex[2], MICROSOFT_INFINITE);
+    WaitForSingleObject(wd->mutex[3], MICROSOFT_INFINITE);
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {
+// This WaitFor could wait for the entire Reduce run any only be signalled
+// during close-down, so putting a timeout on it would nor make sense.
+        WaitForSingleObject(wd->mutex[receive_count], MICROSOFT_INFINITE);
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c,
+                                wd->w);
+        ReleaseMutex(wd->mutex[receive_count^2]);
+        receive_count = (receive_count + 1) & 3;
+    }
+}
+
+#else // Here I use C++ std::mutex
+
+static void workerThread(WorkerData* wd)
+{   wd->mutex[2].lock();
+    wd->mutex[3].lock();
+    wd->ready = true;
+    int receive_count = 0;
+    for (;;)
+    {   wd->mutex[receive_count].lock();
+        if (wd->quit_flag) return;
+// This is where I do some work! I think it would in general have been
+// silly to launch a thread if the sub-multiplication was small enough to
+// call for classical multiplication... so I always use Karatsuba here.
+        BigMultiplication::kara(wd->a, wd->lena,
+                                wd->b, wd->lenb,
+                                wd->c,
+                                wd->w);
+        wd->mutex[receive_count^2].unlock();
+        receive_count = (receive_count + 1) & 3;
+    }
+}
+
+#endif // definition of workerThread
+
+}; // end of BigMultiplication class
+
+inline void workerThread(WorkerData* wd)
+{   BigMultiplication::workerThread(wd);
+}
+
+inline std::atomic<bool> ManageWorkers::threadsInUse(false);
 
 // Now the external world needs access to the entrypoint "generalMul"
 // so I provide a shim that calls it so that others do not need to
@@ -956,6 +1570,30 @@ inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           DigitPtr result)
 {   BigMultiplication::verySimpleMul(a, N, b, M, result);
 }
+
+#ifdef MEASURE_WORKSPACE
+
+int main()
+{
+    const std::size_t limit = 2000;
+    Digit a[10*limit];
+    Digit b[10*limit];
+    Digit res[20*limit];
+    for (int i=0; i<limit; i++) a[i] = b[i] = 0xbad999bad999bad9;
+    worstN = worstM = 0;
+    worstRatio = 0.0;
+    for (std::size_t M=8; M<limit; M++)
+    for (std::size_t N=M; N<limit; N++)
+    {   if (N==limit-1) N = 10*limit-1;
+        generalMul(a, N, b, M, res);
+    }
+    std::cout << "worst ratio = " << worstRatio
+              << " : " << (worstRatio/std::log(worstM))
+              << " with N=" << worstN << " M=" << worstM << "\n";
+    return 0;
+}
+
+#endif // MEASURE_WORKSPACE
 
 // End of integer multiplication code.
 //=========================================================================

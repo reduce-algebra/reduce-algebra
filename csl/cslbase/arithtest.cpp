@@ -303,12 +303,14 @@ int main(int argc, char *argv[])
                             for (std::size_t i=0; i<lena+lenb; i++)
                             {   if (c[i] != c1[i] || c[i] != c2[i])
                                 {   ok = false;
-                                    std::cout << "Failed at " << std::dec
-                                              << i << "\n";
+                                    std::cout << "Failed at digit "
+                                              << std::dec << i << "\n";
                                 }
                             }
                             if (!ok)
-                            {   display("a  ", a, lena);
+                            {   std::cout << "% lena=" << lena
+                                          << "  lenb=" << lenb << "\n";
+                                display("a  ", a, lena);
                                 display("b  ", b, lenb);
                                 display("me ", c1, lenc1);
                                 display("gmp", c, lena+lenb);
