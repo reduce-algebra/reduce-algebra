@@ -339,15 +339,16 @@ endif !mac_framework
 
 all-local:	$(CSL_IMG) $(REDUCE_IMG)
 
+THREADDEP=lvector.h threadloc.h
 if arithlib
 arith_sources = arith-setup.cpp arith-plus.cpp arith-times.cpp \
 		arith-float.cpp arith-gcdn.cpp arith-print.cpp \
 		arith-compare.cpp arith-logops.cpp arith-modular.cpp \
 		arith-elem.cpp arith-misc.cpp
-ARITHDEP=arithlib.hpp lvector.h threadloc.h
+ARITHDEP=arithlib.hpp
 else !arithlib
 arith_sources =
-ARITHDEP=lvector.h threadloc.h
+ARITHDEP=
 endif !arithlib
 
 if conservative
@@ -872,41 +873,41 @@ $(SOFTFLOATDEPS):
 # taken as specifing conflicting actions.
 
 if arithlib
-csl-arith-setup.$(OBJEXT):	$(HDRS)
-csl-arith-plus.$(OBJEXT):	$(HDRS)
-csl-arith-times.$(OBJEXT):	$(HDRS)
-csl-arith-float.$(OBJEXT):	$(HDRS)
-csl-arith-gcdn.$(OBJEXT):	$(HDRS)
-csl-arith-print.$(OBJEXT):	$(HDRS)
-csl-arith-compare.$(OBJEXT):	$(HDRS)
-csl-arith-logops.$(OBJEXT):	$(HDRS)
-csl-arith-modular.$(OBJEXT):	$(HDRS)
-csl-arith-elem.$(OBJEXT):	$(HDRS)
-csl-arith-misc.$(OBJEXT):	$(HDRS)
+csl-arith-setup.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-plus.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-times.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-float.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-gcdn.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-print.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-compare.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-logops.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-modular.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-elem.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+csl-arith-misc.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 
-bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-float.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-gcdn.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-print.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-compare.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS)
-bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS)
+bootstrapreduce-arith-setup.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-plus.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-times.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-float.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-gcdn.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-print.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-compare.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-logops.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-modular.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-elem.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+bootstrapreduce-arith-misc.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 
-reduce-arith-setup.$(OBJEXT):	$(HDRS)
-reduce-arith-plus.$(OBJEXT):	$(HDRS)
-reduce-arith-times.$(OBJEXT):	$(HDRS)
-reduce-arith-float.$(OBJEXT):	$(HDRS)
-reduce-arith-gcdn.$(OBJEXT):	$(HDRS)
-reduce-arith-print.$(OBJEXT):	$(HDRS)
-reduce-arith-compare.$(OBJEXT):	$(HDRS)
-reduce-arith-logops.$(OBJEXT):	$(HDRS)
-reduce-arith-modular.$(OBJEXT):	$(HDRS)
-reduce-arith-elem.$(OBJEXT):	$(HDRS)
-reduce-arith-misc.$(OBJEXT):	$(HDRS)
+reduce-arith-setup.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-plus.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-times.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-float.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-gcdn.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-print.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-compare.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-logops.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-modular.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-elem.$(OBJEXT):	$(HDRS) $(ARITHDEP)
+reduce-arith-misc.$(OBJEXT):	$(HDRS) $(ARITHDEP)
 
 endif arithlib
 
@@ -1238,13 +1239,13 @@ $(cslbase)/lvector.h:	$(cslbase)/flatten $(cslbase)/lvector.base.h \
 	cd $(cslbase) && ./flatten lvector.base.h lvector.h
 
 $(cslbase)/multiply.cpp:	$(cslbase)/flatten \
-		$(cslbase)/multiply.base.cpp $(cslbase)/inlinemul.cpp
+		$(cslbase)/multiply.base.cpp $(cslbase)/inlinemul.cpp \
+		$(cslbase)/lvector.h
 	cd $(cslbase) && ./flatten multiply.base.cpp multiply.cpp
 
 $(cslbase)/arithlib.hpp:	$(cslbase)/flatten \
 		$(cslbase)/arithlib.base.hpp $(cslbase)/lvector.h \
-		$(cslbase)/acnutil.h $(cslbase)/multiply.cpp \
-		$(cslbase)/inlinemul.cpp
+		$(cslbase)/acnutil.h $(cslbase)/multiply.cpp
 	cd $(cslbase) && ./flatten arithlib.base.hpp arithlib.hpp
 
 $(cslbase)/geninline:	$(cslbase)/geninline.cpp
@@ -1255,9 +1256,9 @@ $(cslbase)/inlinemul.cpp:	$(cslbase)/geninline
 
 
 
-HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(ARITHDEP)
+HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(THREADDEP)
 
-csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(CSLCOM) $(CYG_CSL)
+csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(ARITHDEP) $(CSLCOM) $(CYG_CSL)
 	@printf "Relinking $@ because of $?\n"
 if windows
 # In a way that may be seen as strange I want to end up with 3 executables

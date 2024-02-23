@@ -72,7 +72,7 @@ flatten:	flatten.cpp
 lvector.h:	flatten lvector.base.h threadloc.h
 	./flatten lvector.base.h lvector.h
 
-multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp
+multiply.cpp:	flatten multiply.base.cpp inlinemul.cpp lvector.h
 	./flatten multiply.base.cpp multiply.cpp
 
 arithlib.hpp:	flatten arithlib.base.hpp lvector.h \
@@ -105,15 +105,22 @@ endif
 
 .PHONY:	arithtest
 
-ARITHOPT = -O3 -std=gnu++17
-#ARITHOPT = -O0 -g -std=gnu++17
-
 arithtest:	arithtest.cpp arithlib.hpp
-	time g++ $(ARITHOPT) $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtest
+	time g++ -O3 -std=gnu++17 $(MACFLAGS) arithtest.cpp $(LIBS) -o arithtest
 # If one runs arithtest without a command line paramater it should seed
 # its random number generator in an unpredictable way. Specifing an integer
 # uses that as the seed for repeatable behaviour.
-	time ./arithtest 1
+	-time ./arithtest 1
+
+.PRECIOUS:	arithtestg
+arithtestg:	arithtest.cpp arithlib.hpp
+	time g++ -O0 -g -std=gnu++17 $(MACFLAGS) arithtest.cpp \
+		-DTRACE_TIMES=1 -DCHECK_TIMES=1 -DDEBUG=1 $(LIBS) \
+		-o arithtestg
+# If one runs arithtest without a command line paramater it should seed
+# its random number generator in an unpredictable way. Specifing an integer
+# uses that as the seed for repeatable behaviour.
+	-time ./arithtestg 1
 
 # "time-arith" tries to compare (crudely) the speed of the existing (or
 # dare I now say "old"?) CSL arithmetic based on 31-bit digits with the
@@ -140,7 +147,7 @@ karatune:	karatune.cpp arithlib.hpp
 	time ./karatune
 
 measureworkspace:	measureworkspace.cpp arithlib.hpp
-	g++ $(ARITHOPT) $(MACFLAGS) measureworkspace.cpp -o measureworkspace
+	g++ -O3 -std=gnu++17 $(MACFLAGS) measureworkspace.cpp -o measureworkspace
 	-./measureworkspace
 
 # for debugging

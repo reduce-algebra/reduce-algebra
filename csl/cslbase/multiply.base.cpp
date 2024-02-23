@@ -440,8 +440,8 @@ private:
 
 static const std::size_t MUL_INLINE_LIMIT = 7;
 
-#ifdef START
-static const std::size_t KARASTART        = START;
+#ifdef KSTART
+static const std::size_t KARASTART        = KSTART;
 #else
 static const std::size_t KARASTART        = 15;
 #endif
@@ -452,11 +452,13 @@ static const std::size_t KARASTART        = 15;
 
 static_assert((KARASTART+1)/2 > 7);
 
-#ifdef BIG
-static const std::size_t KARABIG          = BIG;
+#ifdef KBIG
+static const std::size_t KARABIG          = KBIG;
 #else
-static const std::size_t KARABIG          = 6000;
+static const std::size_t KARABIG          = 60;
 #endif
+
+static_assert((KARABIG+1)/2 > KARASTART);
 
 // Beyond the classical multiplication I have kara and toom32 and
 // each of those has constraints on valid and on desirable input number
@@ -982,8 +984,8 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 // be (3*M)/2xM and I need M space to keep some digits already computed that I
 // will need to combine with the output from the next square multiply.
 #ifdef TRACE_TIMES
-    display("\na", a, N);
-    display("\nb", b, M);
+    display("a", a, N);
+    display("b", b, M);
 #endif // TRACE_TIMES
     if (4*N <= 5*M)
     {   stkvector<Digit> workspace(1000000); // @@@
@@ -1022,7 +1024,11 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
                             ConstDigitPtr b, std::size_t M,
                             DigitPtr result,
                             DigitPtr workspace)
-{   if (N < M)
+{
+#ifdef TRACE_TIMES
+    displayIndent += 2;
+#endif // TRACE_TIMES
+    if (N < M)
     {   std::swap(a, b);
         std::swap(N, M);
     }
@@ -1051,6 +1057,9 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 // multiplications!
         bigBySmallMul(a, N, b, M, result);
 #endif // MEASURE_WORKSPACE
+#ifdef TRACE_TIMES
+        displayIndent -= 2;
+#endif // TRACE_TIMES
         return;
     }
     else if (M < KARASTART)
@@ -1059,11 +1068,14 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
         if (N==M &&  N<=11) balancedMul(a, b, N, result);
         else simpleMul(a, N, b, M, result);
 #endif // MEASURE_WORKSPACE
+#ifdef TRACE_TIMES
+        displayIndent -= 2;
+#endif // TRACE_TIMES
         return;
     }
 #ifdef TRACE_TIMES
-    display("\na", a, N);
-    display("\nb", b, M);
+    display("a", a, N);
+    display("b", b, M);
 #endif // TRACE_TIMES
 // Here I will call Kara if N <= 1.25*M.
     if (4*N <= 5*M) kara(a, N, b, M, result, workspace);
@@ -1098,6 +1110,9 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
                 else if (N < KARASTART) simpleMul(a, N, b, M, result);
                 else kara(b, M, a, N, result, workspace);
                 addMdigits(workspace, M, result, step+M);
+#ifdef TRACE_TIMES
+                displayIndent -= 2;
+#endif // TRACE_TIMES
                 return;
             }
             else
@@ -1194,12 +1209,16 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 // just 4 but obviously a bunch of extra additions and subtractions together
 // with some general overhead. 
     size_t toomLen = std::max((N+2)/3, (M+1)/2);
+#ifdef DEBUG
     assert(3*toomLen >= N && N > 2*toomLen);
     assert(2*toomLen >= M && M > toomLen);
     assert(N > 2*toomLen);
+#endif // DEBUG
     size_t lenAHigh = N-2*toomLen;
-    assert(lenAHigh <= toomLen);
     size_t lenBHigh = M-toomLen;
+#ifdef DEBUG
+    assert(lenAHigh <= toomLen);
+#endif // DEBUG
     ConstDigitPtr aLow = a;
     ConstDigitPtr aMid = a + toomLen;
     ConstDigitPtr aHigh = aMid + toomLen;
@@ -1243,16 +1262,47 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     bSumTop = karaAdd(bLow, toomLen, bHigh, lenBHigh, bSum);
     bDiffTop = -karaSubtract(bLow, toomLen, bHigh, lenBHigh, bDiff);
     if constexpr (thread)
-    {   setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0, ws);
-        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1, ws+workspaceSize(toomLen));
-        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2, workspace+2*workspaceSize(toomLen));
+    {   std::size_t wsize = workspaceSize(toomLen);
+        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0,
+                                   setSize(ws, wsize));
+        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1,
+                                   setSize(ws+wsize, wsize));
+        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2,
+                                   setSize(ws+2*wsize, wsize));
         driverData.releaseWorkers(true);
         if (lenBHigh <= 7)
             bigBySmallMul(aHigh, lenAHigh, bHigh, lenBHigh, P3);
         if (lenAHigh <= 7)
             bigBySmallMul(bHigh, lenBHigh, aHigh, lenAHigh, P3);
-        else innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, P3, workspace+2*workspaceSize(toomLen));
+        else innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, P3,
+                             setSize(workspace+3*wsize, wsize));
         driverData.wait_for_workers(true);
+#ifdef CHECK_TIMES
+// Here I will repeat each of the thread-run multiplications to check them.
+        stkvector<Digit> TP0(2*toomLen);
+        stkvector<Digit> TP1(2*toomLen);
+        stkvector<Digit> TP2(2*toomLen);
+        stkvector<Digit> TP3(2*toomLen);
+        stkvector<Digit> Tws(workspaceSize(toomLen));
+        kara(aLow, toomLen, bLow, toomLen, TP0, Tws);
+        kara(aSum, toomLen, bSum, toomLen, TP1, Tws);
+        kara(aDiff, toomLen, bDiff, toomLen, TP2, Tws);
+        if (lenBHigh <= 7)
+            bigBySmallMul(aHigh, lenAHigh, bHigh, lenBHigh, TP3);
+        if (lenAHigh <= 7)
+            bigBySmallMul(bHigh, lenBHigh, aHigh, lenAHigh, TP3);
+        else innerGeneralMul(aHigh, lenAHigh, bHigh, lenBHigh, TP3, Tws);
+        for (size_t i=0; i<2*toomLen;i++)
+        {   assert(P0[i] == TP0[i]);
+            assert(P1[i] == TP1[i]);
+            assert(P2[i] == TP2[i]);
+            if (i < lenAHigh+lenBHigh) assert(P3[i] == TP3[i]);
+        }
+        display("TP0", TP0, 2*toomLen);
+        display("TP1", TP1, 2*toomLen);
+        display("TP2", TP2, 2*toomLen);
+        display("TP3", TP3, lenAHigh+lenBHigh);
+#endif // CHECK_TIMES
     }
     else
     {   innerGeneralMul(aSum, toomLen, bSum, toomLen, P1, ws);
@@ -1383,52 +1433,111 @@ static void kara(ConstDigitPtr a, std::size_t N,
     ConstDigitPtr aHigh = a+lowSize;
     ConstDigitPtr bHigh = b+lowSize;
 #ifdef TRACE_TIMES
-    display("\nahigh", aHigh, aHighSize);
-    display("\nalow", a, lowSize);
-    display("\nbhigh", bHigh, bHighSize);
-    display("\nblow", b, lowSize);
+    display("ahigh", aHigh, aHighSize);
+    display("alow", a, lowSize);
+    display("bhigh", bHigh, bHighSize);
+    display("blow", b, lowSize);
 #endif // TRACE_TIMES
 // I have now split a and b into low and and high parts where the two
 // low parts are half the size of the larger input (rounded up if that
 // was odd). I now want to form |aHigh - aLow| and similarly for b
 // keeping track of whether taking the absolute values involved a sign flip.
     DigitPtr aDiff, bDiff;
+    DigitPtr ws;
+    std::size_t wsize = workspaceSize(lowSize);
     if constexpr (thread)
     {   aDiff = workspace+2*lowSize;
         bDiff = workspace+3*lowSize;
+        ws = workspace+4*lowSize;
     }
     else
     {   aDiff = result;
         bDiff = result+lowSize;
+        ws = workspace+2*lowSize;
     }
     bool sign = absDifference(a, lowSize, aHigh, aHighSize, aDiff);
     if (absDifference(b, lowSize, bHigh, bHighSize, bDiff)) sign = !sign;
 #ifdef TRACE_TIMES
-    display("\nadiff", aDiff, lowSize);
-    display("\nbdiff", bDiff, lowSize);
+    display("adiff", aDiff, lowSize);
+    display("bdiff", bDiff, lowSize);
     std::cout << "% sign = " << sign << "\n";
 #endif // TRACE_TIMES
     if constexpr (thread)
-    {   setupKara(driverData.wd_0, aDiff, lowSize, bDiff, lowSize, workspace, workspace+000);
-        setupKara(driverData.wd_1, a, lowSize, b, lowSize, result, workspace+000);
+    {   setupKara(driverData.wd_0, aDiff, lowSize,
+                                   bDiff, lowSize, workspace,
+                                   setSize(ws, wsize));
+        setupKara(driverData.wd_1, a, lowSize,
+                                   b, lowSize, result,
+                                   setSize(ws+wsize, wsize));
 // Let the threads run while I do aHigh*bHigh. I expect that I will only
 // launch threads when the inputs are rather large, and in particular large
 // enough that the half-sized multiplications triggered here will be
 // Karatsuba rather than classical.
         driverData.releaseWorkers(false);
         // Do this while worker threads do their stuff.
-        innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize, workspace+000);
+        innerGeneralMul(aHigh, aHighSize,
+                        bHigh, bHighSize, result+2*lowSize,
+                        setSize(ws+2*wsize, wsize));
         driverData.wait_for_workers(false);
+#ifdef CHECK_TIMES
+// Here I will repeat each of the thread-run multiplications to check them.
+        stkvector<Digit> TP0(2*lowSize);
+        stkvector<Digit> TP1(2*lowSize);
+        stkvector<Digit> TP2(2*lowSize);
+        stkvector<Digit> Tws(workspaceSize(lowSize));
+        kara(a, lowSize, b, lowSize, TP0, Tws);
+        kara(aDiff, lowSize, bDiff, lowSize, TP1, Tws);
+        if (aHighSize<=7 || bHighSize <= 7) std::printf("\n@@@ too small size\n");
+        if (bHighSize <= 7)
+            bigBySmallMul(aHigh, aHighSize, bHigh, bHighSize, TP2);
+        if (aHighSize <= 7)
+            bigBySmallMul(bHigh, bHighSize, aHigh, aHighSize, TP2);
+        else innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, TP2, Tws);
+        int errcount = 0;
+        for (size_t i=0; i<2*lowSize;i++)
+        {   if (result[i] != TP0[i])
+            {   if (errcount < 5) std::printf("lowprod digit %d\n", i);
+                errcount++;
+            }
+            if(workspace[i] != TP1[i])
+            {   if (errcount < 5) std::printf("midprod digit %d\n", i);
+                errcount++;
+            }
+            if (i < aHighSize+bHighSize && result[2*lowSize+i] != TP2[i])
+            {   if (errcount < 5) std::printf("highprod digit %d\n", i);
+                errcount++;
+            }
+        }
+        if (errcount != 0)
+        {   std::printf("\n%%%%@@@ %d FAILURES\n", errcount);
+            display("alow", a, lowSize);
+            display("blow", b, lowSize);
+            display("ahigh", aHigh, aHighSize);
+            display("bhigh", bHigh, bHighSize);
+            display("adiff", aDiff, lowSize);
+            display("bdiff", bDiff, lowSize);
+            display("lowprod", result, 2*lowSize);
+            display("midprod", workspace, 2*lowSize);
+            display("hiprod",  result+2*lowSize, aHighSize+bHighSize);
+            display("TP0", TP0, 2*lowSize);
+            display("TP1", TP1, 2*lowSize);
+            display("TP2", TP2, aHighSize+bHighSize);
+            std::abort();
+        }
+#endif
     }
     else
-    {   innerGeneralMul(aDiff, lowSize, bDiff, lowSize, workspace, workspace+2*lowSize);
-        innerGeneralMul(a, lowSize, b, lowSize, result, workspace+2*lowSize);
-        innerGeneralMul(aHigh, aHighSize, bHigh, bHighSize, result+2*lowSize, workspace+2*lowSize);
+    {   innerGeneralMul(aDiff, lowSize,
+                        bDiff, lowSize, workspace, ws);
+        innerGeneralMul(a, lowSize,
+                        b, lowSize, result, ws);
+        innerGeneralMul(aHigh, aHighSize,
+                        bHigh, bHighSize, result+2*lowSize, ws);
     }
 #ifdef TRACE_TIMES
-    display("\nlowprod", result, 2*lowSize);
-    display("\nmidprod", workspace, 2*lowSize);
-    display("\nhighprod", result+2*lowSize, aHighSize+bHighSize);
+    display("lowprod", result, 2*lowSize);
+    display("midprod", workspace, 2*lowSize);
+    display("highprod", result+2*lowSize, aHighSize+bHighSize);
 #endif // TRACE_TIMES
 // At this stage result has aHigh*bHigh in its top half and aLow*bLow
 // in its bottom half. Then workspace hold aDiff*bDiff. I now need to
@@ -1464,7 +1573,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
     if (extra > 0) karaCarry(extra, result+3*lowSize);
     else if (extra < 0) karaBorrow(-extra, result+3*lowSize);
 #ifdef TRACE_TIMES
-    display("\nresult", result, M+N);
+    display("result", result, M+N);
 #endif // TRACE_TIMES
 }  
 

@@ -2392,6 +2392,7 @@ inline string_handle bignumToStringBinary(std::intptr_t aa);
 
 class Bignum;
 
+inline int displayIndent = 0;
 inline void display(const char& label,
                     const std::uint64_t* a,
                     std::size_t lena);
@@ -2589,8 +2590,8 @@ public:
     template <typename T,
         typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     inline Bignum operator /(const T x) const
-    {   return Bignum(true, op_dispatch2<Quotient,std::intptr_t>(val,
-                      Bignum(x).val));
+    {   return Bignum(true,
+            op_dispatch2<Quotient,std::intptr_t>(val, Bignum(x).val));
     }
 
     inline Bignum operator %(const Bignum& x) const
@@ -3117,7 +3118,8 @@ inline void display(const char* label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena)
-{   int len = std::printf("%s := 0x", label);
+{   for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
+    int len = std::min(displayIndent, 7) + std::printf("%s := 0x", label);
     if (top >= 0)
         len += std::printf("%" PRIx64, top);
     else
@@ -3129,19 +3131,21 @@ inline void display(const char* label,
     }
     for (size_t i=lena; i!=0; i--)
     {   len += std::printf("_");
-        if (len > 80-18)
+        if (len > 80-19)
         {   std::printf("\n");
-            len = 0;
+            for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
+            len = std::min(displayIndent, 7);
         }
         len += std::printf("%.16" PRIx64, a[i-1]);
     }
-    std::printf("$\n");
+    std::printf("$\n\n");
 }
 
 inline void display(const char* label, std::intptr_t a)
 {   if (storedAsFixnum(a))
-    {   std::cout << label << " := 0x" << std::hex
-                  << "0x" << intOfHandle(a) << std::dec << "$\n";
+    {   for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
+        std::cout << label << " := " << std::hex
+                  << "0x" << intOfHandle(a) << std::dec << "$\n\n";
     }
     else
     {   std::uint64_t* d = vectorOfHandle(a);
@@ -8802,8 +8806,8 @@ inline void addBackCorrection(std::uint64_t* r, std::size_t lenr,
 }
 
 inline Digit nextQuotientDigit(std::uint64_t* r,
-                                       std::size_t &lenr,
-                                       std::uint64_t* b, std::size_t lenb)
+                               std::size_t &lenr,
+                               std::uint64_t* b, std::size_t lenb)
 {   Digit q0, r0;
     if (r[lenr-1] == b[lenb-1])
     {   q0 = static_cast<Digit>(-1);
