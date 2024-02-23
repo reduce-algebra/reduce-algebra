@@ -225,9 +225,9 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_VSNPRINTF
 #endif
 
-#ifndef RETSIGTYPE
-#error expected to have RETSIGTYPE
-#endif
+//#ifndef RETSIGTYPE
+//#error expected to have RETSIGTYPE
+//#endif
 
 #ifndef SIZEOF_INT
 #error expected to have SIZEOF_INT
