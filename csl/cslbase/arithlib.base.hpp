@@ -8937,8 +8937,13 @@ inline std::intptr_t Quotient::op(std::uint64_t* a, SignedDigit b)
 {   switch (b)
     {
     case 1:
-// Making division by 1 a special case is merely optimisation.
-        return vectorToHandle(a);
+// Making division by 1 a special case is merely optimisation. However
+// I have to copy the bignum (because I do not keep reference counts).
+    {   std::size_t n = numberSize(a);
+        std::uint64_t* p = reserve(n);
+        std::memcpy(p, a, n*sizeof(Digit));
+        return confirmSize(p, n, n);
+    }
     case -1:
 // Making division by -1 a special case tidies up the code within
 // the function division() because when -2^(64*K) is divided by -1 the
