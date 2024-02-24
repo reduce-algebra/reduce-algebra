@@ -105,6 +105,9 @@
 //                              another vecpointer<T>
 //    casts into T* and const T* and intptr_t
 //
+// setSize(vecpointer<T>, n) sets a bound (only enforced with the checked
+// version.
+//
 // I will require sizeof(vecpointer<T>) == sizeof(T*). I am going to
 // assume all pointer types have the same size which C++ may not
 // guarantee by all general-purpose versions arrange.
@@ -294,6 +297,16 @@ public:
         return out;
     }
 };
+
+template <typename T>
+inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
+{   return v;
+}
+
+template <typename T>
+inline vecpointer<T> setSize(T* v, std::size_t n)
+{   return v;
+}
 
 #else // DEBUG 
 
@@ -543,6 +556,16 @@ public:
         return out;
     }
 };
+
+template <typename T>
+inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
+{   std::size_t o = v.data->offset;
+    std::size_t l = v.data->limit;
+    lvector_assert(o+n <= l);
+    v.data->limit = o+n;
+    return v;
+}
+
 
 #endif // DEBUG
 

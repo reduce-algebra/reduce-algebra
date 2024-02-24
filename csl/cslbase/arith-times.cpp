@@ -3141,7 +3141,7 @@ LispObject Remainder::op(LFlt a, Flt b)
 
 // fixnum % double float
 LispObject Remainder::op(Fixnum a, double b)
-{   LispObject q = Truncate::op(a, b);
+{   LispObject q = Quotient::op(a, b);
     return Difference::op(a, Times::op(q, b));
 }
 
@@ -3361,14 +3361,14 @@ LispObject Divide::op(LFlt a, LispObject b)
 
 // fixnum divide fixnum
 LispObject Divide::op(Fixnum a, Fixnum b)
-{   LispObject q = Truncate::op(a, b);
+{   LispObject q = Quotient::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
 
 // bignum divide fixnum
 LispObject Divide::op(std::uint64_t* a, Fixnum b)
-{   LispObject q = Truncate::op(a, b);
+{   LispObject q = Quotient::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
@@ -3700,7 +3700,7 @@ LispObject Divide::op(LFlt a, Flt b)
 
 // fixnum divide double float
 LispObject Divide::op(Fixnum a, double b)
-{   LispObject q = Truncate::op(a, b);
+{   LispObject q = Quotient::op(a, b);
     LispObject r = Difference::op(a, Times::op(b, q));
     return cons(q, r);
 }
