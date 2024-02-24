@@ -1,3 +1,9 @@
+// Bug in toom32 shown by script div.sh on may home machine as derived
+//   from clprl.tst with CHECK_TIMES=1 to trap it.
+// Unbalanced big multiply does not use threads
+// Setting thresholds KARASTART and KARABIG
+
+
 // Big Number arithmetic.                             A C Norman, 2019-2024
 
 // To use this, go "#include "arithlib.hpp".

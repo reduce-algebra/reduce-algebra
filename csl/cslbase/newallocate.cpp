@@ -245,6 +245,9 @@ bool allocateSegment(size_t n)
 #endif // MACINTOSH
     totalAllocatedMemory += n/pageSize;    // counting in units of Page. 
     if (r == nullptr) return false;
+#ifdef DEBUG
+    std::memset((void *)r, 0xaa, (n/pageSize)*pageSize);
+#endif
     heapSegment[heapSegmentCount] = r;
     heapSegmentSize[heapSegmentCount] = n;
     heapSegmentCount++;
