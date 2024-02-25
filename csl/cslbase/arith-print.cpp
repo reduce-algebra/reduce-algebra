@@ -69,7 +69,16 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
     }
     else if (nobreak==0 && column != 0 && column+len > line_length)
         putc_stream('\n', active_stream);
-    for (size_t i=0; i<len; i++) putc_stream(b[i], active_stream);
+    column = other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
+    for (size_t i=0; i<len; i++)
+    {   if (column > line_length-5)
+        {   putc_stream('_', active_stream);
+            putc_stream('\n', active_stream);
+            column = 0;
+        }
+        putc_stream(b[i], active_stream);
+        column++;
+    }
 // Printing was potentially a fairly expensive step. So I will check to
 // see if an interrupt was posted during it.
     if ((uintptr_t)stack >=

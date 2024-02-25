@@ -3361,16 +3361,12 @@ LispObject Divide::op(LFlt a, LispObject b)
 
 // fixnum divide fixnum
 LispObject Divide::op(Fixnum a, Fixnum b)
-{   LispObject q = Quotient::op(a, b);
-    LispObject r = Difference::op(a, Times::op(b, q));
-    return cons(q, r);
+{   return arithlib_lowlevel::Divide::op(a.intval(), b.intval());
 }
 
 // bignum divide fixnum
 LispObject Divide::op(std::uint64_t* a, Fixnum b)
-{   LispObject q = Quotient::op(a, b);
-    LispObject r = Difference::op(a, Times::op(b, q));
-    return cons(q, r);
+{   return arithlib_lowlevel::Divide::op(a, b.intval());
 }
 
 // rational divide fixnum
@@ -3420,16 +3416,12 @@ LispObject Divide::op(Fixnum a, std::uint64_t* b)
 {   if (arithlib_implementation::numberSize(b) == 1 &&
         a.intval() == -static_cast<int64_t>(b[0]))
         return cons(fixnum_of_int(-1), fixnum_of_int(0));
-    LispObject q = Truncate::op(a, b);
-    LispObject r = Difference::op(a, Times::op(b, q));
-    return cons(q, r);
+    return arithlib_lowlevel::Divide::op(a.intval(), b);
 }
 
 // bignum divide bignum
 LispObject Divide::op(std::uint64_t* a, std::uint64_t* b)
-{   LispObject q = Truncate::op(a, b);
-    LispObject r = Difference::op(a, Times::op(b, q));
-    return cons(q, r);
+{   return arithlib_lowlevel::Divide::op(a, b);
 }
 
 // rational divide bignum
@@ -6901,7 +6893,23 @@ LispObject Ngcdn(LispObject env, LispObject a1)
 }
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
+#ifdef CHECK_TIMES
+    LispObject r = Gcdn::op(a1, a2);
+    LispObject a = a1;
+    LispObject b = a2;
+    if (Minusp::op(a)) a = Minus::op(a);
+    if (Minusp::op(b)) b = Minus::op(b);
+    while (b != fixnum_of_int(0))
+    {   LispObject c = Remainder::op(a, b);
+        a = b;
+        b = c;
+    }
+    if (a != r && !equal_fn(a, r))
+        aerror2("gcd failure", cons(a1, a2), cons(r, a));
+    return r;
+#else // CHECK_TIMES
     return Gcdn::op(a1, a2);
+#endif // CHECK_TIMES
 }
 
 LispObject Ngcdn(LispObject env, LispObject a1, LispObject a2,
@@ -7018,8 +7026,9 @@ LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
         }
         aerror2("quotient failure", cons(a1, a2), w);
     }
-#endif // CHECK_TIMES 
+#else // CHECK_TIMES
     return Divide::op(a1, a2);
+#endif // CHECK_TIMES 
 }
 
 LispObject Nreciprocal(LispObject env, LispObject a1)
