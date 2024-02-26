@@ -635,7 +635,7 @@ symbolic procedure path!-to!-entries p;
 !#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
     % if the first char is a letter and the second is a colon we have a drive spec
     if pairp pl and pairp cdr pl and cadr pl = char !: and
-       (car pl >= char !A and car pl <= char !Z or car pl >= char !a and car pl <= char !a)
+       (car pl >= char !A and car pl <= char !Z or car pl >= char !a and car pl <= char !z)
       then << prefix := list2string {car pl, cadr pl}; pl := cddr pl;
 	      if pairp pl and car pl member dsl
                then << prefix := concat(prefix,dirchar!*);
