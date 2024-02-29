@@ -67,7 +67,7 @@ symbolic procedure svd(a);
     scalar ee,u,v,g,x,eps,tolerance,q,s,f,h,y,test_f_splitting,
            cancellation,test_f_convergence,convergence,c,z,denom,q_mat,
            i_rounded_turned_on,trans_done;
-    integer i,j,k,l,l1,m,n;
+    integer i,j,k,l,l1,m,n,no_iters;
     trans_done := i_rounded_turned_on := nil;
     if not !*rounded then << on1 'rounded; i_rounded_turned_on := t; >>
        where !*msg = nil;
@@ -212,8 +212,10 @@ symbolic procedure svd(a);
     eps := get_num_part(specrd!:times(eps,x));
     test_f_splitting := t;
     k := n;
+    no_iters := 0;
     while k>=1 do
     <<
+      no_iters := no_iters + 1;
       convergence := nil;
       if test_f_splitting then
       <<
@@ -261,6 +263,7 @@ symbolic procedure svd(a);
           >>;
         >>;
       >>;
+      if no_iters >= 30 then rederr "svd: Emergency stop, maximum number of iterations reached without convergence";
       z := getv(q,k);
       if l = k then convergence := t;
 
@@ -283,8 +286,8 @@ symbolic procedure svd(a);
          else denom := specrd!:plus(f,g);
         f := specrd!:quotient(specrd!:plus(specrd!:times(
               specrd!:plus(x,my_minus(z)),specrd!:plus(x,z)),
-               specrd!:times(h,specrd!:quotient(y,
-                specrd!:plus(denom,my_minus(h))))),x);
+               specrd!:times(h,specrd!:plus(
+                specrd!:quotient(y,denom),my_minus(h)))),x);
 
         % Next QR transformation:
         c := s := 1;
@@ -344,6 +347,7 @@ symbolic procedure svd(a);
           for j:=1:n do setmat(v,j,k,my_minus(getmat(v,j,k)));
         >>;
         k := k-1;
+	no_iters := 0;
       >>;
     >>;
 
