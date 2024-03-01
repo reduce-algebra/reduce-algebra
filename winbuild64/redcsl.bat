@@ -1,6 +1,6 @@
 @echo off
 set h=%~dp0
-set reduce=%h%..
+for %%i in ("%h%..") do set "reduce=%%~fi"
 if "%~1"=="-nocd" goto nocd
 if not exist %USERPROFILE%\Documents goto nowindir
 pushd %USERPROFILE%\Documents
