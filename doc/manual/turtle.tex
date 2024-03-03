@@ -1,4 +1,5 @@
 
+
 \section{Turtle Graphics}
 \index{Cotter, Caroline}\index{People!Cotter, Caroline}
 
@@ -94,8 +95,8 @@ x-axis.
        \turtlesyntax{setheading($\theta$)}
 
        \turtleabb{sh($\theta$)}
-     \item[leftturn]
-       \ttindextype{leftturn}{Turtle function}
+     \item[turnleft]
+       \ttindextype{turnleft}{Turtle function}
        \ttindextype{slt}{Turtle function}
        The turtle is turned anticlockwise through the
        stated number of degrees. Takes a number as its argument and
@@ -104,20 +105,20 @@ x-axis.
 
        Returns the turtle position \{$x$,$y$\}
 
-       \turtlesyntax{leftturn($\alpha$)}
+       \turtlesyntax{turnleft($\alpha$)}
 
        \turtleabb{slt($\alpha$)}
-     \item[rightturn]
-       \ttindextype{rightturn}{Turtle function}
+     \item[turnright]
+       \ttindextype{turnright}{Turtle function}
        \ttindextype{srt}{Turtle function}
-       Similar to \texttt{leftturn}, but the turtle is turned
+       Similar to \texttt{turnleft}, but the turtle is turned
        clockwise through the stated number of degrees. Takes a number as
        its argument and resets the heading by subtracting this number from
        the previous heading setting.
 
        Returns the turtle position \{$x$,$y$\}
 
-       \turtlesyntax{rightturn($\beta$)}
+       \turtlesyntax{turnright($\beta$)}
 
        \turtleabb{srt($\beta$)}
      \item[setx]
@@ -390,9 +391,9 @@ draw {for i:=1:36 collect
 forming an angle of 360/n degrees with the previous one.
 \begin{verbatim}
 draw {for i:=1:12 collect
-          {leftturn(30),
+          {turnleft(30),
            for j:=1:12 collect
-               {forward 40, leftturn(30)}} };
+               {forward 40, turnleft(30)}} };
 \end{verbatim}
 
 \unitlength=1cm
@@ -443,10 +444,10 @@ begin;
   return if fixpb and b>0    %checking b is a positive
                              %integer
 
-            then {leftturn(45), forward a,
+            then {turnleft(45), forward a,
                   tree(a/2,b-1), back a,
-                  rightturn(90), forward a,
-                  tree(a/2,b-1), back a, leftturn(45)}
+                  turnright(90), forward a,
+                  tree(a/2,b-1), back a, turnleft(45)}
          else {x_coord,y_coord}; %default:
                                  %Turtle stays still
 end;
@@ -463,8 +464,8 @@ draw {home(), tree(130,7)};
 \noindent{\textbf{Example 5:}} A 36-point star.
 \begin{verbatim}
 draw {home(), for i:=1:36 collect
-                  {leftturn(10), forward 100,
-                   leftturn(10), back 100} };
+                  {turnleft(10), forward 100,
+                   turnleft(10), back 100} };
 \end{verbatim}
 
 \unitlength=1cm
@@ -477,8 +478,8 @@ draw {home(), for i:=1:36 collect
 equally spaced on a circular path.
 \begin{verbatim}
 draw {home(), for i:=1:100 collect
-                  {forward 150, rightturn(60),
-                   back(150), rightturn(60),
+                  {forward 150, turnright(60),
+                   back(150), turnright(60),
                    forward 150, setheading(i*3.6)} };
 \end{verbatim}
 
@@ -493,13 +494,13 @@ if the graphs are named). Here we show graphs 2 and 6 on top of one
 another:
 \begin{verbatim}
 gr2:={home(), for i:=1:12 collect
-                  {leftturn(30),
+                  {turnleft(30),
                    for j:=1:12 collect
-                       {forward 40, leftturn(30)}} }$
+                       {forward 40, turnleft(30)}} }$
 
 gr6:={home(), for i:=1:100 collect
-                  {forward 150, rightturn(60),
-                   back(150), rightturn(60),
+                  {forward 150, turnright(60),
+                   back(150), turnright(60),
                    forward 150, setheading(i*3.6)} }$
 
 draw {gr2, gr6};
@@ -522,16 +523,16 @@ First save the procedures in a file, say fxp (fdraw example procedures):
 procedure gr2;
 begin;
   return {home, for i:=1:12 collect
-                    {leftturn(30),
+                    {turnleft(30),
                      for j:=1:12 collect
-                         {forward 40, leftturn(30)}} };
+                         {forward 40, turnleft(30)}} };
 end;
 
 procedure gr6;
 begin;
   return {home(), for i:=1:100 collect
-                  {forward 150, rightturn(60),
-                   back(150), rightturn(60),
+                  {forward 150, turnright(60),
+                   back(150), turnright(60),
                    forward 150, setheading(i*3.6)} };
 end;
 \end{verbatim}
