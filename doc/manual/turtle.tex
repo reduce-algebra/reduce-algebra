@@ -4,7 +4,9 @@
 \index{Cotter, Caroline}\index{People!Cotter, Caroline}
 
 \newcommand{\turtlesyntax}[1]{\textsl{SYNTAX: } \texttt{#1}}
-\newcommand{\turtleabb}[1]{\textsl{Abbreviated form: } \texttt{#1}}
+% \newcommand{\turtleabb}[1]{\textsl{Abbreviated form: } \texttt{#1}}
+%% Abbreviated forms do not exist
+\newcommand{\turtleabb}[1]{}
 \ifdefined\HCode
 \newcommand{\turtleincludegraphics}[1]
            {\includegraphics[width=8.1cm,height=8.1cm]{#1.eps}}
@@ -62,9 +64,11 @@ made in this implementation due to the design of the graphics package
  \item No facility is provided here to change the pen-colour, but gnuplot
         does have the capability to handle a few different colours (which
         could be included later).
+\iffalse
  \item Many of the commands are long and difficult to type out repeatedly,
         therefore all the commands included under \emph{`Turtle Functions'}
         (below) are listed alongside an equivalent abbreviated form.
+\fi
  \item The user has no control over the range of output that can be seen
         on the screen since the gnuplot program automatically adjusts the
         picture to fit the window. Hence the size of each specified `step'
@@ -230,16 +234,16 @@ x-axis.
        \ttindextype{move}{Turtle function}
        \ttindextype{mv}{Turtle function}
        Moves the turtle to a specified point on the coordinate
-       plane. Takes a pair of numbers as its arguments and draws a line
+       plane. Takes a list of two numbers as its argument and draws a line
        from its current position to the position described. The x and y
        coordinates are set to these new values.
 
        Returns the list of points
     \{ \{\textit{old} $x$,\textit{old} $y$\}, \{\textit{new} $x$,\textit{new} $y$\} \}
 
-       \turtlesyntax{move($x$,$y$)}
+       \turtlesyntax{move\{$x$,$y$\}}
 
-       \turtleabb{mv($x$,$y$)}
+       \turtleabb{mv\{$x$,$y$\}}
 \end{description}
 
 \subsubsection{Plotting Functions}
@@ -407,10 +411,10 @@ draw {for i:=1:12 collect
 procedure peak(r);
 begin;
   return for i:=0:r collect
-             {move(x_coord+5,y_coord-10),
-              move(x_coord+10,y_coord+60),
-              move(x_coord+10,y_coord-60),
-              move(x_coord+5,y_coord+10)};
+             {move{x_coord+5,y_coord-10},
+              move{x_coord+10,y_coord+60},
+              move{x_coord+10,y_coord-60},
+              move{x_coord+5,y_coord+10}};
 end;
 
 draw {home(), peak(3)};
@@ -424,9 +428,9 @@ draw {home(), peak(3)};
 %
 This procedure can then be part of a longer chain of commands:
 \begin{verbatim}
-draw {home(), move(5,50), peak(3),
-      move(x_coord+10,-100), peak(2),
-      move(x_coord+10,0)};
+draw {home(), move{5,50}, peak(3),
+      move{x_coord+10,-100}, peak(2),
+      move{x_coord+10,0}};
 \end{verbatim}
 
 \unitlength=1cm

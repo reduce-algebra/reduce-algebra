@@ -21,7 +21,7 @@ style of drawing graphs in {\small REDUCE}. The background and ideas of
 
 \subsection{Turtle Graphics}
 
- Turtle Graphics was originally developed in the 1960's as part of the
+Turtle Graphics was originally developed in the 1960's as part of the
 LOGO system, and used in the classroom as an introduction to graphics
 and using computers to help with mathematics.
 
@@ -55,7 +55,7 @@ made in this implementation due to the design of the graphics package
 
 \begin{itemize}
  \item It is not possible to draw lines individually and to see each
-        seperate line as it is added to the graph since gnuplot
+        separate line as it is added to the graph since gnuplot
         automatically replaces the last graph each time it calls on
         the plot function.
 
@@ -97,24 +97,24 @@ x-axis.
        \syntax\ {\tt setheading($\theta$)}
 
        \abb\ {\tt sh($\theta$)}
- \item[leftturn]  The turtle is turned anticlockwise through the
+ \item[turnleft]  The turtle is turned anticlockwise through the
        stated number of degrees. Takes a number as its argument and
        resets the heading by adding this number to the previous heading
        setting.
 
        Returns the turtle position \{$x$,$y$\}
 
-       \syntax\ {\tt leftturn($\alpha$)}
+       \syntax\ {\tt turnleft($\alpha$)}
 
        \abb\ {\tt slt($\alpha$)}
- \item[rightturn] Similar to {\tt leftturn}, but the turtle is turned
+ \item[turnleft] Similar to {\tt turnleft}, but the turtle is turned
        clockwise through the stated number of degrees. Takes a number as
        its argument and resets the heading by subtracting this number from
        the previous heading setting.
 
        Returns the turtle position \{$x$,$y$\}
 
-       \syntax\ {\tt rightturn($\beta$)}
+       \syntax\ {\tt turnright($\beta$)}
 
        \abb\ {\tt srt($\beta$)}
  \item[setx] Relocates the turtle in the x direction. Takes a number as
@@ -199,16 +199,16 @@ x-axis.
 
        \abb\ {\tt bk($s$)}
  \item[move] Moves the turtle to a specified point on the coordinate
-       plane. Takes a pair of numbers as its arguments and draws a line
+       plane. Takes a list of two numbers as its argument and draws a line
        from its current position to the position described. The x and y
        coordinates are set to these new values.
 
        Returns the list of points 
     \{ \{{\it old} $x$,{\it old} $y$\}, \{{\it new} $x$,{\it new} $y$\} \}
 
-       \syntax\ {\tt move($x$,$y$)}
+       \syntax\ {\tt move\{$x$,$y$\}}
 
-       \abb\ {\tt mv($x$,$y$)}
+       \abb\ {\tt mv\{$x$,$y$\}}
 \end{description}
 
 \subsection{Plotting Functions}
@@ -331,8 +331,8 @@ draw {for i:=1:36 collect{setheading(i*10), forward 100, back 100} };
 %forming an angle of 360/n degrees with the previous one. 
 
 draw {for i:=1:12 collect
-          {leftturn(30), for j:=1:12 collect
-                             {forward 40, leftturn(30)}} };
+          {turnleft(30), for j:=1:12 collect
+                             {forward 40, turnleft(30)}} };
 \end{verbatim}
 
 \unitlength=1cm
@@ -379,9 +379,9 @@ procedure tree(a,b);         %Here: a is the start length, b is the
 begin;
   return if fixpb and b>0           %checking b is a positive integer
 
-            then {leftturn(45), forward a, tree(a/2,b-1),
-                  back a, rightturn(90), forward a, tree(a/2,b-1),
-                  back a, leftturn(45)}
+            then {turnleft(45), forward a, tree(a/2,b-1),
+                  back a, turnright(90), forward a, tree(a/2,b-1),
+                  back a, turnleft(45)}
          else {x_coord,y_coord};    %default: Turtle stays still
 end;
 
@@ -397,7 +397,7 @@ draw {home(), tree(130,7)};
 % (5)  A 36-point star.
 
 draw {home(), for i:=1:36 collect
-                  {leftturn(10), forward 100, leftturn(10), back 100} };
+                  {turnleft(10), forward 100, turnleft(10), back 100} };
 \end{verbatim}
 
 \unitlength=1cm
@@ -425,12 +425,12 @@ draw {home(), for i:=1:100 collect
 %another:
 
 gr2:={home(), for i:=1:12 collect
-                  {leftturn(30), for j:=1:12 collect
-                                     {forward 40, leftturn(30)}} }$
+                  {turnleft(30), for j:=1:12 collect
+                                     {forward 40, turnleft(30)}} }$
 
 gr6:={home(), for i:=1:100 collect
-                  {forward 150, rightturn(60), back(150),
-                   rightturn(60), forward 150, setheading(i*3.6)} }$
+                  {forward 150, turnright(60), back(150),
+                   turnright(60), forward 150, setheading(i*3.6)} }$
 
 draw {gr2, gr6};
 \end{verbatim}
