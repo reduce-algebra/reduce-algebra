@@ -265,6 +265,12 @@ begin;                             %original position.
 end;
 
 
+procedure info();                  % This function returns the current value
+begin;                             %of the variables.
+      return {x_coord,y_coord,heading}
+end;
+
+
 procedure home();              % This also resets the variables and in general
 begin;                         %is sufficient since gnuplot automatically rep-
       x_coord:=0;              %laces its windows each time it plots a new

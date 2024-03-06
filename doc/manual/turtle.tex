@@ -263,6 +263,8 @@ x-axis.
                          if just one argument is needed. Commands taking
                          more than one argument must be written with
                          parentheses and arguments separated by a comma.
+
+\iffalse
 \item[fdraw]
   \ttindextype{fdraw}{Turtle function}
   This function is also called in {\REDUCE} by the user
@@ -280,6 +282,8 @@ x-axis.
                          written without parentheses and separated with a
                          space, not a comma, regardless of the number of
                          arguments given to the function.
+\fi
+
 \end{description}
 
 
@@ -375,8 +379,10 @@ The following variables are global, so it is advised that these are not altered 
 The following examples are taken from the turtle.tst file.
 Examples 1, 2, 5 \& 6 are simple calls to draw. Examples 3 \& 4 show how
 more complicated commands can be built (which can take their own set of
-arguments) using procedures. Examples 7 \& 8 show the difference between
-the draw and fdraw commands.
+arguments) using procedures.
+%Examples 7 \& 8 show the difference between
+%the draw and fdraw commands.
+Example 7 shows two graphs drawn together.
 
 \noindent{\textbf{Example 1:}} Draw 36 rays of length 100
 \nopagebreak
@@ -515,6 +521,8 @@ draw {gr2, gr6};
 %\put(0,8){\Includegraphics[bb=0 0 504 720,width=8cm,height=8cm,angle=270]{turtleeg9}}
 \put(0,8){\turtleincludegraphics{turtleeg9}}
 \end{picture}
+
+\endinput
 
 \noindent{\textbf{Example 8:}} Example 7 could have been tackled another way, which makes use of
 the fdraw command.
