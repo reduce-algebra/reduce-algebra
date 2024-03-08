@@ -271,7 +271,7 @@ symbolic procedure diffp(u,v);
            go to e
         >>;
         w := list('df,u,v);
-        w := if x := opmtch w then simp x else mksq(w,1);
+        w := if x := diffpmatch w then x else mksq(w,1);
         go to e;
     h:  % Final check for possible kernel deriv.
         if car u eq 'df then <<         % multiple derivative
@@ -359,7 +359,7 @@ symbolic procedure diffp(u,v);
            end;
            go to e
         >> else w := {'df,u,v};
-   j:   if (x := opmtch w) then w := simp x
+   j:   if (x := diffpmatch w) then w := x
          % At this point nested df's may have been collapsed, so
          % we have to consider all dependencies on all variables
          % and be very careful about returning zero.
@@ -399,6 +399,25 @@ symbolic procedure diffp(u,v);
            >>
          else w := mksq(w,1);
       go to e
+   end;
+
+symbolic procedure diffpmatch u;
+   begin scalar a, n, v, w, x, y;
+     if !*nocommutedf
+        then return if (x := opmtch u) then simp x else nil;
+     v := cddr u;
+     y := v;
+     while v and null x
+       do <<a := car v .  if cdr v and (n := d2int simp!* cadr v)
+                                       then <<v := cdr v; {n}>>
+                                     else nil;
+            w := 'df . cadr u . a;
+            x := opmtch w;
+            if x then y := cdr y
+             else y := append(if cdr a then cddr y else cdr y, a);
+            v := cdr v>>;
+     return if x then if y then simpdf (x . y) else simp x
+             else nil
    end;
 
 symbolic procedure get!-all!-kernels(plis);
