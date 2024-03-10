@@ -5,7 +5,7 @@ Major modes for editing and running REDUCE source code
 
 **[Francis Wright](https://sites.google.com/site/fjwcentaur)**
 
-Version 1.11, February 2024
+Version 1.12, March 2024
 
 REDUCE IDE is a package that provides an Integrated Development Environment for the [REDUCE computer algebra system](https://reduce-algebra.sourceforge.io/) within the GNU Emacs editor.  Its two major components are Emacs Lisp libraries that provide major modes for editing REDUCE source code and running a *command-line version* of REDUCE in an Emacs window.  It assumes that Emacs is running under a GUI such as Microsoft Windows or the X Window System under some flavour of UNIX or Linux, and displays Unicode character sets correctly.  REDUCE IDE does not include REDUCE, which is available separately from [SourceForge](https://sourceforge.net/projects/reduce-algebra/).  You don't need to install REDUCE in order to edit REDUCE source code using REDUCE IDE, but if you want to run REDUCE in REDUCE IDE then you do need to install REDUCE.
 
@@ -47,44 +47,19 @@ To Do
 
 * Check relation between standard and REDUCE mode key bindings.
 * Check switch-to-reduce and related commands.
+* Resolve REDUCE Run mode fontification clash with Comint mode.
+* On Microsoft Windows, make REDUCE interruptible.
+* Version 2 (maybe): use treesitter for parsing.
 
-Main Updates since REDUCE IDE 1.10
+Main Updates since REDUCE IDE 1.11
 ----------------------------------
 
-* Define key `Meta-R` in the REDUCE mode key map to run REDUCE.
-* Revise detection of end-of-file marker, which must now be at start of line.
-* Repair `re-run-reduce` to support general REDUCE command names and no name (i.e. an explicit command), rename it to `rerun-reduce` and revise the wording of the menu item to (Re)Run REDUCE.
-* Correct highlighting of fluid variables in a vertical list, such as at start of `int/driver.red`.
-* Repair `reduce-comment-procedure` and `reduce-reposition-window`.
-* Revise manual and move customization of REDUCE Run mode into the chapter on general customization of REDUCE IDE.
-* Remove `require-reduce-run`, and run `reduce-mode-load-hook` before requiring `reduce-run`.
-* Revise manual and move Run Keys section into other Run mode sections.
-* Improve Run REDUCE menu.
-* Remove redundant Package-Version headers; keep only in `reduce-mode.el`.
-* Correct `reduce-run-file` and revise `reduce--wait-for-prompt`.
-* Remove `reduce-run-buffer` key bindings from REDUCE Run mode.
-* Make `reduce-fasl-file` an alias for `reduce-compile-file`, rather than vice versa.
-* Add REDUCE mode font lock support to the previous output font lock support in run mode.
-* Add REDUCE show delim support to run mode.
-* Add minimal font-lock level, which is syntactic plus the old font-lock support in run mode, and syntactic-only in edit mode.
-* Revise `reduce-run-file` and `reduce-run-buffer` to prompt for the REDUCE command (via `run-reduce`).
-* Add option `reduce-run-command-name-default` to specify the default REDUCE command name, which defaults to the first command name in `reduce-run-commands`.
-* Replace `...` with Unicode horizontal ellipsis `…`.
-* Add *Customize…* item to REDUCE mode Run REDUCE menu.
-* Simplify `run-reduce` and no longer use a pop-up window, which was overkill.  Now, a null command name aborts the run.  I think these changes finally repair `reduce-run-file`, which calls `run-reduce`.
-* Improve Imenu support to handle REDUCE syntax.
-* Repair and update Show Proc code.  Turn it on by default.  Add support for mouse menu, cf. which-function-mode.
-* Replace reduce-show-proc-delay with idle-update-delay.
-* Make Show Proc a proper buffer-local minor mode turned on automatically if the new option `reduce-show-proc-mode-on` is non-nil.
-* Fix a minor font-lock bug causing a transient error message.
-* Add links to the manual to all customizable options.
-* Rename `autoload-reduce-run` to `reduce-run-autoload`.
-* Add menu item to read the REDUCE IDE manual.
-* Comment out obsolete menu item to add a change log entry.
-* Make Auto Indent a proper buffer-local minor mode turned on automatically if the new option `reduce-auto-indent-mode-on` is non-nil.  Revise `reduce-auto-indent-regexp` to allow arbitrary text between the trigger and point, which seems to work much better.
-* Make Show Delim a proper buffer-local minor mode.  Replace `reduce-show-delim-delay` with `show-paren-delay`.
-* Add Show Version item to end of main run menu.
-* Remove choice menu from `reduce-run-commands` customization.
-* New option `reduce-run-terminal` to specify value of TERM to use on Unix-like platforms so that CSL REDUCE responds appropriately to interrupts, which with a dumb terminal it does not.  It defaults to nil on MS Windows and to `Eterm` on all other platforms.
-* Only remove `ansi-color-process-output` on MS Windows; it is necessary for CSL REDUCE on Linux and probably redundant on MS Windows.
-* **Incompatible key binding changes**: `reduce-input-file` is now bound to `C-c C-f`, `reduce-compile-file` to `C-c C-M-c`, `reduce-eval-line` to `C-c C-M-e`, and `reduce-load-package` to `C-c C-M-l` to avoid conflicts with other bindings.  Vector key definitions replaced with strings where possible.
+* The command `reduce-tagify-dir-recursively` failed on the REDUCE packages directory (at least on Microsoft Windows) because the list of files is too long.  Add a depth argument to `reduce--directory-files-recursively` to limit the recursion depth, which works around the problem.  Handle errors better and improve the tagging menu tooltips.
+* Fix a bug in the display of the current procedure name.
+* **Incompatible changes**:
+  * Change the option `reduce-run-commands` so that a REDUCE command is a list of strings rather than a single string, which allows spaces in both the command and its arguments.  Automatically update a saved value to the new structure and offer to edit and/or save it.  Add a facility to set the environment variable `reduce`.  Better labelling of the customization buffer.
+  * Rename the option `reduce-run-installation-directory` to `reduce-root-dir-file-name` and make it a directory file name rather than a directory name, i.e. remove the final directory separator.  This makes it suitable as the default value of the environment variable `reduce`.
+  * Remove the option `reduce-run-MSWin-drives` and incorporate its use into the definition of `reduce-root-dir-file-name`, without using any external programs.
+* Introduce the shorthand `$reduce` to be replaced at the start of strings (other than Name) in `reduce-run-commands` and `reduce-packages-directory` with the value of `reduce-root-dir-file-name` before they are used.
+* On Microsoft Windows, run REDUCE directly by default rather than via the `.bat` files, which avoids the query "Terminate batch job (Y/N)?" when REDUCE is killed (such as by attempting to interrupt it).  Keep the `.bat` commands for now for comparison, but update the default CSL REDUCE command to preserve the current working directory.  Remove special support for PSL REDUCE, which is no longer needed from REDUCE revision 6726.  Note that if you have customized `reduce-run-commands` then you **may** need to erase the customization (at least for PSL REDUCE) and then re-customize it.
+* Update manual.

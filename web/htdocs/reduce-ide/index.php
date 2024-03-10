@@ -29,7 +29,7 @@ include '../include/begin-body.php';
 
 <h2>Latest release</h2>
 <p>
-    <strong>REDUCE IDE version 1.11</strong> (February 2024) See the
+    <strong>REDUCE IDE version 1.12</strong> (March 2024) See the
     <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/README.md">README file</a>
     and recent
     <a href="https://github.com/fjwright/REDUCE-IDE/releases">release notes</a>
