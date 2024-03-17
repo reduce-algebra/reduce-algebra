@@ -1,0 +1,35 @@
+%
+% Gentran doesn't like the new procedure info at the end of the parsed procedure form, see
+% https://sourceforge.net/p/reduce-algebra/discussion/899365/thread/7dbb467b00/?limit=25#4577
+%
+
+load gentran;
+
+
+
+GENTRANLANG!* := 'C$
+
+ 
+GENTRAN
+  PROCEDURE FAC N;
+  BEGIN
+  DECLARE FAC, N, I, F : INTEGER;
+  F := FOR I:=1:N PRODUCT I;
+  RETURN F
+  END$
+
+int fac(n)
+int n;
+{
+    int i,f;
+    {
+        f=1.0;
+        for  (i=1;i<=n;++i)
+            f*=i;
+    }
+    return(f);
+}
+
+
+end;
+
