@@ -33,10 +33,10 @@ fluid '(!*cramer !*rounded asymplis!* bareiss!-step!-size!* kord!*
 bareiss!-step!-size!* := 2;     % seems fastest on average.
 
 symbolic procedure simpdet u;
-   begin scalar x,!*protfg;
-      !*protfg := t;
+   begin scalar x;
       return if !*cramer or !*rounded or
-                errorp(x := errorset({'bareiss!-det,mkquote u},nil,nil))
+                (errorp(x := errorset({'bareiss!-det,mkquote u},nil,nil))
+                   where !*protfg := t)
                then detq matsm carx(u,'det)
               else car x
    end;
@@ -172,7 +172,7 @@ symbolic procedure bareiss!-det u;
    setkorder ok;
    if temp then <<asymplis!* := car temp; wtl!* := cdr temp>>;
    if getd 'remob then foreach vv in v do remob vv; %% WN
-		%% PSL suffers from a potential lack of IDs after
+                %% PSL suffers from a potential lack of IDs after
                 %% many det computations
    return resimp bu
    end;

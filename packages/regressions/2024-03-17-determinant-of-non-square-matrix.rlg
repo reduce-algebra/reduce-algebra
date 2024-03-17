@@ -1,0 +1,32 @@
+%
+% Applying the det operator to a non-square matrix failed to
+% print an error message.
+%
+
+mat05 := mat((1,0,-1),(0,1,0));
+
+
+         [1  0  -1]
+mat05 := [        ]
+         [0  1  0 ]
+
+
+
+det(mat05);
+
+
+***** Non square matrix 
+
+
+on rounded;
+
+
+
+det(mat05);
+
+
+***** Non square matrix 
+
+
+end;
+
