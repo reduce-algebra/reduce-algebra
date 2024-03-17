@@ -336,6 +336,7 @@ procedure formgentran(u, vars, mode);
 (car u) . foreach arg in cdr u collect formgentran1(arg, vars, mode)$
 
 symbolic procedure formgentran1(u, vars, mode);
+<<if eqcar(u, 'procedure) then u := strip_procedure_info u;
 if pairp u and car u eq '!:dn!: then
     mkquote <<precmsg length explode abs car(u := cdr u);
               decimal2internal(car u,cdr u)>>
@@ -373,7 +374,12 @@ else if car u memq '(lsetq rsetq lrsetq) then
     end
 else
     'list . foreach elt in u
-                collect formgentran1(elt, vars, mode)$
+                collect formgentran1(elt, vars, mode)>>$
+
+symbolic procedure strip_procedure_info u;
+   for each j in u conc if null atom j and eqcar(car j, 'procedure_type)
+                           then nil
+                         else list j;
 
 
 %%                     %%
