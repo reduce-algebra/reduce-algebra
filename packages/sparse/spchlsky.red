@@ -63,7 +63,7 @@ symbolic procedure spcholesky(mat1);
      rederr "Error in spcholesky:  non matrix input.";
     if not symmetricp(mat1) then
      rederr "Error in spcholesky: input matrix is not symmetric.";
-    in_mat := copy_vect(mat1,nil);
+    in_mat := sp!-copy!-vect(mat1,nil);
     n := sprow_dim(in_mat);
     p := mkvect(n);
     for i:=1:n do

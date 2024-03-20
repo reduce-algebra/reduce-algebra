@@ -163,7 +163,7 @@ flag ('(spjordan_block),'opfn);
 symbolic procedure spminor(list,row,col);
  begin scalar len,lena,lenb,rlist;
   len:=caddr list;
-  rlist :=copy_vect(list,nil);
+  rlist :=sp!-copy!-vect(list,nil);
   lena := cadr len;
   lenb := caddr len;
   if not matrixp(list) then
@@ -474,7 +474,7 @@ symbolic procedure spremove_rows(in_mat,row_list);
     >>;
        cnt:=0;
     tl:=list('spm,rowdim - length unique_row_list,spcol_dim(in_mat));
-    list:=copy_vect(in_mat,tl);
+    list:=sp!-copy!-vect(in_mat,tl);
      for each elt in unique_row_list do
       << spremrow(elt-cnt,list);
          list := rewrite(list,rowdim,elt-cnt,0);
@@ -529,7 +529,7 @@ symbolic procedure spremove_columns(in_mat,col_list);
     >>;
      cnt:=0;
      tl:=list('spm,sprow_dim(in_mat), coldim - length unique_col_list);
-     list := copy_vect(in_mat,tl);
+     list := sp!-copy!-vect(in_mat,tl);
      for each elt in unique_col_list do
       << spremcol(elt-cnt,list);
          list := rewrite(list,coldim,0,elt-cnt);
@@ -744,7 +744,7 @@ symbolic procedure spcopy_into(bb,aa,p,q);
         return;
       >>;
     >>;
-    a := copy_vect(aa,list('spm,m,n));
+    a := sp!-copy!-vect(aa,list('spm,m,n));
     for i:=r step -1 until 1 do
     << col:=findrow(bb,i);
        if col then
@@ -823,7 +823,7 @@ symbolic procedure spswap_rows(in_mat,row1,row2);
   begin
     scalar new_mat,list,pp,r1,r2;
     integer rowdim;
-    list := copy_vect(in_mat,nil);
+    list := sp!-copy!-vect(in_mat,nil);
    % if not !*fast_la then  use later
     <<
       if not matrixp in_mat then
@@ -920,7 +920,7 @@ symbolic procedure spswap_cols(in_mat,col1,col2);
   begin
     scalar new_mat,list,pp;
     integer coldim;
-    list:=copy_vect(in_mat,nil);
+    list:=sp!-copy!-vect(in_mat,nil);
     if not !*fast_la then
     <<
       if not matrixp in_mat then rederr
@@ -1012,7 +1012,7 @@ symbolic procedure spswap_entries(in_mat,entry1,entry2);
         return;
       >>;
     >>;
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     val1:=findelem2(new_mat,car entry1,cadr entry1);
     val2:=findelem2(new_mat,car entry2,cadr entry2);
   %  if not (val2=0) then
@@ -1342,7 +1342,7 @@ symbolic procedure spadd_rows(in_mat,r1,r2,mult1);
       if r2>rowdim or r2=0 then rederr
    "Error in spadd_rows(third argument): out of range for input matrix.";
     >>;
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     % Efficiency.
     if (my_reval mult1) = 0 then return new_mat;
     row1:=findrow(in_mat,r1);
@@ -1382,7 +1382,7 @@ symbolic procedure spadd_columns(in_mat,c1,c2,mult1);
       if c2>rowdim or c2=0 then rederr
  "Error in spadd_columns(third argument): out of range for input matrix.";
     >>;
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     if (my_reval mult1) = 0 then return new_mat;
     for i:=1:rowdim do
     <<val:=reval {'plus,{'times,mult1,
@@ -1415,7 +1415,7 @@ symbolic procedure spadd_to_rows(in_mat,row_list,value);
       >>;
     rowdim := sprow_dim(in_mat);
     coldim := spcol_dim(in_mat);
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     for each row in row_list do
     <<
       if not fixp row then rederr
@@ -1462,7 +1462,7 @@ symbolic procedure spadd_to_columns(in_mat,col_list,value);
       >>;
     rowdim := sprow_dim(in_mat);
     coldim := spcol_dim(in_mat);
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     for each col in col_list do
     <<
       if not fixp col then rederr
@@ -1502,7 +1502,7 @@ symbolic procedure spmult_rows(in_mat,row_list,mult1);
      else if car row_list = 'list then row_list := cdr row_list;
     rowdim := sprow_dim(in_mat);
     coldim := spcol_dim(in_mat);
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     for each row in row_list do
     <<
       if not !*fast_la and not fixp row then rederr
@@ -1537,7 +1537,7 @@ symbolic procedure spmult_columns(in_mat,column_list,mult1);
     else if car column_list = 'list then column_list := cdr column_list;
     rowdim := sprow_dim(in_mat);
     coldim := spcol_dim(in_mat);
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     for each column in column_list do
     <<
       if not !*fast_la and not fixp column then rederr
@@ -1664,7 +1664,7 @@ symbolic procedure sppivot(in_mat,pivot_row,pivot_col);
     if findelem2(in_mat,pivot_row,pivot_col) = 0 then
      rederr "Error in sppivot: cannot pivot on a zero entry.";
     >>;
-    piv_mat := copy_vect(in_mat,nil);
+    piv_mat := sp!-copy!-vect(in_mat,nil);
     val2:=findelem2(in_mat,pivot_row,pivot_col);
     for i:=1:rowdim do
     << col:=findrow(in_mat,i);
@@ -1724,7 +1724,7 @@ symbolic procedure sprows_pivot(in_mat,pivot_row,pivot_col,row_list);
       >>;
     if findelem2(in_mat,pivot_row,pivot_col) = 0 then
      rederr "Error in sprows_pivot: cannot pivot on a zero entry.";
-    piv_mat := copy_vect(in_mat,nil);
+    piv_mat := sp!-copy!-vect(in_mat,nil);
      val2:=findelem2(in_mat,pivot_row,pivot_col);
     for each elt in row_list do
     <<

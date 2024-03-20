@@ -104,6 +104,7 @@ put('sparse,'fn,'spmatflg);
 put('sparse,'evfn,'spmatsm!*);
 
 flag('(sparse),'prifn);
+flag('(sparse),'sprifn);
 
 put('sparse,'tag,'sparsemat);
 
@@ -245,7 +246,7 @@ symbolic procedure mkempspmat(row,len);
   return res;
  end;
 
-symbolic procedure copy_vect(list,len);
+symbolic procedure sp!-copy!-vect(list,len);
  begin scalar oldvec,newvec;
   oldvec:=cadr list;
 % newvec:=totalcopy(oldvec);
@@ -318,9 +319,12 @@ symbolic procedure letmtr3(u,v,y,typ);
 
 symbolic procedure setspmatelem2(u,v);
    begin scalar x,y,p;
-     x := cadr get(car u,'avalue);
-     y := cdr caddr x;
-     p := revlis cdr u;
+      x := get(car u,'avalue);
+      if null x or not (car x eq 'sparse) then typerr(car u,"sparse matrix")
+       else if not eqcar(x := cadr x,'sparsemat)
+        then rerror(matrix,10,list("Sparse matrix",car u,"not set"));
+      y := cdr caddr x;
+      p := revlis cdr u;
      if null x then typerr(car u,"matrix")
       else if car p > car y or cadr p > cadr y then
         typerr(car u,"The dimensions are wrong - matrix unaligned")
@@ -330,15 +334,16 @@ symbolic procedure setspmatelem2(u,v);
 % This is my sparse matrix printer.
 %It will print out the single elements of the matrix.
 
-symbolic procedure empty(vec,val);
- begin scalar res,i;
-  i:=1;
-  while not res and not (i=val+1) do
-  << if not (getv(vec,i) = nil) then res:=t;
-      i:=i+1;
-  >>;
-  return res;
- end;
+symbolic procedure sp!-notempty!-p(vec,val);
+  % Find the first nonempty row and return t; return nil if none found.
+  begin scalar res,i;
+    i:=1;
+    while not res and i<=val do
+       if not null getv(vec,i) then <<res:=t; goto done;>>
+     	 else   i:=i+1;
+ done:
+    return res;
+  end;
 
 % This is my sparse matrix printer.
 % It will print out the single elements of the matrix.
@@ -348,19 +353,23 @@ symbolic procedure sparpri(u,i,nam);
   val:=u;
   row:=i;
   for each x in val do
-   << writepri(list('quote,list('setq, list(nam,row,(car x)), cdr x)),
-                'first);
-      writepri(''!$, 'last)
-   >>;
+     if !*fort then assgnpri(cdr x,list list(nam,row,(car x)),'only)
+     else <<
+ 	writepri(list('quote,list('setq, list(nam,row,(car x)), cdr x)),
+	   'first);
+      	writepri(''!$, 'last)
+     >>;
  end;
 
-symbolic procedure myspmatpri2(u);
+symbolic procedure myspmatpri2(u); myspmatpri1(u,nil);
+
+symbolic procedure myspmatpri1(u,nam);
  begin scalar matr,nam,list,fl;
  % if   then print("The matrix is dense, contains only zeros")
   % else
     << matr:= cadr u;
-       nam:='spm;
-       fl:=empty(matr,cadr caddr u);
+       if null nam then nam:='spm;
+       fl:=sp!-notempty!-p(matr,cadr caddr u);
        %for i:=1:cadr caddr u do
        %<< if not (getv(matr,i) = nil) then fl:=t;>>;
        if fl then
@@ -372,6 +381,11 @@ symbolic procedure myspmatpri2(u);
      >>;
  end;
 
+symbolic procedure spsetmatpri(u,v);
+   % Prints a sparse matrix v with name u
+   myspmatpri1(v,u);
+
+put('sparsemat,'setprifn,'spsetmatpri);
 
 % This function returns the transpose of the sparse matrix.
 % It should replace the current tp function as it is an extension to
@@ -501,15 +515,17 @@ symbolic procedure trans(u);
 
 symbolic procedure spmatsm u;
    begin scalar x,y,r;
-   %if pairp u and not cdr u = nil then spmatsm(cdr u)
-   % else
+   if (r := getrtype u) eq 'yetunknowntype
+     then u := eval!-yetunknowntypeexpr(u,nil);
        if pairp u then
         << if eqcar(u,'sparsemat) then r:='sparse
         else if checksp(u) = 'sparse then r :='sparse
          else if checksp(u) = 'matrix then r:='matrix
-          else <<u:=trans(u); r:='sparse>>;
+         else <<u:=trans u; r:='sparse>>;
         >>
-       else if checksp(u) = 'sparse then r:='sparse
+       else if (r := checksp(u)) eq 'sparse
+	  or null r and getrtype u eq 'sparse
+       then r:='sparse
         else r:='matrix;
       for each j in nssimp(u,r) do % was 'sparse) do
          <<y := multsm(car j,matsm1 cdr j);
@@ -530,44 +546,74 @@ symbolic procedure spmatsm u;
 %   end;
 
 % This is to replace the current matsm1 function.
-% Extend to include sparse matrices.
+% Extended to include sparse matrices.
+
+symbolic inline procedure matsm1!-xsimp u;
+   if not lchk cdr u then rerror(matrix,3,"Matrix mismatch")
+   else for each j in cdr u collect
+      for each k in j collect xsimp k;
+
+symbolic inline procedure sparsemat!-xsimp u;
+   begin integer rows := sprow_dim u;
+      scalar new,oldrow;
+      new := mkempspmat(rows,caddr u);
+      for i:=1:rows do <<
+      	 oldrow := getv(cadr u,i);
+	 if not null oldrow then
+	    putv(cadr new,i,
+	       list nil .
+		  foreach el in cdr oldrow collect car el . expchk cdr el);
+      >>;
+      return new
+   end;
+
+symbolic inline procedure sparsemat!-subs2 u;
+   begin integer rows := sprow_dim u;
+      scalar new,oldrow;
+      new := mkempspmat(rows,caddr u);
+      for i:=1:rows do <<
+      	 oldrow := getv(cadr u,i);
+	 if not null oldrow then
+	    putv(cadr new,i,
+	       list nil .
+	       	  foreach el in cdr oldrow collect
+		     car el . <<!*sub2 := t; mk!*sq subs2 simp cdr el>>);
+      >>;
+      return new
+   end;
 
 symbolic procedure matsm1 u;
    %returns matrix canonical form for matrix symbol product U;
    begin scalar x,y,z,len; integer n;
     a:  if null u then return z
-         else if eqcar(car u,'!*div) then
-          << if length u=1 then go to d
-              else if length u=2 and caar cdr u='sparsemat
-               then <<z:=cdr u; go to d>>
-              else go to d;
-          >>
+         else if eqcar(car u,'!*div) then go to d
          else if atom car u then go to er
-         else if caar u eq 'mat then go to c1
+         else if caar u eq 'mat
+ 	  then x := matsm1!-xsimp car u
+         else if caar u eq 'sparsemat
+          then x := sparsemat!-xsimp car u
+         else if flagp(caar u,'matmapfn) and cdar u
+            and getrtype cadar u eq 'matrix
+          then x := matsm matrixmap(car u,nil)
+         else if (x := get(caar u,'psopfn))
+	 then <<x := lispapply(x,list cdar u); 
+                if eqcar(x,'mat) then x := matsm x>>
          else if caar u eq 'sparsemat and length u = 1
                   then <<z:=u; go to c>>
-         else if caar u eq 'sparsemat and length u = 2 then
-         << if eqcar(car reverse u,'!*div) then
-             << u:=reverse u; z:=cdr u; go to d>>
-             else <<z:=spmultm(car u,cdr u); u:=cdr u; go to c>>;
-         >>
-         else if caar u eq 'sparsemat then
-                       <<z:=spmultm(car u, cdr u); u:=list(nil); go to c>>
-         else x := lispapply(caar u,cdar u);
+         else <<x := lispapply(caar u,cdar u);
+	        if eqcar(x,'mat) then x := matsm x
+		else if eqcar(x,'sparsemat) then x := spmatsm x>>;
     b:  z := if null z then x
               else if null cdr z and null cdar z then multsm(caar z,x)
+              else if car x eq 'sparsemat then spmultm(z,list x)
               else multm(x,z);
     c:  u := cdr u;
         go to a;
-    c1: if not lchk cdar u then rerror(matrix,3,"Matrix mismatch");
-        x := for each j in cdar u collect
-                for each k in j collect xsimp k;
-        go to b;
     d: if checksp(cadar u) = 'sparse then
          <<  y := spmatsm cadar u;
              len:= cdar reverse y;
               if not(car len = cadr len) then
-                rerror(matrix,4,"Non square matrix")
+                rerror(matrix,4,"Non square sparse matrix")
          >>
         else
          << y:= matsm cadar u;
@@ -582,7 +628,7 @@ symbolic procedure matsm1 u;
         subfg!* := nil;
         if null z then z := apply1(get('mat,'inversefn),y)
          else if caar z = 'sparsemat then
-          << z:=list spmultm(car apply1(get('mat,'inversefn),y),z);
+          << z:=spmultm(car apply1(get('mat,'inversefn),y),z);
              u:=cdr u;
           >>
          else if null(x := get('mat,'lnrsolvefn))
@@ -590,7 +636,17 @@ symbolic procedure matsm1 u;
          else z := apply2(get('mat,'lnrsolvefn),y,z);
         subfg!* := x;
         % Make sure there are no power substitutions.
-        if caar z = 'sparsemat then z:=z
+        if caar z = 'sparsemat
+	then <<
+	   for i:=1:upbv cadr car z do <<
+	      if not null row then <<
+	      	 putv(cadr car z,i,
+		    car row .
+		       for each el in cdr row collect
+		       	  <<!*sub2 := t; car el . mk!*sq subs2 simp cdr el>>)
+	      >>
+	   >> where row := getv(cadr car z,i);
+	>>
         else
         z := for each j in z collect for each k in j collect
                  <<!*sub2 := t; subs2 k>>;
@@ -684,7 +740,7 @@ symbolic procedure smaddm2(u,v,lena);
  begin scalar tm,rowas,rowbs,rowa,rowb,rowna,rownb,val1,val2,j,newval;
    rowas := u;
    rowbs := v;
-   tm:=copy_vect(rowbs,nil);
+   tm:=sp!-copy!-vect(rowbs,nil);
    for i:=1:cadr lena do
   << rowa:=findrow(rowas,i);
      rowna:=i;
@@ -829,8 +885,7 @@ symbolic procedure spmultm(u,v);
 symbolic procedure spmultm2 (u,v,len);
  begin scalar tm,rowas,rowbs,rowa,rows,val1,val2,newval,smnewval,jj;
    tm:=mkempspmat(cadr len,len);
-   if empty(cadr u,cadr caddr u) = nil or empty(cadr v, cadr caddr v)
-     = nil then return tm
+   if not sp!-notempty!-p(cadr u,cadr caddr u) or not sp!-notempty!-p(cadr v, cadr caddr v) then return tm
    else
    << rowas := cadr u;
       rowbs := cadr v;
@@ -869,8 +924,7 @@ symbolic procedure spmultm1 (u,v,len);
  begin scalar tm,rowas,rowbs,rowa,rowna,rownb,colas,colbs,cola,colb,
               vala,valb,newval,smnewval,colna,colnb,rows;
    tm:=mkempspmat(cadr len,len);
-   if empty(cadr u,cadr caddr u) = nil or empty(cadr v, cadr caddr v)
-     = nil then return tm
+   if not sp!-notempty!-p(cadr u,cadr caddr u) or not sp!-notempty!-p(cadr v, cadr caddr v) then return tm
     else
      << rowas := cadr u;
         rowbs := cadr v;
@@ -992,12 +1046,17 @@ symbolic procedure sprmcol(num,list);
 % method of calculation).
 
 symbolic procedure simpdet u;
-   % We can't use the Bareiss code when rounded is on, since exact
-   % division is required.
-  if checksp u = 'sparse then spdet spmatsm car u
-   else if !*cramer or !*rounded then detq spmatsm carx(u,'det)
-     else bareiss!-det u;
-
+   begin scalar x,y;
+      y := spmatsm carx(u,'det);
+      % We can't use the Bareiss code when rounded is on, since exact
+      % division is required.
+      return if checksp y = 'sparse then spdet y
+              else if !*cramer or !*rounded or
+                      (errorp(x := errorset({'bareiss!-det,mkquote u},nil,nil))
+	    		 where !*protfg := t)
+               then detq y
+              else car x
+   end;
 
 symbolic procedure spdet(u);
  begin scalar len,lena,lenb,llist,ans;
@@ -1005,61 +1064,53 @@ symbolic procedure spdet(u);
   lena:=car len;
   lenb:=cadr len;
   llist:=cadr u;
-  if not (lena = lenb) then rederr "Non square matrix"
-   else ans := nsimpdet(llist,lena);
+  if not (lena = lenb) then rederr "Non square sparse matrix"
+   else if lena=2 then return twodet(llist)
+   else if lena=1 then return findelem2(llist,1,1)
+   else <<matrix_clrhash();
+          ans := nsimpdet(llist,lena,lena,0,1);
+          matrix_clrhash()>>>
   return ans;
 end;
 
-% A new approach to the ongoing determinent problem.
 
-% THE determinant solver (based on the Sarrus' Rule!!)
-% The algorithm only works for matrices > 2. As a result a further
-% function has been written to deal with this case.
+symbolic procedure nsimpdet(u,size,len,ignnum,firstrow);
+   % u is two row vector of a sparse square matrix of order len.
+   % Value is the determinant of u.
+   % Algorithm is expansion by minors of first row.
+   % ignnum is packed set of column indices to avoid.
+   begin integer n2,i; scalar row,sign,z,x;
+      row := getv(u,firstrow);   % Current row.
+      if not null row then row := cdr row; % drop superfluous leading element
+      n2 := 1;
+      if len=1
+        then return <<i := 1;		% column index
+                      while twomem(n2,ignnum)
+                         do <<n2 := 2*n2; i := i + 1>>;
+                      if null(x := atsoc(i,row))
+			then nil ./ 1
+		       else simp cdr x>>;   % Last row, single element.
+      if z := matrix_gethash ignnum then return cdr z;
+      len := len-1;
+      z := nil ./ 1;
+      for colindex := 1:size do
+        <<x := atsoc(colindex,row);
+	  %% null x means that the matrix element is zero
+          if not twomem(n2,ignnum)
+            then <<if x and numr (x := simp cdr x)
+                     then <<if sign then x := negsq x;
+                            z:= addsq(multsq(x,nsimpdet(u,size,len,n2+ignnum,firstrow+1)),
+                                        z)>>;
+                   sign := not sign>>;
+          n2 := 2*n2>>;
+% z is a standard quotient and hence never NIL, and that makes this use
+% of hash tables safe!
+      matrix_puthash(ignnum,z);
+      return z
+   end;
 
-symbolic procedure nsimpdet(list,len);
- begin scalar row,col,xx,rcnt,ccnt,val,zz,res,sign;
-  row := 1;
-  col := 1;
-   zz := simp 0;
-  ccnt := 0;
- if len = 2 then return twodet(list);
- if len = 1 then return simp findelem2(list,1,1);
- while res = nil do
-  <<
-   while not (ccnt = len) do
-    << xx := simp 1;
-     rcnt := 0;
-    while not (rcnt = len) do
-     <<  val := simp findelem2(list,row,col);
-          if val = (nil ./ 1) then << xx := val; rcnt := len>>
-         else
-           << xx := multsq(val,xx);
-               if sign then row := row - 1
-               else row := row + 1;
-               col := mod((col + 1),(len + 1));
-               if col = 0 then col := 1;
-               rcnt := rcnt + 1;
-           >>;
-     >>;
-        if not (xx=(nil ./ 1)) then
-         <<if sign then xx := negsq xx;
-              zz := addsq(xx,zz)>>;
-        ccnt := ccnt + 1;
-        col := col + 1;
-        if sign then row := len
-         else row := 1;
-    >>;
-      if ccnt = len and sign then res := t;
-      ccnt := 0;
-      sign := t;
-      col := 1;
-      row := len;
 
-   >>;
-  return zz;
- end;
-
-% The determinent solver for 2 x 2 matrices.
+% The determinant solver for 2 x 2 matrices.
 
 symbolic procedure twodet(list);
  begin scalar val1,val2,res;
@@ -1189,7 +1240,7 @@ symbolic procedure sumsol(list,len);
 % column values.
 
 symbolic procedure sumsol2(rows,row,listb,len);
- begin scalar rcnt,slist,col,row,val,sum,rlist,lena,elist,llist,list,mval;
+ begin scalar rcnt,col,row,val,sum,rlist,lena,elist,llist,list,mval;
   rcnt := row;
   listb := cdr listb;
   elist := cdr listb;
@@ -1255,7 +1306,7 @@ symbolic procedure spmatinverse(list);
  begin scalar rows,len;
   len:=caddr list;
   rows:=mkempspmat(cadr len, len);
-  rows:=copy_vect(list,nil);
+  rows:=sp!-copy!-vect(list,nil);
   rows:=spgauss(rows,cadr len);
   return list(rows);
  end;
@@ -1341,7 +1392,7 @@ symbolic procedure spremrow(num,list);
 symbolic procedure spcofactor(list,row,col);
  begin scalar len,lena,lenb,rlist,res;
   len := caddr list;
-  rlist :=copy_vect(list,len);
+  rlist := sp!-copy!-vect(list,len);
   lena := cadr len;
   lenb := caddr len;
   if not (row > 0 and row < lena + 1)
@@ -1357,7 +1408,9 @@ symbolic procedure spcofactor(list,row,col);
    if rlist = nil then res := simp nil
     else
      << rewrite(rlist,lena - 1,row,col);
-        res:= nsimpdet(rlist, lena - 1);
+        matrix_clrhash();
+        res:= nsimpdet(rlist, lena - 1, lena - 1, 0, 1);
+        matrix_clrhash();
         if remainder(row+col,2)=1 then res := negsq res;
       >>;
   return res;

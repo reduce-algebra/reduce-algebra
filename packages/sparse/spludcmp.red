@@ -104,7 +104,7 @@ symbolic procedure spunsymdet(mat1);
     scalar x,y,in_mat,tmp,int_vec,u,col,tp_mat1,tp_mat2,val,col2;
     integer i,j,k,l,n;
     j := 1;
-    in_mat := copy_vect(mat1,nil);
+    in_mat := sp!-copy!-vect(mat1,nil);
     n := sprow_dim(in_mat);
     int_vec := mkvect(n-1);
     for i:=1:n do
@@ -114,7 +114,7 @@ symbolic procedure spunsymdet(mat1);
       putv(int_vec,i-1,{'quotient,1,{'sqrt,y}});
     >>;
     for k:=1:n do
-    << tp_mat1:=copy_vect(smtp (in_mat,nil),nil);
+    << tp_mat1:=sp!-copy!-vect(smtp (in_mat,nil),nil);
       l := k;
       x := 0;
       col:=findrow(tp_mat1,k);
@@ -145,7 +145,7 @@ symbolic procedure spunsymdet(mat1);
           get_num_part(reval{'times,8,rd!-tolerance!*}) then rederr
 "Error in splu_decom: matrix is singular. LU decomposition not possible.";
       x := {'quotient,{'minus,1},findelem2(in_mat,k,k)};
-      tp_mat1:=copy_vect(smtp (in_mat,nil),nil);
+      tp_mat1:=sp!-copy!-vect(smtp (in_mat,nil),nil);
       col:=findrow(in_mat,k);
       for each xx in cdr col do
       << j:=car xx;
@@ -244,7 +244,7 @@ symbolic procedure spcompdet(mat1);
          putv(int_vec,i-1,spinnerprod(1,1,n+n,0,col,col));
     >>;
     for k:=1:n do
-    <<tp_mat1:=copy_vect(smtp (in_mat,'cx),nil);
+    <<tp_mat1:=sp!-copy!-vect(smtp (in_mat,'cx),nil);
       l := k;
       p := k+k;
       pp := p-1;
@@ -296,7 +296,7 @@ symbolic procedure spcompdet(mat1);
       putv(int_vec,k-1,l);
       col:=findrow(in_mat,k);
       if col then col:=cdr col;
-      tp_mat1:=copy_vect(smtp (in_mat,'cx),nil);
+      tp_mat1:=sp!-copy!-vect(smtp (in_mat,'cx),nil);
       x := atsoc(pp,col);
       if x then x:=cdr x;
        if x=list nil then x:=0;
@@ -464,7 +464,7 @@ symbolic procedure spconvert(in_mat,int_vec);
     integer i;
     if not matrixp(in_mat) then
      rederr "Error in convert(first argument): should be a matrix.";
-    new_mat := copy_vect(in_mat,nil);
+    new_mat := sp!-copy!-vect(in_mat,nil);
     for i:=1:upbv(int_vec)+1 do
     <<
       if getv(int_vec,i-1) neq i then
