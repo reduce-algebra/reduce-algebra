@@ -9,4 +9,8 @@ off cref;
 % used to print:
 % ***** `crefoff' is an undefined function
 
+load_package rcref;
+
+off cref;
+
 end;
