@@ -1,6 +1,5 @@
 %
-% Gentran doesn't like the new procedure info blaock at the end of the parsed
-% procedure form, see
+% Gentran doesn't like the new procedure info at the end of the parsed procedure form, see
 % https://sourceforge.net/p/reduce-algebra/discussion/899365/thread/7dbb467b00/?limit=25#4577
 %
 

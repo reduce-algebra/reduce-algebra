@@ -170,6 +170,8 @@ defautoload(crefon,rcref,expr,0);
 
 % Input editor entry points.
 
+remprop('display,'stat); remprop('editdef,'stat);
+
 defautoload cedit;
 
 defautoload(display,cedit);
@@ -476,9 +478,6 @@ put('num_int,'psopfn,'intrdeval);
 defautoload(fiteval,numeric);
 put('num_fit,'psopfn,'fiteval);
 
-defautoload(rdsolveeval,numeric);
-put('num_solve,'psopfn,'rdsolveeval);
-
 defautoload(economise_series,economise);
 put('economise_series, 'psopfn, 'economise_series);
 
@@ -658,6 +657,9 @@ flag('(pf),'noval);
 defautoload(pf,pf,expr,2);
 
 % Compact entry point.
+
+remprop('generic_function,'stat);
+remprop('dfp_commute,'stat);
 
 defautoload(simpcompact,compact);
 
@@ -1076,6 +1078,8 @@ flag('(residue,poleorder),'opfn);
 
 % Arnum entry points
 
+remprop('defpoly,'stat);
+
 fluid '(!*arnum);
 
 switch arnum;
@@ -1114,6 +1118,10 @@ put('log_sum,'simpfn,'simpiden);
 % Rtrace entry points
 
 switch rtrace=on;
+
+remprop('rtr,'stat); remprop('unrtr,'stat);
+remprop('trrl,'stat); remprop('trrlid,'stat);
+remprop('untrrl,'stat); remprop('untrrlid,'stat);
 
 defautoload(rtr!*,rtrace,expr,2);
 
@@ -1367,6 +1375,9 @@ switch assertinstall;
 switch evalassert;
 switch assertbreak, assertstatistics;
 
+remprop('assert_install, 'stat);
+remprop('assert_uninstall, 'stat);
+
 put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
 defautoload(assert_onoff, assert, expr, 0);
 
@@ -1442,6 +1453,14 @@ defautoload(f5dumpAssumptions, f5, expr, 0);
 % Dipoly
 put('torder, 'psopfn, 'torder);
 defautoload(torder, dipoly, expr, 1);
+
+% Sparse
+
+remprop('sparse,'stat);
+
+defautoload(sparse, sparse);
+
+put('sparse,'stat,'rlis);
 
 endmodule;
 

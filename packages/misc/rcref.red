@@ -112,6 +112,7 @@ symbolic procedure princng u;
 
 symbolic procedure crefoff;
    % Main call, sets up, alphabetizes and prints.
+  if !*cref then   % protect against cref being already off
    begin scalar tim,x;
         crefoff1();
         tim:=time()-btime!*;
