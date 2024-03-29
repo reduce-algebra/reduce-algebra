@@ -143,7 +143,7 @@ arguments, e.g.,
         my_step1(~x) =>  1 when numberp x and x>pi/2,
         my_step1(~x) => sin x
             when numberp x and -pi/2<=x and x<=pi/2};
-   plot(my_step2(x));
+   plot(my_step1(x));
 \end{verbatim}
 Of course, such a rule may call a procedure:
 \begin{verbatim}
@@ -373,7 +373,7 @@ plot(sin(1/x), x=(-1 .. 1), y=(-3 .. 3));
 
 Some implicitly-defined curves:
 \begin{verbatim}
-plot(x^3 + y^3 - 3*x*y = {0,1,2,3}, 
+plot(x^3 + y^3 - 3*x*y = {0,1,2,3},
      x=(-2.5 .. 2), y=(-5 .. 5));
 \end{verbatim}
 \unitlength=1cm
