@@ -259,9 +259,9 @@ put('cvit,'simpfg,'((t (load!-package 'cvit))));
 
 % Integrator module entry points.
 
-fluid '(!*trint !*trintsubst !*trdint);
+fluid '(!*trint !*trintsubst !*trdint !*nointsubst);
 
-switch trint,trintsubst,trdint;
+switch trint,trintsubst,trdint,nointsubst;
 
 defautoload(simpint,int);
 
