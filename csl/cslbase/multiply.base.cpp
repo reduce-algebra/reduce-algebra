@@ -753,6 +753,21 @@ static Digit karaRevSubtract(ConstDigitPtr a, std::size_t lenA,
     return borrow;
 }
 
+// Replace a and b with a-b and a+b.
+
+[[gnu::always_inline]]
+static void karaDifferenceAndSum(DigitPtr a, DigitPtr b,
+                                 std::size_t len,
+                                 Digit& carry,
+                                 Digit& borrow)
+{   carry = borrow = 0;
+    for (std::size_t i=0; i<len; i++)
+    {   Digit aa = a[i], bb = b[i];
+        borrow = subtractWithBorrow(aa, bb, borrow, a[i]);
+        carry = addWithCarry(aa, bb, carry, b[i]);
+    }
+}
+
 // Propogate a carry.
 
 [[gnu::always_inline]]
@@ -1141,22 +1156,23 @@ static void unbalancedMul(ConstDigitPtr a, std::size_t N,
 // bsum := bhigh+blow;         preserve carry
 // adiff := ahigh-amid+alow;   preserve carry or borrow
 // bdiff := blow-bhigh;        preserve borrow
-// p0 := alow*blow;
-// p1 := asum*bsum;            adjust for carries, borrows in asum, bsum,
-// p2 := adiff*bdiff;          adiff, bdiff and generate carries or borrows.
-// p3 := ahigh*bhigh;
+// d0 := alow*blow;
+// d1 := asum*bsum;            adjust for carries, borrows in asum, bsum,
+// d2 := adiff*bdiff;          adiff, bdiff and generate carries or borrows.
+// d3 := ahigh*bhigh;
 //
-// d0 := p0;                         alow*blow
-// d1 := (p1 - p2)/2 - p3;           alow*bhigh + amid*blow   record carry etc
-// d2 := (p1 + p2)/2 - p0;           ahigh*blow + amid*bhigh  record carry etc
-// d3 := p3;                         ahigh*bhigh
+// d0                                alow*blow
+// (d1,d2) = (d1-d2,d1+d2)           record carries
+// d1 := d1/2 - p3;                  alow*bhigh + amid*blow   record carry etc
+// d2 := d2/2 - p0;                  ahigh*blow + amid*bhigh  record carry etc
+// d3                                ahigh*bhigh
 //
 // merge d1, d2 in accounting for how they overlap each other and d0, d3.
 
 template <bool thread=false>
 static void toom32(ConstDigitPtr a, std::size_t N,
                    ConstDigitPtr b, std::size_t M,
-                   DigitPtr r,
+                   DigitPtr res,
                    DigitPtr workspace)
 {
 // I will start by viewing a as (ahigh, amid, alow) and b as (bhigh, blow)
@@ -1185,38 +1201,32 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     ConstDigitPtr aHigh = aMid + toomLen;
     ConstDigitPtr bLow = b;
     ConstDigitPtr bHigh = b + toomLen;
-// Now we have
-//     a = (aHigh*B^2, aMid*B, aLow)
-//     b = (bHigh*B, bLow)
-// and I will need to compute
-//     aSum = aHigh + aMid + Alow   (c = 0, 1, 2)
-//     bSum = bHigh + blow          (c = 0, 1)
-// and
-//     aDiff = aHigh - aMid + aLow  (c = -1, 0, 1)
-//     bDiff = bLow - bHigh         (c = 0, -1)
-//
-// Next
-//     P0 = aLow*bLow
-//     P1 = aSum*bSum
-//     P2 = aDiff*bDiff
-//     P3 = aHigh*bHigh
-// I will use the result space as workspace to start with.
-    DigitPtr P0 = r;
-    DigitPtr P1 = r + toomLen;       SignedDigit P1Top;
-    DigitPtr P2 = r + 2*toomLen;     SignedDigit P2Top; 
-    DigitPtr P3 = r + 3*toomLen;
-    DigitPtr D1 = workspace;         SignedDigit D1Top;
-    DigitPtr D2 = D1 + 2*toomLen;    SignedDigit D2Top; 
-    DigitPtr ws = D1 + 4*toomLen;
+
+    DigitPtr aSum, aDiff, bSum, bDiff, D0, D1, D2, D3;
+    Digit aSumTop, bSumTop;
+    SignedDigit aDiffTop, bDiffTop, D1Top, D2Top;
     if constexpr (thread)
-    {   P2 = D1 + 4*toomLen;
-        P3 = D1 + 6*toomLen;
-        ws = D1 + 8*toomLen;
+    {   aSum = setSize(workspace+4*toomLen, toomLen);
+        aDiff = setSize(workspace+5*toomLen, toomLen);
+        bSum = setSize(workspace+6*toomLen, toomLen);
+        bDiff = setSize(res+2*toomLen, toomLen);
+        D0 = setSize(res, 2*toomLen);
+        D1 = setSize(workspace, 2*toomLen);
+        D2 = setSize(workspace + 2*toomLen, 2*toomLen);
+        D3 = setSize(res + 3*toomLen, N+M-3*toomLen);
+        workspace = setSize(workspace + 7*toomLen, 4*workspaceSize(toomLen));
     }
-    DigitPtr aSum = D1;              Digit aSumTop;
-    DigitPtr aDiff = D1 + toomLen;   SignedDigit aDiffTop;
-    DigitPtr bSum = D2;              Digit bSumTop;
-    DigitPtr bDiff = D2 + toomLen;   SignedDigit bDiffTop; 
+    else
+    {   aSum = setSize(res, toomLen);
+        aDiff = setSize(res+toomLen, toomLen);
+        bSum = setSize(res+2*toomLen, toomLen);
+        bDiff = setSize(res+3*toomLen, toomLen);
+        D0 = setSize(res, 2*toomLen);
+        D1 = setSize(workspace, 2*toomLen);
+        D2 = setSize(workspace + 2*toomLen, 2*toomLen);
+        D3 = setSize(res + 3*toomLen, N+M-3*toomLen);
+        workspace = setSize(workspace + 4*toomLen, workspaceSize(toomLen));
+    }
     aSumTop = karaAdd(aLow, toomLen, aHigh, aHighLen, aSum);
     aDiffTop = aSumTop - karaSubtract(aSum, toomLen, aMid, toomLen, aDiff);
     aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
@@ -1224,46 +1234,45 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     bDiffTop = -karaSubtract(bLow, toomLen, bHigh, bHighLen, bDiff);
     if constexpr (thread)
     {   std::size_t wsize = workspaceSize(toomLen);
-        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, P0,
-                                   setSize(ws, wsize));
-        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, P1,
-                                   setSize(ws+wsize, wsize));
-        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, P2,
-                                   setSize(ws+2*wsize, wsize));
+        setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, D0,
+                                   setSize(workspace, wsize));
+        setupKara(driverData.wd_0, aSum, toomLen, bSum, toomLen, D1,
+                                   setSize(workspace+wsize, wsize));
+        setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, D2,
+                                   setSize(workspace+2*wsize, wsize));
         driverData.releaseWorkers(true);
         if (bHighLen <= 7)
-            bigBySmallMul(aHigh, aHighLen, bHigh, bHighLen, P3);
+            bigBySmallMul(aHigh, aHighLen, bHigh, bHighLen, D3);
         if (aHighLen <= 7)
-            bigBySmallMul(bHigh, bHighLen, aHigh, aHighLen, P3);
-        else innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, P3,
+            bigBySmallMul(bHigh, bHighLen, aHigh, aHighLen, D3);
+        else innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3,
                              setSize(workspace+3*wsize, wsize));
         driverData.wait_for_workers(true);
 #ifdef CHECK_TIMES
 // Here I will repeat each of the thread-run multiplications to check them.
-        stkvector<Digit> TP0(2*toomLen);
-        stkvector<Digit> TP1(2*toomLen);
-        stkvector<Digit> TP2(2*toomLen);
-        stkvector<Digit> TP3(2*toomLen);
-        stkvector<Digit> Tws(workspaceSize(toomLen));
-        simpleMul(aLow, toomLen, bLow, toomLen, TP0);
-        simpleMul(aSum, toomLen, bSum, toomLen, TP1);
-        simpleMul(aDiff, toomLen, bDiff, toomLen, TP2);
-        simpleMul(aHigh, aHighLen, bHigh, bHighLen, TP3);
+        stkvector<Digit> TD0(2*toomLen);
+        stkvector<Digit> TD1(2*toomLen);
+        stkvector<Digit> TD2(2*toomLen);
+        stkvector<Digit> TD3(2*toomLen);
+        simpleMul(aLow, toomLen, bLow, toomLen, TD0);
+        simpleMul(aSum, toomLen, bSum, toomLen, TD1);
+        simpleMul(aDiff, toomLen, bDiff, toomLen, TD2);
+        simpleMul(aHigh, aHighLen, bHigh, bHighLen, TD3);
         int errcount = 0;
         for (size_t i=0; i<2*toomLen;i++)
-        {   if (P0[i] != TP0[i])
+        {   if (D0[i] != TD0[i])
             {   if (errcount < 5) std::printf("lowprod digit %d\n", (int)i);
                 errcount++;
             }
-            if (P1[i] != TP1[i])
-            {   if (errcount < 5) std::printf("P1 digit %d\n", (int)i);
+            if (D1[i] != TD1[i])
+            {   if (errcount < 5) std::printf("D1 digit %d\n", (int)i);
                 errcount++;
             }
-            if (P2[i] != TP2[i])
-            {   if (errcount < 5) std::printf("P2 digit %d\n", (int)i);
+            if (D2[i] != TD2[i])
+            {   if (errcount < 5) std::printf("D2 digit %d\n", (int)i);
                 errcount++;
             }
-            if (i < aHighLen+bHighLen && P3[i] != TP3[i])
+            if (i < aHighLen+bHighLen && D3[i] != TD3[i])
             {   if (errcount < 5) std::printf("highprod digit %d\n", (int)i);
                 errcount++;
             }
@@ -1281,94 +1290,97 @@ static void toom32(ConstDigitPtr a, std::size_t N,
             display("bhigh", bHigh, bHighLen);
             display("bsum", bSum, toomLen);
             display("bdiff", bDiff, toomLen);
-            display("lowprod", P0, 2*toomLen);
-            display("P1prod", P1, 2*toomLen);
-            display("P2prod", P2, 2*toomLen);
-            display("hiprod",  P3, aHighLen+bHighLen);
-            display("TP0", TP0, 2*toomLen);
-            display("TP1", TP1, 2*toomLen);
-            display("TP2", TP2, 2*toomLen);
-            display("TP3", TP3, aHighLen+bHighLen);
+            display("D0", D0, 2*toomLen);
+            display("D1", D1, 2*toomLen);
+            display("D2", D2, 2*toomLen);
+            display("D3",  D3, aHighLen+bHighLen);
+            display("TD0", TD0, 2*toomLen);
+            display("TD1", TD1, 2*toomLen);
+            display("TD2", TD2, 2*toomLen);
+            display("TD3", TD3, aHighLen+bHighLen);
             std::abort();
         }
 #endif // CHECK_TIMES
     }
     else
-    {   innerGeneralMul(aSum, toomLen, bSum, toomLen, P1, ws);
+    {   innerGeneralMul(aSum, toomLen, bSum, toomLen, D1, workspace);
 //      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
-        innerGeneralMul(aDiff, toomLen, bDiff, toomLen, P2, ws);
+        innerGeneralMul(aDiff, toomLen, bDiff, toomLen, D2, workspace);
 //      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
 // noting that aDiffTop and bDiffTop are signed values.
     }
-    P1Top = 0;
+    D1Top = 0;
     switch (aSumTop)
     {   case 2:
-            P1Top = karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            D1Top = karaAdd(bSum, toomLen, D1+toomLen, toomLen, D1+toomLen);
             [[fallthrough]];
         case 1:
-            P1Top += karaAdd(bSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
+            D1Top += karaAdd(bSum, toomLen, D1+toomLen, toomLen, D1+toomLen);
             break;
         case 0:
             break;
     }
     if (bSumTop != 0)
-        P1Top += karaAdd(aSum, toomLen, P1+toomLen, toomLen, P1+toomLen);
-    P1Top += aSumTop*bSumTop;   
-    P2Top = 0;
+        D1Top += karaAdd(aSum, toomLen, D1+toomLen, toomLen, D1+toomLen);
+    D1Top += aSumTop*bSumTop;   
+    D2Top = 0;
     switch (aDiffTop)
     {   case 1:
-            P2Top = karaAdd(bDiff, toomLen, P2+toomLen, toomLen, P2+toomLen);
+            D2Top = karaAdd(bDiff, toomLen, D2+toomLen, toomLen, D2+toomLen);
             break;
         case -1:
-            P2Top = -karaSubtract(P2+toomLen, toomLen,
-                                  bDiff, toomLen, P2+toomLen);
+            D2Top = -karaSubtract(D2+toomLen, toomLen,
+                                  bDiff, toomLen, D2+toomLen);
             break;
         case 0:
             break;
     }        
     switch (bDiffTop)
     {   case -1:
-            P2Top -= karaSubtract(P2+toomLen, toomLen,
-                                  aDiff, toomLen, P2+toomLen);
+            D2Top -= karaSubtract(D2+toomLen, toomLen,
+                                  aDiff, toomLen, D2+toomLen);
         break;
     }
-    P2Top += aDiffTop*bDiffTop;   
-// Now set D1 = P1-P2, D2=P1+P2
-    D1Top = P1Top - P2Top - karaSubtract(P1, 2*toomLen, P2, 2*toomLen, D1);
-    D2Top = P1Top + P2Top + karaAdd(P1, 2*toomLen, P2, 2*toomLen, D2);
+    D2Top += aDiffTop*bDiffTop;   
+// Now set D1 = D1-D2, D2=D1+D2
+    Digit carry, borrow;
+    karaDifferenceAndSum(D1, D2, 2*toomLen, carry, borrow);
+    SignedDigit tempD1Top = D1Top - D2Top - borrow;
+    D2Top = D1Top + D2Top + carry;
+    D1Top = tempD1Top;
 // Halve both of these
     D1Top = karaHalve(D1Top, D1, 2*toomLen);
     D2Top = karaHalve(D2Top, D2, 2*toomLen);
     if constexpr (!thread) // These already computed in the threaded version
-    {   innerGeneralMul(aLow, toomLen, bLow, toomLen, P0, ws);
-        innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, P3, ws);
+    {   innerGeneralMul(aLow, toomLen, bLow, toomLen, D0, workspace);
+        innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3, workspace);
     }
-// I need to D1 -= P3; D2 -= P0;
-    D1Top -= karaSubtract(D1, 2*toomLen, P3, aHighLen+bHighLen, D1);
-    D2Top -= karaSubtract(D2, 2*toomLen, P0, 2*toomLen, D2);
+// I need to D1 -= D3; D2 -= D0;
+    D1Top -= karaSubtract(D1, 2*toomLen, D3, aHighLen+bHighLen, D1);
+    D2Top -= karaSubtract(D2, 2*toomLen, D0, 2*toomLen, D2);
 // Now to assemble the final result I just need to cope with the fact
 // the the partial products P0, D1, D1 and P3 overlap.
 // So now I have
-//   c:     P3hi  P3lo   xxx   P0Hi P0Lo
+//   res:   D3hi  D3lo   xxx   D0Hi D0Lo
 //                D1Top  D1Hi  D1Lo
 //          D2Top D2Hi   D2Low
-    Digit carry = karaAdd(D1, toomLen,            // D1Lo
-                          r+toomLen, toomLen,     // P0Hi
-                          r+toomLen);
-    carry = karaAdd(D1+toomLen, toomLen,          // D1Hi
-                    D2, toomLen, carry,           // D2Lo
-                    r+2*toomLen);
-    carry = karaAdd(D2+toomLen, toomLen,          // D2Hi
-                    r+3*toomLen, toomLen, carry,  // P3Lo
-                    r+3*toomLen);
-    // karaCarry(carry, r+4*toomLen); by adding carry into D2Top I do this
+    carry = karaAdd(D1, toomLen,                    // D1Lo
+                    res+toomLen, toomLen,           // D0Hi
+                    res+toomLen);
+    carry = karaAdd(D1+toomLen, toomLen,            // D1Hi
+                    D2, toomLen, carry,             // D2Lo
+                    res+2*toomLen);
+    carry = karaAdd(D2+toomLen, toomLen,            // D2Hi
+                    res+3*toomLen, toomLen, carry,  // D3Lo
+                    res+3*toomLen);
+    // karaCarry(carry, res+4*toomLen); by adding carry into D2Top I do this
     D2Top += carry;
 // I need to merge in D1Top and D2TOP. Note that either could be positive
 // or negative, and that is part of why I did not merge them in earlier.
-    if (D1Top > 0)      karaCarry(D1Top, r+3*toomLen);
-    else if (D1Top < 0) karaBorrow(-D1Top, r+3*toomLen);
-    if (D2Top > 0)      karaCarry(D2Top, r+4*toomLen);
-    else if (D2Top < 0) karaBorrow(-D2Top, r+4*toomLen);
+    if (D1Top > 0)      karaCarry(D1Top, res+3*toomLen);
+    else if (D1Top < 0) karaBorrow(-D1Top, res+3*toomLen);
+    if (D2Top > 0)      karaCarry(D2Top, res+4*toomLen);
+    else if (D2Top < 0) karaBorrow(-D2Top, res+4*toomLen);
 }
 
 [[gnu::always_inline]]
@@ -1470,25 +1482,24 @@ static void kara(ConstDigitPtr a, std::size_t N,
         driverData.wait_for_workers(false);
 #ifdef CHECK_TIMES
 // Here I will repeat each of the thread-run multiplications to check them.
-        stkvector<Digit> TP0(2*lowSize);
-        stkvector<Digit> TP1(2*lowSize);
-        stkvector<Digit> TP2(2*lowSize);
-        stkvector<Digit> Tws(workspaceSize(lowSize));
-        simpleMul(a, lowSize, b, lowSize, TP0);
-        simpleMul(aDiff, lowSize, bDiff, lowSize, TP1);
+        stkvector<Digit> TD0(2*lowSize);
+        stkvector<Digit> TD1(2*lowSize);
+        stkvector<Digit> TD2(2*lowSize);
+        simpleMul(a, lowSize, b, lowSize, TD0);
+        simpleMul(aDiff, lowSize, bDiff, lowSize, TD1);
         if (aHighLen<=7 || bHighLen <= 7) std::printf("\n@@@ too small size\n");
-        simpleMul(aHigh, aHighLen, bHigh, bHighLen, TP2);
+        simpleMul(aHigh, aHighLen, bHigh, bHighLen, TD2);
         int errcount = 0;
         for (size_t i=0; i<2*lowSize;i++)
-        {   if (result[i] != TP0[i])
+        {   if (result[i] != TD0[i])
             {   if (errcount < 5) std::printf("lowprod digit %d\n", (int)i);
                 errcount++;
             }
-            if(workspace[i] != TP1[i])
+            if(workspace[i] != TD1[i])
             {   if (errcount < 5) std::printf("midprod digit %d\n", (int)i);
                 errcount++;
             }
-            if (i < aHighLen+bHighLen && result[2*lowSize+i] != TP2[i])
+            if (i < aHighLen+bHighLen && result[2*lowSize+i] != TD2[i])
             {   if (errcount < 5) std::printf("highprod digit %d\n", (int)i);
                 errcount++;
             }
@@ -1504,9 +1515,9 @@ static void kara(ConstDigitPtr a, std::size_t N,
             display("lowprod", result, 2*lowSize);
             display("midprod", workspace, 2*lowSize);
             display("hiprod",  result+2*lowSize, aHighLen+bHighLen);
-            display("TP0", TP0, 2*lowSize);
-            display("TP1", TP1, 2*lowSize);
-            display("TP2", TP2, aHighLen+bHighLen);
+            display("TD0", TD0, 2*lowSize);
+            display("TD1", TD1, 2*lowSize);
+            display("TD2", TD2, aHighLen+bHighLen);
             std::abort();
         }
 #endif

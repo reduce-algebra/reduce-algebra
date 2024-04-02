@@ -885,9 +885,16 @@ inline int exceptionLine = -1;
    exceptionLine = __LINE__;    \
    exceptionFlag = flavour;     \
    return SPID_Throw; } while(false)
+#define THROWVOID(flavour) do { \
+   exceptionFile = __FILE__;    \
+   exceptionLine = __LINE__;    \
+   exceptionFlag = flavour;     \
+   return; } while(false)
 #else
 #define THROW(flavour)          \
     do { exceptionFlag = flavour; return SPID_Throw; } while(false)
+#define THROWVOID(flavour)      \
+    do { exceptionFlag = flavour; return; } while(false)
 #endif
 
 #define CATCH(flavour) \
@@ -995,6 +1002,7 @@ inline bool exceptionPending()
 #endif // NO_THREADS
 
 #define THROW(flavour) throw flavour()
+#define THROWVOID(flavour) throw flavour()
 
 #define CATCH(flavour) return nil;})(); } catch (flavour &e) {
 
