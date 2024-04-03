@@ -1735,7 +1735,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // present in valid utf8 this ought not to mess too much up! 
                     if (windowed) term_printf("\xc1\x9e\n");
                     term_close();
-                    THROW(LispStop);
+                    THROWVOID(LispStop);
                 }
             },
 
@@ -2211,7 +2211,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
                         REVISION, IMPNAME, __DATE__);
                     term_close();
-                    THROW(LispStop);
+                    THROWVOID(LispStop);
                 }
             },
 
@@ -2955,7 +2955,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         init_flags &= ~INIT_VERBOSE;
         fwin_pause_at_end = true;
         term_close();
-        THROW(LispStop);
+        THROWVOID(LispStop);
     }
     base_time = read_clock();
     gc_time = 0;
@@ -3650,7 +3650,6 @@ EMSCRIPTEN_KEEPALIVE
 int ENTRYPOINT(int argc, const char *argv[])
 {   int res;
 #ifdef EMBEDDED
-    initThreadLocals();
     if ((res = find_program_directory(argv[0])) != 0)
     {   std::fprintf(stderr,
                      "Unable to identify program name and directory (%d)\n", res);

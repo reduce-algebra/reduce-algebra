@@ -1267,7 +1267,8 @@ symbolic procedure scan;
         if null(ttype!* = 3) then go to sw2
          else if nxtsym!* eq !$eof!$ then return filenderr()
          else if car x then go to sw3;
-   sw2: cursym!*:=cadr x;
+   sw2: if null cdr x then <<prin2x nxtsym!*; symerr("Unknown operator",nil) >>;
+        cursym!*:=cadr x;
         curescaped!*:=nil;
         bool := nil;
         if cursym!* = '!*rpar!* then go to l2
