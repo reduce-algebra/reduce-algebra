@@ -78,6 +78,12 @@ symbolic procedure mkprec;
 mkprec();
 % From here onwards the precedences of infix operators are established.
 
+% Definition for bootstrapping: list2widestring is not yet defined at this point,
+% but newtok is called early during the bootstrap process.
+% For the moment, define a simple version for ASCII characters only.
+% The full version is defined later in tok.red and will overwrite this simple definition.
+symbolic procedure list2widestring u; list2string u;
+
 symbolic procedure newtok u;
    begin scalar !*redeflg!*,x,y;
       if atom u or atom car u or null idp caar u
@@ -86,7 +92,7 @@ symbolic procedure newtok u;
       put(caar u,'switch!*,
           cdr newtok1(car u,cadr u,get(caar u,'switch!*)));
       % set up PRTCH property.
-      y := intern list2string car u;
+      y := intern list2widestring car u;
 % A redefinition that does not seem to be changing anything does not
 % need to be warned about.
       if not (get(cadr u, 'prtch) = y) and
