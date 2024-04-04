@@ -326,4 +326,7 @@ then
   dos2unix deps/noncore-packages.psl-depend
 fi
 
+grep -q '^\*\*\*\*\* ' buildlogs/bootstrap.blg && echo Possible error building initial bootstrap system - check buildlogs/bootstrap.blg && exit 1
+exit 0
+
 echo Bootstrap reduce built

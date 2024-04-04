@@ -186,6 +186,33 @@ cd psl
 (load!-package 'rtools)
 (load!-package 'mathpr)
 (load!-package 'entry)
+
+% Now load everything marked as "preload" in packages.map
+
+(prog (i w e r r1 mods)
+    (cond
+       ((and (boundp 'minireduce) (symbol!-value 'minireduce))
+        (setq i "package.map"))
+       (t (setq i "$reduce/packages/package.map")))
+    (setq i (open i 'input))
+    (setq i (rds i))
+    (setq e !*echo)
+    (setq !*echo nil)
+    (setq w (read))
+    (setq !*echo e)
+    (setq i (rds i))
+    (close i)
+    (setq mods nil)
+    (foreach x in w do
+       (cond
+          ((and (member 'preload (cddr x))
+                (member 'psl (cddr x)))
+           (setq mods
+              (nconc mods (list (car x)))))))
+    (foreach m in mods do
+       (cond
+          ((not (member m loaded!-modules!*)) (load!-package m)))))
+
 (cond ((not (equal "$revision" ""))
        (setq revision!* "$revision")))
 (setq version!* (compress (append
@@ -245,4 +272,8 @@ cd psl
 XXX
 
 cd $chere
+
+grep -q '^\*\*\*\*\* ' "$logdir/$logfile" && echo Possible error building Reduce image - check "$logdir/$logfile" && exit 1
+
+exit 0
 
