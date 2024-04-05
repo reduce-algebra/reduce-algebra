@@ -433,9 +433,6 @@ symbolic procedure explodehex n;
 symbolic procedure plist x;
   prop x;
 
-symbolic procedure symbol!-name x;
-  id2string x;
-
 % A function to expand a filename glob (pattern) via a pipe
 %  A couple of tricky issues here:
 %    a) set *raise to nil so that upper case characters in strings are not changed to lower case

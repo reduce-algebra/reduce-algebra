@@ -55,7 +55,7 @@ symbolic procedure intrdeval u;
     % Allow for int(f,x,low,upp).
     if length u = 3 and (atom car u or not(caar u eq 'equal))
       then u := {{'equal,car u,'!*interval!* . cdr u}}
-     else if eqcar(car u,'list) then
+     else if not atom u and eqcar(car u,'list) then
       u := for each x in cdar u collect reval x;
     for each x in u do
      <<if not eqcar(x,'equal) then typerr(x,"interval bounds");
@@ -66,6 +66,7 @@ symbolic procedure intrdeval u;
        imode := t; % inf only for univariate cases.
        vars:=cadr x.vars;
        p:=(cadr x. car y. cadr y).p>>;
+    if null vars then rederr "Missing interval bounds";
     m:=!*msg;
     if !*trnumeric then !*msg:=nil else protfg!* := t;
     r:= intrd0(e,vars,p);

@@ -58,6 +58,9 @@ symbolic procedure define!-alias!-list u;
       u := cdr u >>
    end;
 
+symbolic procedure symbol!-name x;
+  id2string x;
+
 
 % PSL doesn't need PRINTPROMPT.
 
