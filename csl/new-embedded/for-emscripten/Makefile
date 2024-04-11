@@ -76,10 +76,11 @@ else
 endif
 
 # Emscripten link flags:
-EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
- -s EXIT_RUNTIME\
- -s INITIAL_MEMORY=$(initial_memory)\
- -s NO_ERROR_ON_UNDEFINED_SYMBOLS
+EM_LDFLAGS = $(EM_CC_LD_FLAGS) \
+ -s EXIT_RUNTIME \
+ -s INITIAL_MEMORY=$(initial_memory) \
+ -s NO_ERROR_ON_UNDEFINED_SYMBOLS \
+ -s STACK_SIZE=5MB
 
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
