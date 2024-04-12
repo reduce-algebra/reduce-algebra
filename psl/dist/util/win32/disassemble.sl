@@ -245,6 +245,23 @@
 (fi 16#8e Jle ((j v)))
 (fi 16#8f Jnle((j v)))
 
+(fi 16#90 seto  ((E b)))
+(fi 16#91 setno ((E b)))
+(fi 16#92 setc  ((E b)))
+(fi 16#93 setnc ((E b)))
+(fi 16#94 sete  ((E b)))
+(fi 16#95 setne ((E b)))
+(fi 16#96 setna ((E b)))
+(fi 16#97 seta  ((E b)))
+(fi 16#98 sets  ((E b)))
+(fi 16#99 setns ((E b)))
+(fi 16#9a setp  ((E b)))
+(fi 16#9b setnp ((E b)))
+(fi 16#9c setl  ((E b)))
+(fi 16#9d setnl ((E b)))
+(fi 16#9e setng ((E b)))
+(fi 16#9f setg  ((E b)))
+
 (fi 16#af imul ((G v)(E v)))
 
 (fi 16#a3 bt   ((E v)(G v)))
@@ -336,11 +353,11 @@
         ((eqcar p 'R) (decode-modrm p))
         ((eqcar p 'M) (decode-modrm p))
              % offset
-        ((equal p '(o b))
+        ((equal p '(O b))
          (setq lth!* (plus lth!* 1))
          (pop bytes!*))
 
-        ((equal p '(o v))
+        ((equal p '(O v))
          (setq lth!* (plus lth!* 4))
          (setq w (bytes2word))
 	 (cond ((and (xgreaterp w symfnc)
@@ -360,7 +377,7 @@
 	     (decode-x87fpu p bytes* addr* 0)
 	   (decode-modrm p)))
 
-	(t (terpri)
+        (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
            (stderror "disassemble")))))
 
@@ -391,12 +408,12 @@
               (bldmsg "*%w" w))
         ((eq mod 0) (bldmsg "[%w]" (reg-m rm)))
         ((eq mod 1) 
-              (setq  lth* (add1 lth*))
-	      (let ((b (pop bytes*)))
-		% b is unsigned, convert to signed byte
-		(if (greaterp b 127)
-		    (setq b (wdifference b 256)))
-		(bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b)))
+	 (setq  lth* (add1 lth*))
+	 (let ((b (pop bytes*)))
+           % b is unsigned, convert to signed byte
+	   (if (greaterp b 127)
+	       (setq b (wdifference b 256)))
+	   (bldmsg "[%w%w%w]" (reg-m rm) (if (wlessp b 0) "" "+") b)))
         ((eq mod 2) 
               (setq  lth* (plus 4 lth*))
 	      (setq w (bytes2word))
@@ -404,14 +421,14 @@
 		    ((equal w 16#B8000004) (setq *comment " -> cdr")))	      
               (bldmsg "[%w+%x]" (reg-m rm) (int2sys w)))
         ((eq mod 3)
-         (setq mod-is-3* t)
-         (bldmsg "%w" (reg-m rm)))) )))
+	 (setq mod-is-3* t)
+	 (bldmsg "%w" (reg-m rm)))) )))
               
 (de decode-sib(p mod)
-   (prog(scale index base offset seg b w)
+   (prog (scale index base offset seg b w)
      (setq b (pop bytes*))
-     (setq  lth* (add1 lth*))
-     (setq scale (lsh 1 (wshift b -6)))
+     (setq lth* (add1 lth*))
+     (setq scale (lsh 1 (wshift b -6)))     
      (setq index (wand 7 (wshift b -3)))
      (when (eq index 4) (setq index ""))  % erstmal
      (setq base (wand 7 b))
@@ -807,8 +824,8 @@ loop
 
          (when (eq name 'grp1) (setq name (namegrp1)))
          (when (eq name 'grp5) (setq name (namegrp5)))
-	 (when (eq name 'grp3) (setq name (namegrp3)))
-         (when (eq name 'shift)(setq name (nameshift)))
+         (when (eq name 'grp3) (setq name (namegrp3)))
+         (when (eq name 'shift)(setq name ( nameshift)))
          (when (eq name 'convert)(setq name (nameconvert)))
 	 (when (eq name 'x87fpu) (setq name (name-x87fpu p1)))
 

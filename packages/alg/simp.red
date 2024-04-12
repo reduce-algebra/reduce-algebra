@@ -816,7 +816,9 @@ symbolic procedure simprad(u,n);
    if !*reduced then multsq(radfa(numr u,n),invsq radfa(denr u,n))
      else begin scalar iflag,x,y,z;
        if !*rationalize then << % Move all radicands into numerator.
-          y:=list(denr u,1); % A partitioned expression.
+          y:=list(if !*precise and evenp n
+	            then numr mkabsf0 denr u
+	           else denr u,1); % A partitioned expression.
           u:=multf(numr u, exptf(denr u,n-1)) ./ 1 >>
          else y := radf(denr u,n);
        if n=2 and minusf numr u % Should this be 'evenp n'?

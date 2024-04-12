@@ -345,7 +345,7 @@
 	(setq Pass1CodeList (cons NIL NIL))
 	(ForEach TableEntry in (car Pass1ConstantContentsList) do
 		 (AppendContents TableEntry))
-	% The contents go on the begininning of the list.
+	% The contents go on the beginning of the list.
 	(LConc Pass1CodeList (car TempCodeList))))
 
 (de AppendOneConstant (ExpressionLabelPair)

@@ -287,6 +287,23 @@
 (fi 16#8e Jle ((j v)))
 (fi 16#8f Jnle((j v)))
 
+(fi 16#90 seto  ((E b)))
+(fi 16#91 setno ((E b)))
+(fi 16#92 setc  ((E b)))
+(fi 16#93 setnc ((E b)))
+(fi 16#94 sete  ((E b)))
+(fi 16#95 setne ((E b)))
+(fi 16#96 setna ((E b)))
+(fi 16#97 seta  ((E b)))
+(fi 16#98 sets  ((E b)))
+(fi 16#99 setns ((E b)))
+(fi 16#9a setp  ((E b)))
+(fi 16#9b setnp ((E b)))
+(fi 16#9c setl  ((E b)))
+(fi 16#9d setnl ((E b)))
+(fi 16#9e setng ((E b)))
+(fi 16#9f setg  ((E b)))
+
 (fi 16#ae Grp15 ((M)))
 
 (fi 16#af imul ((G v)(E v)))
@@ -554,7 +571,7 @@
                        (safe-int2id (wshift (wdifference w symval) -3))))))
            (if *gassyntax 
 	       (return (bldmsg "*0x%x%w" w index))
-	     (return (bldmsg "[%x%w]" w index))))
+	     (return (bldmsg "[0x%x%w]" w index))))
      (setq seg
        (cond (segment* segment*)
              (t "")))
@@ -647,7 +664,7 @@
 	    ((or (eq p1 16#da) (eq p1 16#de)) (name-x87-da-de))
 	    ((eq p1 16#db) (name-x87-db))
 	    ((eq p1 16#dc) (name-x87-dc))
-	    ((eq p1 16#dd) (name-x87-de))
+	    ((eq p1 16#de) (name-x87-dd))
 	    ))
     (return (list lth* name (cons 'op1 modrm)))
     ) 

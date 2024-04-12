@@ -557,7 +557,7 @@ symbolic eval '
     (prin2 "  ") (prin2 gc_time)
     (terpri))\$
 end\$
-quit\$
+(exitlisp)
 XXX
   if test -f $logdir/$p.showtime
   then
