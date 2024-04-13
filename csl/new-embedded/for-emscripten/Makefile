@@ -75,12 +75,19 @@ else
  initial_memory = 1024mb
 endif
 
+# Emscripten versions up to 3.1.26 use a fixed stack size of 5MB and *do not accept* a STACK_SIZE parameter.
+# Subsequent versions use a default stack size of 64KB, which is too small for REDUCE
+# and must be set explicitly to a larger value, for which 5MB seem reasonable.
+# *** NOTE: the following code only works for an emscripten version earlier than 3.2.0. ***
+SHELL = /bin/bash
+stack_size != [[ `emcc -v |& sed -n '1s/.*) 3.1.\([0-9]\+\) (.*/\1/p'` > 26 ]] && echo '-s STACK_SIZE=5MB'
+
 # Emscripten link flags:
 EM_LDFLAGS = $(EM_CC_LD_FLAGS) \
  -s EXIT_RUNTIME \
  -s INITIAL_MEMORY=$(initial_memory) \
  -s NO_ERROR_ON_UNDEFINED_SYMBOLS \
- -s STACK_SIZE=5MB
+ $(stack_size)
 
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
