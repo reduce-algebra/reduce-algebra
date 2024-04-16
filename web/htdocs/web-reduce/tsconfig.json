@@ -1,9 +1,13 @@
 {
     "compilerOptions": {
-        "outDir": "GenJS",
+        "strict": false,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "generated",
         "target": "es2020",
         "incremental": true,
         "tsBuildInfoFile": ".tsbuildinfo"
     },
-    "include": ["typescript/*"]
+    "include": [
+        "typescript/*"
+    ]
 }

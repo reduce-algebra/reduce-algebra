@@ -70,7 +70,7 @@
 </modal-dialogue>
 
 <script type="module">
-	import { Functions } from "./GenJS/TempFuncs.js";
+	import { Functions } from "./generated/TempFuncs.js";
 
 	class GammaEtcFunctions extends Functions {
 		constructor() {

@@ -1,11 +1,16 @@
 <?php
+$gnuplot = ($_SERVER['QUERY_STRING'] == 'gnuplot');
 $page_title = 'Web REDUCE';
 $header_title = 'Web REDUCE';
 include '../include/begin-head.php';
 ?>
+
 <style type="text/css">
+    /* REDUCE */
+
     #IODisplayIframe,
-    #InputDiv {
+    #InputDiv,
+    #plot-div {
         width: 100%
     }
 
@@ -46,6 +51,17 @@ include '../include/begin-head.php';
         justify-content: space-evenly;
     }
 
+    #plot-div {
+        border: thin solid black;
+    }
+
+    #gnuplot-image {
+        width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: white;
+    }
+
     div.modal-body input[type="text"] {
         text-align: center;
         font-style: italic;
@@ -81,6 +97,18 @@ include '../include/begin-head.php';
     .fs-normal {
         font-size: medium;
     }
+
+    /* Gnuplot */
+    #plot-window {
+        margin-bottom: 1rem;
+    }
+
+    #input {
+        height: 30vh;
+        /* % of viewport height */
+        overflow: scroll;
+        border: solid black medium;
+    }
 </style>
 
 <?php include '../include/begin-body.php'; ?>
@@ -88,21 +116,18 @@ include '../include/begin-head.php';
 <!-- Menu bar -->
 <nav id="Menubar" class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
                 <!-- REDUCE Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle disabled" href="#" id="REDUCEMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">REDUCE</a>
+                    <a class="nav-link dropdown-toggle disabled" href="#" id="REDUCEMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">REDUCE</a>
                     <ul class="dropdown-menu" aria-labelledby="REDUCEMenuLink">
                         <li><button id="StartREDUCEMenuItem" class="dropdown-item" type="button">Start REDUCE</button>
                         </li>
-                        <li><button id="LoadPackagesMenuItem" class="dropdown-item" data-bs-toggle="modal"
-                                data-bs-target="#LoadPackagesDialogue" type="button">Load Packages&hellip;</button></li>
+                        <li><button id="LoadPackagesMenuItem" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#LoadPackagesDialogue" type="button">Load Packages&hellip;</button></li>
                         <li><button id="StopREDUCEMenuItem" class="dropdown-item" type="button">Stop REDUCE</button>
                         </li>
                         <li><button id="RestartREDUCEMenuItem" class="dropdown-item" type="button">Restart
@@ -115,8 +140,7 @@ include '../include/begin-head.php';
                 </li>
                 <!-- File Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="FileMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">File</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="FileMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">File</a>
                     <ul class="dropdown-menu" aria-labelledby="FileMenuLink">
                         <li class="dropdown-item">
                             <input id="EchoFileInputCheckbox" type="checkbox" checked="checked" />
@@ -139,8 +163,7 @@ include '../include/begin-head.php';
                 </li>
                 <!-- View Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="ViewMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">View</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="ViewMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">View</a>
                     <ul class="dropdown-menu" aria-labelledby="ViewMenuLink">
                         <li class="dropdown-item">
                             <input id="FullWindowCheckbox" type="checkbox" />
@@ -170,57 +193,38 @@ include '../include/begin-head.php';
                 </li>
                 <!-- Templates Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="TemplatesMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">Templates</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="TemplatesMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Templates</a>
                     <ul class="dropdown-menu" aria-labelledby="TemplatesMenuLink">
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#DerivativeTemplate"
-                                type="button">Derivative&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralTemplate"
-                                type="button">Integral&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#LimitTemplate"
-                                type="button">Limit&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SumProdTemplate"
-                                type="button">Sum or Product&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MatrixTemplate"
-                                type="button">Matrix&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SolveTemplate"
-                                type="button">Solve Equation(s)&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ODESolveTemplate"
-                                type="button">Solve an ODE&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ForTemplate"
-                                type="button">For Statement&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#DerivativeTemplate" type="button">Derivative&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralTemplate" type="button">Integral&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#LimitTemplate" type="button">Limit&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SumProdTemplate" type="button">Sum or Product&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MatrixTemplate" type="button">Matrix&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SolveTemplate" type="button">Solve Equation(s)&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ODESolveTemplate" type="button">Solve an ODE&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ForTemplate" type="button">For Statement&hellip;</button></li>
                     </ul>
                 </li>
                 <!-- Functions Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="FunctionsMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">Functions</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="FunctionsMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Functions</a>
                     <ul class="dropdown-menu" aria-labelledby="FunctionsMenuLink">
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ExpLogFunctions"
-                                type="button">Exp, Log, Power, Root, etc&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#GammaEtcFunctions"
-                                type="button">Gamma &amp; Beta Functions, etc&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralFunctions"
-                                type="button">Integral Functions&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#AiryBesselFunctions"
-                                type="button">Airy &amp; Bessel Functions, etc&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#StruveEtcFunctions"
-                                type="button">Struve &amp; Kummer Functions, etc&hellip;</button></li>
-                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#OrthoPolyFunctions"
-                                type="button">Classical Orthogonal Polynomials&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#ExpLogFunctions" type="button">Exp, Log, Power, Root, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#GammaEtcFunctions" type="button">Gamma &amp; Beta Functions, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#IntegralFunctions" type="button">Integral Functions&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#AiryBesselFunctions" type="button">Airy &amp; Bessel Functions, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#StruveEtcFunctions" type="button">Struve &amp; Kummer Functions, etc&hellip;</button></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#OrthoPolyFunctions" type="button">Classical Orthogonal Polynomials&hellip;</button></li>
                     </ul>
                 </li>
                 <!-- Help Menu -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="HelpMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">Help</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="HelpMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Help</a>
                     <ul class="dropdown-menu" aria-labelledby="HelpMenuLink">
                         <li><a class="dropdown-item" href="about.php" target="_blank" title="Opens in a new tab.">About
                                 Web REDUCE</a></li>
-                        <li><a class="dropdown-item" href="UserGuide.php" target="_blank"
-                                title="Opens in a new tab.">Web REDUCE User Guide</a></li>
-                        <li><a class="dropdown-item" href="/manual/manual.html" target="_blank"
-                                title="Opens in a new tab.">REDUCE Manual</a></li>
+                        <li><a class="dropdown-item" href="UserGuide.php" target="_blank" title="Opens in a new tab.">Web REDUCE User Guide</a></li>
+                        <li><a class="dropdown-item" href="/manual/manual.html" target="_blank" title="Opens in a new tab.">REDUCE Manual</a></li>
                     </ul>
                 </li>
             </ul>
@@ -231,55 +235,93 @@ include '../include/begin-head.php';
 <div class="labelling">
     <label for="IODisplayIframe">Input/Output Display</label>
 </div>
-<iframe id="IODisplayIframe">
-    The obsolete browser does not support the iframe HTML element and so cannot run Web REDUCE.
-</iframe>
+<iframe id="IODisplayIframe"></iframe>
 
 <div class="labelling">
     <label for="InputDiv">Input Editor</label>
 </div>
 <div id="InputDiv" contenteditable="true" spellcheck="false"></div>
 <div id="buttons">
-    <button id="EarlierButton" type="button" disabled="disabled"
-        title="Select earlier keyboard input. Keyboard Shortcut: Control+UpArrow.">▲ Earlier Input</button>
+    <button id="EarlierButton" type="button" disabled="disabled" title="Select earlier keyboard input. Keyboard Shortcut: Control+UpArrow.">▲ Earlier Input</button>
     <button id="SendInputButton" type="button" title="Send the input above to REDUCE, terminating with a semicolon if necessary.
-Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)">Send
-        Input</button>
-    <button id="LaterButton" type="button" disabled="disabled"
-        title="Select later keyboard input. Keyboard Shortcut: Control+DownArrow.">▼ Later Input</button>
+Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)">Send Input</button>
+    <button id="LaterButton" type="button" disabled="disabled" title="Select later keyboard input. Keyboard Shortcut: Control+DownArrow.">▼ Later Input</button>
+    <?php if ($gnuplot) : ?>
+        <button id="toggle-plot-display-button" type="button" onclick="togglePlotWindowDisplay()">Show Plot Window (Below)</button>
+    <?php endif; ?>
 </div>
+
+<?php if ($gnuplot) : ?>
+    <!-- Web Gnuplot -->
+    <div id="plot-window" class="d-none">
+        <div class="labelling">
+            <label for="plot-div">
+                Plot Display
+                <span style="font-weight: normal">(<span id="gnuplot-version"></span>)</span>
+            </label>
+        </div>
+        <div id="plot-div">
+            <div id="gnuplot-image">
+                <!-- The default plot size in standalone mode is 600 by 400 pixels. -->
+                <canvas id="draw_plot_on_canvas" width="600" height="400">
+                    No support for HTML 5 canvas element
+                </canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        var gnuplot = true;
+    </script>
+<?php else : ?>
+    <script>
+        var gnuplot = false;
+    </script>
+<?php endif; ?>
 
 </div><!-- opened in begin-body.php -->
 
 <?php include '../include/footer.php'; ?>
 
-<script type="module" src="GenJS/Main.js"></script>
-<script type="module" src="GenJS/InputEditor.js"></script>
-<script type="module" src="GenJS/FileMenu.js"></script>
+<!-- REDUCE Libraries -->
 
 <!-- Modal Dialogues -->
-<script type="module" src="GenJS/TempFuncs.js"></script>
-<script type="module" src="GenJS/Templates.js"></script>
+<script type="module" src="generated/TempFuncs.js"></script>
+<script type="module" src="generated/Templates.js"></script>
 <?php
-    include './LoadPackagesDialogue.inc';
+include './LoadPackagesDialogue.inc';
 
-    include './TempFuncs.inc';
-    include './Templates/DerivativeTemplate.inc';
-    include './Templates/IntegralTemplate.inc';
-    include './Templates/LimitTemplate.inc';
-    include './Templates/SumProdTemplate.inc';
-    include './Templates/MatrixTemplate.inc';
-    include './Templates/SolveTemplate.inc';
-    include './Templates/ODESolveTemplate.inc';
-    include './Templates/ForTemplate.inc';
+include './TempFuncs.inc';
+include './Templates/DerivativeTemplate.inc';
+include './Templates/IntegralTemplate.inc';
+include './Templates/LimitTemplate.inc';
+include './Templates/SumProdTemplate.inc';
+include './Templates/MatrixTemplate.inc';
+include './Templates/SolveTemplate.inc';
+include './Templates/ODESolveTemplate.inc';
+include './Templates/ForTemplate.inc';
 
-    include './Functions/ExpLogFunctions.inc';
-    include './Functions/GammaEtcFunctions.inc';
-    include './Functions/IntegralFunctions.inc';
-    include './Functions/AiryBesselFunctions.inc';
-    include './Functions/StruveEtcFunctions.inc';
-    include './Functions/OrthoPolyFunctions.inc';
+include './Functions/ExpLogFunctions.inc';
+include './Functions/GammaEtcFunctions.inc';
+include './Functions/IntegralFunctions.inc';
+include './Functions/AiryBesselFunctions.inc';
+include './Functions/StruveEtcFunctions.inc';
+include './Functions/OrthoPolyFunctions.inc';
 ?>
+
+<!-- Main User Interface -->
+<script type="module" src="generated/Main.js"></script>
+<script type="module" src="generated/InputEditor.js"></script>
+<script type="module" src="generated/FileMenu.js"></script>
+
+<?php if ($gnuplot) : ?>
+    <!-- Gnuplot Libraries -->
+    <script src="generated/run-gnuplot.js"></script>
+    <script src="gnuplot/gnuplot.js"></script>
+    <script src="gnuplot/termjs/canvastext.js"></script>
+    <script src="gnuplot/termjs/gnuplot_common.js"></script>
+    <script src="gnuplot/termjs/gnuplot_dashedlines.js"></script>
+<?php endif; ?>
+
 </body>
 
 </html>

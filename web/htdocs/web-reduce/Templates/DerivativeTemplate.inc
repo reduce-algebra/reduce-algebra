@@ -27,7 +27,7 @@
 </modal-dialogue>
 
 <script type="module">
-	import { Template } from "./GenJS/TempFuncs.js";
+	import { Template } from "./generated/TempFuncs.js";
 
 	class DerivativeTemplate extends Template {
 		constructor() {
