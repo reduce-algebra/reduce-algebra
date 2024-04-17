@@ -22,12 +22,14 @@ Module["onRuntimeInitialized"] = function () {
   document.getElementById("gnuplot-version").innerText =
     "Powered by " + run_gnuplot("", "--version").stdout;
 };
-Module["preRun"] = [function () {
-  function stdin() {
-    return null; // if gnuplot asks for input, say NO
-  }
-  FS.init(stdin, null, null);
-}];
+Module["preRun"] = [
+  function () {
+    function stdin() {
+      return null; // if gnuplot asks for input, say NO
+    }
+    FS.init(stdin, null, null);
+  },
+];
 
 // Utility function to run gnuplot
 function run_gnuplot(script: string, options: string | string[]) {
@@ -54,7 +56,7 @@ function run_gnuplot(script: string, options: string | string[]) {
   HEAPU8.set(mem_snapshot);
 
   return {
-    stdout: STDOUT.join("\n")
+    stdout: STDOUT.join("\n"),
   };
 }
 
@@ -65,10 +67,13 @@ declare function draw_plot_on_canvas(): void; // Defined in "plot.js"
  * @param data: {} - event.data object from REDUCE web worker message.
  * @returns void
  */
-function launchGnuplot(data:
-  { channel: string, script: string, files: { filename: string, data: Uint8Array }[] }) {
+function launchGnuplot(data: {
+  channel: string;
+  script: string;
+  files: { filename: string; data: Uint8Array }[];
+}) {
   // console.log(script);
-  data.files.map(file => {
+  data.files.map((file) => {
     FS.writeFile(file.filename, file.data);
   });
   // Call gnuplot
@@ -87,21 +92,27 @@ function launchGnuplot(data:
   // draw_plot_on_canvas that uses global variables canvas and ctx!
   // Clear any previous plot from the canvas.
   // (There might be a better way to do this!)
-  (<HTMLCanvasElement>document.getElementById("draw_plot_on_canvas")).getContext("2d").reset();
+  (<HTMLCanvasElement>document.getElementById("draw_plot_on_canvas"))
+    .getContext("2d")
+    .reset();
   if (typeof draw_plot_on_canvas === "function") {
     draw_plot_on_canvas();
     showPlotWindowDisplay();
   }
 }
 
-let plotWindow: HTMLElement, togglePlotWindowDisplayBtn: HTMLElement, bottom: number;
+let plotWindow: HTMLElement,
+  togglePlotWindowDisplayBtn: HTMLElement,
+  bottom: number;
 const inputDiv = document.getElementById("InputDiv");
 // inputDiv is exported from module Main.ts but inaccessible here!
 
 // On page load
 document.addEventListener("DOMContentLoaded", function () {
   plotWindow = document.getElementById("plot-window");
-  togglePlotWindowDisplayBtn = document.getElementById("toggle-plot-display-button");
+  togglePlotWindowDisplayBtn = document.getElementById(
+    "toggle-plot-display-button",
+  );
   bottom = document.getElementById("main").scrollHeight;
 });
 
