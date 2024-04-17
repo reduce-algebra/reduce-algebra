@@ -1,6 +1,38 @@
-% Compat.sl.  Useful definitions for Reduce PSL versions.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File: pslcompat.sl.
+% Description:  Useful definitions for Reduce PSL versions.
+%
 % Author: Winfried Neun, Herbert Melenk.
+% Status: Open Source: BSD License
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  $Id$
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load if-system))
 
@@ -16,16 +48,16 @@
 ))
 
 (def-pass-1-reform digit (u)
-	 `((lambda ( ($local $$x$$)) (eq (quote 1) (field 
-		      (wand (wdifference (quote 8#057) 
-			(field ($local $$x$$) ',infstartingbit ',infbitlength))
-			    (wdifference
-			(field ($local $$x$$) ',infstartingbit ',infbitlength)
-					 (quote 8#072)))
-				 '0 '1))) ,u))
+         `((lambda ( ($local $$x$$)) (eq (quote 1) (field 
+                      (wand (wdifference (quote 8#057) 
+                        (field ($local $$x$$) ',infstartingbit ',infbitlength))
+                            (wdifference
+                        (field ($local $$x$$) ',infstartingbit ',infbitlength)
+                                         (quote 8#072)))
+                                 '0 '1))) ,u))
 
 (def-pass-1-reform flagp** (u v)
-	  `(flagp ,u ,v))
+          `(flagp ,u ,v))
 
 (def-pass-1-reform terminalp ()
     '(and ($fluid !*int) (eq ($fluid ifl!*) (quote nil))))
@@ -33,18 +65,19 @@
 (def-pass-1-reform liter (u)
   `((lambda (($local &u&))
     (eq '0 (wor (wxor 
-		 (field ($local &u&) ',tagstartingbit ',infstartingbit) ',id-tag)
+                 (field ($local &u&) ',tagstartingbit ',infstartingbit) ',id-tag)
                 ((lambda (($local &infu&))
-		   (wshift
-		    (wand (wor (wdifference ($local &infu&) '8#141) % a
-			       (wdifference '8#172 ($local &infu&))) % z
-			  (wor (wdifference ($local &infu&) '8#101) % A
-			       (wdifference '8#132 ($local &infu&))) % Z
-		    ) '-31))
-		 (field ($local &u&) ',infstartingbit ',infbitlength))
-		)))
+                   (wshift
+                    (wand (wor (wdifference ($local &infu&) '8#141) % a
+                               (wdifference '8#172 ($local &infu&))) % z
+                          (wor (wdifference ($local &infu&) '8#101) % A
+                               (wdifference '8#132 ($local &infu&))) % Z
+                    ) '-31))
+                 (field ($local &u&) ',infstartingbit ',infbitlength))
+                )))
     ,u))
 
+(commentoutcode % older optimization, see below for current
 (def-pass-1-reform   length (u)
    %  length (length (explode x)) -> (flatsize x)
    %    else check in line for a short list:
@@ -62,6 +95,7 @@
                       (quote 3))
                ((quote t) (wplus2 (quote 3)(length ($local &u&))))))
         ,u)))
+)
 
 (def-pass-1-reform   length (u)
    %  length (length (explode x)) -> (flatsize x)
@@ -83,37 +117,37 @@
                     
 
 (def-pass-1-reform   lengthc (u)
-	`(flatsize2 ,u))
+        `(flatsize2 ,u))
 
 (compiletime
  (defmacro def-pass-1-macro (name args . body)
    (let ((fcn-name (intern (string-concat "pa1m-" (id2string name)))))
      `(progn
-	(put (quote ,name) (quote pass-1-macro) (quote ,fcn-name))
-	(defmacro ,fcn-name ,args ,@body)
+        (put (quote ,name) (quote pass-1-macro) (quote ,fcn-name))
+        (defmacro ,fcn-name ,args ,@body)
     ))))
 
 (def-pass-1-macro  flagpcar (u v)
   `((lambda (&&u&&)
     (and (null (atom &&u&&))
-	 (idp (car  &&u&&))
-	 (flagp (car &&u&&) ,v) )) ,u ))
+         (idp (car  &&u&&))
+         (flagp (car &&u&&) ,v) )) ,u ))
 
 (def-pass-1-macro lispapply(w v)
  `((lambda(&&u&&)
    (cond ((not (atom &&u&&)) 
-	  (rerror 'rlisp '2 (list '"Apply called with non-id arg" &&u&&)))
-	(t (apply &&u&& ,v)))) ,w))
+          (rerror 'rlisp '2 (list '"Apply called with non-id arg" &&u&&)))
+        (t (apply &&u&& ,v)))) ,w))
 
 
 (def-pass-1-reform   apply1(u v)
-	`(apply ,u (list ,v)))
+        `(apply ,u (list ,v)))
 
 (def-pass-1-reform   apply2(u v w)
-	`(apply ,u (list ,v ,w)))
+        `(apply ,u (list ,v ,w)))
 
 (def-pass-1-reform   apply3(u v w x) 
-	`(apply ,u (list ,v ,w ,x)))
+        `(apply ,u (list ,v ,w ,x)))
 
 (def-pass-1-reform lispeval (u) `(eval ,u))
 
@@ -129,27 +163,27 @@
   % the majority of REDUCE's calls to assoc have an empty list.
 
   (cond ((or (eval-eq-able? item)
-	    (and (constant? list)
-		 (for (in item (constant-value list))
-		      (always (eq-able? (car item)))
-		      )))
-	`(atsoc ,item ,list))
-	((and (getd 'assoc*)
-	       % the following are known to be proper a-lists
-	      (or (equal list '(car ($fluid alglist*)))
-		  (equal list '(cdr ($fluid alglist*)))))
-	 (mkassocform `(assoc* ,item ($local !&uhu)) 
-		      '($local !&uhu) 
-		      list))
-	(t (mkassocform `(assoc ,item ($local !&uhu)) 
-		      '($local !&uhu) 
-		       list))
+            (and (constant? list)
+                 (for (in item (constant-value list))
+                      (always (eq-able? (car item)))
+                      )))
+        `(atsoc ,item ,list))
+        ((and (getd 'assoc*)
+               % the following are known to be proper a-lists
+              (or (equal list '(car ($fluid alglist*)))
+                  (equal list '(cdr ($fluid alglist*)))))
+         (mkassocform `(assoc* ,item ($local !&uhu)) 
+                      '($local !&uhu) 
+                      list))
+        (t (mkassocform `(assoc ,item ($local !&uhu)) 
+                      '($local !&uhu) 
+                       list))
     ))
 
 (de mkassocform(form name list)
    `((lambda (,name)
        (cond ((eq ,name (quote nil)) (quote nil))
-	     ((quote t) ,form))) ,list))
+             ((quote t) ,form))) ,list))
 
 %%%%%%%%%%%%%%%% optimize (NULL (AND ...))  (NULL (OR ...))
 %  Note that pa1m-null is applied before pa1r-null. Both have a
@@ -162,8 +196,8 @@
   % (NULL (or a b ...))  -> (and (null a)(null b) ...)
  (cond ((not (pairp u)) nil)
        ((or (eq (car u) 'and) (eq (car u) 'or))
-	 (cons (if (eq (car u) 'and) 'or 'and)
-	       (mapcar (cdr u)(function(lambda(w) (list 'null w) )))))
+         (cons (if (eq (car u) 'and) 'or 'and)
+               (mapcar (cdr u)(function(lambda(w) (list 'null w) )))))
        (t nil)))
 
 %%%%%%%%%%%%%%%% decompose (MEMQ a '(b ....)) into (or (eq a 'b)....) in tests
@@ -219,7 +253,7 @@
       (setq w (cond ((lessp (length w) 8) (cons '!_ w))
                     ((setq x(intersection '(!e !a !i !o !u) w))
                      (subst '!_ (car x) w))
-	            (t (stderror (bldmsg "cannot create lap file name for %w"
+                    (t (stderror (bldmsg "cannot create lap file name for %w"
                                        (car u))))))
       (setq this-module* (compress w))
       (setq name (compress 
@@ -237,7 +271,7 @@
          (saveuncompiledexpression (list 'load this-module*))
          (saveuncompiledexpression '(endmodule))
          (setq dfprint!* 'dfprintfasl)
-   	 )
+         )
         ((atom x) nil)
         ((flagp (car x) 'eval)
          (eval x)

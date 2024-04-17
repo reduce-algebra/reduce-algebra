@@ -82,10 +82,10 @@
 
 <script type="module">
 	// Imported classes:
-	import { Functions } from "./GenJS/TempFuncs.js";
+	import { Functions } from "./generated/TempFuncs.js";
 
 	// Imported functions:
-	import { loadPackage } from "./GenJS/Main.js";
+	import { loadPackage } from "./generated/Main.js";
 
 	class StruveEtcFunctions extends Functions {
 		constructor() {

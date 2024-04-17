@@ -29,10 +29,10 @@
 
 <script type="module">
 	// Imported classes:
-	import { Template } from "./GenJS/TempFuncs.js";
+	import { Template } from "./generated/TempFuncs.js";
 
 	// Imported functions:
-	import { loadPackage } from "./GenJS/Main.js";
+	import { loadPackage } from "./generated/Main.js";
 
 	class MatrixTemplate extends Template {
 		constructor() {

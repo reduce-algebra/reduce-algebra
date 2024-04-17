@@ -32,4 +32,4 @@
 	</div>
 </div>
 
-<script type="module" src="GenJS/LoadPackagesDialogue.js"></script>
+<script type="module" src="generated/LoadPackagesDialogue.js"></script>

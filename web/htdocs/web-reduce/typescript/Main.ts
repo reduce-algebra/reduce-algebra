@@ -1,7 +1,13 @@
 /**
- * Main source code
+ * Main Web REDUCE interface TypeScript code by Francis Wright, July 2021 -- March 2024.
+ * Plotting additions by Hermann Rolfes, March 2024.
  * @module Main
  */
+
+declare function launchGnuplot(data: { channel: string, script: string, files: { filename: string, data: Uint8Array }[] }): void;
+declare var gnuplot: boolean;
+
+/* /// <reference path="../gnuplot/run-gnuplot.js" /> Doesn't work by default for a JS file! */
 
 export interface FileSystemWritableFileStream extends WritableStream {
     write(data: string): Promise<undefined>;
@@ -24,10 +30,10 @@ export const Global: {
 };
 
 /** True if console logging is enabled. */
-export const debug = (location.search.includes("debug"));
+export const debug = location.search.includes("debug");
 
 /** True if mobile version selected. */
-export const mobileVersion = (location.search.includes("mobile"));
+export const mobileVersion = location.search.includes("mobile");
 
 // Set up access to document elements and reset their defaults for when the page is reloaded:
 const startREDUCEMenuItem = document.getElementById("StartREDUCEMenuItem") as HTMLButtonElement;
@@ -35,7 +41,7 @@ const loadPackagesMenuItem = document.getElementById("LoadPackagesMenuItem") as 
 const stopREDUCEMenuItem = document.getElementById("StopREDUCEMenuItem") as HTMLButtonElement;
 const restartREDUCEMenuItem = document.getElementById("RestartREDUCEMenuItem") as HTMLButtonElement;
 const clearDisplayMenuItem = document.getElementById("ClearDisplayMenuItem") as HTMLButtonElement;
-const ioColouringCheckbox = document.getElementById('IOColouringCheckbox') as HTMLInputElement;
+const ioColouringCheckbox = document.getElementById("IOColouringCheckbox") as HTMLInputElement;
 ioColouringCheckbox.checked = true;
 
 // See https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html...
@@ -56,13 +62,13 @@ export function hideViewMenuLink() {
 }
 
 /** Typeset Maths View Menu HTML Element. */
-export const typesetMathsCheckbox = document.getElementById('TypesetMathsCheckbox') as HTMLInputElement;
+export const typesetMathsCheckbox = document.getElementById("TypesetMathsCheckbox") as HTMLInputElement;
 typesetMathsCheckbox.checked = true;
-const centreTypesetMathsCheckbox = document.getElementById('CentreTypesetMathsCheckbox') as HTMLInputElement;
+const centreTypesetMathsCheckbox = document.getElementById("CentreTypesetMathsCheckbox") as HTMLInputElement;
 centreTypesetMathsCheckbox.checked = true;
 
 /** Input Editor HTML Element. */
-export const inputDiv = document.getElementById('InputDiv');
+export const inputDiv = document.getElementById("InputDiv");
 inputDiv.innerHTML = "";
 inputDiv.focus();
 
@@ -74,14 +80,14 @@ export function refocus() {
 }
 
 /** Earlier Button HTML Element. */
-export const earlierButton = document.getElementById('EarlierButton') as HTMLButtonElement;
+export const earlierButton = document.getElementById("EarlierButton") as HTMLButtonElement;
 earlierButton.disabled = true;
 
 /** Send Input Button HTML Element. */
-export const sendInputButton = document.getElementById('SendInputButton') as HTMLButtonElement;
+export const sendInputButton = document.getElementById("SendInputButton") as HTMLButtonElement;
 
 /** Later Button HTML Element. */
-export const laterButton = document.getElementById('LaterButton') as HTMLButtonElement;
+export const laterButton = document.getElementById("LaterButton") as HTMLButtonElement;
 laterButton.disabled = true;
 const fileMenuLink = document.getElementById("FileMenuLink") as HTMLAnchorElement;
 const templatesMenuLink = document.getElementById("TemplatesMenuLink") as HTMLAnchorElement;
@@ -155,12 +161,12 @@ export function sendPlainTextToIODisplay(text: string, displayClass?: string) {
  * @param {*} event
  * @returns null
  */
-function reduceWebMessageHandler(event: { data: { channel: string; line: any; }; }) {
-    if (Global.hideOutput) { // hide changes of switches etc.
-        Global.hideOutput = false;
-        return;
-    }
-    if (event.data.channel === 'stdout') {
+function reduceWebMessageHandler(event: { data: { channel: string, line?: string, script?: string, files?: { filename: string, data: Uint8Array }[] }; }) {
+    if (event.data.channel === "stdout") {
+        if (Global.hideOutput) { // hide changes of switches etc.
+            Global.hideOutput = false;
+            return;
+        }
         let output = event.data.line;
         try {
             if (Global.outputToFile) { // assigned in "FileMenu.js"
@@ -176,27 +182,27 @@ function reduceWebMessageHandler(event: { data: { channel: string; line: any; };
         } catch (ignore) { }
         // If an empty string is passed (ie asking for a blank line of output)
         // it gets lost in the display, so output a single space character.
-        if (output == '') {
+        if (output == "") {
             debug && console.log("OUTPUT: Empty line"); // for debugging
-            sendPlainTextToIODisplay(' ');
+            sendPlainTextToIODisplay(" ");
         } else {
             debug && console.log(`OUTPUT: ${output}`); // for debugging
 
-            // The mathematical part of the output delived by REDUCE will have the form:
+            // The mathematical part of the output delivered by REDUCE will have the form:
             // latex:\black$\displaystyle\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-\log\left(x+1\right)}{4}$
             // delimited by a pair of control characters, \u0002 before and \u0005 after.
             // The TeX in the middle is extracted and MathJax formats it.
 
             // Detect the case where the output line contains some TeX:
-            let n = output.indexOf('\u0002');
+            let n = output.indexOf("\u0002");
             if (n != -1) {
                 // Here I not only strip out the material before the "U+0002" but also the
                 // "junk" that reads "latex:\black$\displaystyle" and a final "U+0005".
                 // Those are fragments that the REDUCE interface for TeXmacs inserts.
                 output = output.substring(n + 1 + 26, output.length - 2);
-                output = ioDisplayWindow.MathJax.tex2chtml(output);
-                output.classList.add("output");
-                ioDisplayBody.appendChild(output);
+                let html: HTMLElement = ioDisplayWindow.MathJax.tex2chtml(output);
+                html.classList.add("output");
+                ioDisplayBody.appendChild(html);
                 // The MathJax documentation doesn't tell the whole story!
                 // See https://github.com/mathjax/MathJax/issues/2365:
                 ioDisplayWindow.MathJax.startup.document.clear();
@@ -215,6 +221,9 @@ function reduceWebMessageHandler(event: { data: { channel: string; line: any; };
                 }
             }
         }
+    } else if (event.data.channel === "plot") { // Hermann Rolfes
+        launchGnuplot(event.data as { channel: string, script: string, files: { filename: string, data: Uint8Array }[] });
+        document.getElementById("plot-window").scrollIntoView();
     }
 }
 
@@ -244,24 +253,52 @@ export let sendToReduce = (str: string) => {
     for (let i = 0; i < str.length; i++)
         buf[i] = str.charCodeAt(i); // Returns a number that is the UTF-16 code unit value at the given index.
     worker.postMessage({
-        funcName: 'insert_buffer',
-        callbackId: '',
+        funcName: "insert_buffer",
+        callbackId: "",
         data: buf
     });
 }
 
-function startREDUCE() {
+/**
+ * @param {number} ms - How long to sleep in milliseconds.
+ */
+function sleep(ms) { // added by Hermann Rolfes
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
+async function startREDUCE() { // async and sleep added by Hermann Rolfes
     ioDisplayBody.innerHTML = "REDUCE is loading. Please wait&hellip;";
     try {
         // Doesn't seem to catch errors in the worker!
         // Need to catch worker errors in the worker and pass them out as messages.
-        worker = new Worker(mobileVersion ? "mobile/reduce.web.js" : "reduce.web.js");
+        worker = new Worker(mobileVersion ? "mobile/reduce.web.js" : "generated/reduce.pre.js");
         worker.onmessage = reduceWebMessageHandler;
         worker.onerror = reduceWebErrorHandler;
         // The rejectionhandled and unhandledrejection events described
         // on MDN don't seem to work or to be in the official spec!
-        sendToReduce('<< lisp (!*redefmsg := nil); load_package tmprint;' +
-            ' on nat, fancy, errcont; off int >>$');
+        await sleep(500);
+        Global.hideOutput = true;
+        sendToReduce(`lisp<<
+            !*redefmsg := nil;
+            load_package tmprint;
+            on nat, fancy, errcont;
+            off int;
+        >>$`);
+        if (gnuplot) {
+            await sleep(200);
+            Global.hideOutput = true;
+            sendToReduce("load_package gnuplot;");
+            await sleep(200);
+            Global.hideOutput = true;
+            // Redefine procedure in "plot/gnupldrv.red" to use fixed filename
+            // and no header (supplied by function run_gnuplot):
+            sendToReduce(`lisp<<
+                procedure PlotOpenDisplay();
+                plotpipe!* := open("/tmp/plotcmds.txt", 'output);
+            >>$`);
+        }
     } catch (error) {
         reduceWebErrorHandler(error);
         throw error; // cannot continue
@@ -299,9 +336,10 @@ function asciify(text: string) {
     for (const char of text)
         if (char > "\x7F") {
             const newChar = toASCII[char];
-            result += newChar ? newChar : char;
-        } else
-            result += char;
+            if (newChar) result += newChar;
+            // else just truncate to 7 bits:
+            else result += String.fromCodePoint(char.charCodeAt(0) & 0x7f);
+        } else result += char;
     return result;
 }
 
@@ -394,7 +432,7 @@ ioColouringCheckbox.addEventListener("change", () => {
  */
 export function enableTypesetMaths(enable: boolean) {
     Global.hideOutput = true;
-    sendToReduce(enable ? 'on fancy;' : 'off fancy;');
+    sendToReduce(enable ? "on fancy;" : "off fancy;");
 }
 
 typesetMathsCheckbox.addEventListener("change", () => {
@@ -404,7 +442,7 @@ typesetMathsCheckbox.addEventListener("change", () => {
 
 // Centre Typeset Maths:
 centreTypesetMathsCheckbox.addEventListener("change", event => {
-    ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? 'center' : 'left';
+    ioDisplayWindow.MathJax.config.chtml.displayAlign = centreTypesetMathsCheckbox.checked ? "center" : "left";
     ioDisplayWindow.MathJax.startup.getComponents(); // See http://docs.mathjax.org/en/latest/web/configuration.html
     hideViewMenuLink();
 });
@@ -446,5 +484,5 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
 <body>
     By default, REDUCE should load automatically.
 </body>
-</html>`
+</html>`;
 }
