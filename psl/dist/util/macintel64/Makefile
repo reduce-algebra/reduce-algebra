@@ -1,7 +1,7 @@
 ###############################################################################
 #
 # File:         PXU:Makefile
-# Description:  Makefile for psl vax specific utilities directory.
+# Description:  Makefile for psl macintel64 specific utilities directory.
 # Author:       Harold Carr and Leigh Stoller.
 # Created:      08-Oct-86
 # Modified:
@@ -39,7 +39,7 @@
 # 
 ###############################################################################
 
-PROOT	= /newsilo/silo/cons/verkaufpsl
+## PROOT	= /newsilo/silo/cons/verkaufpsl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
