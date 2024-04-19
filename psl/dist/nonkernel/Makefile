@@ -77,7 +77,8 @@ PNKFILES= \
 	$(PNKL)/sequence.b $(PNKL)/sets.b \
 	$(PNKL)/string-gen.b $(PNKL)/symbol-vals.b \
 	$(PNKL)/token-decls.b $(PNKL)/token-scan.b $(PNKL)/top-loop.b \
-	$(PNKL)/type-conver.b $(PNKL)/type-error.b $(PNKL)/vectors.b
+	$(PNKL)/type-conver.b $(PNKL)/type-error.b $(PNKL)/vectors.b \
+	$(PNKL)/unicode.b
 
 all: $(PNKFILES)
 	echo "System independent files built."
@@ -270,6 +271,9 @@ $(PNKL)/type-conver.b: $(PNK)/type-conver.sl
 
 $(PNKL)/type-error.b: $(PNK)/type-error.sl
 	$(PDIST)/make-pnk-lap $(PNK) type-error
+
+$(PNKL)/unicode.b: $(PNK)/unicode.sl
+	$(PDIST)/make-pnk-lap $(PNK) unicode
 
 $(PNKL)/vectors.b: $(PNK)/vectors.sl
 	$(PDIST)/make-pnk-lap $(PNK) vectors
