@@ -91,7 +91,7 @@ let { int(exp(~tt)/~tt,~tt,-infinity,~z) =>  Ei (z)
     };
 
 algebraic
-let { int(1/ln(~tt),~tt,0,~z) =>  li (z)
+let { int(1/log(~tt),~tt,0,~z) =>  li (z)
 %      li (~z) => Ei(log z)
     };
 
