@@ -269,7 +269,7 @@ symbolic procedure xread1 u;
               and (null u
                       or u = 'group
                         and null(z memq
-                                   '(!*rsqbkt!* !*rcbkt!* !*rsqb!*)))
+			   '(!*endgroup!* !*rcbkt!* !*rsqbkt!*)))
           then symerr("Improper delimiter",nil)
          else if idp u and (u = 'paren or flagp(u,'struct))
           then symerr("Too few right parentheses",nil);

@@ -216,7 +216,7 @@ symbolic procedure form1(u,vars,mode);
 symbolic procedure form2(u,vars,mode);
    begin scalar x;
       if x := get(caar u,'form2fn) then return apply3(x,u,vars,mode)
-        else if eqcar(caar u, 'progn) and
+        else if eqcar(caar u, 'vect) and
                 check_all_symbols cdaar u then <<
           x := cdaar u;
           if x = '(nil) then x := nil;
@@ -265,7 +265,7 @@ symbolic procedure formabstract(u, vars, mode);
     return formlamb(u, vars, mode);
   end;
 
-put('progn, 'form2fn, 'formabstract);
+put('vect, 'form2fn, 'formabstract);
 
 symbolic procedure argnochk u;
    begin scalar x;

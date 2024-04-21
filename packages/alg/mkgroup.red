@@ -29,7 +29,7 @@ symbolic procedure mkgroup;
    %Expects a list of statements terminated by a >>;
    begin scalar lst,delim;
     a:      lst := aconc(lst,xread 'group);
-        if cursym!* eq '!*rsqb!* then go to b
+        if cursym!* eq '!*rsqbkt!* then go to b
          else if null delim then delim := cursym!*
          else if not(delim eq cursym!*)
           then symerr("Syntax error: mixed , and ; in group",nil);
@@ -39,15 +39,15 @@ symbolic procedure mkgroup;
                 else 'vect . lst
    end;
 
-put('!*lsqb!*,'stat,'mkgroup);
+put('!*lsqbkt!*,'stat,'mkgroup);
 
-newtok '((![) !*lsqb!*);
+newtok '((![) !*lsqbkt!*);
 
-newtok '((!]) !*rsqb!*);
+newtok '((!]) !*rsqbkt!*);
 
 symbolic procedure formvect(u,vars,mode);
    begin integer n; scalar v;
-      u := for each x in u collect form1(x,vars,mode); % was FORMC
+      u := for each x in cdr u collect form1(x,vars,mode); % was FORMC
       v := mkvect(length u-1);
       n := 0;
       for each x in u do <<putv(v,n,x); n := n+1>>;
@@ -57,6 +57,9 @@ symbolic procedure formvect(u,vars,mode);
 put('vect,'formfn,'formvect);
 
 put('vecexprp,'evfn,'evvector);
+
+symbolic procedure getrtype1 u;
+   if vecexprp u then 'vecexprp;
 
 symbolic procedure !*!*a2s(u,vars);
    if u = '(quote nil) then nil

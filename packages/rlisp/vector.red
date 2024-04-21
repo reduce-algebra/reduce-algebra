@@ -44,28 +44,19 @@ flag('(vec!*),'vecfn);
 symbolic procedure xreadvec;
    % Expects a list of expressions enclosed by [, ].
    begin scalar cursym,delim,lst;
-        if scan() = '!*rsqb!* then <<scan(); return list 'list>>;
+        if scan() = '!*rsqbkt!* then <<scan(); return list 'list>>;
     a:      lst := aconc(lst,xread1 'group);
         cursym := cursym!*;
         scan();
-        if cursym = '!*rsqb!*
-          then return if delim = '!*semicol!* then 'progn . lst
-                       else list('vec!*,'list . lst)
+        if cursym = '!*rsqbkt!*
+          then return list('vec!*,'list . lst)
          else if null delim then delim := cursym
          else if not(delim eq cursym)
           then symerr("Syntax error: mixed , and ; in vector",nil);
         go to a
    end;
 
-put('!*lsqb!*,'stat,'xreadvec);
-
-newtok '((![) !*lsqb!*);
-
-newtok '((!]) !*rsqb!*);
-
-flag('(!*rsqb!*),'delim);
-
-flag('(!*rsqb!*),'nodel);
+put('!*lsqbkt!*,'stat,'xreadvec);
 
 symbolic procedure vec!* u;
    % Make a vector out of elements of u.

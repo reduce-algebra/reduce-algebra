@@ -214,10 +214,10 @@ scalar res, varlst, type;
 scan();
 put('range,'infix,4);
 put('range,'op,'((4 4)));
-if cursym!* eq '!*lsqbkt!* then
+if cursym!* eq '!*startgroup!* then
 <<
     scan();
-    while cursym!* neq '!*rsqbkt!* do
+    while cursym!* neq '!*endgroup!* do
     <<
         varlst := list xread1 'for;
         while cursym!* neq '!*colon!* do
@@ -783,7 +783,7 @@ procedure !*filep!* f;
 
 
 procedure endofstmtp;
-if cursym!* member '(!*semicol!* !*rsqbkt!* end) then t$
+if cursym!* member '(!*semicol!* !*endgroup!* end) then t$
 
 procedure fargstonames(fargs, openp);
 begin

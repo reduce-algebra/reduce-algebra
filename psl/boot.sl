@@ -1,4 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % File:         Standard LISP BOOT File.
 % Author:       Anthony C. Hearn.
 % Created:      25 January 1989
@@ -56,9 +57,9 @@
 
 (put '!: 'switch!* '(((!= nil setq)) !*colon!*))
 
-(put '!< 'switch!* '(((!= nil leq) (!< nil !*lsqbkt!*)) lessp))
+(put '!< 'switch!* '(((!= nil leq) (!< nil !*startgroup!*)) lessp))
 
-(put '!> 'switch!* '(((!= nil geq) (!> nil !*rsqbkt!*)) greaterp))
+(put '!> 'switch!* '(((!= nil geq) (!> nil !*endgroup!*)) greaterp))
 
 % When the real parser is loaded the function mkprec will reset all
 % precedence values here. So until then please fully parenthesize
@@ -334,14 +335,14 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 (de readprogn nil
    (prog (lst)
    a  (setq lst (cons (xread 'group) lst))
-      (cond ((null (eq cursym!* '!*rsqbkt!*)) (go a)))
+      (cond ((null (eq cursym!* '!*endgroup!*)) (go a)))
       (scan)
       (return (cons 'progn (reverse lst)))))
 
-(put '!*lsqbkt!* 'stat 'readprogn)
-(flag '(!*lsqbkt!*) 'go)
-(flag '(!*rsqbkt!*) 'delim)
-(flag '(!*rsqbkt!*) 'nodel)
+(put '!*startgroup!* 'stat 'readprogn)
+(flag '(!*startgroup!*) 'go)
+(flag '(!*endgroup!*) 'delim)
+(flag '(!*endgroup!*) 'nodel)
 
 % There is a "wonderful" mess here! The file support/pslprolo.red gives
 % the symbol "do" a newnam that maps it onto "~do" when read. This is to
