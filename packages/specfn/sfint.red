@@ -29,8 +29,11 @@ module sfint;     % Assorted Integral Functions, Ei, Si, Ci, Li etc.
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 %
-put('Ei, 'plain!-functionsymbol, '!Ei);
+%
 % $Id$
+%
+
+put('Ei, 'plain!-functionsymbol, '!Ei);
 put('Ci, 'plain!-functionsymbol, '!Ci);
 put('Si, 'plain!-functionsymbol, '!Si);
 put('Chi, 'plain!-functionsymbol, '!Chi);
