@@ -142,11 +142,11 @@ newtok '((!.) cons);
 newtok '((!<) lessp);
 newtok '((!< !=) leq);
 newtok '((![) !*lsqbkt!*);      % Strange to have both of these the same!
-newtok '((!< !<) !*lsqbkt!*);   %
+newtok '((!< !<) !*startgroup!*);   %
 newtok '((!>) greaterp);
 newtok '((!> !=) geq);
 newtok '((!]) !*rsqbkt!*);      % Strange to have both of these the same!
-newtok '((!> !>) !*rsqbkt!*);   %
+newtok '((!> !>) !*endgroup!*);   %
 newtok '((!/ !*) !*comment!*);
 
 
@@ -205,10 +205,8 @@ newtok '((!: !: !=) lsetq);
 newtok '((!: !:) range);
 newtok '((!: != !:) rsetq);
 newtok '((!@) partdf);
-%   newtok '((![) !*lsqb!*);
 %   newtok '((!\) setdiff);
 %   newtok '((!\) backslash);
-%   newtok '((!]) !*rsqb!*);
 newtok '((!^ !^) super_product);
 %   newtok '((!^) vectorexpt);
 %   newtok '((!^) wedge);

@@ -44,11 +44,11 @@ flag('(vec!*),'vecfn);
 symbolic procedure xreadvec;
    % Expects a list of expressions enclosed by [, ].
    begin scalar cursym,delim,lst;
-        if scan() eq '!*rsqb!* then <<scan(); return list 'list>>;
+        if scan() eq '!*rsqbkt!* then <<scan(); return list 'list>>;
     a:      lst := aconc(lst,xread1 'group);
         cursym := cursym!*;
         scan();
-        if cursym eq '!*rsqb!*
+        if cursym eq '!*rsqbkt!*
           then return if delim eq '!*semicol!* then 'progn . lst
                        else list('vec!*,'list . lst)
          else if null delim then delim := cursym
@@ -57,15 +57,20 @@ symbolic procedure xreadvec;
         go to a
    end;
 
-put('!*lsqb!*,'stat,'xreadvec);
+put('!*lsqbkt!*,'stat,'xreadvec);
 
-newtok '((![) !*lsqb!*);
+newtok '((![) !*lsqbkt!*);
 
-newtok '((!]) !*rsqb!*);
+newtok '((!]) !*rsqbkt!*);
 
-flag('(!*rsqb!*),'delim);
+flag('(!*rsqbkt!*),'delim);
 
-flag('(!*rsqb!*),'nodel);
+flag('(!*rsqbkt!*),'nodel);
+
+symbolic procedure formvect(u,vars,mode);
+   'vec!* . cdr u;
+
+put('vect,'formfn,'formvect);
 
 symbolic procedure vec!* u;
    % Make a vector out of elements of u.

@@ -48,7 +48,7 @@ symbolic procedure comm1 u;
       while not
          (cursym!* = '!*semicol!* or
           (u = 'end and
-           cursym!* memq '(end else then until !*rpar!* !*rsqbkt!*))) do <<
+           cursym!* memq '(end else then until !*rpar!* !*endgroup!*))) do <<
          if u = 'end and null bool then <<
             lprim list("END-COMMENT NO LONGER SUPPORTED");
             bool := t >>;
@@ -107,13 +107,33 @@ symbolic procedure readprogn;
    %Expects a list of statements terminated by a >>;
    begin scalar lst;
       lst := list xread 'group;
-      while not (cursym!* = '!*rsqbkt!*) do
+      while not (cursym!* = '!*endgroup!*) do
          lst := aconc!*(lst,xread 'group);
       scan();
       return ('progn . lst)
    end;
 
-put('!*lsqbkt!*,'stat,'readprogn);
+put('!*startgroup!*,'stat,'readprogn);
+
+flag ('(!*startgroup!*),'go);
+
+flag('(!*endgroup!*),'delim);
+
+flag('(!*endgroup!*),'nodel);
+
+% ***** VECTOR STATEMENT *****
+
+symbolic procedure readvector;
+   %Expects a list of statements terminated by a ];
+   begin scalar lst;
+      lst := list xread 'group;
+      while not (cursym!* = '!*rsqbkt!*) do
+         lst := aconc!*(lst,xread 'group);
+      scan();
+      return ('vect . lst)
+   end;
+
+put('!*lsqbkt!*,'stat,'readvector);
 
 flag ('(!*lsqbkt!*),'go);
 
