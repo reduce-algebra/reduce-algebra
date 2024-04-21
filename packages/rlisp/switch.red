@@ -39,13 +39,6 @@ global '(!*switchcheck switchlist!* switchtree!* switchstring!*);
 % PSL defined ORDERP in pslrend.red - ie "not yet", so here I transcribe
 % the definition that will happen so I can use it now.
 
-% symbolic procedure orderp(u,v);
-%    % U, V are non-numeric atoms (but can be vectors).
-%    % Returns true if U has same or higher order than id V by some
-%    % consistent convention (eg unique position in memory).
-%    wleq(inf u,inf v);       % PSL 3.4 form.
-% %  id2int u <= id2int v;    % PSL 3.2 form.
-
 symbolic procedure orderp(u,v);
    % This PSL-specific definition of ORDERP is designed to work in
    % lexicographical order.  It also checks to make sure arguments are
@@ -59,7 +52,7 @@ symbolic procedure orderp(u,v);
       j := strlen u;
       k := strlen v;
       % In the following, we assume size of u and v are inums.
-   a: if null((l := strbyt(u,i)) eq (m := strbyt(v,i)))
+   a: if null((l := wand(255,strbyt(u,i))) eq (m := wand(255,strbyt(v,i))))
         then return ilessp(l,m)
        else if i eq j then return null igreaterp(j,k)
        else if i eq k then return nil;
