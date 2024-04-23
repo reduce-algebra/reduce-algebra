@@ -1,8 +1,8 @@
 #### FIX THE NEXT LINE
-AC_INIT([PSL], [20080915], [email@maintainer.org])
+AC_INIT([PSL], [20080915], [https://sourceforge.net/p/reduce-algebra/bugs/],,
+	       [https://reduce-algebra.sourceforge.io/])
 
-#### FIX THE NEXT LINE
-AC_COPYRIGHT([Whoever])
+AC_COPYRIGHT([The REDUCE project])
 
 AC_CANONICAL_HOST()
 
@@ -138,7 +138,7 @@ else
   cp ../../psl/dist/kernel/$pslver/bpsl* psl
 
   cp psl/nbig32.b psl/zbig.b
-  rm -f psl/*rlisp*.b
+  rm -f psl/*rlisp*.b psl/compat.b
 
   chmod +x psl/bpsl*
 
