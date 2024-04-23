@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PK:SUPPORT.SL 
+% File:         PXK:SUPPORT.SL 
 % Description:  Assorted support functions for the kernel. 
 % Author:       Brian Beach, Hewlett-Packard CRC 
 % Created:      22-Feb-84 
@@ -207,4 +207,3 @@
 (off fast-integers)
 
 % End of file.
-

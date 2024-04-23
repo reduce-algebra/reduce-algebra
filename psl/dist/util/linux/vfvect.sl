@@ -254,4 +254,3 @@
            ((equal (cdr (assoc pat a)) u) a)
            (T nil)))
 
-
