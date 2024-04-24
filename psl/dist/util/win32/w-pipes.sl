@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:pipes.sl 
-% Title:        Unix pipe interface
+% File:         PXU:w-pipes.sl 
+% Title:        Win32 pipe interface for Win95/98/ME
 % Author:       Winfried Neun
 % Created:      5 February 1991
 % Status:       Open Source: BSD License
@@ -62,7 +62,7 @@
               (eq (strbyt (strinf name) 0) 119) %w
               (eq (strbyt (strinf name) 1) 105) %i
               (eq (strbyt (strinf name) 2) 110) %n
-              (eq (strbyt (strinf name) 3) 58)) %n
+              (eq (strbyt (strinf name) 3) 58)) %:
          (open-a-window name)
          (psl-open name type)))
 
@@ -143,7 +143,7 @@
   (define-constant PIPE_OPEN   33)
   (define-constant PIPE_CLOSE  34)
 ))
- 
+
 (de syspipeopen(name type)
  (let (p) 
   (cond ((not (stringp name))(nonstringerror name 'pipe-open))

@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:              spy.sl   
+% File:              PXU:spy.sl   
 % Description:       Spying by ticks
 % Author:            H. Melenk ,W. Neun       ZIB Berlin
 % Created:           10-Mar-89 , derived from Cray version
@@ -233,4 +233,3 @@
      (for (from i 0 amount)
       (do (putmem (wplus2 (inf ptr) (wshift i 2)) 0))))
 
-

@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:           pxc/sun-spec.SL
+% File:           PXC/386-spec.SL
 % Title:          Some special things for sun PSL compiler
 % Author:         Winfried Neun , ZIB Berlin
 % Created:        9 Feb 1989
@@ -188,4 +188,4 @@
                ',(minus (powerof2p (constant-value arg2)))))
      (t form))))
 
-
+

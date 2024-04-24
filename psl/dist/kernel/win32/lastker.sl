@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PK:LASTKERNEL.SL
+% File:         PXK:LASTKERNEL.SL
 % Description:  A function to mark the end of kernel code space
 % Author:       Cris Perdue, Hewlett-Packard Laboratories
 % Created:      17-Oct-84
@@ -72,4 +72,4 @@
 % Dummy for use by codeaddressp
 (de lastkernel (x) x)
 
-
+
