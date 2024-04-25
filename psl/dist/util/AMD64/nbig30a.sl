@@ -88,7 +88,7 @@
 (compiletime
    (flag '(setbits trimbignum1 big2sysaux btwopower bexpt blor
 	   blxor bland blnot blshift blrshift bllshift bminus
-	   bplus2 bplus2a bdifference bdifference2
+	   bplus2 bplusa2 bdifference bdifference2
 	   btimes2 bdigittimes2 bsmalltimes2 bkaratsuba bwords
 	   bwordsshiftleft bshiftandaddinto bdifference2inplace
 	   bquotient bremainder bdivide-trivialtest
@@ -562,7 +562,7 @@
   % V1 is a BigNum, C a fixnum.                                            
   % Assume C positive, ignore sign(V1)                                     
   % also assume V1 neq 0.                                                  
-  (cond ((and (izerop c)(izerop cc)) (return (gtpos 0)))
+  (cond ((and (izerop c)(izerop cc)) (gtpos 0))
 	(t % Only used from BHardDivide, BReadAdd.                          
 	   (prog (j carry l1 l2 l3 v3)
 		 (setq l1 (bbsize v1))
@@ -1171,8 +1171,8 @@
 
 (de bsmalladd (v c)
   %V big, C fix.                                                           
-  (cond ((izerop c) (return v))
-	((bzerop v) (return (int2big c)))
+  (cond ((izerop c) v)
+	((bzerop v) (int2big c))
 	((bbminusp v) (bminus (bsmalldiff (bminus v) c)))
 	((iminusp c) (bsmalldiff v (iminus c)))
 	(t (prog (v1 l1)

@@ -88,7 +88,7 @@
 (compiletime
    (flag '(setbits trimbignum1 big2sysaux btwopower bexpt blor
 	   blxor bland blnot blshift blrshift bllshift bminus
-	   bplus2 bplus2a bdifference bdifference2
+	   bplus2 bplusa2 bdifference bdifference2
 	   btimes2 bdigittimes2 bsmalltimes2 bkaratsuba bwords
 	   bwordsshiftleft bshiftandaddinto bdifference2inplace
 	   bquotient bremainder bdivide-trivialtest
