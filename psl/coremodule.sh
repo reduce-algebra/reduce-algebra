@@ -78,7 +78,10 @@ else
 STORE=64000000
 fi
 
+reduce=${reduce%/}  # get rid of any trailing slash.
+
 export fasl psldir reduce
+echo "fasl=$fasl psldir=$psldir reduce=$reduce"
 
 psl/bpsl -td $STORE -f red/bootstrap.img <<XXX > buildlogs/$1.blg
 
@@ -110,5 +113,7 @@ if !*faslp
 bye;
 XXX
 
-grep -q '^\*\*\*\*\* ' buildlogs/$1.blg && echo Possible error building noncore module $1 - check buildlogs/$1.blg && exit 1
+grep -q '^\*\*\*\*\* ' buildlogs/$1.blg && \
+   echo Possible error building core module $1 - check buildlogs/$1.blg && \
+   exit 1
 exit 0

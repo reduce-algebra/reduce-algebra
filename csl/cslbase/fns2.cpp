@@ -1184,63 +1184,6 @@ static LispObject Lpreserve_0(LispObject env)
     return Lpreserve_3(env, nil, nil, nil);
 }
 
-
-#if 0
-// This is an experimental addition - a version of PRESERVE that allows
-// CSL to continue executing after it has written out an image file. I am
-// now removing it because I have arranged that if PRESERVE is given a
-// non-nil third argument it reloads the image that it creates rather than
-// quitting lisp.
-
-// ++++ With the new serialization-based scheme for preserve() this would
-//      all become almost trivial to reinstate if I thought it was useful!
-
-
-static LispObject Lcheckpoint(LispObject env,
-                              LispObject startup, LispObject banner)
-{   SingleValued fn;
-    char filename[LONGEST_LEGAL_FILENAME];
-    char *msg = "";
-    int len = 0;
-    std::memset(filename, 0, sizeof(filename));
-    ensure_screen();
-    if (startup != nil) supervisor = startup;
-    bool failed = Iwriterootp(
-                      filename);  // Can I open image file for writing?
-    term_printf("\nThe system will be preserved on file \"%s\"\n",
-                filename);
-    if (failed) return aerror("checkpoint");
-    if (is_vector(banner) && is_string(banner))
-    {   msg = reinterpret_cast<char *>()&celt(banner, 0);
-        len = length_of_byteheader(vechdr(banner)) - CELL;
-    }
-// Note, with some degree of nervousness, that things on the C stack will
-// be updated by the garbage collection that happens during the processing
-// of the call to preserve(), but they will be neither adjusted into
-// relative addresses nor unadjusted (and hence restored) by in the
-// image-writing. But the image writing will not actually move any data
-// around so all is still OK, I hope!
-    RealSave save(THREADARG catch_tags);
-    preserve(msg, len);
-    errexit();
-    save.restore(catch_tags);
-    set_up_functions(true);
-    return nil;
-}
-
-static LispObject Lcheckpoint_0(LispObject env)
-{   SingleValued fn;
-    return Lcheckpoint(env, nil, nil);
-}
-
-static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
-{   SingleValued fn;
-    return Lcheckpoint(env, startup, nil);
-}
-
-#endif
-
-
 // Drop out to the next enclosing code that limits resources, as if there had
 // been an overflow.
 

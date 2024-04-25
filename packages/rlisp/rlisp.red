@@ -27,7 +27,7 @@
 
 % $Id$
 
-global '(date!* patch!-date!* version!*);
+global '(date!* version!*);
 
 create!-package('(rlisp module newtok rsupport slfns superv tok xread
                   lpri parser block form proc forstat loops statmisc

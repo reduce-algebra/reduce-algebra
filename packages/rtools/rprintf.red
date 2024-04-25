@@ -88,7 +88,7 @@ fluid '(!*print!-array!*
 !*print!-length!* := nil;     % Limit length of lists printed if an integer
 !*print!-level!* := nil;      % Limit depth of nesting if an integer.
 
-fluid '(!*prinl_visited_nodes!* !*prinl_index!* );
+fluid '(!*prinl_visited_nodes!* !*prinl_index!*);
 
 !*prinl_visited_nodes!* := mkhash(200, 0, 1.5)$
 

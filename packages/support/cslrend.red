@@ -486,14 +486,14 @@ single precision integers should be used;
 
 largest!-small!-modulus := 2**23;
 
-!#if (not (memq 'vsl lispsystem!*))
+#if (not (memq 'vsl lispsystem!*))
 
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
        modular!-times modular!-expt set!-small!-modulus
        safe!-modular!-reciprocal), 'lose);
 
-!#endif
+#endif
 
 % flag('(random next!-random!-number), 'lose);
 
@@ -503,12 +503,12 @@ set!-small!-modulus 3;
 % and (hence?) maybe low level tricks or special floating point
 % tricks can help with speed.
 
-!#if (or (memq  'vsl lispsystem!*) (memq 'jlisp lispsystem!*))
+#if (or (memq  'vsl lispsystem!*) (memq 'jlisp lispsystem!*))
 
 flag('(cos exp expt log sin sqrt atan fix
        ceiling floor round mkhash clrhash puthash gethash remhash), 'lose);
 
-!#else
+#else
 
 flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        asech asin asind asinh atan atand atan2 atan2d atanh cbrt cos
@@ -517,7 +517,7 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        ceiling floor round mkhash clrhash puthash gethash remhash
        primep32), 'lose);
 
-!#endif
+#endif
 
 
 fluid '(no!_init!_file reduce!-startup!-hooks!*);

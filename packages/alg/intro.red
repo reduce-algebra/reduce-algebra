@@ -140,6 +140,8 @@ symbolic procedure reversip2(a, b);
     return b
   end; 
 
+tracelexer := t;  %@@@
+
 symbolic procedure mkid(x,y);
   % creates the ID XY from identifier X and (evaluated) object Y.
   if not idp x then typerr(x,"MKID root")

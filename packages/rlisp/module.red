@@ -125,7 +125,6 @@ symbolic procedure load!-package u;
                             "cannot be loaded");
          loaded!-modules!* := union(loaded!-modules!*, list car x);
          x := cdr x >>;
-      return install!-patches u
    end;
 
 % Now a more user-friendly version.
@@ -151,74 +150,6 @@ put('load!_package,'stat,'rlis);
 put('packages!_to!_load,'stat,'rlis);
 
 flag('(load!-package load!_package),'eval);
-
-
-% Support for patching REDUCE sources. The whole mechanism set up here is
-% now no longer used. In the past when distribution was on CD (or magnetic
-% tape, or on large piles of floppy disc) users received a base version
-% of the system and then relativly small patch files could be distributed
-% to update the system or correct errors. Now with the faster networks
-% this whole idea is not so necessary.
-
-symbolic procedure patchstat;
-   % Read a patch for a given package.
-   begin scalar !*mode,u,v,x,y,z,z2;
-      x := scan();   % Package name.
-      scan();        % Remove semicolon.
- a:   !*mode := 'symbolic;
-      y := xread nil;
-      if eqcar(y,'symbolic) then y := cadr y
-       else if flagpcar(y,'modefn)
-        then << !*mode := car y; y := cadr y >>;
-      if eq(y,'endpatch) then <<
-         u := name!-for!-patched!-version(x, z);
-         z2 := list('de,u,nil,'progn . reversip z) . z2;
-         z2 := list('patches!-load!-check,mkquote x,mkquote u) . z2;
-         return ('patch . reversip z2) >>
-      else if eqcar(y,'procedure) then <<
-         v := cadr y;
-         u := name!-for!-patched!-version(v, y);
-         z := list('instate!-patches,mkquote v,mkquote u,mkquote x) . z;
-         z2  := convertmode(('procedure . u . cddr y),nil,
-                             'symbolic,!*mode) . z2 >>
-      else z := convertmode(y,nil,'symbolic,!*mode) . z;
-      go to a;
-   end;
-
-symbolic procedure name!-for!-patched!-version(name, extra);
-   % hashtagged!-name (in CSL) constructs a name that starts with NAME but
-   % then continues with a hash value based on EXTRA. The improbability of
-   % hash collisions then makes it reasonable to use an interned symbol.
-   if member('psl, lispsystem!*) then gensym()
-    else hashtagged!-name(name,extra);
-
-symbolic procedure instate!-patches(new,old,pkg);
-  begin scalar x;
-     x := getd old;
-     if x then putd(new,car x,cdr x)
-     else rerror('module,1,list(new,"has a badly set-up patch"));
-     return nil
-  end;
-
-symbolic procedure install!-patches u;
-   if u = 'patches then nil
-   else if (u := get(u,'patchfn)) then
-   begin scalar !*usermode,!*redefmsg;
-      eval list u
-   end;
-
-symbolic procedure patches!-load!-check(u,v);
-   begin
-      put(u,'patchfn,v);
-      if memq(u,loaded!-packages!*) then install!-patches u
-   end;
-
-put('patch,'stat,'patchstat);
-
-symbolic procedure formpatch(u,vars,mode);
-   'progn . cdr u;
-
-put('patch,'formfn,'formpatch);
 
 % endmodule;
 

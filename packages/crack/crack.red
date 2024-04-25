@@ -62,7 +62,7 @@ other packages$
 % and that could lead to them NOT being put in the fasl file. That could
 % cause trouble next time!
 
-!#if (or (null (getd 'setprop)) (flagp 'setprop 'rlisp))
+#if (or (null (getd 'setprop)) (flagp 'setprop 'rlisp))
 
 symbolic procedure setprop(u, l)$
    %% Store item L as the property list of U.
@@ -74,9 +74,9 @@ symbolic procedure setprop(u, l)$
 
 flag('(setprop), 'rlisp);
 
-!#endif
+#endif
 
-!#if (or (null (getd 'flag1)) (flagp 'flag1 'rlisp))
+#if (or (null (getd 'flag1)) (flagp 'flag1 'rlisp))
 
 symbolic inline procedure flag1(u, v)$
    %% smacro is replaced by inline as new policy in sourceforge Reduce
@@ -87,9 +87,9 @@ symbolic inline procedure flag1(u, v)$
 
 flag('(flag1), 'rlisp);
 
-!#endif
+#endif
 
-!#if (or (null (getd 'remflag1)) (flagp 'remflag1 'rlisp))
+#if (or (null (getd 'remflag1)) (flagp 'remflag1 'rlisp))
 
 symbolic inline procedure remflag1(u, v)$
    %% smacro is replaced by inline as new policy in sourceforge Reduce
@@ -100,7 +100,7 @@ symbolic inline procedure remflag1(u, v)$
 
 flag('(remflag1), 'rlisp);
 
-!#endif
+#endif
 
 if lisp(null(getd 'redfront_color) ) then
 symbolic procedure redfront_color(a)$ a$
@@ -165,11 +165,11 @@ packages_to_load ezgcd,odesolve,factor,int,algint,matrix,groebner,gnuplot$
 if getd('pvm_mytid) then  % Load PVM support
 packages_to_load pvm,reducepvm$
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
      load pipes$       % to detect the operating system for parallel runs
                        % See calls of pipe!-open() in crpvm.red and crutil.red.
                        % There is a function "pipe!-open" in CSL.
-!#endif  
+#endif  
 
 compiletime load_package dipoly$    %  for the procedure a2dip() in fixes.red
 

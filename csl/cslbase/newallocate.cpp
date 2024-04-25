@@ -296,7 +296,7 @@ bool allocateAnotherSegment()
     size_t inc = totalAllocatedMemory;
     if ((totalAllocatedMemory+inc) > maxPages)
         inc = maxPages - totalAllocatedMemory;
-    std::cout << "@@@ Current heap size " << (8*totalAllocatedMemory) << " MB\n";
+//  std::cout << "@@@ Current heap size " << (8*totalAllocatedMemory) << " MB\n";
     if (inc == 0) return false;
     else if (allocateSegment(inc*pageSize)) return true;
     memorySeemsFull = true;

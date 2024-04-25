@@ -379,9 +379,9 @@ begin scalar p$
  restore_interactive_prompt()$ 
 end$
 
-!#if (memq 'csl lispsystem!*)    
+#if (memq 'csl lispsystem!*)    
 symbolic fluid '(!*used!-space!* !*avail!-space!*)$ 
-!#endif
+#endif
 
 symbolic operator save_all_sol$
 symbolic procedure save_all_sol(sol)$
@@ -447,9 +447,9 @@ symbolic procedure crackmain(pdes,forg)$
 begin scalar result,l,carpl,unsolvable, % dec_hist_list_copy,
              s,h,pl,ps,batch_one_step,expert_mode_copy,fnc_to_adjust,stop_,
              fnc_adjusted,loopcount,level_length,newli,full_proc_list_length,
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
              processes,
-!#endif
+#endif
              si_hi,plcnt,no_of_children,pt2ineq$
 
   no_of_children:=0;
@@ -616,14 +616,14 @@ again:
       >>
       else if s='fc then <<
         reclaim()$terpri()$            % do garbage collection
-!#if (memq 'psl lispsystem!*)          % PSL:
+#if (memq 'psl lispsystem!*)          % PSL:
         write if boundp 'gcfree!* then gcfree!* 
                                   else known!-free!-space(),
               " free cells"$
-!#else                                 % CSL:
+#else                                 % CSL:
         write"Used memory: ",!*used!-space!*,"KB"$terpri()$
         write"Free memory (without requesting more): ",!*avail!-space!*,"KB"$
-!#endif
+#endif
         terpri()$write countids()," identifiers in use"$;
         terpri()
       >>
@@ -1373,11 +1373,11 @@ again:
          off1 l
         >>
       >>
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
       else if s='ls then mapobl function switchp
-!#else                         % for CSL REDUCE
+#else                         % for CSL REDUCE
       else if s='ls then for each x in oblist() do switchp x
-!#endif
+#endif
       else if s='lg then list_global_crack_variables() 
       else if s='dc then describe_id()
       % to parallelize -----------------------
@@ -1404,15 +1404,15 @@ again:
         write"Duplicating process as batch job."$terpri()$
         add_session(pdes,forg,3)
        >>       else << % s='pp
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
         if ini_check_of_parallel_crack() and pvm_active() then <<
          write"Duplicating process under PVM."$terpri()$
          processes:=add_process(processes,pdes,forg)$
         >>$
-!#else                    
+#else                    
         write"PVM is currently only available in PSL Reduce,"$terpri()$
         write"not in the Lisp system used in this session."$terpri()$
-!#endif
+#endif
        >>$
        !*iconic:=l$
        level_:=cdr level_
@@ -1941,15 +1941,15 @@ symbolic procedure print_hi()$
 symbolic procedure print_hb()$
 <<terpri()$
   for each h in 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
                 '(i_tm i_tg i_ti i_td i_tl i_ts i_to i_ut i_br i_pc i_in i_cu
                   i_tr
                   i_qt i_pq i_so i_sf i_ls i_lg i_dc) 
-!#endif
-!#if (memq 'csl lispsystem!*)
+#endif
+#if (memq 'csl lispsystem!*)
                 '(i_tm i_tg i_ti i_td i_tl i_ts i_to i_ut i_br i_pc i_in i_cu
                   i_qt i_pq i_so i_sf i_ls i_lg i_dc) 
-!#endif
+#endif
   do <<
     write compress cddr explode h," : ",car get(h,'description)$ terpri()
   >>

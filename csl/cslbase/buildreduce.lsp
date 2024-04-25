@@ -330,7 +330,7 @@ a     (setq x (rread))
 b     (setq r (cons x r))
       (go a)))
 
-(de token nil
+(de token ()
    (prog (x y z)
       (setq x crchar!*)
 a     (cond
@@ -394,11 +394,39 @@ d     (setq nxtsym!* x)
 
 (de seprp (u) (or (eq u blank) (eq u tab) (eq u !$eol!$)))
 
+% I want to have support for #if but at this stage it will suffice it it
+% is restricted. I will support "#if #endif" and "#if #else #endif" but
+% without nesting. The way this is implemented is:
+%     #if t        Ignored! continue as usual.
+%     #if nil      Skip until #else or #endif then continue as usual.
+%                  Well as a matter of caution I stop at end of file too.
+%     #else        [Only seen after "#if t" because after "#if nil" it
+%                  had been reached and passed over. Skip to #endif.
+%                  If I make this "skip until #else or #endif" then it
+%                  would only find "#else" if that was repeated, which
+%                  should not happen - so doing that slightly shrinks
+%                  and simplifies the code.
+%     #endif       Ignored!
+
+(de skip_to_else_or_endif ()
+   (prog nil
+a     (cond
+         ((or (eq cursym!* !$eof!$)
+             (and (eq cursym!* '!#)
+                  (or (eq nxtsym!* 'else) (eq nxtsym!* 'endif))))
+          %@ (printc "else_or_endif found")
+          (return nil)))
+      (setq cursym!* nxtsym!*)
+      (setq nxysym!* (token))
+      (go a)))
+
 (de scan nil
-   (prog (x y)
+   (prog (x y b)
+%%      (print (list "scan start cursym=" cursym!*))
       (cond ((null (eq cursym!* '!*semicol!*)) (go b)))
 a     (setq nxtsym!* (token))
-b     (cond
+b     %%(print (list "label b: cur next = " cursym!* nxtsym!*))
+      (cond
          ((or (null (atom nxtsym!*)) (numberp nxtsym!*)) (go l))
          ((and (setq x (get nxtsym!* 'newnam)) (setq nxtsym!* x))
             (go b))
@@ -420,11 +448,41 @@ sw1   (setq nxtsym!* (token))
       (go sw1)
 comm  (cond ((eq (readch) '!;) (setq crchar!* '! )) (t (go comm)))
       (go a)
-l     (setq cursym!*
+l     %%(print (list "about to set cursym*:=nxtsym!* " cursym!* nxtsym!*))
+      (setq cursym!*
          (cond
             ((null (eqcar nxtsym!* 'string)) nxtsym!*)
             (t (cons 'quote (cdr nxtsym!*)))) )
 l1    (setq nxtsym!* (token))
+      %%(print (list "scan to return with " cursym!* nxtsym!*))
+      (cond
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'if))
+          (progn
+             (setq b (rread))
+%%             (setq nxtsym!* (token))
+%%             (print (list "predicate is" b))
+             (setq b (errorset b !*backtrace nil))
+             (cond
+                ((atom b) (setq b nil))
+                (t (setq b (car b))))
+             (cond
+                ((null b) (skip_to_else_or_endif)))
+%            (setq csym!* (token))
+             (go a)))
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'else))
+          (progn
+             %@ (printc "#else triggered while active")
+             (setq nxtsym!* nil) % So it is not 'else
+             (skip_to_else_or_endif)
+%%%%             (setq cursym!* (token))
+             (go a)))
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'endif))
+             (go a)))
+%%      (print (list "ifdef not seen cur, next = " cursym!* nxtsym!*))
+% End of file will cause a total exit from the system.
+      (cond
+         ((and (eq cursym!* !$eof!$) (eq nxtsym!* !$eof!$))
+          (stop 100)))
       (return cursym!*)))
 
 (de ifstat nil
@@ -490,7 +548,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 % it possible to write the full implementation of RLISP in a much
 % more civilised way. What I put in here is a little more than is used
 % to start with, but matches the eventual implementation. Eg the 'go
-% and 'nodel flags are not relevant until the read parser has been loaded.
+% and 'nodel flags are not relevant until the real parser has been loaded.
 
 (de readprogn nil
    (prog (lst)
@@ -544,7 +602,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       (return (list 'repeat body (xread t)))))
 
 (dm repeat (u)
-   (progn (terpri) (print (prog (body bool lab)
+   (prog (body bool lab)
       (setq body (cadr u))
       (setq bool (caddr u))
       (setq lab 'repeatlabel) 
@@ -552,7 +610,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       'prog nil
     lab  body
          (list 'cond
-            (list (list 'not bool) (list 'go lab))))))))))
+            (list (list 'not bool) (list 'go lab)))))))
 
 (put 'repeat 'stat 'repeatstat)
 (flag '(repeat) 'nochange)
@@ -590,13 +648,13 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 (load!-package!-sources 'remake 'support)
 
-(setq !*comp nil)
+%@@@ (setq !*comp nil)
 
 (begin)
 
 symbolic;
 
-!#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
+#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 
 faslout 'user;
@@ -609,7 +667,7 @@ faslout 'user;
 
 if modulep 'cslcompat then load!-module 'cslcompat;
 
-!#if (not (memq 'jlisp lispsystem!*))
+#if (not (memq 'jlisp lispsystem!*))
 % Note that Jlisp will use a different scheme to get the literal-vectors
 % of translated functions installed.
 
@@ -658,21 +716,21 @@ for each name in '(
                         cdr explode name));
    begin scalar !*echo; rdf name; end  >>;
 
-!#endif  % jlisp
+#endif  % jlisp
 
 if modulep 'smacros then load!-module 'smacros;
 
 faslend;
-!#endif  % embedded
+#endif  % embedded
 
 faslout 'remake;
 
-!#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
+#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 
 load!-module "user";
 
-!#endif % embedded
+#endif % embedded
 
 in "$reduce/packages/support/remake.red"$
 
@@ -695,6 +753,11 @@ symbolic procedure get_configuration_data();
          i := "package.map"
     else i := "$reduce/packages/package.map";
     i := open(i, 'input);
+    if null i then <<
+       terpri();
+       prin2 "+++ Unable to access package.map";
+       terpri();
+       stop 1 >>; 
     i := rds i;
     e := !*echo;
     !*echo := nil;
@@ -754,16 +817,16 @@ symbolic procedure build_reduce_modules names;
     if boundp 'interpreted and eval 'interpreted then !*nocompile := t;
     !*comp := null !*nocompile;
 
-!#if !*savedef
+#if !*savedef
     !*savedef := t;
-!#else
+#else
     !*savedef := nil;
-!#endif
-!#if !*noinlines
+#endif
+#if !*noinlines
     !*noinlines := t;
-!#else
+#else
     !*noinlines := nil;
-!#endif
+#endif
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
@@ -771,7 +834,7 @@ symbolic procedure build_reduce_modules names;
     w := explodec car names;
     if !*savedef then w := append(explodec "[Bootstrap] ", w);
     window!-heading list!-to!-string w;
-!#if !*savedef
+#if !*savedef
 % When building the bootstrap version I want to record what switches
 % get declared...
     if not getd 'original!-switch then <<
@@ -781,19 +844,19 @@ symbolic procedure build_reduce_modules names;
           '(lambda (x)
               (dolist (y x) (princ "+++ Declaring a switch: ") (print y))
               (original!-switch x))) >>;
-!#endif
+#endif
     package!-remake car names;
     if null (names := cdr names) then <<
         printc "Recompilation complete";
         window!-heading  "Recompilation complete" >>;
-!#if (or !*savedef
+#if (or !*savedef
          (and (not (boundp 'force_c_code)) (memq 'embedded lispsystem!*)))
     if null names then restart!-csl 'begin
     else restart!-csl('(remake build_reduce_modules), names)
-!#else
+#else
     if null names then restart!-csl '(user begin)
     else restart!-csl('(remake build_reduce_modules), names)
-!#endif
+#endif
   end;
 
 fluid '(cpulimit conslimit testdirectory);
@@ -1564,11 +1627,11 @@ load!-module 'remake;
 
 symbolic;
 
-!#if (and (or (boundp 'force_c_code)
+#if (and (or (boundp 'force_c_code)
               (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 load!-module 'user;
-!#endif
+#endif
 
 get_configuration_data();
 
@@ -1601,14 +1664,14 @@ package!-remake2('smacros,'support);
 % will not work if you start csl manually and then do a (rdf ..) [say]
 % on buildreduce.lsp.  I told you that it was a little delicate.
 
-!#if !*savedef
+#if !*savedef
 % Some switches may be in the utter core and not introduced via the
 % "switch" declaration...
 for each y in oblist() do
   if flagp(y, 'switch) then <<
      princ "+++ Declaring a switch: ";
      print y >>;
-!#endif
+#endif
 
 get_configuration_data();
 
@@ -1755,7 +1818,7 @@ symbolic restart!-csl nil;
 (makeunbound '!@srcdir)
 (makeunbound '!@reduce)
 
-% can discard the fast files for things that I havce loaded into the main
+% can discard the fast files for things that I hace loaded into the main
 % image... However note that the bootstrap version for CSL *MUST* have
 % all those fasl files because they get scanned to find "saved definitions"
 % when I come to compile some of the Lisp into C++.

@@ -750,11 +750,11 @@ global '(OFS_NIL OFS_STACK OFS_LISP_TRUE OFS_CURRENT_MODULUS OFS_STACKLIMIT);
   OFS_STACK           := 1;
   OFS_LISP_TRUE       := 98;
   OFS_CURRENT_MODULUS := 29;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
   OFS_STACKLIMIT      := 16;
-!#else
+#else
   OFS_STACKLIMIT      := 15;
-!#endif
+#endif
 
 % What follows will allow me to patch up direct calls to Lisp kernel
 % functions. The (negative) integers are codes to pass to native!-address
@@ -1236,28 +1236,28 @@ symbolic procedure c!:cspecform(x, env);
    error(0, list("special form", x));
 
 << put('and,                    'c!:code, function c!:cspecform);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
    put('block,                  'c!:code, function c!:cspecform);
-!#endif
+#endif
    put('catch,                  'c!:code, function c!:cspecform);
    put('compiler!-let,          'c!:code, function c!:cspecform);
    put('cond,                   'c!:code, function c!:cspecform);
    put('declare,                'c!:code, function c!:cspecform);
    put('de,                     'c!:code, function c!:cspecform);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
    put('defun,                  'c!:code, function c!:cspecform);
-!#endif
+#endif
    put('eval!-when,             'c!:code, function c!:cspecform);
    put('flet,                   'c!:code, function c!:cspecform);
    put('function,               'c!:code, function c!:cspecform);
    put('go,                     'c!:code, function c!:cspecform);
    put('if,                     'c!:code, function c!:cspecform);
    put('labels,                 'c!:code, function c!:cspecform);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
    put('let,                    'c!:code, function c!:cspecform);
-!#else
+#else
    put('!~let,                  'c!:code, function c!:cspecform);
-!#endif
+#endif
    put('let!*,                  'c!:code, function c!:cspecform);
    put('list,                   'c!:code, function c!:cspecform);
    put('list!*,                 'c!:code, function c!:cspecform);
@@ -1312,23 +1312,23 @@ symbolic procedure c!:reset_gensyms();
       available := car used . available;
       used := cdr used >> >>;
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 fluid '(my_gensym_counter);
 my_gensym_counter := 0;
 
-!#endif
+#endif
 
 symbolic procedure c!:my_gensym();
   begin
     scalar w;
     if available then << w := car available; available := cdr available >>
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     else w := compress1
        ('!v . explodec (my_gensym_counter := my_gensym_counter + 1));
-!#else
+#else
     else w := gensym1 "v";
-!#endif
+#endif
     used := w . used;
     if plist w then << princ "????? "; prin w; princ " => "; prin plist w; terpri() >>;
     return w
@@ -1539,12 +1539,12 @@ symbolic procedure c!:pareval(args, env);
 % executed sequentially with the other args without need for stacking
 % anything.  Otherwise it more care will be needed.  Put the hard
 % cases onto tasks1.
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
       tasks1 := s . tasks1
-!#else
+#else
       if c!:has_calls(car s, cdr s) then tasks1 := s . tasks1
       else merge := s . merge
-!#endif
+#endif
     end;
 %-- % if there are zero or one items in tasks1 then again it is easy -
 %-- % otherwise I flag the problem with a notionally parallel construction.
@@ -1725,12 +1725,12 @@ top:u := errorset('(read), t, !*backtrace);
 % property and so it will mis-parse if I just write "i86!-end()".  Yuk.
     else if eqcar(u, 'i86!-end) then return apply('i86!-end, nil)
     else if eqcar(u, 'rdf) then <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        w := open(u := eval cadr u, !:direction, !:input,
                  !:if!-does!-not!-exist, nil);
-!#else
+#else
        w := open(u := eval cadr u, 'input);
-!#endif
+#endif
        if w then <<
           terpri();
           princ "Reading file "; print u;
@@ -1747,7 +1747,7 @@ top:u := errorset('(read), t, !*backtrace);
 global '(c!:char_mappings);
 
 c!:char_mappings := '(
-  (!  . !A)  (!! . !B)  (!# . !C)  (!$ . !D)
+  (!  . !A)  (!! . !B)  (# . !C)  (!$ . !D)
   (!% . !E)  (!^ . !F)  (!& . !G)  (!* . !H)
   (!( . !I)  (!) . !J)  (!- . !K)  (!+ . !L)
   (!= . !M)  (!\ . !N)  (!| . !O)  (!, . !P)
@@ -1759,29 +1759,29 @@ symbolic procedure c!:inv_name n;
   begin
     scalar r, w;
     r := '(_ !C !C !");
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     for each c in explode2 package!-name symbol!-package n do <<
       if c = '_ then r := '_ . r
       else if alpha!-char!-p c or digit c then r := c . r
       else if w := atsoc(c, c!:char_mappings) then r := cdr w . r
       else r := '!Z . r >>;
     r := '!_ . '!_ . r;
-!#endif
+#endif
     for each c in explode2 n do <<
       if c = '_ then r := '_ . r
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
       else if alpha!-char!-p c or digit c then r := c . r
-!#else
+#else
       else if liter c or digit c then r := c . r
-!#endif
+#endif
       else if w := atsoc(c, c!:char_mappings) then r := cdr w . r
       else r := '!Z . r >>;
     r := '!" . r;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     return compress1 reverse r
-!#else
+#else
     return compress reverse r
-!#endif
+#endif
   end;
 
 
@@ -1800,12 +1800,12 @@ symbolic procedure c!:ccmpout1 u;
           (car u = 'setq and not atom caddr u and flagp(caaddr u, 'eval)) then
        errorset(u, t, !*backtrace);
     if eqcar(u, 'rdf) then begin
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        w := open(u := eval cadr u, !:direction, !:input,
                  !:if!-does!_not!-exist, nil);
-!#else
+#else
        w := open(u := eval cadr u, 'input);
-!#endif
+#endif
        if w then <<
           princ "Reading file "; print u;
           w := rds w;
@@ -1813,21 +1813,21 @@ symbolic procedure c!:ccmpout1 u;
           princ "End of file "; print u;
           close rds w >>
        else << princ "Failed to open file "; print u >> end
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     else if eqcar(u, 'defun) then return c!:ccmpout1 macroexpand u
-!#endif
+#endif
     else if eqcar(u, 'de) then <<
         u := cdr u;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
         w := compress1 ('!" . append(explodec package!-name
                                        symbol!-package car u,
                         '!@ . '!@ . append(explodec symbol!-name car u,
                         append(explodec "@@Builtin", '(!")))));
         w := intern w;
         defnames := list(car u, c!:inv_name car u, length cadr u, w) . defnames;
-!#else
+#else
         defnames := list(car u, c!:inv_name car u, length cadr u) . defnames;
-!#endif
+#endif
         if posn() neq 0 then terpri();
         princ "Compiling "; prin caar defnames; princ " ... ";
         c!:cfndef(caar defnames, cadar defnames, cadr u, 'progn . cddr u);
@@ -1839,13 +1839,13 @@ symbolic procedure c!:ccmpout1 u;
 
 fluid '(!*defn dfprint!* dfprintsave);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 symbolic procedure c!:concat(a, b);
    compress1('!" . append(explode2 a, append(explode2 b, '(!"))));
-!#else
+#else
 symbolic procedure c!:concat(a, b);
    compress('!" . append(explode2 a, append(explode2 b, '(!"))));
-!#endif
+#endif
 
 symbolic procedure c!:ccompilestart name;
     defnames := nil;
@@ -2393,7 +2393,7 @@ symbolic procedure c!:pmodular_minus(op, r1, r2, r3, depth);
 
 put('modular!-minus, 'c!:opcode_printer, function c!:pmodular_minus);
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 symbolic procedure c!:passoc(op, r1, r2, r3, depth);
  <<
@@ -2403,7 +2403,7 @@ symbolic procedure c!:passoc(op, r1, r2, r3, depth);
 put('assoc, 'c!:opcode_printer, function c!:passoc);
 flag('(assoc), 'c!:uses_nil);
 
-!#endif
+#endif
 
 symbolic procedure c!:patsoc(op, r1, r2, r3, depth);
  <<
@@ -2413,7 +2413,7 @@ symbolic procedure c!:patsoc(op, r1, r2, r3, depth);
 put('atsoc, 'c!:opcode_printer, function c!:patsoc);
 flag('(atsoc), 'c!:uses_nil);
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 symbolic procedure c!:pmember(op, r1, r2, r3, depth);
  <<
@@ -2423,7 +2423,7 @@ symbolic procedure c!:pmember(op, r1, r2, r3, depth);
 put('member, 'c!:opcode_printer, function c!:pmember);
 flag('(member), 'c!:uses_nil);
 
-!#endif
+#endif
 
 symbolic procedure c!:pmemq(op, r1, r2, r3, depth);
  <<
@@ -2433,7 +2433,7 @@ symbolic procedure c!:pmemq(op, r1, r2, r3, depth);
 put('memq, 'c!:opcode_printer, function c!:pmemq);
 flag('(memq), 'c!:uses_nil);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 symbolic procedure c!:pget(op, r1, r2, r3, depth);
  <<
@@ -2441,14 +2441,14 @@ symbolic procedure c!:pget(op, r1, r2, r3, depth);
  >>;
 
 flag('(get), 'c!:uses_nil);
-!#else
+#else
 
 symbolic procedure c!:pget(op, r1, r2, r3, depth);
  <<
    c!:pgencall('get, list(r2, r3), r1);
  >>;
 
-!#endif
+#endif
 
 put('get, 'c!:opcode_printer, function c!:pget);
 
@@ -2493,17 +2493,17 @@ symbolic procedure c!:pgenpequal(fname, args, res);
    i!:gopcode('!:,lab2, mov,res,eax)
  end;
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 symbolic procedure c!:pequal(op, r1, r2, r3, depth);
  <<
    c!:pgenpequal('cl_equal_fn, list(r2, r3), r1);
  >>;
-!#else
+#else
 symbolic procedure c!:pequal(op, r1, r2, r3, depth);
  begin
    c!:pgenpequal('equal_fn, list(r2, r3), r1)
  end;
-!#endif
+#endif
 
 put('equal, 'c!:opcode_printer, function c!:pequal);
 flag('(equal), 'c!:uses_nil);
@@ -2735,13 +2735,13 @@ symbolic procedure c!:pgenequal(fname, args, negate);
   else return 'jne
  end;
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 symbolic procedure c!:pifequal(s, negate);
   c!:pgenequal('cl_equal_fn, s, negate);
-!#else
+#else
 symbolic procedure c!:pifequal(s, negate);
   c!:pgenequal('equal_fn, s, negate);
-!#endif
+#endif
 
 put('ifequal, 'c!:exit_helper, function c!:pifequal);
 
@@ -2831,18 +2831,18 @@ symbolic procedure c!:two_operands op;
 
 for each n in '(car cdr qcar qcdr null not atom numberp fixp iminusp
                 iminus iadd1 isub1 modular!-minus) do c!:one_operand n;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 for each n in '(eq equal atsoc memq iplus2 idifference
                 itimes2 ilessp igreaterp getv get
                 modular!-plus modular!-difference
                 ) do c!:two_operands n;
-!#else
+#else
 for each n in '(eq equal atsoc memq iplus2 idifference
                 assoc member
                 itimes2 ilessp igreaterp getv get
                 modular!-plus modular!-difference
                 ) do c!:two_operands n;
-!#endif
+#endif
 
 
 flag('(movr movk movk1 ldrglob call reloadenv fastget fastflag), 'c!:set_r1);
@@ -2882,11 +2882,11 @@ symbolic procedure c!:live_variable_analysis all_blocks;
                   else if r3 = 't then nilbase_used := t >>
               else if atom op and flagp(op, 'c!:uses_nil) then nil_used := t;
               if flagp(op, 'c!:set_r1) then
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
                  if memq(r1, live) then live := remove(r1, live)
-!#else
+#else
                  if memq(r1, live) then live := delete(r1, live)
-!#endif
+#endif
                  else if op = 'call then nil % Always needed
                  else op := 'nop;
               if flagp(op, 'c!:read_r1) then live := union(live, list r1);
@@ -2901,9 +2901,9 @@ symbolic procedure c!:live_variable_analysis all_blocks;
                  live := union(live, r2) >>;
               if flagp(op, 'c!:read_env) then live := union(live, '(env))
             end;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
           live := append(live, nil); % because CL sort is destructive!
-!#endif
+#endif
           live := sort(live, function orderp);
           if not (live = get(b, 'c!:live)) then <<
             put(b, 'c!:live, live);
@@ -2945,11 +2945,11 @@ symbolic procedure c!:build_clash_matrix all_blocks;
             op := car s; r1 := cadr s; r2 := caddr s; r3 := cadddr s;
             if flagp(op, 'c!:set_r1) then
                if memq(r1, live) then <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
                   live := remove(r1, live);
-!#else
+#else
                   live := delete(r1, live);
-!#endif
+#endif
                   if op = 'reloadenv then reloadenv := t;
                   for each v in live do c!:clash(r1, v) >>
                else if op = 'call then nil
@@ -3129,9 +3129,9 @@ symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
     scalar w, n, locs, stacks, error_labels, fn_used, nil_used,
            nilbase_used, locsno, lab1, addr, lab_ok, stackoffs;
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     nilbase_used := t;  % For onevalue(xxx) at least
-!#endif
+#endif
     for each b in all_blocks do c!:insert_tailcall b;
     startpoint := c!:branch_chain(startpoint, nil);
     remflag(all_blocks, 'c!:visited);
@@ -3340,7 +3340,7 @@ symbolic procedure c!:cand(u, env);
 
 put('and, 'c!:code, function c!:cand);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 symbolic procedure c!:cblock(u, env);
   begin
@@ -3360,7 +3360,7 @@ symbolic procedure c!:cblock(u, env);
 
 put('block, 'c!:code, function c!:cblock);
 
-!#endif
+#endif
 
 symbolic procedure c!:ccatch(u, env);
    error(0, "catch");
@@ -3488,11 +3488,11 @@ symbolic procedure c!:expand!-let(vl, b);
 symbolic procedure c!:clet(x, env);
    c!:cval(c!:expand!-let(cadr x, cddr x), env);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 put('let, 'c!:code, function c!:clet);
-!#else
+#else
 put('!~let, 'c!:code, function c!:clet);
-!#endif
+#endif
 
 symbolic procedure c!:expand!-let!*(vl, b);
   if null vl then 'progn . b
@@ -3588,9 +3588,9 @@ symbolic procedure c!:cgetv(u, env);
   else c!:cval('qgetv . cdr u, env);
 
 put('getv, 'c!:code, function c!:cgetv);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 put('svref, 'c!:code, function c!:cgetv);
-!#endif
+#endif
 
 symbolic procedure c!:cputv(u, env);
   if not !*fastvector then c!:ccall(car u, cdr u, env)
@@ -3767,7 +3767,7 @@ symbolic procedure c!:creturn(u, env);
 
 put('return, 'c!:code, function c!:creturn);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 symbolic procedure c!:creturn_from(u, env);
   begin
@@ -3779,7 +3779,7 @@ symbolic procedure c!:creturn_from(u, env);
     return nil      % value should not be used
   end;
 
-!#endif
+#endif
 
 put('return!-from, 'c!:code, function c!:creturn_from);
 
@@ -3800,7 +3800,7 @@ symbolic procedure c!:csetq(u, env);
 put('setq, 'c!:code, function c!:csetq);
 put('noisy!-setq, 'c!:code, function c!:csetq);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 symbolic procedure c!:ctagbody(u, env);
   begin
@@ -3829,7 +3829,7 @@ symbolic procedure c!:ctagbody(u, env);
 
 put('tagbody, 'c!:code, function c!:ctagbody);
 
-!#endif
+#endif
 
 symbolic procedure c!:cprivate_tagbody(u, env);
 % This sets a label for use for tail-call to self.
@@ -3908,7 +3908,7 @@ put('when, 'c!:code, function c!:cwhen);
 % more concerned with performance than with speed.
 %
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 % mapcar etc are compiled specially as a fudge to achieve an effect as
 % if proper environment-capture was implemented for the functional
@@ -3990,7 +3990,7 @@ put('mapcar,  'c!:compile_macro, function c!:expand_map);
 put('mapcon,  'c!:compile_macro, function c!:expand_map);
 put('mapcan,  'c!:compile_macro, function c!:expand_map);
 
-!#endif
+#endif
 
 % caaar to cddddr get expanded into compositions of
 % car, cdr which are compiled in-line
@@ -4063,13 +4063,13 @@ for each n in
         put(car n, 'c!:binary_version, cadr n);
         put(car n, 'c!:code, function c!:narg) >>;
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 for each n in
    '((!+ plus2)
      (!* times2)) do <<
         put(car n, 'c!:binary_version, cadr n);
         put(car n, 'c!:code, function c!:narg) >>;
-!#endif
+#endif
 
 symbolic procedure c!:cplus2(u, env);
   begin
@@ -4254,7 +4254,7 @@ symbolic procedure c!:atomkeys x;
    c!:atomcar cadr x and
    c!:atomkeys caddr x);
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 symbolic procedure c!:comsublis x;
    if c!:atomkeys cadr x then 'subla . cdr x
@@ -4281,7 +4281,7 @@ symbolic procedure c!:comdelete x;
 
 put('delete, 'c!:compile_macro, function c!:comdelete);
 
-!#endif
+#endif
 
 symbolic procedure c!:ctestif(x, env, d1, d2);
   begin

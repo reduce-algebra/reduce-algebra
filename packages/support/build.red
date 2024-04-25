@@ -110,7 +110,8 @@ symbolic procedure inmodule(u,v);
       u := open(module2!-to!-file(u,v),'input);
       v := rds u;
       cursym!* := '!*semicol!*;
-      while not (cursym!* eq 'end) do <<
+      while and(null (cursym!* eq 'end),
+                null (cursym!* eq !$eof!$)) do <<
          prin2 eval form xread nil >>;
       rds v;
       close u;

@@ -204,7 +204,7 @@ procedure redfront_learncolor(c);
       intern compress(int2id 5 . nconc(explode c,{int2id 6}));
 
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 fluid '(redfront_l!*);
 
@@ -218,11 +218,11 @@ symbolic procedure redfront_oblist();
     return redfront_l!*;
   end;
 
-!#else
+#else
 
 symbolic procedure redfront_oblist(); oblist();
 
-!#endif
+#endif
 
 procedure redfront_swl();
    begin scalar swl;

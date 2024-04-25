@@ -201,6 +201,11 @@ symbolic inline procedure search_alglist(key, l);
   if null l then nil
   else gethash(key, l);
 
+symbolic inline procedure alglist_contents l;
+  if null l then nil
+  else hashcontents l;
+   
+
 symbolic inline procedure delete_from_alglist(key, l);
   if null l then nil
   else << remhash(key, l); l >>;
@@ -220,6 +225,9 @@ symbolic inline procedure search_alglist(key, l);
     if null r then return r
     else return cdr r
   end;
+
+symbolic inline procedure alglist_contents l;
+   l;
 
 symbolic inline procedure delete_from_alglist(key, l);
   delasc(key, l);
