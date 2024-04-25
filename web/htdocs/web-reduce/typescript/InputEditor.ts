@@ -7,13 +7,17 @@
  * by about 100ms (which is obviously unreliable).
  */
 
+declare var $gnuplot: boolean; // defined in web-reduce/index.php
+
 // Imported variables:
-import { inputDiv, earlierButton, sendInputButton, laterButton, noOutput, Global } from "./Main.js";
+import { $debug, inputDiv, earlierButton, sendInputButton, plotButton, laterButton, noOutput, Global } from "./Main.js";
 
 // Imported functions:
 import { hideViewMenuLink, refocus, sendToReduce, sendToReduceAndEcho, stopREDUCE } from "./Main.js";
 
-const inputList = [];
+declare function showPlot(script: string): void; // defined in web-reduce/typescript/run-gnuplot.ts
+
+const inputList: string[] = [];
 let inputListIndex = 0;
 let maxInputListIndex = -1;
 const quitPattern = /\b(?:bye|quit)\s*[;$]/i;  // case insensitive
@@ -55,10 +59,18 @@ function sendInput(event: KeyboardEvent | MouseEvent) {
         laterButton.disabled = true;
         if (quitPattern.test(text)) stopREDUCE();
     }
-    refocus()
+    refocus();
 }
 
 sendInputButton.addEventListener('click', sendInput);
+
+if ($gnuplot && $debug) {
+    function plotInput(event: MouseEvent) {
+        showPlot(inputDiv.innerText);
+        refocus();
+    }
+    plotButton.addEventListener('click', plotInput);
+}
 
 function earlierInput(event: KeyboardEvent | MouseEvent) {
     event.preventDefault();
@@ -113,7 +125,7 @@ inputDiv.addEventListener("keydown", event => {
  **********************/
 
 let highlighted = false;  // true when text is highlighted.
-const selection: Selection = getSelection();
+const selection: Selection = getSelection()!; // *** Can this be null? ***
 
 const matchDelimsCheckbox = document.getElementById("MatchDelimsCheckbox") as HTMLInputElement;
 matchDelimsCheckbox.checked = true;
@@ -167,8 +179,10 @@ function matchDelimsKeyHandler(event: { key: string | any[]; ctrlKey: any; }) {
     }
 }
 
-const closeDelimToRegexp = { ")": /[()"]/g, "}": /[{}"]/g, ">>": /<<|>>|"/g, "end": /\bbegin\b|\bend\b|"/ig };
-const openDelimToRegexp = { "(": /[()"]/g, "{": /[{}"]/g, "<<": /<<|>>|"/g, "begin": /\bbegin\b|\bend\b|"/ig };
+const closeDelimToRegexp: { [index: string]: RegExp } =
+    { ")": /[()"]/g, "}": /[{}"]/g, ">>": /<<|>>|"/g, "end": /\bbegin\b|\bend\b|"/ig };
+const openDelimToRegexp: { [index: string]: RegExp } =
+    { "(": /[()"]/g, "{": /[{}"]/g, "<<": /<<|>>|"/g, "begin": /\bbegin\b|\bend\b|"/ig };
 
 const matchSpan = document.createElement("span"); // used to highlight matching delimiters.
 matchSpan.style.textDecoration = "underline";
@@ -187,7 +201,7 @@ function highlightMatchingDelims() {
     // Abort if input is empty or text is selected:
     if (!inputDiv.firstChild || !selection.isCollapsed) return;
     // Get text before and after caret:
-    const caretNode: Node = selection.anchorNode, caret: number = selection.anchorOffset;
+    const caretNode: Node = selection.anchorNode!, caret: number = selection.anchorOffset;
     // Using a range would be better here, but Range.toString() ignores newlines, at least in Firefox.
     selection.setBaseAndExtent(inputDiv, 0, caretNode, caret);
     const textBefore: string = selection.toString();
@@ -197,11 +211,11 @@ function highlightMatchingDelims() {
     selection.collapse(caretNode, caret);
     // Separate lines may be in <div> elements, which implicitly end with a <br/>, so...
     const atEOL: boolean = caretNode.parentNode !== inputDiv && (<Element>caretNode.parentNode).tagName === "DIV" &&
-        caret === (<Text>caretNode).length && caretNode.parentNode.nextSibling !== null;
+        caret === (<Text>caretNode).length && caretNode.parentNode!.nextSibling !== null;
     if (textBefore) {
         // Check for matching delimiters closing immediately before caret.
         // The regexp flag i makes searching case-insensitive.
-        let closeDelim: string | any[], openIndex = -1;
+        let closeDelim: string, openIndex = -1;
         const initialMatch = textBefore.match(/(?:[)}]|>>|\bend)$/i);
         if (initialMatch &&
             !((closeDelim = initialMatch[0].toLowerCase()) === "end" && /^(?:\w|\d)/.test(textAfter))) {

@@ -17,27 +17,27 @@ class ModalDialogue extends HTMLElement {
 		super();
 		// Handle <modal-dialogue> funcsHeader attribute:
 		if (this.hasAttribute("specfnsHeader")) {
-			const specfnsHeader = (document.getElementById("special-functions-header").cloneNode(true) as HTMLTemplateElement)
+			const specfnsHeader = (document.getElementById("special-functions-header")!.cloneNode(true) as HTMLTemplateElement)
 				.content.children;
 			this.prepend(...specfnsHeader);
 		}
 		// Wrap the template content around the content of this <modal-dialogue> element.
 		const templateContent = (document.getElementById("modal-dialogue-template") as HTMLTemplateElement)
-			.content.firstElementChild.cloneNode(true) as HTMLElement;
-		const modalBody = templateContent.querySelector("div.modal-body");
+			.content.firstElementChild!.cloneNode(true) as HTMLElement;
+		const modalBody = templateContent.querySelector("div.modal-body")!;
 		modalBody.append(...this.children);
 		this.appendChild(templateContent);
 		// Handle other <modal-dialogue> attributes:
-		const dialogueId = this.getAttribute("dialogueId");
+		const dialogueId = this.getAttribute("dialogueId")!;
 		templateContent.setAttribute("id", dialogueId);
 		const dialogueLabel = dialogueId + "Label";
 		templateContent.setAttribute("aria-labelledby", dialogueLabel);
-		const modalTitle = templateContent.querySelector("h5");
+		const modalTitle = templateContent.querySelector("h5")!;
 		modalTitle.setAttribute("id", dialogueLabel);
-		modalTitle.innerText = this.getAttribute("dialogueTitle");
+		modalTitle.innerText = this.getAttribute("dialogueTitle")!;
 		const dialogueSize = this.getAttribute("dialogueSize");
 		if (dialogueSize)
-			templateContent.querySelector("div.modal-dialog").classList.add(dialogueSize);
+			templateContent.querySelector("div.modal-dialog")!.classList.add(dialogueSize);
 	}
 }
 
@@ -61,7 +61,7 @@ class TempFuncs {
 	 * @param {string} dialogueId - The id attribute of the modal-dialogue element.
 	 */
 	constructor(dialogueId: string) {
-		this.dialogue = document.getElementById(dialogueId);
+		this.dialogue = document.getElementById(dialogueId)!;
 		this.inputs = this.dialogue.querySelectorAll<HTMLInputElement>("input[type=text]");
 		this.buttons = this.dialogue.querySelectorAll<HTMLButtonElement>("div.modal-footer > button");
 
@@ -104,13 +104,13 @@ class TempFuncs {
 			selBeg = selProps.anchorOffset;
 			let selEnd = selProps.focusOffset;
 			if (selBeg > selEnd) { let tmp = selBeg; selBeg = selEnd; selEnd = tmp; }
-			const cont = insertionNode.textContent;
-			inputDiv.textContent = cont.substr(0, selBeg) + text + cont.substr(selEnd);
+			const cont = insertionNode.textContent!;
+			inputDiv.textContent = cont.substring(0, selBeg) + text + cont.substring(selEnd); // previously used substr, change OK?
 		}
-		const index = text.search(/\bws\b/), selection = getSelection();
+		const index = text.search(/\bws\b/), selection = getSelection()!;
 		if (index >= 0) {
 			// Select ws if available within inserted text:
-			selection.setBaseAndExtent(inputDiv.firstChild, selBeg + index, inputDiv.firstChild, selBeg + index + 2);
+			selection.setBaseAndExtent(inputDiv.firstChild!, selBeg + index, inputDiv.firstChild!, selBeg + index + 2);
 		} else {
 			// Otherwise, set caret to end of insertion:
 			selection.collapse(inputDiv.firstChild, selBeg + text.length);
@@ -135,15 +135,15 @@ export class Template extends TempFuncs {
 	 */
 	constructor(templateName: string) {
 		super(templateName.replace(/\s+/g, ""));
-		this.pattern = this.dialogue.querySelector("div.pattern");
+		this.pattern = this.dialogue.querySelector("div.pattern")!;
 		this.alertHeader = `${templateName} Error\n`;
+		this.checkNonEmpty = false;
 
 		// Edit button action:
 		this.buttons[1].addEventListener("click", () => {
 			try {
 				// No fields are normally required:
-				this.checkNonEmpty = false;
-				this.inputDivInsert(this.result());
+				this.result && this.inputDivInsert(this.result());
 				this.buttons[3].click();
 			} catch (ignored) { }
 			inputDiv.focus(); // always return focus to input editor
@@ -154,7 +154,7 @@ export class Template extends TempFuncs {
 			try {
 				// Check required fields provided:
 				this.checkNonEmpty = true;
-				sendToReduceAndEcho(this.result() + ";");
+				this.result && sendToReduceAndEcho(this.result() + ";");
 				this.buttons[3].click();
 			} catch (ignored) { }
 			refocus(); // return focus to input editor on desktop, I/O Display on mobile
@@ -192,15 +192,14 @@ export class Template extends TempFuncs {
  * @extends TempFuncs
  */
 export class Functions extends TempFuncs {
-	selectedFunction: HTMLElement;
+	selectedFunction: HTMLElement | undefined;
 
 	/**
 	 * Create a generic function dialogue.
-	 * @param {string} dialogueId - The id attribute of the modal-dialogue element.
+	 * @param {string} functionsId - The id attribute of the modal-dialogue element.
 	 */
 	constructor(functionsId: string) {
 		super(functionsId);
-		this.selectedFunction = undefined;
 
 		const functions = this.dialogue.querySelectorAll("div.function-templates>div") as NodeListOf<HTMLElement>;
 		for (const fn of functions)
@@ -241,9 +240,11 @@ export class Functions extends TempFuncs {
 	 * @returns {string} The REDUCE input string.
 	 */
 	result(): string {
-		const values = [...this.selectedFunction.getElementsByTagName("input")]
-			.map(el => el.value.trim());
-		return `${this.selectedFunction.dataset.function}(${values.join()})`;
+		if (this.selectedFunction) {
+			const values = [...this.selectedFunction.getElementsByTagName("input")]
+				.map(el => el.value.trim());
+			return `${this.selectedFunction.dataset.function}(${values.join()})`;
+		} else return "";
 	}
 }
 
@@ -260,16 +261,16 @@ let preMenuSelectionProps: {
 */
 function saveSelectionProps() {
 	// A Selection object represents the range of text selected by the user or the current position of the caret.
-	const selection = getSelection();
+	const selection = getSelection()!;
 	preMenuSelectionProps = {
-		anchorNode: selection.anchorNode,
+		anchorNode: selection.anchorNode!,
 		anchorOffset: selection.anchorOffset,
-		focusNode: selection.focusNode,
+		focusNode: selection.focusNode!,
 		focusOffset: selection.focusOffset
 	}
 }
 
-document.getElementById("TemplatesMenuLink")
+document.getElementById("TemplatesMenuLink")!
 	.addEventListener('show.bs.dropdown', saveSelectionProps);
-document.getElementById("FunctionsMenuLink")
+document.getElementById("FunctionsMenuLink")!
 	.addEventListener('show.bs.dropdown', saveSelectionProps);

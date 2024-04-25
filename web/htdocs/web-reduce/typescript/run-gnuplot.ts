@@ -8,19 +8,21 @@ declare function callMain(args: string[]): void;
 var HEAPU8: Uint8Array;
 
 // WebAssembly module config
-var STDOUT = [],
+var STDOUT: string[] = [],
   SCRIPT_FILE = "script.gnuplot";
 
-var Module = {};
+var Module: { [index: string]: any } = {};
 // Don't run main on page load
 Module["noInitialRun"] = true;
-// Print functions
+// Print functions: each call handles one text line.
+// stdout is used for output such as the version.
+// stderr is used for reporting input errors.
 Module["print"] = (stdout: string) => STDOUT.push(stdout);
 Module["printErr"] = (stderr: string) => STDOUT.push(stderr);
 // When the module is ready
 Module["onRuntimeInitialized"] = function () {
-  document.getElementById("gnuplot-version").innerText =
-    "Powered by " + run_gnuplot("", "--version").stdout;
+  document.getElementById("gnuplot-version")!.innerText =
+    "Powered by " + run_gnuplot("", "--version");
 };
 Module["preRun"] = [function () {
   function stdin() {
@@ -53,12 +55,8 @@ function run_gnuplot(script: string, options: string | string[]) {
   callMain(args);
   HEAPU8.set(mem_snapshot);
 
-  return {
-    stdout: STDOUT.join("\n")
-  };
+  return STDOUT.join("\n");
 }
-
-declare function draw_plot_on_canvas(): void; // Defined in "plot.js"
 
 /**
  * Launch Gnuplot.
@@ -68,54 +66,79 @@ declare function draw_plot_on_canvas(): void; // Defined in "plot.js"
 function launchGnuplot(data:
   { channel: string, script: string, files: { filename: string, data: Uint8Array }[] }) {
   // console.log(script);
-  data.files.map(file => {
+  // data = {channel: "plot", files: null, script: ""} is possible!!!
+  data.files?.map(file => {
     FS.writeFile(file.filename, file.data);
   });
+  data.script && showPlot(data.script);
+}
+
+declare function draw_plot_on_canvas(): void; // Defined in "plot.js"
+
+/**
+ * Show Plot.
+ * @param script: string - Gnuplot input script.
+ * @returns void
+ */
+function showPlot(script: string) {
   // Call gnuplot
-  const output = run_gnuplot(data.script, []).stdout;
+  const output = run_gnuplot(script, []);
   // Handle output -- there shouldn't be any!
   if (output) {
     alert("Gnuplot Message:\n" + output);
     return;
   }
-
   // Display plot image
   let draw_script = FS.readFile("plot.js", { encoding: "utf8" });
-
-  eval(draw_script);
-  // BEWARE that in Gnuplot 5.4.10 this defines function
-  // draw_plot_on_canvas that uses global variables canvas and ctx!
-  // Clear any previous plot from the canvas.
-  // (There might be a better way to do this!)
-  (<HTMLCanvasElement>document.getElementById("draw_plot_on_canvas")).getContext("2d").reset();
-  if (typeof draw_plot_on_canvas === "function") {
-    draw_plot_on_canvas();
-    showPlotWindowDisplay();
+  // BEWARE that in Gnuplot 5.4.10 this defines
+  // a function that uses two global variables:
+  // function draw_plot_on_canvas() {
+  //   canvas = document.getElementById("draw_plot_on_canvas");
+  //   ctx = canvas.getContext("2d");
+  // Localise these two variables...
+  let canvas, ctx;
+  try {
+    // Indirect eval necessary because I am using strict mode; see
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
+    eval?.(draw_script); // indirect eval through optional chaining operator (?.)
+  } catch (error) {
+    console.error(error);
   }
+  if (typeof draw_plot_on_canvas !== "function") {
+    console.error("Function draw_plot_on_canvas not defined!");
+    return;
+  }
+  // Clear any previous plot from the canvas:
+  (<HTMLCanvasElement>document.getElementById("draw_plot_on_canvas")).getContext("2d")!.reset();
+  draw_plot_on_canvas();
+  showPlotWindowDisplay();
 }
 
-let plotWindow: HTMLElement, togglePlotWindowDisplayBtn: HTMLElement, bottom: number;
+let plotWindow: HTMLElement, togglePlotWindowDisplayBtn: HTMLElement;
 const inputDiv = document.getElementById("InputDiv");
 // inputDiv is exported from module Main.ts but inaccessible here!
 
 // On page load
 document.addEventListener("DOMContentLoaded", function () {
-  plotWindow = document.getElementById("plot-window");
-  togglePlotWindowDisplayBtn = document.getElementById("toggle-plot-display-button");
-  bottom = document.getElementById("main").scrollHeight;
+  plotWindow = document.getElementById("plot-window")!;
+  plotWindow.hidden = true;
+  togglePlotWindowDisplayBtn = document.getElementById("toggle-plot-display-button")!;
 });
 
 function togglePlotWindowDisplay() {
-  if (plotWindow.classList.contains("d-none")) showPlotWindowDisplay();
+  if (plotWindow.hidden)
+    showPlotWindowDisplay();
   else {
-    plotWindow.classList.add("d-none");
+    plotWindow.hidden = true;
     togglePlotWindowDisplayBtn.innerText = "Show Plot Window";
   }
-  inputDiv.focus();
+  inputDiv!.focus();
 }
 
 function showPlotWindowDisplay() {
-  plotWindow.classList.remove("d-none");
-  scroll(0, bottom); // make the whole plot window visible
+  plotWindow.hidden = false;
   togglePlotWindowDisplayBtn.innerText = "Hide Plot Window";
+  // Make the plot window visible.
+  // Doing this asynchronously is necessary in Chrome.
+  setTimeout(() => plotWindow.scrollIntoView());
 }
