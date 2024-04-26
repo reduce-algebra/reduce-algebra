@@ -5,8 +5,7 @@
 %  and Opera Software ASA. You are granted a license to use, reproduce
 %  and create derivative works of this document."
 
-% Some of the character names are shown as mapping onto pairs of
-Unicode
+% Some of the character names are shown as mapping onto pairs of Unicode
 % symbols (&acE; is the first such: I might try to render it here as
                % "~=", an &ac;
                sign (alternating current?) followed by a lowered equals

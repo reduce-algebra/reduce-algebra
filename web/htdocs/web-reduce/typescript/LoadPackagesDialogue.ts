@@ -21,9 +21,9 @@ solve sparse spde specbess specfaux specfn specfn2 sstools sum susy2 symaux
 symmetry tables talp taylor tps tri trigd trigint trigsimp turtle utf8 v3tools
 wu xcolor xideal z3 zeilberg ztrans)`;
 const packages = loadable_packages.slice(1, -1).split(/\s+/);
-const loadPackagesDialogue = document.getElementById("LoadPackagesDialogue");
-const pkgButtonGrid = loadPackagesDialogue.querySelector("div.modal-body > div");
-const pkgButtons = [];
+const loadPackagesDialogue = document.getElementById("LoadPackagesDialogue")!;
+const pkgButtonGrid = loadPackagesDialogue.querySelector("div.modal-body > div")!;
+const pkgButtons: HTMLInputElement[] = [];
 let pkgNo = 1;
 for (const pkg of packages) {
 	const pkgId = "LoadPackageButton" + pkgNo++;
@@ -56,7 +56,7 @@ buttons[2].addEventListener("click", loadButtonAction);
 function loadButtonAction() {
 	// Build an array of selected package names:
 	const selectedPackages = pkgButtons.filter(btn => btn.checked)
-		.map(btn => pkgButtonGrid.querySelector<HTMLLabelElement>(`label[for='${btn.id}']`).innerText);
+		.map(btn => pkgButtonGrid.querySelector<HTMLLabelElement>(`label[for='${btn.id}']`)!.innerText);
 	if (selectedPackages.length !== 0)
 		sendToReduceAndEcho(`load_package ${selectedPackages.join(", ")};`);
 	// Close dialogue:
@@ -94,7 +94,7 @@ buttons[1].addEventListener("click", showManualForSelectedPackage);
 function showManualForSelectedPackage() {
 	let button = pkgButtons.find(btn => btn.checked);
 	if (button)
-		showManualForLabel(pkgButtonGrid.querySelector<HTMLLabelElement>(`label[for='${button.id}']`));
+		showManualForLabel(pkgButtonGrid.querySelector<HTMLLabelElement>(`label[for='${button.id}']`)!);
 }
 
 /**

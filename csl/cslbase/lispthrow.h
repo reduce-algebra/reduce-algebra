@@ -1,4 +1,4 @@
-// lispthrow.h                                 Copyright Codemist 2020-2024
+
 
 // Some exception processing stuff for CSL
 

@@ -72,20 +72,18 @@ symbolic procedure csl_normbf x;
 % "count trailing zeros" rather than "least significant digit". At that stage
 % it was rationalized to match its name. The hack here allows for either old
 % or new behaviour.
-!#if (equal (lsd 1) 0)
+#if (equal (lsd 1) 0)
       ep := lsd mt;
-!#else
+#else
       ep := sub1 lsd mt;
-!#endif
+#endif
       mt := lshift(mt, -ep);
       if s then mt := -mt;
       ep := ep + cddr x;
       return make!:ibf(mt,ep)
    end;
 
-% Use "!#if" not "#if" for bootstrapping reasons.
-
-!#if (not (memq 'vsl lispsystem!*))
+#if (not (memq 'vsl lispsystem!*))
 
 remflag('(normbf), 'lose);
 
@@ -107,7 +105,7 @@ symbolic procedure csl_timbf(u, v);
 
 symbolic inline procedure timbf(u, v); csl_timbf(u, v);
 
-!#endif
+#endif
 
 symbolic procedure fl2bf x;
   if not fp!-finite x then rederr list("Floating point infinity or NaN",x)
@@ -119,11 +117,11 @@ symbolic procedure fl2bf x;
     return normbf make!:ibf(x,u-!!nbfpd)
   end;
 
-!#if (memq 'vsl lispsystem!*)
+#if (memq 'vsl lispsystem!*)
 flag ('(fl2bf msd!: fix2), 'lose);
-!#else
+#else
 flag ('(fl2bf msd!: fix2 rndpwr timbf), 'lose);
-!#endif
+#endif
 
 set!-print!-precision 6;
 

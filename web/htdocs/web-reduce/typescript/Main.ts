@@ -5,7 +5,7 @@
  */
 
 declare function launchGnuplot(data: { channel: string, script: string, files: { filename: string, data: Uint8Array }[] }): void;
-declare var gnuplot: boolean;
+declare var $gnuplot: boolean; // defined in web-reduce/index.php
 
 /* /// <reference path="../gnuplot/run-gnuplot.js" /> Doesn't work by default for a JS file! */
 
@@ -21,16 +21,16 @@ export const Global: {
     hideOutput: boolean,
     // Control REDUCE input and output; assigned in FileMenu.js and InputEditor.js, read in Main.js:
     inputFromKbd: boolean,
-    outputToFile: FileSystemWritableFileStream,
-    outputToArray: (string | BlobPart)[]
+    outputToFile: FileSystemWritableFileStream | undefined,
+    outputToArray: (string | BlobPart)[] | undefined
 } = {
     echo: false,
     hideOutput: false,
-    inputFromKbd: undefined, outputToFile: undefined, outputToArray: undefined
+    inputFromKbd: false, outputToFile: undefined, outputToArray: undefined
 };
 
 /** True if console logging is enabled. */
-export const debug = location.search.includes("debug");
+export const $debug = location.search.includes("debug");
 
 /** True if mobile version selected. */
 export const mobileVersion = location.search.includes("mobile");
@@ -56,7 +56,7 @@ export function hideMenuLink(menuLink: HTMLElement) {
     bootstrap.Dropdown.getInstance(menuLink).hide();
 }
 
-const viewMenuLink = document.getElementById("ViewMenuLink");
+const viewMenuLink = document.getElementById("ViewMenuLink")!;
 export function hideViewMenuLink() {
     hideMenuLink(viewMenuLink);
 }
@@ -68,13 +68,13 @@ const centreTypesetMathsCheckbox = document.getElementById("CentreTypesetMathsCh
 centreTypesetMathsCheckbox.checked = true;
 
 /** Input Editor HTML Element. */
-export const inputDiv = document.getElementById("InputDiv");
+export const inputDiv = document.getElementById("InputDiv")!;
 inputDiv.innerHTML = "";
 inputDiv.focus();
 
 export function refocus() {
     if (mobileVersion) // Ensure I/O Display is visible:
-        window.scrollTo(0, document.getElementById("IODisplayIframe").offsetTop);
+        window.scrollTo(0, document.getElementById("IODisplayIframe")!.offsetTop);
     else // Focus the input editor:
         inputDiv.focus();
 }
@@ -85,6 +85,10 @@ earlierButton.disabled = true;
 
 /** Send Input Button HTML Element. */
 export const sendInputButton = document.getElementById("SendInputButton") as HTMLButtonElement;
+
+/** Plot Button HTML Element. */
+export const plotButton = document.getElementById("PlotButton") as HTMLButtonElement;
+plotButton.hidden = !($gnuplot && $debug);
 
 /** Later Button HTML Element. */
 export const laterButton = document.getElementById("LaterButton") as HTMLButtonElement;
@@ -140,7 +144,7 @@ function clearIODisplay() {
 export function sendPlainTextToIODisplay(text: string, displayClass?: string) {
     if (noOutput) {
         // This code executes immediately after REDUCE loads:
-        window.scrollTo(0, document.getElementById("Menubar").offsetTop);
+        window.scrollTo(0, document.getElementById("Menubar")!.offsetTop);
         clearIODisplay();
         setRunningState(true);
         displayClass = undefined;
@@ -162,7 +166,7 @@ export function sendPlainTextToIODisplay(text: string, displayClass?: string) {
  * @returns null
  */
 function reduceWebMessageHandler(event: { data: { channel: string, line?: string, script?: string, files?: { filename: string, data: Uint8Array }[] }; }) {
-    if (event.data.channel === "stdout") {
+    if (event.data.channel === "stdout" && event.data.line !== undefined) {
         if (Global.hideOutput) { // hide changes of switches etc.
             Global.hideOutput = false;
             return;
@@ -183,10 +187,10 @@ function reduceWebMessageHandler(event: { data: { channel: string, line?: string
         // If an empty string is passed (ie asking for a blank line of output)
         // it gets lost in the display, so output a single space character.
         if (output == "") {
-            debug && console.log("OUTPUT: Empty line"); // for debugging
+            $debug && console.log("OUTPUT: Empty line"); // for debugging
             sendPlainTextToIODisplay(" ");
         } else {
-            debug && console.log(`OUTPUT: ${output}`); // for debugging
+            $debug && console.log(`OUTPUT: ${output}`); // for debugging
 
             // The mathematical part of the output delivered by REDUCE will have the form:
             // latex:\black$\displaystyle\frac{-2\*\arctan\left(x\right)+\log\left(x-1\right)-\log\left(x+1\right)}{4}$
@@ -217,13 +221,12 @@ function reduceWebMessageHandler(event: { data: { channel: string, line?: string
                     sendPlainTextToIODisplay(output, match[1] ? "error" : "warning");
                 } else {
                     // Do not colour if input from file because this may be echoed input:
-                    sendPlainTextToIODisplay(output, Global.inputFromKbd && "output");
+                    sendPlainTextToIODisplay(output, Global.inputFromKbd ? "output" : undefined);
                 }
             }
         }
     } else if (event.data.channel === "plot") { // Hermann Rolfes
         launchGnuplot(event.data as { channel: string, script: string, files: { filename: string, data: Uint8Array }[] });
-        document.getElementById("plot-window").scrollIntoView();
     }
 }
 
@@ -242,7 +245,7 @@ function reduceWebErrorHandler(event: ErrorEvent) {
  * @param {string} str - The REDUCE input.
  */
 export let sendToReduce = (str: string) => {
-    debug && console.log(` INPUT: ${str}`); // for debugging
+    $debug && console.log(` INPUT: ${str}`); // for debugging
     // This function posts a string to REDUCE, which treats it rather as if
     // it had been keyboard input. At the start of a run I use this to send a
     // sequence of commands to REDUCE to adjust its input and output processing
@@ -262,7 +265,7 @@ export let sendToReduce = (str: string) => {
 /**
  * @param {number} ms - How long to sleep in milliseconds.
  */
-function sleep(ms) { // added by Hermann Rolfes
+function sleep(ms: number) { // added by Hermann Rolfes
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
@@ -273,7 +276,7 @@ async function startREDUCE() { // async and sleep added by Hermann Rolfes
     try {
         // Doesn't seem to catch errors in the worker!
         // Need to catch worker errors in the worker and pass them out as messages.
-        worker = new Worker(mobileVersion ? "mobile/reduce.web.js" : "generated/reduce.pre.js");
+        worker = new Worker(mobileVersion ? "mobile/reduce.web.js" : "generated/reduce.web.js");
         worker.onmessage = reduceWebMessageHandler;
         worker.onerror = reduceWebErrorHandler;
         // The rejectionhandled and unhandledrejection events described
@@ -286,21 +289,27 @@ async function startREDUCE() { // async and sleep added by Hermann Rolfes
             on nat, fancy, errcont;
             off int;
         >>$`);
-        if (gnuplot) {
+        if ($gnuplot) {
             await sleep(200);
             Global.hideOutput = true;
             sendToReduce("load_package gnuplot;");
             await sleep(200);
             Global.hideOutput = true;
-            // Redefine procedure in "plot/gnupldrv.red" to use fixed filename
-            // and no header (supplied by function run_gnuplot):
-            sendToReduce(`lisp<<
-                procedure PlotOpenDisplay();
-                plotpipe!* := open("/tmp/plotcmds.txt", 'output);
-            >>$`);
+            // Redefine procedure in "plot/gnuintfc.red":
+            sendToReduce(`\
+symbolic procedure initialize_gnuplot();
+  <<
+    !*plotpause := -1;       % pause REDUCE between successive plots
+    !*plotusepipe := nil;    % use system, not a pipe
+    plotcmds!* := "/tmp/plotcmds.txt";
+    plotcommand!* := concat("gnuplot ", plotcmds!*);
+    plotheader!* := ""; % header supplied by JS function run_gnuplot
+    plotdta!* := for i := 1:10 collect
+    bldmsg("/tmp/plotdata%w.txt", i); % scratch data files
+  >>$`);
         }
     } catch (error) {
-        reduceWebErrorHandler(error);
+        error instanceof ErrorEvent && reduceWebErrorHandler(error);
         throw error; // cannot continue
     }
 }
@@ -316,7 +325,7 @@ export function stopREDUCE() {
 // Utility Functions
 // *****************
 
-const toASCII = {
+const toASCII: { [index: string]: string } = {
     Α: "!Alpha", Β: "!Beta", Γ: "!Gamma", Δ: "!Delta", Ε: "!Epsilon", Ζ: "!Zeta", Η: "!Eta", Θ: "!Theta",
     Ι: "!Iota", Κ: "!Kappa", Λ: "!Lambda", Μ: "!Mu", Ν: "!Nu", Ξ: "!Xi", Ο: "!Omicron", Π: "!Pi",
     Ρ: "!Rho", Σ: "!Sigma", Τ: "!Tau", Υ: "!Upsilon", Φ: "!Phi", Χ: "!Chi", Ψ: "!Psi", Ω: "!Omega",
@@ -389,7 +398,7 @@ startREDUCEMenuItem.addEventListener("click", startREDUCE);
 stopREDUCEMenuItem.addEventListener("click", stopREDUCE);
 restartREDUCEMenuItem.addEventListener("click", () => { stopREDUCE(); startREDUCE(); });
 clearDisplayMenuItem.addEventListener("click", clearIODisplay);
-document.getElementById("PrintDisplayMenuItem").addEventListener("click", () => ioDisplayWindow.print());
+document.getElementById("PrintDisplayMenuItem")!.addEventListener("click", () => ioDisplayWindow.print());
 
 // View menu -
 // Full Window:
@@ -397,13 +406,13 @@ function setFullWindow(full: boolean) {
     // If full then hide header, footer and navigation menu:
     document.getElementsByTagName("header")[0].hidden = full;
     document.getElementsByTagName("footer")[0].hidden = full;
-    document.querySelector<HTMLElement>("#navmenu div").hidden = full;
-    document.getElementById("main").className = full ? "" : defaultMainClassName;
+    document.querySelector<HTMLElement>("#navmenu div")!.hidden = full;
+    document.getElementById("main")!.className = full ? "" : defaultMainClassName;
     // If full then hide page heading:
-    document.querySelector<HTMLElement>("#main h1").hidden = full;
+    document.querySelector<HTMLElement>("#main h1")!.hidden = full;
 }
 
-const defaultMainClassName = document.getElementById("main").className;
+const defaultMainClassName = document.getElementById("main")!.className;
 
 const fullWindowCheckbox = document.getElementById("FullWindowCheckbox") as HTMLInputElement;
 fullWindowCheckbox.checked = mobileVersion;
@@ -455,12 +464,12 @@ centreTypesetMathsCheckbox.addEventListener("change", event => {
     const iframe = document.getElementById("IODisplayIframe") as HTMLIFrameElement;
     // Don't try to access the iframe DOM until the iframe has loaded!
     iframe.addEventListener("load", () => {
-        debug && console.log("IODisplayIframe loaded.");
-        ioDisplayWindow = iframe.contentWindow;
-        ioDisplayHead = iframe.contentDocument.head;
-        ioDisplayBody = iframe.contentDocument.body;
+        $debug && console.log("IODisplayIframe loaded.");
+        ioDisplayWindow = iframe.contentWindow!;
+        ioDisplayHead = iframe.contentDocument!.head;
+        ioDisplayBody = iframe.contentDocument!.body;
         ioDisplayHead.appendChild(ioColouringStyleElement); // IOColouringCheckbox initially checked
-        document.getElementById("REDUCEMenuLink").classList.remove("disabled"); // Enable REDUCE menu
+        document.getElementById("REDUCEMenuLink")!.classList.remove("disabled"); // Enable REDUCE menu
         if (location.search.includes("spoof")) {
             setRunningState(true);
             sendToReduce = (str: string) => { };

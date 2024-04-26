@@ -114,15 +114,21 @@ new_inline_definitions := nil;
 % CSL it is in the generated-c directory because several different variant
 % builds may wish to share it.
 
+% I am being cautious here - this file gets read quite early in the
+% bootstrapping process and "#if" may not be fully supported. I will
+% avoid use of "#else" and "#elif" and also of any nesting here so that
+% a very simple initial implementation will suffice.
+
 symbolic procedure inline_defs_file();
-% The PSL bootstrap build needs the "!" here
-!#if (memq 'vsl lispsystem!*)
+#if (memq 'vsl lispsystem!*)
    "inline-defs.dat";
-!#elif (memq 'csl lispsystem!*)
+#endif
+#if (memq 'csl lispsystem!*)
    "$reduce/cslbuild/generated-c/inline-defs.dat";
-!#else
+#endif
+#if (null (or (memq 'vsl lispsystem!*) (memq 'csl lispsystem!*)))
    "$fasl/inline-defs.dat";
-!#endif
+#endif
 
 symbolic procedure load_saved_inlines();
   begin

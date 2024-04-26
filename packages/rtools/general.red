@@ -240,7 +240,7 @@ flag('(hex), 'opfn);
 % As an alternative way to go, prinhex is a function that prints its
 % argument with integers shown in hex. 
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 symbolic procedure prinhex a;
   begin
@@ -248,7 +248,7 @@ symbolic procedure prinhex a;
     prin1 a;
   end;
 
-!#endif
+#endif
 
 flag('(prinhex), 'opfn);
 
@@ -289,12 +289,67 @@ symbolic procedure hex64t n;
     hex64 n;
     terpri() >>;
 
+% leafcount is intended to apply to prefix forms and counts the
+% number of atoms not counting the ones that are operator-names.
+
 symbolic procedure leafcount x;
   if atom x then 1
   else foreach y in cdr x sum leafcount y;
 
 symbolic operator leafcount;
 
+% treesize is a measure of the bulk of a data-structure, assuming there is
+% no sharing and coded in a way that would fail if the structure was
+% cyclic.
+
+symbolic procedure treesize x;
+  begin
+    scalar r := 1;
+    while not atom x do <<
+      r := r + treesize car x;
+      x := cdr x >>;
+    if vectorp x then
+      for i := 0:upbv x do r := r + treesize getv(x, i);
+    return r
+  end;
+
+% Find the bulk of data stored in a hash table.
+
+symbolic procedure hashsize h;
+   treesize hashcontents h;
+
+% The following are the persistent hash tables that Reduce uses:
+
+fluid '(alglist!* !$hash);
+global '(kernhash);
+
+% Here I have something usable from algebraic mode that displays some
+% indication of the amount of material saved in hash tables. The numbers
+% displayed scale as bytes but should not be seen as at all precise. Also
+% if the same data is stored multiple times (maybe under one key a sub-
+% structure of something else is saved) there will be double counting an
+% the numbers displayed here could be serious over-estimates. But still
+% they may be informative!
+
+% Note that for alglist!* items are saved and a count is maintained of
+% how many are used - when a limit is exceeded the table is empties. That
+% is the inwardness if alglist_count!* and alglist_limit!*.
+
+symbolic procedure hashsizes();
+  begin
+    scalar unit;
+    if memq('sixty!-four, lispsystem!*) then unit := 8 else unit = 4;
+    terpri();
+    prin2 "alglist_count* = "; prin2 alglist_count!*;
+    prin2 " alglist_limit* = "; print alglist_limit!*;
+    prin2 "alglist*:"; ttab 20;
+           print (unit*treesize alglist_contents(car alglist!*));
+    prin2 "kernhash:"; ttab 20; print (unit*hashsize kernhash);
+% !*prinl_visited_nodes!* is always cleared after use.
+    prin2 "$hash (for det):"; ttab 20; print (unit*hashsize !$hash);
+  end;
+
+symbolic operator hashsizes;
 
 endmodule;
 

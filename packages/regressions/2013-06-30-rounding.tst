@@ -16,12 +16,12 @@
 
 lisp;
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 symbolic procedure ttab n;
   spaces (n - posn())$
 
-!#endif
+#endif
 
 symbolic procedure show(m, v);
  << prin2 m;

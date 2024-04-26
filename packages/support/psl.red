@@ -37,13 +37,13 @@ fluid '(bbits!* dirchar!* outputhandler!* !*gc!-hook!* lessspace!*);
 
 global '(bfz!* bitsperword tempdir!*);
 
-!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
    dirchar!* := "\";
    tempdir!* := getenv "TMP" or getenv "TEMP";
-!#else
+#else
    dirchar!* := "/";
    tempdir!* := "/tmp";
-!#endif
+#endif
 
 
 compiletime
@@ -57,7 +57,7 @@ flag('(cond),'eval);   % Enable conditional compilation.
 
 %-------------------------------------------------------------------
 
-!#if (member 'ieee lispsystem!*)
+#if (member 'ieee lispsystem!*)
 
 % % The following routines support fast float operations by exploiting
 % % the IEEE number format explicitly.
@@ -152,7 +152,7 @@ symbolic procedure float!-is!-subnormal x;
 symbolic procedure float!-is!-negative x;
   floatp x and not(0 eq ieeesign x);
 
-!#else
+#else
 
 symbolic procedure float!-is!-finite x; t;
 
@@ -164,7 +164,7 @@ symbolic procedure float!-is!-subnormal x; nil;
 
 symbolic procedure float!-is!-negative x; floatp x and minusp x;
 
-!#endif
+#endif
 
 
 remflag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm fp!-signbit),'lose);
@@ -314,8 +314,7 @@ flag('(make!:ibf), 'lose);
 if not('ieee memq lispsystem!*) then
      flag('(fl2bf),'lose);
 
-% Use "!#if" not "#if" for bootstrapping reasons.
-!#if (eq bitsperword 64)
+#if (eq bitsperword 64)
 
 symbolic procedure fl2bf f;
   % u is a floating point number
@@ -332,7 +331,7 @@ symbolic procedure fl2bf f;
                                 idifference(e,52))
      end;
 
-!#else
+#else
 
 symbolic procedure fl2bf f;
   % u is a floating point number
@@ -356,7 +355,7 @@ symbolic procedure fl2bf f;
                                 idifference(e,52))
      end;
 
-!#endif
+#endif
 
 symbolic procedure normbf x;
    begin scalar mt,s;integer ep,ep1;
@@ -443,11 +442,11 @@ symbolic procedure plist x;
 symbolic procedure glob!-filenames pat;
   if not stringp pat then rederr " glob!-filenames needs a string parameter"
    else begin scalar cmd,chan,oldchan,filelist,strbuf,chr,!*raise;
-!#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
+#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
      cmd := "cmd /C FOR %%H IN (%w) DO @ECHO %%H";
-!#else
+#else
      cmd := "sh -c 'for h in %w ; do echo $h ;done'";
-!#endif
+#endif
      cmd := bldmsg(cmd,pat);
      chan := pipe!-open(cmd,'input);
      if chan=0 then return rederr "error opening pipe";
@@ -460,9 +459,9 @@ symbolic procedure glob!-filenames pat;
 	   filelist := (list2string reversip strbuf) . filelist;
            strbuf := nil>> >>;
      close rds oldchan;
-!#if (not (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*)))
+#if (not (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*)))
      if null cdr filelist and car filelist = pat then return nil;
-!#endif
+#endif
      return reversip filelist
    end;
 
@@ -473,11 +472,11 @@ symbolic procedure delete!-file!-wildcard pat;
 % emulate delete!-file via an external command if not defined in PSL
 
 symbolic procedure delete!-file!-slow fi;
-!#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
+#if (or (memq 'win32 lispsystem!*) (memq 'win64 lispsystem!*) (memq 'cygwin lispsystem!*))
   filep fi and system bldmsg("del ""%s""",fi);
-!#else
+#else
   system bldmsg("rm -f %s", fi);
-!#endif
+#endif
 
 loadtime if not getd 'delete!-file then copyd('delete!-file,'delete!-file!-slow);
 
@@ -498,11 +497,11 @@ if 'ibmrs member lispsystem!* then
 
 global '(!*gnuplot_name!*);
 
-!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
     !*gnuplot_name!* := "gnuplot.exe";
-!#else
+#else
     !*gnuplot_name!* := "gnuplot";
-!#endif
+#endif
 
 symbolic procedure find!-gnuplot;
   begin scalar path;
@@ -510,12 +509,12 @@ symbolic procedure find!-gnuplot;
     path := find!-gnuplot!-aux getenv("GNUPLOT");
     if path then return find!-gnuplot!-quotify path;
 
-!#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
     % if on windows, check registry
     path := get!-registry!-value("HKLM","Software\Microsoft\Windows\CurrentVersion\App Paths\gnuplot.exe",nil);
     if path and car path = 1 and filep cdr path
       then return find!-gnuplot!-quotify cdr path;
-!#endif
+#endif
 
     % last resort: return the name without path
     return find!-gnuplot!-quotify !*gnuplot_name!*;
@@ -525,11 +524,11 @@ symbolic procedure find!-gnuplot!-quotify path;
   %
   % for Windows, put double quotes around path
   %
-!#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(winnt alphant win32 win64 cygwin) lispsystem!*)
   concat("""",concat(path,""""));
-!#else
+#else
   path;
-!#endif
+#endif
 
 symbolic procedure find!-gnuplot!-aux path;
   %
@@ -548,7 +547,7 @@ symbolic procedure find!-gnuplot!-aux path;
     % check existence
     (filep path and path)>>;
 
-!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
 
 % When the Windows version of PSL is launched from a cygwin (mintty) shell
 % it can be that neither TEMP nor TMP is set. Under cygwin the directory
@@ -582,20 +581,20 @@ symbolic procedure tempdir_for_cygwin();
     else return nil
   end;
 
-!#endif
+#endif
 
 symbolic procedure get!-tempdir();
   begin
-!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
    tempdir!* := getenv "TMP" or getenv "TEMP";
    if null tempdir!* then tempdir!* := tempdir_for_cygwin();
-!#else
-!#if (member 'vms lispsystem!*)
+#else
+#if (member 'vms lispsystem!*)
    tempdir!* := "SYS$SCRATCH:";
-!#else
+#else
    tempdir!* := "/tmp";
-!#endif
-!#endif
+#endif
+#endif
    return tempdir!*;
   end;
 

@@ -26,12 +26,11 @@
 %
 
 % $Id$
-% Use "!#if" rather than "#if" for bootstrapping reasons.
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
      create!-package('(support pslrend compat fastmath compat psl entry pslprolo),
                     nil);
-!#endif
+#endif
 
 % This file is temporarily empty.
 

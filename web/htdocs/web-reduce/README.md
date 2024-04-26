@@ -12,7 +12,7 @@ The `typescript` directory is not used to run Web REDUCE.
 
 The WebAssembly version of REDUCE is built in the directory `csl/new-embedded/for-emscripten/`. Run `make webreduce` and then copy the two files `reduce.web.js` and `reduce.web.wasm` to the directory `web/htdocs/web-reduce/generated/`. Check that the file `for-emscripten/package.map` is appropriate, run `make mini-webreduce` and then copy the two files `reduce.web.js` and `reduce.web.wasm` to the directory `web/htdocs/web-reduce/mobile/`.
 
-15 April 2024: The version currently on the REDUCE web site is the latest revision of REDUCE built using Emscripten 2.0.34, because I have had problems using later Emscripten versions. The main version of Web REDUCE is currently built without the "pre-js" code included via Emscripten, because to facilitate development this code is temporarily provided separately as the file `generated/reduce.pre.js`, which imports `generated/reduce.web.js`.
+15 April 2024: The version currently on the REDUCE web site is the latest revision of REDUCE built using Emscripten 2.0.34, because I have had problems using later Emscripten versions.
 
 Web REDUCE is available online as [https://reduce-algebra.sourceforge.io/web-reduce/](https://reduce-algebra.sourceforge.io/web-reduce/). See [About Web REDUCE](https://reduce-algebra.sourceforge.io/web-reduce/about.html) for further details, including limitations of the WebAssembly version of REDUCE that I am aware of so far. (But, once downloaded, it's surprisingly fast!)
 
@@ -38,9 +38,8 @@ Windows. However, building on Ubuntu 22.04 under Windows Subsystem
 for Linux on Windows 11 seems to work well once `make` and a few
 libraries are installed.
 
-This project was suggested by Hermans Rolfes and
-use [his code](https://github.com/kungfooman/WebREDUCE/) as a guide to how to
-call Gnuplot from REDUCE.
+This project was suggested by Hermans Rolfes and the code to call Gnuplot from REDUCE was developed from [his code](https://github.com/kungfooman/WebREDUCE/).
+However, it currently works by setting up the REDUCE `gnuplot` package to run gnuplot via calls to the `system` function and adding special support code to the JavaScript implementation of `std::system`.
 
 [Gnuplot 6.0 Terminals](http://gnuplot.info/docs_6.0/Terminals.html)
 describes the [canvas](http://gnuplot.info/docs_6.0/loc19528.html) terminal type.
@@ -48,5 +47,8 @@ describes the [canvas](http://gnuplot.info/docs_6.0/loc19528.html) terminal type
 ## TO DO
 
 - Upgrade to Gnuplot 6.0.0 (maybe).
+- Consider use of a pipe instead of `system`.
+- Support use of the mouse.
 - Support multiple plots.
+- Investigate why turtle examples are so slow and aspect ratio is wrong: the plots should be square.
 - Fix some bugs, e.g. why does `plot(cos x)` cause an error whereas `plot (cos x)` doesn't?

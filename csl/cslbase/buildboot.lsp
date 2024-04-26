@@ -538,11 +538,11 @@ symbolic procedure get_configuration_data();
 symbolic procedure build_reduce_modules names;
   begin
     scalar w;
-!#if !*savedef
+#if !*savedef
     !*savedef := t;
-!#else
+#else
     !*savedef := nil;
-!#endif
+#endif
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
@@ -550,7 +550,7 @@ symbolic procedure build_reduce_modules names;
     w := explodec car names;
     if !*savedef then w := append(explodec "[Bootstrap] ", w);
     window!-heading list!-to!-string w;
-!#if !*savedef
+#if !*savedef
 % When building the bootstrap version I want to record what switches
 % get declared...
     if not getd 'original!-switch then <<
@@ -560,18 +560,18 @@ symbolic procedure build_reduce_modules names;
           '(lambda (x)
               (dolist (y x) (princ "+++ Declaring a switch: ") (print y))
               (original!-switch x))) >>;
-!#endif
+#endif
     package!-remake car names;
     if null (names := cdr names) then <<
         printc "Recompilation complete";
         window!-heading  "Recompilation complete" >>;
-!#if (or !*savedef (memq 'embedded lispsystem!*))
+#if (or !*savedef (memq 'embedded lispsystem!*))
     if null names then restart!-csl 'begin
     else restart!-csl('(remake build_reduce_modules), names)
-!#else
+#else
     if null names then restart!-csl '(user begin)
     else restart!-csl('(remake build_reduce_modules), names)
-!#endif
+#endif
   end;
 
 fluid '(cpulimit conslimit testdirectory);

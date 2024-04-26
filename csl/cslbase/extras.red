@@ -292,11 +292,11 @@ symbolic procedure s!:prinl2(x, depth);
     if fixp !*print!-level!* and depth > !*print!-level!* then
        princ "#"
     else if atom x and not simple!-vector!-p x and not gensymp x then <<
-!#if common!-lisp!-mode       
+#if common!-lisp!-mode       
        if complex!-arrayp x and not !*print!-array!* then princ "[Array]"
        else if structp x and not !*print!-array!* then princ "[Struct]"
        else
-!#endif
+#endif
        funcall(!*prinl!-fn!*, x) >>
     else begin scalar w, length;
       w := gethash(x,!*prinl!-visited!-nodes!*);
@@ -382,7 +382,7 @@ symbolic procedure prinl x;
 % Lisp FORMAT function may be useful.
 %
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 % If I am in COMMON Lisp mode then a more complete version of this
 % will be installed from elsewhere.
@@ -430,7 +430,7 @@ symbolic procedure s!:format(dest, fmt, args);
 symbolic macro procedure format(u, !&optional, env);
    list('s!:format, cadr u, caddr u, 'list . cdddr u);
 
-!#endif
+#endif
 
 fluid '(s!:bn
         s!:bufferi

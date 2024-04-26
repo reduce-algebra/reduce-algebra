@@ -114,9 +114,9 @@ symbolic procedure s!:vecof1 l;
    put('read,                     's!:builtin0, 9);
    put('readch,                   's!:builtin0, 10);
    put('terpri,                   's!:builtin0, 11);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('time,                     's!:builtin0, 12);
-!#endif
+#endif
    put('tyi,                      's!:builtin0, 13);
 % load!-spid is not for use by an ordinary programmer - it is used in the
 % compilation of unwind!-protect.
@@ -125,18 +125,18 @@ symbolic procedure s!:vecof1 l;
    put('abs,                      's!:builtin1, 0);
    put('add1,                     's!:builtin1, 1);
    put('!1!+,                     's!:builtin1, 1);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('atan,                     's!:builtin1, 2);
-!#endif
+#endif
    put('apply0,                   's!:builtin1, 3);
    put('atom,                     's!:builtin1, 4);
    put('boundp,                   's!:builtin1, 5);
    put('char!-code,               's!:builtin1, 6);
    put('close,                    's!:builtin1, 7);
    put('codep,                    's!:builtin1, 8);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('compress,                 's!:builtin1, 9);
-!#endif
+#endif
    put('constantp,                's!:builtin1, 10);
    put('digit,                    's!:builtin1, 11);
    put('endp,                     's!:builtin1, 12);
@@ -148,9 +148,9 @@ symbolic procedure s!:vecof1 l;
    put('explode2,                 's!:builtin1, 18);
    put('explodec,                 's!:builtin1, 18);
    put('fixp,                     's!:builtin1, 19);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('float,                    's!:builtin1, 20);
-!#endif
+#endif
    put('floatp,                   's!:builtin1, 21);
    put('symbol!-specialp,         's!:builtin1, 22);
    put('gc,                       's!:builtin1, 23);
@@ -163,9 +163,9 @@ symbolic procedure s!:vecof1 l;
    put('iminusp,                  's!:builtin1, 30);
    put('indirect,                 's!:builtin1, 31);
    put('integerp,                 's!:builtin1, 32);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('intern,                   's!:builtin1, 33);
-!#endif
+#endif
    put('isub1,                    's!:builtin1, 34);
    put('length,                   's!:builtin1, 35);
    put('lengthc,                  's!:builtin1, 36);
@@ -173,10 +173,10 @@ symbolic procedure s!:vecof1 l;
    put('liter,                    's!:builtin1, 38);
    put('load!-module,             's!:builtin1, 39);
    put('lognot,                   's!:builtin1, 40);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('macroexpand,              's!:builtin1, 41);
    put('macroexpand!-1,           's!:builtin1, 42);
-!#endif
+#endif
    put('macro!-function,          's!:builtin1, 43);
    put('make!-bps,                's!:builtin1, 44);
    put('make!-global,             's!:builtin1, 45);
@@ -195,20 +195,20 @@ symbolic procedure s!:vecof1 l;
    put('pairp,                    's!:builtin1, 58);
    put('plist,                    's!:builtin1, 59);
    put('plusp,                    's!:builtin1, 60);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('prin,                     's!:builtin1, 61);
    put('princ,                    's!:builtin1, 62);
    put('print,                    's!:builtin1, 63);
    put('printc,                   's!:builtin1, 64);
-!#endif
+#endif
 %  put('random,                   's!:builtin1, 65);
 %  put('rational,                 's!:builtin1, 66);
 %  put('load,                     's!:builtin1, 67);
    put('rds,                      's!:builtin1, 68);
    put('remd,                     's!:builtin1, 69);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('reverse,                  's!:builtin1, 70);
-!#endif
+#endif
    put('reversip,                 's!:builtin1, 71);
    put('seprp,                    's!:builtin1, 72);
    put('set!-small!-modulus,      's!:builtin1, 73);
@@ -218,9 +218,9 @@ symbolic procedure s!:vecof1 l;
    put('special!-form!-p,         's!:builtin1, 76);
    put('spool,                    's!:builtin1, 77);
    put('stop,                     's!:builtin1, 78);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('stringp,                  's!:builtin1, 79);
-!#endif
+#endif
    put('sub1,                     's!:builtin1, 80);
    put('!1!-,                     's!:builtin1, 80);
    put('symbol!-env,              's!:builtin1, 81);
@@ -228,22 +228,22 @@ symbolic procedure s!:vecof1 l;
    put('symbol!-name,             's!:builtin1, 83);
    put('symbol!-value,            's!:builtin1, 84);
    put('system,                   's!:builtin1, 85);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('fix,                      's!:builtin1, 86);
-!#endif
+#endif
    put('ttab,                     's!:builtin1, 87);
    put('tyo,                      's!:builtin1, 88);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('remob,                    's!:builtin1, 89);
-!#endif
+#endif
    put('unmake!-global,           's!:builtin1, 90);
    put('unmake!-special,          's!:builtin1, 91);
    put('upbv,                     's!:builtin1, 92);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('vectorp,                  's!:builtin1, 93);
-!#else
+#else
    put('simple!-vectorp,          's!:builtin1, 93);
-!#endif
+#endif
    put('verbos,                   's!:builtin1, 94);
    put('wrs,                      's!:builtin1, 95);
    put('zerop,                    's!:builtin1, 96);
@@ -290,27 +290,27 @@ symbolic procedure s!:vecof1 l;
    put('mv!-list!*,               's!:builtin1, 113);
    put('append,                   's!:builtin2, 0);
    put('ash,                      's!:builtin2, 1);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('assoc,                    's!:builtin2, 2);
-!#endif
+#endif
    put('assoc!*!*,                's!:builtin2, 2);
    put('atsoc,                    's!:builtin2, 3);
    put('deleq,                    's!:builtin2, 4);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('delete,                   's!:builtin2, 5);
    put('divide,                   's!:builtin2, 6);
-!#endif
+#endif
    put('eqcar,                    's!:builtin2, 7);
    put('eql,                      's!:builtin2, 8);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('eqn,                      's!:builtin2, 9);
-!#endif
+#endif
    put('expt,                     's!:builtin2, 10);
    put('flag,                     's!:builtin2, 11);
    put('flagpcar,                 's!:builtin2, 12);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('gcdn,                     's!:builtin2, 13);
-!#endif
+#endif
    put('geq,                      's!:builtin2, 14);
    put('getv,                     's!:builtin2, 15);
    put('greaterp,                 's!:builtin2, 16);
@@ -324,16 +324,16 @@ symbolic procedure s!:vecof1 l;
    put('iremainder,               's!:builtin2, 24);
    put('irightshift,              's!:builtin2, 25);
    put('itimes2,                  's!:builtin2, 26);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 %  put('lcm,                      's!:builtin2, 27);
-!#endif
+#endif
    put('leq,                      's!:builtin2, 28);
    put('lessp,                    's!:builtin2, 29);
 %  put('make!-random!-state,      's!:builtin2, 30);
    put('max2,                     's!:builtin2, 31);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('member,                   's!:builtin2, 32);
-!#endif
+#endif
    put('member!*!*,               's!:builtin2, 32);
    put('memq,                     's!:builtin2, 33);
    put('min2,                     's!:builtin2, 34);
@@ -347,9 +347,9 @@ symbolic procedure s!:vecof1 l;
    put('neq,                      's!:builtin2, 42);
    put('orderp,                   's!:builtin2, 43);
 %  put('ordp,                     's!:builtin2, 43); % alternative name
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('quotient,                 's!:builtin2, 44);
-!#endif
+#endif
    put('remainder,                's!:builtin2, 45);
    put('remflag,                  's!:builtin2, 46);
    put('remprop,                  's!:builtin2, 47);
@@ -368,9 +368,9 @@ symbolic procedure s!:vecof1 l;
    put('eq,                       's!:builtin2, 60);
    put('cons,                     's!:builtin2, 61);
    put('list2,                    's!:builtin2, 62);
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
    put('get,                      's!:builtin2, 63);
-!#endif
+#endif
    put('qgetv,                    's!:builtin2, 64);
    put('flagp,                    's!:builtin2, 65);
    put('apply1,                   's!:builtin2, 66);
@@ -2060,10 +2060,10 @@ symbolic procedure s!:comlambda(bvl, body, args, env, context);
 % process out the keywords here.
   begin
     scalar s, nbvl, fluids, fl1, w, local_decs;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     if context = 0 and s!:maybe_values then
       s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
     nbvl := s := cdr env;
     body := s!:find_local_decs(body, nil);
     local_decs := car body; body := cdr body;
@@ -2120,10 +2120,10 @@ symbolic procedure s!:loadliteral(x, env);
 
 symbolic procedure s!:comquote(x, env, context);
 <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
   if context = 0 and s!:maybe_values then
     s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
   if context <= 1 then s!:loadliteral(cadr x, env) >>;
 
 put('quote, 's!:compfn, function s!:comquote);
@@ -2182,10 +2182,10 @@ symbolic procedure s!:local_macro fn;
 
 symbolic procedure s!:comfunction(x, env, context);
 <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
   if context = 0 and s!:maybe_values then
     s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
   if context <= 1 then
   << x := cadr x;
      if eqcar(x, 'lambda) then begin
@@ -2231,15 +2231,15 @@ symbolic procedure s!:should_be_fluid x;
           if posn() neq 0 then terpri();
           princ "+++ ";
           prin x;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
           princ " treated as if locally SPECIAL";
-!#else
+#else
           princ " declared fluid";
-!#endif
+#endif
           terpri() >>;
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
        fluid list x;
-!#endif
+#endif
        nil >>;
 
 symbolic procedure s!:find_lexical(x, lex, n);
@@ -2263,15 +2263,15 @@ s!:loadlocs := s!:vecof '(LOADLOC0 LOADLOC1 LOADLOC2 LOADLOC3
 symbolic procedure s!:comatom(x, env, context);
   begin
     scalar n, w;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     if context = 0 and s!:maybe_values then
        s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
     if context > 1 then return nil
     else if null x or not symbolp x then return s!:loadliteral(x, env);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     if keywordp x then return s!:loadliteral(x, env);
-!#endif
+#endif
     n := 0;
     w := cdr env;
     while w and not eqcar(w, x) do << n := add1 n; w := cdr w >>;
@@ -2341,7 +2341,7 @@ symbolic procedure s!:load2(a, b, env);
        s!:a_reg_values := nil;
        s!:comval(b, env, 1);
        return nil end
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 % For Common Lisp it seems that I *must* evaluate args strictly left-to-right.
 % I can violate this rule if the item I move in evaluation order is something
 % which has an utterly constant value.
@@ -2362,7 +2362,7 @@ symbolic procedure s!:load2(a, b, env);
        s!:outopcode0('POP, '(POP));
        rplacd(env, cddr env);
        t >>
-!#else
+#else
 % Here, in Standard Lisp mode, I will compile the arguments left to right
 % if !*ord is set. Otherwise in the cases that get down here I can save
 % some generated code (and hence both time and space) by working right
@@ -2390,7 +2390,7 @@ symbolic procedure s!:load2(a, b, env);
        s!:outopcode0('POP, '(POP));
        rplacd(env, cddr env);        % this case saves a SWAP afterwards
        nil >>
-!#endif
+#endif
  >>;
 
 global '(s!:carlocs s!:cdrlocs s!:caarlocs);
@@ -2426,10 +2426,10 @@ symbolic procedure s!:comcall(x, env, context);
     args := for each v in cdr x collect s!:improve v;
     nargs := length args;
     s := cdr env;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     if context = 0 and s!:maybe_values then
       s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
     if nargs = 0 then
        if (w2 := get(fn, 's!:builtin0)) then s!:outopcode1('BUILTIN0, w2, fn)
        else <<
@@ -2452,10 +2452,10 @@ symbolic procedure s!:comcall(x, env, context);
           else if (w2 := get(fn, 's!:builtin1)) then
             s!:outopcode1('BUILTIN1, w2, fn)
           else <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
             if context = 0 and s!:maybe_values then
               s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
             s!:outopcode1lit('CALL1, fn, env);
             if fn neq s!:current_function then s!:maybe_values := t >> >> >>
     else if nargs = 2 then <<
@@ -2471,10 +2471,10 @@ symbolic procedure s!:comcall(x, env, context);
               else s!:outopcode1lit('CALL2R, fn, env) >>
           else if w3 then s!:outopcode1('BUILTIN2, w3, fn)
           else <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
             if context = 0 and s!:maybe_values then
               s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
             s!:outopcode1lit('CALL2, fn, env);
             if fn neq s!:current_function then s!:maybe_values := t >> >> >>
     else if nargs = 3 then <<
@@ -2491,10 +2491,10 @@ symbolic procedure s!:comcall(x, env, context);
         else if w2 := get(fn, 's!:builtin3) then
            s!:outopcode1('BUILTIN3, w2, fn)
         else <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
           if context = 0 and s!:maybe_values then
             s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
           s!:outopcode1lit('CALL3, fn, env);
           if fn neq s!:current_function then s!:maybe_values := t >>;
         rplacd(env, cddr env) >>
@@ -2524,10 +2524,10 @@ symbolic procedure s!:comcall(x, env, context);
       if fn = 'apply3 and nargs = 4 then s!:outopcode0('APPLY3, '(APPLY3))
       else if fn = 'apply4 and nargs = 5 then s!:outopcode0('APPLY4, '(APPLY4))
       else <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
         if context = 0 and s!:maybe_values then
           s!:outopcode0('ONEVALUE, '(onevalue));
-!#endif
+#endif
         s!:outopcode1lit('CALL4, fn, env);
         if fn neq s!:current_function then s!:maybe_values := t >>;
       rplacd(env, s) end
@@ -2898,7 +2898,7 @@ symbolic procedure s!:comprog2(x, env, context);
 
 put('prog2, 's!:compfn, function s!:comprog2);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 % REDUCE seems to introduce a function called IDENTITY that is not quite this
 % one. Shame! hence only do this in Common mode.
@@ -2908,7 +2908,7 @@ symbolic procedure s!:comidentity(x, env, context);
 
 put('identity, 's!:compfn, function s!:comidentity);
 
-!#endif
+#endif
 
 symbolic procedure s!:outstack n;
   begin
@@ -2965,7 +2965,7 @@ symbolic procedure s!:outlose n;
     else if n > 3 then s!:outopcode1('LOSES, n, n)
   end;
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 % s!:comprog displays how much fun prog blocks are, in that it has to
 % prepare support for go statements and returns, and it needs to
@@ -3039,7 +3039,7 @@ symbolic procedure s!:comprog(x, env, context);
 
 put('prog, 's!:compfn, function s!:comprog);
 
-!#endif
+#endif
 
 % s!:comtagbody is put here next to s!:comprog since it is really a subset.
 
@@ -3128,9 +3128,9 @@ symbolic procedure s!:comblock(x, env, context);
     s!:current_exitlab := cdr s!:current_exitlab
   end;
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 put('block, 's!:compfn, function s!:comblock);
-!#endif
+#endif
 
 put('!~block, 's!:compfn, function s!:comblock);
 
@@ -3221,9 +3221,9 @@ symbolic procedure s!:expand_let(vl, b);
 symbolic procedure s!:comlet(x, env, context);
    s!:comval('progn . s!:expand_let(cadr x, cddr x), env, context);
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 put('let, 's!:compfn, function s!:comlet);
-!#endif
+#endif
 
 put('!~let, 's!:compfn, function s!:comlet);
 
@@ -3306,11 +3306,11 @@ symbolic procedure s!:comgo(x, env, context);
 % escape from one LAMBDA expression into an enclosing one.
   begin
     scalar pl, d;
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
     if context < 4 then <<
         princ "go not in program context";
         terpri() >>;
-!#endif
+#endif
     pl := s!:current_proglabels;
     while pl and null d do <<
        d := atsoc(cadr x, car pl);
@@ -3331,19 +3331,19 @@ symbolic procedure s!:comreturn!-from(x, env, context);
 % escape from one LAMBDA expression into an enclosing one.
   begin
     scalar tag;
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
     if context < 4 then <<
        princ "+++++ return or return-from not in prog context";
        terpri() >>;
-!#endif
+#endif
     x := cdr x;
     tag := car x;
     if cdr x then x := cadr x else x := nil;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     s!:comval(x, env, 1);
-!#else
+#else
     s!:comval(x, env, context-4);
-!#endif
+#endif
     x := atsoc(tag, s!:current_exitlab);
     if null x then error(0, list("invalid return-from", tag));
     x := cdr x;
@@ -4075,11 +4075,11 @@ symbolic procedure s!:comcons(x, env, context);
     else if eqcar(b, 'cons) then
        if null caddr b then s!:comval(list('list2, a, cadr b), env, context)
        else s!:comval(list('list2!*, a, cadr b, caddr b), env, context)
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 % For Common Lisp it seems that I *must* evaluate args strictly left-to-right.
     else if not !*ord and s!:iseasy a and not s!:iseasy b then
        s!:comval(list('xcons, b, a), env, context)
-!#endif
+#endif
     else s!:comcall(x, env, context)
   end;
 
@@ -4160,18 +4160,18 @@ symbolic procedure s!:imp_funcall u;
       else if n = 2 then 'apply2 . u
       else if n = 3 then 'apply3 . u
       else 'funcall . u;
-!#if record!-use!-of!-funcall
+#if record!-use!-of!-funcall
 % If this flag is set when the compiler is built then every "funcall" in the
 % original source will get logged. If there are too many of them this
 % can be painfully expensive.
     u := list('progn, 
            list('s!:record_funcall, mkquote s!:current_function, mkquote u),
            u);
-!#endif
+#endif
     return u
   end;
 
-!#if record!-use!-of!-funcall
+#if record!-use!-of!-funcall
 
 global '(all_funcalls);
 
@@ -4201,7 +4201,7 @@ symbolic procedure display!-funcalls();
     linelength w;
   end;
 
-!#endif
+#endif
 
 put('funcall, 's!:tidy_fn, 's!:imp_funcall);
 
@@ -4306,7 +4306,7 @@ symbolic procedure s!:eval_to_alist_eq_unsafe x;
    s!:eval_to_alist_eq_safe caddr x
   else nil;
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 flag('(eq eqcar null not greaterp lessp geq leq minusp
        atom numberp consp), 'eq!-safe);
@@ -4422,9 +4422,9 @@ symbolic procedure s!:comdeleq(x, env, context);
 
 put('deleq, 's!:compfn, function s!:comdeleq);
 
-!#endif
+#endif
 
-!#if (not common!-lisp!-mode)
+#if (not common!-lisp!-mode)
 
 % mapcar etc are compiled specially as a fudge to achieve an effect as
 % if proper environment-capture was implemented for the functional
@@ -4512,9 +4512,9 @@ put('mapcar,  's!:compfn, function s!:commap);
 put('mapcon,  's!:compfn, function s!:commap);
 put('mapcan,  's!:compfn, function s!:commap);
 
-!#endif
+#endif
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 % The next few cases are concerned with demoting functions that use
 % equal tests into ones that use eq instead
@@ -4623,7 +4623,7 @@ symbolic procedure s!:commember!*!*(x, env, context);
 
 put('member!*!*, 's!:compfn, function s!:commember!*!*);
 
-!#endif
+#endif
 
 symbolic procedure s!:nilargs use;
    if null use then t
@@ -4646,11 +4646,11 @@ symbolic procedure load_source_database filename;
   begin
     scalar a, b;
     clear_source_database();
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     a := open(filename, !:direction, !:input, !:if!-does!-not!-exist, nil);
-!#else
+#else
     a := open(filename, 'input);
-!#endif
+#endif
     if null a then return nil;
     a := rds a;
     while (b := read()) do
@@ -4662,11 +4662,11 @@ symbolic procedure load_source_database filename;
 symbolic procedure save_source_database filename;
   begin
     scalar a;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     a := open(filename, !:direction, !:output);
-!#else
+#else
     a := open(filename, 'output);
-!#endif
+#endif
     if null a then return nil;
     a := wrs a;
     for each z in sort(hashcontents !*where_defined!*, function orderp) do <<
@@ -5072,12 +5072,12 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
     s!:current_function := name;
     s!:current_count := 0;
     if !*where_defined!* then <<
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
         w := symbol!-package name;
         if w then w := list(package!-name w, symbol!-name name);
-!#else
+#else
         w := name;
-!#endif
+#endif
         puthash(w, !*where_defined!*, where!-was!-that()) >>;
     body := s!:find_local_decs(body, nil);
     local_decs := car body; body := cdr body;
@@ -5410,7 +5410,7 @@ symbolic procedure s!:compile2(name, nargs, nopts,
 % compile-all may be invoked at any time to ensure that everything that can be
 % has been compiled
 
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 
 symbolic procedure compile!-all;
 % Bootstrapping issues mean that I can not easily use do-all-symbols() here
@@ -5428,7 +5428,7 @@ symbolic procedure compile!-all;
            princ "Compile: "; prin x; terpri();
            errorset(list('compile, mkquote list x), t, t) >> end end;
 
-!#else
+#else
 
 % Compiling in reverse alphabetic order reduced time that bootstrap building
 % of the compiler took by almost a factor of two!
@@ -5441,7 +5441,7 @@ symbolic procedure compile!-all;
          princ "Compile: "; prin x; terpri();
          errorset(list('compile, mkquote list x), t, t) >> end;
 
-!#endif
+#endif
 
 % Support for a FASL mechanism, styled after that which I expect existing
 % Standard Lisp applications to require.
@@ -5470,14 +5470,14 @@ top:u := errorset('(read), t, !*backtrace);
 % the apply('faslend, nil) is here because faslend has a "stat" property
 % and so it will mis-parse if I just write "faslend()".  Yuk.
     else if eqcar(u, 'faslend) then return apply('faslend, nil)
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     else if eqcar(u, 'load) then << <<
        w := open(u := eval cadr u, !:direction, !:input,
                                    !:if!-does!-not!-exist, nil);
-!#else
+#else
     else if eqcar(u, 'rdf) then <<
        w := open(u := eval cadr u, 'input);
-!#endif
+#endif
        if w then <<
           terpri();
           princ "Reading file "; prin u; terpri();
@@ -5486,9 +5486,9 @@ top:u := errorset('(read), t, !*backtrace);
           princ "End of file "; prin u; terpri();
           close rds w >>
        else << princ "Failed to open file "; prin u; terpri() >> >>
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        >> where !*package!* = !*package!*
-!#endif
+#endif
     else s!:fslout0 u;
     go to top
   end;
@@ -5521,14 +5521,14 @@ symbolic procedure s!:fslout1(u, loadonly);
 % picked up as needing compile-time evaluation.
           (car u = 'setq and not atom caddr u and flagp(caaddr u, 'eval)) then
        if not loadonly then errorset(u, t, !*backtrace);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     if eqcar(u, 'load) then << begin
        w := open(u := eval cadr u, !:direction, !:input,
                                    !:if!-does!-not!-exist, nil);
-!#else
+#else
     if eqcar(u, 'rdf) then begin
        w := open(u := eval cadr u, 'input);
-!#endif
+#endif
        if w then <<
           princ "Reading file "; prin u; terpri();
           w := rds w;
@@ -5537,9 +5537,9 @@ symbolic procedure s!:fslout1(u, loadonly);
           close rds w
        >>
        else << princ "Failed to open file "; prin u; terpri() >> end
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        >> where !*package!* = !*package!*
-!#endif
+#endif
 % The object on "*nocompile is to disable compilation while allowing
 % definitions to end up in fasl files. It is mainly for debugging, where if
 % theer is a problem with the compiler this can allow everything to fall
@@ -5763,11 +5763,11 @@ symbolic procedure s!:compile!-file!*(fromfile,
     if null tofile then tofile := fromfile;
     if verbose then <<
        if posn() neq 0 then terpri();
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        princ ";; Compiling file ";
-!#else
+#else
        princ "+++ Compiling file ";
-!#endif
+#endif
        prin fromfile;
        terpri();
        save := verbos nil;
@@ -5777,31 +5777,31 @@ symbolic procedure s!:compile!-file!*(fromfile,
        princ "+++ Failed to open FASL output file"; terpri();
        if save then verbos save;
        return nil >>;
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        << w := open(fromfile, !:direction, !:input,
                               !:if!-does!-not!-exist, nil);
-!#else
+#else
           w := open(fromfile, 'input);
-!#endif
+#endif
           if w then <<
              w := rds w;
              s!:fasl_supervisor();
              close rds w >>
           else << princ "Failed to open file "; prin fromfile; terpri() >>
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        >> where !*package!* = !*package!*;
-!#else
+#else
        ;
-!#endif
+#endif
     if save then verbos save;
     start!-module nil;
     if verbose then <<
        if posn() neq 0 then terpri();
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
        princ ";; Compilation complete";
-!#else
+#else
        princ "+++ Compilation complete";
-!#endif
+#endif
        terpri() >>;
     return t
   end;
@@ -5896,12 +5896,12 @@ symbolic procedure fully!-macroexpand x;
     else if eqcar(car x, 'lambda) then return
        ('lambda . cadar x . s!:fully_macroexpand_list cddar x) .
           s!:fully_macroexpand_list cdr x
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
     else if helper := s!:local_macro car x then <<
        if atom cdr helper then
           fully!-macroexpand('funcall . cdr helper . cdr x)
        else fully!-macroexpand funcall('lambda . cdr helper, x) >>
-!#endif
+#endif
 % NB I do not expand compilermacros here. Actually at present "vector"
 % seems to be the only function that has one.
     else if (helper := get(car x, 's!:newname)) then
@@ -5985,14 +5985,14 @@ put('macrolet, 's!:expandfn, function s!:expandmacrolet);
 put('prog, 's!:expandfn, function s!:expandprog);
 put('tagbody, 's!:expandfn, function s!:expandtagbody);
 put('progv, 's!:expandfn, function s!:expandprogv);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 put('block, 's!:expandfn, function s!:expandblock);
-!#endif
+#endif
 put('!~block, 's!:expandfn, function s!:expandblock);
 put('declare, 's!:expandfn, function s!:expanddeclare);
-!#if common!-lisp!-mode
+#if common!-lisp!-mode
 put('let, 's!:expandfn, function s!:expandlet);
-!#endif
+#endif
 put('!~let, 's!:expandfn, function s!:expandlet);
 put('let!*, 's!:expandfn, function s!:expandlet!*);
 put('go, 's!:expandfn, function s!:expandgo);

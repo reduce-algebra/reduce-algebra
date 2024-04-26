@@ -34,7 +34,7 @@ global '(!*switchcheck switchlist!* switchtree!* switchstring!*);
 % (memq 'psl lispsystem!*) does not work here because lispsystem!* is
 % not yet fully set up.
 
-!#if !*psl
+#if !*psl
 
 % PSL defined ORDERP in pslrend.red - ie "not yet", so here I transcribe
 % the definition that will happen so I can use it now.
@@ -60,7 +60,7 @@ symbolic procedure orderp(u,v);
       go to a;
    end;
 
-!#endif
+#endif
 
 % I will maintain an ordered binary tree of the names of switches that
 % are at present available. The procedures that manage this can be used

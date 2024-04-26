@@ -5951,10 +5951,10 @@ if filep "stop_now" then <<
 
 symbolic procedure aftergcuserhook1$
 begin scalar li$
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
  last_free_cells:=if boundp 'gcfree!* and gcfree!* then gcfree!*  % for 32 bit PSL
                                       else known!-free!-space()$  % for 32 bit PSL and 64 bit PSL
-!#endif
+#endif
  % for CSL last_free_cells is not updated as heap is extended dynamically
 
  li:={'max_gc_elimin,'max_gc_fac,'max_gc_gb,'max_gc_int,'max_gc_minsub,
@@ -6003,7 +6003,7 @@ begin scalar li$
  write"Memory seems to run out. Less than 100000 free cells!"
 end$
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 % For CSL the GC hook has its name saved in !*gc!-hook!*, so I can
 % just implement a new function that calls what I know is the prior
@@ -6016,10 +6016,10 @@ symbolic procedure csl_aftergcuserhook u$
 
 lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
 
-!#endif
+#endif
 
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 % For PSL the GC hook is specified by its function name. Here I
 % wish to chain on after an existing one, so I save the old version as
@@ -6040,7 +6040,7 @@ symbolic procedure aftergcuserhook;
     aftergcuserhook1();
     nil >>;
 
-!#endif
+#endif
 
 symbolic operator err_catch_fac$
 symbolic procedure err_catch_fac(a)$
@@ -6392,7 +6392,7 @@ begin scalar u1,u2,u3,fli,v;
  return fli
 end$
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 % PSL does not have a function oblist(), therefore:
 
 symbolic lispeval '(putd 'countids 'expr
@@ -6400,11 +6400,11 @@ symbolic lispeval '(putd 'countids 'expr
                 (mapobl (function (lambda (x) (setq nn (plus2 nn 1)))))
                                   (return nn))))$
 
-!#else
+#else
 
 symbolic procedure countids$ length oblist()$
 
-!#endif
+#endif
 
 symbolic operator low_mem$
 % if garbage collection recovers only 500000 cells then backtrace
@@ -8336,10 +8336,10 @@ begin scalar s,chn,xx,oldcase$
  chn := rds chn;
  sol_list:=nil$
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
  % "@"
  rederr "CSL problem: 2 x non-portable PSL code: input!-case";
-!#endif
+#endif
 
  oldcase := input!-case  NIL;
  while (xx := read()) and (xx neq int2id 4) do
@@ -8384,13 +8384,13 @@ begin
   return t;
 end$
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
 
 % CSL can do the simpler case directly.
 symbolic procedure delete!-file!-exact fi$
   delete!-file fi$
 
-!#else
+#else
 
 symbolic procedure delete!-file!-exact fi$
   if (memq('linux!-gnu, lispsystem!*) or
@@ -8402,11 +8402,11 @@ symbolic procedure delete!-file!-exact fi$
 % that otherwise intrude.
   else if filep fi then system bldmsg("del ""%w""", fi)$
 
-!#endif
+#endif
 
 % to have ? or * actively matching in file name
 
-!#if (and (memq 'csl lispsystem!*) (not (memq 'jlisp lispsystem!*)))
+#if (and (memq 'csl lispsystem!*) (not (memq 'jlisp lispsystem!*)))
 
 % Comment of Arthur C. Norman:
 % If I assume that Java 7 with its version of the nio package is
@@ -8416,7 +8416,7 @@ symbolic procedure delete!-file!-exact fi$
 symbolic procedure delete!-file!-match fi$
   delete!-wildcard fi$
 
-!#else
+#else
 
 symbolic procedure delete!-file!-match fi$
 % Note that a Macintosh is "unix" for the purposes of the test here.
@@ -8448,9 +8448,9 @@ symbolic procedure delete!-file!-match fi$
     return system bldmsg("del ""%s""", fi)
   end$
 
-!#endif
+#endif
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 % Rename fromname to toname and return t on success.
 % (it is defined in csl)
@@ -8461,7 +8461,7 @@ symbolic procedure rename!-file(fromname, toname)$
     else return nil
   end$
 
-!#endif
+#endif
 
 endmodule$
 

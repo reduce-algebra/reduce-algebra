@@ -1186,6 +1186,9 @@ symbolic procedure readch1;
       return x
    end;
 
+% This version of token() must accept #if, #else, #elif and #endif
+% as tokens - ideally of ttype!*=3.
+
 symbolic procedure token1;
    begin scalar x,y,z;
         x := crchar!*;
@@ -1314,63 +1317,6 @@ symbolic procedure rrdls;
 
 symbolic procedure rread;
    progn(prin2x " '",rread1());
-
-%-- symbolic procedure scan;
-%--    begin scalar x,y;
-%--         if null (cursym!* eq '!*semicol!*) then go to b;
-%--     a:  nxtsym!* := token();
-%--     b:  if null atom nxtsym!* then go to q1
-%--          else if nxtsym!* eq 'else or cursym!* eq '!*semicol!*
-%--          then outl!* := nil;
-%--         prin2x nxtsym!*;
-%--     c:  if null idp nxtsym!* then go to l
-%--          else if (x:=get(nxtsym!*,'newnam)) and
-%--                         (null (x=nxtsym!*)) then go to new
-%--          else if nxtsym!* eq 'comment OR NXTSYM!* EQ '!% AND TTYPE!*=3
-%--           THEN GO TO COMM
-%--          ELSE IF NULL(TTYPE!* = 3) THEN GO TO L
-%--          ELSE IF NXTSYM!* EQ !$eof!$ then return filenderr()
-%--          else if nxtsym!* eq '!' then go to quote
-%--          else if null (x:= get(nxtsym!*,'switch!*)) then go to l
-%--          else if eqcar(cdr x,'!*semicol!*) then go to delim;
-%--    sw1: nxtsym!* := token();
-%--         if null(ttype!* = 3) then go to sw2
-%--          else if nxtsym!* eq !$eof!$ then return filenderr()
-%--          else if car x then go to sw3;
-%--    sw2: cursym!*:=cadr x;
-%--         if cursym!* eq '!*rpar!* then go to l2
-%--          else return cursym!*;
-%--    sw3: if null (y:= atsoc(nxtsym!*,car x)) then go to sw2;
-%--         prin2x nxtsym!*;
-%--         x := cdr y;
-%--         go to sw1;
-%--   comm: if delcp crchar!* then go to com1;
-%--         crchar!* := readch();
-%--         go to comm;
-%--   com1: crchar!* := '! ;
-%--         condterpri();
-%--         go to a;
-%--   delim:
-%--         semic!*:=nxtsym!*;
-%--         return (cursym!*:='!*semicol!*);
-%--   new:  nxtsym!* := x;
-%--         if stringp x then go to l
-%--         else if atom x then go to c
-%--         else go to l;
-%--   quote:
-%--         nxtsym!* := mkquote rread1();
-%--         go to l;
-%--   q1:   if null (car nxtsym!* eq 'string) then go to l;
-%--         prin2x " ";
-%--         prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
-%--   l:    cursym!*:=nxtsym!*;
-%--   l1:   nxtsym!* := token();
-%--         if nxtsym!* eq !$eof!$ and ttype!* = 3 then return filenderr();
-%--   l2:   if numberp nxtsym!*
-%--            or (atom nxtsym!* and null get(nxtsym!*,'switch!*))
-%--           then prin2x " ";
-%--         return cursym!*
-%--    end;
 
 global '(!*eoldelimp comment!*);
 

@@ -169,42 +169,6 @@ symbolic procedure initialize_gnuplot();
      plotcleanup!* :=                     % delete scratch files
        bldmsg("del %w",plotcmds!*) .
         for each f in plotdta!* collect bldmsg("del %w",f);
-%: I am commenting out the support for OS2 and DOS. It looks as if on
-%: OS2 the code here wrote out data to a file and asked the user to launch
-%: gnuplot. For DOS it assumed there was a gnuplot executable at the path
-%: $reduce\wutil\dos386\gnuplot.exe and that is certainly not something that
-%: is routinely available in current versions of Reduce.
-%:    >>
-%:  else if member('os2,lispsystem!*) then  % Does anybody still use OS2?
-%:    <<
-%:     !*plotusepipe:=nil;                   % no pipes
-%:     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
-%:     plotcommand!* := "";
-%:     plotheader!* := "";
-%:
-%:     symbolic procedure plot!-exec u;
-%:       <<
-%:         prin2 "====> invoke GNUPLOT for file ";
-%:         prin2t plotcmds!*;
-%:       >>;
-%:
-%:     loadtime flag('(plot!-exec),'lose);
-%:    >>
-%:  else
-%:    <<
-%:      % for dos:
-%:      %   pass commands as parameter file
-%:      %   write command file and data to directory /tmp
-%:
-%:     !*plotusepipe:=nil;                   % no pipes
-%:     plotcmds!* := bldmsg("%wplotcmds",plottmp!*);
-%:     plotcommand!* :=
-%:       fnexpand bldmsg("$reduce\wutil\dos386\gnuplot.exe %w",plotcmds!*);
-%:     if !*force_gnuplot_term then plotheader!* :=  "set terminal vga";
-%:     else plotheader!* := "";
-%:     plotcleanup!* :=                     % delete scratch files
-%:       bldmsg("del %w",plotcmds!*).
-%:        for each f in plotdta!* collect bldmsg("del %w",f);
     >>;
   !*plotinterrupts := '(10002);
 

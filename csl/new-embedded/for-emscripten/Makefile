@@ -63,7 +63,7 @@ CXX=em++
 # to avoid warnings.
 
 # Emscripten compile and link flags:
-EM_CC_LD_FLAGS = -flto -s USE_ZLIB
+EM_CC_LD_FLAGS = -flto -sUSE_ZLIB
 # USE_ZLIB needed (initially) at compile time to install <zlib.h>!
 
 # Emscripten compile flags:
@@ -83,10 +83,10 @@ SHELL = /bin/bash
 stack_size != [[ `emcc -v |& sed -n '1s/.*) 3.1.\([0-9]\+\) (.*/\1/p'` > 26 ]] && echo '-s STACK_SIZE=5MB'
 
 # Emscripten link flags:
-EM_LDFLAGS = $(EM_CC_LD_FLAGS) \
- -s EXIT_RUNTIME \
- -s INITIAL_MEMORY=$(initial_memory) \
- -s NO_ERROR_ON_UNDEFINED_SYMBOLS \
+EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
+ -sEXIT_RUNTIME\
+ -sINITIAL_MEMORY=$(initial_memory)\
+ -sNO_ERROR_ON_UNDEFINED_SYMBOLS\
  $(stack_size)
 
 
@@ -101,10 +101,8 @@ CPPFLAGS=$(EM_CCFLAGS)\
 LDFLAGS=$(EM_LDFLAGS) -Llib
 LIBS=-lcrlibm
 
-JSOPTS= $(USERFLAGS)
+JSOPTS = $(USERFLAGS)
 # --source-map-base http://localhost:8000/
-
-JS_SRC=js
 
 # --pre-js mountfs.js \
 
@@ -115,14 +113,16 @@ JS_SRC=js
 NODE= $(shell which node)
 
 # Emscripten link flags when building for Node.Js:
-NODE_EM_LDFLAGS= -s NODERAWFS -s FORCE_FILESYSTEM
+NODE_EM_LDFLAGS= -sNODERAWFS -sFORCE_FILESYSTEM
 
-PRE_JS=$(JS_SRC)/init.js
-# WEBOPTS= --pre-js $(PRE_JS)\
-#  -s ENVIRONMENT=worker\
-#  -s BUILD_AS_WORKER\
-#  --js-library $(JS_SRC)/io.js
-WEBOPTS= --pre-js $(PRE_JS) -s ENVIRONMENT=worker -s BUILD_AS_WORKER
+PRE_JS = --pre-js js/init.js
+# WEBOPTS= $(PRE_JS) -s ENVIRONMENT=worker -s BUILD_AS_WORKER --js-library js/io.js
+
+# FJW: Gnuplot support is not currently required for the mobile version.
+ifndef MINIREDUCE
+  JS_LIB = --js-library js/library.js
+endif
+WEBOPTS = $(PRE_JS) -sENVIRONMENT=worker -sBUILD_AS_WORKER $(JS_LIB)
 
 
 #ASYNCIFY_OPTS = -s ASYNCIFY \

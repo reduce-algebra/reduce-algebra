@@ -326,9 +326,9 @@ boson1 '(b)$
 algebraic$
 depend  {f,b},t,x$
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 set_bndstk_size 50000$
-!#endif
+#endif
 
 lisp <<simplimit!* := 100000$ 
        !*noarg := nil  % not done as 'off noarg$' to prevent compiler message

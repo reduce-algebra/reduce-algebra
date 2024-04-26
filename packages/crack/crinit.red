@@ -440,9 +440,9 @@ verify_end_of_parallel_run:=t$ put('verify_end_of_parallel_run,'description,list
 
 proc_list_:=default_proc_list_$  put('proc_list_,'description,list("priority list of procedure in use"))$
 
-!#if (memq 'csl lispsystem!*) 
+#if (memq 'csl lispsystem!*) 
 !*uncached:=nil$ % CSL uses a hash table and has an access time O(1)
-!#else
+#else
 !*uncached:=t$   % PSL uses an association list and has an access time O(n)
 % If there are very many assignments, like reading in millions of (short)
 % expressions from a file then !*uncached:=t is important otherwise even
@@ -451,7 +451,7 @@ proc_list_:=default_proc_list_$  put('proc_list_,'description,list("priority lis
 % is necessary as otherwise reval and aeval of already simplified expressions
 % (lists of equations) take very long. A better strategy may be to have also
 % under PSL !*uncached:=nil and to set it to t only in very long computations.
-!#endif
+#endif
 
 put('!*uncached,'description,list("if nil then any long computations with >10,000 algebraic mode steps or expressions read from files become extremely slow"))$
 
@@ -645,9 +645,9 @@ limit_time:=0$     put('limit_time,'description,list("= time()+how-much-more-tim
 
 groebresmax:=2000$ put('groebresmax,'description,list("parameter for the REDUCE Groebner Basis proram"))$
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 pvm_activate()$    % initializes pvm_able in crpvm.red
-!#endif
+#endif
 
 !*iconic:=nil$     put('!*iconic,'description,list("whether new processes in parallelization should appear as icons"))$
 
@@ -663,12 +663,12 @@ groeb_solve:='reduce$  put('groeb_solve,'description,list("which Groebner packag
  'GB_REVGRAD for Faugere's GB in mode 'revgradlex
  'REDUCE  for the REDUCE package groebnerf"))$
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
  last_free_cells:=if boundp 'gcfree!* then gcfree!*               % for 32 bit PSL
                                       else known!-free!-space()$  % for 32 bit PSL and 64 bit PSL
-!#else
+#else
  last_free_cells:=1000000$ % just a high value, not updated under redcsl as heap is extended dynamically
-!#endif
+#endif
 put('last_free_cells,'description,list("free cells after last garbage collections"))$
 
 choose_6_20_max_ftem:=20$   put('choose_6_20_max_ftem,'description,list("parameter in choose_6_20 when to switch between 6 and 20"))$
@@ -1157,9 +1157,9 @@ put('get_special_alg_sol2,'description,
  put('i_tl,'description,list("Toggle tracing of length reducing decoupling"))$
  put('i_ts,'description,list("Toggle tracing of algebraic length reduction"))$
  put('i_to,'description,list("Toggle tracing of ordering process"))$
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
  put('i_tr,'description,list("Trace an arbitrary procedure"))$
-!#endif
+#endif
  put('i_ut,'description,list("Untrace a procedure"))$
  put('i_br,'description,list("Break"))$
  put('i_pc,'description,list("Do a function call"))$
@@ -1243,19 +1243,19 @@ end$
 
 % The following procedures are PSL/CSL specific therefore the test:
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
   symbolic procedure random_init()$
   <<external_time(datebuffer)$
     random_new_seed(wand(wgetv(datebuffer,0),65535))
   >>$
   if  flambdalinkp 'random_init then
 	compile '(random_init )$
-!#endif
+#endif
 
-!#if (memq 'csl lispsystem!*)
+#if (memq 'csl lispsystem!*)
   symbolic procedure random_init()$
   random_new_seed(datestamp())$
-!#endif
+#endif
 
 endmodule$
 

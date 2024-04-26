@@ -1,5 +1,4 @@
 module tok; % Identifier and reserved character reading.
-
 % Author: Anthony C. Hearn.
 % Modifications by: Arthur Norman.
 
@@ -30,21 +29,34 @@ module tok; % Identifier and reserved character reading.
 
 % $Id$
 
+% WARNING:
+% This file can be read in the process of bootstrapping Reduce, and in that
+% case it may be processed by a limited version of the rlisp parser that
+% has been expressed directly in Lisp. That initial parser was only intended
+% for use during bootstrapping and so was kept as simple and small as
+% possible. During the build process sometimes definitions here overlay
+% the bootstrap ones immediately and this can mean that parsing here happens
+% using a mix of initial and new code. So this file has to be written in
+% a really conservative style! In the past the bootstrap parser did not
+% accept either "<<...>>" group statements or "where" loops and as a result
+% many constructs needed to be expressed using labels and "go to". These days
+% that restriction has been lifted, but historical code here remains expressed
+% with very many "go to" statements and looks archaic in style. One limit
+% that remains in 2024 is that unary "-" is not supported at the stage that
+% this file is processed ("-" is thought of as just an infix operator for
+% subtraction) so it is not possible to write a constant "-1" and the
+% code instead spells out "minus 1".
+% Other perhaps clumsy notation here may either represent historical relics
+% or extreme caution.
+
+% Re-work of scan() in April 2024. ACN.
+
 % Substantial changes in March 2014 to put in support for wide characters
 % generally packed in the underlying Lisp string type using utf-8 encoding.
 
-% Up to the end of 2023 the code in this file has had a HUGE number of
-% "go to" statements. This is because the historical bootstrapping
-% process for Reduce had only a very primitive version of the parser
-% available at this stage.
-% But it turns out that for some while both the CSL and the PSL build
-% processes have supported both "<<...>>" blocks and "while" loops, so
-% this comment is intended to set an agenda of exploiting that to clean
-% some of this code up!
-
-fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
-        peekchar!* !*quotenewnam !*raise semic!* !*report!_colons
-        ifl!* curline!*);
+fluid '(!*adjprec !*comment !*defn !*eoldelimp !*minusliter
+        peekchar!* !*quotenewnam !*raise !*lower semic!*
+        !*report!_colons ifl!* curline!* comment!* !*comment!*);
 
 !*report!_colons := t;
 
@@ -53,8 +65,6 @@ fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
 global '(!$eof!$
          !$eol!$
          !*micro!-version
-         !*savecomments!*
-         comment!*
          crbuf!*
          crbuf1!*
          crchar!*
@@ -63,13 +73,12 @@ global '(!$eof!$
          eof!*
          nxtsym!*
          outl!*
-% Values in ttype!*:
-%     0  symbol                   a,b,c,word,!+
-%     1  string                   "something"
-%     2  number                   1,2, 1.0, 2.0
-%     3  operator-like character  +,-,...
-%     4  result of quotation      '(something)
-         ttype!*
+         ttype!*    %  Values in ttype!*:
+%                      0  symbol                   a,b,c,word,!+
+%                      1  string                   "something"
+%                      2  number                   1,2, 1.0, 2.0
+%                      3  operator-like character  +,-,...
+%                      4  result of quotation      '(something)
          escaped!*
          !*csl
          !*psl
@@ -78,7 +87,8 @@ global '(!$eof!$
          named!-character!*);
 
 blank := '! ;
-tab := '!	;
+% Later on I would be able to write "tab := '!#x09;;" for the character U+09
+tab := '!	;  % A TAB character.
 
 flag('(adjprec),'switch);
 
@@ -106,6 +116,8 @@ curline!* := 1;
 %
 symbolic procedure bytelist2string u;
   list2string u;
+% During the bootstrap build I can not go "inline procedure" so I put
+% data on the property list manually to achieve the same effect.
 put('bytelist2string, 'inline, '(lambda (u) (list2string u)));
 
 % Given a string (that may contain bytes that are over 127) return a list
@@ -196,7 +208,7 @@ symbolic procedure list2widestring u;
       u1 := cdr u1;
       if idp n then n := car widestring2list symbol!-name n
       else if stringp n and n neq "" then n := car widestring2list n
-      else if not fixp n then rederr "Invalid item in arg to list2widestring";
+      else if null fixp n then rederr "Invalid item in arg to list2widestring";
       if n < 0 then error(1, "Negative integer in list2widestring")
 % I put the constants in decimal because hex reading may not be
 % available yet.
@@ -254,7 +266,7 @@ symbolic procedure int2wideid n;
 % are not valid utf-8 is to be considered undefined.
 %
 symbolic procedure moan!-if!-not!-follower n;
-  if not (land(n, 192) = 128) then
+  if null (land(n, 192) = 128) then
     error(0, "Bad follow-on in utf-8 string")
   else n;
 
@@ -276,7 +288,7 @@ symbolic procedure widestring2list u;
 % I am going to rely on the fact that bytes from the string that were
 % at least 0x80 in value come back looking negative here. Thus any values
 % that are positive are simple ASCII.
-       if not (land(n, 128) = 0) then <<
+       if null (land(n, 128) = 0) then <<
          if land(n, 224) = 192 then << % Start of 2 byte code
            c := moan!-if!-truncated w;
            w := cdr w;
@@ -348,7 +360,7 @@ symbolic procedure length!-without!-followers l;
     scalar n;
     n := 0;
     while l do <<
-       if not (land(car l, 192) = 128) then n := n + 1;
+       if null (land(car l, 192) = 128) then n := n + 1;
        l := cdr l >>;
     return n
   end;
@@ -386,8 +398,9 @@ symbolic procedure prin2x u;
 %    or    #number;
 % gets treated as if it was a single character. Numbers must be given in
 % hexadecimal, and the words will be (by and large) following the usage
-% in HTML. Thus "#amp;" and "&" will be equivalent. Many forms of usage
-% here will describe characters outside the safe 7-bit ASCII range,
+% in HTML. Thus "#amp;" and "&" will be equivalent, save that when #amp;
+% is read the variable named!-character!* will be set by token(). This can
+% be used to describe characters outside the safe 7-bit ASCII range,
 % so "#pound;" will be the Sterling pounds sign that is otherwise "#a3"
 % and "#Sigma;" will be the same as "#3a3;". This conversion will take
 % place everywhere, even within strings. However if the material after
@@ -401,17 +414,23 @@ symbolic procedure prin2x u;
 % arguments in the range 0 to 0x0010ffff not just 0 to 0xff.
 %
 % Note that an extension to try to use HTML5 entity names would lead to
-% ambiguity with #ac;, #ace; and several others. To cope with that the
-% symbolic name will take priority over a numeric interpretation, but
-% a form #Xddd; or #Uddd; can be available where X introduces hex digits and
-% U a decimal version. At present at least there are no name conflicts that
-% arise if those versions are used!
+% ambiguity between a name and a hex code with #ac;, #ace; and several
+% others. To cope with that the symbolic name will take priority over a
+% numeric interpretation, but a form #Xddd; or #Uddd; can be available
+% where X introduces hex digits and U a decimal version, so interpretation
+% as a numeric code-point can be forced. At present at least there are n
+% name conflicts that arise if those versions are used! But if a future
+% HTML standard introduced names starting "#x" or "#u" and continuing with
+% letters in the range a-f some more thought might be needed!
 %
 % I will note (although it is not dealt with here) that later on in
-% token I will make "#if", "#else", "#elif", "#endif", "#eval" and
+% token/scan I will make "#if", "#else", "#elif", "#endif", "#eval" and
 % "#define" special cases of tokens that can be written without needing
 % the initial "#" to be escaped. Thus I want the words involved there
-% to be disjoint from the ones I use for character entities.
+% to be disjoint from the ones I use for character entities. But supposing
+% HTML introduced a notation "#if;" then with the semicolon in place that
+% interpretation would be taken in preference to using that as a preprocessor
+% directive.
 %
 % To back this up it will be good if the Lisp system lets prin2 just print
 % items (in UTF8 encoding), but print will need altering. Given a symbol
@@ -430,9 +449,9 @@ symbolic procedure prin2x u;
 % because I believe that they will help.
 % Within a string #quot; expands to a (") but it does not terminate the
 % string. Thus a string with an embedded quote mark can be written
-% as "This string has an embedded #quot; in it". For now the previous
+% as "This string has an embedded #quot; in it". The previous
 % notation where the (") needs to be doubled is still available.
-% In a similar sort of way the end-of-line denoted by #NewLine ; does not
+% In a similar sort of way the end-of-line denoted by #NewLine; does not
 % terminate a "%" comment, and the dollar that results from #dollar;
 % does not end one that is introduced with the word "comment". These
 % three cases are handled by having a flag "named!-character!*" that
@@ -447,14 +466,13 @@ symbolic procedure prin2x u;
 % a result all characters whose code exceeds 127 will be neither letters
 % not digits nor whitespace.
 
-% Check GOTO here
-
-
 symbolic procedure readch1;
   begin
     scalar x, y, w, n, save;
+    named!-character!* := nil;
 % First cope with anything that had been read ahead...
     if peekchar!* then <<
+% WARNING. The flag "named!-character!*" is not handled with look-ahead.
       x := car peekchar!*;
 % In general when I peek ahead I will not do case-folding as I go:
 % that has to be done now when I retrieve the character for final use.
@@ -493,7 +511,7 @@ a:  if null terminalp() then <<
 % In fact about the only extra work done here in normal circumstances is
 % a fairly cheap test to see if "#" is present.
     if null peekchar!* then <<
-      if not (x = '!#) then return x;
+      if null (x eq '!#) then return x;
       save := (!*raise . !*lower);
 % I switch off !*raise and !*lower while reading. That is (for instance)
 % so that #Sigma; and #sigma; can yield an upper and a lower case
@@ -503,7 +521,7 @@ a:  if null terminalp() then <<
       go to a >>
 % Here I am accumulating a bit of stuff where I look ahead following
 % a "#" character.
-    else if (not (x eq !$eof!$)) and
+    else if (null (x eq !$eof!$)) and
        (string!-length id2string x = 1) and
        (liter x or digit x) then <<
 % I accumulate the initial "#" followed by any number of letters and
@@ -518,7 +536,7 @@ a:  if null terminalp() then <<
 % do nothing... ie I will leave the peeked characters to be read one
 % by one in the usual way. Note that while the very final peeked character
 % could be a second "#" none of the others can be.
-    if not (x = '!;) or null cdr peekchar!* then <<
+    if (null (x eq '!;)) or (null cdr peekchar!*) then <<
       peekchar!* := cdr reversip (x . peekchar!*);
       return '!# >>;
 % Now I have a potential character name object. It could be one of
@@ -581,8 +599,8 @@ if !*csl then <<
 % a short float by using ":dn!-s!:" to tag it rather than just ":dn:", but
 % then in algebraic mode form() will map that back onto just !:dn!: so that
 % the short nature of the float is only used in symbolic mode.
-%  put('!p, 'exponent!-mark, '!:dn!-p!:);
-%  put('!P, 'exponent!-mark, '!:dn!-p!:);
+% put('!p, 'exponent!-mark, '!:dn!-p!:);
+% put('!P, 'exponent!-mark, '!:dn!-p!:);
   put('!s, 'exponent!-mark, '!:dn!-s!:);
   put('!S, 'exponent!-mark, '!:dn!-s!:);
   put('!f, 'exponent!-mark, '!:dn!-f!:);
@@ -597,6 +615,18 @@ else <<
   put('!e, 'exponent!-mark, '!:dn!:);
   put('!E, 'exponent!-mark, '!:dn!:) >>;
 
+% The code in this file (still) has quote a lot of labels and goto statements.
+% Some of this is a hang-over or consequence of bootstrapping issues. The
+% way Reduce is built is that there is an initial rlisp parser that is
+% fairly cut down and so which does not support all the syntax that will
+% eventually become available. At least at one stage it did not support
+% either blocks (as in <<A;B;C>>) or "while" statements. Behaviour that
+% might have been expressed using either of those constructs was coded using
+% labels and goto statements. These days the initial parser has been somewhat
+% upgraded so nicer code can be used - but working through here improving
+% style introduces risks (as does any code change) and so will happen
+% rather gradually.
+
 symbolic procedure token!-number x;
    % Read and return a valid number from input.
    % Adjusted by A.C. Norman to be less sensitive to input case and to
@@ -607,27 +637,27 @@ symbolic procedure token!-number x;
       power := 0;
       ttype!* := 2;
     num1:
-      if y or null(x = '!)) then y := x . y;
+      if y or (null (x eq '!))) then y := x . y;
       if dotp then power := power - 1;
     num2:
       x := readch1();
       if (x eq !$eof!$) or
-         (not (string!-length id2string x = 1)) then go to ret
+         (null (string!-length id2string x = 1)) then go to ret
 % The code here used to generate a diagnostic on input like "1.2.3" but
 % now it should accept 1.2 as a number and just stop reading at the second
 % dot. That seems more friendly and generally consistent with what lexical
 % processing should do.
-       else if x = '!. and not dotp then <<
+       else if x eq '!. and null dotp then <<
          dotp := t;
          go to num2 >>
        else if digit x then go to num1
-       else if y = '(!0) and (x = '!x or x = '!X) then go to hexnum
+       else if y = '(!0) and ((x eq '!x) or (x eq '!X)) then go to hexnum
 % Within a number any "\" together with the following character is ignored.
 % I believe this will have been introduced for the case where the backslash
 % is the final character on a line, so it provides for continuation of
 % huge numbers. I am altering the code so that if the character after the
 % "\" is not a newline the number terminates.
-       else if x = '!\ then <<
+       else if x eq '!\ then <<
           if (x := readch1()) = !$eol!$ then go to num2;
           peekchar!* := '!\ . x . peekchar!*;
           go to ret >>
@@ -635,13 +665,13 @@ symbolic procedure token!-number x;
 % one can embed an underscore followed by any amount of whitespace in
 % a number. This allows for continuation over a line with the continuation
 % neatly indented, and also for grouping digits as in 12_34567_89012.
-       else if x = '!_ then <<
-          while x = '!_ or x =!$eol!$ or x = blank or x = tab do
+       else if x eq '!_ then <<
+          while (x eq '!_) or (x eq !$eol!$) or (x eq blank) or (x eq tab) do
              x := readch1();
           peekchar!* := x . peekchar!*;
           go to num2 >>
        else if null(xmark := get(x, 'exponent!-mark)) then go to ret;
-% I want to let exponent markers S, F, E, D and L be available for
+% I want to let exponent markers S, F, E, D and L be available for1
 % writing floating point literals with some specified width. However there
 % is a problem of backwards compatibility. Old-style Reduce lets a number end
 % when there is a character other than "E". And it does not require spaces
@@ -661,11 +691,11 @@ symbolic procedure token!-number x;
 %    2exp x;        (times '(!:rd!: 2 . 0) (list 'xp 'x))
 % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 % I rather view that as broken behaviour.
-      if not dotp and (x neq '!e and x neq '!E) then go to ret;
+      if (null dotp) and ((x neq '!e) and (x neq '!E)) then go to ret;
       % Case of number with embedded or trailing E.
       dotp := t;
-      if (x := readch1()) = '!- then sign := t
-       else if x = '!+ then nil
+      if (x := readch1()) eq '!- then sign := t
+       else if x eq '!+ then nil
        else if (x eq !$eof!$) or
                (null (string!-length id2string x = 1)) then go to ret
        else if null digit x then go to ret
@@ -701,20 +731,20 @@ symbolic procedure token!-number x;
          while (z := get(x := readch1(), 'hexdigit)) do
          << y := 16*y + z;
             if dotp then power := power-4 >> >>
-      else if x = '!~ and y = 0 then <<
+      else if x eq '!~ and y = 0 then <<
         y := minus 1;   % Can not yet write "-1" because of bootstrapping issues!
         goto hexnum1 >>;
-      if x = '!_ then <<
-        while (x := readch1()) = blank or x = tab or x = !$eol!$ do nil;
+      if x eq '!_ then <<
+        while ((x := readch1()) = blank) or (x = tab) or (x = !$eol!$) do nil;
         peekchar!* := x . peekchar!*;
         go to hexnum1 >>;
-      if x = '!. then <<
+      if x eq '!. then <<
         dotp := t;
         go to hexnum1 >>;
       if (x neq '!p and x neq '!P) then go to ret1; 
       dotp := t;
-      if (x := readch1()) = '!- then sign := t
-      else if x = '!+ then nil
+      if (x := readch1()) eq '!- then sign := t
+      else if x eq '!+ then nil
       else if (x eq !$eof!$) or
               (null (string!-length id2string x = 1)) then go to hexe2
       else if null digit x then go to hexe2
@@ -777,11 +807,6 @@ fluid '(!*line!-marker !*file!-marker);
 !*line!-marker := intern "__line__";
 !*file!-marker := intern "__file__";
 
-% This is a big ugly procedure with a lot of GOTO statements. It is overdue
-% for re-work.
-
-symbolic procedure token;
-%
 % The current syntax for an identifier is that it starts with a letter (or
 % an escaped character) and can continue with letters, digits or underscores.
 % I wish to support identifiers that contain an internal unescaped "::"
@@ -790,7 +815,7 @@ symbolic procedure token;
 % an embedded single ":" too. However it became clear that that would cause
 % trouble in common occuring cases such in
 %         label:x:=y;
-% and     for i:=m:n dp ...
+% and     for i:=m:n do ...
 %
 % I believe that little existing code will be troubled if double colons are
 % treated specially. The only use of them that I can see in the current source
@@ -803,7 +828,8 @@ symbolic procedure token;
 % while perhaps the usage
 %   package::name
 % can be used for something interesting. But initially package::name will
-% merely denote a name that has embedded colons.
+% merely denote a name that has embedded colons. But I hope to migrate to
+% using it for namespace control at some stage.
 %
 % I suspect that the flag "!*minusliter" (which I hope is not made a flag
 % that can be toggled using on/off, since it is a dodgy thing for ordinary
@@ -816,10 +842,23 @@ symbolic procedure token;
 % "!") at the start of a symbol, a double underscore can start a symbol
 % without need for escape. This allows the token __line__ and its friends
 % to be used more easily.
+
+% This function gets replaces in calrend.red or pslrend.red but is here so
+% that during system building there is a version of the function when token()
+% gets defined in the following version.
+
+symbolic procedure seprp ch;
+   (ch eq blank) or
+   (ch eq tab) or
+   (ch eq !$eol!$);
+
+symbolic procedure token;
    begin scalar x,y,z;
+% This is a big ugly procedure with a lot of GOTO statements. It is overdue
+% for re-work.
         x := crchar!*;
     a:  if (x eq !$eof!$) or
-           (not (string!-length id2string x = 1)) then go to unicode;
+           (null (string!-length id2string x = 1)) then go to unicode;
         if seprp x and null(x eq !$eol!$ and !*eoldelimp)
           then << x := readch1(); go to a >>
          else if digit x then return token!-number x
@@ -828,33 +867,57 @@ symbolic procedure token;
 % and all the other supplemental characters (to say nothing of Greek letters)
 % will be a matter for the underlying Lisp to worry about.
          else if liter x then go to letter
+% '(...) and `(...) are handled here. They MIGHT have been left for
+% scan to cope with but it ends up tidier to cope at this point.
          else if (y := get(x,'tokprop)) then return lispapply(y,nil)
-         else if x = '!% and null !*savecomments!* then go to coment
-         else if x = '!! and null(!*micro!-version and null !*defn)
+% Comments introduced by "%" are detected here in token() so that they are
+% honoured within quoted expressions. Comments starting with either the
+% word "comment" or with "/*" are handled by scan() and will not be
+% recognised within quoted expressions.
+         else if x eq '!% then <<
+            begin
+               scalar txt, !*raise,!*lower;
+               named!-character!* := nil;
+% The comment here continues until end of line or end of file but the
+% notation "#NewLine;" is an end of line character that does not end
+% the line for these purposes! If !*comment is set the text of the
+% comment is appended to the list !*comment!*.
+               while (null (((x := readch1()) eq !$eol!$) or
+                            (x eq !$eof!$))) or
+                     named!-character!* do <<
+                  txt := x . txt;
+                  named!-character!* = nil >>;
+               if !*comment then
+                  !*comment!* :=
+                     append(!*comment!*, list list!-to!-string reverse txt);
+            end;
+            x := readch1();
+            go to a >>
+         else if x eq '!! and null(!*micro!-version and null !*defn)
           then go to escape
-         else if x = '!" then go to string
-         else if x = '!\ then go to backslash
-         else if x = '!_ then go to underscore;
+         else if x eq '!" then go to string
+         else if x eq '!\ then go to backslash
+         else if x eq '!_ then go to underscore;
     unicode:
         ttype!* := 3;
         if x eq !$eof!$ then prog2(crchar!* := blank,filenderr());
         nxtsym!* := x;
-        if not (x eq !$eof!$) then <<
+        if null (x eq !$eof!$) then <<
            if (string!-length id2string x = 1) and (delcp x) then
              crchar!*:= blank else crchar!*:= readch1() >>;
-        if null(x = '!- and
-                (not (crchar!* eq !$eof!$)) and
+        if null(x eq '!- and
+                (null (crchar!* eq !$eof!$)) and
                 (string!-length id2string crchar!*  = 1) and
                 digit crchar!* and
                 !*minusliter)
           then go to c;
         x := token!-number crchar!*;
-        if numberp x then return apply1('minus,x);  % For bootstrapping.
-        rplaca(cdr x,apply1('minus,cadr x));        % Also for booting.
+        if numberp x then return minus x;  % For bootstrapping.
+        rplaca(cdr x, minus cadr x);       % Also for booting.
         return x;
     underscore:
         x := readch1();
-        if x = '!_ then go to doubleunderscore;
+        if x eq '!_ then go to doubleunderscore;
         peekchar!* := x . peekchar!*;
         x := '!_;
         go to unicode;
@@ -892,16 +955,13 @@ symbolic procedure token;
           x := cdr x >>;
         x := readch1();
         if (x eq !$eof!$) or
-            (not (string!-length id2string crchar!*  = 1)) then go to ordinarysym
-         else if digit x or liter x then go to let1
-         else if x = '!! then go to escape
-         else if x = '!- and !*minusliter
+            (null (string!-length id2string crchar!*  = 1)) then go to ordinarysym
+         else if (digit x) or (liter x) then go to let1
+         else if x eq '!! then go to escape
+         else if x eq '!- and !*minusliter
           then go to let1
-         else if x = '!_ then go to let1     % Allow _ as letter.
-%% The following change led to problems with CSL, and perhaps it is not
-%% even needed.
-%%         else if x = '!% then go to let1     % Allow % as letter.
-         else if x = '!: then go to maybepackage;
+         else if x eq '!_ then go to let1     % Allow _ as letter.
+         else if x eq '!: then go to maybepackage;
     ordinarysym:
         y := list2wideid reversip!* y;
 % If I implement a package system I might want to check if the name
@@ -937,7 +997,9 @@ symbolic procedure token;
         y := '(!\ b e g i n !{ r e d u c e !});
         ttype!* := 3;
     bssrch:
-        if x = '!% then go to bscomm
+% Note that the "%" here is a TeX style comment and will not end up
+% in !*comment!*.
+        if x eq '!% then go to bscomm
         else if x eq !$eof!$ then <<
            crchar!* := blank;
            filenderr();
@@ -947,7 +1009,7 @@ symbolic procedure token;
         if null y then go to a;
         z := x;
         x := readch1();
-        if not (z eq car y) then go to bsfound;
+        if null (z eq car y) then go to bsfound;
         y := cdr y;
         go to bssrch;
     bscomm:
@@ -957,13 +1019,13 @@ symbolic procedure token;
         else go to bscomm;
     maybepackage:                               % Seen abc:
         x := readch1();
-        if x = '!: then go to maybeextpackage;
+        if x eq '!: then go to maybeextpackage;
         peekchar!* := list x;
         x := '!:;
         go to ordinarysym;
     maybeextpackage:                            % Seen abc::
         x := readch1();
-        if (not (x eq !$eof!$)) and
+        if (null (x eq !$eof!$)) and
            (string!-length id2string crchar!*  = 1) and
            liter x then go to isextpackage;
         peekchar!* := list('!:, x);
@@ -984,12 +1046,12 @@ symbolic procedure token;
     ext2:
         x := readch1();
         if (x eq !$eof!$) or
-           (not (string!-length id2string crchar!*  = 1)) then go to extdone
-         else if digit x or liter x then go to extpackmore
-         else if x = '!! then go to extpackescape
-         else if x = '!- and !*minusliter
+           (null (string!-length id2string crchar!*  = 1)) then go to extdone
+         else if (digit x) or (liter x) then go to extpackmore
+         else if x eq '!! then go to extpackescape
+         else if (x eq '!-) and !*minusliter
           then go to extpackmore
-         else if x = '!_ then go to extpackmore;    % Allow _ as letter.
+         else if x eq '!_ then go to extpackmore;    % Allow _ as letter.
     extdone:
         y := list2wideid reversip!* y;
 % At this stage I will always display a message reporting what I have seen.
@@ -1021,25 +1083,16 @@ symbolic procedure token;
              then << crchar!* := blank;
                      lpriw("***** End-of-file in string",nil);
                      filenderr() >>
-            else if (null(x = '!")) or named!-character!* then go to strinx;
+            else if (null (x eq '!")) or named!-character!* then go to strinx;
            % Now check for embedded string character.
            named!-character!* := nil;
            x := readch1();
-           if (x = '!") and (null named!-character!*) then go to strinx;
+           if (x eq '!") and (null named!-character!*) then go to strinx;
            nxtsym!* := list2widestring cdr reversip!* y
          end;
         ttype!* := 1;
         crchar!* := x;
         go to c;
-    coment:
-        begin scalar !*raise,!*lower;
-    comm1:
-        named!-character!* := nil;
-        if (null((x := readch1()) eq !$eol!$ or
-                  x eq !$eof!$)) or named!-character!* then go to comm1
-        end;
-        x := readch1();
-        go to a
    end;
 
 symbolic procedure tokbquote;
@@ -1067,10 +1120,9 @@ symbolic procedure filenderr;
 symbolic procedure ptoken;
    begin scalar x;
         x := token();
-        if x = '!) and eqcar(outl!*,blank) then outl!*:= cdr outl!*;
-           %an explicit reference to OUTL!* used here;
+        if x eq '!) and eqcar(outl!*,blank) then outl!*:= cdr outl!*;
         prin2x x;
-        if null ((x = '!() or (x = '!))) then prin2x blank;
+        if null ((x eq '!() or (x eq '!))) then prin2x blank;
         return x
    end;
 
@@ -1089,16 +1141,15 @@ symbolic procedure rread1;
                        else if eqcar(x,'!:dn!:)
                         then dnform(x,nil,'symbolic)
                        else x
-         else if x = '!( then return rrdls()
-         else if null (x = '!+ or x = '!-) then return x;
+         else if x eq '!( then return rrdls()
+         else if null (((x eq '!+) or (x eq '!-)) and (digit crchar!*))
+           then return x;
         y := ptoken();
         if eqcar(y,'!:dn!:) then y := dnform(y,nil,'symbolic);
-        if null numberp y
-          then << nxtsym!* := " ";
-                  symerr("Syntax error: improper number",nil) >>
-         else if x = '!- then y := apply1('minus,y);
-           % We need this construct for bootstrapping purposes.
-%@@@@@@@@ Check if this is still the case @@@@@@@@@@@
+        if null numberp y then <<
+           nxtsym!* := " ";
+           symerr("Syntax error: improper number",nil) >>
+        else if x eq '!- then y := minus y;
         return y
    end;
 
@@ -1106,11 +1157,11 @@ symbolic procedure rrdls;
    begin scalar x,y,z;
     a:  x := rread1();
         if null (ttype!*=3) then go to b
-         else if x = '!) then return z
-         else if null (x = '!.) then go to b;
+         else if x eq '!) then return z
+         else if null (x eq '!.) then go to b;
         x := rread1();
         y := ptoken();
-        if null (ttype!*=3) or null (y = '!))
+        if (null (ttype!*=3)) or (null (y eq '!)))
           then << nxtsym!* := " "; symerr("Invalid S-expression",nil) >>
          else return nconc(z,x);
     b: z := nconc(z,list x);
@@ -1120,20 +1171,20 @@ symbolic procedure rrdls;
 symbolic procedure rread;
    << prin2x " '"; rread1() >>;
 
+flag('(!; !$),'delchar);
+
 symbolic procedure delcp u;
    % Returns true if U is a semicolon, dollar sign, or other delimiter.
    % This definition replaces the one in the BOOT file.
    flagp(u,'delchar);
 put('delcp, 'inline, '(lambda (u) (flagp u 'delchar)));
 
-flag('(!; !$),'delchar);
-
 symbolic procedure toknump x;
-   numberp x or eqcar(x,'!:dn!:) or eqcar(x,'!:int!:);
+   (numberp x) or eqcar(x,'!:dn!:) or eqcar(x,'!:int!:);
 
 % The following version of SCAN provides RLISP with a facility for
 % conditional compilation.  The protocol is that text is included or
-% excluded at the level of tokens.  Control by use of new reserved
+% excluded at the level of tokens.  Control by use of reserved
 % tokens #if, #else, #elif and #endif.  These are used in the form:
 %    #if (some Lisp expression for use as a condition)
 %    ... RLISP input ...
@@ -1143,9 +1194,11 @@ symbolic procedure toknump x;
 %
 % The form
 %    #if C1 ... #elif C2 ... #elif C3 ... #else ... #endif
-% is also supported.
+% is also supported. Note that "#else" is treated exactly as if
+% it had been "#elif t" so in fact multiple uses of "#else" will
+% be accepted.
 %
-% This formation will not be recognised within quoted exressions, so
+% This notation will not be recognised within quoted exressions, so
 %       a := '(one
 %       #if sometimes
 %              two
@@ -1160,9 +1213,11 @@ symbolic procedure toknump x;
 % condition. It is not necessary to have an #else before #endif if no
 % alternative text is needed.  Although the examples here put #if etc
 % at the start of lines this is not necessary (though it may count as
-% good style?).  Since the condition will be read using RLISPs own
-% list-reader there could be conditional compilation guarding parts of
-% it - the exploitation of that possibility is to be discouraged!
+% good style?). The predicate that follows the word "#if" or "#elif" is
+% read in a way that does not process further conditionals, so anybody
+% who tries to be "clever" with
+%   #if    #if something test1 #else test2 #endif  guarded material #endif
+% is out of luck. The symbol "!#if" will be used as the predicate...
 
 % Making the condition a raw Lisp expression makes sure that parsing it
 % is easy. It makes it possible to express arbitrary conditions, but it
@@ -1174,7 +1229,7 @@ symbolic procedure toknump x;
 %    #endif
 % or
 %    #if debugging!-mode  % NB if variable is unset that counts as nil
-%    print "message";      % so care should be taken to select the most
+%    print "message";     % so care should be taken to select the most
 %    #endif               % useful default sense for such tests
 % should be about as complicated as reasonable people need.
 %
@@ -1197,196 +1252,457 @@ symbolic procedure toknump x;
 % #define is provided, but the general-purpose #eval could be used to
 % remove the 'newnam property that is involved.
 
-symbolic procedure addcomment u;
- %  if commentlist!*
- %    then cursym!* := 'comment . aconc(reversip commentlist!*,u)
- %   else
-     cursym!* := u;
-put('addcomment, 'inline, '(lambda (u) (setq cursym!* u)));
+<< newtok '((!# i f)         !#if);
+   newtok '((!# e l s e)     !#else);
+   newtok '((!# e l i f)     !#elif);
+   newtok '((!# e n d i f)   !#endif);
+   newtok '((!# e v a l)     !#eval);
+   newtok '((!# d e f i n e) !#define) >>;
 
-symbolic procedure scan;
-   begin scalar bool,x,y;
-        if null (cursym!* = '!*semicol!*) then go to b;
-    a:  escaped!* := nil;
-        nxtsym!* := token();
-    b:  if null atom nxtsym!* and null toknump nxtsym!*
-          then go to q1
-         else if nxtsym!* = 'else or cursym!* = '!*semicol!*
-         then outl!* := nil;
-        prin2x nxtsym!*;
-    c:  if null idp nxtsym!* then go to l
-         else if (x:=get(nxtsym!*,'newnam)) and
-                        (null (x=nxtsym!*)) then go to new
-% Here I will allow "comment" to be spent in either upper or lower case
-% so that if "off raise;" (or "off lower;") is active things that may be
-% intended to be comments remain treated as such. The various capitalisations
-% detected here actually arise within the Reduce sources (at least until at
-% some stage they are tidied away...)
-         else if nxtsym!* = '!c!o!m!m!e!n!t or
-                 nxtsym!* = '!C!O!M!M!E!N!T or
-                 nxtsym!* = '!C!o!m!m!e!n!t
-          then << x := read!-comment1 'comment;
-                  if !*comment then return x else go to a >>
-         else if nxtsym!* = '!% and ttype!*=3
-          then << x := read!-comment1 'percent!_comment;
-                  if !*comment then return x else go to a >>
-% I might comment that the material within a quoted form is not
-% processed by SCAN and so the text "!#if" here both NEED the initial
-% escape mark and it will not be treated as introducing a conditional
-% section.
-         else if nxtsym!* = '!#if then go to conditional
-         else if nxtsym!* = '!#else or
-                 nxtsym!* = '!#elif then <<
-                     nxtsym!* := x := bool := nil;
-                     go to skipping >>
-         else if nxtsym!* = '!#endif then go to a
-         else if nxtsym!* = '!#eval then <<
-                     errorset(rread(), !*backtrace, nil);
-                     curescaped!* := (escaped!* := nil);
-                     go to a >>
-         else if nxtsym!* = '!#define then <<
-                     x := errorset('(rread), !*backtrace, nil);
-                     curescaped!* := (escaped!* := nil);
-                     if errorp x then go to a;
-                     y := errorset('(rread), !*backtrace, nil);
-                     curescaped!* := (escaped!* := nil);
-                     if errorp y then go to a;
-                     put(car x, 'newnam, car y);
-% Print a message to show that the "#define" has been seen.
-                     princ "*** "; prin car x; princ " => "; print car y;
-                     go to a >>
-         else if null(ttype!* = 3) then go to l
-         else if nxtsym!* eq !$eof!$ then return filenderr()
-         else if nxtsym!* = '!' then rederr "Invalid QUOTE"
-         else if !*eoldelimp and nxtsym!* eq !$eol!$ then go to delim
-         else if nxtsym!* = '!# and not seprp crchar!* then go to hh
-         else if null (x:= get(nxtsym!*,'switch!*)) then go to l
-         else if eqcar(cdr x,'!*semicol!*) then go to delim;
-        bool := seprp crchar!*;
-   sw1: nxtsym!* := token();
-        if null(ttype!* = 3) then go to sw2
-         else if nxtsym!* eq !$eof!$ then return filenderr()
-         else if car x then go to sw3;
-   sw2: if null cdr x then <<prin2x nxtsym!*; symerr("Unknown operator",nil) >>;
-        cursym!*:=cadr x;
-        curescaped!*:=nil;
-        bool := nil;
-        if cursym!* = '!*rpar!* then go to l2
-         else return addcomment cursym!*;
-   sw3: if bool or null (y:= atsoc(nxtsym!*,car x)) then go to sw2;
-        prin2x nxtsym!*;
-        x := cdr y;
-% The next line is a hook for RLISP88 where input of the form
-%    /* .... */ reads in as (!*comment!* "....") so that the comment
-% text can be preserved.
-        if null car x and cadr x = '!*comment!*
-          then << comment!* := read!-comment(); go to a >>;
-        go to sw1;
-  hh:
-% Here I have a "#" not preceeded by an escape marker (!) and followed
-% by something that is not a separator. I will handle that at first rather
-% as if it was the "switch" case but with extra support for some special
-% cases like "#if".
-        bool := nil;
-        x := get(nxtsym!*,'switch!*);
-        nxtsym!* := token();
-        if nxtsym!* = 'if or
-           nxtsym!* = 'else or
-           nxtsym!* = 'elif or
-           nxtsym!* = 'endif or
-           nxtsym!* = 'eval or
-           nxtsym!* = 'define then go to preprocessor;
-        if null(ttype!* = 3) then go to sw2
-         else if nxtsym!* eq !$eof!$ then return filenderr()
-         else if car x then go to sw3;
-        go to sw2;
-  preprocessor:
-        prin2x nxtsym!*;
-        nxtsym!* := intern list2string ('!# . explode2 nxtsym!*);
-        go to c;
-  conditional:
-% The conditional expression used here must be written in Lisp form
-        x := errorset(rread(), !*backtrace, nil);
-        curescaped!* := (escaped!* := nil);
-% errors in evaluation count as NIL
-        if null errorp x and car x then go to a;
-        x := nil;
-        bool := t;
-  skipping:
-% I support nesting of conditional inclusion. However one new joy
-% here is that a "#" followed (immediately) by one "if, "else", "elif"
-% or "endif" must be noticed here... The way I do that here has the
-% effect that (eg) ##endif is treated as ## endif not as # #endif so will
-% not terminate a conditional block.
-        if nxtsym!* = '!# and ttype!*=3 and not seprp crchar!* then <<
-          nxtsym!* := token();
-          if ttype!* = 0 then
-            nxtsym!* := intern list2string ('!# . explode2 nxtsym!*) >>;
-        if nxtsym!* = '!#endif then
-           if null x then go to a else x := cdr x
-        else if nxtsym!* = '!#if then x := nil . x
-        else if (nxtsym!* = '!#else) and null x and bool then go to a
-        else if (nxtsym!* = '!#elif) and null x and bool then go to conditional;
-        nxtsym!* := token();
-        if (ttype!*=3) and (nxtsym!* eq !$eof!$)
-          then return filenderr()
-         else go to skipping;
-  delim:
-        semic!*:=nxtsym!*;
-        curescaped!* := nil;
-        return addcomment '!*semicol!*;
-  new:  nxtsym!* := x;
-        if stringp x then go to l
-        else if atom x then go to c
-        else go to l;
-  q1:   if null (car nxtsym!* = 'string) then go to l;
-        prin2x " ";
-        prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
-  l:    cursym!*:=nxtsym!*;
-        curescaped!* := escaped!*;
-        escaped!* := nil;
-        nxtsym!* := token();
-        if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
-  l2:   if numberp nxtsym!*
-           or (atom nxtsym!* and null get(nxtsym!*,'switch!*))
-          then prin2x " ";
-        return addcomment cursym!*
-   end;
+% The simple scheme for multi-character operator would lead to the
+% input text (say) "#ifonly" rendering as "#if" followed by "only". I
+% view that as dodgy. So for these alpametic extensions I will insist that
+% the multi-character operator is only accepted if at the end the following
+% character is not a letter, digit, "!" or "_". The consequence is that
+% "#ifonly" will be seen as "#" followed by "ifonly". Sensible people
+% will put whitespace or some other separator in as in "#if only" and
+% "#if(something)".
 
-symbolic procedure read!-comment1 u;
-   begin scalar !*lower,!*raise;
-      named!-character!* := nil;
-      while named!-character!* or
-         (null (string!-length id2string crchar!* = 1)) or
-         (null (delcp crchar!*)) or
-         (crchar!* eq !$eol!$) do <<
-             named!-character!* := nil;
-             crchar!* := readch1() >>;
-      crchar!* := blank;
-      condterpri()
-   end;
+flag('(!#if !#else !#elif !#endif !#eval !#define), 'need_termination);
 
-% The next procedure is adapted from code in RLISP88 for a comment
-% opened with "/*". These leave material in the source.
+symbolic procedure read_long_form_comment();
+   << begin
+         scalar !*raise,!*lower, x;
+         named!-character!* := nil;
+         while named!-character!* or
+            (null (string!-length id2string crchar!* = 1)) or
+            (null (delcp crchar!*)) or
+            (crchar!* eq !$eol!$) do <<
+                x := crchar!* . x;
+                named!-character!* := nil;
+                crchar!* := readch1();
+                if crchar!* = !$eof!$ then filenderr(); >>;
+         crchar!* := blank;
+         condterpri();
+% Note that the comment text here can include newlines.
+         if !*comment then
+            !*comment!* := append(!*comment!*, list list2string reverse x);
+      end;
+      cursym!* := '!*semicol!*;
+      scan() >>;
 
-symbolic procedure read!-comment;
-   begin
-      scalar x,y,z;
-      begin
-         scalar !*raise, !*lower;
-         z := list crchar!*;
+% The next bit is somewhat ridiculous! It will arrange that the word
+% "comment" will be recognized with any mix of upper and lower case
+% letters. Well on a system that is internally either upper or lower
+% case instances of "COMMENT" and "comment" can arise. If either !*raise or
+% !*lower is set any input is reduced to one of those. But if Reduce is run
+% in case-sensitive mode then other situations may arise, and the Reduce
+% source code has used instances of "Comment". Handling all the other
+% improbably cases is really just done because it is fairly easy and
+% does not cost much!
+
+% "foreach" statements are not yet available
+flag('(
+   !c!o!m!m!e!n!t !c!o!m!m!e!n!T !c!o!m!m!e!N!t !c!o!m!m!e!N!T !c!o!m!m!E!n!t
+   !c!o!m!m!E!n!T !c!o!m!m!E!N!t !c!o!m!m!E!N!T !c!o!m!M!e!n!t !c!o!m!M!e!n!T
+   !c!o!m!M!e!N!t !c!o!m!M!e!N!T !c!o!m!M!E!n!t !c!o!m!M!E!n!T !c!o!m!M!E!N!t
+   !c!o!m!M!E!N!T !c!o!M!m!e!n!t !c!o!M!m!e!n!T !c!o!M!m!e!N!t !c!o!M!m!e!N!T
+   !c!o!M!m!E!n!t !c!o!M!m!E!n!T !c!o!M!m!E!N!t !c!o!M!m!E!N!T !c!o!M!M!e!n!t
+   !c!o!M!M!e!n!T !c!o!M!M!e!N!t !c!o!M!M!e!N!T !c!o!M!M!E!n!t !c!o!M!M!E!n!T
+   !c!o!M!M!E!N!t !c!o!M!M!E!N!T !c!O!m!m!e!n!t !c!O!m!m!e!n!T !c!O!m!m!e!N!t
+   !c!O!m!m!e!N!T !c!O!m!m!E!n!t !c!O!m!m!E!n!T !c!O!m!m!E!N!t !c!O!m!m!E!N!T
+   !c!O!m!M!e!n!t !c!O!m!M!e!n!T !c!O!m!M!e!N!t !c!O!m!M!e!N!T !c!O!m!M!E!n!t
+   !c!O!m!M!E!n!T !c!O!m!M!E!N!t !c!O!m!M!E!N!T !c!O!M!m!e!n!t !c!O!M!m!e!n!T
+   !c!O!M!m!e!N!t !c!O!M!m!e!N!T !c!O!M!m!E!n!t !c!O!M!m!E!n!T !c!O!M!m!E!N!t
+   !c!O!M!m!E!N!T !c!O!M!M!e!n!t !c!O!M!M!e!n!T !c!O!M!M!e!N!t !c!O!M!M!e!N!T
+   !c!O!M!M!E!n!t !c!O!M!M!E!n!T !c!O!M!M!E!N!t !c!O!M!M!E!N!T !C!o!m!m!e!n!t
+   !C!o!m!m!e!n!T !C!o!m!m!e!N!t !C!o!m!m!e!N!T !C!o!m!m!E!n!t !C!o!m!m!E!n!T
+   !C!o!m!m!E!N!t !C!o!m!m!E!N!T !C!o!m!M!e!n!t !C!o!m!M!e!n!T !C!o!m!M!e!N!t
+   !C!o!m!M!e!N!T !C!o!m!M!E!n!t !C!o!m!M!E!n!T !C!o!m!M!E!N!t !C!o!m!M!E!N!T
+   !C!o!M!m!e!n!t !C!o!M!m!e!n!T !C!o!M!m!e!N!t !C!o!M!m!e!N!T !C!o!M!m!E!n!t
+   !C!o!M!m!E!n!T !C!o!M!m!E!N!t !C!o!M!m!E!N!T !C!o!M!M!e!n!t !C!o!M!M!e!n!T
+   !C!o!M!M!e!N!t !C!o!M!M!e!N!T !C!o!M!M!E!n!t !C!o!M!M!E!n!T !C!o!M!M!E!N!t
+   !C!o!M!M!E!N!T !C!O!m!m!e!n!t !C!O!m!m!e!n!T !C!O!m!m!e!N!t !C!O!m!m!e!N!T
+   !C!O!m!m!E!n!t !C!O!m!m!E!n!T !C!O!m!m!E!N!t !C!O!m!m!E!N!T !C!O!m!M!e!n!t
+   !C!O!m!M!e!n!T !C!O!m!M!e!N!t !C!O!m!M!e!N!T !C!O!m!M!E!n!t !C!O!m!M!E!n!T
+   !C!O!m!M!E!N!t !C!O!m!M!E!N!T !C!O!M!m!e!n!t !C!O!M!m!e!n!T !C!O!M!m!e!N!t
+   !C!O!M!m!e!N!T !C!O!M!m!E!n!t !C!O!M!m!E!n!T !C!O!M!m!E!N!t !C!O!M!m!E!N!T
+   !C!O!M!M!e!n!t !C!O!M!M!e!n!T !C!O!M!M!e!N!t !C!O!M!M!e!N!T !C!O!M!M!E!n!t
+   !C!O!M!M!E!n!T !C!O!M!M!E!N!t !C!O!M!M!E!N!T), '!*comment!*);
+
+% The next procedure is for a comment opened with "/*".
+
+symbolic procedure read_slash_star_comment();
+   << begin
+         scalar x,y,txt,!*raise,!*lower;
+         txt := list crchar!*;
       a: named!-character!* := nil;
-         if (x := readch()) = '!* and not named!-character!* then
-            if (y := readch()) = '!/ and not named!-character!* then return nil
-            else z := y . x . z
+         if (x := readch()) eq '!* and (null named!-character!*) then
+            if (y := readch()) eq '!/ and (null named!-character!*) then <<
+               if !*comment then
+                  !*comment!* := append(!*comment!*,
+                                        list list2string reversip txt);
+               return >>
+            else if y eq !$eof!$ then fileenderr()
+            else txt := y . x . txt
          else if x = !$eof!$ then rederr "EOF encountered in comment"
-         else z := x . z;
+         else txt := x . txt;
          go to a;
       end;
       crchar!* := readch();
-      return list('!*comment!*, list2string reversip z)
+      cursym!* := '!*semicol!*;
+      scan() >>;
+
+put('!*comment!*, 'scan_action!*, 'read_slash_star_comment);
+
+% scan() handles a whole range of things:
+% (1) Multi-character tokens such as ">=" and "-->".
+% (2) Comments introduced with the word "comment".
+% (3) Handling of "/*" comments. Note that "%" comments are
+%     handled in token() not here.
+% (4) Preprocessor conversions using "#define" and the newnam property.
+% (5) Conditional source inclusion using "#if" and friends.
+% (6) "#eval".
+% (7) Some behaviour using outl!* and prin2x which maintains the contextual
+%     information to be printed if a syntax error is encountered.
+
+% A stray remark. Comments introduced by "%" are honoured within quoted
+% expresisons, but ones with the word "comment" or "/*" are not, so
+% '(comment /* not a comment here */;);
+% has all those items present in the list and "/" and "*" are handled as
+% separate characters. Similarly '(a := 3) is a list of length 4 with ":"
+% and "=" as separate atoms within it.
+
+global '(skipping!*);
+skipping!* := nil;
+
+symbolic procedure read_define();
+   begin
+      scalar x, w;
+      x := rread();
+      if null idp x then symerr("#define can only define a sumbol", nil);
+      w := rread();
+      if null skipping!* then put(x, 'newnam, w);
+      cursym!* := '!*semicol!*;  % Forces reading of the next token.
+      return scan()
    end;
 
+put('!#define, 'scan_action!*, 'read_define);
+
+% The way I need to handle "#if" is basically by using a stack automaton
+% to parse the context-free grammar that matches "#if" with "#endif".
+% One issue that tends to compilicate that automaton is a feeling that
+% "#else" should always come at the end. To simplify parsing I will
+% implement things so that "#else" is treated in the same way as "#elif t",
+% and that means that it becomes legal to have multiple "#else" sections,
+% and further "#elif" ones after an "#else". So
+%   #if nil; A; #else B; #else C; #elif X D; #endif
+% will be accepted (and "B;") would be the part that gets through.
+%
+
+global '(if_stack);
+if_stack := '(NOT_WITHIN_IF);
+
+symbolic procedure scan_state();
+   car if_stack;
+put('scan_state, 'inline,
+    '(lambda () (car if_stack)));
+
+symbolic procedure push_state new_state;
+   if_stack := new_state . if_stack;
+put('push_state, 'inline,
+    '(lambda (new_state) (setq if_stack (cons new_state if_stack))));
+
+symbolic procedure pop_state();
+   if_stack := cdr if_stack;
+put('pop_state, 'inline,
+    '(lambda () (setq if_stack (cdr if_stack))));
+
+symbolic procedure change_state new_state;
+   if_stack := new_state . cdr if_stack;
+put('chance_state, 'inline,
+    '(lambda (new_state) (setq if_stack (cons new_state (cdr if_stack)))));
+
+% When #if wants to ignore some material it can call this. The requirement
+% then if that #if, #else, #elif and #endif clear skipping!*. Also #eval
+% and #define do not do anything in skipping mode. This arranges that
+% all sorts of comment, strings and quoted expressions are handled in
+% ways that do not interect with #if.
+
+symbolic procedure scan_skip();
+   begin
+% Observe that because I remind !*comment!* and comment!* any comments
+% within skipped material are not recorded. I think that makes sense!
+      scalar w, !*comment!*, comment!*;
+      skipping!* := t;
+      while skipping!* do w := scan();
+      return w
+   end;
+
+% #if X
+%       normal: evaluate X
+%               non-nil            push "iftrue" and return next token
+%               nil                push "iffalse" and skip to next directive
+%       iftrue: evaluate X
+%               non-nil            push "iftrue" and return next token
+%               nil                push "iffalse" and skip to next directive
+%       iffalse:do not evaluate X
+%                                  push "ifdone" and skip to next directive
+%       ifdone: do not evaluate X
+%                                  push "ifdone" and skip to next directive
+
+symbolic procedure read_if();
+   begin
+      scalar x;
+      skipping!* := nil;
+% Again note that eg "#if #if" will be treated as "#if !#     if"
+% rather than as a messed up attempt to nest conditionals.
+      x := rread();
+      if (scan_state() = 'NOT_WITHIN_IF) or
+         (scan_state() = 'IF_TRUE) then <<
+         x := errorset(x, !*backtrace, nil);
+         if errorp x then x := nil else x := car x;
+         if x then <<
+            push_state 'IF_TRUE;
+            cursym!* := '!*semicol!*;
+            return scan() >>
+         else <<
+            push_state 'IF_FALSE;
+            return scan_skip() >> >>
+      else <<
+         push_state 'IF_DONE;
+         return scan_skip() >>
+   end;
+
+put('!#if, 'scan_action!*, 'read_if);
+
+% #else
+%       normal:                    error
+%       iftrue:                    set "ifdone" and skip to next directive
+%       iffalse:                   set "iftrue" and return next token
+%       ifdone:                    leave as "ifdone", skip to next directive
+%
+
+symbolic procedure read_else();
+   begin
+      skipping!* := nil; 
+      if scan_state() = 'IF_TRUE then <<
+         change_state 'IF_DONE;
+         return scan_skip() >>
+      else if scan_state() = 'IF_FALSE then <<
+         change_state 'IF_TRUE;
+         cursym!* := '!*semicol!*;
+         return scan() >>
+      else if scan_state() = 'IF_DONE then return scan_skip()
+      else symerr("unexpected #else", nil);
+   end;
+
+put('!#else, 'scan_action!*, 'read_else);
+
+% #elif X
+%       normal:                    error
+%       iftrue: do not evaluate X  set "ifdone" and skip to next directive
+%       iffalse:evaluate X
+%               T                  set "iftrue" and return next token
+%               NIL                leave as "iffalse" and skip to next directive
+%       ifdone: do not evaluate X  leave as "ifdone", skip to next directive
+%
+
+symbolic procedure read_elif();
+   begin
+      scalar x;
+      skipping!* := nil;
+      x := rread();
+      if scan_state() = 'NOT_WITHIN_IF then
+         symerr("unexpected #endif", nil)
+      else if (scan_state() = 'IF_TRUE) or
+         (scan_state() = 'IF_DONE) then <<
+         change_state 'IF_DONE;
+         return scan_skip() >>;
+% must be 'IF_FALSE here...
+      x := errorset(x, !*backtrace, nil);
+      if errorp x then x := nil else x := car x;
+      if x then <<
+         change_state 'IF_TRUE;
+         cursym!* := '!*semicol!*;
+         return scan() >>
+      else return scan_skip()
+   end;
+
+put('!#elif, 'scan_action!*, 'read_elif);
+
+% #endif
+%       normal:                    error
+% otherwise pop and consider the new state:
+%          normal:                 return next tokem
+%          iftrue:                 return next token
+%          iffalse:                skip
+%          ifdone:                 skip
+
+symbolic procedure read_endif();
+   begin
+      skipping!* := nil; 
+      if scan_state() = 'NOT_WITHIN_IF then
+         symerr("unexpected #endif", nil);
+      pop_state();
+      cursym!* := '!*semicol!*;
+      if scan_state() = 'NOT_WITHIN_IF or
+         scan_state() = 'IF_TRUE then return scan()
+      else return scan_skip();
+   end;
+
+put('!#endif, 'scan_action!*, 'read_endif);
+
+symbolic procedure read_eval();
+   begin
+% Note that rread() uses token() not scan() to read things, and so
+% if some clown writes something like
+%     eval #if ...
+% the item read by rread will be just !# and there is no risk of
+% the sort of confusion that could arise if the string "#if" was
+% recognised as a directive!
+      scalar x;
+      x := rread();
+      if null skipping!* then errorset(x, !*backtrace, nil);
+      cursym!* := '!*semicol!*;  % Forces reading of the next token.
+      return scan()
+   end;
+
+put('!#eval, 'scan_action!*, 'read_eval);
+
+% In general scan() will read the token following the one that it returns
+% because in previous versions that was how it handled multi-character
+% operator names such as ":=". These days it processes those character at
+% a time not token at a time. However changing its external interface would
+% potentially impact all places where it is called, so this look-ahead
+% remains in place. Note that if a semicolon is read the material beyond
+% that is not inspected.
+
+symbolic procedure scan();
+   begin
+      scalar x, w;
+% If the most recent symbol is a semicolon then I did not read the
+% token beyond it into nxtsym!* - so I must do that now.
+      if cursym!* eq '!*semicol!* then <<
+         escaped!* := nil;
+         nxtsym!* := token() >>;
+% outl!* is used to record the current context so that if a syntax error
+% arises it can be echoed - potentially with "$$$" inserted to mark the
+% place where things were wrong. prin2x adds items to it. So here I
+% update it is the most recent token was a string.
+      if (null atom nxtsym!*) and (null toknump nxtsym!*) then <<
+         if car nxtsym!* eq 'string then <<
+            prin2x " ";
+            prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*) >>;
+            cursym!*:=nxtsym!*;
+            curescaped!* := escaped!*;
+% Set nxtsym!* to the token beyond this one.
+            escaped!* := nil;
+            comment!* := !*comment!*; !*comment!* := nil;
+            nxtsym!* := token();
+% On some platforms the end of file marker is the symbol !$eof!$ itself,
+% however when that is read because readch() returns it token() will
+% report it with ttype!*=3 while if the text "!$eof!$" appears in a file
+% that will be a token of type 0.
+            if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
+            if (numberp nxtsym!*)
+               or ((atom nxtsym!*) and (null get(nxtsym!*,'switch!*)))
+               then prin2x " ";
+            if (w := get(cursym!*, 'scan_action!*)) then
+               return apply(w, nil);
+            return cursym!* >>;
+% "else" and ";" lead to outl!* being cleared so that the "context" displayed
+% in diagnostics does not get unnecessarily long.
+      if (nxtsym!* eq 'else) or (cursym!* eq '!*semicol!*) then outl!* := nil;
+      prin2x nxtsym!*;
+% Deal with 'newnam. I allow for chains of renaming, but also stop
+% on any loop. So if the user goes (say)
+%    #define A B
+%    #define B A
+% then if either A or B is encountered rather than the code just looping
+% as earlier versions of Reduce did!) I will stop and return at one of the
+% symbols along the way.
+      while (idp nxtsym!*) and
+            (x := get(nxtsym!*, 'newnam)) and
+            (null (x member (w := nxtsym!* . w))) do nxtsym!* := x;
+% Now if the item read is anything other than an operator-like character
+% I should just return it (but adding info to outl!* and reading the
+% following token...). Well I also do this if it is an operator-like
+% character but one that can not start a multi-char symbol.
+      x := nil;
+      if (null (ttype!* = 3)) or
+         (null
+            ((idp nxtsym!*) and (x := get(nxtsym!*, 'switch!*)))) then <<
+% I will make "comment" introduce a comment but eg "!comment" will not.
+         if flagp(nxtsym!*, '!*comment!*) and (null escaped!*) then
+            return read_long_form_comment();
+         cursym!* := nxtsym!*;
+         curescaped!* := escaped!*;
+         escaped!* := nil;
+         comment!* := !*comment!*; !*comment!* := nil;
+         nxtsym!* := token();
+         if (nxtsym!* eq !$eof!$) and (ttype!* = 3) then return filenderr();
+         if (numberp nxtsym!*) or
+            ((atom nxtsym!*) and (null get(nxtsym!*,'switch!*)))
+            then prin2x " ";
+         return cursym!* >>;
+% Note that x is now the switch!* property for nxtsym!*.
+% Semicolons (and newlines if !*eoldelimp is set) are special - and note that
+% "$" decodes as a semicolon! This probably means that one can not introduce
+% a multi-char operator that starts with either ";" or "$".
+      if eqcar(cdr x, '!*semicol!*) or
+         (!*eoldelimp and (nxtsym!* = !$eol!$)) then <<
+         semic!* := nxtsym!*;
+         curescaped!* := nil;
+         return (cursym!* := '!*semicol!*) >>;
+% Next I will consolidate multi-character operators.
+% It is possible that (say) a 3 character token has been defined but
+% not its two-character prefix. Or perhaps not even the one-character lead
+% in. In these cases the code as written is not good enough!
+      w := list(crchar!* . x);
+      while (x := atsoc(crchar!*, car x)) do <<
+         x := cdr x;
+         crchar!* := readch1();
+         w := (crchar!* . x) . w >>;
+% Now if the sequence of characters matched was something like "#if" but the
+% following character is alphanumeric (or "_" or "!") I will pretend that
+% it was not a match by updating my backtrack-list.
+      if (null null cddar w) and
+         flagp(caddar w, 'need_termination) and
+         ((liter crchar!*) or (digit crchar!*) or
+            (crchar!* eq '!_) or (crchar!* eq '!!)) then <<
+         w := (caar w . '(())) . cdr w >>;
+% w is now a list showing the state at each stage in this investigation.
+% Each item in it is a character paired with the switch!* record it
+% was associated with. In normal circumstances the place where I stop
+% will have cdar w of the form (??? token) where token is the result I
+% must return. However there are cases such as the one that arises with
+% "-->" where if the input is "--x" we end up with cdar w being (???) [ie
+% with a nil where there would have been a list showing the token to
+% return on "--" input. I must detect that case and backtrack. Note that
+% the very first character that starts a sequence MUST have a translation
+% and so the loop here will end tidily.
+w := w;
+      while null cddar w do <<
+         peekchar!* := crchar!* . peekchar!*;
+         w := cdr w;
+         crchar!* := caar w >>;
+      cursym!* := caddar w;
+% Comments introduced by "/*" can now be handled. Note that the treatment here
+% differs from the previous in that with the old scheme even if the switch!*
+% data allowed for a longer operator-token starting with "/*" the first two
+% characters would trigger comment processing. This difference could only
+% be triggered if there was a  "newtok '((!/ !* something-more) ???);"
+% so if that is avoided all will be well. However I could at least imagine
+% a future change that make "/**" introduce a special sort of comment - maybe
+% one related to extractable documentation) so all in all I view this as a
+% sane "upgrade".
+      if (w := get(cursym!*, 'scan_action!*)) then return apply(w, nil);
+      escaped!* := nil;
+      comment!* := !*comment!*; !*comment!* := nil;
+      nxtsym!* := token();
+      return cursym!*;
+   end;
 
 endmodule;
 

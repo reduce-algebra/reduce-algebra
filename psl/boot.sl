@@ -173,8 +173,23 @@ a     (setq x (rread))
 b     (setq r (cons x r))
       (go a)))
 
-(de token nil
-   (prog (x y)
+(global '(blank cr!* ff!* tab!*))
+
+(setq blank (intern (int2id 32))) % blank (" ").
+(setq cr!*  (intern (int2id 13))) % carriage return (^M).
+(setq ff!*  (intern (int2id 12))) % form feed (^L).
+(setq tab!* (intern (int2id 9)))  % tab key (^I)
+
+(de seprp (u)
+  (or
+    (eq u blank)
+    (eq u tab!*)
+    (eq u !$eol!$)
+    (eq u cr!*)
+    (eq u ff!*)))
+
+(de token ()
+   (prog (x y z)
       (setq x crchar!*)
 a     (cond
          ((seprp x) (go sepr))
@@ -190,7 +205,14 @@ a     (cond
 a1    (setq crchar!* (readch))
       (go c)
 escape(setq y (cons x y))
+% After a "!" the escaped character will not be case-folded. I set !*lower
+% as well as !*raise to make this code compatible with CSL as well as PSL
+% even though this copy is just for PSL use.
+      (setq z (cons !*raise !*lower))
+      (setq !*raise (setq !*lower nil))
       (setq x (readch))
+      (setq !*raise (car z))
+      (setq !*lower (cdr z))
 letter(setq ttype!* 0)
 let1  (setq y (cons x y))
       (cond
@@ -231,11 +253,33 @@ d     (setq nxtsym!* x)
 
 (de mkstrng (u) u)
 
-(de seprp (u) (or (eq u '! ) (eq u !$eol!$) (eq u '!
-)))
+% I want to have support for #if but at this stage it will suffice it it
+% is restricted. I will support "#if #endif" and "#if #else #endif" but
+% without nesting. The way this is implemented is:
+%     #if t        Ignored! continue as usual.
+%     #if nil      Skip until #else or #endif then continue as usual.
+%                  Well as a matter of caution I stop at end of file too.
+%     #else        [Only seen after "#if t" because after "#if nil" it
+%                  had been reached and passed over. Skip to #endif.
+%                  If I make this "skip until #else or #endif" then it
+%                  would only find "#else" if that was repeated, which
+%                  should not happen - so doing that slightly shrinks
+%                  and simplifies the code.
+%     #endif       Ignored!
+
+(de skip_to_else_or_endif ()
+   (prog nil
+a     (cond
+         ((or (eq cursym!* !$eof!$)
+             (and (eq cursym!* '!#)
+                  (or (eq nxtsym!* 'else) (eq nxtsym!* 'endif))))
+          (return nil)))
+      (setq cursym!* nxtsym!*)
+      (setq nxysym!* (token))
+      (go a)))
 
 (de scan nil
-   (prog (x y)
+   (prog (x y b)
       (cond ((null (eq cursym!* '!*semicol!*)) (go b)))
 a     (setq nxtsym!* (token))
 b     (cond
@@ -265,6 +309,32 @@ l     (setq cursym!*
             ((null (eqcar nxtsym!* 'string)) nxtsym!*)
             (t (cons 'quote (cdr nxtsym!*)))) )
 l1    (setq nxtsym!* (token))
+% This is where "#if" and friends are handled.
+      (cond
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'if))
+          (progn
+             (setq b (rread))
+             (setq b (errorset b !*backtrace nil))
+             (cond
+                ((atom b) (setq b nil))
+                (t (setq b (car b))))
+             (cond
+                ((null b) (skip_to_else_or_endif)))
+             (go a)))
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'else))
+          (progn
+             (setq nxtsym!* nil) % So it is not 'else
+             (skip_to_else_or_endif)
+             (go a)))
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'endif))
+             (go a)))
+% End of file will cause a total exit from the system. This situation
+% should not arise, but if it did the code would tend to loop reading and
+% re-reading the end of file marker. So trapping this here may help when
+% debugging.
+      (cond
+         ((and (eq cursym!* !$eof!$) (eq nxtsym!* !$eof!$))
+          (bye)))
       (return cursym!*)))
 
 (de ifstat nil
@@ -394,7 +464,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       (return (list 'repeat body (xread t)))))
 
 (dm repeat (u)
-   (progn (terpri) (print (prog (body bool lab)
+   (prog (body bool lab)
       (setq body (cadr u))
       (setq bool (caddr u))
       (setq lab 'repeatlabel)
@@ -402,7 +472,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       'prog nil
     lab  body
          (list 'cond
-            (list (list 'not bool) (list 'go lab)))))))))
+            (list (list 'not bool) (list 'go lab)))))))
 
 (put 'repeat 'stat 'repeatstat)
 (flag '(repeat) 'nochange)

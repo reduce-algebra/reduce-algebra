@@ -168,7 +168,7 @@ symbolic procedure formproc(u,vars,mode);
         if (not(type = 'inline) and get(name,'inline)) or
            (not(type = 'smacro) and get(name,'smacro))
           then lprim list("SMACRO/INLINE",name,"redefined");
-% the next line generates warnings if any arguments are not used (in symbolic
+% The next line generates warnings if any arguments are not used (in symbolic
 % mode, and not counting arguments that are fluid).
         symbvarlst(varlis,body,mode);
         if type = 'expr then body := list('de,name,varlis,body)
@@ -204,10 +204,9 @@ symbolic procedure formproc(u,vars,mode);
 % "inline" procedures define a regular procedure as well as saving the
 % definition so it can be expanded in place elsewhere.
         if type = 'inline then
-           body := print mkprogn(list('de,name,varlis,obody), body);
+           body := mkprogn(list('de,name,varlis,obody), body);
         return if !*micro!-version and type memq '(fexpr macro smacro)
-                 then nil
-                else body
+               then nil else body
    end;
 
 put('procedure,'formfn,'formproc);
@@ -265,7 +264,7 @@ symbolic procedure simplify!-filename s;
     return list2string a;
   end;
 
-!#if (or (null (getd 'mkhash)) (flagp 'mkhash 'rlisp))
+#if (or (null (getd 'mkhash)) (flagp 'mkhash 'rlisp))
 
 % I need to simulate hash tables, which PSL does not appear to provide.
 % Well I will provide a minimal functional (but not performance)
@@ -326,7 +325,7 @@ symbolic procedure hashcontents table;
 
 flag('(mkhash), 'rlisp);
 
-!#endif
+#endif
 
 % At present this code only allows single token type specifiers. This is
 % far from enough, but may still do as a placeholder while I implement

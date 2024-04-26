@@ -1,5 +1,6 @@
 <?php
-$gnuplot = ($_SERVER['QUERY_STRING'] == 'gnuplot');
+$gnuplot = (str_contains($_SERVER['QUERY_STRING'], 'gnuplot'));
+$debug = (str_contains($_SERVER['QUERY_STRING'], 'debug'));
 $page_title = 'Web REDUCE';
 $header_title = 'Web REDUCE';
 include '../include/begin-head.php';
@@ -245,6 +246,7 @@ include '../include/begin-head.php';
     <button id="EarlierButton" type="button" disabled="disabled" title="Select earlier keyboard input. Keyboard Shortcut: Control+UpArrow.">▲ Earlier Input</button>
     <button id="SendInputButton" type="button" title="Send the input above to REDUCE, terminating with a semicolon if necessary.
 Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)">Send Input</button>
+    <button id="PlotButton" type="button" title="Send the input above to Gnuplot. Keyboard Shortcut: Control+Enter.">Gnuplot</button>
     <button id="LaterButton" type="button" disabled="disabled" title="Select later keyboard input. Keyboard Shortcut: Control+DownArrow.">▼ Later Input</button>
     <?php if ($gnuplot) : ?>
         <button id="toggle-plot-display-button" type="button" onclick="togglePlotWindowDisplay()">Show Plot Window (Below)</button>
@@ -253,7 +255,7 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
 
 <?php if ($gnuplot) : ?>
     <!-- Web Gnuplot -->
-    <div id="plot-window" class="d-none">
+    <div id="plot-window">
         <div class="labelling">
             <label for="plot-div">
                 Plot Display
@@ -270,11 +272,11 @@ Keyboard Shortcut: Control+Enter. (Also hold Shift to prevent auto-termination.)
         </div>
     </div>
     <script>
-        var gnuplot = true;
+        var $gnuplot = true;
     </script>
 <?php else : ?>
     <script>
-        var gnuplot = false;
+        var $gnuplot = false;
     </script>
 <?php endif; ?>
 

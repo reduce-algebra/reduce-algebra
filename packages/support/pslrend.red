@@ -349,16 +349,12 @@ symbolic procedure begin;
         ifl!* := ipl!* := ofl!* := nil;
         if null date!* then go to a;
         if !*loadversion then errorset!*('(load entry),nil);
-%       if version!* neq "REDUCE Development Version"
-%         then errorset!*('(load patches),nil);
         !*gc := nil;
         !*usermode := nil;
         linelength 80;
         prin2 version!*;
         prin2 ", build date ";
         prin2 date!*;
-%       if patch!-date!*
-%         then progn(prin2 ", patched to ",prin2 patch!-date!*);
         prin2t " ...";
         !*mode := if getd 'addsq then 'algebraic else 'symbolic;
 	if boundp '!*lispmode and !*lispmode then !*mode := 'symbolic;
@@ -615,17 +611,17 @@ symbolic procedure split!-str!-1 (string,separator,r);
 symbolic procedure path!-to!-entries p;
    begin scalar dsl,pl,cl,el,l,prefix;
     % dsl is the list of possible directory separators in the image path
-!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
     dsl := string2list "/\";
-!#else
+#else
     dsl := string2list "/";
-!#endif
+#endif
     % pl is the list characters in p as integers
     % cl will be used to collect the characters of the path elements,
     % and el to collect the result
     pl := string2list p;
     dsl := string2list "/\";
-!#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
+#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
     % if the first char is a letter and the second is a colon we have a drive spec
     if pairp pl and pairp cdr pl and cadr pl = char !: and
        (car pl >= char !A and car pl <= char !Z or car pl >= char !a and car pl <= char !z)
@@ -637,13 +633,13 @@ symbolic procedure path!-to!-entries p;
     % if the string starts with "\\" it is an UNC path
      else if pairp pl and pairp cdr pl and car pl member dsl and cadr pl member dsl
       then << prefix := "\\"; pl := cddr pl >>;
-!#else
+#else
     % if the first char is a directory separator, we have an absolute pathname
     if pairp pl and car pl member dsl
        then << prefix := dirchar!*;
                % strip leading dir separator(s)
                while pairp pl and car pl member dsl do pl := cdr pl >>;
-!#endif
+#endif
     % collect characters 
     while pl do <<
        while pairp pl and not (car pl member dsl) do <<cl := car pl . cl; pl := cdr pl>>;

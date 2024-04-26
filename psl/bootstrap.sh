@@ -328,6 +328,8 @@ end;
 
 initreduce();
 
+tr scan, xread1; % @@@@
+
 savesystem("BOOTSTRAP REDUCE", "../red/bootstrap", nil);
 
 bye;
@@ -339,7 +341,7 @@ cd $chere
 # On Windows (and I will be building from a cygwin environment but
 # typically creating a native Windows copy of the package) PSL will
 # create the dependency files with DOS-style line-termination. This
-# would really confuse "make", so here I concert to Unix form. In a
+# would really confuse "make", so here I convert to Unix form. In a
 # cygwin world I expect dos2unix to be available in the location tested
 # for here, and on most other systems this is irrelevant or harmless.
 

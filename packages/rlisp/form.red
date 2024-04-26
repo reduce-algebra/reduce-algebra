@@ -175,6 +175,11 @@ symbolic procedure form1(u,vars,mode);
                      else u
        else if not atom car u then return form2(u,vars,mode)
        else if not idp car u then typerr(car u,"operator")
+% A form (comment a1 a2 ... aN) discards all but aN. So MAYBE it is
+% intended to be used as eg (command "line 1 of comment" "line 2 here"
+% "third line of comment" some_expression). I suspect that nobody uses
+% this and the comment text is totally discarded here so it was hardly
+% worth preserving it this far!
        else if car u = 'comment
         then return form1(car lastpair u,vars,mode)
        else if flagp(car u,'noform) then return u

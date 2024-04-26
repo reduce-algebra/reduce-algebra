@@ -42,7 +42,8 @@ class ODESolveTemplate extends Template {
         // Options:
         const optEls = this.pattern.querySelectorAll<HTMLInputElement>("input[type=checkbox]:checked");
         for (const optEl of optEls) {
-            const option = this.pattern.querySelector<HTMLInputElement>(`label[for=${optEl.id}]`).innerText;
+            // *** Can the following be null? ***
+            const option = this.pattern.querySelector<HTMLInputElement>(`label[for=${optEl.id}]`)!.innerText;
             text += ", " + (option == "tracing+" ? "tracing=1" : option);
         }
         return text + ")";

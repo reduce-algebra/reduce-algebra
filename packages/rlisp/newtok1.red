@@ -32,16 +32,17 @@ module newtok1;  % More multi-character tokens.
 
 % The notation #bullet; (which includes the terminating semicolon) stands
 % for U+2022 and #times; is U+d7. See rtools/charname.red, and the conversion
-% is arranged in rlisp/tok.red on lines near 530. So users who have Unicode
-% input capability might be able to use some extended characters and the
-% Reduce sources can include mention of them by name so that the source
-% code remains using a limited character set.
-%::
+% is arranged in rlisp/tok.red where it inspects the 'unicode!_character
+% property of a symbol).  So users who have Unicode input capability might
+% be able to use some extended characters and the Reduce sources can
+% refer to them by name so that the source code remains using a limited
+% character set.
+%
 % HOWEVER note well that the "#name;" notation is not available until tok.red
 % has been read - and newtok.red is processed before that. So I put these
 % in newtok1.red that gets build slightly later than newtok.red.
 
-% The thoght here is that perhaps a number of additional unicode symbols
+% The thought here is that perhaps a number of additional unicode symbols
 % might be useful...
 
 newtok '((#bullet;) dotprod);

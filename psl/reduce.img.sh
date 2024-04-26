@@ -82,6 +82,8 @@ else
 # fasl="$cfasl"
 fi
 
+reduce=${reduce%/}
+
 # Get SVN revision from script and make sure that it is numeric
 revision=$($reduce/scripts/revision.sh)
 echo "$revision" | grep "[^0-9]" >/dev/null && revision=""
@@ -151,6 +153,7 @@ cd psl
 (load!-package 'revision)
 (load!-package 'rlisp)
 (load!-package rend_file)
+
 (load!-package 'poly)
 (load!-package 'arith)
 (load!-package 'alg)
@@ -233,7 +236,6 @@ cd psl
 
 (de alterheapsize (d) (rederr "Sorry, but at present the Heap cannot be extended. Please start Reduce again with a larger heap (-td parameter) and rerun."))
 
-
 (savesystem "REDUCE" "../red/reduce" (quote ((reduce-init-forms))))
 
 (bye)
@@ -242,7 +244,9 @@ XXX
 
 cd $chere
 
-grep -q '^\*\*\*\*\* ' "$logdir/$logfile" && echo Possible error building Reduce image - check "$logdir/$logfile" && exit 1
+grep -q '^\*\*\*\*\* ' "$logdir/$logfile" && \
+   echo Possible error building Reduce image - check "$logdir/$logfile" && \
+   exit 1
 
 exit 0
 

@@ -10,7 +10,7 @@
  */
 
 // Imported variables:
-import { debug, typesetMathsCheckbox, inputDiv, Global } from "./Main.js";
+import { $debug, typesetMathsCheckbox, inputDiv, Global } from "./Main.js";
 
 // Imported types:
 import { FileSystemWritableFileStream } from "./Main.js";
@@ -26,7 +26,7 @@ interface FileSystemFileHandle {
 const supported = "showOpenFilePicker" in window;
 const echoFileInputCheckbox = document.getElementById("EchoFileInputCheckbox") as HTMLInputElement;
 echoFileInputCheckbox.checked = true;
-const fileMenuLink = document.getElementById("FileMenuLink");
+const fileMenuLink = document.getElementById("FileMenuLink")!;
 echoFileInputCheckbox.addEventListener("change", () => hideMenuLink(fileMenuLink));
 const outputFileMenuItem = document.getElementById("OutputFileMenuItem") as HTMLButtonElement;
 const outputHereMenuItem = document.getElementById("OutputHereMenuItem") as HTMLButtonElement;
@@ -39,7 +39,7 @@ let typesetMathsEnabled: boolean;
 let fileOpen: () => Promise<File>;
 
 if (supported) {
-    debug && console.log('Using the File System Access API.');
+    $debug && console.log('Using the File System Access API.');
     const inputPickerOptions = {
         id: "input", // keep this picker distinct
         types: [
@@ -63,19 +63,19 @@ if (supported) {
         return fileHandle.getFile();
     };
 } else {
-    debug && console.log('The File System Access API is not available.');
+    $debug && console.log('The File System Access API is not available.');
     fileOpen = async () => {
         return new Promise(resolve => {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = ".red, .tst, .txt, text/plain";
-            input.addEventListener('change', () => resolve(input.files[0]));
+            input.addEventListener('change', () => resolve(input.files![0]));
             input.click();
         });
     };
 };
 
-document.getElementById("InputFileMenuItem").addEventListener('click', async () => {
+document.getElementById("InputFileMenuItem")!.addEventListener('click', async () => {
     Global.inputFromKbd = false;
     try {
         const file = await fileOpen() as File;
@@ -100,7 +100,7 @@ document.getElementById("InputFileMenuItem").addEventListener('click', async () 
             }
         }
     } catch (err) {
-        if (err.name !== 'AbortError') console.error(err.name, err.message);
+        if (err instanceof Error && err.name !== 'AbortError') console.error(err.name, err.message);
     }
     refocus();
 });
@@ -113,7 +113,7 @@ if (supported) {
     // outputToFile.write(output);
     // outputToFile is declared in "Main.js".
     var outputFileHandle: FileSystemFileHandle,
-        writable: FileSystemWritableFileStream;
+        writable: FileSystemWritableFileStream | undefined;
     var outputPickerOptions = {
         id: "output", // keep this picker distinct
         suggestedName: defaultOutputFileName,
@@ -132,7 +132,7 @@ if (supported) {
     // While outputToArray is defined (true), REDUCE outputs using
     // outputToArray.push(output);
     // outputToArray is declared in "Main.js".
-    var outputArray: BlobPart[];
+    var outputArray: BlobPart[] | undefined;
     var fileSave = async (blob: Blob | MediaSource) => {
         const a = document.createElement('a');
         a.download = outputFileName;
@@ -179,7 +179,7 @@ outputFileMenuItem.addEventListener('click', async () => {
         outputHereMenuItem.disabled = false;
         shutFileMenuItem.disabled = false;
     } catch (err) {
-        if (err.name !== 'AbortError') console.error(err.name, err.message);
+        if (err instanceof Error && err.name !== 'AbortError') console.error(err.name, err.message);
     }
     inputDiv.focus();
 });
@@ -206,7 +206,7 @@ outputOpenMenuItem.addEventListener('click', () => {
         Global.outputToArray = outputArray;
     }
     displayOutputtingToFile();
-    // If typeset maths was on and has not explicilty been turned off,
+    // If typeset maths was on and has not explicitly been turned off,
     // then turn it off again:
     if (typesetMathsEnabled && typesetMathsCheckbox.checked) enableTypesetMaths(false);
     outputHereMenuItem.disabled = false;
@@ -217,9 +217,9 @@ outputOpenMenuItem.addEventListener('click', () => {
 shutFileMenuItem.addEventListener('click', async () => {
     if (supported) {
         try {
-            await writable.close();
+            writable && await writable.close();
         } catch (err) {
-            console.error(err.name, err.message);
+            err instanceof Error && console.error(err.name, err.message);
         }
         Global.outputToFile = writable = undefined;
     } else {
@@ -227,7 +227,7 @@ shutFileMenuItem.addEventListener('click', async () => {
             const blob = new Blob(outputArray); // array constructed from REDUCE output
             await fileSave(blob);
         } catch (err) {
-            console.error(err.name, err.message);
+            err instanceof Error && console.error(err.name, err.message);
         }
         Global.outputToArray = outputArray = undefined;
     }

@@ -268,19 +268,19 @@ symbolic procedure fout1(xexp,w);
 % Even if there's a formula. That's the purpose of this flag
 % Added by James Davenport after Francoise Richard.
 
-global '(comment!*);
+global '(fortran!-comment!*);
 
 symbolic procedure fprin2!* u;
    % FORTRAN output of U.
    begin integer m,n;
-        if posn!*=0 then comment!* :=
+        if posn!*=0 then fortran!-comment!* :=
                 stringp u and cadr(explode u) eq 'C;
         n := flatsizec u;
         m := posn!*+n;
         if fixp u and !*period then m := m+1;
         if m<(linelength nil-spare!*) then posn!* := m
           else <<terpri();
-                if comment!* then << fprin2 "C"; spaces 4 >>
+                if fortran!-comment!* then << fprin2 "C"; spaces 4 >>
                              else spaces 5;
                 prin2 if fortlang!*='c then "  " else ". ";
                 posn!* := n+7>>;
