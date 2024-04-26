@@ -24,12 +24,14 @@ Module["onRuntimeInitialized"] = function () {
   document.getElementById("gnuplot-version")!.innerText =
     "Powered by " + run_gnuplot("", "--version");
 };
-Module["preRun"] = [function () {
-  function stdin() {
-    return null; // if gnuplot asks for input, say NO
-  }
-  FS.init(stdin, null, null);
-}];
+Module["preRun"] = [
+  function () {
+    function stdin() {
+      return null; // if gnuplot asks for input, say NO
+    }
+    FS.init(stdin, null, null);
+  },
+];
 
 // Utility function to run gnuplot
 function run_gnuplot(script: string, options: string | string[]) {
@@ -63,11 +65,14 @@ function run_gnuplot(script: string, options: string | string[]) {
  * @param data: {} - event.data object from REDUCE web worker message.
  * @returns void
  */
-function launchGnuplot(data:
-  { channel: string, script: string, files: { filename: string, data: Uint8Array }[] }) {
+function launchGnuplot(data: {
+  channel: string;
+  script: string;
+  files: { filename: string; data: Uint8Array }[];
+}) {
   // console.log(script);
   // data = {channel: "plot", files: null, script: ""} is possible!!!
-  data.files?.map(file => {
+  data.files?.map((file) => {
     FS.writeFile(file.filename, file.data);
   });
   data.script && showPlot(data.script);
@@ -109,7 +114,9 @@ function showPlot(script: string) {
     return;
   }
   // Clear any previous plot from the canvas:
-  (<HTMLCanvasElement>document.getElementById("draw_plot_on_canvas")).getContext("2d")!.reset();
+  (<HTMLCanvasElement>document.getElementById("draw_plot_on_canvas"))
+    .getContext("2d")!
+    .reset();
   draw_plot_on_canvas();
   showPlotWindowDisplay();
 }
@@ -122,12 +129,13 @@ const inputDiv = document.getElementById("InputDiv");
 document.addEventListener("DOMContentLoaded", function () {
   plotWindow = document.getElementById("plot-window")!;
   plotWindow.hidden = true;
-  togglePlotWindowDisplayBtn = document.getElementById("toggle-plot-display-button")!;
+  togglePlotWindowDisplayBtn = document.getElementById(
+    "toggle-plot-display-button",
+  )!;
 });
 
 function togglePlotWindowDisplay() {
-  if (plotWindow.hidden)
-    showPlotWindowDisplay();
+  if (plotWindow.hidden) showPlotWindowDisplay();
   else {
     plotWindow.hidden = true;
     togglePlotWindowDisplayBtn.innerText = "Show Plot Window";
