@@ -63,7 +63,7 @@ CXX=em++
 # to avoid warnings.
 
 # Emscripten compile and link flags:
-EM_CC_LD_FLAGS = -flto -sUSE_ZLIB
+EM_CC_LD_FLAGS = -flto -sUSE_ZLIB -fwasm-exceptions
 # USE_ZLIB needed (initially) at compile time to install <zlib.h>!
 
 # Emscripten compile flags:
@@ -80,26 +80,26 @@ endif
 # and must be set explicitly to a larger value, for which 5MB seem reasonable.
 # *** NOTE: the following code only works for an emscripten version earlier than 3.2.0. ***
 SHELL = /bin/bash
-stack_size != [[ `emcc -v |& sed -n '1s/.*) 3.1.\([0-9]\+\) (.*/\1/p'` > 26 ]] && echo '-s STACK_SIZE=5MB'
+stack_size != [[ `emcc -v |& sed -n '1s/.*) 3.1.\([0-9]\+\) (.*/\1/p'` > 26 ]] && echo '-sSTACK_SIZE=5MB'
 
 # Emscripten link flags:
 EM_LDFLAGS = $(EM_CC_LD_FLAGS)\
  -sEXIT_RUNTIME\
- -sINITIAL_MEMORY=$(initial_memory)\
  -sNO_ERROR_ON_UNDEFINED_SYMBOLS\
+ -sINITIAL_MEMORY=$(initial_memory)\
  $(stack_size)
 
 
 #ASYNC_FUNCTIONS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$cfuns)
 #ASYNC_IMPORTS:=$(shell source ./asyncfuns.sh stack_trace_*.txt && echo $$jsimports)
 
-CPPFLAGS=$(EM_CCFLAGS)\
+CPPFLAGS = $(EM_CCFLAGS)\
  -std=gnu++17 $(OPT) -I. -I../include -Iinclude -I$(S)\
- -DHAVE_CONFIG_H=1 -DNO_THROW=1 -DHAVE_CRLIBM=1\
+ -DHAVE_CONFIG_H=1 -DHAVE_CRLIBM=1\
  -DAVOID_KARATSUBA_THREADS=1 -DEMBEDDED=1 $(XCFLAGS) $(USERFLAGS)
 
-LDFLAGS=$(EM_LDFLAGS) -Llib
-LIBS=-lcrlibm
+LDFLAGS = $(EM_LDFLAGS) -Llib
+LIBS = -lcrlibm
 
 JSOPTS = $(USERFLAGS)
 # --source-map-base http://localhost:8000/
@@ -110,7 +110,7 @@ JSOPTS = $(USERFLAGS)
 # a command like   "node bootstrapreduce.js"   I get a failure, but if I
 # use a fully-rooted path for the "node" command all is well. I do not
 # understand! But this setting for NODE arranges the careful scheme for me.
-NODE= $(shell which node)
+NODE = $(shell which node) --experimental-wasm-eh
 
 # Emscripten link flags when building for Node.Js:
 NODE_EM_LDFLAGS= -sNODERAWFS -sFORCE_FILESYSTEM
@@ -122,7 +122,7 @@ PRE_JS = --pre-js js/init.js
 ifndef MINIREDUCE
   JS_LIB = --js-library js/library.js
 endif
-WEBOPTS = $(PRE_JS) -sENVIRONMENT=worker -sBUILD_AS_WORKER $(JS_LIB)
+WEBOPTS = -sENVIRONMENT=worker -sBUILD_AS_WORKER $(PRE_JS) $(JS_LIB)
 
 
 #ASYNCIFY_OPTS = -s ASYNCIFY \
