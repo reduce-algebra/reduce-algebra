@@ -71,7 +71,13 @@ void print_newbignum(LispObject u, bool blankp, int nobreak)
         putc_stream('\n', active_stream);
     column = other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
     for (size_t i=0; i<len; i++)
-    {   if (column > line_length-5)
+    {
+// I think that something like the next line is a rather good idea so that
+// we do not run over the line length, however at least as it stands (well
+// before I added the "&& false"!) is makes various test logs disagree with
+// the reference versions and with PSL. So I will maybe come back to this
+// later but disable it for now.
+        if ((column > line_length-5) && false)
         {   putc_stream('_', active_stream);
             putc_stream('\n', active_stream);
             column = 0;

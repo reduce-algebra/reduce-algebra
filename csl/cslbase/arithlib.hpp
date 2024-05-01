@@ -9512,14 +9512,14 @@ static std::size_t workspaceSize(std::size_t M)
 {   return 6*M;
 }
 
-// At the top level toom32() can use a little over 4*L workspace for
+// At the top level toom32p() can use a little over 7*L workspace for
 // itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
 // I will ignore rounding. Then plus the need for four parallel
 // sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
 
 static std::size_t topWorkspaceSize(std::size_t M)
 {   size_t toomLen = (2*M+2)/3;
-    return 4*toomLen + 4*workspaceSize(toomLen);
+    return 7*toomLen + 4*workspaceSize(toomLen);
 }
 
 // Set (hi,lo) to the 128-bit product of a by b.
