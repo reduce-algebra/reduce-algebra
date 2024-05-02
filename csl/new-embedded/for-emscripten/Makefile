@@ -50,7 +50,10 @@
 # maps, i.e. just use 'make USERFLAGS="-O0 -g"', and debug using
 # Chrome; see https://developer.chrome.com/blog/wasm-debugging-2020/
 
-OPT=-Oz
+OPT=-O1
+
+# FJW, 02/05/2024: Using Emscripten 2.0.34 and Wasm exception handling
+# (as below), the build fails with optimization level above O1.
 
 # with certain emscripten builds, the linker can take a long time.
 # linking with a lower opt level, like O0, may help with this.
