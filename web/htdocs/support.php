@@ -5,18 +5,19 @@ include './include/begin-body.php';
 
 $Q_A = array(
 
-array(
-'Q' => 'What is REDUCE?',
+  array(
+    'Q' => 'What is REDUCE?',
 
-'A' => 'REDUCE is a Computer Algebra System. Think of it as a very
+    'A' => 'REDUCE is a Computer Algebra System. Think of it as a very
 advanced programmable scientific calculator intended for solving
 algebraic or symbolic problems. But it will also solve purely
-numerical problems (exactly or approximately) and plot graphs.'),
+numerical problems (exactly or approximately) and plot graphs.'
+  ),
 
-array(
-'Q' => 'Who is REDUCE intended for?',
+  array(
+    'Q' => 'Who is REDUCE intended for?',
 
-'A' => '<p>REDUCE is intended for users who want to solve problems in
+    'A' => '<p>REDUCE is intended for users who want to solve problems in
    mathematics, science and engineering at pre-university level and
    above, although it was originally developed for research in high
    energy (elementary particle) physics. But, as when using any kind
@@ -47,12 +48,13 @@ array(
     can access all the
     current <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/">source
     code</a> for REDUCE and its support systems.</li>
-</ol>'),
+</ol>'
+  ),
 
-array(
-'Q' => 'How can I obtain REDUCE?',
+  array(
+    'Q' => 'How can I obtain REDUCE?',
 
-'A' => 'Go to the SourceForge
+    'A' => 'Go to the SourceForge
 <a href="https://sourceforge.net/projects/reduce-algebra/">REDUCE
 project page</a>, click on the green Download button and install the
 file that is downloaded. For more options (previous versions, other
@@ -63,12 +65,13 @@ itself, Lisp systems, user interfaces, documentation, etc.) click on
 the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/">Code</a>
 tab to access the Subversion repository.
 See <a href="obtaining.php">How to Obtain and Run REDUCE</a> for
-further details.'),
+further details.'
+  ),
 
-array(
-'Q' => 'How do I run REDUCE?',
+  array(
+    'Q' => 'How do I run REDUCE?',
 
-'A' => 'Once you have installed REDUCE, you should see applications
+    'A' => 'Once you have installed REDUCE, you should see applications
 named something like CSL REDUCE and/or PSL REDUCE in your application
 menu; click on one of them. CSL REDUCE provides a graphical user
 interface (by default) and PSL REDUCE provides a command-line
@@ -78,24 +81,26 @@ with REDUCE you should probably first browse the REDUCE User&#39;s
 Manual, either as <a href="../manual/manual.html">HTML</a>
 or <a href="../manual/manual.pdf">PDF</a>.  A number
 of <a href="books.php">published books</a> about REDUCE and related
-topics are also available.'),
+topics are also available.'
+  ),
 
-array(
-'Q' => 'Why are there two versions of REDUCE?',
+  array(
+    'Q' => 'Why are there two versions of REDUCE?',
 
-'A' => 'REDUCE runs on <a href="documentation.php">Standard Lisp</a>
+    'A' => 'REDUCE runs on <a href="documentation.php">Standard Lisp</a>
 and there are two versions of Standard Lisp that were developed
 primarily to support REDUCE, namely <a href="versions.php">PSL and
 CSL</a> (in that order chronologically). We only release distributions
 of REDUCE based on these two Lisps, although REDUCE can be implemented
 on other versions of Standard Lisp (and there is some experimental
 code to do this in the
-<a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/">repository</a>).'),
+<a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/">repository</a>).'
+  ),
 
-array(
-'Q' => '<span id="interfaces">What user interfaces does REDUCE provide?</span>',
+  array(
+    'Q' => '<span id="interfaces">What user interfaces does REDUCE provide?</span>',
 
-'A' => 'PSL REDUCE itself provides only a command-line interface
+    'A' => 'PSL REDUCE itself provides only a command-line interface
 (CLI).  CSL REDUCE provides a graphical user interface (GUI) by
 default, but it provides a command-line interface if started with
 the <code>--nogui</code>
@@ -114,23 +119,25 @@ with input history and text colouring.  See
 details.  (There is also code in the repository for
 <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/xr/">XR</a>,
 an X Window GUI for PSL, but it is not currently distributed as a
-pre-built binary and is somewhat out of date.)'),
+pre-built binary and is somewhat out of date.)'
+  ),
 
-array(
-'Q' => 'What start-up options does REDUCE provide?',
+  array(
+    'Q' => 'What start-up options does REDUCE provide?',
 
-'A' => 'At the start of a REDUCE session, the system checks for the
+    'A' => 'At the start of a REDUCE session, the system checks for the
 existence of a user&apos;s <a href="/manual/manualse77.html">REDUCE
 startup ﬁle</a>, and executes the REDUCE statements in it.  For CSL
 REDUCE (only), running <code>redcsl --nogui --help</code> at a command
 prompt lists the start-up options (assuming <code>redcsl</code> is on
 your search path &ndash; see <a href="obtaining.php">How to Obtain and
-Run REDUCE</a>).'),
+Run REDUCE</a>).'
+  ),
 
-array(
-'Q' => 'How can I learn how to use REDUCE?',
+  array(
+    'Q' => 'How can I learn how to use REDUCE?',
 
-'A' => 'The <strong>REDUCE User&#39;s
+    'A' => 'The <strong>REDUCE User&#39;s
 Manual</strong> <small>[ <a href="manual/manual.html">HTML</a>
 | <a href="manual/manual.pdf">PDF</a> ]</small> is the obvious
 starting point and there are also a number of
@@ -149,13 +156,14 @@ familiar with the problems addressed.  The
 <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/xmpl">xmpl</a>
 directory in the REDUCE repository provides a convenient collection of
 test and log files from many of the packages, although they may be out
-of date.'),
+of date.'
+  ),
 
-array(
-'Q' => 'How can I learn how REDUCE works and how to modify or extend it?',
+  array(
+    'Q' => 'How can I learn how REDUCE works and how to modify or extend it?',
 
-'A' =>
-'<a href="http://localhost/REDUCE/web/htdocs/lisp-docs/insidereduce.pdf"><strong>Inside
+    'A' =>
+    '<a href="http://localhost/REDUCE/web/htdocs/lisp-docs/insidereduce.pdf"><strong>Inside
 Reduce</strong></a>, the <strong>Symbolic Mode
 Primer</strong> <small>[ <a href="http://localhost/REDUCE/web/htdocs/lisp-docs/primer.html">HTML</a>
 | <a href="http://localhost/REDUCE/web/htdocs/lisp-docs/primer.pdf">PDF</a>
@@ -172,12 +180,13 @@ the <a href="books.php">published books</a> on REDUCE discuss
 algorithms and implementation, and the references in them will take
 you further. Ultimately, you will have to read the
 REDUCE <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/">source
-code</a>!'),
+code</a>!'
+  ),
 
-array(
-'Q' => 'Why are there multiple REDUCE web sites?',
+  array(
+    'Q' => 'Why are there multiple REDUCE web sites?',
 
-'A' => 'REDUCE is hosted on SourceForge, which provides a project site
+    'A' => 'REDUCE is hosted on SourceForge, which provides a project site
 and a project <strong>web</strong> site for each project; see the
 SourceForge
 <a href="https://sourceforge.net/p/forge/documentation/Docs%20Home/">Site
@@ -199,35 +208,38 @@ also works.)  Redlog, which is the REDUCE package for computing with
 logic included in the standard distribution, has its
 own <a href="http://www.redlog.eu/">independent web site</a>, which
 includes the <a href="http://redlog.eu/reduce-wiki">Reduce Wiki</a>
-that provides some general information about REDUCE.'),
+that provides some general information about REDUCE.'
+  ),
 
-array(
-'Q' => 'How do I find out more about SourceForge?',
+  array(
+    'Q' => 'How do I find out more about SourceForge?',
 
-'A' => 'There is a link to the SourceForge
+    'A' => 'There is a link to the SourceForge
 <a href="https://sourceforge.net/p/forge/documentation/Docs%20Home/">Site
 Documentation</a> at the bottom of every SourceForge page, but this is
 aimed more at developers than users and is not specific to REDUCE. The
 most useful general user documentation is probably
 the <a href="https://sourceforge.net/p/forge/documentation/User%20Accounts/">User
-Account Information</a>.'),
+Account Information</a>.'
+  ),
 
-array(
-'Q' => 'Why should I register with SourceForge and log in?',
+  array(
+    'Q' => 'Why should I register with SourceForge and log in?',
 
-'A' => 'According to the SourceForge documentation
+    'A' => 'According to the SourceForge documentation
 on <a href="https://sourceforge.net/p/forge/documentation/User%20Accounts/">User
 Account Information</a>: Software can be downloaded from
 SourceForge.net without registering an account. An account is needed
 in order to participate in discussion forums, submit bug reports, and
 join a project [as an administrator or
 developer]. <a href="https://sourceforge.net/account/registration/">Register
-a user account</a>.'),
+a user account</a>.'
+  ),
 
-array(
-'Q' => 'How should I report a REDUCE bug?',
+  array(
+    'Q' => 'How should I report a REDUCE bug?',
 
-'A' => 'If you think you have found an error or omission in REDUCE, or
+    'A' => 'If you think you have found an error or omission in REDUCE, or
 in any of its support systems or documentation, then please report it
 using the bug tracker accessible via
 the <a href="https://sourceforge.net/p/reduce-algebra/bugs/">Bugs</a>
@@ -235,12 +247,13 @@ tab on the REDUCE project page. You need to be logged in to
 SourceForge to do this. Or, if you prefer, you can use
 the <a href="mailto:reduce-algebra-developers@lists.sourceforge.net">reduce-algebra-developers
 mailing list</a>, but you need to be registered with SourceForge to do
-this.'),
+this.'
+  ),
 
-array(
-'Q' => 'What REDUCE online discussion fora are there?',
+  array(
+    'Q' => 'What REDUCE online discussion fora are there?',
 
-'A' => '<p>There are currently three REDUCE discussion fora &ndash;
+    'A' => '<p>There are currently three REDUCE discussion fora &ndash;
   Open Discussion, Help, and Developers &ndash; accessible via
   the <a href="https://sourceforge.net/p/reduce-algebra/discussion/">Discussion</a>
   tab on the REDUCE project page. If you are not sure which is most
@@ -255,12 +268,13 @@ array(
   markdown hijacks several mathematical operators for other purposes
   and, for example, if you want to use * to indicate multiplication
   then you either need to escape it as \* or use the HTML entity code
-  &amp;ast;.</p>'),
+  &amp;ast;.</p>'
+  ),
 
-array(
-'Q' => 'What REDUCE mailing lists are available?',
+  array(
+    'Q' => 'What REDUCE mailing lists are available?',
 
-'A' => 'We currently run only one mailing list, details of which are
+    'A' => 'We currently run only one mailing list, details of which are
 accessible via the
 <a href="https://sourceforge.net/p/reduce-algebra/mailman/">Mailing
 Lists</a> tab on the REDUCE project page. Here you can access past
@@ -274,24 +288,26 @@ features, and discuss anything related to REDUCE. Developers also
 occasionally use it for announcements. The list is low volume!
 Just send an email to
 <a href="mailto:reduce-algebra-developers@lists.sourceforge.net">reduce-algebra-developers@lists.sourceforge.net</a>,
-but you should be registered with SourceForge before you do this.'),
+but you should be registered with SourceForge before you do this.'
+  ),
 
-array(
-'Q' => 'How can I receive updates on REDUCE by email?',
+  array(
+    'Q' => 'How can I receive updates on REDUCE by email?',
 
-'A' => '<p>Log in to
+    'A' => '<p>Log in to
   the <a href="https://sourceforge.net/projects/reduce-algebra/">REDUCE
   project page</a> at SourceForge and then click on the Get Updates
   button (beside the green Download button).</p>
 <p>To control all your email subscriptions, log in to SourceForge and
   then look at the Me link towards the top right-hand corner of most
   SourceForge pages. Hover over this, click on Account Settings in the
-  drop-down menu and then select the Subscriptions tab.</p>'),
+  drop-down menu and then select the Subscriptions tab.</p>'
+  ),
 
-array(
-'Q' => 'What is in the REDUCE code repository?',
+  array(
+    'Q' => 'What is in the REDUCE code repository?',
 
-'A' => '<p>You can browse the REDUCE source code repository most
+    'A' => '<p>You can browse the REDUCE source code repository most
   easily by clicking on the
   <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/">Code</a>
   tab on the REDUCE project page. You are most likely to be interested
@@ -314,12 +330,13 @@ array(
   directories contain contributed code that is not (yet) incorporated
   into the REDUCE distributions.  The <code>web</code> directory
   contains the code and content for the REDUCE web site (such as this
-  page).</p>'),
+  page).</p>'
+  ),
 
-array(
-'Q' => 'How does REDUCE represent logarithms?',
+  array(
+    'Q' => 'How does REDUCE represent logarithms?',
 
-'A' => '<p>As in most computer programming languages, the
+    'A' => '<p>As in most computer programming languages, the
   identifier <code>log</code> represents the natural logarithm
   function in REDUCE.  It is the fundamental logarithm function in
   REDUCE and works in both algebraic and numerical contexts.  It is
@@ -371,12 +388,13 @@ array(
   the switch <code>rounded</code> is on and will evaluate exactly
   as <code>log</code>. In fact, <code>ln</code> is an alias
   for <code>log</code> in symbolic mode, although not in algebraic
-  mode.</p>'),
+  mode.</p>'
+  ),
 
-array(
-'Q' => 'How can I control mathematical display in CSL REDUCE?',
+  array(
+    'Q' => 'How can I control mathematical display in CSL REDUCE?',
 
-'A' => '<p>You can turn off typeset display of mathematical output by
+    'A' => '<p>You can turn off typeset display of mathematical output by
   turning off the switch <code>fancy</code>, either by using
   the <em>Switches</em> menu or by executing the command</p>
 <p><code>off fancy;</code></p>
@@ -384,30 +402,41 @@ array(
   glitch.  In addition, if you are having problems with the
   window-based version, or prefer a command-line version, you can run
   CSL REDUCE in command-line mode by starting it using the command</p>
-<p><code>redcsl --nogui</code> or <code>redcsl -w</code></p>')
+<p><code>redcsl --nogui</code> or <code>redcsl -w</code></p>'
+  ),
+
+  array(
+    'Q' => 'How does REDUCE compare with other CASs?',
+
+    'A' => '<p>One measure is provided by a set of independent
+    <a href="https://12000.org/my_notes/CAS_integration_tests/reports/summer_2024/index.htm">CAS integration tests</a>
+    by Nasser M. Abbasi.
+    There are 367 reports covering a total of 106,812 integrals, which are listed in plain text format in appendices.
+    You can also
+    <a href="https://12000.org/my_notes/CAS_integration_tests/reports/summer_2024/DATA_BASE/index.htm">download an SQLite3 database</a>
+    containing all the test results, with instructions how to use it.</p>'
+  )
 
 );
 ?>
 
+
 <p>Click on a question to show (or hide) its answer.</p>
 <div class="accordion" id="Q_A_accordion">
-    <?php foreach ($Q_A as $index => $item): $index1 = $index+1 ?>
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="heading<?=$index1?>">
-                <button class="accordion-button collapsed" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#collapse<?=$index1?>"
-                        aria-expanded="true" aria-controls="collapse<?=$index1?>">
-	            <?=$index1?>.&nbsp;<?=$item['Q']?>
-                </button>
-            </h2>
-            <div id="collapse<?=$index1?>" class="accordion-collapse collapse"
-                 aria-labelledby="heading<?=$index1?>" data-bs-parent="#Q_A_accordion">
-                <div class="accordion-body">
-	            <?=$item['A']?>
-                </div>
-            </div>
+  <?php foreach ($Q_A as $index => $item) : $index1 = $index + 1 ?>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="heading<?= $index1 ?>">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $index1 ?>" aria-expanded="true" aria-controls="collapse<?= $index1 ?>">
+          <?= $index1 ?>.&nbsp;<?= $item['Q'] ?>
+        </button>
+      </h2>
+      <div id="collapse<?= $index1 ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $index1 ?>" data-bs-parent="#Q_A_accordion">
+        <div class="accordion-body">
+          <?= $item['A'] ?>
         </div>
-    <?php endforeach; ?>
+      </div>
+    </div>
+  <?php endforeach; ?>
 </div>
 
 </div><!-- opened in begin-body.php -->
@@ -417,4 +446,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>
