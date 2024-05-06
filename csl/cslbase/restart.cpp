@@ -492,6 +492,8 @@ setup_type const restart_setup[] =
     DEF_2("set-help-file",      Lset_help_file),
     {"mapstore",                Lmapstore0, Lmapstore, G2Wother, G3Wother, G4Wother},
     DEF_1("verbos",             Lverbos),
+    DEF_1("gc-stop",            Lgc_stop),
+    DEF_1("gc-error",           Lgc_error),
     {"gc",                      Lgc, Lgc, G2Wother, G3Wother, G4Wother},
     {"reclaim",                 Lgc, Lgc, G2Wother, G3Wother, G4Wother},
     DEF_1("reclaim-trap",       Lreclaim_trap),

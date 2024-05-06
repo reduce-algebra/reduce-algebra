@@ -1460,6 +1460,7 @@ void setupArgs(argSpec *v, int argc, const char *argv[])
 size_t waste = 0;
 unsigned int gcTrace = 0;
 unsigned int gcStop = 0;
+unsigned int gcError = 0;
 unsigned int gcEvery = 0;
 bool ignoreLoadTime = false;
 
@@ -2109,6 +2110,17 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 {   unsigned int r = 1;
                     if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
                     gcStop = r;
+                }
+            },
+            /*! options [--gc-error] \item [{\ttfamily --gc-error}] \index{{\ttfamily --gc-error}}
+             * --gc-error=N raises and error the start of GC number N.
+             */
+            {   "--gc-error", true, true,
+                "--gc-error N raises an error at the start of GC number N.",
+                [&](string key, bool hasVal, string val)
+                {   unsigned int r = 1;
+                    if (hasVal) r = std::strtoul(val.c_str(), nullptr, 10);
+                    gcError = r;
                 }
             },
             /*! options [--gc-every] \item [{\ttfamily --gc-every}] \index{{\ttfamily --gc-every}}

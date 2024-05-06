@@ -455,7 +455,7 @@ static_assert((KARASTART+1)/2 > 7);
 #ifdef KBIG
 static const std::size_t KARABIG          = KBIG;
 #else
-static const std::size_t KARABIG          = 60;
+static const std::size_t KARABIG          = 165;
 #endif
 
 static_assert((KARABIG+1)/2 > KARASTART);
@@ -463,7 +463,7 @@ static_assert((KARABIG+1)/2 > KARASTART);
 // The test code activated via MEASURE_WORKSPACE shows that the
 // amount of workspace is bounded by 6*M where M is the smaller of
 // the two number-lengths - at least over comprehensive testing of
-// a great meny small to fairly large cases. Well actually it shows a
+// a great many small to fairly large cases. Well actually it shows a
 // multiplier not much larger than 5.
 
 static std::size_t workspaceSize(std::size_t M)
@@ -985,6 +985,9 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
         if (N < KARABIG || !manager.mayUseThreads)
             toom32(a, N, b, M, result, workspace);
         else toom32<true>(a, N, b, M, result, workspace);
+#ifdef TRACE_TIMES
+        display("toom32res", result, N+M);
+#endif // TRACE_TIMES
     }
     else 
     {   stkvector<Digit> workspace(topWorkspaceSize(M));
@@ -994,6 +997,9 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
         if (manager.mayUseThreads)
             unbalancedMul<true>(a, N, b, M, result, workspace);
         else unbalancedMul(a, N, b, M, result, workspace);
+#ifdef TRACE_TIMES
+        display("unbalancedres", result, N+M);
+#endif // TRACE_TIMES
     }
 }
 
@@ -1009,6 +1015,8 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 {
 #ifdef TRACE_TIMES
     displayIndent += 2;
+    display("innergenerala", a, N);
+    display("innergeneralb", b, M);
 #endif // TRACE_TIMES
     if (N < M)
     {   std::swap(a, b);
@@ -1036,6 +1044,7 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
     {
         bigBySmallMul(a, N, b, M, result);
 #ifdef TRACE_TIMES
+        std::cout << "% Used bigBySmallMul\n";
         displayIndent -= 2;
 #endif // TRACE_TIMES
         return;
@@ -1044,6 +1053,7 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
     {   if (N==M &&  N<=11) balancedMul(a, b, N, result);
         else simpleMul(a, N, b, M, result);
 #ifdef TRACE_TIMES
+        std::cout << "% Used balancedMul or simpleMul\n";
         displayIndent -= 2;
 #endif // TRACE_TIMES
         return;
@@ -1060,16 +1070,27 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
     {   DigitPtr save = setSize(workspace, M);
         workspace += M;
         size_t step = (3*M)/2;
+#ifdef TRACE_TIMES
+        std::cout << "% Will so a " << step << "*" << M << " toom32 to start\n";
+#endif // TRACE_TIMES
         toom32(a, step, b, M, result, workspace);
+#ifdef TRACE_TIMES
+        display("firsttoom32res", result, step+M);
+#endif // TRACE_TIMES
         a += step;
         N -= step;
         result += step;
-        workspace += M;
         for (;;)
         {   while (N >= step)
             {   std::memcpy(save, result, M*sizeof(Digit));
+#ifdef TRACE_TIMES
+                std::cout << "% Another " << step << "*" << M << " toom32\n";
+#endif // TRACE_TIMES
                 toom32(a, step, b, M, result, workspace);
                 addMdigits(workspace, M, result, step+M);
+#ifdef TRACE_TIMES
+                display("partial", result, step+M);
+#endif // TRACE_TIMES
                 a += step;
                 N -= step;
                 result += step;
@@ -1079,14 +1100,19 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
 // is either Toom32 or Karatsuba. And I should also take this case
 // if N<KARASTART. Also if N>=M/1.25 I can finish with Karatsuba. This
 // set of end conditions is more complicated than I had originally thought!
+#ifdef TRACE_TIMES
+            std::cout << "End bit is " << N << "*" << M << "\n";
+#endif // TRACE_TIMES
             if (5*N >= 4*M || N < KARASTART)
             {   std::memcpy(save, result, M*sizeof(Digit));
                 if (4*N > 5*M) toom32(a, N, b, M, result, workspace);
                 else if (N >= M) kara(a, N, b, M, result, workspace);
-                else if (N < KARASTART) simpleMul(a, N, b, M, result);
+// Now N < M so I need to flip order for the calls...
+                else if (N < KARASTART) simpleMul(b, M, a, N, result);
                 else kara(b, M, a, N, result, workspace);
-                addMdigits(workspace, M, result, step+M);
+                addMdigits(workspace, M, result, N+M);
 #ifdef TRACE_TIMES
+                display("resulthere", result, N+M);
                 displayIndent -= 2;
 #endif // TRACE_TIMES
                 return;
@@ -1094,6 +1120,9 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
             else
             {
 // If N<M I flip the order of the arguments (and recompute step).
+#ifdef TRACE_TIMES
+                std::cout << "% Flip N and M\n";
+#endif // TRACE_TIMES
                 std::swap(a, b);
                 std::swap(N, M);
                 step = (3*M)/2;
@@ -1196,6 +1225,17 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 #ifdef DEBUG
     assert(aHighLen <= toomLen);
 #endif // DEBUG
+#ifdef TRACE_TIMES
+    std::cout << "%" << N << " = " << aHighLen << "+" << (2*toomLen) << "\n";
+    std::cout << "%" << M << " = " << bHighLen << "+" << toomLen << "\n";
+    display("tooma", a, N);
+    display("toomb", b, M);
+    display("ahigh", a+2*toomLen, aHighLen);
+    display("amid",  a+toomLen,   toomLen);
+    display("alow",  a,           toomLen);
+    display("bhigh", b+toomLen,   bHighLen);
+    display("blow",  b,           toomLen);
+#endif // TRACE_TIMES
     ConstDigitPtr aLow = a;
     ConstDigitPtr aMid = a + toomLen;
     ConstDigitPtr aHigh = aMid + toomLen;
@@ -1232,6 +1272,12 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     aSumTop += karaAdd(aMid, toomLen, aSum, toomLen, aSum);
     bSumTop = karaAdd(bLow, toomLen, bHigh, bHighLen, bSum);
     bDiffTop = -karaSubtract(bLow, toomLen, bHigh, bHighLen, bDiff);
+#ifdef TRACE_TIMES
+    display("asum", aSumTop, aSum, toomLen);
+    display("adiff", aDiffTop, aDiff, toomLen);
+    display("bsum", bSumTop, bSum, toomLen);
+    display("bdiff", bDiffTop, bDiff, toomLen);
+#endif // TRACE_TIMES
     if constexpr (thread)
     {   std::size_t wsize = workspaceSize(toomLen);
         setupKara(driverData.wd_2, aLow, toomLen, bLow, toomLen, D0,
@@ -1309,6 +1355,10 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 //      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
 // noting that aDiffTop and bDiffTop are signed values.
     }
+#ifdef TRACE_TIMES
+    display("sumprod", D1, 2*toomLen);
+    display("diffprod", D2, 2*toomLen);
+#endif // TRACE_TIMES
     D1Top = 0;
     switch (aSumTop)
     {   case 2:
@@ -1342,22 +1392,42 @@ static void toom32(ConstDigitPtr a, std::size_t N,
         break;
     }
     D2Top += aDiffTop*bDiffTop;   
+#ifdef TRACE_TIMES
+    display("sumprod1", D1Top, D1, 2*toomLen);
+    display("diffprod1", D2Top, D2, 2*toomLen);
+#endif // TRACE_TIMES
 // Now set D1 = D1-D2, D2=D1+D2
     Digit carry, borrow;
     karaDifferenceAndSum(D1, D2, 2*toomLen, carry, borrow);
     SignedDigit tempD1Top = D1Top - D2Top - borrow;
     D2Top = D1Top + D2Top + carry;
     D1Top = tempD1Top;
+#ifdef TRACE_TIMES
+    display("diff", D1Top, D1, 2*toomLen);
+    display("sum", D2Top, D2, 2*toomLen);
+#endif // TRACE_TIMES
 // Halve both of these
     D1Top = karaHalve(D1Top, D1, 2*toomLen);
     D2Top = karaHalve(D2Top, D2, 2*toomLen);
+#ifdef TRACE_TIMES
+    display("halfdiff", D1Top, D1, 2*toomLen);
+    display("halfsum", D2Top, D2, 2*toomLen);
+#endif // TRACE_TIMES
     if constexpr (!thread) // These already computed in the threaded version
     {   innerGeneralMul(aLow, toomLen, bLow, toomLen, D0, workspace);
         innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3, workspace);
     }
+#ifdef TRACE_TIMES
+    display("D0", D0, 2*toomLen);
+    display("D3", D3, aHighLen+bHighLen);
+#endif // TRACE_TIMES
 // I need to D1 -= D3; D2 -= D0;
     D1Top -= karaSubtract(D1, 2*toomLen, D3, aHighLen+bHighLen, D1);
     D2Top -= karaSubtract(D2, 2*toomLen, D0, 2*toomLen, D2);
+#ifdef TRACE_TIMES
+    display("fixedD1", D1, 2*toomLen);
+    display("fixedD2", D2, 2*toomLen);
+#endif // TRACE_TIMES
 // Now to assemble the final result I just need to cope with the fact
 // the the partial products P0, D1, D1 and P3 overlap.
 // So now I have
@@ -1381,6 +1451,9 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     else if (D1Top < 0) karaBorrow(-D1Top, res+3*toomLen);
     if (D2Top > 0)      karaCarry(D2Top, res+4*toomLen);
     else if (D2Top < 0) karaBorrow(-D2Top, res+4*toomLen);
+#ifdef TRACE_TIMES
+    display("result", res, M+N);
+#endif // TRACE_TIMES
 }
 
 [[gnu::always_inline]]

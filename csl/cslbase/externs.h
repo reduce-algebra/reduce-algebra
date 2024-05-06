@@ -384,7 +384,7 @@ extern uintptr_t vheapstart;
 extern uintptr_t vlen;
 extern uintptr_t vxor_chain;
 
-extern unsigned int gcTrace, gcStop, gcEvery;
+extern unsigned int gcTrace, gcStop, gcError, gcEvery;
 extern unsigned int gcNumber;
 
 #define GCTRACE (gcTrace!=0 && gcNumber>=gcTrace)

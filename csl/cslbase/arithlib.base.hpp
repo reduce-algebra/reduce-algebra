@@ -1,7 +1,6 @@
-// Bug in toom32 shown by script div.sh on may home machine as derived
-//   from clprl.tst with CHECK_TIMES=1 to trap it.
-// Unbalanced big multiply does not use threads
-// Setting thresholds KARASTART and KARABIG
+// Pending:
+//    Unbalanced big multiply does not use threads
+//    Setting thresholds KARASTART and KARABIG
 
 
 // Big Number arithmetic.                             A C Norman, 2019-2024
@@ -3142,6 +3141,9 @@ inline void display(const char* label,
             for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
             len = std::min(displayIndent, 7);
         }
+#ifdef DOTS
+        if (a[i-1] == 0) len += std::printf("................"); else
+#endif // DOTS
         len += std::printf("%.16" PRIx64, a[i-1]);
     }
     std::printf("$\n\n");

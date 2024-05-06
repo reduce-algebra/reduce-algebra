@@ -1395,6 +1395,7 @@ void inner_garbage_collect()
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = nil;
     WithinGarbageCollector noted;
+    if (gcNumber == gcError) aerror("garbage collector limit reached");
     if (gcNumber == gcStop) give_up("gcStop triggered");
 #ifdef EXTREME_DEBUG
     if (GCTRACE) displayAllPages("Start of GC");
