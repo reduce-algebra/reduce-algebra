@@ -4440,7 +4440,7 @@ LispObject Lexplodelc(LispObject env, LispObject a)
 LispObject Lexplodeuc(LispObject env, LispObject a)
 {   SingleValued fn;
     escaped_printing =
-        ecape_yes+escape_fold_up+escape_nolinebreak+escape_exploding;
+        escape_yes+escape_fold_up+escape_nolinebreak+escape_exploding;
     return explode(a);
 }
 

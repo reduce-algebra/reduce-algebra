@@ -15680,7 +15680,8 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
         workspace += M;
         size_t step = (3*M)/2;
 #ifdef TRACE_TIMES
-        std::cout << "% Will so a " << step << "*" << M << " toom32 to start\n";
+        std::cout << "% Will do a " << step << "*" << M << " toom32 to start";
+        std::cout << " [of " << N << "*" << M << "]\n";
 #endif // TRACE_TIMES
         toom32(a, step, b, M, result, workspace);
 #ifdef TRACE_TIMES
@@ -15835,8 +15836,9 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     assert(aHighLen <= toomLen);
 #endif // DEBUG
 #ifdef TRACE_TIMES
-    std::cout << "%" << N << " = " << aHighLen << "+" << (2*toomLen) << "\n";
-    std::cout << "%" << M << " = " << bHighLen << "+" << toomLen << "\n";
+    std::cout << "%" << N << " = " << toomLen << "+"
+                     << toomLen << "+" << aHighLen  << "\n";
+    std::cout << "%" << M << " = " << toomLen << "+" << bHighLen << "\n";
     display("tooma", a, N);
     display("toomb", b, M);
     display("ahigh", a+2*toomLen, aHighLen);
