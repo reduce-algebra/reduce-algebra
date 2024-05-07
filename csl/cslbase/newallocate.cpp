@@ -787,6 +787,26 @@ LispObject Lverbos(LispObject env, LispObject a)
     return fixnum_of_int(old_code);
 }
 
+LispObject Lgc_stop(LispObject env, LispObject a)
+// Exit the system at the start of GC N
+{   SingleValued fn;
+    int code;
+    if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
+    else code = gc_number+1;
+    gcStop = code;
+    return nil;
+}
+
+LispObject Lgc_error(LispObject env, LispObject a)
+// Raise an error at the start of GC N
+{   SingleValued fn;
+    int code;
+    if (is_fixnum(a)) code = static_cast<int>(int_of_fixnum(a));
+    else code = gc_number+1;
+    gcError = code;
+    return nil;
+}
+
 bool volatile already_in_gc;
 bool volatile interrupt_pending;
 bool pageFull;

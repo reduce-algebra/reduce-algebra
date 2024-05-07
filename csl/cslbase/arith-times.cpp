@@ -7002,6 +7002,9 @@ LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
 // quotient & remainder will be correct if a1 = a2*quo + rem and
 // also rem is between 0 and sign(a1)*|a2|
         LispObject xa1 = Plus::op(Times::op(a2, quo), rem);
+        LispObject xa1a = Plus::op(ClassicalTimes::op(a2, quo), rem);
+        if (xa1 != xa1a && !equal_fn(xa1, xa1a))
+            aerror2("multiplication failure", cons(a2, quo), cons(xa1, xa1a));
         if (a1 != xa1 && !equal_fn(a1, xa1))
             aerror2("quotient failure", cons(a1, a2), w);
         if (rem == fixnum_of_int(0)) return w; // zero remainder OK
@@ -7026,9 +7029,8 @@ LispObject Ndivide(LispObject env, LispObject a1, LispObject a2)
         }
         aerror2("quotient failure", cons(a1, a2), w);
     }
-#else // CHECK_TIMES
+#endif // CHECK_TIMES
     return Divide::op(a1, a2);
-#endif // CHECK_TIMES 
 }
 
 LispObject Nreciprocal(LispObject env, LispObject a1)

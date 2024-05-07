@@ -2003,7 +2003,7 @@ static void putc_utf8(int n)
         putc_stream(0x80 + (n & 0x3f), active_stream);
     }
     else
-    {   putc_stream(0xf0 + (n>>16), active_stream);
+    {   putc_stream(0xf0 + (n>>18), active_stream);
         putc_stream(0x80 + ((n>>12) & 0x3f), active_stream);
         putc_stream(0x80 + ((n>>6) & 0x3f), active_stream);
         putc_stream(0x80 + (n & 0x3f), active_stream);

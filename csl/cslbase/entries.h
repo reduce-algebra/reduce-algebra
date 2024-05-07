@@ -199,7 +199,9 @@ extern LispObject Lfloatp(LispObject env, LispObject a);
 extern LispObject Lfrexp(LispObject env, LispObject a);
 extern LispObject Lfuncall_1(LispObject env, LispObject fn);
 extern LispObject Lgc(LispObject env, LispObject a);
+extern LispObject Lgc_error(LispObject env, LispObject a);
 extern LispObject Lgc_forcer1(LispObject env, LispObject a);
+extern LispObject Lgc_stop(LispObject env, LispObject a);
 extern LispObject Lgensym0(LispObject env, LispObject a,
                            const char *s);
 extern LispObject Lgensym1(LispObject env, LispObject a); // OLD name
