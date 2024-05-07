@@ -44,6 +44,10 @@
 // #included here.
 //
 
+#if defined DEBUG && !defined CHECK_TIMES
+#define CHECK_TIMES 1
+#endif // DEBUG
+
 #include "headers.h"
 
 #include "arithlib.hpp"

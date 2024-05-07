@@ -16722,7 +16722,7 @@ inline Digit fastSlice(const std::uint64_t* u, size_t N,
     return hi;
 }
 
-// This is the main entrypoint to the integer multiplication code. It
+// This is the main entrypoint to the (big) integer multiplication code. It
 // takes two signed numbers and forms their product.
 
 inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
@@ -16733,6 +16733,16 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
 // and the length lenc returned but ensure that the top digit of the
 // product is not a redundant zero or -1.
     generalMul(a, lena, b, lenb, c);
+#ifdef CHECK_TIMES
+    {   stkvector<Digit> c1(lena+lenb);
+        verySimpleMul(a, lena, b, lenb, c1);
+        for (size_t i=0; i<lena+lenb; i++)
+        {   if (c[i] != c1[i])
+            {   arithlib_abort("failure in multiplication");
+            }
+        }
+    }
+#endif // CHECK_TIMES
     if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
     if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
     lena += lenb;
