@@ -15680,7 +15680,8 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
         workspace += M;
         size_t step = (3*M)/2;
 #ifdef TRACE_TIMES
-        std::cout << "% Will so a " << step << "*" << M << " toom32 to start\n";
+        std::cout << "% Will do a " << step << "*" << M << " toom32 to start";
+        std::cout << " [of " << N << "*" << M << "]\n";
 #endif // TRACE_TIMES
         toom32(a, step, b, M, result, workspace);
 #ifdef TRACE_TIMES
@@ -15835,8 +15836,9 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     assert(aHighLen <= toomLen);
 #endif // DEBUG
 #ifdef TRACE_TIMES
-    std::cout << "%" << N << " = " << aHighLen << "+" << (2*toomLen) << "\n";
-    std::cout << "%" << M << " = " << bHighLen << "+" << toomLen << "\n";
+    std::cout << "%" << N << " = " << toomLen << "+"
+                     << toomLen << "+" << aHighLen  << "\n";
+    std::cout << "%" << M << " = " << toomLen << "+" << bHighLen << "\n";
     display("tooma", a, N);
     display("toomb", b, M);
     display("ahigh", a+2*toomLen, aHighLen);
@@ -16722,7 +16724,7 @@ inline Digit fastSlice(const std::uint64_t* u, size_t N,
     return hi;
 }
 
-// This is the main entrypoint to the integer multiplication code. It
+// This is the main entrypoint to the (big) integer multiplication code. It
 // takes two signed numbers and forms their product.
 
 inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
@@ -16733,6 +16735,16 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
 // and the length lenc returned but ensure that the top digit of the
 // product is not a redundant zero or -1.
     generalMul(a, lena, b, lenb, c);
+#ifdef CHECK_TIMES
+    {   stkvector<Digit> c1(lena+lenb);
+        verySimpleMul(a, lena, b, lenb, c1);
+        for (size_t i=0; i<lena+lenb; i++)
+        {   if (c[i] != c1[i])
+            {   arithlib_abort("failure in multiplication");
+            }
+        }
+    }
+#endif // CHECK_TIMES
     if (negative(a[lena-1])) subtractWithBorrow(c+lena, b, c+lena, lenb);
     if (negative(b[lenb-1])) subtractWithBorrow(c+lenb, a, c+lenb, lena);
     lena += lenb;

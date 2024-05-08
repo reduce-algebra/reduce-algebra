@@ -2971,11 +2971,11 @@ restart:
                     len -= CELL;
 // A horrid case here - digits are special at the start of names so need
 // escaping with a "!" there even though they do not within the body of the
-// symbol. In Stanndard Lisp the same is true for "_" and in Common Lisp
+// symbol. In Standard Lisp the same is true for "_" and in Common Lisp
 // for ".".
                     if (len > 0)
                     {   int ch = celt(u, 0);
-                        if (escaped_printing & escape_yes &&
+                        if ((escaped_printing&escape_yes) &&
                             (std::isdigit(static_cast<unsigned char>(ch))
 #ifdef COMMON
                              || (ch=='.')
@@ -3018,7 +3018,8 @@ restart:
 // the u+10000 and above range (or vice versa).
                                  (!is_constituent(ch) ||
 #ifdef COMMON
-                                  (ch=='.' || ch=='\\' || ch=='|' || ch==':') ||
+                                  ch=='.' || ch=='\\' ||
+                                  ch=='|' || ch==':' ||
 #endif
                                   (raised < 0 && std::isupper(static_cast<unsigned char>(ch))) ||
                                   (raised > 0 &&
@@ -3068,8 +3069,9 @@ restart:
 #ifndef COMMON
                     if (len > 0)
                     {   int ch = celt(u, 0);
-                        if (ch == '_' ||
-                            (ch >= '0' && ch <= '9'))
+                        if ((escaped_printing&escape_yes) &&
+                            (ch == '_' ||
+                             (ch >= '0' && ch <= '9')))
                             putc_stream(ESCAPE_CHAR, active_stream);
                     }
 #endif
@@ -3080,9 +3082,10 @@ restart:
                         if (ch == '\\' || ch=='|')
                             putc_stream(ESCAPE_CHAR, active_stream);
 #else
-// If I am case folding then I hope I am not also putting in escape
-// marks. Well at present I will NEVER combine escape_fold_xxx with
-// escape_yes, so I am safe here!
+// If I am case folding then I will avoid putting in escape marks on letters,
+// even though !*raise or !*lower would alter them on re-input. If however
+// I am not case folding I will escape letters that the current setting of
+// !*raise and !*lower would fold.
                         if (!(escaped_printing &
                               (escape_fold_down | escape_fold_up |
                                escape_capitalize)) &&
@@ -3090,6 +3093,10 @@ restart:
                              !is_constituent(ch) ||
                              (raised < 0 && std::isupper(static_cast<unsigned char>(ch))) ||
                              (raised > 0 && std::islower(static_cast<unsigned char>(ch)))))
+                            putc_stream(ESCAPE_CHAR, active_stream);
+// Now what I do if I am case-folding...
+                         else if ((escaped_printing&escape_yes) &&
+                                  (ch > 0x7f || !is_constituent(ch)))
                             putc_stream(ESCAPE_CHAR, active_stream);
 #endif
 // If I am case-folding I may need to extract an utf-8 multi-byte
@@ -4413,15 +4420,27 @@ LispObject Lexplodec(LispObject env, LispObject a)
 
 LispObject Lexplode2lc(LispObject env, LispObject a)
 {   SingleValued fn;
-    escaped_printing = escape_fold_down+escape_nolinebreak
-                       +escape_exploding;
+    escaped_printing = escape_fold_down+escape_nolinebreak+escape_exploding;
     return explode(a);
 }
 
 LispObject Lexplode2uc(LispObject env, LispObject a)
 {   SingleValued fn;
-    escaped_printing = escape_fold_up+escape_nolinebreak
-                       +escape_exploding;
+    escaped_printing = escape_fold_up+escape_nolinebreak+escape_exploding;
+    return explode(a);
+}
+
+LispObject Lexplodelc(LispObject env, LispObject a)
+{   SingleValued fn;
+    escaped_printing =
+        escape_yes+escape_fold_down+escape_nolinebreak+escape_exploding;
+    return explode(a);
+}
+
+LispObject Lexplodeuc(LispObject env, LispObject a)
+{   SingleValued fn;
+    escaped_printing =
+        escape_yes+escape_fold_up+escape_nolinebreak+escape_exploding;
     return explode(a);
 }
 
@@ -5664,6 +5683,8 @@ setup_type const print_setup[] =
     DEF_1("explode2",             Lexplodec),
     DEF_1("explode2lc",           Lexplode2lc),
     DEF_1("explode2uc",           Lexplode2uc),
+    DEF_1("explodelc",            Lexplodelc),
+    DEF_1("explodeuc",            Lexplodeuc),
     DEF_1("exploden",             Lexploden),
     DEF_1("explodecn",            Lexplodecn),
     DEF_1("explode2n",            Lexplodecn),
