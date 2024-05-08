@@ -216,6 +216,40 @@ int main(int argc, char *argv[])
     const std::uint64_t MULT = 6364136223846793005U;
     const std::uint64_t ADD  = 1442695040888963407U;
 
+// I will start with a quickish validation of multilication since that
+// underpins so much else.
+    {   std::uint64_t a[2000], b[2000], c[5000], c1[5000];
+        for (size_t K=10; K<350; K++)
+        for (size_t N=1; N<K; N++)
+        {   size_t M=K-N;
+            for (size_t i=0; i<N; i++)
+            {   a[i] = 1LL<<(mersenne_twister()%64);
+                if (i!=N-1 && mersenne_twister()%100 > 20) a[i] = 0;
+            }
+            for (size_t i=0; i<M; i++)
+            {   b[i] = 1LL<<(mersenne_twister()%64);
+                if (i!=M-1 && mersenne_twister()%100 > 20) b[i] = 0;
+            }
+            size_t lenc, lenc1;
+            std::cout << "%%%% try " << N << "*" << M << "\n";
+            arithlib_implementation::bigmultiply(
+                a, N, b, M, c, lenc);
+            referencemultiply(
+                a, N, b, M, c1, lenc1);
+            bool ok = (lenc == lenc1);
+            for (size_t i=0; i<lenc; i++)
+                if (c[i] != c1[i]) ok = false;
+            if (ok) continue;
+            std::cout << "\nFailed on " << N << "*" << M << "\n";
+            display("a", a, N);
+            display("b", b, M);
+            display("c ", c, lenc);
+            display("c1", c1, lenc1);
+            std::abort();
+        }
+    }
+    std::cout << "simple tests of multiplication complete\n";
+
 #ifdef COMPARE_GMP
 
     {   const std::size_t table_size = 300;
