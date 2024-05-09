@@ -7920,7 +7920,12 @@ inline void bigmultiply(const std::uint64_t* a, std::size_t lena,
         verySimpleMul(a, lena, b, lenb, c1);
         for (size_t i=0; i<lena+lenb; i++)
         {   if (c[i] != c1[i])
-            {   arithlib_abort("failure in multiplication");
+            {   std::cout << "\n% CHECK_TIMES\n";
+                display("a", a, lena);
+                display("b", b, lenb);
+                display("true", c1, lena+lenb);
+                display("mine", c, lena+lenb);
+                arithlib_abort("failure in multiplication");
             }
         }
     }
