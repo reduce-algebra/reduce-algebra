@@ -2,7 +2,7 @@
     <div class="sticky-top">
         <ul>
             <?php
-            navMenuItem('/index.php', 'Home', 'The REDUCE Computer Algebra System');
+            navMenuItem('/', 'Home', 'The REDUCE Computer Algebra System');
             navMenuItem('/features.php', 'Features', 'REDUCE features and design characteristics');
             navMenuItem('/obtaining.php', 'Obtain and Run', 'How to download, install and run REDUCE');
             navMenuItem('/documentation.php', 'Documentation', 'User guides for REDUCE, its packages and Lisp systems');

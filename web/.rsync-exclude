@@ -5,7 +5,7 @@ copy-manual.sh
 README*
 LICENSE
 htdocs/manual/
-htdocs/web-reduce/Notes.txt
+htdocs/web-reduce/Notes.md
 htdocs/web-reduce/emscripten/
 htdocs/web-reduce/gnuplot/Makefile
 htdocs/web-reduce/node_modules/
