@@ -115,7 +115,7 @@ arithtest:	arithtest.cpp arithlib.hpp
 .PRECIOUS:	arithtestg
 arithtestg:	arithtest.cpp arithlib.hpp
 	time g++ -O0 -g -std=gnu++17 $(MACFLAGS) arithtest.cpp \
-		-DTRACE_TIMES=1 -DCHECK_TIMES=1 -DDEBUG=1 $(LIBS) \
+		-DDEBUG=1 $(LIBS) \
 		-o arithtestg
 # If one runs arithtest without a command line paramater it should seed
 # its random number generator in an unpredictable way. Specifing an integer

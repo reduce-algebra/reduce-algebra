@@ -1,8 +1,6 @@
-// Pending:
-//    Unbalanced big multiply does not use threads
-//    Setting thresholds KARASTART and KARABIG
-
-
+#ifdef DEBUG
+#define TRACE_TIMES 1
+#endif
 // Big Number arithmetic.                             A C Norman, 2019-2024
 
 // To use this, go "#include "arithlib.hpp".
@@ -471,6 +469,7 @@
 #include <mutex>
 #include <atomic>
 #include <vector>
+#include <unordered_map>
 #include <type_traits>
 
 #include "acnutil.h"
@@ -2398,7 +2397,7 @@ inline string_handle bignumToStringBinary(std::intptr_t aa);
 class Bignum;
 
 inline int displayIndent = 0;
-inline void display(const char& label,
+inline void display(const char* label,
                     const std::uint64_t* a,
                     std::size_t lena);
 inline void display(const char* label, std::intptr_t a);
@@ -2410,7 +2409,7 @@ inline void display(std::string label,
 inline void display(std::string label, std::intptr_t a);
 inline void display(std::string label, const Bignum& a);
 
-inline void display(const char& label,
+inline void display(const char* label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena);
@@ -2418,6 +2417,13 @@ inline void display(std::string label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena);
+inline void display(std::string label);
+inline void display(const char* label);
+inline void display1(std::string label, std::size_t a);
+inline void display1(const char* label, std::size_t a);
+inline void display2(std::string label, std::size_t a, std::size_t b);
+inline void display2(const char* label, std::size_t a, std::size_t b);
+
 
 //=========================================================================
 //=========================================================================
@@ -3119,11 +3125,32 @@ inline void display(const char* label,
 {   display(label, 0, a, lena);
 }
 
+// I want to annotate some trace or debug output with the identity of the
+// thread involved. A C++ thread identifier is a type that does not have
+// a neat printed representation, so here I arrange that when I want to
+// display one I allocate a small integer.
+
+inline unsigned int nextThreadId = 1;
+inline std::unordered_map<std::thread::id, unsigned int> threadIdTable;
+
+inline unsigned int getTidyThreadId()
+{   unsigned int res;
+    auto id = std::this_thread::get_id();
+    if (threadIdTable.count(id) == 0)
+        threadIdTable[id] = res = nextThreadId++;
+    else res = threadIdTable[id];
+    return res;
+}
+
 inline void display(const char* label,
                     SignedDigit top,
                     const std::uint64_t* a,
                     std::size_t lena)
-{   for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
+{   const char** where;
+    std::lock_guard<std::mutex> lock(
+        arithlib_implementation::diagnostic_mutex(&where));
+    std:printf("[%u]", getTidyThreadId());
+    for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
     int len = std::min(displayIndent, 7) + std::printf("%s := 0x", label);
     if (top >= 0)
         len += std::printf("%" PRIx64, top);
@@ -3150,7 +3177,11 @@ inline void display(const char* label,
 }
 
 inline void display(const char* label, std::intptr_t a)
-{   if (storedAsFixnum(a))
+{   const char** where;
+    std::lock_guard<std::mutex> lock(
+        arithlib_implementation::diagnostic_mutex(&where));
+    std:printf("[%u]", getTidyThreadId());
+    if (storedAsFixnum(a))
     {   for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
         std::cout << label << " := " << std::hex
                   << "0x" << intOfHandle(a) << std::dec << "$\n\n";
@@ -3185,6 +3216,42 @@ inline void display(std::string label, std::intptr_t a)
 
 inline void display(std::string label, const Bignum& a)
 {   display(label.c_str(), a);
+}
+
+inline void display(const char* label)
+{   const char** where;
+    std::lock_guard<std::mutex> lock(
+        arithlib_implementation::diagnostic_mutex(&where));
+    std:printf("[%u] %s\n", getTidyThreadId(), label);
+}
+
+inline void display1(const char* label, std::size_t a)
+{   const char** where;
+    std::lock_guard<std::mutex> lock(
+        arithlib_implementation::diagnostic_mutex(&where));
+    std:printf("[%u] %s %" PRIu64 "\n", getTidyThreadId(),
+               label, (std::uint64_t)a);
+}
+
+inline void display2(const char* label, std::size_t a, std::size_t b)
+{   const char** where;
+    std::lock_guard<std::mutex> lock(
+        arithlib_implementation::diagnostic_mutex(&where));
+    std:printf("[%u] %s %" PRIu64 " %" PRIu64 "\n", getTidyThreadId(),
+               label, (std::uint64_t)a, (std::uint64_t)b);
+}
+
+
+inline void display(std::string label)
+{   display(label.c_str());
+}
+
+inline void display1(std::string label, std::size_t a)
+{   display1(label.c_str(), a);
+}
+
+inline void display2(std::string label, std::size_t a, std::size_t b)
+{   display2(label.c_str(), a, b);
 }
 
 
@@ -3392,8 +3459,8 @@ inline unsigned int logNextPowerOf2(std::size_t n)
 
 [[gnu::always_inline]]
 inline Digit addWithCarry(Digit a1,
-                                  Digit a2,
-                                  Digit &r)
+                          Digit a2,
+                          Digit &r)
 {   return static_cast<Digit>(__builtin_add_overflow(a1, a2, &r));
 }
 
@@ -3404,9 +3471,9 @@ inline Digit addWithCarry(Digit a1,
 
 [[gnu::always_inline]]
 inline Digit addWithCarry(Digit a1,
-                                  Digit a2,
-                                  Digit carry_in,
-                                  Digit &r)
+                          Digit a2,
+                          Digit carry_in,
+                          Digit &r)
 {   Digit w;
     Digit c1 = addWithCarry(a1, carry_in, w);
     return c1 + addWithCarry(w, a2, r);
@@ -3418,16 +3485,16 @@ inline Digit addWithCarry(Digit a1,
 
 [[gnu::always_inline]]
 inline Digit subtractWithBorrow(Digit a1,
-                                        Digit a2,
-                                        Digit &r)
+                                Digit a2,
+                                Digit &r)
 {   return static_cast<Digit>(__builtin_sub_overflow(a1, a2, &r));
 }
 
 [[gnu::always_inline]]
 inline Digit subtractWithBorrow(Digit a1,
-                                        Digit a2,
-                                        Digit borrow_in,
-                                        Digit &r)
+                                Digit a2,
+                                Digit borrow_in,
+                                Digit &r)
 {   Digit w;
     int b1 = subtractWithBorrow(a1, borrow_in, w);
     return b1 + subtractWithBorrow(w, a2, r);
@@ -3439,8 +3506,11 @@ inline Digit subtractWithBorrow(Digit a1,
 // If I have a type "__int128", as will often be the case when using gcc,
 // this is very easy to express. Otherwise I split the two inputs into
 // 32-bit halves, do 4 multiplications and some additions to construct
-// the result. At least I can keep the code portable, even if I can then
-// worry about performance a bit.
+// the result. My belief is that any platform that supports 128-bit
+// integers will define __SIZEOF_INT128__ (that is certainly the case
+// with gcc on cygwin and 64-bit ARM and with clang on a Mac m1).
+// If that is not defined I will suppose that I need to write the
+// calculations out in terms of 64-bit arithmetic.
 
 #ifdef __SIZEOF_INT128__
 
@@ -3474,6 +3544,7 @@ inline UINT128 pack128(Digit hi, Digit lo)
 {   return (static_cast<UINT128>(hi)<<64) | lo;
 }
 
+[[gnu::always_inline]]
 inline void multiply64(Digit a, Digit b,
                        Digit &hi, Digit &lo)
 {   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b);
@@ -3485,6 +3556,7 @@ inline void multiply64(Digit a, Digit b,
 // the 128-bit result. Both hi and lo are only updated at the end
 // of this, and so they are allowed to be the same as other arguments.
 
+[[gnu::always_inline]]
 inline void multiply64(Digit a, Digit b,
                        Digit c,
                        Digit &hi, Digit &lo)
@@ -3494,6 +3566,7 @@ inline void multiply64(Digit a, Digit b,
     lo = static_cast<Digit>(r);
 }
 
+[[gnu::always_inline]]
 inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              SignedDigit &hi, Digit &lo)
 {   INT128 r = static_cast<INT128>(a)*static_cast<INT128>(b);
@@ -3501,6 +3574,7 @@ inline void signedMultiply64(SignedDigit a, SignedDigit b,
     lo = static_cast<Digit>(r);
 }
 
+[[gnu::always_inline]]
 inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              Digit c,
                              SignedDigit &hi, Digit &lo)
@@ -3515,6 +3589,7 @@ inline void signedMultiply64(SignedDigit a, SignedDigit b,
 // version of the code that is able to use __int128 can serve as clean
 // documentation of the intent.
 
+[[gnu::always_inline]]
 inline void divide64(Digit hi, Digit lo,
                      Digit divisor,
                      Digit &q, Digit &r)
@@ -3585,6 +3660,7 @@ inline void multiply64(Digit a, Digit b,
     lo = u0;
 }
 
+[[gnu::always_inline]]
 inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              SignedDigit &hi, Digit &lo)
 {   Digit h, l;
@@ -3596,6 +3672,7 @@ inline void signedMultiply64(SignedDigit a, SignedDigit b,
     lo = l;
 }
 
+[[gnu::always_inline]]
 inline void signedMultiply64(SignedDigit a, SignedDigit b,
                              Digit c,
                              SignedDigit &hi, Digit &lo)

@@ -43,22 +43,18 @@
 #include <cassert>
 #include <cstdint>
 
-#define KARATSUBA_START_EVEN start_even
-#define KARATSUBA_START_ODD  start_odd
-#define PARAKARA_START       start_parallel
+#define KSTART     start
+#define KBIG       start_parallel
 
-size_t start_even,     // = DEFAULT_KARATSUBA_START_EVEN,
-       start_odd,      // = DEFAULT_KARATSUBA_START_ODD,
-       start_parallel; // = DEFAULT_KARATSUBA_PARALLEL;
+size_t start, start_parallel;
 
-// This progran is intended to help select good values for the above
-// three parameters in arithlib.hpp.
+// This program is intended to help select good values for the above
+// parameters in arithlib.hpp.
 // When performing a multiplication on a pair of N digit numbers (where each
 // digit is 64 bits) the code uses classical long multiplication for
-// small N. If N is even then from N=KARATSUBA_START_EVEN upwards it
-// uses Karatsuba. Similarly for N odd. At what will typically be a much
-// higher length it will start to use a pair of worker threads to get the
-// 3 multiplications that come from a top-level decomposition done in
+// small N. From N=KSTART upwards it uses Karatsuba. At what will typically
+// be a much higher length it will start to use a pair of worker threads to
+// get the 3 multiplications that come from a top-level decomposition done in
 // parallel.
 
 // This runs tests for a range of integer sizes. For each size that it
@@ -71,16 +67,16 @@ size_t start_even,     // = DEFAULT_KARATSUBA_START_EVEN,
 // If I set limits over 27 then after a single decomposition things will
 // go no futher. If I allow a split into 27+27 the next place I can
 // block would be with a threshold over 14
-//     START_EVEN   START_ODD  START_PARALLEL
-//       999          999       999            no decomposition
-//        28           28       999 or 54      54->27
-//        15           14       999 or 54      54->27->14
-//         8            8       999 or 54      54->27->14->7
+//     START    N   START_PARALLEL
+//       999         999            no decomposition
+//        28         999 or 54      54->27
+//        15         999 or 54      54->27->14
+//         8         999 or 54      54->27->14->7
 // For each of those apart from the "no decompostion" case the top level
 // decomposition may or may not be performed using threads.
 //
 // I will also have a default setting for the three thresholds where for
-// amy particular N its behavior will match one of the ones suggested
+// any particular N its behavior will match one of the ones suggested
 // above. I will always run that test and annotate its timings with "<<<<<".
 // If my defaults are good that line of measurement will show the shortest
 // time (within normal measurement levels of uncertainty).
@@ -103,26 +99,28 @@ bool sizeorder(uint64_t a, uint64_t b)
            ((b & 0x3ff) + ((b>>10) & 0x3ff) + ((b>>20) & 0x3ff));
 }
 
-size_t pack(size_t even, size_t odd, size_t parallel)
-{   return even + (odd<<10) + (parallel<<20); 
+size_t pack(size_t even, size_t parallel)
+{   return even + (parallel<<20); 
 }
+
+#define DEFAULT_KARATSUBA_START 15
+#define DEFAULT_KARATSUBA_START_PARALLEL 160
 
 void fillInSpecials(size_t N)
 {   special.clear();
-    special.push_back(pack(999, 999, 999));
-    special.push_back(pack(DEFAULT_KARATSUBA_START_EVEN,
-                           DEFAULT_KARATSUBA_START_ODD,
+    special.push_back(pack(999, 999));
+    special.push_back(pack(DEFAULT_KARATSUBA_START,
                            DEFAULT_KARATSUBA_START_PARALLEL));
     size_t topN = N;
     while (N > 6)
     {   N = (N+1)/2;
-        special.push_back(pack(N+1, N+1, 999));
-        special.push_back(pack(N+2, N+2, 999));
-        special.push_back(pack(N+3, N+3, 999));
-        special.push_back(pack(N+4, N+4, 999));
+        special.push_back(pack(N+1, 999));
+        special.push_back(pack(N+2, 999));
+        special.push_back(pack(N+3, 999));
+        special.push_back(pack(N+4, 999));
 // I will take the view that trying threads on less than 80 digits will
 // be over-costly.
-        if (topN >= 80) special.push_back(pack(N+1, N+1, topN));
+        if (topN >= 80) special.push_back(pack(N+1, topN));
     }
     sort(special.begin(), special.end(), sizeorder);
 }
@@ -148,9 +146,8 @@ int main(int argc, char *argv[])
 
 // For multiplication of two numbers each with N digits there can be
 // various special values for the Karatsuba thresholds.
-// If N is even then start_even being N vs any value bigger than that
-// will impact the first level of decomposition. Similarly if N is
-// odd then start_odd will.
+// For any N start being N vs any value bigger than that
+// will impact the first level of decomposition.
 // Then in addition to that all values that are special for (N+1)/2 will
 // also apply.
 
@@ -160,11 +157,9 @@ int main(int argc, char *argv[])
         cout << "\n" << N  << " words\n";
         fillInSpecials(N+3);
         for (auto packed:special)
-        {   start_even = packed&0x3ff;
-            start_odd = (packed>>10) & 0x3ff;
+        {   start = packed&0x3ff;
             start_parallel = (packed>>20) & 0x3ff;
-            cout <<   "start_even = " << setw(3) << start_even
-                 << "  start_odd = " << setw(3) << start_odd
+            cout <<   "start = " << setw(3) << start
                  << "  start_parallel = " << setw(3) << start_parallel
                  << "     ";
             reseed(seed);
@@ -212,8 +207,7 @@ int main(int argc, char *argv[])
             timing =
                 chrono::duration_cast<chrono::nanoseconds>(elapsed);
             cout << setprecision(3) << (timing.count()/1.0e9) << " sec";
-            if (packed == pack(DEFAULT_KARATSUBA_START_EVEN,
-                               DEFAULT_KARATSUBA_START_ODD,
+            if (packed == pack(DEFAULT_KARATSUBA_START,
                                DEFAULT_KARATSUBA_START_PARALLEL))
                 cout << "  <<<<\n";
             else cout << "\n";

@@ -1,4 +1,4 @@
-// A second (or third!) attempt at general multiplication for large
+
 // integers.
 
 // Overall plan:
@@ -385,13 +385,15 @@ class ManageWorkers
 public:
     static std::atomic<bool> threadsInUse;
     bool mayUseThreads;
+    [[gnu::always_inline]]
     ManageWorkers()
     {   bool expected = false;
         mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
 #ifdef MEASURE_WORKSPACE
         mayUseThreads = false;
 #endif // MEASURE_THREADS
-   }
+    }
+    [[gnu::always_inline]]
     ~ManageWorkers()
     {   if (mayUseThreads) threadsInUse.store(false);
     }
@@ -427,7 +429,7 @@ class BigMultiplication
 // will succeed in the compare_exchange and use concurrency only starting
 // at its level.
 
-private:
+public:
 
 // Multiplications where M and N are both no more than than 7
 // are done by unrolled and inlined special code.
@@ -440,25 +442,49 @@ private:
 
 static const std::size_t MUL_INLINE_LIMIT = 7;
 
-#ifdef KSTART
-static const std::size_t KARASTART        = KSTART;
-#else
-static const std::size_t KARASTART        = 15;
+// The thresholds at which I transition from classical multiplication
+// to use of Karatsuba (and Toom-3-2) and the one where I activate
+// multiple thhreads may want to differ on different machines. I have
+// a range of settings with values based on measurements on machines I
+// have access to, but the values may well not be quite optimal even there
+// and my machines may not yield the experience that others will have!
+
+// By predefining preprocessor symbols KARASTART and KARABIG I can
+// override my defaults here.
+
+#ifndef KARASTART
+
+#if defined WIN32                             // Windows (x86_64)
+static const std::size_t KARASTART = 63;
+#elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
+static const std::size_t KARASTART = 15;
+#elif defined __ARM_ARCH_8A                   // Raspberry p 5
+static const std::size_t KARASTART = 15;
+#elif defined __ARM_ARCH                      // Other Raspberry pi etc
+static const std::size_t KARASTART = 15;
+#else                                         // other (eg generic Linux)
+static const std::size_t KARASTART = 15;
 #endif
 
-// I want the "half sized" multiplications to be large enough that
-// there is no need to try the heavily inlined tiny-case code. I want
-// this to apply to Toom as well.
+#endif // KARASTART
 
-static_assert((KARASTART+1)/2 > 7);
+#ifndef KARABIG
 
-#ifdef KBIG
-static const std::size_t KARABIG          = KBIG;
-#else
-static const std::size_t KARABIG          = 165;
+#if defined WIN32                             // Windows (x86_64)
+static const std::size_t KARABIG = 160;
+#elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
+static const std::size_t KARABIG = 160;
+#elif defined __ARM_ARCH_8A                   // Raspberry p 5
+static const std::size_t KARABIG = 160;
+#elif defined __ARM_ARCH                      // Other Raspberry pi etc
+static const std::size_t KARABIG = 160;
+#else                                         // other (eg generic Linux)
+static const std::size_t KARABIG = 160;
 #endif
 
-static_assert((KARABIG+1)/2 > KARASTART);
+#endif // KARABIG
+
+private:
 
 // The test code activated via MEASURE_WORKSPACE shows that the
 // amount of workspace is bounded by 6*M where M is the smaller of
@@ -466,45 +492,20 @@ static_assert((KARABIG+1)/2 > KARASTART);
 // a great many small to fairly large cases. Well actually it shows a
 // multiplier not much larger than 5.
 
+[[gnu::always_inline]]
 static std::size_t workspaceSize(std::size_t M)
 {   return 6*M;
 }
 
-// At the top level toom32p() can use a little over 7*L workspace for
+// At the top level toom32<true>() can use a little over 7*L workspace for
 // itself, where L=max(N/3,M/2). But N<=1.85*M and M is large enough that
 // I will ignore rounding. Then plus the need for four parallel
 // sub-multiplications. I will use a rounded up 2M/3 as my bound on L.
 
+[[gnu::always_inline]]
 static std::size_t topWorkspaceSize(std::size_t M)
 {   size_t toomLen = (2*M+2)/3;
     return 7*toomLen + 4*workspaceSize(toomLen);
-}
-
-// Set (hi,lo) to the 128-bit product of a by b.
-
-// Ha ha - because this is a method defined within a class the word
-// "static" implies "inline" in that the class definition may be included
-// in multiple compilation units but only one copy of the method is liable
-// to arise.
-
-static void oneWordMul(std::uint64_t a, std::uint64_t b,
-                       std::uint64_t &hi, std::uint64_t &lo)
-{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b);
-    hi = static_cast<std::uint64_t>(r >> 64);
-    lo = static_cast<std::uint64_t>(r);
-}
-
-// Now much the same but forming a*b+c. Note that this can not overflow
-// the 128-bit result. Both hi and lo are only updated at the end
-// of this, and so they are allowed to be the same as input arguments.
-
-static void oneWordMul(std::uint64_t a, std::uint64_t b,
-                       std::uint64_t c,
-                       std::uint64_t &hi, std::uint64_t &lo)
-{   UINT128 r = static_cast<UINT128>(a)*static_cast<UINT128>(b) +
-                static_cast<UINT128>(c);
-    hi = static_cast<std::uint64_t>(r >> 64);
-    lo = static_cast<std::uint64_t>(r);
 }
 
 public:
@@ -522,7 +523,7 @@ static void verySimpleMul(ConstDigitPtr a, std::size_t N,
         {   if (k < i) continue;
             if (k-i >= M) continue;
             Digit hi1;
-            oneWordMul(a[i], b[k-i], lo, hi1, lo);
+            multiply64(a[i], b[k-i], lo, hi1, lo);
             carry += ((hi += hi1) < hi1);
         }
         result[k] = lo;
@@ -560,23 +561,27 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 // For this I will require N>=M
     Digit carry = 0, lo, hi = 0, hi1;
 // The lowest Digit can be handled specially to get things going.
-    oneWordMul(a[0], b[0], lo, result[0]);
+    multiply64(a[0], b[0], lo, result[0]);
     std::size_t k=1;
     for (; k<M; k++)
     {   std::size_t i;
 // Here I want k<M<=N so certainly if i<k then i<N
+//@@ The code shown with "//@@" here is the simple presentation of this
+//@@ loop, but the actual code unrolls the loop so that two steps are
+//@@ taken in each iteration (and potentially a final one is needed at
+//@@ the end. This is done to reduce loop overhead.
 //@@    for (i=0; i<=k; i++)
-//@@    {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+//@@    {   multiply64(a[i], b[k-i], lo, hi1, lo);
 //@@        carry += addWithCarry(hi, hi1, hi);
 //@@    }
         for (i=0; i<=k-1; i+=2)
-        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+        {   multiply64(a[i], b[k-i], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
-            oneWordMul(a[i+1], b[k-i-1], lo, hi1, lo);
+            multiply64(a[i+1], b[k-i-1], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
         }
         if (i<=k)
-        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+        {   multiply64(a[i], b[k-i], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
         }
         result[k] = lo;
@@ -591,18 +596,18 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
 //@@    {
 //@@ // Ha ha in this loop I iterate on j=k-i which makes the loop
 //@@ // just a little nicer to express.
-//@@        oneWordMul(a[k-j], b[j], lo, hi1, lo);
+//@@        multiply64(a[k-j], b[j], lo, hi1, lo);
 //@@        carry += addWithCarry(hi, hi1, hi);
 //@@    }
         std::size_t j;
         for (j=0; j<M-1; j+=2)
-        {   oneWordMul(a[k-j], b[j], lo, hi1, lo);
+        {   multiply64(a[k-j], b[j], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
-            oneWordMul(a[k-j-1], b[j+1], lo, hi1, lo);
+            multiply64(a[k-j-1], b[j+1], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
         }
         if (j<M)
-        {   oneWordMul(a[k-j], b[j], lo, hi1, lo);
+        {   multiply64(a[k-j], b[j], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
         }
         result[k] = lo;
@@ -614,18 +619,18 @@ static void simpleMul(ConstDigitPtr a, std::size_t N,
     for (; k<N+M-1; k++)
     {
 //@@    for (std::size_t i=k+1-M; i<N; i++)
-//@@    {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+//@@    {   multiply64(a[i], b[k-i], lo, hi1, lo);
 //@@        carry += addWithCarry(hi, hi1, hi);
 //@@    }
         std::size_t i;
         for (i=k+1-M; i<N-1; i+=2)
-        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+        {   multiply64(a[i], b[k-i], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
-            oneWordMul(a[i+1], b[k-i-1], lo, hi1, lo);
+            multiply64(a[i+1], b[k-i-1], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
         }
         if (i<N)
-        {   oneWordMul(a[i], b[k-i], lo, hi1, lo);
+        {   multiply64(a[i], b[k-i], lo, hi1, lo);
             carry += addWithCarry(hi, hi1, hi);
         }
         result[k] = lo;
@@ -902,8 +907,19 @@ static bool absDifference(ConstDigitPtr low, std::size_t lenLow,
 // unsigned values. It tries to put simple cheap tests to spot
 // cheap cases inline and then dispatch to the separate procedures
 // that apply in each case.
-// The small cases covered here are liable to get expanded in line
-// in rather extreme manners!
+//
+// I make this function "always-inline" and what it expands to is
+// really just
+//     check for 1*1
+//     check for up to 7*7
+//     get args in correct order and check for 7*N
+//     check for cases where Karatsuba will not be needed
+//         special on N*N up to 14*14
+//         OR general case of classical numtiplication
+//     go to general harder case
+// where each of the above is a fairly simple test on the
+// size of the inputs and in each case the behaviour triggered is
+// to call a function that is not tagged as always-inline.
 
 public:
 
@@ -913,14 +929,13 @@ static void generalMul(ConstDigitPtr a, std::size_t N,
                        DigitPtr result)
 {
 #ifdef MEASURE_WORKSPACE
-//@@    std::cout << N << "*" << M << ". ";
     thisN = N;
     thisM = M;
-#endif // MEASURE_WOREKSPACE
+#endif // MEASURE_WORKSPACE
 // I take a view that case of single word multiplication as both so
 // special and so important that I do that in-line here.
     if ((N|M) == 1)
-    {   oneWordMul(a[0], b[0], 0, result[1], result[0]);
+    {   multiply64(a[0], b[0], 0, result[1], result[0]);
         return;
     }
 // I next have special treatment for all the cases where both M and N are
@@ -945,7 +960,7 @@ static void generalMul(ConstDigitPtr a, std::size_t N,
         return;
     }
     if (M < KARASTART)    // Too small for Karatsuba.
-    {   if (N==M && N<=14) balancedMul(a, b, N, result);
+    {   if (N==M) balancedMul(a, b, N, result);
         else simpleMul(a, N, b, M, result);
     }
     else biggerMul(a, N, b, M, result);
@@ -995,34 +1010,49 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
         workspaceBase = workspace;
 #endif // MEASURE_WORKSPACE
         if (manager.mayUseThreads)
-            unbalancedMul<true>(a, N, b, M, result, workspace);
-        else unbalancedMul(a, N, b, M, result, workspace);
+            innerGeneralMul<true>(a, N, b, M, result, workspace);
+        else innerGeneralMul(a, N, b, M, result, workspace);
 #ifdef TRACE_TIMES
         display("unbalancedres", result, N+M);
 #endif // TRACE_TIMES
     }
 }
 
-// The following overload is the one used in recursive calls (it has
-// workspace as its final argument). It is called when Kara or Toom32
-// recurses and so most of the time we will have M==N>KARASTART/2
+// When thread is false this is being used when Kara or Toom32
+// recurses and so most of the time we will have M==N>KARASTART/2. With
+// thread true it is from the top-level and may fire up some workers.
 
-// @@@ [[gnu::always_inline]]
+template <bool thread=false>
+[[gnu::always_inline]]
 static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
                             ConstDigitPtr b, std::size_t M,
                             DigitPtr result,
                             DigitPtr workspace)
 {
 #ifdef TRACE_TIMES
-    DigitPtr fullResult = result;
-    size_t fullSize = M+N;
     displayIndent += 2;
     display("innergenerala", a, N);
     display("innergeneralb", b, M);
+    displayIndent -= 2;
 #endif // TRACE_TIMES
-    if (N < M)
-    {   std::swap(a, b);
-        std::swap(N, M);
+    if constexpr (!thread)
+    {   if ((N|M) <= 7)
+        {   smallCaseMul(a, N, b, M, result);
+            return;
+        }
+        if (N < M)
+        {   std::swap(a, b);
+            std::swap(N, M);
+        }
+        if (M <= 7)
+        {   bigBySmallMul(a, N, b, M, result);
+            return;
+        }
+        if (M < KARASTART)    // Too small for Karatsuba.
+        {   if (N==M) balancedMul(a, b, N, result);
+            else simpleMul(a, N, b, M, result);
+            return;
+        }
     }
 #ifdef MEASURE_WORKSPACE
 // This is where the recursion can stop, so I update info on how much
@@ -1042,138 +1072,109 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
         worstN = thisN;
     }
 #endif
-    if (M <= 7)
-    {
-        bigBySmallMul(a, N, b, M, result);
 #ifdef TRACE_TIMES
-        std::cout << "% Used bigBySmallMul\n";
-        displayIndent -= 2;
-#endif // TRACE_TIMES
-        return;
-    }
-    else if (M < KARASTART)
-    {   if (N==M &&  N<=11) balancedMul(a, b, N, result);
-        else simpleMul(a, N, b, M, result);
-#ifdef TRACE_TIMES
-        std::cout << "% Used balancedMul or simpleMul\n";
-        displayIndent -= 2;
-#endif // TRACE_TIMES
-        return;
-    }
-#ifdef TRACE_TIMES
+    displayIndent += 2;
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
 // Here I will call Kara if N <= 1.25*M.
-    if (4*N <= 5*M) kara(a, N, b, M, result, workspace);
+    if (4*N <= 5*M) kara<thread>(a, N, b, M, result, workspace);
 // If N <= 1.85*M I will use toom32.
-    else if (20*N <= 37*M) toom32(a, N, b, M, result, workspace);
-    else
-    {   DigitPtr save = setSize(workspace, M);
-        workspace += M;
-        size_t step = (3*M)/2;
+    else if (20*N <= 37*M) toom32<thread>(a, N, b, M, result, workspace);
+    else innerBigMul<thread>(a, N, b, M, result, workspace);
+    displayIndent -= 2;
+}
+
+
+template <bool thread=false>
+static void innerBigMul(ConstDigitPtr a, std::size_t N,
+                        ConstDigitPtr b, std::size_t M,
+                        DigitPtr result,
+                        DigitPtr workspace)
+{
 #ifdef TRACE_TIMES
-        std::cout << "% Will do a " << step << "*" << M << " toom32 to start";
-        std::cout << " [of " << N << "*" << M << "]\n";
+    display2("% innerBigMul", N, M);
+    DigitPtr fullResult = result;
+    size_t fullSize = M+N;
 #endif // TRACE_TIMES
-        toom32(a, step, b, M, result, workspace);
+    DigitPtr save = setSize(workspace, M);
+    workspace += M;
+    size_t step = (3*M)/2;
 #ifdef TRACE_TIMES
-        display("firsttoom32res", result, step+M);
+    display2("innerBig starting toom of", step, M);
 #endif // TRACE_TIMES
-        a += step;
-        N -= step;
-        result += step;
+    toom32<thread>(a, step, b, M, result, workspace);
 #ifdef TRACE_TIMES
-        display("topoftoom32res", result, M);
+    display("firsttoom32res", result, step+M);
 #endif // TRACE_TIMES
-        for (;;)
-        {   while (N >= step)
-            {   std::memcpy(save, result, M*sizeof(Digit));
+    a += step;
+    N -= step;
+    result += step;
 #ifdef TRACE_TIMES
-                display("save", save, M);
-                std::cout << "% Another " << step << "*" << M << " toom32\n";
+    display("topoftoom32res", result, M);
 #endif // TRACE_TIMES
-                toom32(a, step, b, M, result, workspace);
-                addMdigits(save, M, result, step+M);
+    for (;;)
+    {   while (N >= step)
+        {   std::memcpy(save, result, M*sizeof(Digit));
 #ifdef TRACE_TIMES
-                display("partial", result, step+M);
+            display("save", save, M);
+            display2("% Another ", step, M);
 #endif // TRACE_TIMES
-                a += step;
-                N -= step;
-                result += step;
-            }
-            if (N == 0) return;
+            toom32<thread>(a, step, b, M, result, workspace);
+            addMdigits(save, M, result, step+M);
+#ifdef TRACE_TIMES
+            display("partial", result, step+M);
+#endif // TRACE_TIMES
+            a += step;
+            N -= step;
+            result += step;
+        }
+        if (N == 0) return;
 // Here N < 1.5*M. If N>=M I can finish the job using a single step that
 // is either Toom32 or Karatsuba. And I should also take this case
 // if N<KARASTART. Also if N>=M/1.25 I can finish with Karatsuba. This
 // set of end conditions is more complicated than I had originally thought!
 #ifdef TRACE_TIMES
-            std::cout << "% End bit is " << N << "*" << M << "\n";
+        display2("% End bit ", N, M);
 #endif // TRACE_TIMES
-            std::memcpy(save, result, M*sizeof(Digit));
+        std::memcpy(save, result, M*sizeof(Digit));
 #ifdef TRACE_TIMES
-            display("save", save, M);
+        display("save", save, M);
 #endif // TRACE_TIMES
-            if (4*N > 5*M) toom32(a, N, b, M, result, workspace);
-            else if (N >= M) kara(a, N, b, M, result, workspace);
+        if (4*N > 5*M) toom32<thread>(a, N, b, M, result, workspace);
+        else if (N >= M) kara<thread>(a, N, b, M, result, workspace);
 // Now N < M so I need to flip order for the calls...
-            else if (N < KARASTART) simpleMul(b, M, a, N, result);
-            else if (5*N >= 4*M) kara(b, M, a, N, result, workspace);
-// Should I worry about the potential recursion depth here? Well maybe!
-// The bit I recurse to process has its smaller input less than 4/5 of the
-// previous smaller input. so recursion depth is bounded based on
-// log_{5/4}(N) I think.
-            else innerGeneralMul(b, M, a, N, result, workspace);
+        else if (N < KARASTART) simpleMul(b, M, a, N, result);
+        else if (5*N >= 4*M) kara<thread>(b, M, a, N, result, workspace);
+// Should I worry about the potential recursion depth here?
+// I will consider how the product M*N decreases rather than how either
+// separately changes. One limiting case is if a single Karatsuba has
+// been done so far. Then what remains must have N>M/2 because otherwise
+// a Toom32 step would have been taken. The result is that M*N is reduced
+// to less than 1/3 of its initial value. Now suppose that the first step
+// had been toom32 and what is left is not enough for a Karatsuba. We have
+// less then M*M left where initially there was (5/2)*M*M so we have at
+// worst 2/5 of the original size: this case is worse than the one that
+// started with Karatsuba. In each situation the fact that I will be willing
+// to perform a final Karatsuba even if its slightly unbalanced makes
+// this analysis conservative. Furthermore if at one step I approach the
+// limit that I identify here it means that the next step is "almost square"
+// and the next one can not be as bad! So analyzing a worst case through
+// layers of recursion seems hard. So instead I ran code that tried
+// comprehensive ranges of M and N and that showed that for large inputs the
+// worst depth observed was 1.5*log2(min(N,M)) for cases where M and N
+// would possibly reach here.
+        else innerGeneralMul<thread>(b, M, a, N, result, workspace);
 #ifdef TRACE_TIMES
-            display("addin", result, N+M);
+        display("addin", result, N+M);
 #endif // TRACE_TIMES
-            addMdigits(save, M, result, N+M);
+        addMdigits(save, M, result, N+M);
 #ifdef TRACE_TIMES
-            display("resulthere", result, N+M);
-            display("full result", fullResult, fullSize);
-            displayIndent -= 2;
+        display("resulthere", result, N+M);
+        display("full result", fullResult, fullSize);
+        display("innerBigMul done");
 #endif // TRACE_TIMES
-            return;
-        }
-    }
-}
-
-template <bool threads=false>
-[[gnu::always_inline]]
-static void unbalancedMul(ConstDigitPtr a, std::size_t N,
-                          ConstDigitPtr b, std::size_t M,
-                          DigitPtr result,
-                          DigitPtr workspace)
-{
-    innerGeneralMul(a, N, b, M, result, workspace);
-#ifdef TRACE_TIMES
-    display("unbalres", result, N+M);
-#endif // TRACE_TIMES
-    return;
-
-
-//@@@@
-// Here N is (much) bigger than M
-    innerGeneralMul(a, M, b, M, result, workspace);
-    N -= M;
-    a += M;
-    result += M;
-    while (2*N > 3*M)
-    {   std::memcpy(workspace, result, M*sizeof(Digit));
-        innerGeneralMul(a, M, b, M, result, workspace+M);
-// Now add M digits from workspace into the 2M digit number in result. There
-// can not be an overflow.
-        addMdigits(workspace, M, result, 2*M);
-        N -= M;
-        a += M;
-        result += M;
-    }
-    if (N != 0)
-    {   std::memcpy(workspace, result, M*sizeof(Digit));
-        innerGeneralMul(a, N, b, M, result, workspace+M);
-// Now add M digits from workspace into the M+N digit number in result. There
-// can not be an overflow.
-        addMdigits(workspace, M, result, M+N);
+        return;
     }
 }
 
@@ -1236,9 +1237,11 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     assert(aHighLen <= toomLen);
 #endif // DEBUG
 #ifdef TRACE_TIMES
-    std::cout << "%" << N << " = " << toomLen << "+"
-                     << toomLen << "+" << aHighLen  << "\n";
-    std::cout << "%" << M << " = " << toomLen << "+" << bHighLen << "\n";
+    if constexpr (thread)
+        display2("start parallel toom32", N, M);
+    else display2("start toom32", N, M);
+    display2("toomlen, aHighen", toomLen, aHighLen);
+    display2("toomlen, bHighen", toomLen, bHighLen);
     display("tooma", a, N);
     display("toomb", b, M);
 //@ display("ahigh", a+2*toomLen, aHighLen);
@@ -1298,12 +1301,8 @@ static void toom32(ConstDigitPtr a, std::size_t N,
         setupKara(driverData.wd_1, aDiff, toomLen, bDiff, toomLen, D2,
                                    setSize(workspace+2*wsize, wsize));
         driverData.releaseWorkers(true);
-        if (bHighLen <= 7)
-            bigBySmallMul(aHigh, aHighLen, bHigh, bHighLen, D3);
-        if (aHighLen <= 7)
-            bigBySmallMul(bHigh, bHighLen, aHigh, aHighLen, D3);
-        else innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3,
-                             setSize(workspace+3*wsize, wsize));
+        innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3,
+                        setSize(workspace+3*wsize, wsize));
         driverData.wait_for_workers(true);
 #ifdef CHECK_TIMES
 // Here I will repeat each of the thread-run multiplications to check them.
@@ -1464,6 +1463,7 @@ static void toom32(ConstDigitPtr a, std::size_t N,
     else if (D2Top < 0) karaBorrow(-D2Top, res+4*toomLen);
 #ifdef TRACE_TIMES
     display("result", res, M+N);
+    display("toom32 finishing");
 #endif // TRACE_TIMES
 }
 
@@ -1518,6 +1518,9 @@ static void kara(ConstDigitPtr a, std::size_t N,
     ConstDigitPtr aHigh = a+lowSize;
     ConstDigitPtr bHigh = b+lowSize;
 #ifdef TRACE_TIMES
+    if constexpr (thread)
+        display2("start parallel kara", N, M);
+    else display2("start kara", N, M);
     display("ahigh", aHigh, aHighLen);
     display("alow", a, lowSize);
     display("bhigh", bHigh, bHighLen);
@@ -1554,7 +1557,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
         setupKara(driverData.wd_1, a, lowSize,
                                    b, lowSize, result,
                                    setSize(ws+wsize, wsize));
-// Let the threads run while I do aHigh*bHigh. I expect that I will only
+// Let the thread run while I do aHigh*bHigh. I expect that I will only
 // launch threads when the inputs are rather large, and in particular large
 // enough that the half-sized multiplications triggered here will be
 // Karatsuba rather than classical.
@@ -1564,47 +1567,6 @@ static void kara(ConstDigitPtr a, std::size_t N,
                         bHigh, bHighLen, result+2*lowSize,
                         setSize(ws+2*wsize, wsize));
         driverData.wait_for_workers(false);
-#ifdef CHECK_TIMES
-// Here I will repeat each of the thread-run multiplications to check them.
-        stkvector<Digit> TD0(2*lowSize);
-        stkvector<Digit> TD1(2*lowSize);
-        stkvector<Digit> TD2(2*lowSize);
-        simpleMul(a, lowSize, b, lowSize, TD0);
-        simpleMul(aDiff, lowSize, bDiff, lowSize, TD1);
-        if (aHighLen<=7 || bHighLen <= 7) std::printf("\n@@@ too small size\n");
-        simpleMul(aHigh, aHighLen, bHigh, bHighLen, TD2);
-        int errcount = 0;
-        for (size_t i=0; i<2*lowSize;i++)
-        {   if (result[i] != TD0[i])
-            {   if (errcount < 5) std::printf("lowprod digit %d\n", (int)i);
-                errcount++;
-            }
-            if(workspace[i] != TD1[i])
-            {   if (errcount < 5) std::printf("midprod digit %d\n", (int)i);
-                errcount++;
-            }
-            if (i < aHighLen+bHighLen && result[2*lowSize+i] != TD2[i])
-            {   if (errcount < 5) std::printf("highprod digit %d\n", (int)i);
-                errcount++;
-            }
-        }
-        if (errcount != 0)
-        {   std::printf("\n%%%%@@@ %d FAILURES\n", errcount);
-            display("alow", a, lowSize);
-            display("blow", b, lowSize);
-            display("ahigh", aHigh, aHighLen);
-            display("bhigh", bHigh, bHighLen);
-            display("adiff", aDiff, lowSize);
-            display("bdiff", bDiff, lowSize);
-            display("lowprod", result, 2*lowSize);
-            display("midprod", workspace, 2*lowSize);
-            display("hiprod",  result+2*lowSize, aHighLen+bHighLen);
-            display("TD0", TD0, 2*lowSize);
-            display("TD1", TD1, 2*lowSize);
-            display("TD2", TD2, aHighLen+bHighLen);
-            std::abort();
-        }
-#endif
     }
     else
     {   innerGeneralMul(aDiff, lowSize,
@@ -1654,6 +1616,7 @@ static void kara(ConstDigitPtr a, std::size_t N,
     else if (extra < 0) karaBorrow(-extra, result+3*lowSize);
 #ifdef TRACE_TIMES
     display("result", result, M+N);
+    display("end of kara");
 #endif // TRACE_TIMES
 }  
 
@@ -1763,8 +1726,7 @@ inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
 #ifdef MEASURE_WORKSPACE
 
 int main()
-{
-    const std::size_t limit = 4000;
+{   const std::size_t limit = 4000;
     Digit a[10*limit];
     Digit b[10*limit];
     Digit res[20*limit];

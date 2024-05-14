@@ -67,7 +67,7 @@
 // inline void inlineMul(ConstDigitPtr a, ConstDigitPtr b, DigitPtr result)
 // {
 //     uint64_t dhi, dlo;
-//     oneWordMul(a[0], b[0], dlo, result[0]);
+//     multiply64(a[0], b[0], dlo, result[0]);
 //     if constexpr (N==1 && M==1)
 //     {   result[1] = dlo;
 //         return;
@@ -78,7 +78,7 @@
 //         forloop<(k<M?0:k+1-M), std::min(N, k+1)>
 //             ([&] (auto i)
 //         {   uint64_t whi;
-//             oneWordMul(a[i], b[k-i], dlo, whi, dlo);
+//             multiply64(a[i], b[k-i], dlo, whi, dlo);
 //             carry += addWithCarry(dhi, whi, dhi);
 //         });
 //         result[k] = dlo;
@@ -97,18 +97,18 @@ void generate(std::size_t N, std::size_t M)
     std::cout << "                          ConstDigitPtr b,\n";
     std::cout << "                          DigitPtr result)\n";
     if (N==1 && M==1)
-    {   std::cout << "{   oneWordMul(a[0], b[0], result[1], result[0]);\n";
+    {   std::cout << "{   multiply64(a[0], b[0], result[1], result[0]);\n";
         std::cout << "}\n";
         return;
     }
     std::cout << "{   uint64_t dhi, dlo;\n";
-    std::cout << "    oneWordMul(a[0], b[0], dlo, result[0]);\n";
+    std::cout << "    multiply64(a[0], b[0], dlo, result[0]);\n";
     std::cout << "    dhi = 0;\n";
     std::cout << "    uint64_t whi, carry;\n";
     for (std::size_t k=1; k<N+M-1; k++)
     {   std::cout << "    carry = 0;\n";
         for (std::size_t i=(k<M?0:k+1-M); i<std::min(N, k+1); i++)
-        {   std::cout << "    oneWordMul(a[" << i << "], b[" << (k-i) << "], dlo, whi, dlo);\n";
+        {   std::cout << "    multiply64(a[" << i << "], b[" << (k-i) << "], dlo, whi, dlo);\n";
             std::cout << "    carry += addWithCarry(dhi, whi, dhi);\n";
         }
         std::cout << "    result[" << k << "] = dlo;\n";
@@ -132,14 +132,14 @@ void generate(std::size_t N, std::size_t M)
 // // For this I will require N>=M
 //     Digit carry = 0, lo, hi = 0;
 // // The lowest Digit can be handled specially to get things going.
-//     oneWordMul(a[0], b[0], lo, result[0]);
+//     multiply64(a[0], b[0], lo, result[0]);
 //     std::size_t k=1;
 //     for (; k<M; k++)
 //     {
 // // Here I want k<M<=N so certainly if i<k then i<N
 //         for (std::size_t i=0; i<=k; i++)
 //         {   Digit hi1;
-//             oneWordMul(a[i], b[k-i], lo, hi1, lo);
+//             multiply64(a[i], b[k-i], lo, hi1, lo);
 //             carry += addWithCarry(hi, hi1, hi);
 //         }
 //         result[k] = lo;
@@ -154,7 +154,7 @@ void generate(std::size_t N, std::size_t M)
 // // a known value.
 //         for (std::size_t j=0; j<M; j++)
 //         {   Digit hi1;
-//             oneWordMul(a[k-j], b[j], lo, hi1, lo);
+//             multiply64(a[k-j], b[j], lo, hi1, lo);
 //             carry += addWithCarry(hi, hi1, hi);
 //         }
 //         result[k] = lo;
@@ -166,7 +166,7 @@ void generate(std::size_t N, std::size_t M)
 //     for (; k<N+M-1; k++)
 //     {   for (std::size_t i=k+1-M; i<N; i++)
 //         {   Digit hi1;
-//             oneWordMul(a[i], b[k-i], lo, hi1, lo);
+//             multiply64(a[i], b[k-i], lo, hi1, lo);
 //             carry += addWithCarry(hi, hi1, hi)
 //         }
 //         result[k] = lo;
@@ -188,10 +188,10 @@ void generate(std::size_t M)
     std::cout << "                        ConstDigitPtr b,\n";
     std::cout << "                        DigitPtr result)\n";
     std::cout << "{   Digit carry = 0, lo, hi = 0, hi1;\n";
-    std::cout << "    oneWordMul(a[0], b[0], lo, result[0]);\n";
+    std::cout << "    multiply64(a[0], b[0], lo, result[0]);\n";
     for (std::size_t k=1; k<M; k++)
     {   for (std::size_t i=0; i<=k; i++)
-        {   std::cout << "    oneWordMul(a[" << i << "], b[" << (k-i) << "], lo, hi1, lo);\n";
+        {   std::cout << "    multiply64(a[" << i << "], b[" << (k-i) << "], lo, hi1, lo);\n";
             std::cout << "    carry += addWithCarry(hi, hi1, hi);\n";
         }
         std::cout << "    result[" << k << "] = lo;\n";
@@ -203,7 +203,7 @@ void generate(std::size_t M)
     std::cout << "    {\n";
     for (std::size_t j=0; j<M; j++)
     {
-        std::cout << "        oneWordMul(a[k-" << j << "], b[" << j << "], lo, hi1, lo);\n";
+        std::cout << "        multiply64(a[k-" << j << "], b[" << j << "], lo, hi1, lo);\n";
         std::cout << "        carry += addWithCarry(hi, hi1, hi);\n";
     }
     std::cout << "        result[k] = lo;\n";
@@ -214,7 +214,7 @@ void generate(std::size_t M)
 
     for (std::size_t k1=0; k1<M-1; k1++)
     {   for (std::size_t i1=k1+1; i1<M; i1++)
-        {   std::cout << "    oneWordMul(a[N-" << (i1-k1) << "], b[" << i1 << "], lo, hi1, lo);\n";
+        {   std::cout << "    multiply64(a[N-" << (i1-k1) << "], b[" << i1 << "], lo, hi1, lo);\n";
             std::cout << "    carry += addWithCarry(hi, hi1, hi);\n";
         }
         std::cout << "    result[N+" << k1 <<"] = lo;\n";
@@ -236,6 +236,7 @@ int main()
     for (std::size_t N=1; N<=7; N++)
         generate(N);
 
+    std::cout << "\n";
     std::cout << "static void smallCaseMul(ConstDigitPtr a, std::size_t N,\n";
     std::cout << "                         ConstDigitPtr b, std::size_t M,\n";
     std::cout << "                         DigitPtr result)\n";
@@ -259,6 +260,7 @@ int main()
                   << "(a, b, result);\n";
         std::cout << "            return;\n";
     }
+    std::cout << "        default: arithlib_abort(\"bad smallCaseMul\");\n";
     std::cout << "    }\n";
     std::cout << "}\n";
     std::cout << "\n";
@@ -272,14 +274,15 @@ int main()
         std::cout << "            inlineMul_" << M
                   << "(a, N, b, result); return;\n";
     }
+    std::cout << "        default: arithlib_abort(\"bad bigBySmallMul\");\n";
     std::cout << "    }\n";
     std::cout << "}\n";
-
+    std::cout << "\n";
     std::cout << "static void balancedMul(ConstDigitPtr a, ConstDigitPtr b, std::size_t N,\n";
     std::cout << "                       DigitPtr result)\n";
     std::cout << "{   switch (N)\n";
     std::cout << "    {   default: simpleMul(a, N, b, N, result); return;\n";
-    for (std::size_t N=1; N<=14; N++)
+    for (std::size_t N=1; N<=15; N++)
         std::cout << "        case " << N << ":  inlineMul_" << N
                   << "_" << N << "(a, b, result);   return;\n";
     std::cout << "    }\n";

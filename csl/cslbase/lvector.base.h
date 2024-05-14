@@ -143,142 +143,178 @@ private:
 public:
 
 //    a default constuctor
+    [[gnu::always_inline]]
     vecpointer()
     {   data = nullptr;
     }
 
 //    a copy constructor
+    [[gnu::always_inline]]
     vecpointer(const vecpointer<T>& a)
     {   data = a.data;
     }
 
 //    constructor from nullptr
+    [[gnu::always_inline]]
     vecpointer(std::nullptr_t a)
     {   data = nullptr;
     }
 
 //    constructor from a T*
     template <typename S>
+    [[gnu::always_inline]]
     vecpointer(S* a)
     {   data = reinterpret_cast<T*>(a);
     }
 
 //    constructor from a T* but with a length specifier
-    vecpointer(T* a, size_t n)
+    [[gnu::always_inline]]
+    vecpointer(T* a, std::size_t n)
     {   data = a;
     }
 
 //    constructor from a intptr_t
+    [[gnu::always_inline]]
     vecpointer(std::intptr_t a)
     {   data = reinterpret_cast<T*>(a);
     }
 
 //    setsize() - a no-op in this case.
-    void setsize(size_t n)
+    [[gnu::always_inline]]
+    void setsize(std::size_t n)
     {}
 
+// getsize() - can not return useful info here!
+    std::size_t getsize()
+    {   return SIZE_MAX;
+    }
+
 //    discard()     for deleting its contents
+    [[gnu::always_inline]]
     void discard()
     {   delete [] data;
         data = nullptr;
     }
 
 //    operator*             indirection
+    [[gnu::always_inline]]
     T& operator*()
     {   return *data;
     }
+    [[gnu::always_inline]]
     T operator*() const
     {   return *data;
     }
 
 //    operator[]            subscripting
-    T& operator[](size_t n)
+    [[gnu::always_inline]]
+    T& operator[](std::size_t n)
     {   return data[n];
     }
-    T operator[](size_t n) const
+    [[gnu::always_inline]]
+    T operator[](std::size_t n) const
     {   return data[n];
     }
 
 //    operator=
+    [[gnu::always_inline]]
     vecpointer<T>& operator=(const vecpointer<T> a)
     {   data = a.data;
         return *this;
     }
 
 //    operator+(integer)
+    [[gnu::always_inline]]
     vecpointer<T> operator+(std::ptrdiff_t n)
     {   return vecpointer<T>(data + n);
     }
 
 //    operator-(integer)
+    [[gnu::always_inline]]
     vecpointer<T> operator-(std::ptrdiff_t n)
     {   return vecpointer<T>(data - n);
     }
 
 //    operator-(vecpointer<T>)
+    [[gnu::always_inline]]
     std::ptrdiff_t operator-(vecpointer<T> a)
     {   return data - (T*)a;
     }
 
 //    operator+= and operator-=
+    [[gnu::always_inline]]
     vecpointer<T>& operator+=(std::ptrdiff_t n)
     {   data += n;
         return *this;
     }
+    [[gnu::always_inline]]
     vecpointer<T>& operator-=(std::ptrdiff_t n)
     {   data -= n;
         return *this;
     }
 
 //    operator++ and operator--  (pre and post versions of each)
+    [[gnu::always_inline]]
     vecpointer<T>& operator++()
     {   ++data;
         return *this;
     }
+    [[gnu::always_inline]]
     vecpointer<T>& operator--()
     {   --data;
         return *this;
     }
+    [[gnu::always_inline]]
     vecpointer<T> operator++(int)
     {   return vecpointer<T>(data++);
     }
+    [[gnu::always_inline]]
     vecpointer<T> operator--(int)
     {   return vecpointer<T>(data--);
     }
 
 //    operator== and operator!= to compare against a nullptr or
 //                              another vecpointer<T>
+    [[gnu::always_inline]]
     bool operator==(std::nullptr_t a)
     {   return data == nullptr;
     }
+    [[gnu::always_inline]]
     bool operator!=(std::nullptr_t a)
     {   return data != nullptr;
     }
+    [[gnu::always_inline]]
     bool operator==(const vecpointer<T> a)
     {   return data == a.data;
     }
+    [[gnu::always_inline]]
     bool operator!=(const vecpointer<T> a)
     {   return data != a.data;
     }
 
 //    casts into T*
+    [[gnu::always_inline]]
     operator T*()
     {   return data;
     }
 
 //    casts into intptr_t
+    [[gnu::always_inline]]
     operator std::intptr_t()
     {   return reinterpret_cast<std::intptr_t>(data);
     }
 
+    [[gnu::always_inline]]
     operator void*()
     {   return static_cast<void*>(data);
     }
 
+    [[gnu::always_inline]]
     operator const void*()
     {   return static_cast<const void*>(data);
     }
 
+    [[gnu::always_inline]]
     operator vecpointer<const T>()
     {   return vecpointer<const T>(data);
     }
@@ -299,11 +335,13 @@ public:
 };
 
 template <typename T>
+[[gnu::always_inline]]
 inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
 {   return v;
 }
 
 template <typename T>
+[[gnu::always_inline]]
 inline vecpointer<T> setSize(T* v, std::size_t n)
 {   return v;
 }
@@ -330,18 +368,18 @@ class vecpointerData
 // 0 <= offset < limit.
 public:
     T* data;
-    size_t limit;
-    size_t offset;
+    std::size_t limit;
+    std::size_t offset;
 
 // normal constructor
-    vecpointerData(T* d, size_t l, size_t o)
+    vecpointerData(T* d, std::size_t l, std::size_t o)
     {   data = d;
         limit = l;
         offset = o;
     }
 
 // null-pointer constructor.
-    vecpointerData(std::nullptr_t d, size_t l, size_t o)
+    vecpointerData(std::nullptr_t d, std::size_t l, std::size_t o)
     {   data = nullptr;
         limit = l;
         offset = o;
@@ -387,12 +425,12 @@ public:
     }
 
 //    constructor from a T* but with a length specifier
-    vecpointer(T* a, size_t n)
+    vecpointer(T* a, std::size_t n)
     {   data = new vecpointerData<T>(a, n, 0);
     }
 
 //    constructor from a T* but with a length specifier and an offset
-    vecpointer(T* a, size_t n, size_t o)
+    vecpointer(T* a, std::size_t n, std::size_t o)
     {   data = new vecpointerData<T>(a, n, o);
     }
 
@@ -407,8 +445,14 @@ public:
     }
 
 //    setsize() - may be useful in debug mode.
-    void setsize(size_t n)
-    {   data->limit = n;
+    void setsize(std::size_t n)
+    {   lvector_assert(n <= data->limit);
+        data->limit = n;
+    }
+
+// getsize() - amount of space in this vector.
+    std::size_t getsize()
+    {   return data->limit - data->offset;
     }
 
 //    discard()     for deleting its contents
@@ -426,13 +470,13 @@ public:
     }
 
 //    operator[]            subscripting
-    T& operator[](size_t n)
-    {   size_t nn = n + data->offset;
+    T& operator[](std::size_t n)
+    {   std::size_t nn = n + data->offset;
         lvector_assert(nn < data->limit);
         return data->data[nn];
     }
-    T operator[](size_t n) const
-    {   size_t nn = n + data->offset;
+    T operator[](std::size_t n) const
+    {   std::size_t nn = n + data->offset;
         lvector_assert(nn < data->limit);
         return data->data[nn];
     }
@@ -447,14 +491,14 @@ public:
 
 //    operator+(integer)
     vecpointer<T> operator+(std::ptrdiff_t n)
-    {   size_t nn = n + data->offset;
+    {   std::size_t nn = n + data->offset;
         lvector_assert(nn < data->limit);
         return vecpointer<T>(data->data, data->limit, nn);
     }
 
 //    operator-(integer)
     vecpointer<T> operator-(std::ptrdiff_t n)
-    {   size_t nn = data->offset - n;
+    {   std::size_t nn = data->offset - n;
         lvector_assert(nn < data->limit);
         return vecpointer<T>(data->data, data->limit, nn);
     }
@@ -611,8 +655,8 @@ class allocationInfoStruct
 {
 public:
     char* chunk;
-    size_t currentChunkSize;
-    size_t fringe;
+    std::size_t currentChunkSize;
+    std::size_t fringe;
     std::vector<char*> listOfPointers;
     void discard(char* v) { listOfPointers.push_back(v); }
     ~allocationInfoStruct()
@@ -627,11 +671,11 @@ template <typename T>
 class stkvector
 {
 private:
-    size_t oldFringe;
+    std::size_t oldFringe;
 public:
     T* data;
 #ifdef DEBUG
-    size_t limit;
+    std::size_t limit;
 #endif // DEBUG
 
 // default constructor
@@ -643,12 +687,12 @@ public:
     }
 
 // Create an stkvector of size n.
-    stkvector(size_t n)
+    stkvector(std::size_t n)
     {
 #ifdef DEBUG
         limit = n;
 #endif // DEBUG
-        size_t nbytes = n*sizeof(T);
+        std::size_t nbytes = n*sizeof(T);
 // Ensure that the block I allocate will have size that is a multiple of
 // max_align even if T would be happy with less allignment - so that the
 // next allocation will be properly aligned whatever it is.
@@ -657,7 +701,7 @@ public:
 // If the current chunk does not have anough space I will allocate another
 // bigger one.
         if (allocationInfoPtr->fringe+nbytes > allocationInfoPtr->currentChunkSize)
-        {   size_t newChunkSize =
+        {   std::size_t newChunkSize =
                 std::max(nbytes, 2*allocationInfoPtr->currentChunkSize);
             allocationInfoPtr->chunk = new char[newChunkSize];
             allocationInfoPtr->currentChunkSize = newChunkSize;
@@ -693,6 +737,7 @@ public:
     }
 
 // convert to vecpointer
+    [[gnu::always_inline]]
     operator vecpointer<T>()
     {
 #ifdef DEBUG
@@ -701,6 +746,7 @@ public:
         return vecpointer<T>(data);
 #endif // DEBUG
     }
+    [[gnu::always_inline]]
     operator vecpointer<const T>()
     {
 #ifdef DEBUG
@@ -710,7 +756,8 @@ public:
 #endif // DEBUG
     }
 
-    vecpointer<T> operator+(size_t n)
+    [[gnu::always_inline]]
+    vecpointer<T> operator+(std::size_t n)
     {
 #ifdef DEBUG
         return vecpointer<T>(data, limit, n);
@@ -720,25 +767,30 @@ public:
     }
 
 // convert to T*
+    [[gnu::always_inline]]
     operator T*()
     {   return data;
     }
+    [[gnu::always_inline]]
     operator const T*()
     {   return data;
     }
+    [[gnu::always_inline]]
     operator void*()
     {   return static_cast<void*>(data);
     }
 
 //    operator[]            subscripting
-    T& operator[](size_t n)
+    [[gnu::always_inline]]
+    T& operator[](std::size_t n)
     {
 #ifdef DEBUG
         lvector_assert(n < limit);
 #endif // DEBUG
         return data[n];
     }
-    T operator[](size_t n) const
+    [[gnu::always_inline]]
+    T operator[](std::size_t n) const
     {
 #ifdef DEBUG
         lvector_assert(n < limit);
@@ -747,6 +799,7 @@ public:
     }
 
 //    operator*            subscripting
+    [[gnu::always_inline]]
     T& operator*()
     {
 #ifdef DEBUG
@@ -754,6 +807,7 @@ public:
 #endif // DEBUG
         return data[0];
     }
+    [[gnu::always_inline]]
     T operator*() const
     {
 #ifdef DEBUG
@@ -763,7 +817,7 @@ public:
     }
 
 // retport size
-    size_t size()
+    std::size_t size()
     {
 #ifdef DEBUG
         return limit;
