@@ -3803,16 +3803,7 @@ LispObject Divide::op(LFlt a, LFlt b)
 }
 
 LispObject Square::op(LispObject a)
-{
-#ifdef CHECK_TIMES
-    LispObject v1 = number_dispatcher::unary<LispObject,Square>("square", a);
-    LispObject v2 = Times::op(a, a);
-    if (v1 != v2 && !equal_fn(v1, v2))
-        aerror2("squaring failure", a, cons(v1, v2));
-    return v1;
-#else // CHECK_TIMES
-    return number_dispatcher::unary<LispObject,Square>("square", a);
-#endif // CHECK_TIMES
+{   return number_dispatcher::unary<LispObject,Square>("square", a);
 }
 
 LispObject Square::op(Fixnum a)
@@ -6810,22 +6801,7 @@ LispObject Ntimes(LispObject env, LispObject a1)
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2)
 {   SingleValued fn;
-#ifdef CHECK_TIMES
-// Here I verify that a product is correct by comparison against the
-// function "classicaltimes" which will perform big-integer arithmetic
-// using code that is intended to be as simple and hence as reliable
-// as possible. The checking will not make any tests on cases other
-// than where both operands are bignums. Well - until and unless I
-// make classicaltimes include independent implementations for those
-// cases too.
-    LispObject v1 = Times::op(a1, a2);
-    LispObject v2 = ClassicalTimes::op(a1, a2);
-    if (v1 != v2 && !equal_fn(v1, v2))
-        aerror2("multiplication failure", cons(a1, a2), cons(v1, v2));
-    return v1;
-#else
     return Times::op(a1, a2);
-#endif
 }
 
 LispObject Ntimes(LispObject env, LispObject a1, LispObject a2,

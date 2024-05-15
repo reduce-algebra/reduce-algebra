@@ -200,6 +200,8 @@ int main(int argc, char *argv[])
         seed = mersenne_twister() & 0xffff;
     std::cout << "seed = " << seed << "\n";
     reseed(seed);
+    std::cout << "KARASTART = " << arithlib_implementation::BigMultiplication::KARASTART
+              << "  KARABIG = " << arithlib_implementation::BigMultiplication::KARABIG << "\n";
 
     int maxbits, ntries;
     std::chrono::high_resolution_clock::time_point clk, clk2;
@@ -219,19 +221,25 @@ int main(int argc, char *argv[])
 // I will start with a quickish validation of multilication since that
 // underpins so much else.
     {   std::uint64_t a[2000], b[2000], c[5000], c1[5000];
-        for (size_t K=10; K<350; K++)
+        int yy=0;
+        for (int zz=0; zz<2; zz++)
+        for (size_t K=10; K<500; K++)
         for (size_t N=1; N<K; N++)
         {   size_t M=K-N;
             for (size_t i=0; i<N; i++)
             {   a[i] = 1LL<<(mersenne_twister()%64);
                 if (i!=N-1 && mersenne_twister()%100 > 20) a[i] = 0;
+                if (zz==1) a[i] = mersenne_twister();
             }
             for (size_t i=0; i<M; i++)
             {   b[i] = 1LL<<(mersenne_twister()%64);
                 if (i!=M-1 && mersenne_twister()%100 > 20) b[i] = 0;
+                if (zz==1) b[i] = mersenne_twister();
             }
             size_t lenc, lenc1;
-            std::cout << "%%%% try " << N << "*" << M << "\n";
+            if (++yy%10000==0)
+                std::cout << "%%%% try " << yy << ": "
+                          << N << "*" << M << "\n";
             arithlib_implementation::bigmultiply(
                 a, N, b, M, c, lenc);
             referencemultiply(
@@ -288,7 +296,7 @@ int main(int argc, char *argv[])
                 }
                 clk = std::chrono::high_resolution_clock::now();
 // When using Karatsuba the cost of a multiplication is expected to
-// grow as n^1.585, and so to arrange that I tke roughly the same
+// grow as n^1.585, and so to arrange that I take roughly the same
 // absolute time on each number-length I perform my tests a number of
 // times scaled inversely by that.
                 std::size_t tests = 2+(10000*N)/static_cast<int>(std::pow(
