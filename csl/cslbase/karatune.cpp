@@ -57,14 +57,13 @@ size_t start, start_parallel;
 // get the 3 multiplications that come from a top-level decomposition done in
 // parallel.
 
-// I will start by picking a value for KARASTART. While doing tkat I will
-// set KBIG to 999 so that multiple threads are never used.
+// I will start by picking a value for KARASTART. While doing that I will
+// set KARABIG to 999 so that multiple threads are never used.
 
-// For a range of input sizes I will try values of KARASTART in the range
-// 15 - 30 and report which one gives the fastest time. The products I
-// will form will be from 15*15 up to 100*100. The choice of a starting point
-// 15 is because my code handles small integer products specially and
-// it requires (KARASTART+1)/2 > 7 so I can miss out just a few tests.
+// For a range of input sizes I will try values of KARASTART and in each
+// case try with or without Karatsuba activated. When I find several in a
+// row all declare Karatsuba faster I will view that is having found a
+// proper transition point.
 
 #include "arithlib.hpp"
 
@@ -80,7 +79,9 @@ int main(int argc, char *argv[])
 // a decent randomized sequence. If I give it a command line argument
 // that is an integer it will use that to see its random number generator
 // and so it will behave deterministically. This is really useful if an
-// error is detected.
+// error is detected. The randomization provides some point for running this
+// code multiple times - even though the exact nature of the numbers
+// being multiplied is not expected to impact costs.
     size_t klimit;
     uint64_t seed;
     if (argc > 1) seed = atoi(argv[1]);
@@ -99,11 +100,16 @@ int main(int argc, char *argv[])
     }
 
     size_t overallBest = 999;
-    for (size_t N = 15; N<=24; N++)
+    int farEnough = 0;
+    cout << "\n*** Check when Karatsuba beats classical\n\n";
+    for (size_t N = 15; farEnough<5 && N<=40; N++)
     {
 #ifdef DEBUG
         size_t ntries = 200/N;
 #else
+// The number of tries set here is intended to be large enough that
+// timing measurements are liable to be reasonably reliable but small
+// enough that running this code does not take stupidly too long.
         size_t ntries = 150000000/N;
 #endif
         cout << "\n" << N  << " words\n";
@@ -114,9 +120,59 @@ int main(int argc, char *argv[])
         {   cout <<   "start = " << setw(3) << start
                  << "  start_parallel = " << setw(3) << start_parallel
                  << "     ";
-            reseed(seed);
-// I will run the multiplication a couple of times before I start
-// timing in case that pre-loads a cache...
+            clk = chrono::high_resolution_clock::now();
+            for (size_t i=1; i<=ntries; i++)
+            {   size_t lenc;
+                arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
+// The next line is intended to defeat any super-clever optimisation that
+// omits most of the work. Because q is volatile it will have to be
+// executed and that means that both the top and the bottom digits of the
+// product will have had to be computed.
+                q += c[0] + c[lenc-1];
+            }
+            clk2 = chrono::high_resolution_clock::now();
+            elapsed = clk2 - clk;
+            timing =
+                chrono::duration_cast<chrono::nanoseconds>(elapsed);
+            double tt = timing.count()/1.0e9;
+            cout << setprecision(3) << tt << " sec\n";
+            if (tt < bestSoFar)
+            {   bestSoFar = tt;
+                bestStart = start;
+            }
+        }
+        if (bestStart == N)
+        {   cout << "Test on " << N << " digit numbers faster using Karatsuba\n";
+            farEnough++;
+        }
+        else
+        {   cout << "Test on " << N << " digit numbers faster using classical multiplication\n";
+            farEnough = 0;
+            overallBest = N+1;
+        }
+        overallBest = std::min(bestStart, overallBest);
+    }
+
+    cout << "\nPropose KARASTART = " << overallBest << "\n\n";
+    start = overallBest;
+
+    size_t overallBestParallel = 999;
+    farEnough = 0;
+    cout << "\n*** Check when parallel Karatsuba beats sequential\n\n";
+    for (size_t N = 50; farEnough<5 && N<=240; N+=3)
+    {
+#ifdef DEBUG
+        size_t ntries = 200/N;
+#else
+        size_t ntries = 75000000/N;
+#endif
+        cout << "\n" << N  << " words\n";
+        double bestSoFar = 1.0e6;
+        size_t bestStart = 0;
+        for (start_parallel=N; start_parallel<=N+1 ; start_parallel++)
+        {   cout <<   "start = " << setw(3) << start
+                 << "  start_parallel = " << setw(3) << start_parallel
+                 << "     ";
             clk = chrono::high_resolution_clock::now();
             for (size_t i=1; i<=ntries; i++)
             {   size_t lenc;
@@ -133,17 +189,37 @@ int main(int argc, char *argv[])
             cout << setprecision(3) << tt << " sec\n";
             if (tt < bestSoFar)
             {   bestSoFar = tt;
-                bestStart = start;
+                bestStart = start_parallel;
             }
         }
         if (bestStart == N)
-            cout << "Test on " << N << " digit numbers says best start <= " << bestStart << "\n";
-        else cout << "Test on " << N << " digit numbers says best start >= " << bestStart << "\n";
-        overallBest = std::min(bestStart, overallBest);
+        {   cout << "Test on " << N << " digit numbers faster with threads\n";
+            farEnough++;
+        }
+        else
+        {   cout << "Test on " << N << " digit numbers faster WITHOUT threads\n";
+            farEnough = 0;
+            overallBestParallel = N+1;
+        }
+        overallBestParallel = std::min(bestStart, overallBestParallel);
     }
 
-    cout << "\nPropose start = " << overallBest << "\n\n";
-    cout << "About to exit" << "\n";
+    cout << "\nPropose KARASTART = " << overallBest << "\n";
+    cout << "\nPropose KARABIG = " << overallBestParallel << "\n\n";
+#if defined WIN32
+    cout << "Windows (x86_64-w64-mingw32-g++)\n";
+#elif defined __CYGWIN__
+    cout << "Cygwin (g++)\n";
+#elif defined __APPLE__ && defined __arm64__
+    cout << "Macintosh m1 (macbook air)\n";
+#elif defined __ARM_ARCH_8A
+    cout << "Raspberry Pi 5 (64-bit Raspberry Pi OS)\n";
+#elif defined __ARM_ARCH
+    cout << "Raspberry Pi 5 (32-bit Raspberry Pi OS)\n";
+#else
+    cout << "General Linux etc\n";
+#endif
+
     return 0;
 }
 

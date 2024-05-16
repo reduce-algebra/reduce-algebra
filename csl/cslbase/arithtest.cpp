@@ -186,6 +186,7 @@ inline void referenceunsignedmultiply(
     arithlib_implementation::truncatePositive(c, lenc);
 }
 
+static volatile std::uint64_t vol;
 
 int main(int argc, char *argv[])
 {
@@ -264,6 +265,11 @@ int main(int argc, char *argv[])
 
         const int N = 30;
         const int LEN = 1600;
+// There is some significant setup overhead associated with the way in
+// which I organise several sets of random numbers to be multiplied (for
+// instance the levels of interior carry may vary). However the inner
+// loop that I have is run REPEATS time and so I expect the cost of the
+// activity within there to dominate.
         const int REPEATS = 1000;
 
         std::uint64_t a[2000], b[2000], c[5000], c1[5000], c2[5000];
@@ -282,6 +288,21 @@ int main(int argc, char *argv[])
         for (int method=0; method<4; method++)
         {   reseed(seed);
             lena = 1;
+            switch (method)
+            {
+            case 0:
+                std::cout << "Compare and check my results vs gmp\n";
+                break;
+            case 1:
+                std::cout << "Run and time my code\n";
+                break;
+            case 2:
+                std::cout << "Run and time gmp code\n";
+                break;
+            case 3:
+                std::cout << "Run reference (classical) multiplication\n";
+                break;
+            }
             for (std::size_t trial=0; trial<table_size; trial++)
             {   lena = (21*lena+19)/20;
                 size[trial] = 0;
@@ -362,9 +383,12 @@ int main(int argc, char *argv[])
                             break;
                         case 1:
                             for (std::size_t i=0; i<lena+lenb; i++) c1[i] = 0;
+// 
                             for (std::size_t m=0; m<REPEATS; m++)
-                                arithlib_implementation::bigmultiply(
+                            {   arithlib_implementation::bigmultiply(
                                     a, lena, b, lenb, c1, lenc1);
+                                vol += c1[0] + c1[lenc1-1];
+                            }
 // By accumulating a sort of checksum on all the products that I compute
 // I will be able to reassure myself that the output from gmp and from my
 // own code agrees.
@@ -374,17 +398,21 @@ int main(int argc, char *argv[])
                         case 2:
                             for (std::size_t i=0; i<lena+lenb; i++) c[i] = 0;
                             for (std::size_t m=0; m<REPEATS; m++)
-                                mpn_mul((mp_ptr)c,
+                            {   mpn_mul((mp_ptr)c,
                                         (mp_srcptr)a, lena*(sizeof(std::uint64_t)/sizeof(mp_limb_t)),
                                         (mp_srcptr)b, lenb*(sizeof(std::uint64_t)/sizeof(mp_limb_t)));
+                                vol += c[0] + c[lenc1-1];
+                            }
                             for (std::size_t i=0; i<lena+lenb; i++)
                                 gmp_check = gmp_check*MULT + c[i];
                             break;
                         case 3:
                             for (std::size_t i=0; i<lena+lenb; i++) c2[i] = 0;
                             for (std::size_t m=0; m<REPEATS; m++)
-                                referenceunsignedmultiply(
+                            {   referenceunsignedmultiply(
                                     a, lena, b, lenb, c2, lenc2);
+                                vol += c2[0] + c2[lenc1-1];
+                            }
 // By accumulating a sort of checksum on all the products that I compute
 // I will be able to reassure myself that the output from gmp and from my
 // own code agrees.
@@ -447,9 +475,9 @@ int main(int argc, char *argv[])
         std::cout << std::setw(10) << "length"
                   << std::setw(10) << "my time"
                   << std::setw(10) << "gmp time"
-//                << std::setw(10) << "ref time"
+                  << std::setw(10) << "ref time"
                   << std::setw(10) << "  mine/gmp"
-//                << std::setw(10) << "  ref/mine"
+                  << std::setw(10) << "  ref/mine"
                   << std::fixed << std::setprecision(3)
                   << "\n";
 // In the following table times are reported in seconds per
@@ -461,12 +489,12 @@ int main(int argc, char *argv[])
                                            (mine[i].count())/testcount[i])
                       << std::setw(10) << (1.0e-3*static_cast<double>
                                            (gmp[i].count())/testcount[i])
-//                    << std::setw(10) << (1.0e-3*static_cast<double>
-//                                         (ref[i].count())/testcount[i])
+                      << std::setw(10) << (1.0e-3*static_cast<double>
+                                           (ref[i].count())/testcount[i])
                       << std::setw(10) << (static_cast<double>
                                            (mine[i].count())/gmp[i].count())
-//                    << std::setw(10) << (static_cast<double>
-//                                         (ref[i].count())/mine[i].count())
+                      << std::setw(10) << (static_cast<double>
+                                           (ref[i].count())/mine[i].count())
                       << "\n";
         }
     }

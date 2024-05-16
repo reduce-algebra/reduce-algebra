@@ -7950,7 +7950,10 @@ inline Digit fastSlice(const std::uint64_t* u, size_t N,
             shiftedU[i] = (d>>bits) | (carry<<(64-bits));
             carry = d;
         }
-        shiftedU[0] = carry<<(64-bits);
+// The "0u" on the next line is to avoid a C++ ambiguity that arises
+// at least on 32-bit platforms where int and size_t are the same
+// width.
+        shiftedU[0u] = carry<<(64-bits);
         u = shiftedU;
         N++;
         from++;

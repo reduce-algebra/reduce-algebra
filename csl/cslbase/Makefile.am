@@ -648,7 +648,7 @@ if windows
 # I will expect the user to have established a path which includes the
 # cygwin tools and hence utilities by these names. This unpleasant issue
 # is because I will end up using file-paths with "/" in not "\", and
-# the Microsoft "copy" and "del" commands get unhppy then. So this issue
+# the Microsoft "copy" and "del" commands get unhappy then. So this issue
 # is one that goes along with using GNU make even in a Microsoft world, and
 # if "make" is on ones path then "rm" and "cp" can be too without too much
 # pain!

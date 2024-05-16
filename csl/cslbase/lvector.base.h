@@ -659,11 +659,12 @@ public:
     std::size_t fringe;
     std::vector<char*> listOfPointers;
     void discard(char* v) { listOfPointers.push_back(v); }
-#ifdef DEBUG
     allocationInfoStruct()
-    {   std::cout << "Creating allocationInfoStruct\n";
+    {   currentChunkSize = 65536;
+        chunk = new char[currentChunkSize];
+        fringe = 0;
+        listOfPointers.clear();
     }
-#endif
     ~allocationInfoStruct()
     {   for (auto v:listOfPointers) delete [] v;
     }
@@ -678,16 +679,20 @@ public:
 // Windows I find it dramatic. So while I show how I can be thread-safe
 // here I make my local vectors such that they should only be activated
 // from just one thread.
+// This is not a problem either if the vector being allocated is rather
+// large so that calculation involving it will be expensive enough to
+// swamp this overhead or if I am in a debugging context where absolute
+// performance does not matter much.
 
-// #define THREAD_SAFE_VERSION 1
+#define ABANDON_THREAD_SAFETY 1
 
-#ifdef THREAD_SAFE_VERSION
+#ifndef ABANDON_THREAD_SAFETY
 constexpr inline int TL_allocationInfoPtr=63;
 DEFINE_INLINE_THREAD_LOCAL(allocationInfoStruct, allocationInfoPtr)
-#else // THREAD_LOCAL
+#else // ABANDON_THREAD_SAFETY
 inline allocationInfoStruct myAllocationInfoStruct;
 inline allocationInfoStruct* allocationInfoPtr = &myAllocationInfoStruct;
-#endif // THREAD_LOCAL
+#endif // ABANDON_THREAD_SAFETY
 
 template <typename T>
 class stkvector
