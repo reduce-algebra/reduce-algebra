@@ -89,7 +89,7 @@ inline constexpr int day_of_week(int m, int d,int y)
 inline bool initialize_version_date()
 {
     const char* v = &VERSION_ID[15];
-// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
+// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
 //                                 ^
     while (std::isdigit(*v)) v++;
     v++;

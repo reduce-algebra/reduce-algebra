@@ -1830,13 +1830,35 @@ public:
     std::size_t fringe;
     std::vector<char*> listOfPointers;
     void discard(char* v) { listOfPointers.push_back(v); }
+#ifdef DEBUG
+    allocationInfoStruct()
+    {   std::cout << "Creating allocationInfoStruct\n";
+    }
+#endif
     ~allocationInfoStruct()
     {   for (auto v:listOfPointers) delete [] v;
     }
 };
 
+// Things are horrible here! If I go in effect
+//   inline thread_local classType* w = &classInstance;
+// then each reference to w can end up involving code that checks whether
+// w has already been initialized for this thread and the classInstance
+// suitably constructed. Even on Linux I find that when I am in really
+// time-sensitive parts of my code the overhead is significant, and on
+// Windows I find it dramatic. So while I show how I can be thread-safe
+// here I make my local vectors such that they should only be activated
+// from just one thread.
+
+// #define THREAD_SAFE_VERSION 1
+
+#ifdef THREAD_SAFE_VERSION
 constexpr inline int TL_allocationInfoPtr=63;
 DEFINE_INLINE_THREAD_LOCAL(allocationInfoStruct, allocationInfoPtr)
+#else // THREAD_LOCAL
+inline allocationInfoStruct myAllocationInfoStruct;
+inline allocationInfoStruct* allocationInfoPtr = &myAllocationInfoStruct;
+#endif // THREAD_LOCAL
 
 template <typename T>
 class stkvector
@@ -9630,7 +9652,7 @@ static const std::size_t MUL_INLINE_LIMIT = 7;
 #ifndef KARASTART
 
 #if defined WIN32                             // Windows (x86_64)
-static const std::size_t KARASTART = 63;
+static const std::size_t KARASTART = 16;
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
 static const std::size_t KARASTART = 15;
 #elif defined __ARM_ARCH_8A                   // Raspberry p 5

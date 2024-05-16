@@ -455,7 +455,7 @@ static const std::size_t MUL_INLINE_LIMIT = 7;
 #ifndef KARASTART
 
 #if defined WIN32                             // Windows (x86_64)
-static const std::size_t KARASTART = 63;
+static const std::size_t KARASTART = 16;
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
 static const std::size_t KARASTART = 15;
 #elif defined __ARM_ARCH_8A                   // Raspberry p 5

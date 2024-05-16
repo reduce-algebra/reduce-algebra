@@ -1,4 +1,4 @@
-// Code to suggest value for KARATSUBA_EVEN_START etc A C Norman, 2020-2024
+// Code to suggest value for KARASTART etc            A C Norman, 2020-2024
 
 
 /**************************************************************************
@@ -43,8 +43,8 @@
 #include <cassert>
 #include <cstdint>
 
-#define KSTART     start
-#define KBIG       start_parallel
+#define KARASTART     start
+#define KARABIG       start_parallel
 
 size_t start, start_parallel;
 
@@ -52,34 +52,19 @@ size_t start, start_parallel;
 // parameters in arithlib.hpp.
 // When performing a multiplication on a pair of N digit numbers (where each
 // digit is 64 bits) the code uses classical long multiplication for
-// small N. From N=KSTART upwards it uses Karatsuba. At what will typically
+// small N. From N=KARASTART upwards it uses Karatsuba. At what will typically
 // be a much higher length it will start to use a pair of worker threads to
 // get the 3 multiplications that come from a top-level decomposition done in
 // parallel.
 
-// This runs tests for a range of integer sizes. For each size that it
-// tries it uses a range of values for the thresholds. The idea is that
-// it should consider threshold values critical for the number size under
-// test.
-// So for an size N I put in a constraint that will allow one level of
-// decomposition and work down from there.
-// As an example consider N=54.
-// If I set limits over 27 then after a single decomposition things will
-// go no futher. If I allow a split into 27+27 the next place I can
-// block would be with a threshold over 14
-//     START    N   START_PARALLEL
-//       999         999            no decomposition
-//        28         999 or 54      54->27
-//        15         999 or 54      54->27->14
-//         8         999 or 54      54->27->14->7
-// For each of those apart from the "no decompostion" case the top level
-// decomposition may or may not be performed using threads.
-//
-// I will also have a default setting for the three thresholds where for
-// any particular N its behavior will match one of the ones suggested
-// above. I will always run that test and annotate its timings with "<<<<<".
-// If my defaults are good that line of measurement will show the shortest
-// time (within normal measurement levels of uncertainty).
+// I will start by picking a value for KARASTART. While doing tkat I will
+// set KBIG to 999 so that multiple threads are never used.
+
+// For a range of input sizes I will try values of KARASTART in the range
+// 15 - 30 and report which one gives the fastest time. The products I
+// will form will be from 15*15 up to 100*100. The choice of a starting point
+// 15 is because my code handles small integer products specially and
+// it requires (KARASTART+1)/2 > 7 so I can miss out just a few tests.
 
 #include "arithlib.hpp"
 
@@ -88,42 +73,6 @@ using namespace arithlib_implementation;
 using namespace std;
 
 volatile uint64_t q = 0;
-
-vector<uint64_t> special;
-
-// Note that the various thresholds will all be (well) under 999 and so
-// allowing 10-bit fields when packing them is safe.
-
-bool sizeorder(uint64_t a, uint64_t b)
-{   return ((a & 0x3ff) + ((a>>10) & 0x3ff) + ((a>>20) & 0x3ff)) <
-           ((b & 0x3ff) + ((b>>10) & 0x3ff) + ((b>>20) & 0x3ff));
-}
-
-size_t pack(size_t even, size_t parallel)
-{   return even + (parallel<<20); 
-}
-
-#define DEFAULT_KARATSUBA_START 15
-#define DEFAULT_KARATSUBA_START_PARALLEL 160
-
-void fillInSpecials(size_t N)
-{   special.clear();
-    special.push_back(pack(999, 999));
-    special.push_back(pack(DEFAULT_KARATSUBA_START,
-                           DEFAULT_KARATSUBA_START_PARALLEL));
-    size_t topN = N;
-    while (N > 6)
-    {   N = (N+1)/2;
-        special.push_back(pack(N+1, 999));
-        special.push_back(pack(N+2, 999));
-        special.push_back(pack(N+3, 999));
-        special.push_back(pack(N+4, 999));
-// I will take the view that trying threads on less than 80 digits will
-// be over-costly.
-        if (topN >= 80) special.push_back(pack(N+1, topN));
-    }
-    sort(special.begin(), special.end(), sizeorder);
-}
 
 int main(int argc, char *argv[])
 {
@@ -144,76 +93,56 @@ int main(int argc, char *argv[])
 
     uint64_t a[1000], b[1000], c[2000];
 
-// For multiplication of two numbers each with N digits there can be
-// various special values for the Karatsuba thresholds.
-// For any N start being N vs any value bigger than that
-// will impact the first level of decomposition.
-// Then in addition to that all values that are special for (N+1)/2 will
-// also apply.
+    for (size_t i=0; i<1000; i++)
+    {   a[i] = mersenne_twister();
+        b[i] = mersenne_twister();
+    }
 
-    for (size_t N = 8; N<=250; N = (N<37 ? N+1 : N<100 ? N+7 : N+25))
-    {   size_t ntries = 100000/N;
-        size_t innerTries = 1000;
+    size_t overallBest = 999;
+    for (size_t N = 15; N<=24; N++)
+    {
+#ifdef DEBUG
+        size_t ntries = 200/N;
+#else
+        size_t ntries = 150000000/N;
+#endif
         cout << "\n" << N  << " words\n";
-        fillInSpecials(N+3);
-        for (auto packed:special)
-        {   start = packed&0x3ff;
-            start_parallel = (packed>>20) & 0x3ff;
-            cout <<   "start = " << setw(3) << start
+        double bestSoFar = 1.0e6;
+        size_t bestStart = 0;
+        start_parallel = 999;
+        for (start=N; start<=N+1 ; start++)
+        {   cout <<   "start = " << setw(3) << start
                  << "  start_parallel = " << setw(3) << start_parallel
                  << "     ";
             reseed(seed);
 // I will run the multiplication a couple of times before I start
 // timing in case that pre-loads a cache...
-            for (size_t i=1; i<=4; i++)
-            {   uint64_t s1 = mersenne_twister(),
-                         s2 = mersenne_twister();
-                for (size_t i=0; i<N; i++)
-                {   a[i] = s1;
-                    s2 = s1 + s2;
-                    s1 = a[i];
-                }
-                for (size_t i=0; i<N; i++)
-                {   b[i] = s1;
-                    s2 = s1 + s2;
-                    s1 = b[i];
-                }
-                size_t lenc;
-                arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
-                q += c[0];
-            }
             clk = chrono::high_resolution_clock::now();
             for (size_t i=1; i<=ntries; i++)
-            {   uint64_t s1 = mersenne_twister(),
-                         s2 = mersenne_twister();
-                for (size_t i=0; i<N; i++)
-                {   a[i] = s1;
-                    s2 = s1 + s2;
-                    s1 = a[i];
-                }
-                for (size_t i=0; i<N; i++)
-                {   b[i] = s1;
-                    s2 = s1 + s2;
-                    s1 = b[i];
-                }
-                for (int kk=0; kk<innerTries; kk++)
-                {   size_t lenc;
-                    arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
-                    q += c[0];
-                }
+            {   size_t lenc;
+                arithlib_implementation::bigmultiply(a, N, b, N, c, lenc);
+// The next line is intended to defeat any super-clever optimisation that
+// omits most of the work.
+                q += c[0] + c[lenc-1];
             }
             clk2 = chrono::high_resolution_clock::now();
             elapsed = clk2 - clk;
             timing =
                 chrono::duration_cast<chrono::nanoseconds>(elapsed);
-            cout << setprecision(3) << (timing.count()/1.0e9) << " sec";
-            if (packed == pack(DEFAULT_KARATSUBA_START,
-                               DEFAULT_KARATSUBA_START_PARALLEL))
-                cout << "  <<<<\n";
-            else cout << "\n";
+            double tt = timing.count()/1.0e9;
+            cout << setprecision(3) << tt << " sec\n";
+            if (tt < bestSoFar)
+            {   bestSoFar = tt;
+                bestStart = start;
+            }
         }
+        if (bestStart == N)
+            cout << "Test on " << N << " digit numbers says best start <= " << bestStart << "\n";
+        else cout << "Test on " << N << " digit numbers says best start >= " << bestStart << "\n";
+        overallBest = std::min(bestStart, overallBest);
     }
 
+    cout << "\nPropose start = " << overallBest << "\n\n";
     cout << "About to exit" << "\n";
     return 0;
 }
