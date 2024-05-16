@@ -453,7 +453,7 @@ static const std::size_t KARASTART = 16;
 
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
 // Tested on Macbook m1.
-static const std::size_t KARASTART = 22;
+static const std::size_t KARASTART = 25;
 
 #elif defined __ARM_ARCH_8A                   // Raspberry Pi 5
 // Measured in a Raspberry Pi 5 running Raspberry Pi OS in 64-bit mode.
@@ -480,13 +480,13 @@ static const std::size_t KARABIG = 60;
 #elif defined __CYGWIN__                      // Cygwin/Windows (x86_64)
 static const std::size_t KARABIG = 65;
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
-static const std::size_t KARABIG = 66;
+static const std::size_t KARABIG = 352;
 #elif defined __ARM_ARCH_8A                   // Raspberry p 5
-static const std::size_t KARABIG = 67;
+static const std::size_t KARABIG = 72;
 #elif defined __ARM_ARCH                      // Other Raspberry pi etc
-static const std::size_t KARABIG = 68;
+static const std::size_t KARABIG = 50;
 #else                                         // other (eg generic Linux)
-static const std::size_t KARABIG = 69;
+static const std::size_t KARABIG = 144;
 #endif
 
 #endif // KARABIG

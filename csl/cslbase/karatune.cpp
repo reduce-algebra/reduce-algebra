@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     size_t overallBestParallel = 999;
     farEnough = 0;
     cout << "\n*** Check when parallel Karatsuba beats sequential\n\n";
-    for (size_t N = 50; farEnough<5 && N<=240; N+=3)
+    for (size_t N = 50; farEnough<5 && N<=400; N+=3)
     {
 #ifdef DEBUG
         size_t ntries = 200/N;
