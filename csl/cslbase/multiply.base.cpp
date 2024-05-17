@@ -68,21 +68,13 @@
 // size of a number there has to be rounding when that number is of odd
 // length make that messy enough that anything I come up with using
 // calculation will not be a sharp bound and will be very fragile against
-// small changes in the code. So I will work empirically. For multiplications
-// of N*M with N>=M I will have (at the end of this file) some code that
-// if MEASURE_WORKSPACE is defined runs comprehensive tests for N and M up
-// to some threshold (initially 2000) and assesses workspace use relative
-// to the smaller of those. I wish to observe both assymptotic behaviour and
-// smaller cases (I will only worry about N>=M>7) so that I can allow for
-// both. While I am doing that I disable the top-level distribution of work
-// into threads.
+// small changes in the code.
 
 inline std::size_t worstN = 0;
 inline std::size_t worstM = 0;
 inline std::size_t thisN = 0;
 inline std::size_t thisM = 0;
 inline double worstRatio = 0.0;
-inline DigitPtr workspaceBase;
 
 #include <atomic>
 
@@ -389,9 +381,6 @@ public:
     ManageWorkers()
     {   bool expected = false;
         mayUseThreads = threadsInUse.compare_exchange_weak(expected, true);
-#ifdef MEASURE_WORKSPACE
-        mayUseThreads = false;
-#endif // MEASURE_THREADS
     }
     [[gnu::always_inline]]
     ~ManageWorkers()
@@ -455,15 +444,31 @@ static const std::size_t MUL_INLINE_LIMIT = 7;
 #ifndef KARASTART
 
 #if defined WIN32                             // Windows (x86_64)
+// Tested using x86_64-w64-mingw-g++ on an Intel i7-8086K. 
 static const std::size_t KARASTART = 16;
+
+#elif defined __CYGWIN__                      // Windows (x86_64)
+// Tested using Cygwin g++ on an Intel i7-8086K. 
+static const std::size_t KARASTART = 16;
+
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
-static const std::size_t KARASTART = 15;
-#elif defined __ARM_ARCH_8A                   // Raspberry p 5
-static const std::size_t KARASTART = 15;
-#elif defined __ARM_ARCH                      // Other Raspberry pi etc
-static const std::size_t KARASTART = 15;
+// Tested on Macbook m1.
+static const std::size_t KARASTART = 25;
+
+#elif defined __ARM_ARCH_8A                   // Raspberry Pi 5
+// Measured in a Raspberry Pi 5 running Raspberry Pi OS in 64-bit mode.
+static const std::size_t KARASTART = 16;
+
+#elif defined __ARM_ARCH                      // Other Raspberry Pi etc
+// Measured on a Raspberry Pi 5 with its 64-but CPU but using 32-bit
+// userland. The use of Karatsuba at 22+ words is not really clear-cut
+// but at least it is competitive by then.
+static const std::size_t KARASTART = 22;
+
 #else                                         // other (eg generic Linux)
-static const std::size_t KARASTART = 15;
+// Figure rather guessed from all the above, but applicable in a Linux
+// vm running on the Windows machine I test on!
+static const std::size_t KARASTART = 16;
 #endif
 
 #endif // KARASTART
@@ -471,26 +476,22 @@ static const std::size_t KARASTART = 15;
 #ifndef KARABIG
 
 #if defined WIN32                             // Windows (x86_64)
-static const std::size_t KARABIG = 160;
+static const std::size_t KARABIG = 60;
+#elif defined __CYGWIN__                      // Cygwin/Windows (x86_64)
+static const std::size_t KARABIG = 65;
 #elif defined __APPLE__ && defined __arm64__  // Mac m1, m2, ...
-static const std::size_t KARABIG = 160;
+static const std::size_t KARABIG = 352;
 #elif defined __ARM_ARCH_8A                   // Raspberry p 5
-static const std::size_t KARABIG = 160;
+static const std::size_t KARABIG = 72;
 #elif defined __ARM_ARCH                      // Other Raspberry pi etc
-static const std::size_t KARABIG = 160;
+static const std::size_t KARABIG = 50;
 #else                                         // other (eg generic Linux)
-static const std::size_t KARABIG = 160;
+static const std::size_t KARABIG = 144;
 #endif
 
 #endif // KARABIG
 
 private:
-
-// The test code activated via MEASURE_WORKSPACE shows that the
-// amount of workspace is bounded by 6*M where M is the smaller of
-// the two number-lengths - at least over comprehensive testing of
-// a great many small to fairly large cases. Well actually it shows a
-// multiplier not much larger than 5.
 
 [[gnu::always_inline]]
 static std::size_t workspaceSize(std::size_t M)
@@ -928,10 +929,6 @@ static void generalMul(ConstDigitPtr a, std::size_t N,
                        ConstDigitPtr b, std::size_t M,
                        DigitPtr result)
 {
-#ifdef MEASURE_WORKSPACE
-    thisN = N;
-    thisM = M;
-#endif // MEASURE_WORKSPACE
 // I take a view that case of single word multiplication as both so
 // special and so important that I do that in-line here.
     if ((N|M) == 1)
@@ -971,7 +968,7 @@ private:
 static void biggerMul(ConstDigitPtr a, std::size_t N,
                       ConstDigitPtr b, std::size_t M,
                       DigitPtr result)
-{   ManageWorkers manager;
+{
 // Now manager.mayUseThreads will be true if I am allowed to use the
 // worker threads.
 //
@@ -983,20 +980,17 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
     display("a", a, N);
     display("b", b, M);
 #endif // TRACE_TIMES
+    size_t w = topWorkspaceSize(M);
+    stkvector<Digit> workspace(w);
+    ManageWorkers manager;
     if (4*N <= 5*M)
-    {   stkvector<Digit> workspace(topWorkspaceSize(M));
-#ifdef MEASURE_WORKSPACE
-        workspaceBase = workspace;
-#endif // MEASURE_WORKSPACE
+    {
         if (N < KARABIG || !manager.mayUseThreads)
             kara(a, N, b, M, result, workspace);
         else kara<true>(a, N, b, M, result, workspace);
     }
     else if (20*N <= 37*M)
-    {   stkvector<Digit> workspace(topWorkspaceSize(M));
-#ifdef MEASURE_WORKSPACE
-        workspaceBase = workspace;
-#endif // MEASURE_WORKSPACE
+    {
         if (N < KARABIG || !manager.mayUseThreads)
             toom32(a, N, b, M, result, workspace);
         else toom32<true>(a, N, b, M, result, workspace);
@@ -1005,10 +999,7 @@ static void biggerMul(ConstDigitPtr a, std::size_t N,
 #endif // TRACE_TIMES
     }
     else 
-    {   stkvector<Digit> workspace(topWorkspaceSize(M));
-#ifdef MEASURE_WORKSPACE
-        workspaceBase = workspace;
-#endif // MEASURE_WORKSPACE
+    {
         if (manager.mayUseThreads)
             innerGeneralMul<true>(a, N, b, M, result, workspace);
         else innerGeneralMul(a, N, b, M, result, workspace);
@@ -1054,24 +1045,6 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
             return;
         }
     }
-#ifdef MEASURE_WORKSPACE
-// This is where the recursion can stop, so I update info on how much
-// workspace has been used.
-    std::size_t workspaceUsed = workspace - workspaceBase;
-    if (workspaceUsed > 900000)
-    {   std::cout << "\nnot converging\n";
-        arithlib_abort();
-    }
-    double ratio = workspaceUsed/(double)thisM;
-    if (ratio > worstRatio)
-    {   std::cout << worstRatio << " -> " << ratio
-                  << " : " << (ratio/std::log(thisM))
-                  << " at " << thisN << "*" << thisM << "\n";
-        worstRatio= ratio;
-        worstM = thisM;
-        worstN = thisN;
-    }
-#endif
 #ifdef TRACE_TIMES
     displayIndent += 2;
     display("a", a, N);
@@ -1085,6 +1058,17 @@ static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
     displayIndent -= 2;
 }
 
+// This version is just for N*N products - a case which arises in recursive
+// calls from Karatsuba and Toom32. These are never top level!
+
+[[gnu::always_inline]]
+static void innerGeneralMul(ConstDigitPtr a, std::size_t N,
+                            ConstDigitPtr b,
+                            DigitPtr result,
+                            DigitPtr workspace)
+{   if (N < KARASTART) balancedMul(a, b, N, result);
+    else kara(a, N, b, N, result, workspace);
+}
 
 template <bool thread=false>
 static void innerBigMul(ConstDigitPtr a, std::size_t N,
@@ -1359,9 +1343,9 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 #endif // CHECK_TIMES
     }
     else
-    {   innerGeneralMul(aSum, toomLen, bSum, toomLen, D1, workspace);
+    {   innerGeneralMul(aSum, toomLen, bSum, D1, workspace);
 //      + aSumTop*bSum + bSumTop*aSum + aSumTop*bSumTop
-        innerGeneralMul(aDiff, toomLen, bDiff, toomLen, D2, workspace);
+        innerGeneralMul(aDiff, toomLen, bDiff, D2, workspace);
 //      + aDiffTop*bDiff + bDiffTop*aDiff + aDiffTop*bDiffTop
 // noting that aDiffTop and bDiffTop are signed values.
     }
@@ -1424,7 +1408,7 @@ static void toom32(ConstDigitPtr a, std::size_t N,
 //@ display("halfsum", D2Top, D2, 2*toomLen);
 #endif // TRACE_TIMES
     if constexpr (!thread) // These already computed in the threaded version
-    {   innerGeneralMul(aLow, toomLen, bLow, toomLen, D0, workspace);
+    {   innerGeneralMul(aLow, toomLen, bLow, D0, workspace);
         innerGeneralMul(aHigh, aHighLen, bHigh, bHighLen, D3, workspace);
     }
 #ifdef TRACE_TIMES
@@ -1570,9 +1554,9 @@ static void kara(ConstDigitPtr a, std::size_t N,
     }
     else
     {   innerGeneralMul(aDiff, lowSize,
-                        bDiff, lowSize, workspace, ws);
+                        bDiff, workspace, ws);
         innerGeneralMul(a, lowSize,
-                        b, lowSize, result, ws);
+                        b, result, ws);
         innerGeneralMul(aHigh, aHighLen,
                         bHigh, bHighLen, result+2*lowSize, ws);
     }
@@ -1722,29 +1706,6 @@ inline void verySimpleMul(ConstDigitPtr a, std::size_t N,
                           DigitPtr result)
 {   BigMultiplication::verySimpleMul(a, N, b, M, result);
 }
-
-#ifdef MEASURE_WORKSPACE
-
-int main()
-{   const std::size_t limit = 4000;
-    Digit a[10*limit];
-    Digit b[10*limit];
-    Digit res[20*limit];
-    for (int i=0; i<limit; i++) a[i] = b[i] = 0xbad999bad999bad9;
-    worstN = worstM = 0;
-    worstRatio = 0.0;
-    for (std::size_t M=8; M<limit; M++)
-    for (std::size_t N=M; N<limit; N++)
-    {   if (N==limit-1) N = 10*limit-1;
-        generalMul(a, N, b, M, res);
-    }
-    std::cout << "worst ratio = " << worstRatio
-              << " : " << (worstRatio/std::log(worstM))
-              << " with N=" << worstN << " M=" << worstM << "\n";
-    return 0;
-}
-
-#endif // MEASURE_WORKSPACE
 
 // End of integer multiplication code.
 //=========================================================================

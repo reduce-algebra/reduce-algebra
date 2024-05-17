@@ -3149,7 +3149,7 @@ inline void display(const char* label,
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
-    std:printf("[%u]", getTidyThreadId());
+    std::printf("[%u]", getTidyThreadId());
     for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
     int len = std::min(displayIndent, 7) + std::printf("%s := 0x", label);
     if (top >= 0)
@@ -3180,7 +3180,7 @@ inline void display(const char* label, std::intptr_t a)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
-    std:printf("[%u]", getTidyThreadId());
+    std::printf("[%u]", getTidyThreadId());
     if (storedAsFixnum(a))
     {   for (int i=0; i<std::min(displayIndent, 7); i++) std::printf(" ");
         std::cout << label << " := " << std::hex
@@ -3222,14 +3222,14 @@ inline void display(const char* label)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
-    std:printf("[%u] %s\n", getTidyThreadId(), label);
+    std::printf("[%u] %s\n", getTidyThreadId(), label);
 }
 
 inline void display1(const char* label, std::size_t a)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
-    std:printf("[%u] %s %" PRIu64 "\n", getTidyThreadId(),
+    std::printf("[%u] %s %" PRIu64 "\n", getTidyThreadId(),
                label, (std::uint64_t)a);
 }
 
@@ -3237,7 +3237,7 @@ inline void display2(const char* label, std::size_t a, std::size_t b)
 {   const char** where;
     std::lock_guard<std::mutex> lock(
         arithlib_implementation::diagnostic_mutex(&where));
-    std:printf("[%u] %s %" PRIu64 " %" PRIu64 "\n", getTidyThreadId(),
+    std::printf("[%u] %s %" PRIu64 " %" PRIu64 "\n", getTidyThreadId(),
                label, (std::uint64_t)a, (std::uint64_t)b);
 }
 
@@ -7950,7 +7950,10 @@ inline Digit fastSlice(const std::uint64_t* u, size_t N,
             shiftedU[i] = (d>>bits) | (carry<<(64-bits));
             carry = d;
         }
-        shiftedU[0] = carry<<(64-bits);
+// The "0u" on the next line is to avoid a C++ ambiguity that arises
+// at least on 32-bit platforms where int and size_t are the same
+// width.
+        shiftedU[0u] = carry<<(64-bits);
         u = shiftedU;
         N++;
         from++;

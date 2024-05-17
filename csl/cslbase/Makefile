@@ -117,58 +117,47 @@ arithtestg:	arithtest.cpp arithlib.hpp
 	time g++ -O0 -g -std=gnu++17 $(MACFLAGS) arithtest.cpp \
 		-DDEBUG=1 $(LIBS) \
 		-o arithtestg
-# If one runs arithtest without a command line paramater it should seed
-# its random number generator in an unpredictable way. Specifing an integer
-# uses that as the seed for repeatable behaviour.
 	-time ./arithtestg 1
 
-# "time-arith" tries to compare (crudely) the speed of the existing (or
-# dare I now say "old"?) CSL arithmetic based on 31-bit digits with the
-# performance of arithlib that used 64-bit digits. On a 64-bit machine
-# this shows the newer code winning fairly convincingly! On general grounds
-# one could start with a prediction that long addition and subtraction might
-# be twice as fast using 64-bit digits, with long multiplication and division
-# showing a factor of 4 in the range where classical methods are used and
-# one of 3 for numbers big enough to trigger Karatsuba multiplication. I
-# believe that the results from this test (which just tries huge
-# multiplication) is in reasonable agreement with that.
+.PHONY:	arithtestwin
 
-.PHONY:	time-arith
+# At present this DOES NOT BUILD AND RUN for me because of some
+# linking issues against gmp... I hope to sort those out later.
 
-time-arith:	time-arith.sh
-	./time-arith.sh
+arithtestwin:	arithtest.cpp arithlib.hpp
+	time x86_64-w64-mingw32-g++ -O3 -std=gnu++17 --static \
+		arithtest.cpp -Wl,--subsystem,console \
+		-lgmp -o arithtestwin
+	-time ./arithtestwin 1
+
 
 # "karatune" attepts to judge a proper value for KARATSUBA_CUTOFF
 
 .PHONY:	karatune
 
+ifeq ($(shell uname -o),Cygwin)
+KLIBS=
+else
+KLIBS=-lpthread
+endif
+
 karatune:	karatune.cpp arithlib.hpp
-	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp $(LIBS) -o karatune
+	g++ $(MACFLAGS) -std=gnu++17 -O3 karatune.cpp $(KLIBS) -o karatune
 	time ./karatune
 
-measureworkspace:	measureworkspace.cpp arithlib.hpp
-	g++ -O3 -std=gnu++17 $(MACFLAGS) measureworkspace.cpp -o measureworkspace
-	-./measureworkspace
 
-# for debugging
-measureworkspaceg:	measureworkspace.cpp arithlib.hpp
-	g++ -O0 -g $(MACFLAGS) measureworkspace.cpp \
-		-fmax-errors=5 -o measureworkspaceg
-	-./measureworkspaceg
+# "karatunewin" attepts to judge a proper value for KARATSUBA_CUTOFF
+# but is only for use on Windows systems. Note both use of the
+# console subsystem and static linking here!
 
-measureworkspacegg:	measureworkspace.cpp arithlib.hpp
-	g++ -O0 -g $(MACFLAGS) measureworkspace.cpp -DDEBUG=1 \
-		-fmax-errors=5 -o measureworkspacegg
+.PHONY:	karatunewin
+
+karatunewin:	karatune.cpp arithlib.hpp
+	x86_64-w64-mingw32-g++ \
+		-std=gnu++17 -O3 karatune.cpp --static \
+		-Wl,--subsystem,console -o karatunewin
+	time ./karatunewin
 
 # end of Makefile in cslbase
-
-
-### TEMP
-
-newmul:	newmul.cpp genmul.cpp
-	g++ -O2 genmul.cpp -o genmul
-	./genmul > gm.cpp
-	sed -i -e 's/classicalMul/classicalMulNew/g' gm.cpp
-	g++ -O3 newmul.cpp -o newmul
 
 
