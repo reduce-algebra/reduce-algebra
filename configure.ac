@@ -72,7 +72,7 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 
 #
 # There is a horror here. If one fetches everything from subversion
-# then timstamps can be ill-ordered, and it can seem necessary to
+# then timestamps can be ill-ordered, and it can seem necessary to
 # re-create the autoconf-related files. The standard way that autoconf and
 # automake allow for this is not very generous if the version of autoconf
 # on the local machine does not match the one used in the files from the
@@ -97,6 +97,34 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # set up a directory of your own, put it early in your PATH and use that as
 # the "--prefix".
 
+
+# Another bit of dreadfulness. On a Raspberry Pi (esp the Pi5) you
+# are liable to find that a "32-bit" operating system in fact runs using
+# a 64-bit kernel. The most recent CPUs do not support otherwise. A
+# conseqence is that config.guess reports a 64-bit world and that
+# can really hurt some parts of the build. So here I detect that
+# situation and force in "--host=arm-linux-gnueabihf" provided no
+# other explicit host setting is provided.
+
+case $ac_configure_args in
+*--host=*)
+  ;;
+*)
+  if test `/usr/bin/uname -m` = "aarch64"
+  then
+    case `file /bin/ls` in
+    *32-bit*)
+      AC_MSG_NOTICE([Need to build for 32-bit world])
+
+  printf "Restart: $abssrcdir/configure $ac_configure_args --host=arm-linux-gnueabihf\n"
+  exec $SHELL -c "$abssrcdir/configure $ac_configure_args --host=arm-linux-gnueabihf"
+
+
+      
+      ;;
+    esac
+  fi
+esac
 
 # Note that AS_HELP_STRING has been available since version 2.61 and
 # use of AC_HELP_STRING leads to loud moans from version 2.71
@@ -183,7 +211,7 @@ then
   printf "Regenerate autoconf-related files\n"
   find . -name config.cache | xargs rm -f
   printf "\n\n+++ About to recreate all autoconf generated files +++\n\n"
-  if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
+  if ! eval $SHELL -c \"./autogen.sh $ac_configure_args --host=arm-linux-gnueabihf\"
   then
     printf "The autogen.sh script seems to have failed. I can not continue\n"
     exit 1
