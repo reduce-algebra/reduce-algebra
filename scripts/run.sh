@@ -30,7 +30,7 @@ fi
 # performance.
 while :
 do
-  $maybe_echo First arg: ${1:-nothing}
+  $maybe_echo "First arg: ${1:-nothing}"
   case ${1:-nothing} in
   --debug)
     debug="-debug"
@@ -70,7 +70,7 @@ xWindows_NT)
 
   for x in $*
   do
-    $maybe_echo Arg to executable: $x
+    $maybe_echo "Arg to executable: $x"
     if test "$x" = "--nogui" ||
        test "$x" = "-w-" ||
        test "$x" = "-w"
@@ -86,7 +86,7 @@ xWindows_NT)
 # Also if the --nogui option is not selected so a GUI is requested and
 # if DISPLAY is set also use the cygwin64 version that will use X11 for its
 # display.
-  $maybe_echo withgui=$withgui DISPLAY=$DISPLAY
+  $maybe_echo "withgui=$withgui DISPLAY=$DISPLAY"
   if test "$withgui" = "no" || ! test -z "$DISPLAY"
   then
     pre="cygwin64-"
@@ -96,14 +96,14 @@ xWindows_NT)
 # the GUI, and the Windows-native version should be the one used.
   fi
 
-  $maybe_echo ap=$ap
+  $maybe_echo "ap=$ap"
   if test "x$ap" = "xbootstrapreduce"
   then
     suffix=".exe"
   fi
 
 # If I have built anything using the "new layout" I will try that!
-  $maybe_echo test for new dir structure case $here/cslbuild/intel-pc-windows*
+  $maybe_echo "test for new dir structure case $here/cslbuild/intel-pc-windows*"
   case $here/cslbuild/intel-pc-windows*
   in
   \*)
@@ -123,7 +123,7 @@ xWindows_NT)
 # I now put "intel-pc-windows" first and that is the name used by my
 # "new layout" - when it is in general use I can withdraw a load of the
 # rest of the complication that is here!
-  $maybe_echo cygwin=$cygwin
+  $maybe_echo "cygwin=$cygwin"
   if test "x$cygwin" = "xyes"
   then
     versions="intel-pc-windows \
@@ -133,20 +133,20 @@ xWindows_NT)
               x86_64-pc-windows \
               x86_64-pc-cygwin"
   fi
-  $maybe_echo version=$versions
+  $maybe_echo "version=$versions"
   for hx in $versions
   do
-    $maybe_echo Try: $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
+    $maybe_echo "Try: $here/../cslbuild/$hx$version/csl/$pre$ap$suffix"
     if test -x $here/../cslbuild/$hx$version/csl/$pre$ap$suffix
     then
-      $maybe_echo exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*
+      $maybe_echo "exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*"
       exec $here/../cslbuild/$hx$version/csl/$pre$ap$suffix $xtra $CSLFLAGS $*
       exit 0
     fi
-    $maybe_echo Try: $here/..cslbuild/$hx$version/$pre$ap$suffix
+    $maybe_echo "Try: $here/..cslbuild/$hx$version/$pre$ap$suffix"
     if test -x $here/../cslbuild/$hx$version/$pre$ap$suffix
     then
-      $maybe_echo exec $here/../cslbuild/$hx$version/$pre$ap$suffix $xtra $CSLFLAGS $*
+      $maybe_echo "exec $here/../cslbuild/$hx$version/$pre$ap$suffix $xtra $CSLFLAGS $*"
       exec $here/../cslbuild/$hx$version/$pre$ap$suffix $xtra $CSLFLAGS $*
       exit 0
     fi
@@ -156,10 +156,10 @@ xWindows_NT)
 # may sometimes help.
   for hx in $versions
   do
-    $maybe_echo Try: $here/../cslbuild/$hx$version/csl/$ap.exe
+    $maybe_echo "Try: $here/../cslbuild/$hx$version/csl/$ap.exe"
     if test -x $here/../cslbuild/$hx$version/csl/$ap.exe
     then
-      $maybe_echo exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $CSLFLAGS $*
+      $maybe_echo "exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $CSLFLAGS $*"
       exec $here/../cslbuild/$hx$version/csl/$ap.exe $xtra $CSLFLAGS $*
       exit 0
     fi
@@ -168,29 +168,31 @@ xWindows_NT)
 *)
   host0=`$here/../config.guess`
   host=`$here/findhost.sh $host0`
-  $maybe_echo if test -x $here/../cslbuild/$host$version/csl/$ap
+  $maybe_echo "if test -x $here/../cslbuild/$host$version/csl/$ap"
   if test -x $here/../cslbuild/$host$version/csl/$ap
   then
-    $maybe_echo exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
+    $maybe_echo "exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*"
     exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exit 0
   else
-    host1=`echo $host | sed 's/aarch64/universal/'`
+    host1=`echo $host | \
+      sed 's/aarch64-unknown-raspbian12/arm-unknown-raspbian12eabihf/'`
+    host1=`echo $host1 | sed 's/aarch64/universal/'`
     host1=`echo $host1 | sed 's/x86_64/universal/'`
-    $maybe_echo host=$host host1=$host1
+    $maybe_echo "host=$host host1=$host1"
     if test -x $here/../cslbuild/$host1$version/csl/$ap
     then
-      $maybe_echo exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*
+      $maybe_echo "exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*"
       exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*
       exit 0
     elif test -x $here/../cslbuild/$host$version-nogui/csl/$ap
     then
-      $maybe_echo exec $here/../cslbuild/$host$version-nogui/csl/$ap $CSLFLAGS $*
+      $maybe_echo "exec $here/../cslbuild/$host$version-nogui/csl/$ap $CSLFLAGS $*"
       exec $here/../cslbuild/$host$version-nogui/csl/$ap $CSLFLAGS $*
       exit 0
     elif test -x $here/../cslbuild/$host1$version-nogui/csl/$ap
     then
-      $maybe_echo exec $here/../cslbuild/$host1$version-nogui/csl/$ap $CSLFLAGS $*
+      $maybe_echo "exec $here/../cslbuild/$host1$version-nogui/csl/$ap $CSLFLAGS $*"
       exec $here/../cslbuild/$host1$version-nogui/csl/$ap $CSLFLAGS $*
       exit 0
     fi
