@@ -1,0 +1,638 @@
+\section{Logo Turtle Graphics}
+\indexpackage{LOGOTURTLE}
+\index{Wright, Francis J.}\index{People!Wright, Francis J.}
+
+\subsection{Introduction}
+
+Logo Turtle Graphics\footnote{The Logo Turtle Graphics package was
+written by Francis Wright.} (henceforth referred to as ``LogoTurtle'')
+is a partial REDUCE emulation of
+\href{https://en.wikipedia.org/wiki/Turtle_graphics}{traditional Logo
+  turtle graphics} with one turtle, modelled on
+\href{http://people.eecs.berkeley.edu/~bh/logo.html}{Berkeley Logo 6.2
+  by Brian Harvey}.  This manual section is derived from the Graphics
+chapter of the Berkeley Logo 6.2 manual available from
+\href{https://github.com/jrincayc/ucblogo-code}{GitHub}.
+
+%% Should use label references in the two hyperlinks below!
+This package is inspired by, and related to, the REDUCE
+\hyperref[package:TURTLE]{Turtle package} by Caroline Cotter (ZIB,
+Berlin, 1998), and the word ``Turtle'' below (with a capital T) will
+refer specifically to that package.  Both packages are built on the
+REDUCE \hyperref[package:GNUPLOT]{Gnuplot package}, which itself uses
+\href{http://gnuplot.info/}{Gnuplot} to display plots.  This means
+that plotting is not fully interactive as it would be in
+\href{https://en.wikipedia.org/wiki/Logo_(programming_language)}{traditional
+  Logo}; a plot is constructed invisibly and only displayed when
+requested.  This package aims to be more efficient, more authentic,
+potentially more interactive and potentially more complete than
+Turtle.
+
+Note that LogoTurtle and Turtle cannot both be run in the same REDUCE
+session because they define some procedures with the same names.
+
+\subsection{Design}
+
+LogoTurtle is entirely procedural.  It uses ``getters'' and
+``setters'', and does not provide any algebraic-mode variables (unlike
+Turtle, but see \hyperref[logoturtle:SLP]{Saving and Loading
+  Pictures}).  Command names are as in Berkeley Logo 6.2, except that
+they are REDUCE procedure calls and so must be followed by parentheses
+unless they take a single argument, in which case the parentheses are
+optional.  Note that commands that take no argument \emph{must} be
+followed by empty parentheses.
+
+LogoTurtle procedures other than queries return nothing (\texttt{nil})
+and plotting is achieved via side effects, not via returned values
+(unlike Turtle).  A plot is displayed by calling the (non-traditional)
+\hyperref[logoturtle:draw]{\texttt{draw}} command, as for Turtle.
+The plot displayed need not be complete; \texttt{draw} displays the
+plot constructed so far, which allows an element of interactivity.
+
+LogoTurtle makes essential use of commands to lower and raise the pen
+(unlike Turtle; see \hyperref[logoturtle:PBC]{Pen and Background
+  Control}).  Lowering the pen begins a ``curve'', namely a sequence
+of points connected by straight lines, and raising the pen ends that
+curve.  Each time the pen is lowered, the turtle moved and the pen
+raised produces a distinct curve.
+
+LogoTurtle uses Lisp floating-point numbers internally and does not
+require any particular REDUCE number domain settings.  However, all
+procedure arguments and list elements must (currently) evaluate to
+explicit real numbers, which can be integers, rationals or floats.
+This means that \emph{if any transcendental functions are used then
+``on rounded'' is required}, and the default (or a little lower)
+precision is appropriate.  Returned values and list elements will be
+floats converted to the current number domain.  Note that LogoTurtle
+lists are REDUCE algebraic-mode lists delimited by curly braces,
+\texttt{\{~\}}, not the square brackets used in traditional Logo.
+
+\subsection{User Interface}
+
+To use LogoTurtle, execute the REDUCE command
+\begin{verbatim}
+     load_package logoturtle;
+\end{verbatim}
+
+LogoTurtle sets the scaling of the two axes to be the same so that
+geometry is correct (although beware that Gnuplot does not always
+honour this).  Apart from that, (currently) Gnuplot automatically
+sizes the display so that it includes the whole plot.  The position of
+the origin (the turtle home location \texttt{\{0,0\}}) is not fixed
+and will be different for different plots.
+
+Positive X is to the right; positive Y is up.  Headings (angles) are
+measured in degrees clockwise from the positive Y axis.  (Note that
+this differs from the common mathematical convention, also used by
+Turtle, of measuring angles counterclockwise from the positive X
+axis!)
+
+The turtle itself is (currently) not displayed.
+
+%% FJW: Commented out text describes facilities that I might implement
+%% at some later date.
+
+%% The turtle is represented as an isoceles triangle; the actual turtle
+%% position is at the midpoint of the base (the short side).  However,
+%% the turtle is drawn one step behind its actual position, so that the
+%% display of the base of the turtle's triangle does not obscure a line
+%% drawn perpendicular to it (as would happen after drawing a square).
+
+%% Colors are, of course, hardware-dependent.  However, Logo provides partial
+%% hardware independence by interpreting color numbers 0 through 7 uniformly
+%% on all computers:
+
+%% \begin{verbatim}
+%% 0  black        1  blue         2  green        3  cyan
+%% 4  red          5  magenta      6  yellow       7 white
+%% \end{verbatim}
+%% Where possible, Logo provides additional user-settable colors; how many
+%% are available depends on the hardware and operating system environment.
+%% If at least 16 colors are available, Logo tries to provide uniform
+%% initial settings for the colors 8-15:
+
+%% \begin{verbatim}
+%%  8  brown        9  tan         10  forest      11  aqua
+%% 12  salmon      13  purple      14  orange      15  grey
+%% \end{verbatim}
+LogoTurtle (currently) uses a white background and pen colour chosen
+automatically by Gnuplot.
+
+Initially, the turtle is at the origin (Cartesian coordinates (0,0))
+facing up (heading 0 degrees) with the pen up.
+
+Note that LogoTurtle command names are shown using upper case letters
+in the descriptions after the example below to distinguish them
+clearly from their arguments, but LogoTurtle is case insensitive, so
+commands can be entered in either case.
+
+
+\subsection{A Simple Example}
+
+This example assumes LogoTurtle has just been loaded but not yet used.
+If this is not the case then first execute the commands
+\begin{verbatim}
+    clearscreen(); penup();
+\end{verbatim}
+
+The following code draws an equilateral triangle with side length 100
+centred on the origin, with one vertex on the positive Y axis.  To
+make this example as interactive as possible, the plot is displayed
+after each side is drawn.
+\begin{verbatim}
+    on rounded;
+    forward(100/sqrt 3); pendown();
+    right 150; forward 100; draw();
+    right 120; forward 100; draw();
+    right 120; forward 100; draw();
+\end{verbatim}
+
+For more interesting examples, please see the file
+\href{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/plot/logoturtle.tst}{\texttt{logoturtle.tst}},
+which can be found in the \texttt{packages/plot} directory in a
+standard REDUCE distribution.
+
+
+\subsection{Displaying Logo Turtle Graphics}
+
+\begin{verbatim}
+     DRAW()
+\end{verbatim}
+\label{logoturtle:draw}
+This command can be used at any time to display the current plot,
+i.e.\@ the plot constructed so far (provided there is a plot to
+display).  It initially opens a Gnuplot window and subsequently
+updates it.
+
+\begin{verbatim}
+     DRAW(variables)
+\end{verbatim}
+The \texttt{draw} command accepts one or more optional arguments
+consisting of variables assigned by the
+\hyperref[logoturtle:savepict]{\texttt{savepict}} command and
+displays superimposed the plot stored in each variable, in the order
+specified, followed by the current plot.  (The order is only
+significant in that it determines the colour of each plot set
+automatically by Gnuplot.)
+
+
+\subsection{Turtle Motion}
+
+\begin{verbatim}
+     FORWARD dist
+\end{verbatim}
+%% FD dist
+moves the turtle forward, in the direction that it's facing, by the
+specified distance (measured in turtle steps).
+
+\begin{verbatim}
+     BACK dist
+\end{verbatim}
+%% BK dist
+moves the turtle backward, i.e., exactly opposite to the direction
+that it's facing, by the specified distance.  (The heading of the
+turtle does not change.)
+
+\begin{verbatim}
+     LEFT degrees
+\end{verbatim}
+%% LT degrees
+turns the turtle counterclockwise by the specified angle, measured in
+degrees (1/360 of a circle).
+
+\begin{verbatim}
+     RIGHT degrees
+\end{verbatim}
+%% RT degrees
+turns the turtle clockwise by the specified angle, measured in degrees
+(1/360 of a circle).
+
+\begin{verbatim}
+     SETPOS pos
+\end{verbatim}
+\label{logoturtle:setpos}
+moves the turtle to an absolute position in the graphics window.  The
+input is a list of two numbers, the X and Y coordinates.
+
+\begin{verbatim}
+     SETXY(xcor, ycor)
+\end{verbatim}
+moves the turtle to an absolute position in the graphics window.  The
+two inputs are numbers, the X and Y coordinates.
+
+\begin{verbatim}
+     SETX xcor
+\end{verbatim}
+moves the turtle horizontally from its old position to a new absolute
+horizontal coordinate.  The input is the new X coordinate.
+
+\begin{verbatim}
+     SETY ycor
+\end{verbatim}
+moves the turtle vertically from its old position to a new absolute
+vertical coordinate.  The input is the new Y coordinate.
+
+\begin{verbatim}
+     SETHEADING degrees
+\end{verbatim}
+\label{logoturtle:setheading}
+%% SETH degrees
+turns the turtle to a new absolute heading.  The input is a number,
+the heading in degrees clockwise from the positive Y axis.
+
+\begin{verbatim}
+     HOME()
+\end{verbatim}
+\label{logoturtle:home}
+moves the turtle to its starting position (the origin) and orientation.
+%% center of the screen.
+Equivalent to ``\texttt{\hyperref[logoturtle:setpos]{SETPOS}~\{0,~0\};
+  \hyperref[logoturtle:setheading]{SETHEADING}~0;}''.
+
+%% \begin{verbatim}
+%% ARC angle radius
+%% \end{verbatim}
+
+%% draws an arc of a circle, with the turtle at the center, with the
+%% specified radius, starting at the turtle's heading and extending
+%% clockwise through the specified angle.  The turtle does not move.
+
+
+\subsection{Turtle Motion Queries}
+
+\begin{verbatim}
+     POS()
+\end{verbatim}
+returns the turtle's current position, as a list of two numbers, the X
+and Y coordinates.
+
+\begin{verbatim}
+     XCOR()
+\end{verbatim}
+returns a number, the turtle's X coordinate.
+
+\begin{verbatim}
+     YCOR()
+\end{verbatim}
+returns a number, the turtle's Y coordinate.
+
+\begin{verbatim}
+     HEADING()
+\end{verbatim}
+returns a number, the turtle's heading in degrees.
+
+\begin{verbatim}
+     TOWARDS pos
+\end{verbatim}
+returns a number, the heading at which the turtle should be facing so
+that it would point from its current position to the position given as
+the input.
+
+%% \begin{verbatim}
+%% SCRUNCH
+%% \end{verbatim}
+%% returns a list containing two numbers, the X and Y scrunch factors, as used by
+%% \texttt{SETSCRUNCH}.  (But note that \texttt{SETSCRUNCH} takes two numbers as inputs, not one
+%% list of numbers.)
+
+%% @xref{SETSCRUNCH} .
+
+
+\subsection{Turtle and Window Control}
+
+%% \begin{verbatim}
+%% SHOWTURTLE
+%% ST
+%% \end{verbatim}
+%% makes the turtle visible.
+
+%% \begin{verbatim}
+%% HIDETURTLE
+%% HT
+%% \end{verbatim}
+%% makes the turtle invisible.  It's a good idea to do this while you're in
+%% the middle of a complicated drawing, because hiding the turtle speeds up
+%% the drawing substantially.
+
+\begin{verbatim}
+     CLEAN()
+\end{verbatim}
+erases all lines that the turtle has drawn on the graphics window.
+The turtle's state (position, heading, pen mode, etc.) is not changed.
+
+\begin{verbatim}
+     CLEARSCREEN()
+\end{verbatim}
+%% CS
+erases (and closes) the graphics window and sends the turtle to its
+initial position and heading.  Like
+\texttt{\hyperref[logoturtle:home]{HOME}()} and \texttt{CLEAN()}
+together.
+
+%% \begin{verbatim}
+%% WRAP
+%% \end{verbatim}
+%% tells the turtle to enter wrap mode:  From now on, if the turtle is
+%% asked to move past the boundary of the graphics window, it will ``wrap
+%% around'' and reappear at the opposite edge of the window.  The top edge
+%% wraps to the bottom edge, while the left edge wraps to the right edge.
+%% (So the window is topologically equivalent to a torus.)  This is the
+%% turtle's initial mode.  Compare \texttt{WINDOW} and \texttt{FENCE}.
+
+%% @xref{FENCE} .
+
+%% \begin{verbatim}
+%% WINDOW
+%% \end{verbatim}
+%% tells the turtle to enter window mode:  From now on, if the turtle is
+%% asked to move past the boundary of the graphics window, it will move
+%% offscreen.  The visible graphics window is considered as just part of an
+%% infinite graphics plane; the turtle can be anywhere on the plane.  (If
+%% you lose the turtle, \texttt{HOME} will bring it back to the center of the
+%% window.)  Compare \texttt{WRAP} and \texttt{FENCE}.
+
+%% \begin{verbatim}
+%% FENCE
+%% \end{verbatim}
+%% tells the turtle to enter fence mode:  From now on, if the turtle is
+%% asked to move past the boundary of the graphics window, it will move as
+%% far as it can and then stop at the edge with an ``out of bounds'' error
+%% message.  Compare \texttt{WRAP} and \texttt{WINDOW}.
+
+%% @xref{WRAP} .
+
+%% \begin{verbatim}
+%% FILL
+%% \end{verbatim}
+%% fills in a region of the graphics window containing the turtle and
+%% bounded by lines that have been drawn earlier.  This is not portable; it
+%% doesn't work for all machines, and may not work exactly the same way on
+%% different machines.
+
+%% \begin{verbatim}
+%% FILLED color instructions
+%% \end{verbatim}
+%% runs the instructions, remembering all points visited by turtle
+%% motion commands, starting @emph{and ending} with the turtle's initial
+%% position.  Then draws (ignoring penmode) the resulting polygon,
+%% in the current pen color, filling the polygon with the given color,
+%% which can be a color number or an RGB list.  The instruction list
+%% cannot include another FILLED invocation.  (wxWidgets only)
+
+%% \begin{verbatim}
+%% LABEL text
+%% \end{verbatim}
+%% takes a word or list as input, and prints the input on the graphics
+%% window, starting at the turtle's position.
+
+%% \begin{verbatim}
+%% SETLABELHEIGHT height
+%% \end{verbatim}
+%% command (wxWidgets only).  Takes a positive integer argument and tries
+%% to set the font size so that the character height (including
+%% descenders) is that many turtle steps.  This will be different from
+%% the number of screen pixels if \texttt{SETSCRUNCH} has been used.  Also, note
+%% that \texttt{SETSCRUNCH} changes the font size to try to preserve this height
+%% in turtle steps.  Note that the query operation corresponding to this
+%% command is \texttt{LABELSIZE}, not \texttt{LABELHEIGHT}, because it tells you the width
+%% as well as the height of characters in the current font.
+
+%% \begin{verbatim}
+%% SETSCRUNCH xscale yscale
+%% \end{verbatim}
+%% adjusts the aspect ratio and scaling of the graphics display.  After
+%% this command is used, all further turtle motion will be adjusted by
+%% multiplying the horizontal and vertical extent of the motion by the two
+%% numbers given as inputs.  For example, after the instruction
+%% @w{@t{SETSCRUNCH 2 1}} motion at a heading of 45 degrees will move twice
+%% as far horizontally as vertically.  If your squares don't come out
+%% square, try this.  (Alternatively, you can deliberately misadjust the
+%% aspect ratio to draw an ellipse.)
+
+
+%% \subsection{Turtle and Window Queries}
+
+%% \begin{verbatim}
+%% SHOWNP
+%% SHOWN?
+%% \end{verbatim}
+%% returns \texttt{TRUE} if the turtle is shown (visible), \texttt{FALSE} if the turtle is
+%% hidden.  See \texttt{SHOWTURTLE} and \texttt{HIDETURTLE}.
+
+%% @xref{SHOWTURTLE} ,
+%% @ref{HIDETURTLE} .
+
+%% \begin{verbatim}
+%% TURTLEMODE
+%% \end{verbatim}
+%% returns the word \texttt{WRAP}, \texttt{FENCE}, or \texttt{WINDOW} depending on the current
+%% turtle mode.
+
+%% \begin{verbatim}
+%% LABELSIZE
+%% \end{verbatim}
+%% (wxWidgets only) returns a list of two positive integers, the width
+%% and height of characters displayed by \texttt{LABEL} measured in turtle steps
+%% (which will be different from screen pixels if \texttt{SETSCRUNCH} has been
+%% used).  There is no \texttt{SETLABELSIZE} because the width and height of a
+%% font are not separately controllable, so the inverse of this operation
+%% is \texttt{SETLABELHEIGHT}, which takes just one number for the desired height.
+
+
+\subsection{Pen and Background Control}
+\label{logoturtle:PBC}
+
+The turtle carries a pen that can draw pictures.  At any time the pen
+can be UP (in which case moving the turtle does not change what's on the
+graphics screen) or DOWN (in which case the turtle leaves a trace).
+Initially, the pen is UP.
+%% If the pen is down, it can operate in one of three modes: PAINT (so that it
+%% draws lines when the turtle moves), ERASE (so that it erases any lines
+%% that might have been drawn on or through that path earlier), or REVERSE
+%% (so that it inverts the status of each point along the turtle's path).
+
+\begin{verbatim}
+     PENDOWN()
+\end{verbatim}
+%% PD
+sets the pen's position to \texttt{DOWN}, without changing its mode.
+
+\begin{verbatim}
+     PENUP()
+\end{verbatim}
+%% PU
+sets the pen's position to \texttt{UP}, without changing its mode.
+
+%% \begin{verbatim}
+%% PENPAINT
+%% PPT
+%% \end{verbatim}
+%% sets the pen's position to \texttt{DOWN} and mode to \texttt{PAINT}.
+
+%% \begin{verbatim}
+%% PENERASE
+%% PE
+%% \end{verbatim}
+%% sets the pen's position to \texttt{DOWN} and mode to \texttt{ERASE}.
+
+%% \begin{verbatim}
+%% PENREVERSE
+%% PX
+%% \end{verbatim}
+%% sets the pen's position to \texttt{DOWN} and mode to \texttt{REVERSE}.  (This may interact
+%% in system-dependent ways with use of color.)
+
+%% \begin{verbatim}
+%% SETPENCOLOR colornumber.or.rgblist
+%% SETPC colornumber.or.rgblist
+%% \end{verbatim}
+%% sets the pen color to the given number, which must be a nonnegative
+%% integer.  There are initial assignments for the first 16 colors:
+
+%% \begin{verbatim}
+%%  0  black	 1  blue	 2  green	 3  cyan
+%%  4  red		 5  magenta	 6  yellow	 7 white
+%%  8  brown	 9  tan		10  forest	11  aqua
+%% 12  salmon	13  purple	14  orange	15  grey
+%% \end{verbatim}
+%% but other colors can be assigned to numbers by the \texttt{PALETTE} command.
+%% Alternatively, sets the pen color to the given RGB values (a list of
+%% three nonnegative numbers less than 100 specifying the percent saturation
+%% of red, green, and blue in the desired color).
+
+%% \begin{verbatim}
+%% SETPALETTE colornumber rgblist
+%% \end{verbatim}
+%% sets the actual color corresponding to a given number, if allowed by the
+%% hardware and operating system.  Colornumber must be an integer greater than or
+%% equal to 8.  (Logo tries to keep the first 8 colors constant.)  The second
+%% input is a list of three nonnegative numbers less than 100 specifying the
+%% percent saturation of red, green, and blue in the desired color.
+
+%% \begin{verbatim}
+%% SETPENSIZE size
+%% \end{verbatim}
+%% sets the thickness of the pen.  The input is either a single positive
+%% integer or a list of two positive integers (for horizontal and
+%% vertical thickness).  Some versions pay no attention to the second
+%% number, but always have a square pen.
+
+%% \begin{verbatim}
+%% SETPENPATTERN pattern
+%% \end{verbatim}
+%% sets hardware-dependent pen characteristics.  This command is not
+%% guaranteed compatible between implementations on different machines.
+
+%% \begin{verbatim}
+%% SETPEN list
+%% \end{verbatim}
+%% sets the pen's position, mode, thickness, and hardware-dependent
+%% characteristics according to the information in the input list, which should
+%% be taken from an earlier invocation of \texttt{PEN}.
+
+%% @xref{PEN} .
+
+%% \begin{verbatim}
+%% SETBACKGROUND colornumber.or.rgblist
+%% SETBG colornumber.or.rgblist
+%% \end{verbatim}
+%% set the screen background color by slot number or RGB values.
+%% See \texttt{SETPENCOLOR} for details.
+
+%% @xref{SETPENCOLOR} .
+
+\subsection{Pen Queries}
+
+\begin{verbatim}
+     PENDOWNP()
+\end{verbatim}
+%% PENDOWN?
+returns the identifier \texttt{TRUE} if the pen is down,
+\texttt{FALSE} if it's up.  This information can be used by writing
+code such as the following:
+\begin{verbatim}
+     if pendownp() = true then ...
+\end{verbatim}
+
+%% \begin{verbatim}
+%% PENMODE
+%% \end{verbatim}
+%% returns one of the words \texttt{PAINT}, \texttt{ERASE}, or \texttt{REVERSE} according to the
+%% current pen mode.
+
+%% \begin{verbatim}
+%% PENCOLOR
+%% PC
+%% \end{verbatim}
+%% returns a color number, a nonnegative integer that is associated with
+%% a particular color, or a list of RGB values if such a list was used as
+%% the most recent input to \texttt{SETPENCOLOR}.  There are initial assignments
+%% for the first 16 colors:
+
+%% \begin{verbatim}
+%%  0  black        1  blue         2  green        3  cyan
+%%  4  red          5  magenta      6  yellow       7 white
+%%  8  brown        9  tan         10  forest      11  aqua
+%% 12  salmon      13  purple      14  orange      15  grey
+%% \end{verbatim}
+%% but other colors can be assigned to numbers by the \texttt{PALETTE} command.
+
+%% \begin{verbatim}
+%% PALETTE colornumber
+%% \end{verbatim}
+%% returns a list of three nonnegative numbers less than 100 specifying the
+%% percent saturation of red, green, and blue in the color associated with the
+%% given number.
+
+%% \begin{verbatim}
+%% PENSIZE
+%% \end{verbatim}
+%% returns a list of two positive integers, specifying the horizontal
+%% and vertical thickness of the turtle pen.  (In some implementations,
+%% including wxWidgets, the two numbers are always equal.)
+
+%% \begin{verbatim}
+%% PENPATTERN
+%% \end{verbatim}
+%% returns system-specific pen information.
+
+%% \begin{verbatim}
+%% PEN
+%% \end{verbatim}
+%% returns a list containing the pen's position, mode, thickness, and
+%% hardware-specific characteristics, for use by \texttt{SETPEN}.
+
+%% @xref{SETPEN} .
+
+%% \begin{verbatim}
+%% BACKGROUND
+%% BG
+%% \end{verbatim}
+%% returns the graphics background color, either as a slot number or
+%% as an RGB list, whichever way it was set.  (See \texttt{PENCOLOR}.)
+
+
+\subsection{Saving and Loading Pictures}
+\label{logoturtle:SLP}
+
+These two commands are different from the Berkeley Logo commands with
+the same names in that they save to, and load from, REDUCE variables
+instead of files.  The values of the variables are REDUCE
+algebraic-mode lists, which can be manipulated as usual in REDUCE.
+
+\begin{verbatim}
+     SAVEPICT variable
+\end{verbatim}
+\label{logoturtle:savepict}
+assigns the current plot to the specified REDUCE variable.  The
+current plot is not changed.  The saved plot can be restored as the
+current plot using \texttt{LOADPICT} or displayed using
+\hyperref[logoturtle:draw]{\texttt{DRAW}}.
+
+\begin{verbatim}
+     LOADPICT variable
+\end{verbatim}
+reads a plot from the specified REDUCE variable, which must have been
+assigned by a \texttt{SAVEPICT} command, and makes it the current
+plot.  The previous current plot is lost if not saved using
+\texttt{SAVEPICT}.

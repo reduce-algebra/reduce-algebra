@@ -235,6 +235,7 @@
  (clprl         "clprl"                            test      csl psl)
  (gcref         "gcref"                            test      csl psl)
  (turtle        "plot"                                       csl psl)
+ (logoturtle    "plot"                                       csl psl)
  (profile       "profile"                                    csl psl)
  (pident        "pident"                                     csl psl)
  (pgauss        "pgauss"                                     csl psl)
