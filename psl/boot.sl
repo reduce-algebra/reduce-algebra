@@ -275,7 +275,7 @@ a     (cond
                   (or (eq nxtsym!* 'else) (eq nxtsym!* 'endif))))
           (return nil)))
       (setq cursym!* nxtsym!*)
-      (setq nxysym!* (token))
+      (setq nxtsym!* (token))
       (go a)))
 
 (de scan nil

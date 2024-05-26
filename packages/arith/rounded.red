@@ -209,10 +209,10 @@ flag('(print!-precision),'opfn); % Symbolic operator print!-precision.
 flag('(print_precision),'opfn);  % Symbolic operator print_precision.
 
 symbolic procedure !*rd2rn x;
- % Converts a rounded number N into a rational to the system precision.
- % Elegant form: uses both rd2rn1 and realrat... and choses the best,
- %  but uses a heuristic to avoid the extra work when not needed.
-   begin scalar n,p,r,r1,r2,d1,d2,ov;
+ % Converts a rounded number X into a rational to the system precision.
+ % Elegant form: uses both rd2rn1 and realrat... and chooses the best,
+ % but uses a heuristic to avoid the extra work when not needed.
+   begin scalar p,r,r1,r2,d1,d2,ov;
      if rd!:zerop x then return '!:rn!: . (0 . 1);
      p := precision 0;
      r := rd2rn1 x;
@@ -634,7 +634,7 @@ symbolic procedure safe!-fp!-times(u, v);
     if u = 0.0 or v = 0.0 then <<
       if !*nonegzerotimes then return 0.0
       else return u*v >>;
-% Now the inputs are non-zero. 
+% Now the inputs are non-zero.
     if u < 0.0 then u1 := -u else u1 := u;
     if v < 0.0 then v1 := -v else v1 := v;
 % I now have the absolute values of the operands. I will check for all
@@ -689,7 +689,7 @@ symbolic procedure safe!-fp!-quot(u, v);
       if (u1/!!two512)/(v1*!!two564) >= 2.0^(-52) then return nil >>;
     return u/v;
   end;
-        
+
 #endif % PSL
 
 symbolic procedure rd!:zerop u;
@@ -735,7 +735,7 @@ symbolic procedure rdprep1 u;
 
 symbolic procedure rd!:prin u;
    if float!-bfp u and not fp!-finite rd2fl u then prin2!* rd2fl u
-   else 
+   else
   % Printed output is rounded to 2 fewer places than internal value.
    bfprin!: bftrim!: rd!:forcebf u;
 

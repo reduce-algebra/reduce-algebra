@@ -187,7 +187,7 @@ symbolic procedure rounddec (x,p);
 
 global '(!!log!&2list);
 
-global(!!log!&2list := '(!!log2 !!sq2 !!sq2!-1 !!logsq2 
+global(!!log!&2list := '(!!log2 !!sq2 !!sq2!-1 !!logsq2
       	       	         !!logten !!log1000 !!log1e9 !!log1e81 !!log1e27));
 
 remflag(!!log!&2list,'reserved);
@@ -195,7 +195,7 @@ remflag(!!log!&2list,'reserved);
 !!sq2 := sqrt 2.0; !!sq2!-1 := 1/(1+!!sq2);
 
 symbolic procedure log x;
-   begin scalar s,lx; integer p;
+   begin scalar s,lx;
       if fixp(x) and (lx := ilog2(x)) > !!floatbits
         then return !!log2*(lx - !!floatbits)
                       + log(x/2^(lx - !!floatbits))
