@@ -60,6 +60,12 @@ flag('(concat), 'variadic);
 % This useful utility function is defined in sl-on-cl:
 flag('(eqcar),'lose);
 
+% The SL definition of PRINC is not used in REDUCE since PRINC is
+% redefined in rlisp/rsupport.red as
+% symbolic procedure princ u; prin2 u;
+% so I define it as an alias for PRIN2 in sl-on-cl.lisp:
+flag('(princ),'lose);
+
 % These functions are already defined (more or less) in Common Lisp:
 flag('(first second third rest lastpair lastcar nth pnth reversip
    evenp oddp symbol!-name),'lose);
