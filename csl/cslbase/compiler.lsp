@@ -1,9 +1,9 @@
 
-% RLISP to LISP converter. A C Norman -2024
+% RLISP to LISP converter. A C Norman 2022
 
 
 %%
-%% Copyright (C) 2024, following the master REDUCE source files.          *
+%% Copyright (C) 2022, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -3424,7 +3424,7 @@ c!:ccompilesupervisor) (princ "End of file ") (print u) (close (rds w)))) (t
 
 (global (quote (c!:char_mappings)))
 
-(setq c!:char_mappings (quote ((!  . !A) (!! . !B) (!# . !C) (!$ . !D) (!% . 
+(setq c!:char_mappings (quote ((!  . !A) (!! . !B) (# . !C) (!$ . !D) (!% . 
 !E) (!^ . !F) (!& . !G) (!* . !H) (!( . !I) (!) . !J) (!- . !K) (!+ . !L) (!=
  . !M) (!\ . !N) (!| . !O) (!, . !P) (!. . !Q) (!< . !R) (!> . !S) (!: . !T) 
 (!; . !U) (!/ . !V) (!? . !W) (!~ . !X) (!` . !Y))))

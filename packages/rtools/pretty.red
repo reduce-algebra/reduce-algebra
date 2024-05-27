@@ -46,6 +46,7 @@ global '(!*quotes !*pretty!-symmetric thin!*);
 !*pretty!-symmetric := t;
 !*quotes := t;
 thin!* := 5;
+rmar := 80;
 
 % This package prints list structures in an indented format that
 % is intended to make them legible. There are a number of special
@@ -157,15 +158,39 @@ inline procedure blankp char; numberp car char;
 
 
 
+fluid '(ppcontext!*);
+
+symbolic procedure prid(x, n);
+  begin
+    scalar ppcontext!* := 'symbol;
+    rmar := rmar - 1;
+    for each c in explode x do putch c;
+    rmar := rmar + 1
+  end;
+
+symbolic procedure pridc(x, n);
+  for each c in explode2 x do putch c;
+
+symbolic procedure prstring(x, n);
+  begin
+    scalar ppcontext!* := 'string;
+    rmar := rmar - 1;
+    for each c in explode x do putch c;
+    rmar := rmar + 1
+  end;
+
+symbolic procedure prstringc(x, n);
+  for each c in explode2 x do putch c;
 
 
 symbolic procedure prindent(x,n);
 % Print list x with indentation level n.
     if atom x then if vectorp x then prvector(x,n)
-        else for each c in
-          (if !*pretty!-symmetric
-             then if stringp x then explodes x else explode x
-            else explode2 x) do putch c
+                   else if stringp x then
+                     if !*pretty!-symmetric then prstring(x, n)
+                     else prstringc(x, n)
+                   else if !*pretty!-symmetric then prid(x, n)
+                   else pridc(x, n)
     else if quotep x then <<
         putch '!';
         prindent(cadr x,n+1) >>
@@ -324,7 +349,6 @@ put('foreach,'ppformat,4); % (foreach x in y do ...) etc.
 % Now for the routines that buffer things on a character by character
 % basis, and deal with buffer overflow.
 
-
 symbolic procedure putch c;
   begin
     if atom c then rparcount:=0
@@ -353,37 +377,48 @@ symbolic procedure overflow flg;
 %               prints up to and including that character, which
 %               should be a blank.
     if indblanks=0 and initialblanks>3 and flg='more then <<
-        initialblanks:=initialblanks - 3;
-        lmar:=lmar - 3;
-        return 'moved!-left >>;
+      initialblanks:=initialblanks - 3;
+      lmar:=lmar - 3;
+      return 'moved!-left >>;
 fblank:
     if bn=0 then <<
 % No blank found - can do no more for now.
 % If flg='more I am in trouble and so have to print
 % a continuation mark. in the other cases I can just exit.
-        if not(flg = 'more) then return 'empty;
-        if atom car buffero then
-% continuation mark not needed if last char printed was
-% special (e.g. lpar or rpar).
-            prin2 "%+"; %continuation marker.
-        terpri();
-        lmar:=0;
-        return 'continued >>
+      if not(flg = 'more) then return 'empty;
+      if atom car buffero then <<
+        if ppcontext!* = 'string then <<
+          prin2 """_";
+          terpri();
+          prin2 "   """;
+          lmar := 0;
+          return 'continued >>
+        else if ppcontext!* = 'symbol then <<
+          prin2 "__";
+          terpri();
+          prin2 "   ";
+          lmar := 0;
+          return 'continued >>
+        else prin2 "\" >>; % This is used in the non-rereadable case
+      terpri();
+      lmar := 0;
+      return 'continued >> 
     else <<
-        spaces initialblanks;
-        initialblanks:=0 >>;
+      spaces initialblanks;
+      initialblanks:=0 >>;
     buffero:=cdr buffero;
     bn:=bn - 1;
     lmar:=lmar+1;
     c:=car buffero;
     if atom c then << prin2 c; go to fblank >>
-    else if blankp c then if not atom blankstoskip then <<
+    else if blankp c then
+      if not atom blankstoskip then <<
         prin2 blank;
         indblanks:=indblanks - 1;
 % blankstoskip = (stack-frame . skip-count).
         if c eq car blankstoskip then <<
-            rplacd(blankstoskip,cdr blankstoskip - 1);
-            if cdr blankstoskip=0 then blankstoskip:=t >>;
+          rplacd(blankstoskip,cdr blankstoskip - 1);
+          if cdr blankstoskip=0 then blankstoskip:=t >>;
         go to fblank >>
       else go to blankfound
     else if car c='lpar or car c='lsquare then <<

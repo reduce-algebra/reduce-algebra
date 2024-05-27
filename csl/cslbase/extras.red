@@ -292,11 +292,11 @@ symbolic procedure s!:prinl2(x, depth);
     if fixp !*print!-level!* and depth > !*print!-level!* then
        princ "#"
     else if atom x and not simple!-vector!-p x and not gensymp x then <<
-#if common!-lisp!-mode       
-       if complex!-arrayp x and not !*print!-array!* then princ "[Array]"
-       else if structp x and not !*print!-array!* then princ "[Struct]"
-       else
-#endif
+%#if common!-lisp!-mode       
+%       if complex!-arrayp x and not !*print!-array!* then princ "[Array]"
+%       else if structp x and not !*print!-array!* then princ "[Struct]"
+%       else
+%#endif
        funcall(!*prinl!-fn!*, x) >>
     else begin scalar w, length;
       w := gethash(x,!*prinl!-visited!-nodes!*);
@@ -382,7 +382,7 @@ symbolic procedure prinl x;
 % Lisp FORMAT function may be useful.
 %
 
-#if (not common!-lisp!-mode)
+%#if (not common!-lisp!-mode)
 
 % If I am in COMMON Lisp mode then a more complete version of this
 % will be installed from elsewhere.
@@ -430,7 +430,7 @@ symbolic procedure s!:format(dest, fmt, args);
 symbolic macro procedure format(u, !&optional, env);
    list('s!:format, cadr u, caddr u, 'list . cdddr u);
 
-#endif
+%#endif
 
 fluid '(s!:bn
         s!:bufferi
@@ -526,7 +526,9 @@ symbolic procedure superprinm(x,s!:lmar);
     return x
   end;
 
-flag('(superprinm superprintm prettyprint tprettyprint), 'lose);
+% I want versions in $reduce/packages/rtools to apply rather than this
+% stuff.
+%flag('(superprinm superprintm prettyprint tprettyprint), 'lose);
 
 % Access functions for a stack entry.
 
@@ -561,14 +563,39 @@ symbolic macro procedure s!:newframe(u,!&optional,v);
 symbolic macro procedure s!:blankp(u,!&optional,v);
    list('numberp, list('car, cadr u));
 
+fluid '(ppcontext!*);
+
+symbolic procedure prid(x, n);
+  begin
+    scalar ppcontext!* := 'symbol;
+    rmar := rmar - 1;
+    for each c in explode x do putch c;
+    rmar := rmar + 1
+  end;
+
+symbolic procedure pridc(x, n);
+  for each c in explode2 x do putch c;
+
+symbolic procedure prstring(x, n);
+  begin
+    scalar ppcontext!* := 'string;
+    rmar := rmar - 1;
+    for each c in explode x do putch c;
+    rmar := rmar + 1
+  end;
+
+symbolic procedure prstringc(x, n);
+  for each c in explode2 x do putch c;
+
 
 symbolic procedure s!:prindent(x,n);
 % Print list x with indentation level n.
-    if atom x then if simple!-vector!-p x then s!:prvector(x,n)
-        else for each c in 
-          (if !*pretty!-symmetric
-             then if stringp x then s!:explodes x else explode x
-            else explode2 x) do s!:putch c
+    if atom x then if vectorp x then prvector(x,n)
+                   else if stringp x then
+                     if !*pretty!-symmetric then prstring(x, n)
+                     else prstringc(x, n)
+                   else if !*pretty!-symmetric then prid(x, n)
+                   else pridc(x, n)
     else if s!:quotep x then <<
         s!:putch '!';
         s!:prindent(cadr x,n+1) >>
@@ -766,14 +793,18 @@ fblank:
 % No blank found - can do no more for now.
 % If flg='more I am in trouble and so have to print
 % a continuation mark. in the other cases I can just exit.
-        if not(flg = 'more) then return 'empty;
-        if atom car s!:buffero then
-% continuation mark not needed if last char printed was
-% special (e.g. lpar or rpar).
-            prin2 "%+"; %continuation marker.
-        terpri();
-        s!:lmar:=0;
-        return 'continued >>
+      if not(flg = 'more) then return 'empty;
+      if atom car buffero then <<
+        if ppcontext!* = 'string then <<
+          prin2 """_";
+          terpri();
+          prin2 "    """;
+          lmar := 0;
+          return 'continued >>
+        else prin2 "%+" >>; % Continuation marker within symbols. Ugh.
+      terpri();
+      lmar := 0;
+      return 'continued >>
     else <<
         spaces s!:initialblanks;
         s!:initialblanks:=0 >>;

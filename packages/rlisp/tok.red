@@ -371,10 +371,7 @@ symbolic procedure length!-without!-followers l;
 % and reserved characters (such as parentheses and infix operators).
 % It is called by the function SCAN, which translates reserved
 % characters into their internal name, and sets up the output of the
-% input line.  The following definitions of TOKEN and SCAN are quite
-% general, but also inefficient.  The reading process can often be
-% speeded up considerably if these functions (especially token) are
-% written in terms of the explicit LISP used.
+% input line.
 
 symbolic procedure prin2x u;
    outl!* := u . outl!*;
@@ -549,7 +546,8 @@ a:  if null terminalp() then <<
 % range the sequence will just be treated as raw characters and all
 % this special treatment will have been merely a diversion.
     y := intern list2string (x := cdr reverse peekchar!*);
-% For bootstrapping there has to be a "!" before the "_" on the next line.
+% For bootstrapping there has to be a escape before the underscore
+% on the next line.
     if (y := get(y, 'unicode!_character)) then <<
        peekchar!* := nil;
        named!-character!* := t;
@@ -733,7 +731,7 @@ symbolic procedure token!-number x;
             if dotp then power := power-4 >> >>
       else if x eq '!~ and y = 0 then <<
         y := minus 1;   % Can not yet write "-1" because of bootstrapping issues!
-        goto hexnum1 >>;
+        go to hexnum1 >>;
       if x eq '!_ then <<
         while ((x := readch1()) = blank) or (x = tab) or (x = !$eol!$) do nil;
         peekchar!* := x . peekchar!*;
@@ -912,8 +910,8 @@ symbolic procedure token;
                 !*minusliter)
           then go to c;
         x := token!-number crchar!*;
-        if numberp x then return minus x;  % For bootstrapping.
-        rplaca(cdr x, minus cadr x);       % Also for booting.
+        if numberp x then return (minus x);  % For bootstrapping.
+        rplaca(cdr x, minus cadr x);         % Also for booting.
         return x;
     underscore:
         x := readch1();
@@ -960,7 +958,59 @@ symbolic procedure token;
          else if x eq '!! then go to escape
          else if x eq '!- and !*minusliter
           then go to let1
-         else if x eq '!_ then go to let1     % Allow _ as letter.
+% In general "_" is permitted within a symbol. But I want to provide
+% a syntax that can support the input of very long names without forcing
+% input line to be very long. Note that for numbers an embedded underscore
+% followed by optional whitespace (including newlines) is ignored. For
+% strings there is a notation like "part1"_ <whitespace> "part2".
+% For symbols if I allowed a single underscore at the end of a line to
+% lead to continuation that would conflict with too much existing usage.
+% However double-underscore seems safe. So I will introduce a notation
+% here 'symbolstart__<newline><whitespace>symbolcontinuation' and in that
+% usage neither of the underscores will appear in the name. A case such as
+% 'start___<newline><whitespace>end' would denote 'start_end' - the rule will
+% be that what used to be the spelling of a symbol ending in two
+% underscores may now discard those and some whitespace provided
+% what follows can continue an identifier.
+% I will also only handle underscores this way if they are not escaped.
+% About the only case I can think of that might cause confusion here
+% would be something like '(__file__<newline>something).
+         else if x eq '!_ then <<
+% OK so here I have a (first) underscore. I certainly have not finished the
+% symbol yet. There are several possibilities:
+%     abc__<newline><?whitespace><continuation>
+%     abc__<newline><?whitespace><punctuation>
+%     abc__<continuation>
+%     abc__<whitespace>
+%     abc__<punctuation>
+%     abc_<continuation>
+%     abc_<whitespace>
+%     abc_<punctuation>
+% For all of these except the first the "_" will form part of the
+% current token, and for that one the token will not stop here but
+% will take at least one character from <continuation>.
+           x := readch1();
+           if x neq '!_ then <<
+             peekchar!* := x . peekchar!*;
+             x := '!_;
+             go to letter >>;
+% Now I have has two underscores in a row... See if what follows is
+% an end-of-line.
+           x := readch1();
+           if x neq !$eol!$ then <<
+             peekchar!* := '!_ . x . peekchar!*;
+             x := '!_;
+             go to letter >>;
+% Here we have "__<newline>".
+           z := list(!$eol!$, '!_);
+           while seprp (x := readch1()) do z := x . z;
+           if (liter x) or (digit x) or (x='!_) or (x='!!) then go to letter;
+           peekchar!* := x . peekchar!*;
+           while z do <<
+             peekchar!* := car z . peekchar!*;
+             z := cdr z >>;
+           x := '!_;
+           go to letter >>
          else if x eq '!: then go to maybepackage;
     ordinarysym:
         y := list2wideid reversip!* y;
@@ -1072,12 +1122,9 @@ symbolic procedure token;
         begin scalar !*raise,!*lower;
        strinx:
            x := wideid2list x; % extract character from the symbol.
-       dumpx:
-           if null x then go to dumped;
-           y := car x . y;
-           x := cdr x;
-           go to dumpx;
-       dumped:
+           while x do <<
+             y := car x . y;
+             x := cdr x >>;
            named!-character!* := nil;
            if (x := readch1()) eq !$eof!$
              then << crchar!* := blank;
@@ -1086,8 +1133,27 @@ symbolic procedure token;
             else if (null (x eq '!")) or named!-character!* then go to strinx;
            % Now check for embedded string character.
            named!-character!* := nil;
-           x := readch1();
+           x := readch1();   % Character after the '"'
            if (x eq '!") and (null named!-character!*) then go to strinx;
+% I had at one stage intended to arrange that adjacent strings got
+% concatenated here. That turns out to be a really bad idea because one
+% can (and does) have legitimate input with literal lists that contain
+% multiple strings. So instead to allow for civilised input of very
+% long strings I provide something akin to the scheme that supports very
+% long integers. A string that is immediately followed by an unescaped
+% underscore then some optional whitespace and a further '"' starting
+% what could have been a second string treated that second string as a
+% continuation of the first.
+           if (x = '!_) and (null named!-character!*) then <<
+             z := list x;
+             while seprp <<named!-character!* := nil; x := readch1() >> do
+               z := x . z;
+             if (x eq '!") and (null named!-character!*) then <<
+               x := readch1();
+               go to strinx >>;
+             while z do <<
+               peekchar!* := car z . peekchar!*;
+               z := cdr z >> >>;
            nxtsym!* := list2widestring cdr reversip!* y
          end;
         ttype!* := 1;
