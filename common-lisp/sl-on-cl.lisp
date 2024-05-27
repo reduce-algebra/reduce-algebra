@@ -1,6 +1,6 @@
 ;;; sl-on-cl.lisp --- Standard Lisp on Common Lisp
 
-;; Copyright (C) 2018, 2019, 2022 Francis J. Wright
+;; Copyright (C) 2018-2024 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 4 November 2018
@@ -3069,6 +3069,9 @@ should be true with current REDUCE.  Ignore case."
   ;; to avoid unnecessary case inversions.
   (declare (symbol u v))
   (string-not-greaterp (cl:symbol-name u) (cl:symbol-name v)))
+
+(defvar *backtrace nil
+  "Used in various places in REDUCE.  Should make it do something!")
 
 
 ;;; Operating system interface

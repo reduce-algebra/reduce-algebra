@@ -58,7 +58,7 @@ global '(!!nfpd !!nbfpd !!shbinfl vv!! !!flbint);
 global '(!!minflbf !!maxflbf);
 
 symbolic procedure normbf x;
-   begin scalar mt,s,r;integer ep,ep1;
+   begin scalar mt,s; integer ep;
       if (mt := mt!: x)=0 then go to ret;
       if mt<0 then <<mt := -mt; s := t>>;
       ep := ep!: x;

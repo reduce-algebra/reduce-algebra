@@ -189,7 +189,7 @@ symbolic procedure update!-fasl2(u,v);
 symbolic procedure upd!-fasl1(u,v,w);
    % Update fasl file for module u corresponding to file v in
    % directory packages/w or current directory if w is nil.
-   begin scalar !*break,x;
+   begin scalar !*break;
       !*faslp := t;
       if !*loadall and w and w neq u then <<
          evload list w;
