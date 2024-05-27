@@ -563,39 +563,39 @@ symbolic macro procedure s!:newframe(u,!&optional,v);
 symbolic macro procedure s!:blankp(u,!&optional,v);
    list('numberp, list('car, cadr u));
 
-fluid '(ppcontext!*);
+fluid '(s!:ppcontext!*);
 
-symbolic procedure prid(x, n);
+symbolic procedure s!:prid(x, n);
   begin
-    scalar ppcontext!* := 'symbol;
-    rmar := rmar - 1;
-    for each c in explode x do putch c;
-    rmar := rmar + 1
+    scalar s!:ppcontext!* := 'symbol;
+    s!:rmar := s!:rmar - 1;
+    for each c in explode x do s!:putch c;
+    s!:rmar := s!:rmar + 1
   end;
 
-symbolic procedure pridc(x, n);
-  for each c in explode2 x do putch c;
+symbolic procedure s!:pridc(x, n);
+  for each c in explode2 x do s!:putch c;
 
-symbolic procedure prstring(x, n);
+symbolic procedure s!:prstring(x, n);
   begin
-    scalar ppcontext!* := 'string;
-    rmar := rmar - 1;
-    for each c in explode x do putch c;
-    rmar := rmar + 1
+    scalar s!:ppcontext!* := 'string;
+    s!:rmar := s!:rmar - 1;
+    for each c in explode x do s!:putch c;
+    s!:rmar := s!:rmar + 1
   end;
 
-symbolic procedure prstringc(x, n);
-  for each c in explode2 x do putch c;
+symbolic procedure s!:prstringc(x, n);
+  for each c in explode2 x do s!:putch c;
 
 
 symbolic procedure s!:prindent(x,n);
 % Print list x with indentation level n.
     if atom x then if vectorp x then prvector(x,n)
                    else if stringp x then
-                     if !*pretty!-symmetric then prstring(x, n)
-                     else prstringc(x, n)
-                   else if !*pretty!-symmetric then prid(x, n)
-                   else pridc(x, n)
+                     if !*pretty!-symmetric then s!:prstring(x, n)
+                     else s!:prstringc(x, n)
+                   else if !*pretty!-symmetric then s!:prid(x, n)
+                   else s!:pridc(x, n)
     else if s!:quotep x then <<
         s!:putch '!';
         s!:prindent(cadr x,n+1) >>
@@ -793,17 +793,23 @@ fblank:
 % No blank found - can do no more for now.
 % If flg='more I am in trouble and so have to print
 % a continuation mark. in the other cases I can just exit.
-      if not(flg = 'more) then return 'empty;
-      if atom car buffero then <<
-        if ppcontext!* = 'string then <<
+      if not (flg='more) then return 'empty;
+      if atom car s!:buffero then <<
+        if s!:ppcontext!* = 'string then <<
           prin2 """_";
           terpri();
-          prin2 "    """;
-          lmar := 0;
+          prin2 "   """;
+          s!:lmar := 0;
           return 'continued >>
-        else prin2 "%+" >>; % Continuation marker within symbols. Ugh.
+        else if s!:ppcontext!* = 'symbol then <<
+          prin2 "__";
+          terpri();
+          prin2 "   ";
+          s!:lmar := 0;
+          return 'continued >>
+        else prin2 "\" >>; % This is used in the non-rereadable case
       terpri();
-      lmar := 0;
+      s!:lmar := 0;
       return 'continued >>
     else <<
         spaces s!:initialblanks;

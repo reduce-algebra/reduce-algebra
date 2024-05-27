@@ -116,6 +116,7 @@ symbolic procedure eqcar(a,b);
 symbolic procedure spaces n;
     for i:=1:n do prin2 blank;
 
+
 % End of compatibility section.
 
 symbolic procedure superprinm(x,lmar);
