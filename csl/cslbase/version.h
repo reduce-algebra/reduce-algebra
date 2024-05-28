@@ -49,7 +49,11 @@
 // Extract the revision number.
 
 inline constexpr int REVISION = []() constexpr {
-    const char* d = &VERSION_ID[15];
+    const char* d = &VERSION_ID[0];
+    while (*d != ' ') d++;      // Skip past "$Id"
+    d++;
+    while (*d != ' ') d++;      // Skip past name of file
+    d++;                        // Now pointing at revision number
     int v = 0, ch = 0;
     while ((ch = *d++) >= '0' && ch <= '9') v = 10*v + (ch-'0');
     return v;
@@ -88,11 +92,14 @@ inline constexpr int day_of_week(int m, int d,int y)
 
 inline bool initialize_version_date()
 {
-    const char* v = &VERSION_ID[15];
-// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxversion.h nnn yyyy-mm-dd hh:mm:ss..."
-//                                 ^
-    while (std::isdigit(*v)) v++;
+    const char* v = &VERSION_ID[0];
+// Format:         "$Id: xfilename revision yyyy-mm-dd hh:mm:ss..."
+    while (*v != ' ') v++;      // Skip past "$Id"
     v++;
+    while (*v != ' ') v++;      // Skip past name of file
+    v++;                        // Now pointing at revision number
+    while (*v != ' ') v++;      // Skip past revision number
+    v++;                        // Now pointing at start of date
     unsigned int year = get_integer(v, 4);
     unsigned int month = get_integer(v+5, 2);
     unsigned int dayofmonth = get_integer(v+8, 2);

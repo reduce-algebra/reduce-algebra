@@ -1,8 +1,9 @@
-% RLISP to LISP converter. A C Norman 2024
+
+% RLISP to LISP converter. A C Norman 2022
 
 
 %%
-%% Copyright (C) 2024, following the master REDUCE source files.          *
+%% Copyright (C) 2022, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -208,8 +209,6 @@ difference s!:rmar 21)))) (setq w (posn)) (cond ((greaterp w s!:lmar) (progn
 difference s!:lmar w)))) (s!:prindent x (plus s!:lmar 2)) (s!:overflow (quote
 none)) (linelength s!:rmar) (return x)))
 
-(flag (quote (superprinm superprintm prettyprint tprettyprint)) (quote lose))
-
 (dm s!:top (u !&optional v) (quote (car s!:stack)))
 
 (dm s!:depth (u !&optional v) (list (quote car) (cadr u)))
@@ -234,47 +233,67 @@ cadr u)) (caddr u)))
 (dm s!:blankp (u !&optional v) (list (quote numberp) (list (quote car) (cadr 
 u))))
 
-(de s!:prindent (x n) (cond ((atom x) (cond ((simple!-vector!-p x) (
-s!:prvector x n)) (t (prog (var1014) (setq var1014 (cond (!*pretty!-symmetric
-(cond ((stringp x) (s!:explodes x)) (t (explode x)))) (t (explode2 x)))) 
-lab1013 (cond ((null var1014) (return nil))) (prog (c) (setq c (car var1014))
-(s!:putch c)) (setq var1014 (cdr var1014)) (go lab1013))))) (t (cond ((
-s!:quotep x) (progn (s!:putch (quote !')) (s!:prindent (cadr x) (plus n 1))))
-(t (prog (cx) (cond ((greaterp (times 4 n) (times 3 s!:rmar)) (progn (
-s!:overflow (quote all)) (setq n (truncate n 8)) (cond ((greaterp 
-s!:initialblanks n) (progn (setq s!:lmar (plus (difference s!:lmar 
-s!:initialblanks) n)) (setq s!:initialblanks n))))))) (setq s!:stack (cons (
-s!:newframe n) s!:stack)) (s!:putch (cons (quote lpar) (s!:top))) (setq cx (
-car x)) (s!:prindent cx (plus n 1)) (cond ((and (idp cx) (not (atom (cdr x)))
-) (setq cx (get cx (quote s!:ppformat)))) (t (setq cx nil))) (cond ((and (
-equal cx 2) (atom (cddr x))) (setq cx nil))) (cond ((equal cx (quote prog)) (
-progn (s!:putch (quote ! )) (s!:prindent (car (setq x (cdr x))) (plus n 2))))
-) (setq x (cdr x)) scan (cond ((atom x) (go outt))) (s!:finishpending) (cond 
-((equal cx (quote prog)) (progn (s!:putblank) (s!:overflow s!:bufferi) (cond 
-((atom (car x)) (progn (setq s!:lmar (setq s!:initialblanks (max (difference 
-s!:lmar 6) 0))) (s!:prindent (car x) (difference n 2)) (setq x (cdr x)) (cond
-((and (not (atom x)) (atom (car x))) (go scan))) (cond ((greaterp (plus 
-s!:lmar s!:bn) n) (s!:putblank)) (t (prog (i) (setq i (plus s!:lmar s!:bn)) 
-lab1015 (cond ((minusp (times 1 (difference (difference n 1) i))) (return nil
-))) (s!:putch (quote ! )) (setq i (plus i 1)) (go lab1015)))) (cond ((atom x)
-(go outt)))))))) (t (cond ((numberp cx) (progn (setq cx (difference cx 1)) (
-cond ((equal cx 0) (setq cx nil))) (s!:putch (quote ! )))) (t (s!:putblank)))
-)) (s!:prindent (car x) (plus n 2)) (setq x (cdr x)) (go scan) outt (cond ((
-not (null x)) (progn (s!:finishpending) (s!:putblank) (s!:putch (quote !.)) (
-s!:putch (quote ! )) (s!:prindent x (plus n 5))))) (s!:putch (cons (quote 
-rpar) (difference n 2))) (cond ((and (equal (s!:indenting (s!:top)) (quote 
-indent)) (not (null (s!:blanklist (s!:top))))) (s!:overflow (car (
-s!:blanklist (s!:top))))) (t (s!:endlist (s!:top)))) (setq s!:stack (cdr 
-s!:stack))))))))
+(fluid (quote (s!:ppcontext!*)))
+
+(de s!:prid (x n) (prog (s!:ppcontext!*) (setq s!:ppcontext!* (quote symbol))
+(setq s!:rmar (difference s!:rmar 1)) (prog (var1014) (setq var1014 (explode
+x)) lab1013 (cond ((null var1014) (return nil))) (prog (c) (setq c (car 
+var1014)) (s!:putch c)) (setq var1014 (cdr var1014)) (go lab1013)) (setq 
+s!:rmar (plus s!:rmar 1))))
+
+(de s!:pridc (x n) (prog (var1016) (setq var1016 (explode2 x)) lab1015 (cond 
+((null var1016) (return nil))) (prog (c) (setq c (car var1016)) (s!:putch c))
+(setq var1016 (cdr var1016)) (go lab1015)))
+
+(de s!:prstring (x n) (prog (s!:ppcontext!*) (setq s!:ppcontext!* (quote 
+string)) (setq s!:rmar (difference s!:rmar 1)) (prog (var1018) (setq var1018 
+(explode x)) lab1017 (cond ((null var1018) (return nil))) (prog (c) (setq c (
+car var1018)) (s!:putch c)) (setq var1018 (cdr var1018)) (go lab1017)) (setq 
+s!:rmar (plus s!:rmar 1))))
+
+(de s!:prstringc (x n) (prog (var1020) (setq var1020 (explode2 x)) lab1019 (
+cond ((null var1020) (return nil))) (prog (c) (setq c (car var1020)) (
+s!:putch c)) (setq var1020 (cdr var1020)) (go lab1019)))
+
+(de s!:prindent (x n) (cond ((atom x) (cond ((vectorp x) (prvector x n)) (t (
+cond ((stringp x) (cond (!*pretty!-symmetric (s!:prstring x n)) (t (
+s!:prstringc x n)))) (t (cond (!*pretty!-symmetric (s!:prid x n)) (t (
+s!:pridc x n)))))))) (t (cond ((s!:quotep x) (progn (s!:putch (quote !')) (
+s!:prindent (cadr x) (plus n 1)))) (t (prog (cx) (cond ((greaterp (times 4 n)
+(times 3 s!:rmar)) (progn (s!:overflow (quote all)) (setq n (truncate n 8)) 
+(cond ((greaterp s!:initialblanks n) (progn (setq s!:lmar (plus (difference 
+s!:lmar s!:initialblanks) n)) (setq s!:initialblanks n))))))) (setq s!:stack 
+(cons (s!:newframe n) s!:stack)) (s!:putch (cons (quote lpar) (s!:top))) (
+setq cx (car x)) (s!:prindent cx (plus n 1)) (cond ((and (idp cx) (not (atom 
+(cdr x)))) (setq cx (get cx (quote s!:ppformat)))) (t (setq cx nil))) (cond (
+(and (equal cx 2) (atom (cddr x))) (setq cx nil))) (cond ((equal cx (quote 
+prog)) (progn (s!:putch (quote ! )) (s!:prindent (car (setq x (cdr x))) (plus
+n 2))))) (setq x (cdr x)) scan (cond ((atom x) (go outt))) (s!:finishpending
+) (cond ((equal cx (quote prog)) (progn (s!:putblank) (s!:overflow s!:bufferi
+) (cond ((atom (car x)) (progn (setq s!:lmar (setq s!:initialblanks (max (
+difference s!:lmar 6) 0))) (s!:prindent (car x) (difference n 2)) (setq x (
+cdr x)) (cond ((and (not (atom x)) (atom (car x))) (go scan))) (cond ((
+greaterp (plus s!:lmar s!:bn) n) (s!:putblank)) (t (prog (i) (setq i (plus 
+s!:lmar s!:bn)) lab1021 (cond ((minusp (times 1 (difference (difference n 1) 
+i))) (return nil))) (s!:putch (quote ! )) (setq i (plus i 1)) (go lab1021))))
+(cond ((atom x) (go outt)))))))) (t (cond ((numberp cx) (progn (setq cx (
+difference cx 1)) (cond ((equal cx 0) (setq cx nil))) (s!:putch (quote ! ))))
+(t (s!:putblank))))) (s!:prindent (car x) (plus n 2)) (setq x (cdr x)) (go 
+scan) outt (cond ((not (null x)) (progn (s!:finishpending) (s!:putblank) (
+s!:putch (quote !.)) (s!:putch (quote ! )) (s!:prindent x (plus n 5))))) (
+s!:putch (cons (quote rpar) (difference n 2))) (cond ((and (equal (
+s!:indenting (s!:top)) (quote indent)) (not (null (s!:blanklist (s!:top))))) 
+(s!:overflow (car (s!:blanklist (s!:top))))) (t (s!:endlist (s!:top)))) (setq
+s!:stack (cdr s!:stack))))))))
 
 (de s!:explodes (x) (explode x))
 
 (de s!:prvector (x n) (prog (bound) (setq bound (upbv x)) (setq s!:stack (
 cons (s!:newframe n) s!:stack)) (s!:putch (cons (quote lsquare) (s!:top))) (
-s!:prindent (getv x 0) (plus n 2)) (prog (i) (setq i 1) lab1016 (cond ((
+s!:prindent (getv x 0) (plus n 2)) (prog (i) (setq i 1) lab1022 (cond ((
 minusp (times 1 (difference bound i))) (return nil))) (progn (s!:putch (quote
 !,)) (s!:putblank) (s!:prindent (getv x i) (plus n 2))) (setq i (plus i 1)) 
-(go lab1016)) (s!:putch (cons (quote rsquare) (difference n 2))) (s!:endlist 
+(go lab1022)) (s!:putch (cons (quote rsquare) (difference n 2))) (s!:endlist 
 (s!:top)) (setq s!:stack (cdr s!:stack))))
 
 (de s!:putblank nil (prog nil (s!:putch (s!:top)) (s!:setblankcount (s!:top) 
@@ -283,14 +302,14 @@ minusp (times 1 (difference bound i))) (return nil))) (progn (s!:putch (quote
 
 (de s!:endlist (l) (setq s!:pendingrpars (cons l s!:pendingrpars)))
 
-(de s!:finishpending nil (progn (prog (var1020) (setq var1020 s!:pendingrpars
-) lab1019 (cond ((null var1020) (return nil))) (prog (stackframe) (setq 
-stackframe (car var1020)) (progn (cond ((neq (s!:indenting stackframe) (quote
-indent)) (prog (var1018) (setq var1018 (s!:blanklist stackframe)) lab1017 (
-cond ((null var1018) (return nil))) (prog (b) (setq b (car var1018)) (progn (
+(de s!:finishpending nil (progn (prog (var1026) (setq var1026 s!:pendingrpars
+) lab1025 (cond ((null var1026) (return nil))) (prog (stackframe) (setq 
+stackframe (car var1026)) (progn (cond ((neq (s!:indenting stackframe) (quote
+indent)) (prog (var1024) (setq var1024 (s!:blanklist stackframe)) lab1023 (
+cond ((null var1024) (return nil))) (prog (b) (setq b (car var1024)) (progn (
 rplaca b (quote ! )) (setq s!:indblanks (difference s!:indblanks 1)))) (setq 
-var1018 (cdr var1018)) (go lab1017)))) (s!:setblanklist stackframe t))) (setq
-var1020 (cdr var1020)) (go lab1019)) (setq s!:pendingrpars nil)))
+var1024 (cdr var1024)) (go lab1023)))) (s!:setblanklist stackframe t))) (setq
+var1026 (cdr var1026)) (go lab1025)) (setq s!:pendingrpars nil)))
 
 (de s!:quotep (x) (and !*quotes (not (atom x)) (equal (car x) (quote quote)) 
 (not (atom (cdr x))) (null (cddr x))))
@@ -325,9 +344,9 @@ var1020 (cdr var1020)) (go lab1019)) (setq s!:pendingrpars nil)))
 s!:blankp c) (progn (setq s!:rparcount 0) (go nocheck))) (t (cond ((equal (
 car c) (quote rpar)) (progn (setq s!:rparcount (plus s!:rparcount 1)) (cond (
 (greaterp s!:rparcount 4) (progn (s!:putch (quote ! )) (setq s!:rparcount 2))
-)))) (t (setq s!:rparcount 0))))))) (prog nil lab1021 (cond ((null (geq (plus
+)))) (t (setq s!:rparcount 0))))))) (prog nil lab1027 (cond ((null (geq (plus
 s!:lmar s!:bn) s!:rmar)) (return nil))) (s!:overflow (quote more)) (go 
-lab1021)) nocheck (setq s!:bufferi (cdr (rplacd s!:bufferi (list c)))) (setq 
+lab1027)) nocheck (setq s!:bufferi (cdr (rplacd s!:bufferi (list c)))) (setq 
 s!:bn (plus s!:bn 1))))
 
 (de s!:overflow (flg) (prog (c blankstoskip) (cond ((and (equal s!:indblanks 
@@ -335,37 +354,40 @@ s!:bn (plus s!:bn 1))))
 s!:initialblanks (difference s!:initialblanks 2)) (setq s!:lmar (difference 
 s!:lmar 2)) (return (quote moved!-left))))) fblank (cond ((equal s!:bn 0) (
 progn (cond ((not (equal flg (quote more))) (return (quote empty)))) (cond ((
-atom (car s!:buffero)) (prin2 "%+"))) (terpri) (setq s!:lmar 0) (return (
-quote continued)))) (t (progn (spaces s!:initialblanks) (setq 
-s!:initialblanks 0)))) (setq s!:buffero (cdr s!:buffero)) (setq s!:bn (
-difference s!:bn 1)) (setq s!:lmar (plus s!:lmar 1)) (setq c (car s!:buffero)
-) (cond ((atom c) (progn (prin2 c) (go fblank))) (t (cond ((s!:blankp c) (
-cond ((not (atom blankstoskip)) (progn (prin2 (quote ! )) (setq s!:indblanks 
-(difference s!:indblanks 1)) (cond ((eq c (car blankstoskip)) (progn (rplacd 
-blankstoskip (difference (cdr blankstoskip) 1)) (cond ((equal (cdr 
-blankstoskip) 0) (setq blankstoskip t)))))) (go fblank))) (t (go blankfound))
-)) (t (cond ((or (equal (car c) (quote lpar)) (equal (car c) (quote lsquare))
-) (progn (prin2 (get (car c) (quote s!:ppchar))) (cond ((equal flg (quote 
-none)) (go fblank))) (setq c (cdr c)) (cond ((not (null (s!:blanklist c))) (
-go fblank))) (cond ((greaterp (s!:depth c) s!:indentlevel) (progn (setq 
-s!:indentlevel (s!:depth c)) (s!:setindenting c (quote indent))))) (go fblank
-))) (t (cond ((or (equal (car c) (quote rpar)) (equal (car c) (quote rsquare)
-)) (progn (cond ((lessp (cdr c) s!:indentlevel) (setq s!:indentlevel (cdr c))
-)) (prin2 (get (car c) (quote s!:ppchar))) (go fblank))) (t (error 0 (list c 
-"UNKNOWN TAG IN OVERFLOW")))))))))) blankfound (cond ((eqcar (s!:blanklist c)
-s!:buffero) (s!:setblanklist c nil))) (setq s!:indblanks (difference 
-s!:indblanks 1)) (cond ((greaterp (s!:depth c) s!:indentlevel) (progn (cond (
-(equal flg (quote none)) (progn (prin2 (quote ! )) (go fblank)))) (cond (
-blankstoskip (setq blankstoskip nil)) (t (progn (setq s!:indentlevel (
-s!:depth c)) (s!:setindenting c (quote indent)))))))) (cond ((greaterp (
-s!:blankcount c) (difference thin!* 1)) (progn (setq blankstoskip (cons c (
-difference (s!:blankcount c) 2))) (s!:setindenting c (quote thin)) (
-s!:setblankcount c 1) (setq s!:indentlevel (difference (s!:depth c) 1)) (
-prin2 (quote ! )) (go fblank)))) (s!:setblankcount c (difference (
-s!:blankcount c) 1)) (terpri) (setq s!:lmar (setq s!:initialblanks (s!:depth 
-c))) (cond ((eq s!:buffero flg) (return (quote to!-flg)))) (cond ((or 
-blankstoskip (not (equal flg (quote more)))) (go fblank))) (return (quote 
-more))))
+atom (car s!:buffero)) (progn (cond ((equal s!:ppcontext!* (quote string)) (
+progn (prin2 """_") (terpri) (prin2 "   """) (setq s!:lmar 0) (return (quote 
+continued)))) (t (cond ((equal s!:ppcontext!* (quote symbol)) (progn (prin2 
+"__") (terpri) (prin2 "   ") (setq s!:lmar 0) (return (quote continued)))) (t
+(prin2 "\")))))))) (terpri) (setq s!:lmar 0) (return (quote continued)))) (t
+(progn (spaces s!:initialblanks) (setq s!:initialblanks 0)))) (setq 
+s!:buffero (cdr s!:buffero)) (setq s!:bn (difference s!:bn 1)) (setq s!:lmar 
+(plus s!:lmar 1)) (setq c (car s!:buffero)) (cond ((atom c) (progn (prin2 c) 
+(go fblank))) (t (cond ((s!:blankp c) (cond ((not (atom blankstoskip)) (progn
+(prin2 (quote ! )) (setq s!:indblanks (difference s!:indblanks 1)) (cond ((
+eq c (car blankstoskip)) (progn (rplacd blankstoskip (difference (cdr 
+blankstoskip) 1)) (cond ((equal (cdr blankstoskip) 0) (setq blankstoskip t)))
+))) (go fblank))) (t (go blankfound)))) (t (cond ((or (equal (car c) (quote 
+lpar)) (equal (car c) (quote lsquare))) (progn (prin2 (get (car c) (quote 
+s!:ppchar))) (cond ((equal flg (quote none)) (go fblank))) (setq c (cdr c)) (
+cond ((not (null (s!:blanklist c))) (go fblank))) (cond ((greaterp (s!:depth 
+c) s!:indentlevel) (progn (setq s!:indentlevel (s!:depth c)) (s!:setindenting
+c (quote indent))))) (go fblank))) (t (cond ((or (equal (car c) (quote rpar)
+) (equal (car c) (quote rsquare))) (progn (cond ((lessp (cdr c) 
+s!:indentlevel) (setq s!:indentlevel (cdr c)))) (prin2 (get (car c) (quote 
+s!:ppchar))) (go fblank))) (t (error 0 (list c "UNKNOWN TAG IN OVERFLOW")))))
+))))) blankfound (cond ((eqcar (s!:blanklist c) s!:buffero) (s!:setblanklist 
+c nil))) (setq s!:indblanks (difference s!:indblanks 1)) (cond ((greaterp (
+s!:depth c) s!:indentlevel) (progn (cond ((equal flg (quote none)) (progn (
+prin2 (quote ! )) (go fblank)))) (cond (blankstoskip (setq blankstoskip nil))
+(t (progn (setq s!:indentlevel (s!:depth c)) (s!:setindenting c (quote 
+indent)))))))) (cond ((greaterp (s!:blankcount c) (difference thin!* 1)) (
+progn (setq blankstoskip (cons c (difference (s!:blankcount c) 2))) (
+s!:setindenting c (quote thin)) (s!:setblankcount c 1) (setq s!:indentlevel (
+difference (s!:depth c) 1)) (prin2 (quote ! )) (go fblank)))) (
+s!:setblankcount c (difference (s!:blankcount c) 1)) (terpri) (setq s!:lmar (
+setq s!:initialblanks (s!:depth c))) (cond ((eq s!:buffero flg) (return (
+quote to!-flg)))) (cond ((or blankstoskip (not (equal flg (quote more)))) (go
+fblank))) (return (quote more))))
 
 (put (quote lpar) (quote s!:ppchar) (quote !())
 
@@ -379,18 +401,18 @@ more))))
 url)) (cond ((null a) (return nil))) (cond (dest (progn (setq d (open dest (
 quote output))) (cond ((null d) (progn (close a) (return (error 0 
 "unable to open destination file"))))) (setq d (wrs d))))) (setq b (rds a)) (
-setq w (linelength 500)) (prog nil lab1022 (cond ((null (not (equal (setq c (
-readch)) !$eof!$))) (return nil))) (princ c) (go lab1022)) (linelength e) (
+setq w (linelength 500)) (prog nil lab1028 (cond ((null (not (equal (setq c (
+readch)) !$eof!$))) (return nil))) (princ c) (go lab1028)) (linelength e) (
 rds b) (close a) (cond (dest (close (wrs d))))))
 
 (de bldmsg_temp_internal (fmt args) (prog (r a) (setq fmt (explodec fmt)) (
-prog nil lab1025 (cond ((null fmt) (return nil))) (progn (cond ((eqcar fmt (
+prog nil lab1031 (cond ((null fmt) (return nil))) (progn (cond ((eqcar fmt (
 quote !%)) (progn (setq fmt (cdr fmt)) (setq a (car args)) (setq args (cdr 
 args)) (cond ((or (eqcar fmt (quote !p)) (eqcar fmt (quote !P))) (setq a (
-explode a))) (t (setq a (explodec a)))) (prog (var1024) (setq var1024 a) 
-lab1023 (cond ((null var1024) (return nil))) (prog (c) (setq c (car var1024))
-(setq r (cons c r))) (setq var1024 (cdr var1024)) (go lab1023)))) (t (setq r
-(cons (car fmt) r)))) (setq fmt (cdr fmt))) (go lab1025)) (return (
+explode a))) (t (setq a (explodec a)))) (prog (var1030) (setq var1030 a) 
+lab1029 (cond ((null var1030) (return nil))) (prog (c) (setq c (car var1030))
+(setq r (cons c r))) (setq var1030 (cdr var1030)) (go lab1029)))) (t (setq r
+(cons (car fmt) r)))) (setq fmt (cdr fmt))) (go lab1031)) (return (
 list2string (reversip r)))))
 
 (dm bldmsg (u) (list (quote bldmsg_temp_internal) (cadr u) (cons (quote list)

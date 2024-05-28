@@ -448,8 +448,8 @@ symbolic operator ssini$
 symbolic procedure ssini(N,nf,nb)$
 % initializes N_, fblist and selects printing routines for f(i) and b(j)
 begin scalar j;
- N_:=N;   % assignung the global number of super symm generators N_
-          % For customized printing:"$  
+ N_:=N;   % assigning the global number of super symm generators N_
+          % For customized printing:  
  if nf=1 then put('f,'prifn,'myfpri)  % to suppress (1) when printing f(1)
          else put('f,'prifn,nil)$     % to print index of all f(i)
  if nb=1 then put('b,'prifn,'myfpri)  % to suppress (1) when printing b(1)

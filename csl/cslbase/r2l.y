@@ -1512,6 +1512,10 @@ static keyword_code operators[] =
        {"!#else",              HASHELSE},
        {"!#elif",              HASHELIF},
        {"!#endif",             HASHENDIF},
+       {"#if",                 HASHIF},
+       {"#else",               HASHELSE},
+       {"#elif",               HASHELIF},
+       {"#endif",              HASHENDIF},
        {NULL,                  0}
     };
 
@@ -1539,6 +1543,10 @@ intptr_t lisp_token()
     intptr_t r;
     while (isspace(ch) || skipcomment()) nextch();
     num = isdigit(ch);
+    if (ch=='#')
+    {   buffer[bp++] = ch;
+        nextch();
+    }
     while (isalpha(ch) || isdigit(ch) || ch=='_' || ch == '!' ||
            (num && ch == '.'))
     {   buffer[bp++] = ch;
@@ -1718,6 +1726,10 @@ restart_lex:
         return ENDFILE;
     }
     num = isdigit(ch);
+    if (ch=='#')
+    {   buffer[bp++] = ch;
+        nextch();
+    }
     while (isalpha(ch) || isdigit(ch) || ch=='_' || ch == '!' ||
            (num && ch == '.'))
     {   buffer[bp++] = ch;

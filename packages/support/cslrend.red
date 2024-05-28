@@ -420,10 +420,6 @@ flag follows the function name, enclosed in parentheses:
         EMBFN (?)
         EZGCDF (EZGCD)
         PRETTYPRINT (DEFN --- also called by DFPRINT)
-                This function is used in particular for output of RLISP
-                expressions in LISP syntax. If that feature is needed,
-                and the prettyprint module is not available, then it
-                should be defined as PRINT
         RPRINT (PRET)
         TIME (TIME) returns elapsed time from some arbitrary initial
                     point in milliseconds;
