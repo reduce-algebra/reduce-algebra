@@ -1,6 +1,6 @@
 # REDUCE on Common Lisp
 
-**[Francis Wright](https://sites.google.com/site/fjwcentaur), February 2023**
+**[Francis Wright](https://sites.google.com/site/fjwcentaur), May 2024**
 
 From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Guy L. Steele Jr.](https://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html):
 
@@ -8,9 +8,9 @@ From the introductory chapter of [*Common Lisp the Language, 2nd edition*, by Gu
 
 **This code is currently experimental!**
 
-The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows and Linux, where, "Linux" means the current or recent versions of Ubuntu and Fedora.  There is also some code to support macOS and I understand that REDUCE builds and runs on SBCL and CCL, but not CLISP, on macOS, although I don't run macOS myself.
+The files in this directory are intended to build and run the current distributed version of REDUCE on ANSI Common Lisp.  Some details depend on the implementation of Common Lisp but I try to keep these to a minimum.  At present, I support [Steel Bank Common Lisp](http://www.sbcl.org/) (SBCL), [CLISP](https://clisp.sourceforge.io/) and [Clozure Common Lisp](https://ccl.clozure.com/) (CCL) on MS Windows and Linux, where, "Linux" means the current or recent versions of Ubuntu and Fedora.  I understand that REDUCE builds and runs on SBCL, CLISP and CCL on macOS, although I don't run macOS myself.
 
-I have built REDUCE using SBCL 2.2.4, Cygwin GNU CLISP 2.49+ and CCL 1.12.1 on Windows, and SBCL 2.2.3, GNU CLISP 2.49.92 and CCL 1.12.1 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing recently.
+I have built REDUCE using SBCL 2.4.5, Cygwin GNU CLISP 2.49+ and CCL 1.12.2 on Windows, and SBCL 2.2.3, GNU CLISP 2.49.92 and CCL 1.12.1 on Ubuntu 20.04.4 LTS.  In all cases, REDUCE runs simple test input correctly, but I have not done any careful testing recently.
 
 The support for CCL is based on code provided by Marco Ferraris.  There is also some preliminary support for the Java-based [Armed Bear Common Lisp (ABCL)](https://abcl.org/) thanks to Rainer Schöpf, but it is not yet possible to preserve Lisp images so this version is not yet usable.
 

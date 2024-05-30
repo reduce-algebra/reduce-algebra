@@ -1,9 +1,5 @@
 #!/bin/bash
-if [ "$OSTYPE" == cygwin ]
-then
-    cmd /c redsbcl.bat
-else
-    # Start the Linux SBCL REDUCE image
-    cl=$(realpath $(dirname $0)) # common-lisp directory
-    sbcl --noinform --core $cl/fasl.sbcl/reduce.img
-fi
+# Start the Cygwin, Linux or macOS SBCL REDUCE image.
+cl=$(realpath $(dirname $0)) # common-lisp directory
+if [ "$OSTYPE" == 'cygwin' ]; then cl=$(cygpath -m $cl); fi
+sbcl --noinform --core $cl/fasl.sbcl/reduce.img

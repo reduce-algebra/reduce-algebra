@@ -96,19 +96,12 @@ symbolic procedure mkfil u;
    else if not idp u then typerr(u,"file name")
    else string!-downcase u;
 
-% seprp!* := {'! , '!	, '!, '!, !$eol!$}; % FJW
-
-% symbolic procedure seprp u;
-%    % Returns true if U is a blank or other separator (eg, tab or ff).
-%    % This definition replaces one in the BOOT file.
-%    u memq seprp!*;
-
-% The above definition fails horribly when using SBCL (although CLISP
-% and CCL work fine) with REDUCE revision 6781 and later.  This
-% revision introduced a major rewrite of the REDUCE parser.  It
-% appears that SBCL does not like cdrs of this list as boolean values.
-% The definition below is used in both cslrend.red and pslrend.red and
-% should return explicitly either t or nil.
+% My previous definition of seprp fails horribly when using SBCL
+% (although CLISP and CCL work fine) with REDUCE revision 6781 and
+% later.  This revision introduced a major rewrite of the REDUCE
+% parser.  It appears that SBCL does not like cdrs of lists as boolean
+% values.  The definition below is used in both cslrend.red and
+% pslrend.red and should return explicitly either t or nil.
 
 % These definitions are from "psl/boot.sl":
 cr!*  := intern int2id 13;              % carriage return (^M)
