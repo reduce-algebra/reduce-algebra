@@ -83,7 +83,7 @@ symbolic procedure mprino1(u,v);
         p := not(car x>cadr v) or not(cadr x>car v);
         if p then prin2ox "(";
         prinox u;
-        if p then prinox ")"
+        if p then prin2ox ")"
        end
        else if atom u then return prinox u
       else if not atom car u and (x:=strangeop u)
