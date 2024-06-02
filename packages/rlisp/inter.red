@@ -140,7 +140,7 @@ flag ('(cont),'ignore);
 % amount of time not depending on the nature of the host platform.
 
 % The value returned ranges from a bit over 1.0 for the regular version of
-% Reduce on a Raspberry Pi (ie about the slowest machine in common use
+% Reduce on a Raspberry Pi 1 (ie about the slowest machine in common use
 % today) up to almost 20.0 for the fastest desktop systems of 2018. The idea
 % of this is that it can be used with with!-timeout() to end up with
 % a time limit that represents at least roughly the same amount of work
@@ -151,7 +151,7 @@ flag ('(cont),'ignore);
 % way for comparing performance on different systems, and the exact results
 % returned will tend to vary somewhat from run to run. Despite all
 % uncertainties it may help make code that wants to set time limits be at
-% least roughtly able to set ones based on how much work has to be done.
+% least roughly able to set ones based on how much work has to be done.
 
 global '(machine_speed!*);
 machine_speed!* := nil;
@@ -167,7 +167,10 @@ symbolic procedure machine_speed();
       t0 := time();
 % At this stage in the Reduce source I do not yet have the infix operators
 % "to", ".*" and ".+" available, so I construct a sample polynomial as a
-% raw Lisp data-structure just using CONS.
+% raw Lisp data-structure just using CONS. The idea here is that getting
+% Reeuce to expand (1+x)^40 will use a range of its functionality and so
+% give me a more sensible result here than if I just used a counting loop
+% to assess performance.
       for i := 1:n do exptf((('x . 1) . 1) . 1, 40);
       t1 := time() - t0 >>;
     return (machine_speed!* := float n / float t1)
@@ -193,7 +196,7 @@ symbolic procedure machine_speed();
 % want to be normalised against machine seed. So I provide two versions here,
 % one for each scenario. The second is called with!-normalized!-timeout and it
 % takes its limit in abstract "time units" that are VERY ROUGHLY milliseconds
-% on a Raspberry pi, and are of course then much smaller on faster systems.
+% on a Raspberry pi 1, and are of course then much smaller on faster systems.
 
 % With CSL and the conservative garbage collector (which is becoming standard
 % for CSL in early 2024) I have a lower-level resource!-limit function that
@@ -226,67 +229,66 @@ symbolic procedure aftergcsystemhook u;
 symbolic procedure trap!-time!-value();
   trap!-time!*;
 
-% When I first coded this I used a "begin/end" block in it, but that impacts
-% on "return" statements written within the expression "u". So now I use
-% lambda-binding instead. Use of
-%  with!-timeout(100, << ... ; return XXX>>);
-% is still delicate because the return lies within a lambda expression not
-% directly in "program context" but that will either work or at worst
-% lead to some diagnostic, while using a "begin/end" here make things appear
-% to be OK but to behave unexpectedly.
+% Usage is
+%     with!-timeout(time_limit, form_to_evaluate);
+% and the result should be (list eval(form)) if that happens quickly enough
+% or atomic if there is a timeout. Rather like the behaviour of errorset.`
+
 
 % Absolute time limit in milliseconds...
 
 #if (member 'csl lispsystem!*)
 
-smacro procedure with!-timeout(n, u);
-  (lambda !~ott!~;
-    (lambda trap!-time!*;
-      << trap!-time!* := time() + fix n;
-         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
-            trap!-time!* := !~ott!~;
-         catch('!@timeout!@, resource!-limit(u, fix n/1000))>>)(nil))
-    (trap!-time!-value());
+symbolic procedure with!-timeout(n, u);
+  begin
+    scalar ott := trap!-time!*;
+    return begin
+      scalar trap!-time!* := time() + fix n;
+      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+      return eval
+        list('catch, ''!@timeout!@,
+          list('resource!-limit, mkquote u, fix n/1000));
+    end
+  end;
 
 % Time limit in arbitrary units such that (very roughly) slow and fast
 % machines get to do about the same amount of work before being interrupted.
 % I think of the argument as being very roughly "Raspberry Pi milliseconds",
 % so mid or high-range laptops or desktops will take less than that time.
 
-smacro procedure with!-normalized!-timeout(n, u);
-  (lambda !~ott!~;
-    (lambda trap!-time!*;
-      << trap!-time!* := time() + fix (n/machine_speed());
-         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
-             trap!-time!* := !~ott!~;
-         catch('!@timeout!@,
-             resource!-limit(u, fix (n/machine_speed())/1000))>>)(nil))
-    (trap!-time!-value());
+symbolic procedure with!-timeout(n, u);
+  begin
+    scalar ott := trap!-time!*;
+    return begin
+      scalar trap!-time!* := time() + fix n;
+      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+      return eval
+        list('catch, ''!@timeout!@,
+          list('resource!-limit, mkquote u, fix n/machine_speed()/1000));
+    end
+  end;
 
 #else
 
-smacro procedure with!-timeout(n, u);
-  (lambda !~ott!~;
-    (lambda trap!-time!*;
-      << trap!-time!* := time() + fix n;
-         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
-            trap!-time!* := !~ott!~;
-         catch('!@timeout!@, u . nil)>>)(nil))
-    (trap!-time!-value());
+symbolic procedure with!-timeout(n, u);
+  begin
+    scalar ott := trap!-time!*;
+    return begin
+      scalar trap!-time!* := time() + fix n;
+      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+      return eval list('catch, ''!@timeout!@, u)
+    end
+  end;
 
-% Time limit in arbitrary units such that (very roughly) slow and fast
-% machines get to do about the same amount of work before being interrupted.
-% I think of the argument as being very roughly "Raspberry Pi milliseconds",
-% so mid or high-range laptops or desktops will take less than that time.
-
-smacro procedure with!-normalized!-timeout(n, u);
-  (lambda !~ott!~;
-    (lambda trap!-time!*;
-      << trap!-time!* := time() + fix (n/machine_speed());
-         if numberp !~ott!~ and trap!-time!* > !~ott!~ then
-             trap!-time!* := !~ott!~;
-         catch('!@timeout!@, u . nil)>>)(nil))
-    (trap!-time!-value());
+symbolic procedure with!-timeout(n, u);
+  begin
+    scalar ott := trap!-time!*;
+    return begin
+      scalar trap!-time!* := time() + fix n;
+      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
+      return eval list('catch, ''!@timeout!@, u)
+    end
+  end;
 
 #endif
 
@@ -294,12 +296,12 @@ smacro procedure with!-normalized!-timeout(n, u);
 % A typical use of this would be:
 %
 %    with!-timeout(7000,               % allow 7 seconds.
-%                  perform_some_calculation());
+%                  '(perform_some_calculation));
 % or
 %    with!-normalized!-timeout(70000, % 70000 "abstract time units"
 %                                     % About as previous case on a mid-range
 %                                     % computer of 2018.
-%                             perform_some_calculation());
+%                             '(perform_some_calculation));
 %
 % These return an atom if the time limit was exceeded, and otherwise a list
 % whose car is the value of the protected expression.
