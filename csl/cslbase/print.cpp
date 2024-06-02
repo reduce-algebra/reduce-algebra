@@ -4283,6 +4283,21 @@ LispObject Lterpri(LispObject env)
     return nil;
 }
 
+// optterpri() performs a terpri() [ie prints a newline character) if there
+// are any characters on the current line.
+
+LispObject Loptterpri(LispObject env)
+{   SingleValued fn;
+    LispObject stream = qvalue(standard_output);
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
+    if (!is_stream(stream)) stream = lisp_terminal_io;
+    if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream) != 0)
+    {   putc_stream('\n', stream);
+        if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
+    }
+    return nil;
+}
+
 LispObject Lflush(LispObject env)
 {   SingleValued fn;
     LispObject stream = qvalue(standard_output);
@@ -5643,6 +5658,7 @@ setup_type const print_setup[] =
     {"posn",                      Lposn, Lposn_1, G2Wother, G3Wother, G4Wother},
     DEF_1("spaces",               Lxtab),
     DEF_0("terpri",               Lterpri),
+    DEF_0("optterpri",            Loptterpri),
     DEF_0("tmpdir",               Ltmpdir),
     {"tmpnam",                    Ltmpnam, Ltmpnam1, G2Wother, G3Wother, G4Wother},
     DEF_1("ttab",                 Lttab),
