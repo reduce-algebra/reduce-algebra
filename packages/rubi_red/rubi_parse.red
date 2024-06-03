@@ -728,7 +728,8 @@ symbolic procedure probably_zero(u, v);
   begin
     scalar r;
     r := with!-timeout(10000, % Allow ten seconds
-       errorset(list('probably_zero1, mkquote u, mkquote v), t, t));
+       list('errorset,
+            mkquote list('probably_zero1, mkquote u, mkquote v), t, t));
     if atom r then <<
       printc "Resource limit exceeded checking equality";
       return nil >>;
@@ -987,7 +988,7 @@ symbolic procedure safe_evaluate a;
   begin
     scalar w;
     w := with!-timeout(time_limit!*,
-      errorset(a, nil, nil));
+      list('errorset, mkquote a, nil, nil));
     if atom w then return 'timeout;
     return car w
   end;
