@@ -82,6 +82,12 @@ symbolic procedure mkrn(u,v);
    %converts two integers U and V into a rational number, an integer
    %or NIL;
    if v<0 then mkrn(-u,-v)
+% Some tests with "complex-rounded" somehow managed to pass floating
+% point values down to here such that the call to gcdn crashed. I intercept
+% some special cases and expect that use of rational number will be
+% uncommon enough that the cost will not hurt anybody.
+    else if u = 0.0 then '!:rn!: . (0 . 1)
+    else if v = 1.0 then '!:rn!: . (u . 1)
     else (lambda m; '!:rn!: . ((u/m) . (v/m))) gcdn(u,v);
 
 symbolic procedure !*i2rn u;
