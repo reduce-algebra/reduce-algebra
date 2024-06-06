@@ -915,7 +915,7 @@ int32_t write_action_broadcast(int32_t c, LispObject f)
     return r;
 }
 
-int char_to_pipeout(int c, LispObject stream)
+int32_t char_to_pipeout(int c, LispObject stream)
 {   if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;

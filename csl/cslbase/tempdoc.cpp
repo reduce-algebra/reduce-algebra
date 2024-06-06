@@ -2455,7 +2455,7 @@ to
 // Not yet written
 //
 
-// fns [resource!-exceeded expr] \item [{\ttfamily resource!-exceeded} {\itshape  expr}] \index{{\ttfamily resource"!-exceeded} {\itshape  expr}} ~\newline
+// fns [resource!-exceeded expr] \item [{\ttfamily resource!-exceeded} {\itshape  expr}] \index{{\ttfamily resource!-exceeded} {\itshape  expr}} ~\newline
 // Not yet written
 //
 

@@ -794,7 +794,7 @@ LispObject bad_specialn(LispObject, int, ...)
     give_up();
 }
 
-static char dependency_file[LONGEST_LEGAL_FILENAME] = {0};
+char dependency_file[LONGEST_LEGAL_FILENAME] = {0};
 static std::vector<char *> dependency_map;
 
 void report_file(const char *s)
@@ -1293,7 +1293,7 @@ size_t output_directory;
 character_reader *procedural_input;
 character_writer *procedural_output;
 
-int init_flags = 0;
+unsigned int init_flags = 0;
 
 #ifdef WITH_GUI
 std::FILE *alternative_stdout = nullptr;
@@ -1321,7 +1321,6 @@ bool restartp;
 double max_store_size = 0.0;
 const size_t pageMega = 8;
 size_t maxPages = 0;
-
 
 #if !defined HAVE_CILK && !defined ARITHLIB
 std::thread kara_thread[2];
@@ -1490,14 +1489,16 @@ public:
 #endif
     }
     ~KaratsubaThreads()
-    {
+    {   if (!inChildOfFork)
+        {
 #ifndef HAVE_CILK
-        {   std::lock_guard<std::mutex> lk(kara_mutex);
-            kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
-            kara_done = 0;
-        }
-        cv_kara_ready.notify_all();
+            {   std::lock_guard<std::mutex> lk(kara_mutex);
+                kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
+                kara_done = 0;
+            }
+            cv_kara_ready.notify_all();
 #endif
+        }
     }
 };
 
@@ -3180,6 +3181,7 @@ int async_interrupt(int type)
 
 LispObject respond_to_stack_event()
 {   uintptr_t f = event_flag.fetch_and(0);
+printf("event_flag = %.8x\n", (int)f); fflush(stdout); // @@@
     if (f == 0) return aerror("stack overflow");
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of
@@ -3420,9 +3422,10 @@ int cslfinish(character_writer *w)
         term_printf("fullest_package = %" PRIu64 "\n", (uint64_t)fullest_package);
         term_printf("fullest_hash_table = %" PRIu64 "\n", (uint64_t)fullest_hash_table);
 #endif
-        term_printf("\n\nEnd of Lisp run after %" PRId64 ".%.2" PRId64
-                    "+%" PRId64 ".%.2" PRId64 " seconds\n",
-                    t/100, t%100, gct/100, gct%100);
+        if ((init_flags & INIT_SILENT) == 0)
+            term_printf("\n\nEnd of Lisp run after %" PRId64 ".%.2" PRId64
+                        "+%" PRId64 ".%.2" PRId64 " seconds\n",
+                        t/100, t%100, gct/100, gct%100);
     }
     drop_heap_segments();
     if (spool_file != nullptr)

@@ -69,7 +69,9 @@ LispObject nreverse(LispObject a)
 //                                    and can never be an atom.
 
 LispObject eval(LispObject u, LispObject env)
-{   THREADID;
+{   if (time_limit >= 0 &&
+        read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
+    THREADID;
     STACK_SANITY;
     assert (env == nil || consp(env));
 #ifdef DEBUG
@@ -1654,20 +1656,11 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
 // to be linked with special libraries to support the shared memory APIs,
 // but the easy way to get a system built there is just to disable this!
 
-#if defined HAVE_UNISTD_H && \
-    defined HAVE_SYS_TYPES_H && \
-    defined HAVE_SYS_STAT_H && \
-    defined HAVE_SYS_WAIT_H && \
-    defined HAVE_SIGNAL_H && \
-    defined HAVE_SYS_SHM_H && \
-    defined HAVE_SYS_IPC_H && \
-    defined HAVE_FORK && \
-    defined HAVE_WAIT && \
-    defined HAVE_WAITPID && \
-    defined HAVE_SHMGET && \
-    defined HAVE_SHMAT && \
-    defined HAVE_SHMDT && \
-    defined HAVE_SHMCTL && \
+// I have also simplified the conditions here so that I really just
+// check if fork() is available and if it is I suppose that all the rest
+// will be there too.
+
+#if defined HAVE_FORK && \
     !defined __ANDROID__
 
 #include <sys/types.h>
@@ -1745,6 +1738,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
     }
     else if (pid1 == 0)
     {   // TASK 1 created OK
+        inChildOfFork = true;
         LispObject r1 = nil;
         if_error(r1 = Lapply2(nil, a, b, nil),
 // If the evaluation failed I will exit indicating a failure.
@@ -1755,7 +1749,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Exiting from the sub-task would in fact detach from the shared data
 // segment, but I do the detaching explictly to feel tidy.
         shmdt(shared);
-        return Lstop(nil, fixnum_of_int(0));
+        std::quick_exit(0);
     }
     else
     {
@@ -1771,6 +1765,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
         }
         else if (pid2 == 0)
         {   // TASK 2
+            inChildOfFork = true;
             LispObject r2 = nil;
             if_error(r2 = Lapply2(nil, a, b, lisp_true),
                      // Error handler
@@ -1778,7 +1773,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
                      my_exit());
             write_result(nil, r2, shared+PARSIZE);
             shmdt(shared);
-            return Lstop(nil, fixnum_of_int(0));
+            std::quick_exit(0);
         }
         else
         {
@@ -1836,7 +1831,10 @@ LispObject Lbacktrace(LispObject env)
     pid1 = fork();
     if (pid1 < 0) return aerror("Fork 1 failed in backtrace function");
     else if (pid1 == 0) // TASK 1 created OK
-        return display_backtrace();
+    {   inChildOfFork = true;
+        display_backtrace();
+        std::quick_exit(0);
+    }
     else
     {   // Wait for the sub-task to finishes.
         wait(nullptr);
@@ -1857,6 +1855,175 @@ LispObject Lbacktrace(LispObject env)
 }
 
 #endif
+
+#ifndef WIN32
+
+#include <unistd.h>
+#include <sys/wait.h>
+
+// sandbox-eval behaves much like eval, EXCEPT for two key differences.
+// (1) The evaluation of u will not change the state of the Lisp
+//     world. It can not change existing data structures (including
+//     those used in the form to be evaluated. It can not change
+//     fluid or global variables. It can not impact flow of control
+//     even if it used THROW or raises errors.
+// (2) The result returned will have the characteristics of data
+//     returned by the Lisp reader. So symbols named in it will
+//     refer to ordinary symbols. There can not be any gensyms present
+//     (any that had been present in the result a natural evaluation of
+//     the form would have led to will have become simple standard
+//     symbols. There will be no sharing of sub-structures either
+//     within the result or with any existing data. Even if the
+//     form included or introduced sharing. If cyclic data is
+//     present in the result the code is liable to loop and fail.
+//     And such failures are liable to mess up the whole system up
+//     to and including causing it to hang.
+//
+// For some uses it will be proper to make the form that is to be
+// evaluated using errorset and something like with!-timeout to
+// get a better guarantee that things will behave!
+
+LispObject Lsandbox_eval(LispObject env, LispObject u)
+{   SingleValued fn;
+    int pipefd[2];
+    pipe(pipefd);
+    pid_t procedId  = fork();
+    if (procedId == 0) // CHILD
+    {   inChildOfFork = true;
+        close(pipefd[0]);
+// When this task completes I really do not want it to say
+//   "End of Lisp run..."
+        init_flags |= INIT_SILENT;
+        init_flags &= ~INIT_VERBOSE;
+// Now there is a "jolly" here. the (POSIX) definition of fork demands
+// that threads other than the calling one are not reflected into the copied
+// world. When this system is running normally there will typically be
+// four threads active. One watches for input from the keyboard or handles
+// the GUI, while the other three are helpers for multiplication.
+// In this child process these will not be running, although muxexes
+// associated with them may be held.
+// Also at the termination of the child any attempt to cause these threads
+// to terminate and possibly even to communicate with them is liable to
+// cause a crash!
+// The code here will not support multiple values!
+        LispObject r = eval(u, nil);
+// The following mess create an output stream to the pipe and
+// sends my result down it. And then it closes the pipe.
+        spool_file = nullptr;
+        procedural_output = nullptr;
+        LispObject out = make_stream_handle();
+        set_stream_file(out, fdopen(pipefd[1], "w"));
+        set_stream_write_fn(out, char_to_pipeout);
+        set_stream_write_other(out, write_action_pipe);
+        set_stream_read_other(out, read_action_output_file);
+// The above is basically transcribed from "popen".
+        escaped_printing = escape_yes;
+        active_stream = out;
+        internal_prin(r, 0);
+        putc_stream('\n', out);
+        other_write_action(WRITE_CLOSE, out);
+// It seems to be (to me) unexpectedly important to use quick_exit() here
+// so that various tidying up and potential printing that can happen during
+// normal shutdown does not happen. In particular this avoids trouble with
+// the threads that might in normal circumstances need closing down but
+// here in the child process after a fork() do not really exist.
+        std::quick_exit(0);
+    }
+// Here I am in the PARENT
+    close(pipefd[1]);
+// Retrieve results from child process.
+    LispObject in = make_stream_handle();
+    set_stream_file(in, fdopen(pipefd[0], "r"));
+    set_stream_read_fn(in, char_from_pipe);
+    set_stream_read_other(in, read_action_pipe);
+    LispObject r;
+    {   save_reader_workspace RAII OPTTHREAD;
+        reader_workspace = nil;
+        r = Lread_sub(in, curchar);
+    }
+    other_read_action(READ_CLOSE, in);
+    wait(NULL);    // Wait for child to terminate
+    return r;
+}
+
+// Much the same by apply not eval.
+
+LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
+{   SingleValued fn1;
+    int pipefd[2];
+    pipe(pipefd);
+    pid_t procedId  = fork();
+    if (procedId == 0) // CHILD
+    {   inChildOfFork = true;
+        close(pipefd[0]);
+// When this task completes I really do not want it to say
+//   "End of Lisp run..."
+        init_flags |= INIT_SILENT;
+        init_flags &= ~INIT_VERBOSE;
+// Now there is a "jolly" here. the (POSIX) definition of fork demands
+// that threads other than the calling one are not reflected into the copied
+// world. When this system is running normally there will typically be
+// four threads active. One watches for input from the keyboard or handles
+// the GUI, while the other three are helpers for multiplication.
+// In this child process these will not be running, although muxexes
+// associated with them may be held.
+// Also at the termination of the child any attempt to cause these threads
+// to terminate and possibly even to communicate with them is liable to
+// cause a crash!
+// The code here will not support multiple values!
+        LispObject r = apply(fn, args, nil, apply_symbol);
+// The following mess create an output stream to the pipe and
+// sends my result down it. And then it closes the pipe.
+        spool_file = nullptr;
+        procedural_output = nullptr;
+        LispObject out = make_stream_handle();
+        set_stream_file(out, fdopen(pipefd[1], "w"));
+        set_stream_write_fn(out, char_to_pipeout);
+        set_stream_write_other(out, write_action_pipe);
+        set_stream_read_other(out, read_action_output_file);
+// The above is basically transcribed from "popen".
+        escaped_printing = escape_yes;
+        active_stream = out;
+        internal_prin(r, 0);
+        putc_stream('\n', out);
+        other_write_action(WRITE_CLOSE, out);
+// It seems to be (to me) unexpectedly important to use quick_exit() here
+// so that various tidying up and potential printing that can happen during
+// normal shutdown does not happen. In particular this avoids trouble with
+// the threads that might in normal circumstances need closing down but
+// here in the child process after a fork() do not really exist.
+        std::quick_exit(0);
+    }
+// Here I am in the PARENT
+    close(pipefd[1]);
+// Retrieve results from child process.
+    LispObject in = make_stream_handle();
+    set_stream_file(in, fdopen(pipefd[0], "r"));
+    set_stream_read_fn(in, char_from_pipe);
+    set_stream_read_other(in, read_action_pipe);
+    LispObject r;
+    {   save_reader_workspace RAII OPTTHREAD;
+        reader_workspace = nil;
+        r = Lread_sub(in, curchar);
+    }
+    other_read_action(READ_CLOSE, in);
+    wait(NULL);    // Wait for child to terminate
+    return r;
+}
+
+#else // WIN32
+
+LispObject Lsandbox_eval(LispObject env, LispObject a)
+{   SingleValued fn;
+    return aerror("sandbox-eval not supported on this platform");
+}
+
+LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
+{   SingleValued fn;
+    return aerror("sandbox-apply not supported on this platform");
+}
+
+#endif // WIN32
 
 LispObject Lsleep(LispObject env, LispObject a)
 {   SingleValued fn;
@@ -1910,28 +2077,30 @@ LispObject Lshow_stack_0(LispObject env)
 }
 
 setup_type const eval1_setup[] =
-{   {"bytecounts",      Lbytecounts_0, Lbytecounts_1, G2Wother, G3Wother, G4Wother},
-    {"idapply",         G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
-    DEF_1("eval",       Leval),
-    {"apply",           G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
-    DEF_1("apply0",     Lapply0),
-    DEF_2("apply1",     Lapply1),
-    DEF_3("apply2",     Lapply2),
-    DEF_4up("apply3",   Lapply3),
-    DEF_4up("apply4",   Lapply4),
-    DEF_1("evlis",      Levlis),
+{   {"bytecounts",         Lbytecounts_0, Lbytecounts_1, G2Wother, G3Wother, G4Wother},
+    {"idapply",            G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
+    DEF_1("eval",          Leval),
+    {"apply",              G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
+    DEF_1("apply0",        Lapply0),
+    DEF_2("apply1",        Lapply1),
+    DEF_3("apply2",        Lapply2),
+    DEF_4up("apply3",      Lapply3),
+    DEF_4up("apply4",      Lapply4),
+    DEF_1("evlis",         Levlis),
 // The symbol "funcall" gets set up manually in restart.cpp, so I should not
 // include it in the list here.
-//  {"funcall",         G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
-    {"funcall*",        G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
-    DEF_2("parallel",   Lparallel),
-    DEF_1("sleep",      Lsleep),
-    {"values",          Lvalues_0, Lvalues_1, Lvalues_2, Lvalues_3, Lvalues_4up},
-    {"macroexpand",     G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
-    {"macroexpand-1",   G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
-    DEF_0("backtrace",  Lbacktrace),
-    {"show-stack",      Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
-    {nullptr,           nullptr, nullptr, nullptr, nullptr, nullptr}
+//  {"funcall",            G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+    {"funcall*",           G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+    DEF_2("parallel",      Lparallel),
+    DEF_1("sandbox-eval",  Lsandbox_eval),
+    DEF_2("sandbox-apply", Lsandbox_apply),
+    DEF_1("sleep",         Lsleep),
+    {"values",             Lvalues_0, Lvalues_1, Lvalues_2, Lvalues_3, Lvalues_4up},
+    {"macroexpand",        G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
+    {"macroexpand-1",      G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
+    DEF_0("backtrace",     Lbacktrace),
+    {"show-stack",         Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
+    {nullptr,              nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 // end of eval1.cpp

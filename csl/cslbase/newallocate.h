@@ -1078,10 +1078,14 @@ extern void grabFreshPage(PageType type);
 // borrowing must not update chunkStatus. This function must be called
 // potentially repeatedly until it returns a value other than zero! 
 
+extern std::uint64_t read_clock();
+
 inline uintptr_t getNBytes(size_t n, Page* current,
                            uintptr_t& fringe, uintptr_t& limit, uintptr_t &end,
                            bool borrowing)
-{   for (;;)
+{   if (time_limit >= 0 &&
+        read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
+    for (;;)
     {   uintptr_t r = fringe;
         my_assert(fringe <= limit, where("fringe < limit"));
         my_assert(fringe > (uintptr_t)current &&

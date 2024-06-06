@@ -982,7 +982,9 @@ LispObject Lerrorset_2(LispObject env, LispObject form, LispObject ffg1)
 //   function catches that fact and returns an atomic value.
 //   Resource limits are not precise, and are specified by the
 //   subsequent arguments here:
-//      time:  an integer giving a time allowance in seconds
+//      time:  an integer giving a time allowance in seconds. Note that the
+//             shorted limit supported is 2 seconds and if you say "1" it
+//             is increased to 2 for you.
 //      space: an integer giving a measure of memory that may be used,
 //             expressed in units of "megaconses". This may only be
 //             checked for at garbage collection and so small values

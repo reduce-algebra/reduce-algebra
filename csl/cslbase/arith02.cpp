@@ -844,7 +844,7 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
     if (4*lenb <= lenc) // In this case I should shrink lenc a bit..
     {   size_t newlenc = (lenb+1)/2;
         int k = 0;
-        while (newlenc > KARATSUBA_CUTOFF)
+        while (newlenc > KARATSUBA_CUTOFF && !inChildOfFork)
         {   newlenc = (newlenc + 1)/2;
             k++;
         }
@@ -855,7 +855,7 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         newlenc = 4*newlenc;
         while (lenc > newlenc) c[--lenc] = 0;
     }
-    if (lena > karatsuba_parallel)
+    if (lena > karatsuba_parallel && !inChildOfFork)
     {   size_t save = karatsuba_parallel;
 // I will only allow a single level of the recursion to use threads, and I
 // achieve that by temporarily resetting the cut-off here...
@@ -863,7 +863,7 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         long_times1p(c, a, b, d, lena, lenb, lenc);
         karatsuba_parallel = save;
     }
-    else if (lena > KARATSUBA_CUTOFF)
+    else if (lena > KARATSUBA_CUTOFF && !inChildOfFork)
         long_times1(c, a, b, d, lena, lenb, lenc);
     else long_times2(c, a, b, lena, lenb, lenc);
 }
@@ -954,13 +954,13 @@ static LispObject timesbb(LispObject a, LispObject b)
 // of two as a factor so that (recursive) splitting in two does not cause
 // trouble later.  Then I have to allocate some workspace, the size of that
 // being related to the size of the numbers being handled.
-        if (lena > KARATSUBA_CUTOFF)
+        if (lena > KARATSUBA_CUTOFF && !inChildOfFork)
         {   size_t lend;
             int k = 0;
 // I pad lenc up to have a suitably large power of 2 as a factor so
 // that splitting numbers in half works neatly for me.
             lenc = (lenb+1)/2;  // rounded up half-length of longer number
-            while (lenc > KARATSUBA_CUTOFF)
+            while (lenc > KARATSUBA_CUTOFF && !inChildOfFork)
             {   lenc = (lenc + 1)/2;
                 k++;
             }

@@ -79,7 +79,7 @@ int first_char(LispObject ch)
 
 //      Basic version of Lisp reader.
 
-static int curchar = NOT_CHAR;
+int curchar = NOT_CHAR;
 std::FILE *non_terminal_input;
 
 size_t boffop;
@@ -3309,7 +3309,7 @@ int32_t read_action_vector(int32_t op, LispObject f)
 
 static int most_recent_read_point = 0;
 
-inline LispObject Lread_sub(LispObject stream, int cursave)
+LispObject Lread_sub(LispObject stream, int cursave)
 {   SingleValued fn;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3337,27 +3337,6 @@ inline LispObject Lread_sub(LispObject stream, int cursave)
     save_stream_1 RAII(THREADARG stream, cursave);
     return read_s(stream);
 }
-
-// This class is rather like "Save" except that it specialises on where
-// things should be restored to.
-
-class save_reader_workspace
-{   LispObject *save;
-    DECLARETHREADID
-public:
-#ifdef NO_THREADS
-    save_reader_workspace()
-#else // NO_THREADS
-    save_reader_workspace(uintptr_t id) : threadId(id)
-#endif // NO_THREADS
-    {   *++stack = reader_workspace;
-        save = stack;
-    }
-    ~save_reader_workspace()
-    {   stack = save;
-        reader_workspace = *stack--;
-    }
-};
 
 LispObject Lread(LispObject env)
 // The full version of read_s() has to support extra optional args

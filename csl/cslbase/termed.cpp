@@ -274,6 +274,8 @@ bool termEnabled = false;
 #define ALT_BIT    0x20000000
 #define ARROW_BIT  0x40000000
 
+inline bool inChildOfFork = false;
+
 #ifndef AVOID_TERMINAL_THREADS
 static std::thread keyboardThread;
 static bool keyboardThreadActive;
@@ -284,7 +286,8 @@ static HANDLE keyboardNeeded; // a mutex
 
 static void quitKeyboardThread()
 {   if (keyboardThreadActive &&
-        keyboardThread.get_id() != std::this_thread::get_id())
+        keyboardThread.get_id() != std::this_thread::get_id() &&
+        !inChildOfFork)
     {   keyboardThreadActive = false;
         while (keyboardThreadHandle == (HANDLE)(-1)) Sleep(10);
         ReleaseMutex(keyboardNeeded);
@@ -300,7 +303,8 @@ static int keyboardPipe[2];    // entry 0 is read end, 1 is write end
 
 static void quitKeyboardThread()
 {   if (keyboardThreadActive &&
-        keyboardThread.get_id() != std::this_thread::get_id())
+        keyboardThread.get_id() != std::this_thread::get_id() &&
+        !inChildOfFork)
     {   keyboardThreadActive = false;
         if (write(keyboardPipe[1], "\n\n\n\n", 4) != 4)
            my_abort("failed to send terminate message to keyboard thread");
@@ -336,6 +340,7 @@ BOOL MyReadConsoleInput(DWORD *np)
 
 int getFromKeyboard()
 {
+    if (inChildOfFork) return EOF;
 #ifdef WIN32
     DWORD n;
     int down, key, ascii, unicode, ctrl;

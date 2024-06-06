@@ -935,11 +935,19 @@ inline void do_freerstr()
     }
 }
 
+inline int countdown = 1000;
+
 inline void poll_jump_back(LispObject& A_reg)
 {
 #ifdef CONSERVATIVE
     static uintptr_t n = 0;
-    if ((++n & 0x3f) == 0) poll();
+    if (--countdown < 0)
+    {   countdown = 1000;
+        stackcheck();
+        if (time_limit >= 0 &&
+            read_clock()/1000 > (std::uint64_t)time_limit)
+                resource_exceeded();
+    }
 #else // CONSERVATIVE
     THREADID;
     if ((uintptr_t)stack >=

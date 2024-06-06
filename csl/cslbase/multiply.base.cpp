@@ -304,10 +304,12 @@ public:
 
     ~DriverData()
     {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
-        releaseWorkers(true);
-        w_0.join();
-        w_1.join(); // These calls to join wait for the threads to shut down.
-        w_2.join();
+        if (!inChildOfFork)
+        {   releaseWorkers(true);
+            w_0.join();
+            w_1.join(); // Wait for the threads to shut down.
+            w_2.join();
+        }
     }
 
 // Using the worker threads is then rather easy: one sets up data in
