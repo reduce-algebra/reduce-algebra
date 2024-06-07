@@ -143,6 +143,31 @@ extern char prompt_string[MAX_PROMPT_LENGTH];
 INLINE_VAR const uint64_t INITIAL_OBVEC_SIZE=goodPrimes[11];  // 2036
 INLINE_VAR const uint64_t MAX_OBVEC_SIZE=goodPrimes[30]; // 2147483647
 
+extern LispObject Lread_sub(LispObject stream, int cursave);
+
+// This class is rather like "Save" except that it specialises on where
+// things should be restored to.
+
+extern int curchar;
+
+class save_reader_workspace
+{   LispObject *save;
+    DECLARETHREADID
+public:
+#ifdef NO_THREADS
+    save_reader_workspace()
+#else // NO_THREADS
+    save_reader_workspace(uintptr_t id) : threadId(id)
+#endif // NO_THREADS
+    {   *++stack = reader_workspace;
+        save = stack;
+    }
+    ~save_reader_workspace()
+    {   stack = save;
+        reader_workspace = *stack--;
+    }
+};
+
 #endif // header_read_h
 
 // end of cslread.h

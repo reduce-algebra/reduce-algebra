@@ -399,6 +399,7 @@ typedef struct Cons_Cell_
 
 
 extern bool valid_address(void *pointer);
+extern char dependency_file[LONGEST_LEGAL_FILENAME];
 //[[noreturn]] extern void my_abort();
 //[[noreturn]] extern void my_abort(const char *msg);
 

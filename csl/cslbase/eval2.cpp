@@ -51,7 +51,9 @@
 
 LispObject apply(LispObject fn, LispObject args,
                  LispObject env, LispObject from)
-{   LispObject def;
+{   if (time_limit >= 0 &&
+        read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
+    LispObject def;
     THREADID;
     for (;;)
     {   if (symbolp(fn))

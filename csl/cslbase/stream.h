@@ -103,6 +103,7 @@ extern int char_from_vector(LispObject f);
 
 extern int32_t read_action_terminal(int32_t c, LispObject f);
 extern int32_t read_action_file(int32_t c, LispObject f);
+extern int32_t read_action_pipe(int32_t op, LispObject f);
 extern int32_t read_action_output_file(int32_t c, LispObject f);
 extern int32_t read_action_synonym(int32_t c, LispObject f);
 extern int32_t read_action_concatenated(int32_t c, LispObject f);

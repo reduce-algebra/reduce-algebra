@@ -485,10 +485,11 @@ void grabFreshPage(PageType type)
 {   bool mustGrab = withinGarbageCollector;
     space_now++;
     if (!mustGrab)
-    {   // Check for timeout and spaceout.
+    {   // Check for timeout and spaceout. Do not even read the clock
+        // if I am not going to check against it.
         time_now = read_clock()/1000;
         if ((space_limit >= 0 && space_now > space_limit) ||
-            (time_limit >= 0 && time_now > time_limit) ||
+            (time_limit >= 0 && time_now > (std::uint64_t)time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
             resource_exceeded();
         stackcheck();  // can pick up any pending SIGINT

@@ -403,6 +403,7 @@ extern uint64_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern bool modulus_is_large;
+inline bool inChildOfFork = false;
 extern size_t karaSize;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
@@ -606,7 +607,7 @@ extern bool ignoreLoadTime;
 extern bool stop_on_error;
 extern uint64_t force_cons, force_vec;
 
-extern int init_flags;
+extern unsigned int init_flags;
 
 extern const char* standard_directory;
 
@@ -654,9 +655,10 @@ inline bool vec_forced(size_t n)
     return false;
 }
 
-#define INIT_QUIET      1
-#define INIT_VERBOSE    2
-#define INIT_EXPANDABLE 4
+inline const unsigned int INIT_QUIET      = 1;
+inline const unsigned int INIT_VERBOSE    = 2;
+inline const unsigned int INIT_EXPANDABLE = 4;
+inline const unsigned int INIT_SILENT     = 8;
 
 #define Lispify_predicate(p)  ((p) ? lisp_true : nil)
 
