@@ -1620,7 +1620,8 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
 // will be there too.
 
 #if defined HAVE_FORK && \
-    !defined __ANDROID__
+    !defined __ANDROID__ && \
+    !defined MACINTOSH
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1839,7 +1840,7 @@ LispObject Lbacktrace(LispObject env)
 //
 // sandbox-apply is similar but models apply rather than eval.
 
-#if defined WIN32 || !defined USE_FORK
+#if defined WIN32 || defined MACINTOSH || !defined USE_FORK
 
 // My first attempt at this facility used fork() to isolate the work that
 // needed cautious evaluation. That functionality is not (readily) available
