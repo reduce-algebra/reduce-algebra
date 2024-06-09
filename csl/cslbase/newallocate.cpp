@@ -71,10 +71,11 @@ PageList vecPages;
 PageList consOldPages;
 PageList vecOldPages;
 PageList borrowPages;
-Page*    potentiallyPinned;
-Page*    pinnedPages;
-Page*    pendingPages;
-Page*    oldVecPinPages;
+Page*    potentiallyPinned = nullptr;
+Page*    pinnedPages = nullptr;
+Page*    pendingPages = nullptr;
+Page*    oldVecPinPages = nullptr;
+Page*    savedPages = nullptr;
 
 uintptr_t consFringe, consLimit, consEnd;
 uintptr_t vecFringe, vecLimit, vecEnd;

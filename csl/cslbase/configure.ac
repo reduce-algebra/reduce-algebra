@@ -41,7 +41,6 @@
 #   --enable-profile  build for profiling at the C++ level
 #
 #   --with-cygwin     Build native cygwin X11 based system, 
-#   --enable-conservative   Newer garbage collector
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
 #                     for testing purposes I allow a build here.
@@ -660,18 +659,7 @@ AC_MSG_NOTICE([foxdir = $foxdir])
 AC_SUBST(ARCHITECTURE)
 ARCHITECTURE="$foxdir"
 
-# Want to build "conservative" variant?
-AC_ARG_ENABLE(conservative,
-  AS_HELP_STRING([--enable-conservative],
-                 [garbage collect now standard. --disable-conservative reverts]),
-  [],
-  [enable_conservative="yes"])
-AC_MSG_RESULT([$enable_conservative])
-
-if test "$enable_conservative" = "yes"
-then
-  AC_DEFINE(CONSERVATIVE, [1], [True if new GC enabled])
-fi
+AC_DEFINE(CONSERVATIVE, [1], [new GC is now always used!])
 
 AC_ARG_ENABLE(minipage,
   AS_HELP_STRING([--enable-minipage],
@@ -683,19 +671,6 @@ AC_MSG_RESULT([$enable_minipage])
 if test "$enable_minipage" = "yes"
 then
   AC_DEFINE(MINIPAGE, [1], [Smaller pages for the heap])
-fi
-
-# Want to build "generational" variant?
-AC_ARG_ENABLE(conservative,
-  AS_HELP_STRING([--enable-generational],
-                 [garbage collect option that was once under development]),
-  [],
-  [enable_generational="no"])
-AC_MSG_RESULT([$enable_generational])
-
-if test "$enable_conservative" = "yes" && test "$enable_generational" = "yes"
-then
-  AC_DEFINE(GENERATIONAL, [1], [True if GC experiment enabled])
 fi
 
 AC_ARG_ENABLE(test,
@@ -754,8 +729,6 @@ if test "$with_arithlib" = "yes"
 then
   CPPFLAGS="$CPPFLAGS -DARITHLIB=1"
   AC_DEFINE(ARITHLIB, [1], [Work on a transition to use of arithlib.hpp for bignums])
-  AC_DEFINE(CONSERVATIVE, [1], [Needed for arithlib])
-  enable_conservative="yes"
 fi
 
 AC_ARG_WITH(throw,
@@ -769,34 +742,7 @@ then
   AC_DEFINE(NO_THROW, [1], [Avoid use of catch and throw])
 fi
 
-AC_ARG_WITH(threads,
-  AS_HELP_STRING([--with-threads],
-                 [Experimental Lisp thread support. (CSL only)]),
-  [],
-  [with_threads="no"])
-
-# I will only allow "--with-threads" if "--enable-conservative" is set
-
-if test "$enable_conservative" != "yes"
-then
-  with_threads="no"
-fi
-
-# Two things intersect here. The first is that use of thread-local variable
-# and code structure that will support a threaded Lisp imposes some overhead
-# for everybody even when not actually used. So by default I will build a
-# traditional single-threaded system and so avoid that burden. Secondly I am
-# developing thread support alongside a new garbage collector, and debugging
-# both at the same time is hideous, and so I will want to get a single thread
-# version of the new GC stable before I move on to the more challenging
-# variant! In addition to thread-local, multi-threaded code may need to use
-# some std::atomic<T> variables and those too can have extraordinary costs,
-# So --without-threads will avoid some (but not all) of them.
-
-if test "$with_threads" != "yes"
-then
-  AC_DEFINE(NO_THREADS, [1], [Avoid use of thread_local and other thread support])
-fi
+AC_DEFINE(NO_THREADS, [1], [Avoid use of thread_local and other thread support])
 
 # Want to build "embedded" variant?
 AC_MSG_CHECKING(for embedded)
@@ -2001,7 +1947,6 @@ AM_CONDITIONAL(exeext, test "$exeext" = "yes")
 AM_CONDITIONAL(fox, test "$with_fox" != "no")
 AM_CONDITIONAL(wx, test "$with_wx" != "no")
 AM_CONDITIONAL(gui, test "$with_fox" != "no" || test "$with_wx" != "no")
-AM_CONDITIONAL(conservative, test "$enable_conservative" = "yes")
 AM_CONDITIONAL(arithlib, test "$with_arithlib" = "yes")
 AM_CONDITIONAL(cygpath, test "$CYGPATH" != "no")
 AM_CONDITIONAL(valgrind, test "$VALGRIND" = "valgrind")

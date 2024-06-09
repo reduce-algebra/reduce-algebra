@@ -48,8 +48,7 @@ LispObject copyb(LispObject a)
 //
 {   LispObject b;
     size_t len = bignum_length(a), i;
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     save.restore(a);
     len = (len-CELL)/4;
@@ -103,8 +102,7 @@ LispObject negateb(LispObject a)
         else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
         else return make_one_word_bignum(d0);
     }
-    {   THREADID;
-        Save save(THREADARG a);
+    {   Save save(a);
         b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
         errexit();
         save.restore(a);
@@ -192,8 +190,7 @@ LispObject negate(LispObject a)
                 case TYPE_RATNUM:
                 {   LispObject n = numerator(a),
                                d = denominator(a);
-                    THREADID;
-                    Save save(THREADARG d);
+                    Save save(d);
                     n = negate(n);
                     save.restore(d);
                     return make_ratio(n, d);
@@ -201,11 +198,10 @@ LispObject negate(LispObject a)
                 case TYPE_COMPLEX_NUM:
                 {   LispObject r = real_part(a),
                                i = imag_part(a);
-                    THREADID;
-                    Save save(THREADARG i);
+                    Save save(i);
                     r = negate(r);
                     save.restore(i);
-                    Save save1(THREADARG r);
+                    Save save1(r);
                     i = negate(i);
                     save1.restore(r);
                     return make_complex(r, i);

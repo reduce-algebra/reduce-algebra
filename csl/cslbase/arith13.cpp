@@ -79,8 +79,6 @@ static LispObject Lcexp(LispObject env, LispObject a, LispObject b)
     double ri = cimag(r);
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -96,8 +94,7 @@ static LispObject Lclog(LispObject env, LispObject a, LispObject b)
     double ri = cimag(r);
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -117,8 +114,7 @@ static LispObject Lcsqrt(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -138,8 +134,7 @@ static LispObject Lcsin(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -159,8 +154,7 @@ static LispObject Lccos(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -180,8 +174,7 @@ static LispObject Lctan(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -216,8 +209,7 @@ static LispObject Lcasin(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -237,8 +229,7 @@ static LispObject Lcacos(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -258,8 +249,7 @@ static LispObject Lcatan(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -294,8 +284,7 @@ static LispObject Lcsinh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -315,8 +304,7 @@ static LispObject Lccosh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -336,8 +324,7 @@ static LispObject Lctanh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -372,8 +359,7 @@ static LispObject Lcasinh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -393,8 +379,7 @@ static LispObject Lcacosh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);
@@ -414,8 +399,7 @@ static LispObject Lcatanh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
     save.restore(a);

@@ -75,17 +75,17 @@ extern void term_close();
 // diagnostics. I also "exit()" rather than "abort()" since that is slightly
 // cleaner!
 
-#if defined CONSERVATIVE && defined EXTREME_DEBUG
+#if defined EXTREME_DEBUG
 extern void displayAllPages(const char*);
-#endif // CONSERVATIVE && EXTREME_DEBUG
+#endif // EXTREME_DEBUG
 
 [[noreturn]] inline void my_abort()
 {   std::fprintf(stdout, "\n!!! Aborting\n\n");
-#if defined CONSERVATIVE && defined EXTREME_DEBUG
+#if defined EXTREME_DEBUG
     displayAllPages("Failure");
     extern unsigned int gcNumber;
     std::fprintf(stdout, "\n\n... gcN=%d\n\n", gcNumber);
-#endif // CONSERVATIVE && EXTREME_DEBUG
+#endif // EXTREME_DEBUG
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
@@ -107,11 +107,11 @@ extern void displayAllPages(const char*);
 
 [[noreturn]] inline void my_abort(const char* msg)
 {   std::fprintf(stdout, "\n!!! Aborting: %s\n\n", msg);
-#if defined CONSERVATIVE && defined EXTREME_DEBUG
+#if defined EXTREME_DEBUG
     displayAllPages("Failure");
     extern unsigned int gcNumber;
     std::fprintf(stdout, "\n\n... Bis: %s gcN=%d\n\n", msg, gcNumber);
-#endif // CONSERVATIVE && EXTREME_DEBUG
+#endif // EXTREME_DEBUG
     std::fflush(stdout);
     std::fflush(stderr);
 #ifdef CSL
@@ -407,8 +407,7 @@ inline void printlog(const char* s, ...)
 //    %f and %g                                similarly to %e
 //    %s                                       ANY C++ argument
 //    %%                                       displays a single %
-//    %a  (in a CSL context only, and then only if CONSERVATIVE
-//         is defined)                         funny way to display an address.
+//    %a  (in a CSL context only)              funny way to display an address.
 //
 // This code allows printing of arguments that are of type std::atomic<T>
 // and displays things as the value stored atomically. For me that feels
@@ -447,7 +446,7 @@ public:
     ~SpoolStream() { delete rdbuf(); }
 };
 
-#if defined CSL && defined CONSERVATIVE
+#if defined CSL
 inline const char* Addr(uintptr_t p);
 template <typename T>
 inline const char* Addr(const std::atomic<T>& p);
@@ -1406,7 +1405,7 @@ BadFmt(
                     (flags&flaghash) != 0,
                     (subtype & subtypeUpperCase) != 0);
             else
-#if defined CSL && defined CONSERVATIVE
+#if defined CSL
             if (type == argTypeGeneral && subtype == subtypeAddr)
                 std::cout << Addr(a1);
             else

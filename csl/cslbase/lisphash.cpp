@@ -337,11 +337,10 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     LispObject v, v2;
-    THREADID;
-    {   Save save(THREADARG v1);
+    {   Save save(v1);
         v2 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
         errexit();
-        Save save1(THREADARG v2);
+        Save save1(v2);
         v = get_basic_vector_init(6*CELL, nil);
         errexit();
         save1.restore(v2);
@@ -389,8 +388,7 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     size_t bits = 3;
     LispObject v1 = get_vector_init(CELL*((1<<bits)+1), SPID_HASHEMPTY);
     LispObject v;
-    THREADID;
-    {   Save save(THREADARG v1);
+    {   Save save(v1);
         v = get_basic_vector_init(6*CELL, nil);
         errexit();
         save.restore(v1);
@@ -1107,19 +1105,18 @@ LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
     v = basic_elt(tab, HASH_KEYS);
     v1 = basic_elt(tab, HASH_VALUES);
     size = cells_in_vector(v);
-    THREADID;
     for (i=0; i<size; i++)
     {   LispObject key = elt(v, i);
         if (key == SPID_HASHEMPTY) continue;
         if (v1 == nil)
-        {   Save save(THREADARG v, v1, fn);
+        {   Save save(v, v1, fn);
             Lapply1(nil, fn, key);
             errexit();
             save.restore(v, v1, fn);
         }
         else
         {   LispObject val = elt(v1, i);
-            Save save(THREADARG v, v1, fn);
+            Save save(v, v1, fn);
             Lapply2(nil, fn, key, val);
             errexit();
             save.restore(v, v1, fn);
@@ -1145,11 +1142,10 @@ LispObject Lhash_contents(LispObject env, LispObject tab)
     v1 = basic_elt(tab, HASH_VALUES);
     size = cells_in_vector(v);
     r = nil;
-    THREADID;
     for (i=0; i<size; i++)
     {   LispObject key = elt(v, i);
         if (key == SPID_HASHEMPTY) continue;
-        Save save(THREADARG v, v1);
+        Save save(v, v1);
         if (v1 == nil) r = cons(key, r);
         else r = acons(key, elt(v1, i), r);
         errexit();
@@ -1169,8 +1165,7 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 // the file matrix.red...  In the long term this is unsatisfactory.
     SingleValued fn;
     LispObject r;
-    THREADID;
-    Save save(THREADARG key);
+    Save save(key);
     r = Lget_hash(nil, key, sys_hash_table, nil);
     errexit();
     save.restore(key);
@@ -1234,13 +1229,12 @@ LispObject Lput_hash(LispObject env,
 // will tend to keep tables sparse all the time.
         if (2*load >= h_table_size)
         {   LispObject newkeys, newvals;
-            THREADID;
-            {   Save save(THREADARG key, val, tab);
+            {   Save save(key, val, tab);
                 h_shift--;
                 newkeys =
                     get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
                 errexit();
-                Save save1(THREADARG newkeys);
+                Save save1(newkeys);
                 newvals = (v_table == nil) ? nil :
                     get_vector_init(CELL*(2*h_table_size+1), SPID_HASHEMPTY);
                 errexit();

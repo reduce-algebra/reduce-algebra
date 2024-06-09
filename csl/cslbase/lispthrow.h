@@ -38,7 +38,6 @@
 
 // If NO_THROW is defined this uses a flag rather than genuine C++ exceptions!
 
-#ifdef NO_THREADS
 extern LispObject *stack;
 extern uintptr_t stackBase;
 extern uintptr_t stackFringe;
@@ -46,22 +45,6 @@ extern uintptr_t stackLimit;
 extern uintptr_t C_stackBase;
 extern uintptr_t C_stackFringe;
 extern uintptr_t C_stackLimit;
-#else // NO_THREADS
-extern LispObject *stacks[maxThreads];
-#define stack stacks[threadId]
-extern uintptr_t stackBases[maxThreads];
-#define stackBase   stackBases[threadId]
-extern uintptr_t stackFringes[maxThreads];
-#define stackFringe stackFringes[threadId]
-extern uintptr_t stackLimits[maxThreads];
-#define stackLimit stackLimits[threadId]
-extern uintptr_t C_stackBases[maxThreads];
-#define C_stackBase   C_stackBases[threadId]
-extern uintptr_t C_stackFringes[maxThreads];
-#define C_stackFringe C_stackFringes[threadId]
-extern uintptr_t C_stackLimits[maxThreads];
-#define C_stackLimit C_stackLimits[threadId]
-#endif // NO_THREADS
 
 // There is a "Lisp Stack" which is separate from the C++ stack. It has
 // a number of uses:
@@ -110,29 +93,12 @@ public:
     }
 };
 
-// There is a bit of a misery here! In a threaded model I want the
-// constructors for the "Save" classes to take an extra argument that
-// tells them the threadId relevant to them, but when there are no
-// threads that is an ugly overhead that I wish to avoid. I use some
-// macros here to achieve what I want. But this is not really very tidy.
-
-#ifdef NO_THREADS
-#define DECLARETHREADID /* Nothing */
-#define DECLAREID       /* Nothing */
-#define SETTHREADID     /* Nothing */
-#else // NO_THREADS
-#define DECLARETHREADID const uintptr_t threadId;
-#define DECLAREID       uintptr_t id,
-#define SETTHREADID     : threadId(id)
-#endif // NO_THREADS
-
 class RealSave
 {
 private:
     LispObject *ssave;
-    DECLARETHREADID
 public:
-    RealSave(DECLAREID PushCount count) SETTHREADID
+    RealSave(PushCount count)
     {   ssave = stack;
 // The coding here may look slightly unusual, but is written on the basis
 // that on Windows having stack as a thread_local variable has a side
@@ -144,7 +110,7 @@ public:
         for (int i=1; i<=count.n; i++)
             ssave[i] = nil;
     }
-    RealSave(DECLAREID LispObject a1) SETTHREADID
+    RealSave(LispObject a1)
     {   ssave = stack;
         stack = ssave + 1;
         ssave[1] = a1;
@@ -158,7 +124,7 @@ public:
         if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, PushCount count) SETTHREADID
+    RealSave(LispObject a1, PushCount count)
     {   ssave = stack;
         stack = ssave + count.n + 1;
         ssave[1] = a1;
@@ -168,7 +134,7 @@ public:
         for (int i=2; i<=count.n+1; i++)
             ssave[i] = nil;
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2) SETTHREADID
+    RealSave(LispObject a1, LispObject a2)
     {   ssave = stack;
         stack = ssave + 2;
         ssave[1] = a1;
@@ -178,7 +144,7 @@ public:
         if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3) SETTHREADID
+    RealSave(LispObject a1, LispObject a2, LispObject a3)
     {   ssave = stack;
         stack = ssave + 3;
         ssave[1] = a1;
@@ -190,8 +156,8 @@ public:
         if (is_exception(a3)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4) SETTHREADID
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
+             LispObject a4)
     {   ssave = stack;
         stack = ssave + 4;
         ssave[1] = a1;
@@ -205,8 +171,8 @@ public:
         if (is_exception(a4)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5) SETTHREADID
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
+             LispObject a4, LispObject a5)
     {   ssave = stack;
         stack = ssave + 5;
         ssave[1] = a1;
@@ -222,8 +188,8 @@ public:
         if (is_exception(a5)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5, PushCount count) SETTHREADID
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
+             LispObject a4, LispObject a5, PushCount count)
     {   ssave = stack;
         stack = ssave + count.n + 5;
         ssave[1] = a1;
@@ -241,8 +207,8 @@ public:
         if (is_exception(a5)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5, LispObject a6) SETTHREADID
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
+             LispObject a4, LispObject a5, LispObject a6)
     {   ssave = stack;
         stack = ssave + 6;
         ssave[1] = a1;
@@ -260,9 +226,9 @@ public:
         if (is_exception(a6)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3,
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
              LispObject a4, LispObject a5, LispObject a6,
-             LispObject a7) SETTHREADID
+             LispObject a7)
     {   ssave = stack;
         stack = ssave + 7;
         ssave[1] = a1;
@@ -282,9 +248,9 @@ public:
         if (is_exception(a7)) UNLIKELY my_abort("exception value not trapped");
 #endif // DEBUG
     }
-    RealSave(DECLAREID LispObject a1, LispObject a2, LispObject a3,
+    RealSave(LispObject a1, LispObject a2, LispObject a3,
              LispObject a4, LispObject a5, LispObject a6,
-             LispObject a7, LispObject a8) SETTHREADID
+             LispObject a7, LispObject a8)
     {   ssave = stack;
         stack = ssave + 8;
         ssave[1] = a1;
@@ -378,29 +344,27 @@ public:
 // I handle some special forms or functions with huge numbers of arguments)
 // but case where it used to be push/pop can replace those with no-operation.
 
-#ifdef CONSERVATIVE
-
 class Save
 {
 public:
-    Save(DECLAREID LispObject a1)
+    Save(LispObject a1)
     {
     }
-    Save(DECLAREID LispObject a1, LispObject a2)
+    Save(LispObject a1, LispObject a2)
     {
     }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3)
+    Save(LispObject a1, LispObject a2, LispObject a3)
     {
     }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3,
+    Save(LispObject a1, LispObject a2, LispObject a3,
              LispObject a4)
     {
     }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3,
+    Save(LispObject a1, LispObject a2, LispObject a3,
              LispObject a4, LispObject a5)
     {
     }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3,
+    Save(LispObject a1, LispObject a2, LispObject a3,
              LispObject a4, LispObject a5, LispObject a6)
     {
     }
@@ -430,197 +394,49 @@ public:
     }
 };
 
-#else // CONSERVATIVE
-
-class Save
-{
-private:
-    LispObject *ssave;
-    DECLARETHREADID
-public:
-//  Save(DECLAREID PushCount count) SETTHREADID
-//  {   ssave = stack;
-//      stack = ssave + count.n;
-//      for (int i=1; i<=count.n; i++)
-//          ssave[i] = nil;
-//  }
-    Save(DECLAREID LispObject a1) SETTHREADID
-    {   ssave = stack;
-        stack = ssave + 1;
-        ssave[1] = a1;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-    }
-    Save(DECLAREID LispObject a1, LispObject a2) SETTHREADID
-    {   ssave = stack;
-        stack = ssave + 2;
-        ssave[1] = a1;
-        ssave[2] = a2;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-    }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3) SETTHREADID
-    {   ssave = stack;
-        stack = ssave + 3;
-        ssave[1] = a1;
-        ssave[2] = a2;
-        ssave[3] = a3;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a3)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-    }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4) SETTHREADID
-    {   ssave = stack;
-        stack = ssave + 4;
-        ssave[1] = a1;
-        ssave[2] = a2;
-        ssave[3] = a3;
-        ssave[4] = a4;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a3)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a4)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-    }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5) SETTHREADID
-    {   ssave = stack;
-        stack = ssave + 5;
-        ssave[1] = a1;
-        ssave[2] = a2;
-        ssave[3] = a3;
-        ssave[4] = a4;
-        ssave[5] = a5;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a3)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a4)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a5)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-    }
-    Save(DECLAREID LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5, LispObject a6) SETTHREADID
-    {   ssave = stack;
-        stack = ssave + 6;
-        ssave[1] = a1;
-        ssave[2] = a2;
-        ssave[3] = a3;
-        ssave[4] = a4;
-        ssave[5] = a5;
-        ssave[6] = a6;
-#ifdef DEBUG
-        if (is_exception(a1)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a2)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a3)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a4)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a5)) UNLIKELY my_abort("exception value not trapped");
-        if (is_exception(a6)) UNLIKELY my_abort("exception value not trapped");
-#endif // DEBUG
-    }
-
-    void restore(LispObject &a1)
-    {   a1 = ssave[1];
-    }
-    void restore(LispObject &a1, LispObject &a2)
-    {   a1 = ssave[1];
-        a2 = ssave[2];
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3)
-    {   a1 = ssave[1];
-        a2 = ssave[2];
-        a3 = ssave[3];
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3,
-                 LispObject &a4)
-    {   a1 = ssave[1];
-        a2 = ssave[2];
-        a3 = ssave[3];
-        a4 = ssave[4];
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3,
-                 LispObject &a4, LispObject &a5)
-    {   a1 = ssave[1];
-        a2 = ssave[2];
-        a3 = ssave[3];
-        a4 = ssave[4];
-        a5 = ssave[5];
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3,
-                 LispObject &a4, LispObject &a5, LispObject &a6)
-    {   a1 = ssave[1];
-        a2 = ssave[2];
-        a3 = ssave[3];
-        a4 = ssave[4];
-        a5 = ssave[5];
-        a6 = ssave[6];
-    }
-    ~Save()
-    {   stack = ssave;
-    }
-};
-
-#endif // CONSERVATIVE
-
 extern volatile bool tick_pending;
 extern volatile int unwind_pending;
 
 extern LispObject respond_to_stack_event();
 
-#ifdef NO_THREADS
 inline void stackcheck()
-#else // NO_THREADS
-inline void stackcheck(uintptr_t id)
-#endif // NO_THREADS
-{   THREADID;
-    if_check_stack();
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
         respond_to_stack_event();
 }
 
-inline void stackcheck(DECLAREID LispObject& a1)
-{   THREADID;
-    if_check_stack();
+inline void stackcheck(LispObject& a1)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(THREADARG a1);
+    {   Save saver(a1);
         respond_to_stack_event();
         saver.restore(a1);
     }
 }
 
-inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2)
-{   THREADID;
-    if_check_stack();
+inline void stackcheck(LispObject& a1, LispObject& a2)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(THREADARG a1, a2);
+    {   Save saver(a1, a2);
         respond_to_stack_event();
         saver.restore(a1, a2);
     }
 }
 
-inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2, LispObject& a3)
-{   THREADID;
-    if_check_stack();
+inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(THREADARG a1, a2, a3);
+    {   Save saver(a1, a2, a3);
         respond_to_stack_event();
         saver.restore(a1, a2, a3);
     }
 }
 
-inline void stackcheck(DECLAREID LispObject& a1, LispObject& a2,
+inline void stackcheck(LispObject& a1, LispObject& a2,
                        LispObject& a3, LispObject& a4)
-{   THREADID;
-    if_check_stack();
+{   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(THREADARG a1, a2, a3, a4);
+    {   Save saver(a1, a2, a3, a4);
         respond_to_stack_event();
         saver.restore(a1, a2, a3, a4);
     }
@@ -642,13 +458,7 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
 // a way to force garbage collection at specific (if rather hard to compute!)
 // moments.
     if (msg == nullptr)
-    {
-#ifdef CONSERVATIVE
-        reclaim("gc-forcer");
-#else
-// With a precise collector r is a variable that must be preserved.
-        r = reclaim(r, "gc-forcer", GC_USER_HARD, 0);
-#endif
+    {   reclaim("gc-forcer");
         return;
     }
 #endif // BOOTSTRAP
@@ -662,12 +472,7 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
 // for garbage collection because event_flag had been zero. In that case
 // just garbage collect.
     if (f == 0)
-    {
-#ifdef CONSERVATIVE
-        reclaim(msg);
-#else
-        r = reclaim(r, "gc-forcer", GC_USER_HARD, 0);
-#endif
+    {   reclaim(msg);
         return;
     }
 }
@@ -680,13 +485,8 @@ inline void respond_to_fringe_event(LispObject &r, const char *msg)
 
 class stack_restorer
 {   LispObject *saveStack;
-    DECLARETHREADID
 public:
-#ifdef NO_THREADS
     stack_restorer()
-#else // NO_THREADS
-    stack_restorer(uintptr_t id) SETTHREADID
-#endif // NO_THREADS
     {   saveStack = stack;
     }
     ~stack_restorer()
@@ -698,9 +498,8 @@ public:
 
 class save_current_function
 {   LispObject *saveStack;
-    DECLARETHREADID
 public:
-    save_current_function(DECLAREID LispObject newfn) SETTHREADID
+    save_current_function(LispObject newfn)
     {   saveStack = stack;
         stack = saveStack + 1;
         saveStack[1] = current_function;
@@ -721,9 +520,8 @@ class bind_fluid_stack
     int env_loc;
     int name_loc;
     int val_loc;
-    DECLARETHREADID
 public:
-    bind_fluid_stack(DECLAREID int e, int name, int val) SETTHREADID
+    bind_fluid_stack(int e, int name, int val)
     {   saveStack = stack;
         env_loc = e;
         name_loc = name;
@@ -867,13 +665,8 @@ inline bool exceptionPending()
 #define errexitvoid() \
     if (exceptionPending()) UNLIKELY return
 
-#ifdef NO_THREADS
 #define TRY ([&]()->LispObject \
     { SaveStack save_stack_Object ## __LINE__;
-#else // NO_THREADS
-#define TRY ([&]()->LispObject \
-    { SaveStack save_stack_Object ## __LINE__(threadId);
-#endif // NO_THREADS
 
 // The next two variables are for debugging!
 inline const char *exceptionFile = "none";
@@ -993,13 +786,8 @@ inline bool exceptionPending()
 #define errexitint()
 #define errexitvoid()
 
-#ifdef NO_THREADS
 #define TRY try { ([&]()->LispObject \
     { SaveStack save_stack_Object ## __LINE__;
-#else // NO_THREADS
-#define TRY try { ([&]()->LispObject \
-    { SaveStack save_stack_Object ## __LINE__(threadId);
-#endif // NO_THREADS
 
 #define THROW(flavour) throw flavour()
 #define THROWVOID(flavour) throw flavour()
@@ -1043,16 +831,14 @@ class RAIIstack_sanity
     LispObject w;
 public:
     RAIIstack_sanity(const char *fn, const char *fi, int li)
-    {   THREADID;
-        saveStack = stack;
+    {       saveStack = stack;
         fname = fn;
         file = fi;
         line = li;
         w = nil;
     }
     RAIIstack_sanity(const char *fn, const char *fi, int li, LispObject ww)
-    {   THREADID;
-        saveStack = stack;
+    {       saveStack = stack;
         fname = fn;
         file = fi;
         line = li;
@@ -1062,7 +848,7 @@ public:
 // can remain un-restored. It is only once I have caught the exception
 // that it must end up correct. Hence get-out of exceptionFxlag is set.
     ~RAIIstack_sanity()
-    {   THREADID;
+    {
 #ifdef NO_THROW
         if (saveStack != stack && exceptionFlag == LispNormal) UNLIKELY
 #else // NO_THROW
@@ -1119,14 +905,9 @@ public:
 // the result might be both clearer code and less overhead.
 
 class RAIIsave_codevec
-{   DECLARETHREADID
-    LispObject *saveStack;
+{   LispObject *saveStack;
 public:
-#ifdef NO_THREADS
     RAIIsave_codevec()
-#else // NO_THREADS
-    RAIIsave_codevec(uintptr_t id) SETTHREADID
-#endif // NO_THREADS
     {   saveStack = stack;
         stack = saveStack + 2;
         saveStack[1] = litvec;
@@ -1139,12 +920,7 @@ public:
     }
 };
 
-#ifdef NO_THREADS
 #define SAVE_CODEVEC RAIIsave_codevec save_codevec_object;
-#else // NO_THREADS
-#define SAVE_CODEVEC RAIIsave_codevec save_codevec_object(threadId);
-#endif // NO_THREADS
-
 
 // First I will comment on protection for push/pop against exceptions that
 // might arise, as in
@@ -1189,14 +965,9 @@ public:
 //
 
 class SaveStack
-{   DECLARETHREADID
-    LispObject *saveStack;
+{   LispObject *saveStack;
 public:
-#ifdef NO_THREADS
     SaveStack()
-#else // NO_THREADS
-    SaveStack(uintptr_t id) SETTHREADID
-#endif // NO_THREADS
     {   saveStack = stack;   // record stack value from entry here.
     }
     ~SaveStack()

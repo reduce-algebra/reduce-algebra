@@ -73,8 +73,7 @@ LispObject make_complex(LispObject r, LispObject i)
 // floating point type.  It is assumed that this has already been
 // arranged by here.
     if (i == fixnum_of_int(0)) return r;
-    THREADID;
-    stackcheck(THREADARG r, i);
+    stackcheck(r, i);
     v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
     errexit();
     setreal_part(v, r);
@@ -87,8 +86,7 @@ LispObject make_ratio(LispObject p, LispObject q)
 // If q=1 then this just returns p, so the rational reverts to an integer.
 {   LispObject v;
     if (q == fixnum_of_int(1)) return p;
-    THREADID;
-    stackcheck(THREADARG p, q);
+    stackcheck(p, q);
     v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
     errexit();
     setnumerator(v, p);
@@ -1209,9 +1207,8 @@ LispObject make_complex(LispObject r, LispObject i)
 // floating point type.  It is assumed that this has already been
 // arranged by here.
     if (i == fixnum_of_int(0)) return r;
-    THREADID;
-    stackcheck(THREADARG r, i);
-    {   Save save(THREADARG r, i);
+    stackcheck(r, i);
+    {   Save save(r, i);
         v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM,
                          sizeof(Complex_Number));
         errexit();
@@ -1231,9 +1228,8 @@ LispObject make_ratio(LispObject p, LispObject q)
 // If q=1 then this just returns p, so the rational reverts to an integer.
 {   LispObject v;
     if (q == fixnum_of_int(1)) return p;
-    THREADID;
-    stackcheck(THREADARG p, q);
-    {   Save save(THREADARG p, q);
+    stackcheck(p, q);
+    {   Save save(p, q);
         v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
                              sizeof(Rational_Number));
         errexit();
@@ -1502,8 +1498,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // where I do not need to optimise edge cases so carefully, and where the
 // length (as a bignum) of the result is rather likely to match that of a2.
     LispObject c;
-    {   THREADID;
-        Save save(THREADARG a2);
+    {   Save save(a2);
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
         errexit();
         save.restore(a2);
@@ -1576,8 +1571,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
         setnumhdr(c, numhdr(c) + pack_hdrlength(1L));
         return c;
     }
-    {   THREADID;
-        Save save(THREADARG c);
+    {   Save save(c);
         a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
         errexit();
         save.restore(c);
@@ -1603,8 +1597,7 @@ inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // and GCD calculations here.
 
 inline LispObject plus_i_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a2);
+{   {   Save save(a2);
         a1 = times2(a1, denominator(a2));
         errexit();
         save.restore(a2);
@@ -1619,8 +1612,7 @@ inline LispObject plus_i_r(LispObject a1, LispObject a2)
 // real value of any sort plus complex.
 
 inline LispObject plus_i_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a2);
+{   {   Save save(a2);
         a1 = plus2(a1, real_part(a2));
         errexit();
         save.restore(a2);
@@ -1672,8 +1664,7 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     if ((len & 4) == 0)
     {   LispObject b;
         int32_t i;
-        {   THREADID;
-            Save save(THREADARG a);
+        {   Save save(a);
             b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
             errexit();
             save.restore(a);
@@ -1722,8 +1713,7 @@ inline LispObject plus_b_b(LispObject a, LispObject b)
 // Now at least one operand uses 3 words... I will do a general bignum add
 // which may sometimes be overkill, but ought to be safe.
     LispObject c;
-    {   THREADID;
-        Save save(THREADARG a, b);
+    {   Save save(a, b);
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
         errexit();
         save.restore(a, b);
@@ -1900,9 +1890,7 @@ inline LispObject plus_r_b(LispObject a1, LispObject a2)
 // lowest terms.
 
 inline LispObject plus_r_r(LispObject a1, LispObject a2)
-{   THREADID;
-    RealSave save(THREADARG
-                  numerator(a1), numerator(a2),
+{   RealSave save(numerator(a1), numerator(a2),
                   denominator(a1), denominator(a2), nil);
     LispObject &na = save.val(1);
     LispObject &nb = save.val(2);
@@ -1977,15 +1965,14 @@ inline LispObject plus_c_r(LispObject a1, LispObject a2)
 // Add complex values.
 
 inline LispObject plus_c_c(LispObject a1, LispObject a2)
-{   THREADID;
-    LispObject c;
-    {   Save save(THREADARG a1, a2);
+{   LispObject c;
+    {   Save save(a1, a2);
         c = plus2(imag_part(a1), imag_part(a2));
         errexit();
         save.restore(a1, a2);
     }
     errexit();
-    {   Save save(THREADARG c);
+    {   Save save(c);
         a1 = plus2(real_part(a1), real_part(a2));
         errexit();
         save.restore(c);
@@ -2195,8 +2182,7 @@ inline LispObject difference_i_i(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_b(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2205,8 +2191,7 @@ inline LispObject difference_i_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2215,8 +2200,7 @@ inline LispObject difference_i_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2225,8 +2209,7 @@ inline LispObject difference_i_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_s(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2235,8 +2218,7 @@ inline LispObject difference_i_s(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_f(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2245,8 +2227,7 @@ inline LispObject difference_i_f(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_i_d(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2256,8 +2237,7 @@ inline LispObject difference_i_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_i_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2268,8 +2248,7 @@ inline LispObject difference_i_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_b_i(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2278,8 +2257,7 @@ inline LispObject difference_b_i(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_b_b(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2289,8 +2267,7 @@ inline LispObject difference_b_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_b_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2299,8 +2276,7 @@ inline LispObject difference_b_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_b_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2309,8 +2285,7 @@ inline LispObject difference_b_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_b_s(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2319,8 +2294,7 @@ inline LispObject difference_b_s(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_b_f(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2329,8 +2303,7 @@ inline LispObject difference_b_f(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_b_d(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2340,8 +2313,7 @@ inline LispObject difference_b_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_b_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2351,8 +2323,7 @@ inline LispObject difference_b_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_r_i(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = times2(a2, denominator(a1));
         errexit();
         save.restore(a1);
@@ -2368,8 +2339,7 @@ inline LispObject difference_r_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2378,8 +2348,7 @@ inline LispObject difference_r_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2388,8 +2357,7 @@ inline LispObject difference_r_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_s(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2398,8 +2366,7 @@ inline LispObject difference_r_s(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_f(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2408,8 +2375,7 @@ inline LispObject difference_r_f(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_r_d(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2419,8 +2385,7 @@ inline LispObject difference_r_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_r_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2430,8 +2395,7 @@ inline LispObject difference_r_l(LispObject a1, LispObject a2)
 #endif // HAVE_SOFTFLOAT
 
 inline LispObject difference_c_i(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = make_lisp_integer64(-int_of_fixnum(a2));
         errexit();
         save.restore(a1);
@@ -2440,8 +2404,7 @@ inline LispObject difference_c_i(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_c_b(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negateb(a2);
         errexit();
         save.restore(a1);
@@ -2450,8 +2413,7 @@ inline LispObject difference_c_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_c_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2460,8 +2422,7 @@ inline LispObject difference_c_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_c_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2470,8 +2431,7 @@ inline LispObject difference_c_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_c_s(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2480,8 +2440,7 @@ inline LispObject difference_c_s(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_c_f(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2490,8 +2449,7 @@ inline LispObject difference_c_f(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_c_d(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2501,8 +2459,7 @@ inline LispObject difference_c_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_c_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2525,8 +2482,7 @@ inline LispObject difference_s_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2535,8 +2491,7 @@ inline LispObject difference_s_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2545,8 +2500,7 @@ inline LispObject difference_s_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_s(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2555,8 +2509,7 @@ inline LispObject difference_s_s(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_f(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2565,8 +2518,7 @@ inline LispObject difference_s_f(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_s_d(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2576,8 +2528,7 @@ inline LispObject difference_s_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_s_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2600,8 +2551,7 @@ inline LispObject difference_f_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_f_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2610,8 +2560,7 @@ inline LispObject difference_f_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_f_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2636,8 +2585,7 @@ inline LispObject difference_f_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_f_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2660,8 +2608,7 @@ inline LispObject difference_d_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_d_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2670,8 +2617,7 @@ inline LispObject difference_d_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_d_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2696,8 +2642,7 @@ inline LispObject difference_d_d(LispObject a1, LispObject a2)
 
 #ifdef HAVE_SOFTFLOAT
 inline LispObject difference_d_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2720,8 +2665,7 @@ inline LispObject difference_l_b(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_r(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2730,8 +2674,7 @@ inline LispObject difference_l_r(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_c(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2740,8 +2683,7 @@ inline LispObject difference_l_c(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_s(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2750,8 +2692,7 @@ inline LispObject difference_l_s(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_f(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2760,8 +2701,7 @@ inline LispObject difference_l_f(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_d(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);
@@ -2770,8 +2710,7 @@ inline LispObject difference_l_d(LispObject a1, LispObject a2)
 }
 
 inline LispObject difference_l_l(LispObject a1, LispObject a2)
-{   {   THREADID;
-        Save save(THREADARG a1);
+{   {   Save save(a1);
         a2 = negate(a2);
         errexit();
         save.restore(a1);

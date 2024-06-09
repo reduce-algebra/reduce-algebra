@@ -578,8 +578,7 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     stream_byte_pos(lisp_work_stream) = 0;
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
-    THREADID;
-    Save save(THREADARG old);
+    Save save(old);
     internal_prin(a, 0);
     errexit();
     save.restore(old);

@@ -378,7 +378,6 @@ inline LispObject make_boxfloat(double a, FloatType type)
         case WANT_SINGLE_FLOAT:
             return pack_single_float(a);
         case WANT_DOUBLE_FLOAT:
-#ifdef CONSERVATIVE
 // double precision floats always consume 16 bytes in all. On a 64
 // bit machines that is an 8 byte header than the 8 bytes of the double
 // itself. With 32-bits the header only uses 4 bytes, but then there has
@@ -390,9 +389,6 @@ inline LispObject make_boxfloat(double a, FloatType type)
             else r = getNBytes(16);
             indirect(r) = DOUBLE_FLOAT_HEADER;
             r += TAG_BOXFLOAT;
-#else // CONSERVATIVE
-            r = get_basic_vector(TAG_BOXFLOAT,TYPE_FLOAT,SIZEOF_DOUBLE_FLOAT);
-#endif // CONSERVATIVE
             errexit();
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;

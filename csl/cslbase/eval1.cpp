@@ -71,7 +71,6 @@ LispObject nreverse(LispObject a)
 LispObject eval(LispObject u, LispObject env)
 {   if (time_limit >= 0 &&
         read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
-    THREADID;
     STACK_SANITY;
     assert (env == nil || consp(env));
 #ifdef DEBUG
@@ -144,7 +143,7 @@ restart:
 // The final case is that of a list (fn ...), and one case that has to
 // be checked is if fn is lexically bound.
         LispObject fn, args;
-        stackcheck(THREADARG u, env);
+        stackcheck(u, env);
         errexit();
         fn = car(u);
         args = cdr(u);
@@ -173,8 +172,7 @@ restart:
 // time may seem to be mutually recursive but there is a sense in which they
 // are not (as well as a sense in which they are) - self and cross references
 // only happen AFTER an expansion and can not happen during one.
-                        THREADID;
-                        Save save(THREADARG u, env);
+                        Save save(u, env);
                         on_backtrace(
                             w = cons(lambda, w);
                             errexit();
@@ -208,9 +206,8 @@ restart:
                 return (*qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
-            {   THREADID;
-                STACK_SANITY;
-                Save save(THREADARG u, env);
+            {   STACK_SANITY;
+                Save save(u, env);
 // the environment passed to macroexpand should only be needed to cope
 // with macrolet, I think.  Since I use just one datastructure for the
 // whole environment I also pass along lexical bindings etc, but I hope that
@@ -243,8 +240,7 @@ restart:
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         {   if (!consp(args)) return (*qfn0(fn))(fn);
             LispObject a1 = car(args);
-            {   THREADID;
-                Save save(THREADARG fn, args, env);
+            {   Save save(fn, args, env);
                 on_backtrace(a1 = eval(a1, env),
                     save.restore(fn, args, env);
                     if (SHOW_ARGS)
@@ -256,8 +252,7 @@ restart:
             args = cdr(args);
             if (!consp(args)) return (*qfn1(fn))(fn, a1);
             LispObject a2 = car(args);
-            {   THREADID;
-                Save save(THREADARG fn, args, env, a1);
+            {   Save save(fn, args, env, a1);
                 on_backtrace(
                     a2 = eval(a2, env),
                     save.restore(fn, args, env, a1);
@@ -270,8 +265,7 @@ restart:
             args = cdr(args);
             if (!consp(args)) return (*qfn2(fn))(fn, a1, a2);
             LispObject a3 = car(args);
-            {   THREADID;
-                Save save(THREADARG fn, args, env, a1, a2);
+            {   Save save(fn, args, env, a1, a2);
                 on_backtrace(
                     a3 = eval(a3, env),
                     save.restore(fn, args, env, a1, a2);
@@ -283,19 +277,17 @@ restart:
             }
             args = cdr(args);
             if (!consp(args)) return (*qfn3(fn))(fn, a1, a2, a3);
-            THREADID;
-            Save save(THREADARG fn, env, args);
+            Save save(fn, env, args);
             eargs = list3(a3, a2, a1);
             errexit();
             save.restore(fn, env, args);
         }
 // I have evaluated the first 3 args if the function was a symbol, so
 // now I process the rest.
-        {   THREADID;
-            STACK_SANITY1(u);
+        {   STACK_SANITY1(u);
             while (consp(args))
             {   LispObject w;
-                Save save(THREADARG fn, args, env, eargs);
+                Save save(fn, args, env, eargs);
                 w = car(args);
                 on_backtrace(
                     w = eval(w, env),
@@ -306,7 +298,7 @@ restart:
                         loop_print_error(car(args));
                     });
                 save.restore(fn, args, env, eargs);
-                Save save1(THREADARG fn, args, env);
+                Save save1(fn, args, env);
                 eargs = cons(w, eargs);
                 errexit();
                 save1.restore(fn, args, env);
@@ -472,14 +464,12 @@ LispObject apply_lambda(LispObject def, LispObject args,
     for (LispObject u=args; u!=nil; u=cdr(u)) args_left++;
     LispObject w1;
     if (!consp(def)) return nvalues(nil,1);    // Should never happen
-    THREADID;
-    stackcheck(THREADARG def, args, env1, name1);
+    stackcheck(def, args, env1, name1);
     w1 = car(def);
 // The next fragment is horrible but is here because at present I have a
 // precise garbage collector and all the values set up here need to act
 // as list-bases.
-    RealSave save(THREADARG
-                  args,                        // arglist
+    RealSave save(args,                        // arglist
                   w1,                          // bvl
                   cdr(def),                    // body
                   env1,
@@ -816,24 +806,22 @@ LispObject apply_lambda(LispObject def, LispObject args,
 }
 
 LispObject Leval(LispObject env, LispObject a)
-{   THREADID;
-    save_current_function saver(THREADARG eval_symbol);
+{   save_current_function saver(eval_symbol);
     return eval(a, nil);     // Multiple values may be returned
 }
 
 LispObject Levlis(LispObject env, LispObject a)
 {   SingleValued fn;
-    THREADID;
     STACK_SANITY;
-    save_current_function saver(THREADARG eval_symbol);
+    save_current_function saver(eval_symbol);
     LispObject r;
-    stackcheck(THREADARG a);
+    stackcheck(a);
     errexit();
     r = nil;
     while (consp(a))
-    {   {   Save save(THREADARG a);
+    {   {   Save save(a);
             LispObject a1;
-            {   Save save1(THREADARG r);
+            {   Save save1(r);
                 a1 = car(a);
                 a1 = eval(a1, nil);
                 errexit();
@@ -859,9 +847,8 @@ LispObject Levlis(LispObject env, LispObject a)
 
 LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
                       LispObject a2, LispObject a3up)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG apply_symbol);
+{   STACK_SANITY;
+    save_current_function saver(apply_symbol);
 // Here I have something like
 //   (APPLY fn a1 a2 (a3 a4 a5up))
 // where a5up will be a list (a5 a6 ...).
@@ -869,7 +856,7 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
     errexit();
     a3up = nreverse2(cdr(a3up), car(a3up));
 // I have just flattened out the final argument.
-    {   Save save(THREADARG fn);
+    {   Save save(fn);
         a1 = list2star(a1, a2, a3up);
         save.restore(fn);
     }
@@ -885,22 +872,19 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
 // and the last one passed is a list of extras.
 
 LispObject Lapply_1(LispObject env, LispObject fn)
-{   THREADID;
-    save_current_function saver(THREADARG apply_symbol);
+{   save_current_function saver(apply_symbol);
     return apply(fn, nil, nil, apply_symbol);
 }
 
 LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
-{   THREADID;
-    save_current_function saver(THREADARG apply_symbol);
+{   save_current_function saver(apply_symbol);
     return apply(fn, a1, nil, apply_symbol);
 }
 
 LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1,
                     LispObject a2)
-{   THREADID;
-    save_current_function saver(THREADARG apply_symbol);
-    {   Save save(THREADARG fn);
+{   save_current_function saver(apply_symbol);
+    {   Save save(fn);
         a1 = cons(a1, a2);
         save.restore(fn);
     }
@@ -920,8 +904,7 @@ LispObject Lapply0(LispObject env, LispObject fn)
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
-    THREADID;
-    Save save(THREADARG fn, env);
+    Save save(fn, env);
     a1 = ncons(a1);
     errexit();
     save.restore(fn, env);
@@ -932,8 +915,7 @@ LispObject Lapply2(LispObject env, LispObject fn,
                    LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
-    THREADID;
-    {   Save save(THREADARG env, fn);
+    {   Save save(env, fn);
         a1 = list2(a1, a2);
         save.restore(env, fn);
     }
@@ -948,8 +930,7 @@ LispObject Lapply3(LispObject env, LispObject fn,
         return (*qfn3(fn))(fn, a1, a2, a3);
     }
     LispObject a3 = arg4("apply3", a3up);
-    THREADID;
-    {   Save save(THREADARG env, fn);
+    {   Save save(env, fn);
         a1 = list3(a1, a2, a3);
         save.restore(env, fn);
     }
@@ -966,8 +947,7 @@ LispObject Lapply4(LispObject env, LispObject fn,
     }
     LispObject a3, a4;
     if (a4a5("apply3", a3up, a3, a4)) return nil;
-    THREADID;
-    {   Save save(THREADARG env, fn);
+    {   Save save(env, fn);
         a1 = list4(a1, a2, a3, a4);
         save.restore(env, fn);
     }
@@ -988,8 +968,7 @@ LispObject Lfuncall_1(LispObject env, LispObject fn)
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn1(fn))(fn, a1);
-    THREADID;
-    {   Save save(THREADARG env, fn);
+    {   Save save(env, fn);
         a1 = ncons(a1);
         save.restore(env, fn);
     }
@@ -1001,8 +980,7 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
                       LispObject a1, LispObject a2)
 {   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
         return (*qfn2(fn))(fn, a1, a2);
-    THREADID;
-    {   Save save(THREADARG env, fn);
+    {   Save save(env, fn);
         a1 = list2(a1, a2);
         save.restore(env, fn);
     }
@@ -1017,8 +995,7 @@ LispObject Lfuncall_4up(LispObject env, LispObject fn,
             return (*qfn3(fn))(fn, a1, a2, car(a3up));
         else return (*qfn4up(fn))(fn, a1, a2, car(a3up), cdr(a3up));
     }
-    THREADID;
-    {   Save save(THREADARG env, fn);
+    {   Save save(env, fn);
         a1 = list2star(a1, a2, a3up);
         save.restore(env, fn);
     }
@@ -1085,24 +1062,23 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 //                            (values a3 a4 a5) a6 (values a7 a8))
 // (for example) is rather like
 //   (FUNCALL 'fn a1 a2 a3 a4 a5 a6 a7 a8)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG mv_call_symbol);
+{   STACK_SANITY;
+    save_current_function saver(mv_call_symbol);
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
-    stackcheck(THREADARG args, env);
+    stackcheck(args, env);
     LispObject fn;
-    {   Save save(THREADARG args, env);
+    {   Save save(args, env);
         fn = car(args);
         fn = eval(fn, env);
         save.restore(args, env);
     }
     errexit();
     args = cdr(args);
-    Save save1(THREADARG fn);
+    Save save1(fn);
     LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
-        {   RealSave save(THREADARG args, env, xargs);
+        {   RealSave save(args, env, xargs);
 //          LispObject &arg1 = save.val(1);
 //          LispObject &env1 = save.val(2);
             LispObject &xargs1 = save.val(3);
@@ -1124,21 +1100,19 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 }
 
 LispObject interpreted_0(LispObject def)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def);
     errexit();
     return apply_lambda(qenv(def), nil, nil, def);
 }
 
 LispObject interpreted_1(LispObject def, LispObject a1)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def, a1);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def, a1);
     errexit();
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = ncons(a1);
         save.restore(def);
     }
@@ -1147,12 +1121,11 @@ LispObject interpreted_1(LispObject def, LispObject a1)
 }
 
 LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def, a1, a2);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def, a1, a2);
     errexit();
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = list2(a1, a2);
         save.restore(def);
     }
@@ -1162,12 +1135,11 @@ LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 
 LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
                          LispObject a3)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def, a1, a2, a3);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def, a1, a2, a3);
     errexit();
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = list3(a1, a2, a3);
         save.restore(def);
     }
@@ -1178,12 +1150,11 @@ LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2,
 LispObject interpreted_4up(LispObject def, LispObject a1,
                            LispObject a2,
                            LispObject a3, LispObject a4up)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG a1, a2, a3, a4up);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(a1, a2, a3, a4up);
     errexit();
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = list3star(a1, a2, a3, a4up);
         save.restore(def);
     }
@@ -1192,23 +1163,21 @@ LispObject interpreted_4up(LispObject def, LispObject a1,
 }
 
 LispObject funarged_0(LispObject def)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def);
     errexit();
     def = qenv(def);
     return apply_lambda(cdr(def), nil, car(def), cdr(def));
 }
 
 LispObject funarged_1(LispObject def, LispObject a1)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def, a1);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def, a1);
     errexit();
     def = qenv(def);
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = ncons(a1);
         save.restore(def);
     }
@@ -1217,13 +1186,12 @@ LispObject funarged_1(LispObject def, LispObject a1)
 }
 
 LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def, a1, a2);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def, a1, a2);
     errexit();
     def = qenv(def);
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = list2(a1, a2);
         save.restore(def);
     }
@@ -1233,13 +1201,12 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 
 LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
                       LispObject a3)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
-    stackcheck(THREADARG def, a1, a2, a3);
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck(def, a1, a2, a3);
     errexit();
     def = qenv(def);
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = list3(a1, a2, a3);
         save.restore(def);
     }
@@ -1249,13 +1216,12 @@ LispObject funarged_3(LispObject def, LispObject a1, LispObject a2,
 
 LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4up)
-{   THREADID;
-    STACK_SANITY;
-    save_current_function saver(THREADARG def);
+{   STACK_SANITY;
+    save_current_function saver(def);
     def = qenv(def);
-    stackcheck(THREADARG a1, a2, a3, a4up);
+    stackcheck(a1, a2, a3, a4up);
     errexit();
-    {   Save save(THREADARG def);
+    {   Save save(def);
         a1 = list3star(a1, a2, a3, a4up);
         save.restore(def);
     }
@@ -1265,11 +1231,10 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
-    THREADID;
     STACK_SANITY;
     LispObject done;
     LispObject f;
-    stackcheck(THREADARG form, env);
+    stackcheck(form, env);
     errexit();
     done = nil;
     if (consp(form))
@@ -1284,8 +1249,8 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     {   mv_2 = nil;
                         return nvalues(form, 2);
                     }
-                    {   RealSave save(THREADARG form, done);
-                        {   RealSave save1(THREADARG env);
+                    {   RealSave save(form, done);
+                        {   RealSave save1(env);
                             w = cons(lambda, w);
                             errexit();
                             w = list3(w, save.val(1), nil);
@@ -1314,12 +1279,12 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
         {   done = qvalue(macroexpand_hook);
             if (done == unset_var)
                 return error(1, err_macroex_hook, macroexpand_hook);
-            {   Save save(THREADARG form, env, done);
+            {   Save save(form, env, done);
                 f = cons(lambda, qenv(f));
                 save.restore(form, env, done);
             }
             errexit();
-            {   Save save(THREADARG done, env);
+            {   Save save(done, env);
                 f = list3(f, form, env);
                 save.restore(done, env);
             }
@@ -1338,14 +1303,13 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
 
 LispObject macroexpand(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
-    THREADID;
     STACK_SANITY;
     LispObject done;
-    stackcheck(THREADARG form, env);
+    stackcheck(form, env);
     errexit();
     done = nil;
     for (;;)
-    {   {   Save save(THREADARG env, done);
+    {   {   Save save(env, done);
             form = macroexpand_1(form, env);
             save.restore(env, done);
         }
@@ -1381,16 +1345,15 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 // function involved.
 
 LispObject autoload_0(LispObject fname)
-{   THREADID;
-    STACK_SANITY;
+{   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(THREADARG fname);
+    {   Save save(fname);
         set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                 undefined_3, undefined_4up);
         setenv(car(fname), car(fname));
         LispObject fname1 = cdr(fname);
         while (consp(fname1))
-        {   {   Save save1(THREADARG fname1);
+        {   {   Save save1(fname1);
                 Lload_module(nil, car(fname1));
                 save1.restore(fname1);
             }
@@ -1403,17 +1366,16 @@ LispObject autoload_0(LispObject fname)
 }
 
 LispObject autoload_1(LispObject fname, LispObject a1)
-{   THREADID;
-    STACK_SANITY;
+{   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(THREADARG fname);
-        {   Save save1(THREADARG a1);
+    {   Save save(fname);
+        {   Save save1(a1);
             set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(THREADARG fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
                     errexit();
                     save2.restore(fname1);
@@ -1430,17 +1392,16 @@ LispObject autoload_1(LispObject fname, LispObject a1)
 }
 
 LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
-{   THREADID;
-    STACK_SANITY;
+{   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(THREADARG fname);
-        {   Save save1(THREADARG a1, a2);
+    {   Save save(fname);
+        {   Save save1(a1, a2);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(THREADARG fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
                     save2.restore(fname1);
                 }
@@ -1459,17 +1420,16 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
 
 LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
                       LispObject a3)
-{   THREADID;
-    STACK_SANITY;
+{   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(THREADARG fname);
-        {   Save save1(THREADARG a1, a2, a3);
+    {   Save save(fname);
+        {   Save save1(a1, a2, a3);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(THREADARG fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
                     errexit();
                     save2.restore(fname1);
@@ -1488,17 +1448,16 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
 LispObject autoload_4up(LispObject fname, LispObject a1,
                         LispObject a2,
                         LispObject a3, LispObject a4up)
-{   THREADID;
-    STACK_SANITY;
+{   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(THREADARG fname);
-        {   Save save1(THREADARG a1, a2, a3, a4up);
+    {   Save save(fname);
+        {   Save save1(a1, a2, a3, a4up);
             set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
                     undefined_3, undefined_4up);
             setenv(car(fname), car(fname));
             LispObject fname1 = cdr(fname);
             while (consp(fname1))
-            {   {   Save save2(THREADARG fname1);
+            {   {   Save save2(fname1);
                     Lload_module(nil, car(fname1));
                     save2.restore(fname);
                 }
@@ -1661,8 +1620,7 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
 // will be there too.
 
 #if defined HAVE_FORK && \
-    !defined __ANDROID__ && \
-    !defined MACINTOSH
+    !defined __ANDROID__
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1681,7 +1639,6 @@ static LispObject write_result(LispObject env, LispObject r, char *shared)
 // Cyclic and re-entrant structures could lead to failure here, and
 // uninterned symbols (eg gensyms) will not be coped with very well. But
 // SIMPLE data types should all be safe.
-    THREADID;
     if_error(r = Lexplode(nil, r),
              // Error handler
              std::strcpy(shared, "Failed");
@@ -1707,7 +1664,6 @@ static LispObject write_result(LispObject env, LispObject r, char *shared)
 
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    THREADID;
     STACK_SANITY;
     pid_t pid1, pid2, pidx, pidy;
 // Create an identifier for a private shared segment of memory of size
@@ -1857,17 +1813,11 @@ LispObject Lbacktrace(LispObject env)
 
 #endif
 
-#if !defined WIN32 && !defined MACINTOSH
-
-#include <unistd.h>
-#include <sys/wait.h>
-
 // sandbox-eval behaves much like eval, EXCEPT for two key differences.
 // (1) The evaluation of u will not change the state of the Lisp
 //     world. It can not change existing data structures (including
 //     those used in the form to be evaluated. It can not change
-//     fluid or global variables. It can not impact flow of control
-//     even if it used THROW or raises errors.
+//     fluid or global variables.
 // (2) The result returned will have the characteristics of data
 //     returned by the Lisp reader. So symbols named in it will
 //     refer to ordinary symbols. There can not be any gensyms present
@@ -1881,8 +1831,244 @@ LispObject Lbacktrace(LispObject env)
 //     to and including causing it to hang.
 //
 // For some uses it will be proper to make the form that is to be
-// evaluated using errorset and something like with!-timeout to
-// get a better guarantee that things will behave!
+// evaluated using errorset and something like resource!-limit to
+// get a better guarantee that things will behave. If the
+// evaluated form misbehaves then the consequences are to be
+// thought of as undefined, and could either involve the system
+// hanging or a non-local exit propagating upwards.
+//
+// sandbox-apply is similar but models apply rather than eval.
+
+#if defined WIN32 || !defined USE_FORK
+
+// My first attempt at this facility used fork() to isolate the work that
+// needed cautious evaluation. That functionality is not (readily) available
+// on Windows. Even though is is provided under Cygwin the performance
+// is liable to be poor and anyway my attempts to use it there have not
+// been fully successful.
+//
+// So here is a notionally generic approch:
+// (1) Check a withinSandbox flag and fail if it is set. Then set it
+//     so that nested use of this scheme is not possible.
+// (2) Make a copy of the current Lisp stack as a vector in the ordinary
+//     heap. Also all listbases.
+// (3) Identify all Pages that contain or may contain live data. These
+//     will be consPinPages, vecPinPages, consCloggedPages, vecCloggedPages,
+//     consPages and vecPages. Supposing that there are N such pages then
+//     I will want there to be at least 2*N emptyPages. If there are not
+//     (and indeed if there are not say at least 2.1*N emptyPages) run
+//     the garbage collector and test again. If there are still not enough
+//     try expanding memory by asking the OS for some more. If that fails
+//     then report and "out of memory" fatal error.
+// (4) Copy data from all active data to some of those emptyPages, arranging
+//     that a copiedPage knows where it had been copied from and that it
+//     is on a list of same.
+// (5) Save all list bases that the system could possibly update and
+//     also non-listbase variables that tends to change during a computation,
+//     eg the stack fringes. Note that the Lisp stack will need its contents
+//     saved, but the C stack will not. Record enough information about
+//     memory allocation, and status preserved within any libraries.
+// (6) Run eval() on the argument. It will be important that this evaluation
+//     exits normally returning an s-expression. Multiple-value results
+//     will not be handled.
+// (7) Use something of the style of a "print-to-string" scheme to turn
+//     the result into a sequence of characters. When that has been done
+//     "borrow" space from the pages that are free (for GC use) and
+//     temporarily put the text in it.
+// (8) Copy from the savedPages back into the places they had been copied
+//     from. Copy back list bases and status variables, putting some pages
+//     back on freePages when they are now in use but had not been at the
+//     start. Now I know that there are plenty of free pages.
+//     Restore non listbase variable. When that is done it will be
+//     OK to compute in the restored space save that garbage collection
+//     should be avoided for a while. 
+// (9) Copy from the borrowed page(s) into currently live pages arranging
+//     that if pages need allocating to make space for this that no GC
+//     intrudes. Unborrow the temporary space.
+// (10)Restore the Lisp stack.  Read the final result from the string data.
+
+bool withinSandbox = false;
+
+void saveOnePage(Page* p)
+{   Page* np = emptyPages.pop();
+    memcpy(np, p, sizeof(Page));
+    np->original = p;
+    np->saveChain = savedPages;
+    savedPages = np;
+}
+
+// This must use borrow_basic_vector() when it wants to grab some
+// space to store a serialized version of u. It must return something
+// that gives access to that data. I must not garbage collect while
+// this data is active, but I will make it using TYPE_MIXED1 so that each
+// block has 3 LispObject fields at the start and one of these will be
+// used for chaining.
+
+const size_t stringBufferSize = 16384-4*8;
+
+// Multiple values are not used during the processing here so I will
+// use mv_2 as a 
+
+LispObject printToStrings(LispObject u)
+{
+    return nil;
+}
+
+LispObject readFromStrings(LispObject u)
+{
+    return nil;
+}
+
+LispObject sandbox(bool fg, LispObject a, LispObject b)
+{
+// (1) Check a withinSandbox flag and fail if it is set. Then set it
+//     so that nested use of this scheme is not possible.
+    if (withinSandbox) aerror("sandbox evaluation can not be nested");
+    withinSandbox = true;
+    LispObject r;
+// (2) Make a copy of the current Lisp stack as a vector in the ordinary
+//     heap. Also all listbases.
+    size_t stackSize =
+        (stack-reinterpret_cast<LispObject*>(stackBase)+sizeof(LispObject));
+    LispObject saveStack =
+        get_vector(TAG_VECTOR, TYPE_INTPTR, stackSize+sizeof(LispObject));
+// Use of memcpy here would not be proper if the stack was so huge that
+// the save vector had to be represented as a non-basic vector
+    for (size_t i=0; i<stackSize/sizeof(LispObject); i++)
+       elt(saveStack, i) = reinterpret_cast<LispObject*>(stackBase)[i];
+    size_t listbasesSize = sizeof(LispObject)*
+        (sizeof(list_bases)/sizeof(LispObject *));
+    LispObject saveListbases =
+        get_vector(TAG_VECTOR, TYPE_INTPTR, listbasesSize+sizeof(LispObject));
+    size_t i = 0;
+    for (LispObject* p : list_bases)
+        elt(saveListbases, i++) = *p;
+// (3) Identify all Pages that contain or may contain live data. These
+//     will be consPinPages, vecPinPages, consCloggedPages, vecCloggedPages,
+//     consPages and vecPages. Supposing that there are N such pages then
+//     I will want there to be at least 2*N emptyPages. If there are not
+//     (and indeed if there are not say at least 2.1*N emptyPages) run
+//     the garbage collector and test again. If there are still not enough
+//     try expanding memory by asking the OS for some more. If that fails
+//     then report and "out of memory" fatal error.
+    size_t N=0, F=0;
+    for (bool first=true;;first=false)
+    {   N = 0;
+        for (UNUSED_NAME auto p:consPinPages) N++;
+        for (UNUSED_NAME auto p:vecPinPages) N++;
+        for (UNUSED_NAME auto p:consCloggedPages) N++;
+        for (UNUSED_NAME auto p:vecCloggedPages) N++;
+        for (UNUSED_NAME auto p:consPages) N++;
+        for (UNUSED_NAME auto p:consPages) N++;
+
+        while (pageFringe != pageEnd)
+        {   Page* r = pageFringe++;
+            r->type = emptyPageType;
+        }
+        F = 0;
+        for (UNUSED_NAME auto p:emptyPages) F++;
+
+        if (F < static_cast<size_t>(2.1*N)+1)
+        {   if (first)
+            {   garbage_collect();
+                continue;
+            }
+            else if (allocateAnotherSegment()) continue;
+            else fatal_error(err_no_store);
+        }
+// (4) Copy data from all active data to some of those emptyPages, arranging
+//     that a copiedPage knows where it had been copied from and that it
+//     is on a list of same.
+        savedPages = nullptr;
+        for (auto p:consPinPages) saveOnePage(p);
+        for (auto p:vecPinPages) saveOnePage(p);
+        for (auto p:consCloggedPages) saveOnePage(p);
+        for (auto p:vecCloggedPages) saveOnePage(p);
+        for (auto p:consPages) saveOnePage(p);
+        for (auto p:consPages) saveOnePage(p);
+// (5) Save all non-listbase variables that tends to change during a
+//     computation, eg the stack fringes. Note that the C stack will not
+//     need its contents saved. Record enough information about
+//     memory allocation, and status preserved within any libraries.
+
+//@@@@
+
+// (6) Run eval() on the argument. It will be important that this evaluation
+//     exits normally returning an s-expression. Multiple-value results
+//     will not be handled.
+       if (fg) r = eval(a, nil);
+       else r = apply(a, b, nil, apply_symbol);
+// (7) Use something of the style of a "print-to-string" scheme to turn
+//     the result into a sequence of characters. When that has been done
+//     "borrow" space from the pages that are free (for GC use) and
+//     temporarily put the text in it.
+       {   Borrowing borrowObject;
+           LispObject resultString = printToStrings(r);
+// (8) Copy from the savedPages back into the places they had been copied
+//     from. Copy back list bases and status variables, putting some pages
+//     back on freePages when they are now in use but had not been at the
+//     start. Now I know that there are plenty of free pages.
+//     Restore non listbase variable. When that is done it will be
+//     OK to compute in the restored space save that garbage collection
+//     should be avoided for a while. 
+            while (savedPages != nullptr)
+            {   memcpy(savedPages->original, savedPages, sizeof(Page));
+                savedPages = savedPages->saveChain;
+            }
+//@@@ now I must get at least non-listbase variables associated with
+//@@@ storage allocation back in a stable state.
+
+// (9) Copy result data from the borrowed page(s) into currently live pages
+//     arranging that if pages need allocating to make space for this that
+//     no GC intrudes. Unborrow the temporary space.
+           withinGarbageCollector = true;
+           r = nil;
+           while (resultString != nil)
+           {   LispObject b =
+                   get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
+                                    stringBufferSize+3*sizeof(LispObject));
+// The "binary data" part of r starts at elt(b, 3). Elements 0, 1 and 2
+// are the LispObject fields.
+               memcpy(&elt(b, 3),
+                      &elt(resultString, 3),
+                      stringBufferSize);
+               elt(b, 0) = r;
+               r = b;
+               resultString = elt(resultString, 0);
+           }
+           withinGarbageCollector = false;
+        }
+    }
+// (10)Restore the Lisp stack.  Read the final result from the string data.
+    for (size_t i=0; i<stackSize/sizeof(LispObject); i++)
+        reinterpret_cast<LispObject*>(stackBase)[i] = elt(saveStack, i);
+    i = 0;
+    for (LispObject* p : list_bases)
+        *p = elt(saveListbases, i++);
+    r = readFromStrings(r);
+// If sandbox_eval crashes out in any way it can leave withinSandbox true.
+// that will prevent any further use of the sandbox facility. This is a
+// deliberate choice of behaviour on my part at present. I could easily
+// set up a little class with a destructor ro ensure that the variable
+// was reset to false on even unusual exits, but I am not doing that!
+    withinSandbox = false;
+    return r;
+}
+
+LispObject Lsandbox_eval(LispObject env, LispObject form)
+{   SingleValued fn;
+    return sandbox(true, form, nil);
+}
+
+LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
+{   SingleValued fn1;
+    return sandbox(false, fn, args);
+}
+
+#else // WIN32
+
+#include <unistd.h>
+#include <sys/wait.h>
 
 LispObject Lsandbox_eval(LispObject env, LispObject u)
 {   SingleValued fn;
@@ -1938,7 +2124,7 @@ LispObject Lsandbox_eval(LispObject env, LispObject u)
     set_stream_read_fn(in, char_from_pipe);
     set_stream_read_other(in, read_action_pipe);
     LispObject r;
-    {   save_reader_workspace RAII OPTTHREAD;
+    {   save_reader_workspace RAII;
         reader_workspace = nil;
         r = Lread_sub(in, curchar);
     }
@@ -1957,24 +2143,9 @@ LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
     if (procedId == 0) // CHILD
     {   inChildOfFork = true;
         close(pipefd[0]);
-// When this task completes I really do not want it to say
-//   "End of Lisp run..."
         init_flags |= INIT_SILENT;
         init_flags &= ~INIT_VERBOSE;
-// Now there is a "jolly" here. the (POSIX) definition of fork demands
-// that threads other than the calling one are not reflected into the copied
-// world. When this system is running normally there will typically be
-// four threads active. One watches for input from the keyboard or handles
-// the GUI, while the other three are helpers for multiplication.
-// In this child process these will not be running, although muxexes
-// associated with them may be held.
-// Also at the termination of the child any attempt to cause these threads
-// to terminate and possibly even to communicate with them is liable to
-// cause a crash!
-// The code here will not support multiple values!
         LispObject r = apply(fn, args, nil, apply_symbol);
-// The following mess create an output stream to the pipe and
-// sends my result down it. And then it closes the pipe.
         spool_file = nullptr;
         procedural_output = nullptr;
         LispObject out = make_stream_handle();
@@ -1982,28 +2153,21 @@ LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
         set_stream_write_fn(out, char_to_pipeout);
         set_stream_write_other(out, write_action_pipe);
         set_stream_read_other(out, read_action_output_file);
-// The above is basically transcribed from "popen".
         escaped_printing = escape_yes;
         active_stream = out;
         internal_prin(r, 0);
         putc_stream('\n', out);
         other_write_action(WRITE_CLOSE, out);
-// It seems to be (to me) unexpectedly important to use quick_exit() here
-// so that various tidying up and potential printing that can happen during
-// normal shutdown does not happen. In particular this avoids trouble with
-// the threads that might in normal circumstances need closing down but
-// here in the child process after a fork() do not really exist.
         std::quick_exit(0);
     }
 // Here I am in the PARENT
     close(pipefd[1]);
-// Retrieve results from child process.
     LispObject in = make_stream_handle();
     set_stream_file(in, fdopen(pipefd[0], "r"));
     set_stream_read_fn(in, char_from_pipe);
     set_stream_read_other(in, read_action_pipe);
     LispObject r;
-    {   save_reader_workspace RAII OPTTHREAD;
+    {   save_reader_workspace RAII;
         reader_workspace = nil;
         r = Lread_sub(in, curchar);
     }
@@ -2012,19 +2176,7 @@ LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
     return r;
 }
 
-#else // WIN32 or MACINTOSH
-
-LispObject Lsandbox_eval(LispObject env, LispObject a)
-{   SingleValued fn;
-    return aerror("sandbox-eval not supported on this platform");
-}
-
-LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
-{   SingleValued fn1;
-    return aerror("sandbox-apply not supported on this platform");
-}
-
-#endif // WIN32 or MACINTOSH
+#endif // WIN32
 
 LispObject Lsleep(LispObject env, LispObject a)
 {   SingleValued fn;
@@ -2055,7 +2207,6 @@ LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
     {   n = int_of_fixnum(a2);
         if (n > 100) n = m+10;
     }
-    THREADID;
     term_printf("Stack depth %" PRIuPTR "\n",
                 reinterpret_cast<uintptr_t>(stack) - stackBase);
     for (int i=m; i<=n; i++)

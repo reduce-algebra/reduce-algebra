@@ -44,7 +44,6 @@ static LispObject Lboole_3(LispObject env, LispObject op,
                            LispObject a1, LispObject a2)
 {   SingleValued fn;
     LispObject r;
-    THREADID;
     switch (is_fixnum(op) ? int_of_fixnum(op) : -1)
     {   case boole_clr:
             return fixnum_of_int(0);
@@ -52,7 +51,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = logand2(a1, a2);
             break;
         case boole_andc2:
-            {   Save save(THREADARG a1);
+            {   Save save(a1);
                 a2 = lognot(a2);
                 errexit();
                 save.restore(a1);
@@ -62,7 +61,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
         case boole_1:
             return a1;
         case boole_andc1:
-            {   Save save(THREADARG a2);
+            {   Save save(a2);
                 a1 = lognot(a1);
                 errexit();
                 save.restore(a2);
@@ -89,7 +88,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = lognot(a2);
             break;
         case boole_orc2:
-            {   Save save(THREADARG a1);
+            {   Save save(a1);
                 a2 = lognot(a2);
                 errexit();
                 save.restore(a1);
@@ -100,7 +99,7 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = lognot(a1);
             break;
         case boole_orc1:
-            {   Save save(THREADARG a2);
+            {   Save save(a2);
                 a1 = lognot(a1);
                 errexit();
                 save.restore(a2);
@@ -159,8 +158,7 @@ static LispObject Lconjugate(LispObject env, LispObject a)
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                        i = imag_part(a);
-        {   THREADID;
-            Save save(THREADARG r);
+        {   Save save(r);
             i = negate(i);
             errexit();
             save.restore(r);
@@ -237,8 +235,7 @@ LispObject Lgcd_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    THREADID;
-    Save save(THREADARG a3);
+    Save save(a3);
     a1 = gcd(a1, a2);
     errexit();
     save.restore(a3);
@@ -248,8 +245,7 @@ LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
 LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    THREADID;
-    {   Save save(THREADARG a3, a4up);
+    {   Save save(a3, a4up);
         a1 = gcd(a1, a2);
         errexit();
         save.restore(a3, a4up);
@@ -258,7 +254,7 @@ LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
         save.restore(a3, a4up);
     }
     while (a4up != nil)
-    {   Save save(THREADARG a4up);
+    {   Save save(a4up);
         a1 = gcd(a1, car(a4up));
         errexit();
         save.restore(a4up);
@@ -294,8 +290,7 @@ LispObject Llcm_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    THREADID;
-    Save save(THREADARG a3);
+    Save save(a3);
     a1 = lcm(a1, a2);
     errexit();
     save.restore(a3);
@@ -305,8 +300,7 @@ LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
 LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    THREADID;
-    {   Save save(THREADARG a3, a4up);
+    {   Save save(a3, a4up);
         a1 = lcm(a1, a2);
         errexit();
         save.restore(a3, a4up);
@@ -315,7 +309,7 @@ LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
         save.restore(a3, a4up);
     }
     while (a4up != nil)
-    {   Save save(THREADARG a4up);
+    {   Save save(a4up);
         a1 = lcm(a1, car(a4up));
         errexit();
         save.restore(a4up);
@@ -362,8 +356,7 @@ LispObject decode_long_float(LispObject a)
     LispObject sign = make_boxfloat128(f128_1);
     if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(
                                   sign)));
-    {   THREADID;
-        Save save(THREADARG sign);
+    {   Save save(sign);
         a = make_boxfloat128(d);
         errexit();
         save.restore(sign);
@@ -400,8 +393,7 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     else d = std::frexp(d, &x);
     if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
     else sign = make_boxfloat(neg, floatWant(flthdr(a)));
-    {   THREADID;
-        Save save(THREADARG sign);
+    {   Save save(sign);
         if (is_sfloat(a)) a = pack_immediate_float(d, a);
         else a = make_boxfloat(d, floatWant(flthdr(a)));
         errexit();
@@ -1093,8 +1085,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 
 static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 {   LispObject w, w1;
-    THREADID;
-    RealSave save(THREADARG numerator(a), denominator(a), nil);
+    RealSave save(numerator(a), denominator(a), nil);
     LispObject &p = save.val(1);
     LispObject &q = save.val(2);  // note that q will always be positive!
     LispObject &r = save.val(3);
@@ -1113,7 +1104,7 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // those edge cases I need to think even harder!
             w = times2(p, fixnum_of_int(2));
             errexit();
-            {   Save save1(THREADARG w);
+            {   Save save1(w);
                 w1 = negate(w);
                 errexit();
                 save.restore(w);
@@ -1159,12 +1150,11 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 
 LispObject lisp_fix(LispObject a, int roundmode)
 {   LispObject r;
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     r = lisp_fix_sub(a, roundmode);
     errexit();
     save.restore(a);
-    Save save1(THREADARG r);
+    Save save1(r);
     a = difference2(a, r);
     errexit();
     save1.restore(r);
@@ -1187,21 +1177,20 @@ static LispObject Lround(LispObject env, LispObject a)
 
 LispObject lisp_ifix(LispObject aa, LispObject bb, int roundmode)
 {   LispObject r2, negb;
-    THREADID;
     if (is_float(aa) || is_float(bb))
-    {   Save save(THREADARG bb);
+    {   Save save(bb);
         aa = quot2(aa, bb);
         errexit();
 // If either argument was floating point then the quotient will be.
         LispObject r = lisp_fix(aa, roundmode);
         save.restore(bb);
-        Save save1(THREADARG r);
+        Save save1(r);
         mv_2 = times2(mv_2, bb);
         errexit();
         save1.restore(r);
         return nvalues(r, 2);
     }
-    RealSave save(THREADARG aa, bb, nil, nil);
+    RealSave save(aa, bb, nil, nil);
     LispObject &a = save.val(1);
     LispObject &b = save.val(2);
     LispObject &r = save.val(3);
@@ -1216,7 +1205,7 @@ LispObject lisp_ifix(LispObject aa, LispObject bb, int roundmode)
         case FIX_ROUND:
 // I will apply a round-to-nearest, with round-to-even to break ties.
             negb = negate(b);
-            {   Save save1(THREADARG negb);
+            {   Save save1(negb);
                 r2 = times2(r, fixnum_of_int(2));
                 errexit();
                 save1.restore(negb);

@@ -389,6 +389,10 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
+// If I am in a process created using fork() this variable must be set
+// and doing that will disable use of threads here!
+inline bool inChild = false;
+
 // While debugging this (or indeed anything else) it is sometimes
 // helpful to embed information about filename and line number in
 // trace ouput. The following supports eg

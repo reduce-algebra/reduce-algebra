@@ -1383,7 +1383,7 @@ void reportOnVecPage(const char* s, Page* p)
 bool withinGarbageCollector = false;
 
 void inner_garbage_collect()
-{   THREADID;
+{
 // The hash table support caches blocks of memory in a way intended to
 // reduce allocation and re-allocation overhead when hash tables need to
 // grow or shrink. The place where I keep the recycled memory contains
@@ -1678,12 +1678,7 @@ static void report_at_end(uint64_t t0)
     uint64_t t1 = read_clock();
     gc_time += (t1 - t0);
     base_time += (t1 - t0);
-    THREADID;
-#ifdef NO_THREADS
     stackcheck();
-#else // NO_THREADS
-    stackcheck(threadId);
-#endif // NO_THREADS
     use_gchook(lisp_true);
 }
 

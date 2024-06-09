@@ -1,6 +1,5 @@
 //  arith03.cpp                           Copyright (C) 1990-2024 Codemist
 
-
 //
 // Arithmetic functions.
 //    quotient.
@@ -103,8 +102,7 @@ static LispObject quotib(LispObject a, LispObject b)
 
 static LispObject CLquotib(LispObject a, LispObject b)
 {   bool w;
-    THREADID;
-    RealSave save(THREADARG a, b, nil);
+    RealSave save(a, b, nil);
     LispObject &aa = save.val(1);
     LispObject &bb = save.val(2);
     LispObject &g = save.val(3);
@@ -131,8 +129,7 @@ static LispObject quotir(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
-    THREADID;
-    RealSave save(THREADARG a, b, nil);
+    RealSave save(a, b, nil);
     LispObject &aa = save.val(1);
     LispObject &bb = save.val(2);
     LispObject &gg = save.val(3);
@@ -154,8 +151,7 @@ static LispObject quotic(LispObject a, LispObject b)
 // the moment I will ignore that miserable fact
 {   LispObject u, v;
     mv_2 = fixnum_of_int(0);
-    THREADID;
-    RealSave save(THREADARG a, b);
+    RealSave save(a, b);
     LispObject &aa = save.val(1);
     LispObject &bb = save.val(2);
 //   a / (p + iq) is computed as follows:
@@ -647,10 +643,9 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
 {
 // Before I do anything else I will ensure that there is space available
 // in the working variables... And I will leave myself a few bytes in hand.
-    THREADID;
     while (bignum_length(a)+16 >= bignum_length(big_dividend))
     {   size_t newlen = 2*bignum_length(big_dividend);
-        Save save(THREADARG a, b);
+        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         save.restore(a, b);
@@ -658,7 +653,7 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
     }
     while (bignum_length(b)+16 >= bignum_length(big_divisor))
     {   size_t newlen = 2*bignum_length(big_divisor);
-        Save save(THREADARG a, b);
+        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         save.restore(a, b);
@@ -667,7 +662,7 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
     while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(
                big_quotient))
     {   size_t newlen = 2*bignum_length(big_quotient);
-        Save save(THREADARG a, b);
+        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         save.restore(a, b);
@@ -853,8 +848,7 @@ inline LispObject pack_up_result(LispObject a, size_t lena)
     {   int64_t r = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
                                     CELL+4*lena+4);
     save.restore(a);
@@ -901,8 +895,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
             nn = (int32_t)((uint32_t)nn | 0x80000000U);
         LispObject q = quotbn(a, nn);
         if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
-        {   THREADID;
-            Save save(THREADARG q);
+        {   Save save(q);
             a = make_lisp_integer32(nwork);
             save.restore(q);
             mv_2 = a;
@@ -990,8 +983,7 @@ static LispObject quotri(LispObject a, LispObject b)
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
-    THREADID;
-    RealSave save(THREADARG a, b, nil);
+    RealSave save(a, b, nil);
     LispObject &aa = save.val(1);
     LispObject &bb = save.val(2);
     LispObject &gg = save.val(3);
@@ -1014,9 +1006,7 @@ static LispObject quotrs(LispObject a, LispObject b)
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
-    THREADID;
-    RealSave save(THREADARG
-                  numerator(a), denominator(a),
+    RealSave save(numerator(a), denominator(a),
                   numerator(b), denominator(b),
                   nil);
     LispObject &na = save.val(1);
@@ -1053,11 +1043,10 @@ static LispObject quotrf(LispObject a, LispObject b)
 static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a);
     mv_2 = fixnum_of_int(0);
-    THREADID;
-    Save save(THREADARG b, r);
+    Save save(b, r);
     i = quot2(i, b);
     save.restore(b, r);
-    Save save1(THREADARG i);
+    Save save1(i);
     r = quot2(r, b);
     save1.restore(i);
     return make_complex(r, i);

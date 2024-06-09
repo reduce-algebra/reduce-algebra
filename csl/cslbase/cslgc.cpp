@@ -507,7 +507,6 @@ static void real_garbage_collector()
 {
 // I lift the real garbage collector to a separate function mainly
 // so that I can set breakpoints on it!
-    THREADID;
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = nil;
 
@@ -715,8 +714,7 @@ void reclaim(const char *why, int stg_class)
     base_time += t1 - t0;
 // (verbos 5) causes a display breaking down how space is used
     if ((verbos_flag & 5) == 5)
-    {   THREADID;
-        trace_printf(
+    {   trace_printf(
             "cons_cells=%" PRIdPTR ", symbol_heads=%" PRIdPTR ", strings=%"
             PRIdPTR ", user_vectors=%" PRIdPTR "\n",
             cons_cells, symbol_heads, strings, user_vectors-litvecs-getvecs);
@@ -746,18 +744,12 @@ void reclaim(const char *why, int stg_class)
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))
         resource_exceeded();
-    THREADID;
-#ifdef NO_THREADS
     stackcheck();
-#else // NO_THREADS
-    stackcheck(threadId);
-#endif // NO_THREADS
     use_gchook(lisp_true);
 }
 
 LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
-{   THREADID;
-    Save save(THREADARG p);
+{   Save save(p);
     reclaim(why, stg_class);
     save.restore(p);
     return p;

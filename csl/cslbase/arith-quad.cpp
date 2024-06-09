@@ -179,8 +179,8 @@ QuadFloat sumSeries(QuadFloat* coeffs, int n, QuadFloat x)
 // mentioned. But most of the time there will not be many leading zeros.
 // So for instance it will probably make sense to start out seeing what
 // emerges from a 3*4 (or some other small calculation) and if it
-// unambiguously does noy have many leading zeros in the fraction accept
-// it. If it is not good then try the next more expensive option.
+// unambiguously does not have many leading zeros in the fraction then
+// accept it. If it is not good then try the next more expensive option.
 //
 // Well all the above is expressed in terms of reducing by a multiple of
 // 2*pi to end up with a fraction that corresponds to the input range

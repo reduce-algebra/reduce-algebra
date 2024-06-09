@@ -211,11 +211,13 @@ INLINE_VAR const size_t chunkMask = chunkSize-1;
 INLINE_VAR const size_t vecAlign = 8;
 
 extern bool allocateSegment(size_t);
+extern bool allocateAnotherSegment();
 
 enum PageType
 {   emptyPageType,
     consPageType,
     vecPageType,
+    savedPageType
 };
 
 inline const char* pageTypeName(PageType x)
@@ -227,6 +229,8 @@ inline const char* pageTypeName(PageType x)
         return "Cons";
     case vecPageType:
         return "Vec";
+    case savedPageType:
+        return "Saved";
     default:
         return "Unknown";
     }
@@ -291,6 +295,8 @@ public:
         struct
         {   PageType type;            // empty, cons or vector.
             Page* chain;              // general purpose chaining.
+            Page* original;           // Used for sandbox
+            Page* saveChain;          // used for sandbox
             size_t hasPinned;         // count of pinned locations/chunks
             Page* pinnedPages;        // chain used during GC
             Page* pendingPages;       // chain used during GC
@@ -306,6 +312,8 @@ public:
         struct
         {   PageType Ctype;
             Page* Cchain;
+            Page* Coriginal;          // Used for sandbox
+            Page* CsaveChain;         // used for sandbox
             size_t ChasPinned;
             Page* CpinnedPages;
             Page* CpendingPages;
@@ -322,6 +330,8 @@ public:
         struct
         {   PageType Vtype;
             Page* Vchain;
+            Page* Voriginal;          // Used for sandbox
+            Page* VsaveChain;         // used for sandbox
             size_t VhasPinned;
             Page* VpinnedPages;
             Page* VpendingPages;
@@ -551,6 +561,7 @@ extern Page* potentiallyPinned;    // For GC.
 extern Page* pinnedPages;          // For GC.
 extern Page* pendingPages;         // For GC.
 extern Page* oldVecPinPages;       // For GC.
+extern Page* savedPages;           // for sandbox
 
 inline uintptr_t endOfConsPage(Page* p)
 {   return reinterpret_cast<uintptr_t>(p) +
