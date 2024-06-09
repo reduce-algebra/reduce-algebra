@@ -1911,6 +1911,17 @@ void saveOnePage(Page* p)
     savedPages = np;
 }
 
+Page* newFreePages = nullptr;
+Page* revFreePages = nullptr;
+
+void releaseOnePage(Page* p)
+{   p->chain = newFreePages;
+    p->saveChain = revFreePages;
+    if (newFreePages!=nullPtr) newFreePages->saveChain = p;
+    if (revFreePages!=nullPtr) revFreePages->chain = p;
+
+}
+
 // This must use borrow_basic_vector() when it wants to grab some
 // space to store a serialized version of u. It must return something
 // that gives access to that data. I must not garbage collect while
@@ -1920,16 +1931,69 @@ void saveOnePage(Page* p)
 
 const size_t stringBufferSize = 16384-4*8;
 
-// Multiple values are not used during the processing here so I will
-// use mv_2 as a 
+// printToStrings will take an S-expression u and serialize it
+// to form a sequence of bytes. These will be placed in
+// one or more blocks (each of which are about 16K bytes long
+// and are chained via an early element). The first block in
+// the chain is returned. While writing to the chain of blocks
+// the listbase mv_4 will be used to store a reference to the
+// current block. This is safe provided the printing routines do
+// not use multiple values beyond 3 of them!
+
+static size_t charCounter;
+#define charBlock mv_4
+ 
+
+bool byteToStrings(int ch)
+{   if (charCounter == stringBufferSize)
+    {   LispObject newBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
+                                  stringBufferSize+3*sizeof(LispObject));
+        elt(newBlock,0) = charBlock;
+        charBlock = newBlock;
+        charCounter = 0;
+    }
+    char* data = static_cast<char*>(&elt(charBlock, 3));
+    data[charCounter++] = ch;
+    return true;
+}
+
+// Note that this ends up with the blocks (if there are several)
+// chained with the last one written first. This will turn out to be
+// OK because the block order gets corrected before data is read!
 
 LispObject printToStrings(LispObject u)
 {
-    return nil;
+     charBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
+                     stringBufferSize+3*sizeof(LispObject));
+     charCounter = 0;
+     iputc_hook = byteToStrings;
+
+     byteToStrings('!');  // Some dummy data for testing purposes.
+     byteToStrings('A');
+     byteToStrings('r');
+     byteToStrings('t');
+     byteToStrings('h');
+     byteToStrings('u');
+     byteToStrings('r');
+     byteToStrings('\n');
+
+     iputc_hook = nullptr;
+     return charBlock;
 }
 
-LispObject readFromStrings(LispObject u)
-{
+int byteFromStrings()
+{   if (charCounter == stringBufferSize)
+    {   charBlock = elt(newBlock,0);
+        charCounter = 0;
+    }
+    char* data = static_cast<char*>(&elt(charBlock, 3));
+    return data[charCounter++];
+}
+
+LispObject readFromStrings(LispObject input)
+{   charBlock = input;
+    charCounter = 0;
+    iget_hook = byteFromStrings;
     return nil;
 }
 
@@ -1973,7 +2037,7 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
         for (UNUSED_NAME auto p:consCloggedPages) N++;
         for (UNUSED_NAME auto p:vecCloggedPages) N++;
         for (UNUSED_NAME auto p:consPages) N++;
-        for (UNUSED_NAME auto p:consPages) N++;
+        for (UNUSED_NAME auto p:vecPages) N++;
 
         while (pageFringe != pageEnd)
         {   Page* r = pageFringe++;
@@ -1999,7 +2063,7 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
         for (auto p:consCloggedPages) saveOnePage(p);
         for (auto p:vecCloggedPages) saveOnePage(p);
         for (auto p:consPages) saveOnePage(p);
-        for (auto p:consPages) saveOnePage(p);
+        for (auto p:vecPages) saveOnePage(p);
 // (5) Save all non-listbase variables that tends to change during a
 //     computation, eg the stack fringes. Note that the C stack will not
 //     need its contents saved. Record enough information about
@@ -2025,12 +2089,42 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 //     Restore non listbase variable. When that is done it will be
 //     OK to compute in the restored space save that garbage collection
 //     should be avoided for a while. 
+// One of the things that will need to be sorted will be the chaining
+// of Pages. Well those of Pages that were in use (including those
+// containing pinned data) will be OK because they are restored from
+// copies, but pages that were empty at the start and any additional
+// pages that came into being if memory was enlarged during the protected
+// calculation may not be.
+// I deal with that by initially puttiing ALL pages apart from the
+// ones with saved data not just on the list of empty pages but as a
+// double-linked list. Then as I restore any page I can easily edit that
+// out from the new list. And once I have moved data out from the page
+// that saved stuff it can go on the empty page list. Ha ha neat!
+
+            newFreePages = revFreePages = nullptr;
+            while (!freePages.isEmpty())
+                releaseOnePage(freePages.pop());
+            while (!consPinPages.isEmpty())
+                releaseOnePage(consPinPages.pop());
+            while (!vecPinPages.isEmpty())
+                releaseOnePage(vecPinPages.pop());
+            while (!consCloggedPages.isEmpty())
+                releaseOnePage(consCloggedPages.pop());
+            while (!vecCloggedPages.isEmpty())
+                releaseOnePage(vecCloggedPages.pop());
+            while (!consPages.isEmpty())
+                releaseOnePage(consPages.pop());
+            while (!vecPages.isEmpty())
+                releaseOnePage(vecPages.pop());
+
+
             while (savedPages != nullptr)
             {   memcpy(savedPages->original, savedPages, sizeof(Page));
                 savedPages = savedPages->saveChain;
             }
 //@@@ now I must get at least non-listbase variables associated with
 //@@@ storage allocation back in a stable state.
+
 
 // (9) Copy result data from the borrowed page(s) into currently live pages
 //     arranging that if pages need allocating to make space for this that
