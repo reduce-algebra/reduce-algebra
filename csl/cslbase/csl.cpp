@@ -1399,16 +1399,14 @@ public:
 #endif
     }
     ~KaratsubaThreads()
-    {   if (!inChildOfFork)
-        {
+    {
 #ifndef HAVE_CILK
-            {   std::lock_guard<std::mutex> lk(kara_mutex);
-                kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
-                kara_done = 0;
-            }
-            cv_kara_ready.notify_all();
-#endif
+        {   std::lock_guard<std::mutex> lk(kara_mutex);
+            kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
+            kara_done = 0;
         }
+        cv_kara_ready.notify_all();
+#endif
     }
 };
 

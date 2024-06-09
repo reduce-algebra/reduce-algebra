@@ -1615,13 +1615,10 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
 // to be linked with special libraries to support the shared memory APIs,
 // but the easy way to get a system built there is just to disable this!
 
-// I have also simplified the conditions here so that I really just
-// check if fork() is available and if it is I suppose that all the rest
-// will be there too.
+// I have simplified the conditions here so that I really just
+// check for Linux but rules oit Android.
 
-#if defined HAVE_FORK && \
-    !defined __ANDROID__ && \
-    !defined MACINTOSH
+#if defined __linux__ && !defined __ANDROID__
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1696,7 +1693,6 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
     }
     else if (pid1 == 0)
     {   // TASK 1 created OK
-        inChildOfFork = true;
         LispObject r1 = nil;
         if_error(r1 = Lapply2(nil, a, b, nil),
 // If the evaluation failed I will exit indicating a failure.
@@ -1707,6 +1703,9 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // Exiting from the sub-task would in fact detach from the shared data
 // segment, but I do the detaching explictly to feel tidy.
         shmdt(shared);
+// Could I get away with use of abort() rather than quick_exit given
+// that the Macintosh seems to have given up on that bit of supporting
+// an international standard?
         std::quick_exit(0);
     }
     else
@@ -1723,7 +1722,6 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
         }
         else if (pid2 == 0)
         {   // TASK 2
-            inChildOfFork = true;
             LispObject r2 = nil;
             if_error(r2 = Lapply2(nil, a, b, lisp_true),
                      // Error handler
@@ -1781,6 +1779,24 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
     }
 }
 
+#else // __linux__
+
+LispObject Lparallel(LispObject env, LispObject a, LispObject b)
+{   SingleValued fn;
+    return aerror("parallel not supported on this platform");
+}
+
+#endif // __linux__
+
+// I wish this was generally available. The idea here is that
+// display_backtrace() works by unwinding the stack reporting what it
+// reaches. That destroys the current context (bigtime!) but if I do that in
+// a forked process then the child process can terminate when it has
+// finished producing the backtrace and the parentg one can resume
+// undisturbed. Windows does not provide fork()  
+
+#ifdef HAVE_FORK
+
 LispObject Lbacktrace(LispObject env)
 {   SingleValued fn;
     pid_t pid1;
@@ -1789,9 +1805,12 @@ LispObject Lbacktrace(LispObject env)
     pid1 = fork();
     if (pid1 < 0) return aerror("Fork 1 failed in backtrace function");
     else if (pid1 == 0) // TASK 1 created OK
-    {   inChildOfFork = true;
-        display_backtrace();
+    {   display_backtrace();
+#ifdef MACINTOSH
+        std::abort();
+#else // MACINTOSH
         std::quick_exit(0);
+#endif // MACINTOSH
     }
     else
     {   // Wait for the sub-task to finishes.
@@ -1800,19 +1819,15 @@ LispObject Lbacktrace(LispObject env)
     }
 }
 
-#else
-
-LispObject Lparallel(LispObject env, LispObject a, LispObject b)
-{   SingleValued fn;
-    return aerror("parallel not supported on this platform");
-}
+#else // HAVE_FORK
 
 LispObject Lbacktrace(LispObject env)
 {   SingleValued fn;
     return aerror("Standard Lisp does not mandate a BACKTRACE function");
 }
 
-#endif
+#endif // HAVE_FORK
+
 
 // sandbox-eval behaves much like eval, EXCEPT for two key differences.
 // (1) The evaluation of u will not change the state of the Lisp
@@ -1840,15 +1855,13 @@ LispObject Lbacktrace(LispObject env)
 //
 // sandbox-apply is similar but models apply rather than eval.
 
-#if defined WIN32 || defined MACINTOSH || !defined USE_FORK
-
 // My first attempt at this facility used fork() to isolate the work that
 // needed cautious evaluation. That functionality is not (readily) available
 // on Windows. Even though is is provided under Cygwin the performance
 // is liable to be poor and anyway my attempts to use it there have not
 // been fully successful.
 //
-// So here is a notionally generic approch:
+// So I abandon the fork() version and here is a notionally generic approch:
 // (1) Check a withinSandbox flag and fail if it is set. Then set it
 //     so that nested use of this scheme is not possible.
 // (2) Make a copy of the current Lisp stack as a vector in the ordinary
@@ -2065,119 +2078,6 @@ LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
 {   SingleValued fn1;
     return sandbox(false, fn, args);
 }
-
-#else // WIN32
-
-#include <unistd.h>
-#include <sys/wait.h>
-
-LispObject Lsandbox_eval(LispObject env, LispObject u)
-{   SingleValued fn;
-    int pipefd[2];
-    pipe(pipefd);
-    pid_t procedId  = fork();
-    if (procedId == 0) // CHILD
-    {   inChildOfFork = true;
-        close(pipefd[0]);
-// When this task completes I really do not want it to say
-//   "End of Lisp run..."
-        init_flags |= INIT_SILENT;
-        init_flags &= ~INIT_VERBOSE;
-// Now there is a "jolly" here. the (POSIX) definition of fork demands
-// that threads other than the calling one are not reflected into the copied
-// world. When this system is running normally there will typically be
-// four threads active. One watches for input from the keyboard or handles
-// the GUI, while the other three are helpers for multiplication.
-// In this child process these will not be running, although muxexes
-// associated with them may be held.
-// Also at the termination of the child any attempt to cause these threads
-// to terminate and possibly even to communicate with them is liable to
-// cause a crash!
-// The code here will not support multiple values!
-        LispObject r = eval(u, nil);
-// The following mess create an output stream to the pipe and
-// sends my result down it. And then it closes the pipe.
-        spool_file = nullptr;
-        procedural_output = nullptr;
-        LispObject out = make_stream_handle();
-        set_stream_file(out, fdopen(pipefd[1], "w"));
-        set_stream_write_fn(out, char_to_pipeout);
-        set_stream_write_other(out, write_action_pipe);
-        set_stream_read_other(out, read_action_output_file);
-// The above is basically transcribed from "popen".
-        escaped_printing = escape_yes;
-        active_stream = out;
-        internal_prin(r, 0);
-        putc_stream('\n', out);
-        other_write_action(WRITE_CLOSE, out);
-// It seems to be (to me) unexpectedly important to use quick_exit() here
-// so that various tidying up and potential printing that can happen during
-// normal shutdown does not happen. In particular this avoids trouble with
-// the threads that might in normal circumstances need closing down but
-// here in the child process after a fork() do not really exist.
-        std::quick_exit(0);
-    }
-// Here I am in the PARENT
-    close(pipefd[1]);
-// Retrieve results from child process.
-    LispObject in = make_stream_handle();
-    set_stream_file(in, fdopen(pipefd[0], "r"));
-    set_stream_read_fn(in, char_from_pipe);
-    set_stream_read_other(in, read_action_pipe);
-    LispObject r;
-    {   save_reader_workspace RAII;
-        reader_workspace = nil;
-        r = Lread_sub(in, curchar);
-    }
-    other_read_action(READ_CLOSE, in);
-    wait(NULL);    // Wait for child to terminate
-    return r;
-}
-
-// Much the same by apply not eval.
-
-LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
-{   SingleValued fn1;
-    int pipefd[2];
-    pipe(pipefd);
-    pid_t procedId  = fork();
-    if (procedId == 0) // CHILD
-    {   inChildOfFork = true;
-        close(pipefd[0]);
-        init_flags |= INIT_SILENT;
-        init_flags &= ~INIT_VERBOSE;
-        LispObject r = apply(fn, args, nil, apply_symbol);
-        spool_file = nullptr;
-        procedural_output = nullptr;
-        LispObject out = make_stream_handle();
-        set_stream_file(out, fdopen(pipefd[1], "w"));
-        set_stream_write_fn(out, char_to_pipeout);
-        set_stream_write_other(out, write_action_pipe);
-        set_stream_read_other(out, read_action_output_file);
-        escaped_printing = escape_yes;
-        active_stream = out;
-        internal_prin(r, 0);
-        putc_stream('\n', out);
-        other_write_action(WRITE_CLOSE, out);
-        std::quick_exit(0);
-    }
-// Here I am in the PARENT
-    close(pipefd[1]);
-    LispObject in = make_stream_handle();
-    set_stream_file(in, fdopen(pipefd[0], "r"));
-    set_stream_read_fn(in, char_from_pipe);
-    set_stream_read_other(in, read_action_pipe);
-    LispObject r;
-    {   save_reader_workspace RAII;
-        reader_workspace = nil;
-        r = Lread_sub(in, curchar);
-    }
-    other_read_action(READ_CLOSE, in);
-    wait(NULL);    // Wait for child to terminate
-    return r;
-}
-
-#endif // WIN32
 
 LispObject Lsleep(LispObject env, LispObject a)
 {   SingleValued fn;

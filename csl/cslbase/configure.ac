@@ -1742,13 +1742,13 @@ then
 # 13.x  Ventura
 # 14.x  Sonoma          Now the version I build and test on.
 #
-# Every few years maybe I should review how old a MacOS can be supported, but
-# note very well that one needs to configure Macports to use a deployment
-# target matching the one here, and if that is changed then all the
-# macports stuff is liable to need rebuilding or re-installing so as to
-# avoid moans about version support conflicts when things are linked.
-#
-  ENVP="MACOSX_DEPLOYMENT_TARGET=11.0"
+
+# I think I am not going to mess with despolyment targets any more
+# so a version built on one platform is only really guaranteed to run
+# on the same one, and Apple introducing incompatible changes represents
+# issues to be addressed to them not to me!
+# ENVP="MACOSX_DEPLOYMENT_TARGET=11.0"
+
   AC_MSG_NOTICE([CC=$CC CXX=$CXX CPP=$CPP CXXCPP=$CXXCPP])
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"

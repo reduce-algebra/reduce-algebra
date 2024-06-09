@@ -393,7 +393,6 @@ extern uint64_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern bool modulus_is_large;
-inline bool inChildOfFork = false;
 extern size_t karaSize;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
@@ -1318,7 +1317,6 @@ extern size_t fullest_hash_table;
    X(fastget_size),                 \
    X(package_bits),                 \
    X(modulus_is_large),             \
-   X(inChildOfFork),                \
    X(karaSize),                     \
    X(fasl_output_file),             \
    X(output_directory),             \
