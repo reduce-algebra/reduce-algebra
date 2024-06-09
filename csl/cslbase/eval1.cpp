@@ -1661,7 +1661,8 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2,
 // will be there too.
 
 #if defined HAVE_FORK && \
-    !defined __ANDROID__
+    !defined __ANDROID__ && \
+    !defined MACINTOSH
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1856,7 +1857,7 @@ LispObject Lbacktrace(LispObject env)
 
 #endif
 
-#ifndef WIN32
+#if !defined WIN32 && !defined MACINTOSH
 
 #include <unistd.h>
 #include <sys/wait.h>
@@ -2011,7 +2012,7 @@ LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
     return r;
 }
 
-#else // WIN32
+#else // WIN32 or MACINTOSH
 
 LispObject Lsandbox_eval(LispObject env, LispObject a)
 {   SingleValued fn;
@@ -2019,11 +2020,11 @@ LispObject Lsandbox_eval(LispObject env, LispObject a)
 }
 
 LispObject Lsandbox_apply(LispObject env, LispObject fn, LispObject args)
-{   SingleValued fn;
+{   SingleValued fn1;
     return aerror("sandbox-apply not supported on this platform");
 }
 
-#endif // WIN32
+#endif // WIN32 or MACINTOSH
 
 LispObject Lsleep(LispObject env, LispObject a)
 {   SingleValued fn;
