@@ -1797,6 +1797,9 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 
 #ifdef HAVE_FORK
 
+#include <unistd.h>
+#include <sys/wait.h>
+
 LispObject Lbacktrace(LispObject env)
 {   SingleValued fn;
     pid_t pid1;
@@ -1891,7 +1894,7 @@ LispObject Lbacktrace(LispObject env)
 //     temporarily put the text in it.
 // (8) Copy from the savedPages back into the places they had been copied
 //     from. Copy back list bases and status variables, putting some pages
-//     back on freePages when they are now in use but had not been at the
+//     back on emptyPages when they are now in use but had not been at the
 //     start. Now I know that there are plenty of free pages.
 //     Restore non listbase variable. When that is done it will be
 //     OK to compute in the restored space save that garbage collection
@@ -1911,15 +1914,35 @@ void saveOnePage(Page* p)
     savedPages = np;
 }
 
+// This puts a page on the simple list newFreePages.
+
 Page* newFreePages = nullptr;
-Page* revFreePages = nullptr;
 
 void releaseOnePage(Page* p)
 {   p->chain = newFreePages;
-    p->saveChain = revFreePages;
-    if (newFreePages!=nullPtr) newFreePages->saveChain = p;
-    if (revFreePages!=nullPtr) revFreePages->chain = p;
+    p->saveChain = nullptr;
+    if (newFreePages!=nullptr) newFreePages->saveChain = p;
+    newFreePages = p;
+}
 
+// Splice a page out from the newFreePages double-linked chain.
+ 
+void unFreePage(Page* p)
+{   Page* prev = p->saveChain;
+    Page* next = p->chain;
+    if (prev == nullptr) newFreePages = next;
+    else prev->chain = next;
+    if (next != nullptr) next->saveChain = prev;
+}
+
+// Put all pages on free back as begin free.
+
+void restoreFreePages(Page* fr)
+{   while (fr != nullptr)
+    {   Page* next = fr->chain;
+        emptyPages.push(fr);
+        fr = next;
+    }
 }
 
 // This must use borrow_basic_vector() when it wants to grab some
@@ -1952,7 +1975,7 @@ bool byteToStrings(int ch)
         charBlock = newBlock;
         charCounter = 0;
     }
-    char* data = static_cast<char*>(&elt(charBlock, 3));
+    char* data = reinterpret_cast<char*>(&elt(charBlock, 3));
     data[charCounter++] = ch;
     return true;
 }
@@ -1968,14 +1991,14 @@ LispObject printToStrings(LispObject u)
      charCounter = 0;
      iputc_hook = byteToStrings;
 
-     byteToStrings('!');  // Some dummy data for testing purposes.
-     byteToStrings('A');
-     byteToStrings('r');
-     byteToStrings('t');
-     byteToStrings('h');
-     byteToStrings('u');
-     byteToStrings('r');
-     byteToStrings('\n');
+byteToStrings('!');  // Some dummy data for testing purposes.
+byteToStrings('A');
+byteToStrings('r');
+byteToStrings('t');
+byteToStrings('h');
+byteToStrings('u');
+byteToStrings('r');
+byteToStrings('\n');
 
      iputc_hook = nullptr;
      return charBlock;
@@ -1983,17 +2006,21 @@ LispObject printToStrings(LispObject u)
 
 int byteFromStrings()
 {   if (charCounter == stringBufferSize)
-    {   charBlock = elt(newBlock,0);
+    {   charBlock = elt(charBlock,0);
         charCounter = 0;
     }
-    char* data = static_cast<char*>(&elt(charBlock, 3));
+    char* data = reinterpret_cast<char*>(&elt(charBlock, 3));
     return data[charCounter++];
 }
 
 LispObject readFromStrings(LispObject input)
 {   charBlock = input;
     charCounter = 0;
-    iget_hook = byteFromStrings;
+    igetc_hook = byteFromStrings;
+char buffer[100];
+for (int i=0; i<7; i++) buffer[i] = (*igetc_hook)();
+buffer[7] = 0;
+return make_string(buffer);
     return nil;
 }
 
@@ -2032,19 +2059,18 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
     size_t N=0, F=0;
     for (bool first=true;;first=false)
     {   N = 0;
-        for (UNUSED_NAME auto p:consPinPages) N++;
-        for (UNUSED_NAME auto p:vecPinPages) N++;
-        for (UNUSED_NAME auto p:consCloggedPages) N++;
-        for (UNUSED_NAME auto p:vecCloggedPages) N++;
-        for (UNUSED_NAME auto p:consPages) N++;
-        for (UNUSED_NAME auto p:vecPages) N++;
+        N += consPinPages.count;
+        N += vecPinPages.count;
+        N += consCloggedPages.count;
+        N += vecCloggedPages.count;
+        N += consPages.count;
+        N += vecPages.count;
 
         while (pageFringe != pageEnd)
         {   Page* r = pageFringe++;
             r->type = emptyPageType;
         }
-        F = 0;
-        for (UNUSED_NAME auto p:emptyPages) F++;
+        F = emptyPages.count;
 
         if (F < static_cast<size_t>(2.1*N)+1)
         {   if (first)
@@ -2084,7 +2110,7 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
            LispObject resultString = printToStrings(r);
 // (8) Copy from the savedPages back into the places they had been copied
 //     from. Copy back list bases and status variables, putting some pages
-//     back on freePages when they are now in use but had not been at the
+//     back on emptyPages when they are now in use but had not been at the
 //     start. Now I know that there are plenty of free pages.
 //     Restore non listbase variable. When that is done it will be
 //     OK to compute in the restored space save that garbage collection
@@ -2100,10 +2126,9 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 // double-linked list. Then as I restore any page I can easily edit that
 // out from the new list. And once I have moved data out from the page
 // that saved stuff it can go on the empty page list. Ha ha neat!
-
-            newFreePages = revFreePages = nullptr;
-            while (!freePages.isEmpty())
-                releaseOnePage(freePages.pop());
+            newFreePages = nullptr;
+            while (!emptyPages.isEmpty())
+                releaseOnePage(emptyPages.pop());
             while (!consPinPages.isEmpty())
                 releaseOnePage(consPinPages.pop());
             while (!vecPinPages.isEmpty())
@@ -2116,12 +2141,17 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
                 releaseOnePage(consPages.pop());
             while (!vecPages.isEmpty())
                 releaseOnePage(vecPages.pop());
-
-
+// Now copy saved data back to where it came from. And the Pages that
+// had been used to save iut go back on the chain of free Oages.
             while (savedPages != nullptr)
-            {   memcpy(savedPages->original, savedPages, sizeof(Page));
-                savedPages = savedPages->saveChain;
+            {   unFreePage(savedPages->original);
+                memcpy(savedPages->original, savedPages, sizeof(Page));
+                Page* next = savedPages->saveChain;
+                releaseOnePage(savedPages);;
+                savedPages = next;
             }
+// Now I can put the chain of free Pages back where it really wants to be.
+            restoreFreePages(newFreePages);
 //@@@ now I must get at least non-listbase variables associated with
 //@@@ storage allocation back in a stable state.
 
