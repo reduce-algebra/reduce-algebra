@@ -349,8 +349,7 @@ LispObject N_rationalizef(double dd, int bits)
     if (dd < 0.0) p1 = make_lisp_integer64(-(int64_t)u1);
     else p1 = make_lisp_integer64(u1);
     if (v1 == 1) return p1;
-    THREADID;
-    Save save(THREADARG p1);
+    Save save(p1);
     LispObject q1 = make_lisp_integer64(v1);
     save.restore(p1);
     return make_ratio(p1, q1);
@@ -524,8 +523,7 @@ LispObject N_rationalizef128(float128_t *dd)
     if (f128_negative(*dd)) p1 = make_lisp_integer128(-u1);
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
-    THREADID;
-    Save save(THREADARG p1);
+    Save save(p1);
     LispObject q1 = make_lisp_unsigned128(v1);
     save.restore(p1);
     return make_ratio(p1, q1);
@@ -953,8 +951,7 @@ LispObject Nconjugate(LispObject env, LispObject a)
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                    i = imag_part(a);
-        {   THREADID;
-            Save save(THREADARG r);
+        {   Save save(r);
             i = Minus::op(i);
             errexit();
             save.restore(r);

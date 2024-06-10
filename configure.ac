@@ -485,46 +485,10 @@ AC_ARG_WITH(clang,
   [],
   [with_clang="no"])
 
-# If Reduce is built on a fully up to date Macintosh then asking to
-# preserve compatibility back as far as 11.0 (Big Sur) is probably
-# reasonable. Buf if you try to build on an Mac that is older than
-# Big Sur this would fail. What I try here is along the lines of
-# build hosts 10.x (ie up as far as Catalina) ask for support to go
-# back as far as 10.13 (High Sierra), while others (which are liable to be
-# 11.0 onwards) set 11.0 (Big Sur) as the baseline. I hope that with this
-# few people will feel the need to override the option by hand.
-# NOTE VERY WELL that /opt/local/etc/macports/macports.conf must have
-# a suitable setting for this as well.
-#
-# High Sierra (10.13) can run on many Macintosh machines from 2009 onwards
-# but some models need to be from 2010. In 2014 that means that any Macintosh
-# less than 14 years old could run it. The last security update for it was
-# in November 2020 and from then on it has counted as being unsupported by
-# Apple, with that now having been its status for over 3 years. All in
-# all I am taking a view that pretending to support versions of macOS
-# older than that is now not necessary.
-
-case `uname -a` in
-*Darwin*)
-  version=`sw_vers | grep ProductVersion`
-  case $version in
-  *\ 10.)
-    DEFAULTVER="10.13"
-    ;;
-  *)
-    DEFAULTVER="11.0"
-    ;;
-  esac
-  ;;
-*)
-  DEFAULTVER="11.0"
-  ;;
-esac  
-
-AC_ARG_WITH(macosxver,
-  AS_HELP_STRING([--with-macosxver=NNN], [set -mmacosx_version_min]),
-  [],
-  [with_macosxver=$DEFAULTVER])
+# I am giving up specification of a "deployment target" both because
+# being certain that all libraries will suit and having any confidence that
+# Apple will really support anything other than their latest version
+# gives me headaches.
 
 ORIG="$CC$CXX"
 OLD_CFLAGS="$CFLAGS"
@@ -1208,11 +1172,6 @@ then
     then
       LDFLAGS="$LDFLAGS -L/opt/local/lib"
     fi
-
-    CPPFLAGS="$CPPFLAGS -mmacosx-version-min=$with_macosxver"
-    CFLAGS="$CFLAGS -mmacosx-version-min=$with_macosxver"
-    CXXFLAGS="$CXXFLAGS -mmacosx-version-min=$with_macosxver"
-    LDFLAGS="$LDFLAGS -mmacosx-version-min=$with_macosxver"
     ;;
   esac
 
@@ -1302,9 +1261,7 @@ then
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
       MACARCH="--enable-macosx_arch=x86_64" 
       extras="--with-xft --with-xim"
-      wx="--with-cocoa \
-          $MACARCH "
-#         --with-macosx-version-min=10.13
+      wx="--with-cocoa $MACARCH "
       ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now

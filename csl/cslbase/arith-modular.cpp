@@ -466,7 +466,6 @@ LispObject Nlarge_modular_reciprocal(LispObject n, bool safe=false)
     }
     b = Mod::op(b, large_modulus);
     a = large_modulus;
-    THREADID;
     while (b != fixnum_of_int(1))
     {   LispObject w, t;
         if (b == fixnum_of_int(0))

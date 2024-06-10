@@ -152,13 +152,8 @@ extern int curchar;
 
 class save_reader_workspace
 {   LispObject *save;
-    DECLARETHREADID
 public:
-#ifdef NO_THREADS
     save_reader_workspace()
-#else // NO_THREADS
-    save_reader_workspace(uintptr_t id) : threadId(id)
-#endif // NO_THREADS
     {   *++stack = reader_workspace;
         save = stack;
     }

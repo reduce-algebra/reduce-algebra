@@ -313,7 +313,6 @@ LispObject error(int nargs, int code, ...)
     int i;
     LispObject w1;
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
-    THREADID;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s: ", errcode(code));
@@ -325,13 +324,7 @@ LispObject error(int nargs, int code, ...)
         va_end(a);
         for (i=0; i<nargs; i++) *++stack = *--w;
         if (code != err_stack_overflow)  // Be cautious here!
-        {
-#ifdef NO_THREADS
             stackcheck();
-#else // NO_THREADS
-            stackcheck(threadId);
-#endif // NO_THREADS
-        }
         for (i=0; i<nargs; i++)
         {   LispObject p = *stack--;
             loop_print_error(p);
@@ -361,7 +354,6 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     std::va_list a;
     int i;
     LispObject *w = reinterpret_cast<LispObject *>(&work_1);
-    THREADID;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s, %s: ", errcode(code1), errcode(code2));
@@ -369,11 +361,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
         for (i=0; i<nargs; i++) *++stack = *--w;
-#ifdef NO_THREADS
         stackcheck();
-#else // NO_THREADS
-        stackcheck(threadId);
-#endif // NO_THREADS
         for (i=0; i<nargs; i++)
         {   LispObject p = *stack--;
             loop_print_error(p);
@@ -411,7 +399,6 @@ LispObject interrupted()
 {   errorNest safe;
     LispObject w;
     string save_prompt;
-    THREADID;
 // If I have a windowed system I expect that the mechanism for
 // raising an exception will have had a menu that gave me a chance
 // to decide whether to proceed or abort.  Thus the following code
@@ -420,7 +407,7 @@ LispObject interrupted()
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
     {   term_printf("\n");
         ensure_screen();
-        RealSave save(THREADARG prompt_thing);
+        RealSave save(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
         save_prompt = fwin_prompt_string;
 // Well I will want this to run a break-loop, but doing what I once did will
@@ -492,7 +479,6 @@ LispObject display_backtrace()
 LispObject aerror(const char *s)
 {   errorNest safe;
     LispObject w;
-    THREADID;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -512,7 +498,6 @@ LispObject aerror(const char *s)
 LispObject aerror0(const char *s)
 {   errorNest safe;
     LispObject w;
-    THREADID;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -532,7 +517,6 @@ LispObject aerror0(const char *s)
 LispObject aerror1(const char *s, LispObject a)
 {   errorNest safe;
     LispObject w;
-    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -555,7 +539,6 @@ LispObject aerror1(const char *s, LispObject a)
 LispObject aerror2(const char *s, LispObject a, LispObject b)
 {   errorNest safe;
     LispObject w;
-    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -580,7 +563,6 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
 LispObject aerror2(const char *s, const char *a, LispObject b)
 {   errorNest safe;
     LispObject w;
-    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s %s ", s, a);
         loop_print_error(b);
@@ -604,7 +586,6 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
                    LispObject c)
 {   errorNest safe;
     LispObject w;
-    THREADID;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -1023,7 +1004,6 @@ static LispObject lisp_main()
 // a NaN for 0.0/0.0 rather than raising an exception.
     trap_floating_overflow = false;
     tty_count = 0;
-    THREADID;
     while (true)
 // The sole purpose of the while loop here is to allow me to proceed
 // for a second try if I get a (cold-start) call.
@@ -1069,7 +1049,7 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    RAIIsave_codevec save OPTTHREAD;
+                    RAIIsave_codevec save;
                     preserve(msg, len);
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
@@ -1085,17 +1065,15 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    {   RAIIsave_codevec save OPTTHREAD;
+                    {   RAIIsave_codevec save;
                         preserve(msg, len);
                     }
-#ifdef CONSERVATIVE
 // This is all to abandon existing in-use pages and put things back as if
 // all memory is totally empty. Since I am abandoning all pages of memory
 // (and even forgetting whether they had been in use to hold lists or
 // vectors, and whether there were ambiguous pointers into them) I must
 // ensure that no list bases have references into any of them.
                     for (LispObject *p:list_bases) *p = nil;
-                    THREADID;
                     *stack = nil;
                     setvalue(nil, nil);
                     setenv(nil, nil);
@@ -1114,37 +1092,6 @@ static LispObject lisp_main()
                     grabFreshPage(vecPageType);
                     potentiallyPinned = pinnedPages = pendingPages =
                         oldVecPinPages = borrowCurrent = nullptr;
-#else
-                    for (size_t i=0; i<pages_count; i++)
-                    {   char *w = reinterpret_cast<char *>(pages[i]);
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            continue;
-                        pages[i] = pages[--pages_count];
-                        i--;
-                    }
-                    while (vheap_pages_count != 0)
-                    {   char *w = reinterpret_cast<char *>
-                                  (vheap_pages[--vheap_pages_count]);
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            pages[pages_count++] = w;
-                    }
-                    while (heap_pages_count != 0)
-                    {   char *w = reinterpret_cast<char *>
-                                  (heap_pages[--heap_pages_count]);
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            pages[pages_count++] = w;
-                    }
-                    {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
-                        char *w1 = w + CSL_PAGE_SIZE;
-                        while (w1 <= big_chunk_end)
-                        {   if (w != reinterpret_cast<char *>(stacksegment))
-                                pages[pages_count++] = w;
-                            w = w1;
-                            w1 = w + CSL_PAGE_SIZE;
-                        }
-                    }
-                    IreInit();
-#endif // CONSERVATIVE
                     setup(1, 0.0); // warm start mode
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
@@ -1198,11 +1145,9 @@ static LispObject lisp_main()
                             }
                         }
                     }
-#ifdef CONSERVATIVE
 // Again I need to do a fairly full tidy up when I recycle all memory.
                     for (LispObject *p:list_bases) *p = nil;
                     karaSize = 0;
-                    THREADID;
                     *stack = nil;
                     setvalue(nil, nil);
                     setenv(nil, nil);
@@ -1220,41 +1165,6 @@ static LispObject lisp_main()
                     grabFreshPage(vecPageType);
                     potentiallyPinned = pinnedPages = pendingPages =
                         oldVecPinPages = borrowCurrent = nullptr;
-#else // CONSERVATIVE
-// This puts all recorded heap pages back in the main pool.
-                    for (size_t i=0; i<pages_count; i++)
-                    {   char *w = reinterpret_cast<char *>(pages[i]);
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            continue;
-// Here the page shown as free is one in the contiguous block. Move in
-// the final page to fill the gap here and try again.
-                        pages[i] = pages[--pages_count];
-                        i--;
-                    }
-// Next recycle all the non-contiguous pages that have been in use.
-                    while (vheap_pages_count != 0)
-                    {   char *w = reinterpret_cast<char *>
-                                  (vheap_pages[--vheap_pages_count]);
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            pages[pages_count++] = w;
-                    }
-                    while (heap_pages_count != 0)
-                    {   char *w = reinterpret_cast<char *>
-                                  (heap_pages[--heap_pages_count]);
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            pages[pages_count++] = w;
-                    }
-// Finally rebuild a contiguous block of pages from the wholesale block.
-                    {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
-                        char *w1 = w + CSL_PAGE_SIZE;
-                        while (w1 <= big_chunk_end)
-                        {   if (w != reinterpret_cast<char *>(stacksegment))
-                                pages[pages_count++] = w;
-                            w = w1;
-                            w1 = w + CSL_PAGE_SIZE;
-                        }
-                    }
-#endif // CONSERVATIVE
 // When I call restart-csl I will leave the random number generator where it
 // was. Anybody who wants to reset if either to a freshly randomised
 // configuration or to a defined condition must do so for themselves. For
@@ -1489,16 +1399,14 @@ public:
 #endif
     }
     ~KaratsubaThreads()
-    {   if (!inChildOfFork)
-        {
+    {
 #ifndef HAVE_CILK
-            {   std::lock_guard<std::mutex> lk(kara_mutex);
-                kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
-                kara_done = 0;
-            }
-            cv_kara_ready.notify_all();
-#endif
+        {   std::lock_guard<std::mutex> lk(kara_mutex);
+            kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
+            kara_done = 0;
         }
+        cv_kara_ready.notify_all();
+#endif
     }
 };
 
@@ -1837,15 +1745,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // Negative requests or requests for more than 256Gbytes (or requests for
 // zero or more than 10 stack chunks) will be rejected. I will also require
 // at least 8 Mbytes be allocated, or 32/512 for the conservative version
-#ifdef CONSERVATIVE
 #ifdef MINIPAGE
                     if (valD <  8.0 || valD > 512.0*1024.0 ||
 #else // MINIPAGE
                     if (valD < 32.0 || valD > 512.0*1024.0 ||
 #endif // MINIPAGE
-#else // CONSERVATIVE
-                    if (valD < 8.0 || valD > 256.0*1024.0 ||
-#endif // CONSERVATIVE
                         valI < 1 || valI > 10)
                     {   badArgs.push_back(key.append(val));
                         return;
@@ -1926,11 +1830,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // Negative requests or requests for more than 256Gbytes (or requests for
 // zero or more than 10 stack chunks) will be rejected. I will also demand that
 // at least 8 Mbytes be allocated, or 32/512 for the conservative version
-#ifdef CONSERVATIVE
                     if (valD < 32.0 || valD > 512.0*1024.0 ||
-#else // CONSERVATIVE
-                    if (valD < 8.0 || valD > 256.0*1024.0 ||
-#endif // CONSERVATIVE
                         valI < 1 || valI > 10)
                     {   badArgs.push_back(key.append(val));
                         return;
@@ -2089,7 +1989,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                 }
             },
 
-#ifdef CONSERVATIVE
             /*! options [--gc-trace] \item [{\ttfamily --gc-trace}] \index{{\ttfamily --gc-trace}}
              * --gc-trace leads to copious debugging trace output from garbage collection.
              * --gc-trace=N only starts that for GC number N and beyond.
@@ -2148,7 +2047,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     waste = r;
                 }
             },
-#endif // CONSERVATIVE
              /*
              * This utterly defeats errorset and arranges that if there is any error that
              * after whatever backtrace might have been generated any inner errorset
@@ -3196,7 +3094,7 @@ printf("event_flag = %.8x\n", (int)f); fflush(stdout); // @@@
         report_time(t, gct);
 #endif
         time_now = read_clock()/1000;  // in milliseconds now
-        if ((time_limit >= 0 && time_now > time_limit) ||
+        if ((time_limit >= 0 && time_now > (uint64_t)time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
             return resource_exceeded();
     }
@@ -3347,7 +3245,6 @@ static LispObject cslaction()
 {   volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     errorset_msg = nullptr;
-    THREADID;
     TRY
         set_up_signal_handlers();
         non_terminal_input = nullptr;
@@ -3453,7 +3350,6 @@ int execute_lisp_function(const char *fname,
 {   LispObject ff;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
     procedural_input = r;
@@ -3527,10 +3423,8 @@ _SETUP
 // just yet.
 // The protocol for calling Lisp code from C is as follows:
 //
-#ifdef CONSERVATIVE
 //     Create an instance of a ThreadStartup object, and keep it alive
 //     while everything else is happening.
-#endif
 //     cslstart(argc, argv, writer);allocate memory and Lisp heap etc. Args
 //                                  should be "as if" CSL was being called
 //                                  directly and this was the main entrypoint.
@@ -3581,12 +3475,6 @@ public:
 
 static int submain(int argc, const char *argv[])
 {   volatile uintptr_t sp;
-    THREADID;
-#ifndef CONSERVATIVE
-#ifndef NO_THREADS
-    genuineThreadId = 0; // the thread_local master variable.
-#endif
-#endif // CONSERVATIVE
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 #ifdef HAVE_CRLIBM
     CrlibmSetup crlibmVar;
@@ -3765,7 +3653,6 @@ int PROC_prepare_for_top_level_loop()
 {   LispObject w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(w1 = make_undefined_symbol("prepare-for-top-loop");
              Lapply1(nil, w1, nil),
              // Error handler
@@ -3777,7 +3664,6 @@ int PROC_prepare_for_web_top_level()
 {   LispObject w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(w1 = make_undefined_symbol("prepare-for-web-top-level");
              Lapply1(nil, w1, nil),
              // Error handler
@@ -3798,7 +3684,6 @@ int PROC_process_one_reduce_statement(const char *s)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     character_reader *save_read = procedural_input;
-    THREADID;
     proc_data_string = s;
     procedural_input = char_from_string;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -3820,9 +3705,8 @@ int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(w1 = make_undefined_symbol("load-package");
-             Save save(THREADARG w1);
+             Save save(w1);
              w = make_undefined_symbol(name);
              save.restore(w1);
              Lapply1(nil, w1, w),
@@ -3835,10 +3719,9 @@ int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(w1 = make_undefined_symbol("onoff");
              errexit();
-             Save save(THREADARG w1);
+             Save save(w1);
              w = make_undefined_symbol(name);
              save.restore(w1);
              Lapply2(nil, w1, w, val == 0 ? nil : lisp_true),
@@ -3868,7 +3751,6 @@ int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(w = make_undefined_symbol(name);
              errexit();
              w = cons(w, procstack),
@@ -3884,7 +3766,6 @@ int PROC_push_string(const char *data)
 {   LispObject w = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(w = make_string(data);
              errexit();
              w = cons(w, procstack),
@@ -3903,7 +3784,6 @@ int PROC_push_string(const char *data)
 int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
-    THREADID;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w = make_lisp_integer32(n);
              errexit();
@@ -3917,7 +3797,6 @@ int PROC_push_big_integer(const char *n)
 {   LispObject w = nil;
     int len = 0;
     volatile uintptr_t sp;
-    THREADID;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
@@ -3937,7 +3816,6 @@ int PROC_push_big_integer(const char *n)
 int PROC_push_floating(double n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
-    THREADID;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, WANT_DOUBLE_FLOAT);
@@ -3960,7 +3838,6 @@ int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
-    THREADID;
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
@@ -3969,7 +3846,7 @@ int PROC_make_function_call(const char *name, int n)
             procstack = cdr(procstack);
             n--;
         }
-        Save save(THREADARG w);
+        Save save(w);
         w1 = make_undefined_symbol(name);
         save.restore(w);
         errexit();
@@ -3997,7 +3874,6 @@ int PROC_save(int n)
 int PROC_load(int n)
 {   LispObject w = nil;
     volatile uintptr_t sp;
-    THREADID;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
@@ -4012,7 +3888,6 @@ int PROC_load(int n)
 int PROC_dup()
 {   LispObject w = nil;
     volatile uintptr_t sp;
-    THREADID;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // no item to duplicate
     w = car(procstack);
@@ -4038,13 +3913,12 @@ int PROC_simplify()
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // stack is empty
-    THREADID;
     if_error(
         w = make_undefined_symbol("simp");
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        Save save(THREADARG w);
+        Save save(w);
         w1 = make_undefined_symbol("mk*sq");
         save.restore(w);
         errexit();
@@ -4062,9 +3936,8 @@ int PROC_simplify()
 // me to put in a cleaner abstraction to support it.
 
 static void PROC_standardise_gensyms(LispObject w)
-{   THREADID;
-    if (consp(w))
-    {   Save save(THREADARG w);
+{   if (consp(w))
+    {   Save save(w);
         PROC_standardise_gensyms(car(w));
         save.restore(w);
 #ifdef NO_THROW
@@ -4078,8 +3951,7 @@ static void PROC_standardise_gensyms(LispObject w)
 }
 
 int PROC_lisp_eval()
-{   THREADID;
-    save_current_function save_fn(THREADARG eval_symbol);
+{   save_current_function save_fn(eval_symbol);
     LispObject w = nil;
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
@@ -4087,7 +3959,7 @@ int PROC_lisp_eval()
     if_error(
         w = eval(car(procstack), nil);
         errexit();
-        Save save(THREADARG w);
+        Save save(w);
         PROC_standardise_gensyms(w);
         save.restore(w),
         return 1);
@@ -4096,15 +3968,14 @@ int PROC_lisp_eval()
 }
 
 static LispObject PROC_standardise_printed_form(LispObject w)
-{   THREADID;
-    if (consp(w))
+{   if (consp(w))
     {   LispObject w1;
-        {   Save save(THREADARG w);
+        {   Save save(w);
             w1 = PROC_standardise_printed_form(car(w));
             save.restore(w);
         }
         errexit();
-        {   Save save(THREADARG w1);
+        {   Save save(w1);
             w =  PROC_standardise_printed_form(cdr(w));
             save.restore(w1);
         }
@@ -4116,7 +3987,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 // Now w is atomic. There are two interesting cases - an unprinted gensym
 // and a bignum.
     if (symbolp(w))
-    {   Save save(THREADARG w);
+    {   Save save(w);
         get_pname(w); // allocates gensym name if needed. Otherwise cheap!
         save.restore(w);
         return w;
@@ -4140,13 +4011,12 @@ int PROC_make_printable()
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if (procstack == nil) return 1; // stack is empty
 // I want to use "simp" again so that I can then use prepsq!
-    THREADID;
     if_error(
         w = make_undefined_symbol("simp");
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        Save save(THREADARG w);
+        Save save(w);
         w1 = make_undefined_symbol("prepsq");
         errexit();
         save.restore(w);

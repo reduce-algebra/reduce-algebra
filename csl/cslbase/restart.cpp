@@ -79,10 +79,7 @@ extern int showmathInitialised;
 #endif
 #endif
 
-DEFINE_THREAD_LOCAL_POD(uintptr_t, genuineThreadId, 0);
-
 LispObject nil;
-#ifdef NO_THREADS
 LispObject* stack;
 uintptr_t   stackBase;
 uintptr_t   stackFringe;
@@ -90,15 +87,6 @@ uintptr_t   stackLimit = 0;
 uintptr_t   C_stackBase;
 uintptr_t   C_stackFringe;
 uintptr_t   C_stackLimit;
-#else // NO_THREADS
-LispObject* stacks[maxThreads];
-uintptr_t   stackBases[maxThreads];
-uintptr_t   stackFringes[maxThreads];
-uintptr_t   stackLimits[maxThreads];
-uintptr_t   C_stackBases[maxThreads];
-uintptr_t   C_stackFringes[maxThreads];
-uintptr_t   C_stackLimits[maxThreads];
-#endif // NO_THREADS
 
 LispObject* nilsegment;
 LispObject* stacksegment;
@@ -1291,9 +1279,7 @@ LispObject set_up_variables(int restart_flag)
 #ifdef EXPERIMENT
         w = cons(make_keyword("EXPERIMENT"), w);
 #endif
-#ifdef CONSERVATIVE
         w = cons(make_keyword("CONSERVATIVE"), w);
-#endif
 #ifdef ARITHLIB
         w = cons(make_keyword("ARITHLIB"), w);
 #endif
@@ -1383,9 +1369,7 @@ LispObject set_up_variables(int restart_flag)
 #ifdef EXPERIMENT
         w = cons(make_keyword("experiment"), w);
 #endif
-#ifdef CONSERVATIVE
         w = cons(make_keyword("conservative"), w);
-#endif
 #ifdef ARITHLIB
         w = cons(make_keyword("arithlib"), w);
 #endif
@@ -1743,8 +1727,7 @@ LispObject set_up_variables(int restart_flag)
         }
         else
         {   LispObject n = make_undefined_symbol(s);
-            THREADID;
-            Save save(THREADARG n);
+            Save save(n);
             s = ss.data.c_str();
 // If you go "--D xxx" then treat it as "--D xxx=t".
             LispObject v;
@@ -1773,8 +1756,7 @@ LispObject set_up_variables(int restart_flag)
         }
         else
         {   LispObject n = make_undefined_symbol(s);
-            THREADID;
-            Save save(THREADARG n);
+            Save save(n);
             s = ss.data.c_str();
             LispObject v;
             if (std::strlen(s) == 0) v = lisp_true;
@@ -1786,7 +1768,6 @@ LispObject set_up_variables(int restart_flag)
     }
     for (auto ss : stringsToEvaluate)
     {   const char* s = ss.c_str();
-        THREADID;
         TRY
             LispObject v = make_string(s);
             errexit();
@@ -1794,14 +1775,13 @@ LispObject set_up_variables(int restart_flag)
             errexit();
             v = Lcompress(nil, v);
             errexit();
-            THREADID;
-            Save save(THREADARG v);
+            Save save(v);
             Lprin(nil, v);
             save.restore(v);
             errexit();
             v = Leval(nil, v);
             errexit();
-            Save save1(THREADARG v);
+            Save save1(v);
             term_printf(" => ");
             errexit();
             save1.restore(v);
@@ -2019,7 +1999,6 @@ void setup(int restart_flag, double store_size)
         init_heap_segments(store_size);
     }
     garbage_collection_permitted = false;
-    THREADID;
     stack = reinterpret_cast<LispObject*>(stackBase);
     stackLimit = ~static_cast<uintptr_t>(0xff) &
                  reinterpret_cast<uintptr_t>(
@@ -2093,19 +2072,6 @@ void setup(int restart_flag, double store_size)
     }
     else for (LispObject* p:list_bases) *p = nil;
 
-#ifndef CONSERVATIVE
-    void* p = vheap_pages[vheap_pages_count++] =
-                  allocate_page("vheap warm setup");
-    vfringe = reinterpret_cast<LispObject>(
-                  8 + reinterpret_cast<char*>(doubleword_align_up(
-                              reinterpret_cast<intptr_t>(p))));
-    vheaplimit = static_cast<LispObject>(vfringe + (CSL_PAGE_SIZE - 16));
-    p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
-    lheaplimit = (intptr_t)p;
-    lfringe = static_cast<LispObject>(lheaplimit + CSL_PAGE_SIZE);
-    lheaplimit = static_cast<LispObject>(lheaplimit + SPARE);
-#endif // !CONSERVATIVE
-
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();
 #ifdef ARITHLIB
@@ -2118,27 +2084,6 @@ void setup(int restart_flag, double store_size)
 
     if (init_flags & INIT_QUIET) Lverbos(nil, fixnum_of_int(1));
     if (init_flags & INIT_VERBOSE) Lverbos(nil, fixnum_of_int(3));
-#ifndef CONSERVATIVE
-// Here I grab more memory (if I am allowed to) until the proportion of the
-// heap active at the end of garbage collection is less than 1/2.  If the
-// attempt to grab more memory fails I clear the bit in init_flags that
-// allows me to try to expand, so I will not waste time again.
-// The aim of keeping the heap less than half full is an heuristic and
-// could be adjusted on the basis of experience with this code.
-    if ((init_flags & INIT_EXPANDABLE) != 0)
-    {   int32_t more = heap_pages_count + vheap_pages_count;
-        more = 3*more - pages_count;
-        while (more-- > 0)
-        {   void* page = reinterpret_cast<void*>(
-                new (std::nothrow) char[CSL_PAGE_SIZE]);
-            if (page == nullptr)
-            {   init_flags &= ~INIT_EXPANDABLE;
-                break;
-            }
-            else pages[pages_count++] = page;
-        }
-    }
-#endif
     {   int32_t w = 0;
 // The total store allocated is that used plus that free, including the
 // page set aside for the Lisp stack.
@@ -2161,9 +2106,7 @@ void setup(int restart_flag, double store_size)
             term_printf("There are %u processors available\n", n);
     }
     garbage_collection_permitted = true;
-#ifdef CONSERVATIVE
     consCounter = 0;
-#endif // CONSERVATIVE
     for (size_t i=0; i<waste; i++) cons(nil, nil);
     return;
 }

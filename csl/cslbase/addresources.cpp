@@ -53,7 +53,7 @@
 
 // This is a utility program only used on Windows and only used by
 // system builders, so I will maybe not be as conservative in its
-// construction as I would be with code intendes for everybody. I will
+// construction as I would be with code intended for everybody. I will
 // requite that zlib is available.
 
 #include <zlib.h>

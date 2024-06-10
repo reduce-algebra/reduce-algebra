@@ -1220,8 +1220,7 @@ static void collect_modules(string Cname, string Cleafname,
     LispObject v;
     char *p = reinterpret_cast<char *>(&celt(boffo, 0));
     if (why != SCAN_FILE) return;
-    THREADID;
-    Save save(THREADARG mods);
+    Save save(mods);
     const char *name = Cleafname.c_str();
     while (*name != '.' && *name != 0)
     {   *p++ = *name++;
@@ -1279,8 +1278,7 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         }
         while (k>0 && p[-1] == ' ') k--, p--;
         *p = 0;
-        THREADID;
-        Save save(THREADARG r);
+        Save save(r);
         v = iintern(boffo, k, lisp_package, 0);
         errexit();
         save.restore(r);
@@ -1793,8 +1791,7 @@ bool finished_with(int j)
         for (i=0; i<get_dirused(*d); i++)
         {   long int pos = bits32(&d->d[i].D_position);
             if (pos != hwm)
-            {   THREADID;
-                char *b = 16 + (char *)stack;
+            {   char *b = 16 + (char *)stack;
                 char small_buffer[64];
                 long int len = bits24(&d->d[i].D_size);
                 long int newpos = hwm;
@@ -1869,6 +1866,8 @@ bool Ifinished()
     return failed;
 }
 
+int (*igetc_hook)() = nullptr;
+
 int Igetc()
 // Returns next byte from current image sub-file, or EOF if either
 // real end-of-file or on failure. As a special fudge here (ugh) I
@@ -1877,14 +1876,14 @@ int Igetc()
 // the currently selected standard input. Setting things up that way
 // then supports processing of FASL files from almost arbitrary
 // sources.
-{   long int n_left = read_bytes_remaining;
+{   if (igetc_hook != nullptr) return (*igetc_hook)();
+    long int n_left = read_bytes_remaining;
     int c;
     if (n_left <= 0)
     {   if (n_left == 0) return EOF;
         else
         {   LispObject stream = qvalue(standard_input);
             if (!is_stream(stream)) return EOF;
-            THREADID;
             if_error(c = getc_stream(stream),
                      return EOF);
         }
@@ -1919,6 +1918,8 @@ long int Ioutsize()
 {   return write_bytes_written;
 }
 
+bool (*iputc_hook)(int byte) = nullptr;
+
 bool Iputc(int ch)
 // Puts one character into image system, returning true if there
 // was trouble.
@@ -1927,7 +1928,8 @@ bool Iputc(int ch)
 // (ie in the normal situation!) I will have used Iopen to set up the
 // stream, and it will have set binary_write_file to the stream and positioned
 // it at the point I should start writing.
-{   write_bytes_written++;
+{   if (iputc_hook != nullptr) return (*iputc_hook)(ch);
+    write_bytes_written++;
     if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
     else if (std::putc(ch, binary_write_file) == EOF) return true;

@@ -38,9 +38,7 @@
 // things with no args...
 //
 
-#ifdef CONSERVATIVE
 extern void poll();
-#endif
 
 // Use C linkage so that if CSL/Reduce is used as a DLL there is still an
 // easy way to access these.

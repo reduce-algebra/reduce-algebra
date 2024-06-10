@@ -162,12 +162,7 @@ int wimpget(char *buf)
     {   if (terminal_eof_seen) c = EOF;
         else
         {   c = fwin_getchar();
-            THREADID;
-#ifdef NO_THREADS
             stackcheck();               // Responds to exceptions!
-#else // NO_THREADS
-            stackcheck(threadId);       // Responds to exceptions!
-#endif // NO_THREADS
             if (c == EOF || c == CTRL_D) terminal_eof_seen = 1;
         }
         if (c == EOF) c = 0x1f & 'D';

@@ -54,7 +54,6 @@ LispObject apply(LispObject fn, LispObject args,
 {   if (time_limit >= 0 &&
         read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
     LispObject def;
-    THREADID;
     for (;;)
     {   if (symbolp(fn))
         {   debug_assert(1);
@@ -63,7 +62,7 @@ LispObject apply(LispObject fn, LispObject args,
 // have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   RealSave save(THREADARG fn, args, from);
+            {   RealSave save(fn, args, from);
                 LispObject &fn1   = save.val(1);
                 LispObject &args1 = save.val(2);
                 LispObject &from1 = save.val(3);
@@ -81,7 +80,7 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 LispObject p = args1;
                 for (int i=1; p!=nil; i++)
-                {   Save save1(THREADARG p);
+                {   Save save1(p);
                     trace_printf("Arg%d: ", i);
                     errexit();
                     save1.restore(p);
@@ -95,7 +94,7 @@ LispObject apply(LispObject fn, LispObject args,
                 save.restore(fn, args, from);
             }
             def = fn; // this is passed as arg1 to the called code
-            Save save(THREADARG fn); // I may need the function name when tracing
+            Save save(fn); // I may need the function name when tracing
             // displays a result.
             if (args == nil)
                 def = (*qfn0(fn))(def);
@@ -122,7 +121,7 @@ LispObject apply(LispObject fn, LispObject args,
             errexit();
             save.restore(fn);
             if (tracing)
-            {   Save save1(THREADARG def);
+            {   Save save1(def);
 // In due course I will need to worry about multiple values here
                 freshline_trace();
                 errexit();
@@ -164,7 +163,7 @@ LispObject apply(LispObject fn, LispObject args,
         else if (def == cfunarg)
         {   def = cdr(fn);
             fn = car(def);
-            Save save(THREADARG fn, env);
+            Save save(fn, env);
             args = cons(cdr(def), args);
             save.restore(fn, env);
 // The "continue" here just goes back and tries again!
@@ -197,46 +196,26 @@ LispObject apply(LispObject fn, LispObject args,
 
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
-{   THREADID;
-    stackcheck(THREADARG args, env);
+{   stackcheck(args, env);
     STACK_SANITY;
     if (!consp(args)) return lisp_true;
     for (;;)
     {   LispObject v = car(args);
         args = cdr(args);
         if (!consp(args)) return eval(v, env);
-        Save save(THREADARG args, env);
+        Save save(args, env);
         v = eval(v, env);
         save.restore(args, env);
         if (v == nil) return nil;
     }
 }
 
-// This is not used at present, but may be wanted sometime so I will
-// leave it here for now...
-//
-//Lisp_Object append(Lisp_Object a, Lisp_Object b)
-//{
-//  if (!consp(a)) return b;
-//  else
-//  {   THREADID;
-//      stackcheck(THREADARG a, b);
-//      Save save(THREADARG a);
-//      b = append(cdr(a), b);
-//      save.restore(a);
-//      return cons(car(a), b);
-//  }
-//}
-//
-
 static LispObject block_fn(LispObject iargs, LispObject ienv)
 {   LispObject p;
-    THREADID;
     STACK_SANITY;
     if (!consp(iargs)) return nil;
-    stackcheck(THREADARG iargs, ienv);
-    RealSave save(THREADARG
-                  car(iargs),          // my_tag
+    stackcheck(iargs, ienv);
+    RealSave save(car(iargs),          // my_tag
                   cdr(iargs),          // args
                   ienv);
     LispObject &my_tag = save.val(1);
@@ -274,11 +253,10 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
 
 static LispObject catch_fn(LispObject args, LispObject env)
 {   LispObject tag, v;
-    THREADID;
     STACK_SANITY;
     if (!consp(args)) return nil;
-    stackcheck(THREADARG args, env);
-    {   Save save(THREADARG args, env);
+    stackcheck(args, env);
+    {   Save save(args, env);
         tag = car(args);
         tag = eval(tag, env);
         errexit();
@@ -286,7 +264,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
         errexit();
         save.restore(args, env);
     }
-    Save save(THREADARG tag);
+    Save save(tag);
     TRY
         v = progn_fn(cdr(args), env);
     CATCH(LispThrow)
@@ -325,9 +303,8 @@ static LispObject catch_fn(LispObject args, LispObject env)
 class LetUnbinder
 {   LispObject *saveStack;
     LispObject *specenv_p;
-    DECLARETHREADID
 public:
-    LetUnbinder(DECLAREID LispObject *ss) SETTHREADID
+    LetUnbinder(LispObject *ss)
     {   saveStack = stack;
         specenv_p = ss;
     }
@@ -348,10 +325,9 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // speeds things up here. Well to be more precise, I support DECLARE in
 // the Compiler, but in the interpreter in non-Common mode every variable
 // is SPECIAL.
-{   THREADID;
-    stackcheck(THREADARG bvlx, bodyx, envx);
+{   stackcheck(bvlx, bodyx, envx);
     errexit();
-    RealSave save(THREADARG bvlx, bodyx, envx,
+    RealSave save(bvlx, bodyx, envx,
                   nil, nil, envx, nil, nil);
     LispObject &bvl        = save.val(1);
     LispObject &body       = save.val(2);
@@ -471,7 +447,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     }
 // The above has instated bindings. Subject to not getting asynchronous
 // interruptions once I start to bind any I bind all.
-    {   LetUnbinder unbind(THREADARG &specenv);
+    {   LetUnbinder unbind(&specenv);
         if (compilerp == BODY_PROG)
             body = (tagbody_fn(body, env1));
         else body = (progn_fn(body, env1));
@@ -487,14 +463,13 @@ static LispObject compiler_let_fn(LispObject args, LispObject env)
 }
 
 LispObject cond_fn(LispObject args, LispObject env)
-{   THREADID;
-    stackcheck(THREADARG args, env);
+{   stackcheck(args, env);
     STACK_SANITY;
     while (consp(args))
     {   LispObject p = car(args);
         if (consp(p))
         {   LispObject p1;
-            {   Save save(THREADARG args, env);
+            {   Save save(args, env);
                 p1 = car(p);
                 p1 = eval(p1, env);
                 save.restore(args, env);
@@ -570,8 +545,7 @@ static LispObject defun_fn(LispObject args, LispObject)
                     interpreted_3, interpreted_4up);
             if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
-            {   THREADID;
-                Save save(THREADARG fname);
+            {   Save save(fname);
                 args = ncons(fname);
                 (*qfn1(compiler_symbol))(compiler_symbol, args);
                 save.restore(fname);
@@ -620,8 +594,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
             if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
             {   LispObject t1, t2;
-                THREADID;
-                {   RealSave save(THREADARG fname);
+                {   RealSave save(fname);
                     if (!(consp(args) &&
                           consp(cdr(args)) &&
                           cdr(cdr(args)) == nil &&
@@ -658,10 +631,9 @@ static LispObject eval_when_fn(LispObject args, LispObject env)
 
 static LispObject flet_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
-    THREADID;
     STACK_SANITY;
     if (!consp(args)) return nil;
-    stackcheck(THREADARG args, env);
+    stackcheck(args, env);
     my_env = env;
     d = car(args);     // The bunch of definitions
     args = cdr(args);
@@ -669,9 +641,9 @@ static LispObject flet_fn(LispObject args, LispObject env)
     {   LispObject w = car(d);
         if (consp(w) && consp(cdr(w)))
         {   LispObject w1;
-            Save save(THREADARG args, d);
-            {   Save save1(THREADARG env);
-                {   Save save2(THREADARG w);
+            Save save(args, d);
+            {   Save save1(env);
+                {   Save save2(w);
                     w1 = list2star(funarg, my_env, cdr(w));
                     save2.restore(w);
                 }
@@ -732,7 +704,6 @@ LispObject go_fn(LispObject args, LispObject env)
 
 static LispObject if_fn(LispObject args, LispObject env)
 {   LispObject p=nil, tr=nil, fs=nil;
-    THREADID;
     STACK_SANITY;
     if (!consp(args)) return aerror("if");
     errexit();
@@ -749,9 +720,9 @@ static LispObject if_fn(LispObject args, LispObject env)
         if (args != nil) return aerror("if");
         errexit();
     }
-    stackcheck(THREADARG p, env, tr, fs);
+    stackcheck(p, env, tr, fs);
     errexit();
-    {   Save save(THREADARG fs, tr, env);
+    {   Save save(fs, tr, env);
         p = eval(p, env);
         save.restore(fs, tr, env);
     }
@@ -762,10 +733,9 @@ static LispObject if_fn(LispObject args, LispObject env)
 
 static LispObject labels_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
-    THREADID;
     STACK_SANITY;
     if (!consp(args)) return nil;
-    stackcheck(THREADARG args, env);
+    stackcheck(args, env);
     errexit();
     my_env = env;
     d = car(args);     // The bunch of definitions
@@ -773,9 +743,9 @@ static LispObject labels_fn(LispObject args, LispObject env)
     {   LispObject w = car(d);
         if (consp(w) && consp(cdr(w)))
         {   LispObject w1;
-            Save save(THREADARG args, d);
-            {   Save save1(THREADARG env);
-                {   Save save2(THREADARG w);
+            Save save(args, d);
+            {   Save save1(env);
+                {   Save save2(w);
                     w1 = list2star(funarg, nil, cdr(w));
                     errexit();
                     save2.restore(w);
@@ -808,12 +778,11 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 // This will have to look for (declare (special ...)), unless
 // I am in CSL mode.
 {   if (!consp(args)) return nil;
-    THREADID;
     STACK_SANITY;
-    stackcheck(THREADARG args, ienv);
+    stackcheck(args, ienv);
     errexit();
-    RealSave save1(THREADARG car(args), cdr(args), ienv); // bvl, body, env
-    RealSave save2(THREADARG PushCount(4));
+    RealSave save1(car(args), cdr(args), ienv); // bvl, body, env
+    RealSave save2(PushCount(4));
     LispObject &bvl        = save1.val(1);
     LispObject &body       = save1.val(2);
     LispObject &env        = save1.val(3);

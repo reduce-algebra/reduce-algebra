@@ -236,13 +236,9 @@ extern char* big_chunk_end;
 
 extern LispObject multiplication_buffer;
 
-#if defined CONSERVATIVE && defined GENERATIONAL
-extern void write_barrier(LispObject* p, LispObject q);
-#else // !CONSERVATIVE
 inline void write_barrier(LispObject* p, LispObject q)
 {  *p = q;
 }
-#endif // !CONSERVATIVE
 
 extern std::mutex debug_lock;
 extern const char* debug_file;
@@ -376,7 +372,6 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 //   64-bit    nil+4     nil
 
 
-#ifdef CONSERVATIVE
 extern uintptr_t heapstart;
 extern uintptr_t len;
 extern uintptr_t xor_chain;
@@ -389,11 +384,6 @@ extern unsigned int gcNumber;
 
 #define GCTRACE (gcTrace!=0 && gcNumber>=gcTrace)
 
-#else // !CONSERVATIVE
-extern uintptr_t stackLimit;
-extern bool minimal;
-#endif // !CONSERVATIVE
-
 extern atomic<uintptr_t> event_flag;
 
 extern intptr_t nwork;
@@ -403,7 +393,6 @@ extern uint64_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern bool modulus_is_large;
-inline bool inChildOfFork = false;
 extern size_t karaSize;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
@@ -526,9 +515,6 @@ extern LispObject om_whichCDs(LispObject, LispObject);
 #endif
 
 extern LispObject workbase[51];
-#ifdef CONSERVATIVE
-extern LispObject ambiguous[10];
-#endif // CONSERVATIVE
 
 extern LispObject user_base_0, user_base_1, user_base_2;
 extern LispObject user_base_3, user_base_4, user_base_5;
@@ -616,12 +602,7 @@ extern int64_t reclaim_trap_count;
 extern uintptr_t reclaim_stack_limit;
 extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 
-#ifdef CONSERVATIVE
 extern void reclaim(const char* why);
-#else // CONSERVATIVE
-extern LispObject reclaim(LispObject value_to_return, const char* why,
-                          int stg_class, size_t size);
-#endif // CONSERVATIVE
 extern void use_gchook(LispObject arg);
 
 extern uint64_t force_cons, force_vec;
@@ -756,8 +737,10 @@ extern bool Idelete(const char* name, size_t len);
 extern bool IcloseInput();
 extern bool IcloseOutput();
 extern bool Ifinished();
+extern int (*igetc_hook)();
 extern int  Igetc();
 extern bool Iread(void* buff, size_t size);
+extern bool (*iputc_hook)(int ch);
 extern bool Iputc(int ch);
 extern bool Iwrite(const void* buff, size_t size);
 extern bool def_init();
@@ -1247,6 +1230,8 @@ extern setup_type const om_parse_setup[];
 
 #define X(name) &name
 
+// Note that the Lisp stack also counts as a bunch of bases.
+
 INLINE_VAR LispObject* list_bases[] =
 {   LIST_BASES
 };
@@ -1282,8 +1267,9 @@ extern LispObject tagbody_fn(LispObject args, LispObject env);
 // file.
 //
 extern LispObject resource_exceeded();
-extern int64_t time_base,  space_base,  io_base,  errors_base;
-extern int64_t time_now,   space_now,   io_now,   errors_now;
+extern uint64_t time_base, time_now;
+extern int64_t             space_base,  io_base,  errors_base;
+extern int64_t             space_now,   io_now,   errors_now;
 extern int64_t time_limit, space_limit, io_limit, errors_limit;
 
 //
@@ -1292,17 +1278,136 @@ extern int64_t time_limit, space_limit, io_limit, errors_limit;
 //
 extern bool symbol_protect_flag, warn_about_protected_symbols;
 
-#ifdef HASH_STATISTICS
 extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2,
        Nhputtmp;
 extern uint64_t Noget, Nogetp, Noput, Noputp, Noputtmp;
-#endif
 
-#ifdef DEBUG
 extern size_t intern_count;
 extern size_t fullest_package;
 extern size_t fullest_hash_table;
-#endif
+
+// In the same spirit as per LIST_BASES I list all the static (including
+// extern and inline) variables that are used to contain serious CSL state.
+// I really just need to list variables that might be changed as the system
+// runs and that thus may need to be restored to roll back time.
+// The list here is a first draft!
+
+// There is a worry about any "system variables" declared in other headers,
+// and in particular any persistent values living in arithlib.hpp.
+
+#define SYSTEM_VARIABLES            \
+   X(C_stackLimit),                 \
+   X(heapstart),                    \
+   X(len),                          \
+   X(xor_chain),                    \
+   X(vheapstart),                   \
+   X(vlen),                         \
+   X(vxor_chain),                   \
+   X(gcTrace),                      \
+   X(gcStop),                       \
+   X(gcError),                      \
+   X(gcEvery),                      \
+   X(gcNumber),                     \
+   X(nwork),                        \
+   X(exit_count),                   \
+   X(gensym_ser),                   \
+   X(print_precision),              \
+   X(miscflags),                    \
+   X(current_modulus),              \
+   X(fastget_size),                 \
+   X(package_bits),                 \
+   X(modulus_is_large),             \
+   X(karaSize),                     \
+   X(fasl_output_file),             \
+   X(output_directory),             \
+   X(repeat_heap),                  \
+   X(repeat_count),                 \
+   X(symbol_sequence),              \
+   X(boffop),                       \
+   X(loadable_packages),            \
+   X(switches),                     \
+   X(errorset_min),                 \
+   X(errorset_max),                 \
+   X(force_verbos),                 \
+   X(force_echo),                   \
+   X(force_backtrace),              \
+   X(ignoreLoadTime),               \
+   X(stop_on_error),                \
+   X(force_cons),                   \
+   X(force_vec),                    \
+   X(gc_number),                    \
+   X(reclaim_trap_count),           \
+   X(reclaim_stack_limit),          \
+   X(reclaim_trigger_count),        \
+   X(reclaim_trigger_target),       \
+   X(force_cons),                   \
+   X(force_vec),                    \
+   X(next_gc_is_hard),              \
+   X(tty_count),                    \
+   X(spool_file),                   \
+   X(spool_file_name),              \
+   X(window_heading),               \
+   X(base_time),                    \
+   X(base_walltime),                \
+   X(gc_time),                      \
+   X(trap_floating_overflow),       \
+   X(errorset_msg),                 \
+   X(errorset_code),                \
+   X(segvtrap),                     \
+   X(batch_flag),                   \
+   X(escaped_printing),             \
+   X(time_base),                    \
+   X(space_base),                   \
+   X(io_base),                      \
+   X(errors_base),                  \
+   X(time_now),                     \
+   X(space_now),                    \
+   X(io_now),                       \
+   X(errors_now),                   \
+   X(time_limit),                   \
+   X(space_limit),                  \
+   X(io_limit),                     \
+   X(errors_limit),                 \
+   X(symbol_protect_flag),          \
+   X(warn_about_protected_symbols), \
+   X(Nhget),                        \
+   X(Nhgetp),                       \
+   X(Nhput1),                       \
+   X(Nhputp1),                      \
+   X(Nhput2),                       \
+   X(Nhputp2),                      \
+   X(Nhputtmp),                     \
+   X(Noget),                        \
+   X(Nogetp),                       \
+   X(Noput),                        \
+   X(Noputp),                       \
+   X(Noputtmp),                     \
+   X(intern_count),                 \
+   X(fullest_package),              \
+   X(fullest_hash_table)
+
+#undef X
+#define X(name) &name
+
+INLINE_VAR void* system_variables[] =
+{   SYSTEM_VARIABLES
+};
+
+#undef X
+#define X(name) sizeof(name)
+
+INLINE_VAR std::size_t system_variable_sizes[] =
+{   SYSTEM_VARIABLES
+};
+
+#undef X
+#define X(name) #name
+
+INLINE_VAR const char* system_variable_names[] =
+{   SYSTEM_VARIABLES
+};
+
+#undef X
 
 #endif // header_externs_h
 

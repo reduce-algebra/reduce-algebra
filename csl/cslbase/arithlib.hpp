@@ -389,6 +389,10 @@
 // too bad, but in many places I will in fact write the rather wordy but very
 // explicit (1ULL<<n).
 
+// If I am in a process created using fork() this variable must be set
+// and doing that will disable use of threads here!
+inline bool inChild = false;
+
 // While debugging this (or indeed anything else) it is sometimes
 // helpful to embed information about filename and line number in
 // trace ouput. The following supports eg
@@ -1376,7 +1380,6 @@ inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
 
 namespace ThreadLocal
 {
-#ifndef NO_THREADS
 #if (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
 
 // With Cygwin and mingw32 (as of 2021) the support of thread-local variables
@@ -1615,7 +1618,7 @@ public:
 // included here already.
 };
 typedef void ZeroArgFunction();
-std::vector <ZeroArgFunction*> initVec;
+inline std::vector <ZeroArgFunction*> initVec;
 
 inline void initialize()
 {   for (auto fn:initVec) (fn)();
@@ -1624,59 +1627,7 @@ inline void initialize()
    
 #endif // MICROSOFT special version.
 
-#endif // NO_THREADS
-
-
-
-//###########################################
-
-#ifdef NO_THREADS
-
-// The versions in this section are dummies in that they do nor make
-// things thead_local at all. There are in case these macros are used in
-// a library or a version of a program than can never need to be thread
-// safe. They also perhaps serve as tidy explanations of the overall
-// behaviour of all these macros.
-
-inline void initialize()
-{
-}
-
-// These versions are all about having a pointer to an object of
-// the given type - which will often be a struct or class.
-
-#define DECLARE_THREAD_LOCAL(T, name) \
-   extern T* name;
-
-#define DEFINE_THREAD_LOCAL(T, name) \
-   T TLSTRUCT_##name;                \
-   T* name = &TLSTRUCT_##name;
-   
-#define DEFINE_STATIC_THREAD_LOCAL(T, name) \
-   static T TLSTRUCT_##name;                \
-   static T* name = &TLSTRUCT_##name;
-   
-#define DEFINE_INLINE_THREAD_LOCAL(T, name) \
-   inline T TLSTRUCT_##name;                \
-   inline T* name = &TLSTRUCT_##name;
-   
-// The "_POD" versions are for when the payload is "Plain Old Data" and
-// in particular it is a value that can be stored in a slot that is
-// an intptr_t or a void*. The definitions include an initialiser.
-
-#define DECLARE_THREAD_LOCAL_POD(T, name) \
-   extern T name;
-
-#define DEFINE_THREAD_LOCAL_POD(T, name, init) \
-   T name = init;
-   
-#define DEFINE_STATIC_THREAD_LOCAL_POD(T, name, init) \
-   static T name = init;
-   
-#define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
-   inline T name = init;
-   
-#elif (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
+#if (defined __CYGWIN__ || defined __MINGW32__) && !defined USE_CXX_TLS
 
 // The Windows cases are different... and is messy enough that it deserves
 // explantion. TL_name will be a const giving a numerical offset within the
@@ -1746,11 +1697,8 @@ inline void initialize()
    
 #define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
    inline thread_local T name = init;
-   
 
-
-
-#else
+#else // Can use compiler-provided thread_local.
 
 inline void initialize()
 {
@@ -1787,33 +1735,7 @@ inline void initialize()
 #define DEFINE_INLINE_THREAD_LOCAL_POD(T, name, init) \
    inline thread_local T name = init;
    
-#endif
-
-
-
-
-
-// The following relate to a CSL experiment that at present is stalled.
-
-#ifdef NO_THREADS
-#define maxThreads   1U
-#define THREADID     UNUSED_NAME const uintptr_t threadId = 0
-#define THREADARG    /* NOTHING */
-#define THREADFORMAL /* NOTHING */
-#define OPTTHREAD    /* NOTHING */
-#else // NO_THREADS
-#ifdef DEBUG
-#define maxThreads   2U
-#else // DEBUG
-#define maxThreads  64U
-#endif // DEBUG
-#define TL_genuineThreadId  50
-DECLARE_THREAD_LOCAL(uintptr_t, genuineThreadId);
-#define THREADID UNUSED_NAME const uintptr_t threadId = genuineThreadId
-#define THREADARG threadId,
-#define THREADFORMAL uintptr_t threadId,
-#define OPTTHREAD (threadId)
-#endif // NO_THREADS
+#endif // WIN32 vs language-provided thread-local.
 
 
 } // end of namespace ThreadLocal
@@ -9506,10 +9428,12 @@ public:
 
     ~DriverData()
     {   wd_0.quit_flag = wd_1.quit_flag = wd_2.quit_flag = true;
-        releaseWorkers(true);
-        w_0.join();
-        w_1.join(); // These calls to join wait for the threads to shut down.
-        w_2.join();
+        if (!inChildOfFork)
+        {   releaseWorkers(true);
+            w_0.join();
+            w_1.join(); // Wait for the threads to shut down.
+            w_2.join();
+        }
     }
 
 // Using the worker threads is then rather easy: one sets up data in

@@ -1304,8 +1304,7 @@ static LispObject CSLpowi(LispObject a, uint64_t n)
     }
     else
     {   LispObject b;
-        THREADID;
-        Save save(THREADARG a);
+        Save save(a);
         b = CSLpowi(a, n/2);
         errexit();
         b = times2(b, b);
@@ -1480,12 +1479,11 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 LispObject Llog_2(LispObject env, LispObject a, LispObject b)
 // Log with specified base.
 {   SingleValued fn;
-    THREADID;
-    Save save(THREADARG b);
+    Save save(b);
     a = trigfn(33, a);
     errexit();
     save.restore(b);
-    Save save1(THREADARG a);
+    Save save1(a);
     b = trigfn(33, b);
     errexit();
     save1.restore(a);
@@ -1588,8 +1586,7 @@ static LispObject Lsignum(LispObject env, LispObject a)
     LispObject w;
     z = zerop(a);
     if (z) return a;
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     w = Labsval(nil, a);
     errexit();
     save.restore(a);
@@ -1602,8 +1599,7 @@ static LispObject Lcis(LispObject, LispObject a)
 // beyond the specification of Common Lisp.
 {   SingleValued fn;
     LispObject ii;
-    THREADID;
-    Save save(THREADARG a);
+    Save save(a);
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     errexit();
     save.restore(a);

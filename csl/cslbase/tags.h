@@ -603,7 +603,7 @@ INLINE_VAR constexpr uintptr_t TYPE_ENCAPSULATE = 0x3b<<Tw; // Encapsulated addr
 
 INLINE_VAR constexpr uintptr_t TYPE_PADDER      = 0x7b<<Tw; // a padder vector
 
-// Sometimes (with the conservative GC) I need to put a padder mixed in
+// Sometimes (with the conservative GC) I need to put a padder in
 // with where I keep cons cells. So this is the header for a padder of
 // the correct size.
 
@@ -628,8 +628,11 @@ INLINE_VAR constexpr uintptr_t TYPE_STRUCTURE    = 0x09<<Tw; // .. includes pack
 INLINE_VAR constexpr uintptr_t TYPE_OBJECT       = 0x0d<<Tw; // .. and "object"
 
 INLINE_VAR constexpr uintptr_t TYPE_VEC32        = 0x13<<Tw; // contains 32-bit integers
-INLINE_VAR constexpr uintptr_t TYPE_VEC64        = 0x17<<Tw; // contains 32-bit integers
-INLINE_VAR constexpr uintptr_t TYPE_VEC128       = 0x1b<<Tw; // contains 32-bit integers
+INLINE_VAR constexpr uintptr_t TYPE_VEC64        = 0x17<<Tw; // contains 64-bit integers
+INLINE_VAR constexpr uintptr_t TYPE_VEC128       = 0x1b<<Tw; // contains 128-bit integers
+INLINE_VAR constexpr uintptr_t TYPE_INTPTR       =
+           (sizeof(LispObject)==4 ? TYPE_VEC32 : TYPE_VEC64);
+
 INLINE_VAR constexpr uintptr_t TYPE_VECFLOAT32   = 0x53<<Tw; // contains single-precision floats
 INLINE_VAR constexpr uintptr_t TYPE_VECFLOAT64   = 0x57<<Tw; // contains double-precision floats
 INLINE_VAR constexpr uintptr_t TYPE_VECFLOAT128  = 0x5b<<Tw; // contains long double floats

@@ -151,7 +151,6 @@ void init_heap_segments(double store_size)
                     static_cast<int>(pages_count));
         fatal_error(err_no_store);
     }
-    THREADID;
     stackBase = reinterpret_cast<uintptr_t>(stacksegment);
 }
 
@@ -706,8 +705,7 @@ LispObject borrow_vector(int tag, int type, size_t n)
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            THREADID;
-            Save save(THREADARG v);
+            Save save(v);
             v1 = borrow_basic_vector(tag, type, k+CELL);
             errexit();
             save.restore(v);

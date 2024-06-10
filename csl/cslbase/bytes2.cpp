@@ -47,7 +47,6 @@ fourup_args *f4up;
 unsigned int fname, w;
 int32_t n, k;
 size_t xppc;
-THREADID;
 //
 // I declare all the other variables I need here up at the top of the function
 // since at least on some C compilers putting the declarations more locally
@@ -126,13 +125,11 @@ THREADID;
 //
     A_reg = nil;
 #ifdef CHECK_STACK
-#ifndef CONSERVATIVE
     if (reinterpret_cast<char *>(ufringe) <=
         reinterpret_cast<char *>(uheaplimit))
     {   A_reg = cons_gc_test(A_reg);
         errexit();
     }
-#endif
 #ifdef DEBUG
     if (check_stack(reinterpret_cast<char *>(&ffname[0]), __LINE__))
     {   err_printf("\n+++ stack overflow\n");
@@ -296,7 +293,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(THREADARG A_reg);
+                {   Save save(A_reg);
                     print_traceset(current_byte, A_reg);
                     errexit();
                     save.restore(A_reg);
@@ -307,7 +304,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE1:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(THREADARG A_reg);
+                {   Save save(A_reg);
                     print_traceset(1, A_reg);
                     errexit();
                     save.restore(A_reg);
@@ -317,7 +314,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE2:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(THREADARG A_reg);
+                {   Save save(A_reg);
                     print_traceset(2, A_reg);
                     errexit();
                     save.restore(A_reg);
@@ -327,7 +324,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE3:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(THREADARG A_reg);
+                {   Save save(A_reg);
                     print_traceset(3, A_reg);
                     errexit();
                     save.restore(A_reg);
@@ -352,7 +349,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_NCONS:                          // A_reg = cons(A_reg, nil);
-                {   Save save(THREADARG B_reg);
+                {   Save save(B_reg);
                     A_reg = ncons(A_reg);
                     errexit();
                     save.restore(B_reg);
@@ -588,7 +585,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack--;
                     continue;
                 }
-                {   Save save(THREADARG B_reg);
+                {   Save save(B_reg);
                     A_reg = ncons(A_reg);
                     errexit();
                     save.restore(B_reg);
@@ -648,7 +645,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // them individually.
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
-                {   {   Save save(THREADARG r2, r3, r1, B_reg);
+                {   {   Save save(r2, r3, r1, B_reg);
                         A_reg = ncons(A_reg);    // Make 4th arg a list!
                         errexit();
                         save.restore(r2, r3, r1, B_reg);
@@ -1671,7 +1668,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // where the bodies of the functions so not do enough work that polling
 // for interrupts or for window-system updates will happen. Thus it seems
 // I need to perform a polling operation as part of the tail-call sequence.
-                {   Save save(THREADARG r1);
+                {   Save save(r1);
                     poll_jump_back(A_reg);
                     save.restore(r1);
                 }
@@ -1725,7 +1722,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
-                {   Save save(THREADARG r1);
+                {   Save save(r1);
                     poll_jump_back(A_reg);
                     save.restore(r1);
                 }
@@ -1770,7 +1767,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-                {   Save save(THREADARG r1);
+                {   Save save(r1);
                     poll_jump_back(A_reg);
                     save.restore(r1);
                 }
@@ -1814,7 +1811,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f3 = qfn3(r1);
-                {   Save save(THREADARG r1);
+                {   Save save(r1);
                     poll_jump_back(A_reg);
                     save.restore(r1);
                 }
@@ -1914,7 +1911,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         continue;
                     case 7:
                         if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                        {   Save save(THREADARG A_reg);
+                        {   Save save(A_reg);
                             print_traceset(fname, A_reg);
                             errexit();
                             save.restore(A_reg);
@@ -1957,7 +1954,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   fname = 0;
                     goto call1;
                 }
-                {   RAIIsave_codevec saver OPTTHREAD;
+                {   RAIIsave_codevec saver;
                     *++stack = A_reg; // the argument
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
@@ -2004,7 +2001,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   fname = 0;
                     goto call2;
                 }
-                {   RAIIsave_codevec saver OPTTHREAD;
+                {   RAIIsave_codevec saver;
                     *++stack =B_reg; *++stack = A_reg;
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();

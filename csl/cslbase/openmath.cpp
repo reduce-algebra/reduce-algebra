@@ -390,7 +390,6 @@ LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, Li
     OMdev dev;
     int32_t len = 0;
     LispObject lispDev;
-    THREADID;
     Save save(threadId, lname, lmode, lenc);
 
     // Convert the parameters into their C equivalents.
@@ -445,7 +444,6 @@ LispObject om_openStringDev(LispObject env, LispObject lstr,
     OMencodingType enc;
     OMdev dev;
 
-    THREADID;
     Save save(threadId, lenc);
     pstr = om_toCString(lstr);
     errexit();
@@ -475,7 +473,6 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
 {   OMdev dev;
     OMencodingType enc;
 
-    THREADIS;
     Save save(threadId, lenc);
 
     dev = om_toDev(ldev);
@@ -577,7 +574,6 @@ LispObject om_connectTCP(LispObject env, LispObject lconn,
     if (!is_fixnum(lport))
         return aerror("om_connectTCP: port number must be a fixnum");
  
-    THREADID;
     {   Save save(threadId, lhost);
 
     // Convert the parameters into their C equivalents.
@@ -1040,7 +1036,6 @@ LispObject om_putSymbol2(LispObject env,
     char *cd, *name;
     int32_t cdLen = 0, nameLen = 0;
     OMstatus status;
-    THREADID;
 
     // err_printf("[om_putSymbol2] about to convert params to C equivalents...\n");
 
@@ -1495,7 +1490,6 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     else
     {   cdstr = make_string(cd);
         errexit();
-        THREADID;
         Save save(threadId, cdstr);
         namestr = make_string(name);
         errexit();

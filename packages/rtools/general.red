@@ -290,11 +290,12 @@ symbolic procedure hex64t n;
     terpri() >>;
 
 % leafcount is intended to apply to prefix forms and counts the
-% number of atoms not counting the ones that are operator-names.
+% number of atoms including those that are operator-names.
 
 symbolic procedure leafcount x;
-  if atom x then 1
-  else foreach y in cdr x sum leafcount y;
+  if null u then 0
+  else if atom u then 1
+  else leafcount car u + leafcount cdr u;
 
 symbolic operator leafcount;
 

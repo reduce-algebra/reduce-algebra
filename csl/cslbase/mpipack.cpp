@@ -325,7 +325,6 @@ static LispObject unpack_cell()
 static LispObject unpack_list()
 {   LispObject r = unpack_cell();
     errexit();
-    THREADID;
     Save save(threadId, r);
     switch (unpack_char())
     {   case ')': return cons(r, nil);

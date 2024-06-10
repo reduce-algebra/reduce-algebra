@@ -508,14 +508,13 @@ LispObject gcd(LispObject a, LispObject b)
             trace_printf("GCD of 2 bignums %x %x\n", topdigit(a), topdigit(b));
             trace_printf("signs %d %d\n", bignum_minusp(a), bignum_minusp(b));
 #endif
-            THREADID;
-            {   Save save(THREADARG b);
+            {   Save save(b);
                 if (bignum_minusp(a)) a = negateb(a);
                 else a = copyb(a);
                 errexit();
                 save.restore(b);
             }
-            {   Save save(THREADARG a);
+            {   Save save(a);
                 if (bignum_minusp(b)) b = negateb(b);
                 else b = copyb(b);
                 errexit();
@@ -706,15 +705,14 @@ LispObject lcm(LispObject a, LispObject b)
 {   LispObject g;
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
-    THREADID;
-    stackcheck(THREADARG a, b);
+    stackcheck(a, b);
     errexit();
-    {   Save save(THREADARG a, b);
+    {   Save save(a, b);
         g = gcd(a, b);
         errexit();
         save.restore(a, b);
     }
-    {   Save save(THREADARG a);
+    {   Save save(a);
         b = quot2(b, g);
         errexit();
         if (minusp(b)) b = negate(b);
@@ -722,7 +720,7 @@ LispObject lcm(LispObject a, LispObject b)
         save.restore(a);
     }
     if (minusp(a))
-    {   Save save(THREADARG b);
+    {   Save save(b);
         a = negate(a);
         errexit();
         save.restore(b);
@@ -827,8 +825,7 @@ LispObject ash(LispObject a, LispObject b)
             lenc++, longer = true;
 // When I am shifting (left) I can work out exactly how long the resulting
 // bignum will be right at the start.
-        {   THREADID;
-            Save save(THREADARG a);
+        {   Save save(a);
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
             errexit();
             save.restore(a);
@@ -880,8 +877,7 @@ LispObject ash(LispObject a, LispObject b)
 // build it in a one or two-word bignum and then (if appropriate) extract the
 // fixnum value.  This is slightly wasteful, but I do not (at present)
 // view right-shifting a bignum to get a fixnum as super speed-critical.
-        {   THREADID;
-            Save save(THREADARG a);
+        {   Save save(a);
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
             errexit();
             save.restore(a);
@@ -972,16 +968,15 @@ static LispObject logiorbb(LispObject a, LispObject b)
     }
     // Now b is at least as long as a
     msd = bignum_digits(a)[lena];
-    THREADID;
     if (msd < 0)
-    {   Save save(THREADARG b);
+    {   Save save(b);
         a = copyb(a);
         errexit();
         save.restore(b);
         for (i=0; i<=lena; i++) bignum_digits(a)[i] |= bignum_digits(b)[i];
     }
     else
-    {   Save save(THREADARG a);
+    {   Save save(a);
         b = copyb(b);
         errexit();
         save.restore(a);
@@ -1032,8 +1027,7 @@ static LispObject logxorbb(LispObject a, LispObject b)
         b = c; lenb = lenc;
     }
     // Now b is at least as long as a
-    {   THREADID;
-        Save save(THREADARG a);
+    {   Save save(a);
         b = copyb(b);
         errexit();
         save.restore(a);
@@ -1085,8 +1079,7 @@ LispObject logeqv2(LispObject a, LispObject b)
     {   if (is_fixnum(b))
             return logxorbb(make_fake_bignum(~int_of_fixnum(b)), a);
         else if (is_numbers(b) && is_bignum(b))
-        {   {   THREADID;
-                Save save(THREADARG a);
+        {   {   Save save(a);
                 b = lognot(b);
                 errexit();
                 save.restore(a);
@@ -1111,16 +1104,15 @@ static LispObject logandbb(LispObject a, LispObject b)
     }
     // Now b is at least as long as a
     msd = bignum_digits(a)[lena];
-    THREADID;
     if (msd >= 0)
-    {   Save save(THREADARG b);
+    {   Save save(b);
         a = copyb(a);
         errexit();
         save.restore(b);
         for (i=0; i<=lena; i++) bignum_digits(a)[i] &= bignum_digits(b)[i];
     }
     else
-    {   Save save(THREADARG a);
+    {   Save save(a);
         b = copyb(b);
         errexit();
         save.restore(a);

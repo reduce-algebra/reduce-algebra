@@ -457,7 +457,6 @@ LispObject Ninorm(LispObject env, LispObject a, LispObject kk)
 LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
 {   SingleValued fn;
     LispObject r;
-    THREADID;
     switch (is_fixnum(op) ? int_of_fixnum(op) : -1)
     {   case boole_clr:
             return fixnum_of_int(0);
@@ -465,7 +464,7 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = Logand::op(a1, a2);
             break;
         case boole_andc2:
-            {   Save save(THREADARG a1);
+            {   Save save(a1);
                 a2 = Lognot::op(a2);
                 errexit();
                 save.restore(a1);
@@ -475,7 +474,7 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
         case boole_1:
             return a1;
         case boole_andc1:
-            {   Save save(THREADARG a2);
+            {   Save save(a2);
                 a1 = Lognot::op(a1);
                 errexit();
                 save.restore(a2);
@@ -502,7 +501,7 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = Lognot::op(a2);
             break;
         case boole_orc2:
-            {   Save save(THREADARG a1);
+            {   Save save(a1);
                 a2 = Lognot::op(a2);
                 errexit();
                 save.restore(a1);
@@ -513,7 +512,7 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = Lognot::op(a1);
             break;
         case boole_orc1:
-            {   Save save(THREADARG a2);
+            {   Save save(a2);
                 a1 = Lognot::op(a1);
                 errexit();
                 save.restore(a2);

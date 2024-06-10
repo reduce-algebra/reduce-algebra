@@ -2470,8 +2470,7 @@ LispObject Ndecode_long_float(LispObject a)
     }
     LispObject sign = make_boxfloat128(f128_1);
     if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(sign)));
-    {   THREADID;
-        Save save(THREADARG sign);
+    {   Save save(sign);
         a = make_boxfloat128(d);
         errexit();
         save.restore(sign);
@@ -2509,8 +2508,7 @@ LispObject Ndecode_float(LispObject env, LispObject a)
     else d = std::frexp(d, &x);
     if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
     else sign = make_boxfloat(neg, floatWant(flthdr(a)));
-    {   THREADID;
-        Save save(THREADARG sign);
+    {   Save save(sign);
         if (is_sfloat(a)) a = pack_immediate_float(d, a);
         else a = make_boxfloat(d, floatWant(flthdr(a)));
         errexit();

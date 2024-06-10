@@ -351,11 +351,7 @@ arith_sources =
 ARITHDEP=
 endif !arithlib
 
-if conservative
 gc_sources = newcslgc.cpp newallocate.cpp 
-else !conservative
-gc_sources = cslgc.cpp allocate.cpp 
-endif !conservative
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
