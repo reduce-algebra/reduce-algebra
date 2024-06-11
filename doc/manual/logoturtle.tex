@@ -14,7 +14,6 @@ is a partial REDUCE emulation of
 chapter of the Berkeley Logo 6.2 manual available from
 \href{https://github.com/jrincayc/ucblogo-code}{GitHub}.
 
-%% Should use label references in the two hyperlinks below!
 This package is inspired by, and related to, the REDUCE
 \hyperref[package:TURTLE]{Turtle package} by Caroline Cotter (ZIB,
 Berlin, 1998), and the word ``Turtle'' below (with a capital T) will
@@ -25,8 +24,7 @@ that plotting is not fully interactive as it would be in
 \href{https://en.wikipedia.org/wiki/Logo_(programming_language)}{traditional
   Logo}; a plot is constructed invisibly and only displayed when
 requested.  This package aims to be more efficient, more authentic,
-potentially more interactive and potentially more complete than
-Turtle.
+more interactive and more complete than Turtle.
 
 Note that LogoTurtle and Turtle cannot both be run in the same REDUCE
 session because they define some procedures with the same names.
@@ -74,29 +72,35 @@ To use LogoTurtle, execute the REDUCE command
      load_package logoturtle;
 \end{verbatim}
 
-LogoTurtle sets the scaling of the two axes to be the same so that
-geometry is correct (although beware that Gnuplot does not always
-honour this).  Apart from that, (currently) Gnuplot automatically
-sizes the display so that it includes the whole plot.  The position of
-the origin (the turtle home location \texttt{\{0,0\}}) is not fixed
-and will be different for different plots.
+LogoTurtle sets the scaling of the two axes to be the same so that the
+aspect ratio is 1:1 and geometry is correct (although beware that
+Gnuplot may not always honour this).  By default, LogoTurtle scales
+the graphics window so that turtle coordinates $(-100,-100)$ and
+$(100,100)$ fit, and the center of the graphics window is turtle
+location $(0,0)$, i.e.\@ the origin or home position.  But this fixed
+window can be turned off or the size changed (see
+\hyperref[logoturtle:TWC]{Turtle and Window Control}), so that Gnuplot
+automatically sizes the display to include the whole plot (as for
+Turtle).  The position of the origin (the turtle home location
+\texttt{\{0,0\}}) is then not fixed and will be different for
+different pictures.
 
 Positive X is to the right; positive Y is up.  Headings (angles) are
 measured in degrees clockwise from the positive Y axis.  (Note that
 this differs from the common mathematical convention, also used by
 Turtle, of measuring angles counterclockwise from the positive X
-axis!)
+axis!)  Initially, the turtle is at the origin (Cartesian coordinates
+$(0,0)$) facing up (heading 0 degrees) with the pen up.
 
-The turtle itself is (currently) not displayed.
+The turtle is (optionally) represented as an isoceles triangle; the
+actual turtle position is at the midpoint of the base (the short
+side).  However, the turtle is drawn one step behind its actual
+position, so that the display of the base of the turtle's triangle
+does not obscure a line drawn perpendicular to it (as would happen
+after drawing a square).
 
 %% FJW: Commented out text describes facilities that I might implement
 %% at some later date.
-
-%% The turtle is represented as an isoceles triangle; the actual turtle
-%% position is at the midpoint of the base (the short side).  However,
-%% the turtle is drawn one step behind its actual position, so that the
-%% display of the base of the turtle's triangle does not obscure a line
-%% drawn perpendicular to it (as would happen after drawing a square).
 
 %% Colors are, of course, hardware-dependent.  However, Logo provides partial
 %% hardware independence by interpreting color numbers 0 through 7 uniformly
@@ -118,13 +122,14 @@ The turtle itself is (currently) not displayed.
 LogoTurtle (currently) uses a white background and pen colour chosen
 automatically by Gnuplot.
 
-Initially, the turtle is at the origin (Cartesian coordinates (0,0))
-facing up (heading 0 degrees) with the pen up.
-
 Note that LogoTurtle command names are shown using upper case letters
 in the descriptions after the example below to distinguish them
 clearly from their arguments, but LogoTurtle is case insensitive, so
 commands can be entered in either case.
+
+When the switch \texttt{trlogoturtle} is on, LogoTurtle outputs
+Cartesian coordinates corresponding to every move of the turtle and
+\texttt{DRAW} outputs the list of curves that it is about to draw.
 
 
 \subsection{A Simple Example}
@@ -249,13 +254,14 @@ moves the turtle to its starting position (the origin) and orientation.
 Equivalent to ``\texttt{\hyperref[logoturtle:setpos]{SETPOS}~\{0,~0\};
   \hyperref[logoturtle:setheading]{SETHEADING}~0;}''.
 
-%% \begin{verbatim}
-%% ARC angle radius
-%% \end{verbatim}
-
-%% draws an arc of a circle, with the turtle at the center, with the
-%% specified radius, starting at the turtle's heading and extending
-%% clockwise through the specified angle.  The turtle does not move.
+\begin{verbatim}
+     ARC(angle, radius)
+\end{verbatim}
+draws an arc of a circle, with the turtle at the center, with the
+specified radius, starting at the turtle's heading and extending
+clockwise through the specified angle.  The turtle does not move and
+the arc is drawn as if the turtle mode is \texttt{WINDOW} for all
+modes unless windowing is turned off.
 
 
 \subsection{Turtle Motion Queries}
@@ -299,20 +305,21 @@ the input.
 
 
 \subsection{Turtle and Window Control}
+\label{logoturtle:TWC}
 
-%% \begin{verbatim}
-%% SHOWTURTLE
+\begin{verbatim}
+     SHOWTURTLE()
+\end{verbatim}
+\label{logoturtle:showturtle}
 %% ST
-%% \end{verbatim}
-%% makes the turtle visible.
+makes the turtle visible (next time the picture is drawn).
 
-%% \begin{verbatim}
-%% HIDETURTLE
+\begin{verbatim}
+     HIDETURTLE()
+\end{verbatim}
+\label{logoturtle:hideturtle}
 %% HT
-%% \end{verbatim}
-%% makes the turtle invisible.  It's a good idea to do this while you're in
-%% the middle of a complicated drawing, because hiding the turtle speeds up
-%% the drawing substantially.
+makes the turtle invisible (next time the picture is drawn).
 
 \begin{verbatim}
      CLEAN()
@@ -329,37 +336,50 @@ initial position and heading.  Like
 \texttt{\hyperref[logoturtle:home]{HOME}()} and \texttt{CLEAN()}
 together.
 
-%% \begin{verbatim}
-%% WRAP
-%% \end{verbatim}
-%% tells the turtle to enter wrap mode:  From now on, if the turtle is
-%% asked to move past the boundary of the graphics window, it will ``wrap
-%% around'' and reappear at the opposite edge of the window.  The top edge
-%% wraps to the bottom edge, while the left edge wraps to the right edge.
-%% (So the window is topologically equivalent to a torus.)  This is the
-%% turtle's initial mode.  Compare \texttt{WINDOW} and \texttt{FENCE}.
+As an extension to Berkeley Logo, the LogoTurtle commands
+\texttt{WRAP}, \texttt{WINDOW} and \texttt{FENCE} accept zero, one or
+two arguments: if the single argument is \texttt{FALSE} then no window
+mode is set, meaning that (like Turtle) LogoTurtle does not use a
+fixed window size and there are no constraints on where the turtle
+moves or draws; otherwise a windowing mode is set.  If there is a
+single numerical argument $N$ then the size of the graphics window is
+set so that $-|N| \le x,y \le |N|$; if there are two numerical
+arguments $M, N$ then the size of the graphics window is set so that
+$-|M| \le x \le |M|, -|N| \le y \le |N|$.
 
-%% @xref{FENCE} .
+\begin{verbatim}
+     WRAP()
+\end{verbatim}
+tells the turtle to enter wrap mode: From now on, if the turtle is
+asked to move past the boundary of the graphics window, it will ``wrap
+around'' and reappear at the opposite edge of the window.  The top
+edge wraps to the bottom edge, while the left edge wraps to the right
+edge.  (So the window is topologically equivalent to a torus.)  This
+is the turtle's initial mode.  \texttt{WRAP} can also take one or more
+arguments as described above.  Compare \texttt{WINDOW} and
+\texttt{FENCE}.
 
-%% \begin{verbatim}
-%% WINDOW
-%% \end{verbatim}
-%% tells the turtle to enter window mode:  From now on, if the turtle is
-%% asked to move past the boundary of the graphics window, it will move
-%% offscreen.  The visible graphics window is considered as just part of an
-%% infinite graphics plane; the turtle can be anywhere on the plane.  (If
-%% you lose the turtle, \texttt{HOME} will bring it back to the center of the
-%% window.)  Compare \texttt{WRAP} and \texttt{FENCE}.
+\begin{verbatim}
+     WINDOW()
+\end{verbatim}
+tells the turtle to enter window mode: From now on, if the turtle is
+asked to move past the boundary of the graphics window, it will move
+offscreen.  The visible graphics window is considered as just part of
+an infinite graphics plane; the turtle can be anywhere on the plane.
+(If you lose the turtle, \texttt{HOME} will bring it back to the
+center of the window.)  \texttt{WINDOW} can also take one or more
+arguments as described above.  Compare \texttt{WRAP} and
+\texttt{FENCE}.
 
-%% \begin{verbatim}
-%% FENCE
-%% \end{verbatim}
-%% tells the turtle to enter fence mode:  From now on, if the turtle is
-%% asked to move past the boundary of the graphics window, it will move as
-%% far as it can and then stop at the edge with an ``out of bounds'' error
-%% message.  Compare \texttt{WRAP} and \texttt{WINDOW}.
+\begin{verbatim}
+     FENCE()
+\end{verbatim}
+tells the turtle to enter fence mode: From now on, if the turtle is
+asked to move past the boundary of the graphics window, it will move
+as far as it can and then stop at the edge with an ``out of bounds''
+error message.  \texttt{FENCE} can also take one or more arguments as
+described above.  Compare \texttt{WRAP} and \texttt{WINDOW}.
 
-%% @xref{WRAP} .
 
 %% \begin{verbatim}
 %% FILL
@@ -410,23 +430,22 @@ together.
 %% aspect ratio to draw an ellipse.)
 
 
-%% \subsection{Turtle and Window Queries}
+\subsection{Turtle and Window Queries}
 
-%% \begin{verbatim}
-%% SHOWNP
+\begin{verbatim}
+     SHOWNP()
+\end{verbatim}
 %% SHOWN?
-%% \end{verbatim}
-%% returns \texttt{TRUE} if the turtle is shown (visible), \texttt{FALSE} if the turtle is
-%% hidden.  See \texttt{SHOWTURTLE} and \texttt{HIDETURTLE}.
+returns \texttt{TRUE} if the turtle is shown (visible), \texttt{FALSE}
+if the turtle is hidden.  See
+\hyperref[logoturtle:showturtle]{\texttt{SHOWTURTLE}} and
+\hyperref[logoturtle:hideturtle]{\texttt{HIDETURTLE}}.
 
-%% @xref{SHOWTURTLE} ,
-%% @ref{HIDETURTLE} .
-
-%% \begin{verbatim}
-%% TURTLEMODE
-%% \end{verbatim}
-%% returns the word \texttt{WRAP}, \texttt{FENCE}, or \texttt{WINDOW} depending on the current
-%% turtle mode.
+\begin{verbatim}
+     TURTLEMODE()
+\end{verbatim}
+returns the word \texttt{WRAP}, \texttt{FENCE}, \texttt{WINDOW} or
+\texttt{FALSE} depending on the current turtle mode.
 
 %% \begin{verbatim}
 %% LABELSIZE

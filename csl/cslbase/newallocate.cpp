@@ -310,6 +310,7 @@ bool allocateAnotherSegment()
 void initConsPage(Page* p, bool empty)
 {   consPages.push(p);
     p->liveData = true;
+    p->liveBeforeSandbox = false;
 #ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("Allocate page %a as a CONS page (was %s)\n", p, pageTypeName(p->type));
 #endif // EXTREME_DEBUG
@@ -348,6 +349,7 @@ void initConsPage(Page* p, bool empty)
 void initVecPage(Page* p, bool empty)
 {   vecPages.push(p);
     p->liveData = true;
+    p->liveBeforeSandbox = false;
 #ifdef EXTREME_DEBUG
     if (GCTRACE) zprintf("Allocate page %a as a VEC page (was %s)\n", p, pageTypeName(p->type));
 #endif // EXTREME_DEBUG

@@ -317,14 +317,14 @@ symbolic procedure gp!-plotoptions();
       plotoptions!* := 'nopolar . plotoptions!*;
     if not('contour memq plotoptions!*) then
       plotoptions!* := 'nocontour . plotoptions!*;
-    if not('title  memq plotoptions!*) then
+    if not assoc('title, plotoptions!*) then
       plotoptions!* := '(title . "REDUCE Plot") . plotoptions!*;
   for each x in plotoptions!* do
     begin
       scalar a, b;
       a := x;
       if not idp a then a := car a;
-      %% RmS: Correct name of option that was renamed during input (e.g., size in PSL Reduce) 
+      %% RmS: Correct name of option that was renamed during input (e.g., size in PSL Reduce)
       if b := get(a,'oldnam) then a := b;
       b := explode2 a;
       if eqcar(b, 'n) and eqcar(cdr b, 'o) then <<

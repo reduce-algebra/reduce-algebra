@@ -305,6 +305,7 @@ public:
             uintptr_t dataEnd;        // end of data in this page
             PinStatus borrowStatus;   // used when borrowed page is discarded
             bool liveData;            // is there valid data here?
+            bool liveBeforeSandbox;   // used for sandbox
         };
 // Because I am using anonymous structs here I make the names of all the
 // initial fields that are expected to be present in every case different
@@ -322,6 +323,7 @@ public:
             uintptr_t CdataEnd;
             PinStatus CborrowStatus;
             bool CliveData;
+            bool CliveBeforeSandbox;   // used for sandbox
 // The above are the common fields...
             uint64_t consPins[consPinWords];
             uint64_t newConsPins[consPinWords];
@@ -340,6 +342,7 @@ public:
             uintptr_t VdataEnd;
             PinStatus VborrowStatus;
             bool VliveData;
+            bool VliveBeforeSandbox;   // used for sandbox
 // The above are the common fields.
             bool potentiallyPinnedFlag;
             Page* potentiallyPinnedChain;

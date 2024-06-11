@@ -1797,6 +1797,9 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 
 #ifdef HAVE_FORK
 
+#include <unistd.h>
+#include <sys/wait.h>
+
 LispObject Lbacktrace(LispObject env)
 {   SingleValued fn;
     pid_t pid1;
@@ -1886,12 +1889,12 @@ LispObject Lbacktrace(LispObject env)
 //     exits normally returning an s-expression. Multiple-value results
 //     will not be handled.
 // (7) Use something of the style of a "print-to-string" scheme to turn
-//     the result into a sequence of characters. When that has been done
-//     "borrow" space from the pages that are free (for GC use) and
-//     temporarily put the text in it.
+//     the result into a sequence of characters. The space that is used
+//     will count as belonging to the protected computation but must not
+//     overlap with that which was originally in use.
 // (8) Copy from the savedPages back into the places they had been copied
 //     from. Copy back list bases and status variables, putting some pages
-//     back on freePages when they are now in use but had not been at the
+//     back on emptyPages when they are now in use but had not been at the
 //     start. Now I know that there are plenty of free pages.
 //     Restore non listbase variable. When that is done it will be
 //     OK to compute in the restored space save that garbage collection
@@ -1909,17 +1912,38 @@ void saveOnePage(Page* p)
     np->original = p;
     np->saveChain = savedPages;
     savedPages = np;
+    p->liveBeforeSandbox = true;
 }
 
+// This puts a page on the simple list newFreePages.
+
 Page* newFreePages = nullptr;
-Page* revFreePages = nullptr;
 
 void releaseOnePage(Page* p)
 {   p->chain = newFreePages;
-    p->saveChain = revFreePages;
-    if (newFreePages!=nullPtr) newFreePages->saveChain = p;
-    if (revFreePages!=nullPtr) revFreePages->chain = p;
+    p->saveChain = nullptr;
+    if (newFreePages!=nullptr) newFreePages->saveChain = p;
+    newFreePages = p;
+}
 
+// Splice a page out from the newFreePages double-linked chain.
+ 
+void unFreePage(Page* p)
+{   Page* prev = p->saveChain;
+    Page* next = p->chain;
+    if (prev == nullptr) newFreePages = next;
+    else prev->chain = next;
+    if (next != nullptr) next->saveChain = prev;
+}
+
+// Put all pages on free back as begin free.
+
+void restoreFreePages(Page* fr)
+{   while (fr != nullptr)
+    {   Page* next = fr->chain;
+        emptyPages.push(fr);
+        fr = next;
+    }
 }
 
 // This must use borrow_basic_vector() when it wants to grab some
@@ -1939,20 +1963,51 @@ const size_t stringBufferSize = 16384-4*8;
 // the listbase mv_4 will be used to store a reference to the
 // current block. This is safe provided the printing routines do
 // not use multiple values beyond 3 of them!
+// The memory that these are put in must not overlap with any that
+// was in use when sandbox-eval started its work. Such pages will
+// have a flag (liveBeforeSandbox) set in them.
 
 static size_t charCounter;
-#define charBlock mv_4
- 
+LispObject& charBlock = mv_4;
 
 bool byteToStrings(int ch)
 {   if (charCounter == stringBufferSize)
-    {   LispObject newBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
-                                  stringBufferSize+3*sizeof(LispObject));
-        elt(newBlock,0) = charBlock;
+    {   LispObject newBlock;
+        for (;;)
+        {   newBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
+                           stringBufferSize+3*sizeof(LispObject));
+            elt(newBlock,0) = charBlock;
+            elt(newBlock,1) = nil;
+            elt(newBlock,2) = nil;
+            Page* p = pageOf(newBlock);
+            if (p->liveBeforeSandbox)
+            {
+// I am going to be lazy here. What I need to do here is accept that the
+// current page can not be used and that I need to allocate another. It
+// would be nice to create a padder from where I am right up to the end
+// of the page. However the page may contain pinned sections between here
+// and its end, so filling it out is a little bit messy. Instead I will
+// just continue allocating 16Kbyte chunks until I end up in the next
+// page. Actually that is not too bad since it only takes 256 of then to
+// fill a page, so I will traverse this loop a few hundred times rather
+// than many many thousands.
+                continue;
+            }
+// Now the page that I am allocating is not one that will get overwritten
+// when original pages are restored. If I fail to find a suitable page
+// I may garbage collect and I may go to the operating system to expand
+// memory. If those fail I will just have run out of memory in a way that
+// could always be possible. Well that may not be quite true because the GC
+// can discard all the padding blocks I allocated here and so it may not
+// believe it is short enough of memory to take drastic action and I fear
+// that this could end up looping looking for suitable pages. Ugh. I will
+// comd back to that problem later on.
+            break;
+        }
         charBlock = newBlock;
         charCounter = 0;
     }
-    char* data = static_cast<char*>(&elt(charBlock, 3));
+    char* data = reinterpret_cast<char*>(&elt(charBlock, 3));
     data[charCounter++] = ch;
     return true;
 }
@@ -1962,38 +2017,41 @@ bool byteToStrings(int ch)
 // OK because the block order gets corrected before data is read!
 
 LispObject printToStrings(LispObject u)
-{
-     charBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
-                     stringBufferSize+3*sizeof(LispObject));
-     charCounter = 0;
-     iputc_hook = byteToStrings;
+{   charBlock = nil;
+    charCounter = stringBufferSize;
+    iputc_hook = byteToStrings;
 
-     byteToStrings('!');  // Some dummy data for testing purposes.
-     byteToStrings('A');
-     byteToStrings('r');
-     byteToStrings('t');
-     byteToStrings('h');
-     byteToStrings('u');
-     byteToStrings('r');
-     byteToStrings('\n');
+byteToStrings('!');  // Some dummy data for testing purposes.
+byteToStrings('A');
+byteToStrings('r');
+byteToStrings('t');
+byteToStrings('h');
+byteToStrings('u');
+byteToStrings('r');
+byteToStrings('\n');
 
-     iputc_hook = nullptr;
-     return charBlock;
+    iputc_hook = nullptr;
+// This is in the space used by the sandboxed task.
+    return charBlock;
 }
 
 int byteFromStrings()
 {   if (charCounter == stringBufferSize)
-    {   charBlock = elt(newBlock,0);
+    {   charBlock = elt(charBlock,0);
         charCounter = 0;
     }
-    char* data = static_cast<char*>(&elt(charBlock, 3));
+    char* data = reinterpret_cast<char*>(&elt(charBlock, 3));
     return data[charCounter++];
 }
 
 LispObject readFromStrings(LispObject input)
 {   charBlock = input;
     charCounter = 0;
-    iget_hook = byteFromStrings;
+    igetc_hook = byteFromStrings;
+char buffer[100];
+for (int i=0; i<7; i++) buffer[i] = (*igetc_hook)();
+buffer[7] = 0;
+return make_string(buffer);
     return nil;
 }
 
@@ -2031,21 +2089,13 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 //     then report and "out of memory" fatal error.
     size_t N=0, F=0;
     for (bool first=true;;first=false)
-    {   N = 0;
-        for (UNUSED_NAME auto p:consPinPages) N++;
-        for (UNUSED_NAME auto p:vecPinPages) N++;
-        for (UNUSED_NAME auto p:consCloggedPages) N++;
-        for (UNUSED_NAME auto p:vecCloggedPages) N++;
-        for (UNUSED_NAME auto p:consPages) N++;
-        for (UNUSED_NAME auto p:vecPages) N++;
-
+    {   N = consPinPages.count + vecPinPages.count + consCloggedPages.count +
+            vecCloggedPages.count + consPages.count + vecPages.count;
         while (pageFringe != pageEnd)
         {   Page* r = pageFringe++;
             r->type = emptyPageType;
         }
-        F = 0;
-        for (UNUSED_NAME auto p:emptyPages) F++;
-
+        F = emptyPages.count;
         if (F < static_cast<size_t>(2.1*N)+1)
         {   if (first)
             {   garbage_collect();
@@ -2077,14 +2127,13 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
        if (fg) r = eval(a, nil);
        else r = apply(a, b, nil, apply_symbol);
 // (7) Use something of the style of a "print-to-string" scheme to turn
-//     the result into a sequence of characters. When that has been done
-//     "borrow" space from the pages that are free (for GC use) and
-//     temporarily put the text in it.
-       {   Borrowing borrowObject;
-           LispObject resultString = printToStrings(r);
+//     the result into a sequence of characters. The space that is used
+//     will count as belonging to the protected computation but must not
+//     overlap with that which was originally in use.
+       LispObject resultString = printToStrings(r);
 // (8) Copy from the savedPages back into the places they had been copied
 //     from. Copy back list bases and status variables, putting some pages
-//     back on freePages when they are now in use but had not been at the
+//     back on emptyPages when they are now in use but had not been at the
 //     start. Now I know that there are plenty of free pages.
 //     Restore non listbase variable. When that is done it will be
 //     OK to compute in the restored space save that garbage collection
@@ -2100,52 +2149,55 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 // double-linked list. Then as I restore any page I can easily edit that
 // out from the new list. And once I have moved data out from the page
 // that saved stuff it can go on the empty page list. Ha ha neat!
-
-            newFreePages = revFreePages = nullptr;
-            while (!freePages.isEmpty())
-                releaseOnePage(freePages.pop());
-            while (!consPinPages.isEmpty())
-                releaseOnePage(consPinPages.pop());
-            while (!vecPinPages.isEmpty())
-                releaseOnePage(vecPinPages.pop());
-            while (!consCloggedPages.isEmpty())
-                releaseOnePage(consCloggedPages.pop());
-            while (!vecCloggedPages.isEmpty())
-                releaseOnePage(vecCloggedPages.pop());
-            while (!consPages.isEmpty())
-                releaseOnePage(consPages.pop());
-            while (!vecPages.isEmpty())
-                releaseOnePage(vecPages.pop());
-
-
-            while (savedPages != nullptr)
-            {   memcpy(savedPages->original, savedPages, sizeof(Page));
-                savedPages = savedPages->saveChain;
-            }
+        newFreePages = nullptr;
+        while (!emptyPages.isEmpty())
+            releaseOnePage(emptyPages.pop());
+        while (!consPinPages.isEmpty())
+            releaseOnePage(consPinPages.pop());
+        while (!vecPinPages.isEmpty())
+            releaseOnePage(vecPinPages.pop());
+        while (!consCloggedPages.isEmpty())
+            releaseOnePage(consCloggedPages.pop());
+        while (!vecCloggedPages.isEmpty())
+            releaseOnePage(vecCloggedPages.pop());
+        while (!consPages.isEmpty())
+            releaseOnePage(consPages.pop());
+        while (!vecPages.isEmpty())
+            releaseOnePage(vecPages.pop());
+// Now copy saved data back to where it came from. And the Pages that
+// had been used to save it go back on the chain of free Pages.
+        while (savedPages != nullptr)
+        {   unFreePage(savedPages->original);
+            memcpy(savedPages->original, savedPages, sizeof(Page));
+            Page* next = savedPages->saveChain;
+            releaseOnePage(savedPages);;
+            savedPages = next;
+        }
+// Now I can put the chain of free Pages back where it really wants to be.
+        restoreFreePages(newFreePages);
 //@@@ now I must get at least non-listbase variables associated with
 //@@@ storage allocation back in a stable state.
-
-
 // (9) Copy result data from the borrowed page(s) into currently live pages
 //     arranging that if pages need allocating to make space for this that
 //     no GC intrudes. Unborrow the temporary space.
-           withinGarbageCollector = true;
-           r = nil;
-           while (resultString != nil)
-           {   LispObject b =
-                   get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
-                                    stringBufferSize+3*sizeof(LispObject));
+       withinGarbageCollector = true;
+       r = nil;
+       while (resultString != nil)
+       {   LispObject b =
+               get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
+                                stringBufferSize+3*sizeof(LispObject));
 // The "binary data" part of r starts at elt(b, 3). Elements 0, 1 and 2
 // are the LispObject fields.
-               memcpy(&elt(b, 3),
-                      &elt(resultString, 3),
-                      stringBufferSize);
-               elt(b, 0) = r;
-               r = b;
-               resultString = elt(resultString, 0);
-           }
-           withinGarbageCollector = false;
-        }
+           memcpy(&elt(b, 3),
+                  &elt(resultString, 3),
+                  stringBufferSize);
+           elt(b, 0) = r;
+           elt(b, 1) = nil;
+           elt(b, 2) = nil;
+           r = b;
+           resultString = elt(resultString, 0);
+       }
+       withinGarbageCollector = false;
     }
 // (10)Restore the Lisp stack.  Read the final result from the string data.
     for (size_t i=0; i<stackSize/sizeof(LispObject); i++)

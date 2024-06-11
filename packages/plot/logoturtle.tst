@@ -1,15 +1,19 @@
 % Test file for Logo turtle graphics.
 
-% Author: Francis Wright, May 2024
+% Author: Francis Wright, June 2024
 
-% Based on "turtle.tst" by Caroline Cotter, ZIB,Berlin, 1998.
+% Part 1: Based on "turtle.tst" by Caroline Cotter, ZIB,Berlin, 1998
+% ==================================================================
 
-% The plots drawn by this test file should be the same as those drawn
-% by "turtle.tst" except that they are better labelled, use equally
-% scaled axes by default, and are mirrored about the line y = x due to
-% the different definition of heading.
+% The plots drawn by this part of the test file should be the same as
+% those drawn by "turtle.tst" except that they are better labelled,
+% use equally scaled axes by default, and are mirrored about the line
+% y = x due to the different definition of heading.
 
 % load_package logoturtle;
+
+% No fixed window size and no constraints on where the turtle moves:
+window false;
 
 on rounded;
 
@@ -192,6 +196,41 @@ draw();
    % Again, draw gr4 and the current plot together.
    % The result should be the same as previously.
    draw(gr4);
+>>;
+
+
+% Part 2: Facilities not provided by the Turtle package
+% =====================================================
+
+% Wrap two long straight lines around the default window size.
+
+<<
+   wrap();
+   clearscreen();
+   pendown(); setheading(60); forward 1000; penup();
+   home();
+   pendown(); setheading(-30); forward 1000; penup();
+   draw();
+>>;
+
+% Two arcs and show the turtle.
+
+<<
+   clearscreen(); penup();
+   arc(180, 50); setheading 180; arc(180, 100);
+   setheading 45; forward 25;
+   showturtle(); draw(); hideturtle();
+>>;
+
+% Two arcs clipped to a smaller window size.  No error message because
+% the turtle does not move outside the fence.
+
+<<
+   fence 75;
+   clearscreen(); penup();
+   arc(180, 50); setheading 180; arc(180, 100);
+   setheading 45; forward 25;
+   showturtle(); draw(); hideturtle();
 >>;
 
 end;
