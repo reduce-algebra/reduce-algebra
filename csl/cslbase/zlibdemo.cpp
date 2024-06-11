@@ -194,7 +194,7 @@ bool def_finish()
 
 bool Zwrite(const void *b, std::size_t n)
 {   const char *c = reinterpret_cast<const char *>(b);
-    while (n-- != 0) if (Zputc(*c++)) return true;
+    while (n-- != 0) if (Zputcx(*c++)) return true;
     return false;
 }
 

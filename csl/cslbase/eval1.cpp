@@ -2050,7 +2050,8 @@ static size_t charCounter;
 LispObject& charBlock = mv_4;
 
 bool byteToStrings(int ch)
-{   if (charCounter == stringBufferSize)
+{   printf("byteToStrings(%x)\n", ch & 0xff); // @@@
+    if (charCounter == stringBufferSize)
     {   LispObject newBlock;
         for (;;)
         {   newBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
@@ -2099,16 +2100,9 @@ LispObject printToStrings(LispObject u)
 {   charBlock = nil;
     charCounter = stringBufferSize;
     iputc_hook = byteToStrings;
-
-byteToStrings('!');  // Some dummy data for testing purposes.
-byteToStrings('A');
-byteToStrings('r');
-byteToStrings('t');
-byteToStrings('h');
-byteToStrings('u');
-byteToStrings('r');
-byteToStrings('\n');
-
+    def_init();
+    Lserialize(nil, u);
+    def_finish();
     iputc_hook = nullptr;
 // This is in the space used by the sandboxed task.
     return charBlock;
@@ -2120,18 +2114,18 @@ int byteFromStrings()
         charCounter = 0;
     }
     char* data = reinterpret_cast<char*>(&elt(charBlock, 3));
-    return data[charCounter++];
+    printf("byteFromStrings => %x\n", data[charCounter]&0xff); // @@@
+    return data[charCounter++] & 0xff;
 }
 
 LispObject readFromStrings(LispObject input)
 {   charBlock = input;
     charCounter = 0;
     igetc_hook = byteFromStrings;
-char buffer[100];
-for (int i=0; i<7; i++) buffer[i] = (*igetc_hook)();
-buffer[7] = 0;
-return make_string(buffer);
-    return nil;
+    inf_init();
+    LispObject r = Lunserialize(nil);
+    igetc_hook = nullptr;
+    return r;
 }
 
 LispObject sandbox(bool fg, LispObject a, LispObject b)

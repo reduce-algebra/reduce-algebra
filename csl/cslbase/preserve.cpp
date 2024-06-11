@@ -261,7 +261,7 @@ int Zgetc()
                 crc_needed = (crc_needed << 8) | w;
             }
 // Now I read the number of bytes I have been told to expect. If I am not
-// able to read thet many it is an error.
+// able to read that many it is an error.
             if (Iread(in, n)) return (z_eof = -1);
 // Compute a CRC on the block just read and complain if it is not as
 // expected.
@@ -1928,9 +1928,9 @@ bool Iputc(int ch)
 // (ie in the normal situation!) I will have used Iopen to set up the
 // stream, and it will have set binary_write_file to the stream and positioned
 // it at the point I should start writing.
-{   if (iputc_hook != nullptr) return (*iputc_hook)(ch);
-    write_bytes_written++;
-    if (fasl_stream != nil && fasl_stream != SPID_NIL)
+{   write_bytes_written++;
+    if (iputc_hook != nullptr) (*iputc_hook)(ch);
+    else if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
     else if (std::putc(ch, binary_write_file) == EOF) return true;
     return false;
