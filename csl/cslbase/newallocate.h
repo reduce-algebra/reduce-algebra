@@ -505,11 +505,15 @@ public:
     bool isEmpty()
     {   return head == nullptr;
     }
-    PageList& operator=(PageList& a)
+// Assignment here copies data from the source but leaves both PageLists
+// containing data. This should only be used from the sandbox code!
+    PageList& operator=(PageList a)
     {   head = a.head;     a.head = nullptr;
-        count = a.count;   a.count = 0;
         return *this;
     }
+// The "+=" operator drains pages from the source and transfers them
+// to the destination, so note very well that it updates the right hand
+// side in the statement.
     PageList& operator+=(PageList& a)
     {   while (!a.isEmpty())
             push(a.pop());
