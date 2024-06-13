@@ -1,4 +1,4 @@
-
+// lispthrow.h                                 Copyright Codemist 2020-2024
 
 // Some exception processing stuff for CSL
 
@@ -700,6 +700,11 @@ inline int exceptionLine = -1;
    {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
        exceptionFlag = LispNormal;
 
+#define CATCH_ANY() \
+   return nil;})(); if (exceptionFlag != 0) UNLIKELY \
+   {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
+       exceptionFlag = LispNormal;
+
 #define RETHROW do \
     { exceptionFlag = saveException; \
       return SPID_ERROR+(saveException<<20); } while(false)
@@ -795,6 +800,8 @@ inline bool exceptionPending()
 #define CATCH(flavour) return nil;})(); } catch (flavour &e) {
 
 #define ANOTHER_CATCH(flavour) } catch (flavour &e) {
+
+#define CATCH_ANY() return nil;})(); } catch (...) {
 
 #define RETHROW throw
 #define RETHROWVOID throw

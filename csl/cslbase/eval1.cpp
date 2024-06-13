@@ -1994,12 +1994,17 @@ void saveOnePage(Page* p)
     p->liveBeforeSandbox = true;
 }
 
-// This puts a page on the simple list newFreePages.
+// This puts a page on the double-linked list list newFreePages. Well I do
+// not put any page that is being used to hold part of the result-string,
+// so they will remain on resultPages rather than newFreePages.
 
+Page* resultPages = nullptr;
 Page* newFreePages = nullptr;
 
 void releaseOnePage(Page* p)
-{   p->chain = newFreePages;
+{   for (Page* w=resultPages; w!=nullptr; w=w->saveChain)
+        if (p == w) return;
+    p->chain = newFreePages;
     p->saveChain = nullptr;
     if (newFreePages!=nullptr) newFreePages->saveChain = p;
     newFreePages = p;
@@ -2050,17 +2055,21 @@ static size_t charCounter;
 LispObject& charBlock = mv_4;
 
 bool byteToStrings(int ch)
-{   printf("byteToStrings(%x)\n", ch & 0xff); // @@@
-    if (charCounter == stringBufferSize)
+{   if (charCounter == stringBufferSize)
     {   LispObject newBlock;
         for (;;)
         {   newBlock = get_basic_vector(TAG_VECTOR, TYPE_MIXED1,
                            stringBufferSize+3*sizeof(LispObject));
+            Page* p = pageOf(newBlock);
+            if (p != resultPages)
+            {   p->saveChain = resultPages;
+                resultPages = p;
+            }
             elt(newBlock,0) = charBlock;
             elt(newBlock,1) = nil;
             elt(newBlock,2) = nil;
-            Page* p = pageOf(newBlock);
-            if (p->liveBeforeSandbox)
+            Page* p1 = pageOf(newBlock);
+            if (p1->liveBeforeSandbox)
             {
 // I am going to be lazy here. What I need to do here is accept that the
 // current page can not be used and that I need to allocate another. It
@@ -2097,7 +2106,8 @@ bool byteToStrings(int ch)
 // OK because the block order gets corrected before data is read!
 
 LispObject printToStrings(LispObject u)
-{   charBlock = nil;
+{   resultPages = nullptr;
+    charBlock = nil;
     charCounter = stringBufferSize;
     iputc_hook = byteToStrings;
     def_init();
@@ -2114,7 +2124,6 @@ int byteFromStrings()
         charCounter = 0;
     }
     char* data = reinterpret_cast<char*>(&elt(charBlock, 3));
-    printf("byteFromStrings => %x\n", data[charCounter]&0xff); // @@@
     return data[charCounter++] & 0xff;
 }
 
@@ -2195,8 +2204,13 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 // (6) Run eval() on the argument. It will be important that this evaluation
 //     exits normally returning an s-expression. Multiple-value results
 //     will not be handled.
-   if (fg) r = eval(a, nil);
-   else r = apply(a, b, nil, apply_symbol);
+   TRY
+     if (fg) r = eval(a, nil);
+     else r = apply(a, b, nil, apply_symbol);
+     r = ncons(r);
+   CATCH_ANY()
+     r = nil;
+   END_CATCH
 // (7) Use something of the style of a "print-to-string" scheme to turn
 //     the result into a sequence of characters. The space that is used
 //     will count as belonging to the protected computation but must not
@@ -2247,14 +2261,10 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 // Now I can put the chain of free Pages back where it really wants to be.
     restoreFreePages(newFreePages);
     restoreStatics();
-// (9) Copy result data from the borrowed page(s) into currently live pages
+// (9) Copy result data from the result page(s) into currently live pages
 //     arranging that if pages need allocating to make space for this that
 //     no GC intrudes.
    withinGarbageCollector = true;
-// Well there is perhaps a problem here in that the Page(s) that
-// resultString are on may be badged as empty now so could get re-used
-// before data has been retrieved from them. Eek. Come back to that issue
-// in a while!  @@@@@@
     r = nil;
     while (resultString != nil)
     {   LispObject b =
@@ -2271,6 +2281,10 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
         r = b;
         resultString = elt(resultString, 0);
     }
+// I had arranged that the result had been put in Pages that would not
+// overlap with those active at the start, and I built a list resultPages
+// of them. So now I can recycle the result space as empty pages.
+    restoreFreePages(resultPages);
     withinGarbageCollector = false;
 // (10)Restore the Lisp stack.  Read the final result from the string data.
     for (size_t i=0; i<stackSize/sizeof(LispObject); i++)
