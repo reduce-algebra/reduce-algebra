@@ -223,7 +223,7 @@ inline double CSLpow(double x, double y)
 #include "isprime.h"
 #include "cslread.h"
 #include "inthash.h"
-#include "version.h"
+// #include "version.h"   // included by just the files that use it
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif // __EMSCRIPTEN__

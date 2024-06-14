@@ -1406,27 +1406,6 @@ void write_function4up(fourup_args *p)
 
 #define start_contents64(p) (((uintptr_t)(p) & ~(uintptr_t)7) + 8)
 
-// Within serial_read there are a number of places where I have to
-// take special care to be garbage-collection safe. This macro encapsulates
-// the rather ugly scheme that I use. Note that p is a raw pointer to
-// somewhere within the object that pbase identifies (or as a special
-// case p=&r and pbase is fixnum_of_int(0)). The protected statement must
-// not assign to any of the variables that are stacked here! It will
-// usually be a good idea to go "GC_PROTECT(prev = ...);".
-//
-// Now I have a conservative garbage collector this complication is
-// unnecessary! I will remove it soon I hope.
-
-#define GC_PROTECT(stmt)                                \
-    do                                                  \
-    {   Save save(r, s, pbase, b);                      \
-        ip = reinterpret_cast<LispObject>(p) - pbase;   \
-        stmt;                                           \
-        save.restore(r, s, pbase, b);                   \
-        p = reinterpret_cast<LispObject *>(pbase + ip); \
-    } while (0)
-
-
 // This code will need to be able to report failure if either
 // the underlying byte-stream is corrupted or if storage allocation
 // here fails. It also needs to be safe against garbage collection.
@@ -1434,8 +1413,7 @@ void write_function4up(fourup_args *p)
 LispObject serial_read()
 {   LispObject *p;    // a pointer to where to put the next item
     LispObject r,     // result of the entire reading process
-               pbase, // needed to make the code GC safe
-               ip,    // ditto
+               pbase, // used as a temporary
                prev,  // recent object read, for use with SER_DUP
                w,     // working variable
                s,     // a (linked) stack used with vectors (and symbols
@@ -1511,7 +1489,7 @@ down:
 // references and so need to go in the repeat table.
                 case SER_L_a:
                 case SER_L_A:
-                    GC_PROTECT(prev = cons(fixnum_of_int(0), nil));
+                    prev = cons(fixnum_of_int(0), nil);
                     if (c & 1) reader_repeat_new(prev);
                     *(LispObject*)p = prev;
                     pbase = prev;
@@ -1520,7 +1498,7 @@ down:
 
                 case SER_L_a_S:
                 case SER_L_A_S:
-                    GC_PROTECT(prev = cons(b, fixnum_of_int(0)));
+                    prev = cons(b, fixnum_of_int(0));
                     if (c & 1) reader_repeat_new(prev);
                     *(LispObject*)p = b = prev;
                     pbase = b;
@@ -1531,7 +1509,7 @@ down:
                 case SER_L_aA:
                 case SER_L_Aa:
                 case SER_L_AA:
-                    GC_PROTECT(prev = list2(nil, nil));
+                    prev = list2(nil, nil);
 // Here I need to set things up just as if I had CONS CONS NIL
 // where note that the old sequence CONS a b would create (CONS b a), ie
 // the CDR field is transmitted before the CAR one.
@@ -1547,7 +1525,7 @@ down:
                 case SER_L_aA_S:
                 case SER_L_Aa_S:
                 case SER_L_AA_S:
-                    GC_PROTECT(prev = list2(nil, nil));
+                    prev = list2(nil, nil);
 // Here I need to set things up just as if I had CONS CONS in the
 // old model (ie L_a_S L_a_S in the new one!)
                     if (c & 1) reader_repeat_new(prev);
@@ -1568,7 +1546,7 @@ down:
                 case SER_L_AaA:
                 case SER_L_AAa:
                 case SER_L_AAA:
-                    GC_PROTECT(prev = list3(nil, nil, nil));
+                    prev = list3(nil, nil, nil);
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
                     if (c & 4) reader_repeat_new(cdr(cdr(prev)));
@@ -1589,7 +1567,7 @@ down:
                 case SER_L_AaA_S:
                 case SER_L_AAa_S:
                 case SER_L_AAA_S:
-                    GC_PROTECT(prev = list3(nil, nil, nil));
+                    prev = list3(nil, nil, nil);
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
                     if (c & 4) reader_repeat_new(cdr(cdr(prev)));
@@ -1606,7 +1584,7 @@ down:
 
                 case SER_L_aaaa:
                 case SER_L_Aaaa:
-                    GC_PROTECT(prev = list4(nil, nil, nil, nil));
+                    prev = list4(nil, nil, nil, nil);
 // Note that for the longest sequence here only the start CONS cell
 // can be shared.
                     if (c & 1) reader_repeat_new(prev);
@@ -1624,7 +1602,7 @@ down:
 
                 case SER_L_aaaa_S:
                 case SER_L_Aaaa_S:
-                    GC_PROTECT(prev = list4(nil, nil, nil, nil));
+                    prev = list4(nil, nil, nil, nil);
                     if (c & 1) reader_repeat_new(prev);
                     setcar(prev, b);
                     b = *(LispObject*)p = prev;
@@ -1691,7 +1669,7 @@ down:
 // while if I made them one at a time they could end up separate if
 // they needed to be bignums. Since they are immutable objects I do not
 // believe that should cause any trouble.
-                    GC_PROTECT(prev = make_lisp_unsigned64(repeat_arg));
+                    prev = make_lisp_unsigned64(repeat_arg);
                     *(LispObject*)p = prev;
                     goto up;
 
@@ -1708,7 +1686,7 @@ down:
                     {   repeat_arg = -1-read_u64();
                         repeat_arg_ready = true;
                     }
-                    GC_PROTECT(prev = make_lisp_integer64(repeat_arg));
+                    prev = make_lisp_integer64(repeat_arg);
                     *(LispObject*)p = prev;
                     goto up;
 
@@ -1722,8 +1700,8 @@ down:
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
                     my_assert(opcode_repeats == 0, LOCATION);
-                    GC_PROTECT(prev =
-                        get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
+                    prev =
+                        get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
                     *(LispObject*)p = w = prev;
                     if (c == SER_DUPRAWSYMBOL) reader_repeat_new(prev);
 // Note that the vector as created will have its LENGTH encoded in the
@@ -1754,7 +1732,7 @@ down:
                     setvalue(w, b); // the back-pointer.
                     b = w;
                     {   const int PNAME_INDEX = pnameaddr(w) - valueaddr(w);
-                        GC_PROTECT(prev = cons(fixnum_of_int(PNAME_INDEX), s));
+                        prev = cons(fixnum_of_int(PNAME_INDEX), s);
                     }
                     s = prev;
                     prev = pbase = b;
@@ -1788,14 +1766,14 @@ down:
                         for (size_t i=0; i<len; i++)
                         {   if (boffop >=
                                 length_of_byteheader(vechdr(boffo))-CELL-8)
-                            GC_PROTECT(packbyte(read_string_byte()));
+                            packbyte(read_string_byte());
                             else packbyte(read_string_byte());
                         }
                         if (c == SER_GENSYM || c == SER_DUPGENSYM)
-                        {   GC_PROTECT(prev = copy_string(boffo, boffop));
-                            GC_PROTECT(prev = Lgensym(nil, prev));
+                        {   prev = copy_string(boffo, boffop);
+                            prev = Lgensym(nil, prev);
                         }
-                        else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
+                        else prev = iintern(boffo, (int32_t)boffop, CP, 0);
                         *(LispObject*)p = prev;
                         if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
                             reader_repeat_new(prev);
@@ -1811,7 +1789,7 @@ down:
                 case SER_FLOAT32:
 // a 32-bit single float
                     my_assert(opcode_repeats == 0, LOCATION);
-                    GC_PROTECT(prev = make_boxfloat(read_f32(), WANT_SINGLE_FLOAT));
+                    prev = make_boxfloat(read_f32(), WANT_SINGLE_FLOAT);
                     *(LispObject*)p = prev;
                     goto up;
 
@@ -1822,7 +1800,7 @@ down:
 // value 0.0, and in the case supporting repeats here could be helpful.
 // But at present I think that will be an uncommon case with Reduce and so
 // I will give priority to other cases.
-                    GC_PROTECT(prev = make_boxfloat(read_f64(), WANT_DOUBLE_FLOAT));
+                    prev = make_boxfloat(read_f64(), WANT_DOUBLE_FLOAT);
                     *(LispObject*)p = prev;
                     goto up;
 
@@ -1830,7 +1808,7 @@ down:
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
                     my_assert(opcode_repeats == 0, LOCATION);
-                    GC_PROTECT(prev = make_boxfloat128(f128_0));
+                    prev = make_boxfloat128(f128_0);
                     long_float_val(prev) = read_f128();
                     *(LispObject*)p = prev;
                     goto up;
@@ -1864,8 +1842,8 @@ down:
                     my_assert(opcode_repeats == 0, LOCATION);
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
-                        GC_PROTECT(prev =
-                            get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
+                        prev =
+                            get_basic_vector(TAG_VECTOR, bitvechdr_(w), len);
                         *(LispObject*)p = prev;
                         char *x = reinterpret_cast<char *>(&basic_celt(prev, 0));
                         for (size_t i=0; i<(size_t)w; i++)
@@ -1930,7 +1908,7 @@ down:
 // what I need to pass to get_basic_vector makes that into a byte count and
 // allows for the header word as well.
                 size_t n = read_u64();
-                GC_PROTECT(prev = get_basic_vector(tag, type, CELL*(n+1)));
+                prev = get_basic_vector(tag, type, CELL*(n+1));
                 w = *(LispObject*)p = prev;
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR, so I use the access macro "vselt" rather than
@@ -1959,7 +1937,7 @@ down:
                 }
                 vselt(w, 0) = b;
                 b = w;
-                GC_PROTECT(prev = cons(fixnum_of_int(n), s));
+                prev = cons(fixnum_of_int(n), s);
                 s = prev;
                 prev = pbase = b;
                 p = reinterpret_cast<LispObject *>(&vselt(b, n));
@@ -1994,7 +1972,7 @@ down:
 // making up the string, with padding at the end.
             my_assert(opcode_repeats == 0, LOCATION);
             w = (c & 0x1f) + 1;
-            GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
+            prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
             *(LispObject*)p = prev;
             {   char *x = reinterpret_cast<char *>(&basic_celt(prev, 0));
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
@@ -2029,7 +2007,7 @@ down:
                     tag = is_either_bignum_header(type) ? TAG_NUMBERS :
                                                           TAG_VECTOR;
                 if (vector_i8(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
+                {   prev = get_basic_vector(tag, type, CELL+w);
                     *(LispObject*)p = prev;
                     unsigned char *x = reinterpret_cast<unsigned char *>(start_contents(prev));
                     if (is_string_header(type))
@@ -2040,7 +2018,7 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i32(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
+                {   prev = get_basic_vector(tag, type, CELL+4*w);
                     *(LispObject*)p = prev;
                     uint32_t *x = (uint32_t *)start_contents(prev);
 // 32-bit integers are transmitted most significant byte first.
@@ -2053,7 +2031,7 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f64(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+8*w));
+                {   prev = get_basic_vector(tag, type, 8+8*w);
                     if (!SIXTY_FOUR_BIT)
                          *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
@@ -2064,7 +2042,7 @@ down:
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f64();
                 }
                 else if (vector_i16(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+2*w));
+                {   prev = get_basic_vector(tag, type, CELL+2*w);
                     *(LispObject*)p = prev;
                     std::uint16_t *x = reinterpret_cast<std::uint16_t *>(start_contents(prev));
                     for (size_t i=0; i<(size_t)w; i++)
@@ -2074,7 +2052,7 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i64(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+8*w));
+                {   prev = get_basic_vector(tag, type, 8+8*w);
                     if (!SIXTY_FOUR_BIT)
                          *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
@@ -2092,7 +2070,7 @@ down:
                     }
                 }
                 else if (vector_f32(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
+                {   prev = get_basic_vector(tag, type, CELL+4*w);
                     *(LispObject*)p = prev;
                     float *x = reinterpret_cast<float *>(start_contents(prev));
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
@@ -2100,7 +2078,7 @@ down:
                 }
 #ifdef HAVE_SOFTFLOAT
                 else if (vector_f128(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+16*w));
+                {   prev = get_basic_vector(tag, type, 8+16*w);
                     if (!SIXTY_FOUR_BIT)
                          *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
@@ -2109,7 +2087,7 @@ down:
                 }
 #endif // HAVE_SOFTFLOAT
                 else if (vector_i128(type))
-                {   GC_PROTECT(prev = get_basic_vector(tag, type, 8+16*w));
+                {   prev = get_basic_vector(tag, type, 8+16*w);
                     if (!SIXTY_FOUR_BIT)
                          *(LispObject*)((prev & ~TAG_BITS)+4) = 0;
                     *(LispObject*)p = prev;
