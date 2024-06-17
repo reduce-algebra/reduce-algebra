@@ -234,15 +234,11 @@ extend_by_one_word:
     return a;
 }
 
-static LispObject timesir(LispObject aa, LispObject bb)
+static LispObject timesir(LispObject a, LispObject b)
 // multiply integer (fixnum or bignum) by ratio.
-{   if (aa == fixnum_of_int(0)) return aa;
-    else if (aa == fixnum_of_int(1)) return bb;
-    RealSave save(aa, bb, nil);
-    LispObject &a = save.val(1);
-    LispObject &b = save.val(2);
-    LispObject &g = save.val(3);
-    g = gcd(a, denominator(b));
+{   if (a == fixnum_of_int(0)) return a;
+    else if (a == fixnum_of_int(1)) return b;
+    LispObject g = gcd(a, denominator(b));
     errexit();
     a = quot2(a, g);
     errexit();
@@ -254,12 +250,10 @@ static LispObject timesir(LispObject aa, LispObject bb)
     return make_ratio(a, g);
 }
 
-static LispObject timesic(LispObject aa, LispObject b)
+static LispObject timesic(LispObject a, LispObject b)
 // multiply an arbitrary non-complex number by a complex one
-{   RealSave save(aa, real_part(b), imag_part(b));
-    LispObject &a = save.val(1);
-    LispObject &r = save.val(2);
-    LispObject &i = save.val(3);
+{   LispObject r = real_part(b);
+    LispObject i = imag_part(b);
     i = times2(a, i);
     errexit();
     r = times2(a, r);
@@ -1119,14 +1113,11 @@ chop2:
 
 static LispObject timesrr(LispObject a, LispObject b)
 // multiply a pair of rational numbers
-{   RealSave save(numerator(a), denominator(a),
-                  numerator(b), denominator(b), nil);
-    LispObject &na = save.val(1);
-    LispObject &da = save.val(2);
-    LispObject &nb = save.val(3);
-    LispObject &db = save.val(4);
-    LispObject &g  = save.val(5);
-    g = gcd(na, db);
+{   LispObject na = numerator(a);
+    LispObject da = denominator(a);
+    LispObject nb = numerator(b);
+    LispObject db = denominator(b);
+    LispObject g  = gcd(na, db);
     errexit();
     na = quot2(na, g);
     errexit();
@@ -1159,17 +1150,13 @@ static LispObject timesrr(LispObject a, LispObject b)
 
 static LispObject timescc(LispObject a, LispObject b)
 // multiply a pair of complex values
-{   RealSave save(real_part(a), imag_part(a),
-                  real_part(b), imag_part(b), nil, nil);
-    LispObject &ra = save.val(1);
-    LispObject &ia = save.val(2);
-    LispObject &rb = save.val(3);
-    LispObject &ib = save.val(4);
-    LispObject &u  = save.val(5);
-    LispObject &v  = save.val(6);
-    u = times2(ra, rb);
+{   LispObject ra = real_part(a);
+    LispObject ia = imag_part(a);
+    LispObject rb = real_part(b);
+    LispObject ib = imag_part(b);
+    LispObject u = times2(ra, rb);
     errexit();
-    v = times2(ia, ib);
+    LispObject v = times2(ia, ib);
     errexit();
     v = negate(v);
     errexit();

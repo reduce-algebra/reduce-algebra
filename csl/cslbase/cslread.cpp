@@ -154,10 +154,8 @@ LispObject copy_string(LispObject str, size_t n)
 {   LispObject r;
     char *s;
     size_t k;
-    Save save(str);
     r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     errexit();
-    save.restore(str);
     s = reinterpret_cast<char *>(r) - TAG_VECTOR;
     std::memcpy(s + CELL,
                 reinterpret_cast<char *>(str) + (CELL-TAG_VECTOR), (size_t)n);
@@ -899,10 +897,8 @@ static LispObject rehash(LispObject v, int grow)
     stackcheck(v);
     STACK_SANITY;
     LispObject new_obvec;
-    {   Save save(v);
-        new_obvec = get_vector_init((h+1)*CELL, fixnum_of_int(0));
+    {   new_obvec = get_vector_init((h+1)*CELL, fixnum_of_int(0));
         errexit();
-        save.restore(v);
     }
     h = cells_in_vector(v);
     while (h != 0)
@@ -928,11 +924,9 @@ static LispObject add_to_externals(LispObject s, LispObject p, uint64_t hash)
 // full - really rather lightly loaded.
     if (static_cast<size_t>(2*int_of_fixnum(n)) > used)
     {   stackcheck(s, p);
-        Save save(s, p);
         v = rehash(v, 1);
 // Hmm - if rehash fails then I might be in a real mess!
         errexit();
-        save.restore(s, p);
         packext_(p) = v;
     }
     packnext_(p) = n + (1<<4);      // increment as a Lisp fixnum
@@ -948,10 +942,8 @@ static LispObject add_to_internals(LispObject s, LispObject p, uint64_t hash)
     size_t used = cells_in_vector(v);
     if (static_cast<size_t>(2*int_of_fixnum(n)) > used)
     {   stackcheck(s, p, v);
-        Save save(s, p);
         v = rehash(v, 1);
         errexit();
-        save.restore(s, p);
         packint_(p) = v;
     }
     packnint_(p) = n + (1<<4);
@@ -1061,17 +1053,13 @@ static int ordersymbol(LispObject v1, LispObject v2)
     size_t l1, l2;
 #ifndef COMMON
     if (qheader(v1) & SYM_UNPRINTED_GENSYM)
-    {   Save save(v2);
-        pn1 = get_pname(v1);
+    {   pn1 = get_pname(v1);
         errexit();
-        save.restore(v2);
         pn2 = qpname(v2);
     }
     if (qheader(v2) & SYM_UNPRINTED_GENSYM)
-    {   Save save(pn1);
-        pn2 = get_pname(v2);
+    {   pn2 = get_pname(v2);
         errexit();
-        save.restore(pn1);
     }
 #endif
     validate_string(pn1);
@@ -1163,12 +1151,10 @@ static int ordpv(LispObject u, LispObject v)
                             (u - TAG_VECTOR + n),
                             ev = *reinterpret_cast<LispObject *>(v - TAG_VECTOR + n);
             int w;
-            Save save(u, v);
             if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                 respond_to_stack_event();
             w = orderp(eu, ev);
             errexit();
-            save.restore(u, v);
             if (w != 0) return w;
             n += CELL;
         }
@@ -1237,13 +1223,11 @@ static int orderp(LispObject u, LispObject v)
         else
         {   LispObject cu = car(u), cv = car(v);
             int w;
-            Save save(u, v);
 //          stackcheck(threadId);
             if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                 respond_to_stack_event();
             w = orderp(cu, cv);
             errexit();
-            save.restore(u, v);
             if (w != 0)
             {   cu = car(u);
                 if (is_symbol(cu) && flagged_noncom(cu))
@@ -1318,10 +1302,8 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     else if (complex_stringp(str)) str = simplify_string(str);
     else if (!is_string_header(vechdr(str))) return aerror1("make-symbol", str);
     LispObject s;
-    {   Save save(str);
-        s = get_symbol(false);
+    {   s = get_symbol(false);
         errexit();
-        save.restore(str);
     }
     setheader(s, TAG_HDR_IMMED+TYPE_SYMBOL);
     setvalue(s, unset_var);
@@ -1361,12 +1343,8 @@ LispObject Lgensym(LispObject env)
         "G%lu", (long unsigned)(uint32_t)gensym_ser++);
     pn = make_string(genname);
     errexit();
-    Save save(pn);
 #endif
     LispObject id = get_symbol(true);
-#ifdef COMMON
-    save.restore(pn);
-#endif
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
     setpname(id, pn);
@@ -1412,10 +1390,8 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     genbase = make_string(genname);
     errexit();
     LispObject id;
-    {   Save save(genbase);
-        id = get_symbol(true);
+    {   id = get_symbol(true);
         errexit();
-        save.restore(genbase);
     }
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
@@ -1466,10 +1442,8 @@ LispObject Lgensym(LispObject env, LispObject a)
     genbase = make_string(genname);
 #endif
     LispObject id;
-    {   Save save(genbase);
-        id = get_symbol(true);
+    {   id = get_symbol(true);
         errexit();
-        save.restore(genbase);
     }
 #ifdef COMMON
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
@@ -1518,10 +1492,8 @@ LispObject Lgensym2(LispObject env, LispObject a)
     genbase = copy_string(genbase, len);
     errexit();
     LispObject id;
-    {   Save save(genbase);
-        id  = get_symbol(true);
+    {   id  = get_symbol(true);
         errexit();
-        save.restore(genbase);
     }
     setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
     setvalue(id, unset_var);
@@ -1590,10 +1562,8 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 // tombstones present.
         if (rehash_pending)
         {   LispObject v = packint_(p);
-            Save save(p, r, str);
             v = rehash(v, 0);
             errexit();
-            save.restore(p, r, str);
             packint_(p) = v;
             rehash_pending = false;
         }
@@ -1606,10 +1576,8 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
     r = lookup(str, h, packext_(p), hash);
     if (rehash_pending)
     {   LispObject v = packext_(p);
-        Save save(p, r, str);
         v = rehash(v, 0);
         errexit();
-        save.restore(p, r, str);
         packext_(p) = v;
         rehash_pending = false;
     }
@@ -1626,10 +1594,8 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         w = lookup(str, h, packext_(w), hash);
         if (rehash_pending)
         {   LispObject v = packext_(p);
-            Save save(p, r, str);
             v = rehash(v, 0);
             errexit();
-            save.restore(p, r, str);
             packext_(p) = v;
             rehash_pending = false;
         }
@@ -1644,7 +1610,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         return nvalues(nil, 2);
     }
     LispObject s;
-    {   Save save(str, p);
+    {
 // Here I was looking up a symbol and it did not exist so I need to
 // create it.
 #ifdef HASH_STATISTICS
@@ -1653,7 +1619,6 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 #endif
         s = get_symbol(false);
         errexit();
-        save.restore(str, p);
     }
     setheader(s, TAG_HDR_IMMED+TYPE_SYMBOL);
 #ifdef COMMON
@@ -1676,7 +1641,6 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
     qfn4up(s) = undefined_4up;
     qcountLow(s) = (symbol_sequence++ & 0x3fffff);
     qcountHigh(s) = 0;
-    Save save(s, str);
 #ifdef COMMON
     if ((p == qvalue(keyword_package) && keyword_package != nil) ||
         str_is_ok == 2)
@@ -1686,14 +1650,10 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
     else
 #endif
         add_to_internals(s, p, hash);
-    save.restore(s, str);
 // Now the symbol-head is safe enough that I can let the GC look at it
     if (str_is_ok != 0) setpname(s, str);
     else
-    {   LispObject pn;
-        Save save1(s);
-        pn = copy_string(str, h);
-        save1.restore(s);
+    {   LispObject pn = copy_string(str, h);
         setpname(s, pn);
     }
     mv_2 = nil;
@@ -1723,10 +1683,8 @@ LispObject Lintern(LispObject env, LispObject str)
     intern_count++;
 #endif
 #ifdef COMMON
-    Save save(str);
     p = Lfind_package(nil, pp);
     errexit();
-    save.restore(str);
 #else
     p = CP;
 #endif
@@ -1736,10 +1694,8 @@ LispObject Lintern(LispObject env, LispObject str)
     if (symbolp(str) && qpackage(str) == p) return str;
 #ifdef COMMON
     if (complex_stringp(str))
-    {   Save save1(p);
-        str = simplify_string(str);
+    {   str = simplify_string(str);
         errexit();
-        save1.restore(p);
     }
 #endif
 // For COMMON it is perhaps undue generosity to permit a symbol here
@@ -1747,10 +1703,8 @@ LispObject Lintern(LispObject env, LispObject str)
 // me in porting existing code.  Note that the Common Lisp book says quite
 // explicitly that symbols are NOT allowed here.
     if (symbolp(str))
-    {   Save save1(p);
-        str = get_pname(str);
+    {   str = get_pname(str);
         errexit();
-        save1.restore(p);
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
         return aerror1("intern (not a string)", str);
@@ -1769,20 +1723,13 @@ static LispObject Lfind_symbol(LispObject env, LispObject str,
 {   SingleValued fn;
     Header h;
     LispObject p;
-    Save save(str);
     p = Lfind_package(nil, pp);
     errexit();
-    save.restore(str);
     if (symbolp(str))
-    {   Save save1(p);
         str = get_pname(str);
-        save1.restore(p);
-    }
     if (complex_stringp(str))
-    {   Save save1(p);
-        str = simplify_string(str);
+    {   str = simplify_string(str);
         errexit();
-        save1.restore(p);
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
     {   return aerror1("find-symbol (not a string)", str);
@@ -3718,7 +3665,7 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
             std::strncmp(tail, "lasf.", 5) == 0 ||
             std::strncmp(tail, "o.", 2) == 0)
         {   if (verbose)
-            {   Save save(file);
+            {
 #ifdef COMMON
                 trace_printf("\n;; Loading module ");
 #else
@@ -3729,12 +3676,9 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
                 errexit();
                 trace_printf("\n");
                 errexit();
-                save.restore(file);
             }
-            {   Save save(file);
-                Lload_module(nil, file);
+            {   Lload_module(nil, file);
                 errexit();
-                save.restore(file);
             }
             if (verbose)
             {
@@ -3754,14 +3698,13 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
             return nil;
 #endif
         }
-        {   Save save(file);
+        {
 #ifdef COMMON
             stream = r = Lopen(nil, file, fixnum_of_int(1+(nofile?64:0)));
 #else
             stream = r = Lopen(nil, file, fixnum_of_int(1+64));
 #endif
             errexit();
-            save.restore(file);
 #ifdef COMMON
 // The test here is necessary since in Common Lisp mode an attempt to OPEN a
 // file that can not be accessed returns NIL rather than raising an
@@ -3772,40 +3715,29 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
             }
 #endif
         }
-        {   Save save(file, stream);
-            oldstream = r = Lrds(nil, r);
-            save.restore(file, stream);
+        {   oldstream = r = Lrds(nil, r);
             if (verbose)
             {   Save save(file, stream, oldstream);
 #ifdef COMMON
-                {   Save save1(file);
-                    trace_printf("\n;; Loading ");
+                {   trace_printf("\n;; Loading ");
                     errexit();
-                    save1.restore(file);
                     prin_to_trace(file);
                     errexit();
                     trace_printf("\n");
                     errexit();
                 }
 #else
-                {   Save save1(file);
-                    trace_printf("\nReading ");
+                {   trace_printf("\nReading ");
                     errexit();
-                    save1.restore(file);
                     prin_to_trace(file);
                     errexit();
                     trace_printf("\n");
                     errexit();
                 }
 #endif
-                save.restore(file, stream, oldstream);
             }
         }
     }
-    RealSave save(file, stream, oldstream);
-    LispObject &file1 = save.val(1);
-    LispObject &stream1 = save.val(2);
-    LispObject &oldstream1 = save.val(3);
     TRY
         read_eval_print(noisy);
     CATCH(LispException)
@@ -3819,13 +3751,13 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 #else
             trace_printf("\nFinished reading ");
 #endif
-            prin_to_trace(file1);
+            prin_to_trace(file);
             trace_printf(" (bad)\n");
             if (stop_on_error) RETHROW;
         }
-        if (file1 != nil)
-        {   ignore_error(Lclose(nil, stream1));
-            Lrds(nil, oldstream1);
+        if (file != nil)
+        {   ignore_error(Lclose(nil, stream));
+            Lrds(nil, oldstream);
         }
         exit_reason = _reason;
         RETHROW;
@@ -3838,11 +3770,11 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         trace_printf("\nFinished reading ");
 #endif
     }
-    prin_to_trace(file1);
+    prin_to_trace(file);
     trace_printf("\n");
-    if (file1 != nil)
-    {   ignore_error(Lclose(nil, stream1));
-        Lrds(nil, oldstream1);
+    if (file != nil)
+    {   ignore_error(Lclose(nil, stream));
+        Lrds(nil, oldstream);
     }
 #ifdef COMMON
     return lisp_true;

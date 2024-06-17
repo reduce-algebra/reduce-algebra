@@ -2146,6 +2146,7 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
     LispObject r;
 // (2) Make a copy of the current Lisp stack as a vector in the ordinary
 //     heap. Also all listbases.
+    LispObject* stackPtr = stack;
     size_t stackSize =
         (stack-reinterpret_cast<LispObject*>(stackBase)+sizeof(LispObject));
     LispObject saveStack =
@@ -2289,6 +2290,7 @@ LispObject sandbox(bool fg, LispObject a, LispObject b)
 // (10)Restore the Lisp stack.  Read the final result from the string data.
     for (size_t i=0; i<stackSize/sizeof(LispObject); i++)
         reinterpret_cast<LispObject*>(stackBase)[i] = elt(saveStack, i);
+    stack = stackPtr;
     i = 0;
     for (LispObject* p : list_bases)
         *p = elt(saveListbases, i++);
