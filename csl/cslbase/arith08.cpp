@@ -1085,11 +1085,9 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 
 static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 {   LispObject w, w1;
-    RealSave save(numerator(a), denominator(a), nil);
-    LispObject &p = save.val(1);
-    LispObject &q = save.val(2);  // note that q will always be positive!
-    LispObject &r = save.val(3);
-    r = quot2(p, q);
+    LispObject p = numerator(a);
+    LispObject q = denominator(a); // note that q will always be positive!
+    LispObject r = quot2(p, q);
     errexit();
     p = Cremainder(p, q);
     errexit();
@@ -1104,10 +1102,8 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // those edge cases I need to think even harder!
             w = times2(p, fixnum_of_int(2));
             errexit();
-            {   Save save1(w);
-                w1 = negate(w);
+            {   w1 = negate(w);
                 errexit();
-                save.restore(w);
             }
             if (greaterp2(w, q) ||
                 (numeq2(w, q) && Loddp(nil, r)!=nil))
@@ -1175,29 +1171,24 @@ static LispObject Lround(LispObject env, LispObject a)
 // floating point values a and b it computes fix(a/b) and the residue
 // returned as a second value is b times the residue in that fix operation.
 
-LispObject lisp_ifix(LispObject aa, LispObject bb, int roundmode)
+LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 {   LispObject r2, negb;
-    if (is_float(aa) || is_float(bb))
-    {   Save save(bb);
-        aa = quot2(aa, bb);
+    if (is_float(a) || is_float(b))
+    {   Save save(b);
+        a = quot2(a, b);
         errexit();
 // If either argument was floating point then the quotient will be.
-        LispObject r = lisp_fix(aa, roundmode);
-        save.restore(bb);
+        LispObject r = lisp_fix(a, roundmode);
+        save.restore(b);
         Save save1(r);
-        mv_2 = times2(mv_2, bb);
+        mv_2 = times2(mv_2, b);
         errexit();
         save1.restore(r);
         return nvalues(r, 2);
     }
-    RealSave save(aa, bb, nil, nil);
-    LispObject &a = save.val(1);
-    LispObject &b = save.val(2);
-    LispObject &r = save.val(3);
-    LispObject &q = save.val(4);
-    q = quot2(a, b);
+    LispObject q = quot2(a, b);
     errexit();
-    r = Cremainder(a, b);
+    LispObject r = Cremainder(a, b);
     errexit();
     switch (roundmode)
     {   case FIX_TRUNCATE:

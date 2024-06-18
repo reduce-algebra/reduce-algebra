@@ -406,7 +406,7 @@ LispObject interrupted()
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
     {   term_printf("\n");
         ensure_screen();
-        RealSave save(prompt_thing);
+        LispObject savePrompt = prompt_thing;
         prompt_thing = nil;  // switch off the regular prompts
         save_prompt = fwin_prompt_string;
 // Well I will want this to run a break-loop, but doing what I once did will
@@ -421,7 +421,7 @@ LispObject interrupted()
 // to send the interrupt! This is in fact a slightly marginal assumption.
             switch (c)
             {   case 'c': case 'C':         // proceed as if no interrupt
-                    save.restore(prompt_thing);
+                    prompt_thing = savePrompt;
                     fwin_set_prompt(save_prompt);
                     return nil;
                 case 'a': case 'A':         // raise an exception
@@ -438,7 +438,7 @@ LispObject interrupted()
             }
             break;
         }
-        save.restore(prompt_thing);
+        prompt_thing = savePrompt;
         fwin_set_prompt(save_prompt);
     }
 // Now for the common code to be used in all cases.

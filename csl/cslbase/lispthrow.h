@@ -48,29 +48,21 @@ extern uintptr_t C_stackLimit;
 
 // There is a "Lisp Stack" which is separate from the C++ stack. It has
 // a number of uses:
-// (1) Prior to the conservative GC all references to heap data must be
-//     somewhere "safe" whenever a GC could happen. This is achieved by
-//     going { Save save(x); <dangerous operations>; save.restore(x); }
-//     in many places.
-//     This keeps the identification of heap pointers "precise".
-// (2) The bytecode interpreter is a variety of stack-based computer with
+// (1) The bytecode interpreter is a variety of stack-based computer with
 //     two accumulators (A and B). It works by pushing and popping items
 //     on the stack and accessing some relative to the stack top. In the
 //     case of deep recursion this naturally lead to a substantial amount
 //     of stuff ending up on the Lisp stack.
+// (2) When the bytecode interpreter sets up a fluid binding it has to
+//     save the old value of a variable for later restoration - but what
+//     is tougher is that it must arrange that if THROW or and error
+//     unwinds then the restoration happens. It achieves that by putting
+//     not just the saved value on the Lisp stack but also a marker that
+//     unambiguously docments what it is. 
 // (3) Some parts of the interpreter and the implementation of some special
 //     forms used the Lisp stack either to marshall data where it is not
 //     known in advance how much will be present or to keep precise pointers
-//     to a significant number of values.
-// When a conservative collector is in use case (1) above becomes an out of
-// date constraint (that adds a level of inefficiency) and come cases of (3)
-// could be reworked to have tidier code when there is no need for precise
-// pointers. By and large (2) will remain. The code should now use RealSave
-// in those cases where push and pop must use the Lisp stack and Save
-// when the transfer is only needed for precision. So in the conservative
-// case Save can represent a no-op while RealSave does something.
-// If at some stage the precice GC is totally removed then all calls to
-// just Save can be discarded.
+//     to a significant number of values. 
 //
 // RealSave ALWAYS transfers values to the stack, so within the code indicated
 // by the "..." you can access them via stack[-n], but use of save.val() is
@@ -339,10 +331,91 @@ public:
     }
 };
 
-// With a conservative GC I will want real_push and real_pop to exist and
+// Now I have a scheme that lets me allocate a vector of dynamic size
+// on the regular C++ stack. The version I have here will support
+// vectors of up to size 78 but no more! The usage is something like
+//    result = withVec(size, [&](LispObject* vec){... return res;});
+// so now let me review the alternatives to this somewhat odd and limited
+// scheme:
+// (1)    LispObject vec[n]; This is a variable length array. The
+//                           syntax and behaviour is mandated for C99
+//                           but not C++, although both g++ and clang++
+//                           support it. But it is not standard!
+// (2)    LispObject* vec = alloca(n*sizeof(LispObject));
+//                           Also widely supported but again not standard!
+// (3)    std::vector<LispObject> vec(n);
+//                           Standard C++, but (a) for real hot-spot
+//                           locations in code it will be heavyweight and
+//                           (b) [much more severe for me] my garbage
+//                           collector will not know where the memory that
+//                           is that vector is, and so will probably end
+//                           up corrupting the Lisp heap.
+// (4)    A custom class that behaves somewhat like std::vector but
+//        that allocates on ths Lisp heap.
+//                           Probably even worse than what follows here!
+// (5)    This code.         Who has any idea what overheads std::function
+//                           may introduce? Limited size of vector. But
+//                           this should be portable and meet official
+//                           standards!
+
+// I will probably use variable length arrays when they are available so
+// that this "fun" is just a fall-back for uncommonly used C++ compilers.
+
+#include <functional>
+
+template <std::size_t N>
+inline LispObject withVecT(std::function<LispObject(LispObject*)>& f)
+{   LispObject v[N];    // Allocate the "dynamically" sized vector.
+    return f(&v[0]);
+}
+
+template <std::size_t p, std::size_t q>
+inline LispObject withVecS(
+    std::size_t n, std::function<LispObject(LispObject*)>& f)
+{
+// This table controls the sizes of vectors actually allocated. My choices
+// at this stage have been that I will always allocate at least 4 units
+// and I want less overshoot on smaller vectors. The scheme here can allocate
+// a vector of length up to 78. If I find that I need larger cases I can
+// just adjust the table here to give a different trade-off between wasted
+// space and maximum size. Or I could increase the table size and use
+// more code space and an extra test each time through... It is all very
+// flexible!
+    static constexpr std::size_t vecSizes[] =
+    {   4,  6,  8, 10, 12, 14, 16, 19,
+       21, 25, 30, 36, 44, 54, 66, 78
+    };
+// Use binary search to identify the particular instantiation of the
+// templated code that I want. Detect the case where I risk going beyond
+// the maximum supported size and abort on failure.
+    if constexpr (p==q)
+    {   if constexpr (p==(sizeof(vecSizes)/sizeof(vecSizes[0]))-1)
+        {   if (n > vecSizes[p]) std::abort();
+        }
+        return withVecT<vecSizes[p]>(f);
+    }
+    constexpr std::size_t m = (p+q)/2;
+    if (n <= vecSizes[m]) return withVecS<p,m>(n, f);
+    else return withVecS<m+1,q>(n,f);
+}
+
+inline LispObject
+    withVec(std::size_t n, std::function<LispObject(LispObject*)> f)
+{
+// The number 15 on the next line is (one less than) the size of the
+// table of vector-sizes to be used.
+    return withVecS<0, 15>(n, f);
+}
+
+// Even with a conservative GC I will want RealSave to exist and to
 // move things to and from a dedicated Lisp stack (eg as part of the way
 // I handle some special forms or functions with huge numbers of arguments)
-// but case where it used to be push/pop can replace those with no-operation.
+// but the simpler Save class turns into no-ops until I have removed all
+// reference to it.
+
+// Note that as of mid June 2024 there are still over 600 uses of Save in
+// the code. Each one renders that fragment uglier, but removing them all
+// will take some while.
 
 class Save
 {

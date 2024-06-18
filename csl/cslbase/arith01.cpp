@@ -1890,14 +1890,11 @@ inline LispObject plus_r_b(LispObject a1, LispObject a2)
 // lowest terms.
 
 inline LispObject plus_r_r(LispObject a1, LispObject a2)
-{   RealSave save(numerator(a1), numerator(a2),
-                  denominator(a1), denominator(a2), nil);
-    LispObject &na = save.val(1);
-    LispObject &nb = save.val(2);
-    LispObject &da = save.val(3);
-    LispObject &db = save.val(4);
-    LispObject &g  = save.val(5);
-    g = gcd(da, db);
+{   LispObject na = numerator(a1);
+    LispObject nb = numerator(a2);
+    LispObject da = denominator(a1);
+    LispObject db = denominator(a2);
+    LispObject g  = gcd(da, db);
 // All the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
     db = quot2(db, g);
