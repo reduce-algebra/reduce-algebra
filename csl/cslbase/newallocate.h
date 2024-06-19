@@ -505,10 +505,12 @@ public:
     bool isEmpty()
     {   return head == nullptr;
     }
-// Assignment here copies data from the source but leaves both PageLists
-// containing data. This should only be used from the sandbox code!
-    PageList& operator=(PageList a)
+    PageList& operator=(PageList& a)
     {   head = a.head;     a.head = nullptr;
+        return *this;
+    }
+    PageList& copy(PageList a)
+    {   head = a.head;
         return *this;
     }
 // The "+=" operator drains pages from the source and transfers them

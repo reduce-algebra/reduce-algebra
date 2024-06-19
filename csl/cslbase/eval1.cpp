@@ -1928,15 +1928,15 @@ uintptr_t sandboxBorrowFringe, sandboxBorrowLimit, sandboxBorrowEnd;
 void saveStatics()
 {
 // Note that I do not save and restore emptyPages.
-    sandboxConsPinPages     = consPinPages;
-    sandboxVecPinPages      = vecPinPages;
-    sandboxConsCloggedPages = consCloggedPages;
-    sandboxVecCloggedPages  = vecCloggedPages;
-    sandboxConsPages        = consPages;
-    sandboxVecPages         = vecPages;
-    sandboxBorrowPages      = borrowPages;
-    sandboxConsOldPages     = consOldPages;
-    sandboxVecOldPages      = vecOldPages;
+    sandboxConsPinPages     .copy(consPinPages);
+    sandboxVecPinPages      .copy(vecPinPages);
+    sandboxConsCloggedPages .copy(consCloggedPages);
+    sandboxVecCloggedPages  .copy(vecCloggedPages);
+    sandboxConsPages        .copy(consPages);
+    sandboxVecPages         .copy(vecPages);
+    sandboxBorrowPages      .copy(borrowPages);
+    sandboxConsOldPages     .copy(consOldPages);
+    sandboxVecOldPages      .copy(vecOldPages);
 
     sandboxConsCurrent    = consCurrent;
     sandboxVecCurrent     = vecCurrent;
@@ -1961,15 +1961,15 @@ void saveStatics()
 }
 
 void restoreStatics()
-{   consPinPages     = sandboxConsPinPages;
-    vecPinPages      = sandboxVecPinPages;
-    consCloggedPages = sandboxConsCloggedPages;
-    vecCloggedPages  = sandboxVecCloggedPages;
-    consPages        = sandboxConsPages;
-    vecPages         = sandboxVecPages;
-    borrowPages      = sandboxBorrowPages;
-    consOldPages     = sandboxConsOldPages;
-    vecOldPages      = sandboxVecOldPages;
+{   consPinPages     .copy(sandboxConsPinPages);
+    vecPinPages      .copy(sandboxVecPinPages);
+    consCloggedPages .copy(sandboxConsCloggedPages);
+    vecCloggedPages  .copy(sandboxVecCloggedPages);
+    consPages        .copy(sandboxConsPages);
+    vecPages         .copy(sandboxVecPages);
+    borrowPages      .copy(sandboxBorrowPages);
+    consOldPages     .copy(sandboxConsOldPages);
+    vecOldPages      .copy(sandboxVecOldPages);
 
     consCurrent   = sandboxConsCurrent;
     vecCurrent    = sandboxVecCurrent;
