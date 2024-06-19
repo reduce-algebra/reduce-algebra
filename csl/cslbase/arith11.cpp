@@ -342,10 +342,8 @@ LispObject Cremainder(LispObject a, LispObject b)
 
 static LispObject mod_by_rem(LispObject a, LispObject b)
 {   bool sb = minusp(b);
-    {   Save save(b);
-        a = Cremainder(a, b);   // Repeats dispatch on argument type. Sorry
+    {   a = Cremainder(a, b);   // Repeats dispatch on argument type. Sorry
         errexit();
-        save.restore(b);
     }
     if (sb)
     {   if (plusp(a)) a = plus2(a, b);

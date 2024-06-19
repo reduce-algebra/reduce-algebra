@@ -3328,19 +3328,16 @@ bool setup_codepointers = false;
 LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
 #ifdef DEBUG_FASL
-    Save save(a, b);
     trace_printf("FASLOUT: ");
     errexit();
     loop_print_trace(a);
     errexit();
     trace_printf("\n");
     errexit();
-    save.restore(a, b);
     loop_print_trace(b);
     errexit();
     trace_printf("\n");
     errexit();
-    save.restore(a, b);
 #endif // DEBUG_FASL
     if (!setup_codepointers)
     {   set_up_function_tables();
@@ -3572,7 +3569,7 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                 w = get(name, load_selected_source_symbol, nil);
                 if (w == nil) getsavedef = false;
                 else if (integerp(w) != nil && consp(def))
-                {   Save save1(name, file, r, def);
+                {
 // The md60 function is called on something like (fname (args...) body...)
                     LispObject def1 = cons(name, cdr(def));
                     errexit();
@@ -3583,12 +3580,10 @@ static LispObject load_module(LispObject env, LispObject file, int option)
 #else // ARITHLIB
                     if (!numeq2(w, w1)) getsavedef = false;
 #endif // ARITHLIB
-                    save1.restore(name, file, r, def);
                 }
             }
             if (getsavedef)
-            {   {   Save save1(name, file, r);
-                    if (name == nil)
+            {   {   if (name == nil)
                     {   LispObject p1 = cdr(p);
                         LispObject n1 = car(p1);
                         LispObject t1 = car(p1 = cdr(p1));
@@ -3596,14 +3591,10 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                         putprop(n1, t1, v1);
                     }
                     else
-                    {   Save save2(def);
-                        putprop(name, savedef_symbol, def);
+                    {   putprop(name, savedef_symbol, def);
                         errexit();
-                        save1.restore(name, file, r);
-                        save2.restore(def);
                         check_no_gensyms(def);
                         LispObject n = Lmd60(nil, def);
-                        save2.restore(def);
 // If RECORD_GET is defined than get() can call puthash to note its use, and
 // in extreme case that can force hash table expansion and through that
 // garbage collection. I will take a view here that RECORD_GET is not
@@ -3612,34 +3603,26 @@ static LispObject load_module(LispObject env, LispObject file, int option)
 // Only insert it on the property if it is not already present.
                         if (Lassoc(nil, n, old) == nil)
                         {   def = acons(n, def, old);
-                            save1.restore(name, file, r);
                             errexit();
                             putprop(name, savedefs_symbol, def);
                             errexit();
-                            save1.restore(name, file, r);
                         }
                     }
                 }
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
-                Save save2(name, r);
                 file = cons(name, file);
                 errexit();
-                save2.restore(name, r);
             }
 // Now set up the load_source property on the function name to indicate the
 // module it was found in.
             LispObject w;
             w = get(name, load_source_symbol, nil);
-            {   Save save(name, file, r);
-                w = cons(current_module, w);
+            {   w = cons(current_module, w);
                 errexit();
-                save.restore(name, file, r);
             }
-            Save save(name, file, r);
             putprop(name, load_source_symbol, w);
             errexit();
-            save.restore(name, file, r);
         }
     }
     if (option == F_LOAD_MODULE) return nil;
@@ -3664,19 +3647,15 @@ LispObject load_source0(int option)
     LispObject mods = nil;
     for (LispObject l = qvalue(input_libraries); is_cons(l); l = cdr(l))
     {   LispObject m;
-        {   Save save(mods, l);
-            m = Llibrary_members(nil, car(l));
+        {   m = Llibrary_members(nil, car(l));
             errexit();
-            save.restore(mods, l);
         }
         while (is_cons(m))
         {   LispObject m1 = car(m);
             m = cdr(m);
             if (Lmemq(nil, m1, mods) != nil) continue;
-            Save save(l, m);
             mods = cons(m1, mods);
             errexit();
-            save.restore(l, m);
         }
     }
 // Now I will do load-source or load-selected-source on each module, and
@@ -3686,12 +3665,9 @@ LispObject load_source0(int option)
     while (is_cons(mods))
     {   LispObject m = car(mods), w;
         mods = cdr(mods);
-        {   Save save(r, mods);
-            w = load_module(nil, m, option);
+        {   w = load_module(nil, m, option);
             errexit();
-            save.restore(r, mods);
         }
-        Save save(mods);
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
 // the final result list from load!-source() ends up of length about
@@ -3700,7 +3676,6 @@ LispObject load_source0(int option)
 // slows things down.
         r = Lunion_symlist(nil, r, w);
         errexit();
-        save.restore(mods);
     }
     return r;
 }
@@ -4457,14 +4432,11 @@ LispObject Lmapstore(LispObject env, LispObject a)
                     if (what == 2 || what == 3)
                     {   LispObject w1;
 // Result is a list of items ((name size bytes-executed) ...).
-                        Save save(r, x);
                         w1 = make_lisp_unsigned64(n);
                         errexit();
-                        save.restore(r, x);
                         x = basic_elt(cdr(qenv(x)), 0);
                         w1 = list3(x, fixnum_of_int(clen), w1);
                         errexit();
-                        save.restore(r, x);
                         r = cons(w1, r);
                         errexit();
                     }

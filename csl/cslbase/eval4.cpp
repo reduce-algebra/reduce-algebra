@@ -317,22 +317,16 @@ static LispObject byteopt(LispObject def, LispObject a1,
     if (nargs < wantargs+wantopts)
     {   a4up = nreverse(a4up);
         while (nargs < wantargs+wantopts)
-        {   Save save(def);
-// Note that defaultval will be either nil or SPID_NOARG and neither
-// of those change address during garbage collection, so I do not need to
-// take special action to save the value.
-            a4up = cons(defaultval, a4up);
-            save.restore(def);
+        {   a4up = cons(defaultval, a4up);
             errexit();
             nargs++;
         }
         if (restp)
-        {   Save save(def, a4up);
+        {
 // On this path the number of actual arguments could not even supply all
 // &OPTIONAL args, and so the &RESR value will definitely be nil. So stick
 // a NIL on the end.
             a1 = ncons(nil);
-            save.restore(def, a4up);
             errexit();
             a4up = nreverse2(a4up, a1);
             nargs++; // allow for the &REST arg.
@@ -348,16 +342,12 @@ static LispObject byteopt(LispObject def, LispObject a1,
 // length. So I can pick off nargs-(wantargs+optargs) items to make
 // a &REST argument...
         while (nargs > wantargs+wantopts)
-        {   Save save(def, a4up);
-            ra = cons(car(a4up), ra);
-            save.restore(def, a4up);
+        {   ra = cons(car(a4up), ra);
             a4up = cdr(a4up);
             errexit();
         }
 // Here I have (eg) a4up = (a3 a2 a1) and ra = (a4 a5 ...).
-        {   Save save(def, a4up);
-            a4up = ncons(ra);
-            save.restore(def, ra);
+        {   a4up = ncons(ra);
             errexit();
         }
 // Make a final extra argument out of the list, and then reverse the rest

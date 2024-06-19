@@ -197,8 +197,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         default:
             break;  // general big case
     }
-    {   Save save(u);
-        len1 = CELL+4+(11*len)/10;
+    {   len1 = CELL+4+(11*len)/10;
 //
 // To print a general big number I will convert it from radix 2^31 to
 // radix 10^9.  This can involve increasing the number of digits by a factor
@@ -207,7 +206,6 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 //
         len1 = (size_t)doubleword_align_up((uintptr_t)len1);
         w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len1);
-        save.restore(u);
     }
     bool sign = false;
     size_t len2;
@@ -242,8 +240,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         if (bignum_digits(w)[len-1] == 0) len--;
         bignum_digits(w)[--len2] = carry; // 9 digits in decimal format
     }
-    {   Save save(w);
-        uint32_t dig;
+    {   uint32_t dig;
         int i;
         size_t len;
         if (bignum_digits(w)[0] == 0) dig = bignum_digits(w)[len2++];
@@ -266,19 +263,16 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         else if (nobreak==0 && column != 0 && column+len > line_length)
             putc_stream('\n', active_stream);
         while (--i >= 0) putc_stream(my_buff[i], active_stream);
-        save.restore(w);
     }
     while (len2 < len1)
     {   uint32_t dig = bignum_digits(w)[len2++];
         int i;
-        Save save(w);
         for (i=8; i>=0; i--)
         {   int32_t nxt = dig % 10;
             dig = dig / 10;
             my_buff[i] = static_cast<char>(nxt + '0');
         }
         for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
-        save.restore(w);
         if ((uintptr_t)stack >=
             ((uintptr_t)stackLimit | event_flag))
             respond_to_stack_event();
@@ -381,7 +375,6 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // extra leading digit so as to make up to an integral multiple of 3 or 4
 // bits in all when I am printing base 8 or 16.  The variable (len) now tells
 // me how many digits remain to be printed.
-    Save save(u);
     if ((int32_t)bignum_digits(u)[n] < 0)
     {   sign = true;
         len+=2;    // Allow extra length for sign marker and initial f/7/1
@@ -412,8 +405,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
             bits -= 1;
         }
         if (bits < 0)     // there had not been enough buffered bits
-        {   save.restore(u);
-            b = bignum_digits(u)[n] << 1;
+        {   b = bignum_digits(u)[n] << 1;
             n--;
             a |= b >> (32+bits);
             b = b << (-bits);

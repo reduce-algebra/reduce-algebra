@@ -145,10 +145,8 @@ static LispObject timesib(LispObject a, LispObject b)
     else if (aa == 1) return b;
     else if (aa == -1) return negateb(b);
     lenb = bignum_length(b);
-    {   Save save(b);
-        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
+    {   c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
         errexit();
-        save.restore(b);
     }
     lenb = (lenb-CELL)/4;
     if (aa < 0)
@@ -222,10 +220,8 @@ extend_by_one_word:
         return c;
     }
 // Need to allocate more space to grow into. I need to grow by just 4 bytes.
-    {   Save save(c);
-        a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
+    {   a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
         errexit();
-        save.restore(c);
     }
     for (i=0; i<lenb; i++)
         bignum_digits(a)[i] = vbignum_digits(c)[i];
@@ -908,7 +904,6 @@ static LispObject timesbb(LispObject a, LispObject b)
 // however this makes life simpler there for me!
     if (((int32_t)bignum_digits(a)[lena-1]) < 0)
     {   sign = -sign;
-        Save save(b);
 // Negating a negative bignum can sometimes mean that it will
 // have to get longer (because of the twos complement assymmetry),
 // but can never cause it to shrink,  In particular it can never lead
@@ -917,16 +912,13 @@ static LispObject timesbb(LispObject a, LispObject b)
 // negate allocates more memory is ugly here.
         a = negateb(a);
         errexit();
-        save.restore(b);
         lena = (bignum_length(a) - CELL)/4;
     }
     if (((int32_t)bignum_digits(b)[lenb-1]) < 0)
     {   sign = -sign;
-        Save save(a);
         // see above comments about negateb
         b = negateb(b);
         errexit();
-        save.restore(a);
         lenb = (bignum_length(b) - CELL)/4;
     }
     if (lenb < lena)    // Commute so that b is at least as long as a
@@ -937,7 +929,7 @@ static LispObject timesbb(LispObject a, LispObject b)
         lena = lenb;
         lenb = lenc;
     }
-    {   Save save(a, b);
+    {
 // For very big numbers I have two special actions called for here.  First
 // I must round up the size of the result vector to have a big enough power
 // of two as a factor so that (recursive) splitting in two does not cause
@@ -970,11 +962,10 @@ static LispObject timesbb(LispObject a, LispObject b)
 // but it should not cause clutter when not used.
             if (multiplication_buffer == nil ||
                 (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
-            {   Save save(c);
+            {
                 multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
                 errexit();
-                save.restore(c);
             }
             lenc = 2*lenc;
         }
@@ -986,14 +977,11 @@ static LispObject timesbb(LispObject a, LispObject b)
             c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
             errexit();
             if (multiplication_buffer == nil)
-            {   Save save(c);
-                multiplication_buffer =
+            {   multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
                 errexit();
-                save.restore(c);
             }
         }
-        save.restore(a, b);
     }
     d = multiplication_buffer;
     {   uint32_t *da = (uint32_t *)&bignum_digits(a)[0],
