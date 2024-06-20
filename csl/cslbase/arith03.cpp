@@ -101,17 +101,12 @@ static LispObject quotib(LispObject a, LispObject b)
 }
 
 static LispObject CLquotib(LispObject a, LispObject b)
-{   bool w;
-    RealSave save(a, b, nil);
-    LispObject &aa = save.val(1);
-    LispObject &bb = save.val(2);
-    LispObject &g = save.val(3);
-    w = minusp(b);
-    g = gcd(bb, aa);
+{   bool w = minusp(b);
+    LispObject g = gcd(b, a);
     if (w) g = negate(g);
-    aa = quot2(aa, g);
-    bb = quot2(bb, g);
-    return make_ratio(aa, bb);
+    a = quot2(a, g);
+    b = quot2(b, g);
+    return make_ratio(a, b);
 }
 
 // Remember that in Common Lisp there is a tendancy for QUOTIENT to
@@ -129,18 +124,14 @@ static LispObject quotir(LispObject a, LispObject b)
 {   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
-    RealSave save(a, b, nil);
-    LispObject &aa = save.val(1);
-    LispObject &bb = save.val(2);
-    LispObject &gg = save.val(3);
-    gg = gcd(aa, numerator(bb));
+    LispObject g = gcd(a, numerator(b));
 // the gcd() function guarantees to hand back a positive result.
-    aa = quot2(aa, gg);
-    w = minusp(numerator(bb));
-    if (w) gg = negate(gg);
-    gg = quot2(numerator(bb), gg);     // denominator of result will be +ve
-    aa = times2(aa, denominator(bb));
-    return make_ratio(aa, gg);
+    a = quot2(a, g);
+    w = minusp(numerator(b));
+    if (w) g = negate(g);
+    g = quot2(numerator(b), g);     // denominator of result will be +ve
+    a = times2(a, denominator(b));
+    return make_ratio(a, g);
 }
 
 static LispObject quotic(LispObject a, LispObject b)
@@ -151,21 +142,18 @@ static LispObject quotic(LispObject a, LispObject b)
 // the moment I will ignore that miserable fact
 {   LispObject u, v;
     mv_2 = fixnum_of_int(0);
-    RealSave save(a, b);
-    LispObject &aa = save.val(1);
-    LispObject &bb = save.val(2);
 //   a / (p + iq) is computed as follows:
 //     (a * (p - iq)) / (p^2 + q^2)
-    u = negate(imag_part(bb));
-    u = make_complex(real_part(bb), u);
-    aa = times2(aa, u);
-    u = real_part(bb);
+    u = negate(imag_part(b));
+    u = make_complex(real_part(b), u);
+    a = times2(a, u);
+    u = real_part(b);
     u = times2(u, u);
-    v = imag_part(bb);
-    bb = u;
+    v = imag_part(b);
+    b = u;
     u = times2(v, v);
-    u = plus2(u, bb);
-    return quot2(aa, u);
+    u = plus2(u, b);
+    return quot2(a, u);
 }
 
 static LispObject quotif(LispObject a, LispObject b)
@@ -645,27 +633,21 @@ inline int make_positive_and_copy(LispObject &a, size_t &lena,
 // in the working variables... And I will leave myself a few bytes in hand.
     while (bignum_length(a)+16 >= bignum_length(big_dividend))
     {   size_t newlen = 2*bignum_length(big_dividend);
-        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        save.restore(a, b);
         big_dividend = w;
     }
     while (bignum_length(b)+16 >= bignum_length(big_divisor))
     {   size_t newlen = 2*bignum_length(big_divisor);
-        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        save.restore(a, b);
         big_divisor = w;
     }
     while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(
                big_quotient))
     {   size_t newlen = 2*bignum_length(big_quotient);
-        Save save(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
         LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
-        save.restore(a, b);
         big_quotient = w;
     }
     int sign = 0;
@@ -848,10 +830,7 @@ inline LispObject pack_up_result(LispObject a, size_t lena)
     {   int64_t r = ASL(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
-    Save save(a);
-    LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM,
-                                    CELL+4*lena+4);
-    save.restore(a);
+    LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
     for (size_t i=0; i<=lena; i++)
         bignum_digits(r)[i] = vbignum_digits(a)[i];
@@ -895,9 +874,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
             nn = (int32_t)((uint32_t)nn | 0x80000000U);
         LispObject q = quotbn(a, nn);
         if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
-        {   Save save(q);
-            a = make_lisp_integer32(nwork);
-            save.restore(q);
+        {   a = make_lisp_integer32(nwork);
             mv_2 = a;
         }
         return q;
@@ -978,22 +955,16 @@ static LispObject quotbf(LispObject a, LispObject b)
 }
 
 static LispObject quotri(LispObject a, LispObject b)
-{   LispObject w;
-    mv_2 = fixnum_of_int(0);
+{   mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
-    RealSave save(a, b, nil);
-    LispObject &aa = save.val(1);
-    LispObject &bb = save.val(2);
-    LispObject &gg = save.val(3);
-    gg = gcd(bb, numerator(aa));
-    w = minusp(bb);
-    if (w) gg = negate(gg);      // ensure denominator is +ve
-    bb = quot2(bb, gg);
-    gg = quot2(numerator(aa), gg);
-    aa = times2(bb, denominator(aa));
-    return make_ratio(gg, aa);
+    LispObject g = gcd(b, numerator(a));
+    if (minusp(b)) g = negate(g);      // ensure denominator is +ve
+    b = quot2(b, g);
+    g = quot2(numerator(a), g);
+    a = times2(b, denominator(a));
+    return make_ratio(g, a);
 }
 
 static LispObject quotrs(LispObject a, LispObject b)
@@ -1004,19 +975,13 @@ static LispObject quotrs(LispObject a, LispObject b)
 }
 
 static LispObject quotrr(LispObject a, LispObject b)
-{   LispObject w;
-    mv_2 = fixnum_of_int(0);
-    RealSave save(numerator(a), denominator(a),
-                  numerator(b), denominator(b),
-                  nil);
-    LispObject &na = save.val(1);
-    LispObject &da = save.val(2);
-    LispObject &nb = save.val(3);
-    LispObject &db = save.val(4);
-    LispObject &g  = save.val(5);
-    g = gcd(na, db);
-    w = minusp(db);
-    if (w) g = negate(g);
+{   mv_2 = fixnum_of_int(0);
+    LispObject na = numerator(a);
+    LispObject da = denominator(a);
+    LispObject nb = numerator(b);
+    LispObject db = denominator(b);
+    LispObject g = gcd(na, db);
+    if (minusp(db)) g = negate(g);
     na = quot2(na, g);
     db = quot2(db, g);
     g = gcd(nb, da);
@@ -1043,12 +1008,8 @@ static LispObject quotrf(LispObject a, LispObject b)
 static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a);
     mv_2 = fixnum_of_int(0);
-    Save save(b, r);
     i = quot2(i, b);
-    save.restore(b, r);
-    Save save1(i);
     r = quot2(r, b);
-    save1.restore(i);
     return make_complex(r, i);
 }
 

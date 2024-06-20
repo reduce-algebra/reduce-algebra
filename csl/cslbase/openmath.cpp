@@ -390,7 +390,6 @@ LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, Li
     OMdev dev;
     int32_t len = 0;
     LispObject lispDev;
-    Save save(threadId, lname, lmode, lenc);
 
     // Convert the parameters into their C equivalents.
     if (!is_vector(lname) ||
@@ -410,8 +409,6 @@ LispObject om_openFileDev(LispObject env, LispObject lname, LispObject lmode, Li
     // This gets OMencodingTypes as an integer then casts it to OMencodingType.
     //   * That may be a bit dodgy...
     fenc = om_toEncodingType(lenc);
-
-    save.restore(lname, lmode, lenc);
 
     f = std::fopen(fname, fmode);
     if (f == nullptr)
@@ -444,10 +441,8 @@ LispObject om_openStringDev(LispObject env, LispObject lstr,
     OMencodingType enc;
     OMdev dev;
 
-    Save save(threadId, lenc);
     pstr = om_toCString(lstr);
     errexit();
-    save.restore(lenc);
 
     enc = om_toEncodingType(lenc);
     errexit();
@@ -473,8 +468,6 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
 {   OMdev dev;
     OMencodingType enc;
 
-    Save save(threadId, lenc);
-
     dev = om_toDev(ldev);
     errexit();
     if (!dev)
@@ -484,7 +477,6 @@ LispObject om_setDevEncoding(LispObject env, LispObject ldev,
         return aerror("om_setDevEncoding: invalid encoding");
     // This gets OMencodingTypes as an integer then casts it to OMencodingType.
    //   * That may be a bit dodgy...
-    save.restore(ldev);
     enc = om_toEncodingType(lenc);
 
     OMsetDeviceEncoding(dev, enc);
@@ -574,14 +566,13 @@ LispObject om_connectTCP(LispObject env, LispObject lconn,
     if (!is_fixnum(lport))
         return aerror("om_connectTCP: port number must be a fixnum");
  
-    {   Save save(threadId, lhost);
+    {
 
     // Convert the parameters into their C equivalents.
         conn = om_toConn(lconn);
         errexit();
         if (!conn)
             return aerror("om_toConn");
-        save.restore(lhost);
     }
     if (!stringp(lhost))
         return aerror("om_connectTCP: host name must be a string");
@@ -1040,24 +1031,20 @@ LispObject om_putSymbol2(LispObject env,
     // err_printf("[om_putSymbol2] about to convert params to C equivalents...\n");
 
     // Convert the parameters into their C equivalents.
-    {   Save save(threadId, lcd, lname);
-        dev = om_toDev(ldev);
+    {   dev = om_toDev(ldev);
         errexit();
         if (!dev)
             return aerror("om_toDev");
-        save.restore(lcd, lname);
     }
 
     if (!is_vector(lcd) || !(type_of_header(vechdr(lcd)) == TYPE_STRING))
         return aerror("om_putSymbol2");
-    Save save(threadId, lname);
     cd = get_string_data(lcd, "om_putSymbol2", cdLen);
     errexit();
     if (cd == nullptr)
     {   status = OMinternalError;
         return om_error(status);
     }
-    save.restore(lname);
 
     // err_printf("[om_putSymbol2] converted cd name (%s)\n", cd);
 
@@ -1490,9 +1477,7 @@ LispObject om_getSymbol(LispObject env, LispObject ldev)
     else
     {   cdstr = make_string(cd);
         errexit();
-        Save save(threadId, cdstr);
         namestr = make_string(name);
-        errexit();
         errexit();
         obj = list2(cdstr, namestr);
     }

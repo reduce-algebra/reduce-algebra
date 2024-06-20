@@ -464,20 +464,16 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = Logand::op(a1, a2);
             break;
         case boole_andc2:
-            {   Save save(a1);
-                a2 = Lognot::op(a2);
+            {   a2 = Lognot::op(a2);
                 errexit();
-                save.restore(a1);
             }
             r = Logand::op(a1, a2);
             break;
         case boole_1:
             return a1;
         case boole_andc1:
-            {   Save save(a2);
-                a1 = Lognot::op(a1);
+            {   a1 = Lognot::op(a1);
                 errexit();
-                save.restore(a2);
             }
             r = Logand::op(a1, a2);
             break;
@@ -501,10 +497,8 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = Lognot::op(a2);
             break;
         case boole_orc2:
-            {   Save save(a1);
-                a2 = Lognot::op(a2);
+            {   a2 = Lognot::op(a2);
                 errexit();
-                save.restore(a1);
             }
             r = Logor::op(a1, a2);
             break;
@@ -512,10 +506,8 @@ LispObject Nboole(LispObject env, LispObject op, LispObject a1, LispObject a2)
             r = Lognot::op(a1);
             break;
         case boole_orc1:
-            {   Save save(a2);
-                a1 = Lognot::op(a1);
+            {   a1 = Lognot::op(a1);
                 errexit();
-                save.restore(a2);
             }
             r = Logor::op(a1, a2);
             break;

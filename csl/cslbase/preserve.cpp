@@ -1221,7 +1221,6 @@ static void collect_modules(string Cname, string Cleafname,
     LispObject v;
     char *p = reinterpret_cast<char *>(&celt(boffo, 0));
     if (why != SCAN_FILE) return;
-    Save save(mods);
     const char *name = Cleafname.c_str();
     while (*name != '.' && *name != 0)
     {   *p++ = *name++;
@@ -1230,7 +1229,6 @@ static void collect_modules(string Cname, string Cleafname,
     if (std::strcmp(name, ".fasl") != 0) return;
     v = iintern(boffo, k, lisp_package, 0);
     if (exceptionPending()) return;
-    save.restore(mods);
     mods = cons(v, mods);
 }
 
@@ -1279,10 +1277,8 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         }
         while (k>0 && p[-1] == ' ') k--, p--;
         *p = 0;
-        Save save(r);
         v = iintern(boffo, k, lisp_package, 0);
         errexit();
-        save.restore(r);
         r = cons(v, r);
     }
     return r;

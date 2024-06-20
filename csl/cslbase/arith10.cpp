@@ -1304,12 +1304,10 @@ static LispObject CSLpowi(LispObject a, uint64_t n)
     }
     else
     {   LispObject b;
-        Save save(a);
         b = CSLpowi(a, n/2);
         errexit();
         b = times2(b, b);
         errexit();
-        save.restore(a);
         return times2(a, b);
     }
 }
@@ -1479,14 +1477,10 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 LispObject Llog_2(LispObject env, LispObject a, LispObject b)
 // Log with specified base.
 {   SingleValued fn;
-    Save save(b);
     a = trigfn(33, a);
     errexit();
-    save.restore(b);
-    Save save1(a);
     b = trigfn(33, b);
     errexit();
-    save1.restore(a);
     return quot2(a, b);
 }
 
@@ -1586,10 +1580,8 @@ static LispObject Lsignum(LispObject env, LispObject a)
     LispObject w;
     z = zerop(a);
     if (z) return a;
-    Save save(a);
     w = Labsval(nil, a);
     errexit();
-    save.restore(a);
     a = quot2(a, w);
     return a;
 }
@@ -1599,10 +1591,8 @@ static LispObject Lcis(LispObject, LispObject a)
 // beyond the specification of Common Lisp.
 {   SingleValued fn;
     LispObject ii;
-    Save save(a);
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     errexit();
-    save.restore(a);
 // it seems a bit gross to multiply by i by calling times2(), but
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).

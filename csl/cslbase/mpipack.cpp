@@ -289,14 +289,11 @@ static LispObject unpack_atom()
             size = length_of_header(a);
             LispObject v = get_basic_vector(TAG_VECTOR,type_of_header(a),size);
             ThreadID;
-            Save save(threadId, v);
             {   int i;
                 for (i=0; i<(size>>2)-1; ++i)
-                {   save.restore(v);
-                    elt(v, i) = unpack_cell();
+                {   elt(v, i) = unpack_cell();
                     errexit();
                 }
-                save.restore(v);
                 if (!(i&1)) elt(v, i) = nil;
             }
             return v;
@@ -325,19 +322,16 @@ static LispObject unpack_cell()
 static LispObject unpack_list()
 {   LispObject r = unpack_cell();
     errexit();
-    Save save(threadId, r);
     switch (unpack_char())
     {   case ')': return cons(r, nil);
         case '.':
         {   LispObject tail = unpack_atom();
             errexit();
-            save.restore(r);
             return cons(r, tail);
         }
         case ',':
         {   LispObject tail = unpack_list();
             errexit();
-            save.restore(r);
             return cons(r, tail);
         }
         default :
