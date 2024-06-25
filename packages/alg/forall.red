@@ -540,7 +540,7 @@ symbolic procedure evalletsub2(u,v);
       % We need resimp on since u may contain (*SQ ... T).
       u := errorset!*(cadr u,nil); % where !*resimp = t;
       % Restore previous environment, if changed.
-      without!-timeout restore_rules w;
+      restore_rules w;
       return u
    end;
 

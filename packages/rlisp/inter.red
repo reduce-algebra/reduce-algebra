@@ -162,19 +162,24 @@ symbolic procedure machine_speed();
     scalar n, t0, t1;
     n := 50;
     t1 := 0;
-    while t1 < 400 do <<
+    while t1 < 20 do <<
       n := 2*n;
       t0 := time();
 % At this stage in the Reduce source I do not yet have the infix operators
 % "to", ".*" and ".+" available, so I construct a sample polynomial as a
 % raw Lisp data-structure just using CONS. The idea here is that getting
-% Reeuce to expand (1+x)^40 will use a range of its functionality and so
+% Reduce to expand (1+x)^40 will use a range of its functionality and so
 % give me a more sensible result here than if I just used a counting loop
 % to assess performance.
       for i := 1:n do exptf((('x . 1) . 1) . 1, 40);
       t1 := time() - t0 >>;
     return (machine_speed!* := float n / float t1)
   end;
+
+% On my main machine the above function runs for around 63ms the first time
+% it is used. I hope that is long enough that clock granularity will not
+% render its result meaningless while not taking long enough to disrupt
+% everything else.
 
 % I will have a scheme that lets me impose a limit on the time taken by
 % a calculation. This works by using a hook function that is called at the
@@ -214,11 +219,29 @@ trap!-time!* := nil; % nil here means no trapping active.
 % about the garbage collection that just happened. In PSL it does not have
 % an argument.
 
-#if (memq 'psl lispsystem!*)
+% Usage is
+%     with!-timeout(time_limit, form_to_evaluate);
+% and the result should be (list eval(form)) if that happens quickly enough
+% or atomic if there is a timeout. Rather like the behaviour of errorset.`
+
+
+#if (member 'csl lispsystem!*)
+
+symbolic procedure with!-timeout(n, u);
+  resource!-limit(u, fix(n/1000));
+
+% Time limit in arbitrary units such that (very roughly) slow and fast
+% machines get to do about the same amount of work before being interrupted.
+% I think of the argument as being very roughly "Raspberry Pi 1 milliseconds",
+% so mid or high-range laptops or desktops will take less than that time by
+% a factor of 10 or 20.
+
+symbolic procedure with!-normalized!-timeout(n, u);
+  resource!-limit(u, fix(n/(1000.0*machine_speed())));
+
+#else   % Now an "anything but CSL" version
+
 symbolic procedure aftergcsystemhook();
-#else
-symbolic procedure aftergcsystemhook u;
-#endif
   if trap!-time!* and
     time() > trap!-time!* then <<
       trap!-time!* := nil;
@@ -226,50 +249,6 @@ symbolic procedure aftergcsystemhook u;
 
 !*gc!-hook!* := 'aftergcsystemhook;
 
-symbolic procedure trap!-time!-value();
-  trap!-time!*;
-
-% Usage is
-%     with!-timeout(time_limit, form_to_evaluate);
-% and the result should be (list eval(form)) if that happens quickly enough
-% or atomic if there is a timeout. Rather like the behaviour of errorset.`
-
-
-% Absolute time limit in milliseconds...
-
-#if (member 'csl lispsystem!*)
-
-symbolic procedure with!-timeout(n, u);
-  begin
-    scalar ott := trap!-time!*;
-    return begin
-      scalar trap!-time!* := time() + fix n;
-      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
-      return eval
-        list('catch, ''!@timeout!@,
-          list('resource!-limit, mkquote u, fix n/1000));
-    end
-  end;
-
-% Time limit in arbitrary units such that (very roughly) slow and fast
-% machines get to do about the same amount of work before being interrupted.
-% I think of the argument as being very roughly "Raspberry Pi milliseconds",
-% so mid or high-range laptops or desktops will take less than that time.
-
-symbolic procedure with!-timeout(n, u);
-  begin
-    scalar ott := trap!-time!*;
-    return begin
-      scalar trap!-time!* := time() + fix n;
-      if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
-      return eval
-        list('catch, ''!@timeout!@,
-          list('resource!-limit, mkquote u, fix n/machine_speed()/1000));
-    end
-  end;
-
-#else
-
 symbolic procedure with!-timeout(n, u);
   begin
     scalar ott := trap!-time!*;
@@ -280,18 +259,17 @@ symbolic procedure with!-timeout(n, u);
     end
   end;
 
-symbolic procedure with!-timeout(n, u);
+symbolic procedure with!-normalized!-timeout(n, u);
   begin
     scalar ott := trap!-time!*;
     return begin
-      scalar trap!-time!* := time() + fix n;
+      scalar trap!-time!* := time() + fix (n/machine_speed());
       if numberp ott and trap!-time!* > ott then trap!-time!* := ott;
       return eval list('catch, ''!@timeout!@, u)
     end
   end;
 
-#endif
-
+#endif % PSL etc
 
 % A typical use of this would be:
 %
@@ -317,24 +295,7 @@ symbolic procedure with!-timeout(n, u);
 % within the Lisp system too, but at present I can not provide a clear
 % statement of what is safe and what might not be. Well input or output
 % stream selection certainly represents global state...
-
-% Sometimes I want to have a critical section of code that must
-% not be interrupted by a timeout trap. I can arrange that using this
-% macro, which disables the timeout for the duration of the evaluation
-% of its argument. Note that this needs to be used with some case to
-% ensure that the computation that it guards is not terribly length, since
-% it is an absolute escape from any surrounding timeout!
-
-% Also these options will not cooperate with the 2024 CSL resource limit
-% scheme which does not (at present?) provide these capabilities, so
-% users who need really find control should use the CSL facilities directly
-% and request extensions to same if they can justify a need.
-
-smacro procedure without!-timeout u;
-  (lambda trap!-time!*; u)(nil);
-
-symbolic procedure errorset_with_timeout(!~n!~, !~u!~);
-  with!-timeout(!~n!~, errorset!*(!~u!~, t));
+% For CSL see sandbox!-eval...
 
 endmodule;
 
