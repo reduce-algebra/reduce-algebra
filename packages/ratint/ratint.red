@@ -327,7 +327,7 @@ symbolic procedure prem(r,v,var);
         unwind!-protect(<<
               let rule_list;
               r := reval r >>,
-           without!-timeout clearrules rule_list);
+           clearrules rule_list);
       >>;
       r := reval{'plus,{'times,l,r},{'minus,tt}};
       dr := deg(r,var);
