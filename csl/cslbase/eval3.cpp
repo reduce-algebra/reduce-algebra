@@ -158,7 +158,7 @@ static LispObject prog_fn(LispObject iargs, LispObject ienv)
     TRY
         let_fn_1(car(args), cdr(args), env, BODY_PROG);
     CATCH(LispReturnFrom)
-        setcar(my_tag, fixnum_of_int(2));    // Invalidate
+        car(my_tag) = fixnum_of_int(2);    // Invalidate
         if (exit_tag == my_tag)
             return exit_value;  // exit_count already OK here
 // It could be that the RETURN(-FROM) is heading to be handled by some
@@ -489,7 +489,7 @@ static LispObject setq_fn(LispObject args, LispObject env)
                 w = car(p);
                 if (car(w) == var)
                 {   if (cdr(w) == work_symbol) setvalue(var, val);
-                    else write_barrier(cdraddr(w), val);
+                    else cdr(w) = val;
                     break;
                 }
                 p = cdr(p);
@@ -562,7 +562,7 @@ LispObject tagbody_fn(LispObject args1, LispObject env1)
 // contained a relevent GO. This is not something that could every happen
 // in Standard Lisp, but it could in Common Lisp!
             while (env != oldenv)
-            {   setcar(car(env), fixnum_of_int(2));
+            {   car(car(env)) = fixnum_of_int(2);
                 env = cdr(env);
             }
 // Because this is a sort of error I will display a message. Well with
@@ -593,7 +593,7 @@ LispObject tagbody_fn(LispObject args1, LispObject env1)
 // This is where I drop off the end of the tagbody, so I tidy up and
 // return nil.
     while (env != oldenv)
-    {   setcar(car(env), fixnum_of_int(2));
+    {   car(car(env)) = fixnum_of_int(2);
         env = cdr(env);
     }
     return nil;

@@ -233,7 +233,7 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
         TRY
             p = eval(p, env);
         CATCH(LispReturnFrom)
-            setcar(my_tag, fixnum_of_int(2)); // Invalidate
+            car(my_tag) = fixnum_of_int(2); // Invalidate
             if (exit_tag == my_tag)
                 return nvalues(exit_value, exit_count);
             else RETHROW;
@@ -270,24 +270,21 @@ static LispObject catch_fn(LispObject args, LispObject env)
     CATCH(LispThrow)
         save.restore(tag);
         catch_tags = cdr(tag);
-        write_barrier(caraddr(tag), tag);
-// Hmm - ought I to put a write_barrier on the CDR. Well it gets changed
-// to point to NIL, and NIL is at a fixed address so the GC does not need
-// to know!
-        setcdr(tag, nil);        // Invalidate the catch frame
+        car(tag) = tag;
+        cdr(tag) = nil;        // Invalidate the catch frame
         if (exit_tag == tag) return nvalues(exit_value, exit_count);
         else RETHROW;
     ANOTHER_CATCH(LispException)
         save.restore(tag);
         catch_tags = cdr(tag);
-        write_barrier(caraddr(tag), tag);
-        setcdr(tag, nil);        // Invalidate the catch frame
+        car(tag) = tag;
+        cdr(tag) = nil;        // Invalidate the catch frame
         RETHROW;
     END_CATCH;
     save.restore(tag);
     catch_tags = cdr(tag);
-    write_barrier(caraddr(tag), tag);
-    setcdr(tag, nil);            // Invalidate the catch frame
+    car(tag) = tag;
+    cdr(tag) = nil;            // Invalidate the catch frame
     return v;
 }
 
@@ -400,7 +397,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
             {   LispObject w;
                 for (w = local_decs; w!=nil; w = cdr(w))
                 {   if (q != car(w)) continue;
-                    setcar(w, fixnum_of_int(0));
+                    car(w) = fixnum_of_int(0);
 // The next few calls to cons() maybe lose w, but that is OK!
                     specenv = cons(z, specenv);
                     q = acons(q, work_symbol, env1);
@@ -443,7 +440,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     {   LispObject w = car(p), v = car(w), z = cdr(w);
         LispObject old = qvalue(v);
         setvalue(v, z);
-        write_barrier(cdraddr(w), old);
+        cdr(w) = old;
     }
 // The above has instated bindings. Subject to not getting asynchronous
 // interruptions once I start to bind any I bind all.
@@ -763,7 +760,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 // permit mutual recursion between them all.
     for (d=env; d!=my_env; d=cdr(d))
     {   LispObject w = cdr(car(car(d)));
-        write_barrier(caraddr(w), env);
+        car(w) = env;
     }
     return let_fn_1(nil, cdr(args), env, BODY_LET);
 }
@@ -848,7 +845,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                 {   for (p = local_decs; p!=nil; p = cdr(p))
                     {   LispObject w;
                         if (q != car(p)) continue;
-                        setcar(p, fixnum_of_int(0));
+                        car(p) = fixnum_of_int(0);
                         w = acons(q, qvalue(q), specenv);
                         errexit();
                         specenv = w;

@@ -42,7 +42,7 @@ LispObject nreverse(LispObject a)
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        write_barrier(cdraddr(c), b);
+        cdr(c) =  b;
         b = c;
     }
     return b;
@@ -411,7 +411,7 @@ inline LispObject instate_binding(LispObject var, LispObject val,
 // when I use them so that they do not get applied multiple times.
         for (w = local_decs1; w!=nil; w = cdr(w))
         {   if (car(w) == var)
-            {   setcar(w, fixnum_of_int(0)); // decl is used up
+            {   car(w) = fixnum_of_int(0); // decl is used up
                 env = acons(var, work_symbol, env);
                 errexit();
                 specenv = acons_no_gc(var, qvalue(var), specenv);

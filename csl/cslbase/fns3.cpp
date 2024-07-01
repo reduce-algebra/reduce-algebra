@@ -203,14 +203,9 @@ LispObject Lmaple_integer(LispObject env, LispObject a)
             errexit();
             save.restore(r, t);
         }
-        {   Save save(t);
-            r = Lplus2(nil, r, d);
-            errexit();
-            save.restore(t);
-        }
-        Save save(r);
+        r = Lplus2(nil, r, d);
+        errexit();
         t = Ltimes2(nil, t, fixnum_of_int(10000));
-        save.restore(r);
     }
     return r;
 }
@@ -439,11 +434,9 @@ LispObject simplify_string(LispObject s)
     h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
     stackcheck(s);
-    Save save(s);
 // Size limited
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
     errexit();
-    save.restore(s);
     errexit();
     i = (intptr_t)doubleword_align_up(n+CELL) - CELL;
     while (i != 0) // pre-fill target vector with zero
@@ -859,10 +852,8 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 // version.
 //
     for (v=a; consp(v); v = cdr(v)) n += CELL;
-    Save save(a);
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
-    save.restore(a);
     for(n=0; consp(a); a = cdr(a), n++)
         elt(v, n) = static_cast<LispObject>(car(a));
     if (!SIXTY_FOUR_BIT && n%2==0) elt(v, n) = TAG_FIXNUM;
@@ -1673,10 +1664,8 @@ LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
     LispObject r = nil;
     size_t n = 3;
     for (LispObject x=a4up; x!=nil; x=cdr(x)) n++;
-    Save save(a1, a2, a3, a4up);
     r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
     errexit();
-    save.restore(a1, a2, a3, a4up);
     write_barrier(&elt(r, 0), a1);
     write_barrier(&elt(r, 1), a2);
     write_barrier(&elt(r, 2), a3);
@@ -1697,20 +1686,16 @@ LispObject Lvector_0(LispObject env)
 
 LispObject Lvector_1(LispObject env, LispObject a)
 {   SingleValued fn;
-    Save save(a);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 2*CELL);
     errexit();
-    save.restore(a);
     write_barrier(&elt(r, 0), a);
     return r;
 }
 
 LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
-    Save save(a, b);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
     errexit();
-    save.restore(a, b);
     write_barrier(&elt(r, 0), a);
     write_barrier(&elt(r, 1), b);
     if (!SIXTY_FOUR_BIT) elt(r, 2) = TAG_FIXNUM;
@@ -1720,10 +1705,8 @@ LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
 LispObject Lvector_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
 {   SingleValued fn;
-    Save save(a, b, c);
     LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
     errexit();
-    save.restore(a, b, c);
     write_barrier(&elt(r, 0), a);
     write_barrier(&elt(r, 1), b);
     write_barrier(&elt(r, 2), c);
@@ -1928,21 +1911,16 @@ LispObject list_subseq(LispObject sequence, size_t start, size_t end)
     copy = nil;
 
 // Store the values
-    Save save(sequence);
     while (consp(seq) && pntr < seq_length)
-    {   Save save1(seq,copy,last);
-        newv = Lcons(nil,car(seq),nil);
+    {   newv = Lcons(nil,car(seq),nil);
         errexit();
-        save1.restore(seq, copy, last);
         if (pntr == 0) copy = newv;
         else write_barrier(cdraddr(last), newv);
         last = newv;
         seq = cdr(seq);
         pntr++;
     }
-    save.restore(sequence);
     if (pntr != seq_length) return aerror1("subseq",sequence);
-
     return copy;
 }
 
@@ -1984,11 +1962,9 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         if (hl < end) return aerror0("vector-subseq* out of range");
 
         // Get a new string of the right size
-        Save save(sequence);
 // Size limited
         copy = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+seq_length+3);
         errexit();
-        save.restore(sequence);
         errexit();
 
         // This code plagiarised from copy_string ...
@@ -2008,10 +1984,8 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         if (hl < end/8) return aerror0("vector-subseq* out of range");
 
         // Grab a bit-vector of the right size
-        Save save(sequence);
         copy = Lmake_simple_bitvector(nil,fixnum_of_int(seq_length));
         errexit();
-        save.restore(sequence);
 
         //
         // This is not terribly efficient since the calls to Lbputv and Lbgetv
@@ -2019,11 +1993,9 @@ LispObject vector_subseq(LispObject sequence, size_t start,
         // original Lisp-coded version.
         //
         for (i=start; i<end; ++i)
-        {   Save save1(sequence, copy);
-            LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i));
+        {   LispObject v = Lbgetv(nil,sequence,fixnum_of_int(i));
             errexit();
             Lbputv(nil,copy,fixnum_of_int(i-start), v);
-            save1.restore(sequence, copy);
         }
 
         return copy;
@@ -2045,10 +2017,8 @@ LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
     size_t first, last;
 
     first = int_of_fixnum(start);
-    Save save(seq);
     len = Llength(nil,seq);
     errexit();
-    save.restore(seq);
     last = int_of_fixnum(len);
     if (first > last) return aerror1("list-subseq* out of range",seq);
     return list_subseq(seq, first, last);
@@ -2071,10 +2041,8 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
     size_t first, last;
 
     first = int_of_fixnum(start);
-    Save save(seq);
     len = Llength(nil,seq);
     errexit();
-    save.restore(seq);
     last = int_of_fixnum(len);
 
     if (first > last) return aerror1("vector-subseq* out of range",seq);
