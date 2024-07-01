@@ -168,6 +168,28 @@
       (channelwritechar channel ch)
       )))
 
+(de channelwritechar-escaped-utf8-char (channel ch special)
+    (if (eq special 'escape) (channelwritechar channel idescapechar*))
+    (if (eq channel 3)			% explode
+	(channelwritechar channel ch)
+      (progn
+	(channelwritechar channel (char !#))
+	(channelwritecodepoint channel (utf8-to-codepoint ch))
+	(channelwritechar channel (char !;)))))
+
+(de maybemagic (s k len)
+    (for (from i k len 1)
+	 (with ch)
+	 (do
+	  (setq ch (wand 16#ff (strbyt (strinf s) i)))
+	  (cond ((weq ch (char !;)) (return t))
+		((or (wneq (wand ch 16#80) 0)
+		     (and (not (lowercasechar ch))
+			  (or (wlessp ch (char !A)) (wgreaterp ch (char !Z)))
+			  (or (wlessp ch (char !0)) (wgreaterp ch (char !9)))))
+		 (return nil))))))
+
+
 (de channelwritestringorid-utf8 (channel strng uplim special)
   %
   % write unicode characters as one unit
@@ -183,26 +205,30 @@
 %       (channelwritechar channel ch)
 	(setq i (iadd1 i))
 	(cond ((wlessp ch 128)	% ASCII character 
-	       (if (and (eq special 'escape) 
-			(or (wneq (tokentypeofchar ch) 10) (charneedsescape ch)))
-		   (channelwritechar channel idescapechar*))
-	       (channelwritechar channel ch)
-	       (if (and (weq ch (char !")) (eq special 'doublequote))
- 	           (channelwritechar channel (char !"))))
+	       (if (and (weq ch (char !#)) (memq special '(doublequote))
+			(maybemagic strng i uplim))
+		   (channelwritehashstring channel special)
+		 (progn
+		   (if (and (eq special 'escape) 
+			    (or (wneq (tokentypeofchar ch) 10) (charneedsescape ch)))
+		       (channelwritechar channel idescapechar*))
+		   (channelwritechar channel ch)
+		   (if (and (weq ch (char !")) (eq special 'doublequote))
+ 	               (channelwritechar channel (char !"))))))
 	      ((wlessp ch 192)   	% continuation byte at start is invalid, print replacement character
-	       (if (eq special 'escape) (channelwritechar-optional-escape channel ch i)
+	       (if special (channelwritechar-optional-escape channel ch i)
 		 (channelwritechar channel utf8-invalid-char)))
 	      ((wlessp ch 224)	% two byte sequence expected
                (cond ((or               % handle invalid bytes - print replacement character 
                        (wgreaterp i uplim)    % last byte in string
 		       (wlessp (setq ch2 (wand 16#ff (strbyt (strinf strng) i))) 128) % low order byte 
 		       (wgeq ch2 192)) % non-continuation byte
-		      (if (eq special 'escape) (channelwritechar-optional-escape channel ch i))
+		      (if special (channelwritechar-optional-escape channel ch i))
 		      (channelwritechar channel utf8-invalid-char))
 		     (t
                       (setq ch (wor (wshift ch 8) ch2))
-                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch i)) 
-                      (channelwritechar channel ch)
+                      (if special (channelwritechar-escaped-utf8-char channel ch special)
+			(channelwritechar channel ch))
 		      (setq i (iadd1 i)))
 		     ))
 	      ((wlessp ch 240)	% three byte sequence
@@ -212,12 +238,12 @@
 		       (wgeq ch2 192) % non-continuation byte
 		       (wlessp (setq ch3 (wand 16#ff (strbyt (strinf strng) (wplus2 i 1)))) 128) % low order byte - ignore error
 		       (wgeq ch3 192)) % non-continuation byte
-                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch i))
+                      (if special (channelwritechar-optional-escape channel ch i))
 		      (channelwritechar channel utf8-invalid-char))
                      (t
                       (setq ch (wor (wshift ch 16) (wshift ch2 8) ch3))
-                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch i))
-		      (channelwritechar channel ch)
+                      (if special (channelwritechar-escaped-utf8-char channel ch special)
+			(channelwritechar channel ch))
 		      (setq i (wplus2 i 2)))))
 	      ((wlessp ch 248)	% four byte sequence
 	       (cond ((or                % handle invalid bytes - print replacement character
@@ -228,25 +254,34 @@
 		       (wgeq ch3 192) % non-continuation byte
 		       (wlessp (setq ch4 (wand 16#ff (strbyt (strinf strng) (wplus2 i 2)))) 128) % low order byte - ignore error
 		       (wgeq ch4 192)) % non-continuation byte
-                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch i))
+                      (if special (channelwritechar-optional-escape channel ch i))
 		      (channelwritechar channel utf8-invalid-char))
                      (t
                       (setq ch (wor (wshift ch 24) (wshift ch2 16) (wshift ch3 8) ch4))
-                      (if (eq special 'escape) (channelwritechar-optional-escape channel ch i))
-		      (channelwritechar channel ch)
+                      (if special (channelwritechar-escaped-utf8-char channel ch special)
+			(channelwritechar channel ch))
 		      (setq i (wplus2 i 3)))))
 	      (t (channelwritechar channel utf8-invalid-char))) % invalid
 	(if (wgreaterp i uplim) 
 	    (return nil))
 	))))
-		     
+
+(de channelwritehashstring (channel special)
+%    (channelwritechar channel idescapechar!*)
+    (channelwritechar channel (char !#))
+    (channelwritechar channel (char !h))
+    (channelwritechar channel (char !a))
+    (channelwritechar channel (char !s))
+    (channelwritechar channel (char !h))
+    (channelwritechar channel (char !;)))
 
 (de writestring (s)
   (channelwritestring out* s))
 
-(fluid '(digitstring))
+(fluid '(digitstring lcdigitstring))
 
 (setq digitstring "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+(setq lcdigitstring "0123456789abcdefghijklmnopqrstuvwxyz")
 
 (declare-wstring writenumberbuffer size 100)
 
@@ -303,6 +338,36 @@
 		  exponent)
 	      (channelwritechar channel
 		  (strbyt (strinf digitstring) (wand number digitmask)))))))
+
+(de channelwritecodepoint (channel number)
+  (if (weq number 0)
+    (progn (channelwritechar channel (char !0))
+           (channelwritechar channel (char !0)))
+    (channelwritecodepointaux channel number 0)))
+
+(de channelwritecodepointaux (channel number depth)
+  (cond ((or (weq number 0) (greaterp depth 16))
+	 (if (weq 1 (wand depth 1))
+	     (channelwritechar channel (char !0))
+	   channel))
+	(t % Channel means nothing here just trying to fool the compiler
+	   (progn
+	      (channelwritecodepointaux
+		  channel
+		  (if_system VAX     % Avoid wshift sign extension on the Vax.
+		      (prog (u)
+			    (cond ((not (isinum
+					 (setq u
+					       (intlshift number -4))))
+				   (return (fixval (fixinf u))))
+				  (t
+				   (return u))))
+		      (wshift number -4))
+                  (iadd1 depth)
+		  )
+	      (channelwritechar channel
+		  (strbyt (strinf lcdigitstring) (wand number 15)))))))
+
 
 (de writesysinteger (number radix)
   (channelwritesysinteger out* number radix))
