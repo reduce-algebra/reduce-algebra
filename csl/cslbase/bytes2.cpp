@@ -1531,7 +1531,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_UNCATCH:
                 stack--; r1 = *stack--; stack--;
                 catch_tags = cdr(r1);
-                setcar(r1,  r1); setcdr(r1, nil);
+                car(r1) = r1; cdr(r1) = nil;
                 continue;
 
             case OP_PROTECT:
@@ -1541,7 +1541,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // an error.
                 stack--; r1 = *stack--; stack--;
                 catch_tags = cdr(r1);
-                setcar(r1, r1); setcdr(r1, nil);
+                car(r1) = r1; cdr(r1) = nil;
                 A_reg = Lmv_list(nil, A_reg);
                 *++stack = nil;
                 *++stack = fixnum_of_int(UNWIND_NULL);

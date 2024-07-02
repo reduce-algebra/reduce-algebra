@@ -506,11 +506,13 @@ public:
     {   return head == nullptr;
     }
     PageList& operator=(PageList& a)
-    {   head = a.head;     a.head = nullptr;
+    {   head = a.head;   a.head = nullptr;
+        count = a.count; a.count = 0;
         return *this;
     }
     PageList& copy(PageList a)
     {   head = a.head;
+        count = a.count;
         return *this;
     }
 // The "+=" operator drains pages from the source and transfers them
@@ -1103,9 +1105,7 @@ extern std::uint64_t read_clock();
 inline uintptr_t getNBytes(size_t n, Page* current,
                            uintptr_t& fringe, uintptr_t& limit, uintptr_t &end,
                            bool borrowing)
-{   if (time_limit >= 0 &&
-        read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
-    for (;;)
+{   for (;;)
     {   uintptr_t r = fringe;
         my_assert(fringe <= limit, where("fringe < limit"));
         my_assert(fringe > (uintptr_t)current &&

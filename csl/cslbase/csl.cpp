@@ -3923,7 +3923,7 @@ int PROC_simplify()
         errexit();
         w = Lapply1(nil, w1, w);
         errexit();
-        setcar(procstack, w),
+        car(procstack) = w,
         // error exit case
         return 1);
     return 0;
@@ -3962,7 +3962,7 @@ int PROC_lisp_eval()
         PROC_standardise_gensyms(w);
         save.restore(w),
         return 1);
-    setcar(procstack, w);
+    car(procstack) = w;
     return 0;
 }
 
@@ -4026,7 +4026,7 @@ int PROC_make_printable()
 // strings. Both of these could be viewed as mildly obscure!
         w = PROC_standardise_printed_form(w),
         return 1);
-    setcar(procstack, w);
+    car(procstack) = w;
     return 0;
 }
 

@@ -552,7 +552,7 @@ LispObject Lcddddr(LispObject, LispObject a)
 LispObject Lrplaca(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!consp(a)) return error(1, err_bad_rplac, a);
-    write_barrier(caraddr(a), b);
+    car(a) = b;
     return a;
 }
 
@@ -563,24 +563,22 @@ LispObject Lrplaca(LispObject, LispObject a, LispObject b)
 LispObject Lrplacd(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!consp(a)) return error(1, err_bad_rplac, a);
-    write_barrier(cdraddr(a), b);
+    cdr(a) = b;
     return a;
 }
 
-// setcar and setcdr are like rplaca and rplacd save that they hand back
-// arg2 as their result rather than arg1.
 
 LispObject Lsetcar(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!consp(a)) return error(1, err_bad_rplac, a);
-    write_barrier(caraddr(a), b);
+    car(a) = b;
     return b;
 }
 
 LispObject Lsetcdr(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!consp(a)) return error(1, err_bad_rplac, a);
-    write_barrier(cdraddr(a), b);
+    cdr(a) = b;
     return b;
 }
 
@@ -964,7 +962,7 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
     LispObject r= nil, w;
     while (a4up != nil)
     {   w = cdr(a4up);
-        write_barrier(cdraddr(a4up), r);
+        cdr(a4up) = r;
         r = a4up;
         a4up = w;
     }
@@ -972,7 +970,7 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
     r = cdr(r);
     while (r != nil)
     {   w = cdr(r);
-        write_barrier(cdraddr(r), a4up);
+        cdr(r) = a4up;
         a4up = r;
         r = w;
     }
@@ -992,7 +990,7 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
     a = nil;
     while (r != nil)
     {   b = cdr(r);
-        write_barrier(cdraddr(r), a);
+        cdr(r) = a;
         a = r;
         r = b;
     }
@@ -1056,7 +1054,7 @@ LispObject Lintersect(LispObject env, LispObject a, LispObject b)
     while (consp(rr))
     {   bb = rr;
         rr = cdr(rr);
-        write_barrier(cdraddr(bb), aa);
+        cdr(bb) = aa;
         aa = bb;
     }
     return aa;
@@ -1113,7 +1111,7 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     while (consp(r))
     {   b = r;
         r = cdr(r);
-        write_barrier(cdraddr(b), a);
+        cdr(b) = a;
         a = b;
     }
     return a;
@@ -1204,7 +1202,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     while (consp(r))
     {   a = r;
         r = cdr(r);
-        write_barrier(cdraddr(a), b);
+        cdr(a) = b;
         b = a;
     }
     return b;

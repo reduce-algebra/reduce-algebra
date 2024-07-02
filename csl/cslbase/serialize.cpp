@@ -1515,7 +1515,7 @@ down:
 // the CDR field is transmitted before the CAR one.
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
-                    setcar(prev, b);
+                    car(prev) = b;
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
                     p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
@@ -1530,10 +1530,10 @@ down:
 // old model (ie L_a_S L_a_S in the new one!)
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
-                    setcar(prev, b);
+                    car(prev) = b;
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     p = reinterpret_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
@@ -1550,10 +1550,10 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
                     if (c & 4) reader_repeat_new(cdr(cdr(prev)));
-                    setcar(prev, b);
+                    car(prev) = b;
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     pbase = cdr(b);
                     p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
@@ -1571,13 +1571,13 @@ down:
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(cdr(prev));
                     if (c & 4) reader_repeat_new(cdr(cdr(prev)));
-                    setcar(prev, b);
+                    car(prev) = b;
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     p = reinterpret_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
@@ -1588,13 +1588,13 @@ down:
 // Note that for the longest sequence here only the start CONS cell
 // can be shared.
                     if (c & 1) reader_repeat_new(prev);
-                    setcar(prev, b);
+                    car(prev) = b;
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     pbase = cdr(pbase);
                     p = reinterpret_cast<LispObject *>(vcaraddr(pbase));
@@ -1604,16 +1604,16 @@ down:
                 case SER_L_Aaaa_S:
                     prev = list4(nil, nil, nil, nil);
                     if (c & 1) reader_repeat_new(prev);
-                    setcar(prev, b);
+                    car(prev) = b;
                     b = *(LispObject*)p = prev;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     pbase = cdr(b);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     pbase = cdr(pbase);
-                    setcar(pbase, b);
+                    car(pbase) = b;
                     b = pbase;
                     p = reinterpret_cast<LispObject *>(vcdraddr(pbase));
                     goto down;
@@ -2164,7 +2164,7 @@ up:
         s = cdr(s);
         goto down;
     }
-    setcar(s, fixnum_of_int(n)); // write back decreased index
+    car(s) = fixnum_of_int(n); // write back decreased index
     pbase = b;
     p = reinterpret_cast<LispObject *>(&vselt(b, n));
     goto down;
@@ -2408,7 +2408,7 @@ down:
             mark_address_as_used(p - TAG_CONS);
             w = p;
             p = cdr(p);
-            setcdr(w, b);
+            cdr(w) = b;
             b = w - TAG_CONS + BACKPOINTER_CDR;
             goto down;
 
@@ -2512,9 +2512,9 @@ up:
 // This is where I had just finished scanning the CAR of a cell and now
 // need to deal with the CDR.
             w = cdr(b - BACKPOINTER_CDR + TAG_CONS);
-            setcdr(b - BACKPOINTER_CDR + TAG_CONS, p);
+            cdr(b - BACKPOINTER_CDR + TAG_CONS) = p;
             p = car(b - BACKPOINTER_CDR + TAG_CONS);
-            setcar(b - BACKPOINTER_CDR + TAG_CONS, w);
+            car(b - BACKPOINTER_CDR + TAG_CONS) = w;
             b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
             goto down;
 
@@ -2526,7 +2526,7 @@ up:
 // up another level.
             w = b - BACKPOINTER_CAR + TAG_CONS;
             b = car(w);
-            setcar(w, p);
+            car(w) = p;
             p = w;
             goto up;
 
@@ -2688,7 +2688,7 @@ down:
                 else write_delayed(SER_L_a, "ncons");
                 w = p;
                 p = car(p);
-                setcar(w, b);
+                car(w) = b;
                 b = w - TAG_CONS + BACKPOINTER_CAR;
                 goto down;
             }
@@ -2705,7 +2705,7 @@ down:
                 else write_delayed(SER_L_a_S, "cons");
                 w = p;
                 p = cdr(p);
-                setcdr(w, b);
+                cdr(w) = b;
  // Reverse pointers with the back-pointer being tagged with 0
                 b = w - TAG_CONS + BACKPOINTER_CDR;
                 goto down;
@@ -2720,10 +2720,10 @@ down:
                      (i2==(size_t)(-1) ? SER_L_aa : SER_L_aA) :
                      (i2==(size_t)(-1) ? SER_L_Aa : SER_L_AA), "list2");
                 if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
-                setcdr(p, b);
+                cdr(p) = b;
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 p = car(tail1);
-                setcar(tail1, b);
+                car(tail1) = b;
                 b = tail1 - TAG_CONS + BACKPOINTER_CAR;
                 goto down;
             }
@@ -2739,10 +2739,10 @@ down:
                      (i2==(size_t)(-1) ? SER_L_aa_S : SER_L_aA_S) :
                      (i2==(size_t)(-1) ? SER_L_Aa_S : SER_L_AA_S), "list2*");
                 if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
-                setcdr(p, b);
+                cdr(p) = b;
                 b = p - TAG_CONS + BACKPOINTER_CDR;
                 p = tail2;
-                setcdr(tail1, b);
+                cdr(tail1) = b;
                 b = tail1 - TAG_CONS + BACKPOINTER_CDR;
                 goto down;
             }
@@ -2758,12 +2758,12 @@ down:
                        (i3==(size_t)(-1) ? SER_L_AAa : SER_L_AAA)), "list3");
                 if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
                 if (i3 != (size_t)(-1)) find_index_in_repeats(i3);
-                setcdr(p, b);
+                cdr(p) = b;
                 b = p - TAG_CONS + BACKPOINTER_CDR;
-                setcdr(tail1, b);
+                cdr(tail1) = b;
                 b = tail1 - TAG_CONS + BACKPOINTER_CDR;
                 p = car(tail2);
-                setcar(tail2, b);
+                car(tail2) = b;
                 b = tail2 - TAG_CONS + BACKPOINTER_CAR;
                 goto down;
             }
@@ -2788,12 +2788,12 @@ down:
                     "list3*");
                 if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
                 if (i3 != (size_t)(-1)) find_index_in_repeats(i3);
-                setcdr(p, b);
+                cdr(p) = b;
                 b = p - TAG_CONS + BACKPOINTER_CDR;
-                setcdr(tail1, b);
+                cdr(tail1) = b;
                 b = tail1 - TAG_CONS + BACKPOINTER_CDR;
                 p = cdr(tail2);
-                setcdr(tail2, b);
+                cdr(tail2) = b;
                 b = tail2 - TAG_CONS + BACKPOINTER_CDR;
                 goto down;
             }
@@ -2801,27 +2801,27 @@ down:
             if (tail4 == nil)
             {   write_delayed(
                    i==(size_t)(-1) ? SER_L_aaaa : SER_L_Aaaa, "list4");
-                setcdr(p, b);
+                cdr(p) = b;
                 b = p - TAG_CONS + BACKPOINTER_CDR;
-                setcdr(tail1, b);
+                cdr(tail1) = b;
                 b = tail1 - TAG_CONS + BACKPOINTER_CDR;
-                setcdr(tail2, b);
+                cdr(tail2) = b;
                 b = tail2 - TAG_CONS + BACKPOINTER_CDR;
                 p = car(tail3);
-                setcar(tail3, b);
+                car(tail3) = b;
                 b = tail3 - TAG_CONS + BACKPOINTER_CAR;
                 goto down;
             }
             write_delayed(
                    i==(size_t)(-1) ? SER_L_aaaa_S : SER_L_Aaaa_S, "list4*");
-            setcdr(p, b);
+            cdr(p) = b;
             b = p - TAG_CONS + BACKPOINTER_CDR;
-            setcdr(tail1, b);
+            cdr(tail1) = b;
             b = tail1 - TAG_CONS + BACKPOINTER_CDR;
-            setcdr(tail2, b);
+            cdr(tail2) = b;
             b = tail2 - TAG_CONS + BACKPOINTER_CDR;
             p = cdr(tail3);
-            setcdr(tail3, b);
+            cdr(tail3) = b;
             b = tail3 - TAG_CONS + BACKPOINTER_CDR;
             goto down;
 
@@ -3241,9 +3241,9 @@ up:
 // This is where I had just finished scanning the CDR of a cell and now
 // need to deal with the CAR.
             w = cdr(b - BACKPOINTER_CDR + TAG_CONS);
-            setcdr(b - BACKPOINTER_CDR + TAG_CONS, p);
+            cdr(b - BACKPOINTER_CDR + TAG_CONS) = p;
             p = car(b - BACKPOINTER_CDR + TAG_CONS);
-            setcar(b - BACKPOINTER_CDR + TAG_CONS, w);
+            car(b - BACKPOINTER_CDR + TAG_CONS) = w;
             b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
             goto down;
 
@@ -3259,7 +3259,7 @@ up:
 // up another level.
             w = b - BACKPOINTER_CAR + TAG_CONS;
             b = car(w);
-            setcar(w, p);
+            car(w) = p;
             p = w;
             goto up;
 
@@ -4036,7 +4036,7 @@ down:
             mark_address_as_used(p - TAG_CONS);
             w = p;
             p = cdr(p);
-            setcdr(w, b);
+            cdr(w) = b;
             b = w - TAG_CONS + BACKPOINTER_CDR;
             goto down;
 
@@ -4128,9 +4128,9 @@ up:
         case BACKPOINTER_CDR:
             debug_record("push_symbols BACKPOINTER_CDR");
             w = cdr(b - BACKPOINTER_CDR + TAG_CONS);
-            setcdr(b - BACKPOINTER_CDR + TAG_CONS, p);
+            cdr(b - BACKPOINTER_CDR + TAG_CONS) = p;
             p = car(b - BACKPOINTER_CDR + TAG_CONS);
-            setcar(b - BACKPOINTER_CDR + TAG_CONS, w);
+            car(b - BACKPOINTER_CDR + TAG_CONS) = w;
             b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
             goto down;
 
@@ -4139,7 +4139,7 @@ up:
             if (b == 0 + BACKPOINTER_CAR) return fail; // finished!
             w = b - BACKPOINTER_CAR + TAG_CONS;
             b = car(w);
-            setcar(w, p);
+            car(w) = p;
             p = w;
             goto up;
 
