@@ -1416,7 +1416,7 @@ error
 		  (if (izerop v) u (gcdn u v) ))))
 	  (t   %(not (bigp v))  
 	   (setq u (remainder u v)) 
-	   (if (izerop u) v (gcdn v u v))))) 
+	   (if (izerop u) v (gcdn v u))))) 
  
 % ---- Input ----                                                          
 (de makestringintolispinteger (s radix sn)
