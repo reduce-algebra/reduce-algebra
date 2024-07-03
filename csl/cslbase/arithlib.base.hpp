@@ -1,6 +1,3 @@
-#ifdef DEBUG
-#define TRACE_TIMES 1
-#endif
 // Big Number arithmetic.                             A C Norman, 2019-2024
 
 // To use this, go "#include "arithlib.hpp".

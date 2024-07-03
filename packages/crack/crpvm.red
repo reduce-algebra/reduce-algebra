@@ -303,9 +303,9 @@ if null reduce_call then <<
    write"and does therefore not specify properly the command"$terpri()$
    write"with which this session was invoked."$terpri()$
   >>                                          else <<
-   reduce_call:=""$
-   for n:=0:4 do setq(reduce_call,bldmsg("%w %w",reduce_call,getv(unixargs!*,n)))
-  >>$
+   reduce_call:="";
+   for n:=0:4 do
+     reduce_call := bldmsg("%w %w", reduce_call, getv(unixargs!*,n)) >>;
 #endif
 
   if null reduce_call then <<
@@ -357,26 +357,6 @@ if null reduce_call then <<
     reduce_call:=bldmsg("%w",reduce_call)$
   >>
 >>$
-
-% symbolic procedure inc_session$
-% begin scalar sess,a,save,ofl!*bak$
-%  setq(sess,bldmsg("%w%w",session_,"processes"));
-%  lock sess;
-%  in sess;
-%  backup_:=add1 backup_;
-%  %out sess;
-%  a := open(sess, 'output);
-%  ofl!*bak:=ofl!*$
-%  ofl!*:=sess$ % any value neq nil, to avoid problem with redfront
-%  save:=wrs a;
-%  write "off echo$backup_:=",backup_,"$ end$"$
-%  terpri()$
-%  %shut sess;
-%  wrs save$ 
-%  ofl!*:=ofl!*bak$
-%  close a;
-%  unlock sess;
-% end$
 
 symbolic procedure read_proczaehler$
 begin 
@@ -457,7 +437,7 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
  ss:=level_string(session_)$
  current_dir:=if para_case_dir neq "" then para_case_dir
                                       else pwd()$
- setq(h,bldmsg("%w%w%w",current_dir,ss,"tmp"));
+ h := bldmsg("%w%w%w",current_dir,ss,"tmp");
  % In the new process the input file is not opened, so eqn_input
  % should there be nil:
  s:=eqn_input$ 
@@ -493,7 +473,7 @@ begin scalar s,ss,h,current_dir,startup,p,id,a,save,ofl!*bak$   % ,crpath$
  % =t --> only an icon opens, =nil --> a window opens
 
  %----- prepare startup file name
- setq(startup,bldmsg("%w%w%w",current_dir,ss,"sup"));
+ startup := bldmsg("%w%w%w",current_dir,ss,"sup");
 
  %----- prepare startup file
  %out startup$

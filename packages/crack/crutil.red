@@ -119,7 +119,7 @@ again:
 %system"sleep 10"$
   if ofl!* then wrs cdr ofl!*$
  >>$
- history_:=cons(val,history_)$
+ history_:=val . history_;
  return val
 end$
 
@@ -141,7 +141,7 @@ again:
   if ofl!* then wrs cdr ofl!*$
  >>$
 % history_:=cons(compress(append(explode val,list('$))),history_)$
- history_:=cons(val,history_)$
+ history_:=val . history_;
  return val
 end$
 
@@ -1861,17 +1861,15 @@ symbolic operator plot_stat$
 symbolic procedure plot_stat$
 begin scalar s,ask$
  change_prompt_to ""$
- if null session_ then ask:=t else <<
+ if null session_ then ask:=t
+ else <<
   write "Do you want to plot statistics of this session,"$
   terpri()$
-  if not yesp "i.e. since loading CRACK the last time? " then ask:=t$
-  % terpri()
- >>$
+  if not yesp "i.e. since loading CRACK the last time? " then ask:=t  >>;
  if ask then <<
-  ask_for_session()$
+  ask_for_session();
   setq(s,bldmsg("%w.%w",session_,"size_hist"));
-  in s
- >>$
+  in s >>;
  plot_statistics(size_hist);
  restore_interactive_prompt()
 end$
@@ -3905,7 +3903,7 @@ symbolic procedure start_level(n,new_assumption)$
   print_level(2)$
   if size_watch and not fixp size_watch then % otherwise avoid growth
   history_:=cons(bldmsg("%w%w","Start of level ",level_string(nil)),
-                 cons('ig,history_));
+                 'ig . history_);
   if size_watch then size_hist:=cons({'A,"Start of ",reverse level_,
                                       new_assumption},size_hist);
 >>$
@@ -3917,7 +3915,7 @@ begin scalar s$
  if size_watch and not fixp size_watch then <<% otherwise avoid growth
   s:=level_string(nil);
   s:=bldmsg("End of level %w, %d solution(s)",s,no_of_sol);
-  history_:=cons(s,cons('ig,history_))
+  history_:=s . 'ig . history_
  >>$
  level_:=cdr level_$
  print_level(0)$
@@ -5155,18 +5153,21 @@ end$
 
 symbolic procedure delete_backup$
 begin scalar s$
+ if null session_ then return nil;
  % at first delete the bu.. file
  s:=level_string(session_);
  delete!-file!-exact s;
 
  % then the cd..* files
  s:=explode s$
- s:=reverse cons(car s,cons('*,cdr reverse s));
- s:=cons(car s,cons('c,cons('d,cdddr s)))$
+% If s is (!" w x y z !") turn it into ("! w x y z  !* !")
+ s:=reverse ('!" . '!* . cdr reverse s);
+% Now make it (!" c d y z !* !")
+ s:='!" . 'c . 'd . cdddr s;
  delete!-file!-match compress s;
 
  % then the ie..* files
- s:=cons(car s,cons('i,cons('e,cdddr s)))$
+ s:='!" . 'i . 'e . cdddr s;
  delete!-file!-match compress s;
 end$
 
@@ -5949,7 +5950,7 @@ if filep "stop_now" then <<
 % The following function should get called at the end of each garbage
 % collection.
 
-symbolic procedure aftergcuserhook1$
+symbolic procedure aftergcuserhook1;
 begin scalar li$
 #if (memq 'psl lispsystem!*)
  last_free_cells:=if boundp 'gcfree!* and gcfree!* then gcfree!*  % for 32 bit PSL
@@ -6010,9 +6011,8 @@ end$
 % function and then the new stuff.
 
 symbolic procedure csl_aftergcuserhook u$
-<< aftergcsystemhook u;       % The handler in rlisp/inter.red
-   if u then aftergcuserhook1() else nil
->>$
+  if u then aftergcuserhook1()
+    else nil;
 
 lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
 
@@ -6867,10 +6867,10 @@ symbolic procedure save_solution(eqns,assigns,freef,ineq,ineqor,file_name)$
 % ineqor  .. list of OR-inequalities
 begin scalar s,h,p,conti,a,save,ofl!*bak$
   if file_name then s:=file_name
-               else <<
+  else <<
    s:=level_string(session_)$
    s:=explode s$
-   s:=compress cons(car s,cons('s,cons('o,cdddr s)))$
+   s:=compress ('!" . 's . 'o . cdddr s);
   >>$
 
   sol_list:=union(list s,sol_list)$
@@ -7889,7 +7889,12 @@ end $
 
 symbolic procedure ask_for_session$
 <<change_prompt_to "Name of the session in double quotes (e.g. ""bu263393-""): "$
-  terpri()$ session_:=termread()$
+  terpri();
+  session_:=termread()$
+% The value of session needs to be a string, so if it is not
+% I will fix that!
+  if not stringp session_ then
+    session_ := compress ('!" . append(explode2 session_, '(!")));
   restore_interactive_prompt()
 >>$
 
@@ -8319,7 +8324,7 @@ symbolic operator clear_session_files$
 symbolic procedure clear_session_files$
 begin scalar s$
  s:=explode session_;
- s:=compress cons(car s,cdddr s)$
+ s:=compress ('!" . cdddr s)$
  setq(s,bldmsg("%w%w%w","rm ??",s,"*"))$
  system s$
 end$
@@ -8329,8 +8334,8 @@ symbolic procedure list_sol_on_disk$
 % the current directory and write them into the bu????-sol_list file.
 begin scalar s,chn,xx,oldcase$
  s:=level_string(session_)$
- s:=explode s$
- s:=compress cons(car s,cons('s,cons('o,cdddr s)))$
+ s:=explode s;
+ s:=compress ('!" . 's . 'o . cdddr s);
  system bldmsg("ls %s* > %w%w",s,session_,"sol_list")$
  chn := open(bldmsg("%w%w",session_,"sol_list"),'input);
  chn := rds chn;
