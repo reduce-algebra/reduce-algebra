@@ -116,21 +116,9 @@ compiletime global '(groebresmax plotheader!*)$
 
 symbolic procedure name_session$
 begin
- random_init()$
- %random_new_seed(1)$ % if a non-random seed is needed for test purposes
-
- %session_:=explode date()$
- %session_:=
- %   for each c in session_ collect
- %    (if c memq '(!: ! ) then '!- else c);
- %session_ := compress session_;    % proposed by ACN
- %%%session_:=reverse cons(car session_,cdr cddddr reverse session_)$
- %%%if cadr session_ = '!  then session_:=cons(car session_,cddr session_)$
- %%%session_:=compress session_$
- %setq(session_,bldmsg("%w%d-%w-","bu",random 1000,session_))$
- %		    % name of the session, used to generate filename
- %		    % for backup when case splitting
- setq(session_,bldmsg("%w%d-","bu",random 1000000));
+ random_init();
+ % random_new_seed(1); % if a non-random seed is needed for test purposes
+ session_ := bldmsg("%w%d-", "bu" ,random 1000000);
  sol_list_file_created:=nil
 end$
 
