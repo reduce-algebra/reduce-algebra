@@ -84,16 +84,12 @@
 
 
 
-// Each of these entrypoints to the bytecode interpreter preserves litvec
-// and codevec. Just about the only place these variable are set is within
-// the bytecode interpreter.
 
 LispObject bytecoded_0(LispObject def)
 {
-// Note that now I have a conservative garbage collector the mess
-// of SAVE_CODEVEC can be removed, and that should at least slightly
-// speed things up.
-    SAVE_CODEVEC;
+// RealSave is being used here to ensure that material is placed on
+// the Lisp stack such that bytestream_interpret will find it where it
+// expects to.
     RealSave save(def);
     LispObject r;
     TRY
@@ -106,7 +102,7 @@ LispObject bytecoded_0(LispObject def)
 }
 
 LispObject bytecoded_1(LispObject def, LispObject a)
-{   SAVE_CODEVEC;
+{
 #ifdef DEBUG
 // In the NO_THROW case I arrange that (most) functions that exit via
 // a simulated throw return a value that denotes an exception value. This
@@ -117,7 +113,6 @@ LispObject bytecoded_1(LispObject def, LispObject a)
     if (is_exception(a)) my_abort("exception value not trapped");
 #endif
     RealSave save(def, a);
-    LispObject &a1 = save.val(2);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-1);
@@ -127,26 +122,22 @@ LispObject bytecoded_1(LispObject def, LispObject a)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
-            loop_print_error(a1);
+            loop_print_error(a);
             err_printf("\n");
         }
         exit_reason = _reason;
         RETHROW;
     END_CATCH;
-// Note that a destructor set up by SAVE_CODEVEC gets activated here and
-// that restores the stack pointer and also values of codevec and litvec.
     return r;
 }
 
 LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
-{   SAVE_CODEVEC;
+{
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
     if (is_exception(b)) my_abort("exception value not trapped");
 #endif
     RealSave save(def, a, b);
-    LispObject &a1 = save.val(2);
-    LispObject &a2 = save.val(3);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-2);
@@ -156,9 +147,9 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg 1: ");
-            loop_print_error(a1); err_printf("\n");
+            loop_print_error(a); err_printf("\n");
             err_printf("Arg 2: ");
-            loop_print_error(a2); err_printf("\n");
+            loop_print_error(b); err_printf("\n");
         }
         exit_reason = _reason;
         RETHROW;
@@ -168,16 +159,13 @@ LispObject bytecoded_2(LispObject def, LispObject a, LispObject b)
 
 LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
                        LispObject c)
-{   SAVE_CODEVEC;
+{
 #ifdef DEBUG
     if (is_exception(a)) my_abort("exception value not trapped");
     if (is_exception(b)) my_abort("exception value not trapped");
     if (is_exception(c)) my_abort("exception value not trapped");
 #endif
     RealSave save(def, a, b, c);
-    LispObject &a1 = save.val(2);
-    LispObject &a2 = save.val(3);
-    LispObject &a3 = save.val(4);
     LispObject r;
     TRY
         r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-3);
@@ -187,11 +175,11 @@ LispObject bytecoded_3(LispObject def, LispObject a, LispObject b,
         int _reason = exit_reason;
         if (SHOW_ARGS)
         {   err_printf("Arg1: ");
-            loop_print_error(a1); err_printf("\n");
+            loop_print_error(a); err_printf("\n");
             err_printf("Arg2: ");
-            loop_print_error(a2); err_printf("\n");
+            loop_print_error(b); err_printf("\n");
             err_printf("Arg3: ");
-            loop_print_error(a3); err_printf("\n");
+            loop_print_error(c); err_printf("\n");
         }
         exit_reason = _reason;
         RETHROW;
@@ -210,7 +198,7 @@ inline int countargs(LispObject a4up)
 
 LispObject bytecoded_4up(LispObject def, LispObject a1, LispObject a2,
                          LispObject a3, LispObject a4up)
-{   SAVE_CODEVEC;
+{
 #ifdef DEBUG
     if (is_exception(a1)) my_abort("exception value not trapped");
     if (is_exception(a2)) my_abort("exception value not trapped");
@@ -261,7 +249,8 @@ LispObject nreverse2(LispObject a, LispObject b)
 static LispObject byteopt(LispObject def, LispObject a1,
                           LispObject a2, LispObject a3,
                           LispObject a4up, LispObject defaultval, bool restp)
-{   LispObject r;
+{   stack_restorer save;
+    LispObject r;
 #ifdef DEBUG
     if (is_exception(a1)) my_abort("exception value not trapped");
     if (is_exception(a2)) my_abort("exception value not trapped");
@@ -270,7 +259,6 @@ static LispObject byteopt(LispObject def, LispObject a1,
     if (is_exception(defaultval)) my_abort("exception value not trapped");
 #endif
     int i, wantargs, wantopts;
-    SAVE_CODEVEC;
 // From calls that passed a small number of arguments I will invoke this as
 // 0:  byteopt(SPID_NOARG, SPID_NOARG, SPID_NOARG, nil, ...)
 // 1:  byteopt(arg1, SPID_NOARG, SPID_NOARG, nil, ...)

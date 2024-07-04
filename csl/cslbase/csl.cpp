@@ -1048,7 +1048,7 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    RAIIsave_codevec save;
+                    stack_restorer save;
                     preserve(msg, len);
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
@@ -1064,7 +1064,7 @@ static LispObject lisp_main()
                         len = static_cast<int>(length_of_byteheader(vechdr(
                                                    exit_value)) - CELL);
                     }
-                    {   RAIIsave_codevec save;
+                    {   stack_restorer save;
                         preserve(msg, len);
                     }
 // This is all to abandon existing in-use pages and put things back as if

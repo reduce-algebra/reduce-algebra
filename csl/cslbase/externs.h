@@ -410,7 +410,7 @@ extern LispObject current_package, startfn, karaWork;
 extern LispObject gensym_base, string_char_sym, boffo;
 extern LispObject err_table, progn_symbol, gcknt_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
-extern LispObject echo_symbol, codevec, litvec, supervisor, B_reg;
+extern LispObject echo_symbol, supervisor, B_reg;
 extern LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
 extern LispObject compiler_symbol, tracedfn, lisp_terminal_io;
 extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
@@ -1163,7 +1163,7 @@ extern setup_type const om_parse_setup[];
     X(builtin4_symbol),       X(bytecoded_symbol),  X(call_stack), \
     X(callstack),             X(catch_tags),        X(cfunarg), \
     X(char_0_symbol),         X(charvec),           X(cl_equal_symbol), \
-    X(codevec),               X(comma_at_symbol),   X(comma_symbol), \
+                              X(comma_at_symbol),   X(comma_symbol), \
     X(compiler_symbol),       X(comp_symbol),       X(cond_symbol), \
     X(cons_symbol),           X(current_file),      X(current_function), \
     X(current_module),        X(current_package),   X(debug_io), \
@@ -1185,7 +1185,7 @@ extern setup_type const om_parse_setup[];
     X(lisp_package),          X(lisp_query_io),     X(lisp_standard_input), \
     X(lisp_standard_output),  X(lisp_terminal_io),  X(lisp_trace_output), \
     X(lisp_true),             X(lisp_work_stream),  X(liststar_symbol), \
-    X(list_symbol),           X(litvec),            X(load_selected_source_symbol), \
+    X(list_symbol),                                 X(load_selected_source_symbol), \
     X(load_source_symbol),    X(long_float),        X(lose_symbol), \
     X(lower_symbol),          X(macroexpand_hook),  X(macro_symbol), \
     X(multiplication_buffer), X(mv_call_symbol),    X(named_character), \

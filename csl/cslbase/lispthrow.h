@@ -478,41 +478,31 @@ inline void stackcheck()
         respond_to_stack_event();
 }
 
+// All the versions that use arguments are now redundant!
+
 inline void stackcheck(LispObject& a1)
 {   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(a1);
         respond_to_stack_event();
-        saver.restore(a1);
-    }
 }
 
 inline void stackcheck(LispObject& a1, LispObject& a2)
 {   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(a1, a2);
         respond_to_stack_event();
-        saver.restore(a1, a2);
-    }
 }
 
 inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
 {   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(a1, a2, a3);
         respond_to_stack_event();
-        saver.restore(a1, a2, a3);
-    }
 }
 
 inline void stackcheck(LispObject& a1, LispObject& a2,
                        LispObject& a3, LispObject& a4)
 {   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-    {   Save saver(a1, a2, a3, a4);
         respond_to_stack_event();
-        saver.restore(a1, a2, a3, a4);
-    }
 }
 
 inline void respond_to_fringe_event(LispObject &r, const char *msg)
@@ -976,31 +966,6 @@ public:
 #define STACK_SANITY1(w)        ;
 
 #endif
-
-// In parts of the interpreter I want to save litvec and codevec and be
-// certain that I will restore them at function exit. This macro will help
-// me.
-// This mess may not be required when I have a conservative garbage collector
-// if I then make codevec and litvec local rather than global variables, and
-// the result might be both clearer code and less overhead.
-
-class RAIIsave_codevec
-{   LispObject *saveStack;
-public:
-    RAIIsave_codevec()
-    {   saveStack = stack;
-        stack = saveStack + 2;
-        saveStack[1] = litvec;
-        saveStack[2] = codevec;
-    }
-    ~RAIIsave_codevec()
-    {   litvec = saveStack[1];
-        codevec = saveStack[2];
-        stack = saveStack;
-    }
-};
-
-#define SAVE_CODEVEC RAIIsave_codevec save_codevec_object;
 
 // First I will comment on protection for push/pop against exceptions that
 // might arise, as in

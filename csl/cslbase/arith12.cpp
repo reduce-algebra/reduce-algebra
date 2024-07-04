@@ -5,7 +5,6 @@
 //
 //
 
-
 /**************************************************************************
  * Copyright (C) 2024, Codemist.                         A C Norman       *
  *                                                                        *
@@ -150,29 +149,14 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
             else return aerror2("non-prime modulus in modular-reciprocal",
                              large_modulus, n);
         }
-        {   Save save(x, y);
-            w = quot2(a, b);
-            save.restore(x, y);
-        }
+        w = quot2(a, b);
         t = b;
-        {   Save save(a, x, y, w, t);
-            b = times2(b, w);
-            save.restore(a, x, y, w, t);
-        }
-        {   Save save(x, y, w, t);
-            b = difference2(a, b);
-            save.restore(x, y, w, t);
-        }
+        b = times2(b, w);
+        b = difference2(a, b);
         a = t;
         t = y;
-        {   Save save(a, b, x, t);
-            y = times2(y, w);
-            save.restore(a, b, x, t);
-        }
-        {   Save save(a, b, t);
-            y = difference2(x, y);
-            save.restore(a, b, t);
-        }
+        y = times2(y, w);
+        y = difference2(x, y);
         x = t;
     }
     y = modulus(y, large_modulus);
@@ -279,11 +263,8 @@ LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
 LispObject Lmodular_quotient(LispObject env, LispObject a,
                              LispObject b)
 {   SingleValued fn;
-    {   Save save(a);
-        b = Lmodular_reciprocal(nil, b);
-        errexit();
-        save.restore(a);
-    }
+    b = Lmodular_reciprocal(nil, b);
+    errexit();
     return Lmodular_times(nil, a, b);
 }
 
@@ -300,20 +281,16 @@ LispObject large_modular_expt(LispObject a, int x)
     }
     r = p;
     while (x != 1)
-    {   Save save(r);
-        w = times2(p, p);
+    {   w = times2(p, p);
         errexit();
         p = modulus(w, large_modulus);
         errexit();
-        save.restore(r);
         x = x/2;
         if ((x & 1) != 0)
-        {   Save save1(p);
-            w = times2(r, p);
+        {   w = times2(r, p);
             errexit();
             r = modulus(w, large_modulus);
             errexit();
-            save1.restore(p);
         }
     }
     return r;

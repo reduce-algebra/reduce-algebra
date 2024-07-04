@@ -237,6 +237,7 @@ prepare() {
 # REVISION will be the subversion revision of the copy that I will make the
 # snapshot of, written in the form "svnNNNN".
   fi
+  chmod +x $REDUCE_DISTRIBUTION/scripts/*.sh
 }
 
 hostname() {

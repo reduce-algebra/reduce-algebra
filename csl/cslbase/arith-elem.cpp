@@ -1927,10 +1927,8 @@ LispObject Nclog(LispObject env, LispObject a, LispObject b)
     double ri = cimag(r);
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -1947,10 +1945,8 @@ LispObject Ncsqrt(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -1967,10 +1963,8 @@ LispObject Ncsin(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -1987,10 +1981,8 @@ LispObject Nccos(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2007,10 +1999,8 @@ LispObject Nctan(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2042,10 +2032,8 @@ LispObject Ncasin(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2062,10 +2050,8 @@ LispObject Ncacos(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2082,10 +2068,8 @@ LispObject Ncatan(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2117,10 +2101,8 @@ LispObject Ncsinh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2137,10 +2119,8 @@ LispObject Nccosh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2157,10 +2137,8 @@ LispObject Nctanh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2192,10 +2170,8 @@ LispObject Ncasinh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2212,10 +2188,8 @@ LispObject Ncacosh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
@@ -2232,10 +2206,8 @@ LispObject Ncatanh(LispObject env, LispObject a, LispObject b)
     std::printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
     errexit();
-    Save save(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     errexit();
-    save.restore(a);
     a = cons(a, b);
     return a;
 }
