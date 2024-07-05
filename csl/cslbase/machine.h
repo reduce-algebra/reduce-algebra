@@ -109,8 +109,10 @@
 
 #ifdef __GNUC__
 #define NOINLINE [[gnu::noinline]]
+#define ALWAYSINLINE [[gnu::always_inline]]
 #else
 #define NOINLINE
+#define ALWAYSINLINE
 #endif // __GNUC__
 
 #ifdef HAVE_BITCAST

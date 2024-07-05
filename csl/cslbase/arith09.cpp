@@ -508,11 +508,9 @@ LispObject gcd(LispObject a, LispObject b)
             trace_printf("GCD of 2 bignums %x %x\n", topdigit(a), topdigit(b));
             trace_printf("signs %d %d\n", bignum_minusp(a), bignum_minusp(b));
 #endif
-            {   Save save(b);
-                if (bignum_minusp(a)) a = negateb(a);
+            {   if (bignum_minusp(a)) a = negateb(a);
                 else a = copyb(a);
                 errexit();
-                save.restore(b);
             }
             {   Save save(a);
                 if (bignum_minusp(b)) b = negateb(b);
@@ -705,7 +703,7 @@ LispObject lcm(LispObject a, LispObject b)
 {   LispObject g;
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
-    stackcheck(a, b);
+    stackcheck();
     errexit();
     {   Save save(a, b);
         g = gcd(a, b);

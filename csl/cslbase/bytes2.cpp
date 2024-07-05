@@ -103,8 +103,8 @@ size_t xppc;
 #endif
 #endif
     lit = qenv(lit);
-    codevec = car(lit);
-    litvec = cdr(lit);
+    LispObject codevec = car(lit);
+    LispObject litvec = cdr(lit);
 #ifndef NO_BYTECOUNT
 // Attribute 10-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
@@ -294,7 +294,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_STOREFREE:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
-                    print_traceset(current_byte, A_reg);
+                    print_traceset(current_byte, A_reg, litvec);
                     errexit();
                     save.restore(A_reg);
                 }
@@ -305,7 +305,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_STOREFREE1:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
-                    print_traceset(1, A_reg);
+                    print_traceset(1, A_reg, litvec);
                     errexit();
                     save.restore(A_reg);
                 }
@@ -315,7 +315,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_STOREFREE2:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
-                    print_traceset(2, A_reg);
+                    print_traceset(2, A_reg, litvec);
                     errexit();
                     save.restore(A_reg);
                 }
@@ -325,7 +325,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_STOREFREE3:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   Save save(A_reg);
-                    print_traceset(3, A_reg);
+                    print_traceset(3, A_reg, litvec);
                     errexit();
                     save.restore(A_reg);
                 }
@@ -931,271 +931,271 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPL0NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[0] == nil) short_jump(ppc, xppc);
+                if (stack[0] == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL0T:
                 xppc = ppc;
                 ppc++;
-                if (stack[0] != nil) short_jump(ppc, xppc);
+                if (stack[0] != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL1NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-1] == nil) short_jump(ppc, xppc);
+                if (stack[-1] == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL1T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-1] != nil) short_jump(ppc, xppc);
+                if (stack[-1] != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL2NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-2] == nil) short_jump(ppc, xppc);
+                if (stack[-2] == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL2T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-2] != nil) short_jump(ppc, xppc);
+                if (stack[-2] != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL3NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-3] == nil) short_jump(ppc, xppc);
+                if (stack[-3] == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL3T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-3] != nil) short_jump(ppc, xppc);
+                if (stack[-3] != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL4NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-4] == nil) short_jump(ppc, xppc);
+                if (stack[-4] == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL4T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-4] != nil) short_jump(ppc, xppc);
+                if (stack[-4] != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL0ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[0])) short_jump(ppc, xppc);
+                if (!consp(stack[0])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL0NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[0])) short_jump(ppc, xppc);
+                if (consp(stack[0])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL1ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[-1])) short_jump(ppc, xppc);
+                if (!consp(stack[-1])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL1NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[-1])) short_jump(ppc, xppc);
+                if (consp(stack[-1])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL2ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[-2])) short_jump(ppc, xppc);
+                if (!consp(stack[-2])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL2NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[-2])) short_jump(ppc, xppc);
+                if (consp(stack[-2])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL3ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[-3])) short_jump(ppc, xppc);
+                if (!consp(stack[-3])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPL3NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[-3])) short_jump(ppc, xppc);
+                if (consp(stack[-3])) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPST0NIL:
                 xppc = ppc;
                 ppc++;
-                if ((stack[0] = A_reg) == nil) short_jump(ppc, xppc);
+                if ((stack[0] = A_reg) == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPST0T:
                 xppc = ppc;
                 ppc++;
-                if ((stack[0] = A_reg) != nil) short_jump(ppc, xppc);
+                if ((stack[0] = A_reg) != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPST1NIL:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-1] = A_reg) == nil) short_jump(ppc, xppc);
+                if ((stack[-1] = A_reg) == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPST1T:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-1] = A_reg) != nil) short_jump(ppc, xppc);
+                if ((stack[-1] = A_reg) != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPST2NIL:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-2] = A_reg) == nil) short_jump(ppc, xppc);
+                if ((stack[-2] = A_reg) == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPST2T:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-2] = A_reg) != nil) short_jump(ppc, xppc);
+                if ((stack[-2] = A_reg) != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE1NIL:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 1)) == nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE1T:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 1)) != nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE2NIL:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 2)) == nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE2T:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 2)) != nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE3NIL:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 3)) == nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE3T:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 3)) != nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE4NIL:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 4)) == nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREE4T:
                 xppc = ppc;
                 ppc++;
                 if (qvalue(basic_elt(litvec, 4)) != nil)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT1EQ:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 1)) == A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT1NE:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 1)) != A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT2EQ:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 2)) == A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT2NE:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 2)) != A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT3EQ:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 3)) == A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT3NE:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 3)) != A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT4EQ:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 4)) == A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLIT4NE:
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec, 4)) != A_reg)
-                    short_jump(ppc, xppc);
+                    short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREENIL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, w)) == nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, w)) == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFREET:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (qvalue(basic_elt(litvec, w)) != nil) short_jump(ppc, xppc);
+                if (qvalue(basic_elt(litvec, w)) != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLITEQ:
@@ -1203,7 +1203,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(
-                    basic_elt(litvec, w)) == A_reg) short_jump(ppc, xppc);
+                    basic_elt(litvec, w)) == A_reg) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPLITNE:
@@ -1211,7 +1211,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (static_cast<LispObject>(basic_elt(litvec,
-                                                      w)) != A_reg) short_jump(ppc, xppc);
+                                                      w)) != A_reg) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPB1NIL:
@@ -1219,7 +1219,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f1(nil, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) short_jump(ppc, xppc);
+                if (A_reg == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPB1T:
@@ -1227,7 +1227,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f1(nil, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) short_jump(ppc, xppc);
+                if (A_reg != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPB2NIL:
@@ -1235,7 +1235,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f2(nil, B_reg, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) short_jump(ppc, xppc);
+                if (A_reg == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPB2T:
@@ -1243,7 +1243,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f2(nil, B_reg, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) short_jump(ppc, xppc);
+                if (A_reg != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPEQCAR:     // jump if eqcar(A, <some literal>)
@@ -1252,7 +1252,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 ppc++;
                 if (car_legal(A_reg) &&
                     static_cast<LispObject>(basic_elt(litvec,
-                                                      w)) == car(A_reg)) short_jump(ppc, xppc);
+                                                      w)) == car(A_reg)) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNEQCAR:
@@ -1261,7 +1261,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 ppc++;
                 if (!car_legal(A_reg) ||
                     static_cast<LispObject>(basic_elt(litvec,
-                                                      w)) != car(A_reg)) short_jump(ppc, xppc);
+                                                      w)) != car(A_reg)) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPFLAGP:
@@ -1273,14 +1273,14 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
                     errexit();
-                    if (r1 != unset_var) short_jump(ppc, xppc);
+                    if (r1 != unset_var) short_jump(ppc, xppc, codevec);
                     continue;
                 }
 #else
                 {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
                     errexit();
                 }
-                if (r1 != nil) short_jump(ppc, xppc);
+                if (r1 != nil) short_jump(ppc, xppc, codevec);
                 continue;
 #endif
 
@@ -1289,21 +1289,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!symbolp(A_reg))
-                {   short_jump(ppc, xppc);
+                {   short_jump(ppc, xppc, codevec);
                     continue;
                 }
                 else
 #ifdef COMMON
                 {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
                     errexit();
-                    if (r1 == unset_var) short_jump(ppc, xppc);
+                    if (r1 == unset_var) short_jump(ppc, xppc, codevec);
                     continue;
                 }
 #else
                 {   r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
                     errexit();
                 }
-                if (r1 == nil) short_jump(ppc, xppc);
+                if (r1 == nil) short_jump(ppc, xppc, codevec);
                 continue;
 #endif
 
@@ -1316,164 +1316,164 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg)) short_jump(ppc, xppc);
+                if (!consp(A_reg)) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPATOM_B:
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg)) short_jump_back(ppc, xppc, A_reg);
+                if (!consp(A_reg)) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPNATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg)) short_jump(ppc, xppc);
+                if (consp(A_reg)) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNATOM_B:
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg)) short_jump_back(ppc, xppc, A_reg);
+                if (consp(A_reg)) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPEQ:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg) short_jump(ppc, xppc);
+                if (A_reg == B_reg) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPEQ_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg) short_jump_back(ppc, xppc, A_reg);
+                if (A_reg == B_reg) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPNE:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg) short_jump(ppc, xppc);
+                if (A_reg != B_reg) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNE_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg) short_jump_back(ppc, xppc, A_reg);
+                if (A_reg != B_reg) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPEQUAL:
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc, codevec);
                 errexit();
                 continue;
 
             case OP_JUMPEQUAL_B:
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg, codevec);
                 errexit();
                 continue;
 
             case OP_JUMPNEQUAL:
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc, codevec);
                 errexit();
                 continue;
 
             case OP_JUMPNEQUAL_B:
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg, codevec);
                 errexit();
                 continue;
 
             case OP_JUMP:
                 ppc++;
-                short_jump(ppc, ppc-1);
+                short_jump(ppc, ppc-1, codevec);
                 continue;
 
             case OP_JUMP_B:
                 ppc++;
-                short_jump_back(ppc, ppc-1, A_reg);
+                short_jump_back(ppc, ppc-1, A_reg, codevec);
                 continue;
 
             case OP_JUMPATOM_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg)) long_jump(w, ppc, xppc);
+                if (!consp(A_reg)) long_jump(w, ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPATOM_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg)) long_jump_back(w, ppc, xppc, A_reg);
+                if (!consp(A_reg)) long_jump_back(w, ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPNATOM_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg)) long_jump(w, ppc, xppc);
+                if (consp(A_reg)) long_jump(w, ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNATOM_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg)) long_jump_back(w, ppc, xppc, A_reg);
+                if (consp(A_reg)) long_jump_back(w, ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPEQ_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg) long_jump(w, ppc, xppc);
+                if (A_reg == B_reg) long_jump(w, ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPEQ_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg) long_jump_back(w, ppc, xppc, A_reg);
+                if (A_reg == B_reg) long_jump_back(w, ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPNE_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg) long_jump(w, ppc, xppc);
+                if (A_reg != B_reg) long_jump(w, ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNE_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg) long_jump_back(w, ppc, xppc, A_reg);
+                if (A_reg != B_reg) long_jump_back(w, ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPEQUAL_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump(w, ppc, xppc);
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump(w, ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPEQUAL_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc, A_reg);
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPNEQUAL_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump(w, ppc, xppc);
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump(w, ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNEQUAL_BL:
@@ -1481,19 +1481,19 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc,
-                            A_reg);
+                            A_reg, codevec);
                 continue;
 
             case OP_JUMP_L:
                 w = next_byte;
                 ppc++;
-                long_jump(w, ppc, ppc-1);
+                long_jump(w, ppc, ppc-1, codevec);
                 continue;
 
             case OP_JUMP_BL:
                 w = next_byte;
                 ppc++;
-                long_jump_back(w, ppc, ppc-1, A_reg);
+                long_jump_back(w, ppc, ppc-1, A_reg, codevec);
                 continue;
 
             case OP_CATCH:
@@ -1668,10 +1668,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // where the bodies of the functions so not do enough work that polling
 // for interrupts or for window-system updates will happen. Thus it seems
 // I need to perform a polling operation as part of the tail-call sequence.
-                {   Save save(r1);
-                    poll_jump_back(A_reg);
-                    save.restore(r1);
-                }
+                poll_jump_back(A_reg);
 // If I have an (untraced) tailcall to a bytecoded function I can just reset
 // some pointers and go back to the top of the code of the bytecode
 // interpreter.
@@ -1722,10 +1719,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
-                {   Save save(r1);
-                    poll_jump_back(A_reg);
-                    save.restore(r1);
-                }
+                poll_jump_back(A_reg);
                 if (f1 == bytecoded_1 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1767,10 +1761,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-                {   Save save(r1);
-                    poll_jump_back(A_reg);
-                    save.restore(r1);
-                }
+                poll_jump_back(A_reg);
                 if (f2 == bytecoded_2 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1811,10 +1802,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f3 = qfn3(r1);
-                {   Save save(r1);
-                    poll_jump_back(A_reg);
-                    save.restore(r1);
-                }
+                poll_jump_back(A_reg);
                 r2 = *stack--;
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
@@ -1857,7 +1845,6 @@ next_opcode:   // This label is so that I can restart what I am doing
 // The args are in stack[-1], stack[0], B_reg, A_reg
 // In some other JCALL cases I optimise if the called function is
 // bytecoded. I have not done that here (yet?).
-                poll_jump_back(A_reg);
                 r2 = *stack--; r1 = *stack--;
                 B_reg = list3star(r1, r2, B_reg, A_reg);
                 A_reg = basic_elt(litvec, fname);
@@ -1912,7 +1899,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     case 7:
                         if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                         {   Save save(A_reg);
-                            print_traceset(fname, A_reg);
+                            print_traceset(fname, A_reg, litvec);
                             errexit();
                             save.restore(A_reg);
                             errexit();
@@ -1954,7 +1941,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   fname = 0;
                     goto call1;
                 }
-                {   RAIIsave_codevec saver;
+                {   stack_restorer saver;
                     *++stack = A_reg; // the argument
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
@@ -2001,7 +1988,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   fname = 0;
                     goto call2;
                 }
-                {   RAIIsave_codevec saver;
+                {   stack_restorer saver;
                     *++stack =B_reg; *++stack = A_reg;
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
@@ -2464,25 +2451,25 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPNIL:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) short_jump(ppc, xppc);
+                if (A_reg == nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPNIL_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) short_jump_back(ppc, xppc, A_reg);
+                if (A_reg == nil) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPT:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) short_jump(ppc, xppc);
+                if (A_reg != nil) short_jump(ppc, xppc, codevec);
                 continue;
 
             case OP_JUMPT_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) short_jump_back(ppc, xppc, A_reg);
+                if (A_reg != nil) short_jump_back(ppc, xppc, A_reg, codevec);
                 continue;
 
             case OP_JUMPNIL_L:

@@ -400,7 +400,6 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
 //    (+ (+ (+ (+ a1 a2) a3) a4) a5)
 {   SingleValued fn;
     intptr_t c;
-    Save save(a3, a4up);
 // While the arithmetic involved fixnums I do it inline in the twin hopes that
 // this will be an expecially common case and that the inline code will
 // help with performance.
@@ -412,7 +411,6 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
     {   a1 = plus2(a1, a2);
         errexit();
     }
-    save.restore(a3, a4up);
     if (is_fixnum(a1) &&
         is_fixnum(a3) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a3)))
@@ -421,7 +419,6 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
     {   a1 = plus2(a1, a3);
         errexit();
     }
-    save.restore(a3, a4up);
     while (a4up != nil)
     {   LispObject an = car(a4up);
         a4up = cdr(a4up);
@@ -430,10 +427,8 @@ static LispObject Lplus_4up(LispObject env, LispObject a1,
             intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(an)))
             a1 = fixnum_of_int(c);
         else
-        {   Save save1(a4up);
-            a1 = plus2(a1, an);
+        {   a1 = plus2(a1, an);
             errexit();
-            save1.restore(a4up);
         }
     }
     return a1;
@@ -443,20 +438,15 @@ static LispObject Ldifference_4up(LispObject env, LispObject a1,
                                   LispObject a2,
                                   LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    Save save(a3, a4up);
     a1 = difference2(a1, a2);
     errexit();
-    save.restore(a3, a4up);
     a1 = difference2(a1, a3);
     errexit();
-    save.restore(a3, a4up);
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
         a1 = difference2(a1, a2);
         errexit();
-        save1.restore(a4up);
     }
     return a1;
 }
@@ -465,20 +455,15 @@ static LispObject Ltimes_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    Save save(a3, a4up);
     a1 = times2(a1, a2);
     errexit();
-    save.restore(a3, a4up);
     a1 = times2(a1, a3);
     errexit();
-    save.restore(a3, a4up);
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
         a1 = times2(a1, a2);
         errexit();
-        save1.restore(a4up);
     }
     return a1;
 }
@@ -501,30 +486,23 @@ LispObject LCLquotient_2(LispObject env, LispObject a, LispObject b)
 LispObject LCLquotient_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   SingleValued fn;
-    Save save(a3);
     a1 = CLquot2(a1, a2);
     errexit();
-    save.restore(a3);
     return CLquot2(a1, a3);
 }
 
 LispObject LCLquotient_4up(LispObject env,
                            LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    Save save(a3, a4up);
     a1 = CLquot2(a1, a2);
     errexit();
-    save.restore(a3, a4up);
     a1 = CLquot2(a1, a3);
     errexit();
-    save.restore(a3, a4up);
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
         a1 = CLquot2(a1, a2);
         errexit();
-        save1.restore(a4up);
     }
     return a1;
 }
@@ -547,30 +525,23 @@ LispObject Lquotient_2(LispObject env, LispObject a, LispObject b)
 LispObject Lquotient_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
 {   SingleValued fn;
-    Save save(a3);
     a1 = quot2(a1, a2);
     errexit();
-    save.restore(a3);
     return quot2(a1, a3);
 }
 
 LispObject Lquotient_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    Save save(a3, a4up);
     a1 = quot2(a1, a2);
     errexit();
-    save.restore(a3, a4up);
     a1 = quot2(a1, a3);
     errexit();
-    save.restore(a3, a4up);
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
         a1 = quot2(a1, a2);
         errexit();
-        save1.restore(a4up);
     }
     return a1;
 }
@@ -578,7 +549,7 @@ LispObject Lquotient_4up(LispObject env,
 LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject q;
-    stackcheck(a, b);
+    stackcheck();
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);
     errexit();
@@ -624,7 +595,6 @@ LispObject Lplus_3(LispObject env, LispObject a1, LispObject a2,
                    LispObject a3)
 {   SingleValued fn;
     intptr_t c;
-    Save save(a3);
     if (is_fixnum(a1) &&
         is_fixnum(a2) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a2)))
@@ -633,7 +603,6 @@ LispObject Lplus_3(LispObject env, LispObject a1, LispObject a2,
     {   a1 = plus2(a1, a2);
         errexit();
     }
-    save.restore(a3);
     if (is_fixnum(a1) &&
         is_fixnum(a3) &&
         intptr_valid_as_fixnum(c = int_of_fixnum(a1) + int_of_fixnum(a3)))
@@ -655,9 +624,7 @@ LispObject Ltimes_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Ltimes_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
 {   SingleValued fn;
-    Save save(a3);
     a1 = times2(a1, a2);
-    save.restore(a3);
     return times2(a1, a3);
 }
 
@@ -674,10 +641,8 @@ LispObject Ldifference_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Ldifference_3(LispObject env, LispObject a1, LispObject a2,
                          LispObject a3)
 {   SingleValued fn;
-    Save save(a3);
     a1 = difference2(a1, a2);
     errexit();
-    save.restore(a3);
     return difference2(a1, a3);
 }
 
@@ -701,20 +666,15 @@ static LispObject Lbool_4up(LispObject env, LispObject a1,
                             LispObject a3, LispObject a4up)
 {   SingleValued fn;
     int what = int_of_fixnum(qenv(env));
-    Save save(a3, a4up);
     a1 = (*boolop_array[what])(a1, a2);
     errexit();
-    save.restore(a3, a4up);
     a1 = (*boolop_array[what])(a1, a3);
     errexit();
-    save.restore(a3, a4up);
     while (a4up != nil)
     {   a2 = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
         a1 = (*boolop_array[what])(a1, a2);
         errexit();
-        save1.restore(a4up);
     }
     return a1;
 }
@@ -772,20 +732,15 @@ LispObject Lplusp(LispObject env, LispObject a)
 LispObject Leqn_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a2, a3, a4up);
-        if (!SL_numeq2(a1, a2)) return nil;
+    {   if (!SL_numeq2(a1, a2)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
         if (!SL_numeq2(a2, a3)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
     }
     while (a4up != nil)
     {   LispObject w = car(a4up);
-        {       Save save(a3, a4up);
-            if (!SL_numeq2(a3, w)) return false;
+        {   if (!SL_numeq2(a3, w)) return false;
             errexit();
-            save.restore(a3, a4up);
         }
         a4up = cdr(a4up);
     }
@@ -806,10 +761,8 @@ LispObject Leqn_1(LispObject, LispObject)
 LispObject Leqn_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a2, a3);
     if (!SL_numeq2(a1, a2)) return nil;
     errexit();
-    save.restore(a2, a3);
     return SL_numeq2(a2, a3) ? lisp_true : nil;
 }
 
@@ -821,21 +774,16 @@ LispObject Leqn_2(LispObject env, LispObject a, LispObject b)
 LispObject Lcl_equals_sign_4up(LispObject env,
                                LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a2, a3, a4up);
-        if (!numeq2(a1, a2)) return nil;
+    {   if (!numeq2(a1, a2)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
         if (!numeq2(a2, a3)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        Save save(q, a4up);
         if (!numeq2(p, q)) return nil;
         errexit();
-        save.restore(q, a4up);
         p = q;
         a4up = cdr(a4up);
     }
@@ -856,10 +804,8 @@ LispObject Lcl_equals_sign_1(LispObject, LispObject)
 LispObject Lcl_equals_sign_3(LispObject env, LispObject a1,
                              LispObject a2, LispObject a3)
 {   SingleValued fn;
-    Save save(a2, a3);
     if (!numeq2(a1, a2)) return nil;
     errexit();
-    save.restore(a2, a3);
     return numeq2(a2, a3) ? lisp_true : nil;
 }
 
@@ -872,20 +818,16 @@ LispObject Lcl_equals_sign_2(LispObject env, LispObject a,
 LispObject Llessp_4up(LispObject env,
                       LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a2, a3, a4up);
-        if (!lessp2(a1, a2)) return nil;
+    {   if (!lessp2(a1, a2)) return nil;
         errexit();
         if (!lessp2(a2, a3)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        Save save(p, a4up);
         if (!lessp2(p, q)) return nil;
         errexit();
-        save.restore(p, a4up);
         p = q;
         a4up = cdr(a4up);
     }
@@ -895,10 +837,8 @@ LispObject Llessp_4up(LispObject env,
 LispObject Llessp_3(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3)
 {   SingleValued fn;
-    Save save(a2, a3);
     if (!lessp2(a1, a2)) return nil;
     errexit();
-    save.restore(a2, a3);
     return lessp2(a2, a3) ? lisp_true : nil;
 }
 
@@ -920,21 +860,16 @@ LispObject Llessp_0(LispObject env)
 LispObject Lgreaterp_4up(LispObject env,
                          LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a2, a3, a4up);
-        if (!lessp2(a2, a1)) return nil;
+    {   if (!lessp2(a2, a1)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
         if (!lessp2(a3, a2)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        {       Save save(q, a4up);
-            if (!lessp2(q, p)) return nil;
+        {   if (!lessp2(q, p)) return nil;
             errexit();
-            save.restore(q, a4up);
         }
         p = q;
         a4up = cdr(a4up);
@@ -945,10 +880,8 @@ LispObject Lgreaterp_4up(LispObject env,
 LispObject Lgreaterp_3(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3)
 {   SingleValued fn;
-    Save save(a2, a3);
     if (!lessp2(a2, a1)) return nil;
     errexit();
-    save.restore(a2, a3);
     return lessp2(a3, a2) ? lisp_true : nil;
 }
 
@@ -972,33 +905,20 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
                                LispObject a3, LispObject a4up)
 // "/=" is supposed to check that no pair of args match.
 {   SingleValued fn;
-    Save save(a1, a2, a3);
-    {   Save save1(a4up);
-        if (numeq2(a1, a2)) return nil;
+    {   if (numeq2(a1, a2)) return nil;
         errexit();
-        save.restore(a1, a2, a3);
         if (numeq2(a1, a3)) return nil;
         errexit();
-        save.restore(a1, a2, a3);
         if (numeq2(a2, a3)) return nil;
         errexit();
-        save.restore(a1, a2, a3);
-        save1.restore(a4up);
     }
     while (a4up != nil)
-    {   Save save1(a4up);
-        if (numeq2(a1, car(a4up))) return nil;
+    {   if (numeq2(a1, car(a4up))) return nil;
         errexit();
-        save.restore(a1, a2, a3);
-        save1.restore(a4up);
         if (numeq2(a2, car(a4up))) return nil;
         errexit();
-        save.restore(a1, a2, a3);
-        save1.restore(a4up);
         if (numeq2(a3, car(a4up))) return nil;
         errexit();
-        save.restore(a1, a2, a3);
-        save1.restore(a4up);
         a4up = cdr(a4up);
     }
     return lisp_true;
@@ -1007,13 +927,10 @@ static LispObject Lnum_neq_4up(LispObject env, LispObject a1,
 LispObject Lnum_neq_3(LispObject env, LispObject a1, LispObject a2,
                       LispObject a3)
 {   SingleValued fn;
-    Save save(a1, a2, a3);
     if (!numeq2(a1, a2)) return nil;
     errexit();
-    save.restore(a1, a2, a3);
     if (!numeq2(a1, a3)) return nil;
     errexit();
-    save.restore(a1, a2, a3);
     if (!numeq2(a2, a3)) return nil;
     errexit();
     return lisp_true;
@@ -1037,21 +954,16 @@ LispObject Lnum_neq_0(LispObject env)
 LispObject Lgeq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a2, a3, a4up);
-        if (!lesseq2(a2, a1)) return nil;
+    {   if (!lesseq2(a2, a1)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
         if (!lesseq2(a3, a2)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        {       Save save(q, a4up);
-            if (!lesseq2(q, p)) return nil;
+        {   if (!lesseq2(q, p)) return nil;
             errexit();
-            save.restore(q, a4up);
         }
         p = q;
         a4up = cdr(a4up);
@@ -1062,10 +974,8 @@ LispObject Lgeq_4up(LispObject env,
 LispObject Lgeq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a2, a3);
     if (!lesseq2(a2, a1)) return nil;
     errexit();
-    save.restore(a2, a3);
     return lesseq2(a3, a2) ? lisp_true : nil;
 }
 
@@ -1088,20 +998,16 @@ LispObject Lgeq_0(LispObject env)
 LispObject Lleq_4up(LispObject env,
                     LispObject a1, LispObject a2, LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a2, a3, a4up);
-        if (!lesseq2(a1, a2)) return nil;
+    {   if (!lesseq2(a1, a2)) return nil;
         errexit();
         if (!lesseq2(a2, a3)) return nil;
         errexit();
-        save.restore(a2, a3, a4up);
     }
     LispObject p = a3;
     while (a4up != nil)
     {   LispObject q = car(a4up);
-        Save save(p, a4up);
         if (!lesseq2(p, q)) return nil;
         errexit();
-        save.restore(p, a4up);
         p = q;
         a4up = cdr(a4up);
     }
@@ -1111,10 +1017,8 @@ LispObject Lleq_4up(LispObject env,
 LispObject Lleq_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a2, a3);
     if (!lesseq2(a1, a2)) return nil;
     errexit();
-    save.restore(a2, a3);
     return lesseq2(a2, a3) ? lisp_true : nil;
 }
 
@@ -1137,10 +1041,8 @@ LispObject Lleq_0(LispObject env)
 LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     bool w;
-    Save save(a, b);
     w = lessp2(a, b);
     errexit();
-    save.restore(a, b);
     if (w) return b;
     else return a;
 }
@@ -1148,10 +1050,8 @@ LispObject Lmax_2(LispObject env, LispObject a, LispObject b)
 LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     bool w;
-    Save save(a, b);
     w = lessp2(b, a);
     errexit();
-    save.restore(a, b);
     if (w) return b;
     else return a;
 }
@@ -1159,60 +1059,30 @@ LispObject Lmin_2(LispObject env, LispObject a, LispObject b)
 LispObject Lmax_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a1, a2, a3);
     if (lessp2(a1, a2))
-    {   save.restore(a1, a2, a3);
-        errexit();
-        if (lessp2(a2, a3))
-        {   save.restore(a1, a2, a3);
-            return a3;
-        }
-        else 
-        {   save.restore(a1, a2, a3);
-            return a2;
-        }
+    {   errexit();
+        if (lessp2(a2, a3)) return a3;
+        else return a2;
     }
     else
-    {   save.restore(a1, a2, a3);
-        errexit();
-        if (lessp2(a1, a3))
-        {   save.restore(a1, a2, a3);
-            return a3;
-        }
-        else 
-        {   save.restore(a1, a2, a3);
-            return a1;
-        }
+    {   errexit();
+        if (lessp2(a1, a3)) return a3;
+        else return a1;
     }
 }
 
 LispObject Lmin_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a1, a2, a3);
     if (greaterp2(a1, a2))
-    {   save.restore(a1, a2, a3);
-        errexit();
-        if (greaterp2(a2, a3))
-        {   save.restore(a1, a2, a3);
-            return a3;
-        }
-        else 
-        {   save.restore(a1, a2, a3);
-            return a2;
-        }
+    {   errexit();
+        if (greaterp2(a2, a3)) return a3;
+        else return a2;
     }
     else
-    {   save.restore(a1, a2, a3);
-        errexit();
-        if (greaterp2(a1, a3))
-        {   save.restore(a1, a2, a3);
-            return a3;
-        }
-        else 
-        {   save.restore(a1, a2, a3);
-            return a1;
-        }
+    {   errexit();
+        if (greaterp2(a1, a3)) return a3;
+        else return a1;
     }
 }
 
@@ -1220,17 +1090,12 @@ LispObject Lmax_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
     LispObject r;
-    {   Save save(a4up);
-        r = Lmax_3(nil, a1, a2, a3);
-        errexit();
-        save.restore(a4up);
-    }
+    r = Lmax_3(nil, a1, a2, a3);
+    errexit();
     while (a4up != nil)
     {   bool better = false;
-        {       Save save(r, a4up);
-            better = lessp2(r, car(a4up));    
+        {   better = lessp2(r, car(a4up));    
             errexit();
-            save.restore(r, a4up);
         }
         if (better) r = car(a4up);
         a4up = cdr(a4up);
@@ -1242,17 +1107,12 @@ LispObject Lmin_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
     LispObject r;
-    {   Save save(a4up);
-        r = Lmin_3(nil, a1, a2, a3);
-        errexit();
-        save.restore(a4up);
-    }
+    r = Lmin_3(nil, a1, a2, a3);
+    errexit();
     while (a4up != nil)
     {   bool better = false;
-        {       Save save(r, a4up);
-            better = greaterp2(r, car(a4up));    
+        {   better = greaterp2(r, car(a4up));    
             errexit();
-            save.restore(r, a4up);
         }
         if (better) r = car(a4up);
         a4up = cdr(a4up);
@@ -1381,10 +1241,8 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         LispObject r;
         if (!is_bignum(a)) return aerror1("random-number", a);
         len = bignum_length(a);
-        {       Save save(a);
-            r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
+        {   r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
             errexit();
-            save.restore(a);
         }
         len1 = (len-CELL)/4-1;
     restart:
@@ -1489,10 +1347,8 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         LispObject r;
         if (!is_bignum(a)) return aerror1("random-number", a);
         len = bignum_length(a);
-        {       Save save(a);
-            r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
+        {   r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
             errexit();
-            save.restore(a);
         }
         len1 = (len-CELL)/4-1;
     restart:

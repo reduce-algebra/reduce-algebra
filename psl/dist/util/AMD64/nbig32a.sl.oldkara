@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG30a.SL 
+% File:         PXU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
 % Modified:     
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -37,6 +37,8 @@
 %
 % Revisions:
 %
+% 16-August-2019 (Rainer Schöpf)
+%   added biglogcount
 % 30-June-1993 (Herbert Melenk)
 %   changed bigit length to full word size
 % 20-June-1989 (Winfried Neun) 
@@ -64,7 +66,9 @@
 
 (compiletime (load muls32 fast-vector vfvect inum if-system double32))
 
-(compiletime (if_system i386 (load arith387)))
+(fluid '(fp-except-mode* ieee-positive-infinity ieee-negative-infinity))
+
+%%(compiletime (if_system i386 (load arith387)))
 
 %------------------------- control of debug output ------------------------
 
@@ -92,6 +96,7 @@
   (ds +x+c(a b) (addAndAddCarry a b)) % add a and b and add carry to 
                                       %  *second-value*
 
+  (ds -w(a b)(idifference a b)) 
   (ds -c(a b)(subtractwithborrow a b))
 
   (ds >u(a b)(ugreaterp a b))         % unsigned greaterp
@@ -127,7 +132,7 @@
   (when (not bigtest)
    (flag '(setbits trimbignum1 big2sysaux btwopower bexpt blor
 	   blxor bland blnot blshift blrshift bllshift bminus
-	   bplus2 bplus2a bdifference bdifference2
+	   bplus2 bplusa2 bdifference bdifference2
 	   btimes2 bdigittimes2 bsmalltimes2 bkaratsuba bwords
 	   bwordsshiftleft bshiftandaddinto bdifference2inplace
 	   bquotient bremainder bdivide-trivialtest
@@ -261,10 +266,14 @@
    (setq b (bbsize u))
    (when (eq b 0) (return 0))
    (setq s (igetv u 1))
-   (when (or (wgreaterp b 1)
-             (wlessp s 0))
-    (continuableerror 99 "BIGNUM too large to convert to SYS" u))
+   (when (wgreaterp b 1)(go error))
+   (when (wlessp s 0) 
+       (if (bbminusp u) (return s) (go error)))
+% The following is possibly "more" correct, but doesn't work properly
+%       (if (bbminusp u) (return (wminus s)) (go error)))
    (return (if (bbminusp u) (wminus s) s))
+error
+   (continuableerror 99 "BIGNUM too large to convert to SYS" u)
   ))
 
 (de big2sysaux (u) (big2sys u))
@@ -302,19 +311,18 @@
 (de twopower (n)(expt 2 n))
 
 (de btwopower (n)
-  % gives 2**n; n is fix/i-num; result BigNum                              
+  % gives 2**n; n is fix/i-num; result BigNum
   (if (not (or (fixp n) (bigp n)))
     (nonintegererror n 'btwopower)
     (prog (quot rem v)
-	  (when (bigp n)
-	    (setq n (big2sys n)))
-	  (setq quot (quotient n bbits!*))
-	  (setq rem (remainder n bbits!*))
-	  (setq v (gtpos (1+ quot)))
-	  (vfor (from i 1 quot 1) (do (iputv v i 0)))
-	  (iputv v (1+ quot) (twopower rem))
-	  (return (trimbignum1 v (1+ quot))))))
-
+          (when (bigp n)
+            (setq n (big2sys n)))
+          (setq quot (quotient n bbits!*))
+          (setq rem (remainder n bbits!*))
+          (setq v (gtpos (1+ quot)))
+          (vfor (from i 1 quot 1) (do (iputv v i 0)))
+          (iputv v (1+ quot) (wshift 1 rem))
+          (return (trimbignum1 v (1+ quot))))))          
 
 (compiletime
  (progn 
@@ -381,28 +389,53 @@
   % be positive;                                                           
   (if (and (bbminusp v1) (bbminusp v2))
     (blnot (blor (blnot v1) (blnot v2)))
-    (prog (l1 l2 l3 v3)
+    (prog (l1 l2 l3 v3 n n1 c)
 	  (setq l1 (bbsize v1)) (setq l2 (bbsize v2)) (setq l3 (min l1 l2))
 	  (cond ((bbminusp v1) 
 		 % When one is negative, we have expand out to the
 		 % size of the other one.  Therefore, we use l2 as the
 		 % size, not l3.  When we exceed the size of the
-		 % negative number, then we just use (logicalbits**).
+		 % negative number, then we just use (logicalbits**) which
+		 % returns a word with all bits set.
 		 (setq v3 (gtpos l2)) (setq l3 l2)
+		 (setq c 1)		% carry to add to current word, see below
 		 (vfor (from i 1 l2 1) 
 		       (do 
 			(iputv v3 i
-			     (iland (cond ((igreaterp i l1) (logicalbits**))
-					    (t (isub1 (igetv v1 i))))
-				      (igetv v2 i))))))
+			     (iland
+			       (cond ((igreaterp i l1) (logicalbits**))
+				     (t (progn
+					  % compute two's complement as one's complement + 1
+					  (setq n (ilnot (igetv v1 i)))
+					  % two's complement is n+c
+					  % if n=(logicalbits**) and c=1, 
+					  % (we have a carry to the next word)
+					  % then set c=1 else 0
+					  (setq n1 (iplus2 n c))
+					  (if (not (and (weq n (logicalbits**)) (weq c 1)))
+					      (setq c 0))
+					  n1)))
+			       (igetv v2 i))))))
 		((bbminusp v2)
 		 (setq v3 (gtpos l1)) (setq l3 l1)
+		 (setq c 1)		% carry to add to current word, see below
 		 (vfor (from i 1 l1 1) 
 		       (do
 			(iputv v3 i
-			       (iland (igetv v1 i)
-				      (cond ((igreaterp i l2)(logicalbits**))
-					    (t (isub1 (igetv v2 i)))))))))
+			     (iland (igetv v1 i)
+			       (cond ((igreaterp i l2)(logicalbits**))
+				     (t (progn
+					  % compute two's complement as one's complement + 1
+					  (setq n (ilnot (igetv v2 i)))
+					  % two's complement is n+c
+					  % if n=(logicalbits**) and c=1, 
+					  % (we have a carry to the next word)
+					  % then set c=1 else 0
+					  (setq n1 (iplus2 n c))
+					  (if (not (and (weq n (logicalbits**)) (weq c 1)))
+					      (setq c 0))
+					  n1)))
+			       )))))
 
 		(t (setq v3 (gtpos l3))
 		   (vfor (from i 1 l3 1) 
@@ -429,7 +462,7 @@
       (setq l1 (bbsize v1))
       (setq l2 (idifference l1 nw))
       (when (ilessp l2 1) (return bzero*))
-      (setq v2 (if (bbminusp v1)(gtneg l2)(gtpos l2)))
+      (setq v2 (if (bbminusp v1)(gtpos l2)(gtpos l2)))
         % for shifts we have to handle the case nb=0
         % separately because processors tend to handle a shift for
         % nr=(-wordsize) bits as nop.
@@ -440,7 +473,7 @@
 	    (do 
 	      (progn
 		 (setq x (igetv v1 j))
-		 (iputv v2 i(wor carry (wshift x nb)))
+		 (iputv v2 i (wor carry (wshift x nb)))
 		 (setq carry (wshift x nr)))))
       (go ret)
    words
@@ -631,7 +664,7 @@
   % V1 is a BigNum, C a fixnum.                                            
   % Assume C positive, ignore sign(V1)                                     
   % also assume V1 neq 0.                                                  
-  (cond ((and (izerop c)(izerop cc)) (return (gtpos 0)))
+  (cond ((and (izerop c)(izerop cc)) (gtpos 0))
 	(t % Only used from BHardDivide, BReadAdd.                          
 	   (prog (j l1 v3 carry)
 		 (setq l1 (bbsize v1))
@@ -840,7 +873,7 @@
 	(setq snu (bbminusp u))
 	(setq snv (bbminusp v))
 	% Note that these are not extra-boolean, i.e.                      
-	% for positive numbers MBinusP returns nil, for                    
+	% for positive numbers BBMinusP returns nil, for                    
 	% negative it returns its argument. Thus the                       
 	% test (SnU=SnV) does not reliably compare the signs of            
 	% U and V;                                                         
@@ -860,6 +893,7 @@
 	   % protect possible gc in bsmalltimes2 from bigits in the stack
 	(setq x (wshift d (minus(difference bitsperword 8))) 
 	  d (wshift (wshift d 8)-8) )
+        (setq *second-value* 0)
 	(setq v1 (bsmalltimes2 v d x))
 	(setq d (+w d (wshift x (difference bitsperword 8) )))
 									   
@@ -1066,7 +1100,9 @@
 (de floatfrombignum (v)
   (cond ((bzerop v) 0.00000E+000)
 	((or (bgreaterp v bigfloathi!*) (blessp v bigfloatlow!*))
-	 (error 99 (list "Argument, " v " to FLOAT is too large")))
+         (if (not (eq fp-except-mode* 0))
+	     (error 99 (list "Argument, " v " to FLOAT is too large"))
+           (if (bbminusp v) ieee-negative-infinity ieee-positive-infinity)))
 	(t (prog (res sn i j base)
 		 (setq i (bbsize v))
 		 (setq j (idifference i bigitsPerMantissa*))
@@ -1080,7 +1116,7 @@
 		     (setq res (floatplus2 res
 				(floattimes2 (bigit2float (igetv v j)) base))) 
 		     (setq j(1+ j)))
-		 (when sn (setq res (minus res)))
+                 (when sn (setq res (floattimes2 -1.0 res)))
 		 (return (cleanstack res))))))
 
 (compiletime (setq system_list!* (cons bitsperword system_list!*)))
@@ -1099,7 +1135,9 @@
 (if_system 32 (progn
 
 (ds ieeezerop(u)
-   (and (weq (floathiword u) 0)
+    % ieee zero may have the sign bit set to indicate -0.0,
+    % so shift the leftmost bit off the machine word before comparing with 0
+   (and (weq (wshift (floathiword u) 1) 0)
         (weq (floatloword u) 0)))
 
 (ds
@@ -1119,8 +1157,13 @@
 
 (progn  % if_system 64
 
-(ds ieeezerop(u) (weq (floathiword u) 0))
-(ds ieeemant (f) (wand (floathiword f) 16#fffffffffffff))
+(ds ieeezerop(u)
+    % ieee zero may have the sign bit set to indicate -0.0,
+    % so shift the leftmost bit off the machine word before comparing with 0
+    (or (weq (wshift (floathiword u) 1) 0)))
+
+%(ds ieeemant (f) (wand (floathiword f) 16#fffffffffffff))
+(ds ieeemant (f) (wshift (wshift (floathiword f) 12) -12))
 
 ))  % if_system 64
 
@@ -1142,6 +1185,8 @@
     (t(prog (m e)
        (setq m (ieeemant x))
        (setq e (ieeeexpt x))
+       (when (eq e 1024)
+          (stderror (list "Non-finite float in fix:" x)))
        (when (neq e (minus 16#3ff))
           (setq m (lor m ieee-hidden-bit*)))
        (when (eq (ieeesign x) 1)
@@ -1213,12 +1258,12 @@
      (cond (sn (channelwritechar channel (char !-))))
      (cond
        ((neq myobase 10)
-	(channelwritesysinteger channel myobase 10)
-	(channelwritechar channel (char !#))))
+        (channelwritesysinteger channel myobase 10)
+        (channelwritechar channel (char !#))))
      (setq ob (if (eq ob 10) 1000000
-	       (progn
-		(setq ob (itimes2 ob ob))  % ob should be < 6 bits
-		(setq ob (itimes2 (itimes2 ob ob) ob)))))
+               (progn
+                (setq ob (itimes2 ob ob))  % ob should be < 6 bits
+                (setq ob (itimes2 (itimes2 ob ob) ob)))))
      (bprin channel v2 ob)
      (setq outputbase!* myobase ))
 
@@ -1256,7 +1301,7 @@
     (channelwritechar channel (igetv digl d2))
     (return (channelwritechar channel (igetv digl d1)))))
  
-% divide the bignum v1 (of length l1) by 100000, except the quotient is
+% divide the bignum v1 (of length l1) by 1000000, except the quotient is
 % accumulated in the same place, the remainder, of course, ripples
 % down to the bottom.  Because the argument is modified there is no need
 % to CONS up a result, but simply return the remainder.
@@ -1286,17 +1331,22 @@
 	(setq sz (size s))
 	(setq res (gtpos 1))
 	(setq ch (indx s 0))
-	(when (and (igeq ch (char a)) (ileq ch (char z)))
-	  (setq ch (+w (idifference ch (char a)) 10)))
+	(when (and (igeq ch (char !A)) (ileq ch (char !Z)))
+	  (setq ch (+w (idifference ch (char !A)) 10)))
+	(when (and (igeq ch (char !a)) (ileq ch (char !z)))
+	  (setq ch (+w (idifference ch (char !a)) 10)))
 	(when (and (igeq ch (char 0)) (ileq ch (char 9)))
 	  (setq ch (idifference ch (char 0))))
 	(iputv res 1 0)
 	(setq accu ch)
 	(ifor (from i 1 sz 1) 
 	      (do (progn (setq ch (indx s i))
-			 (when (and (igeq ch (char a)) (ileq ch (char z)))
+			 (when (and (igeq ch (char !A)) (ileq ch (char !Z)))
 			   (setq ch 
-			    (idifference ch (idifference (char a) 10))))
+			    (idifference ch (idifference (char !A) 10))))
+			 (when (and (igeq ch (char !a)) (ileq ch (char !z)))
+			   (setq ch 
+			    (idifference ch (idifference (char !a) 10))))
 			 (when (and (igeq ch (char 0)) (ileq ch (char 9)))
 			   (setq ch (idifference ch (char 0))))
 			 (setq accu (+w (itimes2 radix accu) ch ))
@@ -1323,8 +1373,8 @@
 
 (de bsmalladd (v c)
   %V big, C fix.                                                           
-  (cond ((izerop c) (return v))
-	((bzerop v) (return (int2big c)))
+  (cond ((izerop c) v)
+	((bzerop v) (int2big c))
 	((bbminusp v) (bminus (bsmalldiff (bminus v) c)))
 	((iminusp c) (bsmalldiff v (iminus c)))
 	(t (prog (v1 l1)
@@ -1411,13 +1461,19 @@
 
 (de recursivechannelprin1 (channel u level)
   (if (bigp u)
-    (bchannelprin2 channel u)
+    (if (eq channel 4) % flatsize etc
+      (checklinefit (times2 10 (bsize u)) channel 'bchannelprin2 u)
+      (checklinefit (flatsize u) channel 'bchannelprin2 u))
+%    (bchannelprin2 channel u)
     (oldchannelprin1 channel u level))
   u)
 
 (de recursivechannelprin2 (channel u level)
   (if (bigp u)
-    (bchannelprin2 channel u)
+    (if (eq channel 4) % flatsize etc
+      (checklinefit (times2 10 (bsize u)) channel 'bchannelprin2 u)
+      (checklinefit (flatsize2 u) channel 'bchannelprin2 u))
+%    (bchannelprin2 channel u)
     (oldchannelprin2 channel u level))
   u)
 
@@ -1458,9 +1514,7 @@
 
 (de checkifreallybigornil (uu)
   % Used for EXTRA-boolean tests                                           
-  (if (null uu) 
-       nil
-       (checkifreallybig uu)))
+   (when uu T))
  
 
 (de bigplus2 (u v) (checkifreallybig (bplus2 u v)))
@@ -1475,6 +1529,20 @@
 (de biglshift (u v) (checkifreallybig (blshift u v)))
 
 (de lshift (u v)
+   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
+   (if (intp u)
+     (cond ((wleq v (minus bitsperword)) 0)
+           ((and (posintp u) (wlessp v 0)) (wshift u v))
+           ((wlessp v (iminus tagbitlength)) (wshift u v))
+           ((wlessp v 0) (sys2int (wshift u v)))
+           ((and (betap u) (wlessp v (iquotient bitsperword 2)))
+                  (sys2int (wshift u v)))
+           (t (biglshift (sys2big u) v)))
+     % Use int2big, not sys2big, since we might have fixnums.
+     (biglshift (int2big u) v)))
+
+(commentoutcode 
+  de lshift (u v)
   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
   (if (betap u) 
     (cond ((wleq v (minus bitsperword)) 0)
@@ -1485,6 +1553,13 @@
     (biglshift (int2big u) v)))
 
 (copyd 'lsh 'lshift)
+
+(de biglogcount (v)
+  (if (bminusp v) (setq v (badd1 v)))
+  (let ((s 0) (l (bbsize v)))
+    (vfor (from i 1 l 1) (do (setq s (+w (wlogcount (igetv v i)) s))))
+    s)
+)
 
 (de biggreaterp (u v) (checkifreallybigornil (bgreaterp u v)))
 (de biglessp (u v) (checkifreallybigornil (blessp u v)))
@@ -1578,7 +1653,7 @@
 		  (if (izerop v) u (gcdn u v) ))))
 	  (t   %(not (bigp v))  
 	   (setq u (remainder u v)) 
-	   (if (izerop u) v (gcdn v u v))))) 
+	   (if (izerop u) v (gcdn v u))))) 
  
 % ---- Input ----                                                          
 (de makestringintolispinteger (s radix sn)
@@ -1647,7 +1722,7 @@
   (progn % IEEE double arithmetic
    (setq BigFloatHi!* (btimes2 (bsub1 (btwopower 53)) (btwopower 971)))
    (setq BigFloatLow!* (bminus BigFloatHi!*))))
- 
+
 
 (prog (y syshi syslo)
 	% Lowest value of Ai                                               
@@ -1660,7 +1735,7 @@
      (setq FloatSysHi!* (float SysHi))
      (setq FloatSysLow!* (float SysLo))
 )
- 
+
 (if_system IEEE
     (let ((one 1))
          (setq ieee-hidden-bit* (lshift bone* 16#34))))

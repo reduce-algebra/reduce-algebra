@@ -80,21 +80,17 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 LispObject p = args1;
                 for (int i=1; p!=nil; i++)
-                {   Save save1(p);
-                    trace_printf("Arg%d: ", i);
+                {   trace_printf("Arg%d: ", i);
                     errexit();
-                    save1.restore(p);
                     loop_print_trace(car(p));
                     errexit();
                     trace_printf("\n");
                     errexit();
-                    save1.restore(p);
                     p = cdr(p);
                 }
                 save.restore(fn, args, from);
             }
             def = fn; // this is passed as arg1 to the called code
-            Save save(fn); // I may need the function name when tracing
             // displays a result.
             if (args == nil)
                 def = (*qfn0(fn))(def);
@@ -119,9 +115,8 @@ LispObject apply(LispObject fn, LispObject args,
                 }
             }
             errexit();
-            save.restore(fn);
             if (tracing)
-            {   Save save1(def);
+            {
 // In due course I will need to worry about multiple values here
                 freshline_trace();
                 errexit();
@@ -129,12 +124,10 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 trace_printf(" => ");
                 errexit();
-                save1.restore(def);
                 loop_print_trace(def);
                 errexit();
                 trace_printf("\n");
                 errexit();
-                save1.restore(def);
             }
             return def;
         }
@@ -163,9 +156,7 @@ LispObject apply(LispObject fn, LispObject args,
         else if (def == cfunarg)
         {   def = cdr(fn);
             fn = car(def);
-            Save save(fn, env);
             args = cons(cdr(def), args);
-            save.restore(fn, env);
 // The "continue" here just goes back and tries again!
             continue;
         }
@@ -203,9 +194,7 @@ static LispObject and_fn(LispObject args, LispObject env)
     {   LispObject v = car(args);
         args = cdr(args);
         if (!consp(args)) return eval(v, env);
-        Save save(args, env);
         v = eval(v, env);
-        save.restore(args, env);
         if (v == nil) return nil;
     }
 }
@@ -256,32 +245,26 @@ static LispObject catch_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return nil;
     stackcheck(args, env);
-    {   Save save(args, env);
-        tag = car(args);
+    {   tag = car(args);
         tag = eval(tag, env);
         errexit();
         tag = catch_tags = cons(tag, catch_tags);
         errexit();
-        save.restore(args, env);
     }
-    Save save(tag);
     TRY
         v = progn_fn(cdr(args), env);
     CATCH(LispThrow)
-        save.restore(tag);
         catch_tags = cdr(tag);
         car(tag) = tag;
         cdr(tag) = nil;        // Invalidate the catch frame
         if (exit_tag == tag) return nvalues(exit_value, exit_count);
         else RETHROW;
     ANOTHER_CATCH(LispException)
-        save.restore(tag);
         catch_tags = cdr(tag);
         car(tag) = tag;
         cdr(tag) = nil;        // Invalidate the catch frame
         RETHROW;
     END_CATCH;
-    save.restore(tag);
     catch_tags = cdr(tag);
     car(tag) = tag;
     cdr(tag) = nil;            // Invalidate the catch frame
@@ -465,12 +448,7 @@ LispObject cond_fn(LispObject args, LispObject env)
     while (consp(args))
     {   LispObject p = car(args);
         if (consp(p))
-        {   LispObject p1;
-            {   Save save(args, env);
-                p1 = car(p);
-                p1 = eval(p1, env);
-                save.restore(args, env);
-            }
+        {   LispObject p1 = eval(car(p), env);
             errexit();
             if (p1 != nil)
             {   args = cdr(car(args));
@@ -542,10 +520,8 @@ static LispObject defun_fn(LispObject args, LispObject)
                     interpreted_3, interpreted_4up);
             if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
-            {   Save save(fname);
-                args = ncons(fname);
+            {   args = ncons(fname);
                 (*qfn1(compiler_symbol))(compiler_symbol, args);
-                save.restore(fname);
             }
             return fname;
         }
@@ -638,19 +614,11 @@ static LispObject flet_fn(LispObject args, LispObject env)
     {   LispObject w = car(d);
         if (consp(w) && consp(cdr(w)))
         {   LispObject w1;
-            Save save(args, d);
-            {   Save save1(env);
-                {   Save save2(w);
-                    w1 = list2star(funarg, my_env, cdr(w));
-                    save2.restore(w);
-                }
-                errexit();
-                w1 = cons(w1, car(w));
-                errexit();
-                save1.restore(env);
-            }
+            w1 = list2star(funarg, my_env, cdr(w));
+            errexit();
+            w1 = cons(w1, car(w));
+            errexit();
             env = cons(w1, env);
-            save.restore(args, d);
         }
         d = cdr(d);
     }
@@ -719,10 +687,7 @@ static LispObject if_fn(LispObject args, LispObject env)
     }
     stackcheck(p, env, tr, fs);
     errexit();
-    {   Save save(fs, tr, env);
-        p = eval(p, env);
-        save.restore(fs, tr, env);
-    }
+    p = eval(p, env);
     errexit();
     if (p == nil) return eval(fs, env);      // tail call on result
     else return eval(tr, env);               // ... passing back values
@@ -740,19 +705,11 @@ static LispObject labels_fn(LispObject args, LispObject env)
     {   LispObject w = car(d);
         if (consp(w) && consp(cdr(w)))
         {   LispObject w1;
-            Save save(args, d);
-            {   Save save1(env);
-                {   Save save2(w);
-                    w1 = list2star(funarg, nil, cdr(w));
-                    errexit();
-                    save2.restore(w);
-                }
-                w1 = cons(w1, car(w));
-                errexit();
-                save1.restore(env);
-            }
+            w1 = list2star(funarg, nil, cdr(w));
+            errexit();
+            w1 = cons(w1, car(w));
+            errexit();
             env = cons(w1, env);
-            save.restore(args, d);
         }
         d = cdr(d);
     }

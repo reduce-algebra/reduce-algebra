@@ -981,9 +981,8 @@ LispObject Lpair(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject r = nil;
     while (consp(a) && consp(b))
-    {   Save save(a, b);
-        r = acons(car(a), car(b), r);
-        save.restore(a, b);
+    {   r = acons(car(a), car(b), r);
+        errexit();
         a = cdr(a);
         b = cdr(b);
     }
@@ -1026,38 +1025,35 @@ static size_t membercount(LispObject a, LispObject b)
 LispObject Lintersect(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject w;
-    RealSave save(a, b, nil);
-    LispObject &aa = save.val(1);
-    LispObject &bb = save.val(2);
-    LispObject &rr = save.val(3);
-    while (consp(aa))
-    {   w = Lmember(nil, car(aa), bb);
+    LispObject r = nil;
+    while (consp(a))
+    {   w = Lmember(nil, car(a), b);
         errexit();
 // Here I ignore any item in a that is not also in b
         if (w != nil)
-        {   size_t n1 = membercount(car(aa), rr);
+        {   size_t n1 = membercount(car(a), r);
             errexit();
 // Here I want to arrange that items only appear in the result list multiple
 // times if they occur multiple times in BOTH the input lists.
             if (n1 != 0)
-            {   size_t n2 = membercount(car(aa), bb);
+            {   size_t n2 = membercount(car(a), b);
                 if (n2 > n1) n1 = 0;
             }
             if (n1 == 0)
-            {   rr = cons(car(aa), rr);
+            {   r = cons(car(a), r);
                 errexit();
             }
         }
-        aa = cdr(aa);
+        a = cdr(a);
     }
-    aa = nil;
-    while (consp(rr))
-    {   bb = rr;
-        rr = cdr(rr);
-        cdr(bb) = aa;
-        aa = bb;
+    a = nil;
+    while (consp(r))
+    {   b = r;
+        r = cdr(r);
+        cdr(b) = a;
+        a = b;
     }
-    return aa;
+    return a;
 }
 
 // If you have two lists where all items in both lists are just symbols
@@ -1093,16 +1089,10 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
     }
 // Now for each item in (a) push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
-    RealSave save(b);
-    LispObject &bb = save.val(1);
-    {   tidy_intersect tidy(&bb);
+    {   tidy_intersect tidy(&b);
         while (consp(a))
         {   LispObject x = car(a);
-            if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
-            {   Save save1(a);
-                r = cons(x, r);
-                save1.restore(a);
-            }
+            if (is_symbol(x) && (qheader(x) & SYM_TAGGED)) r = cons(x, r);
             a = cdr(a);
         }
     }
@@ -1126,16 +1116,12 @@ LispObject Lunion(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     while (consp(a))
     {   LispObject c;
-        {   Save save(a, b);
-            c = Lmember(nil, car(a), b);
+        {   c = Lmember(nil, car(a), b);
             errexit();
-            save.restore(a, b);
         }
         if (c == nil)
-        {   Save save(a);
-            b = cons(car(a), b);
+        {   b = cons(car(a), b);
             errexit();
-            save.restore(a);
         }
         a = cdr(a);
     }
@@ -1174,8 +1160,6 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
-    RealSave save(b);
-    LispObject &bb = save.val(1);
 // I want to be able to traverse the list (b) at the end of this
 // clearing tag bits. And this must be GC safe, so I save b on the
 // stack. The destructor for the tidy_union must then access this and
@@ -1184,21 +1168,18 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 // state. I pass a very explicit stack address here because trying to be
 // more abstract about things pushed too hard against edges of my C++
 // understanding!
-    {   tidy_union tidy(&bb);
+    {   tidy_union tidy(&b);
         while (consp(a))
         {   LispObject x = car(a);
             if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
-            {   Save save1(a);
-                r = cons(x, r);
+            {   r = cons(x, r);
                 errexit();
-                save1.restore(a);
             }
             a = cdr(a);
         }
     }
 // What I now have is a reversed list of new items in r, and the existing
 // list b. So reverse r onto the front of b.
-    save.restore(b);
     while (consp(r))
     {   a = r;
         r = cdr(r);
@@ -1297,8 +1278,7 @@ LispObject error_N(LispObject args)
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
 #ifdef COMMON
-    {   Save save(args);
-        LispObject a1 = car(args);
+    {   LispObject a1 = car(args);
         args = cdr(args);
 // I will use FORMAT to handle error messages provided the first arg
 // to error had been a string and also provided (for bootstrapping) that
@@ -1307,27 +1287,25 @@ LispObject error_N(LispObject args)
             !stringp(a1)) loop_print_error(cons(a1, args));
         else Lapply_3(nil, format_symbol, qvalue(error_output), a1, args);
         err_printf("\n");
-        save.restore(args);
         qvalue(emsg_star) = args;            // "Error message" in CL world
         exit_value = fixnum_of_int(0);       // "Error number"  in CL world
     }
 #else
     if (miscflags & HEADLINE_FLAG)
-    {   RealSave save(args, cdr(args));
+    {   LispObject cdrargs = cdr(args);
         err_printf("\n+++ error: ");
         errexit();
-        loop_print_error(save.val(1));
+        loop_print_error(car(args));
         errexit();
-        while (is_cons(save.val(2)))
+        while (is_cons(cdrargs))
         {   err_printf(" ");
             errexit();
-            loop_print_error(car(save.val(2)));
+            loop_print_error(car(cdrargs));
             errexit();
-            save.val(2) = cdr(save.val(2));
+            cdrargs = cdr(cdrargs);
         }
         err_printf("\n");
         errexit();
-        args = save.val(1);
     }
 // So if you go (error n A B C) the output should be
 //     +++ error n A B C
@@ -1335,7 +1313,7 @@ LispObject error_N(LispObject args)
     LispObject msg = nil;
     if (is_cons(cdr(args))) msg = car(cdr(args));
     setvalue(emsg_star, msg);         // "Error message" in SL world
-    exit_value = car(args);         // "Error number"  in SL world
+    exit_value = car(args);           // "Error number"  in SL world
 #endif
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
@@ -1561,7 +1539,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
             if ((qheader(c) & SYM_CODEPTR) != 0) return c;
             b = cdr(b);
         }
-        {   Save save(a);
+        {
 // To carry a code-pointer I manufacture a sort of gensym, flagging
 // it in its header as a "code pointer object" and sticking the required
 // definition in with it.  I need to link this to the originating
@@ -1583,7 +1561,6 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
             b = Lgensym0(nil, a, "#code");
 #endif
             errexit();
-            save.restore(a);
         }
         qfn0(b) = qfn0(a);
         qfn1(b) = qfn1(a);
@@ -1622,10 +1599,8 @@ LispObject Lcodep(LispObject env, LispObject a)
 
 LispObject get_basic_vector_init(size_t n, LispObject k)
 {   LispObject p;
-    {   Save save(k);
-        p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
+    {   p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
         errexit();
-        save.restore(k);
     }
     n = n/CELL - 1;
     if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
@@ -1724,10 +1699,8 @@ LispObject get_vector(int tag, int type, size_t n)
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            {   Save save(v);
-                v1 = gvector(tag, type, k+CELL);
+            {   v1 = gvector(tag, type, k+CELL);
                 errexit();
-                save.restore(v);
             }
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
@@ -1770,10 +1743,8 @@ LispObject reduce_vector_size(LispObject v, size_t len)
 
 LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
-    Save save(val);
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
-    save.restore(val);
     n = n/CELL - 1;
     if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
     while (n != 0)

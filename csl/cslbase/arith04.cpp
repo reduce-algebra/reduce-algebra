@@ -174,9 +174,7 @@ LispObject rationalf(double d)
 // integer.
     assert(x < 0);
     LispObject w = make_fix_or_big2(a1, a0);
-    Save save(w);
     LispObject den = make_power_of_two(-x);
-    save.restore(w);
     return make_ratio(w, den);
 }
 
@@ -323,9 +321,7 @@ static LispObject rationalizef(double dd, int bits)
     if (dd < 0.0) p1 = make_lisp_integer64(-(int64_t)u1);
     else p1 = make_lisp_integer64(u1);
     if (v1 == 1) return p1;
-    Save save(p1);
     LispObject q1 = make_lisp_integer64(v1);
-    save.restore(p1);
     return make_ratio(p1, q1);
 }
 
@@ -443,9 +439,7 @@ LispObject rationalf128(float128_t *d)
             break;
     }
     if (x == 0) return w;
-    Save save(w);
     LispObject den = make_power_of_two(-x);
-    save.restore(w);
     return make_ratio(w, den);
 }
 
@@ -599,9 +593,7 @@ static LispObject rationalizef128(float128_t *dd)
     if (f128_negative(*dd)) p1 = make_lisp_integer128(-int128_t(u1));
     else p1 = make_lisp_unsigned128(u1);
     if (v1 == 1) return p1;
-    Save save(p1);
     LispObject q1 = make_lisp_unsigned128(v1);
-    save.restore(p1);
     return make_ratio(p1, q1);
 }
 
@@ -797,9 +789,7 @@ inline bool lessp_i_b(LispObject, LispObject b)
 }
 
 inline bool lessp_i_r(LispObject a, LispObject b)
-{   Save save(b);  // compute a < p/q  as a*q < p
-    a = times2(a, denominator(b));
-    save.restore(b);
+{   a = times2(a, denominator(b));
     return lessp2(a, numerator(b));  // lessp2 is NOT an inline function!
 }
 
@@ -1123,12 +1113,8 @@ inline bool lessp_b_l(LispObject a, LispObject b)
 
 inline bool lessp_r_r(LispObject a, LispObject b)
 {   LispObject c;
-    Save save(a, b);
     c = times2(numerator(a), denominator(b));
-    save.restore(a, b);
-    Save save1(c);
     b = times2(numerator(b), denominator(a));
-    save1.restore(c);
     return lessp2(c, b);
 }
 
@@ -1215,9 +1201,7 @@ inline bool lessp_b_r(LispObject a, LispObject b)
 }
 
 inline bool lessp_r_i(LispObject a, LispObject b)
-{   Save save(a);
-    b = times2(b, denominator(a));
-    save.restore(a);
+{   b = times2(b, denominator(a));
     return lessp2(numerator(a), b);
 }
 

@@ -574,10 +574,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     size_t i;
     LispObject pn;
     if (!symbolp(a)) return aerror1("restore-c-code", a);
-    {   Save save(a);
-        pn = get_pname(a);
-        save.restore(a);
-    }
+    pn = get_pname(a);
     name = reinterpret_cast<char *>(&celt(pn, 0));
     len = length_of_byteheader(vechdr(pn)) - CELL;
 // This is a potential time-sink in that it does a linear scan of all the
@@ -585,9 +582,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     for (i=0; setup_tables[i]!=nullptr; i++)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
-            Save save(a);
             env = get(a, funarg, nil);
-            save.restore(a);
             setenv(a, env);
             return a;
         }
@@ -707,12 +702,10 @@ LispObject Lsymbol_set_definition(LispObject env,
         setenv(a, cdr(b));
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
-        {   Save save(a);
-            LispObject a1 = ncons(a);
+        {   LispObject a1 = ncons(a);
             errexit();
             (*qfn1(compiler_symbol))(compiler_symbol, a1);
             errexit();
-            save.restore(a);
         }
     }
     else if (car(b) == funarg)
@@ -785,10 +778,8 @@ LispObject Lremd(LispObject env, LispObject a)
 
 LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
 {   SingleValued fn;
-    Save save(dest, src);
     if (!is_symbol(dest)) return aerror1("copyd", dest);
     LispObject x = Lgetd(nil, src);
-    save.restore(dest, src);
     if (x == nil)
     {   if (qvalue(savedef_symbol) != savedef_symbol)
             return aerror1("undefined function passed to copyd", src);
@@ -801,13 +792,10 @@ LispObject Lcopyd(LispObject env, LispObject dest, LispObject src)
     qenv(dest) = static_cast<LispObject>(qenv(src));
     LispObject w = get(src, savedef_symbol, nil);
     if (w != nil) putprop(dest, savedef_symbol, w);
-    save.restore(dest, src);
     w = get(src, savedefs_symbol, nil);
     if (w != nil) putprop(dest, savedefs_symbol, w);
-    save.restore(dest, src);
     w = get(src, lose_symbol, nil);
     if (w != nil) putprop(dest, lose_symbol, w);
-    save.restore(dest, src);
     return dest;
 }
 
@@ -833,11 +821,9 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
           qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
           qfn4up(a) == undefined_4up)) return nil;
     if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
-    {   Save save(a, b);
-        if (consp(b)) res = cons(a, b);
+    {   if (consp(b)) res = cons(a, b);
         else res = list2(a, b);
         errexit();
-        save.restore(a, b);
     }
 // I will not support autoloadable macros.
     setheader(a, qheader(a) & ~SYM_MACRO);
@@ -1012,11 +998,8 @@ LispObject get_pname(LispObject a)
                          static_cast<int>((gensym_ser/1000)%1000),
                          static_cast<int>(gensym_ser%1000));
         gensym_ser++;
-        {   Save save(a);
-            name = make_string(genname);
-            errexit();
-            save.restore(a);
-        }
+        name = make_string(genname);
+        errexit();
         setpname(a, name);
         setheader(a, qheader(a) & ~SYM_UNPRINTED_GENSYM);
     }
@@ -1078,13 +1061,10 @@ static LispObject Lrestart_lisp2(LispObject env,
 // no second argument provided.
     if (b != SPID_NOARG)
     {   LispObject b1;
-        {   Save save(a);
 // I will need to pack the data into a character vector using utf-8
 // encoding... exploden can hand back character codes up to 0x0010ffff.
-            b1 = b = Lexploden(nil, b);
-            errexit();
-            save.restore(a);
-        }
+        b1 = b = Lexploden(nil, b);
+        errexit();
         while (b1 != nil)
         {   int ch = int_of_fixnum(car(b1));
             n++;            // number of chars of arg
@@ -2191,11 +2171,8 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
 
 LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
 {   SingleValued fn;
-    {   Save save(a);
-        b = ncons(b);
-        errexit();
-        save.restore(a);
-    }
+    b = ncons(b);
+    errexit();
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
@@ -2208,11 +2185,8 @@ LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
 LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b,
                        LispObject c)
 {   SingleValued fn;
-    {   Save save(a);
-        b = list2(b, c);
-        errexit();
-        save.restore(a);
-    }
+    b = list2(b, c);
+    errexit();
     while (consp(a))
     {   LispObject d = a;
         a = cdr(a);
@@ -2247,10 +2221,8 @@ LispObject Lreverse(LispObject env, LispObject a)
     stackcheck(a);
     r = nil;
     while (consp(a))
-    {   Save save(a);
-        r = cons(car(a), r);
+    {   r = cons(car(a), r);
         errexit();
-        save.restore(a);
         a = cdr(a);
     }
     return r;
@@ -2582,42 +2554,31 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
     a = cdr (a);
     if (!consp(a)) return list3star(a1, a2, a3, b);
     LispObject front, p;
-    {   Save save(a, b);
-        front = list3(a1, a2, a3);
-        save.restore(a, b);
-        p = cdr(cdr(front));
-    }
+    front = list3(a1, a2, a3);
+    p = cdr(cdr(front));
     for (;;)
     {   a1 = car(a);
         a = cdr(a);
         if (!consp(a))
-        {   Save save(front);
-            b = cons(a1, b);
+        {   b = cons(a1, b);
             write_barrier(cdraddr(p), b);
-            save.restore(front);
             return front;
         }
         a2 = car(a);
         a = cdr(a);
         if (!consp(a))
-        {   Save save(front);
-            b = list2star(a1, a2, b);
+        {   b = list2star(a1, a2, b);
             write_barrier(cdraddr(p), b);
-            save.restore(front);
             return front;
         }
         a3 = car(a);
         a = cdr(a);
         if (!consp(a))
-        {   Save save(front);
-            b = list3star(a1, a2, a3, b);
+        {   b = list3star(a1, a2, a3, b);
             write_barrier(cdraddr(p), b);
-            save.restore(front);
             return front;
         }
-        Save save(front, p, a, b);
         LispObject w = list3(a1, a2, a3);
-        save.restore(front, p, a, b);
         write_barrier(cdraddr(p), w);
         p = cdr(cdr(w));
     }
@@ -2626,16 +2587,13 @@ LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 LispObject Lappend_3(LispObject env, LispObject a, LispObject b,
                      LispObject c)
 {   SingleValued fn;
-    Save save(a);
     b = Lappend_2(nil, b, c);
-    save.restore(a);
     return Lappend_2(nil, a, b);
 }
 
 LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
                        LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    Save save(a1, a2, a3);
 // Note that the list of arguments from a4 upwards will be freshly consed
 // and so I am entitled to overwrite it as I go.
     a4up = nreverse(a4up);
@@ -2644,18 +2602,13 @@ LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
     while (a4up != nil)
     {   LispObject w = car(a4up);
         a4up = cdr(a4up);
-        Save save1(a4up);
         r = Lappend_2(nil, w, r);
         errexit();
-        save1.restore(a4up);
     }
-    save.restore(a1, a2, a3);
     r = Lappend_2(nil, a3, r);
     errexit();
-    save.restore(a1, a2, a3);
     r = Lappend_2(nil, a2, r);
     errexit();
-    save.restore(a1, a2, a3);
     return Lappend_2(nil, a1, r);
 }
 
@@ -2936,10 +2889,8 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
                     ww = cons(u, v);
                     errexit();
-                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
@@ -3046,10 +2997,8 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
                     ww = cons(u, v);
                     errexit();
-                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
@@ -3157,10 +3106,8 @@ LispObject subla(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
                     ww = cons(u, v);
                     errexit();
-                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }
@@ -3277,10 +3224,8 @@ LispObject sublis(LispObject a1, LispObject c1)
                 r = cc;
                 while (r != c)
                 {   LispObject u = car(r), v = rx;
-                    Save save1(w);
                     ww = cons(u, v);
                     errexit();
-                    save1.restore(w);
                     rx = ww;
                     r = cdr(r);
                 }

@@ -118,7 +118,7 @@ LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
 LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
-LispObject codevec, litvec, supervisor, B_reg;
+LispObject supervisor, B_reg;
 LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
 LispObject compiler_symbol, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;

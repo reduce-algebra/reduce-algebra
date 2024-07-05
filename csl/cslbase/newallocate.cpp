@@ -732,7 +732,7 @@ void initHeapSegments(double storeSize)
 
 // This function receives a target heap size in megabytes. If the user
 // has specified (using -K) a size then that is given, otherwise the
-// default will be half the amount of memory the machine has. Save that
+// default will be half the amount of memory the machine has. Except that
 // on a 32-bit system a limit at 1600Mb is set and in all cases the flag
 // --maxmem can be used to force a smaller limit.
 
