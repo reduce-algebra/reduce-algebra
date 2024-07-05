@@ -819,6 +819,7 @@ static LispObject errorset3(LispObject env,
     CATCH(LispResource)
         RETHROW;
     ANOTHER_CATCH(LispSimpleError)
+        if (miscflags & FNAME_FLAG) err_printf("Inside: errorset\n");
         if (stop_on_error) RETHROW;
 // I am not going to catch exceptions such as the ones that restart the
 // system - only ones that couunt as "errors".
@@ -826,24 +827,8 @@ static LispObject errorset3(LispObject env,
                     (miscflags & ~BACKTRACE_MSG_BITS);
 // Now if within this errorset somebody had gone (enable-errorset min max)
 // I must reset flags on the way out...
-        switch (errorset_min)
-        {   case 0: break;
-            case 1: miscflags |= HEADLINE_FLAG;
-                break;
-            case 2: miscflags |= (HEADLINE_FLAG | FNAME_FLAG);
-                break;
-            default: // case 3:
-                miscflags |= BACKTRACE_MSG_BITS;
-                break;
-        }
-        switch (errorset_max)
-        {   case 0: miscflags &= ~BACKTRACE_MSG_BITS;
-                break;
-            case 1: miscflags &= ~(FNAME_FLAG | ARGS_FLAG);
-                break;
-            case 2: miscflags &= ~ARGS_FLAG;
-            default:break;
-        }
+        miscflags = (miscflags&~BACKTRACE_MSG_BITS) |
+                    (flags&BACKTRACE_MSG_BITS); 
         if (consp(exit_value)) exit_value = nil;
         return exit_value;
     END_CATCH;

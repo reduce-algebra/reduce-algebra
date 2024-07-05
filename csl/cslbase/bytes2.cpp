@@ -293,10 +293,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(A_reg);
-                    print_traceset(current_byte, A_reg, litvec);
+                {   print_traceset(current_byte, A_reg, litvec);
                     errexit();
-                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, next_byte),
                          A_reg);  // store into special var
@@ -304,30 +302,24 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE1:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(A_reg);
-                    print_traceset(1, A_reg, litvec);
+                {   print_traceset(1, A_reg, litvec);
                     errexit();
-                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 1), A_reg);
                 continue;
 
             case OP_STOREFREE2:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(A_reg);
-                    print_traceset(2, A_reg, litvec);
+                {   print_traceset(2, A_reg, litvec);
                     errexit();
-                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 2), A_reg);
                 continue;
 
             case OP_STOREFREE3:
                 if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   Save save(A_reg);
-                    print_traceset(3, A_reg, litvec);
+                {   print_traceset(3, A_reg, litvec);
                     errexit();
-                    save.restore(A_reg);
                 }
                 setvalue(basic_elt(litvec, 3), A_reg);
                 continue;
@@ -349,10 +341,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_NCONS:                          // A_reg = cons(A_reg, nil);
-                {   Save save(B_reg);
-                    A_reg = ncons(A_reg);
+                {   A_reg = ncons(A_reg);
                     errexit();
-                    save.restore(B_reg);
                 }
                 continue;
 
@@ -585,11 +575,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack--;
                     continue;
                 }
-                {   Save save(B_reg);
-                    A_reg = ncons(A_reg);
-                    errexit();
-                    save.restore(B_reg);
-                }
+                A_reg = ncons(A_reg);
+                errexit();
                 A_reg = apply(B_reg, A_reg, nil, basic_elt(litvec, 0));
                 errexit();
                 continue;
@@ -645,10 +632,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // them individually.
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
-                {   {   Save save(r2, r3, r1, B_reg);
-                        A_reg = ncons(A_reg);    // Make 4th arg a list!
+                {   {   A_reg = ncons(A_reg);    // Make 4th arg a list!
                         errexit();
-                        save.restore(r2, r3, r1, B_reg);
                     }
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
@@ -1898,10 +1883,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         continue;
                     case 7:
                         if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
-                        {   Save save(A_reg);
-                            print_traceset(fname, A_reg, litvec);
-                            errexit();
-                            save.restore(A_reg);
+                        {   print_traceset(fname, A_reg, litvec);
                             errexit();
                         }
                         setvalue(basic_elt(litvec, fname), A_reg);  // store into special var

@@ -1307,26 +1307,17 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
                       LispObject a3)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
-        {   Save save1(a1, a2, a3);
-            set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
-                    undefined_3, undefined_4up);
-            setenv(car(fname), car(fname));
-            LispObject fname1 = cdr(fname);
-            while (consp(fname1))
-            {   {   Save save2(fname1);
-                    Lload_module(nil, car(fname1));
-                    errexit();
-                    save2.restore(fname1);
-                }
-                fname1 = cdr(fname1);
-            }
-            save1.restore(a1, a2, a3);
-        }
-        a1 = list3(a1, a2, a3);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   Lload_module(nil, car(fname1));
         errexit();
-        save.restore(fname);
+        fname1 = cdr(fname1);
     }
+    a1 = list3(a1, a2, a3);
+    errexit();
     return apply(car(fname), a1, nil, autoload_symbol);
 }
 
@@ -1335,24 +1326,15 @@ LispObject autoload_4up(LispObject fname, LispObject a1,
                         LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     fname = qenv(fname);
-    {   Save save(fname);
-        {   Save save1(a1, a2, a3, a4up);
-            set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
-                    undefined_3, undefined_4up);
-            setenv(car(fname), car(fname));
-            LispObject fname1 = cdr(fname);
-            while (consp(fname1))
-            {   {   Save save2(fname1);
-                    Lload_module(nil, car(fname1));
-                    save2.restore(fname);
-                }
-                fname1 = cdr(fname1);
-            }
-            save1.restore(a1, a2, a3, a4up);
-        }
-        a1 = list3star(a1, a2, a3, a4up);
-        save.restore(fname);
+    set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
+            undefined_3, undefined_4up);
+    setenv(car(fname), car(fname));
+    LispObject fname1 = cdr(fname);
+    while (consp(fname1))
+    {   Lload_module(nil, car(fname1));
+        fname1 = cdr(fname1);
     }
+    a1 = list3star(a1, a2, a3, a4up);
     return apply(car(fname), a1, nil, autoload_symbol);
 }
 
