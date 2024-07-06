@@ -4,9 +4,9 @@ include './include/begin-head.php';
 ?>
 
 <style type="text/css">
- #main li {
-     margin-bottom: 1em
- }
+    #main li {
+        margin-bottom: 1em
+    }
 </style>
 
 <?php
@@ -14,22 +14,34 @@ include './include/begin-body.php';
 ?>
 
 <h2>REDUCE user interfaces</h2>
-<p>
-    <a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a> is
-    an open-source graphical user interface for running any
-    command-line version of REDUCE.  Installers are available for
-    Microsoft Windows 10 and Gnu/Linux distributions based on Debian
-    (e.g. Ubuntu) or Red Hat (e.g. Fedora).  A Java JAR file is also
-    available that should run on any platform that supports JavaFX.
-</p>
+<ul>
+    <li>
+        <a href="https://fjwright.github.io/Run-REDUCE/">Run-REDUCE</a> is
+        an open-source graphical user interface for running any
+        command-line version of REDUCE. Installers are available for
+        Microsoft Windows and Gnu/Linux distributions based on Debian
+        (e.g. Ubuntu) or Red Hat (e.g. Fedora). A Java JAR file is also
+        available that should run on any platform that supports JavaFX.
+    </li>
+    <li>
+        <a href="reduce-ide/">REDUCE IDE</a> is an open-source
+        <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for the
+        <a href="http://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor,
+        which supports editing REDUCE source code and running any command-line version of REDUCE.
+    </li>
+</ul>
 <h2>REDUCE for mobile devices</h2>
 <p>
+    Currently (July 2024) there appear to be no pre-built REDUCE apps available for mobile devices.
+    However, <a href="/web-reduce/about.php?start">Web REDUCE</a> should work.
+</p>
+<!-- <p>
     Please note that the apps listed below are <strong>not supported</strong> by
     the <a href="https://sourceforge.net/p/reduce-algebra/_members/">REDUCE
-    developers</a>, so any queries should be directed to the app
-    developers.  The links below are provided purely for information
+        developers</a>, so any queries should be directed to the app
+    developers. The links below are provided purely for information
     and their presence here does not constitute any recommendation by
-    the REDUCE developers.  These apps may not use the latest version
+    the REDUCE developers. These apps may not use the latest version
     of REDUCE and you use them entirely at you own risk!
 </p>
 <ul>
@@ -41,7 +53,7 @@ include './include/begin-body.php';
     <li>
         <a href="https://play.google.com/store/apps/details?id=de.dieteregger.symbolic">Symbolic</a>
         is a CLI version of REDUCE packaged for Android, which is
-        available for free from Google Play.  It was developed from
+        available for free from Google Play. It was developed from
         Android REDUCE (see below) and was last updated in 2013.
         Beware that users have reported this app can be a little
         fragile and that the <code>read</code> and <code>save</code>
@@ -49,23 +61,23 @@ include './include/begin-body.php';
         and paste from a separate file editor.
     </li>
 </ul>
-<p>
-    The following Android apps are available only as source code, not
-    as installable apps.
+<p> -->
+The following Android apps are available only as source code, not
+as installable apps.
 </p>
 <ul>
     <li>
         <a href="https://github.com/n0n3m4/ReduceNative">ReduceNative</a>
         is code that provides a GUI written in Kotlin for running
         REDUCE on Android that was kindly released by the authors on
-        25 November 2019.  It includes a prebuilt binary version of
+        25 November 2019. It includes a prebuilt binary version of
         REDUCE itself but not the code to build REDUCE for Android.
     </li>
     <li>
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/jlisp/android">Android REDUCE</a>
         is a GUI version of REDUCE packaged for Android that provides
         only non-programmable calculator-style input with limited
-        functionality developed in 2011&ndash;12.  It was the first
+        functionality developed in 2011&ndash;12. It was the first
         Android version of REDUCE.
     </li>
 </ul>
@@ -115,12 +127,6 @@ include './include/begin-body.php';
             of programs</a> for algebraic calculations in relativity,
         implemented in the Lisp underlying REDUCE;
     </li>
-    <li>
-        <a href="reduce-ide/">REDUCE IDE</a> is
-        an <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for
-        the <a href="http://www.gnu.org/software/emacs/emacs.html">GNU
-            Emacs</a> editor.
-    </li>
 </ul>
 
 <h2>Alternative Access to REDUCE Resources</h2>
@@ -132,7 +138,7 @@ include './include/begin-body.php';
     <a href="https://github.com/reduce-algebra/reduce-algebra/blob/master/README.md">README</a>
     lists several other mirrors, and the
     <a href="https://github.com/reduce-algebra">GitHub REDUCE
-    organization</a> page provides alternative access to a number of
+        organization</a> page provides alternative access to a number of
     closely related projects, including several of those listed above.
 </p>
 
@@ -166,4 +172,5 @@ include './include/footer.php';
 ?>
 
 </body>
+
 </html>

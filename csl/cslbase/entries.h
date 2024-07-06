@@ -43,6 +43,7 @@ extern void poll();
 // Use C linkage so that if CSL/Reduce is used as a DLL there is still an
 // easy way to access these.
 
+extern LispObject Lbacktrace(LispObject env);
 extern LispObject Lbatchp(LispObject env);
 extern LispObject Ldate(LispObject env);
 extern LispObject Ldatestamp(LispObject env);

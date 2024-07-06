@@ -2001,8 +2001,23 @@ struct MyArithlibData
     std::vector<int> someThreadLocalVector;
 }; 
 
-#define TL_arithlibData 48
-DEFINE_INLINE_THREAD_LOCAL(MyArithlibData, arithlibData);
+//#define TL_arithlibData 48
+//DEFINE_INLINE_THREAD_LOCAL(MyArithlibData, arithlibData);
+
+// On Windows there is a gcc bug at least in the Cygwin world whereby
+// "inline thread_local" things that need initialization lead to complaints
+// of multiple definition. However wrapping the thread_local up as a
+// static within a function works OK and achieves close to the same
+// effect. So that is what I do here. Well actually arithlibData is not
+// (yet) used much if at all, so even if this is ugly, clumsy and a bit
+// costly it is not a disaster!
+
+#define arithlibData arithlibDataFn()
+
+inline MyArithlibData* arithlibDataFn()
+{   static thread_local MyArithlibData data;
+    return &data;
+}
 
 // Now the fields within arithlibData can be accessed as in
 // arithlibData->someThreadLocalInteger and this is expected to
