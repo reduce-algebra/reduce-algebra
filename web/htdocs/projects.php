@@ -32,38 +32,41 @@ include './include/begin-body.php';
 </ul>
 <h2>REDUCE for mobile devices</h2>
 <p>
-    Currently (July 2024) there appear to be no pre-built REDUCE apps available for mobile devices.
-    However, <a href="/web-reduce/about.php?start">Web REDUCE</a> should work.
+    <a href="/web-reduce/about.php?start">Web REDUCE</a> should work on most mobile devices.
 </p>
-<!-- <p>
-    Please note that the apps listed below are <strong>not supported</strong> by
-    the <a href="https://sourceforge.net/p/reduce-algebra/_members/">REDUCE
-        developers</a>, so any queries should be directed to the app
-    developers. The links below are provided purely for information
-    and their presence here does not constitute any recommendation by
-    the REDUCE developers. These apps may not use the latest version
-    of REDUCE and you use them entirely at you own risk!
+<p>
+    As of July 2024 there appear to be no REDUCE mobile apps available
+    from the Google or Apple app stores, but there are other options.
+    Please note that the apps listed below are <strong>not supported</strong> at all.
+    The links below are provided purely for information
+    and their presence here does not constitute any recommendation.
+    These apps are all fairly old and you use them entirely at you own risk!
 </p>
 <ul>
-    <li>
+    <!-- <li>
         <a href="https://apps.apple.com/us/app/icas/id394637176">iCAS</a>
         is a commercial version of REDUCE packaged for the Apple
         iPhone and iPad.
-    </li>
+    </li> -->
     <li>
-        <a href="https://play.google.com/store/apps/details?id=de.dieteregger.symbolic">Symbolic</a>
-        is a CLI version of REDUCE packaged for Android, which is
-        available for free from Google Play. It was developed from
+        Symbolic is a CLI version of REDUCE packaged for Android.
+        It was developed from
         Android REDUCE (see below) and was last updated in 2013.
-        Beware that users have reported this app can be a little
+        Beware that users have reported that this app can be a little
         fragile and that the <code>read</code> and <code>save</code>
         facilities do not work, in which case a work-around is to copy
         and paste from a separate file editor.
+        Symbolic is available only from
+        <a href="https://dl2mie.darc.de/papers/ReduceScripts/index.html">the author's web site</a>
+        as both a pre-build package and as source code.
+        However, it may not install on recent versions of Android.
+        Users have reported that, with a little effort, it can be persuaded to
+        install on Android 12 but that it will not install on Android 13.
     </li>
 </ul>
-<p> -->
-The following Android apps are available only as source code, not
-as installable apps.
+<p>
+    The following Android apps are available only as source code, not
+    as installable apps.
 </p>
 <ul>
     <li>

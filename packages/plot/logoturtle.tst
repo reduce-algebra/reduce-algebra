@@ -1,6 +1,6 @@
 % Test file for Logo turtle graphics.
 
-% Author: Francis Wright, June 2024
+% Author: Francis Wright, July 2024
 
 % Part 1: Based on "turtle.tst" by Caroline Cotter, ZIB,Berlin, 1998
 % ==================================================================
@@ -186,9 +186,11 @@ draw();
    draw(gr4, gr8);
 >>;
 
-% Note that there is no current plot:
-plotreset;
-draw();
+<<
+   % Note that there is no current plot, so nothing is displayed:
+   plotreset;
+   draw();
+>>;
 
 <<
    % Load gr8 as current plot.
@@ -222,15 +224,70 @@ draw();
    showturtle(); draw(); hideturtle();
 >>;
 
-% Two arcs clipped to a smaller window size.  No error message because
-% the turtle does not move outside the fence.
+% Two arcs clipped to a smaller window size and show the turtle.  No
+% error message because the turtle does not move outside the fence.
 
 <<
    fence 75;
    clearscreen(); penup();
    arc(180, 50); setheading 180; arc(180, 100);
    setheading 45; forward 25;
-   showturtle(); draw(); hideturtle();
+   showturtle(); draw(); hideturtle(); window 100;
+>>;
+
+% Explicit line colour selection
+% ------------------------------
+
+% An equilateral triangle with side length 100 centred on the origin,
+% with one vertex on the positive Y axis.  The sides are coloured red,
+% green and blue.
+
+<<
+   clearscreen(); penup();
+   on rounded;
+   forward(100/sqrt 3); pendown();
+   setpencolor "red"; right 150; forward 100;
+   setpencolor "green"; right 120; forward 100;
+   setpencolor "blue"; right 120; forward 100; draw();
+>>;
+
+% 36 rays of length 100 using all 16 predefined colours in sequence
+% within a circle in the default colour.  (Note that the white ray is
+% not visible against the white background!)
+
+<<
+   clearscreen();
+   for i := 0 : 35 do <<
+      setheading(i*10); setpencolor(i mod 16);
+      pendown(); forward 100; penup(); home();
+   >>;
+   setpencolor false; arc(360, 100);
+   draw();
+>>;
+
+% As above, but with a grey background.  (Now the grey ray is not
+% visible against the grey background!)
+
+<<
+   clearscreen(); setbackground grey;
+   for i := 0 : 35 do <<
+      setheading(i*10); setpencolor(i mod 16);
+      pendown(); forward 100; penup(); home();
+   >>;
+   setpencolor false; arc(360, 100);
+   draw(); setbackground false;
+>>;
+
+% As above, but with default colour:
+
+<<
+   clearscreen();
+   for i := 0 : 35 do <<
+      setheading(i*10);
+      pendown(); forward 100; penup(); home();
+   >>;
+   arc(360, 100);
+   draw();
 >>;
 
 end;
