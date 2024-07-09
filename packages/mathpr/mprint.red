@@ -259,6 +259,10 @@ symbolic procedure flatsizec u;
     else if atom u then widelengthc u
     else flatsizec car u + flatsizec cdr u + 1;
 
+global '(!*natexpt);
+switch natexpt;
+!*natexpt := nil;
+
 symbolic procedure oprin op;
    (lambda x;
          if null x then <<prin2!* " "; prin2!* op; prin2!* " ">>
@@ -269,7 +273,7 @@ symbolic procedure oprin op;
           else if flagp(op,'spaced)
            then <<prin2!* " "; prin2!* x; prin2!* " ">>
           else prin2!* x)
-   get(op,'prtch);
+   if op='expt and !*natexpt then '!^ else get(op,'prtch);
 
 symbolic procedure prin2!* u;
 % It seems to me possible that the UTF8 package ought to be rewritten to use
