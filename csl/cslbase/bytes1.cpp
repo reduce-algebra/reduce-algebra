@@ -228,7 +228,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         }
         else pl = cdr(pl);
     }
-    stackcheck(a, b, c);
+    stackcheck();
     b = acons(b, c, qplist(a));
     errexit();
     setplist(a, b);
