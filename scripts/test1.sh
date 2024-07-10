@@ -299,7 +299,6 @@ else
     wait $PID 2>/dev/null
     exit $?
     ;;
-
   *)
     ulimit -t $TIME
     $timecmd $*

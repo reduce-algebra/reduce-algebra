@@ -2218,7 +2218,7 @@ LispObject Lnreverse0(LispObject env, LispObject a)
 LispObject Lreverse(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject r;
-    stackcheck(a);
+    stackcheck();
     r = nil;
     while (consp(a))
     {   r = cons(car(a), r);
@@ -2825,7 +2825,7 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
     LispObject r1, rx1;
-    stackcheck(a1, b1, c1);
+    stackcheck();
     {   RealSave save(a1, b1, c1, TAG_FIXNUM, TAG_FIXNUM);
         LispObject &a = save.val(1);
         LispObject &b = save.val(2);
@@ -2922,7 +2922,7 @@ static LispObject substq(LispObject a1, LispObject b1, LispObject c1)
 
 LispObject subst(LispObject a1, LispObject b1, LispObject c1)
 {   LispObject w;
-    stackcheck(a1, b1, c1);
+    stackcheck();
     LispObject r1=TAG_FIXNUM, rx1=TAG_FIXNUM;
     {   RealSave save(a1, b1, c1, r1, rx1);
         LispObject &a  = save.val(1);
@@ -3030,7 +3030,7 @@ LispObject subst(LispObject a1, LispObject b1, LispObject c1)
 
 LispObject subla(LispObject a1, LispObject c1)
 {   LispObject w;
-    stackcheck(a1, c1);
+    stackcheck();
     LispObject r1 = TAG_FIXNUM, rx1 = TAG_FIXNUM;
     {   RealSave save(a1, c1, r1, rx1);
         LispObject &a  = save.val(1);
@@ -3139,7 +3139,7 @@ LispObject subla(LispObject a1, LispObject c1)
 
 LispObject sublis(LispObject a1, LispObject c1)
 {   LispObject w;
-    stackcheck(a1, c1);
+    stackcheck();
     LispObject r1=TAG_FIXNUM, rx1=TAG_FIXNUM;
     {   RealSave save(a1, c1, r1, rx1);
         LispObject &a = save.val(1);
@@ -3283,7 +3283,7 @@ LispObject Lsubst(LispObject env, LispObject a, LispObject b,
 
 LispObject Lsublis(LispObject env, LispObject al, LispObject x)
 {   SingleValued fn;
-    stackcheck(al, x);
+    stackcheck();
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -3298,7 +3298,7 @@ LispObject Lsublis(LispObject env, LispObject al, LispObject x)
 LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 // as sublis, but uses eq test rather than equal
 {   SingleValued fn;
-    stackcheck(al, x);
+    stackcheck();
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();

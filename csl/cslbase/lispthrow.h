@@ -67,14 +67,10 @@ extern uintptr_t C_stackLimit;
 // RealSave ALWAYS transfers values to the stack, so within the code indicated
 // by the "..." you can access them via stack[-n], but use of save.val() is
 // preferable.
-// For the version of CSL before there is a conservative garbage collector
-// Save tranfers values to the stack, but it would be bad to try to access
-// them there. When there is a conservative garbage collector both the
-// constructors for Save and its restore() method will become no-ops because
-// values can be kept safely in simple C++ variables. As a debugging help
-// over the transition the conservative scheme does save values but then
-// arranges that restore() verifies that the stacked value and the one in the
-// simple variable have not got out of step.
+
+// PushCount is merely a class wrapping int that exists so that
+// it can be used to make argument-type overloading work for me in
+// the context if RealSave.
 
 class PushCount
 {
@@ -407,99 +403,12 @@ inline LispObject
     return withVecS<0, 15>(n, f);
 }
 
-// Even with a conservative GC I will want RealSave to exist and to
-// move things to and from a dedicated Lisp stack (eg as part of the way
-// I handle some special forms or functions with huge numbers of arguments)
-// but the simpler Save class turns into no-ops until I have removed all
-// reference to it.
-
-// Note that as of mid June 2024 there are still over 600 uses of Save in
-// the code. Each one renders that fragment uglier, but removing them all
-// will take some while.
-
-class Save
-{
-public:
-    Save(LispObject a1)
-    {
-    }
-    Save(LispObject a1, LispObject a2)
-    {
-    }
-    Save(LispObject a1, LispObject a2, LispObject a3)
-    {
-    }
-    Save(LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4)
-    {
-    }
-    Save(LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5)
-    {
-    }
-    Save(LispObject a1, LispObject a2, LispObject a3,
-             LispObject a4, LispObject a5, LispObject a6)
-    {
-    }
-    void restore(LispObject &a1)
-    {
-    }
-    void restore(LispObject &a1, LispObject &a2)
-    {
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3)
-    {
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3,
-                 LispObject &a4)
-    {
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3,
-                 LispObject &a4, LispObject &a5)
-    {
-    }
-    void restore(LispObject &a1, LispObject &a2, LispObject &a3,
-                 LispObject &a4, LispObject &a5, LispObject &a6)
-    {
-    }
-    ~Save()
-    {
-    }
-};
-
 extern volatile bool tick_pending;
 extern volatile int unwind_pending;
 
 extern LispObject respond_to_stack_event();
 
 inline void stackcheck()
-{   if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-        respond_to_stack_event();
-}
-
-// All the versions that use arguments are now redundant!
-
-inline void stackcheck(LispObject& a1)
-{   if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-        respond_to_stack_event();
-}
-
-inline void stackcheck(LispObject& a1, LispObject& a2)
-{   if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-        respond_to_stack_event();
-}
-
-inline void stackcheck(LispObject& a1, LispObject& a2, LispObject& a3)
-{   if_check_stack();
-    if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
-        respond_to_stack_event();
-}
-
-inline void stackcheck(LispObject& a1, LispObject& a2,
-                       LispObject& a3, LispObject& a4)
 {   if_check_stack();
     if ((reinterpret_cast<uintptr_t>(stack) | event_flag) >= stackLimit)
         respond_to_stack_event();
@@ -967,16 +876,8 @@ public:
 
 #endif
 
-// First I will comment on protection for push/pop against exceptions that
-// might arise, as in
-//    push(a, b);
-//    <exception or sigaction triggered here>
-//    pop(b, a);
-// I try take care to restore the stack pointer before returning from any
-// function.
-// Well for a time I had code that was slack about stack restoration
-// especially in the face of "throw" operations. But using the Save class
-// and RAII I hope I am repairing things.
+// I need the Lisp stack pointer to be kept under control even in the context
+// of catch and throw.
 //
 // The places where I may depend on the stack pointer and so where it may
 // be prudent to take special care to keep a saved copy include...

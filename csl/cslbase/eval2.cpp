@@ -187,7 +187,7 @@ LispObject apply(LispObject fn, LispObject args,
 
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
-{   stackcheck(args, env);
+{   stackcheck();
     STACK_SANITY;
     if (!consp(args)) return lisp_true;
     for (;;)
@@ -203,7 +203,7 @@ static LispObject block_fn(LispObject iargs, LispObject ienv)
 {   LispObject p;
     STACK_SANITY;
     if (!consp(iargs)) return nil;
-    stackcheck(iargs, ienv);
+    stackcheck();
     RealSave save(car(iargs),          // my_tag
                   cdr(iargs),          // args
                   ienv);
@@ -244,7 +244,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
 {   LispObject tag, v;
     STACK_SANITY;
     if (!consp(args)) return nil;
-    stackcheck(args, env);
+    stackcheck();
     {   tag = car(args);
         tag = eval(tag, env);
         errexit();
@@ -305,7 +305,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // speeds things up here. Well to be more precise, I support DECLARE in
 // the Compiler, but in the interpreter in non-Common mode every variable
 // is SPECIAL.
-{   stackcheck(bvlx, bodyx, envx);
+{   stackcheck();
     errexit();
     RealSave save(bvlx, bodyx, envx,
                   nil, nil, envx, nil, nil);
@@ -443,7 +443,7 @@ static LispObject compiler_let_fn(LispObject args, LispObject env)
 }
 
 LispObject cond_fn(LispObject args, LispObject env)
-{   stackcheck(args, env);
+{   stackcheck();
     STACK_SANITY;
     while (consp(args))
     {   LispObject p = car(args);
@@ -606,7 +606,7 @@ static LispObject flet_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
     STACK_SANITY;
     if (!consp(args)) return nil;
-    stackcheck(args, env);
+    stackcheck();
     my_env = env;
     d = car(args);     // The bunch of definitions
     args = cdr(args);
@@ -685,7 +685,7 @@ static LispObject if_fn(LispObject args, LispObject env)
         if (args != nil) return aerror("if");
         errexit();
     }
-    stackcheck(p, env, tr, fs);
+    stackcheck();
     errexit();
     p = eval(p, env);
     errexit();
@@ -697,7 +697,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
     STACK_SANITY;
     if (!consp(args)) return nil;
-    stackcheck(args, env);
+    stackcheck();
     errexit();
     my_env = env;
     d = car(args);     // The bunch of definitions
@@ -733,7 +733,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
 // I am in CSL mode.
 {   if (!consp(args)) return nil;
     STACK_SANITY;
-    stackcheck(args, ienv);
+    stackcheck();
     errexit();
     RealSave save1(car(args), cdr(args), ienv); // bvl, body, env
     RealSave save2(PushCount(4));

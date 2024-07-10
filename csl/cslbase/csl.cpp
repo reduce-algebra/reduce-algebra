@@ -3705,9 +3705,7 @@ int PROC_load_package(const char *name)
     volatile uintptr_t sp;
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w1 = make_undefined_symbol("load-package");
-             Save save(w1);
              w = make_undefined_symbol(name);
-             save.restore(w1);
              Lapply1(nil, w1, w),
              // Error handler
              return 1);  // Failed one way or another
@@ -3720,9 +3718,7 @@ int PROC_set_switch(const char *name, int val)
     C_stackBase = reinterpret_cast<uintptr_t>(&sp);
     if_error(w1 = make_undefined_symbol("onoff");
              errexit();
-             Save save(w1);
              w = make_undefined_symbol(name);
-             save.restore(w1);
              Lapply2(nil, w1, w, val == 0 ? nil : lisp_true),
              // Error handler
              return 1);  // Failed to set the switch
@@ -3845,9 +3841,7 @@ int PROC_make_function_call(const char *name, int n)
             procstack = cdr(procstack);
             n--;
         }
-        Save save(w);
         w1 = make_undefined_symbol(name);
-        save.restore(w);
         errexit();
         w = cons(w1, w);
         errexit();
@@ -3917,9 +3911,7 @@ int PROC_simplify()
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        Save save(w);
         w1 = make_undefined_symbol("mk*sq");
-        save.restore(w);
         errexit();
         w = Lapply1(nil, w1, w);
         errexit();
@@ -3936,9 +3928,7 @@ int PROC_simplify()
 
 static void PROC_standardise_gensyms(LispObject w)
 {   if (consp(w))
-    {   Save save(w);
-        PROC_standardise_gensyms(car(w));
-        save.restore(w);
+    {   PROC_standardise_gensyms(car(w));
 #ifdef NO_THROW
         if (exceptionPending()) return;
 #endif // NO_THROW
@@ -3958,9 +3948,7 @@ int PROC_lisp_eval()
     if_error(
         w = eval(car(procstack), nil);
         errexit();
-        Save save(w);
-        PROC_standardise_gensyms(w);
-        save.restore(w),
+        PROC_standardise_gensyms(w),
         return 1);
     car(procstack) = w;
     return 0;
@@ -3969,15 +3957,9 @@ int PROC_lisp_eval()
 static LispObject PROC_standardise_printed_form(LispObject w)
 {   if (consp(w))
     {   LispObject w1;
-        {   Save save(w);
-            w1 = PROC_standardise_printed_form(car(w));
-            save.restore(w);
-        }
+        w1 = PROC_standardise_printed_form(car(w));
         errexit();
-        {   Save save(w1);
-            w =  PROC_standardise_printed_form(cdr(w));
-            save.restore(w1);
-        }
+        w =  PROC_standardise_printed_form(cdr(w));
         errexit();
         w = cons(w1, w);
         errexit();
@@ -3986,9 +3968,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 // Now w is atomic. There are two interesting cases - an unprinted gensym
 // and a bignum.
     if (symbolp(w))
-    {   Save save(w);
-        get_pname(w); // allocates gensym name if needed. Otherwise cheap!
-        save.restore(w);
+    {   get_pname(w); // allocates gensym name if needed. Otherwise cheap!
         return w;
     }
     else if (is_numbers(w) && is_bignum(w))
@@ -4015,10 +3995,8 @@ int PROC_make_printable()
         errexit();
         w = Lapply1(nil, w, car(procstack));
         errexit();
-        Save save(w);
         w1 = make_undefined_symbol("prepsq");
         errexit();
-        save.restore(w);
         w = Lapply1(nil, w1, w);
         errexit();
 // There are going to be two things I do next. One is to ensure that

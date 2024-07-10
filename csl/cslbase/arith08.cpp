@@ -51,21 +51,15 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = logand2(a1, a2);
             break;
         case boole_andc2:
-            {   Save save(a1);
-                a2 = lognot(a2);
-                errexit();
-                save.restore(a1);
-            }
+            a2 = lognot(a2);
+            errexit();
             r = logand2(a1, a2);
             break;
         case boole_1:
             return a1;
         case boole_andc1:
-            {   Save save(a2);
-                a1 = lognot(a1);
-                errexit();
-                save.restore(a2);
-            }
+            a1 = lognot(a1);
+            errexit();
             r = logand2(a1, a2);
             break;
         case boole_2:
@@ -88,22 +82,16 @@ static LispObject Lboole_3(LispObject env, LispObject op,
             r = lognot(a2);
             break;
         case boole_orc2:
-            {   Save save(a1);
-                a2 = lognot(a2);
-                errexit();
-                save.restore(a1);
-            }
+            a2 = lognot(a2);
+            errexit();
             r = logior2(a1, a2);
             break;
         case boole_c1:
             r = lognot(a1);
             break;
         case boole_orc1:
-            {   Save save(a2);
-                a1 = lognot(a1);
-                errexit();
-                save.restore(a2);
-            }
+            a1 = lognot(a1);
+            errexit();
             r = logior2(a1, a2);
             break;
         case boole_nand:
@@ -158,11 +146,8 @@ static LispObject Lconjugate(LispObject env, LispObject a)
     if (is_numbers(a) && is_complex(a))
     {   LispObject r = real_part(a),
                        i = imag_part(a);
-        {   Save save(r);
-            i = negate(i);
-            errexit();
-            save.restore(r);
-        }
+        i = negate(i);
+        errexit();
         a = make_complex(r, i);
         return a;
     }
@@ -235,29 +220,21 @@ LispObject Lgcd_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a3);
     a1 = gcd(a1, a2);
     errexit();
-    save.restore(a3);
     return gcd(a1, a3);
 }
 
 LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a3, a4up);
-        a1 = gcd(a1, a2);
-        errexit();
-        save.restore(a3, a4up);
-        a1 = gcd(a1, a3);
-        errexit();
-        save.restore(a3, a4up);
-    }
+    a1 = gcd(a1, a2);
+    errexit();
+    a1 = gcd(a1, a3);
+    errexit();
     while (a4up != nil)
-    {   Save save(a4up);
-        a1 = gcd(a1, car(a4up));
+    {   a1 = gcd(a1, car(a4up));
         errexit();
-        save.restore(a4up);
         a4up = cdr(a4up);
     }
     return a1;
@@ -290,29 +267,21 @@ LispObject Llcm_2(LispObject env, LispObject a1, LispObject a2)
 LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2,
                   LispObject a3)
 {   SingleValued fn;
-    Save save(a3);
     a1 = lcm(a1, a2);
     errexit();
-    save.restore(a3);
     return lcm(a1, a3);
 }
 
 LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
                     LispObject a3, LispObject a4up)
 {   SingleValued fn;
-    {   Save save(a3, a4up);
-        a1 = lcm(a1, a2);
-        errexit();
-        save.restore(a3, a4up);
-        a1 = lcm(a1, a3);
-        errexit();
-        save.restore(a3, a4up);
-    }
+    a1 = lcm(a1, a2);
+    errexit();
+    a1 = lcm(a1, a3);
+    errexit();
     while (a4up != nil)
-    {   Save save(a4up);
-        a1 = lcm(a1, car(a4up));
+    {   a1 = lcm(a1, car(a4up));
         errexit();
-        save.restore(a4up);
         a4up = cdr(a4up);
     }
     return a1;
@@ -356,11 +325,8 @@ LispObject decode_long_float(LispObject a)
     LispObject sign = make_boxfloat128(f128_1);
     if (neg) f128_negate(reinterpret_cast<float128_t *>(long_float_addr(
                                   sign)));
-    {   Save save(sign);
-        a = make_boxfloat128(d);
-        errexit();
-        save.restore(sign);
-    }
+    a = make_boxfloat128(d);
+    errexit();
 #ifdef COMMON
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
@@ -393,12 +359,9 @@ LispObject Ldecode_float(LispObject env, LispObject a)
     else d = std::frexp(d, &x);
     if (is_sfloat(a)) sign = pack_immediate_float(neg, a);
     else sign = make_boxfloat(neg, floatWant(flthdr(a)));
-    {   Save save(sign);
-        if (is_sfloat(a)) a = pack_immediate_float(d, a);
-        else a = make_boxfloat(d, floatWant(flthdr(a)));
-        errexit();
-        save.restore(sign);
-    }
+    if (is_sfloat(a)) a = pack_immediate_float(d, a);
+    else a = make_boxfloat(d, floatWant(flthdr(a)));
+    errexit();
 #ifdef COMMON
 // Until and unless Standard Lisp supports multiple values this has to
 // return a list in standard lisp mode.
@@ -1146,14 +1109,10 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 
 LispObject lisp_fix(LispObject a, int roundmode)
 {   LispObject r;
-    Save save(a);
     r = lisp_fix_sub(a, roundmode);
     errexit();
-    save.restore(a);
-    Save save1(r);
     a = difference2(a, r);
     errexit();
-    save1.restore(r);
     mv_2 = a;
     return nvalues(r, 2);
 }
@@ -1174,16 +1133,12 @@ static LispObject Lround(LispObject env, LispObject a)
 LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
 {   LispObject r2, negb;
     if (is_float(a) || is_float(b))
-    {   Save save(b);
-        a = quot2(a, b);
+    {   a = quot2(a, b);
         errexit();
 // If either argument was floating point then the quotient will be.
         LispObject r = lisp_fix(a, roundmode);
-        save.restore(b);
-        Save save1(r);
         mv_2 = times2(mv_2, b);
         errexit();
-        save1.restore(r);
         return nvalues(r, 2);
     }
     LispObject q = quot2(a, b);
@@ -1196,11 +1151,8 @@ LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
         case FIX_ROUND:
 // I will apply a round-to-nearest, with round-to-even to break ties.
             negb = negate(b);
-            {   Save save1(negb);
-                r2 = times2(r, fixnum_of_int(2));
-                errexit();
-                save1.restore(negb);
-            }
+            r2 = times2(r, fixnum_of_int(2));
+            errexit();
             if (lessp2(b, r2) ||
                 (numeq2(b, r2) && Loddp(nil, q)!=nil)) goto increase_q;
             if (lessp2(r2, negb) ||
