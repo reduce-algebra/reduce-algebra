@@ -567,6 +567,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_APPLY1:
                 if (is_symbol(B_reg))   // can optimise this case, I guess
                 {   f1 = qfn1(B_reg);
+                    RECORD_CALL(list2(B_reg, A_reg));
                     *++stack = B_reg;
                     if ((qheader(B_reg) & SYM_TRACED) != 0)
                         A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
@@ -586,6 +587,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f2 = qfn2(r2);
                     stack--;
+                    RECORD_CALL(list3(r2, B_reg, A_reg));
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
@@ -610,6 +612,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f3 = qfn3(r2);
+                    RECORD_CALL(list4(r2, r1, B_reg, A_reg));
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
                     else A_reg = f3(r2, r1, B_reg, A_reg);
@@ -632,9 +635,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 // them individually.
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
-                {   {   A_reg = ncons(A_reg);    // Make 4th arg a list!
-                        errexit();
-                    }
+                {   A_reg = ncons(A_reg);    // Make 4th arg a list!
+                    RECORD_CALL(list4star(r2, r3, r1, B_reg, A_reg));
+                    errexit();
                     f4up = qfn4up(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
                         A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg,
@@ -1610,17 +1613,19 @@ next_opcode:   // This label is so that I can restart what I am doing
                 fname = next_byte;
             call0:
                 r1 = basic_elt(litvec, fname);
-                debug_record_symbol(r1);
+                {   debug_record_symbol(r1);
 //
 // NB I set fname to be the literal-vector offset in the line above so that
 // it will be possible to find the name of the function that was called
 // if I have to display a backtrace.
 //
-                f0 = qfn0(r1);
+                    RECORD_CALL(ncons(r1));
+                    f0 = qfn0(r1);
 // CALL0:  A=fn()
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
-                else A_reg = f0(r1);
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
+                    else A_reg = f0(r1);
+                }
                 errexit();
                 continue;
 
@@ -1659,7 +1664,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // interpreter.
                 if (f0 == bytecoded_0 &&
                     (qheader(r1) & SYM_TRACED) == 0)
-                {   lit = qenv(r1);
+                {   RECORD_TAILCALL(ncons(r1));
+                    lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
@@ -1687,16 +1693,20 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
-                else A_reg = f0(r1);
+                {   RECORD_CALL(ncons(r1));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
+                    else A_reg = f0(r1);
+                }
                 errexit();
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
-                else A_reg = f0(r1);
+                {   RECORD_CALL(ncons(r1));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
+                    else A_reg = f0(r1);
+                }
                 return nil;
 #endif
 
@@ -1707,7 +1717,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 poll_jump_back(A_reg);
                 if (f1 == bytecoded_1 &&
                     (qheader(r1) & SYM_TRACED) == 0)
-                {   lit = qenv(r1);
+                {   RECORD_TAILCALL(list2(r1, A_reg));
+                    lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
@@ -1729,15 +1740,19 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
-                else A_reg = f1(r1, A_reg);
+                {   RECORD_CALL(list2(r1, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
+                    else A_reg = f1(r1, A_reg);
+                }
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
-                else A_reg = f1(r1, A_reg);
+                {   RECORD_CALL(list2(r1, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
+                    else A_reg = f1(r1, A_reg);
+                }
                 return nil;
 #endif
 
@@ -1749,7 +1764,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 poll_jump_back(A_reg);
                 if (f2 == bytecoded_2 &&
                     (qheader(r1) & SYM_TRACED) == 0)
-                {   lit = qenv(r1);
+                {   RECORD_TAILCALL(list3(r1, B_reg, A_reg));
+                    lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
@@ -1771,15 +1787,19 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
-                else A_reg = f2(r1, B_reg, A_reg);
+                {   RECORD_CALL(list3(r1, B_reg, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
+                    else A_reg = f2(r1, B_reg, A_reg);
+                }
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
-                else A_reg = f2(r1, B_reg, A_reg);
+                {   RECORD_CALL(list3(r1, B_reg, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
+                    else A_reg = f2(r1, B_reg, A_reg);
+                }
                 return nil;
 #endif
 
@@ -1791,7 +1811,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r2 = *stack--;
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
-                {   lit = qenv(r1);
+                {   RECORD_TAILCALL(list4(r1, r2, B_reg, A_reg));
+                    lit = qenv(r1);
                     codevec = car(lit);
                     litvec = cdr(lit);
                     ffpname = qpname(basic_elt(litvec, 0));
@@ -1813,15 +1834,19 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = cdr(callstack);
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
-                else A_reg = f3(r1, r2, B_reg, A_reg);
+                {   RECORD_CALL(list4(r1, r2, B_reg, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                    else A_reg = f3(r1, r2, B_reg, A_reg);
+                }
 //              return A_reg;
                 return nil;
 #else
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
-                else A_reg = f3(r1, r2, B_reg, A_reg);
+                {   RECORD_CALL(list4(r1, r2, B_reg, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                    else A_reg = f3(r1, r2, B_reg, A_reg);
+                }
                 return nil;
 #endif
 
@@ -1925,6 +1950,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 {   stack_restorer saver;
                     *++stack = A_reg; // the argument
+                    RECORD_CALL(list2(basic_elt(litvec, 0), A_reg));
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
@@ -1959,9 +1985,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
 // CALL1:   A=fn(A);
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
-                else A_reg = f1(r1, A_reg);
+                {   RECORD_CALL(list2(r1, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
+                    else A_reg = f1(r1, A_reg);
+                }
                 errexit();
                 continue;
 
@@ -1971,7 +1999,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call2;
                 }
                 {   stack_restorer saver;
-                    *++stack =B_reg; *++stack = A_reg;
+                    *++stack = B_reg; *++stack = A_reg;
+                    RECORD_CALL(list3(basic_elt(litvec, 0), B_reg, A_reg));
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
                         respond_to_stack_event();
                     A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0),
@@ -2003,9 +2032,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
 // CALL2:   A=fn(B,A);
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
-                else A_reg = f2(r1, B_reg, A_reg);
+                {
+                    RECORD_CALL(list3(r1, B_reg, A_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
+                    else A_reg = f2(r1, B_reg, A_reg);
+                }
                 errexit();
                 continue;
 
@@ -2016,9 +2048,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
 // CALL2R:   A=fn(A,B); NOTE arg order reversed
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
-                else A_reg = f2(r1, A_reg, B_reg);
+                {   RECORD_CALL(list3(r1, A_reg, B_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
+                    else A_reg = f2(r1, A_reg, B_reg);
+                }
                 errexit();
                 continue;
 
@@ -2030,9 +2064,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f3 = qfn3(r1);
 // CALL3:   A=fn(pop(),B,A);
                 r2 = *stack--;
-                if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
-                else A_reg = f3(r1, r2, B_reg, A_reg);
+                {   RECORD_CALL(list4(r1, r2, A_reg, B_reg));
+                    if ((qheader(r1) & SYM_TRACED) != 0)
+                        A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                    else A_reg = f3(r1, r2, B_reg, A_reg);
+                }
                 errexit();
                 continue;
 
@@ -2057,10 +2093,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f0 = no_arg_functions[next_byte];
                 debug_record_int("BUILTIN0", previous_byte);
 // BUILTIN0:  A=fn()
-                if (no_arg_traceflags[previous_byte])
-                    A_reg = traced_call0(basic_elt(litvec, 0), f0,
-                                         make_undefined_symbol(no_arg_names[previous_byte]));
-                else A_reg = f0(nil);
+                {
+                    if (no_arg_traceflags[previous_byte])
+                        A_reg = traced_call0(basic_elt(litvec, 0), f0,
+                                             make_undefined_symbol(no_arg_names[previous_byte]));
+                    else A_reg = f0(nil);
+                }
                 errexit();
                 continue;
 

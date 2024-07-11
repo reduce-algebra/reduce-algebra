@@ -1231,6 +1231,12 @@ LispObject Lenable_errorset(LispObject env, LispObject a,
     return r;
 }
 
+#ifdef BOOTSTRAP
+bool backtrace_enabled = true;
+#else // BOOTSTRAP
+bool backtrace_enabled = false;
+#endif // BOOTSTRAP
+
 LispObject Lenable_backtrace(LispObject env, LispObject a)
 {   SingleValued fn;
 //    (enable-backtrace nil)    errors silent unless ALWAYS_NOISY set
@@ -1241,6 +1247,7 @@ LispObject Lenable_backtrace(LispObject env, LispObject a)
 //    (enable-backtrace t)      ditto
 //    otherwise                 just return previous setting
     int32_t n = miscflags;
+    backtrace_enabled = true;
     miscflags &= ~BACKTRACE_MSG_BITS;
     if (a == nil || a == fixnum_of_int(0)) /* nothing */;
     else if (a == fixnum_of_int(1))

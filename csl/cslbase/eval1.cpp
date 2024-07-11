@@ -232,7 +232,10 @@ restart:
 // things rather directly.
         LispObject eargs = nil;
         if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
-        {   if (!consp(args)) return (*qfn0(fn))(fn);
+        {   if (!consp(args))
+            {   RECORD_CALL(ncons(fn));
+                return (*qfn0(fn))(fn);
+            }
             LispObject a1 = car(args);
             {   on_backtrace(a1 = eval(a1, env),
                     if (SHOW_ARGS)
@@ -241,7 +244,10 @@ restart:
                     });
             }
             args = cdr(args);
-            if (!consp(args)) return (*qfn1(fn))(fn, a1);
+            if (!consp(args))
+            {   RECORD_CALL(list2(fn, a1));
+                return (*qfn1(fn))(fn, a1);
+            }
             LispObject a2 = car(args);
             {   on_backtrace(
                     a2 = eval(a2, env),
@@ -251,7 +257,10 @@ restart:
                     });
             }
             args = cdr(args);
-            if (!consp(args)) return (*qfn2(fn))(fn, a1, a2);
+            if (!consp(args))
+            {   RECORD_CALL(list3(fn, a1, a2));
+                return (*qfn2(fn))(fn, a1, a2);
+            }
             LispObject a3 = car(args);
             {   on_backtrace(
                     a3 = eval(a3, env),
@@ -261,7 +270,10 @@ restart:
                     });
             }
             args = cdr(args);
-            if (!consp(args)) return (*qfn3(fn))(fn, a1, a2, a3);
+            if (!consp(args))
+            {   RECORD_CALL(list4(fn, a1, a2, a3));
+                return (*qfn3(fn))(fn, a1, a2, a3);
+            }
             eargs = list3(a3, a2, a1);
             errexit();
         }
@@ -1655,49 +1667,32 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 
 #endif // __linux__
 
-// I wish this was generally available. The idea here is that
-// display_backtrace() works by unwinding the stack reporting what it
-// reaches. That destroys the current context (bigtime!) but if I do that in
-// a forked process then the child process can terminate when it has
-// finished producing the backtrace and the parentg one can resume
-// undisturbed. Windows does not provide fork()
-
-#ifdef HAVE_FORK
-
-#include <unistd.h>
-#include <sys/wait.h>
-
 LispObject Lbacktrace(LispObject env)
 {   SingleValued fn;
-    pid_t pid1;
-// Split off a clone of the current process that can be used to generate the
-// backtrace leaving the main thread undamaged.
-    pid1 = fork();
-    if (pid1 < 0) return aerror("Fork 1 failed in backtrace function");
-    else if (pid1 == 0) // TASK 1 created OK
-    {   display_backtrace();
-#ifdef MACINTOSH
-        std::abort();
-#else // MACINTOSH
-        std::quick_exit(0);
-#endif // MACINTOSH
+    LispObject s = callStack;
+    stdout_printf("+++ backtrace +++\n");
+    if (backtrace_enabled)
+    {   while (s != nil)
+        {   LispObject c = car(s);
+            s = cdr(s);
+            stdout_printf("calling: ");
+            loop_print_stdout(car(c));
+            stdout_printf("\n");
+            c = cdr(c);
+            int n = 1;
+            while (c != nil)
+            {   stdout_printf("Arg%d: ", n++);
+                loop_print_stdout(car(c));
+                stdout_printf("\n");
+                c = cdr(c);
+            }
+        }
+        stdout_printf("+++ end of backtrace +++\n");
     }
-    else
-    {   // Wait for the sub-task to finishes.
-        wait(nullptr);
-        return nil;
-    }
+    else stdout_printf(
+        "+++ You must call enable!-backtrace(N) to get a backtrace +++\n");
+    return nil;
 }
-
-#else // HAVE_FORK
-
-LispObject Lbacktrace(LispObject env)
-{   SingleValued fn;
-    return aerror("Standard Lisp does not mandate a BACKTRACE function");
-}
-
-#endif // HAVE_FORK
-
 
 // sandbox-eval behaves much like eval, EXCEPT for two key differences.
 // (1) The evaluation of u will not change the state of the Lisp

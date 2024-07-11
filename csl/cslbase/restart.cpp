@@ -106,7 +106,7 @@ bool modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
-LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
+LispObject list_symbol, callStack, liststar_symbol, eq_symbol, eql_symbol;
 LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 LispObject go_symbol, cond_symbol, char_0_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
@@ -453,7 +453,7 @@ static LispObject Lcheck_c_code(LispObject env, LispObject name,
 LispObject Luse_version_time(LispObject env, LispObject a1)
 {   SingleValued Fn;
     bool old = use_version_time;
-    use_version_time = a1 != nil;
+    use_version_time = (a1 != nil);
     return old ? lisp_true : nil;
 }
 

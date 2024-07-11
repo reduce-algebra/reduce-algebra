@@ -401,8 +401,8 @@ extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,rest_key;
 extern LispObject char_0_symbol, quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
-extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
-extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
+extern LispObject list_symbol, callStack, liststar_symbol, eq_symbol;
+extern LispObject eql_symbol, cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject go_symbol, cond_symbol, print_hash_symbol;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
@@ -878,6 +878,8 @@ extern LispObject list3star(LispObject a, LispObject b,
                             LispObject c, LispObject d);
 extern LispObject list4(LispObject a, LispObject b,
                         LispObject c, LispObject d);
+extern LispObject list4star(LispObject a, LispObject b,
+                            LispObject c, LispObject d, LispObject e);
 extern LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
 extern LispObject make_package(LispObject name);
@@ -1185,7 +1187,7 @@ extern setup_type const om_parse_setup[];
     X(lisp_package),          X(lisp_query_io),     X(lisp_standard_input), \
     X(lisp_standard_output),  X(lisp_terminal_io),  X(lisp_trace_output), \
     X(lisp_true),             X(lisp_work_stream),  X(liststar_symbol), \
-    X(list_symbol),                                 X(load_selected_source_symbol), \
+    X(list_symbol),           X(callStack),         X(load_selected_source_symbol), \
     X(load_source_symbol),    X(long_float),        X(lose_symbol), \
     X(lower_symbol),          X(macroexpand_hook),  X(macro_symbol), \
     X(multiplication_buffer), X(mv_call_symbol),    X(named_character), \
