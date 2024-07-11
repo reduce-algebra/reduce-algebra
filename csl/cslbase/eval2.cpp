@@ -1,6 +1,5 @@
 // eval2.cpp                               Copyright (C) 1989-2024 Codemist
 
-
 //
 // Interpreter (part 2).  apply & some special forms
 //
@@ -53,6 +52,7 @@ LispObject apply(LispObject fn, LispObject args,
                  LispObject env, LispObject from)
 {   if (time_limit >= 0 &&
         read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
+    RECORD_CALL(cons(fn, args));
     LispObject def;
     for (;;)
     {   if (symbolp(fn))

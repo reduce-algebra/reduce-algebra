@@ -32,6 +32,7 @@ module mprint; % Basic output package for symbolic expressions.
 fluid  '(!*fort
          !*list
          !*nat
+         !*expt_caret
          !*nosplit
          !*ratpri
          !*revpri
@@ -53,6 +54,8 @@ fluid  '(!*fort
          !*utf82d
          !*unicode_in_off_nat);
 
+switch expt_caret;
+
 fluid '(!*TeX);
 
 global '(!*eraise initl!* nat!*!* spare!* !*asterisk);
@@ -67,6 +70,7 @@ switch list,ratpri=on,revpri,nosplit=on,asterisk=on,unicode_in_off_nat;
 !*asterisk := t;
 !*eraise := t;
 !*nat := nat!*!* := t;
+!*expt_caret := nil;       % in "on nat" mode displays x^n rather than x**n
 !*nosplit := t;            % Expensive, maybe??
 obrkp!* := t;
 orig!*:=0;
@@ -259,10 +263,6 @@ symbolic procedure flatsizec u;
     else if atom u then widelengthc u
     else flatsizec car u + flatsizec cdr u + 1;
 
-global '(!*natexpt);
-switch natexpt;
-!*natexpt := nil;
-
 symbolic procedure oprin op;
    (lambda x;
          if null x then <<prin2!* " "; prin2!* op; prin2!* " ">>
@@ -273,7 +273,7 @@ symbolic procedure oprin op;
           else if flagp(op,'spaced)
            then <<prin2!* " "; prin2!* x; prin2!* " ">>
           else prin2!* x)
-   if op='expt and !*natexpt then '!^ else get(op,'prtch);
+   if op='expt and !*expt_caret then '!^ else get(op,'prtch);
 
 symbolic procedure prin2!* u;
 % It seems to me possible that the UTF8 package ought to be rewritten to use

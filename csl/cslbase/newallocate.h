@@ -1493,6 +1493,12 @@ inline LispObject list4(LispObject a, LispObject b, LispObject c,
     return list2star(a, b, w);
 }
 
+inline LispObject list4star(LispObject a, LispObject b, LispObject c,
+                            LispObject d, LispObject e)
+{   LispObject w = list2star(c, d, e);
+    return list2star(a, b, w);
+}
+
 inline LispObject acons(LispObject a, LispObject b, LispObject c)
 {   if (get4WordsValid()) LIKELY
     {   LispObject r1 = get4Words() + TAG_CONS;

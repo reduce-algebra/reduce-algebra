@@ -527,7 +527,33 @@ public:
     }
 };
 
+extern bool backtrace_enabled;
 
+class ForBacktrace
+{   LispObject save;
+public:
+    ForBacktrace(LispObject call)
+    {   if (backtrace_enabled)
+        {   save = callStack;
+            callStack = cons(call, callStack);
+        }
+        else save = nil;
+    }
+    ~ForBacktrace()
+    {   if (backtrace_enabled) callStack = save;
+    }
+};
+
+class ForBacktraceTailCall
+{
+public:
+    ForBacktraceTailCall(LispObject call)
+    {   callStack = cons(call, callStack);
+    }
+};
+
+#define RECORD_CALL(x) ForBacktrace btr(x);
+#define RECORD_TAILCALL(x) ForBacktraceTailCall btr(x);
 
 // I am going to have some macros that provide a level of abstraction
 // around "catch" and "throw". The reason for this is that in the special
