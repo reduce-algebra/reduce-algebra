@@ -159,8 +159,6 @@ extern LispObject bad_specialfn_4up(LispObject env, LispObject,
 #define G4W3           got_4up_wanted_3
 #define G4Wother       got_4up_wanted_other
 
-extern LispObject display_backtrace();
-
 extern LispObject aerror(const char *s);         // Called from C not Lisp
 extern LispObject aerror0(const char *s);
 extern LispObject aerror1(const char *s, LispObject a);
