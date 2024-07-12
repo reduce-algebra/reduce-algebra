@@ -444,6 +444,7 @@ build_win64() {
 # The files in winbuild64 provide the framework for building the snapshot.
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
@@ -466,6 +467,7 @@ build_altwin64() {
   start_remote_host
   copy_files "$REDUCE_DISTRIBUTION/winbuild64/"  "$REDUCE_BUILD/"  "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+  execute_in_dir "windows" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
   execute_in_dir "windows" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "windows" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
@@ -494,6 +496,11 @@ build_debian() {
 # system.
   copy_files "$REDUCE_DISTRIBUTION/debianbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+# In ways I do not understand my Windows main file-set does not have
+# executable permissions set on all the files that it should, and I am
+# having difficulty fixing that - so here as a work-round I force a bunch
+# of scripts to be executable.
+  execute_in_dir "linux" "$REDUCE_BUILD/C"               "chmod +x scripts/*.sh"
   execute_in_dir "linux" "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "linux" "$REDUCE_BUILD"                 "make REVISION=$REVISION"
@@ -544,6 +551,7 @@ build_macintosh() {
 # As you might imagine, macbuild holds build scripts here.
   copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
+  execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "chmod +x scripts/*.sh"
   execute_in_dir "macintosh" "$REDUCE_BUILD/C"            "./autogen.sh"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
   execute_in_dir "macintosh" "$REDUCE_BUILD"              "touch C.stamp"
