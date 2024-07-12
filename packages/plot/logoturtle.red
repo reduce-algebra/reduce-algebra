@@ -4,18 +4,24 @@ module logoturtle;   % Logo turtle graphics based on Gnuplot.
 
 % LogoTurtle is a partial REDUCE emulation of traditional Logo turtle
 % graphics (see https://en.wikipedia.org/wiki/Turtle_graphics) with
-% one turtle, modelled on Berkeley Logo 6.2 by Brian Harvey (see
-% http://people.eecs.berkeley.edu/~bh/logo.html).
+% one turtle, modelled on Berkeley Logo (see
+% http://people.eecs.berkeley.edu/~bh/logo.html) by Brian Harvey and
+% FMSLogo (see https://fmslogo.sourceforge.io/) by David Costanzo
+% (which is an updated version of George Mills' MSWLogo, a
+% multimedia-enhanced version for MS Windows, which is itself based on
+% Berkeley Logo).
 
 % This package is inspired by and related to the Turtle package by
-% Caroline Cotter (ZIB,Berlin, 1998), and the word "Turtle" below
+% Caroline Cotter (ZIB, Berlin, 1998), and the word "Turtle" below
 % (with a capital T) will refer specifically to that package.  Both
-% packages are built on the REDUCE plot package, which itself uses
-% Gnuplot to display plots.  This means that plotting is not fully
-% interactive; a plot is constructed invisibly and only displayed when
-% requested.  This package aims to be more efficient, more authentic,
-% more interactive and more complete than Turtle.  Command names are
-% as in Berkeley Logo 6.2.
+% packages are built on the REDUCE gnuplot package, which uses the
+% Gnuplot executable to display plots.  This means that plotting is
+% not fully interactive; a plot is constructed invisibly and only
+% displayed when requested.  This package aims to be more efficient,
+% more authentic, more interactive and more complete than Turtle.
+% Command names are as in Berkeley Logo and/or FMSLogo, and their
+% function is the same or similar.  (Identical behaviour is not always
+% possible.)
 
 % LogoTurtle procedures other than queries return nothing (nil) and
 % plotting is achieved via side effects, not via returned procedure
@@ -96,20 +102,25 @@ logoturtle!-angle!*     := 10.0;
 
 symbolic macro procedure logoturtle!-make!-curve!-seq args;
    % Return a curve sequence data structure as a tagged list of the
-   % form (curve!-seq linestyle curve_1 curve_2 ...).  If an argument
-   % is provided then it should be a colour specification acceptable
-   % to Gnuplot, such as a value returned by logoturtle!-colorspec.
-   % If no argument is provided then linestyle is taken from the lc
-   % property of logoturtle!-curve!-seq!*.
+   % form (curve!-seq linestyle curve_1 curve_2 ...), where linestyle
+   % is a list of items to be printed concatenated as the line style,
+   % built from properties of logoturtle!-curve!-seq!*.  If an
+   % argument is provided then it should be a colour specification
+   % acceptable to Gnuplot, such as a value returned by
+   % logoturtle!-colorspec, which overrides the lc property of
+   % logoturtle!-curve!-seq!*.
 
    % Note that within this macro args has the form
    % (logoturtle!-make!-curve!-seq arg1 arg2 ...).
-   {'prog, '(lc),
+   {'prog, '(lc lw),
       {'setq, 'lc, if cdr args then cadr args
       else '(get 'logoturtle!-curve!-seq!* 'lc)},
+      '(setq lw (get 'logoturtle!-curve!-seq!* 'lw)),
       '(return
          (cons 'curve!-seq
-            (cons (cond (lc (list " lc rgb """ lc """")))
+            (cons (append
+                  (and lc (list " lc rgb """ lc """"))
+                  (and lw (list " lw " lw)))
                logoturtle!-curve!-seq!*)))};
 
 flag('(logoturtle!-make!-curve!-seq), 'variadic);
@@ -497,23 +508,70 @@ symbolic operator home;
 
 symbolic procedure arc(angle, radius);
    % Draw an arc of a circle, with the turtle at the center, with the
-   % specified radius, starting at the turtle's heading and extending
-   % clockwise through the specified angle. The turtle does not move.
-   begin scalar nsteps, h, delta, curve;
-      angle := deg2rad angle;           % angle subtended in radians
-      nsteps := fix(10.0*angle);        % arcstep = radius/10.0
-      h := deg2rad heading();           % heading in radians
+   % specified positive radius, starting at the turtle's heading and
+   % extending clockwise through the specified angle
+   % (counter-clockwise if angle is negative).  The turtle does not
+   % move.
+   begin scalar nsteps, h, delta, curve, a;
+      angle := logoturtle!-number angle;
+      radius := logoturtle!-number radius;
+      if radius <= 0.0 then typerr(radius, "radius");
+      angle := deg2rad angle;             % angle subtended in radians
+      h := deg2rad logoturtle!-heading!*; % heading in radians
+      nsteps := fix abs(10.0*angle);      % arcstep = radius/10.0
       delta := angle/nsteps;
-      curve := for n := 0 : nsteps collect
-         begin scalar a := h + n*delta;
-            return (logoturtle!-x!-coord!* + radius*sin(a)) .
-               (logoturtle!-y!-coord!* + radius*cos(a))
-         end;
+      curve := for n := 0 : nsteps collect <<
+         a := h + n*delta;
+         (logoturtle!-x!-coord!* + radius*sin(a)) .
+            (logoturtle!-y!-coord!* + radius*cos(a))
+      >>;
       logoturtle!-curve!-seq!* := curve . logoturtle!-curve!-seq!*;
    end;
 
 symbolic operator arc;
 
+symbolic procedure arc2(angle, radius);
+   % Move the turtle along a circular arc that sweeps through the
+   % specified angle with the specified positive radius.  The turtle
+   % always moves forwards: if angle is positive, then the turtle
+   % moves forwards in a clockwise direction; if angle is negative,
+   % then the turtle moves forwards in a counter-clockwise direction.
+   % At the end of the arc, the turtle's heading is increased by
+   % angle.
+   begin scalar nsteps, a, h, x, y, delta;
+      angle := logoturtle!-number angle;
+      radius := logoturtle!-number radius;
+      if radius <= 0.0 then typerr(radius, "radius");
+      if angle < 0 then radius := -radius;
+      a := deg2rad angle;                 % angle subtended in radians
+      h := deg2rad logoturtle!-heading!*; % heading in radians
+      x := logoturtle!-x!-coord!* + radius*cos(h); % centre of arc
+      y := logoturtle!-y!-coord!* - radius*sin(h);
+      nsteps := fix abs(10.0*a);        % arcstep = radius/10.0
+      delta := a/nsteps;
+      for n := 1 : nsteps do <<
+         a := h + n*delta;
+         logoturtle!-setxy(x - radius*cos(a), y + radius*sin(a))
+      >>;
+      logoturtle!-setheading(logoturtle!-heading!* + angle)
+   end;
+
+symbolic operator arc2;
+
+symbolic procedure circle radius;
+   % Draw a circle centred on the turtle with the positive radius
+   % specified.  The turtle does not move.
+   arc(360.0, radius);
+
+symbolic operator circle;
+
+symbolic procedure circle2 radius;
+   % Move the turtle clockwise around a circle with the specified
+   % positive radius.  The turtle ends in the same position in which
+   % it starts.
+   arc2(360.0, radius);
+
+symbolic operator circle2;
 
 % Turtle Motion Queries (all procedures return values)
 % ====================================================
@@ -606,15 +664,14 @@ symbolic procedure clearscreen();       % cs;
 
 symbolic operator clearscreen;
 
-% As an extension to Berkeley Logo, the LogoTurtle commands WRAP,
-% WINDOW and FENCE accept zero, one or two arguments: if the single
-% argument is FALSE then no window mode is set, meaning that (like
-% Turtle) LogoTurtle does not use a fixed window size and there are no
-% constraints on where the turtle draws; otherwise a window mode is
-% set.  If there is a single numerical argument N then the size of the
-% graphics window is set to -|N| <= x,y <= |N|; if there are two
-% numerical arguments M, N then the size of the graphics window is set
-% to -|M| <= x <= |M|, -|N| <= y <= |N|.
+% The LogoTurtle commands WRAP, WINDOW and FENCE accept zero, one or
+% two arguments: if the single argument is FALSE then no window mode
+% is set, meaning that (like Turtle) LogoTurtle does not use a fixed
+% window size and there are no constraints on where the turtle draws;
+% otherwise a window mode is set.  If there is a single numerical
+% argument N then the size of the graphics window is set to -|N| <=
+% x,y <= |N|; if there are two numerical arguments M, N then the size
+% of the graphics window is set to -|M| <= x <= |M|, -|N| <= y <= |N|.
 
 symbolic procedure logoturtle!-win!-mode(mode, args);
    begin scalar l, m, n;
@@ -764,21 +821,20 @@ symbolic procedure setpencolor color;   % setpc color
    % than 100 specifying the percent saturation of red, green, and
    % blue in the desired color).
 
-   % As an extension to Berkeley Logo, the argument can be a string or
-   % identifier representing a colour in any way that is acceptable to
-   % Gnuplot, such as a colour name or hexadecimal number.
-   % Alternatively, it can be the identifier FALSE meaning that no
-   % colour is set.
+   % The argument can be a string or identifier representing a colour
+   % in any way that is acceptable to Gnuplot, such as a colour name
+   % or hexadecimal number.  Alternatively, it can be the identifier
+   % FALSE meaning that no colour is set.
    begin scalar colorspec := logoturtle!-colorspec reval color;
-      if colorspec then <<
-         % Changing the pen colour terminates the current curve
-         % sequence with the current line style, saves the new line
-         % style and starts a new curve sequence.
-         logoturtle!-save!-curve!-seq();
-         put('logoturtle!-curve!-seq!*, 'lc, colorspec);
-         logoturtle!-new!-curve!-seq()
-      >> else
-         remprop('logoturtle!-curve!-seq!*, 'lc)
+      % Changing the pen colour terminates the current curve
+      % sequence with the current line style, saves the new line
+      % style and starts a new curve sequence.
+      logoturtle!-save!-curve!-seq();
+      if colorspec then
+         put('logoturtle!-curve!-seq!*, 'lc, colorspec)
+      else
+         remprop('logoturtle!-curve!-seq!*, 'lc);
+      logoturtle!-new!-curve!-seq()
    end;
 
 symbolic operator setpencolor;
@@ -841,10 +897,9 @@ symbolic procedure setpalette(colornumber, rgblist);
    % (LogoTurtle keeps the first 8 colors constant.)  The second input
    % is a list of three nonnegative numbers not greater than 100
    % specifying the percent saturation of red, green, and blue in the
-   % desired color.  As an extension to Berkeley Logo, the second
-   % input can be a string or identifier representing a colour in any
-   % way that is acceptable to Gnuplot, such as a colour name or
-   % hexadecimal number.
+   % desired color.  The second input can be a string or identifier
+   % representing a colour in any way that is acceptable to Gnuplot,
+   % such as a colour name or hexadecimal number.
    begin scalar n := reval colornumber;
       if fixp n and n >= 0 and n <= 15 then
          putv(logoturtle!-colors!*, n,
@@ -858,10 +913,28 @@ symbolic procedure setpalette(colornumber, rgblist);
 
 symbolic operator setpalette;
 
-% SETPENSIZE size
-% sets the thickness of the pen. The input is either a single positive integer or a list of two
-% positive integers (for horizontal and vertical thickness). Some versions pay no attention to
-% the second number, but always have a square pen.
+symbolic procedure setpensize size;
+   % Set the thickness of the pen.  The input is a positive integer
+   % representing a multiple of the default thickness, or false,
+   % meaning unspecified, which is effectively equivalent to 1 but
+   % slightly less efficient.
+   begin scalar sz;
+      if fixp size and size > 0 then
+         sz := size
+      else if not(size eq 'false) then
+         typerr(size, "positive integer or false");
+      % Changing the pen size terminates the current curve sequence
+      % with the current line style, saves the new line style and
+      % starts a new curve sequence.
+      logoturtle!-save!-curve!-seq();
+      if sz then
+         put('logoturtle!-curve!-seq!*, 'lw, sz)
+      else
+         remprop('logoturtle!-curve!-seq!*, 'lw);
+      logoturtle!-new!-curve!-seq()
+   end;
+
+symbolic operator setpensize;
 
 symbolic procedure setbackground color; % setbg color
    % Set the screen background color by slot number or RGB values,
@@ -881,8 +954,8 @@ symbolic procedure setbackground color; % setbg color
 symbolic operator setbackground;
 
 
-% Pen Queries (all procedures return values)
-% ==========================================
+% Pen and Background Queries (all procedures return values)
+% =========================================================
 
 symbolic procedure pendownp();
    % Output TRUE if the pen is down, FALSE if it's up.
@@ -897,8 +970,7 @@ symbolic procedure pencolor();          % PC
    % Output the pen colour as a string or identifier that represents a
    % colour in any way that is acceptable to Gnuplot, such as a colour
    % name or hexadecimal number.  Alternatively, output the identifier
-   % FALSE meaning that no colour is set.  Beware that this is
-   % slightly different from Berkeley Logo.
+   % FALSE meaning that no colour is set.
    begin scalar colorspec := get('logoturtle!-curve!-seq!*, 'lc);
       return if colorspec then colorspec else 'false;
    end;
@@ -909,8 +981,7 @@ symbolic procedure palette colornumber;
    % Colornumber must be a nonnegative integer not greater than 15.
    % Output a string or identifier that represents the colour
    % associated with the given number in any way that is acceptable to
-   % Gnuplot, such as a colour name or hexadecimal number.  Beware
-   % that this is slightly different from Berkeley Logo.
+   % Gnuplot, such as a colour name or hexadecimal number.
    begin scalar n := reval colornumber;
       if fixp n and n >= 0 and n <= 15 then
          return getv(logoturtle!-colors!*, n)
@@ -920,10 +991,17 @@ symbolic procedure palette colornumber;
 
 symbolic operator palette;
 
-% pensize
-% outputs a list of two positive integers, specifying the horizontal and vertical thickness of the
-% turtle pen. (In some implementations, including wxWidgets, the two numbers are always
-% equal.)
+symbolic procedure pensize();
+   % Output a positive integer specifying the thickness of the turtle
+   % pen as a multiple of the default thickness, or false, meaning
+   % unspecified, which is effectively equivalent to 1 but slightly
+   % less efficient.
+   begin scalar size :=
+      get('logoturtle!-curve!-seq!*, 'lw);
+      return if size then size else 'false
+   end;
+
+symbolic operator pensize;
 
 % penpattern
 % outputs system-specific pen information.
@@ -938,11 +1016,10 @@ symbolic procedure background();        % bg
    % that represents a colour in any way that is acceptable to
    % Gnuplot, such as a colour name or hexadecimal number.
    % Alternatively, output the identifier FALSE meaning that no colour
-   % is set.  Beware that this is slightly different from Berkeley
-   % Logo.
+   % is set.
    begin scalar colorspec :=
       get('logoturtle!-plot!*, 'logoturtle!-bg);
-      return if colorspec then colorspec else 'false;
+      return if colorspec then colorspec else 'false
    end;
 
 symbolic operator background;
@@ -951,10 +1028,9 @@ symbolic operator background;
 % Saving and Loading Pictures (all return nothing)
 % ================================================
 
-% These two procedures are different from the Berkeley Logo commands
-% with the same names in that they save to, and load from, an internal
+% These two procedures save to, and load from, an internal
 % LogoTurtle namespace (the property list of the identifier
-% logoturtle!-plot!*) instead of files.
+% logoturtle!-plot!*).
 
 symbolic procedure savepict identifier;
    % Save the current plot to internal storage under the specified
