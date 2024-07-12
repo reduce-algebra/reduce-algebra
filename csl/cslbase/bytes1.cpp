@@ -886,11 +886,11 @@ inline void do_freerstr()
     }
 }
 
-inline int countdown = 1000;
+inline int countdown = 100000;
 
 ALWAYSINLINE inline void poll_jump_back(LispObject& A_reg)
 {   if (--countdown < 0)
-    {   countdown = 1000;
+    {   countdown = 100000;
         stackcheck();
         if (time_limit >= 0 &&
             read_clock()/1000 > (std::uint64_t)time_limit)
