@@ -9,9 +9,13 @@ written by Francis Wright.} (henceforth referred to as ``LogoTurtle'')
 is a partial REDUCE emulation of
 \href{https://en.wikipedia.org/wiki/Turtle_graphics}{traditional Logo
   turtle graphics} with one turtle, modelled on
-\href{http://people.eecs.berkeley.edu/~bh/logo.html}{Berkeley Logo 6.2
-  by Brian Harvey}.  This manual section is derived from the Graphics
-chapter of the Berkeley Logo 6.2 manual available from
+\href{http://people.eecs.berkeley.edu/~bh/logo.html}{Berkeley Logo by
+  Brian Harvey} and \href{https://fmslogo.sourceforge.io/}{FMSLogo by
+  David Costanzo} (which is an updated version of George Mills'
+MSWLogo, a multimedia-enhanced version for Microsoft Windows, which is
+itself based on Berkeley Logo).  This manual section is derived
+primarily from the Graphics chapter of the Berkeley Logo manual
+available from
 \href{https://github.com/jrincayc/ucblogo-code}{GitHub}.
 
 This package is inspired by, and related to, the REDUCE
@@ -33,11 +37,12 @@ session because they define some procedures with the same names.
 
 LogoTurtle is entirely procedural.  It uses ``getters'' and
 ``setters'', and does not provide any algebraic-mode variables (unlike
-Turtle).  Command names are as in Berkeley Logo 6.2, except that they
-are REDUCE procedure calls and so must be followed by parentheses
-unless they take a single argument, in which case the parentheses are
-optional.  Note that commands that take no argument \emph{must} be
-followed by empty parentheses.
+Turtle).  Command names are as in Berkeley Logo and/or FMSLogo, and
+their function is the same or similar.  (Identical behaviour is not
+always possible.)  However, commands are REDUCE procedure calls and so
+must be followed by parentheses unless they take a single argument, in
+which case the parentheses are optional.  Note that commands that take
+no argument \emph{must} be followed by empty parentheses.
 
 LogoTurtle procedures other than queries return nothing (\texttt{nil})
 and plotting is achieved via side effects, not via returned values
@@ -100,17 +105,20 @@ after drawing a square).
 
 LogoTurtle associates the following fixed colours with the colour
 numbers 0--7:
-\begin{verbatim}
- 0  black        1  blue         2  green        3  cyan
- 4  red          5  magenta      6  yellow       7  white
-\end{verbatim}
+\begin{center}
+  \begin{tabular}{rlrlrlrl}
+    0 & black  &  1 & blue    &  2 & green  &  3 & cyan  \\
+    4 & red    &  5 & magenta &  6 & yellow &  7 & white
+  \end{tabular}
+\end{center}
 It currently provides 8 additional user-settable colour numbers 8--15
 with the following initial settings:
-\begin{verbatim}
- 8  brown        9  tan         10  forest      11  aqua
-12  salmon      13  purple      14  orange      15  grey
-\end{verbatim}
-LogoTurtle uses by default a white background and pen colour chosen
+\begin{center}
+  \begin{tabular}{rlrlrlrl}
+     8 & brown  &  9 & tan     & 10 & forest & 11 & aqua  \\
+    12 & salmon & 13 & purple  & 14 & orange & 15 & grey
+  \end{tabular}
+\end{center}LogoTurtle uses by default a white background and pen colour chosen
 automatically by Gnuplot.
 
 Note that LogoTurtle command names are shown using upper case letters
@@ -130,7 +138,7 @@ sent to Gnuplot (but not the actual plot data) are also output.
 This example assumes LogoTurtle has just been loaded but not yet used.
 If this is not the case then first execute the commands
 \begin{verbatim}
-     clearscreen(); penup();
+  clearscreen(); penup();
 \end{verbatim}
 
 The following code draws an equilateral triangle with side length 100
@@ -141,11 +149,11 @@ drawn (but for this effect to be visible each line ending with
 \texttt{draw();} must be executed separately; if you input all the
 commands together then you will only see the complete triangle).
 \begin{verbatim}
-     on rounded;
-     forward(100/sqrt 3); pendown();
-     setpencolor "red"; right 150; forward 100; draw();
-     setpencolor "green"; right 120; forward 100; draw();
-     setpencolor "blue"; right 120; forward 100; draw();
+  on rounded;
+  forward(100/sqrt 3); pendown();
+  setpencolor "red"; right 150; forward 100; draw();
+  setpencolor "green"; right 120; forward 100; draw();
+  setpencolor "blue"; right 120; forward 100; draw();
 \end{verbatim}
 
 For more interesting examples, please see the file
@@ -254,11 +262,36 @@ Equivalent to ``\texttt{\hyperref[logoturtle:setpos]{SETPOS}~\{0,~0\};
 \begin{verbatim}
      ARC(angle, radius)
 \end{verbatim}
-draws an arc of a circle centred on the turtle with the specified
+draws a circular arc centred on the turtle with the specified positive
 radius, starting at the turtle's heading and extending clockwise
-through the specified angle.  The turtle does not move and the arc is
-drawn as if the turtle mode is \texttt{WINDOW} for all modes unless
-windowing is turned off.
+through the specified angle (counter-clockwise if angle is negative).
+The turtle does not move and the arc is drawn as if the turtle mode is
+\texttt{WINDOW} for all modes unless windowing is turned off.
+
+\begin{verbatim}
+     ARC2(angle, radius)
+\end{verbatim}
+moves the turtle around a circular arc that sweeps through the
+specified angle with the specified positive radius.  The turtle always
+moves forwards: if angle is positive, then the turtle moves forwards
+in a clockwise direction; if angle is negative, then the turtle moves
+forwards in a counter-clockwise direction.  At the end of the arc, the
+turtle's heading is increased by angle.
+
+\begin{verbatim}
+     CIRCLE radius
+\end{verbatim}
+draws a circle centred on the turtle with the positive radius
+specified.  The turtle does not move and the circle is drawn as if the
+turtle mode is \texttt{WINDOW} for all modes unless windowing is
+turned off.  Equivalent to \texttt{ARC(360.0, radius)}.
+
+\begin{verbatim}
+     CIRCLE2 radius
+\end{verbatim}
+moves the turtle clockwise around a circle with the specified positive
+radius.  The turtle ends in the same position in which it starts.
+Equivalent to \texttt{ARC2(360.0, radius)}.
 
 
 \subsection{Turtle Motion Queries}
@@ -366,14 +399,13 @@ as far as it can and then stop at the edge with an ``out of bounds''
 error message.  \texttt{FENCE} can also take one or two arguments as
 described below.  Compare \texttt{WRAP} and \texttt{WINDOW}.
 
-As an extension to Berkeley Logo, the above LogoTurtle commands
-\texttt{WRAP}, \texttt{WINDOW} and \texttt{FENCE} accept zero, one or
-two arguments: if the single argument is \texttt{FALSE} then no window
-mode is set, meaning that (like Turtle) LogoTurtle does not use a
-fixed window size and there are no constraints on where the turtle
-moves or draws; otherwise a windowing mode is set.  If there is a
-single numerical argument $N$ then the size of the graphics window is
-set so that $-|N| \le x,y \le |N|$; if there are two numerical
+The commands \texttt{WRAP}, \texttt{WINDOW} and \texttt{FENCE} accept
+zero, one or two arguments: if the single argument is \texttt{FALSE}
+then no window mode is set, meaning that (like Turtle) LogoTurtle does
+not use a fixed window size and there are no constraints on where the
+turtle moves or draws; otherwise a windowing mode is set.  If there is
+a single numerical argument $N$ then the size of the graphics window
+is set so that $-|N| \le x,y \le |N|$; if there are two numerical
 arguments $M, N$ then the size of the graphics window is set so that
 $-|M| \le x \le |M|, -|N| \le y \le |N|$.
 
@@ -525,13 +557,12 @@ the given RGB values (a list of three nonnegative numbers not greater
 than 100 specifying the percent saturation of red, green, and blue in
 the desired colour).
 
-As an extension to Berkeley Logo, the argument can be a string or
-identifier representing a colour in any way that is acceptable to
-Gnuplot, such as a colour name or hexadecimal number,
-e.g.\ \texttt{red}, \texttt{"red"} or \texttt{"\#FF0000"}.
-Alternatively, it can be the identifier \texttt{FALSE} meaning that no
-colour is set.  In this case, Gnuplot uses its own automatic
-colour-choice algorithm.
+The argument can be a string or identifier representing a colour in
+any way that is acceptable to Gnuplot, such as a colour name or
+hexadecimal number, e.g.\ \texttt{red}, \texttt{"red"} or
+\texttt{"\#FF0000"}.  Alternatively, it can be the identifier
+\texttt{FALSE} meaning that no colour is set.  In this case, Gnuplot
+uses its own automatic colour-choice algorithm.
 
 \begin{verbatim}
      SETPALETTE(colornumber, rgblist)
@@ -540,19 +571,18 @@ sets the actual colour corresponding to a given number.  The first
 input must be an integer $N$ such that $8 \le N \le 15$. (LogoTurtle
 keeps the first 8 colours constant.)  The second input is a list of
 three nonnegative numbers not greater than 100 specifying the percent
-saturation of red, green, and blue in the desired color.  As an
-extension to Berkeley Logo, the second input can be a string or
-identifier representing a colour in any way that is acceptable to
-Gnuplot, such as a colour name or hexadecimal number,
-e.g.\ \texttt{red}, \texttt{"red"} or \texttt{"\#FF0000"}.
+saturation of red, green, and blue in the desired color.  The second
+input can be a string or identifier representing a colour in any way
+that is acceptable to Gnuplot, such as a colour name or hexadecimal
+number, e.g.\ \texttt{red}, \texttt{"red"} or \texttt{"\#FF0000"}.
 
-%% \begin{verbatim}
-%% SETPENSIZE size
-%% \end{verbatim}
-%% sets the thickness of the pen.  The input is either a single positive
-%% integer or a list of two positive integers (for horizontal and
-%% vertical thickness).  Some versions pay no attention to the second
-%% number, but always have a square pen.
+\begin{verbatim}
+     SETPENSIZE size
+\end{verbatim}
+sets the thickness of the pen.  The input is a positive integer
+representing a multiple of the default thickness, or false, meaning
+unspecified, which is effectively equivalent to 1 but slightly less
+efficient.
 
 %% \begin{verbatim}
 %% SETPENPATTERN pattern
@@ -611,8 +641,7 @@ returns the identifier \texttt{TRUE} if the pen is down,
 outputs the pen colour as a string or identifier that represents a
 colour in any way that is acceptable to Gnuplot, such as a colour name
 or hexadecimal number.  Alternatively, it may output the identifier
-\texttt{FALSE} meaning that no colour is set.  Beware that this is
-slightly different from Berkeley Logo.
+\texttt{FALSE} meaning that no colour is set.
 
 \begin{verbatim}
      PALETTE colornumber
@@ -620,15 +649,14 @@ slightly different from Berkeley Logo.
 outputs a string or identifier that represents the colour associated
 with the given number in any way that is acceptable to Gnuplot, such
 as a colour name or hexadecimal number.  Colornumber must be a
-nonnegative integer not greater than 15.  Beware that this is slightly
-different from Berkeley Logo.
+nonnegative integer not greater than 15.
 
-%% \begin{verbatim}
-%% PENSIZE
-%% \end{verbatim}
-%% returns a list of two positive integers, specifying the horizontal
-%% and vertical thickness of the turtle pen.  (In some implementations,
-%% including wxWidgets, the two numbers are always equal.)
+\begin{verbatim}
+     PENSIZE()
+\end{verbatim}
+outputs a positive integer specifying the thickness of the pen as a
+multiple of the default thickness, or false, meaning unspecified,
+which is effectively equivalent to 1 but slightly less efficient.
 
 %% \begin{verbatim}
 %% PENPATTERN
@@ -650,18 +678,11 @@ different from Berkeley Logo.
 Outputs the graphics background colour as a string or identifier that
 represents a colour in any way that is acceptable to Gnuplot, such as
 a colour name or hexadecimal number.  Alternatively, it may output the
-identifier \texttt{FALSE} meaning that no colour is set.  Beware that
-this is slightly different from Berkeley Logo.
+identifier \texttt{FALSE} meaning that no colour is set.
 
 
 \subsection{Saving and Loading Pictures}
 %% \label{logoturtle:SLP}
-
-These two commands are different from the Berkeley Logo commands with
-the same names in that they save to, and retrieve from, an internal
-LogoTurtle namespace rather than files.  They do not save or retrieve
-any nonstandard color palette settings, but the LogoTurtle plot data
-format is independent of the palette settings.
 
 \begin{verbatim}
      SAVEPICT identifier
@@ -676,6 +697,6 @@ using \hyperref[logoturtle:draw]{\texttt{DRAW}}.
      LOADPICT identifier
 \end{verbatim}
 retrieves the plot stored under the specified identifier, which must
-have been stored by a \texttt{SAVEPICT} command, and makes it the
+have been saved by a \texttt{SAVEPICT} command, and makes it the
 current plot.  The previous current plot is lost if not saved using
 \texttt{SAVEPICT}.
