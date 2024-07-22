@@ -25,6 +25,13 @@ shift
 host=`$here/../config.guess`
 host=`$here/findhost.sh $host`
 
+case `uname -a` in
+  *Darwin*arm64*)
+    echo "Sorry, PSL Reduce is not supported on ARM based Macs"
+    exit 1
+    ;;
+esac
+
 mkdir -p $here/../bin
 
 if test "x$host" = "xi686-pc-windows" || test "x$host" = "xx86_64-pc-windows"
