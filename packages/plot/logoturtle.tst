@@ -2,6 +2,8 @@
 
 % Author: Francis Wright, July 2024
 
+% $Id:$
+
 % Part 1: Based on "turtle.tst" by Caroline Cotter, ZIB,Berlin, 1998
 % ==================================================================
 
@@ -320,11 +322,89 @@ end;
 <<
    clearscreen(); penup();
    setxy(-20, 40); setheading 90; pendown();
-   for i := 1:4 do << forward 40; arc2(90, 20); >>;
+   for i := 1:4 do << forward 40; arc2(90, 20) >>;
    penup();
    setxy(40, 80); setheading(-90); pendown();
-   for i := 1:4 do << forward 80; arc2(-90, 40); >>;
+   for i := 1:4 do << forward 80; arc2(-90, 40) >>;
    penup(); draw();
+>>;
+
+% As above, but filled using FILL:
+
+<<
+   clearscreen(); penup();
+   setxy(-20, 40); setheading 90; pendown();
+   for i := 1:4 do << forward 40; arc2(90, 20) >>;
+   penup(); draw();
+>>;
+
+<<
+   fill(); draw();
+>>;
+
+% Note the change of default colour...
+
+<<
+   setxy(40, 80); setheading(-90); pendown();
+   for i := 1:4 do << forward 80; arc2(-90, 40) >>;
+   penup(); draw();
+>>;
+
+% and that filling covers everything inside the current curve:
+
+<<
+   fill(); draw();
+>>;
+
+% As above but using FILLED:
+
+% The only way to use programming constructs with FILLED is via a
+% procedure:
+procedure shape;
+   for i := 1:4 do << forward 80; arc2(-90, 40) >>;
+
+<<
+   clearscreen(); penup(); setxy(40, 80); setheading(-90);
+   filled(false, shape());
+   draw();
+>>;
+
+% Filled and non-filled circles of different colours using FILL
+
+<<
+   clearscreen(); penup();
+   setpencolor green;
+   setxy(-50, +50); circle(25);
+   setxy(+50, +50); circle(25); fill();
+   setpencolor blue;
+   setxy(+50, -50); circle(25);
+   setxy(-50, -50); circle(25); fill();
+   setpencolor false; draw();
+>>;
+
+% and using FILLED:
+
+<<
+   clearscreen();
+   setpencolor green;
+   setxy(-50, +50); circle(25);
+   setxy(+50, +50); filled(false, circle(25));
+   setpencolor blue;
+   setxy(+50, -50); circle(25);
+   setxy(-50, -50); filled(blue, circle(25));
+   setpencolor false; draw();
+>>;
+
+% Labelling a plot:
+
+<<
+   clearscreen();
+   label !Centre;
+   setlabelfont 20; setlabelcolor red;
+   setxy(-50, +25); label "Above Centre";
+   setlabelfont("Times New Roman", 30); setlabelcolor blue;
+   setxy(-50, -25); label {!Below, " Centre"};
+   draw();
 >>;
 
 end;
