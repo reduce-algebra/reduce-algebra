@@ -2,6 +2,8 @@ module logoturtle;   % Logo turtle graphics based on Gnuplot.
 
 % Author: Francis Wright, July 2024
 
+% $Id:$
+
 % LogoTurtle is a partial REDUCE emulation of traditional Logo turtle
 % graphics (see https://en.wikipedia.org/wiki/Turtle_graphics) with
 % one turtle, modelled on Berkeley Logo (see
@@ -64,6 +66,14 @@ module logoturtle;   % Logo turtle graphics based on Gnuplot.
 % A PLOT is a list of one or more curve sequences.  Draw displays the
 % current plot plus specified saved plots.
 
+
+% A LABEL is a list of the form
+%      (text-list (x.y) style-list)
+% where text-list is a list of atoms representing the label text,
+% (x.y) is a pair of floats representing the two coordinates at the
+% left of the label, and style-list is a list of atoms representing
+% the label font and colour.
+
 load_package gnuplot;
 
 switch trlogoturtle;
@@ -89,6 +99,7 @@ global '(
    logoturtle!-rel!-len!*   % turtle length relative to window (float)
    logoturtle!-angle!*      % turtle head half-angle (float)
    logoturtle!-term!*       % name of Gnuplot terminal type (string)
+   logoturtle!-labels!*     % list of label data structures
    );
 
 logoturtle!-x!-coord!*  := 0.0;
@@ -102,10 +113,10 @@ logoturtle!-angle!*     := 10.0;
 
 symbolic macro procedure logoturtle!-make!-curve!-seq args;
    % Return a curve sequence data structure as a tagged list of the
-   % form (curve!-seq linestyle curve_1 curve_2 ...), where linestyle
-   % is a list of items to be printed concatenated as the line style,
-   % built from properties of logoturtle!-curve!-seq!*.  If an
-   % argument is provided then it should be a colour specification
+   % form (curve!-seq style curve_1 curve_2 ...), where style is a
+   % list of items to be printed concatenated as the style (following
+   % "with "), built from properties of logoturtle!-curve!-seq!*.  If
+   % an argument is provided then it should be a colour specification
    % acceptable to Gnuplot, such as a value returned by
    % logoturtle!-colorspec, which overrides the lc property of
    % logoturtle!-curve!-seq!*.
@@ -118,7 +129,7 @@ symbolic macro procedure logoturtle!-make!-curve!-seq args;
       '(setq lw (get 'logoturtle!-curve!-seq!* 'lw)),
       '(return
          (cons 'curve!-seq
-            (cons (append
+            (cons (append '("lines")
                   (and lc (list " lc rgb """ lc """"))
                   (and lw (list " lw " lw)))
                logoturtle!-curve!-seq!*)))};
@@ -174,7 +185,7 @@ symbolic procedure draw identifiers;
       % logoturtle!-plot!*:
       plots := reverse plots;
       % Don't draw an empty plot:
-      if identifiers or plots then <<
+      if identifiers or plots or logoturtle!-labels!* then <<
          plots :=                 % Now plots becomes a list of plots.
          append(
             for each id in identifiers collect
@@ -212,8 +223,19 @@ symbolic procedure draw identifiers;
          >>;
          plotprin2lt '("set size ratio -1");
          plotprin2lt '("unset key");
-         begin scalar ll, fn, styles;
-            ll := linelength(1000);
+         for each label in logoturtle!-labels!* do
+         begin scalar pos := cadr label;
+            plotprin2 "set label """;
+            plotprin2l car label;
+            plotprin2l {""" at ", car pos, ",", cdr pos, " front"};
+            if cddr label then <<
+               plotprin2lt '("\");      % keep lines short
+               plotprin2l cddr label    % label style
+            >>;
+            plotterpri()
+         end;
+
+         begin scalar fn, styles;
 
             % Write all plot data to one data file:
 
@@ -241,32 +263,38 @@ symbolic procedure draw identifiers;
                wrs of; close f;
             end;
 
-            % Write all plot commands to one command file:
+            % Write the plot command:
 
+            if styles then
             begin scalar fst := t; integer i;
                for each style in styles do <<
                   if fst then
                      plotprin2lt {"plot '", fn, "'\"}
                   else
                      << plotprin2lt '(",\"); plotprin2 "''" >>;
-                  plotprin2l {" index ", i, " with lines"};
-                  style and plotprin2l style; % e.g. " lc rgb ""green"""
+                  plotprin2l {" index ", i, " with "};
+                  plotprin2l style; % e.g. "lines lc rgb ""green"""
                   fst := nil;
                   i := i + 1;
                >>;
                plotterpri();
-            end;
+            end
+            else <<
+               % Plot nothing to display labels:
+               plotprin2lt '("plot '-' with lines");
+               plotprin2lt '("0 0");
+               plotprin2lt '("e");
+            >>;
 
-            linelength(ll);
          end;
          gp!-show();
       >>;
    end;
 
+put('draw, 'psopfn, 'draw);
+
 symbolic procedure plotprin2l l;     % cf. plotprin2lt in gnupldrv.red
    for each x in l do plotprin2 x;
-
-put('draw, 'psopfn, 'draw);
 
 symbolic procedure logoturtle!-show!-turtle();
    % Return a curve sequence representing the turtle.  The turtle is
@@ -572,6 +600,7 @@ symbolic procedure circle2 radius;
    arc2(360.0, radius);
 
 symbolic operator circle2;
+
 
 % Turtle Motion Queries (all procedures return values)
 % ====================================================
@@ -613,11 +642,6 @@ symbolic procedure towards pos;
 
 symbolic operator towards;
 
-% procedure scrunch;                      % ???
-   % Output a list containing two numbers, the X and Y scrunch
-   % factors, as used by SETSCRUNCH.  (But note that SETSCRUNCH takes
-   % two numbers as inputs, not one list of numbers.)
-
 
 % Turtle and Window Control (all return nothing)
 % ==============================================
@@ -643,7 +667,8 @@ symbolic procedure clean();
    % The turtle's state (position, heading, pen mode, etc.) is not
    % changed.  If the pen is down then start a new curve.
    <<
-      logoturtle!-plot!* := logoturtle!-curve!-seq!* := nil;
+      logoturtle!-labels!* := logoturtle!-plot!* :=
+      logoturtle!-curve!-seq!* := nil;
       logoturtle!-curve!* :=
          if !*logoturtle!-pen!-down then
             {logoturtle!-x!-coord!* . logoturtle!-y!-coord!*};
@@ -736,13 +761,194 @@ symbolic procedure fence(args);
 
 put('fence, 'psopfn, 'fence);
 
+symbolic macro procedure logoturtle!-make!-fill args;
+   % cf. logoturtle!-make!-curve!-seq but for a filled curve sequence
+   % consisting of just the current curve and ignoring line width.
+
+   % Note that within this macro args has the form
+   % (logoturtle!-make!-fill arg1 arg2 ...).
+   {'prog, '(lc),
+      {'setq, 'lc, if cdr args then cadr args
+      else '(get 'logoturtle!-curve!-seq!* 'lc)},
+      '(return
+         (cons 'curve!-seq
+            (cons (append '("filledcurves")
+                  (and lc (list " lc rgb """ lc """")))
+               (list logoturtle!-curve!*))))};
+
+flag('(logoturtle!-make!-fill), 'variadic);
+
+symbolic procedure fill();
+   % Fill the region of the graphics window bounded by the lines that
+   % have just been drawn, i.e. the current curve if the pen is down
+   % or the last curve if the pen is up (or the pen colour or size has
+   % been changed).  The fill colour is the current pen colour and the
+   % pen size is ignored.  The curve is implicitly closed but the
+   % turtle is not moved.
+   begin                                % in order to use return
+      if length logoturtle!-curve!* > 1 then
+         % Current curve exists.  Save the current curve sequence
+         % without the current curve:
+         (if logoturtle!-curve!-seq!* then
+            logoturtle!-plot!* := logoturtle!-make!-curve!-seq() .
+               logoturtle!-plot!*)
+      else
+         % No current curve so retrieve the last curve saved as the
+         % current curve:
+         (if logoturtle!-curve!-seq!* then <<
+            logoturtle!-curve!* := car logoturtle!-curve!-seq!*;
+            logoturtle!-curve!-seq!* := cdr logoturtle!-curve!-seq!*;
+            if logoturtle!-curve!-seq!* then
+               logoturtle!-plot!* := logoturtle!-make!-curve!-seq() .
+                  logoturtle!-plot!*
+         >> else if logoturtle!-plot!* then <<
+            logoturtle!-curve!-seq!* := car logoturtle!-plot!*;
+            logoturtle!-plot!* := cdr logoturtle!-plot!*;
+            logoturtle!-curve!* := caddr logoturtle!-curve!-seq!*;
+            if cdddr logoturtle!-curve!-seq!* then <<
+               logoturtle!-curve!-seq!* := car logoturtle!-curve!-seq!* .
+                  cadr logoturtle!-curve!-seq!* .
+                     cdddr logoturtle!-curve!-seq!*;
+               logoturtle!-plot!* := logoturtle!-curve!-seq!* .
+                  logoturtle!-plot!*
+            >>
+         >> else return);               % nothing to fill!
+
+      % Save the current curve to a new filled curve sequence:
+      logoturtle!-plot!* := logoturtle!-make!-fill() .
+         logoturtle!-plot!*;
+      % Start a new curve sequence:
+      logoturtle!-new!-curve!-seq();
+   end;
+
+symbolic operator fill;
+
+symbolic procedure filled args;         % (color, commands)
+   % The first argument should specify a colour as a colour number,
+   % RGB list, etc, or false meaning that the current pen colour is
+   % used; otherwise the pen colour is ignored.  Subsequent arguments
+   % should be commands or lists of commands that move the turtle or
+   % draw curves.  Execute these in the order written, remembering all
+   % points visited.  Then draw the resulting curve, starting and
+   % ending with the turtle's initial position, filled with the
+   % specified colour.  The pen size and whether the pen is up or down
+   % are ignored.
+   begin scalar !*logoturtle!-pen!-down := t,
+         color := logoturtle!-colorspec reval car args
+            or get('logoturtle!-curve!-seq!*, 'lc);
+      logoturtle!-save!-curve!-seq();
+      logoturtle!-new!-curve();
+      % Run the turtle motion commands...
+      for each arg in cdr args do reval arg;
+      % which may generate a current curve or (arc, circle) a current
+      % curve sequence, so if no current curve then retrieve the last
+      % curve saved as the current curve:
+      if length logoturtle!-curve!* <= 1 then <<
+         if logoturtle!-curve!-seq!* then <<
+            logoturtle!-curve!* := car logoturtle!-curve!-seq!*;
+            logoturtle!-curve!-seq!* := cdr logoturtle!-curve!-seq!*;
+            if logoturtle!-curve!-seq!* then
+               logoturtle!-plot!* := logoturtle!-make!-curve!-seq() .
+                  logoturtle!-plot!*
+         >> else return                 % nothing to fill!
+      >>;
+      logoturtle!-plot!* := logoturtle!-make!-fill color .
+         logoturtle!-plot!*;
+      logoturtle!-new!-curve!-seq()
+   end;
+
+put('filled, 'psopfn, 'filled);
+
+symbolic procedure label text;
+   % Take a printable item or list of printable items as input and
+   % print it on the graphics window, starting at the turtle's
+   % position.  The items in a list are concatenated with no
+   % additional spacing.  Long labels may fail!
+   begin scalar font, color, style;
+      if atom text then text := {text}
+      else <<
+         if not rlistp text then typerr(text, "label text");
+         for each x in cdr text do
+            if not atom x then typerr(text, "label text")
+      >>;
+      if (font := get('logoturtle!-labels!*, 'font)) then
+         begin scalar face := car font, size := cdr font;
+            % font "{<name>}{,<size>}"
+            font := '("""");
+            if size then font := "," . size . font;
+            if face then font := face . font;
+            font := " font """ . font;
+         end;
+      if (color := get('logoturtle!-labels!*, 'color)) then
+         color := {" textcolor rgb """, color, """"};
+      style := append(font, color);
+      logoturtle!-labels!* :=
+         (text . (logoturtle!-x!-coord!* . logoturtle!-y!-coord!*) . style) .
+            logoturtle!-labels!*;
+   end;
+
+symbolic operator label;
+
+symbolic procedure setlabelfont args; % (face/size, size) or {face, size}
+   % Set the face and/or size of the label font.  If the face is
+   % specified then it should be the only or first input and must be
+   % an identifier or string, e.g. \"Arial\".  If the size is
+   % specified then it should be the only or second input and must be
+   % a positive integer.  If only one of the face and size is set then
+   % the other reverts to the default, not the previous value set.
+   % Alternatively, the single input can be a list of the form {face,
+   % size}, or false to revert to the default.  The inputs must
+   % specify a font in a way that is accepted by Gnuplot but the
+   % details of font setting depend on the Gnuplot terminal in use.
+   % The defaults for the wxt terminal are face Sans and size 10.  For
+   % the canvas terminal (and hence on Web REDUCE) setting the label
+   % font face is ignored.
+   begin scalar face, size, arg1 := reval car args;
+      if arg1 eq 'false then <<
+         if cdr args then go to error;
+         remprop('logoturtle!-labels!*, 'font);
+         return
+      >>;
+      if rlistp arg1 then <<
+         if cdr args then go to error;
+         face := cadr arg1;
+         size := caddr arg1
+      >> else if fixp arg1 then <<
+         if cdr args then go to error;
+         size := arg1
+      >> else <<
+         face := arg1;
+         if cdr args then size := reval cadr args
+      >>;
+      if face and not(idp face or stringp face) then
+         typerr(face, "font face");
+      if size and not(fixp size and size > 0) then
+         typerr(size, "font size");
+      put('logoturtle!-labels!*, 'font, face . size);
+      return;
+   error: typerr(args, "multiple SETLABELFONT arguments")
+   end;
+
+put('setlabelfont, 'psopfn, 'setlabelfont);
+
+symbolic procedure setlabelcolor color;
+   % Set the label foreground colour, cf. setpencolor.
+   <<
+      if (color := logoturtle!-colorspec color) then
+         put('logoturtle!-labels!*, 'color, color)
+      else
+         remprop('logoturtle!-labels!*, 'color);
+   >>;
+
+symbolic operator setlabelcolor;
+
 
 % Turtle and Window Queries
 % =========================
 
 symbolic procedure shownp();
-   % Outputs TRUE if the turtle is shown (visible), FALSE if the
-   % turtle is hidden. See SHOWTURTLE and HIDETURTLE.
+   % Output TRUE if the turtle is shown (visible), FALSE if the turtle
+   % is hidden. See SHOWTURTLE and HIDETURTLE.
    if !*logoturtle!-shown then 'true else 'false;
 
 symbolic operator shownp;
@@ -753,6 +959,28 @@ symbolic procedure turtlemode();
    if logoturtle!-win!-mode!* then logoturtle!-win!-mode!* else 'false;
 
 symbolic operator turtlemode;
+
+symbolic procedure labelfont();
+   % Output a list of the current label font face and size if both are
+   % set, or whichever of the face or size is set, or false.
+   begin scalar font, face, size;       % font = (face . size)
+      if not (font := get('logoturtle!-labels!*, 'font)) then
+         return 'false;
+      face := car font;  size := cdr font;
+      if face then
+         return if size then {'list, face, size} else face;
+      return size or 'false
+   end;
+
+symbolic operator labelfont;
+
+symbolic procedure labelcolor();
+   % Output the current label foreground colour, cf. pencolor.
+   begin scalar color := get('logoturtle!-labels!*, 'color);
+      return if color then color else 'false;
+   end;
+
+symbolic operator labelcolor;
 
 
 % Pen and Background Control (all return nothing)
@@ -825,17 +1053,18 @@ symbolic procedure setpencolor color;   % setpc color
    % in any way that is acceptable to Gnuplot, such as a colour name
    % or hexadecimal number.  Alternatively, it can be the identifier
    % FALSE meaning that no colour is set.
-   begin scalar colorspec := logoturtle!-colorspec reval color;
+   <<
+      color := logoturtle!-colorspec color;
       % Changing the pen colour terminates the current curve
       % sequence with the current line style, saves the new line
       % style and starts a new curve sequence.
       logoturtle!-save!-curve!-seq();
-      if colorspec then
-         put('logoturtle!-curve!-seq!*, 'lc, colorspec)
+      if color then
+         put('logoturtle!-curve!-seq!*, 'lc, color)
       else
          remprop('logoturtle!-curve!-seq!*, 'lc);
-      logoturtle!-new!-curve!-seq()
-   end;
+      logoturtle!-new!-curve!-seq();
+   >>;
 
 symbolic operator setpencolor;
 
@@ -875,11 +1104,13 @@ symbolic procedure logoturtle!-rgblist2hexstring(color);
    % Color = {r,g,b}, where r,g,b are percentages of 255.
    % Return string "#RRGGBB", where R,G,B are hex digits.
    begin scalar v := '(!"), hex_hi, hex_lo;
-      if not(length color eq 4) then go to error;
+      if not(length color eq 4) then
+         typerr(color, "RGB list of percent color saturations");
       % For each percent value p in reversed RGB list:
       for each p in reversip cdr color do <<
          p := logoturtle!-number p;
-         if p < 0.0 or p > 100.0 then go to error;
+         if p < 0.0 or p > 100.0 then
+            typerr(color, "RGB list of percent color saturations");
          p := fix(p*2.55 + 0.5);
          % Convert p to two hexadecimal digits:
          p := divide(p, 16);         % (quo . rem)
@@ -887,8 +1118,7 @@ symbolic procedure logoturtle!-rgblist2hexstring(color);
          hex_lo := getv(logoturtle!-hex!-digits!*, cdr p);
          v := hex_hi . hex_lo . v
       >>;
-      return compress('!" . '!# . v);
-   error: typerr(color, "RGB list of percent color saturations")
+      return compress('!" . '!# . v)
    end;
 
 symbolic procedure setpalette(colornumber, rgblist);
@@ -900,16 +1130,16 @@ symbolic procedure setpalette(colornumber, rgblist);
    % desired color.  The second input can be a string or identifier
    % representing a colour in any way that is acceptable to Gnuplot,
    % such as a colour name or hexadecimal number.
-   begin scalar n := reval colornumber;
-      if fixp n and n >= 0 and n <= 15 then
-         putv(logoturtle!-colors!*, n,
+   <<
+      if fixp colornumber and colornumber >= 0 and colornumber <= 15 then
+         putv(logoturtle!-colors!*, colornumber,
             if stringp rgblist or idp rgblist then rgblist
             else if eqcar(rgblist, 'list) then
                logoturtle!-rgblist2hexstring rgblist
             else typerr(rgblist, "color name or RGB list"))
       else
-         typerr(n, "color number between 8 and 15");
-   end;
+         typerr(colornumber, "color number between 8 and 15");
+   >>;
 
 symbolic operator setpalette;
 
@@ -940,13 +1170,13 @@ symbolic procedure setbackground color; % setbg color
    % Set the screen background color by slot number or RGB values,
    % etc.  See SETPENCOLOR for details.
    % Currently requires GNUTERM environment variable to be set!
-   begin scalar colorspec;
+   begin                                % for return!
       if null (logoturtle!-term!* or
          (logoturtle!-term!* := getenv "GNUTERM"))
       then return
          msgpri("GNUTERM environment variable not set",nil,nil,nil,nil);
-      if (colorspec := logoturtle!-colorspec reval color) then
-         put('logoturtle!-plot!*, 'logoturtle!-bg, colorspec)
+      if (color := logoturtle!-colorspec color) then
+         put('logoturtle!-plot!*, 'logoturtle!-bg, color)
       else
          remprop('logoturtle!-plot!*, 'logoturtle!-bg)
    end;
@@ -963,16 +1193,13 @@ symbolic procedure pendownp();
 
 symbolic operator pendownp;
 
-% penmode
-% outputs one of the words PAINT, ERASE, or REVERSE according to the current pen mode.
-
 symbolic procedure pencolor();          % PC
    % Output the pen colour as a string or identifier that represents a
    % colour in any way that is acceptable to Gnuplot, such as a colour
    % name or hexadecimal number.  Alternatively, output the identifier
    % FALSE meaning that no colour is set.
-   begin scalar colorspec := get('logoturtle!-curve!-seq!*, 'lc);
-      return if colorspec then colorspec else 'false;
+   begin scalar color := get('logoturtle!-curve!-seq!*, 'lc);
+      return if color then color else 'false;
    end;
 
 symbolic operator pencolor;
@@ -982,12 +1209,10 @@ symbolic procedure palette colornumber;
    % Output a string or identifier that represents the colour
    % associated with the given number in any way that is acceptable to
    % Gnuplot, such as a colour name or hexadecimal number.
-   begin scalar n := reval colornumber;
-      if fixp n and n >= 0 and n <= 15 then
-         return getv(logoturtle!-colors!*, n)
-      else
-         typerr(n, "color number between 0 and 15");
-   end;
+   if fixp colornumber and colornumber >= 0 and colornumber <= 15 then
+      getv(logoturtle!-colors!*, colornumber)
+   else
+      typerr(colornumber, "color number between 0 and 15");
 
 symbolic operator palette;
 
@@ -1002,14 +1227,6 @@ symbolic procedure pensize();
    end;
 
 symbolic operator pensize;
-
-% penpattern
-% outputs system-specific pen information.
-
-% pen (library procedure)
-% outputs a list containing the pen's position, mode, thickness, and hardware-specific characteristics,
-% for use by SETPEN.
-% See [SETPEN], page 51, .
 
 symbolic procedure background();        % bg
    % Output the graphics background colour as a string or identifier
@@ -1036,10 +1253,11 @@ symbolic procedure savepict identifier;
    % Save the current plot to internal storage under the specified
    % identifier without changing it.  The saved plot can be restored
    % as the current plot using LOADPICT or displayed using DRAW.
-   begin scalar id := reval identifier;
-      if not idp id then typerr(id, "LogoTurtle SAVEPICT identifier");
-      put('logoturtle!-plot!*, id, logoturtle!-get!-plot())
-   end;
+   <<
+      if not idp identifier then
+         typerr(identifier, "LogoTurtle SAVEPICT identifier");
+      put('logoturtle!-plot!*, identifier, logoturtle!-get!-plot());
+   >>;
 
 symbolic operator savepict;
 
@@ -1048,10 +1266,10 @@ symbolic procedure loadpict identifier;
    % must have been stored by a SAVEPICT command, and make it the
    % current plot.  The previous current plot is lost if not saved
    % using SAVEPICT.
-   begin scalar id := reval identifier, pl;
-      if not (idp id and
-         (pl := get('logoturtle!-plot!*, id)))
-      then typerr(id, "LogoTurtle LOADPICT identifier");
+   begin scalar pl;
+      if not (idp identifier and
+         (pl := get('logoturtle!-plot!*, identifier)))
+      then typerr(identifier, "LogoTurtle LOADPICT identifier");
       logoturtle!-plot!* := pl;
       logoturtle!-curve!* := logoturtle!-curve!-seq!* := nil
    end;
