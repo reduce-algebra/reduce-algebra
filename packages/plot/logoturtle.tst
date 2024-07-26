@@ -2,7 +2,7 @@
 
 % Author: Francis Wright, July 2024
 
-% $Id:$
+% $Id$
 
 % Part 1: Based on "turtle.tst" by Caroline Cotter, ZIB,Berlin, 1998
 % ==================================================================
@@ -14,8 +14,8 @@
 
 % load_package logoturtle;
 
-% No fixed window size and no constraints on where the turtle moves:
-window false;
+% No constraints on where the turtle moves:
+setturtlemode false;
 
 on rounded;
 
@@ -28,36 +28,36 @@ on demo;
 % Special Issue 1994)
 
 <<
-   clearscreen();
+   clearscreen;
    for i := 1 : 36 do <<
-      setheading(i*10); pendown(); forward 100; penup(); back 100;
+      setheading(i*10); pendown; forward 100; penup; back 100;
    >>;
-   draw();
+   draw;
 >>;
 
 
 % 2) Draw a "fan" of 36 straight spikes.
 
 <<
-   clearscreen();
+   clearscreen;
    for i := 1 : 36 do <<
-      setheading(i*10); pendown(); forward 100; penup(); back 95;
+      setheading(i*10); pendown; forward 100; penup; back 95;
    >>;
-   draw();
+   draw;
 >>;
 
 
 % 3) Draw a "fan" of 36 curved rays.
 
 <<
-   clearscreen();
+   clearscreen;
    for i := 1 : 36 do <<
-      setheading(i*10); pendown();
+      setheading(i*10); pendown;
       for j := 1 : 4 do << forward 20; left 20; >>; forward 20;
-      penup();
+      penup;
       for j := 1 : 4 do << back 20; right 20; >>; back 18;
    >>;
-   draw();
+   draw;
 >>;
 
 
@@ -67,38 +67,39 @@ on demo;
 % Special Issue 1994)
 
 <<
-   clearscreen(); pendown();
+   clearscreen; pendown;
    for i := 1 : 12 do <<
       left 30;
       for j := 1 : 12 do << forward 40, left 30; >>;
    >>;
-   draw();
+   draw;
 >>;
 
 
-% 5) A "peak" pattern.
+% 5) A "peak" pattern.  This illustrates how to use setpos to make
+% relative movements with the help of the xcor and ycor queries.
 
 <<
 procedure peak(r);
    for i := 0 : r do <<
-      setpos{xcor() + 5,  ycor() - 10};
-      setpos{xcor() + 10, ycor() + 60};
-      setpos{xcor() + 10, ycor() - 60};
-      setpos{xcor() + 5,  ycor() + 10};
+      setpos{(xcor) + 5,  (ycor) - 10};
+      setpos{(xcor) + 10, (ycor) + 60};
+      setpos{(xcor) + 10, (ycor) - 60};
+      setpos{(xcor) + 5,  (ycor) + 10};
    >>;
 
-clearscreen(); pendown(); peak 3;
-draw();
+clearscreen; pendown; peak 3;
+draw;
 >>;
 
 % This procedure can then be part of a longer chain of commands:
 
 <<
-   clearscreen(); pendown();
+   clearscreen; pendown;
    setpos{5, 50}; peak(3);
-   setpos{xcor() + 10, -100};
-   peak(2); setpos{xcor() + 10, 0};
-   draw();
+   setpos{(xcor) + 10, -100};
+   peak(2); setpos{(xcor) + 10, 0};
+   draw;
 >>;
 
 
@@ -117,26 +118,26 @@ procedure tree(a, b);
       back a; left(45);
    >>;
 
-clearscreen(); pendown(); tree(130, 7);
-draw();
+clearscreen; pendown; tree(130, 7);
+draw;
 >>;
 
 % This can be rotated so that the tree grows to the right:
 
 <<
-   clearscreen(); setheading(90); pendown(); tree(130, 7);
-   draw();
+   clearscreen; setheading(90); pendown; tree(130, 7);
+   draw;
 >>;
 
 
 % 7) A 36-point star.
 
 <<
-   clearscreen(); pendown();
+   clearscreen; pendown;
    for i := 1 : 36 do <<
       left(10); forward 100; left(10); back 100;
    >>;
-   draw();
+   draw;
 >>;
 
 
@@ -144,62 +145,45 @@ draw();
 % spaced on a circular path.
 
 <<
-   clearscreen();
+   clearscreen;
    for i := 1 : 100 do <<
-      pendown();
+      pendown;
       forward 150; right(60); back(150); right(60); forward 150;
-      penup(); setheading(i*3.6);
+      penup; setheading(i*3.6);
    >>;
-   draw();
+   draw;
 >>;
 
 
-% 9) Plots can be saved to and later loaded from REDUCE variables or
-% displayed as distinct plots; this example illustrates various ways
-% to display two previous plots superimposed.
+% 9) Plots can be saved to and later loaded from identifiers; this
+% example illustrates how to display two previous plots superimposed.
 
 <<
    % Graph 4 again:
-   clearscreen(); pendown();
+   clearscreen; pendown;
    for i := 1 : 12 do <<
       left(30); for j := 1 : 12 do << forward 40; left(30); >>;
    >>;
-   penup();
+   penup;
    savepict gr4;
 
    % Graph 8 again:
-   clearscreen();
+   clearscreen;
    for i := 1 : 100 do <<
-      pendown();
+      pendown;
       forward 150; right(60); back(150); right(60); forward 150;
-      penup(); setheading(i*3.6);
+      penup; setheading(i*3.6);
    >>;
-
-   % Draw gr4 and the current plot together.
-   draw(gr4);
->>;
-
-<<
-   % Save and clear the current plot.
    savepict gr8;
-   clearscreen();
-   % Then plot gr4 and gr8 together.
-   % The result should be the same as previously.
-   draw(gr4, gr8);
+
+   % Plot gr4 and gr8 together.
+   % (Loadpict does an implicit clearscreen.)
+   loadpict(gr4, gr8); draw;
 >>;
 
+% Note that changing the order changes the default colours:
 <<
-   % Note that there is no current plot, so nothing is displayed:
-   plotreset;
-   draw();
->>;
-
-<<
-   % Load gr8 as current plot.
-   loadpict gr8;
-   % Again, draw gr4 and the current plot together.
-   % The result should be the same as previously.
-   draw(gr4);
+   loadpict(gr8, gr4); draw;
 >>;
 
 
@@ -212,32 +196,33 @@ draw();
 % Wrap two long straight lines around the default window size.
 
 <<
-   wrap();
-   clearscreen();
-   pendown(); setheading(60); forward 1000; penup();
-   home();
-   pendown(); setheading(-30); forward 1000; penup();
-   draw();
+   wrap;
+   clearscreen;
+   pendown; setheading(60); forward 1000; penup;
+   home;
+   pendown; setheading(-30); forward 1000; penup;
+   draw;
 >>;
 
 % Two arcs and show the turtle.
 
 <<
-   clearscreen(); penup();
+   clearscreen; penup;
    arc(180, 50); setheading 180; arc(180, 100);
    setheading 45; forward 25;
-   showturtle(); draw(); hideturtle();
+   showturtle; draw; hideturtle;
 >>;
 
 % Two arcs clipped to a smaller window size and show the turtle.  No
 % error message because the turtle does not move outside the fence.
 
 <<
-   fence 75;
-   clearscreen(); penup();
+   setwindowsize 75; fence;
+   clearscreen; penup;
    arc(180, 50); setheading 180; arc(180, 100);
    setheading 45; forward 25;
-   showturtle(); draw(); hideturtle(); window 100;
+   showturtle; draw;
+   hideturtle; setwindowsize 100; window;
 >>;
 
 % Pen and Background Control
@@ -248,13 +233,13 @@ draw();
 % green and blue, and have thicknesses 1, 2 and 3.
 
 <<
-   clearscreen(); penup(); setpensize false;
+   clearscreen; penup; setpensize false;
    on rounded;
-   forward(100/sqrt 3); pendown();
+   forward(100/sqrt 3); pendown;
    setpencolor "red"; right 150; forward 100;
    setpencolor "green"; setpensize 2; right 120; forward 100;
    setpencolor "blue"; setpensize 3; right 120; forward 100;
-   setpensize false; draw();
+   setpensize false; draw;
 >>;
 
 % 16 rays of length 100 using all 16 predefined colours in sequence
@@ -263,13 +248,13 @@ draw();
 
 begin scalar delta;
    on rounded; delta := 360/16;
-   clearscreen(); penup();
+   clearscreen; penup;
    for i := 0 : 15 do <<
       setheading(i*delta); setpencolor i;
-      pendown(); forward 100; penup(); home();
+      pendown; forward 100; penup; home;
    >>;
    setpencolor false; circle(100);
-   draw();
+   draw;
 end;
 
 % As above, but with a grey background.  (Now the grey ray is not
@@ -277,26 +262,26 @@ end;
 
 begin scalar delta;
    on rounded; delta := 360/16;
-   clearscreen(); setbackground grey;
+   clearscreen; setbackground grey;
    for i := 0 : 15 do <<
       setheading(i*delta); setpencolor i;
-      pendown(); forward 100; penup(); home();
+      pendown; forward 100; penup; home;
    >>;
    setpencolor false; circle(100);
-   draw(); setbackground false;
+   draw; setbackground false;
 end;
 
 % As above, but with default colour:
 
 begin scalar delta;
    on rounded; delta := 360/16;
-   clearscreen();
+   clearscreen;
    for i := 0 : 15 do <<
       setheading(i*delta);
-      pendown(); forward 100; penup(); home();
+      pendown; forward 100; penup; home;
    >>;
    arc(360, 100);
-   draw();
+   draw;
 end;
 
 % Coloured circles and arcs drawn clockwise and outer coloured arcs
@@ -304,7 +289,7 @@ end;
 % turtle does not move, although it rotates.
 
 <<
-   clearscreen(); penup();
+   clearscreen; penup;
    setpencolor red; circle(10); arc(90, 50); right 90;
    setpencolor blue; circle(20); arc(90, 50); right 90;
    setpencolor green; circle(30); arc(90, 50); right 90;
@@ -313,47 +298,47 @@ end;
    setpencolor blue; arc(-90, 60); left 90;
    setpencolor green; arc(-90, 60); left 90;
    setpencolor black; arc(-90, 60); left 90;
-   setpencolor false; draw();
+   setpencolor false; draw;
 >>;
 
 % Inner square with rounded corners drawn clockwise and
 % outer square with rounded corners drawn counter-clockwise:
 
 <<
-   clearscreen(); penup();
-   setxy(-20, 40); setheading 90; pendown();
+   clearscreen; penup;
+   setxy(-20, 40); setheading 90; pendown;
    for i := 1:4 do << forward 40; arc2(90, 20) >>;
-   penup();
-   setxy(40, 80); setheading(-90); pendown();
+   penup;
+   setxy(40, 80); setheading(-90); pendown;
    for i := 1:4 do << forward 80; arc2(-90, 40) >>;
-   penup(); draw();
+   penup; draw;
 >>;
 
 % As above, but filled using FILL:
 
 <<
-   clearscreen(); penup();
-   setxy(-20, 40); setheading 90; pendown();
+   clearscreen; penup;
+   setxy(-20, 40); setheading 90; pendown;
    for i := 1:4 do << forward 40; arc2(90, 20) >>;
-   penup(); draw();
+   penup; draw;
 >>;
 
 <<
-   fill(); draw();
+   fill; draw;
 >>;
 
 % Note the change of default colour...
 
 <<
-   setxy(40, 80); setheading(-90); pendown();
+   setxy(40, 80); setheading(-90); pendown;
    for i := 1:4 do << forward 80; arc2(-90, 40) >>;
-   penup(); draw();
+   penup; draw;
 >>;
 
 % and that filling covers everything inside the current curve:
 
 <<
-   fill(); draw();
+   fill; draw;
 >>;
 
 % As above but using FILLED:
@@ -364,47 +349,60 @@ procedure shape;
    for i := 1:4 do << forward 80; arc2(-90, 40) >>;
 
 <<
-   clearscreen(); penup(); setxy(40, 80); setheading(-90);
+   clearscreen; penup; setxy(40, 80); setheading(-90);
    filled(false, shape());
-   draw();
+   draw;
 >>;
 
 % Filled and non-filled circles of different colours using FILL
 
 <<
-   clearscreen(); penup();
+   clearscreen; penup;
    setpencolor green;
    setxy(-50, +50); circle(25);
-   setxy(+50, +50); circle(25); fill();
+   setxy(+50, +50); circle(25); fill;
    setpencolor blue;
    setxy(+50, -50); circle(25);
-   setxy(-50, -50); circle(25); fill();
-   setpencolor false; draw();
+   setxy(-50, -50); circle(25); fill;
+   setpencolor false; draw;
 >>;
 
 % and using FILLED:
 
 <<
-   clearscreen();
+   clearscreen;
    setpencolor green;
    setxy(-50, +50); circle(25);
    setxy(+50, +50); filled(false, circle(25));
    setpencolor blue;
    setxy(+50, -50); circle(25);
    setxy(-50, -50); filled(blue, circle(25));
-   setpencolor false; draw();
+   setpencolor false; draw;
 >>;
 
 % Labelling a plot:
 
 <<
-   clearscreen();
+   clearscreen;
    label !Centre;
    setlabelfont 20; setlabelcolor red;
    setxy(-50, +25); label "Above Centre";
    setlabelfont("Times New Roman", 30); setlabelcolor blue;
    setxy(-50, -25); label {!Below, " Centre"};
-   draw();
+   draw;
 >>;
+
+% Saving, loading and overlaying plots -- later plots overlay earlier:
+
+<<
+   clearscreen;
+   filled(blue, circle 50); savepict p1;
+   clearscreen; setxy(50,50);
+   filled(green, circle 50); savepict p2;
+   loadpict p1; draw;
+>>;
+<< loadpict p2; draw; >>;
+<< loadpict(p1, p2); draw; >>;
+<< loadpict(p2, p1); draw; >>;
 
 end;
