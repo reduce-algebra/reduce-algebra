@@ -1131,6 +1131,7 @@ symbolic procedure token;
                      lpriw("***** End-of-file in string",nil);
                      filenderr() >>
             else if (null (x eq '!")) or named!-character!* then go to strinx;
+       striny:
            % Now check for embedded string character.
            named!-character!* := nil;
            x := readch1();   % Character after the '"'
@@ -1150,7 +1151,7 @@ symbolic procedure token;
                z := x . z;
              if (x eq '!") and (null named!-character!*) then <<
                x := readch1();
-               go to strinx >>;
+               if x = '!" then go to striny else go to strinx >>;
              while z do <<
                peekchar!* := car z . peekchar!*;
                z := cdr z >> >>;
