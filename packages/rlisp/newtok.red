@@ -124,29 +124,29 @@ symbolic procedure lstchr(u,v);
    if null cdr u then list(car u,nil,v)
     else list(car u,list lstchr(cdr u,v));
 
-newtok '((!$) !*semicol!*);
-newtok '((!;) !*semicol!*);
-newtok '((!+) plus);
-newtok '((!-) difference);
-newtok '((!*) times);
-newtok '((!^) expt);
+newtok '((!$)    !*semicol!*);
+newtok '((!;)    !*semicol!*);
+newtok '((!+)    plus);
+newtok '((!-)    difference);
+newtok '((!*)    times);
+newtok '((!^)    expt);
 newtok '((!* !*) expt);
-newtok '((!/) quotient);
-newtok '((!=) equal);
-newtok '((!,) !*comma!*);
-newtok '((!() !*lpar!*);
-newtok '((!)) !*rpar!*);
-newtok '((!:) !*colon!*);
+newtok '((!/)    quotient);
+newtok '((!=)    equal);
+newtok '((!,)    !*comma!*);
+newtok '((!()    !*lpar!*);
+newtok '((!))    !*rpar!*);
+newtok '((!:)    !*colon!*);
 newtok '((!: !=) setq);
-newtok '((!.) cons);
-newtok '((!<) lessp);
+newtok '((!.)    cons);
+newtok '((!<)    lessp);
 newtok '((!< !=) leq);
-newtok '((![) !*lsqbkt!*);      % Strange to have both of these the same!
-newtok '((!< !<) !*startgroup!*);   %
-newtok '((!>) greaterp);
+newtok '((![)    !*lsqbkt!*);
+newtok '((!< !<) !*startgroup!*);
+newtok '((!>)    greaterp);
 newtok '((!> !=) geq);
-newtok '((!]) !*rsqbkt!*);      % Strange to have both of these the same!
-newtok '((!> !>) !*endgroup!*);   %
+newtok '((!])    !*rsqbkt!*);
+newtok '((!> !>) !*endgroup!*);
 newtok '((!/ !*) !*comment!*);
 
 
@@ -162,73 +162,73 @@ newtok '((!/ !*) !*comment!*);
 % some can clash with things other than "newtok" and cause compilation
 % to fail!
 
-newtok '((!- !- !>) repd);
+newtok '((!- !- !>)  repd);
 %   newtok '((!- !>) rep);
 %   newtok '((!- !>) mapped_to); % For now. Should only be active inside the stat.
 %   newtok '((!- !>) rightarrow);
-newtok '((!#) hash);
-newtok '((!# !-) idifference);
-newtok '((!# !*) itimes2);
-newtok '((!# !/) iquotient);
-newtok '((!# !+) iplus2);
-newtok '((!# !<) ilessp);
-newtok '((!# !=) iequal);
-newtok '((!# !>) igreaterp);
-%   newtok '((!&) hornand);           % also makes pm.red fail to build
-%   newtok '((!& !&), and);
-%   newtok '((!-) formoutminus);
-%   newtok '((!-) vectordifference);
-newtok '((!* !* !*) lpdotimes);
-newtok '((!* !.) ldot);
-%   newtok '((!*) vectortimes);
-newtok '((!. !* !*) to);
-newtok '((!. !* !.) crossprod);
-newtok '((!. !*) mult);
-newtok '((!. !. !=) myequal);
+newtok '((!#)        hash);
+newtok '((!# !-)     idifference);
+newtok '((!# !*)     itimes2);
+newtok '((!# !/)     iquotient);
+newtok '((!# !+)     iplus2);
+newtok '((!# !<)     ilessp);
+newtok '((!# !=)     iequal);
+newtok '((!# !>)     igreaterp);
+%   newtok '((!&)    hornand);           % also makes pm.red fail to build
+%   newtok '((!& !&) and);
+%   newtok '((!-)    formoutminus);
+%   newtok '((!-)    vectordifference);
+newtok '((!* !* !*)  lpdotimes);
+newtok '((!* !.)     ldot);
+%   newtok '((!*)    vectortimes);
+newtok '((!. !* !*)  to);
+newtok '((!. !* !.)  crossprod);
+newtok '((!. !*)     mult);
+newtok '((!. !. !=)  myequal);
 %   newtok '((!. !.) !*interval!*)
 %   newtok '((!. !.) isgr);
-newtok '((!. !/) over);
-newtok '((!. !:) id!-quotient);
-newtok '((!. !^) to);
-newtok '((!. !~ !*) int_mult);
-newtok '((!. !~ !+) int_add);
-newtok '((!. !+) add);
-newtok '((!. !=) id!-equal);
-newtok '((!/ !/) slash);
-newtok '((!/ !\), wedge);
-%   newtok '((!/) vectorquotient);
+newtok '((!. !/)     over);
+newtok '((!. !:)     id!-quotient);
+newtok '((!. !^)     to);
+newtok '((!. !~ !*)  int_mult);
+newtok '((!. !~ !+)  int_add);
+newtok '((!. !+)     add);
+newtok '((!. !=)     id!-equal);
+newtok '((!/ !/)     slash);
+newtok '((!/ !\),    wedge);
+%   newtok '((!/)    vectorquotient);
 %   newtok '((!: !-) rset);
 %   newtok '((!: !-) hornrepl);
-newtok '((!: !: !-) rsetd);
+newtok '((!: !: !-)  rsetd);
 newtok '((!: !: != !:) lrsetq);
-newtok '((!: !: !=) lsetq);
-newtok '((!: !:) range);
-newtok '((!: != !:) rsetq);
-newtok '((!@) partdf);
-%   newtok '((!\) setdiff);
-%   newtok '((!\) backslash);
-newtok '((!^ !^) super_product);
-%   newtok '((!^) vectorexpt);
-%   newtok '((!^) wedge);
-%   newtok '((!^) cross);
-%   newtok '((!_) lnth);
-%   newtok '((!_) prop!-alg);
-%   newtok '((!_) vectorcomponent);
+newtok '((!: !: !=)  lsetq);
+newtok '((!: !:)     range);
+newtok '((!: != !:)  rsetq);
+newtok '((!@)        partdf);
+%   newtok '((!\)    setdiff);
+%   newtok '((!\)    backslash);
+newtok '((!^ !^)     super_product);
+%   newtok '((!^)    vectorexpt);
+%   newtok '((!^)    wedge);
+%   newtok '((!^)    cross);
+%   newtok '((!_)    lnth);
+%   newtok '((!_)    prop!-alg);
+%   newtok '((!_)    vectorcomponent);
 %   newtok '((!_ !|) innerprod);
 %   newtok '((!_ !=) such!-that);
-newtok '((!{) !*lcbkt!*);
-newtok '((!}) !*rcbkt!*);
+newtok '((!{)        !*lcbkt!*);
+newtok '((!})        !*rcbkt!*);
 %   newtok '((!| !_) liedf);
-%   newtok '((!| !|), or);
-%   newtok '((!|) dotprod);       % Some of these upset pm.red
-%   newtok '((!|) opapply);
-%   newtok '((!+) formoutplus);   % clash with main versin of "+"
-%   newtok '((!+) vectoradd);
+%   newtok '((!| !|) or);
+%   newtok '((!|)    dotprod);       % Some of these upset pm.red
+%   newtok '((!|)    opapply);
+%   newtok '((!+)    formoutplus);   % clash with main version of "+"
+%   newtok '((!+)    vectoradd);
 %   newtok '((!< !>) doublearrow);% clashing values
 %   newtok '((!< !>) neq);
 %   newtok '((!= !=) setvalue ! !=!=!);
-newtok '((!= !>) replaceby);
-newtok '((!> !<) vectorcross);
+newtok '((!= !>)     replaceby);
+newtok '((!> !<)     vectorcross);
 
 % The notation #bullet; (which includes the terminating semicolon) stands
 % for U+2022 and #times; is U+d7. See rtools/charname.red, and the conversion
@@ -243,9 +243,9 @@ newtok '((!> !<) vectorcross);
 % a bit later!
 %
 %   newtok '((#bullet;) dotprod);    % "#" notation not yet available
-%   newtok '((#times;) crossprod);   % "#" notation not yet available
-%   newtok '((|) opapply);           % upsets pm.red   In physop.red
-%   newtok '((d o t) dot);           % upsets int.red? In physop.red
+%   newtok '((#times;)  crossprod);  % "#" notation not yet available
+%   newtok '((|)        opapply);    % upsets pm.red   In physop.red
+%   newtok '((d o t)    dot);        % upsets int.red? In physop.red
 
 % ... and from here on the full set of infix operators may be used with
 % their standard notation. So the ONLY files where (eg) "+" may not be used

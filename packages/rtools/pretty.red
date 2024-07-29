@@ -136,7 +136,7 @@ symbolic procedure superprinm(x,lmar);
     w:=posn();
     if w>lmar then << terpri(); w:=0 >>;
     if w<lmar then initialblanks:=lmar - w;
-    prindent(x,lmar+3); %main recursive print routine.
+    prindent(x,lmar+2); %main recursive print routine.
 % traverse routine finished - now tidy up buffers.
     overflow 'none; %flush out the buffer.
     return x
@@ -212,7 +212,7 @@ symbolic procedure prindent(x,n);
         if cx=2 and atom cddr x then cx:=nil;
         if cx='prog then <<
             putch blank;
-            prindent(car (x:=cdr x),n+3) >>;
+            prindent(car (x:=cdr x),n+2) >>;
 % CX now controls the formatting of what follows:
 %    nil      default action
 %    <number> first few blanks are non-indenting
@@ -226,7 +226,7 @@ symbolic procedure prindent(x,n);
              overflow bufferi; %force format for prog.
              if atom car x then << % a label.
                  lmar:=initialblanks:=max(lmar - 6,0);
-                 prindent(car x,n - 3); % print the label.
+                 prindent(car x, n-2); % print the label.
                  x:=cdr x;
                  if not atom x and atom car x then go to scan;
                  if lmar+bn>n then putblank()
@@ -237,7 +237,7 @@ symbolic procedure prindent(x,n);
              if cx=0 then cx:=nil;
              putch blank >>
          else putblank();
-         prindent(car x,n+3);
+         prindent(car x,n+2);
          x:=cdr x;
          go to scan;
 
