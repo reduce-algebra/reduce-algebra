@@ -1729,6 +1729,7 @@ symbolic procedure scan();
       w := list(crchar!* . x);
       while (x := atsoc(crchar!*, car x)) do <<
          x := cdr x;
+         prin2x crchar!*;
          crchar!* := readch1();
          w := (crchar!* . x) . w >>;
 % Now if the sequence of characters matched was something like "#if" but the
@@ -1746,12 +1747,15 @@ symbolic procedure scan();
 % must return. However there are cases such as the one that arises with
 % "-->" where if the input is "--x" we end up with cdar w being (???) [ie
 % with a nil where there would have been a list showing the token to
-% return on "--" input. I must detect that case and backtrack. Note that
-% the very first character that starts a sequence MUST have a translation
-% and so the loop here will end tidily.
-w := w;
+% return on "--" input. I must detect that case and backtrack, putting
+% not only the extra characters back onto the input stream, but also
+% removing them from outl!* where they were placed for printing error
+% messages. Note that the very first character that starts a sequence
+% MUST have a translation and so the loop here will end tidily.
+%w := w;
       while null cddar w do <<
          peekchar!* := crchar!* . peekchar!*;
+         outl!* := cdr outl!*;
          w := cdr w;
          crchar!* := caar w >>;
       cursym!* := caddar w;
