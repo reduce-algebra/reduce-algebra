@@ -85,49 +85,56 @@
 % ordering for variable names t, x, y and z and that obviously impacts
 % many test packages.
 
+% 31 July 2024: I have changed preload to preloadX in all cases here because
+% even if the test scripts did not reveal clashes between various modules
+% there are at least some remaining. So the "X" in effect disables the
+% "preload" option. The X could be removed again if inter-module clashes
+% were really sorted out and avoided. See all the other annotations in the
+% column for known issues between packages!
+
 (
- (support       "support"     core    preload                    psl)
- (revision      "support"     core    preload                csl psl)
- (rlisp         "rlisp"       core    preload                csl psl)
- (alg           "alg"         core    preload      test      csl psl)
- (poly          "poly"        core    preload      test      csl psl)
- (rtools        "rtools"      core    preload                csl psl)
- (arith         "arith"       core    preload      test      csl psl)
- (mathpr        "mathpr"      core    preload                csl psl)
- (ezgcd         "factor"      core    preload                csl psl)
- (factor        "factor"      core    preload      test      csl psl)
+ (support       "support"     core    preloadX                   psl)
+ (revision      "support"     core    preloadX               csl psl)
+ (rlisp         "rlisp"       core    preloadX               csl psl)
+ (alg           "alg"         core    preloadX     test      csl psl)
+ (poly          "poly"        core    preloadX     test      csl psl)
+ (rtools        "rtools"      core    preloadX               csl psl)
+ (arith         "arith"       core    preloadX     test      csl psl)
+ (mathpr        "mathpr"      core    preloadX               csl psl)
+ (ezgcd         "factor"      core    preloadX               csl psl)
+ (factor        "factor"      core    preloadX     test      csl psl)
  (hephys        "hephys"      core    fide_linalg_etc        csl psl)
  (int           "int"         core    fps          test      csl psl)
- (matrix        "matrix"      core    preload      test      csl psl)
+ (matrix        "matrix"      core    preloadX     test      csl psl)
  (rlisp88       "rlisp88"     core    infrequent             csl psl)
  (rprint        "rprint"      core    cons_dot_spaced        csl psl)
  (fmprint       "rprint"      core    infrequent             csl psl)
- (pretty        "rtools"      core    preload                csl psl)
- (solve         "solve"       core    preload      test      csl psl)
+ (pretty        "rtools"      core    preloadX               csl psl)
+ (solve         "solve"       core    preloadX     test      csl psl)
  (desir         "solve"       core    off_precise  test      csl psl)
- (ineq          "solve"       core    preload      test      csl psl)
- (modsr         "solve"       core    preload      test      csl psl)
- (rsolve        "solve"       core    preload      test      csl psl)
+ (ineq          "solve"       core    preloadX     test      csl psl)
+ (modsr         "solve"       core    preloadX     test      csl psl)
+ (rsolve        "solve"       core    preloadX     test      csl psl)
  (algint        "algint"      core    int_solve    test      csl psl)
- (arnum         "arnum"       core    preload      test      csl psl)
+ (arnum         "arnum"       core    preloadX     test      csl psl)
  (assist        "assist"      core    simpsumsym   test      csl psl)
  (dummy         "assist"      core    many_modules test      csl psl)
  (cantens       "assist"      core    simpsumsym   test      csl psl)
- (atensor       "atensor"     core    preload      test      csl psl)
+ (atensor       "atensor"     core    preloadX     test      csl psl)
  (avector       "avector"     core    arith        test      csl psl)
- (invbase       "invbase"     core    preload      test      csl psl)
- (misc          "misc"        core    preload                csl psl)
+ (invbase       "invbase"     core    preloadX     test      csl psl)
+ (misc          "misc"        core    preloadX               csl psl)
 
  (boolean       "misc"        core    print_and_or test      csl psl)
- (cedit         "misc"        core    preload                csl psl)
- (rcref         "misc"        core    preload                csl psl)
- (reset         "misc"        core    preload                csl psl)
+ (cedit         "misc"        core    preloadX               csl psl)
+ (rcref         "misc"        core    preloadX               csl psl)
+ (reset         "misc"        core    preloadX               csl psl)
  (cali          "cali"        core    t_x_y_z      test      csl psl)
- (camal         "camal"       core    preload      test      csl psl)
- (changevr      "misc"        core    preload      test      csl psl)
+ (camal         "camal"       core    preloadX     test      csl psl)
+ (changevr      "misc"        core    preloadX     test      csl psl)
  (compact       "misc"        core    dfpart       test      csl psl)
- (dfpart        "misc"        core    preload      test      csl psl)
- (lie           "misc"        core    preload      test      csl psl)
+ (dfpart        "misc"        core    preloadX     test      csl psl)
+ (lie           "misc"        core    preloadX     test      csl psl)
 
 % Now the modules that are not "core"... It may be possible and it may
 % be desirable to promote some to core status...
