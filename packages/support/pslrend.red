@@ -196,6 +196,10 @@ uc!-charassoc!* :=
            (!s . !S) (!t . !T) (!u . !U) (!v . !V) (!w . !W) (!x . !X)
            (!y . !Y) (!z . !Z));
 
+symbolic procedure explodeuc u;
+  for each c in explode u collect
+    ((if x then cdr x else c) where x = atsoc(c, uc!-charassoc!*));
+
 symbolic procedure explode2uc u;
   for each c in explode2 u collect
     ((if x then cdr x else c) where x = atsoc(c, uc!-charassoc!*));
@@ -208,6 +212,10 @@ lc!-charassoc!* :=
            (!M . !m) (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r)
            (!S . !s) (!T . !t) (!U . !u) (!V . !v) (!W . !w) (!X . !x)
            (!Y . !y) (!Z . !z));
+
+symbolic procedure explodelc u;
+  for each c in explode u collect
+    ((if x then cdr x else c) where x = atsoc(c, lc!-charassoc!*));
 
 symbolic procedure explode2lc u;
   for each c in explode2 u collect
