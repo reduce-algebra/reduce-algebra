@@ -102,6 +102,9 @@ symbolic procedure formproc(u,vars,mode);
           then return << lprim list(name,
                             "not defined (LOSE flag)");
                         '(quote nil) >>
+         else if mode neq 'symbolic and (gettype name) eq 'operator
+          then return <<lprim list(name,"already defined as operator");
+                        '(quote nil) >>
          else if !*redeflg!* and getd name
           then lprim list(name,"redefined");
         varlis := cadr u;
