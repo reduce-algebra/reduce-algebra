@@ -210,7 +210,7 @@ procedure desir ;
 % nom des parametres s'il y en a, puis si l'on souhaite une
 % transformation de cette equation et laquelle ( par exemple, ramener
 % un point singulier a l'origine - voir les procedures changehom,
-% changevar, changefonc - ).
+% desir!-changevar, changefonc - ).
 %
 % Cette procedure ECRIT les solutions et RETOURNE une liste de terme
 % general { lcoeff, {....,{ solution_generale },....}}. Le nombre
@@ -521,7 +521,8 @@ begin scalar l,fct,cf,n;
       return cf;
 end;
 
-procedure changevar(lcoeff,x,v,fct);
+%% RmS: changevar is a reserved identifier; rename changevar to desir!-changevar
+procedure desir!-changevar(lcoeff,x,v,fct);
 %=================================
 %
 % changement de variable dans l'equation homogene definie par la liste,
@@ -1032,7 +1033,7 @@ begin
       if ichoix=2 then
        << write "valeur de x en fonction de la nouvelle variable v ? ";
           fct:=xread(nil);
-          coeff1:=changevar(coeff1,x,v,fct);
+          coeff1:=desir!-changevar(coeff1,x,v,fct);
           coeff1:=for each elt in coeff1 collect(sub(v=x,elt));
           lsor:={coeff1,param}
        >>;

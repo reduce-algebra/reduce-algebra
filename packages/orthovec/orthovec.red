@@ -221,7 +221,7 @@ newtok '(( !^ ) vectorexpt);
 %define operators
 %================
 operator vectorminus,vectorplus,vectorrecip;
-infix vectoradd,vectordifference,vectorcross,vectorexpt,
+symbolic infix vectoradd,vectordifference,vectorcross,vectorexpt,
       vectorcomponent,vectortimes,vectorquotient,dotgrad;
 precedence vectoradd,<;
 precedence vectordifference,vectoradd;
