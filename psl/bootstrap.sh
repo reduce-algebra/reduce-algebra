@@ -328,7 +328,7 @@ end;
 
 initreduce();
 
-tr scan, xread1; % @@@@
+%%tr scan, xread1; % @@@@
 
 savesystem("BOOTSTRAP REDUCE", "../red/bootstrap", nil);
 
