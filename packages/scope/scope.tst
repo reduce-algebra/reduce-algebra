@@ -119,9 +119,10 @@ off acinfo$
 % Further reading: SCOPE 1.5 manual section 4.3, example 16.
 
 clear a$
-procedure taylor(fx,x,x0,n);
+% Note: do not use the name taylor, as it is a reserved identifier
+procedure mytaylor(fx,x,x0,n);
  sub(x=x0,fx)+(for k:=1:n sum(sub(x=x0,df(fx,x,k))*(x-x0)^k/factorial(k)))$
-hlst:={f1=taylor(e^x,x,0,4),f2=taylor(cos x,x,0,6)}$
+hlst:={f1=mytaylor(e^x,x,0,4),f2=mytaylor(cos x,x,0,6)}$
 on rounded$
 hlst:=hlst;
 optimize alghorner(hlst,{x}) iname g$

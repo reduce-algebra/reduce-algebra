@@ -662,11 +662,12 @@ off acinfo$
 clear a$
 
 
-procedure taylor(fx,x,x0,n);
+% Note: do not use the name taylor, as it is a reserved identifier
+procedure mytaylor(fx,x,x0,n);
  sub(x=x0,fx)+(for k:=1:n sum(sub(x=x0,df(fx,x,k))*(x-x0)^k/factorial(k)))$
 
 
-hlst:={f1=taylor(e^x,x,0,4),f2=taylor(cos x,x,0,6)}$
+hlst:={f1=mytaylor(e^x,x,0,4),f2=mytaylor(cos x,x,0,6)}$
 
 
 on rounded$
@@ -1042,10 +1043,3 @@ makeopts$
 
 end;
 
-Tested on x86_64-pc-windows CSL
-1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 1: 
-Time: scope  16  16
-1: Leaving REDUCE ... 
-
-
-End of Lisp run after 0.06+0.03 seconds

@@ -22,15 +22,6 @@ showrules expt;
   (i*pi)/2
  e         => i,
 
-                   ~n
- root_of(~p,~x,~tg)   => 
-
-                               reduct(p,x)        n - deg(p,x)
- sub(x=root_of(p,x,tg), - ----------------------*x            )
-                           coeffn(p,x,deg(p,x))
-
-  when polyp(p,x) and fixp(n) and deg(p,x)>=1 and n>=deg(p,x),
-
                    1/2
  (~a + sqrt(~c)*~b)    => **w when symbolic(setk(**w,unnest-sqrt-sqrt(a,b,c))),
 
@@ -51,15 +42,6 @@ showrules expt;
 
   2
  i  => -1,
-
-                   ~n
- root_of(~p,~x,~tg)   => 
-
-                               reduct(p,x)        n - deg(p,x)
- sub(x=root_of(p,x,tg), - ----------------------*x            )
-                           coeffn(p,x,deg(p,x))
-
-  when polyp(p,x) and fixp(n) and deg(p,x)>=1 and n>=deg(p,x),
 
         2     2
  abs(~x)  => x  when symbolic(not(*precise)) or realvaluedp(x)}
@@ -109,15 +91,6 @@ showrules expt;
   asinh(~x)          2
  e          => sqrt(x  + 1) + x,
 
-                   ~n
- root_of(~p,~x,~tg)   => 
-
-                               reduct(p,x)        n - deg(p,x)
- sub(x=root_of(p,x,tg), - ----------------------*x            )
-                           coeffn(p,x,deg(p,x))
-
-  when polyp(p,x) and fixp(n) and deg(p,x)>=1 and n>=deg(p,x),
-
                    1/2
  (~a + sqrt(~c)*~b)    => **w when symbolic(setk(**w,unnest-sqrt-sqrt(a,b,c))),
 
@@ -138,15 +111,6 @@ showrules expt;
 
   2
  i  => -1,
-
-                   ~n
- root_of(~p,~x,~tg)   => 
-
-                               reduct(p,x)        n - deg(p,x)
- sub(x=root_of(p,x,tg), - ----------------------*x            )
-                           coeffn(p,x,deg(p,x))
-
-  when polyp(p,x) and fixp(n) and deg(p,x)>=1 and n>=deg(p,x),
 
         2     2
  abs(~x)  => x  when symbolic(not(*precise)) or realvaluedp(x)}
