@@ -62,23 +62,19 @@ LispObject apply(LispObject fn, LispObject args,
 // have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   RealSave save(fn, args, from);
-                LispObject &fn1   = save.val(1);
-                LispObject &args1 = save.val(2);
-                LispObject &from1 = save.val(3);
-                freshline_trace();
+            {   freshline_trace();
                 errexit();
                 trace_printf("Calling ");
                 errexit();
-                loop_print_trace(fn1); // Function being called
+                loop_print_trace(fn); // Function being called
                 errexit();
                 trace_printf(" from ");
                 errexit();
-                loop_print_trace(from1);  // caller
+                loop_print_trace(from);  // caller
                 errexit();
                 trace_printf("\n");
                 errexit();
-                LispObject p = args1;
+                LispObject p = args;
                 for (int i=1; p!=nil; i++)
                 {   trace_printf("Arg%d: ", i);
                     errexit();
@@ -88,7 +84,6 @@ LispObject apply(LispObject fn, LispObject args,
                     errexit();
                     p = cdr(p);
                 }
-                save.restore(fn, args, from);
             }
             def = fn; // this is passed as arg1 to the called code
             // displays a result.
@@ -245,12 +240,10 @@ static LispObject catch_fn(LispObject args, LispObject env)
     STACK_SANITY;
     if (!consp(args)) return nil;
     stackcheck();
-    {   tag = car(args);
-        tag = eval(tag, env);
-        errexit();
-        tag = catch_tags = cons(tag, catch_tags);
-        errexit();
-    }
+    tag = eval(car(args), env);
+    errexit();
+    tag = catch_tags = cons(tag, catch_tags);
+    errexit();
     TRY
         v = progn_fn(cdr(args), env);
     CATCH(LispThrow)

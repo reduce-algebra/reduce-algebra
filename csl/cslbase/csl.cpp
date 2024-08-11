@@ -594,40 +594,51 @@ LispObject aerror3(const char *s, LispObject a, LispObject b,
 
 static LispObject wrong(int given, int wanted, LispObject env)
 {   errorNest safe;
-    char msg[64];
+    char msg[128];
+    const char *fname = "function";
+    int namelen=8;
+    if (is_symbol(env))
+    {   env = qpname(env);
+        if (is_string(env))
+        {   namelen = length_of_header(vechdr(env)) - CELL;
+            fname = &celt(env, 0);
+        }
+    }
+    if (namelen > 60) namelen=60;
     if (wanted == 4)
         std::snprintf(msg, sizeof(msg),
-                     "Function called with %d args where more then three wanted",
-                     given);
+                     "%.*s called with %d args where more then three wanted",
+                     namelen, fname, given);
     else if (given == 4)
         std::snprintf(msg, sizeof(msg),
-                     "Function called with more than three args where %d wanted",
-                     wanted);
+                     "%.*s called with more than three args where %d wanted",
+                     namelen, fname, wanted);
     else std::snprintf(msg, sizeof(msg),
-                       "Function called with %d args where %d wanted",
-                       given, wanted);
-    if ((miscflags & HEADLINE_FLAG))
-    {   err_printf("\nCalling ");
-        loop_print_error(env);
-        err_printf("\n");
-    }
+                       "%.*s called with %d args where %d wanted",
+                       namelen, fname, given, wanted);
     return aerror(msg);
 }
 
 static LispObject wrong(int given, LispObject env)
 {   errorNest safe;
-    char msg[64];
+    char msg[128];
+    const char *fname = "function";
+    int namelen=8;
+    if (is_symbol(env))
+    {   env = qpname(env);
+        if (is_string(env))
+        {   namelen = length_of_header(vechdr(env)) - CELL;
+            fname = &celt(env, 0);
+        }
+    }
+    if (namelen > 60) namelen=60;
     if (given == 4)
         std::snprintf(msg, sizeof(msg),
-                     "Function called incorrectly with more than 3 args");
+                     "%.*s called incorrectly with more than 3 args",
+                     namelen, fname);
     else std::snprintf(msg, sizeof(msg),
-                       "Function called incorrectly with %d args",
-                       given);
-    if ((miscflags & HEADLINE_FLAG))
-    {   err_printf("\nCalling ");
-        loop_print_error(env);
-        err_printf("\n");
-    }
+                       "%.*s called incorrectly with %d args",
+                       namelen, fname, given);
     return aerror(msg);
 }
 
