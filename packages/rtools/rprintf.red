@@ -108,7 +108,7 @@ symbolic procedure p_prinl0(x, escaped);
 % time costs particularly to a sequence of calls each of which prints
 % rather small. I arrange in CSL that clearing a hash table that already
 % knows it is empty will be cheap.
-    clrhash !*prinl_visited_nodes!*
+    clrhash !*prinl_visited_nodes!*;
     p_prinl1(x, 0);
     p_prinl2(x, 0, escaped, nil);
     clrhash !*prinl_visited_nodes!*;

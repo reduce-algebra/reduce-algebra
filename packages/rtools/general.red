@@ -292,7 +292,7 @@ symbolic procedure hex64t n;
 % leafcount is intended to apply to prefix forms and counts the
 % number of atoms including those that are operator-names.
 
-symbolic procedure leafcount x;
+symbolic procedure leafcount u;
   if null u then 0
   else if atom u then 1
   else leafcount car u + leafcount cdr u;
