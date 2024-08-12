@@ -1,6 +1,31 @@
 module logoturtle;   % Logo turtle graphics based on Gnuplot.
 
-% Author: Francis Wright, July 2024
+% Author: Francis Wright, August 2024
+
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+%  * Redistributions of source code must retain the relevant copyright
+%    notice, this list of conditions and the following disclaimer.
+%
+%  * Redistributions in binary form must reproduce the relevant
+%    copyright notice, this list of conditions and the following
+%    disclaimer in the documentation and/or other materials provided
+%    with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+% COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 
 % $Id$
 
@@ -39,8 +64,7 @@ module logoturtle;   % Logo turtle graphics based on Gnuplot.
 
 % LogoTurtle uses Lisp floating-point numbers internally and does not
 % require any particular REDUCE number domain settings, such as "on
-% rounded", although using "on rounded" and the default or lower
-% precision makes sense.
+% rounded".
 
 % Data structures
 % ===============
@@ -50,21 +74,22 @@ module logoturtle;   % Logo turtle graphics based on Gnuplot.
 
 % A CURVE is a list of TWO or more points of the form
 %      (point_1 point_2 ...)
-% representing one connected curve consisting the points joined by
+% representing one connected curve consisting of the points joined by
 % straight lines.
 
 % Raising and lowering the pen generates a new curve.  Curves are
 % gathered together into one or more curve sequences with the same
-% style, such as line colour and width.  Changing the line style
+% style, namely line colour and width.  Changing the line style
 % generates a new curve sequence.
 
-% A CURVE SEQUENCE is a tagged list consisting of a line style
-% followed by one or more disconnected curves of the form
-%      (curve!-seq linestyle curve_1 ...)
-% representing a set of curves with the same line style.
+% A CURVE SEQUENCE is a list consisting of a line style followed by
+% one or more curves of the form
+%      (style curve_1 curve_2 ...)
+% representing a sequence of disconnected curves with the same line
+% style.
 
 % A PLOT is a list of one or more curve sequences.  Draw displays the
-% current plot plus specified saved plots.
+% current plot and any incomplete curves.
 
 
 % A LABEL is a list of the form
@@ -75,11 +100,19 @@ module logoturtle;   % Logo turtle graphics based on Gnuplot.
 % the label font and colour.
 
 load_package gnuplot;
+% LogoTurtle uses the following functions from the gnuplot package:
+% gp!-init, plotprin2, plotprin2lt, plotterpri, plot!-filename,
+% gp!-show, plotrounded, plotreset.  It also uses the trplot switch,
+% which affects plotprin2 etc.
 
 switch trlogoturtle;
 % If on then output internal data from draw and logoturtle!-setxy.
 % Also, output the commands sent to Gnuplot.
 put('trlogoturtle, 'simpfg, '((t (on1 'trplot)) (nil (off1 'trplot))));
+
+switch logoturtle_autodraw;
+% If on then automatically call draw after every command that changes
+% the plot.
 
 fluid '(
    logoturtle!-x!-coord!*   % turtle Cartesian x coordinate (float)
@@ -87,12 +120,13 @@ fluid '(
    logoturtle!-heading!*    % turtle heading (float)
    !*logoturtle!-pen!-down  % turtle pen down (boolean)
    logoturtle!-curve!*      % list of points
-   logoturtle!-curve!-seq!* % tagged list of curves with style
+   logoturtle!-curve!-seq!* % list of curves with style
    logoturtle!-plot!*       % list of curve sequences
+   logoturtle!-win!-mode!*  % wrap, window, fence, or nil
+   !*logoturtle!-draw!-nothing          % draw nothing (boolean)
    );
 
 global '(
-   logoturtle!-win!-mode!*  % wrap, window, fence, or nil
    logoturtle!-x!-max!*     % -x!-max!* <= x <= x!-max!* (float)
    logoturtle!-y!-max!*     % -y!-max!* <= y <= y!-max!* (float)
    !*logoturtle!-shown      % turtle shown (boolean)
@@ -100,6 +134,7 @@ global '(
    logoturtle!-angle!*      % turtle head half-angle (float)
    logoturtle!-term!*       % name of Gnuplot terminal type (string)
    logoturtle!-labels!*     % list of label data structures
+   logoturtle!-noarg!*      % list of commands that take no args
    );
 
 logoturtle!-x!-coord!*  := 0.0;
@@ -112,29 +147,47 @@ logoturtle!-rel!-len!*  := 0.1;
 logoturtle!-angle!*     := 10.0;
 
 symbolic macro procedure logoturtle!-make!-curve!-seq args;
-   % Return a curve sequence data structure as a tagged list of the
-   % form (curve!-seq style curve_1 curve_2 ...), where style is a
-   % list of items to be printed concatenated as the style (following
-   % "with "), built from properties of logoturtle!-curve!-seq!*.  If
-   % an argument is provided then it should be a colour specification
-   % acceptable to Gnuplot, such as a value returned by
-   % logoturtle!-colorspec, which overrides the lc property of
+   % Return a curve sequence data structure as a list of the form
+   % (style curve_1 curve_2 ...), where style is a list of items to be
+   % printed concatenated as the style (following "with "), built from
+   % properties of logoturtle!-curve!-seq!*.  If an argument is
+   % provided then it should be a colour specification acceptable to
+   % Gnuplot, such as a value returned by logoturtle!-colorspec, which
+   % overrides the lc property and ignores the lw property of
    % logoturtle!-curve!-seq!*.
 
-   % Note that within this macro args has the form
+   % Note that within this macro args is a list of the form
    % (logoturtle!-make!-curve!-seq arg1 arg2 ...).
-   {'prog, '(lc lw),
+   'prog . '(lc lw) . append(
+      if cdr args then
+         {'setq . 'lc . cdr args}
+      else
+         '((setq lc (get 'logoturtle!-curve!-seq!* 'lc))
+           (setq lw (get 'logoturtle!-curve!-seq!* 'lw))),
+      '((return
+         (cons
+            (cons "lines"
+               (append
+                  (and lc (list " lc rgb """ lc """"))
+                  (and lw (list " lw " lw))))
+            logoturtle!-curve!-seq!*))));
+
+symbolic macro procedure logoturtle!-make!-fill args;
+   % cf. logoturtle!-make!-curve!-seq but for a filled curve sequence
+   % consisting of just the current curve and ignoring line width.
+
+   % Note that within this macro args is a list of the form
+   % (logoturtle!-make!-fill arg1 arg2 ...).
+   {'prog, '(lc),
       {'setq, 'lc, if cdr args then cadr args
       else '(get 'logoturtle!-curve!-seq!* 'lc)},
-      '(setq lw (get 'logoturtle!-curve!-seq!* 'lw)),
       '(return
-         (cons 'curve!-seq
-            (cons (append '("lines")
-                  (and lc (list " lc rgb """ lc """"))
-                  (and lw (list " lw " lw)))
-               logoturtle!-curve!-seq!*)))};
+         (cons
+            (cons "filledcurves"
+               (and lc (list " lc rgb """ lc """")))
+            (list logoturtle!-curve!*)))};
 
-flag('(logoturtle!-make!-curve!-seq), 'variadic);
+flag('(logoturtle!-make!-curve!-seq logoturtle!-make!-fill), 'variadic);
 
 symbolic procedure logoturtle!-new!-curve;
    logoturtle!-curve!* :=
@@ -170,28 +223,34 @@ symbolic procedure logoturtle!-get!-plot;
       logoturtle!-curve!-seq!* = logoturtle!-curve!-seq!*,
       logoturtle!-plot!* = logoturtle!-plot!*;
 
-remprop('draw, 'stat);
+% The following list of all the commands that take no arguments will
+%  have a special read function applied at the end of this file:
+logoturtle!-noarg!* :=
+   '(draw home pos xcor ycor heading showturtle hideturtle clean
+     clearscreen wrap window fence fill shownp windowsize turtlemode
+     labelfont labelcolor pendown penup pendownp pencolor pensize
+     background);
+
+for each cmd in logoturtle!-noarg!* do remprop(cmd, 'stat);
 
 symbolic procedure draw;
    % Display the current plot and, optionally, the turtle.
    begin scalar plot := logoturtle!-get!-plot();
       % logoturtle!-show!-turtle returns a curve sequence representing
       % the turtle.
-      if !*logoturtle!-shown and logoturtle!-win!-mode!* then
+      if !*logoturtle!-shown then
          plot := logoturtle!-show!-turtle() . plot;
 
-      % Don't draw an empty plot:
-      if plot or logoturtle!-labels!* then <<
+      % Don't draw an empty plot (unless specifically requested):
+      if plot or logoturtle!-labels!* or !*logoturtle!-draw!-nothing
+      then <<
          % Draw curve sequences in input order so that overlaying is
          % correct, with turtle last and so on top.  Use reverse (not
          % reversip) so as to make a new list and not mangle
          % logoturtle!-plot!*:
          plot := reverse plot;
 
-         if !*trlogoturtle then <<
-            terpri();
-            prettyprint plot;
-         >>;
+         if !*trlogoturtle then << terpri(); prettyprint plot >>;
 
          % Code below based on ploteval in "plotsynt.red".
          bye!-actions!* := union('((plotreset)), bye!-actions!*);
@@ -233,9 +292,9 @@ symbolic procedure draw;
                of := wrs(f := open(fn := plot!-filename(),'output));
                styles := for each curve_seq in plot collect
                   % curve_seq has the form
-                  % (curve!-seq linestyle curve_1 curve_2 ...):
+                  % (linestyle curve_1 curve_2 ...):
                   <<
-                     for each curve in cddr curve_seq do <<
+                     for each curve in cdr curve_seq do <<
                         % curve has the form (point_1 point_2 ...):
                         for each point in curve do <<
                            % Write plot data to the current write stream:
@@ -247,7 +306,7 @@ symbolic procedure draw;
                      % Separate curve sequences (Gnuplot data sets)
                      % by PAIRS of blank lines:
                      terpri();
-                     cadr curve_seq  % return style
+                     car curve_seq  % return style
                   >>;
                wrs of; close f;
             end;
@@ -262,25 +321,32 @@ symbolic procedure draw;
                   else
                      << plotprin2lt '(",\"); plotprin2 "''" >>;
                   plotprin2l {" index ", i, " with "};
-                  plotprin2l style; % e.g. "lines lc rgb ""green"""
+                  plotprin2l style;    % e.g. "lines lc rgb ""green"""
                   fst := nil;
                   i := i + 1;
                >>;
                plotterpri();
             end
             else <<
-               % Plot nothing to display only labels:
+               % Plot nothing to display only labels or an empty plot:
                plotprin2lt '("plot '-' with lines");
                plotprin2lt '("0 0");
                plotprin2lt '("e");
             >>;
 
          end;
-         gp!-show();
+         gp!-show()
       >>;
    end;
 
-put('draw, 'stat, 'endstat);
+symbolic inline procedure logoturtle!-autodraw;
+   if !*logoturtle_autodraw then draw();
+
+symbolic inline procedure logoturtle!-autodraw!-nothing;
+   if !*logoturtle_autodraw then
+   begin scalar !*logoturtle!-draw!-nothing := t;
+      draw()
+   end;
 
 symbolic procedure plotprin2l l;     % cf. plotprin2lt in gnupldrv.red
    for each x in l do plotprin2 x;
@@ -292,11 +358,15 @@ symbolic procedure logoturtle!-show!-turtle;
    % turtle is drawn one step behind its actual position, so that the
    % display of the base of the turtle's triangle does not obscure a
    % line drawn perpendicular to it (as would happen after drawing a
-   % square).
-   (begin scalar !*logoturtle!-pen!-down,
+   % square).  The turtle is always drawn as a black default-thickness
+   % line that is never wrapped, although it is clipped if any turtle
+   % mode is in effect, i.e. for drawing the turtle any windowing mode
+   % other than false is treated as window.
+   (begin scalar !*logoturtle_autodraw, logoturtle!-win!-mode!*,
+         !*logoturtle!-pen!-down,
          logoturtle!-curve!*, logoturtle!-curve!-seq!*,
          length := logoturtle!-rel!-len!* *
-         (logoturtle!-x!-max!* + logoturtle!-y!-max!*) / 2.0,
+            (logoturtle!-x!-max!* + logoturtle!-y!-max!*) / 2.0,
          side := length / cosd logoturtle!-angle!*,
          base := 2.0 * length * tand logoturtle!-angle!*,
          baseangle := 90.0 - logoturtle!-angle!*;
@@ -304,39 +374,48 @@ symbolic procedure logoturtle!-show!-turtle;
       logoturtle!-right(logoturtle!-angle!*); logoturtle!-forward(-side);
       logoturtle!-right(baseangle); logoturtle!-forward(base);
       logoturtle!-right(baseangle); logoturtle!-forward(-side);
-      logoturtle!-curve!-seq!* := list logoturtle!-curve!*;
+      logoturtle!-curve!-seq!* := {logoturtle!-curve!*};
       return logoturtle!-make!-curve!-seq "black"
    end) where
       logoturtle!-x!-coord!* = logoturtle!-x!-coord!*,
       logoturtle!-y!-coord!* = logoturtle!-y!-coord!*,
       logoturtle!-heading!* = logoturtle!-heading!*;
 
-% *** TO DO: Consider using code similar to procedure rdwrap in
-% "plotnum.red" to evaluate expressions to Lisp floats RELIABLY! ***
-
-symbolic procedure logoturtle!-number n;
-   % Convert N to a Lisp float provided it is a real general REDUCE
-   % algebraic-mode number.
-   if atom n then
-      % integer, float (default number domain) or error
-      (if numberp n then float n else typerr(n, "real number"))
-   else if eqcar(n, 'quotient) then
-      % quotient (default number domain)
-      (float eval cadr n)/(float eval caddr n)
-   else if eqcar(n, '!:rd!:) then
-      % rounded number domain
-      (if floatp cdr n then cdr n else bf2flr n)
-   else if eqcar(n, '!:rn!:) then
-      % rational number domain
-      (float cadr n)/cddr n
-   else if eqcar(n, '!:mod!:) then
-      % modular number domain
-      float cdr n
-   else typerr(n, "real number");
+symbolic procedure logoturtle!-float!-args(cmdname, nargs, args);
+   % If nargs is list then check that args contains a single rlist and
+   % evaluate that as args; otherwise check that the length of list
+   % args equals nargs.  Evaluate each element of args to a Lisp float
+   % provided it is a real general REDUCE algebraic-mode number.  If
+   % nargs = 1 then return a single float, otherwise return a list of
+   % floats.
+   begin scalar rlstp, pr, r, !*exp;
+      if nargs eq 'list then << rlstp := t; nargs := 1 >>;
+      if not(length args eq nargs) then
+         rederr {"Improper number of arguments to", cmdname};
+      pr := plotrounded nil;            % turn on rounded mode safely
+      precision 10;
+      if rlstp then <<
+         args := getrlist reval car args;
+         nargs := nil
+      >>;
+      if nargs eq 1 then
+         (if numberp(r := reval car args) then float r
+         else if eqcar(r, '!:rd!:) and floatp(r := cdr r) then r
+         else typerr(r, "real number"))
+      else
+         r := for each arg in args collect <<
+            if not rlstp then arg := reval arg;
+            if numberp arg then float arg
+            else if eqcar(arg, '!:rd!:) and floatp(arg := cdr arg) then arg
+            else typerr(args, "real numbers")
+         >>;
+      plotrounded pr;                   % restore global domain mode
+      return r
+   end;
 
 
-% Turtle Motion (all return nothing)
-% ==================================
+% Turtle Motion Commands (all return nothing)
+% ===========================================
 
 % LogoTurtle attempts to scale the graphics window so that (by
 % default) turtle coordinates (-100, -100) and (100, 100) fit (but the
@@ -353,17 +432,17 @@ symbolic procedure logoturtle!-number n;
 symbolic procedure forward dist;        % fd dist
    % Move the turtle forward, in the direction that it's facing, by
    % the specified distance.
-   logoturtle!-forward(+ logoturtle!-number dist);
+   logoturtle!-forward(+ logoturtle!-float!-args("FORWARD", 1, dist));
 
-symbolic operator forward;
+put('forward, 'psopfn, 'forward);
 
 symbolic procedure back dist;           % bk dist
    % Move the turtle backward, i.e., exactly opposite to the
    % direction that it's facing, by the specified distance. (The
    % heading of the turtle does not change.)
-   logoturtle!-forward(- logoturtle!-number dist);
+   logoturtle!-forward(- logoturtle!-float!-args("BACK", 1, dist));
 
-symbolic operator back;
+put('back, 'psopfn, 'back);
 
 symbolic procedure logoturtle!-forward dist;
    % Move the turtle forward, in the direction that it's facing, by
@@ -375,34 +454,34 @@ symbolic procedure logoturtle!-forward dist;
 
 symbolic procedure left degrees;        % lt degrees
    % Turn the turtle counterclockwise by the specified angle
-   logoturtle!-right(- logoturtle!-number degrees);
+   logoturtle!-right(- logoturtle!-float!-args("LEFT", 1, degrees));
 
-symbolic operator left;
+put('left, 'psopfn, 'left);
 
 symbolic procedure right degrees;       % rt degrees
    % Turn the turtle clockwise by the specified angle.
-   logoturtle!-right(+ logoturtle!-number degrees);
+   logoturtle!-right(+ logoturtle!-float!-args("RIGHT", 1, degrees));
 
-symbolic operator right;
+put('right, 'psopfn, 'right);
 
 symbolic procedure logoturtle!-right degrees;
    % Turn the turtle clockwise by the specified angle, ASSUMED TO BE A
    % LISP NUMBER!
    logoturtle!-setheading(logoturtle!-heading!* + degrees);
 
-symbolic procedure setpos pos;
+symbolic procedure setpos posn;
    % Move the turtle to an absolute position in the graphics window.
    % The input is a list of two numbers, the X and Y coordinates.
-   apply('setxy, getrlist pos);
+   apply('logoturtle!-setxy, logoturtle!-float!-args("POS", 'list, posn));
 
-symbolic operator setpos;
+put('setpos, 'psopfn, 'setpos);
 
-symbolic procedure setxy(xcor, ycor);
+symbolic procedure setxy args;          % (xcor, ycor)
    % Move the turtle to an absolute position in the graphics window.
    % The two inputs are numbers, the X and Y coordinates.
-   logoturtle!-setxy(logoturtle!-number xcor, logoturtle!-number ycor);
+   apply(function logoturtle!-setxy, logoturtle!-float!-args("SETXY", 2, args));
 
-symbolic operator setxy;
+put('setxy, 'psopfn, 'setxy);
 
 symbolic procedure logoturtle!-setxy(xcor, ycor);
    % Move the turtle to an absolute position in the graphics window.
@@ -477,29 +556,33 @@ symbolic procedure logoturtle!-setxy(xcor, ycor);
             logoturtle!-setxy(xcor, ycor - 2*newy);
          >>;
       >>;
+      if !*logoturtle_autodraw and
+         (!*logoturtle!-pen!-down or !*logoturtle!-shown) then draw();
    end;
 
 symbolic procedure setx xcor;
    % Move the turtle horizontally from its old position to a new
    % absolute horizontal coordinate.  The input is the new X
    % coordinate.
-   logoturtle!-setxy(logoturtle!-number xcor, logoturtle!-y!-coord!*);
+   logoturtle!-setxy(logoturtle!-float!-args("SETX", 1, xcor),
+      logoturtle!-y!-coord!*);
 
-symbolic operator setx;
+put('setx, 'psopfn, 'setx);
 
 symbolic procedure sety ycor;
    % Move the turtle vertically from its old position to a new
    % absolute vertical coordinate.  The input is the new Y coordinate.
-   logoturtle!-setxy(logoturtle!-x!-coord!*, logoturtle!-number ycor);
+   logoturtle!-setxy(logoturtle!-x!-coord!*,
+      logoturtle!-float!-args("SETY", 1, ycor));
 
-symbolic operator sety;
+put('sety, 'psopfn, 'sety);
 
 symbolic procedure setheading degrees;  % seth degrees
    % Turn the turtle to a new absolute heading.  The input is a number,
    % the heading in degrees clockwise from the positive Y axis.
-   logoturtle!-setheading(logoturtle!-number degrees);
+   logoturtle!-setheading(logoturtle!-float!-args("SETHEADING", 1, degrees));
 
-symbolic operator setheading;
+put('setheading, 'psopfn, 'setheading);
 
 symbolic procedure logoturtle!-setheading degrees;
    % Turn the turtle to a new absolute heading.  The input is a
@@ -511,29 +594,37 @@ symbolic procedure logoturtle!-setheading degrees;
       else if degrees <= -180.0 then
          while degrees <= -180.0 do degrees := degrees + 360.0;
       logoturtle!-heading!* := degrees;
+      if !*logoturtle_autodraw and !*logoturtle!-shown then draw();
    >>;
-
-remprop('home, 'stat);
 
 symbolic procedure home;
    % Move the turtle to the origin and set the heading to 0.
    % Equivalent to SETPOS {0, 0}; SETHEADING 0.
    <<
-      logoturtle!-setxy(0.0, 0.0);
       logoturtle!-heading!* := 0.0;
+      logoturtle!-setxy(0.0, 0.0);      % may autodraw
    >>;
 
-put('home, 'stat, 'endstat);
-
-symbolic procedure arc(angle, radius);
+symbolic procedure arc args;            % (angle, radius)
    % Draw an arc of a circle, with the turtle at the center, with the
    % specified positive radius, starting at the turtle's heading and
    % extending clockwise through the specified angle
    % (counter-clockwise if angle is negative).  The turtle does not
    % move.
+   apply(function logoturtle!-arc,
+      logoturtle!-float!-args("ARC", 2, args));
+
+put('arc, 'psopfn, 'arc);
+
+symbolic procedure circle radius;
+   % Draw a circle centred on the turtle with the positive radius
+   % specified.  The turtle does not move.
+   logoturtle!-arc(360.0, logoturtle!-float!-args("CIRCLE", 1, radius));
+
+put('circle, 'psopfn, 'circle);
+
+symbolic procedure logoturtle!-arc(angle, radius);
    begin scalar nsteps, h, delta, curve, a;
-      angle := logoturtle!-number angle;
-      radius := logoturtle!-number radius;
       if radius <= 0.0 then typerr(radius, "radius");
       angle := deg2rad angle;             % angle subtended in radians
       h := deg2rad logoturtle!-heading!*; % heading in radians
@@ -545,11 +636,70 @@ symbolic procedure arc(angle, radius);
             (logoturtle!-y!-coord!* + radius*cos(a))
       >>;
       logoturtle!-curve!-seq!* := curve . logoturtle!-curve!-seq!*;
+      logoturtle!-autodraw()
    end;
 
-symbolic operator arc;
+symbolic procedure ellipticarc args;
+   %   (paramrange, crosswise_semiaxis, inline_semiaxis, paramstart)
+   % Draw an elliptic arc based on the turtle's position and heading.
+   % The turtle does not move.  The center-point of the ellipse is the
+   % turtle's current position.  The size and shape of the ellipse are
+   % determined by the positive CROSSWISE_SEMIAXIS and
+   % INLINE_SEMIAXIS.  The CROSSWISE_SEMIAXIS is the distance from the
+   % turtle to the ellipse in the direction perpendicular to the
+   % turtle's current heading.  The INLINE_SEMIAXIS is the distance
+   % from the turtle to the ellipse in the direction in which the
+   % turtle is currently heading.  Hence the turtle's heading
+   % determines the orientation of the ellipse.  The elliptic arc
+   % starts at angle parameter PARAMSTART degrees and the angle
+   % parameter sweeps through a range of PARAMRANGE degrees.  The
+   % elliptic arc is drawn clockwise if PARAMRANGE is positive and
+   % counter-clockwise if PARAMRANGE is negative.
+   apply(function logoturtle!-ellipticarc,
+      logoturtle!-float!-args("ELLIPTICARC", 4, args));
 
-symbolic procedure arc2(angle, radius);
+put('ellipticarc, 'psopfn, 'ellipticarc);
+
+symbolic procedure ellipse args; % (crosswise_semiaxis, inline_semiaxis)
+   % Draw an ellipse based on the turtle's position and heading.  The
+   % turtle does not move.  The center-point of the ellipse is the
+   % turtle's current position.  The size and shape of the ellipse are
+   % determined by the positive CROSSWISE_SEMIAXIS and
+   % INLINE_SEMIAXIS.  The CROSSWISE_SEMIAXIS is the distance from the
+   % turtle to the ellipse in the direction perpendicular to the
+   % turtle's current heading.  The INLINE_SEMIAXIS is the distance
+   % from the turtle to the ellipse in the direction in which the
+   % turtle is currently heading.  Hence the turtle's heading
+   % determines the orientation of the ellipse.
+   apply(function logoturtle!-ellipticarc,
+      360.0 . nconc(logoturtle!-float!-args("ELLIPSE", 2, args), '(0.0)));
+
+put('ellipse, 'psopfn, 'ellipse);
+
+symbolic procedure logoturtle!-ellipticarc(range, cross, inlin, start);
+   begin scalar nsteps, h, delta, curve, cos_h, sin_h,
+         inlin_sin_h,  cross_cos_h, inlin_cos_h, cross_sin_h;
+      if cross <= 0.0 then typerr(cross, "ellipse semi-axis");
+      if inlin <= 0.0 then typerr(inlin, "ellipse semi-axis");
+      range := deg2rad range;   % angle param range in radians
+      start := deg2rad start;   % initial angle param range in radians
+      h := deg2rad logoturtle!-heading!*; % heading in radians
+      cos_h := cos(h);  sin_h := sin(h);
+      inlin_sin_h := inlin*sin_h;  cross_cos_h := cross*cos_h;
+      inlin_cos_h := inlin*cos_h;  cross_sin_h := cross*sin_h;
+      nsteps := fix abs(10.0*range);    % arcstep = radius/10.0
+      delta := range/nsteps;
+      curve := for n := 0 : nsteps collect
+         begin scalar a := start + n*delta, cos_a := cos(a), sin_a := sin(a);
+            return
+               (logoturtle!-x!-coord!* + inlin_sin_h*cos_a + cross_cos_h*sin_a) .
+                  (logoturtle!-y!-coord!* + inlin_cos_h*cos_a - cross_sin_h*sin_a)
+         end;
+      logoturtle!-curve!-seq!* := curve . logoturtle!-curve!-seq!*;
+      logoturtle!-autodraw()
+   end;
+
+symbolic procedure arc2 args;           % (angle, radius)
    % Move the turtle along a circular arc that sweeps through the
    % specified angle with the specified positive radius.  The turtle
    % always moves forwards: if angle is positive, then the turtle
@@ -557,9 +707,21 @@ symbolic procedure arc2(angle, radius);
    % then the turtle moves forwards in a counter-clockwise direction.
    % At the end of the arc, the turtle's heading is increased by
    % angle.
+   apply(function logoturtle!-arc2,
+      logoturtle!-float!-args("ARC2", 2, args));
+
+put('arc2, 'psopfn, 'arc2);
+
+symbolic procedure circle2 radius;
+   % Move the turtle clockwise around a circle with the specified
+   % positive radius.  The turtle ends in the same position in which
+   % it starts.
+   logoturtle!-arc2(360.0, logoturtle!-float!-args("CIRCLE2", 1, radius));
+
+put('circle2, 'psopfn, 'circle2);
+
+symbolic procedure logoturtle!-arc2(angle, radius);
    begin scalar nsteps, a, h, x, y, delta;
-      angle := logoturtle!-number angle;
-      radius := logoturtle!-number radius;
       if radius <= 0.0 then typerr(radius, "radius");
       if angle < 0 then radius := -radius;
       a := deg2rad angle;                 % angle subtended in radians
@@ -568,107 +730,84 @@ symbolic procedure arc2(angle, radius);
       y := logoturtle!-y!-coord!* - radius*sin(h);
       nsteps := fix abs(10.0*a);        % arcstep = radius/10.0
       delta := a/nsteps;
-      for n := 1 : nsteps do <<
-         a := h + n*delta;
-         logoturtle!-setxy(x - radius*cos(a), y + radius*sin(a))
-      >>;
-      logoturtle!-setheading(logoturtle!-heading!* + angle)
+      begin scalar !*logoturtle_autodraw;
+         for n := 1 : nsteps do <<
+            a := h + n*delta;
+            logoturtle!-setxy(x - radius*cos(a), y + radius*sin(a))
+         >>
+      end;
+      logoturtle!-setheading(logoturtle!-heading!* + angle);
+      if !*logoturtle_autodraw and
+         (!*logoturtle!-pen!-down or !*logoturtle!-shown) then draw()
    end;
 
-symbolic operator arc2;
-
-symbolic procedure circle radius;
-   % Draw a circle centred on the turtle with the positive radius
-   % specified.  The turtle does not move.
-   arc(360.0, radius);
-
-symbolic operator circle;
-
-symbolic procedure circle2 radius;
-   % Move the turtle clockwise around a circle with the specified
-   % positive radius.  The turtle ends in the same position in which
-   % it starts.
-   arc2(360.0, radius);
-
-symbolic operator circle2;
-
 
-% Turtle Motion Queries (all procedures return values)
-% ====================================================
-
-remprop('pos, 'stat);
+% Turtle Motion Queries (all return values)
+% =========================================
 
 symbolic procedure pos;
-   % Output the turtle's current position, as a list of two numbers,
+   % Return the turtle's current position, as a list of two numbers,
    % the X and Y coordinates.
    {'list, logoturtle!-x!-coord!*, logoturtle!-y!-coord!* };
 
-put('pos, 'stat, 'endstat);
-
-remprop('xcor, 'stat);
-
 symbolic procedure xcor;
-   % Output a number, the turtle's X coordinate.
+   % Return a number, the turtle's X coordinate.
    logoturtle!-x!-coord!*;
 
-put('xcor, 'stat, 'endstat);
-
-remprop('ycor, 'stat);
-
 symbolic procedure ycor;
-   % Output a number, the turtle's Y coordinate.
+   % Return a number, the turtle's Y coordinate.
    logoturtle!-y!-coord!*;
 
-put('ycor, 'stat, 'endstat);
-
-remprop('heading, 'stat);
-
 symbolic procedure heading;
-   % Output a number, the turtle's heading in degrees.
+   % Return a number, the turtle's heading in degrees.
    logoturtle!-heading!*;
 
-put('heading, 'stat, 'endstat);
-
 symbolic procedure towards posn;
-   % Output a number, the heading at which the turtle should be facing
+   % Return a number, the heading at which the turtle should be facing
    % so that it would point from its current position to the position
-   % (a list) given as the input.
+   % given as input, which must be a list containing two items, the X
+   % and Y coordinates.
    <<
-      posn := getrlist posn;
-      atan2d(logoturtle!-number car posn - logoturtle!-x!-coord!*,
-         logoturtle!-number cadr posn - logoturtle!-y!-coord!*);
+      posn := logoturtle!-float!-args("TOWARDS", 'list, posn);
+      atan2d(car posn - logoturtle!-x!-coord!*,
+         cadr posn - logoturtle!-y!-coord!*)
    >>;
 
-symbolic operator towards;
+put('towards, 'psopfn, 'towards);
+
+symbolic procedure distance posn;
+    % Return a number, the distance the turtle must travel along a
+    % straight line to reach the position given as input, which must
+    % be a list containing two items, the X and Y coordinates.
+   <<
+      posn := logoturtle!-float!-args("DISTANCE", 'list, posn);
+      hypot(car posn - logoturtle!-x!-coord!*,
+         cadr posn - logoturtle!-y!-coord!*)
+   >>;
+
+put('distance, 'psopfn, 'distance);
 
 
-% Turtle and Window Control (all return nothing)
-% ==============================================
-
-remprop('showturtle, 'stat);
+% Turtle and Window Control (all commands return nothing)
+% =======================================================
 
 symbolic procedure showturtle;          % st
    % Make the turtle visible.
-   <<
+   if not !*logoturtle!-shown then <<
       !*logoturtle!-shown := t;
+      logoturtle!-autodraw()
    >>;
-
-put('showturtle, 'stat, 'endstat);
-
-remprop('hideturtle, 'stat);
 
 symbolic procedure hideturtle;          % ht
-   %% Make the turtle invisible.
-   <<
+   % Make the turtle invisible.
+   if !*logoturtle!-shown then <<
       !*logoturtle!-shown := nil;
+      logoturtle!-autodraw!-nothing()
    >>;
-
-put('hideturtle, 'stat, 'endstat);
-
-remprop('clean, 'stat);
 
 symbolic procedure clean;
    % Erase all lines that the turtle has drawn on the graphics window.
+   % Also, erase all labels.
    % The turtle's state (position, heading, pen mode, etc.) is not
    % changed.  If the pen is down then start a new curve.
    <<
@@ -677,24 +816,19 @@ symbolic procedure clean;
       logoturtle!-curve!* :=
          if !*logoturtle!-pen!-down then
             {logoturtle!-x!-coord!* . logoturtle!-y!-coord!*};
+      logoturtle!-autodraw!-nothing()
    >>;
-
-put('clean, 'stat, 'endstat);
-
-remprop('clearscreen, 'stat);
 
 symbolic procedure clearscreen;         % cs;
    % Erase the graphics window and send the turtle to its initial
    % position and heading.  Like HOME and CLEAN together.
-   <<
+   begin scalar !*logoturtle_autodraw;
       plotreset;
       logoturtle!-x!-coord!* := 0.0;
       logoturtle!-y!-coord!* := 0.0;
       logoturtle!-heading!* := 0.0;
-      clean;
-   >>;
-
-put('clearscreen, 'stat, 'endstat);
+      clean()
+   end;
 
 symbolic procedure setwindowsize args;
    % If there is a single numerical argument N then the size of the
@@ -726,8 +860,6 @@ symbolic procedure setwindowsize args;
 
 put('setwindowsize, 'psopfn, 'setwindowsize);
 
-remprop('wrap, 'stat);
-
 symbolic procedure wrap;
    % Tell the turtle to enter wrap mode: From now on, if the turtle is
    % asked to move past the boundary of the graphics window, it will
@@ -739,10 +871,6 @@ symbolic procedure wrap;
       logoturtle!-win!-mode!* := 'wrap;
    >>;
 
-put('wrap, 'stat, 'endstat);
-
-remprop('window, 'stat);
-
 symbolic procedure window;
    % Tell the turtle to enter window mode: From now on, if the turtle
    % is asked to move past the boundary of the graphics window, it
@@ -753,10 +881,6 @@ symbolic procedure window;
       logoturtle!-win!-mode!* := 'window;
    >>;
 
-put('window, 'stat, 'endstat);
-
-remprop('fence, 'stat);
-
 symbolic procedure fence;
    % Tell the turtle to enter fence mode: From now on, if the turtle
    % is asked to move past the boundary of the graphics window, it
@@ -765,8 +889,6 @@ symbolic procedure fence;
    <<
       logoturtle!-win!-mode!* := 'fence;
    >>;
-
-put('fence, 'stat, 'endstat);
 
 symbolic procedure setturtlemode mode;
    % Set the turtle (window) mode to one of WRAP, FENCE, WINDOW with
@@ -781,25 +903,6 @@ symbolic procedure setturtlemode mode;
    >>;
 
 symbolic operator setturtlemode;
-
-symbolic macro procedure logoturtle!-make!-fill args;
-   % cf. logoturtle!-make!-curve!-seq but for a filled curve sequence
-   % consisting of just the current curve and ignoring line width.
-
-   % Note that within this macro args has the form
-   % (logoturtle!-make!-fill arg1 arg2 ...).
-   {'prog, '(lc),
-      {'setq, 'lc, if cdr args then cadr args
-      else '(get 'logoturtle!-curve!-seq!* 'lc)},
-      '(return
-         (cons 'curve!-seq
-            (cons (append '("filledcurves")
-                  (and lc (list " lc rgb """ lc """")))
-               (list logoturtle!-curve!*))))};
-
-flag('(logoturtle!-make!-fill), 'variadic);
-
-remprop('fill, 'stat);
 
 symbolic procedure fill;
    % Fill the region of the graphics window bounded by the lines that
@@ -842,9 +945,8 @@ symbolic procedure fill;
          logoturtle!-plot!*;
       % Start a new curve sequence:
       logoturtle!-new!-curve!-seq();
+      logoturtle!-autodraw()
    end;
-
-put('fill, 'stat, 'endstat);
 
 symbolic procedure filled args;         % (color, commands)
    % The first argument should specify a colour as a colour number,
@@ -877,7 +979,8 @@ symbolic procedure filled args;         % (color, commands)
       >>;
       logoturtle!-plot!* := logoturtle!-make!-fill color .
          logoturtle!-plot!*;
-      logoturtle!-new!-curve!-seq()
+      logoturtle!-new!-curve!-seq();
+      logoturtle!-autodraw()
    end;
 
 put('filled, 'psopfn, 'filled);
@@ -909,6 +1012,7 @@ symbolic procedure label text;
       logoturtle!-labels!* :=
          (text . (logoturtle!-x!-coord!* . logoturtle!-y!-coord!*) . style) .
             logoturtle!-labels!*;
+      logoturtle!-autodraw()
    end;
 
 symbolic operator label;
@@ -967,40 +1071,26 @@ symbolic procedure setlabelcolor color;
 symbolic operator setlabelcolor;
 
 
-% Turtle and Window Queries
-% =========================
-
-remprop('shownp, 'stat);
+% Turtle and Window Queries (all return values)
+% =============================================
 
 symbolic procedure shownp;
-   % Output TRUE if the turtle is shown (visible), FALSE if the turtle
+   % Return TRUE if the turtle is shown (visible), FALSE if the turtle
    % is hidden. See SHOWTURTLE and HIDETURTLE.
    if !*logoturtle!-shown then 'true else 'false;
 
-put('shownp, 'stat, 'endstat);
-
-remprop('windowsize, 'stat);
-
 symbolic procedure windowsize;
-   % Output the current size of the graphics window as a list of the
+   % Return the current size of the graphics window as a list of the
    % form {x_max, y_max}.
    {'list, logoturtle!-x!-max!*, logoturtle!-y!-max!*};
 
-put('windowsize, 'stat, 'endstat);
-
-remprop('turtlemode, 'stat);
-
 symbolic procedure turtlemode;
-   % Output the word WRAP, FENCE, WINDOW or FALSE depending on the
+   % Return the word WRAP, FENCE, WINDOW or FALSE depending on the
    % current turtle (window) mode.
    logoturtle!-win!-mode!* or 'false;
 
-put('turtlemode, 'stat, 'endstat);
-
-remprop('labelfont, 'stat);
-
 symbolic procedure labelfont;
-   % Output a list of the current label font face and size if both are
+   % Return a list of the current label font face and size if both are
    % set, or whichever of the face or size is set, or false.
    begin scalar font, face, size;       % font = (face . size)
       if not (font := get('logoturtle!-labels!*, 'font)) then
@@ -1011,28 +1101,20 @@ symbolic procedure labelfont;
       return size or 'false
    end;
 
-put('labelfont, 'stat, 'endstat);
-
-remprop('labelcolor, 'stat);
-
 symbolic procedure labelcolor;
-   % Output the current label foreground colour, cf. pencolor.
+   % Return the current label foreground colour, cf. pencolor.
    begin scalar color := get('logoturtle!-labels!*, 'color);
       return if color then color else 'false;
    end;
 
-put('labelcolor, 'stat, 'endstat);
-
 
-% Pen and Background Control (all return nothing)
-% ===============================================
+% Pen and Background Control (all commands return nothing)
+% ========================================================
 
 % The turtle carries a pen that can draw pictures.  At any time the
 % pen can be UP (in which case moving the turtle does not change
 % what's on the graphics screen) or DOWN (in which case the turtle
 % leaves a trace).  Initially, the pen is UP.
-
-remprop('pendown, 'stat);
 
 symbolic procedure pendown;             % pd
    % Set the pen's position to DOWN, without changing its mode.
@@ -1042,10 +1124,6 @@ symbolic procedure pendown;             % pd
       !*logoturtle!-pen!-down := t;
    >>;
 
-put('pendown, 'stat, 'endstat);
-
-remprop('penup, 'stat);
-
 symbolic procedure penup;               % pu
    % Set the pen's position to UP, without changing its mode.
    % Save the current curve if the pen was down.
@@ -1054,8 +1132,6 @@ symbolic procedure penup;               % pu
       logoturtle!-curve!* := nil;
       !*logoturtle!-pen!-down := nil;
    >>;
-
-put('penup, 'stat, 'endstat);
 
 global '(logoturtle!-colors!*);
 logoturtle!-colors!* := mkvect(15);
@@ -1147,22 +1223,29 @@ putv(logoturtle!-hex!-digits!*, 15, '!F);
 
 symbolic procedure logoturtle!-rgblist2hexstring(color);
    % Color = {r,g,b}, where r,g,b are percentages of 255.
+   % Evaluate r,g,b to Lisp floats or throw a type error,
+   % cf. logoturtle!-float!-args.
    % Return string "#RRGGBB", where R,G,B are hex digits.
-   begin scalar v := '(!"), hex_hi, hex_lo;
+   begin scalar pr, v := '(!");
       if not(length color eq 4) then
          typerr(color, "RGB list of percent color saturations");
+      pr := plotrounded nil;            % turn on rounded mode safely
+      precision 10;
       % For each percent value p in reversed RGB list:
       for each p in reversip cdr color do <<
-         p := logoturtle!-number p;
-         if p < 0.0 or p > 100.0 then
+         p := reval p;
+         p := if fixp p then float p
+         else if eqcar(p, '!:rd!:) and floatp(p := cdr p) then p;
+         % else nil!
+         if null p or p < 0.0 or p > 100.0 then
             typerr(color, "RGB list of percent color saturations");
          p := fix(p*2.55 + 0.5);
          % Convert p to two hexadecimal digits:
          p := divide(p, 16);         % (quo . rem)
-         hex_hi := getv(logoturtle!-hex!-digits!*, car p);
-         hex_lo := getv(logoturtle!-hex!-digits!*, cdr p);
-         v := hex_hi . hex_lo . v
+         v := getv(logoturtle!-hex!-digits!*, car p) .
+            getv(logoturtle!-hex!-digits!*, cdr p) . v
       >>;
+      plotrounded pr;                   % restore global domain mode
       return compress('!" . '!# . v)
    end;
 
@@ -1229,21 +1312,15 @@ symbolic procedure setbackground color; % setbg color
 symbolic operator setbackground;
 
 
-% Pen and Background Queries (all procedures return values)
-% =========================================================
-
-remprop('pendownp, 'stat);
+% Pen and Background Queries (all return values)
+% ==============================================
 
 symbolic procedure pendownp;
-   % Output TRUE if the pen is down, FALSE if it's up.
+   % Return TRUE if the pen is down, FALSE if it's up.
    if !*logoturtle!-pen!-down then 'true else 'false;
 
-put('pendownp, 'stat, 'endstat);
-
-remprop('pencolor, 'stat);
-
 symbolic procedure pencolor;            % PC
-   % Output the pen colour as a string or identifier that represents a
+   % Return the pen colour as a string or identifier that represents a
    % colour in any way that is acceptable to Gnuplot, such as a colour
    % name or hexadecimal number.  Alternatively, output the identifier
    % FALSE meaning that no colour is set.
@@ -1251,11 +1328,9 @@ symbolic procedure pencolor;            % PC
       return if color then color else 'false;
    end;
 
-put('pencolor, 'stat, 'endstat);
-
 symbolic procedure palette colornumber;
    % Colornumber must be a nonnegative integer not greater than 15.
-   % Output a string or identifier that represents the colour
+   % Return a string or identifier that represents the colour
    % associated with the given number in any way that is acceptable to
    % Gnuplot, such as a colour name or hexadecimal number.
    if fixp colornumber and colornumber >= 0 and colornumber <= 15 then
@@ -1265,10 +1340,8 @@ symbolic procedure palette colornumber;
 
 symbolic operator palette;
 
-remprop('pensize, 'stat);
-
 symbolic procedure pensize;
-   % Output a positive integer specifying the thickness of the turtle
+   % Return a positive integer specifying the thickness of the turtle
    % pen as a multiple of the default thickness, or false, meaning
    % unspecified, which is effectively equivalent to 1 but slightly
    % less efficient.
@@ -1277,12 +1350,8 @@ symbolic procedure pensize;
       return if size then size else 'false
    end;
 
-put('pensize, 'stat, 'endstat);
-
-remprop('background, 'stat);
-
 symbolic procedure background;          % bg
-   % Output the graphics background colour as a string or identifier
+   % Return the graphics background colour as a string or identifier
    % that represents a colour in any way that is acceptable to
    % Gnuplot, such as a colour name or hexadecimal number.
    % Alternatively, output the identifier FALSE meaning that no colour
@@ -1292,50 +1361,83 @@ symbolic procedure background;          % bg
       return if colorspec then colorspec else 'false
    end;
 
-put('background, 'stat, 'endstat);
-
 
-% Saving and Loading Pictures (all return nothing)
-% ================================================
+% Saving and Loading Pictures (all commands return nothing)
+% =========================================================
 
-% These two procedures save to, and load from, an internal
-% LogoTurtle namespace (the property list of the identifier
-% logoturtle!-plot!*).
+% These two commands save to, and load from, an internal LogoTurtle
+% namespace (the property list of the identifier logoturtle!-plot!*).
+% The data saved has the form (plot . label-list).
 
 symbolic procedure savepict identifier;
-   % Save the current plot to internal storage under the specified
-   % identifier without changing it.  The saved plot can be restored
-   % as the current plot using LOADPICT or displayed using DRAW.
+   % Save the current plot and labels to internal storage under the
+   % specified identifier without changing them.  The saved data can
+   % be restored as the current plot and labels using LOADPICT.
    <<
       if not idp identifier then
          typerr(identifier, "LogoTurtle SAVEPICT identifier");
-      put('logoturtle!-plot!*, identifier, logoturtle!-get!-plot());
+      put('logoturtle!-plot!*, identifier,
+         logoturtle!-get!-plot() . logoturtle!-labels!*);
    >>;
 
 symbolic operator savepict;
 
 symbolic procedure loadpict identifiers;
-   % Retrieve the plots stored under the specified identifiers, which
-   % must have been stored by a SAVEPICT command, merge them in input
-   % order so that later plots overlay earlier one, and make the
-   % result the current plot.  The previous current plot is lost if
-   % not saved using SAVEPICT.
-   begin scalar plot;
+   % Retrieve the plots and labels stored under the specified
+   % identifiers, which must have been stored by a SAVEPICT command,
+   % merge them in input order so that later plots and labels overlay
+   % earlier ones, and make the result current.  The previous current
+   % plot and labels are lost if not saved using SAVEPICT.
+   begin scalar tmp;
       % Normally curve sequences are consed onto the front of
-      % logoturtle!-plot!* as they are generated.  Then the plot is
-      % reversed in draw.
-      logoturtle!-plot!* := nil;
+      % logoturtle!-plot!* as they are generated; then the plot is
+      % reversed in draw.  But labels are drawn in list order without
+      % being reversed.
+      logoturtle!-plot!* := logoturtle!-labels!* := nil;
       for each id in identifiers do
+      <<
+         if not( idp(id := reval id)
+            and (tmp := get('logoturtle!-plot!*, id)) ) then
+               typerr(id, "LogoTurtle LOADPICT identifier");
          % Use append to copy each plot list and avoid any mangling!
-         logoturtle!-plot!* := append(
-            if idp(id := reval id)
-               and (plot := get('logoturtle!-plot!*, id)) then plot
-            else typerr(id, "LogoTurtle LOADPICT identifier"),
-            logoturtle!-plot!*);
-      logoturtle!-curve!* := logoturtle!-curve!-seq!* := nil
+         if car tmp then
+            logoturtle!-plot!* := append(car tmp, logoturtle!-plot!*);
+         if cdr tmp then nconc(logoturtle!-labels!*, cdr tmp)
+      >>;
+      logoturtle!-curve!* := logoturtle!-curve!-seq!* := nil;
+      logoturtle!-autodraw()
    end;
 
 put('loadpict, 'psopfn, 'loadpict);
+
+
+% Special processing for commands that take no arguments
+% ======================================================
+
+symbolic procedure logoturtle!-stat;
+   % Read a command that takes no arguments, like endstat but without
+   % trying to read an end comment.  Also, ignore following empty
+   % parentheses and ignore but complain about any arguments.
+   begin scalar cmd := cursym!*;
+      scan();
+      if cursym!* eq '!*lpar!* then <<
+         scan();
+         if not(cursym!* eq '!*rpar!*) then <<
+            lprim {cmd, "takes no arguments"};
+            while not(cursym!* eq '!*rpar!*) do scan()
+         >>;
+         scan()
+      >>;
+      return list cmd
+   end;
+
+flag('(logoturtle!-stat), 'endstatfn);
+
+for each cmd in logoturtle!-noarg!* do
+   put(cmd, 'stat, 'logoturtle!-stat);
+
+% Don't change display mode to symbolic for these query commands:
+flag('(pos windowsize labelfont), 'nochange);
 
 endmodule;
 

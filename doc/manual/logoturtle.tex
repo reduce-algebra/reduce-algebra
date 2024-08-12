@@ -29,8 +29,10 @@ REDUCE \hyperref[package:GNUPLOT]{Gnuplot package}, which itself uses
 that plotting is not fully interactive as it would be in
 \href{https://en.wikipedia.org/wiki/Logo_(programming_language)}{traditional
   Logo}; a plot is constructed invisibly and only displayed when
-requested.  This package aims to be more efficient, more authentic,
-more interactive and more complete than Turtle.
+requested.  However, turning on the \texttt{LOGOTURTLE\_AUTODRAW}
+switch makes LogoTurtle as interactive as possible.  This package aims
+to be more efficient, more authentic, more interactive and more
+complete than Turtle.
 
 Note that LogoTurtle and Turtle cannot both be run in the same REDUCE
 session because they define some procedures with the same names.
@@ -43,44 +45,21 @@ LogoTurtle is entirely functional.  It uses ``getters'' and
 Turtle).  Most command names are as in Berkeley Logo and/or FMSLogo,
 and their function is the same or similar.  (Identical behaviour is
 not always possible.)  However, all commands are REDUCE procedure
-calls.  Commands that never take any arguments, which applies to most
-queries, use special syntax and \emph{must not be followed by empty
-parentheses}.  Multiple arguments must be in parentheses and single
-arguments may be in parentheses, although parentheses can be, and
-usually are, omitted with a single argument.
+calls.
 
 Getters (query procedures) return values that are accepted as input by
 their matching setters (command procedures).  If more than one data
 value is involved then a list is used.  For example, the
 \hyperref[logoturtle:labelfont]{\texttt{LABELFONT}} query returns a
 list of the current label font face and size if both are set, which
-the correspond
+the corresponding
 \hyperref[logoturtle:setlabelfont]{\texttt{SETLABELFONT}} command
 accepts as its argument.
 
-Query commands that take no arguments appear much like variables and
-can be used much like variables, except that it is best to enclose
-them in parentheses if they are used in expressions; in particular, if
-they are followed by an algebraic operator.  For example, all of the
-following commands increment the x-coordinate of the turtle by 10
-steps:
-\begin{verbatim}
-     setx(10 + xcor);
-     setx(10 + (xcor));
-     setx((xcor) + 10);
-\end{verbatim}
-but use of a query without surrounding parentheses may lead to the
-following somewhat cryptic error message:
-\begin{verbatim}
-     setx(xcor + 10);
-
-     *** END-COMMENT NO LONGER SUPPORTED
-\end{verbatim}
-
 LogoTurtle commands other than queries return nothing (\texttt{nil})
-and plotting is achieved via side effects, not via returned values
-(unlike Turtle).  A plot is displayed by calling the (non-traditional)
-\hyperref[logoturtle:draw]{\texttt{DRAW}} command, as for Turtle.  The
+and plotting is achieved via side effects, not via returned values as
+for Turtle.  A plot is displayed by calling the (non-traditional)
+\hyperref[logoturtle:draw]{\texttt{DRAW}} command as for Turtle.  The
 plot displayed need not be complete; \texttt{DRAW} displays the plot
 constructed so far, which allows an element of interactivity.
 
@@ -89,18 +68,17 @@ LogoTurtle makes essential use of commands to lower and raise the pen
   Control}).  Lowering the pen begins a ``curve'', namely a sequence
 of points connected by straight lines, and raising the pen ends that
 curve.  Each time the pen is lowered, the turtle moved and the pen
-raised produces a distinct curve.
+raised, a distinct curve is produced.
 
 LogoTurtle uses Lisp floating-point numbers internally and does not
 require any particular REDUCE number domain settings.  However, all
-procedure arguments and list elements must (currently) evaluate to
-explicit real numbers, which can be integers, rationals or floats.
-This means that \emph{if any transcendental functions are used then
-``on rounded'' is required}, and the default (or a little lower)
-precision is appropriate.  Returned values and list elements will be
-floats converted to the current number domain.  Note that LogoTurtle
-lists are REDUCE algebraic-mode lists delimited by curly braces,
-\texttt{\{~\}}, not the square brackets used in traditional Logo.
+command arguments and list elements relating to turtle position must
+be expressions that can be evaluated to real numbers.  All returned
+values and list elements relating to turtle position will be
+floating-point numbers.  Note that LogoTurtle lists are REDUCE
+algebraic-mode lists delimited by curly braces, \texttt{\{~\}}, not
+the square brackets used in traditional Logo, and that REDUCE list
+elements must be separated by commas.
 
 
 \subsection{User Interface}
@@ -115,13 +93,13 @@ aspect ratio is 1:1 and geometry is correct (although beware that
 Gnuplot may not always honour this).  By default, LogoTurtle scales
 the graphics window so that turtle coordinates $(-100,-100)$ and
 $(100,100)$ fit, and the center of the graphics window is turtle
-location $(0,0)$, i.e.\@ the origin or home position.  But this fixed
-window can be turned off, or the size changed (see
-\hyperref[logoturtle:TWC]{Turtle and Window Control}) so that Gnuplot
-automatically sizes the display to include the whole plot (as for
-Turtle).  The position of the origin (the turtle home location
-$(0,0)$) is then not fixed and will be different for different
-pictures.
+location $(0,0)$, i.e.\ the origin or home position.  But this fixed
+window can be turned off so that Gnuplot automatically sizes the
+display to include the whole plot (as for Turtle).  The position of
+the origin (the turtle home location $(0,0)$) is then not fixed and
+may be different for different plots.  The window size can also be
+changed; see \hyperref[logoturtle:TWC]{Turtle and Window Control} for
+further details.
 
 Positive $x$ is to the right; positive $y$ is up.  Headings (angles)
 are measured in degrees clockwise from the positive $y$ axis.  (Note
@@ -130,42 +108,36 @@ by Turtle, of measuring angles counterclockwise from the positive $x$
 axis!)  Initially, the turtle is at the origin (Cartesian coordinates
 $(0,0)$) facing up (heading 0 degrees) with the pen up.
 
-The turtle is (optionally) represented as a black isoceles triangle;
-the actual turtle position is at the midpoint of the base (the short
-side).  However, the turtle is drawn one step behind its actual
-position, so that the display of the base of the turtle's triangle
-does not obscure a line drawn perpendicular to it (as would happen
-after drawing a square).
-
-LogoTurtle associates the following fixed colours with the colour
-numbers 0--7:
-\begin{center}
-  \begin{tabular}{rlrlrlrl}
-    0 & black  &  1 & blue    &  2 & green  &  3 & cyan  \\
-    4 & red    &  5 & magenta &  6 & yellow &  7 & white
-  \end{tabular}
-\end{center}
-It currently provides 8 additional user-settable colour numbers 8--15
-with the following initial settings:
-\begin{center}
-  \begin{tabular}{rlrlrlrl}
-     8 & brown  &  9 & tan     & 10 & forest & 11 & aqua  \\
-    12 & salmon & 13 & purple  & 14 & orange & 15 & grey
-  \end{tabular}
-\end{center}
-LogoTurtle uses by default a white background and pen colour chosen
-automatically by Gnuplot.
+LogoTurtle uses by default a white background, and pen, fill and label
+colours chosen automatically by Gnuplot, but you can set all these to
+any colour provided by Gnuplot.
 
 Note that LogoTurtle command names are shown using upper case letters
 in the descriptions after the example below to distinguish them
 clearly from their arguments, but LogoTurtle is case insensitive, so
 commands can be entered in either case.
 
-When the switch \texttt{trlogoturtle} is on, LogoTurtle outputs
+Commands that never take any arguments use special syntax and
+\emph{need not be followed by empty parentheses}.  Query commands that
+take no arguments can be used like (read-only) variables.  For
+example, the following command increments the $x$-coordinate of the
+turtle by 10 steps:
+\begin{verbatim}
+     setx(xcor + 10);
+\end{verbatim}
+Multiple command arguments must be enclosed in parentheses; single or
+no arguments may be enclosed in parentheses, although parentheses can
+be, and usually are, omitted with a single argument or no arguments.
+However, if a single argument is an expression involving infix
+operators then it must be enclosed in parentheses.
+
+When the switch \texttt{TRLOGOTURTLE} is on, LogoTurtle outputs
 Cartesian coordinates corresponding to every move of the turtle and
 \texttt{DRAW} outputs the list of curves that it is about to draw.
-The switch \texttt{trplot} is also turned on, so that the commands
-sent to Gnuplot (but not the actual plot data) are also output.
+When the switch \texttt{TRPLOT} is on, the commands sent to Gnuplot
+(but not the actual plot data) are also output.  Turning the switch
+\texttt{TRLOGOTURTLE} on or off also turns the switch \texttt{TRPLOT}
+on or off.  Both switches are off by default.
 
 
 \subsection{A Simple Example}
@@ -184,18 +156,92 @@ drawn (but for this effect to be visible each line ending with
 \texttt{draw;} must be executed separately; if you input all the
 commands together then you will only see the complete triangle).
 \begin{verbatim}
-  on rounded;
   forward(100/sqrt 3); pendown;
   setpencolor red; right 150; forward 100; draw;
   setpencolor green; right 120; forward 100; draw;
   setpencolor blue; right 120; forward 100; draw;
 \end{verbatim}
 
-For more interesting examples, please see the file
+For more interesting examples, please see the files
 \href{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/plot/logoturtle.tst}
-     {\texttt{logoturtle.tst}}, which can be found in the
+     {\texttt{logoturtle.tst}} and
+\href{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/plot/mondrian.tst}
+     {\texttt{mondrian.tst}}, which can be found online or in the
      \texttt{packages/plot} directory in a standard REDUCE
      distribution.
+
+
+\subsection{Turtle}
+
+The turtle is optionally displayed as an unfilled isosceles triangle;
+see \hyperref[logoturtle:TWC]{Turtle and Window Control}.  The turtle
+is drawn using black default-thickness lines on top of the current
+plot; the colour and line thickness cannot currently be changed.  The
+turtle is never wrapped, although it is clipped if any turtle mode is
+in effect, i.e.\ for drawing the turtle any turtle mode other than
+\texttt{false} is treated as \texttt{window}.
+
+The turtle looks like an arrow head pointing in the direction of the
+turtle's heading.  The height of the isosceles triangle (i.e.\ the
+length of the turtle) is $\ell (= 0.1)$ times the average of the
+maximum $x$ and $y$ coordinates set by the window size (even if
+windowing is not in effect) and the apex angle (at the head of the
+turtle) is twice $\alpha (= 10^{\circ})$ (so that the two equal sides
+are at angles of $\alpha$ to the turtle's heading).\footnote{The
+turtle length relative to the window size $\ell$ and head half-angle
+$\alpha$ are respectively the Lisp float values of the symbolic-mode
+global variables \texttt{logoturtle!-rel!-len!*} and
+\texttt{logoturtle!-angle!*}.  These values are used dynamically and
+in principle you could change them after LogoTurtle has loaded, but
+currently there is no algebraic-mode facility to do this.}
+
+The nominal turtle position is at the midpoint of the base (the short
+side).  However, the turtle is drawn one step behind its nominal
+position, so that the display of the base of the turtle's triangle
+does not obscure a line drawn perpendicular to it (as would happen
+after drawing a square).
+
+
+\subsection{Colours}
+\label{logoturtle:Colours}
+
+LogoTurtle offers both the traditional Berkeley Logo palette model and
+some of the Gnuplot model, which is much more flexible and usually
+more convenient.  Colours may be input and output in several different
+formats, but colour numbers and RGB lists are used only for input and
+only the formats accepted by Gnuplot are used for output, since these
+are the only formats used internally.
+
+\begin{description}
+\item[A colour number (input only)] is an integer between 0 and 15
+  inclusive.  The initial colour assignments are
+  \begin{center}
+    \begin{tabular}{rlrlrlrl}
+       0 & black  &  1 & blue    &  2 & green  &  3 & cyan  \\
+       4 & red    &  5 & magenta &  6 & yellow &  7 & white \\
+       8 & brown  &  9 & tan     & 10 & forest & 11 & aqua  \\
+      12 & salmon & 13 & purple  & 14 & orange & 15 & grey
+    \end{tabular}
+  \end{center}
+  but other colours can be assigned to numbers 8--15 by the
+  \hyperref[logoturtle:setpalette]{\texttt{SETPALETTE}} command.
+  Colour numbers are useful for cycling programmatically through a
+  range of colours.
+
+\item[An RGB list (input only)] is a list of three nonnegative numbers
+  not greater than 100 specifying the percent saturation of red,
+  green, and blue in the desired colour.  RGB lists are also easy to
+  use programmatically.
+
+\item[An identifier or string (input and output)] can be used to
+  represent a colour in any way that is acceptable to Gnuplot, such as
+  a colour name or hexadecimal number, e.g.\ \texttt{red},
+  \texttt{"red"} or \texttt{"\#FF0000"}.
+
+\item[The identifier \texttt{FALSE} (input and output)] means that no
+  colour is set.  In this case, Gnuplot uses its own automatic
+  colour-choice algorithm.
+\end{description}
 
 
 \subsection{Displaying Logo Turtle Graphics}
@@ -205,10 +251,26 @@ For more interesting examples, please see the file
      DRAW
 \end{verbatim}
 \label{logoturtle:draw}
-This command can be used at any time to display the current plot,
-i.e.\ the plot constructed so far (provided there is a plot to
+can be used at any time to display the current plot, i.e.\ the plot
+and/or labels constructed so far (provided there is something to
 display).  It initially opens a Gnuplot window and subsequently
 updates it.
+
+\subsubsection*{Autodraw switch}
+When the switch \texttt{LOGOTURTLE\_AUTODRAW} is on, making any
+visible change to a plot causes it to be redrawn (or drawn)
+automatically.  In this situation it can be useful to turn on display
+of the turtle (using
+\hyperref[logoturtle:showturtle]{\texttt{SHOWTURTLE}}), since this
+makes the turtle's heading and position visible even when the pen is
+up.
+
+When using REDUCE programming constructs (e.g.\ group or loop
+statements) to run multiple LogoTurtle commands, it is best to have
+the \texttt{LOGOTURTLE\_AUTODRAW} switch off, and instead to execute
+the \texttt{DRAW} command explicitly once the programming construct
+has completed, because intermediate changes to the plot will not be
+visible and repeatedly redrawing it is pointless.
 
 
 \subsection{Turtle Motion}
@@ -236,19 +298,19 @@ turtle does not change.)
 \end{verbatim}
 %% LT degrees
 turns the turtle counterclockwise by the specified angle, measured in
-degrees (1/360 of a circle).
+degrees.  (A degree is 1/360 of a full circle.)
 
 \subsubsection*{Right command}
 \begin{verbatim}
      RIGHT degrees
 \end{verbatim}
 %% RT degrees
-turns the turtle clockwise by the specified angle, measured in degrees
-(1/360 of a circle).
+turns the turtle clockwise by the specified angle, measured in
+degrees.
 
 \subsubsection*{Setpos command}
 \begin{verbatim}
-     SETPOS pos
+     SETPOS position
 \end{verbatim}
 \label{logoturtle:setpos}
 moves the turtle to an absolute position in the graphics window.  The
@@ -304,6 +366,15 @@ through the specified angle (counter-clockwise if angle is negative).
 The turtle does not move and the arc is drawn as if the turtle mode is
 \texttt{WINDOW} for all modes unless windowing is turned off.
 
+\subsubsection*{Circle command}
+\begin{verbatim}
+     CIRCLE radius
+\end{verbatim}
+draws a circle centred on the turtle with the positive radius
+specified.  The turtle does not move and the circle is drawn as if the
+turtle mode is \texttt{WINDOW} for all modes unless windowing is
+turned off.  Equivalent to \texttt{ARC(360, radius)}.
+
 \subsubsection*{Arc2 command}
 \begin{verbatim}
      ARC2(angle, radius)
@@ -315,15 +386,6 @@ in a clockwise direction; if angle is negative, then the turtle moves
 forwards in a counter-clockwise direction.  At the end of the arc, the
 turtle's heading is increased by angle.
 
-\subsubsection*{Circle command}
-\begin{verbatim}
-     CIRCLE radius
-\end{verbatim}
-draws a circle centred on the turtle with the positive radius
-specified.  The turtle does not move and the circle is drawn as if the
-turtle mode is \texttt{WINDOW} for all modes unless windowing is
-turned off.  Equivalent to \texttt{ARC(360, radius)}.
-
 \subsubsection*{Circle2 command}
 \begin{verbatim}
      CIRCLE2 radius
@@ -331,6 +393,39 @@ turned off.  Equivalent to \texttt{ARC(360, radius)}.
 moves the turtle clockwise around a circle with the specified positive
 radius.  The turtle ends in the same position in which it starts.
 Equivalent to \texttt{ARC2(360, radius)}.
+
+\subsubsection*{Ellipticarc command}
+\begin{verbatim}
+     ELLIPTICARC(range, crosswise, inline, start)
+\end{verbatim}
+draws an elliptic arc based on the turtle's position and heading.  The
+turtle does not move.  The center-point of the ellipse is the turtle's
+current position.  The size and shape of the ellipse are determined by
+the specified positive crosswise and inline semi-axes.  The crosswise
+semi-axis is the distance from the turtle to the ellipse in the
+direction perpendicular to the turtle's current heading.  The inline
+semi-axis is the distance from the turtle to the ellipse in the
+direction in which the turtle is currently heading.  Hence the
+turtle's heading determines the orientation of the ellipse.  The
+elliptic arc starts at angle parameter start degrees and the angle
+parameter sweeps through range degrees.  The elliptic arc is drawn
+clockwise if range is positive and counter-clockwise if range is
+negative.
+
+\subsubsection*{Ellipse command}
+\begin{verbatim}
+     ELLIPSE(crosswise, inline)
+\end{verbatim}
+draws an ellipse based on the turtle's position and heading.  The
+turtle does not move.  The center-point of the ellipse is the turtle's
+current position.  The size and shape of the ellipse are determined by
+the specified positive crosswise and inline semi-axes.  The crosswise
+semi-axis is the distance from the turtle to the ellipse in the
+direction perpendicular to the turtle's current heading.  The inline
+semi-axis is the distance from the turtle to the ellipse in the
+direction in which the turtle is currently heading.  Hence the
+turtle's heading determines the orientation of the ellipse.
+Equivalent to \texttt{ELLIPTICARC(360, crosswise, inline, 0)}.
 
 
 \subsection{Turtle Motion Queries}
@@ -362,11 +457,28 @@ returns a number, the turtle's heading in degrees.
 
 \subsubsection*{Towards query}
 \begin{verbatim}
-     TOWARDS pos
+     TOWARDS position
 \end{verbatim}
 returns a number, the heading at which the turtle should be facing so
 that it would point from its current position to the position given as
-the input in the form of a list of two numbers.
+the input in the form of a list of two numbers, the $x$ and $y$
+coordinates.
+
+\subsubsection*{Distance query}
+\begin{verbatim}
+     DISTANCE position
+\end{verbatim}
+returns a number, the distance the turtle must travel along a straight
+line to reach the position given as input in the form of a list of two
+numbers, the $x$ and $y$ coordinates.
+
+As an example of using \texttt{TOWARDS} and \texttt{DISTANCE}, here is
+a somewhat convoluted way to angle the turtle towards, and then move
+it to, the position with coordinates $(1,2)$:
+\begin{verbatim}
+     setheading towards {1, 2};
+     forward distance {1, 2};
+\end{verbatim}
 
 
 \subsection{Turtle and Window Control}
@@ -392,36 +504,36 @@ makes the turtle invisible (next time the picture is drawn).
 \begin{verbatim}
      CLEAN
 \end{verbatim}
-erases all lines that the turtle has drawn on the graphics window.
-The turtle's state (position, heading, pen mode, etc.) is not changed.
+erases the graphics window.  The turtle's state (position, heading,
+pen mode, etc.) is not changed.
 
 \subsubsection*{Clearscreen command}
 \begin{verbatim}
      CLEARSCREEN
 \end{verbatim}
 %% CS
-erases (and closes) the graphics window and sends the turtle to its
-initial position and heading.  Like
-\texttt{\hyperref[logoturtle:home]{HOME}} and \texttt{CLEAN}
-together.
+erases \emph{and closes} the graphics window, and sends the turtle to
+its initial position and heading.  Like
+\texttt{\hyperref[logoturtle:home]{HOME}} and \texttt{CLEAN} together.
 
 \subsubsection*{Setwindowsize command}
 \begin{verbatim}
      SETWINDOWSIZE n
-     setwindowsize(m, n)
+     SETWINDOWSIZE(m, n)
      SETWINDOWSIZE {m, n}
 \end{verbatim}
 with a single numerical argument $n$ sets the size of the graphics
-window so that $-|n| \le x,y \le |n|$; with a single list argument
-\texttt{\{m, n\}} in which $m$ and $n$ are numerical or with two
-numerical arguments $m, n$ it sets the size of the graphics window so
-that $-|m| \le x \le |m|, -|n| \le y \le |n|$.
+window so that $-|n| \le x,y \le |n|$; with two numerical arguments
+$m, n$ or with a single list argument \texttt{\{m, n\}} in which $m$
+and $n$ are numerical it sets the size of the graphics window so that
+$-|m| \le x \le |m|, -|n| \le y \le |n|$.  The default window size is
+$-|100| \le x,y \le |100|$.
 
 \subsubsection*{Wrap command}
 \begin{verbatim}
      WRAP
 \end{verbatim}
-tells the turtle to enter wrap mode: From now on, if the turtle is
+tells the turtle to enter wrap mode.  From now on, if the turtle is
 asked to move past the boundary of the graphics window, it will ``wrap
 around'' and reappear at the opposite edge of the window.  The top
 edge wraps to the bottom edge, while the left edge wraps to the right
@@ -433,7 +545,7 @@ is the turtle's initial mode.  Compare \texttt{WINDOW} and
 \begin{verbatim}
      WINDOW
 \end{verbatim}
-tells the turtle to enter window mode: From now on, if the turtle is
+tells the turtle to enter window mode.  From now on, if the turtle is
 asked to move past the boundary of the graphics window, it will move
 offscreen.  The visible graphics window is considered as just part of
 an infinite graphics plane; the turtle can be anywhere on the plane.
@@ -444,7 +556,7 @@ center of the window.)  Compare \texttt{WRAP} and \texttt{FENCE}.
 \begin{verbatim}
      FENCE
 \end{verbatim}
-tells the turtle to enter fence mode: From now on, if the turtle is
+tells the turtle to enter fence mode.  From now on, if the turtle is
 asked to move past the boundary of the graphics window, it will move
 as far as it can and then stop at the edge with an ``out of bounds''
 error message.  Compare \texttt{WRAP} and \texttt{WINDOW}.
@@ -453,9 +565,10 @@ error message.  Compare \texttt{WRAP} and \texttt{WINDOW}.
 \begin{verbatim}
      SETTURTLEMODE mode
 \end{verbatim}
-sets the turtle (window) mode to one of \texttt{WRAP}, \texttt{FENCE},
-\texttt{WINDOW}, with meaning as above, or \texttt{FALSE}, meaning
-that (like Turtle) there are no constraints on where the turtle draws.
+sets the turtle (windowing) mode to one of \texttt{WRAP},
+\texttt{FENCE}, \texttt{WINDOW}, with meaning as above, or
+\texttt{FALSE}, meaning that (like Turtle) there are no constraints on
+where the turtle draws.
 
 \subsubsection*{Fill command}
 \begin{verbatim}
@@ -483,20 +596,17 @@ it will not change.
 
 \subsubsection*{Filled command}
 \begin{verbatim}
-     FILLED(color, commands...)
+     FILLED(colour, commands...)
 \end{verbatim}
 executes the commands in the order written, remembering all points
 visited, and then draws the resulting curve, \emph{starting and
 ending} with the turtle's initial position, filled with the specified
-colour.  The pen size and whether the pen is up or down are ignored.
-The first argument should specify a colour as a colour number, RGB
-list, etc.\ (see
-\hyperref[logoturtle:setpencolor]{\texttt{SETPENCOLOR}} for details)
-or \texttt{FALSE} meaning that the current pen colour is used;
-otherwise the pen colour is ignored.  Subsequent arguments should be
-commands or lists of commands that move the turtle or draw curves.
-For example, the following code draws the same filled blue triangle
-and filled green circle as in the previous example:
+colour; see \hyperref[logoturtle:Colours]{Colours}.  The pen size,
+whether the pen is up or down, and the pen colour are all ignored.
+The command arguments should be commands or lists of commands that
+move the turtle or draw curves.  For example, the following code draws
+the same filled blue triangle and filled green circle as in the
+previous example:
 \begin{verbatim}
   clearscreen; penup;
   filled(blue, setxy(0, 20), setxy(20, 0));
@@ -524,9 +634,13 @@ code, e.g.
      LABEL text
 \end{verbatim}
 takes a printable item or list of printable items as input and prints
-it on the graphics window, starting at the turtle's position.  The
-items in a list are concatenated with no additional spacing.  Beware
-that long labels may fail!
+it on the graphics window with the top left-hand corner of the label
+at the turtle's position.  The items in a list are concatenated with
+no additional spacing.  Beware that long labels will just fall off the
+edge of the graphics window.  Multi-line labels can be produced by
+including newline characters encoded as \texttt{\textbackslash n}
+within the text, e.g.\ \texttt{"This is a\textbackslash nmulti-line
+  label"}.  (The newline is recognised by Gnuplot, not by REDUCE.)
 
 \subsubsection*{Setlabelfont command}
 \begin{verbatim}
@@ -552,10 +666,10 @@ REDUCE) setting the label font face is ignored.
 
 \subsubsection*{Setlabelcolor command}
 \begin{verbatim}
-     SETLABELCOLOR color
+     SETLABELCOLOR colour
 \end{verbatim}
 sets the label foreground colour; see
-\hyperref[logoturtle:setpencolor]{\texttt{SETPENCOLOR}} for details.
+\hyperref[logoturtle:Colours]{Colours}.
 
 
 \subsection{Turtle and Window Queries}
@@ -574,7 +688,7 @@ Note that generally in LogoTurtle \texttt{TRUE}/\texttt{FALSE} values
 returned by query commands can be used to facilitate programming
 LogoTurtle by writing code such as the following:
 \begin{verbatim}
-     if (shownp) = true then ...
+     if shownp = true then ...
 \end{verbatim}
 
 \subsubsection*{Windowsize query}
@@ -606,7 +720,7 @@ information reverts to the Gnuplot default.
      LABELCOLOR
 \end{verbatim}
 returns the current label foreground colour; see
-\hyperref[logoturtle:pencolor]{\texttt{PENCOLOR}} for details.
+\hyperref[logoturtle:Colours]{Colours}.
 
 
 \subsection{Pen and Background Control}
@@ -622,62 +736,40 @@ Initially, the pen is UP.
      PENDOWN
 \end{verbatim}
 %% PD
-sets the pen's position to \texttt{DOWN}, without changing its mode.
+sets the pen's position to \texttt{DOWN}, i.e.\ lowers it so that the
+turtle draws when it moves.
 
 \subsubsection*{Penup command}
 \begin{verbatim}
      PENUP
 \end{verbatim}
 %% PU
-sets the pen's position to \texttt{UP}, without changing its mode.
+sets the pen's position to \texttt{UP}, i.e.\ raises it so that the
+turtle moves without drawing.
 
 \subsubsection*{Setpencolor command}
 \begin{verbatim}
-     SETPENCOLOR color
+     SETPENCOLOR colour
 \end{verbatim}
 \label{logoturtle:setpencolor}
-%% SETPC color
-sets the pen colour.  Several input forms are supported.
-
-The argument can be a number, which must be an integer between 0 and
-15 inclusive.  The initial colour assignments are
-\begin{center}
-  \begin{tabular}{rlrlrlrl}
-    0 & black  &  1 & blue    &  2 & green  &  3 & cyan  \\
-    4 & red    &  5 & magenta &  6 & yellow &  7 & white \\
-    8 & brown  &  9 & tan     & 10 & forest & 11 & aqua  \\
-    12 & salmon & 13 & purple  & 14 & orange & 15 & grey
-  \end{tabular}
-\end{center}
-but other colours can be assigned to numbers 8--15 by the
-\texttt{SETPALETTE} command.
-
-The argument can be an RGB list, which is a list of three nonnegative
-numbers not greater than 100 specifying the percent saturation of red,
-green, and blue in the desired colour.
-
-The argument can be a string or identifier representing a colour in
-any way that is acceptable to Gnuplot, such as a colour name or
-hexadecimal number, e.g.\ \texttt{red}, \texttt{"red"} or
-\texttt{"\#FF0000"}.
-
-The argument can be the identifier \texttt{FALSE} meaning that no
-colour is set.  In this case, Gnuplot uses its own automatic
-colour-choice algorithm.
+%% SETPC colour
+sets the pen colour; see \hyperref[logoturtle:Colours]{Colours}.
 
 \subsubsection*{Setpalette command}
 \begin{verbatim}
-     SETPALETTE(colornumber, rgblist)
+     SETPALETTE(colournumber, colour)
 \end{verbatim}
-sets the actual colour corresponding to a given number.  The first
-argument must be an integer $N$ such that $8 \le N \le
+\label{logoturtle:setpalette}
+sets the actual colour corresponding to a given colour number.  The
+first argument must be an integer $n$ such that $8 \le n \le
 15$. (LogoTurtle keeps the first 8 colours constant.)  The second
-argument may be an RGB list of three nonnegative numbers not greater
-than 100 specifying the percent saturation of red, green, and blue in
-the desired color.  The second argument may also be a string or
-identifier representing a colour in any way that is acceptable to
-Gnuplot, such as a colour name or hexadecimal number,
-e.g.\ \texttt{red}, \texttt{"red"} or \texttt{"\#FF0000"}.
+argument may be either an RGB list of three nonnegative numbers not
+greater than 100 specifying the percent saturation of red, green, and
+blue in the desired colour, or an identifier or string representing a
+colour in any way that is acceptable to Gnuplot, such as a colour name
+or hexadecimal number, e.g.\ \texttt{red}, \texttt{"red"} or
+\texttt{"\#FF0000"}.  See \hyperref[logoturtle:Colours]{Colours} for
+further details.
 
 \subsubsection*{Setpensize command}
 \begin{verbatim}
@@ -685,23 +777,22 @@ e.g.\ \texttt{red}, \texttt{"red"} or \texttt{"\#FF0000"}.
 \end{verbatim}
 sets the thickness of the pen.  The input is a positive integer
 representing a multiple of the default thickness, or \texttt{FALSE},
-meaning unspecified, which is effectively equivalent to 1 but slightly
-less efficient.
+meaning unspecified, which is equivalent to 1 but slightly
+more efficient.
 
 \subsubsection*{Setbackground command}
 \begin{verbatim}
-     SETBACKGROUND color
+     SETBACKGROUND colour
 \end{verbatim}
-%% SETBG color
-sets the screen background color by slot number or RGB values, etc.
-See \hyperref[logoturtle:setpencolor]{\texttt{SETPENCOLOR}} for
-details.  Currently, however, this command requires the
-\texttt{GNUTERM} environment variable to be set to the Gnuplot
-terminal type.  This is because in Gnuplot the background is a
-property of the terminal, so the terminal type is required as part of
-the command to set the background.  Unless you already specify the
-appropriate Gnuplot terminal type, you can find it by running Gnuplot
-interactively, when it will report something like
+%% SETBG colour
+sets the screen background colour; see
+\hyperref[logoturtle:Colours]{Colours}.  Currently, however, this
+command requires the \texttt{GNUTERM} environment variable to be set
+to the Gnuplot terminal type.  This is because in Gnuplot the
+background is a property of the terminal, so the terminal type is
+required as part of the command to set the background.  Unless you
+already specify the appropriate Gnuplot terminal type, you can find it
+by running Gnuplot interactively, when it will report something like
 \begin{verbatim}
      Terminal type set to 'wxt'
 \end{verbatim}
@@ -725,18 +816,14 @@ returns the identifier \texttt{TRUE} if the pen is down,
 \end{verbatim}
 \label{logoturtle:pencolor}
 %% PC
-returns the pen colour as a string or identifier that represents a
-colour in any way that is acceptable to Gnuplot, such as a colour name
-or hexadecimal number, or \texttt{FALSE} meaning that no colour is
-set.
+returns the pen colour; see \hyperref[logoturtle:Colours]{Colours}.
 
 \subsubsection*{Palette query}
 \begin{verbatim}
-     PALETTE colornumber
+     PALETTE colournumber
 \end{verbatim}
-returns a string or identifier that represents the colour associated
-with the given number in any way that is acceptable to Gnuplot, such
-as a colour name or hexadecimal number.  Colornumber must be a
+returns the colour associated with the given number; see
+\hyperref[logoturtle:Colours]{Colours}.  Colournumber must be a
 nonnegative integer not greater than 15.
 
 \subsubsection*{Pensize query}
@@ -744,18 +831,16 @@ nonnegative integer not greater than 15.
      PENSIZE
 \end{verbatim}
 returns a positive integer specifying the thickness of the pen as a
-multiple of the default thickness, or false, meaning unspecified,
-which is effectively equivalent to 1 but slightly less efficient.
+multiple of the default thickness, or \texttt{false}, meaning
+unspecified, which is equivalent to 1 but slightly more efficient.
 
 \subsubsection*{Background query}
 \begin{verbatim}
      BACKGROUND
 \end{verbatim}
 %% BG
-returns the graphics background colour as a string or identifier that
-represents a colour in any way that is acceptable to Gnuplot, such as
-a colour name or hexadecimal number, or \texttt{FALSE} meaning that no
-colour is set.
+returns the graphics background colour; see
+\hyperref[logoturtle:Colours]{Colours}.
 
 
 \subsection{Saving and Loading Pictures}
@@ -766,18 +851,19 @@ colour is set.
      SAVEPICT identifier
 \end{verbatim}
 \label{logoturtle:savepict}
-saves the current plot to internal storage under the specified
-identifier.  The current plot is not changed.  The saved plot can be
-restored as the current plot using \texttt{LOADPICT}.
+saves the current plot and labels to internal storage under the
+specified identifier without changing them.  The saved data can be
+restored as the current plot and labels using \texttt{LOADPICT}.
 
 \subsubsection*{Loadpict command}
 \begin{verbatim}
      LOADPICT(identifiers)
 \end{verbatim}
-retrieves the plots stored under the specified identifiers, which must
-have been saved by \texttt{SAVEPICT} commands, merges them in the
-order specified and makes the result the current plot.  (The order is
+retrieves the plots and labels saved under the specified identifiers,
+which must have been saved by \texttt{SAVEPICT} commands, merges them
+in the order specified, and makes the result current. (The order is
 only significant in that it determines the colour of each plot if it
-is set automatically by Gnuplot and if plots overlap then later plots
-overlay earlier plots and so hide them.)  The previous current plot is
-lost if not saved using \texttt{SAVEPICT}.
+is set automatically by Gnuplot, and if plots or labels overlap then
+later plots and labels overlay earlier ones and so hide them.)  The
+previous current plot and labels are lost if not saved using
+\texttt{SAVEPICT}.

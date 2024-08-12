@@ -1,6 +1,6 @@
 % Test file for Logo turtle graphics.
 
-% Author: Francis Wright, July 2024
+% Author: Francis Wright, August 2024
 
 % $Id$
 
@@ -12,12 +12,12 @@
 % use equally scaled axes by default, and are mirrored about the line
 % y = x due to the different definition of heading.
 
-% load_package logoturtle;
+load_package logoturtle;
+
+% on rounded;  % not required for LogoTurtle
 
 % No constraints on where the turtle moves:
 setturtlemode false;
-
-on rounded;
 
 on demo;
 % Each test is in its own group statement so that demo mode makes
@@ -82,10 +82,10 @@ on demo;
 <<
 procedure peak(r);
    for i := 0 : r do <<
-      setpos{(xcor) + 5,  (ycor) - 10};
-      setpos{(xcor) + 10, (ycor) + 60};
-      setpos{(xcor) + 10, (ycor) - 60};
-      setpos{(xcor) + 5,  (ycor) + 10};
+      setpos{xcor + 5,  ycor - 10};
+      setpos{xcor + 10, ycor + 60};
+      setpos{xcor + 10, ycor - 60};
+      setpos{xcor + 5,  ycor + 10};
    >>;
 
 clearscreen; pendown; peak 3;
@@ -97,8 +97,8 @@ draw;
 <<
    clearscreen; pendown;
    setpos{5, 50}; peak(3);
-   setpos{(xcor) + 10, -100};
-   peak(2); setpos{(xcor) + 10, 0};
+   setpos{xcor + 10, -100};
+   peak(2); setpos{xcor + 10, 0};
    draw;
 >>;
 
@@ -190,7 +190,7 @@ draw;
 % Part 2: Facilities not provided by the Turtle package
 % =====================================================
 
-% Turtle and Window Control (plus Arc etc.)
+% Turtle and window control (plus ARC etc.)
 % -----------------------------------------
 
 % Wrap two long straight lines around the default window size.
@@ -225,7 +225,7 @@ draw;
    hideturtle; setwindowsize 100; window;
 >>;
 
-% Pen and Background Control
+% Pen and background control
 % --------------------------
 
 % An equilateral triangle with side length 100 centred on the origin,
@@ -234,7 +234,6 @@ draw;
 
 <<
    clearscreen; penup; setpensize false;
-   on rounded;
    forward(100/sqrt 3); pendown;
    setpencolor "red"; right 150; forward 100;
    setpencolor "green"; setpensize 2; right 120; forward 100;
@@ -246,8 +245,7 @@ draw;
 % within a circle in the default colour.  (Note that the white ray is
 % not visible against the white background!)
 
-begin scalar delta;
-   on rounded; delta := 360/16;
+begin scalar delta := 360/16;
    clearscreen; penup;
    for i := 0 : 15 do <<
       setheading(i*delta); setpencolor i;
@@ -260,8 +258,7 @@ end;
 % As above, but with a grey background.  (Now the grey ray is not
 % visible against the grey background!)
 
-begin scalar delta;
-   on rounded; delta := 360/16;
+begin scalar delta := 360/16;
    clearscreen; setbackground grey;
    for i := 0 : 15 do <<
       setheading(i*delta); setpencolor i;
@@ -273,8 +270,7 @@ end;
 
 % As above, but with default colour:
 
-begin scalar delta;
-   on rounded; delta := 360/16;
+begin scalar delta := 360/16;
    clearscreen;
    for i := 0 : 15 do <<
       setheading(i*delta);
@@ -313,6 +309,9 @@ end;
    for i := 1:4 do << forward 80; arc2(-90, 40) >>;
    penup; draw;
 >>;
+
+% Filling areas within (closed) curves
+% ------------------------------------
 
 % As above, but filled using FILL:
 
@@ -380,7 +379,8 @@ procedure shape;
    setpencolor false; draw;
 >>;
 
-% Labelling a plot:
+% Adding text labels to a plot
+% ----------------------------
 
 <<
    clearscreen;
@@ -392,7 +392,9 @@ procedure shape;
    draw;
 >>;
 
-% Saving, loading and overlaying plots -- later plots overlay earlier:
+% Saving, loading and overlaying plots
+% ------------------------------------
+% (later plots overlay earlier ones)
 
 <<
    clearscreen;
@@ -404,5 +406,21 @@ procedure shape;
 << loadpict p2; draw; >>;
 << loadpict(p1, p2); draw; >>;
 << loadpict(p2, p1); draw; >>;
+
+% Using autodraw for more interactive plotting
+% --------------------------------------------
+
+<<
+   clearscreen; penup; setpensize false;
+   on logoturtle_autodraw;
+>>;
+showturtle;
+forward(100/sqrt 3);
+<< pendown; setpencolor "red"; right 150; >>;
+forward 100;
+<< setpencolor "green"; setpensize 2; right 120; >>;
+forward 100;
+<< setpencolor "blue"; setpensize 3; right 120; >>;
+forward 100;
 
 end;
