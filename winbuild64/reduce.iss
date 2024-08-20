@@ -92,12 +92,12 @@ Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Description: "set symlinks fo
 
 
 [UninstallRun]
-Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "redcsl"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "bootstrapreduce"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "csl"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "rfcsl"; Flags: runhidden; Components: csl
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "redpsl"; Flags: runhidden; Components: psl32 psl64
-Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "rfpsl"; Flags: runhidden; Components: psl32 psl64
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "redcsl"; Flags: runhidden; Components: csl; RunOnceId: "DelSymlinks"
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "bootstrapreduce"; Flags: runhidden; Components: csl; RunOnceId: "DelSymlinks"
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "csl"; Flags: runhidden; Components: csl; RunOnceId: "DelSymlinks"
+Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Parameters: "rfcsl"; Flags: runhidden; Components: csl; RunOnceId: "DelSymlinks"
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "redpsl"; Flags: runhidden; Components: psl32 psl64; RunOnceId: "DelSymlinks"
+Filename: "{app}\lib\psl\make-cygwin-symlink.exe"; Parameters: "rfpsl"; Flags: runhidden; Components: psl32 psl64; RunOnceId: "DelSymlinks"
 
 
 [Code]
