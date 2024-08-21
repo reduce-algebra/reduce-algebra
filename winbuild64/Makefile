@@ -19,7 +19,11 @@ REVISION=HEAD
 # be no terrible harm, but when you run "make" it will end by displaying
 # a message asking you to run Inno Setup manually.
 
+ifeq ($(INNOVERSION),6)
+inno=/cygdrive/c/Program Files (x86)/Inno Setup 6
+else
 inno=/cygdrive/c/Program Files (x86)/Inno Setup 5
+endif
 
 all:	package-win
 
