@@ -704,9 +704,10 @@ void wake_up_terminal(int n)
     char pipe_data[1];
     pipe_data[0] = n;
     if (write(pipedes[PIPE_WRITE_PORT], pipe_data, 1) != 1)
-    {   fprintf(stdout, "Fatal error attempting to write to a pipe\n");
-        application_object->exit(1);
-        exit(1);
+    {   // fprintf(stdout, "Fatal error attempting to write to a pipe\n");
+        std::quick_exit(0);  /// Try to exit with no fuss at all.
+//      application_object->exit(1);
+//      exit(1);
     }
 #endif
 }

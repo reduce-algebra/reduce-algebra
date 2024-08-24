@@ -298,4 +298,11 @@ Jan 2024.     MPSemaphore seems to have stopped being supported so
               This is achieved by using the byte sequence \xc1\x9e which
               is invalid in utf8 so ought not to clash with any proper usage.
 
+Aug 2024.     If the user closes the window in the GUI on an X-based version
+              (ie not using Windows) use quick_exit(0) to close everything
+              down thereby avoiding an issue where the GUI failed to terminate
+              at all until explicty killed.
+
+
+
 <end of CHANGED>

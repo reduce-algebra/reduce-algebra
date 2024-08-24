@@ -591,6 +591,7 @@ extern int errorset_min, errorset_max;
 extern bool force_verbos, force_echo, force_backtrace;
 extern bool ignoreLoadTime;
 extern bool stop_on_error;
+extern int64_t trace_count;
 extern uint64_t force_cons, force_vec;
 
 extern unsigned int init_flags;

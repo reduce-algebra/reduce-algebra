@@ -3356,6 +3356,7 @@ setup_type const funcs2_setup[] =
     DEF_2("set-autoload",       Lset_autoload),
     DEF_1("remd",               Lremd),
     DEF_1("trace",              Ltrace),
+    DEF_1("trace-count",        Ltrace_count),
     DEF_1("untrace",            Luntrace),
     DEF_1("traceset",           Ltraceset),
     DEF_1("untraceset",         Luntraceset),

@@ -970,10 +970,14 @@ inline LispObject encapsulate_sp(LispObject *sp)
 // across the printing here...
 
 
-static LispObject show_result(LispObject name, LispObject r)
+static LispObject show_result(LispObject name, LispObject r, int64_t count)
 {   freshline_trace();
     loop_print_trace(name);
     errexit();
+    if (count > 0)
+    {   trace_printf(" [%" PRId64 "]", count);
+        errexit();
+    }
     trace_printf(" => ");
     loop_print_trace(r);
     errexit();
@@ -985,13 +989,19 @@ LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
     trace_printf("Calling ");
     loop_print_trace(name);
     errexit();
+    int64_t count = trace_count;
+    if (count > 0)
+    {   trace_count++;
+        trace_printf(" [%" PRId64 "] ", count);
+        errexit();
+    }
     trace_printf(" from ");
     loop_print_trace(from);
     errexit();
     trace_printf("\n");
     LispObject r = f0(name);
     errexit();
-    return show_result(name, r);
+    return show_result(name, r, count);
 }
 
 LispObject traced_call1(LispObject from, one_arg *f1,
@@ -999,6 +1009,12 @@ LispObject traced_call1(LispObject from, one_arg *f1,
 {   freshline_trace();
     trace_printf("Calling ");
     loop_print_trace(name);
+    int64_t count = trace_count;
+    if (count > 0)
+    {   trace_count++;
+        trace_printf(" [%" PRId64 "] ", count);
+        errexit();
+    }
     trace_printf(" from ");
     loop_print_trace(from);
     errexit();
@@ -1009,7 +1025,7 @@ LispObject traced_call1(LispObject from, one_arg *f1,
     trace_printf("\n");
     LispObject r = f1(name, a1);
     errexit();
-    return show_result(name, r);
+    return show_result(name, r, count);
 }
 
 LispObject traced_call2(LispObject from, two_args *f2,
@@ -1018,6 +1034,12 @@ LispObject traced_call2(LispObject from, two_args *f2,
     trace_printf("Calling ");
     loop_print_trace(name);
     errexit();
+    int64_t count = trace_count;
+    if (count > 0)
+    {   trace_count++;
+        trace_printf(" [%" PRId64 "] ", count);
+        errexit();
+    }
     trace_printf(" from ");
     loop_print_trace(from);
     errexit();
@@ -1032,7 +1054,7 @@ LispObject traced_call2(LispObject from, two_args *f2,
     trace_printf("\n");
     LispObject r = f2(name, a1, a2);
     errexit();
-    return show_result(name, r);
+    return show_result(name, r, count);
 }
 
 LispObject traced_call3(LispObject from, three_args *f3,
@@ -1042,6 +1064,12 @@ LispObject traced_call3(LispObject from, three_args *f3,
     trace_printf("Calling ");
     loop_print_trace(name);
     errexit();
+    int64_t count = trace_count;
+    if (count > 0)
+    {   trace_count++;
+        trace_printf(" [%" PRId64 "] ", count);
+        errexit();
+    }
     trace_printf(" from ");
     loop_print_trace(from);
     errexit();
@@ -1060,7 +1088,7 @@ LispObject traced_call3(LispObject from, three_args *f3,
     trace_printf("\n");
     LispObject r = f3(name, a1, a2, a3);
     errexit();
-    return show_result(name, r);
+    return show_result(name, r, count);
 }
 
 LispObject traced_call4up(LispObject from, fourup_args *f4up,
@@ -1071,6 +1099,12 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
     trace_printf("Calling ");
     loop_print_trace(name);
     errexit();
+    int64_t count = trace_count;
+    if (count > 0)
+    {   trace_count++;
+        trace_printf(" [%" PRId64 "] ", count);
+        errexit();
+    }
     trace_printf(" from ");
     loop_print_trace(from);
     errexit();
@@ -1097,7 +1131,7 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
     }
     LispObject r = f4up(name, a1, a2, a3, a4up);
     errexit();
-    return show_result(name, r);
+    return show_result(name, r, count);
 }
 
 LispObject print_traceset(int varname, LispObject val, LispObject litvec)
