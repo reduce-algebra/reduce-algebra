@@ -992,7 +992,7 @@ LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
-        trace_printf(" [%" PRId64 "] ", count);
+        trace_printf(" [%" PRId64 "]", count);
         errexit();
     }
     trace_printf(" from ");
@@ -1012,7 +1012,7 @@ LispObject traced_call1(LispObject from, one_arg *f1,
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
-        trace_printf(" [%" PRId64 "] ", count);
+        trace_printf(" [%" PRId64 "]", count);
         errexit();
     }
     trace_printf(" from ");
@@ -1037,7 +1037,7 @@ LispObject traced_call2(LispObject from, two_args *f2,
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
-        trace_printf(" [%" PRId64 "] ", count);
+        trace_printf(" [%" PRId64 "]", count);
         errexit();
     }
     trace_printf(" from ");
@@ -1067,7 +1067,7 @@ LispObject traced_call3(LispObject from, three_args *f3,
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
-        trace_printf(" [%" PRId64 "] ", count);
+        trace_printf(" [%" PRId64 "]", count);
         errexit();
     }
     trace_printf(" from ");
@@ -1102,7 +1102,7 @@ LispObject traced_call4up(LispObject from, fourup_args *f4up,
     int64_t count = trace_count;
     if (count > 0)
     {   trace_count++;
-        trace_printf(" [%" PRId64 "] ", count);
+        trace_printf(" [%" PRId64 "]", count);
         errexit();
     }
     trace_printf(" from ");
@@ -1326,3 +1326,4 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
 }
 
 // end of bytes1.cpp
+

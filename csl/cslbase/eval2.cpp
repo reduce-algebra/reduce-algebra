@@ -83,13 +83,13 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 trace_printf("Calling ");
                 errexit();
-                if (count > 0)
-                {   trace_count = trace_count+1;
-                    trace_printf(" [%" PRId64 "] ", count);
-                    errexit();
-                }
                 loop_print_trace(fn); // Function being called
                 errexit();
+                if (count > 0)
+                {   trace_count = trace_count+1;
+                    trace_printf(" [%" PRId64 "]", count);
+                    errexit();
+                }
                 trace_printf(" from ");
                 errexit();
                 loop_print_trace(from);  // caller
@@ -140,7 +140,7 @@ LispObject apply(LispObject fn, LispObject args,
                 loop_print_trace(fn);
                 errexit();
                 if (count > 0)
-                {   trace_printf("[%" PRId64 "]", count);
+                {   trace_printf(" [%" PRId64 "]", count);
                     errexit();
                 }
                 trace_printf(" => ");
