@@ -3073,7 +3073,6 @@ int async_interrupt(int type)
 
 LispObject respond_to_stack_event()
 {   uintptr_t f = event_flag.fetch_and(0);
-printf("event_flag = %.8x\n", (int)f); fflush(stdout); // @@@
     if (f == 0) return aerror("stack overflow");
 // Each of the messages that I might be sent comes in a separate bit, so
 // here I have to test each bit. I will test the bits in some sort of

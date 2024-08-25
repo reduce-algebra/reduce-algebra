@@ -37,6 +37,22 @@
 
 #include "headers.h"
 
+// After (trace-count n) each "Calling ..." line of output when a function
+// is being traced will include a sequence number starting with n if n>0.
+// And the matching return value will echo the same number to make it easy
+// to match call and return. (trace-count t) is equivalent to (trace-count 1)
+// and (trace-count nil) to (trace-count 0) which switches this feature off.
+
+int64_t trace_count = 1;
+
+LispObject Ltrace_count(LispObject env, LispObject n)
+{  SingleValued fn;
+   int64_t old = trace_count;
+   if (is_fixnum(n)) trace_count = int_of_fixnum(n);
+   else if (n == lisp_true) trace_count = 1;
+   else if (n == nil) trace_count = 0;
+   return sixty_four_bits(old);
+}
 
 // CSL is now set up so that so that functions of 0, 1, 2 and 3
 // arguments are called directly via dedicated function cells. For 4 and
@@ -54,6 +70,7 @@ LispObject apply(LispObject fn, LispObject args,
         read_clock()/1000 > (std::uint64_t)time_limit) resource_exceeded();
     RECORD_CALL(cons(fn, args));
     LispObject def;
+    int64_t count = trace_count;
     for (;;)
     {   if (symbolp(fn))
         {   debug_assert(1);
@@ -68,6 +85,11 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 loop_print_trace(fn); // Function being called
                 errexit();
+                if (count > 0)
+                {   trace_count = trace_count+1;
+                    trace_printf(" [%" PRId64 "]", count);
+                    errexit();
+                }
                 trace_printf(" from ");
                 errexit();
                 loop_print_trace(from);  // caller
@@ -117,6 +139,10 @@ LispObject apply(LispObject fn, LispObject args,
                 errexit();
                 loop_print_trace(fn);
                 errexit();
+                if (count > 0)
+                {   trace_printf(" [%" PRId64 "]", count);
+                    errexit();
+                }
                 trace_printf(" => ");
                 errexit();
                 loop_print_trace(def);

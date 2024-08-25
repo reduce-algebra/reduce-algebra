@@ -69,7 +69,7 @@
 // paragraph should be fading in relevance!
 
 // On some platforms it will APPEAR that <filesystem> and std::filesystem
-// are available but they will not be. This can perhaps be a consequenec of
+// are available but they will not be. This can perhaps be a consequence of
 // transition arrangements in the C++ comnpiler, library and even the
 // operating system being used. On sufficiently old platforms there will be
 // no pretence of their availability so I will not have trouble, and on

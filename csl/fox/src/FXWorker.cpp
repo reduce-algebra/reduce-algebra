@@ -700,15 +700,19 @@ void wake_up_terminal(int n)
 #ifdef WIN32
     event_code = n;
     SetEvent(pipedes);
-#else
+#else // WIN32
     char pipe_data[1];
     pipe_data[0] = n;
     if (write(pipedes[PIPE_WRITE_PORT], pipe_data, 1) != 1)
-    {   fprintf(stdout, "Fatal error attempting to write to a pipe\n");
+    {   // fprintf(stdout, "Fatal error attempting to write to a pipe\n");
+#ifdef MACINTOSH
         application_object->exit(1);
         exit(1);
+#else // MACINTOSH
+        std::quick_exit(0);  /// Try to exit with no fuss at all.
+#endif // MACINTOSH
     }
-#endif
+#endif// WIN32
 }
 
 #ifdef WIN32
