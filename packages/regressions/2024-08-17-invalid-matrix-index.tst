@@ -1,0 +1,28 @@
+% This used to be buglist/bug39
+
+% Trying to access a matrix element beyong the end of the matrix
+% resulted in an error message from the underlying lisp fucntions
+% nth or pnth.
+% Error messages differ between systems, better generate the error
+% at the Reduce level.
+
+matrix m(10,10);
+
+for i:=1:10 do for j:=1:10 do m(i,j) := random(10^50);
+
+m(11,11);
+
+% The sparse package didn't check for the row and column indices
+% being positive integers.
+
+sparse mm(10,10);
+
+for i:=1:10 do for j:=1:10 do mm(i,j) := random(10^50);
+
+mm(11,11);
+
+% Invalid row index:
+mm(0,10);
+mm(-1,10);
+
+end;
