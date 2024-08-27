@@ -203,19 +203,21 @@ symbolic procedure spmatlength u;
 % This enables elements of the sparse matrix to be obtained.
 
 symbolic procedure getspmatelem2(u);
-   begin scalar x,y;
+   begin scalar x,y,p;
       x := get(car u,'avalue);
       y:= cdr caddr cadr x;
       if null x or not(car x eq 'sparse) then typerr(car u,"sparse")
        else if not eqcar(x := cadr x,'sparsemat)
         then if idp x
          then return getmatelem2(x . cdr u)
-         else rerror(matrix,1,list("Matrix",car u,"not set"))
-        else if not numlis (u := revlis cdr u) or length u neq 2
-         then errpri2(x . u,t)
-        else if car u > car y or cadr u > cadr y then
-         typerr( car u,"The dimensions are wrong - matrix unaligned")
-         else return findelem2(x,car u,cadr u);
+         else rerror(sparse,1,list("Matrix",car u,"not set"))
+         else if length (p := revlis cdr u) neq 2
+	        or not(fixp car p and car p > 0)
+ 	        or not (fixp cadr p and cadr p > 0)
+          then msgpri("Invalid sparse matrix index:",car u . p,nil,nil,t)
+         else if car p > car y or cadr p > cadr y then
+          typerr( car p,"The dimensions are wrong - matrix unaligned")
+         else return findelem2(x,car p,cadr p);
    end;
 
 % This is the finding function. It it used throughout the entire Sparse
@@ -322,13 +324,15 @@ symbolic procedure setspmatelem2(u,v);
       x := get(car u,'avalue);
       if null x or not (car x eq 'sparse) then typerr(car u,"sparse matrix")
        else if not eqcar(x := cadr x,'sparsemat)
-        then rerror(matrix,10,list("Sparse matrix",car u,"not set"));
+        then rerror(sparse,10,list("Sparse matrix",car u,"not set"));
       y := cdr caddr x;
       p := revlis cdr u;
-     if null x then typerr(car u,"matrix")
-      else if car p > car y or cadr p > cadr y then
-        typerr(car u,"The dimensions are wrong - matrix unaligned")
-      else return letmtr3(u,v,x,nil);
+      if length p neq 2 or not(fixp car p and car p > 0)
+ 	   or not (fixp cadr p and cadr p > 0)
+        then msgpri("Invalid sparse matrix index:",car u . p,nil,nil,t)
+       else if car p > car y or cadr p > cadr y
+              then typerr(car u,"The dimensions are wrong - matrix unaligned")
+       else return letmtr3(u,v,x,nil);
    end;
 
 % This is my sparse matrix printer.

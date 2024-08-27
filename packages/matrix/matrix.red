@@ -140,9 +140,11 @@ symbolic procedure getmatelem u;
          else rerror(matrix,1,list("Matrix",car u,"not set"));
       y := reval_without_mod cadr u;
       if not fixp y or y<=0 then typerr(y,"positive integer");
+      if y>length cdr x then rerror(matrix,23,{"Matrix row number",y,"out of range"});
       x := nth(cdr x,y);
       y := reval_without_mod caddr u;
       if not fixp y or y<=0 then typerr(y,"positive integer");
+      if y>length x then rerror(matrix,24,{"Matrix column number",y,"out of range"});
       return nth(x,y)
    end;
 
@@ -155,9 +157,11 @@ symbolic procedure setmatelem(u,v);
         then rerror(matrix,10,list("Matrix",car u,"not set"));
       y := reval_without_mod cadr u;
       if not fixp y or y<=0 then typerr(y,"positive integer");
+      if y>length cdr x then rerror(matrix,25,{"Matrix row number",y,"out of range"});
       x := nth(cdr x,y);
       y := reval_without_mod caddr u;
       if not fixp y or y<=0 then typerr(y,"positive integer");
+      if y>length x then rerror(matrix,26,{"Matrix column number",y,"out of range"});
       return rplaca(pnth(x,y),v)
    end;
 
