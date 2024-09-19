@@ -1,0 +1,121 @@
+
+% Test for a bug in camal package: run the first lines from the camal test file
+%  with "lisp rmsubs();" thrown in. This triggers a lisp error: car/cdr of an atom.
+
+load_package camal;
+
+
+
+n := 4;
+
+
+n := 4
+
+
+on rational, rat;
+
+
+off allfac;
+
+
+
+array p(n/2+2);
+
+
+
+harmonic u,v,w,x,y,z;
+
+
+
+weight e=1, b=1, d=1, a=1;
+
+
+{}
+
+
+%% Step1: Solve Kepler equation
+bige := fourier 0;
+
+
+bige := 0
+
+for k:=1:n do <<
+  wtlevel k;
+  bige:=fourier e * hsub(fourier(sin u), u, u, bige, k);
+>>;
+
+
+write "Kepler Eqn solution:", bige$
+
+
+                             1   4                3   3             1   4
+Kepler Eqn solution: - [( - ---*e )sin[4u] + ( - ---*e )sin[3u] + (---*e
+                             3                    8                 6
+
+    1   2             1   3
+ - ---*e )sin[2u] + (---*e  - e)sin[u]]
+    2                 8
+
+
+%% Ensure we do not calculate things of too high an order
+wtlevel n;
+
+
+4
+
+
+%% Step 2: Calculate r/a in terms of e and l
+dd:=-e*e;
+
+
+          2
+dd :=  - e
+ hh:=3/2;
+
+
+       3
+hh := ---
+       2
+ j:=1;
+
+
+j := 1
+ cc := 1;
+
+
+cc := 1
+
+for i:=1:n/2 do <<
+  j:=i*j; hh:=hh-1; cc:=cc+hh*(dd^i)/j
+>>;
+
+
+
+bb:=hsub(fourier(1-e*cos u), u, u, bige, n);
+
+
+            1   4                3   3             1   4    1   2
+bb := [( - ---*e )cos[4u] + ( - ---*e )cos[3u] + (---*e  - ---*e )cos[2u] + (
+            3                    8                 3        2
+
+       3   3                1   2
+      ---*e  - e)cos[u] + (---*e  + 1)]
+       8                    2
+
+
+lisp rmsubs();
+
+
+
+aa:=fourier 1+hdiff(bige,u);
+
+
+         4   4             9   3                1   4    2                1   3
+aa := [(---*e )cos[4u] + (---*e )cos[3u] + ( - ---*e  + e )cos[2u] + ( - ---*e
+         3                 8                    3                         8
+
+       + e)cos[u] + 1]
+ 
+
+end;
+

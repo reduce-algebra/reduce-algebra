@@ -249,7 +249,7 @@ symbolic procedure fs!:onep u;
 
 symbolic inline procedure fs!:prepfn!:(x); x;
 
-symbolic inline procedure simpfs u; u;
+symbolic inline procedure simpfs u; !*f2q ('!:fs!: . u);
 
 put('!:fs!:,'simpfn,'simpfs);
 
