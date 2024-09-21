@@ -146,8 +146,6 @@ then
   AC_DEFINE(WITHOUT_FFI, [1], [remove the foreign function support])
 fi
 
-
-
 # What host am I on?
 AC_CANONICAL_HOST()
 
