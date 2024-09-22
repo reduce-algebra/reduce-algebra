@@ -807,6 +807,18 @@ CRDEP =
 
 endif !crlibm
 
+if mac_framework
+
+LIBFFIDEPS=
+FFIDEP =
+FFIINC =
+csl_LDADD += -lffi
+flatcsl_LDADD += -lffi
+bootstrapreduce_LDADD += -lffi
+reduce_LDADD += -lffi
+
+else !mac_framework
+
 LIBFFIDEPS=../lib/libffi.a ../include/ffi.h
 
 FFIDEP = ../include/ffi.h
@@ -821,7 +833,6 @@ flatcsl_CPPFLAGS    += $(FFINC)
 # instance, "make csl.o" in a clean tree and libffi building will get
 # triggered.
 
-
 csl_LDADD += ../lib/libffi.a
 flatcsl_LDADD += ../lib/libffi.a
 bootstrapreduce_LDADD += ../lib/libffi.a
@@ -835,6 +846,8 @@ reduce_DEPENDENCIES += $(LIBFFIDEPS)
 $(LIBFFIDEPS):
 	@printf "About to build libffi for %s ($@)\n" `pwd`
 	-$(TRACE)@$(MAKE) -C ../libffi install
+
+endif !mac_framework
 
 SOFTFLOATDEPS=../lib/libsoftfloat.a ../include/softfloat.h
 

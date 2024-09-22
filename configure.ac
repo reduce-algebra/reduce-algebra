@@ -549,6 +549,7 @@ case "$uname_s" in
 Darwin)
 # "uname -o" is not available on the Macintosh!
   uname_o="macOS"
+  macintosh="yes"
   if test "$CC" = ""; then CC=clang; fi
   if test "$CXX" = ""; then CXX=clang++; fi
   if test "$enable_universal" != "no"
@@ -1259,9 +1260,8 @@ then
 # clang on MacOSX does not provide -mfpmath
 #     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
-      MACARCH="--enable-macosx_arch=x86_64" 
       extras="--with-xft --with-xim"
-      wx="--with-cocoa $MACARCH "
+      wx="--with-cocoa"
       ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now
@@ -1389,35 +1389,40 @@ else
   cd "$builddir"
 fi
 
-AC_MSG_NOTICE([About to configure libffi])
-mkdir -p libffi
-if test `uname` = "Darwin" && test "$enable_universal" != "no"
+if test "$macintosh" != "yes"
 then
-# This is a messy script that arranges to build a universal version of
-# the library on MacOS. It does this by building arm64 and an x86_64
-# separately and then merging the resulting libraries.
-  sed "s+@srcdir@+$abssrcdir+" \
-     < $abssrcdir/libraries/libffi-for-mac/Makefile \
-     > libffi/Makefile
-else
-  cd libffi
-  setpasscc
-  doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
-          $pass_host \
-          CPPFLAGS=\"$CPPFLAGS\" \
-          CFLAGS=\"$CFLAGS\" \
-          CXXFLAGS=\"$CXXFLAGS\" \
-          LDFLAGS=\"$LDFLAGS\" \
-          $passcc \
-          --disable-multi-os-directory \
-          --disable-docs \
-          --prefix=\"$builddir\" \
-          --libdir=\"$builddir/lib\" \
-          --includedir=\"$builddir/include\""
-  AC_MSG_NOTICE([doconfig = $doconfig])
-  printf "\n\n+++ About to configure libffi +++\n\n"
-  eval "$doconfig"
-  cd "$builddir"
+
+  AC_MSG_NOTICE([About to configure libffi])
+  mkdir -p libffi
+  if test `uname` = "Darwin" && test "$enable_universal" != "no"
+  then
+  # This is a messy script that arranges to build a universal version of
+  # the library on MacOS. It does this by building arm64 and an x86_64
+  # separately and then merging the resulting libraries.
+    sed "s+@srcdir@+$abssrcdir+" \
+       < $abssrcdir/libraries/libffi-for-mac/Makefile \
+       > libffi/Makefile
+  else
+    cd libffi
+    setpasscc
+    doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
+            $pass_host \
+            CPPFLAGS=\"$CPPFLAGS\" \
+            CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" \
+            LDFLAGS=\"$LDFLAGS\" \
+            $passcc \
+            --disable-multi-os-directory \
+            --disable-docs \
+            --prefix=\"$builddir\" \
+            --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\""
+    AC_MSG_NOTICE([doconfig = $doconfig])
+    printf "\n\n+++ About to configure libffi +++\n\n"
+    eval "$doconfig"
+    cd "$builddir"
+  fi
+
 fi
 
 AC_MSG_NOTICE([About to configure libsoftfloat])
@@ -1499,6 +1504,7 @@ AM_CONDITIONAL(cslpsl, test "$with_csl" != "no" && test "$with_psl" != "no")
 AM_CONDITIONAL(fox, test "$with_fox" != "no")
 AM_CONDITIONAL(wx,  test "$with_wx" != "no")
 AM_CONDITIONAL(crlibm, test "$with_crlibm" != "no")
+AM_CONDITIONAL(systemffi, test "$ffi_found" != "no")
 
 AC_MSG_NOTICE([final output from top level configuration])
 
