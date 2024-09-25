@@ -200,7 +200,7 @@ case $host$ in
 aarch64*)
   if test `getconf LONG_BIT 2>/dev/null` = 32
   then
-    host=`echo $host | $SED -e s/aarch64/arm/`
+    host=`echo $host | $SED -e s/aarch64/arm/`eabihf
   fi
   ;;
 esac
