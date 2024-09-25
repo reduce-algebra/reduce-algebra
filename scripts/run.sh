@@ -3,7 +3,7 @@
 #    run directory-it-is-in appname scriptname args
 # args can start with some mix of --fox, --wx etc and those
 # are used to select a variant of the code to use, so in particular
-# --degug will select the (slower) debugging version and some of the
+# --debug will select the (slower) debugging version and some of the
 # other options activate experimental development versions.
 #
 here="$1"
@@ -48,17 +48,13 @@ do
     arithlib="-arithlib"
     shift
     ;;
-  --oldgc)
-    oldgc="-oldgc"
-    shift
-    ;;
   *)
     break
     ;;
   esac
 done
 
-version="$fox$wx$arithlib$oldgc$debug"
+version="$fox$wx$arithlib$debug"
 
 # Note that the shell variable OS is liable to be set to "Windows_NT"
 # in a Windows world but it is probably otherwise unset.
@@ -133,7 +129,7 @@ xWindows_NT)
               x86_64-pc-windows \
               x86_64-pc-cygwin"
   fi
-  $maybe_echo "version=$versions"
+  $maybe_echo "versions=$versions"
   for hx in $versions
   do
     $maybe_echo "Try: $here/../cslbuild/$hx$version/csl/$pre$ap$suffix"
@@ -175,25 +171,24 @@ xWindows_NT)
     exec $here/../cslbuild/$host$version/csl/$ap $CSLFLAGS $*
     exit 0
   else
-    host1=`echo $host | \
-      sed 's/aarch64-unknown-raspbian12/arm-unknown-raspbian12eabihf/'`
-    host1=`echo $host1 | sed 's/aarch64/universal/'`
-    host1=`echo $host1 | sed 's/x86_64/universal/'`
-    $maybe_echo "host=$host host1=$host1"
-    if test -x $here/../cslbuild/$host1$version/csl/$ap
+# Here I will try for a fallback... I will try almost anything that seems
+# at all possible! I will use the first version I find.
+    try2=""
+    for x in "$here/../cslbuild"/${host%%-*}*$version*/csl/$ap$suffix \
+             "$here/../cslbuild"/${host%%-*}*nogui*$version*/csl/$ap$suffix \
+             "$here/../cslbuild"/*$version*/csl/$ap$suffix \
+             "$here/../cslbuild"/*nogui*$version*/csl/$ap$suffix
+    do
+      if test "$try2" = ""
+      then
+        try2="$x"
+      fi
+    done
+    $maybe_echo "try2=$try2"
+    if test -x "$try2"
     then
-      $maybe_echo "exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*"
-      exec $here/../cslbuild/$host1$version/csl/$ap $CSLFLAGS $*
-      exit 0
-    elif test -x $here/../cslbuild/$host$version-nogui/csl/$ap
-    then
-      $maybe_echo "exec $here/../cslbuild/$host$version-nogui/csl/$ap $CSLFLAGS $*"
-      exec $here/../cslbuild/$host$version-nogui/csl/$ap $CSLFLAGS $*
-      exit 0
-    elif test -x $here/../cslbuild/$host1$version-nogui/csl/$ap
-    then
-      $maybe_echo "exec $here/../cslbuild/$host1$version-nogui/csl/$ap $CSLFLAGS $*"
-      exec $here/../cslbuild/$host1$version-nogui/csl/$ap $CSLFLAGS $*
+      $maybe_echo "exec $try2 $CSLFLAGS $*"
+      exec $try2 $CSLFLAGS $*
       exit 0
     fi
   fi

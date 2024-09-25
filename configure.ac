@@ -98,34 +98,6 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # the "--prefix".
 
 
-# Another bit of dreadfulness. On a Raspberry Pi (esp the Pi5) you
-# are liable to find that a "32-bit" operating system in fact runs using
-# a 64-bit kernel. The most recent CPUs do not support otherwise. A
-# conseqence is that config.guess reports a 64-bit world and that
-# can really hurt some parts of the build. So here I detect that
-# situation and force in "--host=arm-linux-gnueabihf" provided no
-# other explicit host setting is provided.
-
-case $ac_configure_args in
-*--host=*)
-  ;;
-*)
-  if test `/usr/bin/uname -m` = "aarch64"
-  then
-    case `file /bin/ls` in
-    *32-bit*)
-      AC_MSG_NOTICE([Need to build for 32-bit world])
-
-  printf "Restart: $abssrcdir/configure $ac_configure_args --host=arm-linux-gnueabihf\n"
-  exec $SHELL -c "$abssrcdir/configure $ac_configure_args --host=arm-linux-gnueabihf"
-
-
-      
-      ;;
-    esac
-  fi
-esac
-
 # Note that AS_HELP_STRING has been available since version 2.61 and
 # use of AC_HELP_STRING leads to loud moans from version 2.71
 
@@ -211,7 +183,7 @@ then
   printf "Regenerate autoconf-related files\n"
   find . -name config.cache | xargs rm -f
   printf "\n\n+++ About to recreate all autoconf generated files +++\n\n"
-  if ! eval $SHELL -c \"./autogen.sh $ac_configure_args --host=arm-linux-gnueabihf\"
+  if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
   then
     printf "The autogen.sh script seems to have failed. I can not continue\n"
     exit 1
@@ -235,6 +207,25 @@ then
   rm -f temp.o
   AC_MSG_NOTICE([default_univ=$default_univ])
 fi
+
+# On a Raspberry Pi that is running a 64-bit kernel but 32-bit userland
+# I need to make it clear that I want a build for 32-bit Linix, because
+# config.guess reports a 64-bit world based on the kernel. This situation
+# might apply on other systems, so I check in general for uname -m reporting
+# aarch64, uname -s confirming that I am on Linux and getconf LONG_BIT
+# telling me that I have a 32-bit userland.
+
+case `uname -sm 2>/dev/null` in
+*Linux*aarch64*)
+  if test `getconf LONG_BIT` = "32"
+  then
+    exec $SHELL -c \
+      "$abssrcdir/configure --without-autogen $ac_configure_args --host=arm-linux-gnueabihf"
+  fi
+  ;;
+*)
+  ;;
+esac
 
 AC_ARG_ENABLE(universal,
   AS_HELP_STRING([--enable-universal],
