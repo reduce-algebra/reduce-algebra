@@ -14,18 +14,38 @@
 # that they have been configured. It allows for suffixes such as
 # "-debug" as in scripts/findhost.sh.
 
+# Things turn out to be fairly horrid!
+# (1) The file-space may be a Reduce tree stored on a NAS and
+#     accessed from several computers which have different architectures
+#     and can not compile or run code meant for each other. That means
+#     I would like to build in just directories associated with builds
+#     that can succeed on the current machine.
+# (2) Cross compilation (and use of "binfmt") can mean that a single
+#     computer may in fact support multiple architectures.
+# (3) On Macintosh I may want to build one or more of arm64. x86_64 or
+#     univeral versions, but that is not quite cross compilation in the
+#     normal style.
+# (4) A modern raspberry pi that has a 32-bit operating system installed
+#     is liable to use a 64-bit kernel, and autoconf etc (specifically
+#     via config.guess) detects the machine as an aarch64 one which is
+#     not appropriate.
+# (5) When an operating system is upgraded the triple that describes the
+#     setup can change. People may or may not want to rebuild or use
+#     versions from a previous OS.
+
+# When I first set all this up I viewed scenario (1) as most important,
+# but now I think I need to change gear and take a view that if several
+# incompatible architectures are to be used then a Reduce source tree
+# for each should be used (disc is now a lot cheaper than it was in the
+# old days). But then (2), (3) and (4) mean that it makes sense to
+# rebuild in all configured directories. Regarding (5) I will now take
+# the view that the user should delete directories corresponding to
+# older OS releases as part of the release upgrade procedure and that
+# maybe when Reduce is launched until they do that they may get a
+# version originally configured for the older version of their OS.
+
 # It also tries to build both CSL and PSL setups when they have been
 # configured.
-
-# To help with a migration to a new scheme here I will arrange that
-# if the user has gone "export NEW=NEW" then Makefile.new will be activated
-
-if test "$NEW" = "NEW"
-then
-  printf "+++ Using Makefile.new +++\n"
-  make -f Makefile.new $*
-  exit $!
-fi
 
 printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
        "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"
@@ -84,18 +104,6 @@ then
   export SHELL
 fi
 
-host=`./config.guess`
-host=`scripts/findhost.sh $host`
-os=`scripts/findos.sh`
-
-printf "Current machine tag is %s\n" "$host"
-
-# I REALLY want to use GNU make, so here is some stuff to try to
-# find a version. The "/usr/sfw" location is used on Solaris, while
-# "/usr/local" is a plausible place to look in case a user has built and
-# installed it for themselves. Some BSD variants will build imported
-# packages in /pkg/bin so I look there too...
-
 if test "$MAKE" = ""
 then
   if test -x /usr/sfw/bin/gmake
@@ -119,32 +127,16 @@ fi
 # present.
 
 procids=""
-
 list=""
+
 if test "$buildcsl" = "yes"
 then
-  case "$os" in
-  *cygwin* | *windows*)
-    list="cslbuild/*-cygwin*/csl cslbuild/*-windows*/csl"
-    ;;
-  mac_*)
-    list="cslbuild/*${host}*/csl"
-    host1=${host/aarch64/universal}
-    host1=${host1/x86_64/universal}
-    case "$list cslbuild/*${host1}*" in
-    \*)
-# If there is a "*" still present that indicated that the "universal"
-# option did not match any directory so it is not useful.
-      ;;
-    *)
-      list="$list cslbuild/*${host1}*/csl"
-      ;;
-    esac
-    ;;
-  *)
-    list="cslbuild/*${host}*/csl"
-    ;;
-  esac
+  for d in cslbuild/*-*-*/csl/Makefile
+  do
+    w=`dirname $d`
+    w=`dirname $w`
+    list="$list $w"
+  done
 fi
 
 firstcsl=${list%% *}
@@ -155,14 +147,11 @@ fi
 
 if test "$buildpsl" = "yes"
 then
-  case "$os" in
-  *cygwin* | *windows*)
-    list="$list pslbuild/*-cygwin* pslbuild/*-windows*"
-    ;;
-  *)
-    list="$list pslbuild/*${host}*"
-    ;;
-  esac
+  for d in pslbuild/*-*-*/Makefile
+  do
+    w=`dirname $d`
+    list="$list $w"
+  done
 fi
 
 case $args in

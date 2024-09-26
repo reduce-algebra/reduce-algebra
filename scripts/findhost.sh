@@ -119,7 +119,6 @@ debug=
 profile=
 test=
 arithlib=
-oldgc=
 nothrow=
 original=$host
 
@@ -158,14 +157,8 @@ do
   --with-arithlib*)
     arithlib=-arithlib
     ;;
-  --enable-conservative=no | --disable-conservative)
-    oldgc="-oldgc"
-    ;;
   --with-throw=no | --without-throw)
     nothrow=-nothrow
-    ;;
-  --enable-conservative*)
-    oldgc=""
     ;;
   --with-throw=no | --without-throw)
     nothrow=nothrow
@@ -200,6 +193,18 @@ do
   esac
 done
 
+# On a Raspberry pi one can have a 64-bit kernel but 32-bit userland
+# and in that case the it will be better to show this as arm rather
+# the aarch64
+case $host$ in
+aarch64*)
+  if test `getconf LONG_BIT 2>/dev/null` = 32
+  then
+    host=`echo $host | $SED -e s/aarch64/arm/`eabihf
+  fi
+  ;;
+esac
+
 # If --without-gui is specified then neither fox nor wx will be in use
 if test "$nogui" = "-nogui"
 then
@@ -222,6 +227,7 @@ fi
 # Now I do not need to include "-fox" in the string sice it is the default!
 fox=
 
-echo $host$nogui$fox$wx$test$arithlib$oldgc$nothrow$debug$profile
+# Nota that if "nogui" is used it comes first. I rely on that in run.sh
+echo $host$nogui$fox$wx$test$arithlib$nothrow$debug$profile
 
 exit 0
