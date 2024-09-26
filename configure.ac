@@ -771,36 +771,6 @@ AC_MSG_NOTICE([args=<$ac_configure_args>])
 AC_MSG_NOTICE([filtered=<$filtered>])
 AC_MSG_NOTICE([nohost=<$nohost>])
 
-# Hah - the next is a jolly jape. It arranged that when I build on one of my
-# own real machines I default to a new and experimental layout for the build
-# of windows versions, but everybody else (unless their host has a name
-# matching mine!) should be undisturbed.
-
-# I have disabled this just for a while... I am making other changes and I do
-# not want this confusion to mess me up. The XXX is there to cause this
-# match not to be taken.
-
-case `uname -n` in
-*panamintXXX* | *gauguinXXX*)
-  default_windows_layout="new"
-  ;;
-*)
-  default_windows_layout="old"
-  ;;
-esac
-
-AC_ARG_WITH(windows_layout,
-  AS_HELP_STRING([--with-windows_layout], [old or new windows layout]),
-  [],
-  [with_windows_layout="$default_windows_layout"])
-
-AC_MSG_NOTICE([default=$default_windows_layout this-layout=$with_windows_layout])
-
-if test "$with_windows_layout" != "new"
-then
-  with_windows_layout="old"
-fi
-
 setpasscc ()
 {
   passcc=""
@@ -818,26 +788,14 @@ csl_inplace_cygwin_build ()
 # The argument here should be x88_64-pc-cygwin
   target=$1
   forcer=$2
-  AC_MSG_NOTICE([in csl_inplace_cygwin_build wwl=$with_windows_layout])
+  AC_MSG_NOTICE([in csl_inplace_cygwin_build])
 # Find the proper name for the target directory, allowing for --enable-debug
 # and any other options that may be relevant.
-  if test "$with_windows_layout" = "new"
-  then
-    cygver="cyg64"
-    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args --with-cygwin"`
-    AC_MSG_NOTICE([target=$target => build=$build/$cygver])
-    mkdir -p "$abssrcdir/cslbuild/$build/$cygver"
-    cp "$abssrcdir/csl/$CSLBASE/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
-    cp "$abssrcdir/csl/$CSLBASE/stub2020.c" "$abssrcdir/cslbuild/$build/stub2020x.c"
-    cp "$abssrcdir/csl/$CSLBASE/make-cygwin-symlink.c" "$abssrcdir/cslbuild/$build/make-cygwin-symlink.c"
-    cp "$abssrcdir/csl/$CSLBASE/redpsl.sh" "$abssrcdir/cslbuild/$build/redpsl"
-    cd "$abssrcdir/cslbuild/$build/$cygver"
-  else
-    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
-    AC_MSG_NOTICE([target=$target => build=$build])
-    mkdir -p "$abssrcdir/cslbuild/$build"
-    cd "$abssrcdir/cslbuild/$build"
-  fi
+  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args --with-cygwin"`
+  AC_MSG_NOTICE([target=$target => build=$build])
+  mkdir -p "$abssrcdir/cslbuild/$build"
+  cd "$abssrcdir/cslbuild/$build"
+  $CC $abssrcdir/canary.c -o canary
   AC_MSG_NOTICE([host=$host buildmc=$buildmc pass_host=$pass_host])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
   doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
@@ -857,32 +815,18 @@ csl_inplace_nativewin_build ()
   buildmc=$1
   host=$2
   AC_MSG_NOTICE([CSL inplace for native Windows])
-  if test "$with_windows_layout" = "new"
-  then
-    winver="win64"
-    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh intel-pc-windows $ac_configure_args"`
-    AC_MSG_NOTICE([About to configure using $host in $build/$winver])
-    mkdir -p "$abssrcdir/cslbuild/$build/$winver"
-    cp "$abssrcdir/csl/$CSLBASE/Makefile.windows" "$abssrcdir/cslbuild/$build/Makefile"
-    cd "$abssrcdir/cslbuild/$build/$winver"
-  else
-    build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args"`
-    AC_MSG_NOTICE([About to configure using $host in $build])
-    mkdir -p "$abssrcdir/cslbuild/$build"
-    cd "$abssrcdir/cslbuild/$build"
-  fi
-  if test "$with_windows_layout" = "new"
-  then
-    cygextra=
-  else
+  build=`eval "$SHELL $abssrcdir/scripts/findhost.sh $target $ac_configure_args"`
+  AC_MSG_NOTICE([About to configure using $host in $build])
+  mkdir -p "$abssrcdir/cslbuild/$build"
+  cd "$abssrcdir/cslbuild/$build"
+  $CC $abssrcdir/canary.c -o canary
 # The Windows version would like to know where to find cygwin variants
 # at run-time.
-    cygextra=
-    ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
-    dd64=`echo $build | sed -e "$ed64"`
-    cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
-    AC_MSG_NOTICE([cygextra = $cygextra])
-  fi
+  cygextra=
+  ed64="s/.*windows/x86_64-pc-cygwin/; s/.*cygwin/x86_64-pc-cygwin/"
+  dd64=`echo $build | sed -e "$ed64"`
+  cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
+  AC_MSG_NOTICE([cygextra = $cygextra])
   if test "$with_clang" = "yes"
   then
     CC=x86_64-w64-mingw32-clang
@@ -945,6 +889,7 @@ csl_inplace_build ()
 # All other platforms come here...
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
+    $CC $abssrcdir/canary.c -o canary
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
     doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \

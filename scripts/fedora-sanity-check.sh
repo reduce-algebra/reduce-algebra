@@ -1,4 +1,4 @@
-# /usr/bin/env bash
+#! /usr/bin/env bash
 
 # Install all packages needed for REDUCE development
 # on a Fedora Workstation spin.
