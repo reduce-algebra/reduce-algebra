@@ -1,3 +1,5 @@
+#! /bin/bash
+
 # newlogs.sh
 
 # This expects a full set of log files to have been created locally, and it

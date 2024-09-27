@@ -1,3 +1,5 @@
+#! /bin/bash
+
 # getplatform.sh
 
 # To be included from other scripts...

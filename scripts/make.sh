@@ -124,18 +124,34 @@ fi
 # I expect directories with two "-" characters in their names in the
 # cslbuild or pslbuild directories to be named as host triples. But
 # even then I will only try to build in them if there is a "Makefile"
-# present.
+# present. And when that is there I check for a file that should be
+# executable on the current platform - if that file is not present or
+# it has been built for a different architecture I will ignore the
+# directory.
 
 procids=""
 list=""
+
+viable() {
+  if echo "(quit)" | ./$1 >/dev/null 2>/dev/null
+  then
+    echo "yes"
+  else
+    echo "no"
+  fi 
+}
 
 if test "$buildcsl" = "yes"
 then
   for d in cslbuild/*-*-*/csl/Makefile
   do
-    w=`dirname $d`
-    w=`dirname $w`
-    list="$list $w"
+    if test `viable ${d%Makefile}../canary` = "yes"
+    then
+      w=`dirname $d`
+      w=`dirname $w`
+      echo Will build for $w
+      list="$list $w"
+    fi
   done
 fi
 
@@ -149,8 +165,12 @@ if test "$buildpsl" = "yes"
 then
   for d in pslbuild/*-*-*/Makefile
   do
-    w=`dirname $d`
-    list="$list $w"
+    if test `viable ${d%Makefile}psl/bpsl` = "yes"
+    then    
+      w=`dirname $d`
+      echo Will build for $w
+      list="$list $w"
+    fi
   done
 fi
 
@@ -161,12 +181,6 @@ case $args in
   firstcsl=""
   ;;
 esac
-
-printf "Will build for\n";
-for dd in $list
-do
-  printf "  $dd\n"
-done
 
 if test "$firstcsl" != ""
 then
