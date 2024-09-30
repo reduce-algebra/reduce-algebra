@@ -69,7 +69,8 @@ aarch64-apple-darwin*)
   echo "aarch64"
   ;;
 *arm*)
-  echo "arm"
+# echo "arm"     as yet armv6 is what is present.
+  echo "armv6"
   ;;
 *linux*)
 # linux32 or linux_a.out
