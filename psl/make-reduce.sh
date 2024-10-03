@@ -90,6 +90,10 @@ case "guess:$guess" in
 	MACHINE=FreeBSD_aarch64
 	;;
 
+  guess:riscv64-unknown-linux* )
+        MACHINE=riscv64
+	;;
+
 esac
 
 if test "x$1" != "x"
