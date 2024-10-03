@@ -114,6 +114,9 @@ case "guess:$guess" in
 	MACHINE=aarch64
 	;;
 
+  guess:riscv64-unknown-linux* )
+        MACHINE=riscv64
+	;;
 
 esac
 

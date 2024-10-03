@@ -51,16 +51,11 @@ endif
 if ($MACHINE == brock) then
   set imagesize=1000
 endif
-if ($MACHINE == AMD64) then
-  set imagesize=1000
-endif
 if ($MACHINE == AMD64_ext) then
   set imagesize=1000
 endif
-if ($MACHINE == macintel64) then
-  set imagesize=1000
-endif
-if ($MACHINE == freeBSD64) then
+# Anything ending in 64 is a 64bit architecture
+if ($MACHINE =~ *64) then
   set imagesize=1000
 endif
 
