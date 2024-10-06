@@ -65,6 +65,7 @@ fluid '(!*adjprec !*comment !*defn !*eoldelimp !*minusliter
 global '(!$eof!$
          !$eol!$
          !*micro!-version
+         cedit!-loaded!*;
          crbuf!*
          crbuf1!*
          crchar!*
@@ -95,6 +96,7 @@ flag('(adjprec),'switch);
 !*quotenewnam := t;
 put('quotenewnam,'switchdefault,t);
 
+cedit!-loaded!* := nil;
 crchar!* := blank;
 peekchar!* := nil;
 
@@ -502,7 +504,9 @@ a:  if null terminalp() then <<
       x := car crbuf1!*;
       crbuf1!* := cdr crbuf1!* >>
     else x := readch();
-    crbuf!* := x . crbuf!*;
+% I do not preserve text in crbuf!* (or eventually crbuflis!*) unless
+% the cedit module has been loaded.
+    if cedit!-loaded!* then crbuf!* := x . crbuf!*;
 % One might worry that adding support for "#" escapes has made this code
 % a lot longer than before and that this might slow critical things down.
 % In fact about the only extra work done here in normal circumstances is
