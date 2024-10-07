@@ -47,9 +47,6 @@ COMMENT Some general purpose hashing functions;
 
 flag('(array),'eval);      % Declared again for bootstrapping purposes.
 
-#if t % (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
-
-% Use hash tables...
 
 fluid '(!$hash);
 !$hash := mkhash(200,3,nil);
@@ -70,27 +67,6 @@ symbolic procedure matrix_puthash(key,valu);
 
 symbolic procedure matrix_clrhash();
   clrhash !$hash;
-
-#else
-
-array !$hash 256;  % General array for hashing.
-
-symbolic procedure matrix_gethash key;
-   % Access previously saved element.
-   assoc(key,!$hash(remainder(key,256)));
-
-symbolic procedure matrix_puthash(key,valu);
-   begin integer k; scalar buk;
-      k := remainder(key,256);
-      buk := (key . valu) . !$hash k;
-      !$hash k := buk;
-      return car buk
-   end;
-
-symbolic procedure matrix_clrhash;
-   for i := 0:256 do !$hash i := nil;
-
-#endif
 
 COMMENT Determinant Routines;
 

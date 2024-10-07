@@ -40,11 +40,22 @@ global '(!$eol!$
          crbuflis!*
          esc!*
          inputbuflis!*
-         statcounter);
+         statcounter
+         cedit!-loaded!*);
 
 
 %esc!* := intern ascii 125;   %this is system dependent and defines
                               %a terminator for strings.
+<<
+  terpri();
+  for each m in '(
+"*** cedit activated ***"
+"Until you try to use cedit Reduce will not be saving your input for"
+"it, so your first use of it will fail and display this message, but"
+"from then on all that you type is preserved and can be used with cedit"
+"in the usual manner."
+  ) do << prin2 m; terpri() >>;
+  cedit!-loaded!* := t >>;
 
 symbolic procedure rplacw(u,v);
    if atom u or atom v then errach list('rplacw,u,v)

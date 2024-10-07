@@ -290,28 +290,103 @@ symbolic procedure hex64t n;
     terpri() >>;
 
 % leafcount is intended to apply to prefix forms and counts the
-% number of atoms including those that are operator-names.
+% number of atoms including those that are operator-names. It will
+% cope happily with very long structures, but could give stack overflow
+% on very deep ones. It will also fail if handed cyclic structures.
 
 symbolic procedure leafcount u;
-  if null u then 0
-  else if atom u then 1
-  else leafcount car u + leafcount cdr u;
+  begin
+    scalar n := 0;
+    while not atom u do <<
+      n := n + leafcount car u;
+      u := cdr u >>;
+    if null u then return n
+    else return n + 1
+  end;
 
 symbolic operator leafcount;
 
-% treesize is a measure of the bulk of a data-structure, assuming there is
-% no sharing and coded in a way that would fail if the structure was
-% cyclic.
 
-symbolic procedure treesize x;
+% Here I scan an arbitrary Lisp datastructure. I use a stack implemented
+% as a list so that even very deep structures will not lead to overflow
+% of the system stack. I use a hashtable (keyed on on EQ) so that any
+% places where the structure is reentrant are noticed and handled properly.
+% This descends through hash tables and vectors, and makes a guess about
+% the size of bignums. Its result is an assessment of the space used by
+% the structure in "lisp units" which are rather vague in their definition
+% but which are within an modest factor of the size of cons cells.
+
+!*hash!-table!-p := getd 'hash!-table!-p;
+
+symbolic procedure treesize u;
   begin
-    scalar r := 1;
-    while not atom x do <<
-      r := r + treesize car x;
-      x := cdr x >>;
-    if vectorp x then
-      for i := 0:upbv x do r := r + treesize getv(x, i);
-    return r
+    scalar stack:=list u, seen:=mkhash(32, 0), n:=0;
+    while stack do <<
+      u := car stack;
+      stack := cdr stack;
+      if not gethash(u, seen) then <<
+        puthash(u, seen, t);
+        if !*hash!-table!-p and hash!-table!-p u then
+          stack := hashcontents u . stack
+        else if vectorp u then <<
+          for i := 0:upbv u do stack := getv(u, i) . stack;
+          n := n + upbv u + 1 >>
+        else if fixp u then
+          n := n + (msd (if u<0 then -u else u))/64 + 1
+        else if atom u then n := n+1
+        else <<
+          stack := cdr u . stack;
+          stack := car u . stack;
+          u := car u;
+          n := n + 1 >> >> >>;
+    return n
+  end;
+
+% Maintain a sorted association list of lenth at most count where the
+% sorting keeps the higest value keys at the front.
+
+symbolic procedure keeptopfew(key, val, ll, count); 
+  if count=0 then nil
+  else if ll = nil then list (key.val)
+  else if key < caar ll then car ll . keeptopfew(key, val, cdr ll, count-1)
+  else (key.val) . firstfew(count-1, ll);
+
+symbolic procedure firstfew(count, ll);
+  if count=0 or null ll then nil
+  else car ll . firstfew(count-1, cdr ll);
+
+#if (null (getd 'symbol!-value))
+
+symbolic procedure symbol!-value a;
+ << a := errorset(a, nil, nil);
+    if atom a then 'unbound_variable
+    else car a >>;
+
+#endif
+
+% Scan all symbols and find the space used by their (global) value plus
+% space on their property list. Print a table showing the 10 largest
+% users.
+
+symbolic procedure findspaceusers();
+  begin
+    scalar biggest, n, unit;
+    if memq('sixty!-four, lispsystem!*) then unit := 16 else unit = 8;
+    for each a in oblist() do <<
+% On CSL this function MUST be compiled because otherwise when symbol!-value
+% is used on something that does not have a value it returns something that
+% gets viewed as an error.
+      n := treesize symbol!-value a +
+           treesize prop a;
+      biggest := keeptopfew(n, a, biggest, 10) >>;
+    optterpri();
+    for each p in biggest do <<
+      prin cdr p;
+      princ ": ";
+      ttab 20;
+% Display in what will be APPROXIMATELY kilobytes.
+      prin (unit*car p/1000.0);
+      printc '!K >>
   end;
 
 % Find the bulk of data stored in a hash table.
@@ -324,6 +399,9 @@ symbolic procedure hashsize h;
 fluid '(alglist!* !$hash);
 global '(kernhash);
 
+!$hash := mkhash(200,3,nil);  % See matrix/det.red
+
+
 % Here I have something usable from algebraic mode that displays some
 % indication of the amount of material saved in hash tables. The numbers
 % displayed scale as bytes but should not be seen as at all precise. Also
@@ -334,20 +412,26 @@ global '(kernhash);
 
 % Note that for alglist!* items are saved and a count is maintained of
 % how many are used - when a limit is exceeded the table is empties. That
-% is the inwardness if alglist_count!* and alglist_limit!*.
+% is the inwardness if alglist_count!* and alglist_limit!*. The periodic
+% discarding of that data is intended to avoid stale and unwanted material
+% building up in memort and clogging things up.
 
 symbolic procedure hashsizes();
   begin
     scalar unit;
     if memq('sixty!-four, lispsystem!*) then unit := 8 else unit = 4;
     terpri();
-    prin2 "alglist_count* = "; prin2 alglist_count!*;
-    prin2 " alglist_limit* = "; print alglist_limit!*;
+    prin2 "alglist_count* = "; print alglist_count!*;
+    prin2 "alglist_limit* = "; print alglist_limit!*;
     prin2 "alglist*:"; ttab 20;
-           print (unit*treesize alglist_contents(car alglist!*));
-    prin2 "kernhash:"; ttab 20; print (unit*hashsize kernhash);
+      print (unit*treesize alglist_contents(car alglist!*));
+    prin2 "kernhash:"; ttab 20;
+      print (unit*hashsize kernhash);
 % !*prinl_visited_nodes!* is always cleared after use.
-    prin2 "$hash (for det):"; ttab 20; print (unit*hashsize !$hash);
+    prin2 "$hash (for det):"; ttab 20;
+      print (unit*hashsize !$hash);
+    printc "Symbol values and properties:";
+    findspaceusers()
   end;
 
 symbolic operator hashsizes;

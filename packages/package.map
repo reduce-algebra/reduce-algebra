@@ -126,7 +126,7 @@
  (misc          "misc"        core    preloadX               csl psl)
 
  (boolean       "misc"        core    print_and_or test      csl psl)
- (cedit         "misc"        core    preloadX               csl psl)
+ (cedit         "misc"        core                           csl psl)
  (rcref         "misc"        core    preloadX               csl psl)
  (reset         "misc"        core    preloadX               csl psl)
  (cali          "cali"        core    t_x_y_z      test      csl psl)
