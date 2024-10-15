@@ -1183,9 +1183,14 @@ symbolic procedure filenderr;
       cursym!* := '!*semicol!*;
       eof!* := eof!*+1;
       if terminalp() then error1()
-       else error(99,if ifl!*
-                       then list("End-of-file read in file",car ifl!*)
-                      else "End-of-file read")
+       else <<
+         terpri();
+         if ifl!* then << prin2 "*** End-of-file read in file ";
+                          print car ifl!* >>
+         else << prin2 "*** End-of-file read"; terpri() >>;
+% While I raise an error here so that everything unwinds, I do not want
+% any terribly noisy diagnostic. So I use error1().
+         error1() >>
    end;
 
 symbolic procedure ptoken;
