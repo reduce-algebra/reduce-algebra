@@ -93,7 +93,7 @@ module taylor;
 %
 %   Correct a bug in expansion of logarithms: a singular term like
 %    log(var) may be replaced by a constant when a corresponding rule
-%    log(var) => cst is in effect.  Thsi constand should be added into
+%    log(var) => cst is in effect.  This constant should be added into
 %    the resulting Taylor kernel.
 %
 % 11-Dec-2022    2.4f
@@ -139,7 +139,7 @@ module taylor;
 %   Add taylorsimpfn for Gamma, Psi, and Polygamma.
 %    This allows expansion about the poles are the non-negative integers.
 %
-%   Fix a bug: substitution of a taylor variable by the coressponding
+%   Fix a bug: substitution of a taylor variable by the corresponding
 %    expansion point returned an incorrect result.
 %
 %   A bit of cleanup: add missing declarations of global or fluid variables,
