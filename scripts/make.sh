@@ -104,6 +104,15 @@ then
   export SHELL
 fi
 
+if test "${REDUCE_SHARED_BUILD_DIRECTORY}" != ""
+then
+  host=`./config.guess`
+  host=`scripts/findhost.sh $host`
+  os=`scripts/findos.sh`
+
+  printf "Current machine tag is %s\n" "$host"
+fi
+
 if test "$MAKE" = ""
 then
   if test -x /usr/sfw/bin/gmake
@@ -143,16 +152,42 @@ viable() {
 
 if test "$buildcsl" = "yes"
 then
-  for d in cslbuild/*-*-*/csl/Makefile
-  do
-    if test `viable ${d%Makefile}../canary` = "yes"
-    then
-      w=`dirname $d`
-      w=`dirname $w`
-      echo Will build for $w
-      list="$list $w"
-    fi
-  done
+  if test "${REDUCE_SHARED_BUILD_DIRECTORY}" != ""
+  then
+    case "$os" in
+    *cygwin* | *windows*)
+      list="cslbuild/*-cygwin*/csl cslbuild/*-windows*/csl"
+      ;;
+    mac_*)
+      list="cslbuild/*${host}*/csl"
+      host1=${host/aarch64/universal}
+      host1=${host1/x86_64/universal}
+      case "$list cslbuild/*${host1}*" in
+      \*)
+# If there is a "*" still present that indicated that the "universal"
+# option did not match any directory so it is not useful.
+        ;;
+      *)
+        list="$list cslbuild/*${host1}*/csl"
+        ;;
+      esac
+      ;;
+    *)
+      list="cslbuild/*${host}*/csl"
+      ;;
+    esac
+  else
+    for d in cslbuild/*-*-*/csl/Makefile
+    do
+      if test `viable ${d%Makefile}../canary` = "yes"
+      then
+        w=`dirname $d`
+        w=`dirname $w`
+        echo Will build for $w
+        list="$list $w"
+      fi
+    done
+  fi
 fi
 
 firstcsl=${list%% *}
@@ -163,15 +198,27 @@ fi
 
 if test "$buildpsl" = "yes"
 then
-  for d in pslbuild/*-*-*/Makefile
-  do
-    if test `viable ${d%Makefile}psl/bpsl` = "yes"
-    then    
-      w=`dirname $d`
-      echo Will build for $w
-      list="$list $w"
-    fi
-  done
+  if test "${REDUCE_SHARED_BUILD_DIRECTORY}" != ""
+  then
+    case "$os" in
+    *cygwin* | *windows*)
+      list="$list pslbuild/*-cygwin* pslbuild/*-windows*"
+      ;;
+    *)
+      list="$list pslbuild/*${host}*"
+      ;;
+    esac
+  else
+    for d in pslbuild/*-*-*/Makefile
+    do
+      if test `viable ${d%Makefile}psl/bpsl` = "yes"
+      then    
+        w=`dirname $d`
+        echo Will build for $w
+        list="$list $w"
+      fi
+    done
+  fi
 fi
 
 case $args in
