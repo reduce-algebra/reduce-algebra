@@ -342,7 +342,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
         v = get_basic_vector_init(6*CELL, nil);
         errexit();
     }
-    write_barrier(&basic_elt(v, HASH_FLAVOUR), flavour);
+    basic_elt(v, HASH_FLAVOUR) = flavour;
 // I am being tricky here - when I write a fixnum into the vector I
 // do not trigger the write-barrier because I know that a fixnum is not
 // and up-pointer.
@@ -351,8 +351,8 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
     int shift = 64 - bits;
     basic_elt(v, HASH_SHIFT) = fixnum_of_int(
                                    shift);  // 64-log2(table size)
-    write_barrier(&basic_elt(v, HASH_KEYS), v1);
-    write_barrier(&basic_elt(v, HASH_VALUES), v2);
+    basic_elt(v, HASH_KEYS) = v1;
+    basic_elt(v, HASH_VALUES) = v2;
     setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
     return v;
 }
@@ -387,16 +387,15 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     {   v = get_basic_vector_init(6*CELL, nil);
         errexit();
     }
-    write_barrier(&basic_elt(v, HASH_FLAVOUR), flavour);
-    basic_elt(v, HASH_COUNT) = fixnum_of_int(
-                                   0);  // current number of items stored.
+    basic_elt(v, HASH_FLAVOUR) = flavour;
+    basic_elt(v, HASH_COUNT) =
+        fixnum_of_int(0);  // current number of items stored.
     int shift = 64 - bits;
-    basic_elt(v, HASH_SHIFT) = fixnum_of_int(
-                                   shift);  // 64-log2(table size)
-    write_barrier(&basic_elt(v, HASH_KEYS), v1);
+    basic_elt(v, HASH_SHIFT) = fixnum_of_int(shift);  // 64-log2(table size)
+    basic_elt(v, HASH_KEYS) = v1;
     basic_elt(v, HASH_VALUES) = nil;              // value table.
 // nil can never be an up-pointer.
-//  write_barrier(&basic_elt(v, HASH_VALUES), nil);
+//  basic_elt(v, HASH_VALUES) = nil;
     setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
     return v;
 }
@@ -616,7 +615,7 @@ static uint64_t hash_eql(uint64_t r, LispObject key)
 static uint64_t hash_generic_equal(uint64_t r, LispObject key,
                                    int mode, size_t depth);
 
-#ifdef DEBUG
+#if false && defined DEBUG
 static uint64_t hash_generic_equal1(uint64_t r, LispObject key,
                                     int mode, size_t depth);
 #endif // DEBUG
@@ -625,7 +624,7 @@ static uint64_t hash_cl_equal(uint64_t r, LispObject key)
 {   return hash_generic_equal(r, key, HASH_AS_CL_EQUAL, 0);
 }
 
-#ifdef DEBUG
+#if false && defined DEBUG
 static uint64_t hash_equal(uint64_t r, LispObject key)
 {   return hash_generic_equal1(r, key, HASH_AS_EQUAL, 0);
 }
@@ -876,7 +875,7 @@ static uint64_t hash_generic_equal(uint64_t r, LispObject key,
     }
 }
 
-#ifdef DEBUG
+#if false && defined DEBUG
 
 #define MAX_DEPTH 40000
 
@@ -981,6 +980,8 @@ static bool hash_compare_symtab(LispObject key, LispObject hashentry)
 // up discarded. If in the process this discovers that the table is
 // rather empty it will shrink it.
 
+// Well at least on a temporary basis I will never shrink it!
+
 void rehashInPlace(LispObject tab, LispObject oldkeys, LispObject oldvals)
 {   size_t load = 0;
 // Copy live data to the borrowed space and make the existing table empty.
@@ -996,6 +997,7 @@ void rehashInPlace(LispObject tab, LispObject oldkeys, LispObject oldvals)
         }
         ht(i) = SPID_HASHEMPTY;
     }
+#ifdef SHRINK_IF_ALMOST_EMPTY
 // If the table is under 20% occupied (and if it is big enough for shrinking
 // to be sensible) I halve its size, so it will still end up at worst 40%
 // occupied. It a really large fraction of its contents had been removed
@@ -1005,6 +1007,7 @@ void rehashInPlace(LispObject tab, LispObject oldkeys, LispObject oldvals)
     {   do
         {   h_shift++;
             h_table_size /= 2;
+            basic_elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
         }
         while (load < h_table_size/6 && h_table_size > 16);
 // I can reduce the size of a vector and doing so preserves the contents
@@ -1012,21 +1015,21 @@ void rehashInPlace(LispObject tab, LispObject oldkeys, LispObject oldvals)
 // the vector shrinks from a segmented representation to a basic one the
 // address involved may change, so I must update the referenced in the
 // main table.
-        h_table = reduce_vector_size(h_table, CELL*(load+1));
+        h_table = reduce_vector_size(h_table, CELL*(table_size+1));
         if (v_table != nil)
-            v_table = reduce_vector_size(v_table, CELL*(load+1));
-        write_barrier(&basic_elt(tab, HASH_KEYS), h_table);
-        write_barrier(&basic_elt(tab, HASH_VALUES), v_table);
+            v_table = reduce_vector_size(v_table, CELL*(table_size+1));
+        basic_elt(tab, HASH_KEYS) = h_table;
+        basic_elt(tab, HASH_VALUES) = v_table;
     }
+#endif // SHRINK_IF_ALMOST_EMPTY
 // As perhaps a matter of caution I will re-create the COUNT.
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     for (size_t i=0; i<load; i++)
     {   LispObject k = elt(oldkeys, i);
         size_t j = hash_where_to_insert(k);
-        write_barrier(&ht(j), k);
+        ht(j) = k;
         if (v_table != nil)
-            write_barrier(&htv(j),
-                          static_cast<LispObject>(elt(oldvals, i)));
+            htv(j) = static_cast<LispObject>(elt(oldvals, i));
         basic_elt(tab, HASH_COUNT) =
             static_cast<LispObject>(basic_elt(tab, HASH_COUNT)) + 0x10;
     }
@@ -1231,9 +1234,9 @@ LispObject Lput_hash(LispObject env,
             LispObject oldkeys = basic_elt(tab, HASH_KEYS);
             LispObject oldvals = basic_elt(tab, HASH_VALUES);
             h_table = newkeys;
-            write_barrier(&basic_elt(tab, HASH_KEYS), newkeys);
+            basic_elt(tab, HASH_KEYS) = newkeys;
             v_table = newvals;
-            write_barrier(&basic_elt(tab, HASH_VALUES), newvals);
+            basic_elt(tab, HASH_VALUES) = newvals;
             basic_elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
             basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
             for (size_t i=0; i<h_table_size; i++)
@@ -1241,10 +1244,9 @@ LispObject Lput_hash(LispObject env,
 // Copy active stuff to the new table...
                 if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
                 {   size_t j = hash_where_to_insert(k);
-                    write_barrier(&ht(j), k);
+                    ht(j) = k;
                     if (v_table != nil)
-                        write_barrier(&htv(j),
-                                      static_cast<LispObject>(elt(oldvals, i)));
+                        htv(j) = static_cast<LispObject>(elt(oldvals, i));
                     basic_elt(tab, HASH_COUNT) =
                         static_cast<LispObject>(
                             basic_elt(tab, HASH_COUNT)) + 0x10;
@@ -1276,8 +1278,8 @@ LispObject Lput_hash(LispObject env,
     if (k1 == SPID_HASHEMPTY)
         basic_elt(tab, HASH_COUNT) = static_cast<LispObject>(basic_elt(tab,
                                      HASH_COUNT)) + 0x10; // Increment count.
-    write_barrier(&ht(pos), key);
-    if (v_table != nil) write_barrier(&htv(pos), val);
+    ht(pos) = key;
+    if (v_table != nil) htv(pos) = val;
     return val;
 }
 
@@ -1307,8 +1309,8 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
         h_table = reduce_vector_size(h_table, CELL*(size+1));
         if (v_table != nil)
             v_table = reduce_vector_size(v_table, CELL*(size+1));
-        write_barrier(&basic_elt(tab, HASH_KEYS), h_table);
-        write_barrier(&basic_elt(tab, HASH_VALUES), v_table);
+        basic_elt(tab, HASH_KEYS) = h_table;
+        basic_elt(tab, HASH_VALUES) = v_table;
         basic_elt(tab, HASH_SHIFT) = fixnum_of_int(64-4);
     }
     LispObject keys = basic_elt(tab, HASH_KEYS);

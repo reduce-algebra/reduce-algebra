@@ -29,7 +29,7 @@ module block;   % Block statement and related operators.
 
 % $Id$
 
-fluid '(!*blockp !*novarmsg !*rlisp88);
+fluid '(!*blockp !*novarmsg !*rlisp88 !*ldb !*ldbdepth !*ldbname);
 
 global '(!*vars!* cursym!* nxtsym!*);
 
@@ -298,6 +298,11 @@ symbolic procedure formprog1(u,vars,mode);
            then if !*rlisp88 and null(caar u = 'symbolic)
                   then typerr("algebraic expression","Rlisp88 form")
           else formc(cadar u,vars,caar u) . formprog1(cdr u,vars,mode)
+    else if !*ldb then
+      list('ldb!-callback, ''step, mkquote !*ldbname, '!*ldbdepth,
+           mkquote for each v in vars collect car v,
+           'list . for each v in vars collect car v) .
+      formc(car u,vars,mode) . formprog1(cdr u,vars,mode)
     else formc(car u,vars,mode) . formprog1(cdr u,vars,mode);
 
 put('rblock,'formfn,'formblock);

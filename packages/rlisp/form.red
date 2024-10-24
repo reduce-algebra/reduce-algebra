@@ -32,7 +32,7 @@ module form;  % Performs a mode analysis of parsed forms.
 % $Id$
 fluid '(!*!*a2sfn !*comp !*cref !*defn !*mode !*reduce4 !*rlisp88
         current!-modulus fname!* ftype!* !*strict_argcount
-        !*argnochk);
+        !*argnochk !*ldb !*ldbdepth !*ldbname);
 
 global '(!*composites !*force !*micro!-version !*vars!* cursym!*);
 
@@ -343,6 +343,10 @@ symbolic procedure formclis(u,vars,mode);
    begin
       scalar x;
       while u do <<
+         if !*ldb then
+           x := list('ldb!-callback, ''step, mkquote !*ldbname, '!*ldbdepth,
+                     mkquote for each v in vars collect car v,
+                     'list . for each v in vars collect car v) . x;
          x := formc(car u,vars,mode) . x;
          u := cdr u >>;
       return reversip!* x;
