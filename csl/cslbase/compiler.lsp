@@ -3844,15 +3844,13 @@ r1 r2) (c!:printf
 
 (de c!:prplaca (op r1 r2 r3) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (
 c!:printf "    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n" r2 r2
-) (c!:printf "#endif\n") (c!:printf "    write_barrier(caraddr(%v), %v);\n" 
-r2 r3)))
+) (c!:printf "#endif\n") (c!:printf "    car(%v) = %v;\n" r2 r3)))
 
 (put (quote rplaca) (quote c!:opcode_printer) (function c!:prplaca))
 
 (de c!:prplacd (op r1 r2 r3) (progn (c!:printf "#ifndef UNSAFE_CAR\n") (
 c!:printf "    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n" r2 r2
-) (c!:printf "#endif\n") (c!:printf "    write_barrier(cdraddr(%v), %v);\n" 
-r2 r3)))
+) (c!:printf "#endif\n") (c!:printf "    cdr(%v) = %v;\n" r2 r3)))
 
 (put (quote rplacd) (quote c!:opcode_printer) (function c!:prplacd))
 

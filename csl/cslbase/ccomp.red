@@ -1486,7 +1486,7 @@ symbolic procedure c!:prplaca(op, r1, r2, r3);
   c!:printf("#ifndef UNSAFE_CAR\n");
   c!:printf("    if (!car_legal(%v)) UNLIKELY return rplaca_fails(%v);\n", r2, r2);
   c!:printf("#endif\n");
-  c!:printf("    write_barrier(caraddr(%v), %v);\n", r2, r3) >>;
+  c!:printf("    car(%v) = %v;\n", r2, r3) >>;
 
 put('rplaca, 'c!:opcode_printer, function c!:prplaca);
 
@@ -1495,7 +1495,7 @@ symbolic procedure c!:prplacd(op, r1, r2, r3);
   c!:printf("#ifndef UNSAFE_CAR\n");
   c!:printf("    if (!car_legal(%v)) UNLIKELY return rplacd_fails(%v);\n", r2, r2);
   c!:printf("#endif\n");
-  c!:printf("    write_barrier(cdraddr(%v), %v);\n", r2, r3) >>;
+  c!:printf("    cdr(%v) = %v;\n", r2, r3) >>;
 
 put('rplacd, 'c!:opcode_printer, function c!:prplacd);
 

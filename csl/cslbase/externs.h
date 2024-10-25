@@ -236,10 +236,6 @@ extern char* big_chunk_end;
 
 extern LispObject multiplication_buffer;
 
-inline void write_barrier(LispObject* p, LispObject q)
-{  *p = q;
-}
-
 extern std::mutex debug_lock;
 extern const char* debug_file;
 extern int debug_line;

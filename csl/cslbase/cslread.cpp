@@ -1809,7 +1809,7 @@ LispObject ndelete(LispObject a, LispObject l)
     {   LispObject z1 = l, z2 = cdr(l);
         while (consp(z2))
         {   if (a == car(z2))
-            {   write_barrier(cdraddr(z1), cdr(z2));
+            {   cdr(z1) = cdr(z2);
                 return l;
             }
             else
@@ -2188,7 +2188,7 @@ static LispObject read_list(LispObject stream)
                 curchar = NOT_CHAR;
                 {   w = read_s(stream);
                     errexit();
-                    write_barrier(cdraddr(l), w);
+                    cdr(l) = w;
                     skip_whitespace(stream);
                     if (curchar == ')') curchar = NOT_CHAR;
                     return r;
@@ -2201,7 +2201,7 @@ static LispObject read_list(LispObject stream)
                     w = ncons(w);
                     errexit();
                 }
-                write_barrier(cdraddr(l), w);
+                cdr(l) = w;
                 l = w;
                 continue;
 #endif
@@ -2210,7 +2210,7 @@ static LispObject read_list(LispObject stream)
                 errexit();
                 w = ncons(w);
                 errexit();
-                write_barrier(cdraddr(l), w);
+                cdr(l) = w;
                 l = w;
                 continue;
         }
