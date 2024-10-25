@@ -344,7 +344,8 @@ symbolic procedure formclis(u,vars,mode);
       scalar x;
       while u do <<
          if !*ldb then
-           x := list('ldb!-callback, ''step, mkquote !*ldbname, '!*ldbdepth,
+           x := list('ldb!-callback, ''step, mkquote !*ldbname,
+                     list('plus, '!*ldbdepth, !*ldbseq := !*ldbseq+1000000),
                      mkquote for each v in vars collect car v,
                      'list . for each v in vars collect car v) . x;
          x := formc(car u,vars,mode) . x;
