@@ -29,9 +29,10 @@ module forstat;   % Definition of REDUCE FOR loops.
 
 % $Id$
 
-fluid '(!*blockp !*fastfor !*modular);
+fluid '(!*blockp !*fastfor !*modular !*ldb !*ldbdepth !*ldbname);
 
 global '(cursym!* foractions!*);
+
 
 COMMENT the syntax of the FOR statement is as follows:
 
@@ -212,6 +213,17 @@ symbolic procedure formforeach(u,vars,mode);
 
 put('foreach,'formfn,'formforeach);
 
+symbolic procedure allcars l;
+  if null l then nil
+  else caar l . allcars cdr l;
+
+symbolic procedure ldbcall vars;
+  if null !*ldb then ''nil
+  else list('ldb!-callback, ''step, mkquote !*ldbname,
+             list('plus, '!*ldbdepth, !*ldbseq := !*ldbseq+1000000),
+             mkquote allcars vars,
+             'list . allcars vars);
+
 symbolic procedure forformat(action,body,initval,
                              testexp,updform,var,vars,mode);
    begin scalar result;
@@ -254,21 +266,28 @@ symbolic procedure forformat(action,body,initval,
                'testexp . testexp,
                'updfn . car updform,
                'updval . cdr updform,
+               'ldbcallback1 . ldbcall ((var . mode) . vars),
+               'ldbcallback2 . ldbcall ((var . mode) . vars),
+               'ldbcallback3 . ldbcall ((var . mode) . vars),
                'var . var),
           if action = 'do
             then '(prog (var)
                   (setq var initval)
-              lab (cond (testexp (return nil)))
+              lab ldbcallback1
+                  (cond (testexp (return nil)))
                   body
                   (setq var (updfn var . updval))
                   (go lab))
            else if action = 'collect
             then '(prog (var result forall!-endptr)
                   (setq var initval)
+                  ldbcallback1
                   (cond (testexp (return nillist)))
                   (setq result (setq forall!-endptr (cons body nil)))
                 looplabel
+                  ldbcallback2
                   (setq var (updfn var . updval))
+                  ldbcallback3
                   (cond (testexp (return resultlist)))
                   (rplacd forall!-endptr (cons body nil))
                   (setq forall!-endptr (cdr forall!-endptr))
@@ -277,12 +296,15 @@ symbolic procedure forformat(action,body,initval,
             then '(prog (var result forall!-endptr)
                   (setq var initval)
                startover
+                  ldbcallback1
                   (cond (testexp (return nillist)))
                   (setq result body)
                   (setq forall!-endptr (lastpair resultlist))
                   (setq var (updfn var . updval))
+                  ldbcallback2
                   (cond ((atom forall!-endptr) (go startover)))
                 looplabel
+                  ldbcallback3
                   (cond (testexp (return result)))
                   (rplacd forall!-endptr body3)
                   (setq forall!-endptr (lastpair forall!-endptr))
@@ -292,6 +314,7 @@ symbolic procedure forformat(action,body,initval,
                  (setq var initval)
                  (setq result initresult)
               lab1
+                 ldbcallback1
                  (cond (testexp (return result)))
                  (setq result body2)
                  (setq var (updfn var . updval))

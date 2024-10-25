@@ -30,14 +30,71 @@ module ldb;   % A bit of a debugger
 % $Id: ldb.red 6859 2024-08-11 15:41:48Z arthurcnorman $
 
 
-fluid '(!*ldb !*ldbdepth !*ldbname);
+fluid '(!*ldb !*ldbdepth !*ldbname !*ldbcount !*ldbstart);
 !*ldb := nil;
 !*ldbdepth := 0;
 !*ldbname := 'unnamed;
+!*ldbcount := 0;
+!*ldbstart := nil;
 
+% If !*ldbstart is nil then a message is printed for every 1000 uses of
+% ldb!-callback, in the form
+%    ~~~~~ !*ldbcount = NNNNN
+% but nothing more. If !*ldbstart is a number then tracing of all
+% functions where ldbtrace has enabled it starts after that many steps.
+% The intended use is that you first run with !*ldbstart=nil and observe
+% the last reported count before you see something go wrong. And then
+% re-run with that count value set up to be when tracing begins. It will
+% be within 1000 of where the problem arises. This can avoid the generation
+% of truly huge amounts of trace output. Obviously it is not going to be
+% a recipe fror helping everybody, but it may be good for some people!
 
 switch ldb;
 off ldb;
+
+fluid '(print!-limit);
+
+% If I generate a many trace records it can be really bad if each is
+% individually bulky. So here I have a version of prin1 that truncates
+% its output so you get the start of something but never too much.
+
+symbolic procedure prinn u;
+  begin
+    scalar print!-limit := 15;
+    prinn1 u
+  end;
+
+symbolic procedure prinn1 u;
+  if print!-limit > 0 then <<
+    print!-limit := print!-limit-1;
+    if vectorp u then begin
+      scalar i, n;
+      n := upbv u;
+      if n = 0 then <<
+        prin2 "[]";
+        return nil >>;
+      prin2 "[";
+      prinn1 elt(u, 0);
+      i := 1;
+      while i<=n and print!-limit > 0 do <<
+        prin2 " ";
+        prinn elt(u, i);
+        i := i+1 >>;
+      if print!-limit <= 0 then princ "..";
+      prin2 "]";
+    end
+    else if atom u then prin1 u
+    else <<
+      prin2 "(";
+      prinn1 car u;
+      while not atom (u := cdr u) and print!-limit > 0 do <<
+        prin2 " ";
+        prinn car u >>;
+      if u and atom u then <<
+        prin2 " . ";
+        prin1 u >>;
+      if print!-limit <= 0 then princ "..";
+      prin2 ")" >> >>;
 
 fluid '(!*ldbbreak !*ldbignore);
 
@@ -107,46 +164,53 @@ symbolic procedure ldbtrace ll;
 symbolic procedure ldb!-callback(action, fname, depth, names, vals);
   begin
 
+    !*ldbcount := add1 !*ldbcount;
+    if remainder(!*ldbcount, 1000) = 0 then <<
+      princ "~~~~~ !*ldbcount = ";
+      print !*ldbcount >>;
+    if null !*ldbstart or
+       !*ldbcount < !*ldbstart then return nil;
+
 % The code here is more or less deliberately very naive!
 
     if flagp(fname, 'ldbtrace) and action='enter then <<
       optterpri();
       prin2 "Calling ";
-      prin1 fname;
+      prinn fname;
       prin2 " level ";
-      prin1 depth;
+      prinn depth;
       for each v in pair(names, vals) do <<
         prin2 " ";
-        prin1 car v;
+        prinn car v;
         prin2 "=";
-        prin1 cdr v >>;
+        prinn cdr v >>;
       terpri();
       return nil >>;
 
     if flagp(fname, 'ldbtrace) and action='return then <<
       optterpri();
       prin2 "Value of ";
-      prin1 fname;
+      prinn fname;
       prin2 " level ";
-      prin1 depth;
+      prinn depth;
       prin2 " = ";
-      prin1 car vals;
+      prinn car vals;
       terpri();
       return nil >>;
 
     if flagp(fname, 'ldbtrace) and action='step then <<
       optterpri();
       prin2 "Step within ";
-      prin1 fname;
+      prinn fname;
       prin2 " level ";
-      prin1 remainder(depth, 1000000);
+      prinn remainder(depth, 1000000);
       prin2 " step ";
       prin1 (depth/1000000);
       for each v in pair(names, vals) do <<
         prin2 " ";
-        prin1 car v;
+        prinn car v;
         prin2 "=";
-        prin1 cdr v >>;
+        prinn cdr v >>;
       terpri();
       return nil >>;
 

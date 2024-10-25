@@ -182,7 +182,7 @@ symbolic procedure formproc(u,vars,mode);
 % The next line generates warnings if any arguments are not used (in symbolic
 % mode, and not counting arguments that are fluid).
         symbvarlst(varlis,body,mode);
-        if !*ldb then <<
+        if !*ldb and type neq 'inline then <<
           body := list('prog, '(!*ldbtemp),
                        list('ldb!-callback,
                             ''enter,
