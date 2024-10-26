@@ -299,7 +299,8 @@ symbolic procedure formprog1(u,vars,mode);
                   then typerr("algebraic expression","Rlisp88 form")
           else formc(cadar u,vars,caar u) . formprog1(cdr u,vars,mode)
     else if !*ldb then
-      list('ldb!-callback, ''step, mkquote !*ldbname, '!*ldbdepth,
+      list('ldb!-callback, ''step, mkquote !*ldbname,
+           list('plus, '!*ldbdepth, !*ldbseq:=!*ldbseq+1000000),
            mkquote for each v in vars collect car v,
            'list . for each v in vars collect car v) .
       formc(car u,vars,mode) . formprog1(cdr u,vars,mode)

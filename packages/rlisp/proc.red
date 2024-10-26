@@ -91,15 +91,18 @@ symbolic procedure proc!-add!-info(name,info,body);
       cdr info,
       mkprogn(list('put,mkquote name,mkquote caar info,mkquote cdar info),body));
 
-fluid '(!*ldb !*ldbdepth !*ldbname);
+fluid '(!*ldb !*ldbdepth !*ldbseq !*ldbname);
 !*ldb := nil;
 !*ldbdepth := 0;
+!*ldbseq := 0;
 !*ldbname := 'unnamed;
 
 symbolic procedure formproc(u,vars,mode);
-   begin scalar obody,body,fname!*,!*ldbname,name,type,varlis,x,y,fl,n,info;
+   begin scalar obody,body,fname!*,!*ldbname,!*ldbseq,
+                name,type,varlis,x,y,fl,n,info;
         u := cdr u;
         name := fname!* := !*ldbname := car u;
+        !*ldbseq := 0;
         if cadr u then mode := cadr u;   % overwrite previous mode
         u := cddr u;
         type := ftype!* := car u;
@@ -179,7 +182,7 @@ symbolic procedure formproc(u,vars,mode);
 % The next line generates warnings if any arguments are not used (in symbolic
 % mode, and not counting arguments that are fluid).
         symbvarlst(varlis,body,mode);
-        if !*ldb then <<
+        if !*ldb and type neq 'inline then <<
           body := list('prog, '(!*ldbtemp),
                        list('ldb!-callback,
                             ''enter,
@@ -196,7 +199,7 @@ symbolic procedure formproc(u,vars,mode);
                             '(list !*ldbtemp)),
                         '(return !*ldbtemp));
           body := list(list('lambda, '(!*ldbdepth), body),
-                       '(add1 !*ldbdepth)) >>;
+                                     '(add1 !*ldbdepth)) >>;
         if type = 'expr then body := list('de,name,varlis,body)
          else if type = 'fexpr then body := list('df,name,varlis,body)
          else if type = 'macro then body := list('dm,name,varlis,body)

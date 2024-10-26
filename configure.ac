@@ -235,7 +235,10 @@ AC_ARG_ENABLE(universal,
 
 AC_MSG_NOTICE([enable_universal=$enable_universal])
 
-ac_configure_args="--enable-universal=$enable_universal $ac_configure_args"
+if test "$enable_universal" = "yes"
+then
+  ac_configure_args="--enable-universal=$enable_universal $ac_configure_args"
+fi
 
 # It is unexpectedly important the the "--without-autogen" be provided as
 # the first argument in the re-try. This is because otherwise some malformed

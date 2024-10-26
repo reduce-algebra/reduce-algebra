@@ -29,7 +29,7 @@ module loops;  % Looping forms other than the FOR statement.
 
 % $Id$
 
-fluid '(!*blockp);
+fluid '(!*blockp !*ldb !*ldbdepth !*ldbname);
 
 global '(cursym!*);
 
@@ -59,9 +59,17 @@ put('repeat,'stat,'repeatstat);
 flag('(repeat),'nochange);
 
 symbolic procedure formrepeat(u,vars,mode);
-   begin scalar !*!*a2sfn;
+   begin scalar !*!*a2sfn, w;
       !*!*a2sfn := 'aeval!*;
-      return list('repeat,formc(cadr u,vars,mode),
+      w := formc(cadr u,vars,mode);
+      if !*ldb then
+        w := list('progn,
+                  list('ldb!-callback, ''step, mkquote !*ldbname,
+                       list('plus, '!*ldbdepth, !*ldbseq := !*ldbseq+1000000),
+                       mkquote for each v in vars collect car v,
+                       'list . for each v in vars collect car v),
+                  w);
+      return list('repeat,w,
                   formbool(caddr u,vars,mode))
    end;
 
@@ -102,10 +110,17 @@ put('while,'stat,'whilstat);
 flag('(while),'nochange);
 
 symbolic procedure formwhile(u,vars,mode);
-   begin scalar !*!*a2sfn;
+   begin scalar !*!*a2sfn, w;
       !*!*a2sfn := 'aeval!*;
-      return list('while,formbool(cadr u,vars,mode),
-                  formc(caddr u,vars,mode))
+      w := formc(caddr u,vars,mode);
+      if !*ldb then
+        w := list('progn,
+                  list('ldb!-callback, ''step, mkquote !*ldbname,
+                       list('plus, '!*ldbdepth, !*ldbseq := !*ldbseq+1000000),
+                       mkquote for each v in vars collect car v,
+                       'list . for each v in vars collect car v),
+                  w);
+      return list('while,formbool(cadr u,vars,mode), w)
    end;
 
 put('while,'formfn,'formwhile);
