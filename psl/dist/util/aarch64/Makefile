@@ -60,9 +60,7 @@ PL      = $(PSL)/lap/$(MACHINE)
 all: \
 	$(PL)/disassemble.b $(PL)/fc-indirect.b $(PL)/get-options.b \
 	$(PL)/l2cdatacon.b $(PL)/helferlein.b $(PL)/symget.b \
-	$(PL)/nbig30.b $(PL)/nbig30a.b $(PL)/double.b \
 	$(PL)/nbig32.b $(PL)/nbig32a.b $(PL)/double32.b \
-	$(PL)/mbarith.b \
 	$(PL)/qualified-timing.b $(PL)/spy.b 
 
 # MODEL should be either AREGMODEL for 3.2 or DREGMODEL for 3.4.
@@ -99,16 +97,6 @@ $(PL)/qualified-timing.b: $(PXU)/qualified-timing.sl
 $(PL)/oload.b: $(PXU)/oload.sl
 	$(PDIST)/make-lap $(PXU) oload
 
-$(PL)/nbig30.b:  $(PXU)/nbig30.sl
-	$(PDIST)/make-lap $(PXU) nbig30
-
-$(PL)/nbig30a.b: $(PXU)/nbig30a.sl $(PL)/vfvect.b $(PL)/muls.b $(PL)/double.b \
-           $(PL)/fast-vector.b
-	$(PDIST)/make-lap $(PXU) nbig30a
-
-$(PL)/double.b: $(PXU)/double.sl $(PL)/muls.b
-	$(PDIST)/make-lap $(PXU) double
-
 $(PL)/nbig32.b:  $(PXU)/nbig32.sl
 	$(PDIST)/make-lap $(PXU) nbig32
 
@@ -116,11 +104,8 @@ $(PL)/nbig32a.b: $(PXU)/nbig32a.sl $(PL)/vfvect.b $(PL)/muls32.b $(PL)/double32.
            $(PL)/fast-vector.b
 	$(PDIST)/make-lap $(PXU) nbig32a
 
-$(PL)/double32.b: $(PXU)/double.sl $(PL)/muls32.b
+$(PL)/double32.b: $(PL)/muls32.b
 	$(PDIST)/make-lap $(PXU) double32
-
-$(PL)/mbarith.b: $(PXU)/mbarith.sl $(PL)/muls.b
-	$(PDIST)/make-lap $(PXU) mbarith
 
 $(PL)/disassemble.b: $(PXU)/disassemble.sl
 	$(PDIST)/make-lap $(PXU) disassemble
