@@ -1528,6 +1528,17 @@ error
     (oldfloatfix u)
     (bigfromfloat u)))
 
+%% fix needs to be redefined: the standard definition in arithmetic.sl
+%% converts a fixnum outside of betap range into a bignum which.
+%% (Here betap range means integers that fit in a halfword)
+%% Make sure to not convert any integer argument in fix!
+(de fix (x)
+        (case (wand (wplus2 (tag x) 1) 31)  
+           ((0 1 2 3) x)                % posint negint fixnum bignum
+           ((4)   (floatfix x))               %floatnum            
+           (nil   (nonnumber1error x 'fix))
+))
+
 (de betap (x)
   % test if NUMBER in reduced INUM range                                   
   (if (intp x) (and (wleq x betahi!*) (wgeq x betalow!*)) nil))
@@ -1556,17 +1567,29 @@ error
    (setq BigFloatHi!* (btimes2 (bsub1 (btwopower 53)) (btwopower 971)))
    (setq BigFloatLow!* (bminus BigFloatHi!*))))
 
-
-(prog (y syshi syslo)
-	% Lowest value of Ai                                               
-	% here assume 2's complement                                       
+(prog (y syshi syslo ieee-mt-len1)
+	% Lowest value of Ai
+	% here assume 2's complement
+%% For 64 bit word length the number of bits is greater than the
+%%  number of bits in the IEEE mantissa. In this case the largest integer
+%%  than can be safely converted into a float consists of
+%%    (a) a sign bit (always 0)
+%%    (b) 53 1 bits, followed by (bitsperword - 54) 0 bits
+%%  This is different from the previous case if bitsperword > 54
+     (setq ieee-mt-len1 54)		% number of bits in IEEE mantissa
      (setq y (twopower (idifference bitsperword 2)))
-	% eg, 36 bits, 2^35-1=2^34+2^34-1                                  
+	% eg, 36 bits, 2^35-1=2^34+2^34-1
      (setq syshi (plus y (difference y 1)))
+     (if (igreaterp bitsperword ieee-mt-len1)
+       (setq syshi
+         (difference syshi
+           (isub1 (twopower (idifference bitsperword ieee-mt-len1))))
+	   % eg 64 bits, subtract 2^10-1
+     ))
      (setq y (minus y))
      (setq syslo (plus y y))
-     (setq FloatSysHi!* (float SysHi))
-     (setq FloatSysLow!* (float SysLo))
+     (setq floatsyshi!* (float syshi))
+     (setq floatsyslow!* (float syslo))
 )
 
 (if_system IEEE
