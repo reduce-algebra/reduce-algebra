@@ -33,9 +33,12 @@ symbolic procedure evalequal(u,v);
    begin scalar x;
       return if (x := getrtype u) neq getrtype v then nil
               else if null x
-               then numberp(x := reval list('difference,u,v))
+               then numberp(x := aeval list('difference,u,v))
                        and zerop x
-              else u=v
+              else begin scalar !*exp := t;
+		 rmsubs();
+		 return(aeval u = aeval v)
+	      end;
    end;
 
 put('equal,'boolfn,'evalequal);

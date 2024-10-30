@@ -1,0 +1,49 @@
+%
+% https://sourceforge.net/p/reduce-algebra/discussion/899364/thread/f53ebb50a5/?limit=25#c987
+%
+
+%% ==> assign x_off with EXP OFF ====================" ;
+off exp;
+
+x_off := (x + y)^2 ;
+
+%% ==> assign y_on with EXP ON  ====================" ;
+on exp;
+
+y_on := (x + y)^2 ;
+
+%% ==> x_off=y_on and x_off-y_on with EXP OFF ====================";
+off exp ;
+
+
+if x_off = y_on then write "EQUAL" else write "NOT EQUAL" ;
+
+x_off-y_on ;
+
+%% ==> x_off=y_on and x_off-y_on with EXP ON  ====================";
+on exp;
+
+if x_off equal y_on then write "EQUAL" else write "NOT EQUAL" ;
+
+x_off-y_on ;
+
+matrix m_on(2,2),m_off(2,2);
+
+m_on(1,1) := m_on(1,2) := m_on(2,2) := y_on;
+
+l_on := {y_on,y_on};
+
+off exp;
+
+m_off(1,1) := m_off(1,2) := m_off(2,2) := x_off;
+
+l_off := {x_off,x_off};
+
+if m_on = m_off then write "M EQUAL" else write "M NOT EQUAL" ;
+
+m_on - m_off;
+
+if l_on = l_off then write "L EQUAL" else write "L NOT EQUAL" ;
+
+end;
+
