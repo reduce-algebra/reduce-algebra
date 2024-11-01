@@ -174,9 +174,9 @@ xWindows_NT)
 # Here I will try for a fallback... I will try almost anything that seems
 # at all possible! I will use the first version I find.
     try2=""
-    for x in "$here/../cslbuild"/${host%%-*}*$version*/csl/$ap$suffix \
+    for x in "$here/../cslbuild"/*$version*/csl/$ap$suffix \
+             "$here/../cslbuild"/${host%%-*}*$version*/csl/$ap$suffix \
              "$here/../cslbuild"/${host%%-*}*nogui*$version*/csl/$ap$suffix \
-             "$here/../cslbuild"/*$version*/csl/$ap$suffix \
              "$here/../cslbuild"/*nogui*$version*/csl/$ap$suffix
     do
       if test "$try2" = ""
