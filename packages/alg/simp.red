@@ -1430,11 +1430,14 @@ symbolic procedure simpabs1 u;
          abslist := reversip abslist;
          if noabs then
             u := quotsq(u, noabs := simp!*('times . reversip noabs));
-         if (y:=split!-sign abslist) then
-         <<w:=simp!* retimes car y; u:=quotsq(u,w);
-            if cadr y then
-            <<y:=simp!* retimes cadr y; u:=quotsq(u,y);
-               w:=multsq(negsq y,w)>>;
+         if (abslist:=split!-sign abslist) then <<
+            w:=simp!* retimes car abslist;
+            u:=quotsq(u,w);
+            if (abslist := cadr abslist) then <<
+               y:=simp!* retimes abslist;
+               u:=quotsq(u,y);
+               if oddp length abslist then y := negsq y;
+               w:=multsq(y, w)>>;
             if noabs then w := multsq(noabs, w)
          >>
          else w := noabs

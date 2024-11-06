@@ -436,6 +436,28 @@ symbolic procedure hashsizes();
 
 symbolic operator hashsizes;
 
+% gensym1(name) creates an uninterned symbol with name based on the symbol
+% passed to it. The code using newid should work with PSL.
+
+#if (null (getd 'gensym1))
+
+fluid '(gensym1!-counter!*);
+gensym1!-counter!* := 0;
+
+symbolic procedure gensym1 name;
+  begin
+    scalar n := (gensym1!-counter!* := add1 gensym1!-counter!*),
+           s := append(explode2 n, '(!"));
+    if n < 10000 then s := '!0 . n;
+    if n < 1000 then s := '!0 . n;
+    if n < 100 then s := '!0 . n;
+    if n < 10 then s := '!0 . n;
+    s := compress ('!" . append(explode name, s));
+    return newid s
+  end;
+
+#endif
+
 endmodule;
 
 end;

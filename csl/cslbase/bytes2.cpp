@@ -1509,17 +1509,16 @@ next_opcode:   // This label is so that I can restart what I am doing
                                                      (reinterpret_cast<unsigned char *>(codevec))[ppc]));
                 ppc++;
             catcher:
-                A_reg = cons(A_reg, catch_tags);
-                catch_tags = A_reg;
                 *++stack = fixnum_of_int(w+1);
-                *++stack = catch_tags;
+                *++stack = catch_tags = cons(A_reg, catch_tags);
                 *++stack = SPID_CATCH;
                 continue;
 
             case OP_UNCATCH:
-                stack--; r1 = *stack--; stack--;
-                catch_tags = cdr(r1);
-                car(r1) = r1; cdr(r1) = nil;
+                stack--;                // SPID_CATCH
+                r1 = *stack--;          // catch_tags while this one active
+                stack--;                // destination address if throw used
+                catch_tags = cdr(r1);   // this tag no longer in use
                 continue;
 
             case OP_PROTECT:
@@ -1576,11 +1575,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
 
             case OP_THROW:
-                r1 = *stack--;       // the tag to throw to
+                r1 = *stack--;       // The tag to throw to.
+// Check if tag is one we will handle.
                 for (r2 = catch_tags; r2!=nil; r2=cdr(r2))
                     if (r1 == car(r2)) break;
                 if (r2==nil) return aerror1("throw: tag not found", r1);
-                exit_tag = r2;
+                catch_tags = cdr(r2);
+                exit_tag = r2;       // cdr() will go back in catch_tags
                 exit_value = A_reg;
                 exit_reason = UNWIND_THROW;
                 THROW(LispThrow);
