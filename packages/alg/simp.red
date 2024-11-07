@@ -1436,7 +1436,7 @@ symbolic procedure simpabs1 u;
             if (abslist := cadr abslist) then <<
                y:=simp!* retimes abslist;
                u:=quotsq(u,y);
-               if oddp length abslist then y := negsq y;
+               if not evenp length abslist then y := negsq y;
                w:=multsq(y, w)>>;
             if noabs then w := multsq(noabs, w)
          >>
