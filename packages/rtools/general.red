@@ -456,7 +456,14 @@ symbolic procedure gensym1 name;
     return newid s
   end;
 
-#endif
+#endif   % gensym1
+
+#if (null (getd 'oddp))
+
+symbolic inline procedure oddp n;
+  not evenp n;
+
+#endif   % oddp
 
 endmodule;
 
