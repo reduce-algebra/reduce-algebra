@@ -1460,12 +1460,13 @@ fluid '(rubi_rules);
 % Now I have a function that reads a single file of Rubi rules. The
 % path used is relative to $reduce, and that will make it valid while
 % Reduce is being built, but not necessarily if a version of Reduce has
-% then been installed without associated source code.
+% then been installed without associated source code. I need to invent
+% a better way of identifying where to look for files!
 
 symbolic procedure read_rubi_rule_file filename;
   begin
     scalar r, ff, save, !*echo;
-    filename := concat("$reduce/packages/rubi_red/rubi-rules/", filename);
+    filename := concat("$reduce/packages/corrundum/rubi-rules/", filename);
     ff := open(filename, 'input);
     save := rds ff;
     princ "Reading file "; print filename;
