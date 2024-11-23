@@ -534,10 +534,8 @@ symbolic procedure dfform_hypergeometric(ghfform,dfvar,n);
 
 put('hypergeometric,'dfform,'dfform_hypergeometric);
 
-
-% something is missing:
-
 algebraic let {hypergeometric({1/2,1/2},{3/2},-(~x)^2) => asinh(x)/x };
+algebraic let {hypergeometric({ 1 ,1/2},{3/2}, (~x)^2) => atanh(x)/x };
 
 algebraic let hypergeometric({~a,~b},{~c},-(~z/(1-~z))) =>
                 hypergeometric({a,c-b},{c},z) * (1-z)^a;
