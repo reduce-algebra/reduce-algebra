@@ -412,7 +412,7 @@ extern LispObject compiler_symbol, tracedfn, lisp_terminal_io;
 extern LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 extern LispObject prompt_thing;
-extern LispObject prinl_symbol, emsg_star, redef_msg;
+extern LispObject prinl_symbol, starprinl_symbol, emsg_star, redef_msg;
 extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2, active_stream, current_module;
@@ -1190,21 +1190,21 @@ extern setup_type const om_parse_setup[];
     X(multiplication_buffer), X(mv_call_symbol),    X(named_character), \
     X(nicknames_symbol),      X(not_symbol),        X(opt_key), \
     X(or_symbol),             X(output_library),    X(package_symbol), \
-    X(pathname_symbol),       X(prinl_symbol),      X(print_array_sym), \
-    X(procmem),               X(procstack),         X(progn_symbol), \
-    X(prompt_thing),          X(query_io),          X(quote_symbol), \
-    X(raise_symbol),          X(read_base),         X(reader_workspace), \
-    X(read_float_format),     X(redef_msg),         X(rehash_vec1), \
-    X(rehash_vec2),           X(resources),         X(rest_key), \
-    X(savedefs_symbol),       X(savedef_symbol),    X(short_float), \
-    X(single_float),          X(special_symbol),    X(standard_input), \
-    X(standard_output),       X(startfn),           X(karaWork), \
-    X(startup_symbol),        X(string_char_sym),   X(supervisor), \
-    X(sys_hash_table),        X(terminal_io),       X(tracedfn), \
-    X(trace_output),          X(traceprint_symbol), X(trap_time), \
-    X(unset_var),             X(used_space),        X(use_symbol), \
-    X(work_symbol),           X(NaN_symbol),        X(infinity_symbol), \
-    X(minusinfinity_symbol),  X(print_hash_symbol), \
+    X(pathname_symbol),       X(prinl_symbol),      X(starprinl_symbol), \
+    X(print_array_sym),       X(procmem),           X(procstack), \
+    X(progn_symbol),          X(prompt_thing),      X(query_io), \
+    X(quote_symbol),          X(raise_symbol),      X(read_base), \
+    X(reader_workspace),      X(read_float_format), X(redef_msg), \
+    X(rehash_vec1),           X(rehash_vec2),       X(resources), \
+    X(rest_key),              X(savedefs_symbol),   X(savedef_symbol), \
+    X(short_float),           X(single_float),      X(special_symbol), \
+    X(standard_input),        X(standard_output),   X(startfn), \
+    X(karaWork),              X(startup_symbol),    X(string_char_sym), \
+    X(supervisor),            X(sys_hash_table),    X(terminal_io), \
+    X(tracedfn),              X(trace_output),      X(traceprint_symbol), \
+    X(trap_time),             X(unset_var),         X(used_space), \
+    X(use_symbol),            X(work_symbol),       X(NaN_symbol), \
+    X(infinity_symbol),       X(minusinfinity_symbol),X(print_hash_symbol), \
  \
     X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
     X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \

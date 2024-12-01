@@ -219,6 +219,7 @@ switches!* := '(
     precise                   precise_complex           prefix
     prephold                  pret                      prfourmat
     pri                       priall                    primat
+    prinl
     prlinineq                 promptnumbers             psen
     psprintorder              pvector                   pwrds
     qgosper_down              qgosper_specialsol        qhullkeepfiles
@@ -823,6 +824,8 @@ flag('(load!-source load!-selected!-source gcd gcdn lcmn complex
 
 put('gc, 'simpfg, '((t (verbos t))
                     (nil (verbos nil))));
+
+switch loopprint;
 
 global '(!*psl !*csl);
 !*psl := nil;
