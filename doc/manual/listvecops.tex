@@ -56,10 +56,9 @@ the dot product:
 For accessing list elements, the new operator \texttt{\_} (\texttt{lnth})
 \ttindextype{\_}{(lnth) operator for lists}\ttindextype{LNTH}{operator}
 can be used instead of the \f{PART} operator.
-Note that \texttt{\_} is (unusually) a postfix operator, and that it
-must be separated from the name of the list variable to which it is
-applied, otherwise REDUCE will treat the list name and operator
-together as a single identifier.
+Note that the infix operator \texttt{\_} must be separated from the
+name of the list variable to which it is applied, otherwise REDUCE
+will treat the list name and operator as parts of a single identifier.
 \begin{verbatim}
 l := {1,{2,3},4}$
 
