@@ -3352,12 +3352,23 @@ print_my_buff:
     return nil;
 }
 
+void prin_prinl(LispObject u)
+{   one_arg* f;
+    if (qvalue(starprinl_symbol) == nil ||
+       !is_symbol(prinl_symbol) ||
+       (f = qfn1(prinl_symbol)) == undefined_1 ||
+       (f != bytecoded_1 && !is_vector(qenv(prinl_symbol))))
+    {   escaped_printing = escape_yes;
+        internal_prin(u, 0);
+    }
+    else (*f)(prinl_symbol, u);
+}
+
 LispObject prin(LispObject u)
-{   escaped_printing = escape_yes;
-    active_stream = qvalue(standard_output);
+{   active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-    internal_prin(u, 0);
+    ignore_error(prin_prinl(u));
     return u;
 }
 
@@ -3434,7 +3445,7 @@ LispObject prin_to_query(LispObject u)
 
 LispObject loop_print_stdout(LispObject o)
 {   int32_t sx = exit_reason;
-    one_arg *f;
+    one_arg* f;
     LispObject lp = qvalue(traceprint_symbol);
     if (lp == nil || lp == unset_var) lp = prinl_symbol;
 // There is a potential delicacy around here if and when prinl gets compiled
@@ -3603,7 +3614,7 @@ LispObject print(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
-    internal_prin(u, 0);
+    prin_prinl(u);
     checkResources();
     return u;
 }
@@ -3630,7 +3641,6 @@ LispObject freshline_stdout()
     checkResources();
     return nil;
 }
-
 
 LispObject freshline_trace()
 {   if (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
@@ -3869,11 +3879,14 @@ LispObject Lcheck_list(LispObject env, LispObject a)
 
 LispObject Lprin(LispObject env, LispObject a)
 {   SingleValued fn;
-    escaped_printing = escape_yes;
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-    internal_prin(a, 0);
+    if (!is_cons(a) && Lsimple_vectorp(nil,a)==nil)
+    {   escaped_printing = escape_yes;
+        internal_prin(a, 0);
+    }
+    else prin_prinl(a);
     checkResources();
     return a;
 }
@@ -4093,14 +4106,12 @@ LispObject Lprint(LispObject env, LispObject a)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
 #ifdef COMMON
-    escaped_printing = escape_yes;
     active_stream = stream;
     putc_stream('\n', stream);
-    internal_prin(a, 0);
+    prin_prinl(a);
 #else
-    escaped_printing = escape_yes;
     active_stream = stream;
-    internal_prin(a, 0);
+    prin_prinl(a);
     putc_stream('\n', active_stream);
 #endif
     checkResources();

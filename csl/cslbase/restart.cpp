@@ -123,7 +123,7 @@ LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
 LispObject compiler_symbol, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
-LispObject prompt_thing, prinl_symbol, emsg_star, redef_msg;
+LispObject prompt_thing, prinl_symbol, starprinl_symbol, emsg_star, redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module, autoload_symbol, features_symbol;
@@ -770,8 +770,8 @@ static void cold_setup()
     load_selected_source_symbol =
         make_symbol("load-selected-source", 0, Lload_selected_source0,
                     Lload_selected_source, G2Wother, G3Wother, G4Wother);
-    prinl_symbol        = make_symbol("prinl", 0, G0W1, Lprin, G2W1, G3W1,
-                                      G4W1);
+    prinl_symbol        = make_symbol("prinl", 0, G0W1, Lprin, G2W1, G3W1, G4W1);
+    starprinl_symbol    = make_constant("*loopprint", nil);
     emsg_star           = make_undefined_global("emsg*");
     redef_msg           = make_undefined_fluid("*redefmsg");
     expr_symbol         = make_undefined_symbol("expr");
