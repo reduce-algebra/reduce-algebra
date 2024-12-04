@@ -1969,6 +1969,33 @@ static void putc_utf8(int n)
     }
 }
 
+void prin_prinl(LispObject u, int blankp)
+{   one_arg* f;
+    if (qvalue(starloopprint_symbol) == nil ||
+       !is_symbol(prinl_symbol) ||
+       (f = qfn1(prinl_symbol)) == undefined_1 ||
+       (f != bytecoded_1 && !is_vector(qenv(prinl_symbol))))
+    {   escaped_printing = escape_yes;
+        internal_prin(u, blankp);
+    }
+    else
+    {   if (blankp != 0) putc_stream(' ', active_stream);
+        (*f)(prinl_symbol, u);
+    }
+}
+
+void prin_prinl2(LispObject u, int depth)
+{   two_args* f;
+    if (qvalue(starloopprint_symbol) == nil ||
+       !is_symbol(s_prinl2_symbol) ||
+       (f = qfn2(s_prinl2_symbol)) == undefined_2 ||
+       (f != bytecoded_2 && !is_vector(qenv(s_prinl2_symbol))))
+    {   escaped_printing = escape_yes;
+        internal_prin(u, 0);
+    }
+    else  (*f)(s_prinl2_symbol, u, depth);
+}
+
 LispObject internal_prin(LispObject u, int blankp)
 {   LispObject w;
     size_t len, lenchars, k;
@@ -2011,7 +2038,7 @@ restart:
             }
             outprefix(blankp, 1);
             putc_stream('(', active_stream);
-            internal_prin(car(u), 0);
+            prin_prinl(car(u), 0);
             w = u;
             while (is_cons(w = cdr(w)) && w != 0)
             {
@@ -2019,14 +2046,14 @@ restart:
                 if (w == nil) break;    // Again BEWARE the tag code of NIL
 #endif
                 u = w;
-                internal_prin(car(w), 1);
+                prin_prinl(car(w), 1);
                 w = u;
             }
             if (w != nil)
             {   u = w;
                 outprefix(true, 1);
                 putc_stream('.', active_stream);
-                internal_prin(u, 1);
+                prin_prinl(u, 1);
             }
             outprefix(false, 1);
             putc_stream(')', active_stream);
@@ -2628,7 +2655,7 @@ restart:
                         {   LispObject vv = *reinterpret_cast<LispObject *>(
                                                 (reinterpret_cast<char *>(u) +
                                                  (CELL - TAG_VECTOR) + k));
-                            internal_prin(vv, (k != 0) ? 1 : 0);
+                            prin_prinl(vv, (k != 0) ? 1 : 0);
                         }
                     outprefix(false, 1);
 #ifndef COMMON
@@ -2661,11 +2688,11 @@ restart:
                     }
                     else
 #endif
-                    {   internal_prin(elt(u, 0), 0);
+                    {   prin_prinl(elt(u, 0), 0);
                         outprefix(false, 1);
-                        internal_prin(elt(u, 1), 1);
+                        prin_prinl(elt(u, 1), 1);
                         outprefix(false, 1);
-                        internal_prin(elt(u, 2), 1);
+                        prin_prinl(elt(u, 2), 1);
                     }
                     for (k=3*CELL; k<len; k+=CELL)
                     {   std::snprintf(my_buff, sizeof(my_buff), "%.8lx",
@@ -2879,7 +2906,7 @@ restart:
 // The issue of line breaks is maybe horrid here! I probably need to
 // assess the print width of both the package name and the basic
 // part of the name somewhere around here.
-                            internal_prin(packname_(qpackage(u)), blankp | 2);
+                            prin_prinl(packname_(qpackage(u)), blankp | 2);
                             putc_stream(':', active_stream);
                             if (pkgid == 4) putc_stream(':', active_stream);
                             break;
@@ -3001,7 +3028,7 @@ restart:
                             putc_stream(':', active_stream);
                             break;
                         case 3:
-                        case 4: internal_prin(packname_(qpackage(u)), blankp | 2);
+                        case 4: prin_prinl(packname_(qpackage(u)), blankp | 2);
                             putc_stream(':', active_stream);
                             if (pkgid == 4) putc_stream(':', active_stream);
                             break;
@@ -3321,18 +3348,18 @@ restart:
 // denominator.  This would be HORRID. I guess that the correct recipe will
 // involve measuring the size of the denominator first... Let's not bother
 // just at the moment.
-                internal_prin(numerator(u), blankp);
+                prin_prinl(numerator(u), blankp);
                 outprefix(false, 1);
                 putc_stream('/', active_stream);
-                internal_prin(denominator(u), 0);
+                prin_prinl(denominator(u), 0);
                 return nil;
             }
             else if (is_complex(u))
             {   outprefix(blankp, 3);
                 putc_stream('#', active_stream), putc_stream('C', active_stream);
                 putc_stream('(', active_stream);
-                internal_prin(real_part(u), 0);
-                internal_prin(imag_part(u), 1);
+                prin_prinl(real_part(u), 0);
+                prin_prinl(imag_part(u), 1);
                 outprefix(false, 1);
                 putc_stream(')', active_stream);
                 return nil;
@@ -3352,23 +3379,11 @@ print_my_buff:
     return nil;
 }
 
-void prin_prinl(LispObject u)
-{   one_arg* f;
-    if (qvalue(starprinl_symbol) == nil ||
-       !is_symbol(prinl_symbol) ||
-       (f = qfn1(prinl_symbol)) == undefined_1 ||
-       (f != bytecoded_1 && !is_vector(qenv(prinl_symbol))))
-    {   escaped_printing = escape_yes;
-        internal_prin(u, 0);
-    }
-    else (*f)(prinl_symbol, u);
-}
-
 LispObject prin(LispObject u)
 {   active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-    ignore_error(prin_prinl(u));
+    ignore_error(prin_prinl(u, 0));
     return u;
 }
 
@@ -3614,7 +3629,7 @@ LispObject print(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
-    prin_prinl(u);
+    prin_prinl(u, 0);
     checkResources();
     return u;
 }
@@ -3886,7 +3901,7 @@ LispObject Lprin(LispObject env, LispObject a)
     {   escaped_printing = escape_yes;
         internal_prin(a, 0);
     }
-    else prin_prinl(a);
+    else prin_prinl(a, 0);
     checkResources();
     return a;
 }
@@ -4108,10 +4123,10 @@ LispObject Lprint(LispObject env, LispObject a)
 #ifdef COMMON
     active_stream = stream;
     putc_stream('\n', stream);
-    prin_prinl(a);
+    prin_prinl(a, 0);
 #else
     active_stream = stream;
-    prin_prinl(a);
+    prin_prinl(a, 0);
     putc_stream('\n', active_stream);
 #endif
     checkResources();

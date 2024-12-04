@@ -259,7 +259,10 @@ symbolic procedure s!:prinl1(x, depth);
     if fixp !*print!-level!* and depth > !*print!-level!* then return nil;
     length := 0;
  top:
-    if atom x and not simple!-vector!-p x and not gensymp x then return nil
+    if atom x and
+       not simple!-vector!-p x and
+       not gensymp x and
+       not hash!-table!-p x then return nil
     else if w := gethash(x,!*prinl!-visited!-nodes!*) then <<
        if w = 0 then <<
          !*prinl!-index!* := !*prinl!-index!* + 1;
@@ -273,6 +276,7 @@ symbolic procedure s!:prinl1(x, depth);
           if fixp !*print!-length!* and !*print!-length!* < length then
               length := !*print!-length!*;
           for i:=0:length do s!:prinl1(getv(x,i), depth+1) >> >>
+      else if hash!-table!-p x then s!:prinl1(hashcontents x, depth+1)
       else if not atom x then <<
           s!:prinl1(car x, depth+1);
           if fixp !*print!-length!* and
@@ -323,6 +327,18 @@ symbolic procedure s!:prinl2(x, depth);
          else princ "...";
          princ ")";
          return nil >>
+      else if hash!-table!-p x then <<
+        x := hashcontents x;
+        if null x then princ "#H()"
+        else <<
+          w := "#H(";
+          for each y in x do <<
+            princ w;
+            w := " ";
+            s!:prinl2(car y, depth+1);
+            princ ":";
+            s!:prinl2(cdr y, depth+1) >>;
+        princ ")" >> >>
       else if atom x then return funcall(!*prinl!-fn!*, x);
       princ "(";
       length := 0;
