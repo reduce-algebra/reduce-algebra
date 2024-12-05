@@ -1,0 +1,78 @@
+% $Id$
+\index{Wright, Francis J.}\index{People!Wright, Francis J.}
+
+The operator \texttt{with} allows an expression to be evaluated and
+its value displayed subject to switch settings that apply only locally
+during the evaluation and display of this expression.  Its syntax is
+\begin{center}
+  \textit{expression} \texttt{with}
+  \textit{on/off} \textit{switches}\texttt{,}
+  \textit{on/off} \textit{switches}\texttt{,}
+  ...
+\end{center}
+where \textit{on/off} is either \texttt{on} or \texttt{off}, and
+\textit{switches} is a single switch name or a comma-separated
+sequence of switch names (as for the \texttt{on} and \texttt{off}
+commands).  It is intended primarily for interactive use and provides
+a convenient way to experiment with the effects of different switches.
+Here are some examples, assuming default switch settings:
+\begin{verbatim}
+(a+b)^2/2 with off exp, on div;
+
+ 1         2
+---*(a + b)
+ 2
+
+pi with on rounded;
+
+3.14159265359
+
+fix(sqrt 10) with on rounded;
+
+3
+\end{verbatim}
+
+The \texttt{with} operator has precedence immediately above
+\texttt{:=}, so \texttt{with} binds tighter than \texttt{:=} but looser
+than almost every other infix operator.  Therefore,
+\begin{verbatim}
+x := pi + e with on rounded;
+\end{verbatim}
+parses as
+\begin{verbatim}
+x := ((pi + e) with on rounded);
+\end{verbatim}
+Hence,
+\begin{verbatim}
+x := pi + e with on rounded;
+
+5.85987448205
+
+x;
+
+ 103088002085129
+-----------------
+ 17592186044416
+
+x with on rounded;
+
+5.85987448205
+\end{verbatim}
+In the above example, $x$ is assigned a floating-point number, but it
+is displayed as a rational number when the default switch settings are
+in effect.
+
+The keywords \texttt{on} and \texttt{off} can appear as many times as
+desired in the right operand of \texttt{with}.  If a switch already
+has the setting specified in the right operand then it is not changed,
+but if it has the opposite setting then it is changed before the left
+operand is evaluated, and displayed if required, and changed back
+afterwards.  Repeated identical switch settings are ignored but
+conflicting settings cause an error.  The order of switch settings is
+preserved.
+
+Not all switches work sensibly locally, but for example
+\begin{verbatim}
+int(sin x, x) with on trint;
+\end{verbatim}
+turns on integration tracing temporarily.

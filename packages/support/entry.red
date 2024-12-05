@@ -1462,6 +1462,15 @@ defautoload(sparse, sparse);
 
 put('sparse,'stat,'rlis);
 
+% With
+
+global '(fixedpreclis!*);
+% Set precedence immediately above setq:
+fixedpreclis!* := append(fixedpreclis!*, 'with . nil);
+mkprec();
+put('with, 'formfn, 'formwith);
+defautoload(formwith, '(with), expr, 3);
+
 endmodule;
 
 end;
