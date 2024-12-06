@@ -1,7 +1,7 @@
 % "package.map"
 
 %**************************************************************************
-%* Copyright (C) 2020, the Reduce developers                              *
+%* Copyright (C) 2024, the Reduce developers                              *
 %*                                                                        *
 %* Redistribution and use in source and binary forms, with or without     *
 %* modification, are permitted provided that the following conditions are *
@@ -135,6 +135,7 @@
  (compact       "misc"        core    dfpart       test      csl psl)
  (dfpart        "misc"        core    preloadX     test      csl psl)
  (lie           "misc"        core    preloadX     test      csl psl)
+ (with          "misc"        core    preloadX               csl psl)
 
 % Now the modules that are not "core"... It may be possible and it may
 % be desirable to promote some to core status...
