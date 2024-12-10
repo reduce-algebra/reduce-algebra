@@ -34,8 +34,7 @@ global '(basisforml!* basisvectorl!* keepl!* naturalframe2coframe
 fluid '(metricd!* metricu!* alglist!* indl kord!* subfg!*); % indl needed by Common Lisp.
 
 symbolic procedure coframestat;
-   begin scalar framel,metric,with := get('with,'infix);
-     remprop('with,'infix);
+   begin scalar framel,metric,with := remprop('with,'infix);
      flag('(with),'delim);
      framel := cdr rlis();
      remflag('(with),'delim);
