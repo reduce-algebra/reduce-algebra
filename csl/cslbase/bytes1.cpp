@@ -241,8 +241,13 @@ static LispObject remprop(LispObject a, LispObject b)
     if (!symbolp(a)) return nil;
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
     {   pl = qfastgets(a);
-        if (pl != nil) basic_elt(pl, n-1) = SPID_NOPROP;
-        return nil;
+        if (pl != nil)
+        {   LispObject res = basic_elt(pl, n-1);
+            if (res == SPID_NOPROP) res = nil;
+            basic_elt(pl, n-1) = SPID_NOPROP;
+            return res;
+        }
+        else return nil;
     }
     prevp = nil;
     pl = qplist(a);

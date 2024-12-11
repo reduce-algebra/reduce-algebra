@@ -34,10 +34,11 @@ global '(basisforml!* basisvectorl!* keepl!* naturalframe2coframe
 fluid '(metricd!* metricu!* alglist!* indl kord!* subfg!*); % indl needed by Common Lisp.
 
 symbolic procedure coframestat;
-   begin scalar framel,metric;
+   begin scalar framel,metric,with := remprop('with,'infix);
      flag('(with),'delim);
      framel := cdr rlis();
      remflag('(with),'delim);
+     put('with,'infix,with);
      if cursym!* eq '!*semicol!* then go to a;
      if scan() eq 'metric then metric := xread t
       else if cursym!* eq 'signature then metric := rlis()
@@ -110,7 +111,7 @@ symbolic procedure coframe1 u;
      w := !*pf2matwrtcoords(v,scoord);
      naturalvector2framevector := v;
      subfg!* := nil;
-     naturalframe2coframe := 
+     naturalframe2coframe :=
           for each j in lnrsolve(w,for each k in basisforml!*
                                        collect list !*k2q k)
               collect car j;

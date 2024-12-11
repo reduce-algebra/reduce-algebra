@@ -1975,9 +1975,7 @@ void prin_prinl(LispObject u, int blankp)
        !is_symbol(prinl_symbol) ||
        (f = qfn1(prinl_symbol)) == undefined_1 ||
        (f != bytecoded_1 && !is_vector(qenv(prinl_symbol))))
-    {   escaped_printing = escape_yes;
         internal_prin(u, blankp);
-    }
     else
     {   if (blankp != 0) putc_stream(' ', active_stream);
         (*f)(prinl_symbol, u);
@@ -1990,9 +1988,7 @@ void prin_prinl2(LispObject u, int depth)
        !is_symbol(s_prinl2_symbol) ||
        (f = qfn2(s_prinl2_symbol)) == undefined_2 ||
        (f != bytecoded_2 && !is_vector(qenv(s_prinl2_symbol))))
-    {   escaped_printing = escape_yes;
         internal_prin(u, 0);
-    }
     else  (*f)(s_prinl2_symbol, u, depth);
 }
 
@@ -3383,6 +3379,7 @@ LispObject prin(LispObject u)
 {   active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
+    escaped_printing = escape_yes;
     ignore_error(prin_prinl(u, 0));
     return u;
 }
@@ -3629,6 +3626,7 @@ LispObject print(LispObject u)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     putc_stream('\n', stream);
+    escaped_printing = escape_yes;
     prin_prinl(u, 0);
     checkResources();
     return u;
@@ -3897,10 +3895,8 @@ LispObject Lprin(LispObject env, LispObject a)
     active_stream = qvalue(standard_output);
     if (!is_stream(active_stream)) active_stream = qvalue(terminal_io);
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
-    if (!is_cons(a) && Lsimple_vectorp(nil,a)==nil)
-    {   escaped_printing = escape_yes;
-        internal_prin(a, 0);
-    }
+    escaped_printing = escape_yes;
+    if (!is_cons(a) && Lsimple_vectorp(nil,a)==nil) internal_prin(a, 0);
     else prin_prinl(a, 0);
     checkResources();
     return a;
@@ -4120,6 +4116,7 @@ LispObject Lprint(LispObject env, LispObject a)
     LispObject stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
+    escaped_printing = escape_yes;
 #ifdef COMMON
     active_stream = stream;
     putc_stream('\n', stream);
