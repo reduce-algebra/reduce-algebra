@@ -1,10 +1,10 @@
-;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer  -*- lexical-binding: t; -*-
+;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer  -*- lexical-binding:t -*-
 
 ;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022-2024 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: late 1998
-;; Time-stamp: <2024-03-05 18:10:15 franc>
+;; Time-stamp: <2024-12-14 18:00:52 franc>
 ;; Keywords: languages, processes
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
 
@@ -52,6 +52,7 @@
 
 (require 'reduce-mode)
 (require 'comint)
+(require 'wid-edit)
 
 (eval-when-compile (require 'cl-lib))
 
@@ -61,48 +62,62 @@
 (define-obsolete-variable-alias
   'reduce-run-installation-directory 'reduce-root-dir-file-name "1.12"
   "But note that ‘reduce-root-dir-file-name’ has slightly different
-semantics.  It is a directory file name and so must *not* end
-with a directory separator.")
+semantics.  It is a directory file name and so should *not* end with a
+directory separator.")
+
+(defun reduce-run--validate-root-dir (widget)
+  "Ensure that WIDGET is an accessible absolute directory file name.
+If so, return nil.  Otherwise, return WIDGET with error set."
+  (let* ((value (widget-value widget)) (old-value value))
+    (if (not (file-accessible-directory-p value))
+        (progn
+          (widget-put
+           widget :error
+           (format "Directory not accessible: %S" value))
+          widget)
+      (if (directory-name-p value)
+          (setq value (directory-file-name value)))
+      (if (not (file-name-absolute-p value))
+          (setq value (expand-file-name value)))
+      (if (not (string-equal value old-value))
+          (widget-value-set widget value))
+      nil)))
 
 (defcustom reduce-root-dir-file-name
   (if (eq system-type 'windows-nt)
-      (let ((path "?:/Program Files/Reduce"))
+      (let ((path (copy-sequence "?:/Program Files/Reduce"))) ; mutable
         (cl-do ((drive ?C (1+ drive))) ((> drive ?Z))
           (aset path 0 drive)
           (when (file-accessible-directory-p path)
             (cl-return path))))
     "/usr/share/reduce")
-  "Root directory of the REDUCE installation, or nil if not set.
-It must be an absolute file name and must *not* end with a
-directory separator.  It is the directory containing the
-“packages” directory and, on Microsoft Windows, the “bin”
-directory containing the user-executable batch files.  On
-Microsoft Windows, it defaults to “?:/Program Files/Reduce”,
-where ? is a letter C--Z that REDUCE Run mode attempts to
-determine automatically.  On other platforms, it defaults to
-“/usr/share/reduce”.  It the appropriate default value for the
-environment variable “reduce”.
+  "Default REDUCE installation root directory, or nil if not set.
+If set, it must be an accessible absolute directory file name (without
+any trailing directory separator).  It should be the directory
+containing the “packages” directory and, on Microsoft Windows, the “bin”
+directory containing “redcsl.bat” and “redpsl.bat”.  On Microsoft
+Windows, it defaults to “?:/Program Files/Reduce”, where ? is a letter
+C\-Z that REDUCE Run mode attempts to determine automatically.  On other
+platforms, it defaults to “/usr/share/reduce”.
 
 Note that you can complete the directory name using \
-\\<widget-field-keymap>‘\\[widget-complete]’.
-
-If the “env”, “program” or any argument component of a command in
-‘reduce-run-commands’, or the value of ‘reduce-packages-directory’,
-begins with the shorthand “$reduce” then it is replaced with the
-value of this option."
-  :type  '(choice (const :tag "None" nil) directory)
+\\<widget-field-keymap>‘\\[widget-complete]’."
+  :type '(choice
+          (const :tag "None" nil)
+          (directory :validate reduce-run--validate-root-dir))
   :link '(custom-manual "(reduce-ide)REDUCE on Windows")
   :group 'reduce-run
-  :package-version '(reduce-ide . "1.12"))
+  :package-version '(reduce-ide . "1.13"))
 
 (defcustom reduce-run-commands
   (if (and (eq system-type 'windows-nt) reduce-root-dir-file-name)
+      ;; reduce-root-dir-file-name must be set to replace $reduce!
       '(("CSL"
-         "$reduce"
+         nil
          "$reduce/lib/csl/reduce.exe"
          "--nogui")
         ("PSL"
-         "$reduce"
+         nil
          "$reduce/lib/psl/psl/bpsl.exe"
          "-td" "1000" "-f" "$reduce/lib/psl/red/reduce.img")
         ("redcsl.bat"
@@ -114,38 +129,36 @@ value of this option."
     '(("CSL" nil "redcsl" "--nogui")
       ("PSL" nil "redpsl")))
   "Alist of commands to run different versions of REDUCE.
-By default, it should be appropriate for standard installations
-of CSL and PSL REDUCE.
+By default, it should be appropriate for standard installations of CSL
+and PSL REDUCE.
 
-Each element has the form “name.env.program.arguments”, where
-“name” and “program” are strings, “env” is nil or a string, and
+Each element has the form “name.root.program.arguments”, where “name”
+and “program” are strings, “root” is nil or a directory file name, and
 “arguments” is a possibly empty list of strings.  All strings may
-include spaces.  The “name” component is arbitrary but typically
-relates to the underlying Lisp system.  The string \" REDUCE\" is
-appended to it to provide the default name for the interaction
-buffer.
-
-If “env”, “program” or any argument begins with the shorthand
-“$reduce” then it is replaced with the value of
-‘reduce-root-dir-file-name’ before it is used.
-
-If the “env” component is non-nil then it will become the value
-of the environment variable “reduce” within the REDUCE process
-and should be the absolute pathname of the root of the REDUCE
-file tree.  This is used only by a few specialized REDUCE
-packages.  It is not useful if REDUCE is run via a shell script
-that sets the environment variable “reduce” itself.
-
-The “program” component should be an absolute pathname or a
-command on the search path, and the “arguments” component
-consists of optional command arguments.
-
-For *temporary* backward compatibility, each element may
-alternatively have the form “name.command”, where “name” and
-“command” are strings.  The command string should begin with an
-absolute pathname that *may* include spaces or a command on the
-search path, and it may be followed by arguments, which *may not*
 include spaces.
+
+The “name” component is arbitrary but typically relates to the
+underlying Lisp system.  The string \" REDUCE\" is appended to it to
+provide the default name for the interaction buffer.
+
+If “root” is unset (nil) then it defaults to the value of
+‘reduce-root-dir-file-name’; if it is set then its value should be as
+described for ‘reduce-root-dir-file-name’.  If “root” is non-nil and
+“program” or any argument _begins_ with the shorthand “$reduce” then
+“$reduce” will be replaced by “root”.  Also, “root” will become the
+value of the environment variable “reduce” within the REDUCE
+process.  (This is used only by a few specialized REDUCE packages and it
+will be overwritten if REDUCE is run via a shell script that sets the
+environment variable “reduce” itself.)
+
+The “program” component should be an absolute pathname or a command on
+the search path, and “arguments” consists of optional command arguments.
+
+For *temporary* backward compatibility, each element may alternatively
+have the form “name.command”, where “name” and “command” are strings.
+The command string should begin with an absolute pathname that *may*
+include spaces or a command on the search path, and it may be followed
+by arguments, which *may not* include spaces.
 
 The command (together with its arguments) must invoke a
 command-line version of REDUCE; a GUI version will not work!  A
@@ -153,13 +166,13 @@ binary program is run directly, whereas a shell script is run via
 the default shell.  On Microsoft Windows, it is best to run
 REDUCE directly and not via a “.bat” file."
   :type
-  `(alist :tag ,(format "Commands ($reduce => \"%s\")"
-                        reduce-root-dir-file-name)
+  `(alist :tag "Commands"
           :key-type (string :tag "Name")
           :value-type
-          (cons :tag "$reduce environment variable"
+          (cons :tag ,(format "Root => $reduce (defaults to \"%s\")"
+                              reduce-root-dir-file-name)
                 (choice (const :tag "Unset" nil)
-                        (string :tag "Value"))
+                        (directory :validate reduce-run--validate-root-dir))
                 (cons :tag "Command"
                       (string :tag "Program")
                       (repeat :tag "Arguments"
@@ -167,13 +180,12 @@ REDUCE directly and not via a “.bat” file."
   :set-after '(reduce-root-dir-file-name)
   :link '(custom-manual "(reduce-ide)Running")
   :group 'reduce-run
-  :package-version '(reduce-ide . "1.12"))
+  :package-version '(reduce-ide . "1.13"))
 
 (defcustom reduce-run-command-name-default
   (caar reduce-run-commands)
   "Default command name to run REDUCE, or nil.
 The default is the first command name in ‘reduce-run-commands’."
-  ;; :type 'string
   :type `(choice (const :tag "None" nil)
                  ,@(mapcar #'(lambda (x) (list 'const (car x)))
                            reduce-run-commands))
@@ -185,12 +197,11 @@ The default is the first command name in ‘reduce-run-commands’."
 (defcustom reduce-run-terminal
   (and (not (eq system-type 'windows-nt)) "Eterm")
   "If non-nil, value of TERM to use on Unix-like platforms.
-This sets `comint-terminfo-terminal' to the value of
-`reduce-run-terminal' and `system-uses-terminfo' to t locally
-within `run-reduce' so that CSL REDUCE responds appropriately to
-interrupts, which with a dumb terminal it does not.
-A nil value means use the Emacs defaults.
-Possible values to try are “Eterm”, “\emacs”, “xterm”."
+This sets ‘comint-terminfo-terminal’ to the value of
+‘reduce-run-terminal’ and ‘system-uses-terminfo’ to t locally within
+‘run-reduce’ so that CSL REDUCE responds appropriately to interrupts,
+which with a dumb terminal it does not.  A nil value means use the Emacs
+defaults.  Possible values to try are ‘Eterm’, ‘emacs’, ‘xterm’."
   :type '(choice (const :tag "Default" nil) string)
   :link '(custom-manual "(reduce-ide)Running")
   :group 'reduce-run
@@ -286,66 +297,36 @@ Bindings are common to REDUCE mode and REDUCE Run mode."
 (define-key reduce-mode-map "\C-c\C-z" 'switch-to-reduce)
 (define-key reduce-mode-map "\M-R" 'run-reduce)
 
-(defconst reduce-run--menu2
-  '(["Run File…" reduce-run-file :active t
-     :help "Run selected REDUCE source file in a new REDUCE process"]
-    "--"
-    ["Input File…" reduce-input-file :active t
-     :help "Input selected REDUCE source file into selected REDUCE process"]
-    ["Load Package…" reduce-load-package :active t
-     :help "Load selected REDUCE package into selected REDUCE process"]
-    ["Compile File…" reduce-compile-file :active t
-     :help "Compile selected REDUCE source file to selected FASL file"]
-    "--"))
-
 (easy-menu-define                       ; (symbol maps doc menu)
-  reduce-run--menu
+  nil
   reduce-run-mode-map
   "REDUCE Run Menu."
   `("Run REDUCE"
-    ["(Re)Run REDUCE" rerun-reduce :active t
+    ["(Re)Run REDUCE" rerun-reduce
      :help "Stop REDUCE if running in this buffer, then (re)start it"]
-    ,@reduce-run--menu2
-    ["Customize…" (customize-group 'reduce-run) :active t
+    ,@reduce-mode--run-menu2
+    ["Customize…" (customize-group 'reduce-run)
      :help "Customize REDUCE Run mode"]
-    ["Show Version" reduce-ide-version :active t
+    ["Show Version" reduce-ide-version
      :help "Show the REDUCE IDE version"]
     ))
 
 (easy-menu-define                       ; (symbol maps doc menu)
   reduce-mode--run-menu
   nil
-  "REDUCE Mode Run Menu -- updates stub when this file is loaded."
-  `("Run REDUCE"
-    ["Run REDUCE" run-reduce :active t
-     :help "Start a new REDUCE process if necessary"]
-    ["Run Buffer" reduce-run-buffer :active t
-     :help "Run the current buffer in a new REDUCE process"]
-    ,@reduce-run--menu2
-    ["Input Last Statement" reduce-eval-last-statement :active t
-     :help "Input the statement before point to a REDUCE process"]
-    ["Input Line" reduce-eval-line :active t
-     :help "Input the line containing point to a REDUCE process"]
-    ["Input Procedure" reduce-eval-proc :active t
-     :help "Input the procedure containing point to a REDUCE process"]
-    ["Input Region" reduce-eval-region :active mark-active
-     :help "Input the selected region to a REDUCE process"]
-    "--"
-    ["Switch To REDUCE" switch-to-reduce :active t
-     :help "Select and switch to a REDUCE process"]
-    ["Customize…" (customize-group 'reduce-run) :active t
-     :help "Customize REDUCE Run mode"]
-    ))
+  "REDUCE Mode Run Menu -- \
+updates autoload version when this file is loaded."
+  reduce-mode--run-menu1)
 
 (let ((keymap (lookup-key reduce-mode-map [menu-bar]))
       (definition (cons "Run REDUCE" reduce-mode--run-menu)))
-  ;; Redefine the Run REDUCE menu stub if it exists:
+  ;; Redefine the REDUCE Mode Run menu autoload version if it exists:
   (if (lookup-key keymap [run\ reduce])
       (define-key keymap
         [run\ reduce]                   ; MUST be lower case!
         definition)
-    ;; Otherwise, put the Run REDUCE menu on the menu bar AFTER the
-    ;; REDUCE menu:
+    ;; Otherwise, put the REDUCE Mode Run menu on the menu bar AFTER
+    ;; the REDUCE menu:
     (define-key-after keymap
       [Run\ REDUCE]
       definition 'REDUCE)))
@@ -404,8 +385,8 @@ The customization group ‘reduce-run’ affects this mode.  REDUCE
 Run inherits from comint, so the customization group ‘comint’
 also affects this mode.  Entry to this mode runs the hooks on
 ‘comint-mode-hook’ and ‘reduce-run-mode-hook’ (in that order)."
-  :syntax-table reduce-mode-syntax-table
   :group 'reduce-run
+  :syntax-table reduce-mode-syntax-table
   ;; Optionally set up font-lock-mode:
   (and reduce-font-lock-mode-on
        (require 'reduce-font-lock "reduce-font-lock" t)
@@ -531,58 +512,57 @@ Return t if successful; otherwise return nil."
 
 (defun reduce-run--run-reduce-1 (cmd process-name buffer-name)
   "Run CMD as REDUCE process PROCESS-NAME in buffer BUFFER-NAME.
+Set the buffer-local value of ‘reduce-root-dir-file-name’ to “root”.
 Return the process buffer if successful; nil otherwise."
-  (set-buffer (reduce-run--run-reduce-2 cmd process-name))
-  (reduce-run-mode)
+  (let ((root (reduce-run--run-reduce-2 cmd process-name)))
+    (reduce-run-mode)
+    (setq-local reduce-root-dir-file-name root))
   (pop-to-buffer buffer-name))
 
 (defun reduce-run--run-reduce-2 (cmd process-name)
   "Run CMD as REDUCE process PROCESS-NAME.
-Use terminal type ‘reduce-run-terminal’ if non-nil.
-Return the process buffer if successful; nil otherwise."
+Use terminal type ‘reduce-run-terminal’ if non-nil.  Return “root”."
   (if reduce-run-terminal
       (let ((comint-terminfo-terminal reduce-run-terminal)
             (system-uses-terminfo t))
         (reduce-run--run-reduce-3 cmd process-name))
     (reduce-run--run-reduce-3 cmd process-name)))
 
-(defun reduce-run--replace-$reduce (strng)
-  "Return STRNG with “$reduce” at the start replaced.
-If STRNG begins with “$reduce” then replace it with the value of
-‘reduce-root-dir-file-name’."
-  (and reduce-root-dir-file-name strng
-       (replace-regexp-in-string
-        "\\`\\$reduce" reduce-root-dir-file-name strng)))
-
 (defun reduce-run--run-reduce-3 (cmd process-name)
   "Run CMD as REDUCE process PROCESS-NAME.
-CMD has the form “env.program.arguments”, where “env” is nil or
-the value for the environment variable “reduce” within the REDUCE
-process; “program.arguments” is a list of strings representing a
-command and its arguments.  Return the process buffer if
-successful; nil otherwise."
+CMD has the form “root.program.arguments”, where “root” is nil or the
+value for both the shorthand “$reduce” and the environment variable
+“reduce” within the REDUCE process; “program.arguments” is a list of
+strings representing a command and its arguments.  Switch to the process
+buffer and return “root”."
   (let ((process-environment process-environment)
-        (env (reduce-run--replace-$reduce (car cmd)))
-        (cmdlist (mapcar #'reduce-run--replace-$reduce (cdr cmd))))
-    (when env
-      (push (concat "reduce=" env) process-environment))
+        (root (or (car cmd) reduce-root-dir-file-name)))
+    (setq cmd (cdr cmd))
+    (when root
+      (setq cmd
+            (mapcar
+             #'(lambda (s) (replace-regexp-in-string "\\`\\$reduce" root s))
+             cmd))
+      (push (concat "reduce=" root) process-environment))
     ;; ‘apply’ used below because last arg is &rest!
-    (apply #'make-comint-in-buffer
-           process-name nil (car cmdlist) nil (cdr cmdlist))))
+    (set-buffer (apply #'make-comint-in-buffer
+                       process-name nil (car cmd) nil (cdr cmd)))
+    root))
 
 (add-hook 'same-window-regexps "REDUCE") ; ??? Not sure about this! ???
 
 (defun reduce-run-send-input ()
   "Send input to REDUCE.
-Add a final ’;’ unless there is already a final terminator or a
-’?’ in the current line, provided REDUCE is running.  Then call
-‘comint-send-input’.
+Provided REDUCE is running, the cursor is at the end of the
+buffer, there is non-blank input (to support “on demo”) and there
+is no final terminator or ’?’ in the current line then add a
+final ’;’.  Then call ‘comint-send-input’.
 \\<reduce-run-mode-map>Note that ‘\\[comint-send-input]’ calls ‘comint-send-input’ directly."
   (interactive)
   (end-of-line)
   (if (and (get-buffer-process (current-buffer))
            (eobp)
-           (not (looking-back "[;$]\\s-*\\|\\?.*" nil)))
+           (not (looking-back "\\([[:digit:]][:*]\\|[;$]\\)\\s-*\\|\\?.*" nil)))
       (insert ?\;))
   (comint-send-input))
 
@@ -841,70 +821,36 @@ The user chooses whether to echo file input."
 ;;; Support for loading REDUCE packages
 ;;; ===================================
 
-(defvar reduce-run--package-completion-alist nil
+(defvar-local reduce-run--package-completion-alist nil
   "Alist of REDUCE packages used for completion by ‘reduce-load-package’.
-Not intended to be set directly but by customizing ‘reduce-packages-directory’.")
+It is buffer-local and specific to each version of REDUCE.")
 
-(defun reduce-run--set-package-completion-alist (dir)
-  "Assign ‘reduce-run--package-completion-alist’ using directory DIR.
-Process the “package.map” file in directory DIR, assuming it is
-the REDUCE packages directory.  Return DIR if successful; otherwise nil."
+(defun reduce-run--package-completion-alist ()
+  "Return the value of variable ‘reduce-run--package-completion-alist’.
+Build it if necessary by processing \"$reduce/packages/package.map\"
+using the (buffer-local) value of ‘reduce-root-dir-file-name’."
   ;; Errors are trapped by customization, so report problems using
   ;; message.
-  (if (not (file-accessible-directory-p dir))
-      (progn (message "Directory %s is not accessible" dir) nil)
-    (let ((package.map (concat dir "package.map")))
-      (if (not (file-readable-p package.map))
-          (progn (message "File %s is not readable" package.map) nil)
-        (with-temp-buffer
-          (insert-file-contents package.map)
-          (while (re-search-forward "%.*" nil t)
-            (replace-match ""))
-          (goto-char 1)
-          (let ((packages (read (current-buffer))))
-            (setq packages
-                  (mapcar
-                   #'(lambda (x) (symbol-name (car x)))
-                   packages)
-                  packages (sort packages #'string<)
-                  reduce-run--package-completion-alist
-                  (mapcar #'list packages))))
-        dir))))
-
-;; Note that ‘reduce-packages-directory’ must be defined after
-;; ‘reduce-run--set-package-completion-alist’!
-
-(defcustom reduce-packages-directory
-  (and reduce-root-dir-file-name
-       (let ((dir "$reduce/packages/"))
-         (and (file-accessible-directory-p
-               (reduce-run--replace-$reduce dir))
-              dir)))
-  (concat "Directory of REDUCE packages, or nil if not set.
-It should be an absolute pathname ending with “…/packages/” and
-should be set automatically.  The directory must exist.
-Customizing this variable sets up completion for
-‘reduce-load-package’; setting it directly has no effect.
-
-You can complete the directory name using \
-\\<widget-field-keymap>‘\\[widget-complete]’.
-Alternatively, the shorthand “$reduce” at the start of the
-directory name is replaced with the value of
-‘reduce-root-dir-file-name’ before this option is used, that is
-$reduce =>" reduce-root-dir-file-name)
-  :set #'(lambda (symbol value)
-           (when value
-             (let ((dir (reduce-run--replace-$reduce value)))
-               (when (reduce-run--set-package-completion-alist dir)
-                 (set-default symbol value)))))
-  :set-after '(reduce-root-dir-file-name)
-  :type `(choice (const :tag "None" nil)
-                 (directory :help-echo
-                            ,(format "$reduce => %s"
-                                     reduce-root-dir-file-name)))
-  :link '(custom-manual "(reduce-ide)Processing REDUCE Files")
-  :group 'reduce-run
-  :package-version '(reduce-ide . "1.12"))
+  (or reduce-run--package-completion-alist
+      (let ((dir (concat reduce-root-dir-file-name "/packages/")))
+        (if (not (file-accessible-directory-p dir))
+            (progn (message "Directory %s is not accessible" dir) nil)
+          (let ((package.map (concat dir "package.map")))
+            (if (not (file-readable-p package.map))
+                (progn (message "File %s is not readable" package.map) nil)
+              (with-temp-buffer
+                (insert-file-contents package.map)
+                (while (re-search-forward "%.*" nil t)
+                  (replace-match ""))
+                (goto-char 1)
+                (let ((packages (read (current-buffer))))
+                  (setq packages
+                        (mapcar
+                         #'(lambda (x) (symbol-name (car x)))
+                         packages)
+                        packages (sort packages #'string<)
+                        reduce-run--package-completion-alist
+                        (mapcar #'list packages))))))))))
 
 (defvar reduce-run--load-package-history nil
      "A history list for ‘reduce-load-package’.")
@@ -931,7 +877,7 @@ $reduce =>" reduce-root-dir-file-name)
      (list
       (completing-read
        prompt
-       reduce-run--package-completion-alist
+       (reduce-run--package-completion-alist)
        nil              ; predicate
        nil              ; require-match
        nil              ; initial

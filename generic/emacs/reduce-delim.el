@@ -1,10 +1,10 @@
-;;; reduce-delim.el --- Highlight matching group or block delimiter  -*- lexical-binding: t; -*-
+;;; reduce-delim.el --- Highlight matching group or block delimiter  -*- lexical-binding:t -*-
 
 ;; Copyright (C) 2018, 2022-2024 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: 22 March 2018
-;; Time-stamp: <2024-01-28 17:23:27 franc>
+;; Time-stamp: <2024-12-14 16:41:06 franc>
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
 
 ;; This file is part of REDUCE IDE.
@@ -26,9 +26,6 @@
 
 ;; Based closely on Emacs 26 paren.el --- highlight matching paren
 
-;; Display highlighting on whatever group or block delimiter matches
-;; the one before or after point.
-
 ;; In a REDUCE mode buffer, execute ‘M-x reduce-show-delim-mode’ to
 ;; toggle this buffer-local minor mode.  When on, it will display
 ;; highlighting on whatever group or block delimiter matches the one
@@ -42,7 +39,7 @@
 ;;; Code:
 
 (require 'reduce-mode)
-(require 'paren)						; although loaded by default
+(require 'paren)                        ; although loaded by default
 
 ;;;###autoload
 (defgroup reduce-delim-showing nil
@@ -77,8 +74,8 @@ Default is the same as for ‘show-paren-mode’."
   "Style used when showing a matching delimiter.
 Valid styles are ‘delimiter’ (meaning show the matching delimiter),
 ‘expression’ (meaning show the entire expression enclosed by the
-delimiters) and ‘mixed’ (meaning show the matching delimiter if
-it is visible, and the expression otherwise)."
+delimiters) and ‘mixed’ (meaning show the matching delimiter if it is
+visible, and the expression otherwise)."
   :type '(choice (const delimiter) (const expression) (const mixed))
   :group 'reduce-delim-showing)
 
@@ -106,8 +103,8 @@ This will only be done when point isn't also just outside a delimiter."
 (defcustom reduce-show-delim-when-point-in-periphery
   show-paren-when-point-in-periphery
   "If non-nil, show delimiters when point is in the line's periphery.
-The periphery is at the beginning or end of a line or in any
-whitespace there."
+The periphery is at the beginning or end of a line or in any whitespace
+there."
   :type 'boolean
   :group 'reduce-delim-showing)
 
@@ -137,15 +134,15 @@ highlighted, the cursor being regarded as adequate to mark its position."
 ;;;###autoload
 (define-minor-mode reduce-show-delim-mode
   "Toggle REDUCE Show Delim mode.
-REDUCE Show Delim mode highlights matching group or block
-delimiters after ‘show-paren-delay’ seconds of Emacs idle time."
+REDUCE Show Delim mode highlights matching group or block delimiters
+after ‘show-paren-delay’ seconds of Emacs idle time."
   :init-value nil
   (when reduce-show-delim--idle-timer
     (cancel-timer reduce-show-delim--idle-timer))
   (if reduce-show-delim-mode
       (setq reduce-show-delim--idle-timer
             (run-with-idle-timer show-paren-delay t
-								 #'reduce-show-delim))
+                                 #'reduce-show-delim))
     (delete-overlay reduce-show-delim--overlay)
     (delete-overlay reduce-show-delim--overlay-1)))
 
@@ -157,8 +154,8 @@ delimiters after ‘show-paren-delay’ seconds of Emacs idle time."
 
 (defun reduce-show-delim--distinct-word-p (word-length)
   "Return non-nil if distinct word of length WORD-LENGTH after point.
-That is, point is not preceded by an escape or a word character
-and the word is not followed by an escape or a word character."
+That is, point is not preceded by an escape or a word character and the
+word is not followed by an escape or a word character."
   ;; Only used in reduce-show-delim--categorize-delim.
   (and (= (skip-syntax-backward "/w") 0)
        (progn (forward-char word-length)
@@ -166,69 +163,69 @@ and the word is not followed by an escape or a word character."
 
 (defun reduce-show-delim--categorize-delim (pos)
   "Determine whether the characters after POS form a delimiter.
-If so, return a cons (DIR . OUTSIDE), where DIR is > 0 for an
-opening delimiter, < 0 for a closing delimiter, and OUTSIDE is
-the buffer position of the outside of the delimiter.  |DIR| is
-the width of the delimiter.  If POS is nil, or the character
-isn't a delimiter, or it is an escaped delimiter, return nil."
+If so, return a cons (DIR . OUTSIDE), where DIR is > 0 for an opening
+delimiter, < 0 for a closing delimiter, and OUTSIDE is the buffer
+position of the outside of the delimiter.  |DIR| is the width of the
+delimiter.  If POS is nil, or the character isn't a delimiter, or it is
+an escaped delimiter, return nil."
   (if pos
-	  (let ((case-fold-search t))
-		(save-excursion
-		  (goto-char pos)
-		  (cond
-		   ((and (looking-at "<<") (reduce-show-delim--unescaped-p))
-			(cons 2 pos))
-		   ((and (looking-at ">>") (reduce-show-delim--unescaped-p))
-			(cons -2 (+ pos 2)))
-		   ((and (looking-at "begin") (reduce-show-delim--distinct-word-p 5))
-			(cons 5 pos))
-		   ((and (looking-at "end") (reduce-show-delim--distinct-word-p 3))
-			(cons -3 (+ pos 3))))))))
+      (let ((case-fold-search t))
+        (save-excursion
+          (goto-char pos)
+          (cond
+           ((and (looking-at "<<") (reduce-show-delim--unescaped-p))
+            (cons 2 pos))
+           ((and (looking-at ">>") (reduce-show-delim--unescaped-p))
+            (cons -2 (+ pos 2)))
+           ((and (looking-at "begin") (reduce-show-delim--distinct-word-p 5))
+            (cons 5 pos))
+           ((and (looking-at "end") (reduce-show-delim--distinct-word-p 3))
+            (cons -3 (+ pos 3))))))))
 
 (defun reduce-show-delim--locate-delim-backward (&optional pos)
   "Locate and return the start of a delimiter ending at POS.
 Use point if POS not given.  Return nil if no delimiter found."
   ;; Only used as argument of reduce-show-delim--categorize-delim.
   (save-excursion
-	(if pos (goto-char pos))			; otherwise start from point
-	(save-match-data
-	  (re-search-backward
-	   "\\(?:\\(<<\\|>>\\)\\|begin\\|end\\)\\=" nil t))))
+    (if pos (goto-char pos))            ; otherwise start from point
+    (save-match-data
+      (re-search-backward
+       "\\(?:\\(<<\\|>>\\)\\|begin\\|end\\)\\=" nil t))))
 
 (defun reduce-show-delim--locate-near-delim ()
   "Locate an unescaped delimiter “near” point to show.
-If one is found, return a cons (DIR . OUTSIDE), where DIR is > 0
-for an opening delimiter, < 0 for a closing delimiter, and
-OUTSIDE is the buffer position of the outside of the delimiter.
-|DIR| is the width of the delimiter.  Otherwise return nil."
+If one is found, return a cons (DIR . OUTSIDE), where DIR is > 0 for an
+opening delimiter, < 0 for a closing delimiter, and OUTSIDE is the
+buffer position of the outside of the delimiter.  |DIR| is the width of
+the delimiter.  Otherwise return nil."
   (let* ((ind-pos (save-excursion (back-to-indentation) (point)))
-		 (eol-pos
-		  (save-excursion
-			(end-of-line) (skip-chars-backward " \t" ind-pos) (point)))
-		 ;; Delimiter (<</>>) before point?
-		 (before (reduce-show-delim--categorize-delim
-				  (reduce-show-delim--locate-delim-backward)))
-		 ;; Delimiter after point?
-		 (after (reduce-show-delim--categorize-delim (point))))
+         (eol-pos
+          (save-excursion
+            (end-of-line) (skip-chars-backward " \t" ind-pos) (point)))
+         ;; Delimiter (<</>>) before point?
+         (before (reduce-show-delim--categorize-delim
+                  (reduce-show-delim--locate-delim-backward)))
+         ;; Delimiter after point?
+         (after (reduce-show-delim--categorize-delim (point))))
     (cond
      ;; Point is immediately outside a delimiter.
-     ((and before (< (car before) 0)) before)		; closer before point
-     ((and after (> (car after) 0)) after)			; opener after point
+     ((and before (< (car before) 0)) before) ; closer before point
+     ((and after (> (car after) 0)) after)    ; opener after point
      ;; Point is immediately inside a delimiter.
      ((and reduce-show-delim-when-point-inside-delim before)) ; opener before point
-     ((and reduce-show-delim-when-point-inside-delim after))  ; closer after point
+     ((and reduce-show-delim-when-point-inside-delim after)) ; closer after point
      ;; Point is in the whitespace before the code.
      ((and reduce-show-delim-when-point-in-periphery
-		   (<= (point) ind-pos))
+           (<= (point) ind-pos))
       (or (reduce-show-delim--categorize-delim ind-pos)
-		  ;; or inside a lone closer...
-		  (reduce-show-delim--categorize-delim
-		   (reduce-show-delim--locate-delim-backward eol-pos))))
+          ;; or inside a lone closer...
+          (reduce-show-delim--categorize-delim
+           (reduce-show-delim--locate-delim-backward eol-pos))))
      ;; Point is in the whitespace after the code.
      ((and reduce-show-delim-when-point-in-periphery
-		   (>= (point) eol-pos))
+           (>= (point) eol-pos))
       (reduce-show-delim--categorize-delim
-	   (reduce-show-delim--locate-delim-backward eol-pos))))))
+       (reduce-show-delim--locate-delim-backward eol-pos))))))
 
 (defun reduce-show-delim--skip-group-forward (pos)
   "Move forwards to end of group immediately following POS.
@@ -255,85 +252,85 @@ Return t if successful; otherwise move as far as possible and return nil."
   (reduce--backward-block))
 
 (defun reduce-show-delim--data-function ()
-  "Find the opening/closing delimiter \"near\" point and its match.
-The function is called with no argument and should return either nil
-if there's no opener/closer near point, or a list of the form
-\(HERE-BEG HERE-END THERE-BEG THERE-END MISMATCH)
-Where HERE-BEG..HERE-END is expected to be near point."
+  "Find the opening/closing delimiter “near” point and its match.
+The function is called with no argument and should return either nil if
+there's no opener/closer near point, or a list of the form (HERE-BEG
+HERE-END THERE-BEG THERE-END MISMATCH) where HERE-BEG..HERE-END is
+expected to be near point."
   (save-match-data
-	(let* ((temp (reduce-show-delim--locate-near-delim))
-		   (dir (car temp))
-		   (outside (cdr temp))
-		   pos mismatch here-beg here-end)
+    (let* ((temp (reduce-show-delim--locate-near-delim))
+           (dir (car temp))
+           (outside (cdr temp))
+           pos mismatch here-beg here-end)
       ;;
       ;; Find the other end of the expression.
-      (when dir							; +ve = opener, -ve = closer
-		;; here-beg <</>> here-end
-		(setq here-beg (if (> dir 0) outside (+ outside dir))
-			  here-end (if (> dir 0) (+ outside dir) outside))
-		(save-excursion
-		  (save-restriction
-			;; Determine the range within which to look for a match.
-			(when blink-matching-paren-distance
-			  (narrow-to-region
-			   (max (point-min) (- (point) blink-matching-paren-distance))
-			   (min (point-max) (+ (point) blink-matching-paren-distance))))
-			;; Scan across one group within that range.
-			;; Errors or nil mean there is a mismatch.
-			(condition-case ()
-				(progn
-				  (if (cond ((eq dir +2)
-							 (reduce-show-delim--skip-group-forward outside))
-							((eq dir -2)
-							 (reduce-show-delim--skip-group-backward outside))
-							((eq dir +5)
-							 (reduce-show-delim--skip-block-forward outside))
-							((eq dir -3)
-							 (reduce-show-delim--skip-block-backward outside)))
-					  (setq pos (point))
-					(setq pos t mismatch t)))
-			  (error (setq pos t mismatch t)))
-			;; Move back the other way and verify we get back to the
-			;; starting point.  If not, these two delimiters don't really
-			;; match.  Maybe the one at point is escaped and doesn't
-			;; really count, or one is inside a comment.
-			(when (integerp pos)
-			  (unless (condition-case ()
-						  (progn
-							(cond ((eq dir +2)
-								   (reduce-show-delim--skip-group-backward pos))
-								  ((eq dir -2)
-								   (reduce-show-delim--skip-group-forward pos))
-								  ((eq dir +5)
-								   (reduce-show-delim--skip-block-backward pos))
-								  ((eq dir -3)
-								   (reduce-show-delim--skip-block-forward pos)))
-							(eq outside (point)))
-						(error nil))
-				(setq pos nil)))
-			;; If found a "matching" delimiter, see if it is the right
-			;; kind of delimiter to match the one we started at.
-			(if (not (integerp pos))
-				(if mismatch (list here-beg here-end nil nil t))
-			  (let ((beg (min pos outside)) (end (max pos outside)))
-				;; beg << ... >> end (???)
-				(unless (memq (char-after beg) '(?< ?b ?B))
-				  (setq mismatch
-						(not (or (memq (char-before end) '(?> ?d ?D))
-								 (memq (char-after beg) '(?< ?b ?B))))))
-				(list here-beg here-end
-					  (if (> dir 0)
-						  (if (= dir +5) (- pos 3) (- pos 2))
-						pos)
-					  (if (> dir 0)
-						  pos
-						(if (= dir -3) (+ pos 5) (+ pos 2)))
-					  mismatch)))))))))
+      (when dir                         ; +ve = opener, -ve = closer
+        ;; here-beg <</>> here-end
+        (setq here-beg (if (> dir 0) outside (+ outside dir))
+              here-end (if (> dir 0) (+ outside dir) outside))
+        (save-excursion
+          (save-restriction
+            ;; Determine the range within which to look for a match.
+            (when blink-matching-paren-distance
+              (narrow-to-region
+               (max (point-min) (- (point) blink-matching-paren-distance))
+               (min (point-max) (+ (point) blink-matching-paren-distance))))
+            ;; Scan across one group within that range.
+            ;; Errors or nil mean there is a mismatch.
+            (condition-case ()
+                (progn
+                  (if (cond ((eq dir +2)
+                             (reduce-show-delim--skip-group-forward outside))
+                            ((eq dir -2)
+                             (reduce-show-delim--skip-group-backward outside))
+                            ((eq dir +5)
+                             (reduce-show-delim--skip-block-forward outside))
+                            ((eq dir -3)
+                             (reduce-show-delim--skip-block-backward outside)))
+                      (setq pos (point))
+                    (setq pos t mismatch t)))
+              (error (setq pos t mismatch t)))
+            ;; Move back the other way and verify we get back to the
+            ;; starting point.  If not, these two delimiters don't really
+            ;; match.  Maybe the one at point is escaped and doesn't
+            ;; really count, or one is inside a comment.
+            (when (integerp pos)
+              (unless (condition-case ()
+                          (progn
+                            (cond ((eq dir +2)
+                                   (reduce-show-delim--skip-group-backward pos))
+                                  ((eq dir -2)
+                                   (reduce-show-delim--skip-group-forward pos))
+                                  ((eq dir +5)
+                                   (reduce-show-delim--skip-block-backward pos))
+                                  ((eq dir -3)
+                                   (reduce-show-delim--skip-block-forward pos)))
+                            (eq outside (point)))
+                        (error nil))
+                (setq pos nil)))
+            ;; If found a "matching" delimiter, see if it is the right
+            ;; kind of delimiter to match the one we started at.
+            (if (not (integerp pos))
+                (if mismatch (list here-beg here-end nil nil t))
+              (let ((beg (min pos outside)) (end (max pos outside)))
+                ;; beg << ... >> end (???)
+                (unless (memq (char-after beg) '(?< ?b ?B))
+                  (setq mismatch
+                        (not (or (memq (char-before end) '(?> ?d ?D))
+                                 (memq (char-after beg) '(?< ?b ?B))))))
+                (list here-beg here-end
+                      (if (> dir 0)
+                          (if (= dir +5) (- pos 3) (- pos 2))
+                        pos)
+                      (if (> dir 0)
+                          pos
+                        (if (= dir -3) (+ pos 5) (+ pos 2)))
+                      mismatch)))))))))
 
 (defun reduce-show-delim ()
   "Highlight the delimiters until the next input arrives."
   (let ((data (and reduce-show-delim-mode
-				   (reduce-show-delim--data-function))))
+                   (reduce-show-delim--data-function))))
     (if (not data)
         (progn
           ;; If reduce-show-delim-mode is nil in this buffer or if not
@@ -371,15 +368,15 @@ Where HERE-BEG..HERE-END is expected to be near point."
         ;; Otherwise, turn off any such highlighting.
         (if (or (not here-beg)
                 (and (not reduce-show-delim-highlight-opendelim)
-					 (> here-end (point))
-					 (<= here-beg (point))
+                     (> here-end (point))
+                     (<= here-beg (point))
                      (integerp there-beg)))
             (delete-overlay reduce-show-delim--overlay-1)
           (move-overlay reduce-show-delim--overlay-1
                         here-beg here-end (current-buffer))
           ;; Always set the overlay face, since it varies.
           (overlay-put reduce-show-delim--overlay-1 'priority
-					   reduce-show-delim-priority)
+                       reduce-show-delim-priority)
           (overlay-put reduce-show-delim--overlay-1 'face face))
         ;;
         ;; Turn on highlighting for the matching delimiter, if found.
@@ -388,14 +385,14 @@ Where HERE-BEG..HERE-END is expected to be near point."
             (delete-overlay reduce-show-delim--overlay)
           (if highlight-expression
               (move-overlay reduce-show-delim--overlay
-							(if (< there-beg here-beg) here-end here-beg)
+                            (if (< there-beg here-beg) here-end here-beg)
                             (if (< there-beg here-beg) there-beg there-end)
                             (current-buffer))
             (move-overlay reduce-show-delim--overlay
                           there-beg there-end (current-buffer)))
           ;; Always set the overlay face, since it varies.
           (overlay-put reduce-show-delim--overlay 'priority
-					   reduce-show-delim-priority)
+                       reduce-show-delim-priority)
           (overlay-put reduce-show-delim--overlay 'face face))))))
 
 (provide 'reduce-delim)

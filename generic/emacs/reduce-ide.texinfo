@@ -2,9 +2,9 @@
 @c %**start of header
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Manual last updated:
-@set UPDATED Time-stamp: <2024-03-09 09:56:44 franc>
+@set UPDATED Time-stamp: <2024-12-16 15:18:12 franc>
 @c Software version:
-@set VERSION 1.12
+@set VERSION 1.13
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -141,10 +141,9 @@ for the latest package release is also available from
 SourceForge}.
 
 The current version of REDUCE IDE is intended for use with GNU Emacs
-version 28 or later, which I will endeavour to support under recent
-versions of Microsoft Windows and Linux.  It should also run under
-closely related versions of GNU Emacs and on other platforms, but I
-may not be able to provide support.
+version 29 or later, which I will endeavour to support under recent
+versions of Microsoft Windows and Linux.  It should also run on other
+platforms, but I may not be able to provide support.
 
 This manual assumes that you are familiar in general with both Emacs
 and REDUCE.
@@ -1483,14 +1482,13 @@ REDUCE}) if the default values are not correct, and/or to add commands
 to run additional versions of REDUCE, such as those built directly
 from the Subversion repository or REDUCE on Common Lisp.
 
-@subheading Incompatible Changes in Version 1.12
+@subheading Incompatible Changes in Versions 1.12 and 1.13
 
 The option @code{reduce-run-commands} has been changed so that a
 REDUCE command is a list of strings rather than a single string, which
 allows spaces in both the command and its arguments.  Run mode
 automatically updates a saved value to the new structure and offers to
-edit and/or save it.  There is now a facility to set the environment
-variable @code{reduce}.
+edit and/or save it.
 
 The option @code{reduce-run-installation-directory} has been renamed
 to @code{reduce-root-dir-file-name} and become a directory file name
@@ -1502,10 +1500,16 @@ The option @code{reduce-run-MSWin-drives} has been removed and its use
 incorporated into the definition of @code{reduce-root-dir-file-name},
 without using any external programs.
 
-The shorthand @code{$reduce} has been introduced to be replaced at the
-start of strings (other than Name) in @code{reduce-run-commands} and
-@code{reduce-packages-directory} with the value of
-@code{reduce-root-dir-file-name} before they are used.
+There is now a facility to set the root directory separately for each
+command in @code{reduce-run-commands}; if unset then it defaults to
+the value of @code{reduce-root-dir-file-name}.  The environment
+variable @code{reduce} is now always set to the local root directory,
+which is also used to find REDUCE packages.  Hence, the option
+@code{reduce-packages-directory} is no longer used.
+
+The shorthand @code{$reduce} is replaced at the start of strings
+(other than Name) in @code{reduce-run-commands} with the local root
+directory.
 
 The special support for PSL REDUCE has been removed since it is not
 needed when REDUCE is run directly and is no longer needed from REDUCE
@@ -1653,7 +1657,10 @@ then a @code{;} is automatically appended, unless there is a @code{?}
 in the input line (implying that the input is the response to a user
 query, which must not be followed by a terminator).  You can avoid
 this automatic behaviour completely by holding down the @key{SHIFT}
-key, i.e.@: by pressing @key{SHIFT}-@key{RET}.
+key, i.e.@: by pressing @key{SHIFT}-@key{RET}.  Also, if there is no
+input then a newline (with no terminator) is sent to REDUCE to support
+use of @code{on demo}.
+
 
 @table @kbd
 @item RET
@@ -1661,7 +1668,8 @@ key, i.e.@: by pressing @key{SHIFT}-@key{RET}.
 @itemx reduce-run-send-input
 @findex reduce-run-send-input
 Send the preceding input to REDUCE after appending a @code{;} if
-appropriate; holding down the @key{SHIFT} key avoid this.
+appropriate; holding down the @key{SHIFT} key avoids this.  If there
+is no input then send a newline with no terminator.
 @end table
 
 The following REDUCE mode key binding is also available in REDUCE Run
@@ -1925,13 +1933,8 @@ which is also available as a pop-up menu activated by the command
 REDUCE Run mode adds a second major-mode menu called ``Run REDUCE'',
 which appears immediately to the right of the ``REDUCE'' menu on the
 menu bar and immediately below the ``REDUCE'' menu on the pop-up menu.
-
-When REDUCE Run mode is not loaded, it is possible to have an
-abbreviated ``Run REDUCE'' menu instead of the full menu.  The
-abbreviated menu can only run REDUCE (which implicitly loads REDUCE
-Run mode) or explicitly load REDUCE Run mode.  Whether or not to load
-REDUCE Run mode or install the abbreviated REDUCE Run mode menu when
-REDUCE mode loads is controlled by the option
+It is possible to have the ``Run REDUCE'' menu displayed even when
+REDUCE Run mode is not loaded, which is controlled by the option
 @code{reduce-run-autoload}.  @xref{Run Customization}.
 
 @c -------------------------------------------------------------------
@@ -2204,13 +2207,8 @@ character (e.g.@: @kbd{y} or @kbd{n}) possibly surrounded by
 whitespace.
 
 @item reduce-packages-directory
-Absolute pathname of the directory containing REDUCE packages, or nil.
-This option should be set automatically when REDUCE Run mode loads.
-If the directory cannot be found then this option will be set to nil.
-You can customize this variable to override the default setting.  The
-value may contain spaces and may begin with the shortcut
-@code{$reduce}, which is replaced with the value of the option
-@code{reduce-root-dir-file-name} before it is used.
+This option is obsolete since version 1.13.  The packages directory is
+assumed to be a sub-directory of the root directory.
 
 @item reduce-root-dir-file-name
 Default value @file{?:/Program Files/Reduce} on Microsoft Windows,
@@ -2227,9 +2225,8 @@ the directory name using @kbd{M-@key{TAB}}.
 Whether, and if so how, to autoload REDUCE Run mode.  Loading it is
 necessary only if you plan to run REDUCE within REDUCE IDE@.  If the
 value is @code{t} then load REDUCE Run mode after @code{reduce-mode}
-has loaded; if it is @code{menu} (the default) then display a Run
-REDUCE menu stub that can load REDUCE Run mode; if it is @code{nil}
-then do nothing.
+has loaded; if it is @code{menu} (the default) then display the Run
+REDUCE menu in REDUCE mode; if it is @code{nil} then do nothing.
 
 @item reduce-run-autostart
 Default value @code{t}.  If non-nil then all commands that require a
@@ -2237,19 +2234,22 @@ REDUCE process will automatically start a new one if none is already
 running.
 
 @item reduce-run-commands
-The definition of this option changed in version 1.12.
+The definition of this option changed in version 1.12 and again
+slightly in version 1.13.
 
 An association list with an element for each version of REDUCE, which
 is a list.  The first element of each list is the command name as a
 string, by default either "CSL" or "PSL"; the second element is either
-@code{nil} or the value for the environment variable @code{reduce} as
-a string; the third element is the program to run as a string, which
-must be either an absolute pathname or a command name to be looked up
-on the execution path; subsequent elements are optional command
-arguments as strings.  Strings may contain spaces and may begin with
-the shortcut @code{$reduce}, which is replaced with the value of the
-option @code{reduce-root-dir-file-name} before it is used.  Each
-command must run REDUCE using a command-line interface.
+@code{nil} or the root directory for this REDUCE command, which is
+also used to set the environment variable @code{reduce}; the third
+element is the program to run as a string, which must be either an
+absolute pathname or a command name to be looked up on the execution
+path; subsequent elements are optional command arguments as strings.
+The root directory defaults to the value of the option
+@code{reduce-root-dir-file-name}.  Strings may contain spaces and may
+begin with the shortcut @code{$reduce}, which is replaced with the
+root directory.  Each command must run REDUCE using a command-line
+interface.
 
 By default, REDUCE Run mode on Microsoft Windows uses absolute
 pathnames and runs REDUCE directly rather than via batch files,

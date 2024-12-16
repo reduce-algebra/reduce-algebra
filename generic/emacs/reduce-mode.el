@@ -1,12 +1,12 @@
-;;; reduce-mode.el --- Major mode to edit REDUCE computer-algebra code  -*- lexical-binding: t; -*-
+;;; reduce-mode.el --- Major mode to edit REDUCE computer-algebra code  -*- lexical-binding:t -*-
 
 ;; Copyright (C) 1998-2001, 2012, 2017-2019, 2022-2024 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sites.google.com/site/fjwcentaur>
 ;; Created: late 1992
-;; Time-stamp: <2024-03-09 09:56:54 franc>
+;; Time-stamp: <2024-12-14 17:24:26 franc>
 ;; Homepage: https://reduce-algebra.sourceforge.io/reduce-ide/
-;; Package-Version: 1.12
+;; Package-Version: 1.13
 ;; Package-Requires: (cl-lib)
 
 ;; This file is part of REDUCE IDE.
@@ -115,18 +115,19 @@ Note that REDUCE Run inherits from comint."
   ;; Include the REDUCE Run customization options:
   :load "reduce-run")
 
-(defcustom reduce-mode-load-hook nil
+(defcustom reduce-mode-load-hook
+  '((lambda () (require 'reduce-extra)))
   "List of functions to be called when REDUCE mode is loaded.
-It can be used to customize global features of REDUCE mode and so
-is a good place to put keybindings."
+It can be used to customize buffer-independent features of REDUCE mode
+such as keybindings.  By default it loads ‘reduce-extra’."
   :type 'hook
   :link '(custom-manual "(reduce-ide)Hooks")
   :group 'reduce)
 
-(defcustom reduce-mode-hook nil
+(defcustom reduce-mode-hook '(reduce-identifier-mode)
   "List of functions to be called when REDUCE mode is entered.
-For example, ‘turn-on-font-lock’ to turn on font-lock mode locally.
-It can be used to customize buffer-local features of REDUCE mode."
+It can be used to customize buffer-local features of REDUCE mode.  By
+default it turns on ‘reduce-identifier-mode’, defined in ‘reduce-extra’."
   :type 'hook
   :link '(custom-manual "(reduce-ide)Hooks")
   :group 'reduce)
@@ -284,11 +285,19 @@ Defaults to the value of ‘show-paren-mode’."
   :link '(custom-manual "(reduce-ide)Groups and blocks highlighting")
   :group 'reduce-display)
 
+(defcustom reduce-show-proc-delay 0.5
+  "Idle time delay in seconds before showing current procedure name."
+  ;; Reinstated since Emacs 30 obsoletes ‘idle-update-delay.’
+  :package-version '(reduce-ide . "1.12.1")
+  :type 'number
+  :link '(custom-manual "(reduce-ide)Show Proc")
+  :group 'reduce-display)
+
 (defcustom reduce-show-proc-mode-on t
   "If non-nil then turn on REDUCE Show Proc mode automatically.
-REDUCE Show Proc mode displays the current procedure name in the
-mode line and updates it after ‘idle-update-delay’ seconds of
-Emacs idle time.
+REDUCE Show Proc mode displays the current procedure name in the mode
+line and updates it after ‘reduce-show-proc-delay’ seconds of Emacs idle
+time.
 
 This is a buffer-local minor mode so it can also be turned on and
 off in each buffer independently using the command
@@ -307,10 +316,10 @@ off in each buffer independently using the command
 Loading it is necessary only if you plan to run REDUCE within
 REDUCE IDE.  If the value is t then load REDUCE Run mode after
 ‘reduce-mode’ has loaded; if it is ‘menu’ (the default) then
-display a Run REDUCE menu stub that can load REDUCE Run mode; if
-it is nil then do nothing."
+display a version of the REDUCE Mode Run menu that loads REDUCE
+Run mode when used; if it is nil then do nothing."
   :type '(choice (const :tag "Load REDUCE Run mode" t)
-                 (const :tag "Display Run REDUCE menu stub" menu)
+                 (const :tag "Display REDUCE Mode Run menu" menu)
                  (const :tag "Do nothing" nil))
   :link '(custom-manual "(reduce-ide)Major mode menu")
   :group 'reduce-run)
@@ -366,101 +375,155 @@ it is nil then do nothing."
     map)
   "Keymap for REDUCE mode.")
 
-;; REDUCE-run menu bar and pop-up menu stub
+(defconst reduce-mode--run-menu2
+  '(["Run File…" reduce-run-file
+     :help "Run selected REDUCE source file in a new REDUCE process"]
+    "--"
+    ["Input File…" reduce-input-file
+     :help "Input selected REDUCE source file into selected REDUCE process"]
+    ["Load Package…" reduce-load-package
+     :help "Load selected REDUCE package into selected REDUCE process"]
+    ["Compile File…" reduce-compile-file
+     :help "Compile selected REDUCE source file to selected FASL file"]
+    "--"))
+
+(defconst reduce-mode--run-menu1
+  `("Run REDUCE"
+    ["Run REDUCE" run-reduce
+     :help "Start a new REDUCE process if necessary"]
+    ["Run Buffer" reduce-run-buffer
+     :help "Run the current buffer in a new REDUCE process"]
+    ,@reduce-mode--run-menu2
+    ["Input Last Statement" reduce-eval-last-statement
+     :help "Input the statement before point to a REDUCE process"]
+    ["Input Line" reduce-eval-line
+     :help "Input the line containing point to a REDUCE process"]
+    ["Input Procedure" reduce-eval-proc
+     :help "Input the procedure containing point to a REDUCE process"]
+    ["Input Region" reduce-eval-region :active mark-active
+     :help "Input the selected region to a REDUCE process"]
+    "--"
+    ["Switch To REDUCE" switch-to-reduce
+     :help "Select and switch to a REDUCE process"]
+    ["Customize…" (customize-group 'reduce-run)
+     :help "Customize REDUCE Run mode"]))
+
+;; REDUCE-run menu bar and pop-up menu autoload version
+;; Must be defined before reduce-mode-menu so as to be displayed after!
 (when (eq reduce-run-autoload 'menu)
+  (defun reduce-mode--run-menu-item-autoload (menu-item)
+    "Load Run mode and then run MENU-ITEM."
+    (and (require 'reduce-run) (call-interactively menu-item)))
   (easy-menu-define                     ; (symbol maps doc menu)
-    reduce-mode-run-menu
+    nil
     reduce-mode-map
-    "REDUCE Mode Run Menu stub -- updated when REDUCE Run is loaded."
-    '("Run REDUCE"
-      ["Run REDUCE" run-reduce :active t
-       :help "Start a new REDUCE process"]
-      ["Load REDUCE Run Mode" (require 'reduce-run) :active t
-       :help "Load the full REDUCE Run mode functionality"])))
+    "REDUCE Mode Run Menu autoload version -- \
+updated when REDUCE Run is loaded."
+    (cons (car reduce-mode--run-menu1)
+          (mapcar (lambda (v) ; make menu item autoload run mode
+                    (if (and (vectorp v) (functionp (aref v 1)))
+                        (let ((vv (copy-sequence v)))
+                          (aset vv 1 `(reduce-mode--run-menu-item-autoload
+                                       #',(aref vv 1)))
+                          vv)
+                      v))
+                  (cdr reduce-mode--run-menu1)))))
 
 ;; REDUCE-mode menu bar and pop-up menu
-(easy-menu-define           ; (symbol maps doc menu)
-  reduce-mode-menu
+(easy-menu-define                       ; (symbol maps doc menu)
+  nil
   reduce-mode-map
   "REDUCE Mode Menu."
   '("REDUCE"
-    ["Indent Line" indent-for-tab-command :active t
+    ["Indent Line" indent-for-tab-command
      :help "Re-indent the current line"]
-    ["Unindent Line" reduce-unindent-line :active t
+    ["Unindent Line" reduce-unindent-line
      :help "Unindent the current line by one indentation step"]
-    ["Kill Statement" reduce-kill-statement :active t
+    ["Kill Statement" reduce-kill-statement
      :help "Kill to the end of the current statement"]
-    ["Fill Comment" reduce-fill-comment :active t
+    ["Fill Comment" reduce-fill-comment
      :help "Fill the current comment"]
     ["(Un)Comment Region" reduce-comment-region :active mark-active
      :help "Toggle the commenting of the current region"]
     "--"
     "Procedures:"
-    ["Forward Procedure" reduce-forward-procedure :active t
+    ["Forward Procedure" reduce-forward-procedure
      :help "Move forward to the nearest end of a procedure"]
-    ["Backward Procedure" reduce-backward-procedure :active t
+    ["Backward Procedure" reduce-backward-procedure
      :help "Move backward to the nearest start of a procedure"]
-    ["Indent Procedure" reduce-indent-procedure :active t
+    ["Indent Procedure" reduce-indent-procedure
      :help "Re-indent the current procedure"]
-    ["Mark Procedure" reduce-mark-procedure :active t
+    ["Mark Procedure" reduce-mark-procedure
      :help "Mark the current procedure"]
-    ["Reposition Window" reduce-reposition-window :active t
+    ["Reposition Window" reduce-reposition-window
      :help "Scroll to show the current procedure optimally"]
-    ["Narrow To Procedure" reduce-narrow-to-procedure :active t
+    ["Narrow To Procedure" reduce-narrow-to-procedure
      :help "Narrow the buffer to the current procedure"]
-    ["(Un)Comment Proc" reduce-comment-procedure :active t
+    ["(Un)Comment Proc" reduce-comment-procedure
      :help "Toggle the commenting of the current procedure"]
-    ["Kill Procedure" reduce-kill-procedure :active t
+    ["Kill Procedure" reduce-kill-procedure
      :help "Kill the current procedure"]
     "--"
-    ("Show / Find / Tag"
-     ["Show Current Proc" reduce-show-proc-mode
-      :style toggle :selected reduce-show-proc-mode :active t
-      :help "Toggle display of the current procedure name"]
+    ("Find / Tag"
      ["Add “Index” Menu" (reduce--imenu-add-menubar-index t)
       :active (not reduce--imenu-added)
       :help "Show an imenu of procedures, operators and variables"]
      "--"
-     ["Find Tag…" xref-find-definitions :active t
+     ["Find Tag…" xref-find-definitions
       :help "Find a procedure definition using a tag file"]
-     ["New TAGS Table…" visit-tags-table :active t
+     ["New TAGS Table…" visit-tags-table
       :help "Select a new tag file"]
      "--"
-     ["Tag Directory…" reduce-tagify-dir :active t
+     ["Tag Directory…" reduce-tagify-dir
       :help "Tag REDUCE files in selected directory"]
-     ["Tag Dir & Subdirs…" reduce-tagify-dir-recursively :active t
+     ["Tag Dir & Subdirs…" reduce-tagify-dir-recursively
       :help "Tag REDUCE files under selected directory"]
      )
     "--"
     "Templates:"
-    ["Insert If-Then" reduce-insert-if-then :active t
+    ["Insert If-Then" reduce-insert-if-then
      :help "Insert an ‘if-then’ template"]
-    ["Insert Block" reduce-insert-block :active t
+    ["Insert Block" reduce-insert-block
      :help "Insert a ‘block’ template"]
-    ["Insert Group" reduce-insert-group :active t
+    ["Insert Group" reduce-insert-group
      :help "Insert a ‘group’ template"]
     "--"
     ["Indent Region" reduce-indent-region :active mark-active
      :help "Re-indent the current region"]
     ["Indent Buffer" (reduce-indent-region (point-min) (point-max))
-     :keys "C-u M-C-\\" :active t
+     :keys "C-u M-C-\\"
      :help "Re-indent the current buffer"]
     "--"
-    ["Read the Manual" (info "reduce-ide" "*REDUCE IDE*") :active t
+    ["Read the Manual" (info "reduce-ide" "*REDUCE IDE*")
      :help "Read the REDUCE IDE manual in Info format"]
-    ["Command Mini Help" (apropos-command "\\`reduce\\|reduce\\'") :active t
+    ["Command Mini Help" (apropos-command "\\`reduce\\|reduce\\'")
      :help "Show a REDUCE IDE active command summary"]
-    ["Customize…" (customize-group 'reduce) :active t
+    ["Customize…" (customize-group 'reduce)
      :help "Customize REDUCE IDE"]
-    ["Show Version" reduce-ide-version :active t
+    ["Show Version" reduce-ide-version
      :help "Show the REDUCE IDE version"]
     ;; This seems to be obsolete in Emacs 26!
     ;; ["Outline" outline-minor-mode
-    ;;  :style toggle :selected outline-minor-mode :active t
+    ;;  :style toggle :selected outline-minor-mode
     ;;  :help "Toggle outline minor mode"]
-    ;; ["Update ChangeLog" add-change-log-entry-other-window :active t
+    ;; ["Update ChangeLog" add-change-log-entry-other-window
     ;;  :help "Add change log entry other window"]
-    ))
+    "--"
+    ("Minor Modes"
+     ["Auto Indent Mode" reduce-auto-indent-mode
+      :style toggle :selected reduce-auto-indent-mode
+      :help "Automatic indentation"]
+     ["Show Proc Mode" reduce-show-proc-mode
+      :style toggle :selected reduce-show-proc-mode
+      :help "Display the current procedure name"]
+     ["Show Delim Mode" reduce-show-delim-mode
+      :active (featurep 'reduce-delim)
+      :style toggle :selected reduce-show-delim-mode
+      :help "Display matching group or block delimiters"]
+     ["Identifier Mode" reduce-identifier-mode
+      :active (featurep 'reduce-ident)
+      :style toggle :selected reduce-identifier-mode
+      :help "Treat identifiers as words"])))
 
 (defun reduce-ide-version ()
   "Echo version information for REDUCE IDE."
@@ -474,13 +537,13 @@ it is nil then do nothing."
 
 (defvar reduce-mode-syntax-table
   (let ((table (make-syntax-table)))
-    (modify-syntax-entry ?\n ">" table) ; comment ender
-    (modify-syntax-entry ?! "/" table)  ; single character quote
-    (modify-syntax-entry ?# "'" table)  ; expression prefix
-    (modify-syntax-entry ?$ "." table)  ; punctuation (RS)
-    (modify-syntax-entry ?% "<" table)  ; comment starter
-    (modify-syntax-entry ?& "." table)  ; punctuation
-    (modify-syntax-entry ?' "'" table)  ; expression prefix
+    (modify-syntax-entry ?\n ">" table)    ; comment ender
+    (modify-syntax-entry ?! "/" table)     ; single character quote
+    (modify-syntax-entry ?# "'" table)     ; expression prefix
+    (modify-syntax-entry ?$ "." table)     ; punctuation (RS)
+    (modify-syntax-entry ?% "<" table)     ; comment starter
+    (modify-syntax-entry ?& "." table)     ; punctuation
+    (modify-syntax-entry ?' "'" table)     ; expression prefix
     (modify-syntax-entry ?* ". 23b" table) ; C-style comment
     (modify-syntax-entry ?+ "." table)
     (modify-syntax-entry ?- "." table)
@@ -594,9 +657,7 @@ also affects this mode.  Entry to this mode runs the hooks on
    #'reduce--syntax-propertize
    ;; Make syntax scanning functions, like ‘forward-sexp’, pay
    ;; attention to ‘syntax-table’ text properties:
-   parse-sexp-lookup-properties t
-   ;; Treat escape char (!) as part of word:
-   words-include-escapes t)
+   parse-sexp-lookup-properties t)
   ;; This is needed for the comment statement parser:
   (add-hook 'before-change-functions
             'reduce--comment-seq-reset nil t))
@@ -2156,45 +2217,43 @@ If a perfect match (only) has a cdr then delete the match and insert
 the cdr if it is a string or call it if it is a (nullary) function,
 passing on any prefix ARG (in raw form)."
   ;; Based on lisp-complete-symbol in lisp.el
-  (interactive "*P")            ; error if buffer read-only
+  (interactive "*P")                    ; error if buffer read-only
   (let* ((end (progn
-        (cond ((and transient-mark-mode mark-active)
-               (if (= (point) (region-beginning))
-               ()
-             (exchange-point-and-mark)
-             (skip-syntax-backward " "))))
-        (point)))
-     (beg (unwind-protect
-          (save-excursion
-            (reduce-backward-sexp)
-            ;; (while (= (char-syntax (following-char)) ?\')
-              ;; (forward-char 1))
-            (skip-syntax-forward "\'")
-            (point))
-        ))
-     (pattern (buffer-substring-no-properties beg end))
-     (completion (try-completion pattern reduce-completion-alist)))
-    (cond ((eq completion t)        ; perfect match
-       (let ((fn (cdr (assoc pattern reduce-completion-alist))))
-         (if fn
-         (cond ((stringp fn) (delete-region beg end) (insert fn))
-               ((fboundp fn) (delete-region beg end) (funcall fn arg))
-               (t (error "Completion for \"%s\" not a string or function" pattern)))
-           )))
-      ((null completion)
-       (message "Can't find completion for \"%s\"" pattern)
-       (ding))
-      ((not (string= pattern completion))
-       (delete-region beg end)
-       (insert completion)
-       (if (fboundp (cdr (assoc completion reduce-completion-alist)))
-           (setq deactivate-mark nil))) ; for beg -> begin -> …
-      (t
-       (message "Making completion list…")
-       (let ((list (all-completions pattern reduce-completion-alist)))
-         (with-output-to-temp-buffer "*Completions*"
-           (display-completion-list list)))
-       (message "Making completion list…%s" "done")))))
+                (cond ((and transient-mark-mode mark-active)
+                       (if (= (point) (region-beginning))
+                           ()
+                         (exchange-point-and-mark)
+                         (skip-syntax-backward " "))))
+                (point)))
+         (beg (save-excursion
+                (reduce-backward-sexp)
+                ;; (while (= (char-syntax (following-char)) ?\')
+                ;; (forward-char 1))
+                (skip-syntax-forward "\'")
+                (point)))
+         (pattern (buffer-substring-no-properties beg end))
+         (completion (try-completion pattern reduce-completion-alist)))
+    (cond ((eq completion t)            ; perfect match
+           (let ((fn (cdr (assoc pattern reduce-completion-alist))))
+             (when fn
+               (cond ((stringp fn) (delete-region beg end) (insert fn))
+                     ((fboundp fn) (delete-region beg end) (funcall fn arg))
+                     (t (error "Completion for \"%s\" not a string or function"
+                               pattern))))))
+          ((null completion)
+           (message "Can't find completion for \"%s\"" pattern)
+           (ding))
+          ((not (string= pattern completion))
+           (delete-region beg end)
+           (insert completion)
+           (if (fboundp (cdr (assoc completion reduce-completion-alist)))
+               (setq deactivate-mark nil))) ; for beg -> begin -> …
+          (t
+           (message "Making completion list…")
+           (let ((list (all-completions pattern reduce-completion-alist)))
+             (with-output-to-temp-buffer "*Completions*"
+               (display-completion-list list)))
+           (message "Making completion list…%s" "done")))))
 
 
 ;;;; **********************************************************
@@ -2212,15 +2271,15 @@ passing on any prefix ARG (in raw form)."
 
 (define-minor-mode reduce-show-proc-mode
   "Toggle REDUCE Show Proc mode.
-REDUCE Show Proc mode displays the current procedure name in the
-mode line and updates it after ‘idle-update-delay’ seconds of
-Emacs idle time."
+REDUCE Show Proc mode displays the current procedure name in the mode
+line and updates it after ‘reduce-show-proc-delay’ seconds of Emacs idle
+time."
   :init-value nil
   (when reduce--show-proc-idle-timer
     (cancel-timer reduce--show-proc-idle-timer))
   (when reduce-show-proc-mode
     (setq reduce--show-proc-idle-timer
-          (run-with-idle-timer idle-update-delay t
+          (run-with-idle-timer reduce-show-proc-delay t
                                #'reduce--show-proc-name))))
 
 (defconst reduce--show-proc-regexp
