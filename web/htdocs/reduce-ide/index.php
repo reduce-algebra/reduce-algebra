@@ -29,7 +29,7 @@ include '../include/begin-body.php';
 
 <h2>Latest release</h2>
 <p>
-    <strong>REDUCE IDE version 1.12</strong> (March 2024) See the
+    <strong>REDUCE IDE version 1.13</strong> (December 2024) Note that this release requires GNU Emacs 29. See the
     <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/README.md">README file</a>
     and recent
     <a href="https://github.com/fjwright/REDUCE-IDE/releases">release notes</a>
@@ -38,8 +38,7 @@ include '../include/begin-body.php';
 
 <h2>Installation</h2>
 <p>
-    Provided you are using GNU Emacs 24 or later, I recommend that you
-    install the latest complete REDUCE IDE package, which includes
+    I recommend that you install the latest complete REDUCE IDE package, which includes
     documentation in GNU info format, as follows.
 </p>
 <ol>
