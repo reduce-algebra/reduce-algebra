@@ -544,15 +544,13 @@ then
       AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
       AC_MSG_NOTICE([xft-config found, so Xft should be available])
     else
-      AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
-        [/usr/local/bin:/usr/sfw/bin:$PATH])
-      if test "$FREETYPE_CONFIG" != "no"
+      if pkg-config --cflags freetype2 > /dev/null
       then
-        freetype_cflags=`$FREETYPE_CONFIG --cflags`
+        freetype_cflags=`pkg-config --cflags freetype2`
         CFLAGS="$CFLAGS $freetype_cflags"
         CXXFLAGS="$CXXFLAGS $freetype_cflags"
         CPPFLAGS="$CPPFLAGS $freetype_cflags"
-        freetype_libs=`$FREETYPE_CONFIG --libs`
+        freetype_libs=`pkg-config --libs freetype2`
         XLIBS="$XLIBS $freetype_libs"
         xft_found="yes"
         AC_CHECK_LIB(fontconfig, FcConfigCreate)
@@ -561,7 +559,28 @@ then
         if test "$xft_found" = "yes"
         then
           AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
-          AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+          AC_MSG_NOTICE([pkg-config freetype found, and Xft should be available])
+        fi
+      else
+        AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
+          [/usr/local/bin:/usr/sfw/bin:$PATH])
+        if test "$FREETYPE_CONFIG" != "no"
+        then
+          freetype_cflags=`$FREETYPE_CONFIG --cflags`
+          CFLAGS="$CFLAGS $freetype_cflags"
+          CXXFLAGS="$CXXFLAGS $freetype_cflags"
+          CPPFLAGS="$CPPFLAGS $freetype_cflags"
+          freetype_libs=`$FREETYPE_CONFIG --libs`
+          XLIBS="$XLIBS $freetype_libs"
+          xft_found="yes"
+          AC_CHECK_LIB(fontconfig, FcConfigCreate)
+          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+          AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+          if test "$xft_found" = "yes"
+          then
+            AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+            AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+          fi
         fi
       fi
     fi

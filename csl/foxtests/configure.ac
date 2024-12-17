@@ -24,7 +24,7 @@ AC_INIT([FOXTESTS],[1.4.21])
 
 # This seemed to work with 2.57 so despite other parts of the code needing
 # a yet newer version I will leave this here.
-AC_PREREQ(2.57)
+AC_PREREQ([2.72])
 
 here=`pwd`
 AC_MSG_NOTICE([+++ Configuring FOX tests in directory $here +++])
@@ -474,20 +474,15 @@ then
       AC_MSG_NOTICE([xft-config found, so Xft should be available])
     else
 # here xft-config is NOT present, but it may be that xft headers and
-# libraries are nevertheless available. I will look for freetype-config
-# which may also help me...
-      AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
-        [/usr/local/bin:/usr/sfw/bin:$PATH])
-      if test "$FREETYPE_CONFIG" != "no"
+# libraries are nevertheless available. I will look for pkg-config
+# support for freetype, or failing that freetype-config.
+      if pkg-config --cflags freetype2 > /dev/null
       then
-# I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
-# will then leave them there even if then Xft is not found. That is perhaps
-# slightly untidy.
-        freetype_cflags=`$FREETYPE_CONFIG --cflags`
+        freetype_cflags=`pkg-config --cflags freetype2`
         CFLAGS="$CFLAGS $freetype_cflags"
         CXXFLAGS="$CXXFLAGS $freetype_cflags"
         CPPFLAGS="$CPPFLAGS $freetype_cflags"
-        freetype_libs=`$FREETYPE_CONFIG --libs`
+        freetype_libs=`pkg-config --libs freetype2`
         XLIBS="$XLIBS $freetype_libs"
         xft_found="yes"
         AC_CHECK_LIB(fontconfig, FcConfigCreate)
@@ -497,6 +492,31 @@ then
         then
           AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
           AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+        fi
+      fi
+      else
+        AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
+          [/usr/local/bin:/usr/sfw/bin:$PATH])
+        if test "$FREETYPE_CONFIG" != "no"
+        then
+  # I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
+  # will then leave them there even if then Xft is not found. That is perhaps
+  # slightly untidy.
+          freetype_cflags=`$FREETYPE_CONFIG --cflags`
+          CFLAGS="$CFLAGS $freetype_cflags"
+          CXXFLAGS="$CXXFLAGS $freetype_cflags"
+          CPPFLAGS="$CPPFLAGS $freetype_cflags"
+          freetype_libs=`$FREETYPE_CONFIG --libs`
+          XLIBS="$XLIBS $freetype_libs"
+          xft_found="yes"
+          AC_CHECK_LIB(fontconfig, FcConfigCreate)
+          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+          AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+          if test "$xft_found" = "yes"
+          then
+            AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+            AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+          fi
         fi
       fi
     fi
@@ -640,7 +660,6 @@ AC_CHECK_SIZEOF(short int)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(long long)
-AC_C_BIGENDIAN
 
 AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
 
@@ -652,12 +671,7 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_LSTAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
-# AC_FUNC_MALLOC       this seems unduly fussy?
 AC_FUNC_MEMCMP
-# AC_FUNC_MKTIME       causes a hang in on some systems!
-# AC_FUNC_REALLOC
-AC_FUNC_SETVBUF_REVERSED
-AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_UTIME_NULL
 AC_FUNC_VPRINTF
