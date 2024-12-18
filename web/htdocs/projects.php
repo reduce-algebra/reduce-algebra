@@ -26,7 +26,7 @@ include './include/begin-body.php';
     <li>
         <a href="reduce-ide/">REDUCE IDE</a> is an open-source
         <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for the
-        <a href="http://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor,
+        <a href="https://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor,
         which supports editing REDUCE source code and running any command-line version of REDUCE.
     </li>
 </ul>
@@ -88,28 +88,35 @@ include './include/begin-body.php';
 <h2>External projects using REDUCE</h2>
 <p>
     There are a number of independent projects that use REDUCE in
-    various ways. These include:
+    various ways. Please note that the REDUCE developers are not involved with
+    these projects and so probably cannot help users with them.
 </p>
 <ul>
     <li>
-        the <a href="http://www.alltypes.de/">ALLTYPES</a> algebraic
+        <a href="http://www.alltypes.de/">ALLTYPES</a> is an algebraic
         language and type system;
     </li>
     <li>
-        <a href="http://mtt.sourceforge.net/">MTT</a>, a set of tools
+        <a href="http://mtt.sourceforge.net/">MTT</a> is a set of tools
         for modeling dynamic physical systems using the bond-graph
         methodology;
     </li>
     <li>
-        <a href="https://github.com/chakravala/Reduce.jl">Reduce.jl</a>,
+        <a href="https://github.com/chakravala/Reduce.jl">Reduce.jl</a> is
         an interface for calling REDUCE from the Julia language for
         symbolic manipulation;
     </li>
     <li>
-        the <a href="https://github.com/agraef/pure-lang/wiki/ScientificComputing">Pure</a>
-        programming language, which has bindings for REDUCE, providing
+        <a href="https://github.com/agraef/pure-lang/wiki/ScientificComputing">Pure</a>
+        is a programming language, which has bindings for REDUCE, providing
         a very interesting environment for doing computer-powered
-        science.
+        science;
+    </li>
+    <li>
+        <a href="https://daisy.dei.unipd.it/">DAISY</a>
+        (Differential Algebra for Identifiability of SYstems)
+        is a software tool to perform structural identifiability analysis for linear
+        and nonlinear dynamic models described by polynomial or rational ODE equations.
     </li>
 </ul>
 
@@ -128,7 +135,7 @@ include './include/begin-body.php';
         is a
         <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/contrib/ortocartan/">set
             of programs</a> for algebraic calculations in relativity,
-        implemented in the Lisp underlying REDUCE;
+        implemented in the Lisp underlying REDUCE.
     </li>
 </ul>
 

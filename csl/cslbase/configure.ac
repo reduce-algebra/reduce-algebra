@@ -337,8 +337,6 @@ case $host in
 # Here I will certainly be using gcc and I like to limit the number of
 # diagnostics it can generate in any one build.
   CPPFLAGS="$CPPFLAGS -fmax-errors=10"
-  CFLAGS="$CFLAGS -mfsgsbase"
-  CXXFLAGS="$CXXFLAGS -mfsgsbase"
   if test "$with_cygwin" != "no"
   then
 # The next line may ALMOST count as a lie, but under raw cygwin the world
@@ -388,8 +386,6 @@ case $host in
 # like the C++ library do not get found when I try to run the executables.
 # This is of course liable to be an issue of my $PATH, but linking in static
 # mode will still keep me safe.
-    CFLAGS="$CFLAGS -mfsgsbase"
-    CXXFLAGS="$CXXFLAGS -mfsgsbase"
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "x86_64-pc-windows" or some
@@ -849,7 +845,7 @@ fi
 
 OLDCXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -std=gnu++20"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+AC_LINK_IFELSE([AC_LANG_SOURCE(
     [[  consteval int f(int x) { return x*x; }
         int main() {return 0;}]])],
   [AC_MSG_NOTICE(Will use -std=gnu++20)],
@@ -1142,7 +1138,7 @@ fi
 # the log file. Some people may have alternative work flows and so will
 # want to comment out this adjustment.
 OLDCPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS -fno-diagnostic-color"
+CPPFLAGS="$CPPFLAGS -fno-diagnostics-color"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
                                 [[std::printf("\n");]])],
   [],
@@ -1189,7 +1185,7 @@ then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -fPIC"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <cstdio>]],
-                                     [[std::printf("\n");]])],
+                                    [[std::printf("\n");]])],
        [fpic_available="yes"],
        [fpic_available="no"])
     CFLAGS="$OLDCFLAGS"
@@ -1241,9 +1237,10 @@ then
   if (test "$windows_build" != "yes" || test "$with_cygwin" != "no")
   then
 # I will not even look for Xft if I am building for win32 rather than X.
+# But nota the cygwin is sort of Windows but will use X11.
 #
-# Furthermore I will not try xft-config if I am cross-compiling. This may
-# be a mess if I ever try to cross compile towards a machine that needs it.
+# I will not try xft-config if I am cross-compiling. This is liable to
+# be a mess when I wish to cross compile towards a machine that needs it.
     AC_ARG_WITH(xft,
       AS_HELP_STRING([--with-xft],
                      [Can be used to disable use of XFT. Default is yes]),
@@ -1273,45 +1270,63 @@ then
 # here xft-config is NOT present, but it may be that xft headers and
 # libraries are nevertheless available. I will look for freetype-config
 # which may also help me...
-        AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
-          [/usr/local/bin:/usr/sfw/bin:$HOME/ports/bin:/opt/local/bin:$PATH])
-        if test "$FREETYPE_CONFIG" != "no"
+        if pkg-config --cflags freetype2 > /dev/null
         then
-# I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
-# will then leave them there even if then Xft is not found. That is perhaps
-# slightly untidy.
-          freetype_cflags=`$FREETYPE_CONFIG --cflags`
+          freetype_cflags=`pkg-config --cflags freetype2`
           CFLAGS="$CFLAGS $freetype_cflags"
           CXXFLAGS="$CXXFLAGS $freetype_cflags"
           CPPFLAGS="$CPPFLAGS $freetype_cflags"
-          freetype_libs=`$FREETYPE_CONFIG --libs`
-          AC_MSG_NOTICE([freetype_libs=$freetype_libs])
+          freetype_libs=`pkg-config --libs freetype2`
           XLIBS="$XLIBS $freetype_libs"
           xft_found="yes"
-          AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
-          AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
+          AC_CHECK_LIB(fontconfig, FcConfigCreate)
+          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
           AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
           if test "$xft_found" = "yes"
           then
             AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
-            AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+            AC_MSG_NOTICE([pkg-config freetype found, and Xft should be available])
           fi
         else
-# Now a search without the benefit of helper tools.
-          xft_found="yes"
-          AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
-          AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
-          AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
-          if test "$xft_found" = "yes"
+          AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
+            [/usr/local/bin:/usr/sfw/bin:$HOME/ports/bin:/opt/local/bin:$PATH])
+          if test "$FREETYPE_CONFIG" != "no"
           then
-            CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2"
-            AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+# I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
+# will then leave them there even if then Xft is not found. That is perhaps
+# slightly untidy.
+            freetype_cflags=`$FREETYPE_CONFIG --cflags`
+            CFLAGS="$CFLAGS $freetype_cflags"
+            CXXFLAGS="$CXXFLAGS $freetype_cflags"
+            CPPFLAGS="$CPPFLAGS $freetype_cflags"
+            freetype_libs=`$FREETYPE_CONFIG --libs`
+            AC_MSG_NOTICE([freetype_libs=$freetype_libs])
+            XLIBS="$XLIBS $freetype_libs"
+            xft_found="yes"
+            AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
+            AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
+            AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+            if test "$xft_found" = "yes"
+            then
+              AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+              AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+            fi
+          else
+# Now a search without the benefit of helper tools.
+            xft_found="yes"
+            AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
+            AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
+            AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+            if test "$xft_found" = "yes"
+            then
+              CPPFLAGS="$CPPFLAGS -I/usr/include/freetype2"
+              AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+            fi
           fi
         fi
       fi
     fi
   fi
-
   if test "$xft_found" != "yes"
   then
 # Now a search without the benefit of helper tools.
