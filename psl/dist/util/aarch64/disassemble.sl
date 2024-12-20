@@ -4,7 +4,7 @@
 %
 % Author: Rainer Schöpf
 %
-% Date :  23-Aug-2021
+% Date :  20-Dec-2024
 % Status: Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -117,7 +117,7 @@
 
 
 
-(fluid '( the-instruction* addr* cclist* reglist* dataproc* shiftoplist* multiply*))
+(fluid '( the-instruction* addr* cclist* extendlist* reglist* dataproc* shiftoplist* multiply*))
 
 (setq cclist*
       '((2#0000 EQ) (2#0001 NE) (2#0010 CS) (2#0011 CC)
@@ -125,6 +125,12 @@
 	(2#1000 HI) (2#1001 LS) (2#1010 GE) (2#1011 LT)
 	(2#1100 GT) (2#1101 LE) (2#1110 "")))
 
+(setq extendlist*
+      '((2#010 . "UXTW")
+	(2#011 . "LSL")
+	(2#110 . "SXTW")
+	(2#111 . "SXTX")))
+      
 (setq dataproc*
       '((2#00000000 AND) (2#00100000 AND)
 	(2#00000010 EOR) (2#00100010 EOR)
@@ -148,6 +154,10 @@
 (de decode-cc (cc)
     (let ((cctext (assoc cc cclist*)))
       (and cctext (cadr cctext))))
+
+(de decode-extend (option)
+    (let ((ext (assoc option extendlist*)))
+      (and ext (cdr ext))))
 
 (de highest-set-bit (x)
     (let ((n 0) (result -1))
@@ -378,9 +388,9 @@
 	     (list 'sxtw (regnum-to-regname regd sf nil) (regnum-to-regname regn sf nil)))
 	    ((and (eq instr 'ubfm) (or (and (weq sf 0) (weq imms 2#011111)) (and (weq sf 1) (weq imms 2#111111))))
 	     (if (weq (iadd1 imms) immr)
-		 (list 'lsl (regnum-to-regname regd sf nil) (regnum-to-regname regn sf nil) (prefix!# immr))
-	       (list 'lsr (regnum-to-regname regd sf nil) (regnum-to-regname regn sf nil)
-		     (prefix!# (if (weq sf 1) (wand 2#111111 (wdifference 64 immr)) (wand 2#11111 (wdifference 32 immr)))))))
+		 (list 'lsl (regnum-to-regname regd sf nil) (regnum-to-regname regn sf nil)
+		       (prefix!# (if (weq sf 1) (wand 2#111111 (wdifference 64 immr)) (wand 2#11111 (wdifference 32 immr)))))
+	       (list 'lsr (regnum-to-regname regd sf nil) (regnum-to-regname regn sf nil) (prefix!# immr))))
 	    ((and (eq instr 'ubfm) (wlessp imms immr))
 	     (list 'ubfiz (regnum-to-regname regd sf nil) (regnum-to-regname regn sf nil) 0 0))
             ((and (eq instr 'ubfm) (bxpreferred sf opc imms immr))
@@ -439,9 +449,13 @@
 	  ((weq (wand 2#00111010 p1) 2#00101000)
 	   (decode-load-store-pair p1 pp))
 	  ((weq (wand 2#00111011 p1) 2#00111000)
-           (decode-load-store-reg p1 pp))
+	   (cond ((and (weq 0 (wand 1 (wshift pp -21))) (weq 2#00 (wand 2#11 (wshift pp -10))))
+		  (decode-load-store-reg-unscaled-imm p1 pp))
+		 ((and (weq 1 (wand 1 (wshift pp -21))) (weq 2#10 (wand 2#11 (wshift pp -10))))
+		  (decode-load-store-reg-offset p1 pp))
+		 (t (decode-load-store-reg p1 pp nil))))
 	  ((weq (wand 2#00111011 p1) 2#00111001)
-           (decode-load-store-reg-unsigned-imm p1 pp))
+           (decode-load-store-reg p1 pp t))
 	  ((weq (wand 2#10111111 p1) 2#00001100)
            (decode-load-store-simd-multiple p1 pp))
 	  ((weq (wand 2#00111011 p1) 2#00001101)
@@ -490,7 +504,7 @@
 	     (list instr
 		   (regnum-to-regname regt sf nil)
 		   (regnum-to-regname regt2 sf nil)
-		   (bldmsg "[%w%s" (regnum-to-regname regd t) (if (and (weq (wand p1 1) 0) (weq (wand 1 (wshift pp -23)) 1)) "]" ""))
+		   (bldmsg "[%w%s" (regnum-to-regname regd 1 t) (if (and (weq (wand p1 1) 0) (weq (wand 1 (wshift pp -23)) 1)) "]" ""))
 		   (if (not (and (weq (wand p1 1) 1) (weq (wand 1 (wshift pp -23)) 0) (weq imm7 0)))
 		       (bldmsg "#%d%s%s" imm7
 			       (if (wand p1 1) "]" "")
@@ -500,8 +514,89 @@
     (list 'not-yet-implemented 'load-store-noalloc-pair)
     )
 
-(de decode-load-store-reg (p1 pp)
-    (list 'not-yet-implemented 'load-store-reg)
+(de decode-load-store-reg (p1 pp unsigned)
+    (let ((size (wand 2#11 (wshift p1 -6)))
+	  (!V (wand 1 (wshift p1 -2)))
+	  (opc (wand 2#11 (wshift pp -22)))
+	  (imm (if unsigned (wand 16#fff (wshift pp -10))
+		 (wand 2#111111111 (wshift pp -12))))
+	  (type (wand 2#11 (wshift pp -10)))
+	  (regn (wand 2#11111 (wshift pp -5)))
+	  (regt (wand 2#11111 pp))
+	  (instr)
+	  )
+      % check for invalid opcodes
+      (when (and (wgreaterp opc 1)
+		 (or (and (weq size 2#01) (weq !V 1))
+		     (and (weq size 2#10) (weq !V 0) (weq opc 2#11))
+		     (weq size 2#11)))
+	(stderror (bldmsg "Unknown aarch64 instruction %x" pp)))
+      (cond ((weq !V 1)
+	     (setq instr (if (weq (wand 1 opc) 0) 'str 'ldr)))
+	    ((weq size 2#00)
+	     (setq instr (cdr (assoc opc '((0 . strb) (1 . ldrb) (2 . strsb) (3 . ldrsb))))))
+	    ((weq size 2#01)
+	     (setq instr (cdr (assoc opc '((0 . strh) (1 . ldrh) (2 . strsh) (3 . ldrsh))))))
+	    ((weq size 2#10)
+	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr) (2 . strsw))))))
+	    (t
+	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr)))))))
+      (cond (unsigned (setq imm (wshift imm size)))
+	    ((wgreaterp imm 255) (setq imm (wdifference imm 512))))
+      (list instr
+	    (regnum-to-regname regt (wand size 1) nil)
+	    (bldmsg "[%w%s" (regnum-to-regname regn 1 t) (if (or (weq type 2#01) (and unsigned (weq imm 0))) "]" ""))
+	    (if (and unsigned (weq imm 0)) nil
+	      (bldmsg "#%d%s" imm
+		      (cond (unsigned "]")
+			    ((weq type 2#11) "]!")
+			    (t "")))))
+      )
+    )
+
+(de decode-load-store-reg-unscaled-imm (p1 pp)
+    (list 'not-yet-implemented 'load-store-reg-unscaled-imm)
+    )
+
+(de decode-load-store-reg-offset (p1 pp)
+    (let ((size (wand 2#11 (wshift p1 -6)))
+	  (!V (wand 1 (wshift p1 -2)))
+	  (opc (wand 2#11 (wshift pp -22)))
+	  (type (wand 2#11 (wshift pp -10)))
+	  (option (wand #111 (wshift pp -13)))
+	  (!S (wand 1 (wshift pp -12)))
+	  (regm (wand 2#11111 (wshift pp -16)))
+	  (regn (wand 2#11111 (wshift pp -5)))
+	  (regt (wand 2#11111 pp))
+	  (instr)
+	  (extend)
+	  )
+      % check for invalid opcodes
+      (when (and (wgreaterp opc 1)
+		 (or (and (weq size 2#01) (weq !V 1))
+		     (and (weq size 2#10) (weq !V 0) (weq opc 2#11))
+		     (and (weq size 2#11) (or (and (weq !V 0) (weq opc 2#11)) (weq !V 1)))))
+	(stderror (bldmsg "Unknown aarch64 instruction %x" pp)))
+      (cond ((weq !V 1)
+	     (setq instr (if (weq (wand 1 opc) 0) 'str 'ldr)))
+	    ((weq size 2#00)
+	     (setq instr (cdr (assoc opc '((0 . strb) (1 . ldrb) (2 . strsb) (3 . ldrsb))))))
+	    ((weq size 2#01)
+	     (setq instr (cdr (assoc opc '((0 . strh) (1 . ldrh) (2 . strsh) (3 . ldrsh))))))
+	    ((weq size 2#10)
+	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr) (2 . ldrsw))))))
+	    (t
+	     (setq instr (cdr (assoc opc '((0 . str) (1 . ldr) (2 . prfm)))))))
+
+      (setq extend (decode-extend option))
+	    
+      (list instr
+	    (regnum-to-regname regt (wand size 1) nil)
+	    (bldmsg "[%w" (regnum-to-regname regn 1 t))
+	    (regnum-to-regname regm (wand option 1) nil)
+	    (if (weq size 0) (bldmsg "%s]" extend)
+	      (bldmsg "%s #%d]" extend size)))
+      )
     )
 
 (de decode-load-store-reg-unsigned-imm (p1 pp)
