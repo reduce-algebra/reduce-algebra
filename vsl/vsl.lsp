@@ -134,6 +134,12 @@
 (de cddddr (x)
     (cdr (cdr (cdr (cdr x)))))
 
+(de setcar (a b)
+  (progn (rplaca a b) b))
+
+(de setcdr (a b)
+  (progn (rplacd a b) b))
+
 % "not" and "eqcar" are used while processing some parts of
 % this file and so get defined early.
 
@@ -375,6 +381,13 @@
       ((and (not (atom (car l)))
             (eq (caar l) a)) (car l))
       (t (atsoc a (cdr l)))))
+
+(de repasc (u v w)
+   (cond
+      ((atom w) (error1 "key not found in repasc" u))
+      ((equal u (caar w))
+        (cons (cons u v) (cdr w)))
+      (t (cons (car w) (repasc u v (cdr w))))))
 
 (de subst (a b c)              % Substitute a for b in c
    (cond
@@ -1780,9 +1793,14 @@ top (cond ((atom a) (return (reversip r))))
 (de getenv (x) nil)
 
 (de filep (x)
-   (let!* ((h (errorset (list 'open x ''input) nil nil)))
-      (if (atom h) nil
-          (progn (close (car h)) t))))
+   (prog (h w)
+      (setq w (enable!-errorset 0 0))
+      (setq h (errorset (list 'open x ''input) nil nil))
+      (enable!-errorset (car w) (cdr w))
+      (cond
+         ((atom h) (return nil)))
+      (close (car h))
+      (return t)))
 
 (de lengthc (x) (length (explodec x)))
 
@@ -1860,8 +1878,6 @@ top (cond ((atom a) (return (reversip r))))
 (de setpchar (x) (setpchar!* x))
 
 (de printprompt (u) nil)
-
-(flag '(id2string printprompt) 'lose)
 
 (de land (a b) (logand2 a b))
 
@@ -1971,9 +1987,6 @@ top (cond ((atom a) (return (reversip r))))
   nil)
 
 (de posn () 0)
-
-(de enable!-errorset (a b)
-   (setq !*backtrace b))
 
 (de prin1 (x) (prin x))
 
@@ -2746,5 +2759,60 @@ verylong
 
 
 (flag '(printf bldmsg fprintf) 'variadic)
+
+(dm funcall (u)
+  (list 'apply (cadr u) (cons 'list (cddr u)))) 
+
+(de macro!-function (op)
+  (progn
+    (setq op (getd op))
+    (cond
+      ((eqcar op 'macro) (cdr op))
+      (t nil))))
+
+(de s!:fully_macroexpand_list (l)
+  (cond
+    ((atom l) l)
+    (t (prog (var1199 var1200)
+      (setq var1199 l)
+    lab1198
+      (cond
+        ((null var1199) (return (reversip var1200))))
+      (prog (u)
+        (setq u (car var1199))
+        (setq var1200 (cons (fully!-macroexpand u) var1200)))
+      (setq var1199 (cdr var1199))
+      (go lab1198)))))
+
+(de fully!-macroexpand (x)
+  (prog (helper)
+    (cond
+      ((or (atom x) (eqcar x (quote quote))) (return x))
+      (t (cond
+        ((eqcar (car x) (quote lambda))
+         (return (cons (cons (quote lambda)
+           (cons (cadar x) (s!:fully_macroexpand_list (cddar x))))
+           (s!:fully_macroexpand_list (cdr x)))))
+        (t
+          (cond
+            ((setq helper (get (car x) (quote s!:newname)))
+             (return (fully!-macroexpand (cons helper (cdr x)))))
+            (t (cond
+              ((setq helper (get (car x) (quote s!:expandfn)))
+               (return (apply helper (list x))))
+              (t (cond
+                ((setq helper (macro!-function (car x)))
+                 (return (fully!-macroexpand (apply helper (list x)))))
+                (t (return
+                  (cons (car x) (s!:fully_macroexpand_list (cdr x))))))))))))))))
+
+(de id2int (a) (char!-code a))
+
+(fluid '(!*nocompile))
+(cond
+   ((null (boundp '!*nocompile))
+    (setq !*nocompile nil)))
+
+(flag '(id2string printprompt copyd nth pnth) 'lose)
 
 % End of vsl.lsp

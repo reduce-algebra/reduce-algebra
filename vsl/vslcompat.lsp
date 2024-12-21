@@ -886,6 +886,7 @@ top (cond ((null a) (return (reversip r))))
              (setq n (sub1 n)))
       (return (cons n x))))
 
+
 % End of vslcompat.lsp
 
 

@@ -653,8 +653,6 @@ symbolic operator
    nlopt_remove_equality_constraints, nlopt_remove_inequality_constraints,
    nlopt_inf, nlopt_minf;
 
-#endif
-
 endmodule;  % nlopt
 
 end;  % of file

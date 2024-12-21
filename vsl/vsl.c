@@ -2644,7 +2644,7 @@ LispObject Lmkvect(LispObject lits, int nargs, ...)
     if (!isFIXNUM(x)) return error1("bad size in mkvect", x);
     n = (int)qfixnum(x);
 // I put an (arbitrary) limit on the size of the largest vector.
-    if (n < 0 || n > 100000) return error1("bad size in mkvect", x);
+    if (n < -1 || n > 100000) return error1("bad size in mkvect", x);
     return makevector(n);
 }
 

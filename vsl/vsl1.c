@@ -55,7 +55,7 @@ static void gzwrite(gzFile f, void *b, size_t n)
 
 char promptstring[1000] = "> ";
 
-#ifndef NO_LIBEDIT
+#ifndef NOLIBEDIT
 #include <histedit.h>
 
 static EditLine *elx_e;
@@ -68,7 +68,7 @@ const char *prompt(EditLine *e)
 
 const char *elx_line = NULL;
 int elx_count = 0;
-#endif
+#endif // NOLIBEDIT
 
 #ifdef WIN32
 #define popen _popen
@@ -78,6 +78,7 @@ int elx_count = 0;
 // contain tag information that specify how the rest will be used.
 
 typedef intptr_t LispObject;
+typedef uintptr_t ULispObject;
 
 #define TAGBITS    0x7
 
@@ -182,7 +183,7 @@ typedef LispObject LispFn(LispObject lits, int nargs, ...);
 // Fixnums and Floating point numbers are rather easy!
 
 #define qfixnum(x)     ((x) >> 3)
-#define packfixnum(n)  ((((LispObject)(n)) << 3) + tagFIXNUM)
+#define packfixnum(n)  ((LispObject)((((ULispObject)(n)) << 3) + tagFIXNUM))
 
 #define MIN_FIXNUM     qfixnum(INTPTR_MIN)
 #define MAX_FIXNUM     qfixnum(INTPTR_MAX)
@@ -260,21 +261,23 @@ LispObject stackbase, *sp, stacktop;
 #define input      bases[22]
 #define output     bases[23]
 #define pipe       bases[24]
-#define raise      bases[25]
-#define lower      bases[26]
-#define dfprint    bases[27]
-#define bignum     bases[28]
-#define charvalue    bases[29]
-#define toploopeval  bases[30]
-#define loseflag     bases[31]
-#define condsymbol   bases[32]
-#define prognsymbol  bases[33]
-#define gosymbol     bases[34]
-#define returnsymbol bases[35]
+#define eq         bases[25]
+#define equal      bases[26]
+#define raise      bases[27]
+#define lower      bases[28]
+#define dfprint    bases[29]
+#define bignum     bases[30]
+#define charvalue    bases[31]
+#define toploopeval  bases[32]
+#define loseflag     bases[33]
+#define condsymbol   bases[34]
+#define prognsymbol  bases[35]
+#define gosymbol     bases[36]
+#define returnsymbol bases[37]
 #ifdef PSL
-#define dummyvar     bases[36]
+#define dummyvar     bases[38]
 #endif
-#define BASES_SIZE       37
+#define BASES_SIZE       39
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -804,7 +807,7 @@ void wrch(int c)
 
 int my_getc(FILE *f)
 {
-#ifdef NO_LIBEDIT
+#ifdef NOLIBEDIT
 // This can help while running under a debugger!
     return getc(f);
 #else
@@ -2293,6 +2296,31 @@ LispObject Lcdr(LispObject lits, int nargs, ...)
     else return error1("cdr of an atom", x);
 }
 
+LispObject Lnth(LispObject lits, int nargs, ...)
+{   ARG2("nth", x, n);
+    if (!isFIXNUM(n)) return error1("not number in nth", n);
+    int i = qfixnum(n);
+    while (i > 1)
+    {   if (!isCONS(x)) return error1("list too short in nth", n);
+        x = qcdr(x);
+        i--;
+    }
+    if (!isCONS(x)) return error1("list too short in nth", n);
+    else return qcar(x);
+}
+
+LispObject Lpnth(LispObject lits, int nargs, ...)
+{   ARG2("pnth", x, n);
+    if (!isFIXNUM(n)) return error1("not number in pnth", n);
+    int i = qfixnum(n);
+    while (i > 1)
+    {   if (!isCONS(x)) return error1("list too short in pnth", n);
+        x = qcdr(x);
+        i--;
+    }
+    return x;
+}
+
 LispObject Lrplaca(LispObject lits, int nargs, ...)
 {   ARG2("rplaca", x, y);
     if (isCONS(x))
@@ -2349,13 +2377,11 @@ LispObject Lvectorp(LispObject lits, int nargs, ...)
 
 LispObject Lprog1(LispObject lits, int nargs, ...)
 {   ARG2("prog1", x, y);
-    y = y;
     return x;
 }
 
 LispObject Lprog2(LispObject lits, int nargs, ...)
 {   ARG2("prog2", x, y);
-    x = x;
     return y;
 }
 
@@ -2685,7 +2711,7 @@ LispObject Lmkvect(LispObject lits, int nargs, ...)
     if (!isFIXNUM(x)) return error1("bad size in mkvect", x);
     n = (int)qfixnum(x);
 // I put an (arbitrary) limit on the size of the largest vector.
-    if (n < 0 || n > 100000) return error1("bad size in mkvect", x);
+    if (n < -1 || n > 100000) return error1("bad size in mkvect", x);
     return makevector(n);
 }
 
@@ -2728,6 +2754,8 @@ LispObject Lmkhash(LispObject lits, int nargs, ...)
     if (nargs >= 1) size = va_arg(a, LispObject);
     if (nargs >= 2) flavour = va_arg(a, LispObject);
     va_end(a);
+    if (flavour == eq) flavour = packfixnum(0);
+    else if (flavour == equal) flavour = packfixnum(1);
     if (!isFIXNUM(size)) return error1("bad size in mkhash", size);
     if (!isFIXNUM(flavour)) return error1("bad flavour in mkhash", flavour);
     int n = (int)qfixnum(size);
@@ -2889,6 +2917,16 @@ LispObject Lgetd(LispObject lits, int nargs, ...)
         return list2star((qflags(x) & flagMACRO) ? macro : expr,
                          lambda, qlits(x));
     else return cons(subr, x);
+}
+
+LispObject Lcopyd(LispObject lits, int nargs, ...)
+{   ARG2("copyd", x, y);
+    if (!isSYMBOL(x)) return error1("bad arg to copyd", x);
+    if (!isSYMBOL(y)) return error1("bad arg to copyd", y);
+    qdefn(x) = qdefn(y);
+    qlits(x) = qlits(y);
+    qflags(x) = qflags(x);
+    return y;
 }
 
 LispObject Lreturn(LispObject lits, int nargs, ...)
@@ -3506,7 +3544,8 @@ LispObject Lerror(LispObject lits, int nargs, ...)
 }
 
 LispObject Lenable_errorset(LispObject lits, int nargs, ...)
-{   ARG2("enable-errorset", x, y);
+{   int r1 = forcedMIN, r2 = forcedMAX;
+    ARG2("enable-errorset", x, y);
     if (isFIXNUM(x))
     {   forcedMIN = qfixnum(x);
         if (forcedMIN < 0) forcedMIN = 0;
@@ -3515,7 +3554,7 @@ LispObject Lenable_errorset(LispObject lits, int nargs, ...)
     else if (x == nil) forcedMIN = 0;
     else forcedMIN = 3;
     if (isFIXNUM(y))
-    {   forcedMAX = qfixnum(x);
+    {   forcedMAX = qfixnum(y);
         if (forcedMAX < 0) forcedMAX = 0;
         else if (forcedMAX > 3) forcedMAX = 3;
     }
@@ -3526,7 +3565,7 @@ LispObject Lenable_errorset(LispObject lits, int nargs, ...)
     if (forcedMIN > 1) backtraceflag |= backtraceHEADER;
     if (forcedMAX < 1) backtraceflag &= ~backtraceHEADER;
     if (forcedMAX < 2) backtraceflag &= ~backtraceHEADER;
-    return nil;
+    return cons(packfixnum(r1), packfixnum(r2));
 }
 
 LispObject Lerrorset(LispObject lits, int nargs, ...)
@@ -3589,6 +3628,8 @@ struct defined_functions fnsetup[] =
     {"boundp",     0,            (void *)Lboundp},
     {"car",        0,            (void *)Lcar},
     {"cdr",        0,            (void *)Lcdr},
+    {"nth",        0,            (void *)Lnth},
+    {"pnth",       0,            (void *)Lpnth},
     {"char",       0,            (void *)Lchar},
     {"char-code",  0,            (void *)Lcharcode},
     {"checkpoint", 0,            (void *)Lpreserve},
@@ -3604,6 +3645,7 @@ struct defined_functions fnsetup[] =
     {"equal",      0,            (void *)Lequal},
     {"error",      0,            (void *)Lerror},
     {"errorset",   0,            (void *)Lerrorset},
+    {"enable-errorset", 0,       (void *)Lenable_errorset},
     {"eval",       0,            (void *)Leval},
     {"exp",        0,            (void *)Lexp},
     {"explode",    0,            (void *)Lexplode},
@@ -3614,6 +3656,7 @@ struct defined_functions fnsetup[] =
     {"get",        0,            (void *)Lget},
     {"get-lisp-directory",0,     (void *)Lget_lisp_directory},
     {"getd",       0,            (void *)Lgetd},
+    {"copyd",      0,            (void *)Lcopyd},
     {"gethash",    0,            (void *)Lgethash},
     {"getv",       0,            (void *)Lgetv},
     {"iadd1",      0,            (void *)Ladd1},
@@ -3745,9 +3788,10 @@ void setup()
     input = lookup("input", 5, 1);
     output = lookup("output", 6, 1);
     pipe = lookup("pipe", 4, 1);
+    eq = lookup("eq", 2, 1);
+    equal = lookup("equal", 5, 1);    
     qvalue(dfprint = lookup("dfprint*", 6, 1)) = nil;
     qflags(dfprint) |= flagFLUID;
-    bignum = lookup("~bignum", 7, 1);
     qvalue(raise = lookup("*raise", 6, 1)) = nil;
     qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
     qflags(raise) |= flagFLUID;
@@ -3911,7 +3955,7 @@ int main(int argc, char *argv[])
     {   curchars[i] = '\n';
         symtypes[i] = 0;
     }
-#ifndef NO_LIBEDIT
+#ifndef NOLIBEDIT
     elx_e = el_init(argv[0], stdin, stdout, stderr);
     el_set(elx_e, EL_PROMPT, prompt);
     el_set(elx_e, EL_EDITOR, "emacs");
@@ -3959,7 +4003,7 @@ int main(int argc, char *argv[])
 //        -g         force all diagnostics
         if (strcmp(argv[i], "-z") == 0) coldstart = 1;
         else if (strcmp(argv[i], "-g") == 0)
-            Lenable_errorset(nil, 2, lisptrue, lisptrue);
+            forcedMIN = forcedMAX = 3;
         else if (strcmp(argv[i], "-i") == 0 && i<argc-1)
         {   strcpy(imagename, argv[i+1]);
             i++;
