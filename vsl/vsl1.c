@@ -2264,6 +2264,23 @@ LispObject Lliststar(LispObject lits, LispObject x)
     y = va_arg(a, LispObject);  \
     va_end(a)
 
+#define ARG2a(name, x, y)       \
+    va_list a;                  \
+    LispObject x;               \
+    if (nargs != 2) return error1s("wrong number of arguments for", name); \
+    va_start(a, nargs);         \
+    x = va_arg(a, LispObject);  \
+    va_end(a)
+
+#define ARG2b(name, x, y)       \
+    va_list a;                  \
+    LispObject y;               \
+    if (nargs != 2) return error1s("wrong number of arguments for", name); \
+    va_start(a, nargs);         \
+    (void)va_arg(a, LispObject);\
+    y = va_arg(a, LispObject);  \
+    va_end(a)
+
 #define ARG3(name, x, y, z)     \
     va_list a;                  \
     LispObject x, y, z;         \
@@ -2376,12 +2393,12 @@ LispObject Lvectorp(LispObject lits, int nargs, ...)
 }
 
 LispObject Lprog1(LispObject lits, int nargs, ...)
-{   ARG2("prog1", x, y);
+{   ARG2a("prog1", x, y);
     return x;
 }
 
 LispObject Lprog2(LispObject lits, int nargs, ...)
-{   ARG2("prog2", x, y);
+{   ARG2b("prog2", x, y);
     return y;
 }
 

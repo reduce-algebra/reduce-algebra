@@ -1,0 +1,2 @@
+set CC_FOR_TARGET "/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin/cachecc.sh"
+set CXX_FOR_TARGET "/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin/cachecxx.sh"
