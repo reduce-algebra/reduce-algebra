@@ -1,5 +1,6 @@
-% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2021
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2024
 %
+
 % Build a CSL REDUCE.
 %
 % Depending on how this file is used it will EITHER create a bootstrap
@@ -26,12 +27,23 @@
 
 % Author: Anthony C. Hearn, Stanley L. Kameny and Arthur Norman
 
-% $Id: buildreduce.lsp 5439 2020-10-19 07:24:47Z arthurcnorman $
+% $Id: buildreduce.lsp 6781 2024-04-25 09:15:44Z arthurcnorman $
 
 (cond
-   ((eq 'vsl (car lispsystem!*)) (rdf "$srcdir/vsl.lsp")))
+   ((eq 'vsl (car lispsystem!*))
+    (setq !@srcdir ".")
+    (setq !@reduce "..")
+    (setq !*echo t)
+    (rdf "$srcdir/vsl.lsp")))
 
 (verbos 3)
+
+% Datestamps in the image created here will be based in the last
+% checkin date for version.h rather than on the time the build
+% is performed.
+
+(cond
+  ((getd 'use!-version!-time) (use!-version!-time t)))
 
 (window!-heading "basic CSL")
 
@@ -45,8 +57,7 @@
 
 (make!-special '!*noinlines)
 (prog (w)
-   (setq w (errorset 'noinlines nil nil))
-   (setq !*noinlines (and (not (atom w)) (car w)))
+   (setq !*noinlines (and (boundp 'noinlines) (eval 'noinlines)))
    (print (list '!*noinlines 'set 'to !*noinlines)))
 
 % A command-line flag "-g" sets the variable !*backtrace and so can activate
@@ -57,8 +68,7 @@
    (setq w (errorset '!*backtrace nil nil))
    (cond
       ((or (atom w) (null (car w))) (setq !*backtrace nil))
-      (t (enable!-errorset 3 3)
-         (setq !*backtrace t))))
+      (t (enable!-errorset 3 3))))
 
 (cond
    (!*backtrace (setq !*echo t)))
@@ -71,25 +81,19 @@
             (or (boundp 'force_c_code)
                 (null (memq 'embedded lispsystem!*)))) (progn
 
-% This is all to do with getting stuff that was compiled into C++ hooked in
-
-   (de c!:install (name env c!-version !&optional c1)
-      (cond
-        (c1 (check!-c!-code name env c!-version c1))
-        (t (progn
-              (put name 'c!-version c!-version)
-              (cond (env (prog (v n)
-                 (setq v (mkvect (sub1 (length env))))
-                 (setq n 0)
-            top  (cond
-                    ((null env) (progn
-                     (put name 'funarg v)
-                     (return (symbol!-set!-env name v)))))
-                 (putv v n (car env))
-                 (setq n (add1 n))
-                 (setq env (cdr env))
-                 (go top))))
-              name))))
+   (de c!:install (name env checksum)
+      (prog (basename n v)
+          (setq basename (car env))
+          (put basename 'c!-version
+             (union (list checksum) (get basename 'c!-version)))
+          (setq v (mkvect (sub1 (length env))))
+          (setq n 0)
+     top  (cond
+             ((null env) (return (symbol!-set!-env name v))))
+          (putv v n (car env))
+          (setq n (add1 n))
+          (setq env (cdr env))
+          (go top)))
 
    (prog (name names)
       (setq names '(
@@ -115,69 +119,81 @@
          (setq name (compress (cons '!"
             (append (explodec "$reduce/cslbuild/generated-c/")
                     (cdr (explode name))))))))
-      (rdf name)
-      (go top)) )))
+      (prog (!*echo)
+         (rdf name))
+      (go top)))))
 
-(fluid '(!*nocompile))
-(setq !*nocompile nil)
-(cond
-   ((and (boundp 'interpreted) (eq (compress (explodec interpreted)) 'yes))
-      (setq !*nocompile t)))
 
 (cond
    ((memq 'vsl lispsystem!*)
       (faslout 'cslcompat)
       (rdf "$srcdir/vsl.lsp")
-      (faslend)
-   )
-   (t (rdf "$srcdir/fastgets.lsp")
-      (rdf "$srcdir/compat.lsp")
-      (rdf "$srcdir/extras.lsp")
-      (rdf (cond
-        ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
-        (t "$srcdir/compiler.lsp")))
+%     (rdf "$srcdir/extras.lsp")
+      (fluid '(!*nocompile))
+      (setq !*nocompile nil)
+      (faslend))
+   (t
+
+  % Here I have everything other than vsl!
 
 
-      (progn (terpri)
-             (princ "### !*nocompile = ")
-             (print !*nocompile)
-             nil)
+  (rdf "$srcdir/fastgets.lsp")
+  (rdf "$srcdir/compat.lsp")
+  (rdf "$srcdir/extras.lsp")
+  (rdf (cond
+    ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
+    (t "$srcdir/compiler.lsp")))
 
-      (setq !*comp (null !*nocompile))
+  (fluid '(!*nocompile))
+  (setq !*nocompile nil)
 
-% Compile some important things first to improve bootstrapping speed.
+  (cond
+    ((and (boundp 'interpreted) (eq (compress (explodec interpreted)) 'yes))
+     (setq !*nocompile t)))
 
-      (cond
-        ((null !*nocompile)
-         (compile '(
-             s!:improve s!:literal_order s!:comval s!:outopcode0
-             s!:plant_basic_block s!:remlose s!:islocal
-             s!:is_lose_and_exit s!:comatom s!:destination_label
-             s!:record_literal s!:resolve_labels s!:expand_jump
-             s!:outopcode1lit stable!-sortip s!:iseasy s!:outjump
-             s!:add_pending s!:comcall s!:resolve_literals))
-         (compile!-all)))
+  (progn (terpri)
+         (princ "### !*nocompile = ")
+         (print !*nocompile)
+         nil)
+
+  (setq !*comp (null !*nocompile))
+
+  % Compile some important things first to improve bootstrapping speed.
+
+  (cond
+    ((null !*nocompile)
+     (compile '(
+         s!:improve s!:literal_order s!:comval s!:outopcode0
+         s!:plant_basic_block s!:remlose s!:islocal
+         s!:is_lose_and_exit s!:comatom s!:destination_label
+         s!:record_literal s!:resolve_labels s!:expand_jump
+         s!:outopcode1lit stable!-sortip s!:iseasy s!:outjump
+         s!:add_pending s!:comcall s!:resolve_literals))
+     (compile!-all)))
 
 
-% Tidy up be deleting any modules that are left over in this image
+  % Tidy up be deleting any modules that are left over in this image
 
-      (dolist (a (library!-members)) (delete!-module a))
+  (dolist (a (library!-members)) (delete!-module a))
 
-% Build fasl files for the compatibility code and the two
-% versions of the compiler.
+  % Build fasl files for the compatibility code and the two
+  % versions of the compiler.
 
-          (faslout 'cslcompat)
-          (rdf "$srcdir/fastgets.lsp")
-          (rdf "$srcdir/compat.lsp")
-          (rdf "$srcdir/extras.lsp")
-          (faslend)
+  (print (list "*comp =" !*comp))
 
-          (faslout 'compiler)
-          (rdf (cond
-            ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
-            (t "$srcdir/compiler.lsp")))
-          (faslend)
-   ))
+  (faslout 'cslcompat)
+  (rdf "$srcdir/fastgets.lsp")
+  (rdf "$srcdir/compat.lsp")
+  (rdf "$srcdir/extras.lsp")
+  (faslend)
+
+  (faslout 'compiler)
+  (rdf (cond
+    ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
+    (t "$srcdir/compiler.lsp")))
+  (faslend)
+
+))  % End of "not vsl" section.
 
 (setq !*comp (null !*nocompile))
 
@@ -225,9 +241,9 @@
 
 (put '!: 'switch!* '(((!= nil setq)) !*colon!*))
 
-(put '!< 'switch!* '(((!= nil leq) (!< nil !*lsqbkt!*)) lessp))
+(put '!< 'switch!* '(((!= nil leq) (!< nil !*startgroup!*)) lessp))
 
-(put '!> 'switch!* '(((!= nil geq) (!> nil !*rsqbkt!*)) greaterp))
+(put '!> 'switch!* '(((!= nil geq) (!> nil !*endgroup!*)) greaterp))
 
 % When the full parser is loaded the function mkprec() will reset all
 % these precedences. Until then please parenthesize expressions carefully.
@@ -338,7 +354,7 @@ a     (setq x (rread))
 b     (setq r (cons x r))
       (go a)))
 
-(de token nil
+(de token ()
    (prog (x y z)
       (setq x crchar!*)
 a     (cond
@@ -402,11 +418,39 @@ d     (setq nxtsym!* x)
 
 (de seprp (u) (or (eq u blank) (eq u tab) (eq u !$eol!$)))
 
+% I want to have support for #if but at this stage it will suffice it it
+% is restricted. I will support "#if #endif" and "#if #else #endif" but
+% without nesting. The way this is implemented is:
+%     #if t        Ignored! continue as usual.
+%     #if nil      Skip until #else or #endif then continue as usual.
+%                  Well as a matter of caution I stop at end of file too.
+%     #else        [Only seen after "#if t" because after "#if nil" it
+%                  had been reached and passed over. Skip to #endif.
+%                  If I make this "skip until #else or #endif" then it
+%                  would only find "#else" if that was repeated, which
+%                  should not happen - so doing that slightly shrinks
+%                  and simplifies the code.
+%     #endif       Ignored!
+
+(de skip_to_else_or_endif ()
+   (prog nil
+a     (cond
+         ((or (eq cursym!* !$eof!$)
+             (and (eq cursym!* '!#)
+                  (or (eq nxtsym!* 'else) (eq nxtsym!* 'endif))))
+          %@ (printc "else_or_endif found")
+          (return nil)))
+      (setq cursym!* nxtsym!*)
+      (setq nxysym!* (token))
+      (go a)))
+
 (de scan nil
-   (prog (x y)
+   (prog (x y b)
+%%      (print (list "scan start cursym=" cursym!*))
       (cond ((null (eq cursym!* '!*semicol!*)) (go b)))
 a     (setq nxtsym!* (token))
-b     (cond
+b     %%(print (list "label b: cur next = " cursym!* nxtsym!*))
+      (cond
          ((or (null (atom nxtsym!*)) (numberp nxtsym!*)) (go l))
          ((and (setq x (get nxtsym!* 'newnam)) (setq nxtsym!* x))
             (go b))
@@ -428,11 +472,41 @@ sw1   (setq nxtsym!* (token))
       (go sw1)
 comm  (cond ((eq (readch) '!;) (setq crchar!* '! )) (t (go comm)))
       (go a)
-l     (setq cursym!*
+l     %%(print (list "about to set cursym*:=nxtsym!* " cursym!* nxtsym!*))
+      (setq cursym!*
          (cond
             ((null (eqcar nxtsym!* 'string)) nxtsym!*)
             (t (cons 'quote (cdr nxtsym!*)))) )
 l1    (setq nxtsym!* (token))
+      %%(print (list "scan to return with " cursym!* nxtsym!*))
+      (cond
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'if))
+          (progn
+             (setq b (rread))
+%%             (setq nxtsym!* (token))
+%%             (print (list "predicate is" b))
+             (setq b (errorset b !*backtrace nil))
+             (cond
+                ((atom b) (setq b nil))
+                (t (setq b (car b))))
+             (cond
+                ((null b) (skip_to_else_or_endif)))
+%            (setq csym!* (token))
+             (go a)))
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'else))
+          (progn
+             %@ (printc "#else triggered while active")
+             (setq nxtsym!* nil) % So it is not 'else
+             (skip_to_else_or_endif)
+%%%%             (setq cursym!* (token))
+             (go a)))
+         ((and (eq cursym!* '!#) (eq nxtsym!* 'endif))
+             (go a)))
+%%      (print (list "ifdef not seen cur, next = " cursym!* nxtsym!*))
+% End of file will cause a total exit from the system.
+      (cond
+         ((and (eq cursym!* !$eof!$) (eq nxtsym!* !$eof!$))
+          (stop 100)))
       (return cursym!*)))
 
 (de ifstat nil
@@ -498,19 +572,19 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 % it possible to write the full implementation of RLISP in a much
 % more civilised way. What I put in here is a little more than is used
 % to start with, but matches the eventual implementation. Eg the 'go
-% and 'nodel flags are not relevant until the read parser has been loaded.
+% and 'nodel flags are not relevant until the real parser has been loaded.
 
 (de readprogn nil
    (prog (lst)
    a  (setq lst (cons (xread 'group) lst))
-      (cond ((null (eq cursym!* '!*rsqbkt!*)) (go a)))
+      (cond ((null (eq cursym!* '!*endgroup!*)) (go a)))
       (scan)
-      (return (cons 'progn (reverse lst))))) 
+      (return (cons 'progn (reverse lst)))))
 
-(put '!*lsqbkt!* 'stat 'readprogn)
-(flag '(!*lsqbkt!*) 'go)
-(flag '(!*rsqbkt!*) 'delim)
-(flag '(!*rsqbkt!*) 'nodel)
+(put '!*startgroup!* 'stat 'readprogn)
+(flag '(!*startgroup!*) 'go)
+(flag '(!*endgroup!*) 'delim)
+(flag '(!*endgroup!*) 'nodel)
 
 (de whilstat ()
    (prog (!*blockp bool bool2)
@@ -528,7 +602,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
    (prog (body bool lab)
       (setq bool (cadr u))
       (setq body (caddr u))
-      (setq lab 'whilelabel) 
+      (setq lab 'whilelabel)
       (return (list
          'prog nil
     lab  (list 'cond
@@ -552,15 +626,15 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       (return (list 'repeat body (xread t)))))
 
 (dm repeat (u)
-   (progn (terpri) (print (prog (body bool lab)
+   (prog (body bool lab)
       (setq body (cadr u))
       (setq bool (caddr u))
-      (setq lab 'repeatlabel) 
+      (setq lab 'repeatlabel)
       (return (list
       'prog nil
     lab  body
          (list 'cond
-            (list (list 'not bool) (list 'go lab))))))))))
+            (list (list 'not bool) (list 'go lab)))))))
 
 (put 'repeat 'stat 'repeatstat)
 (flag '(repeat) 'nochange)
@@ -590,19 +664,21 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 
 (load!-package!-sources 'alg 'alg)
 
+(load!-package!-sources 'rtools 'rtools)
+
 (load!-package!-sources 'arith 'arith)  %  Needed by roots, specfn*, (psl).
 
 (load!-package!-sources 'entry 'support)
 
 (load!-package!-sources 'remake 'support)
 
-(setq !*comp nil)
+%@@@ (setq !*comp nil)
 
 (begin)
 
 symbolic;
 
-!#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
+#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 
 faslout 'user;
@@ -615,27 +691,30 @@ faslout 'user;
 
 if modulep 'cslcompat then load!-module 'cslcompat;
 
-!#if (not (memq 'jlisp lispsystem!*))
+#if (not (memq 'jlisp lispsystem!*))
 % Note that Jlisp will use a different scheme to get the literal-vectors
 % of translated functions installed.
 
-symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
+% After this a function F that has one or more C++ optimised variants will
+% have a c!-version property that is a list of hash codes. If the integer H
+% is present in that list then sprintf("%s~~%x", F, H) (so to speak!) will
+% be tha name of an optimised version matching checksum H. Given that
+% it will be proper to replace (de F ...) with (copyd 'F~~H 'F) so as
+% to get the optimised version in place.
+
+symbolic procedure c!:install(name, env, checksum);
   begin
-    scalar v, n;
-    if c1 then return check!-c!-code(name, env, c!-version, c1);
-    put(name, 'c!-version, c!-version);
-    if null env then return name;
+    scalar basename, v, n;
+    basename := car env;
+    put(basename, 'c!-version,
+      union(list checksum, get(basename, 'c!-version)));
     v := mkvect sub1 length env;
     n := 0;
     while env do <<
       putv(v, n, car env);
       n := n + 1;
       env := cdr env >>;
-% I only instate the environment if there is nothing useful there at
-% present. This is a rather dubious test!
-    if symbol!-env name = nil or
-       symbol!-env name = name then symbol!-set!-env(name, v);
-    put(name, 'funarg, v);
+    symbol!-set!-env(name, v);
     return name;
   end;
 
@@ -659,35 +738,29 @@ for each name in '(
       name := compress('!" .
                  append(explodec "$reduce/cslbuild/generated-c/",
                         cdr explode name));
-   rdf name >>;
+   begin scalar !*echo; rdf name; end  >>;
 
-!#endif  % jlisp
+#endif  % jlisp
 
 if modulep 'smacros then load!-module 'smacros;
 
 faslend;
-!#endif  % embedded
+#endif  % embedded
 
-faslout 'xremake;
+faslout 'remake;
 
-fluid '(!*nocompile);
-!*nocompile := nil;
-
-if boundp 'interpreted and eq(compress explodec interpreted, 'yes) then
-   !*nocompile := t;
-
-!#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
+#if (and (or (boundp 'force_c_code) (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 
 load!-module "user";
 
-!#endif % embedded
+#endif % embedded
 
 in "$reduce/packages/support/remake.red"$
 
-global '(reduce_base_modules reduce_extra_modules
-         reduce_test_cases reduce_regression_tests
-         !*reduce!-packages!*);
+fluid '(reduce_base_modules reduce_extra_modules
+        reduce_test_cases reduce_regression_tests
+        !*reduce!-packages!*);
 
 symbolic procedure get_configuration_data();
 % Read data from a configuration file that lists the modules that must
@@ -701,9 +774,15 @@ symbolic procedure get_configuration_data();
 % Configuration information is held in a file called something like
 % "package.map".
     if (boundp 'minireduce and symbol!-value 'minireduce) or
-       memq('vsl, lispsystem!*) then i := "package.map"
+       memq('vsl, lispsystem!*) then
+         i := "package.map"
     else i := "$reduce/packages/package.map";
     i := open(i, 'input);
+    if null i then <<
+       terpri();
+       prin2 "+++ Unable to access package.map";
+       terpri();
+       stop 1 >>;
     i := rds i;
     e := !*echo;
     !*echo := nil;
@@ -729,7 +808,7 @@ symbolic procedure get_configuration_data();
     reduce_regression_tests := nil;
 % The embedded build may not support the list!-directory function and so
 % I arrange that if it fails I just omit being aware of the regression
-% test scripts. Soon the embedded system (built ising C++17) will in fact
+% test scripts. Soon the embedded system (built using C++17) will in fact
 % support this!
     if memq('embedded, lispsystem!*) then rdf("$srcdir/regressions.list")
     else <<
@@ -746,10 +825,7 @@ symbolic procedure get_configuration_data();
              put(r1, 'folder, "regressions");
              reduce_regression_tests :=
                 r1 . reduce_regression_tests >> >> >>;
-% I will run the "alg" test twice! This is for the benefit of Java where the
-% first time will be seriously slowed down by the need to JIT almost
-% everything.
-    reduce_test_cases := 'alg . append(reduce_test_cases, reduce_regression_tests);
+    reduce_test_cases := append(reduce_test_cases, reduce_regression_tests);
     for each x in w do
        if member('csl, cddr x) then put(car x, 'folder, cadr x);
 %   princ "reduce_base_modules: "; print reduce_base_modules;
@@ -763,19 +839,19 @@ symbolic procedure get_configuration_data();
 symbolic procedure build_reduce_modules names;
   begin
     scalar w;
-    if boundp 'interpreted and interpreted then !*nocompile := t;
+    if boundp 'interpreted and eval 'interpreted then !*nocompile := t;
     !*comp := null !*nocompile;
 
-!#if !*savedef
+#if !*savedef
     !*savedef := t;
-!#else
+#else
     !*savedef := nil;
-!#endif
-!#if !*noinlines
+#endif
+#if !*noinlines
     !*noinlines := t;
-!#else
+#else
     !*noinlines := nil;
-!#endif
+#endif
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
@@ -783,7 +859,7 @@ symbolic procedure build_reduce_modules names;
     w := explodec car names;
     if !*savedef then w := append(explodec "[Bootstrap] ", w);
     window!-heading list!-to!-string w;
-!#if !*savedef
+#if !*savedef
 % When building the bootstrap version I want to record what switches
 % get declared...
     if not getd 'original!-switch then <<
@@ -793,19 +869,19 @@ symbolic procedure build_reduce_modules names;
           '(lambda (x)
               (dolist (y x) (princ "+++ Declaring a switch: ") (print y))
               (original!-switch x))) >>;
-!#endif
+#endif
     package!-remake car names;
     if null (names := cdr names) then <<
         printc "Recompilation complete";
         window!-heading  "Recompilation complete" >>;
-!#if (or !*savedef
+#if (or !*savedef
          (and (not (boundp 'force_c_code)) (memq 'embedded lispsystem!*)))
     if null names then restart!-csl 'begin
-    else restart!-csl('(xremake build_reduce_modules), names)
-!#else
+    else restart!-csl('(remake build_reduce_modules), names)
+#else
     if null names then restart!-csl '(user begin)
-    else restart!-csl('(xremake build_reduce_modules), names)
-!#endif
+    else restart!-csl('(remake build_reduce_modules), names)
+#endif
   end;
 
 fluid '(cpulimit conslimit testdirectory);
@@ -955,22 +1031,22 @@ symbolic procedure test_a_package names;
         printc "Testing complete";
         window!-heading "Testing complete";
         restart!-csl t >>
-    else restart!-csl('(xremake test_a_package), names)
+    else restart!-csl('(remake test_a_package), names)
   end;
 
 symbolic procedure profile_compare_fn(p, q);
   begin
     scalar a, b;
-    a := (float caddr p/float cadr p);
-    b := (float caddr q/float cadr q);
-    if a < b then return t
-    else if a > b then return nil
+    a := cadddr p;
+    b := cadddr q;
+    if a > b then return t
+    else if a < b then return nil
     else return ordp(p, q)   % Use alpha ordering on function
                              % if counts match exactly.
   end;
 
 %
-% This function runs a test file and sorts out what the top 350
+% This function runs a test file and sorts out what the top 1000
 % functions in it. It appends their names to "profile.dat".
 %
 
@@ -1006,13 +1082,13 @@ symbolic procedure profile_a_package names;
                                                explodec car names);
        quitfn := getd 'quit;
        remd 'quit;
-       putd('quit, 'expr, 'posn);
+       putd('quit, 'expr, 'posn);  % Some harmless temp replacement for quit!
        mapstore 4;  % reset counts;
        !*errcont := t;
 % I try hard to arrange that even if the test fails I can continue and that
 % input & output file selection is not messed up for me.
-       w := wrs nil;   w1 := rds nil;
-       wrs w;          rds w1;
+       w := wrs nil; w1 := rds nil;
+       wrs w; rds w1;
        rr := resource!-limit(list('errorset,
                                   mkquote list('in_list1, mkquote packge, t),
                                   nil, nil),
@@ -1020,11 +1096,15 @@ symbolic procedure profile_a_package names;
                              conslimit,
                              10000,% allow ten megabytes of I/O
                              -1);  % Do not limit Lisp-level errors at all
-       wrs w;          rds w1;
+       wrs w; rds w1;
+       w := for each x in mapstore 2 collect
+           list(car x, cadr x, caddr x, float caddr x/float cadr x);
+       w := sort(w, function profile_compare_fn);
+       w1 := cadddr car w;
+       for each x in w do rplaca(cdddr x, 100.0*cadddr x/w1);
        erfg!* := nil;
        terpri();
        putd('quit, car quitfn, cdr quitfn);
-       w := sort(mapstore 2, function profile_compare_fn);
        begin
           scalar oo;
           oo := wrs open("buildlogs/flaguse.log", 'append);
@@ -1032,32 +1112,22 @@ symbolic procedure profile_a_package names;
           close wrs oo;
        end;
        load!-source(); % Need source versions of all code here
-       w1 := nil;
-       while w do <<
-           w2 := get(caar w, '!*savedef);
-           if eqcar(w2, 'lambda) then w1 := (caar w . md60 (caar w . cdr w2) .
-                                             cadar w . caddar w) . w1;
-           w := cdr w >>;
-       w := w1;
-       % I collect the top 350 functions as used by each test, not because all
-       % that many will be wanted but because I might as well record plenty
-       % of information here and discard unwanted parts later on.
-       for i := 1:349 do if w1 then w1 := cdr w1;
-       if w1 then rplacd(w1, nil);
-       % princ "MODULE "; prin car names; princ " suggests ";
-       % print for each z in w collect car z;
        w1 := open("profile.dat", 'append);
        w1 := wrs w1;
        linelength 80;
        if atom rr then printc "% +++++ Error: Resource limit exceeded";
-       princ "% @@@@@ Resources used: "; print !*resources!*;
-       princ "("; prin car names; terpri();
+       princ "("; prin car names; ttab 20;
+       princ "% Resources used by "; prin car names;
+       princ ": "; print !*resources!*;
+       princ"%  name                                     code size";
+       printc "  bytecodes used  ratio";
        for each n in w do <<
            princ "  ("; prin car n; princ " ";
-           if posn() > 30 then << terpri(); ttab 30 >>;
-           prin cadr n;
-           % I also display the counts just to help me debug & for interest.
-           princ " "; prin caddr n; princ " "; princ cdddr n;
+           if posn() > 47 then terpri();
+           ttab(52-length explodec cadr n);
+           prin cadr n; princ " ";
+           ttab(64-length explodec caddr n); princ caddr n;
+           ttab(77-length explodec cadddr n); princ cadddr n;
            printc ")" >>;
        printc "  )";
        terpri();
@@ -1098,7 +1168,7 @@ symbolic procedure profile_a_package names;
         printc "Profiling complete";
         window!-heading "Profiling complete";
         restart!-csl t >>
-    else restart!-csl('(xremake profile_a_package), names)
+    else restart!-csl('(remake profile_a_package), names)
   end;
 
 symbolic procedure trim_prefix(a, b);
@@ -1571,33 +1641,34 @@ symbolic procedure check_a_package;
 
 faslend;
 
-load!-module 'xremake;
+load!-module 'remake;
 
 << initreduce();
    date!* := "Bootstrap version";
+   otime!* := otime1!* := otime2!* := otime3!* := 0;
+   ogctime!* := ogctime1!* := ogctime2!* := ogctime3!* := 0;
+   lispargs!* := full!-lispargs!* := lispsystem!* := nil;
    preserve('begin, "REDUCE", t) >>;
 
 symbolic;
 
-!#if (and (or (boundp 'force_c_code)
+#if (and (or (boundp 'force_c_code)
               (not (memq 'embedded lispsystem!*)))
           (not !*savedef))
 load!-module 'user;
-!#endif
+#endif
 
 get_configuration_data();
 
 package!-remake2(prolog_file,'support);
 
-package!-remake2('revision,'support);
+%package!-remake2('revision,'support);
 
 package!-remake2(rend_file,'support);
 
 package!-remake2('entry,'support);
 
 package!-remake2('smacros,'support);
-
-package!-remake2('remake,'support);
 
 
 % The next lines have LOTS of hidden depth!  They restart CSL repeatedly
@@ -1618,14 +1689,14 @@ package!-remake2('remake,'support);
 % will not work if you start csl manually and then do a (rdf ..) [say]
 % on buildreduce.lsp.  I told you that it was a little delicate.
 
-!#if !*savedef
+#if !*savedef
 % Some switches may be in the utter core and not introduced via the
 % "switch" declaration...
 for each y in oblist() do
   if flagp(y, 'switch) then <<
      princ "+++ Declaring a switch: ";
      print y >>;
-!#endif
+#endif
 
 get_configuration_data();
 
@@ -1640,14 +1711,12 @@ symbolic restart!-csl nil;
 (cond
    ((eq 'vsl (car lispsystem!*)) (rdf "$srcdir/vsl.lsp")))
 
-
 (setq !*savedef (and (or (boundp 'bootstrap)
                          (null (memq 'embedded lispsystem!*)))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 (make!-special '!*noinlines)
 (prog (w)
-   (setq w (errorset 'noinlines nil nil))
-   (setq !*noinlines (and (not (atom w)) (car w)))
+   (setq !*noinlines (and (boundp 'noinlines) (eval 'noinlines)))
    (print (list '!*noinlines 'set 'to !*noinlines)))
 (make!-special '!*native_code)
 (setq !*native_code nil)
@@ -1668,34 +1737,77 @@ symbolic restart!-csl nil;
 
 (setq loaded!-packages!* '(cslcompat user cslprolo))
 
+% I will load a number of things explicitly just to be certain that any
+% ordering requirements are satisfied. Perhaps the most important of these
+% will be "entry" since then things loaded after that will replace the
+% autoload stub with a real function.
+
 (load!-package 'revision)
-
 (load!-package 'rlisp)
-
 (load!-package 'cslrend)
-
 (load!-package 'smacros)
-
 (load!-package 'poly)
-
 (load!-package 'arith)
-
 (load!-package 'alg)
-
+(load!-package 'rtools)
 (load!-package 'mathpr)
-
-(cond
-   ((modulep 'tmprint) (load!-package 'tmprint)))
-
+(cond ((modulep 'tmprint) (load!-package 'tmprint)))
 (load!-package 'entry)
 
+% Now load everything marked as "preload" in packages.map
 
-(setq version!* (compress (cons '!"
-  (append
-    (explodec "Reduce (Free CSL version, revision ")
-    (append (explodec revision!*) (explodec ")"""))))))
+(prog (i w e r r1 mods)
+    (cond
+       ((and (boundp 'minireduce) (symbol!-value 'minireduce))
+        (setq i "package.map"))
+       (t (setq i "$reduce/packages/package.map")))
+    (setq i (open i 'input))
+    (setq i (rds i))
+    (setq e !*echo)
+    (setq !*echo nil)
+    (setq w (read))
+    (setq !*echo e)
+    (setq i (rds i))
+    (close i)
+    (setq mods nil)
+    (dolist (x w)
+       (cond
+          ((and (member 'preload (cddr x))
+                (member 'csl (cddr x)))
+           (setq mods
+              (nconc mods (list (car x)))))))
+    (dolist (m mods)
+       (cond
+          ((not (member m loaded!-modules!*)) (load!-package m)))))
 
-(setq date!* (date))
+
+(cond
+  ((memq 'vsl lispsystem!*)
+    (setq date!* "05-11-1605")
+    (setq version!* "Reduce (VSL version)"))
+  (t
+    (prog (ff rev)
+% The following line has a delicacy that may be unexpected in the case
+% where one is building on Windows. If a native windows version of Reduce is
+% running then the command here is treated as if presented to CMD.COM with
+% and environment (specifically including $PATH/%PATH%) as ay present in
+% force. I expect (nay DEMAND!) that this build has been launched from
+% sh/bash shell with PATH providing access to all the Unix-like command
+% I want - with "svn" being the most important. If that is the situation the
+% prefix "sh " in the command here ensures that my shell script is processed
+% the way that I want. Attempts to build Reduce under a Windows style shell
+% without the command "sh" and "svn" in PATH will fail!
+      (setq ff (pipe!-open (print (concat "sh "
+         (concat !@reduce "/scripts/revision.sh"))) 'input))
+      (setq ff (rds ff))
+      (setq rev (read))
+      (close (rds ff))
+      (cond ((fixp rev) (setq revision!* rev)))
+      (setq date!* (version!-date))
+      (setq version!* (compress (cons '!"
+        (append
+          (explodec "Reduce (CSL, rev ")
+          (append (explodec revision!*) (explodec ")""")))))))))
 
 (setq !*backtrace nil)
 
@@ -1720,7 +1832,7 @@ symbolic restart!-csl nil;
 % between modules) so I still HOPE that most people who are developing
 % stuff will rebuild Reduce from scratch rather often.
 
-(load!-package 'xremake)
+(load!-package 'remake)
 (get_configuration_data)
 
 % If the user compiles a new FASL module then I will let it
@@ -1735,6 +1847,25 @@ symbolic restart!-csl nil;
 (setq !*native_code nil)   % The native compilation option that I was
                            % considering at one stage is no longer available.
 
+(makeunbound '!@srcdir)
+(makeunbound '!@reduce)
+
+% can discard the fast files for things that I hace loaded into the main
+% image... However note that the bootstrap version for CSL *MUST* have
+% all those fasl files because they get scanned to find "saved definitions"
+% when I come to compile some of the Lisp into C++.
+
+(cond
+  ((null !*savedef)
+   (dolist (m loaded!-modules!*)
+      (princ "Tidy up ") (print m)
+      (dolist (m1 (get m 'package))
+         (princ "  component module: ") (print m1)
+         (delete!-module m1)))))
+
+(setq otime!* (setq otime1!* (setq otime2!* (setq otime3!* 0))))
+(setq ogctime!* (setq ogctime1!* (setq ogctime2!* (setq ogctime3!* 0))))
+(setq lispargs!* (setq full!-lispargs!* (setq lispsystem!* nil)))
 (preserve 'begin (bldmsg "%w, %w ..." version!* date!*) t)
 % Note that (preserve) here arranges to reload the image that it
 % creates, and it then runs (begin) the start-up function. This will
@@ -1748,7 +1879,9 @@ symbolic restart!-csl nil;
 symbolic;
 no_init_file := t;
 
-load!-module 'xremake;
+load!-module 'remake;
+
+fluid '(!*nocompile);
 
 get_configuration_data();
 
@@ -1759,7 +1892,7 @@ symbolic;
 "**** **** REDUCE FULLY REBUILD **** ****";
 
 % At this stage I have a complete workable REDUCE. If built using a
-% basic CSL (I call it "bootstrapreduce" here)  nothing has been compiled into
+% basic CSL (I call it "bootstrapreduce" here) nothing has been compiled into
 % C (everything is bytecoded), and it is big because it has retained all
 % Lisp source code in the image file. If however I built using a version
 % of CSL ("reduce") that did have things compiled into C then these will

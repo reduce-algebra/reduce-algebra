@@ -1,0 +1,11 @@
+prefix=/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin
+exec_prefix=${prefix}
+libdir=/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin/lib
+toolexeclibdir=${libdir}
+includedir=/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin/include
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.3-rc0
+Libs: -L${toolexeclibdir} -lffi
+Cflags: -I${includedir}

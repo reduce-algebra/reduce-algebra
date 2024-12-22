@@ -1,0 +1,12 @@
+prefix=/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin
+exec_prefix=${prefix}
+libdir=/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin/lib
+includedir=/cygdrive/d/reduce-algebra/cslbuild/x86_64-pc-cygwin/include
+
+Name: libedit
+Description: command line editor library provides generic line editing, history, and tokenization functions.
+Version: 3.1
+Requires:
+Libs: -L${libdir} -ledit -lcurses 
+Cflags: -I${includedir} -I${includedir}/editline
+

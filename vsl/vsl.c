@@ -44,11 +44,16 @@
 #include <stdarg.h>
 #include <setjmp.h>
 
+#ifndef NOHISTEDIT
 #include <histedit.h>
+#endif
 
 static EditLine *elx_e;
+
+#ifndef NOHISTEDIT
 static History *elx_h;
 static HistEvent elx_v;
+#endif
 
 // A Lisp item is represented as an integer and the low 3 bits
 // contain tag information that specify how the rest will be used.
@@ -737,8 +742,10 @@ int my_getc(FILE *f)
     if (elx_count == 0)
     {   elx_line = el_gets(elx_e, &elx_count);
         if (elx_count <= 0) return EOF;
+#ifndef NO_HISTEDIT
         if (elx_count > 1 || (elx_line[0] != '\n' && elx_line[0] != '\r'))
             history(elx_h, &elx_v, H_ENTER, elx_line);
+#endif
     }
     elx_count--;
     return *elx_line++;
@@ -2644,7 +2651,7 @@ LispObject Lmkvect(LispObject lits, int nargs, ...)
     if (!isFIXNUM(x)) return error1("bad size in mkvect", x);
     n = (int)qfixnum(x);
 // I put an (arbitrary) limit on the size of the largest vector.
-    if (n < 0 || n > 100000) return error1("bad size in mkvect", x);
+    if (n < -1 || n > 100000) return error1("bad size in mkvect", x);
     return makevector(n);
 }
 
@@ -3715,13 +3722,14 @@ int main(int argc, char *argv[])
 {   elx_e = el_init(argv[0], stdin, stdout, stderr);
     el_set(elx_e, EL_PROMPT, prompt);
     el_set(elx_e, EL_EDITOR, "emacs");
+#ifndef NOHISTEDIT
     if ((elx_h = history_init()) == 0)
     {   fprintf(stderr, "Unable to initialize history\n");
         exit(1);
     }
     history(elx_h, &elx_v, H_SETSIZE, 400);
     el_set(elx_e, EL_HIST, history, elx_h);
- 
+#endif
     const char *inputfilename = NULL;
     coldstart = 0;
     interactive = 1;
