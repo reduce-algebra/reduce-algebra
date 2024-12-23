@@ -4,7 +4,7 @@ Print NaN/Inf correctly;OK;OK;-;OK;OK;OK;OK;OK;OK;OK;;
 Fix for PSL compiler: id constant? Property;OK;OK;-;OK;OK;OK;OK;OK;OK;OK;;
 (quotient 0.0 0.0);OK;OK;-;OK;OK;OK;OK;OK;OK;OK;;
 Get-image-path etc.;OK;OK;-;OK;OK;OK;OK;OK;OK;OK;;
-Lisp disassembler;OK;OK;-;OK;OK;OK;OK;OK;OK;TBD;;
+Lisp disassembler;OK;OK;-;OK;OK;OK;OK;OK;OK;OK;;
 Better 64bit code in Compiler for x86_64;n/a;OK;n/a;OK;n/a;;n/a;;n/a;n/a;n/a;n/a
 exploden and friends;done;done;-;done;done;done;done;done;done;done;;
 Reading high order bit chars from terminal;OK;OK;-;OK;OK;OK;OK;OK;OK;OK;;
