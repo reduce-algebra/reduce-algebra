@@ -351,7 +351,7 @@ arith_sources =
 ARITHDEP=
 endif !arithlib
 
-gc_sources = newcslgc.cpp newallocate.cpp 
+gc_sources = newcslgc.cpp newallocate.cpp gc-check.cpp
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
@@ -363,7 +363,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		winsupport.cpp csl.cpp fasl.cpp preserve.cpp bytes1.cpp \
 		showhdr.cpp float128_t.cpp $(gc_sources) $(arith_sources)
 
-# Thie little rule is because from time to time I really want to see the
+# This little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
 # This gives a target filename.cxx for that. The reason I want to do this
 # is that sometimes I wish to use single stepping in a debugger wihin code
@@ -383,7 +383,8 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 	mv $@.tmp $@
 
 # You can go "make foo.s" to get an assembly-code version of the compiled
-# form of foo.
+# form of foo. You may wish to do that if you want to confirm the optimisation
+# or even the correctness of the generated code.
 
 %.s:	%.cpp
 	@printf "CXX -S $<\n"

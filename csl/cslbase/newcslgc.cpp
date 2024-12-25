@@ -1684,6 +1684,7 @@ static void report_at_end(uint64_t t0)
 
 NOINLINE void garbage_collect(const char* why)
 {   gcNumber++;
+    gc_start();
     uint64_t t0 = read_clock();
 #ifdef WITH_GUI
 // If I have a window system I tell it the current time every so often
@@ -1797,6 +1798,7 @@ NOINLINE void garbage_collect(const char* why)
     }
 // End of garbage collection!
     report_at_end(t0);
+    gc_end();
 }
 
 NOINLINE void garbage_collect()

@@ -770,6 +770,8 @@ extern uintptr_t consFringe, consLimit, consEnd;
 extern uintptr_t consEndOfPage();
 extern void garbage_collect();
 extern void garbage_collect(const char* why);
+extern void gc_start();
+extern void gc_end();
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;
