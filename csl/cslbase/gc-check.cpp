@@ -69,14 +69,37 @@
 
 #ifdef GC_CHECK
 
+static constexpr size_t list_bases_size =
+    sizeof(list_bases)/sizeof(LispObject);
+
+static LispObject save_bases[list_bases_size];
+static uint64_t checksum_bases[list_bases_size];
+
+static uint64_t gc_checksum(LispObject a, size_t depth=10)
+{   if (!is_cons(a) || depth==0) return a & TAG_BITS;
+    uint64_t c = gc_checksum(car(a), depth-1);
+    uint64_t d = gc_checksum(cdr(a), depth-1);
+    return 19937*c + d;
+}
+
 void gc_start()
-{
-// Save everything here.
+{   cout << "\n@@@ Start of garbage collection\n";
+    for (size_t i=0; i<list_bases_size; i++)
+    {   save_bases[i] = *list_bases[i];
+        checksum_bases[i] = gc_checksum(*list_bases[i]);
+    }
 }
 
 void gc_end()
 {
-// Compare against saved data here.
+    cout << "\n@@@ End of garbage collection\n";
+    for (size_t i=0; i<list_bases_size; i++)
+        if (checksum_bases[i] != gc_checksum(*list_bases[i]))
+        {   std::cout << list_names[i]
+                      << " " << checksum_bases[i]
+                      << " " << gc_checksum(*list_bases[i])
+                      << "\n";
+        }
 }
 
 #else // GC_CHECK

@@ -1649,7 +1649,13 @@ void use_gchook(LispObject arg)
                     reclaim_trigger_target = target;
                 }
             } RAII_trapcount;
+// I can see how this call to Lapply1 could lead to all sorts of list-bases
+// changing value, in particular B_reg. There are places where that would be
+// bad, so I will explicitly save B_reg here and continue to worry about
+// other similar issues. 
+            RealSave save(B_reg, callStack);
             Lapply1(nil, g, arg);  // Call the hook
+            save.restore(B_reg, callStack);
         }
     }
 }
@@ -1853,3 +1859,4 @@ void dumpToFile(const char* filename)
 #endif // DEBUG
 
 // end of file newcslgc.cpp
+
