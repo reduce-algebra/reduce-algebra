@@ -667,6 +667,17 @@ then
   AC_DEFINE(MINIPAGE, [1], [Smaller pages for the heap])
 fi
 
+AC_ARG_ENABLE(gc-check,
+  AS_HELP_STRING([--enable-gc-check],
+                 [expensive checks for garbage collector: (CSL only)]),
+  [],
+  [enable_gc_check="yes"])
+
+if test "$enable_gc_check" = "yes"
+then
+  AC_DEFINE([GC_CHECK], [1], [For use by developers])
+fi
+
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),
