@@ -45,7 +45,7 @@
 
 
 (fluid '(bytes* lth* reg* regnr* segment*  symvalhigh symfnchigh *curradr* *currinst* *big-endian*
-		*largest-target-addr* targetaddr* genlbl-pname* gensympname))
+		labels* *largest-target-addr* targetaddr* genlbl-pname* gensympname))
 
           (de getwrd(a)(getmem a))
 
@@ -233,7 +233,7 @@
   (prog (i lth name instr)
       (setq targetaddr* nil)	 
       (setq lth 4)
-      (setq cc (wand 16#0f (wshift pp -28)))
+%      (setq cc (wand 16#0f (wshift pp -28)))
       %% big branch for various instruction types
       (setq instr
 	    (cond ((weq (wand 2#00011100 p1) 2#00010000)
@@ -251,9 +251,9 @@
 		  (t
 		   (unknown-instr-error pp))
 		  ))
-      (when (and targetaddr* (not (assoc targetaddr* labels)))
-	(setq labels (cons (cons targetaddr* (gen-target-label)) labels))
-	(setq *comment (cdar labels)))
+      (when (and targetaddr* (not (assoc targetaddr* labels*)))
+	(setq labels* (cons (cons targetaddr* (gen-target-label)) labels*))
+	(setq *comment (cdar labels*)))
       (return instr)
       ))
 
@@ -303,7 +303,7 @@
 		 
 		 )
 		((and (weq p1 2#11010101) (wand 2#11 (wshift pp -22) 0)) % System
-		 )
+		 (decode-system p1 pp sf))
 		((weq (wand p1 2#11111110) 2#11010110) % Uncond. branch register
 		 (setq op1 (wand 2#1111 (wshift pp -21)))
 		 (let ((op2 (wand 2#11111 (wshift pp -16)))
@@ -324,6 +324,81 @@
 		)
 	  )
     )
+
+(de num-to-cregname (n)
+    (bldmsg "C%d" n))
+
+(de decode-systemreg (op0 op1 crn crm op2)
+
+    (cond
+     
+    %% 2#11 2#000 2#0001 2#0000 2#901 ACTLR_EL1
+    %% 2#11 2#100 2#0001 2#0000 2#001 ACTLR_EL2
+    %% 2#11 2#110 2#0001 2#0000 2#001 ACTLR_EL3
+    %% 2#11 2#000 2#0101 2#0001 2#000 AFSR0_EL1
+    %% 2#11 2#100 2#0101 2#0001 2#000 AFSR0_EL2
+    %% 2#11 2#110 2#0101 2#0001 2#000 AFSR0_EL3
+    %% 2#11 2#000 2#0101 2#0001 2#001 AFSR0_EL1
+    %% 2#11 2#100 2#0101 2#0001 2#001 AFSR0_EL2
+    %% 2#11 2#110 2#0101 2#0001 2#001 AFSR0_EL3
+    %% 2#11 2#001 2#0000 2#0000 2#111 AIDR_EL1
+    %% 2#11 2#000 2#1010 2#0011 2#000 AMAIR_EL1
+    %% 2#11 2#100 2#1010 2#0011 2#000 AMAIR_EL2
+    %% 2#11 2#110 2#1010 2#0011 2#000 AMAIR_EL3
+    %% 2#11 2#001 2#0000 2#0000 2#000 CCSIDR_EL1
+    %% 2#11 2#001 2#0000 2#0000 2#001 CLIDR_EL1
+    %% 2#11 2#000 2#1101 2#0000 2#001 CONTEXTIDR_EL1
+    %% 2#11 2#000 2#0001 2#0000 2#010 CPACR_EL1
+    %% 2#11 2#100 2#0001 2#0001 2#010 CPTR_EL2
+    %% 2#11 2#110 2#0001 2#0001 2#010 CPTR_EL3
+
+    %% 2#11 2#100 2#0101 2#0011 2#000 FPEXC32_EL2
+
+     ((and (weq op0 2#11) (weq op1 2#011) (weq crn 2#0100) (weq crm 2#0100) (weq op2 2#000)) 'FPCR)
+     ((and (weq op0 2#11) (weq op1 2#011) (weq crn 2#0100) (weq crm 2#0100) (weq op2 2#001)) 'FPSR)
+     ((and (weq op0 2#11) (weq op1 2#011) (weq crn 2#0100) (weq crm 2#0010) (weq op2 2#000)) 'NZCV)
+     (t 'not-yet-implemented)
+    ))
+
+(de decode-system (p1 pp sf)
+    (let ((!L (wand 1 (wshift pp -21)))
+	  (op0 (wand 2#11 (wshift pp -19)))
+	  (op1 (wand 2#111 (wshift pp -16)))
+	  (crn (wand 2#1111 (wshift pp -12)))
+	  (crm (wand 2#1111 (wshift pp -8)))
+	  (op2 (wand 2#111 (wshift pp -5)))
+	  (regt (wand 2#11111 pp))
+	  (systemreg))
+      (cond ((weq op0 2#01)
+	     (if (weq !L 1)
+		 (list 'sysl (regnum-to-regname regt 1 nil) (prefix!' op1) (num-to-cregname crn) (num-to-cregname crm) (prefix!' op2))
+	       (list 'sys (prefix!# op1) (num-to-cregname crn) (num-to-cregname crm) (prefix!# op2)
+		     (when (wneq regt 2#11111) (regnum-to-rename regt sf nil)))))
+	    ((wgeq op0 2#10)
+	     (setq systemreg (decode-systemreg op0 op1 crn crm op2))
+	     (if (weq !L 1)
+		 (list 'mrs (regnum-to-regname regt 1 nil) systemreg)
+	       (list 'msr systemreg (regnum-to-regname regt 1 nil))))
+	    ((wneq regt 2#11111) (unknown-instr-error pp))
+	    ((and (weq !L 0) (weq crn 2#0100)) % MSR immediate
+	     (let ((pstatefield
+		    (cond ((and (weq op1 2#000) (weq op2 2#101)) "SPSel")
+			  ((and (weq op1 2#011) (weq op2 2#110)) "DAIFSet")
+			  ((and (weq op1 2#011) (weq op2 2#11)) "DAIFClr")
+			  (t (unknown-instr-error pp)))))
+	       (list 'msr pstatefield (prefix!# crm))))
+	    ((and (weq !L 0) (weq op1 2#011))
+	     (list
+	      (cond ((or (wneq crm 2#0000) (weq op2 2#000)) 'nop)
+		    ((weq op2 2#101) 'sevl)
+		    ((weq op2 2#100) 'sev)
+		    ((weq op2 2#011) 'wfi)
+		    ((weq op2 2#010) 'wfe)
+		    ((weq op2 2#001) 'yield)
+		    (t (unknown-instr-error pp)))))
+	    (t (unknown-instr-error pp)))
+      ))	       
+
 
 (de decode-dataproc-pcrel (p1 pp sf opc)
     (let ((instr (if (weq sf 0) 'adr 'adrp))
@@ -1243,7 +1318,7 @@
 (de disassemble (fkt)
     (prog(base instr jk jk77 p1 pp lth x
 	       jmem symvalhigh symfnchigh frame
-	       argumentblockhigh labels label bstart bend breg com4 memp1
+	       argumentblockhigh labels* label bstart bend breg com4 memp1
 	       !*lower lc name)
          (setq !*lower t)
 	 (setq *largest-target-addr* 0)
@@ -1282,8 +1357,8 @@
  continue1
   % second pass: assign symbolic labels to jump targets
          (when (not bend) (setq bend base))
-         (setq labels (labelsort labels))
-         (mapcar labels
+         (setq labels* (labelsort labels*))
+         (mapcar labels*
                 (function
                   (lambda(x)
                     (cond
@@ -1300,8 +1375,8 @@ erstmal
          (terpri)
          (setq lc 0)
 loop
-         (cond ((assoc base labels)
-                (ttab 19) (prin2 (cdr (assoc base labels)))
+         (cond ((assoc base labels*)
+                (ttab 19) (prin2 (cdr (assoc base labels*)))
                 (setq lc (add1 lc))
                 (prin2t ":")))
          (setq p1 (wand 255 (byte(int2sys base) 0)))
