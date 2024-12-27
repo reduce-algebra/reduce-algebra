@@ -6014,7 +6014,7 @@ symbolic procedure csl_aftergcuserhook u$
   if u then aftergcuserhook1()
     else nil;
 
-lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$
+% lisp(!*gc!-hook!* := 'csl_aftergcuserhook)$   % Moved into setcrackflags.
 
 #endif
 

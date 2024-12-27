@@ -1857,7 +1857,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             {   "--wait", false, false,
                 "--wait   Pause for 15 second before starting anything.\n"
                 "         This may be useful for those who want to attach a debugger to\n"
-                "         during that time, so provided there is a console availabe\n"
+                "         during that time, so provided there is a console available\n"
                 "         the process number will be displayed on the standard output.",
                 [&](string key, bool hasVal, string val)
                 {   std::printf("Process identifier = %d\r\n", getpid());

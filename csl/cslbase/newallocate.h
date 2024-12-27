@@ -771,7 +771,11 @@ extern uintptr_t consEndOfPage();
 extern void garbage_collect();
 extern void garbage_collect(const char* why);
 extern void gc_start();
-extern void gc_end();
+extern void gc_end(bool final=true);
+typedef bool symbol_processor_predicate(LispObject);
+extern bool push_all_symbols(symbol_processor_predicate *pp);
+extern bool always(LispObject);
+extern bool not_gensym(LispObject);
 
 extern uintptr_t vecFringe, vecLimit, vecEnd;
 extern uintptr_t borrowFringe, borrowLimit, borrowEnd;

@@ -65,7 +65,6 @@ extern size_t pages_count, heap_pages_count, vheap_pages_count;
 
 extern size_t new_heap_pages_count, new_vheap_pages_count;
 
-extern LispObject* nilsegment;
 extern LispObject* stacksegment;
 extern int32_t stack_segsize;  // measured in units of one CSL page
 extern double max_store_size;
@@ -323,28 +322,6 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 
 #endif
 
-#define first_nil_offset         50     // GC collector marks from here up
-
-//
-// A vector of 50 words is used by the interpreter when preparing args
-// for functions and when handling multiple values.
-//
-
-#define work_0_offset           250
-
-// Garbage collector marks up to but not including last_nil_offset
-#define last_nil_offset         301
-
-//
-// NIL_SEGMENT_SIZE must be over-large by enough to allow for
-// space lost while rounding nil up to be a multiple of 8. Also in the
-// Common Lisp case I need to give myself a spare word BEFORE the place
-// where nil points. I also want this to be an even multiple of the
-// size of LispObject.
-//
-#define NIL_SEGMENT_SIZE \
-    (((1 + last_nil_offset) & ~1) * sizeof(LispObject) + 32)
-
 // I give myself a margin of SPARE bytes at the end of a page so that I can
 // always CONS that amount (even without a garbage collection check) and not
 // corrupt anything.  The main use for this is that sometimes I need to
@@ -359,14 +336,6 @@ extern void debug_show_trail_raw(const char* msg, const char* file, int line);
 // (multiple-) values so I hope this is safe.
 
 #define SPARE                   512
-
-// I want my table of addresses here to be 8-byte aligned on 64-bit
-// machines...
-
-//            !COMMON  COMMON
-//   32-bit    nil       nil
-//   64-bit    nil+4     nil
-
 
 extern uintptr_t heapstart;
 extern uintptr_t len;
@@ -525,9 +494,6 @@ extern LispObject user_base_9;
 #define mv_3                workbase[3]
 #define mv_4                workbase[4]
 #define work_50             workbase[50]
-
-extern void copy_into_nilseg();
-extern void copy_out_of_nilseg();
 
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);

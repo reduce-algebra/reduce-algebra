@@ -1638,21 +1638,27 @@ void use_gchook(LispObject arg)
         if (symbolp(g) && g != unset_var && g != nil)
         {   class save_trapcount
             {   uint64_t count, target;
+                LispObject* savedStack;
             public:
+// Calling the hook must not disturm any list-bases and really ought not
+// to be able to upset various other important static variables, so
+// when I am going to use it I save a load of state.
                 save_trapcount()
                 {   count = reclaim_trigger_count;
                     target = reclaim_trigger_target;
                     reclaim_trigger_target = 0;
+                    for (LispObject* p:list_bases) *++stack = *p;
+                    savedStack = stack;
                 }
                 ~save_trapcount()
                 {   reclaim_trigger_count = count;
                     reclaim_trigger_target = target;
+                    stack = savedStack;
+                    for (size_t i=sizeof(list_bases)/sizeof(list_bases[0]);
+                         i>0;
+                         i--) *list_bases[i-1] = *stack--;
                 }
             } RAII_trapcount;
-// I can see how this call to Lapply1 could lead to all sorts of list-bases
-// changing value, in particular B_reg. There are places where that would be
-// bad, so I will explicitly save B_reg here and continue to worry about
-// other similar issues. 
             RealSave save(B_reg, callStack);
             Lapply1(nil, g, arg);  // Call the hook
             save.restore(B_reg, callStack);
@@ -1803,6 +1809,7 @@ NOINLINE void garbage_collect(const char* why)
         if (volatileVar == volatileVar) break;
     }
 // End of garbage collection!
+    gc_end(false);
     report_at_end(t0);
     gc_end();
 }

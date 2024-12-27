@@ -690,7 +690,12 @@ LispObject Lgc_forcer1(LispObject env, LispObject a)
     return Lgc_forcer(env, a, a);
 }
 
-LispObject* nilSegment,* stackSegment;
+LispObject* stackSegment;
+
+// This is the symbol "nil" which lives here at a static address
+// rather than anywhere in the heap.
+
+Symbol_Head nilObject;
 
 void initHeapSegments(double storeSize)
 // This function just makes nil and the pool of page-frames available.
@@ -716,10 +721,7 @@ void initHeapSegments(double storeSize)
         consPages.count = vecPages.count = borrowPages.count =
         consOldPages.count = vecOldPages.count = 0;
     potentiallyPinned = pinnedPages = pendingPages = oldVecPinPages = nullptr;
-    nilSegment = reinterpret_cast<LispObject*>(
-        new (std::nothrow) Align8[(NIL_SEGMENT_SIZE)/8]);
-    if (nilSegment == nullptr) fatal_error(err_no_store);
-    nil = static_cast<LispObject>((uintptr_t)nilSegment + TAG_SYMBOL);
+    nil = static_cast<LispObject>((uintptr_t)&nilObject + TAG_SYMBOL);
     stackSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);
@@ -762,7 +764,6 @@ void dropHeapSegments()
         delete [] static_cast<Page*>(heapSegment[i]);
 #endif // MACINTOSH
     }
-    delete [] reinterpret_cast<Align8*>(nilSegment);
     delete [] reinterpret_cast<Align8*>(stackSegment);
 }
 
