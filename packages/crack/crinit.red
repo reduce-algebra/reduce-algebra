@@ -1183,6 +1183,12 @@ put('get_special_alg_sol2,'description,
 
  ini_let_rules()
 
+#if (memq 'csl lispsystem!*)
+% This happens here so that crack is pretty well set up before the hook is
+% ever called.
+ !*gc!-hook!* := 'csl_aftergcuserhook)$
+#endif
+
 >>$ % end of setcrackflags
 
 algebraic procedure ini_let_rules$

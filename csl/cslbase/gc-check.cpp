@@ -82,24 +82,129 @@ static uint64_t gc_checksum(LispObject a, size_t depth=10)
     return 19937*c + d;
 }
 
+static size_t nSymbols = 0;
+static LispObject* vecOfSymbols = nullptr;
+static uint64_t*   sigOfSymbols = nullptr;
+
 void gc_start()
 {   cout << "\n@@@ Start of garbage collection\n";
+// First record the regular list bases.
     for (size_t i=0; i<list_bases_size; i++)
     {   save_bases[i] = *list_bases[i];
         checksum_bases[i] = gc_checksum(*list_bases[i]);
     }
+// Now find every symbol in the heap and record info about
+// value, property list and environment components.
+    LispObject* stacksave = stack;
+    if (push_all_symbols(always))
+    {   stack = stacksave;
+        vecOfSymbols = nullptr;
+        sigOfSymbols = nullptr;
+        nSymbols = 0;
+    }
+    else
+    {   nSymbols = stack-stacksave;
+        vecOfSymbols = new (std::nothrow) LispObject[nSymbols];
+        if (vecOfSymbols == nullptr) nSymbols = 0;
+        else
+        {   sigOfSymbols = new (std::nothrow) uint64_t[nSymbols];
+            if (sigOfSymbols == nullptr)
+            {   delete[] vecOfSymbols;
+                vecOfSymbols = nullptr;
+                nSymbols = 0;
+            }
+            else
+            {   size_t i=0;
+                while (stack != stacksave)
+                {   LispObject w = *stack--;
+                    vecOfSymbols[i] = w;
+                    sigOfSymbols[i++] = 19937*gc_checksum(qvalue(w)) +
+                                        11213*gc_checksum(qenv(w)) +
+                                        gc_checksum(qplist(w));
+                }
+            }
+        }
+    }
 }
 
-void gc_end()
+static size_t nSymbolsAfter = 0;
+static LispObject* vecOfSymbolsAfter = nullptr;
+static uint64_t*   sigOfSymbolsAfter = nullptr;
+
+void gc_end(bool final)
 {
-    cout << "\n@@@ End of garbage collection\n";
+    if (final) cout << "\n@@@ about to check at end of garbage collection\n";
+    else cout << "\n@@@ about to check just before GC hook\n";
     for (size_t i=0; i<list_bases_size; i++)
-        if (checksum_bases[i] != gc_checksum(*list_bases[i]))
+    {   if (checksum_bases[i] != gc_checksum(*list_bases[i]))
         {   std::cout << list_names[i]
                       << " " << checksum_bases[i]
                       << " " << gc_checksum(*list_bases[i])
                       << "\n";
         }
+    }
+// Find every symbol in the new version of the heap and check info about
+// value, property list and environment components.
+    LispObject* stacksave = stack;
+    if (push_all_symbols(always))
+    {   stack = stacksave;
+        vecOfSymbolsAfter = nullptr;
+        sigOfSymbolsAfter = nullptr;
+        nSymbolsAfter = 0;
+    }
+    else
+    {   nSymbolsAfter = stack-stacksave;
+        vecOfSymbolsAfter = new (std::nothrow) LispObject[nSymbolsAfter];
+        if (vecOfSymbolsAfter == nullptr) nSymbolsAfter = 0;
+        else
+        {   sigOfSymbolsAfter = new (std::nothrow) uint64_t[nSymbolsAfter];
+            if (sigOfSymbolsAfter == nullptr)
+            {   delete[] vecOfSymbolsAfter;
+                vecOfSymbolsAfter = nullptr;
+                nSymbolsAfter = 0;
+            }
+            else
+            {   size_t i=0;
+                while (stack != stacksave)
+                {   LispObject w = *stack--;
+                    vecOfSymbolsAfter[i] = w;
+                    sigOfSymbolsAfter[i++] =
+                        19937*gc_checksum(qvalue(w)) +
+                        11213*gc_checksum(qenv(w)) +
+                        gc_checksum(qplist(w));
+                }
+            }
+        }
+    }
+    if (nSymbols != nSymbolsAfter)
+    {   std::cout << "symbol count has changed from"
+            << nSymbols << " to " << nSymbolsAfter << "\n";
+        my_abort();
+    }
+    cout << "@@@ reviewing " << nSymbols << " symbols\n";
+    for (size_t i=0; i<nSymbols; i++)
+    {   if (sigOfSymbols[i]!=sigOfSymbolsAfter[i])
+        {   std::cout << "Symbol " << i << " bad\n";
+            LispObject name = qpname(vecOfSymbolsAfter[i]);
+            if (is_vector(name))
+            {   size_t len = length_of_byteheader(vechdr(name));
+                string sname = string(sizeof(LispObject)+(char *)name, len);
+                std::cout << "Name is: " << sname << "\n";
+            }
+        }
+    }
+    if (final && nSymbols!=0)
+    {   delete [] vecOfSymbols;
+        delete [] sigOfSymbols;
+        nSymbols=0;
+    }
+    if (nSymbolsAfter!=0)
+    {   delete [] vecOfSymbolsAfter;
+        delete [] sigOfSymbolsAfter;
+        nSymbolsAfter=0;
+    }
+    if (final) cout << "\n@@@ End of garbage collection\n";
+    else cout << "\n@@@ Just before GC hook\n";
 }
 
 #else // GC_CHECK

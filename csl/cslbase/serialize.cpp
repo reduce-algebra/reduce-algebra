@@ -4012,8 +4012,6 @@ void warm_setup()
 // that the user could call or for mapstore(), and so I am really not very
 // concerned about its limitation!
 
-typedef bool symbol_processor_predicate(LispObject);
-
 bool push_symbols(symbol_processor_predicate *pp, LispObject p)
 {   LispObject b = 0 + BACKPOINTER_CAR, w;
     uintptr_t len;
@@ -4180,7 +4178,7 @@ up:
 
 // The following returns true if it fails.
 
-static bool push_all_symbols(symbol_processor_predicate *pp)
+bool push_all_symbols(symbol_processor_predicate *pp)
 {   map_releaser RAII;
     LispObject *oldStack = stack;
     for (LispObject *s=reinterpret_cast<LispObject *>(stackBase)+1;
@@ -4226,7 +4224,7 @@ static bool interesting(LispObject x)
             qvalue(x) != unset_var);
 }
 
-static bool not_gensym(LispObject x)
+bool not_gensym(LispObject x)
 {   return ((qheader(x) & (SYM_CODEPTR | SYM_ANY_GENSYM))== 0);
 }
 
