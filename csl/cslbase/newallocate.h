@@ -1213,7 +1213,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 // a multiple of sizeof(uintptr_t).
 
 // At one stage I had a test in here so that vector-like things of
-// size exectly 2*CELL get allocated in CONS pages not VEC ones. That
+// size exactly 2*CELL get allocated in CONS pages not VEC ones. That
 // was intended to reduce overhead dealing with them. The case I was
 // particularly thinking of was boxed double precision floats. Well I
 // may provide special treatment for JUST that case at some stage, but

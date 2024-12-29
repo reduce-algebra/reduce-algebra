@@ -75,24 +75,114 @@ static constexpr size_t list_bases_size =
 static LispObject save_bases[list_bases_size];
 static uint64_t checksum_bases[list_bases_size];
 
-static uint64_t gc_checksum(LispObject a, size_t depth=10)
-{   if (!is_cons(a) || depth==0) return a & TAG_BITS;
-    uint64_t c = gc_checksum(car(a), depth-1);
-    uint64_t d = gc_checksum(cdr(a), depth-1);
-    return 19937*c + d;
+// Here I use a plausible 64-bit multiplier but what happens there only
+// migrates information upwards within the row of 64 bits, so I xor back
+// the top 11 bits to mix them in just a little more. This is frivolous and
+// is done without me being an expert on any of this. I also arrange that the
+// result is never zero.
+
+uint64_t CC(uint64_t a, uint64_t b)
+{   a = a + 6364136223846793005U*b;
+    a = a ^ (a >> 53);
+    if (a==0) return 1;
+    else return a;
 }
+
+// Using a depth limit here is simpler than trying to detect loops but
+// means that data nested deeply within lists may not be checked.
+// I will use a form of cacheing to reduce the waste of repeating
+// checksum calculation.
+
+static const size_t cacheSize = 1000000;
+
+static size_t checksumCacheDepth[cacheSize];
+static LispObject checksumCacheKey[cacheSize];
+static uint64_t checksumCache[cacheSize] = {0};
+
+static uint64_t gc_checksub(LispObject a, size_t depth);
+
+static uint64_t gc_checksum(LispObject a, size_t depth=30)
+{   size_t ha = (6364136223846793005U*a + 314159*depth) % cacheSize;
+    LispObject k = checksumCacheKey[ha];
+    uint64_t v = checksumCache[ha];
+    if (k == a && checksumCacheDepth[ha]==depth && v != 0) return v;
+    v = gc_checksub(a, depth);
+    checksumCacheKey[ha] = a;
+    checksumCacheDepth[ha] = depth;
+    checksumCache[ha] = v;
+    return v;
+}
+
+static uint64_t gc_checksub(LispObject a, size_t depth)
+{   if (depth==0) return 100+(a & TAG_BITS);
+    if (is_cons(a)) return CC(gc_checksum(car(a), depth-1),
+                              gc_checksum(cdr(a), depth-1));
+// current_package has a value which is a vector of all symbols. I will
+// scan the symbols a 
+    if (a == current_package) return
+       CC(gc_checksum(qenv(a), depth-1),
+          CC(gc_checksum(qplist(a), depth-1),
+             CC(gc_checksum(qfastgets(a), depth-1),
+                gc_checksum(qpname(a), depth-1))));
+// current_package has a value that is a vector containing references to
+// (almost) all symbols. Since I will detect and scan them otherwise I do
+// not want to do that here.
+    if (a == current_package) return
+       CC(gc_checksum(qvalue(a), 1),
+          CC(gc_checksum(qenv(a), depth-1),
+             CC(gc_checksum(qplist(a), depth-1),
+                CC(gc_checksum(qfastgets(a), depth-1),
+                   gc_checksum(qpname(a), depth-1)))));
+    if (is_symbol(a)) return
+       CC(gc_checksum(qvalue(a), depth-1),
+          CC(gc_checksum(qenv(a), depth-1),
+             CC(gc_checksum(qplist(a), depth-1),
+                CC(gc_checksum(qfastgets(a), depth-1),
+                   gc_checksum(qpname(a), depth-1)))));
+    if (is_simple_string(a))
+    {   size_t len = length_of_byteheader(vechdr(a)) - sizeof(LispObject);
+        uint64_t h = 1;
+        if (len > 2) len = 2; //@@@
+        for (size_t i=0; i<len; i++) h = CC(h, basic_ucelt(a, i));
+        return h;
+    }
+    if (a == lisp_package) return 11111111;
+    if (is_vector(a) && !vector_header_of_binary(vechdr(a)))
+    {   size_t len = length_of_header(vechdr(a))/sizeof(LispObject)-1;
+        if (is_mixed_header(vechdr(a))) len = 3;
+        uint64_t h = 1;
+        for (size_t i=0; i<len; i++)
+            h = CC(h, gc_checksum(basic_elt(a, i), depth-1));
+        return h;
+    }
+    if (is_fixnum(a)) return a;
+// I have not handled BIGNUMS or rational/complex numbers or floats here yet.
+    return 101+(a&TAG_BITS);
+}         
 
 static size_t nSymbols = 0;
 static LispObject* vecOfSymbols = nullptr;
 static uint64_t*   sigOfSymbols = nullptr;
 
+static size_t nStack = 0;
+static uint64_t*   sigOfStack = nullptr;
+
 void gc_start()
 {   cout << "\n@@@ Start of garbage collection\n";
+    memset(checksumCacheKey, 0, sizeof(checksumCacheKey));
+    memset(checksumCacheDepth, 0xff, sizeof(checksumCacheDepth));
+    memset(checksumCache, 0, sizeof(checksumCache));
 // First record the regular list bases.
     for (size_t i=0; i<list_bases_size; i++)
     {   save_bases[i] = *list_bases[i];
         checksum_bases[i] = gc_checksum(*list_bases[i]);
     }
+// Next the Lisp stack
+    nStack = stack - reinterpret_cast<LispObject*>(stackBase);
+    sigOfStack = new (std::nothrow) uint64_t[nStack];
+    if (sigOfStack==nullptr) nStack = 0;
+    for (size_t i=0; i<nStack; i++)
+        sigOfStack[i] = gc_checksum(reinterpret_cast<LispObject*>(stackBase)[i+1]);
 // Now find every symbol in the heap and record info about
 // value, property list and environment components.
     LispObject* stacksave = stack;
@@ -118,9 +208,7 @@ void gc_start()
                 while (stack != stacksave)
                 {   LispObject w = *stack--;
                     vecOfSymbols[i] = w;
-                    sigOfSymbols[i++] = 19937*gc_checksum(qvalue(w)) +
-                                        11213*gc_checksum(qenv(w)) +
-                                        gc_checksum(qplist(w));
+                    sigOfSymbols[i++] = gc_checksum(w);
                 }
             }
         }
@@ -135,6 +223,9 @@ void gc_end(bool final)
 {
     if (final) cout << "\n@@@ about to check at end of garbage collection\n";
     else cout << "\n@@@ about to check just before GC hook\n";
+    memset(checksumCacheKey, 0, sizeof(checksumCacheKey));
+    memset(checksumCacheDepth, 0xff, sizeof(checksumCacheDepth));
+    memset(checksumCache, 0, sizeof(checksumCache));
     for (size_t i=0; i<list_bases_size; i++)
     {   if (checksum_bases[i] != gc_checksum(*list_bases[i]))
         {   std::cout << list_names[i]
@@ -142,6 +233,15 @@ void gc_end(bool final)
                       << " " << gc_checksum(*list_bases[i])
                       << "\n";
         }
+    }
+    if (nStack != 0)
+    {   if (nStack != static_cast<size_t>(
+                stack - reinterpret_cast<LispObject*>(stackBase)))
+            cout << "@@@ stack size changed\n";
+        std::cout <<"@@@ reviewing " << nStack << " stack locations\n";
+        for (size_t i=0; i<nStack; i++)
+            if (sigOfStack[i] != gc_checksum(reinterpret_cast<LispObject*>(stackBase)[i+1]))
+                cout << "@@@ stack item " << i << " changed\n";
     }
 // Find every symbol in the new version of the heap and check info about
 // value, property list and environment components.
@@ -168,10 +268,7 @@ void gc_end(bool final)
                 while (stack != stacksave)
                 {   LispObject w = *stack--;
                     vecOfSymbolsAfter[i] = w;
-                    sigOfSymbolsAfter[i++] =
-                        19937*gc_checksum(qvalue(w)) +
-                        11213*gc_checksum(qenv(w)) +
-                        gc_checksum(qplist(w));
+                    sigOfSymbolsAfter[i++] = gc_checksum(w);
                 }
             }
         }
@@ -187,8 +284,10 @@ void gc_end(bool final)
         {   std::cout << "Symbol " << i << " bad\n";
             LispObject name = qpname(vecOfSymbolsAfter[i]);
             if (is_vector(name))
-            {   size_t len = length_of_byteheader(vechdr(name));
-                string sname = string(sizeof(LispObject)+(char *)name, len);
+            {   size_t len =
+                    length_of_byteheader(vechdr(name)) - sizeof(LispObject);
+                string sname =
+                    string(sizeof(LispObject)+(char *)name-TAG_VECTOR, len);
                 std::cout << "Name is: " << sname << "\n";
             }
         }
@@ -197,6 +296,10 @@ void gc_end(bool final)
     {   delete [] vecOfSymbols;
         delete [] sigOfSymbols;
         nSymbols=0;
+    }
+    if (final && nStack!=0)
+    {   delete [] sigOfStack;
+        nStack=0;
     }
     if (nSymbolsAfter!=0)
     {   delete [] vecOfSymbolsAfter;
