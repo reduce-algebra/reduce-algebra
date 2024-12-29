@@ -1181,7 +1181,7 @@ put('get_special_alg_sol2,'description,
  put('i_gr,'description,list("Select REDUCE package for Groebner bases"))$
  put('i_df,'description,list("Select DiffElim for diff. Groebner bases"))$
 
- ini_let_rules()
+ ini_let_rules();
 
 #if (memq 'csl lispsystem!*)
 % This happens here so that crack is pretty well set up before the hook is
