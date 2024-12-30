@@ -402,8 +402,8 @@ void initPage(PageType type, Page* p, bool empty)
 // of the specified type set up as current, and it is called when the
 // existing current page is full up.
 // I use pinned pages first, then free ones and clogged only in extremis.
-// When I do not have a page readily to hand the garbage collector is
-// invoked - once I am within the GC I will use every bit of memory I
+// G garbage collector is invoked when I can not instantly find a page
+// here - once I am within the GC I will use every bit of memory I
 // can and not try a recusive call to the GC!
 
 // canAllocate() checks if it is possible to allocate a page of the
@@ -598,7 +598,9 @@ void grabFreshPage(PageType type)
 // I am working be at most 25% full. In the test applied here I am not
 // counting cons and vector pages independently and in particular I am
 // not worrying about the type-commitment represented by pinned Pages etc.
-    if (consPages.count + vecPages.count > totalAllocatedMemory/8 &&
+// Well I put in a "+2" ans used ">=" rather than ">" so that when I do not
+// have very much memory in use I will tend to grow early.
+    if (consPages.count + vecPages.count + 2 >= totalAllocatedMemory/8 &&
         totalAllocatedMemory < maxPages)
         allocateAnotherSegment();
 // I am going to take a somewhat neurotic stance regarding cons pinning...
@@ -637,10 +639,12 @@ void grabFreshPage(PageType type)
 // a megabyte of both cons and vector space available.
     if (!canAllocate(consPageType) &&
         consFringe > (endOfConsPage(consCurrent) - pageSize/8))
-        fatal_error(err_no_store);
+        if (!allocateAnotherSegment())
+            fatal_error(err_no_store);
     if (!canAllocate(vecPageType) &&
         vecFringe > (endOfVecPage(vecCurrent) - pageSize/8))
-        fatal_error(err_no_store);
+        if (!allocateAnotherSegment())
+            fatal_error(err_no_store);
 }
 
 // When I make a page "full" I will put a pointer just beyond the

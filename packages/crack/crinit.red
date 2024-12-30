@@ -1181,12 +1181,14 @@ put('get_special_alg_sol2,'description,
  put('i_gr,'description,list("Select REDUCE package for Groebner bases"))$
  put('i_df,'description,list("Select DiffElim for diff. Groebner bases"))$
 
- ini_let_rules()
+ ini_let_rules();
 
 #if (memq 'csl lispsystem!*)
 % This happens here so that crack is pretty well set up before the hook is
-% ever called.
- !*gc!-hook!* := 'csl_aftergcuserhook)$
+% ever called. Otherwise the hook function can reference unset variables in
+% the pathological case that there is a GC while crack is in the process of
+% loading.
+ !*gc!-hook!* := 'csl_aftergcuserhook;
 #endif
 
 >>$ % end of setcrackflags
