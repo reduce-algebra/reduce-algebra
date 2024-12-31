@@ -353,7 +353,7 @@ LispObject Lmkhash_3(LispObject env, LispObject size,
                                    shift);  // 64-log2(table size)
     basic_elt(v, HASH_KEYS) = v1;
     basic_elt(v, HASH_VALUES) = v2;
-    setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
+    vechdr(v) ^= TYPE_SIMPLE_VEC ^ TYPE_HASH;
     return v;
 }
 
@@ -396,7 +396,7 @@ LispObject Lmkhashset(LispObject env, LispObject flavour)
     basic_elt(v, HASH_VALUES) = nil;              // value table.
 // nil can never be an up-pointer.
 //  basic_elt(v, HASH_VALUES) = nil;
-    setvechdr(v, vechdr(v) ^ (TYPE_SIMPLE_VEC ^ TYPE_HASH));
+    vechdr(v) ^= TYPE_SIMPLE_VEC ^ TYPE_HASH;
     return v;
 }
 
@@ -1042,7 +1042,7 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_HASHX)
             return aerror1("gethash", tab);
-        setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
+        vechdr(tab) ^= TYPE_HASH ^ TYPE_HASHX;
         set_hash_operations(tab);
 // Here I have a table that at some stage had all fitted into the table, and
 // I am not adding new data. I need to rehash it because garbage collection
@@ -1184,7 +1184,7 @@ LispObject Lput_hash(LispObject env,
     if (type_of_header(vechdr(tab)) != TYPE_HASH)
     {   if (type_of_header(vechdr(tab)) == TYPE_HASHX)
         {   needs_rehashing = true;
-            setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
+            vechdr(tab) ^= TYPE_HASH ^ TYPE_HASHX;
         }
         else return aerror1("puthash", tab);
     }
@@ -1230,7 +1230,7 @@ LispObject Lput_hash(LispObject env,
 // could mark the table as in need of rehashing. Well I am about to
 // rehash everything already, so I can cancel any new request.
             if (type_of_header(vechdr(tab)) == TYPE_HASHX)
-                setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
+                vechdr(tab) ^= TYPE_HASH ^ TYPE_HASHX;
             LispObject oldkeys = basic_elt(tab, HASH_KEYS);
             LispObject oldvals = basic_elt(tab, HASH_VALUES);
             h_table = newkeys;
@@ -1321,7 +1321,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
     }
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     if (type_of_header(vechdr(tab)) == TYPE_HASHX)
-        setvechdr(tab, vechdr(tab) ^ (TYPE_HASH ^ TYPE_HASHX));
+        vechdr(tab) ^= TYPE_HASH ^ TYPE_HASHX;
     return tab;
 }
 

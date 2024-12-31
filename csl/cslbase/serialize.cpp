@@ -1709,7 +1709,8 @@ down:
 // header wholesale here. Note that a symbol header has the normal tag for
 // headers in its low bits then two zero bits to indicate that it is
 // a symbol.
-                    setheader(w, static_cast<Header>((read_u64()<<(Tw+4)) + TAG_HDR_IMMED));
+                    qheader(w) =
+                        static_cast<Header>((read_u64()<<(Tw+4)) + TAG_HDR_IMMED);
 // I will first fill in the fields that hold binary data or pointers to
 // executable code.
                     qfn0(w) = read_function0();
@@ -1723,13 +1724,13 @@ down:
                     }
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
-                    setvalue(w, nil);
-                    setenv(w, nil);
-                    setpname(w, nil);
-                    setplist(w, nil);
-                    setfastgets(w, nil);
-                    setpackage(w, nil);
-                    setvalue(w, b); // the back-pointer.
+                    qvalue(w) = nil;
+                    qenv(w) = nil;
+                    qpname(w) = nil;
+                    qplist(w) = nil;
+                    qfastgets(w) = nil;
+                    qpackage(w) = nil;
+                    qvalue(w) = b; // the back-pointer.
                     b = w;
                     {   const int PNAME_INDEX = pnameaddr(w) - valueaddr(w);
                         prev = cons(fixnum_of_int(PNAME_INDEX), s);
@@ -2436,7 +2437,7 @@ down:
             if (!descend_symbols) goto up;
             w = p;
             p = qpname(p);
-            setpname(w, b);
+            qpname(w) = b;
             b = reinterpret_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
@@ -2910,7 +2911,7 @@ down:
             }
             w = p;
             p = qpname(p);
-            setpname(w, b);
+            qpname(w) = b;
             b = reinterpret_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 
@@ -3494,9 +3495,9 @@ static LispObject load_module(LispObject env, LispObject file, int option)
                         uint64_t base, uint64_t gc)
         {   if (fg)
             {   *++stack = qvalue(standard_input);
-                setvalue(standard_input, file);
+                qvalue(standard_input) = file;
                 *++stack = qvalue(echo_symbol);
-                setvalue(echo_symbol, nil);
+                qvalue(echo_symbol) = nil;
             }
             *++stack = qvalue(current_package);
             saveStack = stack;
@@ -3512,12 +3513,12 @@ static LispObject load_module(LispObject env, LispObject file, int option)
             if (repeat_heap != nullptr) delete [] repeat_heap;
             repeat_heap = nullptr;
             repeat_heap_size = 0;
-            setvalue(current_package, *stack--);
+            qvalue(current_package) = *stack--;
             inf_finish();
             IcloseInput();
             if (from_stream)
-            {   setvalue(echo_symbol, *stack--);
-                setvalue(standard_input, *stack--);
+            {   qvalue(echo_symbol) = *stack--;
+                qvalue(standard_input) = *stack--;
             }
             uint64_t delta = read_clock() - t0b;
             if (!ignoreLoadTime) gc_time = gt + delta;
@@ -3880,24 +3881,24 @@ void write_everything()
 void warm_setup()
 {   size_t i;
     set_up_function_tables();
-    setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
     for (LispObject *p:list_bases) *p = nil;
     *stack = nil;
     qcountLow(nil) = 256;
     qcountHigh(nil) = 0;
 // Make things GC safe first...
-    setvalue(nil, nil);
-    setenv(nil, nil);
-    setpname(nil, nil);
-    setplist(nil, nil);
-    setfastgets(nil, nil);
-    setpackage(nil, nil);
+    qvalue(nil) = nil;
+    qenv(nil) = nil;
+    qpname(nil) = nil;
+    qplist(nil) = nil;
+    qfastgets(nil) = nil;
+    qpackage(nil) = nil;
     qfn0(nil) = undefined_0;
     qfn1(nil) = undefined_1;
     qfn2(nil) = undefined_2;
     qfn3(nil) = undefined_3;
     qfn4up(nil) = undefined_4up;
-    setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
 
 #define boffo_size 256
     boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
@@ -3933,15 +3934,15 @@ void warm_setup()
 
 // Now I can use serial_read...
 
-    setvalue(nil, serial_read());
-    setenv(nil, serial_read());
-    setpname(nil, serial_read());
-    setplist(nil, serial_read());
-    setfastgets(nil, serial_read());
+    qvalue(nil) = serial_read();
+    qenv(nil) = serial_read();
+    qpname(nil) = serial_read();
+    qplist(nil) = serial_read();
+    qfastgets(nil) = serial_read();
 
 // This next one is a BIGGY because the package structure is liable to
 // include all other symbols, and through them basically everything!
-    setpackage(nil, serial_read());
+    qpackage(nil) = serial_read();
 
     for (LispObject *p:list_bases) *p = serial_read();
 
@@ -4062,7 +4063,7 @@ down:
             mark_address_as_used(p - TAG_SYMBOL);
             w = p;
             p = qpname(p);
-            setpname(w, b);
+            qpname(w) = b;
             b = reinterpret_cast<LispObject>(pnameaddr(w)) + BACKPOINTER_SYMBOL;
             goto down;
 

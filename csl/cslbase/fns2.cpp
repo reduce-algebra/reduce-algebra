@@ -444,7 +444,7 @@ LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!is_symbol(a)) return aerror1("symbol-set-env", a);
     if ((qheader(a) & SYM_CODEPTR) != 0) return nil;
-    setenv(a, b);
+    qenv(a) = b;
     return b;
 }
 
@@ -485,8 +485,8 @@ LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b)
     Header h;
     if (!is_symbol(a)) return nil;
     h = qheader(a);
-    if (b == nil) setheader(a, h & ~SYM_CODEPTR);
-    else setheader(a, h | SYM_CODEPTR);
+    if (b == nil) qheader(a) = h & ~SYM_CODEPTR;
+    else qheader(a) = h | SYM_CODEPTR;
     h &= SYM_CODEPTR;
     return Lispify_predicate(h!= 0);
 }
@@ -523,7 +523,7 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a,
         if (p != 0) elt(fastget_names, p-1) = SPID_NOPROP;
         q = (n1 + 1) & 0x3f;
         h = (h & ~SYM_FASTGET_MASK) | (q << SYM_FASTGET_SHIFT);
-        setheader(a, h);
+        qheader(a) = h;
         if (q != 0) elt(fastget_names, q-1) = a;
     }
     if (p == 0) return nil;
@@ -583,7 +583,7 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
             env = get(a, funarg, nil);
-            setenv(a, env);
+            qenv(a) = env;
             return a;
         }
     }
@@ -617,7 +617,7 @@ LispObject Lsymbol_set_definition(LispObject env,
     set_fns(a, undefined_0, undefined_1,
                undefined_2, undefined_3,
                undefined_4up); // Tidy up first
-    setenv(a, a);
+    qenv(a) = a;
     if (b == nil) return b; // set defn to nil to undefine
     else if (symbolp(b))
     {
@@ -629,9 +629,9 @@ LispObject Lsymbol_set_definition(LispObject env,
 //          return aerror1("symbol-set-definition", b);
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
             return aerror1("symbol-set-definition", b);
-        setheader(a, qheader(a) & ~SYM_MACRO);
+        qheader(a) = qheader(a) & ~SYM_MACRO;
         {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
-            setenv(a, qenv(b));
+            qenv(a) = qenv(b);
         }
     }
     else if (!consp(b)) return aerror1("symbol-set-definition", b);
@@ -678,7 +678,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
         else
         {   if (nargs > 4) nargs = 4;
-            setheader(a, qheader(a) & ~SYM_MACRO);
+            qheader(a) = qheader(a) & ~SYM_MACRO;
             switch (nargs)
             {   case 0:   set_fns(a, bytecoded_0, G1W0, G2W0, G3W0, G4W0);
                     break;
@@ -693,13 +693,13 @@ LispObject Lsymbol_set_definition(LispObject env,
                     break;
             }
         }
-        setenv(a, cdr(b));
+        qenv(a) = cdr(b);
     }
     else if (car(b) == lambda)
-    {   setheader(a, qheader(a) & ~SYM_MACRO);
+    {   qheader(a) = qheader(a) & ~SYM_MACRO;
         set_fns(a, interpreted_0, interpreted_1, interpreted_2,
                    interpreted_3, interpreted_4up);
-        setenv(a, cdr(b));
+        qenv(a) = cdr(b);
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined_1)
         {   LispObject a1 = ncons(a);
@@ -709,10 +709,10 @@ LispObject Lsymbol_set_definition(LispObject env,
         }
     }
     else if (car(b) == funarg)
-    {   setheader(a, qheader(a) & ~SYM_MACRO);
+    {   qheader(a) = qheader(a) & ~SYM_MACRO;
         set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3,
                 funarged_4up);
-        setenv(a, cdr(b));
+        qenv(a) = cdr(b);
     }
     else return aerror1("symbol-set-definition", b);
     return b;
@@ -751,10 +751,10 @@ LispObject Lremd(LispObject env, LispObject a)
     if (res == nil) return nil; // no definition to remove
 // I treat an explicit use of remd as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.
-    setheader(a, qheader(a) & ~SYM_MACRO);
+    qheader(a) = qheader(a) & ~SYM_MACRO;
     set_fns(a, undefined_0, undefined_1, undefined_2,
                undefined_3, undefined_4up);
-    setenv(a, a);
+    qenv(a) = a;
     return res;
 }
 
@@ -826,10 +826,10 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
         errexit();
     }
 // I will not support autoloadable macros.
-    setheader(a, qheader(a) & ~SYM_MACRO);
+    qheader(a) = qheader(a) & ~SYM_MACRO;
     set_fns(a, autoload_0, autoload_1, autoload_2,
                autoload_3, autoload_4up);
-    setenv(a, res);
+    qenv(a) = res;
     return res;
 }
 
@@ -875,7 +875,7 @@ LispObject Ltrace(LispObject env, LispObject a)
                 debug_printf(" not yet defined, was this a mistake?\n");
                 continue;
             }
-            setheader(s, qheader(s) | SYM_TRACED);
+            qheader(s) = qheader(s) | SYM_TRACED;
             trace_builtin(s, true);
         }
     }
@@ -896,7 +896,7 @@ LispObject Luntrace(LispObject env, LispObject a)
     {   LispObject s = car(w);
         w = cdr(w);
         if (symbolp(s))
-        {   setheader(s, qheader(s) & ~SYM_TRACED & ~SYM_TRACESET);
+        {   qheader(s) = qheader(s) & ~SYM_TRACED & ~SYM_TRACESET;
             trace_builtin(s, false);
         }
     }
@@ -917,7 +917,7 @@ LispObject Ltraceset(LispObject env, LispObject a)
     {   LispObject s = car(w);
         w = cdr(w);
         if (symbolp(s))
-            setheader(s, qheader(s) | SYM_TRACESET | SYM_TRACED);
+            qheader(s) = qheader(s) | SYM_TRACESET | SYM_TRACED;
     }
     return a;
 }
@@ -933,7 +933,7 @@ LispObject Luntraceset(LispObject env, LispObject a)
     while (consp(w))
     {   LispObject s = car(w);
         w = cdr(w);
-        if (symbolp(s)) setheader(s, qheader(s) & ~SYM_TRACESET);
+        if (symbolp(s)) qheader(s) = qheader(s) & ~SYM_TRACESET;
     }
     return a;
 }
@@ -1000,8 +1000,8 @@ LispObject get_pname(LispObject a)
         gensym_ser++;
         name = make_string(genname);
         errexit();
-        setpname(a, name);
-        setheader(a, qheader(a) & ~SYM_UNPRINTED_GENSYM);
+        qpname(a) = name;
+        qheader(a) = qheader(a) & ~SYM_UNPRINTED_GENSYM;
     }
 #endif
     return name;
@@ -2205,7 +2205,7 @@ LispObject Lnreverse0(LispObject env, LispObject a)
     if (!consp(a)) return a;
     b = a;
     a = cdr(a);
-    setcdr(b, nil);
+    cdr(b) = nil;
     while (consp(a))
     {   LispObject c = a;
         a = cdr(a);

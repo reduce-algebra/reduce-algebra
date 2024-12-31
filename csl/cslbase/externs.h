@@ -496,6 +496,7 @@ extern LispObject user_base_9;
 #define work_50             workbase[50]
 
 extern void rehash_this_table(LispObject v);
+extern void simple_string(char* p, size_t n, LispObject x);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char* s, LispObject x);
 extern void simple_print(FILE* f, LispObject x);

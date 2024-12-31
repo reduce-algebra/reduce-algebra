@@ -1069,12 +1069,12 @@ static LispObject lisp_main()
 // ensure that no list bases have references into any of them.
                     for (LispObject *p:list_bases) *p = nil;
                     *stack = nil;
-                    setvalue(nil, nil);
-                    setenv(nil, nil);
-                    setpname(nil, nil);
-                    setplist(nil, nil);
-                    setfastgets(nil, nil);
-                    setpackage(nil, nil);
+                    qvalue(nil) = nil;
+                    qenv(nil) = nil;
+                    qpname(nil) = nil;
+                    qplist(nil) = nil;
+                    qfastgets(nil) = nil;
+                    qpackage(nil) = nil;
                     emptyPages += consPinPages;
                     emptyPages += vecPinPages;
                     emptyPages += consCloggedPages;
@@ -1143,12 +1143,12 @@ static LispObject lisp_main()
                     for (LispObject *p:list_bases) *p = nil;
                     karaSize = 0;
                     *stack = nil;
-                    setvalue(nil, nil);
-                    setenv(nil, nil);
-                    setpname(nil, nil);
-                    setplist(nil, nil);
-                    setfastgets(nil, nil);
-                    setpackage(nil, nil);
+                    qvalue(nil) = nil;
+                    qenv(nil) = nil;
+                    qpname(nil) = nil;
+                    qplist(nil) = nil;
+                    qfastgets(nil) = nil;
+                    qpackage(nil) = nil;
                     emptyPages += consPinPages;
                     emptyPages += vecPinPages;
                     emptyPages += consCloggedPages;

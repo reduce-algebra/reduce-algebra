@@ -237,7 +237,7 @@ LispObject nreverse2(LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c = a;
         a = cdr(a);
-        setcdr(c, b);
+        cdr(c) = b;
         b = c;
     }
     return b;

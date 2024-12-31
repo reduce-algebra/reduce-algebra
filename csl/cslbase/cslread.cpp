@@ -663,8 +663,8 @@ LispObject intern(size_t len, bool escaped, int startAddr)
             }
             r = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM,
                                  sizeof(Rational_Number));
-            setnumerator(r, fixnum_of_int((int32_t)p));
-            setdenominator(r, fixnum_of_int((int32_t)q));
+            numerator(r) = fixnum_of_int((int32_t)p);
+            denominator(r) = fixnum_of_int((int32_t)q);
             return r;
         }
         case 8:
@@ -1266,7 +1266,7 @@ static bool remob(LispObject sym, LispObject v)
 // and remove it from the package-hashtable v.
 {   if (qheader(sym) & SYM_ANY_GENSYM ||
         qpackage(sym) == nil) return false; // gensym case is easy!
-    setpackage(sym, nil);
+    qpackage(sym) = nil;
     LispObject str = qpname(sym);
     validate_string(str);
 #ifdef COMMON
@@ -1305,14 +1305,14 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     {   s = get_symbol(false);
         errexit();
     }
-    setheader(s, TAG_HDR_IMMED+TYPE_SYMBOL);
-    setvalue(s, unset_var);
+    qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
+    qvalue(s) = unset_var;
     if (is_vector(str)) validate_string(str);
-    setpname(s, str);
-    setplist(s, nil);
-    setfastgets(s, nil);
-    setpackage(s, nil);
-    setenv(s, s);
+    qpname(s) = str;
+    qplist(s) = nil;
+    qfastgets(s) = nil;
+    qpackage(s) = nil;
+    qenv(s) = s;
     qfn0(s) = undefined_0;
     qfn1(s) = undefined_1;
     qfn2(s) = undefined_2;
@@ -1346,18 +1346,18 @@ LispObject Lgensym(LispObject env)
 #endif
     LispObject id = get_symbol(true);
 #ifdef COMMON
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
-    setpname(id, pn);
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
+    qetpname(id) = pn;
 #else
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM
-              +SYM_ANY_GENSYM);
-    setpname(id, gensym_base);
+    qheader(id) =
+        TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
+    qpname(id) = gensym_base;
 #endif
-    setvalue(id, unset_var);
-    setplist(id, nil);
-    setfastgets(id, nil);
-    setpackage(id, nil); // Marks it as a uninterned
-    setenv(id, id);
+    qvalue(id) = unset_var;
+    qplist(id) = nil;
+    qfastgets(id) = nil;
+    qpackage(id) = nil; // Marks it as a uninterned
+    qenv(id) = id;
     qfn0(id) = undefined_0;
     qfn1(id) = undefined_1;
     qfn2(id) = undefined_2;
@@ -1394,17 +1394,17 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
         errexit();
     }
 #ifdef COMMON
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
 #else
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+
-                  SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM);
+    qheader(id) =
+        TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
 #endif
-    setvalue(id, unset_var);
-    setpname(id, genbase);
-    setplist(id, nil);
-    setfastgets(id, nil);
-    setpackage(id, nil); // Marks it as a uninterned
-    setenv(id, id);
+    qvalue(id) = unset_var;
+    qpname(id) = genbase;
+    qplist(id) = nil;
+    qfastgets(id) = nil;
+    qpackage(id) = nil; // Marks it as a uninterned
+    qenv(id) = id;
     qfn0(id) = undefined_0;
     qfn1(id) = undefined_1;
     qfn2(id) = undefined_2;
@@ -1446,17 +1446,17 @@ LispObject Lgensym(LispObject env, LispObject a)
         errexit();
     }
 #ifdef COMMON
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
 #else
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+
-                  SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM);
+    qheader(id) =
+        TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
 #endif
-    setvalue(id, unset_var);
-    setpname(id, genbase);
-    setplist(id, nil);
-    setfastgets(id, nil);
-    setpackage(id, nil); // Marks it as a uninterned
-    setenv(id, id);
+    qvalue(id) = unset_var;
+    qpname(id) = genbase;
+    qplist(id) = nil;
+    qfastgets(id) = nil;
+    qpackage(id) = nil; // Marks it as a uninterned
+    qenv(id) = id;
     qfn0(id) = undefined_0;
     qfn1(id) = undefined_1;
     qfn2(id) = undefined_2;
@@ -1495,13 +1495,13 @@ LispObject Lgensym2(LispObject env, LispObject a)
     {   id  = get_symbol(true);
         errexit();
     }
-    setheader(id, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM);
-    setvalue(id, unset_var);
-    setpname(id, genbase);
-    setplist(id, nil);
-    setfastgets(id, nil);
-    setpackage(id, nil); // Marks it as a uninterned
-    setenv(id, id);
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
+    qvalue(id) = unset_var;
+    qpname(id) = genbase;
+    qplist(id) = nil;
+    qfastgets(id) = nil;
+    qpackage(id) = nil; // Marks it as a uninterned
+    qenv(id) = id;
     qfn0(id) = undefined_0;
     qfn1(id) = undefined_1;
     qfn2(id) = undefined_2;
@@ -1620,20 +1620,20 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         s = get_symbol(false);
         errexit();
     }
-    setheader(s, TAG_HDR_IMMED+TYPE_SYMBOL);
+    qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
 #ifdef COMMON
     if (p == qvalue(keyword_package) && keyword_package != nil)
-    {   setvalue(s, s);
-        setheader(s, qheader(s) | SYM_KEYWORD_VAR);
+    {   qvalue(s) = s;
+        qheader(s) = qheader(s) | SYM_KEYWORD_VAR;
     }
     else
 #endif
-        setvalue(s, unset_var);
-    setpname(s, qpname(nil)); // At this stage pname is a dummy
-    setplist(s, nil);
-    setfastgets(s, nil);
-    setpackage(s, p);
-    setenv(s, s);
+        qvalue(s) = unset_var;
+    qpname(s) = qpname(nil); // At this stage pname is a dummy
+    qplist(s) = nil;
+    qfastgets(s) = nil;
+    qpackage(s) = p;
+    qenv(s) = s;
     qfn0(s) = undefined_0;
     qfn1(s) = undefined_1;
     qfn2(s) = undefined_2;
@@ -1651,10 +1651,10 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 #endif
         add_to_internals(s, p, hash);
 // Now the symbol-head is safe enough that I can let the GC look at it
-    if (str_is_ok != 0) setpname(s, str);
+    if (str_is_ok != 0) qpname(s) = str;
     else
     {   LispObject pn = copy_string(str, h);
-        setpname(s, pn);
+        qpname(s) = pn;
     }
     mv_2 = nil;
     return nvalues(static_cast<LispObject>(s), 2);
@@ -1832,7 +1832,7 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
 #endif
     if (!is_symbol(sym)) return nil;
     if (qpackage(sym) == nil) return nil;
-    if (qpackage(sym) == package) setpackage(sym,nil);
+    if (qpackage(sym) == package) qpackage(sym) = nil;
 #ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
 #endif
@@ -2036,7 +2036,7 @@ LispObject Lrds(LispObject env, LispObject a)
     else if ((character_stream_reader *)stream_read_fn(
                  a) == char_from_illegal)
         return aerror("rds"); // closed stream or output stream
-    setvalue(standard_input, a);
+    qvalue(standard_input) = a;
     return old;
 }
 
@@ -4052,12 +4052,12 @@ LispObject Lreadbyte(LispObject env, LispObject stream)
     force_echo = nil;
     if (!is_stream(stream))
         return aerror0("readb requires an appropriate stream");
-    setvalue(echo_symbol, nil);
+    qvalue(echo_symbol) = nil;
     raw_input = 1;
     ch = getc_stream(stream);
     raw_input = 0;
     force_echo = force;
-    setvalue(echo_symbol, save);
+    qvalue(echo_symbol) = save;
 // At one stage this code treated ^D as an end-of file marker - that is
 // most nasty for binary files! The code should now be more transparent.
     if (ch == EOF) return fixnum_of_int(-1);
