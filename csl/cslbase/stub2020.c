@@ -1,8 +1,8 @@
-// stub2020.c                                 Copyright (C) A C Norman 2020
+// stub2020.c                            Copyright (C) A C Norman 2020-2025
 
 
 /**************************************************************************
- * Copyright (C) 2020, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2025, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

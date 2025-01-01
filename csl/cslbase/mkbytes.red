@@ -1,4 +1,4 @@
-% mkbytes.red                                Copyright (C) Codemist 2016-24
+% mkbytes.red                              Copyright (C) Codemist 2016-2025
 
 
 % Create bytes.h out of opcodes.red
@@ -8,7 +8,7 @@
 
 
 %%
-%% Copyright (C) 2024, A C Norman, Codemist.                              *
+%% Copyright (C) 2025, A C Norman, Codemist.                              *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

@@ -1,11 +1,11 @@
-// showhdr.cpp                             Copyright (C) Codemist 2022-2024
+// showhdr.cpp                             Copyright (C) Codemist 2022-2025
 
 //
 // Decode a LispObject, in particular in the case it is actually
 // a Header.
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -80,7 +80,7 @@ const char *decodeObject(LispObject a)
             std::memcpy(&f, &a, sizeof(float));
             std::snprintf(r, sizeof(r), "short float %g", f);
         }
-// As of April 2024 emscrien seems to issue a warning when a intptr is used
+// As of April 2024 emscripten seems to issue a warning when a intptr is used
 // with format PRIuPTR - so here I force everythihng to 64 bits to avoid all
 // the ugly diagnostics!
         else std::snprintf(r, sizeof(r), "fixnum %" PRIu64, (uint64_t)a>>4);

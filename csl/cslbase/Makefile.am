@@ -2,10 +2,10 @@
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
-# Copyright A C Norman, Codemist -2024
+# Copyright A C Norman, Codemist -2025
 
 #**************************************************************************
-#* Copyright (C) 2024, Codemist.                         A C Norman       *
+#* Copyright (C) 2025, Codemist.                         A C Norman       *
 #*                                                                        *
 #* Redistribution and use in source and binary forms, with or without     *
 #* modification, are permitted provided that the following conditions are *

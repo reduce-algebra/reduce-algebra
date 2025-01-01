@@ -1,8 +1,8 @@
-// geninline.cpp                           Copyright (C) Arthur Norman 2024
+// geninline.cpp                           Copyright (C) Arthur Norman 2025
 
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,11 +1,11 @@
-% buildcsli.lsp                            Copyright (C) Codemist 2016-2024
+% buildcsli.lsp                            Copyright (C) Codemist 2016-2025
 
 %
 % Create a csli.img which is much like csl.img but NOTHING is compiled
 %
 
 %%
-%% Copyright (C) 2024, A C Norman, Codemist.                              *
+%% Copyright (C) 2025, A C Norman, Codemist.                              *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

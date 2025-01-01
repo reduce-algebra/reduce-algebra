@@ -1,4 +1,4 @@
-// wxterminal.h                               Copyright (C) A C Norman 2024
+// wxterminal.h                               Copyright (C) A C Norman 2025
 
 // header file to go with wxterminal.cpp
 
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

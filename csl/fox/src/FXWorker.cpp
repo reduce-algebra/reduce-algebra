@@ -1,4 +1,4 @@
-// "FXWorker.cpp"                            Copyright A C Norman 2003-2019
+// "FXWorker.cpp"                            Copyright A C Norman 2003-2025
 //
 //
 // Window interface for old-fashioned C applications. Intended to

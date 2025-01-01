@@ -1,10 +1,10 @@
 %
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist, 1990-2024
+%       Copyright (C) Codemist, 1990-2025
 %
 
 %%
-%% Copyright (C) 2024,                                 A C Norman, Codemist
+%% Copyright (C) 2025,                                 A C Norman, Codemist
 %%
 %% Redistribution and use in source and binary forms, with or without
 %% modification, are permitted provided that the following conditions are
@@ -414,7 +414,7 @@ symbolic procedure s!:prinhex4 n;
 %
 
 flag('(comp plap pgwd pwrds notailcall ord nocompile
-       carcheckflag savedef r2i), 'switch); % for RLISP
+       noisycompiler carcheckflag savedef r2i), 'switch); % for RLISP
 
 if not boundp '!*comp then <<      % compile automatically on "de"
    fluid '(!*comp);
@@ -435,6 +435,10 @@ if not boundp '!*pgwd then <<      % equivalent to *plap here
 if not boundp '!*pwrds then <<     % display size of generated code
    fluid '(!*pwrds);
    !*pwrds := t >>;
+
+if not boundp '!*noisycompiler then << % Messages about compiling embedded lambdas
+   fluid '(!*noisycompiler);
+   !*noisycompiler := nil >>;
 
 if not boundp '!*notailcall then <<% disable an optimisation
    fluid '(!*notailcall);
@@ -5259,14 +5263,21 @@ symbolic procedure s!:scan_for_embedded_lambdas u;
     s!:scan_for_embedded_lambdas cdr u >>
   else begin
     scalar name, checksum, bvl, body;
-    if not zerop posn() then terpri(); princ "Start LAMBDA: "; print u;
+    if !*noisycompiler then <<
+      if not zerop posn() then terpri();
+      princ "Start LAMBDA: ";
+      print u >>;
     s!:scan_for_embedded_lambdas car u; % There could be nested lambdas!
     s!:scan_for_embedded_lambdas cdr u;
     name := hashtagged!-name('lambda, u);
     if atom (u := cdr u) then return nil;
     checksum := md60 u;
-    princ "hashtagged name = "; prin name; princ " checksum = ";
-    prinhex checksum; terpri();
+    if !*noisycompiler then <<
+      princ "hashtagged name = ";
+      prin name;
+      princ " checksum = ";
+      prinhex checksum;
+      terpri() >>;
     bvl := car u;
     u := cdr u;
     if atom u then return nil;
@@ -5275,7 +5286,10 @@ symbolic procedure s!:scan_for_embedded_lambdas u;
 % ever) because what I do with it is checksum protected.
     u := name . compress
        append(explode name, '!! . '!~ . '!! . '!~ . explodehex checksum);
-    if not zerop posn() then terpri(); princ "Within LAMBDA: "; print u;
+    if !*noisycompiler then <<
+      if not zerop posn() then terpri();
+      princ "Within LAMBDA: ";
+      print u >>;
     s!:other_defs := u . s!:other_defs;
   end;
 
@@ -5286,14 +5300,21 @@ symbolic procedure s!:scan_for_embedded_lambdas_fasl u;
     s!:scan_for_embedded_lambdas_fasl cdr u >>
   else begin
     scalar name, checksum, bvl, body;
-    if not zerop posn() then terpri(); princ "Start LAMBDA: "; print u;
+    if !*noisycompiler then <<
+      if not zerop posn() then terpri();
+      princ "Start LAMBDA: ";
+      print u >>;
     s!:scan_for_embedded_lambdas_fasl car u; % There could be nested lambdas!
     s!:scan_for_embedded_lambdas_fasl cdr u;
     name := hashtagged!-name('lambda, u);
     if atom (u := cdr u) then return nil;
     checksum := md60 u;
-    princ "hashtagged name = "; prin name; princ " checksum = ";
-    prinhex checksum; terpri();
+    if !*noisycompiler then <<
+      princ "hashtagged name = ";
+      prin name;
+      princ " checksum = ";
+      prinhex checksum;
+      terpri() >>;
     bvl := car u;
     u := cdr u;
     if atom u then return nil;
@@ -5302,7 +5323,10 @@ symbolic procedure s!:scan_for_embedded_lambdas_fasl u;
 % ever) because what I do with it is checksum protected.
     u := name . compress
        append(explode name, '!! . '!~ . '!! . '!~ . explodehex checksum);
-    if not zerop posn() then terpri(); princ "Within LAMBDA: "; print u;
+    if !*noisycompiler then <<
+      if not zerop posn() then terpri();
+      princ "Within LAMBDA: ";
+      print u >>;
     s!:other_defs := u . s!:other_defs;
     s!:fasl_code :=
        list('symbol!-set!-definition,

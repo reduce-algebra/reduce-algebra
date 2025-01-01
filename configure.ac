@@ -1,7 +1,7 @@
 AC_INIT([REDUCE], [from SourceForge], [acn1@cam.ac.uk])
 
 # **************************************************************************
-# * Copyright (C) 2017-24, Codemist.                      A C Norman       *
+# * Copyright (C) 2017-2025, Codemist.                    A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
