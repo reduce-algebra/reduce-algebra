@@ -254,7 +254,7 @@ public:
     {   stack = saveStack;
         while (*specenv_p != nil)
         {   LispObject p = car(*specenv_p);
-            setvalue(car(p), cdr(p));
+            qvalue(car(p)) = cdr(p);
             *specenv_p = cdr(*specenv_p);
         }
     }
@@ -295,7 +295,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 // above CONS fails and triggers an exit things are bad. I may need to
 // pre-allocate the space, but because PROGV is esoteric (and not used by
 // Reduce) I am not going to go to the trouble YET.
-        setvalue(v, w);
+        qvalue(v) = w;
         specenv = cons(w1, specenv);
     }
     {   Unbind_progv_specials unbind_progv_variables(&specenv);
@@ -420,13 +420,13 @@ static LispObject setq_fn(LispObject args, LispObject env)
         }
         if ((qheader(var) & SYM_KEYWORD_VAR) == SYM_SPECIAL_VAR ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_GLOBAL_VAR)
-            setvalue(var, val);
+            qvalue(var) = val;
         else
         {   LispObject p = env, w;   // Here it seems to be a local variable,
             // or it could be locally FLUID.
             for (;;)
             {   if (!consp(p))
-                {   setheader(var, qheader(var) | SYM_SPECIAL_VAR);
+                {   qheader(var) = qheader(var) | SYM_SPECIAL_VAR;
 #ifdef SOME_TIME_LATER
 // If I display this message - which could be viewed as a proper error report -
 // it leds to multiple failures in the Reduce regressions where scripting
@@ -438,12 +438,12 @@ static LispObject setq_fn(LispObject args, LispObject env)
                     debug_printf(" proclaimed SPECIAL by SETQ\n");
                     errexit();
 #endif
-                    setvalue(var, val);
+                    qvalue(var) = val;
                     break;
                 }
                 w = car(p);
                 if (car(w) == var)
-                {   if (cdr(w) == work_symbol) setvalue(var, val);
+                {   if (cdr(w) == work_symbol) qvalue(var) = val;
                     else cdr(w) = val;
                     break;
                 }
@@ -647,7 +647,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
 //  (d) mv2,...        as indicated by exit_count
 //  (e) exit_reason    what it says.
         LispObject savetraptime = qvalue(trap_time);
-        setvalue(trap_time, nil); // No timeouts in recovery code
+        qvalue(trap_time) = nil; // No timeouts in recovery code
         xv = exit_value;
         xt = exit_tag;
         xc = exit_count;
@@ -673,7 +673,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
         exit_tag   = xt;
         exit_count = xc;
         exit_reason = xr;
-        setvalue(trap_time, savetraptime);
+        qvalue(trap_time) = savetraptime;
         RETHROW;                   // reinstate the exception
     END_CATCH;
 // Now code (just like multiple-value-prog1) that evaluates the
@@ -717,14 +717,14 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
             {   LispObject v = *reinterpret_cast<LispObject *>(
                                    (intptr_t)bv + n - (CELL + TAG_VECTOR));
                 n -= CELL;
-                setvalue(v, *sp--);
+                qvalue(v) = *sp--;
             }
         }
         else if (w == static_cast<LispObject>(SPID_PVBIND))
         {   bv = *sp--;
             while (bv != nil)
             {   LispObject w = car(bv);
-                setvalue(car(w), cdr(w));
+                qvalue(car(w)) = cdr(w);
                 bv = cdr(bv);
             }
         }
@@ -1042,7 +1042,7 @@ static LispObject resource_limit7(LispObject env,
                      fixnum_of_int(r2),
                      fixnum_of_int(r3));
         errexit();
-        setvalue(resources, form);
+        qvalue(resources) = form;
 // Here I had a resource limit trap
         return nil;
     END_CATCH;
@@ -1058,7 +1058,7 @@ static LispObject resource_limit7(LispObject env,
                      fixnum_of_int(r3));
         errexit(); 
     }
-    setvalue(resources, form);
+    qvalue(resources) = form;
     return r;
 }
 

@@ -418,24 +418,43 @@ inline LispObject &cdr(LispObject p)
     return reinterpret_cast<Cons_Cell *>(p)->cdr;
 }
 
-inline void setcar(LispObject p, LispObject q)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid setcar");
-    reinterpret_cast<Cons_Cell *>(p)->car = q;
+// So what is this "old_" stuff about?
+//
+// Well there it lets me go:
+//     pipe(gc_pipes);
+//     pid_t pid = fork();
+//     if (pid == 0)
+//     {   for (;;)
+//         {   uintptr_t addr;
+//             if (read(gc_pipes[0], &addr, sizeof(addr)) != sizeof(addr) ||
+//                 addr == 0) break;
+//     // Actually the server takes care of unaligned accesses...
+//             uint64_t d = *reinterpret_cast<uint64_t*>(addr);
+//             write(gc_pipes[1], &d, sizeof(d));
+//         }
+//         quick_exit(0);
+//     }
+// and the fork captures the state of everything - with the child process
+// being set up to respond via calls to oldMem() to report in the
+// state of memory when it was created.
+// At least initially the only use of this is in "gc-check.cpp".
+
+extern int gc_pipes[2];
+
+inline uint64_t oldMem(void* addr)
+{   if (gc_pipes[1] == 0) return 0;
+    if (write(gc_pipes[1], &addr, sizeof(addr)) != sizeof(addr)) return 0;
+    uint64_t data;
+    if (read(gc_pipes[0], &data, sizeof(data)) != sizeof(data)) return 0;
+    return static_cast<uint64_t>(data);
 }
 
-inline void setcdr(LispObject p, LispObject q)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid setcdr");
-    reinterpret_cast<Cons_Cell *>(p)->cdr = q;
+inline LispObject old_car(LispObject p)
+{   return oldMem(reinterpret_cast<LispObject*>(p-TAG_CONS));
 }
 
-inline LispObject *caraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid caraddr");
-    return &((reinterpret_cast<Cons_Cell *>(p))->car);
-}
-
-inline LispObject *cdraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdraddr");
-    return &((reinterpret_cast<Cons_Cell *>(p))->cdr);
+inline LispObject old_cdr(LispObject p)
+{   return oldMem(reinterpret_cast<LispObject*>(p+CELL-TAG_CONS));
 }
 
 // At present (boo hiss) the serialization code and the garbage collector
@@ -444,14 +463,12 @@ inline LispObject *cdraddr(LispObject p)
 // fields in a cons cell expecting atomic and non-atomic layouts to match.
 
 inline LispObject *vcaraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid vcaraddr");
-    return reinterpret_cast<LispObject *>(
+{   return reinterpret_cast<LispObject *>(
                &(reinterpret_cast<Cons_Cell *>(p)->car));
 }
 
 inline LispObject *vcdraddr(LispObject p)
-{   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid "vcdraddr");
-    return reinterpret_cast<LispObject *>(
+{   return reinterpret_cast<LispObject *>(
                &(reinterpret_cast<Cons_Cell *>(p)->cdr));
 }
 
@@ -676,9 +693,8 @@ inline Header &vechdr(LispObject v)
 {   return *reinterpret_cast<Header *>(v - TAG_VECTOR);
 }
 
-inline void setvechdr(LispObject v, Header h)
-{   *reinterpret_cast<Header *>(
-        reinterpret_cast<char *>(v) - TAG_VECTOR) = h;
+inline Header old_vechdr(LispObject v)
+{   return oldMem(reinterpret_cast<LispObject*>(v-TAG_VECTOR));
 }
 
 inline unsigned int type_of_header(Header h)
@@ -1151,6 +1167,13 @@ inline LispObject& basic_elt(LispObject v, size_t n)
             (n*sizeof(LispObject)));
 }
 
+inline LispObject old_elt(LispObject v, size_t n)
+{   return oldMem(reinterpret_cast<LispObject *>(
+                     reinterpret_cast<char *>(v) +
+                     (CELL-TAG_VECTOR) +
+                     (n*sizeof(LispObject))));
+}
+
 inline bool vector_i8(LispObject n)
 {   if (!is_vector(n)) return false;
     else if (is_basic_vector(n)) return vector_i8(vechdr(n));
@@ -1203,18 +1226,12 @@ inline Header &numhdr(LispObject v)
 {   return *reinterpret_cast<Header *>(v - TAG_NUMBERS);
 }
 
+inline Header old_numhdr(LispObject v)
+{   return oldMem(reinterpret_cast<LispObject*>(v-TAG_NUMBERS));
+}
+
 inline Header &flthdr(LispObject v)
 {   return *reinterpret_cast<Header *>(v - TAG_BOXFLOAT);
-}
-
-inline void setnumhdr(LispObject v, Header h)
-{   *reinterpret_cast<Header *>(
-         reinterpret_cast<char *>(v) - TAG_NUMBERS) = h;
-}
-
-inline void setflthdr(LispObject v, Header h)
-{   *reinterpret_cast<Header *>(
-         reinterpret_cast<char *>(v) - TAG_BOXFLOAT) = h;
 }
 
 inline bool is_short_float(LispObject v)
@@ -1261,12 +1278,20 @@ inline bool is_bignum(LispObject n)
 {   return is_numbers(n) && is_bignum_header(numhdr(n));
 }
 
+inline bool is_old_bignum(LispObject n)
+{   return is_numbers(n) && is_bignum_header(old_numhdr(n));
+}
+
 inline bool is_new_bignum_header(Header h)
 {   return type_of_header(h) == TYPE_NEW_BIGNUM;
 }
 
 inline bool is_new_bignum(LispObject n)
 {   return is_numbers(n) && is_new_bignum_header(numhdr(n));
+}
+
+inline bool is_old_new_bignum(LispObject n)
+{   return is_numbers(n) && is_new_bignum_header(old_numhdr(n));
 }
 
 inline bool is_string_header(Header h)
@@ -1276,6 +1301,11 @@ inline bool is_string_header(Header h)
 inline bool is_simple_string(LispObject n)
 {   if (!is_vector(n)) return false;
     else return is_string_header(vechdr(n));
+}
+
+inline bool is_old_string(LispObject n)
+{   if (!is_vector(n)) return false;
+    else return is_string_header(old_vechdr(n));
 }
 
 inline bool is_string(LispObject n)
@@ -1465,6 +1495,11 @@ inline const char* objectType(uintptr_t h)
 
 inline char& basic_celt(LispObject v, size_t n)
 {   return *(reinterpret_cast<char *>(v) + (CELL-TAG_VECTOR) + n);
+}
+
+inline char old_celt(LispObject v, size_t n)
+{   char* p = reinterpret_cast<char *>(v) + (CELL-TAG_VECTOR) + n;
+    return static_cast<char>(oldMem(p) & 0xff);
 }
 
 inline unsigned char& basic_ucelt(LispObject v, size_t n)
@@ -1661,9 +1696,7 @@ inline void discard_basic_vector(LispObject v)
         {   basic_elt(v, 0) = free_vectors[i];
 // I put the discarded vector in the free-chain as a padder, regardless of
 // what it used to be.
-            setvechdr(v, TYPE_PADDER +
-                      (size << (Tw+5)) +
-                      TAG_HDR_IMMED);
+            vechdr(v) = TYPE_PADDER + (size << (Tw+5)) + TAG_HDR_IMMED;
 // I retag the pointer in case at some stage I use this scheme for (eg)
 // bignums.
             v = (v & ~reinterpret_cast<uintptr_t>(TAG_BITS)) | TAG_VECTOR;
@@ -1866,34 +1899,6 @@ inline LispObject *pnameaddr(LispObject p)
 {   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname);
 }
 
-inline void setheader(LispObject p, Header h)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header = h;
-}
-
-inline void setvalue(LispObject p, LispObject q)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value = q;
-}
-
-inline void setenv(LispObject p, LispObject q)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env = q;
-}
-
-inline void setplist(LispObject p, LispObject q)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist = q;
-}
-
-inline void setfastgets(LispObject p, LispObject q)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets = q;
-}
-
-inline void setpackage(LispObject p, LispObject q)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package = q;
-}
-
-inline void setpname(LispObject p, LispObject q)
-{   reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname = q;
-}
-
 inline no_args*& qfn0(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function0;
 }
@@ -2060,6 +2065,12 @@ inline uint32_t& bignum_digit(LispObject b, size_t n)
     return bignum_digits(b)[n];
 }
 
+inline uint32_t old_bignum_digit(LispObject b, size_t n)
+{   uint32_t* addr = reinterpret_cast<uint32_t *>(
+               reinterpret_cast<char *>(b)  + (CELL-TAG_NUMBERS) + 4*n);
+    return oldMem(addr);;
+}
+
 inline int32_t signed_bignum_digit(LispObject b, size_t n)
 {
 #ifdef DEBUG
@@ -2120,20 +2131,12 @@ typedef struct Rational_Number_
     LispObject den;
 } Rational_Number;
 
-inline LispObject numerator(LispObject r)
+inline LispObject& numerator(LispObject r)
 {   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->num;
 }
 
-inline LispObject denominator(LispObject r)
+inline LispObject& denominator(LispObject r)
 {   return ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->den;
-}
-
-inline void setnumerator(LispObject r, LispObject v)
-{   ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->num = v;
-}
-
-inline void setdenominator(LispObject r, LispObject v)
-{   ((Rational_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->den = v;
 }
 
 typedef struct Complex_Number_
@@ -2142,20 +2145,12 @@ typedef struct Complex_Number_
     LispObject imag;
 } Complex_Number;
 
-inline LispObject real_part(LispObject r)
+inline LispObject& real_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->real;
 }
 
-inline LispObject imag_part(LispObject r)
+inline LispObject& imag_part(LispObject r)
 {   return ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->imag;
-}
-
-inline void setreal_part(LispObject r, LispObject v)
-{   ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->real = v;
-}
-
-inline void setimag_part(LispObject r, LispObject v)
-{   ((Complex_Number *)(reinterpret_cast<char *>(r)-TAG_NUMBERS))->imag = v;
 }
 
 typedef struct Single_Float_

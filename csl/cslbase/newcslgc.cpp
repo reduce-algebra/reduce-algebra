@@ -1684,9 +1684,11 @@ static void report_at_end(uint64_t t0)
             "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
             fn, fn1, z);
     }
+#ifndef GC_CHECK
 // This reports in Kbytes, and does not overflow until over 100 Gbytes
     setvalue(used_space, fixnum_of_int(static_cast<int>(1024.0*fn)));
     setvalue(avail_space, fixnum_of_int(static_cast<int>(1024.0*fn1)));
+#endif
     uint64_t t1 = read_clock();
     gc_time += (t1 - t0);
     base_time += (t1 - t0);
@@ -1866,4 +1868,3 @@ void dumpToFile(const char* filename)
 #endif // DEBUG
 
 // end of file newcslgc.cpp
-

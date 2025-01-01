@@ -158,9 +158,9 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 
 LispObject reduce_basic_vector_size(LispObject v, size_t len)
 {   size_t oldlen = doubleword_align_up(length_of_header(vechdr(v)));
-    setvechdr(v, TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED);
+    vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
     len = doubleword_align_up(len);
-    if (len != oldlen) setvechdr(v + len, makeHeader(oldlen-len, TYPE_PADDER));
+    if (len != oldlen) vechdr(v+len) = makeHeader(oldlen-len, TYPE_PADDER);
     return v;
 }
 

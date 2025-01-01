@@ -1,4 +1,4 @@
-// allocate.h                             Copyright (C) Codemist, 1990-2024
+allocate.h                             Copyright (C) Codemist, 1990-2024
 
 
 /**************************************************************************
@@ -163,8 +163,8 @@ inline LispObject cons(LispObject a, LispObject b)
 // would be safe across the garbage collection and I would need to write
 // them in place after it.
     r += TAG_CONS;
-    setcar(r, a);
-    setcdr(r, b);
+    car(r =  a;
+    cdr(r) = b;
 // cons_forced() always returns false unless this is a debug build. When it
 // is a debug build the extra cost does not worry me. The scheme can then be
 // used to trigger a full garbage collection after exactly some known number
@@ -182,8 +182,8 @@ inline LispObject cons_no_gc(LispObject a, LispObject b)
 {
     LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
-    setcar(r, a);
-    setcdr(r, b);
+    car(r) = a;
+    cdr(r) = b;
     return r;
 }
 
@@ -200,8 +200,8 @@ inline LispObject ncons(LispObject a)
 {
     LispObject r = static_cast<LispObject>(lfringe -= sizeof(Cons_Cell));
     r += TAG_CONS;
-    setcar(r, a);
-    setcdr(r, nil);
+    car(r) = a;
+    cdr(r) = nil;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(1))
         return reclaim(r, "internal ncons", GC_CONS, 0);
@@ -213,10 +213,10 @@ inline LispObject list2(LispObject a, LispObject b)
 // Note that building two cons cells at once saves some overhead here
     LispObject r = static_cast<LispObject>(lfringe -= 2*sizeof(Cons_Cell));
     r += TAG_CONS;
-    setcar(r, a);
-    setcdr(r, r + sizeof(Cons_Cell));
-    setcar(r+sizeof(Cons_Cell), b);
-    setcdr(r+sizeof(Cons_Cell), nil);
+    car(r) = a;
+    cdr(r) = r + sizeof(Cons_Cell);
+    car(r+sizeof(Cons_Cell)) = b;
+    cdr(r+sizeof(Cons_Cell)) = nil;
     if (++reclaim_trigger_count == reclaim_trigger_target ||
         (uintptr_t)r < (uintptr_t)lheaplimit || cons_forced(2))
         return reclaim(r, "internal list2", GC_CONS, 0);
@@ -226,4 +226,3 @@ inline LispObject list2(LispObject a, LispObject b)
 #endif // header_allocate_h
 
 // end of allocate.h
-

@@ -184,7 +184,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         if (car(w) == b)   // found - do move to top operation.
         {   cdr(prev) = cdr(pl);
             cdr(pl) = qplist(a);
-            setplist(a, pl);
+            qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
             errexit();
@@ -214,7 +214,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         if (pl == nil)
         {   pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
             errexit();
-            setfastgets(a, pl);
+            qfastgets(a) = pl;
         }
         basic_elt(pl, n-1) = c;
         return c;            // NB the property is NOT on the plist
@@ -231,7 +231,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     stackcheck();
     b = acons(b, c, qplist(a));
     errexit();
-    setplist(a, b);
+    qplist(a) = b;
     return c;
 }
 
@@ -255,7 +255,7 @@ static LispObject remprop(LispObject a, LispObject b)
     {   LispObject w = car(pl);
         if (car(w) == b)
         {   pl = cdr(pl);
-            if (prevp == nil) setplist(a, pl);
+            if (prevp == nil) qplist(a) = pl;
             else cdr(prevp) = pl;
             return cdr(w);
         }
@@ -361,7 +361,7 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
         if (car(w) == b)
         {   cdr(prev) = cdr(pl);
             cdr(pl) = qplist(a);
-            setplist(a, pl);
+            qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
             errexit();
@@ -482,7 +482,7 @@ LispObject Lflagp(LispObject env, LispObject a, LispObject b)
         if (car(w) == b)
         {   cdr(prev) = cdr(pl);
             cdr(pl) = qplist(a);
-            setplist(a, pl);
+            qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
             errexit();
@@ -605,7 +605,7 @@ LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
         if (car(w) == b)
         {   cdr(prev) = cdr(pl);
             cdr(pl) = qplist(a);
-            setplist(a, pl);
+            qplist(a) = pl;
 #ifdef RECORD_GET
             record_get(b, true);
             errexit();
@@ -642,7 +642,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
             if (pl == nil)
             {   pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
                 errexit();
-                setfastgets(v, pl);
+                qfastgets(v) = pl;
             }
             basic_elt(pl, n-1) = lisp_true;
             continue;
@@ -658,7 +658,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         }
         {   LispObject b1 = acons(b, lisp_true, qplist(v));
             errexit();
-            setplist(v, b1);
+            qplist(v) = b1;
         }
     already_flagged:    ;
     }
@@ -684,7 +684,7 @@ LispObject Lremflag(LispObject env, LispObject a, LispObject b)
         {   LispObject w = car(pl);
             if (car(w) == b)
             {   pl = cdr(pl);
-                if (prevp == nil) setplist(v, pl);
+                if (prevp == nil) qplist(v) = pl;
                 else cdr(prevp) = pl;
                 break;
             }
@@ -868,7 +868,7 @@ inline void do_freebind(LispObject bvec)
     {   LispObject v = *reinterpret_cast<LispObject *>(
             static_cast<intptr_t>(bvec) + k - TAG_VECTOR);
         *++stack = qvalue(v);
-        setvalue(v, nil);
+        qvalue(v) = nil;
     }
 // SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
 // and so it unambiguously marks a block of fluid bindings on that stack.
@@ -887,7 +887,7 @@ inline void do_freerstr()
             static_cast<intptr_t>(bv) + n - (CELL + TAG_VECTOR));
         n -= CELL;
         LispObject v1 = *stack--;;
-        setvalue(v, v1);
+        qvalue(v) = v1;
     }
 }
 
@@ -929,7 +929,7 @@ static inline LispObject do_pvbind(LispObject vals, LispObject vars)
         if (consp(vals)) val = car(vals), vals = cdr(vals);
         else val = unset_var;
         LispObject var = car(vars);
-        if (symbolp(var) && var != nil) setvalue(var, val);
+        if (symbolp(var) && var != nil) qvalue(var) = val;
         vars = cdr(vars);
     }
     return nil;
@@ -941,7 +941,7 @@ inline void do_pvrestore()
     w = *stack--;                // this list ((var . old-value) ...)
     while (w != nil)
     {   LispObject q = car(w);
-        setvalue(car(q), cdr(q));
+        qvalue(car(q)) = cdr(q);
         w = cdr(w);
     }
 }

@@ -311,7 +311,7 @@ public:
     {   stack = saveStack;
         for (LispObject p1 = *specenv_p; p1 != nil; p1 = cdr(p1))
         {   LispObject w = car(p1);
-            setvalue(car(w), cdr(w));
+            qvalue(car(w)) = cdr(w);
         }
     }
 };
@@ -441,7 +441,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
     for (p = specenv; p != nil; p = cdr(p))
     {   LispObject w = car(p), v = car(w), z = cdr(w);
         LispObject old = qvalue(v);
-        setvalue(v, z);
+        qvalue(v) = z;
         cdr(w) = old;
     }
 // The above has instated bindings. Subject to not getting asynchronous
@@ -520,7 +520,7 @@ static LispObject defun_fn(LispObject args, LispObject)
                 debug_printf(" not defined because of LOSE flag\n");
                 return nil;
             }
-            setheader(fname, qheader(fname) & ~SYM_MACRO);
+            qheader(fname) = qheader(fname) & ~SYM_MACRO;
             if (qfn1(fname) != undefined_1)
             {   if (qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
@@ -529,12 +529,12 @@ static LispObject defun_fn(LispObject args, LispObject)
                 }
                 set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3,
                         undefined_4up);
-                setenv(fname, fname);
+                qenv(fname) = fname;
             }
 // qfn() can contain 'interpreted' for a function defined wrt the null
 // environment, or 'funarged' for one with an environment - in the latter
 // case the definition (in qenv()) is a pair (<def> . <env>)
-            setenv(fname, args);         // Sort of notional lambda present
+            qenv(fname) = args;         // Sort of notional lambda present
             set_fns(fname, interpreted_0, interpreted_1, interpreted_2,
                     interpreted_3, interpreted_4up);
             if (qvalue(comp_symbol) != nil &&
@@ -566,7 +566,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                         cdr(args));
         if (is_symbol(fname))
         {   if ((qheader(fname) & SYM_CODEPTR) != 0) return fname;
-            setheader(fname, qheader(fname) | SYM_MACRO);
+            qheader(fname) = qheader(fname) | SYM_MACRO;
 // Note that a name can have a definition as a macro and as a special form,
 // and in that case the qfn() cell gives the special form and the qenv()
 // cell the macro definition.  Otherwise at present I put 'undefined'
@@ -582,7 +582,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                 set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3,
                         undefined_4up);
             }
-            setenv(fname, args);         // Sort of notional lambda present
+            qenv(fname) = args;         // Sort of notional lambda present
             if (qvalue(comp_symbol) != nil &&
                 qfn1(compiler_symbol) != undefined_1)
             {   LispObject t1, t2;
@@ -815,7 +815,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                     z = acons(q, qvalue(q), specenv);
                     errexit();
                     specenv = z;
-                    setvalue(q, p);
+                    qvalue(q) = p;
                 }
                 else
                 {   for (p = local_decs; p!=nil; p = cdr(p))
@@ -828,7 +828,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
                         w = acons(q, work_symbol, env);
                         errexit();
                         env = w;
-                        setvalue(q, z);
+                        qvalue(q) = z;
                         goto bound;
                     }
                     q = acons(q, z, env);
@@ -850,7 +850,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
         errexit();
         for (bvl = specenv; bvl != nil; bvl = cdr(bvl))
         {   LispObject w = car(bvl), v = car(w), z = cdr(w);
-            setvalue(v, z);
+            qvalue(v) = z;
         }
 // WELL: the following line will just return from an inner (lambda)
 // function not from the whole of letstar_fn, and the value returned
@@ -859,7 +859,7 @@ static LispObject letstar_fn(LispObject args, LispObject ienv)
     CATCH(LispException)
         for (bvl = specenv; bvl != nil; bvl = cdr(bvl))
         {   LispObject w = car(bvl), v = car(w), z = cdr(w);
-            setvalue(v, z);
+            qvalue(v) = z;
         }
         RETHROW;
     END_CATCH;

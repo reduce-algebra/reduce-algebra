@@ -870,7 +870,7 @@ static LispObject Lcomplex_arrayp(LispObject env, LispObject a)
 static LispObject Lconvert_to_array(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!(is_basic_vector(a))) return nil;
-    setvechdr(a, TYPE_ARRAY + (vechdr(a) & ~header_mask));
+    vechdr(a) = TYPE_ARRAY + (vechdr(a) & ~header_mask);
     return a;
 }
 
@@ -885,7 +885,7 @@ static LispObject Lstructp(LispObject env, LispObject a)
 static LispObject Lconvert_to_struct(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!(is_basic_vector(a))) return nil;
-    setvechdr(a, TYPE_STRUCTURE + (vechdr(a) & ~header_mask));
+    vechdr(a) = TYPE_STRUCTURE + (vechdr(a) & ~header_mask);
     return a;
 }
 
@@ -1070,8 +1070,8 @@ public:
     {   LispObject w = *b;
         while (consp(w))
         {   LispObject ss = car(w);
-            if (is_symbol(ss)) setheader(ss,
-                qheader(ss) & ~static_cast<Header>(SYM_TAGGED));
+            if (is_symbol(ss)) qheader(ss) =
+                qheader(ss) & ~static_cast<Header>(SYM_TAGGED);
             w = cdr(w);
         }
     }
@@ -1085,7 +1085,7 @@ LispObject Lintersect_symlist(LispObject env, LispObject a,
 // symbols just get ignored.
     for (w = b; consp(w); w = cdr(w))
     {   LispObject x = car(w);
-        if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
+        if (is_symbol(x)) qheader(x) = qheader(x) | SYM_TAGGED;
     }
 // Now for each item in (a) push it onto a result list (r) if it a
 // symbol that is tagged, i.e. if it was present in b.
@@ -1142,8 +1142,8 @@ public:
         while (consp(w))
         {   LispObject ss = car(w);
             if (is_symbol(ss))
-                setheader(ss,
-                    qheader(ss) & ~static_cast<Header>(SYM_TAGGED));
+                qheader(ss) =
+                    qheader(ss) & ~static_cast<Header>(SYM_TAGGED);
             w = cdr(w);
         }
     }
@@ -1156,7 +1156,7 @@ LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 // symbols just ignored.
     for (w = b; consp(w); w = cdr(w))
     {   LispObject x = car(w);
-        if (is_symbol(x)) setheader(x, qheader(x) | SYM_TAGGED);
+        if (is_symbol(x)) qheader(x) = qheader(x) | SYM_TAGGED;
     }
 // Now for each item in a push it onto a result list (r) if it a
 // symbol that is NOT tagged, i.e. if it was not present in b.
@@ -1319,7 +1319,7 @@ LispObject error_N(LispObject args)
 // and emsg!* gets set to A, while an errorset that catches this will get n.
     LispObject msg = nil;
     if (is_cons(cdr(args))) msg = car(cdr(args));
-    setvalue(emsg_star, msg);         // "Error message" in SL world
+    qvalue(emsg_star) = msg;          // "Error message" in SL world
     exit_value = car(args);           // "Error number"  in SL world
 #endif
     if ((w = qvalue(break_function)) != nil &&
@@ -1390,7 +1390,7 @@ LispObject Lmake_special(LispObject, LispObject a)
     if ((qheader(a) & SYM_GLOBAL_VAR) != 0)
         return aerror1(
             "Variable is global or keyword so can not become fluid", a);
-    setheader(a, qheader(a) | SYM_SPECIAL_VAR);
+    qheader(a) = qheader(a) | SYM_SPECIAL_VAR;
     return a;
 }
 
@@ -1400,7 +1400,7 @@ LispObject Lmake_global(LispObject, LispObject a)
     if ((qheader(a) & SYM_SPECIAL_VAR) != 0)
         return aerror1(
             "Variable is fluid or keyword so can not become global", a);
-    setheader(a, qheader(a) | SYM_GLOBAL_VAR);
+    qheader(a) = qheader(a) | SYM_GLOBAL_VAR;
     return a;
 }
 
@@ -1410,8 +1410,8 @@ LispObject Lmake_keyword(LispObject, LispObject a)
     if ((qheader(a) & (SYM_GLOBAL_VAR | SYM_SPECIAL_VAR)) != 0)
         return aerror1(
             "Variable is fluid or global so can not become keyword", a);
-    setheader(a, qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
-    setvalue(a, a);   // value is itself.
+    qheader(a) = qheader(a) | (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
+    qvalue(a) = a;   // value is itself.
     return a;
 }
 
@@ -1421,21 +1421,21 @@ LispObject Lmake_keyword(LispObject, LispObject a)
 LispObject Lunmake_special(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!symbolp(a)) return nil;
-    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    qheader(a) = qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     return a;
 }
 
 LispObject Lunmake_global(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!symbolp(a)) return nil;
-    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    qheader(a) = qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     return a;
 }
 
 LispObject Lunmake_keyword(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!symbolp(a)) return nil;
-    setheader(a, qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR));
+    qheader(a) = qheader(a) & ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     return a;
 }
 
@@ -1497,7 +1497,7 @@ LispObject Lsymbol_value(LispObject, LispObject a)
 LispObject Lset(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     if (!symbolp(a) || a == nil || a == lisp_true) return aerror("set");
-    setvalue(a, b);
+    qvalue(a) = b;
     return b;
 }
 
@@ -1505,7 +1505,7 @@ LispObject Lmakeunbound(LispObject env, LispObject a)
 {   SingleValued fn;
     if (!symbolp(a) || a == nil ||
         a == lisp_true) return aerror("makeunbound");
-    setvalue(a, unset_var);
+    qvalue(a) = unset_var;
     return a;
 }
 
@@ -1574,13 +1574,13 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         qfn2(b) = qfn2(a);
         qfn3(b) = qfn3(a);
         qfn4up(b) = qfn4up(a);
-        setenv(b, qenv(a));
+        qenv(b) = qenv(a);
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special
-        setheader(b, qheader(b) ^ (SYM_ANY_GENSYM | SYM_CODEPTR));
+        qheader(b) = qheader(b) ^ (SYM_ANY_GENSYM | SYM_CODEPTR);
 #else
-        setheader(b, qheader(b) ^
-            (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR));
+        qheader(b) = qheader(b) ^
+            (SYM_UNPRINTED_GENSYM | SYM_ANY_GENSYM | SYM_CODEPTR);
 #endif
         return b;
     }
@@ -1660,7 +1660,7 @@ static LispObject gvector(int tag, int type, size_t size)
         {   free_vectors[i] = basic_elt(r, 0);
             basic_elt(r, 0) = nil; // Just to be tidy!
 // reset type field
-            setvechdr(r, type + (size << (Tw+5)) + TAG_HDR_IMMED);
+            vechdr(r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
 // I will protect myself against the posisbility that the previous use
 // had been for binary data and left junk in the padder word at the end
 // of the vector on a 32-bit machine. There IS a padder since here the
@@ -1742,7 +1742,7 @@ LispObject reduce_vector_size(LispObject v, size_t len)
     if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
     len = CELL*(chunks+1);
 // Shorten the index vector...
-    setvechdr(v, TYPE_INDEXVEC + (len << (Tw+5)) + TAG_HDR_IMMED);
+    vechdr(v) = TYPE_INDEXVEC + (len << (Tw+5)) + TAG_HDR_IMMED;
 // ... and truncate what is now the last chunk.
     reduce_basic_vector_size(basic_elt(v, chunks-1), last_size+CELL);
     return v;

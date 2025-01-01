@@ -499,7 +499,7 @@ static void create_symbols(setup_type const s[], int restart_flag)
     {   LispObject v = make_symbol(s[i].name, restart_flag,
             s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
         if (s[i].zero == bad_specialfn_0)
-            setheader(v, qheader(v) | SYM_SPECIAL_FORM);
+            qheader(v) = qheader(v) | SYM_SPECIAL_FORM;
     }
 }
 
@@ -512,49 +512,49 @@ static void count_symbols(setup_type const s[])
 
 static LispObject make_undefined_fluid(const char* name)
 {   LispObject v = make_undefined_symbol(name);
-    setheader(v, qheader(v) | SYM_SPECIAL_VAR);
+    qheader(v) = qheader(v) | SYM_SPECIAL_VAR;
     return v;
 }
 
 static LispObject make_undefined_global(const char* name)
 {   LispObject v = make_undefined_symbol(name);
-    setheader(v, qheader(v) | SYM_GLOBAL_VAR);
+    qheader(v) = qheader(v) | SYM_GLOBAL_VAR;
     return v;
 }
 
 LispObject make_constant(const char* name, LispObject value)
 {   LispObject w = make_undefined_global(name);
-    setvalue(w, value);
+    qvalue(w) = value;
     return w;
 }
 
 LispObject make_variable(const char* name, LispObject value)
 {   LispObject w = make_undefined_fluid(name);
-    setvalue(w, value);
+    qvalue(w) = value;
     return w;
 }
 
 static void cold_setup()
 {   miscflags = 3;
-    setplist(nil, nil);
-    setfastgets(nil, nil);
-    setenv(nil, nil);        // points to self in undefined case
+    qplist(nil) = nil;
+    qfastgets(nil) = nil;
+    qenv(nil) = nil;        // points to self in undefined case
     qfn0(nil) = undefined_0;
     qfn1(nil) = undefined_1;
     qfn2(nil) = undefined_2;
     qfn3(nil) = undefined_3;
     qfn4up(nil) = undefined_4up;
-    setheader(nil, TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR);
-    setvalue(nil, nil);
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
+    qvalue(nil) = nil;
     qcountLow(nil) = 256;
     qcountHigh(nil) = 0;
 // When I am debugging CSL I can validate the heap, for instance whenever
 // I allocate vector. I am about to need to call make_string to create a
 // record of the name "nil", and during that call the pname field of nil
 // had better be valid - so I fill it in with a nil.
-    setpname(nil, nil);
+    qpname(nil) = nil;
 // Similarly the package field for nil needs a (temporary) safe value.
-    setpackage(nil, nil);
+    qpackage(nil) = nil;
     exit_reason = UNWIND_NULL;
     for (LispObject* p:list_bases) *p = nil;
 // The package I am using at present will always be a package object
@@ -575,16 +575,16 @@ static void cold_setup()
 // Well garbage collection even at this early stage should now be valid when
 // the conservative GC is active.
 #ifdef COMMON
-    setpname(nil, make_string("NIL"));
+    qpname(nil) = make_string("NIL");
 #else
-    setpname(nil, make_string("nil"));
+    qpname(nil) = make_string("nil");
 #endif
-    setvalue(nil, get_basic_vector_init(sizeof(Package), nil));
+    qvalue(nil) = get_basic_vector_init(sizeof(Package), nil);
 #ifdef COMMON
-    setpackage(nil, qvalue(nil));    // For sake of restart code
+    qpackage(nil) = qvalue(nil);    // For sake of restart code
     all_packages = ncons(qvalue(nil));
 #else
-    setpackage(nil, static_cast<LispObject>(qvalue(nil)));
+    qpackage(nil) = static_cast<LispObject>(qvalue(nil));
 #endif
 
     packhdr_(static_cast<LispObject>(CP)) = TYPE_STRUCTURE + (packhdr_
@@ -642,15 +642,15 @@ static void cold_setup()
     symbol_sequence = 257;
     current_package          = make_undefined_fluid("*package*");
     lisp_package             = qpackage(nil);
-    setvalue(current_package,  lisp_package);
-    setvalue(nil,              nil);          // Whew!
-    setpackage(nil,            lisp_package);
-    setpackage(current_package,lisp_package);
+    qvalue(current_package)  = lisp_package;
+    qvalue(nil)              = nil;          // Whew!
+    qpackage(nil)            = lisp_package;
+    qpackage(current_package)= lisp_package;
 
     B_reg = nil;                             // safe for GC
     unset_var                =
         make_undefined_global("~indefinite-value~");
-    setvalue(unset_var,        unset_var);
+    qvalue(unset_var)        = unset_var;
 // I have now set up NIL, !*PACKAGE!* and !~INDEFINITE!-VALUE!~ with
 // sequence number 256, 257 and 258. So now I set up 256 character symbols
 // such that they each get the correct sequence number.
@@ -679,7 +679,7 @@ static void cold_setup()
     symbol_sequence = 259;
 // Now in some minor sense the world is in a self-consistent state
     lisp_true           = make_undefined_global("t");
-    setvalue(lisp_true,   lisp_true);
+    qvalue(lisp_true)   = lisp_true;
     savedef_symbol      = make_undefined_symbol("*savedef");
     savedefs_symbol     = make_undefined_symbol("*savedefs");
     lose_symbol         = make_undefined_symbol("lose");
@@ -701,17 +701,17 @@ static void cold_setup()
 
     macroexpand_hook    = make_undefined_fluid("*macroexpand-hook*");
     evalhook            = make_undefined_fluid("*evalhook*");
-    setvalue(evalhook,    nil);
+    qvalue(evalhook)    = nil;
     applyhook           = make_undefined_fluid("*applyhook*");
-    setvalue(applyhook,  nil);
+    qvalue(applyhook)   = nil;
 #ifdef COMMON
     keyword_package     = make_undefined_fluid("*keyword-package*");
-    setvalue(keyword_package, make_package(make_string("KEYWORD")));
+    qvalue(keyword_package) = make_package(make_string("KEYWORD"));
     err_table           = make_undefined_global("*ERROR-MESSAGE*");
 #else
     err_table           = make_undefined_global("*error-messages*");
 #endif
-    setvalue(err_table,   nil);
+    qvalue(err_table)   = nil;
 #ifdef COMMON
 #define make_keyword(name) \
         Lintern_2(nil, make_string(name), qvalue(keyword_package))
@@ -790,27 +790,27 @@ static void cold_setup()
     call_stack          = nil;
     trap_time           = make_undefined_symbol("trap-time*");
 //  count_high          = make_undefined_symbol("count-high*");
-    setvalue(break_function, nil);
-    setvalue(gchook, nil);
-    setvalue(trap_time, nil);
-    setvalue(resources, nil);
-    setvalue(used_space, fixnum_of_int(0));
-    setvalue(avail_space, fixnum_of_int(0));
+    qvalue(break_function) = nil;
+    qvalue(gchook)      = nil;
+    qvalue(trap_time)   = nil;
+    qvalue(resources)   = nil;
+    qvalue(used_space)  = fixnum_of_int(0);
+    qvalue(avail_space) = fixnum_of_int(0);
     {   LispObject common = make_undefined_fluid("common-lisp-mode");
 #ifdef COMMON
-        setvalue(common, lisp_true);
-        setvalue(raise_symbol, lisp_true);
-        setvalue(lower_symbol, nil);
+        qvalue(common)       = lisp_true;
+        qvalue(raise_symbol) = lisp_true;
+        qvalue(lower_symbol) = nil;
 #else
-        setvalue(common, nil);
-        setvalue(raise_symbol, nil);
-        setvalue(lower_symbol, lisp_true);
+        qvalue(common)       = nil;
+        qvalue(raise_symbol) = nil;
+        qvalue(lower_symbol) = lisp_true;
 #endif
     }
-    setvalue(echo_symbol,      nil);
-    setvalue(comp_symbol,      nil);
-    setvalue(emsg_star,        nil);
-    setvalue(redef_msg,        lisp_true);
+    qvalue(echo_symbol)  = nil;
+    qvalue(comp_symbol)  = nil;
+    qvalue(emsg_star)    = nil;
+    qvalue(redef_msg)    = lisp_true;
 
     rehash_vec1 = get_basic_vector_init(CELL*(1+REHASHVEC_SIZE), nil);
     rehash_vec2 = get_basic_vector_init(CELL*(1+REHASHVEC_SIZE), nil);
@@ -826,10 +826,10 @@ static void cold_setup()
 // simple bit-test.  This MUST use entry zero (coded as 1 here!).
 // Also I insist that 'lose be the second fastget thing!
     {   LispObject nc = make_undefined_symbol("noncom");
-        setheader(nc, qheader(nc) | (1L << SYM_FASTGET_SHIFT));
+        qheader(nc) = qheader(nc) | (1L << SYM_FASTGET_SHIFT);
         elt(fastget_names, 0) = nc;
         nc = make_undefined_symbol("lose");
-        setheader(nc, qheader(nc) | (2L << SYM_FASTGET_SHIFT));
+        qheader(nc) = qheader(nc) | (2L << SYM_FASTGET_SHIFT);
         elt(fastget_names, 1) = nc;
     }
 // I create the stream objects just once at cold-start time, but every time I
@@ -867,28 +867,28 @@ LispObject set_up_functions(int restart_flag)
     function_symbol          = make_symbol("function", restart_flag,
                                            bad_specialfn_0, function_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(function_symbol,
-              qheader(function_symbol) | SYM_SPECIAL_FORM);
+    qheader(function_symbol) =
+              qheader(function_symbol) | SYM_SPECIAL_FORM;
     quote_symbol             = make_symbol("quote", restart_flag,
                                            bad_specialfn_0, quote_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(quote_symbol, qheader(quote_symbol) | SYM_SPECIAL_FORM);
+    qheader(quote_symbol)    = qheader(quote_symbol) | SYM_SPECIAL_FORM;
     go_symbol                = make_symbol("go", restart_flag,
                                            bad_specialfn_0, go_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(go_symbol, qheader(go_symbol) | SYM_SPECIAL_FORM);
+    qheader(go_symbol)       = qheader(go_symbol) | SYM_SPECIAL_FORM;
     cond_symbol              = make_symbol("cond", restart_flag,
                                            bad_specialfn_0, cond_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(cond_symbol, qheader(cond_symbol) | SYM_SPECIAL_FORM);
+    qheader(cond_symbol)     = qheader(cond_symbol) | SYM_SPECIAL_FORM;
     progn_symbol             = make_symbol("progn", restart_flag,
                                            bad_specialfn_0, progn_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(progn_symbol, qheader(progn_symbol) | SYM_SPECIAL_FORM);
+    qheader(progn_symbol)    = qheader(progn_symbol) | SYM_SPECIAL_FORM;
     declare_symbol           = make_symbol("declare", restart_flag,
                                            bad_specialfn_0, declare_fn, bad_specialfn_2, bad_specialfn_3,
                                            bad_specialfn_4up);
-    setheader(declare_symbol, qheader(declare_symbol) | SYM_SPECIAL_FORM);
+    qheader(declare_symbol)  = qheader(declare_symbol) | SYM_SPECIAL_FORM;
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
     cons_symbol              = make_symbol("cons", restart_flag, G0W1,
@@ -1023,22 +1023,22 @@ LispObject set_up_variables(int restart_flag)
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     big_quotient = make_four_word_bignum(0, 0, 0, 0);
 #endif // ARITHLIB
-    setvalue(macroexpand_hook,
+    qvalue(macroexpand_hook) =
         funcall_symbol =
             make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1,
-                        Lfuncall_2, Lfuncall_3, Lfuncall_4up));
+                        Lfuncall_2, Lfuncall_3, Lfuncall_4up);
     input_libraries = make_undefined_symbol("input-libraries");
-    setheader(input_libraries,
-              qheader(input_libraries) | SYM_SPECIAL_VAR);
-    setvalue(input_libraries, nil);
+    qheader(input_libraries) =
+              qheader(input_libraries) | SYM_SPECIAL_VAR;
+    qvalue(input_libraries) = nil;
     for (i=fasl_files.size(); i!=0; i--)
         if (fasl_files[i-1].inUse)
-            setvalue(input_libraries,
+            qvalue(input_libraries) =
                      cons(SPID_LIBRARY + (((int32_t)(i-1))<<20),
-                          qvalue(input_libraries)));
+                          qvalue(input_libraries));
     output_library = make_undefined_symbol("output-library");
-    setvalue(output_library, (output_directory & 0x80000000u) != 0 ? nil :
-             SPID_LIBRARY + (((int32_t)(output_directory&0x3ff))<<20));
+    qvalue(output_library) = (output_directory & 0x80000000u) != 0 ? nil :
+             SPID_LIBRARY + (((int32_t)(output_directory&0x3ff))<<20);
 // The Lisp variable lispsystem* gets set here. (in Common mode it is
 // the variable *features*)
 // Its value is a list.
@@ -1240,7 +1240,7 @@ LispObject set_up_variables(int restart_flag)
 #if defined WIN64 || defined __WIN64__
         w = cons(make_keyword("win64"), w);
 #endif
-        setheader(n, qheader(n) | SYM_SPECIAL_VAR);
+        qheader(n) = qheader(n) | SYM_SPECIAL_VAR;
 #endif
         defined_symbols = 0;
         for (i=0;
@@ -1470,8 +1470,8 @@ LispObject set_up_variables(int restart_flag)
                 std::strcpy(about_box_rights_2, "Codemist");
             }
         }
-        setheader(n, qheader(n) | SYM_SPECIAL_VAR);
-        setvalue(n, w);
+        qheader(n) = qheader(n) | SYM_SPECIAL_VAR;
+        qvalue(n) = w;
 #endif // COMMON
     }
 // lispargs* and full-lispargs!* give access to command line args used at
@@ -1487,11 +1487,11 @@ LispObject set_up_variables(int restart_flag)
             if (std::strcmp(csl_argv[i], "--args") == 0) seen_args_keyword = 1;
         }
         aa = Lreverse(nil, aa);
-        setheader(n, qheader(n) | SYM_SPECIAL_VAR);
-        setvalue(n, aa);
+        qheader(n) = qheader(n) | SYM_SPECIAL_VAR;
+        qvalue(n) = aa;
         faa = Lreverse(nil, faa);
         n = make_undefined_fluid("full-lispargs*");
-        setvalue(n, faa);
+        qvalue(n) = faa;
     }
 // Floating point characteristics are taken from <cfloat> where it is
 // supposed that the C compiler involved has got the values correct.
@@ -1612,7 +1612,7 @@ LispObject set_up_variables(int restart_flag)
         set_stream_read_other(f, read_action_terminal);
         set_stream_write_fn(f, char_to_terminal);
         set_stream_write_other(f, write_action_terminal);
-        setvalue(terminal_io, f);
+        qvalue(terminal_io) = f;
         f = lisp_standard_input;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
@@ -1628,7 +1628,7 @@ LispObject set_up_variables(int restart_flag)
 #endif
         set_stream_read_other(f, read_action_synonym);
         stream_read_data(f) = terminal_io;
-        setvalue(standard_input, f);
+        qvalue(standard_input) = f;
 
         f = lisp_standard_output;
         stream_type(f) = make_undefined_symbol("synonym-stream");
@@ -1639,7 +1639,7 @@ LispObject set_up_variables(int restart_flag)
 #endif
         set_stream_write_other(f, write_action_synonym);
         stream_write_data(f) = terminal_io;
-        setvalue(standard_output, f);
+        qvalue(standard_output) = f;
 
         f = lisp_error_output;
         stream_type(f) = make_undefined_symbol("synonym-stream");
@@ -1650,7 +1650,7 @@ LispObject set_up_variables(int restart_flag)
 #endif
         set_stream_write_other(f, write_action_synonym);
         stream_write_data(f) = terminal_io;
-        setvalue(error_output, f);
+        qvalue(error_output) = f;
 
         f = lisp_trace_output;
         stream_type(f) = make_undefined_symbol("synonym-stream");
@@ -1661,7 +1661,7 @@ LispObject set_up_variables(int restart_flag)
 #endif
         set_stream_write_other(f, write_action_synonym);
         stream_write_data(f) = terminal_io;
-        setvalue(trace_output, f);
+        qvalue(trace_output) = f;
 
         f = lisp_debug_io;
         stream_type(f) = make_undefined_symbol("synonym-stream");
@@ -1679,7 +1679,7 @@ LispObject set_up_variables(int restart_flag)
 #endif
         set_stream_write_other(f, write_action_synonym);
         stream_write_data(f) = terminal_io;
-        setvalue(debug_io, f);
+        qvalue(debug_io) = f;
 
         f = lisp_query_io;
         stream_type(f) = make_undefined_symbol("synonym-stream");
@@ -1697,7 +1697,7 @@ LispObject set_up_variables(int restart_flag)
 #endif
         set_stream_write_other(f, write_action_synonym);
         stream_write_data(f) = terminal_io;
-        setvalue(query_io, f);
+        qvalue(query_io) = f;
     }
 
 #if defined HAVE_LIBFOX || defined HAVE_LIBWX
@@ -1706,13 +1706,13 @@ LispObject set_up_variables(int restart_flag)
         stream_type(f) = make_undefined_symbol("math-output");
         set_stream_write_fn(f, char_to_math);
         set_stream_write_other(f, write_action_math);
-        setvalue(stream, f);
+        qvalue(stream) = f;
         stream = make_undefined_fluid("*spool-output*");
         f = make_stream_handle();
         stream_type(f) = make_undefined_symbol("spool-output");
         set_stream_write_fn(f, char_to_spool);
         set_stream_write_other(f, write_action_spool);
-        setvalue(stream, f);
+        qvalue(stream) = f;
     }
 #endif
 
@@ -1726,7 +1726,7 @@ LispObject set_up_variables(int restart_flag)
         const char* s = ss.key.c_str();
         if (undef)
         {   LispObject n = make_undefined_symbol(s);
-            setvalue(n, unset_var);
+            qvalue(n) = unset_var;
         }
         else
         {   LispObject n = make_undefined_symbol(s);
@@ -1744,8 +1744,8 @@ LispObject set_up_variables(int restart_flag)
 // so symbols, numbers and even s-expressions can be parsed.  If the
 // parsing fails I (silently) treat the value as just NIL.
             }
-            setheader(n, qheader(n) | SYM_SPECIAL_VAR);
-            setvalue(n, v);
+            qheader(n) = qheader(n) | SYM_SPECIAL_VAR;
+            qvalue(n) = v;
         }
     }
     for (auto ss : stringsToDefine)
@@ -1753,7 +1753,7 @@ LispObject set_up_variables(int restart_flag)
         const char* s = ss.key.c_str();
         if (undef)
         {   LispObject n = make_undefined_symbol(s);
-            setvalue(n, unset_var);
+            qvalue(n) = unset_var;
         }
         else
         {   LispObject n = make_undefined_symbol(s);
@@ -1761,8 +1761,8 @@ LispObject set_up_variables(int restart_flag)
             LispObject v;
             if (std::strlen(s) == 0) v = lisp_true;
             else v = make_string(s);
-            setheader(n, qheader(n) | SYM_SPECIAL_VAR);
-            setvalue(n, v);
+            qheader(n) = qheader(n) | SYM_SPECIAL_VAR;
+            qvalue(n) = v;
         }
     }
     for (auto ss : stringsToEvaluate)

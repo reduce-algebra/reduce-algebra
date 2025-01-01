@@ -1324,7 +1324,7 @@ LispObject Lwrs(LispObject env, LispObject a)
 #else
         return aerror("wrs (closed or input file)"); // closed file or input file
 #endif
-    setvalue(standard_output, a);
+    qvalue(standard_output) = a;
     return old;
 }
 
@@ -1335,9 +1335,9 @@ LispObject Lclose(LispObject env, LispObject a)
         a == lisp_terminal_io) return nil;
     else if (!is_stream(a)) return aerror1("close", a);
     if (a == qvalue(standard_input))
-        setvalue(standard_input, lisp_terminal_io);
+        qvalue(standard_input) = lisp_terminal_io;
     else if (a == qvalue(standard_output))
-        setvalue(standard_output, lisp_terminal_io);
+        qvalue(standard_output) = lisp_terminal_io;
     other_read_action(READ_CLOSE, a);
     other_write_action(WRITE_CLOSE, a);
 #ifdef COMMON
@@ -3478,9 +3478,9 @@ LispObject loop_print_stdout(LispObject o)
 LispObject loop_print_error(LispObject o)
 {   LispObject w = qvalue(standard_output);
     if (is_stream(qvalue(error_output)))
-        setvalue(standard_output, qvalue(error_output));
+        qvalue(standard_output) = qvalue(error_output);
     loop_print_stdout(o);
-    setvalue(standard_output, w);
+    qvalue(standard_output) = w;
 #ifdef COMMON
 // This is to help me debug in the face of low level system crashes
     if (spool_file) std::fflush(spool_file);
@@ -3492,9 +3492,9 @@ LispObject loop_print_trace(LispObject o)
 {   STACK_SANITY;
     LispObject w = qvalue(standard_output);
     if (is_stream(qvalue(trace_output)))
-        setvalue(standard_output, qvalue(trace_output));
+        qvalue(standard_output) = qvalue(trace_output);
     loop_print_stdout(o);
-    setvalue(standard_output, w);
+    qvalue(standard_output) = w;
 #ifdef COMMON
 // This is to help me debug in the face of low level system crashes
     if (spool_file) std::fflush(spool_file);
@@ -3505,27 +3505,27 @@ LispObject loop_print_trace(LispObject o)
 LispObject loop_print_debug(LispObject o)
 {   LispObject w = qvalue(standard_output);
     if (is_stream(qvalue(debug_io)))
-        setvalue(standard_output, qvalue(debug_io));
+        qvalue(standard_output) = qvalue(debug_io);
     loop_print_stdout(o);
-    setvalue(standard_output, w);
+    qvalue(standard_output) = w;
     return nil;
 }
 
 LispObject loop_print_query(LispObject o)
 {   LispObject w = qvalue(standard_output);
     if (is_stream(qvalue(query_io)))
-        setvalue(standard_output, qvalue(query_io));
+        qvalue(standard_output) = qvalue(query_io);
     loop_print_stdout(o);
-    setvalue(standard_output, w);
+    qvalue(standard_output) = w;
     return nil;
 }
 
 LispObject loop_print_terminal(LispObject o)
 {   LispObject w = qvalue(standard_output);
     if (is_stream(qvalue(terminal_io)))
-        setvalue(standard_output, qvalue(terminal_io));
+        qvalue(standard_output) = qvalue(terminal_io);
     loop_print_stdout(o);
-    setvalue(standard_output, w);
+    qvalue(standard_output) = w;
     return nil;
 }
 
@@ -3556,7 +3556,7 @@ LispObject prinraw(LispObject u)
         putc_stream('Z', active_stream);
 #endif // ARITHLIB
         for (size_t i=CELL; i<len; i+=4)
-        {   std::snprintf(b, sizeof(b), "%.8x ", (uint32_t)bignum_digits(u)[(i-CELL)/4]);
+        {   std::snprintf(b, sizeof(b), "%.8x ", bignum_digit(u,(i-CELL)/4));
             for (p=b; *p!=0; p++) 
                 putc_stream(*p, active_stream);
         }
@@ -5391,7 +5391,7 @@ void simple_prin1(FILE* f, LispObject x)
         size_t i;
         int clen;
         for (i=len; i>0; i--)
-        {   int32_t d = bignum_digits(x)[i-1];
+        {   int32_t d = bignum_digit(x, i-1);
 // I will print bignums in a manner that shows the 31-bit digits that they
 // are made up from.
             if (i == len) clen = std::snprintf(buffer, sizeof(buffer), "@#%d", d);
@@ -5457,6 +5457,294 @@ void simple_msg(const char *s, LispObject x)
     simple_print(x);
     std::printf("\r\n");
 }
+
+// Now something akin to the above that puts up to some limited
+// numbers of characters into a buffer.
+
+static size_t charCount;
+static size_t charLimit;
+static char*  charBuffer;
+
+void charPut(int ch)
+{   charBuffer[charCount++] = ch;
+    if (charCount == charLimit) throw 1;
+}
+
+void stringPut(const char* s)
+{   while (*s != 0) charPut(*s++);
+}
+
+void simple_prin1(LispObject x)
+{   char buffer[40];
+    if (x == nil)
+    {   stringPut("nil");
+        return;
+    }
+    if (x == 0)
+    {   stringPut("@0@");
+        return;
+    }
+    if (is_forward(x))
+    {   std::sprintf(buffer, "Forward_%" PRIx64, static_cast<uint64_t>(x));
+        stringPut(buffer);
+        return;
+    }
+    if (is_pointer_type(x))
+    {   LispObject h = *reinterpret_cast<LispObject*>(x & ~TAG_BITS);
+        if (is_forward(h))
+        {   std::sprintf(buffer, "%s => ", getPageType(x));
+            stringPut(buffer);
+            x = (h&~TAG_BITS) + (x&TAG_BITS);
+        }
+    }
+    if (is_cons(x))
+    {   int sep = '(';
+        while (consp(x))
+        {   charPut(sep);
+            sep = ' ';
+            simple_prin1(car(x));
+            x = cdr(x);
+        }
+        if (x != nil)
+        {   stringPut(" . ");
+            simple_prin1(x);
+        }
+        charPut(')');
+        return;
+    }
+    else if (is_fixnum(x))
+    {   std::snprintf(buffer, sizeof(buffer), "%" PRId64,
+                              (int64_t)int_of_fixnum(x));
+        stringPut(buffer);
+        return;
+    }
+    else if (is_symbol(x))
+    {   size_t len;
+        x = qpname(x);
+        len = length_of_byteheader(vechdr(x)) - CELL;
+        for (size_t i=0; i<len; i++)
+            charPut(celt(x, i));
+        return;
+    }
+    else if (is_vector(x))
+    {   size_t i, len;
+        if (is_string(x))
+        {   len = length_of_byteheader(vechdr(x)) - CELL;
+            for (size_t i=0; i<len; i++)
+                charPut(celt(x, i));
+            return;
+        }
+        else if (vector_header_of_binary(vechdr(x)) &&
+                 vector_i8(vechdr(x)))
+        {   len = length_of_byteheader(vechdr(x)) - CELL;
+            std::sprintf(buffer, "<Header is %" PRIx64 ">",
+                         static_cast<uint64_t>(vechdr(x)));
+            stringPut(buffer);
+            stringPut("#8[");
+            for (size_t i=0; i<len; i++)
+            {   std::sprintf(buffer, "%.2x", celt(x, i) & 0xff);
+                stringPut(buffer);
+            }
+            charPut(']');
+            return;
+        }
+        len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
+        charPut('[');
+        for (i=0; i<len; i++)
+        {   charPut(' ');
+            if (i > 2 && is_mixed_header(vechdr(x)))
+            {   std::snprintf(buffer, sizeof(buffer), "%" PRIx64, (uint64_t)elt(x, i));
+                stringPut(buffer);
+            }
+            else simple_prin1(elt(x, i));
+        }
+        charPut(']');
+        return;
+    }
+    else if (is_numbers(x) && is_bignum(x))
+    {   size_t len = (length_of_header(numhdr(x))-CELL)/4;
+        size_t i;
+        for (i=len; i>0; i--)
+        {   int32_t d = bignum_digit(x, i-1);
+// I will print bignums in a manner that shows the 31-bit digits that they
+// are made up from.
+            if (i == len) std::snprintf(buffer, sizeof(buffer), "@#%d", d);
+            else std::snprintf(buffer, sizeof(buffer), ":%u", d);
+            stringPut(buffer);
+        }
+        return;
+    }
+#ifdef ARITHLIB
+    else if (is_new_bignum(x))
+    {   intptr_t w = arithlib_lowlevel::bignumToString(x);
+        size_t len = length_of_byteheader(vechdr(w)) - CELL;
+        for (size_t i=0; i<len; i++) charPut(celt(w, 0));
+        return;
+    }
+#endif // ARITHLIB
+    else
+    {   char buffer[32];
+        std::snprintf(buffer, sizeof(buffer), "@%" PRIx64 "@", (int64_t)x);
+        stringPut(buffer);
+        return;
+    }
+}
+
+// This writes the initial characters of a printed form of x to the
+// buffer p which is of size n. It is just intended for debugging.
+
+void simple_string(char* p, size_t n, LispObject x)
+{   charCount = 0;
+    charLimit = n-1;
+    charBuffer = p;
+    try
+    {   simple_prin1(x);
+    }
+    catch (int)
+    {
+    }
+    charBuffer[charCount] = 0;
+}
+
+
+// Now something similar save that it works through the oldMem<T> facility
+// to display something in a preserved copy of the system.
+
+void simple_old_prin1(LispObject x)
+{   char buffer[40];
+    if (x == nil)
+    {   stringPut("nil");
+        return;
+    }
+    if (x == 0)
+    {   stringPut("@0@");
+        return;
+    }
+    if (is_forward(x))
+    {   std::sprintf(buffer, "Forward_%" PRIx64, static_cast<uint64_t>(x));
+        stringPut(buffer);
+        return;
+    }
+    if (is_pointer_type(x))
+    {   LispObject h = *reinterpret_cast<LispObject*>(x & ~TAG_BITS);
+        if (is_forward(h))
+        {   std::sprintf(buffer, "%s => ", getPageType(x));
+            stringPut(buffer);
+            x = (h&~TAG_BITS) + (x&TAG_BITS);
+        }
+    }
+    if (is_cons(x))
+    {   int sep = '(';
+        while (consp(x))
+        {   charPut(sep);
+            sep = ' ';
+            simple_old_prin1(old_car(x));
+            x = old_cdr(x);
+        }
+        if (x != nil)
+        {   stringPut(" . ");
+            simple_old_prin1(x);
+        }
+        charPut(')');
+        return;
+    }
+    else if (is_fixnum(x))
+    {   std::snprintf(buffer, sizeof(buffer), "%" PRId64,
+                              (int64_t)int_of_fixnum(x));
+        stringPut(buffer);
+        return;
+    }
+    else if (is_symbol(x))
+    {   size_t len;
+        x = qpname(x);
+        len = length_of_byteheader(old_vechdr(x)) - CELL;
+        for (size_t i=0; i<len; i++)
+            charPut(old_celt(x, i));
+        return;
+    }
+    else if (is_vector(x))
+    {   size_t i, len;
+        if (is_old_string(x))
+        {   len = length_of_byteheader(old_vechdr(x)) - CELL;
+            for (size_t i=0; i<len; i++)
+                charPut(old_celt(x, i));
+            return;
+        }
+        else if (vector_header_of_binary(old_vechdr(x)) &&
+                 vector_i8(old_vechdr(x)))
+        {   len = length_of_byteheader(old_vechdr(x)) - CELL;
+            std::sprintf(buffer, "<Header is %" PRIx64 ">",
+                         static_cast<uint64_t>(old_vechdr(x)));
+            stringPut(buffer);
+            stringPut("#8[");
+            for (size_t i=0; i<len; i++)
+            {   std::sprintf(buffer, "%.2x", old_celt(x, i) & 0xff);
+                stringPut(buffer);
+            }
+            charPut(']');
+            return;
+        }
+        len = (int64_t)(length_of_header(old_vechdr(x))/CELL - 1);
+        charPut('[');
+        for (i=0; i<len; i++)
+        {   charPut(' ');
+            if (i > 2 && is_mixed_header(old_vechdr(x)))
+            {   std::snprintf(buffer, sizeof(buffer), "%" PRIx64,
+                                      (uint64_t)old_elt(x, i));
+                stringPut(buffer);
+            }
+            else simple_old_prin1(old_elt(x, i));
+        }
+        charPut(']');
+        return;
+    }
+    else if (is_numbers(x) && is_old_bignum(x))
+    {   size_t len = (length_of_header(old_numhdr(x))-CELL)/4;
+        size_t i;
+        for (i=len; i>0; i--)
+        {   int32_t d = old_bignum_digit(x,i-1);
+// I will print bignums in a manner that shows the 31-bit digits that they
+// are made up from.
+            if (i == len) std::snprintf(buffer, sizeof(buffer), "@#%d", d);
+            else std::snprintf(buffer, sizeof(buffer), ":%u", d);
+            stringPut(buffer);
+        }
+        return;
+    }
+#ifdef ARITHLIB
+    else if (is_new_old_bignum(x))
+    {   //intptr_t w = arithlib_lowlevel::bignumToString(x);
+        //size_t len = length_of_byteheader(old_vechdr(w)) - CELL;
+        //for (size_t i=0; i<len; i++) charPut(old_celt(w, 0));
+        stringPut("Bignum");
+        return;
+    }
+#endif // ARITHLIB
+    else
+    {   char buffer[32];
+        std::snprintf(buffer, sizeof(buffer), "@%" PRIx64 "@", (int64_t)x);
+        stringPut(buffer);
+        return;
+    }
+}
+
+// This writes the initial characters of a printed form of x to the
+// buffer p which is of size n. It is just intended for debugging.
+
+void simple_old_string(char* p, size_t n, LispObject x)
+{   charCount = 0;
+    charLimit = n-1;
+    charBuffer = p;
+    try
+    {   simple_old_prin1(x);
+    }
+    catch (int)
+    {
+    }
+    charBuffer[charCount] = 0;
+}
+
+
 
 setup_type const print_setup[] =
 {

@@ -1386,8 +1386,8 @@ inline void poll()
 
 inline LispObject cons(LispObject a, LispObject b)
 {   LispObject r = get2Words() + TAG_CONS;
-    setcar(r, a);
-    setcdr(r, b);
+    car(r) = a;
+    cdr(r) = b;
     return r;
 }
 
@@ -1404,8 +1404,8 @@ inline LispObject cons_gc_test(LispObject p)
 
 inline LispObject ncons(LispObject a)
 {   LispObject r = get2Words() + TAG_CONS;
-    setcar(r,  a);
-    setcdr(r,  nil);
+    car(r) =  a;
+    cdr(r) =  nil;
     return r;
 }
 
@@ -1414,18 +1414,18 @@ inline LispObject list2(LispObject a, LispObject b)
 {   if (get4WordsValid()) LIKELY
     {   LispObject r1 = get4Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
-        setcar(r1, a);
-        setcdr(r1, r2);
-        setcar(r2, b);
-        setcdr(r2, nil);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = nil;
         return r1;
     }
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, nil);
+    car(r2) = b;
+    cdr(r2) = nil;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, r2);
+    car(r1) = a;
+    cdr(r1) = r2;
     return r1;
 }
 
@@ -1433,18 +1433,18 @@ inline LispObject list2star(LispObject a, LispObject b, LispObject c)
 {   if (get4WordsValid()) LIKELY
     {   LispObject r1 = get4Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
-        setcar(r1, a);
-        setcdr(r1, r2);
-        setcar(r2, b);
-        setcdr(r2, c);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = c;
         return r1;
     }
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, c);
+    car(r2) = b;
+    cdr(r2) = c;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, r2);
+    car(r1) = a;
+    cdr(r1) = r2;
     return r1;
 }
 
@@ -1452,18 +1452,18 @@ inline LispObject list2starrev(LispObject c, LispObject b, LispObject a)
 {   if (get4WordsValid()) LIKELY
     {   LispObject r1 = get4Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
-        setcar(r1, a);
-        setcdr(r1, r2);
-        setcar(r2, b);
-        setcdr(r2, c);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = c;
         return r1;
     }
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, c);
+    car(r2) = b;
+    cdr(r2) = c;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, r2);
+    car(r1) = a;
+    cdr(r1) = r2;
     return r1;
 }
 
@@ -1473,23 +1473,23 @@ inline LispObject list3star(LispObject a, LispObject b, LispObject c,
     {   LispObject r1 = get6Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
         LispObject r3 = r2 + sizeof(ConsCell);
-        setcar(r1, a);
-        setcdr(r1, r2);
-        setcar(r2, b);
-        setcdr(r2, r3);
-        setcar(r3, c);
-        setcdr(r3, d);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = r3;
+        car(r3) = c;
+        cdr(r3) = d;
         return r1;
     }
     LispObject r3 = get2Words() + TAG_CONS;
-    setcar(r3, c);
-    setcdr(r3, d);
+    car(r3) = c;
+    cdr(r3) = d;
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, r3);
+    car(r2) = b;
+    cdr(r2) = r3;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, r2);
+    car(r1) = a;
+    cdr(r1) = r2;
     return r1;
 }
 
@@ -1509,18 +1509,18 @@ inline LispObject acons(LispObject a, LispObject b, LispObject c)
 {   if (get4WordsValid()) LIKELY
     {   LispObject r1 = get4Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
-        setcar(r1, r2);
-        setcdr(r1, c);
-        setcar(r2, a);
-        setcdr(r2, b);
+        car(r1) = r2;
+        cdr(r1) = c;
+        car(r2) = a;
+        cdr(r2) = b;
         return r1;
     }
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, a);
-    setcdr(r2, b);
+    car(r2) = a;
+    cdr(r2) = b;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, r2);
-    setcdr(r1, c);
+    car(r1) = r2;
+    cdr(r1) = c;
     return r1;
 
 
@@ -1536,23 +1536,23 @@ inline LispObject list3(LispObject a, LispObject b, LispObject c)
     {   LispObject r1 = get6Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
         LispObject r3 = r2 + sizeof(ConsCell);
-        setcar(r1, a);
-        setcdr(r1, r2);
-        setcar(r2, b);
-        setcdr(r2, r3);
-        setcar(r3, c);
-        setcdr(r3, nil);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = r3;
+        car(r3) = c;
+        cdr(r3) = nil;
         return r1;
     }
     LispObject r3 = get2Words() + TAG_CONS;
-    setcar(r3, c);
-    setcdr(r3, nil);
+    car(r3) = c;
+    cdr(r3) = nil;
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, r3);
+    car(r2) = b;
+    cdr(r2) = r3;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, r2);
+    car(r1) = a;
+    cdr(r1) = r2;
     return r1;
 }
 
@@ -1561,39 +1561,39 @@ inline LispObject list3rev(LispObject c, LispObject b, LispObject a)
     {   LispObject r1 = get6Words() + TAG_CONS;
         LispObject r2 = r1 + sizeof(ConsCell);
         LispObject r3 = r2 + sizeof(ConsCell);
-        setcar(r1, a);
-        setcdr(r1, r2);
-        setcar(r2, b);
-        setcdr(r2, r3);
-        setcar(r3, c);
-        setcdr(r3, nil);
+        car(r1) = a;
+        cdr(r1) = r2;
+        car(r2) = b;
+        cdr(r2) = r3;
+        car(r3) = c;
+        cdr(r3) = nil;
         return r1;
     }
     LispObject r3 = get2Words() + TAG_CONS;
-    setcar(r3, c);
-    setcdr(r3, nil);
+    car(r3) = c;
+    cdr(r3) = nil;
     LispObject r2 = get2Words() + TAG_CONS;
-    setcar(r2, b);
-    setcdr(r2, r3);
+    car(r2) = b;
+    cdr(r2) = r3;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, r2);
+    car(r1) = a;
+    cdr(r1) = r2;
     return r1;
 }
 
 inline LispObject Lcons(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, b);
+    car(r1) = a;
+    cdr(r1) = b;
     return r1;
 }
 
 inline LispObject Lxcons(LispObject, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, b);
-    setcdr(r1, a);
+    car(r1) = b;
+    cdr(r1) = a;
     return r1;
 }
 
@@ -1605,8 +1605,8 @@ inline LispObject Lnilfn(LispObject)
 inline LispObject Lncons(LispObject env, LispObject a)
 {   SingleValued fn;
     LispObject r1 = get2Words() + TAG_CONS;
-    setcar(r1, a);
-    setcdr(r1, nil);
+    car(r1) = a;
+    cdr(r1) = nil;
     return r1;
 }
 

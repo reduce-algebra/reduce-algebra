@@ -338,7 +338,7 @@ LispObject quotbn(LispObject a, int32_t n)
     if (lenc != lenx) // space to discard?
         *reinterpret_cast<Header *>(&bignum_digits(a)[lenc]) = make_bighdr(
                     lenx-lenc);
-    setnumhdr(a,  make_bighdr(lena+1+CELL/4));
+    numhdr(a) = make_bighdr(lena+1+CELL/4);
     return a;
 }
 

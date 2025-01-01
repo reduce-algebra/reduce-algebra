@@ -1,4 +1,4 @@
-// gc-checker.cpp                               Copyright (C) 2024 Codemist
+// gc-check.cpp                                 Copyright (C) 2024 Codemist
 
 
 /**************************************************************************
@@ -30,7 +30,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: gc-checker.cpp 6911 2024-12-21 22:59:22Z arthurcnorman $
+// $Id: gc-check.cpp 6911 2024-12-21 22:59:22Z arthurcnorman $
 
 
 // The code here will be for checking garbage collection - because
@@ -167,6 +167,18 @@ static uint64_t*   sigOfSymbols = nullptr;
 static size_t nStack = 0;
 static uint64_t*   sigOfStack = nullptr;
 
+int gc_pipes[2];
+
+// This is the concept for the code that retrieves stuff.
+// template <typename T>
+// T oldMem(T* addr)
+// {   if (gc_pipes[1] == 0) return 0;
+//     if (write(gc_pipes[1], addr, sizeof(addr)) != sizeof(addr)) return 0;
+//     T data;
+//     if (read(gc_pipes[0], data, sizeof(data)) != sizeof(data)) return 0;
+//     return (T)data;
+// }
+
 void gc_start()
 {   cout << "\n@@@ Start of garbage collection\n";
     memset(checksumCacheKey, 0, sizeof(checksumCacheKey));
@@ -213,6 +225,40 @@ void gc_start()
             }
         }
     }
+    pipe(gc_pipes);
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+// The child process preserves the state that memory was in at this point
+// and provides a service whereby it can return data from that saved
+// state if given an address. If an address zero is passed (or if
+// the pipe has been closed do that the attempt to read from it fails)
+// the child process terminates.
+        for (;;)
+        {   uintptr_t addr;
+// I am going to suppose that read() and write() do not run foul of strict
+// aliasing and so I can pass them pointers to whatever sort of data I like
+// and provided at the two ends of the pipe use the same datatype there
+// that all will be well. Ha ha ha re the rules.
+            if (read(gc_pipes[0], &addr, sizeof(addr)) != sizeof(addr) ||
+                addr == 0) break;
+// Here I read the data byte by byte so that if I am passed an unaligned
+// address things behave the way I want. The key use case for this is when
+// what I want to fetch is just a character and so I fetch 64-bits but
+// just keep the lowest 8 of them.
+            char* p = reinterpret_cast<char*>(&addr);
+            uint64_t d = 0;
+            for (int i=0; i<8; i++)
+                d = d<<8 | (p[7-i] & 0xff);
+            write(gc_pipes[1], &d, sizeof(d));
+        }
+        quick_exit(0);
+    }
+    else if (pid < 0)
+    {   close(gc_pipes[0]);
+        close(gc_pipes[1]);
+        gc_pipes[0] = gc_pipes[1] = 0;
+    }
 }
 
 static size_t nSymbolsAfter = 0;
@@ -228,7 +274,7 @@ void gc_end(bool final)
     memset(checksumCache, 0, sizeof(checksumCache));
     for (size_t i=0; i<list_bases_size; i++)
     {   if (checksum_bases[i] != gc_checksum(*list_bases[i]))
-        {   std::cout << list_names[i]
+        {   std::cout << "@@@@ " << list_names[i]
                       << " " << checksum_bases[i]
                       << " " << gc_checksum(*list_bases[i])
                       << "\n";
@@ -237,11 +283,12 @@ void gc_end(bool final)
     if (nStack != 0)
     {   if (nStack != static_cast<size_t>(
                 stack - reinterpret_cast<LispObject*>(stackBase)))
-            cout << "@@@ stack size changed\n";
+            cout << "@@@@ stack size changed\n";
         std::cout <<"@@@ reviewing " << nStack << " stack locations\n";
         for (size_t i=0; i<nStack; i++)
             if (sigOfStack[i] != gc_checksum(reinterpret_cast<LispObject*>(stackBase)[i+1]))
-                cout << "@@@ stack item " << i << " changed\n";
+                cout << "@@@@ stack item " << i << " changed at "
+                        << &(reinterpret_cast<LispObject*>(stackBase)[i+1]) << "\n";
     }
 // Find every symbol in the new version of the heap and check info about
 // value, property list and environment components.
@@ -281,14 +328,15 @@ void gc_end(bool final)
     cout << "@@@ reviewing " << nSymbols << " symbols\n";
     for (size_t i=0; i<nSymbols; i++)
     {   if (sigOfSymbols[i]!=sigOfSymbolsAfter[i])
-        {   std::cout << "Symbol " << i << " bad\n";
+        {   std::cout << "@@@@ Symbol " << i << " bad at "
+                      << vecOfSymbolsAfter[i] << "\n";
             LispObject name = qpname(vecOfSymbolsAfter[i]);
             if (is_vector(name))
             {   size_t len =
                     length_of_byteheader(vechdr(name)) - sizeof(LispObject);
                 string sname =
                     string(sizeof(LispObject)+(char *)name-TAG_VECTOR, len);
-                std::cout << "Name is: " << sname << "\n";
+                std::cout << "@@@@ Name is: " << sname << "\n";
             }
         }
     }
@@ -306,7 +354,11 @@ void gc_end(bool final)
         delete [] sigOfSymbolsAfter;
         nSymbolsAfter=0;
     }
-    if (final) cout << "\n@@@ End of garbage collection\n";
+    if (final)
+    {   cout << "\n@@@ End of garbage collection\n";
+        close(gc_pipes[0]);
+        close(gc_pipes[1]);
+    }
     else cout << "\n@@@ Just before GC hook\n";
 }
 
@@ -323,4 +375,4 @@ void gc_end()
 #endif // GC_CHECK
 
 
-// end of gc-checker.cpp
+// end of gc-check.cpp

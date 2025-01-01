@@ -390,7 +390,7 @@ inline LispObject instate_binding(LispObject var, LispObject val,
 // but it would not be valid to use push and pop because the name "specenv"
 // expands to a rerefence relative to the top of the stack.
         specenv = acons_no_gc(var, qvalue(var), specenv);
-        setvalue(var, val);
+        qvalue(var) = val;
         cons_gc_test(nil);
         errexit();
     }
@@ -405,7 +405,7 @@ inline LispObject instate_binding(LispObject var, LispObject val,
                 env = acons(var, work_symbol, env);
                 errexit();
                 specenv = acons_no_gc(var, qvalue(var), specenv);
-                setvalue(var, val);
+                qvalue(var) = val;
                 cons_gc_test(nil);
                 errexit();
             }
@@ -775,7 +775,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
             errexit();
             while (specenv != nil)
             {   LispObject bv = car(specenv);
-                setvalue(car(bv), cdr(bv));
+                qvalue(car(bv)) = cdr(bv);
                 specenv = cdr(specenv);
             }
         }
@@ -784,7 +784,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
 // that have been made.
         while (specenv != nil)
         {   LispObject bv = car(specenv);
-            setvalue(car(bv), cdr(bv));
+            qvalue(car(bv)) = cdr(bv);
             specenv = cdr(specenv);
         }
         RETHROW;
@@ -1270,7 +1270,7 @@ LispObject autoload_0(LispObject fname)
     fname = qenv(fname);
     {   set_fns(car(fname), undefined_0, undefined_1, undefined_2,
                 undefined_3, undefined_4up);
-        setenv(car(fname), car(fname));
+        qenv(car(fname)) = car(fname);
         LispObject fname1 = cdr(fname);
         while (consp(fname1))
         {   Lload_module(nil, car(fname1));
@@ -1286,7 +1286,7 @@ LispObject autoload_1(LispObject fname, LispObject a1)
     fname = qenv(fname);
     set_fns(car(fname), undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
-    setenv(car(fname), car(fname));
+    qenv(car(fname)) = car(fname);
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));
@@ -1303,7 +1303,7 @@ LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
     fname = qenv(fname);
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
-    setenv(car(fname), car(fname));
+    qenv(car(fname)) = car(fname);
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));
@@ -1321,7 +1321,7 @@ LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2,
     fname = qenv(fname);
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
-    setenv(car(fname), car(fname));
+    qenv(car(fname)) = car(fname);
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));
@@ -1340,7 +1340,7 @@ LispObject autoload_4up(LispObject fname, LispObject a1,
     fname = qenv(fname);
     set_fns(car(fname),  undefined_0, undefined_1, undefined_2,
             undefined_3, undefined_4up);
-    setenv(car(fname), car(fname));
+    qenv(car(fname)) = car(fname);
     LispObject fname1 = cdr(fname);
     while (consp(fname1))
     {   Lload_module(nil, car(fname1));

@@ -84,7 +84,7 @@ LispObject Lmkevect(LispObject env, LispObject n)
 // For now I will restrict the size here.
     n = get_basic_vector_init(n1+CELL, nil);
     errexit();
-    setvechdr(n, vechdr(n) ^ (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE));
+    vechdr(n) ^= TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE;
     return n;
 }
 
@@ -105,7 +105,7 @@ LispObject Lmkxvect(LispObject env, LispObject n)
 // size-limited.
     n = get_basic_vector_init(n1+CELL, nil);
     errexit();
-    setvechdr(n, vechdr(n) ^ (TYPE_SIMPLE_VEC ^ TYPE_MIXED1));
+    vechdr(n) ^= TYPE_SIMPLE_VEC ^ TYPE_MIXED1;
     return n;
 }
 
@@ -1728,7 +1728,7 @@ UNUSED_NAME static LispObject Lshrink_vector(LispObject env,
 // These days my garbage collector (and other code) never relies on
 // such scans, so I simplify the code here.
     size_t adjustment = n1 - n2;  // number of bytes to shrink by
-    setvechdr(v, vechdr(v) - pack_hdrlength(adjustment/4));
+    vechdr(v) = vechdr(v) - pack_hdrlength(adjustment/4);
     return v;
 }
 
