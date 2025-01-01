@@ -364,11 +364,13 @@ void gc_end(bool final)
 
 #else // GC_CHECK
 
+int gc_pipes[2];
+
 void gc_start()
 {
 }
 
-void gc_end()
+void gc_end(bool final)
 {
 }
 

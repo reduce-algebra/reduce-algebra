@@ -39,7 +39,8 @@ fluid '(!*argnochk
         !*loadall
         !*usermode
         !*writingfaslfile
-        lispsystem!*);
+        lispsystem!*
+        !*pgwd);
 
 global '(nolist!* loaded!-modules!*);
 
@@ -257,7 +258,8 @@ symbolic procedure update!-fasl2 x;
 symbolic procedure upd!-fasl1(u,v,w);
    % We rebind *fastfor here because it's the only case of "compiletime"
    % at the moment (!).
-   begin scalar !*fastfor,!*lower,!*usermode,!*quiet_faslout,!*break,x;
+   begin
+      scalar !*fastfor,!*lower,!*usermode,!*quiet_faslout,!*break,!*pwrds,x;
       !*faslp := t;
       !*quiet_faslout := t;
       if not('psl memq lispsystem!*) then !*lower := t;

@@ -1686,8 +1686,8 @@ static void report_at_end(uint64_t t0)
     }
 #ifndef GC_CHECK
 // This reports in Kbytes, and does not overflow until over 100 Gbytes
-    setvalue(used_space, fixnum_of_int(static_cast<int>(1024.0*fn)));
-    setvalue(avail_space, fixnum_of_int(static_cast<int>(1024.0*fn1)));
+    qvalue(used_space) = fixnum_of_int(static_cast<int>(1024.0*fn));
+    qvalue(avail_space) = fixnum_of_int(static_cast<int>(1024.0*fn1));
 #endif
     uint64_t t1 = read_clock();
     gc_time += (t1 - t0);
