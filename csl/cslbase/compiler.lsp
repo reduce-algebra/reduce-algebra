@@ -3634,12 +3634,12 @@ reloadenv)))
 (put (quote ldrglob) (quote c!:opcode_printer) (function c!:pldrglob))
 
 (de c!:pstrglob (op r1 r2 r3) (c!:printf 
-"    setvalue(basic_elt(env, %s), %v); %<// %c\n" r3 r1 r2))
+"    qvalue(basic_elt(env, %s)) = %v; %<// %c\n" r3 r1 r2))
 
 (put (quote strglob) (quote c!:opcode_printer) (function c!:pstrglob))
 
 (de c!:pnilglob (op r1 r2 r3) (c!:printf 
-"    setvalue(basic_elt(env, %s), nil); %<// %c\n" r3 r2))
+"    qvalue(basic_elt(env, %s)) = nil; %<// %c\n" r3 r2))
 
 (put (quote nilglob) (quote c!:opcode_printer) (function c!:pnilglob))
 
