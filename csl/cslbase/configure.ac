@@ -671,7 +671,7 @@ AC_ARG_ENABLE(gc-check,
   AS_HELP_STRING([--enable-gc-check],
                  [expensive checks for garbage collector: (CSL only)]),
   [],
-  [enable_gc_check="yes"])
+  [enable_gc_check="no"])
 
 if test "$enable_gc_check" = "yes"
 then
