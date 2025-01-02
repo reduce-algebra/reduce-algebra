@@ -1,10 +1,10 @@
-// headers.h                               Copyright (C) 2005-2024 Codemist
+// headers.h                               Copyright (C) 2005-2025 Codemist
 
 #ifndef header_headers_h
 #define header_headers_h 1
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

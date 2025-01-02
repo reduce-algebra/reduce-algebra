@@ -1,9 +1,9 @@
 ### Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                                      2008-2024
+# A C Norman.                                                      2008-2025
 
 # **************************************************************************
-# * Copyright (C) 2024, Codemist.                         A C Norman       *
+# * Copyright (C) 2025, Codemist.                         A C Norman       *
 # *                                                                        *
 # * Redistribution and use in source and binary forms, with or without     *
 # * modification, are permitted provided that the following conditions are *
@@ -671,7 +671,7 @@ AC_ARG_ENABLE(gc-check,
   AS_HELP_STRING([--enable-gc-check],
                  [expensive checks for garbage collector: (CSL only)]),
   [],
-  [enable_gc_check="yes"])
+  [enable_gc_check="no"])
 
 if test "$enable_gc_check" = "yes"
 then

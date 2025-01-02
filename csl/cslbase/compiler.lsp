@@ -1,9 +1,9 @@
 
-% RLISP to LISP converter. A C Norman 2022
+% RLISP to LISP converter. A C Norman 2025
 
 
 %%
-%% Copyright (C) 2022, following the master REDUCE source files.          *
+%% Copyright (C) 2025, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -231,8 +231,8 @@ subst) (quote s!:builtin3) 7) (put (quote apply2) (quote s!:builtin3) 8) (put
 
 (de s!:prinhex4 (n) (progn (s!:prinhex2 (truncate n 256)) (s!:prinhex2 n)))
 
-(flag (quote (comp plap pgwd pwrds notailcall ord nocompile carcheckflag 
-savedef r2i)) (quote switch))
+(flag (quote (comp plap pgwd pwrds notailcall ord nocompile noisycompiler 
+carcheckflag savedef r2i)) (quote switch))
 
 (cond ((not (boundp (quote !*comp))) (progn (fluid (quote (!*comp))) (setq 
 !*comp t))))
@@ -248,6 +248,9 @@ savedef r2i)) (quote switch))
 
 (cond ((not (boundp (quote !*pwrds))) (progn (fluid (quote (!*pwrds))) (setq 
 !*pwrds t))))
+
+(cond ((not (boundp (quote !*noisycompiler))) (progn (fluid (quote (
+!*noisycompiler))) (setq !*noisycompiler nil))))
 
 (cond ((not (boundp (quote !*notailcall))) (progn (fluid (quote (!*notailcall
 ))) (setq !*notailcall nil))))
@@ -2688,32 +2691,35 @@ atom u) (not (null (cdr u)))) (return nil))) (return t)))
 (de s!:scan_for_embedded_lambdas (u) (cond ((atom u) nil) (t (cond ((not (
 eqcar u (quote lambda))) (progn (s!:scan_for_embedded_lambdas (car u)) (
 s!:scan_for_embedded_lambdas (cdr u)))) (t (prog (name checksum bvl body) (
-cond ((not (zerop (posn))) (terpri))) (princ "Start LAMBDA: ") (print u) (
-s!:scan_for_embedded_lambdas (car u)) (s!:scan_for_embedded_lambdas (cdr u)) 
-(setq name (hashtagged!-name (quote lambda) u)) (cond ((atom (setq u (cdr u))
-) (return nil))) (setq checksum (md60 u)) (princ "hashtagged name = ") (prin 
-name) (princ " checksum = ") (prinhex checksum) (terpri) (setq bvl (car u)) (
-setq u (cdr u)) (cond ((atom u) (return nil))) (setq u (cons name (compress (
-append (explode name) (cons (quote !!) (cons (quote !~) (cons (quote !!) (
-cons (quote !~) (explodehex checksum))))))))) (cond ((not (zerop (posn))) (
-terpri))) (princ "Within LAMBDA: ") (print u) (setq s!:other_defs (cons u 
-s!:other_defs))))))))
+cond (!*noisycompiler (progn (cond ((not (zerop (posn))) (terpri))) (princ 
+"Start LAMBDA: ") (print u)))) (s!:scan_for_embedded_lambdas (car u)) (
+s!:scan_for_embedded_lambdas (cdr u)) (setq name (hashtagged!-name (quote 
+lambda) u)) (cond ((atom (setq u (cdr u))) (return nil))) (setq checksum (
+md60 u)) (cond (!*noisycompiler (progn (princ "hashtagged name = ") (prin 
+name) (princ " checksum = ") (prinhex checksum) (terpri)))) (setq bvl (car u)
+) (setq u (cdr u)) (cond ((atom u) (return nil))) (setq u (cons name (
+compress (append (explode name) (cons (quote !!) (cons (quote !~) (cons (
+quote !!) (cons (quote !~) (explodehex checksum))))))))) (cond (
+!*noisycompiler (progn (cond ((not (zerop (posn))) (terpri))) (princ 
+"Within LAMBDA: ") (print u)))) (setq s!:other_defs (cons u s!:other_defs))))
+))))
 
 (de s!:scan_for_embedded_lambdas_fasl (u) (cond ((atom u) nil) (t (cond ((not
 (eqcar u (quote lambda))) (progn (s!:scan_for_embedded_lambdas_fasl (car u))
 (s!:scan_for_embedded_lambdas_fasl (cdr u)))) (t (prog (name checksum bvl 
-body) (cond ((not (zerop (posn))) (terpri))) (princ "Start LAMBDA: ") (print 
-u) (s!:scan_for_embedded_lambdas_fasl (car u)) (
-s!:scan_for_embedded_lambdas_fasl (cdr u)) (setq name (hashtagged!-name (
-quote lambda) u)) (cond ((atom (setq u (cdr u))) (return nil))) (setq 
-checksum (md60 u)) (princ "hashtagged name = ") (prin name) (princ 
-" checksum = ") (prinhex checksum) (terpri) (setq bvl (car u)) (setq u (cdr u
-)) (cond ((atom u) (return nil))) (setq u (cons name (compress (append (
-explode name) (cons (quote !!) (cons (quote !~) (cons (quote !!) (cons (quote
-!~) (explodehex checksum))))))))) (cond ((not (zerop (posn))) (terpri))) (
-princ "Within LAMBDA: ") (print u) (setq s!:other_defs (cons u s!:other_defs)
-) (setq s!:fasl_code (cons (list (quote symbol!-set!-definition) (mkquote (
-car u)) (mkquote (cdr u))) s!:fasl_code))))))))
+body) (cond (!*noisycompiler (progn (cond ((not (zerop (posn))) (terpri))) (
+princ "Start LAMBDA: ") (print u)))) (s!:scan_for_embedded_lambdas_fasl (car 
+u)) (s!:scan_for_embedded_lambdas_fasl (cdr u)) (setq name (hashtagged!-name 
+(quote lambda) u)) (cond ((atom (setq u (cdr u))) (return nil))) (setq 
+checksum (md60 u)) (cond (!*noisycompiler (progn (princ "hashtagged name = ")
+(prin name) (princ " checksum = ") (prinhex checksum) (terpri)))) (setq bvl 
+(car u)) (setq u (cdr u)) (cond ((atom u) (return nil))) (setq u (cons name (
+compress (append (explode name) (cons (quote !!) (cons (quote !~) (cons (
+quote !!) (cons (quote !~) (explodehex checksum))))))))) (cond (
+!*noisycompiler (progn (cond ((not (zerop (posn))) (terpri))) (princ 
+"Within LAMBDA: ") (print u)))) (setq s!:other_defs (cons u s!:other_defs)) (
+setq s!:fasl_code (cons (list (quote symbol!-set!-definition) (mkquote (car u
+)) (mkquote (cdr u))) s!:fasl_code))))))))
 
 (de s!:compile2 (name nargs nopts args oargs restarg body local_decs checksum
 ) (prog (fluids env penv g v init atend w) (prog (var1182) (setq var1182 args
@@ -3628,12 +3634,12 @@ reloadenv)))
 (put (quote ldrglob) (quote c!:opcode_printer) (function c!:pldrglob))
 
 (de c!:pstrglob (op r1 r2 r3) (c!:printf 
-"    setvalue(basic_elt(env, %s), %v); %<// %c\n" r3 r1 r2))
+"    qvalue(basic_elt(env, %s)) = %v; %<// %c\n" r3 r1 r2))
 
 (put (quote strglob) (quote c!:opcode_printer) (function c!:pstrglob))
 
 (de c!:pnilglob (op r1 r2 r3) (c!:printf 
-"    setvalue(basic_elt(env, %s), nil); %<// %c\n" r3 r2))
+"    qvalue(basic_elt(env, %s)) = nil; %<// %c\n" r3 r2))
 
 (put (quote nilglob) (quote c!:opcode_printer) (function c!:pnilglob))
 

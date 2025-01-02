@@ -1,8 +1,8 @@
-// gc-check.cpp                                 Copyright (C) 2024 Codemist
+// gc-check.cpp                                 Copyright (C) 2025 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -364,11 +364,13 @@ void gc_end(bool final)
 
 #else // GC_CHECK
 
+int gc_pipes[2];
+
 void gc_start()
 {
 }
 
-void gc_end()
+void gc_end(bool final)
 {
 }
 

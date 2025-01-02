@@ -1,4 +1,4 @@
-% "ccomp.red"                                Copyright 1991-2024,  Codemist
+% "ccomp.red"                                Copyright 1991-2025,  Codemist
 %
 % Compiler that turns Lisp code into C in a way that fits in
 % with the conventions used with CSL/CCL
@@ -6,7 +6,7 @@
 %                                                        A C Norman
 
 %%
-%% Copyright (C) 2024, following the master REDUCE source files.          *
+%% Copyright (C) 2025, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -1242,12 +1242,12 @@ symbolic procedure c!:pldrglob(op, r1, r2, r3);
 put('ldrglob, 'c!:opcode_printer, function c!:pldrglob);
 
 symbolic procedure c!:pstrglob(op, r1, r2, r3);
-   c!:printf("    setvalue(basic_elt(env, %s), %v); %<// %c\n", r3, r1, r2);
+   c!:printf("    qvalue(basic_elt(env, %s)) = %v; %<// %c\n", r3, r1, r2);
 
 put('strglob, 'c!:opcode_printer, function c!:pstrglob);
 
 symbolic procedure c!:pnilglob(op, r1, r2, r3);
-   c!:printf("    setvalue(basic_elt(env, %s), nil); %<// %c\n", r3, r2);
+   c!:printf("    qvalue(basic_elt(env, %s)) = nil; %<// %c\n", r3, r2);
 
 put('nilglob, 'c!:opcode_printer, function c!:pnilglob);
 flag('(nilglob), 'c!:uses_nil);

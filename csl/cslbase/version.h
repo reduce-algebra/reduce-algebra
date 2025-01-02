@@ -1,4 +1,4 @@
-// version.h                               Copyright (C) 1990-2024 Codemist
+// version.h                               Copyright (C) 1990-2025 Codemist
 
 #ifndef header_version_h
 #define header_version_h 1
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -93,7 +93,7 @@ inline constexpr int day_of_week(int m, int d,int y)
 inline bool initialize_version_date()
 {
     const char* v = &VERSION_ID[0];
-// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxfilename revision yyyy-mm-dd hh:mm:ss..."
+// Format:         "$Id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxfilename revision yyyy-mm-dd hh:mm:ss..."
     while (*v != ' ') v++;      // Skip past "$Id"
     v++;
     while (*v != ' ') v++;      // Skip past name of file

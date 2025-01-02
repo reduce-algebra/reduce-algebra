@@ -1,4 +1,4 @@
-// FXShowMath.cpp"                       Copyright A C Norman 2004-2019
+// FXShowMath.cpp"                       Copyright A C Norman 2004-2025
 //
 //
 // Code to layout mathematical formulae for display. Formulae are
@@ -7,7 +7,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2004-15 by Arthur Norman, Codemist.  All Rights Reserved.     *
+* Copyright (C) 2004-2025 by Arthur Norman, Codemist.  All Rights Reserved.   *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -25,7 +25,7 @@
 *                                                                             *
 * I had intended to permit this code to be used subject to the FOX addendum   *
 * that permits static linking, but that is not feasible given the non-        *
-* transitive nature of that addendum, hence this ha sto be under just LGPL.   *
+* transitive nature of that addendum, hence this has to be under just LGPL.   *
 ******************************************************************************/
 
 // However as a special exception to LGPL 2.1 I grant permission for my code

@@ -1,4 +1,4 @@
-// externs.h                               Copyright (C) Codemist 1989-2024
+// externs.h                               Copyright (C) Codemist 1989-2025
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -497,6 +497,7 @@ extern LispObject user_base_9;
 
 extern void rehash_this_table(LispObject v);
 extern void simple_string(char* p, size_t n, LispObject x);
+extern void simple_old_string(char* p, size_t n, LispObject x);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char* s, LispObject x);
 extern void simple_print(FILE* f, LispObject x);

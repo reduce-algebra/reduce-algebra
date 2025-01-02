@@ -3,17 +3,23 @@
 /* Work on a transition to use of arithlib.hpp for bignums */
 #undef ARITHLIB
 
-/* disable Karatsuba and input local editing so they do not create threads */
-#undef AVOID_THREADS
+/* disable parallel Karatsuba */
+#undef AVOID_KARATSUBA_THREADS
+
+/* disable input local editing */
+#undef AVOID_TERMINAL_THREADS
 
 /* Architecture this is built to run on */
 #undef BUILTFOR
 
-/* Define to 1 if the `closedir' function returns void instead of `int'. */
+/* Define to 1 if the `closedir' function returns void instead of int. */
 #undef CLOSEDIR_VOID
 
-/* True if GC experiment enabled */
+/* new GC is now always used! */
 #undef CONSERVATIVE
+
+/* Collect counts of multiplication */
+#undef COUNT_MULTIPLICATION
 
 /* True to tell sources that this build is part of CSL */
 #undef CSL
@@ -21,14 +27,29 @@
 /* True if this is with no GUI and aimed at embedded use */
 #undef EMBEDDED
 
-/* True if this is an experimental testing mode variant */
+/* For use by developers */
 #undef EXPERIMENT
+
+/* Show down garbage collection dramatically */
+#undef EXTREME_DEBUG
+
+/* "std::filesystem not available" */
+#undef FILESYSTEM_NOT_USABLE
+
+/* For use by developers */
+#undef GC_CHECK
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
+
+/* Define to 1 if you have the `at_quick_exit' function. */
+#undef HAVE_AT_QUICK_EXIT
+
+/* bit_cast<T>() available */
+#undef HAVE_BITCAST
 
 /* Define to 1 if you have the `cfmakeraw' function. */
 #undef HAVE_CFMAKERAW
@@ -59,6 +80,9 @@
 
 /* define if the compiler supports basic C++17 syntax */
 #undef HAVE_CXX17
+
+/* define if the compiler supports basic C++20 syntax */
+#undef HAVE_CXX20
 
 /* Define to 1 if you have the declaration of `RLIM_SAVED_CUR', and to 0 if
    you don't. */
@@ -117,6 +141,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `fontconfig' library (-lfontconfig). */
+#undef HAVE_LIBFONTCONFIG
+
 /* Fox library present */
 #undef HAVE_LIBFOX
 
@@ -168,6 +195,9 @@
 
 /* Define to 1 if you have the `putc_unlocked' function. */
 #undef HAVE_PUTC_UNLOCKED
+
+/* Define to 1 if you have the `quick_exit' function. */
+#undef HAVE_QUICK_EXIT
 
 /* Define to 1 if you have the `rmdir' function. */
 #undef HAVE_RMDIR
@@ -224,11 +254,11 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
-
-/* Define to 1 if you have the `std::aligned_alloc' function. */
-#undef HAVE_STD__ALIGNED_ALLOC
 
 /* Define to 1 if you have the `strchr' function. */
 #undef HAVE_STRCHR
@@ -310,6 +340,9 @@
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
 
+/* std::timespec present */
+#undef HAVE_TIMESPEC
+
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
@@ -349,6 +382,9 @@
 /* Define to 1 if you have the <zlib.h> header file. */
 #undef HAVE_ZLIB_H
 
+/* Define to 1 if you have the `_Exit' function. */
+#undef HAVE__EXIT
+
 /* Define to 1 if you have the `_getc_nolock' function. */
 #undef HAVE__GETC_NOLOCK
 
@@ -386,11 +422,14 @@
 /* Apple MacOS frameworks available */
 #undef MAC_FRAMEWORK
 
-/* alignof(max_align_t)==4 */
-#undef MAXALIGN4
+/* Smaller pages for the heap */
+#undef MINIPAGE
 
-/* Makes use of a debugger easier, I hope. */
-#undef NILSEG_EXTERNS
+/* Avoid use of thread_local and other thread support */
+#undef NO_THREADS
+
+/* Avoid use of catch and throw */
+#undef NO_THROW
 
 /* Name of package */
 #undef PACKAGE
@@ -419,9 +458,6 @@
 /* True if we are running on RAW Cygwin */
 #undef RAW_CYGWIN
 
-/* Define as the return type of signal handlers (`int' or `void'). */
-#undef RETSIGTYPE
-
 /* Not guaranteed by ANSI spec */
 #undef SIGNED_SHIFTS_ARE_ARITHMETIC
 
@@ -434,8 +470,13 @@
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 #undef STAT_MACROS_BROKEN
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
+
+/* For use by developers */
+#undef TEST
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME

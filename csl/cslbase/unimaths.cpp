@@ -1,8 +1,8 @@
-// unimaths.cpp                            Copyright (C) 2015-2024 Codemist
+// unimaths.cpp                            Copyright (C) 2015-2025 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

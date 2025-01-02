@@ -1,4 +1,4 @@
-// Big Number arithmetic.                             A C Norman, 2019-2024
+// Big Number arithmetic.                             A C Norman, 2019-2025
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -12,7 +12,7 @@
 //    Re-work long division to approximate Karatsuba complexity.
 
 /**************************************************************************
- * Copyright (C) 2019-2024, Codemist.                    A C Norman       *
+ * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

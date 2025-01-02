@@ -1,4 +1,4 @@
-// Big Number arithmetic.                             A C Norman, 2019-2024
+// Big Number arithmetic.                             A C Norman, 2019-2025
 
 // To use this, go "#include "arithlib.hpp".
 
@@ -12,7 +12,7 @@
 //    Re-work long division to approximate Karatsuba complexity.
 
 /**************************************************************************
- * Copyright (C) 2019-2024, Codemist.                    A C Norman       *
+ * Copyright (C) 2019-2025, Codemist.                    A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -473,10 +473,10 @@ inline bool inChild = false;
 #include <unordered_map>
 #include <type_traits>
 
-// acnutil.h                               Copyright (C) 2024 Arthur Norman
+// acnutil.h                               Copyright (C) 2025 Arthur Norman
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -599,13 +599,13 @@ inline std::string concat(std::string a, int n)
 #endif // __header_acnutil
 
 // end of acnutil.h
-// lvector.h                                  Copyright (C) A C Norman 2024
+// lvector.h                                  Copyright (C) A C Norman 2025
 
 // This is intended to behave much as a C++ "T*" pointer except that it
 // performs bound checking if DEBUG is defined at compile-time.
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1250,13 +1250,13 @@ inline vecpointer<T> setSize(vecpointer<T> v, std::size_t n)
 
 #include <vector>
 
-// threadloc.h                                  Copyright (C) 2024 Codemist
+// threadloc.h                                  Copyright (C) 2025 Codemist
 
 #ifndef header_threadloc_h
 #define header_threadloc_h 1
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

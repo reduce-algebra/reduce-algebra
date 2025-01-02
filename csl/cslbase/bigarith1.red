@@ -2,7 +2,7 @@ on echo;
 lisp spool "bigarith1.log";
 lisp enable!-errorset(3,3);
 
-% bigarith.red                           Copyright (C) A C Norman 2022-2024
+% bigarith.red                           Copyright (C) A C Norman 2022-2025
 
 % Big-number arithmetic code for use testing the native arithmetic package.
 
@@ -30,7 +30,7 @@ lisp enable!-errorset(3,3);
 % run.
 
 % **************************************************************************
-% * Copyright (C) 2024, Codemist.                         A C Norman       *
+% * Copyright (C) 2025, Codemist.                         A C Norman       *
 % *                                                                        *
 % * Redistribution and use in source and binary forms, with or without     *
 % * modification, are permitted provided that the following conditions are *

@@ -1,10 +1,10 @@
-// lvector.h                                  Copyright (C) A C Norman 2024
+// lvector.h                                  Copyright (C) A C Norman 2025
 
 // This is intended to behave much as a C++ "T*" pointer except that it
 // performs bound checking if DEBUG is defined at compile-time.
 
 /**************************************************************************
- * Copyright (C) 2024, Codemist.                         A C Norman       *
+ * Copyright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
