@@ -498,10 +498,13 @@ extern LispObject user_base_9;
 extern void rehash_this_table(LispObject v);
 extern void simple_string(char* p, size_t n, LispObject x);
 extern void simple_old_string(char* p, size_t n, LispObject x);
+extern bool simple_print_extras;
 extern void simple_print(LispObject x);
 extern void simple_msg(const char* s, LispObject x);
 extern void simple_print(FILE* f, LispObject x);
 extern void simple_msg(FILE* f, const char* s, LispObject x);
+extern void simple_print(std::ostream& f, LispObject x);
+extern void simple_msg(std::ostream& f, const char* s, LispObject x);
 extern uint64_t hash_equal(LispObject key);
 
 extern char* exit_charvec;

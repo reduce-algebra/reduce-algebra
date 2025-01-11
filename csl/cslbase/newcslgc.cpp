@@ -1632,7 +1632,8 @@ NOINLINE uintptr_t getStackFringe(uintptr_t (*f)(double*), double x)
 #endif
 
 void use_gchook(LispObject arg)
-{   LispObject g = gchook;
+{
+    LispObject g = gchook;
     if (symbolp(g) && g != unset_var)
     {   g = qvalue(g);
         if (symbolp(g) && g != unset_var && g != nil)
@@ -1693,12 +1694,13 @@ static void report_at_end(uint64_t t0)
     gc_time += (t1 - t0);
     base_time += (t1 - t0);
     stackcheck();
+    gc_start();
     use_gchook(lisp_true);
 }
 
 NOINLINE void garbage_collect(const char* why)
 {   gcNumber++;
-    gc_start();
+////    gc_start();
     uint64_t t0 = read_clock();
 #ifdef WITH_GUI
 // If I have a window system I tell it the current time every so often
@@ -1811,9 +1813,10 @@ NOINLINE void garbage_collect(const char* why)
         if (volatileVar == volatileVar) break;
     }
 // End of garbage collection!
-    gc_end(false);
+/////    gc_end(false);
+/////    gc_start();
     report_at_end(t0);
-    gc_end();
+    gc_end(true);
 }
 
 NOINLINE void garbage_collect()

@@ -215,6 +215,30 @@ INLINE_VAR constexpr uintptr_t TAG_FIXNUM    =  7; // 28/60-bit integers        
 INLINE_VAR constexpr uintptr_t TAG_XBIT      =  8; // extra bit!                    80
 INLINE_VAR constexpr uintptr_t XTAG_SFLOAT   = 15; // Short float, 28+ bits of data 80
 
+
+
+inline const char* tagName(LispObject p)
+{   static const char* tagNameTable[] =
+    {   "CONS",
+        "VECTOR",
+        "HDR_IMMED",
+        "FORWARD",
+        "SYMBOL",
+        "NUMBERS",
+        "BOXFLOAT",
+        "FIXNUM",
+        "CONS",
+        "VECTOR",
+        "HDR_IMMED",
+        "FORWARD",
+        "SYMBOL",
+        "NUMBERS",
+        "BOXFLOAT",
+        "SFLOAT"
+    };
+    return tagNameTable[p & XTAG_BITS];
+}
+
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
 // bottom 4 bits. On a 64-bit system I have 64-bit immediate data so if I
@@ -418,36 +442,9 @@ inline LispObject &cdr(LispObject p)
     return reinterpret_cast<Cons_Cell *>(p)->cdr;
 }
 
-// So what is this "old_" stuff about?
-//
-// Well there it lets me go:
-//     pipe(gc_pipes);
-//     pid_t pid = fork();
-//     if (pid == 0)
-//     {   for (;;)
-//         {   uintptr_t addr;
-//             if (read(gc_pipes[0], &addr, sizeof(addr)) != sizeof(addr) ||
-//                 addr == 0) break;
-//     // Actually the server takes care of unaligned accesses...
-//             uint64_t d = *reinterpret_cast<uint64_t*>(addr);
-//             write(gc_pipes[1], &d, sizeof(d));
-//         }
-//         quick_exit(0);
-//     }
-// and the fork captures the state of everything - with the child process
-// being set up to respond via calls to oldMem() to report in the
-// state of memory when it was created.
-// At least initially the only use of this is in "gc-check.cpp".
 
-extern int gc_pipes[2];
-
-inline uint64_t oldMem(void* addr)
-{   if (gc_pipes[1] == 0) return 0;
-    if (write(gc_pipes[1], &addr, sizeof(addr)) != sizeof(addr)) return 0;
-    uint64_t data;
-    if (read(gc_pipes[0], &data, sizeof(data)) != sizeof(data)) return 0;
-    return static_cast<uint64_t>(data);
-}
+// for gc-check.cpp
+extern uint64_t oldMem(void* addr);
 
 inline LispObject old_car(LispObject p)
 {   return oldMem(reinterpret_cast<LispObject*>(p-TAG_CONS));
@@ -714,7 +711,7 @@ inline size_t length_of_bitheader(Header h)
 }
 
 // length_of_byteheader returns a length in bytes, and so compatible with
-// what length_of_header used to do on byte arrays (and hence strings)
+// what length_of[1;5u_header used to do on byte arrays (and hence strings)
 
 
 inline size_t length_of_byteheader(Header h)
@@ -1917,6 +1914,34 @@ inline three_args*& qfn3(LispObject p)
 
 inline fourup_args*& qfn4up(LispObject p)
 {   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
+}
+
+inline Header old_qheader(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header));
+}
+
+inline LispObject old_qvalue(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value));
+}
+
+inline LispObject old_qenv(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env));
+}
+
+inline LispObject old_qplist(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist));
+}
+
+inline LispObject old_qfastgets(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets));
+}
+
+inline LispObject old_qpackage(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package));
+}
+
+inline LispObject old_qpname(LispObject p)
+{   return oldMem(&(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname));
 }
 
 extern LispObject aerror1(const char *s, LispObject a);
