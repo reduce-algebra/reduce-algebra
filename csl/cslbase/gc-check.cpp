@@ -631,7 +631,7 @@ void gc_end(bool final)
             dest << "old: " << (char *)&buffer << std::endl;
 #ifndef WIN32
             void* addr = nullptr;
-            if (gc_pipes_to[write_end] |= 0 &&
+            if (gc_pipes_to[write_end] != 0 &&
                 gc_pipes_from[read_end] != 0)
                 write(gc_pipes_to[write_end], &addr, sizeof(addr));
             close(gc_pipes_from[read_end]);
@@ -727,7 +727,7 @@ void gc_end(bool final)
     {   dest << "\n@@@ End of garbage collection\n";
 #ifndef WIN32
         void* addr = nullptr;
-        if (gc_pipes_to[write_end] |= 0 &&
+        if (gc_pipes_to[write_end] != 0 &&
             gc_pipes_from[read_end] != 0)
             write(gc_pipes_to[write_end], &addr, sizeof(addr));
         close(gc_pipes_from[read_end]);

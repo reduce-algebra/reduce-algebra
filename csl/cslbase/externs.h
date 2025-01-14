@@ -1202,7 +1202,7 @@ extern setup_type const om_parse_setup[];
     X(starloopprint_symbol),       X(startfn),                    \
     X(startup_symbol),             X(string_char_sym),            \
     X(supervisor),                 X(sys_hash_table),             \
-    X(terminal_io),                X(trace_count),                \
+    X(terminal_io),                                               \
     X(trace_output),               X(tracedfn),                   \
     X(traceprint_symbol),          X(trap_time),                  \
     X(unset_var),                  X(use_symbol),                 \
