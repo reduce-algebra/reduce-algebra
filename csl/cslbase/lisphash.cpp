@@ -80,10 +80,11 @@
 #define HASH_MULTIPLIER UINT64_C(0x9e3779b97f4a7c15)
 
 // While performing operations on a table I will often load its components
-// info some of the following static variables. When and if I move to
+// info some of the following  variables. When and if I move to
 // a multi-threaded world I will need these to use thread local storage.
+// To avoid storage waste I should clear h_table and v_table after use.
 
-static LispObject h_table, v_table;
+LispObject h_table = fixnum_of_int(0), v_table = fixnum_of_int(1);
 static int h_shift;
 static size_t h_table_size;
 
@@ -291,12 +292,20 @@ LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
 {   SingleValued fn;
     set_hash_operations(tab);
     size_t pos = hash_lookup(key);
-    if (pos == NOT_PRESENT) return nil; // item not there
+    if (pos == NOT_PRESENT)
+    {   h_table_size = 0;
+        h_table = nil;
+        v_table = nil;
+        return nil; // item not there
+    }
 // I replace the deleted key with a tombstone value. Because that still
 // consumes space I will leave the record of how full the table is unchanged.
 // The table may shrink following the next garbage collection.
     ht(pos) = SPID_HASHTOMB;
     if (v_table != nil) htv(pos) = SPID_HASHEMPTY;
+    h_table_size = 0;
+    h_table = nil;
+    v_table = nil;
     return lisp_true;
 }
 
@@ -1075,13 +1084,24 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab,
     pos = hash_lookup(key);
 // For hashsets I return T or nil.
     if (v_table == nil)
+    {   h_table_size = 0;
+        h_table = nil;
+        v_table = nil;
         return nvalues(pos == NOT_PRESENT ? nil : lisp_true, 1);
+    }
     if (pos == NOT_PRESENT)
-    {   mv_2 = nil;
+    {   h_table_size = 0;
+        h_table = nil;
+        v_table = nil;
+        mv_2 = nil;
         return nvalues(dflt, 2);
     }
+    LispObject r = htv(pos);
     mv_2 = lisp_true;
-    return nvalues(htv(pos), 2);
+    h_table_size = 0;
+    h_table = nil;
+    v_table = nil;
+    return nvalues(r, 2);
 }
 
 LispObject Lmap_hash(LispObject env, LispObject fn, LispObject tab)
@@ -1280,6 +1300,9 @@ LispObject Lput_hash(LispObject env,
                                      HASH_COUNT)) + 0x10; // Increment count.
     ht(pos) = key;
     if (v_table != nil) htv(pos) = val;
+    h_table_size = 0;
+    h_table = nil;
+    v_table = nil;
     return val;
 }
 
@@ -1300,7 +1323,12 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
          type_of_header(vechdr(tab)) != TYPE_HASHX))
         return aerror1("clrhash", tab);
     set_hash_operations(tab);
-    if (basic_elt(tab, HASH_COUNT) == fixnum_of_int(0)) return nil;
+    if (basic_elt(tab, HASH_COUNT) == fixnum_of_int(0))
+    {   h_table_size = 0;
+        h_table = nil;
+        v_table = nil;
+        return nil;
+    }
     set_hash_operations(tab);
     int sh = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
     size_t size = ((size_t)1)<<(64-sh);
@@ -1322,6 +1350,9 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
     basic_elt(tab, HASH_COUNT) = fixnum_of_int(0);
     if (type_of_header(vechdr(tab)) == TYPE_HASHX)
         vechdr(tab) ^= TYPE_HASH ^ TYPE_HASHX;
+    h_table_size = 0;
+    h_table = nil;
+    v_table = nil;
     return tab;
 }
 

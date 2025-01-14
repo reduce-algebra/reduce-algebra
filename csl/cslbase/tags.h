@@ -434,14 +434,19 @@ extern char dependency_file[LONGEST_LEGAL_FILENAME];
 
 inline LispObject &car(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid car");
+#ifdef DEBUG
+    my_assert(((p-TAG_CONS) & 0x7) == 0);
+#endif // DEBUG
     return reinterpret_cast<Cons_Cell *>(p)->car;
 }
 
 inline LispObject &cdr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdr");
+#ifdef DEBUG
+    my_assert(((p-TAG_CONS) & 0x7) == 0);
+#endif // DEBUG
     return reinterpret_cast<Cons_Cell *>(p)->cdr;
 }
-
 
 // for gc-check.cpp
 extern uint64_t oldMem(void* addr);
@@ -687,7 +692,11 @@ INLINE_VAR constexpr uintptr_t SPID_NOPROP    = TAG_SPID+(0x0b<<(Tw+4)); // fast
 INLINE_VAR constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0xnnn00000 offset
 
 inline Header &vechdr(LispObject v)
-{   return *reinterpret_cast<Header *>(v - TAG_VECTOR);
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<Header *>(v - TAG_VECTOR);
 }
 
 inline Header old_vechdr(LispObject v)
@@ -1158,6 +1167,9 @@ inline LispObject& basic_elt(LispObject v, size_t n)
     if (!SIXTY_FOUR_BIT) limit |= 1;
     my_assert(n < limit, "basic_elt index out of range");
 #endif // DEBUG
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+#endif // DEBUG
     return *reinterpret_cast<LispObject *>
            (reinterpret_cast<char *>(v) +
             (CELL-TAG_VECTOR) +
@@ -1220,7 +1232,11 @@ inline bool vector_f128(LispObject n)
 }
 
 inline Header &numhdr(LispObject v)
-{   return *reinterpret_cast<Header *>(v - TAG_NUMBERS);
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_NUMBERS) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<Header *>(v - TAG_NUMBERS);
 }
 
 inline Header old_numhdr(LispObject v)
@@ -1228,7 +1244,11 @@ inline Header old_numhdr(LispObject v)
 }
 
 inline Header &flthdr(LispObject v)
-{   return *reinterpret_cast<Header *>(v - TAG_BOXFLOAT);
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<Header *>(v - TAG_BOXFLOAT);
 }
 
 inline bool is_short_float(LispObject v)
@@ -1545,14 +1565,22 @@ inline LispObject& vselt(LispObject v, size_t n)
 // ARM did not support 16-bit usage at all well. However these days I intend
 // to expect that int16_t will exist and will be something I can rely on.
 inline int16_t& basic_helt(LispObject v, size_t n)
-{   return *reinterpret_cast<int16_t *>(reinterpret_cast<char *>
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x1) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<int16_t *>(reinterpret_cast<char *>
             (v) +
             (CELL-TAG_VECTOR) +
             n*sizeof(int16_t));
 }
 
 inline intptr_t& basic_ielt(LispObject v, size_t n)
-{   return  *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+#endif // DEBUG
+    return  *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
                                           (v) +
                                           (CELL-TAG_VECTOR) +
                                           n*sizeof(intptr_t));
@@ -1561,19 +1589,31 @@ inline intptr_t& basic_ielt(LispObject v, size_t n)
 // Even on a 64-bit machine I will support packed arrays of 32-bit
 // ints or short-floats.
 inline int32_t& basic_ielt32(LispObject v, size_t n)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) +
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x3) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) +
                                         (CELL-TAG_VECTOR) +
                                         n*sizeof(int32_t));
 }
 
 inline float& basic_felt(LispObject v, size_t n)
-{   return *reinterpret_cast<float *>(reinterpret_cast<char *>(v) +
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x3) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<float *>(reinterpret_cast<char *>(v) +
                                       (CELL-TAG_VECTOR) +
                                       n*sizeof(float));
 }
 
 inline double& basic_delt(LispObject v, size_t n)
-{   return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) +
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) +
                                        (8-TAG_VECTOR) +
                                        n*sizeof(double));
 }
@@ -1845,75 +1885,147 @@ INLINE_VAR constexpr size_t MAX_FASTGET_SIZE = 63;
 // I have up to 63 "fast" tags for PUT/GET/FLAG/FLAGP
 
 inline Header &qheader(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header;
 }
 
 inline LispObject &qvalue(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value;
 }
 
 inline LispObject &qenv(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env;
 }
 
 inline LispObject &qplist(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist;
 }
 
 inline LispObject &qfastgets(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets;
 }
 
 inline LispObject &qpackage(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package;
 }
 
 inline LispObject &qpname(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname;
 }
 
 inline LispObject *valueaddr(LispObject p)
-{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value);
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value);
 }
 
 inline LispObject *envaddr(LispObject p)
-{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env);
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env);
 }
 
 inline LispObject *plistaddr(LispObject p)
-{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist);
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist);
 }
 
 inline LispObject *fastgetsaddr(LispObject p)
-{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets);
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets);
 }
 
 inline LispObject *packageaddr(LispObject p)
-{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package);
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package);
 }
 
 inline LispObject *pnameaddr(LispObject p)
-{   return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname);
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname);
 }
 
 inline no_args*& qfn0(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function0;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function0;
 }
 
 inline one_arg*& qfn1(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function1;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function1;
 }
 
 inline two_args*& qfn2(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function2;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function2;
 }
 
 inline three_args*& qfn3(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function3;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function3;
 }
 
 inline fourup_args*& qfn4up(LispObject p)
-{   return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
+{
+#ifdef DEBUG
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+#endif // DEBUG
+    return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
 }
 
 inline Header old_qheader(LispObject p)
@@ -2242,19 +2354,35 @@ inline double *double_float_addr(LispObject v)
 // on 32-bit machines there has to be a padding work in a double_float,
 // and this lets me clear it out.
 inline int32_t& double_float_pad(LispObject v)
-{   return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (4-TAG_BOXFLOAT));
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_BOXFLOAT) & 0x3) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) + (4-TAG_BOXFLOAT));
 }
 
 inline double& double_float_val(LispObject v)
-{   return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline float64_t& float64_t_val(LispObject v)
-{   return *reinterpret_cast<float64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<float64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int64_t& intfloat64_t_val(LispObject v)
-{   return *reinterpret_cast<int64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
+{
+#ifdef DEBUG
+    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
+#endif // DEBUG
+    return *reinterpret_cast<int64_t *>(reinterpret_cast<char *>(v) + (8-TAG_BOXFLOAT));
 }
 
 inline int32_t& intfloat64_t_val_hi(LispObject v)

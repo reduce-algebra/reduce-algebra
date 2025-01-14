@@ -627,7 +627,7 @@ void grabFreshPage(PageType type)
             consFringe += sizeof(ConsCell);
         if (consFringe == consEnd) break;   // a bit dubious!
         r = consFringe;
-        consFringe += 2;
+        consFringe += sizeof(ConsCell);
         indirect(r) = CONS_PADDER_HEADER;
         pinCount--;
     }

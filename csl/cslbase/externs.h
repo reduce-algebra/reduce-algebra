@@ -370,6 +370,7 @@ extern LispObject list_symbol, callStack, liststar_symbol, eq_symbol;
 extern LispObject eql_symbol, cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject go_symbol, cond_symbol, print_hash_symbol;
+extern LispObject h_table, v_table;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn, karaWork;
 extern LispObject gensym_base, string_char_sym, boffo;
@@ -574,7 +575,6 @@ extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 extern void reclaim(const char* why);
 extern void use_gchook(LispObject arg);
 
-extern uint64_t force_cons, force_vec;
 extern bool next_gc_is_hard;
 
 inline bool cons_forced(size_t n)
@@ -1122,65 +1122,97 @@ extern setup_type const om_parse_setup[];
 // Here is a table of all the list-bases that CSL marks from, and that
 // must have their values captured in checkpoint files.
 
+// This must be a complete list of the unambiguous list-bases. If
+// a list is stored in a static variable anywhere else it may not
+// be protected against garbage collection.
+
 #define LIST_BASES \
-    X(active_stream),         X(allow_key_key),     X(allow_other_keys), \
-    X(all_packages),          X(and_symbol),        X(append_symbol), \
-    X(applyhook),             X(apply_symbol),      X(autoload_symbol), \
-    X(aux_key),               X(avail_space),       X(big_dividend), \
-    X(big_divisor),           X(big_fake1),         X(big_fake2), \
-    X(big_quotient),          X(bit_symbol),        X(boffo), \
-    X(break_function),        X(B_reg),             X(builtin0_symbol), \
-    X(builtin1_symbol),       X(builtin2_symbol),   X(builtin3_symbol), \
-    X(builtin4_symbol),       X(bytecoded_symbol),  X(call_stack), \
-    X(callstack),             X(catch_tags),        X(cfunarg), \
-    X(char_0_symbol),         X(charvec),           X(cl_equal_symbol), \
-                              X(comma_at_symbol),   X(comma_symbol), \
-    X(compiler_symbol),       X(comp_symbol),       X(cond_symbol), \
-    X(cons_symbol),           X(current_file),      X(current_function), \
-    X(current_module),        X(current_package),   X(debug_io), \
-    X(declare_symbol),        X(double_float),      X(echo_symbol), \
-    X(emsg_star),             X(eof_symbol),        X(eql_symbol), \
-    X(eq_symbol),             X(equalp_symbol),     X(equal_symbol), \
-    X(error_output),          X(err_table),         X(evalhook), \
-    X(eval_symbol),           X(exit_tag),          X(exit_value), \
-    X(expand_def_symbol),     X(expr_symbol),       X(external_symbol), \
-                              X(fasl_stream),                   \
-    X(fastget_names),         X(features_symbol),   X(fexpr_symbol), \
-    X(format_symbol),         X(funarg),            X(funcall_symbol), \
-    X(function_symbol),       X(gchook),            X(gcknt_symbol), \
-    X(gensym_base),           X(get_counts),        X(go_symbol), \
-    X(help_index),            X(inherited_symbol),  X(initial_element), \
-    X(input_libraries),       X(internal_symbol),   X(karaWork),  X(key_key), \
-    X(keyword_package),       X(lambda),            X(large_modulus), \
-    X(lex_words),             X(lisp_debug_io),     X(lisp_error_output), \
-    X(lisp_package),          X(lisp_query_io),     X(lisp_standard_input), \
-    X(lisp_standard_output),  X(lisp_terminal_io),  X(lisp_trace_output), \
-    X(lisp_true),             X(lisp_work_stream),  X(liststar_symbol), \
-    X(list_symbol),           X(callStack),         X(load_selected_source_symbol), \
-    X(load_source_symbol),    X(long_float),        X(lose_symbol), \
-    X(lower_symbol),          X(macroexpand_hook),  X(macro_symbol), \
-    X(multiplication_buffer), X(mv_call_symbol),    X(named_character), \
-    X(nicknames_symbol),      X(not_symbol),        X(opt_key), \
-    X(or_symbol),             X(output_library),    X(package_symbol), \
-    X(pathname_symbol),       X(prinl_symbol),      X(print_array_sym), \
-    X(procmem),               X(procstack),         X(progn_symbol), \
-    X(prompt_thing),          X(query_io),          X(quote_symbol), \
-    X(raise_symbol),          X(read_base),         X(reader_workspace), \
-    X(read_float_format),     X(redef_msg),         X(rehash_vec1), \
-    X(rehash_vec2),           X(resources),         X(rest_key), \
-    X(s_prinl2_symbol),       X(savedefs_symbol),   X(savedef_symbol), \
-    X(short_float),           X(single_float),      X(special_symbol), \
-    X(standard_input),        X(standard_output),   X(starloopprint_symbol), \
-    X(startfn),               X(startup_symbol),    X(string_char_sym), \
-    X(supervisor),            X(sys_hash_table),    X(terminal_io), \
-    X(tracedfn),              X(trace_output),      X(traceprint_symbol), \
-    X(trap_time),             X(unset_var),         X(used_space), \
-    X(use_symbol),            X(work_symbol),       X(NaN_symbol), \
-    X(infinity_symbol),       X(minusinfinity_symbol),X(print_hash_symbol), \
- \
-    X(user_base_0),  X(user_base_1),  X(user_base_2),  X(user_base_3),  X(user_base_4), \
-    X(user_base_5),  X(user_base_6),  X(user_base_7),  X(user_base_8),  X(user_base_9), \
- \
+    X(B_reg),                      X(NaN_symbol),                 \
+    X(active_stream),              X(all_packages),               \
+    X(allow_key_key),              X(allow_other_keys),           \
+    X(and_symbol),                 X(append_symbol),              \
+    X(apply_symbol),               X(applyhook),                  \
+    X(autoload_symbol),            X(aux_key),                    \
+    X(avail_space),                X(big_dividend),               \
+    X(big_divisor),                X(big_fake1),                  \
+    X(big_fake2),                  X(big_quotient),               \
+    X(bit_symbol),                 X(boffo),                      \
+    X(break_function),             X(builtin0_symbol),            \
+    X(builtin1_symbol),            X(builtin2_symbol),            \
+    X(builtin3_symbol),            X(builtin4_symbol),            \
+    X(bytecoded_symbol),           X(callStack),                  \
+    X(call_stack),                 X(callstack),                  \
+    X(catch_tags),                 X(cfunarg),                    \
+    X(char_0_symbol),              X(charvec),                    \
+    X(cl_equal_symbol),            X(comma_at_symbol),            \
+    X(comma_symbol),               X(comp_symbol),                \
+    X(compiler_symbol),            X(cond_symbol),                \
+    X(cons_symbol),                X(current_file),               \
+    X(current_function),           X(current_module),             \
+    X(current_package),            X(debug_io),                   \
+    X(declare_symbol),             X(double_float),               \
+    X(echo_symbol),                X(emsg_star),                  \
+    X(eof_symbol),                 X(eq_symbol),                  \
+    X(eql_symbol),                 X(equal_symbol),               \
+    X(equalp_symbol),              X(err_table),                  \
+    X(error_output),               X(eval_symbol),                \
+    X(evalhook),                   X(exit_tag),                   \
+    X(exit_value),                 X(expand_def_symbol),          \
+    X(expr_symbol),                X(external_symbol),            \
+    X(fasl_stream),                X(fastget_names),              \
+    X(features_symbol),            X(fexpr_symbol),               \
+    X(format_symbol),              X(funarg),                     \
+    X(funcall_symbol),             X(function_symbol),            \
+    X(gchook),                     X(gcknt_symbol),               \
+    X(gensym_base),                X(get_counts),                 \
+    X(go_symbol),                  X(h_table),                    \
+    X(help_index),                 X(infinity_symbol),            \
+    X(inherited_symbol),           X(initial_element),            \
+    X(input_libraries),            X(internal_symbol),            \
+    X(karaWork),                   X(key_key),                    \
+    X(keyword_package),            X(lambda),                     \
+    X(large_modulus),              X(lex_words),                  \
+    X(lisp_debug_io),              X(lisp_error_output),          \
+    X(lisp_package),               X(lisp_query_io),              \
+    X(lisp_standard_input),        X(lisp_standard_output),       \
+    X(lisp_terminal_io),           X(lisp_trace_output),          \
+    X(lisp_true),                  X(lisp_work_stream),           \
+    X(list_symbol),                X(liststar_symbol),            \
+    X(load_selected_source_symbol),X(load_source_symbol),         \
+    X(long_float),                 X(lose_symbol),                \
+    X(lower_symbol),               X(macro_symbol),               \
+    X(macroexpand_hook),           X(minusinfinity_symbol),       \
+    X(multiplication_buffer),      X(mv_call_symbol),             \
+    X(named_character),            X(nicknames_symbol),           \
+    X(not_symbol),                 X(opt_key),                    \
+    X(or_symbol),                  X(output_library),             \
+    X(package_symbol),             X(pathname_symbol),            \
+    X(prinl_symbol),               X(print_array_sym),            \
+    X(print_hash_symbol),          X(procmem),                    \
+    X(procstack),                  X(progn_symbol),               \
+    X(prompt_thing),               X(query_io),                   \
+    X(quote_symbol),               X(raise_symbol),               \
+    X(read_base),                  X(read_float_format),          \
+    X(reader_workspace),           X(redef_msg),                  \
+    X(rehash_vec1),                X(rehash_vec2),                \
+    X(s_prinl2_symbol),            X(savedef_symbol),             \
+    X(savedefs_symbol),            X(short_float),                \
+    X(single_float),               X(special_symbol),             \
+    X(standard_input),             X(standard_output),            \
+    X(starloopprint_symbol),       X(startfn),                    \
+    X(startup_symbol),             X(string_char_sym),            \
+    X(supervisor),                 X(sys_hash_table),             \
+    X(terminal_io),                X(trace_count),                \
+    X(trace_output),               X(tracedfn),                   \
+    X(traceprint_symbol),          X(trap_time),                  \
+    X(unset_var),                  X(use_symbol),                 \
+    X(used_space),                 X(user_base_0),                \
+    X(user_base_1),                X(user_base_2),                \
+    X(user_base_3),                X(user_base_4),                \
+    X(user_base_5),                X(user_base_6),                \
+    X(user_base_7),                X(user_base_8),                \
+    X(user_base_9),                X(v_table),                    \
+    X(work_symbol),                                               \
     X(workbase[ 0]), X(workbase[ 1]), X(workbase[ 2]), X(workbase[ 3]), X(workbase[ 4]), \
     X(workbase[ 5]), X(workbase[ 6]), X(workbase[ 7]), X(workbase[ 8]), X(workbase[ 9]), \
     X(workbase[10]), X(workbase[11]), X(workbase[12]), X(workbase[13]), X(workbase[14]), \
@@ -1192,6 +1224,9 @@ extern setup_type const om_parse_setup[];
     X(workbase[40]), X(workbase[41]), X(workbase[42]), X(workbase[43]), X(workbase[44]), \
     X(workbase[45]), X(workbase[46]), X(workbase[47]), X(workbase[48]), X(workbase[49]), \
     X(workbase[50])
+
+/// Most of these will already be defined I expect. If there are type clashes
+// that will let me prune here!
 
 
 // If using a C++ compiler that does not support inline variables (ie
