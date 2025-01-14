@@ -202,11 +202,11 @@ typedef LispObject LispFn(LispObject lits, int nargs, ...);
 #define isEQUALHASH(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQUALHASH))
 #define isEQUALHASHX(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQUALHASHX))
 
-// The Lisp heap will have fixed size. Here I make it 256 Mbytes on a
-// 32-bit machine and 612M on a 64-bit one.
+// The Lisp heap will have fixed size. Here I make it 1024 Mbytes on a
+// 32-bit machine and 2048M on a 64-bit one.
 
 #ifndef MEM
-#define MEM (256*(sizeof(void *)/4))
+#define MEM (1024*(sizeof(void *)/4))
 #endif // MEM
 
 #define BITMAPSIZE ((uintptr_t)MEM*1024*(1024/128))
@@ -382,12 +382,16 @@ static INLINE LispObject acons(LispObject a, LispObject b, LispObject c)
     return c;
 }
 
+int trap_floating_overflow = 0;
+
 static INLINE LispObject boxfloat(double a)
 {   LispObject r;
     if (fringe1 +sizeof(double) >= fpfringe1) reclaim();
     fpfringe1 -= sizeof(double);
     r = fpfringe1 + tagFLOAT;
     qfloat(r) = a;
+    if (trap_floating_overflow && !isfinite(a))
+       return error1("floating point exception", r);
     return r;
 }
 
@@ -2438,12 +2442,25 @@ LispObject Lceiling(LispObject lits, int nargs, ...)
             error1("arg for ceiling", x));
 }
 
+LispObject Ltrap_floating_overflow(LispObject lits, int nargs, ...)
+{   ARG1("trap-floating-overflow", fg);
+    int old = trap_floating_overflow;
+    trap_floating_overflow = (fg != nil);
+    return (old ? lisptrue : nil);
+}
+
 LispObject Lfloat(LispObject lits, int nargs, ...)
 {   ARG1("float", x);
     return (isFLOAT(x) ? x :
             isFIXNUM(x) ? boxfloat((double)qfixnum(x)) :
             isBIGNUM(x) ? boxfloat((double)qint64(x)) :
             error1("arg for float", x));
+}
+
+LispObject Lfp_infinite(LispObject lits, int nargs, ...)
+{   ARG1("fp-infinite", x);
+    if (!isFLOAT(x)) return nil;
+    return (isinf(qfloat(x)) ? lisptrue : nil);
 }
 
 #define floatval(x)                   \
@@ -3663,6 +3680,8 @@ struct defined_functions fnsetup[] =
     {"error",      0,            (void *)Lerror},
     {"errorset",   0,            (void *)Lerrorset},
     {"enable-errorset", 0,       (void *)Lenable_errorset},
+    {"trap-floating-overflow",0, (void *)Ltrap_floating_overflow},
+    {"fp-infinite",0,            (void *)Lfp_infinite},
     {"eval",       0,            (void *)Leval},
     {"exp",        0,            (void *)Lexp},
     {"explode",    0,            (void *)Lexplode},

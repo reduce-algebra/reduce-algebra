@@ -26,6 +26,19 @@ CC=gcc
 endif
 endif
 
+# I am making vsl use "libedit" for input local editing, which gives it
+# prompts and input history etc. But if you pass a non-empty NOLIBEDIT
+# option to make I will avoid this for the benefit of playforms where
+# editline seems not to be available.
+
+ifeq ($(NOLIBEDIT),)
+CFLAGS=
+LIBS=-ledit -lm
+else
+CFLAGS=-DNOLIBEDIT=1
+LIBS=-lm
+endif
+
 OPT=-O3
 
 all:	vsl vsl.img vslmanual.pdf
@@ -34,24 +47,22 @@ all:	vsl vsl.img vslmanual.pdf
 # characters as if they were letters so that symbols can have names such as
 # *x*, &a, abc-def, 1+ and {q} without needing escape characters.
 
-# I am making vsl use "libedit" for input local editing, which gives it
-# input history etc. unless you predefined NOLIBEDIT.
 
 psl:	vslpsl vsl.img
 
 .PHONY:	vslpsl
 
 vsl:	vsl.c
-	$(CC) $(OPT) $(NOLIBEDIT) -Wall vsl.c -lm -ledit -o vsl
+	$(CC) $(OPT) $(CFLAGS) -Wall vsl.c $(LIBS) -o vsl
 
 vsl1:	vsl1.c
-	$(CC) $(OPT) $(NOLIBEDIT) -Wall vsl1.c -lm -ledit -lz -o vsl1
+	$(CC) $(OPT) $(CFLAGS) -Wall vsl1.c $(LIBS) -lz -o vsl1
 
 vsl1d:	vsl1.c
-	$(CC) -O0 -g $(NOLIBEDIT) -Wall vsl1.c -lm -ledit -lz -o vsl1d
+	$(CC) -O0 -g $(CFLAGS) -Wall vsl1.c $(LIBS) -lz -o vsl1d
 
 vslpsl:	vsl.c
-	$(CC) -DPSL=1 $(OPT) $(NOLIBEDIT) -Wall vsl.c -lm -ledit -o vsl
+	$(CC) -DPSL=1 $(OPT) $(CFLAGS) -Wall vsl.c $(LIBS) -o vsl
 
 vsl.img:	vsl library.lsp vsl.lsp extras.lsp
 	./vsl -z library.lsp
