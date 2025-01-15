@@ -69,13 +69,14 @@
 
 #ifdef GC_CHECK
 
-std::ofstream dest;
+#if true // New idea...
 
-static constexpr size_t list_bases_size =
-    sizeof(list_bases)/sizeof(LispObject);
+#include <unordered_set>
+#include <vector>
 
-static LispObject save_bases[list_bases_size];
-static uint64_t checksum_bases[list_bases_size];
+std::unordered_set<LispObject> visited;
+std::vector<LispObject> objects;
+std::vector<uint64_t> checksums;
 
 // Here I use a plausible 64-bit multiplier but what happens there only
 // migrates information upwards within the row of 64 bits, so I xor back
@@ -89,6 +90,69 @@ uint64_t CC(uint64_t a, uint64_t b)
     if (a==0) return 1;
     else return a;
 }
+
+// This function is just used for checking to depth 4.
+
+static uint64_t local_checksum(LispObject a, size_t depth)
+{   if (depth==0) return 100+(a & TAG_BITS);
+    if (is_cons(a)) return CC (local_checksum(car(a), depth-1),
+                              local_checksum(cdr(a), depth-1));
+    if (is_symbol(a))
+    {   uint64_t r = 1234567;
+        r = CC(local_checksum(qvalue(a), depth-1), r);
+        r = CC(local_checksum(qenv(a), depth-1), r);
+        r = CC(local_checksum(qplist(a), depth-1), r);
+        r = CC(local_checksum(qfastgets(a), depth-1), r);
+        r = CC(local_checksum(qpname(a), depth-1), r);
+        return r;
+    }
+    if (is_simple_string(a))
+    {   size_t len = length_of_byteheader(vechdr(a)) - sizeof(LispObject);
+        uint64_t h = 1;
+        for (size_t i=0; i<len; i++) h = CC(h, basic_ucelt(a, i)  & 0xff);
+        return h;
+    }
+    if (a == lisp_package) return 11111111;
+    if (is_vector(a) && !vector_header_of_binary(vechdr(a)))
+    {   size_t len = length_of_header(vechdr(a))/sizeof(LispObject)-1;
+        if (is_mixed_header(vechdr(a))) len = 3;
+        uint64_t h = 1;
+        for (size_t i=0; i<len; i++)
+            h = CC(h, local_checksum(basic_elt(a, i), depth-1));
+        return h;
+    }
+    if (is_fixnum(a)) return a;
+// I have not handled BIGNUMS or rational/complex numbers or floats here yet.
+    return 101+(a&TAG_BITS);
+}         
+
+void findChecksum(LispObject p)
+{   if (visited.count(p) != 0) return;
+    visited.insert(p);
+    objects.push_back(p);
+    checksums.push_back(local_checksum(p, 4));
+}
+
+void scanEverything()
+{
+    visited.clear();
+    objects.clear();
+    checksums.clear();
+    for (LispObject* v:list_bases)
+        findChecksum(*v);
+    for (LispObject* s=reinterpret_cast<LispObject*>(stackBase); s<=stack; s++)
+        findChecksum(*s);
+}
+
+#endif // true
+
+std::ofstream dest;
+
+static constexpr size_t list_bases_size =
+    sizeof(list_bases)/sizeof(LispObject);
+
+static LispObject save_bases[list_bases_size];
+static uint64_t checksum_bases[list_bases_size];
 
 // Using a depth limit here is simpler than trying to detect loops but
 // means that data nested deeply within lists may not be checked.
@@ -112,7 +176,7 @@ static uint64_t gc_checksub(LispObject a, size_t depth);
 // and how should those values be related? Hmmm that almost sounds like
 // an interesting question!
 
-static uint64_t gc_checksum(LispObject a, size_t depth=40)
+static uint64_t gc_checksum(LispObject a, size_t depth=10)
 {
 // I will treat all small positive integers as if they were the same! This
 // is because crack sets up a gc hook that increments a variable my_gc_counter
@@ -183,6 +247,8 @@ static uint64_t*   sigOfSymbols = nullptr;
 static size_t nStack = 0;
 static uint64_t*   sigOfStack = nullptr;
 
+#define WIN32 1
+
 #ifndef WIN32
 // Native Windows does not support fork() so this part of the checking
 // infrastructure can not be used there.
@@ -238,6 +304,8 @@ void take_snapshot()
                 d = d<<8 | (p[7-i] & 0xff);
             write(gc_pipes_from[write_end], &d, sizeof(d));
         }
+        close(gc_pipes_from[write_end]);
+        close(gc_pipes_to[read_end]);
 // When there is no more to do I use quick_exit because by doing that I
 // do not need to worry about tidying up anything, and I really would hate
 // it if some destructor in the child process performed file operations in
@@ -283,6 +351,12 @@ uint64_t oldMem(void* addr)
     if (read(gc_pipes_from[read_end], &data, sizeof(data)) != sizeof(data))
         return 0;
     return data;
+}
+
+#else
+
+uint64_t oldMem(void* addr)
+{   return 0;
 }
 
 #endif // WIN32
@@ -342,7 +416,7 @@ LispObject znth(LispObject u, size_t n)
     else return znth(cdr(u), n-1); 
 }
 
-void showparts(LispObject u, size_t depth=25)
+void showparts(LispObject u, size_t depth=10)
 {   dest << depth << " " << "u = " << std::hex << std::setw(16) << u << std::dec << std::endl;
     simple_print_extras =  false;
     dest << depth << " " << "inspecting: " << std::hex << std::setw(16) << gc_checksum(u, depth) << std::dec << " ";
@@ -473,6 +547,8 @@ void both()
 
 }
 
+#include <sys/wait.h>
+
 void gc_start()
 {   dest.open("gc_start.log");
     dest << "\n@@@ Start of garbage collection\n";
@@ -555,11 +631,12 @@ void gc_end(bool final)
             dest << "old: " << (char *)&buffer << std::endl;
 #ifndef WIN32
             void* addr = nullptr;
-            if (gc_pipes_to[write_end] |= 0 &&
+            if (gc_pipes_to[write_end] != 0 &&
                 gc_pipes_from[read_end] != 0)
                 write(gc_pipes_to[write_end], &addr, sizeof(addr));
             close(gc_pipes_from[read_end]);
             close(gc_pipes_to[write_end]);
+            wait(nullptr);
 #endif // WIN32
             std::quick_exit(999);
         }
@@ -650,13 +727,14 @@ void gc_end(bool final)
     {   dest << "\n@@@ End of garbage collection\n";
 #ifndef WIN32
         void* addr = nullptr;
-        if (gc_pipes_to[write_end] |= 0 &&
+        if (gc_pipes_to[write_end] != 0 &&
             gc_pipes_from[read_end] != 0)
             write(gc_pipes_to[write_end], &addr, sizeof(addr));
         close(gc_pipes_from[read_end]);
         close(gc_pipes_to[write_end]);
         gc_pipes_from[0] = gc_pipes_from[1] =
             gc_pipes_to[0] = gc_pipes_to[1] = 0;
+        wait(nullptr);
 #endif // WIN32
     }
     else dest << "\n@@@ Just before GC hook\n";

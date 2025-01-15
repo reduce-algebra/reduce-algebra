@@ -1213,8 +1213,6 @@ void Ilist()
     if (is_library(ol)) list_one_library(ol, true);
 }
 
-static LispObject mods;
-
 static void collect_modules(string Cname, string Cleafname,
                             int why, long int size)
 {   int k = 0;
@@ -1229,7 +1227,7 @@ static void collect_modules(string Cname, string Cleafname,
     if (std::strcmp(name, ".fasl") != 0) return;
     v = iintern(boffo, k, lisp_package, 0);
     if (exceptionPending()) return;
-    mods = cons(v, mods);
+    *stack = cons(v, *stack);  // Keyed to the RealSave mods(nil).
 }
 
 LispObject Llibrary_members(LispObject env, LispObject oo)
@@ -1239,10 +1237,11 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
     LispObject v, r = nil;
     char *p;
     if (d->full_filename != nullptr)
-    {   mods = nil;
+    {   RealSave mods(nil);
         string name = d->full_filename;
         scan_directory(d->full_filename, collect_modules);
-        return mods;
+        mods.restore(r);
+        return r;
     }
     for (j=0; j<get_dirused(*d); j++)
     {   int n = 0;

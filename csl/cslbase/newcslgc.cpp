@@ -32,7 +32,48 @@
 
 // $Id$
 
-#define DEFINE_LIST_BASES 1
+// Things I need to worry about...
+// (.) All global variables that can hold references to list structures
+//     (at the time of  a GC) must be mentioned in list_bases[] as defined
+//     in externs.h. I do not have a mechanical way of checking that that
+//     is the case which is a worry. Well the following crudely written
+//     command executed in a directory where there is an executable for
+//     csl lists all data symbols of length 8. On a Linux system in
+//     early 2025 there were 452 symbols listed and I have gone through
+//     that list removing ones that I am certain are not list-bases -
+//     for instance "stdout" and a number that I know hold counts rather
+//     then references. That leaves a list that should be a superset of
+//     my needs. OF course the worry then is that some may be symbols
+//     that only arise for Linux, but such cases get filtered out when I
+//     try building on other platforms! All the ones in package "FX" are
+//     from the FOX toolkit and will not hold Lisp pointers.
+// nm -C -S --size-sort --defined-only csl | grep 0000000000000008 |
+//    grep -v " r " | grep -v " t " | grep -v " T " | grep -v " V " |
+//    grep -v " u " | grep -v " R " > names
+//     So I temporarily insert "extern LispObject" declarations for all
+//     names identified that way then filter out ones where compilation
+//     reveals that some other type was involved.
+//
+// (.) I have at least workbase[] as an array of static references which is
+//     not picked up be the above.
+//
+// (.) If I have a statically allocated (class) object then any fields
+//     within it would not show up in the scheme charted above. Objects
+//     allocated on the stack are OK since I will scan all of that anyway.
+//     But this means I need to be careful e.g. with arithlib.hpp. That has
+//     some persistent state (eg the corrent modulus for mod-P arithmetic)
+//     so it has to be coded for safety there.
+//
+// (.) Data within threads is not protected at all. At present the threads
+//     used are for Karatsuba multiplication and so garbage collection must
+//     probably not be triggered while that is active. Well happily it
+//     will not be!
+//
+// (.) Aggregate classes such as std::vector will keep much of their
+//     data in places I do not know about, so std::vector<LispObject> and
+//     the like must be viewed as unacceptable.
+
+
 
 #include "headers.h"
 #ifdef EXTREME_DEBUG
@@ -513,7 +554,7 @@ void findHeadersOfPinnedItems()
 
 #ifdef EXTREME_DEBUG
 std::unordered_set<LispObject*> evacuated;
-#endif // ETREME_DEBUG
+#endif // EXTREME_DEBUG
 
 void evacuate(LispObject &x)
 {
@@ -1394,6 +1435,7 @@ void inner_garbage_collect()
 // recycled in the normal manner. 
     for (size_t i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = nil;
+    multiplication_buffer = nil;   // Treat this as a weak pointer.
     WithinGarbageCollector noted;
     if (gcNumber == gcError) aerror("garbage collector limit reached");
     if (gcNumber == gcStop) give_up("gcStop triggered");
@@ -1870,4 +1912,4 @@ void dumpToFile(const char* filename)
 
 #endif // DEBUG
 
-// end of file newcslgc.cpp
+

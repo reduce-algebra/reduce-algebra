@@ -47,6 +47,8 @@ include './include/begin-body.php';
 </ul>
 <p>For advanced users:</p>
 <ul>
+    <li><a href="/extra-docs"><strong>Additional Documentation</strong></a> &ndash;
+        for packages not covered in the REDUCE manual;</li>
     <li>
         <a href="/lisp-docs/insidereduce.pdf"><strong>Inside
                 Reduce</strong></a> &ndash; how to build REDUCE, the

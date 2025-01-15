@@ -38,8 +38,6 @@
 
 // $Id$
 
-#define DEFINE_LIST_BASES 1
-
 #include "headers.h"
 #include "version.h"
 

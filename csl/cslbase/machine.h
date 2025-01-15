@@ -297,6 +297,8 @@ using std::atomic;    // If I am going to be multi-threaded then very many
 #  define INADDR_NONE       0xffffffff
 #endif // INADDR_NONE
 
+#else
+#include <unistd.h>
 #endif //WIN32
 
 // I now include eg <cstdio> rather than <stdio.h>. The consequence is that

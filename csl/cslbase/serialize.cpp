@@ -470,7 +470,7 @@ static bool delayed_has_arg = false;
 static char delayed_message[80];
 
 static inthash repeat_hash;
-LispObject *repeat_heap = nullptr;
+LispObject* repeat_heap = nullptr;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
 class TidyRepeatHeap
@@ -3340,6 +3340,13 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
     trace_printf("\n");
     errexit();
 #endif // DEBUG_FASL
+#ifndef ARITHLIB
+    garbage_collection_permitted = false;
+    big_divisor = make_four_word_bignum(0, 0, 0, 0);
+    big_dividend = make_four_word_bignum(0, 0, 0, 0);
+    garbage_collection_permitted = true;
+    multiplication_buffer = nil;
+#endif // !ARITHLIB
     if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
@@ -3374,6 +3381,13 @@ LispObject Lserialize(LispObject env, LispObject a)
     {   set_up_function_tables();
         setup_codepointers = true;
     }
+#ifndef ARITHLIB
+    garbage_collection_permitted = false;
+    big_divisor = make_four_word_bignum(0, 0, 0, 0);
+    big_dividend = make_four_word_bignum(0, 0, 0, 0);
+    garbage_collection_permitted = true;
+    multiplication_buffer = nil;
+#endif // !ARITHLIB
     descend_symbols = false;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     {   map_releaser RAII;
@@ -3394,6 +3408,13 @@ LispObject Lserialize1(LispObject env, LispObject a)
     {   set_up_function_tables();
         setup_codepointers = true;
     }
+#ifndef ARITHLIB
+    garbage_collection_permitted = false;
+    big_divisor = make_four_word_bignum(0, 0, 0, 0);
+    big_dividend = make_four_word_bignum(0, 0, 0, 0);
+    garbage_collection_permitted = true;
+    multiplication_buffer = nil;
+#endif // !ARITHLIB
     descend_symbols = true;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     {   map_releaser RAII;
@@ -3800,6 +3821,7 @@ void write_everything()
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     garbage_collection_permitted = true;
+    multiplication_buffer = nil;
 #endif // !ARITHLIB
     if (!setup_codepointers)
     {   set_up_function_tables();
@@ -3825,10 +3847,11 @@ void write_everything()
         std::strcpy(trigger, "package nil scan");
         scan_data(qpackage(nil));
 // Next the major list-bases.
+        int nn = 0;
         for (LispObject *p:list_bases)
         {   std::snprintf(trigger, sizeof(trigger),
-                "list base %" PRIx64 " scan",
-                static_cast<uint64_t>(*p));
+                "list base %s: %" PRIx64 " scan",
+                list_names[nn++], static_cast<uint64_t>(*p));
             scan_data(*p);
         }
     }
@@ -3867,9 +3890,11 @@ void write_everything()
     write_data(qfastgets(nil));
     std::strcpy(trigger, "package of nil write");
     write_data(qpackage(nil));
+    int nn = 0;
     for (LispObject *p:list_bases)
     {   std::snprintf(trigger, sizeof(trigger),
-            "list base %p write", reinterpret_cast<void *>(*p));
+            "list base %s: %p write", list_names[nn++],
+            reinterpret_cast<void *>(*p));
         write_data(*p);
     }
 // Tidy up at the end. I do not logically need an explicit end of data marker
@@ -4199,9 +4224,11 @@ bool push_all_symbols(symbol_processor_predicate *pp)
     if (push_symbols(pp, qfastgets(nil))) return true;
     std::strcpy(trigger, "package nil push");
     if (push_symbols(pp, qpackage(nil))) return true;
+    int nn = 0;
     for (LispObject *p:list_bases)
     {   std::snprintf(trigger, sizeof(trigger),
-            "list base %p push", reinterpret_cast<void *>(*p));
+            "list base %s: %p push", list_names[nn++],
+            reinterpret_cast<void *>(*p));
         if (push_symbols(pp, *p)) return true;
     }
     return false;

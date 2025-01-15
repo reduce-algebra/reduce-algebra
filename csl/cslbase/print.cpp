@@ -5666,14 +5666,16 @@ void simple_prin1(LispObject x)
         return;
     }
     if (is_forward(x))
-    {   std::sprintf(buffer, "Forward_%" PRIx64, static_cast<uint64_t>(x));
+    {   std::snprintf(buffer, sizeof(buffer),
+                      "Forward_%" PRIx64, static_cast<uint64_t>(x));
         stringPut(buffer);
         return;
     }
     if (is_pointer_type(x))
     {   LispObject h = *reinterpret_cast<LispObject*>(x & ~TAG_BITS);
         if (is_forward(h))
-        {   std::sprintf(buffer, "%s => ", getPageType(x));
+        {   std::snprintf(buffer, sizeof(buffer),
+                          "%s => ", getPageType(x));
             stringPut(buffer);
             x = (h&~TAG_BITS) + (x&TAG_BITS);
         }
@@ -5718,12 +5720,14 @@ void simple_prin1(LispObject x)
         else if (vector_header_of_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            std::sprintf(buffer, "<Header is %" PRIx64 ">",
-                         static_cast<uint64_t>(vechdr(x)));
+            std::snprintf(buffer, sizeof(buffer),
+                          "<Header is %" PRIx64 ">",
+                          static_cast<uint64_t>(vechdr(x)));
             stringPut(buffer);
             stringPut("#8[");
             for (size_t i=0; i<len; i++)
-            {   std::sprintf(buffer, "%.2x", celt(x, i) & 0xff);
+            {   std::snprintf(buffer, sizeof(buffer),
+                              "%.2x", celt(x, i) & 0xff);
                 stringPut(buffer);
             }
             charPut(']');
@@ -5803,14 +5807,16 @@ void simple_old_prin1(LispObject x)
         return;
     }
     if (is_forward(x))
-    {   std::sprintf(buffer, "Forward_%" PRIx64, static_cast<uint64_t>(x));
+    {   std::snprintf(buffer, sizeof(buffer),
+                      "Forward_%" PRIx64, static_cast<uint64_t>(x));
         stringPut(buffer);
         return;
     }
     if (is_pointer_type(x))
     {   LispObject h = oldMem(reinterpret_cast<LispObject*>(x & ~TAG_BITS));
         if (is_forward(h))
-        {   std::sprintf(buffer, "%s => ", getPageType(x));
+        {   std::snprintf(buffer, sizeof(buffer),
+                          "%s => ", getPageType(x));
             stringPut(buffer);
             x = (h&~TAG_BITS) + (x&TAG_BITS);
         }
@@ -5855,12 +5861,14 @@ void simple_old_prin1(LispObject x)
         else if (vector_header_of_binary(old_vechdr(x)) &&
                  vector_i8(old_vechdr(x)))
         {   len = length_of_byteheader(old_vechdr(x)) - CELL;
-            std::sprintf(buffer, "<Header is %" PRIx64 ">",
-                         static_cast<uint64_t>(old_vechdr(x)));
+            std::snprintf(buffer, sizeof(buffer),
+                          "<Header is %" PRIx64 ">",
+                          static_cast<uint64_t>(old_vechdr(x)));
             stringPut(buffer);
             stringPut("#8[");
             for (size_t i=0; i<len; i++)
-            {   std::sprintf(buffer, "%.2x", old_celt(x, i) & 0xff);
+            {   std::snprintf(buffer, sizeof(buffer),
+                              "%.2x", old_celt(x, i) & 0xff);
                 stringPut(buffer);
             }
             charPut(']');

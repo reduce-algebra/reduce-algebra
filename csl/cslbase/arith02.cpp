@@ -962,8 +962,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // but it should not cause clutter when not used.
             if (multiplication_buffer == nil ||
                 (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
-            {
-                multiplication_buffer =
+            {   multiplication_buffer =
                     get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
                 errexit();
             }
