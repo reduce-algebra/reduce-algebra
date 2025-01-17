@@ -15,7 +15,7 @@
 #                 do not run test when the .rlg file is missing
 #     --no-timeout
 #                 do not limit the time for test runs
-#
+#     --rr        [private option for system debugging]
 #
 #
 #  VERSIONS TO TEST:
@@ -114,6 +114,7 @@ skip_missing_rlg="no"
 no_timeout="no"
 slow="no"
 fast="no"
+rr="no"
 
 # I allow any number of the keyword arguments in any order. I will pick
 # off and process arguments for so long as any are available. This will
@@ -153,6 +154,10 @@ do
   --noregressions)
 # This is not a useful option here so it is ignored, but doing so
 # simplifies things for testall.sh. 
+    shift
+    ;;
+  --rr)
+    rr="yes"
     shift
     ;;
   *)
@@ -371,9 +376,25 @@ csltest() {
   export PACKAGE="$p"
 
   fullcommand="$command $CSLFLAGS"
+# "rr" is the "record and replay" system for supporting debugging and is
+# often available on Linux but subject to the precise CPU that you have -
+# since it relies on low level facilities such as performance counters.
+# To allow it to work you typically have to reset some security options to
+# be less paranoid. But when it has recorded a trace of a running program
+# (typically a run that crashes) one can use gdb to replay that and run
+# the execution either forwards or backwards to home in on the exact source
+# of trouble.
+  if test "$rr" = "yes"
+  then
+    rm -rf rr-files
+    RR="rr record -o rr-files"
+    printf "Will run under rr putting logs in rr-files\n"
+  else
+    RR=""
+  fi
 
   mkdir -p $logdir
-  ( limittime $fullcommand $extras -v -w $otherflags ) > \
+  ( limittime $RR $fullcommand $extras -v -w $otherflags ) > \
     $logdir/$p.rlg.tmp <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
