@@ -88,7 +88,9 @@ size_t xppc;
 //
 // The byte-stream interpreter here uses the lisp stack and two
 // special registers, called A, and B which act as a mini stack.
-//
+// Note that it does NOT preserve the stack depth quite the way you
+// might have liked because it gets arguments passed on the stack.
+// At least maybe!
 
 #ifndef NO_BYTECOUNT
 //
@@ -1950,6 +1952,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call1;
                 }
                 {   stack_restorer saver;
+                    STACK_SANITY;
                     *++stack = A_reg; // the argument
                     RECORD_CALL(list2(basic_elt(litvec, 0), A_reg));
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)
@@ -2000,6 +2003,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     goto call2;
                 }
                 {   stack_restorer saver;
+                    STACK_SANITY;
                     *++stack = B_reg; *++stack = A_reg;
                     RECORD_CALL(list3(basic_elt(litvec, 0), B_reg, A_reg));
                     if (reinterpret_cast<uintptr_t>(stack) >= stackLimit)

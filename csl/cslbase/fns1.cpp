@@ -594,6 +594,7 @@ LispObject Latom(LispObject env, LispObject a)
 
 LispObject Lconsp(LispObject env, LispObject a)
 {   SingleValued fn;
+    STACK_SANITY;
     return Lispify_predicate(consp(a));
 }
 
@@ -891,12 +892,14 @@ static LispObject Lconvert_to_struct(LispObject env, LispObject a)
 
 LispObject Llist_2(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
+    STACK_SANITY;
     a = list2(a, b);
     return a;
 }
 
 LispObject Lmkquote(LispObject env, LispObject a)
 {   SingleValued fn;
+    STACK_SANITY;
     a = list2(quote_symbol, a);
     return a;
 }
@@ -904,30 +907,35 @@ LispObject Lmkquote(LispObject env, LispObject a)
 LispObject Llist_2star(LispObject env, LispObject a, LispObject b,
                        LispObject c)
 {   SingleValued fn;
+    STACK_SANITY;
     return list2star(a,b,c);
 }
 
 LispObject Llist_2starrev(LispObject env, LispObject a, LispObject b,
                           LispObject c)
 {   SingleValued fn;
+    STACK_SANITY;
     return list2starrev(a,b,c);
 }
 
 LispObject Lacons(LispObject env, LispObject a, LispObject b,
                   LispObject c)
 {   SingleValued fn;
+    STACK_SANITY;
     return acons(a, b, c);
 }
 
 LispObject Llist_3(LispObject env, LispObject a, LispObject b,
                    LispObject c)
 {   SingleValued fn;
+    STACK_SANITY;
     return list3(a, b, c);
 }
 
 LispObject Llist_3rev(LispObject env, LispObject a, LispObject b,
                       LispObject c)
 {   SingleValued fn;
+    STACK_SANITY;
     return list3rev(a, b, c);
 }
 
@@ -937,6 +945,7 @@ LispObject Llist_3star(LispObject, LispObject a, LispObject b,
     if (cdr(a4up) != nil)
         return aerror("too many arrguments for list3*");
     LispObject d = car(a4up);
+    STACK_SANITY;
     return list3star(a,b,c,d);
 }
 
@@ -946,6 +955,7 @@ LispObject Llist_4(LispObject env, LispObject a, LispObject b,
     if (cdr(a4up) != nil)
         return aerror("too many arguments for list4");
     LispObject d = car(a4up);
+    STACK_SANITY;
     return list4(a,b,c,d);
 }
 
@@ -953,6 +963,7 @@ LispObject Llist_4(LispObject env, LispObject a, LispObject b,
 LispObject Llist_4up(LispObject env, LispObject a, LispObject b,
                      LispObject c, LispObject a4up)
 {   SingleValued fn;
+    STACK_SANITY;
     return list3star(a, b, c, a4up);
 }
 
@@ -974,12 +985,14 @@ LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
         a4up = r;
         r = w;
     }
+    STACK_SANITY;
     return list3star(a, b, c, a4up);
 }
 
 LispObject Lpair(LispObject env, LispObject a, LispObject b)
 {   SingleValued fn;
     LispObject r = nil;
+    STACK_SANITY;
     while (consp(a) && consp(b))
     {   r = acons(car(a), car(b), r);
         errexit();
@@ -1605,10 +1618,9 @@ LispObject Lcodep(LispObject env, LispObject a)
 }
 
 LispObject get_basic_vector_init(size_t n, LispObject k)
-{   LispObject p;
-    {   p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
-        errexit();
-    }
+{   STACK_SANITY;
+    LispObject p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
+    errexit();
     n = n/CELL - 1;
     if (!SIXTY_FOUR_BIT && n%2==0) elt(p, n) = TAG_FIXNUM;
     for (size_t i=0; i<n; i++)
@@ -1676,6 +1688,7 @@ static LispObject gvector(int tag, int type, size_t size)
 
 LispObject get_vector(int tag, int type, size_t n)
 {   LispObject v;
+    STACK_SANITY;
 // A major ugliness here is that I need to support huge vectors.
 // To achieve this I will handle big cases using a vector of vectors, with
 // the higher level vector tagged as a INDEXVEC and the lower level vectors
@@ -1750,6 +1763,7 @@ LispObject reduce_vector_size(LispObject v, size_t len)
 
 LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
+    STACK_SANITY;
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     errexit();
     n = n/CELL - 1;
