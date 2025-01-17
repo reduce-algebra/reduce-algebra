@@ -79,8 +79,8 @@
 #define WITH_GUI 1
 #endif // !WITHOUT_GUI
 
-#include "machine.h"
 #include "log.h"
+#include "machine.h"
 
 // The next two are for platform-specific optimisations.
 #include "threadloc.h"
