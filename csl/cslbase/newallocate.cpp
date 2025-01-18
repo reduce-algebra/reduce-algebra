@@ -402,7 +402,7 @@ void initPage(PageType type, Page* p, bool empty)
 // of the specified type set up as current, and it is called when the
 // existing current page is full up.
 // I use pinned pages first, then free ones and clogged only in extremis.
-// G garbage collector is invoked when I can not instantly find a page
+// Garbage collector is invoked when I can not instantly find a page
 // here - once I am within the GC I will use every bit of memory I
 // can and not try a recusive call to the GC!
 
@@ -572,6 +572,7 @@ void grabFreshPage(PageType type)
     }
 // Here I need to garbage collect.
     if (withinGarbageCollector) fatal_error(err_no_store_in_gc);
+    STACK_SANITY;
     garbage_collect(type==consPageType ? "list space" : "vector space");
 // After garbage collection there had BETTER be some available memory left!
 // At the end of garbage collection everything should be ready to do the

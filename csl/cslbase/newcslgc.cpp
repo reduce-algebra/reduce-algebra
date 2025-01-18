@@ -1728,9 +1728,16 @@ static void report_at_end(uint64_t t0)
             fn, fn1, z);
     }
 #ifndef GC_CHECK
+// If the system was defined with GC_CHECK enables it will try to compare
+// the state of the heap at the end of GC against that at the start and
+// it will object if it sees ANY changes. In particular these benign and
+// intended changes would confuse it... so in that case I do not
+// record this information.
+//
 // This reports in Kbytes, and does not overflow until over 100 Gbytes
     qvalue(used_space) = fixnum_of_int(static_cast<int>(1024.0*fn));
     qvalue(avail_space) = fixnum_of_int(static_cast<int>(1024.0*fn1));
+    qvalue(gccount_symbol) = fixnum_of_int(gcNumber);
 #endif
     uint64_t t1 = read_clock();
     gc_time += (t1 - t0);
@@ -1911,5 +1918,4 @@ void dumpToFile(const char* filename)
 }
 
 #endif // DEBUG
-
 

@@ -374,7 +374,7 @@ extern LispObject h_table, v_table;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn, karaWork;
 extern LispObject gensym_base, string_char_sym, boffo;
-extern LispObject err_table, progn_symbol, gcknt_symbol;
+extern LispObject err_table, progn_symbol, gccount_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
 extern LispObject echo_symbol, supervisor, B_reg;
 extern LispObject savedef_symbol, savedefs_symbol, lose_symbol, comp_symbol;
@@ -1163,7 +1163,7 @@ extern setup_type const om_parse_setup[];
     X(features_symbol),            X(fexpr_symbol),               \
     X(format_symbol),              X(funarg),                     \
     X(funcall_symbol),             X(function_symbol),            \
-    X(gchook),                     X(gcknt_symbol),               \
+    X(gchook),                     X(gccount_symbol),             \
     X(gensym_base),                X(get_counts),                 \
     X(go_symbol),                  X(h_table),                    \
     X(help_index),                 X(infinity_symbol),            \
@@ -1195,6 +1195,7 @@ extern setup_type const om_parse_setup[];
     X(read_base),                  X(read_float_format),          \
     X(reader_workspace),           X(redef_msg),                  \
     X(rehash_vec1),                X(rehash_vec2),                \
+    X(resources),                                                 \
     X(s_prinl2_symbol),            X(savedef_symbol),             \
     X(savedefs_symbol),            X(short_float),                \
     X(single_float),               X(special_symbol),             \

@@ -110,7 +110,7 @@ LispObject go_symbol, cond_symbol, char_0_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, karaWork, all_packages, package_symbol, internal_symbol;
-LispObject gcknt_symbol, external_symbol, inherited_symbol;
+LispObject gccount_symbol, external_symbol, inherited_symbol;
 LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
@@ -780,9 +780,9 @@ static void cold_setup()
     break_function      = make_undefined_fluid("*break-loop*");
     gchook              = make_undefined_fluid("*gc-hook*");
     resources           = make_undefined_fluid("*resources*");
-    used_space          = make_undefined_fluid("*used-space*");
-    avail_space         = make_undefined_fluid("*avail-space*");
-    gcknt_symbol        = make_variable("gcknt*", fixnum_of_int(0));
+    used_space          = make_variable("*used-space*", fixnum_of_int(0));
+    avail_space         = make_variable("*avail-space*", fixnum_of_int(0));
+    gccount_symbol      = make_variable("*gc-count*", fixnum_of_int(0));
 // Note that end-of-file is represented by an odd Unicode value (in UTF-8)
     eof_symbol          = make_undefined_symbol("\xf4\x8f\xbf\xbf");
     call_stack          = nil;

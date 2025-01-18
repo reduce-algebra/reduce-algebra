@@ -38,8 +38,8 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
-#include "machine.h"
 #include "log.h"
+#include "machine.h"
 #include "bitmaps.h"
 #include "tags.h"
 

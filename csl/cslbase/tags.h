@@ -435,7 +435,7 @@ extern char dependency_file[LONGEST_LEGAL_FILENAME];
 inline LispObject &car(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid car");
 #ifdef DEBUG
-    my_assert(((p-TAG_CONS) & 0x7) == 0);
+    my_assert(((p-TAG_CONS) & 0x7) == 0, "unaligned car");
 #endif // DEBUG
     return reinterpret_cast<Cons_Cell *>(p)->car;
 }
@@ -443,7 +443,7 @@ inline LispObject &car(LispObject p)
 inline LispObject &cdr(LispObject p)
 {   //if (!is_cons(p) || !valid_address((void *)p)) my_abort("invalid cdr");
 #ifdef DEBUG
-    my_assert(((p-TAG_CONS) & 0x7) == 0);
+    my_assert(((p-TAG_CONS) & 0x7) == 0, "unaligned cdr");
 #endif // DEBUG
     return reinterpret_cast<Cons_Cell *>(p)->cdr;
 }
@@ -694,7 +694,7 @@ INLINE_VAR constexpr uintptr_t SPID_LIBRARY   = TAG_SPID+(0x0c<<(Tw+4)); // + 0x
 inline Header &vechdr(LispObject v)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned vechdr");
 #endif // DEBUG
     return *reinterpret_cast<Header *>(v - TAG_VECTOR);
 }
@@ -1168,7 +1168,7 @@ inline LispObject& basic_elt(LispObject v, size_t n)
     my_assert(n < limit, "basic_elt index out of range");
 #endif // DEBUG
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned basic_elt");
 #endif // DEBUG
     return *reinterpret_cast<LispObject *>
            (reinterpret_cast<char *>(v) +
@@ -1234,7 +1234,7 @@ inline bool vector_f128(LispObject n)
 inline Header &numhdr(LispObject v)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_NUMBERS) & 0x7) == 0);
+    my_assert(((v-TAG_NUMBERS) & 0x7) == 0, "unaligned numhdr");
 #endif // DEBUG
     return *reinterpret_cast<Header *>(v - TAG_NUMBERS);
 }
@@ -1246,7 +1246,7 @@ inline Header old_numhdr(LispObject v)
 inline Header &flthdr(LispObject v)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0);
+    my_assert(((v-TAG_BOXFLOAT) & 0x7) == 0, "unaligned flthdr");
 #endif // DEBUG
     return *reinterpret_cast<Header *>(v - TAG_BOXFLOAT);
 }
@@ -1567,7 +1567,7 @@ inline LispObject& vselt(LispObject v, size_t n)
 inline int16_t& basic_helt(LispObject v, size_t n)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x1) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x1) == 0, "unaligned helt");
 #endif // DEBUG
     return *reinterpret_cast<int16_t *>(reinterpret_cast<char *>
             (v) +
@@ -1578,7 +1578,7 @@ inline int16_t& basic_helt(LispObject v, size_t n)
 inline intptr_t& basic_ielt(LispObject v, size_t n)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned ielt");
 #endif // DEBUG
     return  *reinterpret_cast<intptr_t *>(reinterpret_cast<char *>
                                           (v) +
@@ -1591,7 +1591,7 @@ inline intptr_t& basic_ielt(LispObject v, size_t n)
 inline int32_t& basic_ielt32(LispObject v, size_t n)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x3) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x3) == 0, "unaligned ielt32");
 #endif // DEBUG
     return *reinterpret_cast<int32_t *>(reinterpret_cast<char *>(v) +
                                         (CELL-TAG_VECTOR) +
@@ -1601,7 +1601,7 @@ inline int32_t& basic_ielt32(LispObject v, size_t n)
 inline float& basic_felt(LispObject v, size_t n)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x3) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x3) == 0, "unaligned felt");
 #endif // DEBUG
     return *reinterpret_cast<float *>(reinterpret_cast<char *>(v) +
                                       (CELL-TAG_VECTOR) +
@@ -1611,7 +1611,7 @@ inline float& basic_felt(LispObject v, size_t n)
 inline double& basic_delt(LispObject v, size_t n)
 {
 #ifdef DEBUG
-    my_assert(((v-TAG_VECTOR) & 0x7) == 0);
+    my_assert(((v-TAG_VECTOR) & 0x7) == 0, "unaligned delt");
 #endif // DEBUG
     return *reinterpret_cast<double *>(reinterpret_cast<char *>(v) +
                                        (8-TAG_VECTOR) +
@@ -1887,7 +1887,7 @@ INLINE_VAR constexpr size_t MAX_FASTGET_SIZE = 63;
 inline Header &qheader(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qheader");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->header;
 }
@@ -1895,7 +1895,7 @@ inline Header &qheader(LispObject p)
 inline LispObject &qvalue(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qvalue");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value;
 }
@@ -1903,7 +1903,7 @@ inline LispObject &qvalue(LispObject p)
 inline LispObject &qenv(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qenv");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->env;
 }
@@ -1911,7 +1911,7 @@ inline LispObject &qenv(LispObject p)
 inline LispObject &qplist(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qplist");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->plist;
 }
@@ -1919,7 +1919,7 @@ inline LispObject &qplist(LispObject p)
 inline LispObject &qfastgets(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfastgets");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->fastgets;
 }
@@ -1927,7 +1927,7 @@ inline LispObject &qfastgets(LispObject p)
 inline LispObject &qpackage(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qpackage");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->package;
 }
@@ -1935,7 +1935,7 @@ inline LispObject &qpackage(LispObject p)
 inline LispObject &qpname(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qpname");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->pname;
 }
@@ -1943,7 +1943,7 @@ inline LispObject &qpname(LispObject p)
 inline LispObject *valueaddr(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned valueaddr");
 #endif // DEBUG
     return &(reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->value);
 }
@@ -1991,7 +1991,7 @@ inline LispObject *pnameaddr(LispObject p)
 inline no_args*& qfn0(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn0");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function0;
 }
@@ -1999,7 +1999,7 @@ inline no_args*& qfn0(LispObject p)
 inline one_arg*& qfn1(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn1");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function1;
 }
@@ -2007,7 +2007,7 @@ inline one_arg*& qfn1(LispObject p)
 inline two_args*& qfn2(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn2");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function2;
 }
@@ -2015,7 +2015,7 @@ inline two_args*& qfn2(LispObject p)
 inline three_args*& qfn3(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn3");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function3;
 }
@@ -2023,7 +2023,7 @@ inline three_args*& qfn3(LispObject p)
 inline fourup_args*& qfn4up(LispObject p)
 {
 #ifdef DEBUG
-    my_assert(((p-TAG_SYMBOL) & 0x7) == 0);
+    my_assert(((p-TAG_SYMBOL) & 0x7) == 0, "unaligned qfn4up");
 #endif // DEBUG
     return reinterpret_cast<Symbol_Head *>(p-TAG_SYMBOL)->function4up;
 }

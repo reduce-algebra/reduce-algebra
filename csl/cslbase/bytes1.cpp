@@ -879,6 +879,9 @@ inline void do_freebind(LispObject bvec)
 inline void do_freerstr()
 {   LispObject bv;
     size_t n;
+#ifdef DEBUG
+    my_assert(*stack == static_cast<LispObject>(SPID_FBIND));
+#endif // DEBUG
     stack--;
     bv = *stack--;
     n = length_of_header(vechdr(bv));
