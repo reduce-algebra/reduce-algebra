@@ -131,11 +131,9 @@ include './include/begin-body.php';
         with Logic &ndash; is now an integral part of REDUCE;
     </li>
     <li>
-        <a href="http://cds.cern.ch/record/438562/files/0005081.pdf">Ortocartan</a>
-        is a
-        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/contrib/ortocartan/">set
-            of programs</a> for algebraic calculations in relativity,
-        implemented in the Lisp underlying REDUCE.
+        <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/contrib/ortocartan/">Ortocartan</a>
+        is a set of programs for algebraic calculations in relativity
+        implemented in Standard Lisp, the Lisp underlying REDUCE.
     </li>
 </ul>
 
