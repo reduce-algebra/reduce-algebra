@@ -590,6 +590,23 @@ symbolic procedure forallox u;
 
 put('forall,pretoprinf,'forallox);
 
+symbolic procedure commentox u;
+   begin
+      prin2ox car u;
+      omark '(m u);
+      curmark := curmark+2;
+      omark '(m u);
+      for each x in cdr u do <<
+         prin2ox "% ";
+         mprino x;  % Need linebreaks between
+         nil >>;
+      curmark := curmark - 2;
+      omark '(m d);
+      omark '(m d)                    % I want to force a linebreak here!
+   end;
+
+%%%%% put('!%,pretoprinf,'commentox);
+
 COMMENT Support for printing algebraic mode code;
 
 put('aeval!*,pretoprinf,'aevalox);
@@ -691,8 +708,9 @@ COMMENT RPRINT MODULE, Part 2;
 fluid '(orig curpos);
 
 symbolic procedure prinos u;
-   begin integer curpos;
-        scalar !*lower,orig;
+   begin
+      integer curpos;
+      scalar !*lower,orig;
       orig := list posn();
       curpos := car orig;
       prinoy(u,0);

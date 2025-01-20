@@ -33,6 +33,7 @@ module superv; % REDUCE supervisory functions.
 
 fluid '(!*debug
         !*defn
+        !*rprint
         !*demo
         !*echo
         !*errcont
@@ -195,7 +196,8 @@ symbolic procedure command;
         then if null y and cursym!* = 'end then rprint 'end
               else << rprint y; terpri() >>;
       if !*slin then return list('symbolic,y);
-      x := form y;
+      if !*defn and !*rprint then x := miniform y
+                             else x := form y;
       if !*mode='algebraic and
          not atom x and
          eqcar(car x, 'lambda) then x := list('aeval, x);
@@ -553,7 +555,11 @@ symbolic procedure dfprint u;
 
 symbolic procedure dfprint1 u;
    % Looks for special action on a form, otherwise prettyprints it.
-   if dfprint!* then lispapply(dfprint!*,list u)
+    if !*defn and !*rprint then <<
+       terpri();
+       rprint u;
+       terpri() >>
+    else if dfprint!* then lispapply(dfprint!*,list u)
     else if cmsg!* then nil
     else if null eqcar(u,'progn) then prettyprint u
     else while (u := cdr u) do dfprint1 car u;

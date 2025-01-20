@@ -127,7 +127,7 @@ symbolic procedure getrmacro u;
    begin scalar x;
       return if not idp u then nil
        else if (x := getd u) and car x = 'macro then x
-       else if (x := get(u,'inline)) then 'inline . x
+       else if (x := get(u,'inline)) and not !*rprint then 'inline . x
        else if (x := get(u,'smacro)) then 'smacro . x
        else nil
    end;
@@ -216,6 +216,30 @@ symbolic procedure form1(u,vars,mode);
               else if not(mode = 'algebraic)
                then convertmode(y,vars,mode,'algebraic)
               else ('list . algid(car u,vars) . x)
+   end;
+
+% Cut down version for "on rprint" case.
+
+symbolic procedure miniform1(u,vars,mode);
+   begin scalar x,y;
+      if atom u
+        then return if not idp u then u
+                     else if flagp(u,'modefn) then set!-global!-mode u
+                     else if x:= get(mode,'idfn) then apply2(x,u,vars)
+                     else u
+       else if not atom car u then return u
+       else if not idp car u then typerr(car u,"operator")
+       else if flagp(car u,'noform) then return u
+       else if arrayp car u and mode = 'symbolic
+        then return list('getel,intargfn(u,vars,mode))
+       else if pairp cdr u and (get(car u,'rtype) = 'vector
+             or vectorp cadr u or flagpcar(cadr u,'vecfn))
+        then return getvect(u,vars,mode)
+       else if flagp(car u,'modefn)
+        then return miniconvertmode(cadr u,vars,mode,car u)
+       else if get(car u,'stat) = 'rlis
+        then return formrlis(u,vars,mode);
+      return u
    end;
 
 symbolic procedure form2(u,vars,mode);
@@ -363,6 +387,13 @@ symbolic procedure form u;
      then typerr("algebraic expression","Rlisp88 form")
     else form1(u,!*vars!*,!*mode);
 
+% This is JUST for use with "in rprint" that is intended for use
+% standardizing the lwyout of code - not then executing it. So it is
+% cut down and restricted in many ways!
+
+symbolic procedure miniform u;
+   miniform1(u,!*vars!*,!*mode);
+
 symbolic procedure macrochk(u,mode);
    begin scalar y;
       % Expands U if CAR U is a macro and expansion allowed.
@@ -407,6 +438,9 @@ symbolic procedure intid(u,vars);
 
 symbolic procedure convertmode(exprn,vars,target,source);
    convertmode1(form1(exprn,vars,source),vars,target,source);
+
+symbolic procedure miniconvertmode(exprn,vars,target,source);
+   convertmode1(miniform1(exprn,vars,source),vars,target,source);
 
 symbolic procedure convertmode1(exprn,vars,target,source);
    begin scalar x;

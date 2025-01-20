@@ -54,7 +54,7 @@ module tok; % Identifier and reserved character reading.
 % Substantial changes in March 2014 to put in support for wide characters
 % generally packed in the underlying Lisp string type using utf-8 encoding.
 
-fluid '(!*adjprec !*comment !*defn !*eoldelimp !*minusliter
+fluid '(!*adjprec !*rprint !*defn !*eoldelimp !*minusliter
         peekchar!* !*quotenewnam !*raise !*lower semic!*
         !*report!_colons ifl!* curline!* comment!* !*comment!*);
 
@@ -882,14 +882,14 @@ symbolic procedure token;
                named!-character!* := nil;
 % The comment here continues until end of line or end of file but the
 % notation "#NewLine;" is an end of line character that does not end
-% the line for these purposes! If !*comment is set the text of the
+% the line for these purposes! If !*rprint is set the text of the
 % comment is appended to the list !*comment!*.
                while (null (((x := readch1()) eq !$eol!$) or
                             (x eq !$eof!$))) or
                      named!-character!* do <<
                   txt := x . txt;
                   named!-character!* = nil >>;
-               if !*comment then
+               if !*rprint then
                   !*comment!* :=
                      append(!*comment!*, list list!-to!-string reverse txt);
             end;
@@ -1361,7 +1361,7 @@ symbolic procedure read_long_form_comment();
          crchar!* := blank;
          condterpri();
 % Note that the comment text here can include newlines.
-         if !*comment then
+         if !*rprint then
             !*comment!* := append(!*comment!*, list list2string reverse x);
       end;
       cursym!* := '!*semicol!*;
@@ -1415,7 +1415,7 @@ symbolic procedure read_slash_star_comment();
       a: named!-character!* := nil;
          if (x := readch()) eq '!* and (null named!-character!*) then
             if (y := readch()) eq '!/ and (null named!-character!*) then <<
-               if !*comment then
+               if !*rprint then
                   !*comment!* := append(!*comment!*,
                                         list list2string reversip txt);
                return >>
@@ -1507,8 +1507,10 @@ put('chance_state, 'inline,
 
 symbolic procedure scan_skip();
    begin
-% Observe that because I remind !*comment!* and comment!* any comments
-% within skipped material are not recorded. I think that makes sense!
+% Observe that comments within skipped material are not recorded in
+% !*comment!*. I think that makes sense! However for the !*rprint scheme
+% the issue of skipping and layout and comment preservation may need to
+% be revisited!
       scalar w, !*comment!*, comment!*;
       skipping!* := t;
       while skipping!* do w := scan();

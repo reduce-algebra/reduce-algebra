@@ -210,7 +210,7 @@ symbolic procedure formproc(u,vars,mode);
                               mkquote type,
                               mkquote list('lambda,varlis,body));
                  if !*defn then lispeval body >>;
-        body := proc!-add!-info(name,info,body);
+        if not !*rprint then body := proc!-add!-info(name,info,body);
         if not(mode = 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
@@ -224,10 +224,10 @@ symbolic procedure formproc(u,vars,mode);
                       "different count from args previously called with")
                 else lprim list(name, "defined with", length varlis,
                     "but previously called with",n,"arguments") >>;
-           body := mkprogn(list('put,mkquote name,
-                                    mkquote 'number!-of!-args,
-                                    length varlis),
-                               body) >>;
+           if not !*rprint then body := mkprogn(list('put,mkquote name,
+                                           mkquote 'number!-of!-args,
+                                           length varlis),
+                                         body) >>;
         if !*defn and type memq '(fexpr macro inline smacro)
           then lispeval body;
 % "inline" procedures define a regular procedure as well as saving the
@@ -553,8 +553,9 @@ symbolic procedure procstat1 mode;
 % where "unit" denotes nothing (ie not having any arguments), "general" is
 % where the type had not been specified, and otherwise at present types
 % are merely symbols.
-               info := ('procedure_type . 'arrow .
-                        make_tuple_type cdar x . cdr x) . info;
+               if not !*rprint then
+                  info := ('procedure_type . 'arrow .
+                           make_tuple_type cdar x . cdr x) . info;
                x := car x;
                fname!* := car x;
                x := fname!* . collect_cars cdr x;
