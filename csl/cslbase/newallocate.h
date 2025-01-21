@@ -1033,7 +1033,7 @@ extern uintptr_t consCounter;
 
 inline uintptr_t get2Words()
 {
-#ifdef DEBUG
+#if defined DEBUG || 1
     consCounter++;
     if (garbage_collection_permitted &&
         !withinGarbageCollector &&
@@ -1222,7 +1222,7 @@ inline uintptr_t getNBytes(size_t n, Page* current,
 
 inline uintptr_t getNBytes(size_t n)
 {
-#ifdef DEBUG
+#if defined DEBUG || 1
     consCounter++;
     if (garbage_collection_permitted &&
         !withinGarbageCollector &&

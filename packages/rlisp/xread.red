@@ -32,7 +32,7 @@ module xread; % Routines for parsing RLISP input.
 % NOTE: For bootstrapping purposes, this file should not have any tab
 %       characters in it.
 
-fluid '(!*blockp !*eoldelimp !*reduce4 commentlist!*);   % !*ignoreeol
+fluid '(!*blockp !*eoldelimp !*reduce4 comment!*);   % !*ignoreeol
 
 global '(cursym!* curescaped!* nxtsym!*);
 
@@ -53,7 +53,7 @@ symbolic procedure chknewnam u;
    end;
 
 % The syntax "symbolic inline procedure" may not be available at this
-% stage if things are being build with a carefull bootstrap process that
+% stage if things are being build with a careful bootstrap process that
 % uses a Lisp-coded parser for a subset of rlisp, so I set up the information
 % by hand.
 
@@ -70,7 +70,7 @@ symbolic procedure eolcheck;
                         else token());
 
 symbolic procedure xcomment(u,commentlist);
-   if commentlist then 'COMMENT . aconc(reversip commentlist,u)
+   if commentlist then '!% . u . reverse commentlist
    else u;
 
 % The code here has MANY labels and goto statements and may be in need
@@ -104,10 +104,10 @@ symbolic procedure xread1 u;
         % z: current symbol
         % z1: next symbol
         % z2: temporary storage;
-        % commentlist: association list of read comments.
-        if commentlist!* then <<
-           commentlist := commentlist!*;
-           commentlist!* := nil >>;
+        % commentlist: list of comments.
+        if comment!* then <<
+           commentlist := comment!*;
+           comment!* := nil >>;
   a:    z := cursym!*;
   a1:   if null idp z then nil
          else if z = '!*lpar!* then go to lparen
