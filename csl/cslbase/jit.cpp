@@ -115,7 +115,9 @@ void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
 #if MACINTOSH
     jit_word32(0xd65f03c0); // "ret" instruction on aarch64
 #else
-    jit_word16(0xed31);     // "ret" on x86_64
+    jit_word32(0xfa1e0ff3);                         // endbr64
+    jit_byte(0x48); jit_byte(0x89); jit_byte(0xf0); // mov %rsi,%rax
+    jit_byte(0xc3);                                 // ret
 #endif
 
 #ifdef MACINTOSH
