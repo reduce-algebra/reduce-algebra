@@ -115,8 +115,6 @@ static const size_t jit_chunk_size = 1024*1024; // Megabyte chunks
 static size_t jit_base = 0, jit_pointer = 0;
 static uint8_t* jit_chunk = nullptr;
 
-static size_t page_size = 0;
-
 void jit_byte(int c)
 {
 // I will arrange some suitable space for putting the generated
@@ -127,18 +125,15 @@ void jit_byte(int c)
         jit_pointer>=jit_chunk_size)
     {   uint8_t* newchunk;
 #ifdef NATIVE_WINDOWS
-        if (page_size == 0)
-        {   SYSTEM_INFO system_info;
-            GetSystemInfo(&system_info);
-            page_size = system_info.dwPageSize;
-        }
         newchunk = static_cast<uint8_t*>(
-            VirtualAlloc(nullptr, page_size, MEM_COMMIT, PAGE_READWRITE));
+            VirtualAlloc(nullptr, jit_chunk_size, MEM_COMMIT, PAGE_READWRITE));
         if (newchunk == nullptr)
             my_abort("unable to allocate JIT space");
         if (jit_chunk != nullptr)
-        {   DWORD dummy;
-            VirtualProtect(jit_chunk, jit_chunk_size, PAGE_EXECUTE_READ, &dummy);
+        {   DWORD oldprotection;
+            my_assert(VirtualProtect(jit_chunk, jit_chunk_size,
+                      PAGE_EXECUTE_READ, &oldprotection) != 0, "fix existing chunk");
+            printf("protection was %04x\n", static_cast<unsigned int>(oldprotection));
         }
 #else // NATIVE_WINDOWS
         newchunk = reinterpret_cast<uint8_t*>(mmap(
@@ -183,8 +178,11 @@ void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
 #if defined APPLE_MACINTOSH
     pthread_jit_write_protect_np(0);
 #elif defined NATIVE_WINDOWS
-    {   DWORD dummy;
-        VirtualProtect(jit_chunk, jit_chunk_size, PAGE_READWRITE, &dummy);
+    if (jit_chunk != nullptr)
+    {   DWORD oldprotection;
+        my_assert(VirtualProtect(jit_chunk, jit_chunk_size,
+                  PAGE_READWRITE, &oldprotection) != 0, "make writable");
+        printf("protection was %04x\n", static_cast<unsigned int>(oldprotection));
     }
 #endif
 
@@ -199,8 +197,10 @@ void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
     pthread_jit_write_protect_np(1);
     sys_icache_invalidate(jit_chunk, jit_chunk_size);
 #elif defined NATIVE_WINDOWS
-    {   DWORD dummy;
-        VirtualProtect(jit_chunk, jit_chunk_size, PAGE_EXECUTE_READ, &dummy);
+    {   DWORD oldprotection;
+        my_assert(VirtualProtect(jit_chunk, jit_chunk_size,
+                  PAGE_EXECUTE_READ, &oldprotection) != 0, "make executable");
+        printf("protection was %04x\n", static_cast<unsigned int>(oldprotection));
     }
 #endif
     printf("About to return executable segment...\n");
@@ -227,4 +227,3 @@ void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
 #endif // UNKNOWN_SYSTEM
 
 // end of jit.cpp
-
