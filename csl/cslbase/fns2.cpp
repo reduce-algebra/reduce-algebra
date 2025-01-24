@@ -3369,6 +3369,7 @@ setup_type const funcs2_setup[] =
     DEF_2("deleq",              Ldeleq),
     DEF_2("deleqip",            Ldeleqip),
     {"preserve",                Lpreserve_0, Lpreserve_1, Lpreserve_2, Lpreserve_3, G4Wother},
+    DEF_1("make-jit",           Lmake_jit),
     DEF_2("nconc",              Lnconc),
     DEF_2("neq",                Lneq_2),
     DEF_1("not",                Lnull),

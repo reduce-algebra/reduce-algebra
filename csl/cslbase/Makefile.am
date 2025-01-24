@@ -356,7 +356,7 @@ gc_sources = newcslgc.cpp newallocate.cpp gc-check.cpp
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
 		arith11.cpp arith12.cpp arith13.cpp arith14.cpp \
-                arith-quad.cpp isprime.cpp \
+                arith-quad.cpp isprime.cpp jit.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
@@ -949,6 +949,7 @@ csl-eval1.$(OBJEXT):	$(HDRS)
 csl-eval2.$(OBJEXT):	$(HDRS)
 csl-eval3.$(OBJEXT):	$(HDRS)
 csl-eval4.$(OBJEXT):	$(HDRS)
+csl-jit.$(OBJEXT):	$(HDRS)
 csl-fasl.$(OBJEXT):	$(HDRS)
 csl-fns1.$(OBJEXT):	$(HDRS)
 csl-fns2.$(OBJEXT):	$(HDRS)
@@ -996,6 +997,7 @@ bootstrapreduce-eval1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval2.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval3.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval4.$(OBJEXT):	$(HDRS)
+bootstrapreduce-jit.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fasl.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fns1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fns2.$(OBJEXT):	$(HDRS)
@@ -1043,6 +1045,7 @@ reduce-eval1.$(OBJEXT):		$(HDRS)
 reduce-eval2.$(OBJEXT):		$(HDRS)
 reduce-eval3.$(OBJEXT):		$(HDRS)
 reduce-eval4.$(OBJEXT):		$(HDRS)
+reduce-jit.$(OBJEXT):		$(HDRS)
 reduce-fasl.$(OBJEXT):		$(HDRS)
 reduce-fns1.$(OBJEXT):		$(HDRS)
 reduce-fns2.$(OBJEXT):		$(HDRS)
