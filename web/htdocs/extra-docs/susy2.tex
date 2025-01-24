@@ -11,8 +11,8 @@
 
                 \title{S U S Y 2}
 
-                \author{by \\
-        Ziemowit Popowicz by \\ \\
+                \author{
+        Ziemowit Popowicz \\ \\
         Institute of Theoretical Physics, University of Wroc{\l}aw,\\
         pl.M.Borna 9 50-205 Wroc{\l}aw, Poland \\
 		e-mail ziemek@ift.uni.wroc.pl \\
@@ -520,31 +520,31 @@ Example
 \ee
 \section{Supersymmetric integration}
 
-There is one command ${\bf s\underline {~} int}(number,expression,list)$ 
-only. This allows us to compute the value  of supersymmetric integration of 
-arbitrary polynomial expression constructed from $fer$ and $bos$ objects. It 
-is valid in the traditional representation of the supersymmetry. The 
-$numbers$ takes the following values: $ 0 \rightarrow $ corresponds for 
-usual $"x"$ integration, $ 1 $ or $ 2 $ for the first or second 
-supersymmetric index while $ 3 $ to the integration both over first and 
-second indexes. The $list$  is the list of the names of the superfunctions 
-over which we would like to integrate. The output of this command is in the 
-form of the integrated part and non-integrated part. The non-integrated part 
-is denoted by $del(-number)$ if $number = 1,2,3$ and by $d(-3)$ for 0. 
+There is one command ${\bf s\underline {~} int}(number,expression,list)$
+only. This allows us to compute the value  of supersymmetric integration of
+arbitrary polynomial expression constructed from $fer$ and $bos$ objects. It
+is valid in the traditional representation of the supersymmetry. The
+$numbers$ takes the following values: $ 0 \rightarrow $ corresponds for
+usual $"x"$ integration, $ 1 $ or $ 2 $ for the first or second
+supersymmetric index while $ 3 $ to the integration both over first and
+second indexes. The $list$  is the list of the names of the superfunctions
+over which we would like to integrate. The output of this command is in the
+form of the integrated part and non-integrated part. The non-integrated part
+is denoted by $del(-number)$ if $number = 1,2,3$ and by $d(-3)$ for 0.
 
-Example 
+Example
 
-\be 
-{\bf {s\underline {~} int}}(0, 2bos(f,0,1)*bos(f,0,1),\{f\}) = 
+\be
+{\bf {s\underline {~} int}}(0, 2bos(f,0,1)*bos(f,0,1),\{f\}) =
 bos(f,0,0)^{2},
 \ee
 \be
 s\underline {~} int(1,2*fer(f,1,0)*bos(f,0,0),\{f\}) = bos(f,0,0)^{2},
 \ee
 \pe
-&& s\underline {~} int(3, 
+&& s\underline {~} int(3,
 bos(f,3,0)*bos(g,0,0)+bos(f,0,0)*bos(g,3,0),\{f,g\}) =\ \\
-&& {~~}{~~}{~~~~}{~~~}{~~}bos(f,0,0)*bos(g,0,0)-\ \\ 
+&& {~~}{~~}{~~~~}{~~~}{~~}bos(f,0,0)*bos(g,0,0)-\ \\
 && del(-3)\Big ( fer(f,1,0)*fer(g,2,0)-fer(f,2,0)*bos(g,1,0) \Big ).
 \ke
 
@@ -1178,7 +1178,7 @@ dyw}(expression,f) \cr
  {\bf war}(expression,f) & {\bf dot\underline{~}ham}(equations,expression)&
 {\bf n\underline{~}gat}(operator,list) \cr
 {\bf fjacob}(operator,list) & {\bf jacob}(operator,list,\{
-$\alpha,\beta,\gamma$ \})& {\bf macierz}(expression,x,y) \cr  
+$\alpha,\beta,\gamma$ \})& {\bf macierz}(expression,x,y) \cr
 {\bf s\underline {~} int}( numbers, expession,list) & &
 \end{tabular}
 }
@@ -1308,4 +1308,3 @@ $\alpha,\beta,\gamma$ \})& {\bf macierz}(expression,x,y) \cr
 \end{thebibliography}
 
 \end{document}
-
