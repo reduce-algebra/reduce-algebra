@@ -206,7 +206,7 @@ gamma!*rules := {
    
    df(Gamma(~a,~x),~x) => -x^(a-1)*exp(-x),
 
-   m_gamma(~a,0) => Gamma(a),
+   m_gamma(~a,0) => 0,
 
    m_gamma(~a,~x) => sqrt(pi)*erf(sqrt(x)) when numberp(a) and a=1/2,
 
