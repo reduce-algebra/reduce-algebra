@@ -1888,6 +1888,10 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 	then $(CP) $(REDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
+if !inlines
+NOINLINES="-Dnoinlines=T"
+endif !inlines
+
 # "make bootstraprecompile which=<module-name>" and "make recompile which="
 # recompile just one package, assuming everything else is properly up to
 # date (at least if the image file exists at all) and they end up by
@@ -1898,7 +1902,7 @@ bootstraprecompile:	$(HDRS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) $(NOINLINES) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -1960,7 +1964,7 @@ bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1981,14 +1985,14 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2025,7 +2029,7 @@ boot.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
