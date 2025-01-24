@@ -38,12 +38,95 @@
 
 #include "headers.h"
 
+#ifdef WIN32
+void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
+{   return nullptr;  // Not available on Windows (yet??)
+}
+#else // WIN32
+
+#include <sys/mman.h>
+#ifdef MACINTOSH
+#include <pthread.h>
+#include <libkern/OSCacheControl.h>
+#endif // MACINTOSH
+
+static const size_t jit_chunk_size = 1024*1024; // Megabyte chunks
+static size_t jit_base = 0, jit_pointer = 0;
+static uint8_t* jit_chunk = nullptr;
+
+#ifdef MACINTOSH
+#define MAP_FLAGS MAP_ANON | MAP_PRIVATE | MAP_JIT
+#else // MACINTOSH
+#define MAP_FLAGS MAP_ANON | MAP_PRIVATE
+#endif // MACINTOSH
+
+void jit_byte(int c)
+{
+// I will arrange some suitable space for putting the generated
+// code. I allocate this in megabyte chunks. If I am about to run off
+// the end of a chunk while writing a function to it I copy the partial
+// bit of code to the start of a fresh chunk.
+    if (jit_chunk==nullptr ||
+        jit_pointer>=jit_chunk_size)
+    {   uint8_t* newchunk = reinterpret_cast<uint8_t*>(mmap(
+            NULL,
+            jit_chunk_size,
+            PROT_WRITE | PROT_READ | PROT_EXEC,
+            MAP_FLAGS,
+            -1,
+            0));
+        if (newchunk == MAP_FAILED)
+            my_abort("unable to allocate JIT space");
+        memcpy(newchunk, jit_chunk+jit_base, jit_pointer-jit_base);
+        jit_chunk = newchunk;
+        jit_pointer -= jit_base;
+        jit_base = 0;
+    }
+    jit_chunk[jit_pointer++] = c;
+}
+
+void jit_word16(uint16_t w)
+{   jit_byte(w);
+    jit_byte(w>>8);
+}
+
+void jit_word32(uint32_t w)
+{   jit_byte(w);
+    jit_byte(w>>8);
+    jit_byte(w>>16);
+    jit_byte(w>>24);
+}
 
 void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
 {
     printf("Calling jitcompile on ");
     simple_print(basic_elt(env, 0));
-    return nullptr;
+    for (unsigned int i=0; static_cast<size_t>(i)<len; i++)
+        printf("%3u:  %02x\n", i, bytes[i]&0xff);
+
+#ifdef MACINTOSH
+    pthread_jit_write_protect_np(0);
+#endif // MACINTOSH
+
+    jit_base = jit_pointer; // for a new function body
+
+// I am NOT delivering a proper return value here so this is
+// really a mess of a placeholder!
+#if MACINTOSH
+    jit_word32(0xd65f03c0); // "ret" instruction on aarch64
+#else
+    jit_word16(0xed31);     // "ret" on x86_64
+#endif
+
+#ifdef MACINTOSH
+    pthread_jit_write_protect_np(1);
+    sys_icache_invalidate(jit_chunk, jit_chunk_size);
+#endif // MACINTOSH
+
+    return jit_chunk+jit_base;
 }
+
+
+#endif // WIN32
 
 // end of jit.cpp

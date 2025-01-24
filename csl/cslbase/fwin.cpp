@@ -607,8 +607,7 @@ int windows_checks(int is_windowed)
 // want to run a terminal or a windowed version of everything.
         const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != nullptr && *ssh != 0)
-        {   FWIN_LOG("SSH_CLIENT set on Windows, so treat as console app\n");
-            ssh_client = 1;
+        {   ssh_client = 1;
             is_windowed = 0;
         }
         else
@@ -648,8 +647,7 @@ int windows_checks(int is_windowed)
 // work in stream/console mode.
         const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != nullptr && *ssh != 0)
-        {   FWIN_LOG("SSH_CLIENT set\n");
-            ssh_client = 1;
+        {   ssh_client = 1;
             is_windowed = 0;
         }
         else if (GetFileType(h) == FILE_TYPE_DISK) is_windowed = 0;
@@ -677,7 +675,7 @@ void sort_out_windows_console(int is_windowed)
 // the newly created console....
 // The code I have here is based on empirical observation in cases that
 // most people will probably not trigger!
-                FWIN_LOG("Running windowed mode application via ssh.\n");
+//              FWIN_LOG("Running windowed mode application via ssh.\n");
             }
             else
             {
@@ -761,7 +759,7 @@ static int unix_and_osx_checks(int xwindowed)
 // have connected via ssh since I will not have the desktop forwarded.
     {   const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != nullptr && *ssh != 0)
-        {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
+        {
 //          ssh_client = 1;
             xwindowed = 0;
         }
