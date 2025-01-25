@@ -33,8 +33,40 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: eval4.cpp 6922 2025-01-01 11:18:24Z arthurcnorman $
+// $Id$
 
+// See comments in jit-x86-64.cpp for an explanation of what this is
+// all about.
+
+__asm__ (
+   ".global Lasmtest_0\n"
+   "Lasmtest_0:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global Lasmtest_1\n"
+   "Lasmtest_1:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global Lasmtest_2\n"
+   "Lasmtest_2:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global Lasmtest_3\n"
+   "Lasmtest_3:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global Lasmtest_4up\n"
+   "Lasmtest_4up:\n"
+   "	ret\n"
+    );
 
 void plant(const char* bytes, size_t len, LispObject env, int nargs)
 {

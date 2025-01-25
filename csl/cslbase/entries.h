@@ -43,6 +43,7 @@ extern void poll();
 // Use C linkage so that if CSL/Reduce is used as a DLL there is still an
 // easy way to access these.
 
+extern "C" LispObject Lasmtest_0(LispObject env);
 extern LispObject Lbacktrace(LispObject env);
 extern LispObject Lbatchp(LispObject env);
 extern LispObject Ldate(LispObject env);
@@ -67,6 +68,7 @@ extern LispObject Lposn(LispObject env);
 extern LispObject Lread(LispObject env);
 extern LispObject Lreadch(LispObject env);
 extern LispObject Lrtell(LispObject env);
+extern LispObject Lshowasm(LispObject env);
 extern LispObject Lstop(LispObject env);
 extern LispObject Lterpri(LispObject env);
 extern LispObject Ltime(LispObject env);
@@ -119,6 +121,7 @@ extern LispObject undefined_1(LispObject env, LispObject a1);
 extern LispObject f1_as_0(LispObject env, LispObject a);
 extern LispObject f1_as_1(LispObject env, LispObject a);
 
+extern "C" LispObject Lasmtest_1(LispObject env, LispObject a);
 extern LispObject Labsval(LispObject env, LispObject a);
 extern LispObject Ladd1(LispObject env, LispObject a);
 extern LispObject Lalpha_char_p(LispObject env, LispObject a);
@@ -201,8 +204,7 @@ extern LispObject Lgc(LispObject env, LispObject a);
 extern LispObject Lgc_error(LispObject env, LispObject a);
 extern LispObject Lgc_forcer1(LispObject env, LispObject a);
 extern LispObject Lgc_stop(LispObject env, LispObject a);
-extern LispObject Lgensym0(LispObject env, LispObject a,
-                           const char *s);
+extern LispObject Lgensym0(LispObject env, LispObject a, const char *s);
 extern LispObject Lgensym1(LispObject env, LispObject a); // OLD name
 extern LispObject Lgensym(LispObject env, LispObject a);
 extern LispObject Lgensym2(LispObject env, LispObject a);
@@ -369,10 +371,9 @@ extern LispObject f2_as_0(LispObject env, LispObject a, LispObject b);
 extern LispObject f2_as_1(LispObject env, LispObject a, LispObject b);
 extern LispObject f2_as_2(LispObject env, LispObject a, LispObject b);
 
-extern LispObject Lappend_2(LispObject env, LispObject a,
-                            LispObject b);
-extern LispObject Lapply_2(LispObject env, LispObject fn,
-                           LispObject a1);
+extern "C" LispObject Lasmtest_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lappend_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1);
 extern LispObject Lapply1(LispObject env, LispObject a, LispObject b);
 extern LispObject Lash(LispObject env, LispObject a, LispObject b);
 extern LispObject Lash1(LispObject env, LispObject a, LispObject b);
@@ -380,74 +381,53 @@ extern LispObject Lassoc(LispObject env, LispObject a, LispObject b);
 extern LispObject Latan2(LispObject env, LispObject a, LispObject b);
 extern LispObject Latan2d(LispObject env, LispObject a, LispObject b);
 extern LispObject Latsoc(LispObject env, LispObject a, LispObject b);
-extern LispObject Lbpsgetv(LispObject env, LispObject v,
-                           LispObject n);
+extern LispObject Lbpsgetv(LispObject env, LispObject v, LispObject n);
 extern LispObject Lcons(LispObject env, LispObject a, LispObject b);
 extern LispObject Ldeleq(LispObject env, LispObject a, LispObject b);
 extern LispObject Ldelete(LispObject env, LispObject a, LispObject b);
-extern LispObject Ldifference_2(LispObject env, LispObject a,
-                                LispObject b);
-extern LispObject Ldivide_2(LispObject env, LispObject a,
-                            LispObject b);
+extern LispObject Ldifference_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Ldivide_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lelt(LispObject env, LispObject a, LispObject b);
 extern LispObject Leq(LispObject env, LispObject a, LispObject b);
 extern LispObject Leqcar(LispObject env, LispObject a, LispObject b);
-extern LispObject Lequalcar(LispObject env, LispObject a,
-                            LispObject b);
+extern LispObject Lequalcar(LispObject env, LispObject a, LispObject b);
 extern LispObject Leql(LispObject env, LispObject a, LispObject b);
 extern LispObject Leqn_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Lcl_equal(LispObject env, LispObject a,
-                            LispObject b);
+extern LispObject Lcl_equal(LispObject env, LispObject a, LispObject b);
 extern LispObject Lequal(LispObject env, LispObject a, LispObject b);
 extern LispObject Lerror_2(LispObject env, LispObject a1, LispObject a2);
-extern LispObject Lerrorset_2(LispObject env, LispObject form,
-                              LispObject ffg1);
+extern LispObject Lerrorset_2(LispObject env, LispObject form, LispObject fg);
 extern LispObject Lexpt(LispObject env, LispObject a, LispObject b);
 extern LispObject Lflag(LispObject env, LispObject a, LispObject b);
 extern LispObject Lflagp(LispObject env, LispObject a, LispObject b);
-extern LispObject Lflagpcar(LispObject env, LispObject a,
-                            LispObject b);
-extern LispObject Lfuncall_2(LispObject env, LispObject fn,
-                             LispObject a1);
-extern LispObject Lgc_forcer(LispObject env, LispObject a,
-                             LispObject b);
+extern LispObject Lflagpcar(LispObject env, LispObject a, LispObject b);
+extern LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1);
+extern LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgcd_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgeq_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lget(LispObject env, LispObject a, LispObject b);
-extern LispObject Lget_hash_2(LispObject env, LispObject a,
-                              LispObject b);
+extern LispObject Lget_hash_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgetv(LispObject env, LispObject a, LispObject b);
-extern LispObject Lgreaterp_2(LispObject env, LispObject a,
-                              LispObject b);
-extern LispObject Lidifference_2(LispObject env, LispObject a,
-                                 LispObject b);
+extern LispObject Lgreaterp_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lidifference_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Ligeq_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Ligreaterp_2(LispObject env, LispObject a,
-                               LispObject b);
+extern LispObject Ligreaterp_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lileq_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Lilessp_2(LispObject env, LispObject a,
-                            LispObject b);
+extern LispObject Lilessp_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Limax_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Limin_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Linorm(LispObject env, LispObject a, LispObject k);
-extern LispObject Lintersect(LispObject env, LispObject a,
-                             LispObject b);
+extern LispObject Lintersect(LispObject env, LispObject a, LispObject b);
 extern LispObject Lintersect_symlist(LispObject env, LispObject a,
                                      LispObject b);
-extern LispObject Liplus_2(LispObject env, LispObject a,
-                           LispObject b);
-extern LispObject Liquotient_2(LispObject env, LispObject a,
-                               LispObject b);
-extern LispObject Liremainder_2(LispObject env, LispObject a,
-                                LispObject b);
-extern LispObject Lirightshift(LispObject env, LispObject a,
-                               LispObject b);
-extern LispObject Litimes_2(LispObject env, LispObject a,
-                            LispObject b);
+extern LispObject Liplus_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Liquotient_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Liremainder_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lirightshift(LispObject env, LispObject a, LispObject b);
+extern LispObject Litimes_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Llcm_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lleq_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Llessp_2(LispObject env, LispObject a,
-                           LispObject b);
+extern LispObject Llessp_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Llist_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Llog(LispObject env, LispObject a, LispObject b);
 extern LispObject Llog_2(LispObject env, LispObject a, LispObject b);
@@ -459,33 +439,25 @@ extern LispObject Lmax_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lmember(LispObject env, LispObject a, LispObject b);
 extern LispObject Lmemq(LispObject env, LispObject a, LispObject b);
 extern LispObject Lmin_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Lmkhash_2(LispObject env, LispObject a,
-                            LispObject b);
+extern LispObject Lmkhash_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lmod_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lmodular_difference(LispObject env, LispObject a,
                                       LispObject b);
-extern LispObject Lmodular_expt(LispObject env, LispObject a,
-                                LispObject b);
-extern LispObject Lmodular_plus(LispObject env, LispObject a,
-                                LispObject b);
+extern LispObject Lmodular_expt(LispObject env, LispObject a, LispObject b);
+extern LispObject Lmodular_plus(LispObject env, LispObject a, LispObject b);
 extern LispObject Lmodular_quotient(LispObject env, LispObject a,
                                     LispObject b);
-extern LispObject Lmodular_times(LispObject env, LispObject a,
-                                 LispObject b);
+extern LispObject Lmodular_times(LispObject env, LispObject a, LispObject b);
 extern LispObject Lnconc(LispObject env, LispObject a, LispObject b);
 extern LispObject Lneq_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Lnreverse2(LispObject env, LispObject a,
-                             LispObject b);
+extern LispObject Lnreverse2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lorderp(LispObject env, LispObject a, LispObject b);
 extern LispObject Lpair(LispObject env, LispObject a, LispObject b);
 extern LispObject Lplus_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Lquotient_2(LispObject env, LispObject a,
-                              LispObject b);
+extern LispObject Lquotient_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lrem_2(LispObject env, LispObject a, LispObject b);
-extern LispObject Lremflag(LispObject env, LispObject a,
-                           LispObject b);
-extern LispObject Lremprop(LispObject env, LispObject a,
-                           LispObject b);
+extern LispObject Lremflag(LispObject env, LispObject a, LispObject b);
+extern LispObject Lremprop(LispObject env, LispObject a, LispObject b);
 extern LispObject Lrepresentation2(LispObject env, LispObject a,
                                    LispObject b);
 extern LispObject Lresource_limit_2(LispObject env, LispObject a,
@@ -500,38 +472,26 @@ extern LispObject Lsgetv(LispObject env, LispObject a, LispObject b);
 extern LispObject Lsmemq(LispObject env, LispObject a, LispObject b);
 extern LispObject Lsubla(LispObject env, LispObject a, LispObject b);
 extern LispObject Lsublis(LispObject env, LispObject a, LispObject b);
-extern LispObject Lsymbol_protect(LispObject env, LispObject a,
-                                  LispObject b);
+extern LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b);
 extern LispObject Lsymbol_set_definition(LispObject env, LispObject a,
-        LispObject b);
-extern LispObject Lsymbol_set_env(LispObject env, LispObject a,
-                                  LispObject b);
+                                         LispObject b);
+extern LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b);
 extern LispObject Lthrow_one_value(LispObject env, LispObject a, LispObject b);
-extern LispObject Ltimes_2(LispObject env, LispObject a,
-                           LispObject b);
+extern LispObject Ltimes_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lunion(LispObject env, LispObject a, LispObject b);
-extern LispObject Lunion_symlist(LispObject env, LispObject a,
-                                 LispObject b);
-extern LispObject Lwrite_module(LispObject env, LispObject a,
-                                LispObject b);
+extern LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b);
+extern LispObject Lwrite_module(LispObject env, LispObject a, LispObject b);
 extern LispObject Lxcons(LispObject env, LispObject a, LispObject b);
 extern LispObject Laref_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Latan_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lelt(LispObject env, LispObject a, LispObject b);
-extern LispObject Lfloat_2(LispObject env, LispObject a,
-                           LispObject b);
-extern LispObject Lintern_2(LispObject env, LispObject a,
-                            LispObject b);
-extern LispObject Lmacroexpand_1_2(LispObject env, LispObject a,
-                                   LispObject b);
-extern LispObject Lmacroexpand_2(LispObject env, LispObject a,
-                                 LispObject b);
-extern LispObject Lrandom_2(LispObject env, LispObject a,
-                            LispObject b);
-extern LispObject Ltruncate_2(LispObject env, LispObject a,
-                              LispObject b);
-extern LispObject Lunintern_2(LispObject env, LispObject a,
-                              LispObject b);
+extern LispObject Lfloat_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lintern_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lmacroexpand_1_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lmacroexpand_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lrandom_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Ltruncate_2(LispObject env, LispObject a, LispObject b);
+extern LispObject Lunintern_2(LispObject env, LispObject a, LispObject b);
 
 
 //
@@ -546,6 +506,8 @@ extern LispObject f3_as_2(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3);
 extern LispObject f3_as_3(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3);
+extern "C" LispObject Lasmtest_3(LispObject env, LispObject a, LispObject b,
+                                 LispObject c);
 extern LispObject Lapply_3(LispObject env, LispObject fn,
                            LispObject a1, LispObject a2);
 extern LispObject Lapply2(LispObject env, LispObject a1,
@@ -686,6 +648,8 @@ extern LispObject undefined_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up);
 
+extern "C" LispObject Lasmtest_4up(LispObject env, LispObject a, LispObject b,
+                                   LispObject c, LispObject d);
 extern LispObject Lapply_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up);

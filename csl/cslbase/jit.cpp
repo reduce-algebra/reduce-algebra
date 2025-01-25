@@ -33,7 +33,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: eval4.cpp 6922 2025-01-01 11:18:24Z arthurcnorman $
+// $Id$
 
 
 #include "headers.h"
@@ -206,6 +206,23 @@ void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
     printf("About to return executable segment...\n");
     fflush(stdout);
     return jit_chunk+jit_base;
+}
+
+void showasm(const char* which, const unsigned char* data)
+{   printf("Argcount %s:", which);
+    for (int i=0; i<16; i++)
+        printf(" %02x", data[i]);
+    printf("\n");
+}
+
+LispObject Lshowasm(LispObject env)
+{   printf("Show binary from my inline-written assembly code\n");
+    showasm("0", reinterpret_cast<const unsigned char*>(Lasmtest_0));
+    showasm("1", reinterpret_cast<const unsigned char*>(Lasmtest_1));
+    showasm("2", reinterpret_cast<const unsigned char*>(Lasmtest_2));
+    showasm("3", reinterpret_cast<const unsigned char*>(Lasmtest_3));
+    showasm("4up", reinterpret_cast<const unsigned char*>(Lasmtest_4up));
+    return nil;
 }
 
 // Now I have the architecture-specific versions of the
