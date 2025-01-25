@@ -145,6 +145,49 @@ void plant(const char* bytes, size_t len, LispObject env, int nargs)
     jit_byte(0xc3);                                 // ret
 }
 
+#elif defined APPLE_MACINTOSH
+
+
+__asm__ (
+   ".global _CSLasmtest_0\n"
+   "_CSLasmtest_0:\n"
+   "	mov %rdx,%rax\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global _CSLasmtest_1\n"
+   "_CSLasmtest_1:\n"
+   "	mov %rdx,%rax\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global _CSLasmtest_2\n"
+   "_CSLasmtest_2:\n"
+   "	mov %rdx,%rax\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global _CSLasmtest_3\n"
+   "_CSLasmtest_3:\n"
+   "	mov %rdx,%rax\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global _CSLasmtest_4up\n"
+   "_CSLasmtest_4up:\n"
+   "	mov %rdx,%rax\n"
+   "	ret\n"
+    );
+
+void plant(const char* bytes, size_t len, LispObject env, int nargs)
+{   jit_byte(0x48); jit_byte(0x89); jit_byte(0xd0); // mov %rdx,%rax
+    jit_byte(0xc3);                                 // ret
+}
+
 #else
 
 __asm__ (
