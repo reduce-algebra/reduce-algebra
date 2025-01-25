@@ -356,7 +356,7 @@ gc_sources = newcslgc.cpp newallocate.cpp gc-check.cpp
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
 		arith11.cpp arith12.cpp arith13.cpp arith14.cpp \
-                arith-quad.cpp isprime.cpp \
+                arith-quad.cpp isprime.cpp jit.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp \
@@ -949,6 +949,7 @@ csl-eval1.$(OBJEXT):	$(HDRS)
 csl-eval2.$(OBJEXT):	$(HDRS)
 csl-eval3.$(OBJEXT):	$(HDRS)
 csl-eval4.$(OBJEXT):	$(HDRS)
+csl-jit.$(OBJEXT):	$(HDRS)
 csl-fasl.$(OBJEXT):	$(HDRS)
 csl-fns1.$(OBJEXT):	$(HDRS)
 csl-fns2.$(OBJEXT):	$(HDRS)
@@ -996,6 +997,7 @@ bootstrapreduce-eval1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval2.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval3.$(OBJEXT):	$(HDRS)
 bootstrapreduce-eval4.$(OBJEXT):	$(HDRS)
+bootstrapreduce-jit.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fasl.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fns1.$(OBJEXT):	$(HDRS)
 bootstrapreduce-fns2.$(OBJEXT):	$(HDRS)
@@ -1043,6 +1045,7 @@ reduce-eval1.$(OBJEXT):		$(HDRS)
 reduce-eval2.$(OBJEXT):		$(HDRS)
 reduce-eval3.$(OBJEXT):		$(HDRS)
 reduce-eval4.$(OBJEXT):		$(HDRS)
+reduce-jit.$(OBJEXT):		$(HDRS)
 reduce-fasl.$(OBJEXT):		$(HDRS)
 reduce-fns1.$(OBJEXT):		$(HDRS)
 reduce-fns2.$(OBJEXT):		$(HDRS)
@@ -1885,6 +1888,10 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 	then $(CP) $(REDUCE_IMG) $(gensrc); fi
 	chmod 664 $(gensrc)/*
 
+if !inlines
+NOINLINES="-Dnoinlines=T"
+endif !inlines
+
 # "make bootstraprecompile which=<module-name>" and "make recompile which="
 # recompile just one package, assuming everything else is properly up to
 # date (at least if the image file exists at all) and they end up by
@@ -1895,7 +1902,7 @@ bootstraprecompile:	$(HDRS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) \
+	$(XBOOTSTRAPREDUCE) -v -w -r1 $(CSLFLAGS) $(NOINLINES) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -1957,7 +1964,7 @@ bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1978,14 +1985,14 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-o$(BOOTSTRAPREDUCE_IMG) -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z -x $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2022,7 +2029,7 @@ boot.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
 	$(XBOOTSTRAPREDUCE) \
-		-w -r1 -z $(CSLFLAGS) -Dno_init_file \
+		-w -r1 -z $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \

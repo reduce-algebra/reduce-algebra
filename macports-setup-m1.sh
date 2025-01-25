@@ -20,7 +20,7 @@
 # universal versions of enough ports to make it possible to build a
 # "universal" Reduce, ie x86_64+aarch64.
 # On an Intel Mac it starts the same process, but at the time of its release
-# deveral ports will not install in univeral mode, and hance building
+# several ports will not install in univeral mode, and hance building
 # bi-architecture Reduce on Intel hardware is not (yet) possible this way.
 # By doing some manual building of the problematic ports and by tricking the
 # macports system into thinking that they have been installed I suspect that

@@ -163,38 +163,55 @@ symbolic operator euler!:aux;
 
 % Gamma function and friends
 
-algebraic operator gamma,psi,m_gamma; % m_gamma is the incomplete gamma
+algebraic operator Gamma,psi,m_gamma; % m_gamma is the (upper) incomplete gamma
  % function which happens to be produced by definite integration.
+ % Gamma with two arguments is an alias for m_gamma
 
-flag('(gamma),'realvalued);
+flag('(Gamma),'realvalued);
 
 symbolic (operator do!*gamma);
 
 gamma!*rules := {
 
-   gamma(~x)  =>  1 when numberp x and x = 1,
-   gamma(~x)  =>  sqrt(pi) when numberp x and x = (1/2),
+   Gamma(~x)  =>  1 when numberp x and x = 1,
+   Gamma(~x)  =>  sqrt(pi) when numberp x and x = (1/2),
 
-   gamma(~x)  =>  factorial (x-1)
+   Gamma(~x)  =>  factorial (x-1)
       when numberp x and impart x = 0
          and x = floor x and x > 0,
 
-%  gamma(~x)  =>  infinity
+%  Gamma(~x)  =>  infinity
 %     when numberp x and impart x = 0
 %        and x = floor x and x < 1,
 
-   gamma(~x)  =>  gamma(x-1) * (x-1)
+   Gamma(~x)  =>  Gamma(x-1) * (x-1)
       when numberp x and not symbolic !*rounded
        and impart x = 0 and (64*x) = floor(64*x) and x > 1 and x < 50,
 
-   gamma(~x)  =>  pi / (sin(pi*x) * gamma(-x) * (-x))
+   Gamma(~x)  =>  pi / (sin(pi*x) * Gamma(-x) * (-x))
       when numberp x and x < 0 and not (fixp x and x < 1),
 
-   gamma(~x)  =>  do!*gamma(x)
+   Gamma(~x)  =>  do!*Gamma(x)
       when numberp x and not (fixp x and x < 1) and symbolic !*rounded,
 
-   df(gamma(~x), x)  =>  gamma(x) * psi(x),
+   df(Gamma(~x), x)  =>  Gamma(x) * psi(x),
 
+% Gamma with two arguments and m_gamma
+
+   Gamma(~a,0) => Gamma(a),
+
+   Gamma(~a,~x) => sqrt(pi)*(1-erf(sqrt(x))) when numberp(a) and a=1/2,
+
+   Gamma(1,~x) => exp(-x),
+   
+   df(Gamma(~a,~x),~x) => -x^(a-1)*exp(-x),
+
+   m_gamma(~a,0) => 0,
+
+   m_gamma(~a,~x) => sqrt(pi)*erf(sqrt(x)) when numberp(a) and a=1/2,
+
+   m_gamma(1,~x) => exp(-x),
+  
    df(m_gamma(~a,~x),~x) => x^(a-1)*exp(-x)
 };
 
@@ -646,43 +663,57 @@ let zeta!*rules;
 
 % from specfn/sfigamma.red
 
-operator igamma, ibeta;
+operator iGamma, iBeta;
 
-% Set up rule definitions for igamma and ibeta functions.
+% Set up rule definitions for iGamma and iBeta functions.
 
 let
 {
- igamma(~a,~x) => igamma!:eval(a,x)
+ iGamma(~a,~x) => igamma!:eval(a,x)
         when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
 
 % The following is only true for a>0
- igamma(~a,0) => 0 when numberp(a) and a>0,
+ iGamma(~a,0) => 0 when numberp(a) and a>0,
 
 % igamma(0,~x) => -ei(-x),
 
- igamma(~a,~x) => erf(sqrt(x)) when numberp(a) and a=1/2,
+ iGamma(~a,~x) => erf(sqrt(x)) when numberp(a) and a=1/2,
 
- igamma(1,~x) => 1-exp(-x),
+ iGamma(1,~x) => 1-exp(-x),
 
- df(igamma(~a,~x),~x) => x^(a-1)*exp(-x) / gamma(a)
+ df(iGamma(~a,~x),~x) => x^(a-1)*exp(-x) / Gamma(a)
 };
 
 let
 {
- ibeta(~a,~b,~x) => ibeta!:eval(a,b,x)
+ iBeta(~a,~b,~x) => ibeta!:eval(a,b,x)
         when numberp(a) and numberp(b) and numberp(x) and lisp !*rounded
              and repart(a)>0 and repart(b)>0 and x>=0 and x<=1,
 
- ibeta(~a,1,~x) => x^a,
- ibeta(1,~b,~x) => 1 - (1-x)^b,
+ iBeta(~a,1,~x) => x^a,
+ iBeta(1,~b,~x) => 1 - (1-x)^b,
 
- df(ibeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
+ df(iBeta(~a,~b,~x),~x) => (1-x)^(b-1)*x^(a-1) / beta(a,b),
 
- ibeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
+ iBeta(~a,~b,~x) => int(t^(a-1)*(1-t)^(b-1),t,0,x) / beta(a,b)
         when numberp a and fixp a and a>0 and a<6 and
              numberp b and fixp b and b>0 and b<6
 
 };
+
+% The next 2 declarations enable better checking of number of arguments
+% by simpiden
+
+
+flag('(Gamma Beta iGamma iBeta m_gamma polygamma psi zeta
+       Pochhammer dilog polylog Lerch_Phi), 'specfn);
+       
+deflist('((Gamma (1 2)) (Beta 2) (iGamma 2) (iBeta 3)
+          (m_gamma 2) (polygamma 2) (psi 1)
+	  (zeta 1) (Pochhammer 2) (dilog 1)
+	  (polylog 2) (Lerch_Phi 3)
+	 ), 'number!-of!-args);
+
 
 endmodule;
 

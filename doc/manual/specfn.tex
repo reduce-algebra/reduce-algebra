@@ -280,13 +280,19 @@ included.
 \subsubsection{Incomplete Gamma Functions}
 \index{Incomplete Gamma functions}
 \hypertarget{operator:M_GAMMA}{}
-\ttindextype[SPECFN]{igamma}{operator}\ttindextype[SPECFN]{m\_gamma}{operator}
-The (unnormalised) incomplete gamma function is provided by the binary function
-\f{m\_gamma}. In the literature it is normally represented as $\gamma(a,z)$
-and is defined by
-\[ \gamma(a, z) = \int_0^z e^{-t}t^{a-1}\, \mathrm{d}t.\]
+\ttindextype[SPECFN]{iGamma}{operator}\ttindextype[SPECFN]{m\_gamma}{operator}
+There are two incomplete gamma functions defined in the literature, see the DLMF:NIST
+chapter on \href{https://dlmf.nist.gov/8.2#i}{Incomplete Gamma functions}:
+\begin{align*}
+  \gamma(a, z) = \int_0^z e^{-t}t^{a-1}\, \mathrm{d}t, \\
+  \Gamma(a, z) = \int_z^{\infty} e^{-t}t^{a-1}\, \mathrm{d}t.
+\end{align*}
+called (unnormalised) lower and upper incomplete gamma function, respectively.
+$\gamma(a,z)$ is provided by the binary function \f{m\_gamma}, $\Gamma(a,z)$ by
+the two argument version of the function \f{Gamma}.
+
 The normalised incomplete gamma function $P(a,z)$ is provided by the binary
-function \f{igamma} and is defined as
+function \f{iGamma} and is defined as
 \[P(a,z) = \frac{\gamma(a,z)}{\Gamma(a)}.\]
 
 \subsubsection{The Beta Functions}
@@ -1146,8 +1152,9 @@ $S(x)$ & \f{Fresnel\_S(x)}\\[5pt]
 $B(a,b)$ & \f{Beta(a,b)}\\
 $\Gamma(a)$ & \f{Gamma(a)}\\
 normalized incomplete Beta $I_{x}(a,b)=\frac{\textstyle B_{x}(a,b)}{\textstyle B(a,b)}$ & \f{iBeta(a,b,x)}\\ % http://dlmf.nist.gov/8.2.E4
-normalized incomplete Gamma $P(a,z)=\frac{\textstyle\gamma(a,z)}{\textstyle\Gamma(a)}$ & \f{iGamma(a,z)}\\
-incomplete Gamma $\gamma(a,z)$ & \f{m\_gamma(a,z)}\\
+normalized (lower) incomplete Gamma $P(a,z)=\frac{\textstyle\gamma(a,z)}{\textstyle\Gamma(a)}$ & \f{iGamma(a,z)}\\
+incomplete (lower) Gamma $\gamma(a,z)$ & \f{m\_gamma(a,z)}\\
+incomplete (upper) Gamma $\Gamma(a,z)$ & \f{Gamma(a,z)}\\
 $(a)_k$ & \f{Pochhammer(a,k)}\\
 $\psi(z)$ & \f{Psi(z)}\\
 $\psi^{(n)}(z)$ & \f{Polygamma(n,z)}\\[5pt]

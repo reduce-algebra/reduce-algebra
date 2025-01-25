@@ -15,7 +15,7 @@ esac
 
 # Having any partially-built ports in a confused state could hurt, so
 # tidy up first.
-port clean installed
+port clean installed > /dev/null
 
 all=`port installed installed | grep active | tail -n +2 | sed -e 's/@.*$//g'`
 failures=""
@@ -33,7 +33,7 @@ do
   fi
   if test "$what" != "yes"
   then
-    port -N clean --all $P rdepof:$P
+    port -N clean --all $P rdepof:$P > /dev/null
     if ! port -N install $P +universal
     then
       failures="$failures $P"

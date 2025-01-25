@@ -58,8 +58,9 @@ and
         a^2+3*a*b+2*b^2
 \end{verbatim}
 will both simplify to the latter form.  With \sw{exp}
-off, they would remain unchanged, unless the complete factoring
-(\sw{allfac}) option were in force. \sw{exp} is normally on.
+off, they would remain unchanged. The switch \sw{exp} is normally on.
+Note that if the complete factoring (\sw{allfac}) option is in force it affects
+the output independently of the setting of \sw{exp}.
 
 Several operators that expect a polynomial as an argument behave
 differently when \sw{exp} is off, since there is often only one term at

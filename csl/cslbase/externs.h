@@ -673,6 +673,9 @@ extern void* extract_pointer(LispObject a);
 extern LispObject Lencapsulatedp(LispObject, LispObject a);
 //typedef void initfn(LispObject*, LispObject**, LispObject*volatile*);
 
+extern void* jitcompile(const char* bytes, size_t nbytes,
+                        LispObject env, int nargs);
+
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
 

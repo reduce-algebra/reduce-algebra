@@ -1090,4 +1090,83 @@ const char *fourup_arg_names[] =
 bool fourup_arg_traceflags[sizeof(fourup_arg_functions)/sizeof(
                                fourup_arg_functions[0])];
 
+
+void dump16bytes(void* p)
+{   printf("Code starts: ");
+    for (int i=0; i<16; i++)
+        printf("%02x ", reinterpret_cast<unsigned char*>(p)[i]);
+    printf("\n");
+}
+
+// Here def will be the name of the function being called, and qenv(def)
+// will give access to the bytecodes.
+
+LispObject jitcoded_0(LispObject def)
+{   LispObject d = qenv(def);
+    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+                            length_of_byteheader(vechdr(car(d)))-CELL,
+                            cdr(d), 0);
+    if (code == nullptr) return bytecoded_0(def);
+    qfn0(def) = reinterpret_cast<no_args*>(code);
+    dump16bytes(code);
+    return reinterpret_cast<no_args*>(code)(def);
+}
+
+LispObject jitcoded_1(LispObject def, LispObject a)
+{   LispObject d = qenv(def);
+    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+                            length_of_byteheader(vechdr(car(d)))-CELL,
+                            cdr(d), 1);
+    if (code == nullptr) return bytecoded_1(def, a);
+    qfn1(def) = reinterpret_cast<one_arg*>(code);
+    dump16bytes(code);
+    return reinterpret_cast<one_arg*>(code)(def, a);
+}
+
+LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
+{   LispObject d = qenv(def);
+    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+                            length_of_byteheader(vechdr(car(d)))-CELL,
+                            cdr(d), 2);
+    if (code == nullptr) return bytecoded_2(def, a, b);
+    qfn2(def) = reinterpret_cast<two_args*>(code);
+    dump16bytes(code);
+    return reinterpret_cast<two_args*>(code)(def, a, b);
+}
+
+LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
+                      LispObject c)
+{   LispObject d = qenv(def);
+    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+                            length_of_byteheader(vechdr(car(d)))-CELL,
+                            cdr(d), 3);
+    if (code == nullptr) return bytecoded_3(def, a, b, c);
+    qfn3(def) = reinterpret_cast<three_args*>(code);
+    dump16bytes(code);
+    return reinterpret_cast<three_args*>(code)(def, a, b, c);
+}
+
+LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4up)
+{   LispObject d = qenv(def);
+    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+                            length_of_byteheader(vechdr(car(d)))-CELL,
+                            cdr(d), 4);
+    if (code == nullptr) return bytecoded_4up(def, a1, a2, a3, a4up);
+    qfn4up(def) = reinterpret_cast<fourup_args*>(code);
+    dump16bytes(code);
+    return reinterpret_cast<fourup_args*>(code)(def, a1, a2, a3, a4up);
+}
+
+LispObject Lmake_jit(LispObject env, LispObject fname)
+{   SingleValued fn;
+    if (!is_symbol(fname)) return aerror1("make-jit", fname);
+    if (qfn0(fname) == bytecoded_0) qfn0(fname) = jitcoded_0;
+    if (qfn1(fname) == bytecoded_1) qfn1(fname) = jitcoded_1;
+    if (qfn2(fname) == bytecoded_2) qfn2(fname) = jitcoded_2;
+    if (qfn3(fname) == bytecoded_3) qfn3(fname) = jitcoded_3;
+    if (qfn4up(fname) == bytecoded_4up) qfn4up(fname) = jitcoded_4up;
+    return fname;
+}
+
 // end of eval4.cpp

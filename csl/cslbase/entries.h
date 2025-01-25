@@ -79,14 +79,14 @@ extern LispObject Lbytecounts_0(LispObject env);
 extern LispObject byteopt_0(LispObject def);
 extern LispObject byteoptrest_0(LispObject def);
 extern LispObject funarged_0(LispObject env);
-extern LispObject tracefunarged_0(LispObject env);
 extern LispObject hardopt_0(LispObject def);
 extern LispObject hardoptrest_0(LispObject def);
 extern LispObject interpreted_0(LispObject env);
+extern LispObject jitcoded_0(LispObject env);
 extern LispObject tracebytecoded_0(LispObject env);
 extern LispObject tracebyteopt_0(LispObject def);
 extern LispObject tracebyteoptrest_0(LispObject def);
-extern LispObject tracebytecoded_0(LispObject env);
+extern LispObject tracefunarged_0(LispObject env);
 extern LispObject traceinterpreted_0(LispObject env);
 extern LispObject tracehardopt_0(LispObject def);
 extern LispObject tracehardoptrest_0(LispObject def);
@@ -108,10 +108,10 @@ extern LispObject tracefunarged_1(LispObject env, LispObject a1);
 extern LispObject hardopt_1(LispObject def, LispObject a);
 extern LispObject hardoptrest_1(LispObject def, LispObject a);
 extern LispObject interpreted_1(LispObject env, LispObject a1);
+extern LispObject jitcoded_1(LispObject env, LispObject a);
 extern LispObject tracebytecoded_1(LispObject env, LispObject a);
 extern LispObject tracebyteopt_1(LispObject def, LispObject a);
 extern LispObject tracebyteoptrest_1(LispObject def, LispObject a);
-extern LispObject tracebytecoded_1(LispObject env, LispObject a);
 extern LispObject traceinterpreted_1(LispObject env, LispObject a1);
 extern LispObject tracehardopt_1(LispObject def, LispObject a);
 extern LispObject tracehardoptrest_1(LispObject def, LispObject a);
@@ -236,6 +236,7 @@ extern LispObject Lmacroexpand(LispObject env, LispObject a);
 extern LispObject Lmacroexpand_1(LispObject env, LispObject a);
 extern LispObject Lmacro_function(LispObject env, LispObject a);
 extern LispObject Lmake_global(LispObject env, LispObject a);
+extern LispObject Lmake_jit(LispObject env, LispObject a);
 extern LispObject Lmake_keyword(LispObject env, LispObject a);
 extern LispObject Lmake_special(LispObject env, LispObject a);
 extern LispObject Lmapstore(LispObject env, LispObject a);
@@ -340,20 +341,22 @@ extern LispObject byteoptrest_2(LispObject def, LispObject a,
                                 LispObject b);
 extern LispObject funarged_2(LispObject env, LispObject a1,
                              LispObject a2);
-extern LispObject tracefunarged_2(LispObject env, LispObject a1,
-                                  LispObject a2);
 extern LispObject hardopt_2(LispObject def, LispObject a,
                             LispObject b);
 extern LispObject hardoptrest_2(LispObject def, LispObject a,
                                 LispObject b);
 extern LispObject interpreted_2(LispObject env, LispObject a1,
                                 LispObject a2);
+extern LispObject jitcoded_2(LispObject env, LispObject a,
+                             LispObject b);
 extern LispObject tracebyteopt_2(LispObject def, LispObject a,
                                  LispObject b);
 extern LispObject tracebyteoptrest_2(LispObject def, LispObject a,
                                      LispObject b);
 extern LispObject tracebytecoded_2(LispObject env, LispObject a,
                                    LispObject b);
+extern LispObject tracefunarged_2(LispObject env, LispObject a1,
+                                  LispObject a2);
 extern LispObject traceinterpreted_2(LispObject env, LispObject a1,
                                      LispObject a2);
 extern LispObject tracehardopt_2(LispObject def, LispObject a,
@@ -595,14 +598,14 @@ extern LispObject byteoptrest_3(LispObject def, LispObject,
                                 LispObject, LispObject);
 extern LispObject funarged_3(LispObject env, LispObject, LispObject,
                              LispObject);
-extern LispObject tracefunarged_3(LispObject env, LispObject,
-                                  LispObject, LispObject);
 extern LispObject hardopt_3(LispObject def, LispObject, LispObject,
                             LispObject);
 extern LispObject hardoptrest_3(LispObject def, LispObject,
                                 LispObject, LispObject);
 extern LispObject interpreted_3(LispObject env, LispObject,
                                 LispObject, LispObject);
+extern LispObject jitcoded_3(LispObject env, LispObject, LispObject,
+                             LispObject);
 extern LispObject tracebytecoded_3(LispObject env, LispObject,
                                    LispObject, LispObject);
 extern LispObject tracebyteopt_3(LispObject def, LispObject,
@@ -611,6 +614,8 @@ extern LispObject tracebyteoptrest_3(LispObject def, LispObject,
                                      LispObject, LispObject);
 extern LispObject tracebytecoded_3(LispObject env, LispObject,
                                    LispObject, LispObject);
+extern LispObject tracefunarged_3(LispObject env, LispObject,
+                                  LispObject, LispObject);
 extern LispObject traceinterpreted_3(LispObject env, LispObject,
                                      LispObject, LispObject);
 extern LispObject tracehardopt_3(LispObject def, LispObject,
@@ -641,9 +646,6 @@ extern LispObject byteoptrest_4up(LispObject def, LispObject a1,
 extern LispObject funarged_4up(LispObject env, LispObject a1,
                                LispObject a2,
                                LispObject a3, LispObject a4up);
-extern LispObject tracefunarged_4up(LispObject env, LispObject a1,
-                                    LispObject a2,
-                                    LispObject a3, LispObject a4up);
 extern LispObject hardopt_4up(LispObject def, LispObject a1,
                               LispObject a2,
                               LispObject a3, LispObject a4up);
@@ -653,6 +655,9 @@ extern LispObject hardoptrest_4up(LispObject def, LispObject a1,
 extern LispObject interpreted_4up(LispObject env, LispObject a1,
                                   LispObject a2,
                                   LispObject a3, LispObject a4up);
+extern LispObject jitcoded_4up(LispObject env, LispObject a1,
+                               LispObject a2,
+                               LispObject a3, LispObject a4up);
 extern LispObject tracebyteopt_4up(LispObject def, LispObject a1,
                                    LispObject a2,
                                    LispObject a3, LispObject a4up);
@@ -665,6 +670,9 @@ extern LispObject tracebytecoded0(LispObject env, LispObject a1,
 extern LispObject tracebytecoded_4up(LispObject env, LispObject a1,
                                      LispObject a2,
                                      LispObject a3, LispObject a4up);
+extern LispObject tracefunarged_4up(LispObject env, LispObject a1,
+                                    LispObject a2,
+                                    LispObject a3, LispObject a4up);
 extern LispObject traceinterpreted_4up(LispObject env, LispObject a1,
                                        LispObject a2,
                                        LispObject a3, LispObject a4up);

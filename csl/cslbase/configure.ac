@@ -620,6 +620,11 @@ then
   AC_DEFINE(EXTREME_DEBUG, [1], [Show down garbage collection dramatically])
 fi
 
+AC_ARG_WITH(inlines,
+  AS_HELP_STRING([--with-inlines],
+                 [--without-inlines supresses inline functions in bootstrapreduce]),
+  [],
+  [with-inlines="yes"])
 
 AC_ARG_ENABLE(profile,
   AS_HELP_STRING([--enable-profile],
@@ -1980,6 +1985,7 @@ AM_CONDITIONAL(redfront, test "$with_redfront" != "no")
 AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
 AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
+AM_CONDITIONAL(inlines, test "$with_inlines" = "yes")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict

@@ -770,11 +770,13 @@ sine and cosine integrals respectively.
 \ttindextype{igamma}{operator}\ttindextype{Polygamma}{operator}\ttindextype{psi}{operator}
 \textbf{Beta, Gamma and Related Functions:}
 \begin{verbatim}
-    Beta ibeta Gamma igamma psi Polygamma
+    Beta ibeta Gamma iGamma psi Polygamma
 \end{verbatim}
-The \f{Gamma} function is unary whilst \f{Beta} is binary.
-The binary function \f{igamma} and ternary function \f{ibeta}
-are the (normalised) incomplete Gamma and Beta functions respectively.
+The \f{Gamma} operator represents the Gamma function $\Gamma(x)$ when used with one argument;
+with two arguments it is the upper incomplete Gamma function $\Gamma(a,x)$.
+\f{Beta} is binary.
+The binary function \f{iGamma} and ternary function \f{iBeta}
+are the (normalised) lower incomplete Gamma ($\gamma(a,x)$) and Beta functions respectively.
 The unary function \f{psi} is sometimes known as the Digamma function and
 the binary function \f{Polygamma} with integer first parameter $n$ is the
 $n$th derivative of the function \f{psi}.
