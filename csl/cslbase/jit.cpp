@@ -210,18 +210,37 @@ void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
 
 void showasm(const char* which, const unsigned char* data)
 {   printf("Argcount %s:", which);
-    for (int i=0; i<16; i++)
+#ifdef __aarch64__
+// For aarch64 instructions are best viewed as 32-bit items.
+    for (int i=0; i<24; i+=4)
+    {   uint32_t w =
+            data[i] |
+            (data[i+1]<<8) |
+            (data[i+2]<<16) |
+            (data[i+3]<<24);
+        printf(" %08x", w);
+    }
+#else // __aarch64__
+// For other systems (well x86_64 is the only one at present) I will
+// display a sequence of bytes.
+    for (int i=0; i<24; i++)
         printf(" %02x", data[i]);
+#endif // __aarch64__
     printf("\n");
 }
 
+
+// In the display for showasm I can overrun the instructions in some of
+// the functions and the consequence is that after the end of asmtest0
+// I will show data from asmtest1. That may look odd to start with!
+
 LispObject Lshowasm(LispObject env)
 {   printf("Show binary from my inline-written assembly code\n");
-    showasm("0", reinterpret_cast<const unsigned char*>(Lasmtest_0));
-    showasm("1", reinterpret_cast<const unsigned char*>(Lasmtest_1));
-    showasm("2", reinterpret_cast<const unsigned char*>(Lasmtest_2));
-    showasm("3", reinterpret_cast<const unsigned char*>(Lasmtest_3));
-    showasm("4up", reinterpret_cast<const unsigned char*>(Lasmtest_4up));
+    showasm("0", reinterpret_cast<const unsigned char*>(CSLasmtest_0));
+    showasm("1", reinterpret_cast<const unsigned char*>(CSLasmtest_1));
+    showasm("2", reinterpret_cast<const unsigned char*>(CSLasmtest_2));
+    showasm("3", reinterpret_cast<const unsigned char*>(CSLasmtest_3));
+    showasm("4up", reinterpret_cast<const unsigned char*>(CSLasmtest_4up));
     return nil;
 }
 

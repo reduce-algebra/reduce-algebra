@@ -44,43 +44,43 @@
 #if defined CYGWIN
 
 // I will put my explanation here. First I use the gcc inline-assembler
-// to create 5 little functions called Lasmtest_N. A call to the function
+// to create 5 little functions called CSLasmtest_N. A call to the function
 // showasm() will display the initial bytes of each in binary. And
 // calls asmtest0(), asmtest1(1), asmtest2(1,2) etc try them out. The idea
 // is that these can be a base for hand-crafting assembly code and testing
 // it a bit.
 
 __asm__ (
-   ".global Lasmtest_0\n"
-   "Lasmtest_0:\n"
+   ".global CSLasmtest_0\n"
+   "CSLasmtest_0:\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_1\n"
-   "Lasmtest_1:\n"
+   ".global CSLasmtest_1\n"
+   "CSLasmtest_1:\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_2\n"
-   "Lasmtest_2:\n"
+   ".global CSLasmtest_2\n"
+   "CSLasmtest_2:\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_3\n"
-   "Lasmtest_3:\n"
+   ".global CSLasmtest_3\n"
+   "CSLasmtest_3:\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_4up\n"
-   "Lasmtest_4up:\n"
+   ".global CSLasmtest_4up\n"
+   "CSLasmtest_4up:\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
@@ -105,36 +105,36 @@ void plant(const char* bytes, size_t len, LispObject env, int nargs)
 // really only one version of that code will be required.
 
 __asm__ (
-   ".global Lasmtest_0\n"
-   "Lasmtest_0:\n"
+   ".global CSLasmtest_0\n"
+   "CSLasmtest_0:\n"
    "	mov %rdx,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_1\n"
-   "Lasmtest_1:\n"
+   ".global CSLasmtest_1\n"
+   "CSLasmtest_1:\n"
    "	mov %rdx,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_2\n"
-   "Lasmtest_2:\n"
+   ".global CSLasmtest_2\n"
+   "CSLasmtest_2:\n"
    "	mov %rdx,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_3\n"
-   "Lasmtest_3:\n"
+   ".global CSLasmtest_3\n"
+   "CSLasmtest_3:\n"
    "	mov %rdx,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_4up\n"
-   "Lasmtest_4up:\n"
+   ".global CSLasmtest_4up\n"
+   "CSLasmtest_4up:\n"
    "	mov %rdx,%rax\n"
    "	ret\n"
     );
@@ -148,40 +148,40 @@ void plant(const char* bytes, size_t len, LispObject env, int nargs)
 #else
 
 __asm__ (
-   ".global Lasmtest_0\n"
-   "Lasmtest_0:\n"
+   ".global CSLasmtest_0\n"
+   "CSLasmtest_0:\n"
    "	endbr64\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_1\n"
-   "Lasmtest_1:\n"
+   ".global CSLasmtest_1\n"
+   "CSLasmtest_1:\n"
    "	endbr64\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_2\n"
-   "Lasmtest_2:\n"
+   ".global CSLasmtest_2\n"
+   "CSLasmtest_2:\n"
    "	endbr64\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_3\n"
-   "Lasmtest_3:\n"
+   ".global CSLasmtest_3\n"
+   "CSLasmtest_3:\n"
    "	endbr64\n"
    "	mov %rsi,%rax\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_4up\n"
-   "Lasmtest_4up:\n"
+   ".global CSLasmtest_4up\n"
+   "CSLasmtest_4up:\n"
    "	endbr64\n"
    "	mov %rsi,%rax\n"
    "	ret\n"

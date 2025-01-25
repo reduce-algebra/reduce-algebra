@@ -38,35 +38,71 @@
 // See comments in jit-x86-64.cpp for an explanation of what this is
 // all about.
 
+#ifdef APPLE_MACINTOSH
+
 __asm__ (
-   ".global Lasmtest_0\n"
-   "Lasmtest_0:\n"
+   ".global _CSLasmtest_0\n"
+   "_CSLasmtest_0:\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_1\n"
-   "Lasmtest_1:\n"
+   ".global _CSLasmtest_1\n"
+   "_CSLasmtest_1:\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_2\n"
-   "Lasmtest_2:\n"
+   ".global _CSLasmtest_2\n"
+   "_CSLasmtest_2:\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_3\n"
-   "Lasmtest_3:\n"
+   ".global _CSLasmtest_3\n"
+   "_CSLasmtest_3:\n"
    "	ret\n"
     );
 
 __asm__ (
-   ".global Lasmtest_4up\n"
-   "Lasmtest_4up:\n"
+   ".global _CSLasmtest_4up\n"
+   "_CSLasmtest_4up:\n"
    "	ret\n"
     );
+
+#else // APPLE_MACINTOSH
+
+__asm__ (
+   ".global CSLasmtest_0\n"
+   "CSLasmtest_0:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global CSLasmtest_1\n"
+   "CSLasmtest_1:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global CSLasmtest_2\n"
+   "CSLasmtest_2:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global CSLasmtest_3\n"
+   "CSLasmtest_3:\n"
+   "	ret\n"
+    );
+
+__asm__ (
+   ".global CSLasmtest_4up\n"
+   "CSLasmtest_4up:\n"
+   "	ret\n"
+    );
+
+#endif // APPLE_MACINTOSH
 
 void plant(const char* bytes, size_t len, LispObject env, int nargs)
 {
