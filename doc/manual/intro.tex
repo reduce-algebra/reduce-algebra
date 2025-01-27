@@ -30,9 +30,11 @@ like:
 \begin{verbatim}
      Reduce (Free CSL version), 25-Oct-14 ...
 \end{verbatim}
-where the version number and the system release date will change from time
-to time. It proceeds to execute the commands in \hyperlink{startup file}{user's startup (\texttt{reducerc}\ttindextype{reducerc}{file}) file}, if such a file is present,
-then prompts the user for input by:
+where the version number and the system release date will change from
+time to time.  It proceeds to execute the commands in
+\hyperlink{startup file}{user's startup
+  (\texttt{reducerc}\ttindextype{reducerc}{file}) file}, if such a
+file is present, then prompts the user for input by:
 \begin{verbatim}
      1:
 \end{verbatim}
@@ -45,8 +47,8 @@ This expression would normally be followed by another character (a
 \key{Return} on an ASCII keyboard) to ``wake up'' the system, which would
 then input the expression, evaluate it, and return the result:
 \begin{verbatim}
-       2                    2            2
-      x  + 2*x*y + 2*x*z + y  + 2*y*z + z
+      2                    2            2
+     x  + 2*x*y + 2*x*z + y  + 2*y*z + z
 \end{verbatim}
 Let us review this simple example to learn a little more about the way that
 {\REDUCE} works. First, we note that {\REDUCE} deals with variables, and
@@ -84,7 +86,7 @@ You can also get the same result by saying
 \end{verbatim}
 Since we want exact results in algebraic calculations, it is essential that
 integer arithmetic be performed to arbitrary precision, as in the above
-example. Furthermore, the {\tt FOR} statement in the above is illustrative of a
+example. Furthermore, the \texttt{FOR} statement in the above is illustrative of a
 whole range of combining forms that {\REDUCE} supports for the convenience of
 the user.
 
@@ -98,7 +100,7 @@ variable, such as
 \begin{verbatim}
      u := (x+y+z)^2;
 \end{verbatim}
-If we now use \var{U} in later calculations, the value of the right-hand
+If we now use \var{u} in later calculations, the value of the right-hand
 side of the above will be used.
 
 The results of a given calculation are also saved in the variable
@@ -110,7 +112,7 @@ For example, the expression
      df(ws,x);
 \end{verbatim}
 following the previous evaluation will calculate the derivative of
-\texttt{(x+y+z)\textasciicircum2} with respect to \var{X}. Alternatively,
+\texttt{(x+y+z)\textasciicircum2} with respect to \var{x}. Alternatively,
 \begin{verbatim}
      int(ws,y);
 \end{verbatim}
@@ -124,10 +126,10 @@ declares \var{m} to be a two by two matrix, and
 \begin{verbatim}
      m := mat((a,b),(c,d));
 \end{verbatim}
-gives its elements values.  Expressions that include \var{M} and make
+gives its elements values.  Expressions that include \var{m} and make
 algebraic sense may now be evaluated, such as \texttt{1/m} to give the
 inverse, \texttt{2*m - u*m\textasciicircum2} to give us another matrix
-and \texttt{det(m)} to give us the determinant of \var{M}.
+and \texttt{det(m)} to give us the determinant of \var{m}.
 
 {\REDUCE} has a wide range of substitution capabilities. The system knows
 about elementary functions, but does not automatically invoke many of their
@@ -144,7 +146,7 @@ where the tilde in front of the variables \var{x} and \var{y} indicates
 that the rules apply for all values of those variables.
 The result of this calculation is
 \begin{verbatim}
-        -(cos(2*a) + sin(2*b))
+     -(cos(2*a) + sin(2*b))
 \end{verbatim}
 \extendedmanual{See also the sections on ASSIST
 (chapter~\ref{ASSIST}), CAMAL (chapter~\ref{CAMAL}) and TRIGSIMP
@@ -176,7 +178,7 @@ These algebraic manipulations illustrate the algebraic mode of {\REDUCE}.
 executing Lisp statements. These statements follow the syntax of Lisp,
 e.g.
 \begin{verbatim}
-  symbolic car '(a);
+     symbolic car '(a);
 \end{verbatim}
 Communication between the two modes is possible.
 
@@ -185,4 +187,3 @@ material in the full {\REDUCE} manual in order to learn just how extensive
 the range of facilities really is.  If further tutorial material is
 desired, the seven {\REDUCE} Interactive Lessons by David R. Stoutemyer are
 recommended.  These are normally distributed with the system.
-

@@ -16,7 +16,7 @@ which in turn are sequences of basic characters.
 \item The 10 decimal digits \texttt{0} through \texttt{9}
 \item The special characters \texttt{\frenchspacing{}
       \textunderscore{} ! " \textdollar{}
-      \% ' ( ) * + , - . / : ; < > = \{ \}} \meta{blank}
+      \% ' ( ) * + , - . / : ; < > = \{ \} }\meta{blank}
 \end{enumerate}
 With the exception of strings and characters preceded by an
 exclamation mark\index{Exclamation mark}, the case
@@ -54,12 +54,12 @@ numbers again, to any precision. Such numbers are called \emph{real}.
 \index{Real number}  They can be input in two ways:
 \begin{enumerate}
 \item as a signed or unsigned sequence of any number of decimal digits
-      with an embedded or trailing decimal point.
-\item as in 1. followed by a decimal exponent which is written as the
+      with an embedded or trailing decimal point;
+\item as in 1.\ followed by a decimal exponent which is written as the
       letter \texttt{e} followed by a signed or unsigned integer.
 \end{enumerate}
-e.g. \texttt{32. +32.0 0.32e2} and \texttt{320.e-1} are all representations of
-32.
+E.g.\ \texttt{32.}, \texttt{+32.0}, \texttt{0.32e2} and
+\texttt{320.e-1} are all representations of 32.
 
 The declaration \texttt{scientific\_notation}\ttindextype{scientific\_notation}{declaration}
 controls the output format of floating point numbers.  At
@@ -71,24 +71,24 @@ more zeros after the decimal point is printed in scientific notation.  To
 change these defaults, \texttt{scientific\_notation} can be used in one of two
 ways.
 
-\texttt{SCIENTIFIC\_NOTATION}\ \emph{m};
+\texttt{SCIENTIFIC\_NOTATION }\emph{m},
 
-where \emph{m} is a positive
+with \emph{m} a positive
 integer, sets the printing format so that a number with more than \emph{m}
 digits before the decimal point, or \emph{m} or more zeros after the
 decimal point, is printed in scientific notation.
 
-\texttt{SCIENTIFIC\_NOTATION}\{\emph{m,n}\},
+\texttt{SCIENTIFIC\_NOTATION\{}\emph{m}\texttt{,}\emph{n}\texttt{\}},
 
 with \emph{m} and \emph{n} both positive integers, sets the
 format so that a number with more than \emph{m} digits before the decimal
 point, or \emph{n} or more zeros after the decimal point is printed in
 scientific notation.
 
-\textit{CAUTION:}  The unsigned part of any number\index{Number} may \emph{not}
-begin with a decimal point, as this causes confusion with the \texttt{CONS} (.)
-operator, i.e., \emph{NOT ALLOWED ARE}: \texttt{.5  -.23  +.12};
-use \texttt{0.5 -0.23 +0.12} instead.
+\textit{CAUTION}:  The unsigned part of any number\index{Number} may \emph{not}
+begin with a decimal point, as this causes confusion with the \texttt{CONS} (\texttt{.})
+operator, i.e., \emph{NOT ALLOWED ARE}: \texttt{.5}, \texttt{-.23}, \texttt{+.12};
+use \texttt{0.5}, \texttt{-0.23}, \texttt{+0.12} instead.
 
 \section{Identifiers}
 
@@ -110,13 +110,13 @@ is not.
 
 A sequence of alphanumeric characters in which the first is a digit is
 interpreted as a product.  For example, \texttt{2ab3c} is interpreted as
-\texttt{2*ab3c}.  There is one exception to this:  If the first letter after a
-digit is \texttt{E}, the system will try to interpret that part of the
+$2 \times \mathit{ab3c}$.  There is one exception to this:  If the first letter after a
+digit is \texttt{e}, the system will try to interpret that part of the
 sequence as a real number\index{Real number}, which may fail in some cases.  For
-example, \texttt{2E12} is the real number $2.0*10^{12}$ and \texttt{2e3c} is
-2000.0*C. If the \texttt{E} is not followed by a number, 0 is assumed as the
+example, \texttt{2e12} is the real number $2.0 \times 10^{12}$ and \texttt{2e3c} is
+$2000.0 \times c$. If the \texttt{e} is not followed by a number, 0 is assumed as the
 decimal exponent, thus \texttt{2e} is interpreted as 2 and \texttt{2ebc} as
-2*bc.
+$2 \times \mathit{bc}$.
 
 Special characters, such as \texttt{-}, \texttt{*}, and blank, may be
 used in identifiers
@@ -126,10 +126,11 @@ exclamation mark in input.  For example:
         light!-years    d!*!*n         good! morning
         !$sign          !5goldrings
 \end{verbatim}
-\textit{CAUTION:} Many system identifiers have such special characters in their
-names (especially * and =). If the user accidentally picks the name of one
-of them for his own purposes it may have catastrophic consequences for his
-{\REDUCE} run.  Users are therefore advised to avoid such names.
+\textit{CAUTION}: Many system identifiers have such special characters
+in their names (especially \texttt{*} and \texttt{=}).  If the user
+accidentally picks the name of one of them for his own purposes it may
+have catastrophic consequences for his {\REDUCE} run.  Users are
+therefore advised to avoid such names.
 
 Identifiers are used as variables, labels and to name arrays, operators
 and procedures.
@@ -146,18 +147,21 @@ the identifier.  For example, with the following values assigned to
 \texttt{fancy\_lower\_digits}, the identifiers \texttt{ab12cd34} and
 \texttt{abcd34} are displayed as follows:
 
-\begin{tabular}{ccc}
-\texttt{fancy\_lower\_digits} & \texttt{ab12cd34} & \texttt{abcd34} \\
-\texttt{t} & \(ab12cd34\) & \(abcd_{34}\) \\
-\texttt{all} & \(ab_{12}cd_{34}\) & \(abcd_{34}\) \\
-\texttt{nil} & \(ab12cd34\) & \(abcd34\)
-\end{tabular}
+\begin{center}
+  \begin{tabular}{c|cc}
+    \texttt{fancy\_lower\_digits} & \texttt{ab12cd34} & \texttt{abcd34} \\
+    \hline
+    \texttt{t} & \(ab12cd34\) & \(abcd_{34}\) \\
+    \texttt{all} & \(ab_{12}cd_{34}\) & \(abcd_{34}\) \\
+    \texttt{nil} & \(ab12cd34\) & \(abcd34\)
+  \end{tabular}
+\end{center}
 
 \subsection*{Restrictions}
 
-The reserved words listed in appendix~\ref{reservedids} may not be used as
-identifiers.  No spaces may appear within an identifier, and an identifier
-may not extend over a line of text.
+The reserved words listed in \hyperlink{sec:appendixa}{Appendix A} may
+not be used as identifiers.  No spaces may appear within an
+identifier, and an identifier may not extend over a line of text.
 
 %(Hyphenation of an identifier, by
 %using a reserved character as a hyphen before an end-of-line character is
@@ -203,7 +207,7 @@ include:
 \ttindextype{Catalan}{reserved variable}
 \index{Reserved variable !Catalan@\texttt{Catalan}}
 
-\item[e] Intended to represent the base of
+\item[e] Intended to represent the base of%
 \ttindextype{e}{reserved variable}
 the natural logarithms.  \texttt{log(e)}, if it occurs in an expression, is
 automatically replaced by 1.  If \sw{rounded}\ttindexswitch{rounded} is
@@ -218,8 +222,8 @@ floating point precision\index{Numerical precision}.
 \ttindextype{Golden\_Ratio}{reserved variable}
 \index{Reserved variable !Golden\_Ration@\var{Golden\_Ratio}}
 
-\item[i] Intended to represent the square
-\ttindextype{i}{reserved variable}
+\item[i] Intended to represent the square%
+\ttindextype{i}{reserved variable}%
 \index{Reserved variable !I@\texttt{i}}
 root of $-1$. \texttt{i\textasciicircum2} is replaced by $-1$, and
 appropriately for higher powers of \texttt{i}.  This applies only to the
@@ -227,10 +231,9 @@ symbol \texttt{i} used on the top
 level, not as a formal parameter in a procedure, a local variable, nor in
 the context \texttt{for i:= ...}.
 
-\item[infinity] Intended to represent $\infty$
-\ttindextype{infinity}{reserved variable}
+\item[infinity] Intended to represent $\infty$%
+\ttindextype{infinity}{reserved variable}%
 \index{Reserved variable !infinity@\texttt{infinity}}
-
 in limit and power series calculations for example, as well as in definite integration.
 Note however that the
 current system does \emph{not} do proper arithmetic on $\infty$.  For example,
@@ -244,7 +247,7 @@ current system does \emph{not} do proper arithmetic on $\infty$.  For example,
 \ttindextype{khinchin}{reserved variable}%\cite{Khinchin:64}.
 \index{Reserved variable !Khinchin@\var{Khinchin}}
 
-\item[negative] Used in the \hyperlink{package:ROOTS}{Roots package}.
+\item[negative] Used in the \hyperlink{package:ROOTS}{ROOTS package}.
 \ttindextype{negative}{reserved variable}
 \index{Reserved variable !negative@\texttt{negative}}
 
@@ -254,29 +257,28 @@ variable.
 \ttindextype{nil}{reserved variable}
 \index{Reserved variable !nil@\texttt{NIL}}
 
-\item[pi] Intended to represent the circular
-\ttindextype{pi}{reserved variable}
+\item[pi] Intended to represent the circular%
+\ttindextype{pi}{reserved variable}%
 \index{Reserved variable !pi@\texttt{pi}}
 constant.  With \sw{rounded}\ttindexswitch{rounded} on, it is replaced by the value of $\pi$ to
 the current degree of floating point precision.
 
-\item[positive] Used in the \hyperlink{package:ROOTS}{Roots package}.
+\item[positive] Used in the \hyperlink{package:ROOTS}{ROOTS package}.
 \ttindextype{positive}{reserved variable}
 \index{Reserved variable !positive@\texttt{positive}}
 
-\item[t] Must not be used as a formal
-\ttindextype{t}{reserved variable}
+\item[t] Must not be used as a formal%
+\ttindextype{t}{reserved variable}%
 \index{Reserved variable !t@\texttt{t}}
 parameter or local variable in procedures, since conflict arises with the
-symbolic mode meaning of t as \emph{true}.
+symbolic mode meaning of \texttt{t} as \emph{true}.
 \end{list}
 
-Other reserved variables, such as \hyperlink{reserved:LOW_POW}{\var{low\_pow}},
-described in other sections,
-are listed in \hyperlink{sec:appendixa}{Appendix A}.
-
-Using these reserved variables\index{Reserved variable} inappropriately
-will lead to errors.
+Other reserved variables, such as
+\hyperlink{reserved:LOW_POW}{\var{low\_pow}}, described in other
+sections, are listed in \hyperlink{sec:appendixa}{Appendix A}.  Using
+these reserved variables\index{Reserved variable} inappropriately will
+lead to errors.
 
 There are also internal variables used by {\REDUCE} that have similar
 restrictions. These usually have an asterisk in their names, so it is
@@ -284,7 +286,7 @@ unlikely a casual user would use one. An example of such a variable is
 \var{k!*} used in the asymptotic command package.
 
 Certain words are reserved in {\REDUCE}. They may only be used in the manner
-intended. A list of these is given in the section ``Reserved Identifiers''.
+intended. A list of these is given in \hyperlink{sec:appendixa}{Appendix A}.
 There are, of course, an impossibly large number of such names to keep in
 mind. The reader may therefore want to make himself a copy of the list,
 deleting the names he doesn't think he is likely to use by mistake.
@@ -295,7 +297,7 @@ Strings\index{String} are used in \texttt{write} statements, in other
 output statements (such as error messages), and to name files.  A string
 consists of any number of characters enclosed in double quotes.  For example:
 \begin{verbatim}
-             "A String".
+     "A String"
 \end{verbatim}
 Lower case characters within a string are not converted to upper case.
 
@@ -313,7 +315,7 @@ attention to it.  There are three ways to do this:
 \begin{enumerate}
 \item Everything from the word \texttt{comment}\ttindextype{comment}{keyword}
   \index{Comment!comment keyword@\texttt{comment} keyword}to the next
-statement terminator, normally ; or \$, is ignored.  Such comments
+statement terminator, normally \texttt{;} or \texttt{\$}, is ignored.  Such comments
 can be placed anywhere a blank could properly appear. (Note that \texttt{end}
 and \texttt{>}\texttt{>} are \emph{not} treated as \texttt{comment} delimiters!)
 
@@ -329,7 +331,7 @@ sign.
 
 \item C-style inline comments: everything from \texttt{/*} to \texttt{*/}\index{C-style inline comments}
   \index{/* ... */ (inline comment)@\texttt{/*} \ldots \texttt{*/} (inline comment)}
-  \index{Comment!/* ... */ (inline)@\texttt{/*} \ldots \texttt{*/} (inline)}is ignored.
+  \index{Comment!/* ... */ (inline)@\texttt{/*} \ldots \texttt{*/} (inline)} is ignored.
 \end{enumerate}
 
 \section{Operators}
@@ -449,9 +451,9 @@ These operators may be further divided into the following subclasses:
 {\REDUCE}.  They are explained in the section on symbolic mode.
 \texttt{where} is described in the section on substitutions.
 
-In previous versions of {\REDUCE}, \emph{not} was also defined as an infix
+In previous versions of {\REDUCE}, \texttt{not} was also defined as an infix
 operator.  In the present version it is a regular prefix operator, and
-interchangeable with \emph{null}.
+interchangeable with \texttt{null}.
 
 For compatibility with the intermediate language used by {\REDUCE}, each
 special character infix operator\index{Infix operator} has an alternative
@@ -492,7 +494,7 @@ symbol provided for it.
 The above operators\index{Operator} are binary, except \texttt{not} which is
 unary and \texttt{+} and \texttt{*} which are nary (i.e., taking an arbitrary
 number of arguments).  In addition, \texttt{-} and \texttt{/} may be used as
-unary operators, e.g., /2 means the same as 1/2.  Any other operator is
+unary operators, e.g., \texttt{/2} means the same as \texttt{1/2}.  Any other operator is
 parsed as a binary operator using a left
 association\index{Operator!associativity}\index{Associativity}
 rule.  Thus
