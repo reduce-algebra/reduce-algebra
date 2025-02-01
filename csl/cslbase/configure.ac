@@ -305,6 +305,15 @@ then
   AC_DEFINE(WITHOUT_GUI,[1],[Not even an attempt at support for GUI])
 fi
 
+use_brew="no"
+case `which autoconf` in
+  *brew*)
+    use_brew="yes";
+    brew_prefix=`brew --prefix`
+    ;;
+  *)
+    ;;
+esac
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
@@ -1746,8 +1755,25 @@ then
   esac
 fi
 
+firstfound() {
+  echo "$1"
+}
+findlib() {
+  names=`find $LL -name $1`
+  echo `firstfound $names`
+}
+findhdr() {
+  names=`find $LL -name $1`
+  inc=`firstfound $names`
+  if test "$inc" != ""
+  then
+    echo "-I ${inc%/*}"
+  fi
+}
+
 if test "$macintosh_build" = "yes"
 then
+  AC_MSG_NOTICE([Special processing for Macintosh])
 # 10.0  Cheetah       )
 # 10.1  Puma          )
 # 10.2  Jaguar        ) I will not support these at all any more.
@@ -1769,7 +1795,10 @@ then
 #                       "Apple Silicon", ie ARM64.                     
 # 12.x  Monterey        (last version that PSL runs on as of 2023)
 # 13.x  Ventura
-# 14.x  Sonoma          Now the version I build and test on.
+# 14.x  Sonoma
+# 15.x  Sequoia         in use in 2025 = being 6 years on from the
+#                       introduction of ARM-based Macs start to mean that
+#                       the importance of Intel ones begins to fade. 
 #
 
 # I think I am not going to mess with despolyment targets any more
@@ -1802,91 +1831,56 @@ then
 # I am not distributing them, merely links to them. Hmm I will try to
 # avoid overriding the linker arrangements in the case that somebody has
 # configured for use without a GUI.
-  if test "$with_gui" = "yes"
+  if test "$use_brew" = "yes"
   then
-    if test -d /opt/local/lib
-    then 
-      LL=/opt/local/lib
-    fi
-    if test -d $HOME/ports/lib
-    then 
-      LL=$HOME/ports/lib
-    fi
-# With older versions of macports therte was a file libbrotlicommon-static.s
-# for the static version of this library. For a little while no static
-# version was provided at all, but more recently one has reappeared but
-# with a changed name - merely libbrotlicommon.a (and similarly for
-# libbrotlidec). If neither static library is present (which could arise if
-# somebody had installed macports during the window, or have not manually
-# installed the brotli-static package because they had not noticed it) I link
-# in a dynamic library which should be OK on the machine being built on
-# but which will be a binary that will not run on other macs if macports
-# and brotli have not bee installed. 
-    BROTLI=
-
-     if test -f $LL/libbrotlicommon.a
-     then
-       BROTLI="$LL/libbrotlicommon.a"
-       AC_MSG_NOTICE([libbrotlicommon.a found +++])
-     elif test -f $LL/libbrotlicommon-static.a
-     then
-       BROTLI="$LL/libbrotlicommon-static.a"
-       AC_MSG_NOTICE([libbrotlicommon-static.a found +++])
-     else
-       BROTLI="-lbrotlicommon"
-     fi
-
-     if test -f $LL/libbrotlidec.a
-     then
-       BROTLI="$BROTLI $LL/libbrotlidec.a"
-       AC_MSG_NOTICE([libbrotlidec.a found +++])
-     elif test -f $LL/libbrotlidec-static.a
-     then
-       BROTLI="$BROTLI $LL/libbrotlidec-static.a"
-       AC_MSG_NOTICE([libbrotlidec-static.a found +++])
-     else
-       BROTLI="$BROTLI -lbrotlidec"
-     fi
-    AC_MSG_NOTICE([BROTLI=$BROTLI])
-    LIBS="$LL/libXrandr.a \
-      $LL/libXcursor.a \
-      $LL/libXrender.a \
-      $LL/libcurses.a \
-      $LL/libXext.a \
-      $LL/libX11.a \
-      $LL/libXft.a \
-      $LL/libXau.a \
-      $LL/libXfixes.a \
-      $LL/libxcb.a \
-      $LL/libXdmcp.a \
-      $LL/libpng.a \
-      $LL/libz.a \
-      $LL/libbz2.a \
-      $LL/libfreetype.a \
-      $LL/libiconv.a \
-      $LL/libXft.a \
-      $LL/libfontconfig.a \
-      $LL/libintl.a \
-      $LL/libexpat.a \
-      $BROTLI \
-      -lpthread \
-      -ldl"
-    if test "$with_wx" = "yes"
-    then
-      LIBS="$LIBS $LL/libiconv.a $LL/libz.a $LL/libpng.a"
-    fi
+    LL=`brew --prefix`
+  elif test -d $HOME/ports/lib
+  then
+    LL=$HOME/ports
+  elif test -d /opt/local/lib
+  then
+    LL=/opt/local
   else
-# Here I have explicitly asked to avoid building the GUI. The result is
-# that it is probably possible to build without use of MacPorts...
-#
-# This is to try to force linking against a system-provided version.
-    LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
-    LIBS="-lz \
-      -lbz2 \
-      -liconv \
-      -lpthread \
-      -ldl"
-  fi  
+    LL=/lib
+  fi
+  AC_MSG_NOTICE([LL=$LL])
+
+  CXXFLAGS="$CXXFLAGS `findhdr ffi.h`"
+  AC_MSG_NOTICE([CXXFLAGS = $CXXFLAGS])
+
+  LIBS="`findlib libXrandr.a` \
+    `findlib libXcursor.a` \
+    `findlib libXrender.a` \
+    `findlib libcurses.a` \
+    `findlib libXext.a` \
+    `findlib libX11.a` \
+    `findlib libXft.a` \
+    `findlib libXau.a` \
+    `findlib libXfixes.a` \
+    `findlib libxcb.a` \
+    `findlib libXdmcp.a` \
+    `findlib libpng.a` \
+    `findlib libz.a` \
+    `findlib libbz2.a` \
+    `findlib libfreetype.a` \
+    `findlib libiconv.a` \
+    `findlib libXft.a` \
+    `findlib libfontconfig.a` \
+    `findlib libintl.a` \
+    `findlib libexpat.a` \
+    `findlib libffi.a` \
+    `findlib libncurses.a` \
+    `findlib libbz2.a` \
+    `findlib libz.a` \
+    `findlib libpng.a` \
+    `findlib libdeflate.a` \
+    `findlib libbrotlicommon.a` \
+    `findlib libbrotlicommon-static.a` \
+    `findlib libbrotlidec.a` \
+    `findlib libbrotlidec-static.a` \
+    -lpthread \
+    -ldl"
+  AC_MSG_NOTICE([LIBS = $LIBS])
 fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])

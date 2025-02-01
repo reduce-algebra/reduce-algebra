@@ -190,6 +190,17 @@ then
   fi
   cd $here
 
+# It is unexpectedly important the the "--without-autogen" be provided as
+# the first argument in the re-try. This is because otherwise some malformed
+# input later on (eg "--") could cause it not to be recognised, leading
+# to an infinite cycle of attempted re-generation!
+  printf "Restart: $abssrcdir/configure --without-autogen $ac_configure_args\n"
+# Because this uses "exec" it chains into the restarted processing and does
+# not proceed further in this shell.
+  exec $SHELL -c "$abssrcdir/configure --without-autogen $ac_configure_args"
+
+fi
+
 # If I am on a Macintosh I may need to create Universal binaries, and
 # an option "--enable-universal" or "--disable-universal" will control
 # that. The default behaviour will be to build in universal mode if that
@@ -198,7 +209,7 @@ then
 default_univ="no"
 if test `uname` = "Darwin"
 then
-  AC_MSG_NOTICE([Test if universal build is possible])
+  AC_MSG_NOTICE([Test for universal build possibility])
   if printf "int main() {return 0;}\n" | \
      gcc -c -x c -arch x86_64 -arch arm64 - -o temp.o >/dev/null 2>/dev/null
   then
@@ -206,6 +217,15 @@ then
   fi
   rm -f temp.o
   AC_MSG_NOTICE([default_univ=$default_univ])
+  case `which autoconf` in
+  *brew*)
+    use_brew="yes"
+    brew_prefix=`brew --prefix`
+    enable_universal="no"
+    ;;
+  *)
+    ;;
+  esac
 fi
 
 # On a Raspberry Pi that is running a 64-bit kernel but 32-bit userland
@@ -240,15 +260,6 @@ then
   ac_configure_args="--enable-universal=$enable_universal $ac_configure_args"
 fi
 
-# It is unexpectedly important the the "--without-autogen" be provided as
-# the first argument in the re-try. This is because otherwise some malformed
-# input later on (eg "--") could cause it not to be recognised, leading
-# to an infinite cycle of attempted re-generation!
-  printf "Restart: $abssrcdir/configure --without-autogen $ac_configure_args\n"
-# Because this uses "exec" it chains into the restarted processing and does
-# not proceed further in this shell.
-  exec $SHELL -c "$abssrcdir/configure --without-autogen $ac_configure_args"
-fi
 
 # Next and before I do anything much else I will see if any GUI toolkit that
 # I am using needs to be unpacked from source. Well before I do that I need
@@ -539,6 +550,7 @@ AC_CHECK_TOOL([STRIP], [strip])
 
 uname_m=`uname -m`
 uname_s=`uname -s`
+
 case "$uname_s" in
 Darwin)
 # "uname -o" is not available on the Macintosh!
@@ -1103,17 +1115,24 @@ then
 
   case $host in
   *darwin* | *Darwin*)
-    if test -d $HOME/ports/include
-    then 
-      CPPFLAGS="$CPPFLAGS -I$HOME/ports/include"
-    fi
-    if test -d $HOME/ports/include/freetype2
-    then 
-      CPPFLAGS="$CPPFLAGS -I$HOME/ports/include/freetype2"
-    fi
-    if test -d $HOME/ports/lib
+    if test "$use_brew" = "yes"
     then
-      LDFLAGS="$LDFLAGS -L$HOME/ports/lib"
+      CPPFLAGS="$CPPFLAGS -I$brew_prefix/include"
+      CPPFLAGS="$CPPFLAGS -I/opt/X11/include"
+      CPPFLAGS="$CPPFLAGS -I/opt/X11/include/freetype2"
+    else
+      if test -d $HOME/ports/include
+      then
+        CPPFLAGS="$CPPFLAGS -I$HOME/ports/include"
+      fi
+      if test -d $HOME/ports/include/freetype2
+      then
+        CPPFLAGS="$CPPFLAGS -I$HOME/ports/include/freetype2"
+      fi
+      if test -d $HOME/ports/lib
+      then
+        LDFLAGS="$LDFLAGS -L$HOME/ports/lib"
+      fi
     fi
     if test -d /opt/local/include
     then 
@@ -1339,40 +1358,31 @@ else
   cd "$builddir"
 fi
 
-if test "$macintosh" != "yes"
+# On the Macintosh I will use a version of libffi provided either by
+# macports or by homebrew, so I do not want to configure to build a
+# private copy.
+if test `uname` != "Darwin" 
 then
-
   AC_MSG_NOTICE([About to configure libffi])
   mkdir -p libffi
-  if test `uname` = "Darwin" && test "$enable_universal" != "no"
-  then
-  # This is a messy script that arranges to build a universal version of
-  # the library on MacOS. It does this by building arm64 and an x86_64
-  # separately and then merging the resulting libraries.
-    sed "s+@srcdir@+$abssrcdir+" \
-       < $abssrcdir/libraries/libffi-for-mac/Makefile \
-       > libffi/Makefile
-  else
-    cd libffi
-    setpasscc
-    doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
-            $pass_host \
-            CPPFLAGS=\"$CPPFLAGS\" \
-            CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" \
-            LDFLAGS=\"$LDFLAGS\" \
-            $passcc \
-            --disable-multi-os-directory \
-            --disable-docs \
-            --prefix=\"$builddir\" \
-            --libdir=\"$builddir/lib\" \
-            --includedir=\"$builddir/include\""
-    AC_MSG_NOTICE([doconfig = $doconfig])
-    printf "\n\n+++ About to configure libffi +++\n\n"
-    eval "$doconfig"
-    cd "$builddir"
-  fi
-
+  cd libffi
+  setpasscc
+  doconfig="$SHELL $abssrcdir/libraries/libffi/configure -C $filtered \
+          $pass_host \
+          CPPFLAGS=\"$CPPFLAGS\" \
+          CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" \
+          LDFLAGS=\"$LDFLAGS\" \
+          $passcc \
+          --disable-multi-os-directory \
+          --disable-docs \
+          --prefix=\"$builddir\" \
+          --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+  AC_MSG_NOTICE([doconfig = $doconfig])
+  printf "\n\n+++ About to configure libffi +++\n\n"
+  eval "$doconfig"
+  cd "$builddir"
 fi
 
 AC_MSG_NOTICE([About to configure libsoftfloat])
