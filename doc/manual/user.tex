@@ -727,40 +727,30 @@ flavours: \emph{Presentation MathML}, like \TeX, is intended for
 displaying mathematics, and its meaning can be ambiguous.
 \emph{Content MathML}, like \href{https://openmath.org/}{OpenMath}, is
 intended for conveying meaning, and how it is displayed is determined
-by the display software.
+by the display software.  This package allows REDUCE to input and
+output \emph{content} MathML.
 
-This package allows REDUCE to input and output \emph{content} MathML.
-
-Author: Luis Alvarez-Sobreviela
+Author: Luis Alvarez-Sobreviela\footnote{This package was written when
+the author was a placement student at ZIB Berlin.}
 \index{Alvarez-Sobreviela, Luis}\index{People!Alvarez-Sobreviela, Luis}
 
-\begin{sloppypar}
-  Further documentation is available at
-  \url{https://reduce-algebra.sourceforge.io/extra-docs/mathml.pdf}.
-\end{sloppypar}
+\input{mathml}
 
 \newpage
 
-\section{MATHMLOM: REDUCE OpenMath/MathML Interface}
+\section[MATHMLOM: REDUCE OpenMath/MathML Interface]{MATHMLOM: REDUCE OpenMath/MathML\\Interface}
 \indexpackage{MATHMLOM}
 
-This package provides easy to use commands to translate
-\href{https://openmath.org/}{OpenMath} into
-\href{https://www.w3.org/Math/}{MathML} and vice versa.  Its principal
-features are:
-\begin{itemize}
-\item translation of OpenMath into MathML 1.0 or MathML 2.0;
-\item translation of MathML 1.0 and MathML 2.0 into OpenMath;
-\item generation of MathML and OpenMath compliant code.
-\end{itemize}
+\href{https://openmath.org/}{OpenMath} provides extensible standards
+for representing the semantics of mathematical objects and
+communicating them between software systems.  This package provides
+commands to translate OpenMath into content
+\href{https://www.w3.org/Math/}{MathML} and vice versa.
 
 Author: Luis Alvarez-Sobreviela
 \index{Alvarez-Sobreviela, Luis}\index{People!Alvarez-Sobreviela, Luis}
 
-\begin{sloppypar}
-  Further documentation is available at
-  \url{https://reduce-algebra.sourceforge.io/extra-docs/mathmlom_user.pdf}.
-\end{sloppypar}
+\input{mathmlom}
 
 \newpage
 

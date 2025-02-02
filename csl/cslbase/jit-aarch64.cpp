@@ -104,7 +104,7 @@ __asm__ (
 
 #endif // APPLE_MACINTOSH
 
-void plant(const char* bytes, size_t len, LispObject env, int nargs)
+void plant(const unsigned char* bytes, size_t len, LispObject env, int nargs)
 {
     jit_word32(0xd65f03c0); // "ret" instruction on aarch64
 }

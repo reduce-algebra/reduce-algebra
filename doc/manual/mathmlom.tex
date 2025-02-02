@@ -1,0 +1,41 @@
+To use the OpenMath/MathML Interface, the package must first be loaded
+explicitly by executing the command
+\begin{verbatim}
+     load_package mathmlom;
+\end{verbatim}
+
+%% FJW: The switches described in "mathmlom_user.pdf" don't appear to
+%% work!
+
+The following commands translate subsequent input from one standard to
+the other:
+\begin{description}
+  \item[\texttt{om2mml();}] translates OpenMath into MathML;
+  \item[\texttt{mml2om();}] translates MathML into OpenMath.
+\end{description}
+Execute one of the above commands, then input one complete expression
+using the appropriate standard.  REDUCE will outputs its intermediate
+Lisp representation followed by the expression translated to the other
+standard, and then revert to normal REDUCE input syntax.
+
+Here is a simple example of translating OpenMath into MathML taken
+from the end of the file \texttt{mathmlom.rlg}.  The following input
+\begin{verbatim}
+     om2mml();
+     <OMOBJ>
+       <OMA>
+         <OMS name="rational" cd="nums1"/>
+         <OMI>4</OMI>
+         <OMI>2</OMI>
+       </OMA>
+     </OMOBJ>
+\end{verbatim}
+produces the following output:
+\begin{verbatim}
+     Intermediate representation:
+     (rational nil 4 2)
+
+     <math>
+        <cn type="rational">4<sep/>2</cn>
+     </math>
+\end{verbatim}

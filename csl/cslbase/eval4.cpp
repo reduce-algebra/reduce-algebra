@@ -1103,7 +1103,7 @@ void dump16bytes(void* p)
 
 LispObject jitcoded_0(LispObject def)
 {   LispObject d = qenv(def);
-    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+    void* code = jitcompile(reinterpret_cast<const unsigned char*>(car(d)+CELL-TAG_VECTOR),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d), 0);
     if (code == nullptr) return bytecoded_0(def);
@@ -1114,7 +1114,7 @@ LispObject jitcoded_0(LispObject def)
 
 LispObject jitcoded_1(LispObject def, LispObject a)
 {   LispObject d = qenv(def);
-    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+    void* code = jitcompile(reinterpret_cast<const unsigned char*>(car(d)+CELL-TAG_VECTOR),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d), 1);
     if (code == nullptr) return bytecoded_1(def, a);
@@ -1125,7 +1125,7 @@ LispObject jitcoded_1(LispObject def, LispObject a)
 
 LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
 {   LispObject d = qenv(def);
-    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+    void* code = jitcompile(reinterpret_cast<const unsigned char*>(car(d)+CELL-TAG_VECTOR),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d), 2);
     if (code == nullptr) return bytecoded_2(def, a, b);
@@ -1137,7 +1137,7 @@ LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
 LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
                       LispObject c)
 {   LispObject d = qenv(def);
-    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+    void* code = jitcompile(reinterpret_cast<const unsigned char*>(car(d)+CELL-TAG_VECTOR),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d), 3);
     if (code == nullptr) return bytecoded_3(def, a, b, c);
@@ -1149,7 +1149,7 @@ LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
 LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4up)
 {   LispObject d = qenv(def);
-    void* code = jitcompile(reinterpret_cast<const char*>(car(d)+CELL-TAG_VECTOR),
+    void* code = jitcompile(reinterpret_cast<const unsigned char*>(car(d)+CELL-TAG_VECTOR),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d), 4);
     if (code == nullptr) return bytecoded_4up(def, a1, a2, a3, a4up);

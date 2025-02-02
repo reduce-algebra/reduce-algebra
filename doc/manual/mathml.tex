@@ -1,0 +1,394 @@
+\subsection{Introduction}
+
+The MathML interface for REDUCE provides commands to evaluate and
+output MathML\@.  The principal features of this package are as
+follows.
+\begin{itemize}
+\item Evaluation of MathML code.  This allows REDUCE to parse MathML
+  expressions and evaluate them.
+\item Generation of MathML compliant code.  This provides output of
+  REDUCE expressions in MathML code, which could be used directly in
+  web page production.
+\end{itemize}
+
+\subsection{Loading}
+
+To use the MathML-REDUCE Interface, the package must first be loaded
+explicitly by executing the command
+\begin{verbatim}
+     load_package mathml;
+\end{verbatim}
+
+\subsection{Switches}
+
+There are three switches which can be used together, which are all off
+by default.
+\begin{description}
+\item[\sw{mathml}:] When on, all output will be displayed as MathML.
+\item[\sw{both}:] When on, all output will be displayed as both MathML
+  and normal REDUCE output (which is much easier to read than MathML).
+\item[\sw{web}:] When on, all MathML output will be enclosed in an
+  \verb|<embed>| element.  This was intended for use in HTML4 web
+  pages but is now obsolete.
+\end{description}
+
+\subsection{Entering MathML}
+
+The MathML-REDUCE Interface allows the user to provide MathML input
+via a file containing MathML or by entering MathML interactively.
+
+\subsubsection{Reading MathML from a File: \texttt{MML}}
+
+When reading from a file the operator \texttt{mml} is used, which takes
+as argument the name of the file containing the MathML.
+
+\texttt{mml}(FILE:\textit{string}):\textit{expression}
+
+\paragraph{Example:}
+As long as the file given contains valid MathML, no errors should be
+produced.
+\begin{verbatim}
+     mml "ex.mml";
+\end{verbatim}
+
+\subsubsection{Reading MathML interactively: \texttt{PARSEML}}
+
+The operator \texttt{parseml} takes no arguments and expects you to
+enter MathML markup starting with \verb|<mathml>| and ending with
+\verb|</mathml>|.  It then outputs an expression resulting from
+evaluating the input.
+
+\paragraph{Example:}
+Here is an extract of a REDUCE session where \texttt{parseml()} is
+used:
+\begin{verbatim}
+     parseml();
+     <math>
+        <apply><plus/>
+           <cn>3</cn>
+           <cn>5</cn>
+        </apply>
+     </math>
+
+     8
+\end{verbatim}
+
+\subsection{The Evaluation of MathML}
+
+MathML is always evaluated by REDUCE in \texttt{algebraic} mode before
+outputting any results.  Hence, undefined variables remain undefined,
+and it is possible to use all normal REDUCE switches and packages.
+
+\paragraph{Example:}
+The following MathML input
+\begin{verbatim}
+     parseml();
+     <math>
+        <reln><gt/>
+           <ci>x</ci>
+           <ci>y</ci>
+        </reln>
+     </math>
+\end{verbatim}
+will evaluate to \verb|x>y|.  (Note that this expression cannot be
+entered directly on its own as REDUCE input!)
+
+Now suppose we execute the following:
+\begin{verbatim}
+     x:=3; y:=2;
+\end{verbatim}
+
+If we once again enter and evaluate the above MathML input we will
+have as result \verb|3>2|.  This can be evaluated to \texttt{true}
+or \texttt{false} as follows:
+\begin{verbatim}
+    if ws then true else false;
+    true
+\end{verbatim}
+
+Of course, it is possible to set only one of the two variables
+\texttt{x} or \texttt{y} used above, say \texttt{y:=4}.  If we once
+again enter and evaluate the above MathML we will get the result
+\verb|x>4|.
+
+When one of the switches \sw{mathml} or \sw{both} is on, the MathML
+output will be:
+\begin{verbatim}
+     <math>
+        <reln><gt/>
+           <ci>x</ci>
+           <cn type="integer">4</cn>
+        </reln>
+     </math>
+\end{verbatim}
+
+\paragraph{Example:}
+Let the file \texttt{ex.mml} contain the following MathML:
+\begin{verbatim}
+     <math>
+        <apply><int/>
+           <bvar>
+              <ci>x</ci>
+           </bvar>
+           <apply><fn><ci>F</ci><fn>
+              <ci>x</ci>
+           </apply>
+        </apply>
+     </math>
+\end{verbatim}
+If we execute the command
+\begin{verbatim}
+     mml "ex.mml";
+\end{verbatim}
+
+we get \texttt{int(f(x),x)} or
+\[ \int f(x) dx \]
+
+It is clear that this has remained unevaluated.  We can now define the
+function \texttt{f(x)} as follows:
+\begin{verbatim}
+     for all x let f(x) = 2*x^2;
+\end{verbatim}
+If we then enter \texttt{mml "ex.mml";} once again, we will have the
+following result:
+\[ \frac {2x^3}{3} \]
+
+This shows that the MathML-REDUCE Interface allows normal REDUCE
+interactions to manipulate the evaluation of MathML input without
+needing to edit the MathML itself.
+
+\subsection{Interpretation of Error Messages}
+
+The MathML-REDUCE Interface has a set of error messages which aim to
+help the user understand and correct any invalid MathML\@.  Because
+there can exist many different causes of errors, such error messages
+should be considered merely as advice.  Here are the most important
+error messages.
+
+\paragraph{Missing Tag:}
+Many MathML tags are used in pairs, e.g.\ \verb|<apply>|
+\verb|</apply>|, \verb|<reln>| \verb|</reln>|, \verb|<ci>|
+\verb|</ci>|.  In the case where the ending tag is missed out, or
+misspelled, it is very probable that an error of this type will be
+thrown.
+
+\paragraph{Ambiguous or Erroneous Use of \texttt{\textless apply\textgreater}:}
+This error message is non-specific.  When it appears, it is not very
+clear to the interface where exactly the error lies.  Probable causes
+are misuse of the \verb|<apply>| \verb|</apply>| tags, or misspelling
+of the tag preceding the \verb|<apply>| tag.  However, other types of
+error may cause this error message to appear.
+
+Tags following an \verb|<apply>| tag may be misspelled without causing
+an error message, but they will be considered as operators by REDUCE
+and therefore generate some unexpected expression.
+
+\paragraph{Syntax Errors:}
+It is possible that the input MathML is not syntactically correct.  In
+such a situation, the error will be spotted, and in some cases a
+resolution might be presented.  There are a variety of syntax error
+messages, but relying on their advice might not always be helpful.
+
+Despite the verbose nature of the error messages and their recommended
+resolutions, in most situations reference to the MathML specification
+is recommended.
+
+\subsection{Limitations of the Interface}
+\label{mathml:limitations}
+
+Not all aspects of MathML have been perfectly fitted into the
+interface.  There are still some unsolved problems in the present
+version of the interface:
+\begin{itemize}
+\item MathML Presentation Markup is not supported.  The interface will
+  treat every presentation tag as either an unknown tag or a REDUCE
+  operator.
+\item Certain MathML tags do not play an important role in the REDUCE
+  environment.  Such tags will be parsed correctly, although their
+  action will be ignored.  These tags are:
+  \begin{itemize}
+  \item \verb|<interval>| \verb|</interval>|
+  \item \verb|<inverse>| \verb|</inverse>|
+  \item \verb|<condition>| \verb|</condition>|
+  \item \verb|<compose>| \verb|</compose>|
+  \item \verb|<ident>| \verb|</ident>|
+  \item \verb|<forall/>|
+  \item \verb|<exists/>|
+  \end{itemize}
+  However, the tags \verb|<condition>| \verb|</condition>| and
+  \verb|<interval>| \verb|</interval>| are supported when used within
+  the following tags:
+  \begin{itemize}
+  \item \verb|<int/>|
+  \item \verb|<limit/>|
+  \item \verb|<sum/>|
+  \item \verb|<product/>|
+  \end{itemize}
+\item The \verb|<declare>| construct takes one or two arguments.  It
+  sets the first argument to the value of the second.  In the case
+  where the second argument is a vector or a matrix, an obscure error
+  message is produced.
+\end{itemize}
+
+\subsection{Including MathML in a Web Page}
+
+We shall not get into the details of including MathML in the design of
+a web page, but for completeness here is a quick overview.  One can
+include MathML in two ways:
+\begin{itemize}
+\item directly within \verb|<math>| \verb|</math>| tags;
+\item within \verb|<math>| \verb|</math>| tags within an
+  \verb|<embed>| element, but this approach is obsolete.
+\end{itemize}
+
+When one has the \sw{mathml} switch on, MathML is generated inside
+\verb|<math>| \verb|</math>| tags.  Modern mainstream browsers all
+support this markup.
+
+\paragraph{Example:}
+\begin{verbatim}
+<html>
+<body>
+<title>MathML example</title>
+<h1>Example of MathML</h1>
+<br/>
+The following is MathML directly encoded within this
+page:
+<br/><br/>
+
+<math>
+   <apply><int>
+      <bvar>
+         <ci>x</ci>
+      </bvar>
+      <apply><power/>
+         <ci>x</ci>
+         <apply><power/>
+            <ci>x</ci>
+            <cn type="integer">2</cn>
+         </apply>
+      </apply>
+   </apply>
+</math>
+
+<br/><br/>
+Modern mainstream browsers should all render the
+MathML correctly.
+</html>
+\end{verbatim} 
+
+In the past, the only way to render MathML in many browsers was to use
+an external plug-in application and include the MathML in the web page
+within an \verb|<embed>| element.  This is easily done with the
+REDUCE-MathML Interface by turning on the \sw{web} switch.  Here is an
+example of embedded MathML:
+
+\paragraph{Example}
+
+\begin{verbatim}
+<html>
+<body>
+<title>MathML example</title>
+<h1>Example of MathML</h1>
+<br>
+The following is MathML directly encoded within this
+page:
+<br><br>
+
+<EMBED TYPE="text/mathml" MMLDATA="<math><apply><int>
+   <bvar><ci>x</ci></bvar><apply><power/><ci>x</ci>
+   <apply><power/><ci>x</ci><cn type=&quot;integer&quot;>
+   2</cn></apply></apply></apply></math>"
+   HEIGHT=300 WIDTH=200>
+
+<br><br>
+On all browsers with a suitable plug-in, this is
+rendered correctly.
+</html>
+\end{verbatim} 
+
+Another way to embed MathML in a web page is to put it in a separate
+file (usually with \texttt{.mml} extension) and embed it with the
+following code:
+\begin{verbatim}
+<EMBED TYPE="text/mathml" SRC="mathml.mml"
+   HEIGHT=300 WIDTH=200>
+\end{verbatim}
+
+\subsection{Examples}
+
+\paragraph{Example 1:} Enter the following input interactively:
+
+\begin{verbatim}
+     on mathml;
+     solve({z=x*a+1},{z,x});
+\end{verbatim}
+
+\paragraph{Example 2:}
+Have a file \texttt{ex2.mml} containing the following MathML:
+\begin{verbatim}
+     <mathml>
+        <apply><sum/>
+           <bvar>
+              <ci>x</ci>
+           </bvar>
+           <apply><fn><ci>F</ci><fn>
+              <ci>x</ci>
+           </apply>
+        </apply>
+     </mathml>
+\end{verbatim}
+and execute the following command:
+\begin{verbatim}
+     mml "ex2.mml";
+\end{verbatim}
+
+\paragraph{Example 3:}
+This example illustrates how practical the switch \sw{both} can be for
+interpreting verbose MathML.  Introduce the following MathML into a
+file, say \texttt{ex3.mml}:
+\begin{verbatim}
+     <mathml>
+        <apply><int/>
+           <bvar>
+              <ci>x</ci>
+           </bvar>
+           <apply><sin/>
+              <apply><log/>
+                 <ci>x</ci>
+              </apply>
+           </apply>
+        </apply>
+     </mathml>
+\end{verbatim}
+then execute the following:
+\begin{verbatim}
+     on both;
+     mml "ml";
+\end{verbatim}
+
+\subsection{An Overview of How the Interface Works}
+
+The interface is primarily built in two parts.  A first one which
+parses and evaluates MathML, and a second one which parses REDUCE's
+algebraic expressions and outputs them in MathML format.  Both parts
+use Top-Down Recursive Descent parsing with one token look ahead.
+
+The EBNF description of the MathML grammar is defined informally in
+\href{https://www.w3.org/TR/REC-MathML/appendixE.html}{APPENDIX E} of
+the original MathML specification, which was used to develop the
+MathML parser.  The MathML parser evaluates all that is possible and
+returns a valid REDUCE algebraic expression.  When either of the
+switches \sw{mathml} or \sw{both} is on, this algebraic expression is
+fed into the second part of the program, which parses these expressions
+and transforms them back into MathML.
+
+The MathML generator parses the algebraic expression produced by
+either REDUCE itself or the MathML parser.  It works in a very similar
+way to the MathML parser.  It is simpler, since no evaluation is
+involved.  All the generated code is MathML compliant.  It is
+important to note that the MathML code generator sometimes introduces
+Presentation Markup tags, and other tags which are not understood by
+the MathML parser of the interface.\footnote{The set of tags not
+understood by the MathML parser is detailed in
+\hyperref[mathml:limitations]{Limitations of the Interface}.}

@@ -198,7 +198,9 @@ gamma!*rules := {
 
 % Gamma with two arguments and m_gamma
 
-   Gamma(~a,0) => Gamma(a),
+   Gamma(~a,0) => Gamma(a) when numberp(a) and a>0,
+
+%   Gamma(0,~x) => ei(-x),
 
    Gamma(~a,~x) => sqrt(pi)*(1-erf(sqrt(x))) when numberp(a) and a=1/2,
 
@@ -206,7 +208,9 @@ gamma!*rules := {
    
    df(Gamma(~a,~x),~x) => -x^(a-1)*exp(-x),
 
-   m_gamma(~a,0) => 0,
+   m_gamma(~a,0) => 0 when numberp(a) and a>0,
+
+%  m_gamma(0,~x) => -ei(-x),
 
    m_gamma(~a,~x) => sqrt(pi)*erf(sqrt(x)) when numberp(a) and a=1/2,
 
@@ -672,7 +676,13 @@ let
  iGamma(~a,~x) => igamma!:eval(a,x)
         when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
 
-% The following is only true for a>0
+ m_gamma(~a,~x) => Gamma(a)*iGamma(a,x)
+        when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
+
+ Gamma(~a,~x) => Gamma(a)-m_gamma(a,x)
+        when numberp(a) and numberp(x) and a>0 and x>=0 and lisp !*rounded,
+
+ % The following is only true for a>0
  iGamma(~a,0) => 0 when numberp(a) and a>0,
 
 % igamma(0,~x) => -ei(-x),

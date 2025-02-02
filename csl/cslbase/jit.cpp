@@ -166,14 +166,14 @@ void jit_word32(uint32_t w)
     jit_byte(w>>24);
 }
 
-extern void plant(const char* bytes, size_t len, LispObject env, int nargs);
+extern void plant(const unsigned char* bytes, size_t len, LispObject env, int nargs);
 
-void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
+void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
 {
     printf("Calling jitcompile on ");
     simple_print(basic_elt(env, 0));
     for (unsigned int i=0; static_cast<size_t>(i)<len; i++)
-        printf("%3u:  %02x\n", i, bytes[i]&0xff);
+        printf("%3u:  %02x\n", i, bytes[i]);
 
 #if defined APPLE_MACINTOSH
     pthread_jit_write_protect_np(0);
