@@ -16,6 +16,9 @@ SUCCESS=0
 RUNS=0
 NEED_BIBTEX=0
 
+# Write current svn revision number to "revision.tex":
+./revision.sh
+
 # Remove .ind file and .aux files that could be left over from a
 # TeX4ht build and may cause obscure complaints from a PDF build, but
 # add an new skeleton .ind file to get a correct Index entry in the
@@ -62,6 +65,8 @@ if test -f ${JOBNAME}.idx ; then
   makeindex -s ${JOBNAME}.ist ${JOBNAME}
   pdflatex ${JOBNAME}
 fi
+
+rm revision.tex
 
 echo 'RUNS =' $RUNS
 

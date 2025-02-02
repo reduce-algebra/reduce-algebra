@@ -17,6 +17,9 @@ GS_OPTIONS=-DNOSAFER ; export GS_OPTIONS
 
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
+# Write current svn revision number to "revision.tex":
+./revision.sh
+
 # FJW 2020-12-28 Delete previously generated HTML and PNG files:
 rm -f ${JOBNAME}*.{html,png}
 
@@ -40,10 +43,9 @@ bibtex ${JOBNAME}
 
 mk4ht htlatex ${JOBNAME} ${CONFIG},${SECTIONINGDEPTH}
 
-# FJW 2020-12-28 This step seems to be redundant:
-# LC_CTYPE=C sed -e 's#https://reduce-_algebra\.sourceforge\.io/#https://reduce-algebra.sourceforge.io/#' ${JOBNAME}.html >index.html
-
 # index.html is used locally by the CSL REDUCE GUI, so...
 if [ ! "$1" = 'for-sf' ]; then cp ${JOBNAME}.html index.html; fi
+
+rm revision.tex
 
 exit 0
