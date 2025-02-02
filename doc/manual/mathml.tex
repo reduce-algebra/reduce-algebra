@@ -7,8 +7,7 @@ follows.
 \item Evaluation of MathML code.  This allows REDUCE to parse MathML
   expressions and evaluate them.
 \item Generation of MathML compliant code.  This provides output of
-  REDUCE expressions in MathML code, which could be used directly in
-  web page production.
+  REDUCE expressions in MathML code.
 \end{itemize}
 
 \subsection{Loading}
@@ -21,15 +20,12 @@ explicitly by executing the command
 
 \subsection{Switches}
 
-There are three switches which can be used together, which are all off
-by default.
+There are two switches that can be used together and are off by
+default.
 \begin{description}
 \item[\sw{mathml}:] When on, all output will be displayed as MathML.
 \item[\sw{both}:] When on, all output will be displayed as both MathML
   and normal REDUCE output (which is much easier to read than MathML).
-\item[\sw{web}:] When on, all MathML output will be enclosed in an
-  \verb|<embed>| element.  This was intended for use in HTML4 web
-  pages but is now obsolete.
 \end{description}
 
 \subsection{Entering MathML}
@@ -229,91 +225,6 @@ version of the interface:
   where the second argument is a vector or a matrix, an obscure error
   message is produced.
 \end{itemize}
-
-\subsection{Including MathML in a Web Page}
-
-We shall not get into the details of including MathML in the design of
-a web page, but for completeness here is a quick overview.  One can
-include MathML in two ways:
-\begin{itemize}
-\item directly within \verb|<math>| \verb|</math>| tags;
-\item within \verb|<math>| \verb|</math>| tags within an
-  \verb|<embed>| element, but this approach is obsolete.
-\end{itemize}
-
-When one has the \sw{mathml} switch on, MathML is generated inside
-\verb|<math>| \verb|</math>| tags.  Modern mainstream browsers all
-support this markup.
-
-\paragraph{Example:}
-\begin{verbatim}
-<html>
-<body>
-<title>MathML example</title>
-<h1>Example of MathML</h1>
-<br/>
-The following is MathML directly encoded within this
-page:
-<br/><br/>
-
-<math>
-   <apply><int>
-      <bvar>
-         <ci>x</ci>
-      </bvar>
-      <apply><power/>
-         <ci>x</ci>
-         <apply><power/>
-            <ci>x</ci>
-            <cn type="integer">2</cn>
-         </apply>
-      </apply>
-   </apply>
-</math>
-
-<br/><br/>
-Modern mainstream browsers should all render the
-MathML correctly.
-</html>
-\end{verbatim} 
-
-In the past, the only way to render MathML in many browsers was to use
-an external plug-in application and include the MathML in the web page
-within an \verb|<embed>| element.  This is easily done with the
-REDUCE-MathML Interface by turning on the \sw{web} switch.  Here is an
-example of embedded MathML:
-
-\paragraph{Example}
-
-\begin{verbatim}
-<html>
-<body>
-<title>MathML example</title>
-<h1>Example of MathML</h1>
-<br>
-The following is MathML directly encoded within this
-page:
-<br><br>
-
-<EMBED TYPE="text/mathml" MMLDATA="<math><apply><int>
-   <bvar><ci>x</ci></bvar><apply><power/><ci>x</ci>
-   <apply><power/><ci>x</ci><cn type=&quot;integer&quot;>
-   2</cn></apply></apply></apply></math>"
-   HEIGHT=300 WIDTH=200>
-
-<br><br>
-On all browsers with a suitable plug-in, this is
-rendered correctly.
-</html>
-\end{verbatim} 
-
-Another way to embed MathML in a web page is to put it in a separate
-file (usually with \texttt{.mml} extension) and embed it with the
-following code:
-\begin{verbatim}
-<EMBED TYPE="text/mathml" SRC="mathml.mml"
-   HEIGHT=300 WIDTH=200>
-\end{verbatim}
 
 \subsection{Examples}
 
