@@ -1,2 +1,0 @@
-set CC_FOR_TARGET "/usr/bin/clang"
-set CXX_FOR_TARGET "/usr/bin/clang++"
