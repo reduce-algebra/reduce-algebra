@@ -1759,11 +1759,16 @@ firstfound() {
   echo "$1"
 }
 findlib() {
-  names=`find $LL -name $1`
-  echo `firstfound $names`
+  if test -f "${LL}lib/$1"
+  then
+    echo "${LL}lib/$1"
+  else
+    names=`find ${LL%/} -name $1 2>/dev/null`
+    echo `firstfound $names`
+  fi
 }
 findhdr() {
-  names=`find $LL -name $1`
+  names=`find ${LL%/} -name $1 2>/dev/null`
   inc=`firstfound $names`
   if test "$inc" != ""
   then
@@ -1836,12 +1841,12 @@ then
     LL=`brew --prefix`
   elif test -d $HOME/ports/lib
   then
-    LL=$HOME/ports
+    LL=$HOME/ports/
   elif test -d /opt/local/lib
   then
-    LL=/opt/local
+    LL=/opt/local/
   else
-    LL=/lib
+    LL=/
   fi
   AC_MSG_NOTICE([LL=$LL])
 
