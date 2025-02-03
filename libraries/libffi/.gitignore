@@ -2,6 +2,10 @@
 .deps
 *.o
 *.lo
+*.wasm
+*.js
+*.test
+*.log
 .dirstamp
 *.la
 Makefile
@@ -9,7 +13,7 @@ Makefile
 Makefile.in
 aclocal.m4
 compile
-!.travis/compile
+!.ci/compile
 configure
 depcomp
 doc/libffi.info
@@ -21,7 +25,6 @@ include/ffitarget.h
 install-sh
 libffi.pc
 libtool
-libtool-ldflags
 ltmain.sh
 m4/libtool.m4
 m4/lt*.m4
@@ -36,3 +39,8 @@ build_*/
 darwin_*/
 src/arm/trampoline.S
 **/texinfo.tex
+target/
+__pycache__
+.docker_home
+emsdk
+test-results

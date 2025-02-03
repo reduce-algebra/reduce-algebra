@@ -257,7 +257,7 @@ void plant(const unsigned char* codevec, size_t len, LispObject env, int nargs)
 
     int ppc = 0;
 
-next_opcode:
+// next_opcode: [label not used!]
 #if 0
     try { ([&]()->LispObject {
 // AAArgh! This "try" is to do with exception handling. Let's ignore that
