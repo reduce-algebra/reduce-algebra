@@ -24,7 +24,7 @@ sudo dnf -y --setopt strict=no install \
    cscope          strace       byacc   \
    ccache          ctags        glibc-devel \
    libtool         ccache       autoconf-archive \
-   oprofile        libffi-devel
+   oprofile        libffi-devel ncurses-devel
 
 sudo dnf -y --setopt strict=no install \
    libX11-devel    libXft-devel libXrender-devel \
