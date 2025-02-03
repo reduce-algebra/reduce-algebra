@@ -15,36 +15,38 @@
 # to identify a package to install to satisfy the dependancy. Then report
 # to the Reduce mailing lists so that those scripts can catch up.
 
-### sudo dnf -y group install C\ Development\ Tools\ and\ Libraries
-
-sudo dnf -y install \
+sudo dnf -y --setopt strict=no install \
    valgrind        astyle       automake \
    pkgconfig       gcc-c++      binutils \
    indent          make         elfutils \
-   gdb             ltrace       flex     \
-   gcc             autoconf     bison    \
-   cscope          strace       byacc    \
+   gdb             ltrace       flex    \
+   gcc             autoconf     bison   \
+   cscope          strace       byacc   \
    ccache          ctags        glibc-devel \
    libtool         ccache       autoconf-archive \
-   oprofile
+   oprofile        libffi-devel
 
-###sudo dnf -y group install Development\ Tools
+sudo dnf -y --setopt strict=no install \
+   libX11-devel    libXft-devel libXrender-devel \
+   libXcursor-devel libXrandr-devel fontconfig
 
-sudo dnf -y install \
-   patchutils           systemtap           diffstat \
-   doxygen              git                 gettext  \
-   subversion           highlight           patch   
 
-sudo dnf -y install clang openssh vim gnuplot ImageMagick
+sudo dnf -y --setopt strict=no install \
+   patchutils      systemtap    diffstat \
+   doxygen         git          gettext \
+   subversion      highlight    patch   
 
-sudo dnf -y install libXft-devel libXext-devel libatomic \
- ncurses-devel ncurses-compat-libs polyml redhat-lsb-core bc dc
+sudo dnf -y --setopt strict=no install \
+   clang           openssh      vim \
+   gnuplot         ImageMagick
 
-# The following pull in a lot of subpackages. Maybe be more selective?
+sudo dnf -y --setopt strict=no install \
+   libXft-devel    libXext-devel libatomic \
+   ncurses-devel   ncurses-compat-libs polyml \
+   redhat-lsb-core bc           dc
 
-sudo dnf -y install texlive-collection-fontsextra \
- texlive-collection-fontsrecommended \
- texlive-collection-latex \
- texlive-collection-latexextra
+sudo dnf -y --setopt strict=no install \
+   texlive-collection-fontsextra   texlive-collection-fontsrecommended \
+   texlive-collection-latex        texlive-collection-latexextra
 
 exit 0
