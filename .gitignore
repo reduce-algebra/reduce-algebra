@@ -235,34 +235,6 @@
 # /libraries/libffi/testsuite/
 /libraries/libffi/testsuite/Makefile.in
 
-# /libraries/libffi-old/
-/libraries/libffi-old/Makefile.in
-/libraries/libffi-old/aclocal.m4
-/libraries/libffi-old/autom4te.cache
-/libraries/libffi-old/compile
-/libraries/libffi-old/configure
-/libraries/libffi-old/depcomp
-/libraries/libffi-old/fficonfig.h.in
-/libraries/libffi-old/install-sh
-/libraries/libffi-old/ltmain.sh
-/libraries/libffi-old/man/Makefile.in
-/libraries/libffi-old/mdate-sh
-/libraries/libffi-old/missing
-/libraries/libffi-old/testsuite/Makefile.in
-/libraries/libffi-old/texinfo.tex
-
-# /libraries/libffi-old/doc/
-/libraries/libffi-old/doc/Makefile.in
-
-# /libraries/libffi-old/include/
-/libraries/libffi-old/include/Makefile.in
-
-# /libraries/libffi-old/man/
-/libraries/libffi-old/man/Makefile.in
-
-# /libraries/libffi-old/testsuite/
-/libraries/libffi-old/testsuite/Makefile.in
-
 # /packages/redlog/cl/
 /packages/redlog/cl/clqe.mo
 /packages/redlog/cl/clqe.cp
