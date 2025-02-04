@@ -1,5 +1,6 @@
-import subprocess
 import pathlib
+import subprocess
+
 import pytest
 
 TEST_PATH = pathlib.Path(__file__).parents[1].resolve()
