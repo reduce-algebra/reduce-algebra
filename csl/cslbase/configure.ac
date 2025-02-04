@@ -1079,7 +1079,7 @@ then
 # seek a version specific to the architecture I am building for. Ugh!
 # Well it seems that if I list ALL versions that I find then ones that are
 # not the relevant architecture get ignored...
-  a=`find /usr/lib -name libtinfo.a -printf "%p "`
+  a=`find /usr/lib -name libtinfo.a -printf "%p " 2>/dev/null`
   if test "$a" = ""
   then    # No libtinfo found
     AC_SEARCH_LIBS([tgetent], [ncurses curses tinfo])

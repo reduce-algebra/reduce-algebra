@@ -27,7 +27,7 @@ here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
-sudo apt -y install alien astyle autoconf ccache devscripts \
+sudo apt -y install alien astyle autoconf autoconf-archive ccache devscripts \
  git gnuplot imagemagick libedit-dev libffi-dev libgtk2.0-dev libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some
 # where it has to be "libtool-bin". By making the install requests each

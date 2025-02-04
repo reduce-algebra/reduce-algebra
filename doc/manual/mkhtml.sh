@@ -18,7 +18,7 @@ GS_OPTIONS=-DNOSAFER ; export GS_OPTIONS
 test "$1" = "for-sf" && CONFIG=reduce-sf
 
 # Write current svn revision number to "revision.tex":
-./revision.sh
+echo $(../../scripts/revision.sh) > revision.tex
 
 # FJW 2020-12-28 Delete previously generated HTML and PNG files:
 rm -f ${JOBNAME}*.{html,png}

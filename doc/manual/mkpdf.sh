@@ -17,7 +17,7 @@ RUNS=0
 NEED_BIBTEX=0
 
 # Write current svn revision number to "revision.tex":
-./revision.sh
+echo $(../../scripts/revision.sh) > revision.tex
 
 # Remove .ind file and .aux files that could be left over from a
 # TeX4ht build and may cause obscure complaints from a PDF build, but
