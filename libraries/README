@@ -1,5 +1,5 @@
 This is a directory for externally provided libraries that may be useful
-for both the PSL and CSL branches of Reduce. The dirtectory "original"
+for both the PSL and CSL branches of Reduce. The directory "original"
 will in general hold a copy of an up-stream archive from which each
 library is derived. That is liable to contain all the notices and licenses
 that apply. Note that in order that the final binaries of Reduce do not
