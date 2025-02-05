@@ -149,6 +149,10 @@ if not get('leq,'simpfn) then
 
 flag('(equal leq geq), 'spaced);
 
+switch noerrsimplex;
+% If on, return empty list if no feasible solution instead of calling
+% rederr, which throws an untrappable error.
+
 procedure fs_simplex1(input);
   %
   % The simplex problem is:
@@ -215,7 +219,7 @@ procedure fs_simplex1(input);
   begin scalar max!-or!-min,objective,equation!-list,boundl,w;
      {max!-or!-min, objective, equation!-list, boundl} := fs_a2s!-simplex input;
      w := fs_simplex2(max!-or!-min, objective, equation!-list, boundl);
-     if w eq 'infeasible then
+     if w eq 'infeasible then if !*noerrsimplex then return {'list} else
 	rederr "Error in simplex: Problem has no feasible solution.";
      return fs_s2a!-simplex w
   end;

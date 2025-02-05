@@ -1271,7 +1271,7 @@ matrix is upper triangular. \\
   \text{\var{random\_matrix}}(4,4,10) = \\
   \begin{pmatrix} 2*i+5 & 3*i+7 & 7*i+3 & 6 \\ 0 & 2*i+5 &
     5*i+1 & 2*i+1 \\ 0 & 0 & 8 & i \\ 0 & 0 & 0& 5*i+9
-  \end{pmatrix}    
+  \end{pmatrix}
 \end{multline*}
 \end{description}
 
@@ -1373,40 +1373,56 @@ the pivot only to the rows specified in row\_list.
   \meta{objective function}  & :- & the function you are maximising or
   minimising. \\
   \meta{linear inequalities} & :- & the constraint
-    inequalities. Each one must be of the form\newline
-    \meta{sum of variables} \meta{compop} \meta{number}\newline where \meta{compop} is one of \f{<=},\f{=},\f{>=}. \\
+    inequalities. Each one must be of the form
+    \meta{linear combination of variables} \meta{compop} \meta{number}
+    where \meta{compop} is one of \f{<=}, \f{=}, \f{>=}. \\
   \meta{bounds} & :- & bounds on the variables as
-    specified for the LP file format. Each bound is of one of the forms $l\leq
+    specified for the LP file format. Each bound has one of the forms $l\leq
     v$, $v\leq u$, or $l\leq v\leq u$, where $v$ is a variable and $l$, $u$ are
-    numbers or \texttt{infinity} or \texttt{-infinity}
+    numbers or \texttt{infinity} or \texttt{-infinity}.
 \end{tabular}
 
 \item[Synopsis:]\mbox{}\\*
 \texttt{simplex} applies the revised simplex algorithm to find the
-optimal(either maximum or minimum) value of the objective function
+optimal (either maximum or minimum) value of the objective function
 under the linear inequality constraints.
 
-It returns \{optimal value,\{ values of variables at this optimal\}\}.
+It returns \texttt{\{}\emph{optimal value}\texttt{, \{}\emph{values of
+variables at this optimum}\texttt{\}\}}.
 
 \hypertarget{switch:FASTSIMPLEX}{}
 \ttindexswitch[LINALG]{fastsimplex}
-The \texttt{\{bounds\}} argument is optional and admissible only when the switch
-\sw{fastsimplex} is on, which is the default.
+The \texttt{\{\emph{bounds}\}} argument is optional and admissible
+only when the switch \sw{fastsimplex} is on, which is the default.
+Without a \texttt{\{\emph{bounds}\}} argument, the algorithm assumes
+that all the variables are non-negative.
 
-Without a \texttt{\{bounds\}} argument, the algorithm implies that all the
-variables are non-negative.
+\hypertarget{switch:NOERRSIMPLEX}{}
+\ttindexswitch[LINALG]{noerrsimplex}
+By default, \f{simplex} throws an error if a problem has no feasible
+solution.  However, if the switch \sw{noerrsimplex} is turned on (it
+is off by default) then \f{simplex} returns the empty list
+\texttt{\{\}}, which facilitates use of \f{simplex} as a subroutine
+within other code.
 
-\item[Examples:]
+\item[Examples:] (assuming \texttt{on rounded}) \\
 \begin{verbatim}
-simplex(max,x+y,{x>=10,y>=20,x+y<=25});
+simplex(max, 10x+5y+5.5z,
+        {5x+3z<=200,0.2x+0.1y+0.5z<=12,
+         0.1x+0.2y+0.3z<=9,30x+10y+50z<=1500});
 
-*****
-Error in simplex: Problem has no feasible solution.
+{525.0,{x = 40.0,y = 25.0,z = 0}}
 
-simplex(max,10x+5y+5.5z,{5x+3z<=200,x+0.1y+0.5z<=12,
-        0.1x+0.2y+0.3z<=9, 30x+10y+50z<=1500});
+simplex(max, x+y, {x>=10,y>=20,x+y<=25});
 
-{525.0,{x=40.0,y=25.0,z=0}}
+***** Error in simplex: Problem has no feasible
+solution.
+
+on noerrsimplex;
+
+simplex(max, x+y, {x>=10,y>=20,x+y<=25});
+
+{}
 \end{verbatim}
 \end{description}
 
@@ -1770,7 +1786,7 @@ functions will be increased:
 \end{tabular}
 
 The increase in speed will be insignificant unless you are making a
-significant number(i.e: thousands) of calls. When using this switch,
+significant number (i.e: thousands) of calls. When using this switch,
 error checking is minimised. This means that illegal input may give
 strange error messages. Beware.
 
@@ -1780,11 +1796,11 @@ strange error messages. Beware.
 
 \subsection{Acknowledgments}
 
-Many of the ideas for this package came from the Maple[3] Linalg package
-[4].
+Many of the ideas for this package came from the Maple Linalg package.
 
-The algorithms for \texttt{cholesky}, \texttt{lu\_decom}, and \texttt{svd} are
-taken from the book Linear Algebra - J.H. Wilkinson \& C. Reinsch[5].
+The algorithms for \texttt{cholesky}, \texttt{lu\_decom}, and
+\texttt{svd} are taken from the book Linear Algebra - J.H. Wilkinson
+\& C. Reinsch.
 
-The \texttt{gram\_schmidt} code comes from Karin Gatermann's Symmetry
-package[6] for {\REDUCE}.
+The \texttt{gram\_schmidt} code comes from Karin Gatermann's
+\hyperref[package:SYMMETRY]{Symmetry package} for {\REDUCE}.
