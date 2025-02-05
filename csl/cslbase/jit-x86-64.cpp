@@ -263,7 +263,7 @@ void plant(const unsigned char* codevec, size_t len, LispObject env, int nargs)
 // AAArgh! This "try" is to do with exception handling. Let's ignore that
 // for the moment.
 #endif
-    for (;;)
+    while (ppc<len)
     {
         switch (next_byte)
         {
@@ -317,10 +317,24 @@ void plant(const unsigned char* codevec, size_t len, LispObject env, int nargs)
             case OP_NILEXIT:
                 printf("Byte %.2x encountered at offset %d\n",
                        previous_byte, ppc-1);
-// THIS is where I should emit some machine instructions for it!
+// On Linux there is a security-measure that imagines that bad people
+// might do indirect jumps into the middle of code to achieve behaviour
+// that they should not ba able to. So it is arranged that the instruction
+// at the destination of any indirect jump must be this "endbr64" or else
+// the program blows up. So I need this as the first instruction of any
+// procedure. So generating it HERE is silly!!!
+                jit_word32(0xfa1e0ff3);
+// Here I have an instrunction to load a 64-bit literal into register %eax.
+// The value I load is that of NIL, and that does not change during any one
+// run. I dump the 64-bit operand in two 32-bit chunks.
+                jit_byte(0x48); jit_byte(0xb8);
+                jit_word32(static_cast<uint32_t>(nil));
+                jit_word32(static_cast<uint32_t>(nil>>32));
+// Now a simple return instruction.
+                jit_byte(0xc3);
                 continue;
-//@@@                stack = entry_stack;
-//@@@                A_reg = nil;
+//@@@                stack = entry_stack;    ???
+//@@@                A_reg = nil;            ???
 //@@@                return nil;
 
             case OP_FREEBIND:
@@ -2684,7 +2698,7 @@ void plant(const unsigned char* codevec, size_t len, LispObject env, int nargs)
             case OP_GET:                                    // A = get(B, A)
                 A_reg = get(B_reg, A_reg, nil);
                 errexit();
-                continue;
+
 
 #endif  // MORE_STUFF_DONE
 

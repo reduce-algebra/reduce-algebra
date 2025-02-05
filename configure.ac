@@ -1358,6 +1358,19 @@ else
   cd "$builddir"
 fi
 
+# Just for now this will always configure! But I expect to need to pass
+# CXX and CXXFLAGS and plausibly mote down to cmake if I am to support
+# cross compilation.
+if test "$with_asmjit" != "no"
+then
+  AC_MSG_NOTICE([About to configure asmjit])
+  mkdir -p asmjit
+  cd asmjit
+  cmake -DASMJIT_STATIC=TRUE -DCMAKE_INSTALL_PREFIX:PATH=$builddir \
+        $abssrcdir/libraries/asmjit
+  cd "$builddir"
+fi
+
 # On the Macintosh I will use a version of libffi provided either by
 # macports or by homebrew, so I do not want to configure to build a
 # private copy.

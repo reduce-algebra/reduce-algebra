@@ -1,0 +1,6 @@
+This material was fetched using
+   git clone https://github.com/asmjit/asmjit.git
+but then (as suggested in notes found via https://asmjit.com/) the
+tests directory was removed. It may make sense if from time to time
+an updated version is fetched. This one is first put in with Reduce
+in February 2025.
