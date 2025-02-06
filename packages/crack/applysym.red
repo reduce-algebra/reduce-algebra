@@ -47,7 +47,7 @@ begin
   scalar genlist,con,e1,e2,h1,h2,h3,h4,h5,h6,h7,modus,u,v,eqlist,xlist,ylist,
 	 n,cop1,cop2,symanz,oldsol,oldmodus,trafoprob,altlogo$
 
-  lisp(change_prompt_to "" )$
+  lisp(change_prompt_to "?" )$
   backup_reduce_flags()$
   clear sy_,sym_;
   array sym_(length(second Symtry));
@@ -83,7 +83,7 @@ begin
 	write"or generalize a special solution with new parameters  ",
              "(2)";terpri()$
 	write"or exit the program                                   ",
-	     "(3) :   ";
+	     "(3)    ";
       >>;
       modus:=lisp termread()
 

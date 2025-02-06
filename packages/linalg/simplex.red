@@ -103,6 +103,10 @@ symbolic inline procedure fast_my_letmtr(u,v,y);
 switch fastsimplex;
 on1 'fastsimplex;
 
+switch noerrsimplex;
+% If on, return empty list if no feasible solution instead of calling
+% rederr, which throws an untrappable error.
+
 put('simplex,'psopfn,'simplex0);
 
 procedure simplex0(input);
@@ -237,7 +241,8 @@ symbolic procedure simplex1(input);
     xb := cadr simp_calc;
     binv := cadddr(simp_calc);
     if get_num_part(phase1_obj_value) neq 0
-     then rederr "Error in simplex: Problem has no feasible solution.";
+     then if !*noerrsimplex then return {'list} else
+       rederr "Error in simplex: Problem has no feasible solution.";
 
     % Are any artificials still basic?
     for ell:=1:m do if nth(ib,ell) <= n then <<>>

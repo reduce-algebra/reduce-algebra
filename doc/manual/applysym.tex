@@ -20,9 +20,15 @@ transformations of ODEs / PDEs and is applied if similarity
 and symmetry variables have been found.
 The program \texttt{APPLYSYM} is used in connection with the program
 \texttt{LIEPDE} for formulating and solving the conditions for point- and
-contact symmetries which is described in \cite{Wolf:93}.
+contact symmetries.  The procedure \texttt{LIEPDE} is also described  below (see also \cite{Wolf:93}).
 The actual problem solving is done in all these programs through a call
 to the package \texttt{CRACK} for solving overdetermined PDE-systems.
+
+Before using  the procedures \texttt{LIEPDE}, \texttt{APPLYSYM}, \texttt{QUASILINPDE} and
+\texttt{DETRAFO}, it is necessary to load the packages:
+\small \begin{verbatim}
+         load_package liepde, applysym;
+\end{verbatim}
 
 %-------------------------------------------------------------------------
 \subsection{Introduction and overview of the symmetry method}
@@ -597,7 +603,7 @@ prob:={{-20*h**4+16*h**6+3*r**2*h*df(h,r,2)+5*r*h*df(h,r)
         -20*h**3*r*df(h,r)+4*h**2-5*r**2*df(h,r)**2},
        {h}, {r}};
 sym:=liepde(prob, {"point"},{},{});
-end; \end{verbatim}}
+\end{verbatim}}
 gives {\small \begin{verbatim}
 sym := {{},
 
@@ -615,15 +621,14 @@ is $\{\}$. The two existing symmetries are therefore
 Corresponding finite
 transformations can be calculated with \texttt{APPLYSYM} through
 {\small \begin{verbatim}
-newde:=applysym(prob,rest sym);
+newde:=applysym(prob,rest first sym);
 \end{verbatim}}
 The interactive session is given below with the user input following
-the prompt `\texttt{:}' or following `?'. (Empty lines have been deleted.)
+the prompt `?'. (Empty lines have been deleted.)
 {\small \begin{verbatim}
 Do you want to find similarity and symmetry variables (1)
 or generalize a special solution with new parameters  (2)
-or exit the program                                   (3)
-Input:3: 1;
+or exit the program                                   (3) ?1
 \end{verbatim}}
 We enter `1' because we want to reduce dependencies by finding similarity
 variables and one symmetry variable and then doing the transformation such
