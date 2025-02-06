@@ -54,22 +54,22 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `gmp' library (-lgmp). */
+/* Define to 1 if you have the 'gmp' library (-lgmp). */
 #undef HAVE_LIBGMP
 
-/* Define to 1 if you have the `m' library (-lm). */
+/* Define to 1 if you have the 'm' library (-lm). */
 #undef HAVE_LIBM
 
-/* Define to 1 if you have the `mcr' library (-lmcr). */
+/* Define to 1 if you have the 'mcr' library (-lmcr). */
 #undef HAVE_LIBMCR
 
 /* Define to 1 if you have the <libmcr.h> header file. */
 #undef HAVE_LIBMCR_H
 
-/* Define to 1 if you have the `mpfr' library (-lmpfr). */
+/* Define to 1 if you have the 'mpfr' library (-lmpfr). */
 #undef HAVE_LIBMPFR
 
-/* Define to 1 if you have the `ultim' library (-lultim). */
+/* Define to 1 if you have the 'ultim' library (-lultim). */
 #undef HAVE_LIBULTIM
 
 /* Define to 1 if you have the <MathLib.h> header file. */
@@ -78,7 +78,7 @@
 /* Define to 1 if you have the <mpfr.h> header file. */
 #undef HAVE_MPFR_H
 
-/* Define to 1 if you have the `sqrt' function. */
+/* Define to 1 if you have the 'sqrt' function. */
 #undef HAVE_SQRT
 
 /* Define to 1 if you have the <stdint.h> header file. */
@@ -135,10 +135,10 @@
 /* Number of digits in the SCS structure */
 #undef SCS_NB_WORDS
 
-/* The size of `int', as computed by sizeof. */
+/* The size of 'int', as computed by sizeof. */
 #undef SIZEOF_INT
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
@@ -158,10 +158,10 @@
 # endif
 #endif
 
-/* Define to empty if `const' does not conform to ANSI C. */
+/* Define to empty if 'const' does not conform to ANSI C. */
 #undef const
 
-/* Define to `__inline__' or `__inline' if that's what the C compiler
+/* Define to '__inline__' or '__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
 #undef inline

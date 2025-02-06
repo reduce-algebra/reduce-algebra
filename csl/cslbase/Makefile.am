@@ -596,17 +596,17 @@ csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 flatcsl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
-foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
+foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC) $(JITINC)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 foxdemo_DEPENDENCIES = $(fwin_icon) 
 
 fontdemo_SOURCES = fontdemo.cpp
-fontdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
+fontdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC) $(JITINC)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 fontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
 showmathdemo_SOURCES = showmathdemo.cpp
-showmathdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
+showmathdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC) $(JITINC)
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 showmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
@@ -807,6 +807,38 @@ CRINC =
 CRDEP =
 
 endif !crlibm
+
+if enable_jit
+
+JITDEPS=../lib/libasmjit.a ../include/asmjit.h
+
+JITDEP = ../include/asmjit.h
+JITINC = -I../include
+AM_CPPFLAGS     += $(JITINC)
+reduce_CPPFLAGS += $(JITINC)
+bootstrapreduce_CPPFLAGS += $(JITINC)
+csl_CPPFLAGS    += $(JITINC)
+flatcsl_CPPFLAGS    += $(JITINC)
+
+csl_LDADD += ../lib/asmjit.a
+flatcsl_LDADD += ../lib/asmjit.a
+bootstrapreduce_LDADD += ../lib/asmjit.a
+reduce_LDADD += ../lib/asmjit.a
+
+csl_DEPENDENCIES += $(JITDEPS)
+flatcsl_DEPENDENCIES += $(JITDEPS)
+bootstrapreduce_DEPENDENCIES += $(JITDEPS)
+reduce_DEPENDENCIES += $(JITDEPS)
+
+$(JITDEPS):
+	@printf "About to build asmjit for %s ($@)\n" `pwd`
+	-$(TRACE)@$(MAKE) -C ../asmjit install
+
+else !enable_jit
+JITINC =
+JITDEP =
+
+endif !enable_jit
 
 if mac_framework
 
@@ -1266,7 +1298,7 @@ $(cslbase)/inlinemul.cpp:	$(cslbase)/geninline
 
 
 
-HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(THREADDEP)
+HDRS = $(FOXDEPS) $(CRDEP) $(JITDEP) $(FFIDEP) $(SOFTFLOATDEP) $(THREADDEP)
 
 csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(ARITHDEP) $(CSLCOM) $(CYG_CSL)
 	@printf "Relinking $@ because of $?\n"

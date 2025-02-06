@@ -667,6 +667,32 @@ then
   AC_DEFINE([GC_CHECK], [1], [For use by developers])
 fi
 
+# At present the JIT library does not install nicely in a naive Windows
+# build performed by mingw32 compilers run under cygwin. So I default
+# to avoiding it, but for testing I can explicitly request it. I may hope to
+# sort that issue out later if the scheme works well on other platforms.
+# Well it is also did not work first time for me under Cygwin so I
+# disable it by default in both those cases
+case `uname -a` in
+*CYGWIN*)
+  default_enable_jit="no";
+  ;;
+*)
+  default_enable_jit="yes";
+  ;;
+esac
+
+AC_ARG_ENABLE(jit,
+  AS_HELP_STRING([--enable-jit],
+                 [currently experimental (CSL only)]),
+  [],
+  [enable_jit="$default_enable_jit"])
+
+if test "$enable_jit" = "yes"
+then
+  AC_DEFINE([ENABLE_JIT], [1], [this option enabled])
+fi
+
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),
@@ -1358,15 +1384,28 @@ else
   cd "$builddir"
 fi
 
-# Just for now this will always configure! But I expect to need to pass
-# CXX and CXXFLAGS and plausibly mote down to cmake if I am to support
-# cross compilation.
-if test "$with_asmjit" != "no"
+if test "$enable_jit" = "yes"
 then
   AC_MSG_NOTICE([About to configure asmjit])
   mkdir -p asmjit
   cd asmjit
-  cmake -DASMJIT_STATIC=TRUE -DCMAKE_INSTALL_PREFIX:PATH=$builddir \
+  case "$CXX" in
+  *mingw*)
+# This is a suggestion for a move towards getting mingw32 support in place
+# by having a custom Toolchain file. The one I have at present is not
+# enough to make things work!
+    temp="$abssrcdir/libraries/asmjit"
+    TRYMINGW="-DCMAKE_TOOLCHAIN_FILE=$temp/Toolchain-x86_64-w64-mingw32.cmake"
+    ;;
+  *)
+    TRYMINGW=""
+    ;;
+  esac
+  cmake -DASMJIT_STATIC=TRUE \
+	$TRYMINGW \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+        -DCMAKE_INSTALL_PREFIX:PATH=$builddir \
         $abssrcdir/libraries/asmjit
   cd "$builddir"
 fi
@@ -1478,6 +1517,7 @@ AM_CONDITIONAL(fox, test "$with_fox" != "no")
 AM_CONDITIONAL(wx,  test "$with_wx" != "no")
 AM_CONDITIONAL(crlibm, test "$with_crlibm" != "no")
 AM_CONDITIONAL(systemffi, test "$ffi_found" != "no")
+AM_CONDITIONAL(jit, test "$enable_jit" = "yes")
 
 AC_MSG_NOTICE([final output from top level configuration])
 
