@@ -131,6 +131,7 @@ plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
 plain_testf128 = testf128
+plain_jitdemo = jitdemo
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -149,6 +150,7 @@ plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_testf128 = testf128.unnecessary.except.on.windows
+plain_jitdemo = jitdemo.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -168,6 +170,7 @@ endif !exeext
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_testf128)
+.PHONY: $(plain_jitdemo)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -304,6 +307,12 @@ else !wx
 wxdemotarget =
 endif !wx
 
+if enable_jit
+jitdemotarget = jitdemo$(EXEEXT)
+else !enable_jit
+jitdemotarget =
+endif !enable_jit
+
 if wx
 noinst_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 else !wx
@@ -313,12 +322,12 @@ if mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	testf128$(EXEEXT) $(wxdemotarget)
+	testf128$(EXEEXT) $(wxdemotarget) $(jitdemotarget)
 else !mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	testf128$(EXEEXT) $(wxdemotarget)
+	testf128$(EXEEXT) $(wxdemotarget) $(jitdemotarget)
 endif !mac_framework
 
 if mac_framework
@@ -638,6 +647,10 @@ AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
 
 testf128_SOURCES = testf128.cpp float128_t.cpp
 testf128_LDADD = ../lib/libsoftfloat.a
+
+jitdemo_SOURCES = jitdemo.cpp
+jitdemo_LDADD = ../lib/libasmjit.a 
+jitdemo_DEPENDENCIES = 
 
 if windows
 
@@ -1738,6 +1751,9 @@ $(plain_termdemo):	termdemo.exe
 
 $(plain_testf128):	testf128.exe
 	printf "$(MAKE) testf128.exe is preferred\n"
+
+$(plain_jitdemo):	jitdemo.exe
+	printf "$(MAKE) jitdemo.exe is preferred\n"
 
 endif exeext
 

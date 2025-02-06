@@ -26,9 +26,9 @@
 // 
 
 
-#include "asmjit.h"
+#include "asmjit/asmjit.h"
 #ifdef __aarch64__
-#include "a64.h"
+#include "asmjit/a64.h"
 #endif // __aarch64__
 #include <cstdio>
 
