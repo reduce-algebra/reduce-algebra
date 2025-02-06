@@ -820,10 +820,10 @@ bootstrapreduce_CPPFLAGS += $(JITINC)
 csl_CPPFLAGS    += $(JITINC)
 flatcsl_CPPFLAGS    += $(JITINC)
 
-csl_LDADD += ../lib/asmjit.a
-flatcsl_LDADD += ../lib/asmjit.a
-bootstrapreduce_LDADD += ../lib/asmjit.a
-reduce_LDADD += ../lib/asmjit.a
+csl_LDADD += ../lib/libasmjit.a
+flatcsl_LDADD += ../lib/libasmjit.a
+bootstrapreduce_LDADD += ../lib/libasmjit.a
+reduce_LDADD += ../lib/libasmjit.a
 
 csl_DEPENDENCIES += $(JITDEPS)
 flatcsl_DEPENDENCIES += $(JITDEPS)
