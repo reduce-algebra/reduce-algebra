@@ -35,8 +35,9 @@
 
 // $Id$
 
-
 #include "headers.h"
+
+#ifdef ENABLE_JIT
 
 // Combinations of symbols that your C++ compiler may predefine
 // to guide usage here:
@@ -261,5 +262,42 @@ LispObject Lshowasm(LispObject env)
 
 
 #endif // UNKNOWN_SYSTEM
+
+#else // ENABLE_JIT
+
+// The functions here are no use, but are provided so that image files
+// are compatible across architectures.
+
+void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
+{   return nullptr;
+}
+
+LispObject Lshowasm(LispObject env)
+{   return nil;
+}
+
+LispObject CSLasmtest_0(LispObject env)
+{   return 0;
+}
+
+LispObject CSLasmtest_1(LispObject env, LispObject a1)
+{   return 1;
+}
+
+LispObject CSLasmtest_2(LispObject env, LispObject a1, LispObject a2)
+{   return 2;
+}
+
+LispObject CSLasmtest_3(LispObject env, LispObject a1, LispObject a2,
+                                        LispObject a3)
+{   return 3;
+}
+
+LispObject CSLasmtest_4up(LispObject env, LispObject a1, LispObject a2,
+                                          LispObject a3, LispObject a4up)
+{   return 4;
+}
+
+#endif // ENABLE_JIT
 
 // end of jit.cpp

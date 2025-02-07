@@ -54,7 +54,7 @@ Errors occur if indices are not properly matched in expressions.
 \hypertarget{command:REMIND}{}
 If a user later wishes to remove the index property from specific vectors,
 he can do it with the declaration \texttt{remind}.\ttindextype{remind}{declaration} Thus
-\texttt{remind v1,\ldots{},vn;} removes the index flags from the variables 
+\texttt{remind v1,\ldots{},vn;} removes the index flags from the variables
 \var{V1}
 through \var{Vn}.  However, these variables remain vectors in the system.
 
@@ -79,9 +79,9 @@ Thus
 \begin{verbatim}
         g(l1,p) * g(l2,q)
 \end{verbatim}
-denotes the product of \texttt{$\gamma$.p} associated with a fermion line
-identified as \texttt{l1}, and \texttt{$\gamma$.q} associated with another line
-identified as \texttt{l2} and where \texttt{p} and \texttt{q} are Lorentz
+denotes the product of $\gamma \cdot p$ associated with a fermion line
+identified as \texttt{l1}, and $\gamma \cdot q$ associated with another line
+identified as \texttt{l2} and where $p$ and $q$ are Lorentz
 four-vectors.  A product of $\gamma$ matrices associated with the same
 line may be written in a contracted form.
 
@@ -89,12 +89,12 @@ Thus
 \begin{verbatim}
    g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .
 \end{verbatim}
-The vector \texttt{a} is reserved in arguments of G to denote the special
+The vector \texttt{a} is reserved in arguments of \texttt{g} to denote the special
 $\gamma$ matrix $\gamma^{5}$. Thus
 \begin{quote}
 \begin{tabular}{lll}
  \texttt{g(l,a)} & $ = \gamma^{5}$ & associated with the line \texttt{l} \\[0.1in]
- \texttt{g(l,p,a)} & $ = \gamma\cdot p \times \gamma^{5}$ & 
+ \texttt{g(l,p,a)} & $ = \gamma\cdot p \times \gamma^{5}$ &
            associated with the line \texttt{l}.
 \end{tabular}
 \end{quote}
@@ -177,7 +177,7 @@ difference of such expressions, or the product of a scalar and Dirac
 expression is again a Dirac expression.  There are no Dirac variables in
 the system, so whenever a scalar variable appears in a Dirac expression
 without an associated $\gamma$ matrix expression, an implicit unit 4
-by 4 matrix is assumed.  For example, \texttt{g(l,p) + m} denotes 
+by 4 matrix is assumed.  For example, \texttt{g(l,p) + m} denotes
 \texttt{g(l,p) + m*\meta{unit 4 by 4 matrix}}.  Multiplication of Dirac
 expressions, as for matrix expressions, is of course non-commutative.
 
@@ -189,7 +189,7 @@ When a Dirac expression is evaluated, the system computes one quarter of
 the trace of each $\gamma$ matrix product in the expansion of the expression.
 One quarter of each trace is taken in order to avoid confusion between the
 trace of the scalar \texttt{m}, say, and \texttt{m} representing
-\texttt{m * \meta{unit 4 by 4 matrix}}.  
+\texttt{m * \meta{unit 4 by 4 matrix}}.
 Contraction over indices occurring in such expressions is
 also performed.  If an unmatched index is found in such an expression, an
 error occurs.
@@ -273,7 +273,7 @@ Bjorken and Drell Eqs. (7.72) through (7.74). We wish to compute the trace of
  \right)
 \]
 where $k_i$ and $k_f$ are the four-momenta of incoming and outgoing photons
-(with polarization vectors $e$ and $e^\prime$ and laboratory energies 
+(with polarization vectors $e$ and $e^\prime$ and laboratory energies
 $k$ and $k^\prime$
 respectively) and $p_i$, $p_f$ are incident and final electron four-momenta.
 
@@ -288,7 +288,7 @@ $\displaystyle\frac{\alpha^2}{2m^2}\left(\frac{k^\prime}{k}\right)^2$ we need to
  \qquad\left(
   \gamma\cdot p_i + m\right)
  \left(\frac{\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime}{2k.p_i} +
-  \frac{\gamma\cdot k_f\gamma\cdot e^\prime \gamma\cdot e}{2k^\prime.p_i}\right) 
+  \frac{\gamma\cdot k_f\gamma\cdot e^\prime \gamma\cdot e}{2k^\prime.p_i}\right)
 \]
 A straightforward \REDUCE{} program for this, with appropriate substitutions
 (using \texttt{p1} for $p_i$, \texttt{pf} for $p_f$, \texttt{ki}
@@ -301,7 +301,7 @@ for $k_i$ and \texttt{kf} for $k_f$) is
  %      identity as the base of natural logarithms.
  mshell ki,kf,p1,pf;
  let p1.e= 0, p1.ep= 0, p1.pf= m^2+ki.kf, p1.ki= m*k,
-     p1.kf= m*kp, pf.e= -kf.e, pf.ep= ki.ep, 
+     p1.kf= m*kp, pf.e= -kf.e, pf.ep= ki.ep,
      pf.ki= m*kp, pf.kf= m*k, ki.e= 0, ki.kf= m*(k-kp),
      kf.ep= 0, e.e= -1, ep.ep=-1;
  operator gp;

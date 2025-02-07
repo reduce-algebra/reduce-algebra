@@ -633,7 +633,7 @@ AC_ARG_WITH(inlines,
   AS_HELP_STRING([--with-inlines],
                  [--without-inlines supresses inline functions in bootstrapreduce]),
   [],
-  [with-inlines="yes"])
+  [with_inlines="yes"])
 
 AC_ARG_ENABLE(profile,
   AS_HELP_STRING([--enable-profile],
@@ -692,6 +692,31 @@ then
   AC_DEFINE([GC_CHECK], [1], [For use by developers])
 fi
 
+# At present the JIT library does not install nicely in a Windows
+# build performed by mingw32 or for cygwin. So I default
+# to avoiding it, but for testing I can explicitly request it. I may hope to
+# sort that issue out later if the scheme works well on other platforms.
+case `uname -a` in
+*CYGWIN*)
+  default_enable_jit="no";
+  ;;
+*)
+  default_enable_jit="yes";
+  ;;
+esac
+
+AC_ARG_ENABLE(jit,
+  AS_HELP_STRING([--enable-jit],
+                 [currently experimental (CSL only)]),
+  [],
+  [enable_jit="$default_enable_jit"])
+
+if test "$enable_jit" = "yes"
+then
+  AC_DEFINE([ENABLE_JIT], [1], [this option enabled])
+fi
+
+
 AC_ARG_ENABLE(test,
   AS_HELP_STRING([--enable-test],
                  [testing-mode version (CSL only)]),
@@ -702,7 +727,6 @@ if test "$enable_test" = "yes"
 then
   AC_DEFINE([TEST], [1], [For use by developers])
 fi
-
 AC_ARG_ENABLE(experiment,
   AS_HELP_STRING([--enable-experiment],
                  [testing-mode version (CSL only)]),
@@ -1985,6 +2009,7 @@ AM_CONDITIONAL(profile, test "$enable_profile" != "no")
 AM_CONDITIONAL(debug, test "$enable_debug" != "no")
 AM_CONDITIONAL(xcross, test "$can_run_compiled_code" != "yes")
 AM_CONDITIONAL(inlines, test "$with_inlines" = "yes")
+AM_CONDITIONAL(enable_jit, test "$enable_jit" = "yes")
 
 # The Makefile that is built from Makefile.am will include these three
 # so it will be unhappy if they are not present... And there is a conflict

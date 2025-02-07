@@ -131,6 +131,7 @@ plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
 plain_testf128 = testf128
+plain_jitdemo = jitdemo
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -149,6 +150,7 @@ plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_testf128 = testf128.unnecessary.except.on.windows
+plain_jitdemo = jitdemo.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -168,6 +170,7 @@ endif !exeext
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_testf128)
+.PHONY: $(plain_jitdemo)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -304,6 +307,12 @@ else !wx
 wxdemotarget =
 endif !wx
 
+if enable_jit
+jitdemotarget = jitdemo$(EXEEXT)
+else !enable_jit
+jitdemotarget =
+endif !enable_jit
+
 if wx
 noinst_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 else !wx
@@ -313,12 +322,12 @@ if mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	testf128$(EXEEXT) $(wxdemotarget)
+	testf128$(EXEEXT) $(wxdemotarget) $(jitdemotarget)
 else !mac_framework
 noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
-	testf128$(EXEEXT) $(wxdemotarget)
+	testf128$(EXEEXT) $(wxdemotarget) $(jitdemotarget)
 endif !mac_framework
 
 if mac_framework
@@ -596,17 +605,17 @@ csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 flatcsl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
-foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
+foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC) $(JITINC)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 foxdemo_DEPENDENCIES = $(fwin_icon) 
 
 fontdemo_SOURCES = fontdemo.cpp
-fontdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
+fontdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC) $(JITINC)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 fontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
 showmathdemo_SOURCES = showmathdemo.cpp
-showmathdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
+showmathdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC) $(JITINC)
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 showmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
@@ -638,6 +647,10 @@ AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
 
 testf128_SOURCES = testf128.cpp float128_t.cpp
 testf128_LDADD = ../lib/libsoftfloat.a
+
+jitdemo_SOURCES = jitdemo.cpp
+jitdemo_LDADD = ../lib/libasmjit.a 
+jitdemo_DEPENDENCIES = 
 
 if windows
 
@@ -807,6 +820,38 @@ CRINC =
 CRDEP =
 
 endif !crlibm
+
+if enable_jit
+
+JITDEPS=../lib/libasmjit.a ../include/asmjit.h
+
+JITDEP = ../include/asmjit.h
+JITINC = -I../include
+AM_CPPFLAGS     += $(JITINC)
+reduce_CPPFLAGS += $(JITINC)
+bootstrapreduce_CPPFLAGS += $(JITINC)
+csl_CPPFLAGS    += $(JITINC)
+flatcsl_CPPFLAGS    += $(JITINC)
+
+csl_LDADD += ../lib/libasmjit.a
+flatcsl_LDADD += ../lib/libasmjit.a
+bootstrapreduce_LDADD += ../lib/libasmjit.a
+reduce_LDADD += ../lib/libasmjit.a
+
+csl_DEPENDENCIES += $(JITDEPS)
+flatcsl_DEPENDENCIES += $(JITDEPS)
+bootstrapreduce_DEPENDENCIES += $(JITDEPS)
+reduce_DEPENDENCIES += $(JITDEPS)
+
+$(JITDEPS):
+	@printf "About to build asmjit for %s ($@)\n" `pwd`
+	-$(TRACE)@$(MAKE) -C ../asmjit install
+
+else !enable_jit
+JITINC =
+JITDEP =
+
+endif !enable_jit
 
 if mac_framework
 
@@ -1266,7 +1311,7 @@ $(cslbase)/inlinemul.cpp:	$(cslbase)/geninline
 
 
 
-HDRS = $(FOXDEPS) $(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(THREADDEP)
+HDRS = $(FOXDEPS) $(CRDEP) $(JITDEP) $(FFIDEP) $(SOFTFLOATDEP) $(THREADDEP)
 
 csl$(EXEEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(HDRS) $(ARITHDEP) $(CSLCOM) $(CYG_CSL)
 	@printf "Relinking $@ because of $?\n"
@@ -1706,6 +1751,9 @@ $(plain_termdemo):	termdemo.exe
 
 $(plain_testf128):	testf128.exe
 	printf "$(MAKE) testf128.exe is preferred\n"
+
+$(plain_jitdemo):	jitdemo.exe
+	printf "$(MAKE) jitdemo.exe is preferred\n"
 
 endif exeext
 
