@@ -2007,11 +2007,10 @@ bootstrapreduce.dep:
 # Build bootstrapreduce.img just once using any existing inline-defs
 
 bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) \
+	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG) && $(XBOOTSTRAPREDUCE) \
 		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2024,7 +2023,6 @@ bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	chmod 664 $(gensrc)/*
 
 $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
-	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG)
 	: > $(INLINE_DEFS)
 # To ensure I am tidy I first make inline-defs.dat empty and then
 # build the image file twice in a row, so that forward references
@@ -2032,7 +2030,7 @@ $(BOOTSTRAPREDUCE_IMG):	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrap
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) \
+	-$(TRACE): > $(BOOTSTRAPREDUCE_IMG) && $(XBOOTSTRAPREDUCE) \
 		-w -r1 -z -x $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2072,11 +2070,10 @@ noinlines.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 # intermediate step.
 
 boot.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
-	-$(TRACE): > boot.img
 	mkdir -p buildlogs
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 	chmod 664 $(gensrc)/*
-	$(XBOOTSTRAPREDUCE) \
+	-$(TRACE): > boot.img && $(XBOOTSTRAPREDUCE) \
 		-w -r1 -z $(CSLFLAGS) $(NOINLINES) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
