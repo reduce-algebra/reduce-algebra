@@ -1,0 +1,32 @@
+// op_closure.cpp
+
+#if defined BYTECODE
+            case OP_CLOSURE:
+                *++stack = B_reg; *++stack = A_reg;
+// This will be the address where the first arg of this function lives on
+// the stack.  It provides a hook for the called function to access lexical
+// variables.
+                w = next_byte;
+                A_reg = encapsulate_sp(&stack[-2-static_cast<int>(w)]);
+                errexit();
+                B_reg = *stack--;
+                A_reg = list2star(cfunarg, B_reg, A_reg);
+                errexit();
+                B_reg = *stack--;
+                continue;
+
+#elif defined __x86_64__
+
+            case OP_CLOSURE:
+                myabort("This case not yet implemented for x86_64");
+
+#elif defined __aarch64__
+
+            case OP_CLOSURE:
+                myabort("This case not yet implemented for ARM");
+
+#else
+            case OP_CLOSURE:
+                myabort("Unsupported architecture");
+
+#endif

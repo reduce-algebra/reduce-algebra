@@ -1,0 +1,95 @@
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+#include <cinttypes>
+#include <cstring>
+#include <unistd.h>
+#include <cctype>
+
+
+// Take the existing bytes2.cpp and wherever there is a line
+//    "... case OP_XXX: ..."
+// put the material on that line and following it in a file
+// called "op_xxx.cpp".
+// Also treat "<12 spaces>default:" as the start of "default.cpp",
+// put material before the first of those in "bytes_head.cpp" and
+// detect "<8 spaces>}" following a blank line as the start
+// of "bytes_tail.cpp".
+//
+// Make a further file "bytes_include.cpp" that contains
+// "#include" statements for all the files so created.
+
+
+void alternatives(FILE* dest, const char* labelLine)
+{
+    std::fprintf(dest, "#elif defined __x86_64__\n\n");
+    std::fprintf(dest, "%s", labelLine);
+    std::fprintf(dest, "                myabort(\"This case not yet implemented for x86_64\");\n\n");
+    std::fprintf(dest, "#elif defined __aarch64__\n\n");
+    std::fprintf(dest, "%s", labelLine);
+    std::fprintf(dest, "                myabort(\"This case not yet implemented for ARM\");\n\n");
+    std::fprintf(dest, "#else\n");
+    std::fprintf(dest, "%s", labelLine);
+    std::fprintf(dest, "                myabort(\"Unsupported architecture\");\n\n");
+    std::fprintf(dest, "#endif\n");
+}
+
+int main(int argc, char* argv[])
+{
+    FILE* src = std::fopen("../bytes2.cpp", "r");
+    FILE* dest = std::fopen("bytes_head.cpp", "w");
+    FILE* includes = std::fopen("bytes_include.cpp", "w");
+    std::fprintf(dest, "// bytes_head.cpp\n\n");
+    std::fprintf(includes, "// bytes_includes.cpp\n\n");
+    bool prevEmpty = false;
+    char* lineptr;
+    char labelLine[250] = "";
+    for (;;)
+    {   lineptr = NULL;
+        size_t len = 0;
+        if (getline(&lineptr, &len, src) < 0) break;
+        if (prevEmpty && std::strcmp(lineptr, "        }\n")==0)
+        {   if (labelLine[0] != 0) alternatives(dest, labelLine);
+            std::fclose(dest);
+            dest = std::fopen("bytes_tail.cpp", "w");
+            std::fprintf(dest, "// bytes_tail.cpp\n\n");
+            std::printf("end of switch block\n");
+        }
+        else if (std::strcmp(lineptr, "            default:\n")==0)
+        {   if (labelLine[0] != 0) alternatives(dest, labelLine);
+            std::fclose(dest);
+            dest = std::fopen("default.cpp", "w");
+            std::strcpy(labelLine, lineptr);
+            std::fprintf(dest, "// default.cpp\n\n");
+            std::fprintf(dest, "#if defined BYTECODE\n");
+            std::fprintf(includes, "#include \"ops/default.cpp\"\n");
+            std::printf("default:\n");
+        }
+        else if (std::strncmp(lineptr, "            case OP_", 20)==0)
+        {   if (labelLine[0] != 0) alternatives(dest, labelLine);
+            std::fclose(dest);
+            char name[100];
+            std::strcpy(name, lineptr+17);
+            size_t i;
+            for (i=0;name[i]!=':';i++)
+            {   name[i] = std::tolower(name[i]);
+            }
+            std::strcpy(&name[i], ".cpp");
+            dest = std::fopen(name, "w");
+            std::strcpy(labelLine, lineptr);
+            std::fprintf(dest, "// %s\n\n", name);
+            std::fprintf(dest, "#if defined BYTECODE\n");
+            std::fprintf(includes, "#include \"ops/%s\"\n", name);
+            std::printf("%s\n", name);
+        }
+        prevEmpty = (std::strcmp(lineptr, "\n") == 0);
+        std::fprintf(dest, "%s", lineptr);
+        std::free(lineptr);
+    }
+    std::free(lineptr);
+    std::fclose(dest);
+    std::fprintf(includes, "\n// end of bytes_includes.cpp\n");
+    std::fclose(includes);
+    return 0;
+}
+
