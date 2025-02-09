@@ -33,7 +33,7 @@ algebraic;
 
 %ARITHMETIC GEOMETRIC MEAN
 
-% do we really need this?  Simpler and sufficient for use in efweier.red 
+% do we really need this?  Simpler and sufficient for use in efweier.red
 procedure agm_basic(a0, b0);
 begin scalar an, bn, cn, tol;
    tol := 10.0^-(symbolic !:prec!:);
@@ -95,7 +95,7 @@ begin scalar agm, alist, clist, n, an, cn, phi_n, phi_list;
     alist := second agm;
     clist := third agm;
     n :=  first agm;
-    an :=  first alist; 
+    an :=  first alist;
     phi_n := (2^n)*an*u;
     phi_list := {phi_n};
 
@@ -147,7 +147,7 @@ begin scalar f, n, bothlists, alist, plist, s,
 
     f := f_function(phi,m);
     bothlists := landentrans(phi,asin m);
-	
+
     alist := second bothlists;
     plist := first bothlists;
 
@@ -185,19 +185,22 @@ procedure je_function(phi,m);
 
 %Increases the precision used to evaluate algebraic arguments.
 
-symbolic procedure  n_elliptic (u);
-% check that length u >= 2 !
- if length u < 2 then
-         rederr "illegal call to n_elliptic" else
-   begin scalar oldprec,res;
-     oldprec := precision(0);
-     precision max(oldprec+4,16);
-
-    res :=  aeval u;
-    precision oldprec;
-    return res;
-
-  end;
+symbolic procedure n_elliptic(u);
+   % check that length u >= 2 !
+   if length u < 2 then
+      rederr "illegal call to n_elliptic" else
+      begin scalar offcomplex, !*msg, oldprec, res;
+         if not !*complex then <<
+            offcomplex := t;
+            on1 'complex
+         >>;
+         oldprec := precision(0);
+         precision max(oldprec+4,16);
+         res := aeval u;
+         precision oldprec;
+         if offcomplex then off1 'complex;
+         return res
+      end;
 
 put('num_elliptic, 'psopfn, 'n_elliptic);
 
@@ -226,7 +229,7 @@ begin scalar alpha1, phi1, alist, plist, tol;
    return list(reverse plist, reverse alist)
 end;
 
-%###################################################################### 
+%######################################################################
 % New routines for the numerical evaluation of symmetric elliptic integrals
 % added by Alan Barnes, February 2022.
 
@@ -292,8 +295,8 @@ algebraic procedure RC(x,y);
       >>;
       oldprec := precision(0);
       precision max(oldprec+4,16);
-      tmp := ceiling(oldprec/3); 
-      tol := 10.0^(-tmp);  
+      tmp := ceiling(oldprec/3);
+      tol := 10.0^(-tmp);
       % relative truncation error of result approx. 10^-(2*oldprec)
       tmp := t;
       while tmp do <<
@@ -336,11 +339,11 @@ algebraic procedure RF(x,y,z);
 	 >>;
       if n>1 then
 	 rederr("divergent integral RF: more than one argument is zero");
-      
+
       oldprec := precision(0);
       precision max(oldprec+4,16);
-      n := ceiling(oldprec/3); 
-      tol := 10.0^(-n);  
+      n := ceiling(oldprec/3);
+      tol := 10.0^(-n);
       % relative trunction error of result approx. 10^-(2*oldprec)
       tmp := t;
       while tmp do <<
@@ -377,8 +380,8 @@ algebraic procedure RD(x,y,z);
 
       oldprec := precision(0);
       precision max(oldprec+4,16);
-      tmp := ceiling(oldprec/3); 
-      tol := 10.0^(-tmp);  
+      tmp := ceiling(oldprec/3);
+      tol := 10.0^(-tmp);
       tmp := t; sigma := 0; pow := 1;
       while tmp do <<
 	 mu := (x+y+3*z)/5;
@@ -434,11 +437,11 @@ algebraic procedure RJ(x,y,z,p);
 	 >>;
       if n>1 then
 	 rederr("divergent integral RJ: more than 1 of first 3 args are zero");
-      
+
       oldprec := precision(0);
       precision max(oldprec+4,16);
-      n := ceiling(oldprec/3); 
-      tol := 10.0^(-n);  
+      n := ceiling(oldprec/3);
+      tol := 10.0^(-n);
 
       oldp := p;
       if p < 0 then <<
@@ -455,7 +458,7 @@ algebraic procedure RJ(x,y,z,p);
 	 rcx:= RC(tmp1,tmp2);
       	 precision max(oldprec+4,16);
       >>;
-       
+
       tmp := t; pow := 1; sigma := 0;
       while tmp do <<
 	 mu := (x+y+z+2*p)/5;
@@ -515,7 +518,7 @@ algebraic procedure carlson_RCR(x,y);
    (if x<0 or y=0 then
       rederr("1st parameter of RC must be non-negative and the 2nd non-zero")
     else if y<0 then atanh(sqrt x/z)/z  % Cauchy principal value
-    else if y<x then atanh(z/sqrt x)/z 
+    else if y<x then atanh(z/sqrt x)/z
     else if x = 0 then pi/(2*z)
     else if x<y then atan(z/sqrt x)/z
     else 1/sqrt x) where z=>sqrt(abs(x-y));
@@ -547,8 +550,8 @@ algebraic procedure sym_int_RFR(x,y,z);
       precision max(oldprec+4,16);
       tol := 10.0^-(symbolic !:prec!:);
       % sort arguments into ascending order
-      if x>y then <<tmp := y; y:=x; x:=tmp>>;      
-      if y>z then <<tmp := z; z:=y; y:=tmp>>;      
+      if x>y then <<tmp := y; y:=x; x:=tmp>>;
+      if y>z then <<tmp := z; z:=y; y:=tmp>>;
       if x>y then <<tmp := y; y:=x; x:=tmp>>;
 
       % use the faster convergent scheme which depends on
@@ -558,7 +561,7 @@ algebraic procedure sym_int_RFR(x,y,z);
 	 % x,y,z now in descending order
 	 theta :=-1;
       >>
-      else theta :=1; 
+      else theta :=1;
 
       cn := 1;
       t0 := sqrt x;
@@ -578,7 +581,7 @@ algebraic procedure sym_int_RFR(x,y,z);
       % RC(tn^2+theta*an^2, tn^2) which equals RF(tn^2, tn^2, tn^2+theta*an^2)
       % when theta +1 or -1 respectively
       % Negative second argument not possible in this case?
-      if y<x then tmp := atanh(z/sqrt x)/z 
+      if y<x then tmp := atanh(z/sqrt x)/z
       else if x = 0 then tmp := pi/(2*z)
       else if x<y then tmp := atan(z/sqrt x)/z
       else tmp := 1/sqrt x;
@@ -616,7 +619,7 @@ algebraic procedure sym_int_RF(x,y,z);
       tmp := abs(y-x);
       tmp2 := abs(z-x);
       if abs(z-x) < tmp then <<
-         tmp:=y; y:=z; z:=tmp         
+         tmp:=y; y:=z; z:=tmp
       >>;
       cn := 1;
       t0 := sqrt x;
@@ -636,16 +639,16 @@ algebraic procedure sym_int_RF(x,y,z);
       else if x=0 then tmp := pi/(2*sqrt y)
       else if impart y=0 and y<0 then  %% can this occur??
              tmp := atanh(sqrt x/z)/z % Cauchy principal value
-      else tmp := atanh(z/sqrt x)/z; 
+      else tmp := atanh(z/sqrt x)/z;
       tmp := carlson_RC(tn^2+an^2,tn^2);
       precision(oldprec);
       return tmp;
    end;
 
-%% 
+%%
 %% % the following two procedures use alternative methods of evaluation
 %% % (probably less efficient) and are mainly for checking consistency.
-%% 
+%%
 %% % For RC, the switch COMPLEX may need to be on even for purely real arguments
 %% % It uses inverse hyperbolic tangent with a possibly imaginary parameter.
 
@@ -696,7 +699,7 @@ algebraic procedure RF1(x,y,z);
       tmp := abs(y-x);
       tmp2 := abs(z-x);
       if abs(z-x) < tmp then <<
-         tmp:=y; y:=z; z:=tmp         
+         tmp:=y; y:=z; z:=tmp
       >>;
       cn := 1;
       t0 := sqrt x;
@@ -716,7 +719,7 @@ algebraic procedure RF1(x,y,z);
 %%       else if x=0 then tmp := pi/(2*sqrt y)
 %%       else if impart y=0 and y<0 then  %% can this occur??
 %%              tmp := atanh(sqrt x/z)/z % Cauchy principal value
-%%       else tmp := atanh(z/sqrt x)/z; 
+%%       else tmp := atanh(z/sqrt x)/z;
       tmp := RC1(tn^2+an^2,tn^2);
       precision(oldprec);
       return tmp;
@@ -832,7 +835,7 @@ algebraic procedure ellint_2nd(lowlim, uplim, fac1, fac2, fac3, fac4);
 	       d12/d13*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
 	 >> else <<
 	    d12 := first(fac1)*second(fac3) - first(fac3)*second(fac1); % d13
-	    d13 := first(fac3)*second(fac4) - first(fac4)*second(fac3); % d34 
+	    d13 := first(fac3)*second(fac4) - first(fac4)*second(fac3); % d34
 	    u12 := ellint_2nd(lowlim,uplim,fac3,fac1,fac3,fac4);
 	    return (second(fac1)+second(fac4)*d12/d13)*u12/second(fac3) -
 	       d12/d13*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
@@ -881,7 +884,7 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
       	 x4 := sqrt(first(fac4)+second(fac4)*uplim);
       	 x5 := sqrt(first(fac5)+second(fac5)*uplim);
       >>;
-    
+
       if lowlim = -infinity then <<
       	 y1 := sqrt(-second(fac1));
       	 y2 := sqrt(-second(fac2));
@@ -898,7 +901,7 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
       if x1=0 or y1=0 then   % awkward case
 	 if x2 neq 0 and y2 neq 0 and second(fac2) neq 0 then <<
 	    d12 := first(fac1)*second(fac2) - first(fac2)*second(fac1);
-	    d25 := first(fac2)*second(fac5) - first(fac5)*second(fac2); 
+	    d25 := first(fac2)*second(fac5) - first(fac5)*second(fac2);
 	    u12 := ellint_3rd(lowlim,uplim,fac2,fac1,fac3,fac4,fac5);
 	    return (second(fac1)+second(fac5)*d12/d25)*u12/second(fac2) -
 	       d12/d25*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
@@ -917,13 +920,13 @@ algebraic procedure ellint_3rd(lowlim, uplim, fac1, fac2, fac3, fac4, fac5);
 	    return (second(fac1)+second(fac5)*d14/d45)*u12/second(fac4) -
 	       d14/d45*ellint_1st(lowlim,uplim, fac1,fac2,fac3,fac4);
 	 >>;
-	 
-      % generic case	    
+
+      % generic case
       u12 := x1*x2*y3*y4 + y1*y2*x3*x4;
       u13 := x1*x3*y2*y4 + y1*y3*x2*x4;
       u23 := x2*x3*y1*y4 + y2*y3*x1*x4;
       s15 := (x2*x3*x4*y5^2/x1  + y2*y3*y4*x5^2/y1);
- 
+
       if uplim neq infinity and lowlim neq -infinity then <<
       	 u12 := u12/(uplim-lowlim);
       	 u13 := u13/(uplim-lowlim);
