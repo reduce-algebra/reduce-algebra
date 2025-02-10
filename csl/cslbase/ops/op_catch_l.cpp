@@ -1,0 +1,25 @@
+// op_catch_l.cpp
+
+#if defined BYTECODE
+            case OP_CATCH_L:
+                w = next_byte;
+                w = static_cast<unsigned int>(ppc + (w << 8) +
+                                              (reinterpret_cast<unsigned char *>(codevec))[ppc]);
+                ppc++;
+                goto catcher;
+
+#elif defined __x86_64__
+
+            case OP_CATCH_L:
+                myabort("This case not yet implemented for x86_64");
+
+#elif defined __aarch64__
+
+            case OP_CATCH_L:
+                myabort("This case not yet implemented for ARM");
+
+#else
+            case OP_CATCH_L:
+                myabort("Unsupported architecture");
+
+#endif

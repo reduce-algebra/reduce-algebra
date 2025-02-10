@@ -52,16 +52,16 @@ sigma_rules :=
    weierstrass_sigma2(~w1+~w3,~w1,~w3) => 0,
    weierstrass_sigma3(~w3,~w1,~w3) => 0,
 
-   weierstrass_sigma(-~u,~w1,~w3) => -weierstrass_sigma(u,w1,w3),  
-   weierstrass_sigma1(-~u,~w1,~w3) => weierstrass_sigma1(u,w1,w3),  
-   weierstrass_sigma2(-~u,~w1,~w3) => weierstrass_sigma2(u,w1,w3),  
+   weierstrass_sigma(-~u,~w1,~w3) => -weierstrass_sigma(u,w1,w3),
+   weierstrass_sigma1(-~u,~w1,~w3) => weierstrass_sigma1(u,w1,w3),
+   weierstrass_sigma2(-~u,~w1,~w3) => weierstrass_sigma2(u,w1,w3),
    weierstrass_sigma3(-~u,~w1,~w3) => weierstrass_sigma3(u,w1,w3),
 
    weierstrass_sigma(~u,-~w1,-~w3)  => weierstrass_sigma(u,w1,w3),
    weierstrass_sigma1(~u,-~w1,-~w3) => weierstrass_sigma1(u,w1,w3),
    weierstrass_sigma2(~u,-~w1,-~w3) => weierstrass_sigma2(u,w1,w3),
    weierstrass_sigma3(~u,-~w1,-~w3) => weierstrass_sigma3(u,w1,w3),
-   
+
    weierstrass_sigma1(0,~w1,~w3) => 1,
    weierstrass_sigma2(0,~w1,~w3) => 1,
    weierstrass_sigma3(0,~w1,~w3) => 1,
@@ -82,7 +82,7 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
-         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -91,7 +91,7 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -100,7 +100,7 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
-         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma1(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma1(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -109,17 +109,17 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-         exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma1(arg,w1,w3); 
+         exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma1(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
    weierstrass_sigma2((~~u + ~k*~w1)/~~d, ~w1, ~w3) =>
     (begin scalar m, arg;
-       m := fix repart(k/(2*d)); 
+       m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
 %         (-1)^m*exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma2(arg,w1,w3);
-          exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma2(arg,w1,w3); 
+          exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma2(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -128,8 +128,8 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-%         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma2(arg,w1,w3); 
-          exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma2(arg,w1,w3); 
+%         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma2(arg,w1,w3);
+          exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma2(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -138,7 +138,7 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w1;
        return
-         exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma3(arg,w1,w3); 
+         exp(2*m*eta1(w1,w3)*(arg+m*w1))*weierstrass_sigma3(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -147,7 +147,7 @@ sigma_rules :=
        m := fix repart(k/(2*d));
        arg := u/d + (k/d-2*m)*w3;
        return
-         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma3(arg,w1,w3); 
+         (-1)^m*exp(2*m*eta3(w1,w3)*(arg+m*w3))*weierstrass_sigma3(arg,w1,w3);
      end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -155,19 +155,19 @@ sigma_rules :=
 
 % Numerical evaluation
    weierstrass_sigma(~u,~w1,~w3) => n_sigma(num_sigma,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u 
+           when lisp !*rounded and lisp !*complex and numberp u
 	        and numberp w1 and numberp w3,
 
    weierstrass_sigma1(~u,~w1,~w3) => n_sigma(num_sigma1,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u 
+           when lisp !*rounded and lisp !*complex and numberp u
 	        and numberp w1 and numberp w3,
 
    weierstrass_sigma2(~u,~w1,~w3) => n_sigma(num_sigma2,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u 
+           when lisp !*rounded and lisp !*complex and numberp u
 	        and numberp w1 and numberp w3,
 
    weierstrass_sigma3(~u,~w1,~w3) => n_sigma(num_sigma3,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u 
+           when lisp !*rounded and lisp !*complex and numberp u
 	        and numberp w1 and numberp w3
 
 }$
@@ -194,7 +194,7 @@ weierstrass_rules :=
       (begin scalar m, arg;
          m := fix repart(k/(2*d));
 	 arg := u/d + (k/d-2*m)*w1;
-         return weierstrass(arg,w1,w3); 
+         return weierstrass(arg,w1,w3);
       end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -208,35 +208,35 @@ weierstrass_rules :=
 
 % Numerical evaluation
    weierstrass(~u,~w1,~w3) => n_sigma(num_weier,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u 
+           when lisp !*rounded and lisp !*complex and numberp u
 	        and numberp w1 and numberp w3,
 
    lattice_e1(~w1, ~w3) => n_lattice(num_e1, w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3,
 
    lattice_e2(~w1, ~w3) => n_lattice(num_e2, w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3,
 
    lattice_e3(~w1, ~w3) => n_lattice(num_e3, w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3,
-		
+
    lattice_g2(~w1, ~w3) => n_lattice(num_g2,w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3,
 
    lattice_g3(~w1, ~w3) => n_lattice(num_g3,w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3,
 
    lattice_delta(~w1, ~w3) => n_lattice(num_delta,w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3,
 
    lattice_g(~w1, ~w3) => n_lattice(num_!G,w1,w3)
-           when lisp !*rounded and lisp !*complex 
+           when lisp !*rounded and lisp !*complex
 	        and numberp w1 and numberp w3
 }$
 let weierstrass_rules;
@@ -251,7 +251,7 @@ weierZeta_rules :=
    weierstrassZeta(~w1,~w1,~w3) => eta1(w1,w3),
    weierstrassZeta(~w3,~w1,~w3) => eta3(w1,w3),
    weierstrassZeta(~w1+~w3,~w1,~w3) => eta1(w1,w3)+eta3(w1,w3),
-   
+
    df(weierstrassZeta(~u,~w1,~w3),~u)  => -weierstrass(u,w1,w3),
 
  % quasi-periodicity
@@ -259,15 +259,15 @@ weierZeta_rules :=
       (begin scalar m, arg;
          m := fix repart(k/(2*d));
 	 arg := u/d + (k/d-2*m)*w1;
-         return weierstrassZeta(arg,w1,w3)+2*m*eta1(w1,w3); 
+         return weierstrassZeta(arg,w1,w3)+2*m*eta1(w1,w3);
 	end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
-      
+
    weierstrassZeta((~~u + ~k*~w3)/~~d, ~w1, ~w3) =>
       (begin scalar m, arg;
          m := fix repart(k/(2*d));
 	 arg := u/d + (k/d-2*m)*w3;
-         return weierstrassZeta(arg,w1,w3)+2*m*eta3(w1,w3); 
+         return weierstrassZeta(arg,w1,w3)+2*m*eta3(w1,w3);
 	end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -275,7 +275,7 @@ weierZeta_rules :=
    weierstrassZeta(~u,~w1,~w3) => n_sigma(num_weierZeta,u,w1,w3)
            when lisp !*rounded and lisp !*complex
 	        and numberp u and numberp w1 and numberp w3,
-		
+
    eta1(~w1,~w3) => n_lattice(num_eta1,w1,w3)
            when lisp !*rounded and lisp !*complex
   	         and numberp w1 and numberp w3,
@@ -306,12 +306,10 @@ weierstrass1_rules :=
 
 % Numerical evaluation
    weierstrass1(~u,~g2,~g3) => num_elliptic(num_weier1, u, g2, g3)
-           when lisp !*rounded and lisp !*complex and numberp u 
-	        and numberp g2 and numberp g3,
+      when lisp !*rounded and numberp u and numberp g2 and numberp g3,
 
    weierstrasszeta1(~u,~g2,~g3) => num_elliptic(num_weierZeta1, u, g2, g3)
-           when lisp !*rounded and lisp !*complex and numberp u 
-	        and numberp g2 and numberp g3,
+      when lisp !*rounded and numberp u and numberp g2 and numberp g3,
 
    df(weierstrass1(~u,~g2,~g3),u) =>
        -sqrt(4*weierstrass1(u,g2,g3)^3 - g2*weierstrass1(u,g2,g3) - g3),
@@ -385,12 +383,12 @@ else begin scalar res, oldprec;
   oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := l_roots(w1,w3);
-  precision oldprec;   
+  precision oldprec;
   return res;
 end;
 
 procedure l_roots(w1,w3);
-begin scalar q, tau, t2, t4, m, l; 
+begin scalar q, tau, t2, t4, m, l;
   l := fix_omegas(w1,w3);
   w1 := first l; tau := third l;
   q := exp(i*pi*tau);
@@ -407,7 +405,7 @@ else begin scalar res, oldprec;
   oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := l_invariants(w1,w3);
-  precision oldprec;   
+  precision oldprec;
   return res;
 end;
 
@@ -522,12 +520,12 @@ else begin scalar res, oldprec;
   oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := num_qpf(w1,w3);
-  precision oldprec;   
+  precision oldprec;
   return res;
 end;
 
 procedure num_qpf(w1,w3);
-begin scalar tmp, tau, tmp1; 
+begin scalar tmp, tau, tmp1;
   tau := w3/w1;
   if impart(tau) <0 then <<
      tmp := w1; w1 := w3;
@@ -690,7 +688,7 @@ begin scalar res, oldprec;
   oldprec := precision(0);
   precision max(oldprec+3, 15);
   res := num_omegas(g2,g3);
-  precision oldprec;   
+  precision oldprec;
   return res;
 end;
 
@@ -725,7 +723,7 @@ begin scalar l, kk, kk1, m;
 % alternative method replacing last two lines above
 %   m := i*kk1/kk;
 %   l1:= (num_g2(1,m)/g2)^(1/4);
-%   return {l1, l1*m}; 
+%   return {l1, l1*m};
 end;
 
 procedure complex!-roots(l);
@@ -739,12 +737,12 @@ begin scalar l1, n, det, k, k1, tmp;
    n:=1;
    if first l1 < second l1 then n := 2;
    if part(l1, n) < third l1 then n := 3;
-   
+
    if n=1 then <<k := -third l, k1 := -second l>>
    else if n=2 then  <<k := -first l, k1 := -third l>>
    else  <<k := -second l, k1 := -first l>>;
    k:=k/part(l,n); k1 := k1/part(l,n);  %  k^2 & k'^2 respectively
-   
+
    if impart k<0 then  % probably redundant
       << tmp := k1, k1:=k; k:=tmp>>;
    return {k,k1};
@@ -754,7 +752,7 @@ procedure real!-roots(l);
 begin scalar e1, e2, e3, k, k1;
    e1:= max l; e3 := min l;  e2 := -e1-e3;
    %  k^2 & k'^2 respectively
-   k:= (e2-e3)/(e1-e3); k1 := (e1-e2)/(e1-e3);  
+   k:= (e2-e3)/(e1-e3); k1 := (e1-e2)/(e1-e3);
    return {k,k1};
 end;
 
@@ -763,7 +761,7 @@ begin scalar l;
   if g2^3-27*g3^2=0 then
     rederr("num_weier: discriminant of the Weierstrass function is zero.");
   l := num_omegas(g2,g3);
-  return num_weier(u, first l, second l); 
+  return num_weier(u, first l, second l);
 end;
 
 procedure num_weierZeta1(u,g2,g3);
@@ -771,7 +769,7 @@ begin scalar l;
   if g2^3-27*g3^2=0 then
     rederr("num_weier: discriminant of the Weierstrass function is zero.");
   l := num_omegas(g2,g3);
-  return num_weierZeta(u, first l, second l); 
+  return num_weierZeta(u, first l, second l);
 end;
 
 % moved to efnumeric.red by AB, Feb 2022.
@@ -867,7 +865,7 @@ put('lattice_omega3, 'plain!-functionsymbol, 'w3);
 
 flag('(weierstrass_sigma weierstrass_sigma1 weierstrass_sigma2
        weierstrass_sigma3 weierstrass weierstrassZeta
-       eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3 
+       eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3
        lattice_g2 lattice_g3  lattice_delta lattice_g
        lattice_omega1 lattice_omega3 weierstrass1 weierstrasszeta1
       ), 'specfn);
@@ -877,7 +875,7 @@ deflist('((weierstrass_sigma 3) (weierstrass_sigma1 3)
           (weierstrass_sigma2 3) (weierstrass_sigma3 3)
           (weierstrass 3) (weierstrassZeta 3) (eta1 2) (eta2 2)
 	  (eta3 2) (lattice_e1 2) (lattice_e3 2) (lattice_e3 2)
-	  (lattice_roots 2) (lattice_invariants 2) 
+	  (lattice_roots 2) (lattice_invariants 2)
 	  (lattice_g2 2) (lattice_g3 2)  (lattice_delta 2) (lattice_g 2)
 	  (weierstrass1 3) (weierstrassZeta1 3)
 	  (lattice_generators 2) (quasi_period_factors 2)
@@ -935,7 +933,7 @@ weier!-recip!-rules := {
       (begin scalar m, arg;
          m := fix repart(k/(2*d));
 	 arg := u/d + (k/d-2*m)*w1;
-         return RW!*(arg, w1, w3); 
+         return RW!*(arg, w1, w3);
       end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -952,7 +950,7 @@ weier!-recip!-rules := {
       (begin scalar m, arg;
          m := fix repart(k/(2*d));
 	 arg := u/d + (k/d-2*m)*lattice_omega1(g2,g3);
-         return RW1!*(arg, g2, g3); 
+         return RW1!*(arg, g2, g3);
       end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d)),
 
@@ -960,10 +958,10 @@ weier!-recip!-rules := {
       (begin scalar m, arg;
          m := fix repart(k/(2*d));
 	 arg := u/d + (k/d-2*m)*lattice_omega3(g2,g3);
-         return RW1!*(arg, g2, g3); 
+         return RW1!*(arg, g2, g3);
       end)
       when ((ratnump(rp) and abs(rp) >= 2) where rp => repart(k/d))
-  
+
 }$
 let weier!-recip!-rules$
 

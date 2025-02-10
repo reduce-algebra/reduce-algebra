@@ -1,0 +1,26 @@
+// op_jumpb2nil.cpp
+
+#if defined BYTECODE
+            case OP_JUMPB2NIL:
+                f2 = two_arg_functions[next_byte];
+                A_reg = f2(nil, B_reg, A_reg);
+                xppc = ppc;
+                ppc++;
+                if (A_reg == nil) short_jump(ppc, xppc, codevec);
+                continue;
+
+#elif defined __x86_64__
+
+            case OP_JUMPB2NIL:
+                myabort("This case not yet implemented for x86_64");
+
+#elif defined __aarch64__
+
+            case OP_JUMPB2NIL:
+                myabort("This case not yet implemented for ARM");
+
+#else
+            case OP_JUMPB2NIL:
+                myabort("Unsupported architecture");
+
+#endif

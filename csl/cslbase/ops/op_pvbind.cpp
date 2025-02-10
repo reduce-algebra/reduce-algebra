@@ -1,0 +1,22 @@
+// op_pvbind.cpp
+
+#if defined BYTECODE
+            case OP_PVBIND:
+                do_pvbind(A_reg, B_reg);
+                continue;
+
+#elif defined __x86_64__
+
+            case OP_PVBIND:
+                myabort("This case not yet implemented for x86_64");
+
+#elif defined __aarch64__
+
+            case OP_PVBIND:
+                myabort("This case not yet implemented for ARM");
+
+#else
+            case OP_PVBIND:
+                myabort("Unsupported architecture");
+
+#endif
