@@ -186,8 +186,8 @@ procedure je_function(phi,m);
 %Increases the precision used to evaluate algebraic arguments.
 
 symbolic procedure n_elliptic(u);
-   % check that length u >= 3 !
-   if length u < 3 then
+   % check that length u >= 2 !
+   if length u < 2 then
       rederr "illegal call to n_elliptic" else
       begin scalar offcomplex, !*msg, oldprec, res;
          if not !*complex then <<
