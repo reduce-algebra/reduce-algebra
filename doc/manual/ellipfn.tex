@@ -206,12 +206,25 @@ functions are unchanged and use only $\mathrm{sn}$, $\mathrm{cn}$ and
 $\mathrm{dn}$.  Note, however, that the previous form of these rules will be
 obtained if the rule-list \texttt{NO\_GLAISHER} is also active. 
 
-If both the switches \sw{rounded} and \sw{complex} are ON and both arguments
-of a Jacobi function are purely numerical, it will be evaluated numerically 
-The numerical evaluation of the Jacobi functions now uses their definitions
-in terms of theta functions as these are valid for all complex values of the
-argument and modulus.  Note that as a consequence it is now necessary that the
-switch \sw{complex} is ON even if both the argument and the modulus are real.
+If the switch \sw{rounded} is ON and both arguments of a Jacobi function are
+purely numerical, it will be evaluated numerically (previously it was
+necessary for both the switches \sw{rounded} and \sw{complex} to be ON).
+Of course, if either argument is a complex number, the switch \sw{complex} must
+also be ON for numerical evaluation to occur.
+
+The numerical evaluation of the Jacobi functions uses their definitions
+in terms of theta functions which are valid for all complex values of the
+argument and modulus.  Since theta functions are inherently complex-valued,
+it is necessary to turn the switch \sw{complex} ON during the evaluation even
+if both the argument and the modulus of the Jacobi function are real. The
+switch \sw{complex} is however returned to its old value as the computation
+completes.  One consequence of the use of theta functions is that occasionally
+the value of a Jacobi function with real arguments is returned with an
+insignificantly small imaginary part due to rounding errors. Since all Jacobi
+functions are real-valued for real arguments the imaginary part may be ignored.
+Similarly in some case where the first argument is purely imaginary and the
+modulus k<1, the result should be purely imaginary, but due to rounding the
+result contains an insignificantly small real part which may be safely ignored.
 
 The traditional AGM and  $\phi$-function based algorithm which was previously
 used when the argument and modulus are both real and $|k| < 1$ as been
@@ -1030,7 +1043,14 @@ second arguments by a vertical bar rather than a comma. The rule for
 differentiation of the Weierstrass function is simpler when expressed in
 this  alternative:
 \[ \wp'(u \mid g_2,g_3)^2 = 4\,\wp(u \mid g_2,g_3)^3
-   - g_2\, \wp(u \mid g_2,g_3) -g_3. \]
+- g_2\, \wp(u \mid g_2,g_3) -g_3. \]
+
+\subsubsection{Numerical Evaluation}
+If the arguments of the Weierstrassian, sigma and lattice functions (see below)
+are all numeric, the functions will only be evaluated if both \sw{rounded} and
+\sw{complex} are ON.  The only exceptions are the functions weierstrass1 and
+weierstrassZeta1. These are real-valued for real arguments and if all three
+arguments are real it suffices that the switch \sw{rounded} is ON.
 
 \subsubsection{Other Sigma Functions}
 \hypertarget{SIGMA1}{}

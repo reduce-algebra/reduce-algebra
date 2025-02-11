@@ -121,7 +121,7 @@ jacobiamrules :=
 
    jacobiam(~u,~m) =>
      num_elliptic(num_jacobiam, u, m)
-       	when lisp !*rounded and lisp !*complex and numberp u and numberp m
+       	when lisp !*rounded and numberp u and numberp m
 }$
 
 let jacobiamrules;
@@ -188,8 +188,7 @@ jacobisnrules :=
 %Calls Num_Jacobisn when the rounded switch is on.
 %-------------------------------------------------
         jacobisn(~u,~m) => num_elliptic(num_jacobisn, u, m)
-	   when lisp !*rounded and lisp !*complex and
-                numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobisnrules;
 
@@ -261,8 +260,7 @@ jacobicnrules :=
 %Calls Num_Jacobicn when rounded switch is on.
 %---------------------------------------------
         jacobicn(~u,~m) => num_elliptic(num_jacobicn, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 
 }$
 let jacobicnrules;
@@ -332,8 +330,7 @@ jacobidnrules :=
 %Calls Num_Jacobidn when rounded switch is on.
 %---------------------------------------------
         jacobidn(~u,~m) => num_elliptic(num_jacobidn, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 
 }$
 let jacobidnrules;
@@ -398,8 +395,7 @@ jacobicdrules :=
 %Calls Num_Jacobicd when rounded switch is on.
 %---------------------------------------------
         jacobicd(~u,~m) => num_elliptic(num_jacobicd, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 
 }$
 let jacobicdrules;
@@ -468,8 +464,7 @@ jacobisdrules :=
 %Calls Num_Jacobisd when rounded switch is on.
 %---------------------------------------------
         jacobisd(~u,~m) => num_elliptic(num_jacobisd, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobisdrules;
 
@@ -537,8 +532,7 @@ jacobindrules :=
 %Calls Num_Jacobind when rounded switch is on.
 %---------------------------------------------
         jacobind(~u,~m) => num_elliptic(num_jacobind, u, m)
-	   when lisp !*rounded and lisp !*complex and
-        	numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobindrules;
 
@@ -601,8 +595,7 @@ jacobidcrules :=
 %Calls Num_Jacobidc when rounded switch is on.
 %---------------------------------------------
         jacobidc(~u,~m) => num_elliptic(num_jacobidc, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobidcrules;
 
@@ -670,8 +663,7 @@ jacobincrules :=
 %Calls Num_Jacobinc when rounded switch is on.
 %---------------------------------------------
         jacobinc(~u,~m) => num_elliptic(num_jacobinc, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 
 }$
 let jacobincrules;
@@ -736,8 +728,7 @@ jacobiscrules :=
 %Calls Num_Jacobisc when rounded switch is on.
 %---------------------------------------------
         jacobisc(~u,~m) => num_elliptic(num_jacobisc, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobiscrules;
 
@@ -802,8 +793,7 @@ jacobinsrules :=
 %Calls Num_Jacobins when rounded switch is on.
 %---------------------------------------------
         jacobins(~u,~m) => num_elliptic(num_jacobins, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobinsrules;
 
@@ -869,8 +859,7 @@ jacobidsrules :=
 %Calls Num_Jacobids when on rounded switch is on.
 %------------------------------------------------
         jacobids(~u,~m) => num_elliptic(num_jacobids, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobidsrules;
 
@@ -931,8 +920,7 @@ jacobicsrules :=
 %Calls Num_Jacobics when rounded switch is on.
 %---------------------------------------------
         jacobics(~u,~m) => num_elliptic(num_jacobics, u, m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp u and numberp m
+	   when lisp !*rounded and numberp u and numberp m
 }$
 let jacobicsrules;
 
