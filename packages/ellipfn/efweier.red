@@ -292,6 +292,8 @@ let weierZeta_rules;
 
 operator weierstrass1, weierstrassZeta1;
 
+flag ('(weierstrass1 weierstrassZeta1), 'realvalued);
+
 weierstrass1_rules :=
 {
    weierstrass1(-~u,~g2,~g3) => weierstrass1(u,g2,g3),
