@@ -196,13 +196,35 @@ symbolic procedure n_elliptic(u);
          >>;
          oldprec := precision(0);
          precision max(oldprec+4,16);
-         res := aeval u;
+         % Must catch any errors here and then tidy up before
+         % re-throwing the error or returning.
+         res := errorset!*({'aeval, mkquote u}, nil);
          precision oldprec;
          if offcomplex then off1 'complex;
-         return res
+         if errorp res then
+            error(res, emsg!*)
+         else
+            return reval car res
       end;
 
 put('num_elliptic, 'psopfn, 'n_elliptic);
+
+% FJW: For numeric Lisp evaluation, e.g. for plotting.  But not
+% necessary and may not work correctly, so commented out for now!
+
+% symbolic procedure weierstrass1(u, g2, g3);
+%    if u = 0 then 1.0/0.0 else           % infinity
+%    begin scalar offrounded, !*msg, res;
+%       if not !*rounded then <<
+%          offrounded := t;
+%          on1 'rounded
+%       >>;
+%       res := bf2flr reval n_elliptic{'num_weier1, u, g2, g3};
+%       if offrounded then off1 'rounded;
+%       return res
+% end;
+
+% flag('(weierstrass1), 'plotevallisp);
 
 %######################################################################
 %DESCENDING LANDEN TRANSFORMATION

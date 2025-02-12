@@ -292,6 +292,8 @@ let weierZeta_rules;
 
 operator weierstrass1, weierstrassZeta1;
 
+flag ('(weierstrass1 weierstrassZeta1), 'realvalued);
+
 weierstrass1_rules :=
 {
    weierstrass1(-~u,~g2,~g3) => weierstrass1(u,g2,g3),
@@ -340,7 +342,8 @@ begin scalar q, tau, t2, t4, e2, l;
   tau := third l;
   l := fix_arg(u,w1, tau);
   u := first l;
-  if u = 0 then rederr("Weierstrass has poles at lattice points");
+  % The error thrown here must be catchable (by n_elliptic):
+  if u = 0 then lisp error(99, "Weierstrass has poles at lattice points");
   n3 := second l;
   n1 := third l;
   q := exp(i*pi*tau);
