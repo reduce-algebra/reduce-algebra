@@ -823,9 +823,9 @@ endif !crlibm
 
 if enable_jit
 
-JITDEPS=../lib/libasmjit.a ../include/asmjit.h
+JITDEPS=../lib/libasmjit.a ../include/asmjit/asmjit.h
 
-JITDEP = ../include/asmjit.h
+JITDEP = ../include/asmjit/asmjit.h
 JITINC = -I../include
 AM_CPPFLAGS     += $(JITINC)
 reduce_CPPFLAGS += $(JITINC)

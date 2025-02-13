@@ -43,6 +43,9 @@ operator eta1, eta2, eta3;
 operator lattice_e1, lattice_e2, lattice_e3;
 operator lattice_g2, lattice_g3, lattice_delta, lattice_g;
 operator lattice_omega1, lattice_omega3;
+
+flag('(weierstrass weierstrassZeta weierstrass_sigma), 'realvalued);
+
 %######################################################################
 
 sigma_rules :=
@@ -155,8 +158,7 @@ sigma_rules :=
 
 % Numerical evaluation
    weierstrass_sigma(~u,~w1,~w3) => n_sigma(num_sigma,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u
-	        and numberp w1 and numberp w3,
+      when lisp !*rounded and numberp u and numberp w1 and numberp w3,
 
    weierstrass_sigma1(~u,~w1,~w3) => n_sigma(num_sigma1,u,w1,w3)
            when lisp !*rounded and lisp !*complex and numberp u
@@ -208,8 +210,7 @@ weierstrass_rules :=
 
 % Numerical evaluation
    weierstrass(~u,~w1,~w3) => n_sigma(num_weier,u,w1,w3)
-           when lisp !*rounded and lisp !*complex and numberp u
-	        and numberp w1 and numberp w3,
+      when lisp !*rounded and numberp u and numberp w1 and numberp w3,
 
    lattice_e1(~w1, ~w3) => n_lattice(num_e1, w1,w3)
            when lisp !*rounded and lisp !*complex
@@ -273,8 +274,7 @@ weierZeta_rules :=
 
 % Numerical evaluation
    weierstrassZeta(~u,~w1,~w3) => n_sigma(num_weierZeta,u,w1,w3)
-           when lisp !*rounded and lisp !*complex
-	        and numberp u and numberp w1 and numberp w3,
+      when lisp !*rounded and numberp u and numberp w1 and numberp w3,
 
    eta1(~w1,~w3) => n_lattice(num_eta1,w1,w3)
            when lisp !*rounded and lisp !*complex
@@ -473,7 +473,8 @@ begin scalar q, tau, n1, n3, et1, et3, z, l;
   tau := third l;
   l := fix_arg(u,w1, tau);
   u := first l;
-  if u = 0 then rederr("WeierstrassZeta has poles at lattice points");
+  % The error thrown here must be catchable (by n_elliptic):
+  if u = 0 then lisp error(99, "WeierstrassZeta has poles at lattice points");
   n3 := second l;
   n1 := third l;
   q := exp(i*pi*tau);
