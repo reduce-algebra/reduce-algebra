@@ -1325,10 +1325,26 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
                                  LispObject *entry_stack)
 #endif // CHECK_STACK
 {
-// I put the body of the interpreter in a separate file. For now (at least)
-// I just textually include it here...
+// I put the body of the interpreter in a separate file.
+// In an "old version" this was a single large file "bytes2.cpp" but
+// I am now moving to a version where the support for each byte opcode
+// is in its own separate little file in the ops/ directory. This
+// perhaps makes navigation to find things easier, but in fact the main
+// motivation was to support an experiment where I see if I can make a
+// just-in-time compiler that will map bytecoded functions onto native
+// code. The new arrangement means I can put the code that interprets
+// each byte op as documentation for what the code to be generated will
+// need to do.
 
+
+#ifdef OLD_VERSION
 #include "bytes2.cpp"
+#else // OLD_VERSION
+#define BYTECODE 1
+#include "ops/bytes_head.cpp"
+#include "ops/bytes_include.cpp"
+#include "ops/bytes_tail.cpp"
+#endif // OLD_VERSION
 
     return A_reg;
 }

@@ -39,6 +39,37 @@
 
 // $Id: bytes2.cpp 6935 2025-01-17 21:44:27Z arthurcnorman $
 
+
+#ifdef SIMPLIFIED_MERELY_TO_SERVE_AS_DOCUMENTATION
+
+// The full definition of bytestream_interpret() has a significant body
+// of code in it that is guarded by #ifdefs and is often not used - and
+// which is certainly not relevant for understanding what it does. This
+// includes extra sections of code that perform heavier duty stack
+// checking than normal and that can be used when trying to identify
+// functions that recurse unduly. There are general debugging-support things
+// and features that accumulate statistics about which bytecodes are used
+// most. The version here has these "extras" stripped out and alse reduces
+// the bulk of comments so that the simplicity of the core behaviour of
+// ths function should become more visible.
+
+LispObject bytestream_interpret1(size_t ppc, LispObject lit,
+                                 LispObject *entry_stack)
+{   LispObject A_reg = nil;
+    LispObject r1, r2, r3;
+    no_args *f0; one_arg *f1; two_args *f2; three_args *f3; fourup_args *f4up;
+    unsigned int fname, w;
+    int32_t n, k;
+    size_t xppc;
+
+next_opcode:
+    try
+    {   for (;;)
+        {   switch (next_byte)
+            {
+        ... ... ...
+#else // SIMPLIFIED_MERELY_TO_SERVE_AS_DOCUMENTATION
+
 LispObject A_reg;
 LispObject r1, r2, r3;
 no_args *f0;
@@ -219,3 +250,5 @@ next_opcode:   // This label is so that I can restart what I am doing
 // clever compiler can understand that there is no "default" that can possibly
 // be activated.
 //
+
+#endif //  SIMPLIFIED_MERELY_TO_SERVE_AS_DOCUMENTATION

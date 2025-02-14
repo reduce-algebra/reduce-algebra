@@ -486,13 +486,13 @@ case $host in
     CPPFLAGS="$CPPFLAGS -fno-common -I/usr/X11R6/include"
     DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
-    if test -d $HOME/ports/lib
+    if which port 2>/dev/null
     then
-      LDFLAGS="$LDFLAGS -L$HOME/ports/lib"
-    fi
-    if test -d /opt/local/lib
-    then
-      LDFLAGS="$LDFLAGS -L/opt/local/lib"
+      portroot=`which port`
+      portroot=`dirname "$portroot"`
+      portroot=`dirname "$portroot"`
+      CPPFLAGS="$CPPFLAGS -I$portroot/include"
+      LDFLAGS="$LDFLAGS -L$portroot/lib"
     fi
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/X11/lib"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework CoreFoundation -framework ApplicationServices"
@@ -1863,12 +1863,11 @@ then
   if test "$use_brew" = "yes"
   then
     LL=`brew --prefix`
-  elif test -d $HOME/ports/lib
+  elif which port 2>/dev/null
   then
-    LL=$HOME/ports/
-  elif test -d /opt/local/lib
-  then
-    LL=/opt/local/
+    LL=`which port`
+    LL=`dirname $LL`
+    LL=`dirname $LL`/
   else
     LL=/
   fi

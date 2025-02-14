@@ -1776,12 +1776,12 @@ endif !debug
 #
 
 if windows
-image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
+image_files = $(CSL_IMG) $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir)
 else !windows
 if mac_framework
 image_files = $(CSL_IMG) $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir) *.app
 else
-image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
+image_files = $(CSL_IMG) $(REDUCE_IMG) reduce.doc reduce.resources reduce.$(fontsdir)
 endif
 endif !windows
 
@@ -1839,11 +1839,11 @@ endif !windows
 
 #=============================================================================
 #
-# The main final target is reduce.img, the image file for full REDUCE.
+# The main final target is $(REDUCE_IMG), the image file for full REDUCE.
 # If you want to rebuild stage-by-stage (eg while testing), try the
 # sequence
 #    make bootstrapreduce         compiles and links C coded kernel
-#    make bootstrapreduce.img     makes bootstrap REDUCE
+#    make $(BOOTSTRAPREDUCE_IMG)  makes bootstrap REDUCE
 #                                 (roughly twice as slow as final one)
 #                                 only used for system recompilation.
 #    make profile                 runs tests, collects profile information.
@@ -1860,7 +1860,7 @@ endif !windows
 # Note that only the steps from here downwards are usually needed
 #
 #    make reduce                final compilation of most of REDUCE
-#    make reduce.img            build final image file
+#    make $(REDUCE_IMG)         build final image file
 #    make testall               runs test files, output to log directory
 # OR make test which=modulename
 #    (make checkall             creates logs/checkall.log & logs/times.log
@@ -1898,13 +1898,12 @@ reduce.prototypes:	prototypes
 reduce.dep:
 	$(TRACE)touch reduce.dep
 
-# By making reduce.img depend on both reduce.exe and reduce.com I ensure
+# By making $(REDUCE_IMG) depend on both reduce.exe and reduce.com I ensure
 # that both get built. However on non-Windows platforms reduce$(COM) expands
 # to be just the same name as reduce$(EXEEXT) and so all I have is a repeated
 # prerequisite, which ought not to hurt.
 
 $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_lisp)
-	-$(TRACE): > $(REDUCE_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd`&& printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
 # A reasonable person might ask what all the "chmod 664 $(gensrc)/* commands
@@ -1919,7 +1918,7 @@ $(REDUCE_IMG):	$(XREDUCE) reduce$(EXEEXT) reduce$(COM) $(reducedep) $(generated_
 #
 # A user may go "make CSLFLAGS=-g" to force "-g" into build-times Lisp flags...
 	chmod 664 $(gensrc)/*
-	$(XREDUCE) -w -r1 -z $(CSLFLAGS) -Dno_init_file \
+	-$(TRACE): > $(REDUCE_IMG) && $(XREDUCE) -w -r1 -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1946,7 +1945,7 @@ endif !inlines
 # stamping all files so that a subsequent "make test" etc will not cause
 # unwanted extra recompilation.
 
-bootstraprecompile:	$(HDRS) bootstrapreduce.img
+bootstraprecompile:	$(HDRS) $(BOOTSTRAPREDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
@@ -1958,7 +1957,7 @@ bootstraprecompile:	$(HDRS) bootstrapreduce.img
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
 
-recompile:	$(HDRS) reduce.img
+recompile:	$(HDRS) $(REDUCE_IMG)
 	chmod 664 $(gensrc)/*
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
@@ -2004,7 +2003,7 @@ reduce.resources/qepcad.awk:	$(packages)/redlog/ofsf/qepcad.awk
 bootstrapreduce.dep:
 	$(TRACE)touch bootstrapreduce.dep
 
-# Build bootstrapreduce.img just once using any existing inline-defs
+# Build $(BOOTSTRAPREDUCE_IMG) just once using any existing inline-defs
 
 bootimage:	$(XBOOTSTRAPREDUCE) bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 	mkdir -p buildlogs
@@ -2066,7 +2065,7 @@ noinlines.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
 # The image here is JUST for debugging and related testing and development.
 # It is one that contains Rlisp and the most basic parts of Reduce, sufficient
 # such that the rest of Reduce should be buildable on top of it. The
-# standard "bootstrapreduce.img" target in effect builds this as an
+# standard "$(BOOTSTRAPREDUCE_IMG)" target in effect builds this as an
 # intermediate step.
 
 boot.img:	$(XBOOTSTRAPREDUCE) $(bootstrapreducedep)
@@ -2328,23 +2327,21 @@ csl.dep:
 	$(TRACE)touch csl.dep
 
 $(CSL_IMG):	$(XCSL) $(csldep)
-	-$(TRACE): > $(CSL_IMG)
 	mkdir -p buildlogs
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
-	$(XCSL) -w -r1 -v -z $(CSLFLAGS) \
+	-$(TRACE): > $(CSL_IMG) && $(XCSL) -w -r1 -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
-		-o $(CSL_IMG) -- buildlogs/csl.img.log \
+		-o $(CSL_IMG) -- buildlogs/$(CSL_IMG).log \
 		-j csl.dep
 	if test -f $(CSL_IMG); \
 	then $(CP) -r $(CSL_IMG) $(gensrc); fi
 
 
 csli.img:	$(XCSL) $(csldep)
-	-$(TRACE): > csli.img
 	mkdir -p buildlogs
 	@ww=`pwd` && printf "~~~~~~~~ Building in $${ww##*cslbuild/}\n"
-	$(XCSL) -w -r1 -v -z $(CSLFLAGS) \
+	-$(TRACE): > csli.img && $(XCSL) -w -r1 -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsli.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
@@ -2404,7 +2401,7 @@ if windows
 	-$(RM) -f reduce-windows-$(shell date +%Y%m%d).zip
 	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	$(CP) -r reduce.exe reduce.com reduce.img reduce.doc \
+	$(CP) -r reduce.exe reduce.com $(REDUCE_IMG) reduce.doc \
 		reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip \
 		reduce-$(NAME)-$(shell date +%Y%m%d)
@@ -2413,7 +2410,7 @@ else !windows
 	-$(RM) -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 	-$(RM) -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
-	$(CP) -r reduce reduce.img reduce.doc reduce.fonts \
+	$(CP) -r reduce $(REDUCE_IMG) reduce.doc reduce.fonts \
 		reduce-$(NAME)-$(shell date +%Y%m%d)
 	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 \
 		reduce-$(NAME)-$(shell date +%Y%m%d)
@@ -2458,13 +2455,13 @@ showhost:
 # reduce can be launched from the command-line an dnot worry (at least the
 # start with) about applications bundles etc.
 
-forinstall:	reduce$(EXEEXT) reduce.img \
-		bootstrapreduce$(EXEEXT) bootstrapreduce.img \
-		csl$(EXEEXT) csl.img \
+forinstall:	reduce$(EXEEXT) $(REDUCE_IMG) \
+		bootstrapreduce$(EXEEXT) $(BOOTSTRAPREDUCE_IMG) \
+		csl$(EXEEXT) $(CSL_IMG) \
 		$(FONTDEP) $(AWKFILES)
 
 if cygwin
-install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
+install-exec-local:	reduce.exe $(REDUCE_IMG) bootstrapreduce.exe $(BOOTSTRAPREDUCE_IMG) csl.exe $(CSL_IMG)
 	printf "Install for cygwin not implemented\n"
 
 else !cygwin
@@ -2475,12 +2472,12 @@ install-exec-local:	reduce $(REDUCE_IMG) bootstrapreduce $(BOOTSTRAPREDUCE_IMG) 
 
 else !mac_framework
 if windows
-install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
+install-exec-local:	reduce.exe $(REDUCE_IMG) bootstrapreduce.exe $(BOOTSTRAPREDUCE_IMG) csl.exe $(CSL_IMG)
 	printf "Install for windows not implemented\n"
 	exit 1
 
 else !windows
-install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl csl.img
+install-exec-local:	reduce $(REDUCE_IMG) bootstrapreduce $(BOOTSTRAPREDUCE_IMG) csl $(CSL_IMG)
 # This version is mainly for Linux... It follows the directory layout used
 # in the "debianbuild" directory, but a user can override a fair amount of
 # that by going e.g. "make INSTALL libdir=... docdir=..."
@@ -2497,9 +2494,9 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 	cp csl $(DESTDIR)$(libdir)/reduce/cslbuild/csl
 	cp bootstrapreduce $(DESTDIR)$(libdir)/reduce/cslbuild/csl
 	cp reduce $(DESTDIR)$(libdir)/reduce/cslbuild/csl
-	cp csl.img $(DESTDIR)$(libdir)/reduce/cslbuild/csl
-	cp bootstrapreduce.img $(DESTDIR)$(libdir)/reduce/cslbuild/csl
-	cp reduce.img $(DESTDIR)$(libdir)/reduce/cslbuild/csl
+	cp $(CSL_IMG) $(DESTDIR)$(libdir)/reduce/cslbuild/csl
+	cp $(BOOTSTRAPREDUCE_IMG) $(DESTDIR)$(libdir)/reduce/cslbuild/csl
+	cp $(REDUCE_IMG) $(DESTDIR)$(libdir)/reduce/cslbuild/csl
 	cp -r reduce.resources/* $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.resources
 	cp -r reduce.fonts/* $(DESTDIR)$(prefix)/share/reduce/fonts
 	cp -r reduce.doc/* $(DESTDIR)$(docdir)

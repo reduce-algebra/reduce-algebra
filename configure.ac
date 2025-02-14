@@ -1146,27 +1146,17 @@ then
       CPPFLAGS="$CPPFLAGS -I$brew_prefix/include"
       CPPFLAGS="$CPPFLAGS -I/opt/X11/include"
       CPPFLAGS="$CPPFLAGS -I/opt/X11/include/freetype2"
-    else
-      if test -d $HOME/ports/include
-      then
-        CPPFLAGS="$CPPFLAGS -I$HOME/ports/include"
-      fi
-      if test -d $HOME/ports/include/freetype2
-      then
-        CPPFLAGS="$CPPFLAGS -I$HOME/ports/include/freetype2"
-      fi
-      if test -d $HOME/ports/lib
-      then
-        LDFLAGS="$LDFLAGS -L$HOME/ports/lib"
-      fi
-    fi
-    if test -d /opt/local/include
-    then 
-      CPPFLAGS="$CPPFLAGS -I/opt/local/include"
-    fi
-    if test -d /opt/local/lib
+    elif which port 2>/dev/null
     then
-      LDFLAGS="$LDFLAGS -L/opt/local/lib"
+      portroot=`which port`
+      portroot=`dirname "$portroot"`
+      portroot=`dirname "$portroot"`
+      CPPFLAGS="$CPPFLAGS -I$portroot/include"
+      if test -d "$portroot/include/freetype2"
+      then
+        CPPFLAGS="$CPPFLAGS -I$portsroot/include/freetype2"
+      fi
+      LDFLAGS="$LDFLAGS -L$portroot/lib"
     fi
     ;;
   esac

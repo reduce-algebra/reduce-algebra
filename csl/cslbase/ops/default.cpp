@@ -12,15 +12,15 @@
 #elif defined __x86_64__
 
             default:
-                myabort("This case not yet implemented for x86_64");
+                unfinished(__FILE__ " not yet implemented for x86_64");
 
 #elif defined __aarch64__
 
             default:
-                myabort("This case not yet implemented for ARM");
+                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             default:
-                myabort("Unsupported architecture");
+                unfinished("Unsupported architecture");
 
 #endif
