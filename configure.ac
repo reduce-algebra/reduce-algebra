@@ -1152,10 +1152,7 @@ then
       portroot=`dirname "$portroot"`
       portroot=`dirname "$portroot"`
       CPPFLAGS="$CPPFLAGS -I$portroot/include"
-      if test -d "$portroot/include/freetype2"
-      then
-        CPPFLAGS="$CPPFLAGS -I$portsroot/include/freetype2"
-      fi
+      CPPFLAGS="$CPPFLAGS -I$portroot/include/freetype2"
       LDFLAGS="$LDFLAGS -L$portroot/lib"
     fi
     ;;

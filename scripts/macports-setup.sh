@@ -85,6 +85,7 @@ fi
 
 install ()
 {
+  printf "\n@@@ Install $1 @@@\n\n"
 # For each port I am keen on I will first try installing in +universal
 # mode and if that fails I will repeat the attempt in single architecture
 # style. I use a suffix ":s" on the port name when I want to build from
@@ -216,7 +217,10 @@ then
     texlive-plain-generic     \
     texlive-bin-extra         \
     texlive-fonts-recommended \
-    wget
+    wget                      \
+    xorg-server               \
+    quartz-wm                 \
+    xorg
   do
     install $p
   done
