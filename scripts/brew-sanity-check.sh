@@ -7,10 +7,10 @@ for x in \
    assimp                astyle                at-spi2-core          \
    autoconf              automake              bc bison              \
    blake3                brotli                ca-certificates       \
-   cairo                 ccache                dbus                  \
+   cairo                 ccache        cmake   dbus                  \
    docbook               docbook-xsl           docutils              \
    double-conversion     fmt                   fontconfig            \
-   freetype              fribidi               gd                    \
+   freetype              fribidi       gawk    gd                    \
    gdk-pixbuf            gettext               giflib                \
    git                   glib                  gmp                   \
    gnu-getopt            gnu-sed               gnu-time              \

@@ -161,7 +161,10 @@ for p in                      \
   xorg-libXrandr:s            \
   xorg-libXcursor:s           \
   brotli                      \
-  brotli-static
+  brotli-static               \
+  xorg-server                 \
+  xorg
+
 do
   install $p
 done
@@ -217,10 +220,7 @@ then
     texlive-plain-generic     \
     texlive-bin-extra         \
     texlive-fonts-recommended \
-    wget                      \
-    xorg-server               \
-    quartz-wm                 \
-    xorg
+    wget
   do
     install $p
   done

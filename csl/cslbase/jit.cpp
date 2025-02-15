@@ -39,6 +39,8 @@
 
 #ifdef ENABLE_JIT
 
+#include "bytes.h"
+
 // Combinations of symbols that your C++ compiler may predefine
 // to guide usage here:
 //    __linux__   __x86_64__             PC Linux (Ubuntu)
@@ -267,7 +269,7 @@ struct JitFailed : public std::exception
 
 void unfinished(const char* msg)
 {   while (*msg != 0 &&
-           strncmp("msg, "op/op", 5)!=0) msg++;
+           strncmp(msg, "op/op", 5)!=0) msg++;
     stdout_printf("+++ %s\n", msg+3);
     THROW(JitFailed);
 }
