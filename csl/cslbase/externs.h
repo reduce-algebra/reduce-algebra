@@ -676,6 +676,8 @@ extern LispObject Lencapsulatedp(LispObject, LispObject a);
 extern void* jitcompile(const unsigned char* bytes, size_t nbytes,
                         LispObject env, int nargs);
 
+extern void jit_procedure_head();
+extern void jit_procedure_tail();
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
 

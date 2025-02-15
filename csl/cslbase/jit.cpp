@@ -88,7 +88,7 @@ define                      UNKNOWN_SYSTEM 1
 
 
 #if defined UNKNOWN_SYSTEM
-void* jitcompile(const char* bytes, size_t len, LispObject env, int nargs)
+void* jitcompile(const char* bytes, int len, LispObject env, int nargs)
 {   return nullptr;  // Not available on Windows (yet??)
 }
 #else // UNKNOWN_SYSTEM
@@ -245,21 +245,74 @@ LispObject Lshowasm(LispObject env)
     return nil;
 }
 
-// Now I have the architecture-specific versions of the
-// code to plant bytes or words into instruation space.
+
+
+// Here I have the architecture-specific versions of the code that
+// sets up a procedure head and tail plus whatever other support
+// functions I will find I ned.
 
 #if defined __aarch64__
-
 #include "jit-aarch64.cpp"
-
 #elif defined __x86_64__
-
 #include "jit-x86-64.cpp"
-
 #else
 #error "Unknown architecture"
 #endif
 
+struct JitFailed : public std::exception
+{   virtual const char *what() const throw()
+    {   return "JIT compiler found unsupported bytecode";
+    }
+};
+
+void unfinished(const char* msg)
+{   while (*msg != 0 &&
+           strncmp("msg, "op/op", 5)!=0) msg++;
+    stdout_printf("+++ %s\n", msg+3);
+    THROW(JitFailed);
+}
+
+// The top level of this is modelled on code in bytes2.cpp where there is
+// code that scans the bytecode stream and performs the operations as
+// indicated (ie it is an interpreter for it). Here codevec is the bytecode
+// vector and ppc is the one currently being processed.
+
+#define current_byte         (codevec[ppc])
+#define next_byte            (codevec[ppc++])
+#define previous_byte        (codevec[ppc-1])
+
+// Note that the file csl/cslbase/bytes.h contains a list of all the
+// bytecodes along with the names I refer to them by. So if you see
+// messages from here that give a hex number that is where you can
+// look up what it refers to.
+
+void plant(const unsigned char* codevec, size_t len, LispObject env, int nargs)
+{
+    printf("Calling plant on ");
+    simple_print(basic_elt(env, 0));
+    for (unsigned int i=0; static_cast<size_t>(i)<len; i++)
+        printf("%3u:  %02x\n", i, codevec[i]&0xff);
+
+    TRY
+    {   jit_procedure_head();
+// BEWARE - bytecoded functions with 4 or more arguments and ones with
+// &optional or &rest arguments have some info bytes at the start of the
+// vector that otherwise holds byte instructions, so in those cases starting
+// at address zero is liable to be wrong!
+        size_t ppc = 0;
+        while (ppc<len)
+        {   switch (next_byte)
+            {
+#include "ops/bytes_include.cpp"
+            }
+        }
+        jit_procedure_tail();
+    }
+    CATCH (JitFailed)
+    {
+    }
+    END_CATCH;
+}
 
 #endif // UNKNOWN_SYSTEM
 

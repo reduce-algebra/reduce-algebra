@@ -12,15 +12,15 @@
 #elif defined __x86_64__
 
             case OP_JUMPLITNE:
-                myabort("This case not yet implemented for x86_64");
+                unfinished(__FILE__ " not yet implemented for x86_64");
 
 #elif defined __aarch64__
 
             case OP_JUMPLITNE:
-                myabort("This case not yet implemented for ARM");
+                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_JUMPLITNE:
-                myabort("Unsupported architecture");
+                unfinished("Unsupported architecture");
 
 #endif
