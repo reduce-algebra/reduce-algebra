@@ -1393,6 +1393,7 @@ then
         -DCMAKE_CXX_COMPILER="$CXX" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
         -DCMAKE_INSTALL_PREFIX:PATH=$builddir \
+        -DCMAKE_INSTALL_LIBDIR=lib \
         $abssrcdir/libraries/asmjit
   cd "$builddir"
 fi
