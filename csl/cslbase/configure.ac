@@ -457,13 +457,14 @@ case $host in
 # that arise because they hand down options that lead to failures in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
-  if test -d $HOME/ports/include
+  if which port 2>/dev/null
   then
-    CPPFLAGS="$CPPFLAGS -I$HOME/ports/include -I$HOME/ports/include/freetype2"
-  fi
-  if test -d /opt/local/include
-  then
-    CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
+    portroot=`which port`
+    portroot=`dirname "$portroot"`
+    portroot=`dirname "$portroot"`
+    CPPFLAGS="$CPPFLAGS -I$portroot/include"
+    CPPFLAGS="$CPPFLAGS -I$portsroot/include/freetype2"
+    LDFLAGS="$LDFLAGS -L$portroot/lib"
   fi
   XLIBS="-lXext -lX11 -lXft -lfontconfig -lc"
   macintosh_build="yes"
@@ -492,6 +493,7 @@ case $host in
       portroot=`dirname "$portroot"`
       portroot=`dirname "$portroot"`
       CPPFLAGS="$CPPFLAGS -I$portroot/include"
+      CPPFLAGS="$CPPFLAGS -I$portroot/include/freetype2"
       LDFLAGS="$LDFLAGS -L$portroot/lib"
     fi
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib -L/opt/X11/lib"
