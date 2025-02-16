@@ -95,8 +95,7 @@ void* jitcompile(const char* bytes, int len, LispObject env, int nargs)
 }
 #else // UNKNOWN_SYSTEM
 
-
-// At the start here I have a load of messting around because I need to
+// At the start here I have a load of messing around because I need to
 // have memory that can be written to at some times and executed from at
 // others. Achieving this involves interaction with the operating system
 // of of necessity there will be version for Linux, MacOS, Native Windows
