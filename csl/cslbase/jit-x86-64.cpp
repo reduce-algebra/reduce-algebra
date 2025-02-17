@@ -88,24 +88,7 @@ __asm__ (
    "	ret\n"
     );
 
-// Now plant() is given a vector of CSL bytecodes (and its length) and
-// information about how many arguments the function should expect. It
-// is intended that it generate machine code that does what the code in
-// bytes2.cpp would have done by using jit_byte() etc to emit bytes or
-// words. The initial version emite what is expected to match the
-// code in asmtest_1. 
-
-void plant(const unsigned char* bytes, size_t len, LispObject env, int nargs)
-{   jit_byte(0x48); jit_byte(0x89); jit_byte(0xf0); // mov %rsi,%rax
-    jit_byte(0xc3);                                 // ret
-}
-
 #elif defined NATIVE_WINDOWS
-
-// There are three copies of all this here because Cygwin, Windows and
-// Linux can have slighly different conventions regarding use of registers
-// etc. I hope that in plant() these changes can be abstracted out so that
-// really only one version of that code will be required.
 
 __asm__ (
    ".global CSLasmtest_0\n"
@@ -142,11 +125,6 @@ __asm__ (
    "	ret\n"
     );
 
-
-void plant(const unsigned char* bytes, size_t len, LispObject env, int nargs)
-{   jit_byte(0x48); jit_byte(0x89); jit_byte(0xd0); // mov %rdx,%rax
-    jit_byte(0xc3);                                 // ret
-}
 
 #elif defined APPLE_MACINTOSH
 
@@ -185,11 +163,6 @@ __asm__ (
    "	mov %rdx,%rax\n"
    "	ret\n"
     );
-
-void plant(const unsigned char* bytes, size_t len, LispObject env, int nargs)
-{   jit_byte(0x48); jit_byte(0x89); jit_byte(0xd0); // mov %rdx,%rax
-    jit_byte(0xc3);                                 // ret
-}
 
 #else // Unknown x86_64
 

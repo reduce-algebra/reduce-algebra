@@ -40,6 +40,7 @@ sudo dnf -y install clang
 
 sudo dnf -y install openssh
 sudo dnf -y install vim
+sudo dng -y install cmake
 
 sudo dnf -y install gnuplot
 sudo dnf -y install ImageMagick
