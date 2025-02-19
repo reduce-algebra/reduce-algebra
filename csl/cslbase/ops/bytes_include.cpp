@@ -1,6 +1,7 @@
 // bytes_includes.cpp
 
-#include "ops/op_spare.cpp"
+#include "ops/op_spare1.cpp"
+#include "ops/op_spare2.cpp"
 #include "ops/default.cpp"
 #include "ops/op_onevalue.cpp"
 #include "ops/op_loc0exit.cpp"

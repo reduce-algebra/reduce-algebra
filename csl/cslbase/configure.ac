@@ -805,7 +805,7 @@ fi
 
 if test "$x86" = "yes"
 then
-  AC_DEFINE(X86, [1], [True if Intel or AMD (64-bit only these days)])
+  AC_DEFINE(IntelOrAMD, [1], [True if Intel or AMD (64-bit only these days)])
 fi
 
 # Checks for programs.

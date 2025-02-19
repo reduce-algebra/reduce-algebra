@@ -54,6 +54,14 @@
 #ifndef header_fwin_h
 #define header_fwin_h 1
 
+#ifdef __MINGW32__
+// In February 2025 on trying to use cross-compilation from Linux to
+// Windows by using --host=x86_64-w64-mingw32 on a WSL2/Ubuntu it seems to
+// be necessary to defined this to make condition variable support
+// available. I may hope this is a temporary issue! 
+#define __GTHREAD_HAS_COND 1
+#endif // __MINGW32__
+
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
@@ -62,6 +70,7 @@
 #include <vector>
 #include <string>
 #include <deque>
+
 
 using std::atomic;
 
