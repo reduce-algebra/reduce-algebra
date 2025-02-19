@@ -667,26 +667,11 @@ then
   AC_DEFINE([GC_CHECK], [1], [For use by developers])
 fi
 
-# At present the JIT library does not install nicely in a naive Windows
-# build performed by mingw32 compilers run under cygwin. So I default
-# to avoiding it, but for testing I can explicitly request it. I may hope to
-# sort that issue out later if the scheme works well on other platforms.
-# Well it is also did not work first time for me under Cygwin so I
-# disable it by default in both those cases
-case `uname -a` in
-*CYGWIN*)
-  default_enable_jit="no";
-  ;;
-*)
-  default_enable_jit="yes";
-  ;;
-esac
-
 AC_ARG_ENABLE(jit,
   AS_HELP_STRING([--enable-jit],
                  [currently experimental (CSL only)]),
   [],
-  [enable_jit="$default_enable_jit"])
+  [enable_jit="yes"])
 
 if test "$enable_jit" = "yes"
 then
