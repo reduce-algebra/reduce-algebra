@@ -40,7 +40,9 @@
       defined(__DragonFly__) || \
       defined(__FreeBSD__  ) || \
       defined(__NetBSD__   ) || \
-      defined(__OpenBSD__  )
+      defined(__OpenBSD__  ) || \
+      defined(__CYGWIN__   ) || \
+      defined(__MINGW32__  )
     #define ASMJIT_FILE64_API(NAME) NAME
   #else
     #define ASMJIT_FILE64_API(NAME) NAME##64

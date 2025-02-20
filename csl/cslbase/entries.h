@@ -43,7 +43,6 @@ extern void poll();
 // Use C linkage so that if CSL/Reduce is used as a DLL there is still an
 // easy way to access these.
 
-extern "C" LispObject CSLasmtest_0(LispObject env);
 extern LispObject Lbacktrace(LispObject env);
 extern LispObject Lbatchp(LispObject env);
 extern LispObject Ldate(LispObject env);
@@ -68,7 +67,6 @@ extern LispObject Lposn(LispObject env);
 extern LispObject Lread(LispObject env);
 extern LispObject Lreadch(LispObject env);
 extern LispObject Lrtell(LispObject env);
-extern LispObject Lshowasm(LispObject env);
 extern LispObject Lstop(LispObject env);
 extern LispObject Lterpri(LispObject env);
 extern LispObject Ltime(LispObject env);
@@ -121,7 +119,6 @@ extern LispObject undefined_1(LispObject env, LispObject a1);
 extern LispObject f1_as_0(LispObject env, LispObject a);
 extern LispObject f1_as_1(LispObject env, LispObject a);
 
-extern "C" LispObject CSLasmtest_1(LispObject env, LispObject a);
 extern LispObject Labsval(LispObject env, LispObject a);
 extern LispObject Ladd1(LispObject env, LispObject a);
 extern LispObject Lalpha_char_p(LispObject env, LispObject a);
@@ -371,7 +368,6 @@ extern LispObject f2_as_0(LispObject env, LispObject a, LispObject b);
 extern LispObject f2_as_1(LispObject env, LispObject a, LispObject b);
 extern LispObject f2_as_2(LispObject env, LispObject a, LispObject b);
 
-extern "C" LispObject CSLasmtest_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lappend_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1);
 extern LispObject Lapply1(LispObject env, LispObject a, LispObject b);
@@ -506,8 +502,6 @@ extern LispObject f3_as_2(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3);
 extern LispObject f3_as_3(LispObject env, LispObject a1,
                           LispObject a2, LispObject a3);
-extern "C" LispObject CSLasmtest_3(LispObject env, LispObject a, LispObject b,
-                                 LispObject c);
 extern LispObject Lapply_3(LispObject env, LispObject fn,
                            LispObject a1, LispObject a2);
 extern LispObject Lapply2(LispObject env, LispObject a1,
@@ -648,8 +642,6 @@ extern LispObject undefined_4up(LispObject env, LispObject a1,
                                 LispObject a2,
                                 LispObject a3, LispObject a4up);
 
-extern "C" LispObject CSLasmtest_4up(LispObject env, LispObject a, LispObject b,
-                                   LispObject c, LispObject d);
 extern LispObject Lapply_4up(LispObject env, LispObject a1,
                              LispObject a2,
                              LispObject a3, LispObject a4up);

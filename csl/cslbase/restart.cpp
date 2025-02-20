@@ -40,6 +40,7 @@
 
 #include "headers.h"
 #include "version.h"
+#include "bytes.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -845,6 +846,22 @@ static void cold_setup()
     lisp_trace_output = make_stream_handle();
     lisp_debug_io = make_stream_handle();
     lisp_query_io = make_stream_handle();
+// Now for things for the compiler to use
+    LispObject opcodetag = make_undefined_symbol("s:opcode");
+    LispObject opcodes = nil;
+    int val = 0;
+    for (auto name:opnames)
+    {   if (name[0] == '@') break;
+        char lowername[32];
+        char* p = lowername;
+        while (*name != 0) *p++ = tolower(*name++);
+        *p = 0;
+        LispObject op = make_undefined_symbol(lowername);
+        putprop(op, opcodetag, fixnum_of_int(val));
+        opcodes = cons(op, opcodes);
+        val++;
+    }
+    make_variable("s:opcodelist", nreverse(opcodes));
     set_up_functions(0);
     set_up_variables(0);
     procstack = nil;

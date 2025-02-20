@@ -745,7 +745,7 @@ LispObject Lplist(LispObject env, LispObject a)
 // when you call BYTECOUNTS.
 extern bool profile_count_mode;
 
-#include "opnames.cpp"
+// #include "opnames.cpp" DEFUNCT NOW!
 
 static uint64_t total = 0, frequencies[256];
 
@@ -1213,7 +1213,7 @@ ALWAYSINLINE inline void short_jump(size_t& ppc, size_t xppc, LispObject codevec
 // displayed if the assertion fails.
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
-        current_byte == OP_SPARE,
+        current_byte == OP_SPARE2,
         [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
                           ppc, ppc, oldppc, oldppc);
             });
@@ -1231,7 +1231,7 @@ ALWAYSINLINE inline void short_jump_back(size_t& ppc, size_t xppc,
     poll_jump_back(A_reg);
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
-        current_byte == OP_SPARE,
+        current_byte == OP_SPARE2,
         [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
                           ppc, ppc, oldppc, oldppc);
             });
@@ -1247,7 +1247,7 @@ ALWAYSINLINE inline void long_jump(unsigned int w, size_t& ppc,
     ppc = ppc + ((w << 8) + (reinterpret_cast<unsigned char *>(codevec))[xppc]);
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
-        current_byte == OP_SPARE,
+        current_byte == OP_SPARE2,
         [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
                           ppc, ppc, oldppc, oldppc);
             });
@@ -1265,7 +1265,7 @@ ALWAYSINLINE inline void long_jump_back(unsigned int w, size_t& ppc, size_t xppc
     poll_jump_back(A_reg);
 #ifdef LABEL_RESOLUTION_DEBUGGING
     my_assert(
-        current_byte == OP_SPARE,
+        current_byte == OP_SPARE2,
         [&] {trace_printf("failure at ppc=%d = %x from %d %x\n",
                           ppc, ppc, oldppc, oldppc);
             });
@@ -1337,14 +1337,10 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
 // need to do.
 
 
-#ifdef OLD_VERSION
-#include "bytes2.cpp"
-#else // OLD_VERSION
 #define BYTECODE 1
 #include "ops/bytes_head.cpp"
 #include "ops/bytes_include.cpp"
 #include "ops/bytes_tail.cpp"
-#endif // OLD_VERSION
 
     return A_reg;
 }

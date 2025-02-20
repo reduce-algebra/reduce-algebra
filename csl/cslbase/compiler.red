@@ -60,24 +60,24 @@
 % might keep them away from most users.  In Common Lisp I may want to put
 % them all in a separate package.
 
-global '(s!:opcodelist);
-
-% The following list of opcodes must be kept in step with the corresponding
-% C header file "bytes.h" in the CSL kernel code, and the source file
-% "opnames.c".
-
-in "$cslbase/opcodes.red"$
-
-begin
-  scalar n;
-  n := 0;
-  for each v in s!:opcodelist do <<
-     put(v, 's!:opcode, n);
-     n := n + 1 >>;
-  return list(n, 'opcodes, 'allocated)
-end;
-
-s!:opcodelist := nil;
+%  global '(s!:opcodelist);
+%  
+%  % The following list of opcodes must be kept in step with the corresponding
+%  % C header file "bytes.h" in the CSL kernel code, and the source file
+%  % "opnames.c".
+%
+%  in "$cslbase/opcodes.red"$
+%
+%  begin
+%    scalar n;
+%    n := 0;
+%    for each v in s!:opcodelist do <<
+%       put(v, 's!:opcode, n);
+%       n := n + 1 >>;
+%    return list(n, 'opcodes, 'allocated)
+%  end;
+%
+%  s!:opcodelist := nil;
 
 fluid '(s!:env_alist);
 

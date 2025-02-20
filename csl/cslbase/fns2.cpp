@@ -3311,12 +3311,6 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 
 setup_type const funcs2_setup[] =
 {   {"all-symbols",             Lall_symbols0, Lall_symbols, G2Wother, G3Wother, G4Wother},
-    DEF_0("asmtest0",           CSLasmtest_0),
-    DEF_1("asmtest1",           CSLasmtest_1),
-    DEF_2("asmtest2",           CSLasmtest_2),
-    DEF_3("asmtest3",           CSLasmtest_3),
-    DEF_4up("asmtest4up",       CSLasmtest_4up),
-    DEF_0("showasm",            Lshowasm),
     DEF_2("assoc",              Lassoc),
 // assoc** is expected to remain as the Standard Lisp version even if in
 // a Common Lisp world I redefine assoc to be something messier. xassoc was
