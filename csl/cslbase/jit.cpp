@@ -49,8 +49,7 @@
 #include <asmjit/x86.h>
 #include <asmjit/a64.h>
 
-
-extern void plant(const unsigned char* bytes, size_t len, LispObject env, int nargs);
+using namespace asmjit;
 
 struct JitFailed : public std::exception
 {   virtual const char *what() const throw()
@@ -63,33 +62,6 @@ void unfinished(const char* msg)
            strncmp(msg, "op/op", 5)!=0) msg++;
     stdout_printf("+++ %s\n", msg+3);
     THROW(JitFailed);
-}
-
-void plant(const unsigned char* codevec, size_t len, LispObject env, int nargs)
-{
-    stdout_printf("Calling plant on ");
-    simple_print(basic_elt(env, 0));
-    for (unsigned int i=0; static_cast<size_t>(i)<len; i++)
-        stdout_printf("%3u:  %02x\n", i, codevec[i]);
-
-    TRY
-    {
-// BEWARE - bytecoded functions with 4 or more arguments and ones with
-// &optional or &rest arguments have some info bytes at the start of the
-// vector that otherwise holds byte instructions, so in those cases starting
-// at address zero is liable to be wrong!
-        size_t ppc = 0;
-        while (ppc<len)
-        {   switch (codevec[ppc])
-            {
-#include "ops/bytes_include.cpp"
-            }
-        }
-    }
-    CATCH (JitFailed)
-    {
-    }
-    END_CATCH;
 }
 
 // When a function is potentially going to be JIT compiled it will
@@ -120,14 +92,80 @@ void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nar
 // I am going to start by printing the byte-stream
     stdout_printf("Calling jitcompile on ");
     simple_print(basic_elt(env, 0));
+// Note that when a byte-code takes a follow-on byte as an operand that
+// the "opname" I display here will be garbage. I may want to rearrange the
+// codes so that I have an easy way to tell when thet is going to be the
+// case.
     for (unsigned int i=0; static_cast<size_t>(i)<len; i++)
-        stdout_printf("%3u:  %02x\n", i, bytes[i]);
+        stdout_printf("%3u:  %02x  \n", i, bytes[i], opnames[bytes[i]]);
+//
+// Set up to use asmjit. The code here just creates and initialises
+// various things that it needs. In this first version I am not
+// checking for error returns from anything - in due course I must do that!
+    JitRuntime rt;
+    CodeHolder code;
+    Environment localEnv = rt.environment();;
+#ifdef __CYGWIN__
+    localEnv._platformABI = PlatformABI::kMSVC;
+#endif
+    code.init(localEnv, rt.cpuFeatures());
+// I believe that the next two lines will lead to the generated assembly
+// code being displayed on the standard output. This is going to be
+// really useful while developing, but it obviously gets switched off for
+// most production use.
+    FileLogger logger(stdout);
+    code.setLogger(&logger);
 
-    plant(bytes, len, env, nargs);
-    stdout_printf("Sample code inserted into memory...\n");
+#if defined __x86_64__
+    auto cc = x86::Compiler(&code);
+// Here I need to specify the type signature of the function that I am
+// creating and associate some names with the arguments it will receive.
+// The code right now is inherited from a test program and is not yet
+// customised for the Lisp world.
+    x86::Gp v1 = cc.newInt32("v1");
+    x86::Gp v2 = cc.newInt32("v2");
+    x86::Gp fptr = cc.newUIntPtr("fptr");
+    Label L_1 = cc.newLabel();
+    Label L_2 = cc.newLabel();
+// The function I am defining will have two integer arguments and will
+// return an integer result.
+    FuncNode* funcNode = cc.newFunc(FuncSignature::build<int, int, int>());
+// Associate v1 and v2 with the arguments that the function will receive.
+    funcNode->setArg(0, v1);
+    funcNode->setArg(1, v2);
+    cc.addFunc(funcNode);
+#elif defined aarch64
+    auto cc = a64::Compiler(&code);
+#else
+#error unrecognised platform
+#endif
 
-    stdout_printf("About to return executable segment...\n");
-    return nullptr;
+    TRY
+    {
+// BEWARE - bytecoded functions with 4 or more arguments and ones with
+// &optional or &rest arguments have some info bytes at the start of the
+// vector that otherwise holds byte instructions, so in those cases starting
+// at address zero is liable to be wrong!
+        size_t ppc = 0;
+        while (ppc<len)
+        {   switch (bytes[ppc])
+            {
+#include "ops/bytes_include.cpp"
+            }
+        }
+    }
+    CATCH (JitFailed)
+    {
+    }
+    END_CATCH;
+
+// End of function.
+
+    cc.endFunc();
+    cc.finalize();
+    void* func = nullptr;
+    rt.add(&func, &code);
+    return func;
 }
 
 #else // ENABLE_JIT

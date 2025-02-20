@@ -1155,13 +1155,27 @@ LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
     return reinterpret_cast<three_args*>(code)(def, a, b, c);
 }
 
+// When a bytecoded function has 4 or more arguments the first byte of the
+// stream is an argument count (so I will not be able to cope with more
+// than 255 arguments!). The actual byte operations start one byte beyound
+// that.
+// For functions with optional arguments the first two bytes indicate the
+// minimum and maximum number of arguments accepted, and if there is a &rest
+// argument that is the number of named arguments before any extras are
+// bundled up into a list for &rest. Not that I am handling those cases
+// here. But the treatment is that within the code for such functions it
+// will be as if each non-present optioal argument had in fact been provided
+// with a special magic "I am really not here" value that the executable code
+// can check for, and any &rest parameter just sees a list of additional
+// values (or obviously nil if there are not any).
+
 LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4up)
 {   LispObject d = qenv(def);
-    void* code = jitcompile(raw_bytecodes(car(d)),
-                            length_of_byteheader(vechdr(car(d)))-CELL,
+    void* code = jitcompile(raw_bytecodes(car(d))+1,
+                            length_of_byteheader(vechdr(car(d)))-CELL-1,
                             cdr(d),
-                            4);       // means "at least 4"
+                            *raw_bytecodes(car(d)));
     if (code == nullptr)
     {   qfn4up(def) = bytecoded_4up;
         return bytecoded_4up(def, a1, a2, a3, a4up);
