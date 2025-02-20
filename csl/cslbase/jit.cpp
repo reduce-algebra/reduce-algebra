@@ -87,7 +87,8 @@ void unfinished(const char* msg)
 // making all this interact with saved heap images - but there is no
 // need to worry about that until and unless the schere is working.
 
-void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
+void* jitcompile(const unsigned char* bytes, size_t len,
+                 LispObject env, int nargs)
 {
 // I am going to start by printing the byte-stream
     stdout_printf("Calling jitcompile on ");
@@ -120,6 +121,49 @@ void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nar
     auto cc = x86::Compiler(&code);
 // Here I need to specify the type signature of the function that I am
 // creating and associate some names with the arguments it will receive.
+// The function I am defining will have min(nargs+1, 5) arguments
+// each of which is a LispObject. It is going to have to start by
+// pushing all these onto the (Lisp) stack. So for instance if this
+// is going to be a function that expects (in the Lisp sense!) 2 arguments
+// its signature in C++ and first few lines would have been
+//    LispObject foo(LispObject def, LispObject a1, LispObject a2)
+//    {   RealSave save(def, a1, a2);
+// where the ReadSave obect's constructor has gone in effect
+//       *stack++ = def;
+//       *stack++ = a1;
+//       *stack++ = a2;
+// and then set things up so that when the function terminates that
+// stack is set back to its initial value.
+    FuncNode* funcNode;
+    switch (nargs)
+    {
+    case 0:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject>());
+        break;
+    case 1:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject, LispObject>());
+        break;
+    case 2:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject,
+                                 LispObject, LispObject>());
+        break;
+    case 3:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject,
+                                 LispObject, LispObject,
+                                 LispObject>());
+        break;
+    default:          // 4 or more
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject,
+                                 LispObject, LispObject,
+                                 LispObject, LispObject>());
+        break;
+    }
+
 // The code right now is inherited from a test program and is not yet
 // customised for the Lisp world.
     x86::Gp v1 = cc.newInt32("v1");
@@ -127,9 +171,6 @@ void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nar
     x86::Gp fptr = cc.newUIntPtr("fptr");
     Label L_1 = cc.newLabel();
     Label L_2 = cc.newLabel();
-// The function I am defining will have two integer arguments and will
-// return an integer result.
-    FuncNode* funcNode = cc.newFunc(FuncSignature::build<int, int, int>());
 // Associate v1 and v2 with the arguments that the function will receive.
     funcNode->setArg(0, v1);
     funcNode->setArg(1, v2);
