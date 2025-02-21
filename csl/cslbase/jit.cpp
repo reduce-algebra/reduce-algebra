@@ -52,8 +52,15 @@
 using namespace asmjit;
 
 struct JitFailed : public std::exception
-{   virtual const char *what() const throw()
-    {   return "JIT compiler found unsupported bytecode";
+{   const char* msg;
+    JitFailed()
+    {   msg = "JIT compiler found unsupported bytecode";;
+    }
+    JitFailed(const char* why)
+    {   msg = why;
+    }
+    virtual const char *what() const throw()
+    {   return msg;
     }
 };
 
@@ -86,6 +93,15 @@ void unfinished(const char* msg)
 // try for JIT compilation. I will need to sort out a good plan for
 // making all this interact with saved heap images - but there is no
 // need to worry about that until and unless the schere is working.
+
+class JitError : public ErrorHandler
+{
+public:
+    void handleError(Error err, const char* msg, BaseEmitter* origin) override
+    {   stdout_printf("+++ AsmJit error: %s\n", msg);
+        throw JitFailed("asmjit reported trouble");
+    }
+};
 
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
@@ -125,6 +141,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     localEnv._platformABI = PlatformABI::kMSVC;
 #endif
     code.init(localEnv, rt.cpuFeatures());
+    JitError jitError;
+    code.setErrorHandler(&jitError);
 // I believe that the next two lines will lead to the generated assembly
 // code being displayed on the standard output. This is going to be
 // really useful while developing, but it obviously gets switched off for
@@ -141,10 +159,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // pushing all these onto the (Lisp) stack. So for instance if this
 // is going to be a function that expects (in the Lisp sense!) 2 arguments
 // its signature in C++ and first few lines would have been
-//    LispObject foo(LispObject def, LispObject a1, LispObject a2)
-//    {   RealSave save(def, a1, a2);
+//    LispObject foo(LispObject litvec, LispObject a1, LispObject a2)
+//    {   RealSave save(litvec, a1, a2);
 // where the ReadSave obect's constructor has gone in effect
-//       *stack++ = def;
+//       *stack++ = litvec;
 //       *stack++ = a1;
 //       *stack++ = a2;
 // and then set things up so that when the function terminates that
@@ -152,30 +170,30 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     FuncNode* funcNode;
 // I will set up enough registers for up to 10 arguments but in most cases
 // almost all of those will not be used.
-    x86::Gp def = cc.newIntPtr("def");
-    x86::Gp a1 = cc.newIntPtr("a1");
-    x86::Gp a2 = cc.newIntPtr("a2");
-    x86::Gp a3 = cc.newIntPtr("a3");
-    x86::Gp a4 = cc.newIntPtr("a4");
-    x86::Gp a5 = cc.newIntPtr("a5");
-    x86::Gp a6 = cc.newIntPtr("a6");
-    x86::Gp a7 = cc.newIntPtr("a7");
-    x86::Gp a8 = cc.newIntPtr("a8");
-    x86::Gp a9 = cc.newIntPtr("a9");
-    x86::Gp a10 = cc.newIntPtr("a10");
-    x86::Gp a12 = cc.newIntPtr("a12");
-    x86::Gp a13 = cc.newIntPtr("a13");
-    x86::Gp a14 = cc.newIntPtr("a14");
-    x86::Gp a15 = cc.newIntPtr("a15");
-    x86::Gp w = cc.newIntPtr("w");
+    x86::Gp litvec = cc.newIntPtr("litvec");
+    x86::Gp a1     = cc.newIntPtr("a1");
+    x86::Gp a2     = cc.newIntPtr("a2");
+    x86::Gp a3     = cc.newIntPtr("a3");
+    x86::Gp a4     = cc.newIntPtr("a4");
+    x86::Gp a5     = cc.newIntPtr("a5");
+    x86::Gp a6     = cc.newIntPtr("a6");
+    x86::Gp a7     = cc.newIntPtr("a7");
+    x86::Gp a8     = cc.newIntPtr("a8");
+    x86::Gp a9     = cc.newIntPtr("a9");
+    x86::Gp a10    = cc.newIntPtr("a10");
+    x86::Gp a12    = cc.newIntPtr("a12");
+    x86::Gp a13    = cc.newIntPtr("a13");
+    x86::Gp a14    = cc.newIntPtr("a14");
+    x86::Gp a15    = cc.newIntPtr("a15");
+    x86::Gp w      = cc.newIntPtr("w");
 // I also need to registers for the things that the JITed code will do
-    x86::Gp A_reg = cc.newIntPtr("A_reg");
-    x86::Gp B_reg = cc.newIntPtr("B_reg");
+    x86::Gp A_reg  = cc.newIntPtr("A_reg");
+    x86::Gp B_reg  = cc.newIntPtr("B_reg");
 // Througout the JIT body I will keep a copy of the C++ variable "stack"
 // in a register. But I will write it back before calling a function from
 // the JIT code.
     x86::Gp stackreg = cc.newIntPtr("stack");
-    x86::Gp fptr = cc.newIntPtr("fptr");
+    x86::Gp fptr   = cc.newIntPtr("fptr");
 // The chack for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
 // Ditto cases where I call a sub-function which may fail, and so I need
@@ -183,31 +201,33 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // the value in the A register, and a vector of labels where I set one
 // on the expansion of each bytecode so that if there is a branch to
 // it I can handle that.
-    Label tooFewArgs = cc.newLabel();
+    Label tooFewArgs  = cc.newLabel();
     Label tooManyArgs = cc.newLabel();
-    Label callFailed = cc.newLabel();
-    Label returnA = cc.newLabel();
+    Label callFailed  = cc.newLabel();
+    Label returnA     = cc.newLabel();
     std::vector<Label> perInstruction;
-    for (size_t i=0; i<len; i++) perInstruction.push_back(cc.newLabel());
-    cc.mov(stackreg, stack);
+    for (size_t i=0; i<len; i++)
+        perInstruction.push_back(cc.newLabel());
+// Load the register "stackreg" from the C++ variable "stack"
+    cc.mov(stackreg, x86::ptr((uintptr_t)&stack));
     switch (nargs)
     {
     case 0:
         funcNode = cc.newFunc(
             FuncSignature::build<LispObject, LispObject>());
-        funcNode->setArg(0, def);
+        funcNode->setArg(0, litvec);
         break;
     case 1:
         funcNode = cc.newFunc(
             FuncSignature::build<LispObject, LispObject, LispObject>());
-        funcNode->setArg(0, def);
+        funcNode->setArg(0, litvec);
         funcNode->setArg(1, a1);
         break;
     case 2:
         funcNode = cc.newFunc(
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject>());
-        funcNode->setArg(0, def);
+        funcNode->setArg(0, litvec);
         funcNode->setArg(1, a1);
         funcNode->setArg(2, a2);
         break;
@@ -216,7 +236,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject,
                                  LispObject>());
-        funcNode->setArg(0, def);
+        funcNode->setArg(0, litvec);
         funcNode->setArg(1, a1);
         funcNode->setArg(2, a2);
         funcNode->setArg(3, a3);
@@ -226,11 +246,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject,
                                  LispObject, LispObject>());
-        funcNode->setArg(0, def);
+        funcNode->setArg(0, litvec);
         funcNode->setArg(1, a1);
         funcNode->setArg(2, a2);
         funcNode->setArg(3, a3);
         funcNode->setArg(4, w);
+//@@        cc.ret(w);
+        break;
         for (int i=4; i<=nargs; i++)
         {
 // Here I need to unpack arg4 and up. This has to go sort of
@@ -242,8 +264,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          w = w[1];
             cc.test(w, 7);
             cc.jne(tooFewArgs);
-            cc.mov(x86::Mem(w, 0), a4);
-            if (i!=nargs) cc.mov(x86::Mem(w, 8), w);
+            cc.mov(a4, x86::ptr(w));
+            if (i!=nargs) cc.mov(w, x86::ptr(w, 8));
         }
         break;
     }
@@ -273,10 +295,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         }
     }
     CATCH (JitFailed)
-    {
+    {   stdout_printf("Caught %s\n", e.what());
+        return nullptr;
     }
     END_CATCH;
-
 
     cc.bind(tooFewArgs);
 // Not implemented yet!
@@ -286,6 +308,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Not implemented yet!
     cc.bind(returnA);
     cc.ret(A_reg);
+
     cc.endFunc();
     cc.finalize();
     void* func = nullptr;
