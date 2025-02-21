@@ -91,16 +91,20 @@ void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
 {
 // I am going to start by printing the byte-stream
-    stdout_printf("Calling jitcompile on ");
+    stdout_printf("\nCalling jitcompile on ");
     simple_print(basic_elt(env, 0));
 // Note that when a byte-code takes a follow-on byte as an operand that
 // the "opname" I display here will be garbage. I may want to rearrange the
 // codes so that I have an easy way to tell when thet is going to be the
 // case.
+    stdout_printf("Bytecodes...\n");
     for (size_t i=0; i<len; i++)
         stdout_printf("%3u:  %02x  %s\n", i, bytes[i], opnames[bytes[i]]);
+// The literal at offset zero is the name of the function, and the
+// final entry is an integer checksum 
+    stdout_printf("Vector of literals...\n");
     for (size_t i=0; i<(length_of_header(vechdr(env))-CELL)/CELL; i++)
-    {   stdout_printf("%d:: ", i);
+    {   stdout_printf("%3d: ", i);
         simple_print(basic_elt(env, i));
     }
 
@@ -239,7 +243,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             cc.test(w, 7);
             cc.jne(tooFewArgs);
             cc.mov(x86::Mem(w, 0), a4);
-            cc.mov(x86::Mem(w, 8), w);
+            if (i!=nargs) cc.mov(x86::Mem(w, 8), w);
         }
         break;
     }
@@ -255,14 +259,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 #endif
 
     TRY
-    {
-// BEWARE - bytecoded functions with 4 or more arguments and ones with
-// &optional or &rest arguments have some info bytes at the start of the
-// vector that otherwise holds byte instructions, so in those cases starting
-// at address zero is liable to be wrong!
-        size_t ppc = 0;
+    {   size_t ppc = 0;
         while (ppc<len)
-        {   switch (bytes[ppc])
+        {
+// Set a label on the code that derives from each opcode. Note that
+// because the "case" code for some opcode will increment ppc there will
+// be some of the labels that are neither defined nor used.
+            cc.bind(perInstruction[ppc]);
+            switch (bytes[ppc])
             {
 #include "ops/bytes_include.cpp"
             }
@@ -273,12 +277,28 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     }
     END_CATCH;
 
-// End of function.
 
+    cc.bind(tooFewArgs);
+// Not implemented yet!
+    cc.bind(tooManyArgs);
+// Not implemented yet!
+    cc.bind(callFailed);
+// Not implemented yet!
+    cc.bind(returnA);
+    cc.ret(A_reg);
     cc.endFunc();
     cc.finalize();
     void* func = nullptr;
     rt.add(&func, &code);
+    size_t size = code.codeSize();
+    FILE* hex = fopen("hex", "w");
+    for (size_t i=0; i<size; i++)
+    {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
+        if ((i%8) == 7) fprintf(hex, "\n");
+        else fprintf(hex, " ");
+    }
+    if ((size%8) != 0) fprintf(hex, "\n");
+    fclose(hex);
     return func;
 }
 
