@@ -103,6 +103,8 @@ public:
     }
 };
 
+JitRuntime rt;
+
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
 {
@@ -132,9 +134,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     if (nargs > 15) return nullptr;
 //
 // Set up to use asmjit. The code here just creates and initialises
-// various things that it needs. In this first version I am not
-// checking for error returns from anything - in due course I must do that!
-    JitRuntime rt;
+// various things that it needs.
     CodeHolder code;
     Environment localEnv = rt.environment();;
 #ifdef __CYGWIN__
@@ -209,7 +209,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     for (size_t i=0; i<len; i++)
         perInstruction.push_back(cc.newLabel());
 // Load the register "stackreg" from the C++ variable "stack"
-    cc.mov(stackreg, x86::ptr((uintptr_t)&stack));
+//@@    stdout_printf("cc.mov(stackreg, x86::ptr((uintptr_t)&stack));\n");
+//@@    cc.mov(stackreg, x86::ptr((uintptr_t)&stack));
     switch (nargs)
     {
     case 0:
@@ -251,6 +252,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode->setArg(2, a2);
         funcNode->setArg(3, a3);
         funcNode->setArg(4, w);
+//@@        stdout_printf("cc.ret(w);\n");
 //@@        cc.ret(w);
         break;
         for (int i=4; i<=nargs; i++)
@@ -262,6 +264,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if ((w & 0x7) != 0) goto tooFewArgs;
 //          aX = w[0];
 //          w = w[1];
+            stdout_printf("test/jne/mov/mov\n");
             cc.test(w, 7);
             cc.jne(tooFewArgs);
             cc.mov(a4, x86::ptr(w));
@@ -270,9 +273,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         break;
     }
     
+//@@    cc.mov(a1, A_reg);
 
-// The code right now is inherited from a test program and is not yet
-// customised for the Lisp world.
     cc.addFunc(funcNode);
 #elif defined aarch64
     auto cc = a64::Compiler(&code);
@@ -280,6 +282,12 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 #error unrecognised platform
 #endif
 
+
+// The part from here on will be to a large extent platform independent
+// in this file, but the #included files all discrimate on x86_64 vs aarch64.
+
+    len = 0; // To avoid even glancing at the bytecode stream, since to
+             // date nothing is supported!
     TRY
     {   size_t ppc = 0;
         while (ppc<len)
@@ -300,6 +308,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     }
     END_CATCH;
 
+    stdout_printf("Set the labels that I ought to\n");
     cc.bind(tooFewArgs);
 // Not implemented yet!
     cc.bind(tooManyArgs);
@@ -307,21 +316,25 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     cc.bind(callFailed);
 // Not implemented yet!
     cc.bind(returnA);
-    cc.ret(A_reg);
+    cc.ret(a3);
 
     cc.endFunc();
     cc.finalize();
     void* func = nullptr;
-    rt.add(&func, &code);
+    Error added = rt.add(&func, &code);
+    if (added != ErrorCode::kErrorOk) throw JitFailed("rt.add failed");
     size_t size = code.codeSize();
-    FILE* hex = fopen("hex", "w");
-    for (size_t i=0; i<size; i++)
-    {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
-        if ((i%8) == 7) fprintf(hex, "\n");
-        else fprintf(hex, " ");
+    stdout_printf("size=%d code at %p\n", size, func);
+    if (func != nullptr)
+    {   FILE* hex = fopen("hex", "w");
+        for (size_t i=0; i<size; i++)
+        {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
+            if ((i%8) == 7) fprintf(hex, "\n");
+            else fprintf(hex, " ");
+        }
+        if ((size%8) != 0) fprintf(hex, "\n");
+        fclose(hex);
     }
-    if ((size%8) != 0) fprintf(hex, "\n");
-    fclose(hex);
     return func;
 }
 
