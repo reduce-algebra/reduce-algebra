@@ -87,7 +87,8 @@ void unfinished(const char* msg)
 // making all this interact with saved heap images - but there is no
 // need to worry about that until and unless the schere is working.
 
-void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
+void* jitcompile(const unsigned char* bytes, size_t len,
+                 LispObject env, int nargs)
 {
 // I am going to start by printing the byte-stream
     stdout_printf("Calling jitcompile on ");
@@ -96,8 +97,19 @@ void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nar
 // the "opname" I display here will be garbage. I may want to rearrange the
 // codes so that I have an easy way to tell when thet is going to be the
 // case.
-    for (unsigned int i=0; static_cast<size_t>(i)<len; i++)
-        stdout_printf("%3u:  %02x  \n", i, bytes[i], opnames[bytes[i]]);
+    for (size_t i=0; i<len; i++)
+        stdout_printf("%3u:  %02x  %s\n", i, bytes[i], opnames[bytes[i]]);
+    for (size_t i=0; i<(length_of_header(vechdr(env))-CELL)/CELL; i++)
+    {   stdout_printf("%d:: ", i);
+        simple_print(basic_elt(env, i));
+    }
+
+// I am going to support functions with up to 15 arguments - anything
+// beyond that I will declare unsuitable to mapping into hard code.
+// Well the function in the Reduce sources with most arguments is
+// add3sint() in fide and that has 14, so this is not a limit that
+// with restrict me.
+    if (nargs > 15) return nullptr;
 //
 // Set up to use asmjit. The code here just creates and initialises
 // various things that it needs. In this first version I am not
@@ -120,19 +132,121 @@ void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nar
     auto cc = x86::Compiler(&code);
 // Here I need to specify the type signature of the function that I am
 // creating and associate some names with the arguments it will receive.
+// The function I am defining will have min(nargs+1, 5) arguments
+// each of which is a LispObject. It is going to have to start by
+// pushing all these onto the (Lisp) stack. So for instance if this
+// is going to be a function that expects (in the Lisp sense!) 2 arguments
+// its signature in C++ and first few lines would have been
+//    LispObject foo(LispObject def, LispObject a1, LispObject a2)
+//    {   RealSave save(def, a1, a2);
+// where the ReadSave obect's constructor has gone in effect
+//       *stack++ = def;
+//       *stack++ = a1;
+//       *stack++ = a2;
+// and then set things up so that when the function terminates that
+// stack is set back to its initial value.
+    FuncNode* funcNode;
+// I will set up enough registers for up to 10 arguments but in most cases
+// almost all of those will not be used.
+    x86::Gp def = cc.newIntPtr("def");
+    x86::Gp a1 = cc.newIntPtr("a1");
+    x86::Gp a2 = cc.newIntPtr("a2");
+    x86::Gp a3 = cc.newIntPtr("a3");
+    x86::Gp a4 = cc.newIntPtr("a4");
+    x86::Gp a5 = cc.newIntPtr("a5");
+    x86::Gp a6 = cc.newIntPtr("a6");
+    x86::Gp a7 = cc.newIntPtr("a7");
+    x86::Gp a8 = cc.newIntPtr("a8");
+    x86::Gp a9 = cc.newIntPtr("a9");
+    x86::Gp a10 = cc.newIntPtr("a10");
+    x86::Gp a12 = cc.newIntPtr("a12");
+    x86::Gp a13 = cc.newIntPtr("a13");
+    x86::Gp a14 = cc.newIntPtr("a14");
+    x86::Gp a15 = cc.newIntPtr("a15");
+    x86::Gp w = cc.newIntPtr("w");
+// I also need to registers for the things that the JITed code will do
+    x86::Gp A_reg = cc.newIntPtr("A_reg");
+    x86::Gp B_reg = cc.newIntPtr("B_reg");
+// Througout the JIT body I will keep a copy of the C++ variable "stack"
+// in a register. But I will write it back before calling a function from
+// the JIT code.
+    x86::Gp stackreg = cc.newIntPtr("stack");
+    x86::Gp fptr = cc.newIntPtr("fptr");
+// The chack for the right number of arguments when there are more than
+// 3 has to be dynamic, so I must be ready to return with a failure response.
+// Ditto cases where I call a sub-function which may fail, and so I need
+// to propagate the failure. I also have a single label for use returning
+// the value in the A register, and a vector of labels where I set one
+// on the expansion of each bytecode so that if there is a branch to
+// it I can handle that.
+    Label tooFewArgs = cc.newLabel();
+    Label tooManyArgs = cc.newLabel();
+    Label callFailed = cc.newLabel();
+    Label returnA = cc.newLabel();
+    std::vector<Label> perInstruction;
+    for (size_t i=0; i<len; i++) perInstruction.push_back(cc.newLabel());
+    cc.mov(stackreg, stack);
+    switch (nargs)
+    {
+    case 0:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject>());
+        funcNode->setArg(0, def);
+        break;
+    case 1:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject, LispObject>());
+        funcNode->setArg(0, def);
+        funcNode->setArg(1, a1);
+        break;
+    case 2:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject,
+                                 LispObject, LispObject>());
+        funcNode->setArg(0, def);
+        funcNode->setArg(1, a1);
+        funcNode->setArg(2, a2);
+        break;
+    case 3:
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject,
+                                 LispObject, LispObject,
+                                 LispObject>());
+        funcNode->setArg(0, def);
+        funcNode->setArg(1, a1);
+        funcNode->setArg(2, a2);
+        funcNode->setArg(3, a3);
+        break;
+    default:          // 4 or more
+        funcNode = cc.newFunc(
+            FuncSignature::build<LispObject, LispObject,
+                                 LispObject, LispObject,
+                                 LispObject, LispObject>());
+        funcNode->setArg(0, def);
+        funcNode->setArg(1, a1);
+        funcNode->setArg(2, a2);
+        funcNode->setArg(3, a3);
+        funcNode->setArg(4, w);
+        for (int i=4; i<=nargs; i++)
+        {
+// Here I need to unpack arg4 and up. This has to go sort of
+//          if atom w then return "called with too few arguments"
+//          aX = car(w); w = cdr(w)   // until X=nargs
+// Now in lower-level language that is
+//          if ((w & 0x7) != 0) goto tooFewArgs;
+//          aX = w[0];
+//          w = w[1];
+            cc.test(w, 7);
+            cc.jne(tooFewArgs);
+            cc.mov(x86::Mem(w, 0), a4);
+            cc.mov(x86::Mem(w, 8), w);
+        }
+        break;
+    }
+    
+
 // The code right now is inherited from a test program and is not yet
 // customised for the Lisp world.
-    x86::Gp v1 = cc.newInt32("v1");
-    x86::Gp v2 = cc.newInt32("v2");
-    x86::Gp fptr = cc.newUIntPtr("fptr");
-    Label L_1 = cc.newLabel();
-    Label L_2 = cc.newLabel();
-// The function I am defining will have two integer arguments and will
-// return an integer result.
-    FuncNode* funcNode = cc.newFunc(FuncSignature::build<int, int, int>());
-// Associate v1 and v2 with the arguments that the function will receive.
-    funcNode->setArg(0, v1);
-    funcNode->setArg(1, v2);
     cc.addFunc(funcNode);
 #elif defined aarch64
     auto cc = a64::Compiler(&code);
