@@ -328,6 +328,10 @@
 /psl/bin/linux/pslcomp.old
 /psl/bin/linux/tmp.sed
 
+# /psl/bin/macintel64/
+/psl/bin/macintel64/bare-psl.img
+/psl/bin/macintel64/pslcomp.img
+
 # /psl/bin/mingw-w64/
 /psl/bin/mingw-w64/bare-psl
 /psl/bin/mingw-w64/bare-psl.img
