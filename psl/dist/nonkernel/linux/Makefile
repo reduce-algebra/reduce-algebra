@@ -45,7 +45,7 @@
 #
 ###############################################################################
 
-PROOT	= /silo/cons/verkaufpsl
+## PROOT	= /silo/cons/verkaufpsl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

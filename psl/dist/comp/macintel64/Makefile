@@ -39,7 +39,7 @@
 # 
 ###############################################################################
 
-PROOT   = /newsilo/silo/cons/verkaufpsl
+## PROOT   = /newsilo/silo/cons/verkaufpsl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

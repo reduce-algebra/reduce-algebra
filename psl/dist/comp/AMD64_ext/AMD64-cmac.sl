@@ -275,18 +275,12 @@
  
 (DefAnyreg CAR
            AnyregCAR   %Grab the source so caller can displace off it.
-%          ((regp anyp)    (displacement source 16#c0000000))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                         (displacement REGISTER 16#c0000000))
            (       (!*Field REGISTER SOURCE InfStartingBit InfBitLength)
                    (indirect REGISTER))
 )
 
 (DefAnyreg CDR
            AnyregCDR     %Same as CAR, except move to next word in pair.
-%          ((regp anyp)    (displacement source 16#c0000004))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                          (displacement REGISTER 16#c0000004))
            (       (!*Field REGISTER SOURCE InfStartingBit InfBitLength)
                    (Displacement REGISTER 8)))
 
@@ -298,8 +292,6 @@
 (DefAnyreg MEMORY
 	   AnyregMEMORY
 	   ((RegP ZeroP)      (indirect SOURCE))
-%   ((RegP ZeroP)      (*move SOURCE REGISTER)
-%		      (indirect REGISTER))
 	   ((Anyp  ZeroP)      (*MOVE SOURCE REGISTER)
 			       (indirect REGISTER))
  	   ((RegP InumP)  (Displacement SOURCE ARGTWO))
@@ -352,18 +344,18 @@
 
 (loadtime (remflag '(fluid global $fluid $global) 'Terminaloperand))
 
-(defanyreg Fluid ZIBanyregfluid)
+(DefAnyreg Fluid ZIBanyregfluid)
 
-(defanyreg $Fluid ZIBanyregfluid)
+(DefAnyreg $Fluid ZIBanyregfluid)
 
 (de ZIBanyregFluid (reg source)
    (cond ((and (idp source) (get source 'registercode))
                          `(reg ,source))
          (t       `($Fluid ,SOURCE))))
 
-(defanyreg Global ZIBanyregglobal)
+(DefAnyreg Global ZIBanyregglobal)
 
-(defanyreg $Global ZIBanyregglobal)
+(DefAnyreg $Global ZIBanyregglobal)
 
 (de ZIBanyregGlobal (reg source)
    (cond ((and (idp source) (get source 'registercode))

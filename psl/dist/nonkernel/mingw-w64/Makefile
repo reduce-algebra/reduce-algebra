@@ -45,7 +45,7 @@
 #
 ###############################################################################
 
-PROOT	= /opt/src/build/reduce-algebra/psl-0594/psl
+## PROOT	= /opt/src/build/reduce-algebra/psl-0594/psl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

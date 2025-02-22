@@ -433,9 +433,6 @@
 %
 %  additional test functions
 
-(fluid '(sregs))
-(setq sregs '(ES CS SS DS FS GS ))
-
 (de RegP (RegName) 
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
@@ -1002,6 +999,7 @@
 	   (fp  29)			% frame pointer for C subroutine calls
 	   (sp  31) (st  31)		% LISP stack register
 	   (lr  30)			% link register
+	   (staticlisp 20)		% pointer to static lisp area
 	   (heaplast 21)
 	   (heaptrapbound 22)
 	   (symfnc 23)
