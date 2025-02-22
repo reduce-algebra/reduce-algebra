@@ -46,7 +46,8 @@ global '(!$eol!$
 
 %esc!* := intern ascii 125;   %this is system dependent and defines
                               %a terminator for strings.
-<<
+
+if !*msg then <<
   terpri();
   for each m in '(
 "*** cedit activated ***"

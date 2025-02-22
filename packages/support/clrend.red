@@ -124,8 +124,9 @@ remflag('(cedit),'lose);
 symbolic procedure cedit n;
    begin scalar x,ochan;
       if not cedit!-loaded!* then <<
-        terpri(); prin2 "*** cedit activated ***"; terpri();
-        prin2 "Input will now be saved for use by cedit"; terpri();
+        if !*msg then <<
+          terpri(); prin2 "*** cedit activated ***"; terpri();
+          prin2 "Input will now be saved for use by cedit"; terpri()>>;
         cedit!-loaded!* := t >>;
       if null terminalp() then rederr "Edit must be from a terminal";
       ochan := wrs nil;
