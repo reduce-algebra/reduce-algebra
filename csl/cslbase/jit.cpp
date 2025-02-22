@@ -180,6 +180,22 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     FuncNode* funcNode;
 // I will set up enough registers for up to 10 arguments but in most cases
 // almost all of those will not be used.
+// The check for the right number of arguments when there are more than
+// 3 has to be dynamic, so I must be ready to return with a failure response.
+// Ditto cases where I call a sub-function which may fail, and so I need
+// to propagate the failure. I also have a single label for use returning
+// the value in the A register, and a vector of labels where I set one
+// on the expansion of each bytecode so that if there is a branch to
+// it I can handle that.
+    Label tooFewArgs  = cc.newLabel();
+    Label tooManyArgs = cc.newLabel();
+    Label callFailed  = cc.newLabel();
+    Label returnA     = cc.newLabel();
+// I am going to set a label on the code that corresponds to each bytecode
+// so that I can handle the jumps there.
+    std::vector<Label> perInstruction;
+    for (size_t i=0; i<len; i++)
+        perInstruction.push_back(cc.newLabel());
     x86::Gp litvec = cc.newIntPtr("litvec");
     x86::Gp argregs[16];
     for (size_t i=1; i<=15; i++)
@@ -197,23 +213,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     x86::Gp spentry = cc.newIntPtr("spentry");
     x86::Gp niladdr = cc.newIntPtr("niladdr");
     x86::Gp nilreg  = cc.newIntPtr("nilreg");
-    x86::Gp fptr   = cc.newIntPtr("fptr");
-// The chack for the right number of arguments when there are more than
-// 3 has to be dynamic, so I must be ready to return with a failure response.
-// Ditto cases where I call a sub-function which may fail, and so I need
-// to propagate the failure. I also have a single label for use returning
-// the value in the A register, and a vector of labels where I set one
-// on the expansion of each bytecode so that if there is a branch to
-// it I can handle that.
-    Label tooFewArgs  = cc.newLabel();
-    Label tooManyArgs = cc.newLabel();
-    Label callFailed  = cc.newLabel();
-    Label returnA     = cc.newLabel();
-// I am going to set a label on the code that corresponds to each bytecode
-// so that I can handle the jumps there.
-    std::vector<Label> perInstruction;
-    for (size_t i=0; i<len; i++)
-        perInstruction.push_back(cc.newLabel());
+    x86::Gp fptr    = cc.newIntPtr("fptr");
 // I will be compiling functions with various numbers of arguments. Here I
 // need to set up a suitable function signature and associate asmjit registers
 // with all of the arguments.
@@ -279,7 +279,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     for (int i=1; i<=nargs&&i<4; i++)
     {   cc.add(spreg, 8);
         cc.mov(ptr(spreg), argregs[i]);
-        stdout+printf("Just moved arg %d to stack\n", i);
+        stdout_printf("Just moved arg %d to stack\n", i);
     }
     if (nargs>=4)
     {   cc.mov(w1, w);
@@ -303,6 +303,41 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     
 #elif defined __aarch64__
     auto cc = a64::Compiler(&code);
+    a64::Gp litvec = cc.newIntPtr("litvec");
+    a64::Gp argregs[16];
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = cc.newIntPtr("a1");
+    a64::Gp w      = cc.newIntPtr("w");
+    a64::Gp w1     = cc.newIntPtr("w1");
+// I also need to registers for the things that the JITed code will do
+    a64::Gp A_reg  = cc.newIntPtr("A_reg");
+    a64::Gp B_reg  = cc.newIntPtr("B_reg");
+// Througout the JIT body I will keep a copy of the C++ variable "stack"
+// in a register. But I will write it back before calling a function from
+// the JIT code.
+    a64::Gp spaddr  = cc.newIntPtr("spaddr");
+    a64::Gp spreg   = cc.newIntPtr("spreg");
+    a64::Gp spentry = cc.newIntPtr("spentry");
+    a64::Gp niladdr = cc.newIntPtr("niladdr");
+    a64::Gp nilreg  = cc.newIntPtr("nilreg");
+    a64::Gp fptr    = cc.newIntPtr("fptr");
+// The check for the right number of arguments when there are more than
+// 3 has to be dynamic, so I must be ready to return with a failure response.
+// Ditto cases where I call a sub-function which may fail, and so I need
+// to propagate the failure. I also have a single label for use returning
+// the value in the A register, and a vector of labels where I set one
+// on the expansion of each bytecode so that if there is a branch to
+// it I can handle that.
+    Label tooFewArgs  = cc.newLabel();
+    Label tooManyArgs = cc.newLabel();
+    Label callFailed  = cc.newLabel();
+    Label returnA     = cc.newLabel();
+// I am going to set a label on the code that corresponds to each bytecode
+// so that I can handle the jumps there.
+    std::vector<Label> perInstruction;
+    for (size_t i=0; i<len; i++)
+        perInstruction.push_back(cc.newLabel());
+
 #pragma message "Much not done here yet"
 #else
 #error unrecognised platform
