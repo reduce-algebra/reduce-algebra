@@ -45,8 +45,8 @@
 #
 ###############################################################################
 
-MACHINE = winnt
-PROOT   = $(PSL)
+## MACHINE = winnt
+## PROOT   = $(PSL)
 
 PSL     = $(PROOT)/dist
 PSYS    = $(PROOT)/bin

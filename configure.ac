@@ -671,7 +671,7 @@ AC_ARG_ENABLE(jit,
   AS_HELP_STRING([--enable-jit],
                  [currently experimental (CSL only)]),
   [],
-  [enable_jit="yes"])
+  [enable_jit="no"])
 
 if test "$enable_jit" = "yes"
 then

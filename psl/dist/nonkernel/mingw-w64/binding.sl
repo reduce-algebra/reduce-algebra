@@ -83,6 +83,7 @@
 (de dump-bndstk ()
   (prog (x id val)
     (setq x bndstkptr)
+    (prin2 "Dumping binding stack:") (terpri)
     (while (wgreaterp x bndstklowerbound)
       (setq id (bndstkid x) val (bndstkval x))
       (print id)

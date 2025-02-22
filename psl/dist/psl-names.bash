@@ -58,9 +58,14 @@
 # Since the environment is inherited, it is only necessary to source psl-names
 # once in your .login file, rather than in the .cshrc for every c-shell.
 
-scriptpath=$BASH_ARGV
-scriptdir=`dirname $scriptpath`
-cd $scriptdir/..; export proot=`pwd`; cd $OLDPWD
+#set -xv
+
+if test "$proot" = ""
+then
+  scriptpath=$BASH_ARGV0
+  scriptdir=`dirname $scriptpath`
+  cd $scriptdir/..; export proot=`pwd`; cd $OLDPWD
+fi
 #export proot=`realpath $scriptdir/..`
 #export proot=/mounts/software/rainer/reduce-algebra/code/trunk/psl
 

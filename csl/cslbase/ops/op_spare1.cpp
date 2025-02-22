@@ -1,8 +1,9 @@
 // op_spare1.cpp
 
 #if defined BYTECODE
+
             case OP_SPARE1:
-                continue; // used on a temporary basis as LABEL
+                continue;
 
 #elif defined __x86_64__
 
