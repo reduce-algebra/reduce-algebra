@@ -301,7 +301,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         }
     }
     
-#elif defined aarch64
+#elif defined __aarch64__
     auto cc = a64::Compiler(&code);
 #pragma message "Much not done here yet"
 #else
