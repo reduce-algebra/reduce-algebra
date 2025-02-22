@@ -143,6 +143,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     code.init(localEnv, rt.cpuFeatures());
     JitError jitError;
     code.setErrorHandler(&jitError);
+    Section* text = code.textSection();
+    Section* data;
+    if (code.newSection(&data,
+                        ".data",
+                        SIZE_MAX,
+                        SectionFlags::kNone,
+                        16) != ErrorCode::kErrorOk)
+        throw JitFailed("attempt to create data section failed");
 // I believe that the next two lines will lead to the generated assembly
 // code being displayed on the standard output. This is going to be
 // really useful while developing, but it obviously gets switched off for
@@ -171,28 +179,18 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // I will set up enough registers for up to 10 arguments but in most cases
 // almost all of those will not be used.
     x86::Gp litvec = cc.newIntPtr("litvec");
-    x86::Gp a1     = cc.newIntPtr("a1");
-    x86::Gp a2     = cc.newIntPtr("a2");
-    x86::Gp a3     = cc.newIntPtr("a3");
-    x86::Gp a4     = cc.newIntPtr("a4");
-    x86::Gp a5     = cc.newIntPtr("a5");
-    x86::Gp a6     = cc.newIntPtr("a6");
-    x86::Gp a7     = cc.newIntPtr("a7");
-    x86::Gp a8     = cc.newIntPtr("a8");
-    x86::Gp a9     = cc.newIntPtr("a9");
-    x86::Gp a10    = cc.newIntPtr("a10");
-    x86::Gp a12    = cc.newIntPtr("a12");
-    x86::Gp a13    = cc.newIntPtr("a13");
-    x86::Gp a14    = cc.newIntPtr("a14");
-    x86::Gp a15    = cc.newIntPtr("a15");
+    x86::Gp argregs[16];
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = cc.newIntPtr("a1");
     x86::Gp w      = cc.newIntPtr("w");
+    x86::Gp w1     = cc.newIntPtr("w1");
 // I also need to registers for the things that the JITed code will do
     x86::Gp A_reg  = cc.newIntPtr("A_reg");
     x86::Gp B_reg  = cc.newIntPtr("B_reg");
 // Througout the JIT body I will keep a copy of the C++ variable "stack"
 // in a register. But I will write it back before calling a function from
 // the JIT code.
-    x86::Gp stackreg = cc.newIntPtr("stack");
+    x86::Gp stackreg = cc.newIntPtr("stackreg");
     x86::Gp fptr   = cc.newIntPtr("fptr");
 // The chack for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
@@ -209,8 +207,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     for (size_t i=0; i<len; i++)
         perInstruction.push_back(cc.newLabel());
 // Load the register "stackreg" from the C++ variable "stack"
-//@@    stdout_printf("cc.mov(stackreg, x86::ptr((uintptr_t)&stack));\n");
-//@@    cc.mov(stackreg, x86::ptr((uintptr_t)&stack));
+    stdout_printf("&stack = %" PRIx64 "\n", reinterpret_cast<uint64_t>(&stack));
+    cc.mov(stackreg, reinterpret_cast<uint64_t>(&stack));
+    cc.mov(stackreg, x86::ptr(stackreg));
     switch (nargs)
     {
     case 0:
@@ -222,15 +221,15 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode = cc.newFunc(
             FuncSignature::build<LispObject, LispObject, LispObject>());
         funcNode->setArg(0, litvec);
-        funcNode->setArg(1, a1);
+        funcNode->setArg(1, argregs[1]);
         break;
     case 2:
         funcNode = cc.newFunc(
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject>());
         funcNode->setArg(0, litvec);
-        funcNode->setArg(1, a1);
-        funcNode->setArg(2, a2);
+        funcNode->setArg(1, argregs[1]);
+        funcNode->setArg(2, argregs[2]);
         break;
     case 3:
         funcNode = cc.newFunc(
@@ -238,9 +237,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
                                  LispObject, LispObject,
                                  LispObject>());
         funcNode->setArg(0, litvec);
-        funcNode->setArg(1, a1);
-        funcNode->setArg(2, a2);
-        funcNode->setArg(3, a3);
+        funcNode->setArg(1, argregs[1]);
+        funcNode->setArg(2, argregs[2]);
+        funcNode->setArg(3, argregs[3]);
         break;
     default:          // 4 or more
         funcNode = cc.newFunc(
@@ -248,32 +247,30 @@ void* jitcompile(const unsigned char* bytes, size_t len,
                                  LispObject, LispObject,
                                  LispObject, LispObject>());
         funcNode->setArg(0, litvec);
-        funcNode->setArg(1, a1);
-        funcNode->setArg(2, a2);
-        funcNode->setArg(3, a3);
+        funcNode->setArg(1, argregs[1]);
+        funcNode->setArg(2, argregs[2]);
+        funcNode->setArg(3, argregs[3]);
         funcNode->setArg(4, w);
-//@@        stdout_printf("cc.ret(w);\n");
-//@@        cc.ret(w);
-        break;
+        cc.mov(w1, w);
         for (int i=4; i<=nargs; i++)
         {
 // Here I need to unpack arg4 and up. This has to go sort of
-//          if atom w then return "called with too few arguments"
-//          aX = car(w); w = cdr(w)   // until X=nargs
+//          if atom w1 then return "called with too few arguments"
+//          aX = car(w1); w1 = cdr(w1)   // until X=nargs
 // Now in lower-level language that is
-//          if ((w & 0x7) != 0) goto tooFewArgs;
-//          aX = w[0];
-//          w = w[1];
+//          if ((w1 & 0x7) != 0) goto tooFewArgs;
+//          aX = w1[0];
+//          w1 = w1[1];
             stdout_printf("test/jne/mov/mov\n");
-            cc.test(w, 7);
+            cc.test(w1, 7);
             cc.jne(tooFewArgs);
-            cc.mov(a4, x86::ptr(w));
-            if (i!=nargs) cc.mov(w, x86::ptr(w, 8));
+            cc.mov(argregs[i], x86::ptr(w1));
+            if (i!=nargs) cc.mov(w1, x86::ptr(w1, 8));
         }
         break;
     }
     
-//@@    cc.mov(a1, A_reg);
+//@@    cc.mov(A_reg, argregs[1]);
 
     cc.addFunc(funcNode);
 #elif defined aarch64
@@ -316,18 +313,18 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     cc.bind(callFailed);
 // Not implemented yet!
     cc.bind(returnA);
-    cc.ret(a3);
+    cc.ret(argregs[4]);
 
     cc.endFunc();
     cc.finalize();
     void* func = nullptr;
-    Error added = rt.add(&func, &code);
-    if (added != ErrorCode::kErrorOk) throw JitFailed("rt.add failed");
+    if (rt.add(&func, &code) != ErrorCode::kErrorOk)
+        throw JitFailed("rt.add failed");
     size_t size = code.codeSize();
     stdout_printf("size=%d code at %p\n", size, func);
     if (func != nullptr)
     {   FILE* hex = fopen("hex", "w");
-        for (size_t i=0; i<size; i++)
+        for (int i=-4; i<(int)size; i++)
         {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
             if ((i%8) == 7) fprintf(hex, "\n");
             else fprintf(hex, " ");
