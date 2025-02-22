@@ -20,7 +20,9 @@
 #elif defined __x86_64__
 
             case OP_LOC0EXIT:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(A_reg, ptr(spreg));
+                cc.jmp(returnA);
+                break;
 
 #elif defined __aarch64__
 

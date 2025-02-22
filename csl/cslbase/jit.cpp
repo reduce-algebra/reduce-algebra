@@ -66,8 +66,8 @@ struct JitFailed : public std::exception
 
 void unfinished(const char* msg)
 {   while (*msg != 0 &&
-           strncmp(msg, "op/op", 5)!=0) msg++;
-    stdout_printf("+++ %s\n", msg+3);
+           strncmp(msg, "ops/op", 6)!=0) msg++;
+    stdout_printf("\n+++ %s\n", msg+4);
     THROW(JitFailed);
 }
 
@@ -192,9 +192,11 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Througout the JIT body I will keep a copy of the C++ variable "stack"
 // in a register. But I will write it back before calling a function from
 // the JIT code.
-    x86::Gp spaddr = cc.newIntPtr("spaddr");
-    x86::Gp spreg  = cc.newIntPtr("spreg");
-    x86::Gp spentry= cc.newIntPtr("spentry");
+    x86::Gp spaddr  = cc.newIntPtr("spaddr");
+    x86::Gp spreg   = cc.newIntPtr("spreg");
+    x86::Gp spentry = cc.newIntPtr("spentry");
+    x86::Gp niladdr = cc.newIntPtr("niladdr");
+    x86::Gp nilreg  = cc.newIntPtr("nilreg");
     x86::Gp fptr   = cc.newIntPtr("fptr");
 // The chack for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
@@ -260,10 +262,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     }
     cc.addFunc(funcNode);
 // Load the register "spaddr" to be the address of the C++ variable
-// "stack", and spreg to hold its value.
+// "stack", and spreg to hold its value. And rather similarly for nil.
     cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
     cc.mov(spreg, ptr(spaddr));
     cc.mov(spentry, spreg);
+    cc.mov(niladdr, reinterpret_cast<uintptr_t>(&nil));
+    cc.mov(nilreg, ptr(niladdr));
+    cc.mov(A_reg, nilreg);
 // In CSL if a Lisp/Reduce-level function has 4 or more arguments it in fact
 // passes just the first 3 separately - all the rest are passed in a list.
 // Here I need to disentangle that. I push all the arguments onto the Lisp
@@ -271,9 +276,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // at any time I do a function call I will need to bring that up to date.
 // If I do change the C++ version I will need to restore it from spentry
 // before I exit.
-    for (int i=1; i<nargs&&i<4; i++)
-    {   cc.mov(argregs[i], ptr(spreg));
-        cc.add(spreg, 8);
+    for (int i=1; i<=nargs&&i<4; i++)
+    {   cc.add(spreg, 8);
+        cc.mov(ptr(spreg), argregs[i]);
+        stdout+printf("Just moved arg %d to stack\n", i);
     }
     if (nargs>=4)
     {   cc.mov(w1, w);
@@ -286,13 +292,12 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if ((w1 & 0x7) != 0) goto tooFewArgs;
 //          aX = w1[0];
 //          w1 = w1[1];
-            stdout_printf("test/jne/mov/mov\n");
             cc.test(w1, 7);
             cc.jne(tooFewArgs);
             cc.mov(argregs[i], ptr(w1));
             if (i!=nargs) cc.mov(w1, ptr(w1, 8));
-            cc.mov(argregs[i], ptr(spreg));
             cc.add(spreg, 8);
+            cc.mov(ptr(spreg), argregs[i]);
         }
     }
     
@@ -304,11 +309,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 #endif
 
 
-// The part from here on will be to a large extent platform independent
+// The part from HERE will be to a large extent platform independent
 // in this file, but the #included files all discrimate on x86_64 vs aarch64.
 
-    len = 0; // To avoid even glancing at the bytecode stream, since to
-             // date nothing is supported!
     TRY
     {   size_t ppc = 0;
         while (ppc<len)
@@ -317,7 +320,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // because the "case" code for some opcode will increment ppc there will
 // be some of the labels that are neither defined nor used.
             cc.bind(perInstruction[ppc]);
-            switch (bytes[ppc])
+            stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
+            switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"
             }
@@ -337,7 +341,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     cc.bind(callFailed);
 // Not implemented yet!
     cc.bind(returnA);
-    cc.ret(argregs[4]);
+    cc.ret(A_reg);
 
     cc.endFunc();
     cc.finalize();
