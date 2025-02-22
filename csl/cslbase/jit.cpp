@@ -105,6 +105,8 @@ public:
 
 JitRuntime rt;
 
+uintptr_t demovar = 99;
+
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
 {
@@ -190,7 +192,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Througout the JIT body I will keep a copy of the C++ variable "stack"
 // in a register. But I will write it back before calling a function from
 // the JIT code.
-    x86::Gp stackreg = cc.newIntPtr("stackreg");
+    x86::Gp spaddr = cc.newIntPtr("spaddr");
+    x86::Gp spreg  = cc.newIntPtr("spreg");
+    x86::Gp spentry= cc.newIntPtr("spentry");
     x86::Gp fptr   = cc.newIntPtr("fptr");
 // The chack for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
@@ -203,13 +207,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     Label tooManyArgs = cc.newLabel();
     Label callFailed  = cc.newLabel();
     Label returnA     = cc.newLabel();
+// I am going to set a label on the code that corresponds to each bytecode
+// so that I can handle the jumps there.
     std::vector<Label> perInstruction;
     for (size_t i=0; i<len; i++)
         perInstruction.push_back(cc.newLabel());
-// Load the register "stackreg" from the C++ variable "stack"
-    stdout_printf("&stack = %" PRIx64 "\n", reinterpret_cast<uint64_t>(&stack));
-    cc.mov(stackreg, reinterpret_cast<uint64_t>(&stack));
-    cc.mov(stackreg, x86::ptr(stackreg));
+// I will be compiling functions with various numbers of arguments. Here I
+// need to set up a suitable function signature and associate asmjit registers
+// with all of the arguments.
     switch (nargs)
     {
     case 0:
@@ -251,7 +256,27 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode->setArg(2, argregs[2]);
         funcNode->setArg(3, argregs[3]);
         funcNode->setArg(4, w);
-        cc.mov(w1, w);
+        break;
+    }
+    cc.addFunc(funcNode);
+// Load the register "spaddr" to be the address of the C++ variable
+// "stack", and spreg to hold its value.
+    cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
+    cc.mov(spreg, ptr(spaddr));
+    cc.mov(spentry, spreg);
+// In CSL if a Lisp/Reduce-level function has 4 or more arguments it in fact
+// passes just the first 3 separately - all the rest are passed in a list.
+// Here I need to disentangle that. I push all the arguments onto the Lisp
+// stack at spreg. Note that this does noy update the C++ variable, and if
+// at any time I do a function call I will need to bring that up to date.
+// If I do change the C++ version I will need to restore it from spentry
+// before I exit.
+    for (int i=1; i<nargs&&i<4; i++)
+    {   cc.mov(argregs[i], ptr(spreg));
+        cc.add(spreg, 8);
+    }
+    if (nargs>=4)
+    {   cc.mov(w1, w);
         for (int i=4; i<=nargs; i++)
         {
 // Here I need to unpack arg4 and up. This has to go sort of
@@ -264,17 +289,16 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             stdout_printf("test/jne/mov/mov\n");
             cc.test(w1, 7);
             cc.jne(tooFewArgs);
-            cc.mov(argregs[i], x86::ptr(w1));
-            if (i!=nargs) cc.mov(w1, x86::ptr(w1, 8));
+            cc.mov(argregs[i], ptr(w1));
+            if (i!=nargs) cc.mov(w1, ptr(w1, 8));
+            cc.mov(argregs[i], ptr(spreg));
+            cc.add(spreg, 8);
         }
-        break;
     }
     
-//@@    cc.mov(A_reg, argregs[1]);
-
-    cc.addFunc(funcNode);
 #elif defined aarch64
     auto cc = a64::Compiler(&code);
+#pragma message "Much not done here yet"
 #else
 #error unrecognised platform
 #endif
@@ -324,7 +348,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     stdout_printf("size=%d code at %p\n", size, func);
     if (func != nullptr)
     {   FILE* hex = fopen("hex", "w");
-        for (int i=-4; i<(int)size; i++)
+        for (int i=0; i<(int)size; i++)
         {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
             if ((i%8) == 7) fprintf(hex, "\n");
             else fprintf(hex, " ");
