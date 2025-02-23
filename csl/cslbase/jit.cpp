@@ -66,8 +66,8 @@ struct JitFailed : public std::exception
 
 void unfinished(const char* msg)
 {   while (*msg != 0 &&
-           strncmp(msg, "op/op", 5)!=0) msg++;
-    stdout_printf("+++ %s\n", msg+3);
+           strncmp(msg, "ops/op", 6)!=0) msg++;
+    stdout_printf("\n+++ %s\n", msg+4);
     THROW(JitFailed);
 }
 
@@ -104,6 +104,8 @@ public:
 };
 
 JitRuntime rt;
+
+uintptr_t demovar = 99;
 
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
@@ -178,6 +180,22 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     FuncNode* funcNode;
 // I will set up enough registers for up to 10 arguments but in most cases
 // almost all of those will not be used.
+// The check for the right number of arguments when there are more than
+// 3 has to be dynamic, so I must be ready to return with a failure response.
+// Ditto cases where I call a sub-function which may fail, and so I need
+// to propagate the failure. I also have a single label for use returning
+// the value in the A register, and a vector of labels where I set one
+// on the expansion of each bytecode so that if there is a branch to
+// it I can handle that.
+    Label tooFewArgs  = cc.newLabel();
+    Label tooManyArgs = cc.newLabel();
+    Label callFailed  = cc.newLabel();
+    Label returnA     = cc.newLabel();
+// I am going to set a label on the code that corresponds to each bytecode
+// so that I can handle the jumps there.
+    std::vector<Label> perInstruction;
+    for (size_t i=0; i<len; i++)
+        perInstruction.push_back(cc.newLabel());
     x86::Gp litvec = cc.newIntPtr("litvec");
     x86::Gp argregs[16];
     for (size_t i=1; i<=15; i++)
@@ -190,26 +208,15 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Througout the JIT body I will keep a copy of the C++ variable "stack"
 // in a register. But I will write it back before calling a function from
 // the JIT code.
-    x86::Gp stackreg = cc.newIntPtr("stackreg");
-    x86::Gp fptr   = cc.newIntPtr("fptr");
-// The chack for the right number of arguments when there are more than
-// 3 has to be dynamic, so I must be ready to return with a failure response.
-// Ditto cases where I call a sub-function which may fail, and so I need
-// to propagate the failure. I also have a single label for use returning
-// the value in the A register, and a vector of labels where I set one
-// on the expansion of each bytecode so that if there is a branch to
-// it I can handle that.
-    Label tooFewArgs  = cc.newLabel();
-    Label tooManyArgs = cc.newLabel();
-    Label callFailed  = cc.newLabel();
-    Label returnA     = cc.newLabel();
-    std::vector<Label> perInstruction;
-    for (size_t i=0; i<len; i++)
-        perInstruction.push_back(cc.newLabel());
-// Load the register "stackreg" from the C++ variable "stack"
-    stdout_printf("&stack = %" PRIx64 "\n", reinterpret_cast<uint64_t>(&stack));
-    cc.mov(stackreg, reinterpret_cast<uint64_t>(&stack));
-    cc.mov(stackreg, x86::ptr(stackreg));
+    x86::Gp spaddr  = cc.newIntPtr("spaddr");
+    x86::Gp spreg   = cc.newIntPtr("spreg");
+    x86::Gp spentry = cc.newIntPtr("spentry");
+    x86::Gp niladdr = cc.newIntPtr("niladdr");
+    x86::Gp nilreg  = cc.newIntPtr("nilreg");
+    x86::Gp fptr    = cc.newIntPtr("fptr");
+// I will be compiling functions with various numbers of arguments. Here I
+// need to set up a suitable function signature and associate asmjit registers
+// with all of the arguments.
     switch (nargs)
     {
     case 0:
@@ -251,7 +258,31 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode->setArg(2, argregs[2]);
         funcNode->setArg(3, argregs[3]);
         funcNode->setArg(4, w);
-        cc.mov(w1, w);
+        break;
+    }
+    cc.addFunc(funcNode);
+// Load the register "spaddr" to be the address of the C++ variable
+// "stack", and spreg to hold its value. And rather similarly for nil.
+    cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
+    cc.mov(spreg, ptr(spaddr));
+    cc.mov(spentry, spreg);
+    cc.mov(niladdr, reinterpret_cast<uintptr_t>(&nil));
+    cc.mov(nilreg, ptr(niladdr));
+    cc.mov(A_reg, nilreg);
+// In CSL if a Lisp/Reduce-level function has 4 or more arguments it in fact
+// passes just the first 3 separately - all the rest are passed in a list.
+// Here I need to disentangle that. I push all the arguments onto the Lisp
+// stack at spreg. Note that this does noy update the C++ variable, and if
+// at any time I do a function call I will need to bring that up to date.
+// If I do change the C++ version I will need to restore it from spentry
+// before I exit.
+    for (int i=1; i<=nargs&&i<4; i++)
+    {   cc.add(spreg, 8);
+        cc.mov(ptr(spreg), argregs[i]);
+        stdout_printf("Just moved arg %d to stack\n", i);
+    }
+    if (nargs>=4)
+    {   cc.mov(w1, w);
         for (int i=4; i<=nargs; i++)
         {
 // Here I need to unpack arg4 and up. This has to go sort of
@@ -261,30 +292,61 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if ((w1 & 0x7) != 0) goto tooFewArgs;
 //          aX = w1[0];
 //          w1 = w1[1];
-            stdout_printf("test/jne/mov/mov\n");
             cc.test(w1, 7);
             cc.jne(tooFewArgs);
-            cc.mov(argregs[i], x86::ptr(w1));
-            if (i!=nargs) cc.mov(w1, x86::ptr(w1, 8));
+            cc.mov(argregs[i], ptr(w1));
+            if (i!=nargs) cc.mov(w1, ptr(w1, 8));
+            cc.add(spreg, 8);
+            cc.mov(ptr(spreg), argregs[i]);
         }
-        break;
     }
     
-//@@    cc.mov(A_reg, argregs[1]);
-
-    cc.addFunc(funcNode);
-#elif defined aarch64
+#elif defined __aarch64__
     auto cc = a64::Compiler(&code);
+    a64::Gp litvec = cc.newIntPtr("litvec");
+    a64::Gp argregs[16];
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = cc.newIntPtr("a1");
+    a64::Gp w      = cc.newIntPtr("w");
+    a64::Gp w1     = cc.newIntPtr("w1");
+// I also need to registers for the things that the JITed code will do
+    a64::Gp A_reg  = cc.newIntPtr("A_reg");
+    a64::Gp B_reg  = cc.newIntPtr("B_reg");
+// Througout the JIT body I will keep a copy of the C++ variable "stack"
+// in a register. But I will write it back before calling a function from
+// the JIT code.
+    a64::Gp spaddr  = cc.newIntPtr("spaddr");
+    a64::Gp spreg   = cc.newIntPtr("spreg");
+    a64::Gp spentry = cc.newIntPtr("spentry");
+    a64::Gp niladdr = cc.newIntPtr("niladdr");
+    a64::Gp nilreg  = cc.newIntPtr("nilreg");
+    a64::Gp fptr    = cc.newIntPtr("fptr");
+// The check for the right number of arguments when there are more than
+// 3 has to be dynamic, so I must be ready to return with a failure response.
+// Ditto cases where I call a sub-function which may fail, and so I need
+// to propagate the failure. I also have a single label for use returning
+// the value in the A register, and a vector of labels where I set one
+// on the expansion of each bytecode so that if there is a branch to
+// it I can handle that.
+    Label tooFewArgs  = cc.newLabel();
+    Label tooManyArgs = cc.newLabel();
+    Label callFailed  = cc.newLabel();
+    Label returnA     = cc.newLabel();
+// I am going to set a label on the code that corresponds to each bytecode
+// so that I can handle the jumps there.
+    std::vector<Label> perInstruction;
+    for (size_t i=0; i<len; i++)
+        perInstruction.push_back(cc.newLabel());
+
+#pragma message "Much not done here yet"
 #else
 #error unrecognised platform
 #endif
 
 
-// The part from here on will be to a large extent platform independent
+// The part from HERE will be to a large extent platform independent
 // in this file, but the #included files all discrimate on x86_64 vs aarch64.
 
-    len = 0; // To avoid even glancing at the bytecode stream, since to
-             // date nothing is supported!
     TRY
     {   size_t ppc = 0;
         while (ppc<len)
@@ -293,7 +355,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // because the "case" code for some opcode will increment ppc there will
 // be some of the labels that are neither defined nor used.
             cc.bind(perInstruction[ppc]);
-            switch (bytes[ppc])
+            stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
+            switch (bytes[ppc++])
             {
 #include "ops/bytes_include.cpp"
             }
@@ -313,7 +376,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     cc.bind(callFailed);
 // Not implemented yet!
     cc.bind(returnA);
-    cc.ret(argregs[4]);
+    cc.ret(A_reg);
 
     cc.endFunc();
     cc.finalize();
@@ -324,7 +387,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     stdout_printf("size=%d code at %p\n", size, func);
     if (func != nullptr)
     {   FILE* hex = fopen("hex", "w");
-        for (int i=-4; i<(int)size; i++)
+        for (int i=0; i<(int)size; i++)
         {   fprintf(hex, "0x%.2x", reinterpret_cast<unsigned char*>(func)[i]);
             if ((i%8) == 7) fprintf(hex, "\n");
             else fprintf(hex, " ");

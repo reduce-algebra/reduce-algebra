@@ -1361,20 +1361,21 @@ then
   AC_MSG_NOTICE([About to configure asmjit])
   mkdir -p asmjit
   cd asmjit
+  TOOLCHAIN=""
+  if test "$enable_universal" = "yes"
+  then
+    temp="$abssrcdir/libraries/asmjit"
+    TOOLCHAIN="-DCMAKE_TOOLCHAIN_FILE=$temp/Toolchain-universal-mac.cmake"
+  else
   case "$CXX" in
   *mingw*)
-# This is a suggestion for a move towards getting mingw32 support in place
-# by having a custom Toolchain file. The one I have at present is not
-# enough to make things work!
     temp="$abssrcdir/libraries/asmjit"
-    TRYMINGW="-DCMAKE_TOOLCHAIN_FILE=$temp/Toolchain-x86_64-w64-mingw32.cmake"
-    ;;
-  *)
-    TRYMINGW=""
+    TOOLCHAIN="-DCMAKE_TOOLCHAIN_FILE=$temp/Toolchain-x86_64-w64-mingw32.cmake"
     ;;
   esac
+  fi
   cmake -DASMJIT_STATIC=TRUE \
-	$TRYMINGW \
+	$TOOLCHAIN \
         -DCMAKE_CXX_COMPILER="$CXX" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
         -DCMAKE_INSTALL_PREFIX:PATH=$builddir \

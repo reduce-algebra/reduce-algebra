@@ -8,88 +8,103 @@
 \indexpackage{GNUPLOT}
 \index{Graphical display}
 \index{Display, graphical}
+\newcommand{\Gnuplot}{\texttt{gnuplot}}
 
-Graphical display of functions and data is done via an interface to the popular GNUPLOT package\footnote{This interface, together with the code for plotting data, was written by Herbert Melenk.}.
-It allows you to display functions in 2D and surfaces in 3D
-on a variety of output devices including X terminals, PC monitors, and
-postscript and Latex printer files.
+Graphical display of functions and data is done via an interface, the
+{\REDUCE} \package{GNUPLOT}\footnote{This interface, together with the
+code for plotting data, was written by Herbert Melenk.} package, to
+the popular {\Gnuplot} graphing utility described at
+\url{https://gnuplot.sourceforge.net/}.  It allows you to display
+functions in 2D and surfaces in 3D on a variety of output devices
+including X terminals, PC monitors, and postscript and {\LaTeX} printer
+files.
 
-\newcommand{\Gnuplot}{\textsc{GnuPlot}}
+Installing {\REDUCE} normally also installs {\Gnuplot} version 4.6,
+which should include its own documentation.  You can install a later
+version of {\Gnuplot} and it should work, but beware of incompatible
+changes since version 4.6!
 
-The {\Gnuplot} system provides easy to use graphics output for curves or surfaces
-which are defined by formulas and/or data sets.  {\Gnuplot} supports a variety of
-output devices such as
-\texttt{VGA screen}, \texttt{postscript}, \texttt{pic}\TeX, \texttt{MS Windows}.
-The {\REDUCE} {\Gnuplot} package lets one use the {\Gnuplot} graphical output
-directly from inside {\REDUCE}, either for the interactive display of
-curves/surfaces or for the production of pictures on paper.
+The \package{GNUPLOT} package provides easy to use graphics output for
+curves or surfaces which are defined by formulas and/or data sets, and
+supports a variety of output devices such as \texttt{VGA screen},
+\texttt{postscript}, \texttt{pic}\TeX, \texttt{MS Windows}.  It lets
+you generate {\Gnuplot} graphical output directly from inside
+{\REDUCE}, either for the interactive display of curves/surfaces or
+for the production of pictures on paper.
 
 \subsection{Command \texttt{plot}}
 \ttindextype{plot}{command}
 \hypertarget{command:PLOT}{}
 
-Under {\REDUCE} {\Gnuplot} is used as graphical output server, invoked by the
-command \texttt{plot(...)}.  This command can have a variable number of
+Under the {\REDUCE} \package{GNUPLOT} package, {\Gnuplot} is used as a
+graphical output server, invoked by the command
+\texttt{plot(}\ldots{)}.  This command can have a variable number of
 parameters:
 \begin{itemize}
-\item A function to plot; a function can be
+\item A function to plot, which can be
   \begin{itemize}
-    \item an expression with one unknown, e.g., \texttt{u*sin(u)\^{}2}.
+    \item an expression with one unknown, e.g.,
+      \texttt{u*sin(u)\textasciicircum2};
     \item a list of expressions with one (identical) unknown,
-      e.g., \texttt{\{sin(u),\allowbreak cos(u)\}}.
-    \item an expression with two unknowns, e.g., \texttt{u*sin(u)\^{}2+sqrt(v)}.
+      e.g., \texttt{\{sin(u),\allowbreak cos(u)\}};
+    \item an expression with two unknowns, e.g.,
+      \texttt{u*sin(u)\textasciicircum2+sqrt(v)};
     \item a list of expressions with two (identical) unknowns,
       e.g., \linebreak
-      \texttt{\{x\textasciicircum{2}+y\textasciicircum{2},\allowbreak x\textasciicircum{2}-y\textasciicircum{2}\}}.
+      \texttt{\{x\textasciicircum{2}+y\textasciicircum{2},\allowbreak x\textasciicircum{2}-y\textasciicircum{2}\}};
     \item a parametic expression of the form \texttt{point(<u>,<v>)} (for 2D plots) or
-      \texttt{point(<u>,\allowbreak <v>,<w>)} (for 3D plots) where \texttt{u,v,w} are
+      \texttt{point(<u>,\allowbreak <v>,<w>)} (for 3D plots) where \texttt{<u>,<v>,<w>} are
       expressions which depend of one or two parameters; if there is one
-      parameter, the object describes a curve in the plane (only \texttt{u} and
-      \texttt{v}) or in 3D space; if there are two parameters, the object
+      parameter, the object describes a curve in the plane (only \texttt{<u>} and
+      \texttt{<v>}) or in 3D space; if there are two parameters, the object
       describes a surface in 3D. The parameters are treated as independent
-      variables.  Example: \texttt{point(sin t,cos t,t/10)}.
-    \item an equation with a symbol on the left-hand side and an expression with
-      one or two unknowns on the right-hand side, e.g.,\linebreak[3]
-      \texttt{dome=\allowbreak
-        1/(x\^{}2+y\^{}2)}.
-    \item an equation with an expression on the left-hand side and a zero on
-      right-hand side describing implicitly a one dimensional variety in the
-      plane (implicitly given curve), e.g.,
-      \texttt{x\^{}3 + x*y\^{}2-9x = 0}, or a
-      two-dimensional surface in 3-dimensional Euclidean space,
+      variables.  Example: \texttt{point(sin t,cos t,t/10)};
+    \item an equation with a symbol on the left-hand side and an
+      expression with one or two unknowns on the right-hand side,
+      e.g.,\linebreak[3] \texttt{dome=\allowbreak
+        1/(x\textasciicircum2+y\textasciicircum2)};
+    \item an equation with an expression on the left-hand side and a
+      zero on the right-hand side describing implicitly a
+      one-dimensional variety in the plane (implicitly given curve),
+      e.g., \texttt{x\textasciicircum3 + x*y\textasciicircum2 - 9x = 0},
+      or a two-dimensional surface in three-dimensional Euclidean
+      space;
     \item an equation with an expression in two variables on the left-hand side
       and a list of numbers on the right-hand side; the contour lines
       corresponding to the given values are drawn, e.g., \\
-      \texttt{x\^{}3 - y\^{}2 + x*y = \{-2,-1,0,1,2\}}.
+      \texttt{x\textasciicircum3 - y\textasciicircum2 + x*y = \{-2,-1,0,1,2\}};
     \item a list of points in 2 or 3 dimensions, e.g.,
-      \texttt{\{\{0,0\},\{0,1\},\{1,1\}\}} representing a curve,
+      \texttt{\{\{0,0\},\{0,1\},\{1,1\}\}} representing a curve;
     \item a list of lists of points in 2 or 3 dimensions,
       e.g.,\\
       \texttt{\{\{\{0,0\},\{0,1\},\{1,1\}\}, \{\{0,0\},\{0,1\},\{1,1\}\}\}}\\
       representing a family of curves.
   \end{itemize}
   \hypertarget{reserved:intervalop}
-\item A range for a variable; this has the form
-  \texttt{variable=(lower\_bound,..,\allowbreak upper\_bound)} where
-  \texttt{lower\_bound} and \texttt{upper\_bound} must be expressions which
-  evaluate to numbers. If no range is specified the default ranges for
-  independent variables are $(-10\,\,..\,\,10)$ and the range for the dependent
-  variable is set to maximum number of the {\Gnuplot} executable (using double
-  floats on most IEEE machines).  Additionally the
+\item A range for a variable: this has the form
+  \texttt{<variable>=(<lower\_bound> ..\ \allowbreak <upper\_bound>)} where
+  \texttt{<lower\_bound>} and \texttt{<upper\_bound>} must be expressions which
+  evaluate to numbers. If no range is specified the default range for
+  independent variables is \texttt{(-10~..~10)} and the range for the dependent
+  variable is set to the maximum for the {\Gnuplot} executable (using double
+  floats on most IEEE machines).  Additionally, the
   number of interval subdivisions can be assigned as a formal quotient
-  \texttt{variable=(lower\_bound\,..\,upper\_bound)\allowbreak /<it>} where
-  \texttt{it} is a positive integer. E.g. \texttt{(1 .. 5)/30} means the
-  interval from $1$ to $5$ subdivided into $30$ pieces of equal size. A
-  subdivision parameter overrides the value of the variable \texttt{points} for
+  of the form
+  \texttt{<variable>=(<lower\_bound> ..\ <upper\_bound>)\allowbreak /<it>} where
+  \texttt{<it>} is a positive integer. E.g. \texttt{(1~..~5)/30} means the
+  interval from 1 to 5 subdivided into 30 pieces of equal size. A
+  subdivision parameter overrides the value of the option \texttt{points} for
   this variable.
-\item A plot option, either as fixed keyword, e.g., \texttt{hidden3d} or as
-  equation e.g., \texttt{term=pictex}; free texts such as titles and labels
-  should be enclosed in string quotes.
+\item A plot option, either as a fixed keyword, e.g.,
+  \texttt{hidden3d} or as an equation e.g., \texttt{term=pictex}; free
+  text such as titles and labels should be enclosed in string quotes.
+  Further details are \hyperref[gnuplot:plot-options]{given below}.
 \end{itemize}
-Please note that a blank has to be inserted between a number and a dot,
-otherwise the \REDUCE{} translator will be misled.
+Please note that a space has to be inserted between a number and a dot
+when specifying an interval, otherwise the \REDUCE{} translator will
+be misled.
 
-If a function is given as an equation the left-hand side is mainly used as a
+If a function is given as an equation, the left-hand side is mainly used as a
 label for the axis of the dependent variable.
 
 In two dimensions, \texttt{plot} can be called with more than one explicit
@@ -102,8 +117,9 @@ one picture.
 The same applies to three dimensions with explicit functions. However, an
 implicitly given curve must be the sole object for one picture.
 
-The functional expressions are evaluated in \texttt{rounded} mode.  This is done
-automatically, it is not necessary to turn on rounded mode explicitly.
+The functional expressions are evaluated in \texttt{rounded} mode.
+This is done automatically, it is not necessary to turn on
+\texttt{rounded} mode explicitly.
 
 \textbf{Examples:}
 \begin{verbatim}
@@ -157,65 +173,103 @@ Of course, such a rule may call a procedure:
 The direct use of a procedure with a numeric \texttt{if} clause is impossible.
 
 \subsubsection{Plot options}
-The following plot options are supported in the \texttt{plot} command:
+\label{gnuplot:plot-options}
+The following options are specific to the {\REDUCE} \texttt{plot} command:
 \begin{itemize}
-   \item \texttt{points=<integer>}: the number of unconditionally computed data
-     points; for a grid \texttt{points\^{}2} grid points are used.  The default
-     value is 20. The value of \texttt{points} is used only for variables for
-     which no individual interval subdivision has been specified in the range
-     specification.
-   \item \texttt{refine=<integer>}: the maximum depth of adaptive interval
-     intersections. The default is 8. A value 0 switches any refinement
-     off. Note that a high value may increase the computing time significantly.
+   \item \texttt{points=<integer>}: the number of unconditionally
+     computed data points; for a grid,
+     \texttt{points\textasciicircum2} grid points are used.  The
+     default value is 20.  The value of \texttt{points} is used only
+     for variables for which no individual interval subdivision has
+     been included in the range specification.
+   \item \texttt{refine=<integer>}: the maximum depth of adaptive
+     interval intersections.  The default is 8.  A value of 0 switches
+     any refinement off.  Note that a high value may increase the
+     computing time significantly.
 \end{itemize}
-
 
 \subsubsection{Additional options}
 
-The following additional {\Gnuplot} options are supported in the \texttt{plot} command:
+Additional {\Gnuplot} options are supported via the following
+syntax in the \texttt{plot} command.
+
+The options below are implemented using the {\Gnuplot} \texttt{set}
+(or \texttt{unset} if the option begins with \texttt{no}) command,
+which offers far more control than is currently exposed via this
+interface.  Note that the {\Gnuplot} \texttt{reset} command, which
+clears the effect of most \texttt{set} commands (not \texttt{set term}
+or \texttt{set output}) from previous calls of \texttt{plot}, is
+always issued before any \texttt{set} commands.  See Commands /
+Set-show / \emph{option} and Commands / Reset in the {\Gnuplot}
+documentation or the {\Gnuplot} Help for details.
 \begin{itemize}
-  \item \texttt{title=name}: the title (string) is put at the top of the picture.
-  \item axes labels: \texttt{xlabel="text1", ylabel="text2"}, and for surfaces
-    \texttt{zlabel="text3"}. If omitted the axes are labeled by the independent
-    and dependent variable names from the expression. Note that \texttt{xlabel},
-    \texttt{ylabel}, and \texttt{zlabel} here are used in the usual sense, $x$
-    for the horizontal and $y$ for the vertical axis in 2-d and $z$ for the
-    perpendicular axis under 3-d -- these names do not refer to the variable
-    names used in the expressions.
- \begin{verbatim}
- plot(1,x,(4*x^2-1)/2,(x*(12*x^2-5))/3, x=(-1 .. 1),
-      ylabel="L(x,n)",
-      title="Legendre Polynomials");
- \end{verbatim}
-  \item \texttt{terminal=name}: prepare output for device type \texttt{name}.
-    Every installation uses a default terminal as output device; some
-    installations support additional devices such as printers; consult the
-    original {\Gnuplot} documentation or the {\Gnuplot} Help for details.
+  \item \texttt{title=<string>}: the specified title is put at the top
+    of the picture.
+  \item \texttt{xlabel=<string>}, \texttt{ylabel=<string>}, and
+    \texttt{zlabel=<string>} for surfaces: the specified axis labels
+    are displayed.  If omitted the axes are labeled by the independent
+    and dependent variable names from the expression. Note that
+    \texttt{xlabel}, \texttt{ylabel}, and \texttt{zlabel} here are
+    used in the usual sense, $x$ for the horizontal and $y$ for the
+    vertical axis in 2D, and $z$ for the perpendicular axis in 3D --
+    these names do not refer to the variable names used in the
+    expressions.
+\begin{verbatim}
+plot(1,x,(4*x^2-1)/2,(x*(12*x^2-5))/3, x=(-1 .. 1),
+   ylabel="L(x,n)", title="Legendre Polynomials");
+\end{verbatim}
+  \item \texttt{terminal=name}: prepare output for device type
+    \texttt{name}.  Every installation uses a default terminal as
+    output device; some installations support additional devices such
+    as printers; consult the {\Gnuplot} documentation or the
+    {\Gnuplot} Help for details.
   \item \texttt{output="filename"}: redirect the output to a file.
   \item \texttt{size="s\_x,s\_y"}: rescale the graph (not the window) where
     $s_x$ and $s_y$ are scaling factors for the $x$- and $y$-sizes.  Defaults
-    are $s_x=1,x_z=1$.  Note that scaling factors greater than 1 will often
+    are $s_x=1,s_y=1$.  Note that scaling factors greater than 1 will often
     cause the picture to be too big for the window.
 \begin{verbatim}
 plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5),
-     size="0.7,1");
+   size="0.7,1");
 \end{verbatim}
   \item \texttt{view="r\_x,r\_z"}: set the viewpoint in 3 dimensions by turning
     the object around the $x$ or $z$ axis; the values are degrees (integers).
     Defaults are $r_x=60,r_z=30$.
 \begin{verbatim}
 plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5),
-     view="30,130");
+   view="30,130");
 \end{verbatim}
-  \item \texttt{contour} resp. \texttt{nocontour}: in 3 dimensions an additional
-    contour map is drawn (default: \texttt{nocontour}).  Note that
-    \texttt{contour} is an option which is executed by {\Gnuplot} by
-    interpolating the precomputed function values. If you want to draw contour
-    lines of a delicate formula, you had better use the contour form of the
-    REDUCE \texttt{plot} command.
-  \item \texttt{surface} resp. \texttt{nosurface}: in 3 dimensions the surface
-    is drawn, resp.  suppressed (default: \texttt{surface}).
-  \item \texttt{hidden3d}: hidden line removal in 3 dimensions.
+  \item \texttt{logscale}: set all axes to use logarithmic scales.
+  \item \texttt{contour} resp.\ \texttt{nocontour}: in 3 dimensions an
+    additional contour map is drawn (default: \texttt{nocontour}).
+    Note that \texttt{contour} is an option which is executed by
+    {\Gnuplot} by interpolating the precomputed function values.  If
+    you want to draw contour lines of a delicate formula, you had
+    better use the contour form of the REDUCE \texttt{plot} command as
+    described above.
+  \item \texttt{surface} resp.\ \texttt{nosurface}: in 3 dimensions the surface
+    is drawn, resp.\ suppressed (default: \texttt{surface}).
+  \item \texttt{hidden3d}: apply hidden line removal in 3 dimensions.
+  \item \texttt{pm3d}: draw a solid coloured (palette-mapped 3d)
+    surface in 3 dimensions.
+\end{itemize}
+
+The option below is implemented using the {\Gnuplot} \texttt{with}
+command, which offers far more control than is currently exposed via
+this interface.  See Commands / Plot / With in the {\Gnuplot}
+documentation or the {\Gnuplot} Help for details.
+\begin{itemize}
+\item
+  \begin{sloppypar}
+    \texttt{style=} one of \texttt{lines}, \texttt{points},
+    \texttt{linespoints}, \texttt{impulses}, \texttt{dots},
+    \texttt{errorbars}, \texttt{boxes}, \texttt{boxerrorbars},
+    \texttt{boxxyerrorbars}, \texttt{candlesticks},
+    \texttt{financebars}, \texttt{fsteps}, \texttt{histeps},
+    \texttt{steps}, \texttt{vector}, \texttt{xerrorbars},
+    \texttt{xyerrorbars}, \texttt{yerrorbars}: set the data display
+    style.
+  \end{sloppypar}
 \end{itemize}
 
 
@@ -405,7 +459,7 @@ plot(sinh(x*y)/sinh(2*x*y), hidden3d);
 \put(0,0){\Includegraphics[scale=0.5]{gnuplotex3}}
 \end{picture}
 
-\newpage
+%% \newpage
 
 \begin{verbatim}
 on rounded;

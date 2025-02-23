@@ -7,9 +7,13 @@ plot(sin(1/x),x=(-1 .. 1),y=(-3 .. 3));
 plot(sin(1/x),x=(-10 .. 10));
 plot(y=tan x,y=(-10 .. 10));
 
+plot(x^2, x=(0 .. 10), logscale);       % slope = 2
+plot(sqrt x, x=(0 .. 10), logscale);    % slope = 1/2
+
 
 plot (cos sqrt(x**2 + y**2),x=(-3 .. 3),y=(-3 .. 3));
 plot (cos sqrt(x**2 + y**2),x=(-3 .. 3),y=(-3 .. 3),hidden3d);
+plot (cos sqrt(x**2 + y**2),x=(-3 .. 3),y=(-3 .. 3),pm3d);
 plot(x*y, x=(0 .. 2), y=(0 .. 2));
 plot(x*y, x=(-2 .. 2), y=(-2 .. 2));
 plot(x+y, x=(0 .. 2), y=(0 .. 2));
@@ -20,7 +24,10 @@ plot(1/(x**2+y**2),x=(0.1 .. 5),y=(0.1 .. 5),view="30,89");
 plot(1/(x**2+y**2),x=(-0.5 .. 0.5),y=(-0.5 .. 0.5),
       hidden3d,contour,view="70,20");
 
-% this may be slow on some machines because of 
+plot((lambda z; min(100,z))(1/(x**2+y**2)),
+   x=(-0.5 .. 0.5), y=(-0.5 .. 0.5), hidden3d);
+
+% this may be slow on some machines because of
 % a delicate evaluation context.
 plot(sinh(x*y)/sinh(2*x*y),hidden3d);
 
@@ -40,11 +47,11 @@ plot(x^2+y^2+z^2-1=0,x=(-1 .. 1),y=(-1 .. 1),points=40);
 wss :=
 {{u=(665280*t**6 + 1995840*t**5*x**2 - 3991680*t**5
 + 831600*t**4*x**4 - 9979200
-*t**4*x**2 + 19958400*t**4 + 110880*t**3*x**6 - 3326400*t**3*x**4 + 
-39916800*t**3*x**2 - 79833600*t**3 + 5940*t**2*x**8 - 332640*t**2*x**6 + 
-9979200*t**2*x**4 - 119750400*t**2*x**2 + 239500800*t**2 + 132*t*x**10 - 
-11880*t*x**8 + 665280*t*x**6 - 19958400*t*x**4 + 239500800*t*x**2 - 
-479001600*t + x**12 - 132*x**10 + 11880*x**8 - 665280*x**6 + 19958400*x**4 
+*t**4*x**2 + 19958400*t**4 + 110880*t**3*x**6 - 3326400*t**3*x**4 +
+39916800*t**3*x**2 - 79833600*t**3 + 5940*t**2*x**8 - 332640*t**2*x**6 +
+9979200*t**2*x**4 - 119750400*t**2*x**2 + 239500800*t**2 + 132*t*x**10 -
+11880*t*x**8 + 665280*t*x**6 - 19958400*t*x**4 + 239500800*t*x**2 -
+479001600*t + x**12 - 132*x**10 + 11880*x**8 - 665280*x**6 + 19958400*x**4
 - 239500800*x**2 + 479001600)/479001600}}$
 
 plot(rhs first first wss,x=(-5 .. 5),t=(-1 .. 1),hidden3d);
@@ -92,14 +99,14 @@ for ttt :=0:tt collect
    list('list, floor (90*x +200 + 0.5), floor (90*y +200 + 0.5)) >>;
 end;
 
-ikeda := lisp ikeda(20000)$
+share ikeda;
+lisp(ikeda := ikeda(20000))$
 
-plot(ikeda,style=points);
-plot(ikeda,style=dots); 
-plot(ikeda,style=errorbars);
+plot(ikeda, ylabel="y", style=points);
+plot(ikeda, ylabel="y", style=dots);
+plot(ikeda, ylabel="y", style=errorbars);
 
 
 plotreset;
 
 end;
-

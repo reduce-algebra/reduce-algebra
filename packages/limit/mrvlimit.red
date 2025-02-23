@@ -114,45 +114,46 @@ symbolic procedure mrv!-set(u,var);
      then return
        %% Shortcut for common cases of log(x), -x, sqrt(x)
        if first argl = var then {var}
-        else if not mrv_constantp(first argl,var) then mrv(first argl,var);
+        else if not mrv_constantp(first argl,var) then mrv!-set(first argl,var);
    %% Nary operators times and plus: iterate comparison
    if op memq '(plus times)
      then << %% Drop subexpressions not depending on var
       	     while argl and mrv_constantp(first argl,var) do argl := rest argl;
 	     if null argl then return nil;
 	     %% Compute compatibility class of 1st subexpression
-	     li2 := mrv(first argl,var); argl := rest argl;
+	     li2 := mrv!-set(first argl,var); argl := rest argl;
 	     %% Compute compatibility class of next subexpression and compare
 	     while argl do <<
 		%% skip constant subexpressions
 		if not mrv_constantp(first argl,var)
- 		  then li2 :=  mrv_maxi(mrv(first argl,var),li2,var);
+ 		  then li2 :=  mrv_maxi(mrv!-set(first argl,var),li2,var);
 		argl := rest argl >>;
 	     return li2;
           >>
     else if op eq 'expt
     then return
        %% short cut for the case:    mrv(expt(u,cst)) => mrv(u)
-       if mrv_constantp(second argl,var) then mrv(first argl,var)
+       if mrv_constantp(second argl,var) then mrv!-set(first argl,var)
         else if mrv!-limit1(mrv!-logsimp u,var) member '(infinity (minus infinity))
-	 then mrv_maxi({u},mrv(second argl,var),var)
-	else mrv_maxi(mrv(first argl,var),mrv(second argl,var),var)
+	 then mrv_maxi({u},mrv!-set(second argl,var),var)
+	else mrv_maxi(mrv(first argl,var),mrv!-set(second argl,var),var)
     else if null rest argl		% length argl = 1
-    then return mrv(first argl,var)
+    then return mrv!-set(first argl,var)
     else if null cddr argl		% length argl = 2, includes difference and quotient
-    then return mrv_maxi(mrv(first argl,var),mrv(second argl,var),var)
+    then return mrv_maxi(mrv!-set(first argl,var),mrv!-set(second argl,var),var)
     else rerror(mrvlimit,1,"mrv not implemented");
 end; % of mrv
 
 symbolic procedure mrv(u,var);
    begin scalar v;
       if !*trlimit then <<
-	 prin2!* "Entering mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
+	 prin2!* "Enter mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
 	 maprin u; terpri!* t;
       >>;
       v := mrv!-set(u,var);
       if !*trlimit then <<
-      	 prin2!* "Mrv set of ";
+      	 prin2!* "Exit mrv("; prin2!* !*mrv!-recursion!-level!*; prin2!* "): ";
+	 prin2!* "Mrv set of ";
       	 maprin u; terpri!* t;
       	 prin2!* " is ";
       	 maprin ('list . v); terpri!* t;
@@ -253,7 +254,7 @@ symbolic procedure mrv!-expand!-series(f,w);
    begin scalar s,coeffs;
       if !*trlimit then <<
 	 prin2!* "In mrv!-leading!-term(";
- 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion of ";
+ 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): computing series expansion of ";
       	 maprin f;
       	 terpri!* t;            
       >>;
@@ -279,7 +280,9 @@ symbolic procedure mrv!-expand!-series(f,w);
 	 rerror(mrvlimit,3,{"mrv_limit: Error in Taylor expansion"})>>
       else if !*trlimit then <<
 	 prin2!* "In mrv!-leading!-term(";
- 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion is ";
+ 	 prin2!* !*mrv!-recursion!-level!*; prin2!* "): series expansion of ";
+	 mathprint f;
+	 prin2!* " is ";
       	 printsq s;
       	 terpri!* t;
          >>;
@@ -359,11 +362,35 @@ symbolic procedure mrv!-simp!-logexp u;
 
 symbolic procedure mrv!-moveup(u,var);
    %   sqchk reval {'sub,{'equal,var,{'expt,'e,var}},u};
-   mrv!-simp!-logexp subst({'expt,'e,var},var,u);
+   begin scalar result;
+      if !*trlimit then <<
+      	 prin2!* "Moving up: replacing ";
+	 maprin var;
+	 prin2!* " by ";
+      	 maprin {'expt,'e,var};
+      	 prin2!* " gives ";
+	 terpri!* t;
+      >>;
+      result :=  mrv!-simp!-logexp subst({'expt,'e,var},var,u);
+      if !*trlimit then <<maprin {'replaceby,u,result};terpri!* t>>;
+      return result;
+   end;
    
 symbolic procedure mrv!-movedown(u,var);
-   for each v in u collect
-      sqchk reval {'sub,{'equal,var,{'log,var}},v};
+   begin scalar result;
+      if !*trlimit then <<
+      	 prin2!* "Moving down: replacing ";
+	 maprin var;
+	 prin2!* " by ";
+      	 maprin {'log,var};
+      	 prin2!* " gives ";
+	 terpri!* t;
+      >>;
+      result := for each v in u collect
+      	 sqchk reval {'sub,{'equal,var,{'log,var}},v};
+      if !*trlimit then <<maprin {'replaceby,'list . u,'list . result};terpri!* t;>>;
+      return result;
+   end;
    
 symbolic procedure mrv!-sign(u,var);
    if mrv_constantp(u,var) then (sign!-of u or 0)
@@ -414,7 +441,7 @@ symbolic procedure mrv!-limit1a(u,var);
 	 s1 := mrv!-sign(c0,var);
 	 if s1=1 then return 'infinity
 	 else if s1=-1 then return '(minus infinity)
-	 else  write "mrv!_limit1a: sign is ", s1;
+	 else  write "mrv!_limit1a: sign of c0=",c0," is ", s1;
       >>;
    end;
 

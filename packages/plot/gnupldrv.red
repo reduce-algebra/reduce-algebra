@@ -313,11 +313,7 @@ symbolic procedure plotprin2number u;
 flag ('(xlabel ylabel zlabel output title),'plotstring);
 
 symbolic procedure gp!-plotoptions();
-  <<if not('polar memq plotoptions!*) then
-      plotoptions!* := 'nopolar . plotoptions!*;
-    if not('contour memq plotoptions!*) then
-      plotoptions!* := 'nocontour . plotoptions!*;
-    if not assoc('title, plotoptions!*) then
+  <<if not assoc('title, plotoptions!*) then
       plotoptions!* := '(title . "REDUCE Plot") . plotoptions!*;
   for each x in plotoptions!* do
     begin
@@ -371,7 +367,7 @@ symbolic procedure gp!-2exp(x,y,pts,fp);
   % pts: list of computed point sets,
   % fp:  list of user supplied point sets.
   begin scalar cm,cm1;
-     plotoptions!* := 'noparametric .  plotoptions!*;
+     plotprin2lt{"reset"};
      plotprin2lt{"set size 1,1"};
      plotprin2lt{"set xlabel ",'!",x,'!"};
      plotprin2lt{"set ylabel ",'!",y,'!"};
@@ -415,16 +411,10 @@ symbolic procedure gp!-3exp(x,y,z,pts);
     % if h then f:=for each l in f collect
       % for each p in l collect {caddr p};
      if z = 'points then z := 'z else pts:= foreach f in pts collect gp!-plotgrids f;
-     plotprin2lt{"unset hidden3d"};
-     plotprin2lt{"unset pm3d"};
-     if not h then plotoptions!* := 'parametric .
-           delete('noparametric,plotoptions!*)
-        else
-            plotoptions!* := 'noparametric .
-           delete('parametric,plotoptions!*);
+     plotoptions!* := 'parametric . delete('noparametric,plotoptions!*);
+     plotprin2lt{"reset"};
      plotprin2lt{"set view 60,30,1,1"};
      plotprin2lt{"set size 1,1"};
-     if h then plotprin2lt{"set format xy ",'!",'!"};
      plotprin2lt{"set xlabel ",'!",x,'!"};
      plotprin2lt{"set ylabel ",'!",y,'!"};
      plotprin2lt{"set zlabel ",'!",z,'!"};
@@ -437,9 +427,6 @@ symbolic procedure gp!-3exp(x,y,z,pts);
 	plotprin2 " with lines "; cm := t;
      >>;
      plotterpri();
-%     plotprin2lt{"unset hidden3d"};
-%     plotprin2lt{"unset pm3d"};
-     if h then plotprin2lt{"set format xy"};
   end;
 
 put('gnuplot,'plot!-3exp!-reg,'gp!-3exp);
@@ -467,8 +454,7 @@ symbolic procedure gp!-3quads(x,y,z,f);
   begin scalar h;
      h:=member('hidden3d,plotoptions!*);
      f:=gp!-plotquads f;
-     plotprin2lt{"unset hidden3d"};
-     plotprin2lt{"unset pm3d"};
+     plotprin2lt{"reset"};
      plotoptions!* := 'parametric .
            delete('noparametric,plotoptions!*);
      plotprin2lt{"set view 60,30,1,1"};
@@ -483,9 +469,6 @@ symbolic procedure gp!-3quads(x,y,z,f);
      plotprin2 "'"; plotprin2 f; plotprin2 "'";
      plotprin2 " with lines ";
      plotterpri();
-     plotprin2lt{"unset hidden3d"};
-     plotprin2lt{"unset pm3d"};
-     if h then plotprin2lt{"set format xy"};
   end;
 
 put('gnuplot,'plot!-3quads,'gp!-3quads);
@@ -498,8 +481,8 @@ symbolic procedure gp!-2imp(x,y,l,g,xmin,xmax,ymin,ymax);
   begin scalar f,q;
     q:={{xmin,ymin},nil,{xmin,ymax},nil,
         {xmax,ymin},nil,{xmax,ymax}};
-    plotoptions!* := 'noparametric .  plotoptions!*;
     f:=plotpoints1 (q.l);
+    plotprin2lt{"reset"};
     plotprin2lt{"set size 1,1"};
     plotprin2lt{"set xlabel ",'!",x,'!"};
     plotprin2lt{"set ylabel ",'!",y,'!"};
