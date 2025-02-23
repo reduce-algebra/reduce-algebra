@@ -211,12 +211,12 @@ then
   else
     for d in pslbuild/*-*-*/Makefile
     do
-      if test `viable ${d%Makefile}psl/bpsl` = "yes"
-      then    
+#     if test `viable ${d%Makefile}psl/bpsl` = "yes"
+#     then    
         w=`dirname $d`
         echo Will build for $w
         list="$list $w"
-      fi
+#     fi
     done
   fi
 fi

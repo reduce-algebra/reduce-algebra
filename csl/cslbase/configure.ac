@@ -703,6 +703,7 @@ AC_ARG_ENABLE(jit,
 if test "$enable_jit" = "yes"
 then
   AC_DEFINE([ENABLE_JIT], [1], [this option enabled])
+  AC_DEFINE([ASMJIT_STATIC], [1], [needed for asmjit linking etc under mingw32])
 fi
 
 
