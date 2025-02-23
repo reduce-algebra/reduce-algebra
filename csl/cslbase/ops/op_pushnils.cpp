@@ -9,7 +9,12 @@
 #elif defined __x86_64__
 
             case OP_PUSHNILS:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                for (int k=0; k<next; k++)
+                {   cc.add(spreg, 8);
+                    cc.mov(nilreg, ptr(spreg));
+                }
+                break;
 
 #elif defined __aarch64__
 

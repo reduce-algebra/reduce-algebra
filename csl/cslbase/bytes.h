@@ -42,262 +42,262 @@
 #define header_bytes_h 1
 
 #define LIST_OF_OPCODES \
-    X(LOADLOC)          \
-    X(LOADLOC0)         \
-    X(LOADLOC1)         \
-    X(LOADLOC2)         \
-    X(LOADLOC3)         \
-    X(LOADLOC4)         \
-    X(LOADLOC5)         \
-    X(LOADLOC6)         \
-    X(LOADLOC7)         \
-    X(LOADLOC8)         \
-    X(LOADLOC9)         \
-    X(LOADLOC10)        \
-    X(LOADLOC11)        \
-    X(LOC0LOC1)         \
-    X(LOC1LOC2)         \
-    X(LOC2LOC3)         \
-    X(LOC1LOC0)         \
-    X(LOC2LOC1)         \
-    X(LOC3LOC2)         \
-    X(VNIL)             \
-    X(LOADLIT)          \
-    X(LOADLIT1)         \
-    X(LOADLIT2)         \
-    X(LOADLIT3)         \
-    X(LOADLIT4)         \
-    X(LOADLIT5)         \
-    X(LOADLIT6)         \
-    X(LOADLIT7)         \
-    X(LOADFREE)         \
-    X(LOADFREE1)        \
-    X(LOADFREE2)        \
-    X(LOADFREE3)        \
-    X(LOADFREE4)        \
-    X(STORELOC)         \
-    X(STORELOC0)        \
-    X(STORELOC1)        \
-    X(STORELOC2)        \
-    X(STORELOC3)        \
-    X(STORELOC4)        \
-    X(STORELOC5)        \
-    X(STORELOC6)        \
-    X(STORELOC7)        \
-    X(STOREFREE)        \
-    X(STOREFREE1)       \
-    X(STOREFREE2)       \
-    X(STOREFREE3)       \
-    X(LOADLEX)          \
-    X(STORELEX)         \
-    X(CLOSURE)          \
-    X(CARLOC0)          \
-    X(CARLOC1)          \
-    X(CARLOC2)          \
-    X(CARLOC3)          \
-    X(CARLOC4)          \
-    X(CARLOC5)          \
-    X(CARLOC6)          \
-    X(CARLOC7)          \
-    X(CARLOC8)          \
-    X(CARLOC9)          \
-    X(CARLOC10)         \
-    X(CARLOC11)         \
-    X(CDRLOC0)          \
-    X(CDRLOC1)          \
-    X(CDRLOC2)          \
-    X(CDRLOC3)          \
-    X(CDRLOC4)          \
-    X(CDRLOC5)          \
-    X(CAARLOC0)         \
-    X(CAARLOC1)         \
-    X(CAARLOC2)         \
-    X(CAARLOC3)         \
-    X(CALL0)            \
-    X(CALL1)            \
-    X(CALL2)            \
-    X(CALL2R)           \
-    X(CALL3)            \
-    X(CALL4)            \
-    X(CALL0_0)          \
-    X(CALL0_1)          \
-    X(CALL0_2)          \
-    X(CALL0_3)          \
-    X(CALL1_0)          \
-    X(CALL1_1)          \
-    X(CALL1_2)          \
-    X(CALL1_3)          \
-    X(CALL1_4)          \
-    X(CALL1_5)          \
-    X(CALL2_0)          \
-    X(CALL2_1)          \
-    X(CALL2_2)          \
-    X(CALL2_3)          \
-    X(CALL2_4)          \
-    X(BUILTIN0)         \
-    X(BUILTIN1)         \
-    X(BUILTIN2)         \
-    X(BUILTIN2R)        \
-    X(BUILTIN3)         \
-    X(APPLY1)           \
-    X(APPLY2)           \
-    X(APPLY3)           \
-    X(APPLY4)           \
-    X(JCALL)            \
-    X(JUMP)             \
-    X(JUMP_B)           \
-    X(JUMP_L)           \
-    X(JUMP_BL)          \
-    X(JUMPNIL)          \
-    X(JUMPNIL_B)        \
-    X(JUMPNIL_L)        \
-    X(JUMPNIL_BL)       \
-    X(JUMPT)            \
-    X(JUMPT_B)          \
-    X(JUMPT_L)          \
-    X(JUMPT_BL)         \
-    X(JUMPATOM)         \
-    X(JUMPATOM_B)       \
-    X(JUMPATOM_L)       \
-    X(JUMPATOM_BL)      \
-    X(JUMPNATOM)        \
-    X(JUMPNATOM_B)      \
-    X(JUMPNATOM_L)      \
-    X(JUMPNATOM_BL)     \
-    X(JUMPEQ)           \
-    X(JUMPEQ_B)         \
-    X(JUMPEQ_L)         \
-    X(JUMPEQ_BL)        \
-    X(JUMPNE)           \
-    X(JUMPNE_B)         \
-    X(JUMPNE_L)         \
-    X(JUMPNE_BL)        \
-    X(JUMPEQUAL)        \
-    X(JUMPEQUAL_B)      \
-    X(JUMPEQUAL_L)      \
-    X(JUMPEQUAL_BL)     \
-    X(JUMPNEQUAL)       \
-    X(JUMPNEQUAL_B)     \
-    X(JUMPNEQUAL_L)     \
-    X(JUMPNEQUAL_BL)    \
-    X(JUMPL0NIL)        \
-    X(JUMPL0T)          \
-    X(JUMPL1NIL)        \
-    X(JUMPL1T)          \
-    X(JUMPL2NIL)        \
-    X(JUMPL2T)          \
-    X(JUMPL3NIL)        \
-    X(JUMPL3T)          \
-    X(JUMPL4NIL)        \
-    X(JUMPL4T)          \
-    X(JUMPST0NIL)       \
-    X(JUMPST0T)         \
-    X(JUMPST1NIL)       \
-    X(JUMPST1T)         \
-    X(JUMPST2NIL)       \
-    X(JUMPST2T)         \
-    X(JUMPL0ATOM)       \
-    X(JUMPL0NATOM)      \
-    X(JUMPL1ATOM)       \
-    X(JUMPL1NATOM)      \
-    X(JUMPL2ATOM)       \
-    X(JUMPL2NATOM)      \
-    X(JUMPL3ATOM)       \
-    X(JUMPL3NATOM)      \
-    X(JUMPFREE1NIL)     \
-    X(JUMPFREE1T)       \
-    X(JUMPFREE2NIL)     \
-    X(JUMPFREE2T)       \
-    X(JUMPFREE3NIL)     \
-    X(JUMPFREE3T)       \
-    X(JUMPFREE4NIL)     \
-    X(JUMPFREE4T)       \
-    X(JUMPFREENIL)      \
-    X(JUMPFREET)        \
-    X(JUMPLIT1EQ)       \
-    X(JUMPLIT1NE)       \
-    X(JUMPLIT2EQ)       \
-    X(JUMPLIT2NE)       \
-    X(JUMPLIT3EQ)       \
-    X(JUMPLIT3NE)       \
-    X(JUMPLIT4EQ)       \
-    X(JUMPLIT4NE)       \
-    X(JUMPLITEQ)        \
-    X(JUMPLITNE)        \
-    X(JUMPB1NIL)        \
-    X(JUMPB1T)          \
-    X(JUMPB2NIL)        \
-    X(JUMPB2T)          \
-    X(JUMPFLAGP)        \
-    X(JUMPNFLAGP)       \
-    X(JUMPEQCAR)        \
-    X(JUMPNEQCAR)       \
-    X(CATCH)            \
-    X(CATCH_B)          \
-    X(CATCH_L)          \
-    X(CATCH_BL)         \
-    X(UNCATCH)          \
-    X(THROW)            \
-    X(PROTECT)          \
-    X(UNPROTECT)        \
-    X(PVBIND)           \
-    X(PVRESTORE)        \
-    X(FREEBIND)         \
-    X(FREERSTR)         \
-    X(EXIT)             \
-    X(NILEXIT)          \
-    X(LOC0EXIT)         \
-    X(LOC1EXIT)         \
-    X(LOC2EXIT)         \
-    X(PUSH)             \
-    X(PUSHNIL)          \
-    X(PUSHNIL2)         \
-    X(PUSHNIL3)         \
-    X(PUSHNILS)         \
-    X(POP)              \
-    X(LOSE)             \
-    X(LOSE2)            \
-    X(LOSE3)            \
-    X(LOSES)            \
-    X(SWOP)             \
-    X(EQ)               \
-    X(EQCAR)            \
-    X(EQUAL)            \
-    X(NUMBERP)          \
-    X(CAR)              \
-    X(CDR)              \
-    X(CAAR)             \
-    X(CADR)             \
-    X(CDAR)             \
-    X(CDDR)             \
-    X(CONS)             \
-    X(NCONS)            \
-    X(XCONS)            \
-    X(ACONS)            \
-    X(LENGTH)           \
-    X(LIST2)            \
-    X(LIST2STAR)        \
-    X(LIST3)            \
-    X(PLUS2)            \
-    X(ADD1)             \
-    X(DIFFERENCE)       \
-    X(SUB1)             \
-    X(TIMES2)           \
-    X(GREATERP)         \
-    X(LESSP)            \
-    X(FLAGP)            \
-    X(GET)              \
-    X(LITGET)           \
-    X(GETV)             \
-    X(QGETV)            \
-    X(QGETVN)           \
-    X(BIGSTACK)         \
-    X(BIGCALL)          \
-    X(ICASE)            \
-    X(FASTGET)          \
-    X(ONEVALUE)         \
-    X(SPARE1)           \
-    X(SPARE2)
+    X(LOADLOC)        /* 00   0 */  \
+    X(LOADLOC0)       /* 01   1 */  \
+    X(LOADLOC1)       /* 02   2 */  \
+    X(LOADLOC2)       /* 03   3 */  \
+    X(LOADLOC3)       /* 04   4 */  \
+    X(LOADLOC4)       /* 05   5 */  \
+    X(LOADLOC5)       /* 06   6 */  \
+    X(LOADLOC6)       /* 07   7 */  \
+    X(LOADLOC7)       /* 08   8 */  \
+    X(LOADLOC8)       /* 09   9 */  \
+    X(LOADLOC9)       /* 0a  10 */  \
+    X(LOADLOC10)      /* 0b  11 */  \
+    X(LOADLOC11)      /* 0c  12 */  \
+    X(LOC0LOC1)       /* 0d  13 */  \
+    X(LOC1LOC2)       /* 0e  14 */  \
+    X(LOC2LOC3)       /* 0f  15 */  \
+    X(LOC1LOC0)       /* 10  16 */  \
+    X(LOC2LOC1)       /* 11  17 */  \
+    X(LOC3LOC2)       /* 12  18 */  \
+    X(VNIL)           /* 13  19 */  \
+    X(LOADLIT)        /* 14  20 */  \
+    X(LOADLIT1)       /* 15  21 */  \
+    X(LOADLIT2)       /* 16  22 */  \
+    X(LOADLIT3)       /* 17  23 */  \
+    X(LOADLIT4)       /* 18  24 */  \
+    X(LOADLIT5)       /* 19  25 */  \
+    X(LOADLIT6)       /* 1a  26 */  \
+    X(LOADLIT7)       /* 1b  27 */  \
+    X(LOADFREE)       /* 1c  28 */  \
+    X(LOADFREE1)      /* 1d  29 */  \
+    X(LOADFREE2)      /* 1e  30 */  \
+    X(LOADFREE3)      /* 1f  31 */  \
+    X(LOADFREE4)      /* 20  32 */  \
+    X(STORELOC)       /* 21  33 */  \
+    X(STORELOC0)      /* 22  34 */  \
+    X(STORELOC1)      /* 23  35 */  \
+    X(STORELOC2)      /* 24  36 */  \
+    X(STORELOC3)      /* 25  37 */  \
+    X(STORELOC4)      /* 26  38 */  \
+    X(STORELOC5)      /* 27  39 */  \
+    X(STORELOC6)      /* 28  40 */  \
+    X(STORELOC7)      /* 29  41 */  \
+    X(STOREFREE)      /* 2a  42 */  \
+    X(STOREFREE1)     /* 2b  43 */  \
+    X(STOREFREE2)     /* 2c  44 */  \
+    X(STOREFREE3)     /* 2d  45 */  \
+    X(LOADLEX)        /* 2e  46 */  \
+    X(STORELEX)       /* 2f  47 */  \
+    X(CLOSURE)        /* 30  48 */  \
+    X(CARLOC0)        /* 31  49 */  \
+    X(CARLOC1)        /* 32  50 */  \
+    X(CARLOC2)        /* 33  51 */  \
+    X(CARLOC3)        /* 34  52 */  \
+    X(CARLOC4)        /* 35  53 */  \
+    X(CARLOC5)        /* 36  54 */  \
+    X(CARLOC6)        /* 37  55 */  \
+    X(CARLOC7)        /* 38  56 */  \
+    X(CARLOC8)        /* 39  57 */  \
+    X(CARLOC9)        /* 3a  58 */  \
+    X(CARLOC10)       /* 3b  59 */  \
+    X(CARLOC11)       /* 3c  60 */  \
+    X(CDRLOC0)        /* 3d  61 */  \
+    X(CDRLOC1)        /* 3e  62 */  \
+    X(CDRLOC2)        /* 3f  63 */  \
+    X(CDRLOC3)        /* 40  64 */  \
+    X(CDRLOC4)        /* 41  65 */  \
+    X(CDRLOC5)        /* 42  66 */  \
+    X(CAARLOC0)       /* 43  67 */  \
+    X(CAARLOC1)       /* 44  68 */  \
+    X(CAARLOC2)       /* 45  69 */  \
+    X(CAARLOC3)       /* 46  70 */  \
+    X(CALL0)          /* 47  71 */  \
+    X(CALL1)          /* 48  72 */  \
+    X(CALL2)          /* 49  73 */  \
+    X(CALL2R)         /* 4a  74 */  \
+    X(CALL3)          /* 4b  75 */  \
+    X(CALL4)          /* 4c  76 */  \
+    X(CALL0_0)        /* 4d  77 */  \
+    X(CALL0_1)        /* 4e  78 */  \
+    X(CALL0_2)        /* 4f  79 */  \
+    X(CALL0_3)        /* 50  80 */  \
+    X(CALL1_0)        /* 51  81 */  \
+    X(CALL1_1)        /* 52  82 */  \
+    X(CALL1_2)        /* 53  83 */  \
+    X(CALL1_3)        /* 54  84 */  \
+    X(CALL1_4)        /* 55  85 */  \
+    X(CALL1_5)        /* 56  86 */  \
+    X(CALL2_0)        /* 57  87 */  \
+    X(CALL2_1)        /* 58  88 */  \
+    X(CALL2_2)        /* 59  89 */  \
+    X(CALL2_3)        /* 5a  90 */  \
+    X(CALL2_4)        /* 5b  91 */  \
+    X(BUILTIN0)       /* 5c  92 */  \
+    X(BUILTIN1)       /* 5d  93 */  \
+    X(BUILTIN2)       /* 5e  94 */  \
+    X(BUILTIN2R)      /* 5f  95 */  \
+    X(BUILTIN3)       /* 60  96 */  \
+    X(APPLY1)         /* 61  97 */  \
+    X(APPLY2)         /* 62  98 */  \
+    X(APPLY3)         /* 63  99 */  \
+    X(APPLY4)         /* 64 100 */  \
+    X(JCALL)          /* 65 101 */  \
+    X(JUMP)           /* 66 102 */  \
+    X(JUMP_B)         /* 67 103 */  \
+    X(JUMP_L)         /* 68 104 */  \
+    X(JUMP_BL)        /* 69 105 */  \
+    X(JUMPNIL)        /* 6a 106 */  \
+    X(JUMPNIL_B)      /* 6b 107 */  \
+    X(JUMPNIL_L)      /* 6c 108 */  \
+    X(JUMPNIL_BL)     /* 6d 109 */  \
+    X(JUMPT)          /* 6e 110 */  \
+    X(JUMPT_B)        /* 6f 111 */  \
+    X(JUMPT_L)        /* 70 112 */  \
+    X(JUMPT_BL)       /* 71 113 */  \
+    X(JUMPATOM)       /* 72 114 */  \
+    X(JUMPATOM_B)     /* 73 115 */  \
+    X(JUMPATOM_L)     /* 74 116 */  \
+    X(JUMPATOM_BL)    /* 75 117 */  \
+    X(JUMPNATOM)      /* 76 118 */  \
+    X(JUMPNATOM_B)    /* 77 119 */  \
+    X(JUMPNATOM_L)    /* 78 120 */  \
+    X(JUMPNATOM_BL)   /* 79 121 */  \
+    X(JUMPEQ)         /* 7a 122 */  \
+    X(JUMPEQ_B)       /* 7b 123 */  \
+    X(JUMPEQ_L)       /* 7c 124 */  \
+    X(JUMPEQ_BL)      /* 7d 125 */  \
+    X(JUMPNE)         /* 7e 126 */  \
+    X(JUMPNE_B)       /* 7f 127 */  \
+    X(JUMPNE_L)       /* 80 128 */  \
+    X(JUMPNE_BL)      /* 81 129 */  \
+    X(JUMPEQUAL)      /* 82 130 */  \
+    X(JUMPEQUAL_B)    /* 83 131 */  \
+    X(JUMPEQUAL_L)    /* 84 132 */  \
+    X(JUMPEQUAL_BL)   /* 85 133 */  \
+    X(JUMPNEQUAL)     /* 86 134 */  \
+    X(JUMPNEQUAL_B)   /* 87 135 */  \
+    X(JUMPNEQUAL_L)   /* 88 136 */  \
+    X(JUMPNEQUAL_BL)  /* 89 137 */  \
+    X(JUMPL0NIL)      /* 8a 138 */  \
+    X(JUMPL0T)        /* 8b 139 */  \
+    X(JUMPL1NIL)      /* 8c 140 */  \
+    X(JUMPL1T)        /* 8d 141 */  \
+    X(JUMPL2NIL)      /* 8e 142 */  \
+    X(JUMPL2T)        /* 8f 143 */  \
+    X(JUMPL3NIL)      /* 90 144 */  \
+    X(JUMPL3T)        /* 91 145 */  \
+    X(JUMPL4NIL)      /* 92 146 */  \
+    X(JUMPL4T)        /* 93 147 */  \
+    X(JUMPST0NIL)     /* 94 148 */  \
+    X(JUMPST0T)       /* 95 149 */  \
+    X(JUMPST1NIL)     /* 96 150 */  \
+    X(JUMPST1T)       /* 97 151 */  \
+    X(JUMPST2NIL)     /* 98 152 */  \
+    X(JUMPST2T)       /* 99 153 */  \
+    X(JUMPL0ATOM)     /* 9a 154 */  \
+    X(JUMPL0NATOM)    /* 9b 155 */  \
+    X(JUMPL1ATOM)     /* 9c 156 */  \
+    X(JUMPL1NATOM)    /* 9d 157 */  \
+    X(JUMPL2ATOM)     /* 9e 158 */  \
+    X(JUMPL2NATOM)    /* 9f 159 */  \
+    X(JUMPL3ATOM)     /* a0 160 */  \
+    X(JUMPL3NATOM)    /* a1 161 */  \
+    X(JUMPFREE1NIL)   /* a2 162 */  \
+    X(JUMPFREE1T)     /* a3 163 */  \
+    X(JUMPFREE2NIL)   /* a4 164 */  \
+    X(JUMPFREE2T)     /* a5 165 */  \
+    X(JUMPFREE3NIL)   /* a6 166 */  \
+    X(JUMPFREE3T)     /* a7 167 */  \
+    X(JUMPFREE4NIL)   /* a8 168 */  \
+    X(JUMPFREE4T)     /* a9 169 */  \
+    X(JUMPFREENIL)    /* aa 170 */  \
+    X(JUMPFREET)      /* ab 171 */  \
+    X(JUMPLIT1EQ)     /* ac 172 */  \
+    X(JUMPLIT1NE)     /* ad 173 */  \
+    X(JUMPLIT2EQ)     /* ae 174 */  \
+    X(JUMPLIT2NE)     /* af 175 */  \
+    X(JUMPLIT3EQ)     /* b0 176 */  \
+    X(JUMPLIT3NE)     /* b1 177 */  \
+    X(JUMPLIT4EQ)     /* b2 178 */  \
+    X(JUMPLIT4NE)     /* b3 179 */  \
+    X(JUMPLITEQ)      /* b4 180 */  \
+    X(JUMPLITNE)      /* b5 181 */  \
+    X(JUMPB1NIL)      /* b6 182 */  \
+    X(JUMPB1T)        /* b7 183 */  \
+    X(JUMPB2NIL)      /* b8 184 */  \
+    X(JUMPB2T)        /* b9 185 */  \
+    X(JUMPFLAGP)      /* ba 186 */  \
+    X(JUMPNFLAGP)     /* bb 187 */  \
+    X(JUMPEQCAR)      /* bc 188 */  \
+    X(JUMPNEQCAR)     /* bd 189 */  \
+    X(CATCH)          /* be 190 */  \
+    X(CATCH_B)        /* bf 191 */  \
+    X(CATCH_L)        /* c0 192 */  \
+    X(CATCH_BL)       /* c1 193 */  \
+    X(UNCATCH)        /* c2 194 */  \
+    X(THROW)          /* c3 195 */  \
+    X(PROTECT)        /* c4 196 */  \
+    X(UNPROTECT)      /* c5 197 */  \
+    X(PVBIND)         /* c6 198 */  \
+    X(PVRESTORE)      /* c7 199 */  \
+    X(FREEBIND)       /* c8 200 */  \
+    X(FREERSTR)       /* c9 201 */  \
+    X(EXIT)           /* ca 202 */  \
+    X(NILEXIT)        /* cb 203 */  \
+    X(LOC0EXIT)       /* cc 204 */  \
+    X(LOC1EXIT)       /* cd 205 */  \
+    X(LOC2EXIT)       /* ce 206 */  \
+    X(PUSH)           /* cf 207 */  \
+    X(PUSHNIL)        /* d0 208 */  \
+    X(PUSHNIL2)       /* d1 209 */  \
+    X(PUSHNIL3)       /* d2 210 */  \
+    X(PUSHNILS)       /* d3 211 */  \
+    X(POP)            /* d4 212 */  \
+    X(LOSE)           /* d5 213 */  \
+    X(LOSE2)          /* d6 214 */  \
+    X(LOSE3)          /* d7 215 */  \
+    X(LOSES)          /* d8 216 */  \
+    X(SWOP)           /* d9 217 */  \
+    X(EQ)             /* da 218 */  \
+    X(EQCAR)          /* db 219 */  \
+    X(EQUAL)          /* dc 220 */  \
+    X(NUMBERP)        /* dd 221 */  \
+    X(CAR)            /* de 222 */  \
+    X(CDR)            /* df 223 */  \
+    X(CAAR)           /* e0 224 */  \
+    X(CADR)           /* e1 225 */  \
+    X(CDAR)           /* e2 226 */  \
+    X(CDDR)           /* e3 227 */  \
+    X(CONS)           /* e4 228 */  \
+    X(NCONS)          /* e5 229 */  \
+    X(XCONS)          /* e6 230 */  \
+    X(ACONS)          /* e7 231 */  \
+    X(LENGTH)         /* e8 232 */  \
+    X(LIST2)          /* e9 233 */  \
+    X(LIST2STAR)      /* ea 234 */  \
+    X(LIST3)          /* eb 235 */  \
+    X(PLUS2)          /* ec 236 */  \
+    X(ADD1)           /* ed 237 */  \
+    X(DIFFERENCE)     /* ee 238 */  \
+    X(SUB1)           /* ef 239 */  \
+    X(TIMES2)         /* f0 240 */  \
+    X(GREATERP)       /* f1 241 */  \
+    X(LESSP)          /* f2 242 */  \
+    X(FLAGP)          /* f3 243 */  \
+    X(GET)            /* f4 244 */  \
+    X(LITGET)         /* f5 245 */  \
+    X(GETV)           /* f6 246 */  \
+    X(QGETV)          /* f7 247 */  \
+    X(QGETVN)         /* f8 248 */  \
+    X(BIGSTACK)       /* f9 249 */  \
+    X(BIGCALL)        /* fa 250 */  \
+    X(ICASE)          /* fb 251 */  \
+    X(FASTGET)        /* fc 252 */  \
+    X(ONEVALUE)       /* fd 253 */  \
+    X(SPARE1)         /* fe 254 */  \
+    X(SPARE2)         /* ff 255 */
 
 // First I set up an enumeration defining names OP_LOADLOC and so on.
 

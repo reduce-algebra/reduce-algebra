@@ -8,7 +8,9 @@
 #elif defined __x86_64__
 
             case OP_PUSH:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.add(spreg, 8);
+                cc.mov(ptr(spreg), A_reg);
+                break;
 
 #elif defined __aarch64__
 

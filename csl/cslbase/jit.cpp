@@ -352,6 +352,7 @@ typedef a64::Gp Register;
 
     TRY
     {   size_t ppc = 0;
+        int next;
         while (ppc<len)
         {
 // Set a label on the code that derives from each opcode. Note that
