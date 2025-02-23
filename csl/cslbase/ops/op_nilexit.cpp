@@ -19,7 +19,9 @@
 #elif defined __aarch64__
 
             case OP_NILEXIT:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                cc.mov(A_reg, nilreg);
+                cc.b(returnA);
+                break;
 
 #else
             case OP_NILEXIT:

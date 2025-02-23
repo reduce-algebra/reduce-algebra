@@ -1,12 +1,10 @@
 I have added CYGWIN and MINGW32 to the set of OSes that support 64-bit
 file-offsets by default. This is just 2 extra lines ion core/api-build_p.h.
 I have done this because Cygwin does not provide either open64() or
-ftruncate64() and with the release version of asmjit without my patch an
-attempt is made to use them and asmjit does not build.
+ftruncate64() and the x86_64-w64-mingw32-g++ toolchain under Cygwin
+does not provide open64 but does have ftruncate64. So my patch leaves
+the mingw32 build using ftruncate where it might ideally use ftruncate64
+but I find it hard to believe that this will hurt me.
 
-I rather believe that I would be happier if rather than having an explicit
-catalogue of OSes there that cmake would check for the presence of eg
-open64 and only try to use it if it existed. But maybe that is because I
-am much more used to automake than to cmake...
 
 Arthur Norman. February 2025
