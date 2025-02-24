@@ -1374,7 +1374,6 @@ then
     ;;
   esac
   fi
-  cmake -DCMAKE_CXX_COMPILER="$CXX" \
   if test "$enable_debug" = "yes"
   then
     JITDEBUG="-DCMAKE_BUILD_TYPE=Debug"
