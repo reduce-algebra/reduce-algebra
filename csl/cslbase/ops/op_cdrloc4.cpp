@@ -5,7 +5,7 @@
                 B_reg = A_reg;
                 A_reg = stack[-4];
                 if (car_legal(A_reg)) A_reg = cdr(A_reg);
-                else
+                else 
                 {   A_reg = cdrerror(A_reg);
                     errexit();
                 }
@@ -14,7 +14,12 @@
 #elif defined __x86_64__
 
             case OP_CDRLOC4:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(B_reg, A_reg);
+                cc.mov(A_reg, ptr(spreg, -32));
+                cc.test(A_reg, 7);
+                cc.jne(cdrError);
+                cc.mov(A_reg, ptr(A_reg, 8));
+                break;
 
 #elif defined __aarch64__
 

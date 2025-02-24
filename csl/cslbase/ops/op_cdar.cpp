@@ -17,7 +17,13 @@
 #elif defined __x86_64__
 
             case OP_CDAR:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.test(A_reg, 7);
+                cc.jne(carError);
+                cc.mov(A_reg, ptr(A_reg));
+                cc.test(A_reg, 7);
+                cc.jne(cdrError);
+                cc.mov(A_reg, ptr(A_reg, 8));
+                break;
 
 #elif defined __aarch64__
 
