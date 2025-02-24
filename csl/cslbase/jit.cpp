@@ -64,10 +64,14 @@ struct JitFailed : public std::exception
     }
 };
 
+static bool testingForUnfinished = false;
+
 void unfinished(const char* msg)
-{   while (*msg != 0 &&
-           strncmp(msg, "ops/op", 6)!=0) msg++;
-    stdout_printf("\n+++ %s\n", msg+4);
+{   if (!testingForUnfinished)
+    {   while (*msg != 0 &&
+               strncmp(msg, "ops/op", 6)!=0) msg++;
+        stdout_printf("\n+++ %s\n", msg+4);
+    }
     THROW(JitFailed);
 }
 
@@ -145,8 +149,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     code.init(localEnv, rt.cpuFeatures());
     JitError jitError;
     code.setErrorHandler(&jitError);
-    Section* text = code.textSection();
-    Section* data;
+    [[maybe_unused]] Section* text = code.textSection();
+    [[maybe_unused]] Section* data;
     if (code.newSection(&data,
                         ".data",
                         SIZE_MAX,
@@ -160,8 +164,18 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     FileLogger logger(stdout);
     code.setLogger(&logger);
 
+// By introducing a type "Register" that is a general purpose register on
+// my host machine I can keep one copy of code where at one stage I had
+// been going to have essentially two copies.
 #if defined __x86_64__
     auto cc = x86::Compiler(&code);
+typedef x86::Gp Register;
+#elif defined __aarch64__
+    auto cc = a64::Compiler(&code);
+typedef a64::Gp Register;
+#else
+#error unrecognised architecture for JIT
+#endif
 // Here I need to specify the type signature of the function that I am
 // creating and associate some names with the arguments it will receive.
 // The function I am defining will have min(nargs+1, 5) arguments
@@ -177,9 +191,27 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //       *stack++ = a2;
 // and then set things up so that when the function terminates that
 // stack is set back to its initial value.
-    FuncNode* funcNode;
 // I will set up enough registers for up to 10 arguments but in most cases
 // almost all of those will not be used.
+    Register litvec = cc.newIntPtr("litvec");
+    Register argregs[16];
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = cc.newIntPtr("a1");
+    Register w      = cc.newIntPtr("w");
+    Register w1     = cc.newIntPtr("w1");
+// I also need to registers for the things that the JITed code will do
+    Register A_reg  = cc.newIntPtr("A_reg");
+    [[maybe_unused]] Register B_reg  = cc.newIntPtr("B_reg");
+// Througout the JIT body I will keep a copy of the C++ variable "stack"
+// in a register. But I will write it back before calling a function from
+// the JIT code.
+    Register spaddr  = cc.newIntPtr("spaddr");
+    Register spreg   = cc.newIntPtr("spreg");
+    Register spentry = cc.newIntPtr("spentry");
+    Register niladdr = cc.newIntPtr("niladdr");
+    Register nilreg  = cc.newIntPtr("nilreg");
+    [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
+
 // The check for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
 // Ditto cases where I call a sub-function which may fail, and so I need
@@ -196,27 +228,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     std::vector<Label> perInstruction;
     for (size_t i=0; i<len; i++)
         perInstruction.push_back(cc.newLabel());
-    x86::Gp litvec = cc.newIntPtr("litvec");
-    x86::Gp argregs[16];
-    for (size_t i=1; i<=15; i++)
-        argregs[i] = cc.newIntPtr("a1");
-    x86::Gp w      = cc.newIntPtr("w");
-    x86::Gp w1     = cc.newIntPtr("w1");
-// I also need to registers for the things that the JITed code will do
-    x86::Gp A_reg  = cc.newIntPtr("A_reg");
-    x86::Gp B_reg  = cc.newIntPtr("B_reg");
-// Througout the JIT body I will keep a copy of the C++ variable "stack"
-// in a register. But I will write it back before calling a function from
-// the JIT code.
-    x86::Gp spaddr  = cc.newIntPtr("spaddr");
-    x86::Gp spreg   = cc.newIntPtr("spreg");
-    x86::Gp spentry = cc.newIntPtr("spentry");
-    x86::Gp niladdr = cc.newIntPtr("niladdr");
-    x86::Gp nilreg  = cc.newIntPtr("nilreg");
-    x86::Gp fptr    = cc.newIntPtr("fptr");
 // I will be compiling functions with various numbers of arguments. Here I
 // need to set up a suitable function signature and associate asmjit registers
 // with all of the arguments.
+    FuncNode* funcNode;
     switch (nargs)
     {
     case 0:
@@ -261,6 +276,11 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         break;
     }
     cc.addFunc(funcNode);
+
+// Now I initialise some registers and put arguments on the Lisp stack. The
+// logic is the same on all platforms, but the instructions available to
+// do things differ.
+#ifdef __x86_64
 // Load the register "spaddr" to be the address of the C++ variable
 // "stack", and spreg to hold its value. And rather similarly for nil.
     cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
@@ -300,55 +320,43 @@ void* jitcompile(const unsigned char* bytes, size_t len,
             cc.mov(ptr(spreg), argregs[i]);
         }
     }
-    
 #elif defined __aarch64__
-    auto cc = a64::Compiler(&code);
-    a64::Gp litvec = cc.newIntPtr("litvec");
-    a64::Gp argregs[16];
-    for (size_t i=1; i<=15; i++)
-        argregs[i] = cc.newIntPtr("a1");
-    a64::Gp w      = cc.newIntPtr("w");
-    a64::Gp w1     = cc.newIntPtr("w1");
-// I also need to registers for the things that the JITed code will do
-    a64::Gp A_reg  = cc.newIntPtr("A_reg");
-    a64::Gp B_reg  = cc.newIntPtr("B_reg");
-// Througout the JIT body I will keep a copy of the C++ variable "stack"
-// in a register. But I will write it back before calling a function from
-// the JIT code.
-    a64::Gp spaddr  = cc.newIntPtr("spaddr");
-    a64::Gp spreg   = cc.newIntPtr("spreg");
-    a64::Gp spentry = cc.newIntPtr("spentry");
-    a64::Gp niladdr = cc.newIntPtr("niladdr");
-    a64::Gp nilreg  = cc.newIntPtr("nilreg");
-    a64::Gp fptr    = cc.newIntPtr("fptr");
-// The check for the right number of arguments when there are more than
-// 3 has to be dynamic, so I must be ready to return with a failure response.
-// Ditto cases where I call a sub-function which may fail, and so I need
-// to propagate the failure. I also have a single label for use returning
-// the value in the A register, and a vector of labels where I set one
-// on the expansion of each bytecode so that if there is a branch to
-// it I can handle that.
-    Label tooFewArgs  = cc.newLabel();
-    Label tooManyArgs = cc.newLabel();
-    Label callFailed  = cc.newLabel();
-    Label returnA     = cc.newLabel();
-// I am going to set a label on the code that corresponds to each bytecode
-// so that I can handle the jumps there.
-    std::vector<Label> perInstruction;
-    for (size_t i=0; i<len; i++)
-        perInstruction.push_back(cc.newLabel());
-
-#pragma message "Much not done here yet"
+// Load the register "spaddr" to be the address of the C++ variable
+// "stack", and spreg to hold its value. And rather similarly for nil.
+    cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
+    cc.ldr(spreg, ptr(spaddr));
+    cc.mov(spentry, spreg);
+    cc.mov(niladdr, reinterpret_cast<uintptr_t>(&nil));
+    cc.ldr(nilreg, ptr(niladdr));
+    cc.mov(A_reg, nilreg);
+// On the arm I can use an addressing node that offsets from the
+// base register that is used and then updates the register. So I do not
+// need the "add" that you saw in the x86_64 version.
+    for (int i=1; i<=nargs&&i<4; i++)
+    {   cc.str(argregs[i], ptr_pre(spreg, 8));
+        stdout_printf("Just moved arg %d to stack\n", i);
+    }
+    if (nargs>=4)
+    {   cc.mov(w1, w);
+        for (int i=4; i<=nargs; i++)
+        {   cc.tst(w1, 7);
+            cc.b_ne(tooFewArgs);
+            cc.ldr(argregs[i], ptr(w1));
+            if (i!=nargs) cc.ldr(w1, ptr(w1, 8));
+// I suppose I should really look to see if I had been given too many args!
+            cc.str(argregs[i], ptr_pre(spreg));
+        }
+    }
 #else
-#error unrecognised platform
+#error unrecognised architecture for JIT
 #endif
-
 
 // The part from HERE will be to a large extent platform independent
 // in this file, but the #included files all discrimate on x86_64 vs aarch64.
 
     TRY
     {   size_t ppc = 0;
+        int next;
         while (ppc<len)
         {
 // Set a label on the code that derives from each opcode. Note that
@@ -375,6 +383,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Not implemented yet!
     cc.bind(callFailed);
 // Not implemented yet!
+
     cc.bind(returnA);
     cc.ret(A_reg);
 
@@ -398,6 +407,74 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     return func;
 }
 
+// This is to report on the bytecodes that are not at present implemented
+// in the JIT. It does this by passing each opcode byte in turn through the
+// generation process and trapping if the "unsupported" exception is
+// raising. While it is doing this it will emit some utter junk by way of
+// generated code - but to do that it needs registers etc set up as if it
+// was being used sensibly.
+
+LispObject Ljit_unfinished(LispObject env)
+{   int numberUnfinished = 0;
+    CodeHolder code;
+    Environment localEnv = rt.environment();;
+    code.init(localEnv, rt.cpuFeatures());
+    JitError jitError;
+    code.setErrorHandler(&jitError);
+#if defined __x86_64__
+    auto cc = x86::Compiler(&code);
+typedef x86::Gp Register;
+#elif defined __aarch64__
+    auto cc = a64::Compiler(&code);
+typedef a64::Gp Register;
+#endif
+    [[maybe_unused]] Register litvec = cc.newIntPtr("litvec");
+    [[maybe_unused]] Register argregs[16];
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = cc.newIntPtr("a1");
+    [[maybe_unused]] Register w      = cc.newIntPtr("w");
+    [[maybe_unused]] Register w1     = cc.newIntPtr("w1");
+// I also need to registers for the things that the JITed code will do
+    [[maybe_unused]] Register A_reg  = cc.newIntPtr("A_reg");
+    [[maybe_unused]] Register B_reg  = cc.newIntPtr("B_reg");
+// Througout the JIT body I will keep a copy of the C++ variable "stack"
+// in a register. But I will write it back before calling a function from
+// the JIT code.
+    [[maybe_unused]] Register spaddr  = cc.newIntPtr("spaddr");
+    [[maybe_unused]] Register spreg   = cc.newIntPtr("spreg");
+    [[maybe_unused]] Register spentry = cc.newIntPtr("spentry");
+    [[maybe_unused]] Register niladdr = cc.newIntPtr("niladdr");
+    [[maybe_unused]] Register nilreg  = cc.newIntPtr("nilreg");
+    [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
+    [[maybe_unused]] Label callFailed  = cc.newLabel();
+    [[maybe_unused]] Label returnA     = cc.newLabel();
+    [[maybe_unused]] std::vector<Label> perInstruction;
+    for (size_t i=0; i<256; i++)
+        perInstruction.push_back(cc.newLabel());
+    [[maybe_unused]] unsigned char bytes[256];
+    [[maybe_unused]] int ppc = 0, next;
+    testingForUnfinished = true;
+    for (unsigned int code=0; code<256; code++)
+    {   TRY
+        {   switch (code)
+            {
+#include "ops/bytes_include.cpp"
+            }
+        }
+        CATCH (JitFailed)
+        {   stdout_printf("Code %.2x (%3d) %s\n", code, code, opnames[code]);
+            numberUnfinished++;
+        }
+    }
+    END_CATCH;
+    testingForUnfinished = false;
+// In reporting the number of cases I still have to do I will discount
+// the 2 opcodes that are currently spare.
+    stdout_printf("%d bytecodes handled so %d to go\n",
+                  256-numberUnfinished, numberUnfinished-2);
+    return nil;
+}
+
 #else // ENABLE_JIT
 
 // The functions here are no use, but are provided so that image files
@@ -406,6 +483,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 
 void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
 {   return nullptr;
+}
+
+LispObject Ljit_unfinished(LispObject env)
+{   return nil;
 }
 
 #endif // ENABLE_JIT

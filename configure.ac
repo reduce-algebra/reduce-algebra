@@ -1374,13 +1374,15 @@ then
     ;;
   esac
   fi
-  cmake -DASMJIT_STATIC=TRUE \
-	$TOOLCHAIN \
-        -DCMAKE_CXX_COMPILER="$CXX" \
+  cmake -DCMAKE_CXX_COMPILER="$CXX" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DCMAKE_INSTALL_PREFIX:PATH=$builddir \
+        $TOOLCHAIN \
+        -DASMJIT_STATIC=TRUE \
+	-DCMAKE_INSTALL_PREFIX:PATH=$builddir \
         -DCMAKE_INSTALL_LIBDIR=lib \
         $abssrcdir/libraries/asmjit
+  CFLAGS="$CXXFLAGS -DASMJIT_STATIC=true"
+  CXXFLAGS="$CXXFLAGS -DASMJIT_STATIC=true"
   cd "$builddir"
 fi
 

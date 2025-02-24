@@ -8,7 +8,8 @@
 #elif defined __x86_64__
 
             case OP_STORELOC6:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(ptr(spreg, -48*next), A_reg);
+                break;
 
 #elif defined __aarch64__
 

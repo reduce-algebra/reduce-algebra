@@ -887,7 +887,7 @@ inline bool exceptionPending()
 
 // jitexception is used as a flag but I make it a 64-bit integer so that I
 // do not have to wonder just how much memory your C++ compiler allocates
-// to store a bool. My exception abstraction arrannges that its value is
+// to store a bool. My exception abstraction arranges that its value is
 // nonzero whenever an exception is active. If "real" exceptions are in
 // play I will sometimes put a value on jitexception_ptr to record
 // the precise exception that is current.
@@ -896,7 +896,23 @@ inline bool exceptionPending()
 inline std::exception_ptr jitexception_ptr;
 #endif // NO
 
-inline LispObject jitshim(no_args* FF, LispObject env)
+// I will only implement variants of "jitshim" that I think the JIT
+// compiler will really want.
+typedef LispObject (*func0)();
+typedef LispObject (*func1)(LispObject);
+typedef LispObject (*func2)(LispObject,LispObject);
+typedef LispObject (*func3)(LispObject,LispObject,LispObject);
+typedef LispObject (*func4)(LispObject,LispObject,LispObject,LispObject);
+typedef LispObject (*func5)(LispObject,LispObject,LispObject,
+                            LispObject,LispObject);
+typedef LispObject (*func6)(LispObject,LispObject,LispObject,
+                            LispObject,LispObject,LispObject);
+typedef LispObject (*errfunc0)(const char*);
+typedef LispObject (*errfunc1)(const char*,LispObject);
+typedef LispObject (*errfunc2)(const char*,LispObject,LispObject);
+typedef LispObject (*errfunc2s)(const char*,const char*,LispObject);
+
+inline LispObject jitshim(func1* FF, LispObject env)
 {   LispObject r;
     TRY
 // I will call FF(env) and use C++ facilities to catch any exceptions
@@ -951,7 +967,7 @@ inline void jitpropagate()
 
 // I now need variants of jitshim passing various numbers of arguments.
 
-inline LispObject jitshim(one_arg* FF, LispObject env, LispObject a1)
+inline LispObject jitshim(func2* FF, LispObject env, LispObject a1)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1);
@@ -966,8 +982,8 @@ inline LispObject jitshim(one_arg* FF, LispObject env, LispObject a1)
     return r;
 }
 
-inline LispObject jitshim(two_args* FF, LispObject env, LispObject a1,
-                          LispObject a2)
+inline LispObject jitshim(func3* FF, LispObject env,
+                          LispObject a1, LispObject a2)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2);
@@ -982,7 +998,7 @@ inline LispObject jitshim(two_args* FF, LispObject env, LispObject a1,
     return r;
 }
 
-inline LispObject jitshim(three_args* FF, LispObject env, LispObject a1,
+inline LispObject jitshim(func4* FF, LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
 {   LispObject r;
     TRY
@@ -998,7 +1014,7 @@ inline LispObject jitshim(three_args* FF, LispObject env, LispObject a1,
     return r;
 }
 
-inline LispObject jitshim(fourup_args* FF, LispObject env, LispObject a1,
+inline LispObject jitshim(func5* FF, LispObject env, LispObject a1,
                           LispObject a2, LispObject a3, LispObject a4up)
 {   LispObject r;
     TRY
