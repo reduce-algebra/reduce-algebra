@@ -64,10 +64,14 @@ struct JitFailed : public std::exception
     }
 };
 
+static bool testingForUnfinished = false;
+
 void unfinished(const char* msg)
-{   while (*msg != 0 &&
-           strncmp(msg, "ops/op", 6)!=0) msg++;
-    stdout_printf("\n+++ %s\n", msg+4);
+{   if (!testingForUnfinished)
+    {   while (*msg != 0 &&
+               strncmp(msg, "ops/op", 6)!=0) msg++;
+        stdout_printf("\n+++ %s\n", msg+4);
+    }
     THROW(JitFailed);
 }
 
@@ -146,7 +150,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     JitError jitError;
     code.setErrorHandler(&jitError);
     [[maybe_unused]] Section* text = code.textSection();
-    [[maybe_unused]]  Section* data;
+    [[maybe_unused]] Section* data;
     if (code.newSection(&data,
                         ".data",
                         SIZE_MAX,
@@ -403,6 +407,74 @@ typedef a64::Gp Register;
     return func;
 }
 
+// This is to report on the bytecodes that are not at present implemented
+// in the JIT. It does this by passing each opcode byte in turn through the
+// generation process and trapping if the "unsupported" exception is
+// raising. While it is doing this it will emit some utter junk by way of
+// generated code - but to do that it needs registers etc set up as if it
+// was being used sensibly.
+
+LispObject Ljit_unfinished(LispObject env)
+{   int numberUnfinished = 0;
+    CodeHolder code;
+    Environment localEnv = rt.environment();;
+    code.init(localEnv, rt.cpuFeatures());
+    JitError jitError;
+    code.setErrorHandler(&jitError);
+#if defined __x86_64__
+    auto cc = x86::Compiler(&code);
+typedef x86::Gp Register;
+#elif defined __aarch64__
+    auto cc = a64::Compiler(&code);
+typedef a64::Gp Register;
+#endif
+    [[maybe_unused]] Register litvec = cc.newIntPtr("litvec");
+    [[maybe_unused]] Register argregs[16];
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = cc.newIntPtr("a1");
+    [[maybe_unused]] Register w      = cc.newIntPtr("w");
+    [[maybe_unused]] Register w1     = cc.newIntPtr("w1");
+// I also need to registers for the things that the JITed code will do
+    [[maybe_unused]] Register A_reg  = cc.newIntPtr("A_reg");
+    [[maybe_unused]] Register B_reg  = cc.newIntPtr("B_reg");
+// Througout the JIT body I will keep a copy of the C++ variable "stack"
+// in a register. But I will write it back before calling a function from
+// the JIT code.
+    [[maybe_unused]] Register spaddr  = cc.newIntPtr("spaddr");
+    [[maybe_unused]] Register spreg   = cc.newIntPtr("spreg");
+    [[maybe_unused]] Register spentry = cc.newIntPtr("spentry");
+    [[maybe_unused]] Register niladdr = cc.newIntPtr("niladdr");
+    [[maybe_unused]] Register nilreg  = cc.newIntPtr("nilreg");
+    [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
+    [[maybe_unused]] Label callFailed  = cc.newLabel();
+    [[maybe_unused]] Label returnA     = cc.newLabel();
+    [[maybe_unused]] std::vector<Label> perInstruction;
+    for (size_t i=0; i<256; i++)
+        perInstruction.push_back(cc.newLabel());
+    [[maybe_unused]] unsigned char bytes[256];
+    [[maybe_unused]] int ppc = 0, next;
+    testingForUnfinished = true;
+    for (unsigned int code=0; code<256; code++)
+    {   TRY
+        {   switch (code)
+            {
+#include "ops/bytes_include.cpp"
+            }
+        }
+        CATCH (JitFailed)
+        {   stdout_printf("Code %.2x (%3d) %s\n", code, code, opnames[code]);
+            numberUnfinished++;
+        }
+    }
+    END_CATCH;
+    testingForUnfinished = false;
+// In reporting the number of cases I still have to do I will discount
+// the 2 opcodes that are currently spare.
+    stdout_printf("%d bytecodes handled so %d to go\n",
+                  256-numberUnfinished, numberUnfinished-2);
+    return nil;
+}
+
 #else // ENABLE_JIT
 
 // The functions here are no use, but are provided so that image files
@@ -411,6 +483,10 @@ typedef a64::Gp Register;
 
 void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
 {   return nullptr;
+}
+
+LispObject Ljit_unfinished(LispObject env)
+{   return nil;
 }
 
 #endif // ENABLE_JIT
