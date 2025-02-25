@@ -16,7 +16,7 @@
             case OP_LOADLIT:
                 next = bytes[ppc++];
                 cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 8*next+8-TAG_VECTOR));
+                cc.mov(A_reg, ptr(litvec, 8*next+CELL-TAG_VECTOR));
                 break;
 
 #elif defined __aarch64__

@@ -9,7 +9,7 @@
 #elif defined __x86_64__
 
             case OP_LOADLIT7:
-                cc.mov(A_reg, ptr(litvec, 56+8-TAG_VECTOR));
+                cc.mov(A_reg, ptr(litvec, 56+CELL-TAG_VECTOR));
                 break;
 
 #elif defined __aarch64__

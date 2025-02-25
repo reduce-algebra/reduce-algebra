@@ -222,6 +222,8 @@ typedef a64::Gp Register;
     Label tooFewArgs  = cc.newLabel();
     Label tooManyArgs = cc.newLabel();
     Label callFailed  = cc.newLabel();
+    Label carError    = cc.newLabel();
+    Label cdrError    = cc.newLabel();
     Label returnA     = cc.newLabel();
 // I am going to set a label on the code that corresponds to each bytecode
 // so that I can handle the jumps there.
@@ -377,12 +379,13 @@ typedef a64::Gp Register;
     END_CATCH;
 
     stdout_printf("Set the labels that I ought to\n");
+// There are labels here for error exits. At present I do not handle the
+// errors!
     cc.bind(tooFewArgs);
-// Not implemented yet!
     cc.bind(tooManyArgs);
-// Not implemented yet!
     cc.bind(callFailed);
-// Not implemented yet!
+    cc.bind(carError);
+    cc.bind(cdrError);
 
     cc.bind(returnA);
     cc.ret(A_reg);
@@ -447,6 +450,8 @@ typedef a64::Gp Register;
     [[maybe_unused]] Register nilreg  = cc.newIntPtr("nilreg");
     [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
     [[maybe_unused]] Label callFailed  = cc.newLabel();
+    [[maybe_unused]] Label carError    = cc.newLabel();
+    [[maybe_unused]] Label cdrError    = cc.newLabel();
     [[maybe_unused]] Label returnA     = cc.newLabel();
     [[maybe_unused]] std::vector<Label> perInstruction;
     for (size_t i=0; i<256; i++)

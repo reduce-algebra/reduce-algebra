@@ -1374,9 +1374,16 @@ then
     ;;
   esac
   fi
-  cmake -DCMAKE_CXX_COMPILER="$CXX" \
+  if test "$enable_debug" = "yes"
+  then
+    JITDEBUG="-DCMAKE_BUILD_TYPE=Debug"
+  else
+    JITDEBUG=""
+  fi
+  cmake -DASMJIT_STATIC=TRUE \
+	$TOOLCHAIN $JITDEBUG \
+        -DCMAKE_CXX_COMPILER="$CXX" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        $TOOLCHAIN \
         -DASMJIT_STATIC=TRUE \
 	-DCMAKE_INSTALL_PREFIX:PATH=$builddir \
         -DCMAKE_INSTALL_LIBDIR=lib \

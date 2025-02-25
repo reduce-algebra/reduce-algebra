@@ -10,7 +10,7 @@
 
             case OP_LOADLIT2:
                 cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 16+8-TAG_VECTOR));
+                cc.mov(A_reg, ptr(litvec, 16+CELL-TAG_VECTOR));
                 break;
 
 #elif defined __aarch64__
