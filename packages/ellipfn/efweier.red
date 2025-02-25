@@ -384,7 +384,7 @@ if impart (w3/w1) = 0 then rederr
    ("Ratio of the period parameters of the lattice must be complex")
 else begin scalar res, oldprec;
   oldprec := precision(0);
-  precision max(oldprec+3, 15);
+  precision max(oldprec+4, 16);
   res := l_roots(w1,w3);
   precision oldprec;
   return res;
@@ -406,7 +406,7 @@ if impart (w3/w1) = 0 then rederr
    ("Ratio of the period parameters of the lattice must be complex")
 else begin scalar res, oldprec;
   oldprec := precision(0);
-  precision max(oldprec+3, 15);
+  precision max(oldprec+4, 16);
   res := l_invariants(w1,w3);
   precision oldprec;
   return res;
@@ -522,7 +522,7 @@ if impart (w3/w1) = 0 then rederr
    ("Ratio of the period parameters of the lattice must be complex")
 else begin scalar res, oldprec;
   oldprec := precision(0);
-  precision max(oldprec+3, 15);
+  precision max(oldprec+4, 16);
   res := num_qpf(w1,w3);
   precision oldprec;
   return res;
@@ -690,7 +690,7 @@ begin scalar res, oldprec;
     rederr("The discriminant of the invariants is zero.");
 
   oldprec := precision(0);
-  precision max(oldprec+3, 15);
+  precision max(oldprec+4, 16);
   res := num_omegas(g2,g3);
   precision oldprec;
   return res;

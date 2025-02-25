@@ -93,16 +93,6 @@ begin scalar n, pow, term, total, tol, m, bound, f, kp, kk, q;
     return total;
 end;    
 
-%This computes the Amplitude of u.
-
-procedure num_jacobiam(u,m);
-   % produces results in agreement with Fourier Series method for
-   % real arguments and also when Im u is small.
-   % Moreover sn(u,k) = sin am(u,k) holds in these cases
-   % However this identity fails for larger  ie. Im u > K'
-   % Also rounding errors become large when Im u is near to K'
-     first phi_function(1,sqrt(1-m^2),m,u);
-
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 jacobiamrules :=
@@ -259,8 +249,8 @@ jacobicnrules :=
 
 %Calls Num_Jacobicn when rounded switch is on.
 %---------------------------------------------
-        jacobicn(~u,~m) => num_elliptic(num_jacobicn, u, m)
-	   when lisp !*rounded and numberp u and numberp m
+        jacobicn(~u,~k) => num_elliptic(num_jacobicn, u, k)
+	   when lisp !*rounded and numberp u and numberp k
 
 }$
 let jacobicnrules;
@@ -460,7 +450,6 @@ jacobisdrules :=
          jacobidn(u,k)*jacobisn(u,k)*k^2)/(jacobidn(u,k)^2*k*(1-k^2))),
 	
    int(jacobisd(~u,~m),~u) => -asin(m*jacobicd(u,m))/(m*sqrt(1-m^2)),
-
 %Calls Num_Jacobisd when rounded switch is on.
 %---------------------------------------------
         jacobisd(~u,~m) => num_elliptic(num_jacobisd, u, m)
@@ -939,141 +928,337 @@ algebraic procedure k2tau(k);
       rederr("tau not defined when k=0, +1 or -1")
    else i*ellipticK!'(k)/ellipticK(k);
 
-% The following need switches rounded and complex to be ON
-% %%%%%%%%%%%%%%%%%%%%%%%%% MORE CHECKING NEEDED %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  NUMERICAL EVALUATION with ROUNDED ON
+
+algebraic procedure num_jacobiam(x,k);
+   if k = 0 then x
+   else if k=1 or k=-1 then asin tanh x
+   else if impart x=0 and impart k =0 and abs k <1 then <<
+      symbolic off1 'complex;
+      jacobiam_r(x,k)>>
+   else jacobiam_c(x,k);
+
 algebraic procedure num_jacobisn(x,k);
    if k = 0 then sin x
    else if k=1 or k=-1 then tanh x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return t3*num1_theta1(y,tau)/
-	        (num1_theta2(0,tau)*num1_theta4(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then <<
+      symbolic off1 'complex;
+      jacobisn_r(x,k)>>
+   else jacobisn_c(x,k);
 
 algebraic procedure num_jacobins(x,k);
    if k = 0 then csc x
    else if k=1 or k=-1 then coth x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return num1_theta2(0,tau)*num1_theta4(y,tau)/
-	        (t3*num1_theta1(y,tau));
-   end;
-
+   else if impart x=0 and impart k =0 and abs k <1 then<<
+      symbolic off1 'complex;
+      1/jacobisn_r(x,k)>>
+   else jacobins_c(x,k);
+      
 algebraic procedure num_jacobicn(x,k);
    if k = 0 then cos x
    else if k=1 or k=-1 then sech x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return num1_theta4(0,tau)*num1_theta2(y,tau)/
-                (num1_theta2(0,tau)*num1_theta4(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then jacobicn_r(x,k)
+   else jacobicn_c(x,k);
 
 algebraic procedure num_jacobinc(x,k);
    if k = 0 then sec x
    else if k=1 or k=-1 then cosh x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return num1_theta2(0,tau)*num1_theta4(y,tau)/
-               (num1_theta4(0,tau)*num1_theta2(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then <<
+      symbolic off1 'complex;
+      1/jacobicn_r(x,k)>>
+   else jacobicn_c(x,k);
 
 algebraic procedure num_jacobidn(x,k);
    if k = 0 then 1
    else if k=1 or k=-1 then sech x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return num1_theta4(0,tau)*num1_theta3(y,tau)/
-                 (t3*num1_theta4(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then <<
+      symbolic off1 'complex;
+      jacobidn_r(x,k)>>
+   else jacobidn_c(x,k);
 
 algebraic procedure num_jacobind(x,k);
    if k = 0 then 1
    else if k=1 or k=-1 then cosh x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return t3*num1_theta4(y,tau)/
-               (num1_theta4(0,tau)*num1_theta3(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then <<
+      symbolic off1 'complex;
+      1/jacobidn_r(x,k)>>
+   else jacobind_c(x,k);
 
 algebraic procedure num_jacobisc(x,k);
    if k = 0 then tan x
    else if k=1 or k=-1 then sinh x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return t3*num1_theta1(y,tau)/
-	        (num1_theta4(0,tau)*num1_theta2(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then <<
+      symbolic off1 'complex;
+      jacobisc_r(x,k)>>
+   else jacobisc_c(x,k);
 
 algebraic procedure num_jacobics(x,k);
   if k = 0 then cot x
    else if k=1 or k=-1 then csch x
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return num1_theta4(0,tau)*num1_theta2(y,tau)/
-	        (t3*num1_theta1(y,tau));
-   end;
+   else if impart x=0 and impart k =0 and abs k <1 then jacobics_r(x,k)
+   else jacobics_c(x,k);
 
 algebraic procedure num_jacobisd(x,k);
   if k = 0 then sin x
    else if k=1 or k=-1 then sinh x
-   else if impart k = 0 and impart x = 0 and abs k <1 then
-      num_jacobisd1(x,k)  % use old AGM-based method
-   else begin scalar tau, t32, y;
-      tau := k2tau(k);
-      t32 := num1_theta3(0,tau)^2;
-      y := x/t32;
-      return t32*num1_theta1(y,tau)/
-               (num1_theta4(0,tau)*num1_theta2(0,tau)*num1_theta3(y,tau));
-   end;
+   else if impart x=0 and impart k= 0 and abs k <1 then <<
+      symbolic off1 'complex;
+      jacobisd_r(x,k)>>
+   else jacobisd_c(x,k);
 
 algebraic procedure num_jacobids(x,k);
   if k = 0 then csc x
    else if k=1 or k=-1 then csch x
-   else begin scalar tau, t32, y;
-      tau := k2tau(k);
-      t32 := num1_theta3(0,tau)^2;
-      y := x/t32;
-      return num1_theta4(0,tau)*num1_theta2(0,tau)*num1_theta3(y,tau)/
-                 (t32*num1_theta1(y,tau));
-   end;
+   else if impart x=0 and impart k= 0 and abs k <1 then <<
+      symbolic off1 'complex;
+      1/jacobisd_r(x,k)>>
+   else jacobids_c(x,k);
 
 algebraic procedure num_jacobicd(x,k);
   if k = 0 then cos x
-   else if k=1 or k=-1 then 1
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return t3*num1_theta2(y,tau)/
-	        (num1_theta2(0,tau)*num1_theta3(y,tau));
-   end;
+  else if k=1 or k=-1 then 1
+  else if impart x=0 and impart k= 0 and abs k <1 then <<
+      symbolic off1 'complex;
+     jacobicd_r(x,k)>>
+  else jacobicd_c(x,k);
 
 algebraic procedure num_jacobidc(x,k);
   if k = 0 then sec x
    else if k=1 or k=-1 then 1
-   else begin scalar tau, t3, y;
-      tau := k2tau(k);
-      t3 := num1_theta3(0,tau);
-      y := x/t3^2;
-      return num1_theta2(0,tau)*num1_theta3(y,tau)/
-	        (t3*num1_theta2(y,tau));
+   else if impart x=0 and impart k= 0 and abs k <1 then <<
+      symbolic off1 'complex;
+      1/jacobicd_r(x,k)>>
+   else jacobidc_c(x,k);
+
+% ########## The following require k real and abs k <1 ################
+
+% JACOBIAM
+procedure jacobiam_r(u,k);
+   % produces results in agreement with Fourier Series method for
+   % real arguments and also when Im u is small.
+   % Moreover sn(u,k) = sin am(u,k) holds in these cases
+   % However this identity fails for larger  ie. Im u > K'
+   % Also rounding errors become large when Im u is near to K'
+     first phi_function(1,sqrt(1-k^2),k,u);
+
+% JACOBISN
+procedure jacobisn_r(u,k);
+    sin first phi_function(1,sqrt(1-k^2),k,u);
+
+% JACOBICN
+procedure jacobicn_r(u,k);
+    cos first phi_function(1,sqrt(1-k^2),k,u);
+
+%JACOBIDN 
+procedure jacobidn_r(u,k);
+   begin scalar phi, phi0,  phi1, denom;
+        phi  := phi_function(1,sqrt(1-k^2),k,u);
+        phi0 := first phi;
+        phi1 := second phi;
+        denom := cos(phi1 - phi0);
+
+        if denom < 10.0^(-(symbolic !:prec!:)) then  return otherdn(u,k)
+        else return cos(phi0)/denom;
    end;
+
+% OTHERDN
+procedure otherdn(u,k);
+   begin scalar mu, m, dn;
+        k := sqrt(1-k^2);
+        mu := (1-k) / (1+k)^2;
+	m := sqrt mu;
+        u  := u / (1+m);
+        a := approx(u,mu)^2;
+        dn := (a-1+m)/ (1+m-a);
+        return dn
+   end;
+
+procedure approx(u,k);
+ 1 - (1/2)*k^2*(sin(u))^2;
+
+% JACOBICD
+procedure jacobicd_r(u,k);
+   begin scalar phi, phi0,  phi1, dendn;
+        phi  := phi_function(1,sqrt(1-k^2),k,u);
+        phi0 := first phi;
+        phi1 := second phi;
+        dendn := cos(phi1 - phi0);
+
+        if dendn < 10.0^(-(symbolic !:prec!:)) then
+	   return cos(phi0)/otherdn(u,k)
+        else return dendn;
+   end;
+
+% JACOBISC
+procedure jacobisc_r(u,k);
+    tan first phi_function(1,sqrt(1-k^2),k,u);
+
+% JACOBICS
+procedure jacobics_r(u,k);
+    cot first phi_function(1,sqrt(1-k^2),k,u);
+
+% JACOBISD
+procedure jacobisd_r(u,k);
+   begin scalar phi, phi0,  phi1, denom, jdn;
+        phi  := phi_function(1,sqrt(1-k^2),k,u);
+        phi0 := first phi;
+        phi1 := second phi;
+        denom := cos(phi1 - phi0);
+
+        if denom < 10.0^(-(symbolic !:prec!:)) then  jdn := otherdn(u,k)
+        else jdn := cos(phi0)/denom;
+	return sin(phi0)/jdn;
+   end;
+
+% The following also  need  COMPLEX to be ON
+
+procedure jacobiam_c(z, k);
+   % computes Jacobi Amplitude from its Fourier series
+   % It fails to converge if Im z is not small -- if q*exp(2*abs Imz) >1
+   % which is equivalent to Im z > K'.
+   % Rounding errors are  large near to this limiting value
+begin scalar n, pow, term, total, tol, m, bound, f, kp, kk, q;
+   tol := 10.0^-(symbolic !:prec!:);
+   kp := num_ellkc(k);
+   kk := num_ellk(k);
+   q := exp(-pi*kp/kk);
+   z := pi*z/(2*kk);
+   n := 1;
+   total := z;
+   bound := exp abs impart z;
+   f := bound^2;
+    % abs sin(2nz) <= exp (2n abs Im z)
+    repeat <<
+       pow := q^n;
+       pow := pow/(n*(1+pow^2));
+       term := 2*pow*sin(2*n*z);
+       total := total + term;
+       n := n+1;
+       bound := bound * f;
+       m :=  abs(pow)*bound;
+    >> until (total = 0 and m < tol) or m < abs(total)*tol;
+    return tidy_result(total);
+end;    
+
+algebraic procedure jacobisn_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := t3*num1_theta1(y,tau)/
+      (num1_theta2(0,tau)*num1_theta4(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobins_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := num1_theta2(0,tau)*num1_theta4(y,tau)/
+      (t3*num1_theta1(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobicn_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := num1_theta4(0,tau)*num1_theta2(y,tau)/
+      (num1_theta2(0,tau)*num1_theta4(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobinc_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := num1_theta2(0,tau)*num1_theta4(y,tau)/
+      (num1_theta4(0,tau)*num1_theta2(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobidn_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := num1_theta4(0,tau)*num1_theta3(y,tau)/
+      (t3*num1_theta4(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobind_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := t3*num1_theta4(y,tau)/
+      (num1_theta4(0,tau)*num1_theta3(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobisc_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := t3*num1_theta1(y,tau)/
+      (num1_theta4(0,tau)*num1_theta2(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobics_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := num1_theta4(0,tau)*num1_theta2(y,tau)/
+      (t3*num1_theta1(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobisd_c(x,k);
+begin scalar tau, t32, y, res;
+   tau := k2tau(k);
+   t32 := num1_theta3(0,tau)^2;
+   y := x/t32;
+   res := t32*num1_theta1(y,tau)/
+      (num1_theta4(0,tau)*num1_theta2(0,tau)*num1_theta3(y,tau));
+      return tidy_result(res);
+end;
+
+algebraic procedure jacobids_c(x,k);
+begin scalar tau, t32, y, res;
+    tau := k2tau(k);
+    t32 := num1_theta3(0,tau)^2;
+    y := x/t32;
+    res := num1_theta4(0,tau)*num1_theta2(0,tau)*num1_theta3(y,tau)/
+                 (t32*num1_theta1(y,tau));
+   return tidy_result(res);
+end;
+     
+algebraic procedure jacobicd_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := t3*num1_theta2(y,tau)/
+      (num1_theta2(0,tau)*num1_theta3(y,tau));
+   return tidy_result(res);
+end;
+
+algebraic procedure jacobidc_c(x,k);
+begin scalar tau, t3, y, res;
+   tau := k2tau(k);
+   t3 := num1_theta3(0,tau);
+   y := x/t3^2;
+   res := num1_theta2(0,tau)*num1_theta3(y,tau)/
+      (t3*num1_theta2(y,tau));
+   return tidy_result(res);
+end;
 
 % some utility rule sets added December 2021 by Alan Barnes
 

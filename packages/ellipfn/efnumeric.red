@@ -200,11 +200,11 @@ symbolic procedure n_elliptic(u);
          % re-throwing the error or returning.
          res := errorset!*({'aeval, mkquote u}, nil);
          precision oldprec;
-         if offcomplex then off1 'complex;
+         if offcomplex then off1 'complex else on1 'complex;
          if errorp res then
             error(res, emsg!*)
          else
-            return reval car res
+	    res :=return reval car res;
       end;
 
 put('num_elliptic, 'psopfn, 'n_elliptic);
@@ -249,6 +249,19 @@ begin scalar alpha1, phi1, alist, plist, tol;
    >>;
 
    return list(reverse plist, reverse alist)
+end;
+
+algebraic procedure tidy_result(res);
+% Remove a spurious real or imaginary part from result
+begin scalar rp,ip,tmp;
+   tmp := reimpart res;
+   rp := first tmp;
+   ip := second tmp;
+   tmp := 10.0^-(symbolic !:prec!:-2);
+   if ip=0 or rp=0 then return res
+   else if abs(ip/rp) <tmp then return rp
+   else if abs(rp/ip) <tmp then return i*ip
+   else return res;
 end;
 
 %######################################################################
