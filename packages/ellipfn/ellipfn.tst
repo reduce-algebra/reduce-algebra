@@ -268,6 +268,10 @@ jacobisn(0.5i,2);
 % should be real
 jacobisn(1.5,2i);
 
+% should be purely real
+% previously had a small imaginary part
+jacobisn(2.0,8.0);
+
 % inverse Jacobi functions
 v := arcsn(0.5,0.7);
 jacobisn(v,0.7);
