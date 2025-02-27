@@ -1384,7 +1384,6 @@ then
 	$TOOLCHAIN $JITDEBUG \
         -DCMAKE_CXX_COMPILER="$CXX" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DASMJIT_STATIC=TRUE \
 	-DCMAKE_INSTALL_PREFIX:PATH=$builddir \
         -DCMAKE_INSTALL_LIBDIR=lib \
         $abssrcdir/libraries/asmjit
