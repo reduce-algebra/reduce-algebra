@@ -76,20 +76,11 @@ long long unexec();
 
 #include <windows.h>
 
-#if (USE_WIN_HEAPFUNCTIONS == 1)
 
 #include <winbase.h>
 
 HANDLE heapHandle;
 LPVOID heapBaseAddr;
-
-#else
-
-#ifndef _SYS_UNISTD_H
-extern void *sbrk (long long size);
-#endif
-
-#endif
 
 
 /* Use 1 if using compacting collector ($pxnk/compact-gc.sl).
@@ -219,18 +210,11 @@ char *argv[];
   if (mallocsize <= 0)
     mallocsize = MALLOCSIZE;
 
-  /* Reserve some space for C's usr of io buffers, etc. By mallocing then
-     freeing, the memory is sbrk'ed onto the image, but available for future
-     calls to malloc, which will not need to call sbrk again. */
-
   bpssize = BPSSIZE;
   heapsize_in_bytes = total - bpssize;
 
   /* On systems in which the image does not start at address 0, this won't
      really allocate the full maximum, but close enough. */
-#if (USE_WIN_HEAPFUNCTIONS != 1)
-  current_size_in_bytes = (((long long) sbrk(0))<<5)>>5;
-#endif
   max_image_size = 0x1000000000000LL; /* 1 more than allowable size */
 
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
@@ -290,11 +274,7 @@ char *argv[];
     printf("bpssize = %lld (%llX), heapsize = %lld (%llX)\nTotal image size = %lld (%llX)\n",
 	   bpssize, bpssize,
 	   heapsize, heapsize,
-#if (USE_WIN_HEAPFUNCTIONS == 1)
 	   oldbreakvalue, oldbreakvalue);
-#else
-    (long long) sbrk(0), (long long) sbrk(0));
-#endif
 }
 
 if (imagefile != NULL) {
@@ -399,8 +379,6 @@ allocatemorebps()
 {
   int old_nextbps = nextbps;
 
-#if (USE_WIN_HEAPFUNCTIONS == 1)
-
   /* always allocate two bytes more so that we can increment to an even
    * number
    */
@@ -421,26 +399,6 @@ allocatemorebps()
     nextbps++;
   }
 
-#else
-
-  long long current_size_in_bytes;
-
-  current_size_in_bytes = (long long)sbrk(0);
-
-  if ((current_size_in_bytes + EXTRABPSSIZE) >= max_image_size)
-    return(0);
-
-  if (((long long)sbrk(0)) % 2)      /* force to even word boundary*/
-     nextbps = (long long)sbrk(1);
-
-  nextbps = (long long)sbrk(EXTRABPSSIZE);   /* allocate extra BPS */
-  if (nextbps == -1) {
-    nextbps = old_nextbps;
-    return(0);
-  }
-
-#endif
-
   if (!mprotect_exec ((char *)nextbps, EXTRABPSSIZE)) {
     perror("Couldn’t mprotect");
     nextbps = old_nextbps;
@@ -457,8 +415,6 @@ void
 getheap(heapsize)
 long long heapsize;
 {
-
-#if (USE_WIN_HEAPFUNCTIONS == 1)
 
   long long lastheapaddress;
   long long heapsize_in_bytes;
@@ -507,20 +463,6 @@ long long heapsize;
 
   }
 
-#else
-
-#if (NUMBEROFHEAPS == 1)
-  heaplowerbound        = (long long)sbrk(heapsize);  /* allocate first heap */;
-  oldheaplowerbound     = -1;
-#else
-  heaplowerbound        = (long long)sbrk(2 * heapsize);  /* allocate first heap */;
-#endif
-  if (heaplowerbound  == (long long) -1 || heaplowerbound == (long long) 0)  {
-    perror("GETHEAP");
-    exit(-1);
-  }
-
-#endif
 
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
@@ -533,11 +475,7 @@ long long heapsize;
   oldheaptrapbound      = oldheapupperbound -120;
 #endif
 
-#if (USE_WIN_HEAPFUNCTIONS == 1)
   oldbreakvalue = heaplowerbound + NUMBEROFHEAPS * heapsize;
-#else
-  oldbreakvalue = (long long)sbrk(0);
-#endif
 }
 
 /* Tag( alterheapsize )
@@ -564,49 +502,13 @@ int increment;
   int heapsize;
   int current_size_in_bytes;
 
-#if (USE_WIN_HEAPFUNCTIONS == 1)
-#endif
 
 #if (NUMBEROFHEAPS == 1)
-  int gcarraysize, newbreakvalue;
  
   printf("***** cannot extend heap on this machine\n");
   return(0);
 
-  if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
-      return(0);
-
-  newbreakvalue = oldbreakvalue + increment;
-
-  /* don't let the user cut his heap back to nothing, taking into account
-     space for the gcarray. */
-  if ((increment < 0) &&
-      ((newbreakvalue - heaplowerbound) <
-       (((heaplast + MINIMUMHEAPADD - heaplowerbound) * 9) / 8)))
-    return(0);
-
-  current_size_in_bytes = sbrk(0);
-
-  if ((current_size_in_bytes +  increment) >= max_image_size)
-    return(0);
-
-  if ((long long)sbrk(increment) == -1)     /* the sbrk failed. */
-     return(0);
-
-  newbreakvalue = (long long) sbrk(0);
-  heapsize = (((newbreakvalue - heaplowerbound) / 4) * 4);
-
-  gcarraysize = (((heapsize / 9) / 4) * 4);
-  heapsize = heapsize - gcarraysize;
-
-  heapupperbound = heaplowerbound + heapsize;
-  heaptrapbound     = heapupperbound;
-
-  oldbreakvalue    = newbreakvalue;
-  return(increment);
 #else
-
-#if (USE_WIN_HEAPFUNCTIONS == 1)
 
   long long newbreakvalue;
   SIZE_T heapSize;
@@ -635,26 +537,6 @@ int increment;
 
   newbreakvalue = oldbreakvalue + increment;
 					  
-#else
-  /* assumes the current heap is the 'lower' one */
-  long long newbreakvalue;
-
-  if ((long long) sbrk(0) != oldbreakvalue)  /* Non contiguous memory */
-      {  printf(" unable to allocate %llx %llx\n",
-		(long long)sbrk(0),oldbreakvalue);
-        return(0); }
-
-  current_size_in_bytes = ( (long long) sbrk(0) <<5) >>5;
-
-  if ((current_size_in_bytes + 2* increment) >= max_image_size)
-    return(-1);
-
-  if ((long long)sbrk(2 * increment) == -1)       /* the sbrk failed. */
-     return(-2);
-
-  newbreakvalue = (long long) sbrk(0);
-
-#endif
 
   heapupperbound        = heapupperbound + increment ;
   heaptrapbound         = heapupperbound - 120;
