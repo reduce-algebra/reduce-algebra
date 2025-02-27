@@ -1,0 +1,768 @@
+diff -ur asmjit-original/src/asmjit/arm/a64compiler.h asmjit/src/asmjit/arm/a64compiler.h
+--- asmjit-original/src/asmjit/arm/a64compiler.h	2025-02-27 10:00:10.178027070 +0000
++++ asmjit/src/asmjit/arm/a64compiler.h	2025-02-27 09:59:50.561454584 +0000
+@@ -218,6 +218,11 @@
+   //! \overload
+   ASMJIT_INLINE_NODEBUG Error ret(const BaseReg& o0, const BaseReg& o1) { return addRet(o0, o1); }
+ 
++  //! Chain.
++  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0) { return addChain(o0, Operand()); }
++  //! \overload
++  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0, const BaseReg& o1) { return addChain(o0, o1); }
++
+   //! \}
+ 
+   //! \name Jump Tables Support
+diff -ur asmjit-original/src/asmjit/arm/a64emithelper.cpp asmjit/src/asmjit/arm/a64emithelper.cpp
+--- asmjit-original/src/asmjit/arm/a64emithelper.cpp	2025-02-27 10:00:10.253373438 +0000
++++ asmjit/src/asmjit/arm/a64emithelper.cpp	2025-02-27 09:59:50.625116691 +0000
+@@ -372,7 +372,7 @@
+ }
+ 
+ // TODO: [ARM] Emit epilog.
+-ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
++ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chain) {
+   Emitter* emitter = _emitter->as<Emitter>();
+ 
+   PrologEpilogInfo pei;
+@@ -431,11 +431,20 @@
+     }
+   }
+ 
+-  ASMJIT_PROPAGATE(emitter->ret(x30));
++  if (chain) ASMJIT_PROPAGATE(emitter->ret(x0));
++  else ASMJIT_PROPAGATE(emitter->ret(x30));
+ 
+   return kErrorOk;
+ }
+ 
++Error EmitHelper::emitEpilog(const FuncFrame& frame) {
++  return EmitHelper::emitEpilog(frame, false);
++}
++
++Error EmitHelper::emitChainEpilog(const FuncFrame& frame) {
++  return EmitHelper::emitEpilog(frame, true);
++}
++
+ static Error ASMJIT_CDECL Emitter_emitProlog(BaseEmitter* emitter, const FuncFrame& frame) {
+   EmitHelper emitHelper(emitter);
+   return emitHelper.emitProlog(frame);
+@@ -446,6 +455,11 @@
+   return emitHelper.emitEpilog(frame);
+ }
+ 
++static Error ASMJIT_CDECL Emitter_emitChainEpilog(BaseEmitter* emitter, const FuncFrame& frame) {
++  EmitHelper emitHelper(emitter);
++  return emitHelper.emitChainEpilog(frame);
++}
++
+ static Error ASMJIT_CDECL Emitter_emitArgsAssignment(BaseEmitter* emitter, const FuncFrame& frame, const FuncArgsAssignment& args) {
+   EmitHelper emitHelper(emitter);
+   return emitHelper.emitArgsAssignment(frame, args);
+@@ -454,6 +468,7 @@
+ void assignEmitterFuncs(BaseEmitter* emitter) {
+   emitter->_funcs.emitProlog = Emitter_emitProlog;
+   emitter->_funcs.emitEpilog = Emitter_emitEpilog;
++  emitter->_funcs.emitChainEpilog = Emitter_emitChainEpilog;
+   emitter->_funcs.emitArgsAssignment = Emitter_emitArgsAssignment;
+ 
+ #ifndef ASMJIT_NO_LOGGING
+diff -ur asmjit-original/src/asmjit/arm/a64emithelper_p.h asmjit/src/asmjit/arm/a64emithelper_p.h
+--- asmjit-original/src/asmjit/arm/a64emithelper_p.h	2025-02-27 10:00:10.317956039 +0000
++++ asmjit/src/asmjit/arm/a64emithelper_p.h	2025-02-27 09:59:50.954037576 +0000
+@@ -39,7 +39,9 @@
+     const Operand_& src_, TypeId srcTypeId, const char* comment = nullptr) override;
+ 
+   Error emitProlog(const FuncFrame& frame);
++  Error emitEpilog(const FuncFrame& frame, bool chain);
+   Error emitEpilog(const FuncFrame& frame);
++  Error emitChainEpilog(const FuncFrame& frame);
+ };
+ 
+ void assignEmitterFuncs(BaseEmitter* emitter);
+diff -ur asmjit-original/src/asmjit/arm/a64rapass.cpp asmjit/src/asmjit/arm/a64rapass.cpp
+--- asmjit-original/src/asmjit/arm/a64rapass.cpp	2025-02-27 10:00:11.329750125 +0000
++++ asmjit/src/asmjit/arm/a64rapass.cpp	2025-02-27 09:59:51.983241637 +0000
+@@ -693,6 +693,18 @@
+             cc()->removeNode(node);
+             block->setLast(prev);
+           }
++          // Similarly for chain.
++          if (node->type() == NodeType::kFuncChain) {
++            RABlock* block = raInst->block();
++            if (!isNextTo(node, _func->chainNode())) {
++              cc()->_setCursor(node->prev());
++              ASMJIT_PROPAGATE(emitJump(_func->chainNode()->label()));
++            }
++
++            BaseNode* prev = node->prev();
++            cc()->removeNode(node);
++            block->setLast(prev);
++          }
+         }
+       }
+ 
+diff -ur asmjit-original/src/asmjit/core/api-build_p.h asmjit/src/asmjit/core/api-build_p.h
+--- asmjit-original/src/asmjit/core/api-build_p.h	2025-02-27 10:00:12.158560175 +0000
++++ asmjit/src/asmjit/core/api-build_p.h	2025-02-27 09:59:52.906342187 +0000
+@@ -40,7 +40,9 @@
+       defined(__DragonFly__) || \
+       defined(__FreeBSD__  ) || \
+       defined(__NetBSD__   ) || \
+-      defined(__OpenBSD__  )
++      defined(__OpenBSD__  ) || \
++      defined(__CYGWIN__   ) || \
++      defined(__MINGW32__  )
+     #define ASMJIT_FILE64_API(NAME) NAME
+   #else
+     #define ASMJIT_FILE64_API(NAME) NAME##64
+diff -ur asmjit-original/src/asmjit/core/builder.h asmjit/src/asmjit/core/builder.h
+--- asmjit-original/src/asmjit/core/builder.h	2025-02-27 10:00:12.772094887 +0000
++++ asmjit/src/asmjit/core/builder.h	2025-02-27 09:59:53.553573607 +0000
+@@ -77,8 +77,10 @@
+   kFunc = 16,
+   //! Node is \ref FuncRetNode (acts as InstNode).
+   kFuncRet = 17,
++  //! Node is \ref FuncChainNode (acts as InstNode).
++  kFuncChain = 18,
+   //! Node is \ref InvokeNode (acts as InstNode).
+-  kInvoke = 18,
++  kInvoke = 19,
+ 
+   // [UserDefined]
+ 
+@@ -650,6 +652,8 @@
+   ASMJIT_INLINE_NODEBUG bool isFunc() const noexcept { return type() == NodeType::kFunc; }
+   //! Tests whether this node is `FuncRetNode`.
+   ASMJIT_INLINE_NODEBUG bool isFuncRet() const noexcept { return type() == NodeType::kFuncRet; }
++  //! Tests whether this node is `FuncChainNode`.
++  ASMJIT_INLINE_NODEBUG bool isFuncChain() const noexcept { return type() == NodeType::kFuncChain; }
+   //! Tests whether this node is `InvokeNode`.
+   ASMJIT_INLINE_NODEBUG bool isInvoke() const noexcept { return type() == NodeType::kInvoke; }
+ 
+diff -ur asmjit-original/src/asmjit/core/compiler.cpp asmjit/src/asmjit/core/compiler.cpp
+--- asmjit-original/src/asmjit/core/compiler.cpp	2025-02-27 10:00:13.224173095 +0000
++++ asmjit/src/asmjit/core/compiler.cpp	2025-02-27 09:59:53.999208356 +0000
+@@ -69,6 +69,7 @@
+   FuncNode* funcNode;
+   ASMJIT_PROPAGATE(_newNodeT<FuncNode>(&funcNode));
+   ASMJIT_PROPAGATE(newLabelNode(&funcNode->_exitNode));
++  ASMJIT_PROPAGATE(newLabelNode(&funcNode->_chainNode));
+   ASMJIT_PROPAGATE(_newNodeT<SentinelNode>(&funcNode->_end, SentinelType::kFuncEnd));
+ 
+   // Initialize the function's detail info.
+@@ -143,12 +144,41 @@
+   return kErrorOk;
+ }
+ 
++Error BaseCompiler::newFuncChainNode(FuncChainNode** out, const Operand_& o0, const Operand_& o1) {
++  uint32_t opCount = !o1.isNone() ? 2u : !o0.isNone() ? 1u : 0u;
++  FuncChainNode* node;
++
++  ASMJIT_PROPAGATE(_newNodeT<FuncChainNode>(&node));
++  ASMJIT_ASSUME(node != nullptr);
++
++  node->setOpCount(opCount);
++  node->setOp(0, o0);
++  node->setOp(1, o1);
++  node->resetOpRange(2, node->opCapacity());
++
++  *out = node;
++  return kErrorOk;
++}
++
++Error BaseCompiler::addFuncChainNode(FuncChainNode** out, const Operand_& o0, const Operand_& o1) {
++  State state = _grabState();
++
++  ASMJIT_PROPAGATE(newFuncChainNode(out, o0, o1));
++  ASMJIT_ASSUME(*out != nullptr);
++
++  BaseBuilder_assignInlineComment(this, *out, state.comment);
++
++  addNode(*out);
++  return kErrorOk;
++}
++
+ FuncNode* BaseCompiler::addFunc(FuncNode* func) {
+   _func = func;
+ 
+   addNode(func);                 // Function node.
+   BaseNode* prev = cursor();     // {CURSOR}.
+   addNode(func->exitNode());     // Function exit label.
++  addNode(func->chainNode());    // Function exit label.
+   addNode(func->endNode());      // Function end sentinel.
+ 
+   _setCursor(prev);
+diff -ur asmjit-original/src/asmjit/core/compiler.h asmjit/src/asmjit/core/compiler.h
+--- asmjit-original/src/asmjit/core/compiler.h	2025-02-27 10:00:13.310283231 +0000
++++ asmjit/src/asmjit/core/compiler.h	2025-02-27 09:59:54.062870463 +0000
+@@ -26,6 +26,7 @@
+ class JumpNode;
+ class FuncNode;
+ class FuncRetNode;
++class FuncChainNode;
+ class InvokeNode;
+ 
+ //! \addtogroup asmjit_compiler
+@@ -95,6 +96,11 @@
+   //! Creates a new \ref FuncRetNode and adds it to the instruction stream.
+   ASMJIT_API Error addFuncRetNode(FuncRetNode** ASMJIT_NONNULL(out), const Operand_& o0, const Operand_& o1);
+ 
++  //! Creates a new \ref FuncChainNode.
++  ASMJIT_API Error newFuncChainNode(FuncChainNode** ASMJIT_NONNULL(out), const Operand_& o0, const Operand_& o1);
++  //! Creates a new \ref FuncChainNode and adds it to the instruction stream.
++  ASMJIT_API Error addFuncChainNode(FuncChainNode** ASMJIT_NONNULL(out), const Operand_& o0, const Operand_& o1);
++
+   //! Returns the current function.
+   ASMJIT_INLINE_NODEBUG FuncNode* func() const noexcept { return _func; }
+ 
+@@ -135,6 +141,11 @@
+     return addFuncRetNode(&node, o0, o1);
+   }
+ 
++  inline Error addChain(const Operand_& o0, const Operand_& o1) {
++    FuncChainNode* node;
++    return addFuncChainNode(&node, o0, o1);
++  }
++
+   //! \}
+ 
+   //! \name Function Invocation
+@@ -373,6 +384,9 @@
+ //!   - Function exit, which is represented by \ref FuncNode::exitNode(). A helper function
+ //!     \ref FuncNode::exitLabel() exists and returns an exit label instead of node.
+ //!
++//!   - Function chain, which is represented by \ref FuncNode::chainNode(). A helper function
++//!     \ref FuncNode::chainLabel() exists and returns an exit label instead of node.
++//!
+ //!   - Function \ref FuncNode::endNode() sentinel. This node marks the end of a function - there should be no
+ //!     code that belongs to the function after this node, but the Compiler doesn't enforce that at the moment.
+ //!
+@@ -429,6 +443,8 @@
+   FuncFrame _frame;
+   //! Function exit label.
+   LabelNode* _exitNode;
++  //! Function chain label.
++  LabelNode* _chainNode;
+   //! Function end (sentinel).
+   SentinelNode* _end;
+   //! Argument packs.
+@@ -447,6 +463,7 @@
+       _funcDetail(),
+       _frame(),
+       _exitNode(nullptr),
++      _chainNode(nullptr),
+       _end(nullptr),
+       _args(nullptr) {
+     setType(NodeType::kFunc);
+@@ -462,6 +479,11 @@
+   //! Returns function exit label.
+   ASMJIT_INLINE_NODEBUG Label exitLabel() const noexcept { return _exitNode->label(); }
+ 
++  //! Returns function chain `LabelNode`.
++  ASMJIT_INLINE_NODEBUG LabelNode* chainNode() const noexcept { return _chainNode; }
++  //! Returns function chain label.
++  ASMJIT_INLINE_NODEBUG Label chainLabel() const noexcept { return _chainNode->label(); }
++
+   //! Returns "End of Func" sentinel node.
+   ASMJIT_INLINE_NODEBUG SentinelNode* endNode() const noexcept { return _end; }
+ 
+@@ -550,6 +572,22 @@
+   //! \}
+ };
+ 
++//! Function chaining, used by \ref BaseCompiler.
++class FuncChainNode : public InstNodeWithOperands<InstNode::kBaseOpCapacity> {
++public:
++  ASMJIT_NONCOPYABLE(FuncChainNode)
++
++  //! \name Construction & Destruction
++  //! \{
++
++  //! Creates a new `FuncChainNode` instance.
++  inline FuncChainNode(BaseBuilder* ASMJIT_NONNULL(cb)) noexcept
++    : InstNodeWithOperands(cb, BaseInst::kIdAbstract, InstOptions::kNone, 0) {
++    _any._nodeType = NodeType::kFuncChain;
++  }
++  //! \}
++};
++
+ //! Function invocation, used by \ref BaseCompiler.
+ class InvokeNode : public InstNodeWithOperands<InstNode::kBaseOpCapacity> {
+ public:
+diff -ur asmjit-original/src/asmjit/core/emitter.cpp asmjit/src/asmjit/core/emitter.cpp
+--- asmjit-original/src/asmjit/core/emitter.cpp	2025-02-27 10:00:13.880762875 +0000
++++ asmjit/src/asmjit/core/emitter.cpp	2025-02-27 09:59:54.582777669 +0000
+@@ -258,6 +258,13 @@
+   return _funcs.emitEpilog(this, frame);
+ }
+ 
++Error BaseEmitter::emitChainEpilog(const FuncFrame& frame) {
++  if (ASMJIT_UNLIKELY(!_code))
++    return DebugUtils::errored(kErrorNotInitialized);
++
++  return _funcs.emitChainEpilog(this, frame);
++}
++
+ Error BaseEmitter::emitArgsAssignment(const FuncFrame& frame, const FuncArgsAssignment& args) {
+   if (ASMJIT_UNLIKELY(!_code))
+     return DebugUtils::errored(kErrorNotInitialized);
+diff -ur asmjit-original/src/asmjit/core/emitter.h asmjit/src/asmjit/core/emitter.h
+--- asmjit-original/src/asmjit/core/emitter.h	2025-02-27 10:00:13.945345476 +0000
++++ asmjit/src/asmjit/core/emitter.h	2025-02-27 09:59:54.657050127 +0000
+@@ -259,6 +259,7 @@
+   struct Funcs {
+     typedef Error (ASMJIT_CDECL* EmitProlog)(BaseEmitter* emitter, const FuncFrame& frame);
+     typedef Error (ASMJIT_CDECL* EmitEpilog)(BaseEmitter* emitter, const FuncFrame& frame);
++    typedef Error (ASMJIT_CDECL* EmitChainEpilog)(BaseEmitter* emitter, const FuncFrame& frame);
+     typedef Error (ASMJIT_CDECL* EmitArgsAssignment)(BaseEmitter* emitter, const FuncFrame& frame, const FuncArgsAssignment& args);
+ 
+     typedef Error (ASMJIT_CDECL* FormatInstruction)(
+@@ -274,6 +275,8 @@
+     EmitProlog emitProlog;
+     //! Emit epilog implementation.
+     EmitEpilog emitEpilog;
++    //! Emit chain epilog implementation.
++    EmitChainEpilog emitChainEpilog;
+     //! Emit arguments assignment implementation.
+     EmitArgsAssignment emitArgsAssignment;
+     //! Instruction formatter implementation.
+@@ -285,6 +288,7 @@
+     ASMJIT_INLINE_NODEBUG void reset() noexcept {
+       emitProlog = nullptr;
+       emitEpilog = nullptr;
++      emitChainEpilog = nullptr;
+       emitArgsAssignment = nullptr;
+       validate = nullptr;
+     }
+@@ -703,6 +707,8 @@
+   ASMJIT_API Error emitProlog(const FuncFrame& frame);
+   //! Emits a function epilog described by the given function `frame`.
+   ASMJIT_API Error emitEpilog(const FuncFrame& frame);
++  //! Emits a function chain epilog described by the given function `frame`.
++  ASMJIT_API Error emitChainEpilog(const FuncFrame& frame);
+   //! Emits code that reassigns function `frame` arguments to the given `args`.
+   ASMJIT_API Error emitArgsAssignment(const FuncFrame& frame, const FuncArgsAssignment& args);
+ 
+diff -ur asmjit-original/src/asmjit/core/environment.h asmjit/src/asmjit/core/environment.h
+--- asmjit-original/src/asmjit/core/environment.h	2025-02-27 10:00:14.214439648 +0000
++++ asmjit/src/asmjit/core/environment.h	2025-02-27 09:59:54.911698554 +0000
+@@ -138,9 +138,7 @@
+     DETECTED_AT_COMPILE_TIME
+ #elif defined(_MSC_VER)
+     kMSVC
+-#elif defined(__CYGWIN__)
+-    kCygwin
+-#elif defined(__MINGW32__) || defined(__GLIBC__)
++#elif defined(__MINGW32__) || defined(__CYGWIN__) || defined(__GLIBC__)
+     kGNU
+ #elif defined(__ANDROID__)
+     kAndroid
+diff -ur asmjit-original/src/asmjit/core/rapass.cpp asmjit/src/asmjit/core/rapass.cpp
+--- asmjit-original/src/asmjit/core/rapass.cpp	2025-02-27 10:00:16.468135564 +0000
++++ asmjit/src/asmjit/core/rapass.cpp	2025-02-27 09:59:57.267196509 +0000
+@@ -250,8 +250,8 @@
+       block = node->passData<RABlock>();
+       if (block) {
+         // Exit node has always a block associated with it. If we went here it means that `cbLabel` passed here
+-        // is after the end of the function and cannot be merged with the function exit block.
+-        if (node == func->exitNode())
++        // is after the end of the function and cannot be merged with the function exit block. Ditto chain.
++        if (node == func->exitNode() || node == func->chainNode())
+           block = nullptr;
+         break;
+       }
+@@ -1844,6 +1844,9 @@
+   cc()->_setCursor(func()->exitNode());
+   ASMJIT_PROPAGATE(cc()->emitEpilog(frame));
+ 
++  cc()->_setCursor(func()->chainNode());
++  ASMJIT_PROPAGATE(cc()->emitChainEpilog(frame));
++
+   return kErrorOk;
+ }
+ 
+diff -ur asmjit-original/src/asmjit/x86/x86assembler.h asmjit/src/asmjit/x86/x86assembler.h
+--- asmjit-original/src/asmjit/x86/x86assembler.h	2025-02-27 10:00:18.630278555 +0000
++++ asmjit/src/asmjit/x86/x86assembler.h	2025-02-27 09:59:59.377658571 +0000
+@@ -393,6 +393,7 @@
+ //!   a.paddd(vec0, vec1);              // Add 4 ints in XMM1 to XMM0.
+ //!   a.movdqu(x86::ptr(dst), vec0);    // Store the result to [dst].
+ //!   a.emitEpilog(frame);              // Emit function epilog and return.
++//!   a.emitChainEpilog(frame);         // Emit function epilog and go to address in result register
+ //!
+ //!   SumIntsFunc fn;
+ //!   Error err = rt.add(&fn, &code);   // Add the generated code to the runtime.
+diff -ur asmjit-original/src/asmjit/x86/x86builder.h asmjit/src/asmjit/x86/x86builder.h
+--- asmjit-original/src/asmjit/x86/x86builder.h	2025-02-27 10:00:18.757463437 +0000
++++ asmjit/src/asmjit/x86/x86builder.h	2025-02-27 09:59:59.506516928 +0000
+@@ -99,6 +99,7 @@
+ //!   // Insert function epilog.
+ //!   cb.setCursor(epilogInsertionPoint);
+ //!   cb.emitEpilog(frame);
++//!   cb.emitChainEpilog(frame);
+ //!
+ //!   // Let's see how the function's prolog and epilog looks.
+ //!   dumpCode(cb, "Prolog & Epilog");
+diff -ur asmjit-original/src/asmjit/x86/x86compiler.h asmjit/src/asmjit/x86/x86compiler.h
+--- asmjit-original/src/asmjit/x86/x86compiler.h	2025-02-27 10:00:18.884648319 +0000
++++ asmjit/src/asmjit/x86/x86compiler.h	2025-02-27 09:59:59.646113481 +0000
+@@ -360,7 +360,45 @@
+ //!   rt.release(func);
+ //!   return 0;
+ //! }
+-//! ```
++//!
++//! ### Chaining
++//!   cc.chain(rr);
++//! When this is called while building a function F the argument rr must identify a register that contains
++//! the entrypoint address of another function G. The chain() operation resets the stack pointer and
++//! all callee-save registers to the value they had when F was invoked, and then jumps to G. If F was
++//! called using a convention that involves the callee popping values from the stack (notably "stdcall"
++//! in the 32-bit x86 world) G should have the same argument signature as F so that the stack will be
++//! properly reset when it finally exits. On x86_64 (and aarch64) where any final stack cleanup is done
++//! by the caller it will be OK for G to have been declared either with up to 4 (on x86_64, or 6 on aarch64)
++//! integer arguments or up to the number and types of arguments that F had. These constraints are so that
++//! G will not overwrite parts of the stack that the called of F is using. Even when G is specified to
++//! take arguments the values it will see passed are all unpredictable and should not be used.
++//! Where "stdcall" is not being used it may be tidiest to make F a function with no arguments that
++//! has the same return type as F.
++//! The overall behaviour will be then when G is entered it is as if it had been called directly from
++//! the original code without any intervening layer of F, and in particular no segment of stack from F
++//! remaining, and so G can interact with all features of the hosting language implementation with no
++//! need to concern itself about the presence of asmjit-generated material.
++//!
++//! The motivation for introducing this is that asmjit-generated code can not participate in automated stack
++//! unwinding including that which is associated with propagation of C++ exceptions.
++//! Thus C++ functions called from within the asmjit-generated code must not lead to exceptions.
++//! The simple consequence of that is that if asmjit code detects an issue that it its caller would
++//! otherwise have been notified of via an exception it is not that it does not have exception-raising
++//! capabilities itself. The issue is that it can not call a little C++ function to raise the exception
++//! for it. But it could chain to such a function, possibly having left information about exactly what
++//! exception should be raised somewhere in memory. I could imagine a variation on cc.chain(rr) where
++//! additonal arguments to chain() got passed to the chained-to function as arguments, and if there were
++//! few enough of them that would seem agreeable to both x86_64 and aarch64 calling standards, but what is
++//! being implemented right now is the simplest scheme and does not support that.
++//! As well as asmjit-generated code wanting to raise exceptions, with chain() there is a strategy to cope
++//! with calling arbitrary C++ functions that rely on exception propagation. Each call would be made though
++//! a little stub that traps every exception and when one is detected sets an error flag and saves the
++//! particular exception that it encountered. The jit code tests for the error flag after every call, and
++//! after doing such clean-up as it needs and then chains to a helper C++ function  that reinstate the
++//! exception. Thus this facility makes it feasible to embed asmjit deeper in C++ infrastructure and
++//! while it leaves some overhead in exception support that may be hardly worse than would have applied
++//! otherwise!
+ //!
+ //! ### Constant Pool
+ //!
+@@ -688,6 +726,11 @@
+   //! \overload
+   ASMJIT_INLINE_NODEBUG Error ret(const BaseReg& o0, const BaseReg& o1) { return addRet(o0, o1); }
+ 
++  //! Chain to another function.
++  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0) { return addChain(o0, Operand()); }
++  //! \overload
++  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0, const BaseReg& o1) { return addChain(o0, o1); }
++
+   //! \}
+ 
+   //! \name Jump Tables Support
+diff -ur asmjit-original/src/asmjit/x86/x86emithelper.cpp asmjit/src/asmjit/x86/x86emithelper.cpp
+--- asmjit-original/src/asmjit/x86/x86emithelper.cpp	2025-02-27 10:00:18.948240760 +0000
++++ asmjit/src/asmjit/x86/x86emithelper.cpp	2025-02-27 09:59:59.710542659 +0000
+@@ -3,6 +3,8 @@
+ // See asmjit.h or LICENSE.md for license and copyright information
+ // SPDX-License-Identifier: Zlib
+ 
++#include <iostream> //@@@
++
+ #include "../core/api-build_p.h"
+ #if !defined(ASMJIT_NO_X86)
+ 
+@@ -517,7 +519,7 @@
+   return kErrorOk;
+ }
+ 
+-ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
++ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chain) {
+   Emitter* emitter = _emitter->as<Emitter>();
+ 
+   uint32_t i;
+@@ -597,15 +599,28 @@
+   if (frame.hasPreservedFP())
+     ASMJIT_PROPAGATE(emitter->pop(zbp));
+ 
+-  // Emit 'ret' or 'ret x'.
+-  if (frame.hasCalleeStackCleanup())
+-    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet, int(frame.calleeStackCleanup())));
+-  else
+-    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet));
+-
++  if (!chain) {
++    // Emit 'ret' or 'ret x'.
++    if (frame.hasCalleeStackCleanup())
++      ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet, int(frame.calleeStackCleanup())));
++    else
++      ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet));
++  }
++  else { 
++    // Emit 'jmp rax'.
++    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::rax));
++  }
+   return kErrorOk;
+ }
+ 
++ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
++  return emitEpilog(frame, false);
++}
++
++ASMJIT_FAVOR_SIZE Error EmitHelper::emitChainEpilog(const FuncFrame& frame) {
++  return emitEpilog(frame, true);
++}
++
+ static Error ASMJIT_CDECL Emitter_emitProlog(BaseEmitter* emitter, const FuncFrame& frame) {
+   EmitHelper emitHelper(emitter, frame.isAvxEnabled(), frame.isAvx512Enabled());
+   return emitHelper.emitProlog(frame);
+@@ -616,6 +631,11 @@
+   return emitHelper.emitEpilog(frame);
+ }
+ 
++static Error ASMJIT_CDECL Emitter_emitChainEpilog(BaseEmitter* emitter, const FuncFrame& frame) {
++  EmitHelper emitHelper(emitter, frame.isAvxEnabled(), frame.isAvx512Enabled());
++  return emitHelper.emitChainEpilog(frame);
++}
++
+ static Error ASMJIT_CDECL Emitter_emitArgsAssignment(BaseEmitter* emitter, const FuncFrame& frame, const FuncArgsAssignment& args) {
+   EmitHelper emitHelper(emitter, frame.isAvxEnabled(), frame.isAvx512Enabled());
+   return emitHelper.emitArgsAssignment(frame, args);
+@@ -624,6 +644,7 @@
+ void assignEmitterFuncs(BaseEmitter* emitter) {
+   emitter->_funcs.emitProlog = Emitter_emitProlog;
+   emitter->_funcs.emitEpilog = Emitter_emitEpilog;
++  emitter->_funcs.emitChainEpilog = Emitter_emitChainEpilog;
+   emitter->_funcs.emitArgsAssignment = Emitter_emitArgsAssignment;
+ 
+ #ifndef ASMJIT_NO_LOGGING
+diff -ur asmjit-original/src/asmjit/x86/x86emithelper_p.h asmjit/src/asmjit/x86/x86emithelper_p.h
+--- asmjit-original/src/asmjit/x86/x86emithelper_p.h	2025-02-27 10:00:19.011833201 +0000
++++ asmjit/src/asmjit/x86/x86emithelper_p.h	2025-02-27 09:59:59.774971838 +0000
+@@ -49,7 +49,9 @@
+     const BaseReg& b, const char* comment = nullptr) override;
+ 
+   Error emitProlog(const FuncFrame& frame);
++  Error emitEpilog(const FuncFrame& frame, bool chain);
+   Error emitEpilog(const FuncFrame& frame);
++  Error emitChainEpilog(const FuncFrame& frame);
+ };
+ 
+ void assignEmitterFuncs(BaseEmitter* emitter);
+diff -ur asmjit-original/src/asmjit/x86/x86rapass.cpp asmjit/src/asmjit/x86/x86rapass.cpp
+--- asmjit-original/src/asmjit/x86/x86rapass.cpp	2025-02-27 10:00:20.039910996 +0000
++++ asmjit/src/asmjit/x86/x86rapass.cpp	2025-02-27 10:00:00.816576889 +0000
+@@ -108,6 +108,8 @@
+ 
+   Error onBeforeRet(FuncRetNode* funcRet) noexcept;
+   Error onRet(FuncRetNode* funcRet, RAInstBuilder& ib) noexcept;
++  Error onBeforeChain(FuncChainNode* funcChain) noexcept;
++  Error onChain(FuncChainNode* funcChain, RAInstBuilder& ib) noexcept;
+ };
+ 
+ // x86::RACFGBuilder - OnInst
+@@ -1089,7 +1091,7 @@
+   return cc()->emit(choose(Inst::kIdMovlps, Inst::kIdVmovlps), stackPtr, r0);
+ }
+ 
+-// x86::RACFGBuilder - OnReg
++// x86::RACFGBuilder - OnRet
+ // =========================
+ 
+ Error RACFGBuilder::onBeforeRet(FuncRetNode* funcRet) noexcept {
+@@ -1188,6 +1190,102 @@
+   return kErrorOk;
+ }
+ 
++Error RACFGBuilder::onBeforeChain(FuncChainNode* funcChain) noexcept {
++  const FuncDetail& funcDetail = _pass->func()->detail();
++  const Operand* opArray = funcChain->operands();
++  uint32_t opCount = funcChain->opCount();
++
++  cc()->_setCursor(funcChain->prev());
++
++  for (uint32_t i = 0; i < opCount; i++) {
++    const Operand& op = opArray[i];
++    const FuncValue& ret = funcDetail.ret(i);
++
++    if (!op.isReg())
++      continue;
++
++    if (ret.regType() == RegType::kX86_St) {
++      const Reg& reg = op.as<Reg>();
++      uint32_t vIndex = Operand::virtIdToIndex(reg.id());
++
++      if (vIndex < Operand::kVirtIdCount) {
++        RAWorkReg* workReg;
++        ASMJIT_PROPAGATE(_pass->virtIndexAsWorkReg(vIndex, &workReg));
++
++        if (workReg->group() != RegGroup::kVec)
++          return DebugUtils::errored(kErrorInvalidAssignment);
++
++        Reg src(workReg->signature(), workReg->virtId());
++        Mem mem;
++
++        TypeId typeId = TypeUtils::scalarOf(workReg->typeId());
++        if (ret.hasTypeId())
++          typeId = ret.typeId();
++
++        switch (typeId) {
++          case TypeId::kFloat32:
++            ASMJIT_PROPAGATE(_pass->useTemporaryMem(mem, 4, 4));
++            mem.setSize(4);
++            ASMJIT_PROPAGATE(cc()->emit(choose(Inst::kIdMovss, Inst::kIdVmovss), mem, src.as<Xmm>()));
++            ASMJIT_PROPAGATE(cc()->fld(mem));
++            break;
++
++          case TypeId::kFloat64:
++            ASMJIT_PROPAGATE(_pass->useTemporaryMem(mem, 8, 4));
++            mem.setSize(8);
++            ASMJIT_PROPAGATE(cc()->emit(choose(Inst::kIdMovsd, Inst::kIdVmovsd), mem, src.as<Xmm>()));
++            ASMJIT_PROPAGATE(cc()->fld(mem));
++            break;
++
++          default:
++            return DebugUtils::errored(kErrorInvalidAssignment);
++        }
++      }
++    }
++  }
++
++  return kErrorOk;
++}
++
++Error RACFGBuilder::onChain(FuncChainNode* funcChain, RAInstBuilder& ib) noexcept {
++  const FuncDetail& funcDetail = _pass->func()->detail();
++  const Operand* opArray = funcChain->operands();
++  uint32_t opCount = funcChain->opCount();
++
++  for (uint32_t i = 0; i < opCount; i++) {
++    const Operand& op = opArray[i];
++    if (op.isNone()) continue;
++
++    const FuncValue& ret = funcDetail.ret(i);
++    if (ASMJIT_UNLIKELY(!ret.isReg()))
++      return DebugUtils::errored(kErrorInvalidAssignment);
++
++    // Not handled here...
++    if (ret.regType() == RegType::kX86_St)
++      continue;
++
++    if (op.isReg()) {
++      // Register return value.
++      const Reg& reg = op.as<Reg>();
++      uint32_t vIndex = Operand::virtIdToIndex(reg.id());
++
++      if (vIndex < Operand::kVirtIdCount) {
++        RAWorkReg* workReg;
++        ASMJIT_PROPAGATE(_pass->virtIndexAsWorkReg(vIndex, &workReg));
++
++        RegGroup group = workReg->group();
++        RegMask inOutRegs = _pass->_availableRegs[group];
++        ASMJIT_PROPAGATE(ib.add(workReg, RATiedFlags::kUse | RATiedFlags::kRead, inOutRegs, ret.regId(), 0, inOutRegs, BaseReg::kIdBad, 0));
++      }
++    }
++    else {
++      return DebugUtils::errored(kErrorInvalidAssignment);
++    }
++  }
++
++  return kErrorOk;
++}
++
+ // x86::X86RAPass - Construction & Destruction
+ // ===========================================
+ 
+@@ -1402,6 +1500,18 @@
+             }
+ 
+             BaseNode* prev = node->prev();
++            cc()->removeNode(node);
++            block->setLast(prev);
++          }
++          // Similarly with chain.
++          if (node->type() == NodeType::kFuncChain) {
++            RABlock* block = raInst->block();
++            if (!isNextTo(node, _func->chainNode())) {
++              cc()->_setCursor(node->prev());
++              ASMJIT_PROPAGATE(emitJump(_func->chainNode()->label()));
++            }
++
++            BaseNode* prev = node->prev();
+             cc()->removeNode(node);
+             block->setLast(prev);
+           }
+
+
+=================================
+// Demonstration of "chain" on x86_64
+
+#include <asmjit/core.h>
+#include <cinttypes>
+#include <cstdio>
+#include <cstdlib>
+
+#include <asmjit/x86.h>
+
+using namespace asmjit;
+
+// I will arrange that my jit-generated code exits via this. The
+// "Arg reg" does not contain anything that it is proper to use, but
+// I print it for interest and debugging. It would be valid for this
+// function to do a "throw".
+
+int64_t chainto(int64_t a)
+{   printf("\n+++ chainto. Arg reg contained %" PRIx64 "\n", a);
+    return 42;
+}
+
+int main(int argc, char* argv[])
+{
+    JitRuntime rt;
+    CodeHolder code;
+    Environment localEnv = rt.environment();;
+    code.init(localEnv, rt.cpuFeatures());
+    FileLogger logger(stdout);
+    code.setLogger(&logger);
+
+    auto cc = x86::Compiler(&code);
+    x86::Gp v1 = cc.newInt64("v1");
+    FuncNode* funcNode = cc.newFunc(FuncSignature::build<int64_t,int64_t>());
+    cc.addFunc(funcNode);
+    cc.mov(v1, (uintptr_t)chainto); 
+//    cc.ret(v1);
+    cc.chain(v1);         // basically "goto chainto"
+    cc.endFunc();
+
+    cc.finalize();
+    void* func = nullptr;
+    rt.add(&func, &code);
+
+// Display generated code in hex too, again for review and debugging.
+    int online = 0;
+    for(size_t i=0; i<code.codeSize(); i++)
+    {   if (online == 0) printf("%3d: ", (int)i);
+        printf(" %.2x",((unsigned char*)func)[i]);
+        online++;
+        if (online == 5)
+        {   online = 0;
+            printf("\n");
+        }
+    }
+    if (online != 0) printf("\n");
+    printf("chainto = %p = %" PRIu64 "\n", chainto, (uint64_t)chainto);
+    typedef int64_t (*Func)(int64_t);
+    Func ff = ptr_as_func<Func>(func);
+    printf("%" PRIx64 "\n", ff(0x9990999));
+
+    printf("End of test\n");
+    return 0;
+}
+
+==============================
