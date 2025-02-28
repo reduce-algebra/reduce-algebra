@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -360,7 +361,45 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   rt.release(func);
 //!   return 0;
 //! }
-//! ```
+//!
+//! ### Chaining
+//!   cc.chain(rr);
+//! When this is called while building a function F the argument rr must identify a register that contains
+//! the entrypoint address of another function G. The chain() operation resets the stack pointer and
+//! all callee-save registers to the value they had when F was invoked, and then jumps to G. If F was
+//! called using a convention that involves the callee popping values from the stack (notably "stdcall"
+//! in the 32-bit x86 world) G should have the same argument signature as F so that the stack will be
+//! properly reset when it finally exits. On x86_64 (and aarch64) where any final stack cleanup is done
+//! by the caller it will be OK for G to have been declared either with up to 4 (on x86_64, or 6 on aarch64)
+//! integer arguments or up to the number and types of arguments that F had. These constraints are so that
+//! G will not overwrite parts of the stack that the called of F is using. Even when G is specified to
+//! take arguments the values it will see passed are all unpredictable and should not be used.
+//! Where "stdcall" is not being used it may be tidiest to make F a function with no arguments that
+//! has the same return type as F.
+//! The overall behaviour will be then when G is entered it is as if it had been called directly from
+//! the original code without any intervening layer of F, and in particular no segment of stack from F
+//! remaining, and so G can interact with all features of the hosting language implementation with no
+//! need to concern itself about the presence of asmjit-generated material.
+//!
+//! The motivation for introducing this is that asmjit-generated code can not participate in automated stack
+//! unwinding including that which is associated with propagation of C++ exceptions.
+//! Thus C++ functions called from within the asmjit-generated code must not lead to exceptions.
+//! The simple consequence of that is that if asmjit code detects an issue that it its caller would
+//! otherwise have been notified of via an exception it is not that it does not have exception-raising
+//! capabilities itself. The issue is that it can not call a little C++ function to raise the exception
+//! for it. But it could chain to such a function, possibly having left information about exactly what
+//! exception should be raised somewhere in memory. I could imagine a variation on cc.chain(rr) where
+//! additonal arguments to chain() got passed to the chained-to function as arguments, and if there were
+//! few enough of them that would seem agreeable to both x86_64 and aarch64 calling standards, but what is
+//! being implemented right now is the simplest scheme and does not support that.
+//! As well as asmjit-generated code wanting to raise exceptions, with chain() there is a strategy to cope
+//! with calling arbitrary C++ functions that rely on exception propagation. Each call would be made though
+//! a little stub that traps every exception and when one is detected sets an error flag and saves the
+//! particular exception that it encountered. The jit code tests for the error flag after every call, and
+//! after doing such clean-up as it needs and then chains to a helper C++ function  that reinstate the
+//! exception. Thus this facility makes it feasible to embed asmjit deeper in C++ infrastructure and
+//! while it leaves some overhead in exception support that may be hardly worse than would have applied
+//! otherwise!
 //!
 //! ### Constant Pool
 //!
@@ -687,6 +726,11 @@ public:
   ASMJIT_INLINE_NODEBUG Error ret(const BaseReg& o0) { return addRet(o0, Operand()); }
   //! \overload
   ASMJIT_INLINE_NODEBUG Error ret(const BaseReg& o0, const BaseReg& o1) { return addRet(o0, o1); }
+
+  //! Chain to another function.
+  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0) { return addChain(o0, Operand()); }
+  //! \overload
+  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0, const BaseReg& o1) { return addChain(o0, o1); }
 
   //! \}
 

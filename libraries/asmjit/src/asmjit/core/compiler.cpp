@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -69,6 +70,7 @@ Error BaseCompiler::newFuncNode(FuncNode** out, const FuncSignature& signature) 
   FuncNode* funcNode;
   ASMJIT_PROPAGATE(_newNodeT<FuncNode>(&funcNode));
   ASMJIT_PROPAGATE(newLabelNode(&funcNode->_exitNode));
+  ASMJIT_PROPAGATE(newLabelNode(&funcNode->_chainNode));
   ASMJIT_PROPAGATE(_newNodeT<SentinelNode>(&funcNode->_end, SentinelType::kFuncEnd));
 
   // Initialize the function's detail info.
@@ -143,12 +145,41 @@ Error BaseCompiler::addFuncRetNode(FuncRetNode** out, const Operand_& o0, const 
   return kErrorOk;
 }
 
+Error BaseCompiler::newFuncChainNode(FuncChainNode** out, const Operand_& o0, const Operand_& o1) {
+  uint32_t opCount = !o1.isNone() ? 2u : !o0.isNone() ? 1u : 0u;
+  FuncChainNode* node;
+
+  ASMJIT_PROPAGATE(_newNodeT<FuncChainNode>(&node));
+  ASMJIT_ASSUME(node != nullptr);
+
+  node->setOpCount(opCount);
+  node->setOp(0, o0);
+  node->setOp(1, o1);
+  node->resetOpRange(2, node->opCapacity());
+
+  *out = node;
+  return kErrorOk;
+}
+
+Error BaseCompiler::addFuncChainNode(FuncChainNode** out, const Operand_& o0, const Operand_& o1) {
+  State state = _grabState();
+
+  ASMJIT_PROPAGATE(newFuncChainNode(out, o0, o1));
+  ASMJIT_ASSUME(*out != nullptr);
+
+  BaseBuilder_assignInlineComment(this, *out, state.comment);
+
+  addNode(*out);
+  return kErrorOk;
+}
+
 FuncNode* BaseCompiler::addFunc(FuncNode* func) {
   _func = func;
 
   addNode(func);                 // Function node.
   BaseNode* prev = cursor();     // {CURSOR}.
   addNode(func->exitNode());     // Function exit label.
+  addNode(func->chainNode());    // Function exit label.
   addNode(func->endNode());      // Function end sentinel.
 
   _setCursor(prev);

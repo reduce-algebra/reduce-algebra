@@ -282,6 +282,9 @@
        (*wshift (reg 4) -5)
        (*move (reg 4)  (fluid stacklowerbound))
 
+       (*move 128 (reg NIL))
+       (*mkitem (reg NIL) id-tag)                 % initialize NIL reg
+
        (*link init-gcarray expr 0)
 
        (*call pre-main)                                 % call PSL

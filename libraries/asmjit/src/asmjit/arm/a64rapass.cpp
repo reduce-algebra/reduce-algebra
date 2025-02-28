@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -687,6 +688,18 @@ ASMJIT_FAVOR_SPEED Error ARMRAPass::_rewrite(BaseNode* first, BaseNode* stop) no
             if (!isNextTo(node, _func->exitNode())) {
               cc()->_setCursor(node->prev());
               ASMJIT_PROPAGATE(emitJump(_func->exitNode()->label()));
+            }
+
+            BaseNode* prev = node->prev();
+            cc()->removeNode(node);
+            block->setLast(prev);
+          }
+          // Similarly for chain.
+          if (node->type() == NodeType::kFuncChain) {
+            RABlock* block = raInst->block();
+            if (!isNextTo(node, _func->chainNode())) {
+              cc()->_setCursor(node->prev());
+              ASMJIT_PROPAGATE(emitJump(_func->chainNode()->label()));
             }
 
             BaseNode* prev = node->prev();

@@ -311,13 +311,11 @@ external_system(command)
  
 /* Tag( external_exit )
  */
-extern void gcleanup ();
 
 void
 external_exit(status)
      int status;
 {
-  gcleanup ();
   exit(status);
 }
  

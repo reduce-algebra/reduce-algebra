@@ -237,262 +237,7 @@ mprotect_exec (void *addr,  long long size)
   return VirtualProtect (addr, size, PAGE_EXECUTE_READWRITE, &OldProtect);
 }
 
-#if (USE_WIN_HEAPFUNCTIONS != 1)
 
-/*
-  winsup/cygwin/dlmalloc.c
-
-  Emulation of sbrk for WIN32
-  All code within the ifdef WIN32 is untested by me.
-*/
-
-#ifndef ASSERT
-#define ASSERT(expr) ((void)0)
-#endif
-    
-#define malloc_pagesize (sysinfo_cache.dwPageSize)
-#define malloc_allocation_unit	(sysinfo_cache.dwAllocationGranularity)
-
-#define ROUND_UP(p, align)   (((DWORD64)(p) + (align)-1) & ~((align)-1))
-#define ROUND_DOWN(p, align) ((DWORD64)(p) & ~((align)-1))
-#define RVA_TO_PTR(rva) ((unsigned char *)((DWORD64)(rva) + (DWORD64)GetModuleHandleA (NULL)))
-
-#define AlignPage(add) (((add) + (malloc_pagesize-1)) & \
-			~(malloc_pagesize-1))
-
-/* resrve 64MB to insure large contiguous space */
-#define RESERVED_SIZE (1024*1024*64)
-#define NEXT_SIZE (2048*1024)
-#define TOP_MEMORY ((unsigned long long)((1LL << 56)-1))
-
-/* This gives us the page size and the size of the allocation unit on WIN64. */
-SYSTEM_INFO sysinfo_cache;
-BOOL sysinfo_cache_init = 0;
-
-struct GmListElement;
-typedef struct GmListElement GmListElement;
-
-struct GmListElement
-{
-  GmListElement* next;
-  void* base;
-};
-
-static GmListElement* head = 0;
-static unsigned long long gNextAddress = 0;
-static unsigned long long gAddressBase = 0;
-static unsigned long long gAllocatedSize = 0;
-
-static GmListElement*
-makeGmListElement (void* bas)
-{
-  GmListElement* this;
-  this = (GmListElement*)(void*)LocalAlloc (0, sizeof (GmListElement));
-  ASSERT (this);
-  if (this)
-    {
-      this->base = bas;
-      this->next = head;
-      head = this;
-    }
-
-  return this;
-}
-
-void
-gcleanup ()
-{
-  BOOL rval;
-  ASSERT ( (head == NULL) || (head->base == (void*)gAddressBase));
-  if (gAddressBase && (gNextAddress - gAddressBase))
-    {
-      rval = VirtualFree ((void*)gAddressBase,
-			  gNextAddress - gAddressBase,
-			  MEM_DECOMMIT);
-      ASSERT (rval);
-    }
-  while (head)
-    {
-      GmListElement* next = head->next;
-      rval = VirtualFree (head->base, 0, MEM_RELEASE);
-      ASSERT (rval);
-      LocalFree (head);
-      head = next;
-    }
-}
-
-#ifndef _SYS_UNISTD_H
-static void*
-findRegion (void* start_address, SIZE_T size)
-{
-  SIZE_T result;
-  MEMORY_BASIC_INFORMATION info;
-  while ((unsigned long long)start_address < TOP_MEMORY)
-    {
-      if (Debug > 0)
-        fprintf(stderr,"Calling VirtualQuery with %llx\n",start_address);
-      result = VirtualQuery (start_address, &info, sizeof (info));
-      if (result == 0 && Debug > 0) {
-	fprintf(stderr,"VirtualQuery returned 0\n");
-      } 
-      if (Debug > 0) {
-        fprintf(stderr,"VirtualQuery State = %d %llX %llX %llx(%lld)\n",
-                info.State,info.BaseAddress,info.AllocationBase,
-                info.RegionSize, info.RegionSize);
-      }
-      if (info.State != MEM_FREE) {
-	start_address = (char*)info.BaseAddress + info.RegionSize;
-      }
-      else if (info.RegionSize >= size)
-	return start_address;
-      else
-	start_address = (char*)info.BaseAddress + info.RegionSize;
-    }
-  return NULL;
-}
-
-/* Return pointer to section header for named section. */
-extern PIMAGE_SECTION_HEADER _FindPESectionByName (const char *);
-
-static void*
-findBase (SIZE_T size)
-{
-/* Info for managing our preload heap, which is essentially a fixed size
-   data area in the executable.  */
-  PIMAGE_SECTION_HEADER preload_heap_section = _FindPESectionByName (".bss");
-
-  unsigned long long base =
-    ROUND_UP ((RVA_TO_PTR (preload_heap_section->VirtualAddress)
-	       + preload_heap_section->Misc.VirtualSize),
-	      malloc_allocation_unit);
-
-  return findRegion ((void *)base, size);
-}
-
-/*
- * Shift start address of memory by this amount if first attempt fails
- */
-#define RETRY_INCREMENT 0x10000 
-void*
-sbrk (SIZE_T size)
-{
-  void* tmp;
-
-  /* Cache page size, allocation unit, processor type, etc.  */
-  if (!sysinfo_cache_init)
-    {
-      GetSystemInfo (&sysinfo_cache);
-      sysinfo_cache_init = 1;
-    }
-
-  if (size > 0)
-    {
-      if (gAddressBase == 0)
-	{
-	  gAllocatedSize = max (RESERVED_SIZE, AlignPage (size));
-          if (Debug > 0)
- 	    fprintf(stderr,"sbrk: size: %lld, allocated: %lld\n",
-                    size,gAllocatedSize);
-	  tmp = findBase (gAllocatedSize);
-	  gNextAddress = gAddressBase =
-	    (unsigned long long)VirtualAlloc (tmp,
-			      gAllocatedSize,	MEM_RESERVE, PAGE_NOACCESS);
-          if (gNextAddress == 0) {
-            if (Debug > 0)
-              fprintf(stderr,"sbrk error: %d %lld %llX retrying \n",
-                      GetLastError(),gAllocatedSize,tmp);
-            tmp = findRegion (tmp+RETRY_INCREMENT,gAllocatedSize);
-            gNextAddress = gAddressBase =
-            (unsigned long long)VirtualAlloc (tmp,
-                              gAllocatedSize,   MEM_RESERVE, PAGE_NOACCESS);
-            if (gNextAddress == 0 && Debug > 0) {
-              fprintf(stderr,"sbrk error: %d %lld %llX fail\n",
-                      GetLastError(),gAllocatedSize,tmp);
-	    }
-	  }
-	} else if (AlignPage (gNextAddress + size) > (gAddressBase +
-						      gAllocatedSize))
-	{
-	  long new_size = max (NEXT_SIZE, AlignPage (size));
-	  void* new_address = (void*)(gAddressBase+gAllocatedSize);
-	  do
-	    {
-	      new_address = findRegion (new_address, new_size);
-	      if (new_address == 0) {
-                errno = ENOMEM;
-		return (void*)-1;
-              }
-	      gAddressBase = gNextAddress =
-		(unsigned long long)VirtualAlloc (new_address, new_size,
-					    MEM_RESERVE, PAGE_NOACCESS);
-	      // repeat in case of race condition
-	      // The region that we found has been snagged
-	      // by another thread
-	    }
-	  while (gAddressBase == 0);
-	  ASSERT (new_address == (void*)gAddressBase);
-	  gAllocatedSize = new_size;
-
-	  if (!makeGmListElement ((void*)gAddressBase)) {
-            errno = ENOMEM;
-	    return (void*)-1;
-          }
-	}
-      if ((size + gNextAddress) > AlignPage (gNextAddress))
-	{
-	  void* res;
-	  res = VirtualAlloc ((void*)AlignPage (gNextAddress),
-			      (size + gNextAddress -
-			       AlignPage (gNextAddress)),
-			      MEM_COMMIT, PAGE_READWRITE);
-	  if (res == 0) {
-            errno = ENOMEM;
-	    return (void*)-1;
-          }
-	}
-      tmp = (void*)gNextAddress;
-      gNextAddress = (unsigned long long)tmp + size;
-      if (tmp == 0 && Debug > 0)
-        fprintf(stderr,"sbrk error (tmp): %d\n",GetLastError());
-      return tmp;
-    }
-  else if (size < 0)
-    {
-      unsigned long long alignedGoal = AlignPage (gNextAddress + size);
-      /* Trim by releasing the virtual memory */
-      if (alignedGoal >= gAddressBase)
-	{
-	  VirtualFree ((void*)alignedGoal, gNextAddress - alignedGoal,
-		       MEM_DECOMMIT);
-	  gNextAddress = gNextAddress + size;
-	  return (void*)gNextAddress;
-	}
-      else
-	{
-	  VirtualFree ((void*)gAddressBase, gNextAddress - gAddressBase,
-		       MEM_DECOMMIT);
-	  gNextAddress = gAddressBase;
-          errno = ENOMEM;
-	  return (void*)-1;
-	}
-    }
-  else
-    {
-      return (void*)gNextAddress;
-    }
-}
-#endif
-
-#else
-
-void gcleanup() {}
-
-#endif
-
-/*
-#define _XOPEN_SOURCE 500
-#include <signal.h>
-*/
 
 int
 sigrelse (int sig)
@@ -500,9 +245,6 @@ sigrelse (int sig)
   return (0);
 }
 
-/*
-#include <unistd.h>
-*/
 
 int /* pid_t */
 fork (void)
@@ -516,10 +258,6 @@ gethostid (void)
   return (0);
 }
 
-/*
-#include <sys/types.h>
-#include <sys/wait.h>
-*/
 
 pid_t
 wait (int *status)
@@ -527,10 +265,6 @@ wait (int *status)
   return (0);
 }
 
-/*
-#include <sys/types.h>
-#include <sys/shm.h>
-*/
 
 typedef long long key_t;
 typedef unsigned int uid_t;
@@ -592,11 +326,6 @@ shmget (key_t key, size_t size, int shmflg)
   return (0);
 }
 
-/*
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-*/
 /* Structure used for argument to `semop' to describe operations.  */
 struct sembuf
 {

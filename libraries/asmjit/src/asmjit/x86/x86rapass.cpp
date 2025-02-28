@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -108,6 +109,8 @@ public:
 
   Error onBeforeRet(FuncRetNode* funcRet) noexcept;
   Error onRet(FuncRetNode* funcRet, RAInstBuilder& ib) noexcept;
+  Error onBeforeChain(FuncChainNode* funcChain) noexcept;
+  Error onChain(FuncChainNode* funcChain, RAInstBuilder& ib) noexcept;
 };
 
 // x86::RACFGBuilder - OnInst
@@ -1089,7 +1092,7 @@ MovXmmQ:
   return cc()->emit(choose(Inst::kIdMovlps, Inst::kIdVmovlps), stackPtr, r0);
 }
 
-// x86::RACFGBuilder - OnReg
+// x86::RACFGBuilder - OnRet
 // =========================
 
 Error RACFGBuilder::onBeforeRet(FuncRetNode* funcRet) noexcept {
@@ -1153,6 +1156,102 @@ Error RACFGBuilder::onRet(FuncRetNode* funcRet, RAInstBuilder& ib) noexcept {
   const FuncDetail& funcDetail = _pass->func()->detail();
   const Operand* opArray = funcRet->operands();
   uint32_t opCount = funcRet->opCount();
+
+  for (uint32_t i = 0; i < opCount; i++) {
+    const Operand& op = opArray[i];
+    if (op.isNone()) continue;
+
+    const FuncValue& ret = funcDetail.ret(i);
+    if (ASMJIT_UNLIKELY(!ret.isReg()))
+      return DebugUtils::errored(kErrorInvalidAssignment);
+
+    // Not handled here...
+    if (ret.regType() == RegType::kX86_St)
+      continue;
+
+    if (op.isReg()) {
+      // Register return value.
+      const Reg& reg = op.as<Reg>();
+      uint32_t vIndex = Operand::virtIdToIndex(reg.id());
+
+      if (vIndex < Operand::kVirtIdCount) {
+        RAWorkReg* workReg;
+        ASMJIT_PROPAGATE(_pass->virtIndexAsWorkReg(vIndex, &workReg));
+
+        RegGroup group = workReg->group();
+        RegMask inOutRegs = _pass->_availableRegs[group];
+        ASMJIT_PROPAGATE(ib.add(workReg, RATiedFlags::kUse | RATiedFlags::kRead, inOutRegs, ret.regId(), 0, inOutRegs, BaseReg::kIdBad, 0));
+      }
+    }
+    else {
+      return DebugUtils::errored(kErrorInvalidAssignment);
+    }
+  }
+
+  return kErrorOk;
+}
+
+Error RACFGBuilder::onBeforeChain(FuncChainNode* funcChain) noexcept {
+  const FuncDetail& funcDetail = _pass->func()->detail();
+  const Operand* opArray = funcChain->operands();
+  uint32_t opCount = funcChain->opCount();
+
+  cc()->_setCursor(funcChain->prev());
+
+  for (uint32_t i = 0; i < opCount; i++) {
+    const Operand& op = opArray[i];
+    const FuncValue& ret = funcDetail.ret(i);
+
+    if (!op.isReg())
+      continue;
+
+    if (ret.regType() == RegType::kX86_St) {
+      const Reg& reg = op.as<Reg>();
+      uint32_t vIndex = Operand::virtIdToIndex(reg.id());
+
+      if (vIndex < Operand::kVirtIdCount) {
+        RAWorkReg* workReg;
+        ASMJIT_PROPAGATE(_pass->virtIndexAsWorkReg(vIndex, &workReg));
+
+        if (workReg->group() != RegGroup::kVec)
+          return DebugUtils::errored(kErrorInvalidAssignment);
+
+        Reg src(workReg->signature(), workReg->virtId());
+        Mem mem;
+
+        TypeId typeId = TypeUtils::scalarOf(workReg->typeId());
+        if (ret.hasTypeId())
+          typeId = ret.typeId();
+
+        switch (typeId) {
+          case TypeId::kFloat32:
+            ASMJIT_PROPAGATE(_pass->useTemporaryMem(mem, 4, 4));
+            mem.setSize(4);
+            ASMJIT_PROPAGATE(cc()->emit(choose(Inst::kIdMovss, Inst::kIdVmovss), mem, src.as<Xmm>()));
+            ASMJIT_PROPAGATE(cc()->fld(mem));
+            break;
+
+          case TypeId::kFloat64:
+            ASMJIT_PROPAGATE(_pass->useTemporaryMem(mem, 8, 4));
+            mem.setSize(8);
+            ASMJIT_PROPAGATE(cc()->emit(choose(Inst::kIdMovsd, Inst::kIdVmovsd), mem, src.as<Xmm>()));
+            ASMJIT_PROPAGATE(cc()->fld(mem));
+            break;
+
+          default:
+            return DebugUtils::errored(kErrorInvalidAssignment);
+        }
+      }
+    }
+  }
+
+  return kErrorOk;
+}
+
+Error RACFGBuilder::onChain(FuncChainNode* funcChain, RAInstBuilder& ib) noexcept {
+  const FuncDetail& funcDetail = _pass->func()->detail();
+  const Operand* opArray = funcChain->operands();
+  uint32_t opCount = funcChain->opCount();
 
   for (uint32_t i = 0; i < opCount; i++) {
     const Operand& op = opArray[i];
@@ -1399,6 +1498,18 @@ ASMJIT_FAVOR_SPEED Error X86RAPass::_rewrite(BaseNode* first, BaseNode* stop) no
             if (!isNextTo(node, _func->exitNode())) {
               cc()->_setCursor(node->prev());
               ASMJIT_PROPAGATE(emitJump(_func->exitNode()->label()));
+            }
+
+            BaseNode* prev = node->prev();
+            cc()->removeNode(node);
+            block->setLast(prev);
+          }
+          // Similarly with chain.
+          if (node->type() == NodeType::kFuncChain) {
+            RABlock* block = raInst->block();
+            if (!isNextTo(node, _func->chainNode())) {
+              cc()->_setCursor(node->prev());
+              ASMJIT_PROPAGATE(emitJump(_func->chainNode()->label()));
             }
 
             BaseNode* prev = node->prev();

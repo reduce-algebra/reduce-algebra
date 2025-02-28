@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -99,6 +100,7 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   // Insert function epilog.
 //!   cb.setCursor(epilogInsertionPoint);
 //!   cb.emitEpilog(frame);
+//!   cb.emitChainEpilog(frame);
 //!
 //!   // Let's see how the function's prolog and epilog looks.
 //!   dumpCode(cb, "Prolog & Epilog");

@@ -81,8 +81,7 @@ int Debug = 0;
 char * cygdrive_prefix = NULL;
 
 extern void * saved_pxcptinfoptrs;
-
-extern void gcleanup ();
+extern char bps[];
 
 void init_fp();
 
@@ -162,7 +161,6 @@ char *argv[];
     psl_main(argc,copy_argv(argc,argv));
   }
  
-  gcleanup ();
   exit(0);
 }
 
@@ -212,7 +210,7 @@ char winpathbuffer[_MAX_PATH];
 char *
 cygpath2winpath(char * cygpath)
 {
-  if (Debug > 0) {
+  if (Debug > 1) {
     fprintf(stderr,"input cygpath: %s\n",cygpath);
     fprintf(stderr,"prefix is %s\n",cygdrive_prefix == NULL ? "(NULL)" : cygdrive_prefix);
   }
@@ -221,7 +219,7 @@ cygpath2winpath(char * cygpath)
       strncmp(cygpath,cygdrive_prefix,strlen(cygdrive_prefix))==0 && cygpath[strlen(cygdrive_prefix)] == '/') {
 
     strcpy(winpathbuffer,cygpath + strlen(cygdrive_prefix));
-    if (Debug > 0) {
+    if (Debug > 1) {
       fprintf(stderr,"prefix found, rest is: %s\n",winpathbuffer);
     }
     

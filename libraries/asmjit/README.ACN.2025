@@ -1,10 +1,34 @@
-I have added CYGWIN and MINGW32 to the set of OSes that support 64-bit
-file-offsets by default. This is just 2 extra lines ion core/api-build_p.h.
-I have done this because Cygwin does not provide either open64() or
-ftruncate64() and the x86_64-w64-mingw32-g++ toolchain under Cygwin
-does not provide open64 but does have ftruncate64. So my patch leaves
-the mingw32 build using ftruncate where it might ideally use ftruncate64
-but I find it hard to believe that this will hurt me.
+This is a patched version of asmjit. The file asmjit.diff should show
+the differences between it and the official version on the asmjit
+repository.
 
+The changes are
+[frivolous] I detect __CYGWIN__ and __MINGW32__ such that in neither
+vase will the code attempt to use open64() or ftruncate64().
+
+[frivolous] If __CYGWIN__ is defined I try to set the default calling
+convention to the (Microsoft-style) one used there.
+
+[more significant] When the "compiler" is being used there is now
+an opcode written as "chain(<register>)" that can be used where one
+might otherwise have used "ret(<register>)". For this to be proper the
+asmjit code being generated should have been set up to return a value
+that would be returned as an integer in a register. When this is used it
+leads to code very similar to that for return save that at the end if
+transfers control to the address held in the specified register. When
+that is the entrypoint of a function it is as if that function has been
+called in place of the JIT code. The motivation for this is that if the
+function transferred to is a C++ one it can now raise exceptions that
+will end up passed back to the original caller. Most code created
+with asmjit will not support the stack unwinding that this entails
+and callee-saved registers that the JIT code used would not get restored
+properly.
+on systems where the callee has to do some stack tidying (ie 32-bit
+"stdcall") the function chained to should have the same argument
+signature as the asmjit-built code, but when it is entered none of its
+argument values will be valid or useful. With "cdecl" and the current
+64-bit systems it would be proper and should be safe to make the
+function one that does not take any arguments but returns the same
+type of result as the original one. 
 
 Arthur Norman. February 2025

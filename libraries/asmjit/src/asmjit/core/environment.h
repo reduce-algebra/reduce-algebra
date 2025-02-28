@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -138,9 +139,7 @@ enum class PlatformABI : uint8_t {
     DETECTED_AT_COMPILE_TIME
 #elif defined(_MSC_VER)
     kMSVC
-#elif defined(__CYGWIN__)
-    kCygwin
-#elif defined(__MINGW32__) || defined(__GLIBC__)
+#elif defined(__MINGW32__) || defined(__CYGWIN__) || defined(__GLIBC__)
     kGNU
 #elif defined(__ANDROID__)
     kAndroid

@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -250,8 +251,8 @@ RABlock* BaseRAPass::newBlockOrExistingAt(LabelNode* cbLabel, BaseNode** stopped
       block = node->passData<RABlock>();
       if (block) {
         // Exit node has always a block associated with it. If we went here it means that `cbLabel` passed here
-        // is after the end of the function and cannot be merged with the function exit block.
-        if (node == func->exitNode())
+        // is after the end of the function and cannot be merged with the function exit block. Ditto chain.
+        if (node == func->exitNode() || node == func->chainNode())
           block = nullptr;
         break;
       }
@@ -1843,6 +1844,9 @@ Error BaseRAPass::insertPrologEpilog() noexcept {
 
   cc()->_setCursor(func()->exitNode());
   ASMJIT_PROPAGATE(cc()->emitEpilog(frame));
+
+  cc()->_setCursor(func()->chainNode());
+  ASMJIT_PROPAGATE(cc()->emitChainEpilog(frame));
 
   return kErrorOk;
 }

@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -77,8 +78,10 @@ enum class NodeType : uint8_t {
   kFunc = 16,
   //! Node is \ref FuncRetNode (acts as InstNode).
   kFuncRet = 17,
+  //! Node is \ref FuncChainNode (acts as InstNode).
+  kFuncChain = 18,
   //! Node is \ref InvokeNode (acts as InstNode).
-  kInvoke = 18,
+  kInvoke = 19,
 
   // [UserDefined]
 
@@ -650,6 +653,8 @@ public:
   ASMJIT_INLINE_NODEBUG bool isFunc() const noexcept { return type() == NodeType::kFunc; }
   //! Tests whether this node is `FuncRetNode`.
   ASMJIT_INLINE_NODEBUG bool isFuncRet() const noexcept { return type() == NodeType::kFuncRet; }
+  //! Tests whether this node is `FuncChainNode`.
+  ASMJIT_INLINE_NODEBUG bool isFuncChain() const noexcept { return type() == NodeType::kFuncChain; }
   //! Tests whether this node is `InvokeNode`.
   ASMJIT_INLINE_NODEBUG bool isInvoke() const noexcept { return type() == NodeType::kInvoke; }
 

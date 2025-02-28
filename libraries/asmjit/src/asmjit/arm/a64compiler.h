@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -217,6 +218,11 @@ public:
   ASMJIT_INLINE_NODEBUG Error ret(const BaseReg& o0) { return addRet(o0, Operand()); }
   //! \overload
   ASMJIT_INLINE_NODEBUG Error ret(const BaseReg& o0, const BaseReg& o1) { return addRet(o0, o1); }
+
+  //! Chain.
+  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0) { return addChain(o0, Operand()); }
+  //! \overload
+  ASMJIT_INLINE_NODEBUG Error chain(const BaseReg& o0, const BaseReg& o1) { return addChain(o0, o1); }
 
   //! \}
 

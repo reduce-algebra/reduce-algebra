@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -256,6 +257,13 @@ Error BaseEmitter::emitEpilog(const FuncFrame& frame) {
     return DebugUtils::errored(kErrorNotInitialized);
 
   return _funcs.emitEpilog(this, frame);
+}
+
+Error BaseEmitter::emitChainEpilog(const FuncFrame& frame) {
+  if (ASMJIT_UNLIKELY(!_code))
+    return DebugUtils::errored(kErrorNotInitialized);
+
+  return _funcs.emitChainEpilog(this, frame);
 }
 
 Error BaseEmitter::emitArgsAssignment(const FuncFrame& frame, const FuncArgsAssignment& args) {

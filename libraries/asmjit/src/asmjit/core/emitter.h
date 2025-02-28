@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -259,6 +260,7 @@ public:
   struct Funcs {
     typedef Error (ASMJIT_CDECL* EmitProlog)(BaseEmitter* emitter, const FuncFrame& frame);
     typedef Error (ASMJIT_CDECL* EmitEpilog)(BaseEmitter* emitter, const FuncFrame& frame);
+    typedef Error (ASMJIT_CDECL* EmitChainEpilog)(BaseEmitter* emitter, const FuncFrame& frame);
     typedef Error (ASMJIT_CDECL* EmitArgsAssignment)(BaseEmitter* emitter, const FuncFrame& frame, const FuncArgsAssignment& args);
 
     typedef Error (ASMJIT_CDECL* FormatInstruction)(
@@ -274,6 +276,8 @@ public:
     EmitProlog emitProlog;
     //! Emit epilog implementation.
     EmitEpilog emitEpilog;
+    //! Emit chain epilog implementation.
+    EmitChainEpilog emitChainEpilog;
     //! Emit arguments assignment implementation.
     EmitArgsAssignment emitArgsAssignment;
     //! Instruction formatter implementation.
@@ -285,6 +289,7 @@ public:
     ASMJIT_INLINE_NODEBUG void reset() noexcept {
       emitProlog = nullptr;
       emitEpilog = nullptr;
+      emitChainEpilog = nullptr;
       emitArgsAssignment = nullptr;
       validate = nullptr;
     }
@@ -703,6 +708,8 @@ public:
   ASMJIT_API Error emitProlog(const FuncFrame& frame);
   //! Emits a function epilog described by the given function `frame`.
   ASMJIT_API Error emitEpilog(const FuncFrame& frame);
+  //! Emits a function chain epilog described by the given function `frame`.
+  ASMJIT_API Error emitChainEpilog(const FuncFrame& frame);
   //! Emits code that reassigns function `frame` arguments to the given `args`.
   ASMJIT_API Error emitArgsAssignment(const FuncFrame& frame, const FuncArgsAssignment& args);
 

@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -49,7 +50,9 @@ public:
     const BaseReg& b, const char* comment = nullptr) override;
 
   Error emitProlog(const FuncFrame& frame);
+  Error emitEpilog(const FuncFrame& frame, bool chain);
   Error emitEpilog(const FuncFrame& frame);
+  Error emitChainEpilog(const FuncFrame& frame);
 };
 
 void assignEmitterFuncs(BaseEmitter* emitter);

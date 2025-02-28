@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -393,6 +394,7 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   a.paddd(vec0, vec1);              // Add 4 ints in XMM1 to XMM0.
 //!   a.movdqu(x86::ptr(dst), vec0);    // Store the result to [dst].
 //!   a.emitEpilog(frame);              // Emit function epilog and return.
+//!   a.emitChainEpilog(frame);         // Emit function epilog and go to address in result register
 //!
 //!   SumIntsFunc fn;
 //!   Error err = rt.add(&fn, &code);   // Add the generated code to the runtime.

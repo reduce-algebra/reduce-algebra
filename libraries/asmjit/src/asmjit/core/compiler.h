@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -26,6 +27,7 @@ class JumpAnnotation;
 class JumpNode;
 class FuncNode;
 class FuncRetNode;
+class FuncChainNode;
 class InvokeNode;
 
 //! \addtogroup asmjit_compiler
@@ -95,6 +97,11 @@ public:
   //! Creates a new \ref FuncRetNode and adds it to the instruction stream.
   ASMJIT_API Error addFuncRetNode(FuncRetNode** ASMJIT_NONNULL(out), const Operand_& o0, const Operand_& o1);
 
+  //! Creates a new \ref FuncChainNode.
+  ASMJIT_API Error newFuncChainNode(FuncChainNode** ASMJIT_NONNULL(out), const Operand_& o0, const Operand_& o1);
+  //! Creates a new \ref FuncChainNode and adds it to the instruction stream.
+  ASMJIT_API Error addFuncChainNode(FuncChainNode** ASMJIT_NONNULL(out), const Operand_& o0, const Operand_& o1);
+
   //! Returns the current function.
   ASMJIT_INLINE_NODEBUG FuncNode* func() const noexcept { return _func; }
 
@@ -133,6 +140,11 @@ public:
   inline Error addRet(const Operand_& o0, const Operand_& o1) {
     FuncRetNode* node;
     return addFuncRetNode(&node, o0, o1);
+  }
+
+  inline Error addChain(const Operand_& o0, const Operand_& o1) {
+    FuncChainNode* node;
+    return addFuncChainNode(&node, o0, o1);
   }
 
   //! \}
@@ -373,6 +385,9 @@ public:
 //!   - Function exit, which is represented by \ref FuncNode::exitNode(). A helper function
 //!     \ref FuncNode::exitLabel() exists and returns an exit label instead of node.
 //!
+//!   - Function chain, which is represented by \ref FuncNode::chainNode(). A helper function
+//!     \ref FuncNode::chainLabel() exists and returns an exit label instead of node.
+//!
 //!   - Function \ref FuncNode::endNode() sentinel. This node marks the end of a function - there should be no
 //!     code that belongs to the function after this node, but the Compiler doesn't enforce that at the moment.
 //!
@@ -429,6 +444,8 @@ public:
   FuncFrame _frame;
   //! Function exit label.
   LabelNode* _exitNode;
+  //! Function chain label.
+  LabelNode* _chainNode;
   //! Function end (sentinel).
   SentinelNode* _end;
   //! Argument packs.
@@ -447,6 +464,7 @@ public:
       _funcDetail(),
       _frame(),
       _exitNode(nullptr),
+      _chainNode(nullptr),
       _end(nullptr),
       _args(nullptr) {
     setType(NodeType::kFunc);
@@ -461,6 +479,11 @@ public:
   ASMJIT_INLINE_NODEBUG LabelNode* exitNode() const noexcept { return _exitNode; }
   //! Returns function exit label.
   ASMJIT_INLINE_NODEBUG Label exitLabel() const noexcept { return _exitNode->label(); }
+
+  //! Returns function chain `LabelNode`.
+  ASMJIT_INLINE_NODEBUG LabelNode* chainNode() const noexcept { return _chainNode; }
+  //! Returns function chain label.
+  ASMJIT_INLINE_NODEBUG Label chainLabel() const noexcept { return _chainNode->label(); }
 
   //! Returns "End of Func" sentinel node.
   ASMJIT_INLINE_NODEBUG SentinelNode* endNode() const noexcept { return _end; }
@@ -547,6 +570,22 @@ public:
     _any._nodeType = NodeType::kFuncRet;
   }
 
+  //! \}
+};
+
+//! Function chaining, used by \ref BaseCompiler.
+class FuncChainNode : public InstNodeWithOperands<InstNode::kBaseOpCapacity> {
+public:
+  ASMJIT_NONCOPYABLE(FuncChainNode)
+
+  //! \name Construction & Destruction
+  //! \{
+
+  //! Creates a new `FuncChainNode` instance.
+  inline FuncChainNode(BaseBuilder* ASMJIT_NONNULL(cb)) noexcept
+    : InstNodeWithOperands(cb, BaseInst::kIdAbstract, InstOptions::kNone, 0) {
+    _any._nodeType = NodeType::kFuncChain;
+  }
   //! \}
 };
 

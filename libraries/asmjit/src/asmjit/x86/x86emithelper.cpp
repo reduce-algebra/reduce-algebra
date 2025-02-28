@@ -1,7 +1,10 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
 // SPDX-License-Identifier: Zlib
+
+#include <iostream> //@@@
 
 #include "../core/api-build_p.h"
 #if !defined(ASMJIT_NO_X86)
@@ -517,7 +520,7 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitProlog(const FuncFrame& frame) {
   return kErrorOk;
 }
 
-ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
+ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chain) {
   Emitter* emitter = _emitter->as<Emitter>();
 
   uint32_t i;
@@ -597,13 +600,26 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
   if (frame.hasPreservedFP())
     ASMJIT_PROPAGATE(emitter->pop(zbp));
 
-  // Emit 'ret' or 'ret x'.
-  if (frame.hasCalleeStackCleanup())
-    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet, int(frame.calleeStackCleanup())));
-  else
-    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet));
-
+  if (!chain) {
+    // Emit 'ret' or 'ret x'.
+    if (frame.hasCalleeStackCleanup())
+      ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet, int(frame.calleeStackCleanup())));
+    else
+      ASMJIT_PROPAGATE(emitter->emit(Inst::kIdRet));
+  }
+  else { 
+    // Emit 'jmp rax'.
+    ASMJIT_PROPAGATE(emitter->emit(Inst::kIdJmp, x86::rax));
+  }
   return kErrorOk;
+}
+
+ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
+  return emitEpilog(frame, false);
+}
+
+ASMJIT_FAVOR_SIZE Error EmitHelper::emitChainEpilog(const FuncFrame& frame) {
+  return emitEpilog(frame, true);
 }
 
 static Error ASMJIT_CDECL Emitter_emitProlog(BaseEmitter* emitter, const FuncFrame& frame) {
@@ -616,6 +632,11 @@ static Error ASMJIT_CDECL Emitter_emitEpilog(BaseEmitter* emitter, const FuncFra
   return emitHelper.emitEpilog(frame);
 }
 
+static Error ASMJIT_CDECL Emitter_emitChainEpilog(BaseEmitter* emitter, const FuncFrame& frame) {
+  EmitHelper emitHelper(emitter, frame.isAvxEnabled(), frame.isAvx512Enabled());
+  return emitHelper.emitChainEpilog(frame);
+}
+
 static Error ASMJIT_CDECL Emitter_emitArgsAssignment(BaseEmitter* emitter, const FuncFrame& frame, const FuncArgsAssignment& args) {
   EmitHelper emitHelper(emitter, frame.isAvxEnabled(), frame.isAvx512Enabled());
   return emitHelper.emitArgsAssignment(frame, args);
@@ -624,6 +645,7 @@ static Error ASMJIT_CDECL Emitter_emitArgsAssignment(BaseEmitter* emitter, const
 void assignEmitterFuncs(BaseEmitter* emitter) {
   emitter->_funcs.emitProlog = Emitter_emitProlog;
   emitter->_funcs.emitEpilog = Emitter_emitEpilog;
+  emitter->_funcs.emitChainEpilog = Emitter_emitChainEpilog;
   emitter->_funcs.emitArgsAssignment = Emitter_emitArgsAssignment;
 
 #ifndef ASMJIT_NO_LOGGING

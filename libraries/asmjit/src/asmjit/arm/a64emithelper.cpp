@@ -1,3 +1,4 @@
+// Modified by A C Norman, Feb 2025, to support chain()
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
@@ -372,7 +373,7 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitProlog(const FuncFrame& frame) {
 }
 
 // TODO: [ARM] Emit epilog.
-ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
+ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame, bool chain) {
   Emitter* emitter = _emitter->as<Emitter>();
 
   PrologEpilogInfo pei;
@@ -431,9 +432,18 @@ ASMJIT_FAVOR_SIZE Error EmitHelper::emitEpilog(const FuncFrame& frame) {
     }
   }
 
-  ASMJIT_PROPAGATE(emitter->ret(x30));
+  if (chain) ASMJIT_PROPAGATE(emitter->ret(x0));
+  else ASMJIT_PROPAGATE(emitter->ret(x30));
 
   return kErrorOk;
+}
+
+Error EmitHelper::emitEpilog(const FuncFrame& frame) {
+  return EmitHelper::emitEpilog(frame, false);
+}
+
+Error EmitHelper::emitChainEpilog(const FuncFrame& frame) {
+  return EmitHelper::emitEpilog(frame, true);
 }
 
 static Error ASMJIT_CDECL Emitter_emitProlog(BaseEmitter* emitter, const FuncFrame& frame) {
@@ -446,6 +456,11 @@ static Error ASMJIT_CDECL Emitter_emitEpilog(BaseEmitter* emitter, const FuncFra
   return emitHelper.emitEpilog(frame);
 }
 
+static Error ASMJIT_CDECL Emitter_emitChainEpilog(BaseEmitter* emitter, const FuncFrame& frame) {
+  EmitHelper emitHelper(emitter);
+  return emitHelper.emitChainEpilog(frame);
+}
+
 static Error ASMJIT_CDECL Emitter_emitArgsAssignment(BaseEmitter* emitter, const FuncFrame& frame, const FuncArgsAssignment& args) {
   EmitHelper emitHelper(emitter);
   return emitHelper.emitArgsAssignment(frame, args);
@@ -454,6 +469,7 @@ static Error ASMJIT_CDECL Emitter_emitArgsAssignment(BaseEmitter* emitter, const
 void assignEmitterFuncs(BaseEmitter* emitter) {
   emitter->_funcs.emitProlog = Emitter_emitProlog;
   emitter->_funcs.emitEpilog = Emitter_emitEpilog;
+  emitter->_funcs.emitChainEpilog = Emitter_emitChainEpilog;
   emitter->_funcs.emitArgsAssignment = Emitter_emitArgsAssignment;
 
 #ifndef ASMJIT_NO_LOGGING
