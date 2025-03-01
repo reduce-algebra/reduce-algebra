@@ -13,16 +13,17 @@
 Graphical display of functions and data is done via an interface, the
 {\REDUCE} \package{GNUPLOT}\footnote{This interface, together with the
 code for plotting data, was written by Herbert Melenk.} package, to
-the popular {\Gnuplot} graphing utility described at
-\url{https://gnuplot.sourceforge.net/}.  It allows you to display
-functions in 2D and surfaces in 3D on a variety of output devices
-including X terminals, PC monitors, and postscript and {\LaTeX} printer
-files.
+the popular
+{\Gnuplot}\footnote{\url{https://gnuplot.sourceforge.net/}} graphing
+utility.  It allows you to display functions in 2D and surfaces in 3D
+on a variety of output devices including X terminals, PC monitors, and
+postscript and {\LaTeX} printer files.
 
 Installing {\REDUCE} normally also installs {\Gnuplot} version 4.6,
 which should include its own documentation.  You can install a later
 version of {\Gnuplot} and it should work, but beware of incompatible
-changes since version 4.6!
+changes since version 4.6!  This manual assumes the use of {\Gnuplot}
+version 4.6.
 
 The \package{GNUPLOT} package provides easy to use graphics output for
 curves or surfaces which are defined by formulas and/or data sets, and
@@ -193,14 +194,14 @@ The following options are specific to the {\REDUCE} \texttt{plot} command:
 Additional {\Gnuplot} options are supported via the following
 syntax in the \texttt{plot} command.
 
-The options below are implemented using the {\Gnuplot} \texttt{set}
-(or \texttt{unset} if the option begins with \texttt{no}) command,
-which offers far more control than is currently exposed via this
-interface.  Note that the {\Gnuplot} \texttt{reset} command, which
-clears the effect of most \texttt{set} commands (not \texttt{set term}
-or \texttt{set output}) from previous calls of \texttt{plot}, is
-always issued before any \texttt{set} commands.  See Commands /
-Set-show / \emph{option} and Commands / Reset in the {\Gnuplot}
+The following options are implemented using the {\Gnuplot}
+\texttt{set} (or \texttt{unset} if the option begins with \texttt{no})
+command, which offers far more control than is currently exposed via
+this interface.  Note that the {\Gnuplot} \texttt{reset} command,
+which clears the effect of most \texttt{set} commands (not \texttt{set
+  term} or \texttt{set output}) from previous calls of \texttt{plot},
+is always issued before any \texttt{set} commands.  See \emph{Commands
+/ Set-show} and \emph{Commands / Reset} in the {\Gnuplot}
 documentation or the {\Gnuplot} Help for details.
 \begin{itemize}
   \item \texttt{title=<string>}: the specified title is put at the top
@@ -224,14 +225,27 @@ plot(1,x,(4*x^2-1)/2,(x*(12*x^2-5))/3, x=(-1 .. 1),
     as printers; consult the {\Gnuplot} documentation or the
     {\Gnuplot} Help for details.
   \item \texttt{output="filename"}: redirect the output to a file.
-  \item \texttt{size="s\_x,s\_y"}: rescale the graph (not the window) where
-    $s_x$ and $s_y$ are scaling factors for the $x$- and $y$-sizes.  Defaults
-    are $s_x=1,s_y=1$.  Note that scaling factors greater than 1 will often
-    cause the picture to be too big for the window.
+  \item \texttt{size=<string>}: set the size of the plot via the
+    {\Gnuplot} command \texttt{set size <string>}, for example\ldots
+    \begin{itemize}
+    \item \texttt{size="s\_x,s\_y"}: rescale the graph (not the
+      window) where $s_x$ and $s_y$ are scaling factors for the $x$-
+      and $y$-sizes, e.g.
 \begin{verbatim}
 plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5),
    size="0.7,1");
 \end{verbatim}
+      Defaults are $s_x=1,s_y=1$.  Note that scaling factors greater
+      than 1 will often cause the picture to be too big for the
+      window.
+    \item \texttt{size="ratio -1"}: set the scales so that the unit
+      has the same length on both the $x$ and $y$ axes, which is
+      essential for geometrical plots to look correct, e.g.
+\begin{verbatim}
+plot(x^2+y^2-1=0, x=(-2 .. 2), y=(-2 .. 2),
+   size="ratio -1");
+\end{verbatim}
+    \end{itemize}
   \item \texttt{view="r\_x,r\_z"}: set the viewpoint in 3 dimensions by turning
     the object around the $x$ or $z$ axis; the values are degrees (integers).
     Defaults are $r_x=60,r_z=30$.
@@ -254,10 +268,10 @@ plot(1/(x^2+y^2), x=(0.1 .. 5), y=(0.1 .. 5),
     surface in 3 dimensions.
 \end{itemize}
 
-The option below is implemented using the {\Gnuplot} \texttt{with}
-command, which offers far more control than is currently exposed via
-this interface.  See Commands / Plot / With in the {\Gnuplot}
-documentation or the {\Gnuplot} Help for details.
+The following option is implemented using the {\Gnuplot} command
+\texttt{with <style>}, which offers far more control than is currently
+exposed via this interface.  See \emph{Plotting styles} in the
+{\Gnuplot} documentation or the {\Gnuplot} Help for details.
 \begin{itemize}
 \item
   \begin{sloppypar}
@@ -267,8 +281,7 @@ documentation or the {\Gnuplot} Help for details.
     \texttt{boxxyerrorbars}, \texttt{candlesticks},
     \texttt{financebars}, \texttt{fsteps}, \texttt{histeps},
     \texttt{steps}, \texttt{vector}, \texttt{xerrorbars},
-    \texttt{xyerrorbars}, \texttt{yerrorbars}: set the data display
-    style.
+    \texttt{xyerrorbars}, \texttt{yerrorbars}: set the display style.
   \end{sloppypar}
 \end{itemize}
 
@@ -344,19 +357,19 @@ output can be produced.
 
 Under Windows 3.1 and Windows NT, {\Gnuplot} has a text and a graph window.  If you
 don't want to see the text window, iconify it and activate the
-option \texttt{update wgnuplot.ini} from the graph window system menu - then the
+option \texttt{update wgnuplot.ini} from the graph window system menu -- then the
 present screen layout (including the graph window size) will be saved and the
 text windows will come up iconified in future.  You can also select some more
 features there and so tailor the graphic output.  Before you terminate {\REDUCE}
 you should terminate the graphic window by calling \texttt{plotreset;}.  If you
 terminate {\REDUCE} without deleting the {\Gnuplot} windows, use the command button
-from the {\Gnuplot} text window - it offers an exit function.
+from the {\Gnuplot} text window -- it offers an exit function.
 
 
 \subsection{Saving {\Gnuplot} command sequences}
 \hypertarget{switch:TRPLOT}{}
 \hypertarget{switch:PLOTKEEP}{}
-\ttindexswitch[GNUPLOT]{trplot}\ttindexswitch{GNUPLOT}{plotkeep}
+\ttindexswitch[GNUPLOT]{trplot}\ttindexswitch[GNUPLOT]{plotkeep}
 \index{Tracing!GNUPLOT package}
 If you want to use the internal {\Gnuplot} command sequence more than once
 (e.g., for producing a picture for a publication), you may set
