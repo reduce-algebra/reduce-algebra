@@ -75,6 +75,88 @@ void unfinished(const char* msg)
     THROW(JitFailed);
 }
 
+// By introducing a type "Register" that is a general purpose register on
+// my host machine I can keep one copy of code where at one stage I had
+// been going to have essentially two copies.
+#if defined __x86_64__
+typedef x86::Gp Register;
+typedef x86::Compiler LocalCompiler;
+#elif defined __aarch64__
+typedef a64::Gp Register;
+typedef x64::Compiler LocalCompiler;
+#else
+#error unrecognised architecture for JIT
+#endif
+
+// Some overloads for setting up function calls with 0, 1,... args,
+// all of which are LispObjects.
+
+void invoke(LocalCompiler& cc, Register& target, Register& result)
+{   InvokeNode *in;
+    cc.invoke(&in, target,
+        FuncSignature::build<LispObject>());
+    in->setRet(0, result);
+}
+
+void invoke(LocalCompiler& cc, Register& target, Register& result,
+            Register& a1)
+{   InvokeNode *in;
+    cc.invoke(&in, target,
+        FuncSignature::build<LispObject, LispObject>());
+    in->setArg(0, a1);
+    in->setRet(0, result);
+}
+
+void invoke(LocalCompiler& cc, Register& target, Register& result,
+            Register& a1, Register& a2)
+{   InvokeNode *in;
+    cc.invoke(&in, target,
+        FuncSignature::build<LispObject, LispObject, LispObject>());
+    in->setArg(0, a1);
+    in->setArg(1, a2);
+    in->setRet(0, result);
+}
+
+void invoke(LocalCompiler& cc, Register& target, Register& result,
+            Register& a1, Register& a2, Register& a3)
+{   InvokeNode *in;
+    cc.invoke(&in, target,
+        FuncSignature::build<LispObject, LispObject,
+                             LispObject, LispObject>());
+    in->setArg(0, a1);
+    in->setArg(1, a2);
+    in->setArg(2, a3);
+    in->setRet(0, result);
+}
+
+void invoke(LocalCompiler& cc, Register& target, Register& result,
+            Register& a1, Register& a2, Register& a3, Register& a4)
+{   InvokeNode *in;
+    cc.invoke(&in, target,
+        FuncSignature::build<LispObject, LispObject, LispObject,
+                             LispObject, LispObject>());
+    in->setArg(0, a1);
+    in->setArg(1, a2);
+    in->setArg(2, a3);
+    in->setArg(3, a4);
+    in->setRet(0, result);
+}
+
+void invoke(LocalCompiler& cc, Register& target, Register& result,
+            Register& a1, Register& a2, Register& a3,
+            Register& a4, Register& a5)
+{   InvokeNode *in;
+    cc.invoke(&in, target,
+        FuncSignature::build<LispObject, LispObject, LispObject,
+                             LispObject, LispObject, LispObject>());
+    in->setArg(0, a1);
+    in->setArg(1, a2);
+    in->setArg(2, a3);
+    in->setArg(3, a4);
+    in->setArg(4, a5);
+    in->setRet(0, result);
+}
+
 // When a function is potentially going to be JIT compiled it will
 // have one of jitcoded_0 to jitcoded_4up in a function call where otherwise
 // it would have had bytecoded_0 etc. At present I an not considering
@@ -164,15 +246,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     FileLogger logger(stdout);
     code.setLogger(&logger);
 
-// By introducing a type "Register" that is a general purpose register on
-// my host machine I can keep one copy of code where at one stage I had
-// been going to have essentially two copies.
 #if defined __x86_64__
-    auto cc = x86::Compiler(&code);
-typedef x86::Gp Register;
+    LocalCompiler cc = x86::Compiler(&code);
 #elif defined __aarch64__
-    auto cc = a64::Compiler(&code);
-typedef a64::Gp Register;
+    LocalCompiler cc = a64::Compiler(&code);
 #else
 #error unrecognised architecture for JIT
 #endif

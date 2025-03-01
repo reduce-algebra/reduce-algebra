@@ -700,8 +700,6 @@ LispObject* stackSegment;
 // This is the symbol "nil" which lives here at a static address
 // rather than anywhere in the heap.
 
-Symbol_Head nilObject;
-
 void initHeapSegments(double storeSize)
 // This function just makes nil and the pool of page-frames available.
 // The store-size is passed in units of Kilobyte, and as a double rather
@@ -726,7 +724,6 @@ void initHeapSegments(double storeSize)
         consPages.count = vecPages.count = borrowPages.count =
         consOldPages.count = vecOldPages.count = 0;
     potentiallyPinned = pinnedPages = pendingPages = oldVecPinPages = nullptr;
-    nil = static_cast<LispObject>((uintptr_t)&nilObject + TAG_SYMBOL);
     stackSegment = reinterpret_cast<LispObject*>(
         new (std::nothrow) Align8[CSL_PAGE_SIZE/8]);
     if (stackSegment == nullptr) fatal_error(err_no_store);

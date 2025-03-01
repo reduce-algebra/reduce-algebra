@@ -38,7 +38,7 @@
 
 // If NO_THROW is defined this uses a flag rather than genuine C++ exceptions!
 
-extern LispObject *stack;
+//extern LispObject *stack;
 extern uintptr_t stackBase;
 extern uintptr_t stackFringe;
 extern uintptr_t stackLimit;
@@ -655,7 +655,6 @@ public:
 
 // I am assuming that from 2025 onwards C++ compilers will support
 // inline variables fully.
-inline int64_t jitexception = 0;
 
 #ifdef NO_THROW
 
@@ -724,13 +723,13 @@ inline int exceptionLine = -1;
 
 #ifdef DEBUG
 #define THROW(flavour) do {     \
-   jitexception = 1;            \
+   JITerrflag = 1;              \
    exceptionFile = __FILE__;    \
    exceptionLine = __LINE__;    \
    exceptionFlag = flavour;     \
    return SPID_Throw; } while(false)
 #define THROWVOID(flavour) do { \
-   jitexception = 1;            \
+   JITerrflag = 1;              \
    exceptionFile = __FILE__;    \
    exceptionLine = __LINE__;    \
    exceptionFlag = flavour;     \
@@ -738,12 +737,12 @@ inline int exceptionLine = -1;
 #else
 #define THROW(flavour)          \
     do {                        \
-       jitexception = 1;        \
+       JITerrflag = 1;          \
        exceptionFlag = flavour; \
        return SPID_Throw; } while(false)
 #define THROWVOID(flavour)      \
     do {                        \
-       jitexception = 1;        \
+       JITerrflag = 1;          \
        exceptionFlag = flavour; \
        return; } while(false)
 #endif
@@ -757,18 +756,18 @@ inline int exceptionLine = -1;
 #define ANOTHER_CATCH(flavour)                                          \
    } else if ((exceptionFlag & flavour) != 0) UNLIKELY                  \
    {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
-       jitexception = 0;                                                \
+       JITerrflag = 0;                                                  \
        exceptionFlag = LispNormal;
 
 #define CATCH_ANY()                                                     \
    return nil;})(); if (exceptionFlag != 0) UNLIKELY                    \
    {   [[maybe_unused]] LispExceptionTag saveException = exceptionFlag; \
-       jitexception = 0;                                                \
+       JITerrflag = 0;                                                  \
        exceptionFlag = LispNormal;
 
 #define RETHROW do                                                      \
     { exceptionFlag = saveException;                                    \
-      jitexception = 1;                                                 \
+      JITerrflag = 1;                                                   \
       return SPID_ERROR+(saveException<<20); } while(false)
 
 #define END_CATCH } \
@@ -856,17 +855,17 @@ inline bool exceptionPending()
 #define TRY try { ([&]()->LispObject \
     { SaveStack save_stack_Object ## __LINE__;
 
-#define THROW(flavour) { jitexception = 1; throw flavour(); }
-#define THROWVOID(flavour) { jitexception = 1; throw flavour(); }
+#define THROW(flavour) { JITerrflag = 1; throw flavour(); }
+#define THROWVOID(flavour) { JITerrflag = 1; throw flavour(); }
 
-#define CATCH(flavour) return nil;})(); } catch (flavour &e) { jitexception=0;
+#define CATCH(flavour) return nil;})(); } catch (flavour &e) { JITerrflag=0;
 
-#define ANOTHER_CATCH(flavour) } catch (flavour &e) { jitexception = 0;
+#define ANOTHER_CATCH(flavour) } catch (flavour &e) { JITerrflag = 0;
 
-#define CATCH_ANY() return nil;})(); } catch (...) { jitexception = 0;
+#define CATCH_ANY() return nil;})(); } catch (...) { JITerrflag = 0;
 
-#define RETHROW { jitexception = 1; throw; }
-#define RETHROWVOID { jitexception = 1; throw; }
+#define RETHROW { JITerrflag = 1; throw; }
+#define RETHROWVOID { JITerrflag = 1; throw; }
 
 #define END_CATCH }
 
@@ -881,22 +880,22 @@ inline bool exceptionPending()
 // correct across all combinations of machine architectures and compilers.
 // So I sidestep at least almost all of it.
 // When JIT code wants to generate a function call that I will express
-// as FFF(a,b,c) I will make it use jitshim(FFF,a,b,c) instead. I will
-// present one override of jitshim here and then explain it - and then
+// as FFF(a,b,c) I will make it use JITshim(FFF,a,b,c) instead. I will
+// present one override of JITshim here and then explain it - and then
 // write out all the other overrides:
 
-// jitexception is used as a flag but I make it a 64-bit integer so that I
+// JITerrflag is used as a flag but I make it a 64-bit integer so that I
 // do not have to wonder just how much memory your C++ compiler allocates
 // to store a bool. My exception abstraction arranges that its value is
 // nonzero whenever an exception is active. If "real" exceptions are in
-// play I will sometimes put a value on jitexception_ptr to record
-// the precise exception that is current.
+// play I will sometimes put a value on JITerr_ptr to record
+// the precise exception that is current so that it can be rethrown.
 
 #ifndef NO_THROW
-inline std::exception_ptr jitexception_ptr;
+inline std::exception_ptr JITerr_ptr;
 #endif // NO
 
-// I will only implement variants of "jitshim" that I think the JIT
+// I will only implement variants of "JITshim" that I think the JIT
 // compiler will really want.
 typedef LispObject (*func0)();
 typedef LispObject (*func1)(LispObject);
@@ -912,7 +911,7 @@ typedef LispObject (*errfunc1)(const char*,LispObject);
 typedef LispObject (*errfunc2)(const char*,LispObject,LispObject);
 typedef LispObject (*errfunc2s)(const char*,const char*,LispObject);
 
-inline LispObject jitshim(func1* FF, LispObject env)
+inline LispObject JITshim(func1 FF, LispObject env)
 {   LispObject r;
     TRY
 // I will call FF(env) and use C++ facilities to catch any exceptions
@@ -920,113 +919,145 @@ inline LispObject jitshim(func1* FF, LispObject env)
         r = (*FF)(env);
     CATCH_ANY()
 // If there is an exception I will return in a normal state as if
-// there had been nothing special happening, save that jitexception
-// will be set. It is the responsibility of whoever uses jitshim to
+// there had been nothing special happening, save that JITerrflag
+// will be set. It is the responsibility of whoever uses JITshim to
 // check for this immediately and deal with it. That may involve
 // doing and local tidying up and then reinstating the exception by
 // doing a tail-call to jitpropagate(). It could involve handling and
 // cancelling the error. At present I do not save quite enough information
 // to make it easy to tell what sort of exception was involved, so
 // surrport for that can be added at a later stage!
-        jitexception = 1;
+        JITerrflag = 1;
 #ifndef NO_THROW
-        jitexception_ptr = std::current_exception();
+        JITerr_ptr = std::current_exception();
 #endif // NO_THROW
         return nil;
     END_CATCH;
 // If the call FF(env) did not raise an exception make sure that the flag
 // is clear before returning.
-    jitexception = 0;
+    JITerrflag = 0;
     return r;
 }
 
-inline void jitpropagate()
+inline LispObject jitthrow()
 {
 #ifndef NO_THROW
-    std::rethrow_exception(jitexception_ptr);
+    std::rethrow_exception(JITerr_ptr);
 #endif // NO_THROW
+    return nil;
 }
 
 // Then the full version of the call to FFF will be
-//  r = jitshim(FFF, env);
-//  if (jitexception!=0) [TAILCALL] return jitpropagate();
+//  r = JITshim(FFF, env);
+//  if (JITerrflag!=0) [TAILCALL] return jitthrow();
 //
-// The annotation [TAILCALL} is to explain that the call to jitpropagate
+// The annotation [TAILCALL} is to explain that the call to jitthrow
 // must be expressed by code that restores the stack and any callee-save
 // registers that the JIT code may have changed and then takes a jump
-// to jitpropagate. The effect must be as if jitpropagate had been called
+// to jitthrow. The effect must be as if jitthrow had been called
 // directly by whoever first invoked the JIT code. The tidying up must not
-// do anything that could interact with jitexception or jitexception_ptr.
+// do anything that could interact with JITerrflag or JITerr_ptr.
 
-// I note that jitshim() could be used as a wrapper if there were any
+// I note that JITshim() could be used as a wrapper if there were any
 // other places where stack unwindinding or exception handling was going
 // to be a problem - perhaps notably or potentially across calls to some
 // code written in other languages - maybe including via use of the
 // foreign function interfaces. It is most liable to be applicable if
 // such code can make callbacks into the body of this code.
 
-// I now need variants of jitshim passing various numbers of arguments.
+// I now need variants of JITshim passing various numbers of arguments.
 
-inline LispObject jitshim(func2* FF, LispObject env, LispObject a1)
+inline LispObject JITshim(func2 FF, LispObject env, LispObject a1)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1);
     CATCH_ANY()
-        jitexception = 1;
+        JITerrflag = 1;
 #ifndef NO_THROW
-        jitexception_ptr = std::current_exception();
+        JITerr_ptr = std::current_exception();
 #endif // NO_THROW
         return nil;
     END_CATCH;
-    jitexception = 0;
+    JITerrflag = 0;
     return r;
 }
 
-inline LispObject jitshim(func3* FF, LispObject env,
+inline LispObject JITshim(boolfunc1 FF, LispObject a1)
+{   bool r;
+    TRY
+        r = (*FF)(a1);
+    CATCH_ANY()
+        JITerrflag = 1;
+#ifndef NO_THROW
+        JITerr_ptr = std::current_exception();
+#endif // NO_THROW
+        return nil;
+    END_CATCH;
+    JITerrflag = 0;
+    return r;        // widens result to intptr_t
+}
+
+
+inline LispObject JITshim(boolfunc2 FF, LispObject a1, LispObject a2)
+{   LispObject r;
+    TRY
+        r = (*FF)(a1, a2);
+    CATCH_ANY()
+        JITerrflag = 1;
+#ifndef NO_THROW
+        JITerr_ptr = std::current_exception();
+#endif // NO_THROW
+        return nil;
+    END_CATCH;
+    JITerrflag = 0;
+    return r;        // widens result to intptr_t
+}
+
+inline LispObject JITshim(func3 FF, LispObject env,
                           LispObject a1, LispObject a2)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2);
     CATCH_ANY()
-        jitexception = 1;
+        JITerrflag = 1;
 #ifndef NO_THROW
-        jitexception_ptr = std::current_exception();
+        JITerr_ptr = std::current_exception();
 #endif // NO_THROW
         return nil;
     END_CATCH;
-    jitexception = 0;
+    JITerrflag = 0;
     return r;
 }
 
-inline LispObject jitshim(func4* FF, LispObject env, LispObject a1,
+inline LispObject JITshim(func4 FF, LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2, a3);
     CATCH_ANY()
-        jitexception = 1;
+        JITerrflag = 1;
 #ifndef NO_THROW
-        jitexception_ptr = std::current_exception();
+        JITerr_ptr = std::current_exception();
 #endif // NO_THROW
         return nil;
     END_CATCH;
-    jitexception = 0;
+    JITerrflag = 0;
     return r;
 }
 
-inline LispObject jitshim(func5* FF, LispObject env, LispObject a1,
+inline LispObject JITshim(func5 FF, LispObject env, LispObject a1,
                           LispObject a2, LispObject a3, LispObject a4up)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2, a3, a4up);
     CATCH_ANY()
-        jitexception = 1;
+        JITerrflag = 1;
 #ifndef NO_THROW
-        jitexception_ptr = std::current_exception();
+        JITerr_ptr = std::current_exception();
 #endif // NO_THROW
         return nil;
     END_CATCH;
-    jitexception = 0;
+    JITerrflag = 0;
     return r;
 }
 

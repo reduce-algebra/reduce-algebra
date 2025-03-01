@@ -16,8 +16,73 @@
 
 #elif defined __x86_64__
 
+// This case is a LOT more stressfull than the opcodes that merely
+// shuffle stuff around on the stack! It is the first case I am
+// implementing that can do a genuine function call. So we have four
+// things of note here:
+// (1) There is special case code that tests tag-bits and spots if the
+//     two values being compared are both "fixnums", in which case the
+//     comparison can be done directly - but the result must be returned
+//     as either T or NIL. The variable lisp_true holds a reference to the
+//     symbol T.
+// (2) I have to wrirte cc.and_ not cc.and because and is a sort of reserved
+//     word here so the asmjit standard name has to be mildly odd! The same
+//     will apply to or/or_ and xor/xor_. Also int/int_  Beware! This is
+//     because in C++ "and" can be used as an alternative to "&&" (and
+//     "bitand" for "&") woth "or" and "bitor" for "||" and "|" and xor
+//     for "^". These exist to make it easier to write C++ on platforms
+//     with less than complete character sets. But the names involved
+//     match those of commonly-used opcodes.
+// (3) The sub-function lessp2 has to be called via JITshim because
+//     it might raise an exception - for instance if one or both of the
+//     operands are not numeric. The value it returns is a "bool" not
+//     a LispObject and JITshim will return a 64-bit result because I
+//     and not terribly careful about types! So I mask out all but the
+//     bottom byte to mend that. I should probably change things to be
+//     more careful about my return types.
+// (4) After calling JITshim I must test JITerrflag and go and do something
+//     special in the failure case.
             case OP_LESSP:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                {   Label notFixnums = cc.newLabel();
+                    Label yes = cc.newLabel();
+                    Label endLessp = cc.newLabel();
+// Test if the low 4 bits of A_reg are 0x7 - ie if the value represents
+// a Fixnum.
+                    cc.mov(w, A_reg);
+                    cc.and_(w, XTAG_BITS);
+                    cc.cmp(w, TAG_FIXNUM);
+                    cc.jne(notFixnums);
+// Similarly for B_reg.
+                    cc.mov(w, B_reg);
+                    cc.and_(w, XTAG_BITS);
+                    cc.cmp(w, TAG_FIXNUM);
+                    cc.jne(notFixnums);
+// If both are fixnums I can compare easily.
+                    cc.cmp(B_reg, A_reg);
+                    cc.jl(yes);
+// Deliver nil here.
+                    cc.mov(A_reg, nilreg);
+                    cc.jmp(endLessp);
+                    cc.bind(yes);
+// Deliver T (lisp_true) here.
+                    cc.mov(A_reg, ptr(nilreg, JIToffset(Olisp_true)));
+                    cc.jmp(endLessp);
+                    cc.bind(notFixnums);
+// Here if one or other is not a Fixnum - call external function "lessp".
+                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                    cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp)));
+                    invoke(cc, w, w1, A_reg, B_reg, A_reg);
+// See if that reported failure.
+                    cc.test(ptr(nilreg, JIToffset(OJITerrflag)), 0);
+                    cc.jne(callFailed);
+// If lessp() succeeded turn result from a bool to either T or NIL.
+                    cc.test(A_reg, 0xff);
+                    cc.jne(yes);
+                    cc.mov(A_reg, nilreg);
+// End of expansion of this opcode!                  
+                    cc.bind(endLessp);
+                }
+                break;
 
 #elif defined __aarch64__
 
@@ -29,3 +94,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op/lessp.cpp
