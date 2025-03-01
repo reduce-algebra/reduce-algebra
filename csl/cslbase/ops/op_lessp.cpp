@@ -16,7 +16,7 @@
 
 #elif defined __x86_64__
 
-// This case is a LOT more stressfull than the opcodes that merely
+// This case is a LOT more stressful than the opcodes that merely
 // shuffle stuff around on the stack! It is the first case I am
 // implementing that can do a genuine function call. So we have four
 // things of note here:
@@ -58,7 +58,7 @@
                     cc.cmp(w, TAG_FIXNUM);
                     cc.jne(notFixnums);
 // If both are fixnums I can compare easily.
-                    cc.cmp(B_reg, A_reg);
+                    cc.cmp(A_reg, B_reg);
                     cc.jl(yes);
 // Deliver nil here.
                     cc.mov(A_reg, nilreg);
@@ -72,8 +72,8 @@
                     cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
                     cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp)));
                     invoke(cc, w, w1, A_reg, B_reg, A_reg);
-// See if that reported failure.
-                    cc.test(ptr(nilreg, JIToffset(OJITerrflag)), 0);
+// See if that reported failure. Test the low bytes of JITerrflag.
+                    cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
                     cc.jne(callFailed);
 // If lessp() succeeded turn result from a bool to either T or NIL.
                     cc.test(A_reg, 0xff);
