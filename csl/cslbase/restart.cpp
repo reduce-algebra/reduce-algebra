@@ -79,8 +79,7 @@ extern int showmathInitialised;
 #endif
 #endif
 
-LispObject nil;
-LispObject* stack;
+//LispObject* stack;
 uintptr_t   stackBase;
 uintptr_t   stackFringe;
 uintptr_t   stackLimit = 0;
@@ -102,7 +101,7 @@ uint64_t gensym_ser;
 intptr_t print_precision, miscflags;
 intptr_t current_modulus, fastget_size, package_bits;
 bool modulus_is_large;
-LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
+LispObject lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
 LispObject list_symbol, callStack, liststar_symbol, eq_symbol, eql_symbol;
@@ -143,8 +142,6 @@ LispObject pathname_symbol, print_array_sym, print_hash_symbol, read_base;
 LispObject initial_element, builtin0_symbol, builtin1_symbol;
 LispObject builtin2_symbol, builtin3_symbol, builtin4_symbol;
 LispObject NaN_symbol, infinity_symbol, minusinfinity_symbol;
-
-LispObject workbase[51];
 
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
 LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
@@ -986,6 +983,18 @@ LispObject set_up_functions(int restart_flag)
 #ifdef COMMON
     CP = saved_package;
 #endif
+
+#ifdef ENABLE_JIT
+    JITthrow = jitthrow;
+    JITshim0 = JITshim;  // These lines disabiguate by types.
+    JITshim1 = JITshim;
+    JITshim2 = JITshim;
+    JITshim3 = JITshim;
+    JITshim4 = JITshim;
+//     JITshim5 = JITshim;
+    JITlessp = lessp2; 
+#endif // ENABLE_JIT
+
     return nil;
 }
 
@@ -1890,6 +1899,13 @@ LispObject set_up_variables(int restart_flag)
 #ifdef COMMON
     CP = saved_package;
 #endif
+#ifdef ENABLE_JIT
+// Now some things for the JIT...
+    JITerrflag = 0;
+    JITstring = "";
+    JITarg1 = nil;
+    JITarg2 = nil;
+#endif // ENABLE_JIT
     return nil;
 }
 

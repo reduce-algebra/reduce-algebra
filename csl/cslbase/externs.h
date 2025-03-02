@@ -360,10 +360,7 @@ extern intptr_t current_modulus, fastget_size, package_bits;
 extern bool modulus_is_large;
 extern size_t karaSize;
 
-extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
-extern LispObject quote_symbol, function_symbol, comma_symbol;
-extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
-extern LispObject lisp_true, lambda, funarg, unset_var, opt_key,rest_key;
+extern LispObject lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject char_0_symbol, quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject list_symbol, callStack, liststar_symbol, eq_symbol;
@@ -480,8 +477,6 @@ extern LispObject om_listCDs(LispObject, int nargs, ...);
 extern LispObject om_listSymbols(LispObject, LispObject);
 extern LispObject om_whichCDs(LispObject, LispObject);
 #endif
-
-extern LispObject workbase[51];
 
 extern LispObject user_base_0, user_base_1, user_base_2;
 extern LispObject user_base_3, user_base_4, user_base_5;

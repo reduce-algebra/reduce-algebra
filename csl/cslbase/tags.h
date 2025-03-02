@@ -74,46 +74,223 @@ typedef intptr_t LispObject;
 
 typedef uintptr_t Header;
 
-// The following is a really rather dodgy idea. Suppose a have variables
-// LispObject x, *y;
-// Then I will be able to go things like
-//    ... AT(X) ...
-//    ... AT(*y) ...
-//    AT(x) = ...
-//    AT(*y) = ...
-// and the AT() wrapper should lead to the access to the stored values being
-// performed as an atomic operation with sequentially_consistent memory
-// ordering imposed. Neither the compiler not hardware (such as a memory
-// write pipeline or buffer) should then re-order access to other values
-// past this one, and if one thread stores a value and then another reads
-// the same item then the two threads should then be in step as regards not
-// just that particular transaction but all others that have happened
-// previously.
-// The reinterpret_cast here is in violation of C++ strict aliasing rules
-// (at least!) and there is no guarantee that the representation in memory
-// of T and std::atomic<T> match but it seems to me that it would be a
-// very brave compiler that omitted a load or store involving the raw data
-// (ie x or y) or relied on a cached value past an atomic access. So I am
-// counting on a visible reference to an atomic<T> item both acting as a
-// barrier to all compiler compiler optimisations that try to rely on
-// assumptions about memory before and after. I am also counting on the
-// compiler generating code for every atomic store even if it is unable to
-// observe code that will use that stored value, because I hope it will
-// think that with an atomic value some other thread that it has no sight
-// of may depend on the value so stored. Bit it probably feels safest if
-// I only do this of the items updates (eg x and y above) are other than
-// static, since perhaps a compiler could believe that it could understand
-// everything within one compilation unit. And hypothetically there could be
-// problems if full-program link-time optimisation was applied - which at
-// present is not the case.
+// LispObject is a datatype where the low 3 bits are used as tags -
+// this idea works provided all memory addresses needed can be kept
+// doubleword aligned.  The main tag allocation is documented here.
 
-template <typename T>
-std::atomic<T>& AT(T& x)
-{   return reinterpret_cast<std::atomic<T>>(x);
+INLINE_VAR constexpr uintptr_t TAG_BITS      = 0x7;
+INLINE_VAR constexpr uintptr_t XTAG_BITS     = 0xf;
+
+// For almost all types I just use TAG_BITS and masking with that leaves
+// an integer in the range 0-7. But the code 7 there is used both for small
+// integers and for short floats and in that case the next bit up is used
+// to discriminate, so there I may want to use XTAG_BITS which picks out
+// the low 4 bits rather than just the low 3.
+
+INLINE_VAR constexpr uintptr_t TAG_CONS      =  0; // Cons cells                    01
+INLINE_VAR constexpr uintptr_t TAG_VECTOR    =  1; // Regular Lisp vectors          02
+INLINE_VAR constexpr uintptr_t TAG_HDR_IMMED =  2; // Char constants, vechdrs etc   04
+INLINE_VAR constexpr uintptr_t TAG_FORWARD   =  3; // For the Garbage Collector     08
+INLINE_VAR constexpr uintptr_t TAG_SYMBOL    =  4; // Symbols                       10
+                            // Note that tags from 5 up are all for numeric date    e0
+INLINE_VAR constexpr uintptr_t TAG_NUMBERS   =  5; // Bignum, Rational, Complex     20
+INLINE_VAR constexpr uintptr_t TAG_BOXFLOAT  =  6; // Boxed floats                  40
+INLINE_VAR constexpr uintptr_t TAG_FIXNUM    =  7; // 28/60-bit integers            80
+INLINE_VAR constexpr uintptr_t TAG_XBIT      =  8; // extra bit!                    80
+INLINE_VAR constexpr uintptr_t XTAG_SFLOAT   = 15; // Short float, 28+ bits of data 80
+
+inline const char* tagName(LispObject p)
+{   static const char* tagNameTable[] =
+    {   "CONS",
+        "VECTOR",
+        "HDR_IMMED",
+        "FORWARD",
+        "SYMBOL",
+        "NUMBERS",
+        "BOXFLOAT",
+        "FIXNUM",
+        "CONS",
+        "VECTOR",
+        "HDR_IMMED",
+        "FORWARD",
+        "SYMBOL",
+        "NUMBERS",
+        "BOXFLOAT",
+        "SFLOAT"
+    };
+    return tagNameTable[p & XTAG_BITS];
 }
 
-// Perhaps the most important value here is nil!
-extern LispObject nil;
+typedef LispObject no_args(LispObject);
+typedef LispObject one_arg(LispObject, LispObject);
+typedef LispObject two_args(LispObject, LispObject, LispObject);
+typedef LispObject three_args(LispObject, LispObject, LispObject,
+                              LispObject);
+typedef LispObject fourup_args(LispObject, LispObject, LispObject,
+                               LispObject, LispObject);
+typedef LispObject (*func0)();
+typedef LispObject (*func1)(LispObject);
+typedef LispObject (*func2)(LispObject, LispObject);
+typedef LispObject (*func3)(LispObject, LispObject, LispObject);
+typedef LispObject (*func4)(LispObject, LispObject, LispObject, LispObject);
+typedef LispObject (*func5)(LispObject, LispObject, LispObject, 
+                            LispObject, LispObject);
+typedef LispObject (*func6)(LispObject, LispObject, LispObject, 
+                            LispObject, LispObject, LispObject);
+typedef bool (*boolfunc1)(LispObject);
+typedef bool (*boolfunc2)(LispObject, LispObject);
+typedef LispObject (*shim0)(no_args, LispObject);
+typedef LispObject (*shim1)(one_arg, LispObject, LispObject);
+typedef LispObject (*shim2)(two_args, LispObject, LispObject, LispObject);
+typedef LispObject (*shim3)(three_args, LispObject, LispObject,
+                                        LispObject, LispObject);
+typedef LispObject (*shim4)(fourup_args, LispObject, LispObject, LispObject,
+                                         LispObject, LispObject);
+typedef LispObject (*boolshim1)(boolfunc1, LispObject);
+typedef LispObject (*boolshim2)(boolfunc2, LispObject, LispObject);
+typedef LispObject (*errfunc0)(const char*);
+typedef LispObject (*errfunc1)(const char*, LispObject);
+typedef LispObject (*errfunc2)(const char*, LispObject, LispObject);
+typedef LispObject (*errfunc2s)(const char*, const char*, LispObject);
+
+typedef struct Symbol_Head_
+{   Header header;       // Header as for other vector-like types
+    LispObject value;    // Global or special value cell
+//
+    LispObject env;      // Extra stuff to help function cell
+    LispObject plist;    // A list
+//
+    LispObject fastgets; // to speed up flagp and get
+    LispObject package;  // Home package - a package object
+//
+    LispObject pname;    // A string (always)
+    uint32_t countLow;   // for statistics
+    uint32_t countHigh;  // for statistics
+//
+    no_args *function0;      // Executable code always (no arguments)
+    one_arg *function1;      // Executable code always (just 1 arg)
+//
+    two_args *function2;     // Executable code always (just 2 args)
+    three_args *function3;   // Executable code always (just 3 args)
+//
+    fourup_args *function4up;// Executable code always (3 args + list of rest)
+} Symbol_Head;
+
+// Perhaps the most important value here is nil! Well I am going to arrange
+// that nil is represented as a block of memory but that a range of
+// other important items are clustered in memory near it. This can have
+// two potential benefits. First keeping important variables close together
+// may help with locality and cache performance. But also this scheme will
+// make it possible to address the other items using instructions that index
+// using nil as a base.
+
+// Here is a union type for things that should all fit into a machine
+// register. Use of this alows me to set up a vector of locations where
+// each can use different data but where their addresses are related.
+
+union Generic
+{
+    LispObject  genericL;
+    LispObject* genericP;
+    Header      genericH;
+    intptr_t    genericI;
+    uintptr_t   genericU;
+    void*       genericV;
+    const char* genericS;
+    func0       genericF0;
+    func1       genericF1;
+    func2       genericF2;
+    func3       genericF3;
+    func4       genericF4;
+    func5       genericF5;
+    func6       genericF6;
+    boolfunc1   genericF1B;
+    boolfunc2   genericF2B;
+    shim0       genericSh0;
+    shim1       genericSh1;
+    shim2       genericSh2;
+    shim3       genericSh3;
+    shim4       genericSh4;
+    boolshim1   genericSh1B;
+    boolshim2   genericSh2B;
+    errfunc0    genericErr0;
+    errfunc1    genericErr1;
+    errfunc2    genericErr2;
+    errfunc2s   genericErr2s;
+};
+
+inline constexpr size_t miscSize = 100;
+
+inline struct NilSegment
+{   Symbol_Head nil_symbol;
+    Generic misc[miscSize];
+    LispObject workbaseVec[51];
+} nilSegment;
+
+inline const LispObject nil =
+    TAG_SYMBOL + reinterpret_cast<LispObject>(&nilSegment);
+
+inline LispObject* const workbase = &nilSegment.workbaseVec[0]; 
+
+// Now there are a number of variables that I view as especially important
+// and also some that are used by the (experimental) JIT. A number of the
+// JIT ones will need to be initialized properly... but few of them
+// need protection by the Garbage Collector since most are used in
+// really transient ways.
+
+enum
+{   Olisp_true = 0,
+    Ostack,
+    OJITerrflag,
+    OJITthrow,
+    OJITstring,
+    OJITarg1,
+    OJITarg2,
+    OJITshim0,
+    OJITshim1,
+    OJITshim2,
+    OJITshim3,
+    OJITshim4,
+    OJITshim5,
+    OJITlessp
+    
+};
+
+// The JIT can generate code to access eg stack if it has the value if nil
+// in a register by using an indexed addressing mode [nilReg, N] where
+// N = offsetof(NilSegment,misc)-TAG_SYMBOL+sizeof(Generic)*Ostack.
+
+inline size_t JIToffset(int o)
+{   return offsetof(NilSegment,misc)-TAG_SYMBOL+sizeof(Generic)*o;
+}
+
+// The symbol "T". This is used throughout the system and is a list-base 
+inline LispObject& lisp_true = nilSegment.misc[Olisp_true].genericL;
+// The "lisp stack" pointer.
+inline LispObject*& stack = nilSegment.misc[Ostack].genericP;
+// The exception handling scheme for the JIT arranges that this flag is
+// set non-zero it a call wished to report an exception.
+inline intptr_t& JITerrflag  = nilSegment.misc[OJITerrflag].genericI;
+// The next 3 are used when JIT code wants to report an error by doing
+// a tail-call that ends in car_fails or aerror or suchlike. It can not
+// pass arguments "naturally" so it deposites them in these static
+// locations.
+inline const char*& JITstring  = nilSegment.misc[OJITerrflag].genericS;
+inline LispObject& JITarg1 = nilSegment.misc[OJITarg1].genericL;
+inline LispObject& JITarg2 = nilSegment.misc[OJITarg2].genericL;
+
+inline func0& JITthrow = nilSegment.misc[OJITthrow].genericF0;
+
+inline shim0& JITshim0 = nilSegment.misc[OJITshim0].genericSh0;
+inline shim1& JITshim1 = nilSegment.misc[OJITshim1].genericSh1;
+inline shim2& JITshim2 = nilSegment.misc[OJITshim2].genericSh2;
+inline shim3& JITshim3 = nilSegment.misc[OJITshim3].genericSh3;
+inline shim4& JITshim4 = nilSegment.misc[OJITshim4].genericSh4;
+inline boolshim1& JITshim1B = nilSegment.misc[OJITshim1].genericSh1B;
+inline boolshim2& JITshim2B = nilSegment.misc[OJITshim2].genericSh2B;
+
+inline boolfunc2& JITlessp = nilSegment.misc[OJITlessp].genericF2B;
+
 
 // In earlier days I could not readily test whether I was on a 32 or 64-bit
 // system at preprocessor time, and so "#ifdef SIXTY_FOUR_BIT" was not
@@ -189,55 +366,6 @@ public:
 // size of the basic unit of memory within which CSL works.
 
 INLINE_VAR constexpr size_t CELL = sizeof(LispObject);
-
-// LispObject is a datatype where the low 3 bits are used as tags -
-// this idea works provided all memory addresses needed can be kept
-// doubleword aligned.  The main tag allocation is documented here.
-
-INLINE_VAR constexpr uintptr_t TAG_BITS      = 0x7;
-INLINE_VAR constexpr uintptr_t XTAG_BITS     = 0xf;
-
-// For almost all types I just use TAG_BITS and masking with that leaves
-// an integer in the range 0-7. But the code 7 there is used both for small
-// integers and for short floats and in that case the next bit up is used
-// to discriminate, so there I may want to use XTAG_BITS which picks out
-// the low 4 bits rather than just the low 3.
-
-INLINE_VAR constexpr uintptr_t TAG_CONS      =  0; // Cons cells                    01
-INLINE_VAR constexpr uintptr_t TAG_VECTOR    =  1; // Regular Lisp vectors          02
-INLINE_VAR constexpr uintptr_t TAG_HDR_IMMED =  2; // Char constants, vechdrs etc   04
-INLINE_VAR constexpr uintptr_t TAG_FORWARD   =  3; // For the Garbage Collector     08
-INLINE_VAR constexpr uintptr_t TAG_SYMBOL    =  4; // Symbols                       10
-                            // Note that tags from 5 up are all for numeric date    e0
-INLINE_VAR constexpr uintptr_t TAG_NUMBERS   =  5; // Bignum, Rational, Complex     20
-INLINE_VAR constexpr uintptr_t TAG_BOXFLOAT  =  6; // Boxed floats                  40
-INLINE_VAR constexpr uintptr_t TAG_FIXNUM    =  7; // 28/60-bit integers            80
-INLINE_VAR constexpr uintptr_t TAG_XBIT      =  8; // extra bit!                    80
-INLINE_VAR constexpr uintptr_t XTAG_SFLOAT   = 15; // Short float, 28+ bits of data 80
-
-
-
-inline const char* tagName(LispObject p)
-{   static const char* tagNameTable[] =
-    {   "CONS",
-        "VECTOR",
-        "HDR_IMMED",
-        "FORWARD",
-        "SYMBOL",
-        "NUMBERS",
-        "BOXFLOAT",
-        "FIXNUM",
-        "CONS",
-        "VECTOR",
-        "HDR_IMMED",
-        "FORWARD",
-        "SYMBOL",
-        "NUMBERS",
-        "BOXFLOAT",
-        "SFLOAT"
-    };
-    return tagNameTable[p & XTAG_BITS];
-}
 
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
@@ -485,14 +613,6 @@ typedef LispObject Special_Form(LispObject, LispObject);
 // For the 5 up case arguments 4, 5, ...
 // are passed as a list much as if the call had been
 //   (F n a1 a2 a3 (list a4 a5 a6 ... an))
-
-typedef LispObject no_args(LispObject);
-typedef LispObject one_arg(LispObject, LispObject);
-typedef LispObject two_args(LispObject, LispObject, LispObject);
-typedef LispObject three_args(LispObject, LispObject, LispObject,
-                              LispObject);
-typedef LispObject fourup_args(LispObject, LispObject, LispObject,
-                               LispObject, LispObject);
 
 // Objects will have a header word with the following format:
 //   xxxx:xxxx:xxxx:xxxx:xxxx:xx  yy:yyy z:z 010
@@ -784,29 +904,6 @@ INLINE_VAR constexpr uintptr_t  SYM_UNPRINTED_GENSYM= 0x00800000; // not-yet-pri
 // Here in Standard Lisp mode I have 8 bits left in a symbol header even
 // on a 32-bit system.
 #endif // COMMON
-
-typedef struct Symbol_Head_
-{   Header header;       // Header as for other vector-like types
-    LispObject value;    // Global or special value cell
-//
-    LispObject env;      // Extra stuff to help function cell
-    LispObject plist;    // A list
-//
-    LispObject fastgets; // to speed up flagp and get
-    LispObject package;  // Home package - a package object
-//
-    LispObject pname;    // A string (always)
-    uint32_t countLow;   // for statistics
-    uint32_t countHigh;  // for statistics
-//
-    no_args *function0;      // Executable code always (no arguments)
-    one_arg *function1;      // Executable code always (just 1 arg)
-//
-    two_args *function2;     // Executable code always (just 2 args)
-    three_args *function3;   // Executable code always (just 3 args)
-//
-    fourup_args *function4up;// Executable code always (3 args + list of rest)
-} Symbol_Head;
 
 inline constexpr uintptr_t word_align_up(uintptr_t n)
 {   return static_cast<LispObject>((n + 3) & -static_cast<uintptr_t>(4U));

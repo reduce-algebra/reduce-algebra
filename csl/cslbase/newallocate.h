@@ -1404,8 +1404,8 @@ inline LispObject cons_gc_test(LispObject p)
 
 inline LispObject ncons(LispObject a)
 {   LispObject r = get2Words() + TAG_CONS;
-    car(r) =  a;
-    cdr(r) =  nil;
+    car(r) = a;
+    cdr(r) = nil;
     return r;
 }
 
@@ -1681,8 +1681,6 @@ inline int findHeapSegment(uintptr_t p)
 // of zero should correspond to the start of the first Chunk within the Page,
 // and so the first bit of allocated user data lies (on a 64-bit machine)
 // at address #0:30 because of the size of the Chunk header.
-
-extern LispObject nil;
 
 inline const char* Addr(uintptr_t p)
 {
