@@ -187,6 +187,14 @@ typedef struct Symbol_Head_
 // Here is a union type for things that should all fit into a machine
 // register. Use of this alows me to set up a vector of locations where
 // each can use different data but where their addresses are related.
+// In some sense this a distressingly large number of cases, but when it
+// it comes down to it there are not really very many that are "seriously"
+// distinct:
+//    LispObject = intptr_t,   Header = uintptr_t     Simple data
+//    LispObject*, [const] char*, void*               Simple pointers
+//    func0 .. errfunc2s                              Many sorts of functions
+// So much of the length of this list is because there can be functions
+// with many different signatures and I separate them all out.
 
 union Generic
 {
@@ -252,6 +260,8 @@ enum
     OJITshim3,
     OJITshim4,
     OJITshim5,
+    OJITshim1B,
+    OJITshim2B,
     OJITlessp
     
 };
@@ -286,10 +296,10 @@ inline shim1& JITshim1 = nilSegment.misc[OJITshim1].genericSh1;
 inline shim2& JITshim2 = nilSegment.misc[OJITshim2].genericSh2;
 inline shim3& JITshim3 = nilSegment.misc[OJITshim3].genericSh3;
 inline shim4& JITshim4 = nilSegment.misc[OJITshim4].genericSh4;
-inline boolshim1& JITshim1B = nilSegment.misc[OJITshim1].genericSh1B;
-inline boolshim2& JITshim2B = nilSegment.misc[OJITshim2].genericSh2B;
+inline boolshim1& JITshim1B = nilSegment.misc[OJITshim1B].genericSh1B;
+inline boolshim2& JITshim2B = nilSegment.misc[OJITshim2B].genericSh2B;
 
-inline boolfunc2& JITlessp = nilSegment.misc[OJITlessp].genericF2B;
+inline boolfunc2& JITlessp  = nilSegment.misc[OJITlessp].genericF2B;
 
 
 // In earlier days I could not readily test whether I was on a 32 or 64-bit

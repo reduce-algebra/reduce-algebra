@@ -279,14 +279,15 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // I also need to registers for the things that the JITed code will do
     Register A_reg  = cc.newIntPtr("A_reg");
     [[maybe_unused]] Register B_reg  = cc.newIntPtr("B_reg");
-// Througout the JIT body I will keep a copy of the C++ variable "stack"
-// in a register. But I will write it back before calling a function from
-// the JIT code.
-    Register spaddr  = cc.newIntPtr("spaddr");
+// Througout the JIT body I will keep a copy of the C++ value of nil
+// and of the variable "stack" in registers. I will also store the value
+// that stack has on entry to the function. I will write stack back
+// before calling a function from the JIT code. The stack pointer (and a
+// number of other things) can be accessed using indexed addressing from
+// nilreg.
+    Register nilreg  = cc.newIntPtr("nilreg");
     Register spreg   = cc.newIntPtr("spreg");
     Register spentry = cc.newIntPtr("spentry");
-    Register niladdr = cc.newIntPtr("niladdr");
-    Register nilreg  = cc.newIntPtr("nilreg");
     [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
 
 // The check for the right number of arguments when there are more than
@@ -360,14 +361,11 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // logic is the same on all platforms, but the instructions available to
 // do things differ.
 #ifdef __x86_64
-// Load the register "spaddr" to be the address of the C++ variable
-// "stack", and spreg to hold its value. And rather similarly for nil.
-    cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
-    cc.mov(spreg, ptr(spaddr));
-    cc.mov(spentry, spreg);
-    cc.mov(niladdr, reinterpret_cast<uintptr_t>(&nil));
-    cc.mov(nilreg, ptr(niladdr));
+    cc.mov(nilreg, nil);
     cc.mov(A_reg, nilreg);
+// Load spreg to hold the stack pointer.
+    cc.mov(spreg, ptr(nilreg, JIToffset(Ostack)));
+    cc.mov(spentry, spreg);
 // In CSL if a Lisp/Reduce-level function has 4 or more arguments it in fact
 // passes just the first 3 separately - all the rest are passed in a list.
 // Here I need to disentangle that. I push all the arguments onto the Lisp
@@ -465,6 +463,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     cc.bind(cdrError);
 
     cc.bind(returnA);
+// Ensure that the Lisp stack pointer is in a good state.
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spentry);
     cc.ret(A_reg);
 
     cc.endFunc();
@@ -484,6 +484,20 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         if ((size%8) != 0) fprintf(hex, "\n");
         fclose(hex);
     }
+
+    stdout_printf(" JITstring = %p\n",  JITstring);
+    stdout_printf(" JITarg1 = %p\n",    JITarg1);
+    stdout_printf(" JITarg2 = %p\n",    JITarg2);
+    stdout_printf(" JITthrow = %p\n",   JITthrow);
+    stdout_printf(" JITshim0 = %p\n",   JITshim0);
+    stdout_printf(" JITshim1 = %p\n",   JITshim1);
+    stdout_printf(" JITshim2 = %p\n",   JITshim2);
+    stdout_printf(" JITshim3 = %p\n",   JITshim3);
+    stdout_printf(" JITshim4 = %p\n",   JITshim4);
+    stdout_printf(" JITshim1B = %p\n",  JITshim1B);
+    stdout_printf(" JITshim2B = %p\n",  JITshim2B);
+    stdout_printf(" JITlessp = %p\n",   JITlessp);
+
     return func;
 }
 

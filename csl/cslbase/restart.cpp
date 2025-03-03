@@ -992,6 +992,8 @@ LispObject set_up_functions(int restart_flag)
     JITshim3 = JITshim;
     JITshim4 = JITshim;
 //     JITshim5 = JITshim;
+    JITshim1B = JITshim;
+    JITshim2B = JITshim;
     JITlessp = lessp2; 
 #endif // ENABLE_JIT
 
@@ -1002,13 +1004,23 @@ static int alpha1(const void* a, const void* b)
 {   return std::strcmp(1+*(const char**)a, 1+*(const char**)b);
 }
 
-// This sets up:
+// Even after a warm start some things need to be set up explictly. This
+// is in part because image files are in a platform-independent form
+// and so such things are characterisation of the particular implementation
+// in use now including its floating point parameters and word-length
+// need adjustment. Also information about the command line in use including
+// the identity of the current executable, and such IO streams as need to
+// be available are not things that can be recovered from an image.
+
+// So this code sets up:
 //   lispsystem!*
 //   The standard input and output streams
 //   information about the command line arguments in lispargs!*
 //   floating point limit constants (which ought in fact to be the
-//       same on all platforms if I am using IEEE arithmetic...)
+//       same on all platforms if I am using IEEE arithmetic..., but
+//       at least the state regarding any long long floats can differ)
 //   input!-libraries and output!-library
+//   Some values needed by the JIT.
 
 LispObject set_up_variables(int restart_flag)
 {   LispObject w, w1;
@@ -1905,6 +1917,17 @@ LispObject set_up_variables(int restart_flag)
     JITstring = "";
     JITarg1 = nil;
     JITarg2 = nil;
+
+    JITthrow = jitthrow;
+    JITshim0 = JITshim;  // These lines disabiguate by types.
+    JITshim1 = JITshim;
+    JITshim2 = JITshim;
+    JITshim3 = JITshim;
+    JITshim4 = JITshim;
+//     JITshim5 = JITshim;
+    JITshim1B = JITshim;
+    JITshim2B = JITshim;
+    JITlessp = lessp2; 
 #endif // ENABLE_JIT
     return nil;
 }

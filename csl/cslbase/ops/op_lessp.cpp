@@ -29,10 +29,10 @@
 //     word here so the asmjit standard name has to be mildly odd! The same
 //     will apply to or/or_ and xor/xor_. Also int/int_  Beware! This is
 //     because in C++ "and" can be used as an alternative to "&&" (and
-//     "bitand" for "&") woth "or" and "bitor" for "||" and "|" and xor
+//     "bitand" for "&") with "or" and "bitor" for "||" and "|" and xor
 //     for "^". These exist to make it easier to write C++ on platforms
 //     with less than complete character sets. But the names involved
-//     match those of commonly-used opcodes.
+//     match those of commonly-used opcodes. Ha ha.
 // (3) The sub-function lessp2 has to be called via JITshim because
 //     it might raise an exception - for instance if one or both of the
 //     operands are not numeric. The value it returns is a "bool" not
@@ -69,9 +69,21 @@
                     cc.jmp(endLessp);
                     cc.bind(notFixnums);
 // Here if one or other is not a Fixnum - call external function "lessp".
-                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2B)));
                     cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp)));
-                    invoke(cc, w, w1, A_reg, B_reg, A_reg);
+// Args to invoke are:
+//      cc      The Compiler object I am generating via
+//      target  Register that contains the entrypoint of the function to call
+//      result  Register to receive result of the call
+//      a1, a2... Registers holding arguments to pass.
+// If the target is one of the "shim" functions that the arguments it needs
+// will be
+//      entry   Entrypoint of function to be called
+//      a1, a2..  Arguments for that.
+// so here w is JITshim2B and w is a function of 2 arguments that returns
+// a boolean value.
+                    invoke(cc, w, A_reg,
+                           w1, B_reg, A_reg);
 // See if that reported failure. Test the low bytes of JITerrflag.
                     cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
                     cc.jne(callFailed);

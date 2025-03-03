@@ -1000,6 +1000,8 @@ inline LispObject JITshim(boolfunc1 FF, LispObject a1)
 
 inline LispObject JITshim(boolfunc2 FF, LispObject a1, LispObject a2)
 {   LispObject r;
+stdout_printf("\nJITshim %p. Self=%p lessp2=%p\n", FF,
+         (boolshim2)JITshim, lessp2);
     TRY
         r = (*FF)(a1, a2);
     CATCH_ANY()
