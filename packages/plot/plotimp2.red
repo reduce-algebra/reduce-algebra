@@ -1,4 +1,4 @@
-module plotimp2; % Implicit plot: compute the varity {x,y|f(x,y)=c}.
+module plotimp2; % Implicit plot: compute the variety {x,y|f(x,y)=c}.
 
 % Author: Herbert Melenk, ZIB Berlin.
 
@@ -42,22 +42,40 @@ module plotimp2; % Implicit plot: compute the varity {x,y|f(x,y)=c}.
 
 fluid '(imp2!-triacount!* imp2!-trias!* !*imp2!-trace);
 
-fluid '(!*show_grid !*test_plot plot!-contour* plot!-refine!*);
+fluid '(!*show_grid !*test_plot plotranges!* plot!-contour!* plot!-refine!*);
 
 imp2!-triacount!*:=0;
 
 symbolic procedure ploteval2xyimpl(rx,ry,f,x,y);
-  begin scalar ll,l,form,g;
-   for each c in plot!-contour!* do
-   << form := plot!-form!-prep({'difference,cdr f,c},x,y);
-      l:=imp2!-plot(car rx,cadr rx, car ry,cadr ry,
-                   plot!-points(nil),form);
-      ll:=append(ll,l);
-    >>;
-    if !*show_grid and null cdr plot!-contour!*
-         then g:= imp2!-show!-meshes();
-    plotdriver(plot!-2imp,x,y,ll,g,car rx,cadr rx,car ry,cadr ry);
-  end;
+   begin scalar ll,l,form,g;
+      % x,y are the two independent variables in the function to be
+      % contoured, but which should be horizontal (x) and which
+      % vertical (y)?  If both variables were provided as options then
+      % they should be used preferentially, the first specified being
+      % horizontal (x) and the second vertical (y).  They should be
+      % reversed in the fluid variable plotranges!* in the form
+      %   ( ... (y . y_range) (x . x_range))
+      if length plotranges!* >= 2 then
+      begin scalar tmp, x_new, y_new;
+         tmp := reverse plotranges!*;
+         x_new := caar tmp;
+         y_new := caadr tmp;
+         if y_new eq x and x_new eq y then <<
+            % Swap variables and ranges:
+            x := x_new; y := y_new;
+            tmp := rx; rx := ry; ry := tmp
+         >>
+      end;
+      for each c in plot!-contour!* do
+      << form := plot!-form!-prep({'difference,cdr f,c},x,y);
+         l:=imp2!-plot(car rx,cadr rx, car ry,cadr ry,
+            plot!-points(nil),form);
+         ll:=append(ll,l);
+      >>;
+      if !*show_grid and null cdr plot!-contour!*
+      then g:= imp2!-show!-meshes();
+      plotdriver(plot!-2imp,x,y,ll,g,car rx,cadr rx,car ry,cadr ry);
+   end;
 
 symbolic procedure imp2!-init();
   << imp2!-finit();
