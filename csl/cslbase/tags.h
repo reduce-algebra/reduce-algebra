@@ -262,8 +262,13 @@ enum
     OJITshim5,
     OJITshim1B,
     OJITshim2B,
-    OJITlessp
-    
+    OJITlessp,
+#ifdef ARITHLIB
+    OJITsub1op,
+#else // ARITHLIB
+    OJITplus2,
+#endif // ARITHLIB
+    EndOfJitOffsetEnumeration
 };
 
 // The JIT can generate code to access eg stack if it has the value if nil
@@ -300,6 +305,11 @@ inline boolshim1& JITshim1B = nilSegment.misc[OJITshim1B].genericSh1B;
 inline boolshim2& JITshim2B = nilSegment.misc[OJITshim2B].genericSh2B;
 
 inline boolfunc2& JITlessp  = nilSegment.misc[OJITlessp].genericF2B;
+#ifdef ARITHLIB
+inline func1& JITsub1op     = nilSegment.misc[OJITsub1op].genericF1;
+#else // ARITHLIB
+inline func2& JITplus2      = nilSegment.misc[OJITplus2].genericF2;
+#endif // ARITHLIB
 
 
 // In earlier days I could not readily test whether I was on a 32 or 64-bit

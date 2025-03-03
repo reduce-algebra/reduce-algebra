@@ -45,6 +45,7 @@
             case OP_LESSP:
                 {   Label notFixnums = cc.newLabel();
                     Label yes = cc.newLabel();
+                    Label no = cc.newLabel();
                     Label endLessp = cc.newLabel();
 // Test if the low 4 bits of A_reg are 0x7 - ie if the value represents
 // a Fixnum.
@@ -58,21 +59,21 @@
                     cc.cmp(w, TAG_FIXNUM);
                     cc.jne(notFixnums);
 // If both are fixnums I can compare easily.
-                    cc.cmp(A_reg, B_reg);
-                    cc.jl(yes);
-// Deliver nil here.
-                    cc.mov(A_reg, nilreg);
-                    cc.jmp(endLessp);
-                    cc.bind(yes);
+                    cc.cmp(B_reg, A_reg);
+                    cc.jnl(no);
+// [I offset label-setting by 4 spaces to highlight it]
+                cc.bind(yes);
 // Deliver T (lisp_true) here.
                     cc.mov(A_reg, ptr(nilreg, JIToffset(Olisp_true)));
                     cc.jmp(endLessp);
-                    cc.bind(notFixnums);
-// Here if one or other is not a Fixnum - call external function "lessp".
+                cc.bind(notFixnums);
+// Here one or other is not a Fixnum - call external function "lessp".
                     cc.mov(w, ptr(nilreg, JIToffset(OJITshim2B)));
                     cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp)));
-// Args to invoke are:
+// Args to "invoke" are:
 //      cc      The Compiler object I am generating via
+//      nilreg  Register holding the value of nil
+//      spreg   Register for the Lisp stack pointer
 //      target  Register that contains the entrypoint of the function to call
 //      result  Register to receive result of the call
 //      a1, a2... Registers holding arguments to pass.
@@ -82,7 +83,7 @@
 //      a1, a2..  Arguments for that.
 // so here w is JITshim2B and w is a function of 2 arguments that returns
 // a boolean value.
-                    invoke(cc, w, A_reg,
+                    invoke(cc, nilreg, spreg, w, A_reg,
                            w1, B_reg, A_reg);
 // See if that reported failure. Test the low bytes of JITerrflag.
                     cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
@@ -90,9 +91,10 @@
 // If lessp() succeeded turn result from a bool to either T or NIL.
                     cc.test(A_reg, 0xff);
                     cc.jne(yes);
+                cc.bind(no);
                     cc.mov(A_reg, nilreg);
 // End of expansion of this opcode!                  
-                    cc.bind(endLessp);
+                cc.bind(endLessp);
                 }
                 break;
 

@@ -91,25 +91,32 @@ typedef x64::Compiler LocalCompiler;
 // Some overloads for setting up function calls with 0, 1,... args,
 // all of which are LispObjects.
 
-void invoke(LocalCompiler& cc, Register& target, Register& result)
+void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
+            Register& target, Register& result)
 {   InvokeNode *in;
+// I must bring the Lisp variable holding a stack pointer up to date.
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
     cc.invoke(&in, target,
         FuncSignature::build<LispObject>());
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& target, Register& result,
+void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
+            Register& target, Register& result,
             Register& a1)
 {   InvokeNode *in;
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject>());
     in->setArg(0, a1);
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& target, Register& result,
+void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
+            Register& target, Register& result,
             Register& a1, Register& a2)
 {   InvokeNode *in;
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject, LispObject>());
     in->setArg(0, a1);
@@ -117,9 +124,12 @@ void invoke(LocalCompiler& cc, Register& target, Register& result,
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& target, Register& result,
-            Register& a1, Register& a2, Register& a3)
+void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
+            Register& target, Register& result,
+            Register& a1, Register& a2,
+            Register& a3)
 {   InvokeNode *in;
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject,
                              LispObject, LispObject>());
@@ -129,9 +139,12 @@ void invoke(LocalCompiler& cc, Register& target, Register& result,
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& target, Register& result,
-            Register& a1, Register& a2, Register& a3, Register& a4)
+void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
+            Register& target, Register& result,
+            Register& a1, Register& a2,
+            Register& a3, Register& a4)
 {   InvokeNode *in;
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject, LispObject,
                              LispObject, LispObject>());
@@ -142,10 +155,13 @@ void invoke(LocalCompiler& cc, Register& target, Register& result,
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& target, Register& result,
-            Register& a1, Register& a2, Register& a3,
-            Register& a4, Register& a5)
+void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
+            Register& target, Register& result,
+            Register& a1, Register& a2,
+            Register& a3, Register& a4,
+            Register& a5)
 {   InvokeNode *in;
+    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject, LispObject,
                              LispObject, LispObject, LispObject>());
@@ -558,11 +574,28 @@ typedef a64::Gp Register;
             }
         }
         CATCH (JitFailed)
-        {   stdout_printf("Code %.2x (%3d) %s\n", code, code, opnames[code]);
+        {   stdout_printf("Pending code %.2x (%3d) %s\n",
+                          code, code, opnames[code]);
             numberUnfinished++;
         }
+        END_CATCH;
     }
-    END_CATCH;
+    stdout_printf("Scan for unfinished bytecodes complete\n");
+    for (unsigned int code=0; code<256; code++)
+    {   bool failed = false;
+        TRY
+        {   switch (code)
+            {
+#include "ops/bytes_include.cpp"
+            }
+        }
+        CATCH (JitFailed)
+        {   failed = true;
+        }
+        END_CATCH;
+        if (!failed) stdout_printf("OK code %.2x (%3d) %s\n",
+                      code, code, opnames[code]);
+    }
     testingForUnfinished = false;
 // In reporting the number of cases I still have to do I will discount
 // the 2 opcodes that are currently spare.

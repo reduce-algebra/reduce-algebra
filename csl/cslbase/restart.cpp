@@ -994,7 +994,12 @@ LispObject set_up_functions(int restart_flag)
 //     JITshim5 = JITshim;
     JITshim1B = JITshim;
     JITshim2B = JITshim;
-    JITlessp = lessp2; 
+    JITlessp = lessp2;
+#ifdef ARITHLIB
+    JITsub1op = Sub1::op;
+#else // ARITHLIB
+    JITplus2 = plus2;
+#endif // ARITHLIB
 #endif // ENABLE_JIT
 
     return nil;
