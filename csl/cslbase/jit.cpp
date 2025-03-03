@@ -81,9 +81,27 @@ void unfinished(const char* msg)
 #if defined __x86_64__
 typedef x86::Gp Register;
 typedef x86::Compiler LocalCompiler;
+
+void loadreg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
+{   cc.mov(r, ptr(base, offset));
+}
+
+void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
+{   cc.mov(ptr(base, offset), r);
+}
+
 #elif defined __aarch64__
 typedef a64::Gp Register;
-typedef x64::Compiler LocalCompiler;
+typedef a64::Compiler LocalCompiler;
+
+void loadreg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
+{   cc.ldr(r, ptr(base, offset));
+}
+
+void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
+{   cc.str(r, ptr(base, offset));
+}
+
 #else
 #error unrecognised architecture for JIT
 #endif
@@ -95,7 +113,7 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
             Register& target, Register& result)
 {   InvokeNode *in;
 // I must bring the Lisp variable holding a stack pointer up to date.
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
+    storereg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.invoke(&in, target,
         FuncSignature::build<LispObject>());
     in->setRet(0, result);
@@ -105,7 +123,7 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
             Register& target, Register& result,
             Register& a1)
 {   InvokeNode *in;
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
+    storereg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject>());
     in->setArg(0, a1);
@@ -116,7 +134,7 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
             Register& target, Register& result,
             Register& a1, Register& a2)
 {   InvokeNode *in;
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
+    storereg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject, LispObject>());
     in->setArg(0, a1);
@@ -129,7 +147,7 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
             Register& a1, Register& a2,
             Register& a3)
 {   InvokeNode *in;
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
+    storereg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject,
                              LispObject, LispObject>());
@@ -144,7 +162,7 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
             Register& a1, Register& a2,
             Register& a3, Register& a4)
 {   InvokeNode *in;
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
+    storereg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject, LispObject,
                              LispObject, LispObject>());
@@ -161,7 +179,7 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
             Register& a3, Register& a4,
             Register& a5)
 {   InvokeNode *in;
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spreg);
+    storereg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.invoke(&in, target,
         FuncSignature::build<LispObject, LispObject, LispObject,
                              LispObject, LispObject, LispObject>());
@@ -247,6 +265,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     code.init(localEnv, rt.cpuFeatures());
     JitError jitError;
     code.setErrorHandler(&jitError);
+// This is in case I want to set up a data section to put static
+// material in.
     [[maybe_unused]] Section* text = code.textSection();
     [[maybe_unused]] Section* data;
     if (code.newSection(&data,
@@ -292,9 +312,10 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         argregs[i] = cc.newIntPtr("a1");
     Register w      = cc.newIntPtr("w");
     Register w1     = cc.newIntPtr("w1");
+    Register w2     = cc.newIntPtr("w2");
 // I also need to registers for the things that the JITed code will do
     Register A_reg  = cc.newIntPtr("A_reg");
-    [[maybe_unused]] Register B_reg  = cc.newIntPtr("B_reg");
+    Register B_reg  = cc.newIntPtr("B_reg");
 // Througout the JIT body I will keep a copy of the C++ value of nil
 // and of the variable "stack" in registers. I will also store the value
 // that stack has on entry to the function. I will write stack back
@@ -304,7 +325,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     Register nilreg  = cc.newIntPtr("nilreg");
     Register spreg   = cc.newIntPtr("spreg");
     Register spentry = cc.newIntPtr("spentry");
-    [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
 
 // The check for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
@@ -414,13 +434,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         }
     }
 #elif defined __aarch64__
-// Load the register "spaddr" to be the address of the C++ variable
-// "stack", and spreg to hold its value. And rather similarly for nil.
-    cc.mov(spaddr, reinterpret_cast<uintptr_t>(&stack));
-    cc.ldr(spreg, ptr(spaddr));
+    cc.mov(nilreg, nil);
+    loadreg(cc, spreg, nilreg, JIToffset(Ostack));
     cc.mov(spentry, spreg);
-    cc.mov(niladdr, reinterpret_cast<uintptr_t>(&nil));
-    cc.ldr(nilreg, ptr(niladdr));
     cc.mov(A_reg, nilreg);
 // On the arm I can use an addressing node that offsets from the
 // base register that is used and then updates the register. So I do not
@@ -480,7 +496,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 
     cc.bind(returnA);
 // Ensure that the Lisp stack pointer is in a good state.
-    cc.mov(ptr(nilreg, JIToffset(Ostack)), spentry);
+    storereg(cc, spentry, nilreg, JIToffset(Ostack));
     cc.ret(A_reg);
 
     cc.endFunc();
@@ -532,39 +548,33 @@ LispObject Ljit_unfinished(LispObject env)
     JitError jitError;
     code.setErrorHandler(&jitError);
 #if defined __x86_64__
-    auto cc = x86::Compiler(&code);
 typedef x86::Gp Register;
+    LocalCompiler cc = x86::Compiler(&code);
 #elif defined __aarch64__
-    auto cc = a64::Compiler(&code);
 typedef a64::Gp Register;
+    LocalCompiler cc = a64::Compiler(&code);
 #endif
-    [[maybe_unused]] Register litvec = cc.newIntPtr("litvec");
-    [[maybe_unused]] Register argregs[16];
+    Register litvec = cc.newIntPtr("litvec");
+    Register argregs[16];
     for (size_t i=1; i<=15; i++)
         argregs[i] = cc.newIntPtr("a1");
-    [[maybe_unused]] Register w      = cc.newIntPtr("w");
-    [[maybe_unused]] Register w1     = cc.newIntPtr("w1");
-// I also need to registers for the things that the JITed code will do
-    [[maybe_unused]] Register A_reg  = cc.newIntPtr("A_reg");
-    [[maybe_unused]] Register B_reg  = cc.newIntPtr("B_reg");
-// Througout the JIT body I will keep a copy of the C++ variable "stack"
-// in a register. But I will write it back before calling a function from
-// the JIT code.
-    [[maybe_unused]] Register spaddr  = cc.newIntPtr("spaddr");
-    [[maybe_unused]] Register spreg   = cc.newIntPtr("spreg");
-    [[maybe_unused]] Register spentry = cc.newIntPtr("spentry");
-    [[maybe_unused]] Register niladdr = cc.newIntPtr("niladdr");
-    [[maybe_unused]] Register nilreg  = cc.newIntPtr("nilreg");
-    [[maybe_unused]] Register fptr    = cc.newIntPtr("fptr");
-    [[maybe_unused]] Label callFailed  = cc.newLabel();
-    [[maybe_unused]] Label carError    = cc.newLabel();
-    [[maybe_unused]] Label cdrError    = cc.newLabel();
-    [[maybe_unused]] Label returnA     = cc.newLabel();
-    [[maybe_unused]] std::vector<Label> perInstruction;
+    Register w       = cc.newIntPtr("w");
+    Register w1      = cc.newIntPtr("w1");
+    Register w2      = cc.newIntPtr("w2");
+    Register A_reg   = cc.newIntPtr("A_reg");
+    Register B_reg   = cc.newIntPtr("B_reg");
+    Register spreg   = cc.newIntPtr("spreg");
+    Register nilreg  = cc.newIntPtr("nilreg");
+    Label callFailed = cc.newLabel();
+    Label carError   = cc.newLabel();
+    Label cdrError   = cc.newLabel();
+    Label returnA    = cc.newLabel();
+    std::vector<Label> perInstruction;
     for (size_t i=0; i<256; i++)
         perInstruction.push_back(cc.newLabel());
-    [[maybe_unused]] unsigned char bytes[256];
-    [[maybe_unused]] int ppc = 0, next;
+    unsigned char bytes[256];
+    size_t ppc = 0;
+    int next;
     testingForUnfinished = true;
     for (unsigned int code=0; code<256; code++)
     {   TRY

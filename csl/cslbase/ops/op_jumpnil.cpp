@@ -27,6 +27,7 @@
 #elif defined __aarch64__
 
             case OP_JUMPNIL:
+                next = bytes[ppc++];
                 unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
