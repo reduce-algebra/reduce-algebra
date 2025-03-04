@@ -11,7 +11,11 @@
 #elif defined __x86_64__
 
             case OP_JUMPATOM_BL:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                next = (next<<8) | bytes[ppc++];
+                cc.test(A_reg, 7);
+                cc.jne(perInstruction[ppc-next-1]);
+                break;
 
 #elif defined __aarch64__
 
@@ -23,3 +27,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpatom_bl.cpp
