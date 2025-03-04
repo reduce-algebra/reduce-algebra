@@ -36,8 +36,27 @@ module plotexp3; % Computing surface z=f(x,y) with regular grid.
 %   if the connection to the neighbour point in that
 %   direction is valid, nil if the connection is broken.
 
+fluid '(plotranges!*);
+
 symbolic procedure ploteval3xy(x,y,z);
   begin scalar rx,ry,rz,f,fcns;
+     % x,y are the two independent variables in the function to be
+     % plotted, but which should be horizontal (x) and which vertical
+     % (y)?  If both variables were provided as options then they
+     % should be used preferentially, the first specified being
+     % horizontal (x) and the second vertical (y).  They should appear
+     % reversed in the fluid variable plotranges!* in the form
+     %   ( ... (y . y_range) (x . x_range))
+     if length plotranges!* >= 2 then
+     begin scalar plotrange, x_new, y_new;
+        plotrange := reverse plotranges!*;
+        x_new := caar plotrange;
+        y_new := caadr plotrange;
+        if y_new eq x and x_new eq y then <<
+           % Swap variables:
+           x := x_new; y := y_new
+        >>
+     end;
      rx:=plotrange(x,
       reval(plot_xrange or '(!*interval!* -10 10)));
      ry:=plotrange(y,
