@@ -29,10 +29,10 @@
 //     word here so the asmjit standard name has to be mildly odd! The same
 //     will apply to or/or_ and xor/xor_. Also int/int_  Beware! This is
 //     because in C++ "and" can be used as an alternative to "&&" (and
-//     "bitand" for "&") woth "or" and "bitor" for "||" and "|" and xor
+//     "bitand" for "&") with "or" and "bitor" for "||" and "|" and xor
 //     for "^". These exist to make it easier to write C++ on platforms
 //     with less than complete character sets. But the names involved
-//     match those of commonly-used opcodes.
+//     match those of commonly-used opcodes. Ha ha.
 // (3) The sub-function lessp2 has to be called via JITshim because
 //     it might raise an exception - for instance if one or both of the
 //     operands are not numeric. The value it returns is a "bool" not
@@ -45,6 +45,7 @@
             case OP_LESSP:
                 {   Label notFixnums = cc.newLabel();
                     Label yes = cc.newLabel();
+                    Label no = cc.newLabel();
                     Label endLessp = cc.newLabel();
 // Test if the low 4 bits of A_reg are 0x7 - ie if the value represents
 // a Fixnum.
@@ -58,29 +59,42 @@
                     cc.cmp(w, TAG_FIXNUM);
                     cc.jne(notFixnums);
 // If both are fixnums I can compare easily.
-                    cc.cmp(A_reg, B_reg);
-                    cc.jl(yes);
-// Deliver nil here.
-                    cc.mov(A_reg, nilreg);
-                    cc.jmp(endLessp);
-                    cc.bind(yes);
+                    cc.cmp(B_reg, A_reg);
+                    cc.jnl(no);
+// [I offset label-setting by 4 spaces to highlight it]
+                cc.bind(yes);
 // Deliver T (lisp_true) here.
                     cc.mov(A_reg, ptr(nilreg, JIToffset(Olisp_true)));
                     cc.jmp(endLessp);
-                    cc.bind(notFixnums);
-// Here if one or other is not a Fixnum - call external function "lessp".
-                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                cc.bind(notFixnums);
+// Here one or other is not a Fixnum - call external function "lessp".
+                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2B)));
                     cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp)));
-                    invoke(cc, w, w1, A_reg, B_reg, A_reg);
+// Args to "invoke" are:
+//      cc      The Compiler object I am generating via
+//      nilreg  Register holding the value of nil
+//      spreg   Register for the Lisp stack pointer
+//      target  Register that contains the entrypoint of the function to call
+//      result  Register to receive result of the call
+//      a1, a2... Registers holding arguments to pass.
+// If the target is one of the "shim" functions that the arguments it needs
+// will be
+//      entry   Entrypoint of function to be called
+//      a1, a2..  Arguments for that.
+// so here w is JITshim2B and w is a function of 2 arguments that returns
+// a boolean value.
+                    invoke(cc, nilreg, spreg, w, A_reg,
+                           w1, B_reg, A_reg);
 // See if that reported failure. Test the low bytes of JITerrflag.
                     cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
                     cc.jne(callFailed);
 // If lessp() succeeded turn result from a bool to either T or NIL.
                     cc.test(A_reg, 0xff);
                     cc.jne(yes);
+                cc.bind(no);
                     cc.mov(A_reg, nilreg);
 // End of expansion of this opcode!                  
-                    cc.bind(endLessp);
+                cc.bind(endLessp);
                 }
                 break;
 

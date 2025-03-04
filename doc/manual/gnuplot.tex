@@ -118,6 +118,13 @@ one picture.
 The same applies to three dimensions with explicit functions. However, an
 implicitly given curve must be the sole object for one picture.
 
+In a two-dimensional implicit or contour plot, it is by default
+arbitrary which of the two independent variables is plotted
+horizontally and which vertically.  However, if both variables are
+specified explicitly via options of the form \texttt{<variable> =
+  <range>} then the first specified is plotted horizontally and the
+second vertically.
+
 The functional expressions are evaluated in \texttt{rounded} mode.
 This is done automatically, it is not necessary to turn on
 \texttt{rounded} mode explicitly.
@@ -442,8 +449,11 @@ plot(sin(1/x), x=(-1 .. 1), y=(-3 .. 3));
 Some implicitly-defined curves:
 \begin{verbatim}
 plot(x^3 + y^3 - 3*x*y = {0,1,2,3},
-     x=(-2.5 .. 2), y=(-5 .. 5));
+     y=(-5 .. 5), x=(-2.5 .. 2));
 \end{verbatim}
+(Note that the $y$-axis is plotted horizontally since it is specified
+first among the options.)
+
 \unitlength=1cm
 \begin{picture}(10,8)(0,0)
 %\put(-1,-1){\Includegraphics[bb=0 0 360 270]{bild1}}

@@ -20,7 +20,20 @@
 #elif defined __x86_64__
 
             case OP_CALL3:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                cc.mov(w, ptr(nilreg, JIToffset(OJITshim4)));
+                cc.mov(w1, ptr(litvec, 8*next+CELL-TAG_VECTOR));
+// w1 is now the symbol that names the function to be called. Now fetch
+// from that the entrypoint to be used when it is a function of 3 args.
+                cc.mov(w1,
+                       ptr(w1, offsetof(Symbol_Head, function3)-TAG_SYMBOL));
+                cc.mov(w2, ptr(spreg));
+                cc.add(spreg, -8);
+                invoke(cc, nilreg, spreg, w, A_reg,
+                       w1, w2, B_reg, A_reg);
+                cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                cc.jne(callFailed);
+                break;
 
 #elif defined __aarch64__
 

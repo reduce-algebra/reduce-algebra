@@ -5435,13 +5435,24 @@ void simple_prin1(FILE* f, atomic<LispObject> &x)
 }
 
 void simple_print(FILE* f, LispObject x)
-{   simple_prin1(f, x);
+{   simple_print_extras = true;
+    simple_prin1(f, x);
     std::fprintf(f, "\r\n");
     simple_column = 0;
 }
 
 void simple_print(LispObject x)
 {   simple_print(stdout, x);
+}
+
+// "dpr" is intended for use just from gdb where one can go "call dpr(x)"
+// to print the value of a Lisp item x in a rather simplistic manner and
+// without any exciting options.
+void dpr(LispObject x)
+{   simple_print_extras = false;
+    simple_prin1(stdout, x);
+    std::fprintf(stdout, "\r\n");
+    simple_column = 0;
 }
 
 void simple_print(FILE* f, atomic<LispObject> &x)
