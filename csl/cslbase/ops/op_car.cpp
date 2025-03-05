@@ -12,7 +12,7 @@
 #elif defined __x86_64__
 
             case OP_CAR:
-                cc.test(A_reg, 7);
+                cc.test(A_reg, TAG_BITS);
                 cc.jne(carError);
                 cc.mov(A_reg, ptr(A_reg));
                 break;
@@ -27,3 +27,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_car.cpp

@@ -1178,16 +1178,32 @@ LispObject car_fails(LispObject a)
 {   return error(1, err_bad_car, a);
 }
 
+LispObject car_fails()
+{   return car_fails(JITarg1);
+}
+
 LispObject cdr_fails(LispObject a)
 {   return error(1, err_bad_cdr, a);
+}
+
+LispObject cdr_fails()
+{   return cdr_fails(JITarg1);
 }
 
 LispObject rplaca_fails(LispObject a)
 {   return error(1, err_bad_rplac, a);
 }
 
+LispObject rplaca_fails()
+{   return rplaca_fails(JITarg1);
+}
+
 LispObject rplacd_fails(LispObject a)
 {   return error(1, err_bad_rplac, a);
+}
+
+LispObject rplacd_fails()
+{   return rplacd_fails(JITarg1);
 }
 
 #define current_byte         (((unsigned char *)codevec)[ppc])

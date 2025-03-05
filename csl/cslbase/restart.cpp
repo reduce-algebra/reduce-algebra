@@ -984,24 +984,6 @@ LispObject set_up_functions(int restart_flag)
     CP = saved_package;
 #endif
 
-#ifdef ENABLE_JIT
-    JITthrow = jitthrow;
-    JITshim0 = JITshim;  // These lines disabiguate by types.
-    JITshim1 = JITshim;
-    JITshim2 = JITshim;
-    JITshim3 = JITshim;
-    JITshim4 = JITshim;
-//     JITshim5 = JITshim;
-    JITshim1B = JITshim;
-    JITshim2B = JITshim;
-    JITlessp = lessp2;
-#ifdef ARITHLIB
-    JITsub1op = Sub1::op;
-#else // ARITHLIB
-    JITplus2 = plus2;
-#endif // ARITHLIB
-#endif // ENABLE_JIT
-
     return nil;
 }
 
@@ -1933,6 +1915,17 @@ LispObject set_up_variables(int restart_flag)
     JITshim1B = JITshim;
     JITshim2B = JITshim;
     JITlessp = lessp2; 
+#ifdef ARITHLIB
+    JITsub1op = Sub1::op;
+    JITplusop = Plus::op;
+#else // ARITHLIB
+    JITplus2 = plus2;
+#endif // ARITHLIB
+    JITmake_int_from_ptr = make_lisp_integerptr;
+    JITcar_fails = car_fails;
+    JITcdr_fails = cdr_fails;
+    JITtoofew = toofew;
+    JITtoomany = toomany;
 #endif // ENABLE_JIT
     return nil;
 }

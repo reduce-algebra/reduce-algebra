@@ -642,6 +642,14 @@ static LispObject wrong(int given, LispObject env)
     return aerror(msg);
 }
 
+LispObject toofew()
+{   return aerror("function called with too few arguments");
+}
+
+LispObject toomany()
+{   return aerror("function called with too many arguments");   
+}
+
 LispObject got_0_wanted_1(LispObject env)
 {   return wrong(0, 1, env);
 }

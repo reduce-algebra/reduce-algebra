@@ -26,10 +26,10 @@
 #elif defined __x86_64__
 
             case OP_CDDR:
-                cc.test(A_reg, 7);
+                cc.test(A_reg, TAG_BITS);
                 cc.jne(cdrError);
                 cc.mov(A_reg, ptr(A_reg, 8));
-                cc.test(A_reg, 7);
+                cc.test(A_reg, TAG_BITS);
                 cc.jne(cdrError);
                 cc.mov(A_reg, ptr(A_reg, 8));
                 break;
@@ -44,3 +44,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_cddr.cpp
