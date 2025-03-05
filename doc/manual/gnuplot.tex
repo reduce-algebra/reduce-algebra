@@ -118,12 +118,19 @@ one picture.
 The same applies to three dimensions with explicit functions. However, an
 implicitly given curve must be the sole object for one picture.
 
-In a two-dimensional implicit or contour plot, it is by default
-arbitrary which of the two independent variables is plotted
-horizontally and which vertically.  However, if both variables are
-specified explicitly via options of the form \texttt{<variable> =
-  <range>} then the first specified is plotted horizontally and the
-second vertically.
+In 2D implicit and contour plots, as well as 3D surface plots, the
+order of the two independent variables is by default apparently
+arbitrary.\footnote{In fact, it is determined in a non-obvious way by
+the order in which the variables appear in the internal form of the
+expression to be plotted.}  This means that in 2D it is apparently
+arbitrary which variable is plotted horizontally and which vertically,
+and in 3D the coordinate system may be left-handed.  (See the examples
+at the end of this section.)  However, if both independent variables
+are specified explicitly via options of the form \texttt{<variable> =
+  <range>} then their order is preserved: in 2D the first variable is
+plotted horizontally and the second vertically; in 3D the first and
+second independent variables and the dependent variable form a
+right-handed coordinate system.
 
 The functional expressions are evaluated in \texttt{rounded} mode.
 This is done automatically, it is not necessary to turn on
@@ -436,6 +443,9 @@ device and using the menu of the graphics window to export to PDF or
 PNG.
 
 A simple plot for $\sin(1/x)$:
+
+\newpage
+
 \begin{verbatim}
 plot(sin(1/x), x=(-1 .. 1), y=(-3 .. 3));
 \end{verbatim}
@@ -451,8 +461,6 @@ Some implicitly-defined curves:
 plot(x^3 + y^3 - 3*x*y = {0,1,2,3},
      y=(-5 .. 5), x=(-2.5 .. 2));
 \end{verbatim}
-(Note that the $y$-axis is plotted horizontally since it is specified
-first among the options.)
 
 \unitlength=1cm
 \begin{picture}(10,8)(0,0)
@@ -460,10 +468,14 @@ first among the options.)
 \put(0,0){\Includegraphics[scale=0.5]{bild1}}
 \end{picture}
 
-%\newpage
+(Note that the $y$-axis is plotted horizontally since it is specified
+first among the options.)
+
+\newpage
+
 A test for hidden surfaces:
 \begin{verbatim}
-plot(cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3),
+plot(cos sqrt(x^2 + y^2), y=(-3 .. 3), x=(-3 .. 3),
      hidden3d);
 \end{verbatim}
 
@@ -472,7 +484,12 @@ plot(cos sqrt(x^2 + y^2), x=(-3 .. 3), y=(-3 .. 3),
 \put(0,0){\Includegraphics[scale=0.5]{gnuplotex2}}
 \end{picture}
 
-This may be slow on some machines because of a delicate evaluation context:
+(Note the left-handed coordinate system since $y$ is specified before
+$x$ among the options; for a right-handed coordinate system specify
+$x$ before $y$.)
+
+\newpage
+
 \begin{verbatim}
 plot(sinh(x*y)/sinh(2*x*y), hidden3d);
 \end{verbatim}
@@ -482,7 +499,10 @@ plot(sinh(x*y)/sinh(2*x*y), hidden3d);
 \put(0,0){\Includegraphics[scale=0.5]{gnuplotex3}}
 \end{picture}
 
-%% \newpage
+(Note the left-handed coordinate system; for a right-handed coordinate
+system specify $x$ and $y$ ranges in that order.)
+
+\newpage
 
 \begin{verbatim}
 on rounded;
@@ -497,7 +517,10 @@ plot w;
 \put(0,0){\Includegraphics[scale=0.5]{gnuplotex4}}
 \end{picture}
 
-An example taken from: Cox, Little, O'Shea, \emph{Ideals, Varieties and Algorithms}:
+\newpage
+
+The following example is taken from: Cox, Little, O'Shea,
+\emph{Ideals, Varieties and Algorithms}:
 \begin{verbatim}
 plot(point(3u+3u*v^2-u^3, 3v+3u^2*v-v^3, 3u^2-3v^2),
      hidden3d, title="Enneper Surface");
@@ -515,7 +538,6 @@ Chebyshev T polynomials and Bessel Y functions.
 The special function package has to be loaded explicitely
 to make the operator ChebyshevT and BesselY available.
 
-%\newpage
 \begin{verbatim}
 load_package specfn;
 plot(chebyshevt(1,x), chebyshevt(2,x), chebyshevt(3,x),
