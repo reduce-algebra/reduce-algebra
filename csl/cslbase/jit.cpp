@@ -79,6 +79,7 @@ void unfinished(const char* msg)
 // my host machine I can keep one copy of code where at one stage I had
 // been going to have essentially two copies.
 #if defined __x86_64__
+#define ARCH "x86_64"
 typedef x86::Gp Register;
 typedef x86::Compiler LocalCompiler;
 
@@ -91,6 +92,7 @@ void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
 }
 
 #elif defined __aarch64__
+#define ARCH "aarch64"
 typedef a64::Gp Register;
 typedef a64::Compiler LocalCompiler;
 
@@ -103,6 +105,7 @@ void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
 }
 
 #else
+#define ARCH "unknown"
 #error unrecognised architecture for JIT
 #endif
 
@@ -422,16 +425,18 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if atom w1 then return "called with too few arguments"
 //          aX = car(w1); w1 = cdr(w1)   // until X=nargs
 // Now in lower-level language that is
-//          if ((w1 & 0x7) != 0) goto tooFewArgs;
+//          if ((w1 & TAG_BITS) != TAG_CONS) goto tooFewArgs;
 //          aX = w1[0];
 //          w1 = w1[1];
-            cc.test(w1, 7);
+            cc.test(w1, TAG_BITS);
             cc.jne(tooFewArgs);
             cc.mov(argregs[i], ptr(w1));
-            if (i!=nargs) cc.mov(w1, ptr(w1, 8));
+            cc.mov(w1, ptr(w1, 8));
             cc.add(spreg, 8);
             cc.mov(ptr(spreg), argregs[i]);
         }
+        cc.cmp(w1, nilreg);
+        cc.jne(tooManyArgs);
     }
 #elif defined __aarch64__
     cc.mov(nilreg, nil);
@@ -448,13 +453,14 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     if (nargs>=4)
     {   cc.mov(w1, w);
         for (int i=4; i<=nargs; i++)
-        {   cc.tst(w1, 7);
+        {   cc.tst(w1, TAG_BITS);
             cc.b_ne(tooFewArgs);
             cc.ldr(argregs[i], ptr(w1));
-            if (i!=nargs) cc.ldr(w1, ptr(w1, 8));
-// I suppose I should really look to see if I had been given too many args!
+            cc.ldr(w1, ptr(w1, 8));
             cc.str(argregs[i], ptr_pre(spreg));
         }
+        cc.cmp(w1, nilreg);
+        cc.b_ne(tooManyArgs);
     }
 #else
 #error unrecognised architecture for JIT
@@ -489,10 +495,29 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // There are labels here for error exits. At present I do not handle the
 // errors!
     cc.bind(tooFewArgs);
+        loadreg(cc, w, litvec, CELL-TAG_VECTOR);
+        storereg(cc, w, nilreg, JIToffset(OJITarg1));
+        loadreg(cc, w, nilreg, JIToffset(OJITtoofew));
+        cc.chain(w);
     cc.bind(tooManyArgs);
+        loadreg(cc, w, litvec, CELL-TAG_VECTOR);
+        storereg(cc, w, nilreg, JIToffset(OJITarg1));
+        loadreg(cc, w, nilreg, JIToffset(OJITtoomany));
+        cc.chain(w);
     cc.bind(callFailed);
+        storereg(cc, spentry, nilreg, JIToffset(Ostack));
+        loadreg(cc, w, nilreg, JIToffset(OJITthrow));
+        cc.chain(w);
     cc.bind(carError);
+        storereg(cc, spentry, nilreg, JIToffset(Ostack));
+        storereg(cc, w=A_reg, nilreg, JIToffset(OJITarg1));
+        loadreg(cc, w, nilreg, JIToffset(OJITcar_fails));
+        cc.chain(w);
     cc.bind(cdrError);
+        storereg(cc, spentry, nilreg, JIToffset(Ostack));
+        storereg(cc, w=A_reg, nilreg, JIToffset(OJITarg1));
+        loadreg(cc, w, nilreg, JIToffset(OJITcdr_fails));
+        cc.chain(w);
 
     cc.bind(returnA);
 // Ensure that the Lisp stack pointer is in a good state.
@@ -529,6 +554,11 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     stdout_printf(" JITshim1B = %p\n",  JITshim1B);
     stdout_printf(" JITshim2B = %p\n",  JITshim2B);
     stdout_printf(" JITlessp = %p\n",   JITlessp);
+#ifdef ARITHLIB
+    stdout_printf(" JITsub1op = %p\n",  JITsub1op);
+#else // ARITHLIB
+    stdout_printf(" JITplus2 = %p\n",   JITplus2);
+#endif
 
     return func;
 }
@@ -542,6 +572,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 
 LispObject Ljit_unfinished(LispObject env)
 {   int numberUnfinished = 0;
+    int online = 0;
     CodeHolder code;
     Environment localEnv = rt.environment();;
     code.init(localEnv, rt.cpuFeatures());
@@ -572,10 +603,12 @@ typedef a64::Gp Register;
     std::vector<Label> perInstruction;
     for (size_t i=0; i<256; i++)
         perInstruction.push_back(cc.newLabel());
-    unsigned char bytes[256];
+    unsigned char bytes[512];
+    for (size_t i=0; i<sizeof(bytes); i++) bytes[i] = 0;
     size_t ppc = 0;
     int next;
     testingForUnfinished = true;
+    stdout_printf("\nThe following opcodes are not yet coded for %s\n", ARCH);
     for (unsigned int code=0; code<256; code++)
     {   TRY
         {   switch (code)
@@ -584,13 +617,21 @@ typedef a64::Gp Register;
             }
         }
         CATCH (JitFailed)
-        {   stdout_printf("Pending code %.2x (%3d) %s\n",
-                          code, code, opnames[code]);
+        {   stdout_printf("%s", opnames[code]);
+            for (size_t col=strlen(opnames[code]);col<15; col++)
+                stdout_printf(" ");
+            if (++online == 5)
+            {   stdout_printf("\n");
+                online = 0;
+            }
             numberUnfinished++;
         }
         END_CATCH;
     }
-    stdout_printf("Scan for unfinished bytecodes complete\n");
+    if (online != 0) stdout_printf("\n");
+    stdout_printf("\nThere is support for the following...\n");
+    ppc = 0;
+    online = 0;
     for (unsigned int code=0; code<256; code++)
     {   bool failed = false;
         TRY
@@ -603,13 +644,21 @@ typedef a64::Gp Register;
         {   failed = true;
         }
         END_CATCH;
-        if (!failed) stdout_printf("OK code %.2x (%3d) %s\n",
-                      code, code, opnames[code]);
+        if (!failed)
+        {   stdout_printf("%s", opnames[code]);
+            for (size_t col=strlen(opnames[code]);col<15; col++)
+                stdout_printf(" ");
+            if (++online == 5)
+            {   stdout_printf("\n");
+                online = 0;
+            }
+        }
     }
+    if (online != 0) stdout_printf("\n");
     testingForUnfinished = false;
 // In reporting the number of cases I still have to do I will discount
 // the 2 opcodes that are currently spare.
-    stdout_printf("%d bytecodes handled so %d to go\n",
+    stdout_printf("\n%d bytecodes handled so %d still need review\n",
                   256-numberUnfinished, numberUnfinished-2);
     return nil;
 }

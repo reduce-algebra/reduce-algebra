@@ -263,11 +263,14 @@ enum
     OJITshim1B,
     OJITshim2B,
     OJITlessp,
-#ifdef ARITHLIB
-    OJITsub1op,
-#else // ARITHLIB
-    OJITplus2,
-#endif // ARITHLIB
+    OJITsub1op,    // For ARITHLIB. There is no harm in having things in
+    OJITplus2,     // this enumeration even when they are not used.
+    OJITplusop,
+    OJITmake_int_from_ptr,
+    OJITcar_fails,
+    OJITcdr_fails,
+    OJITtoofew,
+    OJITtoomany,
     EndOfJitOffsetEnumeration
 };
 
@@ -307,10 +310,17 @@ inline boolshim2& JITshim2B = nilSegment.misc[OJITshim2B].genericSh2B;
 inline boolfunc2& JITlessp  = nilSegment.misc[OJITlessp].genericF2B;
 #ifdef ARITHLIB
 inline func1& JITsub1op     = nilSegment.misc[OJITsub1op].genericF1;
+inline func2& JITplusop     = nilSegment.misc[OJITplusop].genericF2;
 #else // ARITHLIB
 inline func2& JITplus2      = nilSegment.misc[OJITplus2].genericF2;
 #endif // ARITHLIB
+inline func1& JITmake_int_from_ptr =
+                              nilSegment.misc[OJITmake_int_from_ptr].genericF1;
 
+inline func0& JITcar_fails   = nilSegment.misc[OJITcar_fails].genericF0;
+inline func0& JITcdr_fails   = nilSegment.misc[OJITcdr_fails].genericF0;
+inline func0& JITtoofew     = nilSegment.misc[OJITtoofew].genericF0;
+inline func0& JITtoomany    = nilSegment.misc[OJITtoomany].genericF0;
 
 // In earlier days I could not readily test whether I was on a 32 or 64-bit
 // system at preprocessor time, and so "#ifdef SIXTY_FOUR_BIT" was not

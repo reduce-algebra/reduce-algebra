@@ -18,7 +18,52 @@
 #elif defined __x86_64__
 
             case OP_PLUS2:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                {   Label notFixnum = cc.newLabel();
+                    Label endPlus2 = cc.newLabel();
+// First test if both args are fixnums.
+                    cc.mov(w, A_reg);
+                    cc.and_(w, XTAG_BITS);
+                    cc.cmp(w, TAG_FIXNUM);
+                    cc.jne(notFixnum);
+                    cc.mov(w, B_reg);
+                    cc.and_(w, XTAG_BITS);
+                    cc.cmp(w, TAG_FIXNUM);
+                    cc.jne(notFixnum);
+// The actual integer values are got by shifting (arithmetically) right
+// by 4 bits to discard the tagging information that told me that I had
+// a pair of fixnums.
+                    cc.sar(A_reg, 4);
+                    cc.sar(B_reg, 4);
+                    cc.add(A_reg, B_reg);
+// After addding the result could be too large for a fixnum. Call code that
+// handles all that mess. In east cases it will just shift left by 4 bits
+// and add TAG_FIXNUM. In hard cases it needs to create a bignum.
+                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim1)));
+                    cc.mov(w1, ptr(nilreg, JIToffset(OJITmake_int_from_ptr)));
+                    invoke(cc, nilreg, spreg, w, A_reg,
+                           w1, A_reg);
+// Remember to check for failure!
+                    cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                    cc.jne(callFailed);
+                    cc.jmp(endPlus2);
+                cc.bind(notFixnum);
+#ifdef ARITHLIB
+                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                    cc.mov(w1, ptr(nilreg, JIToffset(OJITplus2op)));
+                    invoke(cc, nilreg, spreg, w, A_reg,
+                           w1, A_reg, B_reg);
+#else // ARITHLIB
+                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                    cc.mov(w1, ptr(nilreg, JIToffset(OJITplus2)));
+                    invoke(cc, nilreg, spreg, w, A_reg,
+                           w1, A_reg, B_reg);  
+#endif // ARITHLIB
+                    cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                    cc.jne(callFailed);
+                cc.bind(endPlus2);
+                }
+                break;
+
 
 #elif defined __aarch64__
 
@@ -30,3 +75,7 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_plus2.cpp
+
+

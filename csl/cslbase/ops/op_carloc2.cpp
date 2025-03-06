@@ -16,7 +16,7 @@
             case OP_CARLOC2:
                 cc.mov(B_reg, A_reg);
                 cc.mov(A_reg, ptr(spreg, -16));
-                cc.test(A_reg, 7);
+                cc.test(A_reg, TAG_BITS);
                 cc.jne(carError);
                 cc.mov(A_reg, ptr(A_reg));
                 break;
@@ -31,3 +31,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_carloc2.cpp

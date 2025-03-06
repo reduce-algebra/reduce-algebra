@@ -18,10 +18,10 @@
 #elif defined __x86_64__
 
             case OP_CAAR:
-                cc.test(A_reg, 7);
+                cc.test(A_reg, TAG_BITS);
                 cc.jne(carError);
                 cc.mov(A_reg, ptr(A_reg));
-                cc.test(A_reg, 7);
+                cc.test(A_reg, TAG_BITS);
                 cc.jne(carError);
                 cc.mov(A_reg, ptr(A_reg));
                 break;
@@ -36,3 +36,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_caar.cpp

@@ -159,6 +159,9 @@ extern LispObject bad_specialfn_4up(LispObject env, LispObject,
 #define G4W3           got_4up_wanted_3
 #define G4Wother       got_4up_wanted_other
 
+extern LispObject toofew();
+extern LispObject toomany();
+
 extern LispObject aerror(const char *s);         // Called from C not Lisp
 extern LispObject aerror0(const char *s);
 extern LispObject aerror1(const char *s, LispObject a);
@@ -179,6 +182,11 @@ extern LispObject car_fails(LispObject a);
 extern LispObject cdr_fails(LispObject a);
 extern LispObject rplaca_fails(LispObject a);
 extern LispObject rplacd_fails(LispObject a);
+
+extern LispObject car_fails();
+extern LispObject cdr_fails();
+extern LispObject rplaca_fails();
+extern LispObject rplacd_fails();
 
 //
 // Since miscflags is treated as a set of bits the issue of whether it

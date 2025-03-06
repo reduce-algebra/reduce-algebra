@@ -23,7 +23,8 @@
                     cc.and_(w, XTAG_BITS);
                     cc.cmp(w, TAG_FIXNUM);
                     cc.jne(notFixnum);
-                    cc.cmp(A_reg, MOST_NEGATIVE_FIXNUM);
+                    cc.mov(w, MOST_NEGATIVE_FIXNUM);
+                    cc.cmp(A_reg, w);
                     cc.jne(notFixnum);
                     cc.add(A_reg, -0x10);
                     cc.jmp(endSub1);
@@ -56,3 +57,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_sub1.cpp
