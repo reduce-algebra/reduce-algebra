@@ -174,7 +174,7 @@
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
-% register classes. RegP tests if the ophe operand is a valid x86_64 register.%
+% register classes. RegP tests if the operand is a valid x86_64 register.%
 %
 % RegP  any x86_64 register
 % FakeRegP tests for argument register numbers greater than LastActualReg
@@ -189,11 +189,11 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-	     eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
+             eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
              nil heaplast heaptrapbound
 	     bndstkptr bndstklowerbound
 	     bndstkupperbound t3 t4
-	     al  cl ax cx es cs ss ds fs gs))))
+             al cl ax cx es cs ss ds fs gs))))
  
 (DefList '((RAX   1) (RBX   2) (ebx  2) (RCX   3) (RDX   4) (RBP   5) )
 	 'RegisterNumber)
@@ -283,18 +283,12 @@
  
 (DefAnyreg CAR
            AnyregCAR   %Grab the source so caller can displace off it.
-%          ((regp anyp)    (displacement source 16#c0000000))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                         (displacement REGISTER 16#c0000000))
            (       (!*Field REGISTER SOURCE InfStartingBit InfBitLength)
                    (indirect REGISTER))
 )
 
 (DefAnyreg CDR
            AnyregCDR     %Same as CAR, except move to next word in pair.
-%          ((regp anyp)    (displacement source 16#c0000004))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                          (displacement REGISTER 16#c0000004))
            (       (!*Field REGISTER SOURCE InfStartingBit InfBitLength)
                    (Displacement REGISTER 8)))
 
@@ -306,8 +300,6 @@
 (DefAnyreg MEMORY
 	   AnyregMEMORY
 	   ((RegP ZeroP)      (indirect SOURCE))
-%   ((RegP ZeroP)      (*move SOURCE REGISTER)
-%		      (indirect REGISTER))
 	   ((Anyp  ZeroP)      (*MOVE SOURCE REGISTER)
 			       (indirect REGISTER))
  	   ((RegP InumP)  (Displacement SOURCE ARGTWO))
@@ -360,18 +352,18 @@
 
 (loadtime (remflag '(fluid global $fluid $global) 'Terminaloperand))
 
-(defanyreg Fluid ZIBanyregfluid)
+(DefAnyreg Fluid ZIBanyregfluid)
 
-(defanyreg $Fluid ZIBanyregfluid)
+(DefAnyreg $Fluid ZIBanyregfluid)
 
 (de ZIBanyregFluid (reg source)
    (cond ((and (idp source) (get source 'registercode))
                          `(reg ,source))
          (t       `($Fluid ,SOURCE))))
 
-(defanyreg Global ZIBanyregglobal)
+(DefAnyreg Global ZIBanyregglobal)
 
-(defanyreg $Global ZIBanyregglobal)
+(DefAnyreg $Global ZIBanyregglobal)
 
 (de ZIBanyregGlobal (reg source)
    (cond ((and (idp source) (get source 'registercode))
@@ -1468,7 +1460,7 @@ preload  (setq initload
 		     (wait)))) 
 	 'opencode)
 
-%% *Alloc sets thes variable NAlloc*. Define a new CMacro *SetNAlloc* to
+%% *Alloc sets the variable NAlloc*. Define a new CMacro *SetNAlloc* to
 %%  be used when *Alloc is optimized away.
 (de *SetNAlloc* (framesize)
   (setq NAlloc* framesize))
