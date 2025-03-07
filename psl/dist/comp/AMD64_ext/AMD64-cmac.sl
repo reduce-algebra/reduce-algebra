@@ -191,7 +191,6 @@
 	 'RegisterNumber)
  
 (de RegisterNumber (RegSymbol)
-% registers numbered according to D register model                        scs
   (cond ((NumberP RegSymbol) Regsymbol)
     ( T (OR (GET REGSYMBOL 'REGISTERNUMBER)
 	(StdError (BldMsg "Unknown register %r"  RegSymbol))))
@@ -929,7 +928,7 @@
 (de *ALLOC (framesize)
   (progn
     (setq NAlloc!* framesize)
-    (setq framesize (times2 framesize 8)) %%% addressingunitsperitem))
+    (setq framesize (times2 framesize 8)) %%% addressingunitsperitem
     (cond
       ((ZeroP framesize)
 	NIL)

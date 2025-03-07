@@ -6,7 +6,7 @@
 % Created:      1-August 1989
 % Modified:
 % Mode:         Lisp
-% Status:	Open Source: BSD License
+% Status:       Open Source: BSD License
 % Package:      
 %
 % Redistribution and use in source and binary forms, with or without
@@ -52,50 +52,50 @@
 % ------------------------------------------------------------
 
 (fluid '(LabelOffsets*                  % just the label entries from
-					% BranchAndLabelAList!*
-					% Has the form ( (Label.Offset) ... )
-	BranchCodeList*                 % Used in Branch optimization
-	BranchAndLabelAList*            % Used in Branch optimization
-	CurrentOffset*                  % the global value of the current
-					% byte displacement from the starting
-					% point of the code
-	CodeSize*                       % Current number of bytes generated
-	CodeBase*                       % Starting address of the module
-	Entries*                        % list of procedure entries of the
-					% form
-					% ((ProcedureName
-					%   ProcedureType
-					%   NumberOfArguments) .
-					%   CurrentOffset!* )
-	InstructionChanged*             % Boolean - indicates if any
-					% instructions have changed due to
-					% branch optimization
-	InstructionSize*                % Contains the size constant Byte
-					% Word or Long during length compute
-					% and assembly of individual instr.
-	ForwardInternalReferences*      % a-list of offsets of references to
-					% internal functions, to be patched
-					% by SystemFaslFixup
-	LapReturnValue*                 % set by SaveEntry to the pointer
-					% to be returned by LAP
-	OperandRegisterNumber*          % see EffectiveAddress
-	*WritingFaslFile                % FLAG: if true, then we are writing
-					% the resulting code to a file,
-					% otherwise we are depositing it into
-					% memory directly
-	InitOffset*                     % The offset from the module to the
-					% Initialiization code which is to be
-					% run when the module is loaded
-	*PGWD                           % FLAG: if true, then mnemonics and
-					% assembled instructions are printed
-	*PWrds                          % FLAG: if true, then base address
-					% and size of each compiled
-					% procedure are printed as they are
-					% deposited into memory
-	*align16                        % align lables to 16 byte
-					% boundaries        
-	*lapopt
-	*trlapopt
+                                        % BranchAndLabelAList!*
+                                        % Has the form ( (Label.Offset) ... )
+        BranchCodeList*                 % Used in Branch optimization
+        BranchAndLabelAList*            % Used in Branch optimization
+        CurrentOffset*                  % the global value of the current
+                                        % byte displacement from the starting
+                                        % point of the code
+        CodeSize*                       % Current number of bytes generated
+        CodeBase*                       % Starting address of the module
+        Entries*                        % list of procedure entries of the
+                                        % form
+                                        % ((ProcedureName
+                                        %   ProcedureType
+                                        %   NumberOfArguments) .
+                                        %   CurrentOffset!* )
+        InstructionChanged*             % Boolean - indicates if any
+                                        % instructions have changed due to
+                                        % branch optimization
+        InstructionSize*                % Contains the size constant Byte
+                                        % Word or Long during length compute
+                                        % and assembly of individual instr.
+        ForwardInternalReferences*      % a-list of offsets of references to
+                                        % internal functions, to be patched
+                                        % by SystemFaslFixup
+        LapReturnValue*                 % set by SaveEntry to the pointer
+                                        % to be returned by LAP
+        OperandRegisterNumber*          % see EffectiveAddress
+        *WritingFaslFile                % FLAG: if true, then we are writing
+                                        % the resulting code to a file,
+                                        % otherwise we are depositing it into
+                                        % memory directly
+        InitOffset*                     % The offset from the module to the
+                                        % Initialiization code which is to be
+                                        % run when the module is loaded
+        *PGWD                           % FLAG: if true, then mnemonics and
+                                        % assembled instructions are printed
+        *PWrds                          % FLAG: if true, then base address
+                                        % and size of each compiled
+                                        % procedure are printed as they are
+                                        % deposited into memory
+        *align16                        % align lables to 16 byte
+                                        % boundaries        
+        *lapopt
+        *trlapopt
 ))
 
 (setq *lapopt t)
@@ -107,17 +107,17 @@
 (ds LabelP (X) (atom X))
 
 (setq *PWrds t)                         % By default show where the code is
-					% put in memory
+                                        % put in memory
 
 % ------------------------------------------------------------
 % Constant declarations:
 % ------------------------------------------------------------
 
 (DefConst  
-	 RELOC_ID_NUMBER 1 
-	 RELOC_HALFWORD 2 
-	 RELOC_WORD 1 
-	 RELOC_INF 3)
+         RELOC_ID_NUMBER 1 
+         RELOC_HALFWORD 2 
+         RELOC_WORD 1 
+         RELOC_INF 3)
 
 (DefConst MaximumShortBranch 127)
 
@@ -133,23 +133,23 @@
 %%%    (setq u (lapopt1 u))                % optimize macros
 
     (setq U (Pass1Lap U))               % Pass1lap
-					% expand all the LAP macros
-					% Note that this is defined in
-					% PC:PASS-1-LAP.SL
+                                        % expand all the LAP macros
+                                        % Note that this is defined in
+                                        % PC:PASS-1-LAP.SL
 
     (setq U (LapoptFrame u))            % optimize frame-register transports
     (setq U (LapoptPeep u))             % peephole optimizer for 486 code
 
     (when *WritingFaslFile       % round off to fullword address
-	  (while (not (eq (wshift (wshift currentOffset* -3) 3) currentOffset*))
-		 (depositbyte 0) ))
+          (while (not (eq (wshift (wshift currentOffset* -3) 3) currentOffset*))
+                 (depositbyte 0) ))
  
     (SETQ U (ReformBranches U))         % process conditional branches
     (setq U (OptimizeBranches U))       % optimize branches and
-					% calculate offsets and total length
+                                        % calculate offsets and total length
     
     (when (not *WritingFaslFile)       
-	  (setq CodeBase* (GTBPS (Quotient (Plus2 CodeSize* 3) 4))))
+          (setq CodeBase* (GTBPS (Quotient (Plus2 CodeSize* 3) 4))))
 
 
 % Print the machine specific assembly code
@@ -157,14 +157,14 @@
 % otherwise it is an instruction
 
     (cond (*PGWD (foreach X in U do 
-	(cond ((LabelP X) (Prin2 X)) (t (PrintF "          %p%n" X)))))) 
+        (cond ((LabelP X) (Prin2 X)) (t (PrintF "          %p%n" X)))))) 
 
     (foreach Instruction_or_Label in U do 
-	(cond
-	    ((LabelP Instruction_or_Label) (DepositLabel Instruction_or_Label))
-	    ((equal (first Instruction_or_Label) '*entry) 
-		      (SaveEntry Instruction_or_Label)) 
-	    (t (DepositInstruction Instruction_or_Label) )))
+        (cond
+            ((LabelP Instruction_or_Label) (DepositLabel Instruction_or_Label))
+            ((equal (first Instruction_or_Label) '*entry) 
+                      (SaveEntry Instruction_or_Label)) 
+            (t (DepositInstruction Instruction_or_Label) )))
 
     (DefineEntries)                     % define entries to whom?
 
@@ -173,9 +173,9 @@
 % ??? Why is this using the error channel ???
 
     (cond ((and (not *WritingFaslFile) *PWrds) 
-	(ErrorPrintF "*** %p: base 16#%x, length 10#%d bytes" 
-		(foreach X in Entries* collect (first (car X))) 
-				CodeBase* CodeSize*))) 
+        (ErrorPrintF "*** %p: base 16#%x, length 10#%d bytes" 
+                (foreach X in Entries* collect (first (car X))) 
+                                CodeBase* CodeSize*))) 
 
     % Do not call MkCODE on LapReturnValue* if it is nil
     % LapReturnValue* is a fluid variable that got set up to hold
@@ -192,9 +192,9 @@
 (de CheckForInitCode (CodeList) 
      (foreach Instruction in CodeList do 
        (progn (cond ((PairP Instruction) 
-	   (cond ((equal (car Instruction) '*entry) 
-	     (cond ((equal (second Instruction) '**Fasl**InitCode**) 
-		(return t))))))))))
+           (cond ((equal (car Instruction) '*entry) 
+             (cond ((equal (second Instruction) '**Fasl**InitCode**) 
+                (return t))))))))))
 
 % SaveEntry( '(!*entry ProcedureName ProcedureType NumberOfArguments) )
 % Purpose: To associate with a procedure its location (so other routines can
@@ -211,7 +211,7 @@
    ((not *writingfaslfile) 
     (setq entries* (cons (cons (rest x) currentoffset*) entries*)) 
     (unless lapreturnvalue* (setq lapreturnvalue*
-		 (wplus2 codebase* currentoffset*))))
+                 (wplus2 codebase* currentoffset*))))
 
    % if X = ( _____ !*!*Fasl!*!*InitCode!*!* ... )
    ((equal (second x) '**fasl**initcode**) 
@@ -225,7 +225,7 @@
        (put (second x) 'internalentryoffset currentoffset*) % MK
        (findidnumber (second x))
        (dfprintfasl (list 'putentry (mkquote (second x)) 
-			  (mkquote (third x)) currentoffset*))))))
+                          (mkquote (third x)) currentoffset*))))))
      
 
 % DefineEntries()
@@ -234,24 +234,24 @@
 
 (de DefineEntries nil 
     (foreach X in Entries* do 
-	(PutD (first (car X)) (second (car X))
-		 (MkCODE (wplus2 CodeBase* (cdr X))))))
+        (PutD (first (car X)) (second (car X))
+                 (MkCODE (wplus2 CodeBase* (cdr X))))))
 
 %(de DepositInstruction (X)
 %% This actually dispatches to the procedures to assemble the instructions
 %(prog (Y)
 %    (if (eqcar x 'movq)  (progn (Depositbyte  16#48)  % REX Prefix
-%				(rplaca x 'mov))
+%                               (rplaca x 'mov))
 %    (when (reg64bitp x) (Depositbyte  16#48)))  % REX Prefix
 %    (cond ((setq Y (get (first X) 'InstructionDepositFunction))
-%	   (Apply Y (list X)))
-%	  ((setq Y (get (first X) 'InstructionDepositMacro))
-%	   (apply2safe y (cdr x)))
-%	  (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))))
+%          (Apply Y (list X)))
+%         ((setq Y (get (first X) 'InstructionDepositMacro))
+%          (apply2safe y (cdr x)))
+%         (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))))
 
 
 (de DepositLabel (x) nil)
-	  
+          
 (fluid '(*testlap REX-Prefix REX? allowextrarexprefix))
 (de DepositInstruction (X) 
 % This actually dispatches to the procedures to assemble the instrucitons
@@ -264,59 +264,59 @@
     (when *writingfaslfile (setq offs currentoffset*))
     (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
                           (Depositbyte  16#48)  % REX Prefix
-			  (SETQ REX? (plus codebase!* currentoffset* -1))
-			  (setq allowextrarexprefix 0)
+                          (SETQ REX? (plus codebase!* currentoffset* -1))
+                          (setq allowextrarexprefix 0)
                           (rplaca x 'mov))
           ((eqcar x 'addq) (Depositbyte  16#48)  % REX Prefix
-			  (SETQ REX? (plus codebase!* currentoffset* -1))
-			  (setq allowextrarexprefix 0)
+                          (SETQ REX? (plus codebase!* currentoffset* -1))
+                          (setq allowextrarexprefix 0)
                           (rplaca x 'add))
           ((eqcar x 'subq) (Depositbyte  16#48)  % REX Prefix
-			  (SETQ REX? (plus codebase!* currentoffset* -1))
-			  (setq allowextrarexprefix 0)
+                          (SETQ REX? (plus codebase!* currentoffset* -1))
+                          (setq allowextrarexprefix 0)
                           (rplaca x 'sub))
           ((eqcar x 'cmpq) (Depositbyte  16#48)  % REX Prefix
-			  (SETQ REX? (plus codebase!* currentoffset* -1))
-			  (setq allowextrarexprefix 0)
+                          (SETQ REX? (plus codebase!* currentoffset* -1))
+                          (setq allowextrarexprefix 0)
                           (rplaca x 'cmp))
-	  ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
-	  ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
-	   (cond ((upperreg64p x)
-		  (setq REX-prefix 16#40)
-		  (Depositbyte 16#40)
-		  (SETQ REX? (plus codebase!* currentoffset* -1))
-		  (setq allowextrarexprefix 0))))
+          ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
+          ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
+           (cond ((upperreg64p x)
+                  (setq REX-prefix 16#40)
+                  (Depositbyte 16#40)
+                  (SETQ REX? (plus codebase!* currentoffset* -1))
+                  (setq allowextrarexprefix 0))))
           ((reg64bitp x) (Depositbyte  16#48)    % REX Prefix
-			 (SETQ REX? (plus codebase!* currentoffset* -1))))
+                         (SETQ REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
-	   (Apply Y (list X))) 
-	  ((setq Y (get (first X) 'InstructionDepositMacro))
-	   (apply2safe y (cdr x))) 
-	  (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))
+           (Apply Y (list X))) 
+          ((setq Y (get (first X) 'InstructionDepositMacro))
+           (apply2safe y (cdr x))) 
+          (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))
     (when REX? (putbyte REX? 0 REX-Prefix)) %overwrite REX-Prefix
 
     (when (and (not (eq 0 allowextrarexprefix))
                offs (not (equal currentoffset*
-			 (plus allowextrarexprefix offs
-				 (instructionlength x)))))
-	  (StdError (BldMsg "length error with instruction %p: %p"
-		  x (difference (difference currentoffset* offs)
-				(instructionlength x)))))
+                         (plus allowextrarexprefix offs
+                                 (instructionlength x)))))
+          (StdError (BldMsg "length error with instruction %p: %p"
+                  x (difference (difference currentoffset* offs)
+                                (instructionlength x)))))
 ))
 
 (flag '(JMP CALL
-	movups movss movupd movsd
-	movhlps movlps movlpd movddup movsldup unpcklps unpcklpd 
-	MOVLHPS MOVHPS MOVHPD MOVSHPDUP movaps movapd 
-	CVTPI2PS CVTPI2PD CVTSI2SS CVTSI2SD CVTSI2SDQ 
-	CVTTPS2PI CVTTPD2PI CVTTSS2SI CVTTSD2SI 
-	CVTPS2PI CVTPD2PI CVTSS2SI CVTSD2SI
-	UCOMISS UCOMISD COMISS COMISD
-	MOVW MOVSX MOVZX
-	ADDSD MULsd subsd divsd sqrtsd
-	movd movq ldmxcsr stmxcsr
-	pand pandn por pxor andpd andnpd orpd xorpd
-	) 'norexprefix)
+        movups movss movupd movsd
+        movhlps movlps movlpd movddup movsldup unpcklps unpcklpd 
+        MOVLHPS MOVHPS MOVHPD MOVSHPDUP movaps movapd 
+        CVTPI2PS CVTPI2PD CVTSI2SS CVTSI2SD CVTSI2SDQ 
+        CVTTPS2PI CVTTPD2PI CVTTSS2SI CVTTSD2SI 
+        CVTPS2PI CVTPD2PI CVTSS2SI CVTSD2SI
+        UCOMISS UCOMISD COMISS COMISD
+        MOVW MOVSX MOVZX
+        ADDSD MULsd subsd divsd sqrtsd
+        movd movq ldmxcsr stmxcsr
+        pand pandn por pxor andpd andnpd orpd xorpd
+        ) 'norexprefix)
 
 % Instructions that need a REX.B prefix only if using upper 8 registers
 (flag '(push pop movl movb) 'onlyupperregrexprefix)
@@ -325,9 +325,9 @@
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
     (when (and *writingfaslfile 
-	       (not (equal currentoffset* (LabelOffset x)))) 
+               (not (equal currentoffset* (LabelOffset x)))) 
       (StdError (BldMsg "wrong address for label %p: difference = %p" 
-			x    (difference currentoffset* (LabelOffset x)))))) 
+                        x    (difference currentoffset* (LabelOffset x)))))) 
 
 
 (CompileTime (progn 
@@ -344,14 +344,14 @@
     (setq vars (pop u)) 
     (setq pattern
       (append u
-	`((t (laperr ',OpName  (list .,vars))))))
+        `((t (laperr ',OpName  (list .,vars))))))
     (setq pattern (cons 'cond pattern))
     % (setq u `(lambda ,vars ,pattern)) 
     % (return `(put ,OpName 'InstructionDepositMacro ',u))
     (return
       `(progn
-	 (de ,fname ,vars ,pattern)
-	 (put ,OpName 'InstructionDepositMacro ',fname)))
+         (de ,fname ,vars ,pattern)
+         (put ,OpName 'InstructionDepositMacro ',fname)))
  ))
 
 (dm DefOpLength (U)
@@ -366,14 +366,14 @@
     (setq vars (pop u)) 
     (setq pattern
       (append u 
-	`((t (laperr ',OpName  (list .,vars))))))  
+        `((t (laperr ',OpName  (list .,vars))))))  
     (setq pattern (cons 'cond pattern)) 
     % (setq u `(lambda ,vars ,pattern))
     % (return `(put ,OpName 'InstructionLengthFunction ',u))
     (return 
       `(progn
-	 (de ,fname ,vars ,pattern) 
-	 (put ,OpName 'InstructionLengthFunction ',fname))) 
+         (de ,fname ,vars ,pattern) 
+         (put ,OpName 'InstructionLengthFunction ',fname))) 
 )) 
  
  
@@ -395,7 +395,7 @@
 (setq sregs '(ES CS SS DS FS GS ))
 
 (setq xmmregs '(xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7
-		xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15))
+                xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15))
 
 (de sregp(x)
   % test for a segment register
@@ -416,11 +416,11 @@
   % supports reference to explicit addresses
    (if (atom x) nil
        (progn
-	 (setq x (car x))
-	 (or
-	   (eq x 'label) 
-	   (eq x '$FLUID)
-	   (eq x '$GLOBAL)
+         (setq x (car x))
+         (or
+           (eq x 'label) 
+           (eq x '$FLUID)
+           (eq x '$GLOBAL)
    )))) 
  
 (de effap(x)
@@ -428,8 +428,8 @@
    (or (stringp x) (idp x) (regp x) (xmmregp x)
       (and (pairp x)
        (memq (car x)
-	     '(indirect displacement indexed $fluid $global 
-	       fluid global extrareg) ))))
+             '(indirect displacement indexed $fluid $global 
+               fluid global extrareg) ))))
 
 (de stdimmediatep(x)
   % full size immediate
@@ -438,11 +438,11 @@
 (de shortlabelp (x)(or (labelp x) (eqcar x 'IMMEDIATE)))
 
 (de adrp (x) (or (atom x)
-		 (memq (car x)'(label entry internalentry foreignentry))
-		 (and (eqcar x 'IMMEDIATE) (adrp (cadr x)))))
+                 (memq (car x)'(label entry internalentry foreignentry))
+                 (and (eqcar x 'IMMEDIATE) (adrp (cadr x)))))
 
 (de indirectadrp (x) (and (eqcar x 'INDIRECT) 
-			  (or (adrp (cadr x)) (effap (cadr x))(regp (cadr x)))))
+                          (or (adrp (cadr x)) (effap (cadr x))(regp (cadr x)))))
 
 (de smallimmediatep (x)
      (when (eqcar x 'IMMEDIATE) (setq x (unimmediate x)))
@@ -475,61 +475,61 @@
          (regp (cadr op2)) 
          (setq base (reg2int (cadr op2) 'REXB))
          (equal base 2#101) )
-	    (return (modR/M op1 (list 'displacement (cadr op2) 0))))
+            (return (modR/M op1 (list 'displacement (cadr op2) 0))))
 
     % case: reg - (indirect (reg ESP/R12) )
     (when (and (eq mode 'indirect)
-	       (regp (cadr op2))
-	       (setq base (reg2int (cadr op2) 'REXB))
-	       (equal base 2#100) )
-	  (depositbyte (lor 2#00000100 op1))
-	  (depositbyte 2#00100100)  % s-i-b byte
-	  (return nil))
+               (regp (cadr op2))
+               (setq base (reg2int (cadr op2) 'REXB))
+               (equal base 2#100) )
+          (depositbyte (lor 2#00000100 op1))
+          (depositbyte 2#00100100)  % s-i-b byte
+          (return nil))
 
     % case: reg - (indirect reg) non ESP/EBP
     (when (and (eq mode   'indirect) 
-	       (regp (cadr op2)))
-	  % no zero displacement for reg EBP:
-	  (setq base (reg2int (cadr op2) 'REXB))
-	  (when (or (and (equal base 2#100) (not (upperreg64p (cadr op2)))) (equal base 2#101))
-	    (modR/Merror op2))
-	  (depositbyte (lor 2#00000000 (lor op1 base)))
-	  (return nil))
+               (regp (cadr op2)))
+          % no zero displacement for reg EBP:
+          (setq base (reg2int (cadr op2) 'REXB))
+          (when (or (and (equal base 2#100) (not (upperreg64p (cadr op2)))) (equal base 2#101))
+            (modR/Merror op2))
+          (depositbyte (lor 2#00000000 (lor op1 base)))
+          (return nil))
 
     % case: reg - (displacement (reg ESP/R12) const)
     (when (and (eq mode   'displacement)
-	       (regp (cadr op2)) 
-	       (numberp (caddr op2))
-	       (setq base (reg2int (cadr op2) 'REXB))
-	       (equal base 2#100) )
-	  (return
-	     (if (bytep (caddr op2))  % 8 bit displacement
-		 (progn
-		   (depositbyte (lor 2#01000100 op1))
-		   (depositbyte 2#00100100)  % s-i-b byte
-		   (depositbyte (land 255 (caddr op2))))
-		 (progn
-		   (depositbyte (lor 2#10000100 op1 base))
-		   (depositbyte 2#00100100)  % s-i-b byte
-		   (deposit32bitword (caddr op2) )))))
+               (regp (cadr op2)) 
+               (numberp (caddr op2))
+               (setq base (reg2int (cadr op2) 'REXB))
+               (equal base 2#100) )
+          (return
+             (if (bytep (caddr op2))  % 8 bit displacement
+                 (progn
+                   (depositbyte (lor 2#01000100 op1))
+                   (depositbyte 2#00100100)  % s-i-b byte
+                   (depositbyte (land 255 (caddr op2))))
+                 (progn
+                   (depositbyte (lor 2#10000100 op1 base))
+                   (depositbyte 2#00100100)  % s-i-b byte
+                   (deposit32bitword (caddr op2) )))))
 
     % case: reg - (displacement reg const), non ESP
     (when (and (eq mode   'displacement) 
-	       (regp (cadr op2)) 
-	       (numberp (caddr op2)))
-	  (setq base (reg2int (cadr op2) 'REXB))
-	  (return
-	    (if (bytep (caddr op2))  % 8 bit displacement
-		(progn 
-		  (depositbyte (lor 2#01000000 (lor op1 base)))
-		  (depositbyte (land 255 (caddr op2))))
-		(progn  
-		  (depositbyte (lor 2#10000000 (lor op1 base)))
-		  (deposit32bitword (int2sys (caddr op2) ))))))
-	  
+               (regp (cadr op2)) 
+               (numberp (caddr op2)))
+          (setq base (reg2int (cadr op2) 'REXB))
+          (return
+            (if (bytep (caddr op2))  % 8 bit displacement
+                (progn 
+                  (depositbyte (lor 2#01000000 (lor op1 base)))
+                  (depositbyte (land 255 (caddr op2))))
+                (progn  
+                  (depositbyte (lor 2#10000000 (lor op1 base)))
+                  (deposit32bitword (int2sys (caddr op2) ))))))
+          
     % case: reg - (indexed ....) 
     (when (eq mode   'indexed)
-	  (return (sibbyte-for-indexed (lor 2#00000100 op1) op2)))
+          (return (sibbyte-for-indexed (lor 2#00000100 op1) op2)))
 
 
      % all other cases: reg - absolute 32 bit displacement
@@ -540,30 +540,30 @@
 
 (de sibbyte-for-indexed(modr/m op2)
     (prog(base index factor n)
-	 (setq base (caddr op2) index (cadr op2))
-	 (setq factor 1)
-	 (when (eqcar index 'times)
-	   (setq factor (caddr index))
-	   (setq index (cadr index)))
-	 (setq factor (atsoc factor
-			     '((1 . 0)(2 . 2#01000000)(4 . 2#10000000)(8 . 2#11000000))))
-	 (when (null factor) (modR/Merror op2))
-	 (setq factor (cdr factor))
-	 (cond
-	  ((eqcar base 'displacement)
-	   (when (or (not (numberp (setq n (caddr base))))
-		     (not (regp (cadr base))))   (modR/Merror op2))
-	   (setq base (reg2int (cadr base) 'REXB))
-	   (when (or (not (equal n 0))(eq base 2#101))
-	     (prin2t "****** Fall noch nicht vorgesehen")
-	     (modR/Merror op2))
-	   (depositbyte modr/m) 
-	   (depositbyte(lor factor (lor (lsh (reg2int index 'REXX) 3) base))))
-	  ((labelp base)
-	   (depositbyte modr/m)
-	   (depositbyte(lor factor (lor (lsh (reg2int index 'REXX) 3) 2#101 )))
-	   (depositextension base))
-	  (t (modR/Merror op2)))))
+         (setq base (caddr op2) index (cadr op2))
+         (setq factor 1)
+         (when (eqcar index 'times)
+           (setq factor (caddr index))
+           (setq index (cadr index)))
+         (setq factor (atsoc factor
+                             '((1 . 0)(2 . 2#01000000)(4 . 2#10000000)(8 . 2#11000000))))
+         (when (null factor) (modR/Merror op2))
+         (setq factor (cdr factor))
+         (cond
+          ((eqcar base 'displacement)
+           (when (or (not (numberp (setq n (caddr base))))
+                     (not (regp (cadr base))))   (modR/Merror op2))
+           (setq base (reg2int (cadr base) 'REXB))
+           (when (or (not (equal n 0))(eq base 2#101))
+             (prin2t "****** Fall noch nicht vorgesehen")
+             (modR/Merror op2))
+           (depositbyte modr/m) 
+           (depositbyte(lor factor (lor (lsh (reg2int index 'REXX) 3) base))))
+          ((labelp base)
+           (depositbyte modr/m)
+           (depositbyte(lor factor (lor (lsh (reg2int index 'REXX) 3) 2#101 )))
+           (depositextension base))
+          (t (modR/Merror op2)))))
 
 (de modR/Merror(op2)
     (stderror (bldmsg "illegal x86_64 addressing mode %w" op2)))
@@ -571,57 +571,57 @@
 (de depositextension(op2)
     % generate a relocated fullword extension
     (prog (OfFn)
-	  (when (atom op2) (return (depositwordexpression op2)))
-	  (when (setq OfFn (get (car op2) 'OperandDepositFunction))
-	    (return (apply OfFn (list op2))))
-	  (depositwordexpression op2)))
+          (when (atom op2) (return (depositwordexpression op2)))
+          (when (setq OfFn (get (car op2) 'OperandDepositFunction))
+            (return (apply OfFn (list op2))))
+          (depositwordexpression op2)))
 
 (de lthmodR/M (op1 op2)
     % calculate the length of the address part by modR/M
     (prog (OpFn mode base ireg n)
 
-	  % case: reg - reg
-	  (when (regp op2) (return 1))
-	  (when (pairp op2) (setq mode (car op2)))
+          % case: reg - reg
+          (when (regp op2) (return 1))
+          (when (pairp op2) (setq mode (car op2)))
 
-	  % case: reg - (indirect (reg ESP/R12) ) 
-	  (when (and (eq mode   'indirect) 
-		     (regp (cadr op2)) 
-		     (setq base (reg2int (cadr op2) 'REXB)) 
-		     (equal base 2#100) ) 
-	    (return 2)) 
+          % case: reg - (indirect (reg ESP/R12) ) 
+          (when (and (eq mode   'indirect) 
+                     (regp (cadr op2)) 
+                     (setq base (reg2int (cadr op2) 'REXB)) 
+                     (equal base 2#100) ) 
+            (return 2)) 
 
-	  % case: reg - (indirect (reg EBP/R13) ) % no format without offset 
-	  (when (and (eq mode   'indirect)     
-		     (regp (cadr op2)) 
-		     (setq base (reg2int (cadr op2) 'REXB)) 
-		     (equal base 2#101) ) 
-	    (return (lthmodR/M op1 (list 'displacement (cadr op2) 0)))) 
+          % case: reg - (indirect (reg EBP/R13) ) % no format without offset 
+          (when (and (eq mode   'indirect)     
+                     (regp (cadr op2)) 
+                     (setq base (reg2int (cadr op2) 'REXB)) 
+                     (equal base 2#101) ) 
+            (return (lthmodR/M op1 (list 'displacement (cadr op2) 0)))) 
 
-	  % case: reg - (indirect reg) non ESP/EBP
-	  (when (and (eq mode   'indirect)
-		     (regp (cadr op2)))
-	    (return 1))
+          % case: reg - (indirect reg) non ESP/EBP
+          (when (and (eq mode   'indirect)
+                     (regp (cadr op2)))
+            (return 1))
 
-	  % case: reg - (displacement (reg ESP/R12) const) 
-	  (when (and (eq mode   'displacement)  
-		     (regp (cadr op2)) 
-		     (numberp (caddr op2))
-		     (setq base (reg2int (cadr op2) 'REXB)) 
-		     (equal base 2#100) ) 
-	    (if (bytep (caddr op2) )  % 8 bit displacement
-		(return 3) 
-		(return 6)))
-	  
-	  % case: reg - (displacement reg const), non ESP
-	  (when (and (eq mode   'displacement)
-		     (regp (cadr op2))
-		     (numberp (caddr op2)))
-	    (return (if (bytep (caddr op2)) 2 5)))
+          % case: reg - (displacement (reg ESP/R12) const) 
+          (when (and (eq mode   'displacement)  
+                     (regp (cadr op2)) 
+                     (numberp (caddr op2))
+                     (setq base (reg2int (cadr op2) 'REXB)) 
+                     (equal base 2#100) ) 
+            (if (bytep (caddr op2) )  % 8 bit displacement
+                (return 3) 
+                (return 6)))
+          
+          % case: reg - (displacement reg const), non ESP
+          (when (and (eq mode   'displacement)
+                     (regp (cadr op2))
+                     (numberp (caddr op2)))
+            (return (if (bytep (caddr op2)) 2 5)))
 
-	  % case: (indexed reg (displacement reg 0)) 
-	  (when (eq mode   'indexed) 
-	    (return (add1 (lth-sibbyte-for-indexed op2))))
+          % case: (indexed reg (displacement reg 0)) 
+          (when (eq mode   'indexed) 
+            (return (add1 (lth-sibbyte-for-indexed op2))))
 
 	  % all other cases: reg - relative 32 bit displacement
 	  (return 5)))
@@ -629,19 +629,19 @@
 
 (de lth-sibbyte-for-indexed(op2)
     (prog(base index factor offset)
-	 (setq base (caddr op2) index (cadr op2))
-	 (cond
-	  ((eqcar base 'displacement) 
-	   (setq offset (caddr base))
-	   (when (or (not (equal offset 0))
-		     (not (regp (cadr base))))   (modR/Merror op2))
-	   (setq base (reg2int (cadr base) 'REXB)) 
-	   (when (eq base 2#101)  
-	     (prin2t "****** Fall noch nicht vorgesehen") 
-	     (modR/Merror op2)) 
-	   (return 1))
-	  ((labelp base) (return 5))
-	  (t (modR/Merror op2))))) 
+         (setq base (caddr op2) index (cadr op2))
+         (cond
+          ((eqcar base 'displacement) 
+           (setq offset (caddr base))
+           (when (or (not (equal offset 0))
+                     (not (regp (cadr base))))   (modR/Merror op2))
+           (setq base (reg2int (cadr base) 'REXB)) 
+           (when (eq base 2#101)  
+             (prin2t "****** Fall noch nicht vorgesehen") 
+             (modR/Merror op2)) 
+           (return 1))
+          ((labelp base) (return 5))
+          (t (modR/Merror op2))))) 
 
 % Procedures to compute specific OperandRegisterNumber!*
 % Each of the cases returns the Addrssing MODE
@@ -658,44 +658,44 @@
 (de reg2int (u prefixbit)
     % calculate binary number for register
     (prog (r) (setq r u)
-	  % strip off tag 'reg
-	  (cond ((xmmregp r) (setq r (cadr r)))
-		(t (cond ((eqcar r 'reg)(setq r (cadr r))))
-		   %convert a LISP-register into an x86_64 register
-		   (if (numberp r) (setq r (getv numericRegisterNames r)))))
-	  (setq r (get r 'registercode))
-	  (when (and r (wgreaterp r 7)) (setq r (wand r 7))
-		(setq REX-Prefix
-		      (wor REX-Prefix (get prefixbit 'prefixcode))))
-	  (if r (return r)
-	    (stderror (bldmsg "unknown register %w" u)))))
+          % strip off tag 'reg
+          (cond ((xmmregp r) (setq r (cadr r)))
+                (t (cond ((eqcar r 'reg)(setq r (cadr r))))
+                   %convert a LISP-register into an x86_64 register
+                   (if (numberp r) (setq r (getv numericRegisterNames r)))))
+          (setq r (get r 'registercode))
+          (when (and r (wgreaterp r 7)) (setq r (wand r 7))
+                (setq REX-Prefix
+                      (wor REX-Prefix (get prefixbit 'prefixcode))))
+          (if r (return r)
+            (stderror (bldmsg "unknown register %w" u)))))
 
 (deflist '((EAX   0) (ECX   1) (EDX   2) (EBX   3) 
            (rAX   0) (rCX   1) (rDX   2) (rBX   3) 
-	   (ESP   4) (EBP   5) (ESI   6) (EDI   7)
-	   (rSP   4) (rBP   5) (rSI   6) (rDI   7)
-	   (st    4)        % LISP stack register
-	   (T1    7) % EDI
-	   (T2    6) % ESI
-	   (T3    8) 
-	   (T4    9) 
-	   (heaplast 10) (heaptrapbound 11)
+           (ESP   4) (EBP   5) (ESI   6) (EDI   7)
+           (rSP   4) (rBP   5) (rSI   6) (rDI   7)
+           (st    4)        % LISP stack register
+           (T1    7) % RDI
+           (T2    6) % RSI
+           (T3    8) 
+           (T4    9) 
+           (heaplast 10) (heaptrapbound 11)
            (bndstkptr 12) (bndstkupperbound 13)
            (nil  15) (bndstklowerbound 14)
 
-	   (r8 8) (r9 9) (r10 10) (r11 11)
-	   (r12 12) (r13 13) (r14 14) (r15 15)
-	   (xmm0 0) (xmm1 1) (xmm2 2) (xmm3 3)
-	   (xmm4 4) (xmm5 5) (xmm6 6) (xmm7 7)
-	   (xmm8 8) (xmm9 9) (xmm10 10) (xmm11 11)
-	   (xmm12 12) (xmm13 13) (xmm14 14) (xmm15 15)
+           (r8 8) (r9 9) (r10 10) (r11 11)
+           (r12 12) (r13 13) (r14 14) (r15 15)
+           (xmm0 0) (xmm1 1) (xmm2 2) (xmm3 3)
+           (xmm4 4) (xmm5 5) (xmm6 6) (xmm7 7)
+           (xmm8 8) (xmm9 9) (xmm10 10) (xmm11 11)
+           (xmm12 12) (xmm13 13) (xmm14 14) (xmm15 15)
 
-	   % byte and word registers
-	   (AL    0) (CL    1)
-	   (AX    0) (CX    1)
-	   % segment registers
-	   (ES   0) (CS    1) (SS    2) (DS   3)(FS   4)(GS   5)
-	   ) 'registercode)
+           % byte and word registers
+           (AL    0) (CL    1)
+           (AX    0) (CX    1)
+           % segment registers
+           (ES   0) (CS    1) (SS    2) (DS   3)(FS   4)(GS   5)
+           ) 'registercode)
 
 (put 'NIL 'RegisterCode 15)
 
@@ -715,10 +715,10 @@
 % the DS segment rther than the SS segment
 (de indexed-reg-5-p(op)
     (and (pairp op) NIL % not useful in 64 bit mode
-	 (or (eq (car op) 'indexed)
-	     (eq (car op) 'displacement)
-	     (eq (car op) 'indirect))
-	 (equal (cadr op) '(reg 5))) )
+         (or (eq (car op) 'indexed)
+             (eq (car op) 'displacement)
+             (eq (car op) 'indirect))
+         (equal (cadr op) '(reg 5))) )
 
 (de lth-reg-5-prefix(op)
     (if (indexed-reg-5-p op) 1 0))
@@ -781,29 +781,29 @@
 % op1 is a register, op2 is an effective address
 (de OP-reg-effa-2 (code op1 op2)
     (prog (need_rex)
-	  (setq need_rex (or (upperreg64p op1)  (upperreg64p op2)))
-	  (depositbyte (car code))
-	  (setq code (cdr code))
-	  % check for optional rex byte
-	  (if (eqcar code 'rex)
-	      (progn
-		(setq code (cdr code))	% skip symbolic "rex" byte in inst. def.
-		(if need_rex		% deposit necessary rex byte
-		 (progn
-		   (setq REX-prefix 16#48)
-		   (depositbyte 16#48)
-		   (SETQ REX? (plus codebase!* currentoffset* -1))
-		   (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )))
-		))
-	  (depositbyte (car code)))
+          (setq need_rex (or (upperreg64p op1)  (upperreg64p op2)))
+          (depositbyte (car code))
+          (setq code (cdr code))
+          % check for optional rex byte
+          (if (eqcar code 'rex)
+              (progn
+                (setq code (cdr code))  % skip symbolic "rex" byte in inst. def.
+                (if need_rex            % deposit necessary rex byte
+                 (progn
+                   (setq REX-prefix 16#48)
+                   (depositbyte 16#48)
+                   (SETQ REX? (plus codebase!* currentoffset* -1))
+                   (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )))
+                ))
+          (depositbyte (car code)))
     (modR/M op1 op2))
 
 (de LTH-reg-effa-2 (code op1 op2)
   (prog (codelength) 
     (setq codelength (length code))
     (if (and (memq 'rex code) (not (upperreg64p op1)) (not (upperreg64p op2)))
-	% optional rex byte not needed
-	(setq codelength (sub1 codelength)))
+        % optional rex byte not needed
+        (setq codelength (sub1 codelength)))
     (return (plus codelength (lthmodR/M op1 op2)))))
 
 %------------------------------------------------------------------------
@@ -816,12 +816,12 @@
       (depositbyte (car code))
       (setq code (cdr code)))
     (if (or need_rex (eqcar code 'rex))
-	(progn
-	  (setq REX-prefix (if (eqcar code 'rex) 16#48 16#40))
-	  (depositbyte REX-prefix)
-	  (SETQ REX? (plus codebase!* currentoffset* -1))
-	  (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )
-	  (if (eqcar code 'rex) (setq code (cdr code)))))
+        (progn
+          (setq REX-prefix (if (eqcar code 'rex) 16#48 16#40))
+          (depositbyte REX-prefix)
+          (SETQ REX? (plus codebase!* currentoffset* -1))
+          (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )
+          (if (eqcar code 'rex) (setq code (cdr code)))))
     (depositbyte (car code)))
     (depositbyte (cadr code))
     (modR/M op1 op2))
@@ -830,8 +830,8 @@
   (prog (codelength) 
     (setq codelength (length code))
     (if (and (memq 'rex code) (not (upperreg64p op1)) (not (upperreg64p op2)))
-	% optional rex byte not needed
-	(setq codelength (sub1 codelength)))
+        % optional rex byte not needed
+        (setq codelength (sub1 codelength)))
     (return (plus codelength (lthmodR/M op1 op2)))))
 
 %-----------------------------------------------------------------------
@@ -884,7 +884,7 @@
 %---------------------------------------------------------------------
 % absolute n-byte instruction
 (de OP-byte (code)
-	(foreach x in code do (depositbyte x)))
+        (foreach x in code do (depositbyte x)))
 (de lth-byte (code) (length code))
 
 %---------------------------------------------------------------------
@@ -903,8 +903,8 @@
    (setq n(MakeExpressionrelative op1 4)) % offset wrt next instr
    (depositliteralword n)
    (when *testlap (tab 15)(prin2 "-> ")
-	 (prin2 n) (prin2 " rel = ")
-	 (prin2 (plus currentoffset* n))(prin2t " abs"))))
+         (prin2 n) (prin2 " rel = ")
+         (prin2 (plus currentoffset* n))(prin2t " abs"))))
 
 (de lth-jump (code op1) (if (cdr code) 6 5))
 
@@ -917,17 +917,17 @@
    (when (not (bytep n)) (stderror  "distance too long for short jump"))
    (depositbyte (bytep n))
    (when *testlap (tab 15)(prin2 "-> ") 
-	 (prin2 n) (prin2 " rel = ")
-	 (prin2 (plus currentoffset* n))(prin2t " abs"))))
+         (prin2 n) (prin2 " rel = ")
+         (prin2 (plus currentoffset* n))(prin2t " abs"))))
 
 (de lth-JUMP-SHORT (code op1) 2)
  
 % indirect jump to effective address
 (de OP-JUMP-EFFA (code op1)
-	      % a tag "indirect" contained already in the operation if not
-	      % explicit reg reference
-	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
-		 (setq op1 (cadr op1)))
+              % a tag "indirect" contained already in the operation if not
+              % explicit reg reference
+           (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
+                 (setq op1 (cadr op1)))
            % need REX byte if upper 8 register
            (if (upperreg64p op1)
                (progn
@@ -935,13 +935,13 @@
                  (depositbyte REX-prefix)
                  (SETQ REX? (plus codebase!* currentoffset* -1))
                  (setq allowextrarexprefix 1)))
-	   (op-reg-effa code (cadr code) op1))
+           (op-reg-effa code (cadr code) op1))
 
 (de LTH-JUMP-EFFA (code op1) 
-	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
-		 (setq op1 (cadr op1)))
+           (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
+                 (setq op1 (cadr op1)))
            (if (upperreg64p op1) (add1 (lth-reg-effa code (cadr code) op1))
-	     (lth-reg-effa code (cadr code) op1)))
+             (lth-reg-effa code (cadr code) op1)))
  
 
 (commentoutcode
@@ -956,9 +956,9 @@
 
 (de saniere-Sprungziel(l)
     (cond ((atom l) l)
-	  ((eqcar l 'IMMEDIATE) (saniere-Sprungziel (cadr l)))
-	  ((eqcar l 'LABEL) (saniere-Sprungziel (cadr l)))
-	  (T l)))
+          ((eqcar l 'IMMEDIATE) (saniere-Sprungziel (cadr l)))
+          ((eqcar l 'LABEL) (saniere-Sprungziel (cadr l)))
+          (T l)))
 % RET n
 (de OP-RET-n (code op1) 
    (depositbyte (car code)) 
@@ -1062,7 +1062,7 @@
     (setq Z 0) 
     (foreach Y in (cdr X) do 
     (progn (DepositByte Y) 
-	(setq Z (LXOR Z 1))))           % toggle Z
+        (setq Z (LXOR Z 1))))           % toggle Z
     (cond ((not (equal Z 0)) (DepositByte 0)))))        % go to halfword boundary
 
 
@@ -1073,8 +1073,8 @@
     (setq X (second X)) 
     (for (from I 0 (Size X) 1) (do (DepositByte (Indx X I)))) 
     (DepositByte 0) 
-	(while (not (eq 0 (remainder CurrentOffset!* 8)))
-	       (depositbyte 0))))
+        (while (not (eq 0 (remainder CurrentOffset!* 8)))
+               (depositbyte 0))))
 % align to word boundary
 
 (de DepositFloat (X)                    % this will not work in cross-assembly
@@ -1095,7 +1095,7 @@
       (return (MakeInternalEntryRelative (second Exp) OffsetFromHere)))) 
 
     (cond ((not (LabelP Exp))
-	   (return (StdError "Only labels can be relative")))) 
+           (return (StdError "Only labels can be relative")))) 
 
     (setq X (plus CurrentOffset* OffsetFromHere)) 
     (setq Y (LabelOffset Exp)) 
@@ -1104,29 +1104,29 @@
 
 (de makeinternalentryrelative (nam offsetfromhere)
   (prog (offset)
-	(setq offset (atsoc nam labeloffsets*))
-	(setq offset (if offset
-		(cdr offset)
-		(get nam 'internalentryoffset)))
-	(return (if offset
-		  (progn
-		    (setq offset 
-		     (difference offset 
-		      (plus2 currentoffset* offsetfromhere))))
-		  (progn
-		    (setq forwardinternalreferences* 
-		     (cons (cons currentoffset* nam) 
-		      forwardinternalreferences*))
-		    0)))))
-	% will be fixed in SystemFasl...
+        (setq offset (atsoc nam labeloffsets*))
+        (setq offset (if offset
+                (cdr offset)
+                (get nam 'internalentryoffset)))
+        (return (if offset
+                  (progn
+                    (setq offset 
+                     (difference offset 
+                      (plus2 currentoffset* offsetfromhere))))
+                  (progn
+                    (setq forwardinternalreferences* 
+                     (cons (cons currentoffset* nam) 
+                      forwardinternalreferences*))
+                    0)))))
+        % will be fixed in SystemFasl...
 
 
 (de labeloffset (l)
   (let (offset)
     (cond 
      ((codep l) (if *writingfaslfile
-		  (inf l)
-		  (wdifference (inf l) codebase*)))
+                  (inf l)
+                  (wdifference (inf l) codebase*)))
      ((setq offset  (atsoc l labeloffsets*)) (cdr offset))
      (t (stderror (bldmsg "Unknown label %r" l)))
      )))
@@ -1153,28 +1153,28 @@
   (prog (rcode instr bottom x y z)
     (while code
        (setq instr (pop code))
-	   % replace simple negation jumps
-	   % case: (jne lab)(j anywhere) lab
-	   %  ->   (je anywhere)
+           % replace simple negation jumps
+           % case: (jne lab)(j anywhere) lab
+           %  ->   (je anywhere)
        (when (and 
-		(pairp instr)
-		(setq x (atsoc (car instr) ConditionalJumps*))
-		(setq y (saniere-Sprungziel (cadr instr)))
-		(eqcar (car code) 'JMP)
-		(cdr code)
-		(equal (cadr code) y))
-	     (setq instr (cons (cdr x) (cdr (pop code)))))
-	   % replace indirect conditional jumps (not avail on 386)
-	(when (and
-		(pairp instr)
-		(atsoc (car instr) ConditionalJumps*)
-		(not (atom (saniere-Sprungziel (cadr instr)))))
-	     (setq x (gensym))
-	     (push (cons 'JMP (cdr instr)) bottom)
-	     (push x bottom)
-	     (setq instr (list (car instr) x))   )
-	(push instr rcode))
-	(return (nconc (reversip rcode) bottom))))
+                (pairp instr)
+                (setq x (atsoc (car instr) ConditionalJumps*))
+                (setq y (saniere-Sprungziel (cadr instr)))
+                (eqcar (car code) 'JMP)
+                (cdr code)
+                (equal (cadr code) y))
+             (setq instr (cons (cdr x) (cdr (pop code)))))
+           % replace indirect conditional jumps (not avail on 386)
+        (when (and
+                (pairp instr)
+                (atsoc (car instr) ConditionalJumps*)
+                (not (atom (saniere-Sprungziel (cadr instr)))))
+             (setq x (gensym))
+             (push (cons 'JMP (cdr instr)) bottom)
+             (push x bottom)
+             (setq instr (list (car instr) x))   )
+        (push instr rcode))
+        (return (nconc (reversip rcode) bottom))))
  
 % ------------------------------------------------------------
 % Branch optimization (in favour of short jumps)
@@ -1218,22 +1218,22 @@
     (setq InstructionChanged* nil)
     (FindLongBranches)
     (when (and m InstructionChanged*)   
-	      % give up aligned code 
-	  (return (OptimizeBranches0 u nil)))
+              % give up aligned code 
+          (return (OptimizeBranches0 u nil)))
     (while InstructionChanged* 
-	 (setq InstructionChanged* nil) 
-	 (FindLongBranches)) 
+         (setq InstructionChanged* nil) 
+         (FindLongBranches)) 
     (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
     (return BranchCodeList*)))
 
 (de &make-nop(n)
    % make n bytes of nop instructions
    (cond ((wleq n 0) nil)
-	 ((eq n 1)'((nop)))
-	 ((eq n 2)'((nop) (nop)))
-	 ((eq n 3)'((mov (reg t1)(reg t1))))
-	 ((eq n 4)'((lea (displacement(reg t1)0) (reg t1))))
-	 (t (append (&make-nop 3)(&make-nop (difference n 3)))) ))
+         ((eq n 1)'((nop)))
+         ((eq n 2)'((nop) (nop)))
+         ((eq n 3)'((mov (reg t1)(reg t1))))
+         ((eq n 4)'((lea (displacement(reg t1)0) (reg t1))))
+         (t (append (&make-nop 3)(&make-nop (difference n 3)))) ))
 
 (de alignCode(u)
   (if (&smember 'fastapply u) u (alignCode1 u)))
@@ -1245,64 +1245,64 @@
        (setq nops 0)
        (cond 
 
-	 % initial start: sync. entry point
-	   ((null rcode)
-	     (setq x a)
-	     (setq y u q w)
-	     (setq s (eqcar w '*entry))
-	     (while y
-		 (when (pairp q)(setq x (iplus2 x (instructionlength q))))
-		 (if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
-	     (setq x (wand x 15))
-	     (when (not (eq x 0)) (setq nops (idifference 16 x)))
-	    )
+         % initial start: sync. entry point
+           ((null rcode)
+             (setq x a)
+             (setq y u q w)
+             (setq s (eqcar w '*entry))
+             (while y
+                 (when (pairp q)(setq x (iplus2 x (instructionlength q))))
+                 (if (eqcar q '*entry) (setq y nil) (setq q (pop y))))
+             (setq x (wand x 15))
+             (when (not (eq x 0)) (setq nops (idifference 16 x)))
+            )
  
-	% entry: executable code starts
-	    ((eqcar w '*entry)(setq s t))
-	    
-	% fullword: executable code terminated
-	    ((eqcar w 'fullword)(setq s nil)) 
+        % entry: executable code starts
+            ((eqcar w '*entry)(setq s t))
+            
+        % fullword: executable code terminated
+            ((eqcar w 'fullword)(setq s nil)) 
 
         % label under *align16
-	   ((and s (atom w) *align16)
-	      % next instruction should begin on cache line
-	     (setq x (wand a 15))   
-	     (when (not (eq x 0)) 
-		   (setq nops(wdifference 16 x))))
+           ((and s (atom w) *align16)
+              % next instruction should begin on cache line
+             (setq x (wand a 15))   
+             (when (not (eq x 0)) 
+                   (setq nops(wdifference 16 x))))
 
-	% label in standard mode
-	   ((and s (atom w) u (pairp (car u))) 
-	      % next instruction should not split cache lines
-	    (setq x (iplus2 (wand a 15) (instructionlength (car u))))
-	    (when (not (igreaterp x 16))
-		  (setq nops (idifference 16 (wand a 15))))
-	   )
-	       
+        % label in standard mode
+           ((and s (atom w) u (pairp (car u))) 
+              % next instruction should not split cache lines
+            (setq x (iplus2 (wand a 15) (instructionlength (car u))))
+            (when (not (igreaterp x 16))
+                  (setq nops (idifference 16 (wand a 15))))
+           )
+               
        % call under *align16
-	   ((and *align16 (eqcar w 'call))  
-	      % put call exactly at the end of cache line
-	    (setq x (wand (iplus2 a (instructionlength w)) 15))
-	    (when (not (eq x 0)) (setq nops (idifference 16 x)))
-	   )
+           ((and *align16 (eqcar w 'call))  
+              % put call exactly at the end of cache line
+            (setq x (wand (iplus2 a (instructionlength w)) 15))
+            (when (not (eq x 0)) (setq nops (idifference 16 x)))
+           )
 
-	% call 
-	   ((and (eqcar w 'call) u (pairp (car u)))  
-	      % following instruction should not split over cache line
-	    (setq x (wand (iplus2 a (instructionlength w)) 15))
-	    (when (igreaterp (iplus2 x (instructionlength (car u)))16)
-		  (setq nops (idifference 16 x)))
-	   )
-	 )   
+        % call 
+           ((and (eqcar w 'call) u (pairp (car u)))  
+              % following instruction should not split over cache line
+            (setq x (wand (iplus2 a (instructionlength w)) 15))
+            (when (igreaterp (iplus2 x (instructionlength (car u)))16)
+                  (setq nops (idifference 16 x)))
+           )
+         )   
        (when (and (igreaterp nops 0) 
-		  (ilessp nops 9))  % not too many
-	     (foreach q in (&make-nop nops) do (push q rcode))
-	     (setq a (iplus2 a nops)))
+                  (ilessp nops 9))  % not too many
+             (foreach q in (&make-nop nops) do (push q rcode))
+             (setq a (iplus2 a nops)))
        (when (pairp w)(setq a (iplus2 a (InstructionLength w))))
        (push w rcode)
       )
       (while rcode
-	 (when (not (eq (setq w (pop rcode)) '!%temp-label))
-	       (push w u)))
+         (when (not (eq (setq w (pop rcode)) '!%temp-label))
+               (push w u)))
     u      
 ))
 
@@ -1313,10 +1313,10 @@
    (cond ((null X) (return nil))) 
     (setq Y X) 
     (while (cdr Y) 
-	(cond ((LabelP (car (second Y))) 
-	    (setq Y (cdr Y))) (t 
-	
-	    (Rplacd Y (cddr Y))))) 
+        (cond ((LabelP (car (second Y))) 
+            (setq Y (cdr Y))) (t 
+        
+            (Rplacd Y (cddr Y))))) 
     (return X)))
 
 
@@ -1337,15 +1337,15 @@
     (setq CodeSize* CurrentOffset*) 
     (foreach X in CodeList do 
    (progn (cond ((LabelP X) 
-	  (setq AList (cons (cons X CodeSize*) AList))) 
+          (setq AList (cons (cons X CodeSize*) AList))) 
    ((equal (setq Instr (first X)) '*entry) 
-	  (setq AList (cons (cons (second X) CodeSize*) AList))) 
+          (setq AList (cons (cons (second X) CodeSize*) AList))) 
    ((and (GeneralBranchInstructionP Instr)(locallabelp (second X))) 
-	  (progn (Rplaca X (get Instr 'WordBranch)) 
+          (progn (Rplaca X (get Instr 'WordBranch)) 
 
-		    (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
-		    (setq AList (cons (cons X CodeSize*) AList)))) (t 
-		
+                    (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
+                    (setq AList (cons (cons X CodeSize*) AList)))) (t 
+                
    (setq CodeSize* (plus CodeSize* (InstructionLength X))))))) 
     
 
@@ -1366,13 +1366,13 @@
   (foreach X in BranchCodeList* do 
    (progn 
      (cond ((LabelP X) (setq AList (cons (cons X CodeSize*) AList))) 
-	   ((equal (setq Instr (first X)) '*entry) 
-	    (setq AList (cons (cons (second X) CodeSize*) AList))) 
-	       % branch: enter the address of the following instruction
-	   ((and (GeneralBranchInstructionP Instr) (locallabelp (second X))) 
-	    (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
-	    (setq AList (cons (cons X CodeSize*) AList))) 
-	   (t (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
+           ((equal (setq Instr (first X)) '*entry) 
+            (setq AList (cons (cons (second X) CodeSize*) AList))) 
+               % branch: enter the address of the following instruction
+           ((and (GeneralBranchInstructionP Instr) (locallabelp (second X))) 
+            (setq CodeSize* (plus CodeSize* (InstructionLength X))) 
+            (setq AList (cons (cons X CodeSize*) AList))) 
+           (t (setq CodeSize* (plus CodeSize* (InstructionLength X)))))))
   (setq BranchAndLabelAList* (ReversIP AList)) 
   (setq InstructionChanged* BranchAndLabelAList*)
   (return BranchAndLabelAList*) ))
@@ -1383,19 +1383,19 @@
   (foreach entry on BranchAndLabelAList* do 
     (cond ((not (LabelP (car (first entry)))) 
       (progn 
-	(setq CurrentDisplacement (FindDisplacement (first entry))) 
-	(cond 
-	   ((or (GreaterP CurrentDisplacement (const MaximumShortBranch)) 
-		(ZeroP CurrentDisplacement))    % Must have long brahch.
-	  
-	  (progn (setq InstructionChanged* t) 
-	      (IncreaseAllOffsets entry (MakeLongBranch entry)))))))))))
+        (setq CurrentDisplacement (FindDisplacement (first entry))) 
+        (cond 
+           ((or (GreaterP CurrentDisplacement (const MaximumShortBranch)) 
+                (ZeroP CurrentDisplacement))    % Must have long brahch.
+          
+          (progn (setq InstructionChanged* t) 
+              (IncreaseAllOffsets entry (MakeLongBranch entry)))))))))))
       
 
 
 (de FindDisplacement (InstructionOffsetPair) 
     (Abs (Difference (cdr InstructionOffsetPair) 
-		    (FindLabelOffset (second (first InstructionOffsetPair))))))
+                    (FindLabelOffset (second (first InstructionOffsetPair))))))
 
 %  FindLabelOffset(Label)
 % Purpose: looks up the location of Label in BranchAndLabelAList!*
@@ -1406,8 +1406,8 @@
     (return 
      (cond ((EqCar L 'InternalEntry) (FindEntryOffset (second L))) 
 
-	   ((setq Offset (Atsoc (saniere-sprungziel L) BranchAndLabelAList*)) (cdr Offset))
-	   (t (StdError (BldMsg "Unknown label %r" L)))))))
+           ((setq Offset (Atsoc (saniere-sprungziel L) BranchAndLabelAList*)) (cdr Offset))
+           (t (StdError (BldMsg "Unknown label %r" L)))))))
 
 
 %  FindEntryOffset(ProcedureName);
@@ -1426,7 +1426,7 @@
     (Rplaca InstructionList (get (first InstructionList) 'WordBranch)) 
     (setq n (difference (instructionlength InstructionList) n))
     (cond ((cdr AList) (Rplacw AList (cdr AList)))
-	  (t (Rplacw AList (list (cons '~DummyLabel~ 0))))) 
+          (t (Rplacw AList (list (cons '~DummyLabel~ 0))))) 
     (return n))) % increased length of subsequent code
 
 
@@ -1440,41 +1440,41 @@
 
 (de InstructionLength (X) 
    (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
-	  (wplus2 1 (InstructionLength1 (cons 'mov (cdr x)))))
+          (wplus2 1 (InstructionLength1 (cons 'mov (cdr x)))))
          ((eqcar x 'addq) (wplus2 1 (InstructionLength1 
-				 (cons 'add (cdr x)))))
+                                 (cons 'add (cdr x)))))
          ((eqcar x 'subq) (wplus2 1 (InstructionLength1 
-				     (cons 'sub (cdr x)))))
+                                     (cons 'sub (cdr x)))))
          ((eqcar x 'cmpq) (wplus2 1 (InstructionLength1 
-				     (cons 'cmp (cdr x)))))
+                                     (cons 'cmp (cdr x)))))
          ((and (pairp x) (flagp (car x) 'norexprefix))
-	  (InstructionLength1 x))
-	 ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
-	  (if (upperreg64p x)
-	      (wplus2 1 (InstructionLength1 x))
-	    (InstructionLength1 x)))
+          (InstructionLength1 x))
+         ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
+          (if (upperreg64p x)
+              (wplus2 1 (InstructionLength1 x))
+            (InstructionLength1 x)))
          ((reg64bitp x) (wplus2 1 (InstructionLength1 x)))
          (t (InstructionLength1 x))))
 
 (de InstructionLength1 (X) 
    (prog (Y) 
        (when (setq Y (get (car x) 'InstructionLengthFunction))
-	     (return (apply2safe y (cdr x))))
+             (return (apply2safe y (cdr x))))
        (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
-	     (return (if (numberp y) y (apply y (list x)))))
+             (return (if (numberp y) y (apply y (list x)))))
        (stderror (bldmsg "*** Unknown x86_64 instruction:%w " x))))
 
 (de apply2safe(y x) % ensure that plly has two parameters at least
      (cond ((null x) (apply y (list nil nil)))
-	   ((null (cdr x)) (apply y (list (car x) nil)))
-	   (t (apply y (list (car x)(cadr x))))))
+           ((null (cdr x)) (apply y (list (car x) nil)))
+           (t (apply y (list (car x)(cadr x))))))
 
 (de InlineConstantLength (X) 
 % Purpose: returns the Size_Of_Unit_In_Bytes * Number_Of_Such_Units
 %   X has the form:
 %          (Unit  value_1  value_2 value_3 .... )
     (Times2 (cond ((equal (first X) 'fullword) 8) (t 2)) 
- 	    (length (rest X))))
+            (length (rest X))))
 
 (de ByteConstantLength (X) 
     (Times2 (Quotient (Plus2 (length (rest X)) 1) 2) 2))
@@ -1485,10 +1485,10 @@
     (Times2 (Quotient (Plus2 (Size (second X)) 9) 8) 8))
 
 (DefList '((fullword InlineConstantLength) 
-	  (halfword InlineConstantLength) 
-	  (byte ByteConstantLength) 
-	  (float 8) 
-	  (string LapStringLength)) 'InstructionLength)
+          (halfword InlineConstantLength) 
+          (byte ByteConstantLength) 
+          (float 8) 
+          (string LapStringLength)) 'InstructionLength)
 
 
 (put '*entry 'InstructionLength 0)
@@ -1551,13 +1551,13 @@
       ((labelp x) (deposit-relocated-word (labeloffset x)))
       ((equal (first x) 'internalentry) 
        (let ((offset (get (second x) 'internalentryoffset)))
-	 (if offset
-	     (deposit-relocated-word offset)
-	     (progn
-	       (setq forwardinternalreferences*
-		     (cons (cons currentoffset* (second x))
-			   forwardinternalreferences*))
-	       (deposit-relocated-word 0)))))
+         (if offset
+             (deposit-relocated-word offset)
+             (progn
+               (setq forwardinternalreferences*
+                     (cons (cons currentoffset* (second x))
+                           forwardinternalreferences*))
+               (deposit-relocated-word 0)))))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'entry) (depositentry x))
       (t (stderror (bldmsg "Expression too complicated %r" x))))))
@@ -1570,18 +1570,18 @@
       ((labelp x) (deposit-relocated-word (labeloffset x)))
       ((equal (first x) 'internalentry) 
        (let ((offset (get (second x) 'internalentryoffset)))
-	 (if offset
-	     (deposit-relocated-word offset)
-	     (progn
-	       (setq forwardinternalreferences*
-		     (cons (cons currentoffset* (second x))
-			   forwardinternalreferences*))
-	       (deposit-relocated-word 0)))))
+         (if offset
+             (deposit-relocated-word offset)
+             (progn
+               (setq forwardinternalreferences*
+                     (cons (cons currentoffset* (second x))
+                           forwardinternalreferences*))
+               (deposit-relocated-word 0)))))
       ((and (eq (car x) 'mkitem)
-	    (eq (cadr x) id-tag)
-	    (eqcar (setq y (caddr x)) 'idloc)
-	    (wlessp (id2int(cadr y)) 129))
-	(depositword (cadr y)))
+            (eq (cadr x) id-tag)
+            (eqcar (setq y (caddr x)) 'idloc)
+            (wlessp (id2int(cadr y)) 129))
+        (depositword (cadr y)))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'mkitem) (deposititem (second x) (third x)))
       ((equal (first x) 'entry) (depositentry x))
@@ -1594,7 +1594,7 @@
      (deposit32bitword (idinf X)))
     (t
       (put_a_halfword (wplus2 codebase* currentoffset*) 
-	       (makerelocword (const reloc_id_number) (findidnumber x))) 
+               (makerelocword (const reloc_id_number) (findidnumber x))) 
       (setq currentoffset* (plus currentoffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
 
@@ -1603,58 +1603,58 @@
     (return (cond ((FixP X) (DepositHalfWord X)) 
     ((LabelP X) 
     (progn (puthalfword (wPlus2 CodeBase* CurrentOffset*) 0 
-		    (IPlus2 (LabelOffset X) 
-			   (cond (*WritingFaslFile 0) (t CodeBase*)))) 
-	(UpdateBitTable 2 (const RELOC_HALFWORD)) 
-	(setq CurrentOffset* (plus CurrentOffset* 2)))) 
+                    (IPlus2 (LabelOffset X) 
+                           (cond (*WritingFaslFile 0) (t CodeBase*)))) 
+        (UpdateBitTable 2 (const RELOC_HALFWORD)) 
+        (setq CurrentOffset* (plus CurrentOffset* 2)))) 
     
-	    ((and (equal (first X) 'Difference) (LabelP (second X)) 
-	    (LabelP (third X))) 
-	   (DepositHalfWord (Difference (LabelOffset (second X)) 
-					   (LabelOffset (third X))))) 
+            ((and (equal (first X) 'Difference) (LabelP (second X)) 
+            (LabelP (third X))) 
+           (DepositHalfWord (Difference (LabelOffset (second X)) 
+                                           (LabelOffset (third X))))) 
     ((equal (first X) 'IDLoc) 
-	   (DepositHalfWordIDNumber (second X))) 
+           (DepositHalfWordIDNumber (second X))) 
     ((setq Y (WConstEvaluable X)) 
-	   (DepositHalfWord Y)) (t 
+           (DepositHalfWord Y)) (t 
     (StdError (BldMsg "Halfword expression too complicated %r" X)))))))
 
 
 (de DepositItem (TagPart InfPart) 
     (cond ((not *WritingFaslFile) 
-	   (DepositWord 
-	       (MkItem TagPart 
-		       (cond ((LabelP InfPart) 
-			      (wPlus2 CodeBase* (LabelOffset InfPart))) 
-			     ((equal (first InfPart) 'IDLoc) 
-			      (IDInf (second InfPart))) 
-			     (t 
-				(StdError 
-				    (BldMsg "Unknown inf in MkItem %r"
-					    InfPart)))))))
-	  (t 
-	     (progn (cond 
-		     ((LabelP InfPart)      % RELOC_CODE_OFFSET = 0
-		      (putword (wPlus2 CodeBase* CurrentOffset*) 0 
-		            (mkitem tagpart (LabelOffset InfPart))))
-		     ((equal (first InfPart) 'IDLoc) 
-		      (putword (wPlus2 CodeBase* CurrentOffset*) 0 
-		        (MkItem TagPart 
-	 		(MakeRelocInf (const RELOC_ID_NUMBER) 
-	 		  (FindIDNumber (second InfPart))))))
-		     (t 
-		      (StdError (BldMsg "Unknown inf in MkItem %r"
-				 InfPart))))
-	      (setq CurrentOffset* (plus CurrentOffset* 8))
-	      (UpdateBitTable 8 (const RELOC_INF))))))
+           (DepositWord 
+               (MkItem TagPart 
+                       (cond ((LabelP InfPart) 
+                              (wPlus2 CodeBase* (LabelOffset InfPart))) 
+                             ((equal (first InfPart) 'IDLoc) 
+                              (IDInf (second InfPart))) 
+                             (t 
+                                (StdError 
+                                    (BldMsg "Unknown inf in MkItem %r"
+                                            InfPart)))))))
+          (t 
+             (progn (cond 
+                     ((LabelP InfPart)      % RELOC_CODE_OFFSET = 0
+                      (putword (wPlus2 CodeBase* CurrentOffset*) 0 
+                            (mkitem tagpart (LabelOffset InfPart))))
+                     ((equal (first InfPart) 'IDLoc) 
+                      (putword (wPlus2 CodeBase* CurrentOffset*) 0 
+                        (MkItem TagPart 
+                        (MakeRelocInf (const RELOC_ID_NUMBER) 
+                          (FindIDNumber (second InfPart))))))
+                     (t 
+                      (StdError (BldMsg "Unknown inf in MkItem %r"
+                                 InfPart))))
+              (setq CurrentOffset* (plus CurrentOffset* 8))
+              (UpdateBitTable 8 (const RELOC_INF))))))
 
 (de DepositHalfWordIDNumber (X) 
     (cond ((or (not *WritingFaslFile) (LEQ (IDInf X) 128)) 
-	(DepositHalfWord (IDInf X))) (t 
+        (DepositHalfWord (IDInf X))) (t 
     
     (progn (puthalfword (wplus2 codebase* currentoffset*) 0 
-		    (makerelochalfword (const reloc_id_number) (findidnumber x))) 
-	(setq currentoffset* (plus currentoffset* 2)) 
-	(updatebittable 2 (const reloc_halfword))))))
+                    (makerelochalfword (const reloc_id_number) (findidnumber x))) 
+        (setq currentoffset* (plus currentoffset* 2)) 
+        (updatebittable 2 (const reloc_halfword))))))
 
 % ------------------------------------------------------------
 % this procedure was "inserted" to eliminate the problem with the compiler
@@ -1672,18 +1672,18 @@
      (while (greaterp x 0) (depositbyte 0) (setq x (sub1 x)))
      (while forwardinternalreferences*
        (setq x (get (cdr (first forwardinternalreferences*)) 
-		    'internalentryoffset))
+                    'internalentryoffset))
        (when (null x) 
-	      (errorprintf "***** %r not defined in this module, call incorrect" 
-			   (cdr (first forwardinternalreferences*))))
-	       % calculate the offset
+              (errorprintf "***** %r not defined in this module, call incorrect" 
+                           (cdr (first forwardinternalreferences*))))
+               % calculate the offset
        (setq x (plus -4             % offset to next word
-	     (difference x (car (first forwardinternalreferences*)))))
-			 % insert the fixup
+             (difference x (car (first forwardinternalreferences*)))))
+                         % insert the fixup
        (put_a_halfword 
-	    (iplus2 codebase* (car (first forwardinternalreferences*))) x)
+            (iplus2 codebase* (car (first forwardinternalreferences*))) x)
        (setq forwardinternalreferences* (cdr forwardinternalreferences*)))
-	      % Now remove the InternalEntry offsets from everyone
+              % Now remove the InternalEntry offsets from everyone
    (mapobl 'remove-ieo-property)))
 
 %-----------------------------------------------------------------
@@ -1700,65 +1700,65 @@
 (de LapoptFrame(u)
     (prog (rcode instr op nextinstr src dest x)
        (while u
-	(setq instr (pop u))
-	(when (and (pairp instr) u)
-		(setq op (car instr))
-		(setq nextinstr (car u))
-		    % pattern:
-		    %    (mov (reg n) (frame m))
-		    %    (mov (frame m) (reg k))
-		(when (and (eq op 'MOV) 
-			   (regp (setq src (cadr instr)))
-			   (not (sregp src))  % not for segment registers
-			   (setq dest (caddr instr))
-			   (eqcar nextinstr 'MOV)
-			   (equal (cadr nextinstr)dest)
-			   (regp (setq x (caddr nextinstr))))
-		      (pop u)
-		      (push (list 'mov src x) u))
-		    % pattern:
-		    %      (mov (quote nil) (frame 1))  
-		    %      (mov (quote nil) (frame 2)) ...
-		(when (and
-			(eq op 'mov)
-			(immediatep (setq src (cadr instr)))
-			(not (regp (caddr instr)))
-			(eqcar nextinstr 'mov)
-			(equal (cadr nextinstr) src))   % at 2 of that type
-		      (setq u (LapoptFrame1 src (push instr u)))
-		      (setq instr (list 'mov src '(reg t1))))
-		    % pattern: 
-		    %      (push (quote nil) )   
-		    %      (push (quote nil) ) ... 
-		(when (and
-			(eq op 'push) 
-			(immediatep (setq src (cadr instr))) 
-			(or (and 
-			       (eqcar nextinstr 'mov) 
-			       (equal (cadr nextinstr) src))
-			    (and
-			       (eqcar nextinstr 'push)
-			       (equal (cadr nextinstr) src)))) 
-		      (setq u (LapoptFrame1 src (push instr u))) 
-		      (setq instr (list 'mov src '(reg t1))))
+        (setq instr (pop u))
+        (when (and (pairp instr) u)
+                (setq op (car instr))
+                (setq nextinstr (car u))
+                    % pattern:
+                    %    (mov (reg n) (frame m))
+                    %    (mov (frame m) (reg k))
+                (when (and (eq op 'MOV) 
+                           (regp (setq src (cadr instr)))
+                           (not (sregp src))  % not for segment registers
+                           (setq dest (caddr instr))
+                           (eqcar nextinstr 'MOV)
+                           (equal (cadr nextinstr)dest)
+                           (regp (setq x (caddr nextinstr))))
+                      (pop u)
+                      (push (list 'mov src x) u))
+                    % pattern:
+                    %      (mov (quote nil) (frame 1))  
+                    %      (mov (quote nil) (frame 2)) ...
+                (when (and
+                        (eq op 'mov)
+                        (immediatep (setq src (cadr instr)))
+                        (not (regp (caddr instr)))
+                        (eqcar nextinstr 'mov)
+                        (equal (cadr nextinstr) src))   % at 2 of that type
+                      (setq u (LapoptFrame1 src (push instr u)))
+                      (setq instr (list 'mov src '(reg t1))))
+                    % pattern: 
+                    %      (push (quote nil) )   
+                    %      (push (quote nil) ) ... 
+                (when (and
+                        (eq op 'push) 
+                        (immediatep (setq src (cadr instr))) 
+                        (or (and 
+                               (eqcar nextinstr 'mov) 
+                               (equal (cadr nextinstr) src))
+                            (and
+                               (eqcar nextinstr 'push)
+                               (equal (cadr nextinstr) src)))) 
+                      (setq u (LapoptFrame1 src (push instr u))) 
+                      (setq instr (list 'mov src '(reg t1))))
 
-	)
-	(push instr rcode))
+        )
+        (push instr rcode))
        (return (reversip rcode))))
  
 (de LapoptFrame1 (src u)
      % here subsequent instructions are modified for source T1
    (cond ((or (null u) (atom (car u))) u)
-	 ((and (eq (caar u) 'PUSH) (equal (cadr (car u)) src))
-		(cons '(PUSH (reg t1)) (LapoptFrame1 src (cdr u))))
-	 ((not (and (eq(caar u) 'MOV) % nor more such instr.
-		    (equal (cadar u) src)))
-	  u)
-	 ((equal (caddr (car u)) '(reg t1))
-		(LapoptFrame1 src (cdr u)))
-	 (t  (cons
-		(list 'mov '(reg t1) (caddr (car u)))
-		(LapoptFrame1 src (cdr u))))))
+         ((and (eq (caar u) 'PUSH) (equal (cadr (car u)) src))
+                (cons '(PUSH (reg t1)) (LapoptFrame1 src (cdr u))))
+         ((not (and (eq(caar u) 'MOV) % nor more such instr.
+                    (equal (cadar u) src)))
+          u)
+         ((equal (caddr (car u)) '(reg t1))
+                (LapoptFrame1 src (cdr u)))
+         (t  (cons
+                (list 'mov '(reg t1) (caddr (car u)))
+                (LapoptFrame1 src (cdr u))))))
 
 (fluid '(!*optimize-i486))
 
@@ -1783,13 +1783,13 @@
       %   (ret)
       % move (add 16 (reg st)) one step up if possible.
      ((and (equal i3 '(ret))
-	   (pairp i1)
-	   (pairp i2)
-	   (eq (car i2) 'add)
-	   (equal (caddr i2) '(reg st))
-	   (not (&jumpcontrol i1))
-	   (not (&smember '(reg st) i1))
-	)
+           (pairp i1)
+           (pairp i2)
+           (eq (car i2) 'add)
+           (equal (caddr i2) '(reg st))
+           (not (&jumpcontrol i1))
+           (not (&smember '(reg st) i1))
+        )
 
       (pop code r)
       (push i1 code)
@@ -1806,12 +1806,12 @@
        (eqcar (setq r (caddr i2)) 'reg)
        (equal r (&indirectbase i3))
        (not (&jumpcontrol i1))
-	    % test independence (target i2) and i1
+            % test independence (target i2) and i1
        (not (&smember r i1))
-	    % test independence (source i2) and (target i1)
+            % test independence (source i2) and (target i1)
        (setq rb (&regbase (cadr i2)))
        (or (and (eqcar i1 'mov) (not (&smember rb (caddr i1))) )
-	   (not (&smember rb i1))
+           (not (&smember rb i1))
        )
       )
 
@@ -1827,32 +1827,32 @@
 
 (de &smember(a l)
   (cond ((equal a l) t)
-	((atom l) nil)
-	((&smember a (car l)) t)
-	(t (&smember a (cdr l))) ))
+        ((atom l) nil)
+        ((&smember a (car l)) t)
+        (t (&smember a (cdr l))) ))
 
 (de &indirectbase(u)
   (cond ((atom u) nil)
-	((atom (cdr u)) nil)
-	((eq (car u) 'displacement)(cadr u))
-	((eq (car u) 'indirect) (cadr u))
-	(t (or (&indirectbase (car u))(&indirectbase (cdr u)))) ))
+        ((atom (cdr u)) nil)
+        ((eq (car u) 'displacement)(cadr u))
+        ((eq (car u) 'indirect) (cadr u))
+        (t (or (&indirectbase (car u))(&indirectbase (cdr u)))) ))
 
 (de &regbase(u)
   % u is an operand of *MOVE. Extract the source base. 
      (cond((or (atom u)(eq (car u) 'quote)) t) 
-	  ((eq (car u) 'reg) u)
-	  ((or (eq (car u) 'indirect) (eq(car u)'displacement))
-	   (cadr u))
-	  (t t)))
+          ((eq (car u) 'reg) u)
+          ((or (eq (car u) 'indirect) (eq(car u)'displacement))
+           (cadr u))
+          (t t)))
 
 (de &jumpcontrol(u)
     (or (atom u)
-	 (LocalLabelp u)
-	(GeneralBranchInstructionP (setq u (car u)))
-	(eq u 'call)
-	(eq u 'ret)
-	(eq u '*entry)  
+         (LocalLabelp u)
+        (GeneralBranchInstructionP (setq u (car u)))
+        (eq u 'call)
+        (eq u 'ret)
+        (eq u '*entry)  
    ))
 
 (de lapoptprint(l)
@@ -1866,21 +1866,21 @@
                   (reg rax) (reg rbx) (reg rcx) (reg rdx)
                   (reg t3) (reg t4) (reg NIL) (reg heaplast) 
                   (reg bndstkptr) (reg bndstkupperbound) 
-		  (reg bndstklowerbound)  (reg heaptrapbound) 
+                  (reg bndstklowerbound)  (reg heaptrapbound) 
                   (reg t1) (reg t2) (reg esp) (reg rdi) (reg rsi)
-		  (reg r8) (reg r9) (reg r10) (reg r11)
-		  (reg r12) (reg r13)(reg r14) (reg r15)
-		  ))
+                  (reg r8) (reg r9) (reg r10) (reg r11)
+                  (reg r12) (reg r13)(reg r14) (reg r15)
+                  ))
 
 (setq upper64bitregs '(
                   (reg t3) (reg t4) (reg NIL) (reg heaplast) 
                   (reg bndstkptr) (reg bndstkupperbound) 
-		  (reg bndstklowerbound)  (reg heaptrapbound)
-		  (reg r8) (reg r9) (reg r10) (reg r11)
-		  (reg r12) (reg r13)(reg r14) (reg r15)
-		  (reg xmm8) (reg xmm9) (reg xmm10) (reg xmm11)
-		  (reg xmm12) (reg xmm13) (reg xmm15) (reg xmm15)
-		  ))
+                  (reg bndstklowerbound)  (reg heaptrapbound)
+                  (reg r8) (reg r9) (reg r10) (reg r11)
+                  (reg r12) (reg r13)(reg r14) (reg r15)
+                  (reg xmm8) (reg xmm9) (reg xmm10) (reg xmm11)
+                  (reg xmm12) (reg xmm13) (reg xmm15) (reg xmm15)
+                  ))
 
 
 (de reg64bitP (i) (reg64bitp1 !64bitregs i))
@@ -1899,9 +1899,9 @@
 
 (de lapopt1 (u)
     (prog()
-	(when (not *lapopt) (return u))
-	(setq u (lapopt-move-special-cases u))
-	(return u)))
+        (when (not *lapopt) (return u))
+        (setq u (lapopt-move-special-cases u))
+        (return u)))
 
 %  Move bodies of if-then-elseif ... sequences  such that at runtime as few
 %  jumps as possible are taken.
@@ -1945,8 +1945,8 @@
     )
   (setq code (nconc (reversip rcode) (nconc bcode code)))
   (when *trlapopt 
-	 (prin2t "=== move special cases:")
-	 (MAPCAR code 'PRINT))
+         (prin2t "=== move special cases:")
+         (MAPCAR code 'PRINT))
   code    
 )) 
 
@@ -1962,15 +1962,15 @@
      (setq inst (pop code))
      (push inst rcode)
      (cond ((or (atom inst) (equal inst lbl)) (setq code nil))
-	   ((and (memq (setq op (car inst)) 
-		      '(*jump *linke *exit))
-		 (cdr code)
-		 (equal (car code) lbl)
-	    )
-	    (setq fcode code) (setq code nil))
-	   ((or (eq op '*lbl) (atsoc op &cond-cm&))
-	    (setq code nil)
-	   )
+           ((and (memq (setq op (car inst)) 
+                      '(*jump *linke *exit))
+                 (cdr code)
+                 (equal (car code) lbl)
+            )
+            (setq fcode code) (setq code nil))
+           ((or (eq op '*lbl) (atsoc op &cond-cm&))
+            (setq code nil)
+           )
    ))
    (when fcode (cons (reversip rcode) fcode))
 ))
