@@ -150,6 +150,11 @@ COMMENT Actual Entry Point Definitions;
 
 defautoload(compile,compiler);
 
+if 'csl memq lispsystem!* then <<
+   put('bytecoded, 'stat, 'bytestat);
+   defautoload(bytestat, compiler, expr, 0);
+   defautoload(bytecode, compiler, expr, 4) >>;
+
 if 'psl memq lispsystem!* then defautoload(lap,compiler)
  else <<
   defautoload(faslout,compiler);

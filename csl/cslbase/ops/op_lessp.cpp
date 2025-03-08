@@ -69,7 +69,11 @@
                 cc.bind(notFixnums);
 // Here one or other is not a Fixnum - call external function "lessp".
                     cc.mov(w, ptr(nilreg, JIToffset(OJITshim2B)));
-                    cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp)));
+#ifdef ARITHLIB
+                    cc.mov(w1, ptr(nilreg, JIToffset(OJITlesspop)));
+#else // ARITHLIB
+                    cc.mov(w1, ptr(nilreg, JIToffset(OJITlessp2)));
+#endif // ARITHLIB
 // Args to "invoke" are:
 //      cc      The Compiler object I am generating via
 //      nilreg  Register holding the value of nil

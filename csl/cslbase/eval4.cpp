@@ -1099,7 +1099,8 @@ const unsigned char* raw_bytecodes(LispObject v)
 }
 
 LispObject jitcoded_0(LispObject def)
-{   LispObject d = qenv(def);
+{   STACK_SANITY;
+    LispObject d = qenv(def);
     void* code = jitcompile(raw_bytecodes(car(d)),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d),
@@ -1118,7 +1119,8 @@ LispObject jitcoded_0(LispObject def)
 }
 
 LispObject jitcoded_1(LispObject def, LispObject a)
-{   LispObject d = qenv(def);
+{   STACK_SANITY;
+    LispObject d = qenv(def);
     void* code = jitcompile(raw_bytecodes(car(d)),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d),
@@ -1134,7 +1136,8 @@ LispObject jitcoded_1(LispObject def, LispObject a)
 }
 
 LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
-{   LispObject d = qenv(def);
+{   STACK_SANITY;
+    LispObject d = qenv(def);
     void* code = jitcompile(raw_bytecodes(car(d)),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d),
@@ -1151,7 +1154,8 @@ LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
 
 LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
                       LispObject c)
-{   LispObject d = qenv(def);
+{   STACK_SANITY;
+    LispObject d = qenv(def);
     void* code = jitcompile(raw_bytecodes(car(d)),
                             length_of_byteheader(vechdr(car(d)))-CELL,
                             cdr(d),
@@ -1182,7 +1186,8 @@ LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
 
 LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
                         LispObject a3, LispObject a4up)
-{   LispObject d = qenv(def);
+{   STACK_SANITY;
+    LispObject d = qenv(def);
     void* code = jitcompile(raw_bytecodes(car(d))+1,
                             length_of_byteheader(vechdr(car(d)))-CELL-1,
                             cdr(d),

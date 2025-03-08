@@ -23,4 +23,4 @@
 
 #endif
 
-
+// end of op_loc1log0.cpp

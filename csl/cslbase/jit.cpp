@@ -230,12 +230,17 @@ JitRuntime rt;
 
 uintptr_t demovar = 99;
 
+CodeHolder code;
+JitError jitError;
+FileLogger logger(stdout);
+bool holderOK = false;
+
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
 {
 // I am going to start by printing the byte-stream
     stdout_printf("\nCalling jitcompile on ");
-    simple_print(basic_elt(env, 0));
+    dpr(basic_elt(env, 0));
 // Note that when a byte-code takes a follow-on byte as an operand that
 // the "opname" I display here will be garbage. I may want to rearrange the
 // codes so that I have an easy way to tell when thet is going to be the
@@ -248,7 +253,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     stdout_printf("Vector of literals...\n");
     for (size_t i=0; i<(length_of_header(vechdr(env))-CELL)/CELL; i++)
     {   stdout_printf("%3d: ", i);
-        simple_print(basic_elt(env, i));
+        dpr(basic_elt(env, i));
     }
 
 // I am going to support functions with up to 15 arguments - anything
@@ -260,30 +265,20 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //
 // Set up to use asmjit. The code here just creates and initialises
 // various things that it needs.
-    CodeHolder code;
-    Environment localEnv = rt.environment();;
+    if (!holderOK)
+    {   Environment localEnv = rt.environment();;
 #ifdef __CYGWIN__
-    localEnv._platformABI = PlatformABI::kMSVC;
+        localEnv._platformABI = PlatformABI::kMSVC;
 #endif
-    code.init(localEnv, rt.cpuFeatures());
-    JitError jitError;
-    code.setErrorHandler(&jitError);
-// This is in case I want to set up a data section to put static
-// material in.
-    [[maybe_unused]] Section* text = code.textSection();
-    [[maybe_unused]] Section* data;
-    if (code.newSection(&data,
-                        ".data",
-                        SIZE_MAX,
-                        SectionFlags::kNone,
-                        16) != ErrorCode::kErrorOk)
-        throw JitFailed("attempt to create data section failed");
-// I believe that the next two lines will lead to the generated assembly
+        code.init(localEnv, rt.cpuFeatures());
+        code.setErrorHandler(&jitError);
+// The next line will lead to the generated assembly
 // code being displayed on the standard output. This is going to be
 // really useful while developing, but it obviously gets switched off for
 // most production use.
-    FileLogger logger(stdout);
-    code.setLogger(&logger);
+        code.setLogger(&logger);
+        holderOK = true;
+    }
 
 #if defined __x86_64__
     LocalCompiler cc = x86::Compiler(&code);
@@ -316,6 +311,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     Register w      = cc.newIntPtr("w");
     Register w1     = cc.newIntPtr("w1");
     Register w2     = cc.newIntPtr("w2");
+    Register w3     = cc.newIntPtr("w3");
+    Register w4     = cc.newIntPtr("w4");
 // I also need to registers for the things that the JITed code will do
     Register A_reg  = cc.newIntPtr("A_reg");
     Register B_reg  = cc.newIntPtr("B_reg");
@@ -542,24 +539,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         fclose(hex);
     }
 
-    stdout_printf(" JITstring = %p\n",  JITstring);
-    stdout_printf(" JITarg1 = %p\n",    JITarg1);
-    stdout_printf(" JITarg2 = %p\n",    JITarg2);
-    stdout_printf(" JITthrow = %p\n",   JITthrow);
-    stdout_printf(" JITshim0 = %p\n",   JITshim0);
-    stdout_printf(" JITshim1 = %p\n",   JITshim1);
-    stdout_printf(" JITshim2 = %p\n",   JITshim2);
-    stdout_printf(" JITshim3 = %p\n",   JITshim3);
-    stdout_printf(" JITshim4 = %p\n",   JITshim4);
-    stdout_printf(" JITshim1B = %p\n",  JITshim1B);
-    stdout_printf(" JITshim2B = %p\n",  JITshim2B);
-    stdout_printf(" JITlessp = %p\n",   JITlessp);
-#ifdef ARITHLIB
-    stdout_printf(" JITsub1op = %p\n",  JITsub1op);
-#else // ARITHLIB
-    stdout_printf(" JITplus2 = %p\n",   JITplus2);
-#endif
-
     return func;
 }
 
@@ -592,6 +571,8 @@ typedef a64::Gp Register;
     Register w       = cc.newIntPtr("w");
     Register w1      = cc.newIntPtr("w1");
     Register w2      = cc.newIntPtr("w2");
+    Register w3      = cc.newIntPtr("w3");
+    Register w4      = cc.newIntPtr("w4");
     Register A_reg   = cc.newIntPtr("A_reg");
     Register B_reg   = cc.newIntPtr("B_reg");
     Register spreg   = cc.newIntPtr("spreg");
@@ -669,7 +650,8 @@ typedef a64::Gp Register;
 // are compatible across architectures. By always returning nullptr this
 // reports that it is unable to map from bytecodes to native instructions.
 
-void* jitcompile(const unsigned char* bytes, size_t len, LispObject env, int nargs)
+void* jitcompile(const unsigned char* bytes, size_t len,
+                 LispObject env, int nargs)
 {   return nullptr;
 }
 

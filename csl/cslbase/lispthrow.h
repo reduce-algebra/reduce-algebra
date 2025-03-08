@@ -1077,7 +1077,7 @@ inline const char *tidy_filename(const char *a)
 // of these two macros. The second takes a LispObject that would then
 // appear in any diagnostics about stack confusion. If you are compiling
 // production code all that is generated is a null statement. But in debug
-// mode an object is created that recordsthe current stack pointer, and
+// mode an object is created that records the current stack pointer, and
 // when it goes out of scope at the end of the block it checks if things
 // have been put back as expected.
 

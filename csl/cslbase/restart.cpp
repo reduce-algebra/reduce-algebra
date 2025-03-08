@@ -1914,12 +1914,21 @@ LispObject set_up_variables(int restart_flag)
 //     JITshim5 = JITshim;
     JITshim1B = JITshim;
     JITshim2B = JITshim;
-    JITlessp = lessp2; 
 #ifdef ARITHLIB
+    JITlesspop = Lessp::op;
+    JITleqop = Leq::op;
     JITsub1op = Sub1::op;
     JITplusop = Plus::op;
+    JITtimesop = Times::op
+    JITquotientop = Quotient::op
+    JITremainderop = Remainder::op
 #else // ARITHLIB
+    JITlessp2 = lessp2; 
+    JITleq2 = lesseq2;
     JITplus2 = plus2;
+    JITtimes2 = times2;
+    JITquotient2 = quot2;
+    JITremainder = Cremainder;
 #endif // ARITHLIB
     JITmake_int_from_ptr = make_lisp_integerptr;
     JITcar_fails = car_fails;

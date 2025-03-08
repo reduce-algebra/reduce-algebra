@@ -15,7 +15,17 @@
 #elif defined __x86_64__
 
             case OP_TIMES2:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+#ifdef ARITHLIB
+                cc.mov(w1, ptr(nilreg, JIToffset(OJITtimesop)));
+#else // ARITHLIB
+                cc.mov(w1, ptr(nilreg, JIToffset(OJITtimes2)));
+#endif // ARITHLIB
+                invoke(cc, nilreg, spreg, w, A_reg,
+                       w1, B_reg, A_reg);
+                cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                cc.jne(callFailed);
+                break;
 
 #elif defined __aarch64__
 
@@ -27,3 +37,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_times2.cpp

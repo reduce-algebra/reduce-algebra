@@ -247,13 +247,18 @@ inline LispObject* const workbase = &nilSegment.workbaseVec[0];
 // really transient ways.
 
 enum
-{   Olisp_true = 0,
+{
+// Varius predicates need to return T or NIL and this is T
+    Olisp_true = 0,
+// The Lisp stack pointer is used heavily.
     Ostack,
+// Support for error reporting and recovery.
     OJITerrflag,
     OJITthrow,
     OJITstring,
     OJITarg1,
     OJITarg2,
+// Interface code to the C++ world where catch/throw may be used.
     OJITshim0,
     OJITshim1,
     OJITshim2,
@@ -262,11 +267,24 @@ enum
     OJITshim5,
     OJITshim1B,
     OJITshim2B,
-    OJITlessp,
-    OJITsub1op,    // For ARITHLIB. There is no harm in having things in
-    OJITplus2,     // this enumeration even when they are not used.
-    OJITplusop,
+
+// For use with original generic arithmetic code...
+    OJITlessp2,
+    OJITleq2,
+    OJITplus2,
+    OJITtimes2,
+    OJITquotient2,
+    OJITremainder,
     OJITmake_int_from_ptr,
+// For use with Arithlib generic arithmetic code...
+    OJITsub1op,
+    OJITlesspop,
+    OJITleqop,
+    OJITplusop,
+    OJITtimesop,
+    OJITquotientop,
+    OJITremainderop,
+// Some specific error cases.
     OJITcar_fails,
     OJITcdr_fails,
     OJITtoofew,
@@ -307,15 +325,24 @@ inline shim4& JITshim4 = nilSegment.misc[OJITshim4].genericSh4;
 inline boolshim1& JITshim1B = nilSegment.misc[OJITshim1B].genericSh1B;
 inline boolshim2& JITshim2B = nilSegment.misc[OJITshim2B].genericSh2B;
 
-inline boolfunc2& JITlessp  = nilSegment.misc[OJITlessp].genericF2B;
 #ifdef ARITHLIB
+inline func2B& JITlesspop   = nilSegment.misc[OJITlesspop].genericF2B;
+inline func2B& JITleqop     = nilSegment.misc[OJITleqop].genericF2B;
 inline func1& JITsub1op     = nilSegment.misc[OJITsub1op].genericF1;
 inline func2& JITplusop     = nilSegment.misc[OJITplusop].genericF2;
+inline func2& JITtimesop    = nilSegment.misc[OJITtimesop].genericF2;
+inline func2& JITquotientop = nilSegment.misc[OJITquotientop].genericF2;
+inline func2& JITremainderop= nilSegment.misc[OJITremainderop].genericF2;
 #else // ARITHLIB
+inline boolfunc2& JITlessp2 = nilSegment.misc[OJITlessp2].genericF2B;
+inline boolfunc2& JITleq2   = nilSegment.misc[OJITleq2].genericF2B;
 inline func2& JITplus2      = nilSegment.misc[OJITplus2].genericF2;
-#endif // ARITHLIB
+inline func2& JITtimes2     = nilSegment.misc[OJITtimes2].genericF2;
+inline func2& JITquotient2  = nilSegment.misc[OJITquotient2].genericF2;
+inline func2& JITremainder  = nilSegment.misc[OJITremainder].genericF2;
 inline func1& JITmake_int_from_ptr =
                               nilSegment.misc[OJITmake_int_from_ptr].genericF1;
+#endif // ARITHLIB
 
 inline func0& JITcar_fails   = nilSegment.misc[OJITcar_fails].genericF0;
 inline func0& JITcdr_fails   = nilSegment.misc[OJITcdr_fails].genericF0;

@@ -22,15 +22,19 @@
             case OP_CALL3:
                 next = bytes[ppc++];
                 cc.mov(w, ptr(nilreg, JIToffset(OJITshim4)));
-                cc.mov(w1, ptr(litvec, 8*next+CELL-TAG_VECTOR));
-// w1 is now the symbol that names the function to be called. Now fetch
+                cc.mov(w2, ptr(litvec, 8*next+CELL-TAG_VECTOR));
+// w2 is now the symbol that names the function to be called. Now fetch
 // from that the entrypoint to be used when it is a function of 3 args.
                 cc.mov(w1,
-                       ptr(w1, offsetof(Symbol_Head, function3)-TAG_SYMBOL));
-                cc.mov(w2, ptr(spreg));
+                       ptr(w2, offsetof(Symbol_Head, function3)-TAG_SYMBOL));
+                cc.mov(w3, ptr(spreg));
                 cc.add(spreg, -8);
+// Here I call JITshim with arguments
+//           entrypoint of Lisp function to be called (in w1)
+//           name of function being called (as "env" parameter for it)
+//           the three honest arguments it needs (w3, B_reg and A_reg).
                 invoke(cc, nilreg, spreg, w, A_reg,
-                       w1, w2, B_reg, A_reg);
+                       w1, w2, w3, B_reg, A_reg);
                 cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
                 cc.jne(callFailed);
                 break;
