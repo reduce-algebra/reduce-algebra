@@ -11,7 +11,7 @@
 
             case OP_JUMP_BL:
                 next = bytes[ppc++];
-                next = (next<<0) | bytes[ppc++];
+                next = (next<<8) | bytes[ppc++];
                 cc.jmp(perInstruction[ppc-next-1]);
                 break;
 

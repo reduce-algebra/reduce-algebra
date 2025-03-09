@@ -6041,6 +6041,153 @@ symbolic procedure compile l;
      return l
   end;
 
+% I also provide a scheme that allows the user to create bytecode streams
+% directly. This is not intended to be a sensible thing for ordinary users
+% to play with. But it can be useful for developers. In particular it will
+% be handy while working towards a JIT compiler. It is only expected to be
+% used from Reduce.
+
+% Create a function definition by giving a list of CSL-specific bytecodes
+
+% The syntax as Reduce code is something like:
+%    bytecoded fff(a1, a2);
+%       (fff literals for the bytecode to access)
+%       (1 2 3 ... <bytecodes> ...);
+
+global '(erfg!* cursym!* curescaped!* crchar!*);
+fluid '(fname!*);
+
+symbolic procedure bytestat;
+   begin scalar bool, x, y, z, lits, bytes;
+      bool := erfg!*;
+% Moan if we seem to be inside a function definition.
+      if fname!* then <<
+         bool := t;
+         errorset!*('(symerr (quote procedure) t),nil) >>
+      else <<
+         scan();
+% Read the list of formal parameters. All I will really need from
+% this will be a count of how many there are!
+         x := read_signature();
+         x := car x;
+         fname!* := car x;
+         x := fname!* . collect_cars cdr x;
+         y := cdr x >>;
+      if eof!*>0 then <<
+         cursym!* := '!*semicol!*;
+         curescaped!* := nil >>
+      else <<
+% Now I want to read the body. I will make this a Lisp syntax form
+         crchar!* := readch1();
+         lits := errorset!*('(rread),nil);
+         if not errorp lits then lits := car lits;
+         bytes := errorset!*('(rread),nil);
+         if not errorp bytes then bytes := car bytes;
+         if null erfg!* then
+            z := list('bytecode,
+                      mkquote car x,    % Name of function
+                      mkquote y,        % Argument list
+                      mkquote lits,     % List of literals
+                      mkquote bytes) >>;% Body
+      remflag(list fname!*,'fnc);
+      fname!* := nil;
+      if erfg!* then <<
+         z := nil;
+         if not bool then error1() >>;
+      return z
+   end;
+
+put('bytecoded, 'stat, 'bytestat);
+
+% Mark opcodes that take one or more following bytes as data
+
+flag('(
+   BIGCALL       BIGSTACK      BUILTIN0      BUILTIN1      BUILTIN2
+   BUILTIN2R     BUILTIN3      CALL0         CALL1         CALL2
+   CALL2R        CALL3         CATCH_BL      CATCH_L       CLOSURE
+   FASTGET       FREEBIND      ICASE         JCALL         JUMP_BL
+   JUMP_L        JUMPATOM_BL   JUMPATOM_L    JUMPB1NIL     JUMPB1T
+   JUMPB2NIL     JUMPB2T       JUMPEQ_BL     JUMPEQ_L      JUMPEQCAR
+   JUMPEQUAL_BL  JUMPEQUAL_L   JUMPFLAGP     JUMPFREENIL   JUMPFREET
+   JUMPLITEQ     JUMPLITNE     JUMPNATOM_BL  JUMPNATOM_L   JUMPNE_BL
+   JUMPNE_L      JUMPNEQCAR    JUMPNEQUAL_BL JUMPNEQUAL_L  JUMPNFLAGP
+   JUMPNIL_BL    JUMPNIL_L     JUMPT_BL      JUMPT_L       LITGET
+   LOADFREE      LOADLEX       LOADLIT       LOADLOC       LOSES
+   PUSHNILS      QGETVN        STOREFREE     STORELEX      STORELOC),
+   'argbytes);
+
+% Now the ones that take two bytes...
+
+flag('(
+   BIGCALL       BIGSTACK      CATCH_BL      CATCH_L       JUMP_BL
+   JUMP_L        JUMPATOM_BL   JUMPATOM_L    JUMPEQ_BL     JUMPEQ_L
+   JUMPEQUAL_BL  JUMPEQUAL_L   JUMPNATOM_BL  JUMPNATOM_L   JUMPNE_BL
+   JUMPNE_L      JUMPNEQUAL_BL JUMPNEQUAL_L  JUMPNIL_BL    JUMPNIL_L
+   JUMPT_BL      JUMPT_L),
+   'twobytes);
+
+% The bytecode stream may use the names of the byte operators, and
+% symbols whose name start with ":" can be interleaved to be labels.
+% At present I do not resolve labels so jump-style instructions must
+% have explicit numeric offsets given, with large ones presented as
+% two separate integers each in the range 0-255.
+
+symbolic procedure bytecode(name, args, lits, bytes);
+   begin
+      scalar labs, b, n, v, i, w, jname, jlits;
+      if not eqcar(lits, name) then
+         rederr "first element of literal vector must be same as function name";
+      jname := intern bldmsg("jit-%w", name);
+      jlits := list!-to!-vector(jname . cdr lits);
+      lits := list!-to!-vector lits;
+      i := 0;
+      for each op in bytes do <<
+         if eqcar(explodec op, '!:) then labs := (op . i) . labs
+         else i := i+1 >>;
+      v := make!-bps i;
+      i := 0;
+      optterpri();
+      princ "+++ Bytecodes for "; print name;
+      for each bb on bytes do <<
+         prinhex(i, 4);
+         princ " ";
+         b := car bb;
+         if (w := atsoc(b, labs)) then <<
+            princ b;
+            if posn() > 12 then terpri();
+            b := car (bb := cdr bb); >>;
+         ttab 13;
+         w := b;
+         if idp w then w := get(w, 's!:opcode);
+         if not fixp w then
+            rederr bldmsg("Bad item in list of bytecodes: %w", b);
+         prinhex(w, 2);
+         bps!-putv(v, i, w);
+         i := i+1;
+         if flagp(b, 'argbytes) then <<
+            w := car (bb := cdr bb);
+            if not fixp w then
+               rederr bldmsg("Bad item in list of bytecodes: %w", w);
+            princ " ";
+            prinhex(w, 2);
+            bps!-putv(v, i, w);
+            i := i+1 >>;
+         if flagp(b, 'twobytes) then <<
+            w := car (bb := cdr bb);
+            if not fixp w then
+               rederr bldmsg("Bad item in list of bytecodes: %w", w);
+            princ " ";
+            prinhex(w, 2);
+            bps!-putv(v, i, w);
+            i := i+1 >>;
+         ttab 20; princ b;
+         terpri() >>;
+      symbol!-set!-definition(name, (length args . v . lits));
+      symbol!-set!-definition(jname, (length args . v . jlits));
+      make!-jit jname;
+      return name
+   end;
+
 % These days I am putting the compiler that generates C++ in with
 % the bytecode compiler...
 

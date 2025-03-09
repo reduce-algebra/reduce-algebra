@@ -9,7 +9,10 @@
 #elif defined __x86_64__
 
             case OP_POP:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(B_reg, A_reg);
+                cc.mov(A_reg, ptr(spreg));
+                cc.add(spreg, -8);
+                break;
 
 #elif defined __aarch64__
 
@@ -21,3 +24,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_pop.cpp

@@ -9,7 +9,9 @@
 #elif defined __x86_64__
 
             case OP_LOC1LOC2:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(B_reg, ptr(spreg, -8));
+                cc.mov(A_reg, ptr(spreg, -16));
+                break;
 
 #elif defined __aarch64__
 
@@ -21,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loc1loc2.cpp

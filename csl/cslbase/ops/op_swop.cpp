@@ -10,7 +10,10 @@
 #elif defined __x86_64__
 
             case OP_SWOP:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                cc.mov(w, B_reg);
+                cc.mov(B_reg, A_reg);
+                cc.mov(A_reg, w);
+                break;
 
 #elif defined __aarch64__
 
@@ -22,3 +25,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_swop.cpp
