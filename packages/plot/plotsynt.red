@@ -188,21 +188,32 @@ symbolic procedure ploteval2 ();
        dvar:=car u or dvar;
        ivars := plotindepvars(cdr u,ivars)>>;
       % classify
-   if null dvar then
+   if null dvar or dvar eq 'points then
    <<dvar:='(x y z);
      for each x in ivars do dvar:=delete(x,dvar);
      if dvar then dvar:=if 'y memq dvar then 'y else car dvar;
    >>;
-   if para and length ivars=1 then plotevalpara1(car ivars) else
-   if para and length ivars=2 then plotevalpara2(car ivars,cadr ivars)
-    else if length ivars=1 then ploteval2x(car ivars,dvar) else
-   if length ivars=2 then ploteval3xy(car ivars,cadr ivars,dvar) else
-  % WN was besseres!!  if length ivars=3 and impl then
-            ploteval3impl('x,'y,'z); %car ivars,cadr ivars,caddr ivars);
-  COMMENT  else typerr('list . for each p in plotfunctions!* collect
-                         if null car p then cdr p else
-                         {'equal,car p,cdr p},
-                " plot option or function");
+  %  if para and length ivars=1 then plotevalpara1(car ivars) else
+  %  if para and length ivars=2 then plotevalpara2(car ivars,cadr ivars)
+  %   else if length ivars=1 then ploteval2x(car ivars,dvar) else
+  %  if length ivars=2 then ploteval3xy(car ivars,cadr ivars,dvar) else
+  % % WN was besseres!!  if length ivars=3 and impl then
+  %           ploteval3impl('x,'y,'z); %car ivars,cadr ivars,caddr ivars);
+  % COMMENT  else typerr('list . for each p in plotfunctions!* collect
+  %                        if null car p then cdr p else
+  %                        {'equal,car p,cdr p},
+  %               " plot option or function");
+  if length ivars = 1 then
+     if para then plotevalpara1(car ivars) else ploteval2x(car ivars,dvar)
+  else if length ivars = 2 then
+  begin scalar x := car ivars, y := cadr ivars, tmp;
+     % Sort ivars:
+     if not ordp(x, y) then <<
+        tmp := x; x := y; y := tmp
+     >>;
+     if para then plotevalpara2(x, y) else ploteval3xy(x, y, dvar)
+  end
+  else ploteval3impl('x,'y,'z);
   plotdriver(show);
   end;
 
