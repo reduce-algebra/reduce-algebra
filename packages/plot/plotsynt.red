@@ -188,7 +188,7 @@ symbolic procedure ploteval2 ();
        dvar:=car u or dvar;
        ivars := plotindepvars(cdr u,ivars)>>;
       % classify
-   if null dvar or dvar eq 'points then
+   if null dvar then
    <<dvar:='(x y z);
      for each x in ivars do dvar:=delete(x,dvar);
      if dvar then dvar:=if 'y memq dvar then 'y else car dvar;
@@ -204,7 +204,8 @@ symbolic procedure ploteval2 ();
   %                        {'equal,car p,cdr p},
   %               " plot option or function");
   if length ivars = 1 then
-     if para then plotevalpara1(car ivars) else ploteval2x(car ivars,dvar)
+     if para then plotevalpara1(car ivars) else
+        ploteval2x(car ivars, if dvar eq 'points then 'y else dvar)
   else if length ivars = 2 then
   begin scalar x := car ivars, y := cadr ivars, tmp;
      % Sort ivars:
