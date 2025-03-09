@@ -83,19 +83,30 @@ parameters:
   \end{itemize}
   \hypertarget{reserved:intervalop}
 \item A range for a variable: this has the form
-  \texttt{<variable>=(<lower\_bound> ..\ \allowbreak <upper\_bound>)} where
-  \texttt{<lower\_bound>} and \texttt{<upper\_bound>} must be expressions which
-  evaluate to numbers. If no range is specified the default range for
-  independent variables is \texttt{(-10~..~10)} and the range for the dependent
-  variable is set to the maximum for the {\Gnuplot} executable (using double
-  floats on most IEEE machines).  Additionally, the
-  number of interval subdivisions can be assigned as a formal quotient
-  of the form
-  \texttt{<variable>=(<lower\_bound> ..\ <upper\_bound>)\allowbreak /<it>} where
-  \texttt{<it>} is a positive integer. E.g. \texttt{(1~..~5)/30} means the
-  interval from 1 to 5 subdivided into 30 pieces of equal size. A
-  subdivision parameter overrides the value of the option \texttt{points} for
-  this variable.
+  \texttt{<variable>=(<lower\_bound> ..\ \allowbreak <upper\_bound>)}
+  where \texttt{<lower\_bound>} and \texttt{<upper\_bound>} must be
+  expressions which evaluate to numbers. If no range is specified the
+  default range for independent variables is \texttt{(-10~..~10)} and
+  for the dependent variable it is set to the maximum for the
+  {\Gnuplot} executable (using double floats on most IEEE machines).
+  However, for 3D plots (only), one or more of the variables
+  \texttt{plot\_xrange}, \texttt{plot\_yrange}, \texttt{plot\_zrange}
+  can be assigned intervals of the form \texttt{(<lower\_bound>
+    ..\ \allowbreak <upper\_bound>)} that set the default ranges for
+  the $x$, $y$, $z$ directions.  The $z$ direction corresponds to the
+  function values or surface height and setting a $z$-range flattens
+  the graph at the range limits, which is especially useful for
+  functions with singularities.
+
+  Additionally, the number of interval subdivisions can be assigned as
+  a formal quotient of the form
+  \begin{center}
+    \texttt{<variable>=(<lower\_bound> ..\ <upper\_bound>)/<it>}
+  \end{center}
+  where \texttt{<it>} is a positive integer;
+  e.g.\ \texttt{(1~..~5)/30} means the interval from 1 to 5 subdivided
+  into 30 pieces of equal size.  A subdivision parameter overrides the
+  value of the option \texttt{points} for this variable.
 \item A plot option, either as a fixed keyword, e.g.,
   \texttt{hidden3d} or as an equation e.g., \texttt{term=pictex}; free
   text such as titles and labels should be enclosed in string quotes.
@@ -198,9 +209,9 @@ The following options are specific to the {\REDUCE} \texttt{plot} command:
      for variables for which no individual interval subdivision has
      been included in the range specification.
    \item \texttt{refine=<integer>}: the maximum depth of adaptive
-     interval intersections.  The default is 8.  A value of 0 switches
-     any refinement off.  Note that a high value may increase the
-     computing time significantly.
+     interval intersections for 2D plots (only).  The default is 8.  A
+     value of 0 switches any refinement off.  Note that a high value
+     may increase the computing time significantly.
 \end{itemize}
 
 \subsubsection{Additional options}
