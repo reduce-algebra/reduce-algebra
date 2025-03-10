@@ -980,8 +980,8 @@ algebraic procedure num_jacobind(x,k);
    if k = 0 then 1
    else if k=1 or k=-1 then cosh x
    else if impart x=0 and impart k =0 and abs k <1 then <<
-      symbolic off1 'complex;
-      1/jacobidn_r(x,k)>>
+       symbolic off1 'complex;
+       1/jacobidn_r(x,k)>>
    else jacobind_c(x,k);
 
 algebraic procedure num_jacobisc(x,k);
@@ -1001,33 +1001,33 @@ algebraic procedure num_jacobics(x,k);
 algebraic procedure num_jacobisd(x,k);
   if k = 0 then sin x
    else if k=1 or k=-1 then sinh x
-   else if impart x=0 and impart k= 0 and abs k <1 then <<
-      symbolic off1 'complex;
-      jacobisd_r(x,k)>>
+    else if impart x=0 and impart k= 0 and abs k <1 then <<
+       symbolic off1 'complex;
+       jacobisd_r(x,k)>>
    else jacobisd_c(x,k);
 
 algebraic procedure num_jacobids(x,k);
   if k = 0 then csc x
    else if k=1 or k=-1 then csch x
-   else if impart x=0 and impart k= 0 and abs k <1 then <<
-      symbolic off1 'complex;
-      1/jacobisd_r(x,k)>>
+    else if impart x=0 and impart k= 0 and abs k <1 then <<
+       symbolic off1 'complex;
+       1/jacobisd_r(x,k)>>
    else jacobids_c(x,k);
 
 algebraic procedure num_jacobicd(x,k);
   if k = 0 then cos x
   else if k=1 or k=-1 then 1
-  else if impart x=0 and impart k= 0 and abs k <1 then <<
+   else if impart x=0 and impart k= 0 and abs k <1 then <<
       symbolic off1 'complex;
-     jacobicd_r(x,k)>>
+      jacobicd_r(x,k)>>
   else jacobicd_c(x,k);
 
 algebraic procedure num_jacobidc(x,k);
   if k = 0 then sec x
    else if k=1 or k=-1 then 1
-   else if impart x=0 and impart k= 0 and abs k <1 then <<
-      symbolic off1 'complex;
-      1/jacobicd_r(x,k)>>
+    else if impart x=0 and impart k= 0 and abs k <1 then <<
+       symbolic off1 'complex;
+       1/jacobicd_r(x,k)>>
    else jacobidc_c(x,k);
 
 % ########## The following require k real and abs k <1 ################
@@ -1057,7 +1057,9 @@ procedure jacobidn_r(u,k);
         phi1 := second phi;
         denom := cos(phi1 - phi0);
 
-        if denom < 10.0^(-(symbolic !:prec!:)) then  return otherdn(u,k)
+        if denom < 10.0^(-(symbolic !:prec!:)) then % return otherdn(u,k)
+	   % temporary fix as otherdn is incorrect
+	   return sqrt(1-(k*sin phi0)^2)
         else return cos(phi0)/denom;
    end;
 
@@ -1085,7 +1087,7 @@ procedure jacobicd_r(u,k);
         dendn := cos(phi1 - phi0);
 
         if dendn < 10.0^(-(symbolic !:prec!:)) then
-	   return cos(phi0)/otherdn(u,k)
+	   return cos(phi0)/sqrt(1-(k*sin phi0)^2)
         else return dendn;
    end;
 
@@ -1099,15 +1101,17 @@ procedure jacobics_r(u,k);
 
 % JACOBISD
 procedure jacobisd_r(u,k);
-   begin scalar phi, phi0,  phi1, denom, jdn;
+   begin scalar phi, phi0,  phi1, denom, jdn, s;
         phi  := phi_function(1,sqrt(1-k^2),k,u);
         phi0 := first phi;
         phi1 := second phi;
         denom := cos(phi1 - phi0);
 
-        if denom < 10.0^(-(symbolic !:prec!:)) then  jdn := otherdn(u,k)
+        s := sin phi0;
+	if denom < 10.0^(-(symbolic !:prec!:)) then
+	   jdn := sqrt(1-(k*s)^2) 
         else jdn := cos(phi0)/denom;
-	return sin(phi0)/jdn;
+	return s/jdn;
    end;
 
 % The following also  need  COMPLEX to be ON

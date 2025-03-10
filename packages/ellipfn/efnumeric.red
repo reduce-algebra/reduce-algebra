@@ -204,7 +204,7 @@ symbolic procedure n_elliptic(u);
          if errorp res then
             error(res, emsg!*)
          else
-	    res :=return reval car res;
+	    return reval car res;
       end;
 
 put('num_elliptic, 'psopfn, 'n_elliptic);
@@ -257,7 +257,7 @@ begin scalar rp,ip,tmp;
    tmp := reimpart res;
    rp := first tmp;
    ip := second tmp;
-   tmp := 10.0^-(symbolic !:prec!:-2);
+   tmp := 10.0^-(symbolic !:prec!:-4);
    if ip=0 or rp=0 then return res
    else if abs(ip/rp) <tmp then return rp
    else if abs(rp/ip) <tmp then return i*ip
@@ -318,9 +318,9 @@ end;
 algebraic procedure RC(x,y);
    begin scalar tmp,mu,sn,w,oldprec,tol;
       if impart x =0 and x <0 then
-	 rederr("RC: first parameter must be non-negative");
+      lisp error(99, "RC: 1st parameter must be non-negative");
       if y = 0 then
-	 rederr("RC: second parameter must be non-zero");
+      lisp error(99, "RC: 2nd parameter must be non-zero");
       w := 1;
       if impart y = 0 and y<0 then <<
 	 tmp := x-y;
@@ -329,7 +329,6 @@ algebraic procedure RC(x,y);
 	 x := tmp;
       >>;
       oldprec := precision(0);
-      precision max(oldprec+4,16);
       tmp := ceiling(oldprec/3);
       tol := 10.0^(-tmp);
       % relative truncation error of result approx. 10^-(2*oldprec)
@@ -347,7 +346,6 @@ algebraic procedure RC(x,y);
       >>;
       tmp := sn*sn*(3/10 + sn*(1/7 + sn*(3/8 + 9*sn/22)));
       tmp := w*(1 + tmp)/sqrt mu;
-      precision(oldprec);
       return tmp;
    end;
 
@@ -357,26 +355,25 @@ algebraic procedure RF(x,y,z);
       if impart x=0  then
          << tmp := sign x;
             if tmp = -1 then
-	       rederr("divergent integral RF: negative first argument");
+               lisp error(99, "divergent integral RF: negative 1st argument");
  	    if tmp = 0 then n := n+1
 	 >>;
       if impart y=0  then
          << tmp := sign y;
             if tmp = -1 then
-	       rederr("divergent integral RF: negative second argument");
+      	       lisp error(99, "divergent integral RF: negative 2nd argument");
  	    if tmp = 0 then n := n+1
 	 >>;
       if impart z=0  then
          << tmp := sign z;
             if tmp = -1 then
-	       rederr("divergent integral RF: negative third argument");
+      	       lisp error(99, "divergent integral RF: negative 3rd argument");
  	    if tmp = 0 then n := n+1;
 	 >>;
       if n>1 then
-	 rederr("divergent integral RF: more than one argument is zero");
+      lisp error(99, "divergent integral RF: more than one argument is zero");
 
       oldprec := precision(0);
-      precision max(oldprec+4,16);
       n := ceiling(oldprec/3);
       tol := 10.0^(-n);
       % relative trunction error of result approx. 10^-(2*oldprec)
@@ -397,7 +394,6 @@ algebraic procedure RF(x,y,z);
       e2 := dx*dy-dz*dz;
       e3 := dx*dy*dz;
       tmp := (1 + e2*(e2/24-3*e3/44-1/10)+e3/14)/sqrt(mu);
-      precision(oldprec);
       return tmp
    end;
 
@@ -405,16 +401,15 @@ algebraic procedure RD(x,y,z);
    begin scalar dx,dy,dz,xr,yr,zr,mu,lamda,sigma,e1,e2,e3,e4,
 	        tol,tmp,oldprec,pow;
       if impart x=0 and x<0 then
-      	 rederr("divergent integral RD: first argument is negative")
+      	 lisp error(99, "divergent integral RD: 1st argument is negative")
       else if impart y=0 and y<0 then
-      	 rederr("divergent integral RD: second argument is negative")
+      	 lisp error(99, "divergent integral RD: 2nd argument is negative")
       else if impart(x+y)=0 and x+y<=0 then
-      	 rederr("divergent integral RD: sum of first two aruments <= 0")
+      	 lisp error(99, "divergent integral RD: sum of 1st two arguments <= 0")
       else if impart z =0 and z<=0 then
-      	 rederr("divergent integral RD: third argument <= 0");
+      	 lisp error(99, "divergent integral RD: 3rd argument <= 0");
 
       oldprec := precision(0);
-      precision max(oldprec+4,16);
       tmp := ceiling(oldprec/3);
       tol := 10.0^(-tmp);
       tmp := t; sigma := 0; pow := 1;
@@ -441,7 +436,6 @@ algebraic procedure RD(x,y,z);
       tmp := e3*(-3/14 + 9/88*e3 - 9/52*dz*e4);
       e1 := dz*(1/6*e4 + dz*(-9/22*e2 + 3/26*dz*e1));
       tmp := 3*sigma + pow*(1+tmp+e1)/(mu*sqrt mu);
-      precision(oldprec);
       return tmp;
    end;
 
@@ -451,30 +445,29 @@ algebraic procedure RJ(x,y,z,p);
          ea,eb,ec,e1,e2;
       n := 0;
       if p = 0 then
-	 rederr("divergent integral RJ: fourth argument is zero");
+      	 lisp error(99, "divergent integral RJ: 4th argument is zero");
       if impart x=0  then
          << tmp := sign x;
             if tmp = -1 then
-	       rederr("divergent integral RJ: negative first argument");
+      	       lisp error(99, "divergent integral RJ: negative 1st argument");
  	    if tmp = 0 then n := n+1
 	 >>;
       if impart y=0  then
          << tmp := sign y;
             if tmp = -1 then
-	       rederr("divergent integral RJ: negative second argument");
+      lisp error(99, "divergent integral RJ: negative 2nd argument");
  	    if tmp = 0 then n := n+1
 	 >>;
       if impart z=0  then
          << tmp := sign z;
             if tmp = -1 then
-	       rederr("divergent integral RJ: negative third argument");
+      	       lisp error(99, "divergent integral RJ: negative 3rd argument");
  	    if tmp = 0 then n := n+1;
 	 >>;
       if n>1 then
-	 rederr("divergent integral RJ: more than 1 of first 3 args are zero");
+      	 lisp error(99, "divergent integral RJ: two of 1st 3 args are zero");
 
       oldprec := precision(0);
-      precision max(oldprec+4,16);
       n := ceiling(oldprec/3);
       tol := 10.0^(-n);
 
@@ -489,9 +482,7 @@ algebraic procedure RJ(x,y,z,p);
 	 tmp1 := x*z/y;
 	 tmp2 :=p*tmp/y;
 	 p := tmp;
-	 precision(oldprec);
 	 rcx:= RC(tmp1,tmp2);
-      	 precision max(oldprec+4,16);
       >>;
 
       tmp := t; pow := 1; sigma := 0;
@@ -509,9 +500,7 @@ algebraic procedure RJ(x,y,z,p);
 	    alfa := p*(xr+yr+zr) + xr*yr*zr;
 	    alfa := alfa*alfa;
 	    beta := p*(p+lamda)^2;
-	    precision(oldprec);
 	    tmp2 := RC(alfa,beta);
-	    precision max(oldprec+4,16);
 	    sigma := sigma+pow*tmp2;
 	    pow := pow/4;
 	    x := (x+lamda)/4;
@@ -530,12 +519,9 @@ algebraic procedure RJ(x,y,z,p);
       tmp3 := dp*ea*(1/3 - 3*dp/22) - 1/3*dp*ec;
       tmp := 3*sigma + pow*(tmp+tmp2+tmp3)/(mu*sqrt mu);
       if oldp < 0 then <<
-	 precision(oldprec);
       	 tmp2 := RF(x,y,z);
-      	 precision max(oldprec+4,16);
          tmp := a*(b*tmp + 3*(rcx-tmp2));
       >>;
-      precision(oldprec);
       return tmp;
    end;
 
@@ -549,136 +535,136 @@ algebraic procedure RJ(x,y,z,p);
 % inverse Jacobi functions.
 
 % only valid for real arguments, but works when only rounded is on.
-algebraic procedure carlson_RCR(x,y);
-   (if x<0 or y=0 then
-      rederr("1st parameter of RC must be non-negative and the 2nd non-zero")
-    else if y<0 then atanh(sqrt x/z)/z  % Cauchy principal value
-    else if y<x then atanh(z/sqrt x)/z
-    else if x = 0 then pi/(2*z)
-    else if x<y then atan(z/sqrt x)/z
-    else 1/sqrt x) where z=>sqrt(abs(x-y));
-
-% valid for complex arguments but needs both rounded and complex on
-algebraic procedure carlson_RC(x,y);
-    if y = 0 or (impart x = 0 and x<0) then
-      rederr("1st parameter of RC must be non-negative and 2nd non-zero")
-    else if x=y then 1/sqrt x
-    else if x=0 then pi/(2*sqrt y)
-    else (if impart y=0 and y<0 then
-             atanh(sqrt x/z)/z % Cauchy principal value
-          else atanh(z/sqrt x)/z)  where z => sqrt(x-y);
-
-% only valid for real arguments but works when only rounded is on
-algebraic procedure sym_int_RFR(x,y,z);
-   begin scalar t0,tn,a0,an,c0,cn,tol,theta,tmp,oldprec,n:=0;
-      if x<=0 then
-	 if x=0 then n:=n+1
-	 else rederr("divergent integral RF: negative first argument");
-      if y<=0 then
-	 if y=0 then n:=n+1
-	 else rederr("divergent integral RF: negative second argument");
-      if z<=0 then
-	 if z=0 then n:=n+1
-	 else rederr("divergent integral RF: negative third argument");
-      if n>1 then rederr("divergent integral RF: more than one zero argument");
-      oldprec := precision();
-      precision max(oldprec+4,16);
-      tol := 10.0^-(symbolic !:prec!:);
-      % sort arguments into ascending order
-      if x>y then <<tmp := y; y:=x; x:=tmp>>;
-      if y>z then <<tmp := z; z:=y; y:=tmp>>;
-      if x>y then <<tmp := y; y:=x; x:=tmp>>;
-
-      % use the faster convergent scheme which depends on
-      % whether y > (x+z)/2 or not
-      if 2*y >= x+z then <<
-	 tmp:=x; x:=z; z:=tmp;
-	 % x,y,z now in descending order
-	 theta :=-1;
-      >>
-      else theta :=1;
-
-      cn := 1;
-      t0 := sqrt x;
-      a0 := sqrt(abs(x-z));
-      c0 := sqrt(abs(x-y));
-      n:=0;
-      while (abs cn > tol) do <<
-	 tn := (t0 + sqrt(t0^2+theta*c0^2))/2;
-      	 an := (a0+sqrt(a0^2-c0^2))/2;
-         cn :=c0^2/(4*an);
-	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
-      >>;
-
-      % write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
-      y:=tn^2; x:= y+theta+an^2; z:= sqrt(abs(x-y));
-      % Now return Carlson's hyperbolic or circular function
-      % RC(tn^2+theta*an^2, tn^2) which equals RF(tn^2, tn^2, tn^2+theta*an^2)
-      % when theta +1 or -1 respectively
-      % Negative second argument not possible in this case?
-      if y<x then tmp := atanh(z/sqrt x)/z
-      else if x = 0 then tmp := pi/(2*z)
-      else if x<y then tmp := atan(z/sqrt x)/z
-      else tmp := 1/sqrt x;
-      tmp := carlson_RCR(tn^2+theta*an^2,tn^2);
-      precision(oldprec);
-      return tmp;
-   end;
-
-% valid for complex arguments but needs both rounded and complex on
-algebraic procedure sym_int_RF(x,y,z);
-   begin scalar t0,tn,a0,an,c0,cn,tol,tmp,oldprec,n:=0;
-      if impart x=0  then
-         << tmp := sign x;
-            if tmp = -1 then
-	       rederr("divergent integral RF: negative first argument");
- 	    if tmp = 0 then n := n+1
-	 >>;
-      if impart y=0  then
-         << tmp := sign y;
-            if tmp = -1 then
-	       rederr("divergent integral RF: negative second argument");
- 	    if tmp = 0 then n := n+1
-	 >>;
-      if impart z=0  then
-         << tmp := sign z;
-            if tmp = -1 then
-	       rederr("divergent integral RF: negative third argument");
- 	    if tmp = 0 then n := n+1;
-	 >>;
-      if n>1 then
-	 rederr("divergent integral RF: more than one argument is zero");
-      oldprec := precision();
-      precision max(oldprec+4,16);
-      tol := 10.0^-(symbolic !:prec!:);
-      tmp := abs(y-x);
-      tmp2 := abs(z-x);
-      if abs(z-x) < tmp then <<
-         tmp:=y; y:=z; z:=tmp
-      >>;
-      cn := 1;
-      t0 := sqrt x;
-      a0 := sqrt(z-x);
-      c0 := sqrt(y-x);
-      n:=0;
-      while (abs cn > tol) do <<
-	 tn := (t0 + sqrt(t0^2+c0^2))/2;
-      	 an := (a0+sqrt(a0^2-c0^2))/2;
-         cn :=c0^2/(4*an);
-	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
-      >>;
-
-      %% write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
-      y := tn^2; x := y + an^2; z := sqrt(x-y);
-      if x=y then tmp := 1/sqrt x
-      else if x=0 then tmp := pi/(2*sqrt y)
-      else if impart y=0 and y<0 then  %% can this occur??
-             tmp := atanh(sqrt x/z)/z % Cauchy principal value
-      else tmp := atanh(z/sqrt x)/z;
-      tmp := carlson_RC(tn^2+an^2,tn^2);
-      precision(oldprec);
-      return tmp;
-   end;
+%% algebraic procedure carlson_RCR(x,y);
+%%    (if x<0 or y=0 then
+%%       rederr("1st parameter of RC must be non-negative and the 2nd non-zero")
+%%     else if y<0 then atanh(sqrt x/z)/z  % Cauchy principal value
+%%     else if y<x then atanh(z/sqrt x)/z
+%%     else if x = 0 then pi/(2*z)
+%%     else if x<y then atan(z/sqrt x)/z
+%%     else 1/sqrt x) where z=>sqrt(abs(x-y));
+%% 
+%% % valid for complex arguments but needs both rounded and complex on
+%% algebraic procedure carlson_RC(x,y);
+%%     if y = 0 or (impart x = 0 and x<0) then
+%%       rederr("1st parameter of RC must be non-negative and 2nd non-zero")
+%%     else if x=y then 1/sqrt x
+%%     else if x=0 then pi/(2*sqrt y)
+%%     else (if impart y=0 and y<0 then
+%%              atanh(sqrt x/z)/z % Cauchy principal value
+%%           else atanh(z/sqrt x)/z)  where z => sqrt(x-y);
+%% 
+%% % only valid for real arguments but works when only rounded is on
+%% algebraic procedure sym_int_RFR(x,y,z);
+%%    begin scalar t0,tn,a0,an,c0,cn,tol,theta,tmp,oldprec,n:=0;
+%%       if x<=0 then
+%% 	 if x=0 then n:=n+1
+%% 	 else rederr("divergent integral RF: negative first argument");
+%%       if y<=0 then
+%% 	 if y=0 then n:=n+1
+%% 	 else rederr("divergent integral RF: negative second argument");
+%%       if z<=0 then
+%% 	 if z=0 then n:=n+1
+%% 	 else rederr("divergent integral RF: negative third argument");
+%%       if n>1 then rederr("divergent integral RF: more than one zero argument");
+%%       oldprec := precision();
+%%       precision max(oldprec+4,16);
+%%       tol := 10.0^-(symbolic !:prec!:);
+%%       % sort arguments into ascending order
+%%       if x>y then <<tmp := y; y:=x; x:=tmp>>;
+%%       if y>z then <<tmp := z; z:=y; y:=tmp>>;
+%%       if x>y then <<tmp := y; y:=x; x:=tmp>>;
+%% 
+%%       % use the faster convergent scheme which depends on
+%%       % whether y > (x+z)/2 or not
+%%       if 2*y >= x+z then <<
+%% 	 tmp:=x; x:=z; z:=tmp;
+%% 	 % x,y,z now in descending order
+%% 	 theta :=-1;
+%%       >>
+%%       else theta :=1;
+%% 
+%%       cn := 1;
+%%       t0 := sqrt x;
+%%       a0 := sqrt(abs(x-z));
+%%       c0 := sqrt(abs(x-y));
+%%       n:=0;
+%%       while (abs cn > tol) do <<
+%% 	 tn := (t0 + sqrt(t0^2+theta*c0^2))/2;
+%%       	 an := (a0+sqrt(a0^2-c0^2))/2;
+%%          cn :=c0^2/(4*an);
+%% 	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
+%%       >>;
+%% 
+%%       % write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
+%%       y:=tn^2; x:= y+theta+an^2; z:= sqrt(abs(x-y));
+%%       % Now return Carlson's hyperbolic or circular function
+%%       % RC(tn^2+theta*an^2, tn^2) which equals RF(tn^2, tn^2, tn^2+theta*an^2)
+%%       % when theta +1 or -1 respectively
+%%       % Negative second argument not possible in this case?
+%%       if y<x then tmp := atanh(z/sqrt x)/z
+%%       else if x = 0 then tmp := pi/(2*z)
+%%       else if x<y then tmp := atan(z/sqrt x)/z
+%%       else tmp := 1/sqrt x;
+%%       tmp := carlson_RCR(tn^2+theta*an^2,tn^2);
+%%       precision(oldprec);
+%%       return tmp;
+%%    end;
+%% 
+%% % valid for complex arguments but needs both rounded and complex on
+%% algebraic procedure sym_int_RF(x,y,z);
+%%    begin scalar t0,tn,a0,an,c0,cn,tol,tmp,oldprec,n:=0;
+%%       if impart x=0  then
+%%          << tmp := sign x;
+%%             if tmp = -1 then
+%% 	       rederr("divergent integral RF: negative first argument");
+%%  	    if tmp = 0 then n := n+1
+%% 	 >>;
+%%       if impart y=0  then
+%%          << tmp := sign y;
+%%             if tmp = -1 then
+%% 	       rederr("divergent integral RF: negative second argument");
+%%  	    if tmp = 0 then n := n+1
+%% 	 >>;
+%%       if impart z=0  then
+%%          << tmp := sign z;
+%%             if tmp = -1 then
+%% 	       rederr("divergent integral RF: negative third argument");
+%%  	    if tmp = 0 then n := n+1;
+%% 	 >>;
+%%       if n>1 then
+%% 	 rederr("divergent integral RF: more than one argument is zero");
+%%       oldprec := precision();
+%%       precision max(oldprec+4,16);
+%%       tol := 10.0^-(symbolic !:prec!:);
+%%       tmp := abs(y-x);
+%%       tmp2 := abs(z-x);
+%%       if abs(z-x) < tmp then <<
+%%          tmp:=y; y:=z; z:=tmp
+%%       >>;
+%%       cn := 1;
+%%       t0 := sqrt x;
+%%       a0 := sqrt(z-x);
+%%       c0 := sqrt(y-x);
+%%       n:=0;
+%%       while (abs cn > tol) do <<
+%% 	 tn := (t0 + sqrt(t0^2+c0^2))/2;
+%%       	 an := (a0+sqrt(a0^2-c0^2))/2;
+%%          cn :=c0^2/(4*an);
+%% 	 c0:=cn; a0:=an; t0:=tn; n:=n+1;
+%%       >>;
+%% 
+%%       %% write "tn = ",tn,"  an = ",an,"   cn = ",cn," count = ",n;
+%%       y := tn^2; x := y + an^2; z := sqrt(x-y);
+%%       if x=y then tmp := 1/sqrt x
+%%       else if x=0 then tmp := pi/(2*sqrt y)
+%%       else if impart y=0 and y<0 then  %% can this occur??
+%%              tmp := atanh(sqrt x/z)/z % Cauchy principal value
+%%       else tmp := atanh(z/sqrt x)/z;
+%%       tmp := carlson_RC(tn^2+an^2,tn^2);
+%%       precision(oldprec);
+%%       return tmp;
+%%    end;
 
 %%
 %% % the following two procedures use alternative methods of evaluation
