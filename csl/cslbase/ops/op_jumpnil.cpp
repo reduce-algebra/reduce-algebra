@@ -17,11 +17,7 @@
             case OP_JUMPNIL:
                 next = bytes[ppc++];
                 cc.cmp(A_reg, nilreg);
-// I set a label on the expansion of each bytecode so here I can use
-// that as my destination. The "-1" is because the destination is relative
-// to where ppc was when it had just seen the opcode, and since then it
-// has been updated reading the offset.
-                cc.jne(perInstruction[ppc+next-1]);
+                cc.je(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__
@@ -35,3 +31,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpnil.cpp

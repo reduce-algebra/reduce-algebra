@@ -745,8 +745,6 @@ LispObject Lplist(LispObject env, LispObject a)
 // when you call BYTECOUNTS.
 extern bool profile_count_mode;
 
-// #include "opnames.cpp" DEFUNCT NOW!
-
 static uint64_t total = 0, frequencies[256];
 
 #endif

@@ -3,7 +3,7 @@
 #if defined BYTECODE
             case OP_CARLOC7:
                 B_reg = A_reg;
-                A_reg = stack[-TAG_BITS];
+                A_reg = stack[-7];
                 if (car_legal(A_reg)) A_reg = car(A_reg);
                 else 
                 {   A_reg = carerror(A_reg);

@@ -1091,14 +1091,14 @@ class RAIIstack_sanity
     LispObject w;
 public:
     RAIIstack_sanity(const char *fn, const char *fi, int li)
-    {       saveStack = stack;
+    {   saveStack = stack;
         fname = fn;
         file = fi;
         line = li;
         w = nil;
     }
     RAIIstack_sanity(const char *fn, const char *fi, int li, LispObject ww)
-    {       saveStack = stack;
+    {   saveStack = stack;
         fname = fn;
         file = fi;
         line = li;

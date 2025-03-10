@@ -12,7 +12,11 @@
 #elif defined __x86_64__
 
             case OP_JUMPT_L:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                next = (next<<8) | bytes[ppc++];
+                cc.cmp(A_reg, nilreg);
+                cc.jne(perInstruction[ppc+next]);
+                break;
 
 #elif defined __aarch64__
 
@@ -24,3 +28,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpt_l.cpp

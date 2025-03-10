@@ -77,7 +77,11 @@ void unfinished(const char* msg)
 
 // By introducing a type "Register" that is a general purpose register on
 // my host machine I can keep one copy of code where at one stage I had
-// been going to have essentially two copies.
+// been going to have essentially two copies. Also loadreg and storereg
+// are a level of abstraction above the machine architecture so that I
+// can use those when I need to generate something thart on ARM is
+// LDR or STR but on Intel is simply MOV.
+
 #if defined __x86_64__
 #define ARCH "x86_64"
 typedef x86::Gp Register;
@@ -113,7 +117,7 @@ void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
 // all of which are LispObjects.
 
 void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-            Register& target, Register& result)
+                 Register& target, Register& result)
 {   InvokeNode *in;
 // I must bring the Lisp variable holding a stack pointer up to date.
     storereg(cc, spreg, nilreg, JIToffset(Ostack));
@@ -243,11 +247,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     dpr(basic_elt(env, 0));
 // Note that when a byte-code takes a follow-on byte as an operand that
 // the "opname" I display here will be garbage. I may want to rearrange the
-// codes so that I have an easy way to tell when thet is going to be the
-// case.
+// codes so that I have an easy way to tell when that is going to be the
+// case. Well I am partway to making that happen...
     stdout_printf("Bytecodes...\n");
     for (size_t i=0; i<len; i++)
+    {   int op = bytes[i];
         stdout_printf("%3u:  %02x  %s\n", i, bytes[i], opnames[bytes[i]]);
+    }
 // The literal at offset zero is the name of the function, and the
 // final entry is an integer checksum 
     stdout_printf("Vector of literals...\n");
@@ -264,7 +270,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     if (nargs > 15) return nullptr;
 //
 // Set up to use asmjit. The code here just creates and initialises
-// various things that it needs.
+// various things that it needs. I arrange that the CodeHolder is
+// amd object that remains in place throughout the run.
     if (!holderOK)
     {   Environment localEnv = rt.environment();;
 #ifdef __CYGWIN__
@@ -464,8 +471,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 #endif
 
 // The part from HERE will be to a large extent platform independent
-// in this file, but the #included files all discrimate on x86_64 vs aarch64.
+// in this file, but the #included files all discriminate on x86_64 vs
+// aarch64.
 
+// On entry to the function the "env" argument held the name of the
+// function being called. As this code executes what I need is its
+// vector of literals, which lives in the env field of the Symbol Head.
+    loadreg(cc, litvec, litvec, offsetof(Symbol_Head, env)-TAG_SYMBOL);
     TRY
     {   size_t ppc = 0;
         int next;
@@ -489,9 +501,9 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     END_CATCH;
 
     stdout_printf("Set the labels that I ought to\n");
-// There are labels here for error exits. At present I do not handle the
-// errors!
+// There are labels here for error exits.
     cc.bind(tooFewArgs);
+// At this stage litvec holds the name of the function involved...
         loadreg(cc, w, litvec, CELL-TAG_VECTOR);
         storereg(cc, w, nilreg, JIToffset(OJITarg1));
         loadreg(cc, w, nilreg, JIToffset(OJITtoofew));
@@ -538,7 +550,6 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         if ((size%8) != 0) fprintf(hex, "\n");
         fclose(hex);
     }
-
     return func;
 }
 
@@ -660,5 +671,22 @@ LispObject Ljit_unfinished(LispObject env)
 }
 
 #endif // ENABLE_JIT
+
+static void show(int count, const unsigned char* code)
+{   printf("For %d args at %p...\n", count, code);
+    for (int i=0; i<20; i++)
+        stdout_printf("%02x ", code[i]);
+    stdout_printf("\n");
+}
+
+LispObject Lop_bytes(LispObject env, LispObject ff)
+{   if (!is_symbol(ff)) return nil;
+    show(0, reinterpret_cast<const unsigned char*>(qfn0(ff)));
+    show(1, reinterpret_cast<const unsigned char*>(qfn1(ff)));
+    show(2, reinterpret_cast<const unsigned char*>(qfn2(ff)));
+    show(3, reinterpret_cast<const unsigned char*>(qfn3(ff)));
+    show(4, reinterpret_cast<const unsigned char*>(qfn4up(ff)));
+    return nil;
+}
 
 // end of jit.cpp
