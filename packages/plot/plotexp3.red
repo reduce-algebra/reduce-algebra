@@ -116,12 +116,28 @@ symbolic procedure ploteval3xy1pts
         if null u then  % look for an isolated singularity WN
           u:=ploteval3xysingular(ff,f,x,xx,dx,y,yy,dy,zhi,zlo);
 
-        if null u or eqcar(u,'overflow)
-         or numberp u and
-             (zhi and u>zhi or zlo and u<zlo) then
-        <<u:=nil;
-          if 0<j and j<nx and 0<i and i<ny then
-             w:={xx-dx,xx+dx,yy-dy,yy+dy}.w;
+        % FJW, March 2025: The following code to handle singular
+        % points doesn't seem to work; it leads to a plot in the form
+        % of a stack of 2D plots instead of a 3D plot.  This may be
+        % due to subsequent external changes.  It needs further
+        % investigation.  But for now the replacement seems to give
+        % better results.
+
+        % if null u or eqcar(u,'overflow)
+        %  or numberp u and
+        %      (zhi and u>zhi or zlo and u<zlo) then
+        % <<u:=nil;
+        %   if 0<j and j<nx and 0<i and i<ny then
+        %      w:={xx-dx,xx+dx,yy-dy,yy+dy}.w;
+        % >>;
+        if null u then <<
+           if 0<j and j<nx and 0<i and i<ny then
+              w:={xx-dx,xx+dx,yy-dy,yy+dy}.w;
+        >> else <<
+           % Use bounds on function value, which are always numerical:
+           if eqcar(u,'overflow) then u := cdr u; % +/- plotmax!*
+           if u > zhi then u := zhi
+           else if u < zlo then u := zlo;
         >>;
         {t,t,xx,yy,u}
        >>
