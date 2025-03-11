@@ -846,17 +846,19 @@ static void cold_setup()
 // Now for things for the compiler to use
     LispObject opcodetag = make_undefined_symbol("s:opcode");
     LispObject opcodes = nil;
-    int val = 0;
-    for (auto name:opnames)
-    {   if (name[0] == '@') break;
+    for (int i=0; i<256; i++)
+    {   const char* name = opnames[i];
+        int info = oparginfo[i];
         char lowername[32];
         char* p = lowername;
         while (*name != 0) *p++ = tolower(*name++);
         *p = 0;
         LispObject op = make_undefined_symbol(lowername);
-        putprop(op, opcodetag, fixnum_of_int(val));
+// This give a property that has the numeric opcode value in its low
+// 8 bytes and then info about how long an instruction that starts with
+// that byte will be and whether it takes a label as its operand.
+        putprop(op, opcodetag, fixnum_of_int(i+(info<<8)));
         opcodes = cons(op, opcodes);
-        val++;
     }
     make_variable("s:opcodelist", nreverse(opcodes));
     set_up_functions(0);

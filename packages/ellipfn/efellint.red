@@ -80,26 +80,41 @@ ellipticfrules :=
                  df(k,x)*((elliptice(u,k)/(1-k^2)-ellipticf(u,k))/k
                            - k*sin(u)*cos(u)/((1-k^2)*sqrt(1-k^2*sin(u)^2))),
 
-   ellipticf(~phi,~m)  => num_ellf(phi,m)
-      when lisp !*rounded and lisp !*complex and numberp phi and numberp m
+   ellipticf(~phi,~m)  => num_elliptic(num_ellf,phi,m)
+      when lisp !*rounded and numberp phi and numberp m
 
 }$
 let ellipticfrules;
 
 %######################################################################
-
 % incomplete elliptic integral of the first kind
+
+% older algorithm based on descending Landen
+% Used for real arguments |phi|<=pi/2 and |m|<1
+procedure f_function(phi,m);  % not used
+    if abs phi = pi/2 then sgn(phi)*k_function(abs m)
+    else begin scalar  bothlists, alist, plist, phi_n;
+       bothlists := landentrans(phi,asin m);
+       alist := rest second bothlists;
+       plist := first bothlists;
+       phi_n  := first reverse plist;
+       return (phi_n * for each y in alist product (1+sin y)/2);
+    end;
+
 algebraic procedure num_ellf(phi,k);
    if k=0 then phi
    else if phi = pi/2 or phi = -pi/2 then sign(phi)*num_ellk(k)
    else if k=1 or k=-1 and impart(phi)=0 and abs phi <pi/2 then
-      (log((1+s)/(1-s))/2) where s => sin phi
+   begin scalar s;
+      s := sin phi;
+      return log((1+s)/(1-s))/2;
+   end
    else begin scalar l;
       l := pi_shift phi;
       if second l neq 0 then
       	 return second(l)*num_ellk(k) + num_ellf(first l, k)
       else
-	 return num_elliptic(elliptic_F, phi, k);
+	 return elliptic_F(phi, k);
    end;
 
 algebraic procedure elliptic_F(phi, k);
@@ -170,13 +185,11 @@ elliptickrules :=
 	elliptick(0)      => pi/2,
 	elliptick!'(1)    => pi/2,
 
-        elliptick(~m)   => num_ellk(m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp m and m neq 1 and m neq -1,
+        elliptick(~m)   => num_elliptic(num_ellk, m)
+	   when lisp !*rounded and numberp m, 
 
-        elliptick!'(~m) => num_ellkc(m)
-	   when lisp !*rounded and lisp !*complex and
-	        numberp m and m neq 0,
+        elliptick!'(~m) => num_elliptic(num_ellkc, m)
+	   when lisp !*rounded and  numberp m,
 
         nome(0) => 0,
 
@@ -187,20 +200,30 @@ elliptickrules :=
 let elliptickrules;
 
 % complete elliptic integral of the first kind
+
+% older version valid for |m| <1 (not used)
+procedure k_function(m);
+begin scalar agm, an;
+   agm := agm_function(1,sqrt(1-m^2),m);
+   an  := first second agm;
+   return pi/(2*an);
+end;
+
+
 algebraic procedure num_ellk(k);
    if k=1 or k=-1 then
-      rederr("Logarithmic Singularity")
+     lisp error(99, "K has a logarithmic singularity at +/-1")
    else if k = 0 then pi/2
    else if impart(k) = 0 and abs(k)>1 then
       (RF(0, 1-1/k^2, 1) - i*RF(0, 1/k^2, 1))/abs k
    else
       RF(0,1-k^2,1);
 
-% complementary elliptic integral
+% complementary elliptic integral of first kind
 % NB the identity K'(k)=K(k') only holds if repart k >= 0.
 algebraic procedure num_ellkc(k);
    if k=0 then
-      rederr("Logarithmic Singularity")
+      lisp error(99, "K' has a logarithmic singularity at zero")
    else if repart k > 0 or (repart k = 0 and impart k > 0) then
       num_ellk(sqrt(1-k^2))
    else <<
@@ -212,6 +235,40 @@ algebraic procedure num_ellkc(k);
    >>;
 
 % ######################################################################
+% Legendre's incomplete integral of the second kind
+
+% older version used for real arguments |phi| <pi/2, |m| <1
+procedure e_function(phi, m);   % no longer used
+begin scalar f, n, bothlists, alist, plist, s,
+             sinalist, sinplist, b, blist, allz, z, allx, x;
+
+    f := f_function(phi,m);
+    bothlists := landentrans(phi,asin m);
+	
+    alist := second bothlists;
+    plist := first bothlists;
+
+    n := length alist - 1;
+
+    sinalist := foreach a in rest alist collect sin a;
+    sinplist := foreach p in rest plist collect sin p;
+    b := first sinalist;
+    blist := foreach c in rest sinalist collect (b := b*c);
+    blist := first(sinalist) . blist;
+
+    allz := 0;  allx := 0;
+    for w := 1:n do <<
+        z := first blist/(2^w);
+	x := sqrt(first blist)*first(sinplist)/(2^w);
+        allz := allz + z;
+	allx := allx + x;
+	blist := rest blist;
+	sinplist := rest sinplist;
+     >>;
+     s := sin first alist;
+     return f*(1 - s^2*(1 + allz)/2) + s*allx;
+
+end;
 
 algebraic procedure num_elle(phi,k);
    if k=0 then phi
@@ -222,10 +279,11 @@ algebraic procedure num_elle(phi,k);
       if second l neq 0 then
 	 return second(l)*num_ellec(k) + num_elle(first l, k)
       else
-         return num_elliptic(elliptic_E,phi,k);
+         return elliptic_E(phi,k);
    end;
 
-algebraic procedure elliptic_E(phi, k);
+% Legendre's incomplete integral of the second kind
+algebraic procedure Elliptic_E(phi, k);
 begin scalar sgn;
    if repart(k)<0 or (repart(k)=0 and impart(k)<0) then k := -k;
    if repart(phi)<0 or (repart(phi)=0 and impart(phi)<0) then <<
@@ -282,6 +340,7 @@ begin scalar sgn;
       s*ellint_2nd(0,1, {1,-k^2*s^2},{1,-s^2},{0,1},{1,0})/2;
 end;
 
+% complete elliptic integral of the second kind
 algebraic procedure num_ellec(k);
    if k = 1 or k = -1 then 1
    else if k = 0 then pi/2
@@ -300,6 +359,7 @@ algebraic procedure num_ellec(k);
       >>;
    end;
 
+% complementary elliptic integral of the second kind
 % The identity E'(k) = E(k') only holds if repart k >= 0
 algebraic procedure num_ellecp(k);
  if repart k > 0 or (repart k = 0 and impart k > 0) then
@@ -352,14 +412,14 @@ ellipticerules :=
     df(elliptice(~phi,~m),~x) => df(phi,x)*sqrt(1-m^2*sin(phi)^2) +
                                  df(m,x)*(elliptice(phi,m)-ellipticf(phi,m))/m,
 
-    elliptice(~phi,~m) => num_elle(phi,m)
-       when lisp !*rounded and lisp !*complex and numberp phi and numberp m,
+    elliptice(~phi,~m) => num_elliptic(num_elle,phi,m)
+       when lisp !*rounded and numberp phi and numberp m,
 	     
     elliptice(~m) => num_elliptic(num_ellec, m)
-            when lisp !*rounded and lisp !*complex and numberp  m,
+            when lisp !*rounded and numberp  m,
 
     elliptice!'(~m) => num_elliptic(num_ellecp, m)
-	   when lisp !*rounded and lisp !*complex and numberp m
+	   when lisp !*rounded and numberp m
 
 }$
 
@@ -399,42 +459,41 @@ ellipticdrules := {
        	  df(k,x)*(-2*ellipticd(u,k)+
 	     (elliptice(u,k)-sin(u)*cos(u)/sqrt(1-k^2*sin(u)^2))/(1-k^2))/k,
 	  
-    ellipticd(~phi,~m) => n_elld(phi,m)
-       when lisp !*rounded and lisp !*complex and numberp phi and numberp m,
+    ellipticd(~phi,~m) => num_elliptic(num_elld,phi,m)
+       when lisp !*rounded and numberp phi and numberp m,
 	     
-   ellipticd(~m) => n_elldc(m)
-       when lisp !*rounded and lisp !*complex and numberp m
+   ellipticd(~m) => num_elliptic(num_elldc, m)
+       when lisp !*rounded and numberp m
 
 }$
 
 let ellipticdrules$
 
-algebraic procedure n_elldc(k);
+algebraic procedure num_elldc(k);
    if k = 0 then pi/4
    else if k= 1 or k=-1 then
-      rederr "ellipticd(k) has a logarithmic singularity at k=1"
-   else num_elliptic(num_elldc, k);
-
-algebraic procedure num_elldc(k); 
-   if impart k =0 and abs k>1 then
+        lisp error(99, "D(k) has a logarithmic singularity at k=+/-1")
+   else if impart k =0 and abs k>1 then
       RD(0,1-1/k^2,1)/(3*k^3)+
          i/k*(-RF(0,1/k^2,1)+(1-1/k^2)*RD(0,1/k^2,1)/3)
    else
       RD(0, 1-k^2, 1)/3;
 
 % incomplete elliptic integral of the second kind
-
-algebraic procedure n_elld(phi,k);
+algebraic procedure num_elld(phi,k);
    if phi=0 then 0
    else if (k=1 or k=-1) and impart phi=0 and abs phi < pi/2 then
-      sign(phi)*(log((1+s)/(1-s))/2-s) where s=> sin phi
-   else if phi = pi/2 or phi = -pi/2 then sign(phi)*n_elldc(k)
+   begin scalar s;
+      s := sin phi;
+      return sign(phi)*(log((1+s)/(1-s))/2-s);
+   end
+   else if phi = pi/2 or phi = -pi/2 then sign(phi)*num_elldc(k)
    else begin scalar l;
       l := pi_shift phi;
       if second l neq 0 then
-      	 return second(l)*n_elldc(k) + n_elld(first(l),k)
+      	 return second(l)*num_elldc(k) + num_elld(first(l),k)
       else
-	 return num_elliptic(elliptic_D, phi, k);
+	 return elliptic_D(phi, k);
    end;
 
 
@@ -546,18 +605,17 @@ ellipticpirules :=
 	       ellipticF(u,k)*(k^2-a^2) - a^2*ellipticE(u,k) +
     a^4*sqrt(1-k^2*sin u^2)*sin u*cos u/(1-a^2*sin u^2))/((1-a^2)*(k^2-a^2)*a),
 	  
-   ellipticPi(~phi,~a, ~k) => num_elliptic(n_ellpi,phi,a,k)
-       when lisp !*rounded and lisp !*complex and numberp phi and
+   ellipticPi(~phi,~a, ~k) => num_elliptic(num_ellpi,phi,a,k)
+       when lisp !*rounded and numberp phi and
                 numberp a and numberp k,
 	     
-   ellipticPi(~a,~k) => num_elliptic(n_ellpic,a,k)
-      when lisp !*rounded and lisp !*complex and numberp a and numberp k
-	   and k^2 neq 1
+   ellipticPi(~a,~k) => num_elliptic(num_ellpic,a,k)
+      when lisp !*rounded and numberp a and numberp k and k^2 neq 1
 
 }$      
 
 let ellipticpirules;
-algebraic procedure n_ellpic(a,k);
+algebraic procedure num_ellpic(a,k);
    if k=0 then RC(0,1-a^2)
    else if a=0 then num_ellk(k)
    else if a=k or a=-k then num_ellec(k)/(1-k^2)
@@ -567,39 +625,44 @@ algebraic procedure n_ellpic(a,k);
    else
       ellint_3rd(0,1,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2})/2;
 
-algebraic procedure n_ellpi(phi,a,k);
-   if phi=0 then 0
-   else if phi = pi/2 or phi = -pi/2 then sign(phi)*n_ellpic(a,k)
+algebraic procedure num_ellpi(phi,a,k);
+<< if phi=0 then 0
+   else if phi = pi/2 or phi = -pi/2 then sign(phi)*num_ellpic(a,k)
    else if k=0 and a=0 then phi
    else if k=0 then
-      if a=1 or a =-1 then tan phi
-      else (s*RC(1-s^2, 1-a^2*s^2)) where s=> sin phi
-   else if k^2=1 then
-      if a^2=1 then
-	 ((s*RC(1,1-s^2)+s/(1-s^2))/2) where s => sin phi
-      else
-      	 (s/(1-a^2)*(RC(1, 1-s^2)-a^2*RC(1, 1-a^2*s^2))) where s => sin phi
-   else if a^2=1 then
-      num_ellf(phi,k)-(num_elle(phi,k)-tan phi*sqrt(1-k^2*sin(phi)^2))/(1-k^2)
-   else if a=0 then num_ellf(phi,k)
-   else if a^2=k^2 then
-      (num_elle(phi,k)-k^2*sin phi*cos phi/sqrt(1-k^2*sin(phi)^2))/(1-k^2)
-   else begin scalar l;
+      if a=1 or a =-1 then tan phi;
+   begin scalar s, l;
+      s:= sin phi;
+      if k=0 then
+         return s*RC(1-s^2, 1-a^2*s^2)
+      else if k^2=1 then
+        if a^2=1 then
+	   return s*RC(1,1-s^2)+s/(1-s^2)/2
+        else
+      	   return s/(1-a^2)*(RC(1, 1-s^2)-a^2*RC(1, 1-a^2*s^2))
+      else if a^2=1 then
+         return num_ellf(phi,k)-(num_elle(phi,k)
+	       -tan phi*sqrt(1-k^2*s^2))/(1-k^2)
+      else if a=0 then return num_ellf(phi,k)
+      else if a^2=k^2 then
+      	 return (num_elle(phi,k)-k^2*s*cos phi/sqrt(1-k^2*s^2))/(1-k^2);
       l := pi_shift phi;
       if second l neq 0 then
-         return second(l)*n_ellpic(a,k) + n_ellpi(first(l),a,k)
+         return second(l)*num_ellpic(a,k) + num_ellpi(first(l),a,k)
       else
 	 return elliptic_Pi(phi,a,k);
-   end;
+   end
+>>;
 
 algebraic procedure elliptic_Pi(phi,a,k);
-begin scalar sgn;
-   if a=0 then return elliptic_f(phi,k)
-   else if a^2=1 then return
+begin scalar sgn, s;
+   if a=0 then return elliptic_f(phi,k);
+   s := sin phi;
+   if a^2=1 then return
       elliptic_f(phi,k) - elliptic_e(phi,k)/(1-k^2) +
-          tan(phi)/((1-k^2)*sqrt(1-k^2*sin(phi)^2))
+          tan(phi)/((1-k^2)*sqrt(1-k^2*s^2))
    else if a^2=k^2 then return elliptic_e(phi,k)/(1-k^2) -
-                    sin(phi)*cos(phi)/((1-k^2)*sqrt(1-k^2*sin(phi)^2));
+                    s*cos(phi)/((1-k^2)*sqrt(1-k^2*s^2));
 
    if repart(k)<0 or (repart(k)=0 and impart(k)<0) then k := -k;
    if repart(phi)<0 or (repart(phi)=0 and impart(phi)<0) then <<
@@ -608,14 +671,12 @@ begin scalar sgn;
    >>
    else sgn := 1;
    
-   if impart(phi)=0 then <<
-      s := sin phi;
+   if impart(phi)=0 then
       if impart(k) neq 0 or k*s <1 then return sgn*
 	 ellint_3rd(0,s^2,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2})/2	    
       else return sgn*
 	 (ellint_3rd(0,1/k^2,{1,0},{1,-1},{1,-k^2},{0,1},{1,-a^2}) -
 	  i*ellint_3rd(1/k^2,s^2,{1,0},{1,-1},{-1,k^2},{0,1},{1,-a^2}))/2;
-   >>;
   
    if repart(phi)=pi/2 then <<
       s := cosh impart phi;
@@ -647,7 +708,6 @@ begin scalar sgn;
    >>;
    
    % sin(phi) must be complex here
-   s := sin phi;
    if impart(k*s)=0 and (k*s)^2>1 then return sgn*s*
      (ellint_3rd(0,1/(k*s)^2,{1,0},{1,-s^2},{1,-(k*s)^2},{0,1},{1,-(a*s)^2})-
       i*ellint_3rd(1/(k*s)^2,1,{1,0},{1,-s^2},{-1,(k*s)^2},{0,1},{1,-(a*s)^2}))/2
@@ -744,7 +804,7 @@ jacobierules :=
 % numerical evaluation
 
     jacobie(~phi,~m) => num_elliptic(num_jacobie,phi,m)
-       when lisp  !*rounded and lisp !*complex and numberp phi and numberp m
+       when lisp  !*rounded and numberp phi and numberp m
 }$
 
 let jacobierules;
@@ -753,9 +813,8 @@ let jacobierules;
 %######################################################################
 %CALCULATING ZETA
 
-% most agm based functions have been superceded except this one
 
-procedure num_jacobizeta(u,m);
+procedure num_jacobizeta(u,m); % no longer used
 % computes the JacobiZeta function
 begin scalar phi_list, clist, z, cn, phi;
 
@@ -820,8 +879,8 @@ jacobizetarules :=
      jacobizeta(~u+2*elliptick(~m),m) => jacobizeta(u,m),
      jacobizeta(elliptick(~m) -~u,m) => -jacobizeta(elliptick(m)+u,m),
 
-     jacobizeta(~u,~m) => num_elliptic(num_jacobizeta,u,m)
-	   when lisp !*rounded and lisp !*complex and numberp u and numberp m,
+     jacobizeta(~u,~m) => num_elliptic(num_jacobizeta1,u,m)
+	   when lisp !*rounded and numberp u and numberp m,
 
 %derivative rules
     df(jacobizeta(~u, ~k),~x) =>

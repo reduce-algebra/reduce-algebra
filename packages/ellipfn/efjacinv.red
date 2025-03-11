@@ -193,41 +193,41 @@ invjacobirules :=
        
 % rules for numerical evaluation
 
- arcsn(~x,~k) => num_asn(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcsn(~x,~k) => num_elliptic(num_asn,x,k)
+    when lisp !*rounded and numberp x and numberp k,
 
- arcsc(~x,~k) => num_asc(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcsc(~x,~k) => num_elliptic(num_asc,x,k)
+    when lisp !*rounded and numberp x and numberp k,
 
- arcsd(~x,~k) => num_asd(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcsd(~x,~k) => num_elliptic(num_asd,x,k)
+    when lisp !*rounded and numberp x and numberp k,
 
- arcns(~x,~k) => num_ans(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcns(~x,~k) => num_elliptic(num_ans,x,k)
+    when lisp !*rounded and numberp x and numberp k,
 
- arccs(~x,~k) => num_acs(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arccs(~x,~k) => num_elliptic(num_acs,x,k)
+    when lisp !*rounded and numberp x and numberp k,
 
- arcds(~x,~k) => num_ads(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcds(~x,~k) => num_elliptic(num_ads,x,k)
+    when lisp !*rounded  and numberp x and numberp k,
 
- arccn(~x,~k) => num_acn(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k, 
+ arccn(~x,~k) => num_elliptic(num_acn,x,k)
+    when lisp !*rounded and numberp x and numberp k, 
 
- arcnc(~x,~k) => num_anc(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k, 
+ arcnc(~x,~k) => num_elliptic(num_anc,x,k)
+    when lisp !*rounded and numberp x and numberp k, 
 
- arcdn(~x,~k) => num_adn(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcdn(~x,~k) => num_elliptic(num_adn,x,k)
+    when lisp !*rounded  and numberp x and numberp k,
 
- arcnd(~x,~k) => num_and(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arcnd(~x,~k) => num_elliptic(num_and,x,k)
+    when lisp !*rounded and numberp x and numberp k,
 
- arccd(~x,~k) => num_acd(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k,
+ arccd(~x,~k) => num_elliptic(num_acd,x,k)
+    when lisp !*rounded and numberp x and numberp k,
  
- arcdc(~x,~k) => num_adc(x,k)
-    when lisp !*rounded and lisp !*complex and numberp x and numberp k
+ arcdc(~x,~k) => num_elliptic(num_adc,x,k)
+    when lisp !*rounded and numberp x and numberp k
  }$
 
 let invjacobirules;
@@ -237,29 +237,46 @@ let invjacobirules;
 % ensure all arguments to RF are non-negative and at most one is zero.
 
 algebraic procedure n_asn(x,k);
-   x*RF(1, 1-x^2, 1-k^2*x^2);
+% only called from num_asn with real args
+<< symbolic off1 'complex;
+   x*RF(1, 1-x^2, 1-k^2*x^2)>>;
 
 algebraic procedure n_ans(x,k);
-   RF(1, 1-1/x^2, 1-k^2/x^2)/x;
+% only called from num_ans with real args   
+<< symbolic off1 'complex;
+   RF(1, 1-1/x^2, 1-k^2/x^2)/x>>;
 
 algebraic procedure n_asc(x,k);
- x*RF(1, 1+x^2, 1+(1-k^2)*x^2);
+% only called from num_asc with real args
+<< symbolic off1 'complex;
+   x*RF(1, 1+x^2, 1+(1-k^2)*x^2)>>;
 
 algebraic procedure n_acs(x,k);
- RF(1, 1+1/x^2, 1+(1-k^2)/x^2)/x;
+% only called from num_acs with real args      
+begin scalar s;
+   symbolic off1 'complex;
+   s := RF(1, 1+1/x^2, 1+(1-k^2)/x^2)/x;   
+   return if x<0 then 2*RF(0, 1-k^2, 1)+s else s;
+end;
 
 algebraic procedure n_asd(x,k);
-   x*RF(1, 1+k^2*x^2, 1-(1-k^2)*x^2);
+% only called from num_asd with real args
+<< symbolic off1 'complex;
+   x*RF(1, 1+k^2*x^2, 1-(1-k^2)*x^2)>>;
 
 algebraic procedure n_ads(x,k);
-   RF(1, 1+k^2/x^2, 1-(1-k^2)/x^2)/x;
+% only called from num_ads with real args      
+<< symbolic off1 'complex;
+   RF(1, 1+k^2/x^2, 1-(1-k^2)/x^2)/x>>;
 
 algebraic procedure n_acn(x,k);
+% only called from num_acn with real args 
    begin scalar w, y;
+      symbolic off1 'complex;
       w:= 1-x^2;
       y := sqrt w * RF(x^2,1,1-k^2*w);
-      if repart x <0 then
-	 return 2*elliptick(k)-y
+      if x <0 then
+	 return 2*RF(0, 1-k^2, 1)-y
       else return y;
    end;
 
@@ -291,13 +308,15 @@ algebraic procedure n_and(x,k);
    end;
 
 algebraic procedure n_acd(x,k);
-   begin scalar w, y;
-      w:= (1-x^2)/(1-k^2);
-      y := sqrt w * RF(x^2,1,1+k^2*w);
-      if repart x <0 then
-	 return 2*elliptick(k)-y
-      else return y;
-   end;
+   % only called from num_ans with real args
+begin scalar w, y;
+   symbolic off1 'complex;
+   w:= (1-x^2)/(1-k^2);
+   y := sqrt w * RF(x^2,1,1+k^2*w);
+   if x <0 then
+      return 2*RF(0,1-k^2, 1)-y
+   else return y;
+end;
 
 algebraic procedure n_adc(x,k);
    begin scalar w, y;
@@ -317,7 +336,9 @@ algebraic procedure num_asn(x,k);
     if x=0 then 0
     else if k=0 then asin(x)
     else if k=1 or k=-1 then atanh x
-    else num_elliptic(num2_asn, x, k);
+    else if impart x=0 and impart k =0
+            and abs k <1 and abs x <=1 then n_asn(x,k)
+    else num2_asn(x, k);
 
 algebraic procedure num2_asn(x,k);
    principal_value(num1_asn(x,k), num_ellk(k),
@@ -369,10 +390,12 @@ algebraic procedure num1_asn(x,k);
 algebraic procedure num_ans(x,k);
 % uses the identity arcns(x,k)=arcsn(1/x,k)
    if x = 0 then
-      rederr("arcns not defined at the origin")
+      lisp error(99, "arcns not defined at the origin")
    else if k = 0 then acsc(x)
    else if k=1 or k=-1 then acoth x
-   else num_elliptic(num1_ans, x, k);
+   else if impart x=0 and impart k=0
+           and abs x>=1 and abs k <1 then n_ans(x,k)
+   else num1_ans(x, k);
 
 algebraic procedure num1_ans(x,k);
    principal_value(num1_asn(1/x,k), num_ellk(k),
@@ -382,7 +405,8 @@ algebraic procedure num_asc(x,k);
    if x=0 then 0
    else if k=0 then atan x
    else if k=1 or k=-1 then asinh x
-   else num_elliptic(num2_asc, x, k);
+   else if impart x =0 and impart k =0 and abs k <1 then n_asc(x,k)
+   else num2_asc(x, k);
 
 algebraic procedure num2_asc(x,k);
    principal_value(num1_asc(x,k), i*num_ellk(sqrt(1-k^2)),
@@ -437,13 +461,14 @@ begin scalar kpx, kp, ax, s;
 end;
 
 algebraic procedure num_acs(x,k);
-% uses the identity arccs(x,k)=arcsc(1/x,k)
+% uses the identity arccs(x,k)=arcsc(1/x,k) (Not valid for x <0)
    if k=1 or k=-1 then
       if x=0 then
-         rederr("arccs not defined at the origin when the modulus is a unit")
+        lisp error(99, "arccs not defined at origin when modulus=+/-1")
       else  acsch x
    else if k = 0 then acot(x)
-   else num_elliptic(num1_acs, x, k);
+   else if impart x=0 and impart k=0 and abs k<1 then n_acs(x,k)
+   else num1_acs(x, k);
 
 algebraic procedure num1_acs(x,k);  
 begin scalar qp1, qp2;
@@ -457,11 +482,16 @@ algebraic procedure num_asd(x,k);
    if x=0 then 0
    else if k=0 then asin x
    else if k=1 or k=-1 then asinh x
-   else num_elliptic(num2_asd, x, k);
+   else if impart x=0 and impart k =0 and
+                   abs k<1 and x^2 <= 1/(1-k^2) then n_asd(x,k)
+   else num2_asd(x, k);
 
 algebraic procedure num2_asd(x,k);
-   principal_value(num1_asd(x,k), qp1, qp1+i*qp2, 'odd)
-      where qp1 => num_ellk(k), qp2 => num_ellk(sqrt(1-k^2));
+begin scalar qp1, qp2;
+   qp1 := num_ellk(k);
+   qp2 := num_ellk(sqrt(1-k^2));  
+   return principal_value(num1_asd(x,k), qp1, qp1+i*qp2, 'odd);
+end;
 
 algebraic procedure num1_asd(x,k);
    % = integral from t=0 to x of 1/sqrt((1+(k*t)^2)*(1-(k'*t)^2))
@@ -515,10 +545,12 @@ end;
 algebraic procedure num_ads(x,k);
 % uses the identity arcds(x,k)=arcds(1/x,k)
   if x = 0 and (k=0 or k=1 or k=-1) then
-     rederr("arcds not defined at origin when the modulus is zero or a unit") 
+     lisp error(99, "arcds not defined at origin when modulus=0,+/-1") 
   else if k = 0 then acsc(x)
   else if k = 1 or k = -1 then acsch x
-  else num_elliptic(num1_ads, x, k);
+  else if impart x=0 and impart k=0 and
+        abs k <1 and x^2 >=(1-k^2) then n_ads(x,k)
+  else num1_ads(x, k);
 
 algebraic procedure num1_ads(x,k);
    begin scalar qp1, qp2;
@@ -532,10 +564,12 @@ algebraic procedure num_acn(x,k);
    % integral from t=x to 1 of 1/sqrt((1-t^2)*(k'^2+(k*t)^2))
    % However, simpler to use the identity arccn(x,k) = K(k)-arcsd(x/k', k)
    if x=0 and (k=1 or k=-1) then
-      rederr("arccn not defined at the origin with unit modulus")
+       lisp error(99, "arccn not defined at the origin with unit modulus")
    else if k=0 then acos(x)
    else if k = 1 or k =-1 then asech x
-   else num_elliptic(num1_acn, x, k);
+   else if impart x=0 and impart k=0 and
+           abs x <= 1 and abs k < 1 then n_acn(x,k)
+   else num1_acn(x, k);
 
 algebraic procedure num1_acn(x,k);
    begin scalar qp1, qp2, kp;
@@ -549,10 +583,12 @@ algebraic procedure num1_acn(x,k);
 algebraic procedure num_anc(x,k);
 % uses the identity arcnc(x,k)=arccn(1/x,k)
    if x = 0 and (k = 0 or k=1 or k=-1)  then
-      rederr("arcnc not defined at the origin with zero or unit modulus")
+     lisp error(99, "arcnc not defined at the origin with zero or unit modulus")
    else if k = 0 then asec(x)
    else if k=1 or k=-1 then acosh x
-   else num_elliptic(num1_anc, x, k);
+   else if impart x=0 and impart k=0 and
+           abs x >= 1 and abs k < 1 then n_anc(x,k)
+   else num1_anc(x, k);
 
 algebraic procedure num1_anc(x,k);
    begin scalar qp1, qp2, kp;
@@ -567,11 +603,13 @@ algebraic procedure num1_anc(x,k);
 algebraic procedure num_adn(x,k);
 % uses the identity arcdn(x,k) = iK'(k)-arccs(ix,k)   
    if k = 0  then
-      rederr("arcdn not defined for zero modulus")
+       lisp error(99, "arcdn not defined for zero modulus")
    else if x=0 and (k =1 or k=-1) then
-      rederr("arcdn not defined at the origin for unit modulus") 
+           lisp error(99, "arcdn not defined at the origin for unit modulus") 
    else if k=1 or k=-1 then asech x
-   else num_elliptic(num1_adn, x, k);
+   else if impart x=0 and impart k=0 and
+           abs k <1 and x <= 1 and x>=sqrt(1-k^2) then n_and(x,k)
+   else num1_adn(x, k);
 
 algebraic procedure num1_adn(x,k);
    begin scalar qp1, qp2, kp;
@@ -586,9 +624,11 @@ algebraic procedure num1_adn(x,k);
 algebraic procedure num_and(x,k);
    % uses the identity arcnd(x,k)=i*K' - arcsc(x/i,k)
    if k = 0 then
-      rederr("arcnd not defined for zero modulus")
+      lisp error(99, "arcnd not defined for zero modulus")
    else if x neq 0 and (k=1 or k=-1) then acosh x
-   else num_elliptic(num1_and, x, k);
+   else if impart x=0 and impart k=0 and abs k <1 and
+           x >=1 and x <= 1/sqrt(1-k^2) then n_and(x,k)
+   else num1_and(x, k);
 
 algebraic procedure num1_and(x,k);
    begin scalar Kp;
@@ -601,9 +641,11 @@ algebraic procedure num1_and(x,k);
 algebraic procedure num_acd(x,k);
 % uses the identity arccd(x,k) = arcsn(x,k) - K(k)
    if k=1 or k=-1 then
-      rederr("arccd is not defined for unit modulus")
+      lisp error(99, "arccd is not defined for unit modulus")
    else if k=0 then acos x
-   else num_elliptic(num1_acd, x, k);
+   else if impart x=0 and impart k=0 and
+           abs k<1 and abs x <=1 then n_acd(x,k)
+   else num1_acd(x, k);
 
 algebraic procedure num1_acd(x,k);
    begin scalar ek;
@@ -616,11 +658,13 @@ algebraic procedure num1_acd(x,k);
 algebraic procedure num_adc(x,k);
    % uses the identity arcdc(x,k)=arccd(1/x,k)
    if k=1 or k=-1 then
-      rederr("arcdc is not defined for unit modulus")
+      lisp error(99, "arcdc is not defined for unit modulus")
    else if x = 0 and k=0 then
-      rederr("arcdc not defined at the origin for zero modulus")
+      lisp error(99, "arcdc not defined at the origin for zero modulus")
    else if k = 0 then asec(x)
-   else num_elliptic(num1_adc, x, k);
+   else if impart x=0 and impart k=0 and
+           abs k<1 and abs x >=1 then n_adc(x,k)
+   else num1_adc(x, k);
 
 algebraic procedure num1_adc(x,k);
    begin scalar qp1, qp2;
@@ -632,9 +676,11 @@ algebraic procedure num1_adc(x,k);
 
 % returns list {a,b} where z = a*z1 + b*z2
 algebraic procedure lattice_coords(z,z1,z2);
-   ({(impart(z2)*repart(z) - repart(z2)*impart(z))/d,
-     (repart(z1)*impart(z) - impart(z1)*repart(z))/d})
-        where d => repart(z1)*impart(z2)-impart(z1)*repart(z2);
+begin scalar d;
+   d := repart(z1)*impart(z2)-impart(z1)*repart(z2);      
+   return {(impart(z2)*repart(z) - repart(z2)*impart(z))/d,
+           (repart(z1)*impart(z) - impart(z1)*repart(z))/d};
+end;       
 
 algebraic procedure principal_value(z,z1,z2,parity);
    % z1 and z2 are the so called 'quarter' periods;

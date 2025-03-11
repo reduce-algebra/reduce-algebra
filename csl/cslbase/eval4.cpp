@@ -1115,7 +1115,7 @@ LispObject jitcoded_0(LispObject def)
 // When it is in native code only the latter is needed.
     d = cdr(d);
     qenv(def) = d;
-    return reinterpret_cast<no_args*>(code)(d);
+    return reinterpret_cast<no_args*>(code)(def);
 }
 
 LispObject jitcoded_1(LispObject def, LispObject a)
@@ -1132,7 +1132,7 @@ LispObject jitcoded_1(LispObject def, LispObject a)
     qfn1(def) = reinterpret_cast<one_arg*>(code);
     d = cdr(d);
     qenv(def) = d;
-    return reinterpret_cast<one_arg*>(code)(d, a);
+    return reinterpret_cast<one_arg*>(code)(def, a);
 }
 
 LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
@@ -1149,7 +1149,7 @@ LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
     qfn2(def) = reinterpret_cast<two_args*>(code);
     d = cdr(d);
     qenv(def) = d;
-    return reinterpret_cast<two_args*>(code)(d, a, b);
+    return reinterpret_cast<two_args*>(code)(def, a, b);
 }
 
 LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
@@ -1167,7 +1167,7 @@ LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
     qfn3(def) = reinterpret_cast<three_args*>(code);
     d = cdr(d);
     qenv(def) = d;
-    return reinterpret_cast<three_args*>(code)(d, a, b, c);
+    return reinterpret_cast<three_args*>(code)(def, a, b, c);
 }
 
 // When a bytecoded function has 4 or more arguments the first byte of the
@@ -1199,7 +1199,7 @@ LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
     qfn4up(def) = reinterpret_cast<fourup_args*>(code);
     d = cdr(d);
     qenv(def) = d;
-    return reinterpret_cast<fourup_args*>(code)(d, a1, a2, a3, a4up);
+    return reinterpret_cast<fourup_args*>(code)(def, a1, a2, a3, a4up);
 }
 
 // This will upgrade bytecoded_N to jitcoded_N. If when the function is

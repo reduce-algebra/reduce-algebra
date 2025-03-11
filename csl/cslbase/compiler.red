@@ -60,25 +60,6 @@
 % might keep them away from most users.  In Common Lisp I may want to put
 % them all in a separate package.
 
-%  global '(s!:opcodelist);
-%  
-%  % The following list of opcodes must be kept in step with the corresponding
-%  % C header file "bytes.h" in the CSL kernel code, and the source file
-%  % "opnames.c".
-%
-%  in "$cslbase/opcodes.red"$
-%
-%  begin
-%    scalar n;
-%    n := 0;
-%    for each v in s!:opcodelist do <<
-%       put(v, 's!:opcode, n);
-%       n := n + 1 >>;
-%    return list(n, 'opcodes, 'allocated)
-%  end;
-%
-%  s!:opcodelist := nil;
-
 fluid '(s!:env_alist);
 
 symbolic procedure s!:vecof l;
@@ -1444,6 +1425,9 @@ symbolic procedure s!:resolve_labels();
     return (pc . labelvals)
   end;
 
+symbolic procedure s!:opval op;
+  land(get(op, 's!:opcode), 0xff);
+
 symbolic procedure s!:plant_basic_block(vec, pc, b);
 % For this to give a sensible display the list of bytes must have
 % a comment/annotation after every operation in it.  This is ensured by
@@ -1452,7 +1436,7 @@ symbolic procedure s!:plant_basic_block(vec, pc, b);
     scalar tagged;
     for each i in b do <<
        if atom i then <<
-          if symbolp i then i := get(i, 's!:opcode);
+          if symbolp i then i := s!:opval i;
           if not tagged and (!*plap or !*pgwd) then <<
              s!:prinhex4 pc; princ ":"; ttab 8; tagged := t >>;
           if not fixp i or i < 0 or i > 255 then
@@ -1472,7 +1456,7 @@ symbolic procedure s!:plant_bytes(vec, pc, bytelist, doc);
   begin
     if !*plap or !*pgwd then << s!:prinhex4 pc; princ ":"; ttab 8 >>;
     for each v in bytelist do <<
-       if symbolp v then v := get(v, 's!:opcode);
+       if symbolp v then v := s!:opval v;
        if not fixp v or v < 0 or v > 255 then
        error(0, list("bad byte to put", v));
        bps!-putv(vec, pc, v);
@@ -1496,7 +1480,7 @@ symbolic procedure s!:plant_exit_code(vec, pc, b, labelvals);
     scalar w, loc, low, high, r;
     if null b then return pc
     else if null cdr b then     % Simple EXIT
-       return s!:plant_bytes(vec, pc, list get(car b, 's!:opcode), b)
+       return s!:plant_bytes(vec, pc, list s!:opval car b, b)
     else if car b = 'ICASE then <<
        loc := pc + 3;
        for each ll in cdr b do <<
@@ -1510,7 +1494,7 @@ symbolic procedure s!:plant_exit_code(vec, pc, b, labelvals);
              low := ilogand(w, 255);
              high := truncate(w - low, 256) >>;
           r := low . high . r >>;
-       r := get('ICASE, 's!:opcode) . length cddr b . reversip r;
+       r := s!:opval 'ICASE . length cddr b . reversip r;
        return s!:plant_bytes(vec, pc, r, b) >>;
     w := cdr assoc!*!*(cadr b, labelvals) - pc;
     w := s!:expand_jump(car b, w);  % list of bytes to plant
@@ -1593,13 +1577,13 @@ for each op in '(
    (JUMPNEQUAL   JUMPNEQUAL_B JUMPNEQUAL_L JUMPNEQUAL_BL)
    (CATCH        CATCH_B      CATCH_L      CATCH_BL)) do <<
    putv!-char(s!:backwards_jump,
-         get(car op, 's!:opcode), get(cadr op, 's!:opcode));
+         s!:opval car op, s!:opval cadr op);
    putv!-char(s!:backwards_jump,
-         get(caddr op, 's!:opcode), get(cadddr op, 's!:opcode));
+         s!:opval caddr op, s!:opval cadddr op);
    putv!-char(s!:longer_jump,
-         get(car op, 's!:opcode), get(caddr op, 's!:opcode));
+         s!:opval car op, s!:opval caddr op);
    putv!-char(s!:longer_jump,
-         get(cadr op, 's!:opcode), get(cadddr op, 's!:opcode)) >>;
+         s!:opval cadr op, s!:opval cadddr op) >>;
 
 
 symbolic procedure s!:expand_jump(op, offset);
@@ -1640,7 +1624,7 @@ symbolic procedure s!:expand_jump(op, offset);
        offset := offset - length expanded;
        arg := nil >>
     else expanded := nil;
-    opcode := get(op, 's!:opcode);
+    opcode := s!:opval op;
     if null opcode then error(0, list(op, offset, "invalid block exit"));
     if -256+2 < offset and offset < 256+2 then offset := offset - 2
     else << high := t; offset := offset - 3 >>;
@@ -6128,22 +6112,60 @@ flag('(
 
 % The bytecode stream may use the names of the byte operators, and
 % symbols whose name start with ":" can be interleaved to be labels.
-% At present I do not resolve labels so jump-style instructions must
-% have explicit numeric offsets given, with large ones presented as
-% two separate integers each in the range 0-255.
+% The direction of a jump and length of its offset must be specified
+% by use of eg jump for a short jump forward, jump_l for a long jump
+% forward and jump_b or jump_bl for backwards ones.
 
 symbolic procedure bytecode(name, args, lits, bytes);
    begin
-      scalar labs, b, n, v, i, w, jname, jlits;
+      scalar labs, b, xtra, v, i, w, w1, w2, jname, jlits;
       if not eqcar(lits, name) then
          rederr "first element of literal vector must be same as function name";
       jname := intern bldmsg("jit-%w", name);
       jlits := list!-to!-vector(jname . cdr lits);
       lits := list!-to!-vector lits;
       i := 0;
-      for each op in bytes do <<
-         if eqcar(explodec op, '!:) then labs := (op . i) . labs
-         else i := i+1 >>;
+% The items in the list of bytes can be:
+%    A symbol where the first character of its name is ":". This
+%    will be treated as setting a label.
+%    An opcode that does not take any follow-on bytes.
+%    An opcode that takes exactly one follow-on byte where the next
+%       item is either an integer in the range 0-255 or a symbol such
+%       that if a ":" is put on the front of the symbol name you get the
+%       name of a label.
+%    An opcode that takes two follow-on bytes, with then either an
+%       integer in the range 0-65535 or the name of a label.
+% The number of operand bytes that will be used in the resulting byte-
+% stream will be determined by the operator name, so JUMP will use
+% a single byte operand while JUMP_L will use two bytes (even if the
+% destination is in fact close).
+      for each bb on bytes do <<
+         if eqcar(explodec car bb, '!:) then labs := (car bb . i) . labs
+         else <<
+            b := car bb;
+            if not idp b or null (w := get(b, 's!:opcode)) then
+               rederr bldmsg("%w is not a recognized opcode", b);
+% w has the follwing structure:
+%     | 1 bit takes label | 4 bits instrunction length | 8 bits value |
+            w := w/256;
+            w1 := land(w, 0xf);  % Length of the instruction
+            if w1 = 1 then i := i+1
+            else if w1 = 2 then <<
+               if null cdr bb then
+                  rederr "byte stream terminated unexpectedly";
+               bb := cdr bb;
+               i := i + 2 >>
+            else <<   % w1=3 here
+% Note that after an opcode that will use two bytes of operand I only
+% have a single item in the list, so there will be something like
+%     ... BIGSTACK 0x1234 ... rather than ... BIGSTACK 0x12 0x34 ...
+% and ... JUMP_L labelname ... !:labelname ... for big jumps.
+% At this stage I can not tell whether labels will be set, so I
+% just accept anything as operands.
+               if null cdr bb then
+                  rederr "byte stream terminated unexpectedly";
+               bb := cdr bb;
+               i := i + 3 >> >> >>;
       v := make!-bps i;
       i := 0;
       optterpri();
@@ -6152,6 +6174,7 @@ symbolic procedure bytecode(name, args, lits, bytes);
          prinhex(i, 4);
          princ " ";
          b := car bb;
+         xtra := nil;
          if (w := atsoc(b, labs)) then <<
             princ b;
             if posn() > 12 then terpri();
@@ -6161,35 +6184,88 @@ symbolic procedure bytecode(name, args, lits, bytes);
          if idp w then w := get(w, 's!:opcode);
          if not fixp w then
             rederr bldmsg("Bad item in list of bytecodes: %w", b);
-         prinhex(w, 2);
-         bps!-putv(v, i, w);
+         prinhex(land(w, 0xff), 2);
+         bps!-putv(v, i, land(w, 0xff));
          i := i+1;
-         if flagp(b, 'argbytes) then <<
-            w := car (bb := cdr bb);
-            if not fixp w then
-               rederr bldmsg("Bad item in list of bytecodes: %w", w);
-            princ " ";
-            prinhex(w, 2);
-            bps!-putv(v, i, w);
-            i := i+1 >>;
-         if flagp(b, 'twobytes) then <<
-            w := car (bb := cdr bb);
-            if not fixp w then
-               rederr bldmsg("Bad item in list of bytecodes: %w", w);
-            princ " ";
-            prinhex(w, 2);
-            bps!-putv(v, i, w);
-            i := i+1 >>;
-         ttab 20; princ b;
-         terpri() >>;
+         w := w/256;
+         w1 := land(w, 0xf);  % Length of the instruction
+         if w1 = 3 then <<
+            w2 := car (bb := cdr bb);
+            xtra := w2;
+            if fixp w2 then <<
+               if w2 < 0 or w2 > 65535 then 
+                  rederr bldmsg("Bad item in list of bytecodes: %w", w2);
+               princ " ";
+               prinhex(2/256, 2);
+               bps!-putv(v, i, w2/256);
+               i := i + 1;
+               princ " ";
+               prinhex(land(w2, 255), 2);
+               bps!-putv(v, i, land(w2, 256));
+               i := i + 1  >>
+            else <<
+% Here w2 is a label. See if it is defined.
+               w1 := assoc(compress ('!! . '!: . explode w2), labs);
+               if null w1 then
+                  rederr bldmsg("Label %w not defined", w2);
+               w1 := cdr w1 - i - 2;
+               if w1 < 0 then <<
+                  if zerop land(w, 0x20) then
+                     rederr bldmsg("Bad backwards jump to %w", w2);
+                  w1 := -w1 >>
+               else if zerop land(w, 0x10) then
+                  rederr bldmsg("Bad forwards jump to %w", w2);
+               if w1 >= 65536 then
+                  rederr bldmsg("Label %w is too far away", w2);
+               princ " ";
+               prinhex(w1/256, 2);
+               bps!-putv(v, i, w1/256);
+               i := i+1;
+               princ " ";
+               w1 := land(w1, 255);
+               prinhex(w1, 2);
+               bps!-putv(v, i, w1);
+               i := i+1 >> >>
+         else if w1 = 2 then <<
+            w2 := car (bb := cdr bb);
+            xtra := w2;
+            if fixp w2 then <<
+               if w2 < 0 or w2 > 255 then 
+                  rederr bldmsg("Bad item in list of bytecodes: %w", w2);
+               princ " ";
+               prinhex(w2, 2);
+               bps!-putv(v, i, w2);
+               i := i + 1  >>
+            else <<
+% Here w2 is a label. See if it is defined.
+               w1 := assoc(compress ('!! . '!: . explode w2), labs);
+               if null w1 then
+                  rederr bldmsg("Label %w not defined", w2);
+               w1 := cdr w1 - i - 1;
+               if w1 < 0 then <<
+                  if zerop land(w, 0x20) then
+                     rederr bldmsg("Bad backwards jump to %w", w2);
+                  w1 := -w1 >>
+               else if zerop land(w, 0x10) then
+                  rederr bldmsg("Bad forwards jump to %w", w2);
+               if w1 >= 256 then
+                  rederr bldmsg("Label %w is too far away", w2);
+               princ " ";
+               prinhex(w1, 2);
+               bps!-putv(v, i, w1);
+               i := i + 1  >> >>;
+         ttab 24; princ b;
+         if xtra then << princ " "; printc xtra >>
+         else terpri() >>;
       symbol!-set!-definition(name, (length args . v . lits));
       symbol!-set!-definition(jname, (length args . v . jlits));
       make!-jit jname;
       return name
    end;
 
-% These days I am putting the compiler that generates C++ in with
-% the bytecode compiler...
+
+% The compiler that generates C++ from Lisp hash its main source in
+% a separate file - ccomp.red - but is built as part of what I have here.
 
 in "$cslbase/ccomp.red"$
 

@@ -16,10 +16,14 @@
 #elif defined __aarch64__
 
             case OP_LOADLIT2:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                cc.mov(B_reg, A_reg);
+                cc.ldr(A_reg, ptr(litvec, 16+CELL-TAG_VECTOR));
+                break;
 
 #else
             case OP_LOADLIT2:
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadlit2.cpp

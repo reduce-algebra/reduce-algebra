@@ -12,7 +12,7 @@
             case OP_JUMP_L:
                 next = bytes[ppc++];
                 next = (next<<8) | bytes[ppc++];
-                cc.jmp(perInstruction[ppc+next-1]);
+                cc.jmp(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__

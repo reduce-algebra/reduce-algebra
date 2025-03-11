@@ -10,7 +10,11 @@
 #elif defined __x86_64__
 
             case OP_JUMPL0T:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                cc.mov(w, ptr(spreg));
+                cc.cmp(w, nilreg);
+                cc.jne(perInstruction[ppc+next]);
+                break;
 
 #elif defined __aarch64__
 
@@ -22,3 +26,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpl0.cpp

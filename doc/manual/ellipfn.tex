@@ -210,29 +210,35 @@ If the switch \sw{rounded} is ON and both arguments of a Jacobi function are
 purely numerical, it will be evaluated numerically (previously it was
 necessary for both the switches \sw{rounded} and \sw{complex} to be ON).
 Of course, if either argument is a complex number, the switch \sw{complex} must
-also be ON for numerical evaluation to occur.
+also be ON for numerical evaluation to be triggered.
 
 The numerical evaluation of the Jacobi functions uses their definitions
 in terms of theta functions which are valid for all complex values of the
 argument and modulus.  Since theta functions are inherently complex-valued,
 it is necessary to turn the switch \sw{complex} ON during the evaluation even
-if both the argument and the modulus of the Jacobi function are real. The
-switch \sw{complex} is however returned to its old value as the computation
-completes.  One consequence of the use of theta functions is that occasionally
-the value of a Jacobi function with real arguments is returned with an
+if both the argument and the modulus of the Jacobi function are real (for
+example when the modulus $|k|>1$). The switch \sw{complex} is, however, returned
+to its old value as the computation completes.
+
+One consequence of the use of theta functions is that occasionally
+the value of a Jacobi function with real arguments would be returned with an
 insignificantly small imaginary part due to rounding errors. Since all Jacobi
-functions are real-valued for real arguments the imaginary part may be ignored.
+functions are real-valued for real arguments the imaginary part is known to be
+zero; the spurious imaginary part is removed automatically. 
 Similarly in some case where the first argument is purely imaginary and the
 modulus k<1, the result should be purely imaginary, but due to rounding the
-result contains an insignificantly small real part which may be safely ignored.
+result is returned with an insignificantly small real part which is now ignored.
 
-The traditional AGM and  $\phi$-function based algorithm which was previously
-used when the argument and modulus are both real and $|k| < 1$ as been
-superceded. It appears that there was a problem with the numerical evaluation
-of \texttt{dn, nd, sd, ds, cd, dc} resulting in largish rounding errors. There
-was no problem with previous evaluation of \texttt{sn, ns, cn, nc, sc, cs} and
-these produced the same results (modulo acceptable rounding errors) as the
-theta function based method now used.
+The traditional AGM and  $\phi$-function based algorithms which were
+used when the argument and modulus are both real and $|k| < 1$ have been
+corrected. There was a problem with the numerical evaluation
+of \texttt{dn, nd, sd, ds, cd, dc}\ resulting in largish rounding errors for
+some values of the arguments. There was no problem with previous evaluation of
+\texttt{sn, ns, cn, nc, sc, cs}\ and these produced the same results (modulo
+acceptable rounding errors) as the theta function based methods.
+In fact in all cases when both the arguments are real and $|k|<1$, the
+traditional algorithms have been reinstated as they are somewhat faster than the
+theta function based methods.
 
 \subsubsection{Jacobi Amplitude Function}
 \hypertarget{operator:JACOBIAM}{}
@@ -254,7 +260,7 @@ $3i\mathrm{K}'(k)$ and between corresponding congruent branch points.
 
 A rule list is provided for to simplify this function for special values of the
 arguments and for differentiation with respect to either argument.
-When the switches \sw{ROUNDED} and \sw{COMPLEX} are both ON and both arguments
+When the switch \sw{rounded} is ON and both arguments
 are numeric, \REDUCE will attempt to evaluate \f{jacobiam(z,k)} numerically.
 Several possible methods are available to
 evalaute the function, for example summation of its Fourier series and an
@@ -454,7 +460,7 @@ it will return the value of an alternative form of Legendre's
 When called with one argument \f{EllipticD(k)} will return the value of the
 \emph{Complete Elliptic Integral of the Second Kind}:
 \[\mathrm{D}(k)=\mathrm{D}(\pi/2, k) =
-\int_0^{\pi/2} \frac{\sin^2 theta}{\sqrt{1-k^2 \sin^2 \theta}} \,\mathrm{d}\theta.\]
+\int_0^{\pi/2} \frac{\sin^2 \theta}{\sqrt{1-k^2 \sin^2 \theta}} \,\mathrm{d}\theta.\]
 The integrals of the first and second kind are related:
 \[\mathrm{E}(k) = \mathrm{K}(k)-k^2\mathrm{D}(k), \qquad
 \mathrm{E}(\phi, k) = \mathrm{F}(\phi, k)-k^2\mathrm{D}(\phi, k).\]
@@ -467,15 +473,18 @@ special values of the argument(s), differentiation with respect to either
 argument and shift rules for the incomplete integrals so that their first
 argument lies in the range  $0 <= \phi <= \pi/2$.
 
-If the arguments of the elliptic integral function are numeric and the switches
-\sw{ROUNDED} and \sw{COMPLEX} are both ON, the numerical value will be returned. The
-numerical evaluation routines should now succeed for all complex values of the arguments
-provided, of course, the corresponding integral exists. The incomplete integrals
-$\mathrm{F}(\phi, k)$, $\mathrm{E}(\phi, k)$, $\mathrm{D}(\phi, k)$ and $\Pi(\phi, a, k)$
-are all multi-valued as there are branch points in the  defining integrands  when
-$\sin(\phi) =\pm 1$ and $k\sin(\phi) = \pm 1$.
+If the arguments of the elliptic integral function are numeric and the switch
+\sw{rounded} is ON, the numerical value will be returned. As with Jacobi
+elliptic functions, if any argument is complex then numerical evaluation will
+only occur if the switch \sw{complex} is also ON. 
 
-For mumerical evaluation when the first argument $\phi$ is complex there are issues that
+Numerical evaluation should now succeed for all complex values of the arguments
+provided, of course, the corresponding integral exists. The incomplete integrals
+$\mathrm{F}(\phi, k)$, $\mathrm{E}(\phi, k)$, $\mathrm{D}(\phi, k)$ and
+$\Pi(\phi, a, k)$ are all multi-valued as there are branch points in the
+defining integrands  when $\sin(\phi) =\pm 1$ and $k\sin(\phi) = \pm 1$.
+
+For numerical evaluation when the first argument $\phi$ is complex there are issues that
 arise which are absent when $\phi$ is real. One might use the the straight line contour
 from $\theta=0$ to $\theta=\phi$, but this is leads to integrals that are difficult to
 evaluate. When $|\Re{\phi}| \leq \pi/2$, the change of variable $x=\sin \theta$ is applied
@@ -566,8 +575,8 @@ Riemann's $\zeta$ function. It is closely related to Jacobi's Epsilon function
 \index{Symmetric Elliptic Integrals}
 The functions in this section are currently only intended for use for in the
 numerical evaluation of the `classical' elliptic integrals discussed above and
-in certain other `basic' elliptic integrals. The switches \sw{ROUNDED} and
-\sw{COMPLEX} should both be ON.
+in certain other `basic' elliptic integrals. The switch \sw{rounded} should be
+ON.
 
 Symmetric elliptic integrals are a relatively new development in the theory of
 elliptic functions mainly due to Carlson and his collaborators; an extensive
@@ -744,7 +753,7 @@ the integration range will need to be split into two at each of these branch
 points.
 
 In \REDUCE elliptic integrals of the three kinds may be evaluated numerically
-when the switches \sw{ROUNDED} \& \sw{COMPLEX} are both ON by calling the functions
+when the switch \sw{rounded} is ON by calling the functions
 \f{ellint\_1st},  \f{ellint\_2nd} and \f{ellint\_3rd}. The first two
 parameters are the lower and upper limits of the integration range; these are
 followed by 4 (or 5 for \f{ellint\_3rd}) two-element lists
@@ -1231,10 +1240,11 @@ This choice means that the range of (real) principal values of
 $\mathrm{arccs}$ is \emph{connected} -- it is the open set $(0, 2K(k))$.
 
 When their arguments are \emph{numerical}, these functions will be
-evaluated numerically if the \sw{rounded} and \sw{complex} switches are
-both ON.  Note that in some cases the result may have an imaginary
-part even if both arguments are real, hence the necessity of the switch
-\sw{complex} being ON.
+evaluated numerically if the \sw{rounded} switch is  ON.
+Note that in some cases the result may have an imaginary
+part even if both arguments are real, hence the switch
+\sw{complex} is always turned ON temporarily during numerical evaluation and
+afterwards restored to its original value.
 
 Note also that for $\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of
 the modulus $k$ is excluded (since
@@ -1284,7 +1294,9 @@ When both arguments are real and $|k|<=1$ and when there are certain
 restrictions on the range of the first parameter $x$ (see the
 table below), then the principal value of the inverse function is
 real. It lies in the range  given in the third column of the table
-below. (c.f. the inverse trigonometric functions). Other \emph{real}
+below. (c.f. the inverse trigonometric functions). In these cases the integrand
+in the defining integral has no branch points and a faster algorithm which
+uses only real arithmetic is adopted. Other \emph{real}
 values of the inverse functions are indicated in the fourth column
 of the table below where $n$ is an arbitrary integer.
 
@@ -1324,7 +1336,7 @@ $\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
   $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) + v$ \\  
 $\mathop{\mathrm{arccs}}$: & $ x \in \mathbb{R}$ &
-$0 < v < 2\mathrm{K}(k)$ \& $v \neq 0$ 
+$0 < v < 2\mathrm{K}(k)$ & $v \neq 0$ 
   $2 n\mathrm{K}(k) + v$ \\
 \end{tabular}
 

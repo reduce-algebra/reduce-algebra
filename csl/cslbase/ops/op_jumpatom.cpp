@@ -11,8 +11,8 @@
 
             case OP_JUMPATOM:
                 next = bytes[ppc++];
-                cc.test(A_reg, 7);
-                cc.jne(perInstruction[ppc+next-1]);
+                cc.test(A_reg, TAG_BITS);
+                cc.jne(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__

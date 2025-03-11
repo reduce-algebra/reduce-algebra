@@ -22,14 +22,18 @@
 
             case OP_EXIT:
                 cc.jmp(returnA);
+                break;
 
 #elif defined __aarch64__
 
             case OP_EXIT:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                cc.b(returnA);
+                break;
 
 #else
             case OP_EXIT:
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_exit.cpp
