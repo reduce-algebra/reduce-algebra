@@ -70,6 +70,7 @@
 /debianbuild/reduce/debian/reduce-common
 /debianbuild/reduce/debian/reduce-complete
 /debianbuild/reduce/debian/C
+/debianbuild/reduce/debian/.debhelper
 
 # /doc/manual/
 /doc/manual/manual.bib.bak
