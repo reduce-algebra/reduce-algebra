@@ -140,7 +140,7 @@ Jacobi's transformations for a purely imaginary first argument.
 Rules are also provided for the values of the twelve Jacobi functions at the
 `eighth' period values: $\mathrm{K}/2$, $i\mathrm{K}'/2$ and
 $(\mathrm{K}+i\mathrm{K}')/2$. For these rules to yield correct values it
-is essential that the switch \sw{precise\_complex} is ON, otherwise Reduce will
+is essential that the switch \sw{precise\_complex}\ is ON, otherwise Reduce will
 often incorrectly simplify the results if they involve complex values of $k$ or
 $k'$. It should also be noted that the rule for
 $\mathrm{dn}((\mathrm{K}(k)+i\mathrm{K}'(k))/2, k)$ differs from that on
@@ -177,20 +177,20 @@ split functions for general complex values of the modulus.
 \ttindextype[ELLIPFN]{to\_dn}{rule list}
 \ttindextype[ELLIPFN]{no\_glaisher}{rule list}
 \ttindextype[ELLIPFN]{jacobiadditionrules}{rule list}
-Four useful rule lists \texttt{TO\_SN}, \texttt{TO\_CN}, \texttt{TO\_DN} and
-\texttt{NO\_GLAISHER} are provided for user convenience. The first
-\texttt{TO\_SN} replaces occurences of the squares of $\mathrm{cn}$ and
+Four useful rule lists \texttt{TO\_SN}, \texttt{TO\_CN}, \texttt{TO\_DN}\ and
+\texttt{NO\_GLAISHER}\ are provided for user convenience. The first
+\texttt{TO\_SN}\ replaces occurences of the squares of $\mathrm{cn}$ and
 $\mathrm{dn}$ in favour of the square of $\mathrm{sn}$ using the
-`Pythagorean' identities. \texttt{TO\_CN} and \texttt{TO\_DN} apply these
+`Pythagorean' identities. \texttt{TO\_CN}\ and \texttt{TO\_DN}\ apply these
 identities to replace squares in favour of $\mathrm{cn}$ and $\mathrm{dn}$
 respectively. At most one of these rule sets should be active at any one time
 to avoid a potential infinite recursion in the simplification.
-The fourth rule list \texttt{NO\_GLAISHER} replaces all occurences of the
+The fourth rule list \texttt{NO\_GLAISHER}\ replaces all occurences of the
 nine subsidiary Jacobi elliptic functions $\mathrm{ns}$, $\mathrm{sc}$,
 $\mathrm{sd}$, \ldots by reciprocals and quotients of the `basic' Jacobi
 elliptic functions $\mathrm{sn}$, $\mathrm{cn}$ and $\mathrm{dn}$.
 
-A fifth rule list \texttt{JACOBIADDITIONRULES} applies addition rules when the
+A fifth rule list \texttt{JACOBIADDITIONRULES}\ applies addition rules when the
 first argument of any Jacobi function is a sum.  Note that this rule list is NO
 LONGER active by default. There are many equivalent ways of expressing the
 right-hand sides of these rules. Previously all the rules were expressed using
@@ -204,21 +204,21 @@ whilst that for $\mathrm{cd}$ is expressed in terms of $\mathrm{nd}$,
 $\mathrm{cd}$ and $\mathrm{sd}$ whereas the rules for the three `basic'
 functions are unchanged and use only $\mathrm{sn}$, $\mathrm{cn}$ and
 $\mathrm{dn}$.  Note, however, that the previous form of these rules will be
-obtained if the rule-list \texttt{NO\_GLAISHER} is also active. 
+obtained if the rule-list \texttt{NO\_GLAISHER}\ is also active. 
 
 If the switch \sw{rounded} is ON and both arguments of a Jacobi function are
 purely numerical, it will be evaluated numerically (previously it was
-necessary for both the switches \sw{rounded} and \sw{complex} to be ON).
-Of course, if either argument is a complex number, the switch \sw{complex} must
+necessary for both the switches \sw{rounded}\ and \sw{complex}\ to be ON).
+Of course, if either argument is a complex number, the switch \sw{complex}\ must
 also be ON for numerical evaluation to be triggered.
 
 The numerical evaluation of the Jacobi functions uses their definitions
 in terms of theta functions which are valid for all complex values of the
 argument and modulus.  Since theta functions are inherently complex-valued,
-it is necessary to turn the switch \sw{complex} ON during the evaluation even
+it is necessary to turn the switch \sw{complex}\ ON during the evaluation even
 if both the argument and the modulus of the Jacobi function are real (for
-example when the modulus $|k|>1$). The switch \sw{complex} is, however, returned
-to its old value as the computation completes.
+example when the modulus $|k|>1$). The switch \sw{complex}\ is, however,
+returned to its old value as the computation completes.
 
 One consequence of the use of theta functions is that occasionally
 the value of a Jacobi function with real arguments would be returned with an
@@ -476,7 +476,7 @@ argument lies in the range  $0 <= \phi <= \pi/2$.
 If the arguments of the elliptic integral function are numeric and the switch
 \sw{rounded} is ON, the numerical value will be returned. As with Jacobi
 elliptic functions, if any argument is complex then numerical evaluation will
-only occur if the switch \sw{complex} is also ON. 
+only occur if the switch \sw{complex}\ is also ON. 
 
 Numerical evaluation should now succeed for all complex values of the arguments
 provided, of course, the corresponding integral exists. The incomplete integrals
@@ -863,18 +863,18 @@ Thirdly the second argument is the modulus $\tau = a+i b$ where $b=\Im\tau>0$
 and hence the quasi-period is $\pi\tau$.
 
 The second parameter was previously the nome $q$
-where $|q|<1$. As a consequence \f{elliptictheta1} and \f{elliptictheta2} were
+where $|q|<1$. As a consequence \f{elliptictheta1}\ and \f{elliptictheta2}\ were
 multi-valued owing to the appearance of $q^{1/4}$ in their defining expansions.
-\f{elliptictheta3} and \f{elliptictheta4} were, however, single-valued
+\f{elliptictheta3}\ and \f{elliptictheta4}\ were, however, single-valued
 functions of $q$.
 
 Regarded as functions of $\tau$,
-\f{elliptictheta1} and \f{elliptictheta2} are single-valued functions. The nome
-is given by $q = \exp(i\pi\tau)$  so that the condition $\Im(\tau)>0$ ensures
-that $|q| < 1$. Note also  in this case $q^{1/4}$ is interpreted as
+\f{elliptictheta1}\ and \f{elliptictheta2}\ are single-valued functions. The
+nome is given by $q = \exp(i\pi\tau)$  so that the condition $\Im(\tau)>0$
+ensures that $|q| < 1$. Note also  in this case $q^{1/4}$ is interpreted as
 $\exp(i\pi\tau/4)$ rather than the principal value of $q^{1/4}$.
 Thus, $\tau$, $2+\tau$, $4+\tau$ and $6+\tau$ produce four different values of
-both \f{elliptictheta1} and \f{elliptictheta2} although they all correspond to
+both \f{elliptictheta1}\ and \f{elliptictheta2}\ although they all correspond to
 the same nome $q$.
 
 The four theta functions are defined by their Fourier series:
@@ -893,7 +893,7 @@ into the base period parallelogram with vertices
 Together with the relation $\vartheta_1(0,\tau)=0$,  these shift rules serve to
 simplify all four theta functions to zero when appropriate.
 
-When the switches \sw{rounded} and \sw{complex} are on and the arguments are
+When the switches \sw{rounded}\ and \sw{complex}\ are on and the arguments are
 purely numerical and the imaginary part of $\tau$ positive,
 the theta functions are evaluated numerically. Note that as $\tau$ is
 necessarily complex, the switch \sw{complex} \emph{must} be on.
@@ -954,9 +954,10 @@ Four functions are provided:
 These return the $d$th derivatives of the respective theta functions
 with respect to their first argument $u$; $\tau$ is as usual the modulus
 of the theta function. These functions are only operative when the switches
-\sw{rounded} and \sw{complex} are ON and their arguments are numeric with
-$d$ being a positive integer.  They are provided mainly to support the implementation
-the Weierstrassian and Sigma functions discussed in the following subsection.
+\sw{rounded}\ and \sw{complex}\ are ON and their arguments are numeric with
+$d$ being a positive integer.  They are provided mainly to support the
+implementation the Weierstrassian and Sigma functions discussed in the
+following subsection.
 
 The numeric code simply sums the Fourier series for the required derivatives.
 Unlike the theta functions themselves the code does not use the quasi-periodicity nor
@@ -979,7 +980,8 @@ Three main functions of three arguments are defined:
 \hypertarget{operator:WEIERSTRASS_SIGMA}{}
 \hypertarget{operator:WEIERSTRASS}{}
 \hypertarget{operator:WEIERSTRASSZETA}{}
-\ttindextype[ELLIPFN]{weierstrass}{operator} \ttindextype[ELLIPFN]{weierstrassZeta}{operator}
+\ttindextype[ELLIPFN]{weierstrass}{operator}
+\ttindextype[ELLIPFN]{weierstrassZeta}{operator}
 \ttindextype[ELLIPFN]{weierstrass\_sigma}{operator}
 \begin{itemize}
 \item  $\wp(u, \omega_1, \omega_3)$ \ --- \ \f{weierstrass(u,omega1,omega3)}
@@ -999,7 +1001,7 @@ a positive imaginary part and hence the nome $q = exp(i\pi\tau)$ satisfies $|q| 
 Any linear combination $\Omega_{m,n} = 2m\omega_1 +2n\omega_3$ where $m$ and $n$ are
 integers (not both zero) is also a period. The set of all such periods plus the origin form a lattice. In the literature
 $-(\omega_1+\omega_3)$ is often denoted by $\omega_2$ and $2\omega_2$ is clearly also a period; this
-accounts for the gap in the numbering of primitive periods. The period $\omega_2$ is not used in \REDUCE the rule sets for
+accounts for the gap in the numbering of primitive periods. The period $\omega_2$ is not used in the \REDUCE rule sets for
 the Weierstrassian elliptic and related functions.
 
 The primitive periods are not unique;
@@ -1029,37 +1031,44 @@ $\wp$, $\zeta_w$ and $\sigma$ are homogenous of degrees -2, -1 and +1 respective
 where the lattice parameters have been omitted for conciseness.
 
 Rule sets are provided which implement all the properties such as double periodicity discussed above. For numerical evaluation
-the switches \sw{rounded} and \sw{complex} must both be ON and all three parameters must be numeric. It is not, however,
+the switches \sw{rounded}\ and \sw{complex}\ must both be ON and all three parameters must be numeric. It is not, however,
 necessary to ensure $\Im(\omega_3/\omega_1) >0$ as the second and third parameters will be swapped if required.
 
 \subsubsection{Alternative forms of the Weierstrass Functions}
 \hypertarget{WEIERSTRASS1}{}
 \hypertarget{WEIERSTRASSZETA1}{}
+\hypertarget{WEIERSTRASS_SIGMA0}{}
 \hypertarget{operator:WEIERSTRASS1}{}
 \hypertarget{operator:WEIERSTRASSZETA1}{}
-\ttindextype[ELLIPFN]{weierstrass1}{operator} \ttindextype[ELLIPFN]{weierstrassZeta1}{operator}
-
-Two commonly used alternative forms of the Weierstrassian functions in which
+\hypertarget{operator:WEIERSTRASS_SIGMA0}{}
+\ttindextype[ELLIPFN]{weierstrass1}{operator}
+\ttindextype[ELLIPFN]{weierstrassZeta1}{operator}
+\ttindextype[ELLIPFN]{weierstrass\_sigma0}{operator}
+Three commonly used alternative forms of the Weierstrassian functions in which
 they are regarded as functions of the lattice invariants $g_2$ and $g_3$
 rather than the primitive periods $\omega_1$ and $\omega_3$ are provided:
 \begin{itemize}
 \item  $\wp(u \mid g_2, g_3)$ \ --- \ \f{weierstrass1(u,g2,g3)}
-\item $\zeta_w(u \mid g_2, g_3)$ \ --- \ \f{weierstrassZeta1(u,g2,g3)}.
+\item $\zeta_w(u \mid g_2, g_3)$ \ --- \ \f{weierstrassZeta1(u,g2,g3)}
+\item $\sigma(u \mid g_2, g_3)$ \ --- \ \f{weierstrass\_sigma0(u,g2,g3)}.
 \end{itemize}
-Note that for output they are distinguished from the two discussed above
-by separating the first and
-second arguments by a vertical bar rather than a comma. The rule for
-differentiation of the Weierstrass function is simpler when expressed in
-this  alternative:
+Note the trailing zero rather than 1 in the third of these functions to avoid a
+clash with the notation for the other sigma functions below.
+Note also that for output they are distinguished by separating the first and
+second arguments by a vertical bar rather than a comma.
+
+The rule for differentiation of the Weierstrass function is simpler when
+expressed in this alternative form:
 \[ \wp'(u \mid g_2,g_3)^2 = 4\,\wp(u \mid g_2,g_3)^3
 - g_2\, \wp(u \mid g_2,g_3) -g_3. \]
 
 \subsubsection{Numerical Evaluation}
 If the arguments of the Weierstrassian, sigma and lattice functions (see below)
 are all numeric, the functions will only be evaluated if both \sw{rounded} and
-\sw{complex} are ON.  The only exceptions are the functions weierstrass1 and
-weierstrassZeta1. These are real-valued for real arguments and if all three
-arguments are real it suffices that the switch \sw{rounded} is ON.
+\sw{complex} are ON.  The only exceptions are the functions weierstrass1, 
+weierstrassZeta1 and weierstrass\_sigma0. These are real-valued for real
+arguments and if all three arguments are real it suffices that the switch
+\sw{rounded} is ON.
 
 \subsubsection{Other Sigma Functions}
 \hypertarget{SIGMA1}{}
@@ -1080,6 +1089,8 @@ These are all even functions, regular everywhere, homogenous of degree zero and 
 theta functions $\vartheta_2$, $\vartheta_3$ and $\vartheta_4$ respectively; but \emph{note the difference in numbering}.
 For more information on the properties these sigma functions, see Lawden \cite{Lawden:89};
 they do not appear in the NIST Digital Library of Mathematical Functions, but are included here for completeness.
+These three functions have no corresponding versions where the second and third
+arguments are the lattice invariants $g_2$ and $g_3$.
 
 \subsubsection{ Quasi-Period Factors \& Lattice Functions}
 \hypertarget{ETA}{}
@@ -1090,9 +1101,13 @@ they do not appear in the NIST Digital Library of Mathematical Functions, but ar
 \hypertarget{operator:LATTICE_DELTA}{}
 \hypertarget{operator:LATTICE_G2}{}
 \hypertarget{operator:LATTICE_G3}{}
-\ttindextype[ELLIPFN]{lattice\_e1}{operator}\ttindextype[ELLIPFN]{lattice\_e2}{operator}
-\ttindextype[ELLIPFN]{lattice\_e3}{operator}\ttindextype[ELLIPFN]{lattice\_g}{operator}
-\ttindextype[ELLIPFN]{lattice\_g2}{operator}\ttindextype[ELLIPFN]{lattice\_g3}{operator}\ttindextype[ELLIPFN]{lattice\_delta}{operator}
+\ttindextype[ELLIPFN]{lattice\_e1}{operator}
+\ttindextype[ELLIPFN]{lattice\_e2}{operator}
+\ttindextype[ELLIPFN]{lattice\_e3}{operator}
+\ttindextype[ELLIPFN]{lattice\_g}{operator}
+\ttindextype[ELLIPFN]{lattice\_g2}{operator}
+\ttindextype[ELLIPFN]{lattice\_g3}{operator}
+\ttindextype[ELLIPFN]{lattice\_delta}{operator}
 \index{Lattice roots}\index{Lattice invariants}\index{Quasi-period factors}
 
 Ten functions are provided:
@@ -1104,9 +1119,9 @@ Ten functions are provided:
 \item $g_3(\omega_1, \omega_3)$ \ --- \ \f{lattice\_g3(omega1, omega3)};
 \item $\Delta(\omega_1, \omega_3)$ \ --- \ \f{lattice\_delta(omega1, omega3)};
 \item $\mathrm{G}(\omega_1, \omega_3)$ \ --- \ \f{lattice\_g(omega1, omega3)};
-\item $\eta_1(\omega_1, \omega_3)$ \ --- \ \f{eta\_1(omega1, omega3)};
-\item $\eta_2(\omega_1, \omega_3)$ \ --- \ \f{eta\_2(omega1, omega3)};
-\item $\eta_3(\omega_1, \omega_3)$ \ --- \ \f{eta\_3(omega1, omega3)}.
+\item $\eta_1(\omega_1, \omega_3)$ \ --- \ \f{eta1(omega1, omega3)};
+\item $\eta_2(\omega_1, \omega_3)$ \ --- \ \f{eta2(omega1, omega3)};
+\item $\eta_3(\omega_1, \omega_3)$ \ --- \ \f{eta3(omega1, omega3)}.
 \end{itemize}
 
 These are operative when the switches \sw{rounded} and \sw{complex} are ON
@@ -1122,14 +1137,14 @@ there are at most two distinct lattice roots and the elliptic function
 degenerates to an elementary one. The advantage of the invariant
 $\mathrm{G}$ is that it is a function of $\tau = \omega_3/\omega_1$ only.
 
-\hypertarget{operator:ETA_1}{}
-\hypertarget{operator:ETA_2}{}
-\hypertarget{operator:ETA_3}{}
-\ttindextype[ELLIPFN]{eta\_1}{operator}\ttindextype[ELLIPFN]{eta\_2}{operator}\ttindextype[ELLIPFN]{eta\_3}{operator}
-The remaining three functions \f{eta\_1}, \f{eta\_2} \& \f{eta\_3} appear in
+\hypertarget{operator:ETA1}{}
+\hypertarget{operator:ETA2}{}
+\hypertarget{operator:ETA3}{}
+\ttindextype[ELLIPFN]{eta1}{operator}\ttindextype[ELLIPFN]{eta2}{operator}\ttindextype[ELLIPFN]{eta3}{operator}
+The remaining three functions \f{eta1},\ \f{eta2}\ \& \f{eta3}\ appear in
 the rules for the quasi-periodicity of the four sigma functions and of the
 Weierstrassian Zeta function. They are also used in the numerical
-evaluation of these functions when the switches \sw{rounded} and \sw{complex}
+evaluation of these functions when the switches \sw{rounded}\ and \sw{complex}\
 are ON. The quasi-period relations are:
 \begin{align*}
   \zeta_w(u+2\omega_j) & = \zeta_w(u)+2\eta_j\\
@@ -1149,9 +1164,11 @@ there are four functions which return a list as their value:
 \hypertarget{operator:LATTICE_INVARIANTS}{}
 \hypertarget{operator:LATTICE_GENERATORS}{}
 \hypertarget{operator:QUASI_PERIOD_FACTORS}{}
-\ttindextype[ELLIPFN]{lattice\_roots}{operator}\ttindextype[ELLIPFN]{lattice\_invariants}{operator}
-\ttindextype[ELLIPFN]{lattice\_generators}{operator}\ttindextype[ELLIPFN]{quasi\_period\_factors}{operator}
-\begin{itemize}[left=3mm]
+\ttindextype[ELLIPFN]{lattice\_roots}{operator}
+\ttindextype[ELLIPFN]{lattice\_invariants}{operator}
+\ttindextype[ELLIPFN]{lattice\_generators}{operator}
+\ttindextype[ELLIPFN]{quasi\_period\_factors}{operator}
+\begin{itemize}
 \item \f{lattice\_roots(omega1, omega3)} --- returns $\{e_1,\ e_2,\ e_3\}$;
 \item \f{lattice\_invariants(omega1, omega3)} --- returns
   $\{g_2,\ g_3,\ \Delta,\ \mathrm{G}\}$;
@@ -1162,8 +1179,8 @@ there are four functions which return a list as their value:
 The first three are actually more efficient than calling the requisite
 scalar-valued functions individually and the fourth is used in the numerical
 evaluation of the Weierstrass functions regarded as functions of the
-invariants. These functions are only useful when the switches \sw{rounded} and
-\sw{complex} are ON and their arguments are all numerical.
+invariants. These functions are only useful when the switches \sw{rounded}\ and
+\sw{complex}\ are ON and their arguments are all numerical.
 Note that the call sequence:
 \begin{verbatim}
   lattice_generators(g2,g3);
@@ -1171,8 +1188,8 @@ Note that the call sequence:
   {first ws, second ws};
 \end{verbatim}
 should reproduce the list \{g2, g3\}, perhaps with small rounding errors. The
-corresponding sequence with the function \f{lattice\_generators} being called after
-\f{lattice\_invariants} (and g2 \& g3 replaced by w1 \& w3),
+corresponding sequence with the function \f{lattice\_generators}\ being called after
+\f{lattice\_invariants}\ (and g2 \& g3 replaced by w1 \& w3),
 in general, will not produce the same pair of lattice generators since the
 generators are only defined up to a unimodular bilinear transformation.
 
@@ -1240,10 +1257,10 @@ This choice means that the range of (real) principal values of
 $\mathrm{arccs}$ is \emph{connected} -- it is the open set $(0, 2K(k))$.
 
 When their arguments are \emph{numerical}, these functions will be
-evaluated numerically if the \sw{rounded} switch is  ON.
+evaluated numerically if the \sw{rounded}\ switch is  ON.
 Note that in some cases the result may have an imaginary
 part even if both arguments are real, hence the switch
-\sw{complex} is always turned ON temporarily during numerical evaluation and
+\sw{complex}\ is always turned ON temporarily during numerical evaluation and
 afterwards restored to its original value.
 
 Note also that for $\mathrm{arcdn}$ and $\mathrm{arcnd}$ a zero value of
@@ -1336,8 +1353,8 @@ $\mathop{\mathrm{arcsc}}$: & $ x \in \mathbb{R}$ &
   $-\mathrm{K}(k) < v < \mathrm{K}(k)$ &
   $2 n\mathrm{K}(k) + v$ \\  
 $\mathop{\mathrm{arccs}}$: & $ x \in \mathbb{R}$ &
-$0 < v < 2\mathrm{K}(k)$ & $v \neq 0$ 
-  $2 n\mathrm{K}(k) + v$ \\
+$0 < v < 2\mathrm{K}(k)$  &
+  $2 n\mathrm{K}(k) + v\ (v \neq 0)$ \\
 \end{tabular}
 
 The numerical values of the inverse functions are calculated by
@@ -1392,5 +1409,6 @@ $\sigma_1(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma1(u,omega1,omega3)}\\
 $\sigma_2(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma2(u,omega1,omega3)}\\
 $\sigma_3(u,\omega_1, \omega_3)$ & \f{weierstrass\_sigma3(u,omega1,omega3)}\\
 $\wp(u \mid g_2, g_3)$ & \f{weierstrass1(u,g2,g3)}\\
-$\zeta_w(u \mid g_2, g_3)$ & \f{weierstrassZeta1(u,g2,g3)}\\[5pt]
+$\zeta_w(u \mid g_2, g_3)$ & \f{weierstrassZeta1(u,g2,g3)}\\
+$\sigma(u \mid g_2, g_3)$ & \f{weierstrass\_sigma0(u,g2,g3)}\\[5pt]
 \end{tabular}}

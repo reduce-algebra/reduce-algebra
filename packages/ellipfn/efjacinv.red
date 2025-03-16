@@ -238,41 +238,34 @@ let invjacobirules;
 
 algebraic procedure n_asn(x,k);
 % only called from num_asn with real args
-<< symbolic off1 'complex;
-   x*RF(1, 1-x^2, 1-k^2*x^2)>>;
+   x*RF(1, 1-x^2, 1-k^2*x^2);
 
 algebraic procedure n_ans(x,k);
 % only called from num_ans with real args   
-<< symbolic off1 'complex;
-   RF(1, 1-1/x^2, 1-k^2/x^2)/x>>;
+   RF(1, 1-1/x^2, 1-k^2/x^2)/x;
 
 algebraic procedure n_asc(x,k);
 % only called from num_asc with real args
-<< symbolic off1 'complex;
-   x*RF(1, 1+x^2, 1+(1-k^2)*x^2)>>;
+   x*RF(1, 1+x^2, 1+(1-k^2)*x^2);
 
 algebraic procedure n_acs(x,k);
 % only called from num_acs with real args      
 begin scalar s;
-   symbolic off1 'complex;
    s := RF(1, 1+1/x^2, 1+(1-k^2)/x^2)/x;   
    return if x<0 then 2*RF(0, 1-k^2, 1)+s else s;
 end;
 
 algebraic procedure n_asd(x,k);
 % only called from num_asd with real args
-<< symbolic off1 'complex;
-   x*RF(1, 1+k^2*x^2, 1-(1-k^2)*x^2)>>;
+   x*RF(1, 1+k^2*x^2, 1-(1-k^2)*x^2);
 
 algebraic procedure n_ads(x,k);
 % only called from num_ads with real args      
-<< symbolic off1 'complex;
-   RF(1, 1+k^2/x^2, 1-(1-k^2)/x^2)/x>>;
+   RF(1, 1+k^2/x^2, 1-(1-k^2)/x^2)/x;
 
 algebraic procedure n_acn(x,k);
 % only called from num_acn with real args 
    begin scalar w, y;
-      symbolic off1 'complex;
       w:= 1-x^2;
       y := sqrt w * RF(x^2,1,1-k^2*w);
       if x <0 then
@@ -310,7 +303,6 @@ algebraic procedure n_and(x,k);
 algebraic procedure n_acd(x,k);
    % only called from num_ans with real args
 begin scalar w, y;
-   symbolic off1 'complex;
    w:= (1-x^2)/(1-k^2);
    y := sqrt w * RF(x^2,1,1+k^2*w);
    if x <0 then

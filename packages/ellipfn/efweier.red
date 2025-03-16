@@ -43,8 +43,9 @@ operator eta1, eta2, eta3;
 operator lattice_e1, lattice_e2, lattice_e3;
 operator lattice_g2, lattice_g3, lattice_delta, lattice_g;
 operator lattice_omega1, lattice_omega3;
+operator weierstrass1, weierstrassZeta1, weierstrass_sigma0;
 
-flag('(weierstrass weierstrassZeta weierstrass_sigma), 'realvalued);
+flag ('(weierstrass1 weierstrassZeta1 weierstrass_sigma0), 'realvalued);
 
 %######################################################################
 
@@ -158,7 +159,8 @@ sigma_rules :=
 
 % Numerical evaluation
    weierstrass_sigma(~u,~w1,~w3) => n_sigma(num_sigma,u,w1,w3)
-      when lisp !*rounded and numberp u and numberp w1 and numberp w3,
+      when lisp !*rounded and lisp !*complex and numberp u
+ 	   and numberp w1 and numberp w3,
 
    weierstrass_sigma1(~u,~w1,~w3) => n_sigma(num_sigma1,u,w1,w3)
            when lisp !*rounded and lisp !*complex and numberp u
@@ -210,7 +212,8 @@ weierstrass_rules :=
 
 % Numerical evaluation
    weierstrass(~u,~w1,~w3) => n_sigma(num_weier,u,w1,w3)
-      when lisp !*rounded and numberp u and numberp w1 and numberp w3,
+      when lisp !*rounded and lisp !*complex and numberp u
+	   and numberp w1 and numberp w3,
 
    lattice_e1(~w1, ~w3) => n_lattice(num_e1, w1,w3)
            when lisp !*rounded and lisp !*complex
@@ -274,7 +277,8 @@ weierZeta_rules :=
 
 % Numerical evaluation
    weierstrassZeta(~u,~w1,~w3) => n_sigma(num_weierZeta,u,w1,w3)
-      when lisp !*rounded and numberp u and numberp w1 and numberp w3,
+      when lisp !*rounded and lisp !*complex and numberp u
+ 	   and numberp w1 and numberp w3,
 
    eta1(~w1,~w3) => n_lattice(num_eta1,w1,w3)
            when lisp !*rounded and lisp !*complex
@@ -290,20 +294,22 @@ weierZeta_rules :=
 }$
 let weierZeta_rules;
 
-operator weierstrass1, weierstrassZeta1;
-
-flag ('(weierstrass1 weierstrassZeta1), 'realvalued);
 
 weierstrass1_rules :=
 {
    weierstrass1(-~u,~g2,~g3) => weierstrass1(u,g2,g3),
    weierstrasszeta1(-~u,~g2,~g3) => -weierstrasszeta1(u,g2,g3),
+   weierstrass_sigma0(-~u,~g2,~g3) => -weierstrass_sigma0(u,g2,g3),
+   
    weierstrass1(i*~u,~g2,~g3) => -weierstrass1(u,g2,-g3),
    weierstrassZeta1(i*~u,~g2,~g3) => -i*weierstrassZeta1(u,g2,-g3),
-
+   weierstrass_sigma0(i*~u,~g2,~g3) => i*weierstrass_sigma0(u,g2,-g3),
+   
    weierstrass1(~m*~u,~g2,~g3) => weierstrass1(u, g2*m^4,g3*m^6)/m^2
            when numberp m,
    weierstrasszeta1(~m*~u,~g2,~g3) => weierstrasszeta1(u, g2*m^4,g3*m^6)/m
+           when numberp m,
+   weierstrass_sigma0(~m*~u,~g2,~g3) => m*weierstrass_sigma0(u, g2*m^4,g3*m^6)
            when numberp m,
 
 % Numerical evaluation
@@ -313,10 +319,17 @@ weierstrass1_rules :=
    weierstrasszeta1(~u,~g2,~g3) => num_elliptic(num_weierZeta1, u, g2, g3)
       when lisp !*rounded and numberp u and numberp g2 and numberp g3,
 
+   weierstrass_sigma0(~u, ~g2, ~g3) =>
+          num_elliptic(num_weierSigma, u, g2, g3)
+      when lisp !*rounded and numberp u and numberp g2 and numberp g3,
+   
    df(weierstrass1(~u,~g2,~g3),u) =>
        -sqrt(4*weierstrass1(u,g2,g3)^3 - g2*weierstrass1(u,g2,g3) - g3),
 
-   df(weierstrassZeta1(~u,~g2,~g3),~u)  => -weierstrass1(u,g2,g3)
+   df(weierstrassZeta1(~u,~g2,~g3),~u)  => -weierstrass1(u,g2,g3),
+
+   df(weierstrass_sigma(~u,~g2,~g3),~u)  => weierstrass_sigma(u,g2,g3)*weierstrassZeta(u,g1,g3)
+      
 }$
 let weierstrass1_rules;
 
@@ -763,7 +776,7 @@ end;
 procedure num_weier1(u,g2,g3);
 begin scalar l;
   if g2^3-27*g3^2=0 then
-    rederr("num_weier: discriminant of the Weierstrass function is zero.");
+    lisp error(99, "discriminant of the Weierstrass function is zero.");
   l := num_omegas(g2,g3);
   return num_weier(u, first l, second l);
 end;
@@ -771,9 +784,17 @@ end;
 procedure num_weierZeta1(u,g2,g3);
 begin scalar l;
   if g2^3-27*g3^2=0 then
-    rederr("num_weier: discriminant of the Weierstrass function is zero.");
+    lisp error(99, "discriminant of the Weierstrass function is zero.");
   l := num_omegas(g2,g3);
   return num_weierZeta(u, first l, second l);
+end;
+
+procedure num_weierSigma(u,g2,g3);
+begin scalar l;
+  if g2^3-27*g3^2=0 then
+    lisp error(99, "discriminant of the sigma function is zero.");
+  l := num_omegas(g2,g3);
+  return num_sigma(u, first l, second l);
 end;
 
 % moved to efnumeric.red by AB, Feb 2022.
@@ -794,14 +815,18 @@ end;
 
 put('weierstrass1, 'fancy!-functionsymbol, "\wp");
 put('weierstrassZeta1, 'fancy!-functionsymbol, "\zeta_w");
+put('weierstrass_sigma0, 'fancy!-functionsymbol, "\sigma");
 put('weierstrass1, 'fancy!-prifn, 'fancy!-weier);
 put('weierstrassZeta1, 'fancy!-prifn, 'fancy!-weier);
+put('weierstrass_sigma0, 'fancy!-prifn, 'fancy!-weier);
 put('WeierstrassZeta1, 'fancy!-symbol!-length, 4);
 
 put('weierstrass1, 'plain!-functionsymbol, "P_w");
-put('weierstrasszZeta1, 'plain!-functionsymbol, "zeta_w");
+put('weierstrassZeta1, 'plain!-functionsymbol, "zeta_w");
+put('weierstrass_sigma0, 'plain!-functionsymbol, "sigma");
 put('weierstrass1, 'prifn, 'plain!-weier);
 put('weierstrassZeta1, 'prifn, 'plain!-weier);
+put('weierstrass_sigma0, 'prifn, 'plain!-weier);
 
 put('weierstrass, 'fancy!-functionsymbol, "\wp");
 put('weierstrassZeta, 'fancy!-functionsymbol,"\zeta_w");
@@ -809,13 +834,29 @@ put('weierstrass_sigma, 'fancy!-functionsymbol,"\sigma");
 put('weierstrass_sigma1, 'fancy!-functionsymbol,"\sigma_1");
 put('weierstrass_sigma2, 'fancy!-functionsymbol,"\sigma_2");
 put('weierstrass_sigma3, 'fancy!-functionsymbol,"\sigma_3");
-put('eta1, 'fancy!-functionsymbol,"\eta_1");
-put('eta2, 'fancy!-functionsymbol,"\eta_2");
-put('eta3, 'fancy!-functionsymbol,"\eta_3");
 put('weierstrassZeta, 'fancy!-symbol!-length, 4);
 put('weierstrass_sigma1, 'fancy!-symbol!-length, 4);
 put('weierstrass_sigma2, 'fancy!-symbol!-length, 4);
 put('weierstrass_sigma3, 'fancy!-symbol!-length, 4);
+
+put('weierstrass, 'prifn, 'plain!-symbol);
+put('weierstrassZeta, 'prifn, 'plain!-symbol);
+
+put('weierstrass_sigma, 'prifn, 'plain!-symbol);
+put('weierstrass_sigma1, 'prifn, 'plain!-symbol);
+put('weierstrass_sigma2, 'prifn, 'plain!-symbol);
+put('weierstrass_sigma3, 'prifn, 'plain!-symbol);
+
+put('weierstrass, 'plain!-functionsymbol, "P_w");
+put('weierstrasszeta, 'plain!-functionsymbol, "zeta_w");
+put('weierstrass_sigma, 'plain!-functionsymbol, "sigma");
+put('weierstrass_sigma1, 'plain!-functionsymbol, "sigma_1");
+put('weierstrass_sigma2, 'plain!-functionsymbol, "sigma_2");
+put('weierstrass_sigma3, 'plain!-functionsymbol, "sigma_3");
+
+put('eta1, 'fancy!-functionsymbol,"\eta_1");
+put('eta2, 'fancy!-functionsymbol,"\eta_2");
+put('eta3, 'fancy!-functionsymbol,"\eta_3");
 put('eta1, 'fancy!-symbol!-length, 4);
 put('eta2, 'fancy!-symbol!-length, 4);
 put('eta3, 'fancy!-symbol!-length, 4);
@@ -826,11 +867,6 @@ put('lattice_e3, 'fancy!-functionsymbol,"\mathrm{e_3}");
 put('lattice_e1, 'fancy!-symbol!-length, 4);
 put('lattice_e2, 'fancy!-symbol!-length, 4);
 put('lattice_e3, 'fancy!-symbol!-length, 4);
-
-put('weierstrass, 'prifn, 'plain!-symbol);
-put('weierstrassZeta, 'prifn, 'plain!-symbol);
-put('weierstrass, 'plain!-functionsymbol, "P_w");
-put('weierstrasszeta, 'plain!-functionsymbol, 'zeta_w);
 
 put('lattice_e1, 'prifn, 'plain!-symbol);
 put('lattice_e1, 'plain!-functionsymbol, 'e1);
@@ -871,7 +907,8 @@ flag('(weierstrass_sigma weierstrass_sigma1 weierstrass_sigma2
        weierstrass_sigma3 weierstrass weierstrassZeta
        eta1 eta2 eta3 lattice_e1 lattice_e2 lattice_e3
        lattice_g2 lattice_g3  lattice_delta lattice_g
-       lattice_omega1 lattice_omega3 weierstrass1 weierstrasszeta1
+       lattice_omega1 lattice_omega3 weierstrass1
+       weierstrasszeta1 weierstrass_sigma0	     
       ), 'specfn);
 
 
@@ -881,7 +918,7 @@ deflist('((weierstrass_sigma 3) (weierstrass_sigma1 3)
 	  (eta3 2) (lattice_e1 2) (lattice_e3 2) (lattice_e3 2)
 	  (lattice_roots 2) (lattice_invariants 2)
 	  (lattice_g2 2) (lattice_g3 2)  (lattice_delta 2) (lattice_g 2)
-	  (weierstrass1 3) (weierstrassZeta1 3)
+	  (weierstrass1 3) (weierstrassZeta1 3) (weierstrass_sigma0 3)
 	  (lattice_generators 2) (quasi_period_factors 2)
 	  (lattice_omega1 2) (lattice_omega3 2)
         ), 'number!-of!-args);
