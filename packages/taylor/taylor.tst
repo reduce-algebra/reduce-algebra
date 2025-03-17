@@ -976,6 +976,15 @@ taylor(f,ww,0,2) where {log(ww) => -x};
 
 on mcd;
 
+COMMENT A test where the precise switch matters;
+
+off precise;
+
+taylor(sqrt((1-z)*(1-s*z)), s, 1, 0);
+
+on precise;
+
+taylor(sqrt((1-z)*(1-s*z)), s, 1, 0);
 
 %%% showtime;
 

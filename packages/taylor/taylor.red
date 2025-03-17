@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2023 by Rainer M. Schöpf, all rights reserved.
+%  Copyright (C) 1989--2025 by Rainer M. Schöpf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -81,6 +81,11 @@ module taylor;
 %
 %*****************************************************************
 %
+%
+% 17-Mar-2025    2.4i
+%
+%   Remove binding of !*precise in simptaylor, as it gives wrong results.
+%   Clear the taylor expansion cache with the switch precise changes.
 %
 % 21-Jan-2023    2.4h
 %
