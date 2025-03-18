@@ -99,6 +99,12 @@ symbolic procedure init!-taylor!-cache;
 
 put('taylornocache,'simpfg,'((t (init!-taylor!-cache))));
 
+%%
+%% Clear the taylor cache when the switch precise changes 
+%%
+
+put('precise,'simpfg,'((t (init!-taylor!-cache)) (nil (init!-taylor!-cache))));
+
 symbolic init!-taylor!-cache();
 
 symbolic procedure taylor!-add!-to!-cache(krnl,tp,result);

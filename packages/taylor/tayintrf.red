@@ -68,7 +68,7 @@ imports
         preptaylor!*;
 
 
-fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine taynomul!*
+fluid '(!*backtrace !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine taynomul!*
         frlis!* subfg!*);
 
 global '(kprops!* mul!*);
@@ -126,7 +126,7 @@ symbolic procedure simptaylor u;
   if remainder(length u,3) neq 1
     then taylor!-error('wrong!-no!-args,'taylor)
    else if null subfg!* then mksq('taylor . u,1)
-   else begin scalar !*precise,arglist,degree,f,ll,result,var,var0;
+   else begin scalar arglist,degree,f,ll,result,var,var0;
      %
      % Allow automatic combination of Taylor kernels.
      %
