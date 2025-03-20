@@ -337,7 +337,7 @@ symbolic procedure  lpterm  u ;
  begin  scalar  v,w,w1,y,z ;
    v:=tpow u; % l.pow. - the first factor.
    w:=tc u; % l.coeff. - i.e. st.f.
-   if atom (y:=car v) or atom car y % I.e. atom or Lisp func.
+   if not sfp (y:=car v) % I.e. atom or Lisp func.
       then if not depends(y,'lp!&)
               then return if (z:=lpform w)
                              then multpq(v,z) else nil
@@ -351,7 +351,7 @@ symbolic procedure  lpterm  u ;
  % We can't handle v now, because nothing is known for w for now.
    if domainp w then return lpfunc(v,w);
  % If we have sum, and off exp.
-   if red w then return if (y:=lpterm list(v,car w)) and % v .* !*t2f lt w
+   if red w then return if (y:=lpterm list(v,lt w)) and % v .* !*t2f lt w
        (z:=lpterm(v .* red w))then addsq(y,z) else nil;
    w1:=lc w; % l.coeff - i.e. st.f.
    w :=lpow w; % l.pow. - the second factor.
@@ -375,9 +375,8 @@ symbolic procedure  lpunknown  u ;
    w:= list('laplace, cadr u,'lp!&); % HM: short rule form
    if get('laplace,'opmtch) and
       ( (z:=opmtch u) or (z:=opmtch w))
-      then << !*exp:=t;
-              put('laplace,'simpfn,'laplace1);
-              z:=simp z; !*exp:=nil;
+      then << put('laplace,'simpfn,'laplace1);
+              z:=simp z where !*exp:=t;
               put('laplace,'simpfn,'simplaplace) >>;
    if null z then return if !*lmsg
       then msgpri("Laplace for", subla(list('lp!& . lpvar!*), cadr u),
@@ -395,7 +394,7 @@ symbolic procedure  lpsimp1  u ;
    v:=subla(list(lpvar!* . 'lp!&),u);
    if not depends(car v,'lp!&) then return 1 ./ 1;
    v:= car simpcar v; % Standard form.
-   if mvar v neq 'lp!& then << !*mcd:=t; v:=subf(v,nil); !*mcd:=nil;
+   if mvar v neq 'lp!& then << v:=subf(v,nil) where !*mcd:=t;
                                v:=multf(car v, recipf!* cdr v) >>;
    if not(mvar v eq 'lp!&  and  !:onep ldeg v)
       then go to err;
@@ -439,16 +438,16 @@ symbolic procedure  lpexpt (u,v,w) ;
    p:=cadar u;  % First arg for expt.
    q:=caddar u;  % Second arg for expt.
    if depends(p,'lp!&) then go to gamma;
-   !*exp:=t; q:=numr simp q;
-   if mvar q neq 'lp!& then << !*mcd:=t; q:=subf(q,nil); !*mcd:=nil;
-                               q:=multf(car q, recipf!* cdr q) >>;
-   if not !:onep r then q:=multf(q,r); !*exp:=nil;
+   << % To set scope for "where !*exp = t".
+      q:=numr simp q;
+      if mvar q neq 'lp!& then << q:=subf(q,nil) where !*mcd:=t;
+	                          q:=multf(car q, recipf!* cdr q) >>;
+      if not !:onep r then q:=multf(q,r) >> where !*exp:=t;
    if not(mvar q eq 'lp!& and !:onep ldeg q)
       then return if null v then lpunknown(u . w)
                             else lpunknown list(u, v . w);
    if (r:=red q) then
-     << if !*ldone then << !*exp:=t;
-          w:=multf(w, numr lpsimp1 list prepsq(q./1)); !*exp:=nil >>;
+     << if !*ldone then	w:=(multf(w, numr lpsimp1 list prepsq(q./1)) where !*exp := t);
         q:=list(lt q); r:=!*p2q(list('expt,p,prepsq(r./1)) to 1) >>;
    if p neq 'e then q:=multf(q, !*kk2f list('log,p) );
    z:= if null v then lpform w else lpterm(v .* w);
@@ -505,7 +504,8 @@ symbolic procedure  lpfunc (u,v) ;
  lfunc: % Perform Laplace transform for simple and one-function.
    if fn = 'expt  or (fn = 'one) or  !:onep ld
       then nil else return lpunknown(u.v);
-   !*exp:=t; ex:= numr simp cadr w; !*exp:=nil;
+   ex:= simp cadr w where !*exp:=t;
+   ex := numr ex; 
    if not( mvar ex = 'lp!&  and  !:onep ldeg ex )
       then return lpunknown(u.v);
    k:=lc ex; tau:=red ex;
@@ -619,15 +619,16 @@ symbolic procedure simpinvlap!*  u ;
    put('invlap,'simpfn,'simpiden);
    if w then << lpvar!*:=w; u:=subla(list('lp!& . w), u) >>
         else lpvar!*:='lp!& ;
-   if !*ltrig or !*lhyp then << !*exp:=t;
- if !*lhyp then put('expt,'opmtch,ile3!*.ile4!*.get('expt,'opmtch));
- if !*ltrig then put('expt,'opmtch,ile1!*.ile2!*.get('expt,'opmtch));
-       put('expt,'opmtch, ile5!*.get('expt,'opmtch));
-       u:= simp prepsq u;
-       if !*ltrig and !*lhyp
-          then put('expt,'opmtch, cdr cddddr get('expt,'opmtch))
-          else put('expt,'opmtch, cdddr get('expt,'opmtch)) >>
-                        else u:= resimp u;
+   if !*ltrig or !*lhyp then <<
+      !*exp:=t;
+      if !*lhyp then put('expt,'opmtch,ile3!*.ile4!*.get('expt,'opmtch));
+      if !*ltrig then put('expt,'opmtch,ile1!*.ile2!*.get('expt,'opmtch));
+      put('expt,'opmtch, ile5!* . get('expt,'opmtch));
+      u:= simp prepsq u;
+      if !*ltrig and !*lhyp
+        then put('expt,'opmtch, cdr cddddr get('expt,'opmtch))
+       else put('expt,'opmtch, cdddr get('expt,'opmtch)) >>
+    else u:= resimp u;
  % Restore old env.
    for each x in depl!* do
       if 'il!& memq cdr x then rplacd(x,delete('il!&,cdr x));
@@ -710,15 +711,18 @@ symbolic procedure ilterm (u, numf, denf, rootl) ;
 
    % Now v1 remains as a standard form and v2>0.
    v:= if !:onep v2 then v1 else !*p2f v;
-   if red v1 then
-      << !*exp:=t; y:=numr subf(v,nil); z:=y;
-         while z do if domainp z then z:=nil
-            else if ldeg z < 0 then if depends
-          (if not sfp(p1:=mvar z) then p1 else prepsq(p1 ./1), 'il!&)
-                then << p:=t; z:=nil >> else z:=addf(lc z, red z)
-              else z:=addf(lc z,red z);
-         if p then w:=multf(y, w) else numf:=multf(v,numf);
-         !*exp:=nil >>  else numf:=multf(v,numf);
+   if null red v1 then numf:=multf(v,numf)
+    else << % To set scope for "where !*exp = t".
+      y:=numr subf(v,nil); z:=y;
+      while z do
+ 	 if domainp z then z:=nil
+          else if ldeg z < 0
+                 then if depends (if not sfp(p1:=mvar z) then p1 else prepsq(p1 ./1), 'il!&)
+                        then << p:=t; z:=nil >>
+                       else z:=addf(lc z, red z)
+          else z:=addf(lc z,red z);
+      if p then w:=multf(y, w) else numf:=multf(v,numf)
+    >> where !*exp := t;
    return ilform(w,numf,denf,rootl);
  end;
 
@@ -751,9 +755,8 @@ symbolic procedure  ilunknown (u, numf, denf) ;
    w:= list('invlap, cadr u, 'il!&);
    if get('invlap,'opmtch) and
         ((z:=opmtch u) or (z:=opmtch w))
-      then << !*exp:=t;
-              put('invlap,'simpfn,'invlap1);
-              z:=simp z; !*exp:=nil;
+      then << put('invlap,'simpfn,'invlap1);
+              z:=simp z where !*exp:=t;
               put('invlap,'simpfn,'simpinvlap) >>;
    if null z and !*lmsg then msgpri("Invlap for",
                      subla(list('il!& . ilvar!*), cadr u),
@@ -780,10 +783,11 @@ symbolic procedure  ilexpt (u, v, w, numf, denf, rootl) ;
    p:=cadar u;  % First arg for expt.
    q:=caddar u;  % Second arg for expt.
    if depends(p,'il!&)then go to gamma;
-   !*exp:=t; q:=numr simp q;
-   if mvar q neq 'il!& then << !*mcd:=t; q:=subf(q,nil); !*mcd:=nil;
-                               q:=multf(car q, recipf!* cdr q) >>;
-   if not !:onep r then q:=multf(q,r); !*exp:=nil;
+   << % To set scope for "where !*exp = t".
+      q:=numr simp q;
+      if mvar q neq 'il!& then << q:=subf(q,nil) where !*mcd:=t;
+                                  q:=multf(car q, recipf!* cdr q) >>;
+      if not !:onep r then q:=multf(q,r) >> where !*exp:=t;
    if not((mvar q = 'il!&) and !:onep ldeg q and minusf lc q)
       then return if null v then ilunknown(u.w,numf,denf)
                             else ilunknown(list(u,v.w),numf,denf);
@@ -826,12 +830,14 @@ symbolic procedure  ilexptfn (u, v, numf, denf) ;
    ex:=car u; dg:=pdeg u; fn:=car ex;
    if fn neq 'expt then go to unk;
    d:=caddr ex; if atom(ex:=cadr ex) then k:=t;
-   !*exp:=t; ex:=numr simp ex;
-   dg:=multd(dg,numr simp d); a:=lc ex;
-   if not(domainp a and !:onep a) then
-     << ex:=multf(ex, recipf!* a);
-        a:=!*kk2f list('expt,prepsq(a./1),prepsq(dg./1)) >>;
-   b:=red ex; !*exp:=nil;
+   << % To set scope for "where !*exp = t".
+      ex:=numr simp ex;
+      dg:=multd(dg,numr simp d);
+      a:=lc ex;
+      if not(domainp a and !:onep a) then
+      << ex:=multf(ex, recipf!* a);
+         a:=!*kk2f list('expt,prepsq(a./1),prepsq(dg./1)) >>;
+      b:=red ex >> where !*exp:=t;
    if (mvar ex neq 'il!&) or (ldeg ex neq 1) or
       depends(prepsq(b./1),'il!&) then go to unk;
    if (numf=1) and (denf=1) then go to ret;
@@ -991,7 +997,7 @@ symbolic procedure  ilresid (numf, denf, rootl) ;
  % Apply the residue theorem at last.
  % Numf, denf, rootl are standard forms.  Returns standard quot or nil.
  begin scalar  n,d,ndeg,ddeg,m,x,y,z,w ;
-   !*exp:=t; n:=numr subf(numf,nil); !*exp:=nil;
+   n:=numr subf(numf,nil) where !*exp:=t;
    z:=nil ./ 1; w:=nil ./ 1; x:=n; % Result accumulated in w.
    while x and not domainp x do
      << y:=lt x; x:=red x;
@@ -1003,10 +1009,10 @@ symbolic procedure  ilresid (numf, denf, rootl) ;
    if null z then return ;
  % Now n is polynomial of il!& with constant coeff.
    ndeg:=if not domainp n and mvar n = 'il!& then ldeg n else 0;
-   !*exp:=t; d:=numr subf(denf,nil); !*exp:=nil;
+   d:=numr subf(denf,nil) where !*exp:=t;
    ddeg:=if not domainp d and mvar d = 'il!& then ldeg d else 0;
    if ndeg < ddeg then go to resid;
-   !*exp:=t; y:=qremf(n,d); !*exp:=nil;
+   y:=qremf(n,d) where !*exp:=t;
    n:=cdr y; x:=car y; % N is remainder polynomial.
    while x do if domainp x
      then << w:=addsq(w, !*t2q(mksp('(delta lp!&),1).* x)); x:=nil >>
@@ -1020,19 +1026,21 @@ symbolic procedure  ilresid (numf, denf, rootl) ;
    if null x then y:=!*p2f('il!& to m)
       else << y:=(('il!& to 1) .* 1) .+ negf x;
               if m neq 1 then y:=!*p2f(y to m) >>;
-   !*exp:=t; y:=numr subf(y,nil);
-   y:=car qremf(d,y); !*exp:=nil; % D is quotient - remainder = 0.
+   << y:=numr subf(y,nil);
+      y:=car qremf(d,y);  % D is quotient - remainder = 0.
+   >> where !*exp:=t;
    z:=multpf('(expt e (times il!& lp!&)) to 1, n); % Numerator.
    y:=recipf!* y;
    z:=multf(z,y) ./ 1;
    while (m:=m-1) > 0 do  z:=diffsq(z, 'il!&);
    x:= if null x then 0 else prepsq(x./1); % Root in prefix form.
-   !*exp:=t; z:=subf(numr z, list('il!&.x)); % One residue as st.q.
-   if not depends(prepsq z, 'lp!&)
-      then z:=multsq(z, !*kk2q '(one lp!&));
-   if (m:=cdar rootl) > 2 then while (m:=m-1) > 1 do
-       z:=multf(numr z,'!:rn!: . 1 . m)./1;
-   w:=addsq(w,z); !*exp:=nil;
+   << % To set scope for "where !*exp = t".
+      z:=subf(numr z, list('il!&.x)); % One residue as st.q.
+      if not depends(prepsq z, 'lp!&)
+        then z:=multsq(z, !*kk2q '(one lp!&));
+      if (m:=cdar rootl) > 2 then while (m:=m-1) > 1 do
+       	 z:=multf(numr z,'!:rn!: . 1 . m)./1;
+      w:=addsq(w,z) >> where !*exp:=t;
    rootl:=cdr rootl; go to resid;
  end;
 
