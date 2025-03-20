@@ -1,4 +1,4 @@
-// op_lose2.cpp
+// lose2.cpp
 
 #if defined BYTECODE
             case OP_LOSE2:
@@ -8,7 +8,8 @@
 #elif defined __x86_64__
 
             case OP_LOSE2:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                sub(spreg, 16);
+                break;
 
 #elif defined __aarch64__
 
@@ -20,3 +21,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of lose2.cpp

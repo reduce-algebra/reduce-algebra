@@ -1,4 +1,4 @@
-// op_jumpst0t.cpp
+// jumpst0t.cpp
 
 #if defined BYTECODE
             case OP_JUMPST0T:
@@ -22,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpst0t.cpp

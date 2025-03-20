@@ -1,4 +1,4 @@
-// op_sub1.cpp
+// sub1.cpp
 
 #if defined BYTECODE
             case OP_SUB1:
@@ -7,7 +7,7 @@
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Sub1::op(A_reg);
+                A_reg = Sub1::A_reg);
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
 #endif // ARITHLIB
@@ -17,33 +17,33 @@
 #elif defined __x86_64__
 
             case OP_SUB1:
-                {   Label notFixnum = cc.newLabel();
-                    Label endSub1 = cc.newLabel();
-                    cc.mov(w, A_reg);
-                    cc.and_(w, XTAG_BITS);
-                    cc.cmp(w, TAG_FIXNUM);
-                    cc.jne(notFixnum);
-                    cc.mov(w, MOST_NEGATIVE_FIXNUM);
-                    cc.cmp(A_reg, w);
-                    cc.jne(notFixnum);
-                    cc.add(A_reg, -0x10);
-                    cc.jmp(endSub1);
-                cc.bind(notFixnum);
+                {   Label notFixnum = newLabel();
+                    Label endSub1 = newLabel();
+                    mov(w, A_reg);
+                    and_(w, XTAG_BITS);
+                    cmp(w, TAG_FIXNUM);
+                    jne(notFixnum);
+                    mov(w, MOST_NEGATIVE_FIXNUM);
+                    cmp(A_reg, w);
+                    jne(notFixnum);
+                    add(A_reg, -0x10);
+                    jmp(endSub1);
+                bind(notFixnum);
 #ifdef ARITHLIB
-                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim1)));
-                    cc.mov(w1, ptr(nilreg, JIToffset(OJITsub1op)));
-                    invoke(cc, nilreg, spreg, w, A_reg,
+                    loadstatic(w, OJITshim1);
+                    loadstatic(w1, OJITsub1);
+                    JITcall(w, A_reg,
                            w1, A_reg);
 #else // ARITHLIB
-                    cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
-                    cc.mov(w1, ptr(nilreg, JIToffset(OJITplus2)));
-                    cc.mov(B_reg, fixnum_of_int(-1));
-                    invoke(cc, nilreg, spreg, w, A_reg,
+                    loadstatic(w, OJITshim2);
+                    loadstatic(w1, OJITplus2);
+                    mov(B_reg, fixnum_of_int(-1));
+                    JITcall(w, A_reg,
                            w1, A_reg, B_reg);  
 #endif // ARITHLIB
-                    cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                    cc.jne(callFailed);
-                cc.bind(endSub1);
+                    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                    jne(callFailed);
+                bind(endSub1);
                 }
                 break;
 
@@ -58,4 +58,4 @@
 
 #endif
 
-// end of op_sub1.cpp
+// end of sub1.cpp

@@ -1,4 +1,4 @@
-// op_jumpliteq.cpp
+// jumpliteq.cpp
 
 #if defined BYTECODE
             case OP_JUMPLITEQ:
@@ -24,3 +24,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpliteq.cpp

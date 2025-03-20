@@ -1,4 +1,4 @@
-// op_protect.cpp
+// protect.cpp
 
 #if defined BYTECODE
             case OP_PROTECT:
@@ -30,3 +30,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_protect.cpp

@@ -1,10 +1,10 @@
-// op_builtin3.cpp
+// builtin3.cpp
 
 #if defined BYTECODE
             case OP_BUILTIN3:
                 f3 = three_arg_functions[next_byte];
                 debug_record_int("BUILTIN3", previous_byte);
-// CALL3:   A=fn(pop(),B,A);
+// CALL3:   A=fn(p),B,A);
                 r1 = *stack--;
                 if (three_arg_traceflags[previous_byte])
                     A_reg = traced_call3(basic_elt(litvec, 0), f3,
@@ -17,7 +17,7 @@
 //
 // Now here in a neat block I will have the cases that seem to occur most
 // frequently, at least when I tested things running REDUCE. By collecting
-// these together I hope to (slightly) improve the cache locality behaviour
+// these together I h to (slightly) improve the cache locality behaviour
 // for this code - maybe...
 //
 #elif defined __x86_64__
@@ -35,3 +35,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_builtin3.cpp

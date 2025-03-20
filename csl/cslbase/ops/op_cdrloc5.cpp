@@ -1,4 +1,4 @@
-// op_cdrloc5.cpp
+// cdrloc5.cpp
 
 #if defined BYTECODE
             case OP_CDRLOC5:
@@ -14,11 +14,11 @@
 #elif defined __x86_64__
 
             case OP_CDRLOC5:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -40));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(cdrError);
-                cc.mov(A_reg, ptr(A_reg, 8));
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(spreg, -40));
+                test(A_reg, TAG_BITS);
+                jne(cdrError);
+                mov(A_reg, ptr(A_reg, 8));
                 break;
 
 #elif defined __aarch64__
@@ -32,4 +32,4 @@
 
 #endif
 
-// end of op_cdrloc5.cpp
+// end of cdrloc5.cpp

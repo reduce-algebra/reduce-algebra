@@ -1,4 +1,4 @@
-// op_nilexit.cpp
+// nilexit.cpp
 
 #if defined BYTECODE
             case OP_NILEXIT:
@@ -12,15 +12,15 @@
 #elif defined __x86_64__
 
             case OP_NILEXIT:
-                cc.mov(A_reg, nilreg);
-                cc.jmp(returnA);
+                mov(A_reg, nilreg);
+                jmp(returnA);
                 break;
 
 #elif defined __aarch64__
 
             case OP_NILEXIT:
-                cc.mov(A_reg, nilreg);
-                cc.b(returnA);
+                mov(A_reg, nilreg);
+                b(returnA);
                 break;
 
 #else
@@ -28,3 +28,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_nilexit.cpp

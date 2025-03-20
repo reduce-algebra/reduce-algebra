@@ -1,4 +1,4 @@
-// op_loses.cpp
+// loses.cpp
 
 #if defined BYTECODE
             case OP_LOSES:
@@ -8,7 +8,9 @@
 #elif defined __x86_64__
 
             case OP_LOSES:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                sub(spreg, next);
+                break;
 
 #elif defined __aarch64__
 
@@ -20,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of loses.red

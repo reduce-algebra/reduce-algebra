@@ -1,4 +1,4 @@
-// op_jumpfree3nil.cpp
+// jumpfree3nil.cpp
 
 #if defined BYTECODE
             case OP_JUMPFREE3NIL:
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpfree3nil.cpp

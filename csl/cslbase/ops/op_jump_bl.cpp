@@ -1,4 +1,4 @@
-// op_jump_bl.cpp
+// jump_bl.cpp
 
 #if defined BYTECODE
             case OP_JUMP_BL:
@@ -12,7 +12,7 @@
             case OP_JUMP_BL:
                 next = bytes[ppc++];
                 next = (next<<8) | bytes[ppc++];
-                cc.jmp(perInstruction[ppc-next]);
+                jmp(perInstruction[ppc-next]);
                 break;
 
 
@@ -27,4 +27,4 @@
 
 #endif
 
-// end of op_jump_bl.cpp
+// end of jump_bl.cpp

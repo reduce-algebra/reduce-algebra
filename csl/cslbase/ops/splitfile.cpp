@@ -10,7 +10,7 @@
 // Take the existing bytes2.cpp and wherever there is a line
 //    "... case OP_XXX: ..."
 // put the material on that line and following it in a file
-// called "op_xxx.cpp".
+// called "xxx.cpp".
 // Also treat "<12 spaces>default:" as the start of "default.cpp",
 // put material before the first of those in "bytes_head.cpp" and
 // detect "<8 spaces>}" following a blank line as the start
@@ -42,9 +42,9 @@ void alternatives(FILE* dest, const char* labelLine)
 
 int main(int argc, char* argv[])
 {
-    FILE* src = std::fopen("../bytes2.cpp", "r");
-    FILE* dest = std::fopen("bytes_head.cpp", "w");
-    FILE* includes = std::fopen("bytes_include.cpp", "w");
+    FILE* src = std::fn("../bytes2.cpp", "r");
+    FILE* dest = std::fn("bytes_head.cpp", "w");
+    FILE* includes = std::fn("bytes_include.cpp", "w");
     std::fprintf(dest, "// bytes_head.cpp\n\n");
     std::fprintf(includes, "// bytes_includes.cpp\n\n");
     bool prevEmpty = false;
@@ -57,18 +57,18 @@ int main(int argc, char* argv[])
         if (prevEmpty && std::strcmp(lineptr, "        }\n")==0)
         {   if (labelLine[0] != 0) alternatives(dest, labelLine);
             std::fclose(dest);
-            dest = std::fopen("bytes_tail.cpp", "w");
+            dest = std::fn("bytes_tail.cpp", "w");
             std::fprintf(dest, "// bytes_tail.cpp\n\n");
             std::printf("end of switch block\n");
         }
         else if (std::strcmp(lineptr, "            default:\n")==0)
         {   if (labelLine[0] != 0) alternatives(dest, labelLine);
             std::fclose(dest);
-            dest = std::fopen("default.cpp", "w");
+            dest = std::fn("default.cpp", "w");
             std::strcpy(labelLine, lineptr);
             std::fprintf(dest, "// default.cpp\n\n");
             std::fprintf(dest, "#if defined BYTECODE\n");
-            std::fprintf(includes, "#include \"ops/default.cpp\"\n");
+            std::fprintf(includes, "#include \"/default.cpp\"\n");
             std::printf("default:\n");
         }
         else if (std::strncmp(lineptr, "            case OP_", 20)==0)
@@ -81,11 +81,11 @@ int main(int argc, char* argv[])
             {   name[i] = std::tolower(name[i]);
             }
             std::strcpy(&name[i], ".cpp");
-            dest = std::fopen(name, "w");
+            dest = std::fn(name, "w");
             std::strcpy(labelLine, lineptr);
             std::fprintf(dest, "// %s\n\n", name);
             std::fprintf(dest, "#if defined BYTECODE\n");
-            std::fprintf(includes, "#include \"ops/%s\"\n", name);
+            std::fprintf(includes, "#include \"/%s\"\n", name);
             std::printf("%s\n", name);
         }
         prevEmpty = (std::strcmp(lineptr, "\n") == 0);

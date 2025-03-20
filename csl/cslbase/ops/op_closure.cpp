@@ -1,4 +1,4 @@
-// op_closure.cpp
+// closure.cpp
 
 #if defined BYTECODE
             case OP_CLOSURE:
@@ -30,3 +30,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_closure.cpp

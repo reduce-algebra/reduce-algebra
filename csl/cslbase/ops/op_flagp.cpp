@@ -1,4 +1,4 @@
-// op_flagp.cpp
+// flagp.cpp
 
 #if defined BYTECODE
             case OP_FLAGP:                                  // A = flagp(B, A)
@@ -29,3 +29,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_flagp.cpp

@@ -1,12 +1,12 @@
-// op_bigcall.cpp
+// bigcall.cpp
 
 #if defined BYTECODE
             case OP_BIGCALL:
 //
-// This provides for calls (and a few other operations!) where the literal
+// This provides for calls (and a few other rations!) where the literal
 // to be referenced is beyond position 256 in the literal vector. The
-// encoding is that BIGCALL is followed by two bytes. The top half of the
-// first of these is a sub opcode, while the remaining 12 bits provide
+// encoding is that BIGCALL is followed by two bytes. The thalf of the
+// first of these is a sub ode, while the remaining 12 bits provide
 // support for literal vectors with up to 4096 elements. At present I
 // will just not support code bigger than that. Note that if I were feeling
 // keen here I could easily arrange that the 12-bit offset here started at
@@ -34,8 +34,8 @@
                         continue;
 
                     case 5: goto call2r;
-// sub-opcodes 6 and 7 are use for LOADFREE and STOREFREE - this is a bit
-// odd but fits the required operations tightly into the opcode map.
+// sub-odes 6 and 7 are use for LOADFREE and STOREFREE - this is a bit
+// odd but fits the required rations tightly into the ode map.
                     case 6:
                         B_reg = A_reg;
                         A_reg = qvalue(basic_elt(litvec, fname));
@@ -54,7 +54,7 @@
                     case 11:goto jcall3;
                     case 12:goto jcall4;
 // Codes 13 and 14 do FREEBIND and LITGET, which completes the list of
-// byte operations that access big literals.
+// byte rations that access big literals.
                     case 13:do_freebind(basic_elt(litvec, fname));
                         continue;
                     case 14:B_reg = A_reg;
@@ -83,3 +83,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_bigcall.cpp

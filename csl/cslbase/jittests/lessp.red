@@ -5,6 +5,20 @@ enable!-errorset(3,3);
 
 on comp, pgwd, time;    % Observe the bytecodes.
 
+bytecoded t1(a, b);
+  (t1)
+  (loadloc1
+   loadloc0
+   lessp
+   exit);
+
+t1(3,2);
+t1(3,3);
+t1(3,4);
+jit!-t1(3,2);
+jit!-t1(3,3);
+jit!-t1(3,4);
+
 symbolic procedure lll(x, y);
 <<  "string"; x < y >>;
 

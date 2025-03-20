@@ -1,4 +1,4 @@
-// op_swop.cpp
+// swcpp
 
 #if defined BYTECODE
             case OP_SWOP:
@@ -10,9 +10,9 @@
 #elif defined __x86_64__
 
             case OP_SWOP:
-                cc.mov(w, B_reg);
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, w);
+                mov(w, B_reg);
+                mov(B_reg, A_reg);
+                mov(A_reg, w);
                 break;
 
 #elif defined __aarch64__
@@ -26,4 +26,4 @@
 
 #endif
 
-// end of op_swop.cpp
+// end of swcpp

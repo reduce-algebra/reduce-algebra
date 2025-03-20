@@ -1,18 +1,18 @@
-// op_bigstack.cpp
+// bigstack.cpp
 
 #if defined BYTECODE
             case OP_BIGSTACK:               // LOADLOC, STORELOC, CLOSURE etc
                 //
-                // This opcode allows me to support functions that use up to
+                // This ode allows me to support functions that use up to
                 // 2047-deep stack frames using LOADLEX and STORELEX, or
-                // up to 4095 deep if just using LOADLOC and STORELOC. I hope
+                // up to 4095 deep if just using LOADLOC and STORELOC. I h
                 // that such cases are very uncommon, but examples have been
                 // shown to me where my previous limit of 256-item frames was
-                // inadequate. The BIGSTACK opcode is followed by a byte that
-                // contains a few bits selecting which operation is to be
+                // inadequate. The BIGSTACK ode is followed by a byte that
+                // contains a few bits selecting which ration is to be
                 // performed, plus an extension to the address byte that follows.
                 //
-                w = next_byte;             // contains sub-opcode
+                w = next_byte;             // contains sub-ode
                 switch (w & 0xc0)
                 {   case 0x00:                  // LOADLOC extended
                         B_reg = A_reg;
@@ -62,3 +62,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_bigstack.cpp

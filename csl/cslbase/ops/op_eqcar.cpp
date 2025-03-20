@@ -1,4 +1,4 @@
-// op_eqcar.cpp
+// eqcar.cpp
 
 #if defined BYTECODE
             case OP_EQCAR:
@@ -21,3 +21,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_eqcar.cpp

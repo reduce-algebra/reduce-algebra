@@ -1,4 +1,4 @@
-// op_storelex.cpp
+// storelex.cpp
 
 #if defined BYTECODE
             case OP_STORELEX:
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_storelex.cpp

@@ -1,4 +1,4 @@
-// op_jumpnatom_b.cpp
+// jumpnatom_b.cpp
 
 #if defined BYTECODE
             case OP_JUMPNATOM_B:
@@ -11,8 +11,8 @@
 
             case OP_JUMPNATOM_B:
                 next = bytes[ppc++];
-                cc.test(A_reg, TAG_BITS);
-                cc.je(perInstruction[ppc-next]);
+                test(A_reg, TAG_BITS);
+                je(perInstruction[ppc-next]);
                 break;
 
 
@@ -27,4 +27,6 @@
 
 #endif
 
-// end og op_jumpnatom_b.cpp
+// end og jumpnatom_b.cpp
+
+// end of op_jumpnatom_b.cpp

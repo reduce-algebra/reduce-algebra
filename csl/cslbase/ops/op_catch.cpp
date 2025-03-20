@@ -1,4 +1,4 @@
-// op_catch.cpp
+// catch.cpp
 
 #if defined BYTECODE
             case OP_CATCH:
@@ -22,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_catch.cpp

@@ -1,4 +1,4 @@
-// op_icase.cpp
+// icase.cpp
 
 #if defined BYTECODE
             case OP_ICASE:
@@ -8,7 +8,7 @@
                     n < static_cast<int>(w)) ppc += 2*n + 2;
                 w = next_byte;
 //
-// I support backwards jumps here by setting their top bit. At present I do
+// I support backwards jumps here by setting their tbit. At present I do
 // poll for interrupts on a backwards case-branch. And the encoding used means
 // that case branches can not reach quite as far as regular jumps.
 //
@@ -39,3 +39,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_icase.cpp

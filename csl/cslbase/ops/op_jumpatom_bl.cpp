@@ -1,4 +1,4 @@
-// op_jumpatom_bl.cpp
+// jumpatom_bl.cpp
 
 #if defined BYTECODE
             case OP_JUMPATOM_BL:
@@ -13,8 +13,8 @@
             case OP_JUMPATOM_BL:
                 next = bytes[ppc++];
                 next = (next<<8) | bytes[ppc++];
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(perInstruction[ppc-next]);
+                test(A_reg, TAG_BITS);
+                jne(perInstruction[ppc-next]);
                 break;
 
 #elif defined __aarch64__
@@ -28,4 +28,4 @@
 
 #endif
 
-// end of op_jumpatom_bl.cpp
+// end of jumpatom_bl.cpp

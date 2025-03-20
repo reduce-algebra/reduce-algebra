@@ -1,4 +1,4 @@
-// op_loc1exit.cpp
+// loc1exit.cpp
 
 #if defined BYTECODE
             case OP_LOC1EXIT:
@@ -14,8 +14,8 @@
 #elif defined __x86_64__
 
             case OP_LOC1EXIT:
-                cc.mov(A_reg, ptr(spreg, -8));
-                cc.jmp(returnA);
+                mov(A_reg, ptr(spreg, -8));
+                jmp(returnA);
                 break;
 
 #elif defined __aarch64__
@@ -28,3 +28,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loc1exit.cpp

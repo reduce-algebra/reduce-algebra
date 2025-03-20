@@ -911,7 +911,8 @@ typedef LispObject (*errfunc1)(const char*,LispObject);
 typedef LispObject (*errfunc2)(const char*,LispObject,LispObject);
 typedef LispObject (*errfunc2s)(const char*,const char*,LispObject);
 
-inline LispObject JITshim(func1 FF, LispObject env)
+inline LispObject JITshim(func1 FF,
+                          LispObject env)
 {   LispObject r;
     TRY
 // I will call FF(env) and use C++ facilities to catch any exceptions
@@ -967,7 +968,8 @@ inline LispObject jitthrow()
 
 // I now need variants of JITshim passing various numbers of arguments.
 
-inline LispObject JITshim(func2 FF, LispObject env, LispObject a1)
+inline LispObject JITshim(func2 FF,
+                          LispObject env, LispObject a1)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1);
@@ -982,7 +984,8 @@ inline LispObject JITshim(func2 FF, LispObject env, LispObject a1)
     return r;
 }
 
-inline LispObject JITshim(boolfunc1 FF, LispObject a1)
+inline LispObject JITshim(boolfunc1 FF,
+                          LispObject a1)
 {   bool r;
     TRY
         r = (*FF)(a1);
@@ -998,10 +1001,9 @@ inline LispObject JITshim(boolfunc1 FF, LispObject a1)
 }
 
 
-inline LispObject JITshim(boolfunc2 FF, LispObject a1, LispObject a2)
+inline LispObject JITshim(boolfunc2 FF,
+                          LispObject a1, LispObject a2)
 {   LispObject r;
-stdout_printf("\nJITshim %p. Self=%p lessp2=%p\n", FF,
-         (boolshim2)JITshim, lessp2);
     TRY
         r = (*FF)(a1, a2);
     CATCH_ANY()
@@ -1015,8 +1017,8 @@ stdout_printf("\nJITshim %p. Self=%p lessp2=%p\n", FF,
     return r;        // widens result to intptr_t
 }
 
-inline LispObject JITshim(func3 FF, LispObject env,
-                          LispObject a1, LispObject a2)
+inline LispObject JITshim(func3 FF,
+                          LispObject env, LispObject a1, LispObject a2)
 {   LispObject r;
     TRY
         r = (*FF)(env, a1, a2);
@@ -1031,7 +1033,8 @@ inline LispObject JITshim(func3 FF, LispObject env,
     return r;
 }
 
-inline LispObject JITshim(func4 FF, LispObject env, LispObject a1,
+inline LispObject JITshim(func4 FF,
+                          LispObject env, LispObject a1,
                           LispObject a2, LispObject a3)
 {   LispObject r;
     TRY
@@ -1047,7 +1050,8 @@ inline LispObject JITshim(func4 FF, LispObject env, LispObject a1,
     return r;
 }
 
-inline LispObject JITshim(func5 FF, LispObject env, LispObject a1,
+inline LispObject JITshim(func5 FF,
+                          LispObject env, LispObject a1,
                           LispObject a2, LispObject a3, LispObject a4up)
 {   LispObject r;
     TRY

@@ -1,4 +1,4 @@
-// op_throw.cpp
+// throw.cpp
 
 #if defined BYTECODE
             case OP_THROW:
@@ -14,8 +14,8 @@
                 THROW(LispThrow);
 
 // I expect that calling functions with 0, 1, 2 or 3 arguments will
-// be enormously important for Lisp, and so separate opcodes are provided
-// for these cases.  The operand in each case selects the function to be
+// be enormously important for Lisp, and so separate odes are provided
+// for these cases.  The rand in each case selects the function to be
 // called, which MUST be a symbol (loaded from the literal vector),
 // and arguments are taken from A and B as necessary.  If several
 // arguments are needed the first argument will be loaded first, and thus
@@ -36,3 +36,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_throw.cpp

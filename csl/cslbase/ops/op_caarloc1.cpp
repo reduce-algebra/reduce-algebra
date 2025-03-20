@@ -1,4 +1,4 @@
-// op_caarloc1.cpp
+// caarloc1.cpp
 
 #if defined BYTECODE
             case OP_CAARLOC1:
@@ -9,14 +9,14 @@
 #elif defined __x86_64__
 
             case OP_CAARLOC1:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -8));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(spreg, -8));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
                 break;
 
 #elif defined __aarch64__
@@ -30,4 +30,4 @@
 
 #endif
 
-// end of op_caarloc1.cpp
+// end of caarloc1.cpp

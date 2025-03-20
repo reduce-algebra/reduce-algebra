@@ -1,4 +1,4 @@
-// op_jumplit1ne.cpp
+// jumplit1ne.cpp
 
 #if defined BYTECODE
             case OP_JUMPLIT1NE:
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumplit1ne.cpp

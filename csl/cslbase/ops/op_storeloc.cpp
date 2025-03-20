@@ -1,4 +1,4 @@
-// op_storeloc.cpp
+// storeloc.cpp
 
 #if defined BYTECODE
             case OP_STORELOC:
@@ -6,20 +6,17 @@
 // NB this opcode does not pop the A/B stack
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_STORELOC:
                 next = bytes[ppc++];
-                cc.mov(ptr(spreg, -8*next), A_reg);
+                storeloc(A_reg, next);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_STORELOC:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_STORELOC:
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_storeloc.cpp

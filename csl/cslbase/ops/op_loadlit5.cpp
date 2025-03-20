@@ -1,4 +1,4 @@
-// op_loadlit5.cpp
+// loadlit5.cpp
 
 #if defined BYTECODE
             case OP_LOADLIT5:
@@ -9,7 +9,7 @@
 #elif defined __x86_64__
 
             case OP_LOADLIT5:
-                cc.mov(A_reg, ptr(litvec, 40+CELL-TAG_VECTOR));
+                mov(A_reg, ptr(litvec, 40+CELL-TAG_VECTOR));
                 break;
 
 #elif defined __aarch64__
@@ -22,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadlit5.cpp

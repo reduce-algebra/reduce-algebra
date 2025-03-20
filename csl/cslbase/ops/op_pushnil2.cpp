@@ -1,4 +1,4 @@
-// op_pushnil2.cpp
+// pushnil2.cpp
 
 #if defined BYTECODE
             case OP_PUSHNIL2:
@@ -9,10 +9,10 @@
 #elif defined __x86_64__
 
             case OP_PUSHNIL2:
-                cc.add(spreg, 8);
-                cc.mov(nilreg, ptr(spreg));
-                cc.add(spreg, 8);
-                cc.mov(nilreg, ptr(spreg));
+                add(spreg, 8);
+                mov(nilreg, ptr(spreg));
+                add(spreg, 8);
+                mov(nilreg, ptr(spreg));
                 break;
 
 #elif defined __aarch64__
@@ -25,3 +25,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_pushnil2.cpp

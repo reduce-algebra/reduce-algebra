@@ -1,4 +1,4 @@
-// op_loadloc3.cpp
+// loadloc3.cpp
 
 #if defined BYTECODE
             case OP_LOADLOC3:
@@ -6,20 +6,17 @@
                 A_reg = stack[-3];
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADLOC3:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -24*next));
+                mov(B_reg, A_reg);
+                loadloc(A_reg, 3);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOADLOC3:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOADLOC3:
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadloc3.cpp

@@ -1,4 +1,4 @@
-// op_carloc10.cpp
+// carloc10.cpp
 
 #if defined BYTECODE
             case OP_CARLOC10:
@@ -14,11 +14,11 @@
 #elif defined __x86_64__
 
             case OP_CARLOC10:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -80));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(spreg, -80));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
                 break;
 
 #elif defined __aarch64__
@@ -32,4 +32,4 @@
 
 #endif
 
-// end of op_carloc10.cpp
+// end of carloc10.cpp

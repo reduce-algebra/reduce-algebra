@@ -86,26 +86,77 @@ void unfinished(const char* msg)
 #define ARCH "x86_64"
 typedef x86::Gp Register;
 typedef x86::Compiler LocalCompiler;
-
-void loadreg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
-{   cc.mov(r, ptr(base, offset));
-}
-
-void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
-{   cc.mov(ptr(base, offset), r);
-}
-
 #elif defined __aarch64__
 #define ARCH "aarch64"
 typedef a64::Gp Register;
 typedef a64::Compiler LocalCompiler;
+#else
+#define ARCH "unknown"
+#error unrecognised architecture for JIT
+#endif
 
-void loadreg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
-{   cc.ldr(r, ptr(base, offset));
+// This class will be used if the way I try to call asmjit is bad.
+
+class JitError : public ErrorHandler
+{
+public:
+    void handleError(Error err, const char* msg, BaseEmitter* origin) override
+    {   stdout_printf("+++ AsmJit error: %s\n", msg);
+        throw JitFailed("asmjit reported trouble");
+    }
+};
+
+JitRuntime rt;
+CodeHolder myCodeHolder;
+bool codeHolderInitialized = false;
+JitError jitError;
+FileLogger myFileLogger(stdout);
+
+
+// My class JITcompile extends x86::Compiler or a64::Compiler and as such
+// all the assembly code opcodes like "mov" and so on are directly available.
+// So eg code within it can go just
+//     mov(B_reg, A_reg);
+// rather than
+//     cc.mov(B_reg, A_reg);
+// For this to be useful I also want A_reg and its friends and all the
+// labels I need to use to be fields within the class.
+
+
+
+class JITCompile : public LocalCompiler 
+{
+public:
+
+JITCompile(CodeHolder* ch) : LocalCompiler(ch)
+{}
+
+Register A_reg, B_reg, litvec, nilreg, spreg, spentry, w, w1, w2, w3, w4;
+Register argregs[16];
+
+size_t ppc;
+
+Label tooFewArgs, tooManyArgs, callFailed, carError, cdrError, returnA;    
+std::vector<Label> perInstruction;
+
+#if defined __x86_64__
+
+void loadreg(Register& r, Register& base, intptr_t offset)
+{   mov(r, ptr(base, offset));
 }
 
-void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
-{   cc.str(r, ptr(base, offset));
+void storereg(Register& r, Register& base, intptr_t offset)
+{   mov(ptr(base, offset), r);
+}
+
+#elif defined __aarch64__
+
+void loadreg(Register& r, Register& base, intptr_t offset)
+{   ldr(r, ptr(base, offset));
+}
+
+void storereg(Register& r, Register& base, intptr_t offset)
+{   str(r, ptr(base, offset));
 }
 
 #else
@@ -113,65 +164,113 @@ void storereg(LocalCompiler& cc, Register& r, Register& base, intptr_t offset)
 #error unrecognised architecture for JIT
 #endif
 
-// Some overloads for setting up function calls with 0, 1,... args,
-// all of which are LispObjects.
+// The next two can be used to load and store from locations identified
+// by names like Olisp_true, Ostack, OJITshim5 and many others. The
+// storage involved is addressed relative to a register that holds the
+// nalue of nil.
 
-void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-                 Register& target, Register& result)
+void loadstatic(Register& r, NilOffset n)
+{   loadreg(r, nilreg, JIToffset(n));
+}
+
+void storestatic(Register& r, NilOffset n)
+{   storereg(r, nilreg, JIToffset(n));
+}
+
+// litvec holds a (tagged) pointer to a vector of the literals that the
+// so this loads or stores a register using the nth item in the vector.
+// Entry 0 must always be the name of the function (that is relied upon
+// when generating diagnostics).
+
+void loadlit(Register& r, int n)
+{   loadreg(r, litvec, 8*n+CELL-TAG_VECTOR);
+}
+
+void storelit(Register& r, int n)
+{   storereg(r, litvec, 8*n+CELL-TAG_VECTOR);
+}
+
+// Now functions that move values between the (Lisp) stack and registers.
+// The stack grows upwards so the nth item is 8*n bytes down from its
+// fringe.
+
+void loadloc(Register& r, int n)
+{   loadreg(r, spreg, -8*n);
+}
+
+void storeloc(Register& r, int n)
+{   storereg(r, spreg, -8*n);
+}
+
+// The register sym points to a Lisp symbol, and these two access fields
+// within it using Ovalue, Oenv, Ofunction0 etc to identify what needs
+// to be worked upon.
+
+void loadfromsymbol(Register& r,  Register& sym, size_t n)
+{   loadreg(r, sym, n-TAG_SYMBOL);
+}
+
+void storetosymbol(Register& r,  Register& sym, size_t n)
+{   storereg(r, sym, n-TAG_SYMBOL);
+}
+
+// Some overloads for setting up function calls with 0, 1,... args,
+// where all the arguments are values to be passed in general purpose
+// registers. This means that the arguments can be (u)intptr_t, T* or
+// LispObject at the C++ level.
+
+void JITcall(Register& target, Register& result)
 {   InvokeNode *in;
 // I must bring the Lisp variable holding a stack pointer up to date.
-    storereg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.invoke(&in, target,
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
         FuncSignature::build<LispObject>());
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-            Register& target, Register& result,
-            Register& a1)
+void JITcall(Register& target, Register& result,
+             Register& a1)
 {   InvokeNode *in;
-    storereg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.invoke(&in, target,
-        FuncSignature::build<LispObject, LispObject>());
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
+        FuncSignature::build<LispObject,
+                             LispObject>());
     in->setArg(0, a1);
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-            Register& target, Register& result,
-            Register& a1, Register& a2)
+void JITcall(Register& target, Register& result,
+             Register& a1, Register& a2)
 {   InvokeNode *in;
-    storereg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.invoke(&in, target,
-        FuncSignature::build<LispObject, LispObject, LispObject>());
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
+        FuncSignature::build<LispObject,
+                             LispObject, LispObject>());
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-            Register& target, Register& result,
-            Register& a1, Register& a2,
-            Register& a3)
+void JITcall(Register& target, Register& result,
+             Register& a1, Register& a2, Register& a3)
 {   InvokeNode *in;
-    storereg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.invoke(&in, target,
-        FuncSignature::build<LispObject, LispObject,
-                             LispObject, LispObject>());
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
+        FuncSignature::build<LispObject,
+                             LispObject, LispObject, LispObject>());
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setArg(2, a3);
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-            Register& target, Register& result,
-            Register& a1, Register& a2,
-            Register& a3, Register& a4)
+void JITcall(Register& target, Register& result,
+             Register& a1, Register& a2, Register& a3, Register& a4)
 {   InvokeNode *in;
-    storereg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.invoke(&in, target,
-        FuncSignature::build<LispObject, LispObject, LispObject,
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
+        FuncSignature::build<LispObject,
+                             LispObject, LispObject,
                              LispObject, LispObject>());
     in->setArg(0, a1);
     in->setArg(1, a2);
@@ -180,21 +279,40 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
     in->setRet(0, result);
 }
 
-void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
-            Register& target, Register& result,
-            Register& a1, Register& a2,
-            Register& a3, Register& a4,
-            Register& a5)
+void JITcall(Register& target, Register& result,
+             Register& a1, Register& a2,
+             Register& a3, Register& a4,
+             Register& a5)
 {   InvokeNode *in;
-    storereg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.invoke(&in, target,
-        FuncSignature::build<LispObject, LispObject, LispObject,
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
+        FuncSignature::build<LispObject,
+                             LispObject, LispObject, LispObject,
+                             LispObject, LispObject>());
+    in->setArg(0, a1);
+    in->setArg(1, a2);
+    in->setArg(2, a3);
+    in->setArg(3, a4);
+    in->setArg(4, a5);
+    in->setRet(0, result);
+}
+
+void JITcall(Register& target, Register& result,
+             Register& a1, Register& a2,
+             Register& a3, Register& a4,
+             Register& a5, Register& a6)
+{   InvokeNode *in;
+    storestatic(spreg, Ostack);
+    invoke(&in, target,
+        FuncSignature::build<LispObject,
+                             LispObject, LispObject, LispObject,
                              LispObject, LispObject, LispObject>());
     in->setArg(0, a1);
     in->setArg(1, a2);
     in->setArg(2, a3);
     in->setArg(3, a4);
     in->setArg(4, a5);
+    in->setArg(5, a6);
     in->setRet(0, result);
 }
 
@@ -221,38 +339,21 @@ void invoke(LocalCompiler& cc, Register& nilreg, Register& spreg,
 // making all this interact with saved heap images - but there is no
 // need to worry about that until and unless the schere is working.
 
-class JitError : public ErrorHandler
-{
-public:
-    void handleError(Error err, const char* msg, BaseEmitter* origin) override
-    {   stdout_printf("+++ AsmJit error: %s\n", msg);
-        throw JitFailed("asmjit reported trouble");
-    }
-};
-
-JitRuntime rt;
-
-uintptr_t demovar = 99;
-
-CodeHolder code;
-JitError jitError;
-FileLogger logger(stdout);
-bool holderOK = false;
-
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)
 {
 // I am going to start by printing the byte-stream
     stdout_printf("\nCalling jitcompile on ");
     dpr(basic_elt(env, 0));
-// Note that when a byte-code takes a follow-on byte as an operand that
-// the "opname" I display here will be garbage. I may want to rearrange the
-// codes so that I have an easy way to tell when that is going to be the
-// case. Well I am partway to making that happen...
     stdout_printf("Bytecodes...\n");
     for (size_t i=0; i<len; i++)
     {   int op = bytes[i];
-        stdout_printf("%3u:  %02x  %s\n", i, bytes[i], opnames[bytes[i]]);
+        int len = oparginfo[op] & 3;
+        stdout_printf("%3u:  %02x", i, op);
+        for (int k=2; k<=3; k++)
+            if (k<=len) stdout_printf(" %02x", bytes[++i]);
+            else stdout_printf("   ");
+        stdout_printf(" %s\n", opnames[op]);
     }
 // The literal at offset zero is the name of the function, and the
 // final entry is an integer checksum 
@@ -272,28 +373,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // Set up to use asmjit. The code here just creates and initialises
 // various things that it needs. I arrange that the CodeHolder is
 // amd object that remains in place throughout the run.
-    if (!holderOK)
-    {   Environment localEnv = rt.environment();;
-#ifdef __CYGWIN__
-        localEnv._platformABI = PlatformABI::kMSVC;
-#endif
-        code.init(localEnv, rt.cpuFeatures());
-        code.setErrorHandler(&jitError);
-// The next line will lead to the generated assembly
-// code being displayed on the standard output. This is going to be
-// really useful while developing, but it obviously gets switched off for
-// most production use.
-        code.setLogger(&logger);
-        holderOK = true;
-    }
 
-#if defined __x86_64__
-    LocalCompiler cc = x86::Compiler(&code);
-#elif defined __aarch64__
-    LocalCompiler cc = a64::Compiler(&code);
-#else
-#error unrecognised architecture for JIT
-#endif
 // Here I need to specify the type signature of the function that I am
 // creating and associate some names with the arguments it will receive.
 // The function I am defining will have min(nargs+1, 5) arguments
@@ -303,35 +383,33 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // its signature in C++ and first few lines would have been
 //    LispObject foo(LispObject litvec, LispObject a1, LispObject a2)
 //    {   RealSave save(litvec, a1, a2);
-// where the ReadSave obect's constructor has gone in effect
+// where the RealSave obect's constructor has gone in effect
 //       *stack++ = litvec;
 //       *stack++ = a1;
 //       *stack++ = a2;
 // and then set things up so that when the function terminates that
 // stack is set back to its initial value.
-// I will set up enough registers for up to 10 arguments but in most cases
-// almost all of those will not be used.
-    Register litvec = cc.newIntPtr("litvec");
-    Register argregs[16];
-    for (size_t i=1; i<=15; i++)
-        argregs[i] = cc.newIntPtr("a1");
-    Register w      = cc.newIntPtr("w");
-    Register w1     = cc.newIntPtr("w1");
-    Register w2     = cc.newIntPtr("w2");
-    Register w3     = cc.newIntPtr("w3");
-    Register w4     = cc.newIntPtr("w4");
-// I also need to registers for the things that the JITed code will do
-    Register A_reg  = cc.newIntPtr("A_reg");
-    Register B_reg  = cc.newIntPtr("B_reg");
 // Througout the JIT body I will keep a copy of the C++ value of nil
 // and of the variable "stack" in registers. I will also store the value
 // that stack has on entry to the function. I will write stack back
 // before calling a function from the JIT code. The stack pointer (and a
 // number of other things) can be accessed using indexed addressing from
 // nilreg.
-    Register nilreg  = cc.newIntPtr("nilreg");
-    Register spreg   = cc.newIntPtr("spreg");
-    Register spentry = cc.newIntPtr("spentry");
+    nilreg  = newIntPtr("nilreg");
+    spreg   = newIntPtr("spreg");
+    spentry = newIntPtr("spentry");
+    litvec = newIntPtr("litvec");
+    A_reg  = newIntPtr("A_reg");
+    B_reg  = newIntPtr("B_reg");
+    w      = newIntPtr("w");
+    w1     = newIntPtr("w1");
+    w2     = newIntPtr("w2");
+    w3     = newIntPtr("w3");
+    w4     = newIntPtr("w4");
+// I will set up enough registers for up to 15 arguments but in most cases
+// almost all of those will not be used.
+    for (size_t i=1; i<=15; i++)
+        argregs[i] = newIntPtr("a1");
 
 // The check for the right number of arguments when there are more than
 // 3 has to be dynamic, so I must be ready to return with a failure response.
@@ -340,17 +418,16 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // the value in the A register, and a vector of labels where I set one
 // on the expansion of each bytecode so that if there is a branch to
 // it I can handle that.
-    Label tooFewArgs  = cc.newLabel();
-    Label tooManyArgs = cc.newLabel();
-    Label callFailed  = cc.newLabel();
-    Label carError    = cc.newLabel();
-    Label cdrError    = cc.newLabel();
-    Label returnA     = cc.newLabel();
+    Label tooFewArgs  = newLabel();
+    Label tooManyArgs = newLabel();
+    Label callFailed  = newLabel();
+    Label carError    = newLabel();
+    Label cdrError    = newLabel();
+    Label returnA     = newLabel();
 // I am going to set a label on the code that corresponds to each bytecode
 // so that I can handle the jumps there.
-    std::vector<Label> perInstruction;
     for (size_t i=0; i<len; i++)
-        perInstruction.push_back(cc.newLabel());
+        perInstruction.push_back(newLabel());
 // I will be compiling functions with various numbers of arguments. Here I
 // need to set up a suitable function signature and associate asmjit registers
 // with all of the arguments.
@@ -358,18 +435,18 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     switch (nargs)
     {
     case 0:
-        funcNode = cc.newFunc(
+        funcNode = newFunc(
             FuncSignature::build<LispObject, LispObject>());
         funcNode->setArg(0, litvec);
         break;
     case 1:
-        funcNode = cc.newFunc(
+        funcNode = newFunc(
             FuncSignature::build<LispObject, LispObject, LispObject>());
         funcNode->setArg(0, litvec);
         funcNode->setArg(1, argregs[1]);
         break;
     case 2:
-        funcNode = cc.newFunc(
+        funcNode = newFunc(
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject>());
         funcNode->setArg(0, litvec);
@@ -377,7 +454,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode->setArg(2, argregs[2]);
         break;
     case 3:
-        funcNode = cc.newFunc(
+        funcNode = newFunc(
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject,
                                  LispObject>());
@@ -387,7 +464,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode->setArg(3, argregs[3]);
         break;
     default:          // 4 or more
-        funcNode = cc.newFunc(
+        funcNode = newFunc(
             FuncSignature::build<LispObject, LispObject,
                                  LispObject, LispObject,
                                  LispObject, LispObject>());
@@ -398,17 +475,17 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         funcNode->setArg(4, w);
         break;
     }
-    cc.addFunc(funcNode);
+    addFunc(funcNode);
 
 // Now I initialise some registers and put arguments on the Lisp stack. The
 // logic is the same on all platforms, but the instructions available to
 // do things differ.
 #ifdef __x86_64
-    cc.mov(nilreg, nil);
-    cc.mov(A_reg, nilreg);
+    mov(nilreg, nil);
+    mov(A_reg, nilreg);
 // Load spreg to hold the stack pointer.
-    cc.mov(spreg, ptr(nilreg, JIToffset(Ostack)));
-    cc.mov(spentry, spreg);
+    loadstatic(spreg, Ostack);
+    mov(spentry, spreg);
 // In CSL if a Lisp/Reduce-level function has 4 or more arguments it in fact
 // passes just the first 3 separately - all the rest are passed in a list.
 // Here I need to disentangle that. I push all the arguments onto the Lisp
@@ -417,12 +494,11 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // If I do change the C++ version I will need to restore it from spentry
 // before I exit.
     for (int i=1; i<=nargs&&i<4; i++)
-    {   cc.add(spreg, 8);
-        cc.mov(ptr(spreg), argregs[i]);
-        stdout_printf("Just moved arg %d to stack\n", i);
+    {   add(spreg, 8);
+        storeloc(argregs[i], 0);
     }
     if (nargs>=4)
-    {   cc.mov(w1, w);
+    {   mov(w1, w);
         for (int i=4; i<=nargs; i++)
         {
 // Here I need to unpack arg4 and up. This has to go sort of
@@ -432,39 +508,39 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if ((w1 & TAG_BITS) != TAG_CONS) goto tooFewArgs;
 //          aX = w1[0];
 //          w1 = w1[1];
-            cc.test(w1, TAG_BITS);
-            cc.jne(tooFewArgs);
-            cc.mov(argregs[i], ptr(w1));
-            cc.mov(w1, ptr(w1, 8));
-            cc.add(spreg, 8);
-            cc.mov(ptr(spreg), argregs[i]);
+            test(w1, TAG_BITS);
+            jne(tooFewArgs);
+            loadreg(argregs[i], w1, 0);
+            loadreg(w1, w1, 8);
+            add(spreg, 8);
+            storeloc(argregs[i], 0);
         }
-        cc.cmp(w1, nilreg);
-        cc.jne(tooManyArgs);
+        cmp(w1, nilreg);
+        jne(tooManyArgs);
     }
 #elif defined __aarch64__
-    cc.mov(nilreg, nil);
-    loadreg(cc, spreg, nilreg, JIToffset(Ostack));
-    cc.mov(spentry, spreg);
-    cc.mov(A_reg, nilreg);
+    mov(nilreg, nil);
+    loadstatic(spreg, Ostack);
+    mov(spentry, spreg);
+    mov(A_reg, nilreg);
 // On the arm I can use an addressing node that offsets from the
 // base register that is used and then updates the register. So I do not
 // need the "add" that you saw in the x86_64 version.
     for (int i=1; i<=nargs&&i<4; i++)
-    {   cc.str(argregs[i], ptr_pre(spreg, 8));
+    {   str(argregs[i], ptr_pre(spreg, 8));
         stdout_printf("Just moved arg %d to stack\n", i);
     }
     if (nargs>=4)
-    {   cc.mov(w1, w);
+    {   mov(w1, w);
         for (int i=4; i<=nargs; i++)
-        {   cc.tst(w1, TAG_BITS);
-            cc.b_ne(tooFewArgs);
-            cc.ldr(argregs[i], ptr(w1));
-            cc.ldr(w1, ptr(w1, 8));
-            cc.str(argregs[i], ptr_pre(spreg));
+        {   tst(w1, TAG_BITS);
+            b_ne(tooFewArgs);
+            ldr(argregs[i], ptr(w1));
+            ldr(w1, ptr(w1, 8));
+            str(argregs[i], ptr_pre(spreg));
         }
-        cc.cmp(w1, nilreg);
-        cc.b_ne(tooManyArgs);
+        cmp(w1, nilreg);
+        b_ne(tooManyArgs);
     }
 #else
 #error unrecognised architecture for JIT
@@ -477,16 +553,16 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // On entry to the function the "env" argument held the name of the
 // function being called. As this code executes what I need is its
 // vector of literals, which lives in the env field of the Symbol Head.
-    loadreg(cc, litvec, litvec, offsetof(Symbol_Head, env)-TAG_SYMBOL);
+    loadfromsymbol(litvec, litvec, Oenv);
     TRY
-    {   size_t ppc = 0;
-        int next;
+    {   ppc = 0;
+        intptr_t next;
         while (ppc<len)
         {
 // Set a label on the code that derives from each opcode. Note that
 // because the "case" code for some opcode will increment ppc there will
 // be some of the labels that are neither defined nor used.
-            cc.bind(perInstruction[ppc]);
+            bind(perInstruction[ppc]);
             stdout_printf("Byte %.2x : %s\n", bytes[ppc], opnames[bytes[ppc]]);
             switch (bytes[ppc++])
             {
@@ -502,43 +578,45 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 
     stdout_printf("Set the labels that I ought to\n");
 // There are labels here for error exits.
-    cc.bind(tooFewArgs);
+    bind(tooFewArgs);
 // At this stage litvec holds the name of the function involved...
-        loadreg(cc, w, litvec, CELL-TAG_VECTOR);
-        storereg(cc, w, nilreg, JIToffset(OJITarg1));
-        loadreg(cc, w, nilreg, JIToffset(OJITtoofew));
-        cc.chain(w);
-    cc.bind(tooManyArgs);
-        loadreg(cc, w, litvec, CELL-TAG_VECTOR);
-        storereg(cc, w, nilreg, JIToffset(OJITarg1));
-        loadreg(cc, w, nilreg, JIToffset(OJITtoomany));
-        cc.chain(w);
-    cc.bind(callFailed);
-        storereg(cc, spentry, nilreg, JIToffset(Ostack));
-        loadreg(cc, w, nilreg, JIToffset(OJITthrow));
-        cc.chain(w);
-    cc.bind(carError);
-        storereg(cc, spentry, nilreg, JIToffset(Ostack));
-        storereg(cc, w=A_reg, nilreg, JIToffset(OJITarg1));
-        loadreg(cc, w, nilreg, JIToffset(OJITcar_fails));
-        cc.chain(w);
-    cc.bind(cdrError);
-        storereg(cc, spentry, nilreg, JIToffset(Ostack));
-        storereg(cc, w=A_reg, nilreg, JIToffset(OJITarg1));
-        loadreg(cc, w, nilreg, JIToffset(OJITcdr_fails));
-        cc.chain(w);
+        loadlit(A_reg, 0);
+        storestatic(A_reg, OJITarg1);
+        loadstatic(A_reg, OJITtoofew);
+        chain(A_reg);
+    bind(tooManyArgs);
+        loadlit(A_reg, 0);
+        storestatic(A_reg, OJITarg1);
+        loadstatic(A_reg, OJITtoomany);
+        chain(A_reg);
+    bind(callFailed);
+        storestatic(spentry, Ostack);
+        loadstatic(A_reg, OJITthrow);
+        chain(A_reg);
+    bind(carError);
+        storestatic(spentry, Ostack);
+        storestatic(A_reg, OJITarg1);
+        loadstatic(A_reg, OJITcar_fails);
+        chain(A_reg);
+    bind(cdrError);
+        storestatic(spentry, Ostack);
+        storestatic(A_reg, OJITarg1);
+        loadstatic(A_reg, OJITcdr_fails);
+        chain(A_reg);
 
-    cc.bind(returnA);
+    bind(returnA);
 // Ensure that the Lisp stack pointer is in a good state.
-    storereg(cc, spentry, nilreg, JIToffset(Ostack));
-    cc.ret(A_reg);
+    storestatic(spentry, Ostack);
+    ret(A_reg);
 
-    cc.endFunc();
-    cc.finalize();
+    endFunc();
+    finalize();
     void* func = nullptr;
-    if (rt.add(&func, &code) != ErrorCode::kErrorOk)
+    if (rt.add(&func, &myCodeHolder) != ErrorCode::kErrorOk)
         throw JitFailed("rt.add failed");
-    size_t size = code.codeSize();
+// The size here might be the total size to date rather than just that from
+// the current function???
+    size_t size = myCodeHolder.codeSize();
     stdout_printf("size=%d code at %p\n", size, func);
     if (func != nullptr)
     {   FILE* hex = fopen("hex", "w");
@@ -560,45 +638,17 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 // generated code - but to do that it needs registers etc set up as if it
 // was being used sensibly.
 
-LispObject Ljit_unfinished(LispObject env)
+void Ljit_unfinished()
 {   int numberUnfinished = 0;
     int online = 0;
-    CodeHolder code;
-    Environment localEnv = rt.environment();;
-    code.init(localEnv, rt.cpuFeatures());
-    JitError jitError;
-    code.setErrorHandler(&jitError);
-#if defined __x86_64__
-typedef x86::Gp Register;
-    LocalCompiler cc = x86::Compiler(&code);
-#elif defined __aarch64__
-typedef a64::Gp Register;
-    LocalCompiler cc = a64::Compiler(&code);
-#endif
-    Register litvec = cc.newIntPtr("litvec");
-    Register argregs[16];
     for (size_t i=1; i<=15; i++)
-        argregs[i] = cc.newIntPtr("a1");
-    Register w       = cc.newIntPtr("w");
-    Register w1      = cc.newIntPtr("w1");
-    Register w2      = cc.newIntPtr("w2");
-    Register w3      = cc.newIntPtr("w3");
-    Register w4      = cc.newIntPtr("w4");
-    Register A_reg   = cc.newIntPtr("A_reg");
-    Register B_reg   = cc.newIntPtr("B_reg");
-    Register spreg   = cc.newIntPtr("spreg");
-    Register nilreg  = cc.newIntPtr("nilreg");
-    Label callFailed = cc.newLabel();
-    Label carError   = cc.newLabel();
-    Label cdrError   = cc.newLabel();
-    Label returnA    = cc.newLabel();
-    std::vector<Label> perInstruction;
+        argregs[i] = newIntPtr("a1");
     for (size_t i=0; i<256; i++)
-        perInstruction.push_back(cc.newLabel());
+        perInstruction.push_back(newLabel());
     unsigned char bytes[512];
     for (size_t i=0; i<sizeof(bytes); i++) bytes[i] = 0;
-    size_t ppc = 0;
-    int next;
+    ppc = 0;
+    intptr_t next;
     testingForUnfinished = true;
     stdout_printf("\nThe following opcodes are not yet coded for %s\n", ARCH);
     for (unsigned int code=0; code<256; code++)
@@ -652,6 +702,42 @@ typedef a64::Gp Register;
 // the 2 opcodes that are currently spare.
     stdout_printf("\n%d bytecodes handled so %d still need review\n",
                   256-numberUnfinished, numberUnfinished-2);
+}
+
+}; // end of JITCompile class
+
+// Now the simple entrypoint...
+
+void* jitcompile(const unsigned char* bytes, size_t len,
+                 LispObject env, int nargs)
+{   if (!codeHolderInitialized)
+    {   Environment localEnv = rt.environment();;
+#ifdef __CYGWIN__
+        localEnv._platformABI = PlatformABI::kMSVC;
+#endif
+        myCodeHolder.init(localEnv, rt.cpuFeatures());
+        myCodeHolder.setErrorHandler(&jitError);
+// The next line will lead to the generated assembly
+// code being displayed on the standard output. This is going to be
+// really useful while developing, but it obviously gets switched off for
+// most production use.
+        myCodeHolder.setLogger(&myFileLogger);
+        codeHolderInitialized = true;
+    }
+    JITCompile cc(&myCodeHolder);
+    return cc.jitcompile(bytes, len, env, nargs);
+}
+
+LispObject Ljit_unfinished(LispObject env)
+{   CodeHolder scrap;
+    Environment localEnv = rt.environment();;
+#ifdef __CYGWIN__
+    localEnv._platformABI = PlatformABI::kMSVC;
+#endif
+    scrap.init(localEnv, rt.cpuFeatures());
+    scrap.setErrorHandler(&jitError);
+    JITCompile cc(&scrap);
+    cc.Ljit_unfinished();
     return nil;
 }
 
@@ -659,7 +745,7 @@ typedef a64::Gp Register;
 
 // The functions here are no use, but are provided so that image files
 // are compatible across architectures. By always returning nullptr this
-// reports that it is unable to map from bytecodes to native instructions.
+// reports that it is unable to map from bytemyCodeHolders to native instructions.
 
 void* jitcompile(const unsigned char* bytes, size_t len,
                  LispObject env, int nargs)

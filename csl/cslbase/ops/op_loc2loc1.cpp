@@ -1,4 +1,4 @@
-// op_loc2loc1.cpp
+// loc2loc1.cpp
 
 #if defined BYTECODE
             case OP_LOC2LOC1:
@@ -9,8 +9,8 @@
 #elif defined __x86_64__
 
             case OP_LOC2LOC1:
-                cc.mov(B_reg, ptr(spreg, -16));
-                cc.mov(A_reg, ptr(spreg, -8));
+                mov(B_reg, ptr(spreg, -16));
+                mov(A_reg, ptr(spreg, -8));
                 break;
 
 #elif defined __aarch64__
@@ -24,4 +24,4 @@
 
 #endif
 
-// end of op_loc2loc1.cpp
+// end of loc2loc1.cpp

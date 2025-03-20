@@ -1,4 +1,4 @@
-// op_jumpequal.cpp
+// jumpequal.cpp
 
 #if defined BYTECODE
             case OP_JUMPEQUAL:
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpequal.cpp

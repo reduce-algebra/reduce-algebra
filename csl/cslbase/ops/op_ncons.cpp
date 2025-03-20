@@ -1,4 +1,4 @@
-// op_ncons.cpp
+// ncons.cpp
 
 #if defined BYTECODE
             case OP_NCONS:                          // A_reg = cons(A_reg, nil);
@@ -22,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_ncons.cpp

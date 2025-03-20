@@ -1,4 +1,4 @@
-// op_loadloc10.cpp
+// loadloc10.cpp
 
 #if defined BYTECODE
             case OP_LOADLOC10:
@@ -9,8 +9,8 @@
 #elif defined __x86_64__
 
             case OP_LOADLOC10:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -80*next));
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(spreg, -80*next));
                 break;
 
 #elif defined __aarch64__
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadloc10.cpp

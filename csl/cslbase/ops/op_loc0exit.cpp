@@ -1,10 +1,10 @@
-// op_loc0exit.cpp
+// loc0exit.cpp
 
 #if defined BYTECODE
             case OP_LOC0EXIT:
-// If I execute this opcode then I will have followed a path that will have
-// executed previous opcodes to restore fluids etc. entry_stack is where the
-// stack needs to be so that arguments have been popped as necessary.
+// If I execute this ode then I will have followed a path that will have
+// executed previous odes to restore fluids etc. entry_stack is where the
+// stack needs to be so that arguments have been ped as necessary.
                 A_reg = stack[0];
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
@@ -20,8 +20,8 @@
 #elif defined __x86_64__
 
             case OP_LOC0EXIT:
-                cc.mov(A_reg, ptr(spreg));
-                cc.jmp(returnA);
+                mov(A_reg, ptr(spreg));
+                jmp(returnA);
                 break;
 
 #elif defined __aarch64__
@@ -34,3 +34,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loc0exit.cpp

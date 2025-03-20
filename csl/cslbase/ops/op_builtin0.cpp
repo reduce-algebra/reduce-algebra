@@ -1,4 +1,4 @@
-// op_builtin0.cpp
+// builtin0.cpp
 
 #if defined BYTECODE
             case OP_BUILTIN0:
@@ -32,3 +32,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_builtin0.cpp

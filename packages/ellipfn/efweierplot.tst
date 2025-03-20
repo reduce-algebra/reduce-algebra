@@ -3,6 +3,7 @@
 % cf. <https://dlmf.nist.gov/23.4>
 
 % Author: Francis Wright, March 2025
+% $Id$
 
 % Rough timings are included for each plot.
 
@@ -96,13 +97,8 @@ plot(abs Weierstrass_sigma0(x+i*y, 1, i), x = (-2.5 .. 2.5), y = (-2.5 .. 2.5),
 
 % cf. Figure 23.4.12: ℘⁡(3.7;a+i⁢b,0) for −5≤a≤3, −4≤b≤4. There is a
 % double zero at a=b=0 and double poles on the real axis.
-% plot(abs Weierstrass1(3.7, a+i*b, 0), a = (-5 .. 3), b = (-4 .. 4),
-%    z = (0 .. 40), title = "z = |Weierstrass p(3.7; a+ib, 0)|", hidden3d);
-% PLOT IGNORES Z RANGE!  TO BE FIXED.
-% Ugly work-around:
-plot(abs Weierstrass1(3.7, x+i*y, 0), x = (-5 .. 3), y = (-4 .. 4),
-   z = (0 .. 40), title = "z = |Weierstrass p(3.7; a+ib, 0)|", hidden3d,
-   xlabel = "a", ylabel = "b");
+plot(abs Weierstrass1(3.7, a+i*b, 0), a = (-5 .. 3), b = (-4 .. 4),
+   z = (0 .. 40), title = "z = |Weierstrass p(3.7; a+ib, 0)|", hidden3d);
 % Time: 25s
 
 ;end;

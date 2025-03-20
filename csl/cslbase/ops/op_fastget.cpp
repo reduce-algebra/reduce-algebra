@@ -1,4 +1,4 @@
-// op_fastget.cpp
+// fastget.cpp
 
 #if defined BYTECODE
             case OP_FASTGET:
@@ -45,3 +45,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_fastget.cpp

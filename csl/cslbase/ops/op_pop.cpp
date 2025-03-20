@@ -9,9 +9,9 @@
 #elif defined __x86_64__
 
             case OP_POP:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg));
-                cc.add(spreg, -8);
+                mov(B_reg, A_reg);
+                loadloc(A_reg, 0);
+                add(spreg, -8);
                 break;
 
 #elif defined __aarch64__

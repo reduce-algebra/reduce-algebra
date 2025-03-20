@@ -1,4 +1,4 @@
-// op_loadlit1.cpp
+// loadlit1.cpp
 
 #if defined BYTECODE
             case OP_LOADLIT1:
@@ -6,20 +6,17 @@
                 A_reg = basic_elt(litvec, 1);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADLIT1:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 8+CELL-TAG_VECTOR));
+                mov(B_reg, A_reg);
+                loadlit(A_reg, 1);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOADLIT1:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOADLIT1:
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadlit1.cpp

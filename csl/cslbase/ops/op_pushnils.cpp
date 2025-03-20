@@ -1,4 +1,4 @@
-// op_pushnils.cpp
+// pushnils.cpp
 
 #if defined BYTECODE
             case OP_PUSHNILS:
@@ -11,8 +11,8 @@
             case OP_PUSHNILS:
                 next = bytes[ppc++];
                 for (int k=0; k<next; k++)
-                {   cc.add(spreg, 8);
-                    cc.mov(nilreg, ptr(spreg));
+                {   add(spreg, 8);
+                    storeloc(nilreg, 0);
                 }
                 break;
 
@@ -26,3 +26,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_pushnils.cpp

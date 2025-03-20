@@ -1,4 +1,4 @@
-// op_cons.cpp
+// cons.cpp
 
 #if defined BYTECODE
             case OP_CONS:                           // A_reg = cons(B_reg, A_reg);
@@ -8,9 +8,9 @@
 
 //
 // FASTGET n
-//     0 <= n < 64       (GET A_reg property_n)
-//    64 <= n < 128      (GET A_reg property_n B_reg)
-//   128 <= n < 192      (FLAGP A_reg property_n)
+//     0 <= n < 64       (GET A_reg prrty_n)
+//    64 <= n < 128      (GET A_reg prrty_n B_reg)
+//   128 <= n < 192      (FLAGP A_reg prrty_n)
 //   192 <= n < 256      not used at present.
 //
 #elif defined __x86_64__
@@ -28,3 +28,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_cons.cpp

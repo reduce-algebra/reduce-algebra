@@ -188,11 +188,21 @@ symbolic procedure ploteval2 ();
        dvar:=car u or dvar;
        ivars := plotindepvars(cdr u,ivars)>>;
       % classify
-   if null dvar then
-   <<dvar:='(x y z);
-     for each x in ivars do dvar:=delete(x,dvar);
-     if dvar then dvar:=if 'y memq dvar then 'y else car dvar;
-   >>;
+   % if null dvar then
+   % <<dvar:='(x y z);
+   %   for each x in ivars do dvar:=delete(x,dvar);
+   %   if dvar then dvar:=if 'y memq dvar then 'y else car dvar;
+   % >>;
+   if null dvar then   % find the best dep var
+      % Check variables specified as <var> = <range>:
+      << dvar := mapcar(plotranges!*, function car);
+         % Remove known ind vars:
+         for each x in ivars do dvar := delete(x, dvar);
+         % Regard first remaining variable as dep var...
+         dvar := if dvar then car dvar else
+            % or choose the best default...
+            if length ivars = 1 then 'y else 'z
+      >>;
   %  if para and length ivars=1 then plotevalpara1(car ivars) else
   %  if para and length ivars=2 then plotevalpara2(car ivars,cadr ivars)
   %   else if length ivars=1 then ploteval2x(car ivars,dvar) else

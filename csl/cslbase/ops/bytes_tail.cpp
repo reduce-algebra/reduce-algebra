@@ -3,7 +3,7 @@
         }
 
 //*****************************************************************************
-// End of the main block of opcodes.
+// End of the main block of odes.
 //*****************************************************************************
     } // end of switch block
     CATCH(LispException)
@@ -28,12 +28,12 @@
                 *++stack = Lmv_list(nil, exit_value);
                 ppc = w;
                 A_reg = exit_value;
-                goto next_opcode;
+                goto next_ode;
             }
             else if (exit_reason == UNWIND_THROW && r1 == exit_tag)
             {   ppc = w;
                 A_reg = exit_value;
-                goto next_opcode;
+                goto next_ode;
             }
         }
     END_CATCH;

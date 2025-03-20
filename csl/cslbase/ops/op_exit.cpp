@@ -1,10 +1,10 @@
-// op_exit.cpp
+// exit.cpp
 
 #if defined BYTECODE
             case OP_EXIT:
 //
 // Here I assume that exit_count has been set up already. Note also that
-// there is no need to do any LOSE operations just before an EXIT since the
+// there is no need to do any LOSE rations just before an EXIT since the
 // stack gets reset automatically here.
 //
                 stack = entry_stack;
@@ -21,13 +21,13 @@
 #elif defined __x86_64__
 
             case OP_EXIT:
-                cc.jmp(returnA);
+                jmp(returnA);
                 break;
 
 #elif defined __aarch64__
 
             case OP_EXIT:
-                cc.b(returnA);
+                b(returnA);
                 break;
 
 #else
@@ -36,4 +36,4 @@
 
 #endif
 
-// end of op_exit.cpp
+// end of exit.cpp

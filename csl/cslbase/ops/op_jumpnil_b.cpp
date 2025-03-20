@@ -1,4 +1,4 @@
-// op_jumpnil_b.cpp
+// jumpnil_b.cpp
 
 #if defined BYTECODE
             case OP_JUMPNIL_B:
@@ -11,8 +11,8 @@
 
             case OP_JUMPNIL_B:
                 next = bytes[ppc++];
-                cc.cmp(A_reg, nilreg);
-                cc.je(perInstruction[ppc-next]);
+                cmp(A_reg, nilreg);
+                je(perInstruction[ppc-next]);
                 break;
 
 
@@ -27,3 +27,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpnil_b.cpp

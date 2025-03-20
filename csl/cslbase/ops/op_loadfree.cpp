@@ -1,4 +1,4 @@
-// op_loadfree.cpp
+// loadfree.cpp
 
 #if defined BYTECODE
             case OP_LOADFREE:
@@ -9,23 +9,19 @@
                 A_reg = qvalue(basic_elt(litvec, next_byte));
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADFREE:
                 next = bytes[ppc++];
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 8*next+CELL-TAG_VECTOR));
-                cc.mov(A_reg, ptr(A_reg,
-                   offsetof(Symbol_Head, value)-TAG_SYMBOL));
+                mov(B_reg, A_reg);
+                loadlit(A_reg, next);
+                loadfromsymbol(A_reg, A_reg, Ovalue);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOADFREE:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOADFREE:
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadfree.cpp

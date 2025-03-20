@@ -1,4 +1,4 @@
-// op_jumplit1eq.cpp
+// jumplit1eq.cpp
 
 #if defined BYTECODE
             case OP_JUMPLIT1EQ:
@@ -11,7 +11,11 @@
 #elif defined __x86_64__
 
             case OP_JUMPLIT1EQ:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                loadlit(w, 1);
+                cmp(A_reg, w);
+                je(perInstruction[ppc+next]);
+                break;
 
 #elif defined __aarch64__
 
@@ -23,3 +27,7 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+
+// end of op_jumplit1eq.cpp
+

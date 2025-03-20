@@ -1,4 +1,4 @@
-// op_jumpnatom_l.cpp
+// jumpnatom_l.cpp
 
 #if defined BYTECODE
             case OP_JUMPNATOM_L:
@@ -13,8 +13,8 @@
             case OP_JUMPNATOM_L:
                 next = bytes[ppc++];
                 next = (next<<8) | bytes[ppc++];
-                cc.test(A_reg, TAG_BITS);
-                cc.je(perInstruction[ppc+next]);
+                test(A_reg, TAG_BITS);
+                je(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__
@@ -28,4 +28,4 @@
 
 #endif
 
-// end of op_jumpnatom_l.cpp
+// end of jumpnatom_l.cpp
