@@ -1,4 +1,4 @@
-// op_jumpl1atom.cpp
+// jumpl1atom.cpp
 
 #if defined BYTECODE
             case OP_JUMPL1ATOM:
@@ -22,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpl1atom.cpp

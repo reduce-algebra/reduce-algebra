@@ -1,4 +1,4 @@
-// op_storefree.cpp
+// storefree.cpp
 
 #if defined BYTECODE
             case OP_STOREFREE:
@@ -13,7 +13,11 @@
 #elif defined __x86_64__
 
             case OP_STOREFREE:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                mov(w, ptr(litvec, 8*next+CELL-TAG_VECTOR));
+                mov(ptr(A_reg, offsetof(Symbol_Head, value)-TAG_SYMBOL),
+                       A_reg);
+                break;
 
 #elif defined __aarch64__
 
@@ -25,3 +29,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of storefree.cpp

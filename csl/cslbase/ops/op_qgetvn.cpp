@@ -1,4 +1,4 @@
-// op_qgetvn.cpp
+// qgetvn.cpp
 
 #if defined BYTECODE
             case OP_QGETVN:                         // A_reg = getv(A_reg, n)
@@ -29,3 +29,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_qgetvn.cpp

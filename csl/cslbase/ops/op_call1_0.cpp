@@ -1,4 +1,4 @@
-// op_call1_0.cpp
+// call1_0.cpp
 
 #if defined BYTECODE
             case OP_CALL1_0:
@@ -30,14 +30,14 @@
 #elif defined __x86_64__
 
             case OP_CALL1_0:
-                cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
-                cc.mov(w2, ptr(litvec, CELL-TAG_VECTOR));
-                cc.mov(w1,
+                mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                mov(w2, ptr(litvec, CELL-TAG_VECTOR));
+                mov(w1,
                        ptr(w2, offsetof(Symbol_Head, function1)-TAG_SYMBOL));
-                invoke(cc, nilreg, spreg, w, A_reg,
+                JITcall(w, A_reg,
                        w, w1, w2, A_reg);
-                cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                cc.jne(callFailed);
+                cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                jne(callFailed);
                 break;
 
 #elif defined __aarch64__
@@ -51,4 +51,4 @@
 
 #endif
 
-// end of op_call0.cpp
+// end of call0.cpp

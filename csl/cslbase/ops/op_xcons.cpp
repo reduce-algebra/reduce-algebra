@@ -1,4 +1,4 @@
-// op_xcons.cpp
+// xcons.cpp
 
 #if defined BYTECODE
             case OP_XCONS:                          // A_reg = cons(A_reg, B_reg);
@@ -21,3 +21,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_xcons.cpp

@@ -1,4 +1,4 @@
-// op_cdr.cpp
+// cdr.cpp
 
 #if defined BYTECODE
             case OP_CDR:
@@ -12,9 +12,9 @@
 #elif defined __x86_64__
 
             case OP_CDR:
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(cdrError);
-                cc.mov(A_reg, ptr(A_reg, 8));
+                test(A_reg, TAG_BITS);
+                jne(cdrError);
+                mov(A_reg, ptr(A_reg, 8));
                 break;
 
 #elif defined __aarch64__
@@ -28,4 +28,4 @@
 
 #endif
 
-// end of op_cdr.cpp
+// end of cdr.cpp

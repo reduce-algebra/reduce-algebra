@@ -1,4 +1,4 @@
-// op_get.cpp
+// get.cpp
 
 #if defined BYTECODE
             case OP_GET:                                    // A = get(B, A)
@@ -21,3 +21,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_get.cpp

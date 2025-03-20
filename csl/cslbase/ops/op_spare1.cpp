@@ -1,4 +1,4 @@
-// op_spare1.cpp
+// spare1.cpp
 
 #if defined BYTECODE
 
@@ -20,3 +20,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_spare1.cpp

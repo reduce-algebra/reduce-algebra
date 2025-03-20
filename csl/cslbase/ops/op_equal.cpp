@@ -1,4 +1,4 @@
-// op_equal.cpp
+// equal.cpp
 
 #if defined BYTECODE
             case OP_EQUAL:                                  // A = equal(B, A)
@@ -21,3 +21,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_equal.cpp

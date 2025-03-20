@@ -1,4 +1,4 @@
-// op_freerstr.cpp
+// freerstr.cpp
 
 #if defined BYTECODE
             case OP_FREERSTR:
@@ -20,3 +20,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_freerstr.cpp

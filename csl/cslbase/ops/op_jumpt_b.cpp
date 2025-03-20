@@ -1,4 +1,4 @@
-// op_jumpt_b.cpp
+// jumpt_b.cpp
 
 #if defined BYTECODE
             case OP_JUMPT_B:
@@ -11,8 +11,8 @@
 
             case OP_JUMPT_B:
                 next = bytes[ppc++];
-                cc.cmp(A_reg, nilreg);
-                cc.jne(perInstruction[ppc-next]);
+                cmp(A_reg, nilreg);
+                jne(perInstruction[ppc-next]);
                 break;
 
 
@@ -27,4 +27,4 @@
 
 #endif
 
-// end of op_jumpt_b.cpp
+// end of jumpt_b.cpp

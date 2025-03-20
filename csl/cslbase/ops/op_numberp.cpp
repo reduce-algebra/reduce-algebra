@@ -1,4 +1,4 @@
-// op_numberp.cpp
+// numberp.cpp
 
 #if defined BYTECODE
             case OP_NUMBERP:                                // A = numberp(A)
@@ -20,3 +20,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_numberp.cpp

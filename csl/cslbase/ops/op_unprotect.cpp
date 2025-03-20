@@ -1,4 +1,4 @@
-// op_unprotect.cpp
+// unprotect.cpp
 
 #if defined BYTECODE
             case OP_UNPROTECT:
@@ -25,7 +25,7 @@
 // action that was the same sort as the one that caused me to arrive. I
 // think that will involve switching on exit_reason and trying to re-create
 // the correct state. In native C++ situations I would be able to go just
-// "throw;" without an operand except that in this code I am now outside
+// "throw;" without an rand except that in this code I am now outside
 // the block that was the signal handler.
                 switch (exit_reason)
                 {   case UNWIND_NULL:      continue;
@@ -55,3 +55,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_unprotect.cpp

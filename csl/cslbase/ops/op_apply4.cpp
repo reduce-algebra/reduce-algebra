@@ -1,4 +1,4 @@
-// op_apply4.cpp
+// apply4.cpp
 
 #if defined BYTECODE
             case OP_APPLY4:
@@ -8,7 +8,7 @@
 // APPLY3 I do not wrap the final two arguments up in a list but instead pass
 // them individually.
                 r2 = *stack;
-                if (is_symbol(r2))   // can optimise this case, I guess
+                if (is_symbol(r2))   // can imise this case, I guess
                 {   A_reg = ncons(A_reg);    // Make 4th arg a list!
                     RECORD_CALL(list4star(r2, r3, r1, B_reg, A_reg));
                     errexit();
@@ -49,3 +49,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_apply4.cpp

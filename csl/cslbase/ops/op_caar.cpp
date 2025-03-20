@@ -1,4 +1,4 @@
-// op_caar.cpp
+// caar.cpp
 
 #if defined BYTECODE
             case OP_CAAR:
@@ -18,12 +18,12 @@
 #elif defined __x86_64__
 
             case OP_CAAR:
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
                 break;
 
 #elif defined __aarch64__
@@ -37,4 +37,4 @@
 
 #endif
 
-// end of op_caar.cpp
+// end of caar.cpp

@@ -1,4 +1,4 @@
-// op_call1.cpp
+// call1.cpp
 
 #if defined BYTECODE
             case OP_CALL1:
@@ -19,14 +19,14 @@
 
             case OP_CALL1:
                 next = bytes[ppc++];
-                cc.mov(w, ptr(nilreg, JIToffset(OJITshim2)));
-                cc.mov(w2, ptr(litvec, 8*next+CELL-TAG_VECTOR));
-                cc.mov(w1,
+                mov(w, ptr(nilreg, JIToffset(OJITshim2)));
+                mov(w2, ptr(litvec, 8*next+CELL-TAG_VECTOR));
+                mov(w1,
                        ptr(w2, offsetof(Symbol_Head, function1)-TAG_SYMBOL));
-                invoke(cc, nilreg, spreg, w, A_reg,
+                JITcall(w, A_reg,
                        w, w1, w2, A_reg);
-                cc.cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                cc.jne(callFailed);
+                cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                jne(callFailed);
                 break;
 
 #elif defined __aarch64__
@@ -40,4 +40,4 @@
 
 #endif
 
-// end of op_call1.cpp
+// end of call1.cpp

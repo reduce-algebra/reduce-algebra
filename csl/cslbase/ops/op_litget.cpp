@@ -1,4 +1,4 @@
-// op_litget.cpp
+// litget.cpp
 
 #if defined BYTECODE
             case OP_LITGET:
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_litget.cpp

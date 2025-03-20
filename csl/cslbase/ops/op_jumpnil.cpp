@@ -1,4 +1,4 @@
-// op_jumpnil.cpp
+// jumpnil.cpp
 
 #if defined BYTECODE
             case OP_JUMPNIL:
@@ -16,8 +16,8 @@
 
             case OP_JUMPNIL:
                 next = bytes[ppc++];
-                cc.cmp(A_reg, nilreg);
-                cc.je(perInstruction[ppc+next]);
+                cmp(A_reg, nilreg);
+                je(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__
@@ -32,4 +32,4 @@
 
 #endif
 
-// end of op_jumpnil.cpp
+// end of jumpnil.cpp

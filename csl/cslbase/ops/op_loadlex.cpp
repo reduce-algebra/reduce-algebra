@@ -1,4 +1,4 @@
-// op_loadlex.cpp
+// loadlex.cpp
 
 #if defined BYTECODE
             case OP_LOADLEX:
@@ -24,3 +24,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadlex.cpp

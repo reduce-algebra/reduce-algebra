@@ -1,4 +1,4 @@
-// op_vnil.cpp
+// vnil.cpp
 
 #if defined BYTECODE
             case OP_VNIL:
@@ -9,7 +9,9 @@
 #elif defined __x86_64__
 
             case OP_VNIL:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                mov(B_reg, A_reg);
+                mov(A_reg, nilreg);
+                break;
 
 #elif defined __aarch64__
 
@@ -21,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of vnil.cpp

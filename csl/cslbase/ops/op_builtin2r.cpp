@@ -1,4 +1,4 @@
-// op_builtin2r.cpp
+// builtin2r.cpp
 
 #if defined BYTECODE
             case OP_BUILTIN2R:
@@ -28,3 +28,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_builtin2r.cpp

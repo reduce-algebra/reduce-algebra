@@ -1,4 +1,4 @@
-// op_loadloc5.cpp
+// loadloc5.cpp
 
 #if defined BYTECODE
             case OP_LOADLOC5:
@@ -6,11 +6,11 @@
                 A_reg = stack[-5];
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADLOC5:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -40*next));
+                mov(B_reg, A_reg);
+                loadloc(A_reg, 5);
                 break;
 
 #elif defined __aarch64__
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadloc5.cpp

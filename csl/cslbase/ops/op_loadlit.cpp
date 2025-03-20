@@ -1,10 +1,10 @@
-// op_loadlit.cpp
+// loadlit.cpp
 
 #if defined BYTECODE
             case OP_LOADLIT:
 //
 // Associated with each body of byte-codes there is a literal vector,
-// and this opcode loads values from same.  The literal vector has a
+// and this ode loads values from same.  The literal vector has a
 // header word and is tagged as a Lisp vector.
 //
                 B_reg = A_reg;
@@ -15,8 +15,8 @@
 
             case OP_LOADLIT:
                 next = bytes[ppc++];
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 8*next+CELL-TAG_VECTOR));
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(litvec, 8*next+CELL-TAG_VECTOR));
                 break;
 
 #elif defined __aarch64__
@@ -29,3 +29,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadlit.cpp

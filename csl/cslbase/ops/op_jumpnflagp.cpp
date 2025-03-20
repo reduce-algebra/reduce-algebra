@@ -1,4 +1,4 @@
-// op_jumpnflagp.cpp
+// jumpnflagp.cpp
 
 #if defined BYTECODE
             case OP_JUMPNFLAGP:
@@ -27,7 +27,7 @@
 //
 // Now the general jumps.  Each has four variants - forwards and backwards
 // and long and short offsets.  Backwards jumps poll for interrupts so that
-// all loops will be interruptible.
+// all lo will be interruptible.
 //
 
 #elif defined __x86_64__
@@ -45,3 +45,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpnflagp.cpp

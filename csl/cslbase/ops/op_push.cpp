@@ -1,4 +1,4 @@
-// op_push.cpp
+// push.cpp
 
 #if defined BYTECODE
             case OP_PUSH:
@@ -8,8 +8,8 @@
 #elif defined __x86_64__
 
             case OP_PUSH:
-                cc.add(spreg, 8);
-                cc.mov(ptr(spreg), A_reg);
+                add(spreg, 8);
+                mov(ptr(spreg), A_reg);
                 break;
 
 #elif defined __aarch64__
@@ -22,3 +22,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_push.cpp

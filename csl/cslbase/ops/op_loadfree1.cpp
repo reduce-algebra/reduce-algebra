@@ -1,4 +1,4 @@
-// op_loadfree1.cpp
+// loadfree1.cpp
 
 #if defined BYTECODE
             case OP_LOADFREE1:
@@ -9,9 +9,9 @@
 #elif defined __x86_64__
 
             case OP_LOADFREE1:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 8+CELL-TAG_VECTOR));
-                cc.mov(A_reg, ptr(A_reg,
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(litvec, 8+CELL-TAG_VECTOR));
+                mov(A_reg, ptr(A_reg,
                    offsetof(Symbol_Head, value)-TAG_SYMBOL));
                 break;
 
@@ -25,3 +25,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_loadfree1.cpp

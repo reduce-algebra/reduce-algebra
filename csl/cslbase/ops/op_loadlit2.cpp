@@ -1,4 +1,4 @@
-// op_loadlit2.cpp
+// loadlit2.cpp
 
 #if defined BYTECODE
             case OP_LOADLIT2:
@@ -6,18 +6,11 @@
                 A_reg = basic_elt(litvec, 2);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADLIT2:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(litvec, 16+CELL-TAG_VECTOR));
-                break;
-
-#elif defined __aarch64__
-
-            case OP_LOADLIT2:
-                cc.mov(B_reg, A_reg);
-                cc.ldr(A_reg, ptr(litvec, 16+CELL-TAG_VECTOR));
+                mov(B_reg, A_reg);
+                loadlit(A_reg, 2);
                 break;
 
 #else
@@ -26,4 +19,4 @@
 
 #endif
 
-// end of op_loadlit2.cpp
+// end of loadlit2.cpp

@@ -1,4 +1,4 @@
-// op_getv.cpp
+// getv.cpp
 
 #if defined BYTECODE
             case OP_GETV:                           // A_reg = getv(B_reg, A_reg)
@@ -21,3 +21,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_getv.cpp

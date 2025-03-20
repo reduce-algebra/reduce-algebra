@@ -1,4 +1,4 @@
-// op_cadr.cpp
+// cadr.cpp
 
 #if defined BYTECODE
             case OP_CADR:
@@ -17,12 +17,12 @@
 #elif defined __x86_64__
 
             case OP_CADR:
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(cdrError);
-                cc.mov(A_reg, ptr(A_reg, 8));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
+                test(A_reg, TAG_BITS);
+                jne(cdrError);
+                mov(A_reg, ptr(A_reg, 8));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
                 break;
 
 #elif defined __aarch64__
@@ -36,4 +36,4 @@
 
 #endif
 
-// end of op_cadr.cpp
+// end of cadr.cpp

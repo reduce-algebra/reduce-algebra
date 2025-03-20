@@ -1,4 +1,4 @@
-// op_loc2exit.cpp
+// loc2exit.cpp
 
 #if defined BYTECODE
             case OP_LOC2EXIT:
@@ -13,8 +13,8 @@
 #elif defined __x86_64__
 
             case OP_LOC2EXIT:
-                cc.mov(A_reg, ptr(spreg, -16));
-                cc.jmp(returnA);
+                mov(A_reg, ptr(spreg, -16));
+                jmp(returnA);
                 break;
 
 #elif defined __aarch64__
@@ -28,4 +28,4 @@
 
 #endif
 
-// end of op_loc2exit.cpp
+// end of loc2exit.cpp

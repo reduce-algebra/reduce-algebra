@@ -1,4 +1,4 @@
-// op_qgetv.cpp
+// qgetv.cpp
 
 #if defined BYTECODE
             case OP_QGETV:                          // A_reg = getv(B_reg, A_reg)
@@ -6,7 +6,7 @@
 // Note - this is an UNCHECKED vector access, used when carcheck(nil) has
 // been selected because the user prefers speed to security.  This is in
 // here because the Reduce factoriser test uses getv VERY heavily indeed
-// and both use of a special opcode here and removal of the checking make
+// and both use of a special ode here and removal of the checking make
 // noticable differences to performance.
 //
                 A_reg = *reinterpret_cast<LispObject *>(
@@ -30,3 +30,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_qgetv.cpp

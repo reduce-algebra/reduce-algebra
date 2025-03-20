@@ -1,4 +1,4 @@
-// op_difference.cpp
+// difference.cpp
 
 #if defined BYTECODE
             case OP_DIFFERENCE:
@@ -8,7 +8,7 @@
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Difference::op(B_reg, A_reg);
+                A_reg = Difference::B_reg, A_reg);
 #else // ARITHLIB
                 A_reg = difference2(B_reg, A_reg);
 #endif // ARITHLIB
@@ -30,3 +30,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_difference.cpp

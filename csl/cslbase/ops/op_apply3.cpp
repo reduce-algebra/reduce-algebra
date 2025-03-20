@@ -1,4 +1,4 @@
-// op_apply3.cpp
+// apply3.cpp
 
 #if defined BYTECODE
             case OP_APPLY3:
@@ -6,10 +6,10 @@
 // (funcall F a1 a2 a3) and a3 will be passed directly as is in the stack.
 // In particular a general call to an "apply3" function would have passed in
 // effect (apply3' F a1 a2 [a3]) with the fourth argument passed as a list.
-// When I use the bytecode op I do not do that.
+// When I use the bytecode I do not do that.
                 r1 = *stack--;
                 r2 = *stack;
-                if (is_symbol(r2))   // can optimise this case, I guess
+                if (is_symbol(r2))   // can imise this case, I guess
                 {   f3 = qfn3(r2);
                     RECORD_CALL(list4(r2, r1, B_reg, A_reg));
                     if ((qheader(r2) & SYM_TRACED) != 0)
@@ -41,3 +41,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_apply3.cpp

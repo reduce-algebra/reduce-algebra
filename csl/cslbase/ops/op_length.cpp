@@ -1,4 +1,4 @@
-// op_length.cpp
+// length.cpp
 
 #if defined BYTECODE
             case OP_LENGTH:
@@ -26,3 +26,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_length.cpp

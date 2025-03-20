@@ -1,4 +1,4 @@
-// op_cdar.cpp
+// cdar.cpp
 
 #if defined BYTECODE
             case OP_CDAR:
@@ -17,12 +17,12 @@
 #elif defined __x86_64__
 
             case OP_CDAR:
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(carError);
-                cc.mov(A_reg, ptr(A_reg));
-                cc.test(A_reg, TAG_BITS);
-                cc.jne(cdrError);
-                cc.mov(A_reg, ptr(A_reg, 8));
+                test(A_reg, TAG_BITS);
+                jne(carError);
+                mov(A_reg, ptr(A_reg));
+                test(A_reg, TAG_BITS);
+                jne(cdrError);
+                mov(A_reg, ptr(A_reg, 8));
                 break;
 
 #elif defined __aarch64__
@@ -36,4 +36,4 @@
 
 #endif
 
-// end of op_cdar.cpp
+// end of cdar.cpp

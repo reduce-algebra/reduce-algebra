@@ -1,4 +1,4 @@
-// op_freebind.cpp
+// freebind.cpp
 
 #if defined BYTECODE
             case OP_FREEBIND:
@@ -20,3 +20,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_freebind.cpp

@@ -1,6 +1,6 @@
 // bytes_head.cpp
 
-// bytes2.cpp                              Copyright (C) 1991-2025 Codemist
+// bytes2.cpp                              Cright (C) 1991-2025 Codemist
 //
 //
 // Bytecode interpreter for Lisp
@@ -8,17 +8,17 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2025, Codemist.                         A C Norman       *
+ * Cright (C) 2025, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
  * met:                                                                   *
  *                                                                        *
  *     * Redistributions of source code must retain the relevant          *
- *       copyright notice, this list of conditions and the following      *
+ *       cright notice, this list of conditions and the following      *
  *       disclaimer.                                                      *
  *     * Redistributions in binary form must reproduce the above          *
- *       copyright notice, this list of conditions and the following      *
+ *       cright notice, this list of conditions and the following      *
  *       disclaimer in the documentation and/or other materials provided  *
  *       with the distribution.                                           *
  *                                                                        *
@@ -62,7 +62,7 @@ LispObject bytestream_interpret1(size_t ppc, LispObject lit,
     int32_t n, k;
     size_t xppc;
 
-next_opcode:
+next_ode:
     try
     {   for (;;)
         {   switch (next_byte)
@@ -81,7 +81,7 @@ unsigned int fname, w;
 int32_t n, k;
 size_t xppc;
 //
-// I declare all the other variables I need here up at the top of the function
+// I declare all the other variables I need here up at the tof the function
 // since at least on some C compilers putting the declarations more locally
 // seems to be unexpectedly costly.  In some cases moving the stack pointer
 // may be a pain, in others code like
@@ -144,14 +144,14 @@ size_t xppc;
 // Attribute 10-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
 // end up ranking funtions as by their overall contribution to cost.
-// If I only counted byte opcodes obeyed within functions then a
+// If I only counted byte odes obeyed within functions then a
 // function that used 2 bytecodes and was called 1 million times would
 // be recorded as as more critical than one that used only a single
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+10" here is intended to counterbalance it.
-// Note that I count "byte opcodes obeyed" with no attempt to consider
-// the fact that some opcodes are very cheap and some rather expensive. I
+// Note that I count "byte odes obeyed" with no attempt to consider
+// the fact that some odes are very cheap and some rather expensive. I
 // could potentially change the code so that each individual bytecode
 // incremented the count by an amount intended to stand for its expected
 // cost. I do not think that is worthwhile!
@@ -186,14 +186,14 @@ size_t xppc;
     }
 #endif // CHECK_STACK
 
-next_opcode:   // This label is so that I can restart what I am doing
+next_ode:   // This label is so that I can restart what I am doing
 // following a CATCH or to handle UNWIND-PROTECT.
 // Here the "try" must NOT preserve the stack pointer!
 // I think this may be because of cases like
 //    (f a1 a2 a3 (catch ...) a5 a6)
 // where when preparing args for f some values go on the (Lisp) stack. Then
 // the inline-compiled catch arises. The purpose of the try block here is to
-// be able to cope with it but if this "try" preserved the stack then maybe
+// be able to c with it but if this "try" preserved the stack then maybe
 // reaching the end of it would discard stacked arguments and cause trouble?
 // Anyway, although I make the default behaviour one when a try block
 // preseved the stack I customise this one not to!
@@ -202,7 +202,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 #else
     try { ([&]()->LispObject {
 #endif // NO_THROW
-// The try block will neeed to cope with
+// The try block will neeed to c with
 // .  Various errors raised by functions called from here: a fragment of
 //    backtrace may be called for, and variable bindings undone.
 // .  THROW performed by a called function and caught here.
@@ -215,7 +215,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // there may be excess items on the stack there will only be values
 // SPID_CATCH or SPID_FBIND on there marking places where I can perform
 // nice recovery actions, so I can use the procedure unwind_stack that
-// pops items one at a time looking for those to get back to the state I
+// p items one at a time looking for those to get back to the state I
 // need to be in.
 // If I call aerror or aerror1 (etc) inside this try block it merely jumps
 // to the end of it.
@@ -252,3 +252,5 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
 
 #endif //  SIMPLIFIED_MERELY_TO_SERVE_AS_DOCUMENTATION
+
+// end of bytes_head.cpp

@@ -1,12 +1,12 @@
-// op_jcall.cpp
+// jcall.cpp
 
 #if defined BYTECODE
             case OP_JCALL:
 // This version has the number of args and the target packed into a
-// single operand byte.  Cases where the offset does not fit into this
+// single rand byte.  Cases where the offset does not fit into this
 // will go via BIGCALL.
 // Note that the argument count can only ever be 0, 1, 2, 3 or 4, so
-// codes 5, 6 and 7 are not used. Hmmm I could provide a JCALL2R option
+// codes 5, 6 and 7 are not used. Hmmm I could provide a JCALL2R ion
 // if I wanted!
                 w = next_byte;
                 fname = w & 0x1f;
@@ -28,10 +28,10 @@
 //    (de f2 (x) (f1 x))
 // where the bodies of the functions so not do enough work that polling
 // for interrupts or for window-system updates will happen. Thus it seems
-// I need to perform a polling operation as part of the tail-call sequence.
+// I need to perform a polling ration as part of the tail-call sequence.
                 poll_jump_back(A_reg);
 // If I have an (untraced) tailcall to a bytecoded function I can just reset
-// some pointers and go back to the top of the code of the bytecode
+// some pointers and go back to the tof the code of the bytecode
 // interpreter.
                 if (f0 == bytecoded_0 &&
                     (qheader(r1) & SYM_TRACED) == 0)
@@ -54,7 +54,7 @@
 // number of bytes executed. Well it is a little more complicated than
 // that. If this is a "JCALL self" and I am only counting function entries
 // then I will not increment the count, because this just counts as a jump
-// back to the top of the current procedure. However a JCALL to any other
+// back to the tof the current procedure. However a JCALL to any other
 // function will be counted.
                     if (!profile_count_mode || fname != 0)
                         incCount(basic_elt(litvec, 0));
@@ -224,7 +224,7 @@
             jcall4:
 // fname is the offset in the literal vector of the function to call.
 // The args are in stack[-1], stack[0], B_reg, A_reg
-// In some other JCALL cases I optimise if the called function is
+// In some other JCALL cases I imise if the called function is
 // bytecoded. I have not done that here (yet?).
                 r2 = *stack--; r1 = *stack--;
                 B_reg = list3star(r1, r2, B_reg, A_reg);
@@ -253,3 +253,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jcall.cpp

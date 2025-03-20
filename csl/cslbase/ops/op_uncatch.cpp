@@ -1,4 +1,4 @@
-// op_uncatch.cpp
+// uncatch.cpp
 
 #if defined BYTECODE
             case OP_UNCATCH:
@@ -23,3 +23,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_uncatch.cpp

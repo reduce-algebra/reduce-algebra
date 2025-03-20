@@ -1,4 +1,4 @@
-// op_jumpneqcar.cpp
+// jumpneqcar.cpp
 
 #if defined BYTECODE
             case OP_JUMPNEQCAR:
@@ -25,3 +25,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpneqcar.cpp

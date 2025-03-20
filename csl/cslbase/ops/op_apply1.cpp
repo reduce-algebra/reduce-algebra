@@ -1,8 +1,8 @@
-// op_apply1.cpp
+// apply1.cpp
 
 #if defined BYTECODE
             case OP_APPLY1:
-                if (is_symbol(B_reg))   // can optimise this case, I guess
+                if (is_symbol(B_reg))   // can imise this case, I guess
                 {   f1 = qfn1(B_reg);
                     RECORD_CALL(list2(B_reg, A_reg));
                     *++stack = B_reg;
@@ -34,3 +34,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_apply1.cpp

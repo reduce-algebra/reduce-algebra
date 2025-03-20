@@ -1,4 +1,4 @@
-// op_jump.cpp
+// jump.cpp
 
 #if defined BYTECODE
             case OP_JUMP:
@@ -10,13 +10,15 @@
 
             case OP_JUMP:
                 next = bytes[ppc++];
-                cc.jmp(perInstruction[ppc+next]);
+                jmp(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__
 
             case OP_JUMP:
-                unfinished(__FILE__ " not yet implemented for ARM");
+                next = bytes[ppc++];
+                b(perInstruction[ppc+next]);
+                break;
 
 #else
             case OP_JUMP:
@@ -24,4 +26,4 @@
 
 #endif
 
-// end of op_jump.cpp
+// end of jump.cpp

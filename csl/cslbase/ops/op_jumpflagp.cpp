@@ -1,4 +1,4 @@
-// op_jumpflagp.cpp
+// jumpflagp.cpp
 
 #if defined BYTECODE
             case OP_JUMPFLAGP:
@@ -36,3 +36,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_jumpflagp.cpp

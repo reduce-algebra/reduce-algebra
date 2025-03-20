@@ -1,4 +1,4 @@
-// op_pvrestore.cpp
+// pvrestore.cpp
 
 #if defined BYTECODE
             case OP_PVRESTORE:
@@ -20,3 +20,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_pvrestore.cpp

@@ -1,4 +1,4 @@
-// op_cdrloc4.cpp
+// cdrloc4.cpp
 
 #if defined BYTECODE
             case OP_CDRLOC4:
@@ -14,11 +14,11 @@
 #elif defined __x86_64__
 
             case OP_CDRLOC4:
-                cc.mov(B_reg, A_reg);
-                cc.mov(A_reg, ptr(spreg, -32));
-                cc.test(A_reg, 7);
-                cc.jne(cdrError);
-                cc.mov(A_reg, ptr(A_reg, 8));
+                mov(B_reg, A_reg);
+                mov(A_reg, ptr(spreg, -32));
+                test(A_reg, 7);
+                jne(cdrError);
+                mov(A_reg, ptr(A_reg, 8));
                 break;
 
 #elif defined __aarch64__
@@ -31,3 +31,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of op_cdrloc4.cpp

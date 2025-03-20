@@ -1,4 +1,4 @@
-// op_jumpl0t.cpp
+// jumpl0t.cpp
 
 #if defined BYTECODE
             case OP_JUMPL0T:
@@ -11,9 +11,9 @@
 
             case OP_JUMPL0T:
                 next = bytes[ppc++];
-                cc.mov(w, ptr(spreg));
-                cc.cmp(w, nilreg);
-                cc.jne(perInstruction[ppc+next]);
+                mov(w, ptr(spreg));
+                cmp(w, nilreg);
+                jne(perInstruction[ppc+next]);
                 break;
 
 #elif defined __aarch64__
@@ -27,4 +27,4 @@
 
 #endif
 
-// end of op_jumpl0.cpp
+// end of jumpl0.cpp

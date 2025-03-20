@@ -1,4 +1,4 @@
-// op_call2.cpp
+// call2.cpp
 
 #if defined BYTECODE
             case OP_CALL2:
@@ -20,7 +20,15 @@
 #elif defined __x86_64__
 
             case OP_CALL2:
-                unfinished(__FILE__ " not yet implemented for x86_64");
+                next = bytes[ppc++];
+                loadstatic(w, OJITshim2);
+                loadlit(w2, next);
+                loadfromsymbol(w1, w2, Ofunction2);
+                JITcall(w, A_reg,
+                       w1, w2, B_reg, A_reg);
+                cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+                jne(callFailed);
+                break;
 
 #elif defined __aarch64__
 
@@ -32,3 +40,5 @@
                 unfinished("Unsupported architecture");
 
 #endif
+
+// end of call2.cpp
