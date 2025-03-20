@@ -9,10 +9,9 @@
 #elif defined __x86_64__
 
             case OP_PUSHNIL2:
-                add(spreg, 8);
-                mov(nilreg, ptr(spreg));
-                add(spreg, 8);
-                mov(nilreg, ptr(spreg));
+                add(spreg, 16);
+                storeloc(nilreg, 0);
+                storeloc(nilreg, -8);
                 break;
 
 #elif defined __aarch64__
