@@ -5,13 +5,15 @@ let {sign(x) => 5/2};
 sign(x/y);
 
 
-***** 5 invalid as sign value
+      x
+sign(---)
+      y
 
 
 sign(x*y);
 
 
-***** 5 invalid as sign value
+sign(x*y)
 
 
 let {sign(x) => 1};
