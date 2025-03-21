@@ -65,9 +65,13 @@ for all x let df(sqrt x,x)=sqrt x/(2*x);
 
 % SIGN operator.
 
+symbolic inline procedure sq!-is!-sign u;
+   % Returns t is s.q. u is either 1, -1, or 0
+   denr u = 1 and (nu=1 or nu=-1 or nu=0) where nu=numr u;
+   
 symbolic procedure sign!-of u;
   % Returns -1,0 or 1 if the sign of u is known. Otherwise nil.
-   (numberp s and s) where s = numr simp!-sign{u};
+   (denr s = 1 and numberp(s:=numr s) and s) where s = simp!-sign{u};
 
 symbolic procedure simp!-sign1 u;
  begin scalar s,n;
@@ -87,8 +91,8 @@ symbolic procedure simp!-sign1 u;
        else if car u eq 'expt then simp!-sign!-expt u
        else if car u eq 'sqrt then simp!-sign!-sqrt u
        else simp!-sign2 u;
-   n:=numr s;
-   if not numberp n or n=1 or n=-1 or n=0 then return s;
+   if denr s neq 1 or not numberp (n:=numr s) or n=1 or n=-1 or n=0
+     then return s;
    typerr(n,"sign value");
  end;
 
@@ -99,10 +103,6 @@ symbolic procedure simp!-sign2 u;
 symbolic procedure simp!-sign u;
    simp!-sign1 reval car u;
 
-symbolic inline procedure sq!-is!-sign u;
-   % Returns t is s.q. u is either 1, -1, or 0
-   denr u = 1 and (nu=1 or nu=-1 or nu=0) where nu=numr u;
-   
 symbolic procedure simp!-sign!-times w;
  % Factor all known signs out of the product.
   begin scalar n,s,x;

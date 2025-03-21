@@ -9,7 +9,7 @@
 
             case OP_PUSH:
                 add(spreg, 8);
-                mov(ptr(spreg), A_reg);
+                storeloc(A_reg, 0);
                 break;
 
 #elif defined __aarch64__

@@ -127,6 +127,44 @@ into \hyperlink{command:GROUP}{group}\index{Group statement}
      shut <<filename>>;
 \end{verbatim}
 
+\section{Accessing the Operating System}
+\ttindextype{system}{command}
+
+REDUCE provides limited access to the operating system via the
+operator \texttt{system}, which takes one argument that must evaluate
+to a \hyperlink{strings}{string}.  It passes the content of this
+string to the default shell and returns a number, which will be 0 if
+it succeeds and non-zero if it fails.  The output from the shell is
+displayed on the default output device, which is normally the
+terminal.  There is no straightforward way to process this output
+within REDUCE\@.  The operator \texttt{system} can be useful for
+operations such as copying, moving, renaming and deleting files, or
+for listing a directory interactively.  It is used within a few of the
+REDUCE packages, such as \package{GNUPLOT}.
+
+The correct shell syntax to use with \texttt{system} depends on your
+operating system.  On Microsoft Windows, \texttt{system} invokes the
+\texttt{cmd.exe} shell (not \texttt{PowerShell}); on other operating
+systems it probably invokes \texttt{bash}.  Note that backslash
+(\verb|\|) is not an escape character in REDUCE and so can be included
+in the argument to \texttt{system} without any special precautions.
+However, to include a double-quote character (\verb|"|) within a
+REDUCE string it must be doubled.
+
+For example, on Windows, you could use the following to delete a file
+called ``\verb|C:\long dir name\file.red|''
+\begin{verbatim}
+  system "del ""C:\long dir name\file.red""";
+\end{verbatim}
+whereas, on most other platforms, you could use the following to
+delete a file called ``\verb|/long dir name/file.red|''
+\begin{verbatim}
+  system "rm '/long dir name/file.red'";
+\end{verbatim}
+
+More sophisticated use of \texttt{system} is possible, but requires
+symbolic-mode programming.  See the REDUCE source code for examples.
+
 \section{\REDUCE Startup File}\index{Startup file}
 \index{Startup file}\index{File, startup}
 \ttindextype{reducerc}{file}

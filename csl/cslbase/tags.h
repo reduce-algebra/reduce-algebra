@@ -1,7 +1,3 @@
-shim2
-u
-
-
 //
 //   Data-structure and tag bit definitions, also common C macros
 //   for Lisp implementation.
@@ -261,7 +257,7 @@ union Generic
 
 // The setup here is based on a really horrid bit of low-level
 // planning! I would like to be able to have nil stored in a register
-// quite a lof of the time and address various other important things
+// quite a lot of the time and address various other important things
 // using indexed addressing based on that register. The proper pointer
 // to nil is tagged and so is not a multiple of 8. The 64-bit ARM provides
 // an indexed address mode that can use and offset in the range -256 to 255
@@ -273,12 +269,26 @@ union Generic
 // However the nil object uses 13 words so I have 20 left for general use.
 // That gives me 50 privileged locations!
 
+// What is also pretty bad here is that TAG_SYMBOL has the value 4 and so
+// the representation of NIL for Lisp purposes is the address of the
+// symbol head plus 4. I handle that using padder1 to get myself an item
+// that I expect to be 4 bytes down from nil_symbol. Then when I set up
+// the value nil itself it is merely the address of that thing. The reason
+// I do this is so that there is reduced risk of any run-time arithmetic
+// (such as adding TAG_SYMBOL) when nil is reference in the C++ code. 
+
 inline struct NilBlock
 {   union
     {   Generic misc[64];
         struct
         {   Generic padder[31];
-            Symbol_Head nil_symbol;  // 13 8-byte words used here.
+            union
+            {   Symbol_Head nil_symbol;  // 13 8-byte words used here.
+                struct
+                {   int32_t padder1;
+                    int32_t tagged_nil;
+                };
+            };
             Generic misc2[20];
         };
     };
@@ -288,9 +298,10 @@ inline struct NilBlock
 inline const LispObject& nilHead =
     reinterpret_cast<LispObject>(&nilBlock.nil_symbol);
 
-inline const LispObject nil = TAG_SYMBOL + nilHead;
+inline const LispObject nil =
+    reinterpret_cast<LispObject>(&nilBlock.tagged_nil);
 
-inline constexpr Generic* staticdata = reinterpret_cast<Generic*>(nilHead);
+inline Generic* staticdata = reinterpret_cast<Generic*>(nilHead);
 
 inline LispObject* const workbase = &nilBlock.workbaseVec[0]; 
 
@@ -365,7 +376,7 @@ inline constexpr int JIToffset(int o)
 {   return 8*JITgap(o) - TAG_SYMBOL;
 }
 
-// The symbol "T". This is used throughout the system and is a list-base 
+// The symbol "T". This is used throughout the system and is a list-base
 inline LispObject& lisp_true = staticdata[JITgap(Olisp_true)].genericL;
 
 // The "lisp stack" pointer.
@@ -377,7 +388,7 @@ inline intptr_t& JITerrflag = staticdata[JITgap(OJITerrflag)].genericI;
 
 // The next 3 are used when JIT code wants to report an error by doing
 // a tail-call that ends in car_fails or aerror or suchlike. It can not
-// pass arguments "naturally" so it deposites them in these static
+// pass arguments "naturally" so it deposits them in these static
 // locations.
 inline const char*& JITstring = staticdata[JITgap(OJITstring)].genericS;
 inline LispObject& JITarg1 = staticdata[JITgap(OJITarg1)].genericL;

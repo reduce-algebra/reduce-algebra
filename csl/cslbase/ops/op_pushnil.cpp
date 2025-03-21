@@ -9,7 +9,7 @@
 
             case OP_PUSHNIL:
                 add(spreg, 8);
-                mov(nilreg, ptr(spreg));
+                storeloc(nilreg, 0);
                 break;
 
 #elif defined __aarch64__
