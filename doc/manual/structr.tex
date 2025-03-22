@@ -909,6 +909,13 @@ the ordering of the variables is alphabetical), then
 and
         part(a+b,0)  ->  plus
 \end{verbatim}
+
+If \emph{M} is either a matrix or a matrix-valued expression then
+\texttt{part(\emph{M}, \emph{i})} evaluates to row \emph{i}
+\emph{represented as a list}, and (hence) \texttt{part(\emph{M},
+  \emph{i}, \emph{j})} evaluates to the matrix element in row \emph{i}
+and column \emph{j}.
+
 \hypertarget{operator:ARGLENGTH}{}
 An operator \texttt{arglength}\ttindextype{arglength}{operator} is available to determine
 the number of arguments of the top level operator in an expression.  If
