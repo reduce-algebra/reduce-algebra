@@ -24,7 +24,7 @@ that would be written as \texttt{mat((x,y))}.
 \label{sec:core-matrix-variables}
 \hypertarget{command:MATRIX}{}
 
-An identifier may be declared a matrix variable by the declaration 
+An identifier may be declared a matrix variable by the declaration
 \texttt{matrix}\ttindextype{matrix}{declaration}\index{Declaration!\texttt{matrix}}.
 The size of the matrix may be declared explicitly in the matrix
 declaration, or by default in assigning such a variable to a matrix
@@ -220,8 +220,8 @@ independent vectors (a basis) whose linear combinations satisfy the
 equation $A x = 0$.  The basis is provided in a form such that as many
 upper components as possible are isolated.
 
-Note that with \texttt{b := nullspace a} the expression \texttt{length b} is 
-the \emph{nullity} of A, and that \texttt{second length a - length b} 
+Note that with \texttt{b := nullspace a} the expression \texttt{length b} is
+the \emph{nullity} of A, and that \texttt{second length a - length b}
 calculates the \emph{rank} of A.  The rank of a matrix expression can also
 be found more directly by the \texttt{rank} operator described below.
 
@@ -230,7 +230,7 @@ be found more directly by the \texttt{rank} operator described below.
         nullspace mat((1,2,3,4),(5,6,7,8));
 \end{verbatim}
    gives the output
- 
+
 \begin{verbatim}
         {
          [ 1  ]
@@ -250,7 +250,7 @@ be found more directly by the \texttt{rank} operator described below.
          [ 1  ]
          }
 \end{verbatim}
- 
+
 In addition to the {\REDUCE} matrix form, \texttt{nullspace} accepts as input a
 matrix given as a list of lists, that is interpreted as a row matrix.  If
 that form of input is chosen, the vectors in the result will be
@@ -260,7 +260,7 @@ algebra.
 
 \subsection{RANK Operator}\ttindextype{rank}{operator}
 \hypertarget{operator:RANK}{}
- 
+
 Syntax:
 \begin{syntax}
         \texttt{rank(}\meta{exprn:matrix\_expression}\texttt{)}\,:\,\meta{integer} .
@@ -299,5 +299,14 @@ we simply write
 
 Once an element of a matrix has been assigned, it may be referred to in
 standard array element notation.  Thus \texttt{y(2,1)} refers to the element
-in the second row and first column of the matrix \texttt{Y}.
+in the second row and first column of the matrix \texttt{y}.
 
+The easiest way to access an element of a matrix-valued expression is
+to assign the expression to a variable and then use the syntax
+described above.  Another way is to use the
+\hyperlink{operator:PART}{\texttt{part}} operator: if \emph{M} is
+either a matrix or a matrix-valued expression then
+\texttt{part(\emph{M}, \emph{i})} evaluates to row \emph{i}
+\emph{represented as a list}, and (hence) \texttt{part(\emph{M},
+  \emph{i}, \emph{j})} evaluates to the matrix element in row \emph{i}
+and column \emph{j}.

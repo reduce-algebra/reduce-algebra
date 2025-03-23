@@ -35,8 +35,8 @@ symbolic procedure revalpart u;
    if null u then rerror(alg,201,"part called without arguments")
     else begin scalar !*intstr,bool,expn,v,z;
       !*intstr := t;   % To make following result in output form.
-      expn := if (z := getrtype car u) eq 'list then 
-                  if null atom car u and get(caar u,'listfn) 
+      expn := if (z := getrtype car u) eq 'list then
+                  if null atom car u and get(caar u,'listfn)
                      then reval car u else listeval0 car u
                else reval car u;
       !*intstr := nil;
@@ -78,6 +78,8 @@ symbolic procedure revalpart u;
                            else if z eq 'list
                             then <<!*intstr := t; w := reval w;
                                    !*intstr := z := nil; w>>
+                           else if eqcar(expn, 'mat)
+                            then 'list . w
                            else w) where w = nth(y,x);
            v := if bool then nil else cdr v
         end;
