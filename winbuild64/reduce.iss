@@ -82,7 +82,7 @@ Name: "{group}\Standard Lisp Report"; Filename: "{app}\doc\sl.pdf" ; Components:
 
 
 [Run]
-Filename: "{app}\lib\gp460-win32-setup.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
+Filename: "{app}\lib\gp5410-win64-mingw.exe"; Description: "Install Gnuplot"; Flags: postinstall; Check: MyGnuPlotCheck
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\reduce.exe"" redcsl"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\bootstrapreduce.exe"" bootstrapreduce"; Flags: runhidden; Components: csl
 Filename: "{app}\lib\csl\make-cygwin-symlink.exe"; Description: "set symlinks for benefit of cygwin users"; Parameters: """{app}\lib\csl\csl.exe"" csl"; Flags: runhidden; Components: csl
