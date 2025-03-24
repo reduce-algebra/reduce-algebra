@@ -101,7 +101,27 @@ symbolic procedure revalsetpart u;
       !*intstr := t;
       y := reval car u;
       !*intstr := nil;
-      return  revalsetp1(y,reverse cdr x,reval car x)
+      return if eqcar(y, 'mat)
+      then revalsetp1mat(y,reverse cdr x,reval car x)
+      else revalsetp1(y,reverse cdr x,reval car x)
+   end;
+
+symbolic procedure revalsetp1mat(expn, ptlist, rep);
+   % EXPN is a matrix form: (mat rowlist1 rowlist2 ...).
+   % PTLIST is a list of indices for the part to replace with REP.
+   if null ptlist then rep
+   else if null cdr ptlist then         % replacing a row
+      if not (rlistp rep and length(cdr rep) eq length cadr expn)
+      then typerr(rep, "replacement matrix row")
+      else revalsetp1(expn, ptlist, cdr rep)
+   else                            % replacing or modifying an element
+   begin scalar row_idx := car ptlist; integer i; % := 0
+      return 'mat .
+         for each row in cdr expn collect
+            if (i:=i+1) = row_idx then
+               % Process row as algebraic list:
+               cdr revalsetp1(reval('list . row), cdr ptlist, rep)
+            else row
    end;
 
 symbolic procedure revalsetp1(expn,ptlist,rep);
