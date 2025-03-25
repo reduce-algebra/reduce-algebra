@@ -1264,8 +1264,7 @@ static uint64_t removed_hash;
 static bool remob(LispObject sym, LispObject v)
 // Searches a hash table for a symbol with name matching the given string,
 // and remove it from the package-hashtable v.
-{   if (qheader(sym) & SYM_ANY_GENSYM ||
-        qpackage(sym) == nil) return false; // gensym case is easy!
+{   if (qheader(sym) & SYM_ANY_GENSYM) return false; // gensym case is easy!
     qpackage(sym) = nil;
     LispObject str = qpname(sym);
     validate_string(str);
@@ -1276,8 +1275,8 @@ static bool remob(LispObject sym, LispObject v)
     uint64_t hash = removed_hash = hash_lisp_string(str);
 // The search procedure used here MUST match that coded in lookup().
     size_t size = cells_in_vector(v);
-    size_t i = hash & (size - 1);
-    size_t step = 1 | ((hash >> 10) & (size - 1));
+    size_t i = hash%size;
+    size_t step = 1 + ((hash >> 10)%(size-1));
     for (size_t n=0; n<size; n++)
     {   LispObject w = elt(v, i);
         if (w == fixnum_of_int(0)) return false;  // Not found
@@ -1831,8 +1830,6 @@ LispObject Lunintern(LispObject env, LispObject sym, LispObject pp)
     package = pp;
 #endif
     if (!is_symbol(sym)) return nil;
-    if (qpackage(sym) == nil) return nil;
-    if (qpackage(sym) == package) qpackage(sym) = nil;
 #ifdef COMMON
     packshade_(package) = ndelete(sym, packshade_(package));
 #endif
