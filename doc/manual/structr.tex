@@ -911,10 +911,10 @@ and
 \end{verbatim}
 
 If \emph{M} is either a matrix or a matrix-valued expression then
-\texttt{part(\emph{M}, \emph{i})} evaluates to row \emph{i}
-\emph{represented as a list}, and (hence) \texttt{part(\emph{M},
-  \emph{i}, \emph{j})} evaluates to the matrix element in row \emph{i}
-and column \emph{j}.
+\texttt{part(\emph{M},\emph{i})} evaluates to row \emph{i}
+\emph{represented as a list}, and (hence)
+\texttt{part(\emph{M},\emph{i},\emph{j})} evaluates to the matrix
+element in row \emph{i} and column \emph{j}.
 
 \hypertarget{operator:ARGLENGTH}{}
 An operator \texttt{arglength}\ttindextype{arglength}{operator} is available to determine
@@ -945,6 +945,11 @@ Note that \texttt{xx} in the above is not changed by this substitution.  In
 addition, unlike expressions such as array and matrix elements that have
 an \emph{instant evaluation\/}\index{Instant evaluation} property, the values
 of \texttt{part(xx,2)} and \texttt{part(c+d,0)} are also not changed.
+
+The \texttt{part} operator may be used to replace part of a
+matrix-valued expression, including part of a matrix element.  If it
+is used to replace a row then the replacement must be a list with the
+same number of elements as the row.
 
 
 \section{COMPACT Operator}
