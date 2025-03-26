@@ -1091,6 +1091,8 @@ bool fourup_arg_traceflags[sizeof(fourup_arg_functions)/sizeof(
                                fourup_arg_functions[0])];
 
 
+#ifdef WITH_JIT
+
 // Here def will be the name of the function being called, and qenv(def)
 // will give access to the bytecodes.
 
@@ -1217,5 +1219,37 @@ LispObject Lmake_jit(LispObject env, LispObject fname)
     if (qfn4up(fname) == bytecoded_4up) qfn4up(fname) = jitcoded_4up;
     return fname;
 }
+
+#else // WITH_JIT
+
+LispObject jitcoded_0(LispObject def)
+{   return aerror("jitcoded_0");
+}
+
+LispObject jitcoded_1(LispObject def, LispObject a)
+{   return aerror("jitcoded_1");
+}
+
+LispObject jitcoded_2(LispObject def, LispObject a, LispObject b)
+{   return aerror("jitcoded_2");
+}
+
+LispObject jitcoded_3(LispObject def, LispObject a, LispObject b,
+                      LispObject c)
+{   return aerror("jitcoded_3");
+}
+
+LispObject jitcoded_4up(LispObject def, LispObject a1, LispObject a2,
+                        LispObject a3, LispObject a4up)
+{   return aerror("jitcoded_4up");
+}
+
+
+LispObject Lmake_jit(LispObject env, LispObject fname)
+{   SingleValued fn;
+    return fname;
+}
+
+#endif // WITH_JIT
 
 // end of eval4.cpp
