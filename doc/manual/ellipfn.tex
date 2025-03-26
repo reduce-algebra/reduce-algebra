@@ -206,7 +206,7 @@ functions are unchanged and use only $\mathrm{sn}$, $\mathrm{cn}$ and
 $\mathrm{dn}$.  Note, however, that the previous form of these rules will be
 obtained if the rule-list \texttt{NO\_GLAISHER}\ is also active. 
 
-If the switch \sw{rounded} is ON and both arguments of a Jacobi function are
+If the switch \sw{rounded}\ is ON and both arguments of a Jacobi function are
 purely numerical, it will be evaluated numerically (previously it was
 necessary for both the switches \sw{rounded}\ and \sw{complex}\ to be ON).
 Of course, if either argument is a complex number, the switch \sw{complex}\ must
@@ -260,7 +260,7 @@ $3i\mathrm{K}'(k)$ and between corresponding congruent branch points.
 
 A rule list is provided for to simplify this function for special values of the
 arguments and for differentiation with respect to either argument.
-When the switch \sw{rounded} is ON and both arguments
+When the switch \sw{rounded}\ is ON and both arguments
 are numeric, \REDUCE will attempt to evaluate \f{jacobiam(z,k)} numerically.
 Several possible methods are available to
 evalaute the function, for example summation of its Fourier series and an
@@ -474,7 +474,7 @@ argument and shift rules for the incomplete integrals so that their first
 argument lies in the range  $0 <= \phi <= \pi/2$.
 
 If the arguments of the elliptic integral function are numeric and the switch
-\sw{rounded} is ON, the numerical value will be returned. As with Jacobi
+\sw{rounded}\ is ON, the numerical value will be returned. As with Jacobi
 elliptic functions, if any argument is complex then numerical evaluation will
 only occur if the switch \sw{complex}\ is also ON. 
 
@@ -575,7 +575,7 @@ Riemann's $\zeta$ function. It is closely related to Jacobi's Epsilon function
 \index{Symmetric Elliptic Integrals}
 The functions in this section are currently only intended for use for in the
 numerical evaluation of the `classical' elliptic integrals discussed above and
-in certain other `basic' elliptic integrals. The switch \sw{rounded} should be
+in certain other `basic' elliptic integrals. The switch \sw{rounded}\ should be
 ON.
 
 Symmetric elliptic integrals are a relatively new development in the theory of
@@ -753,7 +753,7 @@ the integration range will need to be split into two at each of these branch
 points.
 
 In \REDUCE elliptic integrals of the three kinds may be evaluated numerically
-when the switch \sw{rounded} is ON by calling the functions
+when the switch \sw{rounded}\ is ON by calling the functions
 \f{ellint\_1st},  \f{ellint\_2nd} and \f{ellint\_3rd}. The first two
 parameters are the lower and upper limits of the integration range; these are
 followed by 4 (or 5 for \f{ellint\_3rd}) two-element lists
@@ -825,7 +825,7 @@ Five utility functions are provided:
 \item \f{nome(k)}
 \end{itemize}
 
-These are only operative when the switch \sw{rounded} is on and their
+These are only operative when the switch \sw{rounded}\ is on and their
 argument is numerical. The first pair relate the nome $q$ of the theta
 functions with the moduli $k$ and $k'=\sqrt{1-k^2}$ of the associated Jacobi
 elliptic functions.
@@ -860,11 +860,12 @@ taking integer values in the range 1 to 4).
 Secondly the periods are $2\pi, 2\pi, \pi$ and $\pi$ respectively
 (NOT 4K, 4K, 2K and 2K).
 Thirdly the second argument is the modulus $\tau = a+i b$ where $b=\Im\tau>0$
-and hence the quasi-period is $\pi\tau$.
+and hence the quasi-period of the theta functions is $\pi\tau$.
 
-The second parameter was previously the nome $q$
-where $|q|<1$. As a consequence \f{elliptictheta1}\ and \f{elliptictheta2}\ were
-multi-valued owing to the appearance of $q^{1/4}$ in their defining expansions.
+The second parameter was previously the nome $q=e^{i\pi\tau}$ where $|q|<1$
+since $\Im\tau>0$.
+As a consequence \f{elliptictheta1}\ and \f{elliptictheta2}\ were multi-valued
+owing to the appearance of $q^{1/4}$ in their defining expansions.
 \f{elliptictheta3}\ and \f{elliptictheta4}\ were, however, single-valued
 functions of $q$.
 
@@ -893,10 +894,20 @@ into the base period parallelogram with vertices
 Together with the relation $\vartheta_1(0,\tau)=0$,  these shift rules serve to
 simplify all four theta functions to zero when appropriate.
 
-When the switches \sw{rounded}\ and \sw{complex}\ are on and the arguments are
-purely numerical and the imaginary part of $\tau$ positive,
-the theta functions are evaluated numerically. Note that as $\tau$ is
-necessarily complex, the switch \sw{complex} \emph{must} be on.
+\subsubsection{Numerical Evaluation}
+When the switch \sw{rounded}\ is ON and the arguments are
+purely numerical, the theta functions are evaluated numerically.
+Note that as the modulus $\tau$ is necessarily complex with a positive
+imaginary part, the switch \sw{complex}\ should normally be ON.
+
+However, there is \emph{one exception} if the second parameter is purely real
+and lies between 0 and 1, it is interpreted as the nome $q$ rather than the
+modulus. This exception facilitates the evaluation and graphing of theta
+functions in the case when both the argument and the nome are real which occurs
+frequently in practical applications.  Theta functions are not defined if the
+second parameter has a negative imaginary part or if it is real and
+$<= 0$ or $>=1$ and the numerical evaluation fails.
+
 
 In what follows $a$ and $b$ will denote the real and imaginary parts of
 $\tau$ respectively and so $|q| = \exp(-\pi b)$ and $\arg q =\pi a$.
@@ -952,9 +963,11 @@ Four functions are provided:
 \item \f{theta4d(u,ord,tau)}
 \end{itemize}
 These return the $d$th derivatives of the respective theta functions
-with respect to their first argument $u$; $\tau$ is as usual the modulus
-of the theta function. These functions are only operative when the switches
-\sw{rounded}\ and \sw{complex}\ are ON and their arguments are numeric with
+with respect to their first argument $u$; the third parameter $\tau$ is as
+for theta functions; either the modulus if $\Im\tau >0$ or the nome if $\tau$
+is real and lies between 0 and 1.
+These functions are only triggered when the switch
+\sw{rounded}\ is ON and their arguments are numeric with
 $d$ being a positive integer.  They are provided mainly to support the
 implementation the Weierstrassian and Sigma functions discussed in the
 following subsection.
@@ -1064,11 +1077,11 @@ expressed in this alternative form:
 
 \subsubsection{Numerical Evaluation}
 If the arguments of the Weierstrassian, sigma and lattice functions (see below)
-are all numeric, the functions will only be evaluated if both \sw{rounded} and
-\sw{complex} are ON.  The only exceptions are the functions weierstrass1, 
+are all numeric, the functions will only be evaluated if both \sw{rounded}\ and
+\sw{complex}\ are ON.  The only exceptions are the functions weierstrass1, 
 weierstrassZeta1 and weierstrass\_sigma0. These are real-valued for real
 arguments and if all three arguments are real it suffices that the switch
-\sw{rounded} is ON.
+\sw{rounded}\ is ON.
 
 \subsubsection{Other Sigma Functions}
 \hypertarget{SIGMA1}{}
@@ -1124,7 +1137,7 @@ Ten functions are provided:
 \item $\eta_3(\omega_1, \omega_3)$ \ --- \ \f{eta3(omega1, omega3)}.
 \end{itemize}
 
-These are operative when the switches \sw{rounded} and \sw{complex} are ON
+These are operative when the switches \sw{rounded}\ and \sw{complex}\ are ON
 and their arguments are numerical. The first three are referred to as lattice
 roots and are related to the invariants
 $g_2, g_3$, the discriminant $\Delta = g_2^3-27g_3^2$ and a closely related

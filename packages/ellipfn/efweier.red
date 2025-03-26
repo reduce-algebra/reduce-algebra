@@ -400,7 +400,8 @@ else begin scalar res, oldprec;
   precision max(oldprec+4, 16);
   res := l_roots(w1,w3);
   precision oldprec;
-  return res;
+  return foreach rt in res collect tidy_result rt;
+
 end;
 
 procedure l_roots(w1,w3);
@@ -422,7 +423,7 @@ else begin scalar res, oldprec;
   precision max(oldprec+4, 16);
   res := l_invariants(w1,w3);
   precision oldprec;
-  return res;
+  return foreach inv in res collect tidy_result inv;
 end;
 
 procedure l_invariants(w1,w3);
@@ -538,7 +539,7 @@ else begin scalar res, oldprec;
   precision max(oldprec+4, 16);
   res := num_qpf(w1,w3);
   precision oldprec;
-  return res;
+  return foreach qf in res collect  tidy_result(qf);
 end;
 
 procedure num_qpf(w1,w3);
@@ -694,9 +695,6 @@ begin scalar z, p1, rp1, nump1, nump2;
   return {2*z*w1, nump1, nump2};
 end;
 
-%##################################################################
-% Alternative forms of the Weierstrass functions
-
 procedure lattice_generators(g2,g3);
 begin scalar res, oldprec;
   if g2^3-27*g3^2 = 0 then
@@ -706,7 +704,7 @@ begin scalar res, oldprec;
   precision max(oldprec+4, 16);
   res := num_omegas(g2,g3);
   precision oldprec;
-  return res;
+  return {tidy_result first res, tidy_result second res};
 end;
 
 % For details of the algorithm used to calculate the lattice generators from the
@@ -772,6 +770,9 @@ begin scalar e1, e2, e3, k, k1;
    k:= (e2-e3)/(e1-e3); k1 := (e1-e2)/(e1-e3);
    return {k,k1};
 end;
+
+%##################################################################
+% Alternative forms of the Weierstrass functions
 
 procedure num_weier1(u,g2,g3);
 begin scalar l;
