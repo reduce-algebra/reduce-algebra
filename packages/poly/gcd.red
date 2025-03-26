@@ -80,7 +80,9 @@ symbolic procedure gcdf!*(u,v);
 symbolic procedure gcdf(u,v);
    % U and V are standard forms.
    % Value is the gcd of U and V, complete only if *GCD is true.
-   begin scalar !*exp,!*rounded,mcdsaved;
+   % Also any "let v^N => 0" rules could cause trouble so rebind
+   % asymplis!* so they do not apply here.
+   begin scalar !*exp,!*rounded,mcdsaved, asymplis!*;
       % The next line was to prevent numerators moving to denominators
       % as in weight x=1,y=2$ wtlevel 4$ wtest:=(z^4-z^3*y-z^3*x+z^2*y^2
       % +2*z^2*x*y+z^2*x^2-3*z*x^2*y-z*x^3+x^4)/z^5; wtest where z=>a;

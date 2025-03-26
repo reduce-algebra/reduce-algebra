@@ -8,7 +8,7 @@
                     n < static_cast<int>(w)) ppc += 2*n + 2;
                 w = next_byte;
 //
-// I support backwards jumps here by setting their tbit. At present I do
+// I support backwards jumps here by setting their top bit. At present I do not
 // poll for interrupts on a backwards case-branch. And the encoding used means
 // that case branches can not reach quite as far as regular jumps.
 //
@@ -18,12 +18,6 @@
                                                  (codevec))[ppc];
                 continue;
 
-//
-// There are a bunch of special-case jumps here - they are only
-// provided with the variants that jump forwards by small offsets,
-// but are expected to pick up a useful number of cases (for both speed and
-// compactness) all the same.
-//
 #elif defined __x86_64__
 
             case OP_ICASE:
