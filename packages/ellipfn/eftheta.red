@@ -526,20 +526,16 @@ ellipticthetarules :=
 % Note impart tau is necessarily > 0 as |q| must be less than 1.
 
    elliptictheta1(~u,~tau) => n_theta(num1_theta1,u,tau)
-        when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau,
 
    elliptictheta2(~u,~tau) => n_theta(num1_theta2,u,tau)
-        when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau,
 
    elliptictheta3(~u,~tau) => n_theta(num1_theta3,u,tau)
-        when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau,
 
    elliptictheta4(~u,~tau) => n_theta(num1_theta4,u,tau)
-        when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau,
 
 % generalised shift rules added by A Barnes
 % periodicity:
@@ -762,9 +758,7 @@ deflist('((elliptictheta1 2) (elliptictheta2 2) (elliptictheta3 2)
 
 procedure n_theta1d(z, d, tau);
 % differentiate d times wrt z
-if not(fixp d and d>0) then
-   rederr("d must be a positve integer: n_theta1d")
-else begin scalar n, q, pow, term, total, tol, m, bound, f;
+begin scalar n, q, pow, term, total, tol, m, bound, f;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     q := exp(i*pi*tau);
@@ -790,9 +784,7 @@ end;
 
 procedure n_theta2d(z, d, tau);
 % differentiate d times wrt z
-if not(fixp d and d>0) then
-   rederr("d must be a positve integer: n_theta2d")
-else begin scalar n, q, pow, term, total, tol, m, bound, f;
+begin scalar n, q, pow, term, total, tol, m, bound, f;
     tol := 10.0^-(symbolic !:prec!:);
     total := 0;
     q := exp(i*pi*tau);
@@ -817,9 +809,7 @@ end;
 
 procedure n_theta3d(z, d, tau);
 % differentiate d times wrt z
-if not(fixp d and d>0) then
-   rederr("d must be a positve integer: n_theta3d")
-else begin scalar n, q, pow, term, total, tol, m, bound, f;
+begin scalar n, q, pow, term, total, tol, m, bound, f;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
@@ -842,9 +832,7 @@ end;
 
 procedure n_theta4d(z, d, tau);
 % differentiate d times wrt z
-if not(fixp d and d>0) then
-   rederr("d must be a positve integer: n_theta4d")
-else begin scalar n, q, pow, term, total, tol, m, bound, f;
+begin scalar n, q, pow, term, total, tol, m, bound, f;
    tol := 10.0^-(symbolic !:prec!:);
    total := 0;
    n := 1;
@@ -867,13 +855,26 @@ else begin scalar n, q, pow, term, total, tol, m, bound, f;
 end;
 
 procedure n_theta(f,u,tau);
-if impart(tau) <= 0 then rederr
-  ("2nd parameter of the theta functions must have positive imaginary part")
-else num_elliptic(f,u,tau);
+if impart(tau) < 0 then rederr
+  ("2nd parameter of a theta function must have non-negative imaginary part")
+else if impart tau=0 then
+   if tau>0 and tau <1 then
+      % assume 2nd parameter of the theta function is the nome 
+      num_elliptic(f,u,-i*log tau/pi)
+   else rederr ("The nome of a theta function must lie between 0 and 1")
+else
+   num_elliptic(f,u,tau);
 
 procedure n_thetad(f,u,d, tau);
-if impart(tau) <= 0 then rederr
-  ("3rd parameter of the theta derivs must have positive imaginary part")
+if not(fixp d and d>0) then
+   rederr("2nd parameter of thetad must be a positve integer")
+else if impart(tau) < 0 then rederr
+  ("3rd parameter of thetad must have a non-negative imaginary part")
+else if impart tau=0 then
+   if tau>0 and tau <1 then
+      % assume 3rd parameter is the nome 
+      num_elliptic(f,u,d,-i*log tau/pi)
+   else rederr ("Nome of a thetad function must lie between 0 and 1")
 else num_elliptic(f,u,d,tau);
 
 operator theta1d, theta2d, theta3d, theta4d;
@@ -886,20 +887,16 @@ deflist('((n_theta1d 3) (n_theta2d 3) (n_theta3d 3) (n_theta4d 3)
 theta_deriv_rules :=
 {
    theta1d(~u,~d,~tau) => n_thetad(n_theta1d,u,d,tau)
-        when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau and numberp d,
 
    theta2d(~u,~d,~tau) => n_thetad(n_theta2d,u,d,tau)
-        when lisp !*rounded and lisp !*complex
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau and numberp d,
 
    theta3d(~u,~d,~tau) => n_thetad(n_theta3d,u,d,tau)
-        when lisp !*rounded and lisp !*complex 
-	     and numberp u and numberp tau,
+        when lisp !*rounded and numberp u and numberp tau and numberp d,
 
    theta4d(~u,~d,~tau) => n_thetad(n_theta4d,u,d,tau)
-        when lisp !*rounded and lisp !*complex 
-	     and numberp u and numberp tau
+        when lisp !*rounded and numberp u and numberp tau and numberp d
 }$
 let theta_deriv_rules$
 
