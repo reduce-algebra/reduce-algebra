@@ -50,12 +50,21 @@
 // Test if the low 4 bits of A_reg are 0x7 - ie if the value represents
 // a Fixnum.
                     mov(w, A_reg);
+#ifdef __x86_64__
+                    mov(w, A_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, A_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnums);
 // Similarly for B_reg.
+#ifdef __x86_64__
                     mov(w, B_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, B_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnums);
 // If both are fixnums I can compare easily.

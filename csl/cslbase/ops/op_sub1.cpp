@@ -19,14 +19,23 @@
             case OP_SUB1:
                 {   Label notFixnum = newLabel();
                     Label endSub1 = newLabel();
+#ifdef __x86_64__
                     mov(w, A_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, A_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnum);
                     loadstatic(w, OJITmostNegativeFixnum);
                     cmp(A_reg, w);
                     jne(notFixnum);
+#ifdef __x86_64__
                     add(A_reg, -0x10);
+#else
+                    add(A_reg, A_reg, -0x10);
+#endif
+// Could I do an overflow check here rather than the pre-check?
                     jmp(endSub1);
                 bind(notFixnum);
                     loadstatic(w, OJITshim1);

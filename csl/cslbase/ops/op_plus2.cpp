@@ -21,20 +21,34 @@
                 {   Label notFixnum = newLabel();
                     Label endPlus2 = newLabel();
 // First test if both args are fixnums.
+#ifdef __x86_64__
                     mov(w, A_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, A_reg, XTAG_BITS);
+#endif 
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnum);
+#ifdef __x86_64__
                     mov(w, B_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, B_reg, XTAG_BITS);
+#endif 
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnum);
 // The actual integer values are got by shifting (arithmetically) right
 // by 4 bits to discard the tagging information that told me that I had
 // a pair of fixnums.
+#ifdef __x86_64__
                     sar(A_reg, 4);
                     sar(B_reg, 4);
                     add(A_reg, B_reg);
+#else
+                    asr(A_reg, A_reg, 4);
+                    asr(B_reg, B_reg, 4);
+                    add(A_reg, A_reg, B_reg);
+#endif
 // After adding the result could be too large for a fixnum. Call code that
 // handles all that mess. In easy cases it will just shift left by 4 bits
 // and add TAG_FIXNUM. In hard cases it needs to create a bignum.

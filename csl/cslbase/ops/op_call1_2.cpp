@@ -5,7 +5,7 @@
                 fname = 2;
                 goto call1;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL1_2:
                 loadstatic(w, OJITshim1);

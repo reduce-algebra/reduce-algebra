@@ -21,12 +21,20 @@
                     Label yes = newLabel();
                     Label no = newLabel();
                     Label endGreaterp = newLabel();
+#ifdef __x86_64__
                     mov(w, A_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, A_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnums);
+#ifdef __x86_64__
                     mov(w, B_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, B_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnums);
                     cmp(A_reg, B_reg);

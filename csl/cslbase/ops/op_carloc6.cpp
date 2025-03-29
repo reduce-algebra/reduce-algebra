@@ -11,7 +11,7 @@
                 }
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CARLOC6:
                 mov(B_reg, A_reg);

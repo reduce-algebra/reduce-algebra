@@ -16,7 +16,7 @@
                 errexit();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL2R:
                 next = bytes[ppc++];
@@ -27,11 +27,6 @@
                        w1, w2, A_reg, B_reg);
                 JITerrorcheck();
                 break;
-
-#elif defined __aarch64__
-
-            case OP_CALL2R:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_CALL2R:

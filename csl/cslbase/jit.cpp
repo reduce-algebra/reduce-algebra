@@ -46,8 +46,12 @@
 #include <memory>
 #include <vector>
 
+#ifdef __x86_64__
 #include <asmjit/x86.h>
+#endif
+#ifdef __aarch64__
 #include <asmjit/a64.h>
+#endif
 
 using namespace asmjit;
 
@@ -320,31 +324,31 @@ void JITcall(Register& target, Register& result,
 
 // To make cross-platform coding easier I define functions named for
 // all the x86_64 jump instructions such that they expand into and
-// generate the equivalent aarch64 variant on branch. Then I can use
+// generate the equivalent aarch64 variant of branch. Then I can use
 // just one name for a jump whichever architecture is involved.
 
 Error ja(Label& lab)
-{   return bhi(lab);
+{   return b_hi(lab);
 }
 
 Error jae(Label& lab)
-{   return bhs(lab);
+{   return b_hs(lab);
 }
 
 Error jb(Label& lab)
-{   return blo(lab);
+{   return b_lo(lab);
 }
 
 Error jbe(Label& lab)
-{   return bls(lab);
+{   return b_ls(lab);
 }
 
 Error jc(Label& lab)
-{   return blo(lab);
+{   return b_lo(lab);
 }
 
 Error je(Label& lab)
-{   return beq(lab);
+{   return b_eq(lab);
 }
 
 //Error jecxz(Label& lab)
@@ -352,19 +356,19 @@ Error je(Label& lab)
 //}
 
 Error jg(Label& lab)
-{   return bgt(lab);
+{   return b_gt(lab);
 }
 
 Error jge(Label& lab)
-{   return bge(lab);
+{   return b_ge(lab);
 }
 
 Error jl(Label& lab)
-{   return blt(lab);
+{   return b_lt(lab);
 }
 
 Error jle(Label& lab)
-{   return ble(lab);
+{   return b_le(lab);
 }
 
 Error jmp(Label& lab)
@@ -372,43 +376,43 @@ Error jmp(Label& lab)
 }
 
 Error jna(Label& lab)
-{   return bls(lab);
+{   return b_ls(lab);
 }
 
 Error jnae(Label& lab)
-{   return blo(lab);
+{   return b_lo(lab);
 }
 
 Error jnb(Label& lab)
-{   return bhs(lab);
+{   return b_hs(lab);
 }
 
 Error jnbe(Label& lab)
-{   return bhi(lab);
+{   return b_hi(lab);
 }
 
 Error jnc(Label& lab)
-{   return bhs(lab);
+{   return b_hs(lab);
 }
 
 Error jne(Label& lab)
-{   return bne(lab);
+{   return b_ne(lab);
 }
 
 Error jng(Label& lab)
-{   return ble(lab);
+{   return b_le(lab);
 }
 
 Error jnge(Label& lab)
-{   return bge(lab);
+{   return b_ge(lab);
 }
 
 Error jnl(Label& lab)
-{   return bge(lab);
+{   return b_ge(lab);
 }
 
 Error jnle(Label& lab)
-{   return bgt(lab);
+{   return b_gt(lab);
 }
 
 //Error jno(Label& lab)
@@ -416,15 +420,15 @@ Error jnle(Label& lab)
 //}
 
 Error jnp(Label& lab)
-{   return bmi(lab);
+{   return b_mi(lab);
 }
 
 Error jns(Label& lab)
-{   return bne(lab);
+{   return b_ne(lab);
 }
 
 Error jnz(Label& lab)
-{   return bne(lab);
+{   return b_ne(lab);
 }
 
 //Error jo(Label& lab)
@@ -432,11 +436,11 @@ Error jnz(Label& lab)
 //}
 
 Error jp(Label& lab)
-{   return bpl(lab);
+{   return b_pl(lab);
 }
 
 Error jpe(Label& lab)
-{   return bpl(lab);
+{   return b_pl(lab);
 }
 
 //Error jpo(Label& lab)
@@ -444,17 +448,17 @@ Error jpe(Label& lab)
 //}
 
 Error js(Label& lab)
-{   return bmi(lab);
+{   return b_mi(lab);
 }
 
 Error jz(Label& lab)
-{   return beq(lab);
+{   return b_eq(lab);
 }
 
 // Also test vs tst.
 
 Error test(Register& r, int n)
-{   tst(r, n);
+{   return tst(r, Imm(n));
 }
 
 #endif // __aarch64__
@@ -462,12 +466,14 @@ Error test(Register& r, int n)
 // After many (but not all!) calls it is necessary to check for any
 // reported error state:
 
+// I should really check error codes everywhere...
+
 void JITerrorcheck()
 {
 #if defined __x86_64__
     cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
 #elif defined __aarch64__
-    ldr(w, ptr(nilreg, JIToffset(OJITerrflag), 1));
+    ldrb(w, ptr(nilreg, JIToffset(OJITerrflag)));
     cmp(w, 0);
 #endif
     jne(callFailed);
@@ -752,7 +758,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     stdout_printf("Set the labels that I ought to\n");
 // There are labels here for error exits.
     bind(tooFewArgs);
-// At this stage litvec holds the name of the function involved...
+// At this stage litvec holds the name of the function involved... So that
+// can be left where it can be picked up for inclusion in a disgnostic message.
         loadlit(A_reg, 0);
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITtoofew);
@@ -762,10 +769,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITtoomany);
         chain(A_reg);
+// This is to do with the asmjit-generated code not being able to participate
+// fully in C++ exception handling.
     bind(callFailed);
         storestatic(spentry, Ostack);
         loadstatic(A_reg, OJITthrow);
         chain(A_reg);
+// Error exits from some basic low level operations.
     bind(carError);
         storestatic(spentry, Ostack);
         storestatic(A_reg, OJITarg1);

@@ -19,14 +19,22 @@
             case OP_ADD1:
                 {   Label notFixnum = newLabel();
                     Label endAdd1 = newLabel();
+#ifdef __x86_64__
                     mov(w, A_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, A_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnum);
                     mov(w, MOST_POSITIVE_FIXNUM);
                     cmp(A_reg, w);
                     jne(notFixnum);
+#ifdef __x86_64__
                     add(A_reg, 0x10);
+#else
+                    add(A_reg, A_reg, 0x10);
+#endif
                     jmp(endAdd1);
                 bind(notFixnum);
                     loadstatic(w, OJITshim1);
