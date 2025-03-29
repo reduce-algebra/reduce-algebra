@@ -8,7 +8,7 @@
 #elif defined __x86_64__
 
             case OP_PUSH:
-                add(spreg, 8);
+                add(spreg, 8);;
                 storeloc(A_reg, 0);
                 break;
 

@@ -5,17 +5,15 @@
                 fname = 3;
                 goto call1;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_CALL1_3:
-                mov(w, ptr(nilreg, JIToffset(OJITshim2)));
-                mov(w2, ptr(litvec, 24+CELL-TAG_VECTOR));
-                mov(w1,
-                       ptr(w2, offsetof(Symbol_Head, function1)-TAG_SYMBOL));
+                loadstatic(w, OJITshim1);
+                loadlit(w2, 3);
+                loadfromsymbol(w1, w2, Ofunction1);
                 JITcall(w, A_reg,
-                       w, w1, w2, A_reg);
-                cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                jne(callFailed);
+                        w1, w2, A_reg);
+                JITerrorcheck();
                 break;
 
 #elif defined __aarch64__

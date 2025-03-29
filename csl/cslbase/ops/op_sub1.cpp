@@ -7,50 +7,46 @@
                     continue;
                 }
 #ifdef ARITHLIB
-                A_reg = Sub1::A_reg);
+                A_reg = Sub1::op(A_reg);
 #else // ARITHLIB
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
 #endif // ARITHLIB
                 errexit();
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_SUB1:
                 {   Label notFixnum = newLabel();
                     Label endSub1 = newLabel();
+#ifdef __x86_64__
                     mov(w, A_reg);
                     and_(w, XTAG_BITS);
+#else
+                    and_(w, A_reg, XTAG_BITS);
+#endif
                     cmp(w, TAG_FIXNUM);
                     jne(notFixnum);
-                    mov(w, MOST_NEGATIVE_FIXNUM);
+                    loadstatic(w, OJITmostNegativeFixnum);
                     cmp(A_reg, w);
                     jne(notFixnum);
+#ifdef __x86_64__
                     add(A_reg, -0x10);
+#else
+                    add(A_reg, A_reg, -0x10);
+#endif
+// Could I do an overflow check here rather than the pre-check?
                     jmp(endSub1);
                 bind(notFixnum);
-#ifdef ARITHLIB
                     loadstatic(w, OJITshim1);
-                    loadstatic(w1, OJITsub1);
-                    JITcall(w, A_reg,
-                           w1, A_reg);
-#else // ARITHLIB
-                    loadstatic(w, OJITshim2);
                     loadstatic(w1, OJITplus2);
                     mov(B_reg, fixnum_of_int(-1));
                     JITcall(w, A_reg,
-                           w1, A_reg, B_reg);  
-#endif // ARITHLIB
-                    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
-                    jne(callFailed);
+                            w1, A_reg, B_reg);  
+                    JITerrorcheck();
                 bind(endSub1);
                 }
                 break;
-
-#elif defined __aarch64__
-
-            case OP_SUB1:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_SUB1:

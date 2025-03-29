@@ -8,7 +8,7 @@
 #elif defined __x86_64__
 
             case OP_LOSE:
-                sub(spreg, 8);
+                sub(spreg, 8);;
                 break;
 
 #elif defined __aarch64__

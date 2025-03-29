@@ -11,17 +11,12 @@
                 return nil;
 
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOC1EXIT:
-                mov(A_reg, ptr(spreg, -8));
+                loadloc(A_reg, 1);
                 jmp(returnA);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOC1EXIT:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOC1EXIT:

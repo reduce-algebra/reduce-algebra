@@ -8,7 +8,7 @@
 #elif defined __x86_64__
 
             case OP_PUSHNIL:
-                add(spreg, 8);
+                add(spreg, 8);;
                 storeloc(nilreg, 0);
                 break;
 

@@ -10,19 +10,13 @@
                          A_reg;  // store into special var
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_STOREFREE:
                 next = bytes[ppc++];
-                mov(w, ptr(litvec, 8*next+CELL-TAG_VECTOR));
-                mov(ptr(A_reg, offsetof(Symbol_Head, value)-TAG_SYMBOL),
-                       A_reg);
+                loadlit(w, next);
+                storetosymbol(A_reg, w, Ovalue);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_STOREFREE:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_STOREFREE:

@@ -11,7 +11,7 @@
             case OP_PUSHNILS:
                 next = bytes[ppc++];
                 for (int k=0; k<next; k++)
-                {   add(spreg, 8);
+                {   add(spreg, 8);;
                     storeloc(nilreg, 0);
                 }
                 break;

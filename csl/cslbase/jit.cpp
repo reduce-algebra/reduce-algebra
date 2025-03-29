@@ -46,8 +46,12 @@
 #include <memory>
 #include <vector>
 
+#ifdef __x86_64__
 #include <asmjit/x86.h>
+#endif
+#ifdef __aarch64__
 #include <asmjit/a64.h>
+#endif
 
 using namespace asmjit;
 
@@ -316,12 +320,189 @@ void JITcall(Register& target, Register& result,
     in->setRet(0, result);
 }
 
+#ifdef __aarch64__
+
+// To make cross-platform coding easier I define functions named for
+// all the x86_64 jump instructions such that they expand into and
+// generate the equivalent aarch64 variant of branch. Then I can use
+// just one name for a jump whichever architecture is involved.
+
+Error ja(Label& lab)
+{   return b_hi(lab);
+}
+
+Error jae(Label& lab)
+{   return b_hs(lab);
+}
+
+Error jb(Label& lab)
+{   return b_lo(lab);
+}
+
+Error jbe(Label& lab)
+{   return b_ls(lab);
+}
+
+Error jc(Label& lab)
+{   return b_lo(lab);
+}
+
+Error je(Label& lab)
+{   return b_eq(lab);
+}
+
+//Error jecxz(Label& lab)
+//{   return b(lab);
+//}
+
+Error jg(Label& lab)
+{   return b_gt(lab);
+}
+
+Error jge(Label& lab)
+{   return b_ge(lab);
+}
+
+Error jl(Label& lab)
+{   return b_lt(lab);
+}
+
+Error jle(Label& lab)
+{   return b_le(lab);
+}
+
+Error jmp(Label& lab)
+{   return b(lab);
+}
+
+Error jna(Label& lab)
+{   return b_ls(lab);
+}
+
+Error jnae(Label& lab)
+{   return b_lo(lab);
+}
+
+Error jnb(Label& lab)
+{   return b_hs(lab);
+}
+
+Error jnbe(Label& lab)
+{   return b_hi(lab);
+}
+
+Error jnc(Label& lab)
+{   return b_hs(lab);
+}
+
+Error jne(Label& lab)
+{   return b_ne(lab);
+}
+
+Error jng(Label& lab)
+{   return b_le(lab);
+}
+
+Error jnge(Label& lab)
+{   return b_ge(lab);
+}
+
+Error jnl(Label& lab)
+{   return b_ge(lab);
+}
+
+Error jnle(Label& lab)
+{   return b_gt(lab);
+}
+
+//Error jno(Label& lab)
+//{   return b(lab);
+//}
+
+Error jnp(Label& lab)
+{   return b_mi(lab);
+}
+
+Error jns(Label& lab)
+{   return b_ne(lab);
+}
+
+Error jnz(Label& lab)
+{   return b_ne(lab);
+}
+
+//Error jo(Label& lab)
+//{   return b(lab);
+//}
+
+Error jp(Label& lab)
+{   return b_pl(lab);
+}
+
+Error jpe(Label& lab)
+{   return b_pl(lab);
+}
+
+//Error jpo(Label& lab)
+//{   return b(lab);
+//}
+
+Error js(Label& lab)
+{   return b_mi(lab);
+}
+
+Error jz(Label& lab)
+{   return b_eq(lab);
+}
+
+// Also test vs tst.
+
+Error test(Register& r, int n)
+{   return tst(r, Imm(n));
+}
+
+#endif // __aarch64__
+
+// After many (but not all!) calls it is necessary to check for any
+// reported error state:
+
+// I should really check error codes everywhere...
+
+void JITerrorcheck()
+{
+#if defined __x86_64__
+    cmp(ptr(nilreg, JIToffset(OJITerrflag), 1), 0);
+#elif defined __aarch64__
+    ldrb(w, ptr(nilreg, JIToffset(OJITerrflag)));
+    cmp(w, 0);
+#endif
+    jne(callFailed);
+}
+
+void JITatomic(Register& r, Label& l)
+{   test(r, TAG_BITS);
+    jne(l);
+}
+
+void JITnotatomic(Register& r, Label& l)
+{   test(r, TAG_BITS);
+    je(l);
+}
+
+void JITcarvalid(Register& r)
+{   JITatomic(r, carError);
+}
+
+void JITcdrvalid(Register& r)
+{   JITatomic(r, cdrError);
+}
+
 // When a function is potentially going to be JIT compiled it will
 // have one of jitcoded_0 to jitcoded_4up in a function call where otherwise
 // it would have had bytecoded_0 etc. At present I an not considering
 // byteopt_0... , hardopt_0... byteoptrest_0... or hardoptrest_0...
 // because they are not used by Reduce and I will be pleased if I can get the
-// simpler cases with a known number of arguments dealt with micely.
+// simpler cases with a known number of arguments dealt with nicely.
 
 // When such a function is first called it will call jitcompile, passing
 // the vector of byte instructions. If this returns nullptr that will
@@ -508,8 +689,7 @@ void* jitcompile(const unsigned char* bytes, size_t len,
 //          if ((w1 & TAG_BITS) != TAG_CONS) goto tooFewArgs;
 //          aX = w1[0];
 //          w1 = w1[1];
-            test(w1, TAG_BITS);
-            jne(tooFewArgs);
+            JITatomic(w1, tooFewArgs);
             loadreg(argregs[i], w1, 0);
             loadreg(w1, w1, 8);
             add(spreg, 8);
@@ -533,14 +713,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     if (nargs>=4)
     {   mov(w1, w);
         for (int i=4; i<=nargs; i++)
-        {   tst(w1, TAG_BITS);
-            b_ne(tooFewArgs);
+        {   JITatomic(w1, tooFewArgs);
             ldr(argregs[i], ptr(w1));
             ldr(w1, ptr(w1, 8));
             str(argregs[i], ptr_pre(spreg));
         }
         cmp(w1, nilreg);
-        b_ne(tooManyArgs);
+        jne(tooManyArgs);
     }
 #else
 #error unrecognised architecture for JIT
@@ -579,7 +758,8 @@ void* jitcompile(const unsigned char* bytes, size_t len,
     stdout_printf("Set the labels that I ought to\n");
 // There are labels here for error exits.
     bind(tooFewArgs);
-// At this stage litvec holds the name of the function involved...
+// At this stage litvec holds the name of the function involved... So that
+// can be left where it can be picked up for inclusion in a disgnostic message.
         loadlit(A_reg, 0);
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITtoofew);
@@ -589,10 +769,13 @@ void* jitcompile(const unsigned char* bytes, size_t len,
         storestatic(A_reg, OJITarg1);
         loadstatic(A_reg, OJITtoomany);
         chain(A_reg);
+// This is to do with the asmjit-generated code not being able to participate
+// fully in C++ exception handling.
     bind(callFailed);
         storestatic(spentry, Ostack);
         loadstatic(A_reg, OJITthrow);
         chain(A_reg);
+// Error exits from some basic low level operations.
     bind(carError);
         storestatic(spentry, Ostack);
         storestatic(A_reg, OJITarg1);

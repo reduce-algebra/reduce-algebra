@@ -1338,7 +1338,12 @@ static void toom32(ConstDigitPtr a, std::size_t N,
             display("TD1", TD1, 2*toomLen);
             display("TD2", TD2, 2*toomLen);
             display("TD3", TD3, aHighLen+bHighLen);
-            std::abort();
+// Copy the "slow" data in place of the bad "fast" stuff.
+            std::memcpy(D0, TD0, 2*toomLen*sizeof(D0[0]));
+            std::memcpy(D1, TD1, 2*toomLen*sizeof(D1[0]));
+            std::memcpy(D2, TD2, 2*toomLen*sizeof(D2[0]));
+            std::memcpy(D3, TD3, (aHighLen+bHighLen)*sizeof(D3[0]));
+//@@@       std::abort();
         }
 #endif // CHECK_TIMES
     }

@@ -6,16 +6,12 @@
                 A_reg = basic_elt(litvec, 4);
                 continue;
 
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __aarch64__
 
             case OP_LOADLIT4:
-                mov(A_reg, ptr(litvec, 32+CELL-TAG_VECTOR));
+                mov(B_reg, A_reg);
+                loadlit(A_reg, 4);
                 break;
-
-#elif defined __aarch64__
-
-            case OP_LOADLIT4:
-                unfinished(__FILE__ " not yet implemented for ARM");
 
 #else
             case OP_LOADLIT4:
